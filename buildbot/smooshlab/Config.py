@@ -9,10 +9,9 @@ def getBuildmasterPort():
 # Slave configuration parameters.
 
 def getBuildslaveName():
-    import os
-
      # Use the hostname as the slave name.
-    return os.uname()[1]
+    import platform
+    return platform.uname()[1]
 
 def getBuildslavePassword():
     return 'password'
