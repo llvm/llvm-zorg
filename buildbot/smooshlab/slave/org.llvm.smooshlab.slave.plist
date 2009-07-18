@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+         <key>Label</key>
+         <string>org.llvm.smooshlab.slave</string>
+
+         <key>UserName</key>
+         <string>buildslave</string>
+
+         <key>WorkingDirectory</key>
+         <string>/Users/buildslave/zorg/buildbot/slaves/smooshlab</string>
+
+         <key>ProgramArguments</key>
+         <array>
+                 <string>/usr/bin/twistd</string>
+                 <string>--nodaemon</string>
+                 <string>--python=buildbot.tac</string>
+                 <string>--logfile=twistd.log</string>
+                 <string>--prefix=smooshlab</string>
+         </array>
+
+         <key>KeepAlive</key>
+         <dict>
+                 <key>SuccessfulExit</key>
+                 <false/>
+         </dict>
+
+         <key>RunAtLoad</key>
+         <true/>
+
+</dict>
+</plist>

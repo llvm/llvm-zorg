@@ -61,3 +61,4 @@ licenses, and/or restrictions:
 
 Program             Directory
 -------             ---------
+GTestCommand        zorg/buildbot/commands/GTestCommand.py
