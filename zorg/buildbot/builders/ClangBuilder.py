@@ -108,6 +108,8 @@ def getClangMSVCBuildFactory():
     # FIXME: Don't require local versions of these files. See buildbot ticket
     # #595. We could always write the contents into a temp file, to avoid having
     # them in SVN, and to allow parameterization.
+    #
+    # See also buildbot ticket #377.
     f.addStep(FileDownload(mastersrc=os.path.join(os.path.dirname(__file__),
                                                   'ClangMSVC_cmakegen.bat'),
                            slavedest='cmakegen.bat',
