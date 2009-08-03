@@ -11,7 +11,7 @@
 
          <!-- Change this to your buildbot working directory -->
          <key>WorkingDirectory</key>
-         <string>/Users/buildmaster/zorg/buildbot/masters/smooshlab</string>
+         <string>/Users/buildmaster/zorg/buildbot/smooshlab/master</string>
 
          <key>ProgramArguments</key>
          <array>

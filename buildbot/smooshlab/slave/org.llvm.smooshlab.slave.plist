@@ -5,11 +5,13 @@
          <key>Label</key>
          <string>org.llvm.smooshlab.slave</string>
 
+         <!-- Change this to the user you want to run buildbot as -->
          <key>UserName</key>
          <string>buildslave</string>
 
+         <!-- Change this to your buildbot working directory -->
          <key>WorkingDirectory</key>
-         <string>/Users/buildslave/zorg/buildbot/slaves/smooshlab</string>
+         <string>/Users/buildslave/zorg/buildbot/smooshlab/slave</string>
 
          <key>ProgramArguments</key>
          <array>
