@@ -1,3 +1,4 @@
+import AnalyzerCompareCommand
 import ClangTestCommand
 import DejaGNUCommand
 import GTestCommand
