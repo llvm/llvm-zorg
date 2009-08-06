@@ -1,4 +1,5 @@
 import sys
+import os
 
 from buildbot.steps import shell
 from buildbot.status import builder
@@ -98,11 +99,11 @@ class AnalyzerCompareCommand(shell.ShellCommand):
   def evaluateCommand(self, cmd):
     # Always fail if the command itself failed.
     if cmd.rc != 0:
-      return FAILURE
+      return builder.FAILURE
 
     # Warn about added reports.
     if self.observer.num_added:
-      return WARNINGS
+      return builder.WARNINGS
 
-    return SUCCESS
+    return builder.SUCCESS
 
