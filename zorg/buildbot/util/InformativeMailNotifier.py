@@ -1,11 +1,14 @@
-import buildbot.util
+from buildbot import util, interfaces
+from zope.interface import implements
 from buildbot.status import builder, mail
 
-class InformativeMailNotifier(mail.MailNotifier, buildbot.util.ComparableMixin):
+class InformativeMailNotifier(mail.MailNotifier):
     """MailNotifier subclass which provides additional information about the
     build failure inside the email."""
 
-    compare_attrs = ["num_lines", "only_failure_logs"]
+    implements(interfaces.IEmailSender)
+    compare_attrs = (mail.MailNotifier.compare_attrs +
+                     ["num_lines", "only_failure_logs"])
 
     # FIXME: The customMessage interface is fairly inefficient, switch to
     # something new when it becomes available.
@@ -19,6 +22,10 @@ class InformativeMailNotifier(mail.MailNotifier, buildbot.util.ComparableMixin):
         self.only_failure_logs = only_failure_logs
 
     def customMessage(self, attrs):
+        # FIXME: It would be nice to find a way to communicate with
+        # the lookup mechanism so that we could note any committers
+        # who we weren't able to send email to.
+
         # Get the standard message.
         data = mail.message(attrs)[0]
 
