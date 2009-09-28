@@ -12,8 +12,8 @@ from zorg.buildbot.commands.DejaGNUCommand import DejaGNUCommand
 from zorg.buildbot.commands.ClangTestCommand import ClangTestCommand
 from zorg.buildbot.commands.GTestCommand import GTestCommand
 
-def getClangBuildFactory(triple, 
-                         CC='gcc', CXX='g++', 
+def getClangBuildFactory(triple,
+                         CC='gcc', CXX='g++',
                          CFLAGS='', CXXFLAGS='',
                          useCMake=False,
                          extraMakeArgs=''):
@@ -23,12 +23,12 @@ def getClangBuildFactory(triple,
                   defaultBranch='trunk',
                   workdir='llvm'))
     f.addStep(SVN(name='svn-clang',
-                  mode='update', baseURL='http://llvm.org/svn/llvm-project/cfe/', 
+                  mode='update', baseURL='http://llvm.org/svn/llvm-project/cfe/',
                   defaultBranch='trunk',
                   workdir='llvm/tools/clang'))
     if useCMake:
         builddir = 'llvm/build'
-        f.addStep(Configure(command=['cmake',
+        f.addStep(ShellCommand(command=['cmake',
                                      '-DCMAKE_C_COMPILER=%s' % (CC,),
                                      '-DCMAKE_CXX_COMPILER=%s' % (CXX,),
                                      '-DCMAKE_C_FLAGS=%s' % (CFLAGS,),
@@ -46,16 +46,16 @@ def getClangBuildFactory(triple,
                             workdir=builddir,
                             description=['configuring','Debug'],
                             descriptionDone=['configure','Debug']))
-    f.addStep(WarningCountingShellCommand(name="clean-llvm", 
-                                          command="make clean", 
-                                          haltOnFailure=True, 
-                                          description="cleaning llvm", 
+    f.addStep(WarningCountingShellCommand(name="clean-llvm",
+                                          command="make clean",
+                                          haltOnFailure=True,
+                                          description="cleaning llvm",
                                           descriptionDone="clean llvm",
                                           workdir=builddir))
-    f.addStep(WarningCountingShellCommand(name="compile", 
-                                          command=WithProperties("nice -n 10 make -j%(jobs)d"), 
-                                          haltOnFailure=True, 
-                                          description="compiling llvm & clang", 
+    f.addStep(WarningCountingShellCommand(name="compile",
+                                          command=WithProperties("nice -n 10 make -j%(jobs)d"),
+                                          haltOnFailure=True,
+                                          description="compiling llvm & clang",
                                           descriptionDone="compile llvm & clang",
                                           workdir=builddir))
     if not useCMake: # :(
@@ -63,12 +63,12 @@ def getClangBuildFactory(triple,
                                  workdir=builddir))
     if not useCMake: # :(
         f.addStep(ClangTestCommand(name='test-clang',
-                                   command=WithProperties("nice -n 10 make -j%(jobs)d test VERBOSE=1"), 
+                                   command=WithProperties("nice -n 10 make -j%(jobs)d test VERBOSE=1"),
                                    workdir="llvm/tools/clang"))
     if not useCMake: # :(
-        f.addStep(GTestCommand(name="unittest-llvm", 
+        f.addStep(GTestCommand(name="unittest-llvm",
                                command=["make", "unittests"],
-                               description="unittests (llvm)", 
+                               description="unittests (llvm)",
                                workdir="llvm"))
     return f
 
@@ -84,7 +84,7 @@ def getClangMSVCBuildFactory():
 
     if True:
         f.addStep(SVN(name='svn-clang',
-                      mode='update', baseURL='http://llvm.org/svn/llvm-project/cfe/', 
+                      mode='update', baseURL='http://llvm.org/svn/llvm-project/cfe/',
                       defaultBranch='trunk',
                       workdir='llvm/tools/clang'))
 
@@ -92,19 +92,19 @@ def getClangMSVCBuildFactory():
     if True:
         f.addStep(ShellCommand(name='clean-1',
                                command=['del','/s/q','build'],
-                               warnOnFailure=True, 
+                               warnOnFailure=True,
                                description='cleaning',
                                descriptionDone='clean',
                                workdir='llvm'))
         f.addStep(ShellCommand(name='clean-2',
                                command=['rmdir','/s/q','build'],
-                               warnOnFailure=True, 
+                               warnOnFailure=True,
                                description='cleaning',
                                descriptionDone='clean',
                                workdir='llvm'))
 
     # Create the project files.
-    
+
     # FIXME: Don't require local versions of these files. See buildbot ticket
     # #595. We could always write the contents into a temp file, to avoid having
     # them in SVN, and to allow parameterization.
@@ -116,7 +116,7 @@ def getClangMSVCBuildFactory():
                            workdir='llvm\\build'))
     f.addStep(ShellCommand(name='cmake',
                            command=['cmakegen.bat'],
-                           haltOnFailure=True, 
+                           haltOnFailure=True,
                            description='cmake gen',
                            workdir='llvm\\build'))
 
@@ -127,7 +127,7 @@ def getClangMSVCBuildFactory():
                            workdir='llvm\\build'))
     f.addStep(WarningCountingShellCommand(name='vcbuild',
                                           command=['vcbuild.bat'],
-                                          haltOnFailure=True, 
+                                          haltOnFailure=True,
                                           description='vcbuild',
                                           workdir='llvm\\build',
                                           warningPattern=" warning C.*:"))
