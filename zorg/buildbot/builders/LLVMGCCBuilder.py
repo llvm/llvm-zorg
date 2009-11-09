@@ -6,9 +6,34 @@ from buildbot.process.properties import WithProperties
 
 from zorg.buildbot.commands.ClangTestCommand import ClangTestCommand
 
+def getConfigArgs(origname):
+  name = origname
+  args = []
+  if name.startswith('Release'):
+    name = name[len('Release'):]
+    args.append('--enable-optimized')
+  elif name.startswith('Debug'):
+    name = name[len('Debug'):]
+  else:
+    raise ValueError,'Unknown config name: %r' % origname
+
+  if name.startswith('-Asserts'):
+    name = name[len('-Asserts'):]
+    args.append('--disable-assertions')
+
+  if name.startswith('+Checks'):
+    name = name[len('+Checks'):]
+    args.append('--enable-expensive-checks')
+
+  if name:
+    raise ValueError,'Unknown config name: %r' % origname
+
+  return args
+
 def getLLVMGCCBuildFactory(jobs=1, update=True, clean=True,
                            gxxincludedir=None, triple=None,
-                           useTwoStage=True):
+                           useTwoStage=True, stage1_config='Release',
+                           stage2_config='Release'):
   f = buildbot.process.factory.BuildFactory()
 
   # Determine the build directory.
@@ -45,13 +70,16 @@ def getLLVMGCCBuildFactory(jobs=1, update=True, clean=True,
     base_llvm_configure_args.append('--build=' + triple)
     base_llvm_configure_args.append('--host=' + triple)
     base_llvm_configure_args.append('--target=' + triple)
+  stage_configure_args = getConfigArgs(stage1_config)
   f.addStep(Configure(name='configure.llvm.stage1',
-                      command=base_llvm_configure_args + 
+                      command=base_llvm_configure_args +
+                              stage_configure_args +
                               ["--without-llvmgcc",
                                "--without-llvmgxx"],
                       description=["configure",
                                    "llvm",
-                                   "(stage 1)"],
+                                   "(stage 1)",
+                                   stage1_config],
                       workdir="llvm.obj"))
 
   # Build llvm (stage 1).
@@ -61,7 +89,7 @@ def getLLVMGCCBuildFactory(jobs=1, update=True, clean=True,
                                         description=["compile",
                                                      "llvm",
                                                      "(stage 1)",
-                                                     "Debug"],
+                                                     stage1_config],
                                         workdir="llvm.obj"))
 
   # Run LLVM tests (stage 1).
@@ -140,10 +168,11 @@ def getLLVMGCCBuildFactory(jobs=1, update=True, clean=True,
                            workdir="."))
 
   # Configure llvm (stage 2).
+  stage_configure_args = getConfigArgs(stage2_config)
   f.addStep(Configure(name="configure.llvm.stage2",
                       command=base_llvm_configure_args + 
-                              ["--enable-optimized",
-                               WithProperties("--with-llvmgcc=%(builddir)s/llvm-gcc.install/bin/llvm-gcc"),
+                              stage_configure_args +
+                              [WithProperties("--with-llvmgcc=%(builddir)s/llvm-gcc.install/bin/llvm-gcc"),
                                WithProperties("--with-llvmgxx=%(builddir)s/llvm-gcc.install/bin/llvm-g++")],
                       env={'CC' : WithProperties("%(builddir)s/llvm-gcc.install/bin/llvm-gcc"),
                            'CXX' :  WithProperties("%(builddir)s/llvm-gcc.install/bin/llvm-g++"),},
@@ -152,7 +181,7 @@ def getLLVMGCCBuildFactory(jobs=1, update=True, clean=True,
                       description=["configure",
                                    "llvm",
                                    "(stage 2)",
-                                   "Release"]))
+                                   stage2_config]))
 
   # Build LLVM (stage 2).
   f.addStep(WarningCountingShellCommand(name = "compile.llvm.stage2",
@@ -161,7 +190,7 @@ def getLLVMGCCBuildFactory(jobs=1, update=True, clean=True,
                                         description=["compile",
                                                      "llvm",
                                                      "(stage 2)",
-                                                     "Release"],
+                                                     stage2_config],
                                         workdir="llvm.obj.2"))
 
   # Run LLVM tests (stage 2).
