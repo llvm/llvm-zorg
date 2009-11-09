@@ -8,16 +8,20 @@ from buildbot.steps.shell import WarningCountingShellCommand
 from buildbot.steps.transfer import FileDownload
 from buildbot.process.properties import WithProperties
 
-from zorg.buildbot.commands.DejaGNUCommand import DejaGNUCommand
 from zorg.buildbot.commands.ClangTestCommand import ClangTestCommand
-from zorg.buildbot.commands.GTestCommand import GTestCommand
+from zorg.buildbot.commands.BatchFileDownload import BatchFileDownload
 
-def getClangBuildFactory(triple,
-                         CC='gcc', CXX='g++',
-                         CFLAGS='', CXXFLAGS='',
-                         useCMake=False,
-                         extraMakeArgs=''):
+def getClangBuildFactory(triple, clean=True, test=True):
     f = buildbot.process.factory.BuildFactory()
+
+    # Determine the build directory.
+    f.addStep(buildbot.steps.shell.SetProperty(name="get_builddir",
+                                               command=["pwd"],
+                                               property="builddir",
+                                               description="set build dir",
+                                               workdir="."))
+
+    # Checkout sources.
     f.addStep(SVN(name='svn-llvm',
                   mode='update', baseURL='http://llvm.org/svn/llvm-project/llvm/',
                   defaultBranch='trunk',
@@ -26,70 +30,54 @@ def getClangBuildFactory(triple,
                   mode='update', baseURL='http://llvm.org/svn/llvm-project/cfe/',
                   defaultBranch='trunk',
                   workdir='llvm/tools/clang'))
-    if useCMake:
-        builddir = 'llvm/build'
-        f.addStep(ShellCommand(command=['cmake',
-                                     '-DCMAKE_C_COMPILER=%s' % (CC,),
-                                     '-DCMAKE_CXX_COMPILER=%s' % (CXX,),
-                                     '-DCMAKE_C_FLAGS=%s' % (CFLAGS,),
-                                     '-DCMAKE_CXX_FLAGS=%s' % (CXXFLAGS,),
-                                     '../'],
-                            workdir=builddir,
-                            description=['cmake','Debug'],
-                            descriptionDone=['cmake','Debug']))
-    else:
-        builddir = 'llvm'
-        f.addStep(Configure(command=['./configure',
-                                     '--build', triple,
-                                     'CC=%s %s' % (CC, CFLAGS),
-                                     'CXX=%s %s' % (CXX, CXXFLAGS)],
-                            workdir=builddir,
-                            description=['configuring','Debug'],
-                            descriptionDone=['configure','Debug']))
-    f.addStep(WarningCountingShellCommand(name="clean-llvm",
-                                          command="make clean",
-                                          haltOnFailure=True,
-                                          description="cleaning llvm",
-                                          descriptionDone="clean llvm",
-                                          workdir=builddir))
+    f.addStep(Configure(command=['./configure',
+                                 '--build', triple,
+                                 '--host', triple,
+                                 '--target', triple],
+                        workdir='llvm',
+                        description=['configuring','Debug'],
+                        descriptionDone=['configure','Debug']))
+    if clean:
+        f.addStep(WarningCountingShellCommand(name="clean-llvm",
+                                              command="make clean",
+                                              haltOnFailure=True,
+                                              description="cleaning llvm",
+                                              descriptionDone="clean llvm",
+                                              workdir='llvm'))
     f.addStep(WarningCountingShellCommand(name="compile",
                                           command=WithProperties("nice -n 10 make -j%(jobs)d"),
                                           haltOnFailure=True,
                                           description="compiling llvm & clang",
                                           descriptionDone="compile llvm & clang",
-                                          workdir=builddir))
-    if not useCMake: # :(
-        f.addStep(DejaGNUCommand(name='test-llvm',
-                                 workdir=builddir))
-    if not useCMake: # :(
+                                          workdir='llvm'))
+    if test:
+        f.addStep(ClangTestCommand(name='test-llvm',
+                                   command=["make", "check-lit", "VERBOSE=1"],
+                                   description=["testing", "llvm"],
+                                   descriptionDone=["test", "llvm"],
+                                   workdir='llvm'))
         f.addStep(ClangTestCommand(name='test-clang',
-                                   command=WithProperties("nice -n 10 make -j%(jobs)d test VERBOSE=1"),
-                                   workdir="llvm/tools/clang"))
-    if not useCMake: # :(
-        f.addStep(GTestCommand(name="unittest-llvm",
-                               command=["make", "unittests"],
-                               description="unittests (llvm)",
-                               workdir="llvm"))
+                                   command=WithProperties("nice -n 10 make test VERBOSE=1"),
+                                   workdir='llvm/tools/clang'))
     return f
 
-
-def getClangMSVCBuildFactory():
+def getClangMSVCBuildFactory(update=True, clean=True, vcDrive='c', jobs=1):
     f = buildbot.process.factory.BuildFactory()
 
-    if True:
+    if update:
         f.addStep(SVN(name='svn-llvm',
                       mode='update', baseURL='http://llvm.org/svn/llvm-project/llvm/',
                       defaultBranch='trunk',
                       workdir='llvm'))
 
-    if True:
+    if update:
         f.addStep(SVN(name='svn-clang',
                       mode='update', baseURL='http://llvm.org/svn/llvm-project/cfe/',
                       defaultBranch='trunk',
                       workdir='llvm/tools/clang'))
 
     # Full & fast clean.
-    if True:
+    if clean:
         f.addStep(ShellCommand(name='clean-1',
                                command=['del','/s/q','build'],
                                warnOnFailure=True,
@@ -105,15 +93,15 @@ def getClangMSVCBuildFactory():
 
     # Create the project files.
 
-    # FIXME: Don't require local versions of these files. See buildbot ticket
-    # #595. We could always write the contents into a temp file, to avoid having
-    # them in SVN, and to allow parameterization.
-    #
-    # See also buildbot ticket #377.
-    f.addStep(FileDownload(mastersrc=os.path.join(os.path.dirname(__file__),
-                                                  'ClangMSVC_cmakegen.bat'),
-                           slavedest='cmakegen.bat',
-                           workdir='llvm\\build'))
+    # Use batch files instead of ShellCommand directly, Windows quoting is
+    # borked. FIXME: See buildbot ticket #595 and buildbot ticket #377.
+    f.addStep(BatchFileDownload(name='cmakegen',
+                                command=[r"c:\Program Files\CMake 2.6\bin\cmake",
+                                         "-DLLVM_TARGETS_TO_BUILD:=X86",
+                                         "-G",
+                                         "Visual Studio 9 2008",
+                                         ".."],
+                                workdir="llvm\\build"))
     f.addStep(ShellCommand(name='cmake',
                            command=['cmakegen.bat'],
                            haltOnFailure=True,
@@ -121,14 +109,27 @@ def getClangMSVCBuildFactory():
                            workdir='llvm\\build'))
 
     # Build it.
-    f.addStep(FileDownload(mastersrc=os.path.join(os.path.dirname(__file__),
-                                                  'ClangMSVC_vcbuild.bat'),
-                           slavedest='vcbuild.bat',
-                           workdir='llvm\\build'))
+    f.addStep(BatchFileDownload(name='vcbuild',
+                                command=[vcDrive + r""":\Program Files\Microsoft Visual Studio 9.0\VC\VCPackages\vcbuild.exe""",
+                                         "/M%d" % jobs,
+                                         "LLVM.sln",
+                                         "Debug|Win32"],
+                                workdir="llvm\\build"))
     f.addStep(WarningCountingShellCommand(name='vcbuild',
                                           command=['vcbuild.bat'],
                                           haltOnFailure=True,
                                           description='vcbuild',
                                           workdir='llvm\\build',
                                           warningPattern=" warning C.*:"))
+
+    # Build clang-test project.
+    f.addStep(BatchFileDownload(name='vcbuild_test',
+                                command=[vcDrive + r""":\Program Files\Microsoft Visual Studio 9.0\VC\VCPackages\vcbuild.exe""",
+                                         "clang-test.vcproj",
+                                         "Debug|Win32"],
+                                workdir="llvm\\build\\tools\\clang\\test"))
+    f.addStep(ClangTestCommand(name='test-clang',
+                               command=["vcbuild_test.bat"],
+                               workdir="llvm\\build\\tools\\clang\\test"))
+
     return f
