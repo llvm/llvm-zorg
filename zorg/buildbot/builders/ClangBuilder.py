@@ -11,7 +11,8 @@ from buildbot.process.properties import WithProperties
 from zorg.buildbot.commands.ClangTestCommand import ClangTestCommand
 from zorg.buildbot.commands.BatchFileDownload import BatchFileDownload
 
-def getClangBuildFactory(triple, clean=True, test=True):
+def getClangBuildFactory(triple=None, clean=True, test=True,
+                         expensive_checks=False, run_cxx_tests=False, valgrind=False):
     f = buildbot.process.factory.BuildFactory()
 
     # Determine the build directory.
@@ -30,13 +31,21 @@ def getClangBuildFactory(triple, clean=True, test=True):
                   mode='update', baseURL='http://llvm.org/svn/llvm-project/cfe/',
                   defaultBranch='trunk',
                   workdir='llvm/tools/clang'))
-    f.addStep(Configure(command=['./configure',
-                                 '--build', triple,
-                                 '--host', triple,
-                                 '--target', triple],
+
+    # Force without llvm-gcc so we don't run afoul of Frontend test failures.
+    configure_args = ["./configure", "--without-llvmgcc", "--without-llvmgxx"]
+    config_name = 'Debug'
+    if expensive_checks:
+        configure_args.append('--enable-expensive-checks')
+        config_name += '+Checks'
+    if triple:
+        configure_args += ['--build=%s' % triple, 
+                           '--host=%s' % triple,
+                           '--target=%s' % triple]
+    f.addStep(Configure(command=configure_args,
                         workdir='llvm',
-                        description=['configuring','Debug'],
-                        descriptionDone=['configure','Debug']))
+                        description=['configuring',config_name],
+                        descriptionDone=['configure',config_name]))
     if clean:
         f.addStep(WarningCountingShellCommand(name="clean-llvm",
                                               command="make clean",
@@ -50,6 +59,14 @@ def getClangBuildFactory(triple, clean=True, test=True):
                                           description="compiling llvm & clang",
                                           descriptionDone="compile llvm & clang",
                                           workdir='llvm'))
+    clangTestArgs = '-v'
+    if valgrind:
+        clangTestArgs += ' --vg '
+        clangTestArgs += ' --vg-arg --leak-check=no'
+        clangTestArgs += ' --vg-arg --suppressions=%(builddir)s/llvm/tools/clang/utils/valgrind/x86_64-pc-linux-gnu_gcc-4.3.3.supp'
+    extraTestDirs = ''
+    if run_cxx_tests:
+        extraTestDirs += '%(builddir)s/llvm/tools/clang/utils/C++Tests'
     if test:
         f.addStep(ClangTestCommand(name='test-llvm',
                                    command=["make", "check-lit", "VERBOSE=1"],
@@ -57,7 +74,8 @@ def getClangBuildFactory(triple, clean=True, test=True):
                                    descriptionDone=["test", "llvm"],
                                    workdir='llvm'))
         f.addStep(ClangTestCommand(name='test-clang',
-                                   command=WithProperties("nice -n 10 make test VERBOSE=1"),
+                                   command=['make', 'test', WithProperties('TESTARGS=%s' % clangTestArgs),
+                                            WithProperties('EXTRA_TESTDIRS=%s' % extraTestDirs)],
                                    workdir='llvm/tools/clang'))
     return f
 
