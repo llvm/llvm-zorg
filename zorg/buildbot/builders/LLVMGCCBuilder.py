@@ -84,7 +84,7 @@ def getLLVMGCCBuildFactory(jobs=1, update=True, clean=True,
 
   # Build llvm (stage 1).
   f.addStep(WarningCountingShellCommand(name = "compile.llvm.stage1",
-                                        command = "nice -n 10 make -j%d" % jobs,
+                                        command = WithProperties("nice -n 10 make -j%s" % jobs),
                                         haltOnFailure = True,
                                         description=["compile",
                                                      "llvm",
@@ -130,7 +130,7 @@ def getLLVMGCCBuildFactory(jobs=1, update=True, clean=True,
 
   # Build llvm-gcc.
   f.addStep(WarningCountingShellCommand(name="compile.llvm-gcc.stage1",
-                                        command="nice -n 10 make -j%d" % jobs,
+                                        command = WithProperties("nice -n 10 make -j%s" % jobs),
                                         haltOnFailure=True,
                                         description=["compile",
                                                      "llvm-gcc"],
@@ -185,7 +185,7 @@ def getLLVMGCCBuildFactory(jobs=1, update=True, clean=True,
 
   # Build LLVM (stage 2).
   f.addStep(WarningCountingShellCommand(name = "compile.llvm.stage2",
-                                        command = "nice -n 10 make -j%d" % jobs,
+                                        command = WithProperties("nice -n 10 make -j%s" % jobs),
                                         haltOnFailure = True,
                                         description=["compile",
                                                      "llvm",
@@ -226,7 +226,7 @@ def getLLVMGCCBuildFactory(jobs=1, update=True, clean=True,
 
   # Build llvm-gcc (stage 2).
   f.addStep(WarningCountingShellCommand(name="compile.llvm-gcc.stage2",
-                                        command="nice -n 10 make -j%d" % jobs,
+                                        command=WithProperties("nice -n 10 make -j%s" % jobs),
                                         haltOnFailure=True,
                                         description=["compile",
                                                      "llvm-gcc",
