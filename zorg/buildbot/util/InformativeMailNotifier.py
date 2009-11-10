@@ -10,6 +10,10 @@ class InformativeMailNotifier(mail.MailNotifier):
     compare_attrs = (mail.MailNotifier.compare_attrs +
                      ["num_lines", "only_failure_logs"])
 
+    # Remove customMesg from the compare_attrs, that would lead to
+    # recursion, and is checked by the class test.
+    compare_attrs.remove("customMesg")
+
     # FIXME: The customMessage interface is fairly inefficient, switch to
     # something new when it becomes available.
 
