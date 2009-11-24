@@ -11,7 +11,7 @@ from zorg.buildbot.commands.ClangTestCommand import ClangTestCommand
 
 def getLLVMBuildFactory(triple=None, clean=True, test=True,
                         expensive_checks=False,
-                        jobs=1, timeout=20):
+                        jobs=1, timeout=20, make='make'):
     f = buildbot.process.factory.BuildFactory()
 
     # Determine the build directory.
@@ -43,13 +43,14 @@ def getLLVMBuildFactory(triple=None, clean=True, test=True,
                         descriptionDone=['configure',config_name]))
     if clean:
         f.addStep(WarningCountingShellCommand(name="clean-llvm",
-                                              command="make clean",
+                                              command=[make, 'clean'],
                                               haltOnFailure=True,
                                               description="cleaning llvm",
                                               descriptionDone="clean llvm",
                                               workdir='llvm'))
     f.addStep(WarningCountingShellCommand(name="compile",
-                                          command=WithProperties("nice -n 10 make -j%s" % jobs),
+                                          command=['nice', '-n', '10',
+                                                   make, WithProperties("-j%s" % jobs)],
                                           haltOnFailure=True,
                                           description="compiling llvm",
                                           descriptionDone="compile llvm",
@@ -57,7 +58,7 @@ def getLLVMBuildFactory(triple=None, clean=True, test=True,
                                           timeout=timeout*60))
     if test:
         f.addStep(ClangTestCommand(name='test-llvm',
-                                   command=["make", "check-lit", "VERBOSE=1"],
+                                   command=[make, "check-lit", "VERBOSE=1"],
                                    description=["testing", "llvm"],
                                    descriptionDone=["test", "llvm"],
                                    workdir='llvm'))

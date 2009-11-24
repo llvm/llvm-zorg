@@ -12,7 +12,8 @@ from zorg.buildbot.commands.ClangTestCommand import ClangTestCommand
 from zorg.buildbot.commands.BatchFileDownload import BatchFileDownload
 
 def getClangBuildFactory(triple=None, clean=True, test=True,
-                         expensive_checks=False, run_cxx_tests=False, valgrind=False):
+                         expensive_checks=False, run_cxx_tests=False, valgrind=False,
+                         make='make'):
     f = buildbot.process.factory.BuildFactory()
 
     # Determine the build directory.
@@ -48,13 +49,14 @@ def getClangBuildFactory(triple=None, clean=True, test=True,
                         descriptionDone=['configure',config_name]))
     if clean:
         f.addStep(WarningCountingShellCommand(name="clean-llvm",
-                                              command="make clean",
+                                              command=[make, "clean"],
                                               haltOnFailure=True,
                                               description="cleaning llvm",
                                               descriptionDone="clean llvm",
                                               workdir='llvm'))
     f.addStep(WarningCountingShellCommand(name="compile",
-                                          command=WithProperties("nice -n 10 make -j%(jobs)d"),
+                                          command=['nice', '-n', '10',
+                                                   make, WithProperties("-j%s" % jobs)],
                                           haltOnFailure=True,
                                           description="compiling llvm & clang",
                                           descriptionDone="compile llvm & clang",
@@ -69,12 +71,12 @@ def getClangBuildFactory(triple=None, clean=True, test=True,
         extraTestDirs += '%(builddir)s/llvm/tools/clang/utils/C++Tests'
     if test:
         f.addStep(ClangTestCommand(name='test-llvm',
-                                   command=["make", "check-lit", "VERBOSE=1"],
+                                   command=[make, "check-lit", "VERBOSE=1"],
                                    description=["testing", "llvm"],
                                    descriptionDone=["test", "llvm"],
                                    workdir='llvm'))
         f.addStep(ClangTestCommand(name='test-clang',
-                                   command=['make', 'test', WithProperties('TESTARGS=%s' % clangTestArgs),
+                                   command=[make, 'test', WithProperties('TESTARGS=%s' % clangTestArgs),
                                             WithProperties('EXTRA_TESTDIRS=%s' % extraTestDirs)],
                                    workdir='llvm/tools/clang'))
     return f

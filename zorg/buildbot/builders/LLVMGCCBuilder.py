@@ -34,7 +34,7 @@ def getLLVMGCCBuildFactory(jobs=1, update=True, clean=True,
                            gxxincludedir=None,
                            triple=None, build=None, host=None, target=None,
                            useTwoStage=True, stage1_config='Release',
-                           stage2_config='Release'):
+                           stage2_config='Release', make='make'):
   if build or host or target:
     if not build or not host or not target:
       raise ValueError,"Must specify all of 'build', 'host', 'target' if used."
@@ -93,7 +93,8 @@ def getLLVMGCCBuildFactory(jobs=1, update=True, clean=True,
 
   # Build llvm (stage 1).
   f.addStep(WarningCountingShellCommand(name = "compile.llvm.stage1",
-                                        command = WithProperties("nice -n 10 make -j%s" % jobs),
+                                        command=['nice', '-n', '10',
+                                                 make, WithProperties("-j%s" % jobs)],
                                         haltOnFailure = True,
                                         description=["compile",
                                                      "llvm",
@@ -103,7 +104,7 @@ def getLLVMGCCBuildFactory(jobs=1, update=True, clean=True,
 
   # Run LLVM tests (stage 1).
   f.addStep(ClangTestCommand(name = 'test.llvm.stage1',
-                             command = ["make", "check-lit", "VERBOSE=1"],
+                             command = [make, "check-lit", "VERBOSE=1"],
                              description = ["testing", "llvm"],
                              descriptionDone = ["test", "llvm"],
                              workdir = 'llvm.obj'))
@@ -139,7 +140,8 @@ def getLLVMGCCBuildFactory(jobs=1, update=True, clean=True,
 
   # Build llvm-gcc.
   f.addStep(WarningCountingShellCommand(name="compile.llvm-gcc.stage1",
-                                        command = WithProperties("nice -n 10 make -j%s" % jobs),
+                                        command=['nice', '-n', '10',
+                                                 make, WithProperties("-j%s" % jobs)],
                                         haltOnFailure=True,
                                         description=["compile",
                                                      "llvm-gcc"],
@@ -156,7 +158,8 @@ def getLLVMGCCBuildFactory(jobs=1, update=True, clean=True,
 
   # Install llvm-gcc.
   f.addStep(WarningCountingShellCommand(name="install.llvm-gcc.stage1",
-                                        command="nice -n 10 make install",
+                                        command=['nice', '-n', '10',
+                                                 make, 'install'],
                                         haltOnFailure=True,
                                         description=["install",
                                                      "llvm-gcc"],
@@ -194,7 +197,8 @@ def getLLVMGCCBuildFactory(jobs=1, update=True, clean=True,
 
   # Build LLVM (stage 2).
   f.addStep(WarningCountingShellCommand(name = "compile.llvm.stage2",
-                                        command = WithProperties("nice -n 10 make -j%s" % jobs),
+                                        command = ['nice', '-n', '10',
+                                                   make, WithProperties("-j%s" % jobs)],
                                         haltOnFailure = True,
                                         description=["compile",
                                                      "llvm",
@@ -204,7 +208,7 @@ def getLLVMGCCBuildFactory(jobs=1, update=True, clean=True,
 
   # Run LLVM tests (stage 2).
   f.addStep(ClangTestCommand(name = 'test.llvm.stage2',
-                             command = ["make", "check-lit", "VERBOSE=1"],
+                             command = [make, "check-lit", "VERBOSE=1"],
                              description = ["testing", "llvm", "(stage 2)"],
                              descriptionDone = ["test", "llvm", "(stage 2)"],
                              workdir = 'llvm.obj.2'))
@@ -235,7 +239,8 @@ def getLLVMGCCBuildFactory(jobs=1, update=True, clean=True,
 
   # Build llvm-gcc (stage 2).
   f.addStep(WarningCountingShellCommand(name="compile.llvm-gcc.stage2",
-                                        command=WithProperties("nice -n 10 make -j%s" % jobs),
+                                        command=['nice', '-n', '10',
+                                                 make, WithProperties("-j%s" % jobs)],
                                         haltOnFailure=True,
                                         description=["compile",
                                                      "llvm-gcc",
@@ -254,6 +259,8 @@ def getLLVMGCCBuildFactory(jobs=1, update=True, clean=True,
 
   # Install llvm-gcc.
   f.addStep(WarningCountingShellCommand(name="install.llvm-gcc.stage2",
+                                        command = ['nice', '-n', '10',
+                                                   make, 'install'],
                                         command="nice -n 10 make",
                                         haltOnFailure=True,
                                         description=["install",
