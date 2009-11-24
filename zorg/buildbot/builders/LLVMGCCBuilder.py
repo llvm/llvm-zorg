@@ -31,9 +31,18 @@ def getConfigArgs(origname):
   return args
 
 def getLLVMGCCBuildFactory(jobs=1, update=True, clean=True,
-                           gxxincludedir=None, triple=None,
+                           gxxincludedir=None,
+                           triple=None, build=None, host=None, target=None,
                            useTwoStage=True, stage1_config='Release',
                            stage2_config='Release'):
+  if build or host or target:
+    if not build or not host or not target:
+      raise ValueError,"Must specify all of 'build', 'host', 'target' if used."
+    if triple:
+      raise ValueError,"Cannot specify 'triple' and 'build', 'host', 'target' options."
+  elif triple:
+    build = host = target = triple
+
   f = buildbot.process.factory.BuildFactory()
 
   # Determine the build directory.
@@ -66,10 +75,10 @@ def getLLVMGCCBuildFactory(jobs=1, update=True, clean=True,
 
   # Configure llvm (stage 1).
   base_llvm_configure_args = [WithProperties("%(builddir)s/llvm.src/configure")]
-  if triple:
-    base_llvm_configure_args.append('--build=' + triple)
-    base_llvm_configure_args.append('--host=' + triple)
-    base_llvm_configure_args.append('--target=' + triple)
+  if build:
+    base_llvm_configure_args.append('--build=' + build)
+    base_llvm_configure_args.append('--host=' + host)
+    base_llvm_configure_args.append('--target=' + target)
   stage_configure_args = getConfigArgs(stage1_config)
   f.addStep(Configure(name='configure.llvm.stage1',
                       command=base_llvm_configure_args +
@@ -113,10 +122,10 @@ def getLLVMGCCBuildFactory(jobs=1, update=True, clean=True,
                                  "--enable-languages=c,c++"]
   if gxxincludedir:
     base_llvmgcc_configure_args.append('--with-gxx-include-dir=' + gxxincludedir)
-  if triple:
-    base_llvmgcc_configure_args.append('--build=' + triple)
-    base_llvmgcc_configure_args.append('--host=' + triple)
-    base_llvmgcc_configure_args.append('--target=' + triple)
+  if build:
+    base_llvmgcc_configure_args.append('--build=' + build)
+    base_llvmgcc_configure_args.append('--host=' + host)
+    base_llvmgcc_configure_args.append('--target=' + target)
   f.addStep(Configure(name='configure.llvm-gcc.stage1',
                       command=(base_llvmgcc_configure_args +
                                ["--program-prefix=llvm-",
