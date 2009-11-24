@@ -13,7 +13,7 @@ from zorg.buildbot.commands.BatchFileDownload import BatchFileDownload
 
 def getClangBuildFactory(triple=None, clean=True, test=True,
                          expensive_checks=False, run_cxx_tests=False, valgrind=False,
-                         make='make'):
+                         make='make', jobs="%(jobs)s"):
     f = buildbot.process.factory.BuildFactory()
 
     # Determine the build directory.

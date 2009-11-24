@@ -3,3 +3,10 @@
 import zorg
 from zorg.buildbot.builders import ClangBuilder, LLVMBuilder, LLVMGCCBuilder
 
+# Just check that we can instaniate the build factors, what else can we do?
+
+print ClangBuilder.getClangBuildFactory()
+
+print LLVMBuilder.getLLVMBuildFactory()
+
+print LLVMGCCBuilder.getLLVMGCCBuildFactory()
