@@ -10,7 +10,7 @@ from buildbot.process.properties import WithProperties
 from zorg.buildbot.commands.ClangTestCommand import ClangTestCommand
 
 def getLLVMBuildFactory(triple=None, clean=True, test=True,
-                        expensive_checks=False,
+                        expensive_checks=False, examples=False,
                         jobs=1, timeout=20, make='make'):
     f = buildbot.process.factory.BuildFactory()
 
@@ -56,6 +56,16 @@ def getLLVMBuildFactory(triple=None, clean=True, test=True,
                                           descriptionDone="compile llvm",
                                           workdir='llvm',
                                           timeout=timeout*60))
+    if examples:
+        f.addStep(WarningCountingShellCommand(name="compile.examples",
+                                              command=['nice', '-n', '10',
+                                                       make, WithProperties("-j%s" % jobs),
+                                                       'BUILD_EXAMPLES=1'],
+                                              haltOnFailure=True,
+                                              description=["compiling", "llvm", "examples"],
+                                              descriptionDone=["compile", "llvm", "examples"],
+                                              workdir='llvm',
+                                              timeout=timeout*60))
     if test:
         f.addStep(ClangTestCommand(name='test-llvm',
                                    command=[make, "check-lit", "VERBOSE=1"],

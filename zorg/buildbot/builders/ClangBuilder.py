@@ -14,7 +14,7 @@ from zorg.buildbot.commands.BatchFileDownload import BatchFileDownload
 from Util import getConfigArgs
 
 def getClangBuildFactory(triple=None, clean=True, test=True, run_cxx_tests=False,
-                         valgrind=False, useTwoStage=False, 
+                         examples=False, valgrind=False, useTwoStage=False, 
                          make='make', jobs="%(jobs)s",
                          stage1_config='Debug', stage2_config='Release',
                          extra_configure_args=[]):
@@ -89,6 +89,17 @@ def getClangBuildFactory(triple=None, clean=True, test=True, run_cxx_tests=False
                                           description=["compiling", stage1_config],
                                           descriptionDone=["compile", stage1_config],
                                           workdir=llvm_1_objdir))
+
+    if examples:
+        f.addStep(WarningCountingShellCommand(name="compile.examples",
+                                              command=['nice', '-n', '10',
+                                                       make, WithProperties("-j%s" % jobs),
+                                                       "BUILD_EXAMPLES=1"],
+                                              haltOnFailure=True,
+                                              description=["compilinge", stage1_config, "examples"],
+                                              descriptionDone=["compile", stage1_config, "examples"],
+                                              workdir=llvm_1_objdir))
+
     clangTestArgs = '-v'
     if valgrind:
         clangTestArgs += ' --vg '
