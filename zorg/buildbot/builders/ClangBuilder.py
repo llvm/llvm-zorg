@@ -11,9 +11,25 @@ from buildbot.process.properties import WithProperties
 from zorg.buildbot.commands.ClangTestCommand import ClangTestCommand
 from zorg.buildbot.commands.BatchFileDownload import BatchFileDownload
 
-def getClangBuildFactory(triple=None, clean=True, test=True,
-                         expensive_checks=False, run_cxx_tests=False, valgrind=False,
-                         make='make', jobs="%(jobs)s"):
+from Util import getConfigArgs
+
+def getClangBuildFactory(triple=None, clean=True, test=True, run_cxx_tests=False,
+                         valgrind=False, useTwoStage=False, 
+                         make='make', jobs="%(jobs)s",
+                         stage1_config='Debug', stage2_config='Release',
+                         extra_configure_args=[]):
+    # Don't use in-dir builds with a two stage build process.
+    inDir = not useTwoStage
+    if inDir:
+        llvm_srcdir = "llvm"
+        llvm_1_objdir = "llvm"
+        llvm_1_installdir = None
+    else:
+        llvm_srcdir = "llvm.src"
+        llvm_1_objdir = "llvm.obj"
+        llvm_1_installdir = "llvm.install.1"
+        llvm_2_objdir = "llvm.obj.2"
+
     f = buildbot.process.factory.BuildFactory()
 
     # Determine the build directory.
@@ -27,40 +43,52 @@ def getClangBuildFactory(triple=None, clean=True, test=True,
     f.addStep(SVN(name='svn-llvm',
                   mode='update', baseURL='http://llvm.org/svn/llvm-project/llvm/',
                   defaultBranch='trunk',
-                  workdir='llvm'))
+                  workdir=llvm_srcdir))
     f.addStep(SVN(name='svn-clang',
                   mode='update', baseURL='http://llvm.org/svn/llvm-project/cfe/',
                   defaultBranch='trunk',
-                  workdir='llvm/tools/clang'))
+                  workdir='%s/tools/clang' % llvm_srcdir))
 
+    # Clean up llvm (stage 1); unless in-dir.
+    if clean and llvm_srcdir != llvm_1_objdir:
+        f.addStep(ShellCommand(name="rm-llvm.obj.stage1",
+                               command=["rm", "-rf", llvm_1_objdir],
+                               haltOnFailure=True,
+                               description=["rm build dir", "llvm"],
+                               workdir="."))
+        
     # Force without llvm-gcc so we don't run afoul of Frontend test failures.
-    configure_args = ["./configure", "--without-llvmgcc", "--without-llvmgxx"]
-    config_name = 'Debug'
-    if expensive_checks:
-        configure_args.append('--enable-expensive-checks')
-        config_name += '+Checks'
+    base_configure_args = [WithProperties("%%(builddir)s/%s/configure" % llvm_srcdir),
+                           WithProperties("--prefix=%%(builddir)s/%s" % llvm_1_installdir),
+                           '--disable-bindings']
+    base_configure_args += extra_configure_args
     if triple:
-        configure_args += ['--build=%s' % triple, 
-                           '--host=%s' % triple,
-                           '--target=%s' % triple]
-    f.addStep(Configure(command=configure_args,
-                        workdir='llvm',
-                        description=['configuring',config_name],
-                        descriptionDone=['configure',config_name]))
-    if clean:
+        base_configure_args += ['--build=%s' % triple, 
+                                '--host=%s' % triple,
+                                '--target=%s' % triple]
+    args = base_configure_args + ["--without-llvmgcc", "--without-llvmgxx"]
+    args += getConfigArgs(stage1_config)
+    f.addStep(Configure(command=args,
+                        workdir=llvm_1_objdir,
+                        description=['configuring',stage1_config],
+                        descriptionDone=['configure',stage1_config]))
+
+    # Make clean if using in-dir builds.
+    if clean and llvm_srcdir == llvm_1_objdir:
         f.addStep(WarningCountingShellCommand(name="clean-llvm",
                                               command=[make, "clean"],
                                               haltOnFailure=True,
                                               description="cleaning llvm",
                                               descriptionDone="clean llvm",
-                                              workdir='llvm'))
+                                              workdir=llvm_1_objdir))
+
     f.addStep(WarningCountingShellCommand(name="compile",
                                           command=['nice', '-n', '10',
                                                    make, WithProperties("-j%s" % jobs)],
                                           haltOnFailure=True,
-                                          description="compiling llvm & clang",
-                                          descriptionDone="compile llvm & clang",
-                                          workdir='llvm'))
+                                          description=["compiling", stage1_config],
+                                          descriptionDone=["compile", stage1_config],
+                                          workdir=llvm_1_objdir))
     clangTestArgs = '-v'
     if valgrind:
         clangTestArgs += ' --vg '
@@ -74,11 +102,67 @@ def getClangBuildFactory(triple=None, clean=True, test=True,
                                    command=[make, "check-lit", "VERBOSE=1"],
                                    description=["testing", "llvm"],
                                    descriptionDone=["test", "llvm"],
-                                   workdir='llvm'))
+                                   workdir=llvm_1_objdir))
         f.addStep(ClangTestCommand(name='test-clang',
                                    command=[make, 'test', WithProperties('TESTARGS=%s' % clangTestArgs),
                                             WithProperties('EXTRA_TESTDIRS=%s' % extraTestDirs)],
-                                   workdir='llvm/tools/clang'))
+                                   workdir='%s/tools/clang' % llvm_1_objdir))
+
+    # Install llvm and clang.
+    if llvm_1_installdir:
+        f.addStep(WarningCountingShellCommand(name="install.llvm.1",
+                                              command=['nice', '-n', '10',
+                                                       make, WithProperties("-j%s" % jobs),
+                                                       'install'],
+                                              haltOnFailure=True,
+                                              description=["install", "llvm & clang"],
+                                              workdir=llvm_1_objdir))
+
+    if not useTwoStage:
+        return f
+
+    # Clean up llvm (stage 2).
+    if clean:
+        f.addStep(ShellCommand(name="rm-llvm.obj.stage2",
+                               command=["rm", "-rf", llvm_2_objdir],
+                               haltOnFailure=True,
+                               description=["rm build dir", "llvm", "(stage 2)"],
+                               workdir="."))
+
+    # Configure llvm (stage 2).
+    args = base_configure_args + ["--without-llvmgcc", "--without-llvmgxx"]
+    args += getConfigArgs(stage2_config)
+    f.addStep(Configure(name="configure.llvm.stage2",
+                        command=args,
+                        env={'CC' : WithProperties("%%(builddir)s/%s/bin/clang" % llvm_1_installdir),
+                             'CXX' :  WithProperties("%%(builddir)s/%s/bin/clang++" % llvm_1_installdir),},
+                        haltOnFailure=True,
+                        workdir=llvm_2_objdir,
+                        description=["configure", "llvm", "(stage 2)",
+                                     stage2_config]))
+
+    # Build llvm (stage 2).
+    f.addStep(WarningCountingShellCommand(name="compile.llvm.stage2",
+                                          command=['nice', '-n', '10',
+                                                   make, WithProperties("-j%s" % jobs)],
+                                          haltOnFailure=True,
+                                          description=["compiling", "(stage 2)",
+                                                       stage2_config],
+                                          descriptionDone=["compile", "(stage 2)",
+                                                           stage2_config],
+                                          workdir=llvm_2_objdir))
+
+    if test:
+        f.addStep(ClangTestCommand(name='test-llvm',
+                                   command=[make, "check-lit", "VERBOSE=1"],
+                                   description=["testing", "llvm"],
+                                   descriptionDone=["test", "llvm"],
+                                   workdir=llvm_2_objdir))
+        f.addStep(ClangTestCommand(name='test-clang',
+                                   command=[make, 'test', WithProperties('TESTARGS=%s' % clangTestArgs),
+                                            WithProperties('EXTRA_TESTDIRS=%s' % extraTestDirs)],
+                                   workdir='%s/tools/clang' % llvm_2_objdir))
+
     return f
 
 def getClangMSVCBuildFactory(update=True, clean=True, vcDrive='c', jobs=1):
