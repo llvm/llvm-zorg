@@ -20,7 +20,7 @@ def getBuildbotName():
     return 'llvmbb'
 
 def getBuildmasterWebPort():
-    return 8010
+    return 8011
 
 def shouldTrackChanges():
     return True
