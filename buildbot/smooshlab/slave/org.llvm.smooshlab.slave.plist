@@ -31,5 +31,14 @@
          <key>RunAtLoad</key>
          <true/>
 
+        <dict>
+                <key>NumberOfFiles</key>
+                <integer>1024</integer>
+        </dict>
+	<key>HardResourceLimits</key>
+        <dict>
+                <key>NumberOfFiles</key>
+                <integer>1024</integer>
+        </dict>
 </dict>
 </plist>
