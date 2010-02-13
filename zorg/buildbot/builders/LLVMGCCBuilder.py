@@ -12,7 +12,8 @@ def getLLVMGCCBuildFactory(jobs=1, update=True, clean=True,
                            gxxincludedir=None,
                            triple=None, build=None, host=None, target=None,
                            useTwoStage=True, stage1_config='Release',
-                           stage2_config='Release', make='make'):
+                           stage2_config='Release', make='make',
+                           extra_configure_args=[]):
   if build or host or target:
     if not build or not host or not target:
       raise ValueError,"Must specify all of 'build', 'host', 'target' if used."
@@ -101,6 +102,7 @@ def getLLVMGCCBuildFactory(jobs=1, update=True, clean=True,
                                  "--enable-languages=c,c++"]
   if gxxincludedir:
     base_llvmgcc_configure_args.append('--with-gxx-include-dir=' + gxxincludedir)
+  base_llvmgcc_configure_args.extend(extra_configure_args)
   if build:
     base_llvmgcc_configure_args.append('--build=' + build)
     base_llvmgcc_configure_args.append('--host=' + host)
