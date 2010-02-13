@@ -13,7 +13,7 @@ def getLLVMGCCBuildFactory(jobs=1, update=True, clean=True,
                            triple=None, build=None, host=None, target=None,
                            useTwoStage=True, stage1_config='Release',
                            stage2_config='Release', make='make',
-                           extra_configure_args=[]):
+                           extra_configure_args=[], verbose=False, env = {}):
   if build or host or target:
     if not build or not host or not target:
       raise ValueError,"Must specify all of 'build', 'host', 'target' if used."
@@ -29,7 +29,7 @@ def getLLVMGCCBuildFactory(jobs=1, update=True, clean=True,
                                              command=["pwd"],
                                              property="builddir",
                                              description="set build dir",
-                                             workdir="."))
+                                             workdir=".", env=env))
 
   # Get the sources.
   if update:
@@ -50,7 +50,7 @@ def getLLVMGCCBuildFactory(jobs=1, update=True, clean=True,
                            description=["rm build dir",
                                         "llvm",
                                         "(stage 1)"],
-                           workdir="."))
+                           workdir=".", env=env))
 
   # Configure llvm (stage 1).
   base_llvm_configure_args = [WithProperties("%(builddir)s/llvm.src/configure")]
@@ -68,25 +68,28 @@ def getLLVMGCCBuildFactory(jobs=1, update=True, clean=True,
                                    "llvm",
                                    "(stage 1)",
                                    stage1_config],
-                      workdir="llvm.obj"))
+                      workdir="llvm.obj", env=env))
 
   # Build llvm (stage 1).
+  base_llvm_make_args = ['nice', '-n', '10',
+                         make, WithProperties("-j%s" % jobs)]
+  if verbose:
+    base_llvm_make_args.append('VERBOSE=1')
   f.addStep(WarningCountingShellCommand(name = "compile.llvm.stage1",
-                                        command=['nice', '-n', '10',
-                                                 make, WithProperties("-j%s" % jobs)],
+                                        command=base_llvm_make_args,
                                         haltOnFailure = True,
                                         description=["compile",
                                                      "llvm",
                                                      "(stage 1)",
                                                      stage1_config],
-                                        workdir="llvm.obj"))
+                                        workdir="llvm.obj", env=env))
 
   # Run LLVM tests (stage 1).
   f.addStep(ClangTestCommand(name = 'test.llvm.stage1',
                              command = [make, "check-lit", "VERBOSE=1"],
                              description = ["testing", "llvm"],
                              descriptionDone = ["test", "llvm"],
-                             workdir = 'llvm.obj'))
+                             workdir = 'llvm.obj', env=env))
 
   # Clean up llvm-gcc.
   if clean:
@@ -95,7 +98,7 @@ def getLLVMGCCBuildFactory(jobs=1, update=True, clean=True,
                            haltOnFailure = True,
                            description=["rm build dir",
                                         "llvm-gcc"],
-                           workdir="."))
+                           workdir=".", env=env))
 
   # Configure llvm-gcc.
   base_llvmgcc_configure_args = ["../llvm-gcc.src/configure",
@@ -116,7 +119,7 @@ def getLLVMGCCBuildFactory(jobs=1, update=True, clean=True,
                       description=["configure",
                                    "llvm-gcc",
                                    "(stage 1)"],
-                      workdir="llvm-gcc.obj"))
+                      workdir="llvm-gcc.obj", env=env))
 
   # Build llvm-gcc.
   f.addStep(WarningCountingShellCommand(name="compile.llvm-gcc.stage1",
@@ -125,7 +128,7 @@ def getLLVMGCCBuildFactory(jobs=1, update=True, clean=True,
                                         haltOnFailure=True,
                                         description=["compile",
                                                      "llvm-gcc"],
-                                        workdir="llvm-gcc.obj"))
+                                        workdir="llvm-gcc.obj", env=env))
 
   # Clean up llvm-gcc install.
   if clean:
@@ -134,7 +137,7 @@ def getLLVMGCCBuildFactory(jobs=1, update=True, clean=True,
                            haltOnFailure = True,
                            description=["rm install dir",
                                         "llvm-gcc"],
-                           workdir="."))
+                           workdir=".", env=env))
 
   # Install llvm-gcc.
   f.addStep(WarningCountingShellCommand(name="install.llvm-gcc.stage1",
@@ -143,7 +146,7 @@ def getLLVMGCCBuildFactory(jobs=1, update=True, clean=True,
                                         haltOnFailure=True,
                                         description=["install",
                                                      "llvm-gcc"],
-                                        workdir="llvm-gcc.obj"))
+                                        workdir="llvm-gcc.obj", env=env))
 
   # We are done if not doing a two-stage build.
   if not useTwoStage:
@@ -157,41 +160,41 @@ def getLLVMGCCBuildFactory(jobs=1, update=True, clean=True,
                            description=["rm build dir",
                                         "llvm",
                                         "(stage 2)"],
-                           workdir="."))
+                           workdir=".", env=env))
 
   # Configure llvm (stage 2).
   stage_configure_args = getConfigArgs(stage2_config)
+  local_env = dict(env)
+  local_env['CC'] = WithProperties("%(builddir)s/llvm-gcc.install/bin/llvm-gcc")
+  local_env['CXX'] = WithProperties("%(builddir)s/llvm-gcc.install/bin/llvm-g++")
   f.addStep(Configure(name="configure.llvm.stage2",
                       command=base_llvm_configure_args + 
                               stage_configure_args +
                               [WithProperties("--with-llvmgcc=%(builddir)s/llvm-gcc.install/bin/llvm-gcc"),
                                WithProperties("--with-llvmgxx=%(builddir)s/llvm-gcc.install/bin/llvm-g++")],
-                      env={'CC' : WithProperties("%(builddir)s/llvm-gcc.install/bin/llvm-gcc"),
-                           'CXX' :  WithProperties("%(builddir)s/llvm-gcc.install/bin/llvm-g++"),},
                       haltOnFailure=True,
                       workdir="llvm.obj.2",
                       description=["configure",
                                    "llvm",
                                    "(stage 2)",
-                                   stage2_config]))
+                                   stage2_config], env=local_env))
 
   # Build LLVM (stage 2).
   f.addStep(WarningCountingShellCommand(name = "compile.llvm.stage2",
-                                        command = ['nice', '-n', '10',
-                                                   make, WithProperties("-j%s" % jobs)],
+                                        command = base_llvm_make_args,
                                         haltOnFailure = True,
                                         description=["compile",
                                                      "llvm",
                                                      "(stage 2)",
                                                      stage2_config],
-                                        workdir="llvm.obj.2"))
+                                        workdir="llvm.obj.2", env=env))
 
   # Run LLVM tests (stage 2).
   f.addStep(ClangTestCommand(name = 'test.llvm.stage2',
                              command = [make, "check-lit", "VERBOSE=1"],
                              description = ["testing", "llvm", "(stage 2)"],
                              descriptionDone = ["test", "llvm", "(stage 2)"],
-                             workdir = 'llvm.obj.2'))
+                             workdir = 'llvm.obj.2', env=env))
 
   # Clean up llvm-gcc (stage 2).
   if clean:
@@ -201,21 +204,22 @@ def getLLVMGCCBuildFactory(jobs=1, update=True, clean=True,
                            description=["rm build dir",
                                         "llvm-gcc",
                                         "(stage 2)"],
-                           workdir="."))
+                           workdir=".", env=env))
 
   # Configure llvm-gcc (stage 2).
+  local_env = dict(env)
+  local_env['CC'] = WithProperties("%(builddir)s/llvm-gcc.install/bin/llvm-gcc")
+  local_env['CXX'] = WithProperties("%(builddir)s/llvm-gcc.install/bin/llvm-g++")
   f.addStep(Configure(name = 'configure.llvm-gcc.stage2',
                       command=base_llvmgcc_configure_args + [
                                "--program-prefix=llvm.2-",
                                WithProperties("--prefix=%(builddir)s/llvm-gcc.install.2"),
                                WithProperties("--enable-llvm=%(builddir)s/llvm.obj.2")],
-                      env={'CC' : WithProperties("%(builddir)s/llvm-gcc.install/bin/llvm-gcc"),
-                           'CXX' :  WithProperties("%(builddir)s/llvm-gcc.install/bin/llvm-g++"),},
                       haltOnFailure = True,
                       description=["configure",
                                    "llvm-gcc",
                                    "(stage 2)"],
-                      workdir="llvm-gcc.obj.2"))
+                      workdir="llvm-gcc.obj.2", env=local_env))
 
   # Build llvm-gcc (stage 2).
   f.addStep(WarningCountingShellCommand(name="compile.llvm-gcc.stage2",
@@ -225,7 +229,7 @@ def getLLVMGCCBuildFactory(jobs=1, update=True, clean=True,
                                         description=["compile",
                                                      "llvm-gcc",
                                                      "(stage 2)"],
-                                        workdir="llvm-gcc.obj.2"))
+                                        workdir="llvm-gcc.obj.2", env=env))
 
   # Clean up llvm-gcc install (stage 2).
   if clean:
@@ -235,7 +239,7 @@ def getLLVMGCCBuildFactory(jobs=1, update=True, clean=True,
                            description=["rm install dir",
                                         "llvm-gcc",
                                         "(stage 2)"],
-                           workdir="."))
+                           workdir=".", env=env))
 
   # Install llvm-gcc.
   f.addStep(WarningCountingShellCommand(name="install.llvm-gcc.stage2",
@@ -245,7 +249,7 @@ def getLLVMGCCBuildFactory(jobs=1, update=True, clean=True,
                                         description=["install",
                                                      "llvm-gcc",
                                                      "(stage 2)"],
-                                        workdir="llvm-gcc.obj.2"))
+                                        workdir="llvm-gcc.obj.2", env=env))
 
   return f
 
