@@ -9,13 +9,13 @@ def create_slave(name, *args, **kwargs):
 
 def get_build_slaves():
     return [
-        create_slave("osu1", properties={'jobs' : 4}, max_builds=1), 
+        create_slave("osu1", properties={'jobs' : 4}, max_builds=1),
 
         # FreeBSD zero.sajd.net 9.0-CURRENT i386
-        create_slave("freebsd1", properties={'jobs' : 1}), 
+        create_slave("freebsd1", properties={'jobs' : 1}),
 
         # A PowerPC Linux machine. 900MHz G3 processor with 256MB of RAM.
-        create_slave("nick1"), 
+        create_slave("nick1"),
 
         # Core 2 Due running Ubuntu.
         create_slave("dunbar1", properties={'jobs' : 2}, max_builds=1),
@@ -42,11 +42,12 @@ def get_build_slaves():
         # Quad Core x86_64, Solaris / AurorAUX
         create_slave("evocallaghan", properties={'jobs' : 4}, max_builds=1),
 
-        # Adobe
-        create_slave("adobe1", properties={'jobs' : 1}, max_builds=1),
+        # Adobe Contributed VM
+        # Win XP SP2, Intel Core2 Duo 2.99GHz -E6850, 2.93 GB
+        create_slave("adobe1", properties={'jobs' : 2}, max_builds=1),
 
         # Defunct.
-        #create_slave("osu2", properties={'jobs' : 4}, max_builds=2), 
+        #create_slave("osu2", properties={'jobs' : 4}, max_builds=2),
         #create_slave("andrew1"),
         #create_slave("danmbp1"),
         ]
