@@ -17,7 +17,7 @@ def get_build_slaves():
         # A PowerPC Linux machine. 900MHz G3 processor with 256MB of RAM.
         create_slave("nick1"),
 
-        # Core 2 Due running Ubuntu.
+        # Core 2 Duo running Ubuntu.
         create_slave("dunbar1", properties={'jobs' : 2}, max_builds=1),
 
         # Athlon 1.2 XP SP 3.
