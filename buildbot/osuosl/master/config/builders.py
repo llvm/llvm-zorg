@@ -1,5 +1,9 @@
 from zorg.buildbot.builders import ClangBuilder, LLVMBuilder, LLVMGCCBuilder
 
+from zorg.buildbot.builders import DragonEggBuilder
+reload(DragonEggBuilder)
+from zorg.buildbot.builders import DragonEggBuilder
+
 # Plain LLVM builders.
 def _get_llvm_builders():
     return [
@@ -111,7 +115,8 @@ def _get_experimental_builders():
                 verbose=True,
                 env={ 'PATH' : '/cross-tools/bin:/usr/bin:/bin:/usr/sbin:/sbin' },
                 ),
-         'category':'llvm-gcc.exp'},
+         'category':'llvm-gcc'},
+
         {'name' : "clang-x86_64-darwin10-selfhost-rel",
          'slavenames' : ["dunbar-darwin10"],
          'builddir' : "clang-x86_64-darwin10-selfhost-rel",
@@ -120,6 +125,12 @@ def _get_experimental_builders():
                                                        stage1_config='Release',
                                                        stage2_config='Release'),
          'category' : 'clang.exp' },
+
+        {'name' : 'dragonegg-x86_64-linux',
+         'slavenames' : ['baldrick2'],
+         'builddir' : 'dragonegg-x86_64-linux',
+         'factory' : DragonEggBuilder.getBuildFactory(triple='x86_64-pc-linux-gnu'),
+         'category' : 'dragonegg.exp' },
         ]
 
 def get_builders():

@@ -46,6 +46,10 @@ def get_build_slaves():
         # Win XP SP2, Intel Core2 Duo 2.99GHz -E6850, 2.93 GB
         create_slave("adobe1", properties={'jobs' : 2}, max_builds=1),
 
+        # GCC Farm Slaves, for DragonEgg
+        create_slave("baldrick1", properties={'jobs' : 2}, max_builds=1),
+        create_slave("baldrick2", properties={'jobs' : 4}, max_builds=1),
+
         # Defunct.
         #create_slave("osu2", properties={'jobs' : 4}, max_builds=2),
         #create_slave("andrew1"),
