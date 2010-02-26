@@ -13,13 +13,14 @@ from zorg.buildbot.commands.BatchFileDownload import BatchFileDownload
 
 from Util import getConfigArgs
 
-def getClangBuildFactory(triple=None, clean=True, test=True, run_cxx_tests=False,
-                         examples=False, valgrind=False, useTwoStage=False, 
+def getClangBuildFactory(triple=None, clean=True, test=True, package_dst=None,
+                         run_cxx_tests=False, examples=False, valgrind=False,
+                         outOfDir=False, useTwoStage=False,
                          make='make', jobs="%(jobs)s",
                          stage1_config='Debug', stage2_config='Release',
                          extra_configure_args=[]):
     # Don't use in-dir builds with a two stage build process.
-    inDir = not useTwoStage
+    inDir = not outOfDir and not useTwoStage
     if inDir:
         llvm_srcdir = "llvm"
         llvm_1_objdir = "llvm"
@@ -29,6 +30,7 @@ def getClangBuildFactory(triple=None, clean=True, test=True, run_cxx_tests=False
         llvm_1_objdir = "llvm.obj"
         llvm_1_installdir = "llvm.install.1"
         llvm_2_objdir = "llvm.obj.2"
+        llvm_2_installdir = "llvm.install.2"
 
     f = buildbot.process.factory.BuildFactory()
 
@@ -59,7 +61,6 @@ def getClangBuildFactory(triple=None, clean=True, test=True, run_cxx_tests=False
         
     # Force without llvm-gcc so we don't run afoul of Frontend test failures.
     base_configure_args = [WithProperties("%%(builddir)s/%s/configure" % llvm_srcdir),
-                           WithProperties("--prefix=%%(builddir)s/%s" % llvm_1_installdir),
                            '--disable-bindings']
     base_configure_args += extra_configure_args
     if triple:
@@ -67,6 +68,7 @@ def getClangBuildFactory(triple=None, clean=True, test=True, run_cxx_tests=False
                                 '--host=%s' % triple,
                                 '--target=%s' % triple]
     args = base_configure_args + ["--without-llvmgcc", "--without-llvmgxx"]
+    args.append(WithProperties("--prefix=%%(builddir)s/%s" % llvm_1_installdir))
     args += getConfigArgs(stage1_config)
     f.addStep(Configure(command=args,
                         workdir=llvm_1_objdir,
@@ -142,6 +144,7 @@ def getClangBuildFactory(triple=None, clean=True, test=True, run_cxx_tests=False
 
     # Configure llvm (stage 2).
     args = base_configure_args + ["--without-llvmgcc", "--without-llvmgxx"]
+    args.append(WithProperties("--prefix=%(builddir)s/" + llvm_2_installdir))
     args += getConfigArgs(stage2_config)
     f.addStep(Configure(name="configure.llvm.stage2",
                         command=args,
@@ -173,6 +176,36 @@ def getClangBuildFactory(triple=None, clean=True, test=True, run_cxx_tests=False
                                    command=[make, 'test', WithProperties('TESTARGS=%s' % clangTestArgs),
                                             WithProperties('EXTRA_TESTDIRS=%s' % extraTestDirs)],
                                    workdir='%s/tools/clang' % llvm_2_objdir))
+
+    # Install clang (stage 2).
+    f.addStep(WarningCountingShellCommand(name="install.clang.stage2",
+                                          command = ['nice', '-n', '10',
+                                                     make, 'install-clang'],
+                                          haltOnFailure=True,
+                                          description=["install", "clang",
+                                                       "(stage 2)"],
+                                          workdir=llvm_2_objdir))
+
+    if package_dst:
+        name = WithProperties(
+            "%(builddir)s/" + llvm_2_objdir +
+            "/clang-r%(got_revision)s-b%(buildnumber)s.tgz")
+        f.addStep(ShellCommand(name='pkg.tar',
+                               description="tar root",
+                               command=["tar", "zcvf", name, "./"],
+                               workdir=llvm_2_installdir,
+                               warnOnFailure=True,
+                               flunkOnFailure=False,
+                               haltOnFailure=False))
+        f.addStep(ShellCommand(name='pkg.upload',
+                               description="upload root", 
+                               command=["scp", name,
+                                        WithProperties(
+                        package_dst + "/%(buildername)s")],
+                               workdir=".",
+                               warnOnFailure=True,
+                               flunkOnFailure=False,
+                               haltOnFailure=False))
 
     return f
 
