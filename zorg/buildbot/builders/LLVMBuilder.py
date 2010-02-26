@@ -11,7 +11,7 @@ from zorg.buildbot.commands.ClangTestCommand import ClangTestCommand
 
 def getLLVMBuildFactory(triple=None, clean=True, test=True,
                         expensive_checks=False, examples=False,
-                        jobs=1, timeout=20, make='make'):
+                        jobs='%(jobs)s', timeout=20, make='make'):
     f = buildbot.process.factory.BuildFactory()
 
     # Determine the build directory.

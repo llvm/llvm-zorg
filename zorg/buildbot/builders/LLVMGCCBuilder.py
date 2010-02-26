@@ -8,7 +8,7 @@ from zorg.buildbot.commands.ClangTestCommand import ClangTestCommand
 
 from Util import getConfigArgs
 
-def getLLVMGCCBuildFactory(jobs=1, update=True, clean=True,
+def getLLVMGCCBuildFactory(jobs='%(jobs)s', update=True, clean=True,
                            gxxincludedir=None,
                            triple=None, build=None, host=None, target=None,
                            useTwoStage=True, stage1_config='Release',
