@@ -11,7 +11,8 @@ from zorg.buildbot.commands.ClangTestCommand import ClangTestCommand
 
 def getLLVMBuildFactory(triple=None, clean=True, test=True,
                         expensive_checks=False, examples=False,
-                        jobs='%(jobs)s', timeout=20, make='make'):
+                        jobs='%(jobs)s', timeout=20, make='make',
+                        enable_shared=False):
     f = buildbot.process.factory.BuildFactory()
 
     # Determine the build directory.
@@ -37,6 +38,8 @@ def getLLVMBuildFactory(triple=None, clean=True, test=True,
         configure_args += ['--build=%s' % triple,
                            '--host=%s' % triple,
                            '--target=%s' % triple]
+    if enable_shared:
+        configure_args.append('--enable-shared')
     f.addStep(Configure(command=configure_args,
                         workdir='llvm',
                         description=['configuring',config_name],

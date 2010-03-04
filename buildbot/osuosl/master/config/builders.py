@@ -10,7 +10,7 @@ def _get_llvm_builders():
         {'name': "llvm-i686-linux",
          'slavenames': ["dunbar1"],
          'builddir': "llvm-i686", 
-         'factory': LLVMBuilder.getLLVMBuildFactory("i686-pc-linux-gnu", 2)},
+         'factory': LLVMBuilder.getLLVMBuildFactory("i686-pc-linux-gnu", jobs=2, enable_shared=True)},
         {'name': "llvm-x86_64-linux",
          'slavenames': ["osu1"],
          'builddir': "llvm-x86_64",
