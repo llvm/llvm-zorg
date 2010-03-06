@@ -47,8 +47,13 @@ def get_build_slaves():
         create_slave("adobe1", properties={'jobs' : 2}, max_builds=1),
 
         # GCC Farm Slaves, for DragonEgg
-        create_slave("baldrick1", properties={'jobs' : 2}, max_builds=1),
-        create_slave("baldrick2", properties={'jobs' : 4}, max_builds=1),
+        create_slave("baldrick1", properties={'jobs' : 4}, max_builds=1),
+        create_slave("baldrick2", properties={'jobs' : 8}, max_builds=1),
+        create_slave("baldrick12", properties={'jobs' : 4}, max_builds=1),
+        create_slave("baldrick13", properties={'jobs' : 4}, max_builds=1),
+        create_slave("baldrick14", properties={'jobs' : 8}, max_builds=1),
+        create_slave("baldrick15", properties={'jobs' : 2}, max_builds=1),
+        create_slave("baldrick17", properties={'jobs' : 8}, max_builds=1),
 
         # Defunct.
         #create_slave("osu2", properties={'jobs' : 4}, max_builds=2),
