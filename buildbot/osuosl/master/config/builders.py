@@ -24,10 +24,6 @@ def _get_llvm_builders():
          'builddir':"llvm-arm-linux",
          'factory': LLVMBuilder.getLLVMBuildFactory("arm-pc-linux-gnu", jobs=1, clean=False,
                                                     timeout=40)},
-        {'name': "llvm-i386-auroraux",
-         'slavenames':["evocallaghan"],
-         'builddir':"llvm-i386-auroraux",
-         'factory': LLVMBuilder.getLLVMBuildFactory("i386-pc-auroraux", jobs="%(jobs)s", make='gmake')},
         ]
 
 # Offline.
@@ -35,6 +31,10 @@ def _get_llvm_builders():
  'slavenames':["andrew1"],
  'builddir':"llvm-alpha",
  'factory': LLVMBuilder.getLLVMBuildFactory("alpha-linux-gnu", jobs=2)}
+{'name': "llvm-i386-auroraux",
+ 'slavenames':["evocallaghan"],
+ 'builddir':"llvm-i386-auroraux",
+ 'factory': LLVMBuilder.getLLVMBuildFactory("i386-pc-auroraux", jobs="%(jobs)s", make='gmake')},
 
 # llvm-gcc self hosting builders.
 def _get_llvmgcc_builders():
@@ -85,11 +85,6 @@ def _get_clang_builders():
          'slavenames' :['dunbar-win32-2'],
          'builddir' :"clang-i686-xp-msvc9",
          'factory' : ClangBuilder.getClangMSVCBuildFactory(jobs=2)},
-        {'name': "clang-i386-auroraux",
-         'slavenames':["evocallaghan"],
-         'builddir':"clang-i386-auroraux",
-         'factory': ClangBuilder.getClangBuildFactory("i386-pc-auroraux",
-                                                      jobs="%(jobs)s", make='gmake')},
         {'name' : "clang-x86_64-darwin10-selfhost",
          'slavenames' : ["dunbar-darwin10"],
          'builddir' : "clang-x86_64-darwin10-selfhost",
@@ -98,6 +93,13 @@ def _get_clang_builders():
                                                        stage1_config='Release',
                                                        stage2_config='Debug')},
         ]
+
+# Offline.
+{'name': "clang-i386-auroraux",
+ 'slavenames':["evocallaghan"],
+ 'builddir':"clang-i386-auroraux",
+ 'factory': ClangBuilder.getClangBuildFactory("i386-pc-auroraux",
+                                              jobs="%(jobs)s", make='gmake')},
 
 def _get_experimental_builders():
     return [
