@@ -127,7 +127,7 @@ def _get_experimental_builders():
          'category' : 'clang.exp' },
 
         {'name' : 'dragonegg-x86_64-linux',
-         'slavenames' : ['baldrick2'],
+         'slavenames' : ['baldrick16'],
          'builddir' : 'dragonegg-x86_64-linux',
          'factory' : DragonEggBuilder.getBuildFactory(triple='x86_64-pc-linux-gnu'),
          'category' : 'dragonegg.exp' },
