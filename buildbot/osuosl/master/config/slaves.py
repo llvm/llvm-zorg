@@ -55,6 +55,10 @@ def get_build_slaves():
         create_slave("baldrick16", properties={'jobs' : 8}, max_builds=1),
         create_slave("baldrick17", properties={'jobs' : 8}, max_builds=1),
 
+        # Debian x86_64, 2 x 6-core Opteron 2.6 GHz
+        create_slave("osu7", properties={'jobs' : 10}, max_builds=4),
+        create_slave("osu8", properties={'jobs' : 10}, max_builds=4),
+
         # Defunct.
         #create_slave("osu2", properties={'jobs' : 4}, max_builds=2),
         #create_slave("andrew1"),
