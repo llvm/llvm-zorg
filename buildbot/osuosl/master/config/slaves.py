@@ -14,8 +14,11 @@ def get_build_slaves():
         # FreeBSD zero.sajd.net 9.0-CURRENT i386
         create_slave("freebsd1", properties={'jobs' : 1}),
 
-        # A PowerPC Linux machine. 900MHz G3 processor with 256MB of RAM.
-        create_slave("nick1"),
+        # PowerPC Linux machine. 900MHz G3 processor with 256MB of RAM.
+        create_slave("nick1", properties={'jobs' : 1}, max_builds=1),
+
+        # Linux, Beagleboard, Cortex A8, 256MB RAM.
+        create_slave("nick2", properties={'jobs' : 1}, max_builds=1),
 
         # Core 2 Duo running Ubuntu.
         create_slave("dunbar1", properties={'jobs' : 2}, max_builds=1),
