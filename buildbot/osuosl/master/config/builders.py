@@ -1,7 +1,6 @@
 from zorg.buildbot.builders import ClangBuilder, LLVMBuilder, LLVMGCCBuilder
-
-from zorg.buildbot.builders import DragonEggBuilder
-reload(DragonEggBuilder)
+reload(LLVMBuilder)
+from zorg.buildbot.builders import ClangBuilder, LLVMBuilder, LLVMGCCBuilder
 from zorg.buildbot.builders import DragonEggBuilder
 
 # Plain LLVM builders.
@@ -24,6 +23,16 @@ def _get_llvm_builders():
          'builddir':"llvm-arm-linux",
          'factory': LLVMBuilder.getLLVMBuildFactory("arm-pc-linux-gnu", jobs=1, clean=False,
                                                     timeout=40)},
+        {'name': "llvm-i686-linux-vg",
+         'slavenames':["osu8"],
+         'builddir':"llvm-i686-linux-vg",
+         'factory': LLVMBuilder.getLLVMBuildFactory("i686-pc-linux-gnu", valgrind=True),
+         'category':'llvm.exp'},
+        {'name': "llvm-x86_64-linux-vg",
+         'slavenames':["osu7"],
+         'builddir':"llvm-x86_64-linux-vg",
+         'factory': LLVMBuilder.getLLVMBuildFactory("x86_64-pc-linux-gnu", valgrind=True),
+         'category':'llvm.exp'},
         ]
 
 # Offline.
@@ -56,10 +65,6 @@ def _get_llvmgcc_builders():
  'slavenames':["osu2"],
  'builddir':"llvm-x86_64-linux-checks",
  'factory':LLVMBuilder.getLLVMBuildFactory("x86_64-pc-linux-gnu", jobs=10, expensive_checks=True)}
-{'name' : "llvm-gcc-x86_64-linux-selfhost",
- 'slavenames':["osu2"],
- 'builddir':"llvm-gcc-x86_64-linux-selfhost",
- 'factory':LLVMGCCBuilder.getLLVMGCCBuildFactory(10)}
 
 # Clang builders.
 def _get_clang_builders():
@@ -85,6 +90,12 @@ def _get_clang_builders():
          'slavenames' :['dunbar-win32-2'],
          'builddir' :"clang-i686-xp-msvc9",
          'factory' : ClangBuilder.getClangMSVCBuildFactory(jobs=2)},
+
+        {'name': "clang-x86_64-linux-vg",
+         'slavenames':["osu7"],
+         'builddir':"clang-x86_64-linux-vg",
+         'factory': ClangBuilder.getClangBuildFactory(valgrind=True)},
+
         {'name' : "clang-x86_64-darwin10-selfhost",
          'slavenames' : ["dunbar-darwin10"],
          'builddir' : "clang-x86_64-darwin10-selfhost",
@@ -128,11 +139,37 @@ def _get_experimental_builders():
                                                        stage2_config='Release'),
          'category' : 'clang.exp' },
 
+        {'name' : "clang-i686-linux-selfhost-rel",
+         'slavenames' : ["osu8"],
+         'builddir' : "clang-i686-linux-selfhost-rel",
+         'factory' : ClangBuilder.getClangBuildFactory(triple='i686-pc-linux-gnu',
+                                                       useTwoStage=True,
+                                                       stage1_config='Release',
+                                                       stage2_config='Release'),
+         'category' : 'clang.exp' },
+
+        {'name' : "llvm-gcc-x86_64-linux-selfhost",
+         'slavenames':["osu7"],
+         'builddir':"llvm-gcc-x86_64-linux-selfhost",
+         'factory':LLVMGCCBuilder.getLLVMGCCBuildFactory(triple='x86_64-pc-linux-gnu',
+                                                         extra_configure_args=['--disable-multilib']),
+         'category' : 'llvm-gcc.exp' },
+
+        {'name' : "clang-x86_64-linux-selfhost-rel",
+         'slavenames' : ["osu7"],
+         'builddir' : "clang-x86_64-linux-selfhost-rel",
+         'factory' : ClangBuilder.getClangBuildFactory(triple='x86_64-pc-linux-gnu',
+                                                       useTwoStage=True,
+                                                       stage1_config='Release',
+                                                       stage2_config='Release'),
+         'category' : 'clang.exp' },
+
         {'name' : 'dragonegg-x86_64-linux',
          'slavenames' : ['baldrick16'],
          'builddir' : 'dragonegg-x86_64-linux',
          'factory' : DragonEggBuilder.getBuildFactory(triple='x86_64-pc-linux-gnu'),
          'category' : 'dragonegg.exp' },
+
         ]
 
 def get_builders():
@@ -153,11 +190,6 @@ def get_builders():
 
 # Random other unused builders...
 
-{'name': "clang-x86_64-linux-vg",
- 'slavenames':["osu2"],
- 'builddir':"clang-x86_64-linux-vg",
- 'factory': ClangBuilder.getClangBuildFactory(valgrind=True),
- 'category':'clang.exp'}
 {'name': "clang-x86_64-openbsd",
  'slavenames':["ocean1"],
  'builddir':"clang-x86_64-openbsd",
