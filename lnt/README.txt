@@ -35,14 +35,22 @@ Internal Dependencies: MooTools
 
 These are the rough steps to get a working LNT installation:
 
- 1. Install external dependencies. FIXME: Elaborate.
+ 1. Install LNT:
 
- 2. Choose a data directory and create the initial SQLite or MySQL
-    databases. SQLite databases need to be writable by the Apache user, as does
-    the directory they are contained in.
+      python setup.py install
 
- 3. Copy viewer/zorg.cfg.sample to viewer/zorg.cfg, and modify for your
-    installation.
+    It is recommended that you install LNT into a virtualenv.
+
+ 2. Create a new LNT installation:
+
+      lnt create path/to/install-dir
+
+    This will create the LNT configuration file, the default database, and a
+    .wsgi wrapper to create the application. You can execute the generated app
+    directly to run with the builtin web server, or use 'lnt runserver' with the
+    path the config file.
+
+ 3. Edit the generated 'lnt.cfg' file if necessary, for example to:
 
     a. Update the databases list.
 
@@ -52,7 +60,8 @@ These are the rough steps to get a working LNT installation:
 
  4. Add the zorg.wsgi app to your Apache configuration. You should set also
     configure the WSGIDaemonProcess and WSGIProcessGroup variables if not
-    already done.
+    already done. If running in a virtualenv you will need to configure that as
+    well.
 
  5. Add a link or copy of the zorg.cgi app in the appropriate place if you want
     to use the CGI script. The WSGI app is significantly faster, but currently

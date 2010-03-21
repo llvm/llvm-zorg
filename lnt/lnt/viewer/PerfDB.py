@@ -152,11 +152,15 @@ def info_eq(a, b):
 
 class PerfDB:
     def __init__(self, path, echo=False):
-        if not path.startswith('mysql://'):
+        if (not path.startswith('mysql://') and
+            not path.startswith('sqlite://')):
             path = 'sqlite:///' + path
         self.engine = sqlalchemy.create_engine(path, echo=echo)
-        Session = sqlalchemy.orm.sessionmaker(self.engine)
-        self.session = Session()
+
+        # Create the tables in case this is a new database.
+        Base.metadata.create_all(self.engine)
+
+        self.session = sqlalchemy.orm.sessionmaker(self.engine)()
 
     def machines(self, name=None):
         q = self.session.query(Machine)

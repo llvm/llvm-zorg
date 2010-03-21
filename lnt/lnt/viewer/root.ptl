@@ -30,7 +30,6 @@ class RootDirectory(Resolving, Directory):
         if self.dbInfo is None:
             self.dbInfo = config.databases[dbName]
         self.pathToRoot = pathToRoot
-        self.db_log = None
 
     def getDB(self):
         db = PerfDB.PerfDB(self.dbInfo.path)
@@ -39,12 +38,12 @@ class RootDirectory(Resolving, Directory):
         #
         # FIXME: Conditionalize on an is_production variable.
         request = quixote.get_request()
-        if self.db_log is None and request.form.get('db_log'):
+        if request.form.get('db_log'):
             import logging, StringIO
-            self.db_log = StringIO.StringIO()
+            request.db_log = StringIO.StringIO()
             logger = logging.getLogger("sqlalchemy")
-            logger.addHandler(logging.StreamHandler(self.db_log))
-            db.db2.engine.echo = True
+            logger.addHandler(logging.StreamHandler(request.db_log))
+            db.engine.echo = True
 
         return db
 
@@ -133,8 +132,9 @@ class RootDirectory(Resolving, Directory):
         """
 
     def getFooter [html] (self):
-        if self.db_log:
-            """<hr><h3>SQL Log</h3><pre>%s</pre>""" % self.db_log.getvalue()
+        db_log = getattr(quixote.get_request(), str('db_log'), None)
+        if db_log:
+            """<hr><h3>SQL Log</h3><pre>%s</pre>""" % db_log.getvalue()
 
         current = time.time()
         """
