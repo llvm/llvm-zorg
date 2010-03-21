@@ -11,16 +11,18 @@ NewNightlyTest.pl in conjunction with LLVM's test-suite repository.
 
 The infrastructure has the following layout:
 
- lnt/db - Database schema, utilities, and examples of the LNT plist format.
+ $ROOT/lnt - Top-level source module
 
- lnt/import - Utilities for converting to the LNT plist format for test data,
-              and for submitting plists to the server.
+ $ROOT/lnt/import - Utilities for converting to the LNT plist format for test
+                    data, and for submitting plists to the server.
 
- lnt/test - Tests for the infrastructure; they currently assume they are running
-            on a system with a live instance available at
-            'http://localhost/zorg/'.
+ $ROOT/lnt/viewer - The LNT web-app itself.
 
- lnt/viewer - The LNT web-app itself.
+ $ROOT/db - Database schema, utilities, and examples of the LNT plist format.
+
+ $ROOT/tests - Tests for the infrastructure; they currently assume they are
+                  running on a system with a live instance available at
+                  'http://localhost/zorg/'.
 
 
 Installation Instructions
