@@ -7,6 +7,45 @@ from buildbot.process.properties import WithProperties
 
 def getBuildFactory(triple, clean=True,
                     jobs='%(jobs)s'):
+    f = buildbot.process.factory.BuildFactory()
+
+    # Determine the build directory.
+    f.addStep(buildbot.steps.shell.SetProperty(name="get_builddir",
+                                               command=["pwd"],
+                                               property="builddir",
+                                               description="set build dir",
+                                               workdir="."))
+
+    # Checkout LLVM sources.
+    f.addStep(SVN(name='svn-llvm',
+                  mode='update', baseURL='http://llvm.org/svn/llvm-project/llvm/',
+                  defaultBranch='trunk',
+                  workdir='llvm.src'))
+
+    # Checkout DragonEgg sources.
+    f.addStep(SVN(name='svn-dragonegg',
+                  mode='update', baseURL='http://llvm.org/svn/llvm-project/dragonegg/',
+                  defaultBranch='trunk',
+                  workdir='dragonegg.src'))
+
+    # Execute the DragonEgg self host script.
+    f.addStep(ShellCommand(name='build',
+                           command=['dragonegg.src/extras/buildbot_self_strap',
+                                    # Path to LLVM src.
+                                    WithProperties("%(builddir)s/llvm.src"),
+                                    # Path to DragonEgg src.
+                                    WithProperties("%(builddir)s/dragonegg.src"),
+                                    # Path to base build dir.
+                                    WithProperties("%(builddir)s")],
+                           workdir='.',
+                           haltOnFailure=False))
+
+    return f
+
+# This is the sketching of a more buildbot style build factory for
+# DragonEgg, but it is far from complete.
+def getBuildFactory_Split(triple, clean=True,
+                          jobs='%(jobs)s'):
     # FIXME: Move out.
     env = {}
     configure_args = ["--enable-lto", "--enable-languages=c,c++", "--disable-bootstrap",
@@ -100,7 +139,9 @@ def getBuildFactory(triple, clean=True,
                         command=(["../llvm.src/configure",
                                   WithProperties("CC=%(builddir)s/gcc.1.install/bin/gcc"),
                                   WithProperties("CXX=%(builddir)s/gcc.1.install/bin/g++"),
-                                  WithProperties("--prefix=%(builddir)s/llvm.1.install")] +
+                                  WithProperties("--prefix=%(builddir)s/llvm.1.install"),
+                                  "--enable-optimized",
+                                  "--enable-assertions"] +
                                  configure_args),
                         haltOnFailure = True,
                         description=["configure", "llvm", "(stage 1)"],
@@ -127,12 +168,16 @@ def getBuildFactory(triple, clean=True,
                                description=["make clean",
                                             "(dragonegg)"],
                                workdir="dragonegg.src", env=env))
+    local_env = env.copy()
+    # Don't do a version check, which may fail based on timestamps.
+    local_env['dragonegg_disable_version_check'] = "yes"
     f.addStep(WarningCountingShellCommand(
             name = "compile.dragonegg.stage1",
             command = ["nice", "-n", "10",
                        "make", WithProperties("-j%s" % jobs),
+                       "CFLAGS=-I/opt/cfarm/mpfr-2.4.1/include -I/opt/cfarm/gmp-4.2.4/include/ -I/opt/cfarm/mpc-0.8/include/",
                        WithProperties("CC=%(builddir)s/gcc.1.install/bin/gcc"),
-                       WithProperties("GXX=%(builddir)s/gcc.1.install/bin/g++"),
+                       WithProperties("CXX=%(builddir)s/gcc.1.install/bin/g++"),
                        WithProperties("GCC=%(builddir)s/gcc.1.install/bin/gcc"),
                        WithProperties("LLVM_CONFIG=%(builddir)s/llvm.1.obj/Debug/bin/llvm-config"),
                        ],
