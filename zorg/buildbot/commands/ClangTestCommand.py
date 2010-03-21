@@ -5,9 +5,9 @@ import os
 import buildbot
 import buildbot.steps.shell
 
+# FIXME: Rename to LitTestCommand.
 class ClangTestCommand(buildbot.steps.shell.Test):
-  description = "testing clang"
-  descriptionDone = "test clang"
+  # FIXME: We should process things in a test observer instead of at the end.
 
   kTestLineRE = re.compile(r'([^ ]*): (.*) \(.*.*\)')
   kTestFailureLogStartRE = re.compile(r"""\*{4,80} TEST '(.*)' .*""")
@@ -62,14 +62,14 @@ class ClangTestCommand(buildbot.steps.shell.Test):
     for name,items in failureLogs[:self.kMaxFailureLogs]:
       self.addCompleteLog(os.path.basename(name.lower()),
                           ''.join(items) + '\n')
-      
+
     numPass = len(grouped.get('PASS',()))
     numFail = len(grouped.get('FAIL',()))
     numXFail = len(grouped.get('XFAIL',()))
     numXPass = len(grouped.get('XPASS',()))
-    self.setTestResults(total=numPass + numFail + numXFail + numXPass, 
-                        failed=numFail + numXPass, 
-                        passed=numPass + numXFail, 
+    self.setTestResults(total=numPass + numFail + numXFail + numXPass,
+                        failed=numFail + numXPass,
+                        passed=numPass + numXFail,
                         warnings=numXFail)
     if numFail + numXPass:
       return buildbot.status.builder.FAILURE
