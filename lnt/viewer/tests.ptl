@@ -1,0 +1,88 @@
+# -*- python -*-
+
+import sys
+from quixote import get_response, redirect
+from quixote.directory import Directory
+from quixote.errors import TraversalError
+
+class TestUI(Directory):
+    _q_exports = [""]
+
+    def __init__(self, root, idstr):
+        self.root = root
+        try:
+            self.id = int(idstr)
+        except ValueError, exc:
+            raise TraversalError(str(exc))
+
+    def _q_index [html] (self):
+        # Get a DB conntection
+        db = self.root.getDB()
+
+        t = db.getTest(self.id)
+
+        self.root.getHeader("zorg:test:%d" % self.id, '../..')
+
+        """
+        <body>
+        <h2>Test: %s</h2>
+        """ % (t.name,)
+
+        # Test info
+        """
+        <h3>Test Info</h3>
+        <table border=1 cellborder=1>
+          <tr>
+            <th>Key</th>
+            <th>Value</th>
+          </tr>
+          </thead>
+        """
+        for item in t.info.values():
+            """
+          <tr>
+            <td>%s</td>
+            <td>%s</td>
+          </tr>""" % (item.key, item.value)
+        """
+        </table>
+        """
+
+        # List samples
+        """
+        <h3>Associated Samples</h3>
+        <table class="sortable" border=1 cellborder=1>
+          <thead>
+          <tr>
+            <th>Run ID</th>
+            <th>Value</th>
+          </tr>
+          </thead>
+        """
+        for s in db.samples(test=t):
+            """
+          <tr>
+            <td><a href="../../runs/%d/">%d</a></td>
+            <td>%s</td>
+          </tr>
+            """ % (s.run_id, s.run_id, s.value)
+        """
+        </table>
+        """
+
+        self.root.getFooter()
+
+class TestsDirectory(Directory):
+    _q_exports = [""]
+
+    def __init__(self, root):
+        Directory.__init__(self)
+        self.root = root
+
+    def _q_index [plain] (self):
+        """
+        test access
+        """
+
+    def _q_lookup(self, component):
+        return TestUI(self.root, component)

@@ -1,0 +1,432 @@
+# -*- python -*-
+
+import os
+import re
+import time
+
+import quixote
+import quixote.form
+import quixote.form.css
+from quixote import get_response
+from quixote.directory import Directory, Resolving
+from quixote.util import StaticDirectory
+
+import PerfDB, Util
+from PerfDB import Machine, Run
+
+class RootDirectory(Resolving, Directory):
+    _q_exports = ["", "resources", "js", "machines", "runs", "tests",
+                  "browse", "submitRun", "nightlytest", "zview",
+
+                  # Redirections,
+                  "select_db",
+
+                  ("favicon.ico", "favicon_ico")]
+
+    def __init__(self, config, dbName='default', dbInfo=None, pathToRoot="./"):
+        self.config = config
+        self.dbName = dbName
+        self.dbInfo = dbInfo
+        if self.dbInfo is None:
+            self.dbInfo = config.databases[dbName]
+        self.pathToRoot = pathToRoot
+        self.db_log = None
+
+    def getDB(self):
+        db = PerfDB.PerfDB(self.dbInfo.path)
+
+        # Enable SQL logging with db_log.
+        #
+        # FIXME: Conditionalize on an is_production variable.
+        request = quixote.get_request()
+        if self.db_log is None and request.form.get('db_log'):
+            import logging, StringIO
+            self.db_log = StringIO.StringIO()
+            logger = logging.getLogger("sqlalchemy")
+            logger.addHandler(logging.StreamHandler(self.db_log))
+            db.db2.engine.echo = True
+
+        return db
+
+    def getHeader [html] (self, title, pathToRoot,
+                          addSorttableJS=True,
+                          addFormCSS=False,
+                          addPopupJS=False,
+                          addGraphJS=False,
+                          addJSScript=None,
+                          onload=None):
+        pathToRoot = os.path.join(self.pathToRoot,
+                                  pathToRoot)
+
+        """
+        <html>
+        <head>
+        """
+        if addSorttableJS:
+            """
+        <script src="%s/resources/sorttable.js"></script>
+            """ % (pathToRoot,)
+        if addPopupJS:
+            """
+        <script src="%s/resources/popup.js"></script>
+            """ % (pathToRoot,)
+        if addGraphJS:
+            """
+        <script src="%s/resources/mootools-1.2.4-core-nc.js"></script>
+        <script src="%s/js/View2D.js"></script>
+            """ % (pathToRoot,pathToRoot)
+        if addJSScript:
+            """\
+<script type="text/javascript">
+%s
+</script>
+""" % (addJSScript,)
+
+        """
+        <link rel="stylesheet" href="%s/resources/style.css" type="text/css" />
+        """ % (pathToRoot,)
+        if addFormCSS:
+            """
+        <link rel="stylesheet" href="%s/resources/form.css" type="text/css" />
+            """ % (pathToRoot,)
+        """
+        <link rel="icon" type="image/png" href="%s/favicon.ico">
+        <title>%s</title>
+        </head>
+        """ % (pathToRoot, title)
+
+        """\
+        <body"""
+        if onload:
+            """ onload="%s">""" % (onload,)
+        else:
+            """>"""
+
+        # Database selection
+        """\
+        <div class="zorg_navheader">
+        <form method="get" action="%s/select_db">
+        <table style="padding:0.1em;" width="100%%">
+        <tr>
+          <td>
+          <strong>
+          [%s]
+          </strong>
+          </td>
+          <td style="text-align:right;">
+          <strong>Database:</strong>
+          <select name="db" onchange="submit()">
+        """ % (pathToRoot, self.dbName)
+        for name in self.config.databases.keys():
+            """\
+            <option %s>%s</option>
+            """ % (('', 'selected')[name == self.dbName],
+                   name)
+        """\
+          </select>
+          <input type="submit" value="Go" />
+          </td>
+        </tr>
+        </table>
+        </form>
+        </div>
+        """
+
+    def getFooter [html] (self):
+        if self.db_log:
+            """<hr><h3>SQL Log</h3><pre>%s</pre>""" % self.db_log.getvalue()
+
+        current = time.time()
+        """
+        <hr>
+        Server Started: %s<br>
+        Generated: %s<br>
+        Render Time: %.2fs<br>
+        </body>
+        </html>
+        """ % (time.strftime(str('%Y-%m-%dT%H:%M:%Sz'),
+                             time.localtime(quixote.get_publisher().create_time)),
+               time.strftime(str('%Y-%m-%dT%H:%M:%Sz'),
+                             time.localtime(current)),
+               current - quixote.get_request().start_time)
+
+    def _q_index [html] (self):
+        self.getHeader("zorg", ".")
+
+        """
+        <h2>LLVM Testing DB</h2>
+        """
+
+        # Features
+
+        if self.dbInfo.showNightlytest:
+            """
+            <h3>Nightly Test Results</h3>
+            <a href="nightlytest/">Nightly Test</a>
+            """
+
+        if self.dbInfo.showGeneral:
+            """
+            <hr>
+
+            <h3>General Database Access</h3>
+            <p><a href="browse">Browse DB</a>
+            <p><a href="submitRun">Submit Run</a>
+            """
+
+        self.getFooter()
+
+    def browse [html] (self):
+        self.getHeader("zorg", ".", addSorttableJS=False)
+
+        # Get a DB connection
+        db = self.getDB()
+
+        """
+        <h2>LLVM Testing DB</h2>
+        """
+
+        # List machines
+        """
+        <h3>Machines</h3>
+        <table class="sortable" border=1 cellborder=1>
+          <thead>
+          <tr>
+            <th>Name</th>
+          </tr>
+          </thead>
+        """
+        for m in db.machines():
+            """
+          <tr>
+            <td><a href="machines/%d/">%s:%d</a></td>
+          </tr>
+            """ % (m.id, m.name, m.number)
+        """
+        </table>
+        """
+
+        # List runs
+        """
+        <h3>Run List</h3>
+        <table class="sortable" border=1 cellborder=1>
+          <thead>
+          <tr>
+            <th>ID</th>
+            <th>Machine</th>
+            <th>Start Time</th>
+            <th>End Time</th>
+          </tr>
+          </thead>
+        """
+        for r,m in db.session.query(Run,Machine).join(Machine):
+            """
+          <tr>
+            <td><a href="runs/%d/">%d</a></td>
+            <td><a href="machines/%d/">%s:%d</a></td>
+            <td>%s</td>
+            <td>%s</td>
+          </tr>
+            """ % (r.id, r.id,
+                   r.machine_id, m.name, m.number,
+                   r.start_time, r.end_time)
+        """
+        </table>
+        """
+
+
+        # List tests
+        """
+        <h3>Test List</h3>
+        <table class="sortable" border=1 cellborder=1>
+          <thead>
+          <tr>
+            <th>ID</th>
+            <th>Test</th>
+          </tr>
+          </thead>
+        """
+        for t in db.tests():
+            """
+          <tr>
+            <td><a href="tests/%d/">%d</a></td>
+            <td>%s</td>
+          </tr>
+            """ % (t.id, t.id, t.name)
+        """
+        </table>
+        """
+
+        self.getFooter()
+
+    def submitRun(self):
+        form = quixote.form.Form(enctype="multipart/form-data")
+        form.add(quixote.form.FileWidget, "file",
+                 title="Input File (plist)", required=True)
+        form.add(quixote.form.SingleSelectWidget, "commit",
+                 title="Commit", value="0",
+                 options=["0", "1"], required=True)
+        form.add_submit("submit", "Submit")
+
+        def render [html] ():
+            self.getHeader("Submit Run", ".", addFormCSS=1)
+            """
+            <h1>Submit Runs</h1>
+            """
+            form.render()
+            self.getFooter()
+
+        def process():
+            import plistlib
+            import tempfile
+            fileWidget = form.get_widget('file')
+            value = fileWidget.parse()
+
+            data = value.fp.read()
+            value.fp.close()
+            prefix = time.strftime("data-%Y-%m-%d_%H-%M-%S")
+            fd,path = tempfile.mkstemp(prefix=prefix,
+                                       suffix='.plist',
+                                       dir=self.config.tempDir)
+            os.write(fd, data)
+            os.close(fd)
+
+            # Find the email address for this machine's results.
+            toAddress = None
+            if isinstance(self.config.ntEmailTo, str):
+                toAddress = self.config.ntEmailTo
+            else:
+                # Find the machine name.
+                #
+                # FIXME: This is really stupid, we shouldn't load the plist
+                # twice just for this.
+                import plistlib
+                data = plistlib.readPlist(path)
+                machineName = data.get('Machine',{}).get('Name')
+
+                for pattern,addr in self.config.ntEmailTo:
+                    if re.match(pattern, machineName):
+                        toAddress = addr
+                        break
+                else:
+                    return 1,"","error: unable to match machine name for test results email address!"
+
+            # Execute ImportData to actually do the import.
+            #
+            # FIXME: This is both broken and annoying. We want to do this
+            # internally to fix the FIXME above and keep it more readable, we
+            # want to serialize imports to keep SQLite happy and avoiding
+            # dropping submissions.
+            import subprocess
+            p = subprocess.Popen([os.path.join(self.config.zorgDir,
+                                               "import/ImportData"),
+                                  "--commit=%s" % form['commit'],
+                                  "--email-on-import=%s" % int(self.config.ntEmailEnabled),
+                                  "--email-base-url=%s/db_%s/nightlytest/" % (self.config.zorgURL,
+                                                                              self.dbName),
+                                  "--email-host=%s" % self.config.ntEmailHost,
+                                  "--email-from=%s" % self.config.ntEmailFrom,
+                                  "--email-to=%s" % toAddress,
+                                  self.dbInfo.path,
+                                  path],
+                                 stdout=subprocess.PIPE,
+                                 stderr=subprocess.PIPE)
+            stdout,stderr = p.communicate(None)
+            res = p.wait()
+            stdout += "\nMAILING RESULTS TO: %r\n" % toAddress
+            return res,stdout,stderr
+
+        def result [plain] ():
+            res,stdout,stderr = process()
+            if True:
+                """\
+STATUS: %s
+
+OUTPUT:
+%s
+ERRORS:
+%s""" % (res, stdout, stderr)
+            else:
+                self.getHeader("Data Received", "../..")
+                """
+                <h3>Result</h3>
+                %s
+                <h3>Output</h3>
+                <pre>\n%s</pre>
+                <h3>Errors</h3>
+                <pre>\n%s</pre>
+                </body>
+                """ % (res, stdout, stderr)
+                self.getFooter()
+
+        if not form.is_submitted() or form.has_errors():
+            return render()
+        return result()
+
+    def favicon_ico(self):
+        response = get_response()
+        response.set_content_type("image/x-icon")
+        response.set_expires(days=1)
+        return FAVICON
+
+    def _q_resolve(self, component):
+        if component == 'machines':
+            import machines
+            return machines.MachinesDirectory(self)
+        if component == 'runs':
+            import runs
+            return runs.RunsDirectory(self)
+        if component == 'tests':
+            import tests
+            return tests.TestsDirectory(self)
+        if component == 'nightlytest':
+            import nightlytest
+            return nightlytest.NightlyTestDirectory(self)
+        if component == 'zview':
+            from zview import zviewui
+            return zviewui.ZViewUI(self)
+
+    def _q_lookup(self, component):
+        if component.startswith('db_'):
+            dbName = component[3:]
+            dbInfo = self.config.databases.get(dbName)
+            if dbInfo:
+                return RootDirectory(self.config, dbName, dbInfo, "../")
+
+    def select_db(self):
+        request = quixote.get_request()
+        dbName = request.form.get('db')
+        return quixote.redirect("db_%s/" % (dbName,))
+
+    resources = StaticDirectory(os.path.join(os.path.dirname(__file__),
+                                             'resources'),
+                                list_directory=True)
+    js = StaticDirectory(os.path.join(os.path.dirname(__file__), 'js'),
+                         list_directory=True)
+
+FAVICON = """\
+AAABAAEAEBAAAAAAAABoBQAAFgAAACgAAAAQAAAAIAAAAAEACAAAAAAAAAEAAAAAAAAAAAAAAAEA
+AAAAAAD///8AAAD/ALOz/wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgEAAAAAAAAAAAAAAAAAAgECAQIAAAAAAAAAAAAAAAEA
+AAIBAQIAAAACAQIAAAECAAAAAAIBAQICAQIBAgECAAAAAAAAAAIBAQIAAAECAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=""".decode('base64')

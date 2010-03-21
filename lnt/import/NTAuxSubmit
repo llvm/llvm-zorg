@@ -1,0 +1,42 @@
+#!/usr/bin/env python
+
+import sys
+import NightlytestReader
+import ServerUtil
+
+def main():
+    global opts
+    from optparse import OptionParser
+    parser = OptionParser("usage: %prog {nightlytest sentdata.txt}*")
+    parser.add_option("", "--commit", dest="commit", type=int,
+                      default=True)
+    parser.add_option("", "--no-convert", dest="noConvert")
+
+    # FIXME: It would be nice to support an easy mechanism for localized
+    # instances of the LNT infrastructure to default to the correct server for
+    # their installation.
+    parser.add_option("", "--server", dest="serverUrl", type=str,
+                      default="http://llvm.org/perf/db_nt_internal/submitRun")
+
+    opts,args = parser.parse_args()
+
+    if not args:
+        parser.error("no input files")
+
+    for inputFile in args:
+        print '%s: note: submitting %s' % (sys.argv[0], inputFile)
+
+        if opts.noConvert:
+            plistPath = inputFile
+        else:
+            # Convert to the zorg format.
+            #
+            # FIXME: Avoid temp file.
+            plistPath = "/tmp/t.plist"
+            NightlytestReader.convertNTData(inputFile, plistPath)
+
+        # Send it off.
+        ServerUtil.submitFiles(opts.serverUrl, [plistPath], opts.commit)
+
+if __name__ == '__main__':
+    main()

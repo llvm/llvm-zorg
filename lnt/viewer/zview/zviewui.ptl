@@ -1,0 +1,211 @@
+from quixote.directory import Directory
+from quixote.html import htmltext
+
+from viewer.PerfDB import Machine, Run, Sample, Test
+from viewer import NTUtil
+
+from sqlalchemy import func
+
+import json
+
+class ZViewUI(Directory):
+    _q_exports = ["", "get_machines", "get_tests", "get_test_data",
+                  "get_test_names"]
+
+    def __init__(self, root):
+        self.root = root
+
+    def get_machines(self):
+        db = self.root.getDB()
+        q = db.session.query(Machine.name.distinct())
+        q = q.order_by(Machine.name)
+        return json.dumps(q.all())
+
+    def get_tests(self):
+        db = self.root.getDB()
+        q = db.session.query(Test.id, Test.name)
+        q = q.order_by([Test.name])
+        return json.dumps(q.all())
+
+    def get_test_data(self):
+        import quixote, time
+        from sqlalchemy import orm
+
+        request = quixote.get_request()
+        machine_name = str(request.form.get('machine_name'))
+        test_name = str(request.form.get('test_name'))
+        component = str(request.form.get('component'))
+
+        full_test_name = 'nightlytest.' + test_name + '.' + component
+
+        # FIXME: Return data about machine crossings.
+        db = self.root.getDB()
+        q = db.session.query(Test.id).filter(Test.name == full_test_name)
+        q = db.session.query(Run.start_time, Sample.value)
+        q = q.join(Sample).join(Test)
+        q = q.filter(Test.name == full_test_name)
+        q = q.join(Machine)
+        q = q.filter(Machine.name == machine_name)
+        q = q.order_by(Run.start_time.desc())
+        return json.dumps([(time.mktime(run_time.timetuple()), value)
+                           for run_time,value in q])
+
+    def get_test_names(self):
+        # FIXME: We should fix the DB to be able to do this directly.
+        left = NTUtil.kPrefix + '.'
+        right = '.' + NTUtil.kSentinelKeyName
+        f = func.substr(Test.name, len(left) + 1,
+                        func.length(Test.name) - len(left) - len(right))
+
+        db = self.root.getDB()
+        q = db.session.query(f)
+        q = q.filter(Test.name.startswith(left))
+        q = q.filter(Test.name.endswith(right))
+        q = q.order_by(Test.name.desc())
+        return json.dumps(q.all())
+
+    def _q_index [html] (self):
+        db = self.root.getDB()
+
+        script = """
+machines = null;
+tests = null;
+graph = null;
+active_test_data = null;
+
+function update_machine_list(data, text) {
+  machines = data;
+
+  var elt = $('test_select_form_machine');
+  elt.length = data.length;
+  for (var i = 0; i != data.length; ++i) {
+    elt[i].value = data[i];
+    elt[i].text = data[i];
+  }
+
+  handle_test_change();
+}
+
+function update_test_list(data, text) {
+  tests = data;
+
+  var elt = $('test_select_form_test');
+  elt.length = data.length;
+  for (var i = 0; i != data.length; ++i) {
+    elt[i].value = data[i];
+    elt[i].text = data[i];
+  }
+
+  handle_test_change();
+}
+
+function update_graph() {
+  update_selected_status();
+
+  graph.clearPlots();
+  if (active_test_data && active_test_data.length) {
+    graph.clearColor = [1, 1, 1];
+    graph.addPlot(active_test_data, new Graph2D_LinePlotStyle(1, [0,0,0]));
+  } else {
+    graph.clearColor = [1, .8, .8];
+  }
+  graph.draw();
+}
+
+function update_selected_status() {
+  var machine_elt = $('test_select_form_machine');
+  var test_elt = $('test_select_form_test');
+  var machine = machines && machines[machine_elt.selectedIndex];
+  var test = tests && tests[test_elt.selectedIndex];
+  var numPts = active_test_data && active_test_data.length;
+  $('log').innerHTML = "<b>Machine:</b> " + machine + "<br>" +
+                       "<b>Test:</b> " + test + "<br>" +
+                       "<b>Num Points:</b> " + numPts;
+}
+
+function handle_test_change() {
+  if (machines === null || tests === null)
+    return;
+
+  var machine_elt = $('test_select_form_machine');
+  var test_elt = $('test_select_form_test');
+  var machine = machines[machine_elt.selectedIndex];
+  var test = tests[test_elt.selectedIndex];
+  var component = $('test_select_form_component').value;
+
+  new Request.JSON({
+    url: 'get_test_data',
+    method: 'get',
+    onSuccess: function(data, text) {
+      active_test_data = data;
+      update_graph();
+    },
+    data: "machine_name=" + encodeURIComponent(machine) + "&" +
+          "test_name=" + encodeURIComponent(test) + "&" +
+          "component=" + component,
+  }).send();
+}
+
+function init() {
+  // Initialize the graph object.
+  graph = new Graph2D("graph");
+  graph.xAxis.format = graph.xAxis.formats.day;
+  update_graph();
+
+  // Load the machine lists.
+  new Request.JSON({
+    url: 'get_machines',
+    onSuccess: update_machine_list,
+  }).send();
+
+  // Load the test list.
+  new Request.JSON({
+    url: 'get_test_names',
+    onSuccess: update_test_list,
+  }).send();
+}
+""" % locals()
+
+        self.root.getHeader("zorg", "..", addGraphJS=True, addJSScript=script,
+                            onload='init()')
+
+        """
+        <h2>ZView</h2>
+        """
+
+        """
+        <h3>Test Selection</h3>
+        <form id="test_select_form">
+        <p>Machine: <select id="test_select_form_machine"
+                            onChange="handle_test_change();">
+        <option value="">Loading...</option>
+        </select></p>
+
+        <p>Test: <select id="test_select_form_test"
+                         onChange="handle_test_change();">
+        <option value="">Loading...</option>
+        </select></p>
+
+        <p>Component: <select id="test_select_form_component"
+                              onChange="handle_test_change();">
+        """
+        for name,key in NTUtil.kComparisonKinds:
+            if key is None:
+                continue
+            """<option value="%s">%s</option>""" % (key, name)
+        """
+        </select></p>
+        </form>
+
+        <h3>Selected Test</h3>
+        <div id="log">
+	<p>Waiting...</p>
+        </div>
+
+        <h3>Graph</h3>
+        <div id="log">
+        <canvas id="graph" width="600" height="400"></canvas>
+        </div>
+        """
+
+        self.root.getFooter()

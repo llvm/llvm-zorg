@@ -1,0 +1,404 @@
+# -*- python -*-
+
+import re
+
+import quixote
+from quixote.directory import Directory
+from quixote.errors import TraversalError
+
+import Util
+from NTUtil import *
+
+from PerfDB import Machine, Run
+
+class TestRunUI(Directory):
+    def __init__(self, root, idstr):
+        self.root = root
+        try:
+            self.id = int(idstr)
+        except ValueError, exc:
+            raise TraversalError(str(exc))
+
+    def getActiveRun(self, db):
+        # Check for overrides
+        request = quixote.get_request()
+        id = self.id
+        run_id = request.form.get('run', '')
+        if run_id:
+            id = int(run_id)
+        return db.getRun(id)
+
+    def getInfo(self, db):
+        request = quixote.get_request()
+
+        compareToID = request.form.get('compare', '')
+        compareTo = None
+        if compareToID:
+            try:
+                compareTo = db.getRun(int(compareToID))
+            except:
+                pass
+
+        run = self.getActiveRun(db)
+
+        # Find previous runs, ordered by time.
+        runs = db.runs(run.machine).order_by(Run.start_time.desc()).all()
+
+        # Find previous run to compare to
+        if compareTo is None:
+            for r in runs:
+                # FIXME: Compare revisions, not times.
+                if r != run and r.start_time < run.start_time:
+                    compareTo = r
+                    break
+
+        return run, runs, compareTo
+
+    def getRunSummary(self, db, run, compareTo, form=None):
+        testPredicate = None
+        infoPredicates = []
+        if form:
+            testPattern = form['testPattern']
+            if testPattern and testPattern.strip():
+                testPattern = re.compile(testPattern)
+                testPredicate = lambda t: testPattern.search(t.name)
+            parameters = self.getParameters()
+            for i,(title,name) in enumerate(self.getParameters()):
+                pattern = form['parmPattern.%d' % i]
+                if pattern and pattern.strip():
+                    pattern = re.compile(pattern)
+                    infoPredicates.append((name,
+                                           lambda t,k,v,p=pattern: p.search(v)))
+
+        # Compare the summary information
+        summary = RunSummary()
+        summary.addRun(db, run, testPredicate, infoPredicates)
+        if compareTo:
+            summary.addRun(db, compareTo, testPredicate, infoPredicates)
+        return summary
+
+    def _q_index [html] (self):
+        self.root.getHeader(self.getTitle(), "../..",
+                            addPopupJS=True, addFormCSS=True)
+
+        request = quixote.get_request()
+        full = request.form.get('full', '')
+        allResults = not not full
+
+        # Get the filtering form.
+        form = quixote.form.Form(method=str("get"))
+        form.add(quixote.form.StringWidget, "testPattern",
+                 title="Test Pattern")
+        for i,(title,name) in enumerate(self.getParameters()):
+            form.add(quixote.form.StringWidget, "parmPattern.%d" %i,
+                     title="Parameter Pattern: %s" % title)
+        form.add_submit("submit", "Update")
+        Util.addOtherFormValues(form)
+
+        # Get a DB connection
+        db = self.root.getDB()
+        run,runs,compareTo = self.getInfo(db)
+        machine = run.machine
+        summary = self.getRunSummary(db, run, compareTo, form)
+
+        """
+        <center>
+          <h1>%s</h1>
+          <table>
+            <tr>
+              <td align=right>Machine:</td>
+              <td>%s:%d</td>
+            </tr>
+            <tr>
+              <td align=right>Run:</td>
+              <td>%s</td>
+            </tr>
+        """ % (self.getHeaderTitle(), machine.name, machine.number, run.start_time)
+        if compareTo:
+            """
+            <tr>
+              <td align=right>Compare To:</td>
+              <td>%s</td>
+            </tr>
+            """ % (compareTo.start_time,)
+        """
+          </table>
+        </center>
+        <p>
+        """
+
+        # Hide by default unless filled in
+        hidden = True
+        for w in form.get_all_widgets():
+            if isinstance(w, (quixote.form.HiddenWidget,)):
+                continue
+            value = w.value
+            if value:
+                hidden = False
+                break
+        key = 'filteringOptions'
+        """
+        <a href="javascript://" onclick="toggleLayer('%s')"; id="%s_">(%s)
+        Show Filtering Options</a>
+        <div id="%s" style="display: %s;" class="hideable">
+        """ % (key, key, ("+","-")[hidden], key, ("","none")[hidden])
+        form.render()
+        """
+        </div>
+        <p>
+        """
+
+        """
+        <table width="100%%" border=1>
+          <tr>
+            <td valign="top" width="200">
+              <a href="..">Homepage</a>
+              <h4>Machine:</h4>
+              <a href="../machines/%d/">%s:%d</a>
+              <h4>Runs:</h4>
+              <ul>
+        """ % (machine.id, machine.name, machine.number)
+
+        # Show a small number of neighboring runs.
+        runIndex = runs.index(run)
+        for r in runs[max(0,runIndex-3):runIndex+6]:
+            if r == run:
+                """ <li> <h3><a href="../%d/">%s</a></h3> """ % (r.id, r.start_time)
+            else:
+                """ <li> <a href="../%d/">%s</a> """ % (r.id, r.start_time)
+
+        # Full list of runs in a drop down.
+        #
+        # FIXME: Make this link to the proper run.
+        """
+        <p>
+        <form method="GET" action=".">
+        <input type="hidden" name="full" value="%s">
+        <select name="run">
+        """ % (full,)
+        for r in runs:
+            """\
+        <option value="%d"%s>%s""" % (r.id, ('', ' selected')[r == run], r.start_time)
+
+        """
+        </select>
+        <input type="submit" value="Jump to Run">
+        </form>
+        """
+        # Set comparison run.
+        """
+        <form method="GET" action=".">
+        <input type="hidden" name="full" value="%s">
+        <select name="compare">
+        """ % (full,)
+        for r in runs:
+            """\
+        <option value="%d"%s>%s</option>""" % (r.id, ('', ' selected')[r == compareTo], r.start_time)
+
+        """
+        </select>
+        <input type="submit" value="Compare to Run">
+        </form>
+        """
+
+        """
+              </ul>
+            </td>
+            <td valign="top">
+              <table border=1>
+              <tr>
+                <td> <b>Nickname</b> </td>
+                <td> %s </td>
+              </tr>
+        """ %  (machine.name,)
+        for mi in machine.info.values():
+            """
+              <tr>
+                <td> <b>%s</b> </td>
+                <td>%s</td>
+              </tr>
+            """ % (mi.key, mi.value)
+        """
+              <tr>
+                <td> <b>Machine ID</b> </td>
+                <td> %d </td>
+              </tr>
+              </table>
+        """ % (machine.id,)
+
+        if allResults:
+            """<h4><a href="?full=">See Brief Test Results</a></h4>"""
+        else:
+            """<h4><a href="?full=1">See Full Test Results</a></h4>"""
+
+        self.renderCommonContents(db, run, compareTo, summary)
+        if not allResults:
+            self.renderBriefContents(db, run, compareTo, summary)
+
+        """
+            </td>
+          </tr>
+        </table>
+        """
+
+        if allResults:
+            self.renderFullContents(db, run, compareTo, summary)
+
+        self.root.getFooter()
+
+    ###
+
+    def getTags(self):
+        abstract
+
+    def getTitle(self):
+        abstract
+
+    def getHeaderTitle(self):
+        abstract
+
+    def getParameters(self):
+        abstract
+
+    def renderFullContents(self, db, run, compareTo, summary):
+        abstract
+
+    def renderBriefContents(self, db, run, compareTo, summary):
+        abstract
+
+    def renderCommonContents(self, db, run, compareTo, summary):
+        abstract
+
+class MachinesDirectory(Directory):
+    _q_exports = [""]
+
+    def __init__(self, parent):
+        Directory.__init__(self)
+        self.parent = parent
+
+    def _q_index [plain] (self):
+        """
+        machine access
+        """
+
+    def _q_lookup(self, component):
+        return self.parent.getTestMachineUI(component)
+
+class ProgramsDirectory(Directory):
+    _q_exports = [""]
+
+    def __init__(self, parent):
+        Directory.__init__(self)
+        self.parent = parent
+
+    def _q_index [plain] (self):
+        """
+        program access
+        """
+
+    def _q_lookup(self, component):
+        return self.parent.getProgramUI(component)
+
+class RecentMachineDirectory(Directory):
+    def __init__(self, root):
+        Directory.__init__(self)
+        self.root = root
+
+    def getTitle(self):
+        abstract
+
+    def getHeaderTitle(self):
+        abstract
+
+    def getTags(self):
+        abstract
+
+    def _q_index [plain] (self):
+        self.root.getHeader(self.getTitle(), "..")
+
+        # Get a DB connection
+        db = self.root.getDB()
+
+        # Find recent runs.
+        """
+        <center>
+          <h2>%s</h2>
+        </center>
+        """ % (self.getHeaderTitle(),)
+
+        """
+        <table width="100%%">
+          <tr>
+            <td valign="top" width="50%">
+              <center>
+              <h3>Test Machines</h3>
+              <table class="sortable" border=1>
+                <thead>
+                <tr>
+                  <th>Latest Submission</th>
+                  <th>Machine</th>
+                  <th>Results</th>
+                </tr>
+                </thead>
+        """
+
+        # Show the most recent entry for each machine.
+        q = db.session.query(Machine.name).distinct().order_by(Machine.name)
+        for name, in q:
+            # Get the most recent run for this machine name.
+            q = db.session.query(Run).join(Machine).filter(Machine.name == name)
+            r = q.order_by(Run.start_time.desc()).first()
+            """
+              <tr>
+                <td>%s</td>
+                <td align=left><a href="machines/%d/">%s:%d</a></td>
+                <td><a href="%d/">View Results</a></td>
+              </tr>
+            """ % (r.start_time, r.machine.id, r.machine.name, r.machine.number, r.id)
+
+        """
+              </table>
+              </center>
+            </td>
+            <td valign="top">
+              <center>
+              <h3>Recent Submissions</h3>
+              <table class="sortable" border=1>
+                <thead>
+                <tr>
+                  <th>Start Time</th>
+                  <th>End Time</th>
+                  <th>Machine</th>
+                  <th>Results</th>
+                </tr>
+                </thead>
+        """
+
+        # Show the 20 most recent submissions, ordered by time.
+        for r in db.session.query(Run).order_by(Run.start_time.desc())[:20]:
+            m = r.machine
+            """
+              <tr>
+                <td>%s</td>
+                <td>%s</td>
+                <td align=left><a href="machines/%d/">%s:%d</a></td>
+                <td><a href="%d/">View Results</a></td>
+              </tr>
+            """ % (r.start_time, r.end_time, m.id, m.name, m.number, r.id)
+
+        """
+              </table>
+              </center>
+            </td>
+          </tr>
+        </table>
+        """
+
+        self.root.getFooter()
+
+    def _q_lookup(self, component):
+        if component == 'machines':
+            return MachinesDirectory(self)
+        if component == 'programs':
+            return ProgramsDirectory(self)
+        return self.getTestRunUI(component)

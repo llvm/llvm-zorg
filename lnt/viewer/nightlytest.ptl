@@ -1,0 +1,800 @@
+# -*- python -*-
+
+import sys
+import time
+
+import quixote
+from quixote.directory import Directory
+from quixote.errors import TraversalError
+
+import Util, NTStyleBrowser
+from Util import safediv
+from NTUtil import *
+
+from PerfDB import Machine, Run
+
+class NightlyTestRunUI(NTStyleBrowser.TestRunUI):
+    _q_exports = ["", "graphSingle"]
+
+    def __init__(self, *args, **kwargs):
+        NTStyleBrowser.TestRunUI.__init__(self, *args, **kwargs)
+        self.popupDepth = 0
+
+    def getTags(self):
+        return (None, 'nightlytest')
+
+    def getTitle(self):
+        return 'LLVM Nightly Test Results'
+
+    def getHeaderTitle(self):
+        return 'LLVM Nightly Test Results'
+
+    def getParameters(self):
+        return ()
+
+    def renderFullContents [html] (self, db, run, compareTo, summary):
+        """<p>"""
+        self.getAllResults(db, run, compareTo, summary)
+
+    def renderBriefContents [html] (self, db, run, compareTo, summary):
+        if compareTo:
+            self.getComparisonPopups(db, run, compareTo, summary)
+
+    def renderCommonContents [html] (self, db, run, compareTo, summary):
+        # Test suite failure information.
+
+        failures = self.getFailuresForRun(db, run, summary)
+
+        if compareTo is not None:
+            prevFailures = self.getFailuresForRun(db, compareTo, summary)
+            newFailures = [(name, list(set(items) -
+                                       set(prevFailures.get(name,[]))))
+                           for name,items in failures.items()]
+            newFailures = dict([(name, items)
+                                for name,items in newFailures
+                                if items])
+
+            if newFailures:
+                newFailures = sorted(newFailures.items())
+                self.renderTestSuiteFailures('newTSFailures',
+                                             '<b>New Test Suite Failures</b>',
+                                             newFailures)
+
+        failures = sorted(failures.items())
+        self.renderTestSuiteFailures('tsFailures',
+                                     'Test Suite Failures', failures)
+
+    def renderTestSuiteFailures [html] (self, id, title, failures):
+        numFailures = sum([len(items) for _,items in failures])
+        title = '%d %s (All)' % (numFailures, title)
+
+        self.renderPopupBegin(id, title, True)
+        self.renderPopupBegin(id+'.all', 'All', True)
+        for name,items in failures:
+            """
+            %s <font color="grey">[%s]</font><br>
+            """ % (name, ', '.join(items))
+        self.renderPopupEnd()
+
+        # Also show failure by type.
+        byType = Util.multidict([(item,name)
+                                 for name,items in failures
+                                 for item in items])
+        byType = sorted(byType.items())
+
+        for i,(item,names) in enumerate(byType):
+            title = '%d %s' % (len(names), item)
+            self.renderPopupBegin(id+'.%d' % i, title, True)
+            for name in names:
+                """
+                %s<br>""" % name
+            self.renderPopupEnd()
+
+        self.renderPopupEnd()
+
+    def renderPopupBegin [html] (self, id, title, hidden):
+        self.popupDepth += 1
+        """\
+        <p>
+        <a href="javascript://" onclick="toggleLayer('%s')"; id="%s_">(%s) %s</a>
+        <div id="%s" style="display: %s;" class="hideable_%d">
+        """ % (id, id, ("+","-")[hidden], title, id, ("","none")[hidden],
+               self.popupDepth)
+    def renderPopupEnd [html] (self):
+        """
+        </div>"""
+        self.popupDepth -= 1
+
+    def getFailuresForRun(self, db, run, summary):
+        failures = Util.multidict()
+        for keyname,title in kTSKeys.items():
+            for testname in summary.testNames:
+                fullname = 'nightlytest.' + testname + '.' + keyname + '.success'
+                t = summary.testMap.get(str(fullname))
+                if t is None:
+                    continue
+                samples = summary.getRunSamples(run).get(t.id)
+                if not samples or samples[0]:
+                    continue
+                failures[testname] = title
+        return failures
+
+    def getAllResults [html] (self, db, run, compareTo, summary):
+        columns = [('GCCAS', 'gcc.compile.time', None, ()),
+                   ('Bitcode','bc.compile.size', None, ()),
+                   ('LLC<br>compile','llc.compile.time', None, ('bc.compile.size',)),
+                   ('LLC-BETA<br>compile','llc-beta.compile.time', None, ('bc.compile.size',)),
+                   ('JIT<br>codegen','jit.compile.time', None, ('bc.compile.size',)),
+                   ('GCC','gcc.exec.time', None, ('gcc.compile.time',)),
+                   ('CBE','cbe.exec.time', None, ('bc.compile.size',)),
+                   ('LLC','llc.exec.time', None, ('llc.compile.time',)),
+                   ('LLC-BETA','llc-beta.exec.time', None, ('llc-beta.compile.time',)),
+                   ('JIT','jit.exec.time', None, ('jit.compile.time',)),
+                   ('GCC/CBE','gcc.exec.time','cbe.exec.time', ()),
+                   ('GCC/LLC','gcc.exec.time','llc.exec.time', ()),
+                   ('GCC/LLC-BETA','gcc.exec.time','llc-beta.exec.time',()),
+                   ('LLC/LLC-BETA','llc.exec.time','llc-beta.exec.time',())]
+
+        # Add interface to hiding columns by test or column type.
+        keyIndices = Util.multidict()
+        ratioIndices = []
+        pctIndices = []
+
+        idx = 1
+        for info in columns:
+            isCmp = info[2] is not None
+            key = str(info[1]).split(str('.'))[0]
+            if not isCmp:
+                keyIndices[key] = idx
+                keyIndices[key] = idx + 1
+                pctIndices.append(idx + 1)
+                idx += 2
+            else:
+                keyIndices[key] = idx
+                ratioIndices.append(idx)
+                idx += 1
+        """
+        <form>
+        <table border="1">
+          <thead>
+            <tr>
+              <th>Column Visibility</th>
+              <th>GCC</th>
+              <th>LLC</th>
+              <th>CBE</th>
+              <th>JIT</th>
+              <th>LLC-BETA</th>
+              <th>Percentages</th>
+              <th>Ratios</th>
+            </tr>
+          </thead>
+          <tr>
+            <td>Enabled</td>
+            <td><input type='checkbox' onClick='javascript:show_hide_column("programs", [%s]);' checked></td>
+            <td><input type='checkbox' onClick='javascript:show_hide_column("programs", [%s]);' checked></td>
+            <td><input type='checkbox' onClick='javascript:show_hide_column("programs", [%s]);' checked></td>
+            <td><input type='checkbox' onClick='javascript:show_hide_column("programs", [%s]);' checked></td>
+            <td><input type='checkbox' onClick='javascript:show_hide_column("programs", [%s]);' checked></td>
+            <td><input type='checkbox' onClick='javascript:show_hide_column("programs", [%s]);' checked></td>
+            <td><input type='checkbox' onClick='javascript:show_hide_column("programs", [%s]);' checked></td>
+          </tr>
+        </table>
+        </form>
+        """ % (', '.join(map(str, keyIndices['gcc'])),
+               ', '.join(map(str, keyIndices['llc'])),
+               ', '.join(map(str, keyIndices['cbe'])),
+               ', '.join(map(str, keyIndices['jit'])),
+               ', '.join(map(str, keyIndices['llc-beta'])),
+               ', '.join(map(str, pctIndices)),
+               ', '.join(map(str, ratioIndices)))
+
+        # The main table.
+        """
+        <table class="sortable" border="1" cellspacing="0" cellpadding="0" id="programs">
+          <thead>
+          <tr>
+            <th>Program</th>
+        """
+        for name,key,cmp,dependsOn in columns:
+            if cmp is None:
+                """
+            <th>%s</th>
+            <th>%%<br>change<br>in<br>%s</th>
+                """ % (name, name)
+            else:
+                """<th>%s</th>""" % name
+        """
+          </tr>
+        </thead>
+        """
+
+        runSamples = summary.getRunSamples(run)
+        prevSamples = summary.getRunSamples(compareTo)
+        testNames = list(summary.testNames)
+        testNames.sort(key = lambda x: x.lower())
+        for testName in testNames:
+            # FIXME: We need some id for the "program". The dotted name system
+            # solves this...
+            fullname = str('nightlytest.' + testName + '.' +
+                           'gcc.compile.success')
+            t = summary.testMap.get(fullname)
+            assert t
+            """
+          <tr>
+            <td><a href="../programs/%s/">%s</a></td>
+            """ % (t.id, testName,)
+
+            for name,key,cmp,dependsOn in columns:
+                if cmp is None:
+                    fullname = str('nightlytest.' + testName + '.' + key)
+                    t = summary.testMap.get(fullname)
+                    if t is None:
+                        current = prev = None
+                    else:
+                        current = runSamples.get(t.id)
+                        prev = prevSamples.get(t.id)
+                    if current:
+                        value = current[0]
+                        if key.endswith('size'):
+                            """<td>%d</td>""" % int(value)
+                        else:
+                            """<td>%.4f</td>""" % value
+                        if prev:
+                            pct = safediv(value, prev[0],
+                                          '<center><font size=-2>nan</font></center>')
+                        else:
+                            pct = 'N/A'
+                    else:
+                        # Only mark failure if nothing we depend on failed.
+                        failed = True
+                        for d in dependsOn:
+                            t = summary.testMap.get(str('nightlytest.' + testName + '.' + d))
+                            if not t or not runSamples.get(t.id):
+                                failed = False
+                                break
+                        if failed:
+                            """<td bgcolor="#FF0000">*</td>"""
+                        else:
+                            """<td>N/A</td>"""
+                        pct = 'N/A'
+                    Util.PctCell(pct, delta=True).render()
+                else:
+                    tNum = summary.testMap.get(str('nightlytest.' + testName + '.' + key))
+                    tDen = summary.testMap.get(str('nightlytest.' + testName + '.' + cmp))
+                    if tNum is None or tDen is None:
+                        num = den = None
+                    else:
+                        num = runSamples.get(tNum.id)
+                        den = runSamples.get(tDen.id)
+                    if num and den:
+                        pct = safediv(num[0], den[0])
+                        if pct is None:
+                            """<td>N/A</td>"""
+                        else:
+                            """<td>%.2f</td>""" % (pct,)
+                    else:
+                        """<td>N/A</td>"""
+            """
+          </tr>
+            """
+        """
+        </table>
+        """
+
+    def getComparisonPopups [html] (self, db, run, compareTo, summary):
+        runSamples = summary.getRunSamples(run)
+        prevSamples = summary.getRunSamples(compareTo)
+
+        for i,(name,key) in enumerate(kComparisonKinds):
+            if not key:
+                # FIXME: File Size
+                deltas = []
+            else:
+                deltas = []
+                for testName in summary.testNames:
+                    fullname = str('nightlytest.' + testName + '.' + key)
+                    t = summary.testMap.get(fullname)
+                    if not t:
+                        continue
+                    current = runSamples.get(t.id)
+                    prev = prevSamples.get(t.id)
+                    if not current or not prev:
+                        continue
+                    current = current[0]
+                    prev = prev[0]
+                    pct = safediv(current, prev)
+                    if pct is None:
+                        continue
+                    pctDelta = pct - 1.
+                    if abs(pctDelta) < .05:
+                        continue
+                    if min(prev,current) <= .2:
+                        continue
+                    deltas.append( (t.id, testName, current, prev, pctDelta) )
+
+            hidden = len(deltas) == 0
+            """
+              <p>
+              <a href="javascript://" onclick="toggleLayer('%s')"; id="%s_">(%s) %d %s Significant Changes</a>
+              <div id="%s" style="display: %s;" class="hideable">
+            """ % (name, name, ("+","-")[hidden], len(deltas), name, name, ("","none")[hidden])
+            if deltas:
+                # Redirect or something so we don't have to specify
+                # run here; that is silly.
+                """
+              <form method="GET" action="graphSingle">
+              <input type="hidden" name="run" value="%d">
+              <input type="hidden" name="kind" value="%d">
+              <form method="GET" action="graphSingle">
+              <table class="sortable" border=1>
+                <thead>
+                <tr>
+                  <th class="sorttable_nosort"><input type="checkbox" id="checkAll.%d"></th>
+                  <th>Program</th>
+                  <th>%% Change</th>
+                  <th>Previous Value</th>
+                  <th>Current Value</th>
+                </tr>
+                </thead>
+                """ % (run.id, i, i,)
+                for id, name, current, prev, pctDelta in deltas:
+                    """
+                  <tr>
+                    <td><input type="checkbox" name="cb.%d" id="cb_group.%d"></td>
+                   <td><a href="../programs/%s/">%s</a></td>
+                    %s
+                    <td>%s</td>
+                    <td>%s</td>
+                  </tr>
+                    """ % (id, i, id, name,
+                           Util.PctCell(pctDelta).render(), prev, current)
+                """
+              </table>
+              <input type="submit" value="Compare Values">
+              </form>
+                """
+
+            """
+              </div>
+            """
+
+    def graphSingle [html] (self):
+        request = quixote.get_request()
+        full = request.form.get('full', '')
+        allResults = not not full
+
+        # Get a DB connection
+        db = self.root.getDB()
+
+        run = self.getActiveRun(db)
+        runs = db.runs(run.machine).order_by(Run.start_time.desc()).all()
+        machine = run.machine
+
+        request = quixote.get_request()
+        kindStr = request.form.get('kind')
+        kind = None
+        try:
+            kind = kComparisonKinds[int(kindStr)]
+        except:
+            pass
+        tests = []
+        for name,value in request.form.items():
+            if name.startswith(str('cb.')):
+                testIDStr = name[3:]
+                try:
+                    testID = int(str(testIDStr))
+                    tests.append(db.getTest(testID))
+                except:
+                    pass
+
+        # Collect samples by test and machine, then bin into runs.
+        samplesByTest = {}
+        for t in tests:
+            samples = samplesByTest[t.id] = samplesByTest.get(t.id,{})
+
+            q = db.session.query(Sample.run_id,
+                                 Sample.value).join(Run)
+            q = q.filter(Run.machine_id == machine.id)
+            q = q.filter(Sample.test_id == t.id)
+            for s_run_id,s_value in q:
+                samples[s_run_id] = s_value
+
+        legend = []
+        plots = ""
+        for i,test in enumerate(tests):
+            data = []
+            for run in runs:
+                value = samplesByTest.get(test.id,{}).get(run.id)
+                if value is not None:
+                    timeval = time.mktime(run.start_time.timetuple())
+                    data.append((timeval, value))
+            data.sort()
+
+            col = list(Util.makeDarkColor(float(i) / len(tests)))
+            pts = ','.join(['[%f,%f]' % (t,v) for t,v in data])
+            style = "new Graph2D_LinePlotStyle(1, %r)" % col
+            plots += "    graph.addPlot([%s], %s);\n" % (pts,style)
+
+            legend.append((test.name.split(str('.'),1)[1], col))
+        graph_init = """\
+    function init() {
+        graph = new Graph2D("graph");
+        graph.clearColor = [1, 1, 1];
+    %s
+        graph.xAxis.format = graph.xAxis.formats.day;
+        graph.draw();
+    }
+    """ % (plots,)
+
+        self.root.getHeader("Nightly Test Results", "../..",
+                            addPopupJS=True, addGraphJS=True,
+                            addJSScript=graph_init,
+                            onload='init()')
+
+        """
+        <center>
+          <h2>LLVM Nightly Test Results</h2>
+        </center>
+        """
+
+        # Graph2D based graph.
+        """
+        <h3>Graph</h3>
+        <table>
+        <tr>
+        <td rowspan=2 valign="top">
+          <canvas id="graph" width="600" height="400"></canvas>
+        </td>
+        <td valign="top">
+        <table cellspacing=4 border=1>
+        <tr><th colspan=2>Test</th></tr>
+        """
+        for name,col in legend:
+            """<tr><td bgcolor="%02x%02x%02x">&nbsp;</td><td>%s</td></tr>""" % (
+                255*col[0], 255*col[1], 255*col[2], name)
+        """
+        </table>
+        </td></tr>
+        <tr><td align="right" valign="bottom">
+        <font size="-2">
+        Shift-Left Mouse: Pan<br>
+        Alt/Meta-Left Mouse: Zoom<br>
+        Wheel: Zoom (<i>Shift Slows</i>)<br>
+        </font>
+        </td></tr>
+        </table>
+        """
+
+        """<h3>Values</h3>
+        <a href="javascript://" onclick="toggleLayer('graph_values');"
+           id="graph_values_">(-) Graph Values</a>
+        <div id="graph_values" style="display: none;" class="hideable">
+        <table class="sortable" border=1>
+        <thead>
+          <tr>
+            <th>Run</th>
+            <th>Timestamp</th>
+        """
+        for t in tests:
+            """
+            <th>%s</th>
+            """ % (t.name,)
+        """
+        </thead>
+        """
+
+        for run in runs:
+            """
+          <tr>
+            <td>%d</td>
+            <td>%s</td>""" % (run.id, run.start_time)
+            for t in tests:
+                value = samplesByTest.get(t.id,{}).get(run.id, 'N/A')
+                """
+            <td>%s</td>""" % value
+            """
+          </tr>"""
+        """
+        </table>
+        </div>
+        """
+
+        self.root.getFooter()
+
+class NightlyTestMachineUI(Directory):
+    _q_exports = [""]
+
+    def __init__(self, root, idstr):
+        self.root = root
+        try:
+            self.id = int(idstr)
+        except ValueError, exc:
+            raise TraversalError(str(exc))
+
+    def _q_index [html] (self):
+        self.root.getHeader("Nightly Test Results", "../../..",
+                            addPopupJS=True)
+
+        # Get a DB connection
+        db = self.root.getDB()
+
+        machine = db.getMachine(self.id)
+
+        # Find all runs on this machine.
+        runs = db.runs(machine).order_by(Run.start_time.desc()).all()
+
+        """
+        <center>
+          <h1>LLVM Nightly Test Results</h1>
+          <table>
+            <tr>
+              <td align=right>Machine:</td>
+              <td>%s:%d</td>
+            </tr>
+          </table>
+        </center>
+        <p>
+        """ % (machine.name, machine.number)
+
+        # FIXME: List previous machines with the same nickname?
+        """
+        <table width="100%%" border=1>
+          <tr>
+            <td valign="top" width="200">
+              <a href="../..">Homepage</a>
+              <h4>Relatives:</h4>
+              <ul>
+        """
+        # List all machines with this name.
+        for m in db.machines(name=machine.name):
+            """<li><a href="../%d">%s:%d</a></li>""" % (m.id, m.name, m.number)
+        """
+              </ul>
+              <h4>Runs:</h4>
+              <ul>
+        """
+
+        # Show the most recent 10 runs.
+        for r in runs[:10]:
+            """ <li> <a href="../../%d/">%s</a> """ % (r.id, r.start_time)
+
+        # Full list of runs in a drop down.
+        #
+        # FIXME: Link to run correctly.
+        """
+        <p>
+        <form method="GET" action="../../1/">
+        <select name="run">
+        """
+        for r in runs:
+            """\
+        <option value="%d">%s""" % (r.id, r.start_time)
+
+        """
+        </select>
+        <input type="submit" value="Go to Run">
+        </form>
+        """
+
+        """
+              </ul>
+            </td>
+            <td valign="top">
+              <table border=1>
+              <tr>
+                <td> <b>Nickname</b> </td>
+                <td> %s </td>
+              </tr>
+        """ %  (machine.name,)
+        for mi in machine.info.values():
+            """
+              <tr>
+                <td> <b>%s</b> </td>
+                <td>%s</td>
+              </tr>
+            """ % (mi.key, mi.value)
+        """
+              <tr>
+                <td> <b>Machine ID</b> </td>
+                <td> %d </td>
+              </tr>
+              </table>
+              <p>
+        """ % (machine.id,)
+
+        # List associated runs.
+        """
+        <table class="sortable" border=1>
+        <thead>
+          <tr>
+            <th>Start Time</th>
+            <th>End Time</th>
+            <th>&nbsp;</th>
+        </thead>
+        """
+        for r in runs:
+            """
+          <tr>
+            <td>%s</td>
+            <td>%s</td>
+            <td><a href="../../%d">View Results</a></td>
+          </tr>""" % (r.start_time, r.end_time, r.id)
+        """
+        </table>
+        """
+
+        """
+            </td>
+          </tr>
+        </table>
+        """
+
+        self.root.getFooter()
+
+class NightlyTestProgramUI(Directory):
+    _q_exports = [""]
+
+    def __init__(self, root, testIDStr):
+        self.root = root
+        try:
+            self.testID = int(testIDStr)
+        except ValueError, exc:
+            raise TraversalError(str(exc))
+
+    def _q_index [html] (self):
+        self.root.getHeader("Nightly Test Results", "../../..",
+                            addPopupJS=True)
+
+        # Get a DB connection.
+        db = self.root.getDB()
+
+        # Get the test we use to derive the name.
+        t = db.getTest(id = self.testID)
+        programName = t.name.split(str('.'), 3)[1]
+
+        # Collect runs within the last 48 hours of the most recent report.
+        import datetime
+        runs = []
+        most_recent, = db.session.query(Run.start_time).\
+            order_by(Run.start_time.desc()).first()
+        cutoff = most_recent - datetime.timedelta(days=2)
+        runs = db.session.query(Run).\
+            filter(Run.start_time >= cutoff).\
+            order_by(Run.start_time.desc()).all()
+
+        """
+        <center>
+          <h1>LLVM Nightly Test Results</h1>
+          <table>
+            <tr>
+              <td align=right>Program:</td>
+              <td>%s</td>
+            </tr>
+          </table>
+        </center>
+        <p>
+        """ % (programName,)
+
+        self.getAllResults(db, programName, runs)
+
+        self.root.getFooter()
+
+    def getAllResults [html] (self, db, testName, runs):
+        columns = [('GCCAS', 'gcc.compile.time', ()),
+                   ('Bitcode','bc.compile.size', ()),
+                   ('LLC<br>compile','llc.compile.time', ('bc.compile.size',)),
+                   ('LLC-BETA<br>compile','llc-beta.compile.time', ('bc.compile.size',)),
+                   ('JIT<br>codegen','jit.compile.time', ('bc.compile.size',)),
+                   ('GCC','gcc.exec.time', ('gcc.compile.time',)),
+                   ('CBE','cbe.exec.time', ('bc.compile.size',)),
+                   ('LLC','llc.exec.time', ('llc.compile.time',)),
+                   ('LLC-BETA','llc-beta.exec.time', ('llc-beta.compile.time',)),
+                   ('JIT','jit.exec.time', ('jit.compile.time',))]
+
+        # Add interface to hiding columns by test or column type.
+        keyIndices = Util.multidict()
+        for idx,info in enumerate(columns):
+            key = str(info[1]).split(str('.'))[0]
+            keyIndices[key] = idx + 2
+        """
+        <form>
+        <table border="1">
+          <thead>
+            <tr>
+              <th>Column Visibility</th>
+              <th>GCC</th>
+              <th>LLC</th>
+              <th>CBE</th>
+              <th>JIT</th>
+              <th>LLC-BETA</th>
+            </tr>
+          </thead>
+          <tr>
+            <td>Enabled</td>
+            <td><input type='checkbox' onClick='javascript:show_hide_column("programs", [%s]);' checked></td>
+            <td><input type='checkbox' onClick='javascript:show_hide_column("programs", [%s]);' checked></td>
+            <td><input type='checkbox' onClick='javascript:show_hide_column("programs", [%s]);' checked></td>
+            <td><input type='checkbox' onClick='javascript:show_hide_column("programs", [%s]);' checked></td>
+            <td><input type='checkbox' onClick='javascript:show_hide_column("programs", [%s]);' checked></td>
+          </tr>
+        </table>
+        </form>
+        """ % (', '.join(map(str, keyIndices['gcc'])),
+               ', '.join(map(str, keyIndices['llc'])),
+               ', '.join(map(str, keyIndices['cbe'])),
+               ', '.join(map(str, keyIndices['jit'])),
+               ', '.join(map(str, keyIndices['llc-beta'])))
+
+        # The main table.
+        """
+        <table class="sortable" border="1" cellspacing="0" cellpadding="0" id="programs">
+          <thead>
+          <tr>
+            <th>Machine</th>
+            <th>Run Start</th>
+        """
+        for name,key,dependsOn in columns:
+            """<th>%s</th>""" % (name, )
+        """
+          </tr>
+        </thead>
+        """
+
+        for run in runs:
+            """
+          <tr>
+            <td><a href="../../machines/%d">%s:%d</a></td>
+            <td><a href="../../%d">%s</a></td>
+            """ % (run.machine.id, run.machine.name, run.machine.number,
+                   run.id, run.start_time)
+
+            for name,key,dependsOn in columns:
+                fullname = str('nightlytest.' + testName + '.' + key)
+                # FIXME: Make fast.
+                current = getTestNameValueInRun(db, run, fullname)
+                if current is not None:
+                    if key.endswith('size'):
+                        """<td>%d</td>""" % int(current)
+                    else:
+                        """<td>%.4f</td>""" % current
+                else:
+                    # Only mark failure if nothing we depend on failed.
+                    failed = True
+                    for d in dependsOn:
+                        # FIXME: Make fast.
+                        t = getTestNameValueInRun(db, run,
+                                                  str('nightlytest.' + testName + '.' + d))
+                        if t is None:
+                            failed = False
+                            break
+                    if failed:
+                        """<td bgcolor="#FF0000">*</td>"""
+                    else:
+                        """<td>N/A</td>"""
+            """
+          </tr>
+            """
+        """
+        </table>
+        """
+
+class NightlyTestDirectory(NTStyleBrowser.RecentMachineDirectory):
+    _q_exports = [""]
+
+    def getTags(self):
+        return (None, 'nightlytest')
+
+    def getTitle(self):
+        return 'Nightly Test'
+
+    def getHeaderTitle(self):
+        return 'LLVM Nightly Test'
+
+    def getTestRunUI(self, component):
+        return NightlyTestRunUI(self.root, component)
+
+    def getTestMachineUI(self, component):
+        return NightlyTestMachineUI(self.root, component)
+
+    def getProgramUI(self, component):
+        return NightlyTestProgramUI(self.root, component)

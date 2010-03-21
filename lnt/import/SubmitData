@@ -1,0 +1,19 @@
+#!/usr/bin/python
+
+import ServerUtil
+
+def main():
+    global opts
+    from optparse import OptionParser
+    parser = OptionParser("usage: %prog serverUrl files+")
+    parser.add_option("", "--commit", dest="commit", type=int,
+                      default=False)
+    opts,args = parser.parse_args()
+
+    if len(args) < 2:
+        parser.error("incorrect number of argments")
+
+    ServerUtil.submitFiles(args[0], args[1:], opts.commit)
+
+if __name__ == '__main__':
+    main()
