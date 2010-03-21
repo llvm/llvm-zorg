@@ -67,10 +67,12 @@ class ClangTestCommand(buildbot.steps.shell.Test):
     numFail = len(grouped.get('FAIL',()))
     numXFail = len(grouped.get('XFAIL',()))
     numXPass = len(grouped.get('XPASS',()))
+    numUnsupported = len(grouped.get('UNSUPPORTED',()))
+    numUnresolved = len(grouped.get('UNRESOLVED',()))
     self.setTestResults(total=numPass + numFail + numXFail + numXPass,
-                        failed=numFail + numXPass,
+                        failed=numFail + numXPass + numUnresolved,
                         passed=numPass + numXFail,
                         warnings=numXFail)
-    if numFail + numXPass:
+    if numFail + numXPass + numUnresolved:
       return buildbot.status.builder.FAILURE
     return buildbot.status.builder.SUCCESS
