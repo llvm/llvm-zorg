@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Machine</key>
+	<dict>
+		<key>Name</key>
+		<string></string>
+		<key>Info</key>
+		<dict>
+			<key>Memory</key>
+			<string>6G</string>
+			<key>Triple</key>
+			<string>i386-apple-darwin9</string>
+		</dict>
+	</dict>
+	<key>Run</key>
+	<dict>
+		<key>End Time</key>
+		<string>2009-04-02T08:59:38Z</string>
+		<key>Info</key>
+		<dict>
+			<key>llvm-revision</key>
+			<string>60300</string>
+			<key>tag</key>
+			<string>test-suite-name</string>
+		</dict>
+		<key>Start Time</key>
+		<string>2009-04-02T01:14:57Z</string>
+	</dict>
+	<key>Tests</key>
+	<array>
+		<dict>
+			<key>Name</key>
+			<string>test.name.in.dotted.notation</string>
+			<key>Info</key>
+			<dict>
+				<key>Compiler</key>
+				<string>gcc</string>
+				<key>Compiler Flags</key>
+				<string>-O2 -g</string>
+			</dict>
+			<key>Data</key>
+			<array>
+				<real>0.122</real>
+				<real>0.125</real>
+			</array>
+		</dict>
+	</array>
+</dict>
+</plist>

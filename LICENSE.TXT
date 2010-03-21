@@ -62,3 +62,5 @@ licenses, and/or restrictions:
 Program             Directory
 -------             ---------
 GTestCommand        zorg/buildbot/commands/GTestCommand.py
+mootools            zorg/lnt/viewer/resources/mootools*
+sorttable.js        zorg/lnt/viewer/resources/sorttable.js
