@@ -10,7 +10,8 @@ zorg = ".."
 # Path to the LNT server.
 zorgURL = "http://llvm.org/perf/"
 
-# The list of available databases, and their properties.
+# The list of available databases, and their properties. At a minimum, there
+# should be a 'default' entry for the default database.
 databases = {
     'default' : { 'path' : '../data/default.db',
                   'showNightlytest' : 1 },
@@ -30,14 +31,14 @@ databases = {
 # the submitted results is matched against the regular expressions to determine
 # which email address to use for the results.
 nt_emailer = {
-    'enabled' : True,
+    'enabled' : False,
     'host' : "llvm.org",
     'from' : "lnt@llvm.org",
 
     # This is a list of (filter-regexp, address) pairs -- it is evaluated in
     # order based on the machine name. This can be used to dispatch different
     # reports to different email address.
-    'to' : [(".*", "llvm-testresults@cs.uiuc.edu")]),
+    'to' : [(".*", "llvm-testresults@cs.uiuc.edu")],
     }
 
 # Enable automatic restart using the wsgi_restart module; this should be off in

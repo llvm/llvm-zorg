@@ -11,7 +11,7 @@ def create_publisher():
     # We expect the config file to be adjacent to the absolute path of
     # the cgi script.
     configPath = os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                          "zorg.cfg")
+                              "zorg.cfg")
     configData = {}
     exec open(configPath) in configData
 
