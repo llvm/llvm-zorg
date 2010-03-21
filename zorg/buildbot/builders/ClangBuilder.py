@@ -15,7 +15,7 @@ from Util import getConfigArgs
 
 def getClangBuildFactory(triple=None, clean=True, test=True, package_dst=None,
                          run_cxx_tests=False, examples=False, valgrind=False,
-                         outOfDir=False, useTwoStage=False,
+                         valgrindLeakCheck=False, outOfDir=False, useTwoStage=False,
                          make='make', jobs="%(jobs)s",
                          stage1_config='Debug', stage2_config='Release',
                          extra_configure_args=[]):
@@ -105,7 +105,10 @@ def getClangBuildFactory(triple=None, clean=True, test=True, package_dst=None,
     clangTestArgs = '-v'
     if valgrind:
         clangTestArgs += ' --vg '
-        clangTestArgs += ' --vg-arg --leak-check=no'
+        if valgrindLeakCheck:
+            clangTestArgs += ' --vg-leak'
+        else:
+            clangTestArgs += ' --vg-arg --leak-check=no'
         clangTestArgs += ' --vg-arg --suppressions=%(builddir)s/llvm/tools/clang/utils/valgrind/x86_64-pc-linux-gnu_gcc-4.3.3.supp'
     extraTestDirs = ''
     if run_cxx_tests:
