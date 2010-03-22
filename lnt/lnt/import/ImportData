@@ -13,6 +13,7 @@ import time
 
 from lnt import formats, viewer
 from lnt.viewer import Util, PerfDB
+from lnt.util import NTEmailReport
 
 def main():
     global opts
@@ -99,7 +100,6 @@ def importFiles(db, files):
                 print "    INFO   : %r = %r" % (ri.key, ri.value)
 
         if opts.emailOnImport and (success or opts.alwaysEmail):
-            import NTEmailReport
             print "\nMAILING RESULTS TO: %r\n" % opts.emailReportTo
             NTEmailReport.emailReport(db, run,
                                       opts.emailReportURL,

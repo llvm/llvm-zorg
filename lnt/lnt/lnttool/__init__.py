@@ -47,6 +47,23 @@ def action_runserver(name, args):
 from create import action_create
 from convert import action_convert
 
+def action_submit(name, args):
+    """submit a test report to the server."""
+
+    from optparse import OptionParser, OptionGroup
+    parser = OptionParser("%%prog %s [options] url files+" % name)
+    parser.add_option("", "--commit", dest="commit", type=int,
+                      default=False)
+
+    (opts, args) = parser.parse_args(args)
+    if len(args) < 2:
+        parser.error("incorrect number of argments")
+
+    from lnt.util import ServerUtil
+    ServerUtil.submitFiles(args[0], args[1:], opts.commit)
+
+###
+
 commands = dict((name[7:], f) for name,f in locals().items()
                 if name.startswith('action_'))
 
