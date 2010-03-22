@@ -27,6 +27,10 @@ zorgURL = %(hosturl)r
 # the web app runs as.
 tmp_dir = %(tmp_dir)r
 
+# Database directory, for easily rerooting the entire set of database. Database
+# paths are resolved relative to the config path + this path.
+db_dir = %(db_dir)r
+
 # The list of available databases, and their properties. At a minimum, there
 # should be a 'default' entry for the default database.
 databases = {
@@ -95,7 +99,7 @@ def action_runserver(config='', hostname=('h','localhost'), port=('p',8000),
 
 
 def action_create(path='', name='LNT', config='lnt.cfg', wsgi='lnt.wsgi',
-                  tmp_dir='tmp', default_db='lnt.db',
+                  tmp_dir='lnt_tmp', db_dir='data', default_db='lnt.db',
                   hostname=platform.uname()[1], hostsuffix='perf'):
     """Create an LLVM nightly test installation"""
 
@@ -112,12 +116,15 @@ def action_create(path='', name='LNT', config='lnt.cfg', wsgi='lnt.wsgi',
     import lnt
     zorg_dir = os.path.dirname(lnt.__file__)
 
+    db_dir_path = os.path.join(basepath, db_dir)
     cfg_path = os.path.join(basepath, config)
-    db_path = os.path.join(basepath, default_db)
+    db_path = os.path.join(db_dir_path, default_db)
     tmp_path = os.path.join(basepath, tmp_dir)
     wsgi_path = os.path.join(basepath, wsgi)
 
     os.mkdir(path)
+    os.mkdir(db_dir_path)
+    os.mkdir(tmp_path)
 
     cfg_version = kConfigVersion
     cfg_file = open(cfg_path, 'w')
@@ -128,8 +135,6 @@ def action_create(path='', name='LNT', config='lnt.cfg', wsgi='lnt.wsgi',
     wsgi_file.write(kWSGITemplate % locals())
     wsgi_file.close()
 
-    os.mkdir(tmp_path)
-
     from lnt.viewer import PerfDB
     db = PerfDB.PerfDB('sqlite:///' + db_path)
     db.commit()
@@ -138,6 +143,7 @@ def action_create(path='', name='LNT', config='lnt.cfg', wsgi='lnt.wsgi',
     print '  configuration file: %s' % cfg_path
     print '  WSGI app          : %s' % wsgi_path
     print '  database file     : %s' % db_path
+    print '  temporary dir     : %s' % tmp_path
     print '  host URL          : %s' % hosturl
     print
     print 'You can execute:'

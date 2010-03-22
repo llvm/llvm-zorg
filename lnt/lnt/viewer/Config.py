@@ -46,20 +46,24 @@ class Config:
 
         zorgDir = os.path.join(baseDir, data['zorg'])
 
+        dbDir = data.get('db_dir', '.')
+        dbDirPath = os.path.join(baseDir, dbDir)
+
         # FIXME: Remove this default.
         tempDir = data.get('tmp_dir', 'viewer/resources/graphs')
 
         return Config(data.get('name', 'LNT'), zorgDir, data['zorgURL'],
-                      os.path.join(baseDir, tempDir),
-                      dict([(k,DBInfo.fromData(baseDir, v))
+                      dbDir, os.path.join(baseDir, tempDir),
+                      dict([(k,DBInfo.fromData(dbDirPath, v))
                                      for k,v in data['databases'].items()]),
                       ntEmailEnabled, ntEmailHost, ntEmailFrom, ntEmailTo)
 
-    def __init__(self, name, zorgDir, zorgURL, tempDir, databases,
+    def __init__(self, name, zorgDir, zorgURL, dbDir, tempDir, databases,
                  ntEmailEnabled, ntEmailHost, ntEmailFrom, ntEmailTo):
         self.name = name
         self.zorgDir = zorgDir
         self.zorgURL = zorgURL
+        self.dbDir = dbDir
         self.tempDir = tempDir
         while self.zorgURL.endswith('/'):
             self.zorgURL = zorgURL[:-1]
