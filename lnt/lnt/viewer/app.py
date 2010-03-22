@@ -8,12 +8,6 @@ def create_publisher(configPath):
     configData = {}
     exec open(configPath) in configData
 
-    # Find the zorg installation dir.
-    zorgDir = os.path.join(os.path.dirname(configPath),
-                           configData.get('zorg', ''))
-    if zorgDir and zorgDir not in sys.path:
-        sys.path.append(zorgDir)
-
     # Optionally enable auto-restart.
     if configData.get('wsgi_restart', False):
         from lnt.viewer import wsgi_restart

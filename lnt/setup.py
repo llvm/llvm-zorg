@@ -26,7 +26,23 @@ setup(
         ],
 
     zip_safe = False,
+
+    # Additional resource extensions we use.
+    #
+    # FIXME: Remove the .ptl entry once we move to Jinja. Note that the files
+    # most likely won't get byte compiled because of how permissions will be
+    # set, unless WSGI app has permissions to write to the install directory. I
+    # can't find a way to force setuptools to treat these as Python modules.
+    package_data = {'lnt.viewer': ['*.ptl',
+                                   'zview/*.ptl',
+                                   'js/*.js',
+                                   'resources/*.css',
+                                   'resources/*.js'],
+                    'lnt.util': ['NTAuxSubmit'],
+                    },
+
     packages = find_packages(),
+
     entry_points = {
         'console_scripts': [
             'lnt = lnt.lnttool:main',

@@ -44,24 +44,21 @@ class Config:
             ntEmailEnabled = False
             ntEmailHost = ntEmailFrom = ntEmailTo = ""
 
-        zorgDir = os.path.join(baseDir, data['zorg'])
-
         dbDir = data.get('db_dir', '.')
         dbDirPath = os.path.join(baseDir, dbDir)
 
         # FIXME: Remove this default.
         tempDir = data.get('tmp_dir', 'viewer/resources/graphs')
 
-        return Config(data.get('name', 'LNT'), zorgDir, data['zorgURL'],
+        return Config(data.get('name', 'LNT'), data['zorgURL'],
                       dbDir, os.path.join(baseDir, tempDir),
                       dict([(k,DBInfo.fromData(dbDirPath, v))
                                      for k,v in data['databases'].items()]),
                       ntEmailEnabled, ntEmailHost, ntEmailFrom, ntEmailTo)
 
-    def __init__(self, name, zorgDir, zorgURL, dbDir, tempDir, databases,
+    def __init__(self, name, zorgURL, dbDir, tempDir, databases,
                  ntEmailEnabled, ntEmailHost, ntEmailFrom, ntEmailTo):
         self.name = name
-        self.zorgDir = zorgDir
         self.zorgURL = zorgURL
         self.dbDir = dbDir
         self.tempDir = tempDir
