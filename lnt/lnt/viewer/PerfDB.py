@@ -7,6 +7,7 @@ import sqlalchemy
 import sqlalchemy.ext.declarative
 import sqlalchemy.orm
 from sqlalchemy import *
+from sqlalchemy.schema import Index
 from sqlalchemy.orm import relation, backref
 from sqlalchemy.orm.collections import attribute_mapped_collection
 
@@ -124,8 +125,8 @@ class Sample(Base):
     __tablename__ = 'Sample'
 
     id = Column("ID", Integer, primary_key=True)
-    run_id = Column("RunID", Integer, ForeignKey('Run.ID'))
-    test_id = Column("TestID", Integer, ForeignKey('Test.ID'))
+    run_id = Column("RunID", Integer, ForeignKey('Run.ID'), index=True)
+    test_id = Column("TestID", Integer, ForeignKey('Test.ID'), index=True)
     value = Column("Value", Float)
 
     run = relation(Run)
@@ -139,6 +140,9 @@ class Sample(Base):
     def __repr__(self):
         return '%s%r' % (self.__class__.__name__,
                          (self.run, self.test, self.value))
+
+# Define an additonal index on (RunID, TestID).
+Index("ix_Sample_RunID_TestID", Sample.run_id, Sample.test_id)
 
 ###
 # PerfDB wrapper, to avoid direct SA dependency when possible.
