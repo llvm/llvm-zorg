@@ -1,17 +1,9 @@
 import os
 import sys
 
-def create_publisher(configPath=None):
+def create_publisher(configPath):
     import warnings
     warnings.simplefilter("ignore", category=DeprecationWarning)
-
-    if configPath is None:
-        # We expect the config file to be adjacent to the absolute path of
-        # the cgi script.
-        #
-        # FIXME: This behavior is deprecated and should be removed.
-        configPath = os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                                  "zorg.cfg")
 
     configData = {}
     exec open(configPath) in configData

@@ -5,9 +5,9 @@ This directory and its subdirectories contain the LLVM nightly test
 infrastructure. This is technically version "3.0" of the LLVM nightly test
 architecture.
 
-LNT is written in Python and implements a (old-school) Quixote web-app,
-available by CGI and WSGI, and utilities for submitting data via LLVM's
-NewNightlyTest.pl in conjunction with LLVM's test-suite repository.
+LNT is written in Python and implements a WSGI web app on top of Quixote, along
+with utilities for submitting data via LLVM's NewNightlyTest.pl in conjunction
+with LLVM's test-suite repository.
 
 The infrastructure has the following layout:
 
@@ -63,13 +63,6 @@ These are the rough steps to get a working LNT installation:
 
     If running in a virtualenv you will need to configure that as well; see the
     `modwsgi wiki <http://code.google.com/p/modwsgi/wiki/VirtualEnvironments>`_.
-
- 5. Add a link or copy of the zorg.cgi app in the appropriate place if you want
-    to use the CGI script. The WSGI app is significantly faster, but currently
-    can't handle submissions.
-
- 6. Create a zorg/lnt/viewer/resources/graphs directory, which the app uses to
-    hold temporary files, and make sure it is writable by the Apache user.
 
 
 Development Instructions
