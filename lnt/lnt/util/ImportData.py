@@ -5,7 +5,7 @@ from lnt.viewer import PerfDB
 from lnt.util import NTEmailReport
 
 def import_and_report(config, db_name, db, file, log, format, commit=False,
-                      show_sample_count=False):
+                      show_sample_count=False, disable_email=False):
     """
     import_file(config, db_name, db, file) -> (success, run, log)
 
@@ -24,6 +24,8 @@ def import_and_report(config, db_name, db, file, log, format, commit=False,
     startTime = time.time()
     try:
         data = formats.read_any(file, format)
+    except KeyboardInterrupt:
+        raise
     except:
         print >>log, 'ERROR: %r: load failed' % file
         return (False, None)
@@ -48,6 +50,8 @@ def import_and_report(config, db_name, db, file, log, format, commit=False,
     importStartTime = time.time()
     try:
         success,run = PerfDB.importDataFromDict(db, data)
+    except KeyboardInterrupt:
+        raise
     except:
         print >>log, 'ERROR: %r: import failed' % file
         return (False, None)
@@ -61,7 +65,7 @@ def import_and_report(config, db_name, db, file, log, format, commit=False,
         for ri in run.info.values():
             print >>log, "    INFO   : %r = %r" % (ri.key, ri.value)
 
-    if config.ntEmailEnabled:
+    if not disable_email and config.ntEmailEnabled:
         print >>log, "\nMAILING RESULTS TO: %r\n" % toAddress
         NTEmailReport.emailReport(db, run,
                                   "%s/db_%s/nightlytest/" % (config.zorgURL,

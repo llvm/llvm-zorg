@@ -21,6 +21,8 @@ def action_import(name, args):
                       default=False)
     parser.add_option("", "--show-sample-count", dest="showSampleCount",
                       action="store_true", default=False)
+    parser.add_option("", "--no-email", dest="noEmail",
+                      action="store_true", default=False)
     (opts, args) = parser.parse_args(args)
 
     if len(args) < 2:
@@ -49,4 +51,5 @@ def action_import(name, args):
     for file in args:
         success, run = ImportData.import_and_report(
             config, opts.database, db, file, sys.stdout,
-            opts.format, opts.commit, opts.showSampleCount)
+            opts.format, opts.commit, opts.showSampleCount,
+            opts.noEmail)
