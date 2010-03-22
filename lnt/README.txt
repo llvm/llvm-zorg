@@ -60,8 +60,10 @@ These are the rough steps to get a working LNT installation:
 
  4. Add the zorg.wsgi app to your Apache configuration. You should set also
     configure the WSGIDaemonProcess and WSGIProcessGroup variables if not
-    already done. If running in a virtualenv you will need to configure that as
-    well.
+    already done.
+
+    If running in a virtualenv you will need to configure that as well; see the
+    `modwsgi wiki <http://code.google.com/p/modwsgi/wiki/VirtualEnvironments>`_.
 
  5. Add a link or copy of the zorg.cgi app in the appropriate place if you want
     to use the CGI script. The WSGI app is significantly faster, but currently
@@ -69,3 +71,29 @@ These are the rough steps to get a working LNT installation:
 
  6. Create a zorg/lnt/viewer/resources/graphs directory, which the app uses to
     hold temporary files, and make sure it is writable by the Apache user.
+
+
+Development Instructions
+------------------------
+
+Developing LNT should be done under a virtualenv (most likely in 'develop'
+mode). Currently, the tests require:
+
+ 1. 'lit', the LLVM test runner, is available.
+
+ 2. The hosted application is live at http://localhost/perf/.
+
+ 3. lnt/tests/lit.cfg should be modified to have the correct '%email_host' and
+    '%email_to' substitutions.
+
+To run the tests, use, e.g.,
+
+  lit -sv $ROOT/lnt/tests
+
+or
+
+  lit -sv $ZORG_ROOT/test
+
+to run the zorg and LNT tests all at once.
+
+Note that currently the email test will actually send you email.

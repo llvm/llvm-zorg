@@ -1,7 +1,7 @@
 # RUN: rm -f %t.db
 # RUN: sqlite3 %t.db ".read %src_root/db/CreateTables.sql"
 
-# RUN: %src_root/import/ImportData --show-sample-count \
+# RUN: %src_root/lnt/import/ImportData --show-sample-count \
 # RUN:     %t.db %S/Inputs/sample-a-small.plist |\
 # RUN:   FileCheck -check-prefix=IMPORT-A-1 %s
 
@@ -10,7 +10,7 @@
 # IMPORT-A-1: ADDED: 90 tests
 # IMPORT-A-1: ADDED: 90 samples
 
-# RUN: %src_root/import/ImportData --show-sample-count \
+# RUN: %src_root/lnt/import/ImportData --show-sample-count \
 # RUN:     %t.db %S/Inputs/sample-b-small.plist |\
 # RUN:   FileCheck -check-prefix=IMPORT-B %s
 
@@ -19,7 +19,7 @@
 # IMPORT-B: ADDED: 0 tests
 # IMPORT-B: ADDED: 90 samples
 
-# RUN: %src_root/import/ImportData --show-sample-count \
+# RUN: %src_root/lnt/import/ImportData --show-sample-count \
 # RUN:     %t.db %S/Inputs/sample-a-small.plist |\
 # RUN:   FileCheck -check-prefix=IMPORT-A-2 %s
 
@@ -32,7 +32,7 @@
 # RUN: python %s %t.db
 
 import datetime, sys
-from viewer.PerfDB import PerfDB, Run, Test
+from lnt.viewer.PerfDB import PerfDB, Run, Test
 
 db = PerfDB(sys.argv[1])
 
