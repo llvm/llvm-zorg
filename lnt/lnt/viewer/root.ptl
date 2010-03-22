@@ -51,7 +51,7 @@ class RootDirectory(Resolving, Directory):
 
         return db
 
-    def getHeader [html] (self, title, pathToRoot,
+    def getHeader [html] (self, title, pathToRoot, components=None,
                           addSorttableJS=True,
                           addFormCSS=False,
                           addPopupJS=False,
@@ -85,6 +85,11 @@ class RootDirectory(Resolving, Directory):
 </script>
 """ % (addJSScript,)
 
+        if components:
+            component_title = ' : %s' %(
+                ' : '.join(short_name for short_name,_ in components))
+        else:
+            component_title = ''
         """
         <link rel="stylesheet" href="%s/resources/style.css" type="text/css" />
         """ % (pathToRoot,)
@@ -94,9 +99,9 @@ class RootDirectory(Resolving, Directory):
             """ % (pathToRoot,)
         """
         <link rel="icon" type="image/png" href="%s/favicon.ico">
-        <title>%s</title>
+        <title>%s%s - %s</title>
         </head>
-        """ % (pathToRoot, title)
+        """ % (pathToRoot, self.config.name, component_title, title)
 
         """\
         <body"""
@@ -135,6 +140,12 @@ class RootDirectory(Resolving, Directory):
         </div>
         """
 
+        if components is not None:
+            """<h2><a href="%s">%s</a>""" % (pathToRoot, self.config.name)
+            for short_name,path in components:
+                """ : <a href="%s/%s">%s</a>""" % (pathToRoot,path,short_name)
+            """ - %s</h2>""" % title
+
     def getFooter [html] (self):
         db_log = getattr(quixote.get_request(), str('db_log'), None)
         if db_log:
@@ -155,13 +166,10 @@ class RootDirectory(Resolving, Directory):
                current - quixote.get_request().start_time)
 
     def _q_index [html] (self):
-        self.getHeader("zorg", ".")
+        self.getHeader("Overview", ".",
+                       components=(),)
 
-        """
-        <h2>LLVM Testing DB</h2>
-        """
-
-        # Available UIs
+        # Available UIs.
 
         if self.dbInfo.showNightlytest:
             """
@@ -181,14 +189,11 @@ class RootDirectory(Resolving, Directory):
         self.getFooter()
 
     def browse [html] (self):
-        self.getHeader("zorg", ".", addSorttableJS=False)
-
         # Get a DB connection.
         db = self.getDB()
 
-        """
-        <h2>LLVM Testing DB</h2>
-        """
+        self.getHeader("Database Browser", ".", components=(),
+                       addSorttableJS=False)
 
         # List machines.
         """
@@ -273,10 +278,7 @@ class RootDirectory(Resolving, Directory):
         form.add_submit("submit", "Submit")
 
         def render [html] ():
-            self.getHeader("Submit Run", ".", addFormCSS=1)
-            """
-            <h1>Submit Runs</h1>
-            """
+            self.getHeader("Submit Run", ".", components=(), addFormCSS=1)
             form.render()
             self.getFooter()
 
@@ -342,26 +344,13 @@ class RootDirectory(Resolving, Directory):
 
         def result [plain] ():
             res,stdout,stderr = process()
-            if True:
-                """\
+            """\
 STATUS: %s
 
 OUTPUT:
 %s
 ERRORS:
 %s""" % (res, stdout, stderr)
-            else:
-                self.getHeader("Data Received", "../..")
-                """
-                <h3>Result</h3>
-                %s
-                <h3>Output</h3>
-                <pre>\n%s</pre>
-                <h3>Errors</h3>
-                <pre>\n%s</pre>
-                </body>
-                """ % (res, stdout, stderr)
-                self.getFooter()
 
         if not form.is_submitted() or form.has_errors():
             return render()

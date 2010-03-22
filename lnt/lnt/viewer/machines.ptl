@@ -26,11 +26,8 @@ class MachineUI(Directory):
 
         m = db.getMachine(self.id)
 
-        self.root.getHeader("zorg:machine:%d" % self.id, '../..')
-
-        """
-        <h2>Machine: %s:%d</h2>
-        """ % (m.name, m.number)
+        self.root.getHeader("Machine: %s:%d" % (m.name,m.number), '../..',
+                            components=(('browse','browse'),))
 
         # Show the machine info dictionary.
         """

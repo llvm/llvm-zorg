@@ -26,12 +26,8 @@ class RunUI(Directory):
         r = db.getRun(self.id)
         m = db.getMachine(r.machine_id)
 
-        self.root.getHeader("zorg:run:%d" % self.id, '../..')
-
-        """
-        <body>
-        <h2>Run: %d</h2>
-        """ % (r.id)
+        self.root.getHeader("Run: %s" % r.id, '../..',
+                            components=(('browse','browse'),))
 
         """
         <table border=1 cellborder=1>

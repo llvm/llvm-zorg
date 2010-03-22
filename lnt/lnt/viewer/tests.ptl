@@ -25,12 +25,8 @@ class TestUI(Directory):
 
         t = db.getTest(self.id)
 
-        self.root.getHeader("zorg:test:%d" % self.id, '../..')
-
-        """
-        <body>
-        <h2>Test: %s</h2>
-        """ % (t.name,)
+        self.root.getHeader("Test: %s" % t.name, '../..',
+                            components=(('browse','browse'),))
 
         # Show the test info dictionary.
         """

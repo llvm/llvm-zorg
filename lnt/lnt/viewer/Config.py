@@ -44,14 +44,16 @@ class Config:
             ntEmailEnabled = False
             ntEmailHost = ntEmailFrom = ntEmailTo = ""
 
-        return Config(os.path.join(baseDir, data['zorg']),
+        return Config(data.get('name', 'LNT'),
+                      os.path.join(baseDir, data['zorg']),
                       data['zorgURL'],
                       dict([(k,DBInfo.fromData(baseDir, v))
                             for k,v in data['databases'].items()]),
                       ntEmailEnabled, ntEmailHost, ntEmailFrom, ntEmailTo)
 
-    def __init__(self, zorgDir, zorgURL, databases,
+    def __init__(self, name, zorgDir, zorgURL, databases,
                  ntEmailEnabled, ntEmailHost, ntEmailFrom, ntEmailTo):
+        self.name = name
         self.zorgDir = zorgDir
         self.zorgURL = zorgURL
         self.tempDir = os.path.join(zorgDir, 'viewer', 'resources', 'graphs')

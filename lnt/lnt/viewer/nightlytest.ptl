@@ -29,12 +29,6 @@ class NightlyTestRunUI(NTStyleBrowser.TestRunUI):
     def getTags(self):
         return (None, 'nightlytest')
 
-    def getTitle(self):
-        return 'LLVM Nightly Test Results'
-
-    def getHeaderTitle(self):
-        return 'LLVM Nightly Test Results'
-
     def getParameters(self):
         return ()
 
@@ -436,16 +430,14 @@ class NightlyTestRunUI(NTStyleBrowser.TestRunUI):
     }
     """ % (plots,)
 
-        self.root.getHeader("Nightly Test Results", "../..",
+        self.root.getHeader("Results Graph", "../..",
+                            components=(('nightlytest','nightlytest'),
+                                        ('machine',
+                                         'nightlytest/machines/%d'%machine.id),
+                                        ('run', 'nightlytest/%d' % run.id)),
                             addPopupJS=True, addGraphJS=True,
                             addJSScript=graph_init,
                             onload='init()')
-
-        """
-        <center>
-          <h2>LLVM Nightly Test Results</h2>
-        </center>
-        """
 
         # Graph2D based graph.
         """
@@ -522,29 +514,18 @@ class NightlyTestMachineUI(Directory):
             raise TraversalError(str(exc))
 
     def _q_index [html] (self):
-        self.root.getHeader("Nightly Test Results", "../../..",
-                            addPopupJS=True)
-
         # Get a DB connection.
         db = self.root.getDB()
 
         machine = db.getMachine(self.id)
 
+        self.root.getHeader("Machine: %s:%d" % (machine.name,machine.number),
+                            "../../..",
+                            components=(('nightlytest','nightlytest'),),
+                            addPopupJS=True)
+
         # Find all runs on this machine.
         runs = db.runs(machine).order_by(Run.start_time.desc()).all()
-
-        """
-        <center>
-          <h1>LLVM Nightly Test Results</h1>
-          <table>
-            <tr>
-              <td align=right>Machine:</td>
-              <td>%s:%d</td>
-            </tr>
-          </table>
-        </center>
-        <p>
-        """ % (machine.name, machine.number)
 
         # FIXME: List previous machines with the same nickname?
         """
@@ -652,15 +633,16 @@ class NightlyTestProgramUI(Directory):
             raise TraversalError(str(exc))
 
     def _q_index [html] (self):
-        self.root.getHeader("Nightly Test Results", "../../..",
-                            addPopupJS=True)
-
         # Get a DB connection.
         db = self.root.getDB()
 
         # Get the test we use to derive the name.
         t = db.getTest(id = self.testID)
         programName = t.name.split(str('.'), 3)[1]
+
+        self.root.getHeader("Program: %s" % programName, "../../..",
+                            components=(('nightlytest','nightlytest'),),
+                            addPopupJS=True)
 
         # Collect runs within the last 48 hours of the most recent report.
         import datetime
@@ -671,19 +653,6 @@ class NightlyTestProgramUI(Directory):
         runs = db.session.query(Run).\
             filter(Run.start_time >= cutoff).\
             order_by(Run.start_time.desc()).all()
-
-        """
-        <center>
-          <h1>LLVM Nightly Test Results</h1>
-          <table>
-            <tr>
-              <td align=right>Program:</td>
-              <td>%s</td>
-            </tr>
-          </table>
-        </center>
-        <p>
-        """ % (programName,)
 
         self.getAllResults(db, programName, runs)
 
@@ -795,12 +764,6 @@ class NightlyTestDirectory(NTStyleBrowser.RecentMachineDirectory):
 
     def getTags(self):
         return (None, 'nightlytest')
-
-    def getTitle(self):
-        return 'Nightly Test'
-
-    def getHeaderTitle(self):
-        return 'LLVM Nightly Test'
 
     def getTestRunUI(self, component):
         return NightlyTestRunUI(self.root, component)

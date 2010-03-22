@@ -172,12 +172,9 @@ function init() {
 }
 """ % locals()
 
-        self.root.getHeader("zorg", "..", addGraphJS=True, addJSScript=script,
+        self.root.getHeader("ZView", "..", components=(),
+                            addGraphJS=True, addJSScript=script,
                             onload='init()')
-
-        """
-        <h2>ZView</h2>
-        """
 
         """
         <h3>Test Selection</h3>

@@ -89,12 +89,8 @@ class TestRunUI(Directory):
         return summary
 
     def _q_index [html] (self):
-        self.root.getHeader(self.getTitle(), "../..",
-                            addPopupJS=True, addFormCSS=True)
-
-        request = quixote.get_request()
-        full = request.form.get('full', '')
-        allResults = not not full
+        # Get a DB connection.
+        db = self.root.getDB()
 
         # Get the filtering form.
         form = quixote.form.Form(method=str("get"))
@@ -106,15 +102,22 @@ class TestRunUI(Directory):
         form.add_submit("submit", "Update")
         Util.addOtherFormValues(form)
 
-        # Get a DB connection.
-        db = self.root.getDB()
         run,runs,compareTo = self.getInfo(db)
         machine = run.machine
         summary = self.getRunSummary(db, run, compareTo, form)
 
+        self.root.getHeader('Run Results', "../..",
+                            components=(('nightlytest','nightlytest'),
+                                        ('machine',
+                                         'nightlytest/machines/%d'%machine.id)),
+                            addPopupJS=True, addFormCSS=True)
+
+        request = quixote.get_request()
+        full = request.form.get('full', '')
+        allResults = not not full
+
         """
         <center>
-          <h1>%s</h1>
           <table>
             <tr>
               <td align=right>Machine:</td>
@@ -124,8 +127,7 @@ class TestRunUI(Directory):
               <td align=right>Run:</td>
               <td>%s</td>
             </tr>
-        """ % (self.getHeaderTitle(), machine.name, machine.number,
-               run.start_time)
+        """ % (machine.name, machine.number, run.start_time)
         if compareTo:
             """
             <tr>
@@ -266,12 +268,6 @@ class TestRunUI(Directory):
     def getTags(self):
         abstract
 
-    def getTitle(self):
-        abstract
-
-    def getHeaderTitle(self):
-        abstract
-
     def getParameters(self):
         abstract
 
@@ -319,29 +315,19 @@ class RecentMachineDirectory(Directory):
         Directory.__init__(self)
         self.root = root
 
-    def getTitle(self):
-        abstract
-
-    def getHeaderTitle(self):
-        abstract
-
     def getTags(self):
         abstract
 
     def _q_index [plain] (self):
-        self.root.getHeader(self.getTitle(), "..")
-
         # Get a DB connection
         db = self.root.getDB()
 
+        self.root.getHeader('Overview', "..",
+                            components=(('nightlytest','nightlytest'),))
+
         # Find recent runs.
         """
-        <center>
-          <h2>%s</h2>
-        </center>
-        """ % (self.getHeaderTitle(),)
-
-        """
+        <center><h3>Submission Overview</h3></center>
         <table width="100%%">
           <tr>
             <td valign="top" width="50%">
