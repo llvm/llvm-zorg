@@ -285,92 +285,60 @@ class RootDirectory(Resolving, Directory):
             form.render()
             self.getFooter()
 
-        def process():
-            import plistlib
-            import tempfile
-
-            # Get the input data.
-            input_file = form.get_widget('file')
-            file_value = input_file.parse()
-
-            input_data = form.get_widget('input_data')
-            data_value = input_data.parse()
-
-            if ((file_value is None and data_value is None) or
-                (file_value is not None and data_value is not None)):
-                raise quixote.errors.QueryError(
-                       "Must supply either an input file or input text data")
-
-            if file_value is not None:
-                data_value = file_value.fp.read()
-                file_value.fp.close()
-
-            # Stash a copy of the submission.
-            prefix = time.strftime("data-%Y-%m-%d_%H-%M-%S")
-            fd,path = tempfile.mkstemp(prefix=prefix,
-                                       suffix='.plist',
-                                       dir=self.config.tempDir)
-            os.write(fd, data_value)
-            os.close(fd)
-
-            # Find the email address for this machine's results.
-            toAddress = None
-            if isinstance(self.config.ntEmailTo, str):
-                toAddress = self.config.ntEmailTo
-            else:
-                # Find the machine name.
-                #
-                # FIXME: This is really stupid, we shouldn't load the plist
-                # twice just for this.
-                import plistlib
-                data = plistlib.readPlist(path)
-                machineName = data.get('Machine',{}).get('Name')
-
-                for pattern,addr in self.config.ntEmailTo:
-                    if re.match(pattern, machineName):
-                        toAddress = addr
-                        break
-                else:
-                    return 1,"","error: unable to match machine name for test results email address!"
-
-            # Execute ImportData to actually do the import.
-            #
-            # FIXME: This is both broken and annoying. We want to do this
-            # internally to fix the FIXME above and keep it more readable, we
-            # want to serialize imports to keep SQLite happy and avoiding
-            # dropping submissions.
-            import lnt, subprocess
-            lnt_dir = os.path.dirname(lnt.__file__)
-            p = subprocess.Popen([os.path.join(lnt_dir, "import/ImportData"),
-                                  "--commit=%s" % form['commit'],
-                                  "--email-on-import=%s" % int(self.config.ntEmailEnabled),
-                                  "--email-base-url=%s/db_%s/nightlytest/" % (self.config.zorgURL,
-                                                                              self.dbName),
-                                  "--email-host=%s" % self.config.ntEmailHost,
-                                  "--email-from=%s" % self.config.ntEmailFrom,
-                                  "--email-to=%s" % toAddress,
-                                  "--always-email",
-                                  self.dbInfo.path,
-                                  path],
-                                 stdout=subprocess.PIPE,
-                                 stderr=subprocess.PIPE)
-            stdout,stderr = p.communicate(None)
-            res = p.wait()
-            return res,stdout,stderr
-
-        def result [plain] ():
-            res,stdout,stderr = process()
+        def result [plain] (success, run, log):
             """\
-STATUS: %s
+STATUS: %d
 
 OUTPUT:
 %s
-ERRORS:
-%s""" % (res, stdout, stderr)
+""" % (not run, log.getvalue())
 
         if not form.is_submitted() or form.has_errors():
             return render()
-        return result()
+
+        import plistlib
+        import tempfile
+        from lnt.util import ImportData
+        from StringIO import StringIO
+
+        commit = int(form.get_widget('commit').parse())
+
+        # Get the input data.
+        input_file = form.get_widget('file')
+        file_value = input_file.parse()
+
+        input_data = form.get_widget('input_data')
+        data_value = input_data.parse()
+
+        if ((file_value is None and data_value is None) or
+            (file_value is not None and data_value is not None)):
+            raise quixote.errors.QueryError(
+                   "Must supply either an input file or input text data")
+
+        if file_value is not None:
+            data_value = file_value.fp.read()
+            file_value.fp.close()
+
+        # Stash a copy of the raw submission.
+        prefix = time.strftime("data-%Y-%m-%d_%H-%M-%S")
+        fd,path = tempfile.mkstemp(prefix=prefix,
+                                   suffix='.plist',
+                                   dir=self.config.tempDir)
+        os.write(fd, data_value)
+        os.close(fd)
+
+        # Get a DB connection.
+        db = self.getDB()
+
+        # Import the data.
+        #
+        # FIXME: Gracefully handle formats failures and DOS attempts. We
+        # should at least reject overly large inputs.
+        log = StringIO()
+        success, run = ImportData.import_and_report(
+            self.config, self.dbName, db, path, log, '<auto>', commit)
+
+        return result(success, run, log)
 
     def favicon_ico(self):
         response = get_response()

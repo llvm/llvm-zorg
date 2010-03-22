@@ -313,7 +313,7 @@ def importDataFromDict(db, data):
                                      runData.get('End Time',''),
                                      runData.get('Info',{}).items())
     if not inserted:
-        return False,(machine,run)
+        return False,run
 
     # Batch load the set of tests instead of repeatedly querying to unique.
     #
@@ -355,8 +355,7 @@ def importDataFromDict(db, data):
     db.addSamples([(run.id, test_id, value)
                    for test_id,testData in zip(test_ids, testsData)
                    for value in testData['Data']])
-
-    return True,(machine,run)
+    return True,run
 
 def test_sa_db(dbpath):
     if not dbpath.startswith('mysql://'):

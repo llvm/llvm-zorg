@@ -46,6 +46,7 @@ def action_runserver(name, args):
 
 from create import action_create
 from convert import action_convert
+from import_data import action_import
 
 def action_submit(name, args):
     """submit a test report to the server."""
@@ -81,6 +82,9 @@ def main():
     import sys
 
     if len(sys.argv) < 2 or sys.argv[1] not in commands:
+        if len(sys.argv) >= 2:
+            print >>sys.sterr,"error: invalid command %r\n" % sys.argv[1]
+
         usage()
 
     cmd = sys.argv[1]

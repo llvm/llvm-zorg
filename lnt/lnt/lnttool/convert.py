@@ -18,7 +18,6 @@ def action_convert(name, args):
 
     from optparse import OptionParser, OptionGroup
     from lnt import formats
-    global parser
     parser = OptionParser("%%prog %s [options] [<input>, [<output>]]" % name)
     parser.add_option("", "--from", dest="inputFormat", metavar="NAME",
                       help="input format name [%default]", default='<auto>',
