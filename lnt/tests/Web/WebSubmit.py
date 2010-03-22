@@ -1,5 +1,5 @@
 # RUN: %src_root/lnt/import/SubmitData %base_url/submitRun \
-# RUN:   ../DB/Inputs/sample-a-small.plist > %t.log
+# RUN:   %S/../DB/Inputs/sample-a-small.plist > %t.log
 # RUN: FileCheck %s < %t.log
 
 # CHECK: STATUS: 0

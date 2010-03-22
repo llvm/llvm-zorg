@@ -10,11 +10,9 @@ import os
 import plistlib
 import sys
 import time
-sys.path.append(os.path.join(os.path.dirname(__file__),'../'))
 
-import viewer
-from viewer import Util
-from viewer import PerfDB
+from lnt import viewer
+from lnt.viewer import Util, PerfDB
 import NightlytestReader
 import AppleOpenSSLReader
 

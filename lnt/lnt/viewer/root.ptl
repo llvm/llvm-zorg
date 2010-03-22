@@ -339,9 +339,9 @@ class RootDirectory(Resolving, Directory):
             # internally to fix the FIXME above and keep it more readable, we
             # want to serialize imports to keep SQLite happy and avoiding
             # dropping submissions.
-            import subprocess
-            p = subprocess.Popen([os.path.join(self.config.zorgDir,
-                                               "import/ImportData"),
+            import lnt, subprocess
+            lnt_dir = os.path.dirname(lnt.__file__)
+            p = subprocess.Popen([os.path.join(lnt_dir, "import/ImportData"),
                                   "--commit=%s" % form['commit'],
                                   "--email-on-import=%s" % int(self.config.ntEmailEnabled),
                                   "--email-base-url=%s/db_%s/nightlytest/" % (self.config.zorgURL,

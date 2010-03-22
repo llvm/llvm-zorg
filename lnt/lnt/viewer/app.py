@@ -16,11 +16,11 @@ def create_publisher(configPath):
 
     # Optionally enable auto-restart.
     if configData.get('wsgi_restart', False):
-        from viewer import wsgi_restart
+        from lnt.viewer import wsgi_restart
         wsgi_restart.track(configPath)
         wsgi_restart.start()
 
-    from viewer import publisher
+    from lnt.viewer import publisher
     return publisher.create_publisher(configPath, configData, threaded=True)
 
 def create_app(cfg_path=None):

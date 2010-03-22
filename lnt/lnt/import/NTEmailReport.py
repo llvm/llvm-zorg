@@ -9,12 +9,11 @@ Command line tool for sending an LNT email report.
 import os
 import smtplib
 import sys
-sys.path.append(os.path.join(os.path.dirname(__file__),'../'))
 
 import StringIO
-import viewer
-from viewer import PerfDB
-from viewer.NTUtil import *
+from lnt import viewer
+from lnt.viewer import PerfDB
+from lnt.viewer.NTUtil import *
 
 def main():
     global opts

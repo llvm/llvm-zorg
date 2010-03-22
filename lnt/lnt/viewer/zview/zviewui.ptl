@@ -7,8 +7,8 @@ Playground for AJAXy interface to nightly test data.
 from quixote.directory import Directory
 from quixote.html import htmltext
 
-from viewer.PerfDB import Machine, Run, Sample, Test
-from viewer import NTUtil
+from lnt.viewer.PerfDB import Machine, Run, Sample, Test
+from lnt.viewer import NTUtil
 
 from sqlalchemy import func
 
