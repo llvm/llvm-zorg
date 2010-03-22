@@ -1,17 +1,26 @@
-#!/usr/bin/env python
-
 """
 Data converter from the llvm/utils/NewNightlyTest.pl report file format
 (*-sentdata.txt) to the LNT plist format.
 """
 
-# FIXME: Refactor data conversion code.
-
 import re
 
 kDataKeyStart = re.compile('(.*)  =>(.*)')
 
-def loadSentData(path):
+def _matches_format(path_or_file):
+    if isinstance(path_or_file, str):
+        path_or_file = open(path_or_file)
+
+    # Assume this is in nightlytes format if the first line matches the
+    # key-value format.
+    for ln in path_or_file:
+        m = kDataKeyStart.match(ln)
+        if m:
+            return True
+        return False
+
+        
+def _load_data(path_or_file):
     def parseDGResults(text):
         results = {}
         if 'Dejagnu skipped by user choice' in text:
@@ -22,13 +31,17 @@ def loadSentData(path):
             results[result].append(value)
         return results
 
+    if isinstance(path_or_file, str):
+        path_or_file = open(path_or_file)
+
     basename = 'nightlytest'
 
     # Guess the format (server side or client side) based on the first
     # character.
-    isServerSide = (open(path).read(1) == '\'')
+    f = path_or_file
+    isServerSide = (f.read(1) == '\'')
+    f.seek(0)
 
-    f = open(path)
     data = {}
 
     current = None
@@ -224,26 +237,6 @@ def loadSentData(path):
              'Tests' : tests,
              'Group Info' : groupInfo }
 
-def convertNTData(inputPath, outputPath):
-    """convertNTData - Convert a nightlytest "sentdata.txt" file into a zorg
-    plist file."""
-    import plistlib
-
-    data = loadSentData(inputPath)
-    plistlib.writePlist(data, outputPath)
-
-def main():
-    global opts
-    from optparse import OptionParser
-    parser = OptionParser("usage: %prog file output")
-    opts,args = parser.parse_args()
-
-    if len(args) != 2:
-        parser.error("incorrect number of argments")
-
-    file,output = args
-
-    convertNTData(file, output)
-
-if __name__=='__main__':
-    main()
+format = { 'name' : 'nightlytest',
+           'predicate' : _matches_format,
+           'read' : _load_data }

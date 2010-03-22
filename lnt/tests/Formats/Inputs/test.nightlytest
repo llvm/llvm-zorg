@@ -1,0 +1,58 @@
+cvsaddedfiles  => 
+cvsuserupdatelist  => 
+all_tests  => TEST-PASS: compile /MultiSource/Applications/aha/aha
+TEST-PASS: compile /MultiSource/Applications/aha/aha
+
+llcbeta_options  => 
+
+cvsusercommitlist  => 
+warnings_added  => 
+new_tests  => 
+starttime  => 2010-03-20 05:23:59
+
+dejagnutests_log  => 
+buildstatus  => OK
+multisource_programstable  => Program,GCCAS,Bytecode,LLC compile,LLC-BETA compile,JIT codegen,GCC,CBE,LLC,LLC-BETA,JIT,GCC/CBE,GCC/LLC,GCC/LLC-BETA,LLC/LLC-BETA
+Applications/aha/aha,0.0326,9696,0.0448,*,*, 2.7800,*, 2.1700,*,*,n/a,1.28,n/a,n/a
+
+warnings  => 
+dejagnutime_cpu  => 0.0
+cvscheckouttime_wall  => 22.86
+cvsremovedfiles  => 
+cvscheckouttime_cpu  => 0
+unexpfail_tests  => 
+gcc_version  => i686-apple-darwin10-gcc-4.2.1 (GCC) 4.2.1 (Apple Inc. build 5659)
+buildtime_wall  => 229.26
+build_data  =>
+
+buildtime_cpu  => 1458.92
+removed_tests  => 
+dejagnutime_wall  => 0.0
+o_file_sizes  => 
+configtime_cpu  => 20.04
+target_triple  => x86_64-apple-darwin10
+warnings_removed  => 
+cvs_file_count  => 0
+machine_data  => uname: Darwin lordcrumb.apple.com 10.2.0 Darwin Kernel Version 10.2.0: Tue Nov  3 10:37:10 PST 2009; root:xnu-1486.2.11~1/RELEASE_I386 i386
+hardware: i386
+os: Darwin 10.2.0
+name: lordcrumb.apple.com
+date: 2010-03-20
+time: 06:41:16
+
+cvsmodifiedfiles  => 
+a_file_sizes  => 
+externalsource_programstable  =>
+
+dejagnutests_results  => Dejagnu skipped by user choice.
+configtime_wall  => 21.38
+endtime  => 2010-03-20 06:41:16
+
+nickname  => lc-01-clang-i386-apple-darwin10
+singlesource_programstable  =>
+
+passing_tests  => 
+expfail_tests  => 
+lines_of_code  => 
+cvs_dir_count  => 0
+

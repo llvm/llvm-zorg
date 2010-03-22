@@ -45,6 +45,7 @@ def action_runserver(name, args):
                False, None, 1, opts.threaded, opts.processes)
 
 from create import action_create
+from convert import action_convert
 
 commands = dict((name[7:], f) for name,f in locals().items()
                 if name.startswith('action_'))

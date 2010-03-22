@@ -1,3 +1,7 @@
+"""
+Converter for a custom format with the output of OpenSSL test runs.
+"""
+
 import os
 
 def parseOpenSSLFile(path):
@@ -23,7 +27,17 @@ def parseOpenSSLFile(path):
 
     return data
 
-def loadData(path):
+def _matches_format(path_or_file):
+    # If this is a file, we definitely can't load it.
+    if not isinstance(path_or_file,str):
+        return False
+
+    # Assume an input matches this format if any of the key files exists.
+    return (os.path.exists(os.path.join(path_or_file, 'svn-revision')) or
+            os.path.exists(os.path.join(path_or_file, 'start.timestamp')) or
+            os.path.exists(os.path.join(path_or_file, 'finished.timestamp')))
+                     
+def _load_data(path):
     # Look for svn-revision and timestamps.
 
     llvmRevision = ''
@@ -92,23 +106,6 @@ def loadData(path):
              'Tests' : tests,
              'Group Info' : groupInfo }
 
-def main():
-    import plistlib
-    import sys
-
-    global opts
-    from optparse import OptionParser
-    parser = OptionParser("usage: %prog raw-data-path output")
-    opts,args = parser.parse_args()
-
-    if len(args) != 2:
-        parser.error("incorrect number of argments")
-
-    file,output = args
-
-    data = loadData(file)
-
-    plistlib.writePlist(data, output)
-
-if __name__=='__main__':
-    main()
+format = { 'name' : 'apple_openssl',
+           'predicate' : _matches_format,
+           'read' : _load_data }

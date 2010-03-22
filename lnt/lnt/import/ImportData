@@ -11,10 +11,8 @@ import plistlib
 import sys
 import time
 
-from lnt import viewer
+from lnt import formats, viewer
 from lnt.viewer import Util, PerfDB
-import NightlytestReader
-import AppleOpenSSLReader
 
 def main():
     global opts
@@ -31,8 +29,8 @@ def main():
     parser.add_option("", "--email-to", dest="emailReportTo", type=str,
                       default=None)
     parser.add_option("", "--format", dest="format",
-                      choices=('plist','nightlytest','apple_openssl'),
-                      default='plist')
+                      choices=formats.format_names + ['<auto>'],
+                      default='<auto>')
     parser.add_option("", "--commit", dest="commit", type=int,
                       default=True)
     parser.add_option("", "--show-sql", dest="showSQL", action="store_true",
@@ -62,13 +60,9 @@ def main():
     print 'TOTAL IMPORT TIME: %.2fs' % (time.time() - startTime,)
 
 def importFiles(db, files):
-    importer = { 'plist' : plistlib.readPlist,
-                 'nightlytest' : NightlytestReader.loadSentData,
-                 'apple_openssl' : AppleOpenSSLReader.loadData }[opts.format]
-
     def consumer(file):
         try:
-            return importer(file)
+            return formats.read_any(file, opts.format)
         except KeyboardInterrupt:
             raise
         except:

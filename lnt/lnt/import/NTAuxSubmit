@@ -4,15 +4,17 @@
 Command line tool for submitting to a LNT server.
 
 This script is explicitly designed to work with llvm/utils/NewNightlyTest.pl's
--submit-aux argument. It simply converts the data and submits it to the llvm.org
-nightly test server.
+-submit-aux argument. It simply uploads the data to the server, and assumes the
+server will sort out any input conversion issues.
+
+This script should be totally free-standing; it is designed so users can svn
+export it directly from the LLVM repository as part of their submission scripts.
 """
 
-# FIXME: Roll into lnttool and kill.
-
+import plistlib
 import sys
-import NightlytestReader
-import ServerUtil
+import urllib
+import urllib2
 
 def main():
     global opts
@@ -20,7 +22,6 @@ def main():
     parser = OptionParser("usage: %prog {nightlytest sentdata.txt}*")
     parser.add_option("", "--commit", dest="commit", type=int,
                       default=True)
-    parser.add_option("", "--no-convert", dest="noConvert")
 
     # FIXME: It would be nice to support an easy mechanism for localized
     # instances of the LNT infrastructure to default to the correct server for
@@ -36,17 +37,20 @@ def main():
     for inputFile in args:
         print '%s: note: submitting %s' % (sys.argv[0], inputFile)
 
-        if opts.noConvert:
-            plistPath = inputFile
-        else:
-            # Convert to the zorg format.
-            #
-            # FIXME: Avoid temp file.
-            plistPath = "/tmp/t.plist"
-            NightlytestReader.convertNTData(inputFile, plistPath)
+        # Encode the form data.
+        f = open(inputFile, 'rb')
+        values = { 'input_data' : f.read(),
+                   'commit' : ("0","1")[not not commit] }
+        f.close()
+        data = urllib.urlencode(values)
 
         # Send it off.
-        ServerUtil.submitFiles(opts.serverUrl, [plistPath], opts.commit)
+        response = urllib2.urlopen(urllib2.Request(url, data))
+        the_page = response.read()
+
+        # FIXME: Parse results and return proper error code.
+        print the_page
+
 
 if __name__ == '__main__':
     main()
