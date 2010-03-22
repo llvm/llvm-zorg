@@ -1,5 +1,9 @@
 # -*- python -*-
 
+"""
+Generic test browsing UI.
+"""
+
 import sys
 from quixote import get_response, redirect
 from quixote.directory import Directory
@@ -16,7 +20,7 @@ class TestUI(Directory):
             raise TraversalError(str(exc))
 
     def _q_index [html] (self):
-        # Get a DB conntection
+        # Get a DB connection.
         db = self.root.getDB()
 
         t = db.getTest(self.id)
@@ -28,7 +32,7 @@ class TestUI(Directory):
         <h2>Test: %s</h2>
         """ % (t.name,)
 
-        # Test info
+        # Show the test info dictionary.
         """
         <h3>Test Info</h3>
         <table border=1 cellborder=1>
@@ -48,7 +52,7 @@ class TestUI(Directory):
         </table>
         """
 
-        # List samples
+        # List samples.
         """
         <h3>Associated Samples</h3>
         <table class="sortable" border=1 cellborder=1>

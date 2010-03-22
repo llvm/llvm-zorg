@@ -1,5 +1,11 @@
 #!/usr/bin/python
 
+"""
+Command line utility for submitting an LNT plist file to a LNT server.
+"""
+
+# FIXME: Roll into lnttool and kill. See also refactor conversion code.
+
 import ServerUtil
 
 def main():

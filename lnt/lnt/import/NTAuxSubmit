@@ -1,5 +1,15 @@
 #!/usr/bin/env python
 
+"""
+Command line tool for submitting to a LNT server.
+
+This script is explicitly designed to work with llvm/utils/NewNightlyTest.pl's
+-submit-aux argument. It simply converts the data and submits it to the llvm.org
+nightly test server.
+"""
+
+# FIXME: Roll into lnttool and kill.
+
 import sys
 import NightlytestReader
 import ServerUtil
@@ -16,7 +26,7 @@ def main():
     # instances of the LNT infrastructure to default to the correct server for
     # their installation.
     parser.add_option("", "--server", dest="serverUrl", type=str,
-                      default="http://llvm.org/perf/db_nt_internal/submitRun")
+                      default="http://llvm.org/perf/db_default/submitRun")
 
     opts,args = parser.parse_args()
 

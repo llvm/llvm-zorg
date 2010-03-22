@@ -1,5 +1,9 @@
 # -*- python -*-
 
+"""
+Generic run browsing UI.
+"""
+
 import sys
 from quixote import get_response, redirect
 from quixote.directory import Directory
@@ -16,7 +20,7 @@ class RunUI(Directory):
             raise TraversalError(str(exc))
 
     def _q_index [html] (self):
-        # Get a DB conntection
+        # Get a DB connection.
         db = self.root.getDB()
 
         r = db.getRun(self.id)
@@ -46,7 +50,7 @@ class RunUI(Directory):
         """ % (r.machine_id, m.name, m.number, r.start_time, r.end_time)
 
 
-        # Run Info
+        # Show the run info dictionary.
         """
         <h3>Run Info</h3>
         <table border=1 cellborder=1>

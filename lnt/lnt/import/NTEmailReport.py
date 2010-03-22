@@ -1,5 +1,11 @@
 #!/usr/bin/python
 
+"""
+Command line tool for sending an LNT email report.
+"""
+
+# FIXME: Roll into lnttool or just kill?
+
 import os
 import smtplib
 import sys

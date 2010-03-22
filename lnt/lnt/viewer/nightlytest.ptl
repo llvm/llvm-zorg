@@ -1,5 +1,11 @@
 # -*- python -*-
 
+"""
+Nightly Test UI instance for actual nightly test data.
+"""
+
+# FIXME: The NTStyleBrowser abstraction is no longer useful. We should kill it.
+
 import sys
 import time
 
@@ -109,7 +115,7 @@ class NightlyTestRunUI(NTStyleBrowser.TestRunUI):
         failures = Util.multidict()
         for keyname,title in kTSKeys.items():
             for testname in summary.testNames:
-                fullname = 'nightlytest.' + testname + '.' + keyname + '.success'
+                fullname = 'nightlytest.' + testname + '.' + keyname +'.success'
                 t = summary.testMap.get(str(fullname))
                 if t is None:
                     continue
@@ -122,13 +128,17 @@ class NightlyTestRunUI(NTStyleBrowser.TestRunUI):
     def getAllResults [html] (self, db, run, compareTo, summary):
         columns = [('GCCAS', 'gcc.compile.time', None, ()),
                    ('Bitcode','bc.compile.size', None, ()),
-                   ('LLC<br>compile','llc.compile.time', None, ('bc.compile.size',)),
-                   ('LLC-BETA<br>compile','llc-beta.compile.time', None, ('bc.compile.size',)),
-                   ('JIT<br>codegen','jit.compile.time', None, ('bc.compile.size',)),
+                   ('LLC<br>compile','llc.compile.time', None,
+                    ('bc.compile.size',)),
+                   ('LLC-BETA<br>compile','llc-beta.compile.time', None,
+                    ('bc.compile.size',)),
+                   ('JIT<br>codegen','jit.compile.time', None,
+                    ('bc.compile.size',)),
                    ('GCC','gcc.exec.time', None, ('gcc.compile.time',)),
                    ('CBE','cbe.exec.time', None, ('bc.compile.size',)),
                    ('LLC','llc.exec.time', None, ('llc.compile.time',)),
-                   ('LLC-BETA','llc-beta.exec.time', None, ('llc-beta.compile.time',)),
+                   ('LLC-BETA','llc-beta.exec.time', None,
+                    ('llc-beta.compile.time',)),
                    ('JIT','jit.exec.time', None, ('jit.compile.time',)),
                    ('GCC/CBE','gcc.exec.time','cbe.exec.time', ()),
                    ('GCC/LLC','gcc.exec.time','llc.exec.time', ()),
@@ -363,7 +373,7 @@ class NightlyTestRunUI(NTStyleBrowser.TestRunUI):
         full = request.form.get('full', '')
         allResults = not not full
 
-        # Get a DB connection
+        # Get a DB connection.
         db = self.root.getDB()
 
         run = self.getActiveRun(db)
@@ -515,7 +525,7 @@ class NightlyTestMachineUI(Directory):
         self.root.getHeader("Nightly Test Results", "../../..",
                             addPopupJS=True)
 
-        # Get a DB connection
+        # Get a DB connection.
         db = self.root.getDB()
 
         machine = db.getMachine(self.id)
@@ -683,7 +693,8 @@ class NightlyTestProgramUI(Directory):
         columns = [('GCCAS', 'gcc.compile.time', ()),
                    ('Bitcode','bc.compile.size', ()),
                    ('LLC<br>compile','llc.compile.time', ('bc.compile.size',)),
-                   ('LLC-BETA<br>compile','llc-beta.compile.time', ('bc.compile.size',)),
+                   ('LLC-BETA<br>compile','llc-beta.compile.time',
+                    ('bc.compile.size',)),
                    ('JIT<br>codegen','jit.compile.time', ('bc.compile.size',)),
                    ('GCC','gcc.exec.time', ('gcc.compile.time',)),
                    ('CBE','cbe.exec.time', ('bc.compile.size',)),
@@ -763,7 +774,8 @@ class NightlyTestProgramUI(Directory):
                     for d in dependsOn:
                         # FIXME: Make fast.
                         t = getTestNameValueInRun(db, run,
-                                                  str('nightlytest.' + testName + '.' + d))
+                                                  str('nightlytest.' + testName
+                                                      + '.' + d))
                         if t is None:
                             failed = False
                             break

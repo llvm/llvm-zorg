@@ -1,3 +1,7 @@
+"""
+LNT Config object for tracking user-configurable installation parameters.
+"""
+
 import os
 
 class DBInfo:

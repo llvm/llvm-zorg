@@ -1,5 +1,12 @@
 #!/usr/bin/env python
 
+"""
+Data converter from the llvm/utils/NewNightlyTest.pl report file format
+(*-sentdata.txt) to the LNT plist format.
+"""
+
+# FIXME: Refactor data conversion code.
+
 import re
 
 kDataKeyStart = re.compile('(.*)  =>(.*)')

@@ -1,5 +1,11 @@
 #!/usr/bin/env python
 
+"""
+Generic script for importing LNT test data into a database.
+"""
+
+# FIXME: Roll this into lnttool and kill.
+
 import os
 import plistlib
 import sys

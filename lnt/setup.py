@@ -1,10 +1,12 @@
+import lnt
+
 from setuptools import setup, find_packages
 setup(
     name = "LNT",
-    version = "0.3",
+    version = lnt.__version__,
 
-    author = "Daniel Dunbar",
-    author_email = "daniel@zuster.org",
+    author = lnt.__author__,
+    author_email = lnt.__email__,
     url = 'http://llvm.org',
     license = 'BSD',
 

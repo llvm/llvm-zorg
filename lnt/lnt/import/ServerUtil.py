@@ -1,3 +1,7 @@
+"""
+Utility for submitting files to a web server over HTTP.
+"""
+
 import plistlib
 import urllib
 import urllib2

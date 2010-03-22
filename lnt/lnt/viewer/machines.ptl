@@ -1,5 +1,9 @@
 # -*- python -*-
 
+"""
+Generic machine browsing UI.
+"""
+
 import sys
 from quixote import get_response, redirect
 from quixote.directory import Directory
@@ -17,7 +21,7 @@ class MachineUI(Directory):
 
 
     def _q_index [html] (self):
-        # Get a DB conntection
+        # Get a DB connection.
         db = self.root.getDB()
 
         m = db.getMachine(self.id)
@@ -28,8 +32,7 @@ class MachineUI(Directory):
         <h2>Machine: %s:%d</h2>
         """ % (m.name, m.number)
 
-
-        # Machine Info
+        # Show the machine info dictionary.
         """
         <table border=1 cellborder=1>
           <tr>
@@ -48,7 +51,7 @@ class MachineUI(Directory):
         </table>
         """
 
-        # List runs
+        # List associated runs.
         """
         <h3>Associated Runs</h3>
         <table class="sortable" border=1 cellborder=1>

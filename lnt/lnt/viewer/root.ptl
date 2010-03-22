@@ -1,5 +1,9 @@
 # -*- python -*-
 
+"""
+Root LNT webapp UI.
+"""
+
 import os
 import re
 import time
@@ -18,7 +22,7 @@ class RootDirectory(Resolving, Directory):
     _q_exports = ["", "resources", "js", "machines", "runs", "tests",
                   "browse", "submitRun", "nightlytest", "zview",
 
-                  # Redirections,
+                  # Redirections.
                   "select_db",
 
                   ("favicon.ico", "favicon_ico")]
@@ -101,7 +105,7 @@ class RootDirectory(Resolving, Directory):
         else:
             """>"""
 
-        # Database selection
+        # Database selection header.
         """\
         <div class="zorg_navheader">
         <form method="get" action="%s/select_db">
@@ -157,7 +161,7 @@ class RootDirectory(Resolving, Directory):
         <h2>LLVM Testing DB</h2>
         """
 
-        # Features
+        # Available UIs
 
         if self.dbInfo.showNightlytest:
             """
@@ -179,14 +183,14 @@ class RootDirectory(Resolving, Directory):
     def browse [html] (self):
         self.getHeader("zorg", ".", addSorttableJS=False)
 
-        # Get a DB connection
+        # Get a DB connection.
         db = self.getDB()
 
         """
         <h2>LLVM Testing DB</h2>
         """
 
-        # List machines
+        # List machines.
         """
         <h3>Machines</h3>
         <table class="sortable" border=1 cellborder=1>
@@ -206,7 +210,7 @@ class RootDirectory(Resolving, Directory):
         </table>
         """
 
-        # List runs
+        # List runs.
         """
         <h3>Run List</h3>
         <table class="sortable" border=1 cellborder=1>
@@ -235,7 +239,7 @@ class RootDirectory(Resolving, Directory):
         """
 
 
-        # List tests
+        # List tests.
         """
         <h3>Test List</h3>
         <table class="sortable" border=1 cellborder=1>

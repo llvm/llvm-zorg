@@ -1,5 +1,13 @@
 # -*- python -*-
 
+"""
+Base UI object for implementing an LNT "nightlytest" style browser of test
+results.
+
+This relies on naming conventions amongst the tests to infer the structure, and
+provide a GUI similar to the old nightly test infrastructure.
+"""
+
 import re
 
 import quixote
@@ -20,7 +28,10 @@ class TestRunUI(Directory):
             raise TraversalError(str(exc))
 
     def getActiveRun(self, db):
-        # Check for overrides
+        # Check for overrides.
+        #
+        # FIXME: This is broken, and breaks down in places. We need to redirect
+        # properly.
         request = quixote.get_request()
         id = self.id
         run_id = request.form.get('run', '')
@@ -44,7 +55,7 @@ class TestRunUI(Directory):
         # Find previous runs, ordered by time.
         runs = db.runs(run.machine).order_by(Run.start_time.desc()).all()
 
-        # Find previous run to compare to
+        # Find previous run to compare to.
         if compareTo is None:
             for r in runs:
                 # FIXME: Compare revisions, not times.
@@ -70,7 +81,7 @@ class TestRunUI(Directory):
                     infoPredicates.append((name,
                                            lambda t,k,v,p=pattern: p.search(v)))
 
-        # Compare the summary information
+        # Compare the summary information.
         summary = RunSummary()
         summary.addRun(db, run, testPredicate, infoPredicates)
         if compareTo:
@@ -95,7 +106,7 @@ class TestRunUI(Directory):
         form.add_submit("submit", "Update")
         Util.addOtherFormValues(form)
 
-        # Get a DB connection
+        # Get a DB connection.
         db = self.root.getDB()
         run,runs,compareTo = self.getInfo(db)
         machine = run.machine
@@ -113,7 +124,8 @@ class TestRunUI(Directory):
               <td align=right>Run:</td>
               <td>%s</td>
             </tr>
-        """ % (self.getHeaderTitle(), machine.name, machine.number, run.start_time)
+        """ % (self.getHeaderTitle(), machine.name, machine.number,
+               run.start_time)
         if compareTo:
             """
             <tr>
@@ -127,7 +139,7 @@ class TestRunUI(Directory):
         <p>
         """
 
-        # Hide by default unless filled in
+        # Show filtering options, hidden by default unless filled in.
         hidden = True
         for w in form.get_all_widgets():
             if isinstance(w, (quixote.form.HiddenWidget,)):
@@ -163,7 +175,8 @@ class TestRunUI(Directory):
         runIndex = runs.index(run)
         for r in runs[max(0,runIndex-3):runIndex+6]:
             if r == run:
-                """ <li> <h3><a href="../%d/">%s</a></h3> """ % (r.id, r.start_time)
+                """ <li> <h3><a href="../%d/">%s</a></h3> """ % (r.id,
+                                                                 r.start_time)
             else:
                 """ <li> <a href="../%d/">%s</a> """ % (r.id, r.start_time)
 
@@ -178,7 +191,8 @@ class TestRunUI(Directory):
         """ % (full,)
         for r in runs:
             """\
-        <option value="%d"%s>%s""" % (r.id, ('', ' selected')[r == run], r.start_time)
+        <option value="%d"%s>%s""" % (r.id, ('', ' selected')[r == run],
+                                      r.start_time)
 
         """
         </select>
@@ -192,8 +206,9 @@ class TestRunUI(Directory):
         <select name="compare">
         """ % (full,)
         for r in runs:
+            selected = ('', ' selected')[r == compareTo]
             """\
-        <option value="%d"%s>%s</option>""" % (r.id, ('', ' selected')[r == compareTo], r.start_time)
+        <option value="%d"%s>%s</option>""" % (r.id, selected, r.start_time)
 
         """
         </select>
@@ -354,7 +369,8 @@ class RecentMachineDirectory(Directory):
                 <td align=left><a href="machines/%d/">%s:%d</a></td>
                 <td><a href="%d/">View Results</a></td>
               </tr>
-            """ % (r.start_time, r.machine.id, r.machine.name, r.machine.number, r.id)
+            """ % (r.start_time, r.machine.id, r.machine.name,
+                   r.machine.number, r.id)
 
         """
               </table>

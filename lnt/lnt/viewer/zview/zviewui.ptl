@@ -1,3 +1,9 @@
+# -*- python -*-
+
+"""
+Playground for AJAXy interface to nightly test data.
+"""
+
 from quixote.directory import Directory
 from quixote.html import htmltext
 
