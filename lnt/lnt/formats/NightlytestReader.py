@@ -145,8 +145,6 @@ def _load_data(path_or_file):
 
     tests = []
 
-    groupInfo = []
-
     # llvm-test doesn't provide this
     infoData = {}
 
@@ -187,13 +185,9 @@ def _load_data(path_or_file):
                         'Data' : [len(results.get(name,[]))] } )
 
     # llvm-test results
-    groupInfo.append( { 'Name' : basename,
-                        'Primary' : 1 } )
     for groupname,data in (('SingleSource', singlesource),
                            ('MultiSource', multisource),
                            ('Externals', externals)):
-        groupInfo.append( { 'Name' : basename + '.' + groupname,
-                            'Primary' : 1 } )
         lines = data.split('\n')
         header = lines[0].strip().split(',')
         for ln in lines[1:]:
@@ -204,8 +198,6 @@ def _load_data(path_or_file):
                            for k,v in zip(header, ln.split(','))])
             testname = basename + '.%s/%s' % (groupname,
                                               entry['Program'].replace('.','_'))
-            groupInfo.append( { 'Name' : testname,
-                                'Primary' : 1 } )
 
             for name,key,tname in (('gcc.compile', 'GCCAS', 'time'),
                                    ('bc.compile', 'Bytecode', 'size'),
@@ -234,8 +226,7 @@ def _load_data(path_or_file):
 
     return { 'Machine' : machine,
              'Run' : run,
-             'Tests' : tests,
-             'Group Info' : groupInfo }
+             'Tests' : tests }
 
 format = { 'name' : 'nightlytest',
            'predicate' : _matches_format,

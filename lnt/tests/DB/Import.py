@@ -1,26 +1,23 @@
-# RUN: rm -f %t.db
-# RUN: sqlite3 %t.db ".read %src_root/db/CreateTables.sql"
+# RUN: rm -rf %t.install
+# RUN: lnt create %t.install
 
-# RUN: %src_root/lnt/import/ImportData --show-sample-count \
-# RUN:     %t.db %S/Inputs/sample-a-small.plist |\
+# RUN: lnt import %t.install %S/Inputs/sample-a-small.plist --commit=1 --show-sample-count |\
 # RUN:   FileCheck -check-prefix=IMPORT-A-1 %s
 
 # IMPORT-A-1: ADDED: 1 machines
 # IMPORT-A-1: ADDED: 1 runs
-# IMPORT-A-1: ADDED: 90 tests
-# IMPORT-A-1: ADDED: 90 samples
+# IMPORT-A-1: ADDED: 8 tests
+# IMPORT-A-1: ADDED: 8 samples
 
-# RUN: %src_root/lnt/import/ImportData --show-sample-count \
-# RUN:     %t.db %S/Inputs/sample-b-small.plist |\
+# RUN: lnt import %t.install %S/Inputs/sample-b-small.plist --commit=1 --show-sample-count |\
 # RUN:   FileCheck -check-prefix=IMPORT-B %s
 
 # IMPORT-B: ADDED: 0 machines
 # IMPORT-B: ADDED: 1 runs
 # IMPORT-B: ADDED: 0 tests
-# IMPORT-B: ADDED: 90 samples
+# IMPORT-B: ADDED: 8 samples
 
-# RUN: %src_root/lnt/import/ImportData --show-sample-count \
-# RUN:     %t.db %S/Inputs/sample-a-small.plist |\
+# RUN: lnt import %t.install %S/Inputs/sample-a-small.plist --commit=1 --show-sample-count |\
 # RUN:   FileCheck -check-prefix=IMPORT-A-2 %s
 
 # IMPORT-A-2: IGNORING DUPLICATE RUN
@@ -29,7 +26,7 @@
 # IMPORT-A-2: ADDED: 0 tests
 # IMPORT-A-2: ADDED: 0 samples
 
-# RUN: python %s %t.db
+# RUN: python %s %t.install/data/lnt.db
 
 import datetime, sys
 from lnt.viewer.PerfDB import PerfDB, Run, Test
@@ -38,7 +35,7 @@ db = PerfDB(sys.argv[1])
 
 m = db.machines().one()
 assert m.id == 1
-assert m.name == 'smoosh-01.apple.com'
+assert m.name == 'LNT SAMPLE MACHINE'
 
 info = dict((i.key,i.value) for i in m.info.values())
 assert 'os' in info
@@ -54,7 +51,7 @@ assert rA.end_time == datetime.datetime(2009, 11, 17, 3, 44, 48)
 assert rA.info['tag'].key == 'tag'
 assert rA.info['tag'].value == 'nightlytest'
 
-t = db.tests().order_by(Test.name)[20]
+t = db.tests().order_by(Test.name)[4]
 assert t.name == 'nightlytest.SingleSource/Benchmarks/BenchmarkGame/fannkuch.llc.compile.success'
 assert t.info.values() == []
 

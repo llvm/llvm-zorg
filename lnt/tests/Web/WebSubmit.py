@@ -1,14 +1,13 @@
-# RUN: %src_root/lnt/import/SubmitData %base_url/submitRun \
-# RUN:   %S/../DB/Inputs/sample-a-small.plist > %t.log
-# RUN: FileCheck %s < %t.log
+# RUN: lnt submit %base_url/submitRun %S/../DB/Inputs/sample-a-small.plist > %t
+# RUN: FileCheck %s < %t
 
 # CHECK: STATUS: 0
 
 # CHECK: OUTPUT:
 # CHECK: IMPORT: {{.*}}/lnt_tmp/{{.*}}.plist
-# CHECK: LOAD TIME: 0.03s
-# CHECK: IMPORT TIME: 0.03s
-# CHECK: MACHINE: 107
+# CHECK: LOAD TIME: {{.*}}
+# CHECK: IMPORT TIME: {{.*}}
+# CHECK: MACHINE: {{.*}}
 # CHECK: START  : {{.*}}
 # CHECK: END    : {{.*}}
 # CHECK: INFO   : u'tag' = u'nightlytest'
