@@ -28,8 +28,7 @@ The infrastructure has the following layout:
 Installation Instructions
 -------------------------
 
-External Dependencies: SQLAlchemy, Quixote, mod_wsgi, SQLite,
-                       MySQL (optional), urllib2_file
+External Dependencies: SQLAlchemy, Quixote, mod_wsgi, SQLite, MySQL (optional)
 
 Internal Dependencies: MooTools
 

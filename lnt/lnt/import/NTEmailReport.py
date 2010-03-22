@@ -32,10 +32,11 @@ def main():
 
     emailReport(db, run, baseurl, host, from_, to)
 
-def emailReport(db, run, baseurl, host, from_, to):
+def emailReport(db, run, baseurl, host, from_, to, was_added=True,
+                will_commit=True):
     import email.mime.text
 
-    subject, report = getReport(db, run, baseurl)
+    subject, report = getReport(db, run, baseurl, was_added, will_commit)
 
     msg = email.mime.text.MIMEText(report)
     msg['Subject'] = subject
@@ -61,7 +62,7 @@ def findPreceedingRun(query, run):
             best = r
     return best
 
-def getReport(db, run, baseurl):
+def getReport(db, run, baseurl, was_added, will_commit):
     report = StringIO.StringIO()
 
     machine = run.machine
@@ -159,15 +160,29 @@ def getReport(db, run, baseurl):
 
             changes[name] = (testname, curValue, prevValue, pctDelta)
 
+    if will_commit:
+        if not was_added:
+            print >>report, ("*** NOTE ***: This was a duplicate submission, "
+                             "and did not modify the database.\n")
+    else:
+        if was_added:
+            print >>report, ("*** NOTE ***: This is a test submission, "
+                             "it will not be committed to the database.\n")
+        else:
+            print >>report, ("*** NOTE ***: This is a test submission, "
+                             "and was a duplicate of an existing run.\n")
+
     if baseurl[-1] == '/':
         baseurl = baseurl[:-1]
     print >>report, """%s/%d/""" % (baseurl, run.id)
     print >>report, """Name: %s""" % (machine.info['name'].value,)
     print >>report, """Nickname: %s:%d""" % (machine.name, machine.number)
     print >>report
-    print >>report, """Run: %d, Start Time: %s, End Time: %s""" % (run.id, run.start_time, run.end_time)
+    print >>report, """Run: %d, Start Time: %s, End Time: %s""" % (
+        run.id, run.start_time, run.end_time)
     if compareTo:
-        print >>report, """Comparing To: %d, Start Time: %s, End Time: %s""" % (compareTo.id, compareTo.start_time, compareTo.end_time)
+        print >>report, """Comparing To: %d, Start Time: %s, End Time: %s""" % (
+            compareTo.id, compareTo.start_time, compareTo.end_time)
         if compareCrossesMachine:
             print >>report, """*** WARNING ***:""",
             print >>report, """comparison is against a different machine""",
@@ -210,7 +225,8 @@ def getReport(db, run, baseurl):
     for name,changelist in changes.items():
         print >>report, """%s:""" % name
         for name,curValue,prevValue,delta in Util.sorted(changelist):
-            print >>report, """ %s: %.2f%% (%.4f => %.4f)""" % (name, delta*100, prevValue, curValue)
+            print >>report, """ %s: %.2f%% (%.4f => %.4f)""" % (
+                name, delta*100, prevValue, curValue)
 
     # FIXME: Where is the old mailer getting the arch from?
     subject = """%s nightly tester results""" % machine.name

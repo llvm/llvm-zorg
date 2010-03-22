@@ -11,6 +11,7 @@ import time
 import quixote
 import quixote.form
 import quixote.form.css
+import quixote.errors
 from quixote import get_response
 from quixote.directory import Directory, Resolving
 from quixote.util import StaticDirectory
@@ -271,7 +272,9 @@ class RootDirectory(Resolving, Directory):
     def submitRun(self):
         form = quixote.form.Form(enctype="multipart/form-data")
         form.add(quixote.form.FileWidget, "file",
-                 title="Input File (plist)", required=True)
+                 title="Input File (plist)")
+        form.add(quixote.form.TextWidget, "input_data",
+                 title="Input Data (plist)")
         form.add(quixote.form.SingleSelectWidget, "commit",
                  title="Commit", value="0",
                  options=["0", "1"], required=True)
@@ -285,16 +288,29 @@ class RootDirectory(Resolving, Directory):
         def process():
             import plistlib
             import tempfile
-            fileWidget = form.get_widget('file')
-            value = fileWidget.parse()
 
-            data = value.fp.read()
-            value.fp.close()
+            # Get the input data.
+            input_file = form.get_widget('file')
+            file_value = input_file.parse()
+
+            input_data = form.get_widget('input_data')
+            data_value = input_data.parse()
+
+            if ((file_value is None and data_value is None) or
+                (file_value is not None and data_value is not None)):
+                raise quixote.errors.QueryError(
+                       "Must supply either an input file or input text data")
+
+            if file_value is not None:
+                data_value = file_value.fp.read()
+                file_value.fp.close()
+
+            # Stash a copy of the submission.
             prefix = time.strftime("data-%Y-%m-%d_%H-%M-%S")
             fd,path = tempfile.mkstemp(prefix=prefix,
                                        suffix='.plist',
                                        dir=self.config.tempDir)
-            os.write(fd, data)
+            os.write(fd, data_value)
             os.close(fd)
 
             # Find the email address for this machine's results.
@@ -333,13 +349,13 @@ class RootDirectory(Resolving, Directory):
                                   "--email-host=%s" % self.config.ntEmailHost,
                                   "--email-from=%s" % self.config.ntEmailFrom,
                                   "--email-to=%s" % toAddress,
+                                  "--always-email",
                                   self.dbInfo.path,
                                   path],
                                  stdout=subprocess.PIPE,
                                  stderr=subprocess.PIPE)
             stdout,stderr = p.communicate(None)
             res = p.wait()
-            stdout += "\nMAILING RESULTS TO: %r\n" % toAddress
             return res,stdout,stderr
 
         def result [plain] ():

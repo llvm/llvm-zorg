@@ -41,6 +41,8 @@ def main():
                       default=False)
     parser.add_option("", "--show-sample-count", dest="showSampleCount",
                       action="store_true", default=False)
+    parser.add_option("", "--always-email", dest="alwaysEmail",
+                      action="store_true", default=False)
     opts,args = parser.parse_args()
 
     if len(args) < 2:
@@ -52,9 +54,13 @@ def main():
     db = PerfDB.PerfDB(dbpath, echo=opts.showSQL)
     importFiles(db, args[1:])
     if opts.commit:
+        print 'COMMITTING RESULT:',
         db.commit()
+        print 'DONE'
     else:
+        print 'DISCARDING RESULT:',
         db.rollback()
+        print 'DONE'
     print 'TOTAL IMPORT TIME: %.2fs' % (time.time() - startTime,)
 
 def importFiles(db, files):
@@ -99,15 +105,17 @@ def importFiles(db, files):
             print "    END    : %s" % (run.end_time, )
             for ri in run.info.values():
                 print "    INFO   : %r = %r" % (ri.key, ri.value)
-            continue
-        else:
-            if opts.emailOnImport:
-                import NTEmailReport
-                NTEmailReport.emailReport(db, run,
-                                          opts.emailReportURL,
-                                          opts.emailReportHost,
-                                          opts.emailReportFrom,
-                                          opts.emailReportTo)
+
+        if opts.emailOnImport and (success or opts.alwaysEmail):
+            import NTEmailReport
+            print "\nMAILING RESULTS TO: %r\n" % opts.emailReportTo
+            NTEmailReport.emailReport(db, run,
+                                      opts.emailReportURL,
+                                      opts.emailReportHost,
+                                      opts.emailReportFrom,
+                                      opts.emailReportTo,
+                                      success,
+                                      opts.commit)
 
     print "ADDED: %d machines" % (db.getNumMachines() - numMachines,)
     print "ADDED: %d runs" % (db.getNumRuns() - numRuns,)
