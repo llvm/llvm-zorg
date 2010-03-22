@@ -23,6 +23,10 @@ zorg = %(zorg_dir)r
 # Path to the LNT server.
 zorgURL = %(hosturl)r
 
+# Temporary directory, for use by the web app. This must be writable by the user
+# the web app runs as.
+tmp_dir = %(tmp_dir)r
+
 # The list of available databases, and their properties. At a minimum, there
 # should be a 'default' entry for the default database.
 databases = {
@@ -91,7 +95,7 @@ def action_runserver(config='', hostname=('h','localhost'), port=('p',8000),
 
 
 def action_create(path='', name='LNT', config='lnt.cfg', wsgi='lnt.wsgi',
-                  default_db='lnt.db',
+                  tmp_dir='tmp', default_db='lnt.db',
                   hostname=platform.uname()[1], hostsuffix='perf'):
     """Create an LLVM nightly test installation"""
 
@@ -110,6 +114,7 @@ def action_create(path='', name='LNT', config='lnt.cfg', wsgi='lnt.wsgi',
 
     cfg_path = os.path.join(basepath, config)
     db_path = os.path.join(basepath, default_db)
+    tmp_path = os.path.join(basepath, tmp_dir)
     wsgi_path = os.path.join(basepath, wsgi)
 
     os.mkdir(path)
@@ -122,6 +127,8 @@ def action_create(path='', name='LNT', config='lnt.cfg', wsgi='lnt.wsgi',
     wsgi_file = open(wsgi_path, 'w')
     wsgi_file.write(kWSGITemplate % locals())
     wsgi_file.close()
+
+    os.mkdir(tmp_path)
 
     from lnt.viewer import PerfDB
     db = PerfDB.PerfDB('sqlite:///' + db_path)
@@ -138,7 +145,9 @@ def action_create(path='', name='LNT', config='lnt.cfg', wsgi='lnt.wsgi',
     print 'to test your installation with the builtin server.'
     print
     print 'For production use configure this application to run with any'
-    print 'WSGI capable web server.'
+    print 'WSGI capable web server. You may need to modify the permissions'
+    print 'on the database and temporary file directory to allow writing'
+    print 'by the web app.'
     print
 
 def main():

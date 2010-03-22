@@ -8,7 +8,7 @@ class DBInfo:
     @staticmethod
     def fromData(baseDir, dict):
         dbPath = dict.get('path')
-        if not dbPath.startswith('mysql://'):
+        if '://' not in dbPath:
             dbPath = os.path.join(baseDir, dbPath)
         return DBInfo(dbPath,
                       bool(dict.get('showNightlytest')),
@@ -44,19 +44,23 @@ class Config:
             ntEmailEnabled = False
             ntEmailHost = ntEmailFrom = ntEmailTo = ""
 
-        return Config(data.get('name', 'LNT'),
-                      os.path.join(baseDir, data['zorg']),
-                      data['zorgURL'],
+        zorgDir = os.path.join(baseDir, data['zorg'])
+
+        # FIXME: Remove this default.
+        tempDir = data.get('tmp_dir', 'viewer/resources/graphs')
+
+        return Config(data.get('name', 'LNT'), zorgDir, data['zorgURL'],
+                      os.path.join(baseDir, tempDir),
                       dict([(k,DBInfo.fromData(baseDir, v))
-                            for k,v in data['databases'].items()]),
+                                     for k,v in data['databases'].items()]),
                       ntEmailEnabled, ntEmailHost, ntEmailFrom, ntEmailTo)
 
-    def __init__(self, name, zorgDir, zorgURL, databases,
+    def __init__(self, name, zorgDir, zorgURL, tempDir, databases,
                  ntEmailEnabled, ntEmailHost, ntEmailFrom, ntEmailTo):
         self.name = name
         self.zorgDir = zorgDir
         self.zorgURL = zorgURL
-        self.tempDir = os.path.join(zorgDir, 'viewer', 'resources', 'graphs')
+        self.tempDir = tempDir
         while self.zorgURL.endswith('/'):
             self.zorgURL = zorgURL[:-1]
         self.databases = databases
