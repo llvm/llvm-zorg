@@ -26,9 +26,6 @@ class NightlyTestRunUI(NTStyleBrowser.TestRunUI):
         NTStyleBrowser.TestRunUI.__init__(self, *args, **kwargs)
         self.popupDepth = 0
 
-    def getTags(self):
-        return (None, 'nightlytest')
-
     def getParameters(self):
         return ()
 
@@ -503,125 +500,6 @@ class NightlyTestRunUI(NTStyleBrowser.TestRunUI):
 
         self.root.getFooter()
 
-class NightlyTestMachineUI(Directory):
-    _q_exports = [""]
-
-    def __init__(self, root, idstr):
-        self.root = root
-        try:
-            self.id = int(idstr)
-        except ValueError, exc:
-            raise TraversalError(str(exc))
-
-    def _q_index [html] (self):
-        # Get a DB connection.
-        db = self.root.getDB()
-
-        machine = db.getMachine(self.id)
-
-        self.root.getHeader("Machine: %s:%d" % (machine.name,machine.number),
-                            "../../..",
-                            components=(('nightlytest','nightlytest'),),
-                            addPopupJS=True)
-
-        # Find all runs on this machine.
-        runs = db.runs(machine).order_by(Run.start_time.desc()).all()
-
-        # FIXME: List previous machines with the same nickname?
-        """
-        <table width="100%%" border=1>
-          <tr>
-            <td valign="top" width="200">
-              <a href="../..">Homepage</a>
-              <h4>Relatives:</h4>
-              <ul>
-        """
-        # List all machines with this name.
-        for m in db.machines(name=machine.name):
-            """<li><a href="../%d">%s:%d</a></li>""" % (m.id, m.name, m.number)
-        """
-              </ul>
-              <h4>Runs:</h4>
-              <ul>
-        """
-
-        # Show the most recent 10 runs.
-        for r in runs[:10]:
-            """ <li> <a href="../../%d/">%s</a> """ % (r.id, r.start_time)
-
-        # Full list of runs in a drop down.
-        #
-        # FIXME: Link to run correctly.
-        """
-        <p>
-        <form method="GET" action="../../1/">
-        <select name="run">
-        """
-        for r in runs:
-            """\
-        <option value="%d">%s""" % (r.id, r.start_time)
-
-        """
-        </select>
-        <input type="submit" value="Go to Run">
-        </form>
-        """
-
-        """
-              </ul>
-            </td>
-            <td valign="top">
-              <table border=1>
-              <tr>
-                <td> <b>Nickname</b> </td>
-                <td> %s </td>
-              </tr>
-        """ %  (machine.name,)
-        for mi in machine.info.values():
-            """
-              <tr>
-                <td> <b>%s</b> </td>
-                <td>%s</td>
-              </tr>
-            """ % (mi.key, mi.value)
-        """
-              <tr>
-                <td> <b>Machine ID</b> </td>
-                <td> %d </td>
-              </tr>
-              </table>
-              <p>
-        """ % (machine.id,)
-
-        # List associated runs.
-        """
-        <table class="sortable" border=1>
-        <thead>
-          <tr>
-            <th>Start Time</th>
-            <th>End Time</th>
-            <th>&nbsp;</th>
-        </thead>
-        """
-        for r in runs:
-            """
-          <tr>
-            <td>%s</td>
-            <td>%s</td>
-            <td><a href="../../%d">View Results</a></td>
-          </tr>""" % (r.start_time, r.end_time, r.id)
-        """
-        </table>
-        """
-
-        """
-            </td>
-          </tr>
-        </table>
-        """
-
-        self.root.getFooter()
-
 class NightlyTestProgramUI(Directory):
     _q_exports = [""]
 
@@ -767,9 +645,6 @@ class NightlyTestDirectory(NTStyleBrowser.RecentMachineDirectory):
 
     def getTestRunUI(self, component):
         return NightlyTestRunUI(self.root, component)
-
-    def getTestMachineUI(self, component):
-        return NightlyTestMachineUI(self.root, component)
 
     def getProgramUI(self, component):
         return NightlyTestProgramUI(self.root, component)
