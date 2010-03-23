@@ -321,11 +321,12 @@ def importDataFromDict(db, data):
     test_info = {}
     for id,k,v in db.session.query(TestInfo.test_id, TestInfo.key,
                                    TestInfo.value):
-        test_info[id] = (str(k),str(v))
+        info = test_info[id] = test_info.get(id,{})
+        info[str(k)] = str(v)
 
     testMap = {}
     for test_id,test_name in db.session.query(Test.id, Test.name):
-        info = test_info.get(test_id,[])
+        info = test_info.get(test_id,{}).items()
         info.sort()
         testMap[(str(test_name),tuple(info))] = test_id
 
@@ -338,7 +339,7 @@ def importDataFromDict(db, data):
         info.sort()
         test_id = testMap.get((name,tuple(info)))
         if test_id is None:
-            test,created = db.getOrCreateTest(testData['Name'],testData['Info'])
+            test,created = db.getOrCreateTest(testData['Name'],info)
             assert created
             late_ids.append((i,test))
         test_ids.append(test_id)

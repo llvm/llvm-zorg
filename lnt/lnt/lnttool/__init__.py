@@ -3,6 +3,8 @@
 import os
 import sys
 
+import StringIO
+
 def action_runserver(name, args):
     """start a new development server."""
 
@@ -48,6 +50,32 @@ from create import action_create
 from convert import action_convert
 from import_data import action_import
 
+def action_checkformat(name, args):
+    """check the format of an LNT test report file."""
+
+    from optparse import OptionParser, OptionGroup
+    parser = OptionParser("%%prog %s [options] files" % name)
+
+    (opts, args) = parser.parse_args(args)
+    if len(args) > 1:
+        parser.error("incorrect number of argments")
+
+    if len(args) == 0:
+        input = '-'
+    else:
+        input, = args
+
+    if input == '-':
+        input = StringIO.StringIO(sys.stdin.read())
+
+    from lnt import formats
+    from lnt.viewer import PerfDB
+
+    db = PerfDB.PerfDB('sqlite:///:memory:')
+
+    data = formats.read_any(input, '<auto>')
+    PerfDB.importDataFromDict(db, data)
+
 def action_submit(name, args):
     """submit a test report to the server."""
 
@@ -83,7 +111,7 @@ def main():
 
     if len(sys.argv) < 2 or sys.argv[1] not in commands:
         if len(sys.argv) >= 2:
-            print >>sys.sterr,"error: invalid command %r\n" % sys.argv[1]
+            print >>sys.stderr,"error: invalid command %r\n" % sys.argv[1]
 
         usage()
 

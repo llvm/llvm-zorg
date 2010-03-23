@@ -12,12 +12,14 @@ class DBInfo:
             dbPath = os.path.join(baseDir, dbPath)
         return DBInfo(dbPath,
                       bool(dict.get('showNightlytest')),
-                      bool(dict.get('showGeneral')))
+                      bool(dict.get('showGeneral')),
+                      bool(dict.get('showSimple')))
 
-    def __init__(self, path, showNightlytest, showGeneral):
+    def __init__(self, path, showNightlytest, showGeneral, showSimple):
         self.path = path
-        self.showNightlytest = showNightlytest
         self.showGeneral = showGeneral
+        self.showNightlytest = showNightlytest
+        self.showSimple = showSimple
 
 class Config:
     @staticmethod

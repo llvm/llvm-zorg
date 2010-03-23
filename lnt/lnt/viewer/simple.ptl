@@ -1,0 +1,471 @@
+# -*- python -*-
+
+"""
+Nightly Test UI instance for actual nightly test data.
+"""
+
+# FIXME: The NTStyleBrowser abstraction is no longer useful. We should kill it.
+
+import sys
+import time
+
+import quixote
+from quixote.directory import Directory
+from quixote.errors import TraversalError
+
+import Util, NTStyleBrowser
+from Util import safediv
+from NTUtil import *
+
+from PerfDB import Machine, Run, Test
+
+class SimpleRunUI(Directory):
+    _q_exports = ["", "graph"]
+
+    def __init__(self, root, idstr):
+        self.root = root
+        try:
+            self.id = int(idstr)
+        except ValueError, exc:
+            raise TraversalError(str(exc))
+
+    def getInfo(self, db):
+        request = quixote.get_request()
+
+        compareToID = request.form.get('compare', '')
+        compareTo = None
+        if compareToID:
+            try:
+                compareTo = db.getRun(int(compareToID))
+            except:
+                pass
+
+        run = db.getRun(self.id)
+
+        # Find previous runs, ordered by time.
+        runs = db.runs(run.machine).order_by(Run.start_time.desc()).all()
+        runs = [r for r in runs
+                if 'tag' in r.info and r.info['tag'].value == 'simple']
+
+        # Find previous run to compare to.
+        if compareTo is None:
+            for r in runs:
+                # FIXME: Compare revisions, not times.
+                if r != run and r.start_time < run.start_time:
+                    compareTo = r
+                    break
+
+        return run, runs, compareTo
+
+    def show_run_page [html] (self, db, run, runs, compareTo, contents_fn):
+        machine = run.machine
+
+        """
+        <center>
+          <table>
+            <tr>
+              <td align=right>Machine:</td>
+              <td>%s:%d</td>
+            </tr>
+            <tr>
+              <td align=right>Run:</td>
+              <td>%s</td>
+            </tr>
+        """ % (machine.name, machine.number, run.start_time)
+        if compareTo:
+            """
+            <tr>
+              <td align=right>Compare To:</td>
+              <td>%s</td>
+            </tr>
+            """ % (compareTo.start_time,)
+        """
+          </table>
+        </center>
+        <p>
+        """
+
+        """
+        <table width="100%%" border=1>
+          <tr>
+            <td valign="top" width="200">
+              <a href="..">Homepage</a>
+              <h4>Machine:</h4>
+              <a href="../machines/%d/">%s:%d</a>
+              <h4>Runs:</h4>
+              <ul>
+        """ % (machine.id, machine.name, machine.number)
+
+        # Show a small number of neighboring runs.
+        runIndex = runs.index(run)
+        for r in runs[max(0,runIndex-3):runIndex+6]:
+            if r == run:
+                """ <li> <h3><a href="../%d/">%s</a></h3> """ % (r.id,
+                                                                 r.start_time)
+            else:
+                """ <li> <a href="../%d/">%s</a> """ % (r.id, r.start_time)
+        """
+              </ul>
+            </td>
+            <td valign="top">
+              <table border=1>
+              <tr>
+                <td> <b>Nickname</b> </td>
+                <td> %s </td>
+              </tr>
+              <tr>
+                <td> <b>Machine ID</b> </td>
+                <td> %d </td>
+              </tr>
+              </table>
+              <p>
+              <table border=1>
+        """ %  (machine.name, machine.id)
+        for mi in machine.info.values():
+            """
+              <tr>
+                <td> <b>%s</b> </td>
+                <td>%s</td>
+              </tr>
+            """ % (mi.key, mi.value)
+        """
+              </table>
+              <p>
+              <table border=1>
+        """
+        for ri in run.info.values():
+            """
+              <tr>
+                <td> <b>%s</b> </td>
+                <td>%s</td>
+              </tr>
+            """ % (ri.key, ri.value)
+        """
+              </table>
+        """
+
+        contents_fn(db, run, runs, compareTo)
+
+        """
+            </td>
+          </tr>
+        </table>
+        """
+
+        self.root.getFooter()
+
+    def _q_index [html] (self):
+        # Get a DB connection.
+        db = self.root.getDB()
+
+        run,runs,compareTo = self.getInfo(db)
+        machine = run.machine
+
+        self.root.getHeader('Run Results', "../..",
+                            components=(('simple','simple'),
+                                        ('machine',
+                                         'simple/machines/%d' % machine.id)),
+                            addPopupJS=True, addFormCSS=True)
+
+        self.show_run_page(db, run, runs, compareTo, self._q_index_body)
+
+    def graph [html] (self):
+        request = quixote.get_request()
+
+        # Get a DB connection.
+        db = self.root.getDB()
+
+        run,runs,compareTo = self.getInfo(db)
+        machine = run.machine
+
+        # Load the metadata.
+
+        test_names,test_map,parameter_keys,parameter_sets = self.\
+            get_simple_metadata(db)
+
+        # Load the form data.
+        graph_tests = []
+        graph_psets = []
+        for name,value in request.form.items():
+            if name.startswith(str('test.')):
+                graph_tests.append(name[5:])
+            elif name.startswith(str('pset.')):
+                graph_psets.append(parameter_sets[int(name[5:])])
+
+        # Get the test ids we want data for.
+        test_ids = [test_map[(name,pset)].id
+                     for name in graph_tests
+                     for pset in graph_psets]
+
+        # Load all the samples for those tests and this machine.
+        q = db.session.query(Sample.run_id,Sample.test_id,
+                             Sample.value).join(Run)
+        q = q.filter(Run.machine_id == machine.id)
+        q = q.filter(Sample.test_id.in_(test_ids))
+        samples = list(q)
+
+        # Aggregate by test id and then run id.
+        #
+        # FIXME: Pretty expensive.
+        samples_by_test_id = {}
+        for run_id,test_id,value in samples:
+            d = samples_by_test_id.get(test_id)
+            if d is None:
+                d = samples_by_test_id[test_id] = Util.multidict()
+            d[run_id] = value
+
+        # Build the graph data
+        run_id_map = dict([(r.id,r) for r in runs])
+        pset_id_map = dict([(pset,i) for i,pset in enumerate(parameter_sets)])
+        legend = []
+        plots = ""
+        num_plots = len(graph_tests) * len(graph_psets)
+        num_points = 0
+        index = 0
+        for name in graph_tests:
+            for pset in graph_psets:
+                test_id = test_map[(name,pset)].id
+
+                # Get the plot for this test.
+                #
+                # FIXME: Support order by something other than time.
+                data = []
+                for run_id,values in samples_by_test_id.get(test_id,{}).items():
+                    r = run_id_map.get(run_id)
+                    if not r:
+                        continue
+                    timeval = time.mktime(r.start_time.timetuple())
+                    data.append((timeval, min(values)))
+                data.sort()
+                num_points += len(data)
+
+                col = list(Util.makeDarkColor(float(index) / num_plots))
+                pts = ','.join(['[%f,%f]' % (t,v) for t,v in data])
+                style = "new Graph2D_LinePlotStyle(1, %r)" % col
+                plots += "    graph.addPlot([%s], %s);\n" % (pts,style)
+
+                legend.append(("%s : P%d" % (name, pset_id_map[pset]), col))
+                index += 1
+
+        def graph_body [html] (db, run, runs, compare_to):
+            """
+            <h3>Graph</h3>
+            <table>
+            <tr>
+            <td rowspan=2 valign="top">
+              <canvas id="graph" width="600" height="400"></canvas>
+            </td>
+            <td valign="top">
+            <table cellspacing=4 border=1>
+            <tr><th colspan=2>Test</th></tr>
+            """
+            for name,col in legend:
+                """
+                <tr><td bgcolor="%02x%02x%02x">&nbsp;</td>
+                <td>%s</td></tr>""" % (255*col[0], 255*col[1], 255*col[2], name)
+            """
+            </table>
+            </td></tr>
+            <tr><td align="right" valign="bottom">
+            <font size="-2">
+            Shift-Left Mouse: Pan<br>
+            Alt/Meta-Left Mouse: Zoom<br>
+            Wheel: Zoom (<i>Shift Slows</i>)<br>
+            </font>
+            </td></tr>
+            </table>
+            <p>
+            <b>Plots</b>: %d<br>
+            <b>Num Points<b>: %d<br>
+            """ % (num_plots, num_points)
+
+        graph_init = """\
+    function init() {
+        graph = new Graph2D("graph");
+        graph.clearColor = [1, 1, 1];
+    %s
+        graph.xAxis.format = graph.xAxis.formats.day;
+        graph.draw();
+    }
+    """ % (plots,)
+        self.root.getHeader('Run Results', "..",
+                            components=(('simple','simple'),
+                                        ('machine',
+                                         'simple/machines/%d' % machine.id),
+                                        ('run', 'simple/%d' % run.id)),
+                            addPopupJS=True, addGraphJS=True,
+                            addJSScript=graph_init,
+                            onload="init()")
+
+        self.show_run_page(db, run, runs, compareTo, graph_body)
+
+    def get_simple_metadata(self, db):
+        """Compute the metadata about tests, parameter sets, etc."""
+
+        # FIXME: We can cache this in a number of ways.
+
+        # Find all test names.
+        q = db.session.query(Test)
+        q = q.filter(Test.name.startswith(str('simple.')))
+        tests = list(q)
+
+        # Collect all the test data.
+        test_names = set()
+        parameter_sets = set()
+        test_map = {}
+        for t in tests:
+            name = t.name.split(str('.'),1)[1]
+            test_names.add(name)
+            
+            items = [(k,v.value) for k,v in t.info.items()]
+            items.sort()
+            key = tuple(items)
+
+            parameter_sets.add(key)
+            test_map[(name, key)] = t
+
+        # Order the test names.
+        test_names = list(test_names)
+        test_names.sort()
+
+        # Collect the set of all parameter keys.
+        parameter_keys = list(set([k for pset in parameter_sets
+                                   for k,v in pset]))
+        parameter_keys.sort()
+
+        # Order the parameter sets and convert to dictionaries.
+        parameter_sets = list(parameter_sets)
+        parameter_sets.sort()
+
+        return test_names,test_map,parameter_keys,parameter_sets
+
+    def _q_index_body [html] (self, db, run, runs, compare_to):
+        # Find the tests. The simple UI maps all tests that start with
+        # 'simple.'.
+        #
+        # One sensible addition would be to allow 'simple.foo.success' as a test
+        # to indicate the success or failure of the test. We would assume that
+        # the test succeeded if its .success test was missing, which leads to a
+        # nice compact format (failures are expected to be rare).
+
+        if compare_to:
+            prev_id = compare_to.id
+            interesting_runs = (run.id, prev_id)
+        else:
+            prev_id = None
+            interesting_runs = (run.id,)
+
+        # Load the metadata.
+
+        test_names,test_map,parameter_keys,parameter_sets = self.\
+            get_simple_metadata(db)
+
+        # Load the run sample data.
+
+        q = db.session.query(Sample.value, Sample.run_id, Sample.test_id)
+        q = q.filter(Sample.run_id.in_(interesting_runs))
+
+        sample_map = Util.multidict()
+        for value,run_id,test_id in q:
+            key = (run_id,test_id)
+            sample_map[key] = value
+
+        # Render the page.
+
+        def get_cell_value [html] (test, name, pset):
+            run_values = sample_map.get((run.id,test.id))
+            prev_values = sample_map.get((prev_id,test.id))
+
+            # FIXME: Check success
+            failed = not run_values
+                
+            run_cell_value = "-"
+            if run_values:
+                run_cell_value = "%.2f" % min(run_values)
+            
+            if failed:
+                """
+                <td bgcolor="#FF0000">%s</td""" % run_cell_value
+            else:
+                """
+                <td>%s</td""" % run_cell_value
+
+            if prev_values and run_values:
+                prev_value = min(prev_values)
+                pct = safediv(min(run_values), prev_value,
+                              '<center><font size=-2>nan</font></center>')
+                Util.PctCell(pct, delta=True).render()
+            else:
+                """<td>-</td>"""
+                
+
+        """
+        <h3>Parameter Sets</h3>
+        <table border=1>
+          <tr>
+            <th rowspan=2>Name</th>
+            <th colspan=%d>Parameters</th>
+          </tr><tr>""" % len(parameter_sets)
+        for key in parameter_keys:
+            """
+            <th>%s</th>""" % key
+        """
+          </tr>"""
+        for (i,pset) in enumerate(parameter_sets):
+            """
+          <tr>
+            <td>P%s</td>""" % (i,)
+            pmap = dict(pset)
+            for key in parameter_keys:
+                item = pmap.get(key)
+                if item is None:
+                    item = "-"
+                """
+            <td>%s</td>""" % item
+            """
+          </tr>"""
+        """
+        </table>"""
+
+        """
+        <h3>Tests</h3>"""
+
+        """
+        <form method="GET" action="graph">
+        <table border=1>
+          <tr>
+            <th></th><th>Name</th>"""
+        for i in range(len(parameter_sets)):
+            """
+            <th><input type="checkbox" name="pset.%d">P%d</th>
+            <th>%%</th>""" % (i, i)
+        """
+          </tr>"""
+        for name in test_names:
+            """
+          <tr>
+            <td><input type="checkbox" name="test.%s"></td>
+            <td>%s</td>""" % (name, name)
+            for pset in parameter_sets:
+                test = test_map.get((name,pset))
+                if test is None:
+                    """
+                <td></td><td></td>"""
+                    continue
+
+                get_cell_value(test, name, pset)
+            """
+          </tr>"""
+        """
+        </table>
+        <input type="submit" value="Graph">
+        </form>"""
+
+class RootDirectory(NTStyleBrowser.RecentMachineDirectory):
+    _q_exports = [""]
+
+    def getTags(self):
+        return ('simple',)
+
+    def getTestRunUI(self, component):
+        return SimpleRunUI(self.root, component)

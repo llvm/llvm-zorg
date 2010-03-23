@@ -21,7 +21,7 @@ from PerfDB import Machine, Run
 
 class RootDirectory(Resolving, Directory):
     _q_exports = ["", "resources", "js", "machines", "runs", "tests",
-                  "browse", "submitRun", "nightlytest", "zview",
+                  "browse", "submitRun", "nightlytest", "simple", "zview",
 
                   # Redirections.
                   "select_db",
@@ -171,6 +171,11 @@ class RootDirectory(Resolving, Directory):
                        components=(),)
 
         # Available UIs.
+
+        if self.dbInfo.showSimple:
+            """
+            <a href="simple/">Simple Test Viewer</a>
+            """
 
         if self.dbInfo.showNightlytest:
             """
@@ -359,6 +364,9 @@ OUTPUT:
         if component == 'nightlytest':
             import nightlytest
             return nightlytest.NightlyTestDirectory(self)
+        if component == 'simple':
+            import simple
+            return simple.RootDirectory(self)
         if component == 'zview':
             from zview import zviewui
             return zviewui.ZViewUI(self)
