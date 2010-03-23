@@ -174,8 +174,9 @@ def getReport(db, run, baseurl, was_added, will_commit):
     if baseurl[-1] == '/':
         baseurl = baseurl[:-1]
     print >>report, """%s/%d/""" % (baseurl, run.id)
-    print >>report, """Name: %s""" % (machine.info['name'].value,)
     print >>report, """Nickname: %s:%d""" % (machine.name, machine.number)
+    if 'name' in machine.info:
+        print >>report, """Name: %s""" % (machine.info['name'].value,)
     print >>report
     print >>report, """Run: %d, Start Time: %s, End Time: %s""" % (
         run.id, run.start_time, run.end_time)

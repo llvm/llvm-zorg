@@ -27,25 +27,32 @@ def import_and_report(config, db_name, db, file, log, format, commit=False,
     except KeyboardInterrupt:
         raise
     except:
+        import traceback
         print >>log, 'ERROR: %r: load failed' % file
+        print >>log, traceback.format_exc()
         return (False, None)
     print >>log, '  LOAD TIME: %.2fs' % (time.time() - startTime,)
 
+    # Check if this is a nightlytest run.
+    tag = data.get('Run',{}).get('Info',{}).get('tag',None)
+    is_nt = tag is None or tag == 'nightlytest'
+
     # Find the email address for this machine's results.
     toAddress = None
-    if isinstance(config.ntEmailTo, str):
-        toAddress = config.ntEmailTo
-    else:
-        # Find the machine name.
-        machineName = str(data.get('Machine',{}).get('Name'))
-        for pattern,addr in config.ntEmailTo:
-            if re.match(pattern, machineName):
-                toAddress = addr
-                break
+    if is_nt and config.ntEmailEnabled:
+        if isinstance(config.ntEmailTo, str):
+            toAddress = config.ntEmailTo
         else:
-            print >>log,("ERROR: unable to match machine name "
-                         "for test results email address!")
-            return (False, None)
+            # Find the machine name.
+            machineName = str(data.get('Machine',{}).get('Name'))
+            for pattern,addr in config.ntEmailTo:
+                if re.match(pattern, machineName):
+                    toAddress = addr
+                    break
+            else:
+                print >>log,("ERROR: unable to match machine name "
+                             "for test results email address!")
+                return (False, None)
 
     importStartTime = time.time()
     try:
@@ -53,7 +60,9 @@ def import_and_report(config, db_name, db, file, log, format, commit=False,
     except KeyboardInterrupt:
         raise
     except:
+        import traceback
         print >>log, 'ERROR: %r: import failed' % file
+        print >>log, traceback.format_exc()
         return (False, None)
 
     print >>log, '  IMPORT TIME: %.2fs' % (time.time() - importStartTime,)
@@ -65,7 +74,7 @@ def import_and_report(config, db_name, db, file, log, format, commit=False,
         for ri in run.info.values():
             print >>log, "    INFO   : %r = %r" % (ri.key, ri.value)
 
-    if not disable_email and config.ntEmailEnabled:
+    if not disable_email and toAddress is not None:
         print >>log, "\nMAILING RESULTS TO: %r\n" % toAddress
         NTEmailReport.emailReport(db, run,
                                   "%s/db_%s/nightlytest/" % (config.zorgURL,
