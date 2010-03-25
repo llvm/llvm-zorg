@@ -43,6 +43,8 @@ setup(
 
     packages = find_packages(),
 
+    test_suite = 'tests.test_all',
+
     entry_points = {
         'console_scripts': [
             'lnt = lnt.lnttool:main',
