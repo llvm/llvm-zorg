@@ -7,10 +7,14 @@ from lnt.util import NTEmailReport
 def import_and_report(config, db_name, db, file, log, format, commit=False,
                       show_sample_count=False, disable_email=False):
     """
-    import_file(config, db_name, db, file) -> (success, run, log)
+    import_and_report(config, db_name, db, file, log, format,
+                      [commit], [show_sample_count],
+                      [disable_email]) -> (success, run)
 
-    Import a test data file into the database. On success, run is the newly
-    imported run.
+    Import a test data file into an LNT server and generate a test report. On
+    success, run is the newly imported run. Note that success is uneffected by
+    the value of commit, this merely changes whether the run (on success) is
+    committed to the database.
     """
     numMachines = db.getNumMachines()
     numRuns = db.getNumRuns()

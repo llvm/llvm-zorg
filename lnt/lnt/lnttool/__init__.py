@@ -80,7 +80,7 @@ def action_submit(name, args):
     """submit a test report to the server."""
 
     from optparse import OptionParser, OptionGroup
-    parser = OptionParser("%%prog %s [options] url files+" % name)
+    parser = OptionParser("%%prog %s [options] <url> <file>+" % name)
     parser.add_option("", "--commit", dest="commit", type=int,
                       default=False)
 

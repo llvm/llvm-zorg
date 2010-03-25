@@ -1,0 +1,38 @@
+{% extends "layout.html" %}
+{% set title = 'LNT' %}
+{% block body %}
+<h1>LNT - LLVM Performance Tracking Software</h1>
+
+<p>
+  LNT is LLVM's performance tracking software. This is the web page for the LNT
+  software itself, the current online version of the server is available
+  at <a href="http://llvm.org/perf/">http://llvm.org/perf/</a>.
+</p>
+
+<h2>Documentation</h2>
+<table class="contentstable" align="center" style="margin-left: 30px">
+  <tr>
+    <td width="50%">
+      <p class="biglink"><a class="biglink" href="{{ pathto("contents") }}">
+          Contents</a><br/>
+        <span class="linkdescr">for a complete overview</span></p>
+      <p class="biglink"><a class="biglink" href="{{ pathto("search") }}">
+          Search page</a><br/>
+        <span class="linkdescr">search the documentation</span></p>
+    </td><td width="50%">
+      <p class="biglink"><a class="biglink" href="{{ pathto("genindex") }}">
+          General Index</a><br/>
+        <span class="linkdescr">all functions, classes, terms</span></p>
+      <p class="biglink"><a class="biglink" href="{{ pathto("modindex") }}">
+          Module Index</a><br/>
+        <span class="linkdescr">quick access to all documented modules</span></p>
+  </td></tr>
+</table>
+
+<h2>Source</h2>
+<p>LNT is available in the LLVM "zorg" SVN repository:
+  <tt>svn co
+    <a href="http://llvm.org/svn/llvm-project/zorg/trunk/lnt">
+      http://llvm.org/svn/llvm-project/zorg/trunk/lnt</a></tt>.</p>
+
+{% endblock %}

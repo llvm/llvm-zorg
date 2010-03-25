@@ -9,7 +9,7 @@ def action_import(name, args):
 
     from optparse import OptionParser, OptionGroup
 
-    parser = OptionParser("%%prog %s [options] <path|config-file> file+" %name)
+    parser = OptionParser("%%prog %s [options] <path|config-file> <file>+"%name)
     parser.add_option("", "--database", dest="database", default="default",
                       help="database to write to [%default]")
     parser.add_option("", "--format", dest="format",

@@ -75,7 +75,7 @@ def action_create(name, args):
     """create an LLVM nightly test installation"""
 
     from optparse import OptionParser, OptionGroup
-    parser = OptionParser("%%prog %s [options] [<path|config file>]" % name)
+    parser = OptionParser("%%prog %s [options] <path>" % name)
     parser.add_option("", "--name", dest="name", default="LNT",
                       help="name to use for the installation [%default]")
     parser.add_option("", "--config", dest="config", default="lnt.cfg",
