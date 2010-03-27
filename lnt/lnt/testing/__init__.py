@@ -13,7 +13,7 @@ import json
 def normalize_time(t):
     if isinstance(t,float):
         t = datetime.datetime.utcfromtimestamp(t)
-    elif not isinstance(t, datatime.datetime):
+    elif not isinstance(t, datetime.datetime):
         t = time.strptime(start_time, '%Y-%m-%d %H:%M:%S')
     return t.strftime('%Y-%m-%d %H:%M:%S')
 

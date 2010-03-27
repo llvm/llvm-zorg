@@ -144,7 +144,8 @@ class RootDirectory(Resolving, Directory):
         if components is not None:
             """<h2><a href="%s">%s</a>""" % (pathToRoot, self.config.name)
             for short_name,path in components:
-                """ : <a href="%s/%s">%s</a>""" % (pathToRoot,path,short_name)
+                """ : <a href="%s/db_%s/%s">%s</a>""" % (pathToRoot,self.dbName,
+                                                         path,short_name)
             """ - %s</h2>""" % title
 
     def getFooter [html] (self):
