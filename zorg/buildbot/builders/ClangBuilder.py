@@ -16,7 +16,7 @@ from Util import getConfigArgs
 def getClangBuildFactory(triple=None, clean=True, test=True, package_dst=None,
                          run_cxx_tests=False, examples=False, valgrind=False,
                          valgrindLeakCheck=False, outOfDir=False, useTwoStage=False,
-                         make='make', jobs="%(jobs)s",
+                         always_install=False, make='make', jobs="%(jobs)s",
                          stage1_config='Debug', stage2_config='Release',
                          extra_configure_args=[]):
     # Don't use in-dir builds with a two stage build process.
@@ -24,7 +24,10 @@ def getClangBuildFactory(triple=None, clean=True, test=True, package_dst=None,
     if inDir:
         llvm_srcdir = "llvm"
         llvm_1_objdir = "llvm"
-        llvm_1_installdir = None
+        if always_install:
+            llvm_1_installdir = "llvm.install"
+        else:
+            llvm_1_installdir = None
     else:
         llvm_srcdir = "llvm.src"
         llvm_1_objdir = "llvm.obj"
@@ -126,12 +129,17 @@ def getClangBuildFactory(triple=None, clean=True, test=True, package_dst=None,
 
     # Install llvm and clang.
     if llvm_1_installdir:
-        f.addStep(WarningCountingShellCommand(name="install.llvm.1",
-                                              command=['nice', '-n', '10',
-                                                       make, WithProperties("-j%s" % jobs),
-                                                       'install'],
+        f.addStep(ShellCommand(name="rm-install.clang.stage1",
+                               command=["rm", "-rf", llvm_1_installdir],
+                               haltOnFailure=True,
+                               description=["rm install dir", "clang"],
+                               workdir="."))
+        f.addStep(WarningCountingShellCommand(name="install.clang.stage1",
+                                              command = ['nice', '-n', '10',
+                                                         make, 'install-clang'],
                                               haltOnFailure=True,
-                                              description=["install", "llvm & clang"],
+                                              description=["install", "clang",
+                                                           stage1_config],
                                               workdir=llvm_1_objdir))
 
     if not useTwoStage:
@@ -181,6 +189,11 @@ def getClangBuildFactory(triple=None, clean=True, test=True, package_dst=None,
                                    workdir='%s/tools/clang' % llvm_2_objdir))
 
     # Install clang (stage 2).
+    f.addStep(ShellCommand(name="rm-install.clang.stage2",
+                           command=["rm", "-rf", llvm_2_installdir],
+                           haltOnFailure=True,
+                           description=["rm install dir", "clang"],
+                           workdir="."))
     f.addStep(WarningCountingShellCommand(name="install.clang.stage2",
                                           command = ['nice', '-n', '10',
                                                      make, 'install-clang'],
