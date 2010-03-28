@@ -5,12 +5,28 @@ Simple example of a test generator which just produces data on some mathematical
 functions, keyed off of the current time.
 """
 
-import time
+import sys, time
 import math, random
 
 from lnt.testing import *
 
 def main():
+    from optparse import OptionParser
+    parser = OptionParser("usage: %prog [options] [output]")
+    opts,args = parser.parse_args()
+
+    if len(args) == 0:
+        output = '-'
+    elif len(args) == 1:
+        output, = args
+    else:
+        parser.error("invalid number of arguments")
+
+    if output == '-':
+        output = sys.stdout
+    else:
+        output = open(output,'w')
+
     offset = math.pi/5
     delay = 120.
 
@@ -30,7 +46,10 @@ def main():
 
     report = Report(machine, run, tests)
 
-    print report.render()
+    print >>output, report.render()
+
+    if output is not sys.stderr:
+        output.close()
 
 if __name__ == '__main__':
     main()
