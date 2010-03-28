@@ -14,7 +14,7 @@ def normalize_time(t):
     if isinstance(t,float):
         t = datetime.datetime.utcfromtimestamp(t)
     elif not isinstance(t, datetime.datetime):
-        t = time.strptime(start_time, '%Y-%m-%d %H:%M:%S')
+        t = datetime.datetime.strptime(t, '%Y-%m-%d %H:%M:%S')
     return t.strftime('%Y-%m-%d %H:%M:%S')
 
 class Report:
@@ -73,9 +73,9 @@ class Run:
     """
     def __init__(self, start_time, end_time, info={}):
         if start_time is None:
-            start_time = datetime.datetime.now()
+            start_time = datetime.datetime.utcnow()
         if end_time is None:
-            end_time = datetime.datetime.now()
+            end_time = datetime.datetime.utcnow()
 
         self.start_time = normalize_time(start_time)
         self.end_time = normalize_time(end_time)

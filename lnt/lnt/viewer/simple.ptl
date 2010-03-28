@@ -28,6 +28,21 @@ class SimpleRunUI(Directory):
             self.id = int(idstr)
         except ValueError, exc:
             raise TraversalError(str(exc))
+        self.popupDepth = 0
+
+    def renderPopupBegin [html] (self, id, title, hidden):
+        self.popupDepth += 1
+        """\
+        <p>
+        <a href="javascript://" onclick="toggleLayer('%s')"; id="%s_">(%s) %s</a>
+        <div id="%s" style="display: %s;" class="hideable_%d">
+        """ % (id, id, ("+","-")[hidden], title, id, ("","none")[hidden],
+               self.popupDepth)
+
+    def renderPopupEnd [html] (self):
+        """
+        </div>"""
+        self.popupDepth -= 1
 
     def getInfo(self, db):
         request = quixote.get_request()
@@ -117,11 +132,14 @@ class SimpleRunUI(Directory):
                 <td> <b>Machine ID</b> </td>
                 <td> %d </td>
               </tr>
-              </table>
-              <p>
-              <table border=1>
-        """ %  (machine.name, machine.id)
-        for mi in machine.info.values():
+              </table>""" %  (machine.name, machine.id)
+
+        self.renderPopupBegin('machine_info', 'Machine Info', True)
+        """
+              <table border=1>"""
+        info = machine.info.values()
+        info.sort(key = lambda i: i.key)
+        for mi in info:
             """
               <tr>
                 <td> <b>%s</b> </td>
@@ -129,11 +147,15 @@ class SimpleRunUI(Directory):
               </tr>
             """ % (mi.key, mi.value)
         """
-              </table>
-              <p>
-              <table border=1>
+              </table>"""
+        self.renderPopupEnd()
+
+        self.renderPopupBegin('run_info', 'Run Info', True)
         """
-        for ri in run.info.values():
+              <table border=1>"""
+        info = run.info.values()
+        info.sort(key = lambda i: i.key)
+        for ri in info:
             """
               <tr>
                 <td> <b>%s</b> </td>
@@ -141,8 +163,8 @@ class SimpleRunUI(Directory):
               </tr>
             """ % (ri.key, ri.value)
         """
-              </table>
-        """
+              </table>"""
+        self.renderPopupEnd()
 
         contents_fn(db, run, runs, compareTo)
 
@@ -316,7 +338,7 @@ class SimpleRunUI(Directory):
         for t in tests:
             name = t.name.split(str('.'),1)[1]
             test_names.add(name)
-            
+
             items = [(k,v.value) for k,v in t.info.items()]
             items.sort()
             key = tuple(items)
@@ -378,11 +400,11 @@ class SimpleRunUI(Directory):
 
             # FIXME: Check success
             failed = not run_values
-                
+
             run_cell_value = "-"
             if run_values:
-                run_cell_value = "%.2f" % min(run_values)
-            
+                run_cell_value = "%.3f" % min(run_values)
+
             if failed:
                 """
                 <td bgcolor="#FF0000">%s</td""" % run_cell_value
@@ -397,7 +419,7 @@ class SimpleRunUI(Directory):
                 Util.PctCell(pct, delta=True).render()
             else:
                 """<td>-</td>"""
-                
+
 
         """
         <h3>Parameter Sets</h3>

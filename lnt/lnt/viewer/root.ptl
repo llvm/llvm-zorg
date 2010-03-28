@@ -16,6 +16,7 @@ from quixote import get_response
 from quixote.directory import Directory, Resolving
 from quixote.util import StaticDirectory
 
+import lnt
 import PerfDB, Util
 from PerfDB import Machine, Run
 
@@ -156,12 +157,14 @@ class RootDirectory(Resolving, Directory):
         current = time.time()
         """
         <hr>
+        LNT Version: %s<br>
         Server Started: %s<br>
         Generated: %s<br>
         Render Time: %.2fs<br>
         </body>
         </html>
-        """ % (time.strftime(str('%Y-%m-%dT%H:%M:%Sz'),
+        """ % (lnt.__version__,
+               time.strftime(str('%Y-%m-%dT%H:%M:%Sz'),
                              time.localtime(quixote.get_publisher().create_time)),
                time.strftime(str('%Y-%m-%dT%H:%M:%Sz'),
                              time.localtime(current)),
