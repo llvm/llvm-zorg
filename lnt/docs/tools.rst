@@ -44,6 +44,9 @@ The following tools are used to interact with an LNT server:
 
     The default server will have one database named *default*.
 
+  ``lnt createdb <path>``
+    Creates a new LNT sqlite3 database at the specified path.
+
   ``lnt import <path | config file> <file>+``
     Import an LNT data file into a database. You can use ``--database`` to
     select the database to write to. Note that by default this will also
