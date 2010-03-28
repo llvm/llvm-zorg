@@ -26,7 +26,7 @@ def main():
     # FIXME: It would be nice to support an easy mechanism for localized
     # instances of the LNT infrastructure to default to the correct server for
     # their installation.
-    parser.add_option("", "--server", dest="serverUrl", type=str,
+    parser.add_option("", "--server", dest="server", type=str,
                       default="http://llvm.org/perf/db_default/submitRun")
 
     opts,args = parser.parse_args()
@@ -40,12 +40,12 @@ def main():
         # Encode the form data.
         f = open(inputFile, 'rb')
         values = { 'input_data' : f.read(),
-                   'commit' : ("0","1")[not not commit] }
+                   'commit' : ("0","1")[not not opts.commit] }
         f.close()
         data = urllib.urlencode(values)
 
         # Send it off.
-        response = urllib2.urlopen(urllib2.Request(url, data))
+        response = urllib2.urlopen(urllib2.Request(opts.server, data))
         the_page = response.read()
 
         # FIXME: Parse results and return proper error code.
