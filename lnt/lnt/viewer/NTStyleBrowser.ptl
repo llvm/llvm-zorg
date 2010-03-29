@@ -55,6 +55,18 @@ class TestRunUI(Directory):
         # Find previous runs, ordered by time.
         runs = db.runs(run.machine).order_by(Run.start_time.desc()).all()
 
+        # Order by run_order info key, if given.
+        for r in runs:
+            if 'run_order' in r.info:
+                has_order = True
+                break
+        else:
+            has_order = False
+        if has_order:
+            runs.sort(key = lambda r: ('run_order' in r.info and
+                                       r.info['run_order'].value))
+            runs.reverse()
+
         # Find previous run to compare to.
         if compareTo is None:
             for r in runs:
@@ -304,6 +316,21 @@ class MachineUI(Directory):
             self.id = int(idstr)
         except ValueError, exc:
             raise TraversalError(str(exc))
+        self.popupDepth = 0
+
+    def renderPopupBegin [html] (self, id, title, hidden):
+        self.popupDepth += 1
+        """\
+        <p>
+        <a href="javascript://" onclick="toggleLayer('%s')"; id="%s_">(%s) %s</a>
+        <div id="%s" style="display: %s;" class="hideable_%d">
+        """ % (id, id, ("+","-")[hidden], title, id, ("","none")[hidden],
+               self.popupDepth)
+
+    def renderPopupEnd [html] (self):
+        """
+        </div>"""
+        self.popupDepth -= 1
 
     def _q_index [html] (self):
         # Get a DB connection.
@@ -318,6 +345,18 @@ class MachineUI(Directory):
 
         # Find all runs on this machine.
         runs = db.runs(machine).order_by(Run.start_time.desc()).all()
+
+        # Order by run_order info key, if given.
+        for r in runs:
+            if 'run_order' in r.info:
+                has_order = True
+                break
+        else:
+            has_order = False
+        if has_order:
+            runs.sort(key = lambda r: ('run_order' in r.info and
+                                       r.info['run_order'].value))
+            runs.reverse()
 
         # FIXME: List previous machines with the same nickname?
         """
@@ -372,26 +411,31 @@ class MachineUI(Directory):
                 <td> <b>Machine ID</b> </td>
                 <td> %d </td>
               </tr>
-              </table>
-              <p>
-              <table border=1>
-              <tr>
-        """ % (machine.name, machine.id)
+              </table>""" % (machine.name, machine.id)
+        self.renderPopupBegin('machine_info', 'Machine Info', True)
+        """
+              <table border=1>"""
         for mi in machine.info.values():
             """
               <tr>
                 <td> <b>%s</b> </td>
                 <td>%s</td>
-              </tr>
-            """ % (mi.key, mi.value)
+              </tr>""" % (mi.key, mi.value)
+        """
+              </table>"""
+        self.renderPopupEnd()
 
         # List associated runs.
+
         """
-        </table>
         <p>
         <table class="sortable" border=1>
         <thead>
-          <tr>
+          <tr>"""
+        if has_order:
+            """
+            <th>Run Order</th>"""
+        """
             <th>Start Time</th>
             <th>End Time</th>
             <th>&nbsp;</th>
@@ -399,7 +443,15 @@ class MachineUI(Directory):
         """
         for r in runs:
             """
-          <tr>
+          <tr>"""
+            if has_order:
+                if 'run_order' in r.info:
+                    order_value = r.info['run_order'].value
+                else:
+                    order_value = str('&nbsp;')
+                """
+            <td align=right>%s</td>""" % order_value
+            """
             <td>%s</td>
             <td>%s</td>
             <td><a href="../../%d">View Results</a></td>

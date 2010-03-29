@@ -19,6 +19,17 @@ from NTUtil import *
 
 from PerfDB import Machine, Run, Test
 
+def median(l):
+    l = list(l)
+    l.sort()
+    N = len(l)
+    return (l[(N-1)//2] + l[N//2])*.5
+
+def median_absolute_deviation(l, med = None):
+    if med is None:
+        med = median(l)
+    return median([abs(x - med) for x in l])
+
 class SimpleRunUI(Directory):
     _q_exports = ["", "graph"]
 
@@ -62,15 +73,25 @@ class SimpleRunUI(Directory):
         runs = [r for r in runs
                 if 'tag' in r.info and r.info['tag'].value == 'simple']
 
+        # Order by run_order info key, if given.
+        for r in runs:
+            if 'run_order' in r.info:
+                has_order = True
+                break
+        else:
+            has_order = False
+        if has_order:
+            runs.sort(key = lambda r: ('run_order' in r.info and
+                                       r.info['run_order'].value))
+            runs.reverse()
+
         # Find previous run to compare to.
         if compareTo is None:
-            for r in runs:
-                # FIXME: Compare revisions, not times.
-                if r != run and r.start_time < run.start_time:
-                    compareTo = r
-                    break
+            run_index = runs.index(run)
+            if run_index < len(runs) - 1:
+                compareTo = runs[run_index + 1]
 
-        return run, runs, compareTo
+        return run, runs, has_order, compareTo
 
     def show_run_page [html] (self, db, run, runs, compareTo, contents_fn):
         machine = run.machine
@@ -180,7 +201,7 @@ class SimpleRunUI(Directory):
         # Get a DB connection.
         db = self.root.getDB()
 
-        run,runs,compareTo = self.getInfo(db)
+        run,runs,has_order,compareTo = self.getInfo(db)
         machine = run.machine
 
         self.root.getHeader('Run Results', "../..",
@@ -197,7 +218,7 @@ class SimpleRunUI(Directory):
         # Get a DB connection.
         db = self.root.getDB()
 
-        run,runs,compareTo = self.getInfo(db)
+        run,runs,has_order,compareTo = self.getInfo(db)
         machine = run.machine
 
         # Load the metadata.
@@ -226,24 +247,36 @@ class SimpleRunUI(Directory):
         q = q.filter(Sample.test_id.in_(test_ids))
         samples = list(q)
 
-        # Aggregate by test id and then run id.
+        # Aggregate by test id and then run key.
         #
         # FIXME: Pretty expensive.
+        run_id_map = dict([(r.id,r) for r in runs])
         samples_by_test_id = {}
         for run_id,test_id,value in samples:
             d = samples_by_test_id.get(test_id)
             if d is None:
                 d = samples_by_test_id[test_id] = Util.multidict()
-            d[run_id] = value
+            r = run_id_map.get(run_id)
+            if r is None:
+                continue
+
+            if has_order:
+                # FIXME: What to do on failure?
+                run_key = int(r.info.get('run_order').value)
+            else:
+                run_key = time.mktime(r.start_time.timetuple())
+            d[run_key] = value
 
         # Build the graph data
-        run_id_map = dict([(r.id,r) for r in runs])
         pset_id_map = dict([(pset,i) for i,pset in enumerate(parameter_sets)])
         legend = []
         plots = ""
         num_plots = len(graph_tests) * len(graph_psets)
         num_points = 0
         index = 0
+        show_mad_error = has_order
+        show_points = has_order
+        show_all_points = False
         for name in graph_tests:
             for pset in graph_psets:
                 test_id = test_map[(name,pset)].id
@@ -251,20 +284,44 @@ class SimpleRunUI(Directory):
                 # Get the plot for this test.
                 #
                 # FIXME: Support order by something other than time.
+                errorbar_data = []
+                points_data = []
                 data = []
-                for run_id,values in samples_by_test_id.get(test_id,{}).items():
-                    r = run_id_map.get(run_id)
-                    if not r:
-                        continue
-                    timeval = time.mktime(r.start_time.timetuple())
-                    data.append((timeval, min(values)))
+                for x,values in samples_by_test_id.get(test_id,{}).items():
+                    min_value = min(values)
+                    data.append((x, min_value))
+                    if show_points:
+                        if show_all_points:
+                            for v in values:
+                                points_data.append((x, v))
+                        else:
+                            points_data.append((x, min_value))
+                    if show_mad_error:
+                        med = median(values)
+                        mad = median_absolute_deviation(values, med)
+                        errorbar_data.append((x, med - mad, med + mad))
                 data.sort()
                 num_points += len(data)
 
                 col = list(Util.makeDarkColor(float(index) / num_plots))
-                pts = ','.join(['[%f,%f]' % (t,v) for t,v in data])
+                pts = ','.join(['[%.3f,%.3f]' % (t,v)
+                                for t,v in data])
                 style = "new Graph2D_LinePlotStyle(1, %r)" % col
                 plots += "    graph.addPlot([%s], %s);\n" % (pts,style)
+
+                if points_data:
+                    pts_col = (0,0,0)
+                    pts = ','.join(['[%.3f,%.3f]' % (t,v)
+                                    for t,v in points_data])
+                    style = "new Graph2D_PointPlotStyle(1, %r)" % (pts_col,)
+                    plots += "    graph.addPlot([%s], %s);\n" % (pts,style)
+
+                if errorbar_data:
+                    bar_col = [c*.7 for c in col]
+                    pts = ','.join(['[%.3f,%.3f,%.3f]' % (x,y_min,y_max)
+                                    for x,y_min,y_max in errorbar_data])
+                    style = "new Graph2D_ErrorBarPlotStyle(1, %r)" % (bar_col,)
+                    plots += "    graph.addPlot([%s], %s);\n" % (pts,style)
 
                 legend.append(("%s : P%d" % (name, pset_id_map[pset]), col))
                 index += 1
@@ -301,15 +358,19 @@ class SimpleRunUI(Directory):
             <b>Num Points<b>: %d<br>
             """ % (num_plots, num_points)
 
+        if has_order:
+            xAxis_format = 'graph.xAxis.formats.normal'
+        else:
+            xAxis_format = 'graph.xAxis.formats.day'
         graph_init = """\
     function init() {
         graph = new Graph2D("graph");
         graph.clearColor = [1, 1, 1];
     %s
-        graph.xAxis.format = graph.xAxis.formats.day;
+        graph.xAxis.format = %s;
         graph.draw();
     }
-    """ % (plots,)
+    """ % (plots,xAxis_format)
         self.root.getHeader('Run Results', "..",
                             components=(('simple','simple'),
                                         ('machine',
