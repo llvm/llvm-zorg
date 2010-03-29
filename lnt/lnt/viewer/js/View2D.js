@@ -532,6 +532,67 @@ var Graph2D_LinePlotStyle = new Class ({
     },
 });
 
+var Graph2D_PointPlotStyle = new Class ({
+    Extends: Graph2D_PlotStyle,
+
+    initialize: function(width, color) {
+        if (!width)
+            width = 1;
+        if (!color)
+            color = [0,0,0];
+
+        this.parent();
+        this.width = width;
+        this.color = color;
+    },
+
+    plot: function(graph, ctx, data) {
+        if (data.length === 0)
+            return;
+
+        ctx.beginPath();
+        var radius = this.width * (graph.getPixelSize()[0] + graph.getPixelSize()[1]) * .5;
+        for (var i = 0, e = data.length; i != e; ++i) {
+            var co = graph.graphInfo.toNDC(data[i]);
+            ctx.moveTo(co[0], co[1]);
+            ctx.arc(co[0], co[1], radius, 0, Math.PI * 2, /*anticlockwise=*/false);
+        }
+        ctx.fillStyle = col3_to_rgb(this.color);
+        ctx.fill();
+    },
+});
+
+var Graph2D_ErrorBarPlotStyle = new Class ({
+    Extends: Graph2D_PlotStyle,
+
+    initialize: function(width, color) {
+        if (!width)
+            width = 1;
+        if (!color)
+            color = [0,0,0];
+
+        this.parent();
+        this.width = width;
+        this.color = color;
+    },
+
+    plot: function(graph, ctx, data) {
+        if (data.length === 0)
+            return;
+
+        ctx.beginPath();
+        for (var i = 0, e = data.length; i != e; ++i) {
+            var co_min = graph.graphInfo.toNDC([data[i][0], data[i][1]]);
+            var co_max = graph.graphInfo.toNDC([data[i][0], data[i][2]]);
+            ctx.moveTo(co_min[0], co_min[1]);
+            ctx.lineTo(co_max[0], co_max[1]);
+        }
+        ctx.lineWidth = this.width * (graph.getPixelSize()[0] + graph.getPixelSize()[1]) * .5;
+        ctx.strokeStyle = col3_to_rgb(this.color);
+        ctx.stroke();
+    },
+});
+
 var Graph2D_Axis = new Class ({
     // Static Methods
     formats: {
