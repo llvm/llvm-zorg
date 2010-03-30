@@ -8,7 +8,11 @@ data suitable for submitting to the server.
 
 import time
 import datetime
-import json
+
+try:
+    import json
+except ImportError:
+    import simplejson as json
 
 def normalize_time(t):
     if isinstance(t,float):

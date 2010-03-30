@@ -12,7 +12,10 @@ from lnt.viewer import NTUtil
 
 from sqlalchemy import func
 
-import json
+try:
+    import json
+except ImportError:
+    import simplejson as json
 
 class ZViewUI(Directory):
     _q_exports = ["", "get_machines", "get_tests", "get_test_data",
