@@ -782,7 +782,7 @@ var Graph2D = new Class ({
         var gi = new Graph2D_GraphInfo();
 
         gi.xAxisH = 40;
-        gi.yAxisW = 40;
+        gi.yAxisW = 60;
 
         var min = null, max = null;
         for (var i = 0, e = this.plots.length; i != e; ++i) {
