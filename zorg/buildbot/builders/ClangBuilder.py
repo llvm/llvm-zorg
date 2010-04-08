@@ -16,7 +16,8 @@ from Util import getConfigArgs
 def getClangBuildFactory(triple=None, clean=True, test=True, package_dst=None,
                          run_cxx_tests=False, examples=False, valgrind=False,
                          valgrindLeakCheck=False, outOfDir=False, useTwoStage=False,
-                         always_install=False, make='make', jobs="%(jobs)s",
+                         completely_clean=False, always_install=False,
+                         make='make', jobs="%(jobs)s",
                          stage1_config='Debug', stage2_config='Release',
                          extra_configure_args=[]):
     # Don't use in-dir builds with a two stage build process.
@@ -43,6 +44,14 @@ def getClangBuildFactory(triple=None, clean=True, test=True, package_dst=None,
                                                property="builddir",
                                                description="set build dir",
                                                workdir="."))
+
+    # Blow away completely, if requested.
+    if completely_clean:
+        f.addStep(ShellCommand(name="rm-llvm.src",
+                               command=["rm", "-rf", llvm_srcdir],
+                               haltOnFailure=True,
+                               description=["rm src dir", "llvm"],
+                               workdir="."))
 
     # Checkout sources.
     f.addStep(SVN(name='svn-llvm',
@@ -225,7 +234,8 @@ def getClangBuildFactory(triple=None, clean=True, test=True, package_dst=None,
 
     return f
 
-def getClangMSVCBuildFactory(update=True, clean=True, vcDrive='c', jobs=1):
+def getClangMSVCBuildFactory(update=True, clean=True, vcDrive='c', jobs=1,
+                             cmake=r"c:\Program Files\CMake 2.6\bin\cmake"):
     f = buildbot.process.factory.BuildFactory()
 
     if update:
@@ -260,7 +270,7 @@ def getClangMSVCBuildFactory(update=True, clean=True, vcDrive='c', jobs=1):
     # Use batch files instead of ShellCommand directly, Windows quoting is
     # borked. FIXME: See buildbot ticket #595 and buildbot ticket #377.
     f.addStep(BatchFileDownload(name='cmakegen',
-                                command=[r"c:\Program Files\CMake 2.6\bin\cmake",
+                                command=[cmake,
                                          "-DLLVM_TARGETS_TO_BUILD:=X86",
                                          "-G",
                                          "Visual Studio 9 2008",
