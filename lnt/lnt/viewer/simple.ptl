@@ -270,6 +270,7 @@ class SimpleRunUI(Directory):
         # Build the graph data
         pset_id_map = dict([(pset,i) for i,pset in enumerate(parameter_sets)])
         legend = []
+        plot_points = []
         plots = ""
         num_plots = len(graph_tests) * len(graph_psets)
         num_points = 0
@@ -287,6 +288,7 @@ class SimpleRunUI(Directory):
                 errorbar_data = []
                 points_data = []
                 data = []
+                points = []
                 for x,values in samples_by_test_id.get(test_id,{}).items():
                     min_value = min(values)
                     data.append((x, min_value))
@@ -300,30 +302,33 @@ class SimpleRunUI(Directory):
                         med = median(values)
                         mad = median_absolute_deviation(values, med)
                         errorbar_data.append((x, med - mad, med + mad))
+                        points.append((x, min_value, mad, med))
                 data.sort()
                 num_points += len(data)
 
                 col = list(Util.makeDarkColor(float(index) / num_plots))
-                pts = ','.join(['[%.3f,%.3f]' % (t,v)
+                pts = ','.join(['[%.4f,%.4f]' % (t,v)
                                 for t,v in data])
                 style = "new Graph2D_LinePlotStyle(1, %r)" % col
                 plots += "    graph.addPlot([%s], %s);\n" % (pts,style)
 
                 if points_data:
                     pts_col = (0,0,0)
-                    pts = ','.join(['[%.3f,%.3f]' % (t,v)
+                    pts = ','.join(['[%.4f,%.4f]' % (t,v)
                                     for t,v in points_data])
                     style = "new Graph2D_PointPlotStyle(1, %r)" % (pts_col,)
                     plots += "    graph.addPlot([%s], %s);\n" % (pts,style)
 
                 if errorbar_data:
                     bar_col = [c*.7 for c in col]
-                    pts = ','.join(['[%.3f,%.3f,%.3f]' % (x,y_min,y_max)
+                    pts = ','.join(['[%.4f,%.4f,%.4f]' % (x,y_min,y_max)
                                     for x,y_min,y_max in errorbar_data])
                     style = "new Graph2D_ErrorBarPlotStyle(1, %r)" % (bar_col,)
                     plots += "    graph.addPlot([%s], %s);\n" % (pts,style)
 
                 legend.append(("%s : P%d" % (name, pset_id_map[pset]), col))
+                points.sort()
+                plot_points.append(points)
                 index += 1
 
         def graph_body [html] (db, run, runs, compare_to):
@@ -357,6 +362,88 @@ class SimpleRunUI(Directory):
             <b>Plots</b>: %d<br>
             <b>Num Points<b>: %d<br>
             """ % (num_plots, num_points)
+
+            """
+            <h2>Deltas</h2>"""
+
+            resample_list = set()
+            new_sample_list = []
+            for (name,col),points in zip(legend,plot_points):
+                """
+            <h3>%s</h3>""" % name
+                """
+            <table>
+            <tr>
+              <th colspan=2>Revision</th>
+              <th> </th>
+              <th colspan=2>Value</th>
+              <th></th>
+              <th></th>
+              <th colspan=2>MAD</th>
+              <th colspan=2>Med - Min</th>
+            <tr>
+              <th>Current</th>
+              <th>Previous</th>
+              <th>Delta (%)</th>
+              <th>Current</th>
+              <th>Previous</th>
+              <th># Revs</th>
+              <th> </th>
+              <th>Current</th>
+              <th>Previous</th>
+              <th>Current</th>
+              <th>Previous</th>
+            </tr>"""
+                points.sort()
+                deltas = [(Util.safediv(p1[1], p0[1]), p0, p1)
+                          for p0,p1 in Util.pairs(points)]
+                deltas.sort()
+                deltas.reverse()
+                for (pct,(r0,t0,mad0,med0),(r1,t1,mad1,med1)) in deltas[:50]:
+                    """
+            <tr>
+              <td><a href="http://llvm.org/viewvc/llvm-project?view=rev&revision=%d">%d</a></td>
+              <td><a href="http://llvm.org/viewvc/llvm-project?view=rev&revision=%d">%d</a></td>
+              %s
+              <td>%.4f</td><td>%.4f</td>
+              <td>%d</td>
+              <td> </td>
+              <td>%.4f</td><td>%.4f</td>
+              <td>%.4f</td><td>%.4f</td>
+            </tr>
+                """ % (r1, r1, r0, r0, Util.PctCell(pct, delta=True).render(),
+                       t1, t0, r1 - r0, mad1, mad0, med1-t1, med0-t0)
+
+                    # Find the best next revision to sample, unless we have
+                    # sampled to the limit. To conserve resources, we try to
+                    # align to the largest "nice" revision boundary that we can,
+                    # so that we tend to sample the same revisions, even as we
+                    # drill down.
+                    assert r0 < r1 and r0 != r1
+                    if r0 + 1 != r1:
+                        for align in [scale * boundary
+                                      for scale in (100000,10000,1000,100,10,1)
+                                      for boundary in (5, 1)]:
+                            r = r0 + 1 + (r1 - r0)//2
+                            r = (r // align) * align
+                            if r0 < r < r1:
+                                new_sample_list.append(r)
+                                break
+
+                    resample_list.add(r0)
+                    resample_list.add(r1)
+            """
+            </table>"""
+
+            """
+            <h3>Revisions to Sample</h3>
+            %s
+            <p>
+            <h3>Revisions to Resample</h3>
+            %s
+            <p>""" % (' '.join(map(str, new_sample_list)),
+                      ' '.join(map(str, Util.sorted(resample_list))))
+            
 
         if has_order:
             xAxis_format = 'graph.xAxis.formats.normal'
@@ -464,7 +551,7 @@ class SimpleRunUI(Directory):
 
             run_cell_value = "-"
             if run_values:
-                run_cell_value = "%.3f" % min(run_values)
+                run_cell_value = "%.4f" % min(run_values)
 
             if failed:
                 """

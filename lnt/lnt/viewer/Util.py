@@ -22,6 +22,9 @@ def detectCPUs():
             return ncpus
         return 1 # Default
 
+def pairs(list):
+    return zip(list[:-1],list[1:])
+
 def safediv(a, b, default=None):
     try:
         return a/b
