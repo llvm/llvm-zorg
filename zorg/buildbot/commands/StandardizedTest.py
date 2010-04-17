@@ -31,10 +31,6 @@ class StandardizedTest(buildbot.steps.shell.Test):
         abstract
 
     def evaluateCommand(self, cmd):
-        # Always fail if the command itself failed.
-        if cmd.rc != 0:
-            return buildbot.status.builder.FAILURE
-
         results_by_code = {}
         logs = []
         lines = self.getLog(self.testLogName).readlines()
@@ -87,6 +83,12 @@ class StandardizedTest(buildbot.steps.shell.Test):
         for test, log in logs:
             self.addCompleteLog(test, log)
 
+        # Always fail if the command itself failed, unless we have ignored
+        # tests.
+        if not self.ignoredTests and cmd.rc != 0:
+            return buildbot.status.builder.FAILURE
+
+        # Report failure/warnings beased on the test status.
         if failed:
             return buildbot.status.builder.FAILURE
         if warnings:
