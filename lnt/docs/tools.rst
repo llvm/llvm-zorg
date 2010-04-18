@@ -1,3 +1,5 @@
+:: _tools:
+
 The ``lnt`` Tool
 ================
 
@@ -12,7 +14,7 @@ Client-Side Tools
   ``lnt checkformat [<file>]``
     Checks the syntax of an LNT test report file. In addition to verifying that
     LNT can read the raw format (e.g., JSON or property list), this also creates
-    a temporary in-memory database instance and insures that the test report
+    a temporary in-memory database instance and ensures that the test report
     file can be imported correctly.
 
     If run without arguments, this expects to read the input file from ``stdin``.
