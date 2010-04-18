@@ -5,8 +5,8 @@ from buildbot.steps.shell import Configure, ShellCommand
 from buildbot.steps.shell import WarningCountingShellCommand
 from buildbot.process.properties import WithProperties
 
-def getBuildFactory(triple, clean=True,
-                    jobs='%(jobs)s'):
+def getBuildFactory(triple, clean=True, jobs='%(jobs)s',
+                    build_script='buildbot_self_strap'):
     f = buildbot.process.factory.BuildFactory()
 
     # Determine the build directory.
@@ -30,13 +30,14 @@ def getBuildFactory(triple, clean=True,
 
     # Execute the DragonEgg self host script.
     f.addStep(ShellCommand(name='build',
-                           command=['dragonegg.src/extras/buildbot_self_strap',
+                           command=['dragonegg.src/extras/%s' % build_script,
                                     # Path to LLVM src.
                                     WithProperties("%(builddir)s/llvm.src"),
                                     # Path to DragonEgg src.
                                     WithProperties("%(builddir)s/dragonegg.src"),
                                     # Path to base build dir.
                                     WithProperties("%(builddir)s")],
+                           description=["build"],
                            workdir='.',
                            haltOnFailure=False))
 
