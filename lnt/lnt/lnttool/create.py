@@ -31,7 +31,9 @@ db_dir = %(db_dir)r
 # should be a 'default' entry for the default database.
 databases = {
     'default' : { 'path' : %(default_db)r,
-                  'showNightlytest' : 1 },
+                  'showGeneral' : 1,
+                  'showNightlytest' : 1,
+                  'showSimple' : 1 },
     }
 
 # The LNT email configuration.
