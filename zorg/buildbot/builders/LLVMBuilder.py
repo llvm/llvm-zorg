@@ -75,8 +75,6 @@ def getLLVMBuildFactory(triple=None, clean=True, test=True,
             litTestArgs += ' --vg '
             if valgrindLeakCheck:
                 litTestArgs += ' --vg-leak'
-            else:
-                litTestArgs += ' --vg-arg --leak-check=no'
         f.addStep(ClangTestCommand(name='test-llvm',
                                    command=[make, "check-lit", "VERBOSE=1",
                                             "LIT_ARGS=%s" % litTestArgs],

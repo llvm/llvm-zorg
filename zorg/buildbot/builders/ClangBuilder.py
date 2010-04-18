@@ -116,11 +116,9 @@ def getClangBuildFactory(triple=None, clean=True, test=True, package_dst=None,
 
     clangTestArgs = '-v'
     if valgrind:
-        clangTestArgs += ' --vg '
+        clangTestArgs += ' --vg'
         if valgrindLeakCheck:
             clangTestArgs += ' --vg-leak'
-        else:
-            clangTestArgs += ' --vg-arg --leak-check=no'
         clangTestArgs += ' --vg-arg --suppressions=%(builddir)s/llvm/tools/clang/utils/valgrind/x86_64-pc-linux-gnu_gcc-4.3.3.supp'
     extraTestDirs = ''
     if run_cxx_tests:
