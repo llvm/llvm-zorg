@@ -2,6 +2,7 @@
 Miscellaneous utilities for running "scripts".
 """
 
+import errno
 import inspect
 import os
 import sys
@@ -37,7 +38,12 @@ def capture(args, include_stderr=False):
     stderr = subprocess.PIPE
     if include_stderr:
         stderr = subprocess.STDOUT
-    p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=stderr)
+    try:
+        p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=stderr)
+    except OSError,e:
+        if e.errno == errno.ENOENT:
+            fatal('no such file or directory: %r' % args[0])
+        raise
     out,_ = p.communicate()
     return out
 
