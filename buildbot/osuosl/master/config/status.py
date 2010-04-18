@@ -11,7 +11,7 @@ def get_status_targets(standard_builders):
     default_email = config.options.get('Master Options', 'default_email')
     return [
         buildbot.status.html.WebStatus(
-            http_port = 8011, allowForce = False),
+            http_port = 8011, allowForce = True),
         buildbot.status.mail.MailNotifier(
             fromaddr = "buildbot@google1.osuosl.org",
             extraRecipients = [default_email],

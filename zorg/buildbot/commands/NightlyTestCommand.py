@@ -12,7 +12,7 @@ class NightlyTestCommand(buildbot.steps.shell.Test):
         buildbot.steps.shell.Test.__init__(self, *args, **kwargs)
 
         self.expectedFailures = set(xfails)
-        self.addFactoryArguments(xfails=xfails)
+        self.addFactoryArguments(xfails=list(xfails))
 
     def evaluateCommand(self, cmd):
         # Always fail if the command itself failed.

@@ -62,6 +62,9 @@ def get_build_slaves():
         create_slave("osu7", properties={'jobs' : 10}, max_builds=4),
         create_slave("osu8", properties={'jobs' : 10}, max_builds=4),
 
+        # Debian, P4 2.8GHz, 1GB mem
+        create_slave("balint1", properties={'jobs' : 1}, max_builds=1),
+
         # Defunct.
         #create_slave("osu2", properties={'jobs' : 4}, max_builds=2),
         #create_slave("andrew1"),
