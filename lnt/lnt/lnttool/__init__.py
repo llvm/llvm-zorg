@@ -42,7 +42,7 @@ def action_runserver(name, args):
 
     from werkzeug import run_simple
     from lnt.viewer import app
-    run_simple(opts.hostname, opts.port, app.create_app(opts.config),
+    run_simple(opts.hostname, opts.port, app.create_app(config),
                opts.reloader, opts.debugger,
                False, None, 1, opts.threaded, opts.processes)
 
