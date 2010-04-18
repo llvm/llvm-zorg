@@ -46,12 +46,13 @@ def getNightlytestBuildFactory(submitAux=None, *args, **kwargs):
                          description="nightlytest"))
   return f
 
-def getFastNightlyTestBuildFactory(triple, clean=True, test=True, xfails=set()):
-  # Build compiler to test.
+def getFastNightlyTestBuildFactory(triple, xfails=[], clean=True, test=False, **kwargs):
+  # Build compiler to test.  
   f = ClangBuilder.getClangBuildFactory(
     triple, outOfDir=True, clean=clean, test=test,
     # FIXME: We shouldn't need this, but --without-llvmgcc is broken.
-    extra_configure_args=['--with-llvmcc=clang'])
+    extra_configure_args=['--with-llvmcc=clang'],
+    **kwargs)
 
   # Get the test-suite sources.
   f.addStep(SVN(name='svn-test-suite',
