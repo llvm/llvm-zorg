@@ -21,5 +21,9 @@ Optimize test distribution format for common cases.
 
  3. We should support [test, sample] in addition to [test, [sample, ...]].
 
+ 4. If we changed the .success marker to be .failure, then having [test] be a
+ shortcut for [test, 0] would be fairly nice, and in the visualization we would
+ automatically get the right defaulting for absent tests.
+
 These changes would significantly compact the archive format, which improves
 performance across the board.
