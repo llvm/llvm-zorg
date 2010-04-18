@@ -1,4 +1,4 @@
-:: _tools:
+.. _tools:
 
 The ``lnt`` Tool
 ================

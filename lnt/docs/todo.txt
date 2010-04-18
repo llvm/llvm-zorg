@@ -1,4 +1,4 @@
-:: _todo:
+.. _todo:
 
 TODO
 ====
