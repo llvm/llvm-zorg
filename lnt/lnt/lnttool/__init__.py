@@ -2,13 +2,13 @@
 
 import os
 import sys
+from optparse import OptionParser, OptionGroup
 
 import StringIO
 
 def action_runserver(name, args):
     """start a new development server."""
 
-    from optparse import OptionParser, OptionGroup
     parser = OptionParser("%%prog %s [options] [<path|config file>]" % name)
     parser.add_option("", "--hostname", dest="hostname", type=str,
                       help="host interface to use [%default]",
@@ -56,7 +56,6 @@ from import_data import action_import
 def action_createdb(name, args):
     """create a new empty LNT sqlite3 database."""
 
-    from optparse import OptionParser, OptionGroup
     parser = OptionParser("%%prog %s [options] path" % name)
 
     (opts, args) = parser.parse_args(args)
@@ -72,7 +71,6 @@ def action_createdb(name, args):
 def action_checkformat(name, args):
     """check the format of an LNT test report file."""
 
-    from optparse import OptionParser, OptionGroup
     parser = OptionParser("%%prog %s [options] files" % name)
 
     (opts, args) = parser.parse_args(args)
@@ -96,7 +94,6 @@ def action_checkformat(name, args):
     PerfDB.importDataFromDict(db, data)
 
 def action_runtest(name, args):
-    from optparse import OptionParser, OptionGroup
     parser = OptionParser("%%prog %s test-name [options]" % name)
     parser.disable_interspersed_args()
     parser.add_option("", "--submit", dest="submit_url", metavar="URL",
@@ -133,7 +130,6 @@ def action_runtest(name, args):
 def action_showtests(name, args):
     """show the available built-in tests."""
 
-    from optparse import OptionParser, OptionGroup
     parser = OptionParser("%%prog %s" % name)
     (opts, args) = parser.parse_args(args)
     if len(args) != 0:
@@ -151,7 +147,6 @@ def action_showtests(name, args):
 def action_submit(name, args):
     """submit a test report to the server."""
 
-    from optparse import OptionParser, OptionGroup
     parser = OptionParser("%%prog %s [options] <url> <file>+" % name)
     parser.add_option("", "--commit", dest="commit", type=int,
                       default=False)
