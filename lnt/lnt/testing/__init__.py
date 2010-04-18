@@ -37,11 +37,11 @@ class Report:
         for t in self.tests:
             assert isinstance(t, TestSamples)
 
-    def render(self):
+    def render(self, indent=4):
         return json.dumps({ 'Machine' : self.machine.render(),
                             'Run' : self.run.render(),
                             'Tests' : [t.render() for t in self.tests] },
-                          sort_keys=True, indent=4)
+                          sort_keys=True, indent=indent)
 
 class Machine:
     """Information on the machine the test was run on.
