@@ -12,6 +12,7 @@ Contents
 
    changes
 
+   todo
 
 Indices and tables
 ==================
