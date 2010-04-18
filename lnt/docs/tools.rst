@@ -33,6 +33,13 @@ Client-Side Tools
     commit the data. When testing, you should verify that the server returns an
     acceptable response before committing runs.
 
+  ``lnt showtests``
+    List available built-in tests. See the :ref:`tests` documentation for more
+    details on this tool.
+
+  ``lnt runtest [<run options>] <test name> ... test arguments ...``
+    Run a built-in test. See the :ref:`tests` documentation for more
+    details on this tool.
 
 Server-Side Tools
 -----------------

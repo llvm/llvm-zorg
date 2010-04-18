@@ -95,6 +95,59 @@ def action_checkformat(name, args):
     data = formats.read_any(input, '<auto>')
     PerfDB.importDataFromDict(db, data)
 
+def action_runtest(name, args):
+    from optparse import OptionParser, OptionGroup
+    parser = OptionParser("%%prog %s test-name [options]" % name)
+    parser.disable_interspersed_args()
+    parser.add_option("", "--submit", dest="submit_url", metavar="URL",
+                      help=("autosubmit the test result to the given server "
+                            "[%default]"),
+                      type=str, default=None)
+    parser.add_option("", "--commit", dest="commit",
+                      help=("whether the autosubmit result should be committed "
+                            "[%default]"),
+                      type=int, default=True)
+
+    (opts, args) = parser.parse_args(args)
+    if len(args) < 1:
+        parser.error("incorrect number of argments")
+
+    test_name,args = args[0],args[1:]
+
+    import lnt.tests
+    try:
+        test_instance = lnt.tests.get_test_instance(test_name)
+    except KeyError:
+        parser.error('invalid test name %r' % test_name)
+
+    report = test_instance.run_test('%s %s' % (name, test_name), args)
+
+    if opts.submit_url is not None:
+        if report is None:
+            raise SystemExit,"error: report generation failed"
+
+        from lnt.util import ServerUtil
+        io = StringIO.StringIO(report.render(indent=None))
+        ServerUtil.submitFile(opts.submit_url, io, True)
+
+def action_showtests(name, args):
+    """show the available built-in tests."""
+
+    from optparse import OptionParser, OptionGroup
+    parser = OptionParser("%%prog %s" % name)
+    (opts, args) = parser.parse_args(args)
+    if len(args) != 0:
+        parser.error("incorrect number of argments")
+
+    import lnt.tests
+
+    print 'Available tests:'
+    test_names = lnt.tests.get_test_names()
+    max_name = max(map(len, test_names))
+    for name in test_names:
+        print '  %-*s - %s' % (max_name, name,
+                               lnt.tests.get_test_description(name))
+
 def action_submit(name, args):
     """submit a test report to the server."""
 

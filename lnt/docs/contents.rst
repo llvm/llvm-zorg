@@ -10,6 +10,8 @@ Contents
 
    tools
 
+   tests
+
    changes
 
    todo
