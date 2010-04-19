@@ -231,16 +231,20 @@ def run_test(nick_prefix, opts):
         program = record['Program']
         if opts.only_test is not None:
             program = os.path.join(opts.only_test, program)
-        test_base_name = 'nt.%s' % program.replace('.','_')
+        test_base_name = 'nightlytest.%s' % program.replace('.','_')
         for name,key,tname in sample_keys:
-            test_name = '%s.%s.%s' % (test_base_name, name, tname)
+            test_name = '%s.%s' % (test_base_name, name)
             value = record[key]
+
+            # FIXME: Move to simpler and more succinct format, using .failed.
             if value == '*':
                 test_samples.append(lnt.testing.TestSamples(
                         test_name + '.success', [0], test_info))
             else:
                 test_samples.append(lnt.testing.TestSamples(
-                        test_name, [float(value)], test_info))
+                        test_name + '.success', [1], test_info))
+                test_samples.append(lnt.testing.TestSamples(
+                        test_name + '.' + tname, [float(value)], test_info))
 
     report_file.close()
 
@@ -262,7 +266,7 @@ def run_test(nick_prefix, opts):
 
     # FIXME: We aren't getting the LLCBETA options.
     run_info = {}
-    run_info['tag'] = 'nt'
+    run_info['tag'] = 'nightlytest'
     run_info.update(cc_info)
 
     # FIXME: Hack, use better method of getting versions. Ideally, from binaries
