@@ -48,11 +48,10 @@ def run_test(nick_prefix, opts):
         }
 
     # Set test selection variables.
+    make_variables['TARGET_CXX'] = opts.cxx_reference
     if opts.test_cxx:
-        make_variables['TARGET_CXX'] = opts.cxx_reference
         make_variables['TARGET_LLVMGXX'] = opts.cxx_under_test
     else:
-        make_variables['TARGET_CXX'] = 'false'
         make_variables['TARGET_LLVMGXX'] = 'false'
         make_variables['DISABLE_CXX'] = '1'
     if not opts.test_cbe:
@@ -496,14 +495,14 @@ class NTTest(builtintest.BuiltinTest):
             opts.cc_reference = which('gcc') or which('cc')
             if opts.cc_reference is None:
                 parser.error('unable to infer --cc-reference (required)')
-        if opts.test_cxx and opts.cxx_reference is None:
+        if opts.cxx_reference is None:
             opts.cxx_reference = which('g++') or which('c++')
             if opts.cxx_reference is None:
                 parser.error('unable to infer --cxx-reference (required)')
 
         if opts.cc_under_test is None:
             parser.error('--cc is required')
-        if opts.cxx_under_test is None:
+        if opts.test_cxx and opts.cxx_under_test is None:
             parser.error('--cxx is required')
 
         if opts.llvm_src_root is None:
