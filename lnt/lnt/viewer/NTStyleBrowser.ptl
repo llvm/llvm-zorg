@@ -243,11 +243,13 @@ class TestRunUI(Directory):
                 <td> <b>Machine ID</b> </td>
                 <td> %d </td>
               </tr>
-              </table>
-              <p>
-              <table border=1>
-        """ %  (machine.name, machine.id)
-        for mi in machine.info.values():
+              </table>""" %  (machine.name, machine.id)
+        self.renderPopupBegin('machine_info', 'Machine Info', True)
+        """
+              <table border=1>"""
+        info = machine.info.values()
+        info.sort(key = lambda i: i.key)
+        for mi in info:
             """
               <tr>
                 <td> <b>%s</b> </td>
@@ -255,11 +257,15 @@ class TestRunUI(Directory):
               </tr>
             """ % (mi.key, mi.value)
         """
-              </table>
-              <p>
-              <table border=1>
+              </table>"""
+        self.renderPopupEnd()
+
+        self.renderPopupBegin('run_info', 'Run Info', True)
         """
-        for ri in run.info.values():
+              <table border=1>"""
+        info = run.info.values()
+        info.sort(key = lambda i: i.key)
+        for ri in info:
             """
               <tr>
                 <td> <b>%s</b> </td>
@@ -267,8 +273,8 @@ class TestRunUI(Directory):
               </tr>
             """ % (ri.key, ri.value)
         """
-              </table>
-        """
+              </table>"""
+        self.renderPopupEnd()
 
         if allResults:
             """<h4><a href="?full=">See Brief Test Results</a></h4>"""
@@ -415,7 +421,9 @@ class MachineUI(Directory):
         self.renderPopupBegin('machine_info', 'Machine Info', True)
         """
               <table border=1>"""
-        for mi in machine.info.values():
+        info = machine.info.values()
+        info.sort(key = lambda i: i.key)
+        for mi in info:
             """
               <tr>
                 <td> <b>%s</b> </td>
