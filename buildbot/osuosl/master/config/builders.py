@@ -229,6 +229,22 @@ def _get_dragonegg_builders():
 def _get_experimental_builders():
     return [
 
+        {'name' : "clang-x86_64-darwin10-selfhost-rel",
+         'slavenames' : ["dunbar-darwin10"],
+         'builddir' : "clang-x86_64-darwin10-selfhost-rel",
+         'factory' : ClangBuilder.getClangBuildFactory(triple='x86_64-apple-darwin10',
+                                                       useTwoStage=True,
+                                                       stage1_config='Release',
+                                                       stage2_config='Release'),
+         'category' : 'clang.exp' },
+
+        {'name' : "llvm-gcc-x86_64-linux-selfhost",
+         'slavenames':["osu7"],
+         'builddir':"llvm-gcc-x86_64-linux-selfhost",
+         'factory':LLVMGCCBuilder.getLLVMGCCBuildFactory(triple='x86_64-pc-linux-gnu',
+                                                         extra_configure_args=['--disable-multilib']),
+         'category' : 'llvm-gcc.exp' },
+
         {'name' : "llvm-gcc-x86_64-darwin10-cross-mingw32",
          'slavenames':["kistanova1"],
          'builddir': "llvm-gcc-x86_64-darwin10-cross-mingw32",
@@ -245,15 +261,6 @@ def _get_experimental_builders():
                 ),
          'category':'llvm-gcc'},
 
-        {'name' : "clang-x86_64-darwin10-selfhost-rel",
-         'slavenames' : ["dunbar-darwin10"],
-         'builddir' : "clang-x86_64-darwin10-selfhost-rel",
-         'factory' : ClangBuilder.getClangBuildFactory(triple='x86_64-apple-darwin10',
-                                                       useTwoStage=True,
-                                                       stage1_config='Release',
-                                                       stage2_config='Release'),
-         'category' : 'clang.exp' },
-
         {'name' : "clang-i686-linux-selfhost-rel",
          'slavenames' : ["osu8"],
          'builddir' : "clang-i686-linux-selfhost-rel",
@@ -262,13 +269,6 @@ def _get_experimental_builders():
                                                        stage1_config='Release',
                                                        stage2_config='Release'),
          'category' : 'clang.exp' },
-
-        {'name' : "llvm-gcc-x86_64-linux-selfhost",
-         'slavenames':["osu7"],
-         'builddir':"llvm-gcc-x86_64-linux-selfhost",
-         'factory':LLVMGCCBuilder.getLLVMGCCBuildFactory(triple='x86_64-pc-linux-gnu',
-                                                         extra_configure_args=['--disable-multilib']),
-         'category' : 'llvm-gcc.exp' },
 
         {'name' : "clang-i686-xp-msvc9_alt",
          'slavenames' :['adobe1'],
