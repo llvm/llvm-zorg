@@ -180,6 +180,14 @@ def _get_clang_builders():
                                                        stage1_config='Release',
                                                        stage2_config='Debug')},
 
+        {'name' : "clang-x86_64-linux-selfhost-rel",
+         'slavenames' : ["osu7"],
+         'builddir' : "clang-x86_64-linux-selfhost-rel",
+         'factory' : ClangBuilder.getClangBuildFactory(triple='x86_64-pc-linux-gnu',
+                                                       useTwoStage=True,
+                                                       stage1_config='Release',
+                                                       stage2_config='Release')},
+
         {'name' : "clang-i686-linux-fnt",
          'slavenames' : ['balint1'],
          'builddir' : "clang-i686-linux-fnt",
@@ -261,15 +269,6 @@ def _get_experimental_builders():
          'factory':LLVMGCCBuilder.getLLVMGCCBuildFactory(triple='x86_64-pc-linux-gnu',
                                                          extra_configure_args=['--disable-multilib']),
          'category' : 'llvm-gcc.exp' },
-
-        {'name' : "clang-x86_64-linux-selfhost-rel",
-         'slavenames' : ["osu7"],
-         'builddir' : "clang-x86_64-linux-selfhost-rel",
-         'factory' : ClangBuilder.getClangBuildFactory(triple='x86_64-pc-linux-gnu',
-                                                       useTwoStage=True,
-                                                       stage1_config='Release',
-                                                       stage2_config='Release'),
-         'category' : 'clang.exp' },
 
         {'name' : "clang-i686-xp-msvc9_alt",
          'slavenames' :['adobe1'],
