@@ -221,7 +221,7 @@ def _get_dragonegg_builders():
                                                       build_script='buildbot_self_strap-32') },
 
         {'name' : 'dragonegg-x86_64-linux',
-         'slavenames' : ['baldrick13', 'baldrick17'],
+         'slavenames' : ['baldrick17'],
          'builddir' : 'dragonegg-x86_64-linux',
          'factory' : DragonEggBuilder.getBuildFactory(triple='x86_64-pc-linux-gnu'), },
         ]
