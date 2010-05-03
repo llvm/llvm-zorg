@@ -9,20 +9,23 @@ class StandardizedTest(buildbot.steps.shell.Test):
     knownCodes = ['FAIL', 'XFAIL', 'PASS', 'XPASS',
                   'UNRESOLVED', 'UNSUPPORTED']
     failingCodes = set(['FAIL', 'XPASS', 'UNRESOLVED'])
-    warningCodes = set(['IGN PASS', 'IGN XFAIL'])
+    warningCodes = set(['IGNORE PASS', 'IGNORE XFAIL'])
 
-    # The list of all possible codes, including ignored codes. This is the
-    # display order, as well.
-    allKnownCodes = knownCodes + ['IGN ' + c for c in knownCodes]
+    # The list of all possible codes, including flaky and ignored codes. This is
+    # the display order, as well.
+    allKnownCodes = (knownCodes + ['IGNORE ' + c for c in knownCodes] +
+                     ['FLAKY ' + c for c in knownCodes])
 
     testLogName = 'stdio'
 
-    def __init__(self, ignore=[], max_logs=20,
+    def __init__(self, ignore=[], flaky=[], max_logs=20,
                  *args, **kwargs):
         buildbot.steps.shell.Test.__init__(self, *args, **kwargs)
 
+        self.flakyTests = set(flaky)
         self.ignoredTests = set(ignore)
         self.maxLogs = int(max_logs)
+        self.addFactoryArguments(flaky=list(flaky))
         self.addFactoryArguments(ignore=list(ignore))
         self.addFactoryArguments(max_logs=max_logs)
 
@@ -34,13 +37,18 @@ class StandardizedTest(buildbot.steps.shell.Test):
         results_by_code = {}
         logs = []
         lines = self.getLog(self.testLogName).readlines()
+        hasIgnored = False
         for result,test,log in self.parseLog(lines):
             if result not in self.knownCodes:
                 raise ValueError,'test command return invalid result code!'
 
-            # Convert externally expected failures.
-            if test in self.ignoredTests:
-                result = 'IGN ' + result
+            # Convert codes for flaky and ignored tests.
+            if test in self.flakyTests:
+                result = 'FLAKY ' + result
+                hasIgnored = True
+            elif test in self.ignoredTests:
+                result = 'IGNORE ' + result
+                hasIgnored = True
 
             if result not in results_by_code:
                 results_by_code[result] = set()
@@ -83,9 +91,10 @@ class StandardizedTest(buildbot.steps.shell.Test):
         for test, log in logs:
             self.addCompleteLog(test, log)
 
-        # Always fail if the command itself failed, unless we have ignored
-        # tests.
-        if not self.ignoredTests and cmd.rc != 0:
+        # Always fail if the command itself failed, unless we have ignored some
+        # test results (which presumably would have caused the actual test
+        # runner to fail).
+        if not hasIgnored and cmd.rc != 0:
             return buildbot.status.builder.FAILURE
 
         # Report failure/warnings beased on the test status.
