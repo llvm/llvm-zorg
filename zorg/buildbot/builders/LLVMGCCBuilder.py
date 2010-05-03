@@ -13,7 +13,8 @@ def getLLVMGCCBuildFactory(jobs='%(jobs)s', update=True, clean=True,
                            triple=None, build=None, host=None, target=None,
                            useTwoStage=True, stage1_config='Release',
                            stage2_config='Release', make='make',
-                           extra_configure_args=[], verbose=False, env = {}):
+                           extra_configure_args=[], verbose=False, env = {},
+                           defaultBranch='trunk'):
   if build or host or target:
     if not build or not host or not target:
       raise ValueError,"Must specify all of 'build', 'host', 'target' if used."
@@ -35,11 +36,11 @@ def getLLVMGCCBuildFactory(jobs='%(jobs)s', update=True, clean=True,
   if update:
     f.addStep(SVN(name='svn-llvm',
                   mode='update', baseURL='http://llvm.org/svn/llvm-project/llvm/',
-                  defaultBranch='trunk',
+                  defaultBranch=defaultBranch,
                   workdir="llvm.src"))
     f.addStep(SVN(name='svn-llvm-gcc',
                   mode='update', baseURL='http://llvm.org/svn/llvm-project/llvm-gcc-4.2/',
-                  defaultBranch='trunk',
+                  defaultBranch=defaultBranch,
                   workdir="llvm-gcc.src"))
 
   # Clean up llvm (stage 1).
