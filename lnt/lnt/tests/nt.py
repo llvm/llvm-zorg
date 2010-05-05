@@ -92,10 +92,11 @@ def run_test(nick_prefix, opts):
     cc_info = lnt.testing.util.compilers.get_cc_info(opts.cc_under_test,
                                                      target_flags)
 
-    # Construct the nickname from a few key parameters.
-    cc_nick = '%s_%s' % (cc_info.get('cc_name'), cc_info.get('cc_build'))
-    nick = "%s__%s__%s" % (nick_prefix, cc_nick,
-                           cc_info.get('cc_target').split('-')[0])
+    nick = nick_prefix
+    if opts.auto_name:
+        # Construct the nickname from a few key parameters.
+        cc_nick = '%s_%s' % (cc_info.get('cc_name'), cc_info.get('cc_build'))
+        nick += "__%s__%s" % (cc_nick, cc_info.get('cc_target').split('-')[0])
     print >>sys.stderr, "%s: using nickname: %r" % (timestamp(), nick)
 
     # Set up the sandbox.
@@ -490,6 +491,9 @@ class NTTest(builtintest.BuiltinTest):
         parser.add_option_group(group)
 
         group = OptionGroup(parser, "Output Options")
+        group.add_option("", "--no-auto-name", dest="auto_name",
+                         help="Don't automatically derive submission name",
+                         action="store_false", default=True)
         parser.add_option("", "--run-order", dest="run_order", metavar="STR",
                           help="String to use to identify and order this run",
                           action="store", type=str, default=None)
