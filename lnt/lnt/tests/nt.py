@@ -64,6 +64,8 @@ def run_test(nick_prefix, opts):
         make_variables['ENABLE_LLCBETA'] = '1'
     if opts.test_small:
         make_variables['SMALL_PROBLEM_SIZE'] = '1'
+    if opts.test_integrated_as:
+        make_variables['TEST_INTEGRATED_AS'] = '1'
 
     if opts.threads > 1:
         make_variables['ENABLE_PARALLEL_REPORT'] = '1'
@@ -81,6 +83,10 @@ def run_test(nick_prefix, opts):
         # FIXME: This is a huge hack, but we should just eliminate this. It is
         # only used by a few tests.
         make_variables['TARGET_ARCH'] = 'ARM'
+
+    # Support disabling test suite externals separately from providing path.
+    if not opts.test_externals:
+        opts.test_suite_externals = '/dev/null'
 
     # Get compiler info.
     cc_info = lnt.testing.util.compilers.get_cc_info(opts.cc_under_test,
@@ -434,6 +440,12 @@ class NTTest(builtintest.BuiltinTest):
 
         group.add_option("", "--enable-cbe", dest="test_cbe",
                          help="Enable CBE tests",
+                         action="store_true", default=False)
+        group.add_option("", "--disable-externals", dest="test_externals",
+                         help="Disable test suite externals (if configured)",
+                         action="store_false", default=True)
+        group.add_option("", "--enable-integrated-as",dest="test_integrated_as",
+                         help="Enable TEST_INTEGRATED_AS tests",
                          action="store_true", default=False)
         group.add_option("", "--enable-jit", dest="test_jit",
                          help="Enable JIT tests",
