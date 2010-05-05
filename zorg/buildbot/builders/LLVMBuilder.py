@@ -77,10 +77,10 @@ def getLLVMBuildFactory(triple=None, clean=True, test=True,
             if valgrindLeakCheck:
                 litTestArgs += ' --vg-leak'
             if valgrindSuppressions is not None:
-                litTestArgs += ' --vg-arg --suppressions=%%(builddir)s/%s' % valgrindSuppressions
+                litTestArgs += ' --vg-arg --suppressions=%%(builddir)s/llvm/%s' % valgrindSuppressions
         f.addStep(ClangTestCommand(name='test-llvm',
                                    command=[make, "check-lit", "VERBOSE=1",
-                                            "LIT_ARGS=%s" % litTestArgs],
+                                            WithProperties("LIT_ARGS=%s" % litTestArgs)],
                                    description=["testing", "llvm"],
                                    descriptionDone=["test", "llvm"],
                                    workdir='llvm'))
