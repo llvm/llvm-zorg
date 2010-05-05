@@ -179,9 +179,13 @@ def run_test(nick_prefix, opts):
                                                     for a in args))
     test_log.flush()
 
+    # FIXME: We shouldn't need to set env=os.environ here, but if we don't
+    # somehow MACOSX_DEPLOYMENT_TARGET gets injected into the environment on OS
+    # X (which changes the driver behavior and causes generally weirdness).
     print >>sys.stderr, '%s: testing...' % timestamp()
     p = subprocess.Popen(args=args, stdin=None, stdout=test_log,
-                         stderr=subprocess.STDOUT, cwd=basedir)
+                         stderr=subprocess.STDOUT, cwd=basedir,
+                         env=os.environ)
     res = p.wait()
     test_log.close()
 
