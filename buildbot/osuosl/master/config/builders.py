@@ -42,12 +42,14 @@ def _get_llvm_builders():
          'slavenames':["osu8"],
          'builddir':"llvm-i686-linux-vg_leak",
          'factory': LLVMBuilder.getLLVMBuildFactory("i686-pc-linux-gnu", valgrind=True,
-                                                    valgrindLeakCheck=True)},
+                                                    valgrindLeakCheck=True,
+                                                    valgrindSuppressions='utils/valgrind/i386-pc-linux-gnu.supp')},
         {'name': "llvm-x86_64-linux-vg_leak",
          'slavenames':["osu7"],
          'builddir':"llvm-x86_64-linux-vg_leak",
          'factory': LLVMBuilder.getLLVMBuildFactory("x86_64-pc-linux-gnu", valgrind=True,
-                                                    valgrindLeakCheck=True)},
+                                                    valgrindLeakCheck=True,
+                                                    valgrindSuppressions='utils/valgrind/x86_64-pc-linux-gnu.supp')},
         ]
 
 # Offline.
@@ -274,6 +276,15 @@ def _get_experimental_builders():
          'slavenames' :['adobe1'],
          'builddir' :"clang-i686-xp-msvc9_alt",
          'factory' : ClangBuilder.getClangMSVCBuildFactory(jobs=2),
+         'category' : 'clang.exp' },
+
+        {'name': "clang-i686-freebsd-selfhost-rel",
+         'slavenames':["freebsd1"],
+         'builddir':"clang-i686-freebsd-selfhost-rel",
+         'factory': ClangBuilder.getClangBuildFactory(triple='i686-pc-freebsd',
+                                                      useTwoStage=True,
+                                                      stage1_config='Release',
+                                                      stage2_config='Release'),
          'category' : 'clang.exp' },
 
         ]

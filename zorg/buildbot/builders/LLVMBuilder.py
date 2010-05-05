@@ -11,7 +11,8 @@ from zorg.buildbot.commands.ClangTestCommand import ClangTestCommand
 
 def getLLVMBuildFactory(triple=None, clean=True, test=True,
                         expensive_checks=False, examples=False, valgrind=False,
-                        valgrindLeakCheck=False, jobs='%(jobs)s', timeout=20, make='make',
+                        valgrindLeakCheck=False, valgrindSuppressions=None,
+                        jobs='%(jobs)s', timeout=20, make='make',
                         enable_shared=False):
     f = buildbot.process.factory.BuildFactory()
 
@@ -75,6 +76,8 @@ def getLLVMBuildFactory(triple=None, clean=True, test=True,
             litTestArgs += ' --vg '
             if valgrindLeakCheck:
                 litTestArgs += ' --vg-leak'
+            if valgrindSuppressions is not None:
+                litTestArgs += ' --vg-arg --suppressions=%%(builddir)s/%s' % valgrindSuppressions
         f.addStep(ClangTestCommand(name='test-llvm',
                                    command=[make, "check-lit", "VERBOSE=1",
                                             "LIT_ARGS=%s" % litTestArgs],
