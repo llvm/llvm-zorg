@@ -299,7 +299,7 @@ def run_test(nick_prefix, opts):
         # FIXME: Pretty lame, should we just require the user to specify this?
         if run_info['llvm_revision'].isdigit():
             run_info['run_order'] = run_info['llvm_revision']
-        if (run_info['cc_src_revision'].isdigit() and
+        if (run_info.get('cc_src_revision','').isdigit() and
             ('run_order' not in run_info or
              int(run_info['run_order'] < int(run_info['cc_src_revision'])))):
             run_info['run_order'] = run_info['cc_src_revision']
