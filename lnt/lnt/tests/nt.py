@@ -464,7 +464,7 @@ class NTTest(builtintest.BuiltinTest):
 
         group.add_option("", "--small", dest="test_small",
                          help="Use smaller test inputs and disable large tests",
-                         action="store_false", default=True)
+                         action="store_true", default=False)
 
         group.add_option("", "--only-test", dest="only_test", metavar="PATH",
                          help="Only run tests under PATH",
