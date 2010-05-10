@@ -18,6 +18,12 @@ from zorg.buildbot.builders import NightlytestBuilder
 reload(NightlytestBuilder)
 from zorg.buildbot.builders import NightlytestBuilder
 
+from zorg.buildbot.builders import ScriptedBuilder
+reload(ScriptedBuilder)
+from zorg.buildbot.builders import ScriptedBuilder
+
+from buildbot.steps.source import SVN
+
 # Plain LLVM builders.
 def _get_llvm_builders():
     return [
@@ -247,21 +253,38 @@ def _get_experimental_builders():
                                                          extra_configure_args=['--disable-multilib']),
          'category' : 'llvm-gcc.exp' },
 
-        {'name' : "llvm-gcc-x86_64-darwin10-cross-mingw32",
-         'slavenames':["kistanova1"],
-         'builddir': "llvm-gcc-x86_64-darwin10-cross-mingw32",
-         'factory':LLVMGCCBuilder.getLLVMGCCBuildFactory(
-                16, build='x86_64-apple-darwin10',
-                host='i686-pc-mingw32',
-                target='i686-pc-mingw32',
-                useTwoStage=False,
-                extra_configure_args=['--disable-multilib', '--disable-nls', '--disable-shared',
-                                      '--disable-sjlj-exceptions', '--disable-__cxa_atexit',
-                                      '--with-local-prefix=/tools'],
-                verbose=True,
-                env={ 'PATH' : '/cross-tools/bin:/usr/bin:/bin:/usr/sbin:/sbin' },
-                ),
-         'category':'llvm-gcc'},
+        {'name'      : "llvm-gcc-x86_64-darwin10-cross-mingw32",
+         'slavenames': [ "kistanova1" ],
+         'builddir'  : "llvm-gcc-x86_64-darwin10-cross-mingw32",
+         'factory'   : ScriptedBuilder.getScriptedBuildFactory(
+                       source_code  = [SVN(name='svn-llvm',
+                                           mode='update', baseURL='http://llvm.org/svn/llvm-project/llvm/',
+                                           defaultBranch='trunk',
+                                           workdir="llvm.src"),
+                                       SVN(name='svn-llvm-gcc',
+                                           mode='update', baseURL='http://llvm.org/svn/llvm-project/llvm-gcc-4.2/',
+                                           defaultBranch='trunk',
+                                           workdir="llvm-gcc.src"),],
+                       launcher     = 'llvm-gcc.src/extras/buildbot-launcher',
+                       build_script = 'llvm-gcc.src/extras/build-4-mingw32',
+                       extra_args   = [],
+                       build_steps  = [{'name'          : 'configure_llvm',
+                                        'description'   : 'Configure LLVM',
+                                        'haltOnFailure' : True },
+                                       {'name'          : 'make_llvm',
+                                        'description'   : 'Make LLVM',
+                                        'extra_args'    : ['-j8'],  # Extra step-specific properties
+                                        'haltOnFailure' : True },
+                                       {'name'          : 'configure_llvmgcc',
+                                        'description'   : 'Configure LLVM-GCC',
+                                        'haltOnFailure' : True },
+                                       {'name'          : 'make_llvmgcc',
+                                        'description'   : 'Make LLVM-GCC',
+                                        'haltOnFailure' : True },
+                                       {'name'          : 'install_llvmgcc',
+                                        'description'   : 'Install LLVM-GCC',
+                                        'haltOnFailure' : True },]),
+         'category'  : 'llvm-gcc' },
 
         {'name' : "clang-i686-linux-selfhost-rel",
          'slavenames' : ["osu8"],
