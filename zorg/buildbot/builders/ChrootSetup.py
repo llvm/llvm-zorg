@@ -33,7 +33,14 @@ def addDarwinChrootSetup(f, build_root_images=[],
                            workdir=build_root_name))
 
     # For each image...
-    for i,image in enumerate(build_root_images):
+    for i,image_info in enumerate(build_root_images):
+        # If this image is (image, package name) then assume this is a dmg with
+        # a package inside, which we should install.
+        if isinstance(image_info, tuple):
+            image,package_to_install = image_info
+        else:
+            image,package_to_install = image_info,None
+
         # Setup the build root we will build projects in.
         f.addStep(ShellCommand(
                 name="attach.buildroot",
@@ -60,17 +67,26 @@ print items[0]
                 haltOnFailure=True,
                 workdir="mounts"))
 
-        # Restore the build root.
-        cmd = ["sudo", "rsync", "-arv"]
-        if i == 0:
-            cmd.append("--delete")
-        cmd.extend([WithProperties("%%(%s)s/" % mount_point_property), "./"])
+        # Check whether we are install the package, or restoring the disk
+        # directly.
+        if package_to_install:
+            cmd = ["sudo", "installer", "-verboseR", "-pkg",
+                   WithProperties("%%(%s)s/%s" % (mount_point_property,
+                                                  package_to_install)),
+                   "-target",
+                   WithProperties("%%(builddir)s/%s" % build_root_name)]
+        else:
+            # Restore the build root.
+            cmd = ["sudo", "rsync", "-arv"]
+            if i == 0:
+                cmd.append("--delete")
+            cmd.extend(["--exclude", "/dev"])
+            cmd.extend([WithProperties("%%(%s)s/" % mount_point_property),
+                        "./"])
         f.addStep(ShellCommand(
                 name="init.buildroot.%d" % i,
                 command=cmd,
-                warnOnFailure=True,
-                flunkOnFailure=False,
-                haltOnFailure=False,
+                haltOnFailure=True,
                 description="init build root",
                 workdir=build_root_name))
 
