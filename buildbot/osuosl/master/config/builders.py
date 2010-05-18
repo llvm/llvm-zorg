@@ -23,6 +23,7 @@ reload(ScriptedBuilder)
 from zorg.buildbot.builders import ScriptedBuilder
 
 from buildbot.steps.source import SVN
+from zorg.buildbot.commands.ClangTestCommand import ClangTestCommand
 
 # Plain LLVM builders.
 def _get_llvm_builders():
@@ -309,6 +310,7 @@ def _get_experimental_builders():
                                         'extra_args'    : ['-j8'],  # Extra step-specific properties
                                         'haltOnFailure' : True },
                                        {'name'          : 'test_llvm',
+                                        'type'          : ClangTestCommand,
                                         'description'   : 'Test LLVM',
                                         'haltOnFailure' : False },
                                        {'name'          : 'cross_tools',

@@ -1,5 +1,5 @@
 import buildbot
-from buildbot.steps.shell import ShellCommand, SetProperty
+from buildbot.steps.shell import WarningCountingShellCommand, SetProperty
 from buildbot.process.properties import WithProperties
 
 def getScriptedBuildFactory(
@@ -13,8 +13,6 @@ def getScriptedBuildFactory(
     # Validate input parameters
     if not launcher:
       raise ValueError,"Must specify launcher."
-    if not build_script:
-      raise ValueError,"Must specify build_script."
 
     f = buildbot.process.factory.BuildFactory()
 
@@ -27,22 +25,25 @@ def getScriptedBuildFactory(
         description = "set build dir",
         workdir     = "."))
 
-    # Get all the source code we need for this build
+    # Common for all steps arguments
+    scripted_step_common_args = list()
+    # build_script is optional but must go first if given.
+    if build_script:
+      scripted_step_common_args.append(WithProperties(build_script))
+
+    # Get all the source code directories we need for this build.
     for checkout in source_code:
+      # Store the list of source code directories in the original order for later use.
+      # Note: We require all spaces and special characters already escaped.
+      src_dir = checkout.args.get('workdir', None)
+      if src_dir:
+        scripted_step_common_args.append(WithProperties(src_dir))
 
-      # Figure out from the source code check out commands where
-      # llvm and llvm-gcc source code directories are.
-      if checkout.name == 'svn-llvm':
-        llvm_src_dir = checkout.args.get('workdir', None)
-      elif checkout.name == 'svn-llvm-gcc':
-        llvm_gcc_src_dir = checkout.args.get('workdir', None)
-
+      # Get the source code from version control system
       f.addStep(checkout)
 
-    assert llvm_src_dir,     \
-      "Cannot retrieve where llvm source code gets checked out to."
-    assert llvm_gcc_src_dir, \
-      "Cannot retrieve where llvm-gcc source code gets checked out to."
+    # The last common arg is build directory
+    scripted_step_common_args.append(WithProperties("%(builddir)s"))
 
     # Run build script for each requested step
     for step_params in build_steps:
@@ -50,6 +51,7 @@ def getScriptedBuildFactory(
 
       # Handle some of the parameters here.
       scripted_step_name            = step_params.pop('name',            None)
+      scripted_step_type            = step_params.pop('type',            WarningCountingShellCommand)
       scripted_step_description     = step_params.pop('description',     None)
       scripted_step_descriptionDone = step_params.pop('descriptionDone', None)
       scripted_step_extra_args      = step_params.pop('extra_args',      [])
@@ -67,16 +69,13 @@ def getScriptedBuildFactory(
       step_params['env'] = scripted_step_env
 
       f.addStep(
-        ShellCommand(
+        scripted_step_type(
           name            = "run.build.step." + scripted_step_name,
           description     = scripted_step_description,
           descriptionDone = scripted_step_descriptionDone,
           command = (
             [WithProperties("%(builddir)s/"      + launcher)] +
-            [WithProperties(build_script)]       +  # Build script to launch
-            [WithProperties(llvm_src_dir)]       +  # TODO: Escape spaces and special charactes
-            [WithProperties(llvm_gcc_src_dir)]   +  # TODO: Escape spaces and special charactes
-            [WithProperties("%(builddir)s")]     +  # TODO: Escape spaces and special charactes
+            scripted_step_common_args            +  # Common args
             [WithProperties(scripted_step_name)] +  # The requested step name
             scripted_step_extra_args             +  # Step-specific extra args 
             extra_args                              # Common extra args
@@ -87,15 +86,12 @@ def getScriptedBuildFactory(
 
       # Run the build_script once
       f.addStep(
-          ShellCommand(
+          WarningCountingShellCommand(
             name="run.build.script",
             command=(
               [WithProperties("%(builddir)s/"    + launcher)] +
-              [WithProperties(build_script)]     +  # Build script to launch
-              [WithProperties(llvm_src_dir)]     +  # TODO: Escape spaces and special charactes
-              [WithProperties(llvm_gcc_src_dir)] +  # TODO: Escape spaces and special charactes
-              [WithProperties("%(builddir)s")]   +  # TODO: Escape spaces and special charactes
-            extra_args                              # Common extra args
+              scripted_step_common_args          +  # Common args
+              extra_args                            # Common extra args
             ),
             haltOnFailure = True,
             description   = "Run build script",
