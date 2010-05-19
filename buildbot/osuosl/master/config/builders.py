@@ -170,7 +170,7 @@ def _get_clang_builders():
         {'name': "clang-i686-freebsd",
          'slavenames':["freebsd1"],
          'builddir':"clang-i686-freebsd",
-         'factory': ClangBuilder.getClangBuildFactory(clean=False)},
+         'factory': ClangBuilder.getClangBuildFactory(clean=False, use_pty_in_tests=True)},
         {'name' : "clang-i686-xp-msvc9",
          'slavenames' :['dunbar-win32-2'],
          'builddir' :"clang-i686-xp-msvc9",
@@ -238,6 +238,14 @@ def _get_dragonegg_builders():
 def _get_experimental_builders():
     return [
 
+        {'name' : "clang-i386-darwin10-selfhost-rel",
+         'slavenames' : ["dunbar-darwin10"],
+         'builddir' : "clang-i386-darwin10-selfhost-rel",
+         'factory' : ClangBuilder.getClangBuildFactory(triple='i386-apple-darwin10',
+                                                       useTwoStage=True,
+                                                       stage1_config='Release',
+                                                       stage2_config='Release'),
+         'category' : 'clang.exp' },
         {'name' : "clang-x86_64-darwin10-selfhost-rel",
          'slavenames' : ["dunbar-darwin10"],
          'builddir' : "clang-x86_64-darwin10-selfhost-rel",

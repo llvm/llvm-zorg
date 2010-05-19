@@ -19,7 +19,7 @@ def getClangBuildFactory(triple=None, clean=True, test=True, package_dst=None,
                          completely_clean=False, always_install=False,
                          make='make', jobs="%(jobs)s",
                          stage1_config='Debug', stage2_config='Release',
-                         extra_configure_args=[]):
+                         extra_configure_args=[], use_pty_in_tests=False):
     # Don't use in-dir builds with a two stage build process.
     inDir = not outOfDir and not useTwoStage
     if inDir:
@@ -128,11 +128,13 @@ def getClangBuildFactory(triple=None, clean=True, test=True, package_dst=None,
                                    command=[make, "check-lit", "VERBOSE=1"],
                                    description=["testing", "llvm"],
                                    descriptionDone=["test", "llvm"],
-                                   workdir=llvm_1_objdir))
+                                   workdir=llvm_1_objdir,
+                                   usePTY=use_pty_in_tests))
         f.addStep(ClangTestCommand(name='test-clang',
                                    command=[make, 'test', WithProperties('TESTARGS=%s' % clangTestArgs),
                                             WithProperties('EXTRA_TESTDIRS=%s' % extraTestDirs)],
-                                   workdir='%s/tools/clang' % llvm_1_objdir))
+                                   workdir='%s/tools/clang' % llvm_1_objdir,
+                                   usePTY=use_pty_in_tests))
 
     # Install llvm and clang.
     if llvm_1_installdir:
@@ -189,11 +191,13 @@ def getClangBuildFactory(triple=None, clean=True, test=True, package_dst=None,
                                    command=[make, "check-lit", "VERBOSE=1"],
                                    description=["testing", "llvm"],
                                    descriptionDone=["test", "llvm"],
-                                   workdir=llvm_2_objdir))
+                                   workdir=llvm_2_objdir,
+                                   usePTY=use_pty_in_tests))
         f.addStep(ClangTestCommand(name='test-clang',
                                    command=[make, 'test', WithProperties('TESTARGS=%s' % clangTestArgs),
                                             WithProperties('EXTRA_TESTDIRS=%s' % extraTestDirs)],
-                                   workdir='%s/tools/clang' % llvm_2_objdir))
+                                   workdir='%s/tools/clang' % llvm_2_objdir,
+                                   usePTY=use_pty_in_tests))
 
     # Install clang (stage 2).
     f.addStep(ShellCommand(name="rm-install.clang.stage2",
