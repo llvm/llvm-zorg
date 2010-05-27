@@ -184,3 +184,6 @@ def main():
 
     cmd = sys.argv[1]
     commands[cmd](cmd, sys.argv[2:])
+
+if __name__ == '__main__':
+    main()

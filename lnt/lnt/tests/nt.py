@@ -37,6 +37,8 @@ def run_test(nick_prefix, opts):
     if opts.relocation_model is not None:
         target_llcflags.append('-relocation-model')
         target_llcflags.append(opts.relocation_model)
+    if opts.disable_fp_elim:
+        target_llcflags.append('-disable-fp-elim')
 
     # Set the make variables to use.
     make_variables = {
@@ -60,6 +62,8 @@ def run_test(nick_prefix, opts):
         make_variables['DISABLE_JIT'] = '1'
     if not opts.test_llc:
         make_variables['DISABLE_LLC'] = '1'
+    if not opts.test_lto:
+        make_variables['DISABLE_LTO'] = '1'
     if opts.test_llcbeta:
         make_variables['ENABLE_LLCBETA'] = '1'
     if opts.test_small:
@@ -432,6 +436,9 @@ class NTTest(builtintest.BuiltinTest):
                          help=("Set -relocation-model in TARGET_LLCFLAGS "
                                 "[%default]"),
                          type="str", default=None, metavar="MODEL")
+        group.add_option("", "--disable-fp-elim", dest="disable_fp_elim",
+                         help=("Set -disable-fp-elim in TARGET_LLCFLAGS"),
+                         action="store_true", default=False)
 
         group.add_option("", "--cflag", dest="cflags",
                          help="Additional flags to set in TARGET_FLAGS",
@@ -461,6 +468,9 @@ class NTTest(builtintest.BuiltinTest):
         group.add_option("", "--enable-llcbeta", dest="test_llcbeta",
                          help="Enable LLCBETA tests",
                          action="store_true", default=False)
+        group.add_option("", "--disable-lto", dest="test_lto",
+                         help="Disable use of link-time optimization",
+                         action="store_false", default=True)
 
         group.add_option("", "--small", dest="test_small",
                          help="Use smaller test inputs and disable large tests",
