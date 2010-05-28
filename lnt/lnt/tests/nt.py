@@ -49,6 +49,15 @@ def run_test(nick_prefix, opts):
         'ENABLE_OPTIMIZED' : '1',
         }
 
+    # Set the optimization level options.
+    make_variables['OPTFLAGS'] = opts.optimize_option
+    if opts.optimize_option == '-Os':
+        make_variables['LLI_OPTFLAGS'] = '-O3'
+        make_variables['LLC_OPTFLAGS'] = '-O3'
+    else:
+        make_variables['LLI_OPTFLAGS'] = opts.optimize_option
+        make_variables['LLC_OPTFLAGS'] = opts.optimize_option
+
     # Set test selection variables.
     make_variables['TARGET_CXX'] = opts.cxx_reference
     if opts.test_cxx:
@@ -440,6 +449,9 @@ class NTTest(builtintest.BuiltinTest):
                          help=("Set -disable-fp-elim in TARGET_LLCFLAGS"),
                          action="store_true", default=False)
 
+        group.add_option("", "--optimize-option", dest="optimize_option",
+                         help="Set optimization level for {LLC_,LLI_,}OPTFLAGS",
+                         choices=('-O0','-O1','-O2','-O3'), default='-O3')
         group.add_option("", "--cflag", dest="cflags",
                          help="Additional flags to set in TARGET_FLAGS",
                          action="append", type=str, default=[], metavar="FLAG")
