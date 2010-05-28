@@ -52,8 +52,8 @@ def run_test(nick_prefix, opts):
     # Set the optimization level options.
     make_variables['OPTFLAGS'] = opts.optimize_option
     if opts.optimize_option == '-Os':
-        make_variables['LLI_OPTFLAGS'] = '-O3'
-        make_variables['LLC_OPTFLAGS'] = '-O3'
+        make_variables['LLI_OPTFLAGS'] = '-O2'
+        make_variables['LLC_OPTFLAGS'] = '-O2'
     else:
         make_variables['LLI_OPTFLAGS'] = opts.optimize_option
         make_variables['LLC_OPTFLAGS'] = opts.optimize_option
