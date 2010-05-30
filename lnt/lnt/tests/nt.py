@@ -451,7 +451,7 @@ class NTTest(builtintest.BuiltinTest):
 
         group.add_option("", "--optimize-option", dest="optimize_option",
                          help="Set optimization level for {LLC_,LLI_,}OPTFLAGS",
-                         choices=('-O0','-O1','-O2','-O3'), default='-O3')
+                         choices=('-O0','-O1','-O2','-O3','-Os'), default='-O3')
         group.add_option("", "--cflag", dest="cflags",
                          help="Additional flags to set in TARGET_FLAGS",
                          action="append", type=str, default=[], metavar="FLAG")
