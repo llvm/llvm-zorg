@@ -213,13 +213,33 @@ def _get_dragonegg_builders():
         {'name' : 'dragonegg-i386-linux',
          'slavenames' : ['baldrick16'],
          'builddir' : 'dragonegg-i386-linux',
-         'factory' : DragonEggBuilder.getBuildFactory(triple='i386-pc-linux-gnu',
-                                                      build_script='buildbot_self_strap-32') },
+         'factory'   : ScriptedBuilder.getScriptedBuildFactory(
+                       source_code  = [SVN(name='svn-llvm',
+                                           mode='update', baseURL='http://llvm.org/svn/llvm-project/llvm/',
+                                           defaultBranch='trunk',
+                                           workdir="llvm.src"),
+                                       SVN(name='svn-dragonegg',
+                                           mode='update', baseURL='http://llvm.org/svn/llvm-project/dragonegg/',
+                                           defaultBranch='trunk',
+                                           workdir="dragonegg.src"),],
+                       launcher     = 'dragonegg.src/extras/buildbot_self_strap-32',),
+         'category'  : 'dragonegg'},
 
         {'name' : 'dragonegg-x86_64-linux',
          'slavenames' : ['baldrick17'],
          'builddir' : 'dragonegg-x86_64-linux',
-         'factory' : DragonEggBuilder.getBuildFactory(triple='x86_64-pc-linux-gnu'), },
+         'factory'   : ScriptedBuilder.getScriptedBuildFactory(
+                       source_code  = [SVN(name='svn-llvm',
+                                           mode='update', baseURL='http://llvm.org/svn/llvm-project/llvm/',
+                                           defaultBranch='trunk',
+                                           workdir="llvm.src"),
+                                       SVN(name='svn-dragonegg',
+                                           mode='update', baseURL='http://llvm.org/svn/llvm-project/dragonegg/',
+                                           defaultBranch='trunk',
+                                           workdir="dragonegg.src"),],
+                       launcher     = 'dragonegg.src/extras/buildbot_self_strap',),
+         'category'  : 'dragonegg'},
+
         ]
 
 def _get_experimental_builders():
