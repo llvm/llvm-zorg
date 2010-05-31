@@ -101,10 +101,11 @@ def get_cc_info(path, cc_flags=[]):
                                ['-x', 'c', '/dev/null'],
                                include_stderr=True).strip()
         m = re.search('target triple = "(.*)"', target_cc_ll)
-        if not m:
+        if m:
+            cc_target, = m.groups()
+        else:
             error("unable to determine LLVM compiler target: %r: %r" %
-                  (ll_cmd, target_cc_ll))
-        cc_target, = m.groups()
+                  (cc, target_cc_ll))
 
     cc_exec_hash = hashlib.sha1()
     cc_exec_hash.update(open(cc,'rb').read())
