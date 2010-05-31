@@ -93,16 +93,6 @@ def run_test(nick_prefix, opts):
         test_style = 'nightly'
     make_variables['TEST'] = test_style
 
-    # Stash the variables we want to report.
-    public_make_variables = make_variables.copy()
-
-    # Set remote execution variables, if used.
-    if opts.remote:
-        make_variables['REMOTE_HOST'] = opts.remote_host
-        make_variables['REMOTE_USER'] = opts.remote_user
-        make_variables['REMOTE_PORT'] = str(opts.remote_port)
-        make_variables['REMOTE_CLIENT'] = opts.remote_client
-
     # Support disabling test suite externals separately from providing path.
     if not opts.test_externals:
         opts.test_suite_externals = '/dev/null'
@@ -146,6 +136,16 @@ def run_test(nick_prefix, opts):
         make_variables['ARCH'] = inferred_arch
     else:
         warning("unable to infer ARCH, some tests may not run correctly!")
+
+    # Stash the variables we want to report.
+    public_make_variables = make_variables.copy()
+
+    # Set remote execution variables, if used.
+    if opts.remote:
+        make_variables['REMOTE_HOST'] = opts.remote_host
+        make_variables['REMOTE_USER'] = opts.remote_user
+        make_variables['REMOTE_PORT'] = str(opts.remote_port)
+        make_variables['REMOTE_CLIENT'] = opts.remote_client
     
     nick = nick_prefix
     if opts.auto_name:
