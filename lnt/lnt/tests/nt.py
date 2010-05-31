@@ -24,7 +24,7 @@ def run_test(nick_prefix, opts):
 
     if opts.arch is not None:
         target_flags.append('-arch')
-        target_flags.append(opts.arch)
+        target_flags.append(opts.arch)        
     if opts.isysroot is not None:
         target_flags.append('-isysroot')
         target_flags.append(opts.isysroot)
@@ -93,10 +93,6 @@ def run_test(nick_prefix, opts):
         make_variables['REMOTE_PORT'] = str(opts.remote_port)
         make_variables['REMOTE_CLIENT'] = opts.remote_client
 
-        # FIXME: This is a huge hack, but we should just eliminate this. It is
-        # only used by a few tests.
-        make_variables['TARGET_ARCH'] = 'ARM'
-
     # Support disabling test suite externals separately from providing path.
     if not opts.test_externals:
         opts.test_suite_externals = '/dev/null'
@@ -105,6 +101,42 @@ def run_test(nick_prefix, opts):
     cc_info = lnt.testing.util.compilers.get_cc_info(opts.cc_under_test,
                                                      target_flags)
 
+    # Set ARCH appropriately, based on the inferred target.
+    #
+    # FIXME: We should probably be more strict about this.
+    cc_target = cc_info.get('cc_target')
+    inferred_arch = None
+    if cc_target:
+        # cc_target is expected to be a (GCC style) target triple. Pick out the
+        # arch component, and then try to convert it to an LLVM nightly test
+        # style architecture name, which is of course totally different from all
+        # of GCC names, triple names, LLVM target names, and LLVM triple
+        # names. Stupid world.
+        #
+        # FIXME: Clean this up once everyone is on 'lnt runtest nt' style
+        # nightly testing.
+        arch = cc_target.split('-',1)[0].lower()
+        if (len(arch) == 4 and arch[0] == 'o' and arch.endswith('86') and
+            arch[1] in '3456789'): # i[3-9]86
+            inferred_arch = 'x86'
+        elif arch in ('x86_64', 'amd64'):
+            inferred_arch = 'x86_64'
+        elif arch in ('powerpc', 'powerpc64', 'ppu'):
+            inferred_arch = 'PowerPC'
+        elif (arch == 'arm' or arch.startswith('armv') or
+              arch == 'thumb' or arch.startswith('thumbv') or
+              arch == 'xscale'):
+            inferred_arch = 'ARM'
+        elif arch.startswith('alpha'):
+            inferred_arch = 'Alpha'
+        elif arch.startswith('sparc'):
+            inferred_arch = 'Sparc'
+
+    if inferred_arch:
+        make_variables['ARCH'] = inferred_arch
+    else:
+        warning("unable to infer ARCH, some tests may not run correctly!")
+    
     nick = nick_prefix
     if opts.auto_name:
         # Construct the nickname from a few key parameters.
