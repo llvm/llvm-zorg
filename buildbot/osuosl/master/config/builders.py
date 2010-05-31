@@ -36,10 +36,6 @@ def _get_llvm_builders():
          'slavenames': ["osu1"],
          'builddir': "llvm-x86_64",
          'factory': LLVMBuilder.getLLVMBuildFactory(triple="x86_64-pc-linux-gnu")},
-        {'name': "llvm-ppc-linux",
-         'slavenames':["nick1"],
-         'builddir':"llvm-ppc",
-         'factory': LLVMBuilder.getLLVMBuildFactory("ppc-linux-gnu", jobs=1, clean=False, timeout=40)},
         {'name': "llvm-arm-linux",
          'slavenames':["ranby1"],
          'builddir':"llvm-arm-linux",
@@ -68,6 +64,10 @@ def _get_llvm_builders():
  'slavenames':["evocallaghan"],
  'builddir':"llvm-i386-auroraux",
  'factory': LLVMBuilder.getLLVMBuildFactory("i386-pc-auroraux", jobs="%(jobs)s", make='gmake')},
+{'name': "llvm-ppc-linux",
+ 'slavenames':["nick1"],
+ 'builddir':"llvm-ppc",
+ 'factory': LLVMBuilder.getLLVMBuildFactory("ppc-linux-gnu", jobs=1, clean=False, timeout=40)},
 
 # llvm-gcc self hosting builders.
 def _get_llvmgcc_builders():
