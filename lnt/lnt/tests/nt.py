@@ -83,6 +83,16 @@ def run_test(nick_prefix, opts):
     if opts.threads > 1:
         make_variables['ENABLE_PARALLEL_REPORT'] = '1'
 
+    # Select the test style to use.
+    if opts.test_simple:
+        test_style = 'simple'
+        # We always use reference outputs with TEST=simple.
+        make_variables['ENABLE_HASHED_PROGRAM_OUTPUT'] = '1'
+        make_variables['USE_REFERENCE_OUTPUT'] = '1'
+    else:
+        test_style = 'nightly'
+    make_variables['TEST'] = test_style
+
     # Stash the variables we want to report.
     public_make_variables = make_variables.copy()
 
@@ -116,7 +126,7 @@ def run_test(nick_prefix, opts):
         # FIXME: Clean this up once everyone is on 'lnt runtest nt' style
         # nightly testing.
         arch = cc_target.split('-',1)[0].lower()
-        if (len(arch) == 4 and arch[0] == 'o' and arch.endswith('86') and
+        if (len(arch) == 4 and arch[0] == 'i' and arch.endswith('86') and
             arch[1] in '3456789'): # i[3-9]86
             inferred_arch = 'x86'
         elif arch in ('x86_64', 'amd64'):
@@ -206,7 +216,7 @@ def run_test(nick_prefix, opts):
     report_path = os.path.join(basedir)
     if opts.only_test is not None:
         report_path =  os.path.join(report_path, opts.only_test)
-    report_path = os.path.join(report_path, 'report.nightly.csv')
+    report_path = os.path.join(report_path, 'report.%s.csv' % test_style)
     if os.path.exists(report_path):
         os.remove(report_path)
 
@@ -215,7 +225,7 @@ def run_test(nick_prefix, opts):
     test_log = open(test_log_path, 'w')
 
     args = ['make', '-k', '-j', str(opts.threads),
-            'TEST=nightly', 'report', 'report.nightly.csv']
+            'report', 'report.%s.csv' % test_style]
     args.extend('%s=%s' % (k,v) for k,v in make_variables.items())
     if opts.only_test is not None:
         args.extend(['-C',opts.only_test])
@@ -238,23 +248,27 @@ def run_test(nick_prefix, opts):
 
     # Compute the test samples to report.
     sample_keys = []
-    sample_keys.append(('gcc.compile', 'GCCAS', 'time'))
-    sample_keys.append(('bc.compile', 'Bytecode', 'size'))
-    if opts.test_llc:
-        sample_keys.append(('llc.compile', 'LLC compile', 'time'))
-    if opts.test_llcbeta:
-        sample_keys.append(('llc-beta.compile', 'LLC-BETA compile', 'time'))
-    if opts.test_jit:
-        sample_keys.append(('jit.compile', 'JIT codegen', 'time'))
-    sample_keys.append(('gcc.exec', 'GCC', 'time'))
-    if opts.test_cbe:
-        sample_keys.append(('cbe.exec', 'CBE', 'time'))
-    if opts.test_llc:
-        sample_keys.append(('llc.exec', 'LLC', 'time'))
-    if opts.test_llcbeta:
-        sample_keys.append(('llc-beta.exec', 'LLC-BETA', 'time'))
-    if opts.test_jit:
-        sample_keys.append(('jit.exec', 'JIT', 'time'))
+    if opts.test_simple:
+        sample_keys.append(('compile', 'CC_Time', None, 'CC'))
+        sample_keys.append(('exec', 'Exec_Time', None, 'Exec'))
+    else:
+        sample_keys.append(('gcc.compile', 'GCCAS', 'time'))
+        sample_keys.append(('bc.compile', 'Bytecode', 'size'))
+        if opts.test_llc:
+            sample_keys.append(('llc.compile', 'LLC compile', 'time'))
+        if opts.test_llcbeta:
+            sample_keys.append(('llc-beta.compile', 'LLC-BETA compile', 'time'))
+        if opts.test_jit:
+            sample_keys.append(('jit.compile', 'JIT codegen', 'time'))
+        sample_keys.append(('gcc.exec', 'GCC', 'time'))
+        if opts.test_cbe:
+            sample_keys.append(('cbe.exec', 'CBE', 'time'))
+        if opts.test_llc:
+            sample_keys.append(('llc.exec', 'LLC', 'time'))
+        if opts.test_llcbeta:
+            sample_keys.append(('llc-beta.exec', 'LLC-BETA', 'time'))
+        if opts.test_jit:
+            sample_keys.append(('jit.exec', 'JIT', 'time'))
 
     # Load the test samples.
     print >>sys.stderr, '%s: loading test data...' % timestamp()
@@ -280,6 +294,10 @@ def run_test(nick_prefix, opts):
             fatal('missing key %r in report header' % item[1])
 
     # We don't use the test info, currently.
+    if opts.test_simple:
+        test_namespace = 'simple'
+    else:
+        test_namespace = 'nightlytest'
     test_info = {}
     for row in reader_it:
         record = dict(zip(header, row))
@@ -287,20 +305,35 @@ def run_test(nick_prefix, opts):
         program = record['Program']
         if opts.only_test is not None:
             program = os.path.join(opts.only_test, program)
-        test_base_name = 'nightlytest.%s' % program.replace('.','_')
-        for name,key,tname in sample_keys:
+        test_base_name = '%s.%s' % (test_namespace, program.replace('.','_'))
+        for info in sample_keys:
+            if len(info) == 3:
+                name,key,tname = info
+                success_key = None
+            else:
+                name,key,tname,success_key = info
+
             test_name = '%s.%s' % (test_base_name, name)
             value = record[key]
+            if success_key is None:
+                success_value = value
+            else:
+                success_value = record[success_key]
 
             # FIXME: Move to simpler and more succinct format, using .failed.
-            if value == '*':
+            if success_value == '*':
                 test_samples.append(lnt.testing.TestSamples(
                         test_name + '.success', [0], test_info))
             else:
                 test_samples.append(lnt.testing.TestSamples(
                         test_name + '.success', [1], test_info))
-                test_samples.append(lnt.testing.TestSamples(
-                        test_name + '.' + tname, [float(value)], test_info))
+            if value != '*':
+                if tname is None:
+                    test_samples.append(lnt.testing.TestSamples(
+                            test_name, [float(value)], test_info))
+                else:
+                    test_samples.append(lnt.testing.TestSamples(
+                            test_name + '.' + tname, [float(value)], test_info))
 
     report_file.close()
 
@@ -316,13 +349,18 @@ def run_test(nick_prefix, opts):
                                        include_stderr=True).strip()
     machine_info['os'] = capture(["uname","-sr"], include_stderr=True).strip()
     machine_info['name'] = capture(["uname","-n"], include_stderr=True).strip()
-    machine_info['gcc_version'] = capture([opts.cc_reference, '--version'],
-                                          include_stderr=True).split('\n')[0]
+    if opts.cc_reference is not None:
+        machine_info['gcc_version'] = capture(
+            [opts.cc_reference, '--version'],
+            include_stderr=True).split('\n')[0]
     machine = lnt.testing.Machine(nick, machine_info)
 
     # FIXME: We aren't getting the LLCBETA options.
     run_info = {}
-    run_info['tag'] = 'nightlytest'
+    if opts.test_simple:
+        run_info['tag'] = 'simple'
+    else:
+        run_info['tag'] = 'nightlytest'
     run_info.update(cc_info)
 
     # FIXME: Hack, use better method of getting versions. Ideally, from binaries
@@ -490,6 +528,10 @@ class NTTest(builtintest.BuiltinTest):
         parser.add_option_group(group)
 
         group = OptionGroup(parser, "Test Selection")
+        group.add_option("", "--simple", dest="test_simple",
+                         help="Use TEST=simple instead of TEST=nightly",
+                         action="store_true", default=False)
+
         group.add_option("", "--disable-cxx", dest="test_cxx",
                          help="Disable C++ tests",
                          action="store_false", default=True)
@@ -567,16 +609,23 @@ class NTTest(builtintest.BuiltinTest):
 
         if opts.sandbox_path is None:
             parser.error('--sandbox is required')
-
-        # Attempt to infer cc_reference and cxx_reference if not given.
-        if opts.cc_reference is None:
-            opts.cc_reference = which('gcc') or which('cc')
+        
+        if opts.test_simple:
+            # TEST=simple doesn't use a reference compiler.
+            if opts.cc_reference is not None:
+                parser.error('--cc-reference is unused with --simple')
+            if opts.cxx_reference is not None:
+                parser.error('--cxx-reference is unused with --simple')
+        else:
+            # Attempt to infer cc_reference and cxx_reference if not given.
             if opts.cc_reference is None:
-                parser.error('unable to infer --cc-reference (required)')
-        if opts.cxx_reference is None:
-            opts.cxx_reference = which('g++') or which('c++')
+                opts.cc_reference = which('gcc') or which('cc')
+                if opts.cc_reference is None:
+                    parser.error('unable to infer --cc-reference (required)')
             if opts.cxx_reference is None:
-                parser.error('unable to infer --cxx-reference (required)')
+                opts.cxx_reference = which('g++') or which('c++')
+                if opts.cxx_reference is None:
+                    parser.error('unable to infer --cxx-reference (required)')
 
         if opts.cc_under_test is None:
             parser.error('--cc is required')
