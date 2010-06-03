@@ -368,7 +368,7 @@ def _get_experimental_builders():
                                         'haltOnFailure' : True },
                                        {'name'          : 'make_llvm_1',
                                         'description'   : 'compile llvm (stage1)',
-                                        'extra_args'    : ['-j16'],  # Extra step-specific properties
+                                        'extra_args'    : ['-j8'],  # Extra step-specific properties
                                         'haltOnFailure' : True },
                                        {'name'          : 'test_llvm_1',
                                         'type'          : ClangTestCommand,
@@ -388,7 +388,7 @@ def _get_experimental_builders():
                                         'haltOnFailure' : True },
                                        {'name'          : 'make_llvm_2',
                                         'description'   : 'compile llvm (stage2)',
-                                        'extra_args'    : ['-j16'],  # Extra step-specific properties
+                                        'extra_args'    : ['-j8'],  # Extra step-specific properties
                                         'haltOnFailure' : True },
                                        {'name'          : 'configure_llvmgcc_2',
                                         'description'   : 'configure llvm-gcc (stage2)',
