@@ -506,23 +506,50 @@ class SimpleRunUI(Directory):
 
         # Render the page.
 
-        def get_cell_value [html] (test, name, pset):
+        def get_cell_value [html] (test, status_test, status_kind, name, pset):
             run_values = sample_map.get((run.id,test.id))
             prev_values = sample_map.get((prev_id,test.id))
 
-            # FIXME: Check success
-            failed = not run_values
+            # Determine whether this (test,pset) passed or failed in the current
+            # and previous runs.
+            run_failed = prev_failed = False
+            if not status_test:
+                run_failed = not run_values
+                prev_failed = not prev_values
+            else:
+                run_status = sample_map.get((run.id,status_test.id))
+                prev_status = sample_map.get((prev_id,status_test.id))
+
+                # FIXME: What to do about the multiple entries here. We could
+                # start by just treating non-matching samples as errors.
+                if status_kind == False: # .success style
+                    run_failed = not run_status or not run_status[0]
+                    prev_failed = not prev_status or not prev_status[0]
+                else:
+                    run_failed = run_status and run_status[0] != 0
+                    prev_failed = prev_status and prev_status[0] != 0
 
             run_cell_value = "-"
             if run_values:
                 run_cell_value = "%.4f" % min(run_values)
 
-            if failed:
+            cell_color = None
+            if run_failed:
+                if prev_failed:
+                    cell_color = (255,195,67)
+                else:
+                    cell_color = (233,128,128)
+            else:
+                if prev_failed:
+                    cell_color = (143,223,95)
+
+            if cell_color:
                 """
-                <td bgcolor="#FF0000">%s</td""" % run_cell_value
+                <td bgcolor="#%02x%02x%02x">%s</td""" % (
+                    cell_color[0], cell_color[1], cell_color[2], run_cell_value)
             else:
                 """
-                <td>%s</td""" % run_cell_value
+                <td>%s</td""" % (run_cell_value,)
 
             if prev_values and run_values:
                 prev_value = min(prev_values)
@@ -587,7 +614,13 @@ class SimpleRunUI(Directory):
                 <td></td><td></td>"""
                     continue
 
-                get_cell_value(test, name, pset)
+                status_info = ts_summary.test_status_map.get(name)
+                if status_info:
+                    status_name,status_kind = status_info
+                    status_test = ts_summary.test_map.get((status_name,pset))
+                else:
+                    status_test = status_kind = None
+                get_cell_value(test, status_test, status_kind, name, pset)
             """
           </tr>"""
         """

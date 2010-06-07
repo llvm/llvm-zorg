@@ -14,6 +14,11 @@ try:
 except ImportError:
     import simplejson as json
 
+# We define the following constants for use as sample values by convention.
+PASS = 0
+FAIL = 1
+XFAIL = 2
+
 def normalize_time(t):
     if isinstance(t,float):
         t = datetime.datetime.utcfromtimestamp(t)

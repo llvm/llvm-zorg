@@ -35,7 +35,7 @@ class PerfDBSummary:
     def is_up_to_date(self, db):
         return self.revision == db.get_revision_number("Run")
 
-class SimpleSuiteSummary:
+class SimpleSuiteSummary(object):
     @staticmethod
     def fromdb(db, tag):
         revision = db.get_revision_number("Test")
@@ -49,9 +49,9 @@ class SimpleSuiteSummary:
         test_names = set()
         parameter_sets = set()
         test_map = {}
+        test_status_map = {}
         for t in tests:
-            name = t.name.split(str('.'),1)[1]
-            test_names.add(name)
+            name = t.name.split('.', 1)[1]
 
             items = [(k,v.value) for k,v in t.info.items()]
             items.sort()
@@ -59,6 +59,17 @@ class SimpleSuiteSummary:
 
             parameter_sets.add(key)
             test_map[(name, key)] = t
+
+            if name.endswith('.success'):
+                test_name = name.rsplit('.', 1)[0]
+                test_status_map[test_name] = (name, False)
+            elif name.endswith('.status'):
+                test_name = name.rsplit('.', 1)[0]
+                test_status_map[test_name] = (name, True)
+            else:
+                test_name = name
+
+            test_names.add(test_name)
 
         # Order the test names.
         test_names = list(test_names)
@@ -73,15 +84,18 @@ class SimpleSuiteSummary:
         parameter_sets = list(parameter_sets)
         parameter_sets.sort()
 
-        return SimpleSuiteSummary(revision, tag, test_names, test_map,
+        return SimpleSuiteSummary(revision, tag, test_names,
+                                  test_map, test_status_map,
                                   parameter_keys, parameter_sets)
 
-    def __init__(self, revision, tag, test_names, test_map,
+    def __init__(self, revision, tag, test_names,
+                 test_map, test_status_map,
                  parameter_keys, parameter_sets):
         self.revision = revision
         self.tag = tag
         self.test_names = test_names
         self.test_map = test_map
+        self.test_status_map = test_status_map
         self.parameter_keys = parameter_keys
         self.parameter_sets = parameter_sets
 
