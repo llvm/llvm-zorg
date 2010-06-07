@@ -12,6 +12,20 @@ from sqlalchemy.orm import relation, backref
 from sqlalchemy.orm.collections import attribute_mapped_collection
 
 Base = sqlalchemy.ext.declarative.declarative_base()
+class Revision(Base):
+    __tablename__ = 'Revision'
+
+    id = Column("ID", Integer, primary_key=True)
+    name = Column("Name", String(256))
+    number = Column("Number", Integer)
+
+    def __init__(self, name, number):
+        self.name = name
+        self.number = number
+
+    def __repr__(self):
+        return '%s%r' % (self.__class__.__name__, (self.name, self.number))
+
 class Machine(Base):
     __tablename__ = 'Machine'
 
@@ -165,6 +179,21 @@ class PerfDB:
         Base.metadata.create_all(self.engine)
 
         self.session = sqlalchemy.orm.sessionmaker(self.engine)()
+        self.modified_machine = self.modified_run = self.modified_test = False
+
+        # Make sure revision numbers exists.
+        for r in ("Machine","MachineInfo","Run","RunInfo","Test","TestInfo"):
+            self.get_revision(r)
+        self.commit()
+
+    def get_revision(self, name):
+        for r in self.session.query(Revision).filter_by(name=name):
+            return r
+        r = Revision(name, 0)
+        self.session.add(r)
+        return r
+    def get_revision_number(self, name):
+        return self.get_revision(name).number
 
     def machines(self, name=None):
         q = self.session.query(Machine)
@@ -225,6 +254,7 @@ class PerfDB:
         m = Machine(name, number)
         m.info = dict((k,MachineInfo(m,k,v)) for k,v in info)
         self.session.add(m)
+        self.modified_machine = True
         return m,True
 
     def getOrCreateTest(self, name, info):
@@ -236,6 +266,7 @@ class PerfDB:
         t = Test(name)
         t.info = dict((k,TestInfo(t,k,v)) for k,v in info)
         self.session.add(t)
+        self.modified_test = True
         return t,True
 
     def getOrCreateRun(self, machine, start_time, end_time, info):
@@ -262,6 +293,7 @@ class PerfDB:
         r = Run(machine, start_time, end_time)
         r.info = dict((k,RunInfo(r,k,v)) for k,v in info)
         self.session.add(r)
+        self.modified_run = True
         return r,True
 
     def addSample(self, run, test, value):
@@ -284,10 +316,21 @@ class PerfDB:
             self.session.execute(q)
 
     def commit(self):
+        if self.modified_machine:
+            self.get_revision("Machine").number += 1
+            self.get_revision("MachineInfo").number += 1
+        if self.modified_run:
+            self.get_revision("Run").number += 1
+            self.get_revision("RunInfo").number += 1
+        if self.modified_test:
+            self.get_revision("Test").number += 1
+            self.get_revision("TestInfo").number += 1
         self.session.commit()
+        self.modified_machine = self.modified_test = self.modified_run = False
 
     def rollback(self):
         self.session.rollback()
+        self.modified_machine = self.modified_test = self.modified_run = False
 
 def importDataFromDict(db, data):
     # FIXME: Validate data
