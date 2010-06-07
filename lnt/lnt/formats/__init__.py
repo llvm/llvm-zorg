@@ -24,7 +24,7 @@ def get_format(name):
     """
 
     return formats_by_name.get(name)
-    
+
 def guess_format(path_or_file):
     """guess_format(path_or_file) -> [format]
 
@@ -71,7 +71,8 @@ def read_any(path_or_file, format_name):
         f = guess_format(path_or_file)
         if f is None:
             if isinstance(path_or_file, str):
-                raise SystemExit("unable to guess input format for %r" % input)
+                raise SystemExit("unable to guess input format for %r" % (
+                        path_or_file,))
             else:
                 raise SystemExit("unable to guess input format for file")
     else:
