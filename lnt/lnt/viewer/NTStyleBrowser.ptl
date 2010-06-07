@@ -17,7 +17,7 @@ from quixote.errors import TraversalError
 import Util
 from NTUtil import *
 
-from PerfDB import Machine, Run
+from PerfDB import Machine, Run, RunInfo
 
 class TestRunUI(Directory):
     def __init__(self, root, idstr):
@@ -316,8 +316,9 @@ class TestRunUI(Directory):
 class MachineUI(Directory):
     _q_exports = [""]
 
-    def __init__(self, root, idstr):
+    def __init__(self, root, parent, idstr):
         self.root = root
+        self.parent = parent
         try:
             self.id = int(idstr)
         except ValueError, exc:
@@ -345,8 +346,8 @@ class MachineUI(Directory):
         machine = db.getMachine(self.id)
 
         self.root.getHeader("Machine: %s:%d" % (machine.name,machine.number),
-                            "../../..",
-                            components=(('nightlytest','nightlytest'),),
+                            "%s/../.." % self.parent.root_path,
+                            components=self.parent.components,
                             addPopupJS=True)
 
         # Find all runs on this machine.
@@ -489,7 +490,7 @@ class MachinesDirectory(Directory):
         """
 
     def _q_lookup(self, component):
-        return MachineUI(self.parent.root, component)
+        return MachineUI(self.parent.root, self.parent, component)
 
 class ProgramsDirectory(Directory):
     _q_exports = [""]
@@ -510,6 +511,8 @@ class RecentMachineDirectory(Directory):
     def __init__(self, root):
         Directory.__init__(self)
         self.root = root
+        self.root_path = '..'
+        self.components = (('nightlytest','nightlytest'),)
 
     def getTags(self):
         abstract
@@ -518,8 +521,7 @@ class RecentMachineDirectory(Directory):
         # Get a DB connection
         db = self.root.getDB()
 
-        self.root.getHeader('Overview', "..",
-                            components=(('nightlytest','nightlytest'),))
+        self.root.getHeader('Overview', self.root_path, self.components)
 
         # Find recent runs.
         """

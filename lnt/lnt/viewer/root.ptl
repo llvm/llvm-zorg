@@ -17,8 +17,9 @@ from quixote.directory import Directory, Resolving
 from quixote.util import StaticDirectory
 
 import lnt
-import PerfDB, Util
-from PerfDB import Machine, Run
+from lnt.db import perfdbsummary
+from lnt.viewer import PerfDB, Util
+from lnt.viewer.PerfDB import Machine, Run
 
 class RootDirectory(Resolving, Directory):
     _q_exports = ["", "resources", "js", "machines", "runs", "tests",
@@ -36,6 +37,7 @@ class RootDirectory(Resolving, Directory):
         if self.dbInfo is None:
             self.dbInfo = config.databases[dbName]
         self.pathToRoot = pathToRoot
+        self.db_summary = None
 
     def getDB(self):
         db = PerfDB.PerfDB(self.dbInfo.path)
@@ -170,22 +172,25 @@ class RootDirectory(Resolving, Directory):
                              time.localtime(current)),
                current - quixote.get_request().start_time)
 
+    def get_db_summary(self, db):
+        if not self.db_summary or not self.db_summary.is_up_to_date(db):
+            self.db_summary = perfdbsummary.PerfDBSummary.fromdb(db)
+        return self.db_summary
+
     def _q_index [html] (self):
+        # Get a DB connection.
+        db = self.getDB()
+
         self.getHeader("Overview", ".",
                        components=(),)
 
-        # Available UIs.
-
-        if self.dbInfo.showSimple:
+        # Display available test result suites.
+        summary = self.get_db_summary(db)
+        """
+        <h3>Test Results</h3>"""
+        for suite in summary.suites:
             """
-            <a href="simple/">Simple Test Viewer</a>
-            """
-
-        if self.dbInfo.showNightlytest:
-            """
-            <h3>Nightly Test Results</h3>
-            <a href="nightlytest/">Nightly Test</a>
-            """
+        <a href="%s">%s</a><br>""" % (os.path.join(*suite.path), suite.name)
 
         if self.dbInfo.showGeneral:
             """

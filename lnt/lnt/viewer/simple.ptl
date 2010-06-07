@@ -33,8 +33,9 @@ def median_absolute_deviation(l, med = None):
 class SimpleRunUI(Directory):
     _q_exports = ["", "graph"]
 
-    def __init__(self, root, idstr):
+    def __init__(self, root, tag, idstr):
         self.root = root
+        self.tag = tag
         try:
             self.id = int(idstr)
         except ValueError, exc:
@@ -70,8 +71,9 @@ class SimpleRunUI(Directory):
 
         # Find previous runs, ordered by time.
         runs = db.runs(run.machine).order_by(Run.start_time.desc()).all()
+        # FIXME: Fold this into query.
         runs = [r for r in runs
-                if 'tag' in r.info and r.info['tag'].value == 'simple']
+                if 'tag' in r.info and r.info['tag'].value == self.tag]
 
         # Order by run_order info key, if given.
         for r in runs:
@@ -204,10 +206,12 @@ class SimpleRunUI(Directory):
         run,runs,has_order,compareTo = self.getInfo(db)
         machine = run.machine
 
-        self.root.getHeader('Run Results', "../..",
-                            components=(('simple','simple'),
+        self.root.getHeader('Run Results', "../../..",
+                            components=((self.tag,
+                                         '%s/%s' % ('simple',self.tag)),
                                         ('machine',
-                                         'simple/machines/%d' % machine.id)),
+                                         'simple/%s/machines/%d'%(self.tag,
+                                                                  machine.id))),
                             addPopupJS=True, addFormCSS=True)
 
         self.show_run_page(db, run, runs, compareTo, self._q_index_body)
@@ -458,7 +462,7 @@ class SimpleRunUI(Directory):
         graph.draw();
     }
     """ % (plots,xAxis_format)
-        self.root.getHeader('Run Results', "..",
+        self.root.getHeader('Run Results', "../..",
                             components=(('simple','simple'),
                                         ('machine',
                                          'simple/machines/%d' % machine.id),
@@ -476,7 +480,7 @@ class SimpleRunUI(Directory):
 
         # Find all test names.
         q = db.session.query(Test)
-        q = q.filter(Test.name.startswith(str('simple.')))
+        q = q.filter(Test.name.startswith(self.tag))
         tests = list(q)
 
         # Collect all the test data.
@@ -631,11 +635,25 @@ class SimpleRunUI(Directory):
         <input type="submit" value="Graph">
         </form>"""
 
-class RootDirectory(NTStyleBrowser.RecentMachineDirectory):
+class TagRootDirectory(NTStyleBrowser.RecentMachineDirectory):
     _q_exports = [""]
 
+    def __init__(self, root, tag):
+        NTStyleBrowser.RecentMachineDirectory.__init__(self, root)
+        self.tag = tag
+        self.root_path = '../..'
+        self.components = ((self.tag, '%s/%s' % ('simple',self.tag)),)
+
     def getTags(self):
-        return ('simple',)
+        return (self.tag,)
 
     def getTestRunUI(self, component):
-        return SimpleRunUI(self.root, component)
+        return SimpleRunUI(self.root, self.tag, component)
+
+class RootDirectory(Directory):
+    def __init__(self, root):
+        Directory.__init__(self)
+        self.root = root
+
+    def _q_lookup(self, component):
+        return TagRootDirectory(self.root, component)
