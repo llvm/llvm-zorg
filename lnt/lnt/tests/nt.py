@@ -385,16 +385,25 @@ def run_test(nick_prefix, opts):
     # Set the run order from the user, if given.
     if opts.run_order is not None:
         run_info['run_order'] = opts.run_order
+
     else:
-        # Otherwise, infer as the most forward revision we found.
+        # Otherwise, try to infer something sensible.
         #
         # FIXME: Pretty lame, should we just require the user to specify this?
-        if run_info['llvm_revision'].isdigit():
-            run_info['run_order'] = run_info['llvm_revision']
-        if (run_info.get('cc_src_revision','').isdigit() and
-            ('run_order' not in run_info or
-             int(run_info['run_order'] < int(run_info['cc_src_revision'])))):
+
+        # If the CC has a src revision, use that.
+        if run_info.get('cc_src_version','').isdigit():
             run_info['run_order'] = run_info['cc_src_revision']
+
+        # Otherwise, if this is a production compiler, look for a source tag.
+        elif (run_info.get('cc_build') == 'PROD' and
+              run_info.get('cc_src_tag','').isdigit()):
+            run_info['run_order'] = run_info['cc_src_tag']
+
+        # Otherwise, infer from the llvm revision.
+        elif run_info.get('llvm_revision','').isdigit():
+            run_info['run_order'] = run_info['llvm_revision']
+
         if 'run_order' in run_info:
             run_info['run_order'] = '%7d' % int(run_info['run_order'])
 
