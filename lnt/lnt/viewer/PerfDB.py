@@ -173,6 +173,7 @@ class PerfDB:
         if (not path.startswith('mysql://') and
             not path.startswith('sqlite://')):
             path = 'sqlite:///' + path
+        self.path = path
         self.engine = sqlalchemy.create_engine(path, echo=echo)
 
         # Create the tables in case this is a new database.

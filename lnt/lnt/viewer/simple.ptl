@@ -13,6 +13,8 @@ import quixote
 from quixote.directory import Directory
 from quixote.errors import TraversalError
 
+from lnt.db import perfdbsummary
+
 import Util, NTStyleBrowser
 from Util import safediv
 from NTUtil import *
@@ -225,10 +227,8 @@ class SimpleRunUI(Directory):
         run,runs,has_order,compareTo = self.getInfo(db)
         machine = run.machine
 
-        # Load the metadata.
-
-        test_names,test_map,parameter_keys,parameter_sets = self.\
-            get_simple_metadata(db)
+        # Load the test suite summary.
+        ts_summary = perfdbsummary.get_simple_suite_summary(db, self.tag)
 
         # Load the form data.
         graph_tests = []
@@ -237,10 +237,10 @@ class SimpleRunUI(Directory):
             if name.startswith(str('test.')):
                 graph_tests.append(name[5:])
             elif name.startswith(str('pset.')):
-                graph_psets.append(parameter_sets[int(name[5:])])
+                graph_psets.append(ts_summary.parameter_sets[int(name[5:])])
 
         # Get the test ids we want data for.
-        test_ids = [test_map[(name,pset)].id
+        test_ids = [ts_summary.test_map[(name,pset)].id
                      for name in graph_tests
                      for pset in graph_psets]
 
@@ -272,7 +272,8 @@ class SimpleRunUI(Directory):
             d[run_key] = value
 
         # Build the graph data
-        pset_id_map = dict([(pset,i) for i,pset in enumerate(parameter_sets)])
+        pset_id_map = dict([(pset,i)
+                            for i,pset in enumerate(ts_summary.parameter_sets)])
         legend = []
         plot_points = []
         plots = ""
@@ -284,7 +285,7 @@ class SimpleRunUI(Directory):
         show_all_points = False
         for name in graph_tests:
             for pset in graph_psets:
-                test_id = test_map[(name,pset)].id
+                test_id = ts_summary.test_map[(name,pset)].id
 
                 # Get the plot for this test.
                 #
@@ -447,7 +448,6 @@ class SimpleRunUI(Directory):
             %s
             <p>""" % (' '.join(map(str, new_sample_list)),
                       ' '.join(map(str, Util.sorted(resample_list))))
-            
 
         if has_order:
             xAxis_format = 'graph.xAxis.formats.normal'
@@ -462,56 +462,19 @@ class SimpleRunUI(Directory):
         graph.draw();
     }
     """ % (plots,xAxis_format)
-        self.root.getHeader('Run Results', "../..",
-                            components=(('simple','simple'),
+        self.root.getHeader('Run Results', "../../..",
+                            components=((self.tag,
+                                         '%s/%s' % ('simple',self.tag)),
                                         ('machine',
-                                         'simple/machines/%d' % machine.id),
-                                        ('run', 'simple/%d' % run.id)),
+                                         'simple/%s/machines/%d' %(self.tag,
+                                                                   machine.id)),
+                                        ('run', 'simple/%s/%d' % (self.tag,
+                                                                  run.id))),
                             addPopupJS=True, addGraphJS=True,
                             addJSScript=graph_init,
                             onload="init()")
 
         self.show_run_page(db, run, runs, compareTo, graph_body)
-
-    def get_simple_metadata(self, db):
-        """Compute the metadata about tests, parameter sets, etc."""
-
-        # FIXME: We can cache this in a number of ways.
-
-        # Find all test names.
-        q = db.session.query(Test)
-        q = q.filter(Test.name.startswith(self.tag))
-        tests = list(q)
-
-        # Collect all the test data.
-        test_names = set()
-        parameter_sets = set()
-        test_map = {}
-        for t in tests:
-            name = t.name.split(str('.'),1)[1]
-            test_names.add(name)
-
-            items = [(k,v.value) for k,v in t.info.items()]
-            items.sort()
-            key = tuple(items)
-
-            parameter_sets.add(key)
-            test_map[(name, key)] = t
-
-        # Order the test names.
-        test_names = list(test_names)
-        test_names.sort()
-
-        # Collect the set of all parameter keys.
-        parameter_keys = list(set([k for pset in parameter_sets
-                                   for k,v in pset]))
-        parameter_keys.sort()
-
-        # Order the parameter sets and convert to dictionaries.
-        parameter_sets = list(parameter_sets)
-        parameter_sets.sort()
-
-        return test_names,test_map,parameter_keys,parameter_sets
 
     def _q_index_body [html] (self, db, run, runs, compare_to):
         # Find the tests. The simple UI maps all tests that start with
@@ -529,13 +492,10 @@ class SimpleRunUI(Directory):
             prev_id = None
             interesting_runs = (run.id,)
 
-        # Load the metadata.
-
-        test_names,test_map,parameter_keys,parameter_sets = self.\
-            get_simple_metadata(db)
+        # Load the test suite summary.
+        ts_summary = perfdbsummary.get_simple_suite_summary(db, self.tag)
 
         # Load the run sample data.
-
         q = db.session.query(Sample.value, Sample.run_id, Sample.test_id)
         q = q.filter(Sample.run_id.in_(interesting_runs))
 
@@ -579,18 +539,18 @@ class SimpleRunUI(Directory):
           <tr>
             <th rowspan=2>Name</th>
             <th colspan=%d>Parameters</th>
-          </tr><tr>""" % len(parameter_sets)
-        for key in parameter_keys:
+          </tr><tr>""" % len(ts_summary.parameter_sets)
+        for key in ts_summary.parameter_keys:
             """
             <th>%s</th>""" % key
         """
           </tr>"""
-        for (i,pset) in enumerate(parameter_sets):
+        for (i,pset) in enumerate(ts_summary.parameter_sets):
             """
           <tr>
             <td>P%s</td>""" % (i,)
             pmap = dict(pset)
-            for key in parameter_keys:
+            for key in ts_summary.parameter_keys:
                 item = pmap.get(key)
                 if item is None:
                     item = "-"
@@ -609,19 +569,19 @@ class SimpleRunUI(Directory):
         <table border=1>
           <tr>
             <th></th><th>Name</th>"""
-        for i in range(len(parameter_sets)):
+        for i in range(len(ts_summary.parameter_sets)):
             """
             <th><input type="checkbox" name="pset.%d">P%d</th>
             <th>%%</th>""" % (i, i)
         """
           </tr>"""
-        for name in test_names:
+        for name in ts_summary.test_names:
             """
           <tr>
             <td><input type="checkbox" name="test.%s"></td>
             <td>%s</td>""" % (name, name)
-            for pset in parameter_sets:
-                test = test_map.get((name,pset))
+            for pset in ts_summary.parameter_sets:
+                test = ts_summary.test_map.get((name,pset))
                 if test is None:
                     """
                 <td></td><td></td>"""
