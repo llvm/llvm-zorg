@@ -833,6 +833,7 @@ class TagRootDirectory(Directory):
               <table class="sortable" border=1>
                 <thead>
                 <tr>
+                  <th>Run Order</th>
                   <th>Start Time</th>
                   <th>End Time</th>
                   <th>Machine</th>
@@ -844,10 +845,8 @@ class TagRootDirectory(Directory):
         # Show the 20 most recent submissions, ordered by time.
         for r in db.session.query(Run).order_by(Run.start_time.desc())[:20]:
             # Limit by matching tags.
-            if 'tag' in r.info:
-                tag = r.info['tag'].value
-            else:
-                tag = None
+            if 'tag' not in r.info or 'run_order' not in r.info:
+                continue
             if tag not in self.getTags():
                 continue
 
@@ -856,10 +855,12 @@ class TagRootDirectory(Directory):
               <tr>
                 <td>%s</td>
                 <td>%s</td>
+                <td>%s</td>
                 <td align=left><a href="machines/%d/">%s:%d</a></td>
                 <td><a href="%d/">View Results</a></td>
               </tr>
-            """ % (r.start_time, r.end_time, m.id, m.name, m.number, r.id)
+            """ % (r.info['run_order'].value, r.start_time, r.end_time, m.id,
+                   m.name, m.number, r.id)
 
         """
               </table>
