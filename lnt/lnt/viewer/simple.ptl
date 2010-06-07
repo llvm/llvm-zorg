@@ -4,8 +4,6 @@
 Nightly Test UI instance for actual nightly test data.
 """
 
-# FIXME: The NTStyleBrowser abstraction is no longer useful. We should kill it.
-
 import sys
 import time
 
@@ -15,7 +13,7 @@ from quixote.errors import TraversalError
 
 from lnt.db import perfdbsummary
 
-import Util, NTStyleBrowser
+import Util
 from Util import safediv
 from NTUtil import *
 
@@ -628,19 +626,298 @@ class SimpleRunUI(Directory):
         <input type="submit" value="Graph">
         </form>"""
 
-class TagRootDirectory(NTStyleBrowser.RecentMachineDirectory):
+class MachineUI(Directory):
+    _q_exports = [""]
+
+    def __init__(self, root, parent, idstr):
+        self.root = root
+        self.parent = parent
+        try:
+            self.id = int(idstr)
+        except ValueError, exc:
+            raise TraversalError(str(exc))
+        self.popupDepth = 0
+
+    def renderPopupBegin [html] (self, id, title, hidden):
+        self.popupDepth += 1
+        """\
+        <p>
+        <a href="javascript://" onclick="toggleLayer('%s')"; id="%s_">(%s) %s</a>
+        <div id="%s" style="display: %s;" class="hideable_%d">
+        """ % (id, id, ("+","-")[hidden], title, id, ("","none")[hidden],
+               self.popupDepth)
+
+    def renderPopupEnd [html] (self):
+        """
+        </div>"""
+        self.popupDepth -= 1
+
+    def _q_index [html] (self):
+        # Get a DB connection.
+        db = self.root.getDB()
+
+        machine = db.getMachine(self.id)
+
+        self.root.getHeader("Machine: %s:%d" % (machine.name,machine.number),
+                            "%s/../.." % self.parent.root_path,
+                            components=self.parent.components,
+                            addPopupJS=True)
+
+        # Find all runs on this machine.
+        runs = db.runs(machine).order_by(Run.start_time.desc()).all()
+
+        # Order by run_order info key, if given.
+        for r in runs:
+            if 'run_order' in r.info:
+                has_order = True
+                break
+        else:
+            has_order = False
+        if has_order:
+            runs.sort(key = lambda r: ('run_order' in r.info and
+                                       r.info['run_order'].value))
+            runs.reverse()
+
+        # FIXME: List previous machines with the same nickname?
+        """
+        <table width="100%%" border=1>
+          <tr>
+            <td valign="top" width="200">
+              <a href="../..">Homepage</a>
+              <h4>Relatives:</h4>
+              <ul>
+        """
+        # List all machines with this name.
+        for m in db.machines(name=machine.name):
+            """<li><a href="../%d">%s:%d</a></li>""" % (m.id, m.name, m.number)
+        """
+              </ul>
+              <h4>Runs:</h4>
+              <ul>
+        """
+
+        # Show the most recent 10 runs.
+        for r in runs[:10]:
+            """ <li> <a href="../../%d/">%s</a> """ % (r.id, r.start_time)
+
+        # Full list of runs in a drop down.
+        #
+        # FIXME: Link to run correctly.
+        """
+        <p>
+        <form method="GET" action="../../1/">
+        <select name="run">
+        """
+        for r in runs:
+            """\
+        <option value="%d">%s""" % (r.id, r.start_time)
+
+        """
+        </select>
+        <input type="submit" value="Go to Run">
+        </form>
+        """
+
+        """
+              </ul>
+            </td>
+            <td valign="top">
+              <table border=1>
+              <tr>
+                <td> <b>Nickname</b> </td>
+                <td> %s </td>
+              </tr>
+              <tr>
+                <td> <b>Machine ID</b> </td>
+                <td> %d </td>
+              </tr>
+              </table>""" % (machine.name, machine.id)
+        self.renderPopupBegin('machine_info', 'Machine Info', True)
+        """
+              <table border=1>"""
+        info = machine.info.values()
+        info.sort(key = lambda i: i.key)
+        for mi in info:
+            """
+              <tr>
+                <td> <b>%s</b> </td>
+                <td>%s</td>
+              </tr>""" % (mi.key, mi.value)
+        """
+              </table>"""
+        self.renderPopupEnd()
+
+        # List associated runs.
+
+        """
+        <p>
+        <table class="sortable" border=1>
+        <thead>
+          <tr>"""
+        if has_order:
+            """
+            <th>Run Order</th>"""
+        """
+            <th>Start Time</th>
+            <th>End Time</th>
+            <th>&nbsp;</th>
+        </thead>
+        """
+        for r in runs:
+            """
+          <tr>"""
+            if has_order:
+                if 'run_order' in r.info:
+                    order_value = r.info['run_order'].value
+                else:
+                    order_value = str('&nbsp;')
+                """
+            <td align=right>%s</td>""" % order_value
+            """
+            <td>%s</td>
+            <td>%s</td>
+            <td><a href="../../%d">View Results</a></td>
+          </tr>""" % (r.start_time, r.end_time, r.id)
+        """
+        </table>
+        """
+
+        """
+            </td>
+          </tr>
+        </table>
+        """
+
+        self.root.getFooter()
+
+class MachinesDirectory(Directory):
+    _q_exports = [""]
+
+    def __init__(self, parent):
+        Directory.__init__(self)
+        self.parent = parent
+
+    def _q_index [plain] (self):
+        """
+        machine access
+        """
+
+    def _q_lookup(self, component):
+        return MachineUI(self.parent.root, self.parent, component)
+
+
+class TagRootDirectory(Directory):
     _q_exports = [""]
 
     def __init__(self, root, tag):
-        NTStyleBrowser.RecentMachineDirectory.__init__(self, root)
+        Directory.__init__(self)
         self.tag = tag
+        self.root = root
         self.root_path = '../..'
         self.components = ((self.tag, '%s/%s' % ('simple',self.tag)),)
 
     def getTags(self):
         return (self.tag,)
 
-    def getTestRunUI(self, component):
+    def _q_index [plain] (self):
+        # Get a DB connection
+        db = self.root.getDB()
+
+        self.root.getHeader('Overview', self.root_path, self.components)
+
+        # Find recent runs.
+        """
+        <center><h3>Submission Overview</h3></center>
+        <table width="100%%">
+          <tr>
+            <td valign="top" width="50%">
+              <center>
+              <h3>Test Machines</h3>
+              <table class="sortable" border=1>
+                <thead>
+                <tr>
+                  <th>Latest Submission</th>
+                  <th>Machine</th>
+                  <th>Results</th>
+                </tr>
+                </thead>
+        """
+
+        # Show the most recent entry for each machine.
+        q = db.session.query(Machine.name).distinct().order_by(Machine.name)
+        for name, in q:
+            # Get the most recent run for this machine name.
+            q = db.session.query(Run).join(Machine).filter(Machine.name == name)
+            r = q.order_by(Run.start_time.desc()).first()
+
+            # Limit by matching tags.
+            if 'tag' in r.info:
+                tag = r.info['tag'].value
+            else:
+                tag = None
+            if tag not in self.getTags():
+                continue
+
+            """
+              <tr>
+                <td>%s</td>
+                <td align=left><a href="machines/%d/">%s:%d</a></td>
+                <td><a href="%d/">View Results</a></td>
+              </tr>
+            """ % (r.start_time, r.machine.id, r.machine.name,
+                   r.machine.number, r.id)
+
+        """
+              </table>
+              </center>
+            </td>
+            <td valign="top">
+              <center>
+              <h3>Recent Submissions</h3>
+              <table class="sortable" border=1>
+                <thead>
+                <tr>
+                  <th>Start Time</th>
+                  <th>End Time</th>
+                  <th>Machine</th>
+                  <th>Results</th>
+                </tr>
+                </thead>
+        """
+
+        # Show the 20 most recent submissions, ordered by time.
+        for r in db.session.query(Run).order_by(Run.start_time.desc())[:20]:
+            # Limit by matching tags.
+            if 'tag' in r.info:
+                tag = r.info['tag'].value
+            else:
+                tag = None
+            if tag not in self.getTags():
+                continue
+
+            m = r.machine
+            """
+              <tr>
+                <td>%s</td>
+                <td>%s</td>
+                <td align=left><a href="machines/%d/">%s:%d</a></td>
+                <td><a href="%d/">View Results</a></td>
+              </tr>
+            """ % (r.start_time, r.end_time, m.id, m.name, m.number, r.id)
+
+        """
+              </table>
+              </center>
+            </td>
+          </tr>
+        </table>
+        """
+
+        self.root.getFooter()
+
+    def _q_lookup(self, component):
+        if component == 'machines':
+            return MachinesDirectory(self)
         return SimpleRunUI(self.root, self.tag, component)
 
 class RootDirectory(Directory):
