@@ -2,7 +2,7 @@
 Classes for caching metadata about a PerfDB instance.
 """
 
-from lnt.viewer.PerfDB import RunInfo, Test
+from lnt.viewer.PerfDB import Run, RunInfo, Test
 
 class SuiteSummary:
     def __init__(self, name, path):
@@ -109,3 +109,96 @@ def get_simple_suite_summary(db, tag):
     if entry is None or not entry.is_up_to_date(db):
         _cache[key] = entry = SimpleSuiteSummary.fromdb(db, tag)
     return entry
+
+class SimpleSuiteRunSummary(object):
+    _cache = {}
+    @staticmethod
+    def get_summary(db, tag):
+        key = (db.path, tag)
+        entry = SimpleSuiteRunSummary._cache.get(key)
+        if entry is None or not entry.is_up_to_date(db):
+            entry = SimpleSuiteRunSummary.fromdb(db, tag)
+            SimpleSuiteRunSummary._cache[key] = entry
+        return entry
+
+    @staticmethod
+    def fromdb(db, tag):
+        revision = db.get_revision_number("RunInfo")
+
+        # Find all run_orders for runs with this tag.
+        all_run_orders = db.session.query(RunInfo.value, RunInfo.run_id,
+                                          Run.machine_id).\
+            join(Run).\
+            filter(RunInfo.key == "run_order").\
+            filter(RunInfo.run_id.in_(
+                db.session.query(RunInfo.run_id).\
+                    filter(RunInfo.key == "tag").\
+                    filter(RunInfo.value == tag).subquery()))
+        order_by_run = dict((run_id,order)
+                            for order,run_id,machine_id in all_run_orders)
+        machine_id_by_run = dict((run_id,machine_id)
+                                 for order,run_id,machine_id in all_run_orders)
+
+        # Create a mapping from run_order to the available runs with that order.
+        runs_by_order = {}
+        for order,run_id,_ in all_run_orders:
+            runs = runs_by_order.get(order)
+            if runs is None:
+                runs = runs_by_order[order] = []
+            runs.append(run_id)
+
+        # Get all available run_orders, in order.
+        def order_key(run_order):
+            return run_order
+        run_orders = runs_by_order.keys()
+        run_orders.sort(key = order_key)
+        run_orders.reverse()
+
+        # Construct the total order of runs.
+        runs_in_order = []
+        for order in run_orders:
+            runs_in_order.extend(runs_by_order[order])
+
+        return SimpleSuiteRunSummary(
+            revision, tag, run_orders, runs_by_order, runs_in_order,
+            order_by_run, machine_id_by_run)
+
+    def __init__(self, revision, tag, run_orders, runs_by_order, runs_in_order,
+                 order_by_run, machine_id_by_run):
+        self.revision = revision
+        self.tag = tag
+        self.run_orders = run_orders
+        self.runs_by_order = runs_by_order
+        self.runs_in_order = runs_in_order
+        self.order_by_run = order_by_run
+        self.machine_id_by_run = machine_id_by_run
+
+    def is_up_to_date(self, db):
+        return self.revision == db.get_revision_number("RunInfo")
+
+    def get_run_order(self, run_id):
+        return self.order_by_run.get(run_id)
+
+    def get_run_ordered_index(self, run_id):
+        try:
+            return self.runs_in_order.index(run_id)
+        except:
+            print run_id
+            print self.runs_in_order
+            raise
+
+    def get_previous_run_on_machine(self, run_id):
+        machine_id = self.machine_id_by_run[run_id]
+        index = self.get_run_ordered_index(run_id)
+        for i in range(index + 1, len(self.runs_in_order)):
+            id = self.runs_in_order[i]
+            if machine_id == self.machine_id_by_run[id]:
+                return id
+
+    def get_next_run_on_machine(self, run_id):
+        machine_id = self.machine_id_by_run[run_id]
+        index = self.get_run_ordered_index(run_id)
+        for i in range(0, index)[::-1]:
+            id = self.runs_in_order[i]
+            if machine_id == self.machine_id_by_run[id]:
+                return id
