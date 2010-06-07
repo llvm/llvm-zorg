@@ -7,10 +7,11 @@ import time
 
 from datetime import datetime
 
+import lnt.testing
+import lnt.testing.util.compilers
+
 from lnt.testing.util.commands import note, warning, error, fatal
 from lnt.testing.util.commands import capture, which
-
-import lnt.testing.util.compilers
 
 def timestamp():
     return datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
@@ -24,7 +25,7 @@ def run_test(nick_prefix, opts):
 
     if opts.arch is not None:
         target_flags.append('-arch')
-        target_flags.append(opts.arch)        
+        target_flags.append(opts.arch)
     if opts.isysroot is not None:
         target_flags.append('-isysroot')
         target_flags.append(opts.isysroot)
@@ -146,7 +147,7 @@ def run_test(nick_prefix, opts):
         make_variables['REMOTE_USER'] = opts.remote_user
         make_variables['REMOTE_PORT'] = str(opts.remote_port)
         make_variables['REMOTE_CLIENT'] = opts.remote_client
-    
+
     nick = nick_prefix
     if opts.auto_name:
         # Construct the nickname from a few key parameters.
@@ -249,9 +250,11 @@ def run_test(nick_prefix, opts):
     # Compute the test samples to report.
     sample_keys = []
     if opts.test_simple:
+        test_namespace = 'nts'
         sample_keys.append(('compile', 'CC_Time', None, 'CC'))
         sample_keys.append(('exec', 'Exec_Time', None, 'Exec'))
     else:
+        test_namespace = 'nightlytest'
         sample_keys.append(('gcc.compile', 'GCCAS', 'time'))
         sample_keys.append(('bc.compile', 'Bytecode', 'size'))
         if opts.test_llc:
@@ -294,10 +297,6 @@ def run_test(nick_prefix, opts):
             fatal('missing key %r in report header' % item[1])
 
     # We don't use the test info, currently.
-    if opts.test_simple:
-        test_namespace = 'simple'
-    else:
-        test_namespace = 'nightlytest'
     test_info = {}
     for row in reader_it:
         record = dict(zip(header, row))
@@ -322,11 +321,20 @@ def run_test(nick_prefix, opts):
 
             # FIXME: Move to simpler and more succinct format, using .failed.
             if success_value == '*':
-                test_samples.append(lnt.testing.TestSamples(
-                        test_name + '.success', [0], test_info))
+                status_value = lnt.testing.FAIL
+            elif success_value == 'xfail':
+                status_value = lnt.testing.XFAIL
             else:
+                status_value = lnt.testing.PASS
+
+            if test_namespace == 'nightlytest':
                 test_samples.append(lnt.testing.TestSamples(
-                        test_name + '.success', [1], test_info))
+                        test_name + '.success',
+                        [status_value != lnt.testing.FAIL], test_info))
+            else:
+                if status_value != lnt.testing.PASS:
+                    test_samples.append(lnt.testing.TestSamples(
+                            test_name + '.status', [status_value], test_info))
             if value != '*':
                 if tname is None:
                     test_samples.append(lnt.testing.TestSamples(
@@ -357,10 +365,7 @@ def run_test(nick_prefix, opts):
 
     # FIXME: We aren't getting the LLCBETA options.
     run_info = {}
-    if opts.test_simple:
-        run_info['tag'] = 'simple'
-    else:
-        run_info['tag'] = 'nightlytest'
+    run_info['tag'] = test_namespace
     run_info.update(cc_info)
 
     # FIXME: Hack, use better method of getting versions. Ideally, from binaries
@@ -609,7 +614,7 @@ class NTTest(builtintest.BuiltinTest):
 
         if opts.sandbox_path is None:
             parser.error('--sandbox is required')
-        
+
         if opts.test_simple:
             # TEST=simple doesn't use a reference compiler.
             if opts.cc_reference is not None:
