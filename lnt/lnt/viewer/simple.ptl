@@ -17,7 +17,7 @@ import Util
 from Util import safediv
 from NTUtil import *
 
-from PerfDB import Machine, Run, Test
+from PerfDB import Machine, Run, RunInfo, Test
 
 def median(l):
     l = list(l)
@@ -69,33 +69,20 @@ class SimpleRunUI(Directory):
 
         run = db.getRun(self.id)
 
-        # Find previous runs, ordered by time.
-        runs = db.runs(run.machine).order_by(Run.start_time.desc()).all()
-        # FIXME: Fold this into query.
-        runs = [r for r in runs
-                if 'tag' in r.info and r.info['tag'].value == self.tag]
-
-        # Order by run_order info key, if given.
-        for r in runs:
-            if 'run_order' in r.info:
-                has_order = True
-                break
-        else:
-            has_order = False
-        if has_order:
-            runs.sort(key = lambda r: ('run_order' in r.info and
-                                       r.info['run_order'].value))
-            runs.reverse()
-
+        # Get the run summary which has run ordering information.
+        run_summary = perfdbsummary.SimpleSuiteRunSummary.get_summary(db,
+                                                                      self.tag)
+ 
         # Find previous run to compare to.
         if compareTo is None:
-            run_index = runs.index(run)
-            if run_index < len(runs) - 1:
-                compareTo = runs[run_index + 1]
+            id = run_summary.get_previous_run_on_machine(run.id)
+            if id is not None:
+                compareTo = db.getRun(id)
 
-        return run, runs, has_order, compareTo
+        return run, run_summary, compareTo
 
-    def show_run_page [html] (self, db, run, runs, compareTo, contents_fn):
+    def show_run_page [html] (self, db, run, run_summary, compare_to,
+                              contents_fn):
         machine = run.machine
 
         """
@@ -107,16 +94,17 @@ class SimpleRunUI(Directory):
             </tr>
             <tr>
               <td align=right>Run:</td>
-              <td>%s</td>
+              <td>%s (%s)</td>
             </tr>
-        """ % (machine.name, machine.number, run.start_time)
-        if compareTo:
+        """ % (machine.name, machine.number, run.start_time,
+               run.info['run_order'].value)
+        if compare_to:
             """
             <tr>
               <td align=right>Compare To:</td>
-              <td>%s</td>
+              <td>%s (%s)</td>
             </tr>
-            """ % (compareTo.start_time,)
+            """ % (compare_to.start_time, compare_to.info['run_order'].value)
         """
           </table>
         </center>
@@ -135,13 +123,23 @@ class SimpleRunUI(Directory):
         """ % (machine.id, machine.name, machine.number)
 
         # Show a small number of neighboring runs.
-        runIndex = runs.index(run)
-        for r in runs[max(0,runIndex-3):runIndex+6]:
+        cur_id = run.id
+        for i in range(3):
+            id = run_summary.get_next_run_on_machine(cur_id)
+            if not id:
+                break
+            cur_id = id
+        for i in range(6):
+            r = db.getRun(cur_id)
             if r == run:
                 """ <li> <h3><a href="../%d/">%s</a></h3> """ % (r.id,
                                                                  r.start_time)
             else:
                 """ <li> <a href="../%d/">%s</a> """ % (r.id, r.start_time)
+            cur_id = run_summary.get_previous_run_on_machine(cur_id)
+            if cur_id is None:
+                break
+
         """
               </ul>
             </td>
@@ -189,7 +187,7 @@ class SimpleRunUI(Directory):
               </table>"""
         self.renderPopupEnd()
 
-        contents_fn(db, run, runs, compareTo)
+        contents_fn()
 
         """
             </td>
@@ -203,7 +201,7 @@ class SimpleRunUI(Directory):
         # Get a DB connection.
         db = self.root.getDB()
 
-        run,runs,has_order,compareTo = self.getInfo(db)
+        run,run_summary,compare_to = self.getInfo(db)
         machine = run.machine
 
         self.root.getHeader('Run Results', "../../..",
@@ -214,7 +212,8 @@ class SimpleRunUI(Directory):
                                                                   machine.id))),
                             addPopupJS=True, addFormCSS=True)
 
-        self.show_run_page(db, run, runs, compareTo, self._q_index_body)
+        self.show_run_page(db, run, run_summary, compare_to,
+                           lambda: self._q_index_body(db, run, compare_to))
 
     def graph [html] (self):
         request = quixote.get_request()
@@ -222,7 +221,7 @@ class SimpleRunUI(Directory):
         # Get a DB connection.
         db = self.root.getDB()
 
-        run,runs,has_order,compareTo = self.getInfo(db)
+        run,run_summary,compare_to = self.getInfo(db)
         machine = run.machine
 
         # Load the test suite summary.
@@ -252,21 +251,17 @@ class SimpleRunUI(Directory):
         # Aggregate by test id and then run key.
         #
         # FIXME: Pretty expensive.
-        run_id_map = dict([(r.id,r) for r in runs])
         samples_by_test_id = {}
         for run_id,test_id,value in samples:
             d = samples_by_test_id.get(test_id)
             if d is None:
                 d = samples_by_test_id[test_id] = Util.multidict()
-            r = run_id_map.get(run_id)
-            if r is None:
+            run_key = run_summary.get_run_order(run_id)
+            if run_key is None:
                 continue
 
-            if has_order:
-                # FIXME: What to do on failure?
-                run_key = int(r.info.get('run_order').value)
-            else:
-                run_key = time.mktime(r.start_time.timetuple())
+            # FIXME: What to do on failure?
+            run_key = int(run_key)
             d[run_key] = value
 
         # Build the graph data
@@ -278,8 +273,8 @@ class SimpleRunUI(Directory):
         num_plots = len(graph_tests) * len(graph_psets)
         num_points = 0
         index = 0
-        show_mad_error = has_order
-        show_points = has_order
+        show_mad_error = True
+        show_points = True
         show_all_points = False
         for name in graph_tests:
             for pset in graph_psets:
@@ -334,7 +329,7 @@ class SimpleRunUI(Directory):
                 plot_points.append(points)
                 index += 1
 
-        def graph_body [html] (db, run, runs, compare_to):
+        def graph_body [html] ():
             """
             <h3>Graph</h3>
             <table>
@@ -447,10 +442,8 @@ class SimpleRunUI(Directory):
             <p>""" % (' '.join(map(str, new_sample_list)),
                       ' '.join(map(str, Util.sorted(resample_list))))
 
-        if has_order:
-            xAxis_format = 'graph.xAxis.formats.normal'
-        else:
-            xAxis_format = 'graph.xAxis.formats.day'
+        # FIXME: Allow run_order to define this.
+        xAxis_format = 'graph.xAxis.formats.normal'
         graph_init = """\
     function init() {
         graph = new Graph2D("graph");
@@ -472,9 +465,9 @@ class SimpleRunUI(Directory):
                             addJSScript=graph_init,
                             onload="init()")
 
-        self.show_run_page(db, run, runs, compareTo, graph_body)
+        self.show_run_page(db, run, run_summary, compare_to, graph_body)
 
-    def _q_index_body [html] (self, db, run, runs, compare_to):
+    def _q_index_body [html] (self, db, run, compare_to):
         # Find the tests. The simple UI maps all tests that start with
         # 'simple.'.
         #
@@ -591,7 +584,7 @@ class SimpleRunUI(Directory):
 
         """
         <form method="GET" action="graph">
-        <table border=1>
+        <table class="sortable" border=1>
           <tr>
             <th></th><th>Name</th>"""
         for i in range(len(ts_summary.parameter_sets)):
@@ -663,22 +656,10 @@ class MachineUI(Directory):
                             components=self.parent.components,
                             addPopupJS=True)
 
-        # Find all runs on this machine.
-        runs = db.runs(machine).order_by(Run.start_time.desc()).all()
+        # Get the run summary which has run ordering information.
+        run_summary = perfdbsummary.SimpleSuiteRunSummary.get_summary(
+            db, self.parent.tag)
 
-        # Order by run_order info key, if given.
-        for r in runs:
-            if 'run_order' in r.info:
-                has_order = True
-                break
-        else:
-            has_order = False
-        if has_order:
-            runs.sort(key = lambda r: ('run_order' in r.info and
-                                       r.info['run_order'].value))
-            runs.reverse()
-
-        # FIXME: List previous machines with the same nickname?
         """
         <table width="100%%" border=1>
           <tr>
@@ -690,34 +671,6 @@ class MachineUI(Directory):
         # List all machines with this name.
         for m in db.machines(name=machine.name):
             """<li><a href="../%d">%s:%d</a></li>""" % (m.id, m.name, m.number)
-        """
-              </ul>
-              <h4>Runs:</h4>
-              <ul>
-        """
-
-        # Show the most recent 10 runs.
-        for r in runs[:10]:
-            """ <li> <a href="../../%d/">%s</a> """ % (r.id, r.start_time)
-
-        # Full list of runs in a drop down.
-        #
-        # FIXME: Link to run correctly.
-        """
-        <p>
-        <form method="GET" action="../../1/">
-        <select name="run">
-        """
-        for r in runs:
-            """\
-        <option value="%d">%s""" % (r.id, r.start_time)
-
-        """
-        </select>
-        <input type="submit" value="Go to Run">
-        </form>
-        """
-
         """
               </ul>
             </td>
@@ -748,45 +701,48 @@ class MachineUI(Directory):
         self.renderPopupEnd()
 
         # List associated runs.
-
+        run_info = db.session.query(Run.id, Run.start_time, Run.end_time).\
+            filter(Run.machine_id == machine.id).\
+            filter(Run.id.in_(run_summary.runs_in_order)).all()
+        run_info_map = dict((id,(start_time,end_time))
+                            for id,start_time,end_time in run_info)
         """
         <p>
         <table class="sortable" border=1>
         <thead>
-          <tr>"""
-        if has_order:
-            """
-            <th>Run Order</th>"""
-        """
+          <tr>
+            <th>Run Order</th>
             <th>Start Time</th>
             <th>End Time</th>
             <th>&nbsp;</th>
+          </tr>
         </thead>
         """
-        for r in runs:
+        for order in run_summary.run_orders:
+            run_ids = [id for id in run_summary.runs_by_order[order]
+                       if id in run_info_map]
+            if not run_ids:
+                continue
+
             """
-          <tr>"""
-            if has_order:
-                if 'run_order' in r.info:
-                    order_value = r.info['run_order'].value
-                else:
-                    order_value = str('&nbsp;')
+          <tr>
+            <td rowspan="%d" align=right>%s</td>""" % (len(run_ids), order)
+            for run_id in run_ids:
+                start_time,end_time = run_info_map[run_id]
+                if run_id != run_ids[0]:
+                    """<tr>"""
                 """
-            <td align=right>%s</td>""" % order_value
-            """
             <td>%s</td>
             <td>%s</td>
             <td><a href="../../%d">View Results</a></td>
-          </tr>""" % (r.start_time, r.end_time, r.id)
+          </tr>""" % (start_time, end_time, run_id)
         """
-        </table>
-        """
+        </table>"""
 
         """
             </td>
           </tr>
-        </table>
-        """
+        </table>"""
 
         self.root.getFooter()
 
