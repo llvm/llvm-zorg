@@ -12,7 +12,7 @@ def get_build_slaves():
         create_slave("osu1", properties={'jobs' : 4}, max_builds=1),
 
         # FreeBSD zero.sajd.net 9.0-CURRENT i386
-        create_slave("freebsd1", properties={'jobs' : 1}),
+        create_slave("freebsd1", properties={'jobs' : 1}, max_builds=1),
 
         # PowerPC Linux machine. 900MHz G3 processor with 256MB of RAM.
         create_slave("nick1", properties={'jobs' : 1}, max_builds=1),
@@ -27,7 +27,7 @@ def get_build_slaves():
         create_slave("dunbar-win32", properties={'jobs' : 1}, max_builds=1),
 
         # Dual Quad Core Mc Pro (Nehalem) running SnowLeopard.
-        create_slave("dunbar-darwin10", properties={'jobs' : 4}, max_builds=4),
+        create_slave("dunbar-darwin10", properties={'jobs' : 4}, max_builds=2),
 
         # Dual Core Pentium M, XP SP 3.
         create_slave("dunbar-win32-2", properties={'jobs' : 2}, max_builds=1),
