@@ -44,7 +44,8 @@ def addDarwinChrootSetup(f, build_root_images=[],
         # Setup the build root we will build projects in.
         f.addStep(ShellCommand(
                 name="attach.buildroot",
-                command=("hdiutil attach -noverify -plist -mountrandom . %s | "
+                command=("hdiutil attach -readonly -noverify "
+                         "-plist -mountrandom . %s | "
                          "tee mount_info.plist") % image,
                 description="attach build root image",
                 haltOnFailure=True,
@@ -109,6 +110,11 @@ print items[0]
                            workdir=build_root_name))
 
     # Initialize /dev/.
+    f.addStep(ShellCommand(name="chroot.init.mkdir.dev",
+                           command=["sudo", "mkdir", "-p", "dev"],
+                           haltOnFailure=True,
+                           description="mkdir /dev",
+                           workdir=build_root_name))
     f.addStep(ShellCommand(name="chroot.init.mount.devfs",
                            command=["sudo", "mount", "-t", "devfs",
                                     "devfs", "dev"],
