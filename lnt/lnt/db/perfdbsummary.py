@@ -49,7 +49,8 @@ class SimpleSuiteSummary(object):
         test_names = set()
         parameter_sets = set()
         test_map = {}
-        test_status_map = {}
+        has_status_markers = False
+        has_success_markers = False
         for t in tests:
             name = t.name.split('.', 1)[1]
 
@@ -62,14 +63,25 @@ class SimpleSuiteSummary(object):
 
             if name.endswith('.success'):
                 test_name = name.rsplit('.', 1)[0]
-                test_status_map[test_name] = (name, False)
+                has_success_markers = True
             elif name.endswith('.status'):
                 test_name = name.rsplit('.', 1)[0]
-                test_status_map[test_name] = (name, True)
+                has_status_markers = True
             else:
                 test_name = name
 
             test_names.add(test_name)
+
+        # Compute the test status info.
+        test_status_map = {}
+        if has_status_markers:
+            for test_name in test_names:
+                marker_name = '%s.status' % test_name
+                test_status_map[test_name] = (marker_name, True)
+        elif has_success_markers:
+            for test_name in test_names:
+                marker_name = '%s.success' % test_name
+                test_status_map[test_name] = (marker_name, False)
 
         # Order the test names.
         test_names = list(test_names)
