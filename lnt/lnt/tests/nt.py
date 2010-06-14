@@ -13,6 +13,10 @@ import lnt.testing.util.compilers
 from lnt.testing.util.commands import note, warning, error, fatal
 from lnt.testing.util.commands import capture, which
 
+# FIXME: Add util command for this.
+kGetSourceVersionPath = os.path.join(os.path.dirname(__file__),
+                                     'misc', 'GetSourceVersion')
+
 def timestamp():
     return datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
 
@@ -370,14 +374,10 @@ def run_test(nick_prefix, opts):
 
     # FIXME: Hack, use better method of getting versions. Ideally, from binaries
     # so we are more likely to be accurate.
-    run_info['llvm_revision'] = capture([os.path.join(opts.llvm_src_root,
-                                                      'utils',
-                                                      'GetSourceVersion'),
+    run_info['llvm_revision'] = capture([kGetSourceVersionPath,
                                          opts.llvm_src_root],
                                         include_stderr=True).strip()
-    run_info['test_suite_revision'] = capture([os.path.join(opts.llvm_src_root,
-                                                            'utils',
-                                                            'GetSourceVersion'),
+    run_info['test_suite_revision'] = capture([kGetSourceVersionPath,
                                                opts.test_suite_root],
                                              include_stderr=True).strip()
     run_info.update(public_make_variables)
