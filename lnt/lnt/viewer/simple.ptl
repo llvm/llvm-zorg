@@ -4,6 +4,7 @@
 Nightly Test UI instance for actual nightly test data.
 """
 
+import math
 import sys
 import time
 
@@ -19,6 +20,9 @@ from NTUtil import *
 
 from PerfDB import Machine, Run, RunInfo, Test
 
+def mean(l):
+    return sum(l)/len(l)
+
 def median(l):
     l = list(l)
     l.sort()
@@ -29,6 +33,12 @@ def median_absolute_deviation(l, med = None):
     if med is None:
         med = median(l)
     return median([abs(x - med) for x in l])
+
+def standard_deviation(l):
+    m = mean(l)
+    means_sqrd = sum([(v - m)**2 for v in l]) / len(l)
+    rms = math.sqrt(means_sqrd)
+    return rms
 
 class SimpleRunUI(Directory):
     _q_exports = ["", "graph"]
@@ -72,7 +82,7 @@ class SimpleRunUI(Directory):
         # Get the run summary which has run ordering information.
         run_summary = perfdbsummary.SimpleSuiteRunSummary.get_summary(db,
                                                                       self.tag)
- 
+
         # Find previous run to compare to.
         if compareTo is None:
             id = run_summary.get_previous_run_on_machine(run.id)
@@ -213,7 +223,8 @@ class SimpleRunUI(Directory):
                             addPopupJS=True, addFormCSS=True)
 
         self.show_run_page(db, run, run_summary, compare_to,
-                           lambda: self._q_index_body(db, run, compare_to))
+                           lambda: self._q_index_body(db, run, run_summary,
+                                                      compare_to))
 
     def graph [html] (self):
         request = quixote.get_request()
@@ -467,7 +478,7 @@ class SimpleRunUI(Directory):
 
         self.show_run_page(db, run, run_summary, compare_to, graph_body)
 
-    def _q_index_body [html] (self, db, run, compare_to):
+    def _q_index_body [html] (self, db, run, run_summary, compare_to):
         # Find the tests. The simple UI maps all tests that start with
         # 'simple.'.
         #
@@ -478,13 +489,33 @@ class SimpleRunUI(Directory):
 
         if compare_to:
             prev_id = compare_to.id
-            interesting_runs = (run.id, prev_id)
+            interesting_runs = [run.id, prev_id]
         else:
             prev_id = None
-            interesting_runs = (run.id,)
+            interesting_runs = [run.id]
 
         # Load the test suite summary.
         ts_summary = perfdbsummary.get_simple_suite_summary(db, self.tag)
+
+        cur_id = run.id
+        previous_runs = []
+
+        request = quixote.get_request()
+        show_delta = bool(request.form.get('show_delta'))
+        show_stddev =  bool(request.form.get('show_stddev'))
+        show_mad = bool(request.form.get('show_mad'))
+
+        if show_stddev or show_mad:
+            for i in range(5):
+                cur_id = run_summary.get_previous_run_on_machine(cur_id)
+                if not cur_id:
+                    break
+
+                previous_runs.append(cur_id)
+                if cur_id not in interesting_runs:
+                    interesting_runs.append(cur_id)
+
+        interesting_runs = tuple(set(interesting_runs + previous_runs))
 
         # Load the run sample data.
         q = db.session.query(Sample.value, Sample.run_id, Sample.test_id)
@@ -522,7 +553,10 @@ class SimpleRunUI(Directory):
 
             run_cell_value = "-"
             if run_values:
-                run_cell_value = "%.4f" % min(run_values)
+                run_value = min(run_values)
+                run_cell_value = "%.4f" % run_value
+            else:
+                run_value = None
 
             cell_color = None
             if run_failed:
@@ -542,14 +576,44 @@ class SimpleRunUI(Directory):
                 """
                 <td>%s</td""" % (run_cell_value,)
 
-            if prev_values and run_values:
+            if prev_values and run_value is not None:
                 prev_value = min(prev_values)
-                pct = safediv(min(run_values), prev_value,
+                pct = safediv(run_value, prev_value,
                               '<center><font size=-2>nan</font></center>')
                 Util.PctCell(pct, delta=True).render()
             else:
                 """<td>-</td>"""
+                prev_value = None
 
+            if show_delta:
+                if prev_value is not None and run_value is not None:
+                    """<td>%.4f</td>""" % (run_value - prev_value)
+                else:
+                    """<td>-</td>"""
+
+            if show_stddev:
+                previous_values = [v for run_id in previous_runs
+                                   for v in sample_map.get((run_id,
+                                                            test.id), ())]
+                if previous_values:
+                    sd_value = standard_deviation(previous_values)
+                    sd_cell_value = "%.4f" % sd_value
+                else:
+                    sd_cell_value = "-"
+                """
+                <td>%s</td""" % (sd_cell_value,)
+
+            if show_mad:
+                previous_values = [v for run_id in previous_runs
+                                   for v in sample_map.get((run_id,
+                                                            test.id), ())]
+                if previous_values:
+                    mad_value = median_absolute_deviation(previous_values)
+                    mad_cell_value = "%.4f" % mad_value
+                else:
+                    mad_cell_value = "-"
+                """
+                <td>%s</td""" % (mad_cell_value,)
 
         """
         <h3>Parameter Sets</h3>
@@ -582,17 +646,34 @@ class SimpleRunUI(Directory):
         """
         <h3>Tests</h3>"""
 
+        pset_cols = 2 + show_delta + show_stddev + show_mad
         """
         <form method="GET" action="graph">
         <table class="sortable" border=1>
+        <thead>
           <tr>
-            <th></th><th>Name</th>"""
+            <th rowspan="1"></th><th rowspan="1">Name</th>"""
+        for i in range(len(ts_summary.parameter_sets)):
+            """<th colspan=%d>P%d</th>
+            """ % (pset_cols, i)
+        """
+          </tr><tr><th></th><th></th>"""
         for i in range(len(ts_summary.parameter_sets)):
             """
-            <th><input type="checkbox" name="pset.%d">P%d</th>
-            <th>%%</th>""" % (i, i)
+            <th><input type="checkbox" name="pset.%d"></th>
+            <th>%%</th>""" % i
+            if show_delta:
+                """
+            <th>&Delta;</th>"""
+            if show_stddev:
+                """
+            <th>&sigma;</th>"""
+            if show_mad:
+                """
+            <th>MAD</th>"""
         """
-          </tr>"""
+          </tr>
+        </thead>"""
         for name in ts_summary.test_names:
             """
           <tr>
