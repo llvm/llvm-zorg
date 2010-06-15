@@ -45,7 +45,9 @@ def run_test(nick_prefix, opts):
     # Set the make variables to use.
     make_variables = {
         'TARGET_CC' : opts.cc_reference,
+        'TARGET_CXX' : opts.cxx_reference,
         'TARGET_LLVMGCC' : opts.cc_under_test,
+        'TARGET_LLVMGXX' : opts.cxx_under_test,
         'TARGET_FLAGS' : ' '.join(target_flags),
         'TARGET_LLCFLAGS' : ' '.join(target_llcflags),
         'ENABLE_OPTIMIZED' : '1',
@@ -61,11 +63,7 @@ def run_test(nick_prefix, opts):
         make_variables['LLC_OPTFLAGS'] = opts.optimize_option
 
     # Set test selection variables.
-    make_variables['TARGET_CXX'] = opts.cxx_reference
-    if opts.test_cxx:
-        make_variables['TARGET_LLVMGXX'] = opts.cxx_under_test
-    else:
-        make_variables['TARGET_LLVMGXX'] = 'false'
+    if not opts.test_cxx:
         make_variables['DISABLE_CXX'] = '1'
     if not opts.test_cbe:
         make_variables['DISABLE_CBE'] = '1'
@@ -638,6 +636,18 @@ class NTTest(builtintest.BuiltinTest):
             parser.error('--cc is required')
         if opts.test_cxx and opts.cxx_under_test is None:
             parser.error('--cxx is required')
+
+        # Always set cxx_under_test, since it may be used as the linker even
+        # when not testing C++ code.
+        if opts.cxx_under_test is None:
+            opts.cxx_under_test = opts.cc_under_test
+
+        # FIXME: As a hack to allow sampling old Clang revisions, if we are
+        # given a C++ compiler that doesn't exist, reset it to just use the
+        # given C compiler.
+        if not os.path.exists(opts.cxx_under_test):
+            warning("invalid cxx_under_test, falling back to cc_under_test")
+            opts.cxx_under_test = opts.cc_under_test
 
         if opts.llvm_src_root is None:
             parser.error('--llvm-src is required')
