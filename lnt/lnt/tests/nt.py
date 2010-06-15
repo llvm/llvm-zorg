@@ -346,26 +346,32 @@ def run_test(nick_prefix, opts):
 
     # Collect the machine and run info.
     #
-    # FIXME: Support no-machdep-info.
-    #
     # FIXME: Import full range of data that the Clang tests are using?
     machine_info = {}
-    machine_info['uname'] = capture(["uname","-a"],
-                                    include_stderr=True).strip()
     machine_info['hardware'] = capture(["uname","-m"],
                                        include_stderr=True).strip()
     machine_info['os'] = capture(["uname","-sr"], include_stderr=True).strip()
-    machine_info['name'] = capture(["uname","-n"], include_stderr=True).strip()
     if opts.cc_reference is not None:
         machine_info['gcc_version'] = capture(
             [opts.cc_reference, '--version'],
             include_stderr=True).split('\n')[0]
-    machine = lnt.testing.Machine(nick, machine_info)
 
     # FIXME: We aren't getting the LLCBETA options.
     run_info = {}
     run_info['tag'] = test_namespace
     run_info.update(cc_info)
+
+    # Add machine dependent info.
+    if opts.use_machdep_info:
+        machdep_info = machine_info
+    else:
+        machdep_info = run_info
+
+    machdep_info['uname'] = capture(["uname","-a"], include_stderr=True).strip()
+    machdep_info['name'] = capture(["uname","-n"], include_stderr=True).strip()
+
+    # Create the machine entry.
+    machine = lnt.testing.Machine(nick, machine_info)
 
     # FIXME: Hack, use better method of getting versions. Ideally, from binaries
     # so we are more likely to be accurate.
@@ -599,7 +605,11 @@ class NTTest(builtintest.BuiltinTest):
         group.add_option("", "--no-auto-name", dest="auto_name",
                          help="Don't automatically derive submission name",
                          action="store_false", default=True)
-        parser.add_option("", "--run-order", dest="run_order", metavar="STR",
+        group.add_option("", "--no-machdep-info", dest="use_machdep_info",
+                         help=("Don't put machine (instance) dependent  "
+                               "variables with machine info"),
+                         action="store_false", default=True)
+        group.add_option("", "--run-order", dest="run_order", metavar="STR",
                           help="String to use to identify and order this run",
                           action="store", type=str, default=None)
         parser.add_option_group(group)
