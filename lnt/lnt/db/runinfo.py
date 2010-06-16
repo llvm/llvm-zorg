@@ -32,7 +32,7 @@ class ComparisonResult:
             else:
                 return UNCHANGED_PASS
 
-    def get_value_status(self, confidence_interval=1.96, value_precision=0.01):
+    def get_value_status(self, confidence_interval=2.576, value_precision=0.01):
         if self.current is None or self.previous is None:
             return None
 
@@ -51,7 +51,7 @@ class ComparisonResult:
         # Ignore tests whose delt is too small relative to the precision we can
         # sample at; otherwise quantization means that we can't measure the
         # standard deviation with enough accuracy.
-        if abs(self.delta) <= value_precision * confidence_interval:
+        if abs(self.delta) <= 2 * value_precision * confidence_interval:
             if self.failed:
                 return UNCHANGED_FAIL
             else:
