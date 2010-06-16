@@ -90,6 +90,9 @@ def getSimpleReport(db, run, baseurl, was_added, will_commit):
     id = run_summary.get_previous_run_on_machine(run.id)
     if id is not None:
         compare_to = db.getRun(id)
+    else:
+        # FIXME: Look for run across machine.
+        compare_to = None
 
     # Gather the changes to report, mapped by parameter set.
     new_failures = Util.multidict()
@@ -147,7 +150,7 @@ def getSimpleReport(db, run, baseurl, was_added, will_commit):
             print >>report, """(%s:%d)""" % (compare_to.machine.name,
                                              compare_to.machine.number)
     else:
-        print >>report, """    To: (none)"""
+        print >>report, """   To: (none)"""
     print >>report
 
     if existing_failures:
@@ -213,9 +216,6 @@ def getSimpleReport(db, run, baseurl, was_added, will_commit):
             for name,cr in tests:
                 print >>report, '  %s' % (name,)
 
-    print 'Subject:',subject
-    print report.getvalue()
-    raise SystemExit,0
     return subject, report.getvalue()
 
 def getReport(db, run, baseurl, was_added, will_commit):

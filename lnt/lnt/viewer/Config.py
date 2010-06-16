@@ -6,6 +6,16 @@ import os
 import re
 
 class EmailConfig:
+    @staticmethod
+    def fromData(data):
+        # The email to field can either be a string, or a list of tuples of
+        # the form [(accept-regexp-pattern, to-address)].
+        to_address = data.get('to')
+        if not isinstance(to_address, str):
+            to_address = [(str(a),str(b)) for a,b in to_address]
+        return EmailConfig(bool(data.get('enabled')), str(data.get('host')),
+                           str(data.get('from')), to_address)
+        
     def __init__(self, enabled, host, from_address, to_address):
         self.enabled = enabled
         self.host = host
@@ -28,11 +38,17 @@ class DBInfo:
         dbPath = dict.get('path')
         if '://' not in dbPath:
             dbPath = os.path.join(baseDir, dbPath)
+
+        # Support per-database email configurations.
+        email_config = default_email_config
+        if 'emailer' in dict:
+            email_config = EmailConfig.fromData(dict['emailer'])
+
         return DBInfo(dbPath,
                       bool(dict.get('showNightlytest')),
                       bool(dict.get('showGeneral')),
                       bool(dict.get('showSimple')),
-                      default_email_config)
+                      email_config)
 
     def __init__(self, path, showNightlytest, showGeneral, showSimple,
                  email_config):
@@ -52,15 +68,7 @@ class Config:
         # Get the default email config.
         emailer = data.get('nt_emailer')
         if emailer:
-            # The email to field can either be a string, or a list of tuples of
-            # the form [(accept-regexp-pattern, to-address)].
-            to_address = emailer.get('to')
-            if not isinstance(to_address, str):
-                to_address = [(str(a),str(b)) for a,b in to_address]
-            default_email_config = EmailConfig(bool(emailer.get('enabled')),
-                                               str(emailer.get('host')),
-                                               str(emailer.get('from')),
-                                               to_address)
+            default_email_config = EmailConfig.fromData(emailer)
         else:
             default_email_config = EmailConfig(False, '', '', [])
 
