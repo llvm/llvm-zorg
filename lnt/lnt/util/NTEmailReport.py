@@ -12,6 +12,9 @@ import sys
 
 import StringIO
 from lnt import viewer
+from lnt.db import runinfo
+from lnt.db import perfdbsummary
+from lnt.viewer import Util
 from lnt.viewer import PerfDB
 from lnt.viewer.NTUtil import *
 
@@ -61,8 +64,167 @@ def findPreceedingRun(query, run):
             best = r
     return best
 
+def getSimpleReport(db, run, baseurl, was_added, will_commit):
+    tag = run.info['tag'].value
+
+    # Get the run summary.
+    run_summary = perfdbsummary.SimpleSuiteRunSummary.get_summary(db, tag)
+
+    # Load the test suite summary.
+    ts_summary = perfdbsummary.get_simple_suite_summary(db, tag)
+
+    # Get the run pass/fail information.
+    sri = runinfo.SimpleRunInfo(db, ts_summary)
+
+    # Gather the runs to use for statistical data.
+    num_comparison_runs = 5
+    cur_id = run.id
+    comparison_window = []
+    for i in range(num_comparison_runs):
+        cur_id = run_summary.get_previous_run_on_machine(cur_id)
+        if not cur_id:
+            break
+        comparison_window.append(cur_id)
+
+    # Find previous run to compare to.
+    id = run_summary.get_previous_run_on_machine(run.id)
+    if id is not None:
+        compare_to = db.getRun(id)
+
+    # Gather the changes to report, mapped by parameter set.
+    new_failures = Util.multidict()
+    new_passes = Util.multidict()
+    perf_regressions = Util.multidict()
+    perf_improvements = Util.multidict()
+    added_tests = Util.multidict()
+    removed_tests = Util.multidict()
+    existing_failures = Util.multidict()
+    for name in ts_summary.test_names:
+        for pset in ts_summary.parameter_sets:
+            cr = sri.get_run_comparison_result(run, compare_to, name, pset,
+                                               comparison_window)
+            test_status = cr.get_test_status()
+            perf_status = cr.get_value_status()
+            if test_status == runinfo.REGRESSED:
+                new_failures[pset] = (name, cr)
+            elif test_status == runinfo.IMPROVED:
+                new_passes[pset] = (name, cr)
+            elif cr.current is None:
+                removed_tests[pset] = (name, cr)
+            elif cr.previous is None:
+                added_tests[pset] = (name, cr)
+            elif test_status == runinfo.UNCHANGED_FAIL:
+                existing_failures[pset] = (name, cr)
+            elif perf_status == runinfo.REGRESSED:
+                perf_regressions[pset] = (name, cr)
+            elif perf_status == runinfo.IMPROVED:
+                perf_improvements[pset] = (name, cr)
+
+    # Generate the report.
+    report = StringIO.StringIO()
+
+    machine = run.machine
+    subject = """%s nightly tester results""" % machine.name
+
+    # Generate the report header.
+    if baseurl[-1] == '/':
+        baseurl = baseurl[:-1]
+    print >>report, """%s/%d/""" % (baseurl, run.id)
+    print >>report, """Nickname: %s:%d""" % (machine.name, machine.number)
+    if 'name' in machine.info:
+        print >>report, """Name: %s""" % (machine.info['name'].value,)
+    print >>report, """Comparing:"""
+    print >>report, """  Run: %d, Order: %s, Start Time: %s, End Time: %s""" % (
+        run.id, run.info['run_order'].value, run.start_time, run.end_time)
+    if compare_to:
+        print >>report, ("""   To: %d, Order: %s, """
+                         """Start Time: %s, End Time: %s""") % (
+            compare_to.id, compare_to.info['run_order'].value,
+            compare_to.start_time, compare_to.end_time)
+        if run.machine != compare_to.machine:
+            print >>report, """*** WARNING ***:""",
+            print >>report, """comparison is against a different machine""",
+            print >>report, """(%s:%d)""" % (compare_to.machine.name,
+                                             compare_to.machine.number)
+    else:
+        print >>report, """    To: (none)"""
+    print >>report
+
+    if existing_failures:
+        print >>report, 'Total Existing Failures:',  sum(
+            map(len, existing_failures.values()))
+        print >>report
+
+    # Generate the summary of the changes.
+    items_info = (('New Failures', new_failures, False),
+                  ('New Passes', new_passes, False),
+                  ('Performance Regressions', perf_regressions, True),
+                  ('Performance Improvements', perf_improvements, True),
+                  ('Removed Tests', removed_tests, False),
+                  ('Added Tests', added_tests, False))
+    total_changes = sum([sum(map(len, items.values()))
+                         for _,items,_ in items_info])
+    if total_changes:
+        print >>report, """==============="""
+        print >>report, """Changes Summary"""
+        print >>report, """==============="""
+        print >>report
+        for name,items,_ in items_info:
+            if items:
+                print >>report, '%s: %d' % (name, sum(map(len, items.values())))
+        print >>report
+
+        print >>report, """=============="""
+        print >>report, """Changes Detail"""
+        print >>report, """=============="""
+        for name,items,show_perf in items_info:
+            if not items:
+                continue
+
+            print >>report
+            print >>report, name
+            print >>report, '-' * len(name)
+            for pset,tests in items.items():
+                if show_perf:
+                    tests.sort(key = lambda (_,cr): -abs(cr.pct_delta))
+
+                if pset or len(items) > 1:
+                    print >>report
+                    print >>report, "Parameter Set:", pset
+                for name,cr in tests:
+                    if show_perf:
+                        print >>report, ('  %s: %.2f%%'
+                                         '(%.4f => %.4f, std. dev.: %.4f)') % (
+                            name, 100. * cr.pct_delta,
+                            cr.previous, cr.current, cr.stddev)
+                    else:
+                        print >>report, '  %s' % (name,)
+
+    # Generate a list of the existing failures.
+    if False and existing_failures:
+        print >>report
+        print >>report, """================="""
+        print >>report, """Existing Failures"""
+        print >>report, """================="""
+        for pset,tests in existing_failures.items():
+            if pset or len(existing_failures) > 1:
+                print >>report
+                print >>report, "Parameter Set:", pset
+            for name,cr in tests:
+                print >>report, '  %s' % (name,)
+
+    print 'Subject:',subject
+    print report.getvalue()
+    raise SystemExit,0
+    return subject, report.getvalue()
+
 def getReport(db, run, baseurl, was_added, will_commit):
     report = StringIO.StringIO()
+
+    # Use a simple report unless the tag indicates this is an old style nightly
+    # test run.
+    if 'tag' in run.info and run.info['tag'].value != 'nightlytest':
+        return getSimpleReport(db, run, baseurl, was_added, will_commit)
 
     machine = run.machine
     compareTo = None

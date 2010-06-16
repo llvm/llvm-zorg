@@ -2,10 +2,10 @@ from lnt.util import stats
 from lnt.viewer import Util
 from lnt.viewer.PerfDB import Sample
 
-REGRESSED = 0
-IMPROVED = 1
-UNCHANGED_PASS = 2
-UNCHANGED_FAIL = 3
+REGRESSED = 'REGRESSED'
+IMPROVED = 'IMPROVED'
+UNCHANGED_PASS = 'UNCHANGED_PASS'
+UNCHANGED_FAIL = 'UNCHANGED_FAIL'
 
 class ComparisonResult:
     def __init__(self, cur_value, prev_value, delta, pct_delta, stddev, MAD,
