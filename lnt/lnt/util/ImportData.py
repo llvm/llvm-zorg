@@ -37,26 +37,17 @@ def import_and_report(config, db_name, db, file, log, format, commit=False,
         return (False, None)
     print >>log, '  LOAD TIME: %.2fs' % (time.time() - startTime,)
 
-    # Check if this is a nightlytest run.
-    tag = data.get('Run',{}).get('Info',{}).get('tag',None)
-    is_nt = tag is None or tag == 'nightlytest'
-
     # Find the email address for this machine's results.
     toAddress = None
-    if is_nt and config.ntEmailEnabled:
-        if isinstance(config.ntEmailTo, str):
-            toAddress = config.ntEmailTo
-        else:
-            # Find the machine name.
-            machineName = str(data.get('Machine',{}).get('Name'))
-            for pattern,addr in config.ntEmailTo:
-                if re.match(pattern, machineName):
-                    toAddress = addr
-                    break
-            else:
-                print >>log,("ERROR: unable to match machine name "
-                             "for test results email address!")
-                return (False, None)
+    email_config = config.databases[db_name].email_config
+    if email_config.enabled:
+        # Find the machine name.
+        machineName = str(data.get('Machine',{}).get('Name'))
+        toAddress = email_config.get_to_address(machineName)
+        if toAddress is None:
+            print >>log,("ERROR: unable to match machine name "
+                         "for test results email address!")
+            return (False, None)
 
     importStartTime = time.time()
     try:
@@ -83,7 +74,7 @@ def import_and_report(config, db_name, db, file, log, format, commit=False,
         NTEmailReport.emailReport(db, run,
                                   "%s/db_%s/nightlytest/" % (config.zorgURL,
                                                              db_name),
-                                  config.ntEmailHost, config.ntEmailFrom,
+                                  email_config.host, email_config.from_address,
                                   toAddress, success, commit)
 
     print >>log, "ADDED: %d machines" % (db.getNumMachines() - numMachines,)
