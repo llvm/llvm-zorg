@@ -4,7 +4,6 @@
 Nightly Test UI instance for actual nightly test data.
 """
 
-import math
 import sys
 import time
 
@@ -13,32 +12,13 @@ from quixote.directory import Directory
 from quixote.errors import TraversalError
 
 from lnt.db import perfdbsummary
+from lnt.util import stats
 
 import Util
 from Util import safediv
 from NTUtil import *
 
 from PerfDB import Machine, Run, RunInfo, Test
-
-def mean(l):
-    return sum(l)/len(l)
-
-def median(l):
-    l = list(l)
-    l.sort()
-    N = len(l)
-    return (l[(N-1)//2] + l[N//2])*.5
-
-def median_absolute_deviation(l, med = None):
-    if med is None:
-        med = median(l)
-    return median([abs(x - med) for x in l])
-
-def standard_deviation(l):
-    m = mean(l)
-    means_sqrd = sum([(v - m)**2 for v in l]) / len(l)
-    rms = math.sqrt(means_sqrd)
-    return rms
 
 class SimpleRunUI(Directory):
     _q_exports = ["", "graph"]
@@ -308,8 +288,8 @@ class SimpleRunUI(Directory):
                         else:
                             points_data.append((x, min_value))
                     if show_mad_error:
-                        med = median(values)
-                        mad = median_absolute_deviation(values, med)
+                        med = stats.median(values)
+                        mad = stats.median_absolute_deviation(values, med)
                         errorbar_data.append((x, med - mad, med + mad))
                         points.append((x, min_value, mad, med))
                 data.sort()
@@ -596,7 +576,7 @@ class SimpleRunUI(Directory):
                                    for v in sample_map.get((run_id,
                                                             test.id), ())]
                 if previous_values:
-                    sd_value = standard_deviation(previous_values)
+                    sd_value = stats.standard_deviation(previous_values)
                     sd_cell_value = "%.4f" % sd_value
                 else:
                     sd_cell_value = "-"
@@ -608,7 +588,7 @@ class SimpleRunUI(Directory):
                                    for v in sample_map.get((run_id,
                                                             test.id), ())]
                 if previous_values:
-                    mad_value = median_absolute_deviation(previous_values)
+                    mad_value = stats.median_absolute_deviation(previous_values)
                     mad_cell_value = "%.4f" % mad_value
                 else:
                     mad_cell_value = "-"
