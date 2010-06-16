@@ -109,9 +109,9 @@ def getSimpleReport(db, run, baseurl, was_added, will_commit):
                 new_failures[pset] = (name, cr)
             elif test_status == runinfo.IMPROVED:
                 new_passes[pset] = (name, cr)
-            elif cr.current is None:
+            elif cr.current is None and cr.previous is not None:
                 removed_tests[pset] = (name, cr)
-            elif cr.previous is None:
+            elif cr.current is not None and cr.previous is None:
                 added_tests[pset] = (name, cr)
             elif test_status == runinfo.UNCHANGED_FAIL:
                 existing_failures[pset] = (name, cr)
