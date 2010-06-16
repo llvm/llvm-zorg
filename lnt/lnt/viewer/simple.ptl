@@ -11,6 +11,7 @@ import quixote
 from quixote.directory import Directory
 from quixote.errors import TraversalError
 
+from lnt.db import runinfo
 from lnt.db import perfdbsummary
 from lnt.util import stats
 
@@ -459,94 +460,63 @@ class SimpleRunUI(Directory):
         self.show_run_page(db, run, run_summary, compare_to, graph_body)
 
     def _q_index_body [html] (self, db, run, run_summary, compare_to):
-        # Find the tests. The simple UI maps all tests that start with
-        # 'simple.'.
-        #
-        # One sensible addition would be to allow 'simple.foo.success' as a test
-        # to indicate the success or failure of the test. We would assume that
-        # the test succeeded if its .success test was missing, which leads to a
-        # nice compact format (failures are expected to be rare).
-
-        if compare_to:
-            prev_id = compare_to.id
-            interesting_runs = [run.id, prev_id]
-        else:
-            prev_id = None
-            interesting_runs = [run.id]
-
         # Load the test suite summary.
         ts_summary = perfdbsummary.get_simple_suite_summary(db, self.tag)
+        sri = runinfo.SimpleRunInfo(db, ts_summary)
 
-        cur_id = run.id
-        previous_runs = []
+        # Get the filtering form.
+        form = quixote.form.Form(method=str("get"))
+        form.add(quixote.form.CheckboxWidget, "show_delta",
+                 title="Show Delta")
+        form.add(quixote.form.CheckboxWidget, "show_stddev",
+                 title="Show Standard Deviation")
+        form.add(quixote.form.CheckboxWidget, "show_mad",
+                 title="Show Median Absolute Deviation")
+        form.add(quixote.form.CheckboxWidget, "show_all",
+                 title="Show All Values")
+        form.add(quixote.form.IntWidget, "num_comparison_runs",
+                 title="Number of Comparison Runs")
+        form.add_submit("submit", "Update")
 
         request = quixote.get_request()
-        show_delta = bool(request.form.get('show_delta'))
-        show_stddev =  bool(request.form.get('show_stddev'))
-        show_mad = bool(request.form.get('show_mad'))
+        show_delta = bool(form['show_delta'])
+        show_stddev =  bool(form['show_stddev'])
+        show_mad = bool(form['show_mad'])
+        show_all = bool(form['show_all'])
+        try:
+            num_comparison_runs = int(form['num_comparison_runs'])
+        except:
+            num_comparison_runs = 5
 
-        if show_stddev or show_mad:
-            for i in range(5):
-                cur_id = run_summary.get_previous_run_on_machine(cur_id)
-                if not cur_id:
-                    break
+        self.renderPopupBegin('view_options', 'View Options', True)
+        form.render()
+        self.renderPopupEnd()
 
-                previous_runs.append(cur_id)
-                if cur_id not in interesting_runs:
-                    interesting_runs.append(cur_id)
-
-        interesting_runs = tuple(set(interesting_runs + previous_runs))
-
-        # Load the run sample data.
-        q = db.session.query(Sample.value, Sample.run_id, Sample.test_id)
-        q = q.filter(Sample.run_id.in_(interesting_runs))
-
-        sample_map = Util.multidict()
-        for value,run_id,test_id in q:
-            key = (run_id,test_id)
-            sample_map[key] = value
+        # Gather the runs to use for statistical data.
+        cur_id = run.id
+        comparison_window = []
+        for i in range(num_comparison_runs):
+            cur_id = run_summary.get_previous_run_on_machine(cur_id)
+            if not cur_id:
+                break
+            comparison_window.append(cur_id)
 
         # Render the page.
-
-        def get_cell_value [html] (test, status_test, status_kind, name, pset):
-            run_values = sample_map.get((run.id,test.id))
-            prev_values = sample_map.get((prev_id,test.id))
-
-            # Determine whether this (test,pset) passed or failed in the current
-            # and previous runs.
-            run_failed = prev_failed = False
-            if not status_test:
-                run_failed = not run_values
-                prev_failed = not prev_values
-            else:
-                run_status = sample_map.get((run.id,status_test.id))
-                prev_status = sample_map.get((prev_id,status_test.id))
-
-                # FIXME: What to do about the multiple entries here. We could
-                # start by just treating non-matching samples as errors.
-                if status_kind == False: # .success style
-                    run_failed = not run_status or not run_status[0]
-                    prev_failed = not prev_status or not prev_status[0]
-                else:
-                    run_failed = run_status and run_status[0] != 0
-                    prev_failed = prev_status and prev_status[0] != 0
+        def get_cell_value [html] (cr):
+            test_status = cr.get_test_status()
+            value_status = cr.get_value_status()
 
             run_cell_value = "-"
-            if run_values:
-                run_value = min(run_values)
-                run_cell_value = "%.4f" % run_value
-            else:
-                run_value = None
+            if cr.current is not None:
+                run_cell_value = "%.4f" % cr.current
 
             cell_color = None
-            if run_failed:
-                if prev_failed:
-                    cell_color = (255,195,67)
-                else:
-                    cell_color = (233,128,128)
-            else:
-                if prev_failed:
-                    cell_color = (143,223,95)
+            if test_status == runinfo.REGRESSED:
+                cell_color = (233,128,128)
+            elif test_status == runinfo.IMPROVED:
+                cell_color = (143,223,95)
+            elif test_status == runinfo.UNCHANGED_FAIL:
+                cell_color = (255,195,67)
 
             if cell_color:
                 """
@@ -556,44 +526,27 @@ class SimpleRunUI(Directory):
                 """
                 <td>%s</td""" % (run_cell_value,)
 
-            if prev_values and run_value is not None:
-                prev_value = min(prev_values)
-                pct = safediv(run_value, prev_value,
-                              '<center><font size=-2>nan</font></center>')
-                Util.PctCell(pct, delta=True).render()
+            if show_all or value_status in (runinfo.REGRESSED,
+                                            runinfo.IMPROVED):
+                Util.PctCell(cr.pct_delta).render()
             else:
                 """<td>-</td>"""
-                prev_value = None
 
             if show_delta:
-                if prev_value is not None and run_value is not None:
-                    """<td>%.4f</td>""" % (run_value - prev_value)
+                if cr.delta is not None:
+                    """<td>%.4f</td>""" % cr.delta
                 else:
                     """<td>-</td>"""
-
             if show_stddev:
-                previous_values = [v for run_id in previous_runs
-                                   for v in sample_map.get((run_id,
-                                                            test.id), ())]
-                if previous_values:
-                    sd_value = stats.standard_deviation(previous_values)
-                    sd_cell_value = "%.4f" % sd_value
+                if cr.stddev is not None:
+                    """<td>%.4f</td>""" % cr.stddev
                 else:
-                    sd_cell_value = "-"
-                """
-                <td>%s</td""" % (sd_cell_value,)
-
+                    """<td>-</td>"""
             if show_mad:
-                previous_values = [v for run_id in previous_runs
-                                   for v in sample_map.get((run_id,
-                                                            test.id), ())]
-                if previous_values:
-                    mad_value = stats.median_absolute_deviation(previous_values)
-                    mad_cell_value = "%.4f" % mad_value
+                if cr.MAD is not None:
+                    """<td>%.4f</td>""" % cr.MAD
                 else:
-                    mad_cell_value = "-"
-                """
-                <td>%s</td""" % (mad_cell_value,)
+                    """<td>-</td>"""
 
         """
         <h3>Parameter Sets</h3>
@@ -660,19 +613,9 @@ class SimpleRunUI(Directory):
             <td><input type="checkbox" name="test.%s"></td>
             <td>%s</td>""" % (name, name)
             for pset in ts_summary.parameter_sets:
-                test = ts_summary.test_map.get((name,pset))
-                if test is None:
-                    """
-                <td></td><td></td>"""
-                    continue
-
-                status_info = ts_summary.test_status_map.get(name)
-                if status_info:
-                    status_name,status_kind = status_info
-                    status_test = ts_summary.test_map.get((status_name,pset))
-                else:
-                    status_test = status_kind = None
-                get_cell_value(test, status_test, status_kind, name, pset)
+                cr = sri.get_run_comparison_result(run, compare_to, name, pset,
+                                                   comparison_window)
+                get_cell_value(cr)
             """
           </tr>"""
         """
