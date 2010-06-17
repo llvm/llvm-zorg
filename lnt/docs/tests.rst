@@ -31,7 +31,7 @@ server. To set up a one-off server for testing::
   [2] 69694
 
   # Watch the server log.
-  $ tail -f /tmp/runserver.log
+  $ tail -f /tmp/FOO/runserver.log
   * Running on http://localhost:8000/
   ...
 
