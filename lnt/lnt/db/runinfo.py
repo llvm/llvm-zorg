@@ -128,7 +128,7 @@ class SimpleRunInfo:
         # Determine whether this (test,pset) passed or failed in the current and
         # previous runs.
         run_failed = prev_failed = False
-        if not status_test:
+        if not status_test_id:
             run_failed = not run_values
             prev_failed = not prev_values
         else:
@@ -172,7 +172,7 @@ class SimpleRunInfo:
 
         # Get all previous values in the comparison window.
         prev_values = [v for run_id in comparison_window
-                       for v in self.sample_map.get((run_id, test.id), ())]
+                       for v in self.sample_map.get((run_id, test_id), ())]
         if prev_values:
             stddev = stats.standard_deviation(prev_values)
             MAD = stats.median_absolute_deviation(prev_values)
