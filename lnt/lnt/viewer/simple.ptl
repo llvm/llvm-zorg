@@ -389,7 +389,7 @@ class SimpleRunUI(Directory):
                           for p0,p1 in Util.pairs(points)]
                 deltas.sort()
                 deltas.reverse()
-                for (pct,(r0,t0,mad0,med0),(r1,t1,mad1,med1)) in deltas[:50]:
+                for (pct,(r0,t0,mad0,med0),(r1,t1,mad1,med1)) in deltas[:20]:
                     """
             <tr>
               <td><a href="http://llvm.org/viewvc/llvm-project?view=rev&revision=%d">%d</a></td>
