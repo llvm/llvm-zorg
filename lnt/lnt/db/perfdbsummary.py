@@ -33,7 +33,8 @@ class PerfDBSummary:
         self.suites = suites
 
     def is_up_to_date(self, db):
-        return self.revision == db.get_revision_number("Run")
+        return (not db.modified_run and
+                self.revision == db.get_revision_number("Run"))
 
 class SimpleSuiteSummary(object):
     @staticmethod
@@ -112,7 +113,8 @@ class SimpleSuiteSummary(object):
         self.parameter_sets = parameter_sets
 
     def is_up_to_date(self, db):
-        return self.revision == db.get_revision_number("Test")
+        return (not db.modified_test and
+                self.revision == db.get_revision_number("Test"))
 
 _cache = {}
 def get_simple_suite_summary(db, tag):
@@ -186,7 +188,8 @@ class SimpleSuiteRunSummary(object):
         self.machine_id_by_run = machine_id_by_run
 
     def is_up_to_date(self, db):
-        return self.revision == db.get_revision_number("RunInfo")
+        return (not db.modified_run and
+                self.revision == db.get_revision_number("RunInfo"))
 
     def get_run_order(self, run_id):
         return self.order_by_run.get(run_id)
