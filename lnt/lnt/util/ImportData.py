@@ -71,6 +71,8 @@ def import_and_report(config, db_name, db, file, log, format, commit=False,
 
     if not disable_email and toAddress is not None:
         print >>log, "\nMAILING RESULTS TO: %r\n" % toAddress
+        # FIXME: The url below is wrong, it shouldn't be hardcoded to
+        # nightlytest.
         NTEmailReport.emailReport(db, run,
                                   "%s/db_%s/nightlytest/" % (config.zorgURL,
                                                              db_name),
