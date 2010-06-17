@@ -149,6 +149,8 @@ def action_submit(name, args):
 
     parser = OptionParser("%%prog %s [options] <url> <file>+" % name)
     parser.add_option("", "--commit", dest="commit", type=int,
+                      help=("whether the result should be committed "
+                            "[%default]"),
                       default=False)
 
     (opts, args) = parser.parse_args(args)

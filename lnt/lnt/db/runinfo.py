@@ -94,8 +94,8 @@ class SimpleRunInfo:
     def get_run_comparison_result(self, run, compare_to, test_name, pset,
                                   comparison_window=[]):
         # Get the test.
-        test = self.test_suite_summary.test_map.get((test_name, pset))
-        if test is None:
+        test_id = self.test_suite_summary.test_id_map.get((test_name, pset))
+        if test_id is None:
             return ComparisonResult(run_value=None, prev_value=None, delta=None,
                                     pct_delta=None, stddev=None, MAD=None,
                                     cur_failed=None, prev_failed=None)
@@ -104,10 +104,10 @@ class SimpleRunInfo:
         status_info = self.test_suite_summary.test_status_map.get(test_name)
         if status_info is not None:
             status_name,status_kind = status_info
-            status_test = self.test_suite_summary.test_map.get(
+            status_test_id = self.test_suite_summary.test_id_map.get(
                 (status_name, pset))
         else:
-            status_test = status_kind = None
+            status_test_id = status_kind = None
 
         # Load the sample data for the current and previous runs and the
         # comparison window.
@@ -122,8 +122,8 @@ class SimpleRunInfo:
         self._load_samples_for_runs(runs_to_load)
 
         # Lookup the current and previous values.
-        run_values = self.sample_map.get((run.id, test.id))
-        prev_values = self.sample_map.get((compare_id, test.id))
+        run_values = self.sample_map.get((run.id, test_id))
+        prev_values = self.sample_map.get((compare_id, test_id))
 
         # Determine whether this (test,pset) passed or failed in the current and
         # previous runs.
@@ -132,8 +132,8 @@ class SimpleRunInfo:
             run_failed = not run_values
             prev_failed = not prev_values
         else:
-            run_status = self.sample_map.get((run.id,status_test.id))
-            prev_status = self.sample_map.get((compare_id,status_test.id))
+            run_status = self.sample_map.get((run.id,status_test_id))
+            prev_status = self.sample_map.get((compare_id,status_test_id))
 
             # FIXME: Support XFAILs.
             #

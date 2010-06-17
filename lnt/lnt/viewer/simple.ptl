@@ -229,7 +229,7 @@ class SimpleRunUI(Directory):
                 graph_psets.append(ts_summary.parameter_sets[int(name[5:])])
 
         # Get the test ids we want data for.
-        test_ids = [ts_summary.test_map[(name,pset)].id
+        test_ids = [ts_summary.test_id_map[(name,pset)]
                      for name in graph_tests
                      for pset in graph_psets]
 
@@ -270,7 +270,7 @@ class SimpleRunUI(Directory):
         show_all_points = False
         for name in graph_tests:
             for pset in graph_psets:
-                test_id = ts_summary.test_map[(name,pset)].id
+                test_id = ts_summary.test_id_map[(name,pset)]
 
                 # Get the plot for this test.
                 #

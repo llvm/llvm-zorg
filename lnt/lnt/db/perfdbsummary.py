@@ -48,7 +48,7 @@ class SimpleSuiteSummary(object):
         # Collect all the test data.
         test_names = set()
         parameter_sets = set()
-        test_map = {}
+        test_id_map = {}
         has_status_markers = False
         has_success_markers = False
         for t in tests:
@@ -59,7 +59,7 @@ class SimpleSuiteSummary(object):
             key = tuple(items)
 
             parameter_sets.add(key)
-            test_map[(name, key)] = t
+            test_id_map[(name, key)] = t.id
 
             if name.endswith('.success'):
                 test_name = name.rsplit('.', 1)[0]
@@ -97,16 +97,16 @@ class SimpleSuiteSummary(object):
         parameter_sets.sort()
 
         return SimpleSuiteSummary(revision, tag, test_names,
-                                  test_map, test_status_map,
+                                  test_id_map, test_status_map,
                                   parameter_keys, parameter_sets)
 
     def __init__(self, revision, tag, test_names,
-                 test_map, test_status_map,
+                 test_id_map, test_status_map,
                  parameter_keys, parameter_sets):
         self.revision = revision
         self.tag = tag
         self.test_names = test_names
-        self.test_map = test_map
+        self.test_id_map = test_id_map
         self.test_status_map = test_status_map
         self.parameter_keys = parameter_keys
         self.parameter_sets = parameter_sets
