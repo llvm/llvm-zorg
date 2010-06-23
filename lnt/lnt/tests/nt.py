@@ -392,8 +392,11 @@ def run_test(nick_prefix, opts):
         if run_info.get('cc_src_version','').isdigit():
             run_info['run_order'] = run_info['cc_src_revision']
 
-        # Otherwise, if this is a production compiler, look for a source tag.
+        # Otherwise, if this is a production compiler, look for a source tag. We
+        # don't accept 0 as a valid source tag, since that is what llvm-gcc
+        # defaults to when no build number is given.
         elif (run_info.get('cc_build') == 'PROD' and
+              run_info.get('cc_src_tag') != '0' and
               run_info.get('cc_src_tag','').isdigit()):
             run_info['run_order'] = run_info['cc_src_tag']
 
