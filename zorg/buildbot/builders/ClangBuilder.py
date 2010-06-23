@@ -114,7 +114,7 @@ def getClangBuildFactory(triple=None, clean=True, test=True, package_dst=None,
                                               descriptionDone=["compile", stage1_config, "examples"],
                                               workdir=llvm_1_objdir))
 
-    clangTestArgs = '-v'
+    clangTestArgs = llvmTestArgs = '-v -j %s' % jobs
     if valgrind:
         clangTestArgs += ' --vg'
         if valgrindLeakCheck:
@@ -125,7 +125,8 @@ def getClangBuildFactory(triple=None, clean=True, test=True, package_dst=None,
         extraTestDirs += '%(builddir)s/llvm/tools/clang/utils/C++Tests'
     if test:
         f.addStep(ClangTestCommand(name='test-llvm',
-                                   command=[make, "check-lit", "VERBOSE=1"],
+                                   command=[make, "check-lit", "VERBOSE=1",
+                                            WithProperties("LIT_ARGS=%s" % llvmTestArgs)],
                                    description=["testing", "llvm"],
                                    descriptionDone=["test", "llvm"],
                                    workdir=llvm_1_objdir,
@@ -188,7 +189,8 @@ def getClangBuildFactory(triple=None, clean=True, test=True, package_dst=None,
 
     if test:
         f.addStep(ClangTestCommand(name='test-llvm',
-                                   command=[make, "check-lit", "VERBOSE=1"],
+                                   command=[make, "check-lit", "VERBOSE=1",
+                                            WithProperties("LIT_ARGS=%s" % llvmTestArgs)],
                                    description=["testing", "llvm"],
                                    descriptionDone=["test", "llvm"],
                                    workdir=llvm_2_objdir,

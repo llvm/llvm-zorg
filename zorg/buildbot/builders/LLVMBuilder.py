@@ -71,7 +71,7 @@ def getLLVMBuildFactory(triple=None, clean=True, test=True,
                                               workdir='llvm',
                                               timeout=timeout*60))
     if test:
-        litTestArgs = '-v'
+        litTestArgs = '-v -j %s' % jobs
         if valgrind:
             litTestArgs += ' --vg '
             if valgrindLeakCheck:
