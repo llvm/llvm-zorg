@@ -7,7 +7,7 @@ from optparse import OptionParser, OptionGroup
 import StringIO
 
 def action_runserver(name, args):
-    """start a new development server."""
+    """start a new development server"""
 
     parser = OptionParser("%%prog %s [options] [<path|config file>]" % name)
     parser.add_option("", "--hostname", dest="hostname", type=str,
@@ -54,7 +54,7 @@ from import_data import action_import
 # stuff much easier to work with, and also simplifies dealing with things like
 # file permissions.
 def action_createdb(name, args):
-    """create a new empty LNT sqlite3 database."""
+    """create a new empty LNT sqlite3 database"""
 
     parser = OptionParser("%%prog %s [options] path" % name)
 
@@ -69,7 +69,7 @@ def action_createdb(name, args):
     db.commit()
 
 def action_checkformat(name, args):
-    """check the format of an LNT test report file."""
+    """check the format of an LNT test report file"""
 
     parser = OptionParser("%%prog %s [options] files" % name)
 
@@ -94,6 +94,8 @@ def action_checkformat(name, args):
     PerfDB.importDataFromDict(db, data)
 
 def action_runtest(name, args):
+    """run a builtin test application"""
+
     parser = OptionParser("%%prog %s test-name [options]" % name)
     parser.disable_interspersed_args()
     parser.add_option("", "--submit", dest="submit_url", metavar="URL",
@@ -128,7 +130,7 @@ def action_runtest(name, args):
         ServerUtil.submitFile(opts.submit_url, io, True)
 
 def action_showtests(name, args):
-    """show the available built-in tests."""
+    """show the available built-in tests"""
 
     parser = OptionParser("%%prog %s" % name)
     (opts, args) = parser.parse_args(args)
@@ -145,7 +147,7 @@ def action_showtests(name, args):
                                lnt.tests.get_test_description(name))
 
 def action_submit(name, args):
-    """submit a test report to the server."""
+    """submit a test report to the server"""
 
     parser = OptionParser("%%prog %s [options] <url> <file>+" % name)
     parser.add_option("", "--commit", dest="commit", type=int,
