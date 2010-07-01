@@ -50,8 +50,34 @@ def run_test(nick_prefix, opts):
         'TARGET_LLVMGXX' : opts.cxx_under_test,
         'TARGET_FLAGS' : ' '.join(target_flags),
         'TARGET_LLCFLAGS' : ' '.join(target_llcflags),
-        'ENABLE_OPTIMIZED' : '1',
         }
+
+    # Pick apart the build mode.
+    build_mode = opts.build_mode
+    if build_mode.startswith("Debug"):
+        build_mode = build_mode[len("Debug"):]
+        make_variables['ENABLE_OPTIMIZED'] = '0'
+    elif build_mode.startswith("Unoptimized"):
+        build_mode = build_mode[len("Unoptimized"):]
+        make_variables['ENABLE_OPTIMIZED'] = '0'
+    elif build_mode.startswith("Release"):
+        build_mode = build_mode[len("Release"):]
+        make_variables['ENABLE_OPTIMIZED'] = '1'
+    else:
+        fatal('invalid build mode: %r' % opts.build_mode)
+
+    while build_mode:
+        for (name,key) in (('-Asserts', 'DISABLE_ASSERTIONS'),
+                           ('+Checks', 'ENABLE_EXPENSIVE_CHECKS'),
+                           ('+Coverage', 'ENABLE_COVERAGE'),
+                           ('+Debug', 'DEBUG_SYMBOLS'),
+                           ('+Profile', 'ENABLE_PROFILING')):
+            if build_mode.startswith(name):
+                build_mode = build_mode[len(name):]
+                make_variables[key] = '1'
+                break
+        else:
+            fatal('invalid build mode: %r' % opts.build_mode)
 
     # Set the optimization level options.
     make_variables['OPTFLAGS'] = opts.optimize_option
@@ -529,7 +555,7 @@ class NTTest(builtintest.BuiltinTest):
         group.add_option("", "--relocation-model", dest="relocation_model",
                          help=("Set -relocation-model in TARGET_LLCFLAGS "
                                 "[%default]"),
-                         type="str", default=None, metavar="MODEL")
+                         type=str, default=None, metavar="MODEL")
         group.add_option("", "--disable-fp-elim", dest="disable_fp_elim",
                          help=("Set -disable-fp-elim in TARGET_LLCFLAGS"),
                          action="store_true", default=False)
@@ -543,6 +569,10 @@ class NTTest(builtintest.BuiltinTest):
         parser.add_option_group(group)
 
         group = OptionGroup(parser, "Test Selection")
+        group.add_option("", "--build-mode", dest="build_mode", metavar="NAME",
+                         help="Select the LLVM build mode to use [%default]",
+                         type=str, action="store", default='Release')
+
         group.add_option("", "--simple", dest="test_simple",
                          help="Use TEST=simple instead of TEST=nightly",
                          action="store_true", default=False)
