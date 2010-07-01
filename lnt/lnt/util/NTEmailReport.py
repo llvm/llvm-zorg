@@ -132,7 +132,7 @@ def getSimpleReport(db, run, baseurl, was_added, will_commit):
     # Generate the report header.
     if baseurl[-1] == '/':
         baseurl = baseurl[:-1]
-    print >>report, """%s/%d/""" % (baseurl, run.id)
+    print >>report, """%s/simple/%s/%d/""" % (baseurl, tag, run.id)
     print >>report, """Nickname: %s:%d""" % (machine.name, machine.number)
     if 'name' in machine.info:
         print >>report, """Name: %s""" % (machine.info['name'].value,)
@@ -204,7 +204,7 @@ def getSimpleReport(db, run, baseurl, was_added, will_commit):
                         print >>report, '  %s' % (name,)
 
     # Generate a list of the existing failures.
-    if False and existing_failures:
+    if existing_failures:
         print >>report
         print >>report, """================="""
         print >>report, """Existing Failures"""
@@ -213,8 +213,13 @@ def getSimpleReport(db, run, baseurl, was_added, will_commit):
             if pset or len(existing_failures) > 1:
                 print >>report
                 print >>report, "Parameter Set:", pset
-            for name,cr in tests:
+
+            # Print at most 10 failures in an email report.
+            N = 10
+            for name,cr in tests[:N]:
                 print >>report, '  %s' % (name,)
+            if len(tests) > 10:
+                print >>report, '  ... and %d more ...' % (len(tests) - 10,)
 
     return subject, report.getvalue()
 
@@ -335,7 +340,7 @@ def getReport(db, run, baseurl, was_added, will_commit):
 
     if baseurl[-1] == '/':
         baseurl = baseurl[:-1]
-    print >>report, """%s/%d/""" % (baseurl, run.id)
+    print >>report, """%s/nightlytest/%d/""" % (baseurl, run.id)
     print >>report, """Nickname: %s:%d""" % (machine.name, machine.number)
     if 'name' in machine.info:
         print >>report, """Name: %s""" % (machine.info['name'].value,)
