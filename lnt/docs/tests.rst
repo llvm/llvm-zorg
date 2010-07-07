@@ -72,9 +72,9 @@ passes).
 
 The ``nt`` test requires that the LLVM test-suite repository, a working LLVM
 compiler, and a LLVM source and build tree are available. Currently, the LLVM
-build tree is expected to have been built-in the Release configuration. Unlike
-the prior ``NewNightlyTest.pl``, the ``nt`` tool does not checkout or build any
-thing, it is expected that users manage their own LLVM source and build
+build tree is expected to have been built-in the Release+Asserts configuration.
+Unlike the prior ``NewNightlyTest.pl``, the ``nt`` tool does not checkout or build
+any thing, it is expected that users manage their own LLVM source and build
 trees. Ideally, each of the components should be based on the same LLVM revision
 (except perhaps the LLVM test-suite), but this is not required.
 
@@ -97,8 +97,8 @@ local build::
   $ rm -rf /tmp/BAR
   $ lnt runtest nt \
        --sandbox /tmp/BAR \
-       --cc ~/llvm.obj.64/Release/bin/clang \
-       --cxx ~/llvm.obj.64/Release/bin/clang++ \
+       --cc ~/llvm.obj.64/Release+Asserts/bin/clang \
+       --cxx ~/llvm.obj.64/Release+Asserts/bin/clang++ \
        --llvm-src ~/llvm \
        --llvm-obj ~/llvm.obj.64 \
        --test-suite ~/llvm-test-suite \

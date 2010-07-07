@@ -11,8 +11,8 @@ from Util import getConfigArgs
 def getLLVMGCCBuildFactory(jobs='%(jobs)s', update=True, clean=True,
                            gxxincludedir=None,
                            triple=None, build=None, host=None, target=None,
-                           useTwoStage=True, stage1_config='Release',
-                           stage2_config='Release', make='make',
+                           useTwoStage=True, stage1_config='Release+Asserts',
+                           stage2_config='Release+Asserts', make='make',
                            extra_configure_args=[], verbose=False, env = {},
                            defaultBranch='trunk'):
   if build or host or target:

@@ -18,7 +18,7 @@ def getClangBuildFactory(triple=None, clean=True, test=True, package_dst=None,
                          valgrindLeakCheck=False, outOfDir=False, useTwoStage=False,
                          completely_clean=False, always_install=False,
                          make='make', jobs="%(jobs)s",
-                         stage1_config='Debug', stage2_config='Release',
+                         stage1_config='Debug+Asserts', stage2_config='Release+Asserts',
                          extra_configure_args=[], use_pty_in_tests=False):
     # Don't use in-dir builds with a two stage build process.
     inDir = not outOfDir and not useTwoStage

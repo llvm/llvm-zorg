@@ -66,8 +66,9 @@ def run_test(nick_prefix, opts):
     else:
         fatal('invalid build mode: %r' % opts.build_mode)
 
+    make_variables['DISABLE_ASSERTIONS'] = '1'
     while build_mode:
-        for (name,key) in (('-Asserts', 'DISABLE_ASSERTIONS'),
+        for (name,key) in (('+Asserts', 'ENABLE_ASSERTIONS'),
                            ('+Checks', 'ENABLE_EXPENSIVE_CHECKS'),
                            ('+Coverage', 'ENABLE_COVERAGE'),
                            ('+Debug', 'DEBUG_SYMBOLS'),

@@ -31,7 +31,7 @@ def getLLVMBuildFactory(triple=None, clean=True, test=True,
 
     # Force without llvm-gcc so we don't run afoul of Frontend test failures.
     configure_args = ["./configure", "--without-llvmgcc", "--without-llvmgxx"]
-    config_name = 'Debug'
+    config_name = 'Debug+Asserts'
     if expensive_checks:
         configure_args.append('--enable-expensive-checks')
         config_name += '+Checks'

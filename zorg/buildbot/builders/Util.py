@@ -9,9 +9,10 @@ def getConfigArgs(origname):
   else:
     raise ValueError,'Unknown config name: %r' % origname
 
-  if name.startswith('-Asserts'):
-    name = name[len('-Asserts'):]
-    args.append('--disable-assertions')
+  args.append('--disable-assertions')
+  if name.startswith('+Asserts'):
+    name = name[len('+Asserts'):]
+    args.append('--enable-assertions')
 
   if name.startswith('+Checks'):
     name = name[len('+Checks'):]
