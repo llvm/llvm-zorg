@@ -66,7 +66,6 @@ def run_test(nick_prefix, opts):
     else:
         fatal('invalid build mode: %r' % opts.build_mode)
 
-    make_variables['DISABLE_ASSERTIONS'] = '1'
     while build_mode:
         for (name,key) in (('+Asserts', 'ENABLE_ASSERTIONS'),
                            ('+Checks', 'ENABLE_EXPENSIVE_CHECKS'),
@@ -79,6 +78,12 @@ def run_test(nick_prefix, opts):
                 break
         else:
             fatal('invalid build mode: %r' % opts.build_mode)
+
+    # Assertions are disabled by default.
+    if 'ENABLE_ASSERTIONS' in make_variables:
+        del make_variables['ENABLE_ASSERTIONS']
+    else:
+        make_variables['DISABLE_ASSERTIONS'] = '1'
 
     # Set the optimization level options.
     make_variables['OPTFLAGS'] = opts.optimize_option
