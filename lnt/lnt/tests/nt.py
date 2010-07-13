@@ -428,8 +428,9 @@ def run_test(nick_prefix, opts):
         # don't accept 0 or 9999 as valid source tag, since that is what
         # llvm-gcc builds use when no build number is given.
         elif (run_info.get('cc_build') == 'PROD' and
-              (run_info.get('cc_src_tag') != '0' or
-               run_info.get('cc_src_tag') != '9999') and
+              run_info.get('cc_src_tag') != '0' and
+              run_info.get('cc_src_tag') != '00' and
+              run_info.get('cc_src_tag') != '9999' and
               run_info.get('cc_src_tag','').isdigit()):
             run_info['run_order'] = run_info['cc_src_tag']
 
