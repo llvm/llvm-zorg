@@ -118,6 +118,11 @@ class Test(Base):
         return '%s%r' % (self.__class__.__name__,
                          (self.name,))
 
+    def get_parameter_set(self):
+        items = [(k,v.value) for k,v in self.info.items()]
+        items.sort()
+        return tuple(items)
+
 class TestInfo(Base):
     __tablename__ = 'TestInfo'
 

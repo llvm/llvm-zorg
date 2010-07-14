@@ -55,9 +55,7 @@ class SimpleSuiteSummary(object):
         for t in tests:
             name = t.name.split('.', 1)[1]
 
-            items = [(k,v.value) for k,v in t.info.items()]
-            items.sort()
-            key = tuple(items)
+            key = t.get_parameter_set()
 
             parameter_sets.add(key)
             test_id_map[(name, key)] = t.id
