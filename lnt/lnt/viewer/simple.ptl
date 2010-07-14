@@ -14,6 +14,7 @@ from quixote.errors import TraversalError
 from lnt.db import runinfo
 from lnt.db import perfdbsummary
 from lnt.util import stats
+from lnt.viewer import GraphUtil
 
 import Util
 from Util import safediv
@@ -233,93 +234,26 @@ class SimpleRunUI(Directory):
                      for name in graph_tests
                      for pset in graph_psets]
 
-        # Load all the samples for those tests and this machine.
-        q = db.session.query(Sample.run_id,Sample.test_id,
-                             Sample.value).join(Run)
-        q = q.filter(Run.machine_id == machine.id)
-        q = q.filter(Sample.test_id.in_(test_ids))
-        samples = list(q)
-
-        # Aggregate by test id and then run key.
-        #
-        # FIXME: Pretty expensive.
-        samples_by_test_id = {}
-        for run_id,test_id,value in samples:
-            d = samples_by_test_id.get(test_id)
-            if d is None:
-                d = samples_by_test_id[test_id] = Util.multidict()
-            run_key = run_summary.get_run_order(run_id)
-            if run_key is None:
-                continue
-
-            # FIXME: What to do on failure?
-            run_key = int(run_key)
-            d[run_key] = value
-
         # Build the graph data
         pset_id_map = dict([(pset,i)
                             for i,pset in enumerate(ts_summary.parameter_sets)])
         legend = []
+        num_points = 0
         plot_points = []
         plots = ""
-        num_plots = len(graph_tests) * len(graph_psets)
-        num_points = 0
-        index = 0
-        show_mad_error = True
-        show_points = True
-        show_all_points = False
-        for name in graph_tests:
-            for pset in graph_psets:
-                test_id = ts_summary.test_id_map[(name,pset)]
+        plots_iter = GraphUtil.get_test_plots(db, machine, test_ids,
+                                              run_summary, ts_summary,
+                                              show_mad_error = True,
+                                              show_points = True)
+        for test_id, plot_js, col, points, ext_points in plots_iter:
+            test = db.getTest(test_id)
+            name = test.name
+            pset = test.get_parameter_set()
 
-                # Get the plot for this test.
-                #
-                # FIXME: Support order by something other than time.
-                errorbar_data = []
-                points_data = []
-                data = []
-                points = []
-                for x,values in samples_by_test_id.get(test_id,{}).items():
-                    min_value = min(values)
-                    data.append((x, min_value))
-                    if show_points:
-                        if show_all_points:
-                            for v in values:
-                                points_data.append((x, v))
-                        else:
-                            points_data.append((x, min_value))
-                    if show_mad_error:
-                        med = stats.median(values)
-                        mad = stats.median_absolute_deviation(values, med)
-                        errorbar_data.append((x, med - mad, med + mad))
-                        points.append((x, min_value, mad, med))
-                data.sort()
-                num_points += len(data)
-
-                col = list(Util.makeDarkColor(float(index) / num_plots))
-                pts = ','.join(['[%.4f,%.4f]' % (t,v)
-                                for t,v in data])
-                style = "new Graph2D_LinePlotStyle(1, %r)" % col
-                plots += "    graph.addPlot([%s], %s);\n" % (pts,style)
-
-                if points_data:
-                    pts_col = (0,0,0)
-                    pts = ','.join(['[%.4f,%.4f]' % (t,v)
-                                    for t,v in points_data])
-                    style = "new Graph2D_PointPlotStyle(1, %r)" % (pts_col,)
-                    plots += "    graph.addPlot([%s], %s);\n" % (pts,style)
-
-                if errorbar_data:
-                    bar_col = [c*.7 for c in col]
-                    pts = ','.join(['[%.4f,%.4f,%.4f]' % (x,y_min,y_max)
-                                    for x,y_min,y_max in errorbar_data])
-                    style = "new Graph2D_ErrorBarPlotStyle(1, %r)" % (bar_col,)
-                    plots += "    graph.addPlot([%s], %s);\n" % (pts,style)
-
-                legend.append(("%s : P%d" % (name, pset_id_map[pset]), col))
-                points.sort()
-                plot_points.append(points)
-                index += 1
+            num_points += len(points)
+            legend.append(("%s : P%d" % (name, pset_id_map[pset]), col))
+            plots += plot_js
+            plot_points.append(ext_points)
 
         def graph_body [html] ():
             """
@@ -351,7 +285,7 @@ class SimpleRunUI(Directory):
             <p>
             <b>Plots</b>: %d<br>
             <b>Num Points<b>: %d<br>
-            """ % (num_plots, num_points)
+            """ % (len(test_ids), num_points)
 
             """
             <h2>Deltas</h2>"""
