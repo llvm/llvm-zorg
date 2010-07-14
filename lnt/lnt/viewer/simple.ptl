@@ -10,10 +10,12 @@ import time
 import quixote
 from quixote.directory import Directory
 from quixote.errors import TraversalError
+from quixote.html import htmltext
 
 from lnt.db import runinfo
 from lnt.db import perfdbsummary
 from lnt.util import stats
+from lnt.util import NTEmailReport
 from lnt.viewer import GraphUtil
 
 import Util
@@ -23,7 +25,7 @@ from NTUtil import *
 from PerfDB import Machine, Run, RunInfo, Test
 
 class SimpleRunUI(Directory):
-    _q_exports = ["", "graph"]
+    _q_exports = ["", "graph", "report", "text_report"]
 
     def __init__(self, root, tag, idstr):
         self.root = root
@@ -196,13 +198,23 @@ class SimpleRunUI(Directory):
         run,run_summary,compare_to = self.getInfo(db)
         machine = run.machine
 
+        # Add JS to run the init_report function, if embedded.
+        init = """\
+    function init() {
+        if (init_report) {
+            init_report();
+        }
+    }
+    """
         self.root.getHeader('Run Results', "../../..",
                             components=((self.tag,
                                          '%s/%s' % ('simple',self.tag)),
                                         ('machine',
                                          'simple/%s/machines/%d'%(self.tag,
                                                                   machine.id))),
-                            addPopupJS=True, addFormCSS=True)
+                            addPopupJS=True, addFormCSS=True, addGraphJS=True,
+                            addJSScript=init,
+                            onload="init()")
 
         self.show_run_page(db, run, run_summary, compare_to,
                            lambda: self._q_index_body(db, run, run_summary,
@@ -393,6 +405,35 @@ class SimpleRunUI(Directory):
 
         self.show_run_page(db, run, run_summary, compare_to, graph_body)
 
+    def report(self):
+        db = self.root.getDB()
+
+        request = quixote.get_request()
+        show_graphs = bool(request.form.get('show_graphs'))
+        run,run_summary,compare_to = self.getInfo(db)
+
+        _, _, html_report = NTEmailReport.getSimpleReport(
+            db, run, str("%s/db_%s/") % (self.root.config.zorgURL,
+                                         self.root.dbName),
+            True, True, show_graphs = show_graphs)
+
+        return htmltext(html_report)
+
+    def text_report(self):
+        db = self.root.getDB()
+
+        run,run_summary,compare_to = self.getInfo(db)
+
+        _, text_report, _ = NTEmailReport.getSimpleReport(
+            db, run, str("%s/db_%s/") % (self.root.config.zorgURL,
+                                         self.root.dbName),
+            True, True)
+
+        response = quixote.get_response()
+        response.set_content_type('text/plain')
+
+        return text_report
+
     def _q_index_body [html] (self, db, run, run_summary, compare_to):
         # Load the test suite summary.
         ts_summary = perfdbsummary.get_simple_suite_summary(db, self.tag)
@@ -410,13 +451,17 @@ class SimpleRunUI(Directory):
                  title="Show All Values")
         form.add(quixote.form.IntWidget, "num_comparison_runs",
                  title="Number of Comparison Runs")
+        form.add(quixote.form.CheckboxWidget, "show_graphs",
+                 title="Show Report Graphs")
         form.add_submit("submit", "Update")
 
         request = quixote.get_request()
+        show_graphs = bool(form['show_graphs'])
         show_delta = bool(form['show_delta'])
         show_stddev =  bool(form['show_stddev'])
         show_mad = bool(form['show_mad'])
         show_all = bool(form['show_all'])
+        show_graphs = bool(form['show_graphs'])
         try:
             num_comparison_runs = int(form['num_comparison_runs'])
         except:
@@ -424,6 +469,19 @@ class SimpleRunUI(Directory):
 
         self.renderPopupBegin('view_options', 'View Options', True)
         form.render()
+        self.renderPopupEnd()
+
+        _, text_report, html_report = NTEmailReport.getSimpleReport(
+            db, run, str("%s/db_%s/") % (self.root.config.zorgURL,
+                                         self.root.dbName),
+            True, True, only_html_body = True, show_graphs = show_graphs)
+        self.renderPopupBegin('text_report', 'Report (Text)', True)
+        """
+        <pre>%s</pre>""" % (text_report,)
+        self.renderPopupEnd()
+
+        self.renderPopupBegin('html_report', 'Report (HTML)', False)
+        htmltext(html_report)
         self.renderPopupEnd()
 
         # Gather the runs to use for statistical data.

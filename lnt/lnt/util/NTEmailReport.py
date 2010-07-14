@@ -14,9 +14,12 @@ import StringIO
 from lnt import viewer
 from lnt.db import runinfo
 from lnt.db import perfdbsummary
+from lnt.viewer import GraphUtil
 from lnt.viewer import Util
 from lnt.viewer import PerfDB
 from lnt.viewer.NTUtil import *
+
+from lnt.viewer.PerfDB import Run, Sample
 
 def main():
     global opts
@@ -79,7 +82,9 @@ def findPreceedingRun(query, run):
             best = r
     return best
 
-def getSimpleReport(db, run, baseurl, was_added, will_commit):
+def getSimpleReport(db, run, baseurl, was_added, will_commit,
+                    only_html_body = False, show_graphs = False):
+    machine = run.machine
     tag = run.info['tag'].value
 
     # Get the run summary.
@@ -140,14 +145,18 @@ def getSimpleReport(db, run, baseurl, was_added, will_commit):
 
     # Generate the report.
     report = StringIO.StringIO()
+    html_report = StringIO.StringIO()
 
     machine = run.machine
     subject = """%s nightly tester results""" % machine.name
 
+
     # Generate the report header.
     if baseurl[-1] == '/':
         baseurl = baseurl[:-1]
-    print >>report, """%s/simple/%s/%d/""" % (baseurl, tag, run.id)
+
+    report_url = """%s/simple/%s/%d/""" % (baseurl, tag, run.id)
+    print >>report, report_url
     print >>report, """Nickname: %s:%d""" % (machine.name, machine.number)
     if 'name' in machine.info:
         print >>report, """Name: %s""" % (machine.info['name'].value,)
@@ -168,10 +177,52 @@ def getSimpleReport(db, run, baseurl, was_added, will_commit):
         print >>report, """   To: (none)"""
     print >>report
 
+    # Generate the HTML report header.
+    print >>html_report, """\
+<h1>%s</h1>
+<table>""" % subject
+    print >>html_report, """\
+<tr><td>URL</td><td><a href="%s">%s</a></td></tr>""" % (report_url, report_url)
+    print >>html_report, "<tr><td>Nickname</td><td>%s:%d</td></tr>" % (
+        machine.name, machine.number)
+    if 'name' in machine.info:
+        print >>html_report, """<tr><td>Name</td<td>%s</td></tr>""" % (
+            machine.info['name'].value,)
+    print >>html_report, """</table>"""
+    print >>html_report, """\
+<p>
+<table>
+  <tr>
+    <th>Run</th>
+    <th>ID</th>
+    <th>Order</th>
+    <th>Start Time</th>
+    <th>End Time</th>
+  </tr>"""
+    print >>html_report, """\
+<tr><td>Current</td><td>%d</td><td>%s</td><td>%s</td><td>%s</td></tr>""" % (
+        run.id, run.info['run_order'].value, run.start_time, run.end_time)
+    if compare_to:
+        print >>html_report, """\
+<tr><td>Previous</td><td>%d</td><td>%s</td><td>%s</td><td>%s</td></tr>""" % (
+            compare_to.id, compare_to.info['run_order'].value,
+            compare_to.start_time, compare_to.end_time)
+    else:
+        print >>html_report, """<tr><td colspan=4>No Previous Run</td></tr>"""
+    print >>html_report, """</table>"""
+    if compare_to and run.machine != compare_to.machine:
+        print >>html_report, """<p><b>*** WARNING ***:""",
+        print >>html_report, """comparison is against a different machine""",
+        print >>html_report, """(%s:%d)</b></p>""" % (compare_to.machine.name,
+                                                      compare_to.machine.number)
+
     if existing_failures:
-        print >>report, 'Total Existing Failures:',  sum(
-            map(len, existing_failures.values()))
+        num_existing_failures = sum(map(len, existing_failures.values()))
+        print >>report, 'Total Existing Failures:', num_existing_failures
         print >>report
+
+        print >>html_report, """\
+<p><b>Total Existing Failures:</b> %d</p>""" % num_existing_failures
 
     # Generate the summary of the changes.
     items_info = (('New Failures', new_failures, False),
@@ -182,23 +233,39 @@ def getSimpleReport(db, run, baseurl, was_added, will_commit):
                   ('Added Tests', added_tests, False))
     total_changes = sum([sum(map(len, items.values()))
                          for _,items,_ in items_info])
+    graphs = []
     if total_changes:
         print >>report, """==============="""
         print >>report, """Changes Summary"""
         print >>report, """==============="""
         print >>report
+        print >>html_report, """
+<hr>
+<h3>Changes Summary</h3>
+<table>
+<tr><th>Change Kind</th><th>#</th></tr>"""
         for name,items,_ in items_info:
             if items:
-                print >>report, '%s: %d' % (name, sum(map(len, items.values())))
+                num_items = sum(map(len, items.values()))
+                print >>report, '%s: %d' % (name, num_items)
+                print >>html_report, """
+<tr><td>%s</td><td>%d</td></tr>""" % (name, num_items)
         print >>report
+        print >>html_report, """
+</table>
+"""
 
         print >>report, """=============="""
         print >>report, """Changes Detail"""
         print >>report, """=============="""
+        print >>html_report, """
+<p>
+<h3>Changes Detail</h3>"""
         for name,items,show_perf in items_info:
             if not items:
                 continue
 
+            show_pset = items.items()[0][0] or len(items) > 1
             print >>report
             print >>report, name
             print >>report, '-' * len(name)
@@ -206,36 +273,130 @@ def getSimpleReport(db, run, baseurl, was_added, will_commit):
                 if show_perf:
                     tests.sort(key = lambda (_,cr): -abs(cr.pct_delta))
 
-                if pset or len(items) > 1:
+                if show_pset:
                     print >>report
                     print >>report, "Parameter Set:", pset
-                for name,cr in tests:
+                    table_name = "%s - %s" % (name, pset)
+                else:
+                    table_name = name
+                print >>html_report, """
+<p>
+<table class="sortable">
+<tr><th>%s</th>""" % table_name
+                if show_perf:
+                    print >>html_report, """
+<th>&Delta;</th><th>Previous</th><th>Current</th> <th>&sigma;</th>"""
+                print >>html_report, """</tr>"""
+
+                for i,(name,cr) in enumerate(tests):
                     if show_perf:
                         print >>report, ('  %s: %.2f%%'
                                          '(%.4f => %.4f, std. dev.: %.4f)') % (
                             name, 100. * cr.pct_delta,
                             cr.previous, cr.current, cr.stddev)
+
+                        # Show inline charts for top 10 changes.
+                        if show_graphs and i < 10:
+                            graph_name = "graph.%d" % len(graphs)
+                            graphs.append( (graph_name,name,pset) )
+                            extra_cell_value = """
+<br><canvas id="%s" width="400" height="100"></canvas/>
+""" % (graph_name)
+                        else:
+                            extra_cell_value = ""
+                        pct_value = Util.PctCell(cr.pct_delta).render()
+                        print >>html_report, """
+<tr><td>%s%s</td>%s<td>%.4f</td><td>%.4f</td><td>%.4f</td></tr>""" %(
+                            name, extra_cell_value, pct_value,
+                            cr.previous, cr.current, cr.stddev)
                     else:
                         print >>report, '  %s' % (name,)
+                        print >>html_report, """
+<tr><td>%s</td></tr>""" % (name,)
+                print >>html_report, """
+</table>"""
 
     # Generate a list of the existing failures.
     if existing_failures:
+        show_pset = existing_failures.items()[0][0] or len(items) > 1
+
         print >>report
         print >>report, """================="""
         print >>report, """Existing Failures"""
         print >>report, """================="""
+        print >>html_report, """
+<hr>
+<h3>Existing Failures</h3>"""
         for pset,tests in existing_failures.items():
-            if pset or len(existing_failures) > 1:
+            if show_pset:
                 print >>report
                 print >>report, "Parameter Set:", pset
+                table_name = "Existing Failures - %s" % (name, pset)
+            else:
+                table_name = "Existing Failures"
 
             # Print at most 10 failures in an email report.
+            print >>html_report, """
+<p>
+<table class="sortable">
+<tr><th>%s</th></tr>""" % table_name
             N = 10
             for name,cr in tests[:N]:
                 print >>report, '  %s' % (name,)
+                print >>html_report, """<tr><td>%s</td></tr>""" % (name,)
             if len(tests) > 10:
                 print >>report, '  ... and %d more ...' % (len(tests) - 10,)
+                print >>html_report, """
+<tfoot><tr><td>... and %d more ...</td></tr></tfoot>""" % (
+                    len(tests) - 10,)
+            print >>html_report, """
+</table>"""
 
+    # Finish up the HTML report.
+    if graphs:
+        # Get the test ids we want data for.
+        test_ids = [ts_summary.test_id_map[(name,pset)]
+                     for _,name,pset in graphs]
+
+        plots_iter = GraphUtil.get_test_plots(db, machine, test_ids,
+                                              run_summary, ts_summary,
+                                              show_mad_error = True,
+                                              show_points = True)
+
+        print >>html_report, """
+<script type="text/javascript">
+function init_report() {"""
+        for (graph_item, plot_info) in zip(graphs, plots_iter):
+            graph_name = graph_item[0]
+            plot_js = plot_info[1]
+            print >>html_report, """
+        graph = new Graph2D("%s");
+        graph.clearColor = [1, 1, 1];
+        %s
+        graph.draw();
+""" % (graph_name, plot_js)
+        print >>html_report, """
+}
+</script>"""
+
+    html_report = html_report.getvalue()
+    if not only_html_body:
+        html_report = """
+<html>
+  <head>
+    <link rel="stylesheet" href="%(baseurl)s/resources/style.css"
+          type="text/css"/>
+    <script src="%(baseurl)s/resources/sorttable.js"></script>
+    <script src="%(baseurl)s/resources/mootools-1.2.4-core-nc.js"></script>
+    <script src="%(baseurl)s/js/View2D.js"></script>
+    <title>%(subject)s</title>
+  </head>
+  <body onload="init_report()">
+%(html_report)s
+  </body>
+</html>""" % locals()
+
+    return subject, report.getvalue(), html_report
     return subject, report.getvalue(), None
 
 def getReport(db, run, baseurl, was_added, will_commit):
