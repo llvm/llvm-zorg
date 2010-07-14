@@ -36,14 +36,29 @@ def main():
 
 def emailReport(db, run, baseurl, host, from_, to, was_added=True,
                 will_commit=True):
+    import email.mime.multipart
     import email.mime.text
 
-    subject, report = getReport(db, run, baseurl, was_added, will_commit)
+    subject, report, html_report = getReport(db, run, baseurl, was_added,
+                                             will_commit)
 
-    msg = email.mime.text.MIMEText(report)
-    msg['Subject'] = subject
-    msg['From'] = from_
-    msg['To'] = to
+    # Generate a plain text message if we have no html report.
+    if not html_report:
+        msg = email.mime.text.MIMEText(report)
+        msg['Subject'] = subject
+        msg['From'] = from_
+        msg['To'] = to
+    else:
+        msg = email.mime.multipart.MIMEMultipart('alternative')
+        msg['Subject'] = subject
+        msg['From'] = from_
+        msg['To'] = to
+
+        # Attach parts into message container, according to RFC 2046, the last
+        # part of a multipart message, in this case the HTML message, is best
+        # and preferred.
+        msg.attach(email.mime.text.MIMEText(report, 'plain'))
+        msg.attach(email.mime.text.MIMEText(html_report, 'html'))
 
     s = smtplib.SMTP(host)
     s.sendmail(from_, [to], msg.as_string())
@@ -221,7 +236,7 @@ def getSimpleReport(db, run, baseurl, was_added, will_commit):
             if len(tests) > 10:
                 print >>report, '  ... and %d more ...' % (len(tests) - 10,)
 
-    return subject, report.getvalue()
+    return subject, report.getvalue(), None
 
 def getReport(db, run, baseurl, was_added, will_commit):
     report = StringIO.StringIO()
@@ -397,7 +412,7 @@ def getReport(db, run, baseurl, was_added, will_commit):
 
     # FIXME: Where is the old mailer getting the arch from?
     subject = """%s nightly tester results""" % machine.name
-    return subject,report.getvalue()
+    return subject, report.getvalue(), None
 
 if __name__ == '__main__':
     main()
