@@ -335,20 +335,13 @@ def getSimpleReport(db, run, baseurl, was_added, will_commit,
             else:
                 table_name = "Existing Failures"
 
-            # Print at most 10 failures in an email report.
             print >>html_report, """
 <p>
 <table class="sortable">
 <tr><th>%s</th></tr>""" % table_name
-            N = 10
-            for name,cr in tests[:N]:
+            for name,cr in tests:
                 print >>report, '  %s' % (name,)
                 print >>html_report, """<tr><td>%s</td></tr>""" % (name,)
-            if len(tests) > 10:
-                print >>report, '  ... and %d more ...' % (len(tests) - 10,)
-                print >>html_report, """
-<tfoot><tr><td>... and %d more ...</td></tr></tfoot>""" % (
-                    len(tests) - 10,)
             print >>html_report, """
 </table>"""
 
