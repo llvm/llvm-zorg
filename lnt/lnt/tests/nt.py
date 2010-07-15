@@ -133,6 +133,10 @@ def run_test(nick_prefix, opts):
     cc_info = lnt.testing.util.compilers.get_cc_info(opts.cc_under_test,
                                                      target_flags)
 
+    # Set CC_UNDER_TEST_IS_CLANG when appropriate.
+    if cc_info.get('cc_name') == 'clang':
+        make_variables['CC_UNDER_TEST_IS_CLANG'] = '1'
+
     # Set ARCH appropriately, based on the inferred target.
     #
     # FIXME: We should probably be more strict about this.
