@@ -114,6 +114,12 @@ def getSimpleReport(db, run, baseurl, was_added, will_commit,
         # FIXME: Look for run across machine.
         compare_to = None
 
+    # Get the list of tests we are interested in.
+    interesting_runs = [run.id]
+    if compare_to:
+        interesting_runs.append(compare_to.id)
+    test_names = ts_summary.get_test_names_in_runs(db, interesting_runs)
+
     # Gather the changes to report, mapped by parameter set.
     new_failures = Util.multidict()
     new_passes = Util.multidict()
@@ -122,7 +128,7 @@ def getSimpleReport(db, run, baseurl, was_added, will_commit,
     added_tests = Util.multidict()
     removed_tests = Util.multidict()
     existing_failures = Util.multidict()
-    for name in ts_summary.test_names:
+    for name in test_names:
         for pset in ts_summary.parameter_sets:
             cr = sri.get_run_comparison_result(run, compare_to, name, pset,
                                                comparison_window)

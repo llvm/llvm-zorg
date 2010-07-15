@@ -2,7 +2,7 @@
 Classes for caching metadata about a PerfDB instance.
 """
 
-from lnt.viewer.PerfDB import Run, RunInfo, Test
+from lnt.viewer.PerfDB import Run, RunInfo, Sample, Test
 
 class SuiteSummary:
     def __init__(self, name, path):
@@ -109,10 +109,26 @@ class SimpleSuiteSummary(object):
         self.test_status_map = test_status_map
         self.parameter_keys = parameter_keys
         self.parameter_sets = parameter_sets
+        self.test_info_map = dict([(v,k) for k,v in test_id_map.items()])
 
     def is_up_to_date(self, db):
         return (not db.modified_test and
                 self.revision == db.get_revision_number("Test"))
+
+    def get_test_names_in_runs(self, db, runs):
+        # Load the distinct test ids for these runs.
+        test_ids = db.session.query(Sample.test_id)\
+            .filter(Sample.run_id.in_(runs)).distinct()
+
+        # Get the test names for the test ids.
+        test_names = [self.test_info_map[id][0]
+                      for id, in test_ids]
+
+        # Limit to the tests we actually report.
+        test_names = list(set(test_names) & set(self.test_names))
+        test_names.sort()
+
+        return test_names
 
 _cache = {}
 def get_simple_suite_summary(db, tag):

@@ -484,6 +484,12 @@ class SimpleRunUI(Directory):
         htmltext(html_report)
         self.renderPopupEnd()
 
+        # Get the list of tests we are interested in.
+        interesting_runs = [run.id]
+        if compare_to:
+            interesting_runs.append(compare_to.id)
+        test_names = ts_summary.get_test_names_in_runs(db, interesting_runs)
+
         # Gather the runs to use for statistical data.
         cur_id = run.id
         comparison_window = []
@@ -599,7 +605,7 @@ class SimpleRunUI(Directory):
         """
           </tr>
         </thead>"""
-        for name in ts_summary.test_names:
+        for name in test_names:
             """
           <tr>
             <td><input type="checkbox" name="test.%s"></td>
