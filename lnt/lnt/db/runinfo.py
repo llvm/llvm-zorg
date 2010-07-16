@@ -1,6 +1,7 @@
 from lnt.util import stats
 from lnt.viewer import Util
 from lnt.viewer.PerfDB import Sample
+from lnt.testing import PASS, FAIL, XFAIL
 
 REGRESSED = 'REGRESSED'
 IMPROVED = 'IMPROVED'
@@ -129,13 +130,15 @@ class SimpleRunInfo:
         # previous runs.
         run_failed = prev_failed = False
         if not status_test_id:
-            run_failed = not run_values
-            prev_failed = not prev_values
+            # Assume status kind is '.status' if missing, in which case no
+            # values indicates success.
+            run_failed = bool(run_values)
+            prev_failed = bool(prev_values)
         else:
             run_status = self.sample_map.get((run.id,status_test_id))
             prev_status = self.sample_map.get((compare_id,status_test_id))
 
-            # FIXME: Support XFAILs.
+            # FIXME: Support XFAILs better.
             #
             # FIXME: What to do about the multiple entries here. We could start
             # by just treating non-matching samples as errors.
@@ -143,8 +146,8 @@ class SimpleRunInfo:
                 run_failed = not run_status or not run_status[0]
                 prev_failed = not prev_status or not prev_status[0]
             else:
-                run_failed = run_status and run_status[0] != 0
-                prev_failed = prev_status and prev_status[0] != 0
+                run_failed = run_status and run_status[0] == FAIL
+                prev_failed = prev_status and prev_status[0] == FAIL
 
         # Get the current and previous values.
         if run_values:
