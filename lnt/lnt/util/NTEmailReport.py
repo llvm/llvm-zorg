@@ -128,6 +128,8 @@ def getSimpleReport(db, run, baseurl, was_added, will_commit,
     added_tests = Util.multidict()
     removed_tests = Util.multidict()
     existing_failures = Util.multidict()
+    unchanged_tests = Util.multidict()
+    num_total_tests = len(test_names) * len(ts_summary.parameter_sets)
     for name in test_names:
         for pset in ts_summary.parameter_sets:
             cr = sri.get_run_comparison_result(run, compare_to, name, pset,
@@ -148,6 +150,8 @@ def getSimpleReport(db, run, baseurl, was_added, will_commit,
                 perf_regressions[pset] = (name, cr)
             elif perf_status == runinfo.IMPROVED:
                 perf_improvements[pset] = (name, cr)
+            else:
+                unchanged_tests[pset] = (name, cr)
 
     # Generate the report.
     report = StringIO.StringIO()
@@ -222,45 +226,44 @@ def getSimpleReport(db, run, baseurl, was_added, will_commit,
         print >>html_report, """(%s:%d)</b></p>""" % (compare_to.machine.name,
                                                       compare_to.machine.number)
 
-    if existing_failures:
-        num_existing_failures = sum(map(len, existing_failures.values()))
-        print >>report, 'Total Existing Failures:', num_existing_failures
-        print >>report
-
-        print >>html_report, """\
-<p><b>Total Existing Failures:</b> %d</p>""" % num_existing_failures
-
     # Generate the summary of the changes.
     items_info = (('New Failures', new_failures, False),
                   ('New Passes', new_passes, False),
                   ('Performance Regressions', perf_regressions, True),
                   ('Performance Improvements', perf_improvements, True),
                   ('Removed Tests', removed_tests, False),
-                  ('Added Tests', added_tests, False))
+                  ('Added Tests', added_tests, False),
+                  ('Existing Failures', existing_failures, False),
+                  ('Unchanged Tests', unchanged_tests, False))
     total_changes = sum([sum(map(len, items.values()))
                          for _,items,_ in items_info])
     graphs = []
-    if total_changes:
-        print >>report, """==============="""
-        print >>report, """Changes Summary"""
-        print >>report, """==============="""
-        print >>report
-        print >>html_report, """
+    print >>report, """==============="""
+    print >>report, """Tests Summary"""
+    print >>report, """==============="""
+    print >>report
+    print >>html_report, """
 <hr>
-<h3>Changes Summary</h3>
+<h3>Tests Summary</h3>
 <table>
-<tr><th>Change Kind</th><th>#</th></tr>"""
-        for name,items,_ in items_info:
-            if items:
-                num_items = sum(map(len, items.values()))
-                print >>report, '%s: %d' % (name, num_items)
-                print >>html_report, """
-<tr><td>%s</td><td>%d</td></tr>""" % (name, num_items)
-        print >>report
-        print >>html_report, """
-</table>
+<thead><tr><th>Status Group</th><th align="right">#</th></tr></thead>
 """
+    for name,items,_ in items_info:
+        if items:
+            num_items = sum(map(len, items.values()))
+            print >>report, '%s: %d' % (name, num_items)
+            print >>html_report, """
+<tr><td>%s</td><td align="right">%d</td></tr>""" % (name, num_items)
+    print >>report, """Total Tests: %d""" % num_total_tests
+    print >>report
+    print >>html_report, """
+<tfoot>
+  <tr><td><b>Total Tests</b></td><td align="right"><b>%d</b></td></tr>
+</tfoot>
+</table>
+""" % num_total_tests
 
+    if total_changes:
         print >>report, """=============="""
         print >>report, """Changes Detail"""
         print >>report, """=============="""
