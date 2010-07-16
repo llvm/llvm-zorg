@@ -42,6 +42,9 @@ def get_build_slaves():
         # Quad Core Mac Pro running Leopard.
         create_slave("kistanova1", properties={'jobs' : 1}, max_builds=3),
 
+        # Win XP SP3.
+        create_slave("kistanova2", properties={'jobs' : 1}, max_builds=1),
+
         # Quad Core x86_64, Solaris / AurorAUX
         create_slave("evocallaghan", properties={'jobs' : 4}, max_builds=1),
 
