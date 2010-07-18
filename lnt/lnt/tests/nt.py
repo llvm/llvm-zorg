@@ -134,7 +134,7 @@ def run_test(nick_prefix, opts):
                                                      target_flags)
 
     # Set CC_UNDER_TEST_IS_CLANG when appropriate.
-    if cc_info.get('cc_name') == 'clang':
+    if cc_info.get('cc_name') in ('apple_clang', 'clang'):
         make_variables['CC_UNDER_TEST_IS_CLANG'] = '1'
 
     # Set ARCH appropriately, based on the inferred target.
