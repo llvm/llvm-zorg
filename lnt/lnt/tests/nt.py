@@ -582,7 +582,7 @@ class NTTest(builtintest.BuiltinTest):
         group = OptionGroup(parser, "Test Selection")
         group.add_option("", "--build-mode", dest="build_mode", metavar="NAME",
                          help="Select the LLVM build mode to use [%default]",
-                         type=str, action="store", default='Release')
+                         type=str, action="store", default='Release+Asserts')
 
         group.add_option("", "--simple", dest="test_simple",
                          help="Use TEST=simple instead of TEST=nightly",
