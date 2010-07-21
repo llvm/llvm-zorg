@@ -18,6 +18,8 @@ def timestamp():
     return datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
 
 def run_test(nick_prefix, opts):
+    llvm_source_version = get_source_version(opts.llvm_src_root)
+
     # Compute TARGET_FLAGS.
     target_flags = []
 
@@ -136,6 +138,11 @@ def run_test(nick_prefix, opts):
     # Set CC_UNDER_TEST_IS_CLANG when appropriate.
     if cc_info.get('cc_name') in ('apple_clang', 'clang'):
         make_variables['CC_UNDER_TEST_IS_CLANG'] = '1'
+
+    # Set LLVM_RELEASE_IS_PLUS_ASSERTS when appropriate, to allow testing older
+    # LLVM source trees.
+    if llvm_source_version.isdigit() and int(llvm_source_version) < 107758:
+        make_variables['LLVM_RELEASE_IS_PLUS_ASSERTS'] = 1
 
     # Set ARCH appropriately, based on the inferred target.
     #
@@ -411,7 +418,7 @@ def run_test(nick_prefix, opts):
 
     # FIXME: Hack, use better method of getting versions. Ideally, from binaries
     # so we are more likely to be accurate.
-    run_info['llvm_revision'] = get_source_version(opts.llvm_src_root)
+    run_info['llvm_revision'] = llvm_source_version
     run_info['test_suite_revision'] = get_source_version(opts.test_suite_root)
     run_info.update(public_make_variables)
 
