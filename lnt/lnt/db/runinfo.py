@@ -92,23 +92,37 @@ class SimpleRunInfo:
         self.sample_map = Util.multidict()
         self.loaded_samples = set()
 
-    def get_run_comparison_result(self, run, compare_to, test_name, pset,
-                                  comparison_window=[]):
+    def get_test_status_in_run(self, run, status_kind, test_name, pset):
+        if status_kind == False: # .success
+            status_name = test_name + '.success'
+            status_test_id = self.test_suite_summary.test_id_map.get(
+                (status_name, pset))
+            run_status = self.sample_map.get((run.id, status_test_id))
+            if run_status and int(run_status[0]) == 1:
+                return PASS
+            else:
+                return FAIL
+        else:
+            status_name = test_name + '.status'
+            status_test_id = self.test_suite_summary.test_id_map.get(
+                (status_name, pset))
+            run_status = self.sample_map.get((run.id, status_test_id))
+            if not run_status:
+                return PASS
+            else:
+                # FIXME: What to do about the multiple entries here. We could
+                # start by just treating non-matching samples as errors.
+                return int(run_status[0])
+
+    def get_run_comparison_result(self, run, run_status_kind,
+                                  compare_to, compare_to_status_kind,
+                                  test_name, pset, comparison_window=[]):
         # Get the test.
         test_id = self.test_suite_summary.test_id_map.get((test_name, pset))
         if test_id is None:
             return ComparisonResult(run_value=None, prev_value=None, delta=None,
                                     pct_delta=None, stddev=None, MAD=None,
                                     cur_failed=None, prev_failed=None)
-
-        # Get the test status info.
-        status_info = self.test_suite_summary.test_status_map.get(test_name)
-        if status_info is not None:
-            status_name,status_kind = status_info
-            status_test_id = self.test_suite_summary.test_id_map.get(
-                (status_name, pset))
-        else:
-            status_test_id = status_kind = None
 
         # Load the sample data for the current and previous runs and the
         # comparison window.
@@ -129,25 +143,18 @@ class SimpleRunInfo:
         # Determine whether this (test,pset) passed or failed in the current and
         # previous runs.
         run_failed = prev_failed = False
-        if not status_test_id:
-            # Assume status kind is '.status' if missing, in which case no
-            # values indicates success.
-            run_failed = bool(run_values)
-            prev_failed = bool(prev_values)
+        run_status = prev_status = None
+        run_status = self.get_test_status_in_run(
+            run, run_status_kind, test_name, pset)
+        if compare_to:
+            prev_status = self.get_test_status_in_run(
+                compare_to, compare_to_status_kind, test_name, pset)
         else:
-            run_status = self.sample_map.get((run.id,status_test_id))
-            prev_status = self.sample_map.get((compare_id,status_test_id))
+            prev_status = None
 
-            # FIXME: Support XFAILs better.
-            #
-            # FIXME: What to do about the multiple entries here. We could start
-            # by just treating non-matching samples as errors.
-            if status_kind == False: # .success style
-                run_failed = not run_status or not run_status[0]
-                prev_failed = not prev_status or not prev_status[0]
-            else:
-                run_failed = run_status and run_status[0] == FAIL
-                prev_failed = prev_status and prev_status[0] == FAIL
+        # FIXME: Support XFAILs better.
+        run_failed = run_status == FAIL
+        prev_failed = prev_status == FAIL
 
         # Get the current and previous values.
         if run_values:

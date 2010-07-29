@@ -435,6 +435,14 @@ class SimpleRunUI(Directory):
         return text_report
 
     def _q_index_body [html] (self, db, run, run_summary, compare_to):
+        # Get the test status style used in each run.
+        run_status_kind = run_summary.get_run_status_kind(db, run.id)
+        if compare_to:
+            compare_to_status_kind = run_summary.get_run_status_kind(
+                db, compare_to.id)
+        else:
+            compare_to_status_kind = None
+
         # Load the test suite summary.
         ts_summary = perfdbsummary.get_simple_suite_summary(db, self.tag)
         sri = runinfo.SimpleRunInfo(db, ts_summary)
@@ -611,8 +619,9 @@ class SimpleRunUI(Directory):
             <td><input type="checkbox" name="test.%s"></td>
             <td>%s</td>""" % (name, name)
             for pset in ts_summary.parameter_sets:
-                cr = sri.get_run_comparison_result(run, compare_to, name, pset,
-                                                   comparison_window)
+                cr = sri.get_run_comparison_result(
+                    run, run_status_kind, compare_to, compare_to_status_kind,
+                    name, pset, comparison_window)
                 get_cell_value(cr)
             """
           </tr>"""

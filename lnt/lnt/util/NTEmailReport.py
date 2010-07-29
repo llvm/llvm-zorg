@@ -114,6 +114,14 @@ def getSimpleReport(db, run, baseurl, was_added, will_commit,
         # FIXME: Look for run across machine.
         compare_to = None
 
+    # Get the test status style used in each run.
+    run_status_kind = run_summary.get_run_status_kind(db, run.id)
+    if compare_to:
+        compare_to_status_kind = run_summary.get_run_status_kind(
+            db, compare_to.id)
+    else:
+        compare_to_status_kind = None
+
     # Get the list of tests we are interested in.
     interesting_runs = [run.id]
     if compare_to:
@@ -132,8 +140,9 @@ def getSimpleReport(db, run, baseurl, was_added, will_commit,
     num_total_tests = len(test_names) * len(ts_summary.parameter_sets)
     for name in test_names:
         for pset in ts_summary.parameter_sets:
-            cr = sri.get_run_comparison_result(run, compare_to, name, pset,
-                                               comparison_window)
+            cr = sri.get_run_comparison_result(
+                run, run_status_kind, compare_to, compare_to_status_kind,
+                name, pset, comparison_window)
             test_status = cr.get_test_status()
             perf_status = cr.get_value_status()
             if test_status == runinfo.REGRESSED:
