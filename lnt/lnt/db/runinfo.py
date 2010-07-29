@@ -53,10 +53,12 @@ class ComparisonResult:
         # sample at; otherwise quantization means that we can't measure the
         # standard deviation with enough accuracy.
         if abs(self.delta) <= 2 * value_precision * confidence_interval:
-            if self.failed:
-                return UNCHANGED_FAIL
-            else:
-                return UNCHANGED_PASS
+            return UNCHANGED_PASS
+
+        # Always ignore percentage changes below 1%, for now, we just don't have enough
+        # time to investigate that level of stuff.
+        if abs(self.pct_delta) < .01:
+            return UNCHANGED_PASS
 
         # If we have a comparison window, then measure using a symmetic
         # confidence interval.
@@ -67,10 +69,7 @@ class ComparisonResult:
                 else:
                     return REGRESSED
             else:
-                if self.failed:
-                    return UNCHANGED_FAIL
-                else:
-                    return UNCHANGED_PASS
+                return UNCHANGED_PASS
 
         # Otherwise, use the old "significant change" metric of > 5%.
         if abs(self.pct_delta) >= .05:
@@ -79,10 +78,7 @@ class ComparisonResult:
             else:
                 return REGRESSED
         else:
-            if self.failed:
-                return UNCHANGED_FAIL
-            else:
-                return UNCHANGED_PASS
+            return UNCHANGED_PASS
 
 class SimpleRunInfo:
     def __init__(self, db, test_suite_summary):
