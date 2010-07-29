@@ -50,8 +50,6 @@ class SimpleSuiteSummary(object):
         test_names = set()
         parameter_sets = set()
         test_id_map = {}
-        has_status_markers = False
-        has_success_markers = False
         for t in tests:
             name = t.name.split('.', 1)[1]
 
@@ -62,25 +60,12 @@ class SimpleSuiteSummary(object):
 
             if name.endswith('.success'):
                 test_name = name.rsplit('.', 1)[0]
-                has_success_markers = True
             elif name.endswith('.status'):
                 test_name = name.rsplit('.', 1)[0]
-                has_status_markers = True
             else:
                 test_name = name
 
             test_names.add(test_name)
-
-        # Compute the test status info.
-        test_status_map = {}
-        if has_status_markers:
-            for test_name in test_names:
-                marker_name = '%s.status' % test_name
-                test_status_map[test_name] = (marker_name, True)
-        elif has_success_markers:
-            for test_name in test_names:
-                marker_name = '%s.success' % test_name
-                test_status_map[test_name] = (marker_name, False)
 
         # Order the test names.
         test_names = list(test_names)
@@ -96,17 +81,14 @@ class SimpleSuiteSummary(object):
         parameter_sets.sort()
 
         return SimpleSuiteSummary(revision, tag, test_names,
-                                  test_id_map, test_status_map,
-                                  parameter_keys, parameter_sets)
+                                  test_id_map, parameter_keys, parameter_sets)
 
     def __init__(self, revision, tag, test_names,
-                 test_id_map, test_status_map,
-                 parameter_keys, parameter_sets):
+                 test_id_map, parameter_keys, parameter_sets):
         self.revision = revision
         self.tag = tag
         self.test_names = test_names
         self.test_id_map = test_id_map
-        self.test_status_map = test_status_map
         self.parameter_keys = parameter_keys
         self.parameter_sets = parameter_sets
         self.test_info_map = dict([(v,k) for k,v in test_id_map.items()])
