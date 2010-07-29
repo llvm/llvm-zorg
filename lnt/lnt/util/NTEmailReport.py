@@ -271,7 +271,7 @@ def getSimpleReport(db, run, baseurl, was_added, will_commit,
 <p>
 <h3>Changes Detail</h3>"""
         for name,items,show_perf in items_info:
-            if not items:
+            if not items or name == 'Unchanged Tests':
                 continue
 
             show_pset = items.items()[0][0] or len(items) > 1
