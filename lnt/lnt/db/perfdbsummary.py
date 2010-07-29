@@ -200,6 +200,7 @@ class SimpleSuiteRunSummary(object):
         self.runs_in_order = runs_in_order
         self.order_by_run = order_by_run
         self.machine_id_by_run = machine_id_by_run
+        self.run_status_kinds = {}
 
     def is_up_to_date(self, db):
         return (not db.modified_run and
@@ -231,3 +232,16 @@ class SimpleSuiteRunSummary(object):
             id = self.runs_in_order[i]
             if machine_id == self.machine_id_by_run[id]:
                 return id
+
+    def get_run_status_kind(self, db, run_id):
+        kind = self.run_status_kinds.get(run_id)
+        if kind is None:
+            # Compute the status kind by for .success tests in this run.
+            if db.session.query(Test.name).join(Sample)\
+                    .filter(Sample.run_id == run_id)\
+                    .filter(Test.name.endswith(".success")).first() is not None:
+                kind = False
+            else:
+                kind = True
+        self.run_status_kinds[run_id] = kind
+        return kind
