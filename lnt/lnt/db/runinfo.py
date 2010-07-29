@@ -92,12 +92,12 @@ class SimpleRunInfo:
         self.sample_map = Util.multidict()
         self.loaded_samples = set()
 
-    def get_test_status_in_run(self, run, status_kind, test_name, pset):
+    def get_test_status_in_run(self, run_id, status_kind, test_name, pset):
         if status_kind == False: # .success
             status_name = test_name + '.success'
             status_test_id = self.test_suite_summary.test_id_map.get(
                 (status_name, pset))
-            run_status = self.sample_map.get((run.id, status_test_id))
+            run_status = self.sample_map.get((run_id, status_test_id))
             if run_status and int(run_status[0]) == 1:
                 return PASS
             else:
@@ -106,7 +106,7 @@ class SimpleRunInfo:
             status_name = test_name + '.status'
             status_test_id = self.test_suite_summary.test_id_map.get(
                 (status_name, pset))
-            run_status = self.sample_map.get((run.id, status_test_id))
+            run_status = self.sample_map.get((run_id, status_test_id))
             if not run_status:
                 return PASS
             else:
@@ -145,10 +145,10 @@ class SimpleRunInfo:
         run_failed = prev_failed = False
         run_status = prev_status = None
         run_status = self.get_test_status_in_run(
-            run, run_status_kind, test_name, pset)
+            run.id, run_status_kind, test_name, pset)
         if compare_to:
             prev_status = self.get_test_status_in_run(
-                compare_to, compare_to_status_kind, test_name, pset)
+                compare_to.id, compare_to_status_kind, test_name, pset)
         else:
             prev_status = None
 
@@ -180,9 +180,13 @@ class SimpleRunInfo:
         else:
             pct_delta = 0.0
 
-        # Get all previous values in the comparison window.
+        # Get all previous values in the comparison window, for passing runs.
+        #
+        # FIXME: This is using the wrong status kind. :/
         prev_values = [v for run_id in comparison_window
-                       for v in self.sample_map.get((run_id, test_id), ())]
+                       for v in self.sample_map.get((run_id, test_id), ())
+                       if self.get_test_status_in_run(run_id, run_status_kind,
+                                                      test_name, pset) == PASS]
         if prev_values:
             stddev = stats.standard_deviation(prev_values)
             MAD = stats.median_absolute_deviation(prev_values)
