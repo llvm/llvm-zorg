@@ -325,35 +325,6 @@ def getSimpleReport(db, run, baseurl, was_added, will_commit,
                 print >>html_report, """
 </table>"""
 
-    # Generate a list of the existing failures.
-    if existing_failures:
-        show_pset = existing_failures.items()[0][0] or len(items) > 1
-
-        print >>report
-        print >>report, """================="""
-        print >>report, """Existing Failures"""
-        print >>report, """================="""
-        print >>html_report, """
-<hr>
-<h3>Existing Failures</h3>"""
-        for pset,tests in existing_failures.items():
-            if show_pset:
-                print >>report
-                print >>report, "Parameter Set:", pset
-                table_name = "Existing Failures - %s" % (name, pset)
-            else:
-                table_name = "Existing Failures"
-
-            print >>html_report, """
-<p>
-<table class="sortable">
-<tr><th>%s</th></tr>""" % table_name
-            for name,cr in tests:
-                print >>report, '  %s' % (name,)
-                print >>html_report, """<tr><td>%s</td></tr>""" % (name,)
-            print >>html_report, """
-</table>"""
-
     # Finish up the HTML report.
     if graphs:
         # Get the test ids we want data for.
