@@ -1,6 +1,7 @@
 import csv
 import os
 import re
+import shutil
 import subprocess
 import sys
 import time
@@ -254,6 +255,20 @@ def run_test(nick_prefix, opts):
         configure_log.close()
         if res != 0:
             fatal('configure failed, log is here: %r' % configure_log_path)
+
+    # If running with --only-test, creating any dirs which might be missing and
+    # copy Makefiles.
+    if opts.only_test is not None:
+        suffix = ''
+        for component in opts.only_test.split('/'):
+            suffix = os.path.join(suffix, component)
+            obj_path = os.path.join(basedir, suffix)
+            src_path = os.path.join(opts.test_suite_root, suffix)
+            if not os.path.exists(obj_path):
+                print '%s: initializing test dir %s' % (timestamp(), suffix)
+                os.mkdir(obj_path)
+                shutil.copyfile(os.path.join(src_path, 'Makefile'),
+                                os.path.join(obj_path, 'Makefile'))
 
     # Always blow away any existing report.
     report_path = os.path.join(basedir)
