@@ -362,6 +362,15 @@ def run_test(nick_prefix, opts):
         if opts.only_test is not None:
             program = os.path.join(opts.only_test, program)
         test_base_name = '%s.%s' % (test_namespace, program.replace('.','_'))
+
+        # Check if this is a subtest result, in which case we ignore missing
+        # values.
+        if '_Subtest_' in test_base_name:
+            is_subtest = True
+            test_base_name = test_base_name.replace('_Subtest_', '.')
+        else:
+            is_subtest = False
+
         for info in sample_keys:
             if len(info) == 3:
                 name,key,tname = info
@@ -378,6 +387,8 @@ def run_test(nick_prefix, opts):
 
             # FIXME: Move to simpler and more succinct format, using .failed.
             if success_value == '*':
+                if is_subtest:
+                    continue
                 status_value = lnt.testing.FAIL
             elif success_value == 'xfail':
                 status_value = lnt.testing.XFAIL
