@@ -10,6 +10,7 @@ from buildbot.process.properties import WithProperties
 
 from zorg.buildbot.commands.ClangTestCommand import ClangTestCommand
 from zorg.buildbot.commands.BatchFileDownload import BatchFileDownload
+from zorg.buildbot.commands import DejaGNUCommand
 
 from Util import getConfigArgs
 
@@ -35,7 +36,7 @@ def getClangBuildFactory(triple=None, clean=True, test=True, package_dst=None,
         llvm_1_objdir = "llvm.obj"
         llvm_1_installdir = "llvm.install.1"
         llvm_2_objdir = "llvm.obj.2"
-        llvm_2_installdir = "llvm.install.2"
+        llvm_2_installdir = "llvm.install"
 
     f = buildbot.process.factory.BuildFactory()
 
@@ -312,3 +313,21 @@ def getClangMSVCBuildFactory(update=True, clean=True, vcDrive='c', jobs=1,
                                workdir="llvm\\build\\tools\\clang\\test"))
 
     return f
+
+def addClangTests(f, ignores={}):
+    make_vars = [WithProperties(
+            'CC_UNDER_TEST=%(builddir)s/llvm.install/bin/clang'),
+                 WithProperties(
+            'CXX_UNDER_TEST=%(builddir)s/llvm.install/bin/clang++')]
+    f.addStep(SVN(name='svn-clang-tests', mode='update',
+                  baseURL='http://llvm.org/svn/llvm-project/clang-tests/',
+                  defaultBranch='trunk', workdir='clang-tests'))
+    gcc_dg_ignores = ignores.get('gcc-4_2-testsuite', {})
+    for lang in ('gcc', 'g++', 'objc', 'obj-c++'):
+        f.addStep(DejaGNUCommand.DejaGNUCommand(
+            name='test-gcc-4_2-testsuite-%s' % lang,
+            command=["make", "-k", "check-%s" % lang] + make_vars,
+            description="gcc-4_2-testsuite (%s)" % lang,
+            workdir='clang-tests/gcc-4_2-testsuite',
+            logfiles={ 'dg.sum' : 'obj/%s/%s.sum' % (lang, lang) },
+            ignore=gcc_dg_ignores.get(lang, [])))
