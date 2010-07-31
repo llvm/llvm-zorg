@@ -39,6 +39,7 @@ class StandardizedTest(buildbot.steps.shell.Test):
         lines = self.getLog(self.testLogName).readlines()
         hasIgnored = False
         for result,test,log in self.parseLog(lines):
+            test = test.strip()
             if result not in self.knownCodes:
                 raise ValueError,'test command return invalid result code!'
 
@@ -59,6 +60,19 @@ class StandardizedTest(buildbot.steps.shell.Test):
             if result in self.failingCodes and len(logs) < self.maxLogs:
                 if log is not None and log.strip():
                     logs.append((test, log))
+
+        # Explicitly remove any ignored warnings for tests which are
+        # also in the an ignored failing set (some tests may appear
+        # twice).
+        ignored_failures = set()
+        for code in self.failingCodes:
+            results = results_by_code.get('IGNORE ' + code)
+            if results:
+                ignored_failures |= set(results)
+        for code in self.warningCodes:
+            results = results_by_code.get(code)
+            if results:
+                results_by_code[code] -= ignored_failures
 
         # Summarize result counts.
         total = failed = passed = warnings = 0
