@@ -9,11 +9,14 @@ from buildbot.process.properties import WithProperties
 
 from zorg.buildbot.commands.ClangTestCommand import ClangTestCommand
 
+from Util import getConfigArgs
+
 def getLLVMBuildFactory(triple=None, clean=True, test=True,
                         expensive_checks=False, examples=False, valgrind=False,
                         valgrindLeakCheck=False, valgrindSuppressions=None,
                         jobs='%(jobs)s', timeout=20, make='make',
-                        enable_shared=False):
+                        enable_shared=False, enable_targets=None, defaultBranch='trunk',
+                        config_name='Debug+Asserts'):
     f = buildbot.process.factory.BuildFactory()
 
     # Determine the build directory.
@@ -26,15 +29,14 @@ def getLLVMBuildFactory(triple=None, clean=True, test=True,
     # Checkout sources.
     f.addStep(SVN(name='svn-llvm',
                   mode='update', baseURL='http://llvm.org/svn/llvm-project/llvm/',
-                  defaultBranch='trunk',
+                  defaultBranch=defaultBranch,
                   workdir='llvm'))
 
     # Force without llvm-gcc so we don't run afoul of Frontend test failures.
     configure_args = ["./configure", "--without-llvmgcc", "--without-llvmgxx"]
-    config_name = 'Debug+Asserts'
-    if expensive_checks:
-        configure_args.append('--enable-expensive-checks')
-        config_name += '+Checks'
+    configure_args += getConfigArgs(config_name)
+    if enable_targets is not None:
+        configure_args.append('--enable-targets %s' % enable_targets)
     if triple:
         configure_args += ['--build=%s' % triple,
                            '--host=%s' % triple,
