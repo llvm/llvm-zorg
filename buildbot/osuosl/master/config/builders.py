@@ -39,7 +39,7 @@ def _get_llvm_builders():
         {'name': "llvm-arm-linux",
          'slavenames':["ranby1"],
          'builddir':"llvm-arm-linux",
-         'factory': LLVMBuilder.getLLVMBuildFactory("arm-pc-linux-gnu", jobs=1, clean=False,
+         'factory': LLVMBuilder.getLLVMBuildFactory("arm-pc-linux-gnu", jobs=1, clean=True,
                                                     timeout=40)},
          {'name': "llvm-i686-linux-vg_leak",
           'slavenames':["osu8"],
