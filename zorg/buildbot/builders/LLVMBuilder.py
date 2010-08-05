@@ -16,7 +16,7 @@ def getLLVMBuildFactory(triple=None, clean=True, test=True,
                         valgrindLeakCheck=False, valgrindSuppressions=None,
                         jobs='%(jobs)s', timeout=20, make='make',
                         enable_shared=False, enable_targets=None, defaultBranch='trunk',
-                        config_name='Debug+Asserts'):
+                        llvmgccdir=None, config_name='Debug+Asserts'):
     f = buildbot.process.factory.BuildFactory()
 
     # Determine the build directory.
@@ -33,10 +33,14 @@ def getLLVMBuildFactory(triple=None, clean=True, test=True,
                   workdir='llvm'))
 
     # Force without llvm-gcc so we don't run afoul of Frontend test failures.
-    configure_args = ["./configure", "--without-llvmgcc", "--without-llvmgxx"]
+    configure_args = ["./configure"]
+    if llvmgccdir:
+        configure_args += ['--with-llvmgccdir=%s' % llvmgccdir]
+    else:
+        configure_args += ["--without-llvmgcc", "--without-llvmgxx"]
     configure_args += getConfigArgs(config_name)
     if enable_targets is not None:
-        configure_args.append('--enable-targets %s' % enable_targets)
+        configure_args.append('--enable-targets=%s' % enable_targets)
     if triple:
         configure_args += ['--build=%s' % triple,
                            '--host=%s' % triple,
