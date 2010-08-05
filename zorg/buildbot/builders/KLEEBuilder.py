@@ -13,6 +13,8 @@ reload(LLVMBuilder)
 import LLVMBuilder
 from Util import getConfigArgs
 
+from zorg.buildbot.commands.DejaGNUCommand import DejaGNUCommand
+
 def getKLEEBuildFactory(triple, jobs='%(jobs)d', llvm_branch='trunk',
                         config_name='Release+Asserts', clean=True, llvmgccdir=None,
                         *args, **kwargs):
@@ -31,12 +33,14 @@ def getKLEEBuildFactory(triple, jobs='%(jobs)d', llvm_branch='trunk',
         if llvm_branch == 'trunk':
             f = ClangBuilder.getClangBuildFactory(triple, jobs=jobs,
                                                   stage1_config=config_name, extra_configure_args=['--with-built-clang',
-                                                                                                   '--enable-targets=host'],
+                                                                                                   '--enable-targets=host',
+                                                                                                   '--with-llvmcc=clang'],
                                                   clean=clean, test=False, *args, **kwargs)
         else:
             f = LLVMBuilder.getLLVMBuildFactory(triple, jobs=jobs, defaultBranch=llvm_branch,
-                                                config_name=config_name, enable_targets='host',
-                                                clean=clean, test=False, *args, **kwargs)
+                                                config_name=config_name, llvmgccdir=llvmgccdir,
+                                                enable_targets='x86', clean=clean, test=False,
+                                                *args, **kwargs)
 
     # Checkout sources.
     f.addStep(SVN(name='svn-klee',
@@ -50,8 +54,6 @@ def getKLEEBuildFactory(triple, jobs='%(jobs)d', llvm_branch='trunk',
         configure_args += ['--build=%s' % triple,
                            '--host=%s' % triple,
                            '--target=%s' % triple]
-    if llvmgccdir:
-        configure_args += ['--with-llvmgccdir=%s' % llvmgccdir]
     f.addStep(Configure(command=configure_args, workdir='klee',
                         description=['configure','klee',config_name]))
 
@@ -70,6 +72,12 @@ def getKLEEBuildFactory(triple, jobs='%(jobs)d', llvm_branch='trunk',
                                           haltOnFailure=True, description="compile klee",
                                           workdir='klee'))
 
+    # Test.
+    f.addStep(DejaGNUCommand(name="test",
+                             command=['nice', '-n', '10',
+                                      'make', 'check'],
+                             haltOnFailure=True, description="test klee",
+                             workdir='klee',
+                             logfiles={ 'dg.sum' : 'test/testrun.sum' }))
+
     return f
-
-
