@@ -242,7 +242,8 @@ def run_test(nick_prefix, opts):
                                               'configure')),
                 '--with-llvmsrc=%s' % opts.llvm_src_root,
                 '--with-llvmobj=%s' % opts.llvm_obj_root,
-                '--with-externals=%s' % opts.test_suite_externals]
+                '--with-externals=%s' % os.path.realpath(
+                  opts.test_suite_externals)]
         print >>configure_log, '%s: running: %s' % (timestamp(),
                                                     ' '.join('"%s"' % a
                                                              for a in args))
