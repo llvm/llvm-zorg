@@ -73,7 +73,7 @@ def import_and_report(config, db_name, db, file, format, commit=False,
         result['original_run'] = run.id
 
     result['report_to_address'] = toAddress
-    NTEmailReport.emailReport(db, run,
+    NTEmailReport.emailReport(result, db, run,
                               "%s/db_%s/" % (config.zorgURL, db_name),
                               email_config, toAddress, success, commit)
 

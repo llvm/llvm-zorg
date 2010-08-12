@@ -412,7 +412,7 @@ class SimpleRunUI(Directory):
         show_graphs = bool(request.form.get('show_graphs'))
         run,run_summary,compare_to = self.getInfo(db)
 
-        _, _, html_report = NTEmailReport.getSimpleReport(
+        _, _, html_report = NTEmailReport.getSimpleReport(None,
             db, run, str("%s/db_%s/") % (self.root.config.zorgURL,
                                          self.root.dbName),
             True, True, show_graphs = show_graphs)
@@ -424,7 +424,7 @@ class SimpleRunUI(Directory):
 
         run,run_summary,compare_to = self.getInfo(db)
 
-        _, text_report, _ = NTEmailReport.getSimpleReport(
+        _, text_report, _ = NTEmailReport.getSimpleReport(None,
             db, run, str("%s/db_%s/") % (self.root.config.zorgURL,
                                          self.root.dbName),
             True, True)
@@ -479,7 +479,7 @@ class SimpleRunUI(Directory):
         form.render()
         self.renderPopupEnd()
 
-        _, text_report, html_report = NTEmailReport.getSimpleReport(
+        _, text_report, html_report = NTEmailReport.getSimpleReport(None,
             db, run, str("%s/db_%s/") % (self.root.config.zorgURL,
                                          self.root.dbName),
             True, True, only_html_body = True, show_graphs = show_graphs)

@@ -37,13 +37,13 @@ def main():
 
     emailReport(db, run, baseurl, host, from_, to)
 
-def emailReport(db, run, baseurl, email_config, to, was_added=True,
+def emailReport(result, db, run, baseurl, email_config, to, was_added=True,
                 will_commit=True):
     import email.mime.multipart
     import email.mime.text
 
-    subject, report, html_report = getReport(db, run, baseurl, was_added,
-                                             will_commit)
+    subject, report, html_report = getReport(result, db, run, baseurl,
+                                             was_added, will_commit)
 
     # Ignore if no to address was given, we do things this way because of the
     # awkward way we collect result information as part of generating the email
@@ -88,7 +88,7 @@ def findPreceedingRun(query, run):
             best = r
     return best
 
-def getSimpleReport(db, run, baseurl, was_added, will_commit,
+def getSimpleReport(result, db, run, baseurl, was_added, will_commit,
                     only_html_body = False, show_graphs = False):
     machine = run.machine
     tag = run.info['tag'].value
@@ -402,13 +402,13 @@ function init_report() {"""
     return subject, report.getvalue(), html_report
     return subject, report.getvalue(), None
 
-def getReport(db, run, baseurl, was_added, will_commit):
+def getReport(result, db, run, baseurl, was_added, will_commit):
     report = StringIO.StringIO()
 
     # Use a simple report unless the tag indicates this is an old style nightly
     # test run.
     if 'tag' in run.info and run.info['tag'].value != 'nightlytest':
-        return getSimpleReport(db, run, baseurl, was_added, will_commit)
+        return getSimpleReport(result, db, run, baseurl, was_added, will_commit)
 
     machine = run.machine
     compareTo = None
