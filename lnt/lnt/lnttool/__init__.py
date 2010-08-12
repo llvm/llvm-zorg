@@ -106,6 +106,9 @@ def action_runtest(name, args):
                       help=("whether the autosubmit result should be committed "
                             "[%default]"),
                       type=int, default=True)
+    parser.add_option("-v", "--verbose", dest="verbose",
+                      help="show verbose test results",
+                      action="store_true", default=False)
 
     (opts, args) = parser.parse_args(args)
     if len(args) < 1:
@@ -127,7 +130,7 @@ def action_runtest(name, args):
 
         from lnt.util import ServerUtil
         io = StringIO.StringIO(report.render(indent=None))
-        ServerUtil.submitFile(opts.submit_url, io, True)
+        ServerUtil.submitFile(opts.submit_url, io, True, opts.verbose)
 
 def action_showtests(name, args):
     """show the available built-in tests"""
@@ -154,13 +157,16 @@ def action_submit(name, args):
                       help=("whether the result should be committed "
                             "[%default]"),
                       default=False)
+    parser.add_option("-v", "--verbose", dest="verbose",
+                      help="show verbose test results",
+                      action="store_true", default=False)
 
     (opts, args) = parser.parse_args(args)
     if len(args) < 2:
         parser.error("incorrect number of argments")
 
     from lnt.util import ServerUtil
-    ServerUtil.submitFiles(args[0], args[1:], opts.commit)
+    ServerUtil.submitFiles(args[0], args[1:], opts.commit, opts.verbose)
 
 ###
 

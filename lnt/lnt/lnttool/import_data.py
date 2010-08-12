@@ -17,9 +17,14 @@ def action_import(name, args):
                       default='<auto>')
     parser.add_option("", "--commit", dest="commit", type=int,
                       default=False)
-    parser.add_option("", "--show-sql", dest="showSQL", action="store_true",
+    parser.add_option("", "--show-sql", dest="show_sql", action="store_true",
                       default=False)
-    parser.add_option("", "--show-sample-count", dest="showSampleCount",
+    parser.add_option("", "--show-sample-count", dest="show_sample_count",
+                      action="store_true", default=False)
+    parser.add_option("", "--show-raw-result", dest="show_raw_result",
+                      action="store_true", default=False)
+    parser.add_option("-v", "--verbose", dest="verbose",
+                      help="show verbose test results",
                       action="store_true", default=False)
     parser.add_option("", "--no-email", dest="noEmail",
                       action="store_true", default=False)
@@ -47,11 +52,15 @@ def action_import(name, args):
         parser.error("invalid database name")
 
     # Load the database.
-    db = PerfDB.PerfDB(db_entry.path, echo=opts.showSQL)
+    db = PerfDB.PerfDB(db_entry.path, echo=opts.show_sql)
     for file in args:
         result = ImportData.import_and_report(
             config, opts.database, db, file,
-            opts.format, opts.commit, opts.showSampleCount,
+            opts.format, opts.commit, opts.show_sample_count,
             opts.noEmail)
 
-        pprint.pprint(result)
+        if opts.show_raw_result:
+            pprint.pprint(result)
+        else:
+            ImportData.print_report_result(result, sys.stdout, opts.verbose)
+
