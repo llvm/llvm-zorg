@@ -135,10 +135,12 @@ class SimpleSuiteRunSummary(object):
     def fromdb(db, tag):
         revision = db.get_revision_number("RunInfo")
 
-        # Find all run_orders for runs with this tag.
+        # Find all run_orders for runs with this tag, ordered by run time so
+        # that runs are ordered by both (run_order, time) in the final ordering.
         all_run_orders = db.session.query(RunInfo.value, RunInfo.run_id,
                                           Run.machine_id).\
             join(Run).\
+            order_by(Run.start_time.desc()).\
             filter(RunInfo.key == "run_order").\
             filter(RunInfo.run_id.in_(
                 db.session.query(RunInfo.run_id).\
