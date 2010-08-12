@@ -1,7 +1,4 @@
-try:
-    import json
-except ImportError:
-    import simplejson as json
+from lnt.util import json
 
 def _matches_format(path_or_file):
     if isinstance(path_or_file, str):
