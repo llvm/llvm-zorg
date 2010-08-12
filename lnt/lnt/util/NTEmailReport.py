@@ -245,7 +245,8 @@ def getSimpleReport(db, run, baseurl, was_added, will_commit,
                   ('Existing Failures', existing_failures, False),
                   ('Unchanged Tests', unchanged_tests, False))
     total_changes = sum([sum(map(len, items.values()))
-                         for _,items,_ in items_info])
+                         for name,items,_ in items_info
+                         if name != 'Unchanged Tests'])
     graphs = []
     print >>report, """==============="""
     print >>report, """Tests Summary"""
