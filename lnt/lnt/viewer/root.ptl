@@ -79,9 +79,8 @@ class RootDirectory(Resolving, Directory):
             """ % (pathToRoot,)
         if addGraphJS:
             """
-        <script src="%s/resources/mootools-1.2.4-core-nc.js"></script>
         <script src="%s/js/View2D.js"></script>
-            """ % (pathToRoot,pathToRoot)
+            """ % pathToRoot
         if addJSScript:
             """\
 <script type="text/javascript">

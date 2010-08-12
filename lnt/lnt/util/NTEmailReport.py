@@ -369,7 +369,6 @@ function init_report() {"""
     <link rel="stylesheet" href="%(baseurl)s/resources/style.css"
           type="text/css"/>
     <script src="%(baseurl)s/resources/sorttable.js"></script>
-    <script src="%(baseurl)s/resources/mootools-1.2.4-core-nc.js"></script>
     <script src="%(baseurl)s/js/View2D.js"></script>
     <title>%(subject)s</title>
   </head>
