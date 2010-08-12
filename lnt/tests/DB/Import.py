@@ -4,27 +4,20 @@
 # RUN: lnt import %t.install %S/Inputs/sample-a-small.plist --commit=1 --show-sample-count |\
 # RUN:   FileCheck -check-prefix=IMPORT-A-1 %s
 
-# IMPORT-A-1: ADDED: 1 machines
-# IMPORT-A-1: ADDED: 1 runs
-# IMPORT-A-1: ADDED: 8 tests
-# IMPORT-A-1: ADDED: 8 samples
+# IMPORT-A-1: Added Machines: 1
+# IMPORT-A-1: Added Runs : 1
+# IMPORT-A-1: Added Tests : 8
+# IMPORT-A-1: Added Samples : 8
 
 # RUN: lnt import %t.install %S/Inputs/sample-b-small.plist --commit=1 --show-sample-count |\
 # RUN:   FileCheck -check-prefix=IMPORT-B %s
 
-# IMPORT-B: ADDED: 0 machines
-# IMPORT-B: ADDED: 1 runs
-# IMPORT-B: ADDED: 0 tests
-# IMPORT-B: ADDED: 8 samples
+# IMPORT-B: Added Runs : 1
 
 # RUN: lnt import %t.install %S/Inputs/sample-a-small.plist --commit=1 --show-sample-count |\
 # RUN:   FileCheck -check-prefix=IMPORT-A-2 %s
 
-# IMPORT-A-2: IGNORING DUPLICATE RUN
-# IMPORT-A-2: ADDED: 0 machines
-# IMPORT-A-2: ADDED: 0 runs
-# IMPORT-A-2: ADDED: 0 tests
-# IMPORT-A-2: ADDED: 0 samples
+# IMPORT-A-2: This submission is a duplicate of run 1
 
 # RUN: python %s %t.install/data/lnt.db
 
