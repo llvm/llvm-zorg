@@ -1,8 +1,9 @@
-import re, time
+import os, re, time
 
 from lnt import formats
-from lnt.viewer import PerfDB
+from lnt.db import runinfo
 from lnt.util import NTEmailReport
+from lnt.viewer import PerfDB
 
 def import_and_report(config, db_name, db, file, format, commit=False,
                       show_sample_count=False, disable_email=False):
@@ -67,11 +68,12 @@ def import_and_report(config, db_name, db, file, format, commit=False,
         result['error'] = "import failure: %s" % traceback.format_exc()
         return result
 
-    result['db_import_time'] = time.time() - importStartTime
+    result['import_time'] = time.time() - importStartTime
     if not success:
         # Record the original run this is a duplicate of.
         result['original_run'] = run.id
 
+    reportStartTime = time.time()
     result['report_to_address'] = toAddress
     NTEmailReport.emailReport(result, db, run,
                               "%s/db_%s/" % (config.zorgURL, db_name),
@@ -89,7 +91,127 @@ def import_and_report(config, db_name, db, file, format, commit=False,
     else:
         db.rollback()
 
-    result['import_time'] = time.time() - startTime
+    result['report_time'] = time.time() - importStartTime
+    result['total_time'] = time.time() - startTime
 
     result['success'] = True
     return result
+
+def print_report_result(result, out, verbose = True):
+    """
+    import_and_report(result, out) -> None
+
+    Print a human readable form of an import result object to the given output
+    stream. Test results are printed in 'lit' format.
+    """
+
+    # Print the generic import information.
+    print >>out, "Importing %r" % os.path.basename(result['import_file'])
+    if result['success']:
+        print >>out, "Import succeeded."
+        print >>out
+    else:
+        print >>out, "Import Failed:"
+        print >>out, "--\n%s--\n" % result['error']
+        return
+
+    if 'original_run' in result:
+        print >>out, ("This submission is a duplicate of run %d, "
+                      "already in the database.") % result['original_run']
+        print >>out
+
+    if not result['committed']:
+        print >>out, "NOTE: This run was not committed!"
+        print >>out
+
+    if result['report_to_address']:
+        print >>out, "Report emailed to: %r" % result['report_to_address']
+        print >>out
+
+    # Print the processing times.
+    print >>out, "Processing Times"
+    print >>out, "----------------"
+    print >>out, "Load   : %.2fs" % result['load_time']
+    print >>out, "Import : %.2fs" % result['import_time']
+    print >>out, "Report : %.2fs" % result['report_time']
+    print >>out, "Total  : %.2fs" % result['total_time']
+    print >>out
+
+    # Print the added database items.
+    total_added = (result['added_machines'] + result['added_runs'] +
+                   result['added_tests'] + result.get('added_samples', 0))
+    if total_added:
+        print >>out, "Imported Data"
+        print >>out, "-------------"
+        if result['added_machines']:
+            print >>out, "Added Machines: %d" % result['added_machines']
+        if result['added_runs']:
+            print >>out, "Added Runs    : %d" % result['added_runs']
+        if result['added_tests']:
+            print >>out, "Added Tests   : %d" % result['added_tests']
+        if result.get('added_samples', 0):
+            print >>out, "Added Samples : %.2fs" % result['added_samples']
+        print >>out
+
+    # Print the test results.
+    test_results = result.get('test_results')
+    if not test_results:
+        return
+
+    # List the parameter sets, if interesting.
+    show_pset = len(test_results) > 1
+    if show_pset:
+        print >>out, "Parameter Sets"
+        print >>out, "--------------"
+        for i,info in enumerate(test_results):
+            print >>out, "P%d: %s" % (i, info['pset'])
+        print >>out
+
+    total_num_tests = sum([len(item['results'])
+                           for item in test_results])
+    print >>out, "--- Tested: %d tests --" % total_num_tests
+    test_index = 0
+    for i,item in enumerate(test_results):
+        pset = item['pset']
+        pset_results = item['results']
+
+        for name,test_status,perf_status in pset_results:
+            test_index += 1
+
+            # FIXME: Show extended information for performance changes, previous
+            # samples, standard deviation, all that.
+            #
+            # FIXME: Think longer about mapping to test codes.
+            result_info = None
+            if test_status == runinfo.REGRESSED:
+                result_string = 'FAIL'
+            elif test_status == runinfo.IMPROVED:
+                result_string = 'IMPROVED'
+                result_info = "Test started passing."
+            elif test_status == runinfo.UNCHANGED_FAIL:
+                result_string = 'XFAIL'
+            elif perf_status == None:
+                # Missing perf status means test was just added or removed.
+                result_string = 'PASS'
+            elif perf_status == runinfo.REGRESSED:
+                result_string = 'REGRESSED'
+                result_info = 'Performance regressed.'
+            elif perf_status == runinfo.IMPROVED:
+                result_string = 'IMPROVED'
+                result_info = 'Performance improved.'
+            else:
+                result_string = 'PASS'
+
+            # Ignore passes unless in verbose mode.
+            if not verbose and result_string == 'PASS':
+                continue
+
+            if show_pset:
+                name = 'P%d :: %s' % (i, name)
+            print >>out, "%s: %s (%d of %d)" % (result_string, name, test_index,
+                                                total_num_tests)
+
+            if result_info:
+                print >>out, "%s TEST '%s' %s" % ('*'*20, name, '*'*20)
+                print >>out, result_info
+                print >>out, "*" * 20
