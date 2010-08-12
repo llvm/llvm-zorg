@@ -18,6 +18,7 @@ from quixote.util import StaticDirectory
 
 import lnt
 from lnt.db import perfdbsummary
+from lnt.util import json
 from lnt.viewer import PerfDB, Util
 from lnt.viewer.PerfDB import Machine, Run
 
@@ -298,14 +299,6 @@ class RootDirectory(Resolving, Directory):
             form.render()
             self.getFooter()
 
-        def result [plain] (success, run, log):
-            """\
-STATUS: %d
-
-OUTPUT:
-%s
-""" % (not run, log.getvalue())
-
         if not form.is_submitted() or form.has_errors():
             return render()
 
@@ -347,11 +340,10 @@ OUTPUT:
         #
         # FIXME: Gracefully handle formats failures and DOS attempts. We
         # should at least reject overly large inputs.
-        log = StringIO()
-        success, run = ImportData.import_and_report(
-            self.config, self.dbName, db, path, log, '<auto>', commit)
+        result = ImportData.import_and_report(
+            self.config, self.dbName, db, path, '<auto>', commit)
 
-        return result(success, run, log)
+        return json.dumps(result)
 
     def favicon_ico(self):
         response = get_response()

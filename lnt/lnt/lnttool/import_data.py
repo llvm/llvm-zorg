@@ -1,4 +1,4 @@
-import os, sys, time
+import os, pprint, sys, time
 
 from lnt import formats
 from lnt.viewer import Config, PerfDB
@@ -49,7 +49,9 @@ def action_import(name, args):
     # Load the database.
     db = PerfDB.PerfDB(db_entry.path, echo=opts.showSQL)
     for file in args:
-        success, run = ImportData.import_and_report(
-            config, opts.database, db, file, sys.stdout,
+        result = ImportData.import_and_report(
+            config, opts.database, db, file,
             opts.format, opts.commit, opts.showSampleCount,
             opts.noEmail)
+
+        pprint.pprint(result)
