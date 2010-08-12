@@ -168,6 +168,22 @@ def getSimpleReport(result, db, run, baseurl, was_added, will_commit,
             else:
                 unchanged_tests[pset] = (name, cr)
 
+    # Collect the simplified results, if desired, for sending back to clients.
+    if result is not None:
+        test_results = result['test_results'] = []
+        for pset in ts_summary.parameter_sets:
+            pset_results = []
+            for name in test_names:
+                cr = sri.get_run_comparison_result(
+                    run, run_status_kind, compare_to, compare_to_status_kind,
+                    name, pset, comparison_window)
+                test_status = cr.get_test_status()
+                perf_status = cr.get_value_status()
+                # FIXME: Include additional information about performance
+                # changes.
+                pset_results.append( (name, test_status, perf_status) )
+            test_results.append({ 'pset' : pset, 'results' : pset_results })
+
     # Generate the report.
     report = StringIO.StringIO()
     html_report = StringIO.StringIO()
@@ -400,7 +416,6 @@ function init_report() {"""
 </html>""" % locals()
 
     return subject, report.getvalue(), html_report
-    return subject, report.getvalue(), None
 
 def getReport(result, db, run, baseurl, was_added, will_commit):
     report = StringIO.StringIO()
