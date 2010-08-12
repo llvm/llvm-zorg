@@ -363,13 +363,28 @@ function init_report() {"""
 
     html_report = html_report.getvalue()
     if not only_html_body:
+        # We embed the additional resources, so that the message is self
+        # contained.
+        viewer_path = os.path.join(os.path.dirname(os.path.dirname(__file__)),
+                                   "viewer")
+        style_css = open(os.path.join(viewer_path, "resources",
+                                      "style.css")).read()
+        header = """
+    <style type="text/css">
+%s
+    </style>""" % style_css
+        if graphs:
+            view2d_js = open(os.path.join(viewer_path, "js",
+                                          "View2D.js")).read()
+            header += """
+    <script type="text/javascript">
+%(view2d_js)s
+    </script>""" % view2d_js
+
         html_report = """
 <html>
   <head>
-    <link rel="stylesheet" href="%(baseurl)s/resources/style.css"
-          type="text/css"/>
-    <script src="%(baseurl)s/resources/sorttable.js"></script>
-    <script src="%(baseurl)s/js/View2D.js"></script>
+%(header)s
     <title>%(subject)s</title>
   </head>
   <body onload="init_report()">
