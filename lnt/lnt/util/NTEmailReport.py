@@ -37,7 +37,7 @@ def main():
 
     emailReport(db, run, baseurl, host, from_, to)
 
-def emailReport(db, run, baseurl, host, from_, to, was_added=True,
+def emailReport(db, run, baseurl, email_config, to, was_added=True,
                 will_commit=True):
     import email.mime.multipart
     import email.mime.text
@@ -45,16 +45,22 @@ def emailReport(db, run, baseurl, host, from_, to, was_added=True,
     subject, report, html_report = getReport(db, run, baseurl, was_added,
                                              will_commit)
 
+    # Ignore if no to address was given, we do things this way because of the
+    # awkward way we collect result information as part of generating the email
+    # report.
+    if email_config is None or to is None:
+        return
+
     # Generate a plain text message if we have no html report.
     if not html_report:
         msg = email.mime.text.MIMEText(report)
         msg['Subject'] = subject
-        msg['From'] = from_
+        msg['From'] = email_config.from_address
         msg['To'] = to
     else:
         msg = email.mime.multipart.MIMEMultipart('alternative')
         msg['Subject'] = subject
-        msg['From'] = from_
+        msg['From'] = email_config.from_address
         msg['To'] = to
 
         # Attach parts into message container, according to RFC 2046, the last
@@ -63,8 +69,8 @@ def emailReport(db, run, baseurl, host, from_, to, was_added=True,
         msg.attach(email.mime.text.MIMEText(report, 'plain'))
         msg.attach(email.mime.text.MIMEText(html_report, 'html'))
 
-    s = smtplib.SMTP(host)
-    s.sendmail(from_, [to], msg.as_string())
+    s = smtplib.SMTP(email_config.host)
+    s.sendmail(email_config.from_address, [to], msg.as_string())
     s.quit()
 
 def findPreceedingRun(query, run):

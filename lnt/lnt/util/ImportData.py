@@ -45,16 +45,17 @@ def import_and_report(config, db_name, db, file, format, commit=False,
     result['load_time'] = time.time() - startTime
 
     # Find the email address for this machine's results.
-    toAddress = None
-    email_config = config.databases[db_name].email_config
-    if email_config.enabled:
-        # Find the machine name.
-        machineName = str(data.get('Machine',{}).get('Name'))
-        toAddress = email_config.get_to_address(machineName)
-        if toAddress is None:
-            result['error'] = ("unable to match machine name "
-                               "for test results email address!")
-            return result
+    toAddress = email_config = None
+    if not disable_email:
+        email_config = config.databases[db_name].email_config
+        if email_config.enabled:
+            # Find the machine name.
+            machineName = str(data.get('Machine',{}).get('Name'))
+            toAddress = email_config.get_to_address(machineName)
+            if toAddress is None:
+                result['error'] = ("unable to match machine name "
+                                   "for test results email address!")
+                return result
 
     importStartTime = time.time()
     try:
@@ -71,12 +72,10 @@ def import_and_report(config, db_name, db, file, format, commit=False,
         # Record the original run this is a duplicate of.
         result['original_run'] = run.id
 
-    if not disable_email and toAddress is not None:
-        result['report_to_address'] = toAddress
-        NTEmailReport.emailReport(db, run,
-                                  "%s/db_%s/" % (config.zorgURL, db_name),
-                                  email_config.host, email_config.from_address,
-                                  toAddress, success, commit)
+    result['report_to_address'] = toAddress
+    NTEmailReport.emailReport(db, run,
+                              "%s/db_%s/" % (config.zorgURL, db_name),
+                              email_config, toAddress, success, commit)
 
     result['added_machines'] = db.getNumMachines() - numMachines
     result['added_runs'] = db.getNumRuns() - numRuns
