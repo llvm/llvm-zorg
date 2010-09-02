@@ -190,7 +190,7 @@ def _get_clang_builders():
 def _get_dragonegg_builders():
     return [
         {'name' : 'dragonegg-i386-linux',
-         'slavenames' : ['baldrick16'],
+         'slavenames' : ['gcc16'],
          'builddir' : 'dragonegg-i386-linux',
          'factory'   : ScriptedBuilder.getScriptedBuildFactory(
                        source_code  = [SVN(name='svn-llvm',
@@ -205,7 +205,7 @@ def _get_dragonegg_builders():
          'category'  : 'dragonegg'},
 
         {'name' : 'dragonegg-x86_64-linux',
-         'slavenames' : ['baldrick17'],
+         'slavenames' : ['gcc17'],
          'builddir' : 'dragonegg-x86_64-linux',
          'factory'   : ScriptedBuilder.getScriptedBuildFactory(
                        source_code  = [SVN(name='svn-llvm',
