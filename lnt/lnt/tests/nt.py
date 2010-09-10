@@ -469,8 +469,8 @@ def run_test(nick_prefix, opts):
               run_info.get('cc_src_tag') != '0' and
               run_info.get('cc_src_tag') != '00' and
               run_info.get('cc_src_tag') != '9999' and
-              run_info.get('cc_src_tag','').isdigit()):
-            run_info['run_order'] = run_info['cc_src_tag']
+              run_info.get('cc_src_tag','').split('.',1)[0].isdigit()):
+            run_info['run_order'] = run_info['cc_src_tag'].split('.',1)[0]
 
         # Otherwise, infer from the llvm revision.
         elif run_info.get('llvm_revision','').isdigit():
