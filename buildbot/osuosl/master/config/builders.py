@@ -248,6 +248,13 @@ def _get_experimental_builders():
                                                          extra_configure_args=['--disable-multilib']),
          'category' : 'llvm-gcc.exp' },
 
+        {'name' : "llvm-gcc-i386-linux-selfhost",
+         'slavenames':["gcc10"],
+         'builddir':"llvm-gcc-i386-linux-selfhost",
+         'factory':LLVMGCCBuilder.getLLVMGCCBuildFactory(triple='i686-pc-linux-gnu',
+                                                         extra_configure_args=['--disable-multilib']),
+         'category' : 'llvm-gcc.exp' },
+
         {'name'      : "llvm-gcc-x86_64-darwin10-self-mingw32",
          'slavenames': [ "kistanova1" ],
          'builddir'  : "llvm-gcc-x86_64-darwin10-self-mingw32",
