@@ -249,7 +249,7 @@ def _get_experimental_builders():
          'category' : 'llvm-gcc.exp' },
 
         {'name' : "llvm-gcc-i386-linux-selfhost",
-         'slavenames':["gcc10"],
+         'slavenames':["gcc11"],
          'builddir':"llvm-gcc-i386-linux-selfhost",
          'factory':LLVMGCCBuilder.getLLVMGCCBuildFactory(triple='i686-pc-linux-gnu',
                                                          extra_configure_args=['--disable-multilib']),
