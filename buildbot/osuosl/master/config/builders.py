@@ -253,7 +253,7 @@ def _get_experimental_builders():
          'builddir':"llvm-gcc-i386-linux-selfhost",
          'factory':LLVMGCCBuilder.getLLVMGCCBuildFactory(triple='i686-pc-linux-gnu',
                                                          extra_configure_args=['--disable-multilib',
-                                                         '--enable-targets=all','--with-as=$HOME/bin32/as']),
+                                                         '--enable-targets=all','--with-as=/home/baldrick/bin32/as']),
          'category' : 'llvm-gcc.exp' },
 
         {'name'      : "llvm-gcc-x86_64-darwin10-self-mingw32",
