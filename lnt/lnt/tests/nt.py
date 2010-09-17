@@ -443,6 +443,11 @@ def run_test(nick_prefix, opts):
     # Create the machine entry.
     machine = lnt.testing.Machine(nick, machine_info)
 
+    # Capture binary tool versions.
+    run_info['as_version'] = capture(["gcc", "-c", "-xassembler", "/dev/null",
+                                      "-Wa,-v"], include_stderr=True).strip()
+    run_info['ld_version'] = capture(["ld", "-v"], include_stderr=True).strip()
+
     # FIXME: Hack, use better method of getting versions. Ideally, from binaries
     # so we are more likely to be accurate.
     run_info['llvm_revision'] = llvm_source_version
@@ -685,7 +690,7 @@ class NTTest(builtintest.BuiltinTest):
                          help="Don't automatically derive submission name",
                          action="store_false", default=True)
         group.add_option("", "--no-machdep-info", dest="use_machdep_info",
-                         help=("Don't put machine (instance) dependent  "
+                         help=("Don't put machine (instance) dependent "
                                "variables with machine info"),
                          action="store_false", default=True)
         group.add_option("", "--run-order", dest="run_order", metavar="STR",
