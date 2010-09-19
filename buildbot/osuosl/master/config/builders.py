@@ -82,6 +82,12 @@ def _get_llvmgcc_builders():
          'builddir':"llvm-gcc-x86_64-darwin10-selfhost",
          'factory':LLVMGCCBuilder.getLLVMGCCBuildFactory(4, triple='x86_64-apple-darwin10',
                                                          gxxincludedir='/usr/include/c++/4.2.1')},
+        {'name' : "llvm-gcc-i386-linux-selfhost",
+         'slavenames':["gcc11"],
+         'builddir':"llvm-gcc-i386-linux-selfhost",
+         'factory':LLVMGCCBuilder.getLLVMGCCBuildFactory(triple='i686-pc-linux-gnu',
+                                                         extra_configure_args=['--disable-multilib',
+                                                         '--enable-targets=all','--with-as=/home/baldrick/bin32/as'])},
         ]
 
 # Offline, no free x86_64 resources.
@@ -246,14 +252,6 @@ def _get_experimental_builders():
          'builddir':"llvm-gcc-x86_64-linux-selfhost",
          'factory':LLVMGCCBuilder.getLLVMGCCBuildFactory(triple='x86_64-pc-linux-gnu',
                                                          extra_configure_args=['--disable-multilib']),
-         'category' : 'llvm-gcc.exp' },
-
-        {'name' : "llvm-gcc-i386-linux-selfhost",
-         'slavenames':["gcc11"],
-         'builddir':"llvm-gcc-i386-linux-selfhost",
-         'factory':LLVMGCCBuilder.getLLVMGCCBuildFactory(triple='i686-pc-linux-gnu',
-                                                         extra_configure_args=['--disable-multilib',
-                                                         '--enable-targets=all','--with-as=/home/baldrick/bin32/as']),
          'category' : 'llvm-gcc.exp' },
 
         {'name'      : "llvm-gcc-x86_64-darwin10-self-mingw32",
