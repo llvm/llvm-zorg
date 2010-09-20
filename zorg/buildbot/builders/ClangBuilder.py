@@ -21,7 +21,8 @@ def getClangBuildFactory(triple=None, clean=True, test=True, package_dst=None,
                          make='make', jobs="%(jobs)s",
                          stage1_config='Debug+Asserts',
                          stage2_config='Release+Asserts',
-                         extra_configure_args=[], use_pty_in_tests=False):
+                         extra_configure_args=[], use_pty_in_tests=False,
+                         checkout_compiler_rt=False):
     # Don't use in-dir builds with a two stage build process.
     inDir = not outOfDir and not useTwoStage
     if inDir:
@@ -57,13 +58,21 @@ def getClangBuildFactory(triple=None, clean=True, test=True, package_dst=None,
 
     # Checkout sources.
     f.addStep(SVN(name='svn-llvm',
-                  mode='update', baseURL='http://llvm.org/svn/llvm-project/llvm/',
+                  mode='update',
+                  baseURL='http://llvm.org/svn/llvm-project/llvm/',
                   defaultBranch='trunk',
                   workdir=llvm_srcdir))
     f.addStep(SVN(name='svn-clang',
-                  mode='update', baseURL='http://llvm.org/svn/llvm-project/cfe/',
+                  mode='update',
+                  baseURL='http://llvm.org/svn/llvm-project/cfe/',
                   defaultBranch='trunk',
                   workdir='%s/tools/clang' % llvm_srcdir))
+    if checkout_compiler_rt:
+        f.addStep(SVN(name='svn-compiler-rt',
+                      mode='update',
+                      baseURL='http://llvm.org/svn/llvm-project/compiler-rt/',
+                      defaultBranch='trunk',
+                      workdir='%s/project/compiler-rt' % llvm_srcdir))
 
     # Clean up llvm (stage 1); unless in-dir.
     if clean and llvm_srcdir != llvm_1_objdir:
