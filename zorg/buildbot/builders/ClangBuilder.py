@@ -72,7 +72,7 @@ def getClangBuildFactory(triple=None, clean=True, test=True, package_dst=None,
                       mode='update',
                       baseURL='http://llvm.org/svn/llvm-project/compiler-rt/',
                       defaultBranch='trunk',
-                      workdir='%s/project/compiler-rt' % llvm_srcdir))
+                      workdir='%s/projects/compiler-rt' % llvm_srcdir))
 
     # Clean up llvm (stage 1); unless in-dir.
     if clean and llvm_srcdir != llvm_1_objdir:
