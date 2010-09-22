@@ -85,7 +85,7 @@ def _get_llvmgcc_builders():
         {'name' : "llvm-x86_64-linux-checks",
         'slavenames':["gcc10"],
         'builddir':"llvm-x86_64-linux-checks",
-        'factory':LLVMBuilder.getLLVMBuildFactory("x86_64-pc-linux-gnu", expensive_checks=True)}
+        'factory':LLVMBuilder.getLLVMBuildFactory("x86_64-pc-linux-gnu", expensive_checks=True)},
         {'name' : "llvm-gcc-i386-linux-selfhost",
          'slavenames':["gcc11"],
          'builddir':"llvm-gcc-i386-linux-selfhost",
