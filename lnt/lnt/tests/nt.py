@@ -114,6 +114,10 @@ def run_test(nick_prefix, opts):
         make_variables['SMALL_PROBLEM_SIZE'] = '1'
     if opts.test_integrated_as:
         make_variables['TEST_INTEGRATED_AS'] = '1'
+    if opts.liblto_path:
+        make_variables['LD_ENV_OVERRIDES'] = (
+            'env DYLD_LIBRARY_PATH=%s' % os.path.dirname(
+                opts.liblto_path))
 
     if opts.threads > 1:
         make_variables['ENABLE_PARALLEL_REPORT'] = '1'
@@ -593,6 +597,11 @@ class NTTest(builtintest.BuiltinTest):
         group.add_option("", "--isysroot", dest="isysroot", metavar="PATH",
                          help="Set -isysroot in TARGET_FLAGS [%default]",
                          type=str, default=None)
+        group.add_option("", "--liblto-path", dest="liblto_path",
+                         metavar="PATH",
+                         help=("Specify the path to the libLTO library "
+                               "[%default]"),
+                         type=str, default=None)
 
         group.add_option("", "--mcpu", dest="mcpu",
                          help="Set -mcpu in TARGET_LLCFLAGS [%default]",
@@ -750,6 +759,12 @@ class NTTest(builtintest.BuiltinTest):
                 parser.error('--remote-port is required with --remote')
             if opts.remote_user is None:
                 parser.error('--remote-user is required with --remote')
+
+        # libLTO should exist, if given.
+        if opts.liblto_path:
+            if not os.path.exists(opts.liblto_path):
+                parser.error('invalid --liblto-path argument %r' % (
+                        opts.liblto_path,))
 
         # FIXME: We need to validate that there is no configured output in the
         # test-suite directory, that borks things. <rdar://problem/7876418>
