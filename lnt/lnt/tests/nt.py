@@ -143,6 +143,16 @@ def run_test(nick_prefix, opts):
     # Set CC_UNDER_TEST_IS_CLANG when appropriate.
     if cc_info.get('cc_name') in ('apple_clang', 'clang'):
         make_variables['CC_UNDER_TEST_IS_CLANG'] = '1'
+    elif cc_info.get('cc_name') in ('llvm-gcc',):
+        make_variables['CC_UNDER_TEST_IS_LLVM_GCC'] = '1'
+    elif cc_info.get('cc_name') in ('gcc',):
+        make_variables['CC_UNDER_TEST_IS_GCC'] = '1'
+
+    # Convert the target arch into a make variable, to allow more target based
+    # specialization (e.g., CC_UNDER_TEST_TARGET_IS_ARMV7).
+    if '-' in cc_info.get('cc_target', ''):
+        arch_name = cc_info.get('cc_target').split('-',1)[0]
+        make_variables['CC_UNDER_TEST_TARGET_IS_' + arch_name.upper()] = '1'
 
     # Set LLVM_RELEASE_IS_PLUS_ASSERTS when appropriate, to allow testing older
     # LLVM source trees.
