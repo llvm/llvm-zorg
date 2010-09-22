@@ -1,8 +1,10 @@
 import hashlib
 import re
+import tempfile
 
-from commands import error
 from commands import capture
+from commands import error
+from commands import rm_f
 
 def get_cc_info(path, cc_flags=[]):
     """get_cc_info(path) -> { ... }
@@ -107,6 +109,19 @@ def get_cc_info(path, cc_flags=[]):
             error("unable to determine LLVM compiler target: %r: %r" %
                   (cc, target_cc_ll))
 
+    # Determine the binary tool versions for the assembler and the linker, as
+    # found by the compiler.
+    cc_as_version = capture([cc, "-c", '-Wa,-v'] + cc_flags +
+                            ['-x', 'assembler', '/dev/null'],
+                            include_stderr=True).strip()
+
+    tf = tempfile.NamedTemporaryFile(suffix='.c', delete=False)
+    print >>tf, "int main() { return 0; }"
+    tf.close()
+    cc_ld_version = capture([cc, "-Wl,-v"] + cc_flags + [tf.name],
+                            include_stderr=True).strip()
+    rm_f(tf.name)
+
     cc_exec_hash = hashlib.sha1()
     cc_exec_hash.update(open(cc,'rb').read())
 
@@ -120,6 +135,8 @@ def get_cc_info(path, cc_flags=[]):
              'cc_version' :cc_version,
              'cc_exec_hash' : cc_exec_hash.hexdigest(),
              'cc1_exec_hash' : cc1_exec_hash.hexdigest(),
+             'cc_as_version' : cc_as_version,
+             'cc_ld_version' : cc_ld_version,
              }
     if cc_src_tag is not None:
         info['cc_src_tag'] = cc_src_tag
