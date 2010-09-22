@@ -82,6 +82,10 @@ def _get_llvmgcc_builders():
          'builddir':"llvm-gcc-x86_64-darwin10-selfhost",
          'factory':LLVMGCCBuilder.getLLVMGCCBuildFactory(4, triple='x86_64-apple-darwin10',
                                                          gxxincludedir='/usr/include/c++/4.2.1')},
+        {'name' : "llvm-x86_64-linux-checks",
+        'slavenames':["gcc10"],
+        'builddir':"llvm-x86_64-linux-checks",
+        'factory':LLVMBuilder.getLLVMBuildFactory("x86_64-pc-linux-gnu", expensive_checks=True)}
         {'name' : "llvm-gcc-i386-linux-selfhost",
          'slavenames':["gcc11"],
          'builddir':"llvm-gcc-i386-linux-selfhost",
@@ -89,13 +93,6 @@ def _get_llvmgcc_builders():
                                                          extra_configure_args=['--disable-multilib',
                                                          '--enable-targets=all','--with-as=/home/baldrick/bin32/as'])},
         ]
-
-# Offline, no free x86_64 resources.
-{'name' : "llvm-x86_64-linux-checks",
- 'slavenames':["osu2"],
- 'builddir':"llvm-x86_64-linux-checks",
- 'factory':LLVMBuilder.getLLVMBuildFactory("x86_64-pc-linux-gnu", jobs=10, expensive_checks=True)}
-
 
 clang_i386_linux_xfails = [
     'GCCAS.MultiSource/Benchmarks/tramp3d-v4/tramp3d-v4',
