@@ -85,10 +85,10 @@ def _get_llvmgcc_builders():
         {'name' : "llvm-x86_64-linux-checks",
         'slavenames':["gcc10"],
         'builddir':"llvm-x86_64-linux-checks",
-        'factory':LLVMBuilder.getLLVMGCCBuildFactory("x86_64-pc-linux-gnu",
-                                                     stage1_config='Release+Asserts+Checks',
-                                                     stage2_config='Release+Asserts+Checks',
-                                                     extra_configure_args=['--disable-multilib'])},
+        'factory':LLVMGCCBuilder.getLLVMGCCBuildFactory("x86_64-pc-linux-gnu",
+                                                        stage1_config='Release+Asserts+Checks',
+                                                        stage2_config='Release+Asserts+Checks',
+                                                        extra_configure_args=['--disable-multilib'])},
         {'name' : "llvm-gcc-i386-linux-selfhost",
          'slavenames':["gcc11"],
          'builddir':"llvm-gcc-i386-linux-selfhost",
@@ -476,7 +476,7 @@ def _get_experimental_builders():
 
         {'name'      : "llvm-gcc-native-mingw32-win7",
          'slavenames': [ "kistanova3" ],
-         'builddir'  : "llvm-gcc-native-mingw32",
+         'builddir'  : "llvm-gcc-native-mingw32-win7",
          'factory'   : ScriptedBuilder.getScriptedBuildFactory(
                        source_code  = [SVN(name='svn-llvm',
                                            mode='update', baseURL='http://llvm.org/svn/llvm-project/llvm/',
