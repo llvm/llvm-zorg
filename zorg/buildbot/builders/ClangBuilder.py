@@ -249,8 +249,7 @@ def getClangBuildFactory(triple=None, clean=True, test=True, package_dst=None,
 
     return f
 
-def getClangMSVCBuildFactory(update=True, clean=True, vcDrive='c', jobs=1,
-                             cmake=r"c:\Program Files\CMake 2.6\bin\cmake"):
+def getClangMSVCBuildFactory(update=True, clean=True, vcDrive='c', jobs=1, cmake=r"cmake"):
     f = buildbot.process.factory.BuildFactory()
 
     if update:
