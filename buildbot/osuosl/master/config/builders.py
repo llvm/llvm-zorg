@@ -85,7 +85,7 @@ def _get_llvmgcc_builders():
         {'name' : "llvm-x86_64-linux-checks",
         'slavenames':["gcc10"],
         'builddir':"llvm-x86_64-linux-checks",
-        'factory':LLVMGCCBuilder.getLLVMGCCBuildFactory("x86_64-pc-linux-gnu",
+        'factory':LLVMGCCBuilder.getLLVMGCCBuildFactory(triple='x86_64-pc-linux-gnu',
                                                         stage1_config='Release+Asserts+Checks',
                                                         stage2_config='Release+Asserts+Checks',
                                                         extra_configure_args=['--disable-multilib'])},
