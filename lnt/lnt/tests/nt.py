@@ -445,6 +445,25 @@ def run_test(nick_prefix, opts):
     run_info['tag'] = test_namespace
     run_info.update(cc_info)
 
+    # Capture sw_vers if this looks like Darwin.
+    if 'Darwin' in machine_info['os']:
+        run_info['sw_vers'] = capture(['sw_vers'], include_stderr=True).strip()
+
+    # Query remote properties if in use.
+    if opts.remote:
+        remote_args = [opts.remote_client,
+                       "-l", opts.remote_user,
+                       "-p",  str(opts.remote_port),
+                       opts.remote_host]
+        print remote_args
+        run_info['remote_uname'] = capture(remote_args + ["uname", "-a"],
+                                           include_stderr=True).strip()
+
+        # Capture sw_vers if this looks like Darwin.
+        if 'Darwin' in run_info['remote_uname']:
+            run_info['remote_sw_vers'] = capture(remote_args + ["sw_vers"],
+                                                 include_stderr=True).strip()
+
     # Add machine dependent info.
     if opts.use_machdep_info:
         machdep_info = machine_info
