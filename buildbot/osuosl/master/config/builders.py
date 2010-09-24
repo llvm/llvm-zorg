@@ -32,10 +32,10 @@ def _get_llvm_builders():
          'slavenames': ["dunbar1"],
          'builddir': "llvm-i686", 
          'factory': LLVMBuilder.getLLVMBuildFactory("i686-pc-linux-gnu", jobs=2, enable_shared=True)},
-#        {'name': "llvm-x86_64-linux",
-#         'slavenames': ["osu1"],
-#         'builddir': "llvm-x86_64",
-#         'factory': LLVMBuilder.getLLVMBuildFactory(triple="x86_64-pc-linux-gnu")},
+        {'name': "llvm-x86_64-linux",
+         'slavenames': ["gcc14"],
+         'builddir': "llvm-x86_64",
+         'factory': LLVMBuilder.getLLVMBuildFactory(triple="x86_64-pc-linux-gnu")},
         {'name': "llvm-arm-linux",
          'slavenames':["ranby1"],
          'builddir':"llvm-arm-linux",
@@ -127,7 +127,7 @@ clang_x86_64_linux_xfails = [
 def _get_clang_builders():
     return [
 #        {'name': "clang-x86_64-linux",
-#         'slavenames':["osu1"],
+#         'slavenames':["gcc14"],
 #         'builddir':"clang-x86_64-linux",
 #         'factory': ClangBuilder.getClangBuildFactory(examples=True)},
         {'name': "clang-i686-linux",
