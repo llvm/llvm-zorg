@@ -14,7 +14,7 @@ def getLLVMGCCBuildFactory(jobs='%(jobs)s', update=True, clean=True,
                            useTwoStage=True, stage1_config='Release+Asserts',
                            stage2_config='Release+Asserts', make='make',
                            extra_configure_args=[], verbose=False, env = {},
-                           defaultBranch='trunk'):
+                           defaultBranch='trunk', timeout=20):
   if build or host or target:
     if not build or not host or not target:
       raise ValueError,"Must specify all of 'build', 'host', 'target' if used."
@@ -83,7 +83,8 @@ def getLLVMGCCBuildFactory(jobs='%(jobs)s', update=True, clean=True,
                                                      "llvm",
                                                      "(stage 1)",
                                                      stage1_config],
-                                        workdir="llvm.obj", env=env))
+                                        workdir="llvm.obj", env=env,
+                                        timeout=timeout*60))
 
   # Run LLVM tests (stage 1).
   f.addStep(ClangTestCommand(name = 'test.llvm.stage1',
@@ -129,7 +130,8 @@ def getLLVMGCCBuildFactory(jobs='%(jobs)s', update=True, clean=True,
                                         haltOnFailure=True,
                                         description=["compile",
                                                      "llvm-gcc"],
-                                        workdir="llvm-gcc.obj", env=env))
+                                        workdir="llvm-gcc.obj", env=env,
+                                        timeout=timeout*60))
 
   # Clean up llvm-gcc install.
   if clean:
@@ -188,7 +190,8 @@ def getLLVMGCCBuildFactory(jobs='%(jobs)s', update=True, clean=True,
                                                      "llvm",
                                                      "(stage 2)",
                                                      stage2_config],
-                                        workdir="llvm.obj.2", env=env))
+                                        workdir="llvm.obj.2", env=env,
+                                        timeout=timeout*60))
 
   # Run LLVM tests (stage 2).
   f.addStep(ClangTestCommand(name = 'test.llvm.stage2',
@@ -230,7 +233,8 @@ def getLLVMGCCBuildFactory(jobs='%(jobs)s', update=True, clean=True,
                                         description=["compile",
                                                      "llvm-gcc",
                                                      "(stage 2)"],
-                                        workdir="llvm-gcc.obj.2", env=env))
+                                        workdir="llvm-gcc.obj.2", env=env,
+                                        timeout=timeout*60))
 
   # Clean up llvm-gcc install (stage 2).
   if clean:
