@@ -13,8 +13,9 @@ def getLLVMGCCBuildFactory(jobs='%(jobs)s', update=True, clean=True,
                            triple=None, build=None, host=None, target=None,
                            useTwoStage=True, stage1_config='Release+Asserts',
                            stage2_config='Release+Asserts', make='make',
-                           extra_configure_args=[], verbose=False, env = {},
-                           defaultBranch='trunk', timeout=20):
+                           extra_configure_args=[], extra_languages=None,
+                           verbose=False, env = {}, defaultBranch='trunk',
+                           timeout=20):
   if build or host or target:
     if not build or not host or not target:
       raise ValueError,"Must specify all of 'build', 'host', 'target' if used."
@@ -103,8 +104,11 @@ def getLLVMGCCBuildFactory(jobs='%(jobs)s', update=True, clean=True,
                            workdir=".", env=env))
 
   # Configure llvm-gcc.
-  base_llvmgcc_configure_args = ["../llvm-gcc.src/configure",
-                                 "--enable-languages=c,c++"]
+  base_llvmgcc_configure_args = ["../llvm-gcc.src/configure"]
+  llvmgcc_languages = "--enable-languages=c,c++"
+  if extra_languages:
+    llvmgcc_languages = llvmgcc_languages + "," + extra_languages
+  base_llvmgcc_configure_args.append(llvmgcc_languages)
   if gxxincludedir:
     base_llvmgcc_configure_args.append('--with-gxx-include-dir=' + gxxincludedir)
   base_llvmgcc_configure_args.extend(extra_configure_args)
