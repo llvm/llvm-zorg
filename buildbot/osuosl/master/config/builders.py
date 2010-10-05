@@ -94,6 +94,7 @@ def _get_llvmgcc_builders():
          'slavenames':["gcc11"],
          'builddir':"llvm-gcc-i386-linux-selfhost",
          'factory':LLVMGCCBuilder.getLLVMGCCBuildFactory(triple='i686-pc-linux-gnu',
+                                                         extra_languages="fortran",
                                                          extra_configure_args=['--disable-multilib',
                                                          '--enable-targets=all','--with-as=/home/baldrick/bin32/as'])},
         ]
