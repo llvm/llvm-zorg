@@ -96,7 +96,10 @@ def _get_llvmgcc_builders():
          'factory':LLVMGCCBuilder.getLLVMGCCBuildFactory(triple='i686-pc-linux-gnu',
                                                          extra_languages="fortran",
                                                          extra_configure_args=['--disable-multilib',
-                                                         '--enable-targets=all','--with-as=/home/baldrick/bin32/as'])},
+                                                         '--enable-targets=all',
+                                                         '--with-as=/home/baldrick/bin32/as',
+                                                         '--with-mpfr=/home/baldrick/cfarm-32',
+                                                         '--with-gmp=/home/baldrick/cfarm-32'])},
         ]
 
 clang_i386_linux_xfails = [
