@@ -20,6 +20,9 @@ def get_build_slaves():
         # Linux, Beagleboard, Cortex A8, 256MB RAM.
         create_slave("nick2", properties={'jobs' : 1}, max_builds=1),
 
+        # Linux, NVidia Tegra 250, Dual-core Cortex A9, 1GB RAM
+        create_slave("nick3", properties={'jobs' : 2}, max_builds=1),
+
         # Core 2 Duo running Ubuntu.
         create_slave("dunbar1", properties={'jobs' : 2}, max_builds=1),
 
