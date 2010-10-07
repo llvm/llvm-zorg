@@ -57,7 +57,8 @@ def get_cc_info(path, cc_flags=[]):
             cc_src_tag, = m.groups()
         else:
             error('unable to determine gcc build version: %r' % cc_build_string)
-    elif (cc_name, cc_extra) in (('clang',''), ('Apple clang','')):
+    elif (cc_name in ('clang', 'Apple clang') and
+          cc_extra == '' or 'based on LLVM' in cc_extra):
         llvm_capable = True
         if cc_name == 'Apple clang':
             cc_norm_name = 'apple_clang'
@@ -115,7 +116,10 @@ def get_cc_info(path, cc_flags=[]):
                             ['-x', 'assembler', '/dev/null'],
                             include_stderr=True).strip()
 
-    tf = tempfile.NamedTemporaryFile(suffix='.c', delete=False)
+    tf = tempfile.NamedTemporaryFile(suffix='.c')
+    name = tf.name
+    tf.close()
+    tf = open(name, 'w')
     print >>tf, "int main() { return 0; }"
     tf.close()
     cc_ld_version = capture([cc, "-Wl,-v"] + cc_flags + [tf.name],
