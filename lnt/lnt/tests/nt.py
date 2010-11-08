@@ -156,7 +156,8 @@ def run_test(nick_prefix, opts):
 
     # Set LLVM_RELEASE_IS_PLUS_ASSERTS when appropriate, to allow testing older
     # LLVM source trees.
-    if llvm_source_version.isdigit() and int(llvm_source_version) < 107758:
+    if (llvm_source_version and llvm_source_version.isdigit() and
+        int(llvm_source_version) < 107758):
         make_variables['LLVM_RELEASE_IS_PLUS_ASSERTS'] = 1
 
     # Set ARCH appropriately, based on the inferred target.
