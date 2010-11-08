@@ -564,7 +564,7 @@ def _get_experimental_builders():
                                        {'name'          : 'install_llvmgcc',
                                         'description'   : 'install llvm-gcc',
                                         'haltOnFailure' : True },]),
-         'category'  : 'llvm-gcc.exp' },
+         'category'  : 'llvm-gcc' },
 
         {'name' : "clang-i686-linux-selfhost-rel",
          'slavenames' : ["osu8"],
