@@ -522,9 +522,9 @@ def _get_experimental_builders():
                                         'haltOnFailure' : True },]),
          'category'  : 'llvm-gcc' },
 
-        {'name'      : "llvm-gcc-i686-pc-linux-gnu-cross-gnueabi",
+        {'name'      : "llvm-gcc-i686-pc-linux-gnu-cross-arm-eabi-hard-float",
          'slavenames': [ "kistanova4" ],
-         'builddir'  : "llvm-gcc-i686-pc-linux-gnu-cross-gnueabi",
+         'builddir'  : "llvm-gcc-i686-pc-linux-gnu-cross-arm-eabi-hard-float",
          'factory'   : ScriptedBuilder.getScriptedBuildFactory(
                        source_code  = [SVN(name='svn-llvm',
                                            mode='update', baseURL='http://llvm.org/svn/llvm-project/llvm/',
@@ -535,7 +535,7 @@ def _get_experimental_builders():
                                            defaultBranch='trunk',
                                            workdir="llvm-gcc.src"),],
                        launcher     = 'llvm-gcc.src/extras/buildbot-launcher',
-                       build_script = 'llvm-gcc.src/extras/build-x-4-gnueabi',
+                       build_script = 'llvm-gcc.src/extras/build-x-4-armeabi-hardfloat',
                        extra_args   = [],
                        build_steps  = [{'name'          : 'clean',
                                         'description'   : 'clean',
