@@ -224,7 +224,8 @@ def _get_dragonegg_builders():
                                            mode='update', baseURL='http://llvm.org/svn/llvm-project/dragonegg/',
                                            defaultBranch='trunk',
                                            workdir="dragonegg.src"),],
-                       launcher     = 'dragonegg.src/extras/buildbot_self_strap-32',),
+                       launcher     = 'dragonegg.src/extras/buildbot_self_strap-32',
+                       timeout      = 60),
          'category'  : 'dragonegg'},
 
         {'name' : 'dragonegg-x86_64-linux',
@@ -239,7 +240,8 @@ def _get_dragonegg_builders():
                                            mode='update', baseURL='http://llvm.org/svn/llvm-project/dragonegg/',
                                            defaultBranch='trunk',
                                            workdir="dragonegg.src"),],
-                       launcher     = 'dragonegg.src/extras/buildbot_self_strap',),
+                       launcher     = 'dragonegg.src/extras/buildbot_self_strap',
+                       timeout      = 60),
          'category'  : 'dragonegg'},
 
         ]

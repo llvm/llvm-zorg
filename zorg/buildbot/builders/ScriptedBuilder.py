@@ -8,7 +8,8 @@ def getScriptedBuildFactory(
                       build_script = None, # Build script name or common prefix.
                       extra_args   = [],   # Extra args common for all steps.
                       build_steps  = [],   # List of step commands.
-                      env          = {}):  # Environmental variables for all steps.
+                      env          = {},   # Environmental variables for all steps.
+                      timeout      = 20):  # Timeout if no activity seen (minutes).
 
     # Validate input parameters
     if not launcher:
@@ -96,6 +97,7 @@ def getScriptedBuildFactory(
             haltOnFailure = True,
             description   = "Run build script",
             workdir       = ".",
-            env           = env))
+            env           = env,
+            timeout       = timeout*60))
 
     return f
