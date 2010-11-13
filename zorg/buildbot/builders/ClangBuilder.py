@@ -164,6 +164,27 @@ def getClangBuildFactory(triple=None, clean=True, test=True, package_dst=None,
                                               workdir=llvm_1_objdir))
 
     if not useTwoStage:
+        if package_dst:
+            name = WithProperties(
+                "%(builddir)s/" + llvm_1_objdir +
+                "/clang-r%(got_revision)s-b%(buildnumber)s.tgz")
+            f.addStep(ShellCommand(name='pkg.tar',
+                                   description="tar root",
+                                   command=["tar", "zcvf", name, "./"],
+                                   workdir=llvm_1_installdir,
+                                   warnOnFailure=True,
+                                   flunkOnFailure=False,
+                                   haltOnFailure=False))
+            f.addStep(ShellCommand(name='pkg.upload',
+                                   description="upload root", 
+                                   command=["scp", name,
+                                            WithProperties(
+                            package_dst + "/%(buildername)s")],
+                                   workdir=".",
+                                   warnOnFailure=True,
+                                   flunkOnFailure=False,
+                                   haltOnFailure=False))
+
         return f
 
     # Clean up llvm (stage 2).
