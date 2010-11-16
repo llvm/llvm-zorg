@@ -159,7 +159,7 @@ def _get_clang_builders():
         {'name': "clang-i686-freebsd",
          'slavenames':["freebsd1"],
          'builddir':"clang-i686-freebsd",
-         'factory': ClangBuilder.getClangBuildFactory(clean=False, use_pty_in_tests=True)},
+         'factory': ClangBuilder.getClangBuildFactory(clean=True, use_pty_in_tests=True)},
         {'name' : "clang-i686-xp-msvc9",
          'slavenames' :['dunbar-win32-2'],
          'builddir' :"clang-i686-xp-msvc9",
