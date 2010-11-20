@@ -473,16 +473,17 @@ class SimpleRunUI(Directory):
         try:
             num_comparison_runs = int(form['num_comparison_runs'])
         except:
-            num_comparison_runs = 5
+            num_comparison_runs = 0
 
         self.renderPopupBegin('view_options', 'View Options', True)
         form.render()
         self.renderPopupEnd()
 
-        _, text_report, html_report = NTEmailReport.getSimpleReport(None,
-            db, run, str("%s/db_%s/") % (self.root.config.zorgURL,
-                                         self.root.dbName),
-            True, True, only_html_body = True, show_graphs = show_graphs)
+        _, text_report, html_report = NTEmailReport.getSimpleReport(
+            None, db, run, str("%s/db_%s/") % (self.root.config.zorgURL,
+                                               self.root.dbName),
+            True, True, only_html_body = True, show_graphs = show_graphs,
+            num_comparison_runs = num_comparison_runs)
         self.renderPopupBegin('text_report', 'Report (Text)', True)
         """
         <pre>%s</pre>""" % (text_report,)
@@ -498,7 +499,7 @@ class SimpleRunUI(Directory):
             interesting_runs.append(compare_to.id)
         test_names = ts_summary.get_test_names_in_runs(db, interesting_runs)
 
-        # Gather the runs to use for statistical data.
+        # Gather the runs to use for statistical data, if enabled.
         cur_id = run.id
         comparison_window = []
         for i in range(num_comparison_runs):
