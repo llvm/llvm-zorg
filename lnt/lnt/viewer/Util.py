@@ -61,6 +61,8 @@ class multidict:
         for key,value in elts:
             self[key] = value
 
+    def __contains__(self, item):
+        return item in self.data
     def __getitem__(self, item):
         return self.data[item]
     def __setitem__(self, key, value):
