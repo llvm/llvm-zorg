@@ -89,7 +89,8 @@ def findPreceedingRun(query, run):
     return best
 
 def getSimpleReport(result, db, run, baseurl, was_added, will_commit,
-                    only_html_body = False, show_graphs = False):
+                    only_html_body = False, show_graphs = False,
+                    num_comparison_runs = 5):
     machine = run.machine
     tag = run.info['tag'].value
 
@@ -103,7 +104,6 @@ def getSimpleReport(result, db, run, baseurl, was_added, will_commit,
     sri = runinfo.SimpleRunInfo(db, ts_summary)
 
     # Gather the runs to use for statistical data.
-    num_comparison_runs = 5
     cur_id = run.id
     comparison_window = []
     for i in range(num_comparison_runs):
@@ -331,10 +331,18 @@ def getSimpleReport(result, db, run, baseurl, was_added, will_commit,
 
                 for i,(name,cr) in enumerate(tests):
                     if show_perf:
-                        print >>report, ('  %s: %.2f%%'
-                                         '(%.4f => %.4f, std. dev.: %.4f)') % (
-                            name, 100. * cr.pct_delta,
-                            cr.previous, cr.current, cr.stddev)
+                        if cr.stddev is not None:
+                            print >>report, (
+                                '  %s: %.2f%%'
+                                '(%.4f => %.4f, std. dev.: %.4f)') % (
+                                name, 100. * cr.pct_delta,
+                                cr.previous, cr.current, cr.stddev)
+                        else:
+                            print >>report, (
+                                '  %s: %.2f%%'
+                                '(%.4f => %.4f)') % (
+                                name, 100. * cr.pct_delta,
+                                cr.previous, cr.current)
 
                         # Show inline charts for top 10 changes.
                         if show_graphs and i < 10:
@@ -346,10 +354,16 @@ def getSimpleReport(result, db, run, baseurl, was_added, will_commit,
                         else:
                             extra_cell_value = ""
                         pct_value = Util.PctCell(cr.pct_delta).render()
-                        print >>html_report, """
+                        if cr.stddev is not None:
+                            print >>html_report, """
 <tr><td>%s%s</td>%s<td>%.4f</td><td>%.4f</td><td>%.4f</td></tr>""" %(
-                            name, extra_cell_value, pct_value,
-                            cr.previous, cr.current, cr.stddev)
+                                name, extra_cell_value, pct_value,
+                                cr.previous, cr.current, cr.stddev)
+                        else:
+                            print >>html_report, """
+<tr><td>%s%s</td>%s<td>%.4f</td><td>%.4f</td><td>-</td></tr>""" %(
+                                name, extra_cell_value, pct_value,
+                                cr.previous, cr.current)
                     else:
                         print >>report, '  %s' % (name,)
                         print >>html_report, """
