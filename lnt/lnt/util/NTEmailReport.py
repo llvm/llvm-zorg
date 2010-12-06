@@ -416,7 +416,7 @@ function init_report() {"""
             header += """
     <script type="text/javascript">
 %(view2d_js)s
-    </script>""" % view2d_js
+    </script>""" % locals()
 
         html_report = """
 <html>
