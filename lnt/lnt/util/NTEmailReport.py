@@ -9,6 +9,7 @@ Command line tool for sending an LNT email report.
 import os
 import smtplib
 import sys
+import urllib
 
 import StringIO
 from lnt import viewer
@@ -307,6 +308,8 @@ def getSimpleReport(result, db, run, baseurl, was_added, will_commit,
                 continue
 
             show_pset = items.items()[0][0] or len(items) > 1
+            pset_names = dict((pset, 'pset.%d' % i)
+                              for i,pset in enumerate(ts_summary.parameter_sets))
             print >>report
             print >>report, name
             print >>report, '-' * len(name)
@@ -353,11 +356,19 @@ def getSimpleReport(result, db, run, baseurl, was_added, will_commit,
 """ % (graph_name)
                         else:
                             extra_cell_value = ""
+
+                        # Link the regression to the chart of its performance.
+                        pset_name = pset_names[pset]
+                        form_data = urllib.urlencode([(pset_name, 'on'),
+                                                      ('test.'+name, 'on')])
+                        linked_name = '<a href="%s?%s">%s</a>' % (
+                            os.path.join(report_url, "graph"), form_data, name)
+
                         pct_value = Util.PctCell(cr.pct_delta).render()
                         if cr.stddev is not None:
                             print >>html_report, """
 <tr><td>%s%s</td>%s<td>%.4f</td><td>%.4f</td><td>%.4f</td></tr>""" %(
-                                name, extra_cell_value, pct_value,
+                                linked_name, extra_cell_value, pct_value,
                                 cr.previous, cr.current, cr.stddev)
                         else:
                             print >>html_report, """
