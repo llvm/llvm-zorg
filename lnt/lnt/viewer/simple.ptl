@@ -473,7 +473,7 @@ class SimpleRunUI(Directory):
         try:
             num_comparison_runs = int(form['num_comparison_runs'])
         except:
-            num_comparison_runs = 0
+            num_comparison_runs = 10
 
         self.renderPopupBegin('view_options', 'View Options', True)
         form.render()

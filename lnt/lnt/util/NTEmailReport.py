@@ -90,7 +90,7 @@ def findPreceedingRun(query, run):
 
 def getSimpleReport(result, db, run, baseurl, was_added, will_commit,
                     only_html_body = False, show_graphs = False,
-                    num_comparison_runs = 0):
+                    num_comparison_runs = 10):
     machine = run.machine
     tag = run.info['tag'].value
 
