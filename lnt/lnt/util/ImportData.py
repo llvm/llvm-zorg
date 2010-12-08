@@ -150,7 +150,7 @@ def print_report_result(result, out, verbose = True):
         if result['added_tests']:
             print >>out, "Added Tests   : %d" % result['added_tests']
         if result.get('added_samples', 0):
-            print >>out, "Added Samples : %.2fs" % result['added_samples']
+            print >>out, "Added Samples : %d" % result['added_samples']
         print >>out
 
     # Print the test results.

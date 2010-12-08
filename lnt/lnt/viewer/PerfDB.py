@@ -389,7 +389,6 @@ def importDataFromDict(db, data):
         test_id = testMap.get((name,tuple(info)))
         if test_id is None:
             test,created = db.getOrCreateTest(testData['Name'],info)
-            assert created
             late_ids.append((i,test))
         test_ids.append(test_id)
 
