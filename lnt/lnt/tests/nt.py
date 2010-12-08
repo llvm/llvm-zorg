@@ -18,7 +18,7 @@ from lnt.testing.util.rcs import get_source_version
 def timestamp():
     return datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
 
-def run_test(nick_prefix, opts):
+def run_test(nick_prefix, opts, iteration):
     llvm_source_version = get_source_version(opts.llvm_src_root)
 
     # Compute TARGET_FLAGS.
@@ -226,6 +226,8 @@ def run_test(nick_prefix, opts):
         build_dir_name = "test-%s" % ts
     else:
         build_dir_name = "build"
+    if iteration is not None:
+        build_dir_name = "%s-%d" % (build_dir_name, iteration)
     basedir = os.path.join(opts.sandbox_path, build_dir_name)
 
     # Canonicalize paths, in case we are using e.g. an NFS remote mount.
@@ -524,7 +526,7 @@ def run_test(nick_prefix, opts):
     print >>lnt_report_file,report.render()
     lnt_report_file.close()
 
-    return report
+    return report, basedir
 
 ###
 
@@ -717,6 +719,10 @@ class NTTest(builtintest.BuiltinTest):
         group.add_option("", "--remote-client", dest="remote_client",
                          help="Set remote execution client [%default]",
                          type=str, default="ssh", metavar="RSH",)
+
+        group.add_option("", "--multisample", dest="multisample",
+                         help="Accumulate test data from multiple runs",
+                         type=int, default=None, metavar="N")
         parser.add_option_group(group)
 
         group = OptionGroup(parser, "Output Options")
@@ -799,7 +805,49 @@ class NTTest(builtintest.BuiltinTest):
         # FIXME: We need to validate that there is no configured output in the
         # test-suite directory, that borks things. <rdar://problem/7876418>
 
-        return run_test(nick, opts)
+        # Multisample, if requested.
+        if opts.multisample is not None:
+            # Collect the sample reports.
+            reports = []
+            first_basedir = None
+            for i in range(opts.multisample):
+                print >>sys.stderr, "%s: (multisample) running iteration %d" % (
+                    timestamp(), i)
+                report, basedir = run_test(nick, opts, i)
+                reports.append(report)
+                if first_basedir is None:
+                    first_basedir = basedir
+
+            # Create the merged report.
+            #
+            # FIXME: Do a more robust job of merging the reports?
+            print >>sys.stderr, "%s: (multisample) creating merged report" % (
+                timestamp(),)
+            machine = reports[0].machine
+            run = reports[0].run
+            run.end_time = reports[-1].run.end_time
+            test_samples = sum([r.tests
+                                for r in reports], [])
+
+            # Write out the merged report.
+            lnt_report_path = os.path.join(first_basedir, 'report-merged.json')
+            report = lnt.testing.Report(machine, run, test_samples)
+            lnt_report_file = open(lnt_report_path, 'w')
+            print >>lnt_report_file,report.render()
+            lnt_report_file.close()
+
+            return report
+            machines = set([r.machine
+                           for r in reports])
+            print machines
+            print reports
+            # FIXME: Would we prefer to aggregate samples to tests?
+
+            print (opts.multisample,)
+            return
+
+        report, _ = run_test(nick, opts)
+        return report
 
 def create_instance():
     return NTTest()
