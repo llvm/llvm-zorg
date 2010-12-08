@@ -457,6 +457,10 @@ class SimpleRunUI(Directory):
                  title="Show Median Absolute Deviation")
         form.add(quixote.form.CheckboxWidget, "show_all",
                  title="Show All Values")
+        form.add(quixote.form.CheckboxWidget, "show_all_samples",
+                 title="Show All Samples")
+        form.add(quixote.form.CheckboxWidget, "show_sample_counts",
+                 title="Show Sample Counts")
         form.add(quixote.form.IntWidget, "num_comparison_runs",
                  title="Number of Comparison Runs")
         form.add(quixote.form.CheckboxWidget, "show_graphs",
@@ -469,6 +473,8 @@ class SimpleRunUI(Directory):
         show_stddev =  bool(form['show_stddev'])
         show_mad = bool(form['show_mad'])
         show_all = bool(form['show_all'])
+        show_all_samples = bool(form['show_all_samples'])
+        show_sample_counts = bool(form['show_sample_counts'])
         show_graphs = bool(form['show_graphs'])
         try:
             num_comparison_runs = int(form['num_comparison_runs'])
@@ -555,6 +561,14 @@ class SimpleRunUI(Directory):
                 else:
                     """<td>-</td>"""
 
+            if show_all_samples:
+                """<td>[%s]</td>""" % (", ".join("%.4f" % v
+                                                 for v in cr.get_samples()),)
+
+            if show_sample_counts:
+                """<td>%d</td>""" % len(cr.get_samples())
+
+
         """
         <h3>Parameter Sets</h3>
         <table border=1>
@@ -586,7 +600,8 @@ class SimpleRunUI(Directory):
         """
         <h3>Tests</h3>"""
 
-        pset_cols = 2 + show_delta + show_stddev + show_mad
+        pset_cols = (2 + show_delta + show_stddev + show_mad +
+                     show_all_samples + show_sample_counts)
         """
         <form method="GET" action="graph">
         <table class="sortable" border=1>
@@ -611,6 +626,12 @@ class SimpleRunUI(Directory):
             if show_mad:
                 """
             <th>MAD</th>"""
+            if show_all_samples:
+                """
+            <th>Samples</th>"""
+            if show_sample_counts:
+                """
+            <th>N</th>"""
         """
           </tr>
         </thead>"""
