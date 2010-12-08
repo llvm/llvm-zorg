@@ -495,7 +495,7 @@ def run_test(nick_prefix, opts, iteration):
         # FIXME: Pretty lame, should we just require the user to specify this?
 
         # If the CC has a src revision, use that.
-        if run_info.get('cc_src_version','').isdigit():
+        if run_info.get('cc_src_revision','').isdigit():
             run_info['run_order'] = run_info['cc_src_revision']
 
         # Otherwise, if this is a production compiler, look for a source tag. We
