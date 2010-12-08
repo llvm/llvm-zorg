@@ -10,7 +10,7 @@ UNCHANGED_FAIL = 'UNCHANGED_FAIL'
 
 class ComparisonResult:
     def __init__(self, cur_value, prev_value, delta, pct_delta, stddev, MAD,
-                 cur_failed, prev_failed):
+                 cur_failed, prev_failed, samples):
         self.current = cur_value
         self.previous = prev_value
         self.delta = delta
@@ -19,6 +19,10 @@ class ComparisonResult:
         self.MAD = MAD
         self.failed = cur_failed
         self.prev_failed = prev_failed
+        self.samples = samples
+
+    def get_samples(self):
+        return self.samples
 
     def get_test_status(self):
         # Compute the comparison status for the test success.
@@ -55,8 +59,8 @@ class ComparisonResult:
         if abs(self.delta) <= 2 * value_precision * confidence_interval:
             return UNCHANGED_PASS
 
-        # Always ignore percentage changes below 1%, for now, we just don't have enough
-        # time to investigate that level of stuff.
+        # Always ignore percentage changes below 1%, for now, we just don't have
+        # enough time to investigate that level of stuff.
         if abs(self.pct_delta) < .01:
             return UNCHANGED_PASS
 
@@ -118,7 +122,8 @@ class SimpleRunInfo:
         if test_id is None:
             return ComparisonResult(run_value=None, prev_value=None, delta=None,
                                     pct_delta=None, stddev=None, MAD=None,
-                                    cur_failed=None, prev_failed=None)
+                                    cur_failed=None, prev_failed=None,
+                                    samples=[])
 
         # Load the sample data for the current and previous runs and the
         # comparison window.
@@ -162,12 +167,22 @@ class SimpleRunInfo:
         else:
             prev_value = None
 
+        # If we have multiple values for this run, use that to estimate the
+        # distribution.
+        if len(run_values) > 1:
+            stddev = stats.standard_deviation(run_values)
+            MAD = stats.median_absolute_deviation(run_values)
+        else:
+            stddev = None
+            MAD = None
+
         # If we are missing current or comparison values we are done.
         if run_value is None or prev_value is None:
             return ComparisonResult(
                 run_value, prev_value, delta=None,
-                pct_delta=None, stddev=None, MAD=None,
-                cur_failed=run_failed, prev_failed=prev_failed)
+                pct_delta = None, stddev = stddev, MAD = MAD,
+                cur_failed = run_failed, prev_failed = prev_failed,
+                samples = run_values)
 
         # Compute the comparison status for the test value.
         delta = run_value - prev_value
@@ -176,23 +191,28 @@ class SimpleRunInfo:
         else:
             pct_delta = 0.0
 
-        # Get all previous values in the comparison window, for passing runs.
+        # If we don't have an estimate for the distribution, attempt to "guess"
+        # it using the comparison window.
         #
-        # FIXME: This is using the wrong status kind. :/
-        prev_values = [v for run_id in comparison_window
-                       for v in self.sample_map.get((run_id, test_id), ())
-                       if self.get_test_status_in_run(run_id, run_status_kind,
-                                                      test_name, pset) == PASS]
-        if prev_values:
-            stddev = stats.standard_deviation(prev_values)
-            MAD = stats.median_absolute_deviation(prev_values)
-        else:
-            stddev = None
-            MAD = None
+        # FIXME: We can substantially improve the algorithm for guessing the
+        # noise level from a list of values. Probably better to just find a way
+        # to kill this code though.
+        if stddev is None:
+            # Get all previous values in the comparison window, for passing
+            # runs.
+            #
+            # FIXME: This is using the wrong status kind. :/
+            prev_values = [v for run_id in comparison_window
+                           for v in self.sample_map.get((run_id, test_id), ())
+                           if self.get_test_status_in_run(
+                    run_id, run_status_kind, test_name, pset) == PASS]
+            if prev_values:
+                stddev = stats.standard_deviation(prev_values)
+                MAD = stats.median_absolute_deviation(prev_values)
 
         return ComparisonResult(run_value, prev_value, delta,
                                 pct_delta, stddev, MAD,
-                                run_failed, prev_failed)
+                                run_failed, prev_failed, run_values)
 
     def _load_samples_for_runs(self, runs):
         # Find the set of new runs to load.
