@@ -223,6 +223,22 @@ class SimpleRunUI(Directory):
     def graph [html] (self):
         request = quixote.get_request()
 
+        # Get the view options form.
+        form = quixote.form.Form(method=str("get"))
+        form.add(quixote.form.CheckboxWidget, "show_mad", True,
+                 title="Show MAD")
+        form.add(quixote.form.CheckboxWidget, "show_stddev", False,
+                 title="Show Standard Deviation")
+
+        # Add all the hidden fields.
+        for name,value in request.form.items():
+            if (name.startswith(str('test.')) or name.startswith(str('pset.'))):
+                form.add(quixote.form.HiddenWidget, name, value)
+
+        form.add_submit("submit", "Update")
+
+        # Get the form values.
+
         # Get a DB connection.
         db = self.root.getDB()
 
@@ -233,6 +249,8 @@ class SimpleRunUI(Directory):
         ts_summary = perfdbsummary.get_simple_suite_summary(db, self.tag)
 
         # Load the form data.
+        show_stddev =  bool(form['show_stddev'])
+        show_mad = bool(form['show_mad'])
         graph_tests = []
         graph_psets = []
         for name,value in request.form.items():
@@ -255,7 +273,8 @@ class SimpleRunUI(Directory):
         plots = ""
         plots_iter = GraphUtil.get_test_plots(db, machine, test_ids,
                                               run_summary, ts_summary,
-                                              show_mad_error = True,
+                                              show_mad_error = show_mad,
+                                              show_stddev = show_stddev,
                                               show_points = True)
         for test_id, plot_js, col, points, ext_points in plots_iter:
             test = db.getTest(test_id)
@@ -268,6 +287,11 @@ class SimpleRunUI(Directory):
             plot_points.append(ext_points)
 
         def graph_body [html] ():
+            # Show the view options form.
+            self.renderPopupBegin('view_options', 'View Options', True)
+            form.render()
+            self.renderPopupEnd()
+
             """
             <h3>Graph</h3>
             <table>
@@ -447,7 +471,7 @@ class SimpleRunUI(Directory):
         ts_summary = perfdbsummary.get_simple_suite_summary(db, self.tag)
         sri = runinfo.SimpleRunInfo(db, ts_summary)
 
-        # Get the filtering form.
+        # Get the view options form.
         form = quixote.form.Form(method=str("get"))
         form.add(quixote.form.CheckboxWidget, "show_delta",
                  title="Show Delta")

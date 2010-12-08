@@ -10,7 +10,7 @@ from PerfDB import Machine, Run, RunInfo, Sample, Test
 
 def get_test_plots(db, machine, test_ids, run_summary, ts_summary,
                    show_mad_error = False, show_points = False,
-                   show_all_points = False):
+                   show_all_points = False, show_stddev = False):
     # Load all the samples for these tests and this machine.
     q = db.session.query(Sample.run_id,Sample.test_id,
                          Sample.value).join(Run)
@@ -59,6 +59,10 @@ def get_test_plots(db, machine, test_ids, run_summary, ts_summary,
                         points_data.append((x, v))
                 else:
                     points_data.append((x, min_value))
+            if show_stddev:
+                mean = stats.mean(values)
+                sigma = stats.standard_deviation(values)
+                errorbar_data.append((x, mean - sigma, mean + sigma))
             if show_mad_error:
                 med = stats.median(values)
                 mad = stats.median_absolute_deviation(values, med)
