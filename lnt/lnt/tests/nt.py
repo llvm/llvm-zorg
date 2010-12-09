@@ -837,16 +837,8 @@ class NTTest(builtintest.BuiltinTest):
             lnt_report_file.close()
 
             return report
-            machines = set([r.machine
-                           for r in reports])
-            print machines
-            print reports
-            # FIXME: Would we prefer to aggregate samples to tests?
 
-            print (opts.multisample,)
-            return
-
-        report, _ = run_test(nick, opts)
+        report, _ = run_test(nick, opts, None)
         return report
 
 def create_instance():
