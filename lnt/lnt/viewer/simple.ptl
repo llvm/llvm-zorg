@@ -221,14 +221,24 @@ class SimpleRunUI(Directory):
                                                       compare_to))
 
     def graph [html] (self):
+        def init_form(form):
+            # Add default fields, Quixote doesn't like missing values if the
+            # form data exists.
+            form['show_mad'] = form.get('show_mad') or '1'
+            form['show_stddev'] = form.get('show_stddev') or '0'
+            form['show_linear_regression'] = form.get(
+                'show_linear_regression') or '1'
+
         request = quixote.get_request()
+        init_form(request.form)
 
         # Get the view options form.
         form = quixote.form.Form(method=str("get"))
-        form.add(quixote.form.CheckboxWidget, "show_mad", True,
-                 title="Show MAD")
-        form.add(quixote.form.CheckboxWidget, "show_stddev", False,
+        form.add(quixote.form.IntWidget, "show_mad", title="Show MAD")
+        form.add(quixote.form.IntWidget, "show_stddev",
                  title="Show Standard Deviation")
+        form.add(quixote.form.IntWidget, "show_linear_regression",
+                 title="Show Linear Regression Line")
 
         # Add all the hidden fields.
         for name,value in request.form.items():
@@ -249,8 +259,9 @@ class SimpleRunUI(Directory):
         ts_summary = perfdbsummary.get_simple_suite_summary(db, self.tag)
 
         # Load the form data.
-        show_stddev =  bool(form['show_stddev'])
-        show_mad = bool(form['show_mad'])
+        show_mad = form.get('show_mad')
+        show_stddev =  form.get('show_stddev')
+        show_linear_regression =  form.get('show_linear_regression')
         graph_tests = []
         graph_psets = []
         for name,value in request.form.items():
@@ -271,11 +282,10 @@ class SimpleRunUI(Directory):
         num_points = 0
         plot_points = []
         plots = ""
-        plots_iter = GraphUtil.get_test_plots(db, machine, test_ids,
-                                              run_summary, ts_summary,
-                                              show_mad_error = show_mad,
-                                              show_stddev = show_stddev,
-                                              show_points = True)
+        plots_iter = GraphUtil.get_test_plots(
+            db, machine, test_ids, run_summary, ts_summary,
+            show_mad_error = show_mad, show_stddev = show_stddev,
+            show_linear_regression = show_linear_regression, show_points = True)
         for test_id, plot_js, col, points, ext_points in plots_iter:
             test = db.getTest(test_id)
             name = test.name

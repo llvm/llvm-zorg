@@ -5,12 +5,14 @@ Helper functions for graphing test results.
 import Util
 
 from lnt.util import stats
+from lnt.external.stats import stats as ext_stats
 
 from PerfDB import Machine, Run, RunInfo, Sample, Test
 
 def get_test_plots(db, machine, test_ids, run_summary, ts_summary,
                    show_mad_error = False, show_points = False,
-                   show_all_points = False, show_stddev = False):
+                   show_all_points = False, show_stddev = False,
+                   show_linear_regression = False):
     # Load all the samples for these tests and this machine.
     q = db.session.query(Sample.run_id,Sample.test_id,
                          Sample.value).join(Run)
@@ -73,7 +75,29 @@ def get_test_plots(db, machine, test_ids, run_summary, ts_summary,
 
         plot_js = ""
 
+        # Determine the base plot color.
         col = list(Util.makeDarkColor(float(index) / num_plots))
+
+        # Add regression line, if requested.
+        if show_linear_regression:
+            xs = [t for t,v in data]
+            ys = [v for t,v in data]
+
+            # We compute the regression line in terms of a normalized X scale.
+            x_min, x_max = min(xs), max(xs)
+            norm_xs = [(x - x_min) / (x_max - x_min)
+                       for x in xs]
+            slope, intercept,_,_,_ = ext_stats.linregress(norm_xs, ys)
+
+            reglin_col = [c*.5 for c in col]
+            pts = ','.join('[%.4f,%.4f]' % pt
+                           for pt in [(x_min, 0.0 * slope + intercept),
+                                      (x_max, 1.0 * slope + intercept)])
+            style = "new Graph2D_LinePlotStyle(4, %r)" % ([.7, .7, .7],)
+            plot_js += "    graph.addPlot([%s], %s);\n" % (pts,style)
+            style = "new Graph2D_LinePlotStyle(2, %r)" % (reglin_col,)
+            plot_js += "    graph.addPlot([%s], %s);\n" % (pts,style)
+
         pts = ','.join(['[%.4f,%.4f]' % (t,v)
                         for t,v in data])
         style = "new Graph2D_LinePlotStyle(1, %r)" % col
