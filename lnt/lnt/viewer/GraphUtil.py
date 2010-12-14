@@ -87,16 +87,24 @@ def get_test_plots(db, machine, test_ids, run_summary, ts_summary,
             x_min, x_max = min(xs), max(xs)
             norm_xs = [(x - x_min) / (x_max - x_min)
                        for x in xs]
-            slope, intercept,_,_,_ = ext_stats.linregress(norm_xs, ys)
 
-            reglin_col = [c*.5 for c in col]
-            pts = ','.join('[%.4f,%.4f]' % pt
-                           for pt in [(x_min, 0.0 * slope + intercept),
-                                      (x_max, 1.0 * slope + intercept)])
-            style = "new Graph2D_LinePlotStyle(4, %r)" % ([.7, .7, .7],)
-            plot_js += "    graph.addPlot([%s], %s);\n" % (pts,style)
-            style = "new Graph2D_LinePlotStyle(2, %r)" % (reglin_col,)
-            plot_js += "    graph.addPlot([%s], %s);\n" % (pts,style)
+            # FIXME: When can this raise ZeroDivisionError?
+            try:
+                info = ext_stats.linregress(norm_xs, ys)
+            except ZeroDivisionError:
+                info = None
+
+            if info is not None:
+                slope, intercept,_,_,_ = info
+
+                reglin_col = [c*.5 for c in col]
+                pts = ','.join('[%.4f,%.4f]' % pt
+                               for pt in [(x_min, 0.0 * slope + intercept),
+                                          (x_max, 1.0 * slope + intercept)])
+                style = "new Graph2D_LinePlotStyle(4, %r)" % ([.7, .7, .7],)
+                plot_js += "    graph.addPlot([%s], %s);\n" % (pts,style)
+                style = "new Graph2D_LinePlotStyle(2, %r)" % (reglin_col,)
+                plot_js += "    graph.addPlot([%s], %s);\n" % (pts,style)
 
         pts = ','.join(['[%.4f,%.4f]' % (t,v)
                         for t,v in data])
