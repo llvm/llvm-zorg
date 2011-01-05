@@ -169,7 +169,7 @@ class SimpleRunInfo:
 
         # If we have multiple values for this run, use that to estimate the
         # distribution.
-        if len(run_values) > 1:
+        if run_values and len(run_values) > 1:
             stddev = stats.standard_deviation(run_values)
             MAD = stats.median_absolute_deviation(run_values)
         else:
