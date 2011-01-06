@@ -54,6 +54,9 @@ def get_build_slaves():
         # CentOS 5.4.
         create_slave("kistanova4", properties={'jobs' : 1}, max_builds=2),
 
+        # Win XP SP3.
+        create_slave("kistanova5", properties={'jobs' : 1}, max_builds=1),
+
         # Quad Core x86_64, Solaris / AurorAUX
         create_slave("evocallaghan", properties={'jobs' : 4}, max_builds=1),
 
