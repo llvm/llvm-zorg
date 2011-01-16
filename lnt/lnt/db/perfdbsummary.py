@@ -146,6 +146,8 @@ class SimpleSuiteRunSummary(object):
                 db.session.query(RunInfo.run_id).\
                     filter(RunInfo.key == "tag").\
                     filter(RunInfo.value == tag).subquery()))
+        all_run_orders = list(all_run_orders)
+
         order_by_run = dict((run_id,order)
                             for order,run_id,machine_id in all_run_orders)
         machine_id_by_run = dict((run_id,machine_id)
