@@ -192,6 +192,9 @@ class SimpleSuiteRunSummary(object):
         return (not db.modified_run and
                 self.revision == db.get_revision_number("RunInfo"))
 
+    def contains_run(self, run_id):
+        return run_id in self.machine_id_by_run
+
     def get_run_order(self, run_id):
         return self.order_by_run.get(run_id)
 

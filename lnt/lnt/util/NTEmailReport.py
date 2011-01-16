@@ -98,6 +98,10 @@ def getSimpleReport(result, db, run, baseurl, was_added, will_commit,
     # Get the run summary.
     run_summary = perfdbsummary.SimpleSuiteRunSummary.get_summary(db, tag)
 
+    # Ignore run's which don't appear in the summary, for whatever reason.
+    if not run_summary.contains_run(run.id):
+        return ("No report for run", "No report for run", None)
+
     # Load the test suite summary.
     ts_summary = perfdbsummary.get_simple_suite_summary(db, tag)
 
