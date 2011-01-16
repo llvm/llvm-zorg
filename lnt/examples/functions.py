@@ -35,7 +35,8 @@ def main():
     start = time.time()
 
     run = Run(start, start, info = { 't' : start,
-                                     'tag' : 'simple' })
+                                     'tag' : 'simple',
+                                     'run_order' : 1 })
     tests = [TestSamples('simple.%s' % name,
                          [fn(start*2*math.pi / delay  + j * offset)],
                          info = { 'offset' : j })
