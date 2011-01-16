@@ -1,6 +1,13 @@
 import lnt
+import os
 
 from setuptools import setup, find_packages
+
+# setuptools expects to be invoked from within the directory of setup.py, but it is nice to allow:
+#   python path/to/setup.py install
+# to work (for scripts, etc.)
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
+
 setup(
     name = "LNT",
     version = lnt.__version__,
