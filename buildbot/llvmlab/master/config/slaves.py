@@ -9,8 +9,8 @@ def create_slave(name, *args, **kwargs):
 def get_build_slaves():
     yield create_slave("llvmlab.local",
                        notify_on_missing="david_dean@apple.com",
-                       properties = { 'jobs' : 4 },
-                       max_builds = 1)
+                       properties = { 'jobs' : 16 },
+                       max_builds = 16)
     yield create_slave("lab-mini-01.local",
                        notify_on_missing="david_dean@apple.com",
                        properties = { 'jobs' : 2 },

@@ -504,12 +504,9 @@ def get_builders(all_slaves):
     typeR  = 'Release'
     typeRA = 'Release+Asserts'
     phase1_slave = 'llvmlab.local'
-    #phase2_slaves = [ 'leone.apple.com', 'dtqa09.apple.com' ]
-    #phaseRunners = [ 'leone.apple.com', 'dtqa09.apple.com' ]
     snow_leopard_slaves = all_slaves
-    barolo_slaves = []
+    phaseRunners = [phase1_slave]
     phase2_slaves = filter(lambda x:x not in [phase1_slave], snow_leopard_slaves)
-    phaseRunners = filter(lambda x:x not in [phase1_slave], snow_leopard_slaves)
     return [
             #Build to announce good build and prepare potential release candidate
             { 'name' : 'Validated Build',
