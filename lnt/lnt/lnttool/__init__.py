@@ -5,6 +5,7 @@ import sys
 from optparse import OptionParser, OptionGroup
 
 import StringIO
+from lnt import testing
 
 def action_runserver(name, args):
     """start a new development server"""
@@ -167,6 +168,204 @@ def action_submit(name, args):
 
     from lnt.util import ServerUtil
     ServerUtil.submitFiles(args[0], args[1:], opts.commit, opts.verbose)
+
+from lnt.db import perfdbsummary, runinfo
+from lnt.viewer import PerfDB
+from lnt.viewer.PerfDB import Run, Machine, Sample, Test
+from lnt.util import stats
+
+def print_table(rows):
+    def format_cell(value):
+        if isinstance(value, str):
+            return value
+        elif isinstance(value, int):
+            return str(value)
+        elif isinstance(value, float):
+            return "%.4f" % value
+        else:
+            return str(value)
+
+    N = len(rows[0])
+    for row in rows:
+        if len(row) != N:
+            raise ValueError,"Invalid table"
+
+        print "\t".join(map(format_cell, row))
+
+def action_report(name, args):
+    """performance reporting tools"""
+
+    parser = OptionParser("%%prog %s [options] <db> <machine>" % name)
+    parser.add_option("-v", "--verbose", dest="verbose",
+                      help="show verbose test results",
+                      action="store_true", default=False)
+
+    (opts, args) = parser.parse_args(args)
+    if len(args) != 2:
+        parser.error("incorrect number of argments")
+
+    path,machine = args
+    db = PerfDB.PerfDB('sqlite:///%s' % path)
+
+    # FIXME: Argument
+    tag = "nts"
+
+    # FIXME: Optional arguments
+    machines = [machine]
+    run_orders = [23, 107, 121, 124, 125]
+    runs = None
+
+    # Get the run summary which has run ordering information.
+    run_summary = perfdbsummary.SimpleSuiteRunSummary.get_summary(db, tag)
+
+    # Load the test suite summary.
+    ts_summary = perfdbsummary.get_simple_suite_summary(db, tag)
+
+    # First, collect the runs we are going to aggregate over, eagerly limiting
+    # by machine name.
+    q = db.session.query(Run)
+    if machines:
+        q = q.join(Machine)
+        q = q.filter(Machine.name.in_(machines))
+    runs = list(q)
+
+    # Gather the names of all tests across these runs, for more normalized
+    # reporting.
+    test_names = ts_summary.get_test_names_in_runs(db, [r.id for r in runs])
+    test_components = list(set(t.rsplit('.',1)[1] for t in test_names))
+    test_base_names = list(set(t.rsplit('.',1)[0] for t in test_names))
+    test_components.sort()
+    test_base_names.sort()
+    test_names = set(test_names)
+
+    # Limit by run orders.
+    runs_by_order = {}
+    for r in runs:
+        run_order = int(r.info["run_order"].value)
+        runs_by_order[run_order] = runs_by_order.get(run_order,[]) + [r]
+
+    # Load all the data.
+    items = {}
+    for test_component in test_components:
+        for order in run_orders:
+            order_runs = runs_by_order.get(order)
+            for name,value in get_test_passes(db, run_summary, ts_summary,
+                                              test_component, test_base_names,
+                                              order_runs):
+                items[(test_component, order, name)] = value
+
+    # Go through and compute global information.
+    machine_name = machine.rsplit("-",1)[1]
+    if '.' not in machine_name:
+        print "%s -O3" % machine_name
+    else:
+        print machine_name.replace(".", " -")
+    print "\t".join(["Run Order"] + map(str, run_orders))
+    print
+    for test_component in test_components:
+        normalized_values = []
+        for test_base_name in test_base_names:
+            # Ignore tests which never were given.
+            test_name = "%s.%s" % (test_base_name, test_component)
+            if test_name not in test_names:
+                continue
+
+            values = [items.get((test_component, order, test_base_name))
+                      for order in run_orders]
+            ok_values = [i for i in values
+                         if i is not None]
+            if ok_values:
+                baseline = max(ok_values[0], 0.0001)
+            else:
+                baseline = None
+
+            normalized = []
+            for value in values:
+                if value is None:
+                    normalized.append(None)
+                else:
+                    normalized.append(value / baseline)
+            normalized_values.append((test_base_name, normalized, baseline))
+
+        # Print summary table.
+        print "%s%s Time" % (test_component[0].upper(), test_component[1:])
+        table = [("Pct. Pass",
+                  "Mean", "Std. Dev.",
+                  "Median", "MAD",
+                  "Min", "Max",
+                  "N (Total)", "N (Perf)")]
+        for i,r in enumerate(run_orders):
+            num_tests = len(normalized_values)
+            num_pass = len([True for nv in normalized_values
+                            if nv[1][i] is not None])
+            pct_pass = num_pass / float(num_tests)
+
+            # Get non-fail normalized values above a reasonable baseline.
+            values = [nv[1][i] for nv in normalized_values
+                      if nv[1][i] is not None
+                      if nv[2] >= 1.0]
+            if not values:
+                table.append((pct_pass,
+                              "", "", "", "",
+                              "", "",
+                              num_tests, 0))
+                continue
+
+            min_value = min(values)
+            max_value = max(values)
+            mean = stats.mean(values)
+            median = stats.median(values)
+            mad = stats.median_absolute_deviation(values)
+            sigma = stats.standard_deviation(values)
+            table.append((pct_pass,
+                          mean, sigma, median, mad,
+                          min_value, max_value,
+                          num_tests, len(values)))
+
+        print_table(zip(*table))
+        print
+
+def get_test_passes(db, run_summary, ts_summary,
+                    test_component, test_base_names, runs):
+    if not runs:
+        return
+
+    sri = runinfo.SimpleRunInfo(db, ts_summary)
+    sri._load_samples_for_runs([r.id for r in runs])
+
+    run_status_info = [(r, run_summary.get_run_status_kind(db, r.id))
+                       for r in runs]
+
+    pset = ()
+    for test_base_name in test_base_names:
+        test_name = "%s.%s" % (test_base_name, test_component)
+        test_id = ts_summary.test_id_map.get((test_name, pset))
+        if test_id is None:
+            continue
+
+        run_values = sum((sri.sample_map.get((run.id, test_id))
+                          for run in runs
+                          if (run.id, test_id) in sri.sample_map), [])
+        # Ignore tests that weren't reported in some runs (e.g., -disable-cxx).
+        if not run_values:
+            continue
+
+        # Find the test status, treat any non-determinism as a FAIL.
+        run_status = list(set([sri.get_test_status_in_run(
+                r.id, rsk, test_name, pset)
+                      for (r,rsk) in run_status_info]))
+        if len(run_status) == 1:
+            status_kind = run_status[0]
+        else:
+            status_kind = testing.FAIL
+
+        # Ignore failing methods.
+        if status_kind == testing.FAIL:
+            continue
+
+        value = min(run_values)
+        yield (test_base_name, value)
+
 
 ###
 
