@@ -43,7 +43,7 @@ def get_build_slaves():
         create_slave("ranby1"),
 
         # Quad Core Mac Pro running Leopard.
-        create_slave("kistanova1", properties={'jobs' : 1}, max_builds=3),
+        create_slave("kistanova1", properties={'jobs' : 1}, max_builds=4),
 
         # Win XP SP3.
         create_slave("kistanova2", properties={'jobs' : 1}, max_builds=1),
