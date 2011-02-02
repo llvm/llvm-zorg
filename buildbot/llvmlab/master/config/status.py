@@ -13,8 +13,9 @@ def get_status_targets(standard_builders):
         buildbot.status.html.WebStatus(
             http_port = 8013, allowForce = True),
         buildbot.status.mail.MailNotifier(
-            fromaddr = "daniel_dunbar@apple.com",
-            extraRecipients = [default_email],
-            mode = "all",
-            builders = standard_builders),
+            fromaddr = 'david_dean@apple.com',
+            extraRecipients = ['daniel_dunbar@apple.com','david_dean@apple.com'],
+            sendToInterestedUsers=False,
+            mode = 'problem',
+            relayhost="mail-in2.apple.com",),
         ]
