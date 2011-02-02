@@ -14,9 +14,10 @@ def get_schedulers():
                          builderNames=['phase2 - living',],
                          properties = {'revision':WithProperties('%(got_revision)s')})
     startphase2 = triggerable.Triggerable(name='doPhase2',
-                         builderNames=['clang-x86_64-osx10-DA',
-                                       'clang-x86_64-osx10-RA',
+                         builderNames=[
                                        'nightly_clang-x86_64-osx10-gcc42-RA',
+                                       'clang-x86_64-osx10-DA',
+                                       'clang-x86_64-osx10-RA',
                                       ],
                          properties = {'revision':WithProperties('%(got_revision)s')})
 
@@ -24,7 +25,9 @@ def get_schedulers():
                          builderNames=['phase3 - tree health',],
                          properties = {'revision':WithProperties('%(got_revision)s')})
     startphase3 = triggerable.Triggerable(name='doPhase3',
-                         builderNames=['nightly_clang-x86_64-osx10-DA',
+                         builderNames=[
+                                       'clang-i386-osx10-RA',
+                                       'nightly_clang-x86_64-osx10-DA',
                                        'nightly_clang-x86_64-osx10-RA',
                                        'nightly_clang-x86_64-osx10-RA-O0',
                                        'nightly_clang-x86_64-osx10-RA-Os',
@@ -38,9 +41,13 @@ def get_schedulers():
                          builderNames=['phase4 - validation',],
                          properties = {'revision':WithProperties('%(got_revision)s')})
     startphase4 = triggerable.Triggerable(name='doPhase4',
-                         builderNames=['clang-x86_64-osx10-RA-stage3',
+                         builderNames=[
+                                       'clang-x86_64-osx10-RA-stage3',
+                                       'nightly_clang-i386-osx10-RA',
                                        'gccTestSuite-clang-x86_64-osx10-RA',
-                                       'libcxx-clang-x86_64-osx10-RA',],
+                                       'libcxx-clang-x86_64-osx10-RA',
+                                       'boost-trunk-clang-x86_64-osx10-RA',
+                                      ],
                          properties = {'revision':WithProperties('%(got_revision)s')})
 
     LastOne = triggerable.Triggerable(name='GoodBuild',
