@@ -57,6 +57,7 @@ def getBuildDir(f):
                                                command=['pwd'],
                                                property='builddir',
                                                description='set build dir',
+                                               workdir='.',
                                                ))
     return f
 
@@ -71,6 +72,7 @@ def GetCompilerArtifacts(f):
               command=['rsync', '-ave', 'ssh', src_file, slavedest ],
               haltOnFailure=True,
               description=['download build artifacts'],
+              workdir='.',
               ))
     #extract compiler artifacts used for this build
     f.addStep(buildbot.steps.shell.ShellCommand(
@@ -78,6 +80,7 @@ def GetCompilerArtifacts(f):
               command=['tar', '-zxvf', WithProperties('clang-install.tar.gz'),],
               haltOnFailure=True,
               description=['extract', WithProperties('clang-install')],
+              workdir='.',
               ))
     return f
 
@@ -86,16 +89,19 @@ def cleanCompilerDir(f):
             command=['rm', '-rf', 'clang-install'],
             haltOnFailure=False,
             description=['rm dir', 'clang-install'],
+            workdir='.',
             ))
     f.addStep(buildbot.steps.shell.ShellCommand(
             command=['rm', '-rf', 'clang-install.tar.gz'],
             haltOnFailure=False,
             description=['rm archive', 'clang-install.tar.gz'],
+            workdir='.',
             ))
     f.addStep(buildbot.steps.shell.ShellCommand(
             command=['rm', '-rf', WithProperties('%(compiler_built:-)s')],
             haltOnFailure=False,
             description=['rm dir', WithProperties('%(compiler_built:-)s')],
+            workdir='.',
             ))
     return f
 
@@ -106,6 +112,7 @@ def uploadArtifacts(f):
                        WithProperties('./clang-install/')],
               haltOnFailure=True,
               description=['tar', '&', 'zip'],
+              workdir='.',
               ))
     archive_src = WithProperties('%(builddir)s/clang-install.tar.gz')
     f.addStep(buildbot.steps.shell.ShellCommand(
@@ -115,6 +122,7 @@ def uploadArtifacts(f):
                       ],
               haltOnFailure=True,
               description=['upload build artifacts'],
+              workdir='.',
               ))
 
     return f
@@ -526,6 +534,7 @@ def runboost(config_options):
                        ';', '>', 'user-config.jam'],
               haltOnFailure=True,
               description=['create user-config.jam'],
+              workdir='.',
               ))
     #--bjam-options=target-os=windows --bjam-options=-l300 --bjam-options=--debug-level=3 --bjam-options=--user-config=%MYJAMFILE% --have-source --skip-script-download --ftp=ftp://boost:4peiV8Xwxfv9@ftp.siliconman.net >runner.log
     f.addStep(buildbot.steps.shell.ShellCommand(
@@ -537,6 +546,7 @@ def runboost(config_options):
                        WithProperties('--bjam-options=-j%(jobs)s'),'--user=""',],
               haltOnFailure=True,
               description=['boost regression harness'],
+              workdir='.',
               timeout=14400
               ))
     return f
