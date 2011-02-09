@@ -299,29 +299,7 @@ def NightlyFactory(f, options, clean=True, test=True, xfails=set()):
              description=['sanity test'],
              env={'PATH': WithProperties('%(use_path)s:${PATH}')}))
     # Pull source code.
-    f = pullllvm(f)
-    f = pullClang(f)
     f = pulltest_suite(f)
-    # It is currently necessary to build llvm in order for nightly tests to build and run.
-    # TODO: build less of llvm.
-    f.addStep(buildbot.steps.shell.ShellCommand(
-            name='configure.with.host',
-            command=[
-                     '../llvm/configure', '--enable-optimized', '--disable-bindings',
-                     '--with-llvmcc=clang', '--without-llvmgcc', '--without-llvmgxx',
-                     WithProperties('CC=%(use_path)s/clang'),
-                     WithProperties('CXX=%(use_path)s/clang++')],
-            haltOnFailure=True,
-            description=['configure'],
-            env={'PATH': WithProperties('%(use_path)s:${PATH}')},
-            workdir='llvm.obj'))
-    f.addStep(buildbot.steps.shell.ShellCommand(
-            name='make',
-            command=['make', 'tools-only', '-j', WithProperties('%(jobs)s')],
-            env={'PATH': WithProperties('%(use_path)s:${PATH}')},
-            haltOnFailure=True,
-            description=['make'],
-            workdir='llvm.obj'))
     # Clean up.
     if clean:
         f.addStep(buildbot.steps.shell.ShellCommand(
@@ -338,8 +316,7 @@ def NightlyFactory(f, options, clean=True, test=True, xfails=set()):
                      WithProperties('CXX=%(use_path)s/clang++'),
                      'CFLAGS='+options,
                      'CXXFLAGS='+options,
-                      WithProperties('--with-llvmsrc=%(builddir)s/llvm'),
-                      WithProperties('--with-llvmobj=%(builddir)s/llvm.obj')],
+                     '--without-llvmsrc', '--without-llvmobj'],
             haltOnFailure=True,
             description=['configure tests'],
             env={'PATH': WithProperties('%(use_path)s:${PATH}')},
