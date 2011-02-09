@@ -63,58 +63,64 @@ def getBuildDir(f):
 
 def GetCompilerArtifacts(f):
     if WithProperties('%(revision)s')=='None':
-        src_file = WithProperties('buildmaster@llvmlab.local:~/artifacts/%(use_builder)s/%(got_revision)s/clang-install.tar.gz')
+        src_file = WithProperties('buildmaster@llvmlab.local:~/artifacts/%(use_builder)s/%(got_revision)s/clang-*.tar.gz')
     else:
-        src_file = WithProperties('buildmaster@llvmlab.local:~/artifacts/%(use_builder)s/%(revision)s/clang-install.tar.gz')
-    slavedest=WithProperties('%(builddir)s/clang-install.tar.gz')
+        src_file = WithProperties('buildmaster@llvmlab.local:~/artifacts/%(use_builder)s/%(revision)s/clang-*.tar.gz')
+    slavedest=WithProperties('%(builddir)s/clang-host.tar.gz')
     f.addStep(buildbot.steps.shell.ShellCommand(
               name='download_artifacts',
               command=['rsync', '-ave', 'ssh', src_file, slavedest ],
               haltOnFailure=True,
               description=['download build artifacts'],
-              workdir='.',
+              workdir=WithProperties('%(builddir)s'),
               ))
     #extract compiler artifacts used for this build
     f.addStep(buildbot.steps.shell.ShellCommand(
               name='unzip',
-              command=['tar', '-zxvf', WithProperties('clang-install.tar.gz'),],
+              command=['tar', '-zxvf','../clang-host.tar.gz',],
               haltOnFailure=True,
-              description=['extract', WithProperties('clang-install')],
-              workdir='.',
+              description=['extract', 'clang-host'],
+              workdir='clang-host',
               ))
     return f
 
 def cleanCompilerDir(f):
     f.addStep(buildbot.steps.shell.ShellCommand(
-            command=['rm', '-rf', 'clang-install'],
+            command=['rm', '-rfv', 'clang-install'],
             haltOnFailure=False,
             description=['rm dir', 'clang-install'],
-            workdir='.',
+            workdir=WithProperties('%(builddir)s'),
             ))
     f.addStep(buildbot.steps.shell.ShellCommand(
-            command=['rm', '-rf', 'clang-install.tar.gz'],
+            command=['rm', '-rfv', 'clang-host'],
             haltOnFailure=False,
-            description=['rm archive', 'clang-install.tar.gz'],
-            workdir='.',
+            description=['rm dir', 'clang-host'],
+            workdir=WithProperties('%(builddir)s'),
             ))
     f.addStep(buildbot.steps.shell.ShellCommand(
-            command=['rm', '-rf', WithProperties('%(compiler_built:-)s')],
+            command=['sh', '-c', 'rm -rfv clang*.tar.gz'],
+            haltOnFailure=False,
+            description=['rm archives'],
+            workdir=WithProperties('%(builddir)s'),
+            ))
+    f.addStep(buildbot.steps.shell.ShellCommand(
+            command=['rm', '-rfv', WithProperties('%(compiler_built:-)s')],
             haltOnFailure=False,
             description=['rm dir', WithProperties('%(compiler_built:-)s')],
-            workdir='.',
+            workdir=WithProperties('%(builddir)s'),
             ))
     return f
 
 def uploadArtifacts(f):
     f.addStep(buildbot.steps.shell.ShellCommand(
               name='tar_and_zip',
-              command=['tar', 'czvf', 'clang-install.tar.gz',
-                       WithProperties('./clang-install/')],
+              command=['tar', 'czvf', WithProperties('../clang-r%(got_revision)s-b%(buildnumber)s.tar.gz'),
+                       './'],
               haltOnFailure=True,
               description=['tar', '&', 'zip'],
-              workdir='.',
+              workdir='clang-install',
               ))
-    archive_src = WithProperties('%(builddir)s/clang-install.tar.gz')
+    archive_src = WithProperties('%(builddir)s/clang-r%(got_revision)s-b%(buildnumber)s.tar.gz')
     f.addStep(buildbot.steps.shell.ShellCommand(
               name='upload_artifacts',
               command=['rsync', '-ave', 'ssh', archive_src, 
@@ -122,9 +128,9 @@ def uploadArtifacts(f):
                       ],
               haltOnFailure=True,
               description=['upload build artifacts'],
-              workdir='.',
+              workdir=WithProperties('%(builddir)s'),
               ))
-
+    setProperty(f, 'artifactsURL', WithProperties('http://smooshlab.apple.com/artifacts/%(buildername)s/clang-r%(got_revision)s-b%(buildnumber)s.tar.gz') )
     return f
 
 def regressionTests(f):
@@ -159,9 +165,8 @@ def createPhase1():
 def clangStage1(f,config_options=''):
     # Determine the build directory.
     f = getBuildDir(f)
-    f = setProperty(f, 'compiler_built', 'clang-build')
     # clean out the directory used for the stage 1 compiler
-    #f = cleanCompilerDir(f)
+    f = cleanCompilerDir(f)
     # pull sources
     f = pullllvm(f)
     f = pullClang(f)
@@ -171,6 +176,7 @@ def clangStage1(f,config_options=''):
             command=[
                      '../llvm/configure', '--enable-optimized', '--disable-bindings',
                      '--with-llvmcc=clang', '--without-llvmgcc', '--without-llvmgxx',
+                     WithProperties('--prefix=/'),
                     ],
             haltOnFailure=True,
             description=['configure'],
@@ -183,7 +189,7 @@ def clangStage1(f,config_options=''):
             workdir=WithProperties('%(compiler_built)s')))
     f.addStep(buildbot.steps.shell.ShellCommand(
             name='make install',
-            command=['make', 'install', '-j', WithProperties('%(jobs)s'),
+            command=['make', 'install-clang', '-j', WithProperties('%(jobs)s'),
                      WithProperties('DESTDIR=%(builddir)s/clang-install')],
             haltOnFailure=True,
             description=['make install'],
@@ -195,8 +201,7 @@ def clangHost(config_options):
     f = buildbot.process.factory.BuildFactory()
     # Determine the build directory.
     f = getBuildDir(f)
-    f = setProperty(f, 'compiler_built', 'clang-build')
-    f = setProperty(f, 'use_path', WithProperties('%(builddir)s/clang-install/usr/local/bin'))
+    f = setProperty(f, 'use_path', WithProperties('%(builddir)s/clang-host/bin'))
     # clean out the directory/archives used for the stage 1 compiler
     # clean out the directory used to build compiler
     f = cleanCompilerDir(f)
@@ -217,6 +222,7 @@ def clangHost(config_options):
                      '--with-llvmcc=clang', '--without-llvmgcc', '--without-llvmgxx',
                      WithProperties('CC=%(use_path)s/clang'),
                      WithProperties('CXX=%(use_path)s/clang++'),
+                     WithProperties('--prefix=/'),
                      ],
             haltOnFailure=True,
             description=['configure'],
@@ -232,7 +238,7 @@ def clangHost(config_options):
             workdir=WithProperties('%(compiler_built)s')))
     f.addStep(buildbot.steps.shell.ShellCommand(
             name='make install',
-            command=['make', '-j', WithProperties('%(jobs)s'), 'install-clang',
+            command=['make', 'install-clang', '-j', WithProperties('%(jobs)s'),
                      WithProperties('DESTDIR=%(builddir)s/clang-install')],
             env={'PATH': WithProperties('%(use_path)s:${PATH}')},
             haltOnFailure=True,
@@ -282,15 +288,21 @@ def HostedClang(myname, compiler_type, use_compiler, slaves, *config_options):
              'factory' : clangHost(config_options),
              'slavenames' : slaves,
              'category' : 'clang',
-             'properties' : {'compiler_type': compiler_type, 'use_builder': use_compiler,
+             'properties' : {'compiler_type': compiler_type, 
+                             'use_builder': use_compiler,
+                             'compiler_built': 'clang-build'
                             }}
 
-def NightlyFactory(compiler, options):
+def CreateNightly(options):
     f = buildbot.process.factory.BuildFactory()
+    NightlyFactory(f, options)
+    return f
+
+from zorg.buildbot.commands.NightlyTestCommand import NightlyTestCommand
+def NightlyFactory(f, options, clean=True, test=True, xfails=set()):
     # Determine the build directory.
     f = getBuildDir(f)
-    f = setProperty(f, 'use_builder', compiler)
-    f = setProperty(f, 'use_path', WithProperties('%(builddir)s/clang-install/usr/local/bin'))
+    f = setProperty(f, 'use_path', WithProperties('%(builddir)s/clang-host/bin'))
     #clean out the directory/archives prior to extracting compiler
     f = cleanCompilerDir(f) 
     #Download compiler artifacts to be used for this build
@@ -303,7 +315,7 @@ def NightlyFactory(compiler, options):
              description=['sanity test'],
              env={'PATH': WithProperties('%(use_path)s:${PATH}')},
              ))
-    # pull test-suite
+    # pull source code
     f = pullllvm(f)
     f = pullClang(f)
     f = pulltest_suite(f)
@@ -329,10 +341,19 @@ def NightlyFactory(compiler, options):
             haltOnFailure=True,
             description=['make'],
             workdir='llvm.obj'))
-    # run tests
+    # Clean up.
+    if clean:
+        f.addStep(buildbot.steps.shell.ShellCommand(
+                               name="rm.test-suite",
+                               command=["rm", "-rfv", "test-suite-build"],
+                               haltOnFailure=True,
+                               description="rm test-suite build dir",
+                               workdir=WithProperties('%(builddir)s'),
+                              ))
+    # Configure.
     f.addStep(buildbot.steps.shell.ShellCommand(
             name='configure_tests',
-            command=['./configure',
+            command=['../test-suite/configure',
                      WithProperties('CC=%(use_path)s/clang'),
                      WithProperties('CXX=%(use_path)s/clang++'),
                      'CFLAGS='+options,
@@ -343,22 +364,27 @@ def NightlyFactory(compiler, options):
             haltOnFailure=True,
             description=['configure tests'],
             env={'PATH': WithProperties('%(use_path)s:${PATH}')},
-            workdir='test-suite'))
-    f.addStep(buildbot.steps.shell.ShellCommand(
-            name='run_nightly_tests',
+            workdir='test-suite-build',
+            ))
+    # Build and test.
+    f.addStep(NightlyTestCommand(
+            name='run_fast_nightly_tests',
             command=['make', WithProperties('-j%(jobs)s'), 'ENABLE_PARALLEL_REPORT=1',
                      'DISABLE_CBE=1', 'DISABLE_JIT=1', 'TEST=nightly', 'report'
                  ],
             env={'PATH': WithProperties('%(use_path)s:${PATH}')},
             haltOnFailure=True,
-            description=['run tests'],
-            workdir='test-suite'))
+            description=["run", "test-suite"],
+            workdir='test-suite-build',
+            logfiles={ 'report' : 'report.nightly.txt' },
+            xfails=xfails
+            ))
     return f
 
 def Nightly(compiler, slaves, options=''):
     return { 'name' : 'nightly_'+ compiler + options,
              'builddir' : 'build.nightly.'+ compiler + options,
-             'factory' : NightlyFactory(compiler, options),
+             'factory' : CreateNightly(options),
              'slavenames' : slaves,
              'category' : 'tests',
              'properties' : {'use_builder': compiler }}
@@ -369,7 +395,8 @@ def stage1Clang(compiler, compiler_type, slave):
              'factory' : createPhase1(),
              'slavename' : slave,
              'category' : 'clang',
-             'properties' : {'compiler_type': compiler_type 
+             'properties' : {'compiler_type': compiler_type,
+                             'compiler_built': 'clang-build'
                             }}
 
 def HostStage3Clang(config_options):
@@ -377,8 +404,7 @@ def HostStage3Clang(config_options):
     f = buildbot.process.factory.BuildFactory()
     # Determine the build directory.
     f = getBuildDir(f)
-    f = setProperty(f, 'compiler_built', 'clang-build')
-    f = setProperty(f, 'use_path', WithProperties('%(builddir)s/clang-install/usr/local/bin'))
+    f = setProperty(f, 'use_path', WithProperties('%(builddir)s/clang-host/bin'))
     # clean out the directory/archives used for the stage 2 compiler
     # clean out the directory used to build compiler
     f = cleanCompilerDir(f)
@@ -396,6 +422,7 @@ def HostStage3Clang(config_options):
                      config_options,
                      WithProperties('CC=%(use_path)s/clang'),
                      WithProperties('CXX=%(use_path)s/clang++'),
+                     WithProperties('--prefix=/'),
                      ],
             haltOnFailure=True,
             description=['configure'],
@@ -411,7 +438,7 @@ def HostStage3Clang(config_options):
             workdir=WithProperties('%(compiler_built)s')))
     f.addStep(buildbot.steps.shell.ShellCommand(
             name='make install',
-            command=['make', '-j', WithProperties('%(jobs)s'), 'install-clang',
+            command=['make', 'install-clang', '-j', WithProperties('%(jobs)s'),
                      WithProperties('DESTDIR=%(builddir)s/clang-install')],
             env={'PATH': WithProperties('%(use_path)s:${PATH}')},
             haltOnFailure=True,
@@ -420,11 +447,7 @@ def HostStage3Clang(config_options):
     # save artifacts of thids build for use by other builders
     f = uploadArtifacts(f)
     f = regressionTests(f)
-    f.addStep(Trigger(schedulerNames=['stage3Nightly'],
-                       waitForFinish=True,
-                       updateSourceStamp=True,
-                       set_properties={'revision': WithProperties('%(revision)s'), 'got_revision': WithProperties('%(revision)s')}
-                       ))
+    NightlyFactory(f, '')
     return f
 
 def stage3Clang(use_compiler, slaves, config_options=''):
@@ -433,7 +456,9 @@ def stage3Clang(use_compiler, slaves, config_options=''):
              'factory' : HostStage3Clang(config_options),
              'slavenames' : slaves,
              'category' : 'clang',
-             'properties' : { 'use_builder': use_compiler,
+             'properties' : {'use_builder': use_compiler,
+                             'compiler_type': 'Release+Asserts',
+                             'compiler_built': 'clang-build'
                             }}
 
 def gccTestSuite(use_compiler, slaves, config_options=''):
@@ -468,7 +493,7 @@ def gccRunSuite(config_options):
     f = buildbot.process.factory.BuildFactory()
     # Determine the build directory.
     getBuildDir(f)
-    setProperty(f, 'use_path', WithProperties('%(builddir)s/clang-install/usr/local/bin'))
+    setProperty(f, 'use_path', WithProperties('%(builddir)s/clang-host/bin'))
     cleanCompilerDir(f)
     # pull test-suite
     pullclang_tests(f)
@@ -490,7 +515,7 @@ def runlibcxx(config_options):
     f = buildbot.process.factory.BuildFactory()
     # Determine the build directory.
     getBuildDir(f)
-    setProperty(f, 'use_path', WithProperties('%(builddir)s/clang-install/usr/local/bin'))
+    setProperty(f, 'use_path', WithProperties('%(builddir)s/clang-host/bin'))
     cleanCompilerDir(f)
     # pull test-suite
     pulllibcxx(f)
@@ -517,7 +542,7 @@ def runboost(config_options):
     f = buildbot.process.factory.BuildFactory()
     # Determine the build directory.
     getBuildDir(f)
-    f = setProperty(f, 'use_path', WithProperties('%(builddir)s/clang-install/usr/local/bin'))
+    f = setProperty(f, 'use_path', WithProperties('%(builddir)s/clang-host/bin'))
     cleanCompilerDir(f)
     # pull test-suite
     pullboostrunner(f)
@@ -534,7 +559,7 @@ def runboost(config_options):
                        ';', '>', 'user-config.jam'],
               haltOnFailure=True,
               description=['create user-config.jam'],
-              workdir='.',
+              workdir=WithProperties('%(builddir)s'),
               ))
     #--bjam-options=target-os=windows --bjam-options=-l300 --bjam-options=--debug-level=3 --bjam-options=--user-config=%MYJAMFILE% --have-source --skip-script-download --ftp=ftp://boost:4peiV8Xwxfv9@ftp.siliconman.net >runner.log
     f.addStep(buildbot.steps.shell.ShellCommand(
@@ -546,7 +571,7 @@ def runboost(config_options):
                        WithProperties('--bjam-options=-j%(jobs)s'),'--user=""',],
               haltOnFailure=True,
               description=['boost regression harness'],
-              workdir='.',
+              workdir=WithProperties('%(builddir)s'),
               timeout=14400
               ))
     return f
@@ -558,11 +583,9 @@ def get_builders(all_slaves):
     typeR  = 'Release'
     typeRA = 'Release+Asserts'
     phase1_slave = 'llvmlab.local'
-    snow_leopard_slaves = all_slaves
     phaseRunners = [phase1_slave]
-    reserved_phase3 = 'lab-mini-04.local'
-    phase2_slaves = filter(lambda x:x not in [phase1_slave, reserved_phase3], snow_leopard_slaves)
-    phase3_slaves = phase2_slaves + [reserved_phase3]
+    phase3_slaves = ['lab-mini-04.local']
+    #phase2_slaves = filter(lambda x:x not in [phase1_slave], all_slaves)
     return [
             #Build to announce good build and prepare potential release candidate
             { 'name' : 'Validated Build',
@@ -578,9 +601,9 @@ def get_builders(all_slaves):
             # phase 1 build
             stage1Clang(phase1, typeRA, phase1_slave),
             #phase 2 Builds
-            HostedClang ('clang-x86_64-osx10-DA', typeDA, phase1, phase2_slaves),
-            HostedClang (final_reference, typeRA, phase1, phase2_slaves, '--enable-optimized'),
-            Nightly(phase1, phase2_slaves),
+            HostedClang ('clang-x86_64-osx10-DA', typeDA, phase1, ['lab-mini-01.local']),
+            HostedClang (final_reference, typeRA, phase1, ['lab-mini-02.local'], '--enable-optimized'),
+            Nightly(phase1, ['lab-mini-03.local']),
             #phase3 builds
             HostedClang ('clang-i386-osx10-RA', typeRA, phase1, phase3_slaves, '--enable-optimized', '--target=i386'),
             Nightly('clang-x86_64-osx10-DA', phase3_slaves),
@@ -595,11 +618,10 @@ def get_builders(all_slaves):
             Nightly('clang-i386-osx10-RA', phase3_slaves),
             stage3Clang(final_reference, phase3_slaves),
             gccTestSuite(final_reference, phase3_slaves),
-            Nightly(final_reference+ '-stage3', phase3_slaves, '-g'),
             libcxx(final_reference, phase3_slaves),
             boost('trunk', final_reference, phase3_slaves),
-#            boost('branches/release', final_reference, phase2_slaves),
-#            boost('tags/release/Boost_1_44_0', final_reference, phase2_slaves),
+#            boost('branches/release', final_reference, phase3_slaves),
+#            boost('tags/release/Boost_1_44_0', final_reference, phase3_slaves),
             #A Placeholder builder is required for triggers which haven't had builders
             #configured yet, otherwise build will hang
 #             { 'name' : 'Placeholder',

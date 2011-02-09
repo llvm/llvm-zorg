@@ -17,5 +17,14 @@ def get_status_targets(standard_builders):
             extraRecipients = ['daniel_dunbar@apple.com','david_dean@apple.com'],
             sendToInterestedUsers=False,
             mode = 'problem',
-            relayhost="mail-in2.apple.com",),
-        ]
+            relayhost="mail-in2.apple.com",
+            categories=['clang','tests'],
+            ),
+        buildbot.status.mail.MailNotifier(
+            fromaddr = 'david_dean@apple.com',
+            extraRecipients = ['david_dean@apple.com'],
+            sendToInterestedUsers=False,
+            mode = 'change',
+            relayhost="mail-in2.apple.com",
+            categories=['status'],
+            ),]

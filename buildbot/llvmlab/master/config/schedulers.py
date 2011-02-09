@@ -53,12 +53,7 @@ def get_schedulers():
     LastOne = triggerable.Triggerable(name='GoodBuild',
                          builderNames=['Validated Build',],
                          properties = {'revision':WithProperties('%(got_revision)s')})
-
-    stage3Nightly = triggerable.Triggerable(name='stage3Nightly',
-                         builderNames=['nightly_clang-x86_64-osx10-RA-stage3-g',],
-                         properties = {'revision':WithProperties('%(got_revision)s')})
-    
     
     return [vcScheduler, startphase1, gate1, startphase2, gate2, 
-                       startphase3, gate3, startphase4, LastOne, stage3Nightly] 
+                       startphase3, gate3, startphase4, LastOne, ] 
 
