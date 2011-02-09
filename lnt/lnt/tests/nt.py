@@ -296,7 +296,7 @@ def run_test(nick_prefix, opts, iteration):
 
     # If running without LLVM, make sure tools are up to date.
     if opts.without_llvm:
-        print '%s: building test-suite tools' % (timestamp(),)
+        print >>sys.stderr, '%s: building test-suite tools' % (timestamp(),)
         args = ['make', 'tools']
         build_tools_log_path = os.path.join(basedir, 'build-tools.log')
         build_tools_log = open(build_tools_log_path, 'w')
