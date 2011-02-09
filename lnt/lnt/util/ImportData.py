@@ -47,7 +47,7 @@ def import_and_report(config, db_name, db, file, format, commit=False,
 
     # Find the email address for this machine's results.
     toAddress = email_config = None
-    if not disable_email:
+    if config and not disable_email:
         email_config = config.databases[db_name].email_config
         if email_config.enabled:
             # Find the machine name.
@@ -75,8 +75,11 @@ def import_and_report(config, db_name, db, file, format, commit=False,
 
     reportStartTime = time.time()
     result['report_to_address'] = toAddress
-    NTEmailReport.emailReport(result, db, run,
-                              "%s/db_%s/" % (config.zorgURL, db_name),
+    if config:
+        report_url = "%s/db_%s/" % (config.zorgURL, db_name)
+    else:
+        report_url = 'localhost'
+    NTEmailReport.emailReport(result, db, run, report_url,
                               email_config, toAddress, success, commit)
 
     result['added_machines'] = db.getNumMachines() - numMachines
