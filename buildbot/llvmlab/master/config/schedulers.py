@@ -45,7 +45,6 @@ def get_schedulers():
                                        'clang-x86_64-osx10-RA-stage3',
                                        'nightly_clang-i386-osx10-RA',
                                        'gccTestSuite-clang-x86_64-osx10-RA',
-                                       'libcxx-clang-x86_64-osx10-RA',
                                        'boost-trunk-clang-x86_64-osx10-RA',
                                       ],
                          properties = {'revision':WithProperties('%(got_revision)s')})
