@@ -132,6 +132,24 @@ def action_runtest(name, args):
         from lnt.util import ServerUtil
         io = StringIO.StringIO(report.render(indent=None))
         ServerUtil.submitFile(opts.submit_url, io, True, opts.verbose)
+    else:
+        # Simulate a submission to retrieve the results report.
+        import lnt.viewer
+        from lnt.util import ImportData
+        import tempfile
+
+        # Save the report to a temporary file.
+        tmp = tempfile.NamedTemporaryFile(suffix='.json')
+        print >>tmp, report.render()
+        tmp.flush()
+
+        # Construct a temporary database and import the result.
+        db = lnt.viewer.PerfDB.PerfDB("sqlite:///:memory:")
+        result = ImportData.import_and_report(
+            None, None, db, tmp.name, 'json', commit = True)
+        ImportData.print_report_result(result, sys.stdout, opts.verbose)
+
+        tmp.close()
 
 def action_showtests(name, args):
     """show the available built-in tests"""
