@@ -19,7 +19,10 @@ def timestamp():
     return datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
 
 def run_test(nick_prefix, opts, iteration):
-    llvm_source_version = get_source_version(opts.llvm_src_root)
+    if opts.llvm_src_root:
+        llvm_source_version = get_source_version(opts.llvm_src_root)
+    else:
+        llvm_source_version = None
 
     # Compute TARGET_FLAGS.
     target_flags = []
@@ -256,11 +259,14 @@ def run_test(nick_prefix, opts, iteration):
         configure_log = open(configure_log_path, 'w')
 
         args = [os.path.realpath(os.path.join(opts.test_suite_root,
-                                              'configure')),
-                '--with-llvmsrc=%s' % opts.llvm_src_root,
-                '--with-llvmobj=%s' % opts.llvm_obj_root,
-                '--with-externals=%s' % os.path.realpath(
-                  opts.test_suite_externals)]
+                                              'configure'))]
+        if opts.without_llvm:
+            args.extend(['--without-llvmsrc', '--without-llvmobj'])
+        else:
+            args.extend(['--with-llvmsrc=%s' % opts.llvm_src_root,
+                         '--with-llvmobj=%s' % opts.llvm_obj_root])
+        args.append('--with-externals=%s' % os.path.realpath(
+                opts.test_suite_externals))
         print >>configure_log, '%s: running: %s' % (timestamp(),
                                                     ' '.join('"%s"' % a
                                                              for a in args))
@@ -288,6 +294,20 @@ def run_test(nick_prefix, opts, iteration):
                 shutil.copyfile(os.path.join(src_path, 'Makefile'),
                                 os.path.join(obj_path, 'Makefile'))
 
+    # If running without LLVM, make sure tools are up to date.
+    if opts.without_llvm:
+        print '%s: building test-suite tools' % (timestamp(),)
+        args = ['make', 'tools']
+        build_tools_log_path = os.path.join(basedir, 'build-tools.log')
+        build_tools_log = open(build_tools_log_path, 'w')
+        p = subprocess.Popen(args=args, stdin=None, stdout=build_tools_log,
+                             stderr=subprocess.STDOUT, cwd=basedir,
+                             env=os.environ)
+        res = p.wait()
+        build_tools_log.close()
+        if res != 0:
+            fatal('unable to build tools, aborting!')
+        
     # Always blow away any existing report.
     report_path = os.path.join(basedir)
     if opts.only_test is not None:
@@ -481,7 +501,8 @@ def run_test(nick_prefix, opts, iteration):
 
     # FIXME: Hack, use better method of getting versions. Ideally, from binaries
     # so we are more likely to be accurate.
-    run_info['llvm_revision'] = llvm_source_version
+    if llvm_source_version is not None:
+        run_info['llvm_revision'] = llvm_source_version
     run_info['test_suite_revision'] = get_source_version(opts.test_suite_root)
     run_info.update(public_make_variables)
 
@@ -593,6 +614,9 @@ class NTTest(builtintest.BuiltinTest):
         parser.add_option_group(group)
 
         group = OptionGroup(parser, "Inputs")
+        group.add_option("", "--without-llvm", dest="without_llvm",
+                         help="Don't use any LLVM source or build products",
+                         action="store_true", default=False)
         group.add_option("", "--llvm-src", dest="llvm_src_root",
                          help="Path to the LLVM source tree",
                          type=str, default=None, metavar="PATH")
@@ -756,6 +780,9 @@ class NTTest(builtintest.BuiltinTest):
             if opts.cxx_reference is not None:
                 parser.error('--cxx-reference is unused with --simple')
         else:
+            if opts.without_llvm:
+                parser.error('--simple is required with --without-llvm')
+
             # Attempt to infer cc_reference and cxx_reference if not given.
             if opts.cc_reference is None:
                 opts.cc_reference = which('gcc') or which('cc')
@@ -783,10 +810,16 @@ class NTTest(builtintest.BuiltinTest):
             warning("invalid cxx_under_test, falling back to cc_under_test")
             opts.cxx_under_test = opts.cc_under_test
 
-        if opts.llvm_src_root is None:
-            parser.error('--llvm-src is required')
-        if opts.llvm_obj_root is None:
-            parser.error('--llvm-obj is required')
+        if opts.without_llvm:
+            if opts.llvm_src_root is not None:
+                parser.error('--llvm-src is not allowed with --without-llvm')
+            if opts.llvm_obj_root is not None:
+                parser.error('--llvm-obj is not allowed with --without-llvm')
+        else:
+            if opts.llvm_src_root is None:
+                parser.error('--llvm-src is required')
+            if opts.llvm_obj_root is None:
+                parser.error('--llvm-obj is required')
         if opts.test_suite_root is None:
             parser.error('--test-suite is required')
 
