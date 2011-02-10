@@ -321,14 +321,22 @@ def NightlyFactory(f, options, clean=True, test=True, xfails=set()):
             description=['configure tests'],
             env={'PATH': WithProperties('%(use_path)s:${PATH}')},
             workdir='test-suite-build'))
+    # You need to make the tools target.
+    f.addStep(buildbot.steps.shell.ShellCommand(
+            name='make.tools',
+            command=['make', 'tools', WithProperties('-j%(jobs)s')],
+            env={'PATH': WithProperties('%(use_path)s:${PATH}')},
+            haltOnFailure=True,
+            description=['Make', 'tools'],
+            workdir='test-suite-build'))
     # Build and test.
     f.addStep(NightlyTestCommand(
             name='run.fast.nightly.tests',
             command=['make', WithProperties('-j%(jobs)s'), 'ENABLE_PARALLEL_REPORT=1',
-                     'DISABLE_CBE=1', 'DISABLE_JIT=1', 'TEST=nightly', 'report'],
+                     'DISABLE_CBE=1', 'DISABLE_JIT=1', 'TEST=simple', 'report'],
             env={'PATH': WithProperties('%(use_path)s:${PATH}')},
             haltOnFailure=True,
-            description=["run", "test-suite"],
+            description=['run', 'test-suite'],
             workdir='test-suite-build',
             logfiles={ 'report' : 'report.nightly.txt'},
             xfails=xfails))
