@@ -23,6 +23,10 @@ class InformativeMailNotifier(mail.MailNotifier):
         self.num_lines = num_lines
         self.only_failure_logs = only_failure_logs
         
+        # Adapt to work with 0.8.3...
+        if not hasattr(self, 'defaultMessage'):
+            self.defaultMessage = mail.defaultMessage
+
     def informative_formatter(self, mode, name, build, results, status):
         # Get the standard message.
         data = self.defaultMessage(mode, name, build, results, status)['body']
