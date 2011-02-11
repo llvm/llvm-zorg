@@ -12,7 +12,7 @@ from zorg.buildbot.commands.ClangTestCommand import ClangTestCommand
 from zorg.buildbot.commands.BatchFileDownload import BatchFileDownload
 from zorg.buildbot.commands import DejaGNUCommand
 
-from Util import getConfigArgs
+from zorg.buildbot.builders.Util import getConfigArgs
 
 def getClangBuildFactory(triple=None, clean=True, test=True, package_dst=None,
                          run_cxx_tests=False, examples=False, valgrind=False,
@@ -346,16 +346,17 @@ def getClangMSVCBuildFactory(update=True, clean=True, vcDrive='c', jobs=1, cmake
 
     return f
 
-def addClangTests(f, ignores={}):
+def addClangTests(f, ignores={}, install_prefix="%(builddir)s/llvm.install",
+                  languages = ('gcc', 'g++', 'objc', 'obj-c++')):
     make_vars = [WithProperties(
-            'CC_UNDER_TEST=%(builddir)s/llvm.install/bin/clang'),
+            'CC_UNDER_TEST=%s/bin/clang' % install_prefix),
                  WithProperties(
-            'CXX_UNDER_TEST=%(builddir)s/llvm.install/bin/clang++')]
+            'CXX_UNDER_TEST=%s/bin/clang++' % install_prefix)]
     f.addStep(SVN(name='svn-clang-tests', mode='update',
                   baseURL='http://llvm.org/svn/llvm-project/clang-tests/',
                   defaultBranch='trunk', workdir='clang-tests'))
     gcc_dg_ignores = ignores.get('gcc-4_2-testsuite', {})
-    for lang in ('gcc', 'g++', 'objc', 'obj-c++'):
+    for lang in languages:
         f.addStep(DejaGNUCommand.DejaGNUCommand(
             name='test-gcc-4_2-testsuite-%s' % lang,
             command=["make", "-k", "check-%s" % lang] + make_vars,
@@ -363,3 +364,27 @@ def addClangTests(f, ignores={}):
             workdir='clang-tests/gcc-4_2-testsuite',
             logfiles={ 'dg.sum' : 'obj/%s/%s.sum' % (lang, lang) },
             ignore=gcc_dg_ignores.get(lang, [])))
+
+def getClangTestsIgnoresFromPath(path, key):
+    def readList(path):
+        if not os.path.exists(path):
+            return []
+
+        f = open(path)
+        lines = [ln.strip() for ln in f]
+        f.close()
+        return lines
+
+    ignores = {}
+
+    gcc_dg_ignores = {}
+    for lang in ('gcc', 'g++', 'objc', 'obj-c++'):
+        lang_path = os.path.join(path, 'gcc-4_2-testsuite', 'expected_results',
+                                 key, lang)
+        gcc_dg_ignores[lang] = (
+            readList(os.path.join(lang_path, 'FAIL.txt')) +
+            readList(os.path.join(lang_path, 'UNRESOLVED.txt')) +
+            readList(os.path.join(lang_path, 'XPASS.txt')))
+    ignores['gcc-4_2-testsuite' ] = gcc_dg_ignores
+
+    return ignores
