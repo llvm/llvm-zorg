@@ -86,10 +86,11 @@ class StatusMonitor(threading.Thread):
                     # Get the build information.
                     res = self.status.statusclient.get_json_result((
                             'builders', name, 'builds', str(build.number)))
-                    build.result = res['results']
-                    build.source_stamp = res['sourceStamp']['revision']
-                    build.start_time = res['times'][0]
-                    build.end_time = res['times'][1]
+                    if res:
+                        build.result = res['results']
+                        build.source_stamp = res['sourceStamp']['revision']
+                        build.start_time = res['times'][0]
+                        build.end_time = res['times'][1]
                 else:
                     # FIXME: Use flask logging APIs.
                     print >>sys.stderr,"warning: unknown event '%r'" % (event,)

@@ -88,7 +88,13 @@ class StatusClient(object):
             path += '?' + urllib2.urlencode(arguments)
 
         url = self.master_url + path
-        request = urllib2.urlopen(url)
+        try:
+            request = urllib2.urlopen(url)
+        except:
+            # FIXME: Logging.
+            import traceback
+            traceback.print_exc()
+            return None
         data = request.read()
         request.close()
 
@@ -116,6 +122,9 @@ class StatusClient(object):
         # FIXME: BuildBot should provide a more efficient query for this.
         #yield ('poll_builders',)
         res = self.get_json_result(('builders',))
+        if not res:
+            return
+
         builder_names = set(res.keys())
         current_builders = set(self.builders)
 
@@ -134,6 +143,8 @@ class StatusClient(object):
 
         # Get the latest build number.
         res = self.get_json_result(('builders', builder.name, 'builds', '-1'))
+        if not res:
+            return
         number = res['number']
 
         # Check if we need to start or reset the state.
@@ -157,6 +168,8 @@ class StatusClient(object):
         for id in builds:
             res = self.get_json_result(('builders', builder.name, 'builds',
                                         str(id)))
+            if not res:
+                continue
             times = res.get('times')
 
             # In rare circumstances, we could have accessed an invalid build,
