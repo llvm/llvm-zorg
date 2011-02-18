@@ -8,6 +8,9 @@ from flask import url_for
 from flask import current_app
 frontend = flask.Module(__name__)
 
+###
+# Top-level Information
+
 @frontend.route('/')
 def index():
     return render_template("index.html")
@@ -16,9 +19,18 @@ def index():
 def favicon_ico():
     return redirect(url_for('.static', filename='favicon.ico'))
 
+@frontend.route('/admin')
+def admin():
+    return render_template("admin.html")
+
+###
+# Machine Management
 @frontend.route('/machines')
 def machines():
     return render_template("machines.html")
+
+###
+# User Management
 
 @frontend.route('/users')
 def users():
@@ -31,6 +43,9 @@ def user(username):
         abort(404)
 
     return render_template("user.html", user=user)
+
+###
+# Session Management
 
 @frontend.route('/login', methods=['GET', 'POST'])
 def login():
