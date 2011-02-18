@@ -7,47 +7,51 @@ from flask import redirect, render_template, request, session, url_for
 import llvmlab.data
 import llvmlab.user
 
-def load_llvmlab_data(app):
-    """load_llvmlab_data(app) -> data.Data
+class LLVMLabApp(flask.Flask):
+    def __init__(self, name):
+        super(LLVMLabApp, self).__init__(name)
 
-    Load the LLVM-Lab data for the given application.
-    """
+    def load_config(self):
+        # Load the configuration file.
+        app.config.from_envvar("LLVMLAB_CONFIG")
 
-    data_path = app.config["DATA_PATH"]
-    data_file = open(data_path, "rb")
-    data_object = flask.json.load(data_file)
-    data_file.close()
+        # Set the application secret key.
+        app.secret_key = app.config["SECRET_KEY"]
 
-    # Create the internal Data object.
-    data = llvmlab.data.Data.fromdata(data_object)
+    def load_data(self):
+        data_path = app.config["DATA_PATH"]
+        data_file = open(data_path, "rb")
+        data_object = flask.json.load(data_file)
+        data_file.close()
 
-    # Set the admin pseudo-user.
-    data.set_admin_user(llvmlab.user.User(
-            id = app.config['ADMIN_LOGIN'],
-            passhash = app.config['ADMIN_PASSHASH'],
-            name = app.config['ADMIN_NAME'],
-            email = app.config['ADMIN_EMAIL']))
+        # Create the internal Data object.
+        data = llvmlab.data.Data.fromdata(data_object)
 
-    return data
+        # Set the admin pseudo-user.
+        data.set_admin_user(llvmlab.user.User(
+                id = app.config['ADMIN_LOGIN'],
+                passhash = app.config['ADMIN_PASSHASH'],
+                name = app.config['ADMIN_NAME'],
+                email = app.config['ADMIN_EMAIL']))
 
-def authenticate_login(username, password):
-    passhash = hashlib.sha256(password + app.config["SECRET_KEY"]).hexdigest()
-    user = app.config.data.users.get(username)
-    return user and passhash == user.passhash
+        self.config.data = data
+
+    def authenticate_login(self, username, password):
+        passhash = hashlib.sha256(
+            password + app.config["SECRET_KEY"]).hexdigest()
+        user = app.config.data.users.get(username)
+        return user and passhash == user.passhash
 
 ###
 
 # Construct the Flask application.
-app = flask.Flask(__name__)
+app = LLVMLabApp(__name__)
 
-# Load the configuration file.
-app.config.from_envvar("LLVMLAB_CONFIG")
-
-# Set the application secret key.
-app.secret_key = app.config["SECRET_KEY"]
+# Load the application configuration.
+app.load_config()
 
 # Load the LLVM-Lab database.
-app.config.data = load_llvmlab_data(app)
+app.load_data()
 
 ###
 # Routing
@@ -72,7 +76,7 @@ def login():
 
     # Authenticate the user.
     username = request.form['username']
-    if not authenticate_login(username, request.form['password']):
+    if not app.authenticate_login(username, request.form['password']):
         return render_template("login.html",
                                error="Invalid login")
 
