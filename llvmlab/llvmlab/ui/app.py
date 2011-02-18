@@ -56,7 +56,7 @@ class App(flask.Flask):
         data = llvmlab.data.Data(users = [], machines = [])
 
         # Construct an empty status file.
-        data = llvmlab.ci.status.Status({})
+        data = llvmlab.ci.status.Status(None, {})
 
         return App.create_standalone(config, data, status)
 

@@ -50,6 +50,9 @@ def action_create(name, args):
     group.add_option("", "--admin-email", dest="admin_email",
                       help="administrator email [%default]",
                      default='admin@example.com')
+    group.add_option("", "--master-url", dest="master_url",
+                      help="URL for the buildbot master [%default]",
+                     default='http://lab.llvm.org:8013')
 
     group.add_option("", "--debug-server", dest="debug_server",
                       help="run server in debug mode [%default]",
@@ -107,7 +110,7 @@ def action_create(name, args):
 
     # Construct the initial database and status files.
     data = llvmlab.data.Data(users = [], machines = [])
-    status = llvmlab.ci.status.Status({})
+    status = llvmlab.ci.status.Status(opts.master_url, {})
 
     # Construct an app instance, and save the data.
     instance = llvmlab.ui.app.App.create_standalone(data = data,

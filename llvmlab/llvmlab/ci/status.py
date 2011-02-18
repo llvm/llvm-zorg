@@ -3,6 +3,7 @@ Status information for the CI infrastructure, for use by the dashboard.
 """
 
 from llvmlab import util
+import buildbot.statusclient
 
 class BuildStatus(util.simple_repr_mixin):
     @staticmethod
@@ -39,15 +40,26 @@ class Status(util.simple_repr_mixin):
         if version != 0:
             raise ValueError, "Unknown version"
 
-        return Status(dict((name, [BuildStatus.fromdata(b)
+        sc = data.get('statusclient')
+        if sc:
+            sc = buildbot.statusclient.StatusClient.fromdata(sc)
+        return Status(data['master_url'],
+                      dict((name, [BuildStatus.fromdata(b)
                                    for b in builds])
-                           for name,builds in data['builders']))
+                           for name,builds in data['builders']),
+                      sc)
 
     def todata(self):
         return { 'version' : 0,
+                 'master_url' : self.master_url,
                  'builders' : [(name, [b.todata()
                                        for b in builds])
-                               for name,builds in self.builders.items()] }
+                               for name,builds in self.builders.items()],
+                 'statusclient' : self.statusclient.todata() }
 
-    def __init__(self, builders):
+    def __init__(self, master_url, builders, statusclient = None):
+        self.master_url = master_url
         self.builders = builders
+        if statusclient is None and master_url:
+            statusclient = buildbot.statusclient.StatusClient(master_url)
+        self.statusclient = statusclient
