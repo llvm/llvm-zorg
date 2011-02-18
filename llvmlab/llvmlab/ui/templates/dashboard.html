@@ -15,7 +15,7 @@ The most recent released revision is <b>r{{
     final_phase.passing.source_stamp }}</b>
 validated at:
 <i>{{ final_phase.passing.end_time }}</i>
-(available <a href="#latest_release">below</a>).
+(available <a href="{{ url_for('latest_release') }}">here</a>).
 {% else %}
 <i><b>No release is currently available!</b></i>
 {% endif %}
@@ -140,37 +140,6 @@ validated at:
 
   {% endfor %}
 </tr>
-</table>
-
-{# The builds archive table... #}
-<a name="latest_release">
-  <h2>Latest Release</h2>
-</a>
-
-<p>
-The latest released sources are available here: <a href="XXX">llvm-rNNNNNN</a>.
-
-<p>
-Binary packages of the latest release:
-<table width="100%">
-  <thead>
-    <tr>
-      <th>Product</th>
-      <th>OS</th>
-      <th>Arch</th>
-      <th width="80%" align="left">Archive</th>
-    </tr>
-  </thead>
-  
-  {% for build in ci_config.published_builds %}
-  <tr>
-    <td>{{ build.product }}</td>
-    <td>{{ build.os }}</td>
-    <td>{{ build.arch }}</td>
-    <td><a href="/archives/{{ build.archive_name }}">{{
-        build.archive_name }}</a></td>
-  </tr>
-  {% endfor %}
 </table>
 
 <h1>Example Phase Popups</h1>

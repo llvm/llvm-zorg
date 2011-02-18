@@ -76,6 +76,10 @@ g_config = config.Config(phases, builders, published_builds,
 def dashboard():
     return render_template("dashboard.html", ci_config=g_config)
 
+@ci.route('/latest_release')
+def latest_release():
+    return render_template("latest_release.html", ci_config=g_config)
+
 @ci.route('/monitor')
 def buildbot_monitor():
     return render_template("buildbot_monitor.html",

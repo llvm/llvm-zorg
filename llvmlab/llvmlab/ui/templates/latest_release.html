@@ -1,0 +1,38 @@
+{% extends "layout.html" %}
+{% block title %}latest release{% endblock %}
+{% block body %}
+
+{# The builds archive table... #}
+<a name="latest_release">
+  <h2>Latest Release</h2>
+</a>
+
+<b>FIXME: THIS PAGE IS JUST A PLACEHOLDER, IT IS NOT LIVE!</b>
+
+<p>
+The latest released sources are available here: <a href="XXX">llvm-rNNNNNN</a>.
+
+<p>
+Binary packages of the latest release:
+<table width="100%">
+  <thead>
+    <tr>
+      <th>Product</th>
+      <th>OS</th>
+      <th>Arch</th>
+      <th width="80%" align="left">Archive</th>
+    </tr>
+  </thead>
+  
+  {% for build in ci_config.published_builds %}
+  <tr>
+    <td>{{ build.product }}</td>
+    <td>{{ build.os }}</td>
+    <td>{{ build.arch }}</td>
+    <td><a href="/archives/{{ build.archive_name }}">{{
+        build.archive_name }}</a></td>
+  </tr>
+  {% endfor %}
+</table>
+
+{% endblock %}
