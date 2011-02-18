@@ -23,8 +23,8 @@ class Data(util.simple_repr_mixin):
                  'users' : [item.todata()
                             for item in self.users.values()
                             if item is not self.admin_user],
-                 'machine' : [item.todata()
-                              for item in self.machines.values()] }
+                 'machines' : [item.todata()
+                               for item in self.machines.values()] }
 
     def __init__(self, users, machines):
         self.users = dict((item.id, item) for item in users)
@@ -38,4 +38,3 @@ class Data(util.simple_repr_mixin):
 
         self.admin_user = user
         self.users[user.id] = user
-
