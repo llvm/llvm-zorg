@@ -14,17 +14,21 @@ class BuilderInfo(object):
         if version != 0:
             raise ValueError, "Unknown version"
 
-        return BuilderInfo(data['name'], set(data['builds']), data['last_poll'])
+        return BuilderInfo(data['name'], data['last_build_number'],
+                           set(data['active_builds']), data['last_poll'])
 
     def todata(self):
         return { 'version' : 0,
                  'name' : self.name,
-                 'builds' : list(self.builds),
+                 'last_build_number' : self.last_build_number,
+                 'active_builds' : list(self.active_builds),
                  'last_poll' : self.last_poll }
 
-    def __init__(self, name, builds, last_poll):
+    def __init__(self, name, last_build_number = None,
+                 active_builds = set(),  last_poll = -1):
         self.name = name
-        self.builds = builds
+        self.last_build_number = last_build_number
+        self.active_builds = active_builds
         self.last_poll = last_poll
 
 class StatusClient(object):
@@ -110,14 +114,14 @@ class StatusClient(object):
         # Pull the builder names.
         #
         # FIXME: BuildBot should provide a more efficient query for this.
-        yield ('poll_builders',)
+        #yield ('poll_builders',)
         res = self.get_json_result(('builders',))
         builder_names = set(res.keys())
         current_builders = set(self.builders)
 
         for name in builder_names - current_builders:
             yield ('added_builder', name)
-            self.builders[name] = BuilderInfo(name, set(), -1)
+            self.builders[name] = BuilderInfo(name)
         for name in current_builders - builder_names:
             yield ('removed_builder', name)
             self.builders.remove(name)
@@ -126,16 +130,45 @@ class StatusClient(object):
 
     def pull_builder(self, builder):
         # Pull the builder data.
-        yield ('poll_builder', builder.name)
-        res = self.get_json_result(('builders', builder.name))
-        builds = set(res['cachedBuilds'])
+        #yield ('poll_builder', builder.name)
 
-        for id in builds - builder.builds:
+        # Get the latest build number.
+        res = self.get_json_result(('builders', builder.name, 'builds', '-1'))
+        number = res['number']
+
+        # Check if we need to start or reset the state.
+        if (builder.last_build_number is None or
+            number < builder.last_build_number):
+            # Send a reset event.
+            yield ('reset_builder', builder.name)
+            builder.last_build_number = number - 1
+
+        # Add any potentially active builds.
+        for id in range(builder.last_build_number + 1, number + 1):
             yield ('add_build', builder.name, id)
-            builder.builds.add(id)
-        for id in builder.builds - builds:
-            yield ('remove_build', builder.name, id)
-            builder.builds.remove(id)
+            builder.active_builds.add(id)
+
+        # Update the latest build number.
+        builder.last_build_number = number
+
+        # Analyze the active builds.
+        builds = list(builder.active_builds)
+        builds.sort()
+        for id in builds:
+            res = self.get_json_result(('builders', builder.name, 'builds',
+                                        str(id)))
+            times = res.get('times')
+
+            # In rare circumstances, we could have accessed an invalid build,
+            # check for this.
+            if times is None or len(times) != 2:
+                yield ('invalid_build', builder.name, id)
+                builder.active_builds.remove(id)
+
+            # Otherwise, just check to see if the build is done.
+            if times[1] is not None:
+                yield ('completed_build', builder.name, id)
+                builder.active_builds.remove(id)
 
         builder.last_poll = time.time()
 
