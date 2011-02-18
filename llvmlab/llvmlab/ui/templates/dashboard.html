@@ -10,7 +10,7 @@
 
 {% macro help_text(text) %}
 <a href='#'
-   onclick='show_content_in_popup("help", "{{ text }}", event); return false;'
+   onclick='show_help_popup("{{ text }}"); return false;'
    title='Help'
    class='help-link'
    target="_blank">?</a>
@@ -77,7 +77,7 @@ r{{ build.source_stamp }}
 {% endblock %}
 
 {% block javascript %}
-function show_content_in_popup(kind, content, event) {
+function show_content_in_popup(kind, content) {
     var popup_holder = document.getElementById(kind + "_popup_holder");
     var popup = document.getElementById(kind + "_popup");
 
@@ -85,15 +85,27 @@ function show_content_in_popup(kind, content, event) {
     popup_holder.style.display = "block";
 }
 
+// Handler for popup close onclick events.
 function close_popup(kind) {
     var popup_holder = document.getElementById(kind + "_popup_holder");
     var popup = document.getElementById(kind + "_popup");
-    popup.innerHTML = "";
     popup_holder.style.display = "none";
+}
+
+// Handler for help onclick events.
+function show_help_popup(text, event) {
+    // Update the popup location.
+    update_popup_location("help", event);
+
+    // Update the help txt.
+    show_content_in_popup("help", text);
 }
 
 // Handler for phase onclick events.
 function show_popup(kind, url, event) {
+    // Update the popup location.
+    update_popup_location(kind, event);
+
     // Get the popup elements.
     var popup = document.getElementById(kind + "_popup");
     var popup_frame = document.getElementById(kind + "_popup_frame");
@@ -102,10 +114,36 @@ function show_popup(kind, url, event) {
     popup_frame.src = url;
 }
 
+// Helper for moving popups around.
+function update_popup_location(kind, event) {
+    var popup_holder = document.getElementById(kind + "_popup_holder");
+    var popup = document.getElementById(kind + "_popup");
+
+    //  Find the current curson position.
+    var cx = (window.event ? window.event.clientX : event.pageX);
+    var cy = (window.event ? window.event.clientY : event.pageY);
+
+    // Offset the popup to not hide the local content.
+    cx = cx + document.body.scrollLeft + 15;
+    cy = cy + document.body.scrollTop + 10;    
+
+    // Move the div (hidden) under the cursor.
+    popup_holder.style.left = parseInt(cx) + 'px';
+    popup_holder.style.top = parseInt(cy) + 'px';
+
+    // Close all current the popups.
+    document.getElementById("help_popup_holder").style.display = "none";
+    document.getElementById("phase_popup_holder").style.display = "none";
+    document.getElementById("timing_popup_holder").style.display = "none";
+}
+
 // Handler for timing onclick events.
 function show_timing_popup(url, event) {
+    // Update the popup location.
+    update_popup_location("timing", event);
+
     // Get the popup elements.
-    var popup = document.getElementById("timing_popup");
+    var popup_holder = document.getElementById("timing_popup_holder");
     var popup_legend = document.getElementById("timing_popup_legend");
 
     // Get the timing data from the server.
@@ -142,7 +180,7 @@ function show_timing_popup(url, event) {
       graph.draw();
 
       // Show the timing popup.
-      popup.style.display = "block";
+      popup_holder.style.display = "block";
     });
 }
 
@@ -152,7 +190,7 @@ function popup_frame_loaded(kind, event) {
 
     // Get the frame contents and put it in the popup div.
     var content = popup_frame.contentWindow.document.body.innerHTML;
-    show_content_in_popup(kind, content, event);
+    show_content_in_popup(kind, content);
 }
 
 // On load, set the iframe's onload handler.
@@ -314,8 +352,9 @@ validated at:
 </table>
 
 {# The div we use to include help popups. #}
-<div id="help_popup_holder" style="display: none;">
+<div id="help_popup_holder" style="display: none;" class="popup">
   {% call close_popup_link("help") %}(close) {% endcall %}
+  <hr>
   <div id="help_popup"></div>
 </div>
 {# The iframe we use to load the help source. This is never actually
@@ -323,17 +362,18 @@ validated at:
 <iframe id="help_popup_frame" style="display: none;"></iframe>
 
 {# The div we use to include phase popups. #}
-<div id="phase_popup_holder" style="display: none;">
+<div id="phase_popup_holder" style="display: none;" class="popup">
   {% call close_popup_link("phase") %}(close) {% endcall %}
-  <div id="phase_popup"></div>
+  <div class="popup_inner"><div id="phase_popup"></div></div>
 </div>
 {# The iframe we use to load the phase popup source. This is never actually
    displayed, just used to load the HTML we insert into the popup div. #}
 <iframe id="phase_popup_frame" style="display: none;"></iframe>
 
 {# The div we use to include timing popups. #}
-<div id="timing_popup_holder" style="display: none;">
-  {% call close_popup_link("help") %}(close) {% endcall %}
+<div id="timing_popup_holder" style="display: none;" class="popup">
+  {% call close_popup_link("timing") %}(close) {% endcall %}
+  <hr>
   <div id="timing_popup">
     <canvas id="timing_graph" width="400" height="300"></canvas>
     <div id="timing_popup_legend"></div>

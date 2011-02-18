@@ -44,6 +44,27 @@ div.flash_message {
     border: 1px solid #AACBE2;
 }
 
+div.popup {
+    border-radius: 7px;
+    -webkit-border-radius: 7px;
+    -moz-border-radius: 7px;
+    position: absolute;
+    background-color: #FFFFFF;
+    padding: 4px 4px 4px 4px;
+    float: left;
+    display: none;
+    border-width: 1px;
+    border-style: solid;
+}
+
+div.popup_inner {
+    border-radius: 3px;
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    background-color: #F0F3EF;
+    padding: 4px 4px 4px 4px;
+}
+
 /* Dashboard Features */
 
 a.help-link {
