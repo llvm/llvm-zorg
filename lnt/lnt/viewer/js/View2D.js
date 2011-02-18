@@ -282,6 +282,11 @@ View2D.prototype.onMouseWheel = function(event) {
         var zoom = 1.0 + .03 * factor;
         this.viewData.location = vec2_mulN(this.viewData.location, zoom);
         this.viewData.scale = vec2_mulN(this.viewData.scale, zoom);
+
+        // Arbitrary limit min and max scales for now, ideally would be derived
+        // based on the view contents.
+        this.viewData.scale = vec2_clampN(this.viewData.scale, 10e-6, 10e6);
+
         this.refresh();
     }
     event.stop();
