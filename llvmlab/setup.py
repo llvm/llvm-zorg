@@ -35,7 +35,7 @@ setup(
         ],
 
     # Additional resource extensions we use.
-    package_data = { 'llvmlab.llvmlabtool' : ['lab.cfg.sample'],
+    package_data = { 'llvmlab.llvmlabtool' : ['*.sample'],
                      'llvmlab.ui' : ['static/*.ico',
                                      'static/*.css',
                                      'static/*.js',

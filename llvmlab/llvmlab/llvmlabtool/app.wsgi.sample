@@ -1,0 +1,10 @@
+#!/usr/bin/env python2.6
+# -*- Python -*-
+%(site_import_string)s
+import llvmlab.ui.app
+application = llvmlab.ui.app.App.create_standalone(
+    config_path = %(lab_config_path)r)
+
+if __name__ == "__main__":
+    import werkzeug
+    werkzeug.run_simple('localhost', 5000, application)

@@ -68,6 +68,7 @@ def action_create(name, args):
     install_path, = args
     install_path = os.path.abspath(install_path)
     cfg_path = os.path.join(install_path, 'lab.cfg')
+    app_path = os.path.join(install_path, 'app.wsgi')
 
     # Create the install directory.
     if os.path.exists(install_path):
@@ -98,6 +99,28 @@ def action_create(name, args):
     cfg_file = open(cfg_path, 'w')
     cfg_file.write(cfg_data)
     cfg_file.close()
+
+    # Construct the WSGI app file.
+    app_wsgi_path = os.path.join(os.path.abspath(os.path.dirname(__file__)),
+                                   "app.wsgi.sample")
+    app_wsgi_file = open(app_wsgi_path, "rb")
+    app_wsgi_data = app_wsgi_file.read()
+    app_wsgi_file.close()
+
+    # Fill in the sample WSGI app.
+    virtual_env = os.environ.get('VIRTUAL_ENV')
+    if virtual_env:
+        site_import_string = """
+import site
+site.addsitedir(%r)\n""" % virtual_env
+    else:
+        site_import_string = ""
+
+    app_data = app_wsgi_data % { 'site_import_string' : site_import_string,
+                                 'lab_config_path' : cfg_path }
+    app_file = open(app_path, 'w')
+    app_file.write(app_data)
+    app_file.close()
 
     # Construct the initial database and status files.
     data = llvmlab.data.Data(users = [], machines = [])
