@@ -18,7 +18,10 @@ class StatusClient(object):
 
         sc = StatusClient(data['master_url'], data['builders_poll_rate'])
         sc.builders = set(data['builders'])
+        sc.builds = dict((name, set(items))
+                         for name, items in data['builds'])
         sc.last_builders_poll = data['last_builders_poll']
+        sc.last_builder_poll = data['last_builder_poll']
         return sc
 
     def todata(self):
@@ -26,26 +29,34 @@ class StatusClient(object):
                  'master_url' : self.master_url,
                  'builders_poll_rate' : self.builders_poll_rate,
                  'builders' : list(self.builders),
-                 'last_builders_poll' : self.last_builders_poll}
+                 'builds' : [(name, list(items))
+                            for name,items in self.builds.items()],
+                 'last_builders_poll' : self.last_builders_poll,
+                 'last_builder_poll' : self.last_builder_poll }
 
     def __init__(self, master_url,
-                 builders_poll_rate = 60.0):
-        self.master_url = master_url
-        self.builders = set()
-
+                 builders_poll_rate = 60.0,
+                 builder_poll_rate = 5.0):
         # Normalize the master URL.
+        self.master_url = master_url
         if self.master_url.endswith('/'):
             self.master_url += '/'
+
+        # Initialize the data we track.
+        self.builders = set()
+        self.builds = {}
 
         # Set poll rates (how frequently we are willing to recontact the
         # master).
         self.builders_poll_rate = float(builders_poll_rate)
+        self.builder_poll_rate = float(builder_poll_rate)
 
         # Set last poll times so we will repoll on startup.
         self.last_builders_poll = -1
+        self.last_builder_poll = {}
 
     def get_json_result(self, query_items, arguments=None):
-        path = '/json/' + ','.join(urllib2.quote(item)
+        path = '/json/' + '/'.join(urllib2.quote(item)
                                    for item in query_items)
         if arguments is not None:
             path += '?' + urllib2.urlencode(arguments)
@@ -67,7 +78,31 @@ class StatusClient(object):
             for event in self.pull_builders():
                 yield event
 
-        yield 1
+        # Update the current builds for each known builder.
+        for builder in self.builders:
+            last_poll = self.last_builder_poll.get(builder, -1)
+            if current_time - last_poll >= self.builder_poll_rate:
+                for event in self.pull_builder(builder):
+                    yield event
+
+    def add_builder(self, name):
+        yield ('added_builder', name)
+        self.builders.add(name)
+        self.last_builder_poll[name] = -1
+        self.builds[name] = set()
+
+    def remove_builder(self, name):
+        yield ('removed_builder', name)
+        self.builders.remove(name)
+        self.last_builder_poll.pop(name)
+        self.builds.pop(name)
+
+    def add_build(self, name, id):
+        yield ('add_build', name, id)
+        self.builds[name].add(id)
+    def remove_build(self, name, id):
+        yield ('remove_build', name, id)
+        self.builds[name].remove(id)
 
     def pull_builders(self):
         # Pull the builder names.
@@ -78,12 +113,28 @@ class StatusClient(object):
         builder_names = set(builders.keys())
 
         for name in builder_names - self.builders:
-            yield ('added_builder', name)
+            for event in self.add_builder(name):
+                yield event
         for name in self.builders - builder_names:
-            yield ('removed_builder', name)
+            for event in self.remove_builder(name):
+                yield event
 
-        self.builders = builder_names
         self.last_builders_poll = time.time()
+
+    def pull_builder(self, name):
+        # Pull the builder data.
+        yield ('poll_builder', name)
+        builder = self.get_json_result(('builders', name))
+        builds = set(builder['cachedBuilds'])
+
+        for id in builds - self.builds[name]:
+            for event in self.add_build(name, id):
+                yield event
+        for id in self.builds[name] - builds:
+            for event in self.remove_build(name, id):
+                yield event
+
+        self.last_builder_poll[name] = time.time()
 
 ###
 
@@ -124,7 +175,7 @@ A simple tool for testing the BuildBot StatusClient.
         while 1:
             for event in sc.pull_events():
                 print time.time(), event
-                time.sleep(.1)
+            time.sleep(.1)
     except KeyboardInterrupt:
         print "(interrupted, stopping)"
 
