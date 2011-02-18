@@ -2,6 +2,142 @@
 {% block title %}dashboard{% endblock %}
 {% block body %}
 
-Welcome to the LLVM Lab Dashboard!
+<h1>Welcome to the LLVM Lab Dashboard!</h1>
+
+<p>
+The most recent validate revision is<br>
+&nbsp; &nbsp; r122966 <br>
+validated at:<br>
+&nbsp; &nbsp; 2011-06-01 10:34 <br>
+(available <a href="#latest_release">below</a>).
+
+<p>
+The tree is currently: <b>open</b>.
+
+<p>
+<font color="#FF0000">
+<b>WARNING!</b> LLVM is currently failing the <i>Living On</i> checks. The tree
+will close in <b>35</b> minutes!
+</font>
+
+
+<a name="current_status">
+  <h2>Current Status</h2>
+</a>
+
+{# The traffic light... #}
+<table>
+<thead>
+  <tr>
+  <tr>
+    <th>Sanity<br>(Phase 1)</th>
+    <th>Living On<br>(Phase 2)</th>
+    <th>Tree Health<br>(Phase 3)</th>
+    <th>Validation<br>(Phase 4)</th>
+  </tr>
+</table>
+
+<hr>
+
+{# The results table... #}
+<table>
+<thead>
+  <tr>
+    <th>Result Type</th>
+    <th>Phase 1</th>
+    <th>Phase 2</th>
+    <th>Phase 3</th>
+    <th>Phase 4</th>
+  </tr>
+</thead>
+<tr>
+  <td>Current</td>
+  <td>---</td>
+  <td>---</td>
+  <td>---</td>
+  <td>---</td>
+</tr>
+<tr>
+  <td>Last Completed</td>
+  <td>---</td>
+  <td>---</td>
+  <td>---</td>
+  <td>---</td>
+</tr>
+<tr>
+  <td>First Failing</td>
+  <td>---</td>
+  <td>---</td>
+  <td>---</td>
+  <td>---</td>
+</tr>
+<tr>
+  <td>Last Working</td>
+  <td>---</td>
+  <td>---</td>
+  <td>---</td>
+  <td>---</td>
+</tr>
+</table>
+
+
+{# The builds archive table... #}
+<a name="latest_release">
+  <h2>Latest Release</h2>
+</a>
+
+<p>
+The latest released sources are available here: <a href="XXX">llvm-rNNNNNN</a>.
+
+<p>
+Binary packages of the latest release:
+<table width="100%">
+  <thead>
+    <tr>
+      <th>Product</th>
+      <th>OS</th>
+      <th>Arch</th>
+      <th width="80%" align="left">Archive</th>
+    </tr>
+  </thead>
+  <tr>
+    <td rowspan="2">LLVM</td>
+    <td>Linux</td>
+    <td>i386</td>
+    <td>llvm-linux-i386.tgz</td>
+  </tr>
+  <tr>
+    <td>Mac OS X (SnowLeopard)</td>
+    <td>x86_64</td>
+    <td>llvm-darwin10-x86_64.tgz</td>
+  </tr>
+  <tr>
+    <td rowspan="3">Clang</td>
+    <td>Linux</td>
+    <td>i386</td>
+    <td>clang-linux-i386.tgz</td>
+  </tr>
+  <tr>
+    <td>Mac OS X (SnowLeopard)</td>
+    <td>x86_64</td>
+    <td>clang-darwin10-x86_64.tgz</td>
+  </tr>
+  <tr>
+    <td>Windows</td>
+    <td>i386</td>
+    <td>clang-windows-i386.tgz</td>
+  </tr>
+  <tr>
+    <td rowspan="2">llvm-gcc 4.2</td>
+    <td>Linux</td>
+    <td>i386</td>
+    <td>llvm-gcc-4.2-linux-i386.tgz</td>
+  </tr>
+  <tr>
+    <td>Linux</td>
+    <td>x86_64</td>
+    <td>llvm-gcc-4.2-linux-x86_64.tgz</td>
+  </tr>
+</table>
 
 {% endblock %}
