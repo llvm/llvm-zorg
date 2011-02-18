@@ -69,6 +69,7 @@ def action_create(name, args):
     cfg_path = os.path.join(basepath, 'lab.cfg')
     data_path = os.path.join(basepath, 'lab-data.json')
     status_path = os.path.join(basepath, 'lab-status.json')
+    error_log_path = os.path.join(basepath, 'error.log')
 
     if not os.path.exists(basepath):
         try:
@@ -101,6 +102,7 @@ def action_create(name, args):
     cfg_options['secret_key'] = secret_key
     cfg_options['data_path'] = data_path
     cfg_options['status_path'] = status_path
+    cfg_options['error_log_path'] = error_log_path
     cfg_data = sample_cfg_data % cfg_options
 
     # Write the initial config file.

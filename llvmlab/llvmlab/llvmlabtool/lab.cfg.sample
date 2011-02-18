@@ -13,6 +13,10 @@ ADMIN_EMAIL = %(admin_email)r
 # Should server run in debug mode?
 DEBUG = %(debug_server)r
 
+# Email configuration.
+EMAIL_RELAY_SERVER = 'localhost'
+MAIL_ERRORS = True
+
 # Secret key for this server instance.
 SECRET_KEY = %(secret_key)r
 
@@ -21,3 +25,6 @@ DATA_PATH = %(data_path)r
 
 # Path to the buildbot status file.
 STATUS_PATH = %(status_path)r
+
+# Path to the error log.
+ERROR_LOG_PATH = %(error_log_path)r

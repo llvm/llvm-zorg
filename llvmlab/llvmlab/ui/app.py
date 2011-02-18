@@ -1,4 +1,6 @@
 import hashlib
+import logging
+import logging.handlers
 import os
 
 import flask
@@ -22,6 +24,19 @@ class App(flask.Flask):
 
         # Load the application configuration.
         app.load_config(config, config_path)
+
+        # Configure error logging.
+        handler = logging.FileHandler(app.config['ERROR_LOG_PATH'])
+        handler.setLevel(logging.WARNING)
+        app.logger.addHandler(handler)
+        
+        # Configure error emails, if requested.
+        if app.config['MAIL_ERRORS']:
+            handler = logging.handlers.SMTPHandler(
+                app.config['EMAIL_RELAY_SERVER'], app.config['ADMIN_EMAIL'],
+                app.config['ADMIN_EMAIL'], 'LLVM Lab Failure')
+            handler.setLevel(logging.ERROR)
+            app.logger.addHandler(handler)
 
         # Load the database.
         app.load_data(data)
@@ -56,6 +71,8 @@ class App(flask.Flask):
             "ADMIN_NAME" : "Administrator",
             "ADMIN_EMAIL" : "admin@example.com",
             "DEBUG" : True,
+            "EMAIL_RELAY_SERVER" : "localhost",
+            "MAIL_ERRORS" : False,
             "SECRET_KEY" : secret_key,
             "DATA_PATH" : None,
             "STATUS_PATH" : None }

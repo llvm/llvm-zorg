@@ -96,8 +96,7 @@ class StatusMonitor(threading.Thread):
                                 build.number < builds[-2].number):
                                 builds.sort(key = lambda b: b.number)
                 else:
-                    # FIXME: Use flask logging APIs.
-                    print >>sys.stderr,"warning: unknown event '%r'" % (event,)
+                    self.app.logger.warning("unknown event '%r'" % (event,))
 
                 # FIXME: Don't save this frequently, we really just want to
                 # checkpoint and make sure we save on restart.
