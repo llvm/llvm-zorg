@@ -5,7 +5,7 @@ import flask
 
 import llvmlab.data
 import llvmlab.user
-import llvmlab.ui.views
+from llvmlab.ui.frontend.views import frontend as frontend_views
 
 class App(flask.Flask):
     @staticmethod
@@ -20,7 +20,7 @@ class App(flask.Flask):
         app.load_data(data)
 
         # Load the application routes.
-        app.register_module(llvmlab.ui.views.ui)
+        app.register_module(frontend_views)
 
         return app
 

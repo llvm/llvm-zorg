@@ -7,21 +7,21 @@ from flask import session
 from flask import url_for
 from flask import current_app
 from flask import Module
-ui = Module(__name__)
+frontend = Module(__name__)
 
-@ui.route('/')
+@frontend.route('/')
 def index():
     return render_template("index.html")
 
-@ui.route('/favicon.ico')
+@frontend.route('/favicon.ico')
 def favicon_ico():
     return redirect(url_for('.static', filename='favicon.ico'))
 
-@ui.route('/users')
+@frontend.route('/users')
 def users():
     return render_template("users.html")
 
-@ui.route('/user/<username>')
+@frontend.route('/user/<username>')
 def user(username):
     user = current_app.config.data.users.get(username)
     if user is None:
@@ -29,7 +29,7 @@ def user(username):
 
     return render_template("user.html", user=user)
 
-@ui.route('/login', methods=['GET', 'POST'])
+@frontend.route('/login', methods=['GET', 'POST'])
 def login():
     # If this isn't a post request, return the login template.
     if request.method != 'POST':
@@ -47,7 +47,7 @@ def login():
     flask.flash('You were logged in as "%s"!' % username)
     return redirect(url_for("index"))
 
-@ui.route('/logout')
+@frontend.route('/logout')
 def logout():
     session.pop('logged_in', None)
     session.pop('active_user', None)
