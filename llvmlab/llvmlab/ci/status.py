@@ -80,8 +80,12 @@ class StatusMonitor(threading.Thread):
                         build = BuildStatus(name, id, None, None, None, None)
 
                     # Get the build information.
-                    res = self.status.statusclient.get_json_result((
-                            'builders', name, 'builds', str(build.number)))
+                    try:
+                        res = self.status.statusclient.get_json_result((
+                                'builders', name, 'builds', str(build.number)))
+                    except:
+                        res = None
+
                     if res:
                         build.result = res['results']
                         build.source_stamp = res['sourceStamp']['revision']
@@ -144,6 +148,8 @@ class Status(util.simple_repr_mixin):
 
     def start_monitor(self, app):
         if self.statusclient:
+            self.statusclient.logger = app.logger
+
             monitor = StatusMonitor(app, self)
             monitor.start()
             return monitor

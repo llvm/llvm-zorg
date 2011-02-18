@@ -1,6 +1,20 @@
 import time
+import traceback
 import urllib2
+import StringIO
 from flask import json
+
+###
+
+# Custom Exception Classes
+#
+# We generally only care about either proper 404 results or "other" failures.
+class ResultMissing(Exception):
+    pass
+class UnknownFailure(Exception):
+    pass
+
+###
 
 class BuilderInfo(object):
     """
@@ -81,6 +95,9 @@ class StatusClient(object):
         # Set last poll time so we will repoll on startup.
         self.last_builders_poll = -1
 
+        # Option logger object.
+        self.logger = None
+
     def get_json_result(self, query_items, arguments=None):
         path = '/json/' + '/'.join(urllib2.quote(item)
                                    for item in query_items)
@@ -90,11 +107,23 @@ class StatusClient(object):
         url = self.master_url + path
         try:
             request = urllib2.urlopen(url)
-        except:
-            # FIXME: Logging.
-            import traceback
-            traceback.print_exc()
-            return None
+        except urllib2.HTTPError, err:
+            # Turn 404 into a result missing error.
+            if err.code == 404:
+                raise ResultMissing
+
+            # Log this failure.
+            os = StringIO.StringIO()
+            print >>os, "*** ERROR: failure in 'get_json_result(%r, %r)' ***" %(
+                query_items, arguments)
+            print >>os, "URL: %r" % url
+            print >>os, "\n-- Traceback --"
+            traceback.print_exc(file = os)
+            if self.logger:
+                self.logger.warning(os.getvalue())
+            else:
+                print >>sys.stderr, os.getvalue()
+            raise UnknownFailure
         data = request.read()
         request.close()
 
@@ -121,8 +150,16 @@ class StatusClient(object):
         #
         # FIXME: BuildBot should provide a more efficient query for this.
         #yield ('poll_builders',)
-        res = self.get_json_result(('builders',))
-        if not res:
+        try:
+            res = self.get_json_result(('builders',))
+        except ResultMissing:
+            # This should never happen, but don't crash if it does.
+            return
+        except UnknownFailure:
+            # Presumably a transient network issue, just wait a while and retry.
+            #
+            # FIXME: Evaluate decay algorithm.
+            self.last_builders_poll = time.time() + 60.
             return
 
         builder_names = set(res.keys())
@@ -138,26 +175,43 @@ class StatusClient(object):
         self.last_builders_poll = time.time()
 
     def pull_builder(self, builder):
-        # Pull the builder data.
-        #yield ('poll_builder', builder.name)
-
         # Get the latest build number.
-        res = self.get_json_result(('builders', builder.name, 'builds', '-1'))
-        if not res:
+        try:
+            res = self.get_json_result(('builders', builder.name, 'builds',
+                                        '-1'))
+            number = res['number']
+        except ResultMissing:
+            # If the server returned 404, then either we gave a bogus builder
+            # name (which is bad), or there are no builds yet.
+            #
+            # We assume that bogus builder's will be figured out elsewhere, so
+            # just assume there are no builds.
+            builder.last_poll = time.time()
+            number = None
+        except UnknownFailure:
+            # Presumably a transient network issue, just wait a while and retry.
+            #
+            # FIXME: Evaluate decay algorithm.
+            builder.last_poll = time.time() + 60.
             return
-        number = res['number']
 
-        # Check if we need to start or reset the state.
-        if (builder.last_build_number is None or
-            number < builder.last_build_number):
-            # Send a reset event.
-            yield ('reset_builder', builder.name)
-            builder.last_build_number = number - 1
+        # Check if we don't have any builds.
+        if number is None:
+            # Check if we need to start or reset the state.
+            if builder.last_build_number is not None:
+                yield ('reset_builder', builder.name)
+        else:
+            # Check if we need to start or reset the state.
+            if (builder.last_build_number is None or
+                number < builder.last_build_number):
+                # Send a reset event.
+                yield ('reset_builder', builder.name)
+                builder.last_build_number = number - 1
 
-        # Add any potentially active builds.
-        for id in range(builder.last_build_number + 1, number + 1):
-            yield ('add_build', builder.name, id)
-            builder.active_builds.add(id)
+            # Add any potentially active builds.
+            for id in range(builder.last_build_number + 1, number + 1):
+                yield ('add_build', builder.name, id)
+                builder.active_builds.add(id)
 
         # Update the latest build number.
         builder.last_build_number = number
@@ -166,10 +220,22 @@ class StatusClient(object):
         builds = list(builder.active_builds)
         builds.sort()
         for id in builds:
-            res = self.get_json_result(('builders', builder.name, 'builds',
-                                        str(id)))
-            if not res:
-                continue
+            # Get the result for this build.
+            try:
+                res = self.get_json_result(('builders', builder.name, 'builds',
+                                            str(id)))
+            except ResultMissing:
+                # This probably shouldn't ever happen, but if it does then trust
+                # the response.
+                res = {}
+            except UnknownFailure:
+                # Presumably a transient network issue, just wait a while and
+                # retry.
+                #
+                # FIXME: Evaluate decay algorithm.
+                builder.last_poll = time.time() + 60.
+                return
+
             times = res.get('times')
 
             # In rare circumstances, we could have accessed an invalid build,
