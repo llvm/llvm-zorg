@@ -1,6 +1,14 @@
 {% extends "layout.html" %}
 {% block title %}login{% endblock %}
 {% block body %}
+
+{% if session.logged_in %}
+
+You are already logged in. Would you like to <a href="{{ url_for('logout')
+}}">logout</a>?
+
+{% else %}
+
 <h2>Login</h2>
 {% if error %}
 <p class=error><strong>Error:</strong> {{ error }}
@@ -12,4 +20,7 @@
   <dd><input type=submit value=Login></dd>
 </dl>
 </form>
+
+{% endif %}
+
 {% endblock %}

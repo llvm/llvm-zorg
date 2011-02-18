@@ -40,6 +40,10 @@ class TestBasic(TestCase):
         # Log in as the test admin user.
         rv = self.login("admin", "admin")
         assert "Logged In: <i>admin</i>""" in rv.data
+
+        # Check that the login page shows something sensible.
+        rv = self.app.get('/login')
+        assert """You are already logged in.""" in rv.data
         
         # Check that we can access the users page now.
         rv = self.app.get('/users')
