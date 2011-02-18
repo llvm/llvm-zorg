@@ -7,6 +7,8 @@ Go-Live Requirements
 
  - User Login
 
+   o Secure login support.
+
    o Expect superset of committer list.
 
    o Keep auth info with lab.llvm.org user cred, svn access will be an

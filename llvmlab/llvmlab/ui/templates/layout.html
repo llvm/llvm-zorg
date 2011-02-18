@@ -11,6 +11,10 @@
   <div class="header">
     <a href="{{ url_for('index') }}">{#
       #}lab.llvm.org</a> | {{ self.title() }}
+    {% if session.logged_in %}
+      &nbsp; &nbsp;
+      Logged In: <i>{{ session.active_user }}</i>
+    {% endif %}
   </div>
   <div class="flash_messages">
     {% for message in get_flashed_messages() %}
