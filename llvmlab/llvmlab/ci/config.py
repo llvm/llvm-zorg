@@ -115,7 +115,8 @@ class Config(util.simple_repr_mixin):
                  'published_builds' : [item.todata()
                                        for item in self.published_builds] }
 
-    def __init__(self, phases, builders, published_builds):
+    def __init__(self, phases, builders, published_builds, validation_builder):
         self.phases = phases
         self.builders = builders
         self.published_builds = published_builds
+        self.validation_builder = validation_builder

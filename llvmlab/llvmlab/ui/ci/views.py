@@ -69,7 +69,8 @@ published_builds = [
                           "llvm-gcc-4.2-linux-i386.tgz"),
     config.PublishedBuild("llvm-gcc-4.2", "Linux", "x86_64",
                           "llvm-gcc-4.2-linux-x86_64.tgz")]
-g_config = config.Config(phases, builders, published_builds)
+g_config = config.Config(phases, builders, published_builds,
+                         'Validated Build')
 
 @ci.route('/')
 def dashboard():
