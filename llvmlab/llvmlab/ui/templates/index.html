@@ -2,6 +2,32 @@
 {% block title %}home{% endblock %}
 {% block body %}
 
-Ceci n'est pas un laboratoire.
+<div id="menu">
+<ul>
+<li><a href="{{ url_for('login') }}">login</a></li>
+<li><a href="{{ url_for('logout') }}">logout</a></li>
+<li><a href="{{ url_for('users') }}">users</a></li>
+{% if session.logged_in %}
+<li><a href="{{ url_for('user', username=session.active_user) }}">my info</a></li>
+{% endif %}
+<li><a href="{{ url_for('dashboard') }}">dashboard</a></li>
+</ul>
+</div>
+
+<h1>Welcome to the LLVM Laboratory!</h1>
+
+<p>The LLVM laboratory is a set of machines and software to support
+the <a href="http://llvm.org">LLVM</a> project, for use by LLVM developers and
+community members.</p>
+
+<h2>Sponsors</h2>
+
+<b>Access Softek</b>: a software development and consulting company with a
+specialization in compiler development, is pleased to help the LLVM development
+effort by hosting the LLVM lab in its Berkeley office.
+
+For more information about us please take a look at our very out-of-date
+website {{ "www.accesssoftek.com"|urlize }} and if you are
+an LLVM developer passing through Berkeley, drop in and say hi.</p>
 
 {% endblock %}
