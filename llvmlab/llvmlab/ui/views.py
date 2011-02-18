@@ -1,4 +1,5 @@
 import flask
+from flask import abort
 from flask import redirect
 from flask import render_template
 from flask import request
@@ -19,6 +20,14 @@ def favicon_ico():
 @ui.route('/users')
 def users():
     return render_template("users.html")
+
+@ui.route('/user/<username>')
+def user(username):
+    user = current_app.config.data.users.get(username)
+    if user is None:
+        abort(404)
+
+    return render_template("user.html", user=user)
 
 @ui.route('/login', methods=['GET', 'POST'])
 def login():
