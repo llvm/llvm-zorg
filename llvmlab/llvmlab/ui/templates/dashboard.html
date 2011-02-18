@@ -30,10 +30,9 @@ will close in <b>35</b> minutes!
 <thead>
   <tr>
   <tr>
-    <th>Sanity<br>(Phase 1)</th>
-    <th>Living On<br>(Phase 2)</th>
-    <th>Tree Health<br>(Phase 3)</th>
-    <th>Validation<br>(Phase 4)</th>
+    {% for phase in ci_config.phases %}
+    <th>{{ phase.name }}<br>(Phase {{ phase.number }})</th>
+    {% endfor %}
   </tr>
   <tr>
     <td align="center"><img src="/static/green.png" width="45" height="45"></td>
@@ -50,10 +49,9 @@ will close in <b>35</b> minutes!
 <thead>
   <tr>
     <th>Result Type</th>
-    <th>Phase 1</th>
-    <th>Phase 2</th>
-    <th>Phase 3</th>
-    <th>Phase 4</th>
+    {% for phase in ci_config.phases %}
+    <th>Phase {{ phase.number }}</th>
+    {% endfor %}
   </tr>
 </thead>
 <tr>
