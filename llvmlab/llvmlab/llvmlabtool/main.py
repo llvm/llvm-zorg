@@ -51,6 +51,9 @@ def action_create(name, args):
     group.add_option("", "--master-url", dest="master_url",
                       help="URL for the buildbot master [%default]",
                      default='http://lab.llvm.org:8013')
+    group.add_option("", "--plugin-module", dest="plugin_module",
+                      help="name of the dashboard plugin to load [%default]",
+                     default=None)
 
     group.add_option("", "--debug-server", dest="debug_server",
                       help="run server in debug mode [%default]",
@@ -88,6 +91,7 @@ def action_create(name, args):
         opts.admin_password + secret_key).hexdigest()
     cfg_options['secret_key'] = secret_key
     cfg_options['install_path'] = install_path
+    cfg_options['plugin_module'] = opts.plugin_module
     cfg_data = sample_cfg_data % cfg_options
 
     # Write the initial config file.

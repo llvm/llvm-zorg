@@ -23,6 +23,9 @@ class App(flask.Flask):
         # Construct the application.
         app = App(__name__)
 
+        # Register additional filters.
+        llvmlab.ui.filters.register(app)
+
         # Load the application configuration.
         app.load_config(config, config_path)
 
@@ -59,9 +62,12 @@ class App(flask.Flask):
         app.config.summary = llvmlab.ci.summary.Summary(
             llvmlab.ui.ci.views.g_config, app.config.status)
 
-        # Register additional filters.
-        llvmlab.ui.filters.register(app)
-
+        # Load any dashboard plugins.
+        plugins_module = app.config["PLUGIN_MODULE"]
+        if plugins_module:
+            module = __import__(plugins_module, fromlist=['__name__'])
+            module.register(app)
+                        
         return app
 
     @staticmethod

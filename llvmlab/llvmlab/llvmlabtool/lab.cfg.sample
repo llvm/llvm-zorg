@@ -23,3 +23,6 @@ SECRET_KEY = %(secret_key)r
 # Path to the installation directory (which stores data files, status, logs,
 # etc.).
 INSTALL_PATH = %(install_path)r
+
+# Name of the plugin module to import (optional).
+PLUGIN_MODULE = %(plugin_module)r
