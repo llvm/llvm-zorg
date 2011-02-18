@@ -1,5 +1,6 @@
 import flask
 from flask import abort
+from flask import jsonify
 from flask import redirect
 from flask import render_template
 from flask import request
@@ -102,3 +103,39 @@ def latest_release():
 def buildbot_monitor():
     return render_template("buildbot_monitor.html",
                            bb_status=current_app.config.status)
+
+@ci.route('/times')
+@ci.route('/times/<int:index>')
+def phase_timing(index=None):
+    # Determine what we are timing.
+    if index is not None:
+        # Validate the phase.
+        if index >= len(g_config.phases):
+            abort(404)
+
+        # Get the phase.
+        phase = g_config.phases[index]
+    else:
+        phase = None
+
+    # Get the list of builders to time.
+    builder_to_time = []
+    if phase is None:
+        builders_to_time = [p.phase_builder
+                            for p in g_config.phases]
+    else:
+        builders_to_time = phase.builder_names
+
+    # Get the builds to report timing information for.
+    status = current_app.config.status
+    builders = dict((name, [b for b in status.builders.get(name, [])
+                            if b.end_time is not None])
+                    for name in builders_to_time)
+
+    # Return the timing data as a json object.
+    data = []
+    for name,builds in builders.items():
+        points = [(float(i) / len(builds), b.end_time - b.start_time)
+                  for i,b in enumerate(builds)]
+        data.append((name, points))
+    return flask.jsonify(data = data)
