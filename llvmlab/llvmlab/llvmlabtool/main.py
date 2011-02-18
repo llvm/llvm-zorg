@@ -9,6 +9,7 @@ import sys
 import flask
 import llvmlab.data
 import llvmlab.user
+import llvmlab.ci.status
 import llvmlab.ui.app
 
 def note(message):
@@ -64,6 +65,7 @@ def action_create(name, args):
     basepath = os.path.abspath(basepath)
     cfg_path = os.path.join(basepath, 'lab.cfg')
     data_path = os.path.join(basepath, 'lab-data.json')
+    status_path = os.path.join(basepath, 'lab-status.json')
 
     if not os.path.exists(basepath):
         try:
@@ -78,6 +80,8 @@ def action_create(name, args):
             parser.error("%r exists (use --force to override)" % cfg_path)
         if os.path.exists(data_path):
             parser.error("%r exists (use --force to override)" % data_path)
+        if os.path.exists(status_path):
+            parser.error("%r exists (use --force to override)" % status_path)
 
     # Construct the config file.
     sample_cfg_path = os.path.join(os.path.abspath(os.path.dirname(__file__)),
@@ -93,21 +97,24 @@ def action_create(name, args):
         opts.admin_password + secret_key).hexdigest()
     cfg_options['secret_key'] = secret_key
     cfg_options['data_path'] = data_path
+    cfg_options['status_path'] = status_path
     cfg_data = sample_cfg_data % cfg_options
 
     # Write the initial config file.
     cfg_file = open(cfg_path, 'w')
     cfg_file.write(cfg_data)
     cfg_file.close()
-    
-    # Create the inital data file.
-    data = llvmlab.data.Data(users = [])
 
-    # Write the initial (empty) data file.
-    data_file = open(data_path, 'w')
-    flask.json.dump(data.todata(), data_file, indent=2)
-    print >>data_file
-    data_file.close()
+    # Construct the initial database and status files.
+    data = llvmlab.data.Data(users = [], machines = [])
+    status = llvmlab.ci.status.Status({})
+
+    # Construct an app instance, and save the data.
+    instance = llvmlab.ui.app.App.create_standalone(data = data,
+                                                    status = status,
+                                                    config_path = cfg_path)
+    instance.save_data()
+    instance.save_status()
 
 def action_runserver(name, args):
     """run a llvmlab instance"""

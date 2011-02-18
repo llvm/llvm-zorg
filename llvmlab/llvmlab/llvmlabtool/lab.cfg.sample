@@ -18,3 +18,6 @@ SECRET_KEY = %(secret_key)r
 
 # Path to the managed data file.
 DATA_PATH = %(data_path)r
+
+# Path to the buildbot status file.
+STATUS_PATH = %(status_path)r

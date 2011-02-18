@@ -5,15 +5,16 @@ import flask
 
 import llvmlab.data
 import llvmlab.user
+import llvmlab.ci.status
 from llvmlab.ui.ci.views import ci as ci_views
 from llvmlab.ui.frontend.views import frontend as frontend_views
 
 class App(flask.Flask):
     @staticmethod
-    def create_standalone(config = None, data = None, config_path = None):
+    def create_standalone(config = None, data = None, status = None,
+                          config_path = None):
         if config_path is not None:
             assert config is None
-            assert data is None
 
         # Construct the application.
         app = App(__name__)
@@ -23,6 +24,9 @@ class App(flask.Flask):
 
         # Load the database.
         app.load_data(data)
+
+        # Load the buildbot status.
+        app.load_status(status)
 
         # Load the application routes.
         app.register_module(ci_views)
@@ -45,12 +49,16 @@ class App(flask.Flask):
             "ADMIN_EMAIL" : "admin@example.com",
             "DEBUG" : True,
             "SECRET_KEY" : secret_key,
-            "DATA_PATH" : None }
+            "DATA_PATH" : None,
+            "STATUS_PATH" : None }
 
         # Construct an empty test database.
-        data = llvmlab.data.Data(users = [])
+        data = llvmlab.data.Data(users = [], machines = [])
 
-        return App.create_standalone(config, data)
+        # Construct an empty status file.
+        data = llvmlab.ci.status.Status({})
+
+        return App.create_standalone(config, data, status)
 
     def __init__(self, name):
         super(App, self).__init__(name)
@@ -94,6 +102,24 @@ class App(flask.Flask):
     def save_data(self):
         file = open(self.config["DATA_PATH"], 'w')
         flask.json.dump(self.config.data.todata(), file, indent=2)
+        print >>file
+        file.close()
+
+    def load_status(self, status = None):
+        if status is None:
+            data_path = self.config["STATUS_PATH"]
+            data_file = open(data_path, "rb")
+            data_object = flask.json.load(data_file)
+            data_file.close()
+
+            # Create the internal Status object.
+            status = llvmlab.ci.status.Status.fromdata(data_object)
+
+        self.config.status = status
+
+    def save_status(self):
+        file = open(self.config["STATUS_PATH"], 'w')
+        flask.json.dump(self.config.status.todata(), file, indent=2)
         print >>file
         file.close()
 

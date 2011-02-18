@@ -39,13 +39,15 @@ class Status(util.simple_repr_mixin):
         if version != 0:
             raise ValueError, "Unknown version"
 
-        return Status([BuildStatus.fromdata(item)
-                       for item in data['builds']])
+        return Status(dict((name, [BuildStatus.fromdata(b)
+                                   for b in builds])
+                           for name,builds in data['builders']))
 
     def todata(self):
         return { 'version' : 0,
-                 'builds' : [item.todata()
-                             for item in self.builds] }
+                 'builders' : [(name, [b.todata()
+                                       for b in builds])
+                               for name,builds in self.builders.items()] }
 
-    def __init__(self, builds):
-        self.builds = builds
+    def __init__(self, builders):
+        self.builders = builders
