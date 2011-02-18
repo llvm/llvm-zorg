@@ -2,21 +2,41 @@
 {% block title %}dashboard{% endblock %}
 {% block body %}
 
+{# Get the current summary... #}
+{% set summary = config.summary.get_current_status() %}
+
 <h1>Welcome to the LLVM Lab Dashboard!</h1>
 
 <p>
-The most recent released revision is <b>r123456</b>
-validated at:
-<i>2011-06-01 10:34</i>
-(available <a href="#latest_release">below</a>).
+{% set final_phase = summary[ci_config.validation_builder] %}
 
-<p>
-The tree is currently: <b>open</b>.
+{% if final_phase and final_phase.passing %}
+The most recent released revision is <b>r{{
+    final_phase.passing.source_stamp }}</b>
+validated at:
+<i>{{ final_phase.passing.end_time }}</i>
+(available <a href="#latest_release">below</a>).
+{% else %}
+<i><b>No release is currently available!</b></i>
+{% endif %}
 
 <p>
 <font color="#FF0000">
-<b>WARNING!</b> LLVM is currently failing the <i>Living On</i> checks. The tree
-will close in <b>35</b> minutes!
+  {% set is_failing = false %}
+  {% for phase in ci_config.phases %}
+  {% set phase_info = summary[phase.phase_builder] %}
+
+  {% if (phase_info and phase_info.completed and not is_failing
+         and phase_info.completed.result != 0) %}
+  {% set is_failing = true %}
+
+  <b>WARNING!</b> LLVM is currently failing the <i>{{ phase.name }}</i> checks.
+  The failures started in r{{ phase_info.failing.source_stamp }} at {{
+  phase_info.failing.end_time }}.
+
+  {% endif %}
+
+  {% endfor %}
 </font>
 
 
@@ -34,16 +54,29 @@ will close in <b>35</b> minutes!
     {% endfor %}
   </tr>
   <tr>
-    <td align="center"><img src="/static/green.png" width="45" height="45"></td>
-    <td align="center"><img src="/static/red.png" width="45" height="45"></td>
-    <td align="center"><img src="/static/red.png" width="45" height="45"></td>
+    {% set is_failing = false %}
+    {% for phase in ci_config.phases %}
+    {% set phase_info = summary[phase.phase_builder] %}
+
+    {# First, check if we have no status (no completed builds, or prior phase is
+       failing). #}
+    {% if not phase_info or not phase_info.completed or is_failing %}
     <td align="center"><img src="/static/white.png" width="45" height="45"></td>
+    {% elif phase_info.completed.result == 0 %}
+    <td align="center"><img src="/static/green.png" width="45" height="45"></td>
+    {% else %}
+    {% set is_failing = true %}
+    <td align="center"><img src="/static/red.png" width="45" height="45"></td>
+    {% endif %}
+
+    {% endfor %}
   </tr>
 </table>
 
 <hr>
 
 {# The results table... #}
+
 <table>
 <thead>
   <tr>
@@ -55,34 +88,59 @@ will close in <b>35</b> minutes!
 </thead>
 <tr>
   <td>Current</td>
-  <td>r123485</td>
-  <td>r123482</td>
-  <td>(blocked)</td>
-  <td>(blocked)</td>
+  {% for phase in ci_config.phases %}
+  {% set phase_info = summary[phase.phase_builder] %}
+
+  {% if phase_info.current %}
+  <td>r{{ phase_info.current[0].source_stamp }}</td>
+  {% else %}
+  <td>(idle)</td>
+  {% endif %}
+
+  {% endfor %}
 </tr>
 <tr>
   <td>Last Completed</td>
-  <td>r123482</td>
-  <td>r123477</td>
-  <td>r123457</td>
-  <td>r123456</td>
+  {% for phase in ci_config.phases %}
+  {% set phase_info = summary[phase.phase_builder] %}
+
+  {% if phase_info.completed %}
+  <td>r{{ phase_info.completed.source_stamp }}</td>
+  {% else %}
+  <td>(unknown)</td>
+  {% endif %}
+
+  {% endfor %}
 </tr>
 <tr>
   <td>First Failing</td>
-  <td>&nbsp;</td>
-  <td>r123475</td>
-  <td>r123457</td>
-  <td>&nbsp;</td>
+  {% for phase in ci_config.phases %}
+  {% set phase_info = summary[phase.phase_builder] %}
+
+  {% if phase_info.failing and
+        (not phase_info.passing or
+         phase_info.failing.number > phase_info.passing.number) %}
+  <td>r{{ phase_info.failing.source_stamp }}</td>
+  {% else %}
+  <td></td>
+  {% endif %}
+
+  {% endfor %}
 </tr>
 <tr>
   <td>Last Working</td>
-  <td>r123482</td>
-  <td>r123473</td>
-  <td>r123456</td>
-  <td>r123456</td>
+  {% for phase in ci_config.phases %}
+  {% set phase_info = summary[phase.phase_builder] %}
+
+  {% if phase_info.passing %}
+  <td>r{{ phase_info.passing.source_stamp }}</td>
+  {% else %}
+  <td>(unknown)</td>
+  {% endif %}
+
+  {% endfor %}
 </tr>
 </table>
-
 
 {# The builds archive table... #}
 <a name="latest_release">
