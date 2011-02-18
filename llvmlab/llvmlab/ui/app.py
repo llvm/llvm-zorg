@@ -86,7 +86,3 @@ class App(flask.Flask):
             password + self.config["SECRET_KEY"]).hexdigest()
         user = self.config.data.users.get(username)
         return user and passhash == user.passhash
-
-if __name__ == '__main__':
-    app = App.create_standalone()
-    app.run()

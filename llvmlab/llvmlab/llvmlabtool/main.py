@@ -10,7 +10,7 @@ import flask
 import llvmlab.data
 
 def action_create(name, args):
-    """create an llvmlab installation"""
+    """create a llvmlab installation"""
 
     import llvmlab
     from optparse import OptionParser, OptionGroup
@@ -88,6 +88,21 @@ def action_create(name, args):
     flask.json.dump(data.todata(), data_file, indent=2)
     print >>data_file
     data_file.close()
+
+def action_runserver(name, args):
+    """run a llvmlab instance"""
+
+    import llvmlab
+    from optparse import OptionParser, OptionGroup
+    parser = OptionParser("%%prog %s [options] <path>" % name)
+    (opts, args) = parser.parse_args(args)
+
+    if len(args) != 0:
+        parser.error("invalid number of arguments")
+
+    from llvmlab.ui import app
+    instance = app.App.create_standalone()
+    instance.run()
 
 ###
 

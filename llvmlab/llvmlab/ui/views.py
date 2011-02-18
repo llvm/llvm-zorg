@@ -6,7 +6,7 @@ from flask import session
 from flask import url_for
 from flask import current_app
 from flask import Module
-ui = Module('app.py')
+ui = Module(__name__)
 
 @ui.route('/')
 def index():
@@ -14,7 +14,7 @@ def index():
 
 @ui.route('/favicon.ico')
 def favicon_ico():
-    return redirect(url_for('static', filename='favicon.ico'))
+    return redirect(url_for('.static', filename='favicon.ico'))
 
 @ui.route('/users')
 def users():
