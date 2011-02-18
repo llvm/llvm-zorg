@@ -1,12 +1,12 @@
 import flask
-from flask import redirect, url_for
+from flask import redirect, render_template, url_for
 
 # Construct the Flask application.
 app = flask.Flask(__name__)
 
 @app.route('/')
 def index():
-    return "Ceci n'est pas un laboratoire."
+    return render_template("index.html")
 
 @app.route('/favicon.ico')
 def favicon_ico():
