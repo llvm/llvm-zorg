@@ -354,7 +354,6 @@ validated at:
 {# The div we use to include help popups. #}
 <div id="help_popup_holder" style="display: none;" class="popup">
   {% call close_popup_link("help") %}(close) {% endcall %}
-  <hr>
   <div id="help_popup"></div>
 </div>
 {# The iframe we use to load the help source. This is never actually
@@ -373,8 +372,7 @@ validated at:
 {# The div we use to include timing popups. #}
 <div id="timing_popup_holder" style="display: none;" class="popup">
   {% call close_popup_link("timing") %}(close) {% endcall %}
-  <hr>
-  <div id="timing_popup">
+  <div id="timing_popup" class="popup_inner">
     <canvas id="timing_graph" width="400" height="300"></canvas>
     <div id="timing_popup_legend"></div>
   </div>

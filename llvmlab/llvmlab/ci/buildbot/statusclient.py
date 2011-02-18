@@ -243,6 +243,7 @@ class StatusClient(object):
             if times is None or len(times) != 2:
                 yield ('invalid_build', builder.name, id)
                 builder.active_builds.remove(id)
+                continue
 
             # Otherwise, just check to see if the build is done.
             if times[1] is not None:
