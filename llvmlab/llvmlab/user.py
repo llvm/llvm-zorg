@@ -12,17 +12,20 @@ class User(util.simple_repr_mixin):
             raise ValueError, "Unknown version"
 
         return User(data['id'], data['passhash'],
-                    data['name'], data['email'])
+                    data['name'], data['email'],
+                    data['htpasswd'])
 
     def todata(self):
         return { 'version' : 0,
                  'id' : self.id,
                  'passhash' : self.passhash,
                  'name' : self.name,
-                 'email' : self.email }
+                 'email' : self.email,
+                 'htpasswd' : self.htpasswd }
 
-    def __init__(self, id, passhash, name, email):
+    def __init__(self, id, passhash, name, email, htpasswd):
         self.id = id
         self.passhash = passhash
         self.name = name
         self.email = email
+        self.htpasswd = htpasswd

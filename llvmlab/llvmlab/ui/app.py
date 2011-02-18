@@ -79,7 +79,8 @@ class App(flask.Flask):
                 id = self.config['ADMIN_LOGIN'],
                 passhash = self.config['ADMIN_PASSHASH'],
                 name = self.config['ADMIN_NAME'],
-                email = self.config['ADMIN_EMAIL']))
+                email = self.config['ADMIN_EMAIL'],
+                htpasswd = None))
 
         self.config.data = data
 
