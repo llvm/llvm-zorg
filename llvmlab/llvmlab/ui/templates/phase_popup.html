@@ -7,16 +7,25 @@
   </thead>
   {% for name,builds in phased_builds|dictsort %}
   <tr>
-    <td>{{ name }}</td>
-    <td>
+    <td><a href="{{ config.status.master_url }}/builders/{{ name }}">{{
+        name }}</a></td>
+    <td class="phase-cell">
       {% for build in builds %}
       {% if build.end_time == None %}
-      RUNNING
+      {%   set kind = "running" %}
+      {%   set text = "RUNNING" %}
       {% elif build.result == 0 %}
-      PASS
+      {%   set kind = "success" %}
+      {%   set text = "PASS" %}
       {% else %}
-      FAIL
+      {%   set kind = "failing" %}
+      {%   set text = "FAIL" %}
       {% endif %}
+
+      <a class="phase-cell {{ kind }}"
+         href="{{ config.status.master_url }}/builders/{{
+                  name }}/builds/{{ build.number }}">{{ text }}</a>
+
       {% endfor %}
     </td>
   </tr>

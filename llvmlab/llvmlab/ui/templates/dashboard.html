@@ -13,7 +13,7 @@
 {% macro phase_popup_cell(phase, phase_info, build) %}
 {% if not build %}
 {%   set kind = "unknown" %}
-{% elif not build.end_time %}
+{% elif build.end_time == None %}
 {%   set kind = "running" %}
 {% elif build.result == 0 %}
 {%   set kind = "success" %}
@@ -202,6 +202,7 @@ validated at:
 
 <hr>
 
+<h2>Recent Activity</h2>
 {# The results table... #}
 
 <table>
