@@ -7,6 +7,7 @@ import shutil
 import sys
 
 import flask
+import llvmlab.data
 
 def action_create(name, args):
     """create an llvmlab installation"""
@@ -79,9 +80,12 @@ def action_create(name, args):
     cfg_file.write(cfg_data)
     cfg_file.close()
     
+    # Create the inital data file.
+    data = llvmlab.data.Data(users = [])
+
     # Write the initial (empty) data file.
     data_file = open(data_path, 'w')
-    flask.json.dump({}, data_file, indent=2)
+    flask.json.dump(data.todata(), data_file, indent=2)
     print >>data_file
     data_file.close()
 
