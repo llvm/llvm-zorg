@@ -1,0 +1,29 @@
+======
+ TODO
+======
+
+Go-Live Requirements
+====================
+
+ - Config Logic
+
+ - User Login
+
+   o Expect superset of committer list.
+
+   o Keep auth info with lab.llvm.org user cred, svn access will be an
+     attribute.
+
+   o Attributes: user name, SSH key, committer name, email, commit access?,
+     machine access?, lab.llvm.org info (machine list, sponsor list)?
+
+ - Machine List
+
+ - Sponsor List
+
+ - Intro Web Page
+
+Other
+=====
+
+ - Dashboard
