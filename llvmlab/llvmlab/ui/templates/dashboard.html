@@ -143,8 +143,8 @@ window.onload = function() {
 The most recent released revision is <b>r{{
     final_phase.passing.source_stamp }}</b>
 validated at:
-<i>{{ final_phase.passing.end_time|asusertime }}</i>
-(available <a href="{{ url_for('latest_release') }}">here</a>).
+<i>{{ final_phase.passing.end_time|asusertime }}</i><!--
+ FIXME: (available <a href="{{ url_for('latest_release') }}">here</a>) -->.
 {% else %}
 <i><b>No release is currently available!</b></i>
 {% endif %}
