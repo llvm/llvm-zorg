@@ -10,12 +10,16 @@ from llvmlab.ui.frontend.views import frontend as frontend_views
 
 class App(flask.Flask):
     @staticmethod
-    def create_standalone(config = None, data = None):
+    def create_standalone(config = None, data = None, config_path = None):
+        if config_path is not None:
+            assert config is None
+            assert data is None
+
         # Construct the application.
         app = App(__name__)
 
         # Load the application configuration.
-        app.load_config(config)
+        app.load_config(config, config_path)
 
         # Load the database.
         app.load_data(data)
@@ -51,8 +55,11 @@ class App(flask.Flask):
     def __init__(self, name):
         super(App, self).__init__(name)
 
-    def load_config(self, config = None):
-        if config is None:
+    def load_config(self, config = None, config_path = None):
+        if config_path is not None:
+            # Load the configuration file.
+            self.config.from_pyfile(os.path.abspath(config_path))
+        elif config is None:
             # Load the configuration file.
             self.config.from_envvar("LLVMLAB_CONFIG")
         else:
@@ -83,6 +90,12 @@ class App(flask.Flask):
                 htpasswd = None))
 
         self.config.data = data
+
+    def save_data(self):
+        file = open(self.config["DATA_PATH"], 'w')
+        flask.json.dump(self.config.data.todata(), file, indent=2)
+        print >>file
+        file.close()
 
     def authenticate_login(self, username, password):
         passhash = hashlib.sha256(
