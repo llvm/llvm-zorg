@@ -102,3 +102,12 @@ class App(flask.Flask):
             password + self.config["SECRET_KEY"]).hexdigest()
         user = self.config.data.users.get(username)
         return user and passhash == user.passhash
+
+    def get_active_user(self):
+        # Lookup the active user.
+        id = flask.session.get('active_user', None)
+        if id is None:
+            return None
+
+        # Return the appropriate user object.
+        return self.config.data.users[id]

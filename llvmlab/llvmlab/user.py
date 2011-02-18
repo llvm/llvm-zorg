@@ -29,3 +29,11 @@ class User(util.simple_repr_mixin):
         self.name = name
         self.email = email
         self.htpasswd = htpasswd
+
+    def has_lab_access(self):
+        """has_lab_access() -> bool
+
+        Is this user allowed access to the lab? Users with lab access can
+        add/modify/remove machines and update other physical lab information.
+        """
+        return True
