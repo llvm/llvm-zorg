@@ -1,0 +1,15 @@
+{% extends "layout.html" %}
+{% block title %}users{% endblock %}
+{% block body %}
+
+<table>
+<tr><th>User Name</th><th>User Email</th></tr>
+{% for user in config.data.users.values() %}
+<tr>
+  <td>{{ user.name }}</td>
+  <td>{{ user.email }}</td>
+</tr>
+{% endfor %}
+</table>
+
+{% endblock %}
