@@ -5,8 +5,6 @@
 Go-Live Requirements
 ====================
 
- - Config Logic
-
  - User Login
 
    o Expect superset of committer list.

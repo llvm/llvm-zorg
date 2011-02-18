@@ -15,7 +15,11 @@
   <div class="body">{% block body %}{% endblock %}</div>
   <div class="footer">
     <a href="{{ url_for('index') }}">{#
-      #}lab.llvm.org</a>
+      #}lab.llvm.org</a><br>
+    <i>Administered by <a href="mailto:{{
+                                        config['ADMIN_EMAIL'] }}">{{
+      config['ADMIN_NAME'] }} &lt;{{
+      config['ADMIN_EMAIL'] }}&gt;</a>
   </div>
 </body>
 </html>

@@ -35,8 +35,11 @@ setup(
         ],
 
     zip_safe = False,
-
     packages = find_packages(),
-
+    entry_points = {
+        'console_scripts': [
+            'llvmlab = llvmlab.llvmlabtool:main',
+            ],
+        },
     install_requires=['Flask'],
 )

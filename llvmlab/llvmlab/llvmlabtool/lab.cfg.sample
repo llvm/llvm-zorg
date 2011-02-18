@@ -1,0 +1,20 @@
+# -*- Python -*-
+
+"""
+LLVM Lab Configuration File
+"""
+
+# Server administrator information.
+ADMIN_LOGIN = %(admin_login)r
+ADMIN_PASSHASH = %(admin_passhash)r
+ADMIN_NAME = %(admin_name)r
+ADMIN_EMAIL = %(admin_email)r
+
+# Should server run in debug mode?
+DEBUG = %(debug_server)r
+
+# Secret key for this server instance.
+SECRET_KEY = %(secret_key)r
+
+# Path to the managed data file.
+DATA_PATH = %(data_path)r
