@@ -26,6 +26,13 @@
    target="_blank">{{ caller() }}</a>
 {% endmacro %}
 
+{% macro close_popup_link(kind) %}
+<a href='#'
+   onclick='close_popup("{{ kind }}", event); return false;'
+   title='Close Popup'
+   target="_blank">{{ caller() }}</a>
+{% endmacro %}
+
 {% macro phase_popup_cell(phase, phase_info, build) %}
 {% if not build %}
 {%   set kind = "unknown" %}
@@ -71,10 +78,18 @@ r{{ build.source_stamp }}
 
 {% block javascript %}
 function show_content_in_popup(kind, content, event) {
+    var popup_holder = document.getElementById(kind + "_popup_holder");
     var popup = document.getElementById(kind + "_popup");
 
     popup.innerHTML = content;
-    popup.style.display = "block";
+    popup_holder.style.display = "block";
+}
+
+function close_popup(kind) {
+    var popup_holder = document.getElementById(kind + "_popup_holder");
+    var popup = document.getElementById(kind + "_popup");
+    popup.innerHTML = "";
+    popup_holder.style.display = "none";
 }
 
 // Handler for phase onclick events.
@@ -298,28 +313,31 @@ validated at:
 </tr>
 </table>
 
-<hr>
-
 {# The div we use to include help popups. #}
-<div id="help_popup" style="display: none;"></div>
+<div id="help_popup_holder" style="display: none;">
+  {% call close_popup_link("help") %}(close) {% endcall %}
+  <div id="help_popup"></div>
+</div>
 {# The iframe we use to load the help source. This is never actually
    displayed, just used to load the HTML we insert into the popup div. #}
 <iframe id="help_popup_frame" style="display: none;"></iframe>
 
-<hr>
-
 {# The div we use to include phase popups. #}
-<div id="phase_popup" style="display: none;"></div>
+<div id="phase_popup_holder" style="display: none;">
+  {% call close_popup_link("phase") %}(close) {% endcall %}
+  <div id="phase_popup"></div>
+</div>
 {# The iframe we use to load the phase popup source. This is never actually
    displayed, just used to load the HTML we insert into the popup div. #}
 <iframe id="phase_popup_frame" style="display: none;"></iframe>
 
-<hr>
-
 {# The div we use to include timing popups. #}
-<div id="timing_popup" style="display: none;">
-  <canvas id="timing_graph" width="400" height="300"></canvas>
-  <div id="timing_popup_legend"></div>
+<div id="timing_popup_holder" style="display: none;">
+  {% call close_popup_link("help") %}(close) {% endcall %}
+  <div id="timing_popup">
+    <canvas id="timing_graph" width="400" height="300"></canvas>
+    <div id="timing_popup_legend"></div>
+  </div>
 </div>
 
 {% endblock %}
