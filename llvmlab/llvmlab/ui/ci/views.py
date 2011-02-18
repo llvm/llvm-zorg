@@ -76,29 +76,34 @@ g_config = config.Config(phases, builders, published_builds,
 
 @ci.route('/')
 def dashboard():
-    return render_template("dashboard.html", ci_config=g_config)
+    return render_template("dashboard.html",
+                           ci_config=current_app.config.summary.config)
 
 @ci.route('/phase/<int:index>/<source_stamp>')
 def phase_popup(index, source_stamp):
+    cfg = current_app.config.summary.config
+
     # Validate the phase.
-    if index >= len(g_config.phases):
+    if index >= len(cfg.phases):
         abort(404)
 
     # Get the phase.
-    phase = g_config.phases[index]
+    phase = cfg.phases[index]
 
     # Lookup the latest builds associated with this revision.
     phased_builds = dict(
         (builder, [b for b in current_app.config.status.builders.get(builder,[])
                    if b.source_stamp == source_stamp])
         for builder in phase.builder_names)
-    return render_template("phase_popup.html", ci_config=g_config,
+    return render_template("phase_popup.html",
+                           ci_config=current_app.config.summary.config,
                            phase = phase, source_stamp = source_stamp,
                            phased_builds = phased_builds)
 
 @ci.route('/latest_release')
 def latest_release():
-    return render_template("latest_release.html", ci_config=g_config)
+    return render_template("latest_release.html",
+                           ci_config=current_app.config.summary.config)
 
 @ci.route('/monitor')
 def buildbot_monitor():
@@ -108,14 +113,16 @@ def buildbot_monitor():
 @ci.route('/times')
 @ci.route('/times/<int:index>')
 def phase_timing(index=None):
+    cfg = current_app.config.summary.config
+
     # Determine what we are timing.
     if index is not None:
         # Validate the phase.
-        if index >= len(g_config.phases):
+        if index >= len(cfg.phases):
             abort(404)
 
         # Get the phase.
-        phase = g_config.phases[index]
+        phase = cfg.phases[index]
     else:
         phase = None
 
@@ -123,7 +130,7 @@ def phase_timing(index=None):
     builder_to_time = []
     if phase is None:
         builders_to_time = [p.phase_builder
-                            for p in g_config.phases]
+                            for p in cfg.phases]
     else:
         builders_to_time = phase.builder_names
 
