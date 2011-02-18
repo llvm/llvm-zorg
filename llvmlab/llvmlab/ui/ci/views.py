@@ -17,10 +17,22 @@ from llvmlab.ci import config
 # load a config object per-revision, and try to be smart about caching it unless
 # things change? Can we report results across changing configs?
 phases = [
-    config.Phase("Sanity", 1, []),
-    config.Phase("Living On", 2, []),
-    config.Phase("Tree Health", 3, []),
-    config.Phase("Validation", 4, [])]
+    config.Phase("Sanity", 1, ["clang-x86_64-osx10-gcc42-RA"]),
+    config.Phase("Living On", 2, ["clang-x86_64-osx10-DA",
+                                  "clang-x86_64-osx10-RA",
+                                  "nightly_clang-x86_64-osx10-gcc42-RA"]),
+    config.Phase("Tree Health", 3, ["nightly_clang-x86_64-osx10-DA",
+                                    "nightly_clang-x86_64-osx10-RA",
+                                    "nightly_clang-x86_64-osx10-RA-O0",
+                                    "nightly_clang-x86_64-osx10-RA-Os",
+                                    "nightly_clang-x86_64-osx10-RA-O3",
+                                    "nightly_clang-x86_64-osx10-RA-flto",
+                                    "nightly_clang-x86_64-osx10-RA-g"]),
+    config.Phase("Validation", 4, ["clang-x86_64-osx10-RA-stage3",
+                                   "gccTestSuite-clang-x86_64-osx10-RA",
+                                   "nightly_clang-x86_64-osx10-RA-stage3-g",
+                                   "libcxx-clang-x86_64-osx10-RA",
+                                   "boost-trunk-clang-x86_64-osx10-RA"])]
 builders = [
     config.Builder("clang-x86_64-osx10-gcc42-RA"),
     config.Builder("clang-x86_64-osx10-DA"),
