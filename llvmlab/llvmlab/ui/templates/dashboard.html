@@ -1,8 +1,8 @@
 {% extends "layout.html" %}
 
-{% macro help_link(key) %}
+{% macro help_link(url) %}
 <a href='#'
-   onclick='show_popup("help", "./help/{{ key }}", event); return false;'
+   onclick='show_popup("help", "{{ url }}", event); return false;'
    title='Help'
    class='help-link'
    target="_blank">?</a>
@@ -205,7 +205,9 @@ validated at:
     {% for phase in ci_config.phases %}
     {% set phase_info = summary[phase.phase_builder] %}
 
-    <th>{{ phase.name }}<br>(Phase {{ phase.number }})</th>
+    <th>{{ phase.name }}{{
+      help_link(url_for('phase_description', index=loop.index0)) }}
+      <br>(Phase {{ phase.number }})</th>
     {% endfor %}
   </tr>
   <tr>

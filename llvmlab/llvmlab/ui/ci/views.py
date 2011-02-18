@@ -47,6 +47,18 @@ def buildbot_monitor():
     return render_template("buildbot_monitor.html",
                            bb_status=current_app.config.status)
 
+@ci.route('/phase_description/<int:index>')
+def phase_description(index):
+    cfg = current_app.config.summary.config
+
+    # Validate the phase.
+    if index >= len(cfg.phases):
+        abort(404)
+
+    # Get the phase.
+    phase = cfg.phases[index]
+    return render_template("phase_description.html", phase=phase)
+
 @ci.route('/times')
 @ci.route('/times/<int:index>')
 def phase_timing(index=None):

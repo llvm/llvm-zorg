@@ -17,21 +17,23 @@ class Phase(util.simple_repr_mixin):
             raise ValueError, "Unknown version"
 
         return Phase(data['name'], data['number'],
-                     data['phase_builder'], data['builder_names'])
+                     data['phase_builder'], data['builder_names'],
+                     data['description'])
 
     def todata(self):
         return { 'version' : 0,
                  'name' : self.name,
                  'number' : self.number,
                  'phase_builder' : self.phase_builder,
-                 'builder_names' : self.builder_names}
+                 'builder_names' : self.builder_names,
+                 'description' : self.description}
 
-    def __init__(self, name, number, phase_builder, builder_names):
+    def __init__(self, name, number, phase_builder, builder_names, description):
         self.name = name
         self.number = number
         self.phase_builder = phase_builder
         self.builder_names = builder_names
-
+        self.description = description
 
 class Builder(util.simple_repr_mixin):
     """
