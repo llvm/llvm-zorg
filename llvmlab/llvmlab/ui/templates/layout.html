@@ -12,6 +12,11 @@
     <a href="{{ url_for('index') }}">{#
       #}lab.llvm.org</a> | {{ self.title() }}
   </div>
+  <div class="flash_messages">
+    {% for message in get_flashed_messages() %}
+    <div class="flash_message">{{ message }}</div>
+    {% endfor %}
+  </div>
   <div class="body">{% block body %}{% endblock %}</div>
   <div class="footer">
     <a href="{{ url_for('index') }}">{#

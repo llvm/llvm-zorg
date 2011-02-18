@@ -34,3 +34,12 @@ div.footer {
 div.footer a {
     color: #FFF;
 }
+
+div.flash_messages {
+    margin: 10px;
+}
+div.flash_message {
+    background: #CEE5F5;
+    padding: 10px;
+    border: 1px solid #AACBE2;
+}
