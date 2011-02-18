@@ -104,44 +104,16 @@ Binary packages of the latest release:
       <th width="80%" align="left">Archive</th>
     </tr>
   </thead>
+  
+  {% for build in ci_config.published_builds %}
   <tr>
-    <td rowspan="2">LLVM</td>
-    <td>Linux</td>
-    <td>i386</td>
-    <td>llvm-linux-i386.tgz</td>
+    <td>{{ build.product }}</td>
+    <td>{{ build.os }}</td>
+    <td>{{ build.arch }}</td>
+    <td><a href="/archives/{{ build.archive_name }}">{{
+        build.archive_name }}</a></td>
   </tr>
-  <tr>
-    <td>Mac OS X (SnowLeopard)</td>
-    <td>x86_64</td>
-    <td>llvm-darwin10-x86_64.tgz</td>
-  </tr>
-  <tr>
-    <td rowspan="3">Clang</td>
-    <td>Linux</td>
-    <td>i386</td>
-    <td>clang-linux-i386.tgz</td>
-  </tr>
-  <tr>
-    <td>Mac OS X (SnowLeopard)</td>
-    <td>x86_64</td>
-    <td>clang-darwin10-x86_64.tgz</td>
-  </tr>
-  <tr>
-    <td>Windows</td>
-    <td>i386</td>
-    <td>clang-windows-i386.tgz</td>
-  </tr>
-  <tr>
-    <td rowspan="2">llvm-gcc 4.2</td>
-    <td>Linux</td>
-    <td>i386</td>
-    <td>llvm-gcc-4.2-linux-i386.tgz</td>
-  </tr>
-  <tr>
-    <td>Linux</td>
-    <td>x86_64</td>
-    <td>llvm-gcc-4.2-linux-x86_64.tgz</td>
-  </tr>
+  {% endfor %}
 </table>
 
 <h1>Example Phase Popups</h1>
