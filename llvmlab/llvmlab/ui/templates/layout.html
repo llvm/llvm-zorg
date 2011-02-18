@@ -6,6 +6,9 @@
   <title>{{ self.title() }}</title>
   <link rel="stylesheet" type="text/css"{#
         #} href="{{ url_for('.static', filename='style.css') }}">
+  <script type='text/javascript'>
+  {% block javascript %}{% endblock %}
+  </script>
 </head>
 <body>
   <div class="header">
@@ -28,7 +31,7 @@
     <i>Administered by <a href="mailto:{{
                                         config['ADMIN_EMAIL'] }}">{{
       config['ADMIN_NAME'] }} &lt;{{
-      config['ADMIN_EMAIL'] }}&gt;</a>
+      config['ADMIN_EMAIL'] }}&gt;</a></i>
   </div>
 </body>
 </html>

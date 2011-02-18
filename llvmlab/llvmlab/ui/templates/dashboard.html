@@ -1,4 +1,44 @@
 {% extends "layout.html" %}
+
+{% macro phase_popup_link(phase, build) %}
+<a href='#'
+   onclick='show_phase_popup("./phase/{{
+            phase.number - 1 }}/{{
+            build.source_stamp }}", event); return false;'
+   title='Phase {{ phase.number }} {{ phase.name }} - {{ build.source_stamp }}'
+   target="_blank">{{ caller() }}</a>
+{% endmacro %}
+
+{% block javascript %}
+// Handler for phase onclick events.
+function show_phase_popup(url, event) {
+    // Get the popup elements.
+    var popup = document.getElementById("phase_popup");
+    var popup_frame = document.getElementById("phase_popup_frame");
+
+    // Load the phase popup into the hidden frame.
+    popup_frame.src = url;
+}
+
+// Handler for page load events inside the hidden iframe we use to load phase
+// popups.
+function popup_frame_loaded(event) {
+    var popup = document.getElementById("phase_popup");
+    var popup_frame = document.getElementById("phase_popup_frame");
+
+    // Get the frame contents and put it in the popup div.
+    var content = popup_frame.contentWindow.document.body.innerHTML;
+    popup.innerHTML = content;
+    popup.style.display = "block";
+}
+
+// On load, set the iframe's onload handler.
+window.onload = function() {
+    var popup_frame = document.getElementById("phase_popup_frame");
+    popup_frame.onload = function(event) { popup_frame_loaded(event); };
+}
+{% endblock %}
+
 {% block title %}dashboard{% endblock %}
 {% block body %}
 
@@ -40,9 +80,7 @@ validated at:
 </font>
 
 
-<a name="current_status">
-  <h2>Current Status</h2>
-</a>
+<h2>Current Status</h2>
 
 {# The traffic light... #}
 <table>
@@ -60,14 +98,20 @@ validated at:
 
     {# First, check if we have no status (no completed builds, or prior phase is
        failing). #}
+    <td align="center">
     {% if not phase_info or not phase_info.completed or is_failing %}
-    <td align="center"><img src="/static/white.png" width="45" height="45"></td>
-    {% elif phase_info.completed.result == 0 %}
-    <td align="center"><img src="/static/green.png" width="45" height="45"></td>
+      <img src="/static/white.png" width="45" height="45">
     {% else %}
-    {% set is_failing = true %}
-    <td align="center"><img src="/static/red.png" width="45" height="45"></td>
+      {% call phase_popup_link(phase, phase_info.completed) %}
+      {% if phase_info.completed.result == 0 %}
+      <img src="/static/green.png" width="45" height="45">
+      {% else %}
+      {% set is_failing = true %}
+      <img src="/static/red.png" width="45" height="45">
+      {% endif %}
+      {% endcall %}
     {% endif %}
+    </td>
 
     {% endfor %}
   </tr>
@@ -92,7 +136,11 @@ validated at:
   {% set phase_info = summary[phase.phase_builder] %}
 
   {% if phase_info.current %}
-  <td>r{{ phase_info.current[0].source_stamp }}</td>
+  <td>
+    {% call phase_popup_link(phase, phase_info.current[0]) %}
+    r{{ phase_info.current[0].source_stamp }}
+    {% endcall %}
+  </td>
   {% else %}
   <td>(idle)</td>
   {% endif %}
@@ -105,7 +153,11 @@ validated at:
   {% set phase_info = summary[phase.phase_builder] %}
 
   {% if phase_info.completed %}
-  <td>r{{ phase_info.completed.source_stamp }}</td>
+  <td>
+    {% call phase_popup_link(phase, phase_info.completed) %}
+    r{{ phase_info.completed.source_stamp }}
+    {% endcall %}
+  </td>
   {% else %}
   <td>(unknown)</td>
   {% endif %}
@@ -120,7 +172,11 @@ validated at:
   {% if phase_info.failing and
         (not phase_info.passing or
          phase_info.failing.number > phase_info.passing.number) %}
-  <td>r{{ phase_info.failing.source_stamp }}</td>
+  <td>
+    {% call phase_popup_link(phase, phase_info.failing) %}
+    r{{ phase_info.failing.source_stamp }}
+    {% endcall %}
+  </td>
   {% else %}
   <td></td>
   {% endif %}
@@ -133,7 +189,11 @@ validated at:
   {% set phase_info = summary[phase.phase_builder] %}
 
   {% if phase_info.passing %}
-  <td>r{{ phase_info.passing.source_stamp }}</td>
+  <td>
+    {% call phase_popup_link(phase, phase_info.passing) %}
+    r{{ phase_info.passing.source_stamp }}
+    {% endcall %}
+  </td>
   {% else %}
   <td>(unknown)</td>
   {% endif %}
@@ -141,5 +201,11 @@ validated at:
   {% endfor %}
 </tr>
 </table>
+
+{# The div we use to include phase popups. #}
+<div id="phase_popup" style="display: none;"></div>
+{# The iframe we use to load the phase popup source. This is never actually
+   displayed, just used to load the HTML we insert into the popup div. #}
+<iframe id="phase_popup_frame" style="display: none;"></iframe>
 
 {% endblock %}
