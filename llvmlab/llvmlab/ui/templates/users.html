@@ -2,6 +2,12 @@
 {% block title %}users{% endblock %}
 {% block body %}
 
+{% if not session.logged_in %}
+
+You must <a href="{{ url_for('login') }}">login</a>.
+
+{% else %}
+
 <table>
 <tr><th>User Name</th><th>User Email</th></tr>
 {% for user in config.data.users.values() %}
@@ -11,5 +17,7 @@
 </tr>
 {% endfor %}
 </table>
+
+{% endif %}
 
 {% endblock %}
