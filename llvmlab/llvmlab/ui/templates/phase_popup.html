@@ -1,0 +1,24 @@
+{# Fragment template for rendering an individual phase pop-up #}
+
+<h3>Phase {{ phase.number }} {{ phase.name }} - r{{ source_stamp }}</h3>
+<table>
+  <thead>
+    <tr><th>Builder</th><th>Status</th></tr>
+  </thead>
+  {% for name,builds in phased_builds|dictsort %}
+  <tr>
+    <td>{{ name }}</td>
+    <td>
+      {% for build in builds %}
+      {% if build.end_time == None %}
+      RUNNING
+      {% elif build.result == 0 %}
+      PASS
+      {% else %}
+      FAIL
+      {% endif %}
+      {% endfor %}
+    </td>
+  </tr>
+  {% endfor %}
+</table>
