@@ -9,6 +9,7 @@ from flask import url_for
 from flask import current_app
 ci = flask.Module(__name__, url_prefix='/ci')
 
+from llvmlab import util
 from llvmlab.ci import config
 
 # Hard-coded current configuration.
@@ -134,8 +135,11 @@ def phase_timing(index=None):
 
     # Return the timing data as a json object.
     data = []
-    for name,builds in builders.items():
+    for i,(name,builds) in enumerate(util.sorted(builders.items())):
+        color = list(util.make_dark_color(float(i) / len(builders)))
+        hex_color = '%02x%02x%02x' % tuple(int(x*255)
+                                           for x in color)
         points = [(float(i) / len(builds), b.end_time - b.start_time)
                   for i,b in enumerate(builds)]
-        data.append((name, points))
+        data.append((name, points, color, hex_color))
     return flask.jsonify(data = data)

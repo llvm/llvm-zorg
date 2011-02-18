@@ -9,6 +9,25 @@
    target="_blank">{{ caller() }}</a>
 {% endmacro %}
 
+{% macro timing_popup_link(phase) -%}
+<a href='#'
+   {% if phase == None %}
+   onclick='show_timing_popup("{{ url_for('phase_timing') }}", event); return false;'
+   title='Phase Timing Information'
+   {% else %}
+   onclick='show_timing_popup("{{
+            url_for('phase_timing', index = phase.number - 1)}}", event); return false;'
+   title='Phase {{ phase.number }} {{ phase.name }} - Timing Information'
+   {% endif %}
+   target="_blank">{{ caller() }}</a>
+{%- endmacro %}
+
+{# Include jQuery and View2D graph widget for use by the timing popups. #}
+{% block head %}
+    <script type=text/javascript src="/static/jquery/1.5/jquery.min.js"></script>
+    <script src="/static/View2D.js"></script>
+{% endblock %}
+
 {% block javascript %}
 // Handler for phase onclick events.
 function show_phase_popup(url, event) {
@@ -18,6 +37,51 @@ function show_phase_popup(url, event) {
 
     // Load the phase popup into the hidden frame.
     popup_frame.src = url;
+}
+
+// Handler for timing onclick events.
+function show_timing_popup(url, event) {
+    // Get the popup elements.
+    var popup = document.getElementById("timing_popup");
+    var popup_legend = document.getElementById("timing_popup_legend");
+
+    // Get the timing data from the server.
+    $.getJSON(url, {}, function(data) {
+      var builds = data.data;
+
+      // Create the timing graph if necessary.
+      var graph = window.timing_graph_object;
+      if (graph) {
+        graph.clearPlots();
+      } else {
+        graph = window.timing_graph_object = new Graph2D("timing_graph");
+        graph.clearColor = [1, 1, 1];
+        graph.xAxis.format = graph.xAxis.formats.normal;
+      }
+
+      // Add the plots and build the legend.
+      var legend = "<table cellspacing=4 border=1>";
+      legend += "<tr><th colspan=2>Legend</th></tr>";
+      for (var i = 0, e = builds.length; i != e; ++i) {
+        var item = builds[i];
+        var name = item[0];
+        var points = item[1];
+        var color = item[2];
+        var hex_color = item[3];
+        graph.addPlot(points, new Graph2D_LinePlotStyle(1, color));
+
+        legend += "<tr><td bgcolor=\""  + hex_color + "\">&nbsp;</td>";
+        legend += "<td>" + name + "</td></tr>";
+      }
+      legend += "</table>";
+      popup_legend.innerHTML = legend;
+
+      graph.draw();
+//      popup.innerHTML = data.data;
+
+      // Show the timing popup.
+      popup.style.display = "block";
+    });
 }
 
 // Handler for page load events inside the hidden iframe we use to load phase
@@ -80,7 +144,8 @@ validated at:
 </font>
 
 
-<h2>Current Status</h2>
+<h2>Current Status ({%
+  call timing_popup_link(None) %}T{% endcall %})</h2>
 
 {# The traffic light... #}
 <table>
@@ -126,7 +191,8 @@ validated at:
   <tr>
     <th>Result Type</th>
     {% for phase in ci_config.phases %}
-    <th>Phase {{ phase.number }}</th>
+    <th>Phase {{ phase.number }} ({%
+  call timing_popup_link(phase) %}T{% endcall %})</th>
     {% endfor %}
   </tr>
 </thead>
@@ -207,5 +273,11 @@ validated at:
 {# The iframe we use to load the phase popup source. This is never actually
    displayed, just used to load the HTML we insert into the popup div. #}
 <iframe id="phase_popup_frame" style="display: none;"></iframe>
+
+{# The div we use to include timing popups. #}
+<div id="timing_popup" style="display: none;">
+  <canvas id="timing_graph" width="400" height="300"></canvas>
+  <div id="timing_popup_legend"></div>
+</div>
 
 {% endblock %}

@@ -6,6 +6,7 @@
   <title>{{ self.title() }}</title>
   <link rel="stylesheet" type="text/css"{#
         #} href="{{ url_for('.static', filename='style.css') }}">
+  {% block head %}{% endblock %}
   <script type='text/javascript'>
   {% block javascript %}{% endblock %}
   </script>
