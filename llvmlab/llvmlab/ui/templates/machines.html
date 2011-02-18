@@ -1,0 +1,27 @@
+{% extends "layout.html" %}
+{% block title %}users{% endblock %}
+{% block body %}
+
+{% if not session.logged_in %}
+
+You must <a href="{{ url_for('login') }}">login</a>.
+
+{% else %}
+
+<table>
+<thead>
+<tr><th colspan=3>Machines</th></tr>
+<tr><th>ID</th><th>Hostname</th><th>Admin</th></tr>
+</thead>
+{% for id,machine in config.data.machines|dictsort %}
+<tr>
+  <td>{{ id }}</td>
+  <td>{{ machine.hostname }}</td>
+  <td><a href="{{ url_for('user', machine.admin) }}">{{ machine.admin }}</td>
+</tr>
+{% endfor %}
+</table>
+
+{% endif %}
+
+{% endblock %}

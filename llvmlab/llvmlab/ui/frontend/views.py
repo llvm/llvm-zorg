@@ -16,6 +16,10 @@ def index():
 def favicon_ico():
     return redirect(url_for('.static', filename='favicon.ico'))
 
+@frontend.route('/machines')
+def machines():
+    return render_template("machines.html")
+
 @frontend.route('/users')
 def users():
     return render_template("users.html")

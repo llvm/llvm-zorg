@@ -27,10 +27,9 @@ class Data(util.simple_repr_mixin):
                                for item in self.machines.values()] }
 
     def __init__(self, users, machines):
+        self.machines = dict((item.id, item) for item in machines)
         self.users = dict((item.id, item) for item in users)
         self.admin_user = None
-
-        self.machines = dict((item.id, item) for item in machines)
 
     def set_admin_user(self, user):
         if user.id in self.users:
