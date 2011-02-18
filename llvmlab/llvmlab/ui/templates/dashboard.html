@@ -1,8 +1,24 @@
 {% extends "layout.html" %}
 
+{% macro help_link(key) %}
+<a href='#'
+   onclick='show_popup("help", "./help/{{ key }}", event); return false;'
+   title='Help'
+   class='help-link'
+   target="_blank">?</a>
+{% endmacro %}
+
+{% macro help_text(text) %}
+<a href='#'
+   onclick='show_content_in_popup("help", "{{ text }}", event); return false;'
+   title='Help'
+   class='help-link'
+   target="_blank">?</a>
+{% endmacro %}
+
 {% macro phase_popup_link(phase, build, kind) %}
 <a href='#'
-   onclick='show_phase_popup("./phase/{{
+   onclick='show_popup("phase", "./phase/{{
             phase.number - 1 }}/{{
             build.source_stamp }}", event); return false;'
    title='Phase {{ phase.number }} {{ phase.name }} - {{ build.source_stamp }}'
@@ -54,13 +70,20 @@ r{{ build.source_stamp }}
 {% endblock %}
 
 {% block javascript %}
-// Handler for phase onclick events.
-function show_phase_popup(url, event) {
-    // Get the popup elements.
-    var popup = document.getElementById("phase_popup");
-    var popup_frame = document.getElementById("phase_popup_frame");
+function show_content_in_popup(kind, content, event) {
+    var popup = document.getElementById(kind + "_popup");
 
-    // Load the phase popup into the hidden frame.
+    popup.innerHTML = content;
+    popup.style.display = "block";
+}
+
+// Handler for phase onclick events.
+function show_popup(kind, url, event) {
+    // Get the popup elements.
+    var popup = document.getElementById(kind + "_popup");
+    var popup_frame = document.getElementById(kind + "_popup_frame");
+
+    // Load the popup into the hidden frame.
     popup_frame.src = url;
 }
 
@@ -102,29 +125,30 @@ function show_timing_popup(url, event) {
       popup_legend.innerHTML = legend;
 
       graph.draw();
-//      popup.innerHTML = data.data;
 
       // Show the timing popup.
       popup.style.display = "block";
     });
 }
 
-// Handler for page load events inside the hidden iframe we use to load phase
-// popups.
-function popup_frame_loaded(event) {
-    var popup = document.getElementById("phase_popup");
-    var popup_frame = document.getElementById("phase_popup_frame");
+// Handler for page load events inside the hidden iframe we use to load popups.
+function popup_frame_loaded(kind, event) {
+    var popup_frame = document.getElementById(kind + "_popup_frame");
 
     // Get the frame contents and put it in the popup div.
     var content = popup_frame.contentWindow.document.body.innerHTML;
-    popup.innerHTML = content;
-    popup.style.display = "block";
+    show_content_in_popup(kind, content, event);
 }
 
 // On load, set the iframe's onload handler.
 window.onload = function() {
-    var popup_frame = document.getElementById("phase_popup_frame");
-    popup_frame.onload = function(event) { popup_frame_loaded(event); };
+    document.getElementById("help_popup_frame").onload = function(event) {
+        popup_frame_loaded("help", event);
+    };
+
+    document.getElementById("phase_popup_frame").onload = function(event) {
+        popup_frame_loaded("phase", event);
+    }
 }
 {% endblock %}
 
@@ -140,8 +164,9 @@ window.onload = function() {
 {% set final_phase = summary[ci_config.validation_builder] %}
 
 {% if final_phase and final_phase.passing %}
-The most recent released revision is <b>r{{
-    final_phase.passing.source_stamp }}</b>
+The most recent released revision{{
+help_text("A released revision is one which has passed all of the phases.") }} is
+<b>r{{ final_phase.passing.source_stamp }}</b>
 validated at:
 <i>{{ final_phase.passing.end_time|asusertime }}</i><!--
  FIXME: (available <a href="{{ url_for('latest_release') }}">here</a>) -->.
@@ -270,6 +295,14 @@ validated at:
   {% endfor %}
 </tr>
 </table>
+
+<hr>
+
+{# The div we use to include help popups. #}
+<div id="help_popup" style="display: none;"></div>
+{# The iframe we use to load the help source. This is never actually
+   displayed, just used to load the HTML we insert into the popup div. #}
+<iframe id="help_popup_frame" style="display: none;"></iframe>
 
 <hr>
 

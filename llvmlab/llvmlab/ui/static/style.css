@@ -46,6 +46,12 @@ div.flash_message {
 
 /* Dashboard Features */
 
+a.help-link {
+    padding: 0px;
+    font-size: 75%;
+    vertical-align: super;
+}
+
 td.phase-cell {
     padding: 4px 4px 4px 4px;
     color: #333333;
