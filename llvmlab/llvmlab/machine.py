@@ -11,13 +11,15 @@ class Machine(util.simple_repr_mixin):
         if version != 0:
             raise ValueError, "Unknown version"
 
-        return Machine(data['id'], data['hostname'])
+        return Machine(data['id'], data['hostname'], data['admin'])
 
     def todata(self):
         return { 'version' : 0,
                  'id' : self.id,
-                 'hostname' : self.hostname }
+                 'hostname' : self.hostname,
+                 'admin' : self.admin }
 
-    def __init__(self, id, hostname):
+    def __init__(self, id, hostname, admin):
         self.id = id
         self.hostname = hostname
+        self.admin = admin
