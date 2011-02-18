@@ -13,10 +13,9 @@ You must <a href="{{ url_for('login') }}">login</a>.
 <tr><th colspan=3>Users</th></tr>
 <tr><th>ID</th><th>Name</th><th>Email</th></tr>
 </thead>
-{% for user in config.data.users.values() %}
+{% for id,user in config.data.users|dictsort %}
 <tr>
-  <td><a href="{{ url_for('user', username=user.id) }}">{{
-      user.id }}</a></td>
+  <td><a href="{{ url_for('user', username=id) }}">{{ id }}</a></td>
   <td>{{ user.name }}</td>
   <td>{{ user.email }}</td>
 </tr>
