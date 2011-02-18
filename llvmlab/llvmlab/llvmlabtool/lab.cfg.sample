@@ -20,11 +20,6 @@ MAIL_ERRORS = True
 # Secret key for this server instance.
 SECRET_KEY = %(secret_key)r
 
-# Path to the managed data file.
-DATA_PATH = %(data_path)r
-
-# Path to the buildbot status file.
-STATUS_PATH = %(status_path)r
-
-# Path to the error log.
-ERROR_LOG_PATH = %(error_log_path)r
+# Path to the installation directory (which stores data files, status, logs,
+# etc.).
+INSTALL_PATH = %(install_path)r

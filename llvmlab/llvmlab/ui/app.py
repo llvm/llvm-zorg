@@ -27,9 +27,12 @@ class App(flask.Flask):
         app.load_config(config, config_path)
 
         # Configure error logging.
-        handler = logging.FileHandler(app.config['ERROR_LOG_PATH'])
-        handler.setLevel(logging.WARNING)
-        app.logger.addHandler(handler)
+        install_path = app.config["INSTALL_PATH"]
+        if install_path:
+            error_log_path = os.path.join(install_path, "error.log")
+            handler = logging.FileHandler(error_log_path)
+            handler.setLevel(logging.WARNING)
+            app.logger.addHandler(handler)
         
         # Configure error emails, if requested.
         if app.config['MAIL_ERRORS']:
@@ -78,8 +81,7 @@ class App(flask.Flask):
             "EMAIL_RELAY_SERVER" : "localhost",
             "MAIL_ERRORS" : False,
             "SECRET_KEY" : secret_key,
-            "DATA_PATH" : None,
-            "STATUS_PATH" : None }
+            "INSTALL_PATH" : None }
 
         # Construct an empty test database.
         data = llvmlab.data.Data(users = [], machines = [])
@@ -111,7 +113,8 @@ class App(flask.Flask):
 
     def load_data(self, data = None):
         if data is None:
-            data_path = self.config["DATA_PATH"]
+            install_path = self.config["INSTALL_PATH"]
+            data_path = os.path.join(install_path, "lab-data.json")
             data_file = open(data_path, "rb")
             data_object = flask.json.load(data_file)
             data_file.close()
@@ -130,14 +133,17 @@ class App(flask.Flask):
         self.config.data = data
 
     def save_data(self):
-        file = open(self.config["DATA_PATH"], 'w')
+        install_path = self.config["INSTALL_PATH"]
+        data_path = os.path.join(install_path, "lab-data.json")
+        file = open(data_path, 'w')
         flask.json.dump(self.config.data.todata(), file, indent=2)
         print >>file
         file.close()
 
     def load_status(self, status = None):
         if status is None:
-            data_path = self.config["STATUS_PATH"]
+            install_path = self.config["INSTALL_PATH"]
+            data_path = os.path.join(install_path, "lab-status.json")
             data_file = open(data_path, "rb")
             data_object = flask.json.load(data_file)
             data_file.close()
@@ -148,7 +154,9 @@ class App(flask.Flask):
         self.config.status = status
 
     def save_status(self):
-        file = open(self.config["STATUS_PATH"], 'w')
+        install_path = self.config["INSTALL_PATH"]
+        data_path = os.path.join(install_path, "lab-status.json")
+        file = open(data_path, 'w')
         flask.json.dump(self.config.status.todata(), file, indent=2)
         print >>file
         file.close()

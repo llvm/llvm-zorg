@@ -36,8 +36,6 @@ def action_create(name, args):
     import llvmlab
     from optparse import OptionParser, OptionGroup
     parser = OptionParser("%%prog %s [options] <path>" % name)
-    parser.add_option("-f", "--force", dest="force", action="store_true",
-                      help="overwrite existing files")
 
     group = OptionGroup(parser, "CONFIG OPTIONS")
     group.add_option("", "--admin-login", dest="admin_login",
@@ -64,28 +62,17 @@ def action_create(name, args):
     if len(args) != 1:
         parser.error("invalid number of arguments")
 
-    basepath, = args
-    basepath = os.path.abspath(basepath)
-    cfg_path = os.path.join(basepath, 'lab.cfg')
-    data_path = os.path.join(basepath, 'lab-data.json')
-    status_path = os.path.join(basepath, 'lab-status.json')
-    error_log_path = os.path.join(basepath, 'error.log')
+    install_path, = args
+    install_path = os.path.abspath(install_path)
+    cfg_path = os.path.join(install_path, 'lab.cfg')
 
-    if not os.path.exists(basepath):
-        try:
-            os.mkdir(basepath)
-        except:
-            parser.error("unable to create directory: %r" % basepath)
-    elif not os.path.isdir(basepath):
-        parser.error("%r exists but is not a directory" % basepath)
-
-    if not opts.force:
-        if os.path.exists(cfg_path):
-            parser.error("%r exists (use --force to override)" % cfg_path)
-        if os.path.exists(data_path):
-            parser.error("%r exists (use --force to override)" % data_path)
-        if os.path.exists(status_path):
-            parser.error("%r exists (use --force to override)" % status_path)
+    # Create the install directory.
+    if os.path.exists(install_path):
+        parser.error("refusing to install: %r exists" % install_path)
+    try:
+        os.mkdir(install_path)
+    except:
+        parser.error("unable to create directory: %r" % install_path)
 
     # Construct the config file.
     sample_cfg_path = os.path.join(os.path.abspath(os.path.dirname(__file__)),
@@ -100,9 +87,7 @@ def action_create(name, args):
     cfg_options['admin_passhash'] = hashlib.sha256(
         opts.admin_password + secret_key).hexdigest()
     cfg_options['secret_key'] = secret_key
-    cfg_options['data_path'] = data_path
-    cfg_options['status_path'] = status_path
-    cfg_options['error_log_path'] = error_log_path
+    cfg_options['install_path'] = install_path
     cfg_data = sample_cfg_data % cfg_options
 
     # Write the initial config file.
