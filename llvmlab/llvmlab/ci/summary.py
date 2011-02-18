@@ -46,11 +46,12 @@ class Summary(object):
                     if completed is None:
                         completed = build
 
-                    if build.result == 0:
-                        if passing is None:
+                    # Track the (a) most recent passing build and (b) oldest
+                    # failure which happened after a passing build.
+                    if passing is None:
+                        if build.result == 0:
                             passing = build
-                    else:
-                        if failing is None:
+                        else:
                             failing = build
 
             info[builder.name] = {
