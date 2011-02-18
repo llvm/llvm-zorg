@@ -18,7 +18,7 @@
 {% elif build.result == 0 %}
 {%   set kind = "success" %}
 {% elif build == phase_info.failing %}
-{%   set kind = "failing" %}
+{%   set kind = "failure" %}
 {% else %}
 {%   set kind = "warnings" %}
 {% endif %}
