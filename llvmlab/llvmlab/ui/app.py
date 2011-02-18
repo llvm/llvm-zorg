@@ -55,18 +55,17 @@ class App(flask.Flask):
         app.register_module(llvmlab.ui.ci.views.ci)
         app.register_module(llvmlab.ui.frontend.views.frontend)
 
-        # Spawn the status monitor thread.
-        app.monitor = app.config.status.start_monitor(app)
-
-        # Construct the dashboard summary object.
-        app.config.summary = llvmlab.ci.summary.Summary(
-            llvmlab.ui.ci.views.g_config, app.config.status)
+        # Clear the dashboard summary object.
+        app.config.summary = None
 
         # Load any dashboard plugins.
         plugins_module = app.config["PLUGIN_MODULE"]
         if plugins_module:
             module = __import__(plugins_module, fromlist=['__name__'])
             module.register(app)
+
+        # Spawn the status monitor thread.
+        app.monitor = app.config.status.start_monitor(app)
                         
         return app
 
