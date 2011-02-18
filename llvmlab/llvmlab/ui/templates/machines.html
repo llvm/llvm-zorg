@@ -17,7 +17,8 @@ You must <a href="{{ url_for('login') }}">login</a>.
 <tr>
   <td>{{ id }}</td>
   <td>{{ machine.hostname }}</td>
-  <td><a href="{{ url_for('user', machine.admin) }}">{{ machine.admin }}</td>
+  <td><a href="{{ url_for('user', username=machine.admin) }}">{{
+      machine.admin }}</td>
 </tr>
 {% endfor %}
 </table>

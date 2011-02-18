@@ -1,0 +1,17 @@
+{% extends "layout.html" %}
+{% block title %}users{% endblock %}
+{% block body %}
+
+<h2>Add Machine</h2>
+{% if error %}
+<p class=error><strong>Error:</strong> {{ error }}
+{% endif %}
+<form action="{{ url_for('add_machine') }}" method="POST">
+<dl>
+  <dt>ID:</dt><dd><input type="text" name="id"></dd>
+  <dt>Hostname:</td><dd><input type="text" name="hostname"></dd>
+  <dd><input type=submit value=Submit></dd>
+</dl>
+</form>
+
+{% endblock %}
