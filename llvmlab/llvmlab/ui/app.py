@@ -5,9 +5,10 @@ import flask
 
 import llvmlab.data
 import llvmlab.user
+import llvmlab.ci.summary
 import llvmlab.ci.status
-from llvmlab.ui.ci.views import ci as ci_views
-from llvmlab.ui.frontend.views import frontend as frontend_views
+import llvmlab.ui.ci.views
+import llvmlab.ui.frontend.views
 
 class App(flask.Flask):
     @staticmethod
@@ -29,11 +30,15 @@ class App(flask.Flask):
         app.load_status(status)
 
         # Load the application routes.
-        app.register_module(ci_views)
-        app.register_module(frontend_views)
+        app.register_module(llvmlab.ui.ci.views.ci)
+        app.register_module(llvmlab.ui.frontend.views.frontend)
 
         # Spawn the status monitor thread.
         app.monitor = app.config.status.start_monitor(app)
+
+        # Construct the dashboard summary object.
+        app.config.summary = llvmlab.ci.summary.Summary(
+            llvmlab.ui.ci.views.g_config, app.config.status)
 
         return app
 

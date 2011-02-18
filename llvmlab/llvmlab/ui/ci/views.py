@@ -32,10 +32,8 @@ phases = [
                   "nightly_clang-x86_64-osx10-RA-flto",
                   "nightly_clang-x86_64-osx10-RA-g"]),
     config.Phase("Validation", 4, "phase4 - validation",
-                 ["clang-x86_64-osx10-RA-stage3",
+                 ["nightly_clang-i386-osx10-RA",
                   "gccTestSuite-clang-x86_64-osx10-RA",
-                  "nightly_clang-x86_64-osx10-RA-stage3-g",
-                  "libcxx-clang-x86_64-osx10-RA",
                   "boost-trunk-clang-x86_64-osx10-RA"])]
 builders = [
     config.Builder("Validated Build"),
@@ -54,10 +52,7 @@ builders = [
     config.Builder("nightly_clang-x86_64-osx10-RA-O3"),
     config.Builder("nightly_clang-x86_64-osx10-RA-flto"),
     config.Builder("nightly_clang-x86_64-osx10-RA-g"),
-    config.Builder("clang-x86_64-osx10-RA-stage3"),
     config.Builder("gccTestSuite-clang-x86_64-osx10-RA"),
-    config.Builder("nightly_clang-x86_64-osx10-RA-stage3-g"),
-    config.Builder("libcxx-clang-x86_64-osx10-RA"),
     config.Builder("boost-trunk-clang-x86_64-osx10-RA")]
 published_builds = [
     config.PublishedBuild("LLVM", "Linux", "i386", "llvm-linux-i386.tgz"),
