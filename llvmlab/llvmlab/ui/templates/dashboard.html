@@ -1,12 +1,37 @@
 {% extends "layout.html" %}
 
-{% macro phase_popup_link(phase, build) %}
+{% macro phase_popup_link(phase, build, kind) %}
 <a href='#'
    onclick='show_phase_popup("./phase/{{
             phase.number - 1 }}/{{
             build.source_stamp }}", event); return false;'
    title='Phase {{ phase.number }} {{ phase.name }} - {{ build.source_stamp }}'
+   class='phase-cell {{ kind }}'
    target="_blank">{{ caller() }}</a>
+{% endmacro %}
+
+{% macro phase_popup_cell(phase, phase_info, build) %}
+{% if not build %}
+{%   set kind = "unknown" %}
+{% elif not build.end_time %}
+{%   set kind = "running" %}
+{% elif build.result == 0 %}
+{%   set kind = "success" %}
+{% elif build == phase_info.failing %}
+{%   set kind = "failing" %}
+{% else %}
+{%   set kind = "warnings" %}
+{% endif %}
+
+<td class="phase-cell {{kind}}">
+{% if build %}
+{%   call phase_popup_link(phase, build, kind) %}
+r{{ build.source_stamp }}
+{%   endcall %}
+{% else %}
+&nbsp;
+{% endif %}
+</td>
 {% endmacro %}
 
 {% macro timing_popup_link(phase) -%}
@@ -153,6 +178,8 @@ validated at:
   <tr>
   <tr>
     {% for phase in ci_config.phases %}
+    {% set phase_info = summary[phase.phase_builder] %}
+
     <th>{{ phase.name }}<br>(Phase {{ phase.number }})</th>
     {% endfor %}
   </tr>
@@ -163,20 +190,11 @@ validated at:
 
     {# First, check if we have no status (no completed builds, or prior phase is
        failing). #}
-    <td align="center">
     {% if not phase_info or not phase_info.completed or is_failing %}
-      <img src="/static/white.png" width="45" height="45">
+    {{ phase_popup_cell(phase, phase_info, None) }}
     {% else %}
-      {% call phase_popup_link(phase, phase_info.completed) %}
-      {% if phase_info.completed.result == 0 %}
-      <img src="/static/green.png" width="45" height="45">
-      {% else %}
-      {% set is_failing = true %}
-      <img src="/static/red.png" width="45" height="45">
-      {% endif %}
-      {% endcall %}
+    {{ phase_popup_cell(phase, phase_info, phase_info.completed) }}
     {% endif %}
-    </td>
 
     {% endfor %}
   </tr>
@@ -202,13 +220,9 @@ validated at:
   {% set phase_info = summary[phase.phase_builder] %}
 
   {% if phase_info.current %}
-  <td>
-    {% call phase_popup_link(phase, phase_info.current[0]) %}
-    r{{ phase_info.current[0].source_stamp }}
-    {% endcall %}
-  </td>
+  {{ phase_popup_cell(phase, phase_info, phase_info.current[0]) }}
   {% else %}
-  <td>(idle)</td>
+  <td class="phase-cell">(idle)</td>
   {% endif %}
 
   {% endfor %}
@@ -219,13 +233,9 @@ validated at:
   {% set phase_info = summary[phase.phase_builder] %}
 
   {% if phase_info.completed %}
-  <td>
-    {% call phase_popup_link(phase, phase_info.completed) %}
-    r{{ phase_info.completed.source_stamp }}
-    {% endcall %}
-  </td>
+  {{ phase_popup_cell(phase, phase_info, phase_info.completed) }}
   {% else %}
-  <td>(unknown)</td>
+  <td class="phase-cell">(unknown)</td>
   {% endif %}
 
   {% endfor %}
@@ -238,13 +248,9 @@ validated at:
   {% if phase_info.failing and
         (not phase_info.passing or
          phase_info.failing.number > phase_info.passing.number) %}
-  <td>
-    {% call phase_popup_link(phase, phase_info.failing) %}
-    r{{ phase_info.failing.source_stamp }}
-    {% endcall %}
-  </td>
+  {{ phase_popup_cell(phase, phase_info, phase_info.failing) }}
   {% else %}
-  <td></td>
+  <td class="phase-cell"></td>
   {% endif %}
 
   {% endfor %}
@@ -255,13 +261,9 @@ validated at:
   {% set phase_info = summary[phase.phase_builder] %}
 
   {% if phase_info.passing %}
-  <td>
-    {% call phase_popup_link(phase, phase_info.passing) %}
-    r{{ phase_info.passing.source_stamp }}
-    {% endcall %}
-  </td>
+  {{ phase_popup_cell(phase, phase_info, phase_info.passing) }}
   {% else %}
-  <td>(unknown)</td>
+  <td class="phase-cell">(unknown)</td>
   {% endif %}
 
   {% endfor %}

@@ -43,3 +43,63 @@ div.flash_message {
     padding: 10px;
     border: 1px solid #AACBE2;
 }
+
+/* Dashboard Features */
+
+td.phase-cell {
+    padding: 4px 4px 4px 4px;
+    color: #333333;
+    background-color: #eee;
+}
+
+.phase-cell {
+    text-align: center;
+    height: 20px;
+    padding: 0 2px;
+    line-height: 0;
+    white-space: nowrap;
+}
+
+.phase-cell a {
+    opacity: 0.85;
+    border-width: 1px;
+    border-style: solid;
+    border-radius: 4px;
+    -webkit-border-radius: 4px;
+    -moz-border-radius: 4px;
+    display: block;
+    width: 90%;
+    height: 20px;
+    line-height: 20px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+
+/* Build Status Indicators */
+.success {
+    color: #FFFFFF;
+    background-color: #8f8;
+    border-color: #4F8530;
+}
+.failure {
+    color: #FFFFFF;
+    background-color: #f99;
+    border-color: #A77272;
+}
+.warnings {
+    color: #FFFFFF;
+    background-color: #ffc343;
+    border-color: #C29D46;
+}
+.running {
+    color: #666666;
+    background-color: #ff6;
+    border-color: #C5C56D;
+}
+.unknown {
+    border-width: 1px;
+    border-style: solid;
+    border-color: #aaa;
+    background-color: #fff;
+}
