@@ -8,6 +8,26 @@ import sys
 
 import flask
 import llvmlab.data
+import llvmlab.user
+import llvmlab.ui.app
+
+def note(message):
+    print >>sys.stderr,"note: %s" % message
+def warning(message):
+    print >>sys.stderr,"warning: %s" % message
+
+def sorted(items):
+    items = list(items)
+    items.sort()
+    return items
+def split_name_and_email(str):
+    if (str.count('<') != 1 or
+        str.count('>') != 1 or
+        not str.endswith('>')):
+        raise ValueError,"Don't know how to parse: %r" % (str,)
+
+    lhs,rhs = str[:-1].split("<")
+    return lhs.strip(), rhs.strip()
 
 def action_create(name, args):
     """create a llvmlab installation"""
@@ -94,19 +114,99 @@ def action_runserver(name, args):
 
     import llvmlab
     from optparse import OptionParser, OptionGroup
-    parser = OptionParser("%%prog %s [options] <path>" % name)
+    parser = OptionParser("%%prog %s [options]" % name)
     (opts, args) = parser.parse_args(args)
 
     if len(args) != 0:
         parser.error("invalid number of arguments")
 
-    from llvmlab.ui import app
-    instance = app.App.create_standalone()
+    instance = llvmlab.ui.app.App.create_standalone()
     instance.run()
+
+def action_import_users(name, args):
+    """import users from SVN information"""
+
+    import llvmlab
+    import ConfigParser
+    from optparse import OptionParser, OptionGroup
+    parser = OptionParser("""\
+%%prog %s [options] <lab config path> <svn mailer config> <svn htpasswd path>
+
+This command imports user information from the llvm.org SVN information. It will
+add any users who are not present in the lab.llvm.org database, and import their
+name, email, and SVN login information.\
+""" % name)
+    (opts, args) = parser.parse_args(args)
+
+    if len(args) != 3:
+        parser.error("invalid number of arguments")
+
+    config_path, svn_mailer_path, svn_htpasswd_path = args
+
+    # Load the app object.
+    instance = llvmlab.ui.app.App.create_standalone(config_path = config_path)
+    data = instance.config.data
+
+    # Load the SVN mailer config.
+    parser = ConfigParser.RawConfigParser()
+    parser.read(svn_mailer_path)
+
+    # Load the SVN htpasswd file.
+    file = open(svn_htpasswd_path)
+    svn_htpasswd = {}
+    for ln in file:
+        if ln.strip():
+            user,htpasswd,module = ln.split(":")
+            svn_htpasswd[user] = (htpasswd, module)
+    file.close()
+
+    # Validate that the authors list and the htpasswd list coincide.
+    svn_authors = dict((author, parser.get("authors", author))
+                       for author in parser.options("authors"))
+    for id in set(svn_authors) - set(svn_htpasswd):
+        warning("svn mailer authors contains user without htpasswd: %r " % id)
+    for id in set(svn_htpasswd) - set(svn_authors):
+        warning("svn contains passwd but no mailer entry: %r " % id)
+
+    # Add user entries for any missing users.
+    for id in sorted(set(svn_authors) & set(svn_htpasswd)):
+        name,email = split_name_and_email(svn_authors[id])
+        htpasswd = svn_htpasswd[id][0]
+        passhash = hashlib.sha256(
+            htpasswd + instance.config['SECRET_KEY']).hexdigest()
+
+        # Lookup the user entry.
+        user = data.users.get(id)
+
+        # Never allow modifying the admin user.
+        if user is data.admin_user:
+            warning("ignore %r, is the admin user!" % id)
+            continue
+
+        # Create the user if missing.
+        if user is None:
+            # Use the users htpasswd (itself) as the initial password.
+            user = data.users[id] = llvmlab.user.User(id, passhash, name,
+                                                      email, htpasswd)
+            note("added user %r" % id)
+            continue
+
+        # Otherwise, update the users info if necessary.
+        for kind,new,old in (('name', name, user.name),
+                             ('email', email, user.email),
+                             ('htpasswd', htpasswd, user.htpasswd)):
+            if new != old:
+                note("changed %r %s from %r to %r" % (
+                        id, kind, old, new))
+                setattr(user, kind, new)
+
+    # Save the instance data.
+    instance.save_data()
 
 ###
 
-commands = dict((name[7:], f) for name,f in locals().items()
+commands = dict((name[7:].replace("_","-"), f)
+                for name,f in locals().items()
                 if name.startswith('action_'))
 
 def usage():

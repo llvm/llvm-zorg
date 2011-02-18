@@ -27,3 +27,6 @@ Other
 =====
 
  - Dashboard
+
+   o Dashboard could be super fancy and push status updates to logged in users
+     (i.e., "you are on the blame list here")
