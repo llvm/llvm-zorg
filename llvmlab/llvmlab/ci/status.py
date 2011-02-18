@@ -58,8 +58,9 @@ class StatusMonitor(threading.Thread):
                         self.status.build_map[name] = {}
                 elif kind == 'removed_builder':
                     name = event[1]
-                    self.status.builders.pop(name)
-                    self.status.build_map.pop(name)
+                    if name in self.status.builders:
+                        self.status.builders.pop(name)
+                        self.status.build_map.pop(name)
                 elif kind == 'reset_builder':
                     name = event[1]
                     self.status.builders[name] = []

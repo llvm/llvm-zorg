@@ -133,7 +133,7 @@ class StatusClient(object):
             self.builders[name] = BuilderInfo(name)
         for name in current_builders - builder_names:
             yield ('removed_builder', name)
-            self.builders.remove(name)
+            self.builders.pop(name)
 
         self.last_builders_poll = time.time()
 
