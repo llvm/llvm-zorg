@@ -34,6 +34,14 @@ setup(
         'Topic :: Software Development :: Testing',
         ],
 
+    # Additional resource extensions we use.
+    package_data = { 'llvmlab.llvmlabtool' : ['lab.cfg.sample'],
+                     'llvmlab.ui' : ['static/*.ico',
+                                     'static/*.css',
+                                     'static/*.js',
+                                     'static/jquery/1.5/*.js',
+                                     'templates/*.html' ] },
+
     zip_safe = False,
     packages = find_packages(),
     entry_points = {
