@@ -86,13 +86,14 @@ class App(flask.Flask):
             "EMAIL_RELAY_SERVER" : "localhost",
             "MAIL_ERRORS" : False,
             "SECRET_KEY" : secret_key,
-            "INSTALL_PATH" : None }
+            "INSTALL_PATH" : None,
+            "PLUGIN_MODULE" : None }
 
         # Construct an empty test database.
         data = llvmlab.data.Data(users = [], machines = [])
 
         # Construct an empty status file.
-        data = llvmlab.ci.status.Status(None, {})
+        status = llvmlab.ci.status.Status(None, {})
 
         return App.create_standalone(config, data, status)
 
