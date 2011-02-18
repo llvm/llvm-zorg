@@ -6,8 +6,7 @@ from flask import request
 from flask import session
 from flask import url_for
 from flask import current_app
-from flask import Module
-frontend = Module(__name__)
+frontend = flask.Module(__name__)
 
 @frontend.route('/')
 def index():
