@@ -33,7 +33,7 @@ class App(flask.Flask):
         app.register_module(frontend_views)
 
         # Spawn the status monitor thread.
-        app.monitor = app.config.status.start_monitor()
+        app.monitor = app.config.status.start_monitor(app)
 
         return app
 

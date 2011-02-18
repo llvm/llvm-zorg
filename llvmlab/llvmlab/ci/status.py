@@ -37,8 +37,9 @@ class BuildStatus(util.simple_repr_mixin):
         self.end_time = end_time
 
 class StatusMonitor(threading.Thread):
-    def __init__(self, status):
+    def __init__(self, app, status):
         threading.Thread.__init__(self)
+        self.app = app
         self.status = status
 
     def run(self):
@@ -93,6 +94,10 @@ class StatusMonitor(threading.Thread):
                     # FIXME: Use flask logging APIs.
                     print >>sys.stderr,"warning: unknown event '%r'" % (event,)
 
+                # FIXME: Don't save this frequently, we really just want to
+                # checkpoint and make sure we save on restart.
+                self.app.save_status()
+
             time.sleep(.1)
         
 class Status(util.simple_repr_mixin):
@@ -132,8 +137,8 @@ class Status(util.simple_repr_mixin):
                                           for b in builds))
                               for name,builds in self.builders.items())
 
-    def start_monitor(self):
+    def start_monitor(self, app):
         if self.statusclient:
-            monitor = StatusMonitor(self)
+            monitor = StatusMonitor(app, self)
             monitor.start()
             return monitor
