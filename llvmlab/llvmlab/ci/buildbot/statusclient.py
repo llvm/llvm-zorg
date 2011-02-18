@@ -16,7 +16,8 @@ class StatusClient(object):
         if version != 0:
             raise ValueError, "Unknown version"
 
-        sc = StatusClient(data['master_url'], data['builders_poll_rate'])
+        sc = StatusClient(data['master_url'], data['builders_poll_rate'],
+                          data['builder_poll_rate'])
         sc.builders = set(data['builders'])
         sc.builds = dict((name, set(items))
                          for name, items in data['builds'])
@@ -27,6 +28,7 @@ class StatusClient(object):
     def todata(self):
         return { 'version' : 0,
                  'master_url' : self.master_url,
+                 'builder_poll_rate' : self.builder_poll_rate,
                  'builders_poll_rate' : self.builders_poll_rate,
                  'builders' : list(self.builders),
                  'builds' : [(name, list(items))
