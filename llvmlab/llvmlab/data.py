@@ -3,7 +3,7 @@ LLVM-Lab Data Management
 """
 
 from llvmlab import util
-from llvmlab import user
+from llvmlab import machine, user
 
 class Data(util.simple_repr_mixin):
     @staticmethod
@@ -14,17 +14,23 @@ class Data(util.simple_repr_mixin):
 
         users = [user.User.fromdata(u)
                  for u in data['users']]
-        return Data(users)
+        machines = [machine.Machine.fromdata(u)
+                    for u in data['machines']]
+        return Data(users, machines)
 
     def todata(self):
         return { 'version' : 0,
-                 'users' : [u.todata()
-                            for u in self.users.values()
-                            if u is not self.admin_user] }
+                 'users' : [item.todata()
+                            for item in self.users.values()
+                            if item is not self.admin_user],
+                 'machine' : [item.todata()
+                              for item in self.machines.values()] }
 
-    def __init__(self, users):
-        self.users = dict((u.id, u) for u in users)
+    def __init__(self, users, machines):
+        self.users = dict((item.id, item) for item in users)
         self.admin_user = None
+
+        self.machines = dict((item.id, item) for item in machines)
 
     def set_admin_user(self, user):
         if user.id in self.users:
