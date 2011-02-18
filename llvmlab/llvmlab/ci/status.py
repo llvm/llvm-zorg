@@ -2,6 +2,9 @@
 Status information for the CI infrastructure, for use by the dashboard.
 """
 
+import threading
+import time
+
 from llvmlab import util
 import buildbot.statusclient
 
@@ -33,6 +36,65 @@ class BuildStatus(util.simple_repr_mixin):
         self.start_time = start_time
         self.end_time = end_time
 
+class StatusMonitor(threading.Thread):
+    def __init__(self, status):
+        threading.Thread.__init__(self)
+        self.status = status
+
+    def run(self):
+        # Constantly read events from the status client.
+        while 1:
+            for event in self.status.statusclient.pull_events():
+                # Log the event (for debugging).
+                self.status.event_log.append((time.time(), event))
+                self.status.event_log = self.status.event_log[-100:]
+
+                kind = event[0]
+                if kind == 'added_builder':
+                    name = event[1]
+                    if name not in self.status.builders:
+                        self.status.builders[name] = []
+                        self.status.build_map[name] = {}
+                elif kind == 'removed_builder':
+                    name = event[1]
+                    self.status.builders.pop(name)
+                    self.status.build_map.pop(name)
+                elif kind == 'reset_builder':
+                    name = event[1]
+                    self.status.builders[name] = []
+                    self.status.build_map[name] = {}
+                elif kind == 'invalid_build':
+                    _,name,id = event
+                    build = self.status.build_map[name].get(id)
+                    if build is not None:
+                        self.status.builders[name].remove(build)
+                        self.status.build_map[name].pop(id)
+                elif kind in ('add_build', 'completed_build'):
+                    _,name,id = event
+                    build = self.status.build_map[name].get(id)
+                    if build is None:
+                        build = BuildStatus(name, id, None, None, None, None)
+                        self.status.build_map[name][id] = build
+
+                        # Add to the builds list, maintaining order.
+                        builds = self.status.builders[name]
+                        builds.append(build)
+                        if len(builds)>1 and build.number < builds[-2].number:
+                            builds.sort(key = lambda b: b.number)
+
+                    # Get the build information.
+                    res = self.status.statusclient.get_json_result((
+                            'builders', name, 'builds', str(build.number)))
+                    build.result = res['results']
+                    build.source_stamp = res['sourceStamp']['revision']
+                    build.start_time = res['times'][0]
+                    build.end_time = res['times'][1]
+                else:
+                    # FIXME: Use flask logging APIs.
+                    print >>sys.stderr,"warning: unknown event '%r'" % (event,)
+
+            time.sleep(.1)
+        
 class Status(util.simple_repr_mixin):
     @staticmethod
     def fromdata(data):
@@ -63,3 +125,15 @@ class Status(util.simple_repr_mixin):
         if statusclient is None and master_url:
             statusclient = buildbot.statusclient.StatusClient(master_url)
         self.statusclient = statusclient
+
+        # Transient data.
+        self.event_log = []
+        self.build_map = dict((name, dict((b.number, b)
+                                          for b in builds))
+                              for name,builds in self.builders.items())
+
+    def start_monitor(self):
+        if self.statusclient:
+            monitor = StatusMonitor(self)
+            monitor.start()
+            return monitor

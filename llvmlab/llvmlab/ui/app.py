@@ -32,6 +32,9 @@ class App(flask.Flask):
         app.register_module(ci_views)
         app.register_module(frontend_views)
 
+        # Spawn the status monitor thread.
+        app.monitor = app.config.status.start_monitor()
+
         return app
 
     @staticmethod
@@ -62,6 +65,7 @@ class App(flask.Flask):
 
     def __init__(self, name):
         super(App, self).__init__(name)
+        self.monitor = None
 
     def load_config(self, config = None, config_path = None):
         if config_path is not None:

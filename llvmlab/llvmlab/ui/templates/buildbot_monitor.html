@@ -1,0 +1,50 @@
+{% extends "layout.html" %}
+{% block title %}buildbot monitor{% endblock %}
+{% block body %}
+
+<h1>Buildbot Status Monitor</h1>
+
+<b>Monitoring:</b> {{ bb_status.master_url }}
+
+{% for name,builds in bb_status.builders|dictsort %}
+
+<h3>{{ name }}</h3>
+
+<table>
+<thead>
+  <tr>
+    <th>Number</th>
+    <th>Source Stamp</th>
+    <th>Result</th>
+    <th>Start Time</th>
+    <th>End Time</th>
+  </tr>
+</thead>
+{% for build in builds %}
+<tr>
+  <td>{{ build.number }}</td>
+  <td>{{ build.source_stamp }}</td>
+  <td>{{ build.result }}</td>
+  <td>{{ build.start_time }}</td>
+  <td>{{ build.end_time }}</td>
+</tr>
+{% endfor %}
+</table>
+
+{% endfor %}
+
+<h2>Event Log</h2>
+
+<table>
+<thead>
+  <tr><th>Time</th><th>Event</th></tr>
+</thead>
+{% for time,event in bb_status.event_log|reverse %}
+<tr>
+  <td>{{ time }}</td>
+  <td>{{ event }}</td>
+</tr>
+{% endfor %}
+</table>
+
+{% endblock %}
