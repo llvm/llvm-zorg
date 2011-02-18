@@ -10,6 +10,24 @@ class StatusClient(object):
     Currently, the client primarily is worried about tracking builders.
     """
 
+    @staticmethod
+    def fromdata(data):
+        version = data['version']
+        if version != 0:
+            raise ValueError, "Unknown version"
+
+        sc = StatusClient(data['master_url'], data['builders_poll_rate'])
+        sc.builders = set(data['builders'])
+        sc.last_builders_poll = data['last_builders_poll']
+        return sc
+
+    def todata(self):
+        return { 'version' : 0,
+                 'master_url' : self.master_url,
+                 'builders_poll_rate' : self.builders_poll_rate,
+                 'builders' : list(self.builders),
+                 'last_builders_poll' : self.last_builders_poll}
+
     def __init__(self, master_url,
                  builders_poll_rate = 60.0):
         self.master_url = master_url
@@ -33,8 +51,6 @@ class StatusClient(object):
             path += '?' + urllib2.urlencode(arguments)
 
         url = self.master_url + path
-        print url
-
         request = urllib2.urlopen(url)
         data = request.read()
         request.close()
@@ -57,6 +73,7 @@ class StatusClient(object):
         # Pull the builder names.
         #
         # FIXME: BuildBot should provide a more efficient query for this.
+        yield ('poll_builders',)
         builders = self.get_json_result(('builders',))
         builder_names = set(builders.keys())
 
@@ -68,10 +85,54 @@ class StatusClient(object):
         self.builders = builder_names
         self.last_builders_poll = time.time()
 
+###
+
+def main():
+    import os
+    import sys
+    from optparse import OptionParser, OptionGroup
+    parser = OptionParser("""\
+%%prog [options] <path> <master url>
+
+A simple tool for testing the BuildBot StatusClient.
+""")
+    opts, args = parser.parse_args()
+    if len(args) != 2:
+        parser.error("invalid arguments")
+
+    path,master_url = args
+
+    # Load the static client object if it exists.
+    sc = None
+    if os.path.exists(path):
+        file = open(path)
+        object = json.load(file)
+        file.close()
+
+        sc = StatusClient.fromdata(object)
+
+        # Check that this instance matches what the user requested.
+        if (sc.master_url != master_url):
+            sc = None
+
+    # Create a new client instance if necessary.
+    if sc is None:
+        sc = StatusClient(master_url)
+
+    # Now wait for events and print them
+    try:
+        while 1:
+            for event in sc.pull_events():
+                print time.time(), event
+                time.sleep(.1)
+    except KeyboardInterrupt:
+        print "(interrupted, stopping)"
+
+    # Save the current instance.
+    file = open(path, "w")
+    json.dump(sc.todata(), file)
+    file.close()
+
 if __name__ == '__main__':
-    sc = StatusClient("http://lab.llvm.org:8013")
-    while 1:
-        for event in sc.pull_events():
-            print time.time(), event
-        time.sleep(.1)
+    main()
 
