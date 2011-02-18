@@ -73,15 +73,10 @@ class StatusMonitor(threading.Thread):
                 elif kind in ('add_build', 'completed_build'):
                     _,name,id = event
                     build = self.status.build_map[name].get(id)
+                    add_build = False
                     if build is None:
+                        add_build = True
                         build = BuildStatus(name, id, None, None, None, None)
-                        self.status.build_map[name][id] = build
-
-                        # Add to the builds list, maintaining order.
-                        builds = self.status.builders[name]
-                        builds.append(build)
-                        if len(builds)>1 and build.number < builds[-2].number:
-                            builds.sort(key = lambda b: b.number)
 
                     # Get the build information.
                     res = self.status.statusclient.get_json_result((
@@ -91,6 +86,15 @@ class StatusMonitor(threading.Thread):
                         build.source_stamp = res['sourceStamp']['revision']
                         build.start_time = res['times'][0]
                         build.end_time = res['times'][1]
+
+                        if add_build:
+                            # Add to the builds list, maintaining order.
+                            self.status.build_map[name][id] = build
+                            builds = self.status.builders[name]
+                            builds.append(build)
+                            if (len(builds) > 1 and
+                                build.number < builds[-2].number):
+                                builds.sort(key = lambda b: b.number)
                 else:
                     # FIXME: Use flask logging APIs.
                     print >>sys.stderr,"warning: unknown event '%r'" % (event,)
