@@ -2,10 +2,10 @@ import hashlib
 import os
 
 import flask
-from flask import redirect, render_template, request, session, url_for
 
 import llvmlab.data
 import llvmlab.user
+import llvmlab.ui.views
 
 class LLVMLabApp(flask.Flask):
     def __init__(self, name):
@@ -53,45 +53,8 @@ app.load_config()
 # Load the LLVM-Lab database.
 app.load_data()
 
-###
-# Routing
-
-@app.route('/')
-def index():
-    return render_template("index.html")
-
-@app.route('/favicon.ico')
-def favicon_ico():
-    return redirect(url_for('static', filename='favicon.ico'))
-
-@app.route('/users')
-def users():
-    return render_template("users.html")
-
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    # If this isn't a post request, return the login template.
-    if request.method != 'POST':
-        return render_template("login.html", error=None)
-
-    # Authenticate the user.
-    username = request.form['username']
-    if not app.authenticate_login(username, request.form['password']):
-        return render_template("login.html",
-                               error="Invalid login")
-
-    # Log the user in.
-    session['logged_in'] = True
-    session['active_user'] = username
-    flask.flash('You were logged in as "%s"!' % username)
-    return redirect(url_for("index"))
-
-@app.route('/logout')
-def logout():
-    session.pop('logged_in', None)
-    session.pop('active_user', None)
-    flask.flash('You were logged out!')
-    return redirect(url_for("index"))
+# Load the application routes.
+app.register_module(llvmlab.ui.views.ui)
 
 ###
 
