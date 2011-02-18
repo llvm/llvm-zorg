@@ -4,3 +4,33 @@ body {
                  Helvetica, sans-serif;
     font-size: small;
 }
+
+div.body {
+    color: #000;
+    margin: 20px;
+}
+div.body a {
+    color: #333;
+}
+
+div.header {
+    background-color: #50505A;
+    color: #FFF;
+    font-size: 125%;
+    padding: 10px 10px;
+    text-align: left;
+}
+div.header a {
+    color: #FFF;
+}
+
+div.footer {
+    background-color: #50505A;
+    color: #FFF;
+    font-size: 75%;
+    padding: 10px 10px;
+    text-align: right;
+}
+div.footer a {
+    color: #FFF;
+}
