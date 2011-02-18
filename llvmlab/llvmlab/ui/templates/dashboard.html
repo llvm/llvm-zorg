@@ -143,7 +143,7 @@ window.onload = function() {
 The most recent released revision is <b>r{{
     final_phase.passing.source_stamp }}</b>
 validated at:
-<i>{{ final_phase.passing.end_time }}</i>
+<i>{{ final_phase.passing.end_time|asusertime }}</i>
 (available <a href="{{ url_for('latest_release') }}">here</a>).
 {% else %}
 <i><b>No release is currently available!</b></i>
@@ -161,7 +161,7 @@ validated at:
 
   <b>WARNING!</b> LLVM is currently failing the <i>{{ phase.name }}</i> checks.
   The failures started in r{{ phase_info.failing.source_stamp }} at {{
-  phase_info.failing.end_time }}.
+  phase_info.failing.end_time|asusertime }}.
 
   {% endif %}
 
@@ -271,11 +271,15 @@ validated at:
 </tr>
 </table>
 
+<hr>
+
 {# The div we use to include phase popups. #}
 <div id="phase_popup" style="display: none;"></div>
 {# The iframe we use to load the phase popup source. This is never actually
    displayed, just used to load the HTML we insert into the popup div. #}
 <iframe id="phase_popup_frame" style="display: none;"></iframe>
+
+<hr>
 
 {# The div we use to include timing popups. #}
 <div id="timing_popup" style="display: none;">

@@ -10,6 +10,7 @@ import llvmlab.user
 import llvmlab.ci.summary
 import llvmlab.ci.status
 import llvmlab.ui.ci.views
+import llvmlab.ui.filters
 import llvmlab.ui.frontend.views
 
 class App(flask.Flask):
@@ -54,6 +55,9 @@ class App(flask.Flask):
         # Construct the dashboard summary object.
         app.config.summary = llvmlab.ci.summary.Summary(
             llvmlab.ui.ci.views.g_config, app.config.status)
+
+        # Register additional filters.
+        llvmlab.ui.filters.register(app)
 
         return app
 
