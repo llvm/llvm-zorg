@@ -4,6 +4,8 @@ Status information for the CI infrastructure, for use by the dashboard.
 
 import threading
 import time
+import traceback
+import StringIO
 
 from llvmlab import util
 import buildbot.statusclient
@@ -43,6 +45,24 @@ class StatusMonitor(threading.Thread):
         self.status = status
 
     def run(self):
+        while 1:
+            try:
+                self.read_events()
+            except:
+                # Log this failure.
+                os = StringIO.StringIO()
+                print >>os, "*** ERROR: failure in buildbot monitor"
+                print >>os, "\n-- Traceback --"
+                traceback.print_exc(file = os)
+                if self.app.logger:
+                    self.app.logger.warning(os.getvalue())
+                else:
+                    print >>sys.stderr, os.getvalue()
+
+                # Sleep for a while, then restart.
+                time.sleep(60)
+
+    def read_events(self):
         # Constantly read events from the status client.
         while 1:
             for event in self.status.statusclient.pull_events():
