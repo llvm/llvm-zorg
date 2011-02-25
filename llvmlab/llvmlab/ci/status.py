@@ -14,29 +14,36 @@ class BuildStatus(util.simple_repr_mixin):
     @staticmethod
     def fromdata(data):
         version = data['version']
-        if version != 0:
+        if version not in (0, 1):
             raise ValueError, "Unknown version"
 
+        if version == 0:
+            slave = None
+        else:
+            slave = data['slave']
         return BuildStatus(data['name'], data['number'], data['source_stamp'],
-                           data['result'], data['start_time'], data['end_time'])
+                           data['result'], data['start_time'], data['end_time'],
+                           slave)
 
     def todata(self):
-        return { 'version' : 0,
+        return { 'version' : 1,
                  'name' : self.name,
                  'number' : self.number,
                  'source_stamp' : self.source_stamp,
                  'result' : self.result,
                  'start_time' : self.start_time,
-                 'end_time' : self.end_time }
+                 'end_time' : self.end_time,
+                 'slave' : self.slave }
 
     def __init__(self, name, number, source_stamp,
-                 result, start_time, end_time):
+                 result, start_time, end_time, slave):
         self.name = name
         self.number = number
         self.source_stamp = source_stamp
         self.result = result
         self.start_time = start_time
         self.end_time = end_time
+        self.slave = slave
 
 class StatusMonitor(threading.Thread):
     def __init__(self, app, status):
@@ -97,7 +104,8 @@ class StatusMonitor(threading.Thread):
                     add_build = False
                     if build is None:
                         add_build = True
-                        build = BuildStatus(name, id, None, None, None, None)
+                        build = BuildStatus(name, id, None, None, None, None,
+                                            None)
 
                     # Get the build information.
                     try:
@@ -111,6 +119,7 @@ class StatusMonitor(threading.Thread):
                         build.source_stamp = res['sourceStamp']['revision']
                         build.start_time = res['times'][0]
                         build.end_time = res['times'][1]
+                        build.slave = res['slave']
 
                         if add_build:
                             # Add to the builds list, maintaining order.
