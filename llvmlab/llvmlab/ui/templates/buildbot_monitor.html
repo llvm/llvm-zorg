@@ -18,6 +18,7 @@
     <th>Result</th>
     <th>Start Time</th>
     <th>End Time</th>
+    <th>Slave</th>
   </tr>
 </thead>
 {% for build in builds %}
@@ -27,6 +28,7 @@
   <td>{{ build.result }}</td>
   <td>{{ build.start_time }}</td>
   <td>{{ build.end_time }}</td>
+  <td>{{ build.slave }}</td>
 </tr>
 {% endfor %}
 </table>

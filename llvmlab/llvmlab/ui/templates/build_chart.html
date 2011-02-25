@@ -1,0 +1,64 @@
+{% extends "layout.html" %}
+{% block title %}build chart{% endblock %}
+{% block head %}
+<style type="text/css">
+div.buildbox {
+    position: absolute;
+    height: 25px;
+    border-width: 1px;
+    border-style: solid;
+    border-radius: 4px;
+    -webkit-border-radius: 4px;
+    -moz-border-radius: 4px;
+}
+tr.even {
+    background-color:#D0D3DD;
+}
+tr.odd {
+    background-color:#E0DFE0;
+}
+tr.inner-even {
+    background-color:#DFE0E9;
+}
+tr.inner-odd {
+    background-color:#EAE9EF;
+}
+</style>
+{% endblock %}
+{% block body %}
+
+<h1>Build Chart</h1>
+
+<table border=1>
+{% for slave,builds in build_chart.data|dictsort %}
+<tr class="{{loop.cycle('even', 'odd')}}">
+  <td>{{ slave }}</td>
+  <td>
+    <table>
+      {% for row in builds %}
+      <tr class="inner-{{loop.cycle('even', 'odd')}}">
+        <td>
+          <div style="display:block;
+                      height:25px;
+                      width:{{build_chart.max_x + 5}}px;
+                      position:relative;">
+            {% for item in row %}
+            <a href="#" title="{{item.build.name}} - {{item.build.number}}">
+              <div class="buildbox"
+                   style="background-color:#{{item.color}};
+                          width:{{item.width - 1}}px;
+                          height:24px;
+                          left:{{item.left}}px;
+                          display:block;
+                          top:0px;"></div></a>
+            {% endfor %}
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+  </table></td>
+</tr>
+{% endfor %}
+</table>
+
+{% endblock %}
