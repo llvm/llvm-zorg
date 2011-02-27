@@ -346,8 +346,8 @@ def getClangMSVCBuildFactory(update=True, clean=True, vcDrive='c', jobs=1, cmake
 
     return f
 
-def addClangTests(f, ignores={}, install_prefix="%(builddir)s/llvm.install",
-                  languages = ('gcc', 'g++', 'objc', 'obj-c++')):
+def addClangGCCTests(f, ignores={}, install_prefix="%(builddir)s/llvm.install",
+                     languages = ('gcc', 'g++', 'objc', 'obj-c++')):
     make_vars = [WithProperties(
             'CC_UNDER_TEST=%s/bin/clang' % install_prefix),
                  WithProperties(
@@ -364,6 +364,26 @@ def addClangTests(f, ignores={}, install_prefix="%(builddir)s/llvm.install",
             workdir='clang-tests/gcc-4_2-testsuite',
             logfiles={ 'dg.sum' : 'obj/%s/%s.sum' % (lang, lang) },
             ignore=gcc_dg_ignores.get(lang, [])))
+
+def addClangGDBTests(f, ignores={}, install_prefix="%(builddir)s/llvm.install"):
+    make_vars = [WithProperties(
+            'CC_UNDER_TEST=%s/bin/clang' % install_prefix),
+                 WithProperties(
+            'CXX_UNDER_TEST=%s/bin/clang++' % install_prefix)]
+    f.addStep(SVN(name='svn-clang-tests', mode='update',
+                  baseURL='http://llvm.org/svn/llvm-project/clang-tests/',
+                  defaultBranch='trunk', workdir='clang-tests'))
+    gdb_dg_ignores = ignores.get('gdb-1472-testsuite', {})
+    f.addStep(DejaGNUCommand.DejaGNUCommand(
+            name='test-gdb-1472-testsuite',
+            command=["make", "-k", "check"] + make_vars,
+            description="gdb-1472-testsuite",
+            workdir='clang-tests/gdb-1472-testsuite',
+            logfiles={ 'dg.sum' : 'obj/gdb.sum' },
+            ignore=gdb_dg_ignores))
+
+# FIXME: Deprecated.
+addClangTests = addClangGCCTests
 
 def getClangTestsIgnoresFromPath(path, key):
     def readList(path):
@@ -386,5 +406,13 @@ def getClangTestsIgnoresFromPath(path, key):
             readList(os.path.join(lang_path, 'UNRESOLVED.txt')) +
             readList(os.path.join(lang_path, 'XPASS.txt')))
     ignores['gcc-4_2-testsuite' ] = gcc_dg_ignores
+
+    ignores_path = os.path.join(path, 'gdb-1472-testsuite', 'expected_results',
+                                key)
+    gdb_dg_ignores = (
+        readList(os.path.join(ignores_path, 'FAIL.txt')) +
+        readList(os.path.join(ignores_path, 'UNRESOLVED.txt')) +
+        readList(os.path.join(ignores_path, 'XPASS.txt')))
+    ignores['gdb-1472-testsuite' ] = gdb_dg_ignores
 
     return ignores
