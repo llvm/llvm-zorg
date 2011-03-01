@@ -15,7 +15,7 @@ def getLLVMGCCBuildFactory(jobs='%(jobs)s', update=True, clean=True,
                            stage2_config='Release+Asserts', make='make',
                            extra_configure_args=[], extra_languages=None,
                            verbose=False, env = {}, defaultBranch='trunk',
-                           timeout=20):
+                           timeout=20, package_dst=None):
   if build or host or target:
     if not build or not host or not target:
       raise ValueError,"Must specify all of 'build', 'host', 'target' if used."
@@ -259,6 +259,34 @@ def getLLVMGCCBuildFactory(jobs='%(jobs)s', update=True, clean=True,
                                                      "llvm-gcc",
                                                      "(stage 2)"],
                                         workdir="llvm-gcc.obj.2", env=env))
+  if package_dst:
+    addPackageStep(f, package_dst, obj_path='llvm-gcc.install.2')
 
   return f
+
+import os
+def addPackageStep(f, package_dst,
+                   obj_path,
+                   project = '%(builder)s',
+                   info_string='r%(got_revision)s'):
+
+  # Package and upload.
+    name = WithProperties(
+      os.path.join("%(builddir)s", obj_path,
+                   "%s-%s-b%%(buildnumber)s.tar.gz" % (project, info_string)))
+    f.addStep(ShellCommand(name='pkg.tar',
+                           description="tar root",
+                           command=["tar", "zcvf", name, "./"],
+                           workdir=os.path.join(obj_path, "%s.roots" % project,
+                                                "%s~dst" % project),
+                           warnOnFailure=True,
+                           flunkOnFailure=False,
+                           haltOnFailure=False))
+    f.addStep(ShellCommand(name='pkg.upload',
+                           description="upload root",
+                           command=["scp", name, package_dst],
+                           workdir=".",
+                           warnOnFailure=True,
+                           flunkOnFailure=False,
+                           haltOnFailure=False))
 
