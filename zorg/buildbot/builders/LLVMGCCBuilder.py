@@ -267,7 +267,7 @@ def getLLVMGCCBuildFactory(jobs='%(jobs)s', update=True, clean=True,
 import os
 def addPackageStep(f, package_dst,
                    obj_path,
-                   project = '%(builder)s',
+                   project = '%(buildername)s',
                    info_string='r%(got_revision)s'):
 
   # Package and upload.
