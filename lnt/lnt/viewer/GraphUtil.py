@@ -88,10 +88,11 @@ def get_test_plots(db, machine, test_ids, run_summary, ts_summary,
             norm_xs = [(x - x_min) / (x_max - x_min)
                        for x in xs]
 
-            # FIXME: When can this raise ZeroDivisionError?
             try:
                 info = ext_stats.linregress(norm_xs, ys)
             except ZeroDivisionError:
+                info = None
+            except ValueError:
                 info = None
 
             if info is not None:
