@@ -1,4 +1,5 @@
 import re
+import urllib
 import buildbot
 import buildbot.status.builder
 import buildbot.steps.shell
@@ -59,6 +60,8 @@ class StandardizedTest(buildbot.steps.shell.Test):
             # Add logs for failures.
             if result in self.failingCodes and len(logs) < self.maxLogs:
                 if log is not None and log.strip():
+                    # Buildbot 0.8 doesn't properly quote slashes, replace them.
+                    test = test.replace("/", "___")
                     logs.append((test, log))
 
         # Explicitly remove any ignored warnings for tests which are
