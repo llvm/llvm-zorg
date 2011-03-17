@@ -649,7 +649,7 @@ class SimpleRunUI(Directory):
           </tr><tr><th></th><th></th>"""
         for i in range(len(ts_summary.parameter_sets)):
             """
-            <th><input type="checkbox" name="pset.%d"></th>
+            <th><input type="checkbox" name="pset.%d" value="on"></th>
             <th>%%</th>""" % i
             if show_delta:
                 """
