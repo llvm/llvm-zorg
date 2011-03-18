@@ -820,9 +820,18 @@ class NTTest(builtintest.BuiltinTest):
                 parser.error('--llvm-src is required')
             if opts.llvm_obj_root is None:
                 parser.error('--llvm-obj is required')
+
+            # Make LLVM source and object paths absolute, this is required.
+            opts.llvm_src_root = os.path.abspath(opts.llvm_src_root)
+            opts.llvm_obj_root = os.path.abspath(opts.llvm_obj_root)
+            if not os.path.exists(opts.llvm_src_root):
+                parser.error('--llvm-src argument does not exist')
+            if not os.path.exists(opts.llvm_obj_root):
+                parser.error('--llvm-obj argument does not exist')
+
         if opts.test_suite_root is None:
             parser.error('--test-suite is required')
-
+            
         if opts.remote:
             if opts.remote_port is None:
                 parser.error('--remote-port is required with --remote')
