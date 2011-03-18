@@ -567,11 +567,11 @@ class SimpleRunUI(Directory):
 
             if cell_color:
                 """
-                <td bgcolor="#%02x%02x%02x">%s</td""" % (
+                <td bgcolor="#%02x%02x%02x">%s</td>""" % (
                     cell_color[0], cell_color[1], cell_color[2], run_cell_value)
             else:
                 """
-                <td>%s</td""" % (run_cell_value,)
+                <td>%s</td>""" % (run_cell_value,)
 
             if show_all or value_status in (runinfo.REGRESSED,
                                             runinfo.IMPROVED):
@@ -649,7 +649,7 @@ class SimpleRunUI(Directory):
           </tr><tr><th></th><th></th>"""
         for i in range(len(ts_summary.parameter_sets)):
             """
-            <th><input type="checkbox" name="pset.%d" value="on"></th>
+            <th><input type="checkbox" name="pset.%d" value="on" checked></th>
             <th>%%</th>""" % i
             if show_delta:
                 """
