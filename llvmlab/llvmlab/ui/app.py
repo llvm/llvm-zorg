@@ -64,9 +64,6 @@ class App(flask.Flask):
             module = __import__(plugins_module, fromlist=['__name__'])
             module.register(app)
 
-        # Spawn the status monitor thread.
-        app.monitor = app.config.status.start_monitor(app)
-                        
         return app
 
     @staticmethod
@@ -181,3 +178,14 @@ class App(flask.Flask):
 
         # Return the appropriate user object.
         return self.config.data.users[id]
+
+    def __call__(self, environ, start_response):
+        # This works around an annoying property of the werkzeug reloader where
+        # we can't tell if we are in the actual web app instance.
+        #
+        # FIXME: Find a nicer solution.
+        if not self.monitor:
+            # Spawn the status monitor thread.
+            self.monitor = self.config.status.start_monitor(self)
+
+        return flask.Flask.__call__(self, environ, start_response)
