@@ -2,6 +2,7 @@ import hashlib
 import logging
 import logging.handlers
 import os
+import shutil
 
 import flask
 
@@ -158,11 +159,21 @@ class App(flask.Flask):
 
     def save_status(self):
         install_path = self.config["INSTALL_PATH"]
-        data_path = os.path.join(install_path, "lab-status.json")
+        data_path = os.path.join(install_path, "lab-status.json.new")
         file = open(data_path, 'w')
         flask.json.dump(self.config.status.todata(), file, indent=2)
         print >>file
         file.close()
+
+        # Backup the current status.
+        backup_path = os.path.join(install_path, "lab-status.json.bak")
+        status_path = os.path.join(install_path, "lab-status.json")
+        try:
+            os.remove(backup_path)
+        except:
+            pass
+        shutil.move(status_path, backup_path)
+        shutil.move(data_path, status_path)
 
     def authenticate_login(self, username, password):
         passhash = hashlib.sha256(
