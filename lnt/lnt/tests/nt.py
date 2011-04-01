@@ -37,17 +37,6 @@ def run_test(nick_prefix, opts, iteration):
         target_flags.append('-isysroot')
         target_flags.append(opts.isysroot)
 
-    # Compute TARGET_LLCFLAGS.
-    target_llcflags = []
-    if opts.mcpu is not None:
-        target_llcflags.append('-mcpu')
-        target_llcflags.append(opts.mcpu)
-    if opts.relocation_model is not None:
-        target_llcflags.append('-relocation-model')
-        target_llcflags.append(opts.relocation_model)
-    if opts.disable_fp_elim:
-        target_llcflags.append('-disable-fp-elim')
-
     # Set the make variables to use.
     make_variables = {
         'TARGET_CC' : opts.cc_reference,
@@ -55,9 +44,22 @@ def run_test(nick_prefix, opts, iteration):
         'TARGET_LLVMGCC' : opts.cc_under_test,
         'TARGET_LLVMGXX' : opts.cxx_under_test,
         'TARGET_FLAGS' : ' '.join(target_flags),
-        'TARGET_LLCFLAGS' : ' '.join(target_llcflags),
         }
 
+    # Compute TARGET_LLCFLAGS, for non-TEST=simple runs.
+    if not opts.test_simple:
+        # Compute TARGET_LLCFLAGS.
+        target_llcflags = []
+        if opts.mcpu is not None:
+            target_llcflags.append('-mcpu')
+            target_llcflags.append(opts.mcpu)
+        if opts.relocation_model is not None:
+            target_llcflags.append('-relocation-model')
+            target_llcflags.append(opts.relocation_model)
+        if opts.disable_fp_elim:
+            target_llcflags.append('-disable-fp-elim')
+        make_variables['TARGET_LLCFLAGS'] = ' '.join(target_llcflags)
+            
     # Pick apart the build mode.
     build_mode = opts.build_mode
     if build_mode.startswith("Debug"):
@@ -778,6 +780,15 @@ class NTTest(builtintest.BuiltinTest):
                 parser.error('--cc-reference is unused with --simple')
             if opts.cxx_reference is not None:
                 parser.error('--cxx-reference is unused with --simple')
+            # TEST=simple doesn't use a llc options.
+            if opts.mcpu is not None:
+                parser.error('--mcpu is unused with --simple (use --cflag)')
+            if opts.relocation_model is not None:
+                parser.error('--relocation-model is unused with --simple '
+                             '(use --cflag)')
+            if opts.disable_fp_elim:
+                parser.error('--disable-fp-elim is unused with --simple '
+                             '(use --cflag)')
         else:
             if opts.without_llvm:
                 parser.error('--simple is required with --without-llvm')
