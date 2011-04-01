@@ -567,8 +567,7 @@ Basic usage:
     --sandbox FOO \\
     --cc ~/llvm.obj.64/Release/bin/clang \\
     --cxx ~/llvm.obj.64/Release/bin/clang++ \\
-    --llvm-src ~/llvm \\
-    --llvm-obj ~/llvm.obj.64 \\
+    --without-llvm --simple \\
     --test-suite ~/llvm-test-suite \\
     FOO
 
