@@ -18,29 +18,43 @@ def get_cc_info(path, cc_flags=[]):
     cc_version = capture([cc, '-v', '-E'] + cc_flags + 
                          ['-x', 'c', '/dev/null', '-###'],
                          include_stderr=True).strip()
-    version_ln = None
-    cc_target = None
+
+    # Check if this is icc, which isn't going to cooperate with most of our
+    # interrogation. This has only been tested for icc 11.1, it isn't
+    # particularly robust.
     cc1_binary = None
-    for ln in cc_version.split('\n'):
-        if ' version ' in ln:
-            version_ln = ln
-        elif ln.startswith('Target:'):
-            cc_target = ln.split(':',1)[1].strip()
-        elif 'cc1' in ln or 'clang-cc' in ln:
-            m = re.match(r' "([^"]*)".*"-E".*', ln)
-            if not m:
-                error("unable to determine cc1 binary: %r: %r" % (cc, ln))
-            cc1_binary, = m.groups()
-    if version_ln is None:
-        error("unable to find compiler version: %r: %r" % (cc, cc_version))
-    if cc_target is None:
-        error("unable to find compiler target: %r: %r" % (cc, cc_version))
-    if cc1_binary is None:
-        error("unable to find compiler cc1 binary: %r: %r" % (cc, cc_version))
-    m = re.match(r'(.*) version ([^ ]*) (\([^(]*\))(.*)', version_ln)
-    if not m:
-        error("unable to determine compiler version: %r: %r" % (cc, version_ln))
-    cc_name,cc_version_num,cc_build_string,cc_extra = m.groups()
+    if cc_version.startswith('icc: command line warning'):
+        cc_name = 'icc'
+        cc_version = capture([cc, '-v'], include_stderr=True).strip()
+        cc_version_num = cc_version        
+        if cc_version_num.startswith('Version '):
+            cc_version_num = cc_version_num.split(' ', 1)[1]
+        cc_target = capture([cc, '-dumpmachine']).strip()
+    else:
+        version_ln = None
+        cc_target = None
+        for ln in cc_version.split('\n'):
+            if ' version ' in ln:
+                version_ln = ln
+            elif ln.startswith('Target:'):
+                cc_target = ln.split(':',1)[1].strip()
+            elif 'cc1' in ln or 'clang-cc' in ln:
+                m = re.match(r' "([^"]*)".*"-E".*', ln)
+                if not m:
+                    error("unable to determine cc1 binary: %r: %r" % (cc, ln))
+                cc1_binary, = m.groups()
+        if version_ln is None:
+            error("unable to find compiler version: %r: %r" % (cc, cc_version))
+        if cc_target is None:
+            error("unable to find compiler target: %r: %r" % (cc, cc_version))
+        if cc1_binary is None:
+            error("unable to find compiler cc1 binary: %r: %r" % (
+                    cc, cc_version))
+        m = re.match(r'(.*) version ([^ ]*) (\([^(]*\))(.*)', version_ln)
+        if not m:
+            error("unable to determine compiler version: %r: %r" % (
+                    cc, version_ln))
+        cc_name,cc_version_num,cc_build_string,cc_extra = m.groups()
 
     # Compute normalized compiler name and type. We try to grab source
     # revisions, branches, and tags when possible.
@@ -49,7 +63,11 @@ def get_cc_info(path, cc_flags=[]):
     cc_src_revision = None
     cc_src_tag = None
     llvm_capable = False
-    if (cc_name, cc_extra) == ('gcc',''):
+    if cc_name == 'icc':
+        cc_norm_name = 'icc'
+        cc_build = 'PROD'
+        
+    elif (cc_name, cc_extra) == ('gcc',''):
         cc_norm_name = 'gcc'
         m = re.match(r'\(Apple Inc. build ([0-9]*)\)', cc_build_string)
         if m:
@@ -129,19 +147,19 @@ def get_cc_info(path, cc_flags=[]):
     cc_exec_hash = hashlib.sha1()
     cc_exec_hash.update(open(cc,'rb').read())
 
-    cc1_exec_hash = hashlib.sha1()
-    cc1_exec_hash.update(open(cc1_binary,'rb').read())
-
     info = { 'cc_build' : cc_build,
              'cc_name' : cc_norm_name,
              'cc_version_number' : cc_version_num,
              'cc_target' : cc_target,
              'cc_version' :cc_version,
              'cc_exec_hash' : cc_exec_hash.hexdigest(),
-             'cc1_exec_hash' : cc1_exec_hash.hexdigest(),
              'cc_as_version' : cc_as_version,
              'cc_ld_version' : cc_ld_version,
              }
+    if cc1_binary is not None:
+        cc1_exec_hash = hashlib.sha1()
+        cc1_exec_hash.update(open(cc1_binary,'rb').read())
+        info['cc1_exec_hash'] = cc1_exec_hash.hexdigest()
     if cc_src_tag is not None:
         info['cc_src_tag'] = cc_src_tag
     if cc_src_revision is not None:
