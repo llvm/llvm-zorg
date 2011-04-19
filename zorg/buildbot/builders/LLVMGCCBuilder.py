@@ -268,12 +268,12 @@ import os
 def addPackageStep(f, package_dst,
                    obj_path,
                    project = '%(buildername)s',
-                   info_string='r%(got_revision)s'):
+                   info_string='%(phase_id)s'):
 
   # Package and upload.
     name = WithProperties(
       os.path.join("%(builddir)s", obj_path,
-                   "%s-%s-b%%(buildnumber)s.tar.gz" % (project, info_string)))
+                   "%s-%s.tar.gz" % (project, info_string)))
     f.addStep(ShellCommand(name='pkg.tar',
                            description="tar root",
                            command=["tar", "zcvf", name, "./"],
