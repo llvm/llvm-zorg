@@ -267,13 +267,12 @@ def getLLVMGCCBuildFactory(jobs='%(jobs)s', update=True, clean=True,
 import os
 def addPackageStep(f, package_dst,
                    obj_path,
-                   project = '%(buildername)s',
                    info_string='%(phase_id)s'):
 
   # Package and upload.
     name = WithProperties(
       os.path.join("%(builddir)s", obj_path,
-                   "%s-%s.tar.gz" % (project, info_string)))
+                   "llvm-gcc-%s.tar.gz" % info_string))
     f.addStep(ShellCommand(name='pkg.tar',
                            description="tar root",
                            command=["tar", "zcvf", name, "./"],
