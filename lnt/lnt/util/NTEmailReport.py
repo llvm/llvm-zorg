@@ -312,8 +312,9 @@ def getSimpleReport(result, db, run, baseurl, was_added, will_commit,
                 continue
 
             show_pset = items.items()[0][0] or len(items) > 1
-            pset_names = dict((pset, 'pset.%d' % i)
-                              for i,pset in enumerate(ts_summary.parameter_sets))
+            pset_names = dict(
+                (pset, 'pset.%d' % i)
+                for i,pset in enumerate(ts_summary.parameter_sets))
             print >>report
             print >>report, name
             print >>report, '-' * len(name)
@@ -321,70 +322,86 @@ def getSimpleReport(result, db, run, baseurl, was_added, will_commit,
                 if show_perf:
                     tests.sort(key = lambda (_,cr): -abs(cr.pct_delta))
 
-                if show_pset:
-                    print >>report
-                    print >>report, "Parameter Set:", pset
-                    table_name = "%s - %s" % (name, pset)
-                else:
-                    table_name = name
-                print >>html_report, """
-<p>
-<table class="sortable">
-<tr><th>%s</th>""" % table_name
-                if show_perf:
-                    print >>html_report, """
-<th>&Delta;</th><th>Previous</th><th>Current</th> <th>&sigma;</th>"""
-                print >>html_report, """</tr>"""
+                # Group tests by final component.
+                def get_last_component(t):
+                    name = t[0]
+                    if '.' in name:
+                        return name.rsplit('.', 1)[1]
+                    return ''
+                grouped = Util.multidict(
+                    (get_last_component(t), t)
+                    for t in tests)
 
-                for i,(name,cr) in enumerate(tests):
-                    if show_perf:
-                        if cr.stddev is not None:
-                            print >>report, (
-                                '  %s: %.2f%%'
-                                '(%.4f => %.4f, std. dev.: %.4f)') % (
-                                name, 100. * cr.pct_delta,
-                                cr.previous, cr.current, cr.stddev)
-                        else:
-                            print >>report, (
-                                '  %s: %.2f%%'
-                                '(%.4f => %.4f)') % (
-                                name, 100. * cr.pct_delta,
-                                cr.previous, cr.current)
-
-                        # Show inline charts for top 10 changes.
-                        if show_graphs and i < 10:
-                            graph_name = "graph.%d" % len(graphs)
-                            graphs.append( (graph_name,name,pset) )
-                            extra_cell_value = """
-<br><canvas id="%s" width="400" height="100"></canvas/>
-""" % (graph_name)
-                        else:
-                            extra_cell_value = ""
-
-                        # Link the regression to the chart of its performance.
-                        pset_name = pset_names[pset]
-                        form_data = urllib.urlencode([(pset_name, 'on'),
-                                                      ('test.'+name, 'on')])
-                        linked_name = '<a href="%s?%s">%s</a>' % (
-                            os.path.join(report_url, "graph"), form_data, name)
-
-                        pct_value = Util.PctCell(cr.pct_delta).render()
-                        if cr.stddev is not None:
-                            print >>html_report, """
-<tr><td>%s%s</td>%s<td>%.4f</td><td>%.4f</td><td>%.4f</td></tr>""" %(
-                                linked_name, extra_cell_value, pct_value,
-                                cr.previous, cr.current, cr.stddev)
-                        else:
-                            print >>html_report, """
-<tr><td>%s%s</td>%s<td>%.4f</td><td>%.4f</td><td>-</td></tr>""" %(
-                                name, extra_cell_value, pct_value,
-                                cr.previous, cr.current)
+                test_name = name
+                for group,grouped_tests in Util.sorted(grouped.items()):
+                    group_name = {
+                        "" : "(ungrouped)",
+                        "exec" : "Execution",
+                        "compile" : "Compile" }.get(group, group)
+                    if show_pset:
+                        table_name = "%s - %s" % (test_name, pset)
                     else:
-                        print >>report, '  %s' % (name,)
+                        table_name = test_name
+                    print >>report, "%s - %s" % (table_name, group_name)
+                    print >>html_report, """
+    <p>
+    <table class="sortable">
+    <tr><th>%s - %s </th>""" % (table_name, group_name)
+                    if show_perf:
                         print >>html_report, """
-<tr><td>%s</td></tr>""" % (name,)
-                print >>html_report, """
-</table>"""
+    <th>&Delta;</th><th>Previous</th><th>Current</th> <th>&sigma;</th>"""
+                    print >>html_report, """</tr>"""
+                    for i,(name,cr) in enumerate(grouped_tests):
+                        if show_perf:
+                            if cr.stddev is not None:
+                                print >>report, (
+                                    '  %s: %.2f%%'
+                                    '(%.4f => %.4f, std. dev.: %.4f)') % (
+                                    name, 100. * cr.pct_delta,
+                                    cr.previous, cr.current, cr.stddev)
+                            else:
+                                print >>report, (
+                                    '  %s: %.2f%%'
+                                    '(%.4f => %.4f)') % (
+                                    name, 100. * cr.pct_delta,
+                                    cr.previous, cr.current)
+
+                            # Show inline charts for top 10 changes.
+                            if show_graphs and i < 10:
+                                graph_name = "graph.%d" % len(graphs)
+                                graphs.append( (graph_name,name,pset) )
+                                extra_cell_value = """
+    <br><canvas id="%s" width="400" height="100"></canvas/>
+    """ % (graph_name)
+                            else:
+                                extra_cell_value = ""
+
+                            # Link the regression to the chart of its
+                            # performance.
+                            pset_name = pset_names[pset]
+                            form_data = urllib.urlencode([(pset_name, 'on'),
+                                                          ('test.'+name, 'on')])
+                            linked_name = '<a href="%s?%s">%s</a>' % (
+                                os.path.join(report_url, "graph"),
+                                form_data, name)
+
+                            pct_value = Util.PctCell(cr.pct_delta).render()
+                            if cr.stddev is not None:
+                                print >>html_report, """
+    <tr><td>%s%s</td>%s<td>%.4f</td><td>%.4f</td><td>%.4f</td></tr>""" %(
+                                    linked_name, extra_cell_value, pct_value,
+                                    cr.previous, cr.current, cr.stddev)
+                            else:
+                                print >>html_report, """
+    <tr><td>%s%s</td>%s<td>%.4f</td><td>%.4f</td><td>-</td></tr>""" %(
+                                    name, extra_cell_value, pct_value,
+                                    cr.previous, cr.current)
+                        else:
+                            print >>report, '  %s' % (name,)
+                            print >>html_report, """
+    <tr><td>%s</td></tr>""" % (name,)
+                    print >>html_report, """
+    </table>"""
 
     # Finish up the HTML report.
     if graphs:
