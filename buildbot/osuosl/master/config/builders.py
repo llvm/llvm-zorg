@@ -273,7 +273,8 @@ def _get_experimental_builders():
          'factory': ClangBuilder.getClangBuildFactory(outOfDir=True, jobs=4, test=False,
 													  extra_configure_args=['--build=x86_64-apple-darwin10',
 													  '--host=i686-pc-mingw32',
-													  '--target=i686-pc-mingw32'])},
+													  '--target=i686-pc-mingw32']),
+         'category' : 'clang'},
 													  
         {'name' : "clang-x86_64-darwin10-cross-mingw32",
          'slavenames' :["kistanova1"],
@@ -281,9 +282,10 @@ def _get_experimental_builders():
          'factory': ClangBuilder.getClangBuildFactory(outOfDir=True, jobs=4,  use_pty_in_tests=True, run_cxx_tests=True,
 													  extra_configure_args=['--build=x86_64-apple-darwin10',
 													  '--host=x86_64-apple-darwin10',
-													  '--target=i686-pc-mingw32'])},
+													  '--target=i686-pc-mingw32']),
+         'category' : 'clang'},
 
-        # llvm-gcc cross builders.
+        # Llvm-gcc cross builders.
         {'name'      : "build-self-4-mingw32",
          'slavenames': [ "kistanova1" ],
          'builddir'  : "build-self-4-mingw32",
