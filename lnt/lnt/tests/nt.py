@@ -480,7 +480,6 @@ def run_test(nick_prefix, opts, iteration):
                        "-l", opts.remote_user,
                        "-p",  str(opts.remote_port),
                        opts.remote_host]
-        print remote_args
         run_info['remote_uname'] = capture(remote_args + ["uname", "-a"],
                                            include_stderr=True).strip()
 
