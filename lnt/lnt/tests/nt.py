@@ -300,8 +300,13 @@ def run_test(nick_prefix, opts, iteration):
     if opts.without_llvm:
         print >>sys.stderr, '%s: building test-suite tools' % (timestamp(),)
         args = ['make', 'tools']
+        args.extend('%s=%s' % (k,v) for k,v in make_variables.items())
         build_tools_log_path = os.path.join(basedir, 'build-tools.log')
         build_tools_log = open(build_tools_log_path, 'w')
+        print >>build_tools_log, '%s: running: %s' % (timestamp(),
+                                                      ' '.join('"%s"' % a
+                                                               for a in args))
+        build_tools_log.flush()
         p = subprocess.Popen(args=args, stdin=None, stdout=build_tools_log,
                              stderr=subprocess.STDOUT, cwd=basedir,
                              env=os.environ)
