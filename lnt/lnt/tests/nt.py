@@ -539,6 +539,11 @@ def run_test(nick_prefix, opts, iteration):
         elif run_info.get('llvm_revision','').isdigit():
             run_info['run_order'] = run_info['llvm_revision']
 
+        # Otherwise, force at least some value for run_order, as it is now
+        # generally required by parts of the "simple" schema.
+        else:
+            run_info['run_order'] = "0"
+
         if 'run_order' in run_info:
             run_info['run_order'] = '%7d' % int(run_info['run_order'])
 
