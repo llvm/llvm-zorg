@@ -841,6 +841,9 @@ class NTTest(builtintest.BuiltinTest):
 
         if opts.test_suite_root is None:
             parser.error('--test-suite is required')
+        elif not os.path.exists(opts.test_suite_root):
+            parser.error("invalid --test-suite argument, does not exist: %r" % (
+                    opts.test_suite_root))
             
         if opts.remote:
             if opts.remote_port is None:
