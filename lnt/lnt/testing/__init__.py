@@ -43,10 +43,13 @@ class Report:
             assert isinstance(t, TestSamples)
 
     def render(self, indent=4):
+        # Note that we specifically override the encoding to avoid the
+        # possibility of encoding errors. Clients which care about the text
+        # encoding should supply unicode string objects.
         return json.dumps({ 'Machine' : self.machine.render(),
                             'Run' : self.run.render(),
                             'Tests' : [t.render() for t in self.tests] },
-                          sort_keys=True, indent=indent)
+                          sort_keys=True, indent=indent, encoding='latin-1')
 
 class Machine:
     """Information on the machine the test was run on.
