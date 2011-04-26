@@ -81,7 +81,7 @@ function init() {
 
 {% endmacro %}
 
-{% call simple_utils.simple_run_page(machine, run, compare_to,
+{% call simple_utils.simple_run_page(tag, machine, run, compare_to,
                                      neighboring_runs) %}
 
 {{ utils.render_popup_begin('view_options', 'View Options', true) }}

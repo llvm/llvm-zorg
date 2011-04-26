@@ -1,6 +1,6 @@
 {% import "utils.html" as utils %}
 
-{% macro simple_run_page(machine, run, compare_to,
+{% macro simple_run_page(tag, machine, run, compare_to,
                          neighboring_runs) %}
 
 <center>
@@ -38,7 +38,7 @@
 {# Show a small number of neighboring runs. #}
 {% for r in neighboring_runs %}
         <li>{{ "<h3>"|safe if r.id == run.id }}
-            <a href="{{db_url_for('simple_run', tag=tag, id=id)}}">{{
+            <a href="{{db_url_for('simple_run', tag=tag, id=r.id)}}">{{
                      r.start_time}}</a>{{
             "</h3>"|safe if r.id == run.id }}
 {% endfor %}
