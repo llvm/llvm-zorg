@@ -89,7 +89,7 @@ class RunInfo(Base):
 
     id = Column("ID", Integer, primary_key=True)
     run_id = Column("Run", Integer, ForeignKey('Run.ID'))
-    key = Column("Key", String(256))
+    key = Column("Key", String(256), index=True)
     value = Column("Value", String(4096))
 
     def __init__(self, run, key, value):

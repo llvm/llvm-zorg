@@ -9,6 +9,8 @@ from flask import render_template
 from flask import request
 from flask import url_for
 
+from lnt.db import perfdb
+
 frontend = flask.Module(__name__)
 
 ###
@@ -94,3 +96,47 @@ def run(id):
 @db_route("/tests/<id>/")
 def test(id):
     return render_template("test.html", id=id)
+
+###
+# Simple LNT Schema Viewer
+
+from lnt.db.perfdb import Machine, Run, RunInfo
+from lnt.db import perfdbsummary
+
+@db_route("/simple/<tag>")
+def simple_overview(tag):
+    db = request.get_db()
+
+    # Get the most recent runs in this tag, we just arbitrarily limit to looking
+    # at the last 100 submission.
+    recent_runs = db.query(Run).\
+        join(RunInfo).\
+        order_by(Run.start_time.desc()).\
+        filter(RunInfo.key == "tag").\
+        filter(RunInfo.value == tag).limit(100)
+    recent_runs = list(recent_runs)
+    
+    # Compute the active machine list.
+    active_machines = dict((run.machine.name, run)
+                           for run in recent_runs[::-1])
+
+    # Compute the active submission list.
+    N = 30
+    active_run_orders = dict(
+        db.query(RunInfo.run_id, RunInfo.value).\
+            filter(RunInfo.key == "run_order").\
+            filter(RunInfo.run_id.in_(s.id for s in recent_runs[:N])))
+    active_submissions = [(r, active_run_orders.get(r.id))
+                          for r in recent_runs[:N]]
+
+    return render_template("simple_overview.html", tag=tag,
+                           active_machines=active_machines,
+                           active_submissions=active_submissions)
+
+@db_route("/simple/<tag>/machines/<id>")
+def simple_machine(tag, id):
+    raise NotImplementedError
+
+@db_route("/simple/<tag>/<id>")
+def simple_run(tag, id):
+    raise NotImplementedError
