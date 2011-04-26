@@ -1,6 +1,79 @@
+.zorg_navheader {
+  background-color: #cccccc;
+}
+
 body {
-    background-color: #FFFFFF;
-    font-family: "Lucida Grande", "Lucida Sans Unicode", Arial, Verdana,
-                 Helvetica, sans-serif;
-    font-size: small;
+    color:#000000;
+    background-color:#ffffff
+}
+
+body {
+    font-family: Helvetica, sans-serif;
+    font-size:9pt
+}
+
+h1 {
+    font-size: 14pt;
+}
+
+h2 {
+    font-size: 12pt;
+}
+
+table {
+    font-size:9pt
+}
+
+table {
+    border-spacing: 0px;
+    border: 1px solid black
+}
+
+th, table thead {
+    background-color:#eee;
+    color:#666666;
+    font-weight: bold;
+    cursor: default;
+    text-align:center;
+    font-weight: bold;
+    font-family: Verdana;
+}
+
+.W {
+    font-size:0px
+}
+
+th, td {
+    padding:5px;
+    padding-left:8px;
+}
+
+tbody.scrollContent {
+    overflow:auto
+}
+
+.hideable {
+    border-width:thin;
+    border-color:background;
+    border-style:solid;
+    background: #F8F8FF;
+    padding:8px;
+}
+
+/* Nested popups */
+
+.hideable_1 {
+    border-width:thin;
+    border-color:background;
+    border-style:solid;
+    background: #F8F8FF;
+    padding:8px;
+}
+
+.hideable_2 {
+    border-width:thin;
+    border-color:background;
+    border-style:solid;
+    background: #E8E8E8;
+    padding:8px;
 }

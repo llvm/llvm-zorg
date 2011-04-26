@@ -3,11 +3,76 @@
 <html>
 <head>
   <META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
-  <title>{{ self.title() }}</title>
+  <link rel="icon" type="image/png"
+        href="{{ url_for('.static', filename='favicon.ico') }}">
+  <title>{{old_config.name}}{%
+    for short_name,_ in components
+    %} : {{short_name}}{% endfor %} - {{ self.title() }}</title>
   <link rel="stylesheet" type="text/css"{#
         #} href="{{ url_for('.static', filename='style.css') }}">
+  {% block head %}{% endblock %}
+  <script type='text/javascript'>
+  {% block javascript %}{% endblock %}
+  </script>
 </head>
+{% if self.onload %}
+<body onload="{{ self.onload() }}">
+{% else %}
 <body>
-  <div class="body">{% block body %}{% endblock %}</div>
+{% endif %}
+
+{# Header #}
+
+{# Database selection header. #}
+<div class="zorg_navheader">
+<form method="get" action="{{ url_for('select_db') }}">
+<table style="padding:0.1em;" width="100%%">
+<tr>
+  <td>
+  <strong>
+  [{{ db_name }}]
+  </strong>
+  </td>
+  <td style="text-align:right;">
+  <input type="hidden" name="path" value="{{ request.path }}"/>
+  <strong>Database:</strong>
+  <select name="db" onchange="submit()">
+{% for name in old_config.databases.keys()|sort %}
+    <option{{" selected" if FIXME_is_selected}}>{{ name }}</option>
+{% endfor %}
+  </select>
+  <input type="submit" value="Go"/>
+  </td>
+</tr>
+</table>
+</form>
+</div>
+
+{# Component links #}
+<h2><a href="{{url_for('index')}}">{{old_config.name}}</a>
+{% for short_name,path in components %}
+  : <a href="{{ path }}">{{short_name}}</a>
+{% endfor %}
+ - {{ self.title() }}</h2>
+
+{# Actual body #}
+<div class="body">{% 
+  block body %}{% endblock %}
+</div>
+
+{# Include any database log, if present. #}
+{% if g.db_log %}
+<hr>
+
+<h3>SQL Log</h3>
+<pre>{{g.db_log}}</pre>
+{% endif %}
+
+{# Footer #}
+<hr>
+LNT Version: {{ app.version }}<br>
+Server Started: {{ app.start_time|asusertime }}<br>
+Generated: {{ request.request_time|asusertime }}<br>
+Render Time: {{ "%.2fs" % request.elapsed_time() }}<br>
 </body>
 </html>

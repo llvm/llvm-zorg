@@ -1,6 +1,14 @@
 {% extends "layout.html" %}
-{% block title %}LNT{% endblock %}
+{% set components = [] %}
+{% block title %}Overview{% endblock %}
 {% block body %}
-WIP
-{% endblock %}
 
+{% if db_info.showGeneral %}
+<hr>
+
+<h3>General Database Access</h3>
+<p><a href="{{url_for('browse')}}">Browse DB</a>
+<p><a href="{{url_for('submit_run')}}">Submit Run</a>
+{% endif %}
+
+{% endblock %}
