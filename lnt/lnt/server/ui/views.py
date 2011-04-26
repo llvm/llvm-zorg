@@ -4,6 +4,7 @@ import flask
 from flask import abort
 from flask import current_app
 from flask import g
+from flask import make_response
 from flask import redirect
 from flask import render_template
 from flask import request
@@ -155,16 +156,13 @@ def simple_machine(tag, id):
     return render_template("simple_machine.html", tag=tag, id=id,
                            associated_runs=associated_runs)
 
-@db_route("/simple/<tag>/<id>")
-def simple_run(tag, id):
+def get_simple_run_info(tag, id):
     db = request.get_db()
 
     run = db.getRun(id)
 
     # Get the run summary.
     run_summary = perfdbsummary.SimpleSuiteRunSummary.get_summary(db, tag)
-    ts_summary = perfdbsummary.get_simple_suite_summary(db, tag)
-    sri = runinfo.SimpleRunInfo(db, ts_summary)
 
     # Get the comparison run.
     compare_to = None
@@ -178,6 +176,41 @@ def simple_run(tag, id):
         prev_id = run_summary.get_previous_run_on_machine(run.id)
         if prev_id is not None:
             compare_to = db.getRun(prev_id)
+
+    return db, run, run_summary, compare_to
+
+@db_route("/simple/<tag>/<id>/report")
+def simple_report(tag, id):
+    db, run, run_summary, compare_to = get_simple_run_info(tag, id)
+
+    show_graphs = bool(request.args.get('show_graphs'))
+    _, _, html_report = NTEmailReport.getSimpleReport(
+        None, db, run, str("%s/db_%s/") % (current_app.old_config.zorgURL,
+                                           g.db_name),
+        True, True, show_graphs = show_graphs)
+
+    return make_response(html_report)
+
+@db_route("/simple/<tag>/<id>/text_report")
+def simple_text_report(tag, id):
+    db, run, run_summary, compare_to = get_simple_run_info(tag, id)
+
+    _, text_report, _ = NTEmailReport.getSimpleReport(
+        None, db, run, str("%s/db_%s/") % (current_app.old_config.zorgURL,
+                                           g.db_name),
+        True, True)
+
+    response = make_response(text_report)
+    response.mimetype = "text/plain"
+    return response
+
+@db_route("/simple/<tag>/<id>")
+def simple_run(tag, id):
+    db, run, run_summary, compare_to = get_simple_run_info(tag, id)
+
+    # Get additional summaries.
+    ts_summary = perfdbsummary.get_simple_suite_summary(db, tag)
+    sri = runinfo.SimpleRunInfo(db, ts_summary)
 
     # Get the neighboring runs.
     cur_id = run.id
@@ -195,7 +228,6 @@ def simple_run(tag, id):
 
     # Parse the view options.
     options = {}
-    options['show_graphs'] = bool(request.args.get('show_graphs'))
     options['show_delta'] = bool(request.args.get('show_delta'))
     options['show_stddev'] =  bool(request.args.get('show_stddev'))
     options['show_mad'] = bool(request.args.get('show_mad'))
