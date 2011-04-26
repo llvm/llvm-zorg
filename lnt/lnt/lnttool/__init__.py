@@ -25,6 +25,9 @@ def action_runserver(name, args):
     parser.add_option("", "--processes", dest="processes", type=int,
                       metavar="N", help="number of processes to use [%default]",
                       default=1)
+    parser.add_option("", "--use-flask-app", dest="use_flask_app",
+                      help="use the Flask based UI [%default]",
+                      action="store_true", default=False)
 
     (opts, args) = parser.parse_args(args)
     if len(args) != 1:
@@ -41,11 +44,23 @@ def action_runserver(name, args):
     if not config or not os.path.exists(config):
         raise SystemExit,"error: invalid config: %r" % config
 
-    from werkzeug import run_simple
-    from lnt.viewer import app
-    run_simple(opts.hostname, opts.port, app.create_app(config),
-               opts.reloader, opts.debugger,
-               False, None, 1, opts.threaded, opts.processes)
+    if opts.use_flask_app:
+        import lnt.server.ui.app
+        instance = lnt.server.ui.app.App.create_standalone(
+            config_path = config)
+        if opts.debugger:
+            instance.debug = True
+        instance.run(opts.hostname, opts.port,
+                     use_reloader = opts.reloader,
+                     use_debugger = opts.debugger,
+                     threaded = opts.threaded,
+                     processes = opts.processes)
+    else:
+        from werkzeug import run_simple
+        from lnt.viewer import app
+        run_simple(opts.hostname, opts.port, app.create_app(config),
+                   opts.reloader, opts.debugger,
+                   False, None, 1, opts.threaded, opts.processes)
 
 from create import action_create
 from convert import action_convert

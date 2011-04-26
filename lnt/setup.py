@@ -57,5 +57,5 @@ setup(
             'lnt = lnt.lnttool:main',
             ],
         },
-    install_requires=['Quixote==2.7b2', 'SQLAlchemy', 'Werkzeug'],
+    install_requires=['Quixote==2.7b2', 'SQLAlchemy', 'Flask'],
 )
