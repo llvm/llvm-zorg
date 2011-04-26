@@ -1,7 +1,8 @@
 import os, pprint, sys, time
 
+import lnt.db.perfdb
 from lnt import formats
-from lnt.viewer import Config, PerfDB
+from lnt.viewer import Config
 from lnt.util import ImportData
 
 def action_import(name, args):
@@ -52,7 +53,7 @@ def action_import(name, args):
         parser.error("invalid database name")
 
     # Load the database.
-    db = PerfDB.PerfDB(db_entry.path, echo=opts.show_sql)
+    db = lnt.db.perfdb.PerfDB(db_entry.path, echo=opts.show_sql)
     for file in args:
         result = ImportData.import_and_report(
             config, opts.database, db, file,

@@ -3,7 +3,7 @@
 # RUN: python %s %t.db
 
 import sys
-from lnt.viewer.PerfDB import PerfDB, Run
+from lnt.db.perfdb import PerfDB, Run
 
 # Check creation.
 

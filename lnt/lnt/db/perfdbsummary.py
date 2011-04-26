@@ -2,7 +2,7 @@
 Classes for caching metadata about a PerfDB instance.
 """
 
-from lnt.viewer.PerfDB import Run, RunInfo, Sample, Test
+from lnt.db.perfdb import Run, RunInfo, Sample, Test
 
 class SuiteSummary:
     def __init__(self, name, path):

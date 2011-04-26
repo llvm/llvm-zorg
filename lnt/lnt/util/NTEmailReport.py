@@ -17,10 +17,10 @@ from lnt.db import runinfo
 from lnt.db import perfdbsummary
 from lnt.viewer import GraphUtil
 from lnt.viewer import Util
-from lnt.viewer import PerfDB
+from lnt.db import perfdb
 from lnt.viewer.NTUtil import *
 
-from lnt.viewer.PerfDB import Run, Sample
+from lnt.db.perfdb import Run, Sample
 
 def main():
     global opts
@@ -33,7 +33,7 @@ def main():
 
     dbpath,runID,baseurl,host,from_,to = args
 
-    db = PerfDB.PerfDB(dbpath)
+    db = lnt.db.perfdb.PerfDB(dbpath)
     run = db.getRun(int(runID))
 
     emailReport(db, run, baseurl, host, from_, to)
@@ -485,7 +485,7 @@ def getReport(result, db, run, baseurl, was_added, will_commit):
     # user we are crosses machines.
     if compareTo is None:
         compareCrossesMachine = True
-        q = db.session.query(PerfDB.Run).join(PerfDB.Machine)
+        q = db.session.query(perfdb.Run).join(perfdb.Machine)
         q = q.filter_by(name=machine.name)
         compareTo = findPreceedingRun(q, run)
 

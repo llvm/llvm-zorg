@@ -19,8 +19,9 @@ from quixote.util import StaticDirectory
 import lnt
 from lnt.db import perfdbsummary
 from lnt.util import json
-from lnt.viewer import PerfDB, Util
-from lnt.viewer.PerfDB import Machine, Run
+from lnt.db import perfdb
+from lnt.viewer import Util
+from lnt.db.perfdb import Machine, Run
 
 class RootDirectory(Resolving, Directory):
     _q_exports = ["", "resources", "js", "machines", "runs", "tests",
@@ -41,7 +42,7 @@ class RootDirectory(Resolving, Directory):
         self.db_summary = None
 
     def getDB(self):
-        db = PerfDB.PerfDB(self.dbInfo.path)
+        db = perfdb.PerfDB(self.dbInfo.path)
 
         # Enable SQL logging with db_log.
         #

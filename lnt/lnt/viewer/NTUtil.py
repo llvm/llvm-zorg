@@ -1,5 +1,5 @@
 import Util
-from PerfDB import Run, Sample, Test
+from lnt.db.perfdb import Run, Sample, Test
 
 kPrefix = 'nightlytest'
 

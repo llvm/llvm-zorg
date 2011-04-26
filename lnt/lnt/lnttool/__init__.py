@@ -6,6 +6,7 @@ from optparse import OptionParser, OptionGroup
 
 import StringIO
 from lnt import testing
+from lnt.db import perfdb
 
 def action_runserver(name, args):
     """start a new development server"""
@@ -78,10 +79,8 @@ def action_createdb(name, args):
     if len(args) != 1:
         parser.error("incorrect number of argments")
 
-    from lnt.viewer import PerfDB
-
     path, = args
-    db = PerfDB.PerfDB('sqlite:///%s' % path)
+    db = perfdb.PerfDB('sqlite:///%s' % path)
     db.commit()
 
 def action_checkformat(name, args):
@@ -102,12 +101,11 @@ def action_checkformat(name, args):
         input = StringIO.StringIO(sys.stdin.read())
 
     from lnt import formats
-    from lnt.viewer import PerfDB
 
-    db = PerfDB.PerfDB('sqlite:///:memory:')
+    db = perfdb.PerfDB('sqlite:///:memory:')
 
     data = formats.read_any(input, '<auto>')
-    PerfDB.importDataFromDict(db, data)
+    perfdb.importDataFromDict(db, data)
 
 def action_runtest(name, args):
     """run a builtin test application"""
@@ -159,7 +157,7 @@ def action_runtest(name, args):
         tmp.flush()
 
         # Construct a temporary database and import the result.
-        db = lnt.viewer.PerfDB.PerfDB("sqlite:///:memory:")
+        db = lnt.db.perfdb.PerfDB("sqlite:///:memory:")
         result = ImportData.import_and_report(
             None, None, db, tmp.name, 'json', commit = True)
         ImportData.print_report_result(result, sys.stdout, opts.verbose)
@@ -203,8 +201,7 @@ def action_submit(name, args):
     ServerUtil.submitFiles(args[0], args[1:], opts.commit, opts.verbose)
 
 from lnt.db import perfdbsummary, runinfo
-from lnt.viewer import PerfDB
-from lnt.viewer.PerfDB import Run, Machine, Sample, Test
+from lnt.db.perfdb import Run, Machine, Sample, Test
 from lnt.util import stats
 
 def print_table(rows):
@@ -238,7 +235,7 @@ def action_report(name, args):
         parser.error("incorrect number of argments")
 
     path,machine = args
-    db = PerfDB.PerfDB('sqlite:///%s' % path)
+    db = perfdb.PerfDB('sqlite:///%s' % path)
 
     # FIXME: Argument
     tag = "nts"

@@ -15,9 +15,9 @@ from quixote.directory import Directory
 from quixote.errors import TraversalError
 
 import Util
-from NTUtil import *
+from lnt.db.NTUtil import *
 
-from PerfDB import Machine, Run, RunInfo
+from lnt.db.perfdb import Machine, Run, RunInfo
 
 class TestRunUI(Directory):
     def __init__(self, root, idstr):

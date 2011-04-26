@@ -1,6 +1,6 @@
 from lnt.util import stats
 from lnt.viewer import Util
-from lnt.viewer.PerfDB import Sample
+from lnt.db.perfdb import Sample
 from lnt.testing import PASS, FAIL, XFAIL
 
 REGRESSED = 'REGRESSED'

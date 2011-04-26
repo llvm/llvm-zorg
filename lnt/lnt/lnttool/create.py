@@ -73,6 +73,8 @@ if __name__ == "__main__":
 
 ###
 
+import lnt.db.perfdb
+
 def action_create(name, args):
     """create an LLVM nightly test installation"""
 
@@ -137,8 +139,7 @@ def action_create(name, args):
     wsgi_file.write(kWSGITemplate % locals())
     wsgi_file.close()
 
-    from lnt.viewer import PerfDB
-    db = PerfDB.PerfDB('sqlite:///' + db_path)
+    db = lnt.db.perfdb.PerfDB('sqlite:///' + db_path)
     db.commit()
 
     print 'created LNT configuration in %r' % basepath

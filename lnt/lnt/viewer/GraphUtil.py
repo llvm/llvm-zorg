@@ -7,7 +7,7 @@ import Util
 from lnt.util import stats
 from lnt.external.stats import stats as ext_stats
 
-from PerfDB import Machine, Run, RunInfo, Sample, Test
+from lnt.db.perfdb import Machine, Run, RunInfo, Sample, Test
 
 def get_test_plots(db, machine, test_ids, run_summary, ts_summary,
                    show_mad_error = False, show_points = False,

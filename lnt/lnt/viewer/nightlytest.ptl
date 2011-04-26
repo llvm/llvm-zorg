@@ -17,7 +17,7 @@ import Util, NTStyleBrowser
 from Util import safediv
 from NTUtil import *
 
-from PerfDB import Machine, Run
+from lnt.db.perfdb import Machine, Run
 
 class NightlyTestRunUI(NTStyleBrowser.TestRunUI):
     _q_exports = ["", "graphSingle"]

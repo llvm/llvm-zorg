@@ -22,7 +22,7 @@ import Util
 from Util import safediv
 from NTUtil import *
 
-from PerfDB import Machine, Run, RunInfo, Test
+from lnt.db.perfdb import Machine, Run, RunInfo, Test
 
 class SimpleRunUI(Directory):
     _q_exports = ["", "graph", "report", "text_report"]

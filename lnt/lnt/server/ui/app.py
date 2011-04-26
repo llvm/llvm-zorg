@@ -15,7 +15,7 @@ import lnt.server.ui.views
 # FIXME: Redesign this.
 import lnt.viewer.Config
 from lnt.db import perfdbsummary
-from lnt.viewer import PerfDB
+from lnt.db import perfdb
 
 class Request(flask.Request):
     def __init__(self, *args, **kwargs):
@@ -32,7 +32,7 @@ class Request(flask.Request):
 
     def get_db(self):
         if self.db is None:
-            self.db = PerfDB.PerfDB(g.db_info.path)
+            self.db = perfdb.PerfDB(g.db_info.path)
 
             # Enable SQL logging with db_log.
             #
@@ -93,7 +93,7 @@ class App(flask.Flask):
         self.jinja_env.globals.update(
             app=current_app,
             db_url_for=db_url_for,
-            perfdb=PerfDB,
+            perfdb=perfdb,
             old_config=self.old_config)
 
     def get_db_summary(self, db_name, db):

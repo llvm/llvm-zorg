@@ -1,9 +1,9 @@
 import os, re, time
 
+import lnt.db.perfdb
 from lnt import formats
 from lnt.db import runinfo
 from lnt.util import NTEmailReport
-from lnt.viewer import PerfDB
 
 def import_and_report(config, db_name, db, file, format, commit=False,
                       show_sample_count=False, disable_email=False):
@@ -60,7 +60,7 @@ def import_and_report(config, db_name, db, file, format, commit=False,
 
     importStartTime = time.time()
     try:
-        success,run = PerfDB.importDataFromDict(db, data)
+        success,run = perfdb.importDataFromDict(db, data)
     except KeyboardInterrupt:
         raise
     except:

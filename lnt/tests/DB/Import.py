@@ -22,7 +22,7 @@
 # RUN: python %s %t.install/data/lnt.db
 
 import datetime, sys
-from lnt.viewer.PerfDB import PerfDB, Run, Test
+from lnt.db.perfdb import PerfDB, Run, Test
 
 db = PerfDB(sys.argv[1])
 
