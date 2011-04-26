@@ -101,7 +101,9 @@ def test(id):
 # Simple LNT Schema Viewer
 
 from lnt.db.perfdb import Machine, Run, RunInfo
+from lnt.db import runinfo
 from lnt.db import perfdbsummary
+from lnt.util import NTEmailReport
 
 @db_route("/simple/<tag>")
 def simple_overview(tag):
@@ -155,4 +157,93 @@ def simple_machine(tag, id):
 
 @db_route("/simple/<tag>/<id>")
 def simple_run(tag, id):
-    raise NotImplementedError
+    db = request.get_db()
+
+    run = db.getRun(id)
+
+    # Get the run summary.
+    run_summary = perfdbsummary.SimpleSuiteRunSummary.get_summary(db, tag)
+    ts_summary = perfdbsummary.get_simple_suite_summary(db, tag)
+    sri = runinfo.SimpleRunInfo(db, ts_summary)
+
+    # Get the comparison run.
+    compare_to = None
+    compare_to_id = request.args.get('compare')
+    if compare_to_id is not None:
+        try:
+            compare_to = db.getRun(int(compare_to_id))
+        except:
+            pass
+    if compare_to is None:
+        prev_id = run_summary.get_previous_run_on_machine(run.id)
+        if prev_id is not None:
+            compare_to = db.getRun(prev_id)
+
+    # Get the neighboring runs.
+    cur_id = run.id
+    for i in range(3):
+        next_id = run_summary.get_next_run_on_machine(cur_id)
+        if not next_id:
+            break
+        cur_id = next_id
+    neighboring_runs = []
+    for i in range(6):
+        neighboring_runs.append(db.getRun(cur_id))
+        cur_id = run_summary.get_previous_run_on_machine(cur_id)
+        if cur_id is None:
+            break
+
+    # Parse the view options.
+    options = {}
+    options['show_graphs'] = bool(request.args.get('show_graphs'))
+    options['show_delta'] = bool(request.args.get('show_delta'))
+    options['show_stddev'] =  bool(request.args.get('show_stddev'))
+    options['show_mad'] = bool(request.args.get('show_mad'))
+    options['show_all'] = bool(request.args.get('show_all'))
+    options['show_all_samples'] = bool(request.args.get('show_all_samples'))
+    options['show_sample_counts'] = bool(request.args.get('show_sample_counts'))
+    options['show_graphs'] = show_graphs = bool(request.args.get('show_graphs'))
+    try:
+        num_comparison_runs = int(request.args.get('num_comparison_runs'))
+    except:
+        num_comparison_runs = 10
+    options['num_comparison_runs'] = num_comparison_runs
+
+    _, text_report, html_report = NTEmailReport.getSimpleReport(
+        None, db, run, str("%s/db_%s/") % (current_app.old_config.zorgURL,
+                                           g.db_name),
+        True, True, only_html_body = True, show_graphs = show_graphs,
+        num_comparison_runs = num_comparison_runs)
+
+    # Get the test status style used in each run.
+    run_status_kind = run_summary.get_run_status_kind(db, run.id)
+    if compare_to:
+        compare_to_status_kind = run_summary.get_run_status_kind(
+            db, compare_to.id)
+    else:
+        compare_to_status_kind = None
+
+    # Get the list of tests we are interest in.
+    interesting_runs = [run.id]
+    if compare_to:
+        interesting_runs.append(compare_to.id)
+    test_names = ts_summary.get_test_names_in_runs(db, interesting_runs)
+
+    # Gather the runs to use for statistical data, if enabled.
+    cur_id = run.id
+    comparison_window = []
+    for i in range(num_comparison_runs):
+        cur_id = run_summary.get_previous_run_on_machine(cur_id)
+        if not cur_id:
+            break
+        comparison_window.append(cur_id)
+
+    return render_template("simple_run.html", tag=tag, id=id,
+                           compare_to=compare_to,
+                           compare_to_status_kind=compare_to_status_kind,
+                           run_summary=run_summary, ts_summary=ts_summary,
+                           simple_run_info=sri, test_names=test_names,
+                           neighboring_runs=neighboring_runs,
+                           text_report=text_report, html_report=html_report,
+                           options=options, runinfo=runinfo,
+                           comparison_window=comparison_window)

@@ -91,6 +91,7 @@ class SimpleSuiteSummary(object):
         self.test_id_map = test_id_map
         self.parameter_keys = parameter_keys
         self.parameter_sets = parameter_sets
+        self.parameter_maps = map(dict, parameter_sets)
         self.test_info_map = dict([(v,k) for k,v in test_id_map.items()])
 
     def is_up_to_date(self, db):
