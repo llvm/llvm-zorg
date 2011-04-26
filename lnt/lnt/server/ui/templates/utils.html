@@ -1,0 +1,12 @@
+{% macro render_popup_begin(id, title, hidden, depth=1) -%}
+<p>
+<a href="javascript://" onclick="toggleLayer('{{id}}')"; id="{{id}}_">({{
+  "-" if hidden else "+" }}) {{title}}</a>
+<div id="{{id}}"
+     style="display: {{'none' if hidden else '' }};"
+     class="hideable_{{depth}}">
+{%- endmacro %}
+
+{% macro render_popup_end() -%}
+</div>
+{%- endmacro %}

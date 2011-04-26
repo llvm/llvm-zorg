@@ -1,14 +1,4 @@
-{% macro render_popup_begin(id, title, hidden, depth) -%}
-<p>
-<a href="javascript://" onclick="toggleLayer('{{id}}')"; id="{{id}}_">({{
-  "-" if hidden else "+" }}) {{title}}</a>
-<div id="{{id}}"
-     style="display: {{'none' if hidden else '' }};"
-     class="hideable_{{depth}}">
-{%- endmacro %}
-{% macro render_popup_end() -%}
-</div>
-{%- endmacro %}
+{% import "utils.html" as utils %}
 
 {% set db = request.get_db() %}
 {% set machine = db.getMachine(id) %}
@@ -48,7 +38,7 @@
       </table>
 
 
-{{ render_popup_begin('machine_info', 'Machine Info', true, 1) }}
+{{ utils.render_popup_begin('machine_info', 'Machine Info', true, 1) }}
       <table border=1>
 {% for key,item in machine.info|dictsort %}
       <tr>
@@ -57,7 +47,7 @@
       </tr>
 {% endfor %}
       </table>
-{{ render_popup_end() }}
+{{ utils.render_popup_end() }}
 
 <p>
 <table class="sortable" border=1>
