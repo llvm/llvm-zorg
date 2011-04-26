@@ -192,6 +192,9 @@ class PerfDB:
             self.get_revision(r)
         self.commit()
 
+        # Add shortcut alias.
+        self.query = self.session.query
+
     def get_revision(self, name):
         for r in self.session.query(Revision).filter_by(name=name):
             return r

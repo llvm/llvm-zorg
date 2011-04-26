@@ -38,7 +38,7 @@
   <strong>Database:</strong>
   <select name="db" onchange="submit()">
 {% for name in old_config.databases.keys()|sort %}
-    <option{{" selected" if FIXME_is_selected}}>{{ name }}</option>
+    <option{{" selected" if name == g.db_name}}>{{ name }}</option>
 {% endfor %}
   </select>
   <input type="submit" value="Go"/>

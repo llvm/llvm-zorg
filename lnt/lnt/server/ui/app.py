@@ -85,6 +85,7 @@ class App(flask.Flask):
 
         self.jinja_env.globals.update(
             app=current_app,
+            perfdb=PerfDB,
             old_config=self.old_config)
 
     def get_db_summary(self, db_name, db):

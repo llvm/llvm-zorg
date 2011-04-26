@@ -74,7 +74,7 @@ def index():
 
 @db_route('/browse')
 def browse():
-    raise NotImplementedError
+    return render_template("browse.html")
 
 @db_route('/submitRun')
 def submit_run():
