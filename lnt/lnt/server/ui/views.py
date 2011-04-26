@@ -3,6 +3,7 @@ import os
 import flask
 from flask import abort
 from flask import current_app
+from flask import g
 from flask import redirect
 from flask import render_template
 from flask import request
@@ -38,25 +39,43 @@ def select_db():
 #####
 # Per-Database Routes
 
-@frontend.route('/')
-@frontend.route('/db_<name>')
-@frontend.route('/db_<name>/')
-def index(name = None):
-    name = name or "default"
-    db_info = current_app.old_config.databases.get(name)
-    return render_template("index.html", db_name=name, db_info=db_info)
+# Decorator for implementing per-database routes.
+def db_route(rule, **options):
+    """
+    LNT specific route for endpoints which always refer to some database
+    object.
+
+    This decorator handles adding the routes for both the default and explicit
+    database, as well as initializing the global database information objects.
+    """
+    def decorator(f):
+        def wrap(db_name = None, **args):
+            # Initialize the database parameters on the app globals object.
+            g.db_name = db_name or "default"
+            g.db_info = current_app.old_config.databases.get(g.db_name)
+            if g.db_info is None:
+                abort(404)
+
+            return f(**args)
+
+        frontend.add_url_rule(rule, f.__name__, wrap, **options)
+        frontend.add_url_rule("/db_<db_name>" + rule,
+                              f.__name__, wrap, **options)
+
+        return wrap
+    return decorator
+
+@db_route('/')
+def index():
+    return render_template("index.html")
 
 ###
 # Database Actions
 
-@frontend.route('/browse')
-def browse(name = None):
-    name = name or "default"
-    db_info = current_app.old_config.databases.get(name)
+@db_route('/browse')
+def browse():
     raise NotImplementedError
 
-@frontend.route('/submitRun')
-def submit_run(name = None):
-    name = name or "default"
-    db_info = current_app.old_config.databases.get(name)
+@db_route('/submitRun')
+def submit_run():
     raise NotImplementedError
