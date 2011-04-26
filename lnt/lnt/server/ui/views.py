@@ -106,7 +106,7 @@ from lnt.db import runinfo
 from lnt.db import perfdbsummary
 from lnt.util import NTEmailReport
 
-@db_route("/simple/<tag>")
+@db_route("/simple/<tag>/")
 def simple_overview(tag):
     db = request.get_db()
 
@@ -204,7 +204,7 @@ def simple_text_report(tag, id):
     response.mimetype = "text/plain"
     return response
 
-@db_route("/simple/<tag>/<id>")
+@db_route("/simple/<tag>/<int:id>")
 def simple_run(tag, id):
     db, run, run_summary, compare_to = get_simple_run_info(tag, id)
 
@@ -279,3 +279,111 @@ def simple_run(tag, id):
                            text_report=text_report, html_report=html_report,
                            options=options, runinfo=runinfo,
                            comparison_window=comparison_window)
+
+@db_route("/simple/<tag>/<int:id>/graph")
+def simple_graph(tag, id):
+    from lnt.viewer import GraphUtil
+    from lnt.viewer import Util
+
+    db, run, run_summary, compare_to = get_simple_run_info(tag, id)
+
+    # Get additional summaries.
+    ts_summary = perfdbsummary.get_simple_suite_summary(db, tag)
+
+    # Get the neighboring runs.
+    cur_id = run.id
+    for i in range(3):
+        next_id = run_summary.get_next_run_on_machine(cur_id)
+        if not next_id:
+            break
+        cur_id = next_id
+    neighboring_runs = []
+    for i in range(6):
+        neighboring_runs.append(db.getRun(cur_id))
+        cur_id = run_summary.get_previous_run_on_machine(cur_id)
+        if cur_id is None:
+            break
+
+    # Parse the view options.
+    options = {}
+    show_mad = bool(request.args.get('show_mad', True))
+    show_stddev = bool(request.args.get('show_stddev'))
+    show_linear_regression = bool(
+        request.args.get('show_linear_regression', True))
+
+    # Load the graph parameters.
+    graph_tests = []
+    graph_psets = []
+    for name,value in request.args.items():
+        if name.startswith(str('test.')):
+            graph_tests.append(name[5:])
+        elif name.startswith(str('pset.')):
+            graph_psets.append(ts_summary.parameter_sets[int(name[5:])])
+
+    # Get the test ids we want data for.
+    test_ids = [ts_summary.test_id_map[(name,pset)]
+                 for name in graph_tests
+                 for pset in graph_psets]
+
+    # Build the graph data
+    pset_id_map = dict([(pset,i)
+                        for i,pset in enumerate(ts_summary.parameter_sets)])
+    legend = []
+    num_points = 0
+    plot_points = []
+    plots = ""
+    plots_iter = GraphUtil.get_test_plots(
+        db, run.machine, test_ids, run_summary, ts_summary,
+        show_mad_error = show_mad, show_stddev = show_stddev,
+        show_linear_regression = show_linear_regression, show_points = True)
+    for test_id, plot_js, col, points, ext_points in plots_iter:
+        test = db.getTest(test_id)
+        name = test.name
+        pset = test.get_parameter_set()
+
+        num_points += len(points)
+        legend.append(("%s : P%d" % (name, pset_id_map[pset]), tuple(col)))
+        plots += plot_js
+        plot_points.append(ext_points)
+
+    # Build the sample info.
+    resample_list = set()
+    new_sample_list = []
+    plot_deltas = []
+    for (name,col),points in zip(legend,plot_points):
+        points.sort()
+        deltas = [(Util.safediv(p1[1], p0[1]), p0, p1)
+                  for p0,p1 in Util.pairs(points)]
+        deltas.sort()
+        deltas.reverse()
+        plot_deltas.append(deltas[:20])
+        for (pct,(r0,t0,mad0,med0),(r1,t1,mad1,med1)) in deltas[:20]:
+            # Find the best next revision to sample, unless we have
+            # sampled to the limit. To conserve resources, we try to
+            # align to the largest "nice" revision boundary that we can,
+            # so that we tend to sample the same revisions, even as we
+            # drill down.
+            assert r0 < r1 and r0 != r1
+            if r0 + 1 != r1:
+                for align in [scale * boundary
+                              for scale in (100000,10000,1000,100,10,1)
+                              for boundary in (5, 1)]:
+                    r = r0 + 1 + (r1 - r0)//2
+                    r = (r // align) * align
+                    if r0 < r < r1:
+                        new_sample_list.append(r)
+                        break
+
+            resample_list.add(r0)
+            resample_list.add(r1)
+
+    return render_template("simple_graph.html", tag=tag, id=id,
+                           compare_to=compare_to,
+                           neighboring_runs=neighboring_runs,
+                           run_summary=run_summary, ts_summary=ts_summary,
+                           graph_plots=plots, legend=legend,
+                           num_plots=len(test_ids), num_points=num_points,
+                           new_sample_list=new_sample_list,
+                           resample_list=resample_list,
+                           plot_deltas=plot_deltas)
+

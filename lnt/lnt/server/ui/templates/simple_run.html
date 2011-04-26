@@ -14,7 +14,7 @@
         <script src="{{ url_for('.static', filename='sorttable.js') }}"></script>
         <script src="{{ url_for('.static', filename='View2D.js') }}"></script>
 {% endblock %}
-{
+
 {% block title %}Run Results{% endblock %}
 
 {# Add JS to run the init_report function, if embedded. #}
@@ -151,7 +151,8 @@ function init() {
       2 + options.show_delta + options.show_stddev + options.show_mad +
       options.show_all_samples + options.show_sample_counts) %}
 
-<form method="GET" action="graph">
+<form method="GET" action="{{ db_url_for('simple_graph',
+                                         tag=tag, id=id) }}">
 <table class="sortable" border=1>
 <thead>
   <tr>
