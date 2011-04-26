@@ -60,7 +60,7 @@ def import_and_report(config, db_name, db, file, format, commit=False,
 
     importStartTime = time.time()
     try:
-        success,run = perfdb.importDataFromDict(db, data)
+        success,run = lnt.db.perfdb.importDataFromDict(db, data)
     except KeyboardInterrupt:
         raise
     except:

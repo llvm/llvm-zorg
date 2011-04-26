@@ -1,4 +1,6 @@
 import os
+import tempfile
+import time
 
 import flask
 from flask import abort
@@ -79,9 +81,48 @@ def index():
 def browse():
     return render_template("browse.html")
 
-@db_route('/submitRun')
+@db_route('/submitRun', methods=('GET', 'POST'))
 def submit_run():
-    raise NotImplementedError
+    from lnt.util import ImportData
+
+    if request.method == 'POST':
+        input_file = request.files.get('file')
+        input_data = request.form.get('input_data')
+        commit = int(request.form.get('commit', 0))
+
+        if not input_file.content_length and not input_data:
+            return render_template(
+                "submit_run.html", error="must provide input file or data")
+        if input_file.content_length and input_data:
+            return render_template(
+                "submit_run.html", error="cannot provide input file *and* data")
+
+        if input_file.content_length:
+            data_value = input_file.read()
+        else:
+            data_value = input_data
+
+        # Stash a copy of the raw submission.
+        prefix = time.strftime("data-%Y-%m-%d_%H-%M-%S")
+        fd,path = tempfile.mkstemp(prefix=prefix,
+                                   suffix='.plist',
+                                   dir=current_app.old_config.tempDir)
+        os.write(fd, data_value)
+        os.close(fd)
+
+        # Get a DB connection.
+        db = request.get_db()
+
+        # Import the data.
+        #
+        # FIXME: Gracefully handle formats failures and DOS attempts. We
+        # should at least reject overly large inputs.
+        result = ImportData.import_and_report(
+            current_app.old_config, g.db_name, db, path, '<auto>', commit)
+
+        return flask.jsonify(data = result)
+
+    return render_template("submit_run.html")
 
 ###
 # Generic Database Views
