@@ -198,6 +198,10 @@ class SimpleSuiteRunSummary(object):
     def get_run_order(self, run_id):
         return self.order_by_run.get(run_id)
 
+    def get_runs_on_machine(self, machine_id):
+        return [k for k,v in self.machine_id_by_run.items()
+                if v == machine_id]
+
     def get_run_ordered_index(self, run_id):
         try:
             return self.runs_in_order.index(run_id)

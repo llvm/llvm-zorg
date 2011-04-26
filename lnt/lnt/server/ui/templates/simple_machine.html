@@ -1,0 +1,92 @@
+{% macro render_popup_begin(id, title, hidden, depth) -%}
+<p>
+<a href="javascript://" onclick="toggleLayer('{{id}}')"; id="{{id}}_">({{
+  "-" if hidden else "+" }}) {{title}}</a>
+<div id="{{id}}"
+     style="display: {{'none' if hidden else '' }};"
+     class="hideable_{{depth}}">
+{%- endmacro %}
+{% macro render_popup_end() -%}
+</div>
+{%- endmacro %}
+
+{% set db = request.get_db() %}
+{% set machine = db.getMachine(id) %}
+
+{% extends "layout.html" %}
+{% set components = [(tag, db_url_for("simple_overview", tag=tag))] %}
+{% block head %}
+        <script src="{{ url_for('.static', filename='popup.js') }}"></script>
+{% endblock %}
+{% block title %}Machine: {{machine.name}}:{{machine.number}}{% endblock %}
+{% block body %}
+
+<table width="100%%" border=1>
+  <tr>
+    <td valign="top" width="200">
+      <a href="../..">Homepage</a>
+      <h4>Relatives:</h4>
+      <ul>
+
+{# List all machines with this name. #}
+{% for m in db.machines(name=machine.name) %}
+        <li><a href="{{ db_url_for('simple_machine', tag=tag, id=m.id)}}">{{
+            m.name}}:{{m.number}}</a></li>
+{% endfor %}
+      </ul>
+    </td>
+    <td valign="top">
+      <table border=1>
+      <tr>
+        <td> <b>Nickname</b> </td>
+        <td> {{machine.name}} </td>
+      </tr>
+      <tr>
+        <td> <b>Machine ID</b> </td>
+        <td> {{machine.id}} </td>
+      </tr>
+      </table>
+
+
+{{ render_popup_begin('machine_info', 'Machine Info', true, 1) }}
+      <table border=1>
+{% for key,item in machine.info|dictsort %}
+      <tr>
+        <td> <b>{{key}}</b> </td>
+        <td>{{item.value}}</td>
+      </tr>
+{% endfor %}
+      </table>
+{{ render_popup_end() }}
+
+<p>
+<table class="sortable" border=1>
+<thead>
+  <tr>
+    <th>Run Order</th>
+    <th>Start Time</th>
+    <th>End Time</th>
+    <th>&nbsp;</th>
+  </tr>
+</thead>
+{% for order,runs in associated_runs|sort|reverse %}
+{% for run in runs %}
+  <tr>
+{% if loop.first %}
+    <td rowspan="{{ runs|length }}" align=right>{{order}}</td>
+{% endif %}
+    <td>{{ run.start_time }}</td>
+    <td>{{ run.end_time }}s</td>
+    <td><a href="{{db_url_for('simple_run', tag=tag, id=run.id)}}">
+        View Results</a></td>
+  </tr>
+{% endfor %}
+{% endfor %}
+</table>
+
+
+    </td>
+  </tr>
+</table>
+
+{% endblock %}

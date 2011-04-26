@@ -133,9 +133,25 @@ def simple_overview(tag):
                            active_machines=active_machines,
                            active_submissions=active_submissions)
 
-@db_route("/simple/<tag>/machines/<id>")
+@db_route("/simple/<tag>/machines/<int:id>")
 def simple_machine(tag, id):
-    raise NotImplementedError
+    db = request.get_db()
+
+    # Get the run summary.
+    run_summary = perfdbsummary.SimpleSuiteRunSummary.get_summary(db, tag)
+
+    # Compute the list of associated runs, grouped by order.
+    from lnt.viewer import Util
+    grouped_runs = Util.multidict(
+        (run_summary.get_run_order(run_id), run_id)
+        for run_id in run_summary.get_runs_on_machine(id))
+
+    associated_runs = [(order, [db.getRun(run_id)
+                                for run_id in runs])
+                       for order,runs in grouped_runs.items()]
+
+    return render_template("simple_machine.html", tag=tag, id=id,
+                           associated_runs=associated_runs)
 
 @db_route("/simple/<tag>/<id>")
 def simple_run(tag, id):
