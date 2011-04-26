@@ -6,6 +6,7 @@ import time
 import flask
 from flask import current_app
 from flask import g
+from flask import url_for
 
 import lnt
 import lnt.server.ui.filters
@@ -48,6 +49,12 @@ class Request(flask.Request):
     def get_db_summary(self):
         return current_app.get_db_summary(g.db_name, self.get_db())
 
+def db_url_for(*args, **kwargs):
+    """
+    Like url_for, but handles automatically providing the db_name argument.
+    """
+    return url_for(*args, db_name=g.db_name, **kwargs)
+
 class App(flask.Flask):
     @staticmethod
     def create_standalone(config_path):
@@ -85,6 +92,7 @@ class App(flask.Flask):
 
         self.jinja_env.globals.update(
             app=current_app,
+            db_url_for=db_url_for,
             perfdb=PerfDB,
             old_config=self.old_config)
 

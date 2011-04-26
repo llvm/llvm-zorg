@@ -79,3 +79,18 @@ def browse():
 @db_route('/submitRun')
 def submit_run():
     raise NotImplementedError
+
+###
+# Generic Database Views
+
+@db_route("/machines/<id>/")
+def machine(id):
+    return render_template("machine.html", id=id)
+
+@db_route("/runs/<id>/")
+def run(id):
+    return render_template("run.html", id=id)
+
+@db_route("/tests/<id>/")
+def test(id):
+    return render_template("test.html", id=id)
