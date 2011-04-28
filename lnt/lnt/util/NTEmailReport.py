@@ -307,8 +307,8 @@ def getSimpleReport(result, db, run, baseurl, was_added, will_commit,
         print >>html_report, """
 <p>
 <h3>Changes Detail</h3>"""
-        for name,items,show_perf in items_info:
-            if not items or name == 'Unchanged Tests':
+        for test_name,items,show_perf in items_info:
+            if not items or test_name == 'Unchanged Tests':
                 continue
 
             show_pset = items.items()[0][0] or len(items) > 1
@@ -316,8 +316,8 @@ def getSimpleReport(result, db, run, baseurl, was_added, will_commit,
                 (pset, 'pset.%d' % i)
                 for i,pset in enumerate(ts_summary.parameter_sets))
             print >>report
-            print >>report, name
-            print >>report, '-' * len(name)
+            print >>report, test_name
+            print >>report, '-' * len(test_name)
             for pset,tests in items.items():
                 if show_perf:
                     tests.sort(key = lambda (_,cr): -abs(cr.pct_delta))
@@ -332,7 +332,6 @@ def getSimpleReport(result, db, run, baseurl, was_added, will_commit,
                     (get_last_component(t), t)
                     for t in tests)
 
-                test_name = name
                 for group,grouped_tests in Util.sorted(grouped.items()):
                     group_name = {
                         "" : "(ungrouped)",
