@@ -246,6 +246,7 @@ def simple_text_report(tag, id):
     return response
 
 @db_route("/simple/<tag>/<int:id>")
+@db_route("/simple/<tag>/<int:id>/")
 def simple_run(tag, id):
     db, run, run_summary, compare_to = get_simple_run_info(tag, id)
 
