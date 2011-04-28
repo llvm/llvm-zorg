@@ -168,7 +168,6 @@ function init() {
 {% for key in ts_summary.parameter_sets %}
     <th><input type="checkbox" name="pset.{{loop.index0}}"
                value="on" checked></th>
-{% endfor %}
     <th>%</th>
     {% if options.show_delta %}
     <th>&Delta;</th>
@@ -185,6 +184,7 @@ function init() {
     {% if options.show_sample_counts %}
     <th>N</th>
     {% endif %}
+{% endfor %}
   </tr>
 </thead>
 
