@@ -90,14 +90,17 @@ def submit_run():
         input_data = request.form.get('input_data')
         commit = int(request.form.get('commit', 0))
 
-        if not input_file.content_length and not input_data:
+	if input_file and not input_file.content_length:
+            input_file = None
+
+        if not input_file and not input_data:
             return render_template(
                 "submit_run.html", error="must provide input file or data")
-        if input_file.content_length and input_data:
+        if input_file and input_data:
             return render_template(
                 "submit_run.html", error="cannot provide input file *and* data")
 
-        if input_file.content_length:
+        if input_file:
             data_value = input_file.read()
         else:
             data_value = input_data
@@ -120,7 +123,7 @@ def submit_run():
         result = ImportData.import_and_report(
             current_app.old_config, g.db_name, db, path, '<auto>', commit)
 
-        return flask.jsonify(data = result)
+        return flask.jsonify(**result)
 
     return render_template("submit_run.html")
 
