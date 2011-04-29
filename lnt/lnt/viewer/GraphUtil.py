@@ -85,8 +85,11 @@ def get_test_plots(db, machine, test_ids, run_summary, ts_summary,
 
             # We compute the regression line in terms of a normalized X scale.
             x_min, x_max = min(xs), max(xs)
-            norm_xs = [(x - x_min) / (x_max - x_min)
-                       for x in xs]
+            try:
+                norm_xs = [(x - x_min) / (x_max - x_min)
+                           for x in xs]
+            except ZeroDivisionError:
+                norm_xs = xs
 
             try:
                 info = ext_stats.linregress(norm_xs, ys)
