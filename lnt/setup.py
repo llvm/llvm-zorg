@@ -45,6 +45,12 @@ setup(
                                    'js/*.js',
                                    'resources/*.css',
                                    'resources/*.js'],
+
+                    'lnt.server.ui': ['static/*.ico',
+                                      'static/*.js',
+                                      'static/*.css',
+                                      'templates/*.html'],
+
                     'lnt.util': ['NTAuxSubmit'],
                     },
 
