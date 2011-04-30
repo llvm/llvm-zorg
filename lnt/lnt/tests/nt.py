@@ -575,14 +575,13 @@ Basic usage:
     --sandbox FOO \\
     --cc ~/llvm.obj.64/Release/bin/clang \\
     --cxx ~/llvm.obj.64/Release/bin/clang++ \\
-    --without-llvm --simple \\
     --test-suite ~/llvm-test-suite \\
     FOO
 
 where --sandbox is the directory to build and store results in, --cc and --cxx
-are the full paths to the compilers to test, and the remaining options are paths
-to the LLVM source tree, LLVM object tree, and test-suite source tree. The final
-argument is the base nickname to use to describe this run in reports.
+are the full paths to the compilers to test, and --test-suite is the path to the
+test-suite source. The final argument is the base nickname to use to describe
+this run in reports.
 
 To do a quick test, you can add something like:
 
