@@ -59,7 +59,22 @@ def run_test(nick_prefix, opts, iteration):
         if opts.disable_fp_elim:
             target_llcflags.append('-disable-fp-elim')
         make_variables['TARGET_LLCFLAGS'] = ' '.join(target_llcflags)
-            
+
+    # Set up environment overrides if requested, to effectively run under the
+    # specified the Darwin iOS simulator.
+    #
+    # See /D/P/../Developer/Tools/RunPlatformUnitTests.
+    if opts.ios_simulator_sdk is not None:
+        make_variables['EXECUTION_ENVIRONMENT_OVERRIDES'] = ' '.join(
+            ['DYLD_FRAMEWORK_PATH="%s"' % opts.ios_simulator_sdk,
+             'DYLD_LIBRARY_PATH=""',
+             'DYLD_ROOT_PATH="%s"' % opts.ios_simulator_sdk,
+             'DYLD_NEW_LOCAL_SHARED_REGIONS=YES',
+             'DYLD_NO_FIX_PREBINDING=YES',
+             'IPHONE_SIMULATOR_ROOT="%s"' % opts.ios_simulator_sdk,
+             'CFFIXED_USER_HOME="%s"' % os.path.expanduser(
+                    "~/Library/Application Support/iPhone Simulator/User")])
+
     # Pick apart the build mode.
     build_mode = opts.build_mode
     if build_mode.startswith("Debug"):
@@ -753,6 +768,11 @@ class NTTest(builtintest.BuiltinTest):
                          help="Set remote execution client [%default]",
                          type=str, default="ssh", metavar="RSH",)
 
+        group.add_option("", "--use-ios-simulator", dest="ios_simulator_sdk",
+                         help=("Execute using an iOS simulator SDK (using "
+                               "environment overrides)"),
+                         type=str, default=None, metavar="SDKPATH")
+
         group.add_option("", "--multisample", dest="multisample",
                          help="Accumulate test data from multiple runs",
                          type=int, default=None, metavar="N")
@@ -873,6 +893,16 @@ class NTTest(builtintest.BuiltinTest):
             if not os.path.exists(opts.liblto_path):
                 parser.error('invalid --liblto-path argument %r' % (
                         opts.liblto_path,))
+
+        # Set up iOS simulator options.
+        if opts.ios_simulator_sdk:
+            # Warn if the user asked to run under an iOS simulator SDK, but
+            # didn't set an isysroot for compilation.
+            if opts.isysroot is None:
+                warning('expected --isysroot when executing with '
+                        '--ios-simulator-sdk')
+
+            opts.isysroot = opts.ios_simulator_sdk
 
         # FIXME: We need to validate that there is no configured output in the
         # test-suite directory, that borks things. <rdar://problem/7876418>
