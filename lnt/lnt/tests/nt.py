@@ -46,8 +46,8 @@ def run_test(nick_prefix, opts, iteration):
         'TARGET_FLAGS' : ' '.join(target_flags),
         }
 
-    # Compute TARGET_LLCFLAGS, for non-TEST=simple runs.
-    if not opts.test_simple:
+    # Compute TARGET_LLCFLAGS, for TEST=nightly runs.
+    if opts.test_style == "nightly":
         # Compute TARGET_LLCFLAGS.
         target_llcflags = []
         if opts.mcpu is not None:
@@ -128,14 +128,11 @@ def run_test(nick_prefix, opts, iteration):
         make_variables['ENABLE_PARALLEL_REPORT'] = '1'
 
     # Select the test style to use.
-    if opts.test_simple:
-        test_style = 'simple'
+    if opts.test_style == "simple":
         # We always use reference outputs with TEST=simple.
         make_variables['ENABLE_HASHED_PROGRAM_OUTPUT'] = '1'
         make_variables['USE_REFERENCE_OUTPUT'] = '1'
-    else:
-        test_style = 'nightly'
-    make_variables['TEST'] = test_style
+    make_variables['TEST'] = opts.test_style
 
     # Support disabling test suite externals separately from providing path.
     if not opts.test_externals:
@@ -319,7 +316,7 @@ def run_test(nick_prefix, opts, iteration):
     report_path = os.path.join(basedir)
     if opts.only_test is not None:
         report_path =  os.path.join(report_path, opts.only_test)
-    report_path = os.path.join(report_path, 'report.%s.csv' % test_style)
+    report_path = os.path.join(report_path, 'report.%s.csv' % opts.test_style)
     if os.path.exists(report_path):
         os.remove(report_path)
 
@@ -328,7 +325,7 @@ def run_test(nick_prefix, opts, iteration):
     test_log = open(test_log_path, 'w')
 
     args = ['make', '-k', '-j', str(opts.threads),
-            'report', 'report.%s.csv' % test_style]
+            'report', 'report.%s.csv' % opts.test_style]
     args.extend('%s=%s' % (k,v) for k,v in make_variables.items())
     if opts.only_test is not None:
         args.extend(['-C',opts.only_test])
@@ -351,7 +348,7 @@ def run_test(nick_prefix, opts, iteration):
 
     # Compute the test samples to report.
     sample_keys = []
-    if opts.test_simple:
+    if opts.test_style == "simple":
         test_namespace = 'nts'
         sample_keys.append(('compile', 'CC_Time', None, 'CC'))
         sample_keys.append(('exec', 'Exec_Time', None, 'Exec'))
@@ -696,6 +693,9 @@ class NTTest(builtintest.BuiltinTest):
         group.add_option("", "--simple", dest="test_simple",
                          help="Use TEST=simple instead of TEST=nightly",
                          action="store_true", default=False)
+        group.add_option("", "--test-style", dest="test_style",
+                         help="Set the test style to run [%default]",
+                         choices=('nightly', 'simple'), default='simple')
 
         group.add_option("", "--disable-cxx", dest="test_cxx",
                          help="Disable C++ tests",
@@ -787,7 +787,12 @@ class NTTest(builtintest.BuiltinTest):
         if opts.sandbox_path is None:
             parser.error('--sandbox is required')
 
+        # Deprecate --simple.
         if opts.test_simple:
+            warning("--simple is deprecated, it is the default.")
+        del opts.test_simple
+
+        if opts.test_style == "simple":
             # TEST=simple doesn't use a reference compiler.
             if opts.cc_reference is not None:
                 parser.error('--cc-reference is unused with --simple')
