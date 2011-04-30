@@ -778,6 +778,10 @@ class NTTest(builtintest.BuiltinTest):
 
         nick, = args
 
+        # The --without--llvm option is the default if no LLVM paths are given.
+        if opts.llvm_src_root is None and opts.llvm_obj_root is None:
+            opts.without_llvm = True
+
         # Validate options.
 
         if opts.sandbox_path is None:
