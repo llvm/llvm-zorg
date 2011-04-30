@@ -902,8 +902,6 @@ class NTTest(builtintest.BuiltinTest):
                 warning('expected --isysroot when executing with '
                         '--ios-simulator-sdk')
 
-            opts.isysroot = opts.ios_simulator_sdk
-
         # FIXME: We need to validate that there is no configured output in the
         # test-suite directory, that borks things. <rdar://problem/7876418>
 
