@@ -37,7 +37,8 @@ class ComparisonResult:
             else:
                 return UNCHANGED_PASS
 
-    def get_value_status(self, confidence_interval=2.576, value_precision=0.01):
+    def get_value_status(self, confidence_interval=2.576,
+                         value_precision=0.0001, ignore_small=True):
         if self.current is None or self.previous is None:
             return None
 
@@ -61,7 +62,7 @@ class ComparisonResult:
 
         # Always ignore percentage changes below 1%, for now, we just don't have
         # enough time to investigate that level of stuff.
-        if abs(self.pct_delta) < .01:
+        if ignore_small and abs(self.pct_delta) < .01:
             return UNCHANGED_PASS
 
         # If we have a comparison window, then measure using a symmetic
