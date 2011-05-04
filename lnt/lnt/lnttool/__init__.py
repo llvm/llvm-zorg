@@ -5,6 +5,7 @@ import sys
 from optparse import OptionParser, OptionGroup
 
 import StringIO
+import lnt
 from lnt import testing
 from lnt.db import perfdb
 
@@ -401,28 +402,27 @@ def get_test_passes(db, run_summary, ts_summary,
 
 commands = dict((name[7:], f) for name,f in locals().items()
                 if name.startswith('action_'))
-
-def usage():
-    print >>sys.stderr, "Usage: %s command [options]" % (
-        os.path.basename(sys.argv[0]))
-    print >>sys.stderr
-    print >>sys.stderr, "Available commands:"
-    cmds_width = max(map(len, commands))
-    for name,func in sorted(commands.items()):
-        print >>sys.stderr, "  %-*s - %s" % (cmds_width, name, func.__doc__)
-    sys.exit(1)
-
 def main():
-    import sys
+    cmds_width = max(map(len, commands))
+    parser = OptionParser("""\
+%%prog [options] <command> ... arguments ...
 
-    if len(sys.argv) < 2 or sys.argv[1] not in commands:
-        if len(sys.argv) >= 2:
-            print >>sys.stderr,"error: invalid command %r\n" % sys.argv[1]
+Available commands:
+%s""" % ("\n".join("  %-*s - %s" % (cmds_width, name, func.__doc__)
+                   for name, func in sorted(commands.items()))),
+                          version = "lnt version %s" % lnt.__version__)
+    parser.disable_interspersed_args()
+    (opts, args) = parser.parse_args()
 
-        usage()
+    if not args:
+        parser.print_usage()
+        return
 
-    cmd = sys.argv[1]
-    commands[cmd](cmd, sys.argv[2:])
+    cmd = args[0]
+    if cmd not in commands:
+        parser.error("invalid command: %r" % cmd)
+
+    commands[cmd](cmd, args[1:])
 
 if __name__ == '__main__':
     main()
