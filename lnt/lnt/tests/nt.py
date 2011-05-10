@@ -514,9 +514,6 @@ def run_test(nick_prefix, opts, iteration):
     machdep_info['uname'] = capture(["uname","-a"], include_stderr=True).strip()
     machdep_info['name'] = capture(["uname","-n"], include_stderr=True).strip()
 
-    # Create the machine entry.
-    machine = lnt.testing.Machine(nick, machine_info)
-
     # FIXME: Hack, use better method of getting versions. Ideally, from binaries
     # so we are more likely to be accurate.
     if llvm_source_version is not None:
@@ -559,10 +556,25 @@ def run_test(nick_prefix, opts, iteration):
         if 'run_order' in run_info:
             run_info['run_order'] = '%7d' % int(run_info['run_order'])
 
+    # Add any user specified parameters.
+    for target,params in ((machine_info, opts.machine_parameters),
+                          (run_info, opts.run_parameters)):
+        for entry in params:
+            if '=' not in entry:
+                name,value = entry,''
+            else:
+                name,value = entry.split('=', 1)
+            if name in target:
+                warning("user parameter %r overwrote existing value: %r" % (
+                        name, target.get(name)))
+            print target,name,value
+            target[name] = value
+
     # Generate the test report.
     lnt_report_path = os.path.join(basedir, 'report.json')
     print >>sys.stderr, '%s: generating report: %r' % (timestamp(),
                                                        lnt_report_path)
+    machine = lnt.testing.Machine(nick, machine_info)
     run = lnt.testing.Run(start_time, end_time, info = run_info)
 
     report = lnt.testing.Report(machine, run, test_samples)
@@ -789,6 +801,14 @@ class NTTest(builtintest.BuiltinTest):
         group.add_option("", "--run-order", dest="run_order", metavar="STR",
                           help="String to use to identify and order this run",
                           action="store", type=str, default=None)
+        group.add_option("", "--machine-param", dest="machine_parameters",
+                         metavar="NAME=VAL",
+                         help="Add 'NAME' = 'VAL' to the machine parameters",
+                         type=str, action="append", default=[])
+        group.add_option("", "--run-param", dest="run_parameters",
+                         metavar="NAME=VAL",
+                         help="Add 'NAME' = 'VAL' to the run parameters",
+                         type=str, action="append", default=[])
         parser.add_option_group(group)
 
         (opts, args) = parser.parse_args(args)
