@@ -71,7 +71,7 @@
 {% for key,item in run.info|dictsort(true) %}
       <tr>
         <td> <b>{{key}}</b> </td>
-        <td>{{item.value}}</td>
+        <td>{{item.value.replace("\n","<br>")|safe}}</td>
       </tr>
 {% endfor %}
       </table>
