@@ -139,7 +139,7 @@ def run_test(nick_prefix, opts, iteration):
             'env DYLD_LIBRARY_PATH=%s' % os.path.dirname(
                 opts.liblto_path))
 
-    if opts.threads > 1:
+    if opts.threads > 1 or opts.build_threads > 1:
         make_variables['ENABLE_PARALLEL_REPORT'] = '1'
 
     # Select the test style to use.
@@ -339,11 +339,29 @@ def run_test(nick_prefix, opts, iteration):
     test_log_path = os.path.join(basedir, 'test.log')
     test_log = open(test_log_path, 'w')
 
-    args = ['make', '-k', '-j', str(opts.threads),
-            'report', 'report.%s.csv' % opts.test_style]
-    args.extend('%s=%s' % (k,v) for k,v in make_variables.items())
+    common_args = ['make', '-k']
+    common_args.extend('%s=%s' % (k,v) for k,v in make_variables.items())
     if opts.only_test is not None:
-        args.extend(['-C',opts.only_test])
+        common_args.extend(['-C',opts.only_test])
+
+    # Run a separate 'make build' step if --build-threads was given.
+    if opts.build_threads > 0:
+      args = common_args + ['-j', str(opts.build_threads), 'build']
+      print >>test_log, '%s: running: %s' % (timestamp(),
+                                             ' '.join('"%s"' % a
+                                                      for a in args))
+      test_log.flush()
+
+      print >>sys.stderr, '%s: building -j%u...' % (timestamp(),
+                                                     opts.build_threads)
+      p = subprocess.Popen(args=args, stdin=None, stdout=test_log,
+                           stderr=subprocess.STDOUT, cwd=basedir,
+                           env=os.environ)
+      res = p.wait()
+
+    # Then 'make report'.
+    args = common_args + ['-j', str(opts.threads),
+        'report', 'report.%s.csv' % opts.test_style]
     print >>test_log, '%s: running: %s' % (timestamp(),
                                            ' '.join('"%s"' % a
                                                     for a in args))
@@ -352,7 +370,7 @@ def run_test(nick_prefix, opts, iteration):
     # FIXME: We shouldn't need to set env=os.environ here, but if we don't
     # somehow MACOSX_DEPLOYMENT_TARGET gets injected into the environment on OS
     # X (which changes the driver behavior and causes generally weirdness).
-    print >>sys.stderr, '%s: testing...' % timestamp()
+    print >>sys.stderr, '%s: testing -j%u...' % (timestamp(), opts.threads)
     p = subprocess.Popen(args=args, stdin=None, stdout=test_log,
                          stderr=subprocess.STDOUT, cwd=basedir,
                          env=os.environ)
@@ -762,6 +780,9 @@ class NTTest(builtintest.BuiltinTest):
         group.add_option("-j", "--threads", dest="threads",
                          help="Number of testing threads",
                          type=int, default=1, metavar="N")
+        group.add_option("", "--build-threads", dest="build_threads",
+                         help="Number of compilation threads",
+                         type=int, default=0, metavar="N")
 
         group.add_option("", "--remote", dest="remote",
                          help=("Execute remotely, see "
