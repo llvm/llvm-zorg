@@ -127,6 +127,10 @@ function init() {
 <input type="checkbox" name="show_graphs" value="yes" {{
        "checked" if options.show_graphs }}><br>
 
+<b>Show Data Table:</b>
+<input type="checkbox" name="show_data_table" value="yes" {{
+       "checked" if options.show_data_table }}><br>
+
 <b>Hide Report By Default:</b>
 <input type="checkbox" name="hide_report_by_default" value="yes" {{
        "checked" if options.hide_report_by_default }}><br>
@@ -232,6 +236,28 @@ function init() {
 </table>
 <input type="submit" value="Graph">
 </form>
+
+{% if options.show_data_table %}
+
+<h3>Test Data</h3>
+
+<pre>
+Name{% for key in ts_summary.parameter_sets
+%}	P{{loop.index0}}	P{{loop.index0}}	P{{loop.index0}}{%
+ endfor %}
+-{% for key in ts_summary.parameter_sets
+%}	Prev	Value	%{% endfor %}
+{% for name in test_names|sort %}
+{{name}}{%
+for pset in ts_summary.parameter_sets %}{%
+  set cr = simple_run_info.get_run_comparison_result(
+            run, run_status_kind, compare_to, compare_to_status_kind,
+            name, pset, comparison_window)
+%}	{{cr.previous}}	{{cr.current}}	{{cr.pct_delta}}{% endfor %}{%
+endfor %}
+
+</pre>
+{% endif %}
 
 {% endcall %}
 
