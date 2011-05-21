@@ -34,6 +34,11 @@ function init() {
 {% set value_status = cr.get_value_status() %}
 {% set run_cell_value = "-" if cr.current is none else "%.4f" % cr.current %}
 
+{% if options.show_previous %}
+{% set prev_cell_value = "-" if cr.previous is none else "%.4f" % cr.previous %}
+    <td>{{prev_cell_value}}</td>
+{% endif %}
+
 {% set cell_color = none %}
 {% if test_status == runinfo.REGRESSED %}
     {% set cell_color = (233,128,128) %}
@@ -89,6 +94,10 @@ function init() {
 <b>Show Delta:</b>
 <input type="checkbox" name="show_delta" value="yes" {{
        "checked" if options.show_delta }}><br>
+
+<b>Show Previous Value:</b>
+<input type="checkbox" name="show_previous" value="yes" {{
+       "checked" if options.show_previous }}><br>
 
 <b>Show Standard Deviation:</b>
 <input type="checkbox" name="show_stddev" value="yes" {{
@@ -165,8 +174,8 @@ function init() {
 <h3>Tests</h3>
 
 {% set pset_cols = (
-      2 + options.show_delta + options.show_stddev + options.show_mad +
-      options.show_all_samples + options.show_sample_counts) %}
+    2 + options.show_previous + options.show_delta + options.show_stddev +
+    options.show_mad + options.show_all_samples + options.show_sample_counts) %}
 
 <form method="GET" action="{{ db_url_for('simple_graph',
                                          tag=tag, id=id) }}">
@@ -183,6 +192,9 @@ function init() {
     <th></th>
     <th></th>
 {% for key in ts_summary.parameter_sets %}
+    {% if options.show_previous %}
+    <th>Prev</th>
+    {% endif %}
     <th><input type="checkbox" name="pset.{{loop.index0}}"
                value="on" checked></th>
     <th>%</th>

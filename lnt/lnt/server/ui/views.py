@@ -275,6 +275,7 @@ def simple_run(tag, id):
     # Parse the view options.
     options = {}
     options['show_delta'] = bool(request.args.get('show_delta'))
+    options['show_previous'] = bool(request.args.get('show_previous'))
     options['show_stddev'] =  bool(request.args.get('show_stddev'))
     options['show_mad'] = bool(request.args.get('show_mad'))
     options['show_all'] = bool(request.args.get('show_all'))
