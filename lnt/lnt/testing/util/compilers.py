@@ -67,7 +67,8 @@ def get_cc_info(path, cc_flags=[]):
         cc_norm_name = 'icc'
         cc_build = 'PROD'
         
-    elif (cc_name, cc_extra) == ('gcc',''):
+    elif cc_name == 'gcc' and (cc_extra == '' or
+                               re.match(r' \(dot [0-9]+\)', cc_extra)):
         cc_norm_name = 'gcc'
         m = re.match(r'\(Apple Inc. build ([0-9]*)\)', cc_build_string)
         if m:
