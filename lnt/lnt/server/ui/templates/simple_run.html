@@ -87,28 +87,36 @@ function init() {
 {{ utils.render_popup_begin('view_options', 'View Options', true) }}
 <form action="" method="get">
 <b>Show Delta:</b>
-<input type="checkbox" name="show_delta" value="yes"><br>
+<input type="checkbox" name="show_delta" value="yes" {{
+       "checked" if options.show_delta }}><br>
 
 <b>Show Standard Deviation:</b>
-<input type="checkbox" name="show_stddev" value="yes"><br>
+<input type="checkbox" name="show_stddev" value="yes" {{
+       "checked" if options.show_stddev }}><br>
 
 <b>Show Median Absolute Deviation:</b>
-<input type="checkbox" name="show_mad" value="yes"><br>
+<input type="checkbox" name="show_mad" value="yes" {{
+       "checked" if options.show_mad }}><br>
 
 <b>Show All Values:</b>
-<input type="checkbox" name="show_all" value="yes"><br>
+<input type="checkbox" name="show_all" value="yes" {{
+       "checked" if options.show_all }}><br>
 
 <b>Show All Samples:</b>
-<input type="checkbox" name="show_all_samples" value="yes"><br>
+<input type="checkbox" name="show_all_samples" value="yes" {{
+       "checked" if options.show_all_samples }}><br>
 
 <b>Show Sample Counts:</b>
-<input type="checkbox" name="show_sample_counts" value="yes"><br>
+<input type="checkbox" name="show_sample_counts" value="yes" {{
+       "checked" if options.show_sample_counts }}><br>
 
 <b>Number of Comparison Runs:</b>
-<input type="text" name="num_comparison_runs" value="10"><br>
+<input type="text" name="num_comparison_runs" value="{{
+       options.num_comparison_runs }}"><br>
 
 <b>Show Report Graphs:</b>
-<input type="checkbox" name="show_graphs" value="yes"><br>
+<input type="checkbox" name="show_graphs" value="yes" {{
+       "checked" if options.show_graphs }}><br>
 
 <input type="submit" name="submit" value="Update">
 </form>
