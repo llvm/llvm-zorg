@@ -118,6 +118,14 @@ function init() {
 <input type="checkbox" name="show_graphs" value="yes" {{
        "checked" if options.show_graphs }}><br>
 
+<b>Hide Report By Default:</b>
+<input type="checkbox" name="hide_report_by_default" value="yes" {{
+       "checked" if options.hide_report_by_default }}><br>
+
+<b>Test Filter (regexp):</b>
+<input type="text" name="test_filter" value="{{
+       options.test_filter }}"><br>
+
 <input type="submit" name="submit" value="Update">
 </form>
 {{ utils.render_popup_end() }}
@@ -126,7 +134,8 @@ function init() {
 <pre>{{ text_report }}</pre>
 {{ utils.render_popup_end() }}
 
-{{ utils.render_popup_begin('html_report', 'Report (HTML)', false) }}
+{{ utils.render_popup_begin('html_report', 'Report (HTML)',
+                            options.hide_report_by_default) }}
 {{html_report|safe}}
 {{ utils.render_popup_end() }}
 

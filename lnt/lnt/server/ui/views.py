@@ -1,4 +1,5 @@
 import os
+import re
 import tempfile
 import time
 
@@ -280,11 +281,19 @@ def simple_run(tag, id):
     options['show_all_samples'] = bool(request.args.get('show_all_samples'))
     options['show_sample_counts'] = bool(request.args.get('show_sample_counts'))
     options['show_graphs'] = show_graphs = bool(request.args.get('show_graphs'))
+    options['hide_report_by_default'] = bool(
+        request.args.get('hide_report_by_default'))
     try:
         num_comparison_runs = int(request.args.get('num_comparison_runs'))
     except:
         num_comparison_runs = 10
     options['num_comparison_runs'] = num_comparison_runs
+    options['test_filter'] = test_filter_str = request.args.get(
+        'test_filter', '')
+    if test_filter_str:
+        test_filter_re = re.compile(test_filter_str)
+    else:
+        test_filter_re = None
 
     _, text_report, html_report = NTEmailReport.getSimpleReport(
         None, db, run, str("%s/db_%s/") % (current_app.old_config.zorgURL,
@@ -305,6 +314,12 @@ def simple_run(tag, id):
     if compare_to:
         interesting_runs.append(compare_to.id)
     test_names = ts_summary.get_test_names_in_runs(db, interesting_runs)
+
+    # Filter the list of tests, if requested.
+    if test_filter_re:
+        test_names = [test
+                      for test in test_names
+                      if test_filter_re.search(test)]
 
     # Gather the runs to use for statistical data, if enabled.
     cur_id = run.id
