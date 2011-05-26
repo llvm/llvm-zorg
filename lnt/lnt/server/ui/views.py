@@ -146,7 +146,7 @@ def test(id):
 ###
 # Simple LNT Schema Viewer
 
-from lnt.db.perfdb import Machine, Run, RunInfo
+from lnt.db.perfdb import Machine, Run, RunInfo, Sample
 from lnt.db import runinfo
 from lnt.db import perfdbsummary
 from lnt.util import NTEmailReport
@@ -449,3 +449,110 @@ def simple_graph(tag, id):
                            resample_list=resample_list,
                            plot_deltas=plot_deltas)
 
+@db_route("/simple/<tag>/order_aggregate_report")
+def simple_order_aggregate_report(tag):
+    from lnt.viewer import Util
+
+    db = request.get_db()
+
+    # Get the run summary.
+    run_summary = perfdbsummary.SimpleSuiteRunSummary.get_summary(db, tag)
+    # Load the test suite summary.
+    ts_summary = perfdbsummary.get_simple_suite_summary(db, tag)
+    # Get the run pass/fail information.
+    sri = runinfo.SimpleRunInfo(db, ts_summary)
+
+    # Get this list of orders we are aggregating over.
+    orders_to_aggregate = request.args.get('orders', '')
+    orders_to_aggregate = orders_to_aggregate.split(',')
+
+    # Collect the runs, aggregated by order and machine.
+    runs_to_summarize = []
+    runs_by_machine_and_order = Util.multidict()
+    available_machine_ids = set()
+    for order in orders_to_aggregate:
+        for id in run_summary.runs_by_order["%7s" % order]:
+            r = db.getRun(id)
+            runs_to_summarize.append(r)
+            available_machine_ids.add(r.machine_id)
+            runs_by_machine_and_order[(r.machine_id, order)] = r
+    available_machine_ids = list(available_machine_ids)
+    available_machine_ids.sort()
+    available_machines = [db.getMachine(id)
+                          for id in available_machine_ids]
+
+    # We currently only compare the null pset.
+    pset = ()
+
+    # Get the list of tests we are interested in.
+    test_names = ts_summary.get_test_names_in_runs(db, (
+            r.id for r in runs_to_summarize))
+
+    # Create test subsets, by name.
+    test_subsets = Util.multidict()
+    for test_name in test_names:
+        if '.' in test_name:
+            subset = test_name.rsplit('.', 1)[1]
+        else:
+            subset = test_name, ''
+        test_subsets[subset] = test_name
+
+    # Convert subset names to pretty form.
+    def convert((subset, tests)):
+        subset_name = { "compile" : "Compile Time",
+                        "exec" : "Execution Time" }.get(subset, subset)
+        return (subset_name, tests)
+    test_subsets = dict(convert(item) for item in test_subsets.items())
+
+    # Batch load all the samples for all the runs we are interested in.
+    start_time = time.time()
+    all_samples = db.session.query(Sample.run_id, Sample.test_id,
+                                   Sample.value).\
+                                   filter(Sample.run_id.in_(
+            r.id for r in runs_to_summarize))
+    all_samples = list(all_samples)
+
+    # Aggregate samples for easy lookup.
+    aggregate_samples = Util.multidict()
+    for run_id, test_id, value in all_samples:
+        aggregate_samples[(run_id, test_id)] = value
+
+    # Create the data table as:
+    #  data_table[subset_name][test_name][order index][machine index] = (
+    #    status samples, samples)
+    def get_test_samples(machine_id, test_name, order):
+        status_name = test_name + '.status'
+        status_test_id = ts_summary.test_id_map.get(
+            (status_name, pset))
+        test_id = ts_summary.test_id_map.get(
+            (test_name, pset))
+
+        status_samples = []
+        samples = []
+        for run in runs_by_machine_and_order.get((machine_id,order), []):
+            status_samples.extend(aggregate_samples.get(
+                    (run.id, status_test_id), []))
+            if status_samples:
+                print test_name,status_samples
+            samples.extend(aggregate_samples.get(
+                    (run.id, test_id), []))
+
+        # For now, return simplified sample set. We can return all the data if
+        # we find a use for it.
+        if status_samples or not samples:
+            return None
+        return min(samples)
+    data_table = {}
+    for subset_name,tests_in_subset in test_subsets.items():
+        data_table[subset_name] = subset_table = {}
+        for test_name in tests_in_subset:
+            subset_table[test_name] = test_data = [
+                [get_test_samples(id, test_name, order)
+                 for id in available_machine_ids]
+                for order in orders_to_aggregate]
+
+    # Create some other data tables of serializable info.
+    available_machine_info = [(m.id, m.name)
+                              for m in available_machines]
+
+    return render_template("simple_order_aggregate_report.html", **locals())
