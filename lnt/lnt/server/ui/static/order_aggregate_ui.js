@@ -14,23 +14,95 @@ function mean(list) {
     return sum(list) / list.length;
 }
 
+/* PlotItem Class */
+function PlotItem(graph) {
+    this.graph = graph;
+    this.oar = graph.oar;
+    this.widget = null;
+}
+
+PlotItem.prototype.init = function(parent) {
+    var graph = this.graph;
+
+    this.widget = $('<div class="oar_plot_item_widget"></div>');
+    this.widget.prependTo(parent);
+
+    // Test type selector.
+    this.widget.append("Test Type:");
+    this.test_type_select = $("<select></select>");
+    this.test_type_select.change(function() { graph.update_plots(); });
+    this.test_type_select.appendTo(this.widget);
+    this.test_type_select.append("<option>All</option>");
+    for (var i in this.oar.data.test_subsets) {
+        this.test_type_select.append("<option>" + i + "</option>");
+    }
+
+    // Machine selector.
+    this.widget.append("<br>");
+    this.widget.append("Machines:");
+    this.machine_select = $("<select multiple></select>");
+    this.machine_select.change(function() { graph.update_plots(); });
+    this.machine_select.appendTo(this.widget);
+    for (var i = 0; i != this.oar.data.available_machines.length; ++i) {
+        var machine = this.oar.data.available_machines[i];
+        this.machine_select.append("<option>" + machine[1] + "</option>");
+    }
+
+    return this;
+}
+
+PlotItem.prototype.compute_plot_info = function() {
+    var subsets_to_plot = [];
+    var machine_indices_to_plot = [];
+
+    // Create the list of subsets to aggregate over.
+    var selected = this.test_type_select[0].selectedIndex;
+    var index = 0;
+    for (var i in this.oar.data.test_subsets) {
+        index += 1;
+        if (selected == -1 || selected == 0 || selected == index)
+            subsets_to_plot.push(i);
+    }
+
+    // Create this list of machines to aggregate over.
+    selected = this.machine_select[0].selectedIndex;
+    for (var i = 0; i != this.machine_select[0].options.length; ++i) {
+        var option = this.machine_select[0].options[i];
+        if (option.selected || selected == -1) {
+            machine_indices_to_plot.push(i);
+        }
+    }
+
+    return { 'label' : "Plot",
+             'subsets_to_plot' : subsets_to_plot,
+             'machine_indices_to_plot' : machine_indices_to_plot };
+}
+
 /* AggregateGraphWidget Class */
-function AggregateGraphWidget(oar, name) {
+function AggregateGraphWidget(oar) {
     this.oar = oar;
-    this.name = name;
     this.widget = null;
     this.graph_data = null;
     this.plots = null;
+    this.plot_items = [];
 }
 
 AggregateGraphWidget.prototype.init = function(parent) {
     this.widget = $('<div class="oar_graph_widget"></div>');
-    this.widget.prependTo(parent);
+    this.widget.appendTo(parent);
 
     // Create the graph element.
-    this.graph_elt = $('<div id="' + this.name + '.plot" ' +
-                            'style="width:400px;height:300px;"></div>');
+    this.graph_elt = $('<div style="width:400px;height:300px;"></div>');
     this.graph_elt.appendTo(this.widget);
+
+    // Create the options UI container element.
+    this.options_elt = $('<div></div>');
+    this.options_elt.appendTo(this.widget);
+
+    // Add the default plot items.
+    this.plot_items.push(new PlotItem(this).init(this.options_elt));
+
+    return this;
 }
 
 AggregateGraphWidget.prototype.compute_aggregate_for_run =
@@ -54,14 +126,14 @@ AggregateGraphWidget.prototype.compute_aggregate_for_run =
     return mean(pts);
 }
 
-AggregateGraphWidget.prototype.compute_plots = function() {
+AggregateGraphWidget.prototype.update_plots = function() {
     // First, compute the metadata on the plots we are generating based on the
     // current user options.
-    var plot_infos = [{ 'subsets_to_plot' : ["Compile Time"],
-                        'machine_indices_to_plot' : [1] },
-                      { 'subsets_to_plot' : ["Execution Time"],
-                        'machine_indices_to_plot' : [1] }];
+    var plot_infos = [];
 
+    for (var i = 0; i != this.plot_items.length; ++i) {
+        plot_infos.push(this.plot_items[i].compute_plot_info());
+    }
 
     // For each plot description, compute the plot.
     var orders = this.oar.data.orders_to_aggregate;
@@ -92,7 +164,7 @@ AggregateGraphWidget.prototype.compute_plots = function() {
         }
 
         this.plots.push({
-            label: "Plot " + (i+1).toString(),
+            label: info.label,
             data: pts,
             lines: { show: true },
             points: { show: true }});
@@ -113,6 +185,7 @@ AggregateGraphWidget.prototype.compute_plots = function() {
 function OrderAggregateReport(ui_elt_name, data) {
     this.ui_elt_name = ui_elt_name;
     this.data = data;
+    this.graphs = [];
 }
 
 OrderAggregateReport.prototype.init = function() {
@@ -120,9 +193,14 @@ OrderAggregateReport.prototype.init = function() {
     this.ui_elt = $("#" + this.ui_elt_name);
 
     // Add the default graph widget.
-    var widget = new AggregateGraphWidget(this, "oar_graph_widget");
-    widget.init(this.ui_elt);
-    widget.compute_plots();
+    this.graphs.push(new AggregateGraphWidget(this).init(this.ui_elt));
+
+    this.update_graphs();
 
     return this;
+}
+
+OrderAggregateReport.prototype.update_graphs = function() {
+    for (var i = 0; i != this.graphs.length; ++i)
+        this.graphs[i].update_plots();
 }
