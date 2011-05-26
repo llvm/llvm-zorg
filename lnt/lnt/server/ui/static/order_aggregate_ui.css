@@ -1,0 +1,46 @@
+/* Custom CSS For the Order Aggregate UI */
+
+/* Graph Widget */
+
+.oar-graph-widget {
+    border: 2px solid #dddddd;
+    padding: 3px;
+    width: 820px;
+    height: 310px;
+}
+
+.oar-graph-element {
+    width: 400px;
+    height: 300px;
+    float: left;
+}
+
+.oar-graph-options {
+    border: 2px solid #eeeeee;
+    width: 400px;
+    height: 300px;
+    float: right;
+    display: inline;
+    overflow: auto;
+}
+
+.oar-graph-options-header {
+    border: 1px solid #000000;
+    background: #cccccc;
+    margin: 1px;
+}
+
+/* Plot Widget */
+
+.oar-plot-item-widget {
+    border: 1px solid #dddddd;
+    padding: 1px;
+    margin: 2px;
+    background: #f3f3f3;
+}
+
+.oar-plot-item-header {
+    border: 1px solid #000000;
+    background: #dddddd;
+    margin: 1px;
+}

@@ -532,8 +532,6 @@ def simple_order_aggregate_report(tag):
         for run in runs_by_machine_and_order.get((machine_id,order), []):
             status_samples.extend(aggregate_samples.get(
                     (run.id, status_test_id), []))
-            if status_samples:
-                print test_name,status_samples
             samples.extend(aggregate_samples.get(
                     (run.id, test_id), []))
 

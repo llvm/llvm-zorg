@@ -24,15 +24,22 @@ function PlotItem(graph) {
 PlotItem.prototype.init = function(parent) {
     var graph = this.graph;
 
-    this.widget = $('<div class="oar_plot_item_widget"></div>');
-    this.widget.prependTo(parent);
+    this.widget = $('<div class="oar-plot-item-widget"></div>');
+    this.widget.appendTo(parent);
+
+    // Add the plot item header with the plot name.
+    var header = $('<div class="oar-plot-item-header"></div>');
+    header.appendTo(this.widget);
+    header.append("Name:");
+    this.plot_name = $('<input type="text" value="Plot">');
+    this.plot_name.appendTo(header);
+    this.plot_name.change(function() { graph.update_plots(); });
 
     // Test type selector.
     this.widget.append("Test Type:");
-    this.test_type_select = $("<select></select>");
+    this.test_type_select = $("<select multiple></select>");
     this.test_type_select.change(function() { graph.update_plots(); });
     this.test_type_select.appendTo(this.widget);
-    this.test_type_select.append("<option>All</option>");
     for (var i in this.oar.data.test_subsets) {
         this.test_type_select.append("<option>" + i + "</option>");
     }
@@ -59,9 +66,10 @@ PlotItem.prototype.compute_plot_info = function() {
     var selected = this.test_type_select[0].selectedIndex;
     var index = 0;
     for (var i in this.oar.data.test_subsets) {
-        index += 1;
-        if (selected == -1 || selected == 0 || selected == index)
+        var option = this.test_type_select[0].options[index];
+        if (option.selected || selected == -1)
             subsets_to_plot.push(i);
+        index += 1;
     }
 
     // Create this list of machines to aggregate over.
@@ -73,7 +81,7 @@ PlotItem.prototype.compute_plot_info = function() {
         }
     }
 
-    return { 'label' : "Plot",
+    return { 'label' : this.plot_name[0].value,
              'subsets_to_plot' : subsets_to_plot,
              'machine_indices_to_plot' : machine_indices_to_plot };
 }
@@ -88,16 +96,30 @@ function AggregateGraphWidget(oar) {
 }
 
 AggregateGraphWidget.prototype.init = function(parent) {
-    this.widget = $('<div class="oar_graph_widget"></div>');
+    var agw = this;
+
+    this.widget = $('<div class="oar-graph-widget"></div>');
     this.widget.appendTo(parent);
 
     // Create the graph element.
-    this.graph_elt = $('<div style="width:400px;height:300px;"></div>');
+    this.graph_elt = $('<div class="oar-graph-element"></div>');
     this.graph_elt.appendTo(this.widget);
 
     // Create the options UI container element.
-    this.options_elt = $('<div></div>');
+    this.options_elt = $('<div class="oar-graph-options"></div>');
     this.options_elt.appendTo(this.widget);
+
+    // Add the global options.
+    var options_header = $('<div class="oar-graph-options-header"></div>');
+    options_header.appendTo(this.options_elt);
+
+    // Add a button for adding a plot item.
+    var add_plot_button = $('<input type="button" value="Add Plot">');
+    add_plot_button.appendTo(options_header);
+    add_plot_button.click(function () {
+        agw.plot_items.push(new PlotItem(agw).init(agw.options_elt));
+        agw.update_plots();
+    });
 
     // Add the default plot items.
     this.plot_items.push(new PlotItem(this).init(this.options_elt));
@@ -195,6 +217,15 @@ function OrderAggregateReport(ui_elt_name, data) {
 OrderAggregateReport.prototype.init = function() {
     // Initialize the UI  container.
     this.ui_elt = $("#" + this.ui_elt_name);
+
+    // Add a button for adding a graph.
+    var oar = this;
+    var add_graph_button = $('<input type="button" value="Add Graph">');
+    add_graph_button.appendTo(this.ui_elt);
+    add_graph_button.click(function () {
+        oar.graphs.push(new AggregateGraphWidget(oar).init(oar.ui_elt));
+        oar.update_graphs();
+    });
 
     // Add the default graph widget.
     this.graphs.push(new AggregateGraphWidget(this).init(this.ui_elt));
