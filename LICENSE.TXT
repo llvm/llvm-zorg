@@ -65,3 +65,4 @@ GTestCommand        zorg/buildbot/commands/GTestCommand.py
 sorttable.js        zorg/lnt/viewer/resources/sorttable.js
 External Stats      zorg/lnt/external/stats/
 jQuery              llvmlab/llvmlab/ui/static/jquery/1.5
+Flot                lnt/lnt/server/ui/static/flot
