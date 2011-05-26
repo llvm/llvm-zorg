@@ -57,6 +57,9 @@ def get_build_slaves():
         # Win XP SP3.
         create_slave("kistanova5", properties={'jobs' : 1}, max_builds=1),
 
+        # Ubuntu pandaboard cortex-a9
+        create_slave("kistanova6", properties={'jobs' : 2}, max_builds=1),        
+
         # Quad Core x86_64, Solaris / AurorAUX
         create_slave("evocallaghan", properties={'jobs' : 4}, max_builds=1),
 
