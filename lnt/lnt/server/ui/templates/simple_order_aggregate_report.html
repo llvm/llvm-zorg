@@ -8,9 +8,33 @@
 
 {% block title %}Order Aggregate Report{% endblock %}
 
+{% block head %}
+  <script src="/static/jquery/1.5/jquery.js"></script>
+  <script src="/static/flot/jquery.flot.js"></script>
+  <script src="/static/order_aggregate_ui.js"></script>
+{% endblock %}
+{% block javascript %}
+var g = {};
+
+g.data_table = {{data_table|tojson|safe}};
+g.test_subsets = {{test_subsets|tojson|safe}};
+g.available_machines = {{available_machine_info|tojson|safe}};
+g.orders_to_aggregate = {{orders_to_aggregate|tojson|safe}};
+
+// Register initialization.
+window.onload = function() {
+  new OrderAggregateReport("order_aggregate_report_ui", g).init();
+}
+{% endblock %}
+
 {% block body %}
 
-<h1>Order Aggregate Report</h1>
+<div id="order_aggregate_report_ui"></div>
+
+{# Template code for dumping the data table, for use in debugging. #}
+{#
+
+<h1>Order Aggregate Data</h1>
 
 {% for subset_name,subset_table in data_table|dictsort %}
 <h2>{{ subset_name }}</h2>
@@ -45,5 +69,7 @@
 </table>
 
 {% endfor %}
+
+#}
 
 {% endblock %}
