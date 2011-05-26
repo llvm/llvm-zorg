@@ -113,15 +113,19 @@ AggregateGraphWidget.prototype.compute_aggregate_for_run =
     var pts = []
 
     for (var i = 0; i != test_names.length; ++i) {
+        // Currently we just assume the first machine is the baseline. This
+        // needs to get more complicated, eventually.
         var baseline = test_data[test_names[i]][0][machine_idx];
         var value = test_data[test_names[i]][order_idx][machine_idx];
         if (baseline === null || value === null)
             continue;
 
-        pts.push(value / baseline);
-    }
+        // Ignore tests with unreasonable baselines.
+        if (baseline < 0.0001)
+            continue;
 
-    console.log([subset_name, order_idx, machine_idx, pts]);
+        pts.push((value / baseline - 1.) * 100.);
+    }
 
     return mean(pts);
 }
