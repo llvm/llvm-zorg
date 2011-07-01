@@ -279,6 +279,13 @@ def _get_experimental_builders():
                                            '--enable-targets=arm,cbe',
                                            '--enable-optimized']),
          'category' : 'clang'},
+
+        {'name': "clang-X86_64-freebsd",
+         'slavenames':["kistanova7"],
+         'builddir':"clang-X86_64-freebsd",
+         'factory': NightlytestBuilder.getFastNightlyTestBuildFactory(triple='x86_64-unknown-freebsd8.2',
+                                                                       stage1_config='Release+Asserts',
+                                                                       test=True),
 		 
         # Clang cross builders.
         {'name': "clang-x86_64-darwin10-self-mingw32",
