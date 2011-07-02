@@ -286,6 +286,7 @@ def _get_experimental_builders():
          'factory': NightlytestBuilder.getFastNightlyTestBuildFactory(triple='x86_64-unknown-freebsd8.2',
                                                                        stage1_config='Release+Asserts',
                                                                        test=True),
+         'category' : 'clang'},
 		 
         # Clang cross builders.
         {'name': "clang-x86_64-darwin10-self-mingw32",
