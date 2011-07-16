@@ -168,6 +168,9 @@ def get_build_slaves():
         # Pentium Dual CPU T3400 @ 2.1GHz
         create_slave("dumitrescu1", properties={'jobs' : 2}, max_builds=1),
 
+	# AMD Athlon(tm) 64 X2 Dual Core 3800+, Ubuntu x86_64
+	create_slave("grosser1", properties={'jobs': 2}, max_builds=1),
+
         # Defunct.
         #create_slave("osu2", properties={'jobs' : 4}, max_builds=2),
         #create_slave("andrew1"),
