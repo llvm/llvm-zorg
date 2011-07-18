@@ -22,6 +22,10 @@ from zorg.buildbot.builders import ScriptedBuilder
 reload(ScriptedBuilder)
 from zorg.buildbot.builders import ScriptedBuilder
 
+from zorg.buildbot.builders import PollyBuilder
+reload(PollyBuilder)
+from zorg.buildbot.builders import PollyBuilder
+
 from buildbot.steps.source import SVN
 from zorg.buildbot.commands.ClangTestCommand import ClangTestCommand
 
@@ -245,6 +249,15 @@ def _get_dragonegg_builders():
          'category'  : 'dragonegg'},
 
         ]
+
+# Polly builders.
+def _get_polly_builders():
+    return [
+        {'name': "polly-amd64-linux",
+         'slavenames':["grosser1"],
+         'builddir':"polly-amd64-linux",
+         'factory': PollyBuilder.getPollyBuildFactory()}
+       ]
 
 def _get_experimental_builders():
     return [
@@ -740,6 +753,10 @@ def get_builders():
         b['category'] = 'clang'
         yield b
         
+    for b in _get_polly_builders():
+        b['category'] = 'polly'
+        yield b
+
     for b in _get_experimental_builders():
         yield b
 
