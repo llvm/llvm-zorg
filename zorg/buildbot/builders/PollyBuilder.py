@@ -40,7 +40,7 @@ def installRequiredLibs():
                         workdir=isl_srcdir,
                         description=['isl-configure']))
     f.addStep(ShellCommand(name="build-isl",
-                               command=["make", WithProperties("-j%s" % jobs)],
+                               command=["make"],
                                haltOnFailure=True,
                                description=["build isl"],
                                workdir=isl_srcdir))
@@ -68,7 +68,7 @@ def installRequiredLibs():
                         workdir=cloog_srcdir,
                         description=['cloog-configure']))
     f.addStep(ShellCommand(name="build-cloog",
-                               command=["make", WithProperties("-j%s" % jobs)],
+                               command=["make"],
                                haltOnFailure=True,
                                description=["build cloog"],
                                workdir=cloog_srcdir))
@@ -118,7 +118,7 @@ def getPollyBuildFactory():
                                workdir=llvm_objdir))
     # Build Polly
     f.addStep(ShellCommand(name="build_polly",
-                               command=["make", WithProperties("-j%s" % jobs)],
+                               command=["make"],
                                haltOnFailure=True,
                                description=["build polly"],
                                workdir=llvm_objdir))
