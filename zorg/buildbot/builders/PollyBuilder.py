@@ -17,11 +17,13 @@ def installRequiredLibs():
     # Get Cloog
     f.addStep(Git(repourl='git://repo.or.cz/cloog.git',
                   mode='update',
-                  workdir=cloog_srcdir))
+                  workdir=cloog_srcdir,
+		  alwaysUseLatest=True))
     # Get isl
     f.addStep(Git(repourl='git://repo.or.cz/isl.git',
                   mode='update',
-                  workdir=isl_srcdir))
+                  workdir=isl_srcdir,
+		  alwaysUseLatest=True))
     # Build isl
     f.addStep(ShellCommand(name="autogen-isl",
                                command=["./autogen.sh"],
@@ -38,7 +40,7 @@ def installRequiredLibs():
                         workdir=isl_srcdir,
                         description=['isl-configure']))
     f.addStep(ShellCommand(name="build-isl",
-                               command=["make"],
+                               command=["make", WithProperties("-j%s" % jobs)],
                                haltOnFailure=True,
                                description=["build isl"],
                                workdir=isl_srcdir))
@@ -66,7 +68,7 @@ def installRequiredLibs():
                         workdir=cloog_srcdir,
                         description=['cloog-configure']))
     f.addStep(ShellCommand(name="build-cloog",
-                               command=["make"],
+                               command=["make", WithProperties("-j%s" % jobs)],
                                haltOnFailure=True,
                                description=["build cloog"],
                                workdir=cloog_srcdir))
@@ -103,7 +105,7 @@ def getPollyBuildFactory():
                   workdir='%s/tools/polly' % llvm_srcdir))
     # Create configuration files with cmake
     f.addStep(ShellCommand(name="create-build-dir",
-                               command=["mkdir", llvm_objdir],
+                               command=["mkdir", "-p", llvm_objdir],
                                haltOnFailure=False,
                                description=["create build dir"],
                                workdir="."))
@@ -116,7 +118,7 @@ def getPollyBuildFactory():
                                workdir=llvm_objdir))
     # Build Polly
     f.addStep(ShellCommand(name="build_polly",
-                               command=["make"],
+                               command=["make", WithProperties("-j%s" % jobs)],
                                haltOnFailure=True,
                                description=["build polly"],
                                workdir=llvm_objdir))
