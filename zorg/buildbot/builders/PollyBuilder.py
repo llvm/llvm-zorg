@@ -18,12 +18,14 @@ def installRequiredLibs():
     f.addStep(Git(repourl='git://repo.or.cz/cloog.git',
                   mode='update',
                   workdir=cloog_srcdir,
-		  alwaysUseLatest=True))
+		  alwaysUseLatest=True,
+		  retry=(30, 10))
     # Get isl
     f.addStep(Git(repourl='git://repo.or.cz/isl.git',
                   mode='update',
                   workdir=isl_srcdir,
-		  alwaysUseLatest=True))
+		  alwaysUseLatest=True),
+		  retry=(30, 10))
     # Build isl
     f.addStep(ShellCommand(name="autogen-isl",
                                command=["./autogen.sh"],
