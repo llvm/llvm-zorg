@@ -34,4 +34,13 @@ def get_status_targets(standard_builders):
             builders = ["dragonegg-i386-linux", "dragonegg-x86_64-linux"],
             addLogs=False,
             num_lines = 15),
+        InformativeMailNotifier(
+            fromaddr = "buildbot@google1.osuosl.org",
+            sendToInterestedUsers= False,
+            extraRecipients = ["tobias@grosser.es"],
+            subject="Build %(builder)s Failure",
+            mode = "failing",
+            builders = ["polly-amd64-linux"],
+            addLogs=False,
+            num_lines = 15),
         ]
