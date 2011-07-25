@@ -15,13 +15,13 @@ def installRequiredLibs():
 
     global f
     # Get Cloog
-    f.addStep(Git(repourl='git://repo.or.cz/cloog.git',
+    f.addStep(Git(repourl='http://repo.or.cz/r/cloog.git',
                   mode='update',
                   workdir=cloog_srcdir,
 		  alwaysUseLatest=True,
 		  retry=(30, 10)))
     # Get isl
-    f.addStep(Git(repourl='git://repo.or.cz/isl.git',
+    f.addStep(Git(repourl='http://repo.or.cz/r/isl.git',
                   mode='update',
                   workdir=isl_srcdir,
 		  alwaysUseLatest=True,
