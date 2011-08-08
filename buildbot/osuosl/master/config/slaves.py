@@ -63,7 +63,7 @@ def get_build_slaves():
         # FreeBSD 8.2  X86_64
         create_slave("kistanova7", properties={'jobs' : 2}, max_builds=1),        
 
-        # Dummy entries for future use.
+        # Windows 7 Ultimate
         create_slave("kistanova8", properties={'jobs' : 1}, max_builds=1),
 
         # Quad Core x86_64, Solaris / AurorAUX

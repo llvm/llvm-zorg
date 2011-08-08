@@ -300,6 +300,15 @@ def _get_experimental_builders():
                                                                        stage1_config='Release+Asserts',
                                                                        test=True),
          'category' : 'clang'},
+
+        {'name': "clang-native-mingw32-win7",
+        'slavenames':["kistanova8"],
+         'builddir':"clang-native-mingw32-win7",
+         'factory' : ClangBuilder.getClangBuildFactory(triple='i686-pc-mingw32',
+                                                       useTwoStage=True,
+                                                       stage1_config='Release+Asserts',
+                                                       stage2_config='Release+Asserts'),
+         'category' : 'clang'},
 		 
         # Clang cross builders.
         {'name': "clang-x86_64-darwin10-self-mingw32",
