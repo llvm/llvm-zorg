@@ -113,8 +113,10 @@ def getPollyBuildFactory():
                                workdir="."))
     cloogpath = WithProperties("-DCMAKE_PREFIX_PATH=%%(builddir)s/%s"
                                 % cloog_installdir)
+    cmakeCommand = ["cmake", "../%s" %llvm_srcdir, cloogpath,
+		    "-DCMAKE_COLOR_MAKEFILE=OFF"]
     f.addStep(ShellCommand(name="cmake-configure",
-                               command=["cmake", "../%s" %llvm_srcdir, cloogpath],
+                               command=cmakeCommand,
                                haltOnFailure=False,
                                description=["cmake configure"],
                                workdir=llvm_objdir))
