@@ -81,13 +81,13 @@ def getClangBuildFactory(triple=None, clean=True, test=True, package_dst=None,
                                haltOnFailure=True,
                                description=["rm build dir", "llvm"],
                                workdir="."))
-        
+
     # Force without llvm-gcc so we don't run afoul of Frontend test failures.
     base_configure_args = [WithProperties("%%(builddir)s/%s/configure" % llvm_srcdir),
                            '--disable-bindings']
     base_configure_args += extra_configure_args
     if triple:
-        base_configure_args += ['--build=%s' % triple, 
+        base_configure_args += ['--build=%s' % triple,
                                 '--host=%s' % triple,
                                 '--target=%s' % triple]
     args = base_configure_args + ["--without-llvmgcc", "--without-llvmgxx"]
@@ -176,7 +176,7 @@ def getClangBuildFactory(triple=None, clean=True, test=True, package_dst=None,
                                    flunkOnFailure=False,
                                    haltOnFailure=False))
             f.addStep(ShellCommand(name='pkg.upload',
-                                   description="upload root", 
+                                   description="upload root",
                                    command=["scp", name,
                                             WithProperties(
                             package_dst + "/%(buildername)s")],
@@ -259,7 +259,7 @@ def getClangBuildFactory(triple=None, clean=True, test=True, package_dst=None,
                                flunkOnFailure=False,
                                haltOnFailure=False))
         f.addStep(ShellCommand(name='pkg.upload',
-                               description="upload root", 
+                               description="upload root",
                                command=["scp", name,
                                         WithProperties(
                         package_dst + "/%(buildername)s")],
