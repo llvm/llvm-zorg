@@ -60,8 +60,8 @@ def get_build_slaves():
         # Ubuntu pandaboard cortex-a9
         create_slave("kistanova6", properties={'jobs' : 2}, max_builds=1), 
 
-        # FreeBSD 8.2  X86_64
-        create_slave("kistanova7", properties={'jobs' : 2}, max_builds=1),        
+        # FreeBSD 8.2 X86_64
+        create_slave("kistanova7", properties={'jobs' : 2}, max_builds=1),
 
         # Windows 7 Ultimate
         create_slave("kistanova8", properties={'jobs' : 1}, max_builds=1),

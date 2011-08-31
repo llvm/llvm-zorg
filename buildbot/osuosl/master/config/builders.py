@@ -305,7 +305,7 @@ def _get_experimental_builders():
         'slavenames':["kistanova8"],
          'builddir':"clang-native-mingw32-win7",
          'factory' : ClangBuilder.getClangBuildFactory(triple='i686-pc-mingw32',
-                                                       useTwoStage=True,
+                                                       useTwoStage=True, test=False,
                                                        stage1_config='Release+Asserts',
                                                        stage2_config='Release+Asserts'),
          'category' : 'clang'},
