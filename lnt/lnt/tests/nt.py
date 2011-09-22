@@ -30,6 +30,10 @@ def run_test(nick_prefix, opts, iteration):
     # FIXME: Eliminate this blanket option.
     target_flags.extend(opts.cflags)
 
+    # Pass flags to backend.
+    for f in opts.mllvm:
+      target_flags.extend(['-mllvm', f])
+
     if opts.arch is not None:
         target_flags.append('-arch')
         target_flags.append(opts.arch)
@@ -726,6 +730,9 @@ class NTTest(builtintest.BuiltinTest):
                          choices=('-O0','-O1','-O2','-O3','-Os'), default='-O3')
         group.add_option("", "--cflag", dest="cflags",
                          help="Additional flags to set in TARGET_FLAGS",
+                         action="append", type=str, default=[], metavar="FLAG")
+        group.add_option("", "--mllvm", dest="mllvm",
+                         help="Add -mllvm FLAG to TARGET_FLAGS",
                          action="append", type=str, default=[], metavar="FLAG")
         parser.add_option_group(group)
 
