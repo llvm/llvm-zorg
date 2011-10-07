@@ -34,6 +34,31 @@ class TestModule(object):
 def timestamp():
     return datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
 
+def scan_for_test_modules(opts):
+    base_modules_path = os.path.join(opts.test_suite_root, 'LNTBased')
+    if opts.only_test is None:
+        test_modules_path = base_modules_path
+    elif opts.only_test.startswith('LNTBased'):
+        test_modules_path = os.path.join(opts.test_suite_root, opts.only_test)
+    else:
+        return
+
+    for dirpath,dirnames,filenames in os.walk(test_modules_path):
+        # Ignore the example tests, unless requested.
+        if not opts.include_test_examples and 'Examples' in dirnames:
+            dirnames.remove('Examples')
+
+        # Check if this directory defines a test module.
+        if 'TestModule' not in filenames:
+            continue
+
+        # If so, don't traverse any lower.
+        del dirnames[:]
+
+        # Add to the list of test modules.
+        assert dirpath.startswith(base_modules_path + '/')
+        yield dirpath[len(base_modules_path) + 1:]
+
 def execute_test_modules(test_log, test_modules, test_module_variables,
                          basedir, opts):
     # For now, we don't execute these in parallel, but we do forward the
@@ -510,14 +535,7 @@ def run_test(nick_prefix, opts, iteration):
     # Scan for LNT-based test modules.
     print >>sys.stderr, "%s: scanning for LNT-based test modules" % (
         timestamp(),)
-    test_modules = []
-    test_modules_path = os.path.join(opts.test_suite_root, 'LNTBased')
-    for dirpath,dirnames,filenames in os.walk(test_modules_path):
-        if 'TestModule' not in filenames:
-            continue
-
-        assert dirpath.startswith(test_modules_path + '/')
-        test_modules.append(dirpath[len(test_modules_path) + 1:])
+    test_modules = list(scan_for_test_modules(opts))
     print >>sys.stderr, "%s: found %d LNT-based test modules" % (
         timestamp(), len(test_modules))
 
@@ -968,6 +986,10 @@ class NTTest(builtintest.BuiltinTest):
         group.add_option("", "--only-test", dest="only_test", metavar="PATH",
                          help="Only run tests under PATH",
                          type=str, default=None)
+        group.add_option("", "--include-test-examples",
+                         dest="include_test_examples",
+                         help="Include test module examples [%default]",
+                         action="store_true", default=False)
         parser.add_option_group(group)
 
         group = OptionGroup(parser, "Test Execution")
