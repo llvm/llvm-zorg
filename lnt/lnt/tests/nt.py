@@ -18,6 +18,44 @@ from lnt.testing.util.rcs import get_source_version
 def timestamp():
     return datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
 
+def execute_nt_tests(test_log, make_variables, basedir, opts):
+    common_args = ['make', '-k']
+    common_args.extend('%s=%s' % (k,v) for k,v in make_variables.items())
+    if opts.only_test is not None:
+        common_args.extend(['-C',opts.only_test])
+
+    # Run a separate 'make build' step if --build-threads was given.
+    if opts.build_threads > 0:
+      args = common_args + ['-j', str(opts.build_threads), 'build']
+      print >>test_log, '%s: running: %s' % (timestamp(),
+                                             ' '.join('"%s"' % a
+                                                      for a in args))
+      test_log.flush()
+
+      print >>sys.stderr, '%s: building -j%u...' % (timestamp(),
+                                                     opts.build_threads)
+      p = subprocess.Popen(args=args, stdin=None, stdout=test_log,
+                           stderr=subprocess.STDOUT, cwd=basedir,
+                           env=os.environ)
+      res = p.wait()
+
+    # Then 'make report'.
+    args = common_args + ['-j', str(opts.threads),
+        'report', 'report.%s.csv' % opts.test_style]
+    print >>test_log, '%s: running: %s' % (timestamp(),
+                                           ' '.join('"%s"' % a
+                                                    for a in args))
+    test_log.flush()
+
+    # FIXME: We shouldn't need to set env=os.environ here, but if we don't
+    # somehow MACOSX_DEPLOYMENT_TARGET gets injected into the environment on OS
+    # X (which changes the driver behavior and causes generally weirdness).
+    print >>sys.stderr, '%s: testing -j%u...' % (timestamp(), opts.threads)
+    p = subprocess.Popen(args=args, stdin=None, stdout=test_log,
+                         stderr=subprocess.STDOUT, cwd=basedir,
+                         env=os.environ)
+    res = p.wait()
+
 def load_nt_report_file(report_path, opts):
     # Compute the test samples to report.
     sample_keys = []
@@ -150,7 +188,7 @@ def compute_run_make_variables(opts, llvm_source_version, target_flags,
         make_variables['TARGET_LLCFLAGS'] = ' '.join(target_llcflags)
 
     # Set up environment overrides if requested, to effectively run under the
-    # specified the Darwin iOS simulator.
+    # specified Darwin iOS simulator.
     #
     # See /D/P/../Developer/Tools/RunPlatformUnitTests.
     if opts.ios_simulator_sdk is not None:
@@ -377,7 +415,8 @@ def run_test(nick_prefix, opts, iteration):
     if needs_clean and opts.timestamp_build:
         fatal('refusing to reuse pre-existing build dir %r' % basedir)
 
-    # FIXME: Auto-remove old test directories.
+    # FIXME: Auto-remove old test directories in the source directory (which
+    # cause make horrible fits).
 
     print >>sys.stderr, '%s: starting test in %r' % (timestamp(), basedir)
 
@@ -454,42 +493,8 @@ def run_test(nick_prefix, opts, iteration):
     test_log_path = os.path.join(basedir, 'test.log')
     test_log = open(test_log_path, 'w')
 
-    common_args = ['make', '-k']
-    common_args.extend('%s=%s' % (k,v) for k,v in make_variables.items())
-    if opts.only_test is not None:
-        common_args.extend(['-C',opts.only_test])
+    execute_nt_tests(test_log, make_variables, basedir, opts)
 
-    # Run a separate 'make build' step if --build-threads was given.
-    if opts.build_threads > 0:
-      args = common_args + ['-j', str(opts.build_threads), 'build']
-      print >>test_log, '%s: running: %s' % (timestamp(),
-                                             ' '.join('"%s"' % a
-                                                      for a in args))
-      test_log.flush()
-
-      print >>sys.stderr, '%s: building -j%u...' % (timestamp(),
-                                                     opts.build_threads)
-      p = subprocess.Popen(args=args, stdin=None, stdout=test_log,
-                           stderr=subprocess.STDOUT, cwd=basedir,
-                           env=os.environ)
-      res = p.wait()
-
-    # Then 'make report'.
-    args = common_args + ['-j', str(opts.threads),
-        'report', 'report.%s.csv' % opts.test_style]
-    print >>test_log, '%s: running: %s' % (timestamp(),
-                                           ' '.join('"%s"' % a
-                                                    for a in args))
-    test_log.flush()
-
-    # FIXME: We shouldn't need to set env=os.environ here, but if we don't
-    # somehow MACOSX_DEPLOYMENT_TARGET gets injected into the environment on OS
-    # X (which changes the driver behavior and causes generally weirdness).
-    print >>sys.stderr, '%s: testing -j%u...' % (timestamp(), opts.threads)
-    p = subprocess.Popen(args=args, stdin=None, stdout=test_log,
-                         stderr=subprocess.STDOUT, cwd=basedir,
-                         env=os.environ)
-    res = p.wait()
     test_log.close()
 
     end_time = timestamp()
