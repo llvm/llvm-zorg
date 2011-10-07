@@ -18,6 +18,112 @@ from lnt.testing.util.rcs import get_source_version
 def timestamp():
     return datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
 
+def load_nt_report_file(report_path, opts):
+    # Compute the test samples to report.
+    sample_keys = []
+    if opts.test_style == "simple":
+        test_namespace = 'nts'
+        sample_keys.append(('compile', 'CC_Time', None, 'CC'))
+        sample_keys.append(('exec', 'Exec_Time', None, 'Exec'))
+    else:
+        test_namespace = 'nightlytest'
+        sample_keys.append(('gcc.compile', 'GCCAS', 'time'))
+        sample_keys.append(('bc.compile', 'Bytecode', 'size'))
+        if opts.test_llc:
+            sample_keys.append(('llc.compile', 'LLC compile', 'time'))
+        if opts.test_llcbeta:
+            sample_keys.append(('llc-beta.compile', 'LLC-BETA compile', 'time'))
+        if opts.test_jit:
+            sample_keys.append(('jit.compile', 'JIT codegen', 'time'))
+        sample_keys.append(('gcc.exec', 'GCC', 'time'))
+        if opts.test_cbe:
+            sample_keys.append(('cbe.exec', 'CBE', 'time'))
+        if opts.test_llc:
+            sample_keys.append(('llc.exec', 'LLC', 'time'))
+        if opts.test_llcbeta:
+            sample_keys.append(('llc-beta.exec', 'LLC-BETA', 'time'))
+        if opts.test_jit:
+            sample_keys.append(('jit.exec', 'JIT', 'time'))
+
+    # Load the report file.
+    report_file = open(report_path, 'rb')
+    reader_it = iter(csv.reader(report_file))
+
+    # Get the header.
+    header = reader_it.next()
+    if header[0] != 'Program':
+        fatal('unexpected report file, missing header')
+
+    # Verify we have the keys we expect.
+    if 'Program' not in header:
+        fatal('missing key %r in report header' % 'Program')
+    for item in sample_keys:
+        if item[1] not in header:
+            fatal('missing key %r in report header' % item[1])
+
+    # We don't use the test info, currently.
+    test_info = {}
+    test_samples = []
+    for row in reader_it:
+        record = dict(zip(header, row))
+
+        program = record['Program']
+        if opts.only_test is not None:
+            program = os.path.join(opts.only_test, program)
+        test_base_name = '%s.%s' % (test_namespace, program.replace('.','_'))
+
+        # Check if this is a subtest result, in which case we ignore missing
+        # values.
+        if '_Subtest_' in test_base_name:
+            is_subtest = True
+            test_base_name = test_base_name.replace('_Subtest_', '.')
+        else:
+            is_subtest = False
+
+        for info in sample_keys:
+            if len(info) == 3:
+                name,key,tname = info
+                success_key = None
+            else:
+                name,key,tname,success_key = info
+
+            test_name = '%s.%s' % (test_base_name, name)
+            value = record[key]
+            if success_key is None:
+                success_value = value
+            else:
+                success_value = record[success_key]
+
+            # FIXME: Move to simpler and more succinct format, using .failed.
+            if success_value == '*':
+                if is_subtest:
+                    continue
+                status_value = lnt.testing.FAIL
+            elif success_value == 'xfail':
+                status_value = lnt.testing.XFAIL
+            else:
+                status_value = lnt.testing.PASS
+
+            if test_namespace == 'nightlytest':
+                test_samples.append(lnt.testing.TestSamples(
+                        test_name + '.success',
+                        [status_value != lnt.testing.FAIL], test_info))
+            else:
+                if status_value != lnt.testing.PASS:
+                    test_samples.append(lnt.testing.TestSamples(
+                            test_name + '.status', [status_value], test_info))
+            if value != '*':
+                if tname is None:
+                    test_samples.append(lnt.testing.TestSamples(
+                            test_name, [float(value)], test_info))
+                else:
+                    test_samples.append(lnt.testing.TestSamples(
+                            test_name + '.' + tname, [float(value)], test_info))
+
+    report_file.close()
+
+    return test_namespace, test_samples
+
 def run_test(nick_prefix, opts, iteration):
     if opts.llvm_src_root:
         llvm_source_version = get_source_version(opts.llvm_src_root)
@@ -383,114 +489,14 @@ def run_test(nick_prefix, opts, iteration):
 
     end_time = timestamp()
 
-    # Compute the test samples to report.
-    sample_keys = []
-    if opts.test_style == "simple":
-        test_namespace = 'nts'
-        sample_keys.append(('compile', 'CC_Time', None, 'CC'))
-        sample_keys.append(('exec', 'Exec_Time', None, 'Exec'))
-    else:
-        test_namespace = 'nightlytest'
-        sample_keys.append(('gcc.compile', 'GCCAS', 'time'))
-        sample_keys.append(('bc.compile', 'Bytecode', 'size'))
-        if opts.test_llc:
-            sample_keys.append(('llc.compile', 'LLC compile', 'time'))
-        if opts.test_llcbeta:
-            sample_keys.append(('llc-beta.compile', 'LLC-BETA compile', 'time'))
-        if opts.test_jit:
-            sample_keys.append(('jit.compile', 'JIT codegen', 'time'))
-        sample_keys.append(('gcc.exec', 'GCC', 'time'))
-        if opts.test_cbe:
-            sample_keys.append(('cbe.exec', 'CBE', 'time'))
-        if opts.test_llc:
-            sample_keys.append(('llc.exec', 'LLC', 'time'))
-        if opts.test_llcbeta:
-            sample_keys.append(('llc-beta.exec', 'LLC-BETA', 'time'))
-        if opts.test_jit:
-            sample_keys.append(('jit.exec', 'JIT', 'time'))
-
     # Load the test samples.
     print >>sys.stderr, '%s: loading test data...' % timestamp()
-    test_samples = []
 
     # If nightly test went screwy, it won't have produced a report.
     if not os.path.exists(report_path):
         fatal('nightly test failed, no report generated')
 
-    report_file = open(report_path, 'rb')
-    reader_it = iter(csv.reader(report_file))
-
-    # Get the header.
-    header = reader_it.next()
-    if header[0] != 'Program':
-        fatal('unexpected report file, missing header')
-
-    # Verify we have the keys we expect.
-    if 'Program' not in header:
-        fatal('missing key %r in report header' % 'Program')
-    for item in sample_keys:
-        if item[1] not in header:
-            fatal('missing key %r in report header' % item[1])
-
-    # We don't use the test info, currently.
-    test_info = {}
-    for row in reader_it:
-        record = dict(zip(header, row))
-
-        program = record['Program']
-        if opts.only_test is not None:
-            program = os.path.join(opts.only_test, program)
-        test_base_name = '%s.%s' % (test_namespace, program.replace('.','_'))
-
-        # Check if this is a subtest result, in which case we ignore missing
-        # values.
-        if '_Subtest_' in test_base_name:
-            is_subtest = True
-            test_base_name = test_base_name.replace('_Subtest_', '.')
-        else:
-            is_subtest = False
-
-        for info in sample_keys:
-            if len(info) == 3:
-                name,key,tname = info
-                success_key = None
-            else:
-                name,key,tname,success_key = info
-
-            test_name = '%s.%s' % (test_base_name, name)
-            value = record[key]
-            if success_key is None:
-                success_value = value
-            else:
-                success_value = record[success_key]
-
-            # FIXME: Move to simpler and more succinct format, using .failed.
-            if success_value == '*':
-                if is_subtest:
-                    continue
-                status_value = lnt.testing.FAIL
-            elif success_value == 'xfail':
-                status_value = lnt.testing.XFAIL
-            else:
-                status_value = lnt.testing.PASS
-
-            if test_namespace == 'nightlytest':
-                test_samples.append(lnt.testing.TestSamples(
-                        test_name + '.success',
-                        [status_value != lnt.testing.FAIL], test_info))
-            else:
-                if status_value != lnt.testing.PASS:
-                    test_samples.append(lnt.testing.TestSamples(
-                            test_name + '.status', [status_value], test_info))
-            if value != '*':
-                if tname is None:
-                    test_samples.append(lnt.testing.TestSamples(
-                            test_name, [float(value)], test_info))
-                else:
-                    test_samples.append(lnt.testing.TestSamples(
-                            test_name + '.' + tname, [float(value)], test_info))
-
-    report_file.close()
+    test_namespace, test_samples = load_nt_report_file(report_path, opts)
 
     # Collect the machine and run info.
     #
