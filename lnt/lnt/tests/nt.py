@@ -647,7 +647,13 @@ def run_test(nick_prefix, opts, iteration):
         test_samples = []
 
     # Merge in the test samples from all of the test modules.
+    existing_tests = set(s.name for s in test_samples)
     for module,results in test_module_results:
+        for s in results:
+            if s.name in existing_tests:
+                fatal("test module %r added duplicate test: %r" % (
+                        module, s.name))
+            existing_tests.add(s.name)
         test_samples.extend(results)
 
     # Collect the machine and run info.
