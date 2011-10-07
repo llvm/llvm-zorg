@@ -124,29 +124,8 @@ def load_nt_report_file(report_path, opts):
 
     return test_namespace, test_samples
 
-def run_test(nick_prefix, opts, iteration):
-    if opts.llvm_src_root:
-        llvm_source_version = get_source_version(opts.llvm_src_root)
-    else:
-        llvm_source_version = None
-
-    # Compute TARGET_FLAGS.
-    target_flags = []
-
-    # FIXME: Eliminate this blanket option.
-    target_flags.extend(opts.cflags)
-
-    # Pass flags to backend.
-    for f in opts.mllvm:
-      target_flags.extend(['-mllvm', f])
-
-    if opts.arch is not None:
-        target_flags.append('-arch')
-        target_flags.append(opts.arch)
-    if opts.isysroot is not None:
-        target_flags.append('-isysroot')
-        target_flags.append(opts.isysroot)
-
+def compute_run_make_variables(opts, llvm_source_version, target_flags,
+                               cc_info):
     # Set the make variables to use.
     make_variables = {
         'TARGET_CC' : opts.cc_reference,
@@ -259,10 +238,6 @@ def run_test(nick_prefix, opts, iteration):
         make_variables['USE_REFERENCE_OUTPUT'] = '1'
     make_variables['TEST'] = opts.test_style
 
-    # Get compiler info.
-    cc_info = lnt.testing.util.compilers.get_cc_info(opts.cc_under_test,
-                                                     target_flags)
-
     # Set CC_UNDER_TEST_IS_CLANG when appropriate.
     if cc_info.get('cc_name') in ('apple_clang', 'clang'):
         make_variables['CC_UNDER_TEST_IS_CLANG'] = '1'
@@ -318,6 +293,40 @@ def run_test(nick_prefix, opts, iteration):
         make_variables['ARCH'] = inferred_arch
     else:
         warning("unable to infer ARCH, some tests may not run correctly!")
+
+    return make_variables
+
+def run_test(nick_prefix, opts, iteration):
+    if opts.llvm_src_root:
+        llvm_source_version = get_source_version(opts.llvm_src_root)
+    else:
+        llvm_source_version = None
+
+    # Compute TARGET_FLAGS.
+    target_flags = []
+
+    # FIXME: Eliminate this blanket option.
+    target_flags.extend(opts.cflags)
+
+    # Pass flags to backend.
+    for f in opts.mllvm:
+      target_flags.extend(['-mllvm', f])
+
+    if opts.arch is not None:
+        target_flags.append('-arch')
+        target_flags.append(opts.arch)
+    if opts.isysroot is not None:
+        target_flags.append('-isysroot')
+        target_flags.append(opts.isysroot)
+
+    # Get compiler info.
+    cc_info = lnt.testing.util.compilers.get_cc_info(opts.cc_under_test,
+                                                     target_flags)
+    cc_target = cc_info.get('cc_target')
+
+    # Compute the make variables.
+    make_variables = compute_run_make_variables(opts, llvm_source_version,
+                                                target_flags, cc_info)
 
     # Stash the variables we want to report.
     public_make_variables = make_variables.copy()
