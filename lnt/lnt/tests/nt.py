@@ -43,7 +43,12 @@ def scan_for_test_modules(opts):
     else:
         return
 
-    for dirpath,dirnames,filenames in os.walk(test_modules_path):
+    # We follow links here because we want to support the ability for having
+    # various "suites" of LNTBased tests in separate repositories, and allowing
+    # users to just checkout them out elsewhere and link them into their LLVM
+    # test-suite source tree.
+    for dirpath,dirnames,filenames in os.walk(test_modules_path,
+                                              followlinks = True):
         # Ignore the example tests, unless requested.
         if not opts.include_test_examples and 'Examples' in dirnames:
             dirnames.remove('Examples')
