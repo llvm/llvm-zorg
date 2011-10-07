@@ -1,0 +1,37 @@
+{% extends "layout.html" %}
+{% set title = 'llvmlab' %}
+{% block body %}
+<h1>llvmlab - LLVM Dashboard</h1>
+
+<p>
+  <i>llvmlab</i> is a dashboard for the LLVM project.
+
+  This is the web page for the <i>llvmlab</i> software itself, the current online
+  version of the server is available
+  at <a href="http://lab.llvm.org/lab/">http://lab.llvm.org/lab/</a>.
+</p>
+
+<h2>Documentation</h2>
+<table class="contentstable" align="center" style="margin-left: 30px">
+  <tr>
+    <td width="50%">
+      <p class="biglink"><a class="biglink" href="{{ pathto("contents") }}">
+          Contents</a><br/>
+        <span class="linkdescr">for a complete overview</span></p>
+      <p class="biglink"><a class="biglink" href="{{ pathto("search") }}">
+          Search page</a><br/>
+        <span class="linkdescr">search the documentation</span></p>
+    </td><td width="50%">
+      <p class="biglink"><a class="biglink" href="{{ pathto("genindex") }}">
+          General Index</a><br/>
+        <span class="linkdescr">all functions, classes, terms</span></p>
+  </td></tr>
+</table>
+
+<h2>Source</h2>
+<p><i>llvmlab</i> is available in the LLVM "zorg" SVN repository:
+  <tt>svn co
+    <a href="http://llvm.org/svn/llvm-project/zorg/trunk/llvmlab">
+      http://llvm.org/svn/llvm-project/zorg/trunk/llvmlab</a></tt>.</p>
+
+{% endblock %}
