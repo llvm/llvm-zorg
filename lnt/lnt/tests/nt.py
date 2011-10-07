@@ -259,10 +259,6 @@ def run_test(nick_prefix, opts, iteration):
         make_variables['USE_REFERENCE_OUTPUT'] = '1'
     make_variables['TEST'] = opts.test_style
 
-    # Support disabling test suite externals separately from providing path.
-    if not opts.test_externals:
-        opts.test_suite_externals = '/dev/null'
-
     # Get compiler info.
     cc_info = lnt.testing.util.compilers.get_cc_info(opts.cc_under_test,
                                                      target_flags)
@@ -947,6 +943,10 @@ class NTTest(builtintest.BuiltinTest):
             if not os.path.exists(opts.liblto_path):
                 parser.error('invalid --liblto-path argument %r' % (
                         opts.liblto_path,))
+
+        # Support disabling test suite externals separately from providing path.
+        if not opts.test_externals:
+            opts.test_suite_externals = '/dev/null'
 
         # Set up iOS simulator options.
         if opts.ios_simulator_sdk:
