@@ -1,6 +1,8 @@
+import re
 import os
 from lnt.testing.util import commands
 
+_git_svn_id_re = re.compile("^    git-svn-id: [^@]*@([0-9]+) .*$")
 def get_source_version(path):
     """get_source_version(path) -> str or None
 
@@ -12,11 +14,17 @@ def get_source_version(path):
         return commands.capture(['/bin/sh', '-c',
                                  'cd "%s" && svnversion' % path]).strip()
     elif os.path.exists(os.path.join(path, ".git", "svn")):
+        # git-svn is pitifully slow, extract the revision manually.
         res = commands.capture(['/bin/sh', '-c',
-                                    'cd "%s" && git svn info' % path]).strip()
-        for ln in res.split("\n"):
-            if ln.startswith("Revision:"):
-                return ln.split(':',1)[1].strip()
+                                ('cd "%s" && '
+                                 'git log -1') % path]
+                               ).strip()
+        last_line = res.split("\n")[-1]
+        m = _git_svn_id_re.match(last_line)
+        if not m:
+            commands.warning("unable to understand git svn log: %r" % res)
+            return
+        return m.group(1)
     elif os.path.exists(os.path.join(path, ".git")):
         return commands.capture(['/bin/sh', '-c',
                                  ('cd "%s" && '
