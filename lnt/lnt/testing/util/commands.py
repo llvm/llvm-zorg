@@ -31,6 +31,25 @@ def rm_f(path):
         if e.errno != errno.ENOENT:
             raise
 
+def mkdir_p(path):
+    """mkdir_p(path) - Make the "path" directory, if it does not exist; this
+    will also make directories for any missing parent directories."""
+    import errno
+
+    if not path or os.path.exists(path):
+        return
+
+    parent = os.path.dirname(path) 
+    if parent != path:
+        mkdir_p(parent)
+
+    try:
+        os.mkdir(path)
+    except OSError,e:
+        # Ignore EEXIST, which may occur during a race condition.
+        if e.errno != errno.EEXIST:
+            raise
+
 def capture(args, include_stderr=False):
     import subprocess
     """capture(command) - Run the given command (or argv list) in a shell and
