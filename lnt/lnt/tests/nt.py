@@ -5,6 +5,7 @@ import shutil
 import subprocess
 import sys
 import time
+import traceback
 
 from datetime import datetime
 
@@ -15,8 +16,112 @@ from lnt.testing.util.commands import note, warning, error, fatal
 from lnt.testing.util.commands import capture, which
 from lnt.testing.util.rcs import get_source_version
 
+###
+
+class TestModule(object):
+    """
+    Base class for extension test modules.
+    """
+
+    def main(self):
+        raise NotImplementedError
+
+    def execute_test(self, options):
+        abstract
+
+###
+
 def timestamp():
     return datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+
+def execute_test_modules(test_log, test_modules, test_module_variables,
+                         basedir, opts):
+    # For now, we don't execute these in parallel, but we do forward the
+    # parallel build options to the test.
+    test_modules.sort()
+
+    results = []
+    for name in test_modules:
+        # First, load the test module file.
+        locals = globals = {}
+        test_path = os.path.join(opts.test_suite_root, 'LNTBased', name)
+        module_path = os.path.join(test_path, 'TestModule')
+        module_file = open(module_path)
+        try:
+            exec module_file in locals, globals
+        except:
+            fatal("unable to import test module: %r" % module_path)
+
+        # Lookup and instantiate the test class.
+        test_class = globals.get('test_class')
+        if test_class is None:
+            fatal("no 'test_class' global in import test module: %r" % (
+                    module_path,))
+        try:
+            test_instance = test_class()
+        except:
+            fatal("unable to instantiate test class for: %r" % module_path)
+
+        # Execute the tests.
+        try:
+            test_samples = test_instance.execute_test(test_module_variables)
+        except:
+            info = traceback.format_exc()
+            fatal("exception executing tests for: %r\n%s" % (
+                    module_path, info))
+
+        # Check that the test samples are in the expected format.
+        is_ok = True
+        try:
+            test_samples = list(test_samples)
+            for item in test_samples:
+                if not isinstance(item, lnt.testing.TestSamples):
+                    is_ok = False
+                    break
+        except:
+            is_ok = False
+        if not is_ok:
+            fatal("test module did not return samples list: %r" % (
+                    module_path,))
+
+        results.append((name, test_samples))
+
+    return results
+
+def compute_test_module_variables(make_variables, opts):
+    # Set the test module options, which we try and restrict to a tighter subset
+    # than what we pass to the LNT makefiles.
+    test_module_variables = {
+        'CC' : make_variables['TARGET_CC'],
+        'CXX' : make_variables['TARGET_CXX'],
+        'CFLAGS' : make_variables['TARGET_FLAGS'],
+        'CXXFLAGS' : make_variables['TARGET_FLAGS'],
+        'OPTFLAGS' : make_variables['OPTFLAGS'] }
+
+    # Add the remote execution variables.
+    if opts.remote:
+        test_module_variables['REMOTE_HOST'] = make_variables['REMOTE_HOST']
+        test_module_variables['REMOTE_USER'] = make_variables['REMOTE_USER']
+        test_module_variables['REMOTE_PORT'] = make_variables['REMOTE_PORT']
+        test_module_variables['REMOTE_CLIENT'] = make_variables['REMOTE_CLIENT']
+
+    # Add miscellaneous optional variables.
+    if 'LD_ENV_OVERRIDES' in make_variables:
+        value = make_variables['LD_ENV_OVERRIDES']
+        assert value.startswith('env ')
+        test_module_variables['LINK_ENVIRONMENT_OVERRIDES'] = value[4:]
+
+    # This isn't possible currently, just here to mark what the option variable
+    # would be called.
+    if 'COMPILE_ENVIRONMENT_OVERRIDES' in make_variables:
+        test_module_variables['COMPILE_ENVIRONMENT_OVERRIDES'] = \
+            make_variables['COMPILE_ENVIRONMENT_OVERRIDES']
+
+    if 'EXECUTION_ENVIRONMENT_OVERRIDES' in make_variables:
+        test_module_variables['EXECUTION_ENVIRONMENT_OVERRIDES'] = \
+            make_variables['EXECUTION_ENVIRONMENT_OVERRIDES']
+
+    return test_module_variables
 
 def execute_nt_tests(test_log, make_variables, basedir, opts):
     common_args = ['make', '-k']
@@ -160,7 +265,7 @@ def load_nt_report_file(report_path, opts):
 
     report_file.close()
 
-    return test_namespace, test_samples
+    return test_samples
 
 def compute_run_make_variables(opts, llvm_source_version, target_flags,
                                cc_info):
@@ -376,6 +481,24 @@ def run_test(nick_prefix, opts, iteration):
         make_variables['REMOTE_PORT'] = str(opts.remote_port)
         make_variables['REMOTE_CLIENT'] = opts.remote_client
 
+    # Compute the test module variables, which are a restricted subset of the
+    # make variables.
+    test_module_variables = compute_test_module_variables(make_variables, opts)
+
+    # Scan for LNT-based test modules.
+    print >>sys.stderr, "%s: scanning for LNT-based test modules" % (
+        timestamp(),)
+    test_modules = []
+    test_modules_path = os.path.join(opts.test_suite_root, 'LNTBased')
+    for dirpath,dirnames,filenames in os.walk(test_modules_path):
+        if 'TestModule' not in filenames:
+            continue
+
+        assert dirpath.startswith(test_modules_path + '/')
+        test_modules.append(dirpath[len(test_modules_path) + 1:])
+    print >>sys.stderr, "%s: found %d LNT-based test modules" % (
+        timestamp(), len(test_modules))
+
     nick = nick_prefix
     if opts.auto_name:
         # Construct the nickname from a few key parameters.
@@ -450,7 +573,7 @@ def run_test(nick_prefix, opts, iteration):
 
     # If running with --only-test, creating any dirs which might be missing and
     # copy Makefiles.
-    if opts.only_test is not None:
+    if opts.only_test is not None and not opts.only_test.startswith("LNTBased"):
         suffix = ''
         for component in opts.only_test.split('/'):
             suffix = os.path.join(suffix, component)
@@ -493,20 +616,39 @@ def run_test(nick_prefix, opts, iteration):
     test_log_path = os.path.join(basedir, 'test.log')
     test_log = open(test_log_path, 'w')
 
-    execute_nt_tests(test_log, make_variables, basedir, opts)
+    # Run the make driven tests if needed.
+    run_nightly_test = (opts.only_test is None or
+                        not opts.only_test.startswith("LNTBased"))
+    if run_nightly_test:
+        execute_nt_tests(test_log, make_variables, basedir, opts)
+
+    # Run the extension test modules, if needed.
+    test_module_results = execute_test_modules(test_log, test_modules,
+                                               test_module_variables, basedir,
+                                               opts)
 
     test_log.close()
 
     end_time = timestamp()
 
-    # Load the test samples.
-    print >>sys.stderr, '%s: loading test data...' % timestamp()
+    # Load the nightly test samples.
+    if opts.test_style == "simple":
+        test_namespace = 'nts'
+    else:
+        test_namespace = 'nightlytest'
+    if run_nightly_test:
+        print >>sys.stderr, '%s: loading nightly test data...' % timestamp()
+        # If nightly test went screwy, it won't have produced a report.
+        if not os.path.exists(report_path):
+            fatal('nightly test failed, no report generated')
 
-    # If nightly test went screwy, it won't have produced a report.
-    if not os.path.exists(report_path):
-        fatal('nightly test failed, no report generated')
+        test_samples = load_nt_report_file(report_path, opts)
+    else:
+        test_samples = []
 
-    test_namespace, test_samples = load_nt_report_file(report_path, opts)
+    # Merge in the test samples from all of the test modules.
+    for module,results in test_module_results:
+        test_samples.extend(results)
 
     # Collect the machine and run info.
     #

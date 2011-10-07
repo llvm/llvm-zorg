@@ -146,3 +146,16 @@ example, if we have a local server running as described earlier, we can run::
   TOTAL IMPORT TIME: 5.57s
 
 and view the results on our local server.
+
+LNT-based NT test modules
++++++++++++++++++++++++++
+
+In order to support more complicated tests, or tests which are not easily
+integrated into the more strict SingleSource or MultiSource layout of the LLVM
+test-suite module, the ``nt`` built-in test provides a mechanism for LLVM
+test-suite tests that just define an extension test module. These tests are
+passed the user configuration parameters for a test run and expected to return
+back the test results in the LNT native format.
+
+For more information, see the example tests in the LLVM test-suite repository
+under the ``LNT/Examples`` directory.
