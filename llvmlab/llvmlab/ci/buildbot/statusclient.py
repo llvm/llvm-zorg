@@ -39,10 +39,10 @@ class BuilderInfo(object):
                  'last_poll' : self.last_poll }
 
     def __init__(self, name, last_build_number = None,
-                 active_builds = set(),  last_poll = -1):
+                 active_builds = [],  last_poll = -1):
         self.name = name
         self.last_build_number = last_build_number
-        self.active_builds = active_builds
+        self.active_builds = set(active_builds)
         self.last_poll = last_poll
 
 class StatusClient(object):
