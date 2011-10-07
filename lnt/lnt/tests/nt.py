@@ -40,6 +40,7 @@ def execute_test_modules(test_log, test_modules, test_module_variables,
     # parallel build options to the test.
     test_modules.sort()
 
+    print >>sys.stderr, '%s: executing test modules' % (timestamp(),)
     results = []
     for name in test_modules:
         # First, load the test module file.
@@ -137,8 +138,8 @@ def execute_nt_tests(test_log, make_variables, basedir, opts):
                                                       for a in args))
       test_log.flush()
 
-      print >>sys.stderr, '%s: building -j%u...' % (timestamp(),
-                                                     opts.build_threads)
+      print >>sys.stderr, '%s: building "nightly tests" with -j%u...' % (
+          timestamp(), opts.build_threads)
       p = subprocess.Popen(args=args, stdin=None, stdout=test_log,
                            stderr=subprocess.STDOUT, cwd=basedir,
                            env=os.environ)
@@ -155,7 +156,8 @@ def execute_nt_tests(test_log, make_variables, basedir, opts):
     # FIXME: We shouldn't need to set env=os.environ here, but if we don't
     # somehow MACOSX_DEPLOYMENT_TARGET gets injected into the environment on OS
     # X (which changes the driver behavior and causes generally weirdness).
-    print >>sys.stderr, '%s: testing -j%u...' % (timestamp(), opts.threads)
+    print >>sys.stderr, '%s: executing "nightly tests" with -j%u...' % (
+        timestamp(), opts.threads)
     p = subprocess.Popen(args=args, stdin=None, stdout=test_log,
                          stderr=subprocess.STDOUT, cwd=basedir,
                          env=os.environ)
@@ -440,10 +442,13 @@ def compute_run_make_variables(opts, llvm_source_version, target_flags,
     return make_variables
 
 def run_test(nick_prefix, opts, iteration):
+    print >>sys.stderr, "%s: checking source versions" % (
+        timestamp(),)
     if opts.llvm_src_root:
         llvm_source_version = get_source_version(opts.llvm_src_root)
     else:
         llvm_source_version = None
+    test_suite_source_version = get_source_version(opts.test_suite_root)
 
     # Compute TARGET_FLAGS.
     target_flags = []
@@ -656,6 +661,7 @@ def run_test(nick_prefix, opts, iteration):
             existing_tests.add(s.name)
         test_samples.extend(results)
 
+    print >>sys.stderr, '%s: capturing machine information' % (timestamp(),)
     # Collect the machine and run info.
     #
     # FIXME: Import full range of data that the Clang tests are using?
@@ -704,7 +710,7 @@ def run_test(nick_prefix, opts, iteration):
     # so we are more likely to be accurate.
     if llvm_source_version is not None:
         run_info['llvm_revision'] = llvm_source_version
-    run_info['test_suite_revision'] = get_source_version(opts.test_suite_root)
+    run_info['test_suite_revision'] = test_suite_source_version
     run_info.update(public_make_variables)
 
     # Set the run order from the user, if given.
