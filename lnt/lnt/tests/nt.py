@@ -13,7 +13,7 @@ import lnt.testing
 import lnt.testing.util.compilers
 
 from lnt.testing.util.commands import note, warning, error, fatal
-from lnt.testing.util.commands import capture, which
+from lnt.testing.util.commands import capture, mkdir_p, which
 from lnt.testing.util.rcs import get_source_version
 
 ###
@@ -46,6 +46,7 @@ def execute_test_modules(test_log, test_modules, test_module_variables,
         # First, load the test module file.
         locals = globals = {}
         test_path = os.path.join(opts.test_suite_root, 'LNTBased', name)
+        test_obj_path = os.path.join(basedir, 'LNTBased', name)
         module_path = os.path.join(test_path, 'TestModule')
         module_file = open(module_path)
         try:
@@ -63,9 +64,19 @@ def execute_test_modules(test_log, test_modules, test_module_variables,
         except:
             fatal("unable to instantiate test class for: %r" % module_path)
 
+        if not isinstance(test_instance, TestModule):
+            fatal("invalid test class (expected lnt.tests.nt.TestModule "
+                  "subclass) for: %r" % module_path)
+
+        # Create the per test variables, and ensure the output directory exists.
+        variables = test_module_variables.copy()
+        variables['SRCROOT'] = test_path
+        variables['OBJROOT'] = test_obj_path
+        mkdir_p(test_obj_path)
+
         # Execute the tests.
         try:
-            test_samples = test_instance.execute_test(test_module_variables)
+            test_samples = test_instance.execute_test(variables)
         except:
             info = traceback.format_exc()
             fatal("exception executing tests for: %r\n%s" % (
@@ -95,9 +106,10 @@ def compute_test_module_variables(make_variables, opts):
     test_module_variables = {
         'CC' : make_variables['TARGET_CC'],
         'CXX' : make_variables['TARGET_CXX'],
-        'CFLAGS' : make_variables['TARGET_FLAGS'],
-        'CXXFLAGS' : make_variables['TARGET_FLAGS'],
-        'OPTFLAGS' : make_variables['OPTFLAGS'] }
+        'CFLAGS' : (make_variables['TARGET_FLAGS'] + ' ' +
+                    make_variables['OPTFLAGS']),
+        'CXXFLAGS' : (make_variables['TARGET_FLAGS'] + ' ' +
+                      make_variables['OPTFLAGS']) }
 
     # Add the remote execution variables.
     if opts.remote:
@@ -121,6 +133,11 @@ def compute_test_module_variables(make_variables, opts):
     if 'EXECUTION_ENVIRONMENT_OVERRIDES' in make_variables:
         test_module_variables['EXECUTION_ENVIRONMENT_OVERRIDES'] = \
             make_variables['EXECUTION_ENVIRONMENT_OVERRIDES']
+
+    # We pass the test execution values as variables too, this might be better
+    # passed as actual arguments.
+    test_module_variables['THREADS'] = opts.threads
+    test_module_variables['BUILD_THREADS'] = opts.build_threads or opts.threads
 
     return test_module_variables
 

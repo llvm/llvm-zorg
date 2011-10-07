@@ -157,5 +157,59 @@ test-suite tests that just define an extension test module. These tests are
 passed the user configuration parameters for a test run and expected to return
 back the test results in the LNT native format.
 
+Test modules are defined by providing a ``TestModule`` file in a subdirectory of
+the ``LNTBased`` root directory inside the LLVM test-suite repository. The
+``TestModule`` file is expected to be a well-formed Python module that provides
+a ``test_class`` global variable which should be a subclass of the
+``lnt.tests.nt.TestModule`` abstract base class.
+
+The test class should override the ``execute_test`` method which is passed an
+options dictionary containg the NT user parameters which apply to test
+execution, and the test should return the test results as a list of
+``lnt.testing.TestSamples`` objects.
+
+The ``execute_test`` method is passed the following options which apply to how
+tests should be executed:
+
+  * ``THREADS`` - The number of parallel processes to run during testing.
+
+  * ``BUILD_THREADS`` - The number of parallel processes to use while building
+    tests (if applicable).
+
+The method is passed the following options which specify how and whether tests
+should be executed remotely. If any of these parameters are present then all are
+guaranteed to be present.
+
+ * ``REMOTE_HOST`` - The host name of the remote machine to execute tests on.
+
+ * ``REMOTE_USER`` - The user to log in to the remote machine as.
+
+ * ``REMOTE_PORT`` - The port to connect to the remote machine on.
+
+ * ``REMOTE_CLIENT`` - The ``rsh`` compatible client to use to connect to the
+   remote machine with.
+
+The method is passed the following options which specify how to build the tests:
+
+ * ``CC`` - The C compiler command to use.
+
+ * ``CXX`` - The C++ compiler command to use.
+
+ * ``CFLAGS`` - The compiler flags to use for building C code.
+
+ * ``CXXFLAGS`` - The compiler flags to use for building C++ code.
+
+The method is passed the following optional parameters which specify the
+environment to use for various commands:
+
+ * ``COMPILE_ENVIRONMENT_OVERRIDES`` [optional] - If given, a ``env`` style list
+   of environment overrides to use when compiling.
+
+ * ``LINK_ENVIRONMENT_OVERRIDES`` [optional] - If given, a ``env`` style list of
+   environment overrides to use when linking.
+
+ * ``EXECUTION_ENVIRONMENT_OVERRIDES`` [optional] - If given, a ``env`` style list of
+   environment overrides to use when executing tests.
+
 For more information, see the example tests in the LLVM test-suite repository
 under the ``LNT/Examples`` directory.
