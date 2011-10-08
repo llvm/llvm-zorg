@@ -168,8 +168,20 @@ options dictionary containg the NT user parameters which apply to test
 execution, and the test should return the test results as a list of
 ``lnt.testing.TestSamples`` objects.
 
-The ``execute_test`` method is passed the following options which apply to how
-tests should be executed:
+The ``execute_test`` method is passed the following options describing
+information about the module itself:
+
+  * ``MODULENAME`` - The name of the module (primarily intended for use in
+    producing well structured test names).
+
+  * ``SRCROOT`` - The path to the modules source directory.
+
+  * ``OBJROOT`` - The path to a directory the module should use for temporary
+    output (build products). The directory is guaranteed to exist but is not
+    guaranteed to be clean.
+
+The method is passed the following options which apply to how tests should be
+executed:
 
   * ``THREADS`` - The number of parallel processes to run during testing.
 

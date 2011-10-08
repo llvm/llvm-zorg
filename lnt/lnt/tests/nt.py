@@ -100,6 +100,7 @@ def execute_test_modules(test_log, test_modules, test_module_variables,
 
         # Create the per test variables, and ensure the output directory exists.
         variables = test_module_variables.copy()
+        variables['MODULENAME'] = name
         variables['SRCROOT'] = test_path
         variables['OBJROOT'] = test_obj_path
         mkdir_p(test_obj_path)
@@ -134,8 +135,8 @@ def compute_test_module_variables(make_variables, opts):
     # Set the test module options, which we try and restrict to a tighter subset
     # than what we pass to the LNT makefiles.
     test_module_variables = {
-        'CC' : make_variables['TARGET_CC'],
-        'CXX' : make_variables['TARGET_CXX'],
+        'CC' : make_variables['TARGET_LLVMGCC'],
+        'CXX' : make_variables['TARGET_LLVMGXX'],
         'CFLAGS' : (make_variables['TARGET_FLAGS'] + ' ' +
                     make_variables['OPTFLAGS']),
         'CXXFLAGS' : (make_variables['TARGET_FLAGS'] + ' ' +
