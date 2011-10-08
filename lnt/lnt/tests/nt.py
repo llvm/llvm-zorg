@@ -23,12 +23,29 @@ class TestModule(object):
     Base class for extension test modules.
     """
 
+    def __init__(self):
+        self._log = None
+
     def main(self):
         raise NotImplementedError
 
     def execute_test(self, options):
         abstract
 
+    def _execute_test(self, test_log, options):
+        self._log = test_log
+        try:
+            return self.execute_test(options)
+        finally:
+            self._log = None
+
+    @property
+    def log(self):
+        """Get the test log output stream."""
+        if self._log is None:
+            raise ValueError("log() unavailable outside test execution")
+        return self._log
+        
 ###
 
 def timestamp():
@@ -82,7 +99,9 @@ def execute_test_modules(test_log, test_modules, test_module_variables,
         try:
             exec module_file in locals, globals
         except:
-            fatal("unable to import test module: %r" % module_path)
+            info = traceback.format_exc()
+            fatal("unable to import test module: %r\n%s" % (
+                    module_path, info))
 
         # Lookup and instantiate the test class.
         test_class = globals.get('test_class')
@@ -107,7 +126,7 @@ def execute_test_modules(test_log, test_modules, test_module_variables,
 
         # Execute the tests.
         try:
-            test_samples = test_instance.execute_test(variables)
+            test_samples = test_instance._execute_test(test_log, variables)
         except:
             info = traceback.format_exc()
             fatal("exception executing tests for: %r\n%s" % (
