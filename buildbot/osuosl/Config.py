@@ -1,7 +1,7 @@
 # Common configuration parameters (used by master and slaves).
 
 def getBuildmasterHost():
-    return 'google1.osuosl.org'
+    return 'lab.llvm.org'
 
 def getBuildmasterPort():
     return 9990
