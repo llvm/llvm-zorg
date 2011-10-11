@@ -36,9 +36,13 @@ def getScriptedBuildFactory(
     for checkout in source_code:
       # Store the list of source code directories in the original order for later use.
       # Note: We require all spaces and special characters already escaped.
-      src_dir = checkout.args.get('workdir', None)
-      if src_dir:
-        scripted_step_common_args.append(WithProperties(src_dir))
+      try:
+        src_dir = checkout.workdir
+        if src_dir:
+          scripted_step_common_args.append(WithProperties(src_dir))
+      except AttributeError:
+        # workdir property is missing. Skip it.
+        pass
 
       # Get the source code from version control system
       f.addStep(checkout)
