@@ -205,6 +205,27 @@ def _get_clang_builders():
                                                                        stage1_config='Release+Asserts',
                                                                        test=False,
                                                                        xfails=clang_x86_64_linux_xfails) },
+
+        {'name': "clang-x86_64-debian",
+         'slavenames':["gcc12"],
+         'builddir':"clang-x86_64-debian",
+         'factory': ClangBuilder.getClangBuildFactory()},
+
+        {'name' : "clang-x86_64-debian-selfhost-rel",
+         'slavenames' : ["gcc13"],
+         'builddir' : "clang-x86_64-debian-selfhost-rel",
+         'factory' : ClangBuilder.getClangBuildFactory(triple='x86_64-pc-linux-gnu',
+                                                       useTwoStage=True,
+                                                       stage1_config='Release+Asserts',
+                                                       stage2_config='Release+Asserts')},
+
+        {'name' : "clang-x86_64-debian-fnt",
+         'slavenames' : ['gcc20'],
+         'builddir' : "clang-x86_64-debian-fnt",
+         'factory' : NightlytestBuilder.getFastNightlyTestBuildFactory(triple='x86_64-pc-linux-gnu',
+                                                                       stage1_config='Release+Asserts',
+                                                                       test=False,
+                                                                       xfails=clang_x86_64_linux_xfails) },
         ]
 
 # Offline.
