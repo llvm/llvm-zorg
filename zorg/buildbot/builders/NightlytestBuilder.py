@@ -50,8 +50,6 @@ def getFastNightlyTestBuildFactory(triple, xfails=[], clean=True, test=False, **
   # Build compiler to test.  
   f = ClangBuilder.getClangBuildFactory(
     triple, outOfDir=True, clean=clean, test=test,
-    # FIXME: We shouldn't need this, but --without-llvmgcc is broken.
-    extra_configure_args=['--with-llvmcc=clang'],
     **kwargs)
 
   # Get the test-suite sources.
@@ -73,7 +71,8 @@ def getFastNightlyTestBuildFactory(triple, xfails=[], clean=True, test=False, **
   f.addStep(Configure(name="configure.test-suite",
                       command=['../test-suite.src/configure',
                                WithProperties("--with-llvmsrc=%(builddir)s/llvm.src"),
-                               WithProperties("--with-llvmobj=%(builddir)s/llvm.obj")],
+                               WithProperties("--with-llvmobj=%(builddir)s/llvm.obj"),
+                               WithProperties("--with-built-clang")],
                       haltOnFailure=True,
                       workdir='test-suite.obj',
                       description=["configure", "test-suite"]))
