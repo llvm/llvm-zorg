@@ -57,6 +57,11 @@ def _get_llvm_builders():
           'factory': LLVMBuilder.getLLVMBuildFactory("x86_64-pc-linux-gnu", valgrind=True,
                                                      valgrindLeakCheck=True,
                                                      valgrindSuppressions='utils/valgrind/x86_64-pc-linux-gnu.supp')},
+        {'name': "llvm-i686-debian",
+         'slavenames': ["gcc15"],
+         'builddir': "llvm-i686-debian", 
+         'factory': LLVMBuilder.getLLVMBuildFactory("i686-pc-linux-gnu",
+                                                    extra_configure_args=['CC="gcc -m32"', 'CXX="g++ -m32"'])},
         ]
 
 # Offline.
