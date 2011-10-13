@@ -61,7 +61,7 @@ def _get_llvm_builders():
          'slavenames': ["gcc15"],
          'builddir': "llvm-i686-debian", 
          'factory': LLVMBuilder.getLLVMBuildFactory("i686-pc-linux-gnu",
-                                                    extra_configure_args=['CC="gcc -m32"', 'CXX="g++ -m32"'])},
+                                                    extra_configure_args=['CC=\"gcc -m32\"', 'CXX=\"g++ -m32\"'])},
         ]
 
 # Offline.
