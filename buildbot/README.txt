@@ -3,7 +3,7 @@ for testing LLVM.
 
 Actually, there are is a generic working skeleton, in 'smooshlab', and
 a specific working skeleton in 'osuosl' for talking to the public LLVM
-buildbot hosted on google1.osuosl.org.
+buildbot hosted on lab.llvm.org.
 
 Build Slaves
 ------------

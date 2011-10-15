@@ -6,7 +6,6 @@ import buildbot
 import buildbot.steps.shell
 
 class NightlyTestCommand(buildbot.steps.shell.Test):
-    warningPattern = None
 
     def __init__(self, xfails=[], *args, **kwargs):
         buildbot.steps.shell.Test.__init__(self, *args, **kwargs)
