@@ -34,7 +34,7 @@ def _get_llvm_builders():
     return [
 #        {'name': "llvm-i686-linux",
 #         'slavenames': ["dunbar1"],
-#         'builddir': "llvm-i686", 
+#         'builddir': "llvm-i686",
 #         'factory': LLVMBuilder.getLLVMBuildFactory("i686-pc-linux-gnu", jobs=2, enable_shared=True)},
         {'name': "llvm-x86_64-linux",
          'slavenames': ["gcc14"],
@@ -63,7 +63,7 @@ def _get_llvm_builders():
                                                      valgrindSuppressions='utils/valgrind/x86_64-pc-linux-gnu.supp')},
         {'name': "llvm-i686-debian",
          'slavenames': ["gcc15"],
-         'builddir': "llvm-i686-debian", 
+         'builddir': "llvm-i686-debian",
          'factory': LLVMBuilder.getLLVMBuildFactory("i686-pc-linux-gnu")},
         {'name': "llvm-x86_64-ubuntu",
          'slavenames':["arxan_davinci"],
@@ -342,7 +342,7 @@ def _get_experimental_builders():
                                                        stage1_config='Release+Asserts',
                                                        stage2_config='Release+Asserts'),
          'category' : 'clang'},
-		 
+
         # Clang cross builders.
         {'name': "clang-x86_64-darwin10-self-mingw32",
          'slavenames':["kistanova1"],
@@ -352,7 +352,7 @@ def _get_experimental_builders():
                                                                              '--host=i686-pc-mingw32',
                                                                              '--target=i686-pc-mingw32']),
          'category' : 'clang'},
-													  
+
         {'name' : "clang-x86_64-darwin10-cross-mingw32",
          'slavenames' :["kistanova1"],
          'builddir' :"clang-x86_64-darwin10-cross-mingw32",
@@ -464,7 +464,7 @@ def _get_experimental_builders():
                                         'description'   : 'install llvm-gcc',
                                         'haltOnFailure' : True },]),
          'category'  : 'llvm-gcc' },
-		 
+
         {'name'      : "llvm-gcc-build-x86_64-darwin10-x-mingw32-x-armeabi",
          'slavenames': [ "kistanova1" ],
          'builddir'  : "llvm-gcc-build-x86_64-darwin10-x-mingw32-x-armeabi",
@@ -485,7 +485,7 @@ def _get_experimental_builders():
                                         'haltOnFailure' : True },
                                        {'name'          : 'copy_cross_tools',
                                         'description'   : 'copy cross_tools',
-                                        'haltOnFailure' : True },										
+                                        'haltOnFailure' : True },
                                        {'name'          : 'configure_llvm_1',
                                         'description'   : 'configure llvm (stage 1)',
                                         'haltOnFailure' : True },
@@ -495,7 +495,7 @@ def _get_experimental_builders():
                                         'haltOnFailure' : True },
                                        {'name'          : 'test_llvm_1',
                                         'description'   : 'test llvm (stage 1)',
-                                        'haltOnFailure' : False },										
+                                        'haltOnFailure' : False },
                                        {'name'          : 'configure_llvmgcc_1',
                                         'description'   : 'configure llvm-gcc (stage 1)',
                                         'haltOnFailure' : True },
@@ -510,35 +510,35 @@ def _get_experimental_builders():
                                         'haltOnFailure' : True },
                                        {'name'          : 'make_llvm_2',
                                         'description'   : 'make llvm (stage 2)',
-                                        'extra_args'    : ['-j8'],  
+                                        'extra_args'    : ['-j8'],
                                         'haltOnFailure' : True },
                                        {'name'          : 'configure_llvmgcc_2',
                                         'description'   : 'configure llvm-gcc (stage 2)',
                                         'haltOnFailure' : True },
                                        {'name'          : 'make_llvmgcc_2',
                                         'description'   : 'make llvm-gcc (stage 2)',
-                                        'extra_args'    : ['-j8'],  
+                                        'extra_args'    : ['-j8'],
                                         'haltOnFailure' : True },
                                        {'name'          : 'install_llvmgcc_2',
                                         'description'   : 'install llvm-gcc (stage 2)',
-                                        'haltOnFailure' : True },										
+                                        'haltOnFailure' : True },
                                        {'name'          : 'configure_llvm_3',
                                         'description'   : 'configure llvm (stage 3)',
                                         'haltOnFailure' : True },
                                        {'name'          : 'make_llvm_3',
                                         'description'   : 'make llvm (stage 3)',
-                                        'extra_args'    : ['-j8'],  
+                                        'extra_args'    : ['-j8'],
                                         'haltOnFailure' : True },
                                        {'name'          : 'configure_llvmgcc_3',
                                         'description'   : 'configure llvm-gcc (stage 3)',
                                         'haltOnFailure' : True },
                                        {'name'          : 'make_llvmgcc_3',
                                         'description'   : 'make llvm-gcc (stage 3)',
-                                        'extra_args'    : ['-j8'], 
+                                        'extra_args'    : ['-j8'],
                                         'haltOnFailure' : True },
                                        {'name'          : 'install_llvmgcc_3',
                                         'description'   : 'install llvm-gcc (stage 3)',
-                                        'haltOnFailure' : True },]),										
+                                        'haltOnFailure' : True },]),
 
          'category'  : 'llvm-gcc' },
 
@@ -794,7 +794,7 @@ def get_builders():
     for b in _get_clang_builders():
         b['category'] = 'clang'
         yield b
-        
+
     for b in _get_polly_builders():
         b['category'] = 'polly'
         yield b

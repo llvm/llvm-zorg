@@ -6,7 +6,7 @@ import buildbot.status.words
 
 import config
 from zorg.buildbot.util.ConfigEmailLookup import ConfigEmailLookup
-from zorg.buildbot.util.InformativeMailNotifier import InformativeMailNotifier 
+from zorg.buildbot.util.InformativeMailNotifier import InformativeMailNotifier
 
 # Returns a list of Status Targets. The results of each build will be
 # pushed to these targets. buildbot/status/*.py has a variety to choose from,
@@ -19,12 +19,12 @@ def get_status_targets(standard_builders):
     authz_cfg=authz.Authz(
                       # change any of these to True to enable; see the manual for more
                       # options
-                      gracefulShutdown = False,
-                      forceBuild = True, # use this to test your slave once it is set up
-                      forceAllBuilds = False,
-                      pingBuilder = True,
-                      stopBuild = True,
-                      stopAllBuilds = False,
+                      gracefulShutdown   = False,
+                      forceBuild         = True, # use this to test your slave once it is set up
+                      forceAllBuilds     = False,
+                      pingBuilder        = True,
+                      stopBuild          = True,
+                      stopAllBuilds      = False,
                       cancelPendingBuild = True,
                       )
 
