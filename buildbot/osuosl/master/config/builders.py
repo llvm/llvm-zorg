@@ -45,6 +45,10 @@ def _get_llvm_builders():
          'builddir':"llvm-arm-linux",
          'factory': LLVMBuilder.getLLVMBuildFactory("arm-pc-linux-gnu", jobs=1, clean=True,
                                                     timeout=40)},
+        {'name': "llvm-ppc-darwin",
+         'slavenames':["arxan_bellini"],
+         'builddir':"llvm-ppc-darwin",
+         'factory': LLVMBuilder.getLLVMBuildFactory("ppc-darwin", jobs=1, clean=True)},
          {'name': "llvm-i686-linux-vg_leak",
           'slavenames':["osu8"],
           'builddir':"llvm-i686-linux-vg_leak",
@@ -61,6 +65,10 @@ def _get_llvm_builders():
          'slavenames': ["gcc15"],
          'builddir': "llvm-i686-debian", 
          'factory': LLVMBuilder.getLLVMBuildFactory("i686-pc-linux-gnu")},
+        {'name': "llvm-x86_64-ubuntu",
+         'slavenames':["arxan_davinci"],
+         'builddir':"llvm-x86_64-ubuntu",
+         'factory': LLVMBuilder.getLLVMBuildFactory("x86_64-pc-linux-gnu", jobs=4)},
         ]
 
 # Offline.
