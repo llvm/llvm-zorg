@@ -10,14 +10,24 @@ import ClangBuilder
 def getNightlytestBuildFactory(submitAux=None, *args, **kwargs):
   f = LLVMGCCBuilder.getLLVMGCCBuildFactory(*args, **kwargs)
 
+  # Prepare environmental variables. Set here all env we want everywhere.
+  merged_env = {
+                   'TERM' : 'dumb'     # Make sure Clang doesn't use color escape sequences.
+               }
+
+  env = kwargs.pop('env', None)
+  if env is not None:
+      merged_env.update(env)  # Overwrite pre-set items with the given ones, so user can set anything.
+
   # Copy NT script.
   f.addStep(ShellCommand(name="cp test script", 
                          command=["cp", 
                                   WithProperties("%(builddir)s/llvm.src/utils/NewNightlyTest.pl"),
                                   "."],
-                         haltOnFailure=True,
-                         workdir="llvm.nt",
-                         description="cp test script"))
+                         haltOnFailure = True,
+                         description   = "cp test script",
+                         workdir       = "llvm.nt",
+                         env           = merged_env))
 
   submitCommand = []
   if submitAux is not None:
@@ -37,13 +47,14 @@ def getNightlytestBuildFactory(submitAux=None, *args, **kwargs):
                                   "-test-cxxflags", "-I/usr/include/c++/4.2.1/i686-apple-darwin10 -I/usr/include/c++/4.2.1",
                                   "-nosubmit",
                                   "-teelogs"] + submitCommand,
-                         env={ 'LLVMGCCDIR' : WithProperties("%(builddir)s/llvm-gcc.install"),
-                               'BUILDDIR' : WithProperties("%(builddir)s/llvm.nt/build"), 
-                               'WEBDIR' : WithProperties("%(builddir)s/llvm.nt/testresults"), 
-                               },
-                         haltOnFailure=True,
-                         workdir="llvm.nt",
-                         description="nightlytest"))
+                         haltOnFailure = True,
+                         description   = "nightlytest",
+                         workdir       = "llvm.nt",
+                         env           = {
+                                          'LLVMGCCDIR' : WithProperties("%(builddir)s/llvm-gcc.install"),
+                                          'BUILDDIR'   : WithProperties("%(builddir)s/llvm.nt/build"),
+                                          'WEBDIR'     : WithProperties("%(builddir)s/llvm.nt/testresults"),
+                                         }.update(merged_env)))
   return f
 
 def getFastNightlyTestBuildFactory(triple, xfails=[], clean=True, test=False, **kwargs):
@@ -52,20 +63,30 @@ def getFastNightlyTestBuildFactory(triple, xfails=[], clean=True, test=False, **
     triple, outOfDir=True, clean=clean, test=test,
     **kwargs)
 
+  # Prepare environmental variables. Set here all env we want everywhere.
+  merged_env = {
+                   'TERM' : 'dumb'     # Make sure Clang doesn't use color escape sequences.
+               }
+  env = kwargs.pop('env', None)
+  if env is not None:
+      merged_env.update(env)  # Overwrite pre-set items with the given ones, so user can set anything.
+
   # Get the test-suite sources.
-  f.addStep(SVN(name='svn-test-suite',
-                mode='update',
-                baseURL='http://llvm.org/svn/llvm-project/test-suite/',
-                defaultBranch='trunk',
-                workdir='test-suite.src'))
+  f.addStep(SVN(name          = 'svn-test-suite',
+                mode          = 'update',
+                baseURL       = 'http://llvm.org/svn/llvm-project/test-suite/',
+                defaultBranch = 'trunk',
+                workdir       = 'test-suite.src',
+                env           = merged_env))
 
   # Clean up.
   if clean:
       f.addStep(ShellCommand(name="rm.test-suite",
                              command=["rm", "-rf", "test-suite.obj"],
-                             haltOnFailure=True,
-                             description="rm test-suite build dir",
-                             workdir="."))
+                             haltOnFailure = True,
+                             description   = "rm test-suite build dir",
+                             workdir       = ".",
+                             env           = merged_env))
 
   # Configure.
   f.addStep(Configure(name="configure.test-suite",
@@ -73,27 +94,32 @@ def getFastNightlyTestBuildFactory(triple, xfails=[], clean=True, test=False, **
                                WithProperties("--with-llvmsrc=%(builddir)s/llvm.src"),
                                WithProperties("--with-llvmobj=%(builddir)s/llvm.obj"),
                                WithProperties("--with-built-clang")],
-                      haltOnFailure=True,
-                      workdir='test-suite.obj',
-                      description=["configure", "test-suite"]))
+                      haltOnFailure   = True,
+                      description     = ["configuring", "test-suite"],
+                      descriptionDone = ["configure",   "test-suite"],
+                      workdir         = 'test-suite.obj',
+                      env             = merged_env))
 
   # Build and test.
   f.addStep(ShellCommand(name="rm.test-suite.report",
                          command=["rm", "-rf",
                                   "test-suite.obj/report.nightly.raw.out",
                                   "test-suite.obj/report.nightly.txt"],
-                         haltOnFailure=True,
-                         description="rm test-suite report",
-                         workdir="."))
+                         haltOnFailure = True,
+                         description   = "rm test-suite report",
+                         workdir       = ".",
+                         env           = merged_env))
   f.addStep(NightlyTestCommand(name="make.test-suite",
                                command=["make", WithProperties("-j%(jobs)s"),
                                         "ENABLE_PARALLEL_REPORT=1",
                                         "DISABLE_CBE=1", "DISABLE_JIT=1",
                                         "TEST=nightly", "report"],
-                               haltOnFailure=True,
-                               workdir='test-suite.obj',
-                               description=["run", "test-suite"],
-                               logfiles={ 'report' : 'report.nightly.txt' },
-                               xfails=xfails))
+                               haltOnFailure   = True,
+                               logfiles        = { 'report' : 'report.nightly.txt' },
+                               xfails          = xfails,
+                               description     = ["running", "test-suite"],
+                               descriptionDone = ["run",     "test-suite"],
+                               workdir         = 'test-suite.obj',
+                               env             = merged_env))
 
   return f

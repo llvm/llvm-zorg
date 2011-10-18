@@ -11,27 +11,52 @@ from zorg.buildbot.commands.ClangTestCommand import ClangTestCommand
 
 from Util import getConfigArgs
 
-def getLLVMBuildFactory(triple=None, clean=True, test=True,
-                        expensive_checks=False, examples=False, valgrind=False,
-                        valgrindLeakCheck=False, valgrindSuppressions=None,
-                        jobs='%(jobs)s', timeout=20, make='make',
-                        enable_shared=False, enable_targets=None, defaultBranch='trunk',
-                        llvmgccdir=None, config_name='Debug+Asserts',
-                        extra_configure_args=[]):
+def getLLVMBuildFactory(
+                  triple               = None,             # Triple to build, host, and target.
+                  clean                = True,             # "clean-llvm" step is requested if true.
+                  test                 = True,             # "test-llvm" step is requested if true.
+                  expensive_checks     = False,
+                  examples             = False,            # "compile.examples" step is requested if true.
+                  valgrind             = False,            # Valgrind is used on "test-llvm" step if true.
+                  valgrindLeakCheck    = False,            # Valgrind leak check is requested if true.
+                  valgrindSuppressions = None,             # Valgrind suppression file.
+                  jobs                 = '%(jobs)s',       # Number of concurrent jobs.
+                  timeout              = 20,               # Timeout if no activity seen (minutes).
+                  make                 = 'make',           # Make command.
+                  enable_shared        = False,            # Enable shared (--enable-shared configure parameters added) if true.
+                  enable_targets       = None,             # List of enabled targets (--enable-targets configure param).
+                  defaultBranch        = 'trunk',          # Branch to build.
+                  llvmgccdir           = None,             # Path to llvm-gcc.
+                  config_name          = 'Debug+Asserts',  # Configuration name.
+                  env                  = {},               # Environmental variables for all steps.
+                  extra_configure_args = []):              # Extra args for the conigure step.
+    # Prepare environmental variables. Set here all env we want everywhere.
+    merged_env = {
+                   'TERM' : 'dumb'     # Make sure Clang doesn't use color escape sequences.
+                 }
+    if env is not None:
+        merged_env.update(env)  # Overwrite pre-set items with the given ones, so user can set anything.
+
     f = buildbot.process.factory.BuildFactory()
 
     # Determine the build directory.
-    f.addStep(buildbot.steps.shell.SetProperty(name="get_builddir",
-                                               command=["pwd"],
-                                               property="builddir",
-                                               description="set build dir",
-                                               workdir="."))
+    f.addStep(
+        buildbot.steps.shell.SetProperty(
+            name        = "get_builddir",
+            command     = ["pwd"],
+            property    = "builddir",
+            description = "set build dir",
+            workdir     = ".",
+            env         = merged_env))
 
     # Checkout sources.
-    f.addStep(SVN(name='svn-llvm',
-                  mode='update', baseURL='http://llvm.org/svn/llvm-project/llvm/',
-                  defaultBranch=defaultBranch,
-                  workdir='llvm'))
+    f.addStep(
+        SVN(
+            name          = 'svn-llvm',
+            mode          = 'update', baseURL='http://llvm.org/svn/llvm-project/llvm/',
+            defaultBranch = defaultBranch,
+            workdir       = 'llvm',
+            env           = merged_env))
 
     # Force without llvm-gcc so we don't run afoul of Frontend test failures.
     configure_args = ["./configure"]
@@ -49,35 +74,47 @@ def getLLVMBuildFactory(triple=None, clean=True, test=True,
     if enable_shared:
         configure_args.append('--enable-shared')
     configure_args.extend(extra_configure_args)
-    f.addStep(Configure(command=configure_args,
-                        workdir='llvm',
-                        description=['configuring',config_name],
-                        descriptionDone=['configure',config_name]))
+    f.addStep(
+        Configure(
+            command         = configure_args,
+            description     = ['configuring', config_name],
+            descriptionDone = ['configure',   config_name],
+            workdir         = 'llvm',
+            env             = merged_env))
     if clean:
-        f.addStep(WarningCountingShellCommand(name="clean-llvm",
-                                              command=[make, 'clean'],
-                                              haltOnFailure=True,
-                                              description="cleaning llvm",
-                                              descriptionDone="clean llvm",
-                                              workdir='llvm'))
-    f.addStep(WarningCountingShellCommand(name="compile",
-                                          command=['nice', '-n', '10',
-                                                   make, WithProperties("-j%s" % jobs)],
-                                          haltOnFailure=True,
-                                          description="compiling llvm",
-                                          descriptionDone="compile llvm",
-                                          workdir='llvm',
-                                          timeout=timeout*60))
+        f.addStep(
+            WarningCountingShellCommand(
+                name            = "clean-llvm",
+                command         = [make, 'clean'],
+                haltOnFailure   = True,
+                description     = "cleaning llvm",
+                descriptionDone = "clean llvm",
+                workdir         = 'llvm',
+                env             = merged_env))
+    f.addStep(
+        WarningCountingShellCommand(
+            name            = "compile",
+            command         = ['nice', '-n', '10',
+                               make, WithProperties("-j%s" % jobs)],
+            haltOnFailure   = True,
+            description     = "compiling llvm",
+            descriptionDone = "compile llvm",
+            workdir         = 'llvm',
+            env             = merged_env,
+            timeout         = timeout * 60))
     if examples:
-        f.addStep(WarningCountingShellCommand(name="compile.examples",
-                                              command=['nice', '-n', '10',
-                                                       make, WithProperties("-j%s" % jobs),
-                                                       'BUILD_EXAMPLES=1'],
-                                              haltOnFailure=True,
-                                              description=["compiling", "llvm", "examples"],
-                                              descriptionDone=["compile", "llvm", "examples"],
-                                              workdir='llvm',
-                                              timeout=timeout*60))
+        f.addStep(
+            WarningCountingShellCommand(
+                name            = "compile.examples",
+                command         = ['nice', '-n', '10',
+                                   make, WithProperties("-j%s" % jobs),
+                                   'BUILD_EXAMPLES=1'],
+                haltOnFailure   = True,
+                description     = ["compiling", "llvm", "examples"],
+                descriptionDone = ["compile",   "llvm", "examples"],
+                workdir         = 'llvm',
+                env             = merged_env,
+                timeout         = timeout * 60))
     if test:
         litTestArgs = '-v -j %s' % jobs
         if valgrind:
@@ -86,10 +123,13 @@ def getLLVMBuildFactory(triple=None, clean=True, test=True,
                 litTestArgs += ' --vg-leak'
             if valgrindSuppressions is not None:
                 litTestArgs += ' --vg-arg --suppressions=%%(builddir)s/llvm/%s' % valgrindSuppressions
-        f.addStep(ClangTestCommand(name='test-llvm',
-                                   command=[make, "check-lit", "VERBOSE=1",
-                                            WithProperties("LIT_ARGS=%s" % litTestArgs)],
-                                   description=["testing", "llvm"],
-                                   descriptionDone=["test", "llvm"],
-                                   workdir='llvm'))
+        f.addStep(
+            ClangTestCommand(
+                name            = 'test-llvm',
+                command         = [make, "check-lit", "VERBOSE=1",
+                                   WithProperties("LIT_ARGS=%s" % litTestArgs)],
+                description     = ["testing", "llvm"],
+                descriptionDone = ["test",    "llvm"],
+                workdir         = 'llvm',
+                env             = merged_env))
     return f
