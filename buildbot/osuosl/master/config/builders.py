@@ -65,7 +65,7 @@ def _get_llvm_builders():
          'slavenames': ["gcc15"],
          'builddir': "llvm-i686-debian",
          'factory': LLVMBuilder.getLLVMBuildFactory("i686-pc-linux-gnu",
-                                                     env = { 'CC' : "gcc -m32",  'CXX' : "g++ -m32" }),
+                                                     env = { 'CC' : "gcc -m32",  'CXX' : "g++ -m32" })},
         {'name': "llvm-x86_64-ubuntu",
          'slavenames':["arxan_davinci"],
          'builddir':"llvm-x86_64-ubuntu",
