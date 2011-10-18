@@ -362,7 +362,8 @@ def addClangGCCTests(f, ignores={}, install_prefix="%(builddir)s/llvm.install",
             command=["make", "-k", "check-%s" % lang] + make_vars,
             description="gcc-4_2-testsuite (%s)" % lang,
             workdir='clang-tests/gcc-4_2-testsuite',
-            logfiles={ 'dg.sum' : 'obj/%s/%s.sum' % (lang, lang) },
+            logfiles={ 'dg.sum' : 'obj/%s/%s.sum' % (lang, lang),
+                       '%s.log' % lang : 'obj/%s/%s.log' % (lang, lang)},
             ignore=gcc_dg_ignores.get(lang, [])))
 
 def addClangGDBTests(f, ignores={}, install_prefix="%(builddir)s/llvm.install"):
