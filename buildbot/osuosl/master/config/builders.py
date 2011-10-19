@@ -48,7 +48,10 @@ def _get_llvm_builders():
         {'name': "llvm-ppc-darwin",
          'slavenames':["arxan_bellini"],
          'builddir':"llvm-ppc-darwin",
-         'factory': LLVMBuilder.getLLVMBuildFactory("ppc-darwin", jobs=1, clean=True)},
+         'factory': LLVMBuilder.getLLVMBuildFactory("ppc-darwin", jobs=1, clean=True,
+                            env = { 'CC' : "/usr/bin/gcc-4.2"
+                                    'CXX': "/usr/bin/g++-4.2" },
+                            extra_configure_args=['--enable-shared'])},
         {'name': "llvm-i686-linux-vg_leak",
          'slavenames':["osu8"],
          'builddir':"llvm-i686-linux-vg_leak",
