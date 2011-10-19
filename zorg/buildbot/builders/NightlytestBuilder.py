@@ -76,8 +76,7 @@ def getFastNightlyTestBuildFactory(triple, xfails=[], clean=True, test=False, **
                 mode          = 'update',
                 baseURL       = 'http://llvm.org/svn/llvm-project/test-suite/',
                 defaultBranch = 'trunk',
-                workdir       = 'test-suite.src',
-                env           = merged_env))
+                workdir       = 'test-suite.src'))
 
   # Clean up.
   if clean:

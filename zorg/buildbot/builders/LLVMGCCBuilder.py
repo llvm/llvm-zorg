@@ -46,14 +46,12 @@ def getLLVMGCCBuildFactory(jobs='%(jobs)s', update=True, clean=True,
     f.addStep(SVN(name='svn-llvm',
                   mode='update', baseURL='http://llvm.org/svn/llvm-project/llvm/',
                   defaultBranch = defaultBranch,
-                  workdir       = "llvm.src",
-                  env           = merged_env))
+                  workdir       = "llvm.src"))
 
     f.addStep(SVN(name='svn-llvm-gcc',
                   mode='update', baseURL='http://llvm.org/svn/llvm-project/llvm-gcc-4.2/',
                   defaultBranch = defaultBranch,
-                  workdir       = "llvm-gcc.src",
-                  env           = merged_env))
+                  workdir       = "llvm-gcc.src"))
 
   # Clean up llvm (stage 1).
   if clean:

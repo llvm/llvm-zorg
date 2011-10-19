@@ -55,8 +55,7 @@ def getLLVMBuildFactory(
             name          = 'svn-llvm',
             mode          = 'update', baseURL='http://llvm.org/svn/llvm-project/llvm/',
             defaultBranch = defaultBranch,
-            workdir       = 'llvm',
-            env           = merged_env))
+            workdir       = 'llvm'))
 
     # Force without llvm-gcc so we don't run afoul of Frontend test failures.
     configure_args = ["./configure"]
