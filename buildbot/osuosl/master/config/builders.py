@@ -102,6 +102,12 @@ def _get_llvmgcc_builders():
          'builddir':"llvm-gcc-i386-linux-selfhost",
          'factory':LLVMGCCBuilder.getLLVMGCCBuildFactory(triple='i686-pc-linux-gnu',
                                                          extra_languages="fortran",
+                                                         env = { 'CC'             : "gcc -m32",
+                                                                 'CXX'            : "g++ -m32",
+                                                                 'LD_LIBRARY_PATH': "/home/baldrick/lib32/",
+                                                                 'LIBRARY_PATH'   : "/emul/ia32-linux/usr/lib/:/home/baldrick/lib32/",
+                                                                 'PATH'           : "/home/baldrick/bin32:/usr/bin:/bin"
+                                                                 },
                                                          extra_configure_args=['--disable-multilib',
                                                          '--enable-targets=all',
                                                          '--with-as=/home/baldrick/bin32/as',
