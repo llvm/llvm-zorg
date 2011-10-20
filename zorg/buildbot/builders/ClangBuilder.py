@@ -14,15 +14,35 @@ from zorg.buildbot.commands import DejaGNUCommand
 
 from zorg.buildbot.builders.Util import getConfigArgs
 
-def getClangBuildFactory(triple=None, clean=True, test=True, package_dst=None,
-                         run_cxx_tests=False, examples=False, valgrind=False,
-                         valgrindLeakCheck=False, outOfDir=False, useTwoStage=False,
-                         completely_clean=False, always_install=False,
-                         make='make', jobs="%(jobs)s",
-                         stage1_config='Debug+Asserts',
-                         stage2_config='Release+Asserts',
-                         extra_configure_args=[], use_pty_in_tests=False,
-                         checkout_compiler_rt=False):
+def getClangBuildFactory(
+            triple=None,
+            clean=True,
+            test=True,
+            package_dst=None,
+            run_cxx_tests=False,
+            examples=False,
+            valgrind=False,
+            valgrindLeakCheck=False,
+            outOfDir=False,
+            useTwoStage=False,
+            completely_clean=False, 
+            always_install=False,
+            make='make',
+            jobs="%(jobs)s",
+            stage1_config='Debug+Asserts',
+            stage2_config='Release+Asserts',
+            env={}, # Environmental variables for all steps.
+            extra_configure_args=[],
+            use_pty_in_tests=False,
+            checkout_compiler_rt=False):
+    # Prepare environmental variables. Set here all env we want everywhere.
+    merged_env = {
+        'TERM' : 'dumb' # Make sure Clang doesn't use color escape sequences.
+                 }
+    if env is not None:
+        # Overwrite pre-set items with the given ones, so user can set anything.
+        merged_env.update(env)
+        
     # Don't use in-dir builds with a two stage build process.
     inDir = not outOfDir and not useTwoStage
     if inDir:
@@ -46,7 +66,8 @@ def getClangBuildFactory(triple=None, clean=True, test=True, package_dst=None,
                                                command=["pwd"],
                                                property="builddir",
                                                description="set build dir",
-                                               workdir="."))
+                                               workdir=".",
+                                               env=merged_env))
 
     # Blow away completely, if requested.
     if completely_clean:
@@ -54,7 +75,8 @@ def getClangBuildFactory(triple=None, clean=True, test=True, package_dst=None,
                                command=["rm", "-rf", llvm_srcdir],
                                haltOnFailure=True,
                                description=["rm src dir", "llvm"],
-                               workdir="."))
+                               workdir=".",
+                               env=merged_env))
 
     # Checkout sources.
     f.addStep(SVN(name='svn-llvm',
@@ -80,7 +102,8 @@ def getClangBuildFactory(triple=None, clean=True, test=True, package_dst=None,
                                command=["rm", "-rf", llvm_1_objdir],
                                haltOnFailure=True,
                                description=["rm build dir", "llvm"],
-                               workdir="."))
+                               workdir=".",
+                               env=merged_env))
 
     # Force without llvm-gcc so we don't run afoul of Frontend test failures.
     base_configure_args = [WithProperties("%%(builddir)s/%s/configure" % llvm_srcdir),
@@ -96,7 +119,8 @@ def getClangBuildFactory(triple=None, clean=True, test=True, package_dst=None,
     f.addStep(Configure(command=args,
                         workdir=llvm_1_objdir,
                         description=['configuring',stage1_config],
-                        descriptionDone=['configure',stage1_config]))
+                        descriptionDone=['configure',stage1_config],
+                        env=merged_env))
 
     # Make clean if using in-dir builds.
     if clean and llvm_srcdir == llvm_1_objdir:
@@ -105,7 +129,8 @@ def getClangBuildFactory(triple=None, clean=True, test=True, package_dst=None,
                                               haltOnFailure=True,
                                               description="cleaning llvm",
                                               descriptionDone="clean llvm",
-                                              workdir=llvm_1_objdir))
+                                              workdir=llvm_1_objdir,
+                                              env=merged_env))
 
     f.addStep(WarningCountingShellCommand(name="compile",
                                           command=['nice', '-n', '10',
@@ -113,7 +138,8 @@ def getClangBuildFactory(triple=None, clean=True, test=True, package_dst=None,
                                           haltOnFailure=True,
                                           description=["compiling", stage1_config],
                                           descriptionDone=["compile", stage1_config],
-                                          workdir=llvm_1_objdir))
+                                          workdir=llvm_1_objdir,
+                                          env=merged_env))
 
     if examples:
         f.addStep(WarningCountingShellCommand(name="compile.examples",
@@ -123,7 +149,8 @@ def getClangBuildFactory(triple=None, clean=True, test=True, package_dst=None,
                                               haltOnFailure=True,
                                               description=["compilinge", stage1_config, "examples"],
                                               descriptionDone=["compile", stage1_config, "examples"],
-                                              workdir=llvm_1_objdir))
+                                              workdir=llvm_1_objdir,
+                                              env=merged_env))
 
     clangTestArgs = llvmTestArgs = '-v -j %s' % jobs
     if valgrind:
@@ -141,12 +168,14 @@ def getClangBuildFactory(triple=None, clean=True, test=True, package_dst=None,
                                    description=["testing", "llvm"],
                                    descriptionDone=["test", "llvm"],
                                    workdir=llvm_1_objdir,
-                                   usePTY=use_pty_in_tests))
+                                   usePTY=use_pty_in_tests,
+                                   env=merged_env))
         f.addStep(ClangTestCommand(name='test-clang',
                                    command=[make, 'test', WithProperties('TESTARGS=%s' % clangTestArgs),
                                             WithProperties('EXTRA_TESTDIRS=%s' % extraTestDirs)],
                                    workdir='%s/tools/clang' % llvm_1_objdir,
-                                   usePTY=use_pty_in_tests))
+                                   usePTY=use_pty_in_tests,
+                                   env=merged_env))
 
     # Install llvm and clang.
     if llvm_1_installdir:
@@ -154,14 +183,16 @@ def getClangBuildFactory(triple=None, clean=True, test=True, package_dst=None,
                                command=["rm", "-rf", llvm_1_installdir],
                                haltOnFailure=True,
                                description=["rm install dir", "clang"],
-                               workdir="."))
+                               workdir=".",
+                               env=merged_env))
         f.addStep(WarningCountingShellCommand(name="install.clang.stage1",
                                               command = ['nice', '-n', '10',
                                                          make, 'install-clang'],
                                               haltOnFailure=True,
                                               description=["install", "clang",
                                                            stage1_config],
-                                              workdir=llvm_1_objdir))
+                                              workdir=llvm_1_objdir,
+                                              env=merged_env))
 
     if not useTwoStage:
         if package_dst:
@@ -174,7 +205,8 @@ def getClangBuildFactory(triple=None, clean=True, test=True, package_dst=None,
                                    workdir=llvm_1_installdir,
                                    warnOnFailure=True,
                                    flunkOnFailure=False,
-                                   haltOnFailure=False))
+                                   haltOnFailure=False,
+                                   env=merged_env))
             f.addStep(ShellCommand(name='pkg.upload',
                                    description="upload root",
                                    command=["scp", name,
@@ -183,7 +215,8 @@ def getClangBuildFactory(triple=None, clean=True, test=True, package_dst=None,
                                    workdir=".",
                                    warnOnFailure=True,
                                    flunkOnFailure=False,
-                                   haltOnFailure=False))
+                                   haltOnFailure=False,
+                                   env=merged_env))
 
         return f
 
@@ -193,20 +226,24 @@ def getClangBuildFactory(triple=None, clean=True, test=True, package_dst=None,
                                command=["rm", "-rf", llvm_2_objdir],
                                haltOnFailure=True,
                                description=["rm build dir", "llvm", "(stage 2)"],
-                               workdir="."))
+                               workdir=".",
+                               env=merged_env))
 
     # Configure llvm (stage 2).
     args = base_configure_args + ["--without-llvmgcc", "--without-llvmgxx"]
     args.append(WithProperties("--prefix=%(builddir)s/" + llvm_2_installdir))
     args += getConfigArgs(stage2_config)
+    local_env = dict(merged_env).update({
+        'CC'  : WithProperties("%%(builddir)s/%s/bin/clang"   % llvm_1_installdir),
+        'CXX' : WithProperties("%%(builddir)s/%s/bin/clang++" % llvm_1_installdir)})
+
     f.addStep(Configure(name="configure.llvm.stage2",
                         command=args,
-                        env={'CC' : WithProperties("%%(builddir)s/%s/bin/clang" % llvm_1_installdir),
-                             'CXX' :  WithProperties("%%(builddir)s/%s/bin/clang++" % llvm_1_installdir),},
                         haltOnFailure=True,
                         workdir=llvm_2_objdir,
                         description=["configure", "llvm", "(stage 2)",
-                                     stage2_config]))
+                                     stage2_config],
+                        env=local_env))
 
     # Build llvm (stage 2).
     f.addStep(WarningCountingShellCommand(name="compile.llvm.stage2",
@@ -217,7 +254,8 @@ def getClangBuildFactory(triple=None, clean=True, test=True, package_dst=None,
                                                        stage2_config],
                                           descriptionDone=["compile", "(stage 2)",
                                                            stage2_config],
-                                          workdir=llvm_2_objdir))
+                                          workdir=llvm_2_objdir,
+                                          env=merged_env))
 
     if test:
         f.addStep(ClangTestCommand(name='test-llvm',
@@ -226,26 +264,30 @@ def getClangBuildFactory(triple=None, clean=True, test=True, package_dst=None,
                                    description=["testing", "llvm"],
                                    descriptionDone=["test", "llvm"],
                                    workdir=llvm_2_objdir,
-                                   usePTY=use_pty_in_tests))
+                                   usePTY=use_pty_in_tests,
+                                   env=merged_env))
         f.addStep(ClangTestCommand(name='test-clang',
                                    command=[make, 'test', WithProperties('TESTARGS=%s' % clangTestArgs),
                                             WithProperties('EXTRA_TESTDIRS=%s' % extraTestDirs)],
                                    workdir='%s/tools/clang' % llvm_2_objdir,
-                                   usePTY=use_pty_in_tests))
+                                   usePTY=use_pty_in_tests,
+                                   env=merged_env))
 
     # Install clang (stage 2).
     f.addStep(ShellCommand(name="rm-install.clang.stage2",
                            command=["rm", "-rf", llvm_2_installdir],
                            haltOnFailure=True,
                            description=["rm install dir", "clang"],
-                           workdir="."))
+                           workdir=".",
+                           env=merged_env))
     f.addStep(WarningCountingShellCommand(name="install.clang.stage2",
                                           command = ['nice', '-n', '10',
                                                      make, 'install-clang'],
                                           haltOnFailure=True,
                                           description=["install", "clang",
                                                        "(stage 2)"],
-                                          workdir=llvm_2_objdir))
+                                          workdir=llvm_2_objdir,
+                                          env=merged_env))
 
     if package_dst:
         name = WithProperties(
@@ -257,7 +299,8 @@ def getClangBuildFactory(triple=None, clean=True, test=True, package_dst=None,
                                workdir=llvm_2_installdir,
                                warnOnFailure=True,
                                flunkOnFailure=False,
-                               haltOnFailure=False))
+                               haltOnFailure=False,
+                               env=merged_env))
         f.addStep(ShellCommand(name='pkg.upload',
                                description="upload root",
                                command=["scp", name,
@@ -266,7 +309,8 @@ def getClangBuildFactory(triple=None, clean=True, test=True, package_dst=None,
                                workdir=".",
                                warnOnFailure=True,
                                flunkOnFailure=False,
-                               haltOnFailure=False))
+                               haltOnFailure=False,
+                               env=merged_env))
 
     return f
 

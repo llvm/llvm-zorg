@@ -176,7 +176,7 @@ def get_build_slaves():
         create_slave("arxan_davinci", properties={'jobs': 4}, max_builds=1),
 
         # 2005 PowerPC Mac Mini, Mac OS X 10.5
-        create_slave("arxan_bellini", properties={'jobs': 1}, max_builds=1),
+        create_slave("arxan_bellini", properties={'jobs': 2}, max_builds=1),
 
         # Defunct.
         #create_slave("osu2", properties={'jobs' : 4}, max_builds=2),
