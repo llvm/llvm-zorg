@@ -10,8 +10,6 @@ def create_slave(name, *args, **kwargs):
 
 def get_build_slaves():
     return [
-        create_slave("osu1", properties={'jobs' : 4}, max_builds=1),
-
         # FreeBSD zero.sajd.net 9.0-CURRENT i386
         create_slave("freebsd1", properties={'jobs' : 1}, max_builds=1),
 
@@ -159,10 +157,6 @@ def get_build_slaves():
         # gcc201 8011  80G   4x0.4 GHz  TI UltraSparc II (BlackBird) / 4 GB RAM / Sun E250 / Gentoo sparc64
         create_slave("gcc201", properties={'jobs' : 2}, max_builds=1),
 
-        # Debian x86_64, 2 x 6-core Opteron 2.6 GHz
-        create_slave("osu7", properties={'jobs' : 6}, max_builds=4),
-        create_slave("osu8", properties={'jobs' : 6}, max_builds=4),
-
         # Debian, P4 2.8GHz, 1GB mem
         create_slave("balint1", properties={'jobs' : 1}, max_builds=1),
 
@@ -179,7 +173,6 @@ def get_build_slaves():
         create_slave("arxan_bellini", properties={'jobs': 2}, max_builds=1),
 
         # Defunct.
-        #create_slave("osu2", properties={'jobs' : 4}, max_builds=2),
         #create_slave("andrew1"),
         #create_slave("danmbp1"),
         ]
