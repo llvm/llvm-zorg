@@ -31,7 +31,7 @@ def getLLDBBuildFactory(triple, outOfDir=False, useTwoStage=False,
 
     f.addStep(SVN(name='svn-lldb',
                   mode='update',
-                  baseURL='https://llvm.org/svn/llvm-project/lldb/',
+                  baseURL='http://llvm.org/svn/llvm-project/lldb/',
                   defaultBranch='trunk',
                   workdir='%s/tools/lldb' % llvm_srcdir))
     f.addStep(SetProperty(command='grep ^our.*llvm_revision scripts/build-llvm.pl | cut -d \\" -f 2',
