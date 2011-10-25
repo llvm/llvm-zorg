@@ -34,6 +34,8 @@ def getClangBuildFactory(
             env={}, # Environmental variables for all steps.
             extra_configure_args=[],
             use_pty_in_tests=False,
+            trunk_revision=None,
+            force_checkout=False,
             checkout_compiler_rt=False):
     # Prepare environmental variables. Set here all env we want everywhere.
     merged_env = {
@@ -79,22 +81,48 @@ def getClangBuildFactory(
                                env=merged_env))
 
     # Checkout sources.
-    f.addStep(SVN(name='svn-llvm',
-                  mode='update',
-                  baseURL='http://llvm.org/svn/llvm-project/llvm/',
-                  defaultBranch='trunk',
-                  workdir=llvm_srcdir))
-    f.addStep(SVN(name='svn-clang',
-                  mode='update',
-                  baseURL='http://llvm.org/svn/llvm-project/cfe/',
-                  defaultBranch='trunk',
-                  workdir='%s/tools/clang' % llvm_srcdir))
-    if checkout_compiler_rt:
-        f.addStep(SVN(name='svn-compiler-rt',
+    if trunk_revision:
+        # The SVN build step provides no mechanism to check out a specific revision
+        # based on a property, so just run the commands directly here.
+        svn_co = ['svn', 'checkout']
+        if force_checkout:
+            svn_co += ['--force']
+        svn_co += ['--revision', WithProperties(trunk_revision)]
+
+        svn_co_llvm = svn_co + \
+          [WithProperties('http://llvm.org/svn/llvm-project/llvm/trunk@%s' %
+                          trunk_revision),
+           llvm_srcdir]
+        svn_co_clang = svn_co + \
+          [WithProperties('http://llvm.org/svn/llvm-project/cfe/trunk@%s' %
+                          trunk_revision),
+           '%s/tools/clang' % llvm_srcdir]
+
+        f.addStep(ShellCommand(name='svn-llvm',
+                               command=svn_co_llvm,
+                               haltOnFailure=True,
+                               workdir='.'))
+        f.addStep(ShellCommand(name='svn-clang',
+                               command=svn_co_clang,
+                               haltOnFailure=True,
+                               workdir='.'))
+    else:
+        f.addStep(SVN(name='svn-llvm',
                       mode='update',
-                      baseURL='http://llvm.org/svn/llvm-project/compiler-rt/',
+                      baseURL='http://llvm.org/svn/llvm-project/llvm/',
                       defaultBranch='trunk',
-                      workdir='%s/projects/compiler-rt' % llvm_srcdir))
+                      workdir=llvm_srcdir))
+        f.addStep(SVN(name='svn-clang',
+                      mode='update',
+                      baseURL='http://llvm.org/svn/llvm-project/cfe/',
+                      defaultBranch='trunk',
+                      workdir='%s/tools/clang' % llvm_srcdir))
+        if checkout_compiler_rt:
+            f.addStep(SVN(name='svn-compiler-rt',
+                          mode='update',
+                          baseURL='http://llvm.org/svn/llvm-project/compiler-rt/',
+                          defaultBranch='trunk',
+                          workdir='%s/projects/compiler-rt' % llvm_srcdir))
 
     # Clean up llvm (stage 1); unless in-dir.
     if clean and llvm_srcdir != llvm_1_objdir:
