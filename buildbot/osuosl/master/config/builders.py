@@ -273,9 +273,8 @@ def _get_polly_builders():
 # LLDB builders.
 def _get_lldb_builders():
     gcc_latest_env = {
-        'LD_LIBRARY_PATH': '/opt/cfarm/mpc-latest/lib:/opt/cfarm/mpfr-latest/lib:/opt/cfarm/gmp-latest/lib',
-        'CC':  '/opt/cfarm/gcc-core-latest/bin/gcc',
-        'CXX': '/opt/cfarm/gcc-core-latest/bin/g++'}
+        'CC':  '/opt/cfarm/release/4.5.1/bin/gcc',
+        'CXX': '/opt/cfarm/release/4.5.1/bin/g++'}
 
     gcc_m32_latest_env = gcc_latest_env.copy()
     gcc_m32_latest_env['CC'] += ' -m32'
