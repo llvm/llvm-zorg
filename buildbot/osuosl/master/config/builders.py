@@ -26,6 +26,10 @@ from zorg.buildbot.builders import PollyBuilder
 reload(PollyBuilder)
 from zorg.buildbot.builders import PollyBuilder
 
+from zorg.buildbot.builders import LLDBBuilder
+reload(LLDBBuilder)
+from zorg.buildbot.builders import LLDBBuilder
+
 from buildbot.steps.source import SVN
 from zorg.buildbot.commands.ClangTestCommand import ClangTestCommand
 
@@ -264,6 +268,30 @@ def _get_polly_builders():
          'slavenames':["grosser1"],
          'builddir':"polly-amd64-linux",
          'factory': PollyBuilder.getPollyBuildFactory()}
+       ]
+
+# LLDB builders.
+def _get_lldb_builders():
+    gcc_latest_env = {
+        'LD_LIBRARY_PATH': '/opt/cfarm/mpc-latest/lib:/opt/cfarm/mpfr-latest/lib:/opt/cfarm/gmp-latest/lib',
+        'CC':  '/opt/cfarm/gcc-core-latest/bin/gcc',
+        'CXX': '/opt/cfarm/gcc-core-latest/bin/g++'}
+
+    gcc_m32_latest_env = gcc_latest_env.copy()
+    gcc_m32_latest_env['CC'] += ' -m32'
+    gcc_m32_latest_env['CXX'] += ' -m32'
+
+    return [
+        {'name': "lldb-x86_64-linux",
+         'slavenames': ["gcc14"],
+         'builddir': "lldb-x86_64",
+         'factory': LLDBBuilder.getLLDBBuildFactory(triple="x86_64-pc-linux-gnu",
+                                                    env=gcc_latest_env)},
+        {'name': "lldb-i686-debian",
+         'slavenames': ["gcc15"],
+         'builddir': "lldb-i686-debian",
+         'factory': LLDBBuilder.getLLDBBuildFactory(triple="i686-pc-linux-gnu",
+                                                    env=gcc_m32_latest_env)}
        ]
 
 def _get_experimental_builders():
@@ -761,6 +789,10 @@ def get_builders():
 
     for b in _get_polly_builders():
         b['category'] = 'polly'
+        yield b
+
+    for b in _get_lldb_builders():
+        b['category'] = 'lldb'
         yield b
 
     for b in _get_experimental_builders():
