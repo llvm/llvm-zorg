@@ -36,6 +36,7 @@ def getClangBuildFactory(
             use_pty_in_tests=False,
             trunk_revision=None,
             force_checkout=False,
+            extra_clean_step=None,
             checkout_compiler_rt=False):
     # Prepare environmental variables. Set here all env we want everywhere.
     merged_env = {
@@ -158,7 +159,11 @@ def getClangBuildFactory(
                                               description="cleaning llvm",
                                               descriptionDone="clean llvm",
                                               workdir=llvm_1_objdir,
+                                              doStepIf=clean,
                                               env=merged_env))
+
+    if extra_clean_step:
+        f.addStep(extra_clean_step)
 
     f.addStep(WarningCountingShellCommand(name="compile",
                                           command=['nice', '-n', '10',
