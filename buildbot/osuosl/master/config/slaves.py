@@ -13,27 +13,6 @@ def get_build_slaves():
         # FreeBSD zero.sajd.net 9.0-CURRENT i386
         create_slave("freebsd1", properties={'jobs' : 1}, max_builds=1),
 
-        # PowerPC Linux machine. 900MHz G3 processor with 256MB of RAM.
-        create_slave("nick1", properties={'jobs' : 1}, max_builds=1),
-
-        # Linux, Beagleboard, Cortex A8, 256MB RAM.
-        create_slave("nick2", properties={'jobs' : 1}, max_builds=1),
-
-        # Linux, NVidia Tegra 250, Dual-core Cortex A9, 1GB RAM
-        create_slave("nick3", properties={'jobs' : 2}, max_builds=1),
-
-        # Core 2 Duo running Ubuntu.
-        create_slave("dunbar1", properties={'jobs' : 2}, max_builds=1),
-
-        # Athlon 1.2 XP SP 3.
-        create_slave("dunbar-win32", properties={'jobs' : 1}, max_builds=1),
-
-        # Dual Quad Core Mc Pro (Nehalem) running SnowLeopard.
-        create_slave("dunbar-darwin10", properties={'jobs' : 4}, max_builds=2),
-
-        # Dual Core Pentium M, XP SP 3.
-        create_slave("dunbar-win32-2", properties={'jobs' : 2}, max_builds=1),
-
         # CPU Marvell Kirkwood 88F6281 ARM Based armv5tejl running at 1.2Ghz
         # Memory 512MB SDRAM
         # Power 2.3w idle no attached devices, 7.0w running at 100% CPU utilization
@@ -64,13 +43,6 @@ def get_build_slaves():
 
         # Windows 7 Ultimate
         create_slave("kistanova8", properties={'jobs' : 1}, max_builds=1),
-
-        # Quad Core x86_64, Solaris / AurorAUX
-        create_slave("evocallaghan", properties={'jobs' : 4}, max_builds=1),
-
-        # Adobe Contributed VM
-        # Win XP SP2, Intel Core2 Duo 2.99GHz -E6850, 2.93 GB
-        create_slave("adobe1", properties={'jobs' : 2}, max_builds=1),
 
         # GCC Compile Farm Slaves, see http://gcc.gnu.org/wiki/CompileFarm
 
@@ -160,9 +132,6 @@ def get_build_slaves():
         # Debian, P4 2.8GHz, 1GB mem
         create_slave("balint1", properties={'jobs' : 1}, max_builds=1),
 
-        # Pentium Dual CPU T3400 @ 2.1GHz
-        create_slave("dumitrescu1", properties={'jobs' : 2}, max_builds=1),
-
         # AMD Athlon(tm) 64 X2 Dual Core 3800+, Ubuntu x86_64
         create_slave("grosser1", properties={'jobs': 2}, max_builds=1),
 
@@ -173,6 +142,32 @@ def get_build_slaves():
         create_slave("arxan_bellini", properties={'jobs': 2}, max_builds=1),
 
         # Defunct.
+        # Pentium Dual CPU T3400 @ 2.1GHz
+        #create_slave("dumitrescu1", properties={'jobs' : 2}, max_builds=1),
+        # Quad Core x86_64, Solaris / AurorAUX
+        #create_slave("evocallaghan", properties={'jobs' : 4}, max_builds=1),
+        # Adobe Contributed VM
+        # Win XP SP2, Intel Core2 Duo 2.99GHz -E6850, 2.93 GB
+        #create_slave("adobe1", properties={'jobs' : 2}, max_builds=1),
+        # PowerPC Linux machine. 900MHz G3 processor with 256MB of RAM.
+        #create_slave("nick1", properties={'jobs' : 1}, max_builds=1),
+        # Linux, Beagleboard, Cortex A8, 256MB RAM.
+        #create_slave("nick2", properties={'jobs' : 1}, max_builds=1),
+        # Linux, NVidia Tegra 250, Dual-core Cortex A9, 1GB RAM
+        #create_slave("nick3", properties={'jobs' : 2}, max_builds=1),
+        # Core 2 Duo running Ubuntu.
+        #create_slave("dunbar1", properties={'jobs' : 2}, max_builds=1),
+        # Athlon 1.2 XP SP 3.
+        #create_slave("dunbar-win32", properties={'jobs' : 1}, max_builds=1),
+        # Dual Quad Core Mc Pro (Nehalem) running SnowLeopard.
+        #create_slave("dunbar-darwin10", properties={'jobs' : 4}, max_builds=2),
+        # Dual Core Pentium M, XP SP 3.
+        #create_slave("dunbar-win32-2", properties={'jobs' : 2}, max_builds=1),
+        #create_slave("osu1", properties={'jobs' : 4}, max_builds=1),
+        #create_slave("osu2", properties={'jobs' : 4}, max_builds=2),
+        # Debian x86_64, 2 x 6-core Opteron 2.6 GHz
+        #create_slave("osu7", properties={'jobs' : 6}, max_builds=4),
+        #create_slave("osu8", properties={'jobs' : 6}, max_builds=4),
         #create_slave("andrew1"),
         #create_slave("danmbp1"),
         ]

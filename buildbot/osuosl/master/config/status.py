@@ -33,20 +33,20 @@ def get_status_targets(standard_builders):
     return [
         buildbot.status.html.WebStatus(
             http_port = 8011, authz=authz_cfg),
-#        buildbot.status.mail.MailNotifier(
-#            fromaddr = "buildbot@lab.llvm.org",
-#            extraRecipients = [default_email],
-#            lookup = ConfigEmailLookup(os.path.join(os.path.dirname(__file__),
-#                                                    "llvmauthors.cfg"),
-#                                       default_email),
-#            mode = "problem",
-#            builders = standard_builders),
+        buildbot.status.mail.MailNotifier(
+            fromaddr = "llvm.buildmaster@lab.llvm.org",
+            extraRecipients = [default_email],
+            lookup = ConfigEmailLookup(os.path.join(os.path.dirname(__file__),
+                                                    "llvmauthors.cfg"),
+                                       default_email),
+            mode = "problem",
+            builders = standard_builders),
         buildbot.status.words.IRC(
             host = "irc.oftc.net", nick = "llvmbb", channels = ["#llvm"],
             allowForce = True,
             notify_events = ['successToFailure', 'failureToSuccess']),
         InformativeMailNotifier(
-            fromaddr = "buildbot@lab.llvm.org",
+            fromaddr = "llvm.buildmaster@lab.llvm.org",
             sendToInterestedUsers= False,
             extraRecipients = ["baldrick@free.fr", "gkistanova@gmail.com"],
             subject="Build %(builder)s Failure",
@@ -55,7 +55,7 @@ def get_status_targets(standard_builders):
             addLogs=False,
             num_lines = 15),
         InformativeMailNotifier(
-            fromaddr = "buildbot@lab.llvm.org",
+            fromaddr = "llvm.buildmaster@lab.llvm.org",
             sendToInterestedUsers= False,
             extraRecipients = ["tobias@grosser.es"],
             subject="Build %(builder)s Failure",
