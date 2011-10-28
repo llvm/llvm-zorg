@@ -174,23 +174,15 @@ clang_x86_64_linux_xfails = [
 # Clang builders.
 def _get_clang_builders():
     return [
-        {'name': "clang-i686-freebsd",
-         'slavenames':["freebsd1"],
-         'builddir':"clang-i686-freebsd",
-         'factory': ClangBuilder.getClangBuildFactory(clean=True, use_pty_in_tests=True)},
-
-        {'name' : "clang-i686-linux-fnt",
-         'slavenames' : ['balint1'],
-         'builddir' : "clang-i686-linux-fnt",
-         'factory' : NightlytestBuilder.getFastNightlyTestBuildFactory(triple='i686-pc-linux-gnu',
-                                                                       stage1_config='Release+Asserts',
-                                                                       test=False,
-                                                                       xfails=clang_i386_linux_xfails) },
-
         {'name': "clang-x86_64-debian",
          'slavenames':["gcc12"],
          'builddir':"clang-x86_64-debian",
          'factory': ClangBuilder.getClangBuildFactory()},
+
+        {'name': "clang-x86_64-ubuntu",
+         'slavename':["arxan_raphael"],
+         'builddir':"clang-x86_64-ubuntu",
+         'factory' : ClangBuilder.getClangBuildFactory()},
 
         {'name' : "clang-x86_64-debian-selfhost-rel",
          'slavenames' : ["gcc13"],
@@ -207,7 +199,7 @@ def _get_clang_builders():
                                                                        stage1_config='Release+Asserts',
                                                                        test=False,
                                                                        xfails=clang_x86_64_linux_xfails)},
- 
+
         {'name': "clang-native-arm-cortex-a9",
          'slavenames':["kistanova6"],
          'builddir':"clang-native-arm-cortex-a9",
@@ -313,6 +305,17 @@ def _get_clang_builders():
                                                useTwoStage=True,
                                                stage1_config='Release+Asserts',
                                                stage2_config='Debug+Asserts')},
+{'name': "clang-i686-freebsd",
+ 'slavenames':["freebsd1"],
+ 'builddir':"clang-i686-freebsd",
+ 'factory': ClangBuilder.getClangBuildFactory(clean=True, use_pty_in_tests=True)},
+{'name' : "clang-i686-linux-fnt",
+ 'slavenames' : ['balint1'],
+ 'builddir' : "clang-i686-linux-fnt",
+ 'factory' : NightlytestBuilder.getFastNightlyTestBuildFactory(triple='i686-pc-linux-gnu',
+                                                               stage1_config='Release+Asserts',
+                                                               test=False,
+                                                               xfails=clang_i386_linux_xfails) },
 
 def _get_dragonegg_builders():
     return [
@@ -735,15 +738,6 @@ def _get_experimental_builders():
                                         'haltOnFailure' : True },]),
          'category'  : 'llvm-gcc' },
 
-        {'name': "clang-i686-freebsd-selfhost-rel",
-         'slavenames':["freebsd1"],
-         'builddir':"clang-i686-freebsd-selfhost-rel",
-         'factory': ClangBuilder.getClangBuildFactory(triple='i686-pc-freebsd',
-                                                      useTwoStage=True,
-                                                      stage1_config='Release+Asserts',
-                                                      stage2_config='Release+Asserts'),
-         'category' : 'clang.exp' },
-
         ]
 
 def get_builders():
@@ -843,3 +837,11 @@ def get_builders():
 # 'builddir' :"clang-i686-xp-msvc9_alt",
 # 'factory' : ClangBuilder.getClangMSVCBuildFactory(jobs=2),
 # 'category' : 'clang.exp' },
+{'name': "clang-i686-freebsd-selfhost-rel",
+ 'slavenames':["freebsd1"],
+ 'builddir':"clang-i686-freebsd-selfhost-rel",
+ 'factory': ClangBuilder.getClangBuildFactory(triple='i686-pc-freebsd',
+                                              useTwoStage=True,
+                                              stage1_config='Release+Asserts',
+                                              stage2_config='Release+Asserts'),
+ 'category' : 'clang.exp' },

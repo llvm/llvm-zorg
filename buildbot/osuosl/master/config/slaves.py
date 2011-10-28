@@ -10,9 +10,6 @@ def create_slave(name, *args, **kwargs):
 
 def get_build_slaves():
     return [
-        # FreeBSD zero.sajd.net 9.0-CURRENT i386
-        create_slave("freebsd1", properties={'jobs' : 1}, max_builds=1),
-
         # CPU Marvell Kirkwood 88F6281 ARM Based armv5tejl running at 1.2Ghz
         # Memory 512MB SDRAM
         # Power 2.3w idle no attached devices, 7.0w running at 100% CPU utilization
@@ -129,14 +126,14 @@ def get_build_slaves():
         # gcc201 8011  80G   4x0.4 GHz  TI UltraSparc II (BlackBird) / 4 GB RAM / Sun E250 / Gentoo sparc64
         create_slave("gcc201", properties={'jobs' : 2}, max_builds=1),
 
-        # Debian, P4 2.8GHz, 1GB mem
-        create_slave("balint1", properties={'jobs' : 1}, max_builds=1),
-
         # AMD Athlon(tm) 64 X2 Dual Core 3800+, Ubuntu x86_64
         create_slave("grosser1", properties={'jobs': 2}, max_builds=1),
 
         # Intel(R) Core(TM)2 CPU 6420  @ 2.13GHz, Ubuntu Oneiric x86_64
         create_slave("arxan_davinci", properties={'jobs': 4}, max_builds=1),
+
+        # Intel(R) Core(TM)2 CPU 6420  @ 2.13GHz, Ubuntu Oneiric x86_64
+        create_slave("arxan_raphael", properties={'jobs': 4}, max_builds=1),
 
         # 2005 PowerPC Mac Mini, Mac OS X 10.5
         create_slave("arxan_bellini", properties={'jobs': 2}, max_builds=1),
@@ -170,4 +167,8 @@ def get_build_slaves():
         #create_slave("osu8", properties={'jobs' : 6}, max_builds=4),
         #create_slave("andrew1"),
         #create_slave("danmbp1"),
+        # FreeBSD zero.sajd.net 9.0-CURRENT i386
+        #create_slave("freebsd1", properties={'jobs' : 1}, max_builds=1),
+        # Debian, P4 2.8GHz, 1GB mem
+        #create_slave("balint1", properties={'jobs' : 1}, max_builds=1),
         ]
