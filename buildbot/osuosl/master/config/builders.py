@@ -180,7 +180,7 @@ def _get_clang_builders():
          'factory': ClangBuilder.getClangBuildFactory()},
 
         {'name': "clang-x86_64-ubuntu",
-         'slavename':["arxan_raphael"],
+         'slavenames':["arxan_raphael"],
          'builddir':"clang-x86_64-ubuntu",
          'factory' : ClangBuilder.getClangBuildFactory()},
 
