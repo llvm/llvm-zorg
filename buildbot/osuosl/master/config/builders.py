@@ -362,6 +362,7 @@ def _get_polly_builders():
 # LLDB builders.
 def _get_lldb_builders():
     gcc_latest_env = {
+        'PATH': '/opt/cfarm/python2-latest/bin:/usr/local/bin:/usr/bin:/bin:/usr/games',
         'CC':  '/opt/cfarm/release/4.5.1/bin/gcc',
         'CXX': '/opt/cfarm/release/4.5.1/bin/g++'}
 
