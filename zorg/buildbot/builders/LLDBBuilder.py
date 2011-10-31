@@ -23,7 +23,7 @@ def isNewLLVMRevision(build_status):
 
 def getLLDBBuildFactory(triple, outOfDir=False, useTwoStage=False,
                         always_install=False, extra_configure_args=[],
-                        *args, **kwargs):
+                        env={}, *args, **kwargs):
     # FIXME: this code is copied from getClangBuildFactory
     inDir = not outOfDir and not useTwoStage
     if inDir:
@@ -74,6 +74,7 @@ def getLLDBBuildFactory(triple, outOfDir=False, useTwoStage=False,
                                                extra_configure_args=
                                                  extra_configure_args+
                                                  ['--enable-targets=host'],
+                                               env=env,
                                                trunk_revision='%(llvmrev)s',
                                                force_checkout=True,
                                                clean=new_llvmrev,
@@ -86,6 +87,7 @@ def getLLDBBuildFactory(triple, outOfDir=False, useTwoStage=False,
                            command=['nice', '-n', '10',
                                     'make'],
                            haltOnFailure=True, description="test lldb",
+                           env=env,
                            workdir='%s/tools/lldb/test' % llvm_1_objdir))
 
     return f
