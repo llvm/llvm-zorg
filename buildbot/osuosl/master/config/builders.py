@@ -48,7 +48,7 @@ def _get_llvm_builders():
         {'name': "llvm-ppc-darwin",
          'slavenames':["arxan_bellini"],
          'builddir':"llvm-ppc-darwin",
-         'factory': LLVMBuilder.getLLVMBuildFactory("ppc-darwin", jobs=1, clean=True,
+         'factory': LLVMBuilder.getLLVMBuildFactory("ppc-darwin", jobs=2, clean=True,
                             config_name = 'Release',
                             env = { 'CC' : "/usr/bin/gcc-4.2",
                                     'CXX': "/usr/bin/g++-4.2" },
