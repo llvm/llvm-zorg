@@ -163,9 +163,12 @@ clang_i386_linux_xfails = [
 ]
 
 clang_x86_64_linux_xfails = [
+    'GCCAS.MultiSource/Benchmarks/tramp3d-v4/tramp3d-v4',
+    'Bytecode.MultiSource/Benchmarks/tramp3d-v4/tramp3d-v4',
     'LLC.SingleSource/Regression/C++/EH/ConditionalExpr',
     'LLC.SingleSource/UnitTests/Vector/SSE/sse.expandfft',
     'LLC.SingleSource/UnitTests/Vector/SSE/sse.stepfft',
+    'LLC_compile.MultiSource/Benchmarks/tramp3d-v4/tramp3d-v4',
     'LLC_compile.SingleSource/Regression/C++/EH/ConditionalExpr',
     'LLC_compile.SingleSource/UnitTests/Vector/SSE/sse.expandfft',
     'LLC_compile.SingleSource/UnitTests/Vector/SSE/sse.stepfft',
