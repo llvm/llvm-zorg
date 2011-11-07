@@ -9,62 +9,20 @@ from buildbot.process.properties import WithProperties
 f = buildbot.process.factory.BuildFactory()
 
 def installRequiredLibs():
-    cloog_srcdir = "cloog.src"
-    isl_srcdir = "isl.src"
-    cloog_installdir = isl_installdir = "cloog.install"
+    cloog_installdir = "cloog.install"
 
     global f
-    # Get Cloog
-    f.addStep(Git(repourl='http://repo.or.cz/r/cloog.git',
-                  mode='update',
-                  workdir=cloog_srcdir,
-		  alwaysUseLatest=True,
-		  retry=(30, 10)))
-    # Get isl
-    f.addStep(Git(repourl='http://repo.or.cz/r/isl.git',
-                  mode='update',
-                  workdir=isl_srcdir,
-		  alwaysUseLatest=True,
-		  retry=(30, 10)))
-    # Build isl
-    f.addStep(ShellCommand(name="autogen-isl",
-                               command=["./autogen.sh"],
-                               haltOnFailure=True,
-                               description=["autogen cloog"],
-                               workdir=isl_srcdir))
-    islconfargs = []
-    islconfargs.append(WithProperties("%%(builddir)s/%s/configure"
-                                    % isl_srcdir))
-    islconfargs.append(WithProperties("--prefix=%%(builddir)s/%s"
-                                    % isl_installdir))
-    f.addStep(Configure(name="isl-configure",
-                        command=islconfargs,
-                        workdir=isl_srcdir,
-                        description=['isl-configure']))
-    f.addStep(ShellCommand(name="build-isl",
-                               command=["make"],
-                               haltOnFailure=True,
-                               description=["build isl"],
-                               workdir=isl_srcdir))
-    f.addStep(ShellCommand(name="install-isl",
-                               command=["make", "install"],
-                               haltOnFailure=True,
-                               description=["install isl"],
-                               workdir=isl_srcdir))
-    # Build Cloog
-    f.addStep(ShellCommand(name="autogen-cloog",
-                               command=["./autogen.sh"],
-                               haltOnFailure=True,
-                               description=["autogen cloog"],
-                               workdir=cloog_srcdir))
+    # Get Cloog and isl
+    checkout_cloog = WithProperties("%s/llvm.src/tools/polly/utils/checkout_cloog.sh", "builddir")
+    cloog_srcdir = WithProperties("%s/cloog.src", "builddir")
+    f.addStep(ShellCommand(name="get-cloog",
+			   command=[checkout_cloog,
+				     cloog_srcdir],
+			   description="Get CLooG/isl source code"))
+
     confargs = []
-    confargs.append(WithProperties("%%(builddir)s/%s/configure"
-                                    % cloog_srcdir))
-    confargs.append(WithProperties("--prefix=%%(builddir)s/%s"
-                                    % cloog_installdir))
-    confargs.append(WithProperties("--with-isl-prefix=%%(builddir)s/%s"
-                                    % cloog_installdir))
-    confargs.append(WithProperties("--with-isl=system"))
+    confargs.append(WithProperties("%s/cloog.src/configure", "builddir"))
+    confargs.append(WithProperties("--prefix=%s/cloog.install", "builddir"))
     f.addStep(Configure(name="cloog-configure",
                         command=confargs,
                         workdir=cloog_srcdir,
@@ -92,8 +50,6 @@ def getPollyBuildFactory():
                                                property="builddir",
                                                description="set build dir",
                                                workdir="."))
-    # Install Prerequisites
-    installRequiredLibs()
     # Get LLVM and Polly
     f.addStep(SVN(name='svn-llvm',
                   mode='update',
@@ -105,6 +61,10 @@ def getPollyBuildFactory():
                   baseURL='http://llvm.org/svn/llvm-project/polly/',
                   defaultBranch='trunk',
                   workdir='%s/tools/polly' % llvm_srcdir))
+
+    # Install Prerequisites
+    installRequiredLibs()
+
     # Create configuration files with cmake
     f.addStep(ShellCommand(name="create-build-dir",
                                command=["mkdir", "-p", llvm_objdir],
