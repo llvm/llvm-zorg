@@ -146,6 +146,8 @@ def _get_llvmgcc_builders():
                                                  gxxincludedir='/usr/include/c++/4.2.1')},
 
 clang_i386_linux_xfails = [
+    'GCC.MultiSource/Applications/siod/siod',
+    'GCC.MultiSource/Benchmarks/MiBench/consumer-lame/consumer-lame',
     'GCCAS.MultiSource/Benchmarks/tramp3d-v4/tramp3d-v4',
     'Bytecode.MultiSource/Benchmarks/tramp3d-v4/tramp3d-v4',
     'LLC.MultiSource/Applications/oggenc/oggenc',
