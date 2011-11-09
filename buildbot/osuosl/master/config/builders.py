@@ -146,31 +146,24 @@ def _get_llvmgcc_builders():
                                                  gxxincludedir='/usr/include/c++/4.2.1')},
 
 clang_i386_linux_xfails = [
-    'GCC.MultiSource/Applications/siod/siod',
-    'GCC.MultiSource/Benchmarks/MiBench/consumer-lame/consumer-lame',
-    'GCCAS.MultiSource/Benchmarks/tramp3d-v4/tramp3d-v4',
-    'Bytecode.MultiSource/Benchmarks/tramp3d-v4/tramp3d-v4',
     'LLC.MultiSource/Applications/oggenc/oggenc',
     'LLC.MultiSource/Benchmarks/VersaBench/bmm/bmm',
     'LLC.MultiSource/Benchmarks/VersaBench/dbms/dbms',
-    'LLC.MultiSource/Benchmarks/tramp3d-v4/tramp3d-v4',
     'LLC.SingleSource/Benchmarks/Misc-C++/Large/sphereflake',
     'LLC.SingleSource/Regression/C++/EH/ConditionalExpr',
     'LLC_compile.MultiSource/Applications/oggenc/oggenc',
     'LLC_compile.MultiSource/Benchmarks/VersaBench/bmm/bmm',
     'LLC_compile.MultiSource/Benchmarks/VersaBench/dbms/dbms',
-    'LLC_compile.MultiSource/Benchmarks/tramp3d-v4/tramp3d-v4',
     'LLC_compile.SingleSource/Benchmarks/Misc-C++/Large/sphereflake',
     'LLC_compile.SingleSource/Regression/C++/EH/ConditionalExpr',
 ]
 
 clang_x86_64_linux_xfails = [
-    'GCCAS.MultiSource/Benchmarks/tramp3d-v4/tramp3d-v4',
-    'Bytecode.MultiSource/Benchmarks/tramp3d-v4/tramp3d-v4',
+    'GCC.MultiSource/Applications/siod/siod',
+    'GCC.MultiSource/Benchmarks/MiBench/consumer-lame/consumer-lame',
     'LLC.SingleSource/Regression/C++/EH/ConditionalExpr',
     'LLC.SingleSource/UnitTests/Vector/SSE/sse.expandfft',
     'LLC.SingleSource/UnitTests/Vector/SSE/sse.stepfft',
-    'LLC_compile.MultiSource/Benchmarks/tramp3d-v4/tramp3d-v4',
     'LLC_compile.SingleSource/Regression/C++/EH/ConditionalExpr',
     'LLC_compile.SingleSource/UnitTests/Vector/SSE/sse.expandfft',
     'LLC_compile.SingleSource/UnitTests/Vector/SSE/sse.stepfft',
