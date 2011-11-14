@@ -210,6 +210,16 @@ class LLVMPoller(base.PollingChangeSource, util.ComparableMixin):
     def create_changes(self, new_logentries):
         changes = []
 
+        categories = {
+            'llvm'         : 'llvm',
+            'cfe'          : 'clang',
+            'polly'        : 'polly',
+            'llvm-gcc-4.2' : 'llvm-gcc',
+            'compiler-rt'  : 'compiler-rt',
+            'dragonegg'    : 'dragonegg',
+            'lldb'         : 'lldb'
+            }
+
         for el in new_logentries:
             revision = str(el.getAttribute("revision"))
 
@@ -272,7 +282,7 @@ class LLVMPoller(base.PollingChangeSource, util.ComparableMixin):
                                   revision=revision,
                                   branch=branch,
                                   revlink=revlink,
-                                  category=self.category,
+                                  category=categories.get(project, None),
                                   repository=self.svnurl,
                                   project=project)
                     changes.append(chdict)
