@@ -200,14 +200,14 @@ def _get_clang_builders():
          'slavenames':["kistanova6"],
          'builddir':"clang-native-arm-cortex-a9",
          'factory' : ClangBuilder.getClangBuildFactory(
+                     stage1_config='Release+Asserts',
                      extra_configure_args=['--build=armv7l-unknown-linux-gnueabi',
                                            '--host=armv7l-unknown-linux-gnueabi',
                                            '--target=armv7l-unknown-linux-gnueabi',
                                            '--with-cpu=cortex-a9',
                                            '--with-fpu=neon', '--with-abi=aapcs',
                                            '--with-float=hard',
-                                           '--enable-targets=arm,cbe',
-                                           '--enable-optimized'])},
+                                           '--enable-targets=arm,cbe'])},
 
         {'name': "clang-X86_64-freebsd",
          'slavenames':["kistanova7"],
