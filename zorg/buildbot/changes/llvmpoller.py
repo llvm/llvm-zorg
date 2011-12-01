@@ -29,19 +29,31 @@ class LLVMPoller(base.PollingChangeSource, util.ComparableMixin):
     parent = None # filled in when we're added
     last_change = None
     loop = None
+    projects = None  # Projects and branches to watch.
 
     def __init__(self, svnurl=_svnurl, svnuser=None, svnpasswd=None,
                  pollInterval=2*60, histmax=10,
-                 svnbin='svn', revlinktmpl=_revlinktmpl, category=None, 
+                 svnbin='svn', revlinktmpl=_revlinktmpl, category=None,
                  projects=None, cachepath=None):
 
         # projects is a list of projects to watch or None to watch all.
         if projects:
-            if isinstance(projects, str):
+            if isinstance(projects, str) or isinstance(projects, tuple):
                 projects = [projects]
             assert isinstance(projects, list)
             assert len(projects) > 0
-        self.projects = projects
+
+            # Each project to watch is a string (project name) or a tuple
+            # (project name, branch) like ('llvm', 'branches/release_30').
+            # But we want it always to be a tuple, so we convert a project
+            # name string to a tuple (project, 'trunk').
+            self.projects = set()
+            for project in projects:
+                if isinstance(project, str):
+                    project = (project, 'trunk')
+
+                assert isinstance(project, tuple)
+                self.projects.add(project)
 
         if svnurl.endswith("/"):
             svnurl = svnurl[:-1] # strip the trailing slash.
@@ -187,25 +199,31 @@ class LLVMPoller(base.PollingChangeSource, util.ComparableMixin):
         #  ("llvm", "branches/release_30", "lib/CodeGen/Analysis.cpp")
         # and llvm/tags/RELEASE_30/rc1/lib/CodeGen/Analysis.cpp into
         #  ("llvm", "tags/RELEASE_30/rc1", "lib/CodeGen/Analysis.cpp")
+        # and filter projects/branches we are not watching.
 
         pieces = relative_path.split('/')
         project = pieces.pop(0)
-
-        if self.projects:
-            if project not in self.projects:
-                # Handle only projects we are watching.
-                return None
+        branch = None
+        file_path = None
 
         if pieces[0] == "trunk":
-            return (project, pieces[0], '/'.join(pieces[1:]))
+            branch = pieces[0]
+            file_path = '/'.join(pieces[1:])
         elif pieces[0] == "branches":
-            return (project, '/'.join(pieces[0:2]), '/'.join(pieces[2:]))
+            branch = '/'.join(pieces[0:2])
+            file_path = '/'.join(pieces[2:])
         elif pieces[0] == "tags":
-            return (project, '/'.join(pieces[0:3]), '/'.join(pieces[3:]))
+            branch = '/'.join(pieces[0:3])
+            file_path = '/'.join(pieces[3:])
         else:
             # Something we do not expect.
             log.msg("LLVMPoller(%s) cannot parse the path (%s). Ignored." % (self.svnuurl, path))
             return None
+
+        if self.projects:
+            if (project, branch) not in self.projects:
+                return None
+        return (project, branch, file_path)
 
     def create_changes(self, new_logentries):
         changes = []
