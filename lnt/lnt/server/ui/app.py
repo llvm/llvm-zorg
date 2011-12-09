@@ -17,6 +17,16 @@ import lnt.viewer.Config
 from lnt.db import perfdbsummary
 from lnt.db import perfdb
 
+class RootSlashPatchMiddleware(object):
+    def __init__(self, app):
+        self.app = app
+
+    def __call__(self, environ, start_response):
+        if environ['PATH_INFO'] == '':
+            return flask.redirect(environ['SCRIPT_NAME'] + '/')(
+                environ, start_response)
+        return self.app(environ, start_response)
+
 class Request(flask.Request):
     def __init__(self, *args, **kwargs):
         super(Request, self).__init__(*args, **kwargs)
@@ -82,6 +92,10 @@ class App(flask.Flask):
 
         # Store a few global things we want available to templates.
         self.version = lnt.__version__
+
+        # Inject a fix for missing slashes on the root URL (see Flask issue
+        # #169).
+        self.wsgi_app = RootSlashPatchMiddleware(self.wsgi_app)
 
     def load_config(self, config_path):
         config_data = {}
