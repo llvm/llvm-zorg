@@ -230,8 +230,7 @@ def simple_report(tag, id):
 
     show_graphs = bool(request.args.get('show_graphs'))
     _, _, html_report = NTEmailReport.getSimpleReport(
-        None, db, run, str("%s/db_%s/") % (current_app.old_config.zorgURL,
-                                           g.db_name),
+        None, db, run, url_for('index', db_name=g.db_name),
         True, True, show_graphs = show_graphs)
 
     return make_response(html_report)
@@ -241,8 +240,7 @@ def simple_text_report(tag, id):
     db, run, run_summary, compare_to = get_simple_run_info(tag, id)
 
     _, text_report, _ = NTEmailReport.getSimpleReport(
-        None, db, run, str("%s/db_%s/") % (current_app.old_config.zorgURL,
-                                           g.db_name),
+        None, db, run, url_for('index', db_name=g.db_name),
         True, True)
 
     response = make_response(text_report)
@@ -298,8 +296,7 @@ def simple_run(tag, id):
         test_filter_re = None
 
     _, text_report, html_report = NTEmailReport.getSimpleReport(
-        None, db, run, str("%s/db_%s/") % (current_app.old_config.zorgURL,
-                                           g.db_name),
+        None, db, run, url_for('index', db_name=g.db_name),
         True, True, only_html_body = True, show_graphs = show_graphs,
         num_comparison_runs = num_comparison_runs)
 
