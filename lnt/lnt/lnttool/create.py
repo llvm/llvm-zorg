@@ -1,5 +1,6 @@
 import os
 import platform
+import sys
 
 ###
 
@@ -60,7 +61,7 @@ wsgi_restart = False
 """
 
 kWSGITemplate = """\
-#!/usr/bin/env python2.6
+#!%(python_executable)s
 # -*- Python -*-
 
 from lnt.viewer import app
@@ -121,6 +122,7 @@ def action_create(name, args):
 
     hosturl = "http://%s/%s" % (hostname, hostsuffix)
 
+    python_executable = sys.executable
     db_dir_path = os.path.join(basepath, db_dir)
     cfg_path = os.path.join(basepath, config)
     db_path = os.path.join(db_dir_path, default_db)
@@ -139,6 +141,7 @@ def action_create(name, args):
     wsgi_file = open(wsgi_path, 'w')
     wsgi_file.write(kWSGITemplate % locals())
     wsgi_file.close()
+    os.chmod(wsgi_path, 0755)
 
     db = lnt.db.perfdb.PerfDB('sqlite:///' + db_path)
     db.commit()
@@ -151,7 +154,7 @@ def action_create(name, args):
     print '  host URL          : %s' % hosturl
     print
     print 'You can execute:'
-    print '  python %s' % wsgi_path
+    print '  %s' % wsgi_path
     print 'to test your installation with the builtin server.'
     print
     print 'For production use configure this application to run with any'
