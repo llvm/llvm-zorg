@@ -64,9 +64,10 @@ kWSGITemplate = """\
 #!%(python_executable)s
 # -*- Python -*-
 
-from lnt.viewer import app
+import lnt.server.ui.app
 
-application = app.create_app(%(cfg_path)r)
+application = lnt.server.ui.app.App.create_standalone(
+  %(cfg_path)r)
 
 if __name__ == "__main__":
     import werkzeug
