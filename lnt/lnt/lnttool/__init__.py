@@ -138,7 +138,6 @@ def action_runtest(name, args):
         ServerUtil.submitFile(opts.submit_url, io, True, opts.verbose)
     else:
         # Simulate a submission to retrieve the results report.
-        import lnt.viewer
         from lnt.util import ImportData
         import tempfile
 
