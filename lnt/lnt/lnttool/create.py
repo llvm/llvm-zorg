@@ -16,7 +16,8 @@ config_version = %(cfg_version)r
 # example.
 name = %(name)r
 
-# Path to the LNT server.
+# Path to the LNT server. This is required for use in emails where we need to
+# provude an absolute URL to the server.
 zorgURL = %(hosturl)r
 
 # Temporary directory, for use by the web app. This must be writable by the user
