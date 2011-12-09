@@ -131,7 +131,7 @@ def get_cc_info(path, cc_flags=[]):
 
     # Determine the binary tool versions for the assembler and the linker, as
     # found by the compiler.
-    cc_as_version = capture([cc, "-c", '-Wa,-v'] + cc_flags +
+    cc_as_version = capture([cc, "-c", '-Wa,-v', '-o', '/dev/null'] + cc_flags +
                             ['-x', 'assembler', '/dev/null'],
                             include_stderr=True).strip()
 
@@ -141,7 +141,8 @@ def get_cc_info(path, cc_flags=[]):
     tf = open(name, 'w')
     print >>tf, "int main() { return 0; }"
     tf.close()
-    cc_ld_version = capture([cc, "-Wl,-v"] + cc_flags + [tf.name],
+    cc_ld_version = capture(([cc, "-Wl,-v", '-o', '/dev/null'] + 
+                             cc_flags + [tf.name]),
                             include_stderr=True).strip()
     rm_f(tf.name)
 
