@@ -2,7 +2,7 @@ import os, pprint, sys, time
 
 import lnt.db.perfdb
 from lnt import formats
-from lnt.viewer import Config
+import lnt.server.config
 from lnt.util import ImportData
 
 def action_import(name, args):
@@ -45,7 +45,7 @@ def action_import(name, args):
     # Load the config file.
     config_data = {}
     exec open(config) in config_data
-    config = Config.Config.fromData(config, config_data)
+    config = lnt.server.config.Config.fromData(config, config_data)
 
     # Get the database entry to use.
     db_entry = config.databases.get(opts.database)

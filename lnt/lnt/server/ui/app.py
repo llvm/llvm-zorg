@@ -9,11 +9,10 @@ from flask import g
 from flask import url_for
 
 import lnt
+import lnt.server.config
 import lnt.server.ui.filters
 import lnt.server.ui.views
 
-# FIXME: Redesign this.
-import lnt.viewer.Config
 from lnt.db import perfdbsummary
 from lnt.db import perfdb
 
@@ -101,7 +100,7 @@ class App(flask.Flask):
         config_data = {}
         exec open(config_path) in config_data
 
-        self.old_config = lnt.viewer.Config.Config.fromData(
+        self.old_config = lnt.server.config.Config.fromData(
             config_path, config_data)
 
         self.jinja_env.globals.update(
