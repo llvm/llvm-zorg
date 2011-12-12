@@ -12,13 +12,12 @@ import sys
 import urllib
 
 import StringIO
-from lnt import viewer
 from lnt.db import runinfo
 from lnt.db import perfdbsummary
-from lnt.viewer import GraphUtil
-from lnt.viewer import Util
+from lnt.server.ui import graphutil
+from lnt.server.ui import util
 from lnt.db import perfdb
-from lnt.viewer.NTUtil import *
+from lnt.util.NTUtil import *
 
 from lnt.db.perfdb import Run, Sample
 
@@ -140,14 +139,14 @@ def getSimpleReport(result, db, run, baseurl, was_added, will_commit,
     test_names = ts_summary.get_test_names_in_runs(db, interesting_runs)
 
     # Gather the changes to report, mapped by parameter set.
-    new_failures = Util.multidict()
-    new_passes = Util.multidict()
-    perf_regressions = Util.multidict()
-    perf_improvements = Util.multidict()
-    added_tests = Util.multidict()
-    removed_tests = Util.multidict()
-    existing_failures = Util.multidict()
-    unchanged_tests = Util.multidict()
+    new_failures = util.multidict()
+    new_passes = util.multidict()
+    perf_regressions = util.multidict()
+    perf_improvements = util.multidict()
+    added_tests = util.multidict()
+    removed_tests = util.multidict()
+    existing_failures = util.multidict()
+    unchanged_tests = util.multidict()
     num_total_tests = len(test_names) * len(ts_summary.parameter_sets)
     for name in test_names:
         for pset in ts_summary.parameter_sets:
@@ -328,11 +327,11 @@ def getSimpleReport(result, db, run, baseurl, was_added, will_commit,
                     if '.' in name:
                         return name.rsplit('.', 1)[1]
                     return ''
-                grouped = Util.multidict(
+                grouped = util.multidict(
                     (get_last_component(t), t)
                     for t in tests)
 
-                for group,grouped_tests in Util.sorted(grouped.items()):
+                for group,grouped_tests in util.sorted(grouped.items()):
                     group_name = {
                         "" : "(ungrouped)",
                         "exec" : "Execution",
@@ -384,7 +383,7 @@ def getSimpleReport(result, db, run, baseurl, was_added, will_commit,
                                 os.path.join(report_url, "graph"),
                                 form_data, name)
 
-                            pct_value = Util.PctCell(cr.pct_delta).render()
+                            pct_value = util.PctCell(cr.pct_delta).render()
                             if cr.stddev is not None:
                                 print >>html_report, """
     <tr><td>%s%s</td>%s<td>%.4f</td><td>%.4f</td><td>%.4f</td></tr>""" %(
@@ -408,7 +407,7 @@ def getSimpleReport(result, db, run, baseurl, was_added, will_commit,
         test_ids = [ts_summary.test_id_map[(name,pset)]
                      for _,name,pset in graphs]
 
-        plots_iter = GraphUtil.get_test_plots(db, machine, test_ids,
+        plots_iter = graphutil.get_test_plots(db, machine, test_ids,
                                               run_summary, ts_summary,
                                               show_mad_error = True,
                                               show_points = True)
@@ -433,16 +432,16 @@ function init_report() {"""
     if not only_html_body:
         # We embed the additional resources, so that the message is self
         # contained.
-        viewer_path = os.path.join(os.path.dirname(os.path.dirname(__file__)),
-                                   "viewer")
-        style_css = open(os.path.join(viewer_path, "resources",
+        static_path = os.path.join(os.path.dirname(os.path.dirname(__file__)),
+                                   "server", "ui", "static")
+        style_css = open(os.path.join(static_path,
                                       "style.css")).read()
         header = """
     <style type="text/css">
 %s
     </style>""" % style_css
         if graphs:
-            view2d_js = open(os.path.join(viewer_path, "js",
+            view2d_js = open(os.path.join(static_path,
                                           "View2D.js")).read()
             header += """
     <script type="text/javascript">
@@ -474,7 +473,7 @@ def getReport(result, db, run, baseurl, was_added, will_commit):
     compareTo = None
 
     # Find comparison run.
-    # FIXME: Share this code with similar stuff in the viewer.
+    # FIXME: Share this code with similar stuff in the server UI.
     # FIXME: Scalability.
     compareCrossesMachine = False
     compareTo = findPreceedingRun(db.runs(machine=machine), run)
@@ -508,13 +507,13 @@ def getReport(result, db, run, baseurl, was_added, will_commit):
             return res
         return not not res
 
-    newPasses = Util.multidict()
-    newFailures = Util.multidict()
-    addedTests = Util.multidict()
-    removedTests = Util.multidict()
+    newPasses = util.multidict()
+    newFailures = util.multidict()
+    addedTests = util.multidict()
+    removedTests = util.multidict()
     allTests = set()
     allFailures = set()
-    allFailuresByKey = Util.multidict()
+    allFailuresByKey = util.multidict()
     for keyname,title in kTSKeys.items():
         for testname in summary.testNames:
             curResult = getTestSuccess(run, testname, keyname)
@@ -540,7 +539,7 @@ def getReport(result, db, run, baseurl, was_added, will_commit):
             if curResult is None and prevResult is not None:
                 removedTests[testname] = title
 
-    changes = Util.multidict()
+    changes = util.multidict()
     for i,(name,key) in enumerate(kComparisonKinds):
         if not key:
             # FIXME: File Size
@@ -554,7 +553,7 @@ def getReport(result, db, run, baseurl, was_added, will_commit):
             if curValue is None or prevValue is None:
                 continue
 
-            pct = Util.safediv(curValue, prevValue)
+            pct = util.safediv(curValue, prevValue)
             if pct is None:
                 continue
             pctDelta = pct - 1.
@@ -615,7 +614,7 @@ def getReport(result, db, run, baseurl, was_added, will_commit):
     print >>report, """Total Test Failures: %d""" % (len(allFailures),)
     print >>report
     print >>report, """Total Test Failures By Type:"""
-    for name,items in Util.sorted(allFailuresByKey.items()):
+    for name,items in util.sorted(allFailuresByKey.items()):
         print >>report, """  %s: %d""" % (name, len(set(items)))
 
     print >>report
@@ -626,11 +625,11 @@ def getReport(result, db, run, baseurl, was_added, will_commit):
                        ('Removed Tests', removedTests)):
         print >>report, """%s:""" % (title,)
         print >>report, "".join("%s [%s]\n" % (key, ", ".join(values))
-                                for key,values in Util.sorted(elts.items()))
+                                for key,values in util.sorted(elts.items()))
     print >>report, """Significant Changes in Test Results:"""
     for name,changelist in changes.items():
         print >>report, """%s:""" % name
-        for name,curValue,prevValue,delta in Util.sorted(changelist):
+        for name,curValue,prevValue,delta in util.sorted(changelist):
             print >>report, """ %s: %.2f%% (%.4f => %.4f)""" % (
                 name, delta*100, prevValue, curValue)
 

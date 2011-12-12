@@ -189,8 +189,8 @@ def simple_machine(tag, id):
     run_summary = perfdbsummary.SimpleSuiteRunSummary.get_summary(db, tag)
 
     # Compute the list of associated runs, grouped by order.
-    from lnt.viewer import Util
-    grouped_runs = Util.multidict(
+    from lnt.server.ui import util
+    grouped_runs = util.multidict(
         (run_summary.get_run_order(run_id), run_id)
         for run_id in run_summary.get_runs_on_machine(id))
 
@@ -341,8 +341,8 @@ def simple_run(tag, id):
 
 @db_route("/simple/<tag>/<int:id>/graph")
 def simple_graph(tag, id):
-    from lnt.viewer import GraphUtil
-    from lnt.viewer import Util
+    from lnt.server.ui import graphutil
+    from lnt.server.ui import util
 
     db, run, run_summary, compare_to = get_simple_run_info(tag, id)
 
@@ -391,7 +391,7 @@ def simple_graph(tag, id):
     num_points = 0
     plot_points = []
     plots = ""
-    plots_iter = GraphUtil.get_test_plots(
+    plots_iter = graphutil.get_test_plots(
         db, run.machine, test_ids, run_summary, ts_summary,
         show_mad_error = show_mad, show_stddev = show_stddev,
         show_linear_regression = show_linear_regression, show_points = True)
@@ -411,8 +411,8 @@ def simple_graph(tag, id):
     plot_deltas = []
     for (name,col),points in zip(legend,plot_points):
         points.sort()
-        deltas = [(Util.safediv(p1[1], p0[1]), p0, p1)
-                  for p0,p1 in Util.pairs(points)]
+        deltas = [(util.safediv(p1[1], p0[1]), p0, p1)
+                  for p0,p1 in util.pairs(points)]
         deltas.sort()
         deltas.reverse()
         plot_deltas.append(deltas[:20])
@@ -448,7 +448,7 @@ def simple_graph(tag, id):
 
 @db_route("/simple/<tag>/order_aggregate_report")
 def simple_order_aggregate_report(tag):
-    from lnt.viewer import Util
+    from lnt.server.ui import util
 
     db = request.get_db()
 
@@ -465,7 +465,7 @@ def simple_order_aggregate_report(tag):
 
     # Collect the runs, aggregated by order and machine.
     runs_to_summarize = []
-    runs_by_machine_and_order = Util.multidict()
+    runs_by_machine_and_order = util.multidict()
     available_machine_ids = set()
     for order in orders_to_aggregate:
         for id in run_summary.runs_by_order["%7s" % order]:
@@ -486,7 +486,7 @@ def simple_order_aggregate_report(tag):
             r.id for r in runs_to_summarize))
 
     # Create test subsets, by name.
-    test_subsets = Util.multidict()
+    test_subsets = util.multidict()
     for test_name in test_names:
         if '.' in test_name:
             subset = test_name.rsplit('.', 1)[1]
@@ -510,7 +510,7 @@ def simple_order_aggregate_report(tag):
     all_samples = list(all_samples)
 
     # Aggregate samples for easy lookup.
-    aggregate_samples = Util.multidict()
+    aggregate_samples = util.multidict()
     for run_id, test_id, value in all_samples:
         aggregate_samples[(run_id, test_id)] = value
 

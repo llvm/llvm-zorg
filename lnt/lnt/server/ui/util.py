@@ -198,19 +198,10 @@ class PctCell:
         return '%.*f%%' % (self.precision, self.value*100)
 
     def render(self):
-        import quixote.html
         r,g,b = [clamp(int(v*255), 0, 255)
                  for v in self.getColor()]
         res = '<td bgcolor="#%02x%02x%02x">%s</td>' % (r,g,b, self.getValue())
-        return quixote.html.htmltext(res)
-
-
-def addOtherFormValues(form):
-    import quixote
-    request = quixote.get_request()
-    for name,value in request.form.items():
-        if form.get_widget(name) is None:
-            form.add(quixote.form.HiddenWidget, name, value=value)
+        return res
 
 def sorted(l, *args, **kwargs):
     l = list(l)

@@ -1,5 +1,5 @@
 from lnt.util import stats
-from lnt.viewer import Util
+from lnt.server.ui import util
 from lnt.db.perfdb import Sample
 from lnt.testing import PASS, FAIL, XFAIL
 
@@ -90,7 +90,7 @@ class SimpleRunInfo:
         self.db = db
         self.test_suite_summary = test_suite_summary
 
-        self.sample_map = Util.multidict()
+        self.sample_map = util.multidict()
         self.loaded_samples = set()
 
     def get_test_status_in_run(self, run_id, status_kind, test_name, pset):

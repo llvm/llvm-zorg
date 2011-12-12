@@ -2,8 +2,7 @@
 Helper functions for graphing test results.
 """
 
-import Util
-
+from lnt.server.ui import util
 from lnt.util import stats
 from lnt.external.stats import stats as ext_stats
 
@@ -27,7 +26,7 @@ def get_test_plots(db, machine, test_ids, run_summary, ts_summary,
     for run_id,test_id,value in samples:
         d = samples_by_test_id.get(test_id)
         if d is None:
-            d = samples_by_test_id[test_id] = Util.multidict()
+            d = samples_by_test_id[test_id] = util.multidict()
         run_key = run_summary.get_run_order(run_id)
         if run_key is None:
             continue
@@ -76,7 +75,7 @@ def get_test_plots(db, machine, test_ids, run_summary, ts_summary,
         plot_js = ""
 
         # Determine the base plot color.
-        col = list(Util.makeDarkColor(float(index) / num_plots))
+        col = list(util.makeDarkColor(float(index) / num_plots))
 
         # Add regression line, if requested.
         if show_linear_regression:

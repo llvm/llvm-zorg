@@ -1,4 +1,4 @@
-import Util
+from lnt.server.ui import util
 from lnt.db.perfdb import Run, Sample, Test
 
 kPrefix = 'nightlytest'
@@ -76,7 +76,7 @@ class RunSummary:
     def addRun(self, db, run, testPredicate=None, infoPredicates=None):
         sampleMap = self.runSamples.get(run.id)
         if sampleMap is None:
-            sampleMap = self.runSamples[run.id] = Util.multidict()
+            sampleMap = self.runSamples[run.id] = util.multidict()
 
         q = db.session.query(Sample.value,Test).join(Test)
         q = q.filter(Sample.run == run)

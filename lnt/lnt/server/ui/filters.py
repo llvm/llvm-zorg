@@ -1,5 +1,5 @@
 import datetime
-from lnt.viewer.Util import PctCell
+from lnt.server.ui import util
 
 def filter_asusertime(time):
     # FIXME: Support alternate timezones?
@@ -7,7 +7,7 @@ def filter_asusertime(time):
     return ts.strftime('%Y-%m-%d %H:%M:%S %Z PST')
 
 def filter_aspctcell(value, *args, **kwargs):
-    cell = PctCell(value, *args, **kwargs)
+    cell = util.PctCell(value, *args, **kwargs)
     return cell.render()
 
 def register(app):
