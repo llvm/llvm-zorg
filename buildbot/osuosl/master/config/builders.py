@@ -253,6 +253,7 @@ def _get_clang_builders():
          'slavenames':["as-bldslv11"],
          'builddir':"clang-x86_64-darwin11-self-mingw32",
          'factory' : ClangBuilder.getClangBuildFactory(outOfDir=True, jobs=4, test=False,
+                                                       env = { 'PATH' : "/mingw_build_tools/install_with_gcc/bin:/opt/local/bin:/opt/local/sbin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/usr/X11/bin"},
                                                        extra_configure_args=['--build=x86_64-apple-darwin11',
                                                                              '--host=i686-pc-mingw32',
                                                                              '--target=i686-pc-mingw32'])},
