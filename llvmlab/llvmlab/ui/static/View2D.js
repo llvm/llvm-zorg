@@ -1,1 +1,1 @@
-../../../../lnt/lnt/viewer/js/View2D.js
+../../../../lnt/lnt/server/ui/static/View2D.js
