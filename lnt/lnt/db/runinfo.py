@@ -10,7 +10,8 @@ UNCHANGED_FAIL = 'UNCHANGED_FAIL'
 
 class ComparisonResult:
     def __init__(self, cur_value, prev_value, delta, pct_delta, stddev, MAD,
-                 cur_failed, prev_failed, samples):
+                 cur_failed, prev_failed, samples, stddev_mean = None,
+                 stddev_is_estimated = False):
         self.current = cur_value
         self.previous = prev_value
         self.delta = delta
@@ -20,6 +21,8 @@ class ComparisonResult:
         self.failed = cur_failed
         self.prev_failed = prev_failed
         self.samples = samples
+        self.stddev_mean = stddev_mean
+        self.stddev_is_estimated = stddev_is_estimated
 
     def get_samples(self):
         return self.samples
@@ -65,10 +68,27 @@ class ComparisonResult:
         if ignore_small and abs(self.pct_delta) < .01:
             return UNCHANGED_PASS
 
+        # Always ignore changes with small deltas. There is no mathematical
+        # basis for this, it should be obviated by appropriate statistical
+        # checks, but practical evidence indicates what we currently have isn't
+        # good enough (for reasons I do not yet understand).
+        if ignore_small and abs(self.delta) < .01:
+            return UNCHANGED_PASS
+
         # If we have a comparison window, then measure using a symmetic
         # confidence interval.
         if self.stddev is not None:
-            if abs(self.delta) > self.stddev * confidence_interval:
+            is_significant = abs(self.delta) > (self.stddev *
+                                                confidence_interval)
+
+            # If the stddev is estimated, then it is also only significant if
+            # the delta from the estimate mean is above the confidence interval.
+            if self.stddev_is_estimated:
+                is_significant &= (abs(self.current - self.stddev_mean) >
+                                   self.stddev * confidence_interval)
+
+            # If the delta is significant, return 
+            if is_significant:
                 if self.delta < 0:
                     return IMPROVED
                 else:
@@ -173,9 +193,13 @@ class SimpleRunInfo:
         if run_values and len(run_values) > 1:
             stddev = stats.standard_deviation(run_values)
             MAD = stats.median_absolute_deviation(run_values)
+            stddev_mean = stats.mean(run_values)
+            stddev_is_estimated = False
         else:
             stddev = None
             MAD = None
+            stddev_mean = None
+            stddev_is_estimated = False
 
         # If we are missing current or comparison values we are done.
         if run_value is None or prev_value is None:
@@ -210,10 +234,13 @@ class SimpleRunInfo:
             if prev_values:
                 stddev = stats.standard_deviation(prev_values)
                 MAD = stats.median_absolute_deviation(prev_values)
+                stddev_mean = stats.mean(prev_values)
+                stddev_is_estimated = True
 
         return ComparisonResult(run_value, prev_value, delta,
                                 pct_delta, stddev, MAD,
-                                run_failed, prev_failed, run_values)
+                                run_failed, prev_failed, run_values,
+                                stddev_mean, stddev_is_estimated)
 
     def _load_samples_for_runs(self, runs):
         # Find the set of new runs to load.
