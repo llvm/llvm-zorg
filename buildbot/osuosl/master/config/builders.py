@@ -224,13 +224,6 @@ def _get_clang_builders():
                                                        stage1_config='Release+Asserts',
                                                        stage2_config='Release+Asserts')},
         # Clang cross builders.
-        {'name': "clang-x86_64-darwin10-self-mingw32",
-         'slavenames':["kistanova1"],
-         'builddir':"clang-x86_64-darwin10-self-mingw32",
-         'factory' : ClangBuilder.getClangBuildFactory(outOfDir=True, jobs=4, test=False,
-                                                       extra_configure_args=['--build=x86_64-apple-darwin10',
-                                                                             '--host=i686-pc-mingw32',
-                                                                             '--target=i686-pc-mingw32'])},
         {'name' : "clang-x86_64-darwin10-cross-mingw32",
          'slavenames' :["kistanova1"],
          'builddir' :"clang-x86_64-darwin10-cross-mingw32",
