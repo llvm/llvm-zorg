@@ -9,7 +9,7 @@
 <li><a href="{{ url_for('logout') }}">logout</a></li>
 <li><a href="{{ url_for('machines') }}">machines</a></li>
 <li><a href="{{ url_for('users') }}">users</a></li>
-<li><a href="{{ url_for('dashboard') }}">dashboard</a></li>
+<li><a href="{{ url_for('ci.dashboard') }}">dashboard</a></li>
 {% if session.logged_in %}
 <li><a href="{{ url_for('user', username=session.active_user) }}">my info</a></li>
 <li><a href="{{ url_for('admin') }}">admin</a></li>

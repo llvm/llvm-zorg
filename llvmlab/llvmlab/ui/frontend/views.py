@@ -13,7 +13,7 @@ import llvmlab.machine
 ###
 # Top-level Information
 
-frontend = flask.Module(__name__)
+frontend = flask.Module(__name__, name="frontend")
 
 @frontend.route('/')
 def index():

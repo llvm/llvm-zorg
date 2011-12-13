@@ -7,7 +7,7 @@ from flask import request
 from flask import session
 from flask import url_for
 from flask import current_app
-ci = flask.Module(__name__, url_prefix='/ci')
+ci = flask.Module(__name__, url_prefix='/ci', name='ci')
 
 from llvmlab import util
 
