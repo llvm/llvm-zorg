@@ -301,8 +301,16 @@ def action_report(name, args):
                     opts.optflags, ", ".join(sorted(available_flags))))
         matching_runs = selected
 
+    # Inform the user of the final list of selected runs.
+    note("selection arguments resulted in %d runs" % (len(matching_runs),))
+    for run in matching_runs:
+        note("Run: % 5d, Start Time: %s, Machine: %s:%d" % (
+            run.id, run.start_time.strftime('%Y-%m-%d %H:%M:%S'),
+            run.machine.name, run.machine.number))
+
     # Take only the first matched run, for now. This will be the latest, by the
     # original ordering clause.
+    note("selecting newest run for reporting...")
     matching_runs = [matching_runs[0]]
 
     # Inform the user of the final list of selected runs.
