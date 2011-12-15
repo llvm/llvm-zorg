@@ -8,6 +8,7 @@ import StringIO
 import lnt
 from lnt import testing
 from lnt.db import perfdb
+from lnt.testing.util.commands import note, warning, error, fatal
 
 def action_runserver(name, args):
     """start a new development server"""
@@ -191,7 +192,7 @@ def action_submit(name, args):
     ServerUtil.submitFiles(args[0], args[1:], opts.commit, opts.verbose)
 
 from lnt.db import perfdbsummary, runinfo
-from lnt.db.perfdb import Run, Machine, Sample, Test
+from lnt.db.perfdb import Run, RunInfo, Machine, Sample, Test
 from lnt.util import stats
 
 def print_table(rows):
@@ -215,25 +216,101 @@ def print_table(rows):
 def action_report(name, args):
     """performance reporting tools"""
 
-    parser = OptionParser("%%prog %s [options] <db> <machine>" % name)
+    parser = OptionParser("""\
+%%prog %s [options] <db>""" % name)
     parser.add_option("-v", "--verbose", dest="verbose",
                       help="show verbose test results",
                       action="store_true", default=False)
+    parser.add_option("", "--run-order", dest="run_order",
+                      help="run order to select on",
+                      type=int, default=None)
+    parser.add_option("", "--arch", dest="arch",
+                      help="arch field to select on",
+                      type=str, default=None)
+    parser.add_option("", "--optflags", dest="optflags",
+                      help="optimization flags field to select on",
+                      type=str, default=None)
+    parser.add_option("", "--machine", dest="machine_name",
+                      help="machine name to select on",
+                      type=str, default=None)
 
     (opts, args) = parser.parse_args(args)
-    if len(args) != 2:
+    if len(args) != 1:
         parser.error("incorrect number of argments")
 
-    path,machine = args
+    path, = args
     db = perfdb.PerfDB('sqlite:///%s' % path)
+    tag = 'nts'
 
-    # FIXME: Argument
-    tag = "nts"
+    if opts.run_order is None:
+        parser.error("--run-order is required")
 
-    # FIXME: Optional arguments
-    machines = [machine]
-    run_orders = [23, 107, 121, 124, 125]
-    runs = None
+    # First, find all runs with the desired order.
+    q = db.session.query(Run).\
+        join(RunInfo).\
+        order_by(Run.start_time.desc()).\
+        filter(RunInfo.key == "run_order").\
+        filter(RunInfo.value == "% 7d" % opts.run_order)
+    matching_runs = list(q)
+
+    # Try to help user if nothing was found.
+    if not matching_runs:
+        available_orders = set(
+            db.session.query(RunInfo.value).\
+                filter(RunInfo.key == "run_order"))
+        fatal("no runs found matching --run-order %d, available orders: %s" % (
+                opts.run_order, str(sorted(int(x)
+                                           for x, in available_orders))))
+
+    # Match based on the machine name, if given.
+    if opts.machine_name:
+        selected = [r for r in matching_runs
+                    if r.machine.name == opts.machine_name]
+        if not selected:
+            available_names = set(r.machine.name
+                                  for r in matching_runs)
+            fatal(
+                "no runs found matching --machine %s, available names: [%s]" %(
+                    opts.machine_name, ", ".join(sorted(available_names))))
+        matching_runs = selected
+
+    # Match based on the architecture, if given.
+    if opts.arch:
+        selected = [r for r in matching_runs
+                    if 'ARCH' in r.info
+                    if r.info['ARCH'].value == opts.arch]
+        if not selected:
+            available_archs = set(r.info['ARCH'].value
+                                  for r in matching_runs
+                                  if 'ARCH' in r.info)
+            fatal("no runs found matching --arch %s, available archs: [%s]" % (
+                    opts.arch, ", ".join(sorted(available_archs))))
+        matching_runs = selected
+
+    # Match based on the optflags, if given.
+    if opts.optflags:
+        selected = [r for r in matching_runs
+                    if 'OPTFLAGS' in r.info
+                    if r.info['OPTFLAGS'].value == opts.optflags]
+        if not selected:
+            available_flags = set(r.info['OPTFLAGS'].value
+                                  for r in matching_runs
+                                  if 'OPTFLAGS' in r.info)
+            fatal(
+                "no runs found matching --optflags %s, available flags: [%s]" %(
+                    opts.optflags, ", ".join(sorted(available_flags))))
+        matching_runs = selected
+
+    # Take only the first matched run, for now. This will be the latest, by the
+    # original ordering clause.
+    matching_runs = [matching_runs[0]]
+
+    # Inform the user of the final list of selected runs.
+    note("reporting over %d total runs" % (len(matching_runs),))
+    for run in matching_runs:
+        note("Run: % 5d, Start Time: %s, Machine: %s:%d" % (
+            run.id, run.start_time.strftime('%Y-%m-%d %H:%M:%S'),
+            run.machine.name, run.machine.number))
 
     # Get the run summary which has run ordering information.
     run_summary = perfdbsummary.SimpleSuiteRunSummary.get_summary(db, tag)
@@ -241,109 +318,43 @@ def action_report(name, args):
     # Load the test suite summary.
     ts_summary = perfdbsummary.get_simple_suite_summary(db, tag)
 
-    # First, collect the runs we are going to aggregate over, eagerly limiting
-    # by machine name.
-    q = db.session.query(Run)
-    if machines:
-        q = q.join(Machine)
-        q = q.filter(Machine.name.in_(machines))
-    runs = list(q)
-
     # Gather the names of all tests across these runs, for more normalized
     # reporting.
-    test_names = ts_summary.get_test_names_in_runs(db, [r.id for r in runs])
-    test_components = list(set(t.rsplit('.',1)[1] for t in test_names))
-    test_base_names = list(set(t.rsplit('.',1)[0] for t in test_names))
-    test_components.sort()
-    test_base_names.sort()
-    test_names = set(test_names)
-
-    # Limit by run orders.
-    runs_by_order = {}
-    for r in runs:
-        run_order = int(r.info["run_order"].value)
-        runs_by_order[run_order] = runs_by_order.get(run_order,[]) + [r]
+    test_names = ts_summary.get_test_names_in_runs(
+        db, [r.id for r in matching_runs])
+    test_components = sorted(set(t.rsplit('.',1)[1] for t in test_names))
+    test_base_names = sorted(set(t.rsplit('.',1)[0] for t in test_names))
 
     # Load all the data.
     items = {}
     for test_component in test_components:
-        for order in run_orders:
-            order_runs = runs_by_order.get(order)
-            for name,value in get_test_passes(db, run_summary, ts_summary,
-                                              test_component, test_base_names,
-                                              order_runs):
-                items[(test_component, order, name)] = value
+        for name,value in get_test_passes(db, run_summary, ts_summary,
+                                          test_component, test_base_names,
+                                          matching_runs):
+            items[(test_component, name)] = value
 
-    # Go through and compute global information.
-    machine_name = machine.rsplit("-",1)[1]
-    if '.' not in machine_name:
-        print "%s -O3" % machine_name
-    else:
-        print machine_name.replace(".", " -")
-    print "\t".join(["Run Order"] + map(str, run_orders))
-    print
-    for test_component in test_components:
-        normalized_values = []
-        for test_base_name in test_base_names:
-            # Ignore tests which never were given.
-            test_name = "%s.%s" % (test_base_name, test_component)
-            if test_name not in test_names:
-                continue
-
-            values = [items.get((test_component, order, test_base_name))
-                      for order in run_orders]
-            ok_values = [i for i in values
-                         if i is not None]
-            if ok_values:
-                baseline = max(ok_values[0], 0.0001)
-            else:
-                baseline = None
-
-            normalized = []
-            for value in values:
-                if value is None:
-                    normalized.append(None)
-                else:
-                    normalized.append(value / baseline)
-            normalized_values.append((test_base_name, normalized, baseline))
-
-        # Print summary table.
-        print "%s%s Time" % (test_component[0].upper(), test_component[1:])
-        table = [("Pct. Pass",
-                  "Mean", "Std. Dev.",
-                  "Median", "MAD",
-                  "Min", "Max",
-                  "N (Total)", "N (Perf)")]
-        for i,r in enumerate(run_orders):
-            num_tests = len(normalized_values)
-            num_pass = len([True for nv in normalized_values
-                            if nv[1][i] is not None])
-            pct_pass = num_pass / float(num_tests)
-
-            # Get non-fail normalized values above a reasonable baseline.
-            values = [nv[1][i] for nv in normalized_values
-                      if nv[1][i] is not None
-                      if nv[2] >= 1.0]
-            if not values:
-                table.append((pct_pass,
-                              "", "", "", "",
-                              "", "",
-                              num_tests, 0))
-                continue
-
-            min_value = min(values)
-            max_value = max(values)
-            mean = stats.mean(values)
-            median = stats.median(values)
-            mad = stats.median_absolute_deviation(values)
-            sigma = stats.standard_deviation(values)
-            table.append((pct_pass,
-                          mean, sigma, median, mad,
-                          min_value, max_value,
-                          num_tests, len(values)))
-
-        print_table(zip(*table))
-        print
+    # Dump the results.
+    print "%s\t%s\t%s\t%s\t%s\t%s\t%s" % (
+        "Test", "Mean Compile Time", "Mean Execution Time",
+        "Std.Dev. Compile Time", "Std.Dev. Execution Time",
+        "Num. Compile Time Samples", "Num. Execution Time Samples")
+    for name in test_base_names:
+        compile_results = items.get(('compile', name), [])
+        exec_results = items.get(('exec', name), [])
+        if compile_results:
+            compile_value = "%.4f" % stats.mean(compile_results)
+            compile_stddev = "%.4f" % stats.standard_deviation(compile_results)
+        else:
+            compile_value = compile_stddev = ""
+        if exec_results:
+            exec_value = "%.4f" % stats.mean(exec_results)
+            exec_stddev = "%.4f" % stats.standard_deviation(exec_results)
+        else:
+            exec_value = exec_stddev = ""
+        print "%s\t%s\t%s\t%s\t%s\t%d\t%d" % (
+            name, compile_value, exec_value,
+            compile_stddev, exec_stddev,
+            len(compile_results), len(exec_results))
 
 def get_test_passes(db, run_summary, ts_summary,
                     test_component, test_base_names, runs):
@@ -383,8 +394,7 @@ def get_test_passes(db, run_summary, ts_summary,
         if status_kind == testing.FAIL:
             continue
 
-        value = min(run_values)
-        yield (test_base_name, value)
+        yield (test_base_name, run_values)
 
 
 ###
