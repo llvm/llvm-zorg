@@ -1,8 +1,11 @@
+# This test just checks that we can construct and manipulate the test suite
+# model itself. The heavy lifting of constructing a test suite's databases,
+# etc. is checked in CreateV4TestSuiteInstance.
+#
 # RUN: rm -f %t.db
 # RUN: python %s %t.db
 
 import sys
-from lnt.db.perfdb import PerfDB, Run
 from lnt.server.db import testsuite
 from lnt.server.db import v4db
 

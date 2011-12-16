@@ -7,8 +7,7 @@ import sqlalchemy.ext.declarative
 import sqlalchemy.orm
 from sqlalchemy import *
 from sqlalchemy.schema import Index
-from sqlalchemy.orm import relation, backref
-from sqlalchemy.orm.collections import attribute_mapped_collection
+from sqlalchemy.orm import relation
 
 Base = sqlalchemy.ext.declarative.declarative_base()
 class StatusKind(Base):
