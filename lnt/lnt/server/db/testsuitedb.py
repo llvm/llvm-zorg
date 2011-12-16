@@ -98,17 +98,15 @@ class TestSuiteDB(object):
             id = Column("ID", Integer, primary_key=True)
             run_id = Column("RunID", Integer, ForeignKey(Run.id))
             test_id = Column("TestID", Integer, ForeignKey(Test.id))
-            value = Column("Value", Float)
-            status_id = Column("StatusID", Integer, ForeignKey(
-                    testsuite.StatusKind.id))
 
             run = sqlalchemy.orm.relation(Run)
             test = sqlalchemy.orm.relation(Test)
 
-            def __init__(self, run, test, value):
+            # ... FIXME: Add test suite sample keys ...
+
+            def __init__(self, run, test):
                 self.run = run
                 self.test = test
-                self.value = value
 
             def __repr__(self):
                 return '%s_%s%r' % (db_key_name, self.__class__.__name__,

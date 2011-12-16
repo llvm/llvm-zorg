@@ -121,24 +121,35 @@ tests to represent the status aspect of other tests. This is nice and flexible,
 but makes the UI code very painful. Especially, some things like making a graph
 of the test values for all tests which passed become incredibly complex.
 
-It is obvious that we need to move the "test status" indication into the sample
-field. However, this raises the question of what *else* should move into the
-status field. Is there a more general problem here?
+The plan is to handle this problem by also constructing the Sample tables on the
+fly, and allowing the test suite to define the keys that go into a sample. Thus,
+any one sample will reflect *all* of the statistics that were reported for that
+test.
 
-Also, just moving the test status in introduces other modeling problem, for
-example what about tests for which there is no meaningful notion of status? For
-example, an aggregate test that may produce a large number of results on
-success. Does it make sense to think about all those tests as succeeding? It
-seems ok, but not quite accurate.
+This has many advantages:
+ * We can start using types for the columns (e.g., easy to start reporting hash
+   of produced binaries, for example).
+ * The performance impact of adding new sample values should be much lower than
+   in the old schema.
+ * The database explicitly models the fact that sample values were produced from
+   a single run, whereas before sample values and status could not technically
+   be correlated correctly.
+ * We eliminate the need to mangle subtest/test result key information into the
+   test name, which is a big win.
 
-The only other option I can think of at the moment would be to allow multiple
-kinds of samples. This might be worth considering, because it also solves other
-problems like associating types with samples (instead of just requiring every
-sample to be a float).
+The has some disadvantages, however:
+ * Poorly models suites where different tests reported different test results.
+ * Poorly models situations where we want to support a large number of test
+   results and that set might change frequently or dynamically (e.g., suppose we
+   reported one test for each LLVM Statistic counter).
 
-In particular, one thing I would very much like would be to be able to report
-the hash of the generated exutable along whenever we compile something (and
-eventually dispatch them to an archival server).
+However, at least for our current usage this scheme should work well enough and
+be **substantially** faster than the old scheme.
+
+This will probably mean that we have to do a bit of work (similar to what we had
+to do for parameter sets) to handle what the UI for this should look
+like. However, we should have better infrastructure for defining how the UI
+should handle things in the metadata.
 
 Other Antipatterns In Use
 +++++++++++++++++++++++++
@@ -186,6 +197,13 @@ StatusKind
  - ID
  - Name
 
+SampleType
+ - ID
+ - Name
+
+   Initially, we will only have Real and Status. Integer and Hash are obvious
+   extensions.
+
 TestSuite
  - ID
  - Name
@@ -201,7 +219,7 @@ TestSuite
 TestSuiteMachineKeys
  - ID INTEGER PRIMARY KEY
  - TestSuite FOREIGN KEY TestSuite(ID)
- - Name VARCHAR(512)
+ - Name VARCHAR(256)
  - Type?
  - Default?
  - InfoKey
@@ -212,7 +230,7 @@ TestSuiteMachineKeys
 TestSuiteOrderKeys
  - ID INTEGER PRIMARY KEY
  - TestSuite FOREIGN KEY TestSuite(ID)
- - Name VARCHAR(512)
+ - Name VARCHAR(256)
  - Index INTEGER
 
    The ordinal index this order key should appear in.
@@ -223,8 +241,19 @@ TestSuiteOrderKeys
 TestSuiteRunKeys
  - ID INTEGER PRIMARY KEY
  - TestSuite FOREIGN KEY TestSuite(ID)
- - Name VARCHAR(512)
+ - Name VARCHAR(256)
  - Type?
+ - Default?
+ - InfoKey
+
+   This is used for migration purposes (possibly permanent), it is the key name
+   to expect this field to be present as in a submitted info dictionary.
+
+TestSuiteSampleKeys
+ - ID INTEGER PRIMARY KEY
+ - TestSuite FOREIGN KEY TestSuite(ID)
+ - Name VARCHAR(256)
+ - Type FOREIGN KEY SampleType(ID)
  - Default?
  - InfoKey
 
@@ -293,8 +322,7 @@ Per Test Suite
  - ID INTEGER PRIMARY KEY
  - Run FOREIGN Key <TS>_Run(ID)
  - Test FOREIGN KEY <TS>_Test(ID)
- - Value REAL
- - Status FOREIGN KEY StatusKind(ID)
+ - ... keys here are defined by TestSuite(SampleKeys) relation ...
  - Indices::
 
      CREATE INDEX [<TS>_Samples_RunID_IDX] ON <TS>_Sample(RunID);
@@ -347,34 +375,15 @@ few places that will require special care.
    This is the one area where I really don't want to change the test data
    serialization format, so maybe this is even the right long term approach.
 
+   In the new model of collapsing samples into a single row, this is going to
+   mean that we will need to assume that tests mangled into subtest names are
+   specified in the same order.
+
 Unaddressed Issues
 ~~~~~~~~~~~~~~~~~~
 
 There are couple design problems in the current system which I *am not*
 intending to address as part of the v0.4 changes.
-
-Test / Subtest Relationships
-++++++++++++++++++++++++++++
-
-We currently impose a certain amount of structure on the tests and mangle it
-into the name (e.g., as "<test_name>.compile" or "<test_name>.exec", not to
-mention the status indicators). The status indicators are going to go away in
-the redesign, but we will still have the distinction between ".compile" and
-".exec".
-
-This works ok up to the point where we want to do things in the UI based on the
-test structure (for example, separate out compile time results from execution
-results). At the moment we have gross code in the UI which just happens to
-"know" these manglings, but it would be much better to have this be explicit in
-the schema.
-
-While I don't have a plan to solve this in the current iteration, I can imagine
-one way to solve this is to allow the test suite to define additional metadata
-that is present in the Test table. We would allow that metadata to specify how
-tests should be displayed, their units, etc.
-
-This could be more important problem going forward if we wanted to start
-reporting large numbers of additional statistics (like number of spills, etc.).
 
 Machine Naming
 ++++++++++++++
