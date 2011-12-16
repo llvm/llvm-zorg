@@ -198,11 +198,38 @@ TestSuite
    The version of the schema used for the per-test suite databases (probably
    encoded as LNT version).
 
- - MachineKeys {Name,Type?,Default?}
+TestSuiteMachineKeys
+ - ID INTEGER PRIMARY KEY
+ - TestSuite FOREIGN KEY TestSuite(ID)
+ - Name VARCHAR(512)
+ - Type?
+ - Default?
+ - InfoKey
 
- - OrderKeys {Name,Type?,Default?}
+   This is used for migration purposes (possibly permanent), it is the key name
+   to expect this field to be present as in a submitted info dictionary.
 
- - RunKeys {Name,Type?,Default?}
+TestSuiteOrderKeys
+ - ID INTEGER PRIMARY KEY
+ - TestSuite FOREIGN KEY TestSuite(ID)
+ - Name VARCHAR(512)
+ - Index INTEGER
+
+   The ordinal index this order key should appear in.
+
+ - Type?
+ - Default?
+
+TestSuiteRunKeys
+ - ID INTEGER PRIMARY KEY
+ - TestSuite FOREIGN KEY TestSuite(ID)
+ - Name VARCHAR(512)
+ - Type?
+ - Default?
+ - InfoKey
+
+   This is used for migration purposes (possibly permanent), it is the key name
+   to expect this field to be present as in a submitted info dictionary.
 
 Per Test Suite
 ++++++++++++++
@@ -313,3 +340,39 @@ few places that will require special care.
 
    This is the one area where I really don't want to change the test data
    serialization format, so maybe this is even the right long term approach.
+
+Unaddressed Issues
+~~~~~~~~~~~~~~~~~~
+
+There are couple design problems in the current system which I *am not*
+intending to address as part of the v0.4 changes.
+
+Test / Subtest Relationships
+++++++++++++++++++++++++++++
+
+We currently impose a certain amount of structure on the tests and mangle it
+into the name (e.g., as "<test_name>.compile" or "<test_name>.exec", not to
+mention the status indicators). The status indicators are going to go away in
+the redesign, but we will still have the distinction between ".compile" and
+".exec".
+
+This works ok up to the point where we want to do things in the UI based on the
+test structure (for example, separate out compile time results from execution
+results). At the moment we have gross code in the UI which just happens to
+"know" these manglings, but it would be much better to have this be explicit in
+the schema.
+
+While I don't have a plan to solve this in the current iteration, I can imagine
+one way to solve this is to allow the test suite to define additional metadata
+that is present in the Test table. We would allow that metadata to specify how
+tests should be displayed, their units, etc.
+
+This could be more important problem going forward if we wanted to start
+reporting large numbers of additional statistics (like number of spills, etc.).
+
+Machine Naming
+++++++++++++++
+
+LNT currently allows a "name" for machines, which is very arbitrary. It would be
+nice to eliminate this field completely, but we should probably eliminate the
+name from the UI completely first, and make sure that is workable.
