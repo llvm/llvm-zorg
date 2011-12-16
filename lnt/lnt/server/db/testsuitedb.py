@@ -57,6 +57,7 @@ class TestSuiteDB(object):
             id = Column("ID", Integer, primary_key=True)
             machine_id = Column("MachineID", Integer, ForeignKey(Machine.id))
             order_id = Column("OrderID", Integer, ForeignKey(Order.id))
+            imported_from = Column("ImportedFrom", String(512))
             start_time = Column("StartTime", DateTime)
             end_time = Column("EndTime", DateTime)
             parameters = Column("Parameters", Binary)
@@ -71,6 +72,7 @@ class TestSuiteDB(object):
                 self.order = order
                 self.start_time = start_time
                 self.end_time = end_time
+                self.imported_from = None
 
             def __repr__(self):
                 return '%s_%s%r' % (db_key_name, self.__class__.__name__,

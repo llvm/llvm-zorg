@@ -252,13 +252,19 @@ Per Test Suite
 <TS>_Run
  - ID INTEGER PRIMARY KEY
  - Machine FOREIGN KEY <TS>_Machine(ID)
- - StartTime DATETIME
- - EndTime DATETIME
  - Order FOREIGN KEY <TS>_Order(ID)
 
    This is the order of the tested products. The schema doesn't explicitly
    record any information about what the actual products under test are, though,
    so we just refer to this as the "order" of the run.
+ - ImportedFrom VARCHAR(512)
+
+   Field used to store the filesystem path of the interchange file used to
+   import the run into the database. Mostly used for paranoid future proofing to
+   allow more sophisticated rebuild tools.
+
+ - StartTime DATETIME
+ - EndTime DATETIME
 
  - ... additional keys here are defined by TestSuite(RunKeys) relation ...
 
