@@ -69,10 +69,9 @@ mode). Currently, the tests require:
 
  1. 'lit', the LLVM test runner, is available.
 
- 2. The hosted application is live at http://localhost/perf/.
-
- 3. lnt/tests/lit.cfg should be modified to have the correct '%email_host' and
-    '%email_to' substitutions.
+ 2. If inside a virtualenv, the virtualenv will need to be activated because the
+ tests want to run Python directly. This should be fixed to substitute in the
+ Python that was used to run lit, so the venv doesn't have to be active.
 
 To run the tests, use, e.g.,
 
@@ -88,8 +87,6 @@ to run the zorg and LNT tests all at once. You can use
 
 if you prefer 'unittest' style output (this still requires that 'lit' be
 installed).
-
-Note that currently the email test will actually send you email.
 
 
 Architecture
