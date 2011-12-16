@@ -3,7 +3,8 @@ import os
 
 from setuptools import setup, find_packages
 
-# setuptools expects to be invoked from within the directory of setup.py, but it is nice to allow:
+# setuptools expects to be invoked from within the directory of setup.py, but it
+# is nice to allow:
 #   python path/to/setup.py install
 # to work (for scripts, etc.)
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
@@ -24,7 +25,8 @@ setup(
         'Development Status :: 4 - Beta',
         'Environment :: Web Environment',
         'Intended Audience :: Developers',
-        'License :: OSI Approved :: University of Illinois/NCSA Open Source License',
+        ('License :: OSI Approved :: '
+         'University of Illinois/NCSA Open Source License'),
         'Natural Language :: English',
         'Operating System :: OS Independent',
         'Progamming Language :: Python',
@@ -35,18 +37,7 @@ setup(
     zip_safe = False,
 
     # Additional resource extensions we use.
-    #
-    # FIXME: Remove the .ptl entry once we move to Jinja. Note that the files
-    # most likely won't get byte compiled because of how permissions will be
-    # set, unless WSGI app has permissions to write to the install directory. I
-    # can't find a way to force setuptools to treat these as Python modules.
-    package_data = {'lnt.viewer': ['*.ptl',
-                                   'zview/*.ptl',
-                                   'js/*.js',
-                                   'resources/*.css',
-                                   'resources/*.js'],
-
-                    'lnt.server.ui': ['static/*.ico',
+    package_data = {'lnt.server.ui': ['static/*.ico',
                                       'static/*.js',
                                       'static/*.css',
                                       'templates/*.html'],
@@ -63,5 +54,5 @@ setup(
             'lnt = lnt.lnttool:main',
             ],
         },
-    install_requires=['Quixote==2.7b2', 'SQLAlchemy', 'Flask'],
+    install_requires=['SQLAlchemy', 'Flask'],
 )

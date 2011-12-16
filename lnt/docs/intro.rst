@@ -95,9 +95,9 @@ Note that currently the email test will actually send you email.
 Architecture
 ------------
 
-The LNT web app is currently implemented as a WSGI web app on top of Quixote,
-along with some facilities from Werkzeug. My tentative plan is to move to Jinja
-for templating, and to move to a more AJAXy web interface.
+The LNT web app is currently implemented as a Flask WSGI web app, with Jinja2
+for the templating engine. My hope is to eventually move to a more AJAXy web
+interface.
 
 The database layer uses SQLAlchemy for its ORM, and is typically backed by
 SQLite, although I have tested on MySQL on the past, and supporting other
