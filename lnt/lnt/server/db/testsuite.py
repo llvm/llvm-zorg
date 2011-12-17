@@ -14,8 +14,8 @@ class SampleType(Base):
     __tablename__ = 'SampleType'
 
     id = Column("ID", Integer, primary_key=True)
-    name = Column("Name", String(256))
     
+    name = Column("Name", String(256), unique=True)
     def __init__(self, name):
         self.name = name
 
@@ -26,7 +26,7 @@ class StatusKind(Base):
     __tablename__ = 'StatusKind'
 
     id = Column("ID", Integer, primary_key=True)
-    name = Column("Name", String(256))
+    name = Column("Name", String(256), unique=True)
     
     def __init__(self, name):
         self.name = name
@@ -38,7 +38,7 @@ class TestSuite(Base):
     __tablename__ = 'TestSuite'
 
     id = Column("ID", Integer, primary_key=True)
-    name = Column("Name", String(256))
+    name = Column("Name", String(256), unique=True)
     db_key_name = Column("DBKeyName", String(256))
     version = Column("Version", Integer)
 
@@ -60,7 +60,8 @@ class MachineField(Base):
     __tablename__ = 'TestSuiteMachineFields'
 
     id = Column("ID", Integer, primary_key=True)
-    test_suite_id = Column("TestSuiteID", Integer, ForeignKey('TestSuite.ID'))
+    test_suite_id = Column("TestSuiteID", Integer, ForeignKey('TestSuite.ID'),
+                           index=True)
     name = Column("Name", String(256))
     info_key = Column("InfoKey", String(256))
 
@@ -75,7 +76,8 @@ class OrderField(Base):
     __tablename__ = 'TestSuiteOrderFields'
 
     id = Column("ID", Integer, primary_key=True)
-    test_suite_id = Column("TestSuiteID", Integer, ForeignKey('TestSuite.ID'))
+    test_suite_id = Column("TestSuiteID", Integer, ForeignKey('TestSuite.ID'),
+                           index=True)
     name = Column("Name", String(256))
     info_key = Column("InfoKey", String(256))
     ordinal = Column("Ordinal", Integer)
@@ -95,7 +97,8 @@ class RunField(Base):
     __tablename__ = 'TestSuiteRunFields'
 
     id = Column("ID", Integer, primary_key=True)
-    test_suite_id = Column("TestSuiteID", Integer, ForeignKey('TestSuite.ID'))
+    test_suite_id = Column("TestSuiteID", Integer, ForeignKey('TestSuite.ID'),
+                           index=True)
     name = Column("Name", String(256))
     info_key = Column("InfoKey", String(256))
 
@@ -110,7 +113,8 @@ class SampleField(Base):
     __tablename__ = 'TestSuiteSampleFields'
 
     id = Column("ID", Integer, primary_key=True)
-    test_suite_id = Column("TestSuiteID", Integer, ForeignKey('TestSuite.ID'))
+    test_suite_id = Column("TestSuiteID", Integer, ForeignKey('TestSuite.ID'),
+                           index=True)
     name = Column("Name", String(256))
     type_id = Column("Type", Integer, ForeignKey('SampleType.ID'))
     info_key = Column("InfoKey", String(256))

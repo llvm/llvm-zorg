@@ -23,7 +23,7 @@ class TestSuiteDB(object):
             __tablename__ = db_key_name + '_Machine'
 
             id = Column("ID", Integer, primary_key=True)
-            name = Column("Name", String(256))
+            name = Column("Name", String(256), index=True)
             number = Column("Number", Integer)
             parameters = Column("Parameters", Binary)
 
@@ -52,6 +52,9 @@ class TestSuiteDB(object):
 
             # Dynamically create fields for all of the test suite defined order
             # fields.
+            #
+            # FIXME: We are probably going to want to index on some of these,
+            # but need a bit for that in the test suite definition.
             class_dict = locals()
             for item in test_suite.order_fields:
                 if item.name in class_dict:
@@ -71,8 +74,10 @@ class TestSuiteDB(object):
             __tablename__ = db_key_name + '_Run'
 
             id = Column("ID", Integer, primary_key=True)
-            machine_id = Column("MachineID", Integer, ForeignKey(Machine.id))
-            order_id = Column("OrderID", Integer, ForeignKey(Order.id))
+            machine_id = Column("MachineID", Integer, ForeignKey(Machine.id),
+                                index=True)
+            order_id = Column("OrderID", Integer, ForeignKey(Order.id),
+                              index=True)
             imported_from = Column("ImportedFrom", String(512))
             start_time = Column("StartTime", DateTime)
             end_time = Column("EndTime", DateTime)
@@ -83,6 +88,9 @@ class TestSuiteDB(object):
 
             # Dynamically create fields for all of the test suite defined run
             # fields.
+            #
+            # FIXME: We are probably going to want to index on some of these,
+            # but need a bit for that in the test suite definition.
             class_dict = locals()
             for item in test_suite.run_fields:
                 if item.name in class_dict:
@@ -107,7 +115,7 @@ class TestSuiteDB(object):
             __tablename__ = db_key_name + '_Test'
 
             id = Column("ID", Integer, primary_key=True)
-            name = Column("Name", String(256))
+            name = Column("Name", String(256), unique=True, index=True)
 
             def __init__(self, name):
                 self.name = name
@@ -120,8 +128,8 @@ class TestSuiteDB(object):
             __tablename__ = db_key_name + '_Sample'
 
             id = Column("ID", Integer, primary_key=True)
-            run_id = Column("RunID", Integer, ForeignKey(Run.id))
-            test_id = Column("TestID", Integer, ForeignKey(Test.id))
+            run_id = Column("RunID", Integer, ForeignKey(Run.id), index=True)
+            test_id = Column("TestID", Integer, ForeignKey(Test.id), index=True)
 
             run = sqlalchemy.orm.relation(Run)
             test = sqlalchemy.orm.relation(Test)
@@ -158,6 +166,10 @@ class TestSuiteDB(object):
         self.Test = Test
         self.Sample = Sample
         self.Order = Order
+
+        # Create the compound index we cannot declare inline.
+        sqlalchemy.schema.Index("ix_Sample_RunID_TestID",
+                                Sample.run_id, Sample.test_id)
 
         # Create the test suite database tables in case this is a new database.
         self.base.metadata.create_all(self.v4db.engine)
