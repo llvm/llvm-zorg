@@ -25,6 +25,10 @@ class TestSuiteDB(object):
             id = Column("ID", Integer, primary_key=True)
             name = Column("Name", String(256), index=True)
             number = Column("Number", Integer)
+
+            # The parameters blob is used to store any additional information
+            # reported by the run but not promoted into the machine record. Such
+            # data is stored as a JSON encoded blob.
             parameters = Column("Parameters", Binary)
 
             # Dynamically create fields for all of the test suite defined
@@ -81,6 +85,10 @@ class TestSuiteDB(object):
             imported_from = Column("ImportedFrom", String(512))
             start_time = Column("StartTime", DateTime)
             end_time = Column("EndTime", DateTime)
+
+            # The parameters blob is used to store any additional information
+            # reported by the run but not promoted into the machine record. Such
+            # data is stored as a JSON encoded blob.
             parameters = Column("Parameters", Binary)
 
             machine = sqlalchemy.orm.relation(Machine)

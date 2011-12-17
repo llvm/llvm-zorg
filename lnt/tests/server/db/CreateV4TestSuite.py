@@ -13,7 +13,7 @@ from lnt.server.db import v4db
 db = v4db.V4DB("sqlite:///:memory:", echo=True)
 
 # Create a new TestSuite.
-ts = testsuite.TestSuite("nt", "NT", 0)
+ts = testsuite.TestSuite("nt", "NT")
 db.add(ts)
 
 db.commit()
