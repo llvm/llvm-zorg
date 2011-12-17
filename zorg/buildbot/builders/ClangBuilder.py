@@ -457,7 +457,8 @@ def addClangGDBTests(f, ignores={}, install_prefix="%(builddir)s/llvm.install"):
             command=["make", "-k", "check"] + make_vars,
             description="gdb-1472-testsuite",
             workdir='clang-tests/gdb-1472-testsuite',
-            logfiles={ 'dg.sum' : 'obj/gdb.sum' },
+            logfiles={ 'dg.sum' : 'obj/gdb.sum',
+                       'gdb.log' : 'obj/gdb.log' },
             ignore=gdb_dg_ignores))
 
 # FIXME: Deprecated.
