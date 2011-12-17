@@ -19,6 +19,9 @@ class SampleType(Base):
     def __init__(self, name):
         self.name = name
 
+    def __repr__(self):
+        return '%s%r' % (self.__class__.__name__, (self.name,))
+
 class StatusKind(Base):
     __tablename__ = 'StatusKind'
 
@@ -27,6 +30,9 @@ class StatusKind(Base):
     
     def __init__(self, name):
         self.name = name
+
+    def __repr__(self):
+        return '%s%r' % (self.__class__.__name__, (self.name,))
 
 class TestSuite(Base):
     __tablename__ = 'TestSuite'
@@ -62,6 +68,9 @@ class MachineField(Base):
         self.name = name
         self.info_key = info_key
 
+    def __repr__(self):
+        return '%s%r' % (self.__class__.__name__, (self.name, self.info_key))
+
 class OrderField(Base):
     __tablename__ = 'TestSuiteOrderFields'
 
@@ -78,6 +87,10 @@ class OrderField(Base):
         self.info_key = info_key
         self.ordinal = ordinal
 
+    def __repr__(self):
+        return '%s%r' % (self.__class__.__name__, (self.name, self.info_key,
+                                                   self.ordinal))
+
 class RunField(Base):
     __tablename__ = 'TestSuiteRunFields'
 
@@ -90,15 +103,25 @@ class RunField(Base):
         self.name = name
         self.info_key = info_key
 
+    def __repr__(self):
+        return '%s%r' % (self.__class__.__name__, (self.name, self.info_key))
+
 class SampleField(Base):
     __tablename__ = 'TestSuiteSampleFields'
 
     id = Column("ID", Integer, primary_key=True)
     test_suite_id = Column("TestSuiteID", Integer, ForeignKey('TestSuite.ID'))
     name = Column("Name", String(256))
-    type = Column("Type", Integer, ForeignKey('SampleType.ID'))
+    type_id = Column("Type", Integer, ForeignKey('SampleType.ID'))
     info_key = Column("InfoKey", String(256))
 
-    def __init__(self, name, info_key):
+    type = relation(SampleType)
+
+    def __init__(self, name, type, info_key):
         self.name = name
+        self.type = type
         self.info_key = info_key
+
+    def __repr__(self):
+        return '%s%r' % (self.__class__.__name__, (self.name, self.type,
+                                                   self.info_key))

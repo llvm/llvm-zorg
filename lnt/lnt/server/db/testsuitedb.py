@@ -27,7 +27,15 @@ class TestSuiteDB(object):
             number = Column("Number", Integer)
             parameters = Column("Parameters", Binary)
 
-            # ... FIXME: Add test suite machine keys ...
+            # Dynamically create fields for all of the test suite defined
+            # machine fields.
+            class_dict = locals()
+            for item in test_suite.machine_fields:
+                if item.name in class_dict:
+                    raise ValueError,"test suite defines reserved key %r" % (
+                        name,)
+
+                class_dict[item.name] = Column(item.name, String(256))
 
             def __init__(self, name, number):
                 self.name = name
@@ -42,7 +50,15 @@ class TestSuiteDB(object):
 
             id = Column("ID", Integer, primary_key=True)
 
-            # ... FIXME: Add test suite order keys ...
+            # Dynamically create fields for all of the test suite defined order
+            # fields.
+            class_dict = locals()
+            for item in test_suite.order_fields:
+                if item.name in class_dict:
+                    raise ValueError,"test suite defines reserved key %r" % (
+                        name,)
+
+                class_dict[item.name] = Column(item.name, String(256))
 
             def __init__(self):
                 pass
@@ -65,7 +81,15 @@ class TestSuiteDB(object):
             machine = sqlalchemy.orm.relation(Machine)
             order = sqlalchemy.orm.relation(Order)
 
-            # ... FIXME: Add test suite run keys ...
+            # Dynamically create fields for all of the test suite defined run
+            # fields.
+            class_dict = locals()
+            for item in test_suite.run_fields:
+                if item.name in class_dict:
+                    raise ValueError,"test suite defines reserved key %r" % (
+                        name,)
+
+                class_dict[item.name] = Column(item.name, String(256))
 
             def __init__(self, machine, order, start_time, end_time):
                 self.machine = machine
@@ -102,7 +126,24 @@ class TestSuiteDB(object):
             run = sqlalchemy.orm.relation(Run)
             test = sqlalchemy.orm.relation(Test)
 
-            # ... FIXME: Add test suite sample keys ...
+            # Dynamically create fields for all of the test suite defined sample
+            # fields.
+            class_dict = locals()
+            for item in test_suite.sample_fields:
+                if item.name in class_dict:
+                    raise ValueError,"test suite defines reserved key %r" % (
+                        name,)
+
+                if item.type.name == 'Real':
+                    class_dict[item.name] = Column(item.name, Float)
+                elif item.type.name == 'Status':
+                    class_dict[item.name] = Column(item.name, Integer,
+                                                    ForeignKey(
+                            testsuite.StatusKind.id))
+                else:
+                    raise ValueError,(
+                        "test suite defines unknown sample type %r" (
+                            item.type.name,))
 
             def __init__(self, run, test):
                 self.run = run

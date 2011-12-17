@@ -13,6 +13,20 @@ db = v4db.V4DB("sqlite:///:memory:", echo=True)
 
 # Create a new TestSuite.
 ts = testsuite.TestSuite("nt", "NT", 0)
+
+# Define the default sample types.
+real_sample_type = testsuite.SampleType("Real")
+status_sample_type = testsuite.SampleType("Status")
+
+# Add reasonable definitions for the machine, run, order, and sample fields.
+ts.machine_fields.append(testsuite.MachineField("uname", "uname"))
+ts.order_fields.append(testsuite.OrderField("llvm_revision", "llvm_revision",
+                                            1))
+ts.run_fields.append(testsuite.RunField("arch", "ARCH"))
+ts.sample_fields.append(testsuite.SampleField("value", real_sample_type,
+                                              ".value"))
+ts.sample_fields.append(testsuite.SampleField("status", status_sample_type,
+                                              ".value.status"))
 db.add(ts)
 
 db.commit()
@@ -28,10 +42,14 @@ start_time = datetime.datetime.utcnow()
 end_time = datetime.datetime.utcnow()
 
 machine = ts_db.Machine("test-machine", 1)
+machine.uname = "test-uname"
 order = ts_db.Order()
+order.llvm_revision = "test-revision"
 run = ts_db.Run(machine, order, start_time, end_time)
+run.arch = "test-arch"
 test = ts_db.Test("test-a")
 sample = ts_db.Sample(run, test)
+sample.value = 1.0
 
 # Add and commit.
 ts_db.add(machine)
@@ -66,13 +84,18 @@ sample = samples[0]
 # Audit the various fields.
 assert machine.name == "test-machine"
 assert machine.number == 1
+assert machine.uname == "test-uname"
+
+assert order.llvm_revision == "test-revision"
 
 assert run.machine is machine
 assert run.order is order
 assert run.start_time == start_time
 assert run.end_time == end_time
+assert run.arch == "test-arch"
 
 assert test.name == "test-a"
 
 assert sample.run is run
 assert sample.test is test
+assert sample.value == 1.0
