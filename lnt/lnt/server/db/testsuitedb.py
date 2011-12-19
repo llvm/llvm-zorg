@@ -11,6 +11,16 @@ from sqlalchemy import *
 import testsuite
 
 class TestSuiteDB(object):
+    """
+    Wrapper object for an individual test suites database tables.
+
+    This wrapper is somewhat special in that it handles specializing the
+    metatable instances for the given test suite.
+
+    Clients are expected to only access the test suite database tables by going
+    through the model classes constructed by this wrapper object.
+    """
+
     def __init__(self, v4db, test_suite):
         self.v4db = v4db
         self.test_suite = test_suite
