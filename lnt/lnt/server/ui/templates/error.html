@@ -1,0 +1,8 @@
+{% extends "layout.html" %}
+{% set components = [("browse", db_url_for("browse"))] %}
+{% block title %}Error{% endblock %}
+{% block body %}
+
+{{ message }}
+
+{% endblock %}

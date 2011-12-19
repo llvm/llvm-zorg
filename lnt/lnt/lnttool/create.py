@@ -18,14 +18,14 @@ config_version = %(cfg_version)r
 name = %(name)r
 
 # Path to the LNT server. This is required for use in emails where we need to
-# provude an absolute URL to the server.
+# provide an absolute URL to the server.
 zorgURL = %(hosturl)r
 
 # Temporary directory, for use by the web app. This must be writable by the user
 # the web app runs as.
 tmp_dir = %(tmp_dir)r
 
-# Database directory, for easily rerooting the entire set of database. Database
+# Database directory, for easily rerooting the entire set of databases. Database
 # paths are resolved relative to the config path + this path.
 db_dir = %(db_dir)r
 
@@ -35,7 +35,8 @@ databases = {
     'default' : { 'path' : %(default_db)r,
                   'showGeneral' : 1,
                   'showNightlytest' : 1,
-                  'showSimple' : 1 },
+                  'showSimple' : 1,
+                  'db_version' : %(default_db_version)r },
     }
 
 # The LNT email configuration.
@@ -116,6 +117,7 @@ def action_create(name, args):
     default_db = opts.default_db
     hostname = opts.hostname
     hostsuffix = opts.hostsuffix
+    default_db_version = "0.3"
 
     basepath = os.path.abspath(path)
     if os.path.exists(basepath):

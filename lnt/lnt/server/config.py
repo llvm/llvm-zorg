@@ -48,14 +48,16 @@ class DBInfo:
                       bool(dict.get('showNightlytest')),
                       bool(dict.get('showGeneral')),
                       bool(dict.get('showSimple')),
+                      str(dict.get('db_version', '0.3')),
                       email_config)
 
     def __init__(self, path, showNightlytest, showGeneral, showSimple,
-                 email_config):
+                 db_version, email_config):
         self.path = path
         self.showGeneral = showGeneral
         self.showNightlytest = showNightlytest
         self.showSimple = showSimple
+        self.db_version = db_version
         self.email_config = email_config
 
 class Config:

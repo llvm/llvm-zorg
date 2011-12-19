@@ -62,6 +62,12 @@ def db_route(rule, **options):
             if g.db_info is None:
                 abort(404)
 
+            # Currently the UI has absolutely no support for non-v0.3 databases.
+            if g.db_info.db_version != '0.3':
+                return render_template("error.html", message="""\
+UI support for database with version %r is not yet implemented.""" % (
+                        g.db_info.db_version))
+
             return f(**args)
 
         frontend.add_url_rule(rule, f.__name__, wrap, **options)
