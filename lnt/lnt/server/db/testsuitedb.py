@@ -136,7 +136,9 @@ class TestSuiteDB(object):
             __tablename__ = db_key_name + '_Sample'
 
             id = Column("ID", Integer, primary_key=True)
-            run_id = Column("RunID", Integer, ForeignKey(Run.id), index=True)
+            # We do not need an index on run_id, this is covered by the compound
+            # (Run(ID),Test(ID)) index we create below.
+            run_id = Column("RunID", Integer, ForeignKey(Run.id))
             test_id = Column("TestID", Integer, ForeignKey(Test.id), index=True)
 
             run = sqlalchemy.orm.relation(Run)
@@ -144,6 +146,11 @@ class TestSuiteDB(object):
 
             # Dynamically create fields for all of the test suite defined sample
             # fields.
+            #
+            # FIXME: We might want to index some of these, but for a different
+            # reason than above. It is possible worth it to turn the compound
+            # index below into a covering index. We should evaluate this once
+            # the new UI is up.
             class_dict = locals()
             for item in test_suite.sample_fields:
                 if item.name in class_dict:
