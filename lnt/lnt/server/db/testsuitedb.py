@@ -193,7 +193,7 @@ class TestSuiteDB(object):
         self.Order = Order
 
         # Create the compound index we cannot declare inline.
-        sqlalchemy.schema.Index("ix_Sample_RunID_TestID",
+        sqlalchemy.schema.Index("ix_%s_Sample_RunID_TestID" % db_key_name,
                                 Sample.run_id, Sample.test_id)
 
         # Create the test suite database tables in case this is a new database.

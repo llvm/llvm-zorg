@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Machine</key>
+	<dict>
+		<key>Info</key>
+		<dict>
+			<key>gcc_version</key>
+			<string> i686-apple-darwin10-gcc-4.2.1 (GCC) 4.2.1 (Apple Inc. build 5646)</string>
+			<key>name</key>
+			<string> smoosh-01</string>
+			<key>os</key>
+			<string> Darwin 10.2.0</string>
+			<key>uname</key>
+			<string> Darwin smoosh-01 10.2.0 Darwin Kernel Version 10.2.0: Tue Nov  3 10:37:10 PST 2009; root:xnu-1486.2.11~1/RELEASE_I386 i386hardware: i386</string>
+		</dict>
+		<key>Name</key>
+		<string>LNT SAMPLE MACHINE</string>
+	</dict>
+	<key>Run</key>
+	<dict>
+		<key>End Time</key>
+		<string>2009-11-19 03:00:12</string>
+		<key>Info</key>
+		<dict>
+			<key>tag</key>
+			<string>nts</string>
+		</dict>
+		<key>Start Time</key>
+		<string>2009-11-19 01:27:49</string>
+	</dict>
+	<key>Tests</key>
+	<array>
+		<dict>
+			<key>Data</key>
+			<array>
+				<integer>0</integer>
+			</array>
+			<key>Info</key>
+			<dict>
+			</dict>
+			<key>Name</key>
+			<string>nightlytest.SingleSource/Benchmarks/BenchmarkGame/fannkuch.compile.status</string>
+		</dict>
+		<dict>
+			<key>Data</key>
+			<array>
+				<real>0.022</real>
+			</array>
+			<key>Info</key>
+			<dict>
+			</dict>
+			<key>Name</key>
+			<string>nightlytest.SingleSource/Benchmarks/BenchmarkGame/fannkuch.compile.time</string>
+		</dict>
+		<dict>
+			<key>Data</key>
+			<array>
+				<integer>0</integer>
+			</array>
+			<key>Info</key>
+			<dict>
+			</dict>
+			<key>Name</key>
+			<string>nightlytest.SingleSource/Benchmarks/BenchmarkGame/fannkuch.exec.status</string>
+		</dict>
+		<dict>
+			<key>Data</key>
+			<array>
+				<real>0.32</real>
+			</array>
+			<key>Info</key>
+			<dict>
+			</dict>
+			<key>Name</key>
+			<string>nightlytest.SingleSource/Benchmarks/BenchmarkGame/fannkuch.exec.time</string>
+		</dict>
+	</array>
+</dict>
+</plist>

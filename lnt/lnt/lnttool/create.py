@@ -79,6 +79,49 @@ if __name__ == "__main__":
 
 import lnt.db.perfdb
 
+def _create_v4_nt_database(db_path):
+    from lnt.server.db import v4db, testsuite
+
+    # Create the initial database.
+    db = lnt.server.db.v4db.V4DB('sqlite:///' + db_path)
+    db.commit()
+
+    # Create an NT compatible test suite, automatically.
+    ts = testsuite.TestSuite("nt", "NT")
+
+    # Define the default sample types.
+    #
+    # FIXME: This should probably be done by V4DB.
+    real_sample_type = testsuite.SampleType("Real")
+    status_sample_type = testsuite.SampleType("Status")
+
+    # Promote the natural information produced by 'runtest nt' to fields.
+    ts.machine_fields.append(testsuite.MachineField("hardware", "hardware"))
+    ts.machine_fields.append(testsuite.MachineField("os", "os"))
+
+    # The only reliable order currently is the "run_order" field. We will want
+    # to revise this over time.
+    ts.order_fields.append(testsuite.OrderField("llvm_project_revision",
+                                                "run_order", 0))
+
+    # We are only interested in simple runs, so we expect exactly four fields
+    # per test.
+    ts.sample_fields.append(testsuite.SampleField(
+            "compile_time", real_sample_type, ".compile.time"))
+    ts.sample_fields.append(testsuite.SampleField(
+            "compile_status", status_sample_type, ".compile.status"))
+    ts.sample_fields.append(testsuite.SampleField(
+            "execution_time", real_sample_type, ".exec.time"))
+    ts.sample_fields.append(testsuite.SampleField(
+            "execution_status", status_sample_type, ".exec.status"))
+
+    db.add(ts)
+    db.commit()
+
+    # Finally, ensure the tables for the test suite we just defined are
+    # constructed.
+    ts_db = db.testsuite['nt']
+
 def action_create(name, args):
     """create an LLVM nightly test installation"""
 
@@ -102,6 +145,9 @@ def action_create(name, args):
     parser.add_option("", "--hostsuffix", dest="hostsuffix", default="perf",
                       help="suffix at which WSGI app lives [%default]",
                       metavar="NAME")
+    parser.add_option("", "--use-v4", dest="use_v4",
+                      help="use the v0.4 database schema [%default]",
+                      action="store_true", default=False)
 
     (opts, args) = parser.parse_args(args)
     if len(args) != 1:
@@ -118,6 +164,10 @@ def action_create(name, args):
     hostname = opts.hostname
     hostsuffix = opts.hostsuffix
     default_db_version = "0.3"
+    if opts.use_v4:
+        default_db_version = "0.4"
+    else:
+        default_db_version = "0.3"
 
     basepath = os.path.abspath(path)
     if os.path.exists(basepath):
@@ -146,8 +196,11 @@ def action_create(name, args):
     wsgi_file.close()
     os.chmod(wsgi_path, 0755)
 
-    db = lnt.db.perfdb.PerfDB('sqlite:///' + db_path)
-    db.commit()
+    if opts.use_v4:
+        _create_v4_nt_database(db_path)
+    else:
+        db = lnt.db.perfdb.PerfDB('sqlite:///' + db_path)
+        db.commit()
 
     print 'created LNT configuration in %r' % basepath
     print '  configuration file: %s' % cfg_path
