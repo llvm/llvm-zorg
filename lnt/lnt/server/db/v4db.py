@@ -11,6 +11,10 @@ class V4DB(object):
         def __init__(self, v4db):
             self.v4db = v4db
 
+        def __iter__(self):
+            for name, in self.v4db.query(testsuite.TestSuite.name):
+                yield name
+
         def __getitem__(self, name):
             # Get the test suite object.
             ts = self.v4db.query(testsuite.TestSuite).\
@@ -20,6 +24,17 @@ class V4DB(object):
 
             # Instantiate the per-test suite wrapper object for this test suite.
             return testsuitedb.TestSuiteDB(self.v4db, ts)
+
+        def keys(self):
+            return iter(self)
+
+        def values(self):
+            for name in self:
+                yield self[name]
+
+        def items(self):
+            for name in self:
+                yield name,self[name]
 
     def __init__(self, path, echo=False):
         # If the path includes no database type, assume sqlite.
@@ -49,5 +64,23 @@ class V4DB(object):
         # by the TestSuites table.
 
         # The magic starts by returning a object which will allow us to use
-        # array access to get the per-test suite database wrapper.
+        # dictionary like access to get the per-test suite database wrapper.
         return V4DB.TestSuiteAccessor(self)
+
+    # FIXME: The getNum...() methods below should be phased out once we can
+    # eliminate the v0.3 style databases.
+    def getNumMachines(self):
+        return sum([ts.query(ts.Machine).count()
+                    for ts in self.testsuite.values()])
+    def getNumRuns(self):
+        return sum([ts.query(ts.Run).count()
+                    for ts in self.testsuite.values()])
+    def getNumSamples(self):
+        return sum([ts.query(ts.Sample).count()
+                    for ts in self.testsuite.values()])
+    def getNumTests(self):
+        return sum([ts.query(ts.Test).count()
+                    for ts in self.testsuite.values()])
+
+    def importDataFromDict(self, data):
+        raise NotImplementedError
