@@ -48,7 +48,8 @@ class TestSuiteDB(object):
                     raise ValueError,"test suite defines reserved key %r" % (
                         name,)
 
-                class_dict[item.name] = Column(item.name, String(256))
+                class_dict[item.name] = item.column = Column(
+                    item.name, String(256))
 
             def __init__(self, name):
                 self.name = name
@@ -73,7 +74,8 @@ class TestSuiteDB(object):
                     raise ValueError,"test suite defines reserved key %r" % (
                         name,)
 
-                class_dict[item.name] = Column(item.name, String(256))
+                class_dict[item.name] = item.column = Column(
+                    item.name, String(256))
 
             def __init__(self):
                 pass
@@ -113,7 +115,8 @@ class TestSuiteDB(object):
                     raise ValueError,"test suite defines reserved key %r" % (
                         name,)
 
-                class_dict[item.name] = Column(item.name, String(256))
+                class_dict[item.name] = item.column = Column(
+                    item.name, String(256))
 
             def __init__(self, machine, order, start_time, end_time):
                 self.machine = machine
@@ -166,15 +169,16 @@ class TestSuiteDB(object):
                         name,)
 
                 if item.type.name == 'Real':
-                    class_dict[item.name] = Column(item.name, Float)
+                    item.column = Column(item.name, Float)
                 elif item.type.name == 'Status':
-                    class_dict[item.name] = Column(item.name, Integer,
-                                                    ForeignKey(
+                    item.column = Column(item.name, Integer, ForeignKey(
                             testsuite.StatusKind.id))
                 else:
                     raise ValueError,(
                         "test suite defines unknown sample type %r" (
                             item.type.name,))
+
+                class_dict[item.name] = item.column
 
             def __init__(self, run, test):
                 self.run = run

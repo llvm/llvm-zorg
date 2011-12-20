@@ -97,6 +97,10 @@ class MachineField(Base):
         self.name = name
         self.info_key = info_key
 
+        # Column instance for fields which have been bound (non-DB
+        # parameter). This is provided for convenience in querying.
+        self.column = None
+
     def __repr__(self):
         return '%s%r' % (self.__class__.__name__, (self.name, self.info_key))
 
@@ -124,6 +128,10 @@ class OrderField(Base):
         self.info_key = info_key
         self.ordinal = ordinal
 
+        # Column instance for fields which have been bound (non-DB
+        # parameter). This is provided for convenience in querying.
+        self.column = None
+
     def __repr__(self):
         return '%s%r' % (self.__class__.__name__, (self.name, self.info_key,
                                                    self.ordinal))
@@ -144,6 +152,10 @@ class RunField(Base):
     def __init__(self, name, info_key):
         self.name = name
         self.info_key = info_key
+
+        # Column instance for fields which have been bound (non-DB
+        # parameter). This is provided for convenience in querying.
+        self.column = None
 
     def __repr__(self):
         return '%s%r' % (self.__class__.__name__, (self.name, self.info_key))
@@ -170,6 +182,10 @@ class SampleField(Base):
         self.name = name
         self.type = type
         self.info_key = info_key
+
+        # Column instance for fields which have been bound (non-DB
+        # parameter). This is provided for convenience in querying.
+        self.column = None
 
     def __repr__(self):
         return '%s%r' % (self.__class__.__name__, (self.name, self.type,
