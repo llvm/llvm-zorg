@@ -22,8 +22,12 @@ class V4DB(object):
             return testsuitedb.TestSuiteDB(self.v4db, ts)
 
     def __init__(self, path, echo=False):
-        assert (path.startswith('mysql://') or
-                path.startswith('sqlite://')), "invalid database path"
+        # If the path includes no database type, assume sqlite.
+        #
+        # FIXME: I would like to phase this out and force clients to propagate
+        # paths, but it isn't a big deal.
+        if not path.startswith('mysql://') and not path.startswith('sqlite://'):
+            path = 'sqlite:///' + path
 
         self.path = path
         self.engine = sqlalchemy.create_engine(path, echo=echo)

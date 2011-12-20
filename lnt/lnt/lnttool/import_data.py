@@ -3,7 +3,8 @@ import os, pprint, sys, time
 import lnt.db.perfdb
 from lnt import formats
 import lnt.server.config
-from lnt.util import ImportData
+import lnt.server.db.v4db
+import lnt.util.ImportData
 
 def action_import(name, args):
     """import test data into a database"""
@@ -52,10 +53,18 @@ def action_import(name, args):
     if db_entry is None:
         parser.error("invalid database name")
 
+    # Load the appropriate version of the database.
+    if db_entry.db_version == '0.3':
+        db = lnt.db.perfdb.PerfDB(db_entry.path, echo=opts.show_sql)
+    elif db_entry.db_version == '0.4':
+        db = lnt.server.db.v4db.V4DB(db_entry.path, echo=opts.show_sql)
+    else:
+        raise NotImplementedError,"unable to import to version %r database" % (
+            db_entry.db_version,)
+
     # Load the database.
-    db = lnt.db.perfdb.PerfDB(db_entry.path, echo=opts.show_sql)
     for file in args:
-        result = ImportData.import_and_report(
+        result = lnt.util.ImportData.import_and_report(
             config, opts.database, db, file,
             opts.format, opts.commit, opts.show_sample_count,
             opts.noEmail)
@@ -63,5 +72,6 @@ def action_import(name, args):
         if opts.show_raw_result:
             pprint.pprint(result)
         else:
-            ImportData.print_report_result(result, sys.stdout, opts.verbose)
+            lnt.util.ImportData.print_report_result(result, sys.stdout,
+                                                    opts.verbose)
 

@@ -341,6 +341,9 @@ class PerfDB:
         self.session.rollback()
         self.modified_machine = self.modified_test = self.modified_run = False
 
+    def importDataFromDict(self, data):
+        return importDataFromDict(self, data)
+
 def importDataFromDict(db, data):
     # FIXME: Validate data
     machineData = data['Machine']
