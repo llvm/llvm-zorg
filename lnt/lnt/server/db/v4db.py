@@ -10,12 +10,19 @@ class V4DB(object):
     class TestSuiteAccessor(object):
         def __init__(self, v4db):
             self.v4db = v4db
+            self._cache = {}
 
         def __iter__(self):
             for name, in self.v4db.query(testsuite.TestSuite.name):
                 yield name
 
         def __getitem__(self, name):
+            # Check the test suite cache, to avoid gratuitous reinstantiation.
+            #
+            # FIXME: Invalidation?
+            if name in self._cache:
+                return self._cache[name]
+
             # Get the test suite object.
             ts = self.v4db.query(testsuite.TestSuite).\
                 filter(testsuite.TestSuite.name == name).first()
@@ -23,7 +30,8 @@ class V4DB(object):
                 raise IndexError,name
 
             # Instantiate the per-test suite wrapper object for this test suite.
-            return testsuitedb.TestSuiteDB(self.v4db, ts)
+            self._cache[name] = ts = testsuitedb.TestSuiteDB(self.v4db, ts)
+            return ts
 
         def keys(self):
             return iter(self)
@@ -47,6 +55,9 @@ class V4DB(object):
         self.path = path
         self.engine = sqlalchemy.create_engine(path, echo=echo)
 
+        # Proxy object for implementing dict-like .testsuite property.
+        self._testsuite_proxy = None
+
         # Create the common tables in case this is a new database.
         testsuite.Base.metadata.create_all(self.engine)
 
@@ -65,7 +76,9 @@ class V4DB(object):
 
         # The magic starts by returning a object which will allow us to use
         # dictionary like access to get the per-test suite database wrapper.
-        return V4DB.TestSuiteAccessor(self)
+        if self._testsuite_proxy is None:
+            self._testsuite_proxy = V4DB.TestSuiteAccessor(self)
+        return self._testsuite_proxy
 
     # FIXME: The getNum...() methods below should be phased out once we can
     # eliminate the v0.3 style databases.
