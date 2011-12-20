@@ -34,7 +34,6 @@ class TestSuiteDB(object):
 
             id = Column("ID", Integer, primary_key=True)
             name = Column("Name", String(256), index=True)
-            number = Column("Number", Integer)
 
             # The parameters blob is used to store any additional information
             # reported by the run but not promoted into the machine record. Such
@@ -51,13 +50,12 @@ class TestSuiteDB(object):
 
                 class_dict[item.name] = Column(item.name, String(256))
 
-            def __init__(self, name, number):
+            def __init__(self, name):
                 self.name = name
-                self.number = number
 
             def __repr__(self):
                 return '%s_%s%r' % (db_key_name, self.__class__.__name__,
-                                    (self.name, self.number))
+                                    (self.name,))
                 
         class Order(self.base):
             __tablename__ = db_key_name + '_Order'
@@ -195,6 +193,14 @@ class TestSuiteDB(object):
         # Create the compound index we cannot declare inline.
         sqlalchemy.schema.Index("ix_%s_Sample_RunID_TestID" % db_key_name,
                                 Sample.run_id, Sample.test_id)
+
+
+        # Create the index we use to ensure machine uniqueness.
+        args = [Machine.name, Machine.parameters]
+        for item in self.test_suite.machine_fields:
+            args.append(getattr(Machine, item.name))
+        sqlalchemy.schema.Index("ix_%s_Machine_Unique" % db_key_name,
+                                *args, unique = True)
 
         # Create the test suite database tables in case this is a new database.
         self.base.metadata.create_all(self.v4db.engine)
