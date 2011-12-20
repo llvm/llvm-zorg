@@ -72,6 +72,7 @@ class V4DB(object):
         self.add = self.session.add
         self.commit = self.session.commit
         self.query = self.session.query
+        self.rollback = self.session.rollback
 
     @property
     def testsuite(self):

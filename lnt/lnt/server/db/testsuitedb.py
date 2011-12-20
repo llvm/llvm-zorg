@@ -5,6 +5,7 @@ These are a bit magical because the models themselves are driven by the test
 suite metadata, so we only create the classes at runtime.
 """
 
+import datetime
 import json
 
 import sqlalchemy
@@ -200,11 +201,10 @@ class TestSuiteDB(object):
         sqlalchemy.schema.Index("ix_%s_Sample_RunID_TestID" % db_key_name,
                                 Sample.run_id, Sample.test_id)
 
-
         # Create the index we use to ensure machine uniqueness.
         args = [Machine.name, Machine.parameters]
         for item in self.test_suite.machine_fields:
-            args.append(getattr(Machine, item.name))
+            args.append(item.column)
         sqlalchemy.schema.Index("ix_%s_Machine_Unique" % db_key_name,
                                 *args, unique = True)
 
@@ -215,13 +215,17 @@ class TestSuiteDB(object):
         self.add = self.v4db.add
         self.commit = self.v4db.commit
         self.query = self.v4db.query
+        self.rollback = self.v4db.rollback
 
     def _getOrCreateMachine(self, machine_data):
         """
-        _getOrCreateMachine(data) -> Machine
+        _getOrCreateMachine(data) -> Machine, bool
 
         Add or create (and insert) a Machine record from the given machine data
         (as recorded by the test interchange format).
+
+        The boolean result indicates whether the returned record was constructed
+        or not.
         """
 
         # Convert the machine data into a machine record. We construct the query
@@ -256,21 +260,139 @@ class TestSuiteDB(object):
 
         # Execute the query to see if we already have this machine.
         try:
-            return query.one()
+            return query.one(),False
         except sqlalchemy.orm.exc.NoResultFound:
             # If not, add the machine.
             self.add(machine)
 
-            return machine
+            return machine,True
+
+    def _getOrCreateOrder(self, run_parameters):
+        """
+        _getOrCreateOrder(data) -> Order, bool
+
+        Add or create (and insert) an Order record based on the given run
+        parameters (as recorded by the test interchange format).
+
+        The run parameters that define the order will be removed from the
+        provided ddata argument.
+
+        The boolean result indicates whether the returned record was constructed
+        or not.
+        """
+
+        query = self.query(self.Order)
+        order = self.Order()
+
+        # First, extract all of the specified order fields.
+        for item in self.test_suite.order_fields:
+            if item.info_key in run_parameters:
+                value = run_parameters.pop(item.info_key)
+            else:
+                # We require that all of the order fields be present.
+                raise ValueError,"""\
+supplied run is missing required run parameter: %r""" % (
+                    item.info_key)
+
+            # FIXME: Avoid setattr.
+            query = query.filter(item.column == value)
+            setattr(order, item.name, value)
+
+        # Execute the query to see if we already have this order.
+        try:
+            return query.one(),False
+        except sqlalchemy.orm.exc.NoResultFound:
+            # If not, add the run.
+            self.add(order)
+
+            return order,True
+
+    def _getOrCreateRun(self, run_data, machine):
+        """
+        _getOrCreateRun(data) -> Run, bool
+
+        Add a new Run record from the given data (as recorded by the test
+        interchange format).
+
+        The boolean result indicates whether the returned record was constructed
+        or not.
+        """
+
+        # Extra the run parameters that define the order.
+        run_parameters = run_data['Info'].copy()
+
+        # The tag has already been used to dispatch to the appropriate database.
+        run_parameters.pop('tag')
+
+        # Find the order record.
+        order,inserted = self._getOrCreateOrder(run_parameters)
+        start_time = datetime.datetime.strptime(run_data['Start Time'],
+                                                "%Y-%m-%d %H:%M:%S")
+        end_time = datetime.datetime.strptime(run_data['End Time'],
+                                              "%Y-%m-%d %H:%M:%S")
+
+        # Convert the rundata into a run record. As with Machines, we construct
+        # the query to look for any existingrun at the same time as we build up
+        # the record to possibly add.
+        #
+        # FIXME: This feels inelegant, can't SA help us out here?
+        query = self.query(self.Run).\
+            filter(self.Run.machine_id == machine.id).\
+            filter(self.Run.order_id == order.id).\
+            filter(self.Run.start_time == start_time).\
+            filter(self.Run.end_time == end_time)
+        run = self.Run(machine, order, start_time, end_time)
+
+        # First, extract all of the specified run fields.
+        for item in self.test_suite.run_fields:
+            if item.info_key in run_parameters:
+                value = run_parameters.pop(item.info_key)
+            else:
+                # For now, insert empty values for any missing fields. We don't
+                # want to insert NULLs, so we should probably allow the test
+                # suite to define defaults.
+                value = ''
+
+            # FIXME: Avoid setattr.
+            query = query.filter(item.column == value)
+            setattr(run, item.name, value)
+
+        # Any remaining parameters are saved as a JSON encoded array.
+        run.parameters = json.dumps(sorted(run_parameters.items()))
+        query = query.filter(self.Run.parameters == run.parameters)
+
+        # Execute the query to see if we already have this run.
+        try:
+            return query.one(),False
+        except sqlalchemy.orm.exc.NoResultFound:
+            # If not, add the run.
+            self.add(run)
+
+            return run,True
 
     def importDataFromDict(self, data):
+        """
+        importDataFromDict(data) -> Run, bool
+
+        Import a new run from the provided test interchange data, and return the
+        constructed Run record.
+
+        The boolean result indicates whether the returned record was constructed
+        or not (i.e., whether the data was a duplicate submission).
+        """
+
         # Construct the machine entry.
-        machine = self._getOrCreateMachine(data['Machine'])
+        machine,inserted = self._getOrCreateMachine(data['Machine'])
 
-        self.commit()
+        # Construct the run entry.
+        run,inserted = self._getOrCreateRun(data['Run'], machine)
 
-        import sys
-        print >>sys.stderr,"added machine %r" % machine.id
+        # If we didn't construct a new run, this is a duplicate
+        # submission. Return the prior Run.
+        if not inserted:
+            return False, run
 
-        print self.test_suite.machine_fields
+        # FIXME: Insert tests and samples.
         raise NotImplementedError
+
+        return True, run

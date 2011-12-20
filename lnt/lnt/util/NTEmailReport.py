@@ -18,6 +18,7 @@ from lnt.server.ui import graphutil
 from lnt.server.ui import util
 from lnt.db import perfdb
 from lnt.util.NTUtil import *
+import lnt.server.db.v4db
 
 from lnt.db.perfdb import Run, Sample
 
@@ -463,6 +464,10 @@ function init_report() {"""
 
 def getReport(result, db, run, baseurl, was_added, will_commit):
     report = StringIO.StringIO()
+
+    # We haven't implemented V4DB support yet in reports.
+    if isinstance(db, lnt.server.db.v4db.V4DB):
+        return "NotYetImplemented", "NotYetImplemented", "NotYetImplemented"
 
     # Use a simple report unless the tag indicates this is an old style nightly
     # test run.

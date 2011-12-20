@@ -26,6 +26,8 @@
 		<dict>
 			<key>tag</key>
 			<string>nts</string>
+			<key>run_order</key>
+			<string>      1</string>
 		</dict>
 		<key>Start Time</key>
 		<string>2009-11-17 02:12:25</string>
