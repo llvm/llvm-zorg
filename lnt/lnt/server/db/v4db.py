@@ -33,6 +33,11 @@ class V4DB(object):
             self._cache[name] = ts = testsuitedb.TestSuiteDB(self.v4db, ts)
             return ts
 
+        def get(self, name, default = None):
+            if name in self:
+                return self[name]
+            return default
+
         def keys(self):
             return iter(self)
 
@@ -96,4 +101,14 @@ class V4DB(object):
                     for ts in self.testsuite.values()])
 
     def importDataFromDict(self, data):
-        raise NotImplementedError
+        # Select the database to import into.
+        #
+        # FIXME: Promote this to a top-level field in the data.
+        tag = data['Run']['Info'].get('tag')
+        db_name = { 'nts' : 'nt' }.get(tag)
+        if db_name is None:
+            raise ValueError,"unknown database target from tag %r" % (
+                tag,)
+
+        db = self.testsuite.get(db_name)
+        return db.importDataFromDict(data)

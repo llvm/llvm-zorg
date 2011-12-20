@@ -5,6 +5,8 @@ These are a bit magical because the models themselves are driven by the test
 suite metadata, so we only create the classes at runtime.
 """
 
+import json
+
 import sqlalchemy
 from sqlalchemy import *
 
@@ -213,3 +215,62 @@ class TestSuiteDB(object):
         self.add = self.v4db.add
         self.commit = self.v4db.commit
         self.query = self.v4db.query
+
+    def _getOrCreateMachine(self, machine_data):
+        """
+        _getOrCreateMachine(data) -> Machine
+
+        Add or create (and insert) a Machine record from the given machine data
+        (as recorded by the test interchange format).
+        """
+
+        # Convert the machine data into a machine record. We construct the query
+        # to look for any existing machine at the same time as we build up the
+        # record to possibly add.
+        #
+        # FIXME: This feels inelegant, can't SA help us out here?
+        query = self.query(self.Machine).\
+            filter(self.Machine.name == machine_data['Name'])
+        machine = self.Machine(machine_data['Name'])
+        machine_parameters = machine_data['Info'].copy()
+
+        # First, extract all of the specified machine fields.
+        for item in self.test_suite.machine_fields:
+            if item.info_key in machine_parameters:
+                value = machine_parameters.pop(item.info_key)
+            else:
+                # For now, insert empty values for any missing fields. We don't
+                # want to insert NULLs, so we should probably allow the test
+                # suite to define defaults.
+                value = ''
+
+            # FIXME: Avoid setattr.
+            query = query.filter(item.column == value)
+            setattr(machine, item.name, value)
+
+        # Convert any remaining machine_parameters into a JSON encoded blob. We
+        # encode this as an array to avoid a potential ambiguity on the key
+        # ordering.
+        machine.parameters = json.dumps(sorted(machine_parameters.items()))
+        query = query.filter(self.Machine.parameters == machine.parameters)
+
+        # Execute the query to see if we already have this machine.
+        try:
+            return query.one()
+        except sqlalchemy.orm.exc.NoResultFound:
+            # If not, add the machine.
+            self.add(machine)
+
+            return machine
+
+    def importDataFromDict(self, data):
+        # Construct the machine entry.
+        machine = self._getOrCreateMachine(data['Machine'])
+
+        self.commit()
+
+        import sys
+        print >>sys.stderr,"added machine %r" % machine.id
+
+        print self.test_suite.machine_fields
+        raise NotImplementedError
