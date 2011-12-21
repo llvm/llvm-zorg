@@ -34,6 +34,7 @@ class Request(flask.Request):
         self.request_time = time.time()
         self.db = None
         self.db_summary = None
+        self.testsuite = None
 
     def elapsed_time(self):
         return time.time() - self.request_time
@@ -59,6 +60,12 @@ class Request(flask.Request):
 
         return self.db
 
+    def get_testsuite(self):
+        if self.testsuite is None:
+            self.testsuite = self.get_db().testsuite[g.testsuite_name]
+
+        return self.testsuite
+
     def get_db_summary(self):
         return current_app.get_db_summary(g.db_name, self.get_db())
 
@@ -67,6 +74,14 @@ def db_url_for(*args, **kwargs):
     Like url_for, but handles automatically providing the db_name argument.
     """
     return url_for(*args, db_name=g.db_name, **kwargs)
+
+def v4_url_for(*args, **kwargs):
+    """
+    Like url_for, but handles automatically providing the db_name and
+    testsuite_name arguments.
+    """
+    return url_for(*args, db_name=g.db_name, testsuite_name=g.testsuite_name,
+                    **kwargs)
 
 class App(flask.Flask):
     @staticmethod
@@ -110,6 +125,7 @@ class App(flask.Flask):
         self.jinja_env.globals.update(
             app=current_app,
             db_url_for=db_url_for,
+            v4_url_for=v4_url_for,
             perfdb=perfdb,
             old_config=self.old_config)
 

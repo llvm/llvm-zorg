@@ -170,7 +170,7 @@ def simple_overview(tag):
         filter(RunInfo.key == "tag").\
         filter(RunInfo.value == tag).limit(100)
     recent_runs = list(recent_runs)
-    
+
     # Compute the active machine list.
     active_machines = dict((run.machine.name, run)
                            for run in recent_runs[::-1])
@@ -558,3 +558,67 @@ def simple_order_aggregate_report(tag):
                               for m in available_machines]
 
     return render_template("simple_order_aggregate_report.html", **locals())
+
+###
+# V4 Schema Viewer
+
+# Decorator for implementing per-testsuite routes.
+def v4_route(rule, **options):
+    """
+    LNT V4 specific route for endpoints which always refer to some testsuite
+    object.
+    """
+
+    # FIXME: This is manually composed with db_route.
+    def decorator(f):
+        def wrap(testsuite_name, db_name = None, **args):
+            # Initialize the test suite parameters on the app globals object.
+            g.testsuite_name = testsuite_name
+
+            # Initialize the database parameters on the app globals object.
+            g.db_name = db_name or "default"
+            g.db_info = current_app.old_config.databases.get(g.db_name)
+            if g.db_info is None:
+                abort(404)
+
+            return f(**args)
+
+        frontend.add_url_rule("/v4/<testsuite_name>" + rule,
+                              f.__name__, wrap, **options)
+        frontend.add_url_rule("/db_<db_name>/v4/<testsuite_name>" + rule,
+                              f.__name__, wrap, **options)
+
+        return wrap
+    return decorator
+
+@v4_route("/")
+def v4_overview():
+    ts = request.get_testsuite()
+
+    # Get the most recent runs in this tag, we just arbitrarily limit to looking
+    # at the last 100 submission.
+    recent_runs = ts.query(ts.Run).\
+        order_by(ts.Run.start_time.desc()).limit(100)
+    recent_runs = list(recent_runs)
+
+    # Compute the active machine list.
+    active_machines = dict((run.machine.name, run)
+                           for run in recent_runs[::-1])
+
+    # Compute the active submission list.
+    N = 30
+    active_submissions = [(r, r.order.llvm_project_revision)
+                          for r in recent_runs[:N]]
+
+    return render_template("v4_overview.html",
+                           testsuite_name=g.testsuite_name,
+                           active_machines=active_machines,
+                           active_submissions=active_submissions)
+
+@v4_route("/machine/<id>")
+def v4_machine(id):
+    return "machine %d" % int(id)
+
+@v4_route("/run/<id>")
+def v4_run(id):
+    return "run %d" % int(id)
