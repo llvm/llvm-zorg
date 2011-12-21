@@ -63,15 +63,20 @@ def action_import(name, args):
             db_entry.db_version,)
 
     # Load the database.
+    success = True
     for file in args:
         result = lnt.util.ImportData.import_and_report(
             config, opts.database, db, file,
             opts.format, opts.commit, opts.show_sample_count,
             opts.noEmail)
 
+        success &= result.get('success', False)
         if opts.show_raw_result:
             pprint.pprint(result)
         else:
             lnt.util.ImportData.print_report_result(result, sys.stdout,
                                                     opts.verbose)
+
+    if not success:
+        raise SystemExit, 1
 
