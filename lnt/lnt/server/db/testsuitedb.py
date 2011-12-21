@@ -25,8 +25,15 @@ class TestSuiteDB(object):
     """
 
     def __init__(self, v4db, test_suite):
+        testsuitedb = self
         self.v4db = v4db
         self.test_suite = test_suite
+
+        # Save caches of the various fields.
+        self.machine_fields = list(self.test_suite.machine_fields)
+        self.order_fields = list(self.test_suite.order_fields)
+        self.run_fields = list(self.test_suite.run_fields)
+        self.sample_fields = list(self.test_suite.sample_fields)
 
         self.base = sqlalchemy.ext.declarative.declarative_base()
 
@@ -46,7 +53,7 @@ class TestSuiteDB(object):
             # Dynamically create fields for all of the test suite defined
             # machine fields.
             class_dict = locals()
-            for item in test_suite.machine_fields:
+            for item in self.machine_fields:
                 if item.name in class_dict:
                     raise ValueError,"test suite defines reserved key %r" % (
                         name,)
@@ -72,7 +79,7 @@ class TestSuiteDB(object):
             # FIXME: We are probably going to want to index on some of these,
             # but need a bit for that in the test suite definition.
             class_dict = locals()
-            for item in test_suite.order_fields:
+            for item in self.order_fields:
                 if item.name in class_dict:
                     raise ValueError,"test suite defines reserved key %r" % (
                         name,)
@@ -113,7 +120,7 @@ class TestSuiteDB(object):
             # FIXME: We are probably going to want to index on some of these,
             # but need a bit for that in the test suite definition.
             class_dict = locals()
-            for item in test_suite.run_fields:
+            for item in self.run_fields:
                 if item.name in class_dict:
                     raise ValueError,"test suite defines reserved key %r" % (
                         name,)
@@ -166,7 +173,7 @@ class TestSuiteDB(object):
             # index below into a covering index. We should evaluate this once
             # the new UI is up.
             class_dict = locals()
-            for item in test_suite.sample_fields:
+            for item in self.sample_fields:
                 if item.name in class_dict:
                     raise ValueError,"test suite defines reserved key %r" % (
                         name,)
@@ -188,12 +195,12 @@ class TestSuiteDB(object):
                 self.test = test
 
                 # Initialize sample fields (defaulting to 0, for now).
-                for item in test_suite.sample_fields:
+                for item in testsuitedb.sample_fields:
                     setattr(self, item.name, kwargs.get(item.name, 0))
 
             def __repr__(self):
                 fields = dict((item.name, getattr(self, item.name))
-                              for item in test_suite.sample_fields)
+                              for item in self.sample_fields)
 
                 return '%s_%s(%r, %r, **%r)' % (
                     db_key_name, self.__class__.__name__,
@@ -211,7 +218,7 @@ class TestSuiteDB(object):
 
         # Create the index we use to ensure machine uniqueness.
         args = [Machine.name, Machine.parameters]
-        for item in self.test_suite.machine_fields:
+        for item in self.machine_fields:
             args.append(item.column)
         sqlalchemy.schema.Index("ix_%s_Machine_Unique" % db_key_name,
                                 *args, unique = True)
@@ -247,7 +254,7 @@ class TestSuiteDB(object):
         machine_parameters = machine_data['Info'].copy()
 
         # First, extract all of the specified machine fields.
-        for item in self.test_suite.machine_fields:
+        for item in self.machine_fields:
             if item.info_key in machine_parameters:
                 value = machine_parameters.pop(item.info_key)
             else:
@@ -293,7 +300,7 @@ class TestSuiteDB(object):
         order = self.Order()
 
         # First, extract all of the specified order fields.
-        for item in self.test_suite.order_fields:
+        for item in self.order_fields:
             if item.info_key in run_parameters:
                 value = run_parameters.pop(item.info_key)
             else:
@@ -352,7 +359,7 @@ supplied run is missing required run parameter: %r""" % (
         run = self.Run(machine, order, start_time, end_time)
 
         # First, extract all of the specified run fields.
-        for item in self.test_suite.run_fields:
+        for item in self.run_fields:
             if item.info_key in run_parameters:
                 value = run_parameters.pop(item.info_key)
             else:
@@ -407,7 +414,7 @@ test parameter sets are not supported by V4DB databases"""
             # Map this reported test name into a test name and a sample field.
             #
             # FIXME: This is really slow.
-            for item in self.test_suite.sample_fields:
+            for item in self.sample_fields:
                 if name.endswith(item.info_key):
                     test_name = name[:-len(item.info_key)]
                     sample_field = item
