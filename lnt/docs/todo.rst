@@ -30,6 +30,17 @@ Optimize test distribution format for common cases.
 These changes would significantly compact the archive format, which improves
 performance across the board.
 
+Other stuff:
+
+ 1. We should find ways to manage the SQLite databases better. Currently we:
+
+    o Could benefit from having LNT manage when to run ANALYZE.
+
+    o Could benefit from making LNT handle setting some of the page size
+      pragmas, at some point.
+
+    o Could benefit from finding a way to have LNT VACUUM, although this can be
+      very expensive.
 
 v0.4 Redesign
 -------------
