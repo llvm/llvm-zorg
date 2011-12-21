@@ -344,6 +344,10 @@ class PerfDB:
     def importDataFromDict(self, data):
         return importDataFromDict(self, data)
 
+    def get_db_summary(self):
+        import perfdbsummary
+        return perfdbsummary.PerfDBSummary.fromdb(self)
+
 def importDataFromDict(db, data):
     # FIXME: Validate data
     machineData = data['Machine']

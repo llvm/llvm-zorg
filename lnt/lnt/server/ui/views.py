@@ -46,7 +46,7 @@ def select_db():
 # Per-Database Routes
 
 # Decorator for implementing per-database routes.
-def db_route(rule, **options):
+def db_route(rule, only_v3 = True, **options):
     """
     LNT specific route for endpoints which always refer to some database
     object.
@@ -62,11 +62,12 @@ def db_route(rule, **options):
             if g.db_info is None:
                 abort(404)
 
-            # Currently the UI has absolutely no support for non-v0.3 databases.
-            if g.db_info.db_version != '0.3':
+            # Disable non-v0.3 database support, if requested.
+            if only_v3 and g.db_info.db_version != '0.3':
                 return render_template("error.html", message="""\
 UI support for database with version %r is not yet implemented.""" % (
                         g.db_info.db_version))
+
 
             return f(**args)
 
@@ -77,7 +78,7 @@ UI support for database with version %r is not yet implemented.""" % (
         return wrap
     return decorator
 
-@db_route('/')
+@db_route('/', only_v3 = False)
 def index():
     return render_template("index.html")
 

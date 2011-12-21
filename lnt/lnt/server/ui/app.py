@@ -12,6 +12,7 @@ import lnt
 import lnt.server.config
 import lnt.server.ui.filters
 import lnt.server.ui.views
+import lnt.server.db.v4db
 
 from lnt.db import perfdbsummary
 from lnt.db import perfdb
@@ -41,7 +42,10 @@ class Request(flask.Request):
 
     def get_db(self):
         if self.db is None:
-            self.db = perfdb.PerfDB(g.db_info.path)
+            if g.db_info.db_version == '0.3':
+                self.db = perfdb.PerfDB(g.db_info.path)
+            else:
+                self.db = lnt.server.db.v4db.V4DB(g.db_info.path)
 
             # Enable SQL logging with db_log.
             #
@@ -110,9 +114,10 @@ class App(flask.Flask):
             old_config=self.old_config)
 
     def get_db_summary(self, db_name, db):
+        # FIXME/v3removal: Eliminate this, V4DB style has no need for summary
+        # abstraction.
         db_summary = self.db_summaries.get(db_name)
         if db_summary is None or not db_summary.is_up_to_date(db):
-            self.db_summaries[db_name] = db_summary = \
-                perfdbsummary.PerfDBSummary.fromdb(db)
+            self.db_summaries[db_name] = db_summary = db.get_db_summary()
         return db_summary
 

@@ -113,3 +113,23 @@ class V4DB(object):
 
         db = self.testsuite.get(db_name)
         return db.importDataFromDict(data)
+
+    def get_db_summary(self):
+        return V4DBSummary(self)
+
+class V4DBSummary(object):
+    class SuiteSummary(object):
+        def __init__(self, name, path):
+            self.name = name
+            self.path = path
+
+    def __init__(self, db):
+        self.db = db
+
+    @property
+    def suites(self):
+        for name in self.db.testsuite:
+            yield V4DBSummary.SuiteSummary(name, ("v4", name))
+
+    def is_up_to_date(self, db):
+        return True

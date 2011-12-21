@@ -5,12 +5,12 @@
 
 {# Display available test result suites. #}
 {% set summary = request.get_db_summary() %}
-<h3>Test Results</h3>
+<h3>Test Suites</h3>
 {% for suite in summary.suites %}
   <a href="{{ '/'.join(suite.path) }}">{{suite.name}}</a><br>
 {% endfor %}
 
-{% if g.db_info.showGeneral %}
+{% if g.db_info.db_version == '0.3' and g.db_info.showGeneral %}
 <hr>
 
 <h3>General Database Access</h3>
