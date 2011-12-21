@@ -100,7 +100,7 @@ def import_and_report(config, db_name, db, file, format, commit=False,
     result['success'] = True
     return result
 
-def print_report_result(result, out, verbose = True):
+def print_report_result(result, out, err, verbose = True):
     """
     import_and_report(result, out) -> None
 
@@ -114,8 +114,10 @@ def print_report_result(result, out, verbose = True):
         print >>out, "Import succeeded."
         print >>out
     else:
-        print >>out, "Import Failed:"
-        print >>out, "--\n%s--\n" % result['error']
+        out.flush()
+        print >>err, "Import Failed:"
+        print >>err, "--\n%s--\n" % result['error']
+        err.flush()
         return
 
     if 'original_run' in result:

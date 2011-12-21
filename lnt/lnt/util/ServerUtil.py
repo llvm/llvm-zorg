@@ -38,7 +38,7 @@ def submitFile(url, file, commit, verbose):
         return
 
     # Print the test report.
-    ImportData.print_report_result(result, sys.stdout, verbose)
+    ImportData.print_report_result(result, sys.stdout, sys.stderr, verbose)
 
 def submitFiles(url, files, commit, verbose):
     for file in files:

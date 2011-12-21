@@ -75,6 +75,7 @@ def action_import(name, args):
             pprint.pprint(result)
         else:
             lnt.util.ImportData.print_report_result(result, sys.stdout,
+                                                    sys.stderr,
                                                     opts.verbose)
 
     if not success:
