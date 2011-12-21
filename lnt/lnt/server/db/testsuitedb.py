@@ -88,14 +88,29 @@ class TestSuiteDB(object):
         class Order(self.base, ParameterizedMixin):
             __tablename__ = db_key_name + '_Order'
 
-            fields = self.order_fields
+            # We guarantee that our fields are stored in the order they are
+            # supposed to be lexicographically compared, the __cmp__ method
+            # relies on this.
+            fields = sorted(self.order_fields,
+                            key = lambda of: of.ordinal)
+
+
             id = Column("ID", Integer, primary_key=True)
+
+            # The ordinal defines the placement of the Order record within the
+            # total ordering. The ordinals are always [0, count(Order)) and are
+            # maintained by the insertion code.
+            #
+            # FIXME: There are many other ways we could deal with this
+            # information. Obviously we could always manage it outside the
+            # database, but we could also store things like previous and next
+            # links in the orders (which would be easier to update, but harder
+            # to query, but also supports more complicated ordering schemes).
+            ordinal = Column("Ordinal", Integer, nullable=False, unique=True,
+                             index=True)
 
             # Dynamically create fields for all of the test suite defined order
             # fields.
-            #
-            # FIXME: We are probably going to want to index on some of these,
-            # but need a bit for that in the test suite definition.
             class_dict = locals()
             for item in self.order_fields:
                 if item.name in class_dict:
@@ -105,17 +120,25 @@ class TestSuiteDB(object):
                 class_dict[item.name] = item.column = Column(
                     item.name, String(256))
 
-            def __init__(self, **kwargs):
-                for item in self.fields:
-                    self.set_field(item, kwargs[item.name])
+            def __init__(self, ordinal, **kwargs):
+                self.ordinal = ordinal
 
+                # Initialize fields (defaulting to None, for now).
+                for item in self.fields:
+                    self.set_field(item, kwargs.get(item.name))
 
             def __repr__(self):
                 fields = dict((item.name, self.get_field(item))
                               for item in self.fields)
 
-                return '%s_%s(**%r)' % (
-                    db_key_name, self.__class__.__name__, fields)
+                return '%s_%s(%r, **%r)' % (
+                    db_key_name, self.__class__.__name__, self.ordinal, fields)
+
+            def __cmp__(self, b):
+                return cmp(tuple(self.get_field(item)
+                                 for item in self.fields),
+                           tuple(b.get_field(item)
+                                 for item in self.fields))
 
         class Run(self.base, ParameterizedMixin):
             __tablename__ = db_key_name + '_Run'
@@ -331,7 +354,7 @@ class TestSuiteDB(object):
         """
 
         query = self.query(self.Order)
-        order = self.Order()
+        order = self.Order(ordinal = None)
 
         # First, extract all of the specified order fields.
         for item in self.order_fields:
@@ -350,7 +373,31 @@ supplied run is missing required run parameter: %r""" % (
         try:
             return query.one(),False
         except sqlalchemy.orm.exc.NoResultFound:
-            # If not, add the run.
+            # If not, then we need to assign an ordinal to this run.
+            #
+            # For now, we do this in the simple, slow, and stupid fashion in
+            # which we just recompute the total ordering and reassign the
+            # ordinals.
+            #
+            # FIXME: Optimize this for the common case, in which the new ordinal
+            # will almost always be very close to the top value, and will
+            # require shifting only a few (or no) other order ordinals.
+
+            # Load all the orders.
+            orders = list(self.query(self.Order))
+            orders.append(order)
+
+            # Sort the objects to form the total ordering.
+            orders.sort()
+
+            # Assign ordinals.
+            for i,o in enumerate(orders):
+                # FIXME: Figure out whether or not SA checks modified status on
+                # write or on value change.
+                if o.ordinal != i:
+                    o.ordinal = i
+
+            # Finally, add the new order.
             self.add(order)
 
             return order,True
@@ -508,3 +555,6 @@ test %r does not map to a sample field in the reported suite""" % (
 
     def getMachine(self, id):
         return self.query(self.Machine).filter_by(id=id).one()
+
+    def getRun(self, id):
+        return self.query(self.Run).filter_by(id=id).one()
