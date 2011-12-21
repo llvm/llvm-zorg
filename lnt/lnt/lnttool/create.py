@@ -107,11 +107,11 @@ def _create_v4_nt_database(db_path):
     # We are only interested in simple runs, so we expect exactly four fields
     # per test.
     ts.sample_fields.append(testsuite.SampleField(
-            "compile_time", real_sample_type, ".compile.time"))
+            "compile_time", real_sample_type, ".compile"))
     ts.sample_fields.append(testsuite.SampleField(
             "compile_status", status_sample_type, ".compile.status"))
     ts.sample_fields.append(testsuite.SampleField(
-            "execution_time", real_sample_type, ".exec.time"))
+            "execution_time", real_sample_type, ".exec"))
     ts.sample_fields.append(testsuite.SampleField(
             "execution_status", status_sample_type, ".exec.status"))
 
