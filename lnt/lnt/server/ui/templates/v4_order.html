@@ -1,0 +1,65 @@
+{% import "utils.html" as utils %}
+
+{% extends "layout.html" %}{
+{% set components = [(ts.name, v4_url_for("v4_overview"))] %}
+{% block head %}
+        <script src="{{ url_for('.static', filename='popup.js') }}"></script>
+{% endblock %}
+{% block title %}Order: {{order.id}}{% endblock %}
+{% block body %}
+
+<h3>Order Fields</h3>
+<table border="1">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Value</th>
+    </tr>
+  </thead>
+  <tr>
+    <td>Ordinal</td>
+    <td>{{order.ordinal}}</td>
+  </tr>
+{% for field in order.fields %}
+  <tr>
+    <td>{{field.name}}</td>
+    <td>{{order.get_field(field)}}</td>
+  </tr>
+{% endfor %}
+</table>
+
+{# Provide links to the previous and next orders. #}
+{% if order.ordinal != 0 %}
+<a href="{{v4_url_for('v4_order', ordinal=order.ordinal - 1)}}">Previous</a>
+{% endif %}
+<a href="{{v4_url_for('v4_order', ordinal=order.ordinal + 1)}}">Next</a>
+
+{# List all submissions which reported for this order. #}
+<h3>Submissions</h3>
+<table class="sortable" border=1>
+  <thead>
+    <tr>
+      <th>Start Time</th>
+      <th>End Time</th>
+      <th>Machine</th>
+      <th>Results</th>
+    </tr>
+  </thead>
+
+{# Show the active submissions. #}
+{% for r in ts.query(ts.Run).filter_by(order_id = order.id) %}
+{% set m = r.machine %}
+  <tr>
+    <td>{{r.start_time}}</td>
+    <td>{{r.end_time}}</td>
+    <td align=left><a href="{{v4_url_for('v4_machine',id=m.id)}}">{{
+        m.name}}:{{m.id}}</a></td>
+    <td><a href="{{v4_url_for('v4_run', id=r.id)}}">
+        View Results</a></td>
+  </tr>
+{% endfor %}
+</table>
+<p><b>Num. Submissions:</b> {{
+  ts.query(ts.Run).filter_by(order_id = order.id).count()}}</p>
+
+{% endblock %}

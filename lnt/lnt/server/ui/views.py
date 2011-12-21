@@ -637,6 +637,18 @@ def v4_machine(id):
                            testsuite_name=g.testsuite_name, id=id,
                            associated_runs=associated_runs)
 
-@v4_route("/run/<id>")
+@v4_route("/<int:id>")
 def v4_run(id):
-    return "run %d" % int(id)
+    return "run %d" % id
+
+@v4_route("/order/<int:ordinal>")
+def v4_order(ordinal):
+    # Get the testsuite.
+    ts = request.get_testsuite()
+
+    # Get the order.
+    order = ts.query(ts.Order).filter_by(ordinal = ordinal).first()
+    if order is None:
+        abort(404)
+
+    return render_template("v4_order.html", ts=ts, order=order)
