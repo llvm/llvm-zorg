@@ -14,6 +14,7 @@ from flask import request
 from flask import url_for
 
 from lnt.db import perfdb
+from lnt.server.ui.globals import v4_url_for
 
 frontend = flask.Module(__name__)
 
@@ -665,8 +666,35 @@ def get_adjacent_runs_on_machine(ts, run, N):
 
     return next_runs[::-1] + [run] + prev_runs
 
+@v4_route("/<int:id>/report")
+def v4_report(id):
+    db = request.get_db()
+    ts = request.get_testsuite()
+    run = ts.getRun(id)
+
+    _, _, html_report = NTEmailReport.getReport(
+        result=None, db=db, run=run, baseurl=v4_url_for('index'),
+        was_added=True, will_commit=True, only_html_body=False)
+
+    return make_response(html_report)
+
+@v4_route("/<int:id>/text_report")
+def v4_text_report(id):
+    db = request.get_db()
+    ts = request.get_testsuite()
+    run = ts.getRun(id)
+
+    _, text_report, _ = NTEmailReport.getReport(
+        result=None, db=db, run=run, baseurl=v4_url_for('index'),
+        was_added=True, will_commit=True, only_html_body=True)
+
+    response = make_response(text_report)
+    response.mimetype = "text/plain"
+    return response
+
 @v4_route("/<int:id>")
 def v4_run(id):
+    db = request.get_db()
     ts = request.get_testsuite()
     run = ts.getRun(id)
 
@@ -698,11 +726,17 @@ def v4_run(id):
     else:
         test_filter_re = None
 
-    # FIXME: Include when we have report functionality.
-    _, text_report, html_report = None, "", ""
+    # Generate the report for inclusion in the run page.
+    #
+    # FIXME: This is a crummy implementation of the concept that we want the
+    # webapp UI to be easy to correlate with the email reports.
+    _, text_report, html_report = NTEmailReport.getReport(
+        result=None, db=db, run=run, baseurl=v4_url_for('index'),
+        was_added=True, will_commit=True, only_html_body=True)
 
     return render_template("v4_run.html", ts=ts, run=run,
-                           options=options, neighboring_runs=neighboring_runs)
+                           options=options, neighboring_runs=neighboring_runs,
+                           text_report=text_report, html_report=html_report)
 
 @v4_route("/order/<int:ordinal>")
 def v4_order(ordinal):

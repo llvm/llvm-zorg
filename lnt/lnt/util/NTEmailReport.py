@@ -462,7 +462,8 @@ function init_report() {"""
 
     return subject, report.getvalue(), html_report
 
-def getReport(result, db, run, baseurl, was_added, will_commit):
+def getReport(result, db, run, baseurl, was_added, will_commit,
+              only_html_body = False):
     report = StringIO.StringIO()
 
     # We haven't implemented V4DB support yet in reports.
@@ -472,7 +473,8 @@ def getReport(result, db, run, baseurl, was_added, will_commit):
     # Use a simple report unless the tag indicates this is an old style nightly
     # test run.
     if 'tag' in run.info and run.info['tag'].value != 'nightlytest':
-        return getSimpleReport(result, db, run, baseurl, was_added, will_commit)
+        return getSimpleReport(result, db, run, baseurl, was_added, will_commit,
+                               only_html_body)
 
     machine = run.machine
     compareTo = None
