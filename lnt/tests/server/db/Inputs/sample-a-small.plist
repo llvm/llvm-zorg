@@ -6,14 +6,12 @@
 	<dict>
 		<key>Info</key>
 		<dict>
-			<key>gcc_version</key>
-			<string> i686-apple-darwin10-gcc-4.2.1 (GCC) 4.2.1 (Apple Inc. build 5646)</string>
-			<key>name</key>
-			<string> smoosh-01</string>
+			<key>extrakey</key>
+			<string>extravalue</string>
 			<key>os</key>
-			<string> Darwin 10.2.0</string>
-			<key>uname</key>
-			<string> Darwin smoosh-01 10.2.0 Darwin Kernel Version 10.2.0: Tue Nov  3 10:37:10 PST 2009; root:xnu-1486.2.11~1/RELEASE_I386 i386hardware: i386</string>
+			<string>SAMPLE OS</string>
+			<key>hardware</key>
+			<string>x86_64</string>
 		</dict>
 		<key>Name</key>
 		<string>LNT SAMPLE MACHINE</string>
@@ -43,7 +41,7 @@
 			<dict>
 			</dict>
 			<key>Name</key>
-			<string>nightlytest.SingleSource/Benchmarks/BenchmarkGame/fannkuch.compile.status</string>
+			<string>sampletest.compile.status</string>
 		</dict>
 		<dict>
 			<key>Data</key>
@@ -54,7 +52,7 @@
 			<dict>
 			</dict>
 			<key>Name</key>
-			<string>nightlytest.SingleSource/Benchmarks/BenchmarkGame/fannkuch.compile.time</string>
+			<string>sampletest.compile</string>
 		</dict>
 		<dict>
 			<key>Data</key>
@@ -65,7 +63,7 @@
 			<dict>
 			</dict>
 			<key>Name</key>
-			<string>nightlytest.SingleSource/Benchmarks/BenchmarkGame/fannkuch.exec.status</string>
+			<string>sampletest.exec.status</string>
 		</dict>
 		<dict>
 			<key>Data</key>
@@ -76,7 +74,7 @@
 			<dict>
 			</dict>
 			<key>Name</key>
-			<string>nightlytest.SingleSource/Benchmarks/BenchmarkGame/fannkuch.exec.time</string>
+			<string>sampletest.exec</string>
 		</dict>
 	</array>
 </dict>
