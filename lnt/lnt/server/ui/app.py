@@ -11,6 +11,7 @@ from flask import url_for
 import lnt
 import lnt.server.config
 import lnt.server.ui.filters
+import lnt.server.ui.globals
 import lnt.server.ui.views
 import lnt.server.db.v4db
 
@@ -69,20 +70,6 @@ class Request(flask.Request):
     def get_db_summary(self):
         return current_app.get_db_summary(g.db_name, self.get_db())
 
-def db_url_for(*args, **kwargs):
-    """
-    Like url_for, but handles automatically providing the db_name argument.
-    """
-    return url_for(*args, db_name=g.db_name, **kwargs)
-
-def v4_url_for(*args, **kwargs):
-    """
-    Like url_for, but handles automatically providing the db_name and
-    testsuite_name arguments.
-    """
-    return url_for(*args, db_name=g.db_name, testsuite_name=g.testsuite_name,
-                    **kwargs)
-
 class App(flask.Flask):
     @staticmethod
     def create_standalone(config_path):
@@ -124,10 +111,10 @@ class App(flask.Flask):
 
         self.jinja_env.globals.update(
             app=current_app,
-            db_url_for=db_url_for,
-            v4_url_for=v4_url_for,
             perfdb=perfdb,
             old_config=self.old_config)
+
+        lnt.server.ui.globals.register(self)
 
     def get_db_summary(self, db_name, db):
         # FIXME/v3removal: Eliminate this, V4DB style has no need for summary
