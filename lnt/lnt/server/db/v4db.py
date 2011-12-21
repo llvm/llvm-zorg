@@ -30,7 +30,8 @@ class V4DB(object):
                 raise IndexError,name
 
             # Instantiate the per-test suite wrapper object for this test suite.
-            self._cache[name] = ts = testsuitedb.TestSuiteDB(self.v4db, ts)
+            self._cache[name] = ts = testsuitedb.TestSuiteDB(
+                self.v4db, name, ts)
             return ts
 
         def get(self, name, default = None):

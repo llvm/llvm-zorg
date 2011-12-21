@@ -24,9 +24,10 @@ class TestSuiteDB(object):
     through the model classes constructed by this wrapper object.
     """
 
-    def __init__(self, v4db, test_suite):
+    def __init__(self, v4db, name, test_suite):
         testsuitedb = self
         self.v4db = v4db
+        self.name = name
         self.test_suite = test_suite
 
         # Save caches of the various fields.
