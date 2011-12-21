@@ -42,6 +42,11 @@ Other stuff:
     o Could benefit from finding a way to have LNT VACUUM, although this can be
       very expensive.
 
+ 2. We should get an LNT buildbot up somewhere.
+
+ 3. We should start defining performance tests for LNT itself, and have LNT
+    monitor them (of course). Probably best integrated into the LNT buildbot.
+
 v0.4 Redesign
 -------------
 
