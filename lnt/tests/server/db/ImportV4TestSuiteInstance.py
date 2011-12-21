@@ -89,9 +89,8 @@ assert run_a.machine is machine
 assert run_b.machine is machine
 assert run_a.order is order_a
 assert run_b.order is order_b
-# FIXME: Set imported_from correctly.
-assert run_a.imported_from is None
-assert run_b.imported_from is None
+assert run_a.imported_from.endswith("sample-a-small.plist")
+assert run_b.imported_from.endswith("sample-b-small.plist")
 assert run_a.start_time == datetime.datetime(2009, 11, 17, 2, 12, 25)
 assert run_a.end_time == datetime.datetime(2009, 11, 17, 3, 44, 48)
 assert not run_a.parameters

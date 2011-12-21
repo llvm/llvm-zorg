@@ -68,6 +68,9 @@ def import_and_report(config, db_name, db, file, format, commit=False,
         result['error'] = "import failure: %s" % traceback.format_exc()
         return result
 
+    # If the import succeeded, save the import path.
+    run.imported_from = file
+
     result['import_time'] = time.time() - importStartTime
     if not success:
         # Record the original run this is a duplicate of.
