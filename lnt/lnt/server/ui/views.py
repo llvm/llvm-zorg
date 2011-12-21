@@ -606,6 +606,8 @@ def v4_overview():
                            for run in recent_runs[::-1])
 
     # Compute the active submission list.
+    #
+    # FIXME: Remove hard coded field use here.
     N = 30
     active_submissions = [(r, r.order.llvm_project_revision)
                           for r in recent_runs[:N]]
@@ -615,9 +617,25 @@ def v4_overview():
                            active_machines=active_machines,
                            active_submissions=active_submissions)
 
-@v4_route("/machine/<id>")
+@v4_route("/machine/<int:id>")
 def v4_machine(id):
-    return "machine %d" % int(id)
+    # Compute the list of associated runs, grouped by order.
+    from lnt.server.ui import util
+
+    # Gather all the runs on this machine.
+    ts = request.get_testsuite()
+
+    # FIXME: Remove hard coded field use here.
+    associated_runs = util.multidict(
+        (run_order, r)
+        for r,run_order in ts.query(ts.Run, ts.Order.llvm_project_revision).\
+            join(ts.Order).\
+            filter(ts.Run.machine_id == id))
+    associated_runs = associated_runs.items()
+
+    return render_template("v4_machine.html",
+                           testsuite_name=g.testsuite_name, id=id,
+                           associated_runs=associated_runs)
 
 @v4_route("/run/<id>")
 def v4_run(id):
