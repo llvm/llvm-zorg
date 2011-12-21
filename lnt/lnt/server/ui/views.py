@@ -637,9 +637,72 @@ def v4_machine(id):
                            testsuite_name=g.testsuite_name, id=id,
                            associated_runs=associated_runs)
 
+def get_adjacent_runs_on_machine(ts, run, N):
+    prev_runs = []
+    ordinal = run.order.ordinal - 1
+    while ordinal >= 0 and (len(prev_runs) < N or
+                           run.order.ordinal - ordinal < N):
+        # Find all the runs on this machine from the previous order.
+        prev_runs.extend(ts.query(ts.Run).\
+                             join(ts.Order).\
+                             filter(ts.Order.ordinal == ordinal).\
+                             filter(ts.Run.machine == run.machine))
+        ordinal = ordinal - 1
+
+    next_runs = []
+    ordinal = run.order.ordinal + 1
+    # FIXME: This probably isn't a great way to limit our search, at least for
+    # SQLite which can't answer this quickly.
+    last_ordinal = ts.query(ts.Order).count()
+    while ordinal != last_ordinal and (len(next_runs) < N or
+                                       ordinal - run.order.ordinal < N):
+        # Find all the runs on this machine from the next order.
+        next_runs.extend(ts.query(ts.Run).\
+            join(ts.Order).\
+            filter(ts.Order.ordinal == ordinal).\
+            filter(ts.Run.machine == run.machine))
+        ordinal = ordinal + 1
+
+    return next_runs[::-1] + [run] + prev_runs
+
 @v4_route("/<int:id>")
 def v4_run(id):
-    return "run %d" % id
+    ts = request.get_testsuite()
+    run = ts.getRun(id)
+
+    # Find the neighboring runs, by order.
+    neighboring_runs = get_adjacent_runs_on_machine(ts, run, N = 3)
+
+    # Parse the view options.
+    options = {}
+    options['show_delta'] = bool(request.args.get('show_delta'))
+    options['show_previous'] = bool(request.args.get('show_previous'))
+    options['show_stddev'] =  bool(request.args.get('show_stddev'))
+    options['show_mad'] = bool(request.args.get('show_mad'))
+    options['show_all'] = bool(request.args.get('show_all'))
+    options['show_all_samples'] = bool(request.args.get('show_all_samples'))
+    options['show_sample_counts'] = bool(request.args.get('show_sample_counts'))
+    options['show_graphs'] = show_graphs = bool(request.args.get('show_graphs'))
+    options['show_data_table'] = bool(request.args.get('show_data_table'))
+    options['hide_report_by_default'] = bool(
+        request.args.get('hide_report_by_default'))
+    try:
+        num_comparison_runs = int(request.args.get('num_comparison_runs'))
+    except:
+        num_comparison_runs = 10
+    options['num_comparison_runs'] = num_comparison_runs
+    options['test_filter'] = test_filter_str = request.args.get(
+        'test_filter', '')
+    if test_filter_str:
+        test_filter_re = re.compile(test_filter_str)
+    else:
+        test_filter_re = None
+
+    # FIXME: Include when we have report functionality.
+    _, text_report, html_report = None, "", ""
+
+    return render_template("v4_run.html", ts=ts, run=run,
+                           options=options, neighboring_runs=neighboring_runs)
 
 @v4_route("/order/<int:ordinal>")
 def v4_order(ordinal):

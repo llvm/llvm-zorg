@@ -1,0 +1,86 @@
+{% import "v4_utils.html" as v4_utils %}
+{% import "utils.html" as utils %}
+
+{% set machine = run.machine %}
+
+{% extends "layout.html" %}
+{% set components = [(ts.name, v4_url_for("v4_overview")),
+                     ('machine', v4_url_for("v4_machine", id=machine.id))] %}
+{% block head %}
+        <script src="{{ url_for('.static', filename='popup.js') }}"></script>
+        <script src="{{ url_for('.static', filename='sorttable.js') }}"></script>
+        <script src="{{ url_for('.static', filename='View2D.js') }}"></script>
+{% endblock %}
+
+{% block title %}Run Results{% endblock %}
+
+{% block body %}
+
+{% call v4_utils.v4_run_page(ts, machine, run, compare_to, neighboring_runs) %}
+
+{{ utils.render_popup_begin('view_options', 'View Options', true) }}
+<form action="" method="get">
+<b>Show Delta:</b>
+<input type="checkbox" name="show_delta" value="yes" {{
+       "checked" if options.show_delta }}><br>
+
+<b>Show Previous Value:</b>
+<input type="checkbox" name="show_previous" value="yes" {{
+       "checked" if options.show_previous }}><br>
+
+<b>Show Standard Deviation:</b>
+<input type="checkbox" name="show_stddev" value="yes" {{
+       "checked" if options.show_stddev }}><br>
+
+<b>Show Median Absolute Deviation:</b>
+<input type="checkbox" name="show_mad" value="yes" {{
+       "checked" if options.show_mad }}><br>
+
+<b>Show All Values:</b>
+<input type="checkbox" name="show_all" value="yes" {{
+       "checked" if options.show_all }}><br>
+
+<b>Show All Samples:</b>
+<input type="checkbox" name="show_all_samples" value="yes" {{
+       "checked" if options.show_all_samples }}><br>
+
+<b>Show Sample Counts:</b>
+<input type="checkbox" name="show_sample_counts" value="yes" {{
+       "checked" if options.show_sample_counts }}><br>
+
+<b>Number of Comparison Runs:</b>
+<input type="text" name="num_comparison_runs" value="{{
+       options.num_comparison_runs }}"><br>
+
+<b>Show Report Graphs:</b>
+<input type="checkbox" name="show_graphs" value="yes" {{
+       "checked" if options.show_graphs }}><br>
+
+<b>Show Data Table:</b>
+<input type="checkbox" name="show_data_table" value="yes" {{
+       "checked" if options.show_data_table }}><br>
+
+<b>Hide Report By Default:</b>
+<input type="checkbox" name="hide_report_by_default" value="yes" {{
+       "checked" if options.hide_report_by_default }}><br>
+
+<b>Test Filter (regexp):</b>
+<input type="text" name="test_filter" value="{{
+       options.test_filter }}"><br>
+
+<input type="submit" name="submit" value="Update">
+</form>
+{{ utils.render_popup_end() }}
+
+{{ utils.render_popup_begin('text_report', 'Report (Text)', true) }}
+<pre>{{ text_report }}</pre>
+{{ utils.render_popup_end() }}
+
+{{ utils.render_popup_begin('html_report', 'Report (HTML)',
+                            options.hide_report_by_default) }}
+{{html_report|safe}}
+{{ utils.render_popup_end() }}
+
+{% endcall %}
+
+{% endblock %}
