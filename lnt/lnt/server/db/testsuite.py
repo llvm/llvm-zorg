@@ -46,7 +46,8 @@ class StatusKind(Base):
     id = Column("ID", Integer, primary_key=True)
     name = Column("Name", String(256), unique=True)
     
-    def __init__(self, name):
+    def __init__(self, id, name):
+        self.id = id
         self.name = name
 
     def __repr__(self):

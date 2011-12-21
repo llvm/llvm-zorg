@@ -41,9 +41,9 @@ ts_db = db.testsuite['nt']
 start_time = datetime.datetime.utcnow()
 end_time = datetime.datetime.utcnow()
 
-machine = ts_db.Machine("test-machine", 1)
+machine = ts_db.Machine("test-machine")
 machine.uname = "test-uname"
-order = ts_db.Order()
+order = ts_db.Order(ordinal = 0)
 order.llvm_revision = "test-revision"
 run = ts_db.Run(machine, order, start_time, end_time)
 run.arch = "test-arch"
@@ -83,9 +83,9 @@ sample = samples[0]
 
 # Audit the various fields.
 assert machine.name == "test-machine"
-assert machine.number == 1
 assert machine.uname == "test-uname"
 
+assert order.ordinal == 0
 assert order.llvm_revision == "test-revision"
 
 assert run.machine is machine

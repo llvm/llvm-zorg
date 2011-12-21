@@ -74,6 +74,12 @@ class V4DB(object):
         self.query = self.session.query
         self.rollback = self.session.rollback
 
+        # For parity with the usage of TestSuiteDB, we make our primary model
+        # classes available as instance variables.
+        self.SampleType = testsuite.SampleType
+        self.StatusKind = testsuite.StatusKind
+        self.TestSuite = testsuite.TestSuite
+
     @property
     def testsuite(self):
         # This is the start of "magic" part of V4DB, which allows us to get

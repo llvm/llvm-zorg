@@ -78,6 +78,7 @@ if __name__ == "__main__":
 ###
 
 import lnt.db.perfdb
+import lnt.testing
 
 def _create_v4_nt_database(db_path):
     from lnt.server.db import v4db, testsuite
@@ -88,6 +89,13 @@ def _create_v4_nt_database(db_path):
 
     # Create an NT compatible test suite, automatically.
     ts = testsuite.TestSuite("nt", "NT")
+
+    # Define the default status kinds.
+    #
+    # FIXME: This should probably be done by V4DB.
+    db.add(testsuite.StatusKind(lnt.testing.PASS, "PASS"))
+    db.add(testsuite.StatusKind(lnt.testing.FAIL, "FAIL"))
+    db.add(testsuite.StatusKind(lnt.testing.XFAIL, "XFAIL"))
 
     # Define the default sample types.
     #
