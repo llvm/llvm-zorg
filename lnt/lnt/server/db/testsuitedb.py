@@ -60,7 +60,7 @@ class TestSuiteDB(object):
             def __repr__(self):
                 return '%s_%s%r' % (db_key_name, self.__class__.__name__,
                                     (self.name,))
-                
+
         class Order(self.base):
             __tablename__ = db_key_name + '_Order'
 
@@ -144,7 +144,7 @@ class TestSuiteDB(object):
 
             def __repr__(self):
                 return '%s_%s%r' % (db_key_name, self.__class__.__name__,
-                                    (self.name))
+                                    (self.name,))
 
         class Sample(self.base):
             __tablename__ = db_key_name + '_Sample'
@@ -183,13 +183,21 @@ class TestSuiteDB(object):
 
                 class_dict[item.name] = item.column
 
-            def __init__(self, run, test):
+            def __init__(self, run, test, **kwargs):
                 self.run = run
                 self.test = test
 
+                # Initialize sample fields (defaulting to 0, for now).
+                for item in test_suite.sample_fields:
+                    setattr(self, item.name, kwargs.get(item.name, 0))
+
             def __repr__(self):
-                return '%s_%s%r' % (db_key_name, self.__class__.__name__,
-                                    (self.run, self.test, self.value))
+                fields = dict((item.name, getattr(self, item.name))
+                              for item in test_suite.sample_fields)
+
+                return '%s_%s(%r, %r, **%r)' % (
+                    db_key_name, self.__class__.__name__,
+                    self.run, self.test, fields)
 
         self.Machine = Machine
         self.Run = Run
@@ -370,6 +378,62 @@ supplied run is missing required run parameter: %r""" % (
 
             return run,True
 
+    def _importSampleValues(self, tests_data, run):
+        # We now need to transform the old schema data (composite samples split
+        # into multiple tests) into the V4DB format where each sample is a
+        # complete record.
+
+        # Load a map of all the tests, which we will extend when we find tests
+        # that need to be added.
+        test_cache = dict((test.name, test)
+                          for test in self.query(self.Test))
+
+        # We build a map of test name to sample values, by scanning all the
+        # tests. This is complicated by the interchange's support of multiple
+        # values, which we cannot properly aggregate. We handle this by keying
+        # off of the test name and the sample index.
+        #
+        # Note that the above strategy only works if reports don't report the
+        # same test name multiple times. That was possible in the schema, but I
+        # believe never used.
+        sample_records = {}
+        for test_data in tests_data:
+            if test_data['Info']:
+                raise ValueError,"""\
+test parameter sets are not supported by V4DB databases"""
+
+            name = test_data['Name']
+
+            # Map this reported test name into a test name and a sample field.
+            #
+            # FIXME: This is really slow.
+            for item in self.test_suite.sample_fields:
+                if name.endswith(item.info_key):
+                    test_name = name[:-len(item.info_key)]
+                    sample_field = item
+                    break
+            else:
+                # Disallow tests which do not map to a sample field.
+                raise ValueError,"""\
+test %r does not map to a sample field in the reported suite""" % (
+                    name)
+
+            # Get or create the test.
+            test = test_cache.get(test_name)
+            if test is None:
+                test_cache[test_name] = test = self.Test(test_name)
+                self.add(test)
+
+            for i,value in enumerate(test_data['Data']):
+                record_key = (test_name, i)
+                record = sample_records.get(record_key)
+                if record is None:
+                    sample_records[record_key] = sample = self.Sample(run, test)
+                    self.add(sample)
+
+                # FIXME: Avoid setattr.
+                setattr(sample, sample_field.name, value)
+
     def importDataFromDict(self, data):
         """
         importDataFromDict(data) -> Run, bool
@@ -392,7 +456,6 @@ supplied run is missing required run parameter: %r""" % (
         if not inserted:
             return False, run
 
-        # FIXME: Insert tests and samples.
-        raise NotImplementedError
+        self._importSampleValues(data['Tests'], run)
 
         return True, run
