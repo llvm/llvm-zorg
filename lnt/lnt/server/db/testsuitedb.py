@@ -42,6 +42,7 @@ class TestSuiteDB(object):
         class Machine(self.base):
             __tablename__ = db_key_name + '_Machine'
 
+            fields = self.machine_fields
             id = Column("ID", Integer, primary_key=True)
             name = Column("Name", String(256), index=True)
 
@@ -53,7 +54,7 @@ class TestSuiteDB(object):
             # Dynamically create fields for all of the test suite defined
             # machine fields.
             class_dict = locals()
-            for item in self.machine_fields:
+            for item in fields:
                 if item.name in class_dict:
                     raise ValueError,"test suite defines reserved key %r" % (
                         name,)
@@ -68,9 +69,19 @@ class TestSuiteDB(object):
                 return '%s_%s%r' % (db_key_name, self.__class__.__name__,
                                     (self.name,))
 
+            def get_field(self, field):
+                return getattr(self, field.name)
+
+            def set_field(self, field, value):
+                return setattr(self, field.name, value)
+
+            def get_parameters(self):
+                return json.loads(self.parameters)
+
         class Order(self.base):
             __tablename__ = db_key_name + '_Order'
 
+            fields = self.order_fields
             id = Column("ID", Integer, primary_key=True)
 
             # Dynamically create fields for all of the test suite defined order
@@ -87,16 +98,31 @@ class TestSuiteDB(object):
                 class_dict[item.name] = item.column = Column(
                     item.name, String(256))
 
-            def __init__(self):
-                pass
+            def __init__(self, **kwargs):
+                for item in self.fields:
+                    self.set_field(item, kwargs[item.name])
 
             def __repr__(self):
                 return '%s_%s%r' % (db_key_name, self.__class__.__name__,
                                     ())
 
+            def __repr__(self):
+                fields = dict((item.name, self.get_field(item))
+                              for item in self.fields)
+
+                return '%s_%s(**%r)' % (
+                    db_key_name, self.__class__.__name__, fields)
+
+            def get_field(self, field):
+                return getattr(self, field.name)
+
+            def set_field(self, field, value):
+                return setattr(self, field.name, value)
+
         class Run(self.base):
             __tablename__ = db_key_name + '_Run'
 
+            fields = self.run_fields
             id = Column("ID", Integer, primary_key=True)
             machine_id = Column("MachineID", Integer, ForeignKey(Machine.id),
                                 index=True)
@@ -120,7 +146,7 @@ class TestSuiteDB(object):
             # FIXME: We are probably going to want to index on some of these,
             # but need a bit for that in the test suite definition.
             class_dict = locals()
-            for item in self.run_fields:
+            for item in fields:
                 if item.name in class_dict:
                     raise ValueError,"test suite defines reserved key %r" % (
                         name,)
@@ -140,6 +166,15 @@ class TestSuiteDB(object):
                                     (self.machine, self.order, self.start_time,
                                      self.end_time))
 
+            def get_field(self, field):
+                return getattr(self, field.name)
+
+            def set_field(self, field, value):
+                return setattr(self, field.name, value)
+
+            def get_parameters(self):
+                return json.loads(self.parameters)
+
         class Test(self.base):
             __tablename__ = db_key_name + '_Test'
 
@@ -153,9 +188,16 @@ class TestSuiteDB(object):
                 return '%s_%s%r' % (db_key_name, self.__class__.__name__,
                                     (self.name,))
 
+            def get_field(self, field):
+                return getattr(self, field.name)
+
+            def set_field(self, field, value):
+                return setattr(self, field.name, value)
+
         class Sample(self.base):
             __tablename__ = db_key_name + '_Sample'
 
+            fields = self.sample_fields
             id = Column("ID", Integer, primary_key=True)
             # We do not need an index on run_id, this is covered by the compound
             # (Run(ID),Test(ID)) index we create below.
@@ -195,16 +237,22 @@ class TestSuiteDB(object):
                 self.test = test
 
                 # Initialize sample fields (defaulting to 0, for now).
-                for item in testsuitedb.sample_fields:
-                    setattr(self, item.name, kwargs.get(item.name, 0))
+                for item in self.fields:
+                    self.set_field(item, kwargs.get(item.name, 0))
 
             def __repr__(self):
-                fields = dict((item.name, getattr(self, item.name))
-                              for item in self.sample_fields)
+                fields = dict((item.name, self.get_field(item))
+                              for item in self.fields)
 
                 return '%s_%s(%r, %r, **%r)' % (
                     db_key_name, self.__class__.__name__,
                     self.run, self.test, fields)
+
+            def get_field(self, field):
+                return getattr(self, field.name)
+
+            def set_field(self, field, value):
+                return setattr(self, field.name, value)
 
         self.Machine = Machine
         self.Run = Run
@@ -263,9 +311,8 @@ class TestSuiteDB(object):
                 # suite to define defaults.
                 value = ''
 
-            # FIXME: Avoid setattr.
             query = query.filter(item.column == value)
-            setattr(machine, item.name, value)
+            machine.set_field(item.name, value)
 
         # Convert any remaining machine_parameters into a JSON encoded blob. We
         # encode this as an array to avoid a potential ambiguity on the key
@@ -309,9 +356,8 @@ class TestSuiteDB(object):
 supplied run is missing required run parameter: %r""" % (
                     item.info_key)
 
-            # FIXME: Avoid setattr.
             query = query.filter(item.column == value)
-            setattr(order, item.name, value)
+            order.set_field(item, value)
 
         # Execute the query to see if we already have this order.
         try:
@@ -368,9 +414,8 @@ supplied run is missing required run parameter: %r""" % (
                 # suite to define defaults.
                 value = ''
 
-            # FIXME: Avoid setattr.
             query = query.filter(item.column == value)
-            setattr(run, item.name, value)
+            run.set_field(item, value)
 
         # Any remaining parameters are saved as a JSON encoded array.
         run.parameters = json.dumps(sorted(run_parameters.items()))
@@ -438,8 +483,7 @@ test %r does not map to a sample field in the reported suite""" % (
                     sample_records[record_key] = sample = self.Sample(run, test)
                     self.add(sample)
 
-                # FIXME: Avoid setattr.
-                setattr(sample, sample_field.name, value)
+                sample.set_field(sample_field, value)
 
     def importDataFromDict(self, data):
         """
@@ -466,3 +510,14 @@ test %r does not map to a sample field in the reported suite""" % (
         self._importSampleValues(data['Tests'], run)
 
         return True, run
+
+    # Simple query support (mostly used by templates)
+
+    def machines(self, name=None):
+        q = self.query(self.Machine)
+        if name:
+            q = q.filter_by(name=name)
+        return q
+
+    def getMachine(self, id):
+        return self.query(self.Machine).filter_by(id=id).one()
