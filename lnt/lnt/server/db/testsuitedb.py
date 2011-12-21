@@ -38,8 +38,15 @@ class TestSuiteDB(object):
         self.base = sqlalchemy.ext.declarative.declarative_base()
 
         # Create parameterized model classes for this test suite.
+        class ParameterizedMixin(object):
+            def get_field(self, field):
+                return getattr(self, field.name)
+
+            def set_field(self, field, value):
+                return setattr(self, field.name, value)
+
         db_key_name = self.test_suite.db_key_name
-        class Machine(self.base):
+        class Machine(self.base, ParameterizedMixin):
             __tablename__ = db_key_name + '_Machine'
 
             fields = self.machine_fields
@@ -49,7 +56,7 @@ class TestSuiteDB(object):
             # The parameters blob is used to store any additional information
             # reported by the run but not promoted into the machine record. Such
             # data is stored as a JSON encoded blob.
-            parameters = Column("Parameters", Binary)
+            parameters_data = Column("Parameters", Binary)
 
             # Dynamically create fields for all of the test suite defined
             # machine fields.
@@ -69,16 +76,16 @@ class TestSuiteDB(object):
                 return '%s_%s%r' % (db_key_name, self.__class__.__name__,
                                     (self.name,))
 
-            def get_field(self, field):
-                return getattr(self, field.name)
+            @property
+            def parameters(self):
+                """dictionary access to the BLOB encoded parameters data"""
+                return dict(json.loads(self.parameters_data))
 
-            def set_field(self, field, value):
-                return setattr(self, field.name, value)
+            @parameters.setter
+            def parameters(self, data):
+                self.parameters_data = json.dumps(sorted(data.items()))
 
-            def get_parameters(self):
-                return json.loads(self.parameters)
-
-        class Order(self.base):
+        class Order(self.base, ParameterizedMixin):
             __tablename__ = db_key_name + '_Order'
 
             fields = self.order_fields
@@ -102,9 +109,6 @@ class TestSuiteDB(object):
                 for item in self.fields:
                     self.set_field(item, kwargs[item.name])
 
-            def __repr__(self):
-                return '%s_%s%r' % (db_key_name, self.__class__.__name__,
-                                    ())
 
             def __repr__(self):
                 fields = dict((item.name, self.get_field(item))
@@ -113,13 +117,7 @@ class TestSuiteDB(object):
                 return '%s_%s(**%r)' % (
                     db_key_name, self.__class__.__name__, fields)
 
-            def get_field(self, field):
-                return getattr(self, field.name)
-
-            def set_field(self, field, value):
-                return setattr(self, field.name, value)
-
-        class Run(self.base):
+        class Run(self.base, ParameterizedMixin):
             __tablename__ = db_key_name + '_Run'
 
             fields = self.run_fields
@@ -135,7 +133,7 @@ class TestSuiteDB(object):
             # The parameters blob is used to store any additional information
             # reported by the run but not promoted into the machine record. Such
             # data is stored as a JSON encoded blob.
-            parameters = Column("Parameters", Binary)
+            parameters_data = Column("Parameters", Binary)
 
             machine = sqlalchemy.orm.relation(Machine)
             order = sqlalchemy.orm.relation(Order)
@@ -166,16 +164,16 @@ class TestSuiteDB(object):
                                     (self.machine, self.order, self.start_time,
                                      self.end_time))
 
-            def get_field(self, field):
-                return getattr(self, field.name)
+            @property
+            def parameters(self):
+                """dictionary access to the BLOB encoded parameters data"""
+                return dict(json.loads(self.parameters_data))
 
-            def set_field(self, field, value):
-                return setattr(self, field.name, value)
+            @parameters.setter
+            def parameters(self, data):
+                self.parameters_data = json.dumps(sorted(data.items()))
 
-            def get_parameters(self):
-                return json.loads(self.parameters)
-
-        class Test(self.base):
+        class Test(self.base, ParameterizedMixin):
             __tablename__ = db_key_name + '_Test'
 
             id = Column("ID", Integer, primary_key=True)
@@ -188,13 +186,7 @@ class TestSuiteDB(object):
                 return '%s_%s%r' % (db_key_name, self.__class__.__name__,
                                     (self.name,))
 
-            def get_field(self, field):
-                return getattr(self, field.name)
-
-            def set_field(self, field, value):
-                return setattr(self, field.name, value)
-
-        class Sample(self.base):
+        class Sample(self.base, ParameterizedMixin):
             __tablename__ = db_key_name + '_Sample'
 
             fields = self.sample_fields
@@ -248,12 +240,6 @@ class TestSuiteDB(object):
                     db_key_name, self.__class__.__name__,
                     self.run, self.test, fields)
 
-            def get_field(self, field):
-                return getattr(self, field.name)
-
-            def set_field(self, field, value):
-                return setattr(self, field.name, value)
-
         self.Machine = Machine
         self.Run = Run
         self.Test = Test
@@ -265,7 +251,7 @@ class TestSuiteDB(object):
                                 Sample.run_id, Sample.test_id)
 
         # Create the index we use to ensure machine uniqueness.
-        args = [Machine.name, Machine.parameters]
+        args = [Machine.name, Machine.parameters_data]
         for item in self.machine_fields:
             args.append(item.column)
         sqlalchemy.schema.Index("ix_%s_Machine_Unique" % db_key_name,
@@ -312,13 +298,14 @@ class TestSuiteDB(object):
                 value = ''
 
             query = query.filter(item.column == value)
-            machine.set_field(item.name, value)
+            machine.set_field(item, value)
 
         # Convert any remaining machine_parameters into a JSON encoded blob. We
         # encode this as an array to avoid a potential ambiguity on the key
         # ordering.
-        machine.parameters = json.dumps(sorted(machine_parameters.items()))
-        query = query.filter(self.Machine.parameters == machine.parameters)
+        machine.parameters = machine_parameters
+        query = query.filter(self.Machine.parameters_data ==
+                             machine.parameters_data)
 
         # Execute the query to see if we already have this machine.
         try:
@@ -418,8 +405,8 @@ supplied run is missing required run parameter: %r""" % (
             run.set_field(item, value)
 
         # Any remaining parameters are saved as a JSON encoded array.
-        run.parameters = json.dumps(sorted(run_parameters.items()))
-        query = query.filter(self.Run.parameters == run.parameters)
+        run.parameters = run_parameters
+        query = query.filter(self.Run.parameters_data == run.parameters_data)
 
         # Execute the query to see if we already have this run.
         try:
