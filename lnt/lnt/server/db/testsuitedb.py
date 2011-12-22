@@ -231,6 +231,21 @@ class TestSuiteDB(object):
             run = sqlalchemy.orm.relation(Run)
             test = sqlalchemy.orm.relation(Test)
 
+            @staticmethod
+            def get_primary_fields():
+                """
+                get_primary_fields() -> [SampleField*]
+
+                Get the primary sample fields (those which are not associated
+                with some other sample field).
+                """
+                status_fields = set(s.status_field
+                                    for s in self.Sample.fields
+                                    if s.status_field is not None)
+                for field in self.Sample.fields:
+                    if field not in status_fields:
+                        yield field
+
             # Dynamically create fields for all of the test suite defined sample
             # fields.
             #

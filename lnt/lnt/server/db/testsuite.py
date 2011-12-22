@@ -171,18 +171,25 @@ class SampleField(Base):
 
     # The type of sample this is.
     type_id = Column("Type", Integer, ForeignKey('SampleType.ID'))
+    type = relation(SampleType)
 
     # The info key describes the key to expect this field to be present as in
     # the reported machine information. Missing keys result in NULL values in
     # the database.
     info_key = Column("InfoKey", String(256))
 
-    type = relation(SampleType)
+    # The status field is used to create a relation to the sample field that
+    # reports the status (pass/fail/etc.) code related to this value. This
+    # association is used by UI code to present the two status fields together.
+    status_field_id = Column("status_field", Integer, ForeignKey(
+            'TestSuiteSampleFields.ID'))
+    status_field = relation('SampleField', remote_side=id)
 
-    def __init__(self, name, type, info_key):
+    def __init__(self, name, type, info_key, status_field = None):
         self.name = name
         self.type = type
         self.info_key = info_key
+        self.status_field = status_field
 
         # Column instance for fields which have been bound (non-DB
         # parameter). This is provided for convenience in querying.
