@@ -392,11 +392,23 @@ supplied run is missing required run parameter: %r""" % (
             orders.sort()
 
             # Assign ordinals.
-            for i,o in enumerate(orders):
+            #
+            # We iterate in reverse order to guarantee that we do not create
+            # unique conflicts.
+            for i in range(len(orders)-1,-1,-1):
                 # FIXME: Figure out whether or not SA checks modified status on
                 # write or on value change.
+                o = orders[i]
                 if o.ordinal != i:
                     o.ordinal = i
+                    # We have to flush now in order to assure that SA will not
+                    # present non-unique values to the database.
+                    #
+                    # FIXME: This is really horrible from a performance point of
+                    # view. If we can't figure out how to get SA to do a batch
+                    # update then we should write the SQL query to do the update
+                    # directly.
+                    self.v4db.session.flush()
 
             # Finally, add the new order.
             self.add(order)
