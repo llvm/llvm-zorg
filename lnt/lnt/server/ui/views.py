@@ -642,7 +642,9 @@ def v4_machine(id):
 def v4_report(id):
     db = request.get_db()
     ts = request.get_testsuite()
-    run = ts.getRun(id)
+    run = ts.query(ts.Run).filter_by(id=id).first()
+    if run is None:
+        abort(404)
 
     _, _, html_report = NTEmailReport.getReport(
         result=None, db=db, run=run,
@@ -655,7 +657,9 @@ def v4_report(id):
 def v4_text_report(id):
     db = request.get_db()
     ts = request.get_testsuite()
-    run = ts.getRun(id)
+    run = ts.query(ts.Run).filter_by(id=id).first()
+    if run is None:
+        abort(404)
 
     _, text_report, _ = NTEmailReport.getReport(
         result=None, db=db, run=run,
@@ -670,7 +674,9 @@ def v4_text_report(id):
 def v4_run(id):
     db = request.get_db()
     ts = request.get_testsuite()
-    run = ts.getRun(id)
+    run = ts.query(ts.Run).filter_by(id=id).first()
+    if run is None:
+        abort(404)
 
     # Find the neighboring runs, by order.
     prev_runs = list(ts.get_previous_runs_on_machine(run, N = 3))
