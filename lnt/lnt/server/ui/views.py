@@ -638,34 +638,6 @@ def v4_machine(id):
                            testsuite_name=g.testsuite_name, id=id,
                            associated_runs=associated_runs)
 
-def get_adjacent_runs_on_machine(ts, run, N):
-    prev_runs = []
-    ordinal = run.order.ordinal - 1
-    while ordinal >= 0 and (len(prev_runs) < N or
-                           run.order.ordinal - ordinal < N):
-        # Find all the runs on this machine from the previous order.
-        prev_runs.extend(ts.query(ts.Run).\
-                             join(ts.Order).\
-                             filter(ts.Order.ordinal == ordinal).\
-                             filter(ts.Run.machine == run.machine))
-        ordinal = ordinal - 1
-
-    next_runs = []
-    ordinal = run.order.ordinal + 1
-    # FIXME: This probably isn't a great way to limit our search, at least for
-    # SQLite which can't answer this quickly.
-    last_ordinal = ts.query(ts.Order).count()
-    while ordinal != last_ordinal and (len(next_runs) < N or
-                                       ordinal - run.order.ordinal < N):
-        # Find all the runs on this machine from the next order.
-        next_runs.extend(ts.query(ts.Run).\
-            join(ts.Order).\
-            filter(ts.Order.ordinal == ordinal).\
-            filter(ts.Run.machine == run.machine))
-        ordinal = ordinal + 1
-
-    return next_runs[::-1] + [run] + prev_runs
-
 @v4_route("/<int:id>/report")
 def v4_report(id):
     db = request.get_db()
@@ -699,7 +671,9 @@ def v4_run(id):
     run = ts.getRun(id)
 
     # Find the neighboring runs, by order.
-    neighboring_runs = get_adjacent_runs_on_machine(ts, run, N = 3)
+    prev_runs = list(ts.get_previous_runs_on_machine(run, N = 3))
+    next_runs = list(ts.get_next_runs_on_machine(run, N = 3))
+    neighboring_runs = next_runs[::-1] + [run] + prev_runs
 
     # Parse the view options.
     options = {}

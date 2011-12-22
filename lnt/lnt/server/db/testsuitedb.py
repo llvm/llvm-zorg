@@ -571,3 +571,49 @@ test %r does not map to a sample field in the reported suite""" % (
 
     def getRun(self, id):
         return self.query(self.Run).filter_by(id=id).one()
+
+    def get_adjacent_runs_on_machine(self, run, N, direction = -1):
+        """
+        get_adjacent_runs_on_machine(run, N, direction = -1) -> [Run*]
+
+        Return the N runs which have been submitted to the same machine and are
+        adjacent to the given run.
+
+        The actual number of runs returned may be greater than N in situations
+        where multiple reports were received for the same order.
+
+        The runs will be reported starting with the runs closest to the given
+        run's order.
+
+        The direction must be -1 or 1 and specified whether or not the
+        preceeding or following runs should be returned.
+        """
+        assert direction in (-1, 1), "invalid direction"
+
+        ordinal = run.order.ordinal + direction
+        # FIXME: This probably isn't a great way to limit our search, at least
+        # for SQLite which can't answer this quickly.
+        last_ordinal = self.query(self.Order).count()
+        while 0 <= ordinal <= last_ordinal and N > 0:
+            # Find all the runs on this machine for the current ordinal.
+            found_any = False
+            for item in self.query(self.Run).\
+                    join(self.Order).\
+                    filter(self.Order.ordinal == ordinal).\
+                    filter(self.Run.machine == run.machine):
+                yield item
+                found_any = True
+
+            # If we found any, decrement the number of orders remaining to find
+            # runs for.
+            if found_any:
+                N -= 1
+
+            # Update the ordinal we are searching for runs for.
+            ordinal += direction
+
+    def get_previous_runs_on_machine(self, run, N):
+        return self.get_adjacent_runs_on_machine(run, N, direction = -1)
+
+    def get_next_runs_on_machine(self, run, N):
+        return self.get_adjacent_runs_on_machine(run, N, direction = 1)
