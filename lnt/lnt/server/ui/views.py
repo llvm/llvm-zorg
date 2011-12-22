@@ -645,7 +645,8 @@ def v4_report(id):
     run = ts.getRun(id)
 
     _, _, html_report = NTEmailReport.getReport(
-        result=None, db=db, run=run, baseurl=v4_url_for('index'),
+        result=None, db=db, run=run,
+        baseurl=v4_url_for('v4_overview', _external=True),
         was_added=True, will_commit=True, only_html_body=False)
 
     return make_response(html_report)
@@ -657,7 +658,8 @@ def v4_text_report(id):
     run = ts.getRun(id)
 
     _, text_report, _ = NTEmailReport.getReport(
-        result=None, db=db, run=run, baseurl=v4_url_for('index'),
+        result=None, db=db, run=run,
+        baseurl=v4_url_for('v4_overview', _external=True),
         was_added=True, will_commit=True, only_html_body=True)
 
     response = make_response(text_report)
@@ -705,7 +707,8 @@ def v4_run(id):
     # FIXME: This is a crummy implementation of the concept that we want the
     # webapp UI to be easy to correlate with the email reports.
     _, text_report, html_report = NTEmailReport.getReport(
-        result=None, db=db, run=run, baseurl=v4_url_for('index'),
+        result=None, db=db, run=run,
+        baseurl=v4_url_for('v4_overview', _external=True),
         was_added=True, will_commit=True, only_html_body=True)
 
     return render_template("v4_run.html", ts=ts, run=run,

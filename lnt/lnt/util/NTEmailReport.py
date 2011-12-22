@@ -19,6 +19,7 @@ from lnt.server.ui import util
 from lnt.db import perfdb
 from lnt.util.NTUtil import *
 import lnt.server.db.v4db
+import lnt.server.reporting.runs
 
 from lnt.db.perfdb import Run, Sample
 
@@ -468,7 +469,8 @@ def getReport(result, db, run, baseurl, was_added, will_commit,
 
     # We haven't implemented V4DB support yet in reports.
     if isinstance(db, lnt.server.db.v4db.V4DB):
-        return "NotYetImplemented", "NotYetImplemented", "NotYetImplemented"
+        return lnt.server.reporting.runs.generate_run_report(
+            run, baseurl=baseurl, only_html_body=only_html_body)
 
     # Use a simple report unless the tag indicates this is an old style nightly
     # test run.

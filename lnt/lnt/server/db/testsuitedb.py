@@ -40,6 +40,14 @@ class TestSuiteDB(object):
 
         # Create parameterized model classes for this test suite.
         class ParameterizedMixin(object):
+            # Class variable to allow finding the associated test suite from
+            # model instances.
+            testsuite = self
+
+            # Class variable (expected to be defined by subclasses) to allow
+            # easy access to the field list for parameterized model classes.
+            fields = None
+
             def get_field(self, field):
                 return getattr(self, field.name)
 
