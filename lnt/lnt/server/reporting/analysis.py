@@ -2,6 +2,7 @@
 Utilities for helping with the analysis of data, for reporting purposes.
 """
 
+from lnt.util import stats
 from lnt.server.ui import util
 from lnt.db.runinfo import ComparisonResult
 from lnt.testing import PASS, FAIL, XFAIL
@@ -97,8 +98,8 @@ class RunInfo(object):
             # runs.
             #
             # FIXME: This is using the wrong status kind. :/
-            prev_samples = [v for run_id in comparison_window
-                            for v in self.sample_map.get((run_id, test_id), ())]
+            prev_samples = [v for run in comparison_window
+                            for v in self.sample_map.get((run.id, test_id), ())]
             if prev_samples:
                 # Filter out failing samples.
                 if status_field:
