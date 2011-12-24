@@ -4,8 +4,10 @@ Report functionality centered around individual runs.
 
 import StringIO
 import os
+import urllib
 
 import lnt.server.reporting.analysis
+import lnt.server.ui.util
 from lnt.db import runinfo
 
 def generate_run_report(run, baseurl, only_html_body = False,
@@ -74,7 +76,7 @@ def generate_run_report(run, baseurl, only_html_body = False,
             else:
                 bucket = unchanged_tests
 
-            bucket.append((name, cr))
+            bucket.append((name, cr, test_id))
 
         test_results.append(
             (field, (('New Failures', new_failures, False),
@@ -92,7 +94,7 @@ def generate_run_report(run, baseurl, only_html_body = False,
         result['test_results'] = [{ 'pset' : (), 'results' : pset_results}]
         for field,field_results in test_results:
             for _,bucket,_ in field_results:
-                for name,cr in bucket:
+                for name,cr,_ in bucket:
                     # FIXME: Include additional information about performance
                     # changes.
                     pset_results.append(("%s.%s" % (name, field.name),
@@ -109,7 +111,7 @@ def generate_run_report(run, baseurl, only_html_body = False,
     if baseurl[-1] == '/':
         baseurl = baseurl[:-1]
 
-    report_url = """%s/%d/""" % (baseurl, run.id)
+    report_url = """%s/%d""" % (baseurl, run.id)
     print >>report, report_url
     print >>report, """Nickname: %s:%d""" % (machine.name, machine.id)
     if 'name' in machine_parameters:
@@ -175,10 +177,10 @@ def generate_run_report(run, baseurl, only_html_body = False,
                                                       compare_to.machine.id)
 
     # Generate the summary of the changes.
-    total_changes = sum(len(bucket)
-                        for _,field_results in test_results
-                        for name,bucket,_ in field_results
-                        if name != 'Unchanged Tests')
+    num_total_changes = sum(len(bucket)
+                            for _,field_results in test_results
+                            for name,bucket,_ in field_results
+                            if name != 'Unchanged Tests')
 
     print >>report, """==============="""
     print >>report, """Tests Summary"""
@@ -208,6 +210,19 @@ def generate_run_report(run, baseurl, only_html_body = False,
 </table>
 """ % num_total_tests
 
+    # Add the changes detail.
+    if num_total_changes:
+        print >>report, """=============="""
+        print >>report, """Changes Detail"""
+        print >>report, """=============="""
+        print >>html_report, """
+<p>
+<h3>Changes Detail</h3>"""
+
+        for field,field_results in test_results:
+            _add_report_changes_detail(field, field_results, report,
+                                       html_report, report_url)
+
     # Finish up the HTML report (wrapping the body, if necessary).
     html_report = html_report.getvalue()
     if not only_html_body:
@@ -232,3 +247,64 @@ def generate_run_report(run, baseurl, only_html_body = False,
 </html>""" % locals()
 
     return subject, report.getvalue(), html_report
+
+def _add_report_changes_detail(field, field_results, report, html_report,
+                               report_url):
+    field_display_name = { "compile_time" : "Compile Time",
+                           "execution_time" : "Execution Time" }.get(field.name)
+    for bucket_name,bucket,show_perf in field_results:
+        if not bucket or bucket_name == 'Unchanged Tests':
+            continue
+
+        print >>report, "%s - %s" % (bucket_name, field_display_name)
+        print >>report, '-' * (len(bucket_name) + len(field_display_name) + 3)
+        print >>html_report, """
+    <p>
+    <table class="sortable">
+    <tr><th>%s - %s </th>""" % (bucket_name, field_display_name)
+        if show_perf:
+            print >>html_report, """
+    <th>&Delta;</th><th>Previous</th><th>Current</th> <th>&sigma;</th>"""
+            print >>html_report, """</tr>"""
+
+        # If we aren't displaying any performance results, just write out the
+        # list of tests and continue.
+        if not show_perf:
+            for name,cr,_ in bucket:
+                print >>report, '  %s' % (name,)
+                print >>html_report, """
+    <tr><td>%s</td></tr>""" % (name,)
+            print >>report
+            print >>html_report, """
+    </table>"""
+            continue
+
+        bucket.sort(key = lambda (_,cr,__): -abs(cr.pct_delta))
+
+        for name,cr,test_id in bucket:
+            if cr.stddev is not None:
+                stddev_value = ', std. dev.: %.4f' % cr.stddev
+            else:
+                stddev_value = ''
+            print >>report, ('  %s: %.2f%% (%.4f => %.4f%s)') % (
+                name, 100. * cr.pct_delta,
+                cr.previous, cr.current, stddev_value)
+
+            # Link the regression to the chart of its performance.
+            form_data = urllib.urlencode([('test.%d' % test_id, 'on')])
+            linked_name = '<a href="%s?%s">%s</a>' % (
+                os.path.join(report_url, "graph"),
+                form_data, name)
+
+            pct_value = lnt.server.ui.util.PctCell(cr.pct_delta).render()
+            if cr.stddev is not None:
+                stddev_value = "%.4f" % cr.stddev
+            else:
+                stddev_value = "-"
+
+            print >>html_report, """
+    <tr><td>%s</td>%s<td>%.4f</td><td>%.4f</td><td>%s</td></tr>""" %(
+                linked_name, pct_value, cr.previous, cr.current, stddev_value)
+        print >>report
+        print >>html_report, """
+    </table>"""
