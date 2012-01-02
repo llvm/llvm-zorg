@@ -64,50 +64,50 @@ def get_build_slaves():
         create_slave("gcc17", properties={'jobs' : 4}, max_builds=1),
         # gcc20   1TB  2x6x2.93 GHz Intel Dual Xeon X5670 2.93 GHz 12 cores 24 threads / 24 GB RAM / Debian amd64
         create_slave("gcc20", properties={'jobs' : 12}, max_builds=1),
-        # gcc30        17G     0.4  GHz Alpha EV56 / 2GB RAM / AlphaServer 1200 5/400 => offline, to relocate
-        create_slave("gcc30", properties={'jobs' : 1}, max_builds=1),
-        # gcc31        51G   2x0.4  GHz TI UltraSparc II (BlackBird) / 2 GB RAM / Sun Enterprise 250 => offline, to relocate
-        create_slave("gcc31", properties={'jobs' : 1}, max_builds=1),
-        # gcc33 19033  1TB     0.8  GHz Freescale i.MX515 / 512 MB RAM / Efika MX Client Dev Board / Ubuntu armv7l
-        create_slave("gcc33", properties={'jobs' : 1}, max_builds=1),
-        # gcc34 19034  1TB     0.8  GHz Freescale i.MX515 / 512 MB RAM / Efika MX Client Dev Board / Ubuntu armv7l
-        create_slave("gcc34", properties={'jobs' : 1}, max_builds=1),
-        # gcc35 19035  1TB     0.8  GHz Freescale i.MX515 (ARM Cortex-A8) / 512 MB RAM / Efika MX Client Dev Board / Debian armel
-        create_slave("gcc35", properties={'jobs' : 1}, max_builds=1),
-        # gcc36 19036  1TB     0.8  GHz Freescale i.MX515 (ARM Cortex-A8) / 512 MB RAM / Efika MX Client Dev Board / Debian armel (?)
-        create_slave("gcc36", properties={'jobs' : 1}, max_builds=1),
-        # gcc37 19037  1TB     0.8  GHz Freescale i.MX515 / 512 MB RAM / Efika MX Client Dev Board / Ubuntu armv7l
-        create_slave("gcc37", properties={'jobs' : 1}, max_builds=1),
+#        # gcc30        17G     0.4  GHz Alpha EV56 / 2GB RAM / AlphaServer 1200 5/400 => offline, to relocate
+#        create_slave("gcc30", properties={'jobs' : 1}, max_builds=1),
+#        # gcc31        51G   2x0.4  GHz TI UltraSparc II (BlackBird) / 2 GB RAM / Sun Enterprise 250 => offline, to relocate
+#        create_slave("gcc31", properties={'jobs' : 1}, max_builds=1),
+#        # gcc33 19033  1TB     0.8  GHz Freescale i.MX515 / 512 MB RAM / Efika MX Client Dev Board / Ubuntu armv7l
+#        create_slave("gcc33", properties={'jobs' : 1}, max_builds=1),
+#        # gcc34 19034  1TB     0.8  GHz Freescale i.MX515 / 512 MB RAM / Efika MX Client Dev Board / Ubuntu armv7l
+#        create_slave("gcc34", properties={'jobs' : 1}, max_builds=1),
+#        # gcc35 19035  1TB     0.8  GHz Freescale i.MX515 (ARM Cortex-A8) / 512 MB RAM / Efika MX Client Dev Board / Debian armel
+#        create_slave("gcc35", properties={'jobs' : 1}, max_builds=1),
+#        # gcc36 19036  1TB     0.8  GHz Freescale i.MX515 (ARM Cortex-A8) / 512 MB RAM / Efika MX Client Dev Board / Debian armel (?)
+#        create_slave("gcc36", properties={'jobs' : 1}, max_builds=1),
+#        # gcc37 19037  1TB     0.8  GHz Freescale i.MX515 / 512 MB RAM / Efika MX Client Dev Board / Ubuntu armv7l
+#        create_slave("gcc37", properties={'jobs' : 1}, max_builds=1),
         # gcc38   1TB      3.2  GHz IBM Cell BE / 256 MB RAM / Sony Playstation 3 / Debian powerpc
         create_slave("gcc38", properties={'jobs' : 1}, max_builds=1),
-        # gcc40  160G      1.8  GHz IBM PowerPC 970 (G5) / 512 MB RAM / Apple PowerMac G5 / Debian powerpc
-        create_slave("gcc40", properties={'jobs' : 1}, max_builds=1),
+#        # gcc40  160G      1.8  GHz IBM PowerPC 970 (G5) / 512 MB RAM / Apple PowerMac G5 / Debian powerpc
+#        create_slave("gcc40", properties={'jobs' : 1}, max_builds=1),
         # gcc42  9092 160G     0.8  GHz ICT Loongson 2F / 512 MB RAM / Lemote Fuloong 6004 Linux mini PC / Debian mipsel
         create_slave("gcc42", properties={'jobs' : 1}, max_builds=1),
-        # gcc43  9093  60G     1.4  GHz Powerpc G4 7447A / 1GB RAM / Apple Mac Mini
-        create_slave("gcc43", properties={'jobs' : 1}, max_builds=1),
+#        # gcc43  9093  60G     1.4  GHz Powerpc G4 7447A / 1GB RAM / Apple Mac Mini
+#        create_slave("gcc43", properties={'jobs' : 1}, max_builds=1),
         # gcc45 19045  1TB   4x3.0  GHz AMD Athlon II X4 640 / 4 GB RAM / Debian i386
         create_slave("gcc45", properties={'jobs' : 2}, max_builds=1),
         # gcc46  250G      1.66 GHz Intel Atom D510 2 cores 4 threads / 4 GB RAM / Debian amd64
         create_slave("gcc46", properties={'jobs' : 2}, max_builds=1),
         # gcc47  250G      1.66 GHz Intel Atom D510 2 cores 4 threads / 4 GB RAM / Debian amd64
         create_slave("gcc47", properties={'jobs' : 2}, max_builds=1),
-        # gcc50  9080 250G     0.6  GHz ARM XScale-80219 / 512 MB RAM / Thecus N2100 NAS
-        create_slave("gcc50", properties={'jobs' : 1}, max_builds=1),
+#        # gcc50  9080 250G     0.6  GHz ARM XScale-80219 / 512 MB RAM / Thecus N2100 NAS
+#        create_slave("gcc50", properties={'jobs' : 1}, max_builds=1),
         # gcc51  9081  60G     0.8  GHz ICT Loongson 2F /   1 GB RAM / Lemote YeeLoong 8089 notebook / Debian mipsel
         create_slave("gcc51", properties={'jobs' : 1}, max_builds=1),
-        # gcc52  9082  1TB     0.8  GHz ICT Loongson 2F / 512 MB RAM / Gdium Liberty 1000 notebook / Mandriva 2009.1 mipsel
-        create_slave("gcc52", properties={'jobs' : 1}, max_builds=1),
-        # gcc53  9083  80G   2x1.25 GHz PowerPC 7455 G4  / 1.5 GB RAM / PowerMac G4 dual processor
-        create_slave("gcc53", properties={'jobs' : 1}, max_builds=1),
+#        # gcc52  9082  1TB     0.8  GHz ICT Loongson 2F / 512 MB RAM / Gdium Liberty 1000 notebook / Mandriva 2009.1 mipsel
+#        create_slave("gcc52", properties={'jobs' : 1}, max_builds=1),
+#        # gcc53  9083  80G   2x1.25 GHz PowerPC 7455 G4  / 1.5 GB RAM / PowerMac G4 dual processor
+#        create_slave("gcc53", properties={'jobs' : 1}, max_builds=1),
         # gcc54   36G      0.5  GHz TI UltraSparc IIe (Hummingbird) / 1.5 GB RAM / Sun Netra T1 200 / Debian sparc
         create_slave("gcc54", properties={'jobs' : 1}, max_builds=1),
-        # gcc55  9085 250G     1.2  GHz Marvell Kirkwood 88F6281 (Feroceon) / 512 MB RAM / Marvell SheevaPlug / Ubuntu armel
-        create_slave("gcc55", properties={'jobs' : 1}, max_builds=1),
-        # gcc56  9086 320G     1.2  GHz Marvell Kirkwood 88F6281 (Feroceon) / 512 MB RAM / Marvell SheevaPlug / Ubuntu armel
-        create_slave("gcc56", properties={'jobs' : 1}, max_builds=1),
-        # gcc57  9087 320G     1.2  GHz Marvell Kirkwood 88F6281 (Feroceon) / 512 MB RAM / Marvell SheevaPlug / Ubuntu armel
-        create_slave("gcc57", properties={'jobs' : 1}, max_builds=1),
+#        # gcc55  9085 250G     1.2  GHz Marvell Kirkwood 88F6281 (Feroceon) / 512 MB RAM / Marvell SheevaPlug / Ubuntu armel
+#        create_slave("gcc55", properties={'jobs' : 1}, max_builds=1),
+#        # gcc56  9086 320G     1.2  GHz Marvell Kirkwood 88F6281 (Feroceon) / 512 MB RAM / Marvell SheevaPlug / Ubuntu armel
+#        create_slave("gcc56", properties={'jobs' : 1}, max_builds=1),
+#        # gcc57  9087 320G     1.2  GHz Marvell Kirkwood 88F6281 (Feroceon) / 512 MB RAM / Marvell SheevaPlug / Ubuntu armel
+#        create_slave("gcc57", properties={'jobs' : 1}, max_builds=1),
         # gcc60  9200  72G   2x1.3  GHz Intel Itanium 2 (Madison) / 6 GB RAM / HP zx6000 / Debian ia64
         create_slave("gcc60", properties={'jobs' : 1}, max_builds=1),
         # gcc61  9201  36G   2x0.55 GHz HP PA-8600 / 3.5 GB RAM / HP 9000/785/J6000 / Debian hppa
@@ -118,16 +118,20 @@ def get_build_slaves():
         create_slave("gcc63", properties={'jobs' : 16}, max_builds=1),
         # gcc64  9204  72G       1  GHz Sun UltraSPARC-IIIi / 1 GB RAM / Sun V210 / OpenBSD 4.6 sparc64
         create_slave("gcc64", properties={'jobs' : 1}, max_builds=1),
+        # gcc66  9206  72G   2x1.3  GHz Intel Itanium 2 (Madison) / 12 GB RAM / HP rx2600 / Debian ia64
+        create_slave("gcc66", properties={'jobs' : 1}, max_builds=1),
         # gcc70       160G   2x3.2 GHz  Intel Xeon 3.2E (Irwindale) / 3 GB RAM / Dell Poweredge SC1425 / NetBSD amd64
         create_slave("gcc70", properties={'jobs' : 1}, max_builds=1),
-        # gcc100       1TB   2x2.6 GHz  AMD Opteron 252 / 1GB RAM running Debian x86_64
-        create_slave("gcc100", properties={'jobs' : 1}, max_builds=1),
-        # gcc101       1TB   2x2.6 GHz  AMD Opteron 252 / 1GB RAM running FreeBSD 8 x86_64
-        create_slave("gcc101", properties={'jobs' : 1}, max_builds=1),
-        # gcc200 8010  80G   4x0.4 GHz  TI UltraSparc II (BlackBird) / 4 GB RAM / Sun E250 / Gentoo sparc64
-        create_slave("gcc200", properties={'jobs' : 2}, max_builds=1),
-        # gcc201 8011  80G   4x0.4 GHz  TI UltraSparc II (BlackBird) / 4 GB RAM / Sun E250 / Gentoo sparc64
-        create_slave("gcc201", properties={'jobs' : 2}, max_builds=1),
+#        # gcc100       1TB   2x2.6 GHz  AMD Opteron 252 / 1GB RAM running Debian x86_64
+#        create_slave("gcc100", properties={'jobs' : 1}, max_builds=1),
+#        # gcc101       1TB   2x2.6 GHz  AMD Opteron 252 / 1GB RAM running FreeBSD 8 x86_64
+#        create_slave("gcc101", properties={'jobs' : 1}, max_builds=1),
+        # gcc110       2TB    4x16x3.55 GHz IBM POWER7 / 64 GB RAM / IBM Power 730 Express server / Fedora ppc64
+        create_slave("gcc110", properties={'jobs' : 2}, max_builds=1),
+#        # gcc200 8010  80G   4x0.4 GHz  TI UltraSparc II (BlackBird) / 4 GB RAM / Sun E250 / Gentoo sparc64
+#        create_slave("gcc200", properties={'jobs' : 2}, max_builds=1),
+#        # gcc201 8011  80G   4x0.4 GHz  TI UltraSparc II (BlackBird) / 4 GB RAM / Sun E250 / Gentoo sparc64
+#        create_slave("gcc201", properties={'jobs' : 2}, max_builds=1),
 
         # AMD Athlon(tm) 64 X2 Dual Core 3800+, Ubuntu x86_64
         create_slave("grosser1", properties={'jobs': 2}, max_builds=1),
