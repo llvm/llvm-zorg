@@ -4,6 +4,7 @@ Report functionality centered around individual runs.
 
 import StringIO
 import os
+import time
 import urllib
 
 import lnt.server.reporting.analysis
@@ -21,6 +22,8 @@ def generate_run_report(run, baseurl, only_html_body = False,
     """
 
     assert num_comparison_runs > 0
+
+    start_time = time.time()
 
     ts = run.testsuite
     machine = run.machine
@@ -220,8 +223,14 @@ def generate_run_report(run, baseurl, only_html_body = False,
 <h3>Changes Detail</h3>"""
 
         for field,field_results in test_results:
-            _add_report_changes_detail(field, field_results, report,
+            _add_report_changes_detail(ts, field, field_results, report,
                                        html_report, report_url)
+
+    report_time = time.time() - start_time
+    print >>report, "Report Time: %.2fs" % (report_time,)
+    print >>html_report, """
+<hr>
+<b>Report Time<b>: %.2fs""" % (report_time,)
 
     # Finish up the HTML report (wrapping the body, if necessary).
     html_report = html_report.getvalue()
@@ -248,8 +257,9 @@ def generate_run_report(run, baseurl, only_html_body = False,
 
     return subject, report.getvalue(), html_report
 
-def _add_report_changes_detail(field, field_results, report, html_report,
+def _add_report_changes_detail(ts, field, field_results, report, html_report,
                                report_url):
+    field_index = ts.sample_fields.index(field)
     field_display_name = { "compile_time" : "Compile Time",
                            "execution_time" : "Execution Time" }.get(field.name)
     for bucket_name,bucket,show_perf in field_results:
@@ -291,7 +301,8 @@ def _add_report_changes_detail(field, field_results, report, html_report,
                 cr.previous, cr.current, stddev_value)
 
             # Link the regression to the chart of its performance.
-            form_data = urllib.urlencode([('test.%d' % test_id, 'on')])
+            form_data = urllib.urlencode([('test.%d' % test_id,
+                                           str(field_index))])
             linked_name = '<a href="%s?%s">%s</a>' % (
                 os.path.join(report_url, "graph"),
                 form_data, name)
