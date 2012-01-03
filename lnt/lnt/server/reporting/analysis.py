@@ -98,13 +98,13 @@ class RunInfo(object):
             # runs.
             #
             # FIXME: This is using the wrong status kind. :/
-            prev_samples = [v for run in comparison_window
-                            for v in self.sample_map.get((run.id, test_id), ())]
+            prev_samples = [s for run in comparison_window
+                            for s in self.sample_map.get((run.id, test_id), ())]
+            # Filter out failing samples.
+            if status_field:
+                prev_samples = [s for s in prev_samples
+                                if s.get_field(status_field) == PASS]
             if prev_samples:
-                # Filter out failing samples.
-                if status_field:
-                    prev_samples = [s for s in prev_samples
-                                    if s.get_field(status_field) == PASS]
                 prev_values = [s.get_field(field)
                                for s in prev_samples]
                 stddev = stats.standard_deviation(prev_values)
