@@ -681,6 +681,10 @@ def v4_run(id):
     # Find the neighboring runs, by order.
     prev_runs = list(ts.get_previous_runs_on_machine(run, N = 3))
     next_runs = list(ts.get_next_runs_on_machine(run, N = 3))
+    if prev_runs:
+        compare_to = prev_runs[0]
+    else:
+        compare_to = None
     neighboring_runs = next_runs[::-1] + [run] + prev_runs
 
     # Parse the view options.
@@ -717,7 +721,7 @@ def v4_run(id):
         baseurl=v4_url_for('v4_overview', _external=True),
         was_added=True, will_commit=True, only_html_body=True)
 
-    return render_template("v4_run.html", ts=ts, run=run,
+    return render_template("v4_run.html", ts=ts, run=run, compare_to=compare_to,
                            options=options, neighboring_runs=neighboring_runs,
                            text_report=text_report, html_report=html_report)
 
@@ -732,3 +736,182 @@ def v4_order(ordinal):
         abort(404)
 
     return render_template("v4_order.html", ts=ts, order=order)
+
+@v4_route("/<int:id>/graph")
+def v4_graph(id):
+    from lnt.server.ui import util
+    from lnt.testing import PASS
+    from lnt.util import stats
+    from lnt.external.stats import stats as ext_stats
+
+    ts = request.get_testsuite()
+    run = ts.query(ts.Run).filter_by(id=id).first()
+    if run is None:
+        abort(404)
+
+    # Find the neighboring runs, by order.
+    prev_runs = list(ts.get_previous_runs_on_machine(run, N = 3))
+    next_runs = list(ts.get_next_runs_on_machine(run, N = 3))
+    if prev_runs:
+        compare_to = prev_runs[0]
+    else:
+        compare_to = None
+    neighboring_runs = next_runs[::-1] + [run] + prev_runs
+
+    # Parse the view options.
+    options = {}
+    options['show_mad'] = show_mad = bool(request.args.get('show_mad'))
+    options['show_stddev'] = show_stddev = bool(request.args.get('show_stddev'))
+    options['show_points'] = show_points = bool(request.args.get('show_points'))
+    options['show_all_points'] = show_all_points = bool(
+        request.args.get('show_all_points'))
+    options['show_linear_regression'] = show_linear_regression = bool(
+        request.args.get('show_linear_regression', True))
+    options['show_failures'] = show_failures = bool(
+        request.args.get('show_failures'))
+
+    # Load the graph parameters.
+    graph_tests = []
+    for name,value in request.args.items():
+        # Tests to graph are passed as test.<test id>=<sample field id>.
+        if not name.startswith(str('test.')):
+            continue
+
+        # Extract the test id string and convert to integers.
+        test_id_str = name[5:]
+        try:
+            test_id = int(test_id_str)
+            field_index = int(value)
+        except:
+            return abort(400)
+
+        # Get the test and the field.
+        if not (0 <= field_index < len(ts.sample_fields)):
+            return abort(400)
+
+        test = ts.query(ts.Test).filter(ts.Test.id == test_id).one()
+        field = ts.sample_fields[field_index]
+
+        graph_tests.append((test, field))
+
+    # Order the plots by test name and then field.
+    graph_tests.sort(key = lambda (t,f): (t.name, f.name))
+
+    # Build the graph data.
+    legend = []
+    graph_plots = []
+    num_points = 0
+    num_plots = len(graph_tests)
+    for i,(test,field) in enumerate(graph_tests):
+        # Determine the base plot color.
+        col = list(util.makeDarkColor(float(i) / num_plots))
+        legend.append((test.name, field.name, tuple(col)))
+
+        # Load all the field values for this test on the same machine.
+        #
+        # FIXME: Don't join to Order here, aggregate this across all the tests
+        # we want to load. Actually, we should just make this a single query.
+        q = ts.query(field.column, ts.Order.ordinal).\
+            join(ts.Run).join(ts.Order).\
+            filter(ts.Run.machine == run.machine).\
+            filter(ts.Sample.test == test)
+
+        # Unless all samples requested, filter out failing tests.
+        if not show_failures:
+            if field.status_field:
+                q = q.filter(field.status_field.column == PASS)
+
+        # Aggregate by run order id.
+        data = util.multidict((r,v)
+                              for v,r in q).items()
+        data.sort()
+
+        # Compute the graph points.
+        errorbar_data = []
+        points_data = []
+        pts = []
+        for x,values in data:
+            pts.append((x, min(values)))
+
+            # Add the individual points, if requested.
+            if show_points:
+                if show_all_points:
+                    for v in values:
+                        points_data.append((x, v))
+                else:
+                    points_data.append((x, min_value))
+
+            # Add the standard deviation error bar, if requested.
+            if show_stddev:
+                mean = stats.mean(values)
+                sigma = stats.standard_deviation(values)
+                errorbar_data.append((x, mean - sigma, mean + sigma))
+
+            # Add the MAD error bar, if requested.
+            if show_mad:
+                med = stats.median(values)
+                mad = stats.median_absolute_deviation(values, med)
+                errorbar_data.append((x, med - mad, med + mad))
+
+        # Add the minimum line plot.
+        num_points += len(data)
+        graph_plots.append("graph.addPlot([%s], %s);" % (
+                        ','.join(['[%.4f,%.4f]' % (t,v)
+                                  for t,v in pts]),
+                        "new Graph2D_LinePlotStyle(1, %r)" % col))
+
+        # Add regression line, if requested.
+        if show_linear_regression:
+            xs = [t for t,v in pts]
+            ys = [v for t,v in pts]
+
+            # We compute the regression line in terms of a normalized X scale.
+            x_min, x_max = min(xs), max(xs)
+            try:
+                norm_xs = [(x - x_min) / (x_max - x_min)
+                           for x in xs]
+            except ZeroDivisionError:
+                norm_xs = xs
+
+            try:
+                info = ext_stats.linregress(norm_xs, ys)
+            except ZeroDivisionError:
+                info = None
+            except ValueError:
+                info = None
+
+            if info is not None:
+                slope, intercept,_,_,_ = info
+
+                reglin_col = [c*.5 for c in col]
+                pts = ','.join('[%.4f,%.4f]' % pt
+                               for pt in [(x_min, 0.0 * slope + intercept),
+                                          (x_max, 1.0 * slope + intercept)])
+                style = "new Graph2D_LinePlotStyle(4, %r)" % ([.7, .7, .7],)
+                graph_plots.append("graph.addPlot([%s], %s);" % (
+                        pts,style))
+                style = "new Graph2D_LinePlotStyle(2, %r)" % (reglin_col,)
+                graph_plots.append("graph.addPlot([%s], %s);" % (
+                        pts,style))
+
+        # Add the points plot, if used.
+        if points_data:
+            pts_col = (0,0,0)
+            graph_plots.append("graph.addPlot([%s], %s);" % (
+                ','.join(['[%.4f,%.4f]' % (t,v)
+                            for t,v in points_data]),
+                "new Graph2D_PointPlotStyle(1, %r)" % (pts_col,)))
+
+        # Add the error bar plot, if used.
+        if errorbar_data:
+            bar_col = [c*.7 for c in col]
+            graph_plots.append("graph.addPlot([%s], %s);" % (
+                ','.join(['[%.4f,%.4f,%.4f]' % (x,y_min,y_max)
+                          for x,y_min,y_max in errorbar_data]),
+                "new Graph2D_ErrorBarPlotStyle(1, %r)" % (bar_col,)))
+
+    return render_template("v4_graph.html", ts=ts, run=run,
+                           compare_to=compare_to, options=options,
+                           num_plots=num_plots, num_points=num_points,
+                           neighboring_runs=neighboring_runs,
+                           graph_plots=graph_plots, legend=legend)

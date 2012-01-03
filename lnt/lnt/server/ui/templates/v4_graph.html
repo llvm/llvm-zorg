@@ -1,0 +1,107 @@
+{% import "v4_utils.html" as v4_utils %}
+{% import "utils.html" as utils %}
+
+{% set machine = run.machine %}
+
+{% extends "layout.html" %}
+{% set components = [(ts.name, v4_url_for("v4_overview")),
+                     ('machine', v4_url_for("v4_machine", id=machine.id))] %}
+{% block head %}
+        <script src="{{ url_for('.static', filename='popup.js') }}"></script>
+        <script src="{{ url_for('.static', filename='sorttable.js') }}"></script>
+        <script src="{{ url_for('.static', filename='View2D.js') }}"></script>
+{% endblock %}
+
+{% block title %}Graph{% endblock %}
+
+{# Add JS to initialize the graph. #}
+{% block onload %}init(){% endblock %}
+{% block javascript %}
+function init() {
+    graph = new Graph2D("graph");
+    graph.clearColor = [1, 1, 1];
+
+{% for plot in graph_plots %}
+    {{ plot }}
+{% endfor %}
+    
+    graph.xAxis.format = graph.xAxis.formats.normal;
+    graph.draw();
+}
+{% endblock %}
+
+{% block body %}
+
+{% call v4_utils.v4_run_page(ts, machine, run, compare_to, neighboring_runs) %}
+
+{{ utils.render_popup_begin('view_options', 'View Options', true) }}
+<form action="" method="get">
+<b>Show Median Absolute Deviation:</b>
+<input type="checkbox" name="show_mad" value="yes" {{
+       'checked' if options.show_mad}}><br>
+
+<b>Show Standard Deviation:</b>
+<input type="checkbox" name="show_stddev" value="yes" {{
+       'checked' if options.show_stddev}}><br>
+
+<b>Show Linear Regression:</b>
+<input type="checkbox" name="show_linear_regression" value="yes" {{
+       'checked' if options.show_linear_regression}}><br>
+
+<b>Show Points For Failures:</b>
+<input type="checkbox" name="show_failures" value="yes" {{
+       'checked' if options.show_failures}}><br>
+
+<b>Show Sample Points:</b>
+<input type="checkbox" name="show_points" value="yes" {{
+       'checked' if options.show_points}}><br>
+
+<b>Show All Sample Points:</b>
+<input type="checkbox" name="show_all_points" value="yes" {{
+       'checked' if options.show_all_points}}><br>
+
+{# Add all the hidden fields. #}
+{% for name,value in request.args.items() %}
+  {% if name.startswith('test.') %}
+    <input type="hidden" name="{{name}}" value="{{value}}">
+  {% endif %}
+{% endfor %}
+
+<input type="submit" name="submit" value="Update">
+</form>
+{{ utils.render_popup_end() }}
+
+<h3>Graph</h3>
+<table>
+<tr>
+<td rowspan=2 valign="top">
+  <canvas id="graph" width="600" height="400"></canvas>
+</td>
+<td valign="top">
+<table cellspacing=4 border=1>
+<tr><th colspan=3>Test</th></tr>
+{% for name,field_name,col in legend %}
+    <tr>
+      <td bgcolor="{{ '%02x%02x%02x' % (
+                        255*col[0], 255*col[1], 255*col[2]) }}">&nbsp;</td>
+      <td>{{name}}</td>
+      <td>{{field_name}}</td>
+    </tr>
+{% endfor %}
+</table>
+</td></tr>
+<tr><td align="right" valign="bottom">
+<font size="-2">
+Shift-Left Mouse: Pan<br>
+Alt/Meta-Left Mouse: Zoom<br>
+Wheel: Zoom (<i>Shift Slows</i>)<br>
+</font>
+</td></tr>
+</table>
+<p>
+<b>Plots</b>: {{ num_plots }}<br>
+<b>Num Points</b>: {{ num_points }}<br>
+
+{% endcall %}
+
+{% endblock %}
