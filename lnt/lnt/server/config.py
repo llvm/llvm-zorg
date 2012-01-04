@@ -5,6 +5,9 @@ LNT Config object for tracking user-configurable installation parameters.
 import os
 import re
 
+import lnt.db.perfdb
+import lnt.server.db.v4db
+
 class EmailConfig:
     @staticmethod
     def fromData(data):
@@ -94,3 +97,24 @@ class Config:
         while self.zorgURL.endswith('/'):
             self.zorgURL = zorgURL[:-1]
         self.databases = databases
+
+    def get_database(self, name, echo=False):
+        """
+        get_database(name, echo=False) -> db or None
+
+        Return the appropriate instance of the database with the given name, or
+        None if there is no database with that name."""
+
+        # Get the database entry.
+        db_entry = self.databases.get(name)
+        if db_entry is None:
+            return None
+
+        # Instantiate the appropriate database version.
+        if db_entry.db_version == '0.3':
+            return lnt.db.perfdb.PerfDB(db_entry.path, echo=echo)
+        if db_entry.db_version == '0.4':
+            return lnt.server.db.v4db.V4DB(db_entry.path, echo=echo)
+
+        raise NotImplementedError,"unable to import to version %r database" % (
+            db_entry.db_version,)

@@ -44,20 +44,18 @@ class Request(flask.Request):
 
     def get_db(self):
         if self.db is None:
-            if g.db_info.db_version == '0.3':
-                self.db = perfdb.PerfDB(g.db_info.path)
-            else:
-                self.db = lnt.server.db.v4db.V4DB(g.db_info.path)
+            echo = bool(self.args.get('db_log') or self.form.get('db_log'))
+
+            self.db = current_app.old_config.get_database(g.db_name, echo=echo)
 
             # Enable SQL logging with db_log.
             #
             # FIXME: Conditionalize on an is_production variable.
-            if self.args.get('db_log') or self.form.get('db_log'):
+            if echo:
                 import logging, StringIO
                 g.db_log = StringIO.StringIO()
                 logger = logging.getLogger("sqlalchemy")
                 logger.addHandler(logging.StreamHandler(g.db_log))
-                self.db.engine.echo = True
 
         return self.db
 

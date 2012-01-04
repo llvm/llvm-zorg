@@ -48,19 +48,8 @@ def action_import(name, args):
     exec open(config) in config_data
     config = lnt.server.config.Config.fromData(config, config_data)
 
-    # Get the database entry to use.
-    db_entry = config.databases.get(opts.database)
-    if db_entry is None:
-        parser.error("invalid database name")
-
-    # Load the appropriate version of the database.
-    if db_entry.db_version == '0.3':
-        db = lnt.db.perfdb.PerfDB(db_entry.path, echo=opts.show_sql)
-    elif db_entry.db_version == '0.4':
-        db = lnt.server.db.v4db.V4DB(db_entry.path, echo=opts.show_sql)
-    else:
-        raise NotImplementedError,"unable to import to version %r database" % (
-            db_entry.db_version,)
+    # Get the database.
+    db = config.get_database(opts.database, echo=opts.show_sql)
 
     # Load the database.
     success = True
