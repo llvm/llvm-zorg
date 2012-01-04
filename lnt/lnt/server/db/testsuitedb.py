@@ -144,6 +144,12 @@ class TestSuiteDB(object):
                     db_key_name, self.__class__.__name__, self.ordinal, fields)
 
             def __cmp__(self, b):
+                # SA occassionally uses comparison to check model instances
+                # verse some sentinels, so we ensure we support comparison
+                # against non-instances.
+                if self.__class__ is not b.__class__:
+                    return -1
+
                 return cmp(tuple(self.get_field(item)
                                  for item in self.fields),
                            tuple(b.get_field(item)
