@@ -90,7 +90,7 @@ def index():
 def browse():
     return render_template("browse.html")
 
-@db_route('/submitRun', methods=('GET', 'POST'))
+@db_route('/submitRun', only_v3=False, methods=('GET', 'POST'))
 def submit_run():
     from lnt.util import ImportData
 
