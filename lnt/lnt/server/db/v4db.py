@@ -136,10 +136,15 @@ class V4DBSummary(object):
 
     def __init__(self, db):
         self.db = db
+        # Load all the test suite names now so that we don't attempt to reuse a
+        # cursor later.
+        #
+        # FIXME: Really, we just need to eliminate this object.
+        self.testsuites = list(self.db.testsuite)
 
     @property
     def suites(self):
-        for name in self.db.testsuite:
+        for name in self.testsuites:
             yield V4DBSummary.SuiteSummary(name, ("v4", name))
 
     def is_up_to_date(self, db):
