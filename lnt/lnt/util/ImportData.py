@@ -102,9 +102,9 @@ def import_and_report(config, db_name, db, file, format, commit=False,
 
     # If this database has a shadow import configured, import the run into that
     # database as well.
-    db_config = config.databases[db_name]
-    if db_config.shadow_import:
+    if config and config.databases[db_name].shadow_import:
         # Load the shadow database to import into.
+        db_config = config.databases[db_name]
         shadow_name = db_config.shadow_import
         shadow_db = config.get_database(shadow_name)
         if shadow_db is None:
