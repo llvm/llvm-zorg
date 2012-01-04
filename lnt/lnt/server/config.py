@@ -52,15 +52,17 @@ class DBInfo:
                       bool(dict.get('showGeneral')),
                       bool(dict.get('showSimple')),
                       str(dict.get('db_version', '0.3')),
+                      dict.get('shadow_import', None),
                       email_config)
 
     def __init__(self, path, showNightlytest, showGeneral, showSimple,
-                 db_version, email_config):
+                 db_version, shadow_import, email_config):
         self.path = path
         self.showGeneral = showGeneral
         self.showNightlytest = showNightlytest
         self.showSimple = showSimple
         self.db_version = db_version
+        self.shadow_import = shadow_import
         self.email_config = email_config
 
 class Config:

@@ -119,6 +119,10 @@ class V4DB(object):
                 tag,)
 
         db = self.testsuite.get(db_name)
+        if db is None:
+            raise ValueError,"test suite %r not present in this database!" % (
+                db_name)
+
         return db.importDataFromDict(data)
 
     def get_db_summary(self):

@@ -100,6 +100,25 @@ def import_and_report(config, db_name, db, file, format, commit=False,
     result['report_time'] = time.time() - importStartTime
     result['total_time'] = time.time() - startTime
 
+    # If this database has a shadow import configured, import the run into that
+    # database as well.
+    db_config = config.databases[db_name]
+    if db_config.shadow_import:
+        # Load the shadow database to import into.
+        shadow_name = db_config.shadow_import
+        shadow_db = config.get_database(shadow_name)
+        if shadow_db is None:
+            raise ValueError,("invalid configuration, shadow import "
+                              "database %r does not exist") % shadow_name
+
+        # Perform the shadow import.
+        shadow_result = import_and_report(config, shadow_name,
+                                          shadow_db, file, format, commit,
+                                          show_sample_count, disable_email)
+
+        # Append the shadow result to the result.
+        result['shadow_result'] = shadow_result
+
     result['success'] = True
     return result
 
