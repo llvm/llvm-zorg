@@ -14,7 +14,7 @@ from flask import request
 from flask import url_for
 
 from lnt.db import perfdb
-from lnt.server.ui.globals import v4_url_for
+from lnt.server.ui.globals import db_url_for, v4_url_for
 
 frontend = flask.Module(__name__)
 
@@ -648,7 +648,7 @@ def v4_report(id):
 
     _, _, html_report = NTEmailReport.getReport(
         result=None, db=db, run=run,
-        baseurl=v4_url_for('v4_overview', _external=True),
+        baseurl=db_url_for('index', _external=True),
         was_added=True, will_commit=True, only_html_body=False)
 
     return make_response(html_report)
@@ -663,7 +663,7 @@ def v4_text_report(id):
 
     _, text_report, _ = NTEmailReport.getReport(
         result=None, db=db, run=run,
-        baseurl=v4_url_for('v4_overview', _external=True),
+        baseurl=db_url_for('index', _external=True),
         was_added=True, will_commit=True, only_html_body=True)
 
     response = make_response(text_report)
@@ -718,7 +718,7 @@ def v4_run(id):
     # webapp UI to be easy to correlate with the email reports.
     _, text_report, html_report = NTEmailReport.getReport(
         result=None, db=db, run=run,
-        baseurl=v4_url_for('v4_overview', _external=True),
+        baseurl=db_url_for('index', _external=True),
         was_added=True, will_commit=True, only_html_body=True)
 
     return render_template("v4_run.html", ts=ts, run=run, compare_to=compare_to,

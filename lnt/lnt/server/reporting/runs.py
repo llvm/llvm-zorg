@@ -114,7 +114,7 @@ def generate_run_report(run, baseurl, only_html_body = False,
     if baseurl[-1] == '/':
         baseurl = baseurl[:-1]
 
-    report_url = """%s/%d""" % (baseurl, run.id)
+    report_url = """%s/v4/nt/%d""" % (baseurl, run.id)
     print >>report, report_url
     print >>report, """Nickname: %s:%d""" % (machine.name, machine.id)
     if 'name' in machine_parameters:
