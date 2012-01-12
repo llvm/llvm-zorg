@@ -131,7 +131,8 @@ def submit_run():
         # to use these files in cases we might need them for debugging or data
         # recovery.
         prefix = utcnow.strftime("data-%Y-%m-%d_%H-%M-%S")
-        fd,path = tempfile.mkstemp(prefix=prefix, suffix='.plist', dir=tmpdir)
+        fd,path = tempfile.mkstemp(prefix=prefix, suffix='.plist',
+                                   dir=str(tmpdir))
         os.write(fd, data_value)
         os.close(fd)
 
