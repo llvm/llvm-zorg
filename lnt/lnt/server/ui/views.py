@@ -845,6 +845,19 @@ def v4_order(id):
 
     return render_template("v4_order.html", ts=ts, order=order)
 
+@v4_route("/all_orders")
+def v4_all_orders():
+    # Get the testsuite.
+    ts = request.get_testsuite()
+
+    # Get the orders.
+    orders = ts.query(ts.Order).all()
+
+    # Order the runs totally.
+    orders.sort()
+
+    return render_template("v4_all_orders.html", ts=ts, orders=orders)
+
 @v4_route("/<int:id>/graph")
 def v4_graph(id):
     from lnt.server.ui import util

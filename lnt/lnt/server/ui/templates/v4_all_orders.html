@@ -1,0 +1,36 @@
+{% import "utils.html" as utils %}
+
+{% extends "layout.html" %}{
+{% set components = [(ts.name, v4_url_for("v4_overview"))] %}
+{% block head %}
+        <script src="{{ url_for('.static', filename='popup.js') }}"></script>
+{% endblock %}
+{% block title %}All Orders{% endblock %}
+{% block body %}
+
+<h3>All Orders</h3>
+<table border="1">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Previous Order ID</th>
+      <th>Next Order ID</th>
+{% for field in ts.order_fields %}
+      <th>{{field.name}}</th>
+{% endfor %}
+    </tr>
+  </thead>
+{% for order in orders %}
+  <tr>
+    <td><a href="{{v4_url_for('v4_order', id=order.id)}}">{{
+        order.id}}</a></td>
+    <td>{{order.previous_order_id}}</td>
+    <td>{{order.next_order_id}}</td>
+{% for field in ts.order_fields %}
+    <td>{{order.get_field(field)}}</td>
+{% endfor %}
+  </tr>
+{% endfor %}
+</table>
+
+{% endblock %}
