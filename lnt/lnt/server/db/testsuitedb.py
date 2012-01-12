@@ -169,6 +169,7 @@ class TestSuiteDB(object):
             imported_from = Column("ImportedFrom", String(512))
             start_time = Column("StartTime", DateTime)
             end_time = Column("EndTime", DateTime)
+            simple_run_id = Column("SimpleRunID", Integer)
 
             # The parameters blob is used to store any additional information
             # reported by the run but not promoted into the machine record. Such

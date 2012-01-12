@@ -172,8 +172,12 @@ from lnt.db import runinfo
 from lnt.db import perfdbsummary
 from lnt.util import NTEmailReport
 
-@db_route("/simple/<tag>/")
+@db_route("/simple/<tag>/", only_v3=False)
 def simple_overview(tag):
+    # If this is a v0.4 database, redirect.
+    if g.db_info.db_version != '0.3':
+        return redirect(db_url_for("v4_overview", testsuite_name=tag))
+
     db = request.get_db()
 
     # Get the most recent runs in this tag, we just arbitrarily limit to looking
@@ -268,9 +272,32 @@ def simple_text_report(tag, id):
     response.mimetype = "text/plain"
     return response
 
-@db_route("/simple/<tag>/<int:id>")
-@db_route("/simple/<tag>/<int:id>/")
+@db_route("/simple/<tag>/<int:id>/", only_v3=False)
 def simple_run(tag, id):
+    # If this is a v0.4 database, redirect.
+    if g.db_info.db_version != '0.3':
+        # Attempt to find a V4 run which declares that it matches this simple
+        # run ID.
+
+        # Get the expected test suite.
+        db = request.get_db()
+        ts = db.testsuite[tag]
+
+        # Look for a matched run.
+        matched_run = ts.query(ts.Run).\
+            filter(ts.Run.simple_run_id == id).\
+            first()
+
+        # If we found one, redirect to it's report.
+        if matched_run is not None:
+            return redirect(db_url_for("v4_run", testsuite_name=tag,
+                                       id=matched_run.id))
+
+        # Otherwise, report an error.
+        return render_template("error.html", message="""\
+Unable to find a v0.4 run for this ID. Please use the native v0.4 URL interface
+(instead of the /simple/... URL schema).""")
+
     db, run, run_summary, compare_to = get_simple_run_info(tag, id)
 
     # Get additional summaries.
