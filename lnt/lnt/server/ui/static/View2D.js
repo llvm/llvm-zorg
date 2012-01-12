@@ -161,8 +161,8 @@ ViewAction.prototype.update = function(v2d, co) {
         var delta = vec2_sub(v2d.convertClientToNDC(co, this.vd),
             v2d.convertClientToNDC(this.start, this.vd))
         v2d.viewData.scale = vec2_Npow(Math.E,
-                                       vec2_addN(vec2_log(this.vd.scale),
-                                                 delta[1]))
+                                       vec2_add(vec2_log(this.vd.scale),
+                                                delta))
         v2d.viewData.location = vec2_mul(this.vd.location,
                                          vec2_div(v2d.viewData.scale,
                                                   this.vd.scale))
