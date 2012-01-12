@@ -662,35 +662,60 @@ test %r does not map to a sample field in the reported suite""" % (
         assert N > 0, "invalid count"
         assert direction in (-1, 1), "invalid direction"
 
-        order = run.order
-        while N:
-            # Update the order in the direction we are searching.
-            if direction == -1:
-                next_id = order.previous_order_id
-            else:
-                next_id = order.next_order_id
+        # The obvious algorithm here is to step through the run orders in the
+        # appropriate direction and yield any runs on the same machine which
+        # were reported at that order.
+        #
+        # However, this has one large problem. In some cases, the gap between
+        # orders reported on that machine may be quite high. This will be
+        # particularly true when a machine has stopped reporting for a while,
+        # for example, as there may be large gap between the largest reported
+        # order and the last order the machine reported at.
+        #
+        # In such cases, we could end up executing a large number of individual
+        # SA object materializations in traversing the order list, which is very
+        # bad.
+        #
+        # We currently solve this by instead finding all the orders reported on
+        # this machine, ordering those programatically, and then iterating over
+        # that. This performs worse (O(N) instead of O(1)) than the obvious
+        # algorithm in the common case but more uniform and significantly better
+        # in the worst cast, and I prefer that response times be uniform. In
+        # practice, this appears to perform fine even for quite large (~1GB,
+        # ~20k runs) databases.
 
-            # If we have reached the end of the order chain, we are done.
-            if next_id is None:
-                break
+        # Find all the orders on this machine, then sort them.
+        #
+        # FIXME: Scalability! However, pretty fast in practice, see elaborate
+        # explanation above.
+        all_machine_orders = self.query(self.Order).\
+            join(self.Run).\
+            filter(self.Run.machine == run.machine).distinct().all()
+        all_machine_orders.sort()
 
-            # Otherwise fetch the run.
-            order = self.query(self.Order).\
-                filter(self.Order.id == next_id).first()
-            assert order is not None
+        # Find the index of the current run.
+        index = all_machine_orders.index(run.order)
 
-            # Find all the runs on this machine for the current order.
-            found_any = False
-            for item in self.query(self.Run).\
-                    filter(self.Run.order == order).\
-                    filter(self.Run.machine == run.machine):
-                yield item
-                found_any = True
+        # Gather the next N orders.
+        if direction == -1:
+            orders_to_return = all_machine_orders[max(0, index - N):index]
+        else:
+            orders_to_return = all_machine_orders[index+1:index+N]
 
-            # If we found any, decrement the number of orders remaining to find
-            # runs for.
-            if found_any:
-                N -= 1
+        # Get all the runs for those orders on this machine in a single query.
+        runs = self.query(self.Run).\
+            filter(self.Run.machine == run.machine).\
+            filter(self.Run.order_id.in_(o.id
+                                         for o in orders_to_return)).all()
+
+        # Sort the result by order, accounting for direction to satisfy our
+        # requirement of returning the runs in adjacency order.
+        #
+        # Even though we already know the right order, this is faster than
+        # issueing separate queries.
+        runs.sort(key = lambda r: r.order, reverse = (direction==-1))
+
+        return runs
 
     def get_previous_runs_on_machine(self, run, N):
         return self.get_adjacent_runs_on_machine(run, N, direction = -1)
