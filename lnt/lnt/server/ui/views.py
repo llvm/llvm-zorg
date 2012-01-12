@@ -387,10 +387,77 @@ Unable to find a v0.4 run for this ID. Please use the native v0.4 URL interface
                            options=options, runinfo=runinfo,
                            comparison_window=comparison_window)
 
-@db_route("/simple/<tag>/<int:id>/graph")
+@db_route("/simple/<tag>/<int:id>/graph", only_v3=False)
 def simple_graph(tag, id):
     from lnt.server.ui import graphutil
     from lnt.server.ui import util
+    # If this is a v0.4 database, redirect.
+    if g.db_info.db_version != '0.3':
+        # Attempt to find a V4 run which declares that it matches this simple
+        # run ID.
+
+        # Get the expected test suite.
+        db = request.get_db()
+        ts = db.testsuite[tag]
+
+        # Look for a matched run.
+        matched_run = ts.query(ts.Run).\
+            filter(ts.Run.simple_run_id == id).\
+            first()
+
+        # If we found one, redirect to it's report.
+        if matched_run is not None:
+            # We need to translate all of the graph parameters.
+            v4_graph_args = {}
+
+            for name,value in request.args.items():
+                if name.startswith("pset."):
+                    # We don't use psets anymore, just ignore.
+                    continue
+                if name.startswith("test."):
+                    # Rewrite test arguments to point at the correct new test.
+                    #
+                    # The old style encoded tests to print as:
+                    #   test.<name>=on
+                    # where the name is the mangled form.
+                    if value != "on":
+                        continue
+
+                    # Strip the prefix.
+                    test_name = name[5:]
+
+                    # Determine the sample field.
+                    for sample_index,item in enumerate(ts.sample_fields):
+                        if test_name.endswith(item.info_key):
+                            test_name = test_name[:-len(item.info_key)]
+                            break
+                    else:
+                        # We didn't recognize this test parameter. Just bail.
+                        return render_template("error.html", message="""\
+Unexpected query argument %r""" % (name,))
+
+                    # Find the test id for that test name.
+                    test = ts.query(ts.Test).\
+                        filter(ts.Test.name == test_name).first()
+                    if test is None:
+                        return render_template("error.html", message="""\
+Unknown test %r""" % (test_name,))
+
+                    # Add the query argument in the manner that v4_graph
+                    # expects.
+                    v4_graph_args["test.%d" % test.id] = sample_index
+                else:
+                    # Otherwise, assume this is a view parameter and we can
+                    # forward as is.
+                    v4_graph_args[name] = value
+
+            return redirect(db_url_for("v4_graph", testsuite_name=tag,
+                                       id=matched_run.id, **v4_graph_args))
+
+        # Otherwise, report an error.
+        return render_template("error.html", message="""\
+Unable to find a v0.4 run for this ID. Please use the native v0.4 URL interface
+(instead of the /simple/... URL schema).""")
 
     db, run, run_summary, compare_to = get_simple_run_info(tag, id)
 
