@@ -1,3 +1,4 @@
+import datetime
 import os
 import re
 import tempfile
@@ -115,10 +116,22 @@ def submit_run():
             data_value = input_data
 
         # Stash a copy of the raw submission.
-        prefix = time.strftime("data-%Y-%m-%d_%H-%M-%S")
-        fd,path = tempfile.mkstemp(prefix=prefix,
-                                   suffix='.plist',
-                                   dir=current_app.old_config.tempDir)
+        #
+        # To keep the temporary directory organized, we keep files in
+        # subdirectories organized by (database, year-month).
+        utcnow = datetime.datetime.utcnow()
+        tmpdir = os.path.join(current_app.old_config.tempDir, g.db_name,
+                              "%04d-%02d" % (utcnow.year, utcnow.month))
+        try:
+            os.makedirs(tmpdir)
+        except OSError,e:
+            pass
+
+        # Save the file under a name prefixed with the date, to make it easier
+        # to use these files in cases we might need them for debugging or data
+        # recovery.
+        prefix = utcnow.strftime("data-%Y-%m-%d_%H-%M-%S")
+        fd,path = tempfile.mkstemp(prefix=prefix, suffix='.plist', dir=tmpdir)
         os.write(fd, data_value)
         os.close(fd)
 
