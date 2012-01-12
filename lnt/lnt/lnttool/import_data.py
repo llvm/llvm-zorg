@@ -28,7 +28,9 @@ def action_import(name, args):
     parser.add_option("-v", "--verbose", dest="verbose",
                       help="show verbose test results",
                       action="store_true", default=False)
-    parser.add_option("", "--no-email", dest="noEmail",
+    parser.add_option("", "--no-email", dest="no_email",
+                      action="store_true", default=False)
+    parser.add_option("", "--no-report", dest="no_report",
                       action="store_true", default=False)
     (opts, args) = parser.parse_args(args)
 
@@ -57,7 +59,7 @@ def action_import(name, args):
         result = lnt.util.ImportData.import_and_report(
             config, opts.database, db, file,
             opts.format, opts.commit, opts.show_sample_count,
-            opts.noEmail)
+            opts.no_email, opts.no_report)
 
         success &= result.get('success', False)
         if opts.show_raw_result:

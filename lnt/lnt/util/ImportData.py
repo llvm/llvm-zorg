@@ -6,7 +6,8 @@ from lnt.db import runinfo
 from lnt.util import NTEmailReport
 
 def import_and_report(config, db_name, db, file, format, commit=False,
-                      show_sample_count=False, disable_email=False):
+                      show_sample_count=False, disable_email=False,
+                      disable_report=False):
     """
     import_and_report(config, db_name, db, file, format,
                       [commit], [show_sample_count],
@@ -88,8 +89,9 @@ def import_and_report(config, db_name, db, file, format, commit=False,
         report_url = "%s/db_%s/" % (config.zorgURL, db_name)
     else:
         report_url = 'localhost'
-    NTEmailReport.emailReport(result, db, run, report_url,
-                              email_config, toAddress, success, commit)
+    if not disable_report:
+        NTEmailReport.emailReport(result, db, run, report_url,
+                                  email_config, toAddress, success, commit)
 
     result['added_machines'] = db.getNumMachines() - numMachines
     result['added_runs'] = db.getNumRuns() - numRuns
@@ -120,7 +122,8 @@ def import_and_report(config, db_name, db, file, format, commit=False,
         # Perform the shadow import.
         shadow_result = import_and_report(config, shadow_name,
                                           shadow_db, file, format, commit,
-                                          show_sample_count, disable_email)
+                                          show_sample_count, disable_email,
+                                          disable_report)
 
         # Append the shadow result to the result.
         result['shadow_result'] = shadow_result
