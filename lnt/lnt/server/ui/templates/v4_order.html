@@ -37,10 +37,10 @@
 </table>
 
 {# Provide links to the previous and next orders. #}
-{% if order.previous_order_id is not null %}
+{% if order.previous_order_id is not none %}
 <a href="{{v4_url_for('v4_order', id=order.previous_order_id)}}">Previous</a>
 {% endif %}
-{% if order.next_order_id is not null %}
+{% if order.next_order_id is not none %}
 <a href="{{v4_url_for('v4_order', id=order.next_order_id)}}">Next</a>
 {% endif %}
 
