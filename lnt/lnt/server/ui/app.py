@@ -65,7 +65,7 @@ class Request(flask.Request):
             if g.testsuite_name not in testsuites:
                 flask.abort(404)
 
-            self.testsuite = testsuite[g.testsuite_name]
+            self.testsuite = testsuites[g.testsuite_name]
 
         return self.testsuite
 
