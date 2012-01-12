@@ -61,7 +61,11 @@ class Request(flask.Request):
 
     def get_testsuite(self):
         if self.testsuite is None:
-            self.testsuite = self.get_db().testsuite[g.testsuite_name]
+            testsuites = self.get_db().testsuite
+            if g.testsuite_name not in testsuites:
+                flask.abort(404)
+
+            self.testsuite = testsuite[g.testsuite_name]
 
         return self.testsuite
 
