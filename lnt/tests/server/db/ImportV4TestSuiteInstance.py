@@ -53,7 +53,7 @@ xfail_kind = db.query(db.StatusKind).filter_by(id = lnt.testing.XFAIL).one()
 assert xfail_kind.name == "XFAIL"
 
 # Load the imported test suite.
-ts = db.testsuite['nt']
+ts = db.testsuite['nts']
 
 # Validate the machine.
 machines = list(ts.query(ts.Machine))
@@ -70,7 +70,7 @@ assert parameters['extrakey'] == u'extravalue'
 tests = list(ts.query(ts.Test))
 assert len(tests) == 1
 test = tests[0]
-assert tests[0].name == 'nts.sampletest'
+assert tests[0].name == 'sampletest'
 
 # Validate the orders.
 orders = list(ts.query(ts.Order).order_by(ts.Order.ordinal))

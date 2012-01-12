@@ -506,10 +506,12 @@ supplied run is missing required run parameter: %r""" % (
 
             return run,True
 
-    def _importSampleValues(self, tests_data, run):
+    def _importSampleValues(self, tests_data, run, tag):
         # We now need to transform the old schema data (composite samples split
-        # into multiple tests) into the V4DB format where each sample is a
-        # complete record.
+        # into multiple tests with mangling) into the V4DB format where each
+        # sample is a complete record.
+        tag_dot = "%s." % tag
+        tag_dot_len = len(tag_dot)
 
         # Load a map of all the tests, which we will extend when we find tests
         # that need to be added.
@@ -531,6 +533,11 @@ supplied run is missing required run parameter: %r""" % (
 test parameter sets are not supported by V4DB databases"""
 
             name = test_data['Name']
+            if not name.startswith(tag_dot):
+                raise ValueError,"""\
+test %r is misnamed for reporting under schema %r""" % (
+                    name, tag)
+            name = name[tag_dot_len:]
 
             # Map this reported test name into a test name and a sample field.
             #
@@ -578,12 +585,15 @@ test %r does not map to a sample field in the reported suite""" % (
         # Construct the run entry.
         run,inserted = self._getOrCreateRun(data['Run'], machine)
 
+        # Get the schema tag.
+        tag = data['Run']['Info']['tag']
+
         # If we didn't construct a new run, this is a duplicate
         # submission. Return the prior Run.
         if not inserted:
             return False, run
 
-        self._importSampleValues(data['Tests'], run)
+        self._importSampleValues(data['Tests'], run, tag)
 
         return True, run
 
