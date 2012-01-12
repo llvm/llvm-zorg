@@ -887,7 +887,7 @@ def v4_graph(id):
     options['show_all_points'] = show_all_points = bool(
         request.args.get('show_all_points'))
     options['show_linear_regression'] = show_linear_regression = bool(
-        request.args.get('show_linear_regression', True))
+        request.args.get('show_linear_regression'))
     options['show_failures'] = show_failures = bool(
         request.args.get('show_failures'))
 
@@ -954,15 +954,15 @@ def v4_graph(id):
         points_data = []
         pts = []
         for x,values in data:
-            pts.append((x, min(values)))
+            min_value = min(values)
+            pts.append((x, min_value))
 
             # Add the individual points, if requested.
-            if show_points:
-                if show_all_points:
-                    for v in values:
-                        points_data.append((x, v))
-                else:
-                    points_data.append((x, min_value))
+            if show_all_points:
+                for v in values:
+                    points_data.append((x, v))
+            elif show_points:
+                points_data.append((x, min_value))
 
             # Add the standard deviation error bar, if requested.
             if show_stddev:
