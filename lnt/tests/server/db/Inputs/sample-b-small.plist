@@ -41,7 +41,7 @@
 			<dict>
 			</dict>
 			<key>Name</key>
-			<string>sampletest.compile.status</string>
+			<string>nts.sampletest.compile.status</string>
 		</dict>
 		<dict>
 			<key>Data</key>
@@ -52,7 +52,7 @@
 			<dict>
 			</dict>
 			<key>Name</key>
-			<string>sampletest.compile</string>
+			<string>nts.sampletest.compile</string>
 		</dict>
 		<dict>
 			<key>Data</key>
@@ -63,7 +63,7 @@
 			<dict>
 			</dict>
 			<key>Name</key>
-			<string>sampletest.exec.status</string>
+			<string>nts.sampletest.exec.status</string>
 		</dict>
 		<dict>
 			<key>Data</key>
@@ -74,7 +74,7 @@
 			<dict>
 			</dict>
 			<key>Name</key>
-			<string>sampletest.exec</string>
+			<string>nts.sampletest.exec</string>
 		</dict>
 	</array>
 </dict>

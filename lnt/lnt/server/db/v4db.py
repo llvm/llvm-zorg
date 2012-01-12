@@ -112,11 +112,9 @@ class V4DB(object):
         # Select the database to import into.
         #
         # FIXME: Promote this to a top-level field in the data.
-        tag = data['Run']['Info'].get('tag')
-        db_name = { 'nts' : 'nt' }.get(tag)
+        db_name = data['Run']['Info'].get('tag')
         if db_name is None:
-            raise ValueError,"unknown database target from tag %r" % (
-                tag,)
+            raise ValueError,"unknown database target (no tag field)"
 
         db = self.testsuite.get(db_name)
         if db is None:

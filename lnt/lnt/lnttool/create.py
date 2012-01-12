@@ -88,7 +88,7 @@ def _create_v4_nt_database(db_path):
     db.commit()
 
     # Create an NT compatible test suite, automatically.
-    ts = testsuite.TestSuite("nt", "NT")
+    ts = testsuite.TestSuite("nts", "NT")
 
     # Define the default status kinds.
     #
@@ -134,7 +134,7 @@ def _create_v4_nt_database(db_path):
 
     # Finally, ensure the tables for the test suite we just defined are
     # constructed.
-    ts_db = db.testsuite['nt']
+    ts_db = db.testsuite['nts']
 
 def action_create(name, args):
     """create an LLVM nightly test installation"""
