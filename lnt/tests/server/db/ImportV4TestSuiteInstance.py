@@ -12,7 +12,7 @@
 # IMPORT-A-1: Added Machines: 1
 # IMPORT-A-1: Added Runs : 1
 # IMPORT-A-1: Added Tests : 1
-# IMPORT-A-1: Added Samples : 1
+# IMPORT-A-1: Added Samples : 2
 
 # Import the second test set.
 # RUN: lnt import %t.install %S/Inputs/sample-b-small.plist \
@@ -102,16 +102,25 @@ assert not run_b.parameters
 
 # Validate the samples.
 samples = list(ts.query(ts.Sample))
-assert len(samples) == 2
-sample_a,sample_b = samples
-assert sample_a.run is run_a
+assert len(samples) == 3
+sample_a_0,sample_a_1,sample_b = samples
+assert sample_a_0.run is run_a
+assert sample_a_1.run is run_a
 assert sample_b.run is run_b
-assert sample_a.test is test
+assert sample_a_0.test is test
+assert sample_a_1.test is test
 assert sample_b.test is test
-assert sample_a.compile_time == 0.019
-assert sample_a.compile_status == lnt.testing.PASS
-assert sample_a.execution_time == 0.3
-assert sample_a.execution_status == lnt.testing.PASS
+print sample_a_0
+print sample_a_1
+print sample_b
+assert sample_a_0.compile_time == 0.019
+assert sample_a_0.compile_status == lnt.testing.PASS
+assert sample_a_0.execution_time == 0.3
+assert sample_a_0.execution_status == lnt.testing.PASS
+assert sample_a_1.compile_time == 0.0189
+assert sample_a_1.compile_status == lnt.testing.PASS
+assert sample_a_1.execution_time == 0.29
+assert sample_a_1.execution_status == lnt.testing.PASS
 assert sample_b.compile_time == 0.022
 assert sample_b.compile_status == lnt.testing.PASS
 assert sample_b.execution_time == 0.32

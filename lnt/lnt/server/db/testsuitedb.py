@@ -508,15 +508,11 @@ supplied run is missing required run parameter: %r""" % (
         test_cache = dict((test.name, test)
                           for test in self.query(self.Test))
 
-        # We build a map of test name to sample values, by scanning all the
-        # tests. This is complicated by the interchange's support of multiple
-        # values, which we cannot properly aggregate. We handle this by keying
-        # off of the test name and the sample index.
-        #
-        # Note that the above strategy only works if reports don't report the
-        # same test name multiple times. That was possible in the schema, but I
-        # believe never used.
-        sample_records = {}
+        # First, we aggregate all of the samples by test name. The schema allows
+        # reporting multiple values for a test in two ways, one by multiple
+        # samples and the other by multiple test entries with the same test
+        # name. We need to handle both.
+        tests_values = {}
         for test_data in tests_data:
             if test_data['Info']:
                 raise ValueError,"""\
@@ -529,6 +525,19 @@ test %r is misnamed for reporting under schema %r""" % (
                     name, tag)
             name = name[tag_dot_len:]
 
+            # Add all the values.
+            values = tests_values.get(name)
+            if values is None:
+                tests_values[name] = values = []
+
+            values.extend(test_data['Data'])
+
+        # Next, build a map of test name to sample values, by scanning all the
+        # tests. This is complicated by the interchange's support of multiple
+        # values, which we cannot properly aggregate. We handle this by keying
+        # off of the test name and the sample index.
+        sample_records = {}
+        for name,test_samples in tests_values.items():
             # Map this reported test name into a test name and a sample field.
             #
             # FIXME: This is really slow.
@@ -549,10 +558,10 @@ test %r does not map to a sample field in the reported suite""" % (
                 test_cache[test_name] = test = self.Test(test_name)
                 self.add(test)
 
-            for i,value in enumerate(test_data['Data']):
+            for i,value in enumerate(test_samples):
                 record_key = (test_name, i)
-                record = sample_records.get(record_key)
-                if record is None:
+                sample = sample_records.get(record_key)
+                if sample is None:
                     sample_records[record_key] = sample = self.Sample(run, test)
                     self.add(sample)
 

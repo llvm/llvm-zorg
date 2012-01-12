@@ -76,6 +76,29 @@
 			<key>Name</key>
 			<string>nts.sampletest.exec</string>
 		</dict>
+
+		<dict>
+			<key>Data</key>
+			<array>
+				<real>0.0189</real>
+			</array>
+			<key>Info</key>
+			<dict>
+			</dict>
+			<key>Name</key>
+			<string>nts.sampletest.compile</string>
+		</dict>
+		<dict>
+			<key>Data</key>
+			<array>
+				<real>0.29</real>
+			</array>
+			<key>Info</key>
+			<dict>
+			</dict>
+			<key>Name</key>
+			<string>nts.sampletest.exec</string>
+		</dict>
 	</array>
 </dict>
 </plist>
