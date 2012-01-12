@@ -725,13 +725,13 @@ def v4_run(id):
                            options=options, neighboring_runs=neighboring_runs,
                            text_report=text_report, html_report=html_report)
 
-@v4_route("/order/<int:ordinal>")
-def v4_order(ordinal):
+@v4_route("/order/<int:id>")
+def v4_order(id):
     # Get the testsuite.
     ts = request.get_testsuite()
 
     # Get the order.
-    order = ts.query(ts.Order).filter_by(ordinal = ordinal).first()
+    order = ts.query(ts.Order).filter(ts.Order.id == id).first()
     if order is None:
         abort(404)
 
@@ -811,7 +811,9 @@ def v4_graph(id):
         #
         # FIXME: Don't join to Order here, aggregate this across all the tests
         # we want to load. Actually, we should just make this a single query.
-        q = ts.query(field.column, ts.Order.ordinal).\
+        #
+        # FIXME: Don't hard code field name.
+        q = ts.query(field.column, ts.Order.llvm_project_revision).\
             join(ts.Run).join(ts.Order).\
             filter(ts.Run.machine == run.machine).\
             filter(ts.Sample.test == test)
@@ -821,8 +823,8 @@ def v4_graph(id):
             if field.status_field:
                 q = q.filter(field.status_field.column == PASS)
 
-        # Aggregate by run order id.
-        data = util.multidict((r,v)
+        # Aggregate by revision.
+        data = util.multidict((int(r),v)
                               for v,r in q).items()
         data.sort()
 

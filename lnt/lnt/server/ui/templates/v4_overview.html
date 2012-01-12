@@ -53,7 +53,7 @@
 {% for r,run_order in active_submissions %}
 {% set m = r.machine %}
       <tr>
-        <td><a href="{{v4_url_for('v4_order', ordinal=r.order.ordinal)}}">{{
+        <td><a href="{{v4_url_for('v4_order', id=r.order.id)}}">{{
             run_order}}</a></td></td>
         <td>{{r.start_time}}</td>
         <td>{{r.end_time}}</td>

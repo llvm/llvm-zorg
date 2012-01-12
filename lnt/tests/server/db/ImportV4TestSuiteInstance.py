@@ -73,12 +73,16 @@ test = tests[0]
 assert tests[0].name == 'sampletest'
 
 # Validate the orders.
-orders = list(ts.query(ts.Order).order_by(ts.Order.ordinal))
+orders = list(ts.query(ts.Order).order_by(ts.Order.llvm_project_revision))
 assert len(orders) == 2
 order_a,order_b = orders
-assert order_a.ordinal == 0
+print order_a
+print order_b
+assert order_a.previous_order_id is None
+assert order_a.next_order_id is order_b.id
 assert order_a.llvm_project_revision == u'% 7d' % 1
-assert order_b.ordinal == 1
+assert order_b.previous_order_id is order_a.id
+assert order_b.next_order_id is None
 assert order_b.llvm_project_revision == u'% 7d' % 2
 
 # Validate the runs.

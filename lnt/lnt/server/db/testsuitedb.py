@@ -106,17 +106,16 @@ class TestSuiteDB(object):
 
             id = Column("ID", Integer, primary_key=True)
 
-            # The ordinal defines the placement of the Order record within the
-            # total ordering. The ordinals are always [0, count(Order)) and are
-            # maintained by the insertion code.
-            #
-            # FIXME: There are many other ways we could deal with this
-            # information. Obviously we could always manage it outside the
-            # database, but we could also store things like previous and next
-            # links in the orders (which would be easier to update, but harder
-            # to query, but also supports more complicated ordering schemes).
-            ordinal = Column("Ordinal", Integer, nullable=False, unique=True,
-                             index=True)
+            # Define two common columns which are used to store the previous and
+            # next links for the total ordering amongst run orders.
+            next_order_id = Column("NextOrder", Integer, ForeignKey(
+                    "%s.ID" % __tablename__))
+            previous_order_id = Column("PreviousOrder", Integer, ForeignKey(
+                    "%s.ID" % __tablename__))
+
+            # FIXME: <sheepish> I would really like to have next_order and
+            # previous_order relation's here, but can't figure out how to
+            # declare them </sheepsih>.
 
             # Dynamically create fields for all of the test suite defined order
             # fields.
@@ -129,8 +128,10 @@ class TestSuiteDB(object):
                 class_dict[item.name] = item.column = Column(
                     item.name, String(256))
 
-            def __init__(self, ordinal, **kwargs):
-                self.ordinal = ordinal
+            def __init__(self, previous_order_id = None, next_order_id = None,
+                         **kwargs):
+                self.previous_order_id = previous_order_id
+                self.next_order_id = next_order_id
 
                 # Initialize fields (defaulting to None, for now).
                 for item in self.fields:
@@ -140,8 +141,9 @@ class TestSuiteDB(object):
                 fields = dict((item.name, self.get_field(item))
                               for item in self.fields)
 
-                return '%s_%s(%r, **%r)' % (
-                    db_key_name, self.__class__.__name__, self.ordinal, fields)
+                return '%s_%s(%r, %r, **%r)' % (
+                    db_key_name, self.__class__.__name__,
+                    self.previous_order_id, self.next_order_id, fields)
 
             def __cmp__(self, b):
                 # SA occassionally uses comparison to check model instances
@@ -384,7 +386,7 @@ class TestSuiteDB(object):
         """
 
         query = self.query(self.Order)
-        order = self.Order(ordinal = None)
+        order = self.Order()
 
         # First, extract all of the specified order fields.
         for item in self.order_fields:
@@ -403,44 +405,32 @@ supplied run is missing required run parameter: %r""" % (
         try:
             return query.one(),False
         except sqlalchemy.orm.exc.NoResultFound:
-            # If not, then we need to assign an ordinal to this run.
-            #
-            # For now, we do this in the simple, slow, and stupid fashion in
-            # which we just recompute the total ordering and reassign the
-            # ordinals.
-            #
-            # FIXME: Optimize this for the common case, in which the new ordinal
-            # will almost always be very close to the top value, and will
-            # require shifting only a few (or no) other order ordinals.
+            # If not, then we need to insert this order into the total ordering
+            # linked list.
+
+            # Add the new order and flush, to assign an ID.
+            self.add(order)
+            self.v4db.session.flush()
 
             # Load all the orders.
             orders = list(self.query(self.Order))
-            orders.append(order)
 
             # Sort the objects to form the total ordering.
             orders.sort()
 
-            # Assign ordinals.
-            #
-            # We iterate in reverse order to guarantee that we do not create
-            # unique conflicts.
-            for i in range(len(orders)-1,-1,-1):
-                # FIXME: Figure out whether or not SA checks modified status on
-                # write or on value change.
-                o = orders[i]
-                if o.ordinal != i:
-                    o.ordinal = i
-                    # We have to flush now in order to assure that SA will not
-                    # present non-unique values to the database.
-                    #
-                    # FIXME: This is really horrible from a performance point of
-                    # view. If we can't figure out how to get SA to do a batch
-                    # update then we should write the SQL query to do the update
-                    # directly.
-                    self.v4db.session.flush()
+            # Find the order we just added.
+            index = orders.index(order)
 
-            # Finally, add the new order.
-            self.add(order)
+            # Insert this order into the linked list which forms the total
+            # ordering.
+            if index > 0:
+                previous_order = orders[index - 1]
+                previous_order.next_order_id = order.id
+                order.previous_order_id = previous_order.id
+            if index + 1 < len(orders):
+                next_order = orders[index + 1]
+                next_order.previous_order_id = order.id
+                order.next_order_id = next_order.id
 
             return order,True
 
@@ -627,18 +617,30 @@ test %r does not map to a sample field in the reported suite""" % (
         The direction must be -1 or 1 and specified whether or not the
         preceeding or following runs should be returned.
         """
+        assert N > 0, "invalid count"
         assert direction in (-1, 1), "invalid direction"
 
-        ordinal = run.order.ordinal + direction
-        # FIXME: This probably isn't a great way to limit our search, at least
-        # for SQLite which can't answer this quickly.
-        last_ordinal = self.query(self.Order).count()
-        while 0 <= ordinal <= last_ordinal and N > 0:
-            # Find all the runs on this machine for the current ordinal.
+        order = run.order
+        while N:
+            # Update the order in the direction we are searching.
+            if direction == -1:
+                next_id = order.previous_order_id
+            else:
+                next_id = order.next_order_id
+
+            # If we have reached the end of the order chain, we are done.
+            if next_id is None:
+                break
+
+            # Otherwise fetch the run.
+            order = self.query(self.Order).\
+                filter(self.Order.id == next_id).first()
+            assert order is not None
+
+            # Find all the runs on this machine for the current order.
             found_any = False
             for item in self.query(self.Run).\
-                    join(self.Order).\
-                    filter(self.Order.ordinal == ordinal).\
+                    filter(self.Run.order == order).\
                     filter(self.Run.machine == run.machine):
                 yield item
                 found_any = True
@@ -647,9 +649,6 @@ test %r does not map to a sample field in the reported suite""" % (
             # runs for.
             if found_any:
                 N -= 1
-
-            # Update the ordinal we are searching for runs for.
-            ordinal += direction
 
     def get_previous_runs_on_machine(self, run, N):
         return self.get_adjacent_runs_on_machine(run, N, direction = -1)

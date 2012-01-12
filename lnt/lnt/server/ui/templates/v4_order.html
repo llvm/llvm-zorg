@@ -21,8 +21,12 @@
     <td>{{order.id}}</td>
   </tr>
   <tr>
-    <td>Ordinal</td>
-    <td>{{order.ordinal}}</td>
+    <td>Previous Order ID</td>
+    <td>{{order.previous_order_id}}</td>
+  </tr>
+  <tr>
+    <td>Next ID</td>
+    <td>{{order.next_order_id}}</td>
   </tr>
 {% for field in order.fields %}
   <tr>
@@ -33,10 +37,12 @@
 </table>
 
 {# Provide links to the previous and next orders. #}
-{% if order.ordinal != 0 %}
-<a href="{{v4_url_for('v4_order', ordinal=order.ordinal - 1)}}">Previous</a>
+{% if order.previous_order_id is not null %}
+<a href="{{v4_url_for('v4_order', id=order.previous_order_id)}}">Previous</a>
 {% endif %}
-<a href="{{v4_url_for('v4_order', ordinal=order.ordinal + 1)}}">Next</a>
+{% if order.next_order_id is not null %}
+<a href="{{v4_url_for('v4_order', id=order.next_order_id)}}">Next</a>
+{% endif %}
 
 {# List all submissions which reported for this order. #}
 <h3>Submissions</h3>

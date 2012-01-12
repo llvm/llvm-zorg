@@ -43,7 +43,7 @@ end_time = datetime.datetime.utcnow()
 
 machine = ts_db.Machine("test-machine")
 machine.uname = "test-uname"
-order = ts_db.Order(ordinal = 0)
+order = ts_db.Order()
 order.llvm_revision = "test-revision"
 run = ts_db.Run(machine, order, start_time, end_time)
 run.arch = "test-arch"
@@ -85,7 +85,8 @@ sample = samples[0]
 assert machine.name == "test-machine"
 assert machine.uname == "test-uname"
 
-assert order.ordinal == 0
+assert order.next_order_id is None
+assert order.previous_order_id is None
 assert order.llvm_revision == "test-revision"
 
 assert run.machine is machine
