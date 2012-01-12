@@ -341,7 +341,7 @@ class PerfDB:
         self.session.rollback()
         self.modified_machine = self.modified_test = self.modified_run = False
 
-    def importDataFromDict(self, data):
+    def importDataFromDict(self, data, config=None):
         return importDataFromDict(self, data)
 
     def get_db_summary(self):

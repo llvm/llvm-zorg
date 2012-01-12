@@ -568,7 +568,7 @@ test %r does not map to a sample field in the reported suite""" % (
 
                 sample.set_field(sample_field, value)
 
-    def importDataFromDict(self, data):
+    def importDataFromDict(self, data, config=None):
         """
         importDataFromDict(data) -> Run, bool
 
@@ -595,7 +595,39 @@ test %r does not map to a sample field in the reported suite""" % (
 
         self._importSampleValues(data['Tests'], run, tag)
 
+        # If we have a config object and we have a database which we are
+        # supposed to link simple/ runs from, attempt to find the matching run
+        # in that database.
+        if config and config.simple_run_source:
+            self.find_and_set_simple_run_id(run, data, config)
+
         return True, run
+
+
+    def find_and_set_simple_run_id(self, run, data, config):
+        # Get the database we are supposed to match run IDs in.
+        db = config.config.get_database(config.simple_run_source)
+
+        # Figure out the matching machine.
+        simple_machine,created = db.getOrCreateMachine(
+            data['Machine']['Name'], data['Machine']['Info'].items())
+        if created:
+            # Obviously missing, rollback and abort.
+            db.rollback()
+            return
+
+        run_data = data['Run']
+        simple_run,created = db.getOrCreateRun(
+            simple_machine,
+            run_data.get('Start Time',''), run_data.get('End Time',''),
+            run_data['Info'].items())
+        if created:
+            # Obviously missing, rollback and abort.
+            db.rollback()
+            return
+
+        # Otherwise, we found the run.
+        run.simple_run_id = simple_run.id
 
     # Simple query support (mostly used by templates)
 

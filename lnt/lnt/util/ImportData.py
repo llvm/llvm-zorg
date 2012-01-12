@@ -45,10 +45,16 @@ def import_and_report(config, db_name, db, file, format, commit=False,
 
     result['load_time'] = time.time() - startTime
 
+    # Find the database config, if we have a configuration object.
+    if config:
+        db_config = config.databases[db_name]
+    else:
+        db_config = None
+
     # Find the email address for this machine's results.
     toAddress = email_config = None
-    if config and not disable_email:
-        email_config = config.databases[db_name].email_config
+    if db_config and not disable_email:
+        email_config = db_config.email_config
         if email_config.enabled:
             # Find the machine name.
             machineName = str(data.get('Machine',{}).get('Name'))
@@ -60,7 +66,7 @@ def import_and_report(config, db_name, db, file, format, commit=False,
 
     importStartTime = time.time()
     try:
-        success,run = db.importDataFromDict(data)
+        success,run = db.importDataFromDict(data, config=db_config)
     except KeyboardInterrupt:
         raise
     except:

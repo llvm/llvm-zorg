@@ -108,7 +108,7 @@ class V4DB(object):
         return sum([ts.query(ts.Test).count()
                     for ts in self.testsuite.values()])
 
-    def importDataFromDict(self, data):
+    def importDataFromDict(self, data, config=None):
         # Select the database to import into.
         #
         # FIXME: Promote this to a top-level field in the data.
@@ -121,7 +121,7 @@ class V4DB(object):
             raise ValueError,"test suite %r not present in this database!" % (
                 db_name)
 
-        return db.importDataFromDict(data)
+        return db.importDataFromDict(data, config)
 
     def get_db_summary(self):
         return V4DBSummary(self)
