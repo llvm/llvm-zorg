@@ -222,9 +222,8 @@ def generate_run_report(run, baseurl, only_html_body = False,
 <p>
 <h3>Changes Detail</h3>"""
 
-        for field,field_results in test_results:
-            _add_report_changes_detail(ts, field, field_results, report,
-                                       html_report, report_url)
+        _add_report_changes_detail(ts, test_results, report,
+                                   html_report, report_url)
 
     report_time = time.time() - start_time
     print >>report, "Report Time: %.2fs" % (report_time,)
@@ -257,65 +256,82 @@ def generate_run_report(run, baseurl, only_html_body = False,
 
     return subject, report.getvalue(), html_report
 
-def _add_report_changes_detail(ts, field, field_results, report, html_report,
+def _add_report_changes_detail(ts, test_results, report, html_report,
                                report_url):
+    # Reorder results to present by most important bucket first.
+    prioritized = [(priority, field, bucket_name, bucket, show_perf)
+                   for field,field_results in test_results
+                   for priority,(bucket_name, bucket,
+                                 show_perf) in enumerate(field_results)]
+    prioritized.sort()
+
+    for _,field,bucket_name,bucket,show_perf in prioritized:
+        _add_report_changes_detail_for_field_and_bucket(
+            ts, field, bucket_name, bucket, show_perf, report,
+            html_report, report_url)
+
+def _add_report_changes_detail_for_field_and_bucket(ts, field, bucket_name,
+                                                    bucket, show_perf, report,
+                                                    html_report, report_url):
+    if not bucket or bucket_name == 'Unchanged Tests':
+        return
+
     field_index = ts.sample_fields.index(field)
+    # FIXME: Do not hard code field display names here, this should be in the
+    # test suite metadata.
     field_display_name = { "compile_time" : "Compile Time",
                            "execution_time" : "Execution Time" }.get(field.name)
-    for bucket_name,bucket,show_perf in field_results:
-        if not bucket or bucket_name == 'Unchanged Tests':
-            continue
 
-        print >>report, "%s - %s" % (bucket_name, field_display_name)
-        print >>report, '-' * (len(bucket_name) + len(field_display_name) + 3)
+    print >>report, "%s - %s" % (bucket_name, field_display_name)
+    print >>report, '-' * (len(bucket_name) + len(field_display_name) + 3)
+    print >>html_report, """
+<p>
+<table class="sortable">
+<tr><th>%s - %s </th>""" % (bucket_name, field_display_name)
+    if show_perf:
         print >>html_report, """
-    <p>
-    <table class="sortable">
-    <tr><th>%s - %s </th>""" % (bucket_name, field_display_name)
-        if show_perf:
+<th>&Delta;</th><th>Previous</th><th>Current</th> <th>&sigma;</th>"""
+        print >>html_report, """</tr>"""
+
+    # If we aren't displaying any performance results, just write out the
+    # list of tests and continue.
+    if not show_perf:
+        for name,cr,_ in bucket:
+            print >>report, '  %s' % (name,)
             print >>html_report, """
-    <th>&Delta;</th><th>Previous</th><th>Current</th> <th>&sigma;</th>"""
-            print >>html_report, """</tr>"""
-
-        # If we aren't displaying any performance results, just write out the
-        # list of tests and continue.
-        if not show_perf:
-            for name,cr,_ in bucket:
-                print >>report, '  %s' % (name,)
-                print >>html_report, """
-    <tr><td>%s</td></tr>""" % (name,)
-            print >>report
-            print >>html_report, """
-    </table>"""
-            continue
-
-        bucket.sort(key = lambda (_,cr,__): -abs(cr.pct_delta))
-
-        for name,cr,test_id in bucket:
-            if cr.stddev is not None:
-                stddev_value = ', std. dev.: %.4f' % cr.stddev
-            else:
-                stddev_value = ''
-            print >>report, ('  %s: %.2f%% (%.4f => %.4f%s)') % (
-                name, 100. * cr.pct_delta,
-                cr.previous, cr.current, stddev_value)
-
-            # Link the regression to the chart of its performance.
-            form_data = urllib.urlencode([('test.%d' % test_id,
-                                           str(field_index))])
-            linked_name = '<a href="%s?%s">%s</a>' % (
-                os.path.join(report_url, "graph"),
-                form_data, name)
-
-            pct_value = lnt.server.ui.util.PctCell(cr.pct_delta).render()
-            if cr.stddev is not None:
-                stddev_value = "%.4f" % cr.stddev
-            else:
-                stddev_value = "-"
-
-            print >>html_report, """
-    <tr><td>%s</td>%s<td>%.4f</td><td>%.4f</td><td>%s</td></tr>""" %(
-                linked_name, pct_value, cr.previous, cr.current, stddev_value)
+<tr><td>%s</td></tr>""" % (name,)
         print >>report
         print >>html_report, """
-    </table>"""
+</table>"""
+        return
+
+    bucket.sort(key = lambda (_,cr,__): -abs(cr.pct_delta))
+
+    for name,cr,test_id in bucket:
+        if cr.stddev is not None:
+            stddev_value = ', std. dev.: %.4f' % cr.stddev
+        else:
+            stddev_value = ''
+        print >>report, ('  %s: %.2f%% (%.4f => %.4f%s)') % (
+            name, 100. * cr.pct_delta,
+            cr.previous, cr.current, stddev_value)
+
+        # Link the regression to the chart of its performance.
+        form_data = urllib.urlencode([('test.%d' % test_id,
+                                       str(field_index))])
+        linked_name = '<a href="%s?%s">%s</a>' % (
+            os.path.join(report_url, "graph"),
+            form_data, name)
+
+        pct_value = lnt.server.ui.util.PctCell(cr.pct_delta).render()
+        if cr.stddev is not None:
+            stddev_value = "%.4f" % cr.stddev
+        else:
+            stddev_value = "-"
+
+        print >>html_report, """
+<tr><td>%s</td>%s<td>%.4f</td><td>%.4f</td><td>%s</td></tr>""" %(
+            linked_name, pct_value, cr.previous, cr.current, stddev_value)
+    print >>report
+    print >>html_report, """
+</table>"""
