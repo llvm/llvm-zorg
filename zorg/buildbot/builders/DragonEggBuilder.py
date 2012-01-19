@@ -5,16 +5,33 @@ from buildbot.steps.shell import Configure, ShellCommand
 from buildbot.steps.shell import WarningCountingShellCommand
 from buildbot.process.properties import WithProperties
 
-def getBuildFactory(triple, clean=True, jobs='%(jobs)s',
-                    build_script='buildbot_self_strap'):
+def getCCSetting(gcc, gxx):
+  cc_settings = []
+  if gcc is not None:
+    cc_settings += [WithProperties('CC=' + gcc)]
+  if gxx is not None:
+    cc_settings += [WithProperties('CXX=' + gxx)]
+  return cc_settings
+
+def getDragonEggBootstrapFactory(triple, gcc_repository,
+                                 extra_languages=[],
+                                 extra_gcc_configure_args=[],
+                                 extra_llvm_configure_args=[],
+                                 clean=True, env={}, jobs='%(jobs)s'):
+    # Add gcc configure arguments required by the plugin.
+    gcc_configure_args = extra_gcc_configure_args + ['--enable-plugin',
+      '--enable-lto', ','.join(['--enable-languages=c,c++'] + extra_languages)]
+
+    llvm_configure_args = extra_llvm_configure_args
+
     f = buildbot.process.factory.BuildFactory()
 
     # Determine the build directory.
-    f.addStep(buildbot.steps.shell.SetProperty(name="get_builddir",
-                                               command=["pwd"],
-                                               property="builddir",
-                                               description="set build dir",
-                                               workdir="."))
+    f.addStep(buildbot.steps.shell.SetProperty(name='get_builddir',
+                                               command=['pwd'],
+                                               property='builddir',
+                                               description='set build dir',
+                                               workdir='.'))
 
     # Checkout LLVM sources.
     f.addStep(SVN(name='svn-llvm',
@@ -28,163 +45,156 @@ def getBuildFactory(triple, clean=True, jobs='%(jobs)s',
                   defaultBranch='trunk',
                   workdir='dragonegg.src'))
 
-    # Execute the DragonEgg self host script.
-    f.addStep(ShellCommand(name='build',
-                           command=['dragonegg.src/extras/%s' % build_script,
-                                    # Path to LLVM src.
-                                    WithProperties("%(builddir)s/llvm.src"),
-                                    # Path to DragonEgg src.
-                                    WithProperties("%(builddir)s/dragonegg.src"),
-                                    # Path to base build dir.
-                                    WithProperties("%(builddir)s")],
-                           description=["build"],
-                           workdir='.',
-                           haltOnFailure=False))
+    # Checkout GCC.  This is usually a specific known good revision (supplied by
+    # appending @revision to the URL).  The SVN step can't handle that.  As it
+    # provides no mechanism at all for checking out a specific revision, just
+    # run the command directly here.
+    svn_co = ['svn', 'checkout', gcc_repository, 'gcc.src']
+    f.addStep(ShellCommand(name='svn-gcc',
+                           command=svn_co,
+                           haltOnFailure=True,
+                           workdir='.'))
+
+    # Do the boostrap.
+    prev_gcc = None     # C compiler built during the previous stage.
+    prev_gxx = None     # C++ compiler built during the previous stage.
+    prev_plugin = None  # Plugin built during the previous stage.
+    for stage in 'stage1', 'stage2', 'stage3':
+
+      # Build and install GCC.
+      gcc_obj_dir = 'gcc.obj.%s' % stage
+      gcc_install_dir = 'gcc.install' # Name is embedded in object files, so if
+                                      # per-stage would get bootstrap comparison
+                                      # failures.
+      if clean:
+          f.addStep(ShellCommand(name='rm-%s' % gcc_obj_dir,
+                                 command=['rm', '-rf', gcc_obj_dir],
+                                 haltOnFailure = True,
+                                 description=['rm build dir', 'gcc', stage],
+                                 workdir='.', env=env))
+      f.addStep(Configure(name='configure.gcc.%s' % stage,
+                          command=(['../gcc.src/configure',
+                                    WithProperties('--prefix=%%(builddir)s/%s' % gcc_install_dir)] +
+                                   gcc_configure_args + getCCSetting(prev_gcc, prev_gxx)),
+                          haltOnFailure = True,
+                          description=['configure', 'gcc', stage],
+                          workdir=gcc_obj_dir, env=env))
+      f.addStep(WarningCountingShellCommand(name = 'compile.gcc.%s' % stage,
+                                            command = ['nice', '-n', '10',
+                                                       'make', WithProperties('-j%s' % jobs)],
+                                            haltOnFailure = True,
+                                            description=['compile', 'gcc', stage],
+                                            workdir=gcc_obj_dir, env=env))
+      f.addStep(WarningCountingShellCommand(name = 'install.gcc.%s' % stage,
+                                            command = ['nice', '-n', '10',
+                                                       'make', 'install'],
+                                            haltOnFailure = True,
+                                            description=['install', 'gcc', stage],
+                                            workdir=gcc_obj_dir, env=env))
+
+      # From this point on build everything using the just built GCC.
+      prev_gcc = '%(builddir)s/'+gcc_install_dir+'/bin/gcc'
+      prev_gxx = '%(builddir)s/'+gcc_install_dir+'/bin/g++'
+      if prev_plugin is not None:
+        prev_gcc += ' -fplugin=' + prev_plugin
+        prev_gxx += ' -fplugin=' + prev_plugin
+
+# FIXME: The built libstdc++ and libgcc may be more recent than the system versions.
+# FIXME: Set the library path so that programs compiled with the just built GCC will
+# FIXME: start successfully, rather than failing due to shared library dependencies.
+# FIXME: export LD_LIBRARY_PATH=`$CC -print-search-dirs | grep "^libraries:" | \
+# FIXME:   sed "s/^libraries: *=//"`:$LD_LIBRARY_PATH
+
+      # Build LLVM with the just built GCC and install it.
+      llvm_obj_dir = 'llvm.obj.%s' % stage
+      llvm_install_dir = 'llvm.install' # Name is embedded in object files, so
+                                        # if per-stage would get bootstrap
+                                        # comparison failures.
+      if clean:
+          f.addStep(ShellCommand(name='rm-%s' % llvm_obj_dir,
+                                 command=['rm', '-rf', llvm_obj_dir],
+                                 haltOnFailure = True,
+                                 description=['rm build dir', 'llvm', stage],
+                                 workdir='.', env=env))
+      f.addStep(Configure(name='configure.llvm.%s' % stage,
+                          command=(['../llvm.src/configure',
+                                    WithProperties('--prefix=%%(builddir)s/%s' % llvm_install_dir)] +
+                                    llvm_configure_args + getCCSetting(prev_gcc, prev_gxx)),
+                          haltOnFailure = True,
+                          description=['configure', 'llvm', stage],
+                          workdir=llvm_obj_dir, env=env))
+      f.addStep(WarningCountingShellCommand(name = 'compile.llvm.%s' % stage,
+                                            command = ['nice', '-n', '10',
+                                                       'make', WithProperties('-j%s' % jobs)],
+                                            haltOnFailure = True,
+                                            description=['compile', 'llvm', stage],
+                                            workdir=llvm_obj_dir, env=env))
+      f.addStep(WarningCountingShellCommand(name = 'install.llvm.%s' % stage,
+                                            command = ['nice', '-n', '10',
+                                                       'make', 'install'],
+                                            haltOnFailure = True,
+                                            description=['install', 'llvm', stage],
+                                            workdir=llvm_obj_dir, env=env))
+
+      # Build dragonegg with the just built LLVM and GCC.
+      dragonegg_pre_obj_dir = 'dragonegg.obj.pre.%s' % stage
+      if clean:
+          f.addStep(ShellCommand(name='rm-%s' % dragonegg_pre_obj_dir,
+                                 command=['rm', '-rf', dragonegg_pre_obj_dir],
+                                 haltOnFailure = True,
+                                 description=['rm build dir', 'dragonegg pre', stage],
+                                 workdir='.', env=env))
+      f.addStep(WarningCountingShellCommand(
+              name = 'compile.dragonegg.pre.%s' % stage,
+              command = ['nice', '-n', '10',
+                         'make', '-f', '../dragonegg.src/Makefile',
+                         WithProperties('-j%s' % jobs),
+                         WithProperties('GCC=%(builddir)s/'+gcc_install_dir+'/bin/gcc'),
+                         WithProperties('LLVM_CONFIG=%(builddir)s/'+llvm_install_dir+'/bin/llvm-config'),
+                         WithProperties('TOP_DIR=%(builddir)s/dragonegg.src')
+                         ] + getCCSetting(prev_gcc, prev_gxx),
+              haltOnFailure = True,
+              description=['compile', 'dragonegg pre', stage],
+              workdir=dragonegg_pre_obj_dir, env=env))
+      prev_gcc = '%(builddir)s/'+gcc_install_dir+'/bin/gcc -fplugin=%(builddir)s/'+dragonegg_pre_obj_dir+'/dragonegg.so'
+      prev_gxx = '%(builddir)s/'+gcc_install_dir+'/bin/g++ -fplugin=%(builddir)s/'+dragonegg_pre_obj_dir+'/dragonegg.so'
+
+      # Now build dragonegg again using the just built dragonegg.
+      dragonegg_obj_dir = 'dragonegg.obj.%s' % stage
+      if clean:
+          f.addStep(ShellCommand(name='rm-%s' % dragonegg_obj_dir,
+                                 command=['rm', '-rf', dragonegg_obj_dir],
+                                 haltOnFailure = True,
+                                 description=['rm build dir', 'dragonegg', stage],
+                                 workdir='.', env=env))
+      f.addStep(WarningCountingShellCommand(
+              name = 'compile.dragonegg.%s' % stage,
+              command = ['nice', '-n', '10',
+                         'make', '-f', '../dragonegg.src/Makefile',
+                         'DISABLE_VERSION_CHECK=1',
+                         WithProperties('-j%s' % jobs),
+                         WithProperties('GCC=%(builddir)s/'+gcc_install_dir+'/bin/gcc'),
+                         WithProperties('LLVM_CONFIG=%(builddir)s/'+llvm_install_dir+'/bin/llvm-config'),
+                         WithProperties('TOP_DIR=%(builddir)s/dragonegg.src')
+                         ] + getCCSetting(prev_gcc, prev_gxx),
+              haltOnFailure = True,
+              description=['compile', 'dragonegg', stage],
+              workdir=dragonegg_obj_dir, env=env))
+
+      # Ensure that the following stages use the just built plugin.
+      prev_plugin = '%(builddir)s/'+dragonegg_obj_dir+'/dragonegg.so'
+      prev_gcc = '%(builddir)s/'+gcc_install_dir+'/bin/gcc -fplugin=' + prev_plugin
+      prev_gxx = '%(builddir)s/'+gcc_install_dir+'/bin/g++ -fplugin=' + prev_plugin
+
+    # Check that the dragonegg objects didn't change between stages 2 and 3.
+    f.addStep(ShellCommand(name='compare.stages',
+                           command=['sh', '-c', 'for O in *.o ; do ' +
+                                    'cmp --ignore-initial=16 ' +
+                                    '../dragonegg.obj.stage2/$O ' +
+                                    '../dragonegg.obj.stage3/$O || exit 1 ; ' +
+                                    'done'],
+                           haltOnFailure = True,
+                           description=['compare', 'stages', '2', 'and', '3'],
+                           workdir='dragonegg.obj.stage3', env=env))
 
     return f
-
-# This is the sketching of a more buildbot style build factory for
-# DragonEgg, but it is far from complete.
-def getBuildFactory_Split(triple, clean=True,
-                          jobs='%(jobs)s'):
-    # FIXME: Move out.
-    env = {}
-    configure_args = ["--enable-lto", "--enable-languages=c,c++", "--disable-bootstrap",
-                      "--disable-multilib", "--enable-checking", 
-                      "--with-mpfr=/opt/cfarm/mpfr-2.4.1", "--with-gmp=/opt/cfarm/gmp-4.2.4",
-                      "--with-mpc=/opt/cfarm/mpc-0.8", "--with-libelf=/opt/cfarm/libelf-0.8.12"]
-
-    f = buildbot.process.factory.BuildFactory()
-
-    # Determine the build directory.
-    f.addStep(buildbot.steps.shell.SetProperty(name="get_builddir",
-                                               command=["pwd"],
-                                               property="builddir",
-                                               description="set build dir",
-                                               workdir="."))
-
-    # Checkout LLVM sources.
-    f.addStep(SVN(name='svn-llvm',
-                  mode='update', baseURL='http://llvm.org/svn/llvm-project/llvm/',
-                  defaultBranch='trunk',
-                  workdir='llvm.src'))
-
-    # Checkout DragonEgg sources.
-    f.addStep(SVN(name='svn-dragonegg',
-                  mode='update', baseURL='http://llvm.org/svn/llvm-project/dragonegg/',
-                  defaultBranch='trunk',
-                  workdir='dragonegg.src'))
-
-    # Revert any DragonEgg patches.
-    f.addStep(ShellCommand(name='patch.revert.gcc',
-                           command=['svn','revert','-R','gcc'],
-                           workdir='gcc.src',
-                           haltOnFailure=False))
-
-    # Checkout GCC sources.
-    #
-    # FIXME: This is going to mess up revision numbers.
-    f.addStep(SVN(name='svn-gcc',
-                  mode='update', baseURL='svn://gcc.gnu.org/svn/gcc/',
-                  defaultBranch='trunk',
-                  workdir='gcc.src'))
-
-    # Apply patch.
-    #
-    # FIXME: Eliminate this.
-    f.addStep(ShellCommand(name='patch.gcc',
-                           command="patch -p1 < ../dragonegg.src/gcc-patches/i386_static.diff",
-                           workdir='gcc.src'))
-
-    # Build and install GCC.
-    if clean:
-        f.addStep(ShellCommand(name="rm-gcc.obj.stage1",
-                               command=["rm", "-rf", "gcc.1.obj"],
-                               haltOnFailure = True,
-                               description=["rm build dir", "gcc"],
-                               workdir=".", env=env))
-    # Create the gcc.1.obj dir. FIXME: This shouldn't be necessary, old buildbot or something.
-    f.addStep(ShellCommand(command="mkdir gcc.1.obj",
-                           workdir='.'))
-    f.addStep(Configure(name='configure.gcc.stage1',
-                        command=(["../gcc.src/configure",
-                                  WithProperties("--prefix=%(builddir)s/gcc.1.install")] +
-                                 configure_args),
-                        haltOnFailure = True,
-                        description=["configure", "gcc", "(stage 1)"],
-                        workdir="gcc.1.obj", env=env))
-    f.addStep(WarningCountingShellCommand(name = "compile.gcc.stage1",
-                                          command = ["nice", "-n", "10",
-                                                     "make", WithProperties("-j%s" % jobs)],
-                                          haltOnFailure = True,
-                                          description=["compile", "gcc", "(stage 1)"],
-                                          workdir="gcc.1.obj", env=env))
-    f.addStep(WarningCountingShellCommand(name = "install.gcc.stage1",
-                                          command = ["nice", "-n", "10",
-                                                     "make", "install"],
-                                          haltOnFailure = True,
-                                          description=["install", "gcc", "(stage 1)"],
-                                          workdir="gcc.1.obj", env=env))
-
-    # Build LLVM (stage 1) with the GCC (stage 1).
-    if clean:
-        f.addStep(ShellCommand(name="rm-llvm.obj.stage1",
-                               command=["rm", "-rf", "llvm.1.obj"],
-                               haltOnFailure = True,
-                               description=["rm build dir", "llvm"],
-                               workdir=".", env=env))
-    # Create the llvm.1.obj dir. FIXME: This shouldn't be necessary, old buildbot or something.
-    f.addStep(ShellCommand(command="mkdir llvm.1.obj",
-                           workdir='.'))
-    f.addStep(Configure(name='configure.llvm.stage1',
-                        command=(["../llvm.src/configure",
-                                  WithProperties("CC=%(builddir)s/gcc.1.install/bin/gcc"),
-                                  WithProperties("CXX=%(builddir)s/gcc.1.install/bin/g++"),
-                                  WithProperties("--prefix=%(builddir)s/llvm.1.install"),
-                                  "--enable-optimized",
-                                  "--enable-assertions"] +
-                                 configure_args),
-                        haltOnFailure = True,
-                        description=["configure", "llvm", "(stage 1)"],
-                        workdir="llvm.1.obj", env=env))
-    f.addStep(WarningCountingShellCommand(name = "compile.llvm.stage1",
-                                          command = ["nice", "-n", "10",
-                                                     "make", WithProperties("-j%s" % jobs)],
-                                          haltOnFailure = True,
-                                          description=["compile", "llvm", "(stage 1)"],
-                                          workdir="llvm.1.obj", env=env))
-    f.addStep(WarningCountingShellCommand(name = "install.llvm.stage1",
-                                          command = ["nice", "-n", "10",
-                                                     "make", WithProperties("-j%s" % jobs),
-                                                     "install"],
-                                          haltOnFailure = True,
-                                          description=["install", "llvm", "(stage 1)"],
-                                          workdir="llvm.1.obj", env=env))
-
-    # Clean DragonEgg.
-    if clean:
-        f.addStep(ShellCommand(name="clean.dragonegg.stage1",
-                               command=["make", "clean"],
-                               haltOnFailure = True,
-                               description=["make clean",
-                                            "(dragonegg)"],
-                               workdir="dragonegg.src", env=env))
-    local_env = env.copy()
-    # Don't do a version check, which may fail based on timestamps.
-    local_env['dragonegg_disable_version_check'] = "yes"
-    f.addStep(WarningCountingShellCommand(
-            name = "compile.dragonegg.stage1",
-            command = ["nice", "-n", "10",
-                       "make", WithProperties("-j%s" % jobs),
-                       "CFLAGS=-I/opt/cfarm/mpfr-2.4.1/include -I/opt/cfarm/gmp-4.2.4/include/ -I/opt/cfarm/mpc-0.8/include/",
-                       WithProperties("CC=%(builddir)s/gcc.1.install/bin/gcc"),
-                       WithProperties("CXX=%(builddir)s/gcc.1.install/bin/g++"),
-                       WithProperties("GCC=%(builddir)s/gcc.1.install/bin/gcc"),
-                       WithProperties("LLVM_CONFIG=%(builddir)s/llvm.1.obj/Debug+Asserts/bin/llvm-config"),
-                       ],
-            haltOnFailure = True,
-            description=["compile", "dragonegg", "(stage 1)"],
-            workdir="dragonegg.src", env=env))
-    
-    return f
-
