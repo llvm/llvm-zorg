@@ -105,8 +105,7 @@ def generate_run_report(run, baseurl, only_html_body = False,
                                          cr.get_value_status()))
 
     # Begin report generation...
-    subject = """%s test results: %s""" % (
-        machine.name, run.start_time.strftime('%Y-%m-%d %H:%M:%S %Z PST'))
+    subject = """%s test results""" % (machine.name,)
     report = StringIO.StringIO()
     html_report = StringIO.StringIO()
 
