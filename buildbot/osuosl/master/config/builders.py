@@ -363,19 +363,12 @@ def _get_dragonegg_builders():
 
         {'name' : 'dragonegg-x86_64-linux',
          'slavenames' : ['gcc17'],
-         'builddir' : 'dragonegg-x86_64-linux',
-         'factory'   : ScriptedBuilder.getScriptedBuildFactory(
-                       source_code  = [SVN(name='svn-llvm',
-                                           mode='update', baseURL='http://llvm.org/svn/llvm-project/llvm/',
-                                           defaultBranch='trunk',
-                                           workdir="llvm.src"),
-                                       SVN(name='svn-dragonegg',
-                                           mode='update', baseURL='http://llvm.org/svn/llvm-project/dragonegg/',
-                                           defaultBranch='trunk',
-                                           workdir="dragonegg.src"),],
-                       launcher     = 'dragonegg.src/extras/buildbot_self_strap',
-                       timeout      = 60),
-         'category'  : 'dragonegg'},
+         'builddir'   : 'dragonegg-x86_64-linux',
+         'factory'    : DragonEggBuilder.getDragonEggBootstrapFactory(triple='x86_64-linux-gnu',
+                                                                      gcc_repository='http://gcc.gnu.org/svn/gcc/branches/gcc-4_5-branch@174467',
+                                                                      extra_gcc_configure_args=['--disable-bootstrap', '--disable-multilib', '--enable-checking'],
+                                                                      extra_llvm_configure_args=['--enable-optimized', '--enable-assertions']),
+         'category'   : 'dragonegg'},
 
         ]
 
