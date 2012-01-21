@@ -366,8 +366,10 @@ def _get_dragonegg_builders():
          'builddir'   : 'dragonegg-x86_64-linux',
          'factory'    : DragonEggBuilder.getDragonEggBootstrapFactory(triple='x86_64-linux-gnu',
                                                                       gcc_repository='http://gcc.gnu.org/svn/gcc/branches/gcc-4_5-branch@174467',
-                                                                      extra_gcc_configure_args=['--disable-bootstrap', '--disable-multilib', '--enable-checking'],
-                                                                      extra_llvm_configure_args=['--enable-optimized', '--enable-assertions']),
+                                                                      extra_languages=['fortran', 'objc', 'obj-c++'],
+                                                                      extra_gcc_configure_args=['--disable-bootstrap', '--disable-multilib', '--enable-checking', '--with-mpfr=/opt/cfarm/mpfr-2.4.1', '--with-gmp=/opt/cfarm/gmp-4.2.4', '--with-mpc=/opt/cfarm/mpc-0.8', '--with-libelf=/opt/cfarm/libelf-0.8.12'],
+                                                                      extra_llvm_configure_args=['--enable-optimized', '--enable-assertions'],
+                                                                      env={'CPPFLAGS' : '-I/opt/cfarm/mpfr-2.4.1/include -I/opt/cfarm/gmp-4.2.4/include/ -I /opt/cfarm/mpc-0.8/include/'}),
          'category'   : 'dragonegg'},
 
         ]
