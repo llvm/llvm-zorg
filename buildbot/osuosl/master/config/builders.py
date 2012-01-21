@@ -369,7 +369,7 @@ def _get_dragonegg_builders():
                                                                       extra_languages=['fortran', 'objc', 'obj-c++'],
                                                                       extra_gcc_configure_args=['--disable-bootstrap', '--disable-multilib', '--enable-checking', '--with-mpfr=/opt/cfarm/mpfr-2.4.1', '--with-gmp=/opt/cfarm/gmp-4.2.4', '--with-mpc=/opt/cfarm/mpc-0.8', '--with-libelf=/opt/cfarm/libelf-0.8.12'],
                                                                       extra_llvm_configure_args=['--enable-optimized', '--enable-assertions'],
-                                                                      env={'CPPFLAGS' : '-I/opt/cfarm/mpfr-2.4.1/include -I/opt/cfarm/gmp-4.2.4/include/ -I /opt/cfarm/mpc-0.8/include/'}),
+                                                                      env={'CPPFLAGS' : '-I/opt/cfarm/mpfr-2.4.1/include -I/opt/cfarm/gmp-4.2.4/include/ -I/opt/cfarm/mpc-0.8/include/'}),
          'category'   : 'dragonegg'},
 
         ]
