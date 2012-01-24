@@ -24,8 +24,13 @@ function init() {
 {% for plot in graph_plots %}
     {{ plot }}
 {% endfor %}
-    
+
+{% if use_day_axis %}
+    graph.xAxis.format = graph.xAxis.formats.day;
+{% else %}
     graph.xAxis.format = graph.xAxis.formats.normal;
+{% endif %}
+
     graph.draw();
 }
 {% endblock %}

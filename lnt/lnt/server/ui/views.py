@@ -923,6 +923,7 @@ def v4_graph(id):
     graph_plots = []
     num_points = 0
     num_plots = len(graph_tests)
+    use_day_axis = None
     for i,(test,field) in enumerate(graph_tests):
         # Determine the base plot color.
         col = list(util.makeDarkColor(float(i) / num_plots))
@@ -948,6 +949,30 @@ def v4_graph(id):
         data = util.multidict((int(r),v)
                               for v,r in q).items()
         data.sort()
+
+        # Infer whether or not we should use a day axis. This is a total hack to
+        # try and get graphs of machines which report in the %04Y%02M%02D format
+        # to look readable.
+        #
+        # We only do this detection for the first test.
+        if use_day_axis is None:
+            if data:
+                use_day_axis = (20000000 <= data[0][0] < 20990000)
+            else:
+                use_day_axis = False
+
+        # If we are using a day axis, convert the keys into seconds since the
+        # epoch.
+        if use_day_axis:
+            def convert((x,y)):
+                year = x//10000
+                month = (x//100) % 100
+                day = x % 100
+                seconds = datetime.datetime
+                timestamp = time.mktime((year, month, day,
+                                         0, 0, 0, 0, 0, 0))
+                return (timestamp,y)
+            data = map(convert, data)
 
         # Compute the graph points.
         errorbar_data = []
@@ -1037,4 +1062,5 @@ def v4_graph(id):
                            compare_to=compare_to, options=options,
                            num_plots=num_plots, num_points=num_points,
                            neighboring_runs=neighboring_runs,
-                           graph_plots=graph_plots, legend=legend)
+                           graph_plots=graph_plots, legend=legend,
+                           use_day_axis=use_day_axis)
