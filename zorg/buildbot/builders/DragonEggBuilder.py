@@ -104,9 +104,6 @@ def getDragonEggBootstrapFactory(triple, gcc_repository,
       # From this point on build everything using the just built GCC.
       prev_gcc = '%(builddir)s/'+gcc_install_dir+'/bin/gcc'
       prev_gxx = '%(builddir)s/'+gcc_install_dir+'/bin/g++'
-      if prev_plugin is not None:
-        prev_gcc += ' -fplugin=' + prev_plugin
-        prev_gxx += ' -fplugin=' + prev_plugin
 
       # The built libstdc++ and libgcc may well be more recent than the system
       # versions.  Set the library path so that programs compiled with the just
@@ -116,6 +113,7 @@ def getDragonEggBootstrapFactory(triple, gcc_repository,
                                                  command=[WithProperties(prev_gcc),
                                                           '-print-search-dirs'],
                                                  extract_fn=extractSearchPaths,
+                                                 haltOnFailure = True,
                                                  description=['gcc', 'search paths',
                                                               stage], env=cur_env))
       cur_env = cur_env.copy();
@@ -123,6 +121,11 @@ def getDragonEggBootstrapFactory(triple, gcc_repository,
         cur_env['LD_LIBRARY_PATH'] = WithProperties('%(gcc_libraries)s'+':'+env['LD_LIBRARY_PATH'])
       else:
         cur_env['LD_LIBRARY_PATH'] = WithProperties('%(gcc_libraries)s')
+
+      # Build everything using the DragonEgg plugin from the previous stage.
+      if prev_plugin is not None:
+        prev_gcc += ' -fplugin=' + prev_plugin
+        prev_gxx += ' -fplugin=' + prev_plugin
 
       # Build LLVM with the just built GCC and install it.
       llvm_obj_dir = 'llvm.obj.%s' % stage
