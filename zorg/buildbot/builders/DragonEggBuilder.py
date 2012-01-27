@@ -21,8 +21,7 @@ def extractSearchPaths(rc, stdout, stderr):
       mapping['gcc_' + vals[0]] = vals[1]
   return mapping
 
-def getDragonEggBootstrapFactory(triple, gcc_repository,
-                                 extra_languages=[],
+def getDragonEggBootstrapFactory(gcc_repository, extra_languages=[],
                                  extra_gcc_configure_args=[],
                                  extra_llvm_configure_args=[],
                                  clean=True, env={}, jobs='%(jobs)s'):
