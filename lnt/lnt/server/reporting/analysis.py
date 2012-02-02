@@ -16,13 +16,8 @@ class RunInfo(object):
 
     def get_run_comparison_result(self, run, compare_to, test_id, field,
                                   comparison_window=[]):
-        field_index = self.testsuite.sample_fields.index(field)
-
         # Get the field which indicates the requested field's status.
         status_field = field.status_field
-        if status_field:
-            status_field_index = self.testsuite.sample_fields.index(
-                status_field)
 
         # Load the sample data for the current and previous runs and the
         # comparison window.
@@ -48,13 +43,13 @@ class RunInfo(object):
         run_failed = prev_failed = False
         if status_field:
             for sample in run_samples:
-                run_failed |= sample[status_field_index] == FAIL
+                run_failed |= sample[status_field.index] == FAIL
             for sample in prev_samples:
-                prev_failed |= sample[status_field_index] == FAIL
+                prev_failed |= sample[status_field.index] == FAIL
 
         # Get the current and previous values.
-        run_values = [s[field_index] for s in run_samples]
-        prev_values = [s[field_index] for s in prev_samples]
+        run_values = [s[field.index] for s in run_samples]
+        prev_values = [s[field.index] for s in prev_samples]
         if run_values:
             run_value = min(run_values)
         else:
@@ -108,9 +103,9 @@ class RunInfo(object):
             # Filter out failing samples.
             if status_field:
                 prev_samples = [s for s in prev_samples
-                                if s[status_field_index] == PASS]
+                                if s[status_field.index] == PASS]
             if prev_samples:
-                prev_values = [s[field_index]
+                prev_values = [s[field.index]
                                for s in prev_samples]
                 stddev = stats.standard_deviation(prev_values)
                 MAD = stats.median_absolute_deviation(prev_values)

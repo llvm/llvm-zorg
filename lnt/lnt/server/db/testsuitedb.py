@@ -35,6 +35,8 @@ class TestSuiteDB(object):
         self.order_fields = list(self.test_suite.order_fields)
         self.run_fields = list(self.test_suite.run_fields)
         self.sample_fields = list(self.test_suite.sample_fields)
+        for i,field in enumerate(self.sample_fields):
+            field.index = i
 
         self.base = sqlalchemy.ext.declarative.declarative_base()
 

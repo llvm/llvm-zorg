@@ -191,6 +191,9 @@ class SampleField(Base):
         self.info_key = info_key
         self.status_field = status_field
 
+        # Index of this column.
+        self.index = None
+
         # Column instance for fields which have been bound (non-DB
         # parameter). This is provided for convenience in querying.
         self.column = None
