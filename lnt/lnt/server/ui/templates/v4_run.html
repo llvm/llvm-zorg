@@ -140,7 +140,8 @@
 
 <h3>Tests</h3>
 
-<form method="GET" action="{{ v4_url_for('v4_graph', id=run.id) }}">
+{% set graph_base=v4_url_for('v4_graph', id=run.id) %}
+<form method="GET" action="{{ graph_base }}">
 
 {# Report one table for each primary field. #}
 {% for field in primary_fields %}
@@ -182,7 +183,8 @@
   <tr>
     <td><input type="checkbox" name="test.{{test_id}}"
                value="{{field.index}}"></td>
-    <td>{{test_name}}</td>
+    <td><a href="{{graph_base}}?test.{{test_id}}={{field.index}}">{{
+        test_name}}</a></td>
     {{ get_cell_value(cr) }}
   </tr>
 {%  endif %}
