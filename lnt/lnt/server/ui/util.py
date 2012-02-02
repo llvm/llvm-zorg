@@ -193,6 +193,8 @@ class PctCell:
         return lerp(self.kNeutralColor, c, t)
 
     def getValue(self):
+        if self.value is None:
+            return ""
         if not isinstance(self.value, float):
             return self.value
         return '%.*f%%' % (self.precision, self.value*100)
