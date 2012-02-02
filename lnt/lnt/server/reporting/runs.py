@@ -228,7 +228,7 @@ def generate_run_report(run, baseurl, only_html_body = False,
     print >>report, "Report Time: %.2fs" % (report_time,)
     print >>html_report, """
 <hr>
-<b>Report Time<b>: %.2fs""" % (report_time,)
+<b>Report Time</b>: %.2fs""" % (report_time,)
 
     # Finish up the HTML report (wrapping the body, if necessary).
     html_report = html_report.getvalue()
