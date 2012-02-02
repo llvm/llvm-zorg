@@ -16,6 +16,7 @@ from flask import url_for
 
 from lnt.db import perfdb
 from lnt.server.ui.globals import db_url_for, v4_url_for
+import lnt.server.reporting.analysis
 
 frontend = flask.Module(__name__)
 
@@ -829,9 +830,31 @@ def v4_run(id):
         baseurl=db_url_for('index', _external=True),
         was_added=True, will_commit=True, only_html_body=True)
 
-    return render_template("v4_run.html", ts=ts, run=run, compare_to=compare_to,
-                           options=options, neighboring_runs=neighboring_runs,
-                           text_report=text_report, html_report=html_report)
+    # Gather the runs to use for statistical data.
+    comparison_window = list(ts.get_previous_runs_on_machine(
+            run, num_comparison_runs))
+
+    # Get the test names.
+    test_names = ts.query(ts.Test.name, ts.Test.id).order_by(ts.Test.name).all()
+
+    # Gather all the samples for the runs we are interested in.
+    if compare_to:
+        run_ids = (run.id, compare_to.id)
+    else:
+        run_ids = (run.id,)
+
+    test_info = ts.query(ts.Test.name, ts.Test.id).\
+        order_by(ts.Test.name).all()
+
+    sri = lnt.server.reporting.analysis.RunInfo(ts)
+
+    return render_template(
+        "v4_run.html", ts=ts, run=run, compare_to=compare_to,
+        options=options, neighboring_runs=neighboring_runs,
+        text_report=text_report, html_report=html_report,
+        primary_fields=list(ts.Sample.get_primary_fields()),
+        comparison_window=comparison_window,
+        sri=sri, test_info=test_info, runinfo=runinfo)
 
 @v4_route("/order/<int:id>")
 def v4_order(id):
