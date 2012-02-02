@@ -144,6 +144,7 @@
 
 {# Report one table for each primary field. #}
 {% for field in primary_fields %}
+{{ utils.render_popup_begin('test_data.' + field.name, field.name) }}
 <h4>{{field.name}}</h4>
 
 <table class="sortable" border=1>
@@ -187,6 +188,7 @@
 {%  endif %}
 {% endfor %}
 </table>
+{{ utils.render_popup_end() }}
 
 {% endfor %}
 <p><input type="submit" value="Graph">
