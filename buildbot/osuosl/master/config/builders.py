@@ -318,7 +318,8 @@ def _get_dragonegg_builders():
          'factory'    : DragonEggBuilder.getDragonEggBootstrapFactory(gcc_repository='http://gcc.gnu.org/svn/gcc/branches/gcc-4_6-branch@183339',
                                                                       extra_languages=['fortran', 'objc', 'obj-c++'],
                                                                       extra_gcc_configure_args=['--disable-bootstrap', '--enable-checking'],
-                                                                      extra_llvm_configure_args=['--enable-optimized', '--enable-assertions']),
+                                                                      extra_llvm_configure_args=['--enable-optimized', '--enable-assertions'],
+                                                                      env={ 'CFLAGS' : '-march=native' }),
          'category'   : 'dragonegg'},
 
         {'name' : "dragonegg-x86_64-linux-gcc-4.6-self-host",
