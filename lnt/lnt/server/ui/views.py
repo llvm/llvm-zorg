@@ -838,6 +838,13 @@ Invalid compare_to ID %r""" % compare_to_str)
     else:
         test_filter_re = None
 
+    options['test_min_value_filter'] = test_min_value_filter_str = \
+        request.args.get('test_min_value_filter', '')
+    if test_min_value_filter_str is not '':
+        test_min_value_filter = float(test_min_value_filter_str)
+    else:
+        test_min_value_filter = 0.0
+    
     # Generate the report for inclusion in the run page.
     #
     # FIXME: This is a crummy implementation of the concept that we want the
@@ -865,6 +872,12 @@ Invalid compare_to ID %r""" % compare_to_str)
 
     sri = lnt.server.reporting.analysis.RunInfo(ts)
 
+    # Filter the list of tests by name, if requested.
+    if test_filter_re:
+        test_names = [test
+                      for test in test_names
+                      if test_filter_re.search(test)]
+
     return render_template(
         "v4_run.html", ts=ts, run=run, compare_to=compare_to,
         options=options, neighboring_runs=neighboring_runs,
@@ -872,7 +885,8 @@ Invalid compare_to ID %r""" % compare_to_str)
         text_report=text_report, html_report=html_report,
         primary_fields=list(ts.Sample.get_primary_fields()),
         comparison_window=comparison_window,
-        sri=sri, test_info=test_info, runinfo=runinfo)
+        sri=sri, test_info=test_info, runinfo=runinfo,
+        test_min_value_filter=test_min_value_filter)
 
 @v4_route("/order/<int:id>")
 def v4_order(id):

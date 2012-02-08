@@ -125,6 +125,10 @@
 <input type="text" name="test_filter" value="{{
        options.test_filter }}"><br>
 
+<b>Test Min. Value Filter:</b>
+<input type="text" name="test_min_value_filter" value="{{
+       options.test_min_value_filter }}"><br>
+
 {% if compare_to %}
 <input type="hidden" name="compare_to" value="{{compare_to.id}}">
 {% endif %}
@@ -185,6 +189,7 @@
 {%  set cr = sri.get_run_comparison_result(
             run, compare_to, test_id, field, comparison_window) %}
 {%  if cr.previous is not none or cr.current is not none %}
+{%    if cr.current is none or cr.current >= test_min_value_filter %}
   <tr>
     <td><input type="checkbox" name="test.{{test_id}}"
                value="{{field.index}}"></td>
@@ -192,6 +197,7 @@
         test_name}}</a></td>
     {{ get_cell_value(cr) }}
   </tr>
+{%    endif %}
 {%  endif %}
 {% endfor %}
 </table>
