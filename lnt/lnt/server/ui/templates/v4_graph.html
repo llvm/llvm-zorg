@@ -65,6 +65,10 @@ function init() {
 <input type="checkbox" name="show_all_points" value="yes" {{
        'checked' if options.show_all_points}}><br>
 
+<b>Normalize By Median:</b>
+<input type="checkbox" name="normalize_by_median" value="yes" {{
+       'checked' if options.normalize_by_median}}><br>
+
 {# Add all the hidden fields. #}
 {% for name,value in request.args.items() %}
   {% if name.startswith('test.') %}

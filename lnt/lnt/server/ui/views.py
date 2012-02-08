@@ -945,6 +945,8 @@ def v4_graph(id):
         request.args.get('show_linear_regression'))
     options['show_failures'] = show_failures = bool(
         request.args.get('show_failures'))
+    options['normalize_by_median'] = normalize_by_median = bool(
+        request.args.get('normalize_by_median'))
 
     # Load the graph parameters.
     graph_tests = []
@@ -1033,7 +1035,13 @@ def v4_graph(id):
         errorbar_data = []
         points_data = []
         pts = []
-        for x,values in data:
+        if normalize_by_median:
+            normalize_by = 1.0/stats.median([min(values)
+                                           for _,values in data])
+        else:
+            normalize_by = 1.0
+        for x,orig_values in data:
+            values = [v*normalize_by for v in orig_values]
             min_value = min(values)
             pts.append((x, min_value))
 
