@@ -1,6 +1,7 @@
 {% import "utils.html" as utils %}
 
-{% macro v4_run_page(ts, machine, run, compare_to, neighboring_runs) %}
+{% macro v4_run_page(ts, machine, run, compare_to, neighboring_runs,
+                     comparison_neighboring_runs=none) %}
 
 <center>
   <table>
@@ -43,6 +44,19 @@
             "</h3>"|safe if r.id == run.id }}
 {% endfor %}
       </ul>
+
+{# Show a small number of runs in the neighborhood of the comparison run. #}
+{% if comparison_neighboring_runs %}
+      <h4>Compare To:</h4>
+      <ul>
+{% for r in comparison_neighboring_runs %}
+        <li>{{ "<h3>"|safe if r.id == compare_to.id }}
+            <a href="{{v4_url_for('v4_run', id=run.id, compare_to=r.id)}}">{{
+                     r.start_time}}</a>{{
+            "</h3>"|safe if r.id == compare_to.id }}
+{% endfor %}
+      </ul>
+{% endif %}
     </td>
     <td valign="top">
       <table border=1>

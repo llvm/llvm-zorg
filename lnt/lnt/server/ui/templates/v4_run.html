@@ -72,7 +72,8 @@
 
 {% endmacro %}
 
-{% call v4_utils.v4_run_page(ts, machine, run, compare_to, neighboring_runs) %}
+{% call v4_utils.v4_run_page(ts, machine, run, compare_to, neighboring_runs,
+                             comparison_neighboring_runs) %}
 
 {{ utils.render_popup_begin('view_options', 'View Options', true) }}
 <form action="" method="get">
@@ -123,6 +124,10 @@
 <b>Test Filter (regexp):</b>
 <input type="text" name="test_filter" value="{{
        options.test_filter }}"><br>
+
+{% if compare_to %}
+<input type="hidden" name="compare_to" value="{{compare_to.id}}">
+{% endif %}
 
 <input type="submit" name="submit" value="Update">
 </form>

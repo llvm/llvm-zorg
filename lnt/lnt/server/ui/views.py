@@ -790,11 +790,28 @@ def v4_run(id):
     # Find the neighboring runs, by order.
     prev_runs = list(ts.get_previous_runs_on_machine(run, N = 3))
     next_runs = list(ts.get_next_runs_on_machine(run, N = 3))
-    if prev_runs:
-        compare_to = prev_runs[0]
-    else:
-        compare_to = None
     neighboring_runs = next_runs[::-1] + [run] + prev_runs
+
+    # Select the comparison run as either the previous run, or a user specified
+    # comparison run.
+    compare_to_str = request.args.get('compare_to')
+    if compare_to_str:
+        compare_to_id = int(compare_to_str)
+        compare_to = ts.query(ts.Run).filter_by(id = compare_to_id).first()
+        if compare_to is None:
+            return render_template("error.html", message="""\
+Invalid compare_to ID %r""" % compare_to_str)
+
+        comparison_neighboring_runs = (
+            list(ts.get_next_runs_on_machine(compare_to, N=3))[::-1] +
+            [compare_to] +
+            list(ts.get_previous_runs_on_machine(compare_to, N=3)))
+    else:
+        if prev_runs:
+            compare_to = prev_runs[0]
+        else:
+            compare_to = None
+        comparison_neighboring_runs = neighboring_runs
 
     # Parse the view options.
     options = {}
@@ -851,6 +868,7 @@ def v4_run(id):
     return render_template(
         "v4_run.html", ts=ts, run=run, compare_to=compare_to,
         options=options, neighboring_runs=neighboring_runs,
+        comparison_neighboring_runs=comparison_neighboring_runs,
         text_report=text_report, html_report=html_report,
         primary_fields=list(ts.Sample.get_primary_fields()),
         comparison_window=comparison_window,
