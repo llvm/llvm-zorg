@@ -442,7 +442,8 @@ class CompileTest(builtintest.BuiltinTest):
     def run_test(self, name, args):
         global opts
         parser = OptionParser(
-            ("%%prog %(name)s [options] tester-name\n" + usage_info) % locals())
+            ("%%prog %(name)s [options] [<output file>]\n" +
+             usage_info) % locals())
         parser.add_option("-v", "--verbose", dest="verbose",
                           help="Show more test output",
                           action="store_true", default=False)
@@ -478,7 +479,7 @@ class CompileTest(builtintest.BuiltinTest):
                           help="Individual test to run",
                           action="append", default=[],
                           choices=[k for k,v in all_tests])
-        opts,args = parser.parse_args()
+        opts,args = parser.parse_args(args)
 
         if len(args) == 0:
             output = '-'
