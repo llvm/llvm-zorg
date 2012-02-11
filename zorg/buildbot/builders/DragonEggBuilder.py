@@ -24,7 +24,8 @@ def extractSearchPaths(rc, stdout, stderr):
 def getDragonEggBootstrapFactory(gcc_repository, extra_languages=[],
                                  extra_gcc_configure_args=[],
                                  extra_llvm_configure_args=[],
-                                 clean=True, env={}, jobs='%(jobs)s'):
+                                 clean=True, env={}, jobs='%(jobs)s',
+                                 timeout=20):
     # Add gcc configure arguments required by the plugin.
     gcc_configure_args = extra_gcc_configure_args + ['--enable-plugin',
       '--enable-lto', ','.join(['--enable-languages=c,c++'] + extra_languages)]
@@ -92,7 +93,8 @@ def getDragonEggBootstrapFactory(gcc_repository, extra_languages=[],
                                                        'make', WithProperties('-j%s' % jobs)],
                                             haltOnFailure = True,
                                             description=['compile', 'gcc', stage],
-                                            workdir=gcc_obj_dir, env=cur_env))
+                                            workdir=gcc_obj_dir, env=cur_env,
+                                            timeout=timeout * 60))
       f.addStep(WarningCountingShellCommand(name = 'install.gcc.%s' % stage,
                                             command = ['nice', '-n', '10',
                                                        'make', 'install'],
@@ -149,7 +151,8 @@ def getDragonEggBootstrapFactory(gcc_repository, extra_languages=[],
                                                        'make', WithProperties('-j%s' % jobs)],
                                             haltOnFailure = True,
                                             description=['compile', 'llvm', stage],
-                                            workdir=llvm_obj_dir, env=cur_env))
+                                            workdir=llvm_obj_dir, env=cur_env,
+                                            timeout=timeout * 60))
       f.addStep(WarningCountingShellCommand(name = 'install.llvm.%s' % stage,
                                             command = ['nice', '-n', '10',
                                                        'make', 'install'],
@@ -176,7 +179,8 @@ def getDragonEggBootstrapFactory(gcc_repository, extra_languages=[],
                          ] + getCCSetting(prev_gcc, prev_gxx),
               haltOnFailure = True,
               description=['compile', 'dragonegg pre', stage],
-              workdir=dragonegg_pre_obj_dir, env=cur_env))
+              workdir=dragonegg_pre_obj_dir, env=cur_env,
+              timeout=timeout * 60))
       prev_gcc = '%(builddir)s/'+gcc_install_dir+'/bin/gcc -fplugin=%(builddir)s/'+dragonegg_pre_obj_dir+'/dragonegg.so'
       prev_gxx = '%(builddir)s/'+gcc_install_dir+'/bin/g++ -fplugin=%(builddir)s/'+dragonegg_pre_obj_dir+'/dragonegg.so'
 
@@ -200,7 +204,8 @@ def getDragonEggBootstrapFactory(gcc_repository, extra_languages=[],
                          ] + getCCSetting(prev_gcc, prev_gxx),
               haltOnFailure = True,
               description=['compile', 'dragonegg', stage],
-              workdir=dragonegg_obj_dir, env=cur_env))
+              workdir=dragonegg_obj_dir, env=cur_env,
+              timeout=timeout * 60))
 
       # Ensure that the following stages use the just built plugin.
       prev_plugin = '%(builddir)s/'+dragonegg_obj_dir+'/dragonegg.so'

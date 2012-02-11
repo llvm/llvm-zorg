@@ -342,7 +342,8 @@ def _get_dragonegg_builders():
                                                                                                 '--with-mpfr=/opt/cfarm/mpfr',
                                                                                                 '--with-gmp=/opt/cfarm/gmp',
                                                                                                 '--with-mpc=/opt/cfarm/mpc'],
-                                                                      extra_llvm_configure_args=['--enable-optimized', '--enable-assertions', '--enable-expensive-checks']),
+                                                                      extra_llvm_configure_args=['--enable-optimized', '--enable-assertions', '--enable-expensive-checks'],
+                                                                      timeout=120),
          'category'   : 'dragonegg'},
 
         {'name' : 'dragonegg-i686-linux-gcc-4.5-self-host',
