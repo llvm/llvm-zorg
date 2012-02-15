@@ -54,8 +54,9 @@ def runN(args, N, cwd, preprocess_cmd=None, env=None, sample_mem=False,
     return data
 
 # Test functions.
-def get_input_path(*names):
-    return os.path.join(g_input_dir, *names)
+def get_input_path(opts, *names):
+    return os.path.join(opts.test_suite_externals, "lnt-compile-suite-src",
+                        *names)
 
 def get_output_path(name):
     return os.path.join(g_output_dir, name)
@@ -90,7 +91,7 @@ def test_cc_command(name, run_info, variables, input, output, flags,
                     extra_flags, has_output=True, ignore_stderr=False,
                     can_memprof=True):
     info = { 'flags' : repr(flags) }
-    input = get_input_path(input)
+    input = get_input_path(opts, input)
     output = get_output_path(output)
 
     cmd = [variables.get('cc')]
@@ -194,7 +195,7 @@ def test_compile(name, run_info, variables, input, output, pch_input,
         assert pch_input.endswith('.gch')
         extra_flags.extend(['-include', get_output_path(pch_input[:-4])])
     
-    extra_flags.extend(['-I', os.path.dirname(get_input_path(input))])
+    extra_flags.extend(['-I', os.path.dirname(get_input_path(opts, input))])
 
     return test_cc_command(name, run_info, variables, input, output, flags,
                            extra_flags, has_output, ignore_stderr, can_memprof)
@@ -203,8 +204,6 @@ def test_compile(name, run_info, variables, input, output, pch_input,
 def curry(fn, **kw_args):
     return lambda *args: fn(*args, **kw_args)
 
-g_input_dir = os.path.join(os.path.abspath(os.path.dirname(__file__)),
-                           'Inputs')
 g_output_dir = os.path.join(os.path.abspath(os.path.dirname(__file__)),
                             'Output')
 all_inputs = [('Sketch/Sketch+Accessibility/SKTGraphicView.m', True, ()),
@@ -455,6 +454,9 @@ class CompileTest(builtintest.BuiltinTest):
         group.add_option("", "--cc", dest="cc", type='str',
                          help="Compiler under test",
                          action="store", default='/Developer/usr/bin/clang')
+        group.add_option("", "--test-externals", dest="test_suite_externals",
+                         help="Path to the LLVM test-suite externals",
+                         type=str, default=None, metavar="PATH")
         group.add_option("", "--machine-param", dest="machine_parameters",
                          metavar="NAME=VAL",
                          help="Add 'NAME' = 'VAL' to the machine parameters",
@@ -495,6 +497,10 @@ class CompileTest(builtintest.BuiltinTest):
 
         if len(args) != 0:
             parser.error("invalid number of arguments")
+
+        # Validate options.
+        if opts.test_suite_externals is None:
+            parser.error("--test-externals option is required")
 
         # Collect machine and run information.
         #
