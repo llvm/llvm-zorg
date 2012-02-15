@@ -450,38 +450,47 @@ class CompileTest(builtintest.BuiltinTest):
         parser.add_option("-v", "--verbose", dest="verbose",
                           help="Show more test output",
                           action="store_true", default=False)
-        parser.add_option("", "--machine-param", dest="machine_parameters",
-                          metavar="NAME=VAL",
-                          help="Add 'NAME' = 'VAL' to the machine parameters",
-                          type=str, action="append", default=[])
-        parser.add_option("", "--run-param", dest="run_parameters",
-                          metavar="NAME=VAL",
-                          help="Add 'NAME' = 'VAL' to the run parameters",
-                          type=str, action="append", default=[])
 
-        parser.add_option("", "--no-machdep-info", dest="machdep_info",
-                          help=("Don't put machine (instance) dependent "
-                                "variables in machine info"),
-                          action="store_false", default=True)
-        parser.add_option("", "--no-memory-profiling", dest="memory_profiling",
-                          help="Disable memory profiling",
-                          action="store_false", default=True)
-        parser.add_option("", "--cc", dest="cc", type='str',
-                          help="Compiler under test",
-                          action="store", default='/Developer/usr/bin/clang')
-        parser.add_option("", "--machine-name", dest="machine_name", type='str',
-                          help="Machine name to use in submission [%default]",
-                          action="store", default=platform.uname()[1])
-        parser.add_option("", "--run-count", dest="run_count", metavar="N",
-                          help="Number of per-test samples to run",
-                          action="store", type=int, default=3)
-        parser.add_option("", "--run-order", dest="run_order", metavar="STR",
-                          help="String to use to identify and order this run",
-                          action="store", type=str, default=None)
-        parser.add_option("", "--test", dest="tests", metavar="NAME",
-                          help="Individual test to run",
-                          action="append", default=[],
-                          choices=[k for k,v in all_tests])
+        group = OptionGroup(parser, "Test Options")
+        group.add_option("", "--cc", dest="cc", type='str',
+                         help="Compiler under test",
+                         action="store", default='/Developer/usr/bin/clang')
+        group.add_option("", "--machine-param", dest="machine_parameters",
+                         metavar="NAME=VAL",
+                         help="Add 'NAME' = 'VAL' to the machine parameters",
+                         type=str, action="append", default=[])
+        group.add_option("", "--run-param", dest="run_parameters",
+                         metavar="NAME=VAL",
+                         help="Add 'NAME' = 'VAL' to the run parameters",
+                         type=str, action="append", default=[])
+        group.add_option("", "--run-order", dest="run_order", metavar="STR",
+                         help="String to use to identify and order this run",
+                         action="store", type=str, default=None)
+        parser.add_option_group(group)
+
+        group = OptionGroup(parser, "Test Selection")
+        group.add_option("", "--no-memory-profiling", dest="memory_profiling",
+                         help="Disable memory profiling",
+                         action="store_false", default=True)
+        group.add_option("", "--multisample", dest="run_count", metavar="N",
+                         help="Accumulate test data from multiple runs",
+                         action="store", type=int, default=3)
+        group.add_option("", "--test", dest="tests", metavar="NAME",
+                         help="Individual test to run",
+                         action="append", default=[],
+                         choices=[k for k,v in all_tests])
+        parser.add_option_group(group)
+
+        group = OptionGroup(parser, "Output Options")
+        group.add_option("", "--no-machdep-info", dest="machdep_info",
+                         help=("Don't put machine (instance) dependent "
+                               "variables in machine info"),
+                         action="store_false", default=True)
+        group.add_option("", "--machine-name", dest="machine_name", type='str',
+                         help="Machine name to use in submission [%default]",
+                         action="store", default=platform.uname()[1])
+        parser.add_option_group(group)
+
         opts,args = parser.parse_args(args)
 
         if len(args) != 0:
