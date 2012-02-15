@@ -14,6 +14,8 @@ from lnt.testing.util.commands import capture, rm_f
 # Interface to runN.
 #
 # FIXME: Simplify.
+#
+# FIXME: Figure out a better way to deal with need to run as root.
 def runN(args, N, cwd, preprocess_cmd=None, env=None, sample_mem=False,
          ignore_stderr=False):
     cmd = ['runN', '-a']
@@ -146,8 +148,8 @@ def test_cc_command(name, run_info, variables, input, output, flags,
         yield (success, tname, info, samples)
 
 def test_compile(name, run_info, variables, input, output, pch_input,
-                 flags, stage):
-    extra_flags = []
+                 flags, stage, extra_flags=[]):
+    extra_flags = list(extra_flags)
 
     cc_name = variables.get('cc_name')
     is_llvm = not (cc_name == 'gcc')
@@ -158,7 +160,7 @@ def test_compile(name, run_info, variables, input, output, pch_input,
         return ()
 
     # Ignore 'init' and 'irgen_only' stages for non-Clang.
-    if not is_clang and stage in ('init','irgen_only'):
+    if not is_clang and stage in ('init', 'irgen_only'):
         return ()
 
     # Force gnu99 mode for all compilers.
@@ -205,8 +207,8 @@ g_input_dir = os.path.join(os.path.abspath(os.path.dirname(__file__)),
                            'Inputs')
 g_output_dir = os.path.join(os.path.abspath(os.path.dirname(__file__)),
                             'Output')
-all_inputs = [('Sketch/SKTGraphicView/SKTGraphicView.m',True),
-               ('403.gcc/combine/combine.c',False)]
+all_inputs = [('Sketch/Sketch+Accessibility/SKTGraphicView.m', True, ()),
+               ('403.gcc/combine.c', False, ('-DSPEC_CPU_MACOSX',))]
 
 flags_to_test = [('-O0',), ('-O0','-g',), ('-Os',)]
 stages_to_test = ['driver', 'init', 'syntax', 'irgen_only', 'irgen', 'codegen',
@@ -220,7 +222,7 @@ for f in flags_to_test:
                   curry(test_compile, input='Cocoa_Prefix.h',
                         output='Cocoa_Prefix.h.gch', pch_input=None, flags=f,
                         stage='pch-gen')))
-    for input,uses_pch in all_inputs:
+    for input,uses_pch,extra_flags in all_inputs:
         name = os.path.dirname(input)
         output = os.path.splitext(os.path.basename(input))[0] + '.o'
         for stage in stages_to_test:
@@ -229,7 +231,8 @@ for f in flags_to_test:
                 pch_input = 'Cocoa_Prefix.h.gch'
             all_tests.append(('compile/%s/%s' % (name.replace('.','_'), stage),
                               curry(test_compile, input=input, output=output,
-                                    pch_input=pch_input, flags=f, stage=stage)))
+                                    pch_input=pch_input, flags=f, stage=stage,
+                                    extra_flags=extra_flags)))
 
 tests_by_name = dict([(k,(k,v)) for k,v in all_tests])
 
@@ -606,7 +609,7 @@ class CompileTest(builtintest.BuiltinTest):
         else:
             output = open(output,'w')
         print >>output, report.render()
-        if output is not sys.stderr:
+        if output is not sys.stdout:
             output.close()
 
         return report
