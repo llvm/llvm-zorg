@@ -478,17 +478,13 @@ class CompileTest(builtintest.BuiltinTest):
         parser.add_option("", "--run-order", dest="run_order", metavar="STR",
                           help="String to use to identify and order this run",
                           action="store", type=str, default=None)
-        parser.add_option("", "--tests", dest="tests", metavar="NAME",
+        parser.add_option("", "--test", dest="tests", metavar="NAME",
                           help="Individual test to run",
                           action="append", default=[],
                           choices=[k for k,v in all_tests])
         opts,args = parser.parse_args(args)
 
-        if len(args) == 0:
-            output = '-'
-        elif len(args) == 1:
-            output, = args
-        else:
+        if len(args) != 0:
             parser.error("invalid number of arguments")
 
         # Collect machine and run information.
@@ -602,17 +598,7 @@ class CompileTest(builtintest.BuiltinTest):
         machine = lnt.testing.Machine(opts.machine_name, machine_info)
         run = lnt.testing.Run(start_time, end_time, info = run_info)
 
-        report = lnt.testing.Report(machine, run, testsamples)
-
-        if output == '-':
-            output = sys.stdout
-        else:
-            output = open(output,'w')
-        print >>output, report.render()
-        if output is not sys.stdout:
-            output.close()
-
-        return report
+        return lnt.testing.Report(machine, run, testsamples)
 
 def create_instance():
   return CompileTest()

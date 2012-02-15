@@ -112,6 +112,9 @@ def action_runtest(name, args):
                       help=("whether the autosubmit result should be committed "
                             "[%default]"),
                       type=int, default=True)
+    parser.add_option("", "--output", dest="output", metavar="PATH",
+                      help="write raw report data to PATH (or stdout if '-')",
+                      action="store", default=None)
     parser.add_option("-v", "--verbose", dest="verbose",
                       help="show verbose test results",
                       action="store_true", default=False)
@@ -129,6 +132,15 @@ def action_runtest(name, args):
         parser.error('invalid test name %r' % test_name)
 
     report = test_instance.run_test('%s %s' % (name, test_name), args)
+
+    if opts.output is not None:
+        if opts.output == '-':
+            output_stream = sys.stdout
+        else:
+            output_stream = open(opts.output, 'w')
+        print >>output_stream, report.render()
+        if output_stream is not sys.stdout:
+            output_stream.close()
 
     if opts.submit_url is not None:
         if report is None:
