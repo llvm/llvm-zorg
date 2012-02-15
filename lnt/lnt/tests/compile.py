@@ -23,7 +23,7 @@ def runN(args, N, cwd, preprocess_cmd=None, env=None, sample_mem=False,
     if sample_mem:
         cmd = ['sudo'] + cmd + ['-m']
     if preprocess_cmd is not None:
-        cmd.append('-p', preprocess_cmd)    
+        cmd.append('-p', preprocess_cmd)
     cmd.append(str(int(N)))
     cmd.extend(args)
 
@@ -43,11 +43,11 @@ def runN(args, N, cwd, preprocess_cmd=None, env=None, sample_mem=False,
         data = eval(stdout)
     except:
         error("failed to parse output: %s\n" % stdout)
-    
+
     if not ignore_stderr and stderr.strip():
         error("stderr isn't empty: %s\n" % stderr)
         data = None
-    
+
     if res:
         error("res != 0: %s\n" % res)
         data = None
@@ -195,7 +195,7 @@ def test_compile(name, run_info, variables, input, output, pch_input,
     if pch_input is not None:
         assert pch_input.endswith('.gch')
         extra_flags.extend(['-include', get_output_path(pch_input[:-4])])
-    
+
     extra_flags.extend(['-I', os.path.dirname(get_input_path(opts, input))])
 
     return test_cc_command(name, run_info, variables, input, output, flags,
@@ -207,7 +207,7 @@ def curry(fn, **kw_args):
 
 g_output_dir = None
 all_inputs = [('Sketch/Sketch+Accessibility/SKTGraphicView.m', True, ()),
-               ('403.gcc/combine.c', False, ('-DSPEC_CPU_MACOSX',))]
+              ('403.gcc/combine.c', False, ('-DSPEC_CPU_MACOSX',))]
 
 flags_to_test = [('-O0',), ('-O0','-g',), ('-Os',)]
 stages_to_test = ['driver', 'init', 'syntax', 'irgen_only', 'irgen', 'codegen',
@@ -218,9 +218,9 @@ for f in flags_to_test:
     # generate the right PCH file before we try to use it. Ideally the testing
     # infrastructure would just handle this.
     all_tests.append(('pch-gen/Cocoa',
-                  curry(test_compile, input='Cocoa_Prefix.h',
-                        output='Cocoa_Prefix.h.gch', pch_input=None, flags=f,
-                        stage='pch-gen')))
+                      curry(test_compile, input='Cocoa_Prefix.h',
+                            output='Cocoa_Prefix.h.gch', pch_input=None, flags=f,
+                            stage='pch-gen')))
     for input,uses_pch,extra_flags in all_inputs:
         name = os.path.dirname(input)
         output = os.path.splitext(os.path.basename(input))[0] + '.o'
@@ -307,14 +307,14 @@ sysctl_info_table = [
     ('kern.maxvnodes',                            'machine'), # 99328
     ('kern.netboot',                              'machine'), # 0
     ('kern.ngroups',                              'machine'), # 16
-    ('kern.nisdomainname',                        'machine'), # 
+    ('kern.nisdomainname',                        'machine'), #
     ('kern.nx',                                   'machine'), # 1
     ('kern.osrelease',                            'machine'), # 10.2.0
     ('kern.osrevision',                           'machine'), # 199506
     ('kern.ostype',                               'machine'), # Darwin
     ('kern.osversion',                            'machine'), # 10C540
     ('kern.posix1version',                        'machine'), # 200112
-    ('kern.procname',                             'machine'), # 
+    ('kern.procname',                             'machine'), #
     ('kern.rage_vnode',                           'machine'), # 0
     ('kern.safeboot',                             'machine'), # 0
     ('kern.saved_ids',                            'machine'), # 1
@@ -372,7 +372,7 @@ sysctl_info_table = [
     ('machdep.cpu.tlb.inst.large',                'machine'), # 8
     ('machdep.cpu.tlb.inst.small',                'machine'), # 128
     ('machdep.cpu.vendor',                        'machine'), # GenuineIntel
-]
+    ]
 
 def get_mac_addresses():
     lines = capture(['ifconfig']).strip()
@@ -456,7 +456,7 @@ class CompileTest(builtintest.BuiltinTest):
         group = OptionGroup(parser, "Test Options")
         group.add_option("", "--cc", dest="cc", type='str',
                          help="Compiler under test",
-                         action="store", default='/Developer/usr/bin/clang')
+                         action="store", default=None)
         group.add_option("", "--test-externals", dest="test_suite_externals",
                          help="Path to the LLVM test-suite externals",
                          type=str, default=None, metavar="PATH")
@@ -502,6 +502,8 @@ class CompileTest(builtintest.BuiltinTest):
             parser.error("invalid number of arguments")
 
         # Validate options.
+        if opts.cc is None:
+            parser.error('--cc is required')
         if opts.sandbox_path is None:
             parser.error('--sandbox is required')
         if opts.test_suite_externals is None:
@@ -534,7 +536,7 @@ class CompileTest(builtintest.BuiltinTest):
         run_info = {}
         info_targets = { 'machdep' : (run_info,machine_info)[opts.machdep_info],
                          'machine' : machine_info,
-                         'run' : run_info }    
+                         'run' : run_info }
         for name,target in sysctl_info_table:
             info_targets[target][name] = capture(['sysctl','-n',name],
                                                  include_stderr=True).strip()
@@ -553,7 +555,7 @@ class CompileTest(builtintest.BuiltinTest):
 
         # Set command line machine and run information.
         for target,params in (('machine',opts.machine_parameters),
-                            ('run',opts.run_parameters)):
+                              ('run',opts.run_parameters)):
             for entry in params:
                 if '=' not in entry:
                     name,val = entry,''
@@ -639,6 +641,6 @@ class CompileTest(builtintest.BuiltinTest):
         return lnt.testing.Report(machine, run, testsamples)
 
 def create_instance():
-  return CompileTest()
+    return CompileTest()
 
 __all__ = ['create_instance']
