@@ -330,7 +330,8 @@ def _get_dragonegg_builders():
                                                                       extra_languages=['fortran', 'objc', 'obj-c++'],
                                                                       extra_gcc_configure_args=['--disable-bootstrap', '--enable-checking',
                                                                                                 '--with-mpc=/opt/cfarm/mpc-0.8/'],
-                                                                      extra_llvm_configure_args=['--enable-optimized', '--enable-assertions']),
+                                                                      extra_llvm_configure_args=['--enable-optimized', '--enable-assertions'],
+                                                                      env={ 'CFLAGS' : '-march=native' }),
          'category'   : 'dragonegg'},
 
         {'name' : "dragonegg-x86_64-linux-gcc-4.6-self-host-checks",
