@@ -15,6 +15,7 @@ import lnt.testing.util.compilers
 from lnt.testing.util.commands import note, warning, error, fatal
 from lnt.testing.util.commands import capture, mkdir_p, which
 from lnt.testing.util.rcs import get_source_version
+from lnt.testing.util.misc import timestamp
 
 ###
 
@@ -47,9 +48,6 @@ class TestModule(object):
         return self._log
         
 ###
-
-def timestamp():
-    return datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
 
 def scan_for_test_modules(opts):
     base_modules_path = os.path.join(opts.test_suite_root, 'LNTBased')

@@ -10,6 +10,7 @@ import lnt.testing
 import lnt.testing.util.compilers
 from lnt.testing.util.commands import note, warning, error, fatal
 from lnt.testing.util.commands import capture, rm_f
+from lnt.testing.util.misc import timestamp
 
 # Interface to runN.
 #
@@ -204,8 +205,7 @@ def test_compile(name, run_info, variables, input, output, pch_input,
 def curry(fn, **kw_args):
     return lambda *args: fn(*args, **kw_args)
 
-g_output_dir = os.path.join(os.path.abspath(os.path.dirname(__file__)),
-                            'Output')
+g_output_dir = None
 all_inputs = [('Sketch/Sketch+Accessibility/SKTGraphicView.m', True, ()),
                ('403.gcc/combine.c', False, ('-DSPEC_CPU_MACOSX',))]
 
@@ -449,6 +449,9 @@ class CompileTest(builtintest.BuiltinTest):
         parser.add_option("-v", "--verbose", dest="verbose",
                           help="Show more test output",
                           action="store_true", default=False)
+        parser.add_option("-s", "--sandbox", dest="sandbox_path",
+                          help="Parent directory to build and run tests in",
+                          type=str, default=None, metavar="PATH")
 
         group = OptionGroup(parser, "Test Options")
         group.add_option("", "--cc", dest="cc", type='str',
@@ -499,8 +502,28 @@ class CompileTest(builtintest.BuiltinTest):
             parser.error("invalid number of arguments")
 
         # Validate options.
+        if opts.sandbox_path is None:
+            parser.error('--sandbox is required')
         if opts.test_suite_externals is None:
             parser.error("--test-externals option is required")
+
+        # Set up the sandbox.
+        global g_output_dir
+        if not os.path.exists(opts.sandbox_path):
+            print >>sys.stderr, "%s: creating sandbox: %r" % (
+                timestamp(), opts.sandbox_path)
+            os.mkdir(opts.sandbox_path)
+        g_output_dir = os.path.join(os.path.abspath(opts.sandbox_path),
+                                    "test-%s" % (
+                timestamp().replace(' ','_').replace(':','-'),))
+        try:
+            os.mkdir(g_output_dir)
+        except OSError,e:
+            if e.errno == errno.EEXIST:
+                parser.error("sandbox output directory %r already exists!" % (
+                        g_output_dir,))
+            else:
+                raise
 
         # Collect machine and run information.
         #
