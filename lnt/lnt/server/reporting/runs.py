@@ -279,7 +279,8 @@ def _add_report_changes_detail_for_field_and_bucket(ts, field, bucket_name,
     # FIXME: Do not hard code field display names here, this should be in the
     # test suite metadata.
     field_display_name = { "compile_time" : "Compile Time",
-                           "execution_time" : "Execution Time" }.get(field.name)
+                           "execution_time" : "Execution Time" }.get(
+        field.name, field.name)
 
     print >>report, "%s - %s" % (bucket_name, field_display_name)
     print >>report, '-' * (len(bucket_name) + len(field_display_name) + 3)
