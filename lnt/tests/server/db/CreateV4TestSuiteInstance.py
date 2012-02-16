@@ -14,18 +14,14 @@ db = v4db.V4DB("sqlite:///:memory:", echo=True)
 # Create a new TestSuite.
 ts = testsuite.TestSuite("nt", "NT")
 
-# Define the default sample types.
-real_sample_type = testsuite.SampleType("Real")
-status_sample_type = testsuite.SampleType("Status")
-
 # Add reasonable definitions for the machine, run, order, and sample fields.
 ts.machine_fields.append(testsuite.MachineField("uname", "uname"))
 ts.order_fields.append(testsuite.OrderField("llvm_revision", "llvm_revision",
                                             1))
 ts.run_fields.append(testsuite.RunField("arch", "ARCH"))
-ts.sample_fields.append(testsuite.SampleField("value", real_sample_type,
+ts.sample_fields.append(testsuite.SampleField("value", db.real_sample_type,
                                               ".value"))
-ts.sample_fields.append(testsuite.SampleField("status", status_sample_type,
+ts.sample_fields.append(testsuite.SampleField("status", db.status_sample_type,
                                               ".value.status"))
 db.add(ts)
 

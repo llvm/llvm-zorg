@@ -2,6 +2,8 @@ import sqlalchemy
 import testsuite
 import testsuitedb
 
+import lnt.testing
+
 class V4DB(object):
     """
     Wrapper object for LNT v0.4+ databases.
@@ -80,6 +82,38 @@ class V4DB(object):
         self.SampleType = testsuite.SampleType
         self.StatusKind = testsuite.StatusKind
         self.TestSuite = testsuite.TestSuite
+
+        # Resolve or create the known status kinds.
+        self.pass_status_kind = self.query(testsuite.StatusKind)\
+            .filter_by(id = lnt.testing.PASS).first()
+        if self.pass_status_kind is None:
+            self.pass_status_kind = testsuite.StatusKind(lnt.testing.PASS,
+                                                         "PASS")
+            self.add(self.pass_status_kind)
+        self.fail_status_kind = self.query(testsuite.StatusKind)\
+            .filter_by(id = lnt.testing.FAIL).first()
+        if self.fail_status_kind is None:
+            self.fail_status_kind = testsuite.StatusKind(lnt.testing.FAIL,
+                                                         "FAIL")
+            self.add(self.fail_status_kind)
+        self.xfail_status_kind = self.query(testsuite.StatusKind)\
+            .filter_by(id = lnt.testing.XFAIL).first()
+        if self.xfail_status_kind is None:
+            self.xfail_status_kind = testsuite.StatusKind(lnt.testing.XFAIL,
+                                                         "XFAIL")
+            self.add(self.xfail_status_kind)
+
+        # Resolve or create the known sample types.
+        self.real_sample_type = self.query(testsuite.SampleType)\
+            .filter_by(name = "Real").first()
+        if self.real_sample_type is None:
+            self.real_sample_type = testsuite.SampleType("Real")
+            self.add(self.real_sample_type)
+        self.status_sample_type = self.query(testsuite.SampleType)\
+            .filter_by(name = "Status").first()
+        if self.status_sample_type is None:
+            self.status_sample_type = testsuite.SampleType("Status")
+            self.add(self.status_sample_type)
 
     @property
     def testsuite(self):

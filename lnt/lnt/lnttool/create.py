@@ -90,19 +90,6 @@ def _create_v4_nt_database(db_path):
     # Create an NT compatible test suite, automatically.
     ts = testsuite.TestSuite("nts", "NT")
 
-    # Define the default status kinds.
-    #
-    # FIXME: This should probably be done by V4DB.
-    db.add(testsuite.StatusKind(lnt.testing.PASS, "PASS"))
-    db.add(testsuite.StatusKind(lnt.testing.FAIL, "FAIL"))
-    db.add(testsuite.StatusKind(lnt.testing.XFAIL, "XFAIL"))
-
-    # Define the default sample types.
-    #
-    # FIXME: This should probably be done by V4DB.
-    real_sample_type = testsuite.SampleType("Real")
-    status_sample_type = testsuite.SampleType("Status")
-
     # Promote the natural information produced by 'runtest nt' to fields.
     ts.machine_fields.append(testsuite.MachineField("hardware", "hardware"))
     ts.machine_fields.append(testsuite.MachineField("os", "os"))
@@ -115,14 +102,14 @@ def _create_v4_nt_database(db_path):
     # We are only interested in simple runs, so we expect exactly four fields
     # per test.
     compile_status = testsuite.SampleField(
-            "compile_status", status_sample_type, ".compile.status")
+            "compile_status", db.status_sample_type, ".compile.status")
     compile_time = testsuite.SampleField(
-        "compile_time", real_sample_type, ".compile",
+        "compile_time", db.real_sample_type, ".compile",
         status_field = compile_status)
     exec_status = testsuite.SampleField(
-            "execution_status", status_sample_type, ".exec.status")
+            "execution_status", db.status_sample_type, ".exec.status")
     exec_time = testsuite.SampleField(
-            "execution_time", real_sample_type, ".exec",
+            "execution_time", db.real_sample_type, ".exec",
             status_field = exec_status)
     ts.sample_fields.append(compile_time)
     ts.sample_fields.append(compile_status)
@@ -135,6 +122,7 @@ def _create_v4_nt_database(db_path):
     # Finally, ensure the tables for the test suite we just defined are
     # constructed.
     ts_db = db.testsuite['nts']
+    db.commit()
 
 def action_create(name, args):
     """create an LLVM nightly test installation"""
