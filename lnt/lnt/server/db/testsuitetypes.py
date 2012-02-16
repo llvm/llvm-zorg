@@ -30,7 +30,8 @@ def get_compile_testsuite(db):
                            ('size', 'bytes'),
                            ('mem', 'bytes')):
         status = testsuite.SampleField(
-            "%s_status" % (name,), db.status_sample_type, "%s.status" % (name,))
+            "%s_status" % (name,), db.status_sample_type,
+            ".%s.status" % (name,))
         ts.sample_fields.append(status)
         value = testsuite.SampleField(
             "%s_%s" % (name,type_name), db.real_sample_type, ".%s" % (name,),
