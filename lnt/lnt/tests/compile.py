@@ -146,7 +146,14 @@ def test_cc_command(base_name, run_info, variables, input, output, flags,
         try:
             stat = os.stat(output)
             success = True
-            samples.append(stat.st_size)
+
+            # For now, the way the software is set up things are going to get
+            # confused if we don't report the same number of samples as reported
+            # for other variables. So we just report the size N times.
+            #
+            # FIXME: We should resolve this, eventually.
+            for i in range(variables.get('run_count')):
+                samples.append(stat.st_size)
         except OSError,e:
             if e.errno != errno.ENOENT:
                 raise
