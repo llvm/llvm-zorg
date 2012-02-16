@@ -326,8 +326,8 @@ sysctl_info_table = [
     ('kern.speculative_reads_disabled',           'machine'), # 0
     ('kern.sugid_coredump',                       'machine'), # 0
     ('kern.thread_name',                          'machine'), # kern
-    ('kern.usrstack',                             'machine'), # 1606418432
-    ('kern.usrstack64',                           'machine'), # 140734799806464
+    ('kern.usrstack',                             'run'), # 1606418432
+    ('kern.usrstack64',                           'run'), # 140734799806464
     ('kern.version',                              'machine'), # Darwin Kernel Version 10.2.0: Tue Nov 3 10:37:10 PST 2009; root:xnu-1486.2.11~1/RELEASE_I386
     ('machdep.cpu.address_bits.physical',         'machine'), # 38
     ('machdep.cpu.address_bits.virtual',          'machine'), # 48
