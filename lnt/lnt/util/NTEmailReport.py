@@ -1,11 +1,3 @@
-#!/usr/bin/python
-
-"""
-Command line tool for sending an LNT email report.
-"""
-
-# FIXME: Roll into lnttool or just kill?
-
 import os
 import smtplib
 import sys
@@ -22,22 +14,6 @@ import lnt.server.db.v4db
 import lnt.server.reporting.runs
 
 from lnt.db.perfdb import Run, Sample
-
-def main():
-    global opts
-    from optparse import OptionParser
-    parser = OptionParser("usage: %prog database run-id baseurl sendmail-host from to")
-    opts,args = parser.parse_args()
-
-    if len(args) != 6:
-        parser.error("incorrect number of argments")
-
-    dbpath,runID,baseurl,host,from_,to = args
-
-    db = lnt.db.perfdb.PerfDB(dbpath)
-    run = db.getRun(int(runID))
-
-    emailReport(db, run, baseurl, host, from_, to)
 
 def emailReport(result, db, run, baseurl, email_config, to, was_added=True,
                 will_commit=True):
@@ -646,6 +622,3 @@ def getReport(result, db, run, baseurl, was_added, will_commit,
     # FIXME: Where is the old mailer getting the arch from?
     subject = """%s nightly tester results""" % machine.name
     return subject, report.getvalue(), None
-
-if __name__ == '__main__':
-    main()
