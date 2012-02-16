@@ -705,10 +705,14 @@ test %r does not map to a sample field in the reported suite""" % (
             orders_to_return = all_machine_orders[index+1:index+N]
 
         # Get all the runs for those orders on this machine in a single query.
+        ids_to_fetch = [o.id
+                        for o in orders_to_return]
+        if not ids_to_fetch:
+            return []
+
         runs = self.query(self.Run).\
             filter(self.Run.machine == run.machine).\
-            filter(self.Run.order_id.in_(o.id
-                                         for o in orders_to_return)).all()
+            filter(self.Run.order_id.in_(ids_to_fetch)).all()
 
         # Sort the result by order, accounting for direction to satisfy our
         # requirement of returning the runs in adjacency order.
