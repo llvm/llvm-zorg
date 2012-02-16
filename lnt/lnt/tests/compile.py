@@ -91,7 +91,7 @@ def get_runN_test_data(name, variables, cmd, ignore_stderr=False,
 def test_cc_command(base_name, run_info, variables, input, output, flags,
                     extra_flags, has_output=True, ignore_stderr=False,
                     can_memprof=True):
-    name = '%s.flags=%s' % (base_name,' '.join(flags),)
+    name = '%s/(%s)' % (base_name,' '.join(flags),)
     input = get_input_path(opts, input)
     output = get_output_path(output)
 
@@ -222,16 +222,16 @@ for f in flags_to_test:
     # infrastructure would just handle this.
     all_tests.append(('pch-gen/Cocoa',
                       curry(test_compile, input='Cocoa_Prefix.h',
-                            output='Cocoa_Prefix.h.gch', pch_input=None, flags=f,
-                            stage='pch-gen')))
+                            output='Cocoa_Prefix.h.gch', pch_input=None,
+                            flags=f, stage='pch-gen')))
     for input,uses_pch,extra_flags in all_inputs:
-        name = os.path.dirname(input)
+        name = input
         output = os.path.splitext(os.path.basename(input))[0] + '.o'
         for stage in stages_to_test:
             pch_input = None
             if uses_pch:
                 pch_input = 'Cocoa_Prefix.h.gch'
-            all_tests.append(('compile/%s/%s' % (name.replace('.','_'), stage),
+            all_tests.append(('compile/%s/%s' % (name, stage),
                               curry(test_compile, input=input, output=output,
                                     pch_input=pch_input, flags=f, stage=stage,
                                     extra_flags=extra_flags)))
