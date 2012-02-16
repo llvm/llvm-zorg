@@ -262,7 +262,7 @@ def _add_report_changes_detail(ts, test_results, report, html_report,
                    for field,field_results in test_results
                    for priority,(bucket_name, bucket,
                                  show_perf) in enumerate(field_results)]
-    prioritized.sort()
+    prioritized.sort(key = lambda item: (item[0], item[1].name))
 
     for _,field,bucket_name,bucket,show_perf in prioritized:
         _add_report_changes_detail_for_field_and_bucket(
