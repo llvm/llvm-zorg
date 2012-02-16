@@ -59,22 +59,6 @@ from create import action_create
 from convert import action_convert
 from import_data import action_import
 
-# FIXME: We really just need a web admin interface. That makes this kind of
-# stuff much easier to work with, and also simplifies dealing with things like
-# file permissions.
-def action_createdb(name, args):
-    """create a new empty LNT sqlite3 database"""
-
-    parser = OptionParser("%%prog %s [options] path" % name)
-
-    (opts, args) = parser.parse_args(args)
-    if len(args) != 1:
-        parser.error("incorrect number of argments")
-
-    path, = args
-    db = perfdb.PerfDB('sqlite:///%s' % path)
-    db.commit()
-
 def action_checkformat(name, args):
     """check the format of an LNT test report file"""
 
