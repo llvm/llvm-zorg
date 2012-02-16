@@ -840,7 +840,7 @@ Invalid compare_to ID %r""" % compare_to_str)
 
     options['test_min_value_filter'] = test_min_value_filter_str = \
         request.args.get('test_min_value_filter', '')
-    if test_min_value_filter_str is not '':
+    if test_min_value_filter_str != '':
         test_min_value_filter = float(test_min_value_filter_str)
     else:
         test_min_value_filter = 0.0
