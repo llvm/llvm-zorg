@@ -145,10 +145,11 @@ def action_runtest(name, args):
         tmp.flush()
 
         # Construct a temporary database and import the result.
-        db = lnt.db.perfdb.PerfDB("sqlite:///:memory:")
+        db = lnt.server.db.v4db.V4DB("sqlite:///:memory:")
         result = ImportData.import_and_report(
             None, None, db, tmp.name, 'json', commit = True)
-        ImportData.print_report_result(result, sys.stdout, opts.verbose)
+        ImportData.print_report_result(result, sys.stdout, sys.stderr,
+                                       opts.verbose)
 
         tmp.close()
 
