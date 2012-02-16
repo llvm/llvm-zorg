@@ -8,8 +8,35 @@ appropriate test suites on the fly for these known types.
 
 from lnt.server.db import testsuite
 
+def get_compile_testsuite(db):
+    # Create a test suite compile with "lnt runtest compile".
+    ts = testsuite.TestSuite("compile", "compile")
+
+    # Promote some natural information to fields.
+    ts.machine_fields.append(testsuite.MachineField("hardware",
+                                                    "hw.model"))
+    ts.machine_fields.append(testsuite.MachineField("os_version",
+                                                    "kern.version"))
+
+    # The only reliable order currently is the "run_order" field. We will want
+    # to revise this over time.
+    ts.order_fields.append(testsuite.OrderField("llvm_project_revision",
+                                                "run_order", 0))
+
+    # We expect up to five fields per test, with a sole shared status field.
+    status = testsuite.SampleField(
+            "status", db.status_sample_type, ".status")
+    ts.sample_fields.append(status)
+    for name in ('user', 'sys', 'wall', 'size', 'mem'):
+        value = testsuite.SampleField(
+            "%s_time" % (name,), db.real_sample_type, ".%s" % (name,),
+            status_field = status)
+        ts.sample_fields.append(value)
+
+    return ts
+
 def get_nts_testsuite(db):
-    # Create an NT compatible test suite, automatically.
+    # Create a test suite compile with "lnt runtest nt".
     ts = testsuite.TestSuite("nts", "NT")
 
     # Promote the natural information produced by 'runtest nt' to fields.
@@ -41,6 +68,7 @@ def get_nts_testsuite(db):
     return ts
 
 _registry = {
+    'compile' : get_compile_testsuite,
     'nts' : get_nts_testsuite,
     }
 def get_testsuite_for_type(typename, db):

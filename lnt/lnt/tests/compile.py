@@ -609,7 +609,7 @@ class CompileTest(builtintest.BuiltinTest):
 
         # Execute the run.
         run_info.update(variables)
-        run_info['tag'] = 'simple'
+        run_info['tag'] = tag = 'compile'
 
         testsamples = []
         start_time = datetime.utcnow()
@@ -622,7 +622,7 @@ class CompileTest(builtintest.BuiltinTest):
                     print >>sys.stderr, '%s: collected sample: %r: %r - %r' % (
                         datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'),
                         name, info, samples)
-                    test_name = 'simple.' + name
+                    test_name = '%s.%s' % (tag, name)
                     if not success:
                         testsamples.append(lnt.testing.TestSamples(
                                 test_name + '.failed', [1], info))
