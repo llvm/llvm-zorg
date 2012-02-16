@@ -62,7 +62,7 @@ def get_input_path(opts, *names):
 def get_output_path(name):
     return os.path.join(g_output_dir, name)
 
-def get_runN_test_data(name, variables, cmd, info, ignore_stderr=False,
+def get_runN_test_data(name, variables, cmd, ignore_stderr=False,
                        sample_mem=False, only_mem=False):
     if only_mem and not sample_mem:
         raise ArgumentError,"only_mem doesn't make sense without sample_mem"
@@ -85,13 +85,13 @@ def get_runN_test_data(name, variables, cmd, info, ignore_stderr=False,
         if data is not None:
             success = True
             samples = [sample[idx] for sample in data_samples]
-        yield (success, tname, info, samples)
+        yield (success, tname, samples)
 
 # FIXME: Encode dependency on output automatically, for simpler test execution.
-def test_cc_command(name, run_info, variables, input, output, flags,
+def test_cc_command(base_name, run_info, variables, input, output, flags,
                     extra_flags, has_output=True, ignore_stderr=False,
                     can_memprof=True):
-    info = { 'flags' : repr(flags) }
+    name = '%s.flags=%s' % (base_name,' '.join(flags),)
     input = get_input_path(opts, input)
     output = get_output_path(output)
 
@@ -128,13 +128,13 @@ def test_cc_command(name, run_info, variables, input, output, flags,
             fatal('unable to determine cc1 command: %r' % cc_output)
 
         cc1_cmd = shlex.split(cc_commands[0])
-        for res in get_runN_test_data(name, variables, cc1_cmd, info,
+        for res in get_runN_test_data(name, variables, cc1_cmd,
                                       ignore_stderr=ignore_stderr,
                                       sample_mem=True, only_mem=True):
             yield res
 
     rm_f(output)
-    for res in get_runN_test_data(name, variables, cmd + ['-o',output], info,
+    for res in get_runN_test_data(name, variables, cmd + ['-o',output],
                                   ignore_stderr=ignore_stderr):
         yield res
 
@@ -150,7 +150,7 @@ def test_cc_command(name, run_info, variables, input, output, flags,
         except OSError,e:
             if e.errno != errno.ENOENT:
                 raise
-        yield (success, tname, info, samples)
+        yield (success, tname, samples)
 
 def test_compile(name, run_info, variables, input, output, pch_input,
                  flags, stage, extra_flags=[]):
@@ -617,19 +617,18 @@ class CompileTest(builtintest.BuiltinTest):
             '%Y-%m-%d %H:%M:%S')
         try:
             for basename,test_fn in tests_to_run:
-                for success,name,info,samples in test_fn(basename, run_info,
+                for success,name,samples in test_fn(basename, run_info,
                                                          variables):
-                    print >>sys.stderr, '%s: collected sample: %r: %r - %r' % (
+                    print >>sys.stderr, '%s: collected sample: %r - %r' % (
                         datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'),
-                        name, info, samples)
+                        name, samples)
                     test_name = '%s.%s' % (tag, name)
                     if not success:
                         testsamples.append(lnt.testing.TestSamples(
-                                test_name + '.status', [lnt.testing.FAIL],
-                                info))
+                                test_name + '.status', [lnt.testing.FAIL]))
                     if samples:
                         testsamples.append(lnt.testing.TestSamples(
-                                test_name, samples, info))
+                                test_name, samples))
         except KeyboardInterrupt:
             pass
         except:
