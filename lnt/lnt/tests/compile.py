@@ -105,6 +105,9 @@ def test_cc_command(name, run_info, variables, input, output, flags,
     cmd.append('-w')
 
     # Do a memory profiling run, if requested.
+    #
+    # FIXME: Doing this as a separate step seems silly. We shouldn't do any
+    # extra run just to get the memory statistics.
     if can_memprof and opts.memory_profiling:
         # Find the cc1 command, which we use to do memory profiling. To do this
         # we execute the compiler with '-###' to figure out what it wants to do.
@@ -567,13 +570,18 @@ class CompileTest(builtintest.BuiltinTest):
         variables = {}
         variables['cc'] = opts.cc
         variables['run_count'] = opts.run_count
-        if not opts.run_order:
-            warning("run_order not set!")
-        else:
-            variables['run_order'] = opts.run_order
 
-        variables.update(
-            lnt.testing.util.compilers.get_cc_info(variables['cc']))
+        # Get compiler info.
+        cc_info = lnt.testing.util.compilers.get_cc_info(variables['cc'])
+        variables.update(cc_info)
+
+        # Set the run order from the user, if given.
+        if opts.run_order is not None:
+            variables['run_order'] = opts.run_order
+        else:
+            # Otherwise, use the inferred run order.
+            variables['run_order'] = cc_info['inferred_run_order']
+            note("inferred run order to be: %r" % (variables['run_order'],))
 
         if opts.verbose:
             format = pprint.pformat(variables)

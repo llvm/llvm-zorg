@@ -776,35 +776,8 @@ def run_test(nick_prefix, opts, iteration):
         run_info['run_order'] = opts.run_order
 
     else:
-        # Otherwise, try to infer something sensible.
-        #
-        # FIXME: Pretty lame, should we just require the user to specify this?
-
-        # If the CC has a src revision, use that.
-        if run_info.get('cc_src_revision','').isdigit():
-            run_info['run_order'] = run_info['cc_src_revision']
-
-        # Otherwise, if this is a production compiler, look for a source tag. We
-        # don't accept 0 or 9999 as valid source tag, since that is what
-        # llvm-gcc builds use when no build number is given.
-        elif (run_info.get('cc_build') == 'PROD' and
-              run_info.get('cc_src_tag') != '0' and
-              run_info.get('cc_src_tag') != '00' and
-              run_info.get('cc_src_tag') != '9999' and
-              run_info.get('cc_src_tag','').split('.',1)[0].isdigit()):
-            run_info['run_order'] = run_info['cc_src_tag'].split('.',1)[0]
-
-        # Otherwise, infer from the llvm revision.
-        elif run_info.get('llvm_revision','').isdigit():
-            run_info['run_order'] = run_info['llvm_revision']
-
-        # Otherwise, force at least some value for run_order, as it is now
-        # generally required by parts of the "simple" schema.
-        else:
-            run_info['run_order'] = "0"
-
-        if 'run_order' in run_info:
-            run_info['run_order'] = '%7d' % int(run_info['run_order'])
+        # Otherwise, use the inferred run order from the compiler.
+        run_info['run_order'] = cc_info['inferred_run_order']
 
     # Add any user specified parameters.
     for target,params in ((machine_info, opts.machine_parameters),

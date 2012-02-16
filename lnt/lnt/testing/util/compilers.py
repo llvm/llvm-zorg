@@ -168,7 +168,34 @@ def get_cc_info(path, cc_flags=[]):
         info['cc_src_revision'] = cc_src_revision
     if cc_src_branch is not None:
         info['cc_src_branch'] = cc_src_branch
+
+    # Infer the run order from the other things we have computed.
+    info['inferred_run_order'] = '%7d' % (get_inferred_run_order(info),)
+
     return info
+
+def get_inferred_run_order(info):
+    # If the CC has a src revision, use that.
+    if info.get('cc_src_revision','').isdigit():
+        return int(info['cc_src_revision'])
+
+    # If this is a production compiler, look for a source tag. We don't accept 0
+    # or 9999 as valid source tag, since that is what llvm-gcc builds use when
+    # no build number is given.
+    if (info.get('cc_build') == 'PROD' and
+          info.get('cc_src_tag') != '0' and
+          info.get('cc_src_tag') != '00' and
+          info.get('cc_src_tag') != '9999' and
+          info.get('cc_src_tag','').split('.',1)[0].isdigit()):
+        return int(info['cc_src_tag'].split('.',1)[0])
+
+    # If that failed, infer from the LLVM revision.
+    if info.get('llvm_revision','').isdigit():
+        return int(info['llvm_revision'])
+
+    # Otherwise, force at least some value for run_order, as it is now
+    # generally required by parts of the "simple" schema.
+    return 0
 
 __all__ = [get_cc_info]
 
