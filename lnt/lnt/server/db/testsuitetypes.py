@@ -24,12 +24,16 @@ def get_compile_testsuite(db):
                                                 "run_order", 0))
 
     # We expect up to five fields per test, each with a status field.
-    for name in ('user', 'sys', 'wall', 'size', 'mem'):
+    for name,type_name in (('user', 'time'),
+                           ('sys', 'time'),
+                           ('wall', 'time'),
+                           ('size', 'bytes'),
+                           ('mem', 'bytes')):
         status = testsuite.SampleField(
             "%s_status" % (name,), db.status_sample_type, "%s.status" % (name,))
         ts.sample_fields.append(status)
         value = testsuite.SampleField(
-            "%s_time" % (name,), db.real_sample_type, ".%s" % (name,),
+            "%s_%s" % (name,type_name), db.real_sample_type, ".%s" % (name,),
             status_field = status)
         ts.sample_fields.append(value)
 
