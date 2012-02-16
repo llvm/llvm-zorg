@@ -6,6 +6,7 @@ from optparse import OptionParser, OptionGroup
 
 import StringIO
 import lnt
+import lnt.util.ImportData
 from lnt import testing
 from lnt.db import perfdb
 from lnt.testing.util.commands import note, warning, error, fatal
@@ -77,12 +78,11 @@ def action_checkformat(name, args):
     if input == '-':
         input = StringIO.StringIO(sys.stdin.read())
 
-    from lnt import formats
-
     db = lnt.server.db.v4db.V4DB('sqlite:///:memory:')
-
-    data = formats.read_any(input, '<auto>')
-    db.importDataFromDict(data)
+    result = lnt.util.ImportData.import_and_report(
+        None, None, db, input, 'json', commit = True)
+    lnt.util.ImportData.print_report_result(result, sys.stdout, sys.stderr,
+                                            verbose = True)
 
 def action_runtest(name, args):
     """run a builtin test application"""
@@ -136,7 +136,6 @@ def action_runtest(name, args):
         ServerUtil.submitFile(opts.submit_url, io, True, opts.verbose)
     else:
         # Simulate a submission to retrieve the results report.
-        from lnt.util import ImportData
         import tempfile
 
         # Save the report to a temporary file.
@@ -146,10 +145,10 @@ def action_runtest(name, args):
 
         # Construct a temporary database and import the result.
         db = lnt.server.db.v4db.V4DB("sqlite:///:memory:")
-        result = ImportData.import_and_report(
+        result = lnt.util.ImportData.import_and_report(
             None, None, db, tmp.name, 'json', commit = True)
-        ImportData.print_report_result(result, sys.stdout, sys.stderr,
-                                       opts.verbose)
+        lnt.util.ImportData.print_report_result(result, sys.stdout, sys.stderr,
+                                                opts.verbose)
 
         tmp.close()
 
