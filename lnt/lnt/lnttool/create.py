@@ -79,50 +79,7 @@ if __name__ == "__main__":
 
 import lnt.db.perfdb
 import lnt.testing
-
-def _create_v4_nt_database(db_path):
-    from lnt.server.db import v4db, testsuite
-
-    # Create the initial database.
-    db = lnt.server.db.v4db.V4DB('sqlite:///' + db_path)
-    db.commit()
-
-    # Create an NT compatible test suite, automatically.
-    ts = testsuite.TestSuite("nts", "NT")
-
-    # Promote the natural information produced by 'runtest nt' to fields.
-    ts.machine_fields.append(testsuite.MachineField("hardware", "hardware"))
-    ts.machine_fields.append(testsuite.MachineField("os", "os"))
-
-    # The only reliable order currently is the "run_order" field. We will want
-    # to revise this over time.
-    ts.order_fields.append(testsuite.OrderField("llvm_project_revision",
-                                                "run_order", 0))
-
-    # We are only interested in simple runs, so we expect exactly four fields
-    # per test.
-    compile_status = testsuite.SampleField(
-            "compile_status", db.status_sample_type, ".compile.status")
-    compile_time = testsuite.SampleField(
-        "compile_time", db.real_sample_type, ".compile",
-        status_field = compile_status)
-    exec_status = testsuite.SampleField(
-            "execution_status", db.status_sample_type, ".exec.status")
-    exec_time = testsuite.SampleField(
-            "execution_time", db.real_sample_type, ".exec",
-            status_field = exec_status)
-    ts.sample_fields.append(compile_time)
-    ts.sample_fields.append(compile_status)
-    ts.sample_fields.append(exec_time)
-    ts.sample_fields.append(exec_status)
-
-    db.add(ts)
-    db.commit()
-
-    # Finally, ensure the tables for the test suite we just defined are
-    # constructed.
-    ts_db = db.testsuite['nts']
-    db.commit()
+import lnt.server.db.v4db
 
 def action_create(name, args):
     """create an LLVM nightly test installation"""
@@ -199,10 +156,11 @@ def action_create(name, args):
     os.chmod(wsgi_path, 0755)
 
     if opts.use_v4:
-        _create_v4_nt_database(db_path)
+        db_class = lnt.server.db.v4db.V4DB
     else:
-        db = lnt.db.perfdb.PerfDB('sqlite:///' + db_path)
-        db.commit()
+        db_class = lnt.db.perfdb.PerfDB
+    db = db_class('sqlite:///' + db_path)
+    db.commit()
 
     print 'created LNT configuration in %r' % basepath
     print '  configuration file: %s' % cfg_path
