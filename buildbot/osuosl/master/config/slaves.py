@@ -17,9 +17,6 @@ def get_build_slaves():
         # OS Ubuntu Jaunty
         create_slave("ranby1"),
 
-        # Quad Core Mac Pro running Leopard.
-        create_slave("kistanova1", properties={'jobs' : 1}, max_builds=4),
-
         # Quad Core Mac Pro running Lion.
         create_slave("as-bldslv11", properties={'jobs' : 1}, max_builds=4),
 
