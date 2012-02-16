@@ -23,11 +23,11 @@ def get_compile_testsuite(db):
     ts.order_fields.append(testsuite.OrderField("llvm_project_revision",
                                                 "run_order", 0))
 
-    # We expect up to five fields per test, with a sole shared status field.
-    status = testsuite.SampleField(
-            "status", db.status_sample_type, ".status")
-    ts.sample_fields.append(status)
+    # We expect up to five fields per test, each with a status field.
     for name in ('user', 'sys', 'wall', 'size', 'mem'):
+        status = testsuite.SampleField(
+            "%s_status" % (name,), db.status_sample_type, "%s.status" % (name,))
+        ts.sample_fields.append(status)
         value = testsuite.SampleField(
             "%s_time" % (name,), db.real_sample_type, ".%s" % (name,),
             status_field = status)

@@ -625,7 +625,8 @@ class CompileTest(builtintest.BuiltinTest):
                     test_name = '%s.%s' % (tag, name)
                     if not success:
                         testsamples.append(lnt.testing.TestSamples(
-                                test_name + '.failed', [1], info))
+                                test_name + '.status', [lnt.testing.FAIL],
+                                info))
                     if samples:
                         testsamples.append(lnt.testing.TestSamples(
                                 test_name, samples, info))
