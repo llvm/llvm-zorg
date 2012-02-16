@@ -852,7 +852,8 @@ Invalid compare_to ID %r""" % compare_to_str)
     _, text_report, html_report = NTEmailReport.getReport(
         result=None, db=db, run=run,
         baseurl=db_url_for('index', _external=True),
-        was_added=True, will_commit=True, only_html_body=True)
+        was_added=True, will_commit=True, only_html_body=True,
+        compare_to=compare_to)
 
     # Gather the runs to use for statistical data.
     comparison_window = list(ts.get_previous_runs_on_machine(

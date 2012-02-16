@@ -12,7 +12,8 @@ import lnt.server.ui.util
 from lnt.db import runinfo
 
 def generate_run_report(run, baseurl, only_html_body = False,
-                        num_comparison_runs = 10, result = None):
+                        num_comparison_runs = 10, result = None,
+                        compare_to = None):
     """
     generate_run_report(...) -> (str: subject, str: text_report,
                                  str: html_report)
@@ -35,10 +36,8 @@ def generate_run_report(run, baseurl, only_html_body = False,
             run, num_comparison_runs))
 
     # Get the specific run to compare to.
-    if comparison_window:
+    if compare_to is None and comparison_window:
         compare_to = comparison_window[0]
-    else:
-        compare_to = None
 
     # Get the test names.
     test_names = ts.query(ts.Test.name, ts.Test.id).order_by(ts.Test.name).all()
