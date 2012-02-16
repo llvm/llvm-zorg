@@ -79,10 +79,10 @@ def action_checkformat(name, args):
 
     from lnt import formats
 
-    db = perfdb.PerfDB('sqlite:///:memory:')
+    db = lnt.server.db.v4db.V4DB('sqlite:///:memory:')
 
     data = formats.read_any(input, '<auto>')
-    perfdb.importDataFromDict(db, data)
+    db.importDataFromDict(data)
 
 def action_runtest(name, args):
     """run a builtin test application"""
