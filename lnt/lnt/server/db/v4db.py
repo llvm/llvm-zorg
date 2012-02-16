@@ -18,7 +18,7 @@ class V4DB(object):
             for name, in self.v4db.query(testsuite.TestSuite.name):
                 yield name
 
-        def __getitem__(self, name):
+        def get(self, name, default = None):
             # Check the test suite cache, to avoid gratuitous reinstantiation.
             #
             # FIXME: Invalidation?
@@ -29,18 +29,19 @@ class V4DB(object):
             ts = self.v4db.query(testsuite.TestSuite).\
                 filter(testsuite.TestSuite.name == name).first()
             if ts is None:
-                raise IndexError,name
+                return default
 
             # Instantiate the per-test suite wrapper object for this test suite.
             self._cache[name] = ts = testsuitedb.TestSuiteDB(
                 self.v4db, name, ts)
             return ts
 
-        def get(self, name, default = None):
-            if name in self:
-                return self[name]
-            return default
-
+        def __getitem__(self, name):
+            ts = self.get(name)
+            if ts is None:
+                raise IndexError(name)
+            return ts
+            
         def keys(self):
             return iter(self)
 
