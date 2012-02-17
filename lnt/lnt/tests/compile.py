@@ -637,7 +637,7 @@ class CompileTest(builtintest.BuiltinTest):
                         testsamples.append(lnt.testing.TestSamples(
                                 test_name, samples))
         except KeyboardInterrupt:
-            pass
+            raise
         except:
             import traceback
             print >>sys.stderr,'*** EXCEPTION DURING TEST, HALTING ***'
