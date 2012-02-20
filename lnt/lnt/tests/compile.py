@@ -614,22 +614,26 @@ class CompileTest(builtintest.BuiltinTest):
         if not os.path.exists(g_output_dir):
             os.mkdir(g_output_dir)
 
+        # Create the test log.
+        test_log_path = os.path.join(g_output_dir, 'test.log')
+        test_log = open(test_log_path, 'w')
+
         # Execute the run.
         run_info.update(variables)
         run_info['tag'] = tag = 'compile'
 
         testsamples = []
         start_time = datetime.utcnow()
-        print >>sys.stderr, '%s: run started' % start_time.strftime(
+        print >>test_log, '%s: run started' % start_time.strftime(
             '%Y-%m-%d %H:%M:%S')
         try:
             for basename,test_fn in tests_to_run:
                 for success,name,samples in test_fn(basename, run_info,
                                                          variables):
                     now = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
-                    print >>sys.stderr, '%s: collected sample: %r' % (
+                    print >>test_log, '%s: collected sample: %r' % (
                         now, name)
-                    print >>sys.stderr, '%s:   %r' % (now, samples)
+                    print >>test_log, '%s:   %r' % (now, samples)
                     test_name = '%s.%s' % (tag, name)
                     if not success:
                         testsamples.append(lnt.testing.TestSamples(
@@ -647,8 +651,10 @@ class CompileTest(builtintest.BuiltinTest):
             print >>sys.stderr,'--'
             run_info['had_errors'] = 1
         end_time = datetime.utcnow()
-        print >>sys.stderr, '%s: run complete' % start_time.strftime(
+        print >>test_log, '%s: run complete' % start_time.strftime(
             '%Y-%m-%d %H:%M:%S')
+
+        test_log.close()
 
         # Package up the report.
         machine = lnt.testing.Machine(opts.machine_name, machine_info)
