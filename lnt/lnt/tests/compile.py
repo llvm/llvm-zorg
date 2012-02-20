@@ -626,9 +626,10 @@ class CompileTest(builtintest.BuiltinTest):
             for basename,test_fn in tests_to_run:
                 for success,name,samples in test_fn(basename, run_info,
                                                          variables):
-                    print >>sys.stderr, '%s: collected sample: %r - %r' % (
-                        datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'),
-                        name, samples)
+                    now = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+                    print >>sys.stderr, '%s: collected sample: %r' % (
+                        now, name)
+                    print >>sys.stderr, '%s:   %r' % (now, samples)
                     test_name = '%s.%s' % (tag, name)
                     if not success:
                         testsamples.append(lnt.testing.TestSamples(
