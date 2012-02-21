@@ -327,6 +327,11 @@ def test_build(base_name, run_info, variables, project, num_jobs):
         cmd.append('CC=%s' % (opts.cc,))
         cmd.append('CPLUSPLUS=%s' % (opts.cxx,))
 
+        # We need to force this variable here because Xcode has some completely
+        # broken logic for deriving this variable from the compiler
+        # name. <rdar://problem/7989147>
+        cmd.append('LDPLUSPLUS=%s' % (opts.cxx,))
+
         # Add additional arguments to force the build scenario we want.
         cmd.extend(('-jobs', str(num_jobs)))
     else:
