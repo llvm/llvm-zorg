@@ -103,8 +103,7 @@ def get_runN_test_data(name, variables, cmd, ignore_stderr=False,
 
 # FIXME: Encode dependency on output automatically, for simpler test execution.
 def test_cc_command(base_name, run_info, variables, input, output, flags,
-                    extra_flags, has_output=True, ignore_stderr=False,
-                    can_memprof=True):
+                    extra_flags, has_output=True, ignore_stderr=False):
     name = '%s/(%s)' % (base_name,' '.join(flags),)
     input = get_input_path(opts, input)
     output = get_output_path(output)
@@ -122,7 +121,7 @@ def test_cc_command(base_name, run_info, variables, input, output, flags,
     #
     # FIXME: Doing this as a separate step seems silly. We shouldn't do any
     # extra run just to get the memory statistics.
-    if can_memprof and opts.memory_profiling:
+    if opts.memory_profiling:
         # Find the cc1 command, which we use to do memory profiling. To do this
         # we execute the compiler with '-###' to figure out what it wants to do.
         cc_output = commands.capture(cmd + ['-o','/dev/null','-###'],
@@ -182,11 +181,11 @@ def test_compile(name, run_info, variables, input, output, pch_input,
     is_clang = not (cc_name in ('gcc', 'llvm-gcc'))
 
     # Ignore irgen stages for non-LLVM compilers.
-    if not is_llvm and stage in ('irgen', 'irgen_only',):
+    if not is_llvm and stage in ('irgen', 'irgen_only'):
         return ()
 
-    # Ignore 'init' and 'irgen_only' stages for non-Clang.
-    if not is_clang and stage in ('init', 'irgen_only'):
+    # Ignore 'init', 'irgen_only', and 'codegen' stages for non-Clang.
+    if not is_clang and stage in ('init', 'irgen_only', 'codegen'):
         return ()
 
     # Force gnu99 mode for all compilers.
@@ -203,17 +202,14 @@ def test_compile(name, run_info, variables, input, output, pch_input,
                                                 '-Xclang','-emit-llvm-only'),
                                                False),
                                'irgen' : (('-emit-llvm','-c'), True),
-                               'codegen' : (('-S',), True),
+                               'codegen' : (('-c',
+                                             '-Xclang', '-emit-codegen-only'),
+                                            False),
                                'assembly' : (('-c',), True), }[stage]
 
     # Ignore stderr output (instead of failing) in 'driver' stage, -### output
     # goes to stderr by default.
     ignore_stderr = stage == 'driver'
-
-    # We can't memory profile an assembly command.
-    #
-    # FIXME: Actually, we can with -integrated-as.
-    can_memprof = stage != 'assembly'
 
     extra_flags.extend(stage_flags)
     if pch_input is not None:
@@ -223,7 +219,7 @@ def test_compile(name, run_info, variables, input, output, pch_input,
     extra_flags.extend(['-I', os.path.dirname(get_input_path(opts, input))])
 
     return test_cc_command(name, run_info, variables, input, output, flags,
-                           extra_flags, has_output, ignore_stderr, can_memprof)
+                           extra_flags, has_output, ignore_stderr)
 
 def test_build(base_name, run_info, variables, project, num_jobs):
     name = '%s(j=%d)' % (base_name, num_jobs)
