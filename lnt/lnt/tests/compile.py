@@ -323,6 +323,10 @@ def test_build(base_name, run_info, variables, project, num_jobs):
         cmd.append('SYMROOT=%s' % (os.path.join(build_base, 'sym')))
         cmd.append('DSTROOT=%s' % (os.path.join(build_base, 'dst')))
 
+        # Add arguments to force the appropriate compiler.
+        cmd.append('CC=%s' % (opts.cc,))
+        cmd.append('CPLUSPLUS=%s' % (opts.cxx,))
+
         # Add additional arguments to force the build scenario we want.
         cmd.extend(('-jobs', str(num_jobs)))
     else:
@@ -479,8 +483,11 @@ class CompileTest(builtintest.BuiltinTest):
 
         group = OptionGroup(parser, "Test Options")
         group.add_option("", "--cc", dest="cc", type='str',
-                         help="Compiler under test",
+                         help="Path to the compiler under test",
                          action="store", default=None)
+        group.add_option("", "--cxx", dest="cxx",
+                         help="Path to the C++ compiler to test",
+                         type=str, default=None)
         group.add_option("", "--test-externals", dest="test_suite_externals",
                          help="Path to the LLVM test-suite externals",
                          type=str, default=None, metavar="PATH")
@@ -536,13 +543,38 @@ class CompileTest(builtintest.BuiltinTest):
         if len(args) != 0:
             parser.error("invalid number of arguments")
 
+        # Attempt to infer the cxx compiler if not given.
+        if opts.cc and opts.cxx is None:
+            name = os.path.basename(opts.cc)
+            cxx_name = { 'clang' : 'clang++',
+                         'gcc' : 'g++',
+                         'llvm-gcc' : 'llvm-g++' }.get(name)
+            if cxx_name is not None:
+                opts.cxx = os.path.join(os.path.dirname(opts.cc),
+                                        cxx_name)
+                note("inferred C++ compiler: %r" % (opts.cxx,))
+
         # Validate options.
         if opts.cc is None:
             parser.error('--cc is required')
+        if opts.cxx is None:
+            parser.error('--cxx is required (and could not be inferred)')
         if opts.sandbox_path is None:
             parser.error('--sandbox is required')
         if opts.test_suite_externals is None:
             parser.error("--test-externals option is required")
+
+        # Force the CC and CXX variables to be absolute paths.
+        cc_abs = os.path.abspath(commands.which(opts.cc))
+        cxx_abs = os.path.abspath(commands.which(opts.cxx))
+        if not os.path.exists(cc_abs):
+            parser.error("unable to determine absolute path for --cc: %r" % (
+                    opts.cc,))
+        if not os.path.exists(cxx_abs):
+            parser.error("unable to determine absolute path for --cc: %r" % (
+                    opts.cc,))
+        opts.cc = cc_abs
+        opts.cxx = cxx_abs
 
         # Set up the sandbox.
         global g_output_dir
@@ -689,6 +721,10 @@ class CompileTest(builtintest.BuiltinTest):
         start_time = datetime.utcnow()
         print >>test_log, '%s: run started' % start_time.strftime(
             '%Y-%m-%d %H:%M:%S')
+        print >>test_log, '%s: using CC: %r' % (start_time.strftime(
+                '%Y-%m-%d %H:%M:%S'), opts.cc)
+        print >>test_log, '%s: using CXX: %r' % (start_time.strftime(
+            '%Y-%m-%d %H:%M:%S'), opts.cxx)
         try:
             for basename,test_fn in tests_to_run:
                 for success,name,samples in test_fn(basename, run_info,
