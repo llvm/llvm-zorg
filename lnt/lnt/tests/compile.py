@@ -354,6 +354,12 @@ def test_build(base_name, run_info, variables, project, num_jobs):
     preprocess_cmd = 'rm -rf "%s" "%s"' % (
         build_base,
         os.path.expanduser("~/Library/Developer/Xcode/DerivedData"))
+
+    # FIXME: It might be a good idea to audit the stdout files here from the
+    # build system and check that they are "about" the same. For example, I
+    # believe an Xcode build log should always be the same size if each
+    # iterating did a clean build (even though the results might show up in a
+    # different order).
     for res in get_runN_test_data(name, variables, cmd,
                                   stdout=stdout_path, stderr=stderr_path,
                                   preprocess_cmd=preprocess_cmd):
@@ -606,7 +612,8 @@ class CompileTest(builtintest.BuiltinTest):
 
         for name,cmd in (('sys_cc_version', ('/usr/bin/gcc','-v')),
                          ('sys_as_version', ('/usr/bin/as','-v','/dev/null')),
-                         ('sys_ld_version', ('/usr/bin/ld','-v'))):
+                         ('sys_ld_version', ('/usr/bin/ld','-v')),
+                         ('sys_xcodebuild', ('xcodebuild','-version'))):
             run_info[name] = commands.capture(cmd, include_stderr=True).strip()
 
         # Set command line machine and run information.
