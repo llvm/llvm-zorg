@@ -125,8 +125,8 @@ def test_cc_command(base_name, run_info, variables, input, output, flags,
     if can_memprof and opts.memory_profiling:
         # Find the cc1 command, which we use to do memory profiling. To do this
         # we execute the compiler with '-###' to figure out what it wants to do.
-        cc_output = cmmands.capture(cmd + ['-o','/dev/null','-###'],
-                                    include_stderr=True).strip()
+        cc_output = commands.capture(cmd + ['-o','/dev/null','-###'],
+                                     include_stderr=True).strip()
         cc_commands = []
         for ln in cc_output.split('\n'):
             # Filter out known garbage.
