@@ -1,17 +1,21 @@
 import errno
+import hashlib
+import json
 import os
 import platform
 import pprint
 import re
 import shlex
+import shutil
 import subprocess
 import sys
+import zipfile
 from datetime import datetime
 
 import lnt.testing
 import lnt.testing.util.compilers
 from lnt.testing.util.commands import note, warning, error, fatal
-from lnt.testing.util.commands import capture, rm_f
+from lnt.testing.util.commands import capture, mkdir_p, rm_f
 from lnt.testing.util.misc import TeeStream, timestamp
 from lnt.testing.util import machineinfo
 
@@ -19,19 +23,25 @@ from lnt.testing.util import machineinfo
 #
 # FIXME: Simplify.
 #
-# FIXME: Figure out a better way to deal with need to run as root.
+# FIXME: Figure out a better way to deal with need to run as root. Maybe farm
+# memory sampling process out into something we can setuid? Eek.
 def runN(args, N, cwd, preprocess_cmd=None, env=None, sample_mem=False,
-         ignore_stderr=False):
+         ignore_stderr=False, stdout=None, stderr=None):
     cmd = ['runN', '-a']
     if sample_mem:
         cmd = ['sudo'] + cmd + ['-m']
     if preprocess_cmd is not None:
-        cmd.append('-p', preprocess_cmd)
+        cmd.extend(('-p', preprocess_cmd))
+    if stdout is not None:
+        cmd.extend(('--stdout', stdout))
+    if stderr is not None:
+        cmd.extend(('--stderr', stderr))
     cmd.append(str(int(N)))
     cmd.extend(args)
 
     if opts.verbose:
-        note("running %r" % cmd)
+        print >>test_log, "running: %s" % " ".join("'%s'" % arg
+                                                   for arg in cmd)
     p = subprocess.Popen(args=cmd,
                          stdin=None,
                          stdout=subprocess.PIPE,
@@ -62,16 +72,18 @@ def get_input_path(opts, *names):
     return os.path.join(opts.test_suite_externals, "lnt-compile-suite-src",
                         *names)
 
-def get_output_path(name):
-    return os.path.join(g_output_dir, name)
+def get_output_path(*names):
+    return os.path.join(g_output_dir, *names)
 
 def get_runN_test_data(name, variables, cmd, ignore_stderr=False,
-                       sample_mem=False, only_mem=False):
+                       sample_mem=False, only_mem=False,
+                       stdout=None, stderr=None, preprocess_cmd=None):
     if only_mem and not sample_mem:
         raise ArgumentError,"only_mem doesn't make sense without sample_mem"
 
     data = runN(cmd, variables.get('run_count'), cwd='/tmp',
-                ignore_stderr=ignore_stderr, sample_mem=sample_mem)
+                ignore_stderr=ignore_stderr, sample_mem=sample_mem,
+                stdout=stdout, stderr=stderr, preprocess_cmd=preprocess_cmd)
     if data is not None:
         if data.get('version') != 0:
             raise ValueError,'unknown runN data format'
@@ -214,11 +226,124 @@ def test_compile(name, run_info, variables, input, output, pch_input,
     return test_cc_command(name, run_info, variables, input, output, flags,
                            extra_flags, has_output, ignore_stderr, can_memprof)
 
-# Build the test map.
+def test_build(name, run_info, variables, project):
+    # Check if we need to expand the archive into the sandbox.
+    archive_path = get_input_path(opts, project['archive'])
+    with open(archive_path) as f:
+        archive_hash = hashlib.md5(f.read()).hexdigest()
+
+    # Compute the path to unpack to.
+    source_path = get_output_path("..", "Sources", project['name'])
+
+    # Load the hash of the last unpack, in case the archive has been updated.
+    last_unpack_hash_path = os.path.join(source_path, "last_unpack_hash.txt")
+    if os.path.exists(last_unpack_hash_path):
+        with open(last_unpack_hash_path) as f:
+            last_unpack_hash = f.read()
+    else:
+        last_unpack_hash = None
+
+    # Unpack if necessary.
+    if last_unpack_hash == archive_hash:
+        print >>test_log, '%s: reusing sources %r (already unpacked)' % (
+            datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'), name)
+    else:
+        # Remove any existing content, if necessary.
+        try:
+            shutil.rmtree(source_path)
+        except OSError, e:
+            if e.errno != errno.ENOENT:
+                raise
+
+        # Extract the zip file.
+        #
+        # We shell out to unzip here because zipfile's extractall does not
+        # appear to preserve permissions properly.
+        mkdir_p(source_path)
+        print >>test_log, '%s: extracting sources for %r' % (
+            datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'), name)
+        p = subprocess.Popen(args=['unzip', '-q', archive_path],
+                             stdin=None,
+                             stdout=subprocess.PIPE,
+                             stderr=subprocess.PIPE,
+                             cwd=source_path)
+        stdout,stderr = p.communicate()
+        if p.wait() != 0:
+            fatal(("unable to extract archive %r at %r\n"
+                   "-- stdout --\n%s\n"
+                   "-- stderr --\n%s\n") % (archive_path, source_path,
+                                            stdout, stderr))
+        if p.wait() != 0:
+            fatal
+
+        # Apply the patch file, if necessary.
+        patch_file = project.get('patch_file')
+        if patch_file:
+            print >>test_log, '%s: applying patch file %r for %r' % (
+                datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'),
+                patch_file, name)
+            patch_file_path = get_input_path(opts, patch_file)
+            p = subprocess.Popen(args=['patch', '-i', patch_file_path,
+                                       '-p', '1'],
+                                 stdin=None,
+                                 stdout=subprocess.PIPE,
+                                 stderr=subprocess.PIPE,
+                                 cwd=source_path)
+            stdout,stderr = p.communicate()
+            if p.wait() != 0:
+                fatal(("unable to apply patch file %r in %r\n"
+                       "-- stdout --\n%s\n"
+                       "-- stderr --\n%s\n") % (patch_file_path, source_path,
+                                                stdout, stderr))
+
+        # Write the hash tag.
+        with open(last_unpack_hash_path, "w") as f:
+            f.write(archive_hash)
+
+    # Form the test build command.
+    build_info = project['build_info']
+    if build_info['style'].startswith('xcode-'):
+        file_path = os.path.join(source_path, build_info['file'])
+        cmd = ['xcodebuild']
+
+        # Add the arguments to select the build target.
+        if build_info['style'] == 'xcode-project':
+            cmd.extend(('-target', build_info['target'],
+                        '-project', file_path))
+        elif build_info['style'] == 'xcode-workspace':
+            cmd.extend(('-scheme', build_info['scheme'],
+                        '-workspace', file_path))
+        else:
+            fatal("unknown build style in project: %r" % project)
+
+        # Add arguments to ensure output files go into our build directory.
+        output_base = get_output_path(project['name'])
+        build_base = os.path.join(output_base, 'build')
+        cmd.append('OBJROOT=%s' % (os.path.join(build_base, 'obj')))
+        cmd.append('SYMROOT=%s' % (os.path.join(build_base, 'sym')))
+        cmd.append('DSTROOT=%s' % (os.path.join(build_base, 'dst')))
+    else:
+        fatal("unknown build style in project: %r" % project)
+
+    # Create the output base directory.
+    mkdir_p(output_base)
+
+    # Collect the samples.
+    print >>test_log, '%s: executing full build: %s' % (
+        datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'),
+        " ".join("'%s'" % arg
+                 for arg in cmd))
+    stdout_path = os.path.join(output_base, "stdout.log")
+    stderr_path = os.path.join(output_base, "stderr.log")
+    for res in get_runN_test_data(name, variables, cmd,
+                                  stdout=stdout_path, stderr=stderr_path,
+                                  preprocess_cmd='rm -rf "%s"' % (build_base,)):
+        yield res
+
+###
+
 def curry(fn, **kw_args):
     return lambda *args: fn(*args, **kw_args)
-
-g_output_dir = None
 
 def get_single_file_tests(flags_to_test):
     all_inputs = [('Sketch/Sketch+Accessibility/SKTGraphicView.m', True, ()),
@@ -230,10 +355,10 @@ def get_single_file_tests(flags_to_test):
         # FIXME: Note that the order matters here, because we need to make sure
         # to generate the right PCH file before we try to use it. Ideally the
         # testing infrastructure would just handle this.
-        yield (('pch-gen/Cocoa',
-                curry(test_compile, input='Cocoa_Prefix.h',
-                      output='Cocoa_Prefix.h.gch', pch_input=None,
-                      flags=f, stage='pch-gen')))
+        yield ('pch-gen/Cocoa',
+               curry(test_compile, input='Cocoa_Prefix.h',
+                     output='Cocoa_Prefix.h.gch', pch_input=None,
+                     flags=f, stage='pch-gen'))
         for input,uses_pch,extra_flags in all_inputs:
             name = input
             output = os.path.splitext(os.path.basename(input))[0] + '.o'
@@ -241,13 +366,27 @@ def get_single_file_tests(flags_to_test):
                 pch_input = None
                 if uses_pch:
                     pch_input = 'Cocoa_Prefix.h.gch'
-                yield (('compile/%s/%s' % (name, stage),
-                        curry(test_compile, input=input, output=output,
-                              pch_input=pch_input, flags=f, stage=stage,
-                              extra_flags=extra_flags)))
-    
-def get_tests(flags_to_test):
+                yield ('compile/%s/%s' % (name, stage),
+                       curry(test_compile, input=input, output=output,
+                             pch_input=pch_input, flags=f, stage=stage,
+                             extra_flags=extra_flags))
+
+def get_full_build_tests(test_suite_externals):
+    # Load the project description file from the externals.
+    with open(os.path.join(test_suite_externals, "lnt-compile-suite-src",
+                           "project_list.json")) as f:
+        data = json.load(f)
+
+    for project in data['projects']:
+        # Check the style.
+        yield ('build/%s' % (project['name'],),
+               curry(test_build, project=project))
+
+def get_tests(test_suite_externals, flags_to_test):
     for item in get_single_file_tests(flags_to_test):
+        yield item
+
+    for item in get_full_build_tests(test_suite_externals):
         yield item
 
 ###
@@ -255,12 +394,12 @@ def get_tests(flags_to_test):
 import builtintest
 from optparse import OptionParser, OptionGroup
 
+g_output_dir = None
 usage_info = """
-Script for testing a few simple dimensions of compile time performance
-on individual files.
+Script for testing compile time performance.
 
-This is only intended to test the raw compiler performance, not its scalability
-or its performance in parallel builds.
+Currently this is only intended to test the raw compiler performance, not its
+scalability or its performance in parallel builds.
 
 This tests:
  - PCH Generation for Cocoa.h
@@ -275,6 +414,8 @@ This tests:
    o File Sizes
    o Memory Usage
    o Time
+ - Full Build Times
+   o Total Build Time (serialized) (using xcodebuild)
 
 TODO:
  - Objective-C Compile Time, with PCH
@@ -299,6 +440,14 @@ We run each of the compile time tests in various stages:
  - emit-llvm (.bc output time and size, mostly to track output file size)
  - S (codegen time and size)
  - c (assembly time and size)
+
+FIXME: In the past, we have generated breakdown timings of full builds using
+Make or xcodebuild by interposing scripts to stub out parts of the compilation
+process. This is fragile, but can also be very useful when trying to understand
+where the time is going in a full build.
+
+FIXME: We may want to consider timing non-serial builds in order to start
+measuring things like the full-system-performance impact on the compiler.
 """
 
 class CompileTest(builtintest.BuiltinTest):
@@ -457,7 +606,7 @@ class CompileTest(builtintest.BuiltinTest):
                              for string in opts.flags_to_test]
 
         # Compute the list of all tests.
-        all_tests = get_tests(flags_to_test)
+        all_tests = get_tests(opts.test_suite_externals, flags_to_test)
 
         # Show the tests, if requested.
         if opts.show_tests:
@@ -486,6 +635,7 @@ class CompileTest(builtintest.BuiltinTest):
             os.mkdir(g_output_dir)
 
         # Create the test log.
+        global test_log
         test_log_path = os.path.join(g_output_dir, 'test.log')
         test_log = open(test_log_path, 'w')
 
@@ -525,7 +675,7 @@ class CompileTest(builtintest.BuiltinTest):
             print >>sys.stderr,'--'
             run_info['had_errors'] = 1
         end_time = datetime.utcnow()
-        print >>test_log, '%s: run complete' % start_time.strftime(
+        print >>test_log, '%s: run complete' % end_time.strftime(
             '%Y-%m-%d %H:%M:%S')
 
         test_log.close()
