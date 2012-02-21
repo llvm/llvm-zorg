@@ -11,6 +11,7 @@ import lnt.testing.util.compilers
 from lnt.testing.util.commands import note, warning, error, fatal
 from lnt.testing.util.commands import capture, rm_f
 from lnt.testing.util.misc import timestamp
+from lnt.testing.util import machineinfo
 
 # Interface to runN.
 #
@@ -248,154 +249,6 @@ tests_by_name = dict([(k,(k,v)) for k,v in all_tests])
 import platform
 from datetime import datetime
 
-# All the things we care to probe about the system, and whether to track with
-# the machine or run. This is a list of (sysctl, kind) where kind is one of:
-#  machine - key should always be part of machine
-#  machdep - key should be part of machine, unless --no-machdep-info is set
-#  run     - key should always be part of run
-sysctl_info_table = [
-    ('hw.activecpu',                              'machine'), # 8
-    ('hw.availcpu',                               'machine'), # 8
-    ('hw.busfrequency',                           'machine'), # 1600000000
-    ('hw.busfrequency_max',                       'machine'), # 1600000000
-    ('hw.busfrequency_min',                       'machine'), # 1600000000
-    ('hw.byteorder',                              'machine'), # 1234
-    ('hw.cacheconfig',                            'machine'), # 8 1 2 0 0 0 0 0 0 0
-    ('hw.cachelinesize',                          'machine'), # 64
-    ('hw.cachesize',                              'machine'), # 6442450944 32768 6291456 0 0 0 0 0 0 0
-    ('hw.cpu64bit_capable',                       'machine'), # 1
-    ('hw.cpufamily',                              'machine'), # 2028621756
-    ('hw.cpufrequency',                           'machine'), # 2800000000
-    ('hw.cpufrequency_max',                       'machine'), # 2800000000
-    ('hw.cpufrequency_min',                       'machine'), # 2800000000
-    ('hw.cpusubtype',                             'machine'), # 4
-    ('hw.cputype',                                'machine'), # 7
-    ('hw.epoch',                                  'machine'), # 0
-    ('hw.l1dcachesize',                           'machine'), # 32768
-    ('hw.l1icachesize',                           'machine'), # 32768
-    ('hw.l2cachesize',                            'machine'), # 6291456
-    ('hw.l2settings',                             'machine'), # 1
-    ('hw.logicalcpu',                             'machine'), # 8
-    ('hw.logicalcpu_max',                         'machine'), # 8
-    ('hw.machine',                                'machine'), # i386
-    ('hw.memsize',                                'machine'), # 6442450944
-    ('hw.model',                                  'machine'), # MacPro3,1
-    ('hw.ncpu',                                   'machine'), # 8
-    ('hw.optional.floatingpoint',                 'machine'), # 1
-    ('hw.optional.mmx',                           'machine'), # 1
-    ('hw.optional.sse',                           'machine'), # 1
-    ('hw.optional.sse2',                          'machine'), # 1
-    ('hw.optional.sse3',                          'machine'), # 1
-    ('hw.optional.sse4_1',                        'machine'), # 1
-    ('hw.optional.sse4_2',                        'machine'), # 0
-    ('hw.optional.supplementalsse3',              'machine'), # 1
-    ('hw.optional.x86_64',                        'machine'), # 1
-    ('hw.packages',                               'machine'), # 2
-    ('hw.pagesize',                               'machine'), # 4096
-    ('hw.physicalcpu',                            'machine'), # 8
-    ('hw.physicalcpu_max',                        'machine'), # 8
-    ('hw.physmem',                                'machine'), # 2147483648
-    ('hw.tbfrequency',                            'machine'), # 1000000000
-    ('hw.usermem',                                'run'    ), # 1347354624
-    ('hw.vectorunit',                             'machine'), # 1
-    ('kern.aiomax',                               'machine'), # 90
-    ('kern.aioprocmax',                           'machine'), # 16
-    ('kern.aiothreads',                           'machine'), # 4
-    ('kern.argmax',                               'machine'), # 262144
-    ('kern.boottime',                             'run'    ), # Tue Mar 23 18:36:38 2010
-    ('kern.clockrate: hz',                        'machine'), # 100, tick = 10000, profhz = 100, stathz = 100
-    ('kern.coredump',                             'machine'), # 1
-    ('kern.corefile',                             'machine'), # /cores/core.%P
-    ('kern.delayterm',                            'machine'), # 0
-    ('kern.hostid',                               'machine'), # 0
-    ('kern.hostname',                             'machdep'), # lordcrumb.apple.com
-    ('kern.job_control',                          'machine'), # 1
-    ('kern.maxfiles',                             'machine'), # 12288
-    ('kern.maxfilesperproc',                      'machine'), # 10240
-    ('kern.maxproc',                              'machine'), # 532
-    ('kern.maxprocperuid',                        'machine'), # 266
-    ('kern.maxvnodes',                            'machine'), # 99328
-    ('kern.netboot',                              'machine'), # 0
-    ('kern.ngroups',                              'machine'), # 16
-    ('kern.nisdomainname',                        'machine'), #
-    ('kern.nx',                                   'machine'), # 1
-    ('kern.osrelease',                            'machine'), # 10.2.0
-    ('kern.osrevision',                           'machine'), # 199506
-    ('kern.ostype',                               'machine'), # Darwin
-    ('kern.osversion',                            'machine'), # 10C540
-    ('kern.posix1version',                        'machine'), # 200112
-    ('kern.procname',                             'machine'), #
-    ('kern.rage_vnode',                           'machine'), # 0
-    ('kern.safeboot',                             'machine'), # 0
-    ('kern.saved_ids',                            'machine'), # 1
-    ('kern.securelevel',                          'machine'), # 0
-    ('kern.shreg_private',                        'machine'), # 0
-    ('kern.speculative_reads_disabled',           'machine'), # 0
-    ('kern.sugid_coredump',                       'machine'), # 0
-    ('kern.thread_name',                          'machine'), # kern
-    ('kern.usrstack',                             'run'), # 1606418432
-    ('kern.usrstack64',                           'run'), # 140734799806464
-    ('kern.version',                              'machine'), # Darwin Kernel Version 10.2.0: Tue Nov 3 10:37:10 PST 2009; root:xnu-1486.2.11~1/RELEASE_I386
-    ('machdep.cpu.address_bits.physical',         'machine'), # 38
-    ('machdep.cpu.address_bits.virtual',          'machine'), # 48
-    ('machdep.cpu.arch_perf.events',              'machine'), # 0
-    ('machdep.cpu.arch_perf.events_number',       'machine'), # 7
-    ('machdep.cpu.arch_perf.fixed_number',        'machine'), # 3
-    ('machdep.cpu.arch_perf.fixed_width',         'machine'), # 40
-    ('machdep.cpu.arch_perf.number',              'machine'), # 2
-    ('machdep.cpu.arch_perf.version',             'machine'), # 2
-    ('machdep.cpu.arch_perf.width',               'machine'), # 40
-    ('machdep.cpu.brand',                         'machine'), # 0
-    ('machdep.cpu.brand_string',                  'machine'), # Intel(R) Xeon(R) CPU E5462 @ 2.80GHz
-    ('machdep.cpu.cache.L2_associativity',        'machine'), # 8
-    ('machdep.cpu.cache.linesize',                'machine'), # 64
-    ('machdep.cpu.cache.size',                    'machine'), # 6144
-    ('machdep.cpu.core_count',                    'machine'), # 4
-    ('machdep.cpu.cores_per_package',             'machine'), # 4
-    ('machdep.cpu.extfamily',                     'machine'), # 0
-    ('machdep.cpu.extfeature_bits',               'machine'), # 537921536 1
-    ('machdep.cpu.extfeatures',                   'machine'), #  SYSCALL XD EM64T
-    ('machdep.cpu.extmodel',                      'machine'), # 1
-    ('machdep.cpu.family',                        'machine'), # 6
-    ('machdep.cpu.feature_bits',                  'machine'), # 3219913727 844733
-    ('machdep.cpu.features',                      'machine'), #  FPU VME DE PSE TSC MSR PAE MCE CX8  APIC SEP MTRR PGE MCA CMOV PAT PSE36 CLFSH DS ACPI MMX FXSR SSE SSE2 SS HTT TM SSE3 MON DSCPL VMX EST TM2 SSSE3 CX16 TPR PDCM SSE4.1
-    ('machdep.cpu.logical_per_package',           'machine'), # 4
-    ('machdep.cpu.max_basic',                     'machine'), # 10
-    ('machdep.cpu.max_ext',                       'machine'), # 2147483656
-    ('machdep.cpu.microcode_version',             'machine'), # 1547
-    ('machdep.cpu.model',                         'machine'), # 23
-    ('machdep.cpu.mwait.extensions',              'machine'), # 3
-    ('machdep.cpu.mwait.linesize_max',            'machine'), # 64
-    ('machdep.cpu.mwait.linesize_min',            'machine'), # 64
-    ('machdep.cpu.mwait.sub_Cstates',             'machine'), # 8736
-    ('machdep.cpu.signature',                     'machine'), # 67190
-    ('machdep.cpu.stepping',                      'machine'), # 6
-    ('machdep.cpu.thermal.ACNT_MCNT',             'machine'), # 1
-    ('machdep.cpu.thermal.dynamic_acceleration',  'machine'), # 0
-    ('machdep.cpu.thermal.sensor',                'machine'), # 1
-    ('machdep.cpu.thermal.thresholds',            'machine'), # 2
-    ('machdep.cpu.thread_count',                  'machine'), # 4
-    ('machdep.cpu.tlb.data.large',                'machine'), # 16
-    ('machdep.cpu.tlb.data.large_level1',         'machine'), # 32
-    ('machdep.cpu.tlb.data.small',                'machine'), # 16
-    ('machdep.cpu.tlb.data.small_level1',         'machine'), # 256
-    ('machdep.cpu.tlb.inst.large',                'machine'), # 8
-    ('machdep.cpu.tlb.inst.small',                'machine'), # 128
-    ('machdep.cpu.vendor',                        'machine'), # GenuineIntel
-    ]
-
-def get_mac_addresses():
-    lines = capture(['ifconfig']).strip()
-    current_ifc = None
-    for ln in lines.split('\n'):
-        if ln.startswith('\t'):
-            if current_ifc is None:
-                fatal('unexpected ifconfig output')
-            if ln.startswith('\tether '):
-                yield current_ifc,ln[len('\tether '):].strip()
-        else:
-            current_ifc, = re.match(r'([A-Za-z0-9]*): .*', ln).groups()
-
 ###
 
 import builtintest
@@ -497,7 +350,7 @@ class CompileTest(builtintest.BuiltinTest):
         parser.add_option_group(group)
 
         group = OptionGroup(parser, "Output Options")
-        group.add_option("", "--no-machdep-info", dest="machdep_info",
+        group.add_option("", "--no-machdep-info", dest="use_machdep_info",
                          help=("Don't put machine (instance) dependent "
                                "variables in machine info"),
                          action="store_false", default=True)
@@ -538,25 +391,12 @@ class CompileTest(builtintest.BuiltinTest):
                 raise
 
         # Collect machine and run information.
-        #
+        machine_info, run_info = machineinfo.get_machine_information(
+            opts.use_machdep_info)
+
         # FIXME: Include information on test source versions.
         #
         # FIXME: Get more machine information? Cocoa.h hash, for example.
-        machine_info = {}
-        run_info = {}
-        info_targets = { 'machdep' : (run_info,machine_info)[opts.machdep_info],
-                         'machine' : machine_info,
-                         'run' : run_info }
-        for name,target in sysctl_info_table:
-            info_targets[target][name] = capture(['sysctl','-n',name],
-                                                 include_stderr=True).strip()
-
-        for ifc,addr in get_mac_addresses():
-            # Ignore virtual machine mac addresses.
-            if ifc.startswith('vmnet'):
-                continue
-
-            info_targets['machdep']['mac_addr.%s' % ifc] = addr
 
         for name,cmd in (('sys_cc_version', ('/usr/bin/gcc','-v')),
                          ('sys_as_version', ('/usr/bin/as','-v','/dev/null')),
@@ -564,14 +404,14 @@ class CompileTest(builtintest.BuiltinTest):
             run_info[name] = capture(cmd, include_stderr=True).strip()
 
         # Set command line machine and run information.
-        for target,params in (('machine',opts.machine_parameters),
-                              ('run',opts.run_parameters)):
+        for info,params in ((machine_info, opts.machine_parameters),
+                            (run_info, opts.run_parameters)):
             for entry in params:
                 if '=' not in entry:
-                    name,val = entry,''
+                    name,value = entry,''
                 else:
-                    name,val = entry.split('=', 1)
-                info_targets[target][name] = val
+                    name,value = entry.split('=', 1)
+                info[name] = value
 
         # Set user variables.
         variables = {}
