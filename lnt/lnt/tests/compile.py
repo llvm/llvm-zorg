@@ -35,6 +35,8 @@ def runN(args, N, cwd, preprocess_cmd=None, env=None, sample_mem=False,
         cmd.extend(('--stdout', stdout))
     if stderr is not None:
         cmd.extend(('--stderr', stderr))
+    cmd.extend(('--min-sample-time', repr(opts.min_sample_time)))
+    cmd.extend(('--max-num-samples', '100'))
     cmd.append(str(int(N)))
     cmd.extend(args)
 
@@ -515,6 +517,9 @@ class CompileTest(builtintest.BuiltinTest):
         group.add_option("", "--multisample", dest="run_count", metavar="N",
                          help="Accumulate test data from multiple runs",
                          action="store", type=int, default=3)
+        group.add_option("", "--min-sample-time", dest="min_sample_time",
+                         help="Ensure all tests run for at least N seconds",
+                         metavar="N", action="store", type=float, default=.5)
         group.add_option("", "--show-tests", dest="show_tests",
                          help="Only list the availables tests that will be run",
                          action="store_true", default=False)
