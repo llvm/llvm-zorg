@@ -511,6 +511,9 @@ class CompileTest(builtintest.BuiltinTest):
         group.add_option("", "--test", dest="tests", metavar="NAME",
                          help="Individual test to run",
                          action="append", default=[])
+        group.add_option("", "--test-filter", dest="test_filters",
+                         help="Run tests matching the given pattern",
+                         metavar="REGEXP", action="append", default=[])
         group.add_option("", "--flags-to-test", dest="flags_to_test",
                          help="Add a set of flags to test (space separated)",
                          metavar="FLAGLIST", action="append", default=[])
@@ -627,8 +630,8 @@ class CompileTest(builtintest.BuiltinTest):
             jobs_to_test = opts.jobs_to_test
 
         # Compute the list of all tests.
-        all_tests = get_tests(opts.test_suite_externals, flags_to_test,
-                              jobs_to_test)
+        all_tests = list(get_tests(opts.test_suite_externals, flags_to_test,
+                                   jobs_to_test))
 
         # Show the tests, if requested.
         if opts.show_tests:
@@ -639,18 +642,33 @@ class CompileTest(builtintest.BuiltinTest):
             raise SystemExit
 
         # Find the tests to run.
-        if not opts.tests:
+        if not opts.tests and not opts.test_filters:
             tests_to_run = list(all_tests)
         else:
-            tests_to_run = []
-            for name in opts.tests:
-                matching_tests = [test
-                                  for test in all_tests
-                                  if name == test[0]]
-                if not matching_tests:
-                    parser.error(("invalid test name %r, use --show-tests to "
-                                  "see available tests") % name)
-                tests_to_run.extend(matching_tests)
+            all_test_names = set(test[0] for test in all_tests)
+            
+            # Validate the test names.
+            requested_tests = set(opts.tests)
+            missing_tests = requested_tests - all_test_names
+            if missing_tests:
+                    parser.error(("invalid test names %s, use --show-tests to "
+                                  "see available tests") % (
+                            ", ".join(map(repr, missing_tests)),))
+
+            # Validate the test filters.
+            test_filters = [re.compile(pattern)
+                            for pattern in opts.test_filters]
+
+            # Form the list of tests.
+            tests_to_run = [test
+                            for test in all_tests
+                            if (test[0] in requested_tests or
+                                [True
+                                 for filter in test_filters
+                                 if filter.search(test[0])])]
+        if not tests_to_run:
+            parser.error(
+                "no tests requested (invalid --test or --test-filter options)!")
 
         # Ensure output directory is available.
         if not os.path.exists(g_output_dir):
