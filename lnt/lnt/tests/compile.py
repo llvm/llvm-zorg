@@ -220,11 +220,10 @@ def curry(fn, **kw_args):
 
 g_output_dir = None
 
-def get_single_file_tests():
+def get_single_file_tests(flags_to_test):
     all_inputs = [('Sketch/Sketch+Accessibility/SKTGraphicView.m', True, ()),
                   ('403.gcc/combine.c', False, ('-DSPEC_CPU_MACOSX',))]
 
-    flags_to_test = [('-O0',), ('-O0','-g',), ('-Os',)]
     stages_to_test = ['driver', 'init', 'syntax', 'irgen_only', 'irgen',
                       'codegen', 'assembly']
     for f in flags_to_test:
@@ -247,8 +246,8 @@ def get_single_file_tests():
                               pch_input=pch_input, flags=f, stage=stage,
                               extra_flags=extra_flags)))
     
-def get_tests():
-    for item in get_single_file_tests():
+def get_tests(flags_to_test):
+    for item in get_single_file_tests(flags_to_test):
         yield item
 
 ###
@@ -351,6 +350,9 @@ class CompileTest(builtintest.BuiltinTest):
         group.add_option("", "--test", dest="tests", metavar="NAME",
                          help="Individual test to run",
                          action="append", default=[])
+        group.add_option("", "--flags-to-test", dest="flags_to_test",
+                         help="Add a set of flags to test (space separated)",
+                         metavar="FLAGLIST", action="append", default=[])
         parser.add_option_group(group)
 
         group = OptionGroup(parser, "Output Options")
@@ -447,8 +449,15 @@ class CompileTest(builtintest.BuiltinTest):
             msg = '\n\t'.join(['using run info:'] + format.splitlines())
             note(msg)
 
+        # Compute the set of flags to test.
+        if not opts.flags_to_test:
+            flags_to_test = [('-O0',), ('-O0','-g',), ('-Os',)]
+        else:
+            flags_to_test = [string.split(' ')
+                             for string in opts.flags_to_test]
+
         # Compute the list of all tests.
-        all_tests = get_tests()
+        all_tests = get_tests(flags_to_test)
 
         # Show the tests, if requested.
         if opts.show_tests:
