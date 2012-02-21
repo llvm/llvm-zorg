@@ -15,9 +15,8 @@ from datetime import datetime
 import lnt.testing
 import lnt.testing.util.compilers
 from lnt.testing.util.commands import note, warning, error, fatal
-from lnt.testing.util.commands import capture, mkdir_p, rm_f
 from lnt.testing.util.misc import TeeStream, timestamp
-from lnt.testing.util import machineinfo
+from lnt.testing.util import commands, machineinfo
 
 # Interface to runN.
 #
@@ -126,8 +125,8 @@ def test_cc_command(base_name, run_info, variables, input, output, flags,
     if can_memprof and opts.memory_profiling:
         # Find the cc1 command, which we use to do memory profiling. To do this
         # we execute the compiler with '-###' to figure out what it wants to do.
-        cc_output = capture(cmd + ['-o','/dev/null','-###'],
-                            include_stderr=True).strip()
+        cc_output = cmmands.capture(cmd + ['-o','/dev/null','-###'],
+                                    include_stderr=True).strip()
         cc_commands = []
         for ln in cc_output.split('\n'):
             # Filter out known garbage.
@@ -148,7 +147,7 @@ def test_cc_command(base_name, run_info, variables, input, output, flags,
                                       sample_mem=True, only_mem=True):
             yield res
 
-    rm_f(output)
+    commands.rm_f(output)
     for res in get_runN_test_data(name, variables, cmd + ['-o',output],
                                   ignore_stderr=ignore_stderr):
         yield res
@@ -260,7 +259,7 @@ def test_build(base_name, run_info, variables, project, num_jobs):
         #
         # We shell out to unzip here because zipfile's extractall does not
         # appear to preserve permissions properly.
-        mkdir_p(source_path)
+        commands.mkdir_p(source_path)
         print >>test_log, '%s: extracting sources for %r' % (
             datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'), name)
         p = subprocess.Popen(args=['unzip', '-q', archive_path],
@@ -330,7 +329,7 @@ def test_build(base_name, run_info, variables, project, num_jobs):
         fatal("unknown build style in project: %r" % project)
 
     # Create the output base directory.
-    mkdir_p(output_base)
+    commands.mkdir_p(output_base)
 
     # Collect the samples.
     print >>test_log, '%s: executing full build: %s' % (
@@ -574,7 +573,7 @@ class CompileTest(builtintest.BuiltinTest):
         for name,cmd in (('sys_cc_version', ('/usr/bin/gcc','-v')),
                          ('sys_as_version', ('/usr/bin/as','-v','/dev/null')),
                          ('sys_ld_version', ('/usr/bin/ld','-v'))):
-            run_info[name] = capture(cmd, include_stderr=True).strip()
+            run_info[name] = commands.capture(cmd, include_stderr=True).strip()
 
         # Set command line machine and run information.
         for info,params in ((machine_info, opts.machine_parameters),
@@ -646,7 +645,7 @@ class CompileTest(builtintest.BuiltinTest):
             tests_to_run = list(all_tests)
         else:
             all_test_names = set(test[0] for test in all_tests)
-            
+
             # Validate the test names.
             requested_tests = set(opts.tests)
             missing_tests = requested_tests - all_test_names
