@@ -1,10 +1,12 @@
 import errno
 import os
+import platform
 import pprint
 import re
 import shlex
 import subprocess
 import sys
+from datetime import datetime
 
 import lnt.testing
 import lnt.testing.util.compilers
@@ -217,37 +219,37 @@ def curry(fn, **kw_args):
     return lambda *args: fn(*args, **kw_args)
 
 g_output_dir = None
-all_inputs = [('Sketch/Sketch+Accessibility/SKTGraphicView.m', True, ()),
-              ('403.gcc/combine.c', False, ('-DSPEC_CPU_MACOSX',))]
 
-flags_to_test = [('-O0',), ('-O0','-g',), ('-Os',)]
-stages_to_test = ['driver', 'init', 'syntax', 'irgen_only', 'irgen', 'codegen',
-                  'assembly']
-all_tests = []
-for f in flags_to_test:
-    # FIXME: Note that the order matters here, because we need to make sure to
-    # generate the right PCH file before we try to use it. Ideally the testing
-    # infrastructure would just handle this.
-    all_tests.append(('pch-gen/Cocoa',
-                      curry(test_compile, input='Cocoa_Prefix.h',
-                            output='Cocoa_Prefix.h.gch', pch_input=None,
-                            flags=f, stage='pch-gen')))
-    for input,uses_pch,extra_flags in all_inputs:
-        name = input
-        output = os.path.splitext(os.path.basename(input))[0] + '.o'
-        for stage in stages_to_test:
-            pch_input = None
-            if uses_pch:
-                pch_input = 'Cocoa_Prefix.h.gch'
-            all_tests.append(('compile/%s/%s' % (name, stage),
-                              curry(test_compile, input=input, output=output,
-                                    pch_input=pch_input, flags=f, stage=stage,
-                                    extra_flags=extra_flags)))
+def get_single_file_tests():
+    all_inputs = [('Sketch/Sketch+Accessibility/SKTGraphicView.m', True, ()),
+                  ('403.gcc/combine.c', False, ('-DSPEC_CPU_MACOSX',))]
 
-tests_by_name = dict([(k,(k,v)) for k,v in all_tests])
-
-import platform
-from datetime import datetime
+    flags_to_test = [('-O0',), ('-O0','-g',), ('-Os',)]
+    stages_to_test = ['driver', 'init', 'syntax', 'irgen_only', 'irgen',
+                      'codegen', 'assembly']
+    for f in flags_to_test:
+        # FIXME: Note that the order matters here, because we need to make sure
+        # to generate the right PCH file before we try to use it. Ideally the
+        # testing infrastructure would just handle this.
+        yield (('pch-gen/Cocoa',
+                curry(test_compile, input='Cocoa_Prefix.h',
+                      output='Cocoa_Prefix.h.gch', pch_input=None,
+                      flags=f, stage='pch-gen')))
+        for input,uses_pch,extra_flags in all_inputs:
+            name = input
+            output = os.path.splitext(os.path.basename(input))[0] + '.o'
+            for stage in stages_to_test:
+                pch_input = None
+                if uses_pch:
+                    pch_input = 'Cocoa_Prefix.h.gch'
+                yield (('compile/%s/%s' % (name, stage),
+                        curry(test_compile, input=input, output=output,
+                              pch_input=pch_input, flags=f, stage=stage,
+                              extra_flags=extra_flags)))
+    
+def get_tests():
+    for item in get_single_file_tests():
+        yield item
 
 ###
 
@@ -343,10 +345,12 @@ class CompileTest(builtintest.BuiltinTest):
         group.add_option("", "--multisample", dest="run_count", metavar="N",
                          help="Accumulate test data from multiple runs",
                          action="store", type=int, default=3)
+        group.add_option("", "--show-tests", dest="show_tests",
+                         help="Only list the availables tests that will be run",
+                         action="store_true", default=False)
         group.add_option("", "--test", dest="tests", metavar="NAME",
                          help="Individual test to run",
-                         action="append", default=[],
-                         choices=[k for k,v in all_tests])
+                         action="append", default=[])
         parser.add_option_group(group)
 
         group = OptionGroup(parser, "Output Options")
@@ -443,12 +447,30 @@ class CompileTest(builtintest.BuiltinTest):
             msg = '\n\t'.join(['using run info:'] + format.splitlines())
             note(msg)
 
+        # Compute the list of all tests.
+        all_tests = get_tests()
+
+        # Show the tests, if requested.
+        if opts.show_tests:
+            print >>sys.stderr, 'Available Tests'
+            for name in sorted(set(name for name,_ in all_tests)):
+                print >>sys.stderr, '  %s' % (name,)
+            print
+            raise SystemExit
+
         # Find the tests to run.
         if not opts.tests:
             tests_to_run = list(all_tests)
         else:
-            tests_to_run = [(k,v) for k,v in all_tests
-                            if k in opts.tests]
+            tests_to_run = []
+            for name in opts.tests:
+                matching_tests = [test
+                                  for test in all_tests
+                                  if name == test[0]]
+                if not matching_tests:
+                    parser.error(("invalid test name %r, use --show-tests to "
+                                  "see available tests") % name)
+                tests_to_run.extend(matching_tests)
 
         # Ensure output directory is available.
         if not os.path.exists(g_output_dir):
@@ -485,7 +507,7 @@ class CompileTest(builtintest.BuiltinTest):
                         testsamples.append(lnt.testing.TestSamples(
                                 test_name, samples))
         except KeyboardInterrupt:
-            raise
+            raise SystemExit("\ninterrupted\n")
         except:
             import traceback
             print >>sys.stderr,'*** EXCEPTION DURING TEST, HALTING ***'
