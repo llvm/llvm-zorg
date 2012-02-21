@@ -339,9 +339,16 @@ def test_build(base_name, run_info, variables, project, num_jobs):
                  for arg in cmd))
     stdout_path = os.path.join(output_base, "stdout.log")
     stderr_path = os.path.join(output_base, "stderr.log")
+    # FIXME: I haven't figured out how to prevent Xcode from putting some data
+    # (shared PCH files, notably) in the derived data folder. There is most
+    # likely a command line setting to override this, but I don't know it
+    # yet. Until then, we just blow away the users entire DerivedData folder!
+    preprocess_cmd = 'rm -rf "%s" "%s"' % (
+        build_base,
+        os.path.expanduser("~/Library/Developer/Xcode/DerivedData"))
     for res in get_runN_test_data(name, variables, cmd,
                                   stdout=stdout_path, stderr=stderr_path,
-                                  preprocess_cmd='rm -rf "%s"' % (build_base,)):
+                                  preprocess_cmd=preprocess_cmd):
         yield res
 
 ###
