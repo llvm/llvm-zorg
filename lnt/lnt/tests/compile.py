@@ -10,7 +10,7 @@ import lnt.testing
 import lnt.testing.util.compilers
 from lnt.testing.util.commands import note, warning, error, fatal
 from lnt.testing.util.commands import capture, rm_f
-from lnt.testing.util.misc import timestamp
+from lnt.testing.util.misc import TeeStream, timestamp
 from lnt.testing.util import machineinfo
 
 # Interface to runN.
@@ -457,6 +457,9 @@ class CompileTest(builtintest.BuiltinTest):
         # Create the test log.
         test_log_path = os.path.join(g_output_dir, 'test.log')
         test_log = open(test_log_path, 'w')
+
+        # Tee the output to stderr as well.
+        test_log = TeeStream(test_log, sys.stderr)
 
         # Execute the run.
         run_info.update(variables)
