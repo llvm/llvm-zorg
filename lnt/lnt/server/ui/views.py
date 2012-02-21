@@ -996,12 +996,14 @@ def v4_graph(id):
         q = ts.query(field.column, ts.Order.llvm_project_revision).\
             join(ts.Run).join(ts.Order).\
             filter(ts.Run.machine == run.machine).\
-            filter(ts.Sample.test == test)
+            filter(ts.Sample.test == test).\
+            filter(field.column != None)
 
         # Unless all samples requested, filter out failing tests.
         if not show_failures:
             if field.status_field:
-                q = q.filter(field.status_field.column == PASS)
+                q = q.filter((field.status_field.column == PASS) |
+                             (field.status_field.column == None))
 
         # Aggregate by revision.
         data = util.multidict((int(r),v)

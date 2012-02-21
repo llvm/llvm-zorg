@@ -48,8 +48,10 @@ class RunInfo(object):
                 prev_failed |= sample[status_field.index] == FAIL
 
         # Get the current and previous values.
-        run_values = [s[field.index] for s in run_samples]
-        prev_values = [s[field.index] for s in prev_samples]
+        run_values = [s[field.index] for s in run_samples
+                      if s[field.index] is not None]
+        prev_values = [s[field.index] for s in prev_samples
+                       if s[field.index] is not None]
         if run_values:
             run_value = min(run_values)
         else:
@@ -94,16 +96,14 @@ class RunInfo(object):
         # noise level from a list of values. Probably better to just find a way
         # to kill this code though.
         if stddev is None:
-            # Get all previous values in the comparison window, for passing
-            # runs.
-            #
-            # FIXME: This is using the wrong status kind. :/
+            # Get all previous values in the comparison window.
             prev_samples = [s for run in comparison_window
-                            for s in self.sample_map.get((run.id, test_id), ())]
+                            for s in self.sample_map.get((run.id, test_id), ())
+                            if s[field.index] is not None]
             # Filter out failing samples.
             if status_field:
                 prev_samples = [s for s in prev_samples
-                                if s[status_field.index] == PASS]
+                                if s[status_field.index] != FAIL]
             if prev_samples:
                 prev_values = [s[field.index]
                                for s in prev_samples]

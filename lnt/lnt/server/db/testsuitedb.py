@@ -288,7 +288,7 @@ class TestSuiteDB(object):
 
                 # Initialize sample fields (defaulting to 0, for now).
                 for item in self.fields:
-                    self.set_field(item, kwargs.get(item.name, 0))
+                    self.set_field(item, kwargs.get(item.name, None))
 
             def __repr__(self):
                 fields = dict((item.name, self.get_field(item))
