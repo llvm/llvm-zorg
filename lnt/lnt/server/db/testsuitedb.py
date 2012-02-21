@@ -319,6 +319,7 @@ class TestSuiteDB(object):
         self.base.metadata.create_all(self.v4db.engine)
 
         # Add several shortcut aliases, similar to the ones on the v4db.
+        self.session = self.v4db.session
         self.add = self.v4db.add
         self.commit = self.v4db.commit
         self.query = self.v4db.query
