@@ -413,8 +413,8 @@ g_output_dir = None
 usage_info = """
 Script for testing compile time performance.
 
-Currently this is only intended to test the raw compiler performance, not its
-scalability or its performance in parallel builds.
+Currently this is primarily intended to test the raw compiler performance (not
+its scalability or its performance in parallel builds).
 
 This tests:
  - PCH Generation for Cocoa.h
@@ -460,9 +460,6 @@ FIXME: In the past, we have generated breakdown timings of full builds using
 Make or xcodebuild by interposing scripts to stub out parts of the compilation
 process. This is fragile, but can also be very useful when trying to understand
 where the time is going in a full build.
-
-FIXME: We may want to consider timing non-serial builds in order to start
-measuring things like the full-system-performance impact on the compiler.
 """
 
 class CompileTest(builtintest.BuiltinTest):
