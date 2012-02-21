@@ -769,7 +769,14 @@ class CompileTest(builtintest.BuiltinTest):
         machine = lnt.testing.Machine(opts.machine_name, machine_info)
         run = lnt.testing.Run(start_time, end_time, info = run_info)
 
-        return lnt.testing.Report(machine, run, testsamples)
+        # Write out the report.
+        lnt_report_path = os.path.join(g_output_dir, 'report.json')
+        report = lnt.testing.Report(machine, run, testsamples)
+        lnt_report_file = open(lnt_report_path, 'w')
+        print >>lnt_report_file, report.render()
+        lnt_report_file.close()
+
+        return report
 
 def create_instance():
     return CompileTest()
