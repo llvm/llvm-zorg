@@ -448,7 +448,7 @@ def getReport(result, db, run, baseurl, was_added, will_commit,
         reports = lnt.server.reporting.runs.generate_run_report(
             run, baseurl=baseurl, only_html_body=only_html_body,
             result=result, compare_to=compare_to)
-        return reports[:2]
+        return reports[:3]
 
     # Use a simple report unless the tag indicates this is an old style nightly
     # test run.
