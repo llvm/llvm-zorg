@@ -1,6 +1,9 @@
 {% import "v4_utils.html" as v4_utils %}
 {% import "utils.html" as utils %}
 
+{% set run = request_info.run %}
+{% set compare_to = request_info.compare_to %}
+{% set ts = request_info.ts %}
 {% set machine = run.machine %}
 
 {% extends "layout.html" %}
@@ -72,8 +75,9 @@
 
 {% endmacro %}
 
-{% call v4_utils.v4_run_page(ts, machine, run, compare_to, neighboring_runs,
-                             comparison_neighboring_runs) %}
+{% call v4_utils.v4_run_page(ts, machine, run, compare_to,
+                             request_info.neighboring_runs,
+                             request_info.comparison_neighboring_runs) %}
 
 {{ utils.render_popup_begin('view_options', 'View Options', true) }}
 <form action="" method="get">
@@ -139,12 +143,12 @@
 {{ utils.render_popup_end() }}
 
 {{ utils.render_popup_begin('text_report', 'Report (Text)', true) }}
-<pre>{{ text_report }}</pre>
+<pre>{{ request_info.text_report }}</pre>
 {{ utils.render_popup_end() }}
 
 {{ utils.render_popup_begin('html_report', 'Report (HTML)',
                             options.hide_report_by_default) }}
-{{html_report|safe}}
+{{request_info.html_report|safe}}
 {{ utils.render_popup_end() }}
 
 <h3>Tests</h3>

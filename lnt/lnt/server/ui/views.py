@@ -747,71 +747,66 @@ def v4_machine(id):
                            testsuite_name=g.testsuite_name, id=id,
                            associated_runs=associated_runs)
 
+class V4RequestInfo(object):
+    def __init__(self, run_id, only_html_body=True):
+        self.db = request.get_db()
+        self.ts = ts = request.get_testsuite()
+        self.run = run = ts.query(ts.Run).filter_by(id=run_id).first()
+        if run is None:
+            abort(404)
+
+        # Find the neighboring runs, by order.
+        prev_runs = list(ts.get_previous_runs_on_machine(run, N = 3))
+        next_runs = list(ts.get_next_runs_on_machine(run, N = 3))
+        self.neighboring_runs = next_runs[::-1] + [self.run] + prev_runs
+
+        # Select the comparison run as either the previous run, or a user
+        # specified comparison run.
+        compare_to_str = request.args.get('compare_to')
+        if compare_to_str:
+            compare_to_id = int(compare_to_str)
+            self.compare_to = ts.query(ts.Run).\
+                filter_by(id=compare_to_id).first()
+            if self.compare_to is None:
+                # FIXME: Need better way to report this error.
+                abort(404)
+
+            self.comparison_neighboring_runs = (
+                list(ts.get_next_runs_on_machine(self.compare_to, N=3))[::-1] +
+                [self.compare_to] +
+                list(ts.get_previous_runs_on_machine(self.compare_to, N=3)))
+        else:
+            if prev_runs:
+                self.compare_to = prev_runs[0]
+            else:
+                self.compare_to = None
+            self.comparison_neighboring_runs = self.neighboring_runs
+
+        _, self.text_report, self.html_report = NTEmailReport.getReport(
+            result=None, db=self.db, run=self.run,
+            baseurl=db_url_for('index', _external=True),
+            was_added=True, will_commit=True, only_html_body=only_html_body,
+            compare_to=self.compare_to)
+
 @v4_route("/<int:id>/report")
 def v4_report(id):
-    db = request.get_db()
-    ts = request.get_testsuite()
-    run = ts.query(ts.Run).filter_by(id=id).first()
-    if run is None:
-        abort(404)
+    info = V4RequestInfo(id, only_html_body=False)
 
-    _, _, html_report = NTEmailReport.getReport(
-        result=None, db=db, run=run,
-        baseurl=db_url_for('index', _external=True),
-        was_added=True, will_commit=True, only_html_body=False)
-
-    return make_response(html_report)
+    return make_response(info.html_report)
 
 @v4_route("/<int:id>/text_report")
 def v4_text_report(id):
-    db = request.get_db()
-    ts = request.get_testsuite()
-    run = ts.query(ts.Run).filter_by(id=id).first()
-    if run is None:
-        abort(404)
+    info = V4RequestInfo(id, only_html_body=False)
 
-    _, text_report, _ = NTEmailReport.getReport(
-        result=None, db=db, run=run,
-        baseurl=db_url_for('index', _external=True),
-        was_added=True, will_commit=True, only_html_body=True)
-
-    response = make_response(text_report)
+    response = make_response(info.text_report)
     response.mimetype = "text/plain"
     return response
 
 @v4_route("/<int:id>")
 def v4_run(id):
-    db = request.get_db()
-    ts = request.get_testsuite()
-    run = ts.query(ts.Run).filter_by(id=id).first()
-    if run is None:
-        abort(404)
-
-    # Find the neighboring runs, by order.
-    prev_runs = list(ts.get_previous_runs_on_machine(run, N = 3))
-    next_runs = list(ts.get_next_runs_on_machine(run, N = 3))
-    neighboring_runs = next_runs[::-1] + [run] + prev_runs
-
-    # Select the comparison run as either the previous run, or a user specified
-    # comparison run.
-    compare_to_str = request.args.get('compare_to')
-    if compare_to_str:
-        compare_to_id = int(compare_to_str)
-        compare_to = ts.query(ts.Run).filter_by(id = compare_to_id).first()
-        if compare_to is None:
-            return render_template("error.html", message="""\
-Invalid compare_to ID %r""" % compare_to_str)
-
-        comparison_neighboring_runs = (
-            list(ts.get_next_runs_on_machine(compare_to, N=3))[::-1] +
-            [compare_to] +
-            list(ts.get_previous_runs_on_machine(compare_to, N=3)))
-    else:
-        if prev_runs:
-            compare_to = prev_runs[0]
-        else:
-            compare_to = None
-        comparison_neighboring_runs = neighboring_runs
+    info = V4RequestInfo(id)
+    ts = info.ts
+    run = info.run
 
     # Parse the view options.
     options = {}
@@ -844,16 +839,6 @@ Invalid compare_to ID %r""" % compare_to_str)
         test_min_value_filter = float(test_min_value_filter_str)
     else:
         test_min_value_filter = 0.0
-    
-    # Generate the report for inclusion in the run page.
-    #
-    # FIXME: This is a crummy implementation of the concept that we want the
-    # webapp UI to be easy to correlate with the email reports.
-    _, text_report, html_report = NTEmailReport.getReport(
-        result=None, db=db, run=run,
-        baseurl=db_url_for('index', _external=True),
-        was_added=True, will_commit=True, only_html_body=True,
-        compare_to=compare_to)
 
     # Gather the runs to use for statistical data.
     comparison_window = list(ts.get_previous_runs_on_machine(
@@ -872,14 +857,12 @@ Invalid compare_to ID %r""" % compare_to_str)
                      if test_filter_re.search(test[0])]
 
     return render_template(
-        "v4_run.html", ts=ts, run=run, compare_to=compare_to,
-        options=options, neighboring_runs=neighboring_runs,
-        comparison_neighboring_runs=comparison_neighboring_runs,
-        text_report=text_report, html_report=html_report,
+        "v4_run.html", ts=ts, options=options,
         primary_fields=list(ts.Sample.get_primary_fields()),
         comparison_window=comparison_window,
         sri=sri, test_info=test_info, runinfo=runinfo,
-        test_min_value_filter=test_min_value_filter)
+        test_min_value_filter=test_min_value_filter,
+        request_info=info)
 
 @v4_route("/order/<int:id>")
 def v4_order(id):
