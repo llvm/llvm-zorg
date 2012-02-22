@@ -860,14 +860,6 @@ Invalid compare_to ID %r""" % compare_to_str)
             run, num_comparison_runs))
 
     # Get the test names.
-    test_names = ts.query(ts.Test.name, ts.Test.id).order_by(ts.Test.name).all()
-
-    # Gather all the samples for the runs we are interested in.
-    if compare_to:
-        run_ids = (run.id, compare_to.id)
-    else:
-        run_ids = (run.id,)
-
     test_info = ts.query(ts.Test.name, ts.Test.id).\
         order_by(ts.Test.name).all()
 
@@ -875,9 +867,9 @@ Invalid compare_to ID %r""" % compare_to_str)
 
     # Filter the list of tests by name, if requested.
     if test_filter_re:
-        test_names = [test
-                      for test in test_names
-                      if test_filter_re.search(test)]
+        test_info = [test
+                     for test in test_info
+                     if test_filter_re.search(test[0])]
 
     return render_template(
         "v4_run.html", ts=ts, run=run, compare_to=compare_to,
