@@ -782,10 +782,21 @@ class V4RequestInfo(object):
                 self.compare_to = None
             self.comparison_neighboring_runs = self.neighboring_runs
 
+        try:
+            self.num_comparison_runs = int(
+                request.args.get('num_comparison_runs'))
+        except:
+            self.num_comparison_runs = 10
+
+        # Gather the runs to use for statistical data.
+        self.comparison_window = list(ts.get_previous_runs_on_machine(
+                    self.run, self.num_comparison_runs))
+
         reports = lnt.server.reporting.runs.generate_run_report(
             self.run, baseurl=db_url_for('index', _external=True),
-            only_html_body=only_html_body,
-            result=None, compare_to=self.compare_to)
+            only_html_body=only_html_body, result=None,
+            compare_to=self.compare_to,
+            comparison_window=self.comparison_window)
         _, self.text_report, self.html_report, self.sri = reports
 
 @v4_route("/<int:id>/report")
@@ -821,11 +832,7 @@ def v4_run(id):
     options['show_data_table'] = bool(request.args.get('show_data_table'))
     options['hide_report_by_default'] = bool(
         request.args.get('hide_report_by_default'))
-    try:
-        num_comparison_runs = int(request.args.get('num_comparison_runs'))
-    except:
-        num_comparison_runs = 10
-    options['num_comparison_runs'] = num_comparison_runs
+    options['num_comparison_runs'] = info.num_comparison_runs
     options['test_filter'] = test_filter_str = request.args.get(
         'test_filter', '')
     if test_filter_str:
@@ -840,10 +847,6 @@ def v4_run(id):
     else:
         test_min_value_filter = 0.0
 
-    # Gather the runs to use for statistical data.
-    comparison_window = list(ts.get_previous_runs_on_machine(
-            run, num_comparison_runs))
-
     # Get the test names.
     test_info = ts.query(ts.Test.name, ts.Test.id).\
         order_by(ts.Test.name).all()
@@ -857,7 +860,6 @@ def v4_run(id):
     return render_template(
         "v4_run.html", ts=ts, options=options,
         primary_fields=list(ts.Sample.get_primary_fields()),
-        comparison_window=comparison_window,
         test_info=test_info, runinfo=runinfo,
         test_min_value_filter=test_min_value_filter,
         request_info=info)

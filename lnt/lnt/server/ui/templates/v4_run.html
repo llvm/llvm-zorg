@@ -228,7 +228,7 @@ test_name
   for field in primary_fields
 %}{%
   set cr = request_info.sri.get_run_comparison_result(
-            run, compare_to, test_id, field, comparison_window)
+            run, compare_to, test_id, field, request_info.comparison_window)
 %}	{{cr.previous}}	{{cr.current}}	{{cr.pct_delta}}{%
    endfor %}
 {%

@@ -13,7 +13,7 @@ from lnt.db import runinfo
 
 def generate_run_report(run, baseurl, only_html_body = False,
                         num_comparison_runs = 10, result = None,
-                        compare_to = None):
+                        compare_to = None, comparison_window = None):
     """
     generate_run_report(...) -> (str: subject, str: text_report,
                                  str: html_report)
@@ -31,8 +31,9 @@ def generate_run_report(run, baseurl, only_html_body = False,
     machine_parameters = machine.parameters
 
     # Gather the runs to use for statistical data.
-    comparison_window = list(ts.get_previous_runs_on_machine(
-            run, num_comparison_runs))
+    if comparison_window is None:
+        comparison_window = list(ts.get_previous_runs_on_machine(
+                run, num_comparison_runs))
 
     # Get the specific run to compare to.
     if compare_to is None and comparison_window:
