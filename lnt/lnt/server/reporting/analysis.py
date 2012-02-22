@@ -8,11 +8,13 @@ from lnt.db.runinfo import ComparisonResult
 from lnt.testing import PASS, FAIL, XFAIL
 
 class RunInfo(object):
-    def __init__(self, testsuite):
+    def __init__(self, testsuite, runs_to_load):
         self.testsuite = testsuite
 
         self.sample_map = util.multidict()
         self.loaded_run_ids = set()
+
+        self._load_samples_for_runs(runs_to_load)
 
     def get_run_comparison_result(self, run, compare_to, test_id, field,
                                   comparison_window=[]):
@@ -25,11 +27,6 @@ class RunInfo(object):
             compare_id = None
         else:
             compare_id = compare_to.id
-        runs_to_load = set([r.id for r in comparison_window])
-        runs_to_load.add(run.id)
-        if compare_id is not None:
-            runs_to_load.add(compare_id)
-        self._load_samples_for_runs(runs_to_load)
 
         # Lookup the current and previous samples.
         run_samples = self.sample_map.get((run.id, test_id), ())

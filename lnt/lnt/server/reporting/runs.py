@@ -29,7 +29,6 @@ def generate_run_report(run, baseurl, only_html_body = False,
     ts = run.testsuite
     machine = run.machine
     machine_parameters = machine.parameters
-    sri = lnt.server.reporting.analysis.RunInfo(ts)
 
     # Gather the runs to use for statistical data.
     comparison_window = list(ts.get_previous_runs_on_machine(
@@ -41,6 +40,13 @@ def generate_run_report(run, baseurl, only_html_body = False,
 
     # Get the test names.
     test_names = ts.query(ts.Test.name, ts.Test.id).order_by(ts.Test.name).all()
+
+    # Create the run info analysis object.
+    runs_to_load = set(r.id for r in comparison_window)
+    runs_to_load.add(run.id)
+    if compare_to:
+        runs_to_load.add(compare_to.id)
+    sri = lnt.server.reporting.analysis.RunInfo(ts, runs_to_load)
 
     # Gather the changes to report, organized by field and then collated by
     # change type.
