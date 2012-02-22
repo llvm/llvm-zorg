@@ -445,9 +445,10 @@ def getReport(result, db, run, baseurl, was_added, will_commit,
 
     # We haven't implemented V4DB support yet in reports.
     if isinstance(db, lnt.server.db.v4db.V4DB):
-        return lnt.server.reporting.runs.generate_run_report(
+        reports = lnt.server.reporting.runs.generate_run_report(
             run, baseurl=baseurl, only_html_body=only_html_body,
             result=result, compare_to=compare_to)
+        return reports[:2]
 
     # Use a simple report unless the tag indicates this is an old style nightly
     # test run.

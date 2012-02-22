@@ -786,7 +786,7 @@ class V4RequestInfo(object):
             self.run, baseurl=db_url_for('index', _external=True),
             only_html_body=only_html_body,
             result=None, compare_to=self.compare_to)
-        _, self.text_report, self.html_report = reports
+        _, self.text_report, self.html_report, self.sri = reports
 
 @v4_route("/<int:id>/report")
 def v4_report(id):
@@ -848,8 +848,6 @@ def v4_run(id):
     test_info = ts.query(ts.Test.name, ts.Test.id).\
         order_by(ts.Test.name).all()
 
-    sri = lnt.server.reporting.analysis.RunInfo(ts)
-
     # Filter the list of tests by name, if requested.
     if test_filter_re:
         test_info = [test
@@ -860,7 +858,7 @@ def v4_run(id):
         "v4_run.html", ts=ts, options=options,
         primary_fields=list(ts.Sample.get_primary_fields()),
         comparison_window=comparison_window,
-        sri=sri, test_info=test_info, runinfo=runinfo,
+        test_info=test_info, runinfo=runinfo,
         test_min_value_filter=test_min_value_filter,
         request_info=info)
 

@@ -252,7 +252,7 @@ def generate_run_report(run, baseurl, only_html_body = False,
   </body>
 </html>""" % locals()
 
-    return subject, report.getvalue(), html_report
+    return subject, report.getvalue(), html_report, sri
 
 def _add_report_changes_detail(ts, test_results, report, html_report,
                                report_url):

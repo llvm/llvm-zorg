@@ -190,7 +190,7 @@
 </thead>
 
 {% for test_name,test_id in test_info %}
-{%  set cr = sri.get_run_comparison_result(
+{%  set cr = request_info.sri.get_run_comparison_result(
             run, compare_to, test_id, field, comparison_window) %}
 {%  if cr.previous is not none or cr.current is not none %}
 {%    if cr.current is none or cr.current >= test_min_value_filter %}
@@ -227,7 +227,7 @@ test_name
 }}{%
   for field in primary_fields
 %}{%
-  set cr = sri.get_run_comparison_result(
+  set cr = request_info.sri.get_run_comparison_result(
             run, compare_to, test_id, field, comparison_window)
 %}	{{cr.previous}}	{{cr.current}}	{{cr.pct_delta}}{%
    endfor %}
