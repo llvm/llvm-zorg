@@ -782,11 +782,11 @@ class V4RequestInfo(object):
                 self.compare_to = None
             self.comparison_neighboring_runs = self.neighboring_runs
 
-        _, self.text_report, self.html_report = NTEmailReport.getReport(
-            result=None, db=self.db, run=self.run,
-            baseurl=db_url_for('index', _external=True),
-            was_added=True, will_commit=True, only_html_body=only_html_body,
-            compare_to=self.compare_to)
+        reports = lnt.server.reporting.runs.generate_run_report(
+            self.run, baseurl=db_url_for('index', _external=True),
+            only_html_body=only_html_body,
+            result=None, compare_to=self.compare_to)
+        _, self.text_report, self.html_report = reports
 
 @v4_route("/<int:id>/report")
 def v4_report(id):
