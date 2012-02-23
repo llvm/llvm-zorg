@@ -228,7 +228,7 @@ def test_build(base_name, run_info, variables, project, num_jobs):
     # Check if we need to expand the archive into the sandbox.
     archive_path = get_input_path(opts, project['archive'])
     with open(archive_path) as f:
-        archive_hash = hashlib.md5(f.read()).hexdigest()
+        archive_hash = hashlib.md5(f.read() + str(project)).hexdigest()
 
     # Compute the path to unpack to.
     source_path = get_output_path("..", "Sources", project['name'])
