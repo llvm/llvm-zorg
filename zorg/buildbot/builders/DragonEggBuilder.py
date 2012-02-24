@@ -42,22 +42,23 @@ def getDragonEggBootstrapFactory(gcc_repository, extra_languages=[],
                                                workdir='.', env=env))
 
     # Checkout LLVM sources.
-    f.addStep(SVN(name='svn-llvm',
-                  mode='update', baseURL='http://llvm.org/svn/llvm-project/llvm/',
-                  defaultBranch='trunk',
-                  workdir='llvm.src', env=env))
+    llvm_src_dir = 'llvm.src'
+    f.addStep(SVN(name='svn-llvm', mode='update',
+                  baseURL='http://llvm.org/svn/llvm-project/llvm/',
+                  defaultBranch='trunk', workdir=llvm_src_dir, env=env))
 
     # Checkout DragonEgg sources.
-    f.addStep(SVN(name='svn-dragonegg',
-                  mode='update', baseURL='http://llvm.org/svn/llvm-project/dragonegg/',
-                  defaultBranch='trunk',
-                  workdir='dragonegg.src', env=env))
+    dragonegg_src_dir = 'dragonegg.src'
+    f.addStep(SVN(name='svn-dragonegg', mode='update',
+                  baseURL='http://llvm.org/svn/llvm-project/dragonegg/',
+                  defaultBranch='trunk', workdir=dragonegg_src_dir, env=env))
 
     # Checkout GCC.  This is usually a specific known good revision (supplied by
     # appending @revision to the URL).  The SVN step can't handle that.  As it
     # provides no mechanism at all for checking out a specific revision, just
     # run the command directly here.
-    svn_co = ['svn', 'checkout', gcc_repository, 'gcc.src']
+    gcc_src_dir = 'gcc.src'
+    svn_co = ['svn', 'checkout', gcc_repository, gcc_src_dir]
     f.addStep(ShellCommand(name='svn-gcc',
                            command=svn_co,
                            haltOnFailure=True,
@@ -78,27 +79,27 @@ def getDragonEggBootstrapFactory(gcc_repository, extra_languages=[],
       if clean:
           f.addStep(ShellCommand(name='rm-%s' % gcc_obj_dir,
                                  command=['rm', '-rf', gcc_obj_dir],
-                                 haltOnFailure = True,
+                                 haltOnFailure=True,
                                  description=['rm build dir', 'gcc', stage],
                                  workdir='.', env=cur_env))
       f.addStep(Configure(name='configure.gcc.%s' % stage,
-                          command=(['../gcc.src/configure',
+                          command=(['../' + gcc_src_dir + '/configure',
                                     WithProperties('--prefix=%%(builddir)s/%s' % gcc_install_dir)] +
                                    gcc_configure_args + getCCSetting(prev_gcc, prev_gxx)),
-                          haltOnFailure = True,
+                          haltOnFailure=True,
                           description=['configure', 'gcc', stage],
                           workdir=gcc_obj_dir, env=cur_env))
-      f.addStep(WarningCountingShellCommand(name = 'compile.gcc.%s' % stage,
-                                            command = ['nice', '-n', '10',
-                                                       'make', WithProperties('-j%s' % jobs)],
-                                            haltOnFailure = True,
+      f.addStep(WarningCountingShellCommand(name='compile.gcc.%s' % stage,
+                                            command=['nice', '-n', '10',
+                                                     'make', WithProperties('-j%s' % jobs)],
+                                            haltOnFailure=True,
                                             description=['compile', 'gcc', stage],
                                             workdir=gcc_obj_dir, env=cur_env,
-                                            timeout=timeout * 60))
-      f.addStep(WarningCountingShellCommand(name = 'install.gcc.%s' % stage,
-                                            command = ['nice', '-n', '10',
-                                                       'make', 'install'],
-                                            haltOnFailure = True,
+                                            timeout=timeout*60))
+      f.addStep(WarningCountingShellCommand(name='install.gcc.%s' % stage,
+                                            command=['nice', '-n', '10',
+                                                     'make', 'install'],
+                                            haltOnFailure=True,
                                             description=['install', 'gcc', stage],
                                             workdir=gcc_obj_dir, env=cur_env))
 
@@ -110,11 +111,11 @@ def getDragonEggBootstrapFactory(gcc_repository, extra_languages=[],
       # versions.  Set the library path so that programs compiled with the just
       # built GCC will start successfully, rather than failing due to missing
       # shared library dependencies.
-      f.addStep(buildbot.steps.shell.SetProperty(name = 'gcc.search.paths.%s' % stage,
+      f.addStep(buildbot.steps.shell.SetProperty(name='gcc.search.paths.%s' % stage,
                                                  command=[WithProperties(prev_gcc),
                                                           '-print-search-dirs'],
                                                  extract_fn=extractSearchPaths,
-                                                 haltOnFailure = True,
+                                                 haltOnFailure=True,
                                                  description=['gcc', 'search paths',
                                                               stage], env=cur_env))
       cur_env = cur_env.copy();
@@ -136,27 +137,27 @@ def getDragonEggBootstrapFactory(gcc_repository, extra_languages=[],
       if clean:
           f.addStep(ShellCommand(name='rm-%s' % llvm_obj_dir,
                                  command=['rm', '-rf', llvm_obj_dir],
-                                 haltOnFailure = True,
+                                 haltOnFailure=True,
                                  description=['rm build dir', 'llvm', stage],
                                  workdir='.', env=cur_env))
       f.addStep(Configure(name='configure.llvm.%s' % stage,
-                          command=(['../llvm.src/configure',
+                          command=(['../' + llvm_src_dir + '/configure',
                                     WithProperties('--prefix=%%(builddir)s/%s' % llvm_install_dir)] +
                                     llvm_configure_args + getCCSetting(prev_gcc, prev_gxx)),
-                          haltOnFailure = True,
+                          haltOnFailure=True,
                           description=['configure', 'llvm', stage],
                           workdir=llvm_obj_dir, env=cur_env))
-      f.addStep(WarningCountingShellCommand(name = 'compile.llvm.%s' % stage,
-                                            command = ['nice', '-n', '10',
-                                                       'make', WithProperties('-j%s' % jobs)],
-                                            haltOnFailure = True,
+      f.addStep(WarningCountingShellCommand(name='compile.llvm.%s' % stage,
+                                            command=['nice', '-n', '10',
+                                                     'make', WithProperties('-j%s' % jobs)],
+                                            haltOnFailure=True,
                                             description=['compile', 'llvm', stage],
                                             workdir=llvm_obj_dir, env=cur_env,
-                                            timeout=timeout * 60))
-      f.addStep(WarningCountingShellCommand(name = 'install.llvm.%s' % stage,
-                                            command = ['nice', '-n', '10',
-                                                       'make', 'install'],
-                                            haltOnFailure = True,
+                                            timeout=timeout*60))
+      f.addStep(WarningCountingShellCommand(name='install.llvm.%s' % stage,
+                                            command=['nice', '-n', '10',
+                                                     'make', 'install'],
+                                            haltOnFailure=True,
                                             description=['install', 'llvm', stage],
                                             workdir=llvm_obj_dir, env=cur_env))
 
@@ -165,22 +166,21 @@ def getDragonEggBootstrapFactory(gcc_repository, extra_languages=[],
       if clean:
           f.addStep(ShellCommand(name='rm-%s' % dragonegg_pre_obj_dir,
                                  command=['rm', '-rf', dragonegg_pre_obj_dir],
-                                 haltOnFailure = True,
                                  description=['rm build dir', 'dragonegg pre', stage],
-                                 workdir='.', env=cur_env))
+                                 haltOnFailure=True, workdir='.', env=cur_env))
       f.addStep(WarningCountingShellCommand(
-              name = 'compile.dragonegg.pre.%s' % stage,
-              command = ['nice', '-n', '10',
-                         'make', '-f', '../dragonegg.src/Makefile',
-                         WithProperties('-j%s' % jobs),
-                         WithProperties('GCC=%(builddir)s/'+gcc_install_dir+'/bin/gcc'),
-                         WithProperties('LLVM_CONFIG=%(builddir)s/'+llvm_install_dir+'/bin/llvm-config'),
-                         WithProperties('TOP_DIR=%(builddir)s/dragonegg.src')
-                         ] + getCCSetting(prev_gcc, prev_gxx),
-              haltOnFailure = True,
+              name='compile.dragonegg.pre.%s' % stage,
+              command=['nice', '-n', '10',
+                       'make', '-f', '../' + dragonegg_src_dir + '/Makefile',
+                       WithProperties('-j%s' % jobs),
+                       WithProperties('GCC=%(builddir)s/'+gcc_install_dir+'/bin/gcc'),
+                       WithProperties('LLVM_CONFIG=%(builddir)s/'+llvm_install_dir+'/bin/llvm-config'),
+                       WithProperties('TOP_DIR=%(builddir)s/' + dragonegg_src_dir)
+                       ] + getCCSetting(prev_gcc, prev_gxx),
+              haltOnFailure=True,
               description=['compile', 'dragonegg pre', stage],
               workdir=dragonegg_pre_obj_dir, env=cur_env,
-              timeout=timeout * 60))
+              timeout=timeout*60))
       prev_gcc = '%(builddir)s/'+gcc_install_dir+'/bin/gcc -fplugin=%(builddir)s/'+dragonegg_pre_obj_dir+'/dragonegg.so'
       prev_gxx = '%(builddir)s/'+gcc_install_dir+'/bin/g++ -fplugin=%(builddir)s/'+dragonegg_pre_obj_dir+'/dragonegg.so'
 
@@ -189,23 +189,20 @@ def getDragonEggBootstrapFactory(gcc_repository, extra_languages=[],
       if clean:
           f.addStep(ShellCommand(name='rm-%s' % dragonegg_obj_dir,
                                  command=['rm', '-rf', dragonegg_obj_dir],
-                                 haltOnFailure = True,
                                  description=['rm build dir', 'dragonegg', stage],
-                                 workdir='.', env=cur_env))
+                                 haltOnFailure=True, workdir='.', env=cur_env))
       f.addStep(WarningCountingShellCommand(
-              name = 'compile.dragonegg.%s' % stage,
-              command = ['nice', '-n', '10',
-                         'make', '-f', '../dragonegg.src/Makefile',
-                         'DISABLE_VERSION_CHECK=1',
-                         WithProperties('-j%s' % jobs),
-                         WithProperties('GCC=%(builddir)s/'+gcc_install_dir+'/bin/gcc'),
-                         WithProperties('LLVM_CONFIG=%(builddir)s/'+llvm_install_dir+'/bin/llvm-config'),
-                         WithProperties('TOP_DIR=%(builddir)s/dragonegg.src')
-                         ] + getCCSetting(prev_gcc, prev_gxx),
-              haltOnFailure = True,
-              description=['compile', 'dragonegg', stage],
-              workdir=dragonegg_obj_dir, env=cur_env,
-              timeout=timeout * 60))
+              name='compile.dragonegg.%s' % stage,
+              command=['nice', '-n', '10',
+                       'make', '-f', '../' + dragonegg_src_dir + '/Makefile',
+                       'DISABLE_VERSION_CHECK=1',
+                       WithProperties('-j%s' % jobs),
+                       WithProperties('GCC=%(builddir)s/'+gcc_install_dir+'/bin/gcc'),
+                       WithProperties('LLVM_CONFIG=%(builddir)s/'+llvm_install_dir+'/bin/llvm-config'),
+                       WithProperties('TOP_DIR=%(builddir)s/' + dragonegg_src_dir)
+                       ] + getCCSetting(prev_gcc, prev_gxx),
+              description=['compile', 'dragonegg', stage], haltOnFailure=True,
+              workdir=dragonegg_obj_dir, env=cur_env, timeout=timeout*60))
 
       # Ensure that the following stages use the just built plugin.
       prev_plugin = '%(builddir)s/'+dragonegg_obj_dir+'/dragonegg.so'
@@ -219,8 +216,8 @@ def getDragonEggBootstrapFactory(gcc_repository, extra_languages=[],
                                     '../dragonegg.obj.stage2/$O ' +
                                     '../dragonegg.obj.stage3/$O || exit 1 ; ' +
                                     'done'],
-                           haltOnFailure = True,
-                           description=['compare', 'stages', '2', 'and', '3'],
+                           haltOnFailure=True,
+                           description='compare stages 2 and 3',
                            workdir='dragonegg.obj.stage3', env=cur_env))
 
     return f
