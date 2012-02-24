@@ -151,28 +151,21 @@ def generate_run_report(run, baseurl, only_html_body = False,
     <th>Start Time</th>
     <th>Duration</th>
   </tr>"""
-    # FIXME: Remove hard coded field use here.
-    print >>html_report, """\
-<tr><td><a href="%s/%d">Current</a></td>\
-<td>%s</td><td>%s</td><td>%s</td></tr>""" % (
-        ts_url, run.id, run.order.llvm_project_revision,
-        run.start_time, run.end_time - run.start_time)
-    if compare_to:
+    for (title, r) in (('Current', run),
+                       ('Previous', compare_to),
+                       ('Baseline', baseline)):
+        if r is None:
+            print >>html_report, """<tr><td colspan=4>No %s Run</td></tr>""" % (
+                title,)
+            continue
+
         # FIXME: Remove hard coded field use here.
         print >>html_report, """\
-<tr><td><a href="%s/%d">Previous</a></td>\
-<td>%s</td><td>%s</td><td>%s</td></tr>""" % (
-            ts_url, compare_to.id, compare_to.order.llvm_project_revision,
-            compare_to.start_time, compare_to.end_time - compare_to.start_time)
-    else:
-        print >>html_report, """<tr><td colspan=4>No Previous Run</td></tr>"""
-    if baseline:
-        # FIXME: Remove hard coded field use here.
-        print >>html_report, """\
-<tr><td><a href="%s/%d">Baseline</a></td>\
-<td>%s</td><td>%s</td><td>%s</td></tr>""" % (
-            ts_url, baseline.id, baseline.order.llvm_project_revision,
-            baseline.start_time, baseline.end_time - baseline.start_time)
+<tr><td><a href="%s/%d">%s</a></td>\
+<td><a href="%s/order/%d">%s</a></td><td>%s</td><td>%s</td></tr>""" % (
+        ts_url, r.id, title,
+        ts_url, r.order.id, r.order.llvm_project_revision,
+        r.start_time, r.end_time - r.start_time)
     print >>html_report, """</table>"""
     if compare_to and run.machine != compare_to.machine:
         print >>html_report, """<p><b>*** WARNING ***:""",
