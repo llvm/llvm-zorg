@@ -140,7 +140,15 @@ def generate_run_report(run, baseurl, only_html_body = False,
     if baseurl[-1] == '/':
         baseurl = baseurl[:-1]
 
-    report_url = """%s/v4/%s/%d""" % (baseurl, ts.name, run.id)
+    run_url = """%s/v4/%s/%d""" % (baseurl, ts.name, run.id)
+    report_url = run_url
+    url_fields = []
+    if compare_to:
+        url_fields.append(('compare_to', str(compare_to.id)))
+    if baseline:
+        url_fields.append(('baseline', str(baseline.id)))
+    report_url = "%s?%s" % (run_url, "&".join("%s=%s" % (k,v)
+                                              for k,v in url_fields))
     print >>report, report_url
     print >>report, """Nickname: %s:%d""" % (machine.name, machine.id)
     if 'name' in machine_parameters:
@@ -171,17 +179,8 @@ def generate_run_report(run, baseurl, only_html_body = False,
     print >>report
 
     # Generate the HTML report header.
-    print >>html_report, """\
-<h1>%s</h1>
-<table>""" % subject
-    print >>html_report, """\
-<tr><td>URL</td><td><a href="%s">%s</a></td></tr>""" % (report_url, report_url)
-    print >>html_report, "<tr><td>Nickname</td><td>%s:%d</td></tr>" % (
-        machine.name, machine.id)
-    if 'name' in machine_parameters:
-        print >>html_report, """<tr><td>Name</td><td>%s</td></tr>""" % (
-            machine_parameters['name'],)
-    print >>html_report, """</table>"""
+    print >>html_report, """<h1><a href="%s">%s</a></h1>""" % (
+        report_url, subject)
     print >>html_report, """\
 <p>
 <table>
@@ -268,7 +267,7 @@ def generate_run_report(run, baseurl, only_html_body = False,
 <h3>Changes Detail</h3>"""
 
         _add_report_changes_detail(ts, test_results, report,
-                                   html_report, report_url,
+                                   html_report, run_url,
                                    run_to_baseline_info)
 
     report_time = time.time() - start_time
@@ -303,7 +302,7 @@ def generate_run_report(run, baseurl, only_html_body = False,
     return subject, report.getvalue(), html_report, sri
 
 def _add_report_changes_detail(ts, test_results, report, html_report,
-                               report_url, run_to_baseline_info):
+                               run_url, run_to_baseline_info):
     # Reorder results to present by most important bucket first.
     prioritized = [(priority, field, bucket_name, bucket, show_perf)
                    for field,field_results in test_results
@@ -314,11 +313,11 @@ def _add_report_changes_detail(ts, test_results, report, html_report,
     for _,field,bucket_name,bucket,show_perf in prioritized:
         _add_report_changes_detail_for_field_and_bucket(
             ts, field, bucket_name, bucket, show_perf, report,
-            html_report, report_url, run_to_baseline_info)
+            html_report, run_url, run_to_baseline_info)
 
 def _add_report_changes_detail_for_field_and_bucket(ts, field, bucket_name,
                                                     bucket, show_perf, report,
-                                                    html_report, report_url,
+                                                    html_report, run_url,
                                                     run_to_baseline_info):
     if not bucket or bucket_name == 'Unchanged Tests':
         return
@@ -371,7 +370,7 @@ def _add_report_changes_detail_for_field_and_bucket(ts, field, bucket_name,
         form_data = urllib.urlencode([('test.%d' % test_id,
                                        str(field_index))])
         linked_name = '<a href="%s?%s">%s</a>' % (
-            os.path.join(report_url, "graph"),
+            os.path.join(run_url, "graph"),
             form_data, name)
 
         pct_value = lnt.server.ui.util.PctCell(cr.pct_delta).render()
