@@ -788,6 +788,18 @@ class V4RequestInfo(object):
         except:
             self.num_comparison_runs = 10
 
+        # Find the baseline run, if requested.
+        baseline_str = request.args.get('baseline')
+        if baseline_str:
+            baseline_id = int(baseline_str)
+            self.baseline = ts.query(ts.Run).\
+                filter_by(id=baseline_id).first()
+            if self.baseline is None:
+                # FIXME: Need better way to report this error.
+                abort(404)
+        else:
+            self.baseline = None
+
         # Gather the runs to use for statistical data.
         comparison_start_run = self.compare_to or self.run
         self.comparison_window = list(ts.get_previous_runs_on_machine(
@@ -796,7 +808,7 @@ class V4RequestInfo(object):
         reports = lnt.server.reporting.runs.generate_run_report(
             self.run, baseurl=db_url_for('index', _external=True),
             only_html_body=only_html_body, result=None,
-            compare_to=self.compare_to,
+            compare_to=self.compare_to, baseline=self.baseline,
             comparison_window=self.comparison_window)
         _, self.text_report, self.html_report, self.sri = reports
 

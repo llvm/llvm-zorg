@@ -13,7 +13,8 @@ from lnt.db import runinfo
 
 def generate_run_report(run, baseurl, only_html_body = False,
                         num_comparison_runs = 10, result = None,
-                        compare_to = None, comparison_window = None):
+                        compare_to = None, baseline = None,
+                        comparison_window = None):
     """
     generate_run_report(...) -> (str: subject, str: text_report,
                                  str: html_report)
@@ -35,25 +36,44 @@ def generate_run_report(run, baseurl, only_html_body = False,
         comparison_start_run = compare_to or run
         comparison_window = list(ts.get_previous_runs_on_machine(
                 comparison_start_run, num_comparison_runs))
+    if baseline:
+        baseline_window = list(ts.get_previous_runs_on_machine(
+                baseline, num_comparison_runs))
+    else:
+        baseline_window = []
 
-    # Get the specific run to compare to.
+    # If we don't have an explicit baseline run or a comparison run, use the
+    # previous run.
     if compare_to is None and comparison_window:
         compare_to = comparison_window[0]
 
-    # Get the test names.
-    test_names = ts.query(ts.Test.name, ts.Test.id).order_by(ts.Test.name).all()
-
     # Create the run info analysis object.
     runs_to_load = set(r.id for r in comparison_window)
+    for r in baseline_window:
+        runs_to_load.add(r.id)
     runs_to_load.add(run.id)
     if compare_to:
         runs_to_load.add(compare_to.id)
+    if baseline:
+        runs_to_load.add(baseline.id)
     sri = lnt.server.reporting.analysis.RunInfo(ts, runs_to_load)
 
-    # Gather the changes to report, organized by field and then collated by
-    # change type.
+    # Get the test names, primary fields and total test counts.
+    test_names = ts.query(ts.Test.name, ts.Test.id).order_by(ts.Test.name).all()
     primary_fields = list(ts.Sample.get_primary_fields())
     num_total_tests = len(primary_fields) * len(test_names)
+
+    # If we have a baseline, gather the run-over-baseline information.
+    run_to_baseline_info = {}
+    if baseline:
+        for field in primary_fields:
+            for name,test_id in test_names:
+                cr = sri.get_run_comparison_result(
+                    run, baseline, test_id, field, baseline_window)
+                run_to_baseline_info[(name,field)] = cr
+
+    # Gather the run-over-run changes to report, organized by field and then
+    # collated by change type.
     test_results = []
     for field in primary_fields:
         new_failures = []
@@ -125,14 +145,14 @@ def generate_run_report(run, baseurl, only_html_body = False,
     print >>report, """Nickname: %s:%d""" % (machine.name, machine.id)
     if 'name' in machine_parameters:
         print >>report, """Name: %s""" % (machine_parameters['name'],)
-    print >>report, """Comparing:"""
+    print >>report, "Comparing:"
     # FIXME: Remove hard coded field use here.
-    print >>report, """  Run: %d, Order: %s, Start Time: %s, End Time: %s""" % (
+    print >>report, "     Run: %d, Order: %s, Start Time: %s, End Time: %s" % (
         run.id, run.order.llvm_project_revision, run.start_time, run.end_time)
     if compare_to:
         # FIXME: Remove hard coded field use here.
-        print >>report, ("""   To: %d, Order: %s, """
-                         """Start Time: %s, End Time: %s""") % (
+        print >>report, ("      To: %d, Order: %s, "
+                         "Start Time: %s, End Time: %s") % (
             compare_to.id, compare_to.order.llvm_project_revision,
             compare_to.start_time, compare_to.end_time)
         if run.machine != compare_to.machine:
@@ -141,7 +161,13 @@ def generate_run_report(run, baseurl, only_html_body = False,
             print >>report, """(%s:%d)""" % (compare_to.machine.name,
                                              compare_to.machine.id)
     else:
-        print >>report, """   To: (none)"""
+        print >>report, "      To: (none)"
+    if baseline:
+        # FIXME: Remove hard coded field use here.
+        print >>report, ("Baseline: %d, Order: %s, "
+                         "Start Time: %s, End Time: %s") % (
+            baseline.id, baseline.order.llvm_project_revision,
+            baseline.start_time, baseline.end_time)
     print >>report
 
     # Generate the HTML report header.
@@ -165,19 +191,32 @@ def generate_run_report(run, baseurl, only_html_body = False,
     <th>Order</th>
     <th>Start Time</th>
     <th>End Time</th>
+    <th>Machine</th>
   </tr>"""
     # FIXME: Remove hard coded field use here.
     print >>html_report, """\
-<tr><td>Current</td><td>%d</td><td>%s</td><td>%s</td><td>%s</td></tr>""" % (
-        run.id, run.order.llvm_project_revision, run.start_time, run.end_time)
+<tr><td>Current</td><td>%d</td><td>%s</td><td>%s</td><td>%s</td>\
+<td>%s:%d</td></tr>""" % (
+        run.id, run.order.llvm_project_revision, run.start_time, run.end_time,
+        run.machine.name, run.machine.id)
     if compare_to:
         # FIXME: Remove hard coded field use here.
         print >>html_report, """\
-<tr><td>Previous</td><td>%d</td><td>%s</td><td>%s</td><td>%s</td></tr>""" % (
+<tr><td>Previous</td><td>%d</td><td>%s</td><td>%s</td><td>%s</td>\
+<td>%s:%d</td></tr>""" % (
             compare_to.id, compare_to.order.llvm_project_revision,
-            compare_to.start_time, compare_to.end_time)
+            compare_to.start_time, compare_to.end_time, compare_to.machine.name,
+            compare_to.machine.id)
     else:
         print >>html_report, """<tr><td colspan=4>No Previous Run</td></tr>"""
+    if baseline:
+        # FIXME: Remove hard coded field use here.
+        print >>html_report, """\
+<tr><td>Baseline</td><td>%d</td><td>%s</td><td>%s</td><td>%s</td>\
+<td>%s:%d</td></tr>""" % (
+            baseline.id, baseline.order.llvm_project_revision,
+            baseline.start_time, baseline.end_time, baseline.machine.name,
+            baseline.machine.id)
     print >>html_report, """</table>"""
     if compare_to and run.machine != compare_to.machine:
         print >>html_report, """<p><b>*** WARNING ***:""",
@@ -229,7 +268,8 @@ def generate_run_report(run, baseurl, only_html_body = False,
 <h3>Changes Detail</h3>"""
 
         _add_report_changes_detail(ts, test_results, report,
-                                   html_report, report_url)
+                                   html_report, report_url,
+                                   run_to_baseline_info)
 
     report_time = time.time() - start_time
     print >>report, "Report Time: %.2fs" % (report_time,)
@@ -263,7 +303,7 @@ def generate_run_report(run, baseurl, only_html_body = False,
     return subject, report.getvalue(), html_report, sri
 
 def _add_report_changes_detail(ts, test_results, report, html_report,
-                               report_url):
+                               report_url, run_to_baseline_info):
     # Reorder results to present by most important bucket first.
     prioritized = [(priority, field, bucket_name, bucket, show_perf)
                    for field,field_results in test_results
@@ -274,11 +314,12 @@ def _add_report_changes_detail(ts, test_results, report, html_report,
     for _,field,bucket_name,bucket,show_perf in prioritized:
         _add_report_changes_detail_for_field_and_bucket(
             ts, field, bucket_name, bucket, show_perf, report,
-            html_report, report_url)
+            html_report, report_url, run_to_baseline_info)
 
 def _add_report_changes_detail_for_field_and_bucket(ts, field, bucket_name,
                                                     bucket, show_perf, report,
-                                                    html_report, report_url):
+                                                    html_report, report_url,
+                                                    run_to_baseline_info):
     if not bucket or bucket_name == 'Unchanged Tests':
         return
 
@@ -294,10 +335,13 @@ def _add_report_changes_detail_for_field_and_bucket(ts, field, bucket_name,
     print >>html_report, """
 <p>
 <table class="sortable">
-<tr><th>%s - %s </th>""" % (bucket_name, field_display_name)
+<tr><th width="500">%s - %s </th>""" % (bucket_name, field_display_name)
     if show_perf:
-        print >>html_report, """
+        print >>html_report, """\
 <th>&Delta;</th><th>Previous</th><th>Current</th> <th>&sigma;</th>"""
+        if run_to_baseline_info:
+            print >>html_report, """<th>&Delta; (B)</th>"""
+            print >>html_report, """<th>&sigma; (B)</th>"""
         print >>html_report, """</tr>"""
 
     # If we aren't displaying any performance results, just write out the
@@ -336,9 +380,21 @@ def _add_report_changes_detail_for_field_and_bucket(ts, field, bucket_name,
         else:
             stddev_value = "-"
 
-        print >>html_report, """
-<tr><td>%s</td>%s<td>%.4f</td><td>%.4f</td><td>%s</td></tr>""" %(
-            linked_name, pct_value, cr.previous, cr.current, stddev_value)
+        if run_to_baseline_info:
+            a_cr = run_to_baseline_info[(name,field)]
+            if cr.stddev is not None:
+                a_stddev_value = "%.4f" % a_cr.stddev
+            else:
+                a_stddev_value = "-"
+            baseline_info = "%s<td>%s</td>""" % (
+                lnt.server.ui.util.PctCell(a_cr.pct_delta).render(),
+                a_stddev_value)
+        else:
+            baseline_info = ""
+        print >>html_report, """\
+<tr><td>%s</td>%s<td>%.4f</td><td>%.4f</td><td>%s</td>%s</tr>""" %(
+            linked_name, pct_value, cr.previous, cr.current, stddev_value,
+            baseline_info)
     print >>report
     print >>html_report, """
 </table>"""
