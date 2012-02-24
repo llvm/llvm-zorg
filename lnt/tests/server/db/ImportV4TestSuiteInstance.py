@@ -118,9 +118,9 @@ assert sample_a_0.compile_status == lnt.testing.PASS
 assert sample_a_0.execution_time == 0.3
 assert sample_a_0.execution_status == lnt.testing.PASS
 assert sample_a_1.compile_time == 0.0189
-assert sample_a_1.compile_status == lnt.testing.PASS
+assert sample_a_1.compile_status == None
 assert sample_a_1.execution_time == 0.29
-assert sample_a_1.execution_status == lnt.testing.PASS
+assert sample_a_1.execution_status == None
 assert sample_b.compile_time == 0.022
 assert sample_b.compile_status == lnt.testing.PASS
 assert sample_b.execution_time == 0.32
