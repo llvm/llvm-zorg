@@ -789,8 +789,9 @@ class V4RequestInfo(object):
             self.num_comparison_runs = 10
 
         # Gather the runs to use for statistical data.
+        comparison_start_run = self.compare_to or self.run
         self.comparison_window = list(ts.get_previous_runs_on_machine(
-                    self.run, self.num_comparison_runs))
+                    comparison_start_run, self.num_comparison_runs))
 
         reports = lnt.server.reporting.runs.generate_run_report(
             self.run, baseurl=db_url_for('index', _external=True),

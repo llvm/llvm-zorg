@@ -32,8 +32,9 @@ def generate_run_report(run, baseurl, only_html_body = False,
 
     # Gather the runs to use for statistical data.
     if comparison_window is None:
+        comparison_start_run = compare_to or run
         comparison_window = list(ts.get_previous_runs_on_machine(
-                run, num_comparison_runs))
+                comparison_start_run, num_comparison_runs))
 
     # Get the specific run to compare to.
     if compare_to is None and comparison_window:
