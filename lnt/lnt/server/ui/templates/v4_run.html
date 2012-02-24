@@ -64,7 +64,7 @@
 {% if options.show_all_samples %}
     <td>[
       {%- for v in cr.get_samples() -%}
-        {{ ", " if not loop.first }}
+        {{ ", " if not loop.first else "" }}
         {{ "%.4f" % v }}
       {%- endfor -%}]</td>
 {% endif %}
@@ -83,31 +83,31 @@
 <form action="" method="get">
 <b>Show Delta:</b>
 <input type="checkbox" name="show_delta" value="yes" {{
-       "checked" if options.show_delta }}><br>
+       "checked" if options.show_delta else "" }}><br>
 
 <b>Show Previous Value:</b>
 <input type="checkbox" name="show_previous" value="yes" {{
-       "checked" if options.show_previous }}><br>
+       "checked" if options.show_previous else "" }}><br>
 
 <b>Show Standard Deviation:</b>
 <input type="checkbox" name="show_stddev" value="yes" {{
-       "checked" if options.show_stddev }}><br>
+       "checked" if options.show_stddev else "" }}><br>
 
 <b>Show Median Absolute Deviation:</b>
 <input type="checkbox" name="show_mad" value="yes" {{
-       "checked" if options.show_mad }}><br>
+       "checked" if options.show_mad else "" }}><br>
 
 <b>Show All Values:</b>
 <input type="checkbox" name="show_all" value="yes" {{
-       "checked" if options.show_all }}><br>
+       "checked" if options.show_all else "" }}><br>
 
 <b>Show All Samples:</b>
 <input type="checkbox" name="show_all_samples" value="yes" {{
-       "checked" if options.show_all_samples }}><br>
+       "checked" if options.show_all_samples else "" }}><br>
 
 <b>Show Sample Counts:</b>
 <input type="checkbox" name="show_sample_counts" value="yes" {{
-       "checked" if options.show_sample_counts }}><br>
+       "checked" if options.show_sample_counts else "" }}><br>
 
 <b>Number of Comparison Runs:</b>
 <input type="text" name="num_comparison_runs" value="{{
@@ -115,15 +115,15 @@
 
 <b>Show Report Graphs:</b>
 <input type="checkbox" name="show_graphs" value="yes" {{
-       "checked" if options.show_graphs }}><br>
+       "checked" if options.show_graphs else "" }}><br>
 
 <b>Show Data Table:</b>
 <input type="checkbox" name="show_data_table" value="yes" {{
-       "checked" if options.show_data_table }}><br>
+       "checked" if options.show_data_table else ""}}><br>
 
 <b>Hide Report By Default:</b>
 <input type="checkbox" name="hide_report_by_default" value="yes" {{
-       "checked" if options.hide_report_by_default }}><br>
+       "checked" if options.hide_report_by_default else ""}}><br>
 
 <b>Test Filter (regexp):</b>
 <input type="text" name="test_filter" value="{{
@@ -158,7 +158,7 @@
 
 {# Report one table for each primary field. #}
 {% for field in primary_fields %}
-{{ utils.render_popup_begin('test_data.' + field.name, field.name) }}
+{{ utils.render_popup_begin('test_data.' + field.name, field.name, false) }}
 <h4>{{field.name}}</h4>
 
 <table class="sortable" border=1>
@@ -191,7 +191,7 @@
 
 {% for test_name,test_id in test_info %}
 {%  set cr = request_info.sri.get_run_comparison_result(
-            run, compare_to, test_id, field, comparison_window) %}
+            run, compare_to, test_id, field, request_info.comparison_window) %}
 {%  if cr.previous is not none or cr.current is not none %}
 {%    if cr.current is none or cr.current >= test_min_value_filter %}
   <tr>

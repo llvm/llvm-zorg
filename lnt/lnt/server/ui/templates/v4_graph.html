@@ -43,31 +43,31 @@ function init() {
 <form action="" method="get">
 <b>Show Median Absolute Deviation:</b>
 <input type="checkbox" name="show_mad" value="yes" {{
-       'checked' if options.show_mad}}><br>
+       'checked' if options.show_mad else ""}}><br>
 
 <b>Show Standard Deviation:</b>
 <input type="checkbox" name="show_stddev" value="yes" {{
-       'checked' if options.show_stddev}}><br>
+       'checked' if options.show_stddev else ""}}><br>
 
 <b>Show Linear Regression:</b>
 <input type="checkbox" name="show_linear_regression" value="yes" {{
-       'checked' if options.show_linear_regression}}><br>
+       'checked' if options.show_linear_regression else ""}}><br>
 
 <b>Show Points For Failures:</b>
 <input type="checkbox" name="show_failures" value="yes" {{
-       'checked' if options.show_failures}}><br>
+       'checked' if options.show_failures else ""}}><br>
 
 <b>Show Sample Points:</b>
 <input type="checkbox" name="show_points" value="yes" {{
-       'checked' if options.show_points}}><br>
+       'checked' if options.show_points else ""}}><br>
 
 <b>Show All Sample Points:</b>
 <input type="checkbox" name="show_all_points" value="yes" {{
-       'checked' if options.show_all_points}}><br>
+       'checked' if options.show_all_points else ""}}><br>
 
 <b>Normalize By Median:</b>
 <input type="checkbox" name="normalize_by_median" value="yes" {{
-       'checked' if options.normalize_by_median}}><br>
+       'checked' if options.normalize_by_median else ""}}><br>
 
 {# Add all the hidden fields. #}
 {% for name,value in request.args.items() %}

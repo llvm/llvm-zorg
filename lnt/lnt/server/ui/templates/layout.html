@@ -15,7 +15,7 @@
   {% block javascript %}{% endblock %}
   </script>
 </head>
-{% if self.onload %}
+{% if self.onload is defined %}
 <body onload="{{ self.onload() }}">
 {% else %}
 <body>
@@ -38,7 +38,7 @@
   <strong>Database:</strong>
   <select name="db" onchange="submit()">
 {% for name in old_config.databases.keys()|sort %}
-    <option{{" selected" if name == g.db_name}}>{{ name }}</option>
+    <option{{" selected" if name == g.db_name else ""}}>{{ name }}</option>
 {% endfor %}
   </select>
   <input type="submit" value="Go"/>
@@ -61,7 +61,7 @@
 </div>
 
 {# Include any database log, if present. #}
-{% if g.db_log %}
+{% if g.db_log is defined %}
 <hr>
 
 <h3>SQL Log</h3>

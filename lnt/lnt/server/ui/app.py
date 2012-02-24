@@ -1,3 +1,4 @@
+import jinja2
 import logging
 import logging.handlers
 import os
@@ -80,6 +81,9 @@ class App(flask.Flask):
 
         # Register additional filters.
         lnt.server.ui.filters.register(app)
+
+        # Set up strict undefined mode for templates.
+        app.jinja_env.undefined = jinja2.StrictUndefined
 
         # Load the application configuration.
         app.load_config(config_path)
