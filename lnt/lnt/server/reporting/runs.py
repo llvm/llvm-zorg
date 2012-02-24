@@ -149,42 +149,41 @@ def generate_run_report(run, baseurl, only_html_body = False,
     <th>Run</th>
     <th>Order</th>
     <th>Start Time</th>
-    <th>End Time</th>
-    <th>Machine</th>
+    <th>Duration</th>
   </tr>"""
     # FIXME: Remove hard coded field use here.
     print >>html_report, """\
 <tr><td><a href="%s/%d">Current</a></td>\
-<td>%s</td><td>%s</td><td>%s</td>\
-<td>%s:%d</td></tr>""" % (
+<td>%s</td><td>%s</td><td>%s</td></tr>""" % (
         ts_url, run.id, run.order.llvm_project_revision,
-        run.start_time, run.end_time, run.machine.name, run.machine.id)
+        run.start_time, run.end_time - run.start_time)
     if compare_to:
         # FIXME: Remove hard coded field use here.
         print >>html_report, """\
 <tr><td><a href="%s/%d">Previous</a></td>\
-<td>%s</td><td>%s</td><td>%s</td>\
-<td>%s:%d</td></tr>""" % (
+<td>%s</td><td>%s</td><td>%s</td></tr>""" % (
             ts_url, compare_to.id, compare_to.order.llvm_project_revision,
-            compare_to.start_time, compare_to.end_time, compare_to.machine.name,
-            compare_to.machine.id)
+            compare_to.start_time, compare_to.end_time - compare_to.start_time)
     else:
         print >>html_report, """<tr><td colspan=4>No Previous Run</td></tr>"""
     if baseline:
         # FIXME: Remove hard coded field use here.
         print >>html_report, """\
 <tr><td><a href="%s/%d">Baseline</a></td>\
-<td>%s</td><td>%s</td><td>%s</td>\
-<td>%s:%d</td></tr>""" % (
+<td>%s</td><td>%s</td><td>%s</td></tr>""" % (
             ts_url, baseline.id, baseline.order.llvm_project_revision,
-            baseline.start_time, baseline.end_time, baseline.machine.name,
-            baseline.machine.id)
+            baseline.start_time, baseline.end_time - baseline.start_time)
     print >>html_report, """</table>"""
     if compare_to and run.machine != compare_to.machine:
         print >>html_report, """<p><b>*** WARNING ***:""",
         print >>html_report, """comparison is against a different machine""",
         print >>html_report, """(%s:%d)</b></p>""" % (compare_to.machine.name,
                                                       compare_to.machine.id)
+    if baseline and run.machine != baseline.machine:
+        print >>html_report, """<p><b>*** WARNING ***:""",
+        print >>html_report, """baseline is against a different machine""",
+        print >>html_report, """(%s:%d)</b></p>""" % (baseline.machine.name,
+                                                      baseline.machine.id)
 
     # Generate the summary of the changes.
     num_total_changes = sum(len(bucket)
