@@ -31,6 +31,28 @@ def generate_run_report(run, baseurl, only_html_body = False,
     machine = run.machine
     machine_parameters = machine.parameters
 
+    # If no baseline was given, find one close to the requested baseline run
+    # order.
+    if baseline is None:
+        # Find the closest order to the requested baseline order, for which this
+        # machine also reported.
+        #
+        # FIXME: Scalability! Pretty fast in practice, but still pretty lame.
+        order_to_find = ts.Order(llvm_project_revision = '% 7d' % 144168)
+        best = None
+        for order in ts.query(ts.Order).\
+                join(ts.Run).\
+                filter(ts.Run.machine == machine).distinct():
+            if order >= order_to_find and (best is None or order < best):
+                best = order
+
+        # Find the most recent run on this machine that used that order.
+        if best:
+            baseline = ts.query(ts.Run).\
+                filter(ts.Run.machine == run.machine).\
+                filter(ts.Run.order == best).\
+                order_by(ts.Run.start_time.desc()).first()
+
     # Gather the runs to use for statistical data.
     if comparison_window is None:
         comparison_start_run = compare_to or run
@@ -426,7 +448,7 @@ def _add_report_changes_detail_for_field_and_bucket(
 
         if secondary_info:
             a_cr = secondary_info[(name,field)]
-            if cr.stddev is not None:
+            if a_cr.stddev is not None:
                 a_stddev_value = "%.4f" % a_cr.stddev
             else:
                 a_stddev_value = "-"
