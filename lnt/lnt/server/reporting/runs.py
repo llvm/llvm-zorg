@@ -140,7 +140,8 @@ def generate_run_report(run, baseurl, only_html_body = False,
     if baseurl[-1] == '/':
         baseurl = baseurl[:-1]
 
-    run_url = """%s/v4/%s/%d""" % (baseurl, ts.name, run.id)
+    ts_url = """%s/v4/%s""" % (baseurl, ts.name)
+    run_url = """%s/%d""" % (ts_url, run.id)
     report_url = run_url
     url_fields = []
     if compare_to:
@@ -186,7 +187,6 @@ def generate_run_report(run, baseurl, only_html_body = False,
 <table>
   <tr>
     <th>Run</th>
-    <th>ID</th>
     <th>Order</th>
     <th>Start Time</th>
     <th>End Time</th>
@@ -194,16 +194,18 @@ def generate_run_report(run, baseurl, only_html_body = False,
   </tr>"""
     # FIXME: Remove hard coded field use here.
     print >>html_report, """\
-<tr><td>Current</td><td>%d</td><td>%s</td><td>%s</td><td>%s</td>\
+<tr><td><a href="%s/%d">Current</a></td>\
+<td>%s</td><td>%s</td><td>%s</td>\
 <td>%s:%d</td></tr>""" % (
-        run.id, run.order.llvm_project_revision, run.start_time, run.end_time,
-        run.machine.name, run.machine.id)
+        ts_url, run.id, run.order.llvm_project_revision,
+        run.start_time, run.end_time, run.machine.name, run.machine.id)
     if compare_to:
         # FIXME: Remove hard coded field use here.
         print >>html_report, """\
-<tr><td>Previous</td><td>%d</td><td>%s</td><td>%s</td><td>%s</td>\
+<tr><td><a href="%s/%d">Previous</a></td>\
+<td>%s</td><td>%s</td><td>%s</td>\
 <td>%s:%d</td></tr>""" % (
-            compare_to.id, compare_to.order.llvm_project_revision,
+            ts_url, compare_to.id, compare_to.order.llvm_project_revision,
             compare_to.start_time, compare_to.end_time, compare_to.machine.name,
             compare_to.machine.id)
     else:
@@ -211,9 +213,10 @@ def generate_run_report(run, baseurl, only_html_body = False,
     if baseline:
         # FIXME: Remove hard coded field use here.
         print >>html_report, """\
-<tr><td>Baseline</td><td>%d</td><td>%s</td><td>%s</td><td>%s</td>\
+<tr><td><a href="%s/%d">Baseline</a></td>\
+<td>%s</td><td>%s</td><td>%s</td>\
 <td>%s:%d</td></tr>""" % (
-            baseline.id, baseline.order.llvm_project_revision,
+            ts_url, baseline.id, baseline.order.llvm_project_revision,
             baseline.start_time, baseline.end_time, baseline.machine.name,
             baseline.machine.id)
     print >>html_report, """</table>"""
