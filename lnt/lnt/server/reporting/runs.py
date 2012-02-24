@@ -207,14 +207,18 @@ def generate_run_report(run, baseurl, only_html_body = False,
         else:
             num_items_vs_baseline = None
         if num_items or num_items_vs_baseline:
+            if baseline:
+                print >>report, '%s: %d (%d on baseline)' % (
+                    name, num_items, num_items_vs_baseline)
+            else:
                 print >>report, '%s: %d' % (name, num_items)
-                print >>html_report, """
+            print >>html_report, """
 <tr><td>%s</td><td align="right">%d</td>""" % (
-                    name, num_items)
-                if baseline:
-                    print >>html_report, """<td align="right">%d</td>""" % (
-                        num_items_vs_baseline)
-                print >>html_report, """</tr>"""
+                name, num_items)
+            if baseline:
+                print >>html_report, """<td align="right">%d</td>""" % (
+                    num_items_vs_baseline)
+            print >>html_report, """</tr>"""
     print >>report, """Total Tests: %d""" % num_total_tests
     print >>report
     print >>html_report, """

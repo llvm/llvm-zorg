@@ -3,6 +3,7 @@
 
 {% set run = request_info.run %}
 {% set compare_to = request_info.compare_to %}
+{% set baseline = request_info.baseline %}
 {% set ts = request_info.ts %}
 {% set machine = run.machine %}
 
@@ -136,17 +137,16 @@
 {% if compare_to %}
 <input type="hidden" name="compare_to" value="{{compare_to.id}}">
 {% endif %}
+{% if baseline %}
+<input type="hidden" name="baseline" value="{{baseline.id}}">
+{% endif %}
 
 <input type="submit" name="submit" value="Update">
 </form>
 
 {{ utils.render_popup_end() }}
 
-{{ utils.render_popup_begin('text_report', 'Report (Text)', true) }}
-<pre>{{ request_info.text_report }}</pre>
-{{ utils.render_popup_end() }}
-
-{{ utils.render_popup_begin('html_report', 'Report (HTML)',
+{{ utils.render_popup_begin('html_report', 'Report',
                             options.hide_report_by_default) }}
 {{request_info.html_report|safe}}
 {{ utils.render_popup_end() }}
