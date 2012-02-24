@@ -139,7 +139,7 @@ clang_x86_64_linux_xfails = [
 def _get_clang_builders():
     return [
         {'name': "clang-x86_64-debian",
-         'slavenames':["gcc12"],
+         'slavenames':["gcc46"],
          'builddir':"clang-x86_64-debian",
          'factory': ClangBuilder.getClangBuildFactory()},
 
@@ -336,6 +336,14 @@ def _get_dragonegg_builders():
                                                                                                 '--with-mpc=/opt/cfarm/mpc'],
                                                                       extra_llvm_configure_args=['--enable-optimized', '--enable-assertions', '--enable-expensive-checks'],
                                                                       timeout=120),
+         'category'   : 'dragonegg'},
+
+        {'name' : 'dragonegg-x86_64-linux-gcc-4.6-fnt',
+         'slavenames' : ['gcc12'],
+         'builddir'   : 'dragonegg-x86_64-linux-gcc-4.6-fnt',
+         'factory'    : DragonEggBuilder.getDragonEggNightlyTestBuildFactory(gcc='/home/baldrick/bin/gcc',
+                                                                             gxx='/home/baldrick/bin/g++',
+                                                                             llvm_configure_args=['--enable-optimized', '--enable-assertions']),
          'category'   : 'dragonegg'},
 
         {'name' : 'dragonegg-i686-linux-gcc-4.5-self-host',
