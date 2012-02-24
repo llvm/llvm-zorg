@@ -63,60 +63,20 @@ def generate_run_report(run, baseurl, only_html_body = False,
     primary_fields = list(ts.Sample.get_primary_fields())
     num_total_tests = len(primary_fields) * len(test_names)
 
-    # If we have a baseline, gather the run-over-baseline information.
-    run_to_baseline_info = {}
-    if baseline:
-        for field in primary_fields:
-            for name,test_id in test_names:
-                cr = sri.get_run_comparison_result(
-                    run, baseline, test_id, field, baseline_window)
-                run_to_baseline_info[(name,field)] = cr
-
     # Gather the run-over-run changes to report, organized by field and then
     # collated by change type.
-    test_results = []
-    for field in primary_fields:
-        new_failures = []
-        new_passes = []
-        perf_regressions = []
-        perf_improvements = []
-        removed_tests = []
-        added_tests = []
-        existing_failures = []
-        unchanged_tests = []
-        for name,test_id in test_names:
-            cr = sri.get_run_comparison_result(run, compare_to, test_id, field,
-                                               comparison_window)
-            test_status = cr.get_test_status()
-            perf_status = cr.get_value_status()
-            if test_status == runinfo.REGRESSED:
-                bucket = new_failures
-            elif test_status == runinfo.IMPROVED:
-                bucket = new_passes
-            elif cr.current is None and cr.previous is not None:
-                bucket = removed_tests
-            elif cr.current is not None and cr.previous is None:
-                bucket = added_tests
-            elif test_status == runinfo.UNCHANGED_FAIL:
-                bucket = existing_failures
-            elif perf_status == runinfo.REGRESSED:
-                bucket = perf_regressions
-            elif perf_status == runinfo.IMPROVED:
-                bucket = perf_improvements
-            else:
-                bucket = unchanged_tests
+    run_to_run_info,test_results = _get_changes_by_type(
+        run, compare_to, primary_fields, test_names, comparison_window, sri)
 
-            bucket.append((name, cr, test_id))
+    # If we have a baseline, gather the run-over-baseline results and
+    # changes.
+    if baseline:
+        run_to_baseline_info,baselined_results = _get_changes_by_type(
+            run, baseline, primary_fields, test_names, baseline_window, sri)
+    else:
+        run_to_baseline_info = baselined_results = None
 
-        test_results.append(
-            (field, (('New Failures', new_failures, False),
-                     ('New Passes', new_passes, False),
-                     ('Performance Regressions', perf_regressions, True),
-                     ('Performance Improvements', perf_improvements, True),
-                     ('Removed Tests', removed_tests, False),
-                     ('Added Tests', added_tests, False),
-                     ('Existing Failures', existing_failures, False),
-                     ('Unchanged Tests', unchanged_tests, False))))
+    # Gather the run-over-run changes to report.
 
     # Collect the simplified results, if desired, for sending back to clients.
     if result is not None:
@@ -240,38 +200,69 @@ def generate_run_report(run, baseurl, only_html_body = False,
 <hr>
 <h3>Tests Summary</h3>
 <table>
-<thead><tr><th>Status Group</th><th align="right">#</th></tr></thead>
-"""
+<thead><tr><th>Status Group</th><th align="right">#</th>"""
+    if baseline:
+        print >>html_report, """<th align="right"># (B)</th>"""
+    print >>html_report, """</tr></thead> """
     # For now, we aggregate across all bucket types for reports.
     for i,(name,_,_) in enumerate(test_results[0][1]):
         num_items = sum(len(field_results[i][1])
                         for _,field_results in test_results)
-        if num_items:
+        if baseline:
+            num_items_vs_baseline = sum(
+                len(field_results[i][1])
+                for _,field_results in baselined_results)
+        else:
+            num_items_vs_baseline = None
+        if num_items or num_items_vs_baseline:
                 print >>report, '%s: %d' % (name, num_items)
                 print >>html_report, """
-<tr><td>%s</td><td align="right">%d</td></tr>""" % (
+<tr><td>%s</td><td align="right">%d</td>""" % (
                     name, num_items)
+                if baseline:
+                    print >>html_report, """<td align="right">%d</td>""" % (
+                        num_items_vs_baseline)
+                print >>html_report, """</tr>"""
     print >>report, """Total Tests: %d""" % num_total_tests
     print >>report
     print >>html_report, """
 <tfoot>
-  <tr><td><b>Total Tests</b></td><td align="right"><b>%d</b></td></tr>
+  <tr><td><b>Total Tests</b></td><td align="right"><b>%d</b></td>""" % (
+        num_total_tests,)
+    if baseline:
+        print >>html_report, """<td align="right"><b>%d</b></td>""" % (
+            num_total_tests,)
+    print >>html_report, """</tr>
 </tfoot>
 </table>
-""" % num_total_tests
+"""
 
-    # Add the changes detail.
-    if num_total_changes:
-        print >>report, """=============="""
-        print >>report, """Changes Detail"""
-        print >>report, """=============="""
+    # Add the run-over-run changes detail (if any were present).
+    print >>report, """==========================="""
+    print >>report, """Run-Over-Run Changes Detail"""
+    print >>report, """==========================="""
+    print >>html_report, """
+<p>
+<h3>Run-Over-Run Changes Detail</h3>"""
+
+    _add_report_changes_detail(ts, test_results, report,
+                               html_report, run_url,
+                               run_to_baseline_info,
+                               'Previous', '', ' (B)')
+
+    # Add the run-over-baseline changes detail.
+    if baseline:
+        print >>report, """================================"""
+        print >>report, """Run-Over-Baseline Changes Detail"""
+        print >>report, """================================"""
         print >>html_report, """
 <p>
-<h3>Changes Detail</h3>"""
+<h3>Run-Over-Baseline Changes Detail</h3>"""
 
-        _add_report_changes_detail(ts, test_results, report,
+        _add_report_changes_detail(ts, baselined_results, report,
                                    html_report, run_url,
-                                   run_to_baseline_info)
+                                   run_to_run_info,
+                                   'Baseline', '(B)', '')
 
     report_time = time.time() - start_time
     print >>report, "Report Time: %.2fs" % (report_time,)
@@ -304,8 +295,59 @@ def generate_run_report(run, baseurl, only_html_body = False,
 
     return subject, report.getvalue(), html_report, sri
 
+def _get_changes_by_type(run_a, run_b, primary_fields, test_names,
+                         comparison_window, sri):
+    comparison_results = {}
+    results_by_type = []
+    for field in primary_fields:
+        new_failures = []
+        new_passes = []
+        perf_regressions = []
+        perf_improvements = []
+        removed_tests = []
+        added_tests = []
+        existing_failures = []
+        unchanged_tests = []
+        for name,test_id in test_names:
+            cr = sri.get_run_comparison_result(run_a, run_b, test_id, field,
+                                               comparison_window)
+            comparison_results[(name,field)] = cr
+            test_status = cr.get_test_status()
+            perf_status = cr.get_value_status()
+            if test_status == runinfo.REGRESSED:
+                bucket = new_failures
+            elif test_status == runinfo.IMPROVED:
+                bucket = new_passes
+            elif cr.current is None and cr.previous is not None:
+                bucket = removed_tests
+            elif cr.current is not None and cr.previous is None:
+                bucket = added_tests
+            elif test_status == runinfo.UNCHANGED_FAIL:
+                bucket = existing_failures
+            elif perf_status == runinfo.REGRESSED:
+                bucket = perf_regressions
+            elif perf_status == runinfo.IMPROVED:
+                bucket = perf_improvements
+            else:
+                bucket = unchanged_tests
+
+            bucket.append((name, cr, test_id))
+
+        results_by_type.append(
+            (field, (('New Failures', new_failures, False),
+                     ('New Passes', new_passes, False),
+                     ('Performance Regressions', perf_regressions, True),
+                     ('Performance Improvements', perf_improvements, True),
+                     ('Removed Tests', removed_tests, False),
+                     ('Added Tests', added_tests, False),
+                     ('Existing Failures', existing_failures, False),
+                     ('Unchanged Tests', unchanged_tests, False))))
+    return comparison_results, results_by_type
+
 def _add_report_changes_detail(ts, test_results, report, html_report,
-                               run_url, run_to_baseline_info):
+                               run_url, run_to_baseline_info,
+                               primary_name, primary_field_suffix,
+                               secondary_field_suffix):
     # Reorder results to present by most important bucket first.
     prioritized = [(priority, field, bucket_name, bucket, show_perf)
                    for field,field_results in test_results
@@ -316,12 +358,13 @@ def _add_report_changes_detail(ts, test_results, report, html_report,
     for _,field,bucket_name,bucket,show_perf in prioritized:
         _add_report_changes_detail_for_field_and_bucket(
             ts, field, bucket_name, bucket, show_perf, report,
-            html_report, run_url, run_to_baseline_info)
+            html_report, run_url, run_to_baseline_info,
+            primary_name, primary_field_suffix, secondary_field_suffix)
 
-def _add_report_changes_detail_for_field_and_bucket(ts, field, bucket_name,
-                                                    bucket, show_perf, report,
-                                                    html_report, run_url,
-                                                    run_to_baseline_info):
+def _add_report_changes_detail_for_field_and_bucket(
+      ts, field, bucket_name, bucket, show_perf, report,
+      html_report, run_url, secondary_info,
+      primary_name, primary_field_suffix, secondary_field_suffix):
     if not bucket or bucket_name == 'Unchanged Tests':
         return
 
@@ -340,10 +383,13 @@ def _add_report_changes_detail_for_field_and_bucket(ts, field, bucket_name,
 <tr><th width="500">%s - %s </th>""" % (bucket_name, field_display_name)
     if show_perf:
         print >>html_report, """\
-<th>&Delta;</th><th>Previous</th><th>Current</th> <th>&sigma;</th>"""
-        if run_to_baseline_info:
-            print >>html_report, """<th>&Delta; (B)</th>"""
-            print >>html_report, """<th>&sigma; (B)</th>"""
+<th>&Delta;%s</th><th>%s</th><th>Current</th> <th>&sigma;%s</th>""" % (
+            primary_field_suffix, primary_name, primary_field_suffix)
+        if secondary_info:
+            print >>html_report, """<th>&Delta;%s</th>""" % (
+                secondary_field_suffix,)
+            print >>html_report, """<th>&sigma;%s</th>""" % (
+                secondary_field_suffix,)
         print >>html_report, """</tr>"""
 
     # If we aren't displaying any performance results, just write out the
@@ -382,8 +428,8 @@ def _add_report_changes_detail_for_field_and_bucket(ts, field, bucket_name,
         else:
             stddev_value = "-"
 
-        if run_to_baseline_info:
-            a_cr = run_to_baseline_info[(name,field)]
+        if secondary_info:
+            a_cr = secondary_info[(name,field)]
             if cr.stddev is not None:
                 a_stddev_value = "%.4f" % a_cr.stddev
             else:
