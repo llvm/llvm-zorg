@@ -127,8 +127,6 @@ clang_i386_linux_xfails = [
 ]
 
 clang_x86_64_linux_xfails = [
-    'GCC.MultiSource/Applications/siod/siod',
-    'GCC.MultiSource/Benchmarks/MiBench/consumer-lame/consumer-lame',
     'LLC.SingleSource/UnitTests/Vector/SSE/sse.expandfft',
     'LLC.SingleSource/UnitTests/Vector/SSE/sse.stepfft',
     'LLC_compile.SingleSource/UnitTests/Vector/SSE/sse.expandfft',
