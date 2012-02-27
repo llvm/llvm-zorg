@@ -387,7 +387,8 @@ Unable to find a v0.4 run for this ID. Please use the native v0.4 URL interface
                            neighboring_runs=neighboring_runs,
                            text_report=text_report, html_report=html_report,
                            options=options, runinfo=runinfo,
-                           comparison_window=comparison_window)
+                           comparison_window=comparison_window,
+                           run_status_kind=run_status_kind)
 
 @db_route("/simple/<tag>/<int:id>/graph", only_v3=False)
 def simple_graph(tag, id):

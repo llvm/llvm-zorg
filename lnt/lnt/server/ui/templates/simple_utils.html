@@ -37,10 +37,10 @@
 
 {# Show a small number of neighboring runs. #}
 {% for r in neighboring_runs %}
-        <li>{{ "<h3>"|safe if r.id == run.id }}
+        <li>{{ "<h3>"|safe if r.id == run.id else "" }}
             <a href="{{db_url_for('simple_run', tag=tag, id=r.id)}}">{{
                      r.start_time}}</a>{{
-            "</h3>"|safe if r.id == run.id }}
+            "</h3>"|safe if r.id == run.id else "" }}
 {% endfor %}
       </ul>
     </td>
