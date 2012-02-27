@@ -137,9 +137,9 @@ clang_x86_64_linux_xfails = [
 def _get_clang_builders():
     return [
         {'name': "clang-x86_64-debian",
-         'slavenames':["gcc46"],
+         'slavenames':["gcc12"],
          'builddir':"clang-x86_64-debian",
-         'factory': ClangBuilder.getClangBuildFactory(timeout=40)},
+         'factory': ClangBuilder.getClangBuildFactory()},
 
         {'name': "clang-x86_64-ubuntu",
          'slavenames':["arxan_raphael"],
