@@ -20,18 +20,6 @@ def get_build_slaves():
         # Quad Core Mac Pro running Lion.
         create_slave("as-bldslv11", properties={'jobs' : 1}, max_builds=4),
 
-        # Win XP SP3.
-        create_slave("kistanova2", properties={'jobs' : 1}, max_builds=1),
-
-        # Windows 7 Ultimate.
-        create_slave("kistanova3", properties={'jobs' : 1}, max_builds=1),
-
-        # CentOS 5.4.
-        create_slave("kistanova4", properties={'jobs' : 1}, max_builds=2),
-
-        # Win XP SP3.
-        create_slave("kistanova5", properties={'jobs' : 1}, max_builds=1),
-
         # Ubuntu pandaboard cortex-a9
         create_slave("kistanova6", properties={'jobs' : 2}, max_builds=1),
 
