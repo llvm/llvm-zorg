@@ -139,7 +139,7 @@ def _get_clang_builders():
         {'name': "clang-x86_64-debian",
          'slavenames':["gcc12"],
          'builddir':"clang-x86_64-debian",
-         'factory': ClangBuilder.getClangBuildFactory()},
+         'factory': ClangBuilder.getClangBuildFactory(extra_configure_args=['--enable-shared'])},
 
         {'name': "clang-x86_64-ubuntu",
          'slavenames':["arxan_raphael"],
