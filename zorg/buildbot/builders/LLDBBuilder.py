@@ -7,7 +7,7 @@ from buildbot.steps.shell import Configure, SetProperty
 from buildbot.steps.shell import ShellCommand, WarningCountingShellCommand
 from buildbot.process.properties import WithProperties
 
-def getLLDBBuildFactory(triple, outOfDir=False, useTwoStage=False, jobs=1,
+def getLLDBBuildFactory(triple, outOfDir=False, useTwoStage=False, jobs='%(jobs)s',
                         always_install=False, extra_configure_args=[],
                         env={}, *args, **kwargs):
 
