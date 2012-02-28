@@ -383,13 +383,6 @@ def _get_polly_builders():
 
 # LLDB builders.
 def _get_lldb_builders():
-    gcc_latest_env = {
-        'PATH': '/home/baldrick/python-shared/bin/Python-2.7.2/bin:/usr/local/bin:/usr/bin:/bin:/usr/games',
-        'LD_LIBRARY_PATH': '/opt/cfarm/release/4.5.1/lib64:/home/baldrick/python-shared/bin/Python-2.7.2/lib',
-        'CPATH': '/home/baldrick/libedit-dev/usr/include',
-        'LIBRARY_PATH': '/home/baldrick/libedit-dev/usr/lib:/home/baldrick/python-shared/bin/Python-2.7.2/lib',
-        'CC':  '/opt/cfarm/release/4.5.1/bin/gcc',
-        'CXX': '/opt/cfarm/release/4.5.1/bin/g++'}
 
 #   gcc_m32_latest_env = gcc_latest_env.copy()
 #   gcc_m32_latest_env['CC'] += ' -m32'
@@ -399,8 +392,7 @@ def _get_lldb_builders():
         {'name': "lldb-x86_64-linux",
          'slavenames': ["gcc20"],
          'builddir': "lldb-x86_64",
-         'factory': LLDBBuilder.getLLDBBuildFactory(triple="x86_64-pc-linux-gnu",
-                                                    env=gcc_latest_env)},
+         'factory': LLDBBuilder.getLLDBBuildFactory(triple="x86_64-pc-linux-gnu")},
 #       {'name': "lldb-i686-debian",
 #        'slavenames': ["gcc15"],
 #        'builddir': "lldb-i686-debian",
