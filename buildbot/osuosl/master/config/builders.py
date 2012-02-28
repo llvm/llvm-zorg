@@ -397,7 +397,7 @@ def _get_lldb_builders():
 #
     return [
         {'name': "lldb-x86_64-linux",
-         'slavenames': ["gcc14"],
+         'slavenames': ["gcc20"],
          'builddir': "lldb-x86_64",
          'factory': LLDBBuilder.getLLDBBuildFactory(triple="x86_64-pc-linux-gnu",
                                                     env=gcc_latest_env)},
