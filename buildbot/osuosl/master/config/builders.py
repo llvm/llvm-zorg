@@ -339,10 +339,7 @@ def _get_dragonegg_builders():
         {'name' : 'dragonegg-x86_64-linux-gcc-4.6-fnt',
          'slavenames' : ['gcc12'],
          'builddir'   : 'dragonegg-x86_64-linux-gcc-4.6-fnt',
-         'factory'    : DragonEggBuilder.getDragonEggNightlyTestBuildFactory(gcc='/home/baldrick/bin/gcc',
-                                                                             gxx='/home/baldrick/bin/g++',
-                                                                             llvm_configure_args=['--enable-optimized', '--enable-assertions'],
-                                                                             env={'LD_LIBRARY_PATH' : '/home/baldrick/lib/gcc/x86_64-unknown-linux-gnu/4.6.2/:/home/baldrick/lib64/:/lib64/:/usr/lib64/:/home/baldrick/lib/'}),
+         'factory'    : DragonEggBuilder.getDragonEggNightlyTestBuildFactory(llvm_configure_args=['--enable-optimized', '--enable-assertions']),
          'category'   : 'dragonegg'},
 
         {'name' : 'dragonegg-i686-linux-gcc-4.5-self-host',
