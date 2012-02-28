@@ -224,7 +224,8 @@ def getDragonEggBootstrapFactory(gcc_repository, extra_languages=[],
     return f
 
 
-def getDragonEggNightlyTestBuildFactory(gcc, gxx, llvm_configure_args=[],
+def getDragonEggNightlyTestBuildFactory(gcc='gcc', gxx='g++',
+                                        llvm_configure_args=[],
                                         xfails=[], clean=True, env={},
                                         jobs='%(jobs)s', timeout=20):
     f = buildbot.process.factory.BuildFactory()
