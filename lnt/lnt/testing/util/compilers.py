@@ -83,22 +83,28 @@ def get_cc_info(path, cc_flags=[]):
             cc_norm_name = 'apple_clang'
         else:
             cc_norm_name = 'clang'
-        m = re.search('clang-([0-9]*)', cc_build_string)
+
+        m = re.match(r'\(([^ ]+) ([0-9]+)\)', cc_build_string)
+        if m:
+            cc_src_branch,cc_src_revision = m.groups()
+
+            # These show up with git-svn.
+            if cc_src_branch == '$URL$':
+                cc_src_branch = None
+        else:
+            error('unable to determine Clang development build info: %r' % (
+                    (cc_name, cc_build_string),))
+
+        m = re.search('clang-([0-9]*)', cc_src_branch)
         if m:
             cc_build = 'PROD'
             cc_src_tag, = m.groups()
+            
+            # We sometimes use a tag of 9999 to indicate a dev build.
+            if cc_src_tag == '9999':
+                cc_build = 'DEV'
         else:
             cc_build = 'DEV'
-            m = re.match(r'\(([^ ]+) ([0-9]+)\)', cc_build_string)
-            if m:
-                cc_src_branch,cc_src_revision = m.groups()
-
-                # These show up with git-svn.
-                if cc_src_branch == '$URL$':
-                    cc_src_branch = None
-            else:
-                error('unable to determine Clang development build info: %r' % (
-                        (cc_name, cc_build_string),))
     elif cc_name == 'gcc' and 'LLVM build' in cc_extra:
         llvm_capable = True
         cc_norm_name = 'llvm-gcc'
