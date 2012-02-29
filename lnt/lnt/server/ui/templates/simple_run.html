@@ -75,7 +75,7 @@ function init() {
 {% if options.show_all_samples %}
     <td>[
       {%- for v in cr.get_samples() -%}
-        {{ ", " if not loop.first }}
+        {{ ", " if not loop.first else "" }}
         {{ "%.4f" % v }}
       {%- endfor -%}]</td>
 {% endif %}
