@@ -84,7 +84,7 @@ def get_cc_info(path, cc_flags=[]):
         else:
             cc_norm_name = 'clang'
 
-        m = re.match(r'\(([^ ]+) ([0-9]+)\)', cc_build_string)
+        m = re.match(r'\(([^ ]*)( [0-9]+)?\)', cc_build_string)
         if m:
             cc_src_branch,cc_src_revision = m.groups()
 
