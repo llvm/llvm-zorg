@@ -361,7 +361,7 @@ def _get_dragonegg_builders():
          'category'   : 'dragonegg'},
 
         {'name' : 'dragonegg-x86_64-linux-gcc-4.5-self-host',
-         'slavenames' : ['gcc17'],
+         'slavenames' : ['gcc16'],
          'builddir'   : 'dragonegg-x86_64-linux-gcc-4.5-self-host',
          'factory'    : DragonEggBuilder.getDragonEggBootstrapFactory(gcc_repository='http://gcc.gnu.org/svn/gcc/branches/gcc-4_5-branch@174467',
                                                                       extra_languages=['fortran', 'objc', 'obj-c++'],
