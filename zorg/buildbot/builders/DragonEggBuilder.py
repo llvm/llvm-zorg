@@ -344,8 +344,8 @@ def getDragonEggNightlyTestBuildFactory(gcc='gcc', gxx='g++',
                                  WithProperties('--with-llvmobj=%(builddir)s/' + llvm_obj_dir),
                                  WithProperties('--with-llvmgccdir=%(builddir)s/'),
                                  '--with-llvmcc=llvm-gcc', 'CC=' + gcc, 'CXX=' + gxx],
-                        description='configuring test-suite',
-                        descriptionDone='configure test-suite',
+                        description='configuring nightly test-suite',
+                        descriptionDone='configure nightly test-suite',
                         haltOnFailure=True, workdir=testsuite_obj_dir, env=env))
 
     # Build and test.
@@ -361,10 +361,167 @@ def getDragonEggNightlyTestBuildFactory(gcc='gcc', gxx='g++',
                                           'DISABLE_CBE=1', 'DISABLE_JIT=1',
                                           'TEST=nightly', 'report'],
                                  logfiles={'report' : 'report.nightly.txt'},
-                                 description='running test-suite',
-                                 descriptionDone='run test-suite',
+                                 description='running nightly test-suite',
+                                 descriptionDone='run nightly test-suite',
                                  haltOnFailure=True, xfails=xfails,
                                  timeout=timeout*60,
                                  workdir=testsuite_obj_dir, env=env))
+
+    return f
+
+
+def getDragonEggTestBuildFactory(gcc='gcc', svn_testsuites=[],
+                                 llvm_configure_args=[], xfails=[],
+                                 clean=True, env={}, jobs='%(jobs)s',
+                                 timeout=20):
+    f = buildbot.process.factory.BuildFactory()
+
+    # Determine the build directory.
+    f.addStep(buildbot.steps.shell.SetProperty(name='get_builddir',
+                                               command=['pwd'],
+                                               property='builddir',
+                                               description='set build dir',
+                                               workdir='.', env=env))
+
+    # Checkout LLVM sources.
+    llvm_src_dir = 'llvm.src'
+    f.addStep(SVN(name='svn-llvm', mode='update',
+                  baseURL='http://llvm.org/svn/llvm-project/llvm/',
+                  defaultBranch='trunk', workdir=llvm_src_dir, env=env))
+
+    # Checkout DragonEgg sources.
+    dragonegg_src_dir = 'dragonegg.src'
+    f.addStep(SVN(name='svn-dragonegg', mode='update',
+                  baseURL='http://llvm.org/svn/llvm-project/dragonegg/',
+                  defaultBranch='trunk', workdir=dragonegg_src_dir, env=env))
+
+    # Checkout victims for the compilator.
+    compilator_dir = dragonegg_src_dir + '/test/compilator'
+
+    # Checkout testsuites held in subversion repositories.  These are usually
+    # specified using a known good revision (supplied by appending @revision to
+    # the URL).  The SVN step can't handle that.  As it provides no mechanism at
+    # all for checking out a specific revision, run the command directly here.
+    for svn_testsuite in svn_testsuites:
+        url = svn_testsuite[0]
+        name = svn_testsuite[1]
+        if url is None:
+            f.addStep(ShellCommand(name='rm-%s' % name,
+                                   command=['rm', '-rf', name],
+                                   description=['rm', name], haltOnFailure=True,
+                                   workdir=compilator_dir, env=env))
+        else:
+            svn_co = ['svn', 'checkout', url, name]
+            f.addStep(ShellCommand(name=name, command=svn_co,
+                                   haltOnFailure=True, workdir=compilator_dir,
+                                   env=env))
+
+    # Checkout miscellaneous testsuites.
+
+    # LAPACK.
+    f.addStep(ShellCommand(name='wget.lapack',
+                           command='wget -N http://www.netlib.org/lapack/lapack-3.4.0.tgz',
+                           haltOnFailure=True, workdir=compilator_dir,
+                           env=env))
+    f.addStep(ShellCommand(name='unpack.lapack',
+                           command='tar xzf lapack-3.4.0.tgz',
+                           haltOnFailure=True, workdir=compilator_dir,
+                           env=env))
+
+    # Nist Fortran 77 test suite.
+    f.addStep(ShellCommand(name='wget.nist',
+                           command='wget -N ftp://ftp.fortran-2000.com/fcvs21_f95.tar.bz2',
+                           haltOnFailure=True, workdir=compilator_dir,
+                           env=env))
+    f.addStep(ShellCommand(name='unpack.nist',
+                           command='tar xjf fcvs21_f95.tar.bz2',
+                           haltOnFailure=True, workdir=compilator_dir,
+                           env=env))
+
+    # Polyhedron.
+    f.addStep(ShellCommand(name='wget.polyhedron',
+                           command='wget -N http://www.polyhedron.com/web_images/documents/pb11.zip',
+                           haltOnFailure=True, workdir=compilator_dir,
+                           env=env))
+    f.addStep(ShellCommand(name='unpack.polyhedron',
+                           command='unzip pb11.zip',
+                           haltOnFailure=True, workdir=compilator_dir,
+                           env=env))
+
+    # Build and install LLVM.
+    llvm_obj_dir = 'llvm.obj'
+    llvm_install_dir = 'llvm.install'
+    if clean:
+        f.addStep(ShellCommand(name='rm-%s' % llvm_obj_dir,
+                               command=['rm', '-rf', llvm_obj_dir,
+                                        llvm_install_dir],
+                               description='rm build dir llvm',
+                               haltOnFailure=True, workdir='.', env=env))
+    f.addStep(Configure(name='configure.llvm',
+                        command=(['../' + llvm_src_dir + '/configure',
+                                  WithProperties('--prefix=%%(builddir)s/%s' % llvm_install_dir)] +
+                                 llvm_configure_args),
+                        description='configuring llvm',
+                        descriptionDone='configure llvm',
+                        haltOnFailure=True, workdir=llvm_obj_dir, env=env))
+    f.addStep(WarningCountingShellCommand(name='compile.llvm',
+                                          command=['nice', '-n', '10',
+                                                   'make', WithProperties('-j%s' % jobs)],
+                                          haltOnFailure=True,
+                                          description='compiling llvm',
+                                          descriptionDone='compile llvm',
+                                          workdir=llvm_obj_dir, env=env,
+                                          timeout=timeout*60))
+    f.addStep(WarningCountingShellCommand(name='install.llvm',
+                                          command=['nice', '-n', '10',
+                                                   'make', 'install'],
+                                          haltOnFailure=True,
+                                          description='installing llvm',
+                                          descriptionDone='install llvm',
+                                          workdir=llvm_obj_dir, env=env))
+
+    # Build dragonegg with the just built LLVM.
+    dragonegg_obj_dir = 'dragonegg.obj'
+    if clean:
+        f.addStep(ShellCommand(name='rm-%s' % dragonegg_obj_dir,
+                               command=['rm', '-rf', dragonegg_obj_dir],
+                               description='rm build dir dragonegg',
+                               haltOnFailure=True, workdir='.', env=env))
+    f.addStep(WarningCountingShellCommand(
+            name='compile.dragonegg',
+            command=['nice', '-n', '10',
+                     'make', '-f', '../' + dragonegg_src_dir + '/Makefile',
+                     WithProperties('-j%s' % jobs),
+                     WithProperties('GCC=' + gcc),
+                     WithProperties('LLVM_CONFIG=%(builddir)s/' +
+                                    llvm_install_dir + '/bin/llvm-config'),
+                     WithProperties('TOP_DIR=%(builddir)s/' + dragonegg_src_dir)
+                     ],
+            haltOnFailure=True,
+            description='compiling dragonegg',
+            descriptionDone='compile dragonegg',
+            workdir=dragonegg_obj_dir, env=env, timeout=timeout*60))
+
+    # Run the dragonegg testsuite.
+    testsuite_output_dir = dragonegg_obj_dir + '/test/Output'
+    if clean:
+        f.addStep(ShellCommand(name='rm-%s' % testsuite_output_dir,
+                               command=['rm', '-rf', dragonegg_obj_dir],
+                               description='rm test-suite output directory',
+                               haltOnFailure=True, workdir='.', env=env))
+
+    f.addStep(ShellCommand(name='make.check',
+                           command=['make', '-f', '../' + dragonegg_src_dir + '/Makefile',
+                                    WithProperties('GCC=' + gcc),
+                                    WithProperties('LLVM_CONFIG=%(builddir)s/' +
+                                                   llvm_install_dir + '/bin/llvm-config'),
+                                    WithProperties('TOP_DIR=%(builddir)s/' + dragonegg_src_dir),
+                                    WithProperties('LIT_ARGS=-j%s' % jobs),
+                                    'check'
+                                    ],
+                           description='running test-suite',
+                           descriptionDone='run test-suite',
+                           haltOnFailure=True, workdir=dragonegg_obj_dir,
+                           env=env, timeout=timeout*60))
 
     return f
