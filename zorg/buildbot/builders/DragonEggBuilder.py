@@ -4,6 +4,7 @@ from buildbot.steps.source import SVN
 from buildbot.steps.shell import Configure, ShellCommand
 from buildbot.steps.shell import WarningCountingShellCommand
 from buildbot.process.properties import WithProperties
+from zorg.buildbot.commands.ClangTestCommand import ClangTestCommand
 from zorg.buildbot.commands.NightlyTestCommand import NightlyTestCommand
 
 def getCCSetting(gcc, gxx):
@@ -510,19 +511,19 @@ def getDragonEggTestBuildFactory(gcc='gcc', svn_testsuites=[],
                                description='rm test-suite output directory',
                                haltOnFailure=True, workdir='.', env=env))
 
-    f.addStep(ShellCommand(name='make.check',
-                           command=['nice', '-n', '10',
-                                    'make', '-f', '../' + dragonegg_src_dir + '/Makefile',
-                                    WithProperties('GCC=' + gcc),
-                                    WithProperties('LLVM_CONFIG=%(builddir)s/' +
-                                                   llvm_install_dir + '/bin/llvm-config'),
-                                    WithProperties('TOP_DIR=%(builddir)s/' + dragonegg_src_dir),
-                                    WithProperties('LIT_ARGS=-j%s' % jobs),
-                                    'check'
-                                    ],
-                           description='running test-suite',
-                           descriptionDone='run test-suite',
-                           haltOnFailure=True, workdir=dragonegg_obj_dir,
-                           env=env, timeout=timeout*60))
+    f.addStep(ClangTestCommand(name='make.check',
+                               command=['nice', '-n', '10',
+                                        'make', '-f', '../' + dragonegg_src_dir + '/Makefile',
+                                        WithProperties('GCC=' + gcc),
+                                        WithProperties('LLVM_CONFIG=%(builddir)s/' +
+                                                       llvm_install_dir + '/bin/llvm-config'),
+                                        WithProperties('TOP_DIR=%(builddir)s/' + dragonegg_src_dir),
+                                        WithProperties('LIT_ARGS=-j%s' % jobs),
+                                        'check'
+                                        ],
+                               description='running test-suite',
+                               descriptionDone='run test-suite',
+                               haltOnFailure=True, workdir=dragonegg_obj_dir,
+                               env=env, timeout=timeout*60))
 
     return f
