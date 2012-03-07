@@ -506,7 +506,7 @@ def getDragonEggTestBuildFactory(gcc='gcc', svn_testsuites=[],
     testsuite_output_dir = dragonegg_obj_dir + '/test/Output'
     if clean:
         f.addStep(ShellCommand(name='rm-%s' % testsuite_output_dir,
-                               command=['rm', '-rf', dragonegg_obj_dir],
+                               command=['rm', '-rf', testsuite_output_dir],
                                description='rm test-suite output directory',
                                haltOnFailure=True, workdir='.', env=env))
 
