@@ -352,16 +352,42 @@ def test_build(base_name, run_info, variables, project, num_jobs):
     stderr_path = os.path.join(output_base, "stderr.log")
     preprocess_cmd = 'rm -rf "%s"' % (build_base,)
 
-    # FIXME: It might be a good idea to audit the stdout files here from the
-    # build system and check that they are "about" the same. For example, I
-    # believe an Xcode build log should always be the same size if each
-    # iterating did a clean build (even though the results might show up in a
-    # different order).
     for res in get_runN_test_data(name, variables, cmd,
                                   stdout=stdout_path, stderr=stderr_path,
                                   preprocess_cmd=preprocess_cmd):
         yield res
 
+    # Check that the file sizes of the output log files "make sense", and warn
+    # if they do not. That might indicate some kind of non-determinism in the
+    # test command, which makes timing less useful.
+    stdout_sizes = []
+    stderr_sizes = []
+    run_count = variables['run_count']
+    for i in range(run_count):
+        iter_stdout_path = '%s.%d' % (stdout_path, i)
+        iter_stderr_path = '%s.%d' % (stderr_path, i)
+        if os.path.exists(iter_stdout_path):
+            stdout_sizes.append(os.stat(iter_stdout_path).st_size)
+        else:
+            stdout_sizes.append(None)
+        if os.path.exists(iter_stderr_path):
+            stderr_sizes.append(os.stat(iter_stderr_path).st_size)
+        else:
+            stderr_sizes.append(None)
+
+    if len(set(stdout_sizes)) != 1:
+        print >>test_log, (
+            ('%s: warning: test command had stdout files with '
+             'different sizes: %r') %
+            (datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'),
+             stdout_sizes))
+    if len(set(stderr_sizes)) != 1:
+        print >>test_log, (
+            ('%s: warning: test command had stderr files with '
+             'different sizes: %r') %
+            (datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'),
+             stdout_sizes))
+    
 ###
 
 def curry(fn, **kw_args):
