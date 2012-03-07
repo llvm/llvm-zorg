@@ -511,7 +511,8 @@ def getDragonEggTestBuildFactory(gcc='gcc', svn_testsuites=[],
                                haltOnFailure=True, workdir='.', env=env))
 
     f.addStep(ShellCommand(name='make.check',
-                           command=['make', '-f', '../' + dragonegg_src_dir + '/Makefile',
+                           command=['nice', '-n', '10',
+                                    'make', '-f', '../' + dragonegg_src_dir + '/Makefile',
                                     WithProperties('GCC=' + gcc),
                                     WithProperties('LLVM_CONFIG=%(builddir)s/' +
                                                    llvm_install_dir + '/bin/llvm-config'),
