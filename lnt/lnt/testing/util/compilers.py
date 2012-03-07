@@ -59,8 +59,8 @@ def get_cc_info(path, cc_flags=[]):
     # Compute normalized compiler name and type. We try to grab source
     # revisions, branches, and tags when possible.
     cc_build = None
-    cc_src_branch = None
-    cc_src_revision = None
+    cc_src_branch = cc_alt_src_branch = None
+    cc_src_revision = cc_alt_src_revision = None
     cc_src_tag = None
     llvm_capable = False
     if cc_name == 'icc':
@@ -77,7 +77,8 @@ def get_cc_info(path, cc_flags=[]):
         else:
             error('unable to determine gcc build version: %r' % cc_build_string)
     elif (cc_name in ('clang', 'Apple clang') and
-          cc_extra == '' or 'based on LLVM' in cc_extra):
+          cc_extra == '' or 'based on LLVM' in cc_extra or
+          'llvm/' in cc_extra):
         llvm_capable = True
         if cc_name == 'Apple clang':
             cc_norm_name = 'apple_clang'
@@ -93,7 +94,7 @@ def get_cc_info(path, cc_flags=[]):
                 cc_src_branch = None
         else:
             error('unable to determine Clang development build info: %r' % (
-                    (cc_name, cc_build_string),))
+                    (cc_name, cc_build_string, cc_extra),))
 
         m = re.search('clang-([0-9]*)', cc_src_branch)
         if m:
@@ -105,6 +106,17 @@ def get_cc_info(path, cc_flags=[]):
                 cc_build = 'DEV'
         else:
             cc_build = 'DEV'
+
+        # Newer Clang's can report separate versions for LLVM and Clang. Parse
+        # the cc_extra text so we can get the maximum SVN version.
+        if 'llvm/' in cc_extra:
+            m = re.match(r' \(llvm/(.*) (.*)\)', cc_extra)
+            if m:
+                cc_alt_src_branch,cc_alt_src_revision = m.groups()
+            else:
+                error('unable to determine Clang development build info: %r' % (
+                        (cc_name, cc_build_string, cc_extra)))
+
     elif cc_name == 'gcc' and 'LLVM build' in cc_extra:
         llvm_capable = True
         cc_norm_name = 'llvm-gcc'
@@ -174,6 +186,10 @@ def get_cc_info(path, cc_flags=[]):
         info['cc_src_revision'] = cc_src_revision
     if cc_src_branch is not None:
         info['cc_src_branch'] = cc_src_branch
+    if cc_alt_src_revision is not None:
+        info['cc_alt_src_revision'] = cc_alt_src_revision
+    if cc_alt_src_branch is not None:
+        info['cc_alt_src_branch'] = cc_alt_src_branch
 
     # Infer the run order from the other things we have computed.
     info['inferred_run_order'] = '%7d' % (get_inferred_run_order(info),)
@@ -183,7 +199,13 @@ def get_cc_info(path, cc_flags=[]):
 def get_inferred_run_order(info):
     # If the CC has a src revision, use that.
     if info.get('cc_src_revision','').isdigit():
-        return int(info['cc_src_revision'])
+        order = int(info['cc_src_revision'])
+
+        # If the CC has an alt src revision, use that if it is greater:
+        if info.get('cc_alt_src_revision','').isdigit():
+            order = max(order, int(info.get('cc_alt_src_revision')))
+
+        return order
 
     # If this is a production compiler, look for a source tag. We don't accept 0
     # or 9999 as valid source tag, since that is what llvm-gcc builds use when
