@@ -444,7 +444,7 @@ def getDragonEggTestBuildFactory(gcc='gcc', svn_testsuites=[],
                            haltOnFailure=True, workdir=compilator_dir,
                            env=env))
     f.addStep(ShellCommand(name='unpack.polyhedron',
-                           command='unzip pb11.zip',
+                           command='unzip -o pb11.zip',
                            haltOnFailure=True, workdir=compilator_dir,
                            env=env))
 
