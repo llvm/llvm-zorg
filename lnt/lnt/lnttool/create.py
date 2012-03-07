@@ -77,7 +77,6 @@ if __name__ == "__main__":
 
 ###
 
-import lnt.db.perfdb
 import lnt.testing
 import lnt.server.db.v4db
 
@@ -104,9 +103,6 @@ def action_create(name, args):
     parser.add_option("", "--hostsuffix", dest="hostsuffix", default="perf",
                       help="suffix at which WSGI app lives [%default]",
                       metavar="NAME")
-    parser.add_option("", "--use-v4", dest="use_v4",
-                      help="use the v0.4 database schema [%default]",
-                      action="store_true", default=False)
 
     (opts, args) = parser.parse_args(args)
     if len(args) != 1:
@@ -122,11 +118,7 @@ def action_create(name, args):
     default_db = opts.default_db
     hostname = opts.hostname
     hostsuffix = opts.hostsuffix
-    default_db_version = "0.3"
-    if opts.use_v4:
-        default_db_version = "0.4"
-    else:
-        default_db_version = "0.3"
+    default_db_version = "0.4"
 
     basepath = os.path.abspath(path)
     if os.path.exists(basepath):
@@ -155,10 +147,7 @@ def action_create(name, args):
     wsgi_file.close()
     os.chmod(wsgi_path, 0755)
 
-    if opts.use_v4:
-        db_class = lnt.server.db.v4db.V4DB
-    else:
-        db_class = lnt.db.perfdb.PerfDB
+    db_class = lnt.server.db.v4db.V4DB
     db = db_class('sqlite:///' + db_path)
     db.commit()
 
