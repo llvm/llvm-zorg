@@ -320,6 +320,7 @@ def test_build(base_name, run_info, variables, project, num_jobs):
         cmd.append('OBJROOT=%s' % (os.path.join(build_base, 'obj')))
         cmd.append('SYMROOT=%s' % (os.path.join(build_base, 'sym')))
         cmd.append('DSTROOT=%s' % (os.path.join(build_base, 'dst')))
+        cmd.append('SHARED_PRECOMPS_DIR=%s' % (os.path.join(build_base, 'pch')))
 
         # Add arguments to force the appropriate compiler.
         cmd.append('CC=%s' % (opts.cc,))
@@ -349,13 +350,7 @@ def test_build(base_name, run_info, variables, project, num_jobs):
                  for arg in cmd))
     stdout_path = os.path.join(output_base, "stdout.log")
     stderr_path = os.path.join(output_base, "stderr.log")
-    # FIXME: I haven't figured out how to prevent Xcode from putting some data
-    # (shared PCH files, notably) in the derived data folder. There is most
-    # likely a command line setting to override this, but I don't know it
-    # yet. Until then, we just blow away the users entire DerivedData folder!
-    preprocess_cmd = 'rm -rf "%s" "%s"' % (
-        build_base,
-        os.path.expanduser("~/Library/Developer/Xcode/DerivedData"))
+    preprocess_cmd = 'rm -rf "%s"' % (build_base,)
 
     # FIXME: It might be a good idea to audit the stdout files here from the
     # build system and check that they are "about" the same. For example, I
