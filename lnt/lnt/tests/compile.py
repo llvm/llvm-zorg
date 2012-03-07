@@ -330,6 +330,10 @@ def test_build(base_name, run_info, variables, project, num_jobs):
         # name. <rdar://problem/7989147>
         cmd.append('LDPLUSPLUS=%s' % (opts.cxx,))
 
+        # Force off the static analyzer, in case it was enabled in any projects
+        # (we don't want to obscure what we are trying to time).
+        cmd.append('RUN_CLANG_STATIC_ANALYZER=NO')
+
         # Add additional arguments to force the build scenario we want.
         cmd.extend(('-jobs', str(num_jobs)))
     else:
