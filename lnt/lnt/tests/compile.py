@@ -223,8 +223,8 @@ def test_compile(name, run_info, variables, input, output, pch_input,
     return test_cc_command(name, run_info, variables, input, output, flags,
                            extra_flags, has_output, ignore_stderr)
 
-def test_build(base_name, run_info, variables, project, num_jobs):
-    name = '%s(j=%d)' % (base_name, num_jobs)
+def test_build(base_name, run_info, variables, project, build_config, num_jobs):
+    name = '%s(config=%r,j=%d)' % (base_name, build_config, num_jobs)
     # Check if we need to expand the archive into the sandbox.
     archive_path = get_input_path(opts, project['archive'])
     with open(archive_path) as f:
@@ -313,6 +313,9 @@ def test_build(base_name, run_info, variables, project, num_jobs):
                         '-workspace', file_path))
         else:
             fatal("unknown build style in project: %r" % project)
+
+        # Add the build configuration selection.
+        cmd.extend(('-configuration', build_config))
 
         # Add arguments to ensure output files go into our build directory.
         output_base = get_output_path(name)
@@ -419,7 +422,8 @@ def get_single_file_tests(flags_to_test):
                              pch_input=pch_input, flags=f, stage=stage,
                              extra_flags=extra_flags))
 
-def get_full_build_tests(jobs_to_test, test_suite_externals):
+def get_full_build_tests(jobs_to_test, configs_to_test,
+                         test_suite_externals):
     # Load the project description file from the externals.
     with open(os.path.join(test_suite_externals, "lnt-compile-suite-src",
                            "project_list.json")) as f:
@@ -427,15 +431,19 @@ def get_full_build_tests(jobs_to_test, test_suite_externals):
 
     for jobs in jobs_to_test:
         for project in data['projects']:
-            # Check the style.
-            yield ('build/%s' % (project['name'],),
-                   curry(test_build, project=project, num_jobs=jobs))
+            for config in configs_to_test:
+                # Check the style.
+                yield ('build/%s' % (project['name'],),
+                       curry(test_build, project=project, build_config=config,
+                             num_jobs=jobs))
 
-def get_tests(test_suite_externals, flags_to_test, jobs_to_test):
+def get_tests(test_suite_externals, flags_to_test, jobs_to_test,
+              configs_to_test):
     for item in get_single_file_tests(flags_to_test):
         yield item
 
-    for item in get_full_build_tests(jobs_to_test, test_suite_externals):
+    for item in get_full_build_tests(jobs_to_test, configs_to_test,
+                                     test_suite_externals):
         yield item
 
 ###
@@ -560,6 +568,10 @@ class CompileTest(builtintest.BuiltinTest):
         group.add_option("", "--jobs-to-test", dest="jobs_to_test",
                          help="Add a job count to test (full builds)",
                          metavar="NUM", action="append", default=[], type=int)
+        group.add_option("", "--config-to-test", dest="configs_to_test",
+                         help="Add build configuration to test (full builds)",
+                         metavar="NAME", action="append", default=[],
+                         choices=('Debug','Release'))
         parser.add_option_group(group)
 
         group = OptionGroup(parser, "Output Options")
@@ -695,9 +707,15 @@ class CompileTest(builtintest.BuiltinTest):
         else:
             jobs_to_test = opts.jobs_to_test
 
+        # Compute the build configurations to test.
+        if not opts.configs_to_test:
+            configs_to_test = ['Debug', 'Release']
+        else:
+            configs_to_test = opts.config_to_test
+
         # Compute the list of all tests.
         all_tests = list(get_tests(opts.test_suite_externals, flags_to_test,
-                                   jobs_to_test))
+                                   jobs_to_test, configs_to_test))
 
         # Show the tests, if requested.
         if opts.show_tests:
