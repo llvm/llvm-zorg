@@ -353,7 +353,7 @@ def _get_dragonegg_builders():
                                               ['http://gcc.gnu.org/svn/gcc/branches/gcc-4_6-branch/gcc/testsuite@184732', 'gcc-testsuite'],
                                               ['http://llvm.org/svn/llvm-project/test-suite/trunk@151258', 'llvm-testsuite']
                                              ],
-                            llvm_configure_args=['--enable-optimized', '--enable-assertions'],
+                            llvm_configure_args=['--enable-optimized', '--enable-assertions', '--enable-debug-symbols'],
                             env={'LD_LIBRARY_PATH' : '/home/baldrick/local/lib/gcc/x86_64-unknown-linux-gnu/4.6.3/:/home/baldrick/local/lib64/:/lib64/:/usr/lib64/:/home/baldrick/local/lib:/lib/:/usr/lib/'}
                         ),
          'category'   : 'dragonegg'},
