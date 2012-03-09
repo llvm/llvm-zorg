@@ -58,6 +58,7 @@ def get_cc_info(path, cc_flags=[]):
 
     # Compute normalized compiler name and type. We try to grab source
     # revisions, branches, and tags when possible.
+    cc_norm_name = None
     cc_build = None
     cc_src_branch = cc_alt_src_branch = None
     cc_src_revision = cc_alt_src_revision = None
