@@ -94,8 +94,14 @@ def get_cc_info(path, cc_flags=[]):
             if cc_src_branch == '$URL$':
                 cc_src_branch = None
         else:
-            error('unable to determine Clang development build info: %r' % (
-                    (cc_name, cc_build_string, cc_extra),))
+            # Otherwise, see if we can match a branch and a tag name. That could
+            # be a git hash.
+            m = re.match(r'\(([^ ]+) ([^ ]+)\)', cc_build_string)
+            if m:
+                cc_src_branch,cc_src_revision = m.groups()
+            else:
+                error('unable to determine Clang development build info: %r' % (
+                        (cc_name, cc_build_string, cc_extra),))
 
         m = re.search('clang-([0-9]*)', cc_src_branch)
         if m:
