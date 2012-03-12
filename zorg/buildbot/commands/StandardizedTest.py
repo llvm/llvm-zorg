@@ -8,9 +8,9 @@ class StandardizedTest(buildbot.steps.shell.Test):
     # FIXME: We should process things in a test observer instead of at the end.
 
     knownCodes = ['FAIL', 'XFAIL', 'PASS', 'XPASS',
-                  'UNRESOLVED', 'UNSUPPORTED']
+                  'UNRESOLVED', 'UNSUPPORTED', 'IMPROVED', 'REGRESSED']
     failingCodes = set(['FAIL', 'XPASS', 'UNRESOLVED'])
-    warningCodes = set(['IGNORE PASS', 'IGNORE XFAIL'])
+    warningCodes = set(['IGNORE PASS', 'IGNORE XFAIL', 'REGRESSED'])
 
     # The list of all possible codes, including flaky and ignored codes. This is
     # the display order, as well.
