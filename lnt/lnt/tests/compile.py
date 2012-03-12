@@ -455,9 +455,6 @@ g_output_dir = None
 usage_info = """
 Script for testing compile time performance.
 
-Currently this is primarily intended to test the raw compiler performance (not
-its scalability or its performance in parallel builds).
-
 This tests:
  - PCH Generation for Cocoa.h
    o File Size
@@ -472,7 +469,7 @@ This tests:
    o Memory Usage
    o Time
  - Full Build Times
-   o Total Build Time (serialized) (using xcodebuild)
+   o Total Build Time (using xcodebuild)
 
 TODO:
  - Objective-C Compile Time, with PCH
@@ -495,13 +492,8 @@ We run each of the compile time tests in various stages:
  - fsyntax-only (lex/parse/sema time)
  - emit-llvm-only (IRgen time)
  - emit-llvm (.bc output time and size, mostly to track output file size)
- - S (codegen time and size)
+ - emit-codegen-only (codegen time, without assembler)
  - c (assembly time and size)
-
-FIXME: In the past, we have generated breakdown timings of full builds using
-Make or xcodebuild by interposing scripts to stub out parts of the compilation
-process. This is fragile, but can also be very useful when trying to understand
-where the time is going in a full build.
 """
 
 class CompileTest(builtintest.BuiltinTest):
