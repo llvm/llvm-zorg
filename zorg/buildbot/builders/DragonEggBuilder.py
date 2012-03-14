@@ -449,6 +449,32 @@ def getDragonEggTestBuildFactory(gcc='gcc', svn_testsuites=[],
                            haltOnFailure=True, workdir=compilator_dir,
                            env=env))
 
+    # Large single compilation-unit C programs.
+    f.addStep(ShellCommand(name='wget.bzip2',
+                           command='wget -N http://people.csail.mit.edu/smcc/projects/single-file-programs/bzip2.c',
+                           haltOnFailure=True, workdir=compilator_dir,
+                           env=env))
+    f.addStep(ShellCommand(name='wget.gzip',
+                           command='wget -N http://people.csail.mit.edu/smcc/projects/single-file-programs/gzip.c',
+                           haltOnFailure=True, workdir=compilator_dir,
+                           env=env))
+    f.addStep(ShellCommand(name='fix.gzip',
+                           command='sed -i "s/^static char \*$/char */" gzip.c',
+                           haltOnFailure=True, workdir=compilator_dir,
+                           env=env))
+    f.addStep(ShellCommand(name='wget.oggenc',
+                           command='wget -N http://people.csail.mit.edu/smcc/projects/single-file-programs/oggenc.c',
+                           haltOnFailure=True, workdir=compilator_dir,
+                           env=env))
+    f.addStep(ShellCommand(name='wget.gcc',
+                           command='wget -N http://people.csail.mit.edu/smcc/projects/single-file-programs/gcc.c.bz2',
+                           haltOnFailure=True, workdir=compilator_dir,
+                           env=env))
+    f.addStep(ShellCommand(name='unpack.gcc',
+                           command='bunzip2 -f -k gcc.c.bz2',
+                           haltOnFailure=True, workdir=compilator_dir,
+                           env=env))
+
     # Build and install LLVM.
     llvm_obj_dir = 'llvm.obj'
     llvm_install_dir = 'llvm.install'
