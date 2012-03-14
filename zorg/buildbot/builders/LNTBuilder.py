@@ -11,12 +11,14 @@ from buildbot.process.properties import WithProperties
 import zorg
 from zorg.buildbot.builders import ClangBuilder
 
-# The URL of our local package cache.
-g_package_url = "http://lab.llvm.org/packages"
-
 def getLNTFactory(triple, nt_flags, xfails=[], clean=True, test=False,
                   **kwargs):
-    submitURL = kwargs.pop("submitURL", "http://llvm.org/perf/submitRun")
+    lnt_args = {}
+    lnt_arg_names = ['submitURL', 'package_cache']
+
+    for argname in lnt_arg_names:
+        if argname in kwargs:
+            lnt_args[argname] = kwargs.pop(argname)
 
     # Build compiler to test.  
     f = ClangBuilder.getClangBuildFactory(
@@ -27,13 +29,11 @@ def getLNTFactory(triple, nt_flags, xfails=[], clean=True, test=False,
     AddLNTTestsToFactory(f, nt_flags,
                          cc_path="llvm.install.1/bin/clang",
                          cxx_path="llvm.install.1/bin/clang++",
-                         submitURL = submitURL)
+                         **lnt_args);
 
     return f
 
-def AddLNTTestsToFactory(f, nt_flags, cc_path, cxx_path,
-                         parallel = False, jobs = '%(jobs)s',
-                         submitURL = "http://llvm.org/perf/submitRun"):
+def AddLNTTestsToFactory(f, nt_flags, cc_path, cxx_path, **kwargs):
     """
     Add the buildbot steps necessary to run an LNT driven test of a compiler.
 
@@ -41,6 +41,11 @@ def AddLNTTestsToFactory(f, nt_flags, cc_path, cxx_path,
     contain a builddir property which points at the full path to the build
     directory.
     """
+
+    parallel = kwargs.pop('parallel', False)
+    jobs = kwargs.pop('jobs', '$(jobs)s')
+    submitURL = kwargs.pop('submitURL', 'http://llvm.org/perf/submitRun')
+    package_cache = kwargs.pop('package_cache', 'http://lab.llvm.org/packages')
 
     # Create variables to refer to the compiler-under-test.
     #
@@ -84,7 +89,7 @@ def AddLNTTestsToFactory(f, nt_flags, cc_path, cxx_path,
             name='venv.lnt.install', haltOnFailure=True,
             command=[WithProperties('%(builddir)s/lnt.venv/bin/pip'), 'install',
                      '--no-index',
-                     '--find-links', g_package_url,
+                     '--find-links', package_cache,
                      '-e', '.'],
             description=['install', 'LNT'], workdir='zorg/lnt',
             env={'ARCHFLAGS' : '-arch i386 -arch x86_64'}))
