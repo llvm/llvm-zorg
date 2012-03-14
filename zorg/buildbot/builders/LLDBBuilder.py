@@ -28,12 +28,6 @@ def getLLDBBuildFactory(triple, outOfDir=False, useTwoStage=False, jobs='%(jobs)
                                                description="set build dir",
                                                workdir="."))
 
-    # We really want to revert the patched llvm/clang files but svn sometimes
-    # doesn't do the right thing. We're left with removing and rebuilding.
-    f.addStep(ShellCommand(name='rm-%s' % llvm_srcdir,
-                           command=['rm', '-rf', llvm_srcdir],
-                           haltOnFailure = True,
-                           workdir='.', env=env))
     # Find out what version of llvm and clang are needed to build this version
     # of lldb. Right now we will assume they use the same version.
     # XXX - could this be done directly on the master instead of the slave?
@@ -70,16 +64,6 @@ def getLLDBBuildFactory(triple, outOfDir=False, useTwoStage=False, jobs='%(jobs)
                   defaultBranch='trunk',
                   always_purge=True,
                   workdir='%s/tools/lldb' % llvm_srcdir))
-
-    # Patch llvm with lldb changes
-    f.addStep(ShellCommand(name='patch.llvm',
-        command='for i in tools/lldb/scripts/llvm*.diff; do echo "Patching with file $i"; patch -p0 -i $i; done',
-        workdir=llvm_srcdir))
-
-    # Patch clang with lldb changes
-    f.addStep(ShellCommand(name='patch.clang',
-        command='for i in ../lldb/scripts/clang*.diff; do echo "Patching with file $i"; patch -p0 -i $i; done',
-        workdir='%s/tools/clang' % llvm_srcdir))
 
     # Run configure
     config_args = [WithProperties("%%(builddir)s/%s/configure" % llvm_srcdir),
