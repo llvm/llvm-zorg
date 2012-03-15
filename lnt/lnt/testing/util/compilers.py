@@ -1,4 +1,5 @@
 import hashlib
+import os
 import re
 import tempfile
 
@@ -232,8 +233,38 @@ def get_inferred_run_order(info):
     # generally required by parts of the "simple" schema.
     return 0
 
-__all__ = [get_cc_info]
+def infer_cxx_compiler(cc_path):
+    # If this is obviously a compiler name, then try replacing with the '++'
+    # name.
+    name = os.path.basename(cc_path)
+    if 'clang' in name:
+        expected_cxx_name = 'clang++'
+        cxx_name = name.replace('clang', expected_cxx_name)
+    elif 'gcc' in name:
+        expected_cxx_name = 'g++'
+        cxx_name = name.replace('gcc', expected_cxx_name)
+    elif 'icc' in name:
+        expected_cxx_name = 'icpc'
+        cxx_name = name.replace('icc', expected_cxx_name)
+    else:
+        # We have no idea, give up.
+        return None
+
+    # Check if the compiler exists at that path.
+    cxx_path = os.path.join(os.path.dirname(cc_path), cxx_name)
+    if os.path.exists(cxx_path):
+        return cxx_path
+
+    # Otherwise, try to let the compiler itself tell us what the '++' version
+    # would be. This is useful when the compiler under test is a symlink to the
+    # real compiler.
+    cxx_path = capture([cc_path, '-print-prog-name=%s' % expected_cxx_name]).strip()
+    if os.path.exists(cxx_path):
+        return cxx_path
+    
+o__all__ = ['get_cc_info', 'infer_cxx_compiler']
 
 if __name__ == '__main__':
     import pprint, sys
-    pprint.pprint(get_cc_info(sys.argv[1], sys.argv[2:]))
+    pprint.pprint(('get_cc_info', get_cc_info(sys.argv[1], sys.argv[2:])))
+    pprint.pprint(('infer_cxx_compiler', infer_cxx_compiler(sys.argv[1])))
