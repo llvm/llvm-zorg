@@ -584,7 +584,7 @@ class CompileTest(builtintest.BuiltinTest):
         # Attempt to infer the cxx compiler if not given.
         if opts.cc and opts.cxx is None:
             opts.cxx = lnt.testing.util.compilers.infer_cxx_compiler(opts.cc)
-            if opts.cxx is not None
+            if opts.cxx is not None:
                 note("inferred C++ compiler under test as: %r" % (opts.cxx,))
 
         # Validate options.
