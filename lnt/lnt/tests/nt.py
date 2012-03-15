@@ -1,5 +1,6 @@
 import csv
 import os
+import platform
 import re
 import shutil
 import subprocess
@@ -1045,10 +1046,12 @@ class NTTest(builtintest.BuiltinTest):
         parser.add_option_group(group)
 
         (opts, args) = parser.parse_args(args)
-        if len(args) != 1:
+        if len(args) == 0:
+            nick = platform.uname()[1]
+        elif len(args) == 1:
+            nick, = args
+        else:
             parser.error("invalid number of arguments")
-
-        nick, = args
 
         # The --without--llvm option is the default if no LLVM paths are given.
         if opts.llvm_src_root is None and opts.llvm_obj_root is None:
