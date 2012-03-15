@@ -42,6 +42,7 @@ following steps should suffice on any modern Unix variant:
 
 That's it!
 
+
 Running Tests
 -------------
 
@@ -68,3 +69,37 @@ command. The information below should be enough to get you started, but see the
 
    The ``SANDBOX`` value is a path to where the test suite build products and
    results will be stored (inside a timestamped directory, by default).
+
+
+Viewing Results
+---------------
+
+By default, ``lnt runtest nt`` will show the passes and failures after doing a
+run, but if you are interested in viewing the result data in more detail you
+should install a local LNT instance to submit the results to.
+
+You can create a local LNT instance with, e.g.::
+
+    lnt create ~/myperfdb
+
+This will create an LNT instance at ``~/myperfdb`` which includes the
+configuration of the LNT application and a SQLite database for storing the
+results.
+
+Once you have a local instance, you can either submit results directly with::
+
+     lnt import ~/myperfdb SANDBOX/test-<stamp>/report.json
+
+or as part of a run with::
+
+     lnt runtest --submit ~/myperfdb nt ... arguments ...
+
+Once you have submitted results into a database, you can run the LNT web UI
+with::
+
+     lnt runserver ~/myperfdb
+
+which runs the server on ``http://localhost:8000`` by default.
+
+In the future, LNT will grow a robust set of command line tools to allow
+investigation of performance results without having to use the web UI.
