@@ -825,14 +825,11 @@ Basic usage:
   %%prog %(name)s \\
     --sandbox FOO \\
     --cc ~/llvm.obj.64/Release/bin/clang \\
-    --cxx ~/llvm.obj.64/Release/bin/clang++ \\
-    --test-suite ~/llvm-test-suite \\
-    FOO
+    --test-suite ~/llvm-test-suite
 
 where --sandbox is the directory to build and store results in, --cc and --cxx
 are the full paths to the compilers to test, and --test-suite is the path to the
-test-suite source. The final argument is the base nickname to use to describe
-this run in reports.
+test-suite source.
 
 To do a quick test, you can add something like:
 

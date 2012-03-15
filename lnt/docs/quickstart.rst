@@ -64,13 +64,7 @@ command. The information below should be enough to get you started, but see the
            lnt runtest nt \
                --sandbox SANDBOX \
                --cc ~/llvm.obj/Release/bin/clang \
-               --cxx ~/llvm.obj/Release/bin/clang++ \
-               --test-suite ~/llvm-test-suite \
-               MACHINENAME
+               --test-suite ~/llvm-test-suite
 
    The ``SANDBOX`` value is a path to where the test suite build products and
    results will be stored (inside a timestamped directory, by default).
-
-   The ``MACHINENAME`` value is used to identify the machine that produced the
-   results. This is only important if you plan on submitting the results to a
-   server (but is always required, I just use 'FOO' for dummy runs).
