@@ -48,7 +48,7 @@ def get_build_slaves():
         # gcc17  580G  2x4x2.2 GHz AMD Opteron 8354 (Barcelona B3) / 16 GB RAM / Debian x86-64
         create_slave("gcc17", properties={'jobs' : 4}, max_builds=1),
         # gcc20   1TB  2x6x2.93 GHz Intel Dual Xeon X5670 2.93 GHz 12 cores 24 threads / 24 GB RAM / Debian amd64
-        create_slave("gcc20", properties={'jobs' : 12}, max_builds=1),
+        create_slave("gcc20", properties={'jobs' : 6}, max_builds=1),
 #        # gcc30        17G     0.4  GHz Alpha EV56 / 2GB RAM / AlphaServer 1200 5/400 => offline, to relocate
 #        create_slave("gcc30", properties={'jobs' : 1}, max_builds=1),
 #        # gcc31        51G   2x0.4  GHz TI UltraSparc II (BlackBird) / 2 GB RAM / Sun Enterprise 250 => offline, to relocate
