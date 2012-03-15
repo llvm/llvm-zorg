@@ -583,14 +583,9 @@ class CompileTest(builtintest.BuiltinTest):
 
         # Attempt to infer the cxx compiler if not given.
         if opts.cc and opts.cxx is None:
-            name = os.path.basename(opts.cc)
-            cxx_name = { 'clang' : 'clang++',
-                         'gcc' : 'g++',
-                         'llvm-gcc' : 'llvm-g++' }.get(name)
-            if cxx_name is not None:
-                opts.cxx = os.path.join(os.path.dirname(opts.cc),
-                                        cxx_name)
-                note("inferred C++ compiler: %r" % (opts.cxx,))
+            opts.cxx = lnt.testing.util.compilers.infer_cxx_compiler(opts.cc)
+            if opts.cxx is not None
+                note("inferred C++ compiler under test as: %r" % (opts.cxx,))
 
         # Validate options.
         if opts.cc is None:

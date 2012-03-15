@@ -1095,6 +1095,16 @@ class NTTest(builtintest.BuiltinTest):
 
         if opts.cc_under_test is None:
             parser.error('--cc is required')
+
+        # If there was no --cxx given, attempt to infer it from the --cc.
+        if opts.cxx_under_test is None:
+            opts.cxx_under_test = lnt.testing.util.compilers.infer_cxx_compiler(
+                opts.cc_under_test)
+            if opts.cxx_under_test is not None:
+                note("inferred C++ compiler under test as: %r" % (
+                    opts.cxx_under_test,))
+
+        # The cxx_under_test option is required if we are testing C++.
         if opts.test_cxx and opts.cxx_under_test is None:
             parser.error('--cxx is required')
 
