@@ -1,4 +1,14 @@
-0.3.0 (not yet released)
-========================
+0.4.0
+=====
+
+* Major redesign of database schema, primarily for performance reasons.
+
+  * New design allows for definition of independent "test suites" which define
+    the exact kinds of test data that are stored in the database. This greatly
+    increased LNT's utility for testing things other than just the LLVM
+    test-suite.
+
+0.3.0
+=====
 
 * Initial release.
