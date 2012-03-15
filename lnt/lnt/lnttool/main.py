@@ -2,6 +2,7 @@
 
 import os
 import sys
+import tempfile
 from optparse import OptionParser, OptionGroup
 
 import StringIO
@@ -90,9 +91,9 @@ def action_runtest(name, args):
 
     parser = OptionParser("%%prog %s test-name [options]" % name)
     parser.disable_interspersed_args()
-    parser.add_option("", "--submit", dest="submit_url", metavar="URL",
+    parser.add_option("", "--submit", dest="submit_url", metavar="URLORPATH",
                       help=("autosubmit the test result to the given server "
-                            "[%default]"),
+                            "(or local instance) [%default]"),
                       type=str, default=None)
     parser.add_option("", "--commit", dest="commit",
                       help=("whether the autosubmit result should be committed "
@@ -128,21 +129,24 @@ def action_runtest(name, args):
         if output_stream is not sys.stdout:
             output_stream.close()
 
+    # Save the report to a temporary file.
+    #
+    # FIXME: This is silly, the underlying test probably wrote the report to a
+    # file itself. We need to clean this up and make it standard across all
+    # tests. That also has the nice side effect that writing into a local
+    # database records the correct imported_from path.
+    tmp = tempfile.NamedTemporaryFile(suffix='.json')
+    print >>tmp, report.render()
+    tmp.flush()
+
     if opts.submit_url is not None:
         if report is None:
             raise SystemExit,"error: report generation failed"
 
         from lnt.util import ServerUtil
-        io = StringIO.StringIO(report.render(indent=None))
-        ServerUtil.submitFile(opts.submit_url, io, True, opts.verbose)
+        ServerUtil.submitFile(opts.submit_url, tmp.name, True, opts.verbose)
     else:
         # Simulate a submission to retrieve the results report.
-        import tempfile
-
-        # Save the report to a temporary file.
-        tmp = tempfile.NamedTemporaryFile(suffix='.json')
-        print >>tmp, report.render()
-        tmp.flush()
 
         # Construct a temporary database and import the result.
         db = lnt.server.db.v4db.V4DB("sqlite:///:memory:")
@@ -151,7 +155,7 @@ def action_runtest(name, args):
         lnt.util.ImportData.print_report_result(result, sys.stdout, sys.stderr,
                                                 opts.verbose)
 
-        tmp.close()
+    tmp.close()
 
 def action_showtests(name, args):
     """show the available built-in tests"""
