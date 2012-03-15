@@ -37,18 +37,10 @@ def action_import(name, args):
     if len(args) < 2:
         parser.error("invalid number of arguments")
 
-    config = args.pop(0)
+    path = args.pop(0)
 
-    # Accept paths to config files, or to directories containing 'lnt.cfg'.
-    if os.path.isdir(config):
-        tmp = os.path.join(config, 'lnt.cfg')
-        if os.path.exists(tmp):
-            config = tmp
-
-    # Load the config file.
-    config_data = {}
-    exec open(config) in config_data
-    config = lnt.server.config.Config.fromData(config, config_data)
+    # Load the LNT configuration.
+    config = lnt.server.config.get_config_from_path(path)
 
     # Get the database.
     db = config.get_database(opts.database, echo=opts.show_sql)

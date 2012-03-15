@@ -125,3 +125,16 @@ class Config:
 
         raise NotImplementedError,"unable to import to version %r database" % (
             db_entry.db_version,)
+
+def get_config_from_path(path):
+    # Accept paths to config files or to directories containing 'lnt.cfg'.
+    if os.path.isdir(path):
+        config_path = os.path.join(path, 'lnt.cfg')
+    else:
+        config_path = path
+
+    # Load the config file.
+    config_data = {}
+    exec open(config_path) in config_data
+    return lnt.server.config.Config.fromData(config_path, config_data)
+    
