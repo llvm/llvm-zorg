@@ -8,6 +8,8 @@ Contents
 
    intro
 
+   quickstart
+
    tools
 
    tests

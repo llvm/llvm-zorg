@@ -21,13 +21,8 @@ JSON. This makes it easy to produce test results from almost any language.
 Installation
 ------------
 
-These are the (current) rough steps to get a working LNT client:
-
- 1. Install LNT:
-
-      python setup.py install
-
-    It is recommended that you install LNT into a virtualenv.
+If you are only interested in using LNT to run tests locally, see the
+:ref:`quickstart`.
 
 If you want to run an LNT server, you will need to perform the following
 additional steps:
@@ -49,7 +44,7 @@ additional steps:
 
     a. Update the databases list.
 
-    b. Update the zorgURL.
+    b. Update the public URL the server is visible at.
 
     c. Update the nt_emailer configuration.
 
