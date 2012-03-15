@@ -3,15 +3,18 @@
 Introduction
 ============
 
-LNT consists of two main parts, a server side web application for accessing and
-visualizing performance data, and client side utilities for easily generating
-and submitting data.
+LNT is designed to be a generic infastrcture for performance testing. The LNT
+software itself consists of two main parts, a web application for accessing and
+visualizing performance data, and command line utilities to allow users to
+generate and submit test results to the server.
 
-LNT uses a simple and extensible format for interchanging data between the
-clients and the server; this allows the LNT server to receive and store data for
-a wide variety of applications. The web app currently contains a specialized
-viewer for LLVM nightly test data, and a generic viewer for visualizing
-arbitrary test reports.
+If you are an LLVM developer who is mostly interested in just using LNT to run
+the test-suite against some compiler, then you should fast forward to the
+:ref:`quickstart` or to the information on :ref:`tests`.
+
+LNT uses a simple and extensible format for interchanging data between the test
+producers and the server; this allows the LNT server to receive and store data
+for a wide variety of applications.
 
 Both the LNT client and server are written in Python, however the test data
 itself can be passed in one of several formats, including property lists and
