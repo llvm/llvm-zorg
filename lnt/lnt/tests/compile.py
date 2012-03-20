@@ -17,6 +17,7 @@ import lnt.testing.util.compilers
 from lnt.testing.util.commands import note, warning, error, fatal
 from lnt.testing.util.misc import TeeStream, timestamp
 from lnt.testing.util import commands, machineinfo
+from lnt.util import stats
 
 # Interface to runN.
 #
@@ -770,9 +771,13 @@ class CompileTest(builtintest.BuiltinTest):
                 for success,name,samples in test_fn(basename, run_info,
                                                          variables):
                     now = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
-                    print >>test_log, '%s: collected sample: %r' % (
+                    print >>test_log, '%s: collected samples: %r' % (
                         now, name)
-                    print >>test_log, '%s:   %r' % (now, samples)
+                    num_samples = len(samples)
+                    samples_median = stats.median(samples)
+                    samples_mad = stats.median_absolute_deviation(samples)
+                    print >>test_log, '%s:   N=%d, median=%.4f, MAD=%.4f' % (
+                        now, num_samples, samples_median, samples_mad)
                     test_name = '%s.%s' % (tag, name)
                     if not success:
                         testsamples.append(lnt.testing.TestSamples(
