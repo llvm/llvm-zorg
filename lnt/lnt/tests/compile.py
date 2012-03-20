@@ -413,8 +413,7 @@ k_JSC_compile_flags = (
     # Compiler flags.
     '-fasm-blocks', '-fstrict-aliasing', '-fvisibility-inlines-hidden',
     '-fno-threadsafe-statics', '-fmessage-length=0', '-fno-exceptions',
-    '-fno-rtti', '-fpascal-strings', '-fomit-frame-pointer', '-funwind-tables',
-    '-fno-var-tracking')
+    '-fno-rtti', '-fpascal-strings', '-fomit-frame-pointer', '-funwind-tables')
 
 # These are the OmniGroupFrameworks compile flags, extract from a full build.
 k_OGF_compile_flags = (
@@ -728,7 +727,7 @@ class CompileTest(builtintest.BuiltinTest):
 
         # Compute the set of flags to test.
         if not opts.flags_to_test:
-            flags_to_test = [('-O0',), ('-O0','-g',), ('-Os',)]
+            flags_to_test = [('-O0',), ('-O0','-g',), ('-Os','-g'), ('-O3',)]
         else:
             flags_to_test = [string.split(' ')
                              for string in opts.flags_to_test]
