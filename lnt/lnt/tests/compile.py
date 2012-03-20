@@ -397,9 +397,52 @@ def test_build(base_name, run_info, variables, project, build_config, num_jobs):
 def curry(fn, **kw_args):
     return lambda *args: fn(*args, **kw_args)
 
+# These are the JavaScriptCore compile flags, extracted from a full build.
+k_JSC_compile_flags = (
+    # Target options.
+    '-mmacosx-version-min=10.7',
+
+    # Warning options.
+    '-Wall', '-Wextra', '-Wcast-qual', '-Wchar-subscripts', '-Wextra-tokens',
+    '-Wformat=2', '-Winit-self', '-Wmissing-format-attribute', '-Wpacked',
+    '-Wmissing-noreturn', '-Wmissing-prototypes', '-Wnon-virtual-dtor',
+    '-Wnewline-eof', '-Wno-deprecated-declarations', '-Wpointer-arith',
+    '-Wredundant-decls', '-Wundef', '-Wwrite-strings', '-Wshorten-64-to-32',
+    '-Wno-trigraphs',
+
+    # Compiler flags.
+    '-fasm-blocks', '-fstrict-aliasing', '-fvisibility-inlines-hidden',
+    '-fno-threadsafe-statics', '-fmessage-length=0', '-fno-exceptions',
+    '-fno-rtti', '-fpascal-strings', '-fomit-frame-pointer', '-funwind-tables',
+    '-fno-var-tracking')
+
+# These are the OmniGroupFrameworks compile flags, extract from a full build.
+k_OGF_compile_flags = (
+    # Target options.
+    '-mmacosx-version-min=10.6',
+
+    # Language options.
+    '-std=gnu99',
+
+    # Warning options.
+    '-Wno-trigraphs', '-Wmissing-prototypes', '-Wreturn-type', '-Wparentheses',
+    '-Wmissing-braces', '-Wswitch', '-Wunused-function', '-Wunused-label',
+    '-Wno-unused-parameter', '-Wunused-variable', '-Wunknown-pragmas',
+    '-Wunused-value', '-Wsign-compare', '-Wshorten-64-to-32', '-Wnewline-eof',
+    '-Wall', '-Wno-#warnings', '-Wno-trigraphs', '-Winit-self',
+
+    # Compiler flags.
+    '-fmessage-length=0', '-fdiagnostics-print-source-range-info',
+    '-fdiagnostics-show-category=id', '-fdiagnostics-parseable-fixits',
+    '-fpascal-strings',)
+
 def get_single_file_tests(flags_to_test):
-    all_inputs = [('Sketch/Sketch+Accessibility/SKTGraphicView.m', True, ()),
-                  ('403.gcc/combine.c', False, ('-DSPEC_CPU_MACOSX',))]
+    all_inputs = [('Sketch+Accessibility/SKTGraphicView.m', True, ()),
+                  ('403.gcc/combine.c', False, ('-DSPEC_CPU_MACOSX',)),
+                  ('JavaScriptCore/Interpreter.cpp', False,
+                   k_JSC_compile_flags),
+                  ('OmniGroupFrameworks/NSBezierPath-OAExtensions.m', False,
+                   k_OGF_compile_flags)]
 
     stages_to_test = ['driver', 'init', 'syntax', 'irgen_only', 'irgen',
                       'codegen', 'assembly']
@@ -408,7 +451,7 @@ def get_single_file_tests(flags_to_test):
         # to generate the right PCH file before we try to use it. Ideally the
         # testing infrastructure would just handle this.
         yield ('pch-gen/Cocoa',
-               curry(test_compile, input='Cocoa_Prefix.h',
+               curry(test_compile, input='single-file/Cocoa_Prefix.h',
                      output='Cocoa_Prefix.h.gch', pch_input=None,
                      flags=f, stage='pch-gen'))
         for input,uses_pch,extra_flags in all_inputs:
@@ -419,9 +462,10 @@ def get_single_file_tests(flags_to_test):
                 if uses_pch:
                     pch_input = 'Cocoa_Prefix.h.gch'
                 yield ('compile/%s/%s' % (name, stage),
-                       curry(test_compile, input=input, output=output,
-                             pch_input=pch_input, flags=f, stage=stage,
-                             extra_flags=extra_flags))
+                       curry(test_compile,
+                             input=os.path.join('single-file', input),
+                             output=output, pch_input=pch_input, flags=f,
+                             stage=stage, extra_flags=extra_flags))
 
 def get_full_build_tests(jobs_to_test, configs_to_test,
                          test_suite_externals):
