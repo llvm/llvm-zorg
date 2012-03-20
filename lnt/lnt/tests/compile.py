@@ -817,9 +817,13 @@ class CompileTest(builtintest.BuiltinTest):
                     print >>test_log, '%s: collected samples: %r' % (
                         now, name)
                     num_samples = len(samples)
-                    samples_median = stats.median(samples)
-                    samples_mad = stats.median_absolute_deviation(samples)
-                    print >>test_log, '%s:   N=%d, median=%.4f, MAD=%.4f' % (
+                    if num_samples:
+                        samples_median = '%.4f' % (stats.median(samples),)
+                        samples_mad = '%.4f' % (
+                            stats.median_absolute_deviation(samples),)
+                    else:
+                        samples_median = samples_mad = 'N/A'
+                    print >>test_log, '%s:   N=%d, median=%s, MAD=%s' % (
                         now, num_samples, samples_median, samples_mad)
                     test_name = '%s.%s' % (tag, name)
                     if not success:
