@@ -30,7 +30,6 @@ class ConfigEmailLookup(buildbot.util.ComparableMixin):
 
     self.time_checked = datetime.utcnow()
     self.time_loaded  = datetime.utcfromtimestamp(os.path.getmtime(self.author_filename))
-    log.msg('Loaded file %s (mtime=%s) at %s' % (self.author_filename, self.time_loaded, self.time_checked))
 
     if only_addresses:
       import re
@@ -45,7 +44,6 @@ class ConfigEmailLookup(buildbot.util.ComparableMixin):
       if (datetime.utcnow() - self.time_checked) >= timedelta(minutes=1):
         self.time_checked = datetime.utcnow()
         current_mtime = datetime.utcfromtimestamp(os.path.getmtime(self.author_filename))
-        log.msg('Checked file %s (mtime=%s) at %s' % (self.author_filename, current_mtime, self.time_checked))
 
         if (current_mtime != self.time_loaded) and ((datetime.utcnow() - current_mtime) >= timedelta(minutes=1)):
           # Reload the list of authors.

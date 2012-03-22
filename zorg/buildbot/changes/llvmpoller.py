@@ -230,7 +230,7 @@ class LLVMPoller(base.PollingChangeSource, util.ComparableMixin):
 
         categories = {
             # Project:       Category:
-            'llvm'         : ['clang','dragonegg','llvm','llvm-gcc','polly'],
+            'llvm'         : 'llvm',
             'cfe'          : 'clang',
             'polly'        : 'polly',
             'llvm-gcc-4.2' : 'llvm-gcc',
