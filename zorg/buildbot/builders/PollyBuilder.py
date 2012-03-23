@@ -6,19 +6,17 @@ from buildbot.steps.source import SVN, Git
 from buildbot.steps.shell import Configure, ShellCommand
 from buildbot.process.properties import WithProperties
 
-f = buildbot.process.factory.BuildFactory()
+def installRequiredLibs(f, polly_src):
 
-def installRequiredLibs():
     cloog_installdir = "cloog.install"
 
-    global f
     # Get Cloog and isl
-    checkout_cloog = WithProperties("%s/llvm.src/tools/polly/utils/checkout_cloog.sh", "builddir")
+    checkout_cloog = polly_src + '/utils/checkout_cloog.sh'
     cloog_srcdir = WithProperties("%s/cloog.src", "builddir")
     f.addStep(ShellCommand(name="get-cloog",
-			   command=[checkout_cloog,
-				     cloog_srcdir],
-			   description="Get CLooG/isl source code"))
+                           command=[checkout_cloog, cloog_srcdir],
+                           description="Get CLooG/isl source code",
+                           workdir="."))
 
     confargs = []
     confargs.append(WithProperties("%s/cloog.src/configure", "builddir"))
@@ -43,7 +41,7 @@ def getPollyBuildFactory():
     llvm_objdir = "llvm.obj"
     cloog_installdir = "cloog.install"
 
-    global f
+    f = buildbot.process.factory.BuildFactory()
     # Determine the build directory.
     f.addStep(buildbot.steps.shell.SetProperty(name="get_builddir",
                                                command=["pwd"],
@@ -63,7 +61,7 @@ def getPollyBuildFactory():
                   workdir='%s/tools/polly' % llvm_srcdir))
 
     # Install Prerequisites
-    installRequiredLibs()
+    installRequiredLibs(f, '%s/tools/polly' % llvm_srcdir)
 
     # Create configuration files with cmake
     f.addStep(ShellCommand(name="create-build-dir",
