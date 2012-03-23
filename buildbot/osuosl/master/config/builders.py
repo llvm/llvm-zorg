@@ -173,7 +173,7 @@ def _get_clang_builders():
                                            '--with-cpu=cortex-a9',
                                            '--with-fpu=neon', '--with-abi=aapcs',
                                            '--with-float=hard',
-                                           '--enable-targets=arm,cbe'])},
+                                           '--enable-targets=arm'])},
 
         {'name': "clang-X86_64-freebsd",
          'slavenames':["kistanova7"],
@@ -216,7 +216,7 @@ def _get_clang_builders():
                                                        extra_configure_args=['--build=x86_64-apple-darwin11',
                                                                              '--host=x86_64-apple-darwin11',
                                                                              '--target=arm-eabi',
-                                                                             '--enable-targets=cbe,arm'])},
+                                                                             '--enable-targets=arm'])},
 
         {'name' : "clang-x86_64-darwin11-cross-linux-gnu",
          'slavenames' :["as-bldslv11"],
