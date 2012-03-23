@@ -14,7 +14,7 @@ from zorg.buildbot.builders import ClangBuilder
 def getLNTFactory(triple, nt_flags, xfails=[], clean=True, test=False,
                   **kwargs):
     lnt_args = {}
-    lnt_arg_names = ['submitURL', 'package_cache']
+    lnt_arg_names = ['submitURL', 'package_cache', 'testerName']
 
     for argname in lnt_arg_names:
         if argname in kwargs:
@@ -46,6 +46,8 @@ def AddLNTTestsToFactory(f, nt_flags, cc_path, cxx_path, **kwargs):
     jobs = kwargs.pop('jobs', '$(jobs)s')
     submitURL = kwargs.pop('submitURL', 'http://llvm.org/perf/submitRun')
     package_cache = kwargs.pop('package_cache', 'http://lab.llvm.org/packages')
+    testerName = kwargs.pop('testerName ', '')
+    env = kwargs.pop('env', {})
 
     # Create variables to refer to the compiler-under-test.
     #
@@ -100,6 +102,13 @@ def AddLNTTestsToFactory(f, nt_flags, cc_path, cxx_path, **kwargs):
             haltOnFailure=True, description=['clean', 'LNT', 'sandbox'],
             workdir='tests'))
 
+    reportName = '%(slavename)s'
+
+    if testerName:
+        reportname += '__' + testerName
+
+    reportName = WithProperties(reportName)
+
     # Run the nightly test.
     args = [WithProperties('%(builddir)s/lnt.venv/bin/python'),
             WithProperties('%(builddir)s/lnt.venv/bin/lnt'),
@@ -111,7 +120,7 @@ def AddLNTTestsToFactory(f, nt_flags, cc_path, cxx_path, **kwargs):
             '--cc', cc_path, '--cxx', cxx_path,
             '--without-llvm',
             '--test-suite', WithProperties('%(builddir)s/test-suite'), 
-            '--no-machdep-info', WithProperties('%(slavename)s')]
+            '--no-machdep-info', reportName]
     if parallel:
         args.extend(['-j', WithProperties(jobs)])
     args.extend(nt_flags)
@@ -121,5 +130,6 @@ def AddLNTTestsToFactory(f, nt_flags, cc_path, cxx_path, **kwargs):
             logfiles={'configure.log' : 'nt/build/configure.log',
                       'build-tools.log' : 'nt/build/build-tools.log',
                       'test.log' : 'nt/build/test.log',
-                      'report.json' : 'nt/build/report.json'}))
+                      'report.json' : 'nt/build/report.json'},
+            env=env))
     return f
