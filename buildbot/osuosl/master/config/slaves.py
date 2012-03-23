@@ -121,6 +121,12 @@ def get_build_slaves():
         # AMD Athlon(tm) 64 X2 Dual Core 3800+, Ubuntu x86_64
         create_slave("grosser1", properties={'jobs': 2}, max_builds=1),
 
+        # LLVM Lab slaves
+        create_slave("lab-mini-01", properties={'jobs': 2}, max_builds=1),
+        create_slave("lab-mini-02", properties={'jobs': 2}, max_builds=1),
+        create_slave("lab-mini-03", properties={'jobs': 2}, max_builds=1),
+        create_slave("lab-mini-04", properties={'jobs': 2}, max_builds=1),
+
         # Intel(R) Core(TM)2 CPU 6420  @ 2.13GHz, Ubuntu Oneiric x86_64
         create_slave("arxan_davinci", properties={'jobs': 4}, max_builds=1),
 
