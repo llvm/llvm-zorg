@@ -27,7 +27,7 @@ def submitFileToServer(url, file, commit):
 
     # The result is expected to be a JSON object.
     try:
-        result = json.loads(result_data)
+        return json.loads(result_data)
     except:
         import traceback
         print "Unable to load result, not a valid JSON object."
