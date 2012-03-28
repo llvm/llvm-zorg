@@ -2,6 +2,10 @@
 Base class for builtin-in tests.
 """
 
+import sys
+
+from lnt.testing.util.misc import timestamp
+
 class BuiltinTest(object):
     def __init__(self):
         pass
@@ -19,3 +23,6 @@ class BuiltinTest(object):
         the given command line args.
         """
         abstract
+
+    def log(self, message, ts=timestamp()):
+        print >>sys.stderr, '%s: %s' % (ts, message)

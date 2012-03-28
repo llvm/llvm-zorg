@@ -144,11 +144,13 @@ def action_runtest(name, args):
             raise SystemExit,"error: report generation failed"
 
         from lnt.util import ServerUtil
+        test_instance.log("submitting result to %r" % (opts.submit_url,))
         ServerUtil.submitFile(opts.submit_url, tmp.name, True, opts.verbose)
     else:
         # Simulate a submission to retrieve the results report.
 
         # Construct a temporary database and import the result.
+        test_instance.log("submitting result to dummy instance")
         db = lnt.server.db.v4db.V4DB("sqlite:///:memory:")
         result = lnt.util.ImportData.import_and_report(
             None, None, db, tmp.name, 'json', commit = True)
