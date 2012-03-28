@@ -3,7 +3,7 @@
 {% block title %}Submit Run{% endblock %}
 {% block body %}
 
-{% if error %}
+{% if error is defined %}
   <p><font color="#FF0000">{{ error }}</font></p>
 {% endif %}
 
