@@ -394,6 +394,10 @@ def _get_polly_builders():
         {'name': "polly-amd64-linux",
          'slavenames':["grosser1"],
          'builddir':"polly-amd64-linux",
+         'factory': PollyBuilder.getPollyBuildFactory()},
+        {'name': "polly-intel32-linux",
+         'slavenames':["botether"],
+         'builddir':"polly-intel32-linux",
          'factory': PollyBuilder.getPollyBuildFactory()}
        ]
 

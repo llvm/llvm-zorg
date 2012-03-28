@@ -124,6 +124,9 @@ def get_build_slaves():
         # Intel(R) Core(TM)2 Quad CPU Q6600  @ 2.40GHz, Debian x86_64 GNU/Linux
         create_slave("grosser2", properties={'jobs': 4}, max_builds=1),
 
+        # Intel(R) Pentium(R) CPU G620 @ 2.60GHz, Ubuntu i686
+        create_slave("botether", properties={'jobs': 2}, max_builds=1),
+
         # LLVM Lab slaves
         create_slave("lab-mini-01", properties={'jobs': 2}, max_builds=1),
         create_slave("lab-mini-02", properties={'jobs': 2}, max_builds=1),
