@@ -196,6 +196,36 @@ def execute_nt_tests(test_log, make_variables, basedir, opts):
     if opts.only_test is not None:
         common_args.extend(['-C',opts.only_test])
 
+    # If we are using isolation, run under sandbox-exec.
+    if opts.use_isolation:
+        # Write out the sandbox profile.
+        sandbox_profile_path = os.path.join(basedir, "isolation.sb")
+        print >>sys.stderr, "%s: creating sandbox profile %r" % (
+            timestamp(), sandbox_profile_path)
+        with open(sandbox_profile_path, 'w') as f:
+            print >>f, """
+;; Sandbox profile for isolation test access.
+(version 1)
+
+;; Allow everything by default, and log debug messages on deny.
+(allow default)
+(debug deny)
+
+;; Deny all file writes by default.        
+(deny file-write*)
+
+;; Deny all network access by default.
+(deny network*)
+
+;; Explicitly allow writes to temporary directories, /dev/, and the sandbox
+;; output directory.
+(allow file-write*      (regex #"^/private/var/tmp/")
+                        (regex #"^/private/tmp/")
+                        (regex #"^/private/var/folders/")
+                        (regex #"^/dev/")
+                        (regex #"^%s"))""" % (basedir,)
+        common_args = ['sandbox-exec', '-f', sandbox_profile_path] + common_args
+
     # Run a separate 'make build' step if --build-threads was given.
     if opts.build_threads > 0:
       args = common_args + ['-j', str(opts.build_threads), 'build']
@@ -1015,6 +1045,11 @@ class NTTest(builtintest.BuiltinTest):
                          help=("Execute using an iOS simulator SDK (using "
                                "environment overrides)"),
                          type=str, default=None, metavar="SDKPATH")
+        group.add_option("", "--use-isolation", dest="use_isolation",
+                         help=("Execute using a sandboxing profile to limit "
+                               "OS access (e.g., to the network or "
+                               "non-test directories)"),
+                         action="store_true", default=False)
 
         group.add_option("", "--multisample", dest="multisample",
                          help="Accumulate test data from multiple runs",
