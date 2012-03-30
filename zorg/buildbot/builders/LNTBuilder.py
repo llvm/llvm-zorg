@@ -46,7 +46,7 @@ def AddLNTTestsToFactory(f, nt_flags, cc_path, cxx_path, **kwargs):
     jobs = kwargs.pop('jobs', '$(jobs)s')
     submitURL = kwargs.pop('submitURL', 'http://llvm.org/perf/submitRun')
     package_cache = kwargs.pop('package_cache', 'http://lab.llvm.org/packages')
-    testerName = kwargs.pop('testerName ', '')
+    testerName = kwargs.pop('testerName', None)
     env = kwargs.pop('env', {})
 
     # Create variables to refer to the compiler-under-test.
@@ -105,7 +105,7 @@ def AddLNTTestsToFactory(f, nt_flags, cc_path, cxx_path, **kwargs):
     reportName = '%(slavename)s'
 
     if testerName:
-        reportname += '__' + testerName
+        reportName += '__' + testerName
 
     reportName = WithProperties(reportName)
 

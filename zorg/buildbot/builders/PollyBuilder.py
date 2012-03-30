@@ -158,7 +158,7 @@ def AddExternalPollyBuildFactory(f, llvm_installdir):
 def getPollyLNTFactory(triple, nt_flags, xfails=[], clean=True, test=False,
                   **kwargs):
     lnt_args = {}
-    lnt_arg_names = ['submitURL', 'package_cache']
+    lnt_arg_names = ['submitURL', 'package_cache', 'testerName']
 
     for argname in lnt_arg_names:
         if argname in kwargs:
