@@ -10,6 +10,10 @@ from zorg.buildbot.builders import LLVMGCCBuilder
 reload(LLVMGCCBuilder)
 from zorg.buildbot.builders import LLVMGCCBuilder
 
+from zorg.buildbot.builders import LNTBuilder
+reload(LNTBuilder)
+from zorg.buildbot.builders import LNTBuilder
+
 from zorg.buildbot.builders import DragonEggBuilder
 reload(DragonEggBuilder)
 from zorg.buildbot.builders import DragonEggBuilder
@@ -135,6 +139,9 @@ clang_x86_64_linux_xfails = [
 
 # Clang builders.
 def _get_clang_builders():
+
+    LabPackageCache = 'http://10.1.1.2/packages/'
+
     return [
         {'name': "clang-x86_64-debian",
          'slavenames':["gcc12"],
@@ -226,6 +233,22 @@ def _get_clang_builders():
                                                        extra_configure_args=['--build=x86_64-apple-darwin11',
                                                                              '--host=x86_64-apple-darwin11',
                                                                              '--target=i686-pc-linux-gnu '])},
+
+        {'name' : "clang-x86_64-darwin10-nt-O3",
+         'slavenames' :["lab-mini-01"],
+         'builddir' :"clang-x86_64-darwin10-nt-O3",
+         'factory' : LNTBuilder.getLNTFactory(triple='x86_64-apple-darwin10',
+                                              nt_flags=[], jobs=2,  use_pty_in_tests=True,
+                                              testerName='O3-plain', run_cxx_tests=True,
+                                              package_cache=LabPackageCache)},
+
+        {'name' : "clang-x86_64-darwin10-nt-O3-vectorize",
+         'slavenames' :["lab-mini-02"],
+         'builddir' :"clang-x86_64-darwin10-nt-O3-vectorize",
+         'factory' : LNTBuilder.getLNTFactory(triple='x86_64-apple-darwin10',
+                                              nt_flags=['--mllvm=-vectorize'], jobs=2,
+                                              use_pty_in_tests=True, testerName='O3-vectorize',
+                                              run_cxx_tests=True, package_cache=LabPackageCache)},
 
         ]
 
