@@ -238,7 +238,7 @@ def _get_clang_builders():
          'slavenames' :["lab-mini-01"],
          'builddir' :"clang-x86_64-darwin10-nt-O3",
          'factory' : LNTBuilder.getLNTFactory(triple='x86_64-apple-darwin10',
-                                              nt_flags=[], jobs=2,  use_pty_in_tests=True,
+                                              nt_flags=['--multisample=3'], jobs=2,  use_pty_in_tests=True,
                                               testerName='O3-plain', run_cxx_tests=True,
                                               package_cache=LabPackageCache)},
 
@@ -246,7 +246,7 @@ def _get_clang_builders():
          'slavenames' :["lab-mini-02"],
          'builddir' :"clang-x86_64-darwin10-nt-O3-vectorize",
          'factory' : LNTBuilder.getLNTFactory(triple='x86_64-apple-darwin10',
-                                              nt_flags=['--mllvm=-vectorize'], jobs=2,
+                                              nt_flags=['--mllvm=-vectorize', '--multisample=3'], jobs=2,
                                               use_pty_in_tests=True, testerName='O3-vectorize',
                                               run_cxx_tests=True, package_cache=LabPackageCache)},
 
