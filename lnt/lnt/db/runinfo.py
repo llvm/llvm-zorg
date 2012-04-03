@@ -96,8 +96,10 @@ class ComparisonResult:
             else:
                 return UNCHANGED_PASS
 
-        # Otherwise, use the old "significant change" metric of > 5%.
-        if abs(self.pct_delta) >= .05:
+        # Otherwise, report any changes above 0.2%, which is a rough
+        # approximation for the smallest change we expect "could" be measured
+        # accurately.
+        if abs(self.pct_delta) >= .002:
             if self.pct_delta < 0:
                 return IMPROVED
             else:
