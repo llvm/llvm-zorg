@@ -161,33 +161,57 @@ def generate_run_report(run, baseurl, only_html_body = False,
             baseline.start_time, baseline.end_time)
     print >>report
 
+    # Compute static CSS styles for elemenets. We use the style directly on
+    # elements instead of via a stylesheet to support major email clients (like
+    # Gmail) which can't deal with embedded style sheets.
+    #
+    # These are derived from the static style.css file we use elsewhere.
+    styles = {
+        "body" : ("color:#000000; background-color:#ffffff; "
+                  "font-family: Helvetica, sans-serif; font-size:9pt"),
+        "h1" : ("font-size: 14pt"),
+        "table" : "font-size:9pt; border-spacing: 0px; border: 1px solid black",
+        "th" : (
+            "background-color:#eee; color:#666666; font-weight: bold; "
+            "cursor: default; text-align:center; font-weight: bold; "
+            "font-family: Verdana; padding:5px; padding-left:8px"),
+        "td" : "padding:5px; padding-left:8px",
+        }
+
     # Generate the HTML report header.
-    print >>html_report, """<h1><a href="%s">%s</a></h1>""" % (
-        report_url, subject)
+    print >>html_report, """<h1 style="%s"><a href="%s">%s</a></h1>""" % (
+        styles['h1'], report_url, subject)
     print >>html_report, """\
 <p>
-<table>
+<table style="%s">
+<thead>
   <tr>
-    <th>Run</th>
-    <th>Order</th>
-    <th>Start Time</th>
-    <th>Duration</th>
-  </tr>"""
+    <th style="%s">Run</th>
+    <th style="%s">Order</th>
+    <th style="%s">Start Time</th>
+    <th style="%s">Duration</th>
+  </tr>
+</thead>""" % (styles['table'],
+               styles['th'], styles['th'], styles['th'], styles['th'])
     for (title, r) in (('Current', run),
                        ('Previous', compare_to),
                        ('Baseline', baseline)):
         if r is None:
-            print >>html_report, """<tr><td colspan=4>No %s Run</td></tr>""" % (
-                title,)
+            print >>html_report, """\
+<tr><td style="%s" colspan=4>No %s Run</td></tr>""" % (
+                style['td'], title,)
             continue
 
         # FIXME: Remove hard coded field use here.
         print >>html_report, """\
-<tr><td><a href="%s/%d">%s</a></td>\
-<td><a href="%s/order/%d">%s</a></td><td>%s</td><td>%s</td></tr>""" % (
-        ts_url, r.id, title,
-        ts_url, r.order.id, r.order.llvm_project_revision,
-        r.start_time, r.end_time - r.start_time)
+<tr><td style="%s"><a href="%s/%d">%s</a></td>\
+<td style="%s"><a href="%s/order/%d">%s</a></td>\
+<td style="%s">%s</td>\
+<td style="%s">%s</td></tr>""" % (
+            styles['td'], ts_url, r.id, title,
+            styles['td'], ts_url, r.order.id, r.order.llvm_project_revision,
+            styles['td'], r.start_time,
+            styles['td'], r.end_time - r.start_time)
     print >>html_report, """</table>"""
     if compare_to and run.machine != compare_to.machine:
         print >>html_report, """<p><b>*** WARNING ***:""",
@@ -213,10 +237,15 @@ def generate_run_report(run, baseurl, only_html_body = False,
     print >>html_report, """
 <hr>
 <h3>Tests Summary</h3>
-<table>
-<thead><tr><th>Status Group</th><th align="right">#</th>"""
+<table style="%s">
+<thead>
+  <tr>
+    <th style="%s">Status Group</th>
+    <th style="%s" align="right">#</th>""" % (
+        styles['table'], styles['th'], styles['th'])
     if baseline:
-        print >>html_report, """<th align="right"># (B)</th>"""
+        print >>html_report, """<th style="%s" align="right"># (B)</th>""" % (
+            styles['th'],)
     print >>html_report, """</tr></thead> """
     # For now, we aggregate across all bucket types for reports.
     for i,(name,_,_) in enumerate(test_results[0][1]):
@@ -235,21 +264,25 @@ def generate_run_report(run, baseurl, only_html_body = False,
             else:
                 print >>report, '%s: %d' % (name, num_items)
             print >>html_report, """
-<tr><td>%s</td><td align="right">%d</td>""" % (
-                name, num_items)
+<tr><td style="%s">%s</td><td style="%s" align="right">%d</td>""" % (
+                styles['td'], name, styles['td'], num_items)
             if baseline:
-                print >>html_report, """<td align="right">%d</td>""" % (
-                    num_items_vs_baseline)
+                print >>html_report, """\
+<td style="%s" align="right">%d</td>""" % (
+                    styles['td'], num_items_vs_baseline)
             print >>html_report, """</tr>"""
     print >>report, """Total Tests: %d""" % num_total_tests
     print >>report
     print >>html_report, """
 <tfoot>
-  <tr><td><b>Total Tests</b></td><td align="right"><b>%d</b></td>""" % (
-        num_total_tests,)
+  <tr>\
+<td style="%s"><b>Total Tests</b></td>\
+<td style="%s" align="right"><b>%d</b></td>""" % (
+        styles['td'], styles['td'], num_total_tests)
     if baseline:
-        print >>html_report, """<td align="right"><b>%d</b></td>""" % (
-            num_total_tests,)
+        print >>html_report, """\
+<td style="%s" align="right"><b>%d</b></td>""" % (
+            styles['td'], num_total_tests,)
     print >>html_report, """</tr>
 </tfoot>
 </table>
@@ -266,7 +299,8 @@ def generate_run_report(run, baseurl, only_html_body = False,
     _add_report_changes_detail(ts, test_results, report,
                                html_report, run_url,
                                run_to_baseline_info,
-                               'Previous', '', ' (B)')
+                               'Previous', '', ' (B)',
+                               styles)
 
     # Add the run-over-baseline changes detail.
     if baseline:
@@ -280,7 +314,8 @@ def generate_run_report(run, baseurl, only_html_body = False,
         _add_report_changes_detail(ts, baselined_results, report,
                                    html_report, run_url,
                                    run_to_run_info,
-                                   'Baseline', '(B)', '')
+                                   'Baseline', '(B)', '',
+                                   styles)
 
     report_time = time.time() - start_time
     print >>report, "Report Time: %.2fs" % (report_time,)
@@ -293,23 +328,15 @@ def generate_run_report(run, baseurl, only_html_body = False,
     if not only_html_body:
         # We embed the additional resources, so that the message is self
         # contained.
-        static_path = os.path.join(os.path.dirname(os.path.dirname(__file__)),
-                                   "ui", "static")
-        style_css = open(os.path.join(static_path,
-                                      "style.css")).read()
-
         html_report = """\
 <html>
   <head>
-    <style type="text/css">
-%(style_css)s
-    </style>
-    <title>%(subject)s</title>
+    <title>%s</title>
   </head>
-  <body onload="init_report()">
-%(html_report)s
+  <body style="%s">
+%s
   </body>
-</html>""" % locals()
+</html>""" % (subject, styles['body'], html_report)
 
     return subject, report.getvalue(), html_report, sri
 
@@ -365,7 +392,8 @@ def _get_changes_by_type(run_a, run_b, primary_fields, test_names,
 def _add_report_changes_detail(ts, test_results, report, html_report,
                                run_url, run_to_baseline_info,
                                primary_name, primary_field_suffix,
-                               secondary_field_suffix):
+                               secondary_field_suffix,
+                               styles):
     # Reorder results to present by most important bucket first.
     prioritized = [(priority, field, bucket_name, bucket, show_perf)
                    for field,field_results in test_results
@@ -377,12 +405,14 @@ def _add_report_changes_detail(ts, test_results, report, html_report,
         _add_report_changes_detail_for_field_and_bucket(
             ts, field, bucket_name, bucket, show_perf, report,
             html_report, run_url, run_to_baseline_info,
-            primary_name, primary_field_suffix, secondary_field_suffix)
+            primary_name, primary_field_suffix, secondary_field_suffix,
+            styles)
 
 def _add_report_changes_detail_for_field_and_bucket(
       ts, field, bucket_name, bucket, show_perf, report,
       html_report, run_url, secondary_info,
-      primary_name, primary_field_suffix, secondary_field_suffix):
+      primary_name, primary_field_suffix, secondary_field_suffix,
+      styles):
     if not bucket or bucket_name == 'Unchanged Tests':
         return
 
@@ -397,17 +427,23 @@ def _add_report_changes_detail_for_field_and_bucket(
     print >>report, '-' * (len(bucket_name) + len(field_display_name) + 3)
     print >>html_report, """
 <p>
-<table class="sortable">
-<tr><th width="500">%s - %s </th>""" % (bucket_name, field_display_name)
+<table style="%s" class="sortable">
+<tr><th style="%s", width="500">%s - %s </th>""" % (
+        styles['table'], styles['th'], bucket_name, field_display_name)
     if show_perf:
         print >>html_report, """\
-<th>&Delta;%s</th><th>%s</th><th>Current</th> <th>&sigma;%s</th>""" % (
-            primary_field_suffix, primary_name, primary_field_suffix)
+<th style="%s">&Delta;%s</th>\
+<th style="%s">%s</th>\
+<th style="%s">Current</th>\
+<th style="%s">&sigma;%s</th>""" % (
+            styles['th'], primary_field_suffix,
+            styles['th'], primary_name,
+            styles['th'], styles['th'], primary_field_suffix)
         if secondary_info:
-            print >>html_report, """<th>&Delta;%s</th>""" % (
-                secondary_field_suffix,)
-            print >>html_report, """<th>&sigma;%s</th>""" % (
-                secondary_field_suffix,)
+            print >>html_report, """<th style="%s">&Delta;%s</th>""" % (
+                styles['th'], secondary_field_suffix,)
+            print >>html_report, """<th style="%s">&sigma;%s</th>""" % (
+                styles['th'], secondary_field_suffix,)
         print >>html_report, """</tr>"""
 
     # If we aren't displaying any performance results, just write out the
@@ -416,7 +452,7 @@ def _add_report_changes_detail_for_field_and_bucket(
         for name,cr,_ in bucket:
             print >>report, '  %s' % (name,)
             print >>html_report, """
-<tr><td>%s</td></tr>""" % (name,)
+<tr><td style="%s">%s</td></tr>""" % (styles['td'], name,)
         print >>report
         print >>html_report, """
 </table>"""
@@ -440,7 +476,8 @@ def _add_report_changes_detail_for_field_and_bucket(
             os.path.join(run_url, "graph"),
             form_data, name)
 
-        pct_value = lnt.server.ui.util.PctCell(cr.pct_delta).render()
+        pct_value = lnt.server.ui.util.PctCell(cr.pct_delta).render(
+            style=styles['td'])
         if cr.stddev is not None:
             stddev_value = "%.4f" % cr.stddev
         else:
@@ -452,14 +489,22 @@ def _add_report_changes_detail_for_field_and_bucket(
                 a_stddev_value = "%.4f" % a_cr.stddev
             else:
                 a_stddev_value = "-"
-            baseline_info = "%s<td>%s</td>""" % (
-                lnt.server.ui.util.PctCell(a_cr.pct_delta).render(),
-                a_stddev_value)
+            baseline_info = """%s<td style="%s">%s</td>""" % (
+                lnt.server.ui.util.PctCell(a_cr.pct_delta).render(
+                    style=styles['td']),
+                styles['td'], a_stddev_value)
         else:
             baseline_info = ""
         print >>html_report, """\
-<tr><td>%s</td>%s<td>%.4f</td><td>%.4f</td><td>%s</td>%s</tr>""" %(
-            linked_name, pct_value, cr.previous, cr.current, stddev_value,
+<tr>\
+<td style="%s">%s</td>%s\
+<td style="%s">%.4f</td>\
+<td style="%s">%.4f</td>\
+<td style="%s">%s</td>%s</tr>""" %(
+            styles['td'], linked_name, pct_value,
+            styles['td'], cr.previous,
+            styles['td'], cr.current,
+            styles['td'], stddev_value,
             baseline_info)
     print >>report
     print >>html_report, """
