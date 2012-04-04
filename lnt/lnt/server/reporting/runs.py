@@ -199,7 +199,7 @@ def generate_run_report(run, baseurl, only_html_body = False,
         if r is None:
             print >>html_report, """\
 <tr><td style="%s" colspan=4>No %s Run</td></tr>""" % (
-                style['td'], title,)
+                styles['td'], title,)
             continue
 
         # FIXME: Remove hard coded field use here.
