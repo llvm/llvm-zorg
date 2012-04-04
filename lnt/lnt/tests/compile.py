@@ -795,7 +795,7 @@ class CompileTest(builtintest.BuiltinTest):
         test_log = open(test_log_path, 'w')
 
         # Tee the output to stderr as well.
-        test_log = TeeStream(test_log, sys.stderr)
+        test_log = TeeStream(test_log, sys.stderr, noclose_b=True)
 
         # Execute the run.
         run_info.update(variables)
