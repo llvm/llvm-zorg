@@ -66,10 +66,10 @@ def AddLNTTestsToFactory(f, nt_flags, cc_path, cxx_path, **kwargs):
                          os.path.join('%(builddir)s', base_directory, 'lib',
                                       'libLTO.dylib'))])
 
-    # Get the Zorg sources, for LNT.
-    f.addStep(SVN(name='pull.zorg', mode='incremental', method='fresh',
-                  baseURL='http://llvm.org/svn/llvm-project/zorg/',
-                  defaultBranch='trunk', workdir='zorg', alwaysUseLatest=True))
+    # Get the LNT sources.
+    f.addStep(SVN(name='pull.lnt', mode='incremental', method='fresh',
+                  baseURL='http://llvm.org/svn/llvm-project/lnt/',
+                  defaultBranch='trunk', workdir='lnt', alwaysUseLatest=True))
 
     # Get the LLVM test-suite sources.
     f.addStep(SVN(name='pull.test-suite', mode='incremental', method='fresh',
@@ -93,7 +93,7 @@ def AddLNTTestsToFactory(f, nt_flags, cc_path, cxx_path, **kwargs):
                      '--no-index',
                      '--find-links', package_cache,
                      '-e', '.'],
-            description=['install', 'LNT'], workdir='zorg/lnt',
+            description=['install', 'LNT'], workdir='lnt',
             env={'ARCHFLAGS' : '-arch i386 -arch x86_64'}))
 
     # Clean up the sandbox dir.
