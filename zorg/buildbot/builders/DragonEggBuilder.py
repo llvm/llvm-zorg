@@ -227,6 +227,7 @@ def getDragonEggBootstrapFactory(gcc_repository, extra_languages=[],
 
 def getDragonEggNightlyTestBuildFactory(gcc='gcc', gxx='g++',
                                         llvm_configure_args=[],
+                                        testsuite_configure_args=[],
                                         xfails=[], clean=True, env={},
                                         jobs='%(jobs)s', timeout=20):
     f = buildbot.process.factory.BuildFactory()
@@ -344,7 +345,8 @@ def getDragonEggNightlyTestBuildFactory(gcc='gcc', gxx='g++',
                                  WithProperties('--with-llvmsrc=%(builddir)s/' + llvm_src_dir),
                                  WithProperties('--with-llvmobj=%(builddir)s/' + llvm_obj_dir),
                                  WithProperties('--with-llvmgccdir=%(builddir)s/'),
-                                 '--with-llvmcc=llvm-gcc', 'CC=' + gcc, 'CXX=' + gxx],
+                                 '--with-llvmcc=llvm-gcc', 'CC=' + gcc, 'CXX=' + gxx] +
+                                 testsuite_configure_args,
                         description='configuring nightly test-suite',
                         descriptionDone='configure nightly test-suite',
                         haltOnFailure=True, workdir=testsuite_obj_dir, env=env))
@@ -360,6 +362,7 @@ def getDragonEggNightlyTestBuildFactory(gcc='gcc', gxx='g++',
                                  command=['make', WithProperties('-j%s' % jobs),
                                           'ENABLE_PARALLEL_REPORT=1',
                                           'DISABLE_CBE=1', 'DISABLE_JIT=1',
+                                          'RUNTIMELIMIT=%s' % (timeout*60),
                                           'TEST=nightly', 'report'],
                                  logfiles={'report' : 'report.nightly.txt'},
                                  description='running nightly test-suite',
