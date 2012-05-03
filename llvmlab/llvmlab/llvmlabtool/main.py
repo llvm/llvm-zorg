@@ -139,13 +139,25 @@ def action_runserver(name, args):
     import llvmlab
     from optparse import OptionParser, OptionGroup
     parser = OptionParser("%%prog %s [options]" % name)
+    parser.add_option("", "--reloader", dest="reloader", default=False,
+                      action="store_true", help="use WSGI reload monitor")
+    parser.add_option("", "--debugger", dest="debugger", default=False,
+                      action="store_true", help="use WSGI debugger")
+    parser.add_option("", "--profiler", dest="profiler", default=False,
+                      action="store_true", help="enable WSGI profiler")
     (opts, args) = parser.parse_args(args)
 
     if len(args) != 0:
         parser.error("invalid number of arguments")
 
-    instance = llvmlab.ui.app.App.create_standalone()
-    instance.run()
+    app = llvmlab.ui.app.App.create_standalone()
+    if opts.debugger:
+        app.debug = True
+    if opts.profiler:
+        app.wsgi_app = werkzeug.contrib.profiler.ProfilerMiddleware(
+            app.wsgi_app, stream = open('profiler.log', 'w'))
+    app.run(use_reloader = opts.reloader,
+            use_debugger = opts.debugger)
 
 def action_import_users(name, args):
     """import users from SVN information"""
