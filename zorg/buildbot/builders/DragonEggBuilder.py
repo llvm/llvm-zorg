@@ -547,7 +547,7 @@ def getDragonEggTestBuildFactory(gcc='gcc', svn_testsuites=[],
                                         WithProperties('LLVM_CONFIG=%(builddir)s/' +
                                                        llvm_install_dir + '/bin/llvm-config'),
                                         WithProperties('TOP_DIR=%(builddir)s/' + dragonegg_src_dir),
-                                        WithProperties('LIT_ARGS=-j%s' % jobs),
+                                        WithProperties('LIT_ARGS=-v -j%s' % jobs),
                                         'check'
                                         ],
                                description='running test-suite',
