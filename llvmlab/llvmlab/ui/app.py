@@ -172,7 +172,8 @@ class App(flask.Flask):
             os.remove(backup_path)
         except:
             pass
-        shutil.move(status_path, backup_path)
+        if os.path.exists(status_path):
+            shutil.move(status_path, backup_path)
         shutil.move(data_path, status_path)
 
     def authenticate_login(self, username, password):
