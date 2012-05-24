@@ -20,8 +20,9 @@ def get_build_slaves():
         # Quad Core Mac Pro running Lion.
         create_slave("as-bldslv11", properties={'jobs' : 1}, max_builds=4),
 
-        # Ubuntu pandaboard cortex-a9
+        # Ubuntu pandaboard cortex-a9 slaves
         create_slave("kistanova6", properties={'jobs' : 2}, max_builds=1),
+        create_slave("as-bldslv2", properties={'jobs' : 1}, max_builds=1),
 
         # FreeBSD 8.2 X86_64
         create_slave("kistanova7", properties={'jobs' : 2}, max_builds=1),

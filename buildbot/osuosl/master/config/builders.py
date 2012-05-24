@@ -170,7 +170,7 @@ def _get_clang_builders():
                                                                        xfails=clang_x86_64_linux_xfails)},
 
         {'name': "clang-native-arm-cortex-a9",
-         'slavenames':["kistanova6"],
+         'slavenames':["kistanova6", "as-bldslv2"],
          'builddir':"clang-native-arm-cortex-a9",
          'factory' : ClangBuilder.getClangBuildFactory(
                      stage1_config='Release+Asserts',
