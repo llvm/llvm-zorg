@@ -49,25 +49,12 @@ def _get_llvm_builders():
          'builddir':"llvm-arm-linux",
          'factory': LLVMBuilder.getLLVMBuildFactory("arm-pc-linux-gnu", jobs=1, clean=True,
                                                     timeout=40)},
-        {'name': "llvm-ppc-darwin",
-         'slavenames':["arxan_bellini"],
-         'builddir':"llvm-ppc-darwin",
-         'factory': LLVMBuilder.getLLVMBuildFactory("ppc-darwin", jobs=2, clean=True,
-                            config_name = 'Release',
-                            env = { 'CC' : "/usr/bin/gcc-4.2",
-                                    'CXX': "/usr/bin/g++-4.2" },
-                            extra_configure_args=['--enable-shared'],
-                            timeout=600)},
         {'name': "llvm-i686-debian",
          'slavenames': ["gcc15"],
          'builddir': "llvm-i686-debian",
          'factory': LLVMBuilder.getLLVMBuildFactory("i686-pc-linux-gnu",
                                                     config_name = 'Release+Asserts',
                                                     env = { 'CC' : "gcc -m32",  'CXX' : "g++ -m32" })},
-        {'name': "llvm-x86_64-ubuntu",
-         'slavenames':["arxan_davinci"],
-         'builddir':"llvm-x86_64-ubuntu",
-         'factory': LLVMBuilder.getLLVMBuildFactory("x86_64-pc-linux-gnu", jobs=4)},
         ]
 
 # Offline.
@@ -148,16 +135,6 @@ def _get_clang_builders():
          'builddir':"clang-x86_64-debian",
          'factory': ClangBuilder.getClangBuildFactory(extra_configure_args=['--enable-shared'])},
 
-        {'name': "clang-atom-d2700-ubuntu",
-         'slavenames':["atom-buildbot"],
-         'builddir':"clang-atom-d2700-ubuntu",
-         'factory' : ClangBuilder.getClangBuildFactory()},
-
-        {'name': "clang-x86_64-ubuntu",
-         'slavenames':["arxan_raphael"],
-         'builddir':"clang-x86_64-ubuntu",
-         'factory' : ClangBuilder.getClangBuildFactory()},
-
         {'name' : "clang-x86_64-debian-selfhost-rel",
          'slavenames' : ["gcc13"],
          'builddir' : "clang-x86_64-debian-selfhost-rel",
@@ -201,14 +178,6 @@ def _get_clang_builders():
                                                        useTwoStage=True, test=True,
                                                        stage1_config='Release+Asserts',
                                                        stage2_config='Release+Asserts')},
-
-        {'name'      : "clang-native-mingw64-win7",
-         'slavenames': ["milyng1"],
-         'builddir'  : "clang-native-mingw64-win7",
-         'factory'   : ClangBuilder.getClangBuildFactory(triple='x86_64-pc-mingw64',
-                                                         useTwoStage=True, test=True,
-                                                         stage1_config='Release+Asserts',
-                                                         stage2_config='Release+Asserts')},
 
         # Clang cross builders.
         {'name' : "clang-x86_64-darwin11-cross-mingw32",
@@ -255,14 +224,6 @@ def _get_clang_builders():
                                               nt_flags=['--multisample=3'], jobs=2,  use_pty_in_tests=True,
                                               testerName='O3-plain', run_cxx_tests=True,
                                               package_cache=LabPackageCache)},
-
-        {'name' : "clang-x86_64-darwin10-nt-O3-vectorize",
-         'slavenames' :["lab-mini-02"],
-         'builddir' :"clang-x86_64-darwin10-nt-O3-vectorize",
-         'factory' : LNTBuilder.getLNTFactory(triple='x86_64-apple-darwin10',
-                                              nt_flags=['--mllvm=-vectorize', '--multisample=3'], jobs=2,
-                                              use_pty_in_tests=True, testerName='O3-vectorize',
-                                              run_cxx_tests=True, package_cache=LabPackageCache)},
 
         ]
 
@@ -428,10 +389,6 @@ def _get_dragonegg_builders():
 # Polly builders.
 def _get_polly_builders():
     return [
-        {'name': "polly-amd64-linux",
-         'slavenames':["grosser1"],
-         'builddir':"polly-amd64-linux",
-         'factory': PollyBuilder.getPollyBuildFactory()},
         {'name': "polly-intel32-linux",
          'slavenames':["botether"],
          'builddir':"polly-intel32-linux",
@@ -457,9 +414,54 @@ def _get_lldb_builders():
 #                                                   env=gcc_m32_latest_env)}
        ]
 
+# Experimental and stopped builders
 def _get_experimental_builders():
     return [
+        {'name': "llvm-ppc-darwin",
+         'slavenames':["arxan_bellini"],
+         'builddir':"llvm-ppc-darwin",
+         'factory': LLVMBuilder.getLLVMBuildFactory("ppc-darwin", jobs=2, clean=True,
+                            config_name = 'Release',
+                            env = { 'CC' : "/usr/bin/gcc-4.2",
+                                    'CXX': "/usr/bin/g++-4.2" },
+                            extra_configure_args=['--enable-shared'],
+                            timeout=600)},
 
+        {'name': "llvm-x86_64-ubuntu",
+         'slavenames':["arxan_davinci"],
+         'builddir':"llvm-x86_64-ubuntu",
+         'factory': LLVMBuilder.getLLVMBuildFactory("x86_64-pc-linux-gnu", jobs=4)},
+
+        {'name': "clang-atom-d2700-ubuntu",
+         'slavenames':["atom-buildbot"],
+         'builddir':"clang-atom-d2700-ubuntu",
+         'factory' : ClangBuilder.getClangBuildFactory()},
+
+        {'name': "clang-x86_64-ubuntu",
+         'slavenames':["arxan_raphael"],
+         'builddir':"clang-x86_64-ubuntu",
+         'factory' : ClangBuilder.getClangBuildFactory()},
+
+        {'name'      : "clang-native-mingw64-win7",
+         'slavenames': ["milyng1"],
+         'builddir'  : "clang-native-mingw64-win7",
+         'factory'   : ClangBuilder.getClangBuildFactory(triple='x86_64-pc-mingw64',
+                                                         useTwoStage=True, test=True,
+                                                         stage1_config='Release+Asserts',
+                                                         stage2_config='Release+Asserts')},
+
+        {'name' : "clang-x86_64-darwin10-nt-O3-vectorize",
+         'slavenames' :["lab-mini-02"],
+         'builddir' :"clang-x86_64-darwin10-nt-O3-vectorize",
+         'factory' : LNTBuilder.getLNTFactory(triple='x86_64-apple-darwin10',
+                                              nt_flags=['--mllvm=-vectorize', '--multisample=3'], jobs=2,
+                                              use_pty_in_tests=True, testerName='O3-vectorize',
+                                              run_cxx_tests=True, package_cache=LabPackageCache)},
+
+        {'name': "polly-amd64-linux",
+         'slavenames':["grosser1"],
+         'builddir':"polly-amd64-linux",
+         'factory': PollyBuilder.getPollyBuildFactory()},
         ]
 
 def get_builders():
