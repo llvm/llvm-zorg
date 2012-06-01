@@ -148,6 +148,11 @@ def _get_clang_builders():
          'builddir':"clang-x86_64-debian",
          'factory': ClangBuilder.getClangBuildFactory(extra_configure_args=['--enable-shared'])},
 
+        {'name': "clang-atom-d2700-ubuntu",
+         'slavenames':["atom-buildbot"],
+         'builddir':"clang-atom-d2700-ubuntu",
+         'factory' : ClangBuilder.getClangBuildFactory()},
+
         {'name': "clang-x86_64-ubuntu",
          'slavenames':["arxan_raphael"],
          'builddir':"clang-x86_64-ubuntu",
