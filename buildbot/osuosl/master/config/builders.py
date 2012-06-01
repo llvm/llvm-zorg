@@ -416,6 +416,9 @@ def _get_lldb_builders():
 
 # Experimental and stopped builders
 def _get_experimental_builders():
+
+    LabPackageCache = 'http://10.1.1.2/packages/'
+
     return [
         {'name': "llvm-ppc-darwin",
          'slavenames':["arxan_bellini"],
@@ -486,6 +489,7 @@ def get_builders():
         yield b
 
     for b in _get_experimental_builders():
+        b['category'] = 'experimental'
         yield b
 
 # Random other unused builders...
