@@ -428,22 +428,26 @@ def _get_experimental_builders():
                             env = { 'CC' : "/usr/bin/gcc-4.2",
                                     'CXX': "/usr/bin/g++-4.2" },
                             extra_configure_args=['--enable-shared'],
-                            timeout=600)},
+                            timeout=600),
+         'category' : 'llvm'},
 
         {'name': "llvm-x86_64-ubuntu",
          'slavenames':["arxan_davinci"],
          'builddir':"llvm-x86_64-ubuntu",
-         'factory': LLVMBuilder.getLLVMBuildFactory("x86_64-pc-linux-gnu", jobs=4)},
+         'factory': LLVMBuilder.getLLVMBuildFactory("x86_64-pc-linux-gnu", jobs=4),
+         'category' : 'llvm'},
 
         {'name': "clang-atom-d2700-ubuntu",
          'slavenames':["atom-buildbot"],
          'builddir':"clang-atom-d2700-ubuntu",
-         'factory' : ClangBuilder.getClangBuildFactory()},
+         'factory' : ClangBuilder.getClangBuildFactory(),
+         'category' : 'clang'},
 
         {'name': "clang-x86_64-ubuntu",
          'slavenames':["arxan_raphael"],
          'builddir':"clang-x86_64-ubuntu",
-         'factory' : ClangBuilder.getClangBuildFactory()},
+         'factory' : ClangBuilder.getClangBuildFactory(),
+         'category' : 'clang'},
 
         {'name'      : "clang-native-mingw64-win7",
          'slavenames': ["milyng1"],
@@ -451,7 +455,8 @@ def _get_experimental_builders():
          'factory'   : ClangBuilder.getClangBuildFactory(triple='x86_64-pc-mingw64',
                                                          useTwoStage=True, test=True,
                                                          stage1_config='Release+Asserts',
-                                                         stage2_config='Release+Asserts')},
+                                                         stage2_config='Release+Asserts'),
+         'category'  : 'clang'},
 
         {'name' : "clang-x86_64-darwin10-nt-O3-vectorize",
          'slavenames' :["lab-mini-02"],
@@ -459,12 +464,14 @@ def _get_experimental_builders():
          'factory' : LNTBuilder.getLNTFactory(triple='x86_64-apple-darwin10',
                                               nt_flags=['--mllvm=-vectorize', '--multisample=3'], jobs=2,
                                               use_pty_in_tests=True, testerName='O3-vectorize',
-                                              run_cxx_tests=True, package_cache=LabPackageCache)},
+                                              run_cxx_tests=True, package_cache=LabPackageCache),
+         'category' : 'clang'},
 
         {'name': "polly-amd64-linux",
          'slavenames':["grosser1"],
          'builddir':"polly-amd64-linux",
-         'factory': PollyBuilder.getPollyBuildFactory()},
+         'factory': PollyBuilder.getPollyBuildFactory(),
+         'category' : 'polly'},
         ]
 
 def get_builders():
@@ -489,7 +496,6 @@ def get_builders():
         yield b
 
     for b in _get_experimental_builders():
-        b['category'] = 'experimental'
         yield b
 
 # Random other unused builders...
