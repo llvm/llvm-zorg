@@ -225,6 +225,15 @@ def _get_clang_builders():
                                               testerName='O3-plain', run_cxx_tests=True,
                                               package_cache=LabPackageCache)},
 
+        {'name' : "clang-x86_64-darwin10-nt-O0-g",
+         'slavenames' :["lab-mini-03"],
+         'builddir' :"clang-x86_64-darwin10-nt-O0-g",
+         'factory' : LNTBuilder.getLNTFactory(triple='x86_64-apple-darwin10',
+                                              nt_flags=['--multisample=3', '-O0', '-g'],
+                                              jobs=2,  use_pty_in_tests=True,
+                                              testerName='O0-g', run_cxx_tests=True,
+                                              package_cache=LabPackageCache)},
+
         ]
 
 # Offline.
