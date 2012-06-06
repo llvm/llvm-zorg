@@ -423,6 +423,80 @@ def getClangMSVCBuildFactory(update=True, clean=True, vcDrive='c', jobs=1, cmake
 
     return f
 
+# Builds on Windows using CMake, MinGW(32|64), and no Microsoft tools.
+def getClangMinGWBuildFactory(update=True, clean=True, jobs=1, cmake=r"cmake"):
+    f = buildbot.process.factory.BuildFactory()
+
+    if update:
+        f.addStep(SVN(name='svn-llvm',
+                      mode='update', baseURL='http://llvm.org/svn/llvm-project/llvm/',
+                      defaultBranch='trunk',
+                      workdir='llvm'))
+
+    if update:
+        f.addStep(SVN(name='svn-clang',
+                      mode='update', baseURL='http://llvm.org/svn/llvm-project/cfe/',
+                      defaultBranch='trunk',
+                      workdir='llvm/tools/clang'))
+
+    # Full & fast clean.
+    if clean:
+        # note: This command is redundant as the next command removes everything
+        f.addStep(ShellCommand(name='clean-1',
+                               command=['del','/s/q','build'],
+                               warnOnFailure=True,
+                               description='cleaning',
+                               descriptionDone='clean',
+                               workdir='llvm'))
+        f.addStep(ShellCommand(name='clean-2',
+                               command=['rmdir','/s/q','build'],
+                               warnOnFailure=True,
+                               description='cleaning',
+                               descriptionDone='clean',
+                               workdir='llvm'))
+
+    # Create the Makefiles.
+
+    # Use batch files instead of ShellCommand directly, Windows quoting is
+    # borked. FIXME: See buildbot ticket #595 and buildbot ticket #377.
+    f.addStep(BatchFileDownload(name='cmakegen',
+                                command=[cmake,
+                                         "-DLLVM_TARGETS_TO_BUILD:=X86",
+                                         "-DLLVM_INCLUDE_EXAMPLES:=OFF",
+                                         "-DLLVM_INCLUDE_TESTS:=OFF",
+                                         "-DLLVM_TARGETS_TO_BUILD:=X86",
+                                         "-G",
+                                         "MinGW Makefiles",
+                                         ".."],
+                                workdir="llvm\\build"))
+    f.addStep(ShellCommand(name='cmake',
+                           command=['cmakegen.bat'],
+                           haltOnFailure=True,
+                           description='cmake gen',
+                           workdir='llvm\\build'))
+
+    # Build it.
+    f.addStep(BatchFileDownload(name='makeall',
+                                command=["make", "-j%d" % jobs],
+                                haltOnFailure=True,
+                                workdir='llvm\\build'))
+
+    f.addStep(WarningCountingShellCommand(name='makeall',
+                                          command=['makeall.bat'],
+                                          haltOnFailure=True,
+                                          description='makeall',
+                                          workdir='llvm\\build'))
+
+    # Build clang-test project.
+    f.addStep(BatchFileDownload(name='maketest',
+                                command=["make", "-j%d" % jobs],
+                                workdir="llvm\\build\\tools\\clang\\test"))
+    f.addStep(ClangTestCommand(name='test-clang',
+                               command=["maketest.bat"],
+                               workdir="llvm\\build\\tools\\clang\\test"))
+
+    return f
+
 def addClangGCCTests(f, ignores={}, install_prefix="%(builddir)s/llvm.install",
                      languages = ('gcc', 'g++', 'objc', 'obj-c++')):
     make_vars = [WithProperties(

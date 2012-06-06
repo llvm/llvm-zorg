@@ -463,10 +463,7 @@ def _get_experimental_builders():
         {'name'      : "clang-native-mingw64-win7",
          'slavenames': ["milyng1"],
          'builddir'  : "clang-native-mingw64-win7",
-         'factory'   : ClangBuilder.getClangBuildFactory(triple='x86_64-pc-mingw64',
-                                                         useTwoStage=True, test=True,
-                                                         stage1_config='Release+Asserts',
-                                                         stage2_config='Release+Asserts'),
+         'factory'   : ClangBuilder.getClangMinGWBuildFactory(),
          'category'  : 'clang'},
 
         {'name' : "clang-x86_64-darwin10-nt-O3-vectorize",
