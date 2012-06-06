@@ -151,6 +151,11 @@ def _get_clang_builders():
                                                                        test=False,
                                                                        xfails=clang_x86_64_linux_xfails)},
 
+        {'name': "clang-atom-d2700-ubuntu",
+         'slavenames':["atom-buildbot"],
+         'builddir':"clang-atom-d2700-ubuntu",
+         'factory' : ClangBuilder.getClangBuildFactory()},
+
         {'name': "clang-native-arm-cortex-a9",
          'slavenames':["as-bldslv1", "as-bldslv2"],
          'builddir':"clang-native-arm-cortex-a9",
@@ -447,12 +452,6 @@ def _get_experimental_builders():
          'builddir':"llvm-x86_64-ubuntu",
          'factory': LLVMBuilder.getLLVMBuildFactory("x86_64-pc-linux-gnu", jobs=4),
          'category' : 'llvm'},
-
-        {'name': "clang-atom-d2700-ubuntu",
-         'slavenames':["atom-buildbot"],
-         'builddir':"clang-atom-d2700-ubuntu",
-         'factory' : ClangBuilder.getClangBuildFactory(),
-         'category' : 'clang'},
 
         {'name': "clang-x86_64-ubuntu",
          'slavenames':["arxan_raphael"],
