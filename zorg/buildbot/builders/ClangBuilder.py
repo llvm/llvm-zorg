@@ -487,13 +487,22 @@ def getClangMinGWBuildFactory(update=True, clean=True, jobs=1, cmake=r"cmake"):
                                           description='makeall',
                                           workdir='llvm\\build'))
 
-    # Build clang-test project.
+    # Build global check project (make check).
+    f.addStep(BatchFileDownload(name='makecheck',
+                                command=["make", "check"],
+                                workdir='llvm\\build'))
+    f.addStep(WarningCountingShellCommand(name='check',
+                                          command=['makecheck.bat'],
+                                          description='make check',
+                                          workdir='llvm\\build'))
+
+    # Build clang-test project (make clang-test).
     f.addStep(BatchFileDownload(name='maketest',
-                                command=["make", "-j%d" % jobs],
-                                workdir="llvm\\build\\tools\\clang\\test"))
-    f.addStep(ClangTestCommand(name='test-clang',
+                                command=["make", "clang-test"],
+                                workdir="llvm\\build"))
+    f.addStep(ClangTestCommand(name='clang-test',
                                command=["maketest.bat"],
-                               workdir="llvm\\build\\tools\\clang\\test"))
+                               workdir="llvm\\build"))
 
     return f
 
