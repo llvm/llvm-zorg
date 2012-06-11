@@ -127,6 +127,7 @@ def AddLNTTestsToFactory(f, nt_flags, cc_path, cxx_path, **kwargs):
     f.addStep(zorg.buildbot.commands.LitTestCommand.LitTestCommand(
             name='lnt.nightly-test', command=args, haltOnFailure=True,
             description=['nightly test'], workdir='tests',
+            timeout=7200, # set timeout to 2 hours as workaround for PR 12695
             logfiles={'configure.log' : 'nt/build/configure.log',
                       'build-tools.log' : 'nt/build/build-tools.log',
                       'test.log' : 'nt/build/test.log',
