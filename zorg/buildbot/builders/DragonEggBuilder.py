@@ -425,7 +425,7 @@ def getDragonEggTestBuildFactory(gcc='gcc', svn_testsuites=[],
     # LAPACK.
     f.addStep(ShellCommand(name='wget.lapack',
                            command='wget -N http://www.netlib.org/lapack/lapack-3.4.0.tgz',
-                           haltOnFailure=True, workdir=compilator_dir,
+                           haltOnFailure=False, workdir=compilator_dir,
                            env=env))
     f.addStep(ShellCommand(name='unpack.lapack',
                            command='tar xzf lapack-3.4.0.tgz',
@@ -435,7 +435,7 @@ def getDragonEggTestBuildFactory(gcc='gcc', svn_testsuites=[],
     # Nist Fortran 77 test suite.
     f.addStep(ShellCommand(name='wget.nist',
                            command='wget -N ftp://ftp.fortran-2000.com/fcvs21_f95.tar.bz2',
-                           haltOnFailure=True, workdir=compilator_dir,
+                           haltOnFailure=False, workdir=compilator_dir,
                            env=env))
     f.addStep(ShellCommand(name='unpack.nist',
                            command='tar xjf fcvs21_f95.tar.bz2',
@@ -445,7 +445,7 @@ def getDragonEggTestBuildFactory(gcc='gcc', svn_testsuites=[],
     # Polyhedron.
     f.addStep(ShellCommand(name='wget.polyhedron',
                            command='wget -N http://www.polyhedron.com/web_images/documents/pb11.zip',
-                           haltOnFailure=True, workdir=compilator_dir,
+                           haltOnFailure=False, workdir=compilator_dir,
                            env=env))
     f.addStep(ShellCommand(name='unpack.polyhedron',
                            command='unzip -o pb11.zip',
@@ -471,7 +471,7 @@ def getDragonEggTestBuildFactory(gcc='gcc', svn_testsuites=[],
                            env=env))
     f.addStep(ShellCommand(name='wget.gcc',
                            command='wget -N http://people.csail.mit.edu/smcc/projects/single-file-programs/gcc.c.bz2',
-                           haltOnFailure=True, workdir=compilator_dir,
+                           haltOnFailure=False, workdir=compilator_dir,
                            env=env))
     f.addStep(ShellCommand(name='unpack.gcc',
                            command='bunzip2 -f -k gcc.c.bz2',
