@@ -424,7 +424,7 @@ def getClangMSVCBuildFactory(update=True, clean=True, vcDrive='c', jobs=1, cmake
     return f
 
 # Builds on Windows using CMake, MinGW(32|64), and no Microsoft tools.
-def getClangMinGWBuildFactory(update=True, clean=True, jobs=1, cmake=r"cmake"):
+def getClangMinGWBuildFactory(update=True, clean=True, jobs=6, cmake=r"cmake"):
     f = buildbot.process.factory.BuildFactory()
 
     if update:
@@ -466,7 +466,7 @@ def getClangMinGWBuildFactory(update=True, clean=True, jobs=1, cmake=r"cmake"):
                                          "-DLLVM_INCLUDE_TESTS:=OFF",
                                          "-DLLVM_TARGETS_TO_BUILD:=X86",
                                          "-G",
-                                         "MinGW Makefiles",
+                                         "Ninja",
                                          ".."],
                                 workdir="llvm\\build"))
     f.addStep(ShellCommand(name='cmake',
@@ -477,7 +477,7 @@ def getClangMinGWBuildFactory(update=True, clean=True, jobs=1, cmake=r"cmake"):
 
     # Build it.
     f.addStep(BatchFileDownload(name='makeall',
-                                command=["make", "-j%d" % jobs],
+                                command=["ninja", "-j", "%d" % jobs],
                                 haltOnFailure=True,
                                 workdir='llvm\\build'))
 
@@ -487,18 +487,19 @@ def getClangMinGWBuildFactory(update=True, clean=True, jobs=1, cmake=r"cmake"):
                                           description='makeall',
                                           workdir='llvm\\build'))
 
-    # Build global check project (make check).
-    f.addStep(BatchFileDownload(name='makecheck',
-                                command=["make", "check"],
-                                workdir='llvm\\build'))
-    f.addStep(WarningCountingShellCommand(name='check',
-                                          command=['makecheck.bat'],
-                                          description='make check',
-                                          workdir='llvm\\build'))
+    # Build global check project (make check) (sources not checked out...).
+    if 0:
+        f.addStep(BatchFileDownload(name='makecheck',
+                                    command=["ninja", "check"],
+                                    workdir='llvm\\build'))
+        f.addStep(WarningCountingShellCommand(name='check',
+                                              command=['makecheck.bat'],
+                                              description='make check',
+                                              workdir='llvm\\build'))
 
     # Build clang-test project (make clang-test).
     f.addStep(BatchFileDownload(name='maketest',
-                                command=["make", "clang-test"],
+                                command=["ninja", "clang-test"],
                                 workdir="llvm\\build"))
     f.addStep(ClangTestCommand(name='clang-test',
                                command=["maketest.bat"],
