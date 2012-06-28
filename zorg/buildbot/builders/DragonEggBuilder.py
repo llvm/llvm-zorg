@@ -66,6 +66,23 @@ def getDragonEggBootstrapFactory(gcc_repository, extra_languages=[],
                            haltOnFailure=True,
                            workdir='.', env=env))
 
+    gcc_install_dir = 'gcc.install'	# Names are embedded in object files, so
+    llvm_install_dir = 'llvm.install'	# would cause bootstrap comparison fails
+					# if they were different for each stage.
+
+    # Remove any install directories hanging over from a previous run.
+    if clean:
+        f.addStep(ShellCommand(name='rm-%s' % gcc_install_dir,
+                               command=['rm', '-rf', gcc_install_dir],
+                               haltOnFailure=True,
+                               description=['rm install dir', 'gcc'],
+                               workdir='.', env=env))
+        f.addStep(ShellCommand(name='rm-%s' % llvm_install_dir,
+                               command=['rm', '-rf', llvm_install_dir],
+                               haltOnFailure=True,
+                               description=['rm install dir', 'llvm'],
+                               workdir='.', env=env))
+
     # Do the boostrap.
     cur_env = env
     prev_gcc = None     # C compiler built during the previous stage.
@@ -75,9 +92,6 @@ def getDragonEggBootstrapFactory(gcc_repository, extra_languages=[],
 
       # Build and install GCC.
       gcc_obj_dir = 'gcc.obj.%s' % stage
-      gcc_install_dir = 'gcc.install' # Name is embedded in object files, so if
-                                      # per-stage would get bootstrap comparison
-                                      # failures.
       if clean:
           f.addStep(ShellCommand(name='rm-%s' % gcc_obj_dir,
                                  command=['rm', '-rf', gcc_obj_dir],
@@ -133,9 +147,6 @@ def getDragonEggBootstrapFactory(gcc_repository, extra_languages=[],
 
       # Build LLVM with the just built GCC and install it.
       llvm_obj_dir = 'llvm.obj.%s' % stage
-      llvm_install_dir = 'llvm.install' # Name is embedded in object files, so
-                                        # if per-stage would get bootstrap
-                                        # comparison failures.
       if clean:
           f.addStep(ShellCommand(name='rm-%s' % llvm_obj_dir,
                                  command=['rm', '-rf', llvm_obj_dir],
