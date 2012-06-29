@@ -66,9 +66,9 @@ def getDragonEggBootstrapFactory(gcc_repository, extra_languages=[],
                            haltOnFailure=True,
                            workdir='.', env=env))
 
-    gcc_install_dir = 'gcc.install'	# Names are embedded in object files, so
-    llvm_install_dir = 'llvm.install'	# would cause bootstrap comparison fails
-					# if they were different for each stage.
+    gcc_install_dir = 'gcc.install'     # Names are embedded in object files, so
+    llvm_install_dir = 'llvm.install'   # would cause bootstrap comparison fails
+                                        # if they were different for each stage.
 
     # Remove any install directories hanging over from a previous run.
     if clean:
@@ -225,9 +225,12 @@ def getDragonEggBootstrapFactory(gcc_repository, extra_languages=[],
     # Check that the dragonegg objects didn't change between stages 2 and 3.
     f.addStep(ShellCommand(name='compare.stages',
                            command=['sh', '-c', 'for O in *.o ; do ' +
+                                    'O2=../dragonegg.obj.stage2/$O ; '
+                                    'O3=../dragonegg.obj.stage3/$O ; '
+                                    'strip --strip-debug $O2 -o $O2.no_dbg ; ' +
+                                    'strip --strip-debug $O3 -o $O3.no_dbg ; ' +
                                     'cmp --ignore-initial=16 ' +
-                                    '../dragonegg.obj.stage2/$O ' +
-                                    '../dragonegg.obj.stage3/$O || exit 1 ; ' +
+                                    '$O2.no_dbg $O3.no_dbg || exit 1 ; ' +
                                     'done'],
                            haltOnFailure=True,
                            description='compare stages 2 and 3',
