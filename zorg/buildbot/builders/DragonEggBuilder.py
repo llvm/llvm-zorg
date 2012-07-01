@@ -197,13 +197,17 @@ def getDragonEggBootstrapFactory(gcc_repository, extra_languages=[],
       prev_gcc = '%(builddir)s/'+gcc_install_dir+'/bin/gcc -fplugin=%(builddir)s/'+dragonegg_pre_obj_dir+'/dragonegg.so'
       prev_gxx = '%(builddir)s/'+gcc_install_dir+'/bin/g++ -fplugin=%(builddir)s/'+dragonegg_pre_obj_dir+'/dragonegg.so'
 
-      # Now build dragonegg again using the just built dragonegg.
-      dragonegg_obj_dir = 'dragonegg.obj.%s' % stage
-      if clean:
-          f.addStep(ShellCommand(name='rm-%s' % dragonegg_obj_dir,
-                                 command=['rm', '-rf', dragonegg_obj_dir],
-                                 description=['rm build dir', 'dragonegg', stage],
-                                 haltOnFailure=True, workdir='.', env=cur_env))
+      # Now build dragonegg again using the just built dragonegg.  The build is
+      # always done in the same directory to ensure that object files built by
+      # the different stages should be the same (the build directory name ends
+      # up in object files via debug info), then moved to a per-stage directory.
+      dragonegg_bld_dir = 'dragonegg.obj' # The common build directory.
+      dragonegg_obj_dir = 'dragonegg.obj.%s' % stage # The per-stage directory.
+      f.addStep(ShellCommand(name='rm-%s' % dragonegg_obj_dir,
+                             command=['rm', '-rf', dragonegg_bld_dir,
+                                      dragonegg_obj_dir],
+                             description=['rm build dirs', 'dragonegg', stage],
+                             haltOnFailure=True, workdir='.', env=cur_env))
       f.addStep(WarningCountingShellCommand(
               name='compile.dragonegg.%s' % stage,
               command=['nice', '-n', '10',
@@ -215,7 +219,12 @@ def getDragonEggBootstrapFactory(gcc_repository, extra_languages=[],
                        WithProperties('TOP_DIR=%(builddir)s/' + dragonegg_src_dir)
                        ] + getCCSetting(prev_gcc, prev_gxx),
               description=['compile', 'dragonegg', stage], haltOnFailure=True,
-              workdir=dragonegg_obj_dir, env=cur_env, timeout=timeout*60))
+              workdir=dragonegg_bld_dir, env=cur_env, timeout=timeout*60))
+      f.addStep(ShellCommand(name='mv-%s' % dragonegg_obj_dir,
+                             command=['mv', dragonegg_bld_dir,
+                                      dragonegg_obj_dir],
+                             description=['mv build dir', 'dragonegg', stage],
+                             haltOnFailure=True, workdir='.', env=cur_env))
 
       # Ensure that the following stages use the just built plugin.
       prev_plugin = '%(builddir)s/'+dragonegg_obj_dir+'/dragonegg.so'
@@ -225,12 +234,9 @@ def getDragonEggBootstrapFactory(gcc_repository, extra_languages=[],
     # Check that the dragonegg objects didn't change between stages 2 and 3.
     f.addStep(ShellCommand(name='compare.stages',
                            command=['sh', '-c', 'for O in *.o ; do ' +
-                                    'O2=../dragonegg.obj.stage2/$O ; '
-                                    'O3=../dragonegg.obj.stage3/$O ; '
-                                    'strip --strip-debug $O2 -o $O2.no_dbg ; ' +
-                                    'strip --strip-debug $O3 -o $O3.no_dbg ; ' +
                                     'cmp --ignore-initial=16 ' +
-                                    '$O2.no_dbg $O3.no_dbg || exit 1 ; ' +
+                                    '../dragonegg.obj.stage2/$O ' +
+                                    '../dragonegg.obj.stage3/$O || exit 1 ; ' +
                                     'done'],
                            haltOnFailure=True,
                            description='compare stages 2 and 3',
