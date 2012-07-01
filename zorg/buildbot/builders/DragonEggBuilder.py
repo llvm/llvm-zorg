@@ -233,8 +233,7 @@ def getDragonEggBootstrapFactory(gcc_repository, extra_languages=[],
 
     # Check that the dragonegg objects didn't change between stages 2 and 3.
     f.addStep(ShellCommand(name='compare.stages',
-                           command=['sh', '-c', 'for O in *.o ; do ' +
-                                    'cmp --ignore-initial=16 ' +
+                           command=['sh', '-c', 'for O in *.o ; do cmp ' +
                                     '../dragonegg.obj.stage2/$O ' +
                                     '../dragonegg.obj.stage3/$O || exit 1 ; ' +
                                     'done'],
