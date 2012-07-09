@@ -193,11 +193,6 @@ def _get_clang_builders():
                                                        stage1_config='Release+Asserts',
                                                        stage2_config='Release+Asserts')},
 
-        {'name'      : "clang-native-mingw64-win7",
-         'slavenames': ["milyng1"],
-         'builddir'  : "clang-native-mingw64-win7",
-         'factory'   : ClangBuilder.getClangMinGWBuildFactory(jobs=6)},
-
         # Clang cross builders.
         {'name' : "clang-x86_64-darwin11-cross-mingw32",
          'slavenames' :["as-bldslv11"],
