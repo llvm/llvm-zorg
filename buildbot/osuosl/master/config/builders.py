@@ -160,6 +160,11 @@ def _get_clang_builders():
          'builddir':"clang-atom-d2700-ubuntu",
          'factory' : ClangBuilder.getClangBuildFactory()},
 
+        {'name': "clang-atom-d2700-ubuntu-rel",
+         'slavenames':["atom1-buildbot"],
+         'builddir':"clang-atom-d2700-ubuntu-rel",
+         'factory' : ClangBuilder.getClangBuildFactory(stage1_config='Release+Asserts')},
+
         {'name': "clang-x86_64-ubuntu",
          'slavenames':["arxan_raphael"],
          'builddir':"clang-x86_64-ubuntu",

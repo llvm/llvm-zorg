@@ -130,6 +130,7 @@ def get_build_slaves():
 
         # Intel(R) Atom(TM) CPU D2700 @ 2.13GHz, Ubuntu x86_64
         create_slave("atom-buildbot", properties={'jobs': 4}, max_builds=1),
+        create_slave("atom1-buildbot", properties={'jobs': 4}, max_builds=1),
 
         # LLVM Lab slaves
         create_slave("lab-mini-01", properties={'jobs': 2}, max_builds=1),
