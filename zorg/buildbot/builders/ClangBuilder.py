@@ -266,7 +266,8 @@ def getClangBuildFactory(
     args = base_configure_args + ["--without-llvmgcc", "--without-llvmgxx"]
     args.append(WithProperties("--prefix=%(builddir)s/" + llvm_2_installdir))
     args += getConfigArgs(stage2_config)
-    local_env = dict(merged_env).update({
+    local_env = dict(merged_env)
+    local_env.update({
         'CC'  : WithProperties("%%(builddir)s/%s/bin/clang"   % llvm_1_installdir),
         'CXX' : WithProperties("%%(builddir)s/%s/bin/clang++" % llvm_1_installdir)})
 
