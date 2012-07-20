@@ -175,6 +175,7 @@ def _get_clang_builders():
          'builddir':"clang-native-arm-cortex-a9",
          'factory' : ClangBuilder.getClangBuildFactory(
                      stage1_config='Release+Asserts',
+                     env = { 'CXXFLAGS' : '-Wno-psabi', 'CFLAGS' : '-Wno-psabi'},
                      extra_configure_args=['--build=armv7l-unknown-linux-gnueabi',
                                            '--host=armv7l-unknown-linux-gnueabi',
                                            '--target=armv7l-unknown-linux-gnueabi',
