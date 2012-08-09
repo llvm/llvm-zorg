@@ -147,6 +147,12 @@ def get_build_slaves():
         # 2005 PowerPC Mac Mini, Mac OS X 10.5
         create_slave("arxan_bellini", properties={'jobs': 2}, max_builds=1),
 
+        # POWER7 PowerPC (powerpc64), Fedora16.
+        create_slave("chinook", properties={'jobs': 12}, max_builds=4),
+
+        # POWER7 PowerPC (powerpc64), Fedora16.
+        create_slave("coho", properties={'jobs': 12}, max_builds=4),
+
         # Defunct.
         # Pentium Dual CPU T3400 @ 2.1GHz
         #create_slave("dumitrescu1", properties={'jobs' : 2}, max_builds=1),

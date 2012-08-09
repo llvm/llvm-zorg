@@ -59,6 +59,14 @@ def _get_llvm_builders():
          'slavenames':["arxan_davinci"],
          'builddir':"llvm-x86_64-ubuntu",
          'factory': LLVMBuilder.getLLVMBuildFactory("x86_64-pc-linux-gnu", jobs=4)},
+        {'name': "llvm-ppc64-linux1",
+         'slavenames':["chinook"],
+         'builddir':"llvm-ppc64",
+         'factory': LLVMBuilder.getLLVMBuildFactory("ppc64-linux-gnu", jobs=4, clean=False, timeout=20)},
+        {'name': "llvm-ppc64-linux2",
+         'slavenames':["coho"],
+         'builddir':"llvm-ppc64",
+         'factory': LLVMBuilder.getLLVMBuildFactory("ppc64-linux-gnu", jobs=4, clean=False, timeout=20)},
         ]
 
 # Offline.
