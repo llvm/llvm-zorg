@@ -65,7 +65,7 @@ def _get_llvm_builders():
          'factory': LLVMBuilder.getLLVMBuildFactory("ppc64-linux-gnu", jobs=4, clean=False, timeout=20)},
         {'name': "llvm-ppc64-linux2",
          'slavenames':["coho"],
-         'builddir':"llvm-ppc64",
+         'builddir':"llvm-ppc64-2",
          'factory': LLVMBuilder.getLLVMBuildFactory("ppc64-linux-gnu", jobs=4, clean=False, timeout=20)},
         ]
 
