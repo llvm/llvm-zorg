@@ -98,6 +98,10 @@ def getClangBuildFactory(
           [WithProperties('http://llvm.org/svn/llvm-project/cfe/trunk@%s' %
                           trunk_revision),
            '%s/tools/clang' % llvm_srcdir]
+        svn_co_clang_tools_extra = svn_co + \
+          [WithProperties('http://llvm.org/svn/llvm-project/clang-tools-extra/trunk@%s' %
+                          trunk_revision),
+           '%s/tools/clang/tools/extra' % llvm_srcdir]
 
         f.addStep(ShellCommand(name='svn-llvm',
                                command=svn_co_llvm,
@@ -105,6 +109,10 @@ def getClangBuildFactory(
                                workdir='.'))
         f.addStep(ShellCommand(name='svn-clang',
                                command=svn_co_clang,
+                               haltOnFailure=True,
+                               workdir='.'))
+        f.addStep(ShellCommand(name='svn-clang-tools-extra',
+                               command=svn_co_clang_tools_extra,
                                haltOnFailure=True,
                                workdir='.'))
     else:
@@ -118,6 +126,11 @@ def getClangBuildFactory(
                       baseURL='http://llvm.org/svn/llvm-project/cfe/',
                       defaultBranch='trunk',
                       workdir='%s/tools/clang' % llvm_srcdir))
+        f.addStep(SVN(name='svn-clang-tools-extra',
+                      mode='update',
+                      baseURL='http://llvm.org/svn/llvm-project/clang-tools-extra/',
+                      defaultBranch='trunk',
+                      workdir='%s/tools/clang/tools/extra' % llvm_srcdir))
         if checkout_compiler_rt:
             f.addStep(SVN(name='svn-compiler-rt',
                           mode='update',
@@ -356,12 +369,14 @@ def getClangMSVCBuildFactory(update=True, clean=True, vcDrive='c', jobs=1, cmake
                       mode='update', baseURL='http://llvm.org/svn/llvm-project/llvm/',
                       defaultBranch='trunk',
                       workdir='llvm'))
-
-    if update:
         f.addStep(SVN(name='svn-clang',
                       mode='update', baseURL='http://llvm.org/svn/llvm-project/cfe/',
                       defaultBranch='trunk',
                       workdir='llvm/tools/clang'))
+        f.addStep(SVN(name='svn-clang-tools-extra',
+                      mode='update', baseURL='http://llvm.org/svn/llvm-project/clang-tools-extra/',
+                      defaultBranch='trunk',
+                      workdir='llvm/tools/clang/tools/extra'))
 
     # Full & fast clean.
     if clean:
@@ -433,12 +448,14 @@ def getClangMinGWBuildFactory(update=True, clean=True, jobs=6, cmake=r"cmake"):
                       mode='update', baseURL='http://llvm.org/svn/llvm-project/llvm/',
                       defaultBranch='trunk',
                       workdir='llvm'))
-
-    if update:
         f.addStep(SVN(name='svn-clang',
                       mode='update', baseURL='http://llvm.org/svn/llvm-project/cfe/',
                       defaultBranch='trunk',
                       workdir='llvm/tools/clang'))
+        f.addStep(SVN(name='svn-clang-tools-extra',
+                      mode='update', baseURL='http://llvm.org/svn/llvm-project/clang-tools-extra/',
+                      defaultBranch='trunk',
+                      workdir='llvm/tools/clang/tools/extra'))
 
     # Full & fast clean.
     if clean:
