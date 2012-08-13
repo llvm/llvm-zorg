@@ -277,6 +277,11 @@ def _get_clang_builders():
                                               testerName='O0-g', run_cxx_tests=True,
                                               package_cache=LabPackageCache)},
 
+        {'name' : "clang-x86_64-darwin10-gdb-gcc",
+         'slavenames' :["lab-mini-04"],
+         'builddir' :"clang-x86_64-darwin10-gdb-gcc",
+         'factory' : ClangBuilder.getClangBuildFactory(run_gdb=True, run_gcc=True)},
+
         ]
 
 # Offline.

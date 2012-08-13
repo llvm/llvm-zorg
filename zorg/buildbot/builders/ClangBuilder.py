@@ -37,7 +37,9 @@ def getClangBuildFactory(
             trunk_revision=None,
             force_checkout=False,
             extra_clean_step=None,
-            checkout_compiler_rt=False):
+            checkout_compiler_rt=False,
+            run_gdb=False,
+            run_gcc=False):
     # Prepare environmental variables. Set here all env we want everywhere.
     merged_env = {
         'TERM' : 'dumb' # Make sure Clang doesn't use color escape sequences.
@@ -239,6 +241,14 @@ def getClangBuildFactory(
                                                            stage1_config],
                                               workdir=llvm_1_objdir,
                                               env=merged_env))
+
+    if run_gdb or run_gcc:
+        ignores = getClangTestsIgnoresFromPath(os.path.expanduser('~/public/clang-tests'), 'clang-x86_64-darwin10')
+        install_prefix = "%%(builddir)s/%s" % llvm_1_installdir
+        if run_gdb:
+            addClangGDBTests(f, ignores, install_prefix)
+        if run_gcc:
+            addClangGCCTests(f, ignores, install_prefix)
 
     if not useTwoStage:
         if package_dst:
