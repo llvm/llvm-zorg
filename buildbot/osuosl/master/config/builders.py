@@ -287,7 +287,7 @@ def _get_clang_builders():
         {'name' : "clang-x86_64-darwin10-gdb-gcc",
          'slavenames' :["lab-mini-04"],
          'builddir' :"clang-x86_64-darwin10-gdb-gcc",
-         'factory' : ClangBuilder.getClangBuildFactory(stage1_config='Release+Asserts')},
+         'factory' : ClangBuilder.getClangBuildFactory(stage1_config='Release+Asserts', run_gdb=True, run_gcc=True)},
 
         ]
 
