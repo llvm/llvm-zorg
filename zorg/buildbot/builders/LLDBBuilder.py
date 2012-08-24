@@ -8,8 +8,7 @@ from buildbot.steps.shell import ShellCommand, WarningCountingShellCommand
 from buildbot.process.properties import WithProperties
 
 def getLLDBBuildFactory(triple, outOfDir=False, useTwoStage=False, jobs='%(jobs)s',
-                        always_install=False, extra_configure_args=[],
-                        env={}, *args, **kwargs):
+                        extra_configure_args=[], env={}, *args, **kwargs):
 
     inDir = not outOfDir and not useTwoStage
     if inDir:

@@ -23,7 +23,7 @@ def getLNTFactory(triple, nt_flags, xfails=[], clean=True, test=False,
     # Build compiler to test.  
     f = ClangBuilder.getClangBuildFactory(
         triple, outOfDir=True, clean=clean, test=test,
-        always_install=True, stage1_config='Release+Asserts', **kwargs)
+        stage1_config='Release+Asserts', **kwargs)
 
     # Add an LNT test runner.
     AddLNTTestsToFactory(f, nt_flags,

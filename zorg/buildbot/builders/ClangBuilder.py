@@ -26,7 +26,6 @@ def getClangBuildFactory(
             outOfDir=False,
             useTwoStage=False,
             completely_clean=False, 
-            always_install=False,
             make='make',
             jobs="%(jobs)s",
             stage1_config='Debug+Asserts',
@@ -49,17 +48,14 @@ def getClangBuildFactory(
         merged_env.update(env)
 
     if run_gdb or run_gcc:
-        always_install = True
+        outOfDir = True
         
     # Don't use in-dir builds with a two stage build process.
     inDir = not outOfDir and not useTwoStage
     if inDir:
         llvm_srcdir = "llvm"
         llvm_1_objdir = "llvm"
-        if always_install:
-            llvm_1_installdir = "llvm.install"
-        else:
-            llvm_1_installdir = None
+        llvm_1_installdir = None
     else:
         llvm_srcdir = "llvm.src"
         llvm_1_objdir = "llvm.obj"
