@@ -47,6 +47,9 @@ def getClangBuildFactory(
     if env is not None:
         # Overwrite pre-set items with the given ones, so user can set anything.
         merged_env.update(env)
+
+    if run_gdb or run_gcc:
+        always_install = True
         
     # Don't use in-dir builds with a two stage build process.
     inDir = not outOfDir and not useTwoStage
