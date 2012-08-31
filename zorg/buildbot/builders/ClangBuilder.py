@@ -209,18 +209,12 @@ def getClangBuildFactory(
     if run_cxx_tests:
         extraTestDirs += '%(builddir)s/llvm/tools/clang/utils/C++Tests'
     if test:
-        f.addStep(ClangTestCommand(name='test-llvm',
-                                   command=[make, "check-lit", "VERBOSE=1",
+        f.addStep(ClangTestCommand(name='check-all',
+                                   command=[make, "check-all", "VERBOSE=1",
                                             WithProperties("LIT_ARGS=%s" % llvmTestArgs)],
-                                   description=["testing", "llvm"],
-                                   descriptionDone=["test", "llvm"],
+                                   description=["checking"],
+                                   descriptionDone=["checked"],
                                    workdir=llvm_1_objdir,
-                                   usePTY=use_pty_in_tests,
-                                   env=merged_env))
-        f.addStep(ClangTestCommand(name='test-clang',
-                                   command=[make, 'test', WithProperties('TESTARGS=%s' % clangTestArgs),
-                                            WithProperties('EXTRA_TESTDIRS=%s' % extraTestDirs)],
-                                   workdir='%s/tools/clang' % llvm_1_objdir,
                                    usePTY=use_pty_in_tests,
                                    env=merged_env))
 
@@ -314,18 +308,12 @@ def getClangBuildFactory(
                                           env=merged_env))
 
     if test:
-        f.addStep(ClangTestCommand(name='test-llvm',
-                                   command=[make, "check-lit", "VERBOSE=1",
+        f.addStep(ClangTestCommand(name='check-all',
+                                   command=[make, "check-all", "VERBOSE=1",
                                             WithProperties("LIT_ARGS=%s" % llvmTestArgs)],
-                                   description=["testing", "llvm"],
-                                   descriptionDone=["test", "llvm"],
+                                   description=["checking"],
+                                   descriptionDone=["checked"],
                                    workdir=llvm_2_objdir,
-                                   usePTY=use_pty_in_tests,
-                                   env=merged_env))
-        f.addStep(ClangTestCommand(name='test-clang',
-                                   command=[make, 'test', WithProperties('TESTARGS=%s' % clangTestArgs),
-                                            WithProperties('EXTRA_TESTDIRS=%s' % extraTestDirs)],
-                                   workdir='%s/tools/clang' % llvm_2_objdir,
                                    usePTY=use_pty_in_tests,
                                    env=merged_env))
 
