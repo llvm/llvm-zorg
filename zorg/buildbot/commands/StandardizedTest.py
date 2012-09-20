@@ -41,16 +41,18 @@ class StandardizedTest(buildbot.steps.shell.Test):
         hasIgnored = False
         for result,test,log in self.parseLog(lines):
             test = test.strip()
-            if result not in self.knownCodes:
+            if result not in self.allKnownCodes:
                 raise ValueError,'test command return invalid result code!'
 
             # Convert codes for flaky and ignored tests.
             if test in self.flakyTests:
                 result = 'FLAKY ' + result
-                hasIgnored = True
             elif test in self.ignoredTests:
                 result = 'IGNORE ' + result
+
+            if result.startswith('FLAKY ') or result.startswith('IGNORE '):
                 hasIgnored = True
+                
 
             if result not in results_by_code:
                 results_by_code[result] = set()
