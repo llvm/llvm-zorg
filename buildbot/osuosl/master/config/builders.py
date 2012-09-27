@@ -184,11 +184,11 @@ def _get_clang_builders():
          'factory' : ClangBuilder.getClangBuildFactory(
                      stage1_config='Release+Asserts',
                      env = { 'CXXFLAGS' : '-Wno-psabi', 'CFLAGS' : '-Wno-psabi'},
-                     extra_configure_args=['--build=armv7l-unknown-linux-gnueabi',
-                                           '--host=armv7l-unknown-linux-gnueabi',
-                                           '--target=armv7l-unknown-linux-gnueabi',
+                     extra_configure_args=['--build=armv7l-unknown-linux-gnueabihf',
+                                           '--host=armv7l-unknown-linux-gnueabihf',
+                                           '--target=armv7l-unknown-linux-gnueabihf',
                                            '--with-cpu=cortex-a9',
-                                           '--with-fpu=neon', '--with-abi=aapcs',
+                                           '--with-fpu=neon',
                                            '--with-float=hard',
                                            '--enable-targets=arm'])},
 
