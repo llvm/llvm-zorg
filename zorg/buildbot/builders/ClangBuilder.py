@@ -154,8 +154,7 @@ def getClangBuildFactory(
     base_configure_args += extra_configure_args
     if triple:
         base_configure_args += ['--build=%s' % triple,
-                                '--host=%s' % triple,
-                                '--target=%s' % triple]
+                                '--host=%s' % triple]
     args = base_configure_args + ["--without-llvmgcc", "--without-llvmgxx"]
     args.append(WithProperties("--prefix=%%(builddir)s/%s" % llvm_1_installdir))
     args += getConfigArgs(stage1_config)
