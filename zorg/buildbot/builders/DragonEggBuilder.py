@@ -474,11 +474,11 @@ def getDragonEggTestBuildFactory(gcc='gcc', svn_testsuites=[],
     # Large single compilation-unit C programs.
     f.addStep(ShellCommand(name='wget.bzip2',
                            command='wget -N http://people.csail.mit.edu/smcc/projects/single-file-programs/bzip2.c',
-                           haltOnFailure=True, workdir=compilator_dir,
+                           haltOnFailure=False, workdir=compilator_dir,
                            env=env))
     f.addStep(ShellCommand(name='wget.gzip',
                            command='wget -N http://people.csail.mit.edu/smcc/projects/single-file-programs/gzip.c',
-                           haltOnFailure=True, workdir=compilator_dir,
+                           haltOnFailure=False, workdir=compilator_dir,
                            env=env))
     f.addStep(ShellCommand(name='fix.gzip',
                            command='sed -i "s/^static char \*$/char */" gzip.c',
@@ -486,7 +486,7 @@ def getDragonEggTestBuildFactory(gcc='gcc', svn_testsuites=[],
                            env=env))
     f.addStep(ShellCommand(name='wget.oggenc',
                            command='wget -N http://people.csail.mit.edu/smcc/projects/single-file-programs/oggenc.c',
-                           haltOnFailure=True, workdir=compilator_dir,
+                           haltOnFailure=False, workdir=compilator_dir,
                            env=env))
     f.addStep(ShellCommand(name='wget.gcc',
                            command='wget -N http://people.csail.mit.edu/smcc/projects/single-file-programs/gcc.c.bz2',
