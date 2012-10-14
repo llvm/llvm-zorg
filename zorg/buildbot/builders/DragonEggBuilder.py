@@ -453,12 +453,12 @@ def getDragonEggTestBuildFactory(gcc='gcc', svn_testsuites=[],
 
     # Nist Fortran 77 test suite.
     f.addStep(ShellCommand(name='wget.nist',
-                           command='wget -N ftp://ftp.fortran-2000.com/fcvs21_f95.tar.bz2',
+                           command='wget -N http://www.itl.nist.gov/div897/ctg/suites/fcvs21.tar.Z',
                            haltOnFailure=False, workdir=compilator_dir,
                            env=env))
     f.addStep(ShellCommand(name='unpack.nist',
-                           command='tar xjf fcvs21_f95.tar.bz2',
-                           haltOnFailure=True, workdir=compilator_dir,
+                           command='tar xzf ../fcvs21.tar.Z',
+                           haltOnFailure=True, workdir=compilator_dir+'/fcvs21/',
                            env=env))
 
     # Polyhedron.
