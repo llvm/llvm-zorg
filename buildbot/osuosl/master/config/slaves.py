@@ -145,7 +145,7 @@ def get_build_slaves():
         create_slave("arxan_raphael", properties={'jobs': 4}, max_builds=1),
 
         # 2005 PowerPC Mac Mini, Mac OS X 10.5
-        create_slave("arxan_bellini", properties={'jobs': 2}, max_builds=1),
+        #create_slave("arxan_bellini", properties={'jobs': 2}, max_builds=1),
 
         # Intel(R) Core i7 920 @ 2.8GHz, 6 GB RAM, Windows 7 x64, Mingw64
         create_slave("sschiffli1", properties={'jobs': 4}, max_builds=1),

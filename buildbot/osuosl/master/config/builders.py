@@ -248,14 +248,14 @@ def _get_clang_builders():
                                                                              '--target=arm-eabi',
                                                                              '--enable-targets=arm'])},
 
-        {'name' : "clang-x86_64-darwin11-cross-linux-gnu",
-         'slavenames' :["as-bldslv11"],
-         'builddir' :"clang-x86_64-darwin11-cross-linux-gnu",
-         'factory' : ClangBuilder.getClangBuildFactory(outOfDir=True, jobs=4,  use_pty_in_tests=True,
-                                                       run_cxx_tests=True,
-                                                       extra_configure_args=['--build=x86_64-apple-darwin11',
-                                                                             '--host=x86_64-apple-darwin11',
-                                                                             '--target=i686-pc-linux-gnu '])},
+#        {'name' : "clang-x86_64-darwin11-cross-linux-gnu",
+#         'slavenames' :["as-bldslv11"],
+#         'builddir' :"clang-x86_64-darwin11-cross-linux-gnu",
+#         'factory' : ClangBuilder.getClangBuildFactory(outOfDir=True, jobs=4,  use_pty_in_tests=True,
+#                                                       run_cxx_tests=True,
+#                                                       extra_configure_args=['--build=x86_64-apple-darwin11',
+#                                                                             '--host=x86_64-apple-darwin11',
+#                                                                             '--target=i686-pc-linux-gnu '])},
 
         {'name' : "clang-x86_64-darwin10-nt-O3",
          'slavenames' :["lab-mini-01"],
@@ -518,16 +518,16 @@ def _get_lldb_builders():
 def _get_experimental_builders():
 
     return [
-        {'name': "llvm-ppc-darwin",
-         'slavenames':["arxan_bellini"],
-         'builddir':"llvm-ppc-darwin",
-         'factory': LLVMBuilder.getLLVMBuildFactory("ppc-darwin", jobs=2, clean=True,
-                            config_name = 'Release',
-                            env = { 'CC' : "/usr/bin/gcc-4.2",
-                                    'CXX': "/usr/bin/g++-4.2" },
-                            extra_configure_args=['--enable-shared'],
-                            timeout=600),
-         'category' : 'llvm'},
+#        {'name': "llvm-ppc-darwin",
+#         'slavenames':["arxan_bellini"],
+#         'builddir':"llvm-ppc-darwin",
+#         'factory': LLVMBuilder.getLLVMBuildFactory("ppc-darwin", jobs=2, clean=True,
+#                            config_name = 'Release',
+#                            env = { 'CC' : "/usr/bin/gcc-4.2",
+#                                    'CXX': "/usr/bin/g++-4.2" },
+#                            extra_configure_args=['--enable-shared'],
+#                            timeout=600),
+#         'category' : 'llvm'},
         ]
 
 def get_builders():
