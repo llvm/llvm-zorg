@@ -137,6 +137,11 @@ def get_build_slaves():
         create_slave("lab-mini-02", properties={'jobs': 2}, max_builds=1),
         create_slave("lab-mini-03", properties={'jobs': 2}, max_builds=1),
         create_slave("lab-mini-04", properties={'jobs': 2}, max_builds=1),
+        create_slave("xserve1", properties={'jobs': 4}, max_builds=1),
+        create_slave("xserve2", properties={'jobs': 4}, max_builds=1),
+        create_slave("xserve3", properties={'jobs': 4}, max_builds=1),
+        create_slave("xserve4", properties={'jobs': 4}, max_builds=1),
+        create_slave("xserve5", properties={'jobs': 4}, max_builds=1),
 
         # Intel(R) Core(TM)2 CPU 6420  @ 2.13GHz, Ubuntu Oneiric x86_64
         create_slave("arxan_davinci", properties={'jobs': 4}, max_builds=1),
