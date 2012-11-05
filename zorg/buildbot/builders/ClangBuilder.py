@@ -549,15 +549,13 @@ def addClangGDBTests(f, ignores={}, install_prefix="%(builddir)s/llvm.install"):
     f.addStep(SVN(name='svn-clang-tests', mode='update',
                   baseURL='http://llvm.org/svn/llvm-project/clang-tests/',
                   defaultBranch='trunk', workdir='clang-tests'))
-    gdb_dg_ignores = ignores.get('gdb-1472-testsuite', {})
     f.addStep(DejaGNUCommand.DejaGNUCommand(
             name='test-gdb-1472-testsuite',
             command=["make", "-k", "check"] + make_vars,
             description="gdb-1472-testsuite",
             workdir='clang-tests/gdb-1472-testsuite',
             logfiles={ 'dg.sum' : 'obj/filtered.gdb.sum',
-                       'gdb.log' : 'obj/gdb.log' },
-            ignore=gdb_dg_ignores))
+                       'gdb.log' : 'obj/gdb.log' }))
 
 # FIXME: Deprecated.
 addClangTests = addClangGCCTests
