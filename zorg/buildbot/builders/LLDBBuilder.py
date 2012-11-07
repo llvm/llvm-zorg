@@ -21,11 +21,11 @@ def getLLDBBuildFactory(triple, outOfDir=False, useTwoStage=False, jobs='%(jobs)
     f = buildbot.process.factory.BuildFactory()
 
     # Determine the build directory.
-    f.addStep(buildbot.steps.shell.SetProperty(name="get_builddir",
-                                               command=["pwd"],
-                                               property="builddir",
-                                               description="set build dir",
-                                               workdir="."))
+    f.addStep(SetProperty(name="get_builddir",
+              command=["pwd"],
+              property="builddir",
+              description="set build dir",
+              workdir="."))
 
     # Find out what version of llvm and clang are needed to build this version
     # of lldb. Right now we will assume they use the same version.
