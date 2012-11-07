@@ -178,8 +178,8 @@ def getLLDBxcodebuildFactory(use_cc=None):
                   workdir=lldb_srcdir))
     
     f.addStep(ShellCommand(name='lldb-test',
-                           command=['./dotest.py', '-C', 
-                                    WithProperties('%(use_cc)s'],
+                           command=['./dotest.py', '-C',
+                                    WithProperties('%(use_cc)s')],
                            haltOnFailure=True,
                            workdir='%s/test' % lldb_srcdir))
 
