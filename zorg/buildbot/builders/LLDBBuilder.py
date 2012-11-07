@@ -103,3 +103,89 @@ def getLLDBBuildFactory(triple, outOfDir=False, useTwoStage=False, jobs='%(jobs)
     #                       workdir='%s/tools/lldb/test' % llvm_objdir))
 
     return f
+
+def getLLDBxcodebuildFactory(use_cc=None):
+    f = buildbot.process.factory.BuildFactory()
+    f.addStep(SetProperty(name='get_builddir',
+                          command=['pwd'],
+                          property='builddir',
+                          description='set build dir',
+                          workdir='.'))
+    lldb_srcdir = 'lldb.src'
+    OBJROOT='%(builddir)s/' + lldb_srcdir + '/build'
+    # cleaning out the build directory is vital for codesigning.
+    f.addStep(ShellCommand(name='clean',
+                           command=['rm', '-rf', WithProperties(OBJROOT)],
+                           haltOnFailure=True,
+                           workdir=WithProperties('%(builddir)s')))
+    f.addStep(SVN(name='svn-lldb',
+                  mode='update',
+                  baseURL='http://llvm.org/svn/llvm-project/lldb/',
+                  defaultBranch='trunk',
+                  workdir=lldb_srcdir))
+    f.addStep(SVN(name='svn-llvm',
+                  mode='update',
+                  baseURL='http://llvm.org/svn/llvm-project/llvm/',
+                  defaultBranch='trunk',
+                  workdir='%s/llvm' % lldb_srcdir))
+    f.addStep(SVN(name='svn-clang',
+                  mode='update',
+                  baseURL='http://llvm.org/svn/llvm-project/cfe/',
+                  defaultBranch='trunk',
+                  workdir='%s/llvm/tools/clang' % lldb_srcdir))
+# setup keychain for codesign
+# In order for the codesigning to work inside of buildbot, security must be 
+# called to unlock the keychain, which requires a password.
+# I've set up a special keychain for this purpose, so as to not compromise
+# the login password of the buildslave.
+# This means I have to set the special keychain as the default and unlock it
+# prior to building the sources.
+
+    f.addStep(ShellCommand(name='check.keychain',
+                           command=['security', 'default-keychain'],
+                           haltOnFailure=True,
+                           workdir=WithProperties('%(builddir)s')))
+    f.addStep(ShellCommand(name='find.certificate',
+                           command=['security', 'find-certificate', '-c',
+                                    'lldb_codesign'],
+                           haltOnFailure=True,
+                           workdir=WithProperties('%(builddir)s')))
+# Building the sources
+# 
+    f.addStep(ShellCommand(name='lldb-build',
+                           command=['xcrun', 'xcodebuild', '-workspace', 
+                                    'lldb.xcworkspace', '-scheme', 'lldb-tool',
+                                    '-configuration', 'Debug',
+                                    WithProperties('SYMROOT=' + OBJROOT),
+                                    WithProperties('OBJROOT=' + OBJROOT)],
+                           haltOnFailure=True,
+                           workdir=lldb_srcdir))
+# Testing
+# 
+    if not use_cc:
+        use_cc = '/Applications/Xcode.app/Contents/Developer/Toolchains/'
+        use_cc += 'XcodeDefault.xctoolchain/usr/bin/clang'
+        f.addStep(SetProperty(name='set.cc',
+                  command=['xcrun', '-find', 'clang'],
+                  property='use_cc',
+                  description='set cc',
+                  workdir=lldb_srcdir))
+    else:
+        f.addStep(SetProperty(name='set.cc',
+                  command=['echo', use_cc],
+                  property='use_cc',
+                  description='set cc',
+                  workdir=lldb_srcdir))
+    
+    f.addStep(ShellCommand(name='lldb-test',
+                           command=['./dotest.py', '-C', 
+                                    WithProperties('%(use_cc)s'],
+                           haltOnFailure=True,
+                           workdir='%s/test' % lldb_srcdir))
+
+# Results go in a directory coded named according to the date and time of the test run, e.g.:
+# 
+# 2012-10-16-11_26_48/Failure-x86_64-_Applications_Xcode.app_Contents_Developer_Toolchains_XcodeDefault.xctoolchain_usr_bin_clang-TestLogging.LogTestCase.test_with_dsym.log
+# 
+# Possible results are ExpectedFailure, Failure, SkippedTest, UnexpectedSuccess, and Error.    return f
+    return f
