@@ -72,8 +72,9 @@ r{{ build.source_stamp }}
 
 {# Include jQuery and View2D graph widget for use by the timing popups. #}
 {% block head %}
-    <script type=text/javascript src="/static/jquery/1.5/jquery.min.js"></script>
-    <script src="/static/View2D.js"></script>
+    <script type=text/javascript src="{{
+      url_for('.static', filename='jquery/1.5/jquery.min.js') }}"></script>
+    <script src="{{ url_for('.static', filename='View2D.js') }}"></script>
 {% endblock %}
 
 {% block javascript %}
