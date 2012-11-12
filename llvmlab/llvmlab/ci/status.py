@@ -48,6 +48,7 @@ class BuildStatus(util.simple_repr_mixin):
 class StatusMonitor(threading.Thread):
     def __init__(self, app, status):
         threading.Thread.__init__(self)
+        self.daemon = True
         self.app = app
         self.status = status
 
@@ -61,10 +62,7 @@ class StatusMonitor(threading.Thread):
                 print >>os, "*** ERROR: failure in buildbot monitor"
                 print >>os, "\n-- Traceback --"
                 traceback.print_exc(file = os)
-                if self.app.logger:
-                    self.app.logger.warning(os.getvalue())
-                else:
-                    print >>sys.stderr, os.getvalue()
+                self.app.logger.error(os.getvalue())
 
                 # Sleep for a while, then restart.
                 time.sleep(60)
@@ -116,7 +114,10 @@ class StatusMonitor(threading.Thread):
 
                     if res:
                         build.result = res['results']
-                        build.source_stamp = res['sourceStamp']['revision']
+                        if 'sourceStamps' in res:
+                            build.source_stamp = res['sourceStamps'][0]['revision']
+                        else:
+                            build.source_stamp = res['sourceStamp']['revision']
                         build.start_time = res['times'][0]
                         build.end_time = res['times'][1]
                         build.slave = res['slave']
