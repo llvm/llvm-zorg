@@ -62,7 +62,7 @@ def AddLNTTestsToFactory(f, nt_flags, cc_path, cxx_path, **kwargs):
     # FIXME: This is currently only going to work on Darwin.
     if '-flto' in nt_flags:
         base_directory = os.path.dirname(os.path.dirname(cc_path))
-        lnt_flags.extend(['--liblto-path', WithProperties(
+        nt_flags.extend(['--liblto-path', WithProperties(
                          os.path.join('%(builddir)s', base_directory, 'lib',
                                       'libLTO.dylib'))])
 
