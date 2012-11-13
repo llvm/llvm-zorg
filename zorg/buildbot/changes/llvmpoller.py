@@ -217,7 +217,7 @@ class LLVMPoller(base.PollingChangeSource, util.ComparableMixin):
             file_path = '/'.join(pieces[3:])
         else:
             # Something we do not expect.
-            log.msg("LLVMPoller(%s) cannot parse the path (%s). Ignored." % (self.svnuurl, path))
+            log.msg("LLVMPoller(%s) cannot parse the path (%s). Ignored." % (self.svnurl, path))
             return None
 
         if self.projects:
