@@ -425,6 +425,8 @@ def _get_dragonegg_builders():
          'factory'    : DragonEggBuilder.getDragonEggBootstrapFactory(gcc_repository='http://gcc.gnu.org/svn/gcc/branches/gcc-4_6-branch@188355',
                                                                       extra_languages=['fortran', 'objc', 'obj-c++'],
                                                                       extra_gcc_configure_args=['--disable-bootstrap', '--enable-checking',
+                                                                                                '--with-mpfr=/opt/cfarm/mpfr-2.4.1',
+                                                                                                '--with-gmp=/opt/cfarm/gmp-4.3.2',
                                                                                                 '--with-mpc=/opt/cfarm/mpc-0.8'],
                                                                       extra_llvm_configure_args=['--disable-optimized', '--enable-assertions']),
          'category'   : 'dragonegg'},
