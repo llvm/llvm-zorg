@@ -219,6 +219,14 @@ def _get_clang_builders():
                                               nt_flags=['--multisample=3'], jobs=4,  use_pty_in_tests=True,
                                               testerName='O3-plain', run_cxx_tests=True)},
 
+        {'name' : "clang-ppc64-elf-linux2",
+         'slavenames' :["chinook-clangslave2"],
+         'builddir' :"clang-ppc64-2",
+         'factory' : ClangBuilder.getClangBuildFactory(triple='ppc64-elf-linux',
+                                                       useTwoStage=True, test=True,
+                                                       stage1_config='Release+Asserts',
+                                                       stage2_config='Release+Asserts')},
+
         # Clang cross builders.
         {'name' : "clang-x86_64-darwin11-cross-mingw32",
          'slavenames' :["as-bldslv11"],

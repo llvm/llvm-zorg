@@ -157,7 +157,10 @@ def get_build_slaves():
 
         # POWER7 PowerPC (powerpc64), Fedora16.
         create_slave("chinook", properties={'jobs': 12}, max_builds=4),
+        #    LNT slave
         create_slave("chinook-clangslave1", properties={'jobs': 12}, max_builds=4),
+        #    Clang build slave
+        create_slave("chinook-clangslave2", properties={'jobs': 12}, max_builds=4),
 
         # POWER7 PowerPC (powerpc64), Fedora16.
         create_slave("coho", properties={'jobs': 12}, max_builds=4),
