@@ -520,7 +520,7 @@ def _get_lldb_builders():
         {'name': "lldb-x86_64-darwin11",
          'slavenames': ["xserve1"],
          'builddir': "build.lldb-x86_64-darwin11",
-         'factory': LLDBBuilder.getLLDBxcodebuildFactory()},
+         'factory': LLDBBuilder.getLLDBxcodebuildFactory(extra_configure_args=['--enable-cxx11'])},
 #       {'name': "lldb-i686-debian",
 #        'slavenames': ["gcc15"],
 #        'builddir': "lldb-i686-debian",
