@@ -517,7 +517,7 @@ def _get_lldb_builders():
          'slavenames': ["gcc20"],
          'builddir': "lldb-x86_64",
          'factory': LLDBBuilder.getLLDBBuildFactory(triple="x86_64-pc-linux-gnu",
-                                                    extra_configure_args=['--enable-cxx11'])},
+                                                    env={'CXXFLAGS' : '-std=gnu++11'})},
         {'name': "lldb-x86_64-darwin11",
          'slavenames': ["xserve1"],
          'builddir': "build.lldb-x86_64-darwin11",
