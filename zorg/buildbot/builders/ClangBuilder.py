@@ -561,7 +561,7 @@ def addClangGDBTests(f, ignores={}, install_prefix="%(builddir)s/llvm.install"):
                        'gdb.log' : 'obj/gdb.log' }))
 
 def addModernClangGDBTests(f, jobs, install_prefix):
-    make_vars = [WithProperties('RUNTESTFLAGS="CC_FOR_TARGET=%s/bin/clang CXX_FOR_TARGET=%s/bin/clang++"' % install_prefix),
+    make_vars = [WithProperties('RUNTESTFLAGS="CC_FOR_TARGET={0}/bin/clang CXX_FOR_TARGET={0}/bin/clang++"'.format(install_prefix)),
                  "FORCE_PARALLEL=1"]
     f.addStep(SVN(name='svn-clang-tests', mode='update',
                   svnurl='http://llvm.org/svn/llvm-project/clang-tests-external/trunk/gdb/7.5/gdb/testsuite',
