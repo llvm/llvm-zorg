@@ -38,6 +38,7 @@ def getClangBuildFactory(
             extra_clean_step=None,
             checkout_compiler_rt=False,
             run_gdb=False,
+            run_modern_gdb=False,
             run_gcc=False):
     # Prepare environmental variables. Set here all env we want everywhere.
     merged_env = {
@@ -47,7 +48,7 @@ def getClangBuildFactory(
         # Overwrite pre-set items with the given ones, so user can set anything.
         merged_env.update(env)
 
-    if run_gdb or run_gcc:
+    if run_gdb or run_gcc or run_modern_gdb:
         outOfDir = True
         
     # Don't use in-dir builds with a two stage build process.
@@ -234,11 +235,13 @@ def getClangBuildFactory(
                                               workdir=llvm_1_objdir,
                                               env=merged_env))
 
-    if run_gdb or run_gcc:
+    if run_gdb or run_gcc or run_modern_gdb:
         ignores = getClangTestsIgnoresFromPath(os.path.expanduser('~/public/clang-tests'), 'clang-x86_64-darwin10')
         install_prefix = "%%(builddir)s/%s" % llvm_1_installdir
         if run_gdb:
             addClangGDBTests(f, ignores, install_prefix)
+        if run_modern_gdb:
+            addModernClangGDBTests(f, jobs, install_prefix)
         if run_gcc:
             addClangGCCTests(f, ignores, install_prefix)
 
@@ -556,6 +559,24 @@ def addClangGDBTests(f, ignores={}, install_prefix="%(builddir)s/llvm.install"):
             workdir='clang-tests/gdb-1472-testsuite',
             logfiles={ 'dg.sum' : 'obj/filtered.gdb.sum',
                        'gdb.log' : 'obj/gdb.log' }))
+
+def addModernClangGDBTests(f, jobs, install_prefix):
+    make_vars = [WithProperties('RUNTESTFLAGS="CC_FOR_TARGET=%s/bin/clang CXX_FOR_TARGET=%s/bin/clang++"' % install_prefix),
+                 "FORCE_PARALLEL=1"]
+    f.addStep(SVN(name='svn-clang-tests', mode='update',
+                  svnurl='http://llvm.org/svn/llvm-project/clang-tests-external/trunk/gdb/7.5/gdb/testsuite',
+                  workdir='clang-tests/src'))
+    f.addStep(Configure(command='../src/configure',
+                        workdir='clang-tests/build'))
+    f.addStep(DejaGNUCommand.DejaGNUCommand(
+            name='gdb-75-check',
+            command=["make", "-k", WithProperties("-j%s" % jobs), "check"] + make_vars,
+            env={'PATH': ['/home/buildslave/gdb-install/bin', '${PATH}']},
+            workdir='clang-tests/build',
+            logfiles={'dg.sum':'dg.sum', 
+                      'gdb.log':'gdb.log'}))
+
+
 
 # FIXME: Deprecated.
 addClangTests = addClangGCCTests
