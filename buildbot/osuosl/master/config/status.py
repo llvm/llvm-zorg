@@ -69,7 +69,7 @@ def get_status_targets(standard_builders):
             extraRecipients = ["dblaikie@gmail.com", "echristo@gmail.com"],
             subject="Build %(builder)s Failure",
             mode = "failing",
-            builders = ["clang-x86_64-darwin10-gdb", "clang-x86_64-ubuntu-gdb-75],
+            builders = ["clang-x86_64-darwin10-gdb", "clang-x86_64-ubuntu-gdb-75"],
             addLogs=False,
             num_lines = 15),
         ]
