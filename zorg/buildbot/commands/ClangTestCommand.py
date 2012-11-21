@@ -17,7 +17,6 @@ class ClangTestCommand(buildbot.steps.shell.Test):
   kMaxFailureLogs = 20
 
   def evaluateCommand(self, cmd):
-    rc = 0
     grouped = {}
     failureLogs = []
     lines = self.getLog('stdio').readlines()
@@ -73,6 +72,4 @@ class ClangTestCommand(buildbot.steps.shell.Test):
                         failed=numFail + numXPass + numUnresolved,
                         passed=numPass + numXFail,
                         warnings=numXFail)
-    if numFail + numXPass + numUnresolved:
-      return buildbot.status.builder.FAILURE
-    return buildbot.status.builder.SUCCESS
+    return buildbot.steps.shell.Test.evaluateCommand(self, cmd)
