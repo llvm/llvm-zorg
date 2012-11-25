@@ -578,7 +578,7 @@ def addModernClangGDBTests(f, jobs, install_prefix):
     f.addStep(DejaGNUCommand.DejaGNUCommand(
             name='gdb-75-check',
             command=["make", "-k", WithProperties("-j%s" % jobs), "check"] + make_vars,
-            env={'PATH': ['/home/buildslave/gdb-install/bin', '${PATH}']},
+            env={'PATH': os.pathsep.join(['/home/buildslave/gdb-install/bin', '${PATH}'])},
             workdir='clang-tests/build',
             logfiles={'dg.sum':'gdb.sum', 
                       'gdb.log':'gdb.log'}))
