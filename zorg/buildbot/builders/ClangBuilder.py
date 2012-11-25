@@ -564,11 +564,11 @@ def addModernClangGDBTests(f, jobs, install_prefix):
     # Build a list of flags as a value of RUNTESTFLAGS var
     # which should be a string.
     run_test_flags = [
-        'CC_FOR_TARGET="%s/bin/clang"'    % install_prefix,
-        'CXX_FOR_TARGET="%s/bin/clang++"' % install_prefix,
+        WithProperties('CC_FOR_TARGET="%s/bin/clang"'    % install_prefix),
+        WithProperties('CXX_FOR_TARGET="%s/bin/clang++"' % install_prefix),
         'CFLAGS_FOR_TARGET="-w"',
     ]
-    make_vars = [WithProperties("RUNTESTFLAGS='%s'" % (" ".join(run_test_flags))),
+    make_vars = ["RUNTESTFLAGS='%s'" % (" ".join(run_test_flags)),
                  "FORCE_PARALLEL=1"]
     f.addStep(SVN(name='svn-clang-tests', mode='update',
                   svnurl='http://llvm.org/svn/llvm-project/clang-tests-external/trunk/gdb/7.5',
