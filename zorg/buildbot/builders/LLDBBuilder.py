@@ -114,8 +114,12 @@ def getLLDBxcodebuildFactory(use_cc=None):
     lldb_srcdir = 'lldb.src'
     OBJROOT='%(builddir)s/' + lldb_srcdir + '/build'
     # cleaning out the build directory is vital for codesigning.
-    f.addStep(ShellCommand(name='clean',
+    f.addStep(ShellCommand(name='clean.lldb-buid',
                            command=['rm', '-rf', WithProperties(OBJROOT)],
+                           haltOnFailure=True,
+                           workdir=WithProperties('%(builddir)s')))
+    f.addStep(ShellCommand(name='clean.llvm-buid',
+                           command=['rm', '-rf', '%s/llvm-build' % lldb_srcdir ],
                            haltOnFailure=True,
                            workdir=WithProperties('%(builddir)s')))
     f.addStep(SVN(name='svn-lldb',
