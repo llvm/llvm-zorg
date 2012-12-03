@@ -48,7 +48,7 @@ def get_status_targets(standard_builders):
         InformativeMailNotifier(
             fromaddr = "llvm.buildmaster@lab.llvm.org",
             sendToInterestedUsers= False,
-            extraRecipients = ["baldrick@free.fr", "gkistanova@gmail.com"],
+            extraRecipients = ["baldrick@free.fr"],
             subject="Build %(builder)s Failure",
             mode = "failing",
             builders = ["dragonegg-i386-linux", "dragonegg-x86_64-linux"],
@@ -66,7 +66,9 @@ def get_status_targets(standard_builders):
         InformativeMailNotifier(
             fromaddr = "llvm.buildmaster@lab.llvm.org",
             sendToInterestedUsers= False,
-            extraRecipients = ["dblaikie@gmail.com", "echristo@gmail.com"],
+            extraRecipients = ["dblaikie@gmail.com", "echristo@gmail.com",
+                               "daniel.malea@intel.com", "matt.kopec@intel.com",
+                               "andrew.kaylor@intel.com", "ashok.thirumurthi@intel.com"],
             subject="Build %(builder)s Failure",
             mode = "failing",
             builders = ["clang-x86_64-darwin10-gdb", "clang-x86_64-ubuntu-gdb-75"],
