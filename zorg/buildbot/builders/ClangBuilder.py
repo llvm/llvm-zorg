@@ -39,7 +39,8 @@ def getClangBuildFactory(
             checkout_compiler_rt=False,
             run_gdb=False,
             run_modern_gdb=False,
-            run_gcc=False):
+            run_gcc=False,
+            baseline_modern_gdb=True):
     # Prepare environmental variables. Set here all env we want everywhere.
     merged_env = {
         'TERM' : 'dumb' # Make sure Clang doesn't use color escape sequences.
@@ -241,7 +242,7 @@ def getClangBuildFactory(
         if run_gdb:
             addClangGDBTests(f, ignores, install_prefix)
         if run_modern_gdb:
-            addModernClangGDBTests(f, jobs, install_prefix)
+            addModernClangGDBTests(f, jobs, install_prefix, baseline_modern_gdb)
         if run_gcc:
             addClangGCCTests(f, ignores, install_prefix)
 
@@ -560,8 +561,16 @@ def addClangGDBTests(f, ignores={}, install_prefix="%(builddir)s/llvm.install"):
             logfiles={ 'dg.sum' : 'obj/filtered.gdb.sum',
                        'gdb.log' : 'obj/gdb.log' }))
 
-def addModernClangGDBTests(f, jobs, install_prefix):
-    make_vars = [WithProperties('RUNTESTFLAGS=CC_FOR_TARGET="{0}/bin/clang" CXX_FOR_TARGET="{0}/bin/clang++" CFLAGS_FOR_TARGET="-w"'.format(install_prefix)),
+def addModernClangGDBTests(f, jobs, install_prefix, baseline):
+    # strangely, we want to put CC_FOR_TARGET, CXX_FOR_TARGET, etc. inside the
+    # RUNTESTFLAGS value, not as separate parameters to make
+    suppress_baseline = ''
+    if not baseline:
+        suppress_baseline = 'SUPPRESS_CLANG_BASELINE=1'
+    make_vars = [WithProperties('RUNTESTFLAGS=CC_FOR_TARGET="{0}/bin/clang" '
+                                'CXX_FOR_TARGET="{0}/bin/clang++" '
+                                'CFLAGS_FOR_TARGET="-w" '
+                                '{1}'.format(install_prefix, suppress_baseline)),
                  "FORCE_PARALLEL=1"]
     f.addStep(SVN(name='svn-clang-tests', mode='update',
                   svnurl='http://llvm.org/svn/llvm-project/clang-tests-external/trunk/gdb/7.5',
