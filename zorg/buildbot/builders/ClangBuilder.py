@@ -567,11 +567,11 @@ def addModernClangGDBTests(f, jobs, install_prefix, baseline):
     suppress_baseline = ''
     if not baseline:
         suppress_baseline = 'SUPPRESS_CLANG_BASELINE=1'
-    make_vars = [WithProperties('RUNTESTFLAGS=CC_FOR_TARGET="{0}/bin/clang" '
-                                'CXX_FOR_TARGET="{0}/bin/clang++" '
-                                'CFLAGS_FOR_TARGET="-w -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer" '
+    make_vars = [WithProperties('RUNTESTFLAGS=CC_FOR_TARGET=\'{0}/bin/clang\' '
+                                'CXX_FOR_TARGET=\'{0}/bin/clang++\' '
+                                'CFLAGS_FOR_TARGET=\'-w -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer\' '
                                 '{1}'.format(install_prefix, suppress_baseline)),
-                 "FORCE_PARALLEL=1"]
+                 'FORCE_PARALLEL=1']
     f.addStep(SVN(name='svn-clang-tests', mode='update',
                   svnurl='http://llvm.org/svn/llvm-project/clang-tests-external/trunk/gdb/7.5',
                   workdir='clang-tests/src'))
@@ -585,8 +585,8 @@ def addModernClangGDBTests(f, jobs, install_prefix, baseline):
             name='gdb-75-check',
             command=['make', '-k', WithProperties('-j%s' % jobs), 'check'] + make_vars,
             workdir='clang-tests/build',
-            logfiles={'dg.sum':'gdb.sum', 
-                      'gdb.log':'gdb.log'}))
+            logfiles={'dg.sum':'gdb/testsuite/gdb.sum', 
+                      'gdb.log':'gdb/testsuite/gdb.log'}))
 
 
 
