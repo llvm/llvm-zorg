@@ -575,12 +575,15 @@ def addModernClangGDBTests(f, jobs, install_prefix, baseline):
     f.addStep(SVN(name='svn-clang-tests', mode='update',
                   svnurl='http://llvm.org/svn/llvm-project/clang-tests-external/trunk/gdb/7.5',
                   workdir='clang-tests/src'))
-    f.addStep(Configure(command='../src/gdb/testsuite/configure',
+    f.addStep(Configure(command='../src/configure',
                         workdir='clang-tests/build/'))
+    f.addStep(WarningCountingShellCommand(name='gdb-75-build',
+                                          command=['make', WithProperties('-j%s' % jobs)],
+                                          haltOnFailure=True,
+                                          workdir='clang-tests/build'))
     f.addStep(DejaGNUCommand.DejaGNUCommand(
             name='gdb-75-check',
-            command=["make", "-k", WithProperties("-j%s" % jobs), "check"] + make_vars,
-            env={'PATH': os.pathsep.join(['${HOME}/gdb-install/bin', '${PATH}'])},
+            command=['make', '-k', WithProperties('-j%s' % jobs), 'check'] + make_vars,
             workdir='clang-tests/build',
             logfiles={'dg.sum':'gdb.sum', 
                       'gdb.log':'gdb.log'}))
