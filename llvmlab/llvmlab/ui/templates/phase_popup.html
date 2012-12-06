@@ -3,8 +3,7 @@
 <h3><a  href="{{ config.status.master_url }}/builders/{{
               phase.phase_builder }}">{{ phase.name }}</a>
     (Phase {{ phase.number }}) -
-    <a href="http://llvm.org/viewvc/llvm-project?view=rev&revision={{
-             source_stamp }}">r{{ source_stamp }}</a></h3>
+    <a href="{{ config.revlink_url % source_stamp }}">r{{ source_stamp }}</a></h3>
 <table>
   <thead>
     <tr><th>Builder</th><th>Status</th></tr>

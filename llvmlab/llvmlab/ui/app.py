@@ -109,6 +109,10 @@ class App(flask.Flask):
         else:
             self.config.update(config)
 
+        # Set the default revision URL.
+        self.config.revlink_url = \
+            "http://llvm.org/viewvc/llvm-project?view=rev&revision=%s"
+
         # Set the application secret key.
         self.secret_key = self.config["SECRET_KEY"]
 
