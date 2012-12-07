@@ -166,6 +166,9 @@ def get_build_slaves():
         # POWER7 PowerPC (powerpc64), Fedora16.
         create_slave("coho", properties={'jobs': 12}, max_builds=4),
 
+        # Debian 86_64, 2 x 6-core Opteron 2.6 GHz
+        create_slave("osu8", properties={'jobs' : 6}, max_builds=4),
+
         # Defunct.
         # Pentium Dual CPU T3400 @ 2.1GHz
         #create_slave("dumitrescu1", properties={'jobs' : 2}, max_builds=1),
@@ -190,9 +193,6 @@ def get_build_slaves():
         #create_slave("dunbar-win32-2", properties={'jobs' : 2}, max_builds=1),
         #create_slave("osu1", properties={'jobs' : 4}, max_builds=1),
         #create_slave("osu2", properties={'jobs' : 4}, max_builds=2),
-        # Debian x86_64, 2 x 6-core Opteron 2.6 GHz
-        #create_slave("osu7", properties={'jobs' : 6}, max_builds=4),
-        #create_slave("osu8", properties={'jobs' : 6}, max_builds=4),
         #create_slave("andrew1"),
         #create_slave("danmbp1"),
         # FreeBSD zero.sajd.net 9.0-CURRENT i386
