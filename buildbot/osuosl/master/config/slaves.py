@@ -34,8 +34,8 @@ def get_build_slaves():
 
         # gcc10  2TB   2x12x1.5 GHz AMD Opteron Magny-Cours / 64 GB RAM / Supermicro AS-1022G-BTF / Debian x86-64
         create_slave("gcc10", properties={'jobs' : 12}, max_builds=1),
-        # gcc11  580G  2x 2x2.0 GHz AMD Opteron 2212 / 4GB RAM / Dell SC1345 / Debian x86-64
-        create_slave("gcc11", properties={'jobs' : 2}, max_builds=1),
+#        # gcc11  580G  2x 2x2.0 GHz AMD Opteron 2212 / 4GB RAM / Dell SC1345 / Debian x86-64
+#        create_slave("gcc11", properties={'jobs' : 2}, max_builds=1),
         # gcc12  580G  2x 2x2.0 GHz AMD Opteron 2212 / 4GB RAM / Dell SC1345 / Debian x86-64
         create_slave("gcc12", properties={'jobs' : 2}, max_builds=1),
         # gcc13  580G  2x2x2.0 GHz AMD Opteron 2212 / 4GB RAM / Dell SC1345 / Debian x86-64
@@ -64,8 +64,8 @@ def get_build_slaves():
 #        create_slave("gcc36", properties={'jobs' : 1}, max_builds=1),
 #        # gcc37 19037  1TB     0.8  GHz Freescale i.MX515 / 512 MB RAM / Efika MX Client Dev Board / Ubuntu armv7l
 #        create_slave("gcc37", properties={'jobs' : 1}, max_builds=1),
-        # gcc38   1TB      3.2  GHz IBM Cell BE / 256 MB RAM / Sony Playstation 3 / Debian powerpc
-        create_slave("gcc38", properties={'jobs' : 1}, max_builds=1),
+#        # gcc38   1TB      3.2  GHz IBM Cell BE / 256 MB RAM / Sony Playstation 3 / Debian powerpc
+#        create_slave("gcc38", properties={'jobs' : 1}, max_builds=1),
 #        # gcc40  160G      1.8  GHz IBM PowerPC 970 (G5) / 512 MB RAM / Apple PowerMac G5 / Debian powerpc
 #        create_slave("gcc40", properties={'jobs' : 1}, max_builds=1),
         # gcc42  9092 160G     0.8  GHz ICT Loongson 2F / 512 MB RAM / Lemote Fuloong 6004 Linux mini PC / Debian mipsel
@@ -74,14 +74,16 @@ def get_build_slaves():
 #        create_slave("gcc43", properties={'jobs' : 1}, max_builds=1),
         # gcc45 19045  1TB   4x3.0  GHz AMD Athlon II X4 640 / 4 GB RAM / Debian i386
         create_slave("gcc45", properties={'jobs' : 2}, max_builds=1),
-        # gcc46  250G      1.66 GHz Intel Atom D510 2 cores 4 threads / 4 GB RAM / Debian amd64
-        create_slave("gcc46", properties={'jobs' : 2}, max_builds=1),
-        # gcc47  250G      1.66 GHz Intel Atom D510 2 cores 4 threads / 4 GB RAM / Debian amd64
-        create_slave("gcc47", properties={'jobs' : 2}, max_builds=1),
+#        # gcc46  250G      1.66 GHz Intel Atom D510 2 cores 4 threads / 4 GB RAM / Debian amd64
+#        create_slave("gcc46", properties={'jobs' : 2}, max_builds=1),
+#        # gcc47  250G      1.66 GHz Intel Atom D510 2 cores 4 threads / 4 GB RAM / Debian amd64
+#        create_slave("gcc47", properties={'jobs' : 2}, max_builds=1),
+        # gcc49  2TB   4x0.9  GHz ICT Loongson 3A / 2 GB RAM / prototype board / Debian mipsel
+        create_slave("gcc49", properties={'jobs' : 2}, max_builds=1),
 #        # gcc50  9080 250G     0.6  GHz ARM XScale-80219 / 512 MB RAM / Thecus N2100 NAS
 #        create_slave("gcc50", properties={'jobs' : 1}, max_builds=1),
-        # gcc51  9081  60G     0.8  GHz ICT Loongson 2F /   1 GB RAM / Lemote YeeLoong 8089 notebook / Debian mipsel
-        create_slave("gcc51", properties={'jobs' : 1}, max_builds=1),
+#        # gcc51  9081  60G     0.8  GHz ICT Loongson 2F /   1 GB RAM / Lemote YeeLoong 8089 notebook / Debian mipsel
+#        create_slave("gcc51", properties={'jobs' : 1}, max_builds=1),
 #        # gcc52  9082  1TB     0.8  GHz ICT Loongson 2F / 512 MB RAM / Gdium Liberty 1000 notebook / Mandriva 2009.1 mipsel
 #        create_slave("gcc52", properties={'jobs' : 1}, max_builds=1),
 #        # gcc53  9083  80G   2x1.25 GHz PowerPC 7455 G4  / 1.5 GB RAM / PowerMac G4 dual processor
@@ -108,6 +110,8 @@ def get_build_slaves():
         create_slave("gcc66", properties={'jobs' : 1}, max_builds=1),
         # gcc70       160G   2x3.2 GHz  Intel Xeon 3.2E (Irwindale) / 3 GB RAM / Dell Poweredge SC1425 / NetBSD amd64
         create_slave("gcc70", properties={'jobs' : 1}, max_builds=1),
+        # gcc76       2TB    4x2x3.4 GHz Core i7-2600 / 16 GB RAM / 2TB
+        create_slave("gcc76", properties={'jobs' : 4}, max_builds=1),
 #        # gcc100       1TB   2x2.6 GHz  AMD Opteron 252 / 1GB RAM running Debian x86_64
 #        create_slave("gcc100", properties={'jobs' : 1}, max_builds=1),
 #        # gcc101       1TB   2x2.6 GHz  AMD Opteron 252 / 1GB RAM running FreeBSD 8 x86_64
