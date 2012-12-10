@@ -171,7 +171,7 @@ def get_build_slaves():
         create_slave("coho", properties={'jobs': 12}, max_builds=4),
 
         # Debian 86_64, 2 x 6-core Opteron 2.6 GHz
-        create_slave("osu8", properties={'jobs' : 6}, max_builds=4),
+        create_slave("osu8", properties={'jobs' : 6}, max_builds=2),
 
         # Defunct.
         # Pentium Dual CPU T3400 @ 2.1GHz
