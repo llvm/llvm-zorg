@@ -1,18 +1,19 @@
-import os
-
 import buildbot
 import buildbot.process.factory
-from buildbot.steps.source import SVN
+import os
+
+from buildbot.process.properties import WithProperties
 from buildbot.steps.shell import Configure, ShellCommand
 from buildbot.steps.shell import WarningCountingShellCommand
+from buildbot.steps.source import SVN
 from buildbot.steps.transfer import FileDownload
-from buildbot.process.properties import WithProperties
-
-from zorg.buildbot.commands.ClangTestCommand import ClangTestCommand
-from zorg.buildbot.commands.BatchFileDownload import BatchFileDownload
-from zorg.buildbot.commands import DejaGNUCommand
-
+from zorg.buildbot.Artifacts import GetCompilerArtifacts, uploadArtifacts
 from zorg.buildbot.builders.Util import getConfigArgs
+from zorg.buildbot.commands import DejaGNUCommand
+from zorg.buildbot.commands.BatchFileDownload import BatchFileDownload
+from zorg.buildbot.commands.ClangTestCommand import ClangTestCommand
+from zorg.buildbot.commands.LitTestCommand import LitTestCommand
+from zorg.buildbot.PhasedBuilderUtils import GetLatestValidated, find_cc
 
 def getClangBuildFactory(
             triple=None,
@@ -624,3 +625,133 @@ def getClangTestsIgnoresFromPath(path, key):
     ignores['gdb-1472-testsuite' ] = gdb_dg_ignores
 
     return ignores
+
+from zorg.buildbot.PhasedBuilderUtils import getBuildDir, setProperty
+from buildbot.steps.source.svn import SVN as HostSVN
+
+def phasedClang(config_options, is_bootstrap = True):
+    # Create an instance of the Builder.
+    f = buildbot.process.factory.BuildFactory()
+    # Determine the build directory.
+    f = getBuildDir(f)
+    # get rid of old archives from prior builds
+    f.addStep(buildbot.steps.shell.ShellCommand(
+            name='rm.archives', command=['sh', '-c', 'rm -rfv *gz'],
+            haltOnFailure=False, description=['rm archives'],
+            workdir=WithProperties('%(builddir)s')))
+    # Clean the build directory.
+    clang_build_dir = 'clang-build'
+    f.addStep(buildbot.steps.shell.ShellCommand(
+            name='rm.clang-build', command=['rm', '-rfv', clang_build_dir],
+            haltOnFailure=False, description=['rm dir', clang_build_dir],
+            workdir=WithProperties('%(builddir)s')))
+    # Cleanup the clang link, which buildbot's SVN always_purge does not know
+    # (in 8.5 this changed to method='fresh')
+    # how to remove correctly. If we don't do this, the LLVM update steps will
+    # end up doing a clobber every time.
+    #
+    # FIXME: Should file a Trac for this, but I am lazy.
+    f.addStep(buildbot.steps.shell.ShellCommand(
+            name='rm.clang-sources-link',
+            command=['rm', '-rfv', 'llvm/tools/clang'],
+            haltOnFailure=False, description=['rm', 'clang sources link'],
+            workdir=WithProperties('%(builddir)s')))
+    f.addStep(buildbot.steps.shell.ShellCommand(
+            name='rm.compiler-rt-sources-link',
+            command=['rm', '-rfv', 'llvm/projects/compiler-rt'],
+            haltOnFailure=False, description=['rm', 'compiler-rt sources link'],
+            workdir=WithProperties('%(builddir)s')))
+    # Pull sources.
+    f.addStep(HostSVN(name='pull.llvm', mode='incremental', method='fresh',
+                      repourl='http://llvm.org/svn/llvm-project/llvm/trunk',
+                      retry = (60, 5), workdir='llvm',
+                      description='pull.llvm', alwaysUseLatest=False))
+    f.addStep(HostSVN(name='pull.clang', mode='incremental', method='fresh',
+                      repourl='http://llvm.org/svn/llvm-project/cfe/trunk',
+                      workdir='clang.src', retry = (60, 5),
+                      description='pull.clang', alwaysUseLatest=False))
+    f.addStep(HostSVN(name='pull.compiler-rt', mode='incremental', method='fresh',
+                      repourl='http://llvm.org/svn/llvm-project/compiler-rt/trunk',
+                      workdir='compiler-rt.src',
+                      alwaysUseLatest=False, retry = (60, 5),
+                      description='pull.compiler-rt'))
+    # Create symlinks to the clang & compiler-rt sources inside the LLVM tree.
+    # We don't actually check out the sources there, because the SVN purge
+    # would always remove them then.
+    f.addStep(buildbot.steps.shell.ShellCommand(
+              name='ln.clang-sources', haltOnFailure=True,
+              command=['ln', '-sfv', '../../clang.src', 'clang'],
+              workdir='llvm/tools', description = ['ln', 'clang sources']))
+    f.addStep(buildbot.steps.shell.ShellCommand(
+              name='ln.compiler-rt-sources',
+              command=['ln', '-sfv', '../../compiler-rt.src', 'compiler-rt'],
+              haltOnFailure=True, workdir='llvm/projects',
+              description = ['ln', 'compiler-rt sources']))
+    # Checkout the supplemental 'debuginfo-tests' repository.
+    debuginfo_url = 'http://llvm.org/svn/llvm-project/debuginfo-tests/trunk'
+    f.addStep(HostSVN(name='pull.debug-info tests', mode='incremental',
+                      repourl=debuginfo_url,
+                      method='fresh',
+                      workdir='llvm/tools/clang/test/debuginfo-tests',
+                      alwaysUseLatest=False, retry = (60, 5),
+                      description='pull.debug-info tests'))
+    # Clean the install directory.
+    f.addStep(buildbot.steps.shell.ShellCommand(
+              name='rm.clang-install', command=['rm', '-rfv', 'clang-install'],
+              haltOnFailure=False, description=['rm dir', 'clang-install'],
+              workdir=WithProperties('%(builddir)s')))
+    # Construct the configure arguments.
+    configure_args = ['../llvm/configure']
+    configure_args.extend(config_options)
+    configure_args.extend(['--disable-bindings', '--with-llvmcc=clang',
+                           '--without-llvmgcc', '--without-llvmgxx',
+                           '--enable-keep-symbols'])
+    configure_args.append(
+        WithProperties('--prefix=%(builddir)s/clang-install'))
+    # If we are using a previously built compiler, download it and override CC
+    # and CXX.
+    if is_bootstrap:
+        f = GetCompilerArtifacts(f)
+    else:
+        f = GetLatestValidated(f)
+    cc_command = ['find', 'host-compiler', '-name', 'clang']
+    f.addStep(buildbot.steps.shell.SetProperty(
+              name='find.cc',
+              command=cc_command,
+              extract_fn=find_cc,
+              workdir=WithProperties('%(builddir)s')))
+    f.addStep(buildbot.steps.shell.ShellCommand(
+              name='sanity.test', haltOnFailure=True,
+              command=[WithProperties('%(builddir)s/%(cc_path)s'), '-v'],
+              description=['sanity test']))
+    configure_args.extend([
+            WithProperties('CC=%(builddir)s/%(cc_path)s'),
+            WithProperties('CXX=%(builddir)s/%(cc_path)s++')])
+    # Configure the LLVM build.
+    f.addStep(buildbot.steps.shell.ShellCommand(
+              name='configure.with.host', command=configure_args,
+              haltOnFailure=True, description=['configure'],
+              workdir=clang_build_dir))
+    # Build the compiler.
+    f.addStep(buildbot.steps.shell.ShellCommand(
+              name='make', command=['make', '-j', WithProperties('%(jobs)s')],
+              haltOnFailure=True, description=['make'], workdir=clang_build_dir))
+    # Use make install-clang to produce minimal archive for use by downstream
+    # builders.
+    f.addStep(buildbot.steps.shell.ShellCommand(
+              name='make.install-clang', haltOnFailure=True,
+              command=['make', 'install-clang', '-j', WithProperties('%(jobs)s'),
+                     'RC_SUPPORTED_ARCHS=armv7 i386 x86_64'],
+              description=['make install'], workdir=clang_build_dir))
+    # Save artifacts of this build for use by other builders.
+    f = uploadArtifacts(f)
+    # Run the LLVM and Clang regression tests.
+    f.addStep(LitTestCommand(name='run.llvm.tests', haltOnFailure=True,
+                             command=['make', '-j', WithProperties('%(jobs)s'),
+                             'VERBOSE=1'], description=['llvm', 'tests'],
+                             workdir='%s/test' % clang_build_dir))
+    f.addStep(LitTestCommand(name='run.clang.tests', haltOnFailure=True,
+                             command=['make', '-j', WithProperties('%(jobs)s'),
+                             'VERBOSE=1'], description=['clang', 'tests'],
+                             workdir='%s/tools/clang/test' % clang_build_dir))
+    return f
