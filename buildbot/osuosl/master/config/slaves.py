@@ -173,6 +173,9 @@ def get_build_slaves():
         # Debian 86_64, 2 x 6-core Opteron 2.6 GHz
         create_slave("osu8", properties={'jobs' : 6}, max_builds=2),
 
+        # Cavium Octeon II V0.8, MIPS64 big endian, Debian squeeze (6.0.6)
+        create_slave("mipsswbrd002", properties={'jobs' : 6}, max_builds=1),
+
         # Defunct.
         # Pentium Dual CPU T3400 @ 2.1GHz
         #create_slave("dumitrescu1", properties={'jobs' : 2}, max_builds=1),

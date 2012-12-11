@@ -73,6 +73,12 @@ def _get_llvm_builders():
          'factory': LLVMBuilder.getLLVMBuildFactory("x86_64-pc-linux-gnu", valgrind=True,
                                              valgrindLeakCheck=True,
                                              valgrindSuppressions='utils/valgrind/x86_64-pc-linux-gnu.supp')},
+        {'name': "llvm-mips-linux",
+         'slavenames':["mipsswbrd002"],
+         'builddir':"llvm-mips-linux",
+         'factory': LLVMBuilder.getLLVMBuildFactory("mips-linux-gnu",
+                                                    extra_configure_args=["--with-extra-options=-mips32r2",
+                                                                          "--with-extra-ld-options=-mips32r2"])},
         ]
 
 # Offline.
