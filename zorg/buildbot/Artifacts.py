@@ -9,7 +9,7 @@ is_production = config.options.get('Master Options', 'is_production')
 if is_production:
     rsync_user = config.options.get('Master Options', 'rsync_user')
     master_name = config.options.get('Master Options', 'master_name')
-    master_protocol = config.options.get('Master Options', 'protocol')
+    master_protocol = config.options.get('Master Options', 'master_protocol')
 
     base_download_url = '%s://%s/artifacts' % (master_protocol, master_name)
     package_url = 'http://smooshlab.apple.com/packages'
