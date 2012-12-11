@@ -1,5 +1,6 @@
 import buildbot
 import config
+import warnings
 
 from buildbot.steps.shell import WithProperties
 from zorg.buildbot.PhasedBuilderUtils import setProperty, determine_phase_id
@@ -14,7 +15,7 @@ master_name = 'localhost'
 base_download_url = 'http://%s/~%s/artifacts' % (master_name, rsync_user)
 package_url = 'http://%s/~%s/packages' % (master_name, rsync_user)
 
-try:
+if config.options.has_option('Master Options', 'is_production'):
     is_production = config.options.get('Master Options', 'is_production')
     if is_production:
         rsync_user = config.options.get('Master Options', 'rsync_user')
@@ -22,8 +23,8 @@ try:
         master_protocol = config.options.get('Master Options', 'master_protocol')
         base_download_url = '%s://%s/artifacts' % (master_protocol, master_name)
         package_url = 'http://smooshlab.apple.com/packages'
-except AttributeError:
-    warning('Please update your local.cfg file') 
+else:
+    warnings.warn('Please update your local.cfg file') 
 
 base_rsync_path = rsync_user + '@' + master_name + ':'
 # TODO: Fix this up. Quick hack to get smooshbase up.
