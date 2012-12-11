@@ -5,22 +5,25 @@ from buildbot.steps.shell import WithProperties
 from zorg.buildbot.PhasedBuilderUtils import setProperty, determine_phase_id
 
 # Get some parameters about where to upload and download results from.
-is_production = config.options.get('Master Options', 'is_production')
-if is_production:
-    rsync_user = config.options.get('Master Options', 'rsync_user')
-    master_name = config.options.get('Master Options', 'master_name')
-    master_protocol = config.options.get('Master Options', 'master_protocol')
 
-    base_download_url = '%s://%s/artifacts' % (master_protocol, master_name)
-    package_url = 'http://smooshlab.apple.com/packages'
-else:
-    # If we aren't in production mode, assume that we are just using a local
-    # user.
-    import getpass
-    rsync_user = getpass.getuser()
-    master_name = 'localhost'
-    base_download_url = 'http://%s/~%s/artifacts' % (master_name, rsync_user)
-    package_url = 'http://%s/~%s/packages' % (master_name, rsync_user)
+# Set up defaults assuming we aren't in  production mode which
+# assume that we are just using a local user.
+import getpass
+rsync_user = getpass.getuser()
+master_name = 'localhost'
+base_download_url = 'http://%s/~%s/artifacts' % (master_name, rsync_user)
+package_url = 'http://%s/~%s/packages' % (master_name, rsync_user)
+
+try:
+    is_production = config.options.get('Master Options', 'is_production')
+    if is_production:
+        rsync_user = config.options.get('Master Options', 'rsync_user')
+        master_name = config.options.get('Master Options', 'master_name')
+        master_protocol = config.options.get('Master Options', 'master_protocol')
+        base_download_url = '%s://%s/artifacts' % (master_protocol, master_name)
+        package_url = 'http://smooshlab.apple.com/packages'
+except AttributeError:
+    warning('Please update your local.cfg file') 
 
 base_rsync_path = rsync_user + '@' + master_name + ':'
 # TODO: Fix this up. Quick hack to get smooshbase up.
