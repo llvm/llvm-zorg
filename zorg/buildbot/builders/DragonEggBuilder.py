@@ -26,6 +26,7 @@ def extractSearchPaths(rc, stdout, stderr):
 def getDragonEggBootstrapFactory(gcc_repository, extra_languages=[],
                                  extra_gcc_configure_args=[],
                                  extra_llvm_configure_args=[],
+                                 check_llvm=True, check_dragonegg=True,
                                  clean=True, env={}, jobs='%(jobs)s',
                                  timeout=20):
     # Add gcc configure arguments required by the plugin.
@@ -167,6 +168,18 @@ def getDragonEggBootstrapFactory(gcc_repository, extra_languages=[],
                                             description=['compile', 'llvm', stage],
                                             workdir=llvm_obj_dir, env=cur_env,
                                             timeout=timeout*60))
+
+      # Optionally run the LLVM testsuite.
+      if check_llvm:
+        f.addStep(ClangTestCommand(name='check.llvm.%s' % stage,
+                                   command=['nice', '-n', '10', 'make',
+                                            WithProperties('LIT_ARGS=-v -j%s' % jobs),
+                                            'check-all'
+                                            ],
+                                   description=['test', 'llvm', stage],
+                                   haltOnFailure=True, workdir=llvm_obj_dir,
+                                   env=env, timeout=timeout*60))
+
       f.addStep(WarningCountingShellCommand(name='install.llvm.%s' % stage,
                                             command=['nice', '-n', '10',
                                                      'make', 'install'],
@@ -225,6 +238,22 @@ def getDragonEggBootstrapFactory(gcc_repository, extra_languages=[],
                                       dragonegg_obj_dir],
                              description=['mv build dir', 'dragonegg', stage],
                              haltOnFailure=True, workdir='.', env=cur_env))
+
+      # Optionally run the dragonegg testsuite.
+      if check_dragonegg:
+        f.addStep(ClangTestCommand(name='check.dragonegg.%s' % stage,
+                                   command=['nice', '-n', '10',
+                                            'make', '-f', '../' + dragonegg_src_dir + '/Makefile',
+                                            WithProperties('GCC=%(builddir)s/'+gcc_install_dir+'/bin/gcc'),
+                                            WithProperties('LLVM_CONFIG=%(builddir)s/' +
+                                                           llvm_install_dir + '/bin/llvm-config'),
+                                            WithProperties('TOP_DIR=%(builddir)s/' + dragonegg_src_dir),
+                                            WithProperties('LIT_ARGS=-v -j%s' % jobs),
+                                            'check'
+                                            ],
+                                   description=['test', 'dragonegg', stage],
+                                   haltOnFailure=True, workdir=dragonegg_obj_dir,
+                                   env=env, timeout=timeout*60))
 
       # Ensure that the following stages use the just built plugin.
       prev_plugin = '%(builddir)s/'+dragonegg_obj_dir+'/dragonegg.so'
