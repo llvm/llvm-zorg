@@ -76,12 +76,14 @@ def getLLDBBuildFactory(triple, outOfDir=False, useTwoStage=False, jobs='%(jobs)
 
     f.addStep(Configure(name='configure',
         command=config_args,
+        env=env,
         workdir=llvm_objdir))
 
     f.addStep(WarningCountingShellCommand(name="compile",
                                           command=['nice', '-n', '10',
                                           'make', WithProperties("-j%s" % jobs)
                                           ],
+                                          env=env,
                                           haltOnFailure=True,
                                           workdir=llvm_objdir))
 
