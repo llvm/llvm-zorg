@@ -260,3 +260,13 @@ def PublishGoodBuild():
                                artifacts_str],
                     description = ['publish', buildname]))
     return f
+
+def set_config_option(section, option, default=False):
+    import warnings
+    if config.options.has_option(section, option):
+        return config.options.get(section, option)
+    else:
+        warn_str = 'Please add the "%s" option to the ' % option
+        warn_str += '"%s" section of your local.cfg file' % section
+        warnings.warn(warn_str) 
+        return default
