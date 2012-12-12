@@ -1,39 +1,37 @@
 import buildbot
 import config
-import warnings
 
 from buildbot.steps.shell import WithProperties
 from zorg.buildbot.PhasedBuilderUtils import setProperty, determine_phase_id
+from zorg.buildbot.PhasedBuilderUtils import set_config_option
 
 # Get some parameters about where to upload and download results from.
-
 # Set up defaults assuming we aren't in  production mode which
 # assume that we are just using a local user.
 import getpass
 rsync_user = getpass.getuser()
 master_name = 'localhost'
+master_protocol = 'http'
 base_download_url = 'http://%s/~%s/artifacts' % (master_name, rsync_user)
 package_url = 'http://%s/~%s/packages' % (master_name, rsync_user)
+base_rsync_path = '~/artifacts'
+curl_flags = '-svo'
 
-if config.options.has_option('Master Options', 'is_production'):
-    is_production = config.options.get('Master Options', 'is_production')
-    if is_production:
-        rsync_user = config.options.get('Master Options', 'rsync_user')
-        master_name = config.options.get('Master Options', 'master_name')
-        master_protocol = config.options.get('Master Options', 'master_protocol')
-        base_download_url = '%s://%s/artifacts' % (master_protocol, master_name)
-        package_url = 'http://smooshlab.apple.com/packages'
-else:
-    warnings.warn('Please update your local.cfg file') 
-
-base_rsync_path = rsync_user + '@' + master_name + ':'
-# TODO: Fix this up. Quick hack to get smooshbase up.
-if master_name == "smooshbase.apple.com":
-    base_rsync_path += '/var/www/root/artifacts'
-    curl_flags = '-ksvo'
-else:
-    base_rsync_path += '~/artifacts'
-    curl_flags = '-svo'
+is_production = set_config_option('Master Options', 'is_production')
+if is_production:
+    rsync_user = set_config_option('Master Options', 'rsync_user',
+                                   'buildmaster')
+    master_name = set_config_option('Master Options', 'master_name',
+                                    'localhost')
+    master_protocol = set_config_option('Master Options', 
+                                        'master_protocol', 'http')
+    base_download_url = '%s://%s/artifacts' % (master_protocol, master_name)
+    package_url = set_config_option('Master Options', 'package_url',
+                                    'http://localhost/~buildmaster/packages')
+    base_rsync_path = set_config_option('Master Options', 'base_rsync_path',
+                                        '~/artifacts')
+    master_name = set_config_option('Master Options', 'curl_flags',
+                                    '-svo')
 
 # This method is used in determining the name of a given compiler archive
 def _determine_compiler_kind(props):
