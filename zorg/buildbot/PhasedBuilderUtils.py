@@ -114,7 +114,7 @@ def getUserDir(f):
     return f
 
 def GetLatestValidated(f):
-    master_name = config.options.get('Master Options', 'master_name')
+    master_name = set_config_option('Master Options', 'master_name')
     download_url = 'http://%s/artifacts' % master_name
     f.addStep(buildbot.steps.shell.ShellCommand(
             name='rm.host-compiler',
@@ -184,7 +184,7 @@ def getPhaseBuilderFactory(config, phase, next_phase, stages):
     setProperty(f, 'got_revision', WithProperties('%(revision)s'))
     # this generates URLs we can use to link back to the builder which
     # triggered downstream builds
-    master_url = config.options.get('Master Options', 'master_url')
+    master_url = set_config_option('Master Options', 'master_url')
     this_str = '/'.join([master_url, 'builders', '%(buildername)s', 'builds',
                         '%(buildnumber)s'])
     setProperty(f, 'trigger', WithProperties(this_str))
@@ -263,6 +263,10 @@ def PublishGoodBuild():
 
 def set_config_option(section, option, default=False):
     import warnings
+    # FIXME: always return default value until I can debug why config.options 
+    # aren't working here
+    return default
+
     if config.options.has_option(section, option):
         return config.options.get(section, option)
     else:
