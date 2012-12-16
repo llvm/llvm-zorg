@@ -136,6 +136,10 @@ def getDragonEggBootstrapFactory(gcc_repository, extra_languages=[],
                                                  description=['gcc', 'search paths',
                                                               stage], env=cur_env))
       cur_env = cur_env.copy();
+      if 'LIBRARY_PATH' in env:
+        cur_env['LIBRARY_PATH'] = WithProperties('%(gcc_libraries)s'+':'+env['LIBRARY_PATH'])
+      else:
+        cur_env['LIBRARY_PATH'] = WithProperties('%(gcc_libraries)s')
       if 'LD_LIBRARY_PATH' in env:
         cur_env['LD_LIBRARY_PATH'] = WithProperties('%(gcc_libraries)s'+':'+env['LD_LIBRARY_PATH'])
       else:
