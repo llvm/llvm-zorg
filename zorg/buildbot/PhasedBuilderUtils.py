@@ -184,7 +184,8 @@ def getPhaseBuilderFactory(config, phase, next_phase, stages):
     setProperty(f, 'got_revision', WithProperties('%(revision)s'))
     # this generates URLs we can use to link back to the builder which
     # triggered downstream builds
-    master_url = set_config_option('Master Options', 'master_url')
+    master_url = set_config_option('Master Options', 'master_url',
+                                   'http://localhost')
     this_str = '/'.join([master_url, 'builders', '%(buildername)s', 'builds',
                         '%(buildnumber)s'])
     setProperty(f, 'trigger', WithProperties(this_str))
