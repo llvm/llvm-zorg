@@ -1,30 +1,33 @@
 import buildbot
 import buildbot.buildslave
 import os
+import config
 
-def create_slave(name, *args, **kwargs):
-    return buildbot.buildslave.BuildSlave(name, password='password',
-                                          *args, **kwargs)
+from zorg.buildbot.PhasedBuilderUtils import set_config_option
+
+def create_slave(name, jobs, max_builds = None):
+    if max_builds is None:
+        max_builds = jobs // 2
+    return buildbot.buildslave.BuildSlave(
+        name, password = 'password',
+        notify_on_missing = set_config_option('Master Options',
+                                               'default_email',
+                                               'david_dean@apple.com'),
+        properties = { 'jobs' : jobs },
+        max_builds = 1)
 
 def get_build_slaves():
-    #phase runners
-    yield create_slave("llvmlab.local",
-                       notify_on_missing="david_dean@apple.com",
-                       properties = { 'jobs' : 16 },
-                       max_builds = 16)
-    yield create_slave("lab-mini-01.local",
-                       notify_on_missing="david_dean@apple.com",
-                       properties = { 'jobs' : 2 },
-                       max_builds = 1)
-    yield create_slave("lab-mini-02.local",
-                       notify_on_missing="david_dean@apple.com",
-                       properties = { 'jobs' : 2 },
-                       max_builds = 1)
-    yield create_slave("lab-mini-03.local",
-                       notify_on_missing="david_dean@apple.com",
-                       properties = { 'jobs' : 2 },
-                       max_builds = 1)
-    yield create_slave("lab-mini-04.local",
-                       notify_on_missing="david_dean@apple.com",
-                       properties = { 'jobs' : 2 },
-                       max_builds = 1)
+    # Phase runnner.
+    yield create_slave('macpro1', jobs = 1, max_builds = 8)
+
+    # Builders.
+    yield create_slave('xserve2', jobs = 4, max_builds = 2)
+    yield create_slave('xserve3', jobs = 4, max_builds = 2)
+    yield create_slave('xserve4', jobs = 4, max_builds = 2)
+    yield create_slave('xserve5', jobs = 4, max_builds = 2)
+
+    has_production = config.options.has_option('Master Options', 'is_production')
+    is_production = config.options.has_option('Master Options', 'is_production')
+    if has_production and is_production:
+        # Test slave which can do anything.
+        yield create_slave('localhost', 8)

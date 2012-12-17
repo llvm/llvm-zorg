@@ -1,58 +1,89 @@
-from buildbot.scheduler import Scheduler
+from buildbot.schedulers import basic
 from buildbot.schedulers import triggerable
 from buildbot.process.properties import WithProperties
+from buildbot.changes.filter import ChangeFilter
+
+# Load the phase information.
+from phase_config import phases
+
+def get_phase_stages(phase):
+    """get_phase_stages() -> [(normal builders, experimental builders), ...]
+
+    Split a phase's builders into the list of serial stages, and separate
+    experimental builders from non-exerpeimntal ones."""
+
+    builders = dict((b['name'], b)
+                    for b in phase['builders'])
+
+    # Each entry in the stage parameter should be a list of builder names.
+    stages = []
+    for stage in phase.get('stages', []):
+        stages.append([builders.pop(name)
+                       for name in stage])
+
+    # Add any remaining builders to the final stage.
+    stages.append(builders.values())
+
+    # Split the builder types.
+    split_stages = []
+    for stage in stages:
+        normal_builders = []
+        experimental_builders = []
+        for b in stage:
+            if b['category'] != 'experimental':
+                normal_builders.append(b)
+            else:
+                experimental_builders.append(b)
+        split_stages.append( (normal_builders, experimental_builders) )
+
+    return split_stages
 
 def get_schedulers():
+    first_phase = phases[0]
+    last_phase = phases[-1]
 
-    vcScheduler = Scheduler(name='all',branch=None,
-                                 treeStableTimer=2*60,
-                                 builderNames=['phase1 - sanity',])
-    startphase1 = triggerable.Triggerable(name='doPhase1',
-                         builderNames=['clang-x86_64-osx10-gcc42-RA',])
+    # The VC scheduler initiates the first phase.
+    # Each phase, in turn, triggers the next phase,
+    # until the fianl phase
 
-    gate1 = triggerable.Triggerable(name='phase2',
-                         builderNames=['phase2 - living',],
-                         properties = {'revision':WithProperties('%(got_revision)s')})
-    startphase2 = triggerable.Triggerable(name='doPhase2',
-                         builderNames=[
-                                       'nightly_clang-x86_64-osx10-gcc42-RA',
-                                       'clang-x86_64-osx10-DA',
-                                       'clang-x86_64-osx10-RA',
-                                      ],
-                         properties = {'revision':WithProperties('%(got_revision)s')})
+    for phase in phases:
+        phase_name = 'phase%d' % phase['number']
+        my_filter = ChangeFilter(category = phase_name)
+        if phase == first_phase:
+            delay=120
+        else:
+            delay=15
+        
+        yield basic.AnyBranchScheduler(
+            name = phase_name, treeStableTimer=delay,
+            change_filter = my_filter,
+            builderNames = ['phase%d - %s' % (phase['number'], phase['name'])],
+            )
 
-    gate2 = triggerable.Triggerable(name='phase3',
-                         builderNames=['phase3 - tree health',],
-                         properties = {'revision':WithProperties('%(got_revision)s')})
-    startphase3 = triggerable.Triggerable(name='doPhase3',
-                         builderNames=[
-                                       'clang-i386-osx10-RA',
-                                       'nightly_clang-x86_64-osx10-DA',
-                                       'nightly_clang-x86_64-osx10-RA',
-                                       'nightly_clang-x86_64-osx10-RA-O0',
-                                       'nightly_clang-x86_64-osx10-RA-Os',
-                                       'nightly_clang-x86_64-osx10-RA-O3',
-                                       'nightly_clang-x86_64-osx10-RA-g',
-                                       'nightly_clang-x86_64-osx10-RA-flto',
-                                      ],
-                         properties = {'revision':WithProperties('%(got_revision)s')})
+    # Add triggers for initiating the builds in each phase.
+    for phase in phases:
 
-    gate3 = triggerable.Triggerable(name='phase4',
-                         builderNames=['phase4 - validation',],
-                         properties = {'revision':WithProperties('%(got_revision)s')})
-    startphase4 = triggerable.Triggerable(name='doPhase4',
-                         builderNames=[
-                                       'clang-x86_64-osx10-RA-stage3',
-                                       'nightly_clang-i386-osx10-RA',
-                                       'gccTestSuite-clang-x86_64-osx10-RA',
-                                       'boost-trunk-clang-x86_64-osx10-RA',
-                                      ],
-                         properties = {'revision':WithProperties('%(got_revision)s')})
+        # Split the phase builders into separate stages.
+        split_stages = get_phase_stages(phase)
+        for i, (normal, experimental) in enumerate(split_stages):
+            # Add the normal trigger, if used.
+            if normal:
+                yield triggerable.Triggerable(
+                    name = 'phase%d-stage%d' % (phase['number'], i),
+                    builderNames = [b['name'] for b in normal])
 
-    LastOne = triggerable.Triggerable(name='GoodBuild',
-                         builderNames=['Validated Build',],
-                         properties = {'revision':WithProperties('%(got_revision)s')})
-    
-    return [vcScheduler, startphase1, gate1, startphase2, gate2, 
-                       startphase3, gate3, startphase4, LastOne, ] 
+            # Add the experimental trigger, if used.
+            if experimental:
+                yield triggerable.Triggerable(
+                    name = 'phase%d-stage%d-experimental' % (phase['number'],
+                                                             i),
+                    builderNames = [b['name'] for b in experimental])
 
+    # Add a final trigger to trigger the validated build scheduler.
+    phase_name = 'GoodBuild'
+    my_filter = ChangeFilter(category = phase_name)
+    yield basic.AnyBranchScheduler(
+            name = phase_name, treeStableTimer=5,
+            builderNames = ['Validated Build',],
+            change_filter = my_filter,
+            )
