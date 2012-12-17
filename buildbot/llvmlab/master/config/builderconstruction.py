@@ -1,4 +1,4 @@
-from zorg.buildbot.builders.LNTBuilder import CreateLNTNightlyFactory
+#from zorg.buildbot.builders.LNTBuilder import CreateLNTNightlyFactory
 from zorg.buildbot.Artifacts import rsync_user, master_name
 from zorg.buildbot.builders.ClangBuilder import getClangMSVCBuildFactory
 from zorg.buildbot.builders.ClangBuilder import phasedClang
