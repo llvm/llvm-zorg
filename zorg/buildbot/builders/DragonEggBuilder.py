@@ -182,7 +182,7 @@ def getDragonEggBootstrapFactory(gcc_repository, extra_languages=[],
                                             ],
                                    description=['test', 'llvm', stage],
                                    haltOnFailure=True, workdir=llvm_obj_dir,
-                                   env=env, timeout=timeout*60))
+                                   env=cur_env, timeout=timeout*60))
 
       f.addStep(WarningCountingShellCommand(name='install.llvm.%s' % stage,
                                             command=['nice', '-n', '10',
@@ -257,7 +257,7 @@ def getDragonEggBootstrapFactory(gcc_repository, extra_languages=[],
                                             ],
                                    description=['test', 'dragonegg', stage],
                                    haltOnFailure=True, workdir=dragonegg_obj_dir,
-                                   env=env, timeout=timeout*60))
+                                   env=cur_env, timeout=timeout*60))
 
       # Ensure that the following stages use the just built plugin.
       prev_plugin = '%(builddir)s/'+dragonegg_obj_dir+'/dragonegg.so'
