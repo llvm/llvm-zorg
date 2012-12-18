@@ -570,7 +570,7 @@ def addModernClangGDBTests(f, jobs, install_prefix, baseline):
         suppress_baseline = 'SUPPRESS_CLANG_BASELINE=1'
     make_vars = [WithProperties('RUNTESTFLAGS=CC_FOR_TARGET=\'{0}/bin/clang\' '
                                 'CXX_FOR_TARGET=\'{0}/bin/clang++\' '
-                                'CFLAGS_FOR_TARGET=\'-w -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer\' '
+                                'CFLAGS_FOR_TARGET=\'-w -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -fno-limit-debug-info\' '
                                 '{1}'.format(install_prefix, suppress_baseline)),
                  'FORCE_PARALLEL=1']
     f.addStep(SVN(name='svn-clang-tests', mode='update',
