@@ -213,7 +213,9 @@ def getClangBuildFactory(
     if test:
         f.addStep(ClangTestCommand(name='check-all',
                                    command=[make, "check-all", "VERBOSE=1",
-                                            WithProperties("LIT_ARGS=%s" % llvmTestArgs)],
+                                            WithProperties("LIT_ARGS=%s" % llvmTestArgs),
+                                            WithProperties("TESTARGS=%s" % clangTestArgs),
+                                            WithProperties("EXTRA_TESTDIRS=%s" % extraTestDirs)],
                                    description=["checking"],
                                    descriptionDone=["checked"],
                                    workdir=llvm_1_objdir,
@@ -314,7 +316,9 @@ def getClangBuildFactory(
     if test:
         f.addStep(ClangTestCommand(name='check-all',
                                    command=[make, "check-all", "VERBOSE=1",
-                                            WithProperties("LIT_ARGS=%s" % llvmTestArgs)],
+                                            WithProperties("LIT_ARGS=%s" % llvmTestArgs),
+                                            WithProperties("TESTARGS=%s" % clangTestArgs),
+                                            WithProperties("EXTRA_TESTDIRS=%s" % extraTestDirs)],
                                    description=["checking"],
                                    descriptionDone=["checked"],
                                    workdir=llvm_2_objdir,
