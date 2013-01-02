@@ -12,7 +12,6 @@ from zorg.buildbot.builders.Util import getConfigArgs
 from zorg.buildbot.commands import DejaGNUCommand
 from zorg.buildbot.commands.BatchFileDownload import BatchFileDownload
 from zorg.buildbot.commands.ClangTestCommand import ClangTestCommand
-from zorg.buildbot.commands.LitTestCommand import LitTestCommand
 from zorg.buildbot.PhasedBuilderUtils import GetLatestValidated, find_cc
 
 def getClangBuildFactory(
@@ -745,12 +744,8 @@ def phasedClang(config_options, is_bootstrap = True):
     # Save artifacts of this build for use by other builders.
     f = uploadArtifacts(f)
     # Run the LLVM and Clang regression tests.
-    f.addStep(LitTestCommand(name='run.llvm.tests', haltOnFailure=True,
+    f.addStep(ClangTestCommand(name='check-all', haltOnFailure=True,
                              command=['make', '-j', WithProperties('%(jobs)s'),
-                             'VERBOSE=1'], description=['llvm', 'tests'],
-                             workdir='%s/test' % clang_build_dir))
-    f.addStep(LitTestCommand(name='run.clang.tests', haltOnFailure=True,
-                             command=['make', '-j', WithProperties('%(jobs)s'),
-                             'VERBOSE=1'], description=['clang', 'tests'],
-                             workdir='%s/tools/clang/test' % clang_build_dir))
+                             'VERBOSE=1'], description=['all', 'tests'],
+                             workdir=clang_build_dir))
     return f

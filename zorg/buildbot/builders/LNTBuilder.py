@@ -124,7 +124,7 @@ def AddLNTTestsToFactory(f, nt_flags, cc_path, cxx_path, **kwargs):
     if parallel:
         args.extend(['-j', WithProperties(jobs)])
     args.extend(nt_flags)
-    f.addStep(zorg.buildbot.commands.LitTestCommand.LitTestCommand(
+    f.addStep(zorg.buildbot.commands.ClangTestCommand.ClangTestCommand(
             name='lnt.nightly-test', command=args, haltOnFailure=True,
             description=['nightly test'], workdir='tests',
             logfiles={'configure.log' : 'nt/build/configure.log',
