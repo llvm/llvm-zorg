@@ -746,6 +746,7 @@ def phasedClang(config_options, is_bootstrap = True):
     # Run the LLVM and Clang regression tests.
     f.addStep(ClangTestCommand(name='check-all', haltOnFailure=True,
                              command=['make', '-j', WithProperties('%(jobs)s'),
-                             'VERBOSE=1'], description=['all', 'tests'],
+                             'VERBOSE=1', 'check-all'],
+                             description=['all', 'tests'],
                              workdir=clang_build_dir))
     return f
