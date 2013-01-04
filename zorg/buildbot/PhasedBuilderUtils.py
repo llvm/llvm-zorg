@@ -9,6 +9,7 @@ from buildbot.steps.shell import SetProperty
 from buildbot.steps.shell import WithProperties
 from buildbot.steps.trigger import Trigger
 from datetime import datetime, date, time
+import zorg
 
 class NamedTrigger(Trigger):
     """Trigger subclass which allows overriding the trigger name, and also
@@ -114,14 +115,12 @@ def getUserDir(f):
     return f
 
 def GetLatestValidated(f):
-    master_name = set_config_option('Master Options', 'master_name')
-    download_url = 'http://%s/artifacts' % master_name
     f.addStep(buildbot.steps.shell.ShellCommand(
             name='rm.host-compiler',
             command=['rm', '-rfv', 'host-compiler', 'host-compiler.tar.gz'],
             haltOnFailure=False, description=['rm', 'host-compiler'],
             workdir=WithProperties('%(builddir)s')))
-    latest_url = download_url
+    latest_url = zorg.buildbot.Artifacts.base_download_url
     latest_url += '/latest_validated/apple-clang-x86_64-darwin10-R.tar.gz'
     f.addStep(buildbot.steps.shell.ShellCommand(
               name='download.artifacts',
