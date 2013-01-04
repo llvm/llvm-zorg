@@ -14,8 +14,8 @@ master_name = 'localhost'
 master_protocol = 'http'
 base_download_url = 'http://%s/~%s/artifacts' % (master_name, rsync_user)
 package_url = 'http://%s/~%s/packages' % (master_name, rsync_user)
-base_rsync_path = '~/artifacts'
-curl_flags = '-svo'
+base_rsync_path = '%s@%s:~/artifacts' % (rsync_user , master_name)
+curl_flags = '-svLo'
 
 is_production = set_config_option('Master Options', 'is_production')
 if is_production:
@@ -26,12 +26,14 @@ if is_production:
     master_protocol = set_config_option('Master Options', 
                                         'master_protocol', 'http')
     base_download_url = '%s://%s/artifacts' % (master_protocol, master_name)
+    base_package_url = '%s://%s/packages' % (master_protocol, master_name)
     package_url = set_config_option('Master Options', 'package_url',
-                                    'http://localhost/~buildmaster/packages')
+                                    base_package_url)
     base_rsync_path = set_config_option('Master Options', 'base_rsync_path',
-                                        '~/artifacts')
+                                        '%s@%s:~/artifacts' %
+                                        (rsync_user , master_name))
     master_name = set_config_option('Master Options', 'curl_flags',
-                                    '-svo')
+                                    '-svLo')
 
 # This method is used in determining the name of a given compiler archive
 def _determine_compiler_kind(props):
