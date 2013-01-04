@@ -124,7 +124,7 @@ def GetLatestValidated(f):
     latest_url += '/latest_validated/apple-clang-x86_64-darwin10-R.tar.gz'
     f.addStep(buildbot.steps.shell.ShellCommand(
               name='download.artifacts',
-              command=['curl', '-svo', 'host-compiler.tar.gz', latest_url],
+              command=['curl', '-svLo', 'host-compiler.tar.gz', latest_url],
               haltOnFailure=True, description=['download build artifacts'],
               workdir=WithProperties('%(builddir)s')))
     f.addStep(buildbot.steps.shell.ShellCommand(
