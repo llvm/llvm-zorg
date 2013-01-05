@@ -263,10 +263,6 @@ def PublishGoodBuild():
 
 def set_config_option(section, option, default=False):
     import warnings
-    # FIXME: always return default value until I can debug why config.options 
-    # aren't working here
-    return default
-
     if config.options.has_option(section, option):
         return config.options.get(section, option)
     else:
