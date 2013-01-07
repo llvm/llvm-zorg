@@ -221,7 +221,7 @@ def getPhaseBuilderFactory(config, phase, next_phase, stages):
                                    copy_properties = copy_properties))
     f.addStep(MasterShellCommand(
         name='trigger.next_phase', haltOnFailure = True,
-        command = ['../master-0/process_changelist.py', next_phase,
+        command = ['./process_changelist.py', next_phase,
                    WithProperties('%(scheduler)s_changes.txt')],
         description = ['Trigger', next_phase],
         descriptionDone = ['Trigger', next_phase]))
