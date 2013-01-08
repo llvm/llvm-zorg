@@ -93,7 +93,7 @@ def _determine_bootstrap_url(props):
             # always use phase2 compiler for phase3 & phase4 compiler builds
             # TODO: this shouldn't be hard coded
             name = 'clang-x86_64-darwin11-RA'
-        curl = download_url + '/' + name + '/clang-' + props['phase_id']
+        curl = base_download_url + '/' + name + '/clang-' + props['phase_id']
         curl += '.tar.gz'
         return curl
     else:
