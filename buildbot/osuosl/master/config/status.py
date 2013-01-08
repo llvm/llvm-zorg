@@ -74,4 +74,13 @@ def get_status_targets(standard_builders):
             builders = ["clang-x86_64-darwin10-gdb", "clang-x86_64-ubuntu-gdb-75"],
             addLogs=False,
             num_lines = 15),
+        InformativeMailNotifier(
+            fromaddr = "llvm.buildmaster@lab.llvm.org",
+            sendToInterestedUsers= False,
+            extraRecipients = ["gribozavr@gmail.com"],
+            subject="Build %(builder)s Failure",
+            mode = "failing",
+            builders = ["clang-x86_64-debian-fast"],
+            addLogs=False,
+            num_lines = 15),
         ]
