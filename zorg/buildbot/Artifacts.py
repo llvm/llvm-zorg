@@ -82,6 +82,28 @@ def _determine_compiler_path(props):
     
     return compiler_path
 
+def _determine_bootstrap_url(props):
+    if props.has_key('scheduler'):
+        name= ''
+        if props['scheduler'].startswith('phase2'):
+            # always use phase1 compiler for phase2
+            # TODO: this shouldn't be hard coded
+            name = 'clang-x86_64-darwin11-nobootstrap-RA'
+        else:
+            # always use phase2 compiler for phase3 & phase4 compiler builds
+            # TODO: this shouldn't be hard coded
+            name = 'clang-x86_64-darwin11-RA'
+        curl = download_url + '/' + name + '/clang-' + props['phase_id']
+        curl += '.tar.gz'
+        return curl
+    else:
+        # if we get this far, we can assume that someone clicked 'rebuild'
+        # (otherwise it would have a scheduler, or not have a phase_id)
+        # we'll fall back to the phase1 build for this compiler
+        curl = download_url + '/clang-x86_64-darwin11-nobootstrap-RA/'
+        curl += props['buildername'] + '.tar.gz'
+        return curl
+
 def GetCompilerRoot(f):
     # The following steps are used to retrieve a compiler archive
     # clean out any existing archives
@@ -146,7 +168,7 @@ def uploadArtifacts(f, rootdir='clang-install'):
 def determine_url(props):
     if props.has_key('phase_id') and props.has_key('category'):
         if props['category'].startswith('build-'):
-            return determine_bootstrap_url(props)
+            return _determine_bootstrap_url(props)
         project = project_from_name(props['buildername'])
         name = props['use_builder']
         curl = download_url + '/' + name + '/' + project_from_name(name)
