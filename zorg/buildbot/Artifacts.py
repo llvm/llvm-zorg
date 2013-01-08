@@ -74,12 +74,6 @@ def _determine_compiler_path(props):
         compiler_path = props['branch']
     elif props.has_key('use_builder') and props['use_builder']:
         compiler_path = props['use_builder']
-
-    # If our compiler has noboostrap in its name, append -nobootstrap
-    # to our compiler path name.
-    if compiler_path is not None and 'nobootstrap' in props['buildername']:
-        compiler_path += '-nobootstrap'
-    
     return compiler_path
 
 def _determine_bootstrap_url(props):
