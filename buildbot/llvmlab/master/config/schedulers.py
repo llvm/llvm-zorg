@@ -39,7 +39,7 @@ def get_phase_stages(phase):
     return split_stages
 
 def _tracked_projects(change):
-    changedict = change.asDict
+    changedict = change.asDict()
     projects = ['cfe',
 #                'clang-tests-external',
                 'clang-tests',
