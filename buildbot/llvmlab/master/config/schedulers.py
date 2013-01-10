@@ -38,6 +38,29 @@ def get_phase_stages(phase):
 
     return split_stages
 
+def _tracked_projects(change):
+    projects = ['cfe',
+#                'clang-tests-external',
+                'clang-tests',
+                'clang-tools-extra',
+                'compiler-rt',
+                'debuginfo-tests',
+#                'dragonegg',
+#                'libcxx',
+#                'libcxxabi',
+                'lldb',
+                'llvm',
+#                'lnt',
+#                'polly',
+                'test-suite',
+    ]
+    if change['category'] or 'trunk' not in change['branch']:
+        return 
+    if change['project'] in projects:
+        return true
+    else:
+        return false
+
 def get_schedulers():
     first_phase = phases[0]
     last_phase = phases[-1]
@@ -47,12 +70,13 @@ def get_schedulers():
     # until the fianl phase
 
     for phase in phases:
+        my_filter = ChangeFilter(filter_fn=_tracked_projects)
         phase_name = 'phase%d' % phase['number']
-        my_filter = ChangeFilter(category = phase_name)
         if phase == first_phase:
             delay=120
         else:
             delay=15
+            my_filter = ChangeFilter(category = phase_name)
         
         yield basic.AnyBranchScheduler(
             name = phase_name, treeStableTimer=delay,
