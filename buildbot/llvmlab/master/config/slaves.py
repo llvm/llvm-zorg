@@ -14,7 +14,7 @@ def create_slave(name, jobs, max_builds = None):
                                                'default_email',
                                                'david_dean@apple.com'),
         properties = { 'jobs' : jobs },
-        max_builds = 1)
+        max_builds = max_builds)
 
 def get_build_slaves():
     # Phase runnner.
