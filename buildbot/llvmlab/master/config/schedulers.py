@@ -39,7 +39,6 @@ def get_phase_stages(phase):
     return split_stages
 
 def _tracked_projects(change):
-    changedict = change.asDict()
     projects = ['cfe',
 #                'clang-tests-external',
                 'clang-tests',
@@ -55,9 +54,9 @@ def _tracked_projects(change):
 #                'polly',
                 'test-suite',
     ]
-    if changedict['category'] or 'trunk' not in changedict['branch']:
-        return 
-    if changedict['project'] in projects:
+    if change.category or 'trunk' not in Change.branch:
+        return false
+    if change.project in projects:
         return true
     else:
         return false
