@@ -55,12 +55,12 @@ def _tracked_projects(change):
                 'test-suite',
     ]
     if change.category:
-        return false
+        return False
     if change.branch and 'trunk' not in change.branch:
-        return false
+        return False
     if change.project and change.project in projects:
-        return true
-    return false
+        return True
+    return False
 
 def get_schedulers():
     first_phase = phases[0]
