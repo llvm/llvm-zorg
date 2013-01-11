@@ -54,7 +54,7 @@ def _tracked_projects(change):
 #                'polly',
                 'test-suite',
     ]
-    if change.category
+    if change.category:
         return false
     if change.branch and 'trunk' not in change.branch:
         return false
