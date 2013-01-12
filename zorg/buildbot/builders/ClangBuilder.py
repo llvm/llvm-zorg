@@ -3,7 +3,7 @@ import buildbot.process.factory
 import os
 
 from buildbot.process.properties import WithProperties
-from buildbot.steps.shell import Configure, ShellCommand
+from buildbot.steps.shell import Configure, ShellCommand, SetProperty
 from buildbot.steps.shell import WarningCountingShellCommand
 from buildbot.steps.source import SVN
 from buildbot.steps.transfer import FileDownload
@@ -160,11 +160,19 @@ def getClangBuildFactory(
     args = base_configure_args + ["--without-llvmgcc", "--without-llvmgxx"]
     args.append(WithProperties("--prefix=%%(builddir)s/%s" % llvm_1_installdir))
     args += getConfigArgs(stage1_config)
+    if not clean:
+        f.addStep(SetProperty(name="Makefile_isready",
+                              workdir=llvm_1_objdir,
+                              command=["sh", "-c",
+                                       "test -e Makefile && echo OK"],
+                              flunkOnFailure=False,
+                          property="exists_Makefile"))
     f.addStep(Configure(command=args,
                         workdir=llvm_1_objdir,
                         description=['configuring',stage1_config],
                         descriptionDone=['configure',stage1_config],
-                        env=merged_env))
+                        env=merged_env,
+                        doStepIf=lambda step: step.build.getProperty("exists_Makefile") != "OK"))
 
     # Make clean if using in-dir builds.
     if clean and llvm_srcdir == llvm_1_objdir:
