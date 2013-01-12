@@ -9,7 +9,7 @@ from buildbot.steps.source import SVN
 from buildbot.steps.transfer import FileDownload
 from zorg.buildbot.Artifacts import GetCompilerArtifacts, uploadArtifacts
 from zorg.buildbot.builders.Util import getConfigArgs
-from zorg.buildbot.commands import DejaGNUCommand
+from zorg.buildbot.commands import SuppressionDejaGNUCommand
 from zorg.buildbot.commands.BatchFileDownload import BatchFileDownload
 from zorg.buildbot.commands.ClangTestCommand import ClangTestCommand
 from zorg.buildbot.commands.LitTestCommand import LitTestCommand
@@ -540,7 +540,7 @@ def addClangGCCTests(f, ignores={}, install_prefix="%(builddir)s/llvm.install",
                   defaultBranch='trunk', workdir='clang-tests'))
     gcc_dg_ignores = ignores.get('gcc-4_2-testsuite', {})
     for lang in languages:
-        f.addStep(DejaGNUCommand.DejaGNUCommand(
+        f.addStep(SuppressionDejaGNUCommand.SuppressionDejaGNUCommand(
             name='test-gcc-4_2-testsuite-%s' % lang,
             command=["make", "-k", "check-%s" % lang] + make_vars,
             description="gcc-4_2-testsuite (%s)" % lang,
@@ -557,7 +557,7 @@ def addClangGDBTests(f, ignores={}, install_prefix="%(builddir)s/llvm.install"):
     f.addStep(SVN(name='svn-clang-tests', mode='update',
                   baseURL='http://llvm.org/svn/llvm-project/clang-tests/',
                   defaultBranch='trunk', workdir='clang-tests'))
-    f.addStep(DejaGNUCommand.DejaGNUCommand(
+    f.addStep(SuppressionDejaGNUCommand.SuppressionDejaGNUCommand(
             name='test-gdb-1472-testsuite',
             command=["make", "-k", "check"] + make_vars,
             description="gdb-1472-testsuite",
@@ -581,7 +581,7 @@ def addModernClangGDBTests(f, jobs, install_prefix):
                                           command=['make', WithProperties('-j%s' % jobs)],
                                           haltOnFailure=True,
                                           workdir='clang-tests/build'))
-    f.addStep(DejaGNUCommand.DejaGNUCommand(
+    f.addStep(SuppressionDejaGNUCommand.SuppressionDejaGNUCommand(
             name='gdb-75-check',
             command=['make', '-k', WithProperties('-j%s' % jobs), 'check'] + make_vars,
             workdir='clang-tests/build',

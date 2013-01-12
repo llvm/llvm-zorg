@@ -2,7 +2,7 @@ import AnalyzerCompareCommand
 import BatchFileDownload
 import ClangTestCommand
 import LitTestCommand
-import DejaGNUCommand
+import SuppressionDejaGNUCommand
 import GTestCommand
 
 __all__ = []

@@ -13,7 +13,7 @@ reload(LLVMBuilder)
 import LLVMBuilder
 from Util import getConfigArgs
 
-from zorg.buildbot.commands.DejaGNUCommand import DejaGNUCommand
+from zorg.buildbot.commands.SuppressionDejaGNUCommand import SuppressionDejaGNUCommand
 
 def getKLEEBuildFactory(triple, jobs='%(jobs)d', llvm_branch='trunk',
                         config_name='Release+Asserts', clean=True, llvmgccdir=None,
@@ -73,7 +73,7 @@ def getKLEEBuildFactory(triple, jobs='%(jobs)d', llvm_branch='trunk',
                                           workdir='klee'))
 
     # Test.
-    f.addStep(DejaGNUCommand(name="test",
+    f.addStep(SuppressionDejaGNUCommand(name="test",
                              command=['nice', '-n', '10',
                                       'make', 'check'],
                              haltOnFailure=True, description="test klee",

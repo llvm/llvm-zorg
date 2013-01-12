@@ -1,7 +1,7 @@
 import re
 import StandardizedTest
 
-class DejaGNUCommand(StandardizedTest.StandardizedTest):
+class SuppressionDejaGNUCommand(StandardizedTest.StandardizedTest):
     kRunningRE = re.compile(r'Running (.*) ...')
     kRunningRE = re.compile(r'Running (.*) ...')
     kTestStateLineRE = re.compile(r'(FAIL|PASS|XFAIL|XPASS|UNRESOLVED): (.*)')
@@ -28,6 +28,6 @@ class DejaGNUCommand(StandardizedTest.StandardizedTest):
 
 if __name__ == '__main__':
     import sys
-    t = DejaGNUCommand()
+    t = SuppressionDejaGNUCommand()
     for res in t.parseLog(open(sys.argv[1]).readlines()):
         print res
