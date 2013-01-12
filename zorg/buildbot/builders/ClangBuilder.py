@@ -211,7 +211,7 @@ def getClangBuildFactory(
     if run_cxx_tests:
         extraTestDirs += '%(builddir)s/llvm/tools/clang/utils/C++Tests'
     if test:
-        f.addStep(ClangTestCommand(name='check-all',
+        f.addStep(LitTestCommand(name='check-all',
                                    command=[make, "check-all", "VERBOSE=1",
                                             WithProperties("LIT_ARGS=%s" % llvmTestArgs),
                                             WithProperties("TESTARGS=%s" % clangTestArgs),

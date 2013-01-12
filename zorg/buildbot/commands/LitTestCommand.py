@@ -1,50 +1,73 @@
 import re
-import StandardizedTest
+import urllib
+import buildbot
+import buildbot.status.builder
+from buildbot.status.results import FAILURE, SUCCESS
+import buildbot.steps.shell
+from buildbot.process.buildstep import LogLineObserver
+from buildbot.steps.shell import Test
 
-class LitTestCommand(StandardizedTest.StandardizedTest):
-  kTestLineRE = re.compile(r'([^ ]*): (.*) \(.*.*\)')
-  kTestFailureLogStartRE = re.compile(r"""\*{4,80} TEST '(.*)' .*""")
-  kTestFailureLogStopRE = re.compile(r"""\*{10,80}""")
-
-  def parseLog(self, lines):
-    results = []
-    results_by_name = {}
-    failureLogs = []
-    lines = self.getLog('stdio').readlines()
-
-    it = iter(lines)
-    inFailure = None
-    for ln in it:
+class LitLogObserver(LogLineObserver):
+    kTestLineRE = re.compile(r'([^ ]*): (.*) \(.*.*\)')
+    kTestFailureLogStartRE = re.compile(r"""\*{4,80} TEST '(.*)' .*""")
+    kTestFailureLogStopRE = re.compile(r"""\*{10,80}""")
+    def __init__(self):
+        LogLineObserver.__init__(self)
+        self.resultCounts = {}
+        self.inFailure = None
+    def outLineReceived(self, line):
       # See if we are inside a failure log.
-      if inFailure:
-        inFailure[1].append(ln)
-        if self.kTestFailureLogStopRE.match(ln):
-          name,log = inFailure
-          if name not in results_by_name:
-            raise ValueError,'Invalid log result with no status line!'
-          results_by_name[name][2] = ''.join(log) + '\n'
-          inFailure = None
-        continue
+      if self.inFailure:
+        self.inFailure[1].append(line)
+        if self.kTestFailureLogStopRE.match(line):
+          name,log = self.inFailure
+          self.step.addCompleteLog(name.replace('/', '__'), '\n'.join(log))
+          self.inFailure = None
+        return
 
-      ln = ln.strip()
-      if not ln:
-        continue
+      line = line.strip()
+      if not line:
+        return
 
       # Check for test failure logs.
-      m = self.kTestFailureLogStartRE.match(ln)
+      m = self.kTestFailureLogStartRE.match(line)
       if m:
-        inFailure = (m.group(1), [ln])
-        continue
+        self.inFailure = (m.group(1), [line])
+        return
 
       # Otherwise expect a test status line.
-      m = self.kTestLineRE.match(ln)
+      m = self.kTestLineRE.match(line)
       if m:
-        code, name = m.group(1),m.group(2)
-        results.append( [code, name, None] )
-        results_by_name[name] = results[-1]
+        code, name = m.groups()
+        if not code in self.resultCounts:
+          self.resultCounts[code] = 0
+        self.resultCounts[code] += 1
 
-    if inFailure:
-      raise ValueError,("Unexpected clang test running output, "
-                        "unterminated failure log!")
+class LitTestCommand(Test):
+    resultNames = {'FAIL':'unexpected failures',
+                   'PASS':'expected passes',
+                   'XFAIL':'expected failures',
+                   'XPASS':'unexpected passes',
+                   'KFAIL':'known failures',
+                   'KPASS':'unknown passes',
+                   'UNRESOLVED':'unresolved testcases',
+                   'UNTESTED':'untested testcases',
+                   'UNSUPPORTED':'unsupported tests'}
+    failingCodes = set(['FAIL', 'XPASS', 'KPASS', 'UNRESOLVED'])
 
-    return results
+    def __init__(self, ignore=[], flaky=[], max_logs=20,
+                 *args, **kwargs):
+        Test.__init__(self, *args, **kwargs)
+        self.logObserver = LitLogObserver()
+        self.addLogObserver('stdio', self.logObserver)
+
+    def evaluateCommand(self, cmd):
+        if any([r in self.logObserver.resultCounts for r in self.failingCodes]):
+            return FAILURE
+        return SUCCESS
+
+    def describe(self, done=False):
+        description = Test.describe(self, done)
+        for name, count in self.logObserver.resultCounts.iteritems():
+            description.append('{0} {1}'.format(count, self.resultNames[name]))
+        return description
