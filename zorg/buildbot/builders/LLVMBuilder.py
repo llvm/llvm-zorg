@@ -7,7 +7,7 @@ from buildbot.steps.shell import Configure, ShellCommand
 from buildbot.steps.shell import WarningCountingShellCommand
 from buildbot.process.properties import WithProperties
 
-from zorg.buildbot.commands.ClangTestCommand import ClangTestCommand
+from zorg.buildbot.commands.LitTestCommand import LitTestCommand
 
 from Util import getConfigArgs
 
@@ -123,7 +123,7 @@ def getLLVMBuildFactory(
             if valgrindSuppressions is not None:
                 litTestArgs += ' --vg-arg --suppressions=%%(builddir)s/llvm/%s' % valgrindSuppressions
         f.addStep(
-            ClangTestCommand(
+            LitTestCommand(
                 name            = 'test-llvm',
                 command         = [make, "check-lit", "VERBOSE=1",
                                    WithProperties("LIT_ARGS=%s" % litTestArgs)],

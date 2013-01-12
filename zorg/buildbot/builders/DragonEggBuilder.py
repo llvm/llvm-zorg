@@ -4,7 +4,7 @@ from buildbot.steps.source import SVN
 from buildbot.steps.shell import Configure, ShellCommand
 from buildbot.steps.shell import WarningCountingShellCommand
 from buildbot.process.properties import WithProperties
-from zorg.buildbot.commands.ClangTestCommand import ClangTestCommand
+from zorg.buildbot.commands.LitTestCommand import LitTestCommand
 from zorg.buildbot.commands.NightlyTestCommand import NightlyTestCommand
 
 def getCCSetting(gcc, gxx):
@@ -175,7 +175,7 @@ def getDragonEggBootstrapFactory(gcc_repository, extra_languages=[],
 
       # Optionally run the LLVM testsuite.
       if check_llvm:
-        f.addStep(ClangTestCommand(name='check.llvm.%s' % stage,
+        f.addStep(LitTestCommand(name='check.llvm.%s' % stage,
                                    command=['nice', '-n', '10', 'make',
                                             WithProperties('LIT_ARGS=-v -j%s' % jobs),
                                             'check-all'
@@ -245,7 +245,7 @@ def getDragonEggBootstrapFactory(gcc_repository, extra_languages=[],
 
       # Optionally run the dragonegg testsuite.
       if check_dragonegg:
-        f.addStep(ClangTestCommand(name='check.dragonegg.%s' % stage,
+        f.addStep(LitTestCommand(name='check.dragonegg.%s' % stage,
                                    command=['nice', '-n', '10',
                                             'make', '-f', '../' + dragonegg_src_dir + '/Makefile',
                                             WithProperties('GCC=%(builddir)s/'+gcc_install_dir+'/bin/gcc'),
@@ -592,7 +592,7 @@ def getDragonEggTestBuildFactory(gcc='gcc', svn_testsuites=[],
                                description='rm test-suite output directory',
                                haltOnFailure=True, workdir='.', env=env))
 
-    f.addStep(ClangTestCommand(name='make.check',
+    f.addStep(LitTestCommand(name='make.check',
                                command=['nice', '-n', '10',
                                         'make', '-f', '../' + dragonegg_src_dir + '/Makefile',
                                         WithProperties('GCC=' + gcc),

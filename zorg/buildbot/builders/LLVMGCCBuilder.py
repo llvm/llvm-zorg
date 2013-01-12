@@ -4,7 +4,7 @@ from buildbot.steps.shell import Configure, WarningCountingShellCommand
 from buildbot.steps.shell import ShellCommand, SetProperty
 from buildbot.process.properties import WithProperties
 
-from zorg.buildbot.commands.ClangTestCommand import ClangTestCommand
+from zorg.buildbot.commands.LitTestCommand import LitTestCommand
 
 from Util import getConfigArgs
 
@@ -100,7 +100,7 @@ def getLLVMGCCBuildFactory(jobs='%(jobs)s', update=True, clean=True,
                                         timeout       = timeout * 60))
 
   # Run LLVM tests (stage 1).
-  f.addStep(ClangTestCommand(name = 'test.llvm.stage1',
+  f.addStep(LitTestCommand(name = 'test.llvm.stage1',
                              command = [make, "check-lit", "VERBOSE=1"],
                              description     = ["testing", "llvm"],
                              descriptionDone = ["test",    "llvm"],
@@ -219,7 +219,7 @@ def getLLVMGCCBuildFactory(jobs='%(jobs)s', update=True, clean=True,
                                         timeout       = timeout * 60))
 
   # Run LLVM tests (stage 2).
-  f.addStep(ClangTestCommand(name = 'test.llvm.stage2',
+  f.addStep(LitTestCommand(name = 'test.llvm.stage2',
                              command = [make, "check-lit", "VERBOSE=1"],
                              description     = ["testing", "llvm", "(stage 2)"],
                              descriptionDone = ["test",    "llvm", "(stage 2)"],

@@ -12,7 +12,6 @@ from zorg.buildbot.builders.Util import getConfigArgs
 from zorg.buildbot.commands import DejaGNUCommand
 from zorg.buildbot.commands import SuppressionDejaGNUCommand
 from zorg.buildbot.commands.BatchFileDownload import BatchFileDownload
-from zorg.buildbot.commands.ClangTestCommand import ClangTestCommand
 from zorg.buildbot.commands.LitTestCommand import LitTestCommand
 from zorg.buildbot.PhasedBuilderUtils import GetLatestValidated, find_cc
 
@@ -314,7 +313,7 @@ def getClangBuildFactory(
                                           env=merged_env))
 
     if test:
-        f.addStep(ClangTestCommand(name='check-all',
+        f.addStep(LitTestCommand(name='check-all',
                                    command=[make, "check-all", "VERBOSE=1",
                                             WithProperties("LIT_ARGS=%s" % llvmTestArgs),
                                             WithProperties("TESTARGS=%s" % clangTestArgs),
@@ -438,7 +437,7 @@ def getClangMSVCBuildFactory(update=True, clean=True, vcDrive='c', jobs=1, cmake
                                          "clang-test.vcproj",
                                          "Debug|Win32"],
                                 workdir="llvm\\build\\tools\\clang\\test"))
-    f.addStep(ClangTestCommand(name='test-clang',
+    f.addStep(LitTestCommand(name='test-clang',
                                command=["vcbuild_test.bat"],
                                workdir="llvm\\build\\tools\\clang\\test"))
 
@@ -524,7 +523,7 @@ def getClangMinGWBuildFactory(update=True, clean=True, jobs=6, cmake=r"cmake"):
     f.addStep(BatchFileDownload(name='maketest',
                                 command=["ninja", "clang-test"],
                                 workdir="llvm\\build"))
-    f.addStep(ClangTestCommand(name='clang-test',
+    f.addStep(LitTestCommand(name='clang-test',
                                command=["maketest.bat"],
                                workdir="llvm\\build"))
 
