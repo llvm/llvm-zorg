@@ -9,6 +9,7 @@ from buildbot.steps.source import SVN
 from buildbot.steps.transfer import FileDownload
 from zorg.buildbot.Artifacts import GetCompilerArtifacts, uploadArtifacts
 from zorg.buildbot.builders.Util import getConfigArgs
+from zorg.buildbot.commands import DejaGNUCommand
 from zorg.buildbot.commands import SuppressionDejaGNUCommand
 from zorg.buildbot.commands.BatchFileDownload import BatchFileDownload
 from zorg.buildbot.commands.ClangTestCommand import ClangTestCommand
@@ -581,7 +582,7 @@ def addModernClangGDBTests(f, jobs, install_prefix):
                                           command=['make', WithProperties('-j%s' % jobs)],
                                           haltOnFailure=True,
                                           workdir='clang-tests/build'))
-    f.addStep(SuppressionDejaGNUCommand.SuppressionDejaGNUCommand(
+    f.addStep(DejaGNUCommand.DejaGNUCommand(
             name='gdb-75-check',
             command=['make', '-k', WithProperties('-j%s' % jobs), 'check'] + make_vars,
             workdir='clang-tests/build',
