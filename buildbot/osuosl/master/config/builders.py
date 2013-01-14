@@ -181,7 +181,7 @@ def _get_clang_builders():
          'factory' : ClangBuilder.getClangBuildFactory()},
 
         {'name': "clang-native-arm-cortex-a9",
-         'slavenames':["as-bldslv1", "as-bldslv2"],
+         'slavenames':["as-bldslv1", "as-bldslv2", "linaro-panda-01"],
          'builddir':"clang-native-arm-cortex-a9",
          'factory' : ClangBuilder.getClangBuildFactory(
                      stage1_config='Release+Asserts',
