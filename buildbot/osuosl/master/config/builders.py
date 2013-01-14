@@ -131,6 +131,18 @@ clang_x86_64_linux_xfails = [
     'LLC_compile.SingleSource/UnitTests/Vector/SSE/sse.stepfft',
 ]
 
+# Clang fast builders.
+def _get_clang_fast_builders():
+    return [
+        {'name': "clang-x86_64-debian-fast",
+         'slavenames':["gribozavr1"],
+         'builddir':"clang-x86_64-debian-fast",
+         'factory': ClangBuilder.getClangBuildFactory(env={'PATH':'/home/llvmbb/bin/clang-latest/bin:/home/llvmbb/bin:/usr/local/bin:/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games'},
+                                                      stage1_config='Release+Asserts',
+                                                      checkout_compiler_rt=True,
+                                                      outOfDir=True)},
+        ]
+
 # Clang builders.
 def _get_clang_builders():
 
@@ -157,13 +169,6 @@ def _get_clang_builders():
                                                                        stage1_config='Release+Asserts',
                                                                        test=False,
                                                                        xfails=clang_x86_64_linux_xfails)},
-        {'name': "clang-x86_64-debian-fast",
-         'slavenames':["gribozavr1"],
-         'builddir':"clang-x86_64-debian-fast",
-         'factory': ClangBuilder.getClangBuildFactory(env={'PATH':'/home/llvmbb/bin/clang-latest/bin:/home/llvmbb/bin:/usr/local/bin:/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games'},
-                                                      stage1_config='Release+Asserts',
-                                                      checkout_compiler_rt=True,
-                                                      outOfDir=True)},
 
         {'name': "clang-atom-d2700-ubuntu",
          'slavenames':["atom-buildbot"],
@@ -554,6 +559,10 @@ def get_builders():
 
     for b in _get_dragonegg_builders():
         b['category'] = 'dragonegg'
+        yield b
+
+    for b in _get_clang_fast_builders():
+        b['category'] = 'clang_fast'
         yield b
 
     for b in _get_clang_builders():
