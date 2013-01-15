@@ -52,6 +52,8 @@ class LitTestCommand(Test):
                    'KPASS':'unknown passes',
                    'UNRESOLVED':'unresolved testcases',
                    'UNTESTED':'untested testcases',
+                   'REGRESSED':'runtime performance regression',
+                   'IMPROVED':'runtime performance improvement',
                    'UNSUPPORTED':'unsupported tests'}
     failingCodes = set(['FAIL', 'XPASS', 'KPASS', 'UNRESOLVED'])
 
