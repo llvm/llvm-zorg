@@ -79,6 +79,20 @@ def _get_llvm_builders():
          'factory': LLVMBuilder.getLLVMBuildFactory("mips-linux-gnu",
                                                     extra_configure_args=["--with-extra-options=-mips32r2",
                                                                           "--with-extra-ld-options=-mips32r2"])},
+
+        {'name': "llvm-x86_64-debian-debug-werror",
+         'slavenames':["obbligato-johnson"],
+         'builddir':"llvm-x86-64-debian-debug-werror",
+         'factory': LLVMBuilder.getLLVMBuildFactory("x86_64-pc-linux-gnu",
+                                                    config_name='Debug+Asserts',
+                                                    extra_configure_args=["--enable-werror"])},
+
+        {'name': "llvm-x86_64-debian-release-werror",
+         'slavenames':["obbligato-johnson"],
+         'builddir':"llvm-x86-64-debian-release-werror",
+         'factory': LLVMBuilder.getLLVMBuildFactory("x86_64-pc-linux-gnu",
+                                                    config_name='Release+Asserts',
+                                                    extra_configure_args=["--enable-werror"])},
         ]
 
 # Offline.
@@ -246,6 +260,24 @@ def _get_clang_builders():
                                                useTwoStage=True,
                                                stage1_config='Release+Asserts',
                                                stage2_config='Release+Asserts')},
+
+        {'name': "clang-x86_64-debian-debug-werror",
+         'slavenames':["obbligato-johnson"],
+         'builddir':"clang-x86-64-debian-debug-werror",
+         'factory': LLVMBuilder.getClangBuildFactory(triple="x86_64-pc-linux-gnu",
+                                                     useTwoStage=True,
+                                                     stage1_config='Debug+Asserts',
+                                                     stage2_config='Debug+Asserts',
+                                                     extra_configure_args=["--enable-werror"])},
+
+        {'name': "clang-x86_64-debian-release-werror",
+         'slavenames':["obbligato-johnson"],
+         'builddir':"clang-x86-64-debian-release-werror",
+         'factory': LLVMBuilder.getClangBuildFactory(triple="x86_64-pc-linux-gnu",
+                                                     useTwoStage=True,
+                                                     stage1_config='Release+Asserts',
+                                                     stage2_config='Release+Asserts',
+                                                     extra_configure_args=["--enable-werror"])},
 
          {'name' : "clang-x86_64-linux-fnt",
           'slavenames' : ['osu8'],
