@@ -208,7 +208,7 @@ def getClangBuildFactory(
                                               workdir=llvm_1_objdir,
                                               env=merged_env))
 
-    clangTestArgs = llvmTestArgs = '-v -j %s' % jobs
+    clangTestArgs = '-v -j %s' % jobs
     if valgrind:
         clangTestArgs += ' --vg'
         if valgrindLeakCheck:
@@ -220,8 +220,7 @@ def getClangBuildFactory(
     if test:
         f.addStep(LitTestCommand(name='check-all',
                                    command=[make, "check-all", "VERBOSE=1",
-                                            WithProperties("LIT_ARGS=%s" % llvmTestArgs),
-                                            WithProperties("TESTARGS=%s" % clangTestArgs),
+                                            WithProperties("LIT_ARGS=%s" % clangTestArgs),
                                             WithProperties("EXTRA_TESTDIRS=%s" % extraTestDirs)],
                                    description=["checking"],
                                    descriptionDone=["checked"],
@@ -323,8 +322,7 @@ def getClangBuildFactory(
     if test:
         f.addStep(LitTestCommand(name='check-all',
                                    command=[make, "check-all", "VERBOSE=1",
-                                            WithProperties("LIT_ARGS=%s" % llvmTestArgs),
-                                            WithProperties("TESTARGS=%s" % clangTestArgs),
+                                            WithProperties("LIT_ARGS=%s" % clangTestArgs),
                                             WithProperties("EXTRA_TESTDIRS=%s" % extraTestDirs)],
                                    description=["checking"],
                                    descriptionDone=["checked"],
