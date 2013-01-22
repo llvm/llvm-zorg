@@ -180,8 +180,8 @@ def get_build_slaves():
         # Debian Testing x86-64, Intel(R) Core(TM) i7-2700K CPU @ 3.50GHz
         create_slave("gribozavr1", properties={'jobs': 8}, max_builds=1),
 
-        # Debian Testing x86-64, Intel(R) Xeon(R) CPU L5520  @ 2.27GHz
-        create_slave("obbligato-johnson", properties={'jobs': 1}, max_builds=1),
+        # Debian Testing x86-64, Intel Core i5-3570K (ivybridge) CPU @ 3.40GHz
+        create_slave("obbligato-ellington", properties={'jobs': 4}, max_builds=1),
 
         # Defunct.
         # Pentium Dual CPU T3400 @ 2.1GHz
