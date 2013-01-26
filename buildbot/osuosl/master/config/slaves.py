@@ -23,6 +23,7 @@ def get_build_slaves():
         # Ubuntu pandaboard cortex-a9 slaves
         create_slave("as-bldslv1", properties={'jobs' : 2}, max_builds=1),
         create_slave("as-bldslv2", properties={'jobs' : 2}, max_builds=1),
+        create_slave("as-bldslv3", properties={'jobs' : 2}, max_builds=1),
         create_slave("linaro-panda-01", properties={'jobs' : 2}, max_builds=1),
 
         # FreeBSD 8.2 X86_64
