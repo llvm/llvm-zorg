@@ -360,7 +360,7 @@ def _get_clang_builders():
         {'name' : "clang-x86_64-ubuntu-gdb-75",
          'slavenames' :["hpproliant1"],
          'builddir' :"clang-x86_64-ubuntu-gdb-75",
-         'factory' : ClangBuilder.getClangBuildFactory(stage1_config='Release+Asserts', run_modern_gdb=True)},
+         'factory' : ClangBuilder.getClangBuildFactory(stage1_config='Release+Asserts', run_modern_gdb=True, clean=False)},
         ]
 
 # Offline.
