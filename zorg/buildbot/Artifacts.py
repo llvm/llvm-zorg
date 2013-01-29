@@ -94,7 +94,7 @@ def _determine_bootstrap_url(props):
         # if we get this far, we can assume that someone clicked 'rebuild'
         # (otherwise it would have a scheduler, or not have a phase_id)
         # we'll fall back to the phase1 build for this compiler
-        curl = download_url + '/clang-x86_64-darwin11-nobootstrap-RA/'
+        curl = base_download_url + '/clang-x86_64-darwin11-nobootstrap-RA/'
         curl += props['buildername'] + '.tar.gz'
         return curl
 
@@ -165,14 +165,14 @@ def determine_url(props):
             return _determine_bootstrap_url(props)
         project = project_from_name(props['buildername'])
         name = props['use_builder']
-        curl = download_url + '/' + name + '/' + project_from_name(name)
+        curl = base_download_url + '/' + name + '/' + project_from_name(name)
         curl += '-' + props['phase_id'] + '.tar.gz'
         return curl
     # phase_id does not exist, so this has to be a manually triggered build.
     # we will fall back to the latest_validated build for the use_builder
     # property if it exists, otherwise, fall back to the latest_validated build
     # for this builder.
-    curl = download_url + '/latest_validated/'
+    curl = base_download_url + '/latest_validated/'
     if props.has_key('use_builder'):
         curl += props['use_builder'] + '.tar.gz'
     else:
