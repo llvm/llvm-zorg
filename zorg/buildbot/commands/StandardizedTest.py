@@ -32,7 +32,7 @@ class StandardizedTest(buildbot.steps.shell.Test):
 
     def parseLog(self, log_lines):
         """parseLog(log_lines) -> [(result_code, test_name, test_log), ...]"""
-        abstract
+        raise RuntimeError("Abstract method.")
 
     def evaluateCommand(self, cmd):
         results_by_code = {}
