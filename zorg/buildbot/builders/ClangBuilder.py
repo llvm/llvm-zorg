@@ -576,8 +576,7 @@ def addModernClangGDBTests(f, jobs, install_prefix):
                                 'CXX_FOR_TARGET=\'{0}/bin/clang++\' '
                                 'CFLAGS_FOR_TARGET=\'-w -fno-omit-frame-pointer '
                                 '-mno-omit-leaf-frame-pointer -fno-limit-debug-info\''
-                                .format(install_prefix)),
-                 'FORCE_PARALLEL=1']
+                                .format(install_prefix))]
     f.addStep(SVN(name='svn-clang-tests', mode='update',
                   svnurl='http://llvm.org/svn/llvm-project/clang-tests-external/trunk/gdb/7.5',
                   workdir='clang-tests/src'))
