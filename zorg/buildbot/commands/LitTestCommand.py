@@ -42,7 +42,7 @@ class LitLogObserver(LogLineObserver):
     m = self.kTestLineRE.match(line)
     if m:
       code, name = m.groups()
-      if name != self.inFailure[0]:
+      if self.inFailure and name != self.inFailure[0]:
         name,log = self.inFailure
         self.step.addCompleteLog(name.replace('/', '__'), '\n'.join(log))
         self.inFailure = None
