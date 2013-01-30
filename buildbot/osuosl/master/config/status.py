@@ -89,7 +89,7 @@ def get_status_targets(standard_builders):
             extraRecipients = ["brian.minard@intel.com"],
             subject="Build %(builder)s Failure",
             mode = "failing",
-            builders = ["clang-atom-d2700-ubuntu"],
+            builders = ["clang-atom-d2700-ubuntu", "clang-atom-d2700-ubuntu-rel"],
             addLogs=False,
             num_lines = 15),
         ]
