@@ -498,6 +498,12 @@ def _get_lldb_builders():
 #   gcc_m32_latest_env['CXX'] += ' -m32'
 #
     return [
+        {'name': "lldb-x86_64-debian",
+         'slavenames': ["gribozavr1"],
+         'builddir': "lldb-x86_64",
+         'factory': LLDBBuilder.getLLDBBuildFactory(triple=None, # use default
+                                                    extra_configure_args=['--enable-cxx11', '--enable-optimized', '--enable-assertions'],
+                                                    env={'PATH':'/home/llvmbb/bin/clang-latest/bin:/home/llvmbb/bin:/usr/local/bin:/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games'})},
         {'name': "lldb-x86_64-linux",
          'slavenames': ["gcc20"],
          'builddir': "lldb-x86_64",
