@@ -498,7 +498,7 @@ def _get_lldb_builders():
 #   gcc_m32_latest_env['CXX'] += ' -m32'
 #
     return [
-        {'name': "lldb-x86_64-debian",
+        {'name': "lldb-x86_64-debian-clang",
          'slavenames': ["gribozavr1"],
          'builddir': "lldb-x86_64",
          'factory': LLDBBuilder.getLLDBBuildFactory(triple=None, # use default
