@@ -36,6 +36,7 @@ class LitLogObserver(LogLineObserver):
       if self.inFailure[0] in m.group(0):
           self.inFailure[1].append(line)
           self.inFailureContext = True
+          self.failed = True
           return
       else:
           msg = 'm[0]: %r\ninFailure[0]: %r' % (m.group(0), self.inFailure[0])
