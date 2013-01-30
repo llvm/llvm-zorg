@@ -500,7 +500,7 @@ def _get_lldb_builders():
     return [
         {'name': "lldb-x86_64-debian-clang",
          'slavenames': ["gribozavr1"],
-         'builddir': "lldb-x86_64",
+         'builddir': "lldb-x86_64-clang",
          'factory': LLDBBuilder.getLLDBBuildFactory(triple=None, # use default
                                                     extra_configure_args=['--enable-cxx11', '--enable-optimized', '--enable-assertions'],
                                                     env={'PATH':'/home/llvmbb/bin/clang-latest/bin:/home/llvmbb/bin:/usr/local/bin:/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games'})},
