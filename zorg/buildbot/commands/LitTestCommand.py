@@ -33,7 +33,7 @@ class LitLogObserver(LogLineObserver):
     # Check for test failure logs.
     m = self.kTestFailureLogStartRE.match(line)
     if m and self.inFailure:
-      if m.group(0) == self.inFailure[0]:
+      if self.inFailure[0] in m.group(0):
           self.inFailure[1].append(line)
           self.inFailureContext = True
           return
