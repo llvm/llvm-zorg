@@ -20,9 +20,11 @@ class LitLogObserver(LogLineObserver):
   # step results.
   failingCodes = set(['FAIL', 'XPASS', 'KPASS', 'UNRESOLVED'])
 
-  def __init__(self):
+  def __init__(self, maxLogs=None):
     LogLineObserver.__init__(self)
     self.resultCounts = {}
+    self.maxLogs = maxLogs
+    self.numLogs = 0
 
     # If non-null, a tuple of the last test code and name.
     self.lastTestResult = None
@@ -48,8 +50,10 @@ class LitLogObserver(LogLineObserver):
     # We have finished getting information for one test, handle it.
     code, name = self.lastTestResult
 
-    # If the test failed, add a log entry for it.
-    if code in self.failingCodes:
+    # If the test failed, add a log entry for it (unless we have reached the
+    # max).
+    if code in self.failingCodes and (self.maxLogs is None or
+                                      self.numLogs < self.maxLogs):
       # If a verbose log was not provided, just add a one line description.
       if self.activeVerboseLog is None:
         self.activeVerboseLog = ['%s: %s' % (code, name)]
@@ -57,6 +61,7 @@ class LitLogObserver(LogLineObserver):
       # Add the log to the build status.
       self.step.addCompleteLog(name.replace('/', '__'),
                                '\n'.join(self.activeVerboseLog))
+      self.numLogs += 1
 
     # Reset the current state.
     self.lastTestResult = None
@@ -112,7 +117,9 @@ class LitTestCommand(Test):
   def __init__(self, ignore=[], flaky=[], max_logs=20,
                *args, **kwargs):
     Test.__init__(self, *args, **kwargs)
-    self.logObserver = LitLogObserver()
+    self.maxLogs = int(max_logs)
+    self.logObserver = LitLogObserver(self.maxLogs)
+    self.addFactoryArguments(max_logs=max_logs)
     self.addLogObserver('stdio', self.logObserver)
 
   def evaluateCommand(self, cmd):
@@ -182,8 +189,8 @@ FAIL: test-three (3 of 3)
         ('test-three', 'FAIL: test-three')])
 
 class TestCommand(unittest.TestCase):
-  def parse_log(self, text):
-    cmd = LitTestCommand()
+  def parse_log(self, text, **kwargs):
+    cmd = LitTestCommand(**kwargs)
     cmd.logObserver.step = StepProxy()
     for ln in text.split('\n'):
       cmd.logObserver.outLineReceived(ln)
@@ -199,6 +206,13 @@ class TestCommand(unittest.TestCase):
     for failing_code in ('FAIL', 'XPASS', 'KPASS', 'UNRESOLVED'):
       cmd = self.parse_log("""%s: test-one (1 of 1)""" % (failing_code,))
       self.assertEqual(cmd.evaluateCommand(RemoteCommandProxy(0)), FAILURE)
+
+  def test_max_logs(self):
+    cmd = self.parse_log("""
+FAIL: test-one (1 of 2)
+FAIL: test-two (2 of 2)
+""", max_logs=1)
+    self.assertEqual(cmd.logObserver.step.logs, [('test-one', 'FAIL: test-one')])
 
 if __name__ == '__main__':
   unittest.main()
