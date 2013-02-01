@@ -76,8 +76,14 @@ class LitTestCommand(Test):
     self.addLogObserver('stdio', self.logObserver)
 
   def evaluateCommand(self, cmd):
+    # Always report failure if the command itself failed.
+    if cmd.rc != 0:
+      return FAILURE
+
+    # Otherwise, report failure if there were failures in the log.
     if self.logObserver.failed:
-        return FAILURE
+      return FAILURE
+
     return SUCCESS
 
   def describe(self, done=False):
@@ -97,6 +103,10 @@ class StepProxy(object):
   def addCompleteLog(self, name, text):
     self.logs.append((name, text))
 
+class RemoteCommandProxy(object):
+  def __init__(self, rc):
+    self.rc = rc
+
 class TestLogObserver(unittest.TestCase):
   def parse_log(self, text):
     observer = LitLogObserver()
@@ -114,6 +124,19 @@ PASS: test-three (3 of 3)
 
     self.assertEqual(obs.resultCounts, { 'FAIL' : 1, 'PASS' : 2 })
     self.assertEqual(obs.step.logs, [('test-two', 'FAIL: test-two (2 of 3)')])
+
+class TestCommand(unittest.TestCase):
+  def parse_log(self, text):
+    cmd = LitTestCommand()
+    cmd.logObserver.step = StepProxy()
+    for ln in text.split('\n'):
+      cmd.logObserver.outLineReceived(ln)
+    return cmd
+
+  def test_command_status(self):
+    # If the command failed, the status should always be error.
+    cmd = self.parse_log("")
+    self.assertEqual(cmd.evaluateCommand(RemoteCommandProxy(1)), FAILURE)
 
 if __name__ == '__main__':
   unittest.main()
