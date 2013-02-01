@@ -8,54 +8,93 @@ from buildbot.process.buildstep import LogLineObserver
 from buildbot.steps.shell import Test
 
 class LitLogObserver(LogLineObserver):
-  kTestLineRE = re.compile(r'([^ ]*): (.*) \(.*.*\)')
-  kTestFailureLogStartRE = re.compile(r"""\*{4,80} TEST '(.*)' .*""")
-  kTestFailureLogStopRE = re.compile(r"""\*{10,80}""")
+  # Regular expressions for a regular test line.
+  kTestLineRE = re.compile(r'([^ ]*): (.*) \(.*\)')
+
+  # Regular expressions for verbose log start and stop markers. Verbose log
+  # output always immediately follow a test.
+  kTestVerboseLogStartRE = re.compile(r"""\*{4,80} TEST '(.*)' .*""")
+  kTestVerboseLogStopRE = re.compile(r"""\*{10,80}""")
+
+  # These are the codes for which we will include the log output in the buildbot
+  # step results.
   failingCodes = set(['FAIL', 'XPASS', 'KPASS', 'UNRESOLVED'])
+
   def __init__(self):
     LogLineObserver.__init__(self)
     self.resultCounts = {}
-    self.inFailure = None
-    self.inFailureContext = False
+
+    # If non-null, a tuple of the last test code and name.
+    self.lastTestResult = None
+
+    # If non-null, a list of lines in the current log.
+    self.activeVerboseLog = None
 
   def hadFailure(self):
     for code in self.failingCodes:
       if self.resultCounts.get(code):
         return True
 
+  def handleVerboseLogLine(self, line):
+    # If this isn't a stop marker, just append it and continue.
+    if not self.kTestVerboseLogStopRE.match(line):
+      self.activeVerboseLog.append(line)
+      return
+
+    # Otherwise, the log and test info are finished.
+    self.testInfoFinished()
+
+  def testInfoFinished(self):
+    # We have finished getting information for one test, handle it.
+    code, name = self.lastTestResult
+
+    # If the test failed, add a log entry for it.
+    if code in self.failingCodes:
+      # If a verbose log was not provided, just add a one line description.
+      if self.activeVerboseLog is None:
+        self.activeVerboseLog = ['%s: %s' % (code, name)]
+
+      # Add the log to the build status.
+      self.step.addCompleteLog(name.replace('/', '__'),
+                               '\n'.join(self.activeVerboseLog))
+
+    # Reset the current state.
+    self.lastTestResult = None
+    self.activeVerboseLog = None
+
   def outLineReceived(self, line):
-    # See if we are inside a failure log.
-    if self.inFailureContext:
-      self.inFailure[1].append(line)
-      if self.kTestFailureLogStopRE.match(line):
-        self.inFailureContext = False
+    # If we are inside a verbose log, just accumulate lines until we reach the
+    # stop marker.
+    if self.activeVerboseLog is not None:
+      self.handleVerboseLogLine(line)
       return
 
-    line = line.strip()
-    if not line:
-      return
-
-    # Check for test failure logs.
-    m = self.kTestFailureLogStartRE.match(line)
-    if m and self.inFailure:
-      if m.group(1)==self.inFailure[0]:
-          self.inFailure[1].append(line)
-          self.inFailureContext = True
-          return
-      else:
-          msg = 'm[0]: %r\ninFailure[0]: %r' % (m.group(0), self.inFailure[0])
-          raise ValueError, msg
-    # Otherwise expect a test status line.
-    m = self.kTestLineRE.match(line)
+    # Check for the test verbose log start marker.
+    m = self.kTestVerboseLogStartRE.match(line.strip())
     if m:
-      code, name = m.groups()
-      if self.inFailure and name != self.inFailure[0]:
-        name,log = self.inFailure
-        self.step.addCompleteLog(name.replace('/', '__'), '\n'.join(log))
-        self.inFailure = None
-      if code in self.failingCodes:
-        self.inFailure = (name, [line])
+      self.activeVerboseLog = []
+      if m.group(1) != self.lastTestResult[1]:
+        # This is bogus, the verbose log test name doesn't match what we
+        # expect. Just note it in the log but otherwise accumulate as normal.
+        self.activeVerboseLog.append(
+          "error: verbose log output name didn't match expected test name")
+      return
+
+    # Otherwise, if we had any previous test consider it finished.
+    #
+    # FIXME: This assumes that we will always have at least one line following
+    # the last test result to properly record each test; we could fix this if
+    # buildbot provided us a hook for when the log is done.
+    if self.lastTestResult:
+      self.testInfoFinished()
+
+    # Check for a new test status line.
+    m = self.kTestLineRE.match(line.strip())
+    if m:
+      # Remember the last test result and update the result counts.
+      self.lastTestResult = (code, name) = m.groups()
       self.resultCounts[code] = self.resultCounts.get(code, 0) + 1
+      return
 
 class LitTestCommand(Test):
   resultNames = {'FAIL':'unexpected failures',
@@ -124,7 +163,23 @@ PASS: test-three (3 of 3)
 """)
 
     self.assertEqual(obs.resultCounts, { 'FAIL' : 1, 'PASS' : 2 })
-    self.assertEqual(obs.step.logs, [('test-two', 'FAIL: test-two (2 of 3)')])
+    self.assertEqual(obs.step.logs, [('test-two', 'FAIL: test-two')])
+
+  def test_verbose_logs(self):
+    obs = self.parse_log("""
+FAIL: test-one (1 of 3)
+FAIL: test-two (2 of 3)
+**** TEST 'test-two' ****
+bla bla bla
+**********
+FAIL: test-three (3 of 3)
+""")
+
+    self.assertEqual(obs.resultCounts, { 'FAIL' : 3 })
+    self.assertEqual(obs.step.logs, [
+        ('test-one', 'FAIL: test-one'),
+        ('test-two', 'bla bla bla'),
+        ('test-three', 'FAIL: test-three')])
 
 class TestCommand(unittest.TestCase):
   def parse_log(self, text):
