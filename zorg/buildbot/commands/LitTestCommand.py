@@ -36,7 +36,6 @@ class LitLogObserver(LogLineObserver):
       if m.group(1)==self.inFailure[0]:
           self.inFailure[1].append(line)
           self.inFailureContext = True
-          self.failed = True
           return
       else:
           msg = 'm[0]: %r\ninFailure[0]: %r' % (m.group(0), self.inFailure[0])
@@ -51,7 +50,7 @@ class LitLogObserver(LogLineObserver):
         self.inFailure = None
       if code in self.failingCodes:
         self.inFailure = (name, [line])
-        self.Failed = True
+        self.failed = True
       if not code in self.resultCounts:
         self.resultCounts[code] = 0
       self.resultCounts[code] += 1
@@ -137,6 +136,12 @@ class TestCommand(unittest.TestCase):
     # If the command failed, the status should always be error.
     cmd = self.parse_log("")
     self.assertEqual(cmd.evaluateCommand(RemoteCommandProxy(1)), FAILURE)
+
+    # If there were failing tests, the status should be an error (even if the
+    # test command didn't report as such).
+    for failing_code in ('FAIL', 'XPASS', 'KPASS', 'UNRESOLVED'):
+      cmd = self.parse_log("""%s: test-one (1 of 1)""" % (failing_code,))
+      self.assertEqual(cmd.evaluateCommand(RemoteCommandProxy(0)), FAILURE)
 
 if __name__ == '__main__':
   unittest.main()
