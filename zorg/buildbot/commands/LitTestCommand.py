@@ -85,3 +85,35 @@ class LitTestCommand(Test):
     for name, count in self.logObserver.resultCounts.iteritems():
         description.append('{0} {1}'.format(count, self.resultNames[name]))
     return description
+
+##
+
+import unittest
+
+class StepProxy(object):
+  def __init__(self):
+    self.logs = []
+
+  def addCompleteLog(self, name, text):
+    self.logs.append((name, text))
+
+class TestLogObserver(unittest.TestCase):
+  def parse_log(self, text):
+    observer = LitLogObserver()
+    observer.step = StepProxy()
+    for ln in text.split('\n'):
+      observer.outLineReceived(ln)
+    return observer
+
+  def test_basic(self):
+    obs = self.parse_log("""
+PASS: test-one (1 of 3)
+FAIL: test-two (2 of 3)
+PASS: test-three (3 of 3)
+""")
+
+    self.assertEqual(obs.resultCounts, { 'FAIL' : 1, 'PASS' : 2 })
+    self.assertEqual(obs.step.logs, [('test-two', 'FAIL: test-two (2 of 3)')])
+
+if __name__ == '__main__':
+  unittest.main()
