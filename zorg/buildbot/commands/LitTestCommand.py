@@ -17,7 +17,12 @@ class LitLogObserver(LogLineObserver):
     self.resultCounts = {}
     self.inFailure = None
     self.inFailureContext = False
-    self.failed = False
+
+  def hadFailure(self):
+    for code in self.failingCodes:
+      if self.resultCounts.get(code):
+        return True
+
   def outLineReceived(self, line):
     # See if we are inside a failure log.
     if self.inFailureContext:
@@ -50,10 +55,7 @@ class LitLogObserver(LogLineObserver):
         self.inFailure = None
       if code in self.failingCodes:
         self.inFailure = (name, [line])
-        self.failed = True
-      if not code in self.resultCounts:
-        self.resultCounts[code] = 0
-      self.resultCounts[code] += 1
+      self.resultCounts[code] = self.resultCounts.get(code, 0) + 1
 
 class LitTestCommand(Test):
   resultNames = {'FAIL':'unexpected failures',
@@ -80,7 +82,7 @@ class LitTestCommand(Test):
       return FAILURE
 
     # Otherwise, report failure if there were failures in the log.
-    if self.logObserver.failed:
+    if self.logObserver.hadFailure():
       return FAILURE
 
     return SUCCESS
