@@ -188,6 +188,20 @@ def _get_clang_builders():
                                            '--with-float=hard',
                                            '--enable-targets=arm'])},
 
+        {'name': "clang-native-arm-cortex-a15",
+         'slavenames':["linaro-chrome-01"],
+         'builddir':"clang-native-arm-cortex-a15",
+         'factory' : ClangBuilder.getClangBuildFactory(
+                     stage1_config='Release+Asserts',
+                     env = { 'CXXFLAGS' : '-Wno-psabi', 'CFLAGS' : '-Wno-psabi'},
+                     extra_configure_args=['--build=armv7l-unknown-linux-gnueabihf',
+                                           '--host=armv7l-unknown-linux-gnueabihf',
+                                           '--target=armv7l-unknown-linux-gnueabihf',
+                                           '--with-cpu=cortex-a15',
+                                           '--with-fpu=neon',
+                                           '--with-float=hard',
+                                           '--enable-targets=arm'])},
+
         {'name': "clang-X86_64-freebsd",
          'slavenames':["kistanova7"],
          'builddir':"clang-X86_64-freebsd",

@@ -26,6 +26,9 @@ def get_build_slaves():
         create_slave("as-bldslv3", properties={'jobs' : 2}, max_builds=1),
         create_slave("linaro-panda-01", properties={'jobs' : 2}, max_builds=1),
 
+        # Ubuntu Chromebook Cortex-A15 slaves
+        create_slave("linaro-chrome-01", properties={'jobs' : 2}, max_builds=1),
+
         # FreeBSD 8.2 X86_64
         create_slave("kistanova7", properties={'jobs' : 2}, max_builds=1),
 
