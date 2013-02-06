@@ -38,13 +38,12 @@ class LitLogObserver(LogLineObserver):
         return True
 
   def handleVerboseLogLine(self, line):
-    # If this isn't a stop marker, just append it and continue.
-    if not self.kTestVerboseLogStopRE.match(line):
-      self.activeVerboseLog.append(line)
-      return
+    # Append to the log.
+    self.activeVerboseLog.append(line)
 
-    # Otherwise, the log and test info are finished.
-    self.testInfoFinished()
+    # If this is a stop marker, process the test info.
+    if self.kTestVerboseLogStopRE.match(line):
+      self.testInfoFinished()
 
   def testInfoFinished(self):
     # We have finished getting information for one test, handle it.
@@ -77,7 +76,7 @@ class LitLogObserver(LogLineObserver):
     # Check for the test verbose log start marker.
     m = self.kTestVerboseLogStartRE.match(line.strip())
     if m:
-      self.activeVerboseLog = []
+      self.activeVerboseLog = [line]
       if m.group(1) != self.lastTestResult[1]:
         # This is bogus, the verbose log test name doesn't match what we
         # expect. Just note it in the log but otherwise accumulate as normal.
@@ -176,7 +175,7 @@ PASS: test-three (3 of 3)
     obs = self.parse_log("""
 FAIL: test-one (1 of 3)
 FAIL: test-two (2 of 3)
-**** TEST 'test-two' ****
+**** TEST 'test-two' FAILED ****
 bla bla bla
 **********
 FAIL: test-three (3 of 3)
@@ -185,7 +184,10 @@ FAIL: test-three (3 of 3)
     self.assertEqual(obs.resultCounts, { 'FAIL' : 3 })
     self.assertEqual(obs.step.logs, [
         ('test-one', 'FAIL: test-one'),
-        ('test-two', 'bla bla bla'),
+        ('test-two', """\
+**** TEST 'test-two' FAILED ****
+bla bla bla
+**********"""),
         ('test-three', 'FAIL: test-three')])
 
 class TestCommand(unittest.TestCase):
