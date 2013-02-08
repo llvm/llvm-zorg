@@ -65,7 +65,7 @@ def _get_llvm_builders():
         {'name': "llvm-mips-linux",
          'slavenames':["mipsswbrd002"],
          'builddir':"llvm-mips-linux",
-         'factory': LLVMBuilder.getLLVMBuildFactory("mips-linux-gnu",
+         'factory': LLVMBuilder.getLLVMBuildFactory("mips-linux-gnu", timeout=40,
                                                     extra_configure_args=["--with-extra-options=-mips32r2",
                                                                           "--with-extra-ld-options=-mips32r2"])},
         ]
@@ -179,6 +179,7 @@ def _get_clang_builders():
          'builddir':"clang-native-arm-cortex-a9",
          'factory' : ClangBuilder.getClangBuildFactory(
                      stage1_config='Release+Asserts',
+                     clean=False,
                      env = { 'CXXFLAGS' : '-Wno-psabi', 'CFLAGS' : '-Wno-psabi'},
                      extra_configure_args=['--build=armv7l-unknown-linux-gnueabihf',
                                            '--host=armv7l-unknown-linux-gnueabihf',
@@ -193,6 +194,7 @@ def _get_clang_builders():
          'builddir':"clang-native-arm-cortex-a15",
          'factory' : ClangBuilder.getClangBuildFactory(
                      stage1_config='Release+Asserts',
+                     clean=False,
                      env = { 'CXXFLAGS' : '-Wno-psabi', 'CFLAGS' : '-Wno-psabi'},
                      extra_configure_args=['--build=armv7l-unknown-linux-gnueabihf',
                                            '--host=armv7l-unknown-linux-gnueabihf',
