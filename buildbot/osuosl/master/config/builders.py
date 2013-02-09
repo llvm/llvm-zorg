@@ -566,6 +566,8 @@ def _get_lldb_builders():
 # Experimental and stopped builders
 def _get_experimental_builders():
 
+    LabPackageCache = 'http://10.1.1.2/packages/'
+
     return [
         {'name': "llvm-x86_64-ubuntu",
          'slavenames':["arxan_davinci"],
