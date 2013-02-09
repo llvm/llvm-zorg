@@ -270,7 +270,6 @@ def _get_clang_builders():
                                                      stage2_config='Debug+Asserts',
                                                      extra_configure_args=["--enable-werror"])},
 
-         'category' : 'clang'},
         {'name': "clang-x86_64-debian-release-werror",
          'slavenames':["obbligato-ellington"],
          'builddir':"clang-x86-64-debian-release-werror",
