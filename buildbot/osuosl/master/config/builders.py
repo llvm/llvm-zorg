@@ -72,7 +72,7 @@ def _get_llvm_builders():
         {'name': "llvm-mips-linux",
          'slavenames':["mipsswbrd002"],
          'builddir':"llvm-mips-linux",
-         'factory': LLVMBuilder.getLLVMBuildFactory("mips-linux-gnu", timeout=40,
+         'factory': LLVMBuilder.getLLVMBuildFactory("mips-linux-gnu", timeout=40, config_name='Release+Asserts',
                                                     extra_configure_args=["--with-extra-options=-mips32r2",
                                                                           "--with-extra-ld-options=-mips32r2"])},
         {'name': "llvm-x86_64-debian-debug-werror",
