@@ -97,12 +97,12 @@ def getLLDBBuildFactory(triple, outOfDir=False, useTwoStage=False, jobs='%(jobs)
     #                       workdir=llvm_srcdir))
 
     # Test.
-    #f.addStep(ShellCommand(name="test",
-    #                       command=['nice', '-n', '10',
-    #                                'make'],
-    #                       haltOnFailure=True, description="test lldb",
-    #                       env=env,
-    #                       workdir='%s/tools/lldb/test' % llvm_objdir))
+    f.addStep(ShellCommand(name="test",
+                           command=['nice', '-n', '10',
+                                    'make'],
+                           haltOnFailure=True, description="test lldb",
+                           env=env,
+                           workdir='%s/tools/lldb/test' % llvm_objdir))
 
     return f
 
