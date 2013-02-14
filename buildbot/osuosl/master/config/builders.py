@@ -222,7 +222,7 @@ def _get_clang_builders():
          'slavenames':["linaro-chrome-01"],
          'builddir':"clang-native-arm-lnt",
          'factory' : LNTBuilder.getLNTFactory(triple='armv7l-unknown-linux-gnueabihf',
-                                              nt_flags=['--mllvm=-vectorize', '-mcpu=cortex-a15', '--multisample=3'],
+                                              nt_flags=['--mllvm=-vectorize', '--mllvm=-mcpu=cortex-a15', '--multisample=3'],
                                               jobs=2, use_pty_in_tests=True, clean=False,
                                               testerName='O3-vect', run_cxx_tests=True)},
 
