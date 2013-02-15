@@ -35,7 +35,6 @@ reload(LLDBBuilder)
 from zorg.buildbot.builders import LLDBBuilder
 
 from buildbot.steps.source import SVN
-from zorg.buildbot.commands.ClangTestCommand import ClangTestCommand
 
 # Plain LLVM builders.
 def _get_llvm_builders():
