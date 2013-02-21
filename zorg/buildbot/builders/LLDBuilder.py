@@ -2,10 +2,9 @@ import os
 
 import buildbot
 import buildbot.process.factory
-from buildbot.steps.source import SVN, Git from buildbot.steps.shell import Configure, ShellCommand from buildbot.process.properties import WithProperties
-
-from zorg.buildbot.builders import LNTBuilder from zorg.buildbot.builders import ClangBuilder
-
+from buildbot.steps.source import SVN, Git
+from buildbot.steps.shell import Configure, ShellCommand
+from buildbot.process.properties import WithProperties
 
 def getLLDBuildFactory(
            clean = True):
