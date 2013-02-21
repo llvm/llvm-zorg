@@ -34,6 +34,10 @@ from zorg.buildbot.builders import LLDBBuilder
 reload(LLDBBuilder)
 from zorg.buildbot.builders import LLDBBuilder
 
+from zorg.buildbot.builders import LLDBuilder
+reload(LLDBBuilder)
+from zorg.buildbot.builders import LLDBuilder
+
 from buildbot.steps.source import SVN
 
 # Plain LLVM builders.
@@ -573,6 +577,16 @@ def _get_lldb_builders():
 #                                                   env=gcc_m32_latest_env)}
        ]
 
+# LLD builders.
+def _get_lld_builders():
+    return [
+        {'name': "lld-x86_64-darwin11",
+         'slavenames' :["as-bldslv11"],
+         'builddir':"lld-x86_64-darwin11",
+         'factory': LLDBuilder.getLLDBuildFactory(),
+         'category'   : 'lld'},
+         ]
+
 # Experimental and stopped builders
 def _get_experimental_builders():
 
@@ -637,6 +651,10 @@ def get_builders():
 
     for b in _get_polly_builders():
         b['category'] = 'polly'
+        yield b
+
+    for b in _get_lld_builders():
+        b['category'] = 'lld'
         yield b
 
     for b in _get_lldb_builders():
