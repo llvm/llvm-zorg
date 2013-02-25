@@ -6,6 +6,7 @@ from buildbot.steps.source import SVN
 from buildbot.steps.shell import Configure, SetProperty
 from buildbot.steps.shell import ShellCommand, WarningCountingShellCommand
 from buildbot.process.properties import WithProperties
+from zorg.buildbot.commands.LitTestCommand import LitTestCommand
 
 def getLLDBBuildFactory(triple, outOfDir=False, useTwoStage=False, jobs='%(jobs)s',
                         extra_configure_args=[], env={}, *args, **kwargs):
