@@ -87,22 +87,13 @@ def getLLDBBuildFactory(triple, outOfDir=False, useTwoStage=False, jobs='%(jobs)
                                           haltOnFailure=True,
                                           workdir=llvm_objdir))
 
-    # The tests are hanging on Linux at the moment due to some "expect"
-    # functionality not happening correctly. For now we will stub out the tests
-    # so we can at least get builds running and reinstate the tests later.
-
-    # Fixup file needed for tests
-    # f.addStep(ShellCommand(name"copy-gnu_libstdcpp.py",
-    #                       command="cp tools/lldb/examples/synthetic/gnu_libstdcpp.py Debug+Asserts/bin",
-    #                       workdir=llvm_srcdir))
-
     # Test.
-    f.addStep(ShellCommand(name="test",
-                           command=['nice', '-n', '10',
-                                    'make'],
-                           haltOnFailure=True, description="test lldb",
-                           env=env,
-                           workdir='%s/tools/lldb/test' % llvm_objdir))
+    f.addStep(LitTestCommand(name="test lldb",
+                             command=['nice', '-n', '10',
+                                      'make'],
+                             description="test lldb",
+                             env=env,
+                             workdir='%s/tools/lldb/test' % llvm_objdir))
 
     return f
 
