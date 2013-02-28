@@ -80,6 +80,7 @@ def getClangAndLLDBuildFactory(
         "-DCMAKE_BUILD_TYPE=Release",
         "-DLLVM_ENABLE_ASSERTIONS=ON",
         "-DCMAKE_CXX_FLAGS=\"-std=c++11\"",
+        "-DLLVM_LIT_ARGS=\"-v\"",
         "-G", "Ninja",
         "../%s" % llvm_srcdir]
     # Note: ShellCommand does not pass the params with special symbols right.
