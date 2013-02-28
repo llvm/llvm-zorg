@@ -51,7 +51,7 @@ def _get_llvm_builders():
          'slavenames':["ranby1"],
          'builddir':"llvm-armv5-linux",
          'factory': LLVMBuilder.getLLVMBuildFactory("armv5-pc-linux-gnu", jobs=1, clean=False,
-                                                    timeout=40)},
+                                                    config_name='Release+Asserts', timeout=40)},
         {'name': "llvm-i686-debian",
          'slavenames': ["gcc15"],
          'builddir': "llvm-i686-debian",
