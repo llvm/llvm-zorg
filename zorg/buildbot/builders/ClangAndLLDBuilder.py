@@ -38,6 +38,11 @@ def getClangAndLLDBuildFactory(
                   baseURL='http://llvm.org/svn/llvm-project/llvm/',
                   defaultBranch='trunk',
                   workdir=llvm_srcdir))
+    f.addStep(SVN(name='svn-compiler-rt',
+                  mode='update',
+                  baseURL='http://llvm.org/svn/llvm-project/compiler-rt/',
+                  defaultBranch='trunk',
+                  workdir='%s/projects/compiler-rt' % llvm_srcdir))
     f.addStep(SVN(name='svn-clang',
                   mode='update',
                   baseURL='http://llvm.org/svn/llvm-project/cfe/',
