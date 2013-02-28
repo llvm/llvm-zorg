@@ -38,6 +38,10 @@ from zorg.buildbot.builders import LLDBuilder
 reload(LLDBBuilder)
 from zorg.buildbot.builders import LLDBuilder
 
+from zorg.buildbot.builders import ClangAndLLDBuilder
+reload(ClangAndLLDBuilder)
+from zorg.buildbot.builders import ClangAndLLDBuilder
+
 from buildbot.steps.source import SVN
 
 # Plain LLVM builders.
@@ -148,10 +152,18 @@ def _get_clang_fast_builders():
         {'name': "clang-x86_64-debian-fast",
          'slavenames':["gribozavr1"],
          'builddir':"clang-x86_64-debian-fast",
-         'factory': ClangBuilder.getClangBuildFactory(env={'PATH':'/home/llvmbb/bin/clang-latest/bin:/home/llvmbb/bin:/usr/local/bin:/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games'},
-                                                      stage1_config='Release+Asserts',
-                                                      checkout_compiler_rt=True,
-                                                      outOfDir=True)},
+         'factory': ClangBuilder.getClangBuildFactory(
+                    env={'PATH':'/home/llvmbb/bin/clang-latest/bin:/home/llvmbb/bin:/usr/local/bin:/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games'},
+                    stage1_config='Release+Asserts',
+                    checkout_compiler_rt=True,
+                    outOfDir=True)},
+
+        {'name': "llvm-clang-lld-x86_64-debian-fast",
+         'slavenames':["gribozavr1"],
+         'builddir':"llvm-clang-lld-x86_64-debian-fast",
+         'factory': ClangAndLLDBuilder.getClangAndLLDBuildFactory(
+                    env={'PATH':'/home/llvmbb/bin/clang-latest/bin:/home/llvmbb/bin:/usr/local/bin:/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games'})},
+
         ]
 
 # Clang builders.
