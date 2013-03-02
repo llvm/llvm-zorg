@@ -27,7 +27,15 @@ def get_status_targets(standard_builders):
                                     sendToInterestedUsers = False,
                                     mode = 'change',
                                     addLogs = False,
-                                    num_lines = 15)]
+                                    num_lines = 15),
+            buildbot.status.words.IRC('irc.oftc.net', 'llvmlab',
+                                      port=6668,
+                                      channels=['llvm'],
+                                      allowForce=False,
+                                      password='smooshy',
+                                      notify_events=['successToFailure', 'failureToSuccess'],
+                                      categories=['build', 'test']),
+            ]
 
     # Get the path to the authors file we use for email lookup.
     llvm_authors_path = os.path.join(os.path.dirname(__file__), 
