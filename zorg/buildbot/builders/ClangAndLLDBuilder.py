@@ -79,7 +79,7 @@ def getClangAndLLDBuildFactory(
         "cmake",
         "-DCMAKE_BUILD_TYPE=Release",
         "-DLLVM_ENABLE_ASSERTIONS=ON",
-        "-DCMAKE_CXX_FLAGS=\"-std=c++11\"",
+        "-DCMAKE_CXX_FLAGS=\"-std=c++11 -Wdocumentation -Wno-documentation-deprecated-sync\"",
         "-DLLVM_LIT_ARGS=\"-v\"",
         "-G", "Ninja",
         "../%s" % llvm_srcdir]
