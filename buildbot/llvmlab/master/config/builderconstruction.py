@@ -28,6 +28,8 @@ def construct(name):
     # their type delimited by '_'.
     if name.startswith('clang-') or name.startswith('llvm-gcc-'):
         kind,subname = 'compile',name
+        if 'lto' in name:
+            kind += '-lto'
     elif name.startswith('apple-clang'):
         kind,subname = 'buildit',name
     else:
@@ -63,7 +65,7 @@ def construct(name):
 
     return builder
 
-def construct_compiler_builder_from_name(name):
+def construct_compiler_builder_from_name(name, use_lto=False):
     # Compiler builds are named following:
     #   <compiler>-<host arch>-<host os>-[<build cc>-]<build style>.
     # if <build cc> is unspecified, then the most recent validated build 
@@ -123,7 +125,7 @@ def construct_compiler_builder_from_name(name):
         config_options.extend(['--enable-optimized'])
         config_options.extend(['--disable-assertions'])
     else:
-        raise ValueError, "invalid build style: %r" % build_style
+        raise ValueError, "invalid build style: %r" % build_style    
 
     # Passing is_bootstrap==False will specify the stage 1 compiler as the
     # latest validated apple-clang style compiler.
@@ -131,7 +133,8 @@ def construct_compiler_builder_from_name(name):
     # build_cc must be set for a bootstrapped compiler
     if compiler == 'clang':
         return { 'factory' : phasedClang(config_options,
-                                       is_bootstrap = (build_cc is None)) }
+                                         is_bootstrap = (build_cc is None),
+                                         use_lto=use_lto) }
     elif compiler == 'llvm-gcc':
         # Currently, llvm-gcc builders do their own two-stage build,
         # they don't use any prebuilt artifacts.
@@ -223,8 +226,12 @@ def construct_lldb_builder_from_name(name):
     lldb_triple = '-'.join([host_arch,host_os])
     return { 'factory': getLLDBxcodebuildFactory()}
 
+def construct_lto_compiler_builder_from_name(name):
+    return construct_compiler_builder_from_name(name, use_lto=True)
+
 builder_kinds = {
                   'compile' : construct_compiler_builder_from_name,
+                  'compile-lto' : construct_lto_compiler_builder_from_name,
                   'lnt' : construct_lnt_builder_from_name,
                   'lldb' : construct_lldb_builder_from_name}
 

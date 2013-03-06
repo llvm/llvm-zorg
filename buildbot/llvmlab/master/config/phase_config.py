@@ -81,6 +81,9 @@ phase3_builders.append(build('clang-i386-darwin11-RA', phase3_slaves))
 # Add a release (no asserts) build.
 phase3_builders.append(build('clang-x86_64-darwin11-R', phase3_slaves))
 
+# Add an lto release build.
+phase3_builders.append(build('clang-x86_64-darwin11-Rlto', phase3_slaves))
+
 # Add a reasonable matrix of nightlies on the final reference compiler.
 # for arch in ('i386', 'x86_64'):
 #     for flags in (['-O0','-g'],

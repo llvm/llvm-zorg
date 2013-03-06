@@ -712,6 +712,12 @@ def phasedClang(config_options, is_bootstrap = True):
                            '--enable-keep-symbols'])
     configure_args.append(
         WithProperties('--prefix=%(builddir)s/clang-install'))
+    
+    # If we need to use lto, add in proper flags here.
+    if use_lto:
+      configure_args.append(
+        '--with-extra-options="-flto -gline-tables-only"')
+    
     # If we are using a previously built compiler, download it and override CC
     # and CXX.
     if is_bootstrap:
