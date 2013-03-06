@@ -68,7 +68,7 @@ def get_schedulers():
 
     # The VC scheduler initiates the first phase.
     # Each phase, in turn, triggers the next phase,
-    # until the fianl phase
+    # until the final phase.
 
     for phase in phases:
         my_filter = ChangeFilter(filter_fn=_tracked_projects)
