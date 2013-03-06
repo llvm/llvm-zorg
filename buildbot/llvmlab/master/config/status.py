@@ -23,7 +23,8 @@ def get_status_targets(standard_builders):
                 http_port = 8013, allowForce = True),
 
             InformativeMailNotifier(fromaddr = from_email,
-                                    extraRecipients = ['david_dean@apple.com'],
+                                    extraRecipients = ['david_dean@apple.com',
+                                                       'mgottesman@apple.com'],
                                     sendToInterestedUsers = False,
                                     mode = 'change',
                                     addLogs = False,
