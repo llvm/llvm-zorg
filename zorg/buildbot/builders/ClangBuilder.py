@@ -633,7 +633,7 @@ def getClangTestsIgnoresFromPath(path, key):
 from zorg.buildbot.PhasedBuilderUtils import getBuildDir, setProperty
 from buildbot.steps.source.svn import SVN as HostSVN
 
-def phasedClang(config_options, is_bootstrap = True):
+def phasedClang(config_options, is_bootstrap=True, use_lto=False):
     # Create an instance of the Builder.
     f = buildbot.process.factory.BuildFactory()
     # Determine the build directory.
