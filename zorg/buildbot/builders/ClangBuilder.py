@@ -716,7 +716,7 @@ def phasedClang(config_options, is_bootstrap=True, use_lto=False):
     # If we need to use lto, add in proper flags here.
     if use_lto:
       configure_args.append(
-        '--with-extra-options="-flto -gline-tables-only"')
+        '--with-extra-options=-flto -gline-tables-only')
     
     # If we are using a previously built compiler, download it and override CC
     # and CXX.
