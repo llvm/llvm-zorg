@@ -112,11 +112,11 @@ def construct_compiler_builder_from_name(name, use_lto=False):
     config_options = ['--build=%s' % target_triple,
                       '--host=%s' % target_triple]
 
-    if build_style == 'DA' or build_type == 'DAlto':
+    if build_style == 'DA' or build_style == 'DAlto':
         build_config = "Debug+Asserts"
         config_options.extend(['--disable-optimized'])
         config_options.extend(['--enable-assertions'])
-    elif build_style == 'RA' or build_type == 'RAlto':
+    elif build_style == 'RA' or build_style == 'RAlto':
         build_config = "Release+Asserts"
         config_options.extend(['--enable-optimized'])
         config_options.extend(['--enable-assertions'])
