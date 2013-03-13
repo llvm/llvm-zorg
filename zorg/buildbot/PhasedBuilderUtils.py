@@ -153,7 +153,7 @@ def find_liblto(status, stdin, stdout):
     lines = filter(bool, stdin.split('\n'))
     for line in lines:
         if 'lib/libLTO.dylib' in line:
-            liblto_path = line
+            liblto_path = os.path.dirname(line)
             return { 'liblto_path' : liblto_path }
     return {}
 
