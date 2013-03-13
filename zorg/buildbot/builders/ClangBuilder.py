@@ -14,6 +14,7 @@ from zorg.buildbot.commands import SuppressionDejaGNUCommand
 from zorg.buildbot.commands.BatchFileDownload import BatchFileDownload
 from zorg.buildbot.commands.LitTestCommand import LitTestCommand
 from zorg.buildbot.PhasedBuilderUtils import GetLatestValidated, find_cc
+from zorg.buildbot.PhasedBuilderUtils import find_liblto
 
 def getClangBuildFactory(
             triple=None,
@@ -711,12 +712,7 @@ def phasedClang(config_options, is_bootstrap=True, use_lto=False):
                            '--without-llvmgcc', '--without-llvmgxx',
                            '--enable-keep-symbols'])
     configure_args.append(
-        WithProperties('--prefix=%(builddir)s/clang-install'))
-    
-    # If we need to use lto, add in proper flags here.
-    if use_lto:
-      configure_args.append(
-        '--with-extra-options=-flto -gline-tables-only')
+        WithProperties('--prefix=%(builddir)s/clang-install'))    
     
     # If we are using a previously built compiler, download it and override CC
     # and CXX.
@@ -737,14 +733,30 @@ def phasedClang(config_options, is_bootstrap=True, use_lto=False):
     configure_args.extend([
             WithProperties('CC=%(builddir)s/%(cc_path)s'),
             WithProperties('CXX=%(builddir)s/%(cc_path)s++')])
+    
+    # If we need to use lto, find liblto, add in proper flags here, etc.
+    if use_lto:
+        liblto_command = ['find', 'host-compiler', '-name', 'libLTO.dylib']
+        f.addStep(buildbot.steps.shell.ShellCommand(
+                name='find.liblto',
+                command=liblto_command,
+                extract_fn=find_liblto,
+                workdir=WithProperties('%(builddir)s')))
+        configure_args.append(
+          '--with-extra-options=-flto -gline-tables-only')
+    
     # Configure the LLVM build.
     f.addStep(buildbot.steps.shell.ShellCommand(
               name='configure.with.host', command=configure_args,
               haltOnFailure=True, description=['configure'],
               workdir=clang_build_dir))
     # Build the compiler.
+    make_command = ['make', '-j', WithProperties('%(jobs)s')]
+    if use_lto:
+        make_command.append(WithProperties('DYLD_LIBRARY_PATH=%(liblto_path)s'))
+    
     f.addStep(buildbot.steps.shell.ShellCommand(
-              name='make', command=['make', '-j', WithProperties('%(jobs)s')],
+              name='make', command=make_command,
               haltOnFailure=True, description=['make'], workdir=clang_build_dir))
     # Use make install-clang to produce minimal archive for use by downstream
     # builders.
