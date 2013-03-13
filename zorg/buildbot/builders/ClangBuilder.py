@@ -736,7 +736,8 @@ def phasedClang(config_options, is_bootstrap=True, use_lto=False):
     
     # If we need to use lto, find liblto, add in proper flags here, etc.
     if use_lto:
-        liblto_command = ['find', 'host-compiler', '-name', 'libLTO.dylib']
+        liblto_command = ['find', WithProperties('%(builddir)s/host-compiler'),
+                          '-name', 'libLTO.dylib']
         f.addStep(buildbot.steps.shell.SetProperty(
                 name='find.liblto',
                 command=liblto_command,
