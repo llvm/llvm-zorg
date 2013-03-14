@@ -753,12 +753,15 @@ def phasedClang(config_options, is_bootstrap=True, use_lto=False):
               workdir=clang_build_dir))
     # Build the compiler.
     make_command = ['make', '-j', WithProperties('%(jobs)s')]
+    timeout = 20*60 # Normal timeout is 20 minutes.
     if use_lto:
         make_command.append(WithProperties('DYLD_LIBRARY_PATH=%(liblto_path)s'))
+        timeout = 30*60 # LTO timeout is 30 minutes.
     
     f.addStep(buildbot.steps.shell.ShellCommand(
               name='make', command=make_command,
-              haltOnFailure=True, description=['make'], workdir=clang_build_dir))
+              haltOnFailure=True, description=['make'], workdir=clang_build_dir,
+              timeout=timeout))
     # Use make install-clang to produce minimal archive for use by downstream
     # builders.
     f.addStep(buildbot.steps.shell.ShellCommand(
