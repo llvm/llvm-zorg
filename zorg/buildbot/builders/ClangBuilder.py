@@ -165,7 +165,7 @@ def getClangBuildFactory(
         f.addStep(SetProperty(name="Makefile_isready",
                               workdir=llvm_1_objdir,
                               command=["sh", "-c",
-                                       "test -e Makefile.config && echo OK"],
+                                       "test -e Makefile.config && echo OK || echo Missing"],
                               flunkOnFailure=False,
                           property="exists_Makefile"))
     f.addStep(Configure(command=args,
