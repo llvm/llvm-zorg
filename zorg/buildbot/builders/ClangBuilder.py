@@ -756,7 +756,7 @@ def phasedClang(config_options, is_bootstrap=True, use_lto=False):
     timeout = 20*60 # Normal timeout is 20 minutes.
     if use_lto:
         make_command.append(WithProperties('DYLD_LIBRARY_PATH=%(liblto_path)s'))
-        timeout = 30*60 # LTO timeout is 30 minutes.
+        timeout = 60*60 # LTO timeout is 60 minutes.
     
     f.addStep(buildbot.steps.shell.ShellCommand(
               name='make', command=make_command,
