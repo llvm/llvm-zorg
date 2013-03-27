@@ -17,7 +17,8 @@ def get_status_targets(standard_builders):
 
     # Check whether we are in testing mode, if so, just add minimal and verbose
     # status clients.
-    if True:
+    is_production = set_config_option('Master Options', 'is_production', False)
+    if not is_production:
         return [
             buildbot.status.html.WebStatus(
                 http_port = 8013, allowForce = True),
