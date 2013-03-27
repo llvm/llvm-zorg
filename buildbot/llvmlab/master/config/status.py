@@ -66,11 +66,11 @@ def get_status_targets(standard_builders):
 
         # Regular problem build notifier.
         #
-        # These emails go to the interested (internal users), and the catch-all
+        # These emails go to the interested public_users, and the catch-all
         # list.
         InformativeMailNotifier(
             fromaddr = from_email,
-            lookup = internal_lookup,
+            lookup = public_lookup,
             extraRecipients = ['llvm-testresults@cs.uiuc.edu'],
             sendToInterestedUsers = True,
             mode = 'problem',
