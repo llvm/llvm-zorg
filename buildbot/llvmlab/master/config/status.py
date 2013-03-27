@@ -50,7 +50,7 @@ def get_status_targets(standard_builders):
                   allowForce=False,
                   password='smooshy',
                   notify_events=['successToFailure', 'failureToSuccess'],
-                  categories=['build', 'test']),
+                  categories=['build-public', 'test-public']),
 
         # Experimental failing build notifier.
         #
@@ -74,7 +74,7 @@ def get_status_targets(standard_builders):
             extraRecipients = ['llvm-testresults@cs.uiuc.edu'],
             sendToInterestedUsers = True,
             mode = 'problem',
-            categories = ['build', 'test'],
+            categories = ['build-public', 'test-public'],
             addLogs = False,
             num_lines = 15),
 
@@ -89,7 +89,7 @@ def get_status_targets(standard_builders):
             sendToInterestedUsers = False,
             extraRecipients = ['llvm-testresults@cs.uiuc.edu'],
             mode = 'failing',
-            categories = ['build', 'test'],
+            categories = ['build-public', 'test-public'],
             addLogs = False,
             num_lines = 15),
 
