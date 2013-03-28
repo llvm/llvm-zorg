@@ -669,34 +669,36 @@ def phasedClang(config_options, is_bootstrap=True, use_lto=False):
     # Pull sources.
     f.addStep(HostSVN(name='pull.llvm', mode='incremental', method='fresh',
                       repourl='http://llvm.org/svn/llvm-project/llvm/trunk',
-                      retry = (60, 5), workdir='llvm',
-                      description='pull.llvm', alwaysUseLatest=False))
+                      retry=(60, 5), workdir='llvm', description='pull.llvm',
+                      alwaysUseLatest=False))
     f.addStep(HostSVN(name='pull.clang', mode='incremental', method='fresh',
                       repourl='http://llvm.org/svn/llvm-project/cfe/trunk',
-                      workdir='clang.src', retry = (60, 5),
+                      workdir='clang.src', retry=(60, 5),
                       description='pull.clang', alwaysUseLatest=False))
     f.addStep(HostSVN(name='pull.clang-tools-extra', mode='incremental',
                       method='fresh',
-                      repourl='http://llvm.org/svn/llvm-project/clang-tools-extra/trunk',
+                      repourl='http://llvm.org/svn/llvm-project/'
+                              'clang-tools-extra/trunk',
                       workdir='clang-tools-extra.src', alwaysUseLatest=False,
                       retry=(60, 5), description='pull.clang-tools-extra'))
-    f.addStep(HostSVN(name='pull.compiler-rt', mode='incremental', method='fresh',
-                      repourl='http://llvm.org/svn/llvm-project/compiler-rt/trunk',
-                      workdir='compiler-rt.src',
-                      alwaysUseLatest=False, retry = (60, 5),
-                      description='pull.compiler-rt'))
-    # Create symlinks to the clang & compiler-rt sources inside the LLVM tree.
+    f.addStep(HostSVN(name='pull.compiler-rt', mode='incremental',
+                      method='fresh',
+                      repourl='http://llvm.org/svn/llvm-project/compiler-rt/'
+                              'trunk',
+                      workdir='compiler-rt.src', alwaysUseLatest=False,
+                      retry=(60, 5), description='pull.compiler-rt'))
+    # Create symlinks to the clang compiler-rt sources inside the LLVM tree.
     # We don't actually check out the sources there, because the SVN purge
     # would always remove them then.
     f.addStep(buildbot.steps.shell.ShellCommand(
               name='ln.clang-sources', haltOnFailure=True,
               command=['ln', '-sfv', '../../clang.src', 'clang'],
-              workdir='llvm/tools', description = ['ln', 'clang sources']))
+              workdir='llvm/tools', description=['ln', 'clang sources']))
     f.addStep(buildbot.steps.shell.ShellCommand(
               name='ln.compiler-rt-sources',
               command=['ln', '-sfv', '../../compiler-rt.src', 'compiler-rt'],
               haltOnFailure=True, workdir='llvm/projects',
-              description = ['ln', 'compiler-rt sources']))
+              description=['ln', 'compiler-rt sources']))
     # Create a symlink in clang for clang-tools-extra.
     f.addStep(buildbot.steps.shell.ShellCommand(
               name='ln.clang-tools-extra-sources',
@@ -777,8 +779,9 @@ def phasedClang(config_options, is_bootstrap=True, use_lto=False):
     # builders.
     f.addStep(buildbot.steps.shell.ShellCommand(
               name='make.install-clang', haltOnFailure=True,
-              command=['make', 'install-clang', '-j', WithProperties('%(jobs)s'),
-                     'RC_SUPPORTED_ARCHS=armv7 i386 x86_64'],
+              command=['make', 'install-clang', '-j',
+                       WithProperties('%(jobs)s'),
+                       'RC_SUPPORTED_ARCHS=armv7 i386 x86_64'],
               description=['make install'], workdir=clang_build_dir))
     # Save artifacts of this build for use by other builders.
     f = uploadArtifacts(f)
