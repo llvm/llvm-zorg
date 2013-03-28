@@ -699,12 +699,13 @@ def phasedClang(config_options, is_bootstrap=True, use_lto=False):
               command=['ln', '-sfv', '../../compiler-rt.src', 'compiler-rt'],
               haltOnFailure=True, workdir='llvm/projects',
               description=['ln', 'compiler-rt sources']))
-    # Create a symlink in clang for clang-tools-extra.
+    # TODO: We used to use a symlink here but it seems to not work. I am trying
+    # to get this builder to work so I am just going to copy it instead.
     f.addStep(buildbot.steps.shell.ShellCommand(
-              name='ln.clang-tools-extra-sources',
-              command=['ln', '-sfv', '../../clang-tools-extra.src', 'extra'],
+              name='cp.clang-tools-extra-sources',
+              command=['cp', '-fv', '../../clang-tools-extra.src', 'extra'],
               haltOnFailure=True, workdir='clang.src/tools',
-              description=['ln', 'clang-tools-extra sources']))    
+              description=['cp', 'clang-tools-extra sources']))    
     # Checkout the supplemental 'debuginfo-tests' repository.
     debuginfo_url = 'http://llvm.org/svn/llvm-project/debuginfo-tests/trunk'
     f.addStep(HostSVN(name='pull.debug-info tests', mode='incremental',
