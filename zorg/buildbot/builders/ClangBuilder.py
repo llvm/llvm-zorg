@@ -703,7 +703,7 @@ def phasedClang(config_options, is_bootstrap=True, use_lto=False):
     # to get this builder to work so I am just going to copy it instead.
     f.addStep(buildbot.steps.shell.ShellCommand(
               name='cp.clang-tools-extra-sources',
-              command=['cp', '-fv', '../../clang-tools-extra.src', 'extra'],
+              command=['cp', '-Rfv', '../../clang-tools-extra.src', 'extra'],
               haltOnFailure=True, workdir='clang.src/tools',
               description=['cp', 'clang-tools-extra sources']))    
     # Checkout the supplemental 'debuginfo-tests' repository.
