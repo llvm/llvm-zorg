@@ -15,6 +15,7 @@ def getLibCXXBuilder():
     
     # Grab the sources.
     src_url = 'http://llvm.org/svn/llvm-project/libcxx/trunk'
+    f = zorg.buildbot.PhasedBuilderUtils.SVNCleanupStep(f, 'sources')
     f.addStep(svn.SVN(name='pull.src', mode='full', repourl=src_url,
                       workdir='sources', method='fresh',
                       alwaysUseLatest=False, retry = (60, 5),
