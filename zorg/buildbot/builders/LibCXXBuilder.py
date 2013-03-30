@@ -9,8 +9,7 @@ import zorg.buildbot.commands.LitTestCommand
 import zorg.buildbot.Artifacts
 import zorg.buildbot.PhasedBuilderUtils
 
-
-def libcxx():
+def getLibCXXBuilder():
     f = buildbot.process.factory.BuildFactory()
     
     # Grab the sources.

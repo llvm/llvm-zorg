@@ -3,6 +3,7 @@ from zorg.buildbot.Artifacts import rsync_user, master_name
 from zorg.buildbot.builders.ClangBuilder import getClangMSVCBuildFactory
 from zorg.buildbot.builders.ClangBuilder import phasedClang
 from zorg.buildbot.builders.LLDBBuilder import getLLDBxcodebuildFactory
+import zorg.buildbot.builders.LibCXXBuilder as LibCXXBuilder
 
 """
 Helper module to handle automatically constructing builder objects from a
@@ -229,11 +230,21 @@ def construct_lldb_builder_from_name(name):
 def construct_lto_compiler_builder_from_name(name):
     return construct_compiler_builder_from_name(name, use_lto=True)
 
+def construct_libcxx_builder_from_name(name):
+    # libcxx builds are named following:
+    #   libcxx_<compiler under test>
+    
+    cc_under_test = name
+    return { 'factory' : LibCXXBuilder.getLibCXXBuilder(),
+             'properties' : {'use_builder' : cc_under_test } }
+
+
 builder_kinds = {
                   'compile' : construct_compiler_builder_from_name,
                   'compile-lto' : construct_lto_compiler_builder_from_name,
                   'lnt' : construct_lnt_builder_from_name,
-                  'lldb' : construct_lldb_builder_from_name}
+                  'lldb' : construct_lldb_builder_from_name,
+                  'libcxx' : construct_libcxx_builder_from_name }
 
 # Testing.
 
