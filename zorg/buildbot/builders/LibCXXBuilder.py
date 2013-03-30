@@ -3,6 +3,7 @@ import buildbot
 import buildbot.process.factory
 import buildbot.steps.shell
 import buildbot.steps.source as source
+import buildbot.steps.source.svn as svn
 import buildbot.process.properties as properties
 
 import zorg.buildbot.commands.LitTestCommand
@@ -14,10 +15,10 @@ def getLibCXXBuilder():
     
     # Grab the sources.
     src_url = 'http://llvm.org/svn/llvm-project/libcxx/trunk'
-    f.addStep(source.SVN(name='pull.src', mode='full', baseURL=src_url,
-                         workdir='sources', method='fresh',
-                         alwaysUseLatest=False, retry = (60, 5),
-                         description='pull.src'))
+    f.addStep(svn.SVN(name='pull.src', mode='full', repourl=src_url,
+                      workdir='sources', method='fresh',
+                      alwaysUseLatest=False, retry = (60, 5),
+                      description='pull.src'))
     
     # Find the build directory and grab the artifacts for our build.
     f = zorg.buildbot.PhasedBuilderUtils.getBuildDir(f)
