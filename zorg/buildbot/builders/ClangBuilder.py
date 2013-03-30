@@ -14,7 +14,7 @@ from zorg.buildbot.commands import SuppressionDejaGNUCommand
 from zorg.buildbot.commands.BatchFileDownload import BatchFileDownload
 from zorg.buildbot.commands.LitTestCommand import LitTestCommand
 from zorg.buildbot.PhasedBuilderUtils import GetLatestValidated, find_cc
-from zorg.buildbot.PhasedBuilderUtils import find_liblto
+from zorg.buildbot.PhasedBuilderUtils import find_liblto, SVNCleanupStep
 
 def getClangBuildFactory(
             triple=None,
@@ -667,20 +667,24 @@ def phasedClang(config_options, is_bootstrap=True, use_lto=False):
             haltOnFailure=False, description=['rm', 'compiler-rt sources link'],
             workdir=WithProperties('%(builddir)s')))
     # Pull sources.
+    f = SVNCleanupStep(f, 'llvm')
     f.addStep(HostSVN(name='pull.llvm', mode='incremental', method='fresh',
                       repourl='http://llvm.org/svn/llvm-project/llvm/trunk',
                       retry=(60, 5), workdir='llvm', description='pull.llvm',
                       alwaysUseLatest=False))
+    f = SVNCleanupStep(f, 'clang.src')
     f.addStep(HostSVN(name='pull.clang', mode='incremental', method='fresh',
                       repourl='http://llvm.org/svn/llvm-project/cfe/trunk',
                       workdir='clang.src', retry=(60, 5),
                       description='pull.clang', alwaysUseLatest=False))
+    f = SVNCleanupStep(f, 'clang-tools-extra.src')
     f.addStep(HostSVN(name='pull.clang-tools-extra', mode='incremental',
                       method='fresh',
                       repourl='http://llvm.org/svn/llvm-project/'
                               'clang-tools-extra/trunk',
                       workdir='clang-tools-extra.src', alwaysUseLatest=False,
                       retry=(60, 5), description='pull.clang-tools-extra'))
+    f = SVNCleanupStep(f, 'compiler-rt.src')
     f.addStep(HostSVN(name='pull.compiler-rt', mode='incremental',
                       method='fresh',
                       repourl='http://llvm.org/svn/llvm-project/compiler-rt/'

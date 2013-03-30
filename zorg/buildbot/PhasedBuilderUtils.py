@@ -278,3 +278,14 @@ def set_config_option(section, option, default=False):
         warn_str += '"%s" section of your local.cfg file' % section
         warnings.warn(warn_str) 
         return default
+
+
+def SVNCleanupStep(f, name):
+  f.addStep(buildbot.steps.shell.ShellCommand(
+      name='svn.cleanup.%s' % name,
+      command=['svn', 'cleanup'],
+      haltOnFailure=False, flunkOnFailure=False,
+      description='svn cleanup %s just in case' % name,
+      workdir=name))
+  return f
+
