@@ -128,6 +128,7 @@ phases.append(
             # slow.
 #             test('lnt_clang-x86_64-darwin11-DA_x86_64-O3', phase4_slaves),
             experimental('lldb_clang-x86_64-darwin11-RA', phase4_slaves),
+            experimental('libcxx_clang-x86_64-darwin11-RA', phase4_slaves),
             ],
 
       'description' : """\
