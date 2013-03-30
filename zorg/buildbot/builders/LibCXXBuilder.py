@@ -14,7 +14,7 @@ def getLibCXXBuilder():
     
     # Grab the sources.
     src_url = 'http://llvm.org/svn/llvm-project/libcxx/trunk'
-    f.addStep(source.SVN(name='pull.src', mode='full', repourl=src_url,
+    f.addStep(source.SVN(name='pull.src', mode='full', baseURL=src_url,
                          workdir='sources', method='fresh',
                          alwaysUseLatest=False, retry = (60, 5),
                          description='pull.src'))
