@@ -118,7 +118,7 @@ phase4_builders = []
 # Test the compilers produced in phase 3.
 #phase4_builders.append(test('lnt_clang-i386-darwin11-RA_i386-O3', phase4_slaves))
 #phase4_builders.append(test('lnt_clang-x86_64-darwin11-R_i386-O0', phase4_slaves))
-#phase4_builders.append(test('lnt_clang-x86_64-darwin11-RA_x86_64-Os', phase3_slaves))
+#phase4_builders.append(test('lnt_clang-x86_64-darwin11-RA_x86_64-Os', phase4_slaves))
 #phase4_builders.append(test('lnt_clang-i386-darwin11-RA_i386-g', phase4_slaves))
 
 # Test the -DA compiler produced in phase 2. We delay this
@@ -127,7 +127,7 @@ phase4_builders = []
 #phase4_builders.append(test('lnt_clang-x86_64-darwin11-DA_x86_64-O3', phase4_slaves))
 
 phase4_builders.append(experimental('lldb_clang-x86_64-darwin11-RA', phase4_slaves))
-phase4_builders.append(experimental('libcxx_clang-x86_64-darwin11-RA', phase4_slaves))
+phase4_builders.append(test('libcxx_clang-x86_64-darwin11-RA', phase4_slaves))
 
 phases.append(
     { 'number' : 4,
