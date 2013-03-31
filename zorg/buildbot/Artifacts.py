@@ -47,9 +47,8 @@ def _determine_compiler_kind(props):
         kind,subname = buildName.split('_', 1)
     if 'clang' in kind:
         subname = kind
-    for kind in ('apple-clang','clang'):
-        if kind in subname:
-            return kind
+    if 'clang' in subname:
+      return 'clang'
     raise ValueError, "unknown compiler"
 
 # compiler_path and archive_name should be completely deterministic. Any 
