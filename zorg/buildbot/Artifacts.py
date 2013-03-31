@@ -47,8 +47,9 @@ def _determine_compiler_kind(props):
         kind,subname = buildName.split('_', 1)
     if 'clang' in kind:
         subname = kind
-    if 'clang' in subname:
-        return 'clang'
+    for kind in ('apple-clang','clang'):
+        if kind in subname:
+            return kind
     raise ValueError, "unknown compiler"
 
 # compiler_path and archive_name should be completely deterministic. Any 
@@ -158,6 +159,11 @@ def uploadArtifacts(f, rootdir='clang-install'):
     setProperty(f, 'artifactsURL', artifactsURL)
     return f
 
+def project_from_name(builder_name):
+  if 'clang' in builder_name:
+    return 'clang'
+  raise RuntimeError('Invalid builder name.')
+
 def determine_url(props):
     if props.has_key('phase_id') and props.has_key('category'):
         if props['category'].startswith('build-'):
@@ -178,55 +184,16 @@ def determine_url(props):
         curl += props['buildername'] + '.tar.gz'
     return curl
 
-# This method is used in determining the name of a given compiler archive
-def _determine_compiler_kind(props):
-    buildName = props['buildername']
-    kind = buildName
-    subname = buildName
-    if '_' in buildName:
-        kind,subname = buildName.split('_', 1)    
-    if 'clang' in subname:
-      return 'clang'
-    raise ValueError, "unknown compiler"
-
-# compiler_path and archive_name should be completely deterministic. Any 
-# methods acting on an archive should use the following two methods to
-# calculate the path and/or name for an archive
-def _determine_archive_name(props):
-    # phase_id must be set upstream. Usually by a phase builder
-    archive_name = _determine_compiler_kind(props)
-    if props.has_key('phase_id') and props['phase_id']:
-        archive_name += '-' + props['phase_id'] + '.tar.gz'
-    else:
-        raise ValueError, "phase_id doesn't exist"
-    return archive_name
-
-def _determine_compiler_path(props):
-    # We need to segregate compiler builds based on both branch and builder
-    # TODO: better solution when branch is None
-    compiler_path = props['buildername']
-    if props.has_key('default_branch') and props['default_branch']:
-        compiler_path = props['default_branch']
-    elif props.has_key('branch') and props['branch']:
-        compiler_path = props['branch']
-    elif props.has_key('use_builder') and props['use_builder']:
-        compiler_path = props['use_builder']        
-    return compiler_path
-
 def GetCompilerArtifacts(f):
     f.addStep(buildbot.steps.shell.ShellCommand(
             name='rm.host-compiler',
             command=['rm', '-rfv', 'host-compiler', 'host-compiler.tar.gz'],
             haltOnFailure=False, description=['rm', 'host-compiler'],
             workdir=WithProperties('%(builddir)s')))
-    setProperty(f, 'rootURL',
-                WithProperties(base_download_url + '/%(getpath)s/%(getname)s',
-                               getpath=_determine_compiler_path,
-                               getname=_determine_archive_name))    
     f.addStep(buildbot.steps.shell.ShellCommand(
               name='download.artifacts',
               command=['curl', '-svo', 'host-compiler.tar.gz',
-                       WithProperties('%(rootURL)s')],
+                       WithProperties('%(get_curl)s', get_curl=determine_url)],
               haltOnFailure=True, description=['download build artifacts'],
               workdir=WithProperties('%(builddir)s')))
     f.addStep(buildbot.steps.shell.ShellCommand(
