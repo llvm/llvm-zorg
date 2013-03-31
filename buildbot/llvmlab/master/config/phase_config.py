@@ -24,13 +24,15 @@ phaseRunners = ['macpro1']
 # LauchDaemon plist
 
 phase1_slaves=['xserve5']
+phase1_builders = []
+
+phase1_builders.append(build('clang-x86_64-darwin11-nobootstrap-RA', phase1_slaves))
 
 phases.append(
     { 'number' : 1,
       'name' : 'sanity',
       'title' : 'Sanity',
-      'builders' : [build('clang-x86_64-darwin11-nobootstrap-RA',
-                                 phase1_slaves)],
+      'builders' : phase1_builders,
       'description' : """\
 
 The first phase is responsible for quickly testing that tree is sane -- namely
@@ -45,18 +47,18 @@ The first phase is targeted to run on almost every commit and to react within at
 most 10 to 15 minutes to failures.""" })
 
 phase2_slaves=['xserve2']
+phase2_builders = []
+
+phase2_builders.append(build('clang-x86_64-darwin11-DA', phase2_slaves))
+phase2_builders.append(build('clang-x86_64-darwin11-RA', phase2_slaves))
+#phase2_builders.append(test('lnt_clang-x86_64-darwin11-nobootstrap-RA_x86_64-O3',
+#                            phase2_slaves))
 
 phases.append(
     { 'number' : 2,
       'name' : 'living',
       'title' : 'Living On',
-      'builders' : [build('clang-x86_64-darwin11-DA',
-                                phase2_slaves),
-                    build('clang-x86_64-darwin11-RA',
-                                phase2_slaves),
-#                     test('lnt_clang-x86_64-darwin11-nobootstrap-RA_x86_64-O3',
-#                                 phase2_slaves),
-                    ],
+      'builders' : phase2_builders,
       'description' : """\
 The second phase is designed to test that the compiler is basically functional
 and that it is suitable for living on. This means that almost all developers can
@@ -111,26 +113,27 @@ The third phase is targeted to react within at most 1 to 2 hours.""" })
 # Phase 4
 
 phase4_slaves = ['xserve4']
+phase4_builders = []
+
+# Test the compilers produced in phase 3.
+#phase4_builders.append(test('lnt_clang-i386-darwin11-RA_i386-O3', phase4_slaves))
+#phase4_builders.append(test('lnt_clang-x86_64-darwin11-R_i386-O0', phase4_slaves))
+#phase4_builders.append(test('lnt_clang-x86_64-darwin11-RA_x86_64-Os', phase3_slaves))
+#phase4_builders.append(test('lnt_clang-i386-darwin11-RA_i386-g', phase4_slaves))
+
+# Test the -DA compiler produced in phase 2. We delay this
+# to phase 4 because testing a -DA compiler is *very*
+# slow.
+#phase4_builders.append(test('lnt_clang-x86_64-darwin11-DA_x86_64-O3', phase4_slaves))
+
+phase4_builders.append(experimental('lldb_clang-x86_64-darwin11-RA', phase4_slaves))
+phase4_builders.append(experimental('libcxx_clang-x86_64-darwin11-RA', phase4_slaves))
 
 phases.append(
     { 'number' : 4,
       'name' : 'validation',
       'title' : 'Validation',
-      'builders' : [
-            # Test the compilers produced in phase 3.
-#             test('lnt_clang-i386-darwin11-RA_i386-O3', phase4_slaves),
-#             test('lnt_clang-x86_64-darwin11-R_i386-O0', phase4_slaves),
-#             test('lnt_clang-x86_64-darwin11-RA_x86_64-Os', phase3_slaves),
-#             test('lnt_clang-i386-darwin11-RA_i386-g', phase4_slaves),
-
-            # Test the -DA compiler produced in phase 2. We delay this
-            # to phase 4 because testing a -DA compiler is *very*
-            # slow.
-#             test('lnt_clang-x86_64-darwin11-DA_x86_64-O3', phase4_slaves),
-            experimental('lldb_clang-x86_64-darwin11-RA', phase4_slaves),
-            experimental('libcxx_clang-x86_64-darwin11-RA', phase4_slaves),
-            ],
-
+      'builders' : phase4_builders,
       'description' : """\
 The fourth and final phase is designed to validate that the tree is in a good
 enough state for a general release."""})
