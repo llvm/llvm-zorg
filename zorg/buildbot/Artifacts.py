@@ -32,8 +32,8 @@ if is_production:
     base_rsync_path = set_config_option('Master Options', 'base_rsync_path',
                                         '%s@%s:~/artifacts' %
                                         (rsync_user , master_name))
-    master_name = set_config_option('Master Options', 'curl_flags',
-                                    '-svLo')
+    curl_flags = set_config_option('Master Options', 'curl_flags',
+                                   '-svLo')
 
 # This method is used in determining the name of a given compiler archive
 def _determine_compiler_kind(props):
