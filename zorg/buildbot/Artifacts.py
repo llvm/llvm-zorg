@@ -48,7 +48,7 @@ def _determine_compiler_kind(props):
     if 'clang' in kind:
         subname = kind
     if 'clang' in subname:
-      return 'clang'
+        return 'clang'
     raise ValueError, "unknown compiler"
 
 # compiler_path and archive_name should be completely deterministic. Any 
