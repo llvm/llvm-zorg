@@ -26,8 +26,7 @@ def get_build_slaves():
     yield create_slave('xserve4', jobs = 4, max_builds = 2)
     yield create_slave('xserve5', jobs = 4, max_builds = 2)
 
-    has_production = config.options.has_option('Master Options', 'is_production')
     is_production = config.options.has_option('Master Options', 'is_production')
-    if has_production and is_production:
+    if not is_production:
         # Test slave which can do anything.
         yield create_slave('localhost', 8)
