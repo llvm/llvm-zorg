@@ -78,13 +78,13 @@ phase3_slaves = ['xserve3']
 phase3_builders = []
 
 # Add an i386 build.
-phase3_builders.append(build('clang-i386-darwin11-RA', phase3_slaves))
+phase3_builders.append(build('clang-i386-darwin11-RA', ['xserve2']))
 
 # Add a release (no asserts) build.
-phase3_builders.append(build('clang-x86_64-darwin11-R', phase3_slaves))
+phase3_builders.append(build('clang-x86_64-darwin11-R', ['xserve4']))
 
 # Add an lto release build.
-phase3_builders.append(build('clang-x86_64-darwin11-Rlto', phase3_slaves))
+phase3_builders.append(build('clang-x86_64-darwin11-Rlto', ['xserve3']))
 
 # Add a reasonable matrix of nightlies on the final reference compiler.
 # for arch in ('i386', 'x86_64'):
