@@ -23,8 +23,8 @@ def get_build_slaves():
     # Builders.
     yield create_slave('xserve2', jobs = 4, max_builds = 2)
     yield create_slave('xserve3', jobs = 4, max_builds = 2)
-    yield create_slave('xserve4', jobs = 4, max_builds = 2)
-    yield create_slave('xserve5', jobs = 4, max_builds = 2)
+    yield create_slave('xserve4', jobs = 4, max_builds = 1)
+    yield create_slave('xserve5', jobs = 4, max_builds = 1)
 
     is_production = config.options.has_option('Master Options', 'is_production')
     if not is_production:
