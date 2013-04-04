@@ -27,6 +27,7 @@ phase1_slaves=['xserve5']
 phase1_builders = []
 
 phase1_builders.append(build('clang-x86_64-darwin11-nobootstrap-RA', phase1_slaves))
+phase1_builders.append(experimental('clang-x86_64-darwin11-nobootstrap-RAincremental', 'xserve4'))
 
 phases.append(
     { 'number' : 1,
@@ -81,7 +82,7 @@ phase3_builders = []
 phase3_builders.append(build('clang-i386-darwin11-RA', ['xserve2']))
 
 # Add a release (no asserts) build.
-phase3_builders.append(build('clang-x86_64-darwin11-R', ['xserve4']))
+phase3_builders.append(build('clang-x86_64-darwin11-R', ['xserve2']))
 
 # Add an lto release build.
 phase3_builders.append(build('clang-x86_64-darwin11-Rlto', ['xserve3']))
