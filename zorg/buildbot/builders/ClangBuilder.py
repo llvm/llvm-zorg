@@ -780,10 +780,22 @@ def phasedClang(config_options, is_bootstrap=True, use_lto=False,
           '--with-extra-options=-flto -gline-tables-only')
     
     # Configure the LLVM build.
-    f.addStep(buildbot.steps.shell.ShellCommand(
-              name='configure.with.host', command=configure_args,
-              haltOnFailure=True, description=['configure'],
-              workdir=clang_build_dir))
+    if incremental:
+        # *NOTE* This is a temporary work around. I am eventually going to just
+        # set up cmake/ninja but for now I am sticking with the make => I need
+        # configure to run only after a failure so on success I have incremental
+        # builds.
+        f.addStep(buildbot.steps.shell.ShellCommand(
+                name='configure.with.host', command=configure_args,
+                haltOnFailure=True, description=['configure'],
+                workdir=clang_build_dir,
+                doStepIf=_did_last_build_fail))
+    else:
+        f.addStep(buildbot.steps.shell.ShellCommand(
+                name='configure.with.host', command=configure_args,
+                haltOnFailure=True, description=['configure'],
+                workdir=clang_build_dir))
+    
     # Build the compiler.
     make_command = ['make', '-j', WithProperties('%(jobs)s')]
     timeout = 20*60 # Normal timeout is 20 minutes.
