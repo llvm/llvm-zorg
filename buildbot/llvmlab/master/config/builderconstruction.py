@@ -31,8 +31,8 @@ def construct(name):
         kind,subname = 'compile',name
         if 'lto' in name:
             kind += '-lto'
-    elif name.startswith('apple-clang'):
-        kind,subname = 'buildit',name
+        elif 'incremental' in name:
+            kind += '-incremental'
     else:
         if '_' not in name:
             raise ValueError, "invalid builder name: %r" % name
@@ -66,7 +66,9 @@ def construct(name):
 
     return builder
 
-def construct_compiler_builder_from_name(name, use_lto=False):
+def construct_compiler_builder_from_name(name, use_lto=False,
+                                         incremental=False):
+    
     # Compiler builds are named following:
     #   <compiler>-<host arch>-<host os>-[<build cc>-]<build style>.
     # if <build cc> is unspecified, then the most recent validated build 
@@ -113,15 +115,15 @@ def construct_compiler_builder_from_name(name, use_lto=False):
     config_options = ['--build=%s' % target_triple,
                       '--host=%s' % target_triple]
 
-    if build_style == 'DA' or build_style == 'DAlto':
+    if build_style in ['DA', 'DAlto', 'DAincremental']:
         build_config = "Debug+Asserts"
         config_options.extend(['--disable-optimized'])
         config_options.extend(['--enable-assertions'])
-    elif build_style == 'RA' or build_style == 'RAlto':
+    elif build_style in ['RA', 'RAlto', 'RAincremental']:
         build_config = "Release+Asserts"
         config_options.extend(['--enable-optimized'])
         config_options.extend(['--enable-assertions'])
-    elif build_style == 'R' or build_style == 'Rlto':
+    elif build_style in ['R', 'Rlto', 'Rincremental']:
         build_config = "Release"
         config_options.extend(['--enable-optimized'])
         config_options.extend(['--disable-assertions'])
@@ -134,8 +136,9 @@ def construct_compiler_builder_from_name(name, use_lto=False):
     # build_cc must be set for a bootstrapped compiler
     if compiler == 'clang':
         return { 'factory' : phasedClang(config_options,
-                                         is_bootstrap = (build_cc is None),
-                                         use_lto=use_lto) }
+                                         is_bootstrap=(build_cc is None),
+                                         use_lto=use_lto,
+                                         incremental=incremental) }
     elif compiler == 'llvm-gcc':
         # Currently, llvm-gcc builders do their own two-stage build,
         # they don't use any prebuilt artifacts.
@@ -230,6 +233,9 @@ def construct_lldb_builder_from_name(name):
 def construct_lto_compiler_builder_from_name(name):
     return construct_compiler_builder_from_name(name, use_lto=True)
 
+def construct_incremental_compiler_build_from_name(name):
+    return construct_compiler_builder_from_name(name, incremental=True)    
+
 def construct_libcxx_builder_from_name(name):
     # libcxx builds are named following:
     #   libcxx_<compiler under test>
@@ -242,6 +248,8 @@ def construct_libcxx_builder_from_name(name):
 builder_kinds = {
                   'compile' : construct_compiler_builder_from_name,
                   'compile-lto' : construct_lto_compiler_builder_from_name,
+                  'compile-incremental' :
+                      construct_incremental_compiler_build_from_name,
                   'lnt' : construct_lnt_builder_from_name,
                   'lldb' : construct_lldb_builder_from_name,
                   'libcxx' : construct_libcxx_builder_from_name }

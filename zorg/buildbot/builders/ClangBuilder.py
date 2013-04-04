@@ -632,9 +632,11 @@ def getClangTestsIgnoresFromPath(path, key):
     return ignores
 
 from zorg.buildbot.PhasedBuilderUtils import getBuildDir, setProperty
+from zorg.buildbot.builders.Util import _did_last_build_fail
 from buildbot.steps.source.svn import SVN as HostSVN
 
-def phasedClang(config_options, is_bootstrap=True, use_lto=False):
+def phasedClang(config_options, is_bootstrap=True, use_lto=False,
+                incremental=False):
     # Create an instance of the Builder.
     f = buildbot.process.factory.BuildFactory()
     # Determine the build directory.
@@ -646,10 +648,18 @@ def phasedClang(config_options, is_bootstrap=True, use_lto=False):
             workdir=WithProperties('%(builddir)s')))
     # Clean the build directory.
     clang_build_dir = 'clang-build'
-    f.addStep(buildbot.steps.shell.ShellCommand(
-            name='rm.clang-build', command=['rm', '-rfv', clang_build_dir],
-            haltOnFailure=False, description=['rm dir', clang_build_dir],
-            workdir=WithProperties('%(builddir)s')))
+    if incremental:
+        f.addStep(buildbot.steps.shell.ShellCommand(
+                name='rm.clang-build', command=['rm', '-rfv', clang_build_dir],
+                haltOnFailure=False, description=['rm dir', clang_build_dir],
+                workdir=WithProperties('%(builddir)s'),
+                doStepIf=_did_last_build_fail))
+    else:
+        f.addStep(buildbot.steps.shell.ShellCommand(
+                name='rm.clang-build', command=['rm', '-rfv', clang_build_dir],
+                haltOnFailure=False, description=['rm dir', clang_build_dir],
+                workdir=WithProperties('%(builddir)s')))
+    
     # Cleanup the clang link, which buildbot's SVN always_purge does not know
     # (in 8.5 this changed to method='fresh')
     # how to remove correctly. If we don't do this, the LLVM update steps will
