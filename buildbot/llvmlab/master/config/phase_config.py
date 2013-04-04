@@ -27,7 +27,7 @@ phase1_slaves=['xserve5']
 phase1_builders = []
 
 phase1_builders.append(build('clang-x86_64-darwin11-nobootstrap-RA', phase1_slaves))
-phase1_builders.append(experimental('clang-x86_64-darwin11-nobootstrap-RAincremental', ['xserve4']))
+phase1_builders.append(build('clang-x86_64-darwin11-nobootstrap-RAincremental', ['xserve4']))
 
 phases.append(
     { 'number' : 1,
