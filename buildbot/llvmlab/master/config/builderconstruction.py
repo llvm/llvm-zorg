@@ -1,7 +1,6 @@
 #from zorg.buildbot.builders.LNTBuilder import CreateLNTNightlyFactory
 from zorg.buildbot.Artifacts import rsync_user, master_name
-from zorg.buildbot.builders.ClangBuilder import getClangMSVCBuildFactory
-from zorg.buildbot.builders.ClangBuilder import phasedClang
+import zorg.buildbot.builders.ClangBuilder as ClangBuilder
 from zorg.buildbot.builders.LLDBBuilder import getLLDBxcodebuildFactory
 import zorg.buildbot.builders.LibCXXBuilder as LibCXXBuilder
 
@@ -105,7 +104,7 @@ def construct_compiler_builder_from_name(name, use_lto=False,
                 build_style != 'DA'):
                 raise ValueError, "invalid builder name: %r" % name
             # FIXME: Shouldn't have to hard code jobs or cmake path here.
-            return { 'factory' : getClangMSVCBuildFactory(
+            return { 'factory' : ClangBuilder.getClangMSVCBuildFactory(
                     cmake = r"c:\Program Files\CMake 2.8\bin\cmake",
                     jobs = 4) }
         else:
@@ -135,7 +134,7 @@ def construct_compiler_builder_from_name(name, use_lto=False,
 
     # build_cc must be set for a bootstrapped compiler
     if compiler == 'clang':
-        return { 'factory' : phasedClang(config_options,
+        return { 'factory' : ClangBuilder.phasedClang(config_options,
                                          is_bootstrap=(build_cc is None),
                                          use_lto=use_lto,
                                          incremental=incremental) }
