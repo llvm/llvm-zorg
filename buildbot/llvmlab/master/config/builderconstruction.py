@@ -171,7 +171,7 @@ def construct_compiler_builder_from_name(name, use_lto=False,
 
 def construct_lnt_builder_from_name(name):
     # LNT builds are named following:
-    #   <compiler under test>_<arch>_<options>.
+    #   lnt_<compiler under test>_<arch>_<options>.
     # and all options are prefixed by '-' and no '-' can appear in an option.
 
     # Hack around x86_64 problem for now, to avoid changing builder names yet.
