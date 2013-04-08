@@ -303,6 +303,12 @@ def _get_clang_builders():
                                                      stage2_config='Release+Asserts',
                                                      extra_configure_args=["--enable-werror"])},
 
+        {'name': "llvm-clang-lld-x86_64-ubuntu-13.04",
+         'slavenames':["gribozavr2"],
+         'builddir':"llvm-clang-lld-x86_64-ubuntu-13.04",
+         'factory': ClangAndLLDBuilder.getClangAndLLDBuildFactory(
+                    env={'PATH':'/home/llvmbb/bin/clang-latest/bin:/home/llvmbb/bin:/usr/local/bin:/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games'})},
+
          {'name' : "clang-x86_64-linux-fnt",
           'slavenames' : ['osu8'],
           'builddir' : "clang-x86_64-linux-fnt",
