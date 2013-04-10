@@ -50,7 +50,7 @@ def get_status_targets(standard_builders):
                   allowForce=False,
                   password='smooshy',
                   notify_events=['successToFailure', 'failureToSuccess'],
-                  categories=['build-public', 'test-public']),
+                  categories=['status']),
 
         # Experimental failing build notifier.
         #
