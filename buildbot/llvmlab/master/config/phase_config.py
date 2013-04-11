@@ -26,8 +26,8 @@ phaseRunners = ['macpro1']
 phase1_slaves=['xserve5']
 phase1_builders = []
 
-phase1_builders.append(build('clang-x86_64-darwin11-nobootstrap-RA', phase1_slaves))
-phase1_builders.append(build('clang-x86_64-darwin11-nobootstrap-RAincremental', ['xserve4']))
+#phase1_builders.append(build('clang-x86_64-darwin11-nobootstrap-RA', phase1_slaves))
+phase1_builders.append(build('clang-x86_64-darwin11-nobootstrap-RAincremental', phase1_slaves))
 
 phases.append(
     { 'number' : 1,
@@ -47,7 +47,7 @@ will be used to boot strap subsequent builds.
 The first phase is targeted to run on almost every commit and to react within at
 most 10 to 15 minutes to failures.""" })
 
-phase2_slaves=['xserve2']
+phase2_slaves=['xserve2','xserve4']
 phase2_builders = []
 
 phase2_builders.append(build('clang-x86_64-darwin11-DA', phase2_slaves))
