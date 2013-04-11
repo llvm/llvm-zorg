@@ -82,7 +82,6 @@ def _get_llvm_builders():
          'factory': LLVMBuilder.getLLVMBuildFactory("mips-linux-gnu", timeout=40, config_name='Release+Asserts',
                                                     extra_configure_args=["--with-extra-options=-mips32r2",
                                                                           "--with-extra-ld-options=-mips32r2"])},
-
         ]
 
 # Offline.
@@ -152,7 +151,6 @@ def _get_clang_fast_builders():
          'builddir':"llvm-clang-lld-x86_64-debian-fast",
          'factory': ClangAndLLDBuilder.getClangAndLLDBuildFactory(
                     env={'PATH':'/home/llvmbb/bin/clang-latest/bin:/home/llvmbb/bin:/usr/local/bin:/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games'})},
-
         ]
 
 # Clang builders.
