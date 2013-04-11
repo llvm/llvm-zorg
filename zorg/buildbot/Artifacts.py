@@ -82,7 +82,7 @@ def _determine_bootstrap_url(props):
         if props['scheduler'].startswith('phase2'):
             # always use phase1 compiler for phase2
             # TODO: this shouldn't be hard coded
-            name = 'clang-x86_64-darwin11-nobootstrap-RA'
+            name = 'clang-x86_64-darwin11-nobootstrap-RAincremental'
         else:
             # always use phase2 compiler for phase3 & phase4 compiler builds
             # TODO: this shouldn't be hard coded
