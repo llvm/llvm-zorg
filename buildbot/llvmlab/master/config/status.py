@@ -44,7 +44,7 @@ def get_status_targets(standard_builders):
     return [
         buildbot.status.html.WebStatus(
             http_port = 8013, allowForce = True),
-        buildbot.status.words.IRC('irc.oftc.net', 'llvmlab',
+        buildbot.status.words.IRC('irc.oftc.net', 'phased-bb-llvmlab',
                   port=6668,
                   channels=['llvm'],
                   allowForce=False,
