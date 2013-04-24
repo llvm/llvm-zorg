@@ -190,6 +190,9 @@ def get_build_slaves():
         # Debian Testing x86-64, Intel Core i5-3570K (ivybridge) CPU @ 3.40GHz
         create_slave("obbligato-ellington", properties={'jobs': 2}, max_builds=1),
 
+        # OpenBSD
+        create_slave("openbsd-buildslave", properties={'jobs': 2}, max_builds=1),
+
         # Defunct.
         # Pentium Dual CPU T3400 @ 2.1GHz
         #create_slave("dumitrescu1", properties={'jobs' : 2}, max_builds=1),

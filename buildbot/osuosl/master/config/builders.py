@@ -228,7 +228,6 @@ def _get_clang_builders():
                                               jobs=2, use_pty_in_tests=True, clean=False,
                                               testerName='O3-vect', run_cxx_tests=True)},
 
-
         {'name': "clang-X86_64-freebsd",
          'slavenames':["kistanova7"],
          'builddir':"clang-X86_64-freebsd",
@@ -623,6 +622,13 @@ def _get_experimental_builders():
          'builddir':"clang-x86_64-ubuntu",
          'factory' : ClangBuilder.getClangBuildFactory(),
          'category' : 'clang'},
+
+        {'name': "clang-openbsd",
+         'slavenames':["openbsd-buildslave"],
+         'builddir':"clang-openbsd",
+         'factory' : ClangBuilder.getClangBuildFactory(stage1_config='Release+Asserts'),
+         'category' : 'clang'},
+
         {'name': "clang-native-mingw64-win7",
          'slavenames':["sschiffli1"],
          'builddir':"clang-native-mingw64-win7",
