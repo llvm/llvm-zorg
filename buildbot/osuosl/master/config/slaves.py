@@ -191,7 +191,7 @@ def get_build_slaves():
         create_slave("obbligato-ellington", properties={'jobs': 2}, max_builds=1),
 
         # OpenBSD
-        create_slave("openbsd-buildslave", properties={'jobs': 2}, max_builds=1),
+        create_slave("openbsd-buildslave", properties={'jobs': 1}, max_builds=1),
 
         # Defunct.
         # Pentium Dual CPU T3400 @ 2.1GHz
