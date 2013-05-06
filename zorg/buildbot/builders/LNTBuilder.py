@@ -5,7 +5,6 @@ Builders for using LNT to test LLVM/Clang.
 import os
 
 import buildbot
-from buildbot.process.properties import Interpolate
 from buildbot.steps.source.svn import SVN
 from buildbot.process.properties import WithProperties
 
@@ -66,18 +65,17 @@ def AddLNTTestsToFactory(f, nt_flags, cc_path, cxx_path, **kwargs):
         nt_flags.extend(['--liblto-path', WithProperties(
                          os.path.join('%(builddir)s', base_directory, 'lib',
                                       'libLTO.dylib'))])
-    llvm_base_url = 'http://llvm.org/svn/llvm-project/'
-    # Get the LLVM test-suite sources.
-    testsuite_url = llvm_base_url + 'test-suite/%(src::branch:-trunk)s'
-    f.addStep(SVN(name='pull.test-suite', mode='incremental', method='fresh',
-                  repourl=Interpolate(testsuite_url),
-                  workdir='test-suite', alwaysUseLatest=False))
 
     # Get the LNT sources.
-    lnt_url = llvm_base_url + 'lnt/%(src::branch:-trunk)s'
     f.addStep(SVN(name='pull.lnt', mode='incremental', method='fresh',
-                  repourl=Interpolate(lnt_url),
-                  workdir='lnt', alwaysUseLatest=True))
+                  baseURL='http://llvm.org/svn/llvm-project/lnt/',
+                  defaultBranch='trunk', workdir='lnt', alwaysUseLatest=True))
+
+    # Get the LLVM test-suite sources.
+    f.addStep(SVN(name='pull.test-suite', mode='incremental', method='fresh',
+                  baseURL='http://llvm.org/svn/llvm-project/test-suite/',
+                  defaultBranch='trunk', workdir='test-suite',
+                  alwaysUseLatest=False))
 
     # Create the LNT virtual env.
     f.addStep(buildbot.steps.shell.ShellCommand(
