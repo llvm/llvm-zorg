@@ -49,15 +49,26 @@ def getLibCXXBuilder():
             command=['lit.venv/bin/pip', 'install', 'lit'],
             workdir='.', haltOnFailure=True))
 
-    # Run the tests.
+    # Run the tests with the system's dylib
     f.addStep(zorg.buildbot.commands.LitTestCommand.LitTestCommand(
-            name='test.libcxx',
+            name='test.libcxx.system',
             command=[
                 properties.WithProperties('%(builddir)s/lit.venv/bin/lit'),
                 '-v',
                 properties.WithProperties(
                     '--param=cxx_under_test=%s' % (cxx_path,)),
                 '--param=use_system_lib=true',
+                'sources/test'],
+            workdir='.'))
+    # Run the tests with the newly built dylib
+    f.addStep(zorg.buildbot.commands.LitTestCommand.LitTestCommand(
+            name='test.libcxx.new',
+            command=[
+                properties.WithProperties('%(builddir)s/lit.venv/bin/lit'),
+                '-v',
+                properties.WithProperties(
+                    '--param=cxx_under_test=%s' % (cxx_path,)),
+                '--param=use_system_lib=false',
                 'sources/test'],
             workdir='.'))
 
