@@ -101,5 +101,16 @@ def get_status_targets(standard_builders):
             sendToInterestedUsers = False,
             extraRecipients = ['llvm-testresults@cs.uiuc.edu'],
             mode = 'change',
-            categories = ['status']),]
-
+            categories = ['status']),
+        
+        # Send email to Howard Hinnant if the libcxx builder fails.
+        InformativeMailNotifier(
+            fromaddr = from_email,
+            sendToInterestedUsers = False,
+            extraRecipients = ['hhinnant@apple.com'],
+            subject = "Build %(builder)s Failure",
+            mode = "failing",
+            builders = ['libcxx_clang-x86_64-darwin11-RA'],
+            addLogs = False,
+            num_lines = 15),
+        ]
