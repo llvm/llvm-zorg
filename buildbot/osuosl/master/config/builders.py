@@ -265,8 +265,7 @@ def _get_clang_builders():
          'factory' : ClangBuilder.getClangBuildFactory(triple='ppc64-elf-linux',
                                                        useTwoStage=True, test=True,
                                                        stage1_config='Release+Asserts',
-                                                       stage2_config='Release+Asserts',
-                                                       make='make ENABLE_OPTIMIZED=1 OPTIMIZE_OPTION=-O2')},
+                                                       stage2_config='Release+Asserts')},
 
          {'name': "clang-x86_64-linux-vg",
           'slavenames':["osu8"],
