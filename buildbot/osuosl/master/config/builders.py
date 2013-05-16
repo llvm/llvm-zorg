@@ -335,7 +335,7 @@ def _get_clang_builders():
         {'name' : "clang-x86_64-darwin10-nt-O3",
          'slavenames' :["lab-mini-01"],
          'builddir' :"clang-x86_64-darwin10-nt-O3",
-         'factory' : LNTBuilder.getLNTFactory(triple='x86_64-apple-darwin10',
+         'factory' : LNTBuilder.getLNTFactory(triple='x86_64-apple-darwin12',
                                               nt_flags=['--multisample=3'], jobs=2,  use_pty_in_tests=True,
                                               testerName='O3-plain', run_cxx_tests=True,
                                               package_cache=LabPackageCache)},
