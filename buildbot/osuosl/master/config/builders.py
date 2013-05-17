@@ -229,6 +229,21 @@ def _get_clang_builders():
 #                                           '--with-float=hard',
 #                                           '--enable-targets=arm'])},
 
+        ## Cortex-A9 check-all self-host
+        {'name': "clang-native-arm-cortex-a9-self-host",
+         'slavenames':["linaro-panda-02"],
+         'builddir':"clang-native-arm-cortex-a9-self-host",
+         'factory' : ClangBuilder.getClangBuildFactory(
+                     stage1_config='Release+Asserts',
+                     stage2_config='Release+Asserts',
+                     useTwoStage=True,
+                     clean=False,
+                     test=False,
+                     extra_configure_args=[ '--with-cpu=cortex-a9',
+                                            '--with-fpu=neon',
+                                            '--with-float=hard',
+                                            '--enable-targets=arm'])}
+
         {'name' : "clang-native-arm-lnt",
          'slavenames':["linaro-chrome-01"],
          'builddir':"clang-native-arm-lnt",
