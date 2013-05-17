@@ -646,7 +646,8 @@ def _get_experimental_builders():
          'factory' : LNTBuilder.getLNTFactory(triple='x86_64-apple-darwin12',
                                               nt_flags=['--mllvm=-vectorize', '--multisample=3'], jobs=2,
                                               use_pty_in_tests=True, testerName='O3-vectorize',
-                                              run_cxx_tests=True, package_cache=LabPackageCache)},
+                                              run_cxx_tests=True, package_cache=LabPackageCache),
+         'category' : 'clang'},
 
         {'name' : "clang-x86_64-darwin10-nt-O0-g",
          'slavenames' :["lab-mini-03"],
