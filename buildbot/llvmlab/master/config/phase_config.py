@@ -127,7 +127,7 @@ phase4_builders = []
 # slow.
 #phase4_builders.append(test('lnt_clang-x86_64-darwin11-DA_x86_64-O3', phase4_slaves))
 
-phase4_builders.append(experimental('lldb_clang-x86_64-darwin11-RA', phase4_slaves))
+phase4_builders.append(experimental('lldb_clang-x86_64-darwin12-RA', ['lab-mini-02']))
 phase4_builders.append(test('libcxx_clang-x86_64-darwin11-RA', phase4_slaves))
 
 phases.append(
