@@ -26,6 +26,9 @@ def get_build_slaves():
         create_slave("as-bldslv3", properties={'jobs' : 2}, max_builds=1),
         create_slave("linaro-panda-01", properties={'jobs' : 2}, max_builds=1),
 
+        # Cortex-A9 check-all self-host
+        create_slave("linaro-panda-02", properties={'jobs' : 2}, max_builds=1),
+
         # Ubuntu Chromebook Cortex-A15 slaves
         create_slave("linaro-chrome-01", properties={'jobs' : 2}, max_builds=1),
 
