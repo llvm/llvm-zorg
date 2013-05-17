@@ -245,7 +245,7 @@ def _get_clang_builders():
                      stage2_config='Release+Asserts',
                      useTwoStage=True,
                      clean=False,
-                     test=False,
+                     test=True,
                      extra_configure_args=[ '--with-cpu=cortex-a9',
                                             '--with-fpu=neon',
                                             '--with-float=hard',
