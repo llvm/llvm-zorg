@@ -155,6 +155,13 @@ def _get_clang_fast_builders():
          'builddir':"llvm-clang-lld-x86_64-debian-fast",
          'factory': ClangAndLLDBuilder.getClangAndLLDBuildFactory(
                     env={'PATH':'/home/llvmbb/bin/clang-latest/bin:/home/llvmbb/bin:/usr/local/bin:/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games'})},
+
+        {'name': "llvm-clang-lld-x86_64-ubuntu-13.04",
+         'slavenames':["gribozavr2"],
+         'builddir':"llvm-clang-lld-x86_64-ubuntu-13.04",
+         'factory': ClangAndLLDBuilder.getClangAndLLDBuildFactory(
+                    env={'PATH':'/home/llvmbb/bin/clang-latest/bin:/home/llvmbb/bin:/usr/local/bin:/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games'})},
+
         ]
 
 # Clang builders.
@@ -294,12 +301,6 @@ def _get_clang_builders():
                                                useTwoStage=True,
                                                stage1_config='Release+Asserts',
                                                stage2_config='Release+Asserts')},
-
-        {'name': "llvm-clang-lld-x86_64-ubuntu-13.04",
-         'slavenames':["gribozavr2"],
-         'builddir':"llvm-clang-lld-x86_64-ubuntu-13.04",
-         'factory': ClangAndLLDBuilder.getClangAndLLDBuildFactory(
-                    env={'PATH':'/home/llvmbb/bin/clang-latest/bin:/home/llvmbb/bin:/usr/local/bin:/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games'})},
 
          {'name' : "clang-x86_64-linux-fnt",
           'slavenames' : ['osu8'],
