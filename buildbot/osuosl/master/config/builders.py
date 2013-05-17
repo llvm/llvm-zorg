@@ -249,7 +249,7 @@ def _get_clang_builders():
                      extra_configure_args=[ '--with-cpu=cortex-a9',
                                             '--with-fpu=neon',
                                             '--with-float=hard',
-                                            '--enable-targets=arm'])}
+                                            '--enable-targets=arm'])},
 
         {'name' : "clang-native-arm-lnt",
          'slavenames':["linaro-chrome-01"],
