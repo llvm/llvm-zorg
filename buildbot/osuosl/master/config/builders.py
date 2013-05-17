@@ -355,14 +355,6 @@ def _get_clang_builders():
                                               testerName='O3-plain', run_cxx_tests=True,
                                               package_cache=LabPackageCache)},
 
-        {'name' : "clang-x86_64-darwin12-nt-O3-vectorize",
-         'slavenames' :["lab-mini-02"],
-         'builddir' :"clang-x86_64-darwin12-nt-O3-vectorize",
-         'factory' : LNTBuilder.getLNTFactory(triple='x86_64-apple-darwin12',
-                                              nt_flags=['--mllvm=-vectorize', '--multisample=3'], jobs=2,
-                                              use_pty_in_tests=True, testerName='O3-vectorize',
-                                              run_cxx_tests=True, package_cache=LabPackageCache)},
-
         {'name' : "clang-x86_64-darwin10-gdb",
          'slavenames' :["lab-mini-04"],
          'builddir' :"clang-x86_64-darwin10-gdb",
@@ -646,6 +638,15 @@ def _get_experimental_builders():
          'builddir':"clang-native-mingw64-win7",
          'factory' : ClangBuilder.getClangMinGWBuildFactory(),
          'category' : 'clang'},
+
+        {'name' : "clang-x86_64-darwin12-nt-O3-vectorize",
+         'slavenames' :["lab-mini-03"],
+         'builddir' :"clang-x86_64-darwin12-nt-O3-vectorize",
+         'factory' : LNTBuilder.getLNTFactory(triple='x86_64-apple-darwin12',
+                                              nt_flags=['--mllvm=-vectorize', '--multisample=3'], jobs=2,
+                                              use_pty_in_tests=True, testerName='O3-vectorize',
+                                              run_cxx_tests=True, package_cache=LabPackageCache)},
+
         {'name' : "clang-x86_64-darwin10-nt-O0-g",
          'slavenames' :["lab-mini-03"],
          'builddir' :"clang-x86_64-darwin10-nt-O0-g",
