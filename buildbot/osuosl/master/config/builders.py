@@ -356,10 +356,10 @@ def _get_clang_builders():
                                               testerName='O3-plain', run_cxx_tests=True,
                                               package_cache=LabPackageCache)},
 
-        {'name' : "clang-x86_64-darwin10-gdb",
+        {'name' : "clang-x86_64-darwin12-gdb",
          'slavenames' :["lab-mini-04"],
-         'builddir' :"clang-x86_64-darwin10-gdb",
-         'factory' : ClangBuilder.getClangBuildFactory(triple='x86_64-apple-darwin10', stage1_config='Release+Asserts', run_gdb=True)},
+         'builddir' :"clang-x86_64-darwin12-gdb",
+         'factory' : ClangBuilder.getClangBuildFactory(triple='x86_64-apple-darwin12', stage1_config='Release+Asserts', run_gdb=True)},
 
         {'name' : "clang-x86_64-ubuntu-gdb-75",
          'slavenames' :["hpproliant1"],
