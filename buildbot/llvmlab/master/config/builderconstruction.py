@@ -4,6 +4,7 @@ import zorg.buildbot.builders.ClangBuilder as ClangBuilder
 from zorg.buildbot.builders.LLDBBuilder import getLLDBxcodebuildFactory
 import zorg.buildbot.builders.LibCXXBuilder as LibCXXBuilder
 
+
 """
 Helper module to handle automatically constructing builder objects from a
 builder name.
@@ -26,7 +27,7 @@ def construct(name):
     # First, determine the 'kind' of build we are doing. Compiler builds are a
     # common case, so we specialize their names -- other builds should have
     # their type delimited by '_'.
-    if name.startswith('clang-') or name.startswith('llvm-gcc-'):
+    if name.startswith('clang-'):
         kind,subname = 'compile',name
         if 'lto' in name:
             kind += '-lto'
@@ -127,7 +128,7 @@ def construct_compiler_builder_from_name(name, use_lto=False,
         config_options.extend(['--enable-optimized'])
         config_options.extend(['--disable-assertions'])
     else:
-        raise ValueError, "invalid build style: %r" % build_style    
+        raise ValueError, "invalid build style: %r" % build_style
 
     # Passing is_bootstrap==False will specify the stage 1 compiler as the
     # latest validated apple-clang style compiler.
@@ -242,7 +243,6 @@ def construct_libcxx_builder_from_name(name):
     cc_under_test = name
     return { 'factory' : LibCXXBuilder.getLibCXXBuilder(),
              'properties' : {'use_builder' : cc_under_test } }
-
 
 builder_kinds = {
                   'compile' : construct_compiler_builder_from_name,
