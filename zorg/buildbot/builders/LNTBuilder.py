@@ -133,3 +133,9 @@ def AddLNTTestsToFactory(f, nt_flags, cc_path, cxx_path, **kwargs):
                       'report.json' : 'nt/build/report.json'},
             env=env))
     return f
+
+def CreateLNTNightlyFactory(nt_flags, cc_path=None, cxx_path=None,
+                            parallel = False, jobs = '%(jobs)s',
+                            db_url=None):
+    f = buildbot.process.factory.BuildFactory()
+    return f
