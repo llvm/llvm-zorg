@@ -286,6 +286,7 @@ def _get_clang_builders():
          'builddir' :"clang-ppc64-2",
          'factory' : ClangBuilder.getClangBuildFactory(triple='ppc64-elf-linux',
                                                        useTwoStage=True, test=True,
+                                                       checkout_compiler_rt=True,
                                                        stage1_config='Release+Asserts',
                                                        stage2_config='Release+Asserts')},
 
