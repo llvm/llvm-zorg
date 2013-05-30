@@ -29,13 +29,21 @@ def getLLVMBuildFactory(
                   llvmgccdir           = None,             # Path to llvm-gcc.
                   config_name          = 'Debug+Asserts',  # Configuration name.
                   env                  = {},               # Environmental variables for all steps.
-                  extra_configure_args = []):              # Extra args for the conigure step.
+                  extra_configure_args = [],               # Extra args for the conigure step.
+                  outOfDir             = False):           # Enable out-of-dir build (for cross-compile builds).
     # Prepare environmental variables. Set here all env we want everywhere.
     merged_env = {
                    'TERM' : 'dumb'     # Make sure Clang doesn't use color escape sequences.
                  }
     if env is not None:
         merged_env.update(env)  # Overwrite pre-set items with the given ones, so user can set anything.
+
+    if outOfDir:
+        llvm_srcdir = "llvm.src"
+        llvm_objdir = "llvm.obj"
+    else:
+        llvm_srcdir = "llvm"
+        llvm_objdir = "llvm"
 
     f = buildbot.process.factory.BuildFactory()
 
@@ -55,10 +63,10 @@ def getLLVMBuildFactory(
             name          = 'svn-llvm',
             mode          = 'update', baseURL='http://llvm.org/svn/llvm-project/llvm/',
             defaultBranch = defaultBranch,
-            workdir       = 'llvm'))
+            workdir       = llvm_srcdir))
 
     # Force without llvm-gcc so we don't run afoul of Frontend test failures.
-    configure_args = ["./configure"]
+    configure_args = [WithProperties("%%(builddir)s/%s/configure" % llvm_srcdir)]
     if llvmgccdir:
         configure_args += ['--with-llvmgccdir=%s' % llvmgccdir]
     else:
@@ -78,7 +86,7 @@ def getLLVMBuildFactory(
             command         = configure_args,
             description     = ['configuring', config_name],
             descriptionDone = ['configure',   config_name],
-            workdir         = 'llvm',
+            workdir         = llvm_objdir,
             env             = merged_env))
     if clean:
         f.addStep(
@@ -88,7 +96,7 @@ def getLLVMBuildFactory(
                 haltOnFailure   = True,
                 description     = "cleaning llvm",
                 descriptionDone = "clean llvm",
-                workdir         = 'llvm',
+                workdir         = llvm_objdir,
                 env             = merged_env))
     f.addStep(
         WarningCountingShellCommand(
@@ -98,7 +106,7 @@ def getLLVMBuildFactory(
             haltOnFailure   = True,
             description     = "compiling llvm",
             descriptionDone = "compile llvm",
-            workdir         = 'llvm',
+            workdir         = llvm_objdir,
             env             = merged_env,
             timeout         = timeout * 60))
     if examples:
@@ -111,7 +119,7 @@ def getLLVMBuildFactory(
                 haltOnFailure   = True,
                 description     = ["compiling", "llvm", "examples"],
                 descriptionDone = ["compile",   "llvm", "examples"],
-                workdir         = 'llvm',
+                workdir         = llvm_objdir,
                 env             = merged_env,
                 timeout         = timeout * 60))
     if test:
@@ -129,6 +137,6 @@ def getLLVMBuildFactory(
                                    WithProperties("LIT_ARGS=%s" % litTestArgs)],
                 description     = ["testing", "llvm"],
                 descriptionDone = ["test",    "llvm"],
-                workdir         = 'llvm',
+                workdir         = llvm_objdir,
                 env             = merged_env))
     return f
