@@ -86,6 +86,12 @@ def _get_llvm_builders():
          'factory': LLVMBuilder.getLLVMBuildFactory("mips-linux-gnu", timeout=40, config_name='Release+Asserts',
                                                     extra_configure_args=["--with-extra-options=-mips32r2",
                                                                           "--with-extra-ld-options=-mips32r2"])},
+        {'name': "llvm-aarch64-linux",
+         'slavenames':["aarch64-foundation"],
+         'builddir':"llvm-aarch64-linux",
+         'factory': LLVMBuilder.getLLVMBuildFactory(config_name='Release+Asserts',
+                                                    outOfDir=True,
+                                                    extra_configure_args=["--host=aarch64-linux-gnu"])},
         ]
 
 # Offline.

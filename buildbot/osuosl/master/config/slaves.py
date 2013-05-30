@@ -196,6 +196,9 @@ def get_build_slaves():
         # OpenBSD
         create_slave("openbsd-buildslave", properties={'jobs': 1}, max_builds=1),
 
+        # Aarch64 Foundation Model
+        create_slave("aarch64-foundation", properties={'jobs': 4}, max_builds=1),
+
         # Defunct.
         # Pentium Dual CPU T3400 @ 2.1GHz
         #create_slave("dumitrescu1", properties={'jobs' : 2}, max_builds=1),
