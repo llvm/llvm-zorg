@@ -10,6 +10,24 @@ from buildbot.process.properties import WithProperties
 
 import zorg
 from zorg.buildbot.builders import ClangBuilder
+from zorg.buildbot.PhasedBuilderUtils import getBuildDir, setProperty
+from zorg.buildbot.Artifacts import GetCompilerRoot
+
+def _get_cc(status, stdin, stdout):
+    lines = filter(bool, stdin.split('\n'))
+    for line in lines:
+        if 'bin/clang' in line:
+            cc_path = line
+            return { 'cc_path' : cc_path }
+    return {}
+
+def _get_cxx(status, stdin, stdout):
+    lines = filter(bool, stdin.split('\n'))
+    for line in lines:
+        if 'bin/clang++' in line:
+            cxx_path = line
+            return { 'cxx_path' : cxx_path }
+    return {}
 
 def getLNTFactory(triple, nt_flags, xfails=[], clean=True, test=False,
                   **kwargs):
@@ -137,5 +155,44 @@ def AddLNTTestsToFactory(f, nt_flags, cc_path, cxx_path, **kwargs):
 def CreateLNTNightlyFactory(nt_flags, cc_path=None, cxx_path=None,
                             parallel = False, jobs = '%(jobs)s',
                             db_url=None):
+    # Paramaters used by this method:
+    # nt_flags  : a list of flags passed to the lnt process
+    # cc_path   : explicit path to c compiler
+    # cxx_path  : explicit path to c++ compiler
+    # parallel  : set to True if using multiple cores for faster turnaround
+    #            set to False if measuring performance
+    # Properties set externally but used by this method:
+    # jobs      : This property is set by the slave, it indicates the number of
+    #            cores availble to use.
+
     f = buildbot.process.factory.BuildFactory()
+    # Determine the build directory.
+    f = getBuildDir(f)
+    f = GetCompilerRoot(f)
+    if cc_path:
+       cc_command = ['echo', cc_path]
+    else:
+       cc_command = ['find', 'host-compiler', '-name', 'clang']
+    f.addStep(buildbot.steps.shell.SetProperty(
+              name='find.cc',
+              command=cc_command,
+              extract_fn=_get_cc,
+              workdir=WithProperties('%(builddir)s')))
+    if cxx_path:
+       cc_command = ['echo', cxx_path]
+    else:
+       cc_command = ['find', 'host-compiler', '-name', 'clang++']
+    f.addStep(buildbot.steps.shell.SetProperty(
+              name='find.cxx',
+              command=cc_command,
+              extract_fn=_get_cxx,
+              workdir=WithProperties('%(builddir)s')))
+    f.addStep(buildbot.steps.shell.ShellCommand(
+            name='sanity.test', haltOnFailure=True,
+            command=[WithProperties('%(builddir)s/%(cc_path)s'), '-v'],
+            description=['sanity test']))
+    args = [WithProperties('%(builddir)s/lnt.venv/bin/python'),
+            WithProperties('%(builddir)s/lnt.venv/bin/lnt'),
+            'runtest', '--verbose']
+
     return f
