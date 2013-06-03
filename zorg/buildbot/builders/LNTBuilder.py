@@ -217,5 +217,29 @@ def CreateLNTNightlyFactory(nt_flags, cc_path=None, cxx_path=None,
                   extract_fn=_get_liblto,
                   workdir=WithProperties('%(builddir)s')))
         nt_flags.extend(['--liblto-path', WithProperties('%(builddir)s/%(lto_path)s')])
+    # Get the LNT sources.
+    f.addStep(buildbot.steps.shell.ShellCommand(
+            name = 'svn.clean.lnt',
+            command = ['svn', 'cleanup'],
+            haltOnFailure=False, flunkOnFailure=False,
+            description = ['svn clean lnt'],
+            workdir='lnt'))
+    f.addStep(SVN(name='pull.lnt', mode='full', method='fresh',
+                  repourl='http://llvm.org/svn/llvm-project/lnt/trunk',
+                  haltOnFailure=False, flunkOnFailure=False,
+                  workdir='lnt', alwaysUseLatest=True, retry = (60, 5),
+                  description='pull.lnt'))
+    # Get the LLVM test-suite sources.
+    f.addStep(buildbot.steps.shell.ShellCommand(
+            name = 'svn.clean.tests',
+            command = ['svn', 'cleanup'],
+            haltOnFailure=False, flunkOnFailure=False,
+            description = ['svn clean test-suite'],
+            workdir='test-suite'))
+    f.addStep(SVN(name='pull.test-suite', mode='full', method='fresh',
+                  repourl='http://llvm.org/svn/llvm-project/test-suite/trunk',
+                  haltOnFailure=False, flunkOnFailure=False,
+                  workdir='test-suite', alwaysUseLatest=True, retry = (60, 5),
+                  description='pull.test-suite'))
 
     return f
