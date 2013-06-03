@@ -162,7 +162,7 @@ def AddLNTTestsToFactory(f, nt_flags, cc_path, cxx_path, **kwargs):
 
 def CreateLNTNightlyFactory(nt_flags, cc_path=None, cxx_path=None,
                             parallel = False, jobs = '%(jobs)s',
-                            db_url=None):
+                            db_url=None, external_URL=None):
     # Paramaters used by this method:
     # nt_flags  : a list of flags passed to the lnt process
     # cc_path   : explicit path to c compiler
@@ -241,5 +241,23 @@ def CreateLNTNightlyFactory(nt_flags, cc_path=None, cxx_path=None,
                   haltOnFailure=False, flunkOnFailure=False,
                   workdir='test-suite', alwaysUseLatest=True, retry = (60, 5),
                   description='pull.test-suite'))
+    if external_URL:
+        external_dir = WithProperties('%(builddir)s/test-suite-externals')
+        f.addStep(buildbot.steps.shell.ShellCommand(
+                name = 'svn.clean.externals',
+                command = ['svn', 'cleanup'],
+                haltOnFailure=False, flunkOnFailure=False,
+                description = ['svn clean externals'],
+                workdir='test-suite-externals'))
+        f.addStep(SVN(name='pull.test-suite-externals', mode='full',
+                      repourl=external_URL, retry = (60, 5), method='fresh',
+                      workdir='test-suite-externals', alwaysUseLatest=True,
+                      haltOnFailure=False, flunkOnFailure=False,
+                      description='pull.test-suite-externals',
+                      timeout=300))
+        # Buildbot uses got_revision instead of revision to identify builds.
+        # The previous step will set it incorrectly
+        # We set it to the correct value in th following step
+        setProperty(f, 'got_revision', WithProperties('%(revision)s'))
 
     return f
