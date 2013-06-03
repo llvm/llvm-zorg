@@ -194,5 +194,12 @@ def CreateLNTNightlyFactory(nt_flags, cc_path=None, cxx_path=None,
     args = [WithProperties('%(builddir)s/lnt.venv/bin/python'),
             WithProperties('%(builddir)s/lnt.venv/bin/lnt'),
             'runtest', '--verbose']
+    if db_url:
+        f.addStep(buildbot.steps.shell.SetProperty(
+                  name='db_url',
+                  command=['echo', db_url, ':', WithProperties('%(buildername)s')],
+                  extract_fn=_get_db_url,
+                  workdir=WithProperties('%(builddir)s')))
+        args.extend(['--submit', WithProperties('%(db_url)s')])
 
     return f
