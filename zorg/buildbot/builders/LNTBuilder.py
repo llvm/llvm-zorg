@@ -29,6 +29,14 @@ def _get_cxx(status, stdin, stdout):
             return { 'cxx_path' : cxx_path }
     return {}
 
+def _get_liblto(status, stdin, stdout):
+    lines = filter(bool, stdin.split('\n'))
+    for line in lines:
+        if 'lib/libLTO.dylib' in line:
+            lto_path = line
+            return { 'lto_path' : lto_path }
+    return {}
+
 def getLNTFactory(triple, nt_flags, xfails=[], clean=True, test=False,
                   **kwargs):
     lnt_args = {}
@@ -201,5 +209,13 @@ def CreateLNTNightlyFactory(nt_flags, cc_path=None, cxx_path=None,
                   extract_fn=_get_db_url,
                   workdir=WithProperties('%(builddir)s')))
         args.extend(['--submit', WithProperties('%(db_url)s')])
+    # Add --liblto-path if necessary.
+    if '-flto' in nt_flags:
+        f.addStep(buildbot.steps.shell.SetProperty(
+                  name='find.liblto',
+                  command=['find', 'host-compiler', '-name', 'libLTO.dylib'],
+                  extract_fn=_get_liblto,
+                  workdir=WithProperties('%(builddir)s')))
+        nt_flags.extend(['--liblto-path', WithProperties('%(builddir)s/%(lto_path)s')])
 
     return f
