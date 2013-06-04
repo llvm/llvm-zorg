@@ -11,7 +11,7 @@ from buildbot.process.properties import WithProperties
 import zorg
 from zorg.buildbot.builders import ClangBuilder
 from zorg.buildbot.PhasedBuilderUtils import getBuildDir, setProperty
-from zorg.buildbot.Artifacts import GetCompilerRoot
+from zorg.buildbot.Artifacts import GetCompilerRoot, package_url
 
 def _get_cc(status, stdin, stdout):
     lines = filter(bool, stdin.split('\n'))
@@ -170,8 +170,12 @@ def CreateLNTNightlyFactory(nt_flags, cc_path=None, cxx_path=None,
     # parallel  : set to True if using multiple cores for faster turnaround
     #            set to False if measuring performance
     # Properties set externally but used by this method:
+    # builddir  : This property is set below
     # jobs      : This property is set by the slave, it indicates the number of
     #            cores availble to use.
+    # revision  : This property should be set by an upstream builder.
+    # slavename : This property is set by the slave
+    # buildername : This property is set by the master
 
     f = buildbot.process.factory.BuildFactory()
     # Determine the build directory.
@@ -280,5 +284,25 @@ def CreateLNTNightlyFactory(nt_flags, cc_path=None, cxx_path=None,
             name='lnt.nightly-test.clean', command=['rm', '-rfv', 'nt'],
             haltOnFailure=True, description=['clean', 'LNT', 'sandbox'],
             workdir='tests'))
+    # Run the nightly test.
+    nick = '%(slavename)s-%(buildername)s'
+    args.extend(['nt', '--sandbox', 'nt', '--cc',
+            WithProperties('%(builddir)s/%(cc_path)s'), '--cxx',
+            WithProperties('%(builddir)s/%(cxx_path)s'), '--without-llvm',
+            '--test-suite', WithProperties('%(builddir)s/test-suite'),
+            '--no-timestamp', '--no-machdep-info', '--no-auto-name',
+            '--no-configure'])
+    if external_URL:
+        args.extend(['--test-externals', external_dir])
+    if parallel:
+        args.extend(['-j', WithProperties(jobs)])
+    args.extend(nt_flags)
+    f.addStep(zorg.buildbot.commands.LitTestCommand.LitTestCommand(
+            name='lnt.nightly-test', command=args, haltOnFailure=True,
+            description=['nightly test'], workdir='tests',
+            logfiles={'configure.log' : 'nt/build/configure.log',
+                      'build-tools.log' : 'nt/build/build-tools.log',
+                      'test.log' : 'nt/build/test.log',
+                      'report.json' : 'nt/build/report.json'}))
 
     return f
