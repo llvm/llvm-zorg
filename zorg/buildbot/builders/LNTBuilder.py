@@ -259,5 +259,26 @@ def CreateLNTNightlyFactory(nt_flags, cc_path=None, cxx_path=None,
         # The previous step will set it incorrectly
         # We set it to the correct value in th following step
         setProperty(f, 'got_revision', WithProperties('%(revision)s'))
+    # Create the LNT virtual env.
+    f.addStep(buildbot.steps.shell.ShellCommand(
+            name='venv.lnt.clean', command=['rm', '-rfv', 'lnt.venv'],
+            haltOnFailure=True, description=['clean', 'LNT', 'venv'],
+            workdir=WithProperties('%(builddir)s')))
+    f.addStep(buildbot.steps.shell.ShellCommand(
+            name='venv.lnt.create', command=['virtualenv', 'lnt.venv'],
+            haltOnFailure=True, description=['create', 'LNT', 'venv'],
+            workdir=WithProperties('%(builddir)s'),
+            env={'PATH' : '${PATH}:/usr/local/bin'}))
+    f.addStep(buildbot.steps.shell.ShellCommand(
+            name='venv.lnt.install', haltOnFailure=True,
+            command=[WithProperties('%(builddir)s/lnt.venv/bin/pip'), 'install',
+                     '--index-url', package_url,
+                     '-e', '.'],
+            description=['install', 'LNT'], workdir='lnt'))
+    # Clean up the sandbox dir.
+    f.addStep(buildbot.steps.shell.ShellCommand(
+            name='lnt.nightly-test.clean', command=['rm', '-rfv', 'nt'],
+            haltOnFailure=True, description=['clean', 'LNT', 'sandbox'],
+            workdir='tests'))
 
     return f
