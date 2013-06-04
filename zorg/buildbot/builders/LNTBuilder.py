@@ -247,7 +247,7 @@ def CreateLNTNightlyFactory(nt_flags, cc_path=None, cxx_path=None,
     f.addStep(SVN(name='pull.test-suite', mode='full', method='fresh',
                   repourl='http://llvm.org/svn/llvm-project/test-suite/trunk',
                   haltOnFailure=False, flunkOnFailure=False,
-                  workdir='test-suite', alwaysUseLatest=True, retry = (60, 5),
+                  workdir='test-suite', retry = (60, 5),
                   description='pull.test-suite'))
     if external_URL:
         external_dir = WithProperties('%(builddir)s/test-suite-externals')
