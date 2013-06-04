@@ -168,11 +168,15 @@ def CreateLNTNightlyFactory(nt_flags, cc_path=None, cxx_path=None,
     # cc_path   : explicit path to c compiler
     # cxx_path  : explicit path to c++ compiler
     # parallel  : set to True if using multiple cores for faster turnaround
-    #            set to False if measuring performance
+    #             set to False if measuring performance
+    # db_url    : set to the submission URL for an LNT database when measuring 
+    #             performance
+    # external_URL : Used to pull additional tests from a separate svn 
+    #                repository
     # Properties set externally but used by this method:
     # builddir  : This property is set below
     # jobs      : This property is set by the slave, it indicates the number of
-    #            cores availble to use.
+    #             cores availble to use.
     # revision  : This property should be set by an upstream builder.
     # slavename : This property is set by the slave
     # buildername : This property is set by the master
