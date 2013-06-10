@@ -599,6 +599,13 @@ def _get_lld_builders():
          'builddir':"lld-x86_64-darwin11",
          'factory': LLDBuilder.getLLDBuildFactory(),
          'category'   : 'lld'},
+
+        {'name': "lld-x86_64-win7",
+         'slavenames' :["as-bldslv4"],
+         'builddir':"lld-x86_64-win7",
+         'factory': LLDBuilder.getLLDWinBuildFactory(clean=False),
+         'category'   : 'lld'},
+
          ]
 
 # Sanitizer builders.

@@ -202,6 +202,9 @@ def get_build_slaves():
         # Ubuntu x86-64, 12x Intel(R) Xeon(R) CPU X5650 @ 2.67GHz
         create_slave("sanitizer-buildbot1", properties={'jobs': 8}, max_builds=1),
 
+        # Windows 7 Professional x64
+        create_slave("as-bldslv4", properties={'jobs' : 2}, max_builds=1),
+
         # Defunct.
         # Pentium Dual CPU T3400 @ 2.1GHz
         #create_slave("dumitrescu1", properties={'jobs' : 2}, max_builds=1),
