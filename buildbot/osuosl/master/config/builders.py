@@ -42,6 +42,10 @@ from zorg.buildbot.builders import ClangAndLLDBuilder
 reload(ClangAndLLDBuilder)
 from zorg.buildbot.builders import ClangAndLLDBuilder
 
+from zorg.buildbot.builders import SanitizerBuilder
+reload(SanitizerBuilder)
+from zorg.buildbot.builders import SanitizerBuilder
+
 from buildbot.steps.source import SVN
 
 # Plain LLVM builders.
@@ -597,6 +601,15 @@ def _get_lld_builders():
          'category'   : 'lld'},
          ]
 
+# Sanitizer builders.
+def _get_sanitizer_builders():
+      return [
+          {'name': "sanitizer-x86_64-linux",
+           'slavenames' :["sanitizer-buildbot1"],
+           'builddir': "sanitizer-x86_64-linux",
+           'factory': SanitizerBuilder.getSanitizerBuildFactory()},
+          ]
+
 # Experimental and stopped builders
 def _get_experimental_builders():
 
@@ -707,6 +720,10 @@ def get_builders():
 
     for b in _get_lldb_builders():
         b['category'] = 'lldb'
+        yield b
+
+    for b in _get_sanitizer_builders():
+        b['category'] = 'sanitizer'
         yield b
 
     for b in _get_experimental_builders():
