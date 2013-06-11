@@ -42,8 +42,9 @@ def getSanitizerBuildFactory(
                   defaultBranch='trunk',
                   workdir=sanitizer_buildbot))
 
-    sanitizer_script = os.path.join(sanitizer_buildbot, "build", "scripts",
-                                    "slave", "buildbot_selector.py")
+    sanitizer_script = os.path.join("..", sanitizer_buildbot, "build",
+                                    "scripts", "slave",
+                                    "buildbot_selector.py")
 
     # Run annotated command for sanitizer.
     f.addStep(AnnotatedCommand(name="annotate",
