@@ -44,13 +44,13 @@ def get_status_targets(standard_builders):
     return [
         buildbot.status.html.WebStatus(
             http_port = 8013, allowForce = True),
-        buildbot.status.words.IRC('irc.oftc.net', 'phased-bb-llvmlab',
-                  port=6668,
-                  channels=['llvm'],
-                  allowForce=False,
-                  password='smooshy',
-                  notify_events=['successToFailure', 'failureToSuccess'],
-                  categories=['status']),
+        #buildbot.status.words.IRC('irc.oftc.net', 'phased-bb-llvmlab',
+        #          port=6668,
+        #          channels=['llvm'],
+        #          allowForce=False,
+        #          password='smooshy',
+        #          notify_events=['successToFailure', 'failureToSuccess'],
+        #          categories=['status']),
 
         # Experimental failing build notifier.
         #
