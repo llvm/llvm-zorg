@@ -39,10 +39,19 @@ def installRequiredLibs(f, polly_src):
                                description=["install cloog"],
                                workdir=cloog_srcdir))
 
+def checkRequiredLibs(f, polly_src):
+    cloog_srcdir = WithProperties("%s/cloog.src", "builddir")
+    f.addStep(ShellCommand(name="check-cloog-isl",
+                               command=["make", "check"],
+                               haltOnFailure=True,
+                               description=["check cloog and isl"],
+                               workdir=cloog_srcdir))
+
 def getPollyBuildFactory():
     llvm_srcdir = "llvm.src"
     llvm_objdir = "llvm.obj"
     cloog_installdir = "cloog.install"
+    polly_srcdir = '%s/tools/polly' % llvm_srcdir
 
     f = buildbot.process.factory.BuildFactory()
     # Determine the build directory.
@@ -61,10 +70,10 @@ def getPollyBuildFactory():
                   mode='update',
                   baseURL='http://llvm.org/svn/llvm-project/polly/',
                   defaultBranch='trunk',
-                  workdir='%s/tools/polly' % llvm_srcdir))
+                  workdir=polly_srcdir))
 
     # Install Prerequisites
-    installRequiredLibs(f, '%s/tools/polly' % llvm_srcdir)
+    installRequiredLibs(f, polly_srcdir)
 
     # Create configuration files with cmake
     f.addStep(ShellCommand(name="create-build-dir",
@@ -87,6 +96,7 @@ def getPollyBuildFactory():
                                haltOnFailure=True,
                                description=["build polly"],
                                workdir=llvm_objdir))
+    checkRequiredLibs(f, polly_srcdir)
     # Test Polly
     f.addStep(ShellCommand(name="test_polly",
                                command=["make", "polly-test"],
