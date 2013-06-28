@@ -7,14 +7,13 @@ from buildbot.steps.shell import Configure, ShellCommand, SetProperty
 from buildbot.steps.shell import WarningCountingShellCommand
 from buildbot.steps.source import SVN
 from buildbot.steps.transfer import FileDownload
-from zorg.buildbot.Artifacts import GetCompilerArtifacts, uploadArtifacts
-from zorg.buildbot.builders.Util import getConfigArgs
-from zorg.buildbot.commands import DejaGNUCommand
-from zorg.buildbot.commands import SuppressionDejaGNUCommand
-from zorg.buildbot.commands.BatchFileDownload import BatchFileDownload
-from zorg.buildbot.commands.LitTestCommand import LitTestCommand
-from zorg.buildbot.PhasedBuilderUtils import GetLatestValidated, find_cc
-from zorg.buildbot.PhasedBuilderUtils import find_liblto, SVNCleanupStep
+
+import zorg.buildbot.Artifacts as artifacts
+import zorg.buildbot.builders.Util as builders_util
+import zorg.buildbot.PhasedBuilderUtils as phased_builder_utils
+import zorg.buildbot.commands as commands
+import zorg.buildbot.commands.BatchFileDownload as batch_file_download
+import zorg.buildbot.commands.LitTestCommand as lit_test_command
 
 def getClangBuildFactory(
             triple=None,
@@ -160,7 +159,7 @@ def getClangBuildFactory(
                                 '--host=%s' % triple]
     args = base_configure_args + ["--without-llvmgcc", "--without-llvmgxx"]
     args.append(WithProperties("--prefix=%%(builddir)s/%s" % llvm_1_installdir))
-    args += getConfigArgs(stage1_config)
+    args += builders_util.getConfigArgs(stage1_config)
     if not clean:
         f.addStep(SetProperty(name="Makefile_isready",
                               workdir=llvm_1_objdir,
@@ -219,7 +218,7 @@ def getClangBuildFactory(
     if run_cxx_tests:
         extraTestDirs += '%(builddir)s/llvm/tools/clang/utils/C++Tests'
     if test:
-        f.addStep(LitTestCommand(name='check-all',
+        f.addStep(lit_test_command.LitTestCommand(name='check-all',
                                    command=[make, "check-all", "VERBOSE=1",
                                             WithProperties("LIT_ARGS=%s" % clangTestArgs),
                                             WithProperties("EXTRA_TESTDIRS=%s" % extraTestDirs)],
@@ -294,7 +293,7 @@ def getClangBuildFactory(
     # Configure llvm (stage 2).
     args = base_configure_args + ["--without-llvmgcc", "--without-llvmgxx"]
     args.append(WithProperties("--prefix=%(builddir)s/" + llvm_2_installdir))
-    args += getConfigArgs(stage2_config)
+    args += builders_util.getConfigArgs(stage2_config)
     local_env = dict(merged_env)
     local_env.update({
         'CC'  : WithProperties("%%(builddir)s/%s/bin/clang"   % llvm_1_installdir),
@@ -321,7 +320,7 @@ def getClangBuildFactory(
                                           env=merged_env))
 
     if test:
-        f.addStep(LitTestCommand(name='check-all',
+        f.addStep(lit_test_command.LitTestCommand(name='check-all',
                                    command=[make, "check-all", "VERBOSE=1",
                                             WithProperties("LIT_ARGS=%s" % clangTestArgs),
                                             WithProperties("EXTRA_TESTDIRS=%s" % extraTestDirs)],
@@ -408,7 +407,7 @@ def getClangMSVCBuildFactory(update=True, clean=True, vcDrive='c', jobs=1, cmake
 
     # Use batch files instead of ShellCommand directly, Windows quoting is
     # borked. FIXME: See buildbot ticket #595 and buildbot ticket #377.
-    f.addStep(BatchFileDownload(name='cmakegen',
+    f.addStep(batch_file_download.BatchFileDownload(name='cmakegen',
                                 command=[cmake,
                                          "-DLLVM_TARGETS_TO_BUILD:=X86",
                                          "-DLLVM_INCLUDE_EXAMPLES:=OFF",
@@ -425,7 +424,7 @@ def getClangMSVCBuildFactory(update=True, clean=True, vcDrive='c', jobs=1, cmake
                            workdir='llvm\\build'))
 
     # Build it.
-    f.addStep(BatchFileDownload(name='vcbuild',
+    f.addStep(batch_file_download.BatchFileDownload(name='vcbuild',
                                 command=[vcDrive + r""":\Program Files\Microsoft Visual Studio 9.0\VC\VCPackages\vcbuild.exe""",
                                          "/M%d" % jobs,
                                          "LLVM.sln",
@@ -439,12 +438,12 @@ def getClangMSVCBuildFactory(update=True, clean=True, vcDrive='c', jobs=1, cmake
                                           warningPattern=" warning C.*:"))
 
     # Build clang-test project.
-    f.addStep(BatchFileDownload(name='vcbuild_test',
+    f.addStep(batch_file_download.BatchFileDownload(name='vcbuild_test',
                                 command=[vcDrive + r""":\Program Files\Microsoft Visual Studio 9.0\VC\VCPackages\vcbuild.exe""",
                                          "clang-test.vcproj",
                                          "Debug|Win32"],
                                 workdir="llvm\\build\\tools\\clang\\test"))
-    f.addStep(LitTestCommand(name='test-clang',
+    f.addStep(lit_test_command.LitTestCommand(name='test-clang',
                                command=["vcbuild_test.bat"],
                                workdir="llvm\\build\\tools\\clang\\test"))
 
@@ -488,7 +487,7 @@ def getClangMinGWBuildFactory(update=True, clean=True, jobs=6, cmake=r"cmake"):
 
     # Use batch files instead of ShellCommand directly, Windows quoting is
     # borked. FIXME: See buildbot ticket #595 and buildbot ticket #377.
-    f.addStep(BatchFileDownload(name='cmakegen',
+    f.addStep(batch_file_download.BatchFileDownload(name='cmakegen',
                                 command=[cmake,
                                          "-DLLVM_TARGETS_TO_BUILD:=X86",
                                          "-DLLVM_INCLUDE_EXAMPLES:=OFF",
@@ -505,7 +504,7 @@ def getClangMinGWBuildFactory(update=True, clean=True, jobs=6, cmake=r"cmake"):
                            workdir='llvm\\build'))
 
     # Build it.
-    f.addStep(BatchFileDownload(name='makeall',
+    f.addStep(batch_file_download.BatchFileDownload(name='makeall',
                                 command=["ninja", "-j", "%d" % jobs],
                                 haltOnFailure=True,
                                 workdir='llvm\\build'))
@@ -518,7 +517,7 @@ def getClangMinGWBuildFactory(update=True, clean=True, jobs=6, cmake=r"cmake"):
 
     # Build global check project (make check) (sources not checked out...).
     if 0:
-        f.addStep(BatchFileDownload(name='makecheck',
+        f.addStep(batch_file_download.BatchFileDownload(name='makecheck',
                                     command=["ninja", "check"],
                                     workdir='llvm\\build'))
         f.addStep(WarningCountingShellCommand(name='check',
@@ -527,13 +526,12 @@ def getClangMinGWBuildFactory(update=True, clean=True, jobs=6, cmake=r"cmake"):
                                               workdir='llvm\\build'))
 
     # Build clang-test project (make clang-test).
-    f.addStep(BatchFileDownload(name='maketest',
-                                command=["ninja", "clang-test"],
-                                workdir="llvm\\build"))
-    f.addStep(LitTestCommand(name='clang-test',
-                               command=["maketest.bat"],
-                               workdir="llvm\\build"))
-
+    f.addStep(batch_file_download.BatchFileDownload(name='maketest',
+                                                    command=["ninja", "clang-test"],
+                                                    workdir="llvm\\build"))
+    f.addStep(lit_test_command.LitTestCommand(name='clang-test',
+                                              command=["maketest.bat"],
+                                              workdir="llvm\\build"))
     return f
 
 def addClangGCCTests(f, ignores={}, install_prefix="%(builddir)s/llvm.install",
@@ -547,7 +545,7 @@ def addClangGCCTests(f, ignores={}, install_prefix="%(builddir)s/llvm.install",
                   defaultBranch='trunk', workdir='clang-tests'))
     gcc_dg_ignores = ignores.get('gcc-4_2-testsuite', {})
     for lang in languages:
-        f.addStep(SuppressionDejaGNUCommand.SuppressionDejaGNUCommand(
+        f.addStep(commands.SuppressionDejaGNUCommand.SuppressionDejaGNUCommand(
             name='test-gcc-4_2-testsuite-%s' % lang,
             command=["make", "-k", "check-%s" % lang] + make_vars,
             description="gcc-4_2-testsuite (%s)" % lang,
@@ -564,7 +562,7 @@ def addClangGDBTests(f, ignores={}, install_prefix="%(builddir)s/llvm.install"):
     f.addStep(SVN(name='svn-clang-tests', mode='update',
                   baseURL='http://llvm.org/svn/llvm-project/clang-tests/',
                   defaultBranch='trunk', workdir='clang-tests'))
-    f.addStep(SuppressionDejaGNUCommand.SuppressionDejaGNUCommand(
+    f.addStep(commands.SuppressionDejaGNUCommand.SuppressionDejaGNUCommand(
             name='test-gdb-1472-testsuite',
             command=["make", "-k", "check"] + make_vars,
             description="gdb-1472-testsuite",
@@ -586,7 +584,7 @@ def addModernClangGDBTests(f, jobs, install_prefix):
                                           command=['make', WithProperties('-j%s' % jobs)],
                                           haltOnFailure=True,
                                           workdir='clang-tests/build'))
-    f.addStep(DejaGNUCommand.DejaGNUCommand(
+    f.addStep(commands.DejaGNUCommand.DejaGNUCommand(
             name='gdb-75-check',
             command=['make', '-k', WithProperties('-j%s' % jobs), 'check'] + make_vars,
             workdir='clang-tests/build',
@@ -676,24 +674,24 @@ def phasedClang(config_options, is_bootstrap=True, use_lto=False,
             haltOnFailure=False, description=['rm', 'compiler-rt sources link'],
             workdir=WithProperties('%(builddir)s')))
     # Pull sources.
-    f = SVNCleanupStep(f, 'llvm')
+    f = phased_builder_utils.SVNCleanupStep(f, 'llvm')
     f.addStep(HostSVN(name='pull.llvm', mode='incremental', method='fresh',
                       repourl='http://llvm.org/svn/llvm-project/llvm/trunk',
                       retry=(60, 5), workdir='llvm', description='pull.llvm',
                       alwaysUseLatest=False))
-    f = SVNCleanupStep(f, 'clang.src')
+    f = phased_builder_utils.SVNCleanupStep(f, 'clang.src')
     f.addStep(HostSVN(name='pull.clang', mode='incremental', method='fresh',
                       repourl='http://llvm.org/svn/llvm-project/cfe/trunk',
                       workdir='clang.src', retry=(60, 5),
                       description='pull.clang', alwaysUseLatest=False))
-    f = SVNCleanupStep(f, 'clang-tools-extra.src')
+    f = phased_builder_utils.SVNCleanupStep(f, 'clang-tools-extra.src')
     f.addStep(HostSVN(name='pull.clang-tools-extra', mode='incremental',
                       method='fresh',
                       repourl='http://llvm.org/svn/llvm-project/'
                               'clang-tools-extra/trunk',
                       workdir='clang-tools-extra.src', alwaysUseLatest=False,
                       retry=(60, 5), description='pull.clang-tools-extra'))
-    f = SVNCleanupStep(f, 'compiler-rt.src')
+    f = phased_builder_utils.SVNCleanupStep(f, 'compiler-rt.src')
     f.addStep(HostSVN(name='pull.compiler-rt', mode='incremental',
                       method='fresh',
                       repourl='http://llvm.org/svn/llvm-project/compiler-rt/'
@@ -749,14 +747,14 @@ def phasedClang(config_options, is_bootstrap=True, use_lto=False,
     # If we are using a previously built compiler, download it and override CC
     # and CXX.
     if is_bootstrap:
-        f = GetCompilerArtifacts(f)
+        f = artifacts.GetCompilerArtifacts(f)
     else:
-        f = GetLatestValidated(f)
+        f = phased_builder_utils.GetLatestValidated(f)
     cc_command = ['find', 'host-compiler', '-name', 'clang']
     f.addStep(buildbot.steps.shell.SetProperty(
               name='find.cc',
               command=cc_command,
-              extract_fn=find_cc,
+              extract_fn=phased_builder_utils.find_cc,
               workdir=WithProperties('%(builddir)s')))
     f.addStep(buildbot.steps.shell.ShellCommand(
               name='sanity.test', haltOnFailure=True,
@@ -773,7 +771,7 @@ def phasedClang(config_options, is_bootstrap=True, use_lto=False,
         f.addStep(buildbot.steps.shell.SetProperty(
                 name='find.liblto',
                 command=liblto_command,
-                extract_fn=find_liblto,
+                extract_fn=phased_builder_utils.find_liblto,
                 workdir=WithProperties('%(builddir)s')))
         configure_args.append(
           '--with-extra-options=-flto -gline-tables-only')
@@ -815,11 +813,11 @@ def phasedClang(config_options, is_bootstrap=True, use_lto=False,
                        'RC_SUPPORTED_ARCHS=armv7 i386 x86_64'],
               description=['make install'], workdir=clang_build_dir))
     # Save artifacts of this build for use by other builders.
-    f = uploadArtifacts(f)
+    f = artifacts.uploadArtifacts(f)
     # Run the LLVM and Clang regression tests.
-    f.addStep(LitTestCommand(name='run.llvm.tests', haltOnFailure=True,
-                             command=['make', '-j', WithProperties('%(jobs)s'),
-                             'VERBOSE=1', 'check-all'],
-                             description=['all', 'tests'],
-                             workdir=clang_build_dir))
+    f.addStep(lit_test_command.LitTestCommand(name='run.llvm.tests', haltOnFailure=True,
+                                              command=['make', '-j', WithProperties('%(jobs)s'),
+                                                       'VERBOSE=1', 'check-all'],
+                                              description=['all', 'tests'],
+                                              workdir=clang_build_dir))
     return f
