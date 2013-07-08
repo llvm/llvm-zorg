@@ -15,7 +15,7 @@ master_protocol = 'http'
 base_download_url = 'http://%s/~%s/artifacts' % (master_name, rsync_user)
 package_url = 'http://%s/~%s/packages' % (master_name, rsync_user)
 base_rsync_path = '%s@%s:~/artifacts' % (rsync_user , master_name)
-curl_flags = '-svLo'
+curl_flags = '-fvLo'
 
 is_production = set_config_option('Master Options', 'is_production')
 if is_production:
@@ -33,7 +33,7 @@ if is_production:
                                         '%s@%s:~/artifacts' %
                                         (rsync_user , master_name))
     curl_flags = set_config_option('Master Options', 'curl_flags',
-                                   '-svLo')
+                                   '-fvLo')
 
 # This method is used in determining the name of a given compiler archive
 def _determine_compiler_kind(props):
@@ -192,7 +192,7 @@ def GetCompilerArtifacts(f):
             workdir=WithProperties('%(builddir)s')))
     f.addStep(buildbot.steps.shell.ShellCommand(
               name='download.artifacts',
-              command=['curl', '-svo', 'host-compiler.tar.gz',
+              command=['curl', '-fvLo'', 'host-compiler.tar.gz',
                        WithProperties('%(get_curl)s', get_curl=determine_url)],
               haltOnFailure=True, description=['download build artifacts'],
               workdir=WithProperties('%(builddir)s')))

@@ -124,7 +124,7 @@ def GetLatestValidated(f):
     latest_url += '/latest_validated/clang-x86_64-darwin11-R.tar.gz'
     f.addStep(buildbot.steps.shell.ShellCommand(
               name='download.artifacts',
-              command=['curl', '-svLo', 'host-compiler.tar.gz', latest_url],
+              command=['curl', '-fvLo', 'host-compiler.tar.gz', latest_url],
               haltOnFailure=True, description=['download build artifacts'],
               workdir=WithProperties('%(builddir)s')))
     f.addStep(buildbot.steps.shell.ShellCommand(
