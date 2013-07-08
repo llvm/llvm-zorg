@@ -121,7 +121,7 @@ def GetLatestValidated(f):
             haltOnFailure=False, description=['rm', 'host-compiler'],
             workdir=WithProperties('%(builddir)s')))
     latest_url = zorg.buildbot.Artifacts.base_download_url
-    latest_url += '/latest_validated/apple-clang-x86_64-darwin10-R.tar.gz'
+    latest_url += '/latest_validated/clang-x86_64-darwin11-R.tar.gz'
     f.addStep(buildbot.steps.shell.ShellCommand(
               name='download.artifacts',
               command=['curl', '-svLo', 'host-compiler.tar.gz', latest_url],
