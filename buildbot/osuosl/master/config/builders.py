@@ -96,6 +96,14 @@ def _get_llvm_builders():
          'factory': LLVMBuilder.getLLVMBuildFactory(config_name='Release+Asserts',
                                                     outOfDir=True,
                                                     extra_configure_args=["--host=aarch64-linux-gnu"])},
+        {'name': "llvm-hexagon-elf",
+         'slavenames':["hexagon-build-02"],
+         'builddir':"llvm-hexagon-elf",
+         'factory': LLVMBuilder.getLLVMBuildFactory("hexagon-unknown-elf", timeout=40, config_name='Release+Asserts',
+                                                       extra_configure_args=['--build=x86_64-linux-gnu',
+                                                                             '--host=x86_64-linux-gnu',
+                                                                             '--target=hexagon-unknown-elf',
+                                                                             '--enable-targets=hexagon'])},
         ]
 
 # Offline.
@@ -376,6 +384,16 @@ def _get_clang_builders():
          'slavenames' :["hpproliant1"],
          'builddir' :"clang-x86_64-ubuntu-gdb-75",
          'factory' : ClangBuilder.getClangBuildFactory(stage1_config='Release+Asserts', run_modern_gdb=True, clean=False)},
+
+        {'name' : "clang-hexagon-elf",
+         'slavenames' :["hexagon-build-02"],
+         'builddir' :"clang-hexagon-elf",
+         'factory' : ClangBuilder.getClangBuildFactory(triple='hexagon-unknown-elf',
+                                                       stage1_config='Release+Asserts',
+                                                       extra_configure_args=['--build=x86_64-linux-gnu',
+                                                                             '--host=x86_64-linux-gnu',
+                                                                             '--target=hexagon-unknown-elf',
+                                                                             '--enable-targets=hexagon'])},
         ]
 
 # Offline.

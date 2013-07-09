@@ -92,4 +92,13 @@ def get_status_targets(standard_builders):
             builders = ["clang-atom-d2700-ubuntu", "clang-atom-d2700-ubuntu-rel"],
             addLogs=False,
             num_lines = 15),
+        InformativeMailNotifier(
+            fromaddr = "llvm.buildmaster@lab.llvm.org",
+            sendToInterestedUsers= False,
+            extraRecipients = ["rfoos@codeaurora.org","llvm.buildmaster@quicinc.com"],
+            subject="Build %(builder)s Failure",
+            mode = "failing",
+            builders = ["llvm-hexagon-elf","clang-hexagon-elf"],
+            addLogs=False,
+            num_lines = 15),
         ]
