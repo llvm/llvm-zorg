@@ -74,10 +74,6 @@ def _get_llvm_builders():
          'slavenames':["chinook"],
          'builddir':"llvm-ppc64",
          'factory': LLVMBuilder.getLLVMBuildFactory("ppc64-linux-gnu", jobs=4, clean=False, timeout=20)},
-        {'name': "llvm-ppc64-linux2",
-         'slavenames':["coho"],
-         'builddir':"llvm-ppc64-2",
-         'factory': LLVMBuilder.getLLVMBuildFactory("ppc64-linux-gnu", jobs=4, clean=False, timeout=20)},
         {'name': "llvm-x86_64-linux-vg_leak",
          'slavenames':["osu8"],
          'builddir':"llvm-x86_64-linux-vg_leak",
@@ -209,11 +205,6 @@ def _get_clang_builders():
                                                                        test=False,
                                                                        xfails=clang_x86_64_linux_xfails)},
 
-        {'name': "clang-atom-d2700-ubuntu",
-         'slavenames':["atom-buildbot"],
-         'builddir':"clang-atom-d2700-ubuntu",
-         'factory' : ClangBuilder.getClangBuildFactory()},
-
         {'name': "clang-atom-d2700-ubuntu-rel",
          'slavenames':["atom1-buildbot"],
          'builddir':"clang-atom-d2700-ubuntu-rel",
@@ -253,21 +244,6 @@ def _get_clang_builders():
 #                                           '--with-fpu=neon',
 #                                           '--with-float=hard',
 #                                           '--enable-targets=arm'])},
-
-        ## Cortex-A9 check-all self-host
-        {'name': "clang-native-arm-cortex-a9-self-host",
-         'slavenames':["linaro-panda-02"],
-         'builddir':"clang-native-arm-cortex-a9-self-host",
-         'factory' : ClangBuilder.getClangBuildFactory(
-                     stage1_config='Release+Asserts',
-                     stage2_config='Release+Asserts',
-                     useTwoStage=True,
-                     clean=False,
-                     test=True,
-                     extra_configure_args=[ '--with-cpu=cortex-a9',
-                                            '--with-fpu=neon',
-                                            '--with-float=hard',
-                                            '--enable-targets=arm'])},
 
         {'name' : "clang-native-arm-lnt",
          'slavenames':["linaro-chrome-01"],
@@ -374,11 +350,6 @@ def _get_clang_builders():
                                               nt_flags=['--multisample=3'], jobs=2,  use_pty_in_tests=True,
                                               testerName='O3-plain', run_cxx_tests=True,
                                               package_cache=LabPackageCache)},
-
-        {'name' : "clang-x86_64-darwin12-gdb",
-         'slavenames' :["lab-mini-04"],
-         'builddir' :"clang-x86_64-darwin12-gdb",
-         'factory' : ClangBuilder.getClangBuildFactory(triple='x86_64-apple-darwin12', stage1_config='Release+Asserts', run_gdb=True)},
 
         {'name' : "clang-x86_64-ubuntu-gdb-75",
          'slavenames' :["hpproliant1"],
@@ -641,6 +612,11 @@ def _get_experimental_builders():
     LabPackageCache = 'http://10.1.1.2/packages/'
 
     return [
+        {'name': "llvm-ppc64-linux2",
+         'slavenames':["coho"],
+         'builddir':"llvm-ppc64-2",
+         'factory': LLVMBuilder.getLLVMBuildFactory("ppc64-linux-gnu", jobs=4, clean=False, timeout=20),
+         'category' : 'llvm'},
         {'name': "llvm-x86_64-debian-debug-werror",
          'slavenames':["obbligato-ellington"],
          'builddir':"llvm-x86-64-debian-debug-werror",
@@ -655,6 +631,11 @@ def _get_experimental_builders():
                                                     config_name='Release+Asserts',
                                                     extra_configure_args=["--enable-werror"]),
          'category' : 'llvm'},
+        {'name': "clang-atom-d2700-ubuntu",
+         'slavenames':["atom-buildbot"],
+         'builddir':"clang-atom-d2700-ubuntu",
+         'factory' : ClangBuilder.getClangBuildFactory(),
+         'category' : 'clang'},
         {'name': "clang-x86_64-debian-debug-werror",
          'slavenames':["obbligato-ellington"],
          'builddir':"clang-x86-64-debian-debug-werror",
@@ -663,6 +644,21 @@ def _get_experimental_builders():
                                                      stage1_config='Debug+Asserts',
                                                      stage2_config='Debug+Asserts',
                                                      extra_configure_args=["--enable-werror"]),
+         'category' : 'clang'},
+        ## Cortex-A9 check-all self-host
+        {'name': "clang-native-arm-cortex-a9-self-host",
+         'slavenames':["linaro-panda-02"],
+         'builddir':"clang-native-arm-cortex-a9-self-host",
+         'factory' : ClangBuilder.getClangBuildFactory(
+                     stage1_config='Release+Asserts',
+                     stage2_config='Release+Asserts',
+                     useTwoStage=True,
+                     clean=False,
+                     test=True,
+                     extra_configure_args=[ '--with-cpu=cortex-a9',
+                                            '--with-fpu=neon',
+                                            '--with-float=hard',
+                                            '--enable-targets=arm']),
          'category' : 'clang'},
         {'name': "clang-x86_64-debian-release-werror",
          'slavenames':["obbligato-ellington"],
@@ -705,7 +701,13 @@ def _get_experimental_builders():
                                               testerName='O0-g', run_cxx_tests=True,
                                               package_cache=LabPackageCache),
          'category' : 'clang'},
-         
+
+        {'name' : "clang-x86_64-darwin12-gdb",
+         'slavenames' :["lab-mini-04"],
+         'builddir' :"clang-x86_64-darwin12-gdb",
+         'factory' : ClangBuilder.getClangBuildFactory(triple='x86_64-apple-darwin12', stage1_config='Release+Asserts', run_gdb=True),
+         'category' : 'clang'},
+
 #        {'name': "llvm-ppc-darwin",
 #         'slavenames':["arxan_bellini"],
 #         'builddir':"llvm-ppc-darwin",
