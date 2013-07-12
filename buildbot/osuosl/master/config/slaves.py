@@ -208,6 +208,9 @@ def get_build_slaves():
         # Windows 7 Professional x64
         create_slave("as-bldslv4", properties={'jobs' : 2}, max_builds=1),
 
+        # zEnterprise 196 (s390x), SLES 11 SP2
+        create_slave("systemz-1", properties={'jobs': 4}, max_builds=1),
+
         # Defunct.
         # Pentium Dual CPU T3400 @ 2.1GHz
         #create_slave("dumitrescu1", properties={'jobs' : 2}, max_builds=1),

@@ -74,6 +74,12 @@ def _get_llvm_builders():
          'slavenames':["chinook"],
          'builddir':"llvm-ppc64",
          'factory': LLVMBuilder.getLLVMBuildFactory("ppc64-linux-gnu", jobs=4, clean=False, timeout=20)},
+
+        {'name': "llvm-s390x-linux1",
+         'slavenames':["systemz-1"],
+         'builddir':"llvm-s390x-linux1",
+         'factory': LLVMBuilder.getLLVMBuildFactory("s390x-linux-gnu", jobs=4, clean=False, timeout=20)},
+
         {'name': "llvm-x86_64-linux-vg_leak",
          'slavenames':["osu8"],
          'builddir':"llvm-x86_64-linux-vg_leak",
