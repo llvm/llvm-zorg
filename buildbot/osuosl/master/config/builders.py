@@ -219,7 +219,7 @@ def _get_clang_builders():
         {'name': "clang-x86_64-ubuntu",
          'slavenames':["arxan_raphael"],
          'builddir':"clang-x86_64-ubuntu",
-         'factory' : ClangBuilder.getClangBuildFactory()},
+         'factory' : ClangBuilder.getClangBuildFactory(extra_configure_args=['--enable-shared'])},
 
         {'name': "clang-native-arm-cortex-a9",
          'slavenames':["as-bldslv1", "as-bldslv2", "as-bldslv3", "linaro-panda-01"],
@@ -640,7 +640,7 @@ def _get_experimental_builders():
         {'name': "clang-atom-d2700-ubuntu",
          'slavenames':["atom-buildbot"],
          'builddir':"clang-atom-d2700-ubuntu",
-         'factory' : ClangBuilder.getClangBuildFactory(),
+         'factory' : ClangBuilder.getClangBuildFactory(extra_configure_args=['--enable-shared']),
          'category' : 'clang'},
         {'name': "clang-x86_64-debian-debug-werror",
          'slavenames':["obbligato-ellington"],
