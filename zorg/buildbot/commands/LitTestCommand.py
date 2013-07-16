@@ -9,7 +9,7 @@ from buildbot.steps.shell import Test
 
 class LitLogObserver(LogLineObserver):
   # Regular expressions for a regular test line.
-  kTestLineRE = re.compile(r'([^ ]*): (.*) \(.*\)')
+  kTestLineRE = re.compile(r'(\w+): (.*) \(.*\)')
 
   # Regular expressions for verbose log start and stop markers. Verbose log
   # output always immediately follow a test.
