@@ -33,9 +33,7 @@ def get_status_targets(standard_builders):
             ]
 
     # Get the path to the authors file we use for email lookup.
-    llvm_authors_path = os.path.join(os.path.dirname(__file__), 
-                                     set_config_option('Master Options',
-                                                        'llvm_authors_path'))
+    llvm_authors_path = set_config_option('Master Options', 'llvm_authors_path')
 
     # Construct a lookup object to be used for public builders.
     public_lookup = ConfigEmailLookup(
