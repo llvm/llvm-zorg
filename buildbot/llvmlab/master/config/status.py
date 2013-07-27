@@ -72,7 +72,7 @@ def get_status_targets(standard_builders):
             extraRecipients = ['llvm-testresults@cs.uiuc.edu', 'mgottesman@apple.com'],
             sendToInterestedUsers = True,
             mode = 'problem',
-            categories = ['build-public', 'test-public'],
+            categories = ['build-public', 'test-public', 'status'],
             addLogs = False,
             num_lines = 15),
 
