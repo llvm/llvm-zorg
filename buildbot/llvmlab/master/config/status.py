@@ -69,7 +69,7 @@ def get_status_targets(standard_builders):
         InformativeMailNotifier(
             fromaddr = from_email,
             lookup = public_lookup,
-            extraRecipients = ['llvm-testresults@cs.uiuc.edu', 'mgottesman@apple.com'],
+            extraRecipients = ['llvm-testresults@cs.uiuc.edu'],
             sendToInterestedUsers = True,
             mode = 'problem',
             categories = ['build-public', 'test-public', 'status'],
