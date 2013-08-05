@@ -673,6 +673,13 @@ def phasedClang(config_options, is_bootstrap=True, use_lto=False,
             command=['rm', '-rfv', 'llvm/projects/compiler-rt'],
             haltOnFailure=False, description=['rm', 'compiler-rt sources link'],
             workdir=WithProperties('%(builddir)s')))
+    # TODO: We used to use a symlink here but it seems to not work. I am trying
+    # to get this builder to work so I am just going to copy it instead.
+    f.addStep(buildbot.steps.shell.ShellCommand(
+              name='rm.clang-tools-extra-source',
+              command=['rm', '-rfv', 'extra'],
+              haltOnFailure=True, workdir='clang.src/tools',
+              description=['rm', 'clang-tools-extra sources']))
     # Pull sources.
     f = phased_builder_utils.SVNCleanupStep(f, 'llvm')
     f.addStep(HostSVN(name='pull.llvm', mode='incremental', method='fresh',
@@ -710,13 +717,6 @@ def phasedClang(config_options, is_bootstrap=True, use_lto=False,
               command=['ln', '-sfv', '../../compiler-rt.src', 'compiler-rt'],
               haltOnFailure=True, workdir='llvm/projects',
               description=['ln', 'compiler-rt sources']))
-    # TODO: We used to use a symlink here but it seems to not work. I am trying
-    # to get this builder to work so I am just going to copy it instead.
-    f.addStep(buildbot.steps.shell.ShellCommand(
-              name='rm.clang-tools-extra-source',
-              command=['rm', '-rfv', 'extra'],
-              haltOnFailure=True, workdir='clang.src/tools',
-              description=['rm', 'clang-tools-extra sources']))
     f.addStep(buildbot.steps.shell.ShellCommand(
               name='cp.clang-tools-extra-sources',
               command=['cp', '-Rfv', '../../clang-tools-extra.src', 'extra'],
