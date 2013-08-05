@@ -817,8 +817,7 @@ def phasedClang(config_options, is_bootstrap=True, use_lto=False,
     # Run the LLVM and Clang regression tests.
     f.addStep(lit_test_command.LitTestCommand(name='run.llvm.tests', haltOnFailure=True,
                                               command=['make', '-j', WithProperties('%(jobs)s'),
-                                                       'VERBOSE=1', 'check-all',
-                                                       'LIT_ARGS="-v --param run_long_tests=true"'],
+                                                       'VERBOSE=1', 'check-all'],
                                               description=['all', 'tests'],
                                               workdir=clang_build_dir))
     return f
