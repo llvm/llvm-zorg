@@ -101,4 +101,13 @@ def get_status_targets(standard_builders):
             builders = ["llvm-hexagon-elf","clang-hexagon-elf"],
             addLogs=False,
             num_lines = 15),
+        InformativeMailNotifier(
+            fromaddr = "llvm.buildmaster@lab.llvm.org",
+            sendToInterestedUsers= False,
+            extraRecipients = ["Ulrich.Weigand@de.ibm.com"],
+            subject="Build %(builder)s Failure",
+            mode = "failing",
+            builders = ["llvm-s390x-linux1"],
+            addLogs=False,
+            num_lines = 15),
         ]
