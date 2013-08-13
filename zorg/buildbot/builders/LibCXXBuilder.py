@@ -39,14 +39,24 @@ def getLibCXXBuilder():
               workdir='sources/lib', 
               env={ 'CC' : CC, 'CXX' : CXX, 'TRIPLE' : '-apple-'}))
 
+    # Get the 'lit' sources.
+    f.addStep(SVN(
+            name='pull.lit', mode='incremental', method='fresh',
+            baseURL='http://llvm.org/svn/llvm-project/llvm/trunk/utils/lit',
+            workdir='lit.src', alwaysUseLatest=False))
+
     # Install a copy of 'lit' in a virtualenv.
     f.addStep(buildbot.steps.shell.ShellCommand(
-            name='venv.lit.make', command=[
-                '/usr/local/bin/virtualenv', 'lit.venv'],
+            name='venv.lit.clean',
+            command=['rm', '-rf', 'lit.venv'],
+            workdir='.', haltOnFailure=True))
+    f.addStep(buildbot.steps.shell.ShellCommand(
+            name='venv.lit.make',
+            command=['/usr/local/bin/virtualenv', 'lit.venv'],
             workdir='.', haltOnFailure=True))
     f.addStep(buildbot.steps.shell.ShellCommand(
             name='venv.lit.install',
-            command=['lit.venv/bin/pip', 'install', 'lit'],
+            command=['lit.venv/bin/python', 'lit.src/setup.py', 'install'],
             workdir='.', haltOnFailure=True))
 
     # Run the tests with the system's dylib
