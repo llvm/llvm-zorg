@@ -42,7 +42,7 @@ def getLibCXXBuilder():
     # Get the 'lit' sources.
     f.addStep(svn.SVN(
             name='pull.lit', mode='incremental', method='fresh',
-            baseURL='http://llvm.org/svn/llvm-project/llvm/trunk/utils/lit',
+            repourl='http://llvm.org/svn/llvm-project/llvm/trunk/utils/lit',
             workdir='lit.src', alwaysUseLatest=False))
 
     # Install a copy of 'lit' in a virtualenv.
