@@ -40,7 +40,7 @@ def getLibCXXBuilder():
               env={ 'CC' : CC, 'CXX' : CXX, 'TRIPLE' : '-apple-'}))
 
     # Get the 'lit' sources.
-    f.addStep(SVN(
+    f.addStep(svn.SVN(
             name='pull.lit', mode='incremental', method='fresh',
             baseURL='http://llvm.org/svn/llvm-project/llvm/trunk/utils/lit',
             workdir='lit.src', alwaysUseLatest=False))
