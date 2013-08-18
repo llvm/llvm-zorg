@@ -1,3 +1,5 @@
+import os
+
 import buildbot
 import config
 
@@ -19,7 +21,7 @@ if is_production:
     package_url = set_config_option('Master Options', 'package_url',
                                     base_package_url)
     artifacts_path = set_config_option('Master Options', 'artifacts_path',
-                                       '~/artifacts')
+                                       os.path.expanduser('~/artifacts'))
     curl_flags = set_config_option('Master Options', 'curl_flags',
                                    '-fvLo')    
 else:
@@ -29,7 +31,7 @@ else:
     master_protocol = 'http'
     base_download_url = 'http://%s/~%s/artifacts' % (master_name, rsync_user)
     package_url = 'http://%s/~%s/packages' % (master_name, rsync_user)
-    artifacts_path = '~/artifacts'
+    artifacts_path = os.path.expanduser('~/artifacts')
     curl_flags = '-fvLo'
 
 base_rsync_path = '%s@%s:%s' % (rsync_user, master_name, artifacts_path)
