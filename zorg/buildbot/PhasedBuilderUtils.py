@@ -1,5 +1,4 @@
 import buildbot
-import config
 import json
 import os 
 import StringIO
@@ -9,7 +8,11 @@ from buildbot.steps.shell import SetProperty
 from buildbot.steps.shell import WithProperties
 from buildbot.steps.trigger import Trigger
 from datetime import datetime, date, time
+
 import zorg
+
+import config
+reload(config)
 
 class NamedTrigger(Trigger):
     """Trigger subclass which allows overriding the trigger name, and also
