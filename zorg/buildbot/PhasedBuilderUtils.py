@@ -12,7 +12,9 @@ from datetime import datetime, date, time
 import zorg
 
 import config
+import config.phase_config
 reload(config)
+reload(config.phase_config)
 
 class NamedTrigger(Trigger):
     """Trigger subclass which allows overriding the trigger name, and also
@@ -246,32 +248,6 @@ def getPhaseBuilderFactory(config, phase, next_phase, stages):
         descriptionDone = ['Clear changelist']))
     return f
 
-def PublishGoodBuild():
-    artifacts_dir = os.path.expanduser('~/artifacts/')
-    f = buildbot.process.factory.BuildFactory()
-    # TODO: Add steps to prepare a release and announce a good build.
-    from config.phase_config import phases
-    # Buildbot uses got_revision instead of revision to identify builds.
-    # We set it below so that the revision shows up in the html status pages.
-    setProperty(f, 'got_revision', WithProperties('%(revision)s'))
-    for phase in phases:
-        for build in phase['builders']:
-            buildname = build['name']
-            project = _project_from_name(buildname)
-            if project in ('clang', 'llvm-gcc', 'apple-clang'):
-                link_str = artifacts_dir + buildname + '/' + project
-                link_str += '-%(get_phase_id)s' + '.tar.gz'
-                artifacts_str = artifacts_dir + 'latest_validated/' + buildname 
-                artifacts_str += '.tar.gz'
-                f.addStep(MasterShellCommand(
-                    name='Publish.'+ buildname, haltOnFailure = True,
-                    command = ['ln', '-sfv',
-                               WithProperties(link_str,
-                                              get_phase_id=determine_phase_id),
-                               artifacts_str],
-                    description = ['publish', buildname]))
-    return f
-
 def set_config_option(section, option, default=False):
     import warnings
     if config.options.has_option(section, option):
@@ -281,6 +257,32 @@ def set_config_option(section, option, default=False):
         warn_str += '"%s" section of your local.cfg file' % section
         warnings.warn(warn_str) 
         return default
+
+def PublishGoodBuild():
+    artifacts_dir = set_config_option('Master Options', 'artifacts_path',
+                                      os.path.expanduser('~/artifacts/'))
+    f = buildbot.process.factory.BuildFactory()
+    # TODO: Add steps to prepare a release and announce a good build.
+    # Buildbot uses got_revision instead of revision to identify builds.
+    # We set it below so that the revision shows up in the html status pages.
+    setProperty(f, 'got_revision', WithProperties('%(revision)s'))
+    for phase in config.phase_config.phases:
+        for build in phase['builders']:
+            buildname = build['name']
+            project = _project_from_name(buildname)
+            if project in ('clang', 'llvm-gcc', 'apple-clang'):
+                link_str = os.path.join(artifacts_dir, buildname,
+                                        project + '-%(get_phase_id)s.tar.gz')
+                artifacts_str = os.path.join(artifacts_dir, 'latest_validated',
+                                             buildname + '.tar.gz')
+                f.addStep(MasterShellCommand(
+                    name='Publish.'+ buildname, haltOnFailure = True,
+                    command = ['ln', '-sfv',
+                               WithProperties(link_str,
+                                              get_phase_id=determine_phase_id),
+                               artifacts_str],
+                    description = ['publish', buildname]))
+    return f
 
 
 def SVNCleanupStep(f, name):
