@@ -285,7 +285,7 @@ def PublishGoodBuild():
                         haltOnFailure = True,
                         description = ['create', 'validated', 'dir', 'for', buildname]))
                 
-                artifacts_str = os.path.join(artifacts_dir, 'latest_validated',
+                artifacts_str = os.path.join(artifacts_dir, 'validated_builds',
                                              buildname, file_str)
 
                 f.addStep(MasterShellCommand(
