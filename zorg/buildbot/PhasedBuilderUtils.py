@@ -37,7 +37,8 @@ class NamedTrigger(Trigger):
         Trigger.start(self)
 
 def _project_from_name(buildname):
-    name = buildname.replace('llvm-gcc', 'llvm$gcc')
+    name = buildname.replace('llvm-gcc', 'llvm$gcc')\
+                    .replace('apple-clang', 'apple$clang')
     params = name.split('-')
     project = params[0].replace('$', '-')
     return project
