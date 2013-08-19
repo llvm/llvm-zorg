@@ -267,15 +267,27 @@ def PublishGoodBuild():
     # Buildbot uses got_revision instead of revision to identify builds.
     # We set it below so that the revision shows up in the html status pages.
     setProperty(f, 'got_revision', WithProperties('%(revision)s'))
+
     for phase in config.phase_config.phases:
         for build in phase['builders']:
             buildname = build['name']
             project = _project_from_name(buildname)
             if project in ('clang', 'llvm-gcc', 'apple-clang'):
+                file_str = project + '-%(get_phase_id)s.tar.gz'
                 link_str = os.path.join(artifacts_dir, buildname,
-                                        project + '-%(get_phase_id)s.tar.gz')
+                                        file_str)
+                build_artifacts_dir = os.path.join(artifacts_dir, 'validated_builds',
+                                                   buildname)
+                f.addStep(MasterShellCommand(
+                        name='create.dir.%s' % buildname,
+                        command = ['mkdir', '-p',
+                                   build_artifacts_dir],
+                        haltOnFailure = True,
+                        description = ['create', 'validated', 'dir', 'for', buildname]))
+                
                 artifacts_str = os.path.join(artifacts_dir, 'latest_validated',
-                                             buildname + '.tar.gz')
+                                             buildname, file_str)
+
                 f.addStep(MasterShellCommand(
                     name='Publish.'+ buildname, haltOnFailure = True,
                     command = ['ln', '-sfv',
