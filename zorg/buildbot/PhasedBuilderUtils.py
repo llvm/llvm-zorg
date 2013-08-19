@@ -12,9 +12,7 @@ from datetime import datetime, date, time
 import zorg
 
 import config
-import config.phase_config
 reload(config)
-reload(config.phase_config)
 
 class NamedTrigger(Trigger):
     """Trigger subclass which allows overriding the trigger name, and also
@@ -260,6 +258,9 @@ def set_config_option(section, option, default=False):
         return default
 
 def PublishGoodBuild():
+    import config.phase_config
+    reload(config.phase_config)
+    
     artifacts_dir = set_config_option('Master Options', 'artifacts_path',
                                       os.path.expanduser('~/artifacts/'))
     f = buildbot.process.factory.BuildFactory()
