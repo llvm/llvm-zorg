@@ -293,7 +293,8 @@ def PublishGoodBuild():
                     command = ['ln', '-sfv',
                                WithProperties(link_str,
                                               get_phase_id=determine_phase_id),
-                               artifacts_str],
+                               WithProperties(artifacts_str,
+                                              get_phase_id=determine_phase_id)],
                     description = ['publish', buildname]))
     return f
 
