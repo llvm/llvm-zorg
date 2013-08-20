@@ -193,7 +193,7 @@ def GetCompilerArtifacts(f):
             workdir=WithProperties('%(builddir)s')))
     f.addStep(buildbot.steps.shell.ShellCommand(
               name='download.artifacts',
-              command=['curl', '-fvLo', 'host-compiler.tar.gz',
+              command=['curl', curl_flags, 'host-compiler.tar.gz',
                        WithProperties('%(get_curl)s', get_curl=determine_url)],
               haltOnFailure=True, description=['download build artifacts'],
               workdir=WithProperties('%(builddir)s')))
