@@ -40,7 +40,8 @@ def getSanitizerBuildFactory(
                   mode='update',
                   baseURL='http://address-sanitizer.googlecode.com/svn/',
                   defaultBranch='trunk',
-                  workdir=sanitizer_buildbot))
+                  workdir=sanitizer_buildbot,
+                  alwaysUseLatest=True))
 
     sanitizer_script = os.path.join("..", sanitizer_buildbot, "build",
                                     "scripts", "slave",
