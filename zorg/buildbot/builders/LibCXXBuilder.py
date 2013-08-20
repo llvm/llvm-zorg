@@ -7,28 +7,30 @@ import buildbot.steps.source.svn as svn
 import buildbot.process.properties as properties
 
 import zorg.buildbot.commands.LitTestCommand
-import zorg.buildbot.Artifacts
-import zorg.buildbot.PhasedBuilderUtils
+import zorg.buildbot.Artifacts as artifacts
+import zorg.buildbot.PhasedBuilderUtils as phased_builder_utils
 
 def getLibCXXBuilder():
     f = buildbot.process.factory.BuildFactory()
     
     # Grab the sources.
     src_url = 'http://llvm.org/svn/llvm-project/libcxx/trunk'
-    f = zorg.buildbot.PhasedBuilderUtils.SVNCleanupStep(f, 'sources')
+    f = phased_builder_utils.SVNCleanupStep(f, 'sources')
     f.addStep(svn.SVN(name='pull.src', mode='full', repourl=src_url,
                       workdir='sources', method='fresh',
                       alwaysUseLatest=False, retry = (60, 5),
                       description='pull.src'))
     
     # Find the build directory and grab the artifacts for our build.
-    f = zorg.buildbot.PhasedBuilderUtils.getBuildDir(f)
-    f = zorg.buildbot.Artifacts.GetCompilerArtifacts(f)
+    f = phased_builder_utils.getBuildDir(f)
+    f = artifacts.GetCompilerArtifacts(f)
+    host_compiler_dir = properties.WithProperties('%(builddir)s/host-compiler')
+    f = artifacts.GetCCFromCompilerArtifacts(f, host_compiler_dir)
+    f = artifacts.GetCXXFromCompilerArtifacts(f, host_compiler_dir)
     
     # Build libcxx.
-    CC = properties.WithProperties('%(builddir)s/host-compiler/bin/clang')
-    cxx_path = '%(builddir)s/host-compiler/bin/clang++'
-    CXX = properties.WithProperties(cxx_path)
+    CC = properties.WithProperties('%(cc_path)s')
+    CXX = properties.WithProperties('%(cxx_path)s')
     HEADER_INCLUDE = \
         properties.WithProperties('-I %(builddir)s/sources/include')
     SOURCE_LIB = \
@@ -66,7 +68,7 @@ def getLibCXXBuilder():
                 properties.WithProperties('%(builddir)s/lit.venv/bin/lit'),
                 '-v',
                 properties.WithProperties(
-                    '--param=cxx_under_test=%s' % (cxx_path,)),
+                    '--param=cxx_under_test=%(cxx_path)s'),
                 '--param=use_system_lib=true',
                 'sources/test'],
             workdir='.'))
@@ -77,7 +79,7 @@ def getLibCXXBuilder():
                 properties.WithProperties('%(builddir)s/lit.venv/bin/lit'),
                 '-v',
                 properties.WithProperties(
-                    '--param=cxx_under_test=%s' % (cxx_path,)),
+                    '--param=cxx_under_test=%(cxx_path)s'),
                 '--param=use_system_lib=false',
                 'sources/test'],
             workdir='.'))
