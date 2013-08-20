@@ -257,17 +257,20 @@ def set_config_option(section, option, default=False):
         warnings.warn(warn_str) 
         return default
 
-def PublishGoodBuild():
+def PublishGoodBuild(f=None, validated_build_dir='validated_builds'):
     import config.phase_config
     reload(config.phase_config)
     
     artifacts_dir = set_config_option('Master Options', 'artifacts_path',
                                       os.path.expanduser('~/artifacts/'))
-    f = buildbot.process.factory.BuildFactory()
+
     # TODO: Add steps to prepare a release and announce a good build.
-    # Buildbot uses got_revision instead of revision to identify builds.
-    # We set it below so that the revision shows up in the html status pages.
-    setProperty(f, 'got_revision', WithProperties('%(revision)s'))
+    
+    if f is None:
+        f = buildbot.process.factory.BuildFactory()
+        # Buildbot uses got_revision instead of revision to identify builds.
+        # We set it below so that the revision shows up in the html status pages.
+        setProperty(f, 'got_revision', WithProperties('%(revision)s'))
 
     for phase in config.phase_config.phases:
         for build in phase['builders']:
@@ -277,16 +280,17 @@ def PublishGoodBuild():
                 file_str = project + '-%(get_phase_id)s.tar.gz'
                 link_str = os.path.join(artifacts_dir, buildname,
                                         file_str)
-                build_artifacts_dir = os.path.join(artifacts_dir, 'validated_builds',
+                build_artifacts_dir = os.path.join(artifacts_dir, validated_build_dir,
                                                    buildname)
                 f.addStep(MasterShellCommand(
                         name='create.dir.%s' % buildname,
                         command = ['mkdir', '-p',
                                    build_artifacts_dir],
                         haltOnFailure = True,
-                        description = ['create', 'validated', 'dir', 'for', buildname]))
+                        description = ['create', validated_build_dir, 'dir', 'for',
+                                       buildname]))
                 
-                artifacts_str = os.path.join(artifacts_dir, 'validated_builds',
+                artifacts_str = os.path.join(artifacts_dir, validated_build_dir,
                                              buildname, file_str)
 
                 f.addStep(MasterShellCommand(
