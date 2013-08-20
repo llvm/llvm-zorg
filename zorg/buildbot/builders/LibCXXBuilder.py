@@ -6,9 +6,13 @@ import buildbot.steps.source as source
 import buildbot.steps.source.svn as svn
 import buildbot.process.properties as properties
 
-import zorg.buildbot.commands.LitTestCommand
+import zorg.buildbot.commands.LitTestCommand as lit_test_command
 import zorg.buildbot.Artifacts as artifacts
 import zorg.buildbot.PhasedBuilderUtils as phased_builder_utils
+
+reload(lit_test_command)
+reload(artifacts)
+reload(phased_builder_utils)
 
 def getLibCXXBuilder():
     f = buildbot.process.factory.BuildFactory()
@@ -62,7 +66,7 @@ def getLibCXXBuilder():
             workdir='lit.src', haltOnFailure=True))
 
     # Run the tests with the system's dylib
-    f.addStep(zorg.buildbot.commands.LitTestCommand.LitTestCommand(
+    f.addStep(lit_test_command.LitTestCommand(
             name='test.libcxx.system',
             command=[
                 properties.WithProperties('%(builddir)s/lit.venv/bin/lit'),
@@ -73,7 +77,7 @@ def getLibCXXBuilder():
                 'sources/test'],
             workdir='.'))
     # Run the tests with the newly built dylib
-    f.addStep(zorg.buildbot.commands.LitTestCommand.LitTestCommand(
+    f.addStep(lit_test_command.LitTestCommand(
             name='test.libcxx.new',
             command=[
                 properties.WithProperties('%(builddir)s/lit.venv/bin/lit'),
