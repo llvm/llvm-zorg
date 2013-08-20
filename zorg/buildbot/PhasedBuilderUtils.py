@@ -125,7 +125,7 @@ def GetLatestValidated(f):
             haltOnFailure=False, description=['rm', 'host-compiler'],
             workdir=WithProperties('%(builddir)s')))
     latest_url = zorg.buildbot.Artifacts.base_download_url
-    latest_url += '/latest_validated/clang-x86_64-darwin11-R.tar.gz'
+    latest_url += '/validated_builds/clang-x86_64-darwin11-R.tar.gz'
     f.addStep(buildbot.steps.shell.ShellCommand(
               name='download.artifacts',
               command=['curl', '-fvLo', 'host-compiler.tar.gz', latest_url],
@@ -292,7 +292,17 @@ def PublishGoodBuild(f=None, validated_build_dir='validated_builds'):
                 
                 artifacts_str = os.path.join(artifacts_dir, validated_build_dir,
                                              buildname, file_str)
-
+                
+                f.addStep(MasterShellCommand(
+                    name='Publish.Latest.' + buildname,
+                    haltOnFailure=True,
+                    command=['ln', '-sfv',
+                             WithProperties(link_str,
+                                            get_phase_id=determine_phase_id),
+                             os.path.join(artifacts_dir, validated_build_dir,
+                                          "%s.tar.gz" % buildname)],
+                    description=['publish', buildname, 'as latest']))
+                                            
                 f.addStep(MasterShellCommand(
                     name='Publish.'+ buildname, haltOnFailure = True,
                     command = ['ln', '-sfv',
