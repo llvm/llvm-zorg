@@ -257,7 +257,8 @@ def set_config_option(section, option, default=False):
         warnings.warn(warn_str) 
         return default
 
-def PublishGoodBuild(f=None, validated_build_dir='validated_builds'):
+def PublishGoodBuild(f=None, validated_build_dir='validated_builds',
+                     publish_only_latest=False):
     import config.phase_config
     reload(config.phase_config)
     
@@ -272,6 +273,14 @@ def PublishGoodBuild(f=None, validated_build_dir='validated_builds'):
         # We set it below so that the revision shows up in the html status pages.
         setProperty(f, 'got_revision', WithProperties('%(revision)s'))
 
+    f.addStep(MasterShellCommand(
+            name='create.dir.validated_build_dir',
+            command = ['mkdir', '-p',
+                       os.path.join(artifacts_dir, validated_build_dir)],
+            haltOnFailure = True,
+            description = ['create', validated_build_dir, 'dir']))
+
+
     for phase in config.phase_config.phases:
         for build in phase['builders']:
             buildname = build['name']
@@ -282,17 +291,7 @@ def PublishGoodBuild(f=None, validated_build_dir='validated_builds'):
                                         file_str)
                 build_artifacts_dir = os.path.join(artifacts_dir, validated_build_dir,
                                                    buildname)
-                f.addStep(MasterShellCommand(
-                        name='create.dir.%s' % buildname,
-                        command = ['mkdir', '-p',
-                                   build_artifacts_dir],
-                        haltOnFailure = True,
-                        description = ['create', validated_build_dir, 'dir', 'for',
-                                       buildname]))
-                
-                artifacts_str = os.path.join(artifacts_dir, validated_build_dir,
-                                             buildname, file_str)
-                
+
                 f.addStep(MasterShellCommand(
                     name='Publish.Latest.' + buildname,
                     haltOnFailure=True,
@@ -302,15 +301,27 @@ def PublishGoodBuild(f=None, validated_build_dir='validated_builds'):
                              os.path.join(artifacts_dir, validated_build_dir,
                                           "%s.tar.gz" % buildname)],
                     description=['publish', buildname, 'as latest']))
-                                            
-                f.addStep(MasterShellCommand(
-                    name='Publish.'+ buildname, haltOnFailure = True,
-                    command = ['ln', '-sfv',
-                               WithProperties(link_str,
-                                              get_phase_id=determine_phase_id),
-                               WithProperties(artifacts_str,
-                                              get_phase_id=determine_phase_id)],
-                    description = ['publish', buildname]))
+
+                if not publish_only_latest:
+                    f.addStep(MasterShellCommand(
+                            name='create.dir.%s' % buildname,
+                            command = ['mkdir', '-p',
+                                       build_artifacts_dir],
+                            haltOnFailure = True,
+                            description = ['create', 'validated', 'dir', 'for',
+                                           buildname]))
+
+                    artifacts_str = os.path.join(artifacts_dir, validated_build_dir,
+                                                 buildname, file_str)                
+
+                    f.addStep(MasterShellCommand(
+                        name='Publish.'+ buildname, haltOnFailure = True,
+                        command = ['ln', '-sfv',
+                                   WithProperties(link_str,
+                                                  get_phase_id=determine_phase_id),
+                                   WithProperties(artifacts_str,
+                                                  get_phase_id=determine_phase_id)],
+                        description = ['publish', buildname]))
     return f
 
 
