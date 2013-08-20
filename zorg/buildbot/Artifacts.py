@@ -202,3 +202,36 @@ def GetCompilerArtifacts(f):
               haltOnFailure=True, description=['extract', 'host-compiler'],
               workdir='host-compiler'))
     return f
+
+def GetCCFromCompilerArtifacts(f, base_dir):
+    def get_cc(status, stdin, stdout):
+        lines = filter(bool, stdin.split('\n'))
+        for line in lines:
+            if 'bin/clang' in line:
+                cc_path = line
+                return { 'cc_path' : cc_path }
+        return { }
+    
+    f.addStep(buildbot.steps.shell.SetProperty(
+        name='find.cc',
+        command=['find', base_dir, '-name', 'clang'],
+        extract_fn=get_cc,
+        workdir=WithProperties('%(builddir)s')))
+    return f
+
+def GetCXXFromCompilerArtifacts(f, base_dir):
+    def get_cxx(status, stdin, stdout):
+        lines = filter(bool, stdin.split('\n'))
+        for line in lines:
+            if 'bin/clang++' in line:
+                cxx_path = line
+                return { 'cxx_path' : cxx_path }
+        return { }
+
+    f.addStep(buildbot.steps.shell.SetProperty(
+        name='find.cxx',
+        command=['find', base_dir, '-name', 'clang++'],
+        extract_fn=get_cxx,
+        workdir=WithProperties('%(builddir)s')))
+    return f
+
