@@ -76,7 +76,8 @@ def getLibCXXBuilder(f=None, source_path=None,
             workdir='.', haltOnFailure=True))
     f.addStep(buildbot.steps.shell.ShellCommand(
             name='venv.lit.install',
-            command=['../lit.venv/bin/python', 'setup.py', 'install'],
+            command=[WithProperties('%(builddir)s/lit.venv/bin/python'),
+                     'setup.py', 'install'],
             workdir=lit_dir, haltOnFailure=True))
 
     # Run the tests with the system's dylib
