@@ -17,7 +17,7 @@ reload(artifacts)
 reload(phased_builder_utils)
 
 def getLibCXXBuilder(f=None, source_path=None,
-                     lit_path=None):
+                     lit_dir=None):
     if f is None:
         f = buildbot.process.factory.BuildFactory()
         # Find the build directory. We assume if f is passed in that the build
@@ -58,7 +58,7 @@ def getLibCXXBuilder(f=None, source_path=None,
               env={ 'CC' : CC, 'CXX' : CXX, 'TRIPLE' : '-apple-'}))
 
     # Get the 'lit' sources if we need to.
-    if lit_path is None:
+    if lit_dir is None:
         lit_dir = 'lit.src'
         f.addStep(svn.SVN(
             name='pull.lit', mode='incremental', method='fresh',
