@@ -7,11 +7,11 @@ import buildbot.steps.source.svn as svn
 import buildbot.process.properties as properties
 
 import zorg.buildbot.commands.LitTestCommand as lit_test_command
-import zorg.buildbot.Artifacts as artifacts
+import zorg.buildbot.Artifacts as compiler_artifacts
 import zorg.buildbot.PhasedBuilderUtils as phased_builder_utils
 
 reload(lit_test_command)
-reload(artifacts)
+reload(compiler_artifacts)
 reload(phased_builder_utils)
 
 def getLibCXXBuilder():
@@ -27,10 +27,10 @@ def getLibCXXBuilder():
     
     # Find the build directory and grab the artifacts for our build.
     f = phased_builder_utils.getBuildDir(f)
-    f = artifacts.GetCompilerArtifacts(f)
+    f = compiler_artifacts.GetCompilerArtifacts(f)
     host_compiler_dir = properties.WithProperties('%(builddir)s/host-compiler')
-    f = artifacts.GetCCFromCompilerArtifacts(f, host_compiler_dir)
-    f = artifacts.GetCXXFromCompilerArtifacts(f, host_compiler_dir)
+    f = compiler_artifacts.GetCCFromCompilerArtifacts(f, host_compiler_dir)
+    f = compiler_artifacts.GetCXXFromCompilerArtifacts(f, host_compiler_dir)
     
     # Build libcxx.
     CC = properties.WithProperties('%(cc_path)s')
