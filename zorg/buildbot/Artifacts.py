@@ -161,8 +161,9 @@ def uploadArtifacts(f, rootdir='clang-install'):
     return f
 
 def project_from_name(builder_name):
-  if 'clang' in builder_name:
-    return 'clang'
+  for project in ('apple-clang', 'clang'):
+      if project in builder_name:
+          return project
   raise RuntimeError('Invalid builder name.')
 
 def determine_url(props):
