@@ -12,7 +12,6 @@ from datetime import datetime, date, time
 import zorg
 
 import config
-reload(config)
 
 class NamedTrigger(Trigger):
     """Trigger subclass which allows overriding the trigger name, and also
