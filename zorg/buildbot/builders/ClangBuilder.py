@@ -157,8 +157,7 @@ def getClangBuildFactory(
     if triple:
         base_configure_args += ['--build=%s' % triple,
                                 '--host=%s' % triple]
-    args = base_configure_args + ["--without-llvmgcc", "--without-llvmgxx"]
-    args.append(WithProperties("--prefix=%%(builddir)s/%s" % llvm_1_installdir))
+    args = base_configure_args + [WithProperties("--prefix=%%(builddir)s/%s" % llvm_1_installdir)]
     args += builders_util.getConfigArgs(stage1_config)
     if not clean:
         f.addStep(SetProperty(name="Makefile_isready",
@@ -291,8 +290,7 @@ def getClangBuildFactory(
                                env=merged_env))
 
     # Configure llvm (stage 2).
-    args = base_configure_args + ["--without-llvmgcc", "--without-llvmgxx"]
-    args.append(WithProperties("--prefix=%(builddir)s/" + llvm_2_installdir))
+    args = base_configure_args + [WithProperties("--prefix=%(builddir)s/" + llvm_2_installdir)]
     args += builders_util.getConfigArgs(stage2_config)
     local_env = dict(merged_env)
     local_env.update({
@@ -738,8 +736,7 @@ def phasedClang(config_options, is_bootstrap=True, use_lto=False,
     # Construct the configure arguments.
     configure_args = ['../llvm/configure']
     configure_args.extend(config_options)
-    configure_args.extend(['--disable-bindings', '--with-llvmcc=clang',
-                           '--without-llvmgcc', '--without-llvmgxx',
+    configure_args.extend(['--disable-bindings',
                            '--enable-keep-symbols'])
     configure_args.append(
         WithProperties('--prefix=%(builddir)s/clang-install'))    

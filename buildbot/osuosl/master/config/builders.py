@@ -366,12 +366,12 @@ def _get_clang_builders():
         {'name' : "clang-hexagon-elf",
          'slavenames' :["hexagon-build-02"],
          'builddir' :"clang-hexagon-elf",
-         'factory' : ClangBuilder.getClangBuildFactory(triple='hexagon-unknown-elf',
-                                                       stage1_config='Release+Asserts',
-                                                       extra_configure_args=['--build=x86_64-linux-gnu',
-                                                                             '--host=x86_64-linux-gnu',
-                                                                             '--target=hexagon-unknown-elf',
-                                                                             '--enable-targets=hexagon'])},
+         'factory' : ClangBuilder.getClangBuildFactory(
+                     triple='x86_64-linux-gnu',
+                     stage1_config='Release+Asserts',
+                     extra_configure_args=['--enable-shared',
+                                           '--target=hexagon-unknown-elf',
+                                           '--enable-targets=hexagon'])},
         ]
 
 # Offline.
