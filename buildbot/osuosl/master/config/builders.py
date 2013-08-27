@@ -611,6 +611,11 @@ def _get_sanitizer_builders():
            'slavenames' :["sanitizer-buildbot1"],
            'builddir': "sanitizer-x86_64-linux",
            'factory': SanitizerBuilder.getSanitizerBuildFactory()},
+
+          {'name': "sanitizer-x86_64-linux-bootstrap",
+           'slavenames' :["sanitizer-buildbot2"],
+           'builddir': "sanitizer-x86_64-linux-bootstrap",
+           'factory': SanitizerBuilder.getSanitizerBuildFactory()},
           ]
 
 # Experimental and stopped builders
