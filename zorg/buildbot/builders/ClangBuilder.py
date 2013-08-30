@@ -812,9 +812,9 @@ def phasedClang(config_options, is_bootstrap=True, use_lto=False,
     # Save artifacts of this build for use by other builders.
     f = artifacts.uploadArtifacts(f)
     # Run the LLVM and Clang regression tests.
+    cmd_str = 'make VERBOSE=1 LIT_ARGS="-v --param run_long_tests=true" check-all'
     f.addStep(lit_test_command.LitTestCommand(name='run.llvm.tests', haltOnFailure=True,
-                                              command=['make', '-j', WithProperties('%(jobs)s'),
-                                                       'VERBOSE=1', 'check-all'],
+                                              command=cmd_str,
                                               description=['all', 'tests'],
                                               workdir=clang_build_dir))
     return f
