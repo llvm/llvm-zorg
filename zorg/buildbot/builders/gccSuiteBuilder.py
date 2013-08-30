@@ -1,6 +1,6 @@
 import os
 import buildbot
-from zorg.buildbot.PhasedBuilderUtils import getBuildDir, setProperty
+from zorg.buildbot.util.phasedbuilderutils import getBuildDir, setProperty
 from zorg.buildbot.util.artifacts import GetCompilerArtifacts
 import zorg.buildbot.builders.ClangBuilder as ClangBuilder
 

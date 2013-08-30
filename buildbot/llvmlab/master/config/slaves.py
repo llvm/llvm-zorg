@@ -3,7 +3,7 @@ import buildbot.buildslave
 import os
 import config
 
-from zorg.buildbot.PhasedBuilderUtils import set_config_option
+from zorg.buildbot.util.phasedbuilderutils import set_config_option
 
 def create_slave(name, jobs, max_builds = None):
     if max_builds is None:

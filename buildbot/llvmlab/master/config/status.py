@@ -5,7 +5,7 @@ import buildbot.status.words
 import config
 import os
 
-from zorg.buildbot.PhasedBuilderUtils import set_config_option
+from zorg.buildbot.util.phasedbuilderutils import set_config_option
 from zorg.buildbot.util.ConfigEmailLookup import ConfigEmailLookup
 from zorg.buildbot.util.InformativeMailNotifier import InformativeMailNotifier 
 

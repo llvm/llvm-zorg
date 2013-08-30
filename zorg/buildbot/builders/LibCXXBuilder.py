@@ -10,7 +10,7 @@ import buildbot.process.properties as properties
 
 import zorg.buildbot.commands.LitTestCommand as lit_test_command
 import zorg.buildbot.util.artifacts as artifacts
-import zorg.buildbot.PhasedBuilderUtils as phased_builder_utils
+import zorg.buildbot.util.phasedbuilderutils as phased_builder_utils
 
 reload(lit_test_command)
 reload(artifacts)

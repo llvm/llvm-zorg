@@ -4,8 +4,8 @@ import buildbot
 import config
 
 from buildbot.steps.shell import WithProperties
-from zorg.buildbot.PhasedBuilderUtils import setProperty, determine_phase_id
-from zorg.buildbot.PhasedBuilderUtils import set_config_option
+from zorg.buildbot.util.phasedbuilderutils import setProperty, determine_phase_id
+from zorg.buildbot.util.phasedbuilderutils import set_config_option
 
 # Get some parameters about where to upload and download results from.
 is_production = set_config_option('Master Options', 'is_production')

@@ -10,7 +10,7 @@ from buildbot.steps.transfer import FileDownload
 
 import zorg.buildbot.util.artifacts as artifacts
 import zorg.buildbot.builders.Util as builders_util
-import zorg.buildbot.PhasedBuilderUtils as phased_builder_utils
+import zorg.buildbot.util.phasedbuilderutils as phasedbuilderutils
 import zorg.buildbot.commands as commands
 import zorg.buildbot.commands.BatchFileDownload as batch_file_download
 import zorg.buildbot.commands.LitTestCommand as lit_test_command
@@ -626,7 +626,7 @@ def getClangTestsIgnoresFromPath(path, key):
 
     return ignores
 
-from zorg.buildbot.PhasedBuilderUtils import getBuildDir, setProperty
+from zorg.buildbot.util.phasedbuilderutils import getBuildDir, setProperty
 from zorg.buildbot.builders.Util import _did_last_build_fail
 from buildbot.steps.source.svn import SVN as HostSVN
 
@@ -679,24 +679,24 @@ def phasedClang(config_options, is_bootstrap=True, use_lto=False,
               haltOnFailure=True, workdir='clang.src/tools',
               description=['rm', 'clang-tools-extra sources']))
     # Pull sources.
-    f = phased_builder_utils.SVNCleanupStep(f, 'llvm')
+    f = phasedbuilderutils.SVNCleanupStep(f, 'llvm')
     f.addStep(HostSVN(name='pull.llvm', mode='incremental', method='fresh',
                       repourl='http://llvm.org/svn/llvm-project/llvm/trunk',
                       retry=(60, 5), workdir='llvm', description='pull.llvm',
                       alwaysUseLatest=False))
-    f = phased_builder_utils.SVNCleanupStep(f, 'clang.src')
+    f = phasedbuilderutils.SVNCleanupStep(f, 'clang.src')
     f.addStep(HostSVN(name='pull.clang', mode='incremental', method='fresh',
                       repourl='http://llvm.org/svn/llvm-project/cfe/trunk',
                       workdir='clang.src', retry=(60, 5),
                       description='pull.clang', alwaysUseLatest=False))
-    f = phased_builder_utils.SVNCleanupStep(f, 'clang-tools-extra.src')
+    f = phasedbuilderutils.SVNCleanupStep(f, 'clang-tools-extra.src')
     f.addStep(HostSVN(name='pull.clang-tools-extra', mode='incremental',
                       method='fresh',
                       repourl='http://llvm.org/svn/llvm-project/'
                               'clang-tools-extra/trunk',
                       workdir='clang-tools-extra.src', alwaysUseLatest=False,
                       retry=(60, 5), description='pull.clang-tools-extra'))
-    f = phased_builder_utils.SVNCleanupStep(f, 'compiler-rt.src')
+    f = phasedbuilderutils.SVNCleanupStep(f, 'compiler-rt.src')
     f.addStep(HostSVN(name='pull.compiler-rt', mode='incremental',
                       method='fresh',
                       repourl='http://llvm.org/svn/llvm-project/compiler-rt/'
@@ -746,12 +746,12 @@ def phasedClang(config_options, is_bootstrap=True, use_lto=False,
     if is_bootstrap:
         f = artifacts.GetCompilerArtifacts(f)
     else:
-        f = phased_builder_utils.GetLatestValidated(f)
+        f = phasedbuilderutils.GetLatestValidated(f)
     cc_command = ['find', 'host-compiler', '-name', 'clang']
     f.addStep(buildbot.steps.shell.SetProperty(
               name='find.cc',
               command=cc_command,
-              extract_fn=phased_builder_utils.find_cc,
+              extract_fn=phasedbuilderutils.find_cc,
               workdir=WithProperties('%(builddir)s')))
     f.addStep(buildbot.steps.shell.ShellCommand(
               name='sanity.test', haltOnFailure=True,
@@ -768,7 +768,7 @@ def phasedClang(config_options, is_bootstrap=True, use_lto=False,
         f.addStep(buildbot.steps.shell.SetProperty(
                 name='find.liblto',
                 command=liblto_command,
-                extract_fn=phased_builder_utils.find_liblto,
+                extract_fn=phasedbuilderutils.find_liblto,
                 workdir=WithProperties('%(builddir)s')))
         configure_args.append(
           '--with-extra-options=-flto -gline-tables-only')

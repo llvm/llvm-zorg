@@ -1,5 +1,5 @@
 import config
-from zorg.buildbot.PhasedBuilderUtils import getPhaseBuilderFactory, PublishGoodBuild
+from zorg.buildbot.util.phasedbuilderutils import getPhaseBuilderFactory, PublishGoodBuild
 
 # Load the phase information.
 import phase_config

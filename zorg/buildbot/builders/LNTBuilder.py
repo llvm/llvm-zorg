@@ -10,7 +10,7 @@ from buildbot.process.properties import WithProperties
 
 import zorg
 from zorg.buildbot.builders import ClangBuilder
-from zorg.buildbot.PhasedBuilderUtils import getBuildDir, setProperty
+from zorg.buildbot.util.phasedbuilderutils import getBuildDir, setProperty
 from zorg.buildbot.util.artifacts import GetCompilerRoot, package_url
 
 def _get_cc(status, stdin, stdout):
