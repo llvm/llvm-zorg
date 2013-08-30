@@ -1,5 +1,5 @@
 #from zorg.buildbot.builders.LNTBuilder import CreateLNTNightlyFactory
-from zorg.buildbot.Artifacts import rsync_user, master_name
+from zorg.buildbot.util.artifacts import rsync_user, master_name
 import zorg.buildbot.builders.ClangBuilder as ClangBuilder
 from zorg.buildbot.builders.LLDBBuilder import getLLDBxcodebuildFactory
 import zorg.buildbot.builders.LibCXXBuilder as LibCXXBuilder

@@ -8,7 +8,7 @@ from buildbot.steps.shell import WarningCountingShellCommand
 from buildbot.steps.source import SVN
 from buildbot.steps.transfer import FileDownload
 
-import zorg.buildbot.Artifacts as artifacts
+import zorg.buildbot.util.artifacts as artifacts
 import zorg.buildbot.builders.Util as builders_util
 import zorg.buildbot.PhasedBuilderUtils as phased_builder_utils
 import zorg.buildbot.commands as commands

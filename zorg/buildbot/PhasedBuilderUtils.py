@@ -118,12 +118,14 @@ def getUserDir(f):
     return f
 
 def GetLatestValidated(f):
+    import zorg.buildbot.util.artifacts as artifacts
+
     f.addStep(buildbot.steps.shell.ShellCommand(
             name='rm.host-compiler',
             command=['rm', '-rfv', 'host-compiler', 'host-compiler.tar.gz'],
             haltOnFailure=False, description=['rm', 'host-compiler'],
             workdir=WithProperties('%(builddir)s')))
-    latest_url = zorg.buildbot.Artifacts.base_download_url
+    latest_url = artifacts.base_download_url
     latest_url += '/validated_builds/clang-x86_64-darwin11-R.tar.gz'
     f.addStep(buildbot.steps.shell.ShellCommand(
               name='download.artifacts',

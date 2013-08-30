@@ -1,7 +1,7 @@
 import os
 import buildbot
 from zorg.buildbot.PhasedBuilderUtils import getBuildDir, setProperty
-from zorg.buildbot.Artifacts import GetCompilerArtifacts
+from zorg.buildbot.util.artifacts import GetCompilerArtifacts
 import zorg.buildbot.builders.ClangBuilder as ClangBuilder
 
 def gccRunSuite(languages):

@@ -9,7 +9,7 @@ import buildbot.steps.source.svn as svn
 import buildbot.process.properties as properties
 
 import zorg.buildbot.commands.LitTestCommand as lit_test_command
-import zorg.buildbot.Artifacts as artifacts
+import zorg.buildbot.util.artifacts as artifacts
 import zorg.buildbot.PhasedBuilderUtils as phased_builder_utils
 
 reload(lit_test_command)
