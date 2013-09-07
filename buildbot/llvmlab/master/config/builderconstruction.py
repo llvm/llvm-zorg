@@ -33,6 +33,8 @@ def construct(name):
             kind += '-lto'
         elif 'incremental' in name:
             kind += '-incremental'
+        if 'cxx11' in name:
+            kind += '-cxx11'
     else:
         if '_' not in name:
             raise ValueError, "invalid builder name: %r" % name
@@ -236,6 +238,10 @@ def construct_lto_compiler_builder_from_name(name):
 def construct_incremental_compiler_build_from_name(name):
     return construct_compiler_builder_from_name(name, incremental=True)    
 
+def construct_incremental_cxx11_compiler_build_from_name(name):
+    return construct_compiler_builder_from_name(name, incremental=True,
+                                                libcxx=True)
+
 def construct_libcxx_builder_from_name(name):
     # libcxx builds are named following:
     #   libcxx_<compiler under test>
@@ -249,6 +255,8 @@ builder_kinds = {
                   'compile-lto' : construct_lto_compiler_builder_from_name,
                   'compile-incremental' :
                       construct_incremental_compiler_build_from_name,
+                  'compile-incremental-cxx11' :
+                      construct_incremental_cxx11_compiler_build_from_name,
                   'lnt' : construct_lnt_builder_from_name,
                   'lldb' : construct_lldb_builder_from_name,
                   'libcxx' : construct_libcxx_builder_from_name }
