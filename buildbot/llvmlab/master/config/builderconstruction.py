@@ -240,7 +240,7 @@ def construct_incremental_compiler_build_from_name(name):
 
 def construct_incremental_cxx11_compiler_build_from_name(name):
     return construct_compiler_builder_from_name(name, incremental=True,
-                                                libcxx=True)
+                                                use_cxx11=True)
 
 def construct_libcxx_builder_from_name(name):
     # libcxx builds are named following:
