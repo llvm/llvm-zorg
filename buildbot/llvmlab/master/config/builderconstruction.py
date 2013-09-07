@@ -69,7 +69,8 @@ def construct(name):
     return builder
 
 def construct_compiler_builder_from_name(name, use_lto=False,
-                                         incremental=False):
+                                         incremental=False,
+                                         use_cxx11=False):
     
     # Compiler builds are named following:
     #   <compiler>-<host arch>-<host os>-[<build cc>-]<build style>.
@@ -117,15 +118,15 @@ def construct_compiler_builder_from_name(name, use_lto=False,
     config_options = ['--build=%s' % target_triple,
                       '--host=%s' % target_triple]
 
-    if build_style in ['DA', 'DAlto', 'DAincremental']:
+    if build_style in ['DA', 'DAlto', 'DAincremental', 'DAincrementalcxx11']:
         build_config = "Debug+Asserts"
         config_options.extend(['--disable-optimized'])
         config_options.extend(['--enable-assertions'])
-    elif build_style in ['RA', 'RAlto', 'RAincremental']:
+    elif build_style in ['RA', 'RAlto', 'RAincremental', 'RAincrementalcxx11']:
         build_config = "Release+Asserts"
         config_options.extend(['--enable-optimized'])
         config_options.extend(['--enable-assertions'])
-    elif build_style in ['R', 'Rlto', 'Rincremental']:
+    elif build_style in ['R', 'Rlto', 'Rincremental', 'Rincrementalcxx11']:
         build_config = "Release"
         config_options.extend(['--enable-optimized'])
         config_options.extend(['--disable-assertions'])
@@ -140,7 +141,8 @@ def construct_compiler_builder_from_name(name, use_lto=False,
         return { 'factory' : ClangBuilder.phasedClang(config_options,
                                          is_bootstrap=(build_cc is None),
                                          use_lto=use_lto,
-                                         incremental=incremental) }
+                                         incremental=incremental,
+                                         use_cxx11=use_cxx11) }
     elif compiler == 'llvm-gcc':
         # Currently, llvm-gcc builders do their own two-stage build,
         # they don't use any prebuilt artifacts.
