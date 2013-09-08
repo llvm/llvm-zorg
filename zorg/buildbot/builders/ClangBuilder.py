@@ -847,7 +847,7 @@ def phasedClang(config_options, is_bootstrap=True, use_lto=False,
                                               workdir=clang_build_dir))
     # Work around for lldb issue rdar://14929651
     cmd_str = r"""make VERBOSE=1 LIT_ARGS="-j 1 -v --param run_long_tests=true --filter='debuginfo-tests'" check-all"""
-    f.addStep(lit_test_command.LitTestCommand(name='run.llvm.tests', haltOnFailure=True,
+    f.addStep(lit_test_command.LitTestCommand(name='run.llvm.debuginfo-tests', haltOnFailure=True,
                                               command=cmd_str,
                                               description=['all', 'tests'],
                                               workdir=clang_build_dir))
