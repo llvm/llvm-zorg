@@ -680,9 +680,9 @@ def phasedClang(config_options, is_bootstrap=True, use_lto=False,
               description=['rm', 'clang-tools-extra sources']))
     f.addStep(buildbot.steps.shell.ShellCommand(
               name='rm.debuginfo-tests',
-              command=['rm', '-rfv', 'clang.src/test/debuginfo-test'],
+              command=['rm', '-rfv', 'clang.src/test/debuginfo-tests'],
               haltOnFailure=True, workdir=WithProperties('%(builddir)s'),
-              description=['rm', 'debuginfo-test sources']))
+              description=['rm', 'debuginfo-tests sources']))
 
     # Pull sources.
     f = phasedbuilderutils.SVNCleanupStep(f, 'llvm')
@@ -716,7 +716,7 @@ def phasedClang(config_options, is_bootstrap=True, use_lto=False,
                               'trunk',
                       workdir='libcxx.src', alwaysUseLatest=False,
                       retry=(60, 5), description='pull.libcxx'))
-    f = phasedbuilderutils.SVNCleanupStep(f, 'libcxx.src')
+    f = phasedbuilderutils.SVNCleanupStep(f, 'debuginfo-tests.src')
     f.addStep(HostSVN(name='pull.debuginfo-tests', mode='incremental',
                       method='fresh',
                       repourl='http://llvm.org/svn/llvm-project/debuginfo-tests/'
@@ -747,11 +747,11 @@ def phasedClang(config_options, is_bootstrap=True, use_lto=False,
               haltOnFailure=True, workdir='clang.src/tools',
               description=['cp', 'clang-tools-extra sources']))    
     f.addStep(buildbot.steps.shell.ShellCommand(
-              name='cp.debuginfo-test-sources',
-              command=['cp', '-Rfv', 'debuginfo-test.src',
-                       'clang.src/test/debuginfo-test'],
+              name='cp.debuginfo-tests.sources',
+              command=['cp', '-Rfv', 'debuginfo-tests.src',
+                       'clang.src/test/debuginfo-tests'],
               haltOnFailure=True, workdir=WithProperties('%(builddir)s'),
-              description=['cp', 'debuginfo-test sources']))
+              description=['cp', 'debuginfo-tests sources']))
 
     # Clean the install directory.
     f.addStep(buildbot.steps.shell.ShellCommand(
