@@ -675,9 +675,15 @@ def phasedClang(config_options, is_bootstrap=True, use_lto=False,
     # to get this builder to work so I am just going to copy it instead.
     f.addStep(buildbot.steps.shell.ShellCommand(
               name='rm.clang-tools-extra-source',
-              command=['rm', '-rfv', 'extra'],
-              haltOnFailure=True, workdir='clang.src/tools',
+              command=['rm', '-rfv', 'clang.src/tools/extra'],
+              haltOnFailure=True, workdir=WithProperties('%(builddir)s'),
               description=['rm', 'clang-tools-extra sources']))
+    f.addStep(buildbot.steps.shell.ShellCommand(
+              name='rm.debuginfo-tests',
+              command=['rm', '-rfv', 'clang.src/test/debuginfo-test'],
+              haltOnFailure=True, workdir=WithProperties('%(builddir)s'),
+              description=['rm', 'debuginfo-test sources']))
+
     # Pull sources.
     f = phasedbuilderutils.SVNCleanupStep(f, 'llvm')
     f.addStep(HostSVN(name='pull.llvm', mode='incremental', method='fresh',
@@ -710,6 +716,14 @@ def phasedClang(config_options, is_bootstrap=True, use_lto=False,
                               'trunk',
                       workdir='libcxx.src', alwaysUseLatest=False,
                       retry=(60, 5), description='pull.libcxx'))
+    f = phasedbuilderutils.SVNCleanupStep(f, 'libcxx.src')
+    f.addStep(HostSVN(name='pull.debuginfo-tests', mode='incremental',
+                      method='fresh',
+                      repourl='http://llvm.org/svn/llvm-project/debuginfo-tests/'
+                              'trunk',
+                      workdir='debuginfo-tests.src', alwaysUseLatest=False,
+                      retry=(60, 5), description='pull.debuginfo-tests'))
+
     # Create symlinks to the clang compiler-rt sources inside the LLVM tree.
     # We don't actually check out the sources there, because the SVN purge
     # would always remove them then.
@@ -732,14 +746,13 @@ def phasedClang(config_options, is_bootstrap=True, use_lto=False,
               command=['cp', '-Rfv', '../../clang-tools-extra.src', 'extra'],
               haltOnFailure=True, workdir='clang.src/tools',
               description=['cp', 'clang-tools-extra sources']))    
-    # Checkout the supplemental 'debuginfo-tests' repository.
-    debuginfo_url = 'http://llvm.org/svn/llvm-project/debuginfo-tests/trunk'
-    f.addStep(HostSVN(name='pull.debug-info tests', mode='incremental',
-                      repourl=debuginfo_url,
-                      method='fresh',
-                      workdir='llvm/tools/clang/test/debuginfo-tests',
-                      alwaysUseLatest=False, retry = (60, 5),
-                      description='pull.debug-info tests'))
+    f.addStep(buildbot.steps.shell.ShellCommand(
+              name='cp.debuginfo-test-sources',
+              command=['cp', '-Rfv', 'debuginfo-test.src',
+                       'clang.src/test/debuginfo-test'],
+              haltOnFailure=True, workdir=WithProperties('%(builddir)s'),
+              description=['cp', 'debuginfo-test sources']))
+
     # Clean the install directory.
     f.addStep(buildbot.steps.shell.ShellCommand(
               name='rm.clang-install', command=['rm', '-rfv', 'clang-install'],
