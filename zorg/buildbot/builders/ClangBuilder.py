@@ -799,7 +799,7 @@ def phasedClang(config_options, is_bootstrap=True, use_lto=False,
           '--with-extra-options=-flto -gline-tables-only')
     
     if use_cxx11:
-        configure_args.append("CXX_FLAGS=-std=c++11 -stdlib=libc++ -nostdinc++")
+        configure_args.append("CXXFLAGS=-std=c++11 -stdlib=libc++ -nostdinc++")
 
     # Configure the LLVM build.
     if incremental:
