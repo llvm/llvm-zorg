@@ -143,7 +143,7 @@ def uploadArtifacts(f, rootdir='clang-install'):
                   workdir=WithProperties('%(builddir)s')))
     f.addStep(buildbot.steps.shell.ShellCommand(
               name='tar.and.zip', haltOnFailure=True,
-              command=['tar', 'czvf', archive_path, './'],
+              command=['tar', '-czv', '--exclude', '.svn', '-f', archive_path, './'],
               description=['tar', '&', 'zip'], workdir=rootdir))
     # Upload the archive.
     archive_dest = WithProperties(base_rsync_path +'/%(getpath)s/',
