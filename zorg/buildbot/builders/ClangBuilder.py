@@ -703,6 +703,13 @@ def phasedClang(config_options, is_bootstrap=True, use_lto=False,
                               'trunk',
                       workdir='compiler-rt.src', alwaysUseLatest=False,
                       retry=(60, 5), description='pull.compiler-rt'))
+    f = phasedbuilderutils.SVNCleanupStep(f, 'libcxx.src')
+    f.addStep(HostSVN(name='pull.libcxx', mode='incremental',
+                      method='fresh',
+                      repourl='http://llvm.org/svn/llvm-project/libcxx/'
+                              'trunk',
+                      workdir='libcxx.src', alwaysUseLatest=False,
+                      retry=(60, 5), description='pull.libcxx'))
     # Create symlinks to the clang compiler-rt sources inside the LLVM tree.
     # We don't actually check out the sources there, because the SVN purge
     # would always remove them then.
@@ -715,6 +722,11 @@ def phasedClang(config_options, is_bootstrap=True, use_lto=False,
               command=['ln', '-sfv', '../../compiler-rt.src', 'compiler-rt'],
               haltOnFailure=True, workdir='llvm/projects',
               description=['ln', 'compiler-rt sources']))
+    f.addStep(buildbot.steps.shell.ShellCommand(
+              name='ln.libcxx.sources',
+              command=['ln', '-sfv', '../../libcxx.src', 'libcxx'],
+              haltOnFailure=True, workdir='llvm/projects',
+              description=['ln', 'libcxx sources']))
     f.addStep(buildbot.steps.shell.ShellCommand(
               name='cp.clang-tools-extra-sources',
               command=['cp', '-Rfv', '../../clang-tools-extra.src', 'extra'],
