@@ -179,7 +179,7 @@ def determine_url(props):
     # we will fall back to the latest_validated build for the use_builder
     # property if it exists, otherwise, fall back to the latest_validated build
     # for this builder.
-    curl = base_download_url + '/latest_validated/'
+    curl = base_download_url + '/validated_builds/'
     if props.has_key('use_builder'):
         curl += props['use_builder'] + '.tar.gz'
     else:
