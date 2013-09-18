@@ -26,6 +26,12 @@ def get_build_slaves():
         create_slave("as-bldslv3", properties={'jobs' : 2}, max_builds=1),
         create_slave("linaro-panda-01", properties={'jobs' : 2}, max_builds=1),
 
+        # Windows 7 Professional x64
+        create_slave("as-bldslv4", properties={'jobs' : 2}, max_builds=1),
+
+        # FreeBSD 9.2-PRERELEASE
+        create_slave("as-bldslv5", properties={'jobs' : 64}, max_builds=2),
+
         # Cortex-A9 check-all self-host
         create_slave("linaro-panda-02", properties={'jobs' : 2}, max_builds=1),
 
@@ -206,9 +212,6 @@ def get_build_slaves():
         create_slave("sanitizer-buildbot1", properties={'jobs': 8}, max_builds=1),
         # Ubuntu x86-64, 24x Intel(R) Xeon(R) CPU X5650 @ 2.67GHz
         create_slave("sanitizer-buildbot2", properties={'jobs': 8}, max_builds=1),
-
-        # Windows 7 Professional x64
-        create_slave("as-bldslv4", properties={'jobs' : 2}, max_builds=1),
 
         # zEnterprise 196 (s390x), SLES 11 SP2
         create_slave("systemz-1", properties={'jobs': 4}, max_builds=1),

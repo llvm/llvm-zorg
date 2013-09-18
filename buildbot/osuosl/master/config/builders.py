@@ -602,6 +602,12 @@ def _get_lld_builders():
          'factory': LLDBuilder.getLLDWinBuildFactory(clean=False),
          'category'   : 'lld'},
 
+        {'name': "lld-x86_64-freeBSD",
+         'slavenames' :["as-bldslv5"],
+         'builddir':"lld-x86_64-freeBSD",
+         'factory': LLDBuilder.getLLDWinBuildFactory(clean=False),
+         'category'   : 'lld'},
+
          ]
 
 # Sanitizer builders.
