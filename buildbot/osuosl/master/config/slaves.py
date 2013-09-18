@@ -203,7 +203,7 @@ def get_build_slaves():
         create_slave("obbligato-ellington", properties={'jobs': 2}, max_builds=1),
 
         # OpenBSD
-        create_slave("openbsd-buildslave", properties={'jobs': 1}, max_builds=1),
+        create_slave("openbsd-buildslave", properties={'jobs': 2}, max_builds=1),
 
         # Aarch64 Foundation Model
         create_slave("aarch64-foundation", properties={'jobs': 4}, max_builds=1),
