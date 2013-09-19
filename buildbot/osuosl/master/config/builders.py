@@ -593,7 +593,7 @@ def _get_lld_builders():
         {'name': "lld-x86_64-darwin11",
          'slavenames' :["as-bldslv11"],
          'builddir':"lld-x86_64-darwin11",
-         'factory': LLDBuilder.getLLDBuildFactory(),
+         'factory': LLDBuilder.getLLDBuildFactory(clean=False),
          'category'   : 'lld'},
 
         {'name': "lld-x86_64-win7",
