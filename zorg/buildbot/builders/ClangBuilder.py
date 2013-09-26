@@ -40,7 +40,8 @@ def getClangBuildFactory(
             checkout_compiler_rt=False,
             run_gdb=False,
             run_modern_gdb=False,
-            run_gcc=False):
+            run_gcc=False,
+            merge_functions=False):
     # Prepare environmental variables. Set here all env we want everywhere.
     merged_env = {
         'TERM' : 'dumb' # Make sure Clang doesn't use color escape sequences.
@@ -140,6 +141,23 @@ def getClangBuildFactory(
                           baseURL='http://llvm.org/svn/llvm-project/compiler-rt/',
                           defaultBranch='trunk',
                           workdir='%s/projects/compiler-rt' % llvm_srcdir))
+
+    # Revert and apply patch mergeFunctions in required
+    if merge_functions:
+        f.addStep(ShellCommand(name="revert_patch_MergeFunctions",
+                               command=["svn", "-R", "revert", '.'],
+                               haltOnFailure=True,
+                               description=["revert patch MergeFunctions"],
+                               workdir='%s/tools/clang' % llvm_srcdir,
+                               env=merged_env))
+
+    if merge_functions:
+        f.addStep(ShellCommand(name="patch_MergeFunctions",
+                               command=["patch", "-Np0", "-i", '../../utils/Misc/mergefunctions.clang.svn.patch'],
+                               haltOnFailure=True,
+                               description=["patch MergeFunctions"],
+                               workdir='%s/tools/clang' % llvm_srcdir,
+                               env=merged_env))
 
     # Clean up llvm (stage 1); unless in-dir.
     if clean and llvm_srcdir != llvm_1_objdir:
