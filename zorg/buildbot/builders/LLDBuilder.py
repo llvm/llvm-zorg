@@ -7,7 +7,8 @@ from buildbot.steps.shell import Configure, ShellCommand, SetProperty
 from buildbot.process.properties import WithProperties
 
 def getLLDBuildFactory(
-           clean = True):
+           clean = True,
+           jobs="%(jobs)s"):
 
     llvm_srcdir = "llvm.src"
     llvm_objdir = "llvm.obj"
@@ -62,7 +63,8 @@ def getLLDBuildFactory(
                                workdir=llvm_objdir))
     # Build Lld
     f.addStep(ShellCommand(name="build_Lld",
-                               command=["make"],
+                               command=['nice', '-n', '10',
+                                        'make', WithProperties("-j%s" % jobs)],
                                haltOnFailure=True,
                                description=["build lld"],
                                workdir=llvm_objdir))
