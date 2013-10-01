@@ -663,13 +663,15 @@ def phasedClang(config_options, is_bootstrap=True, use_lto=False,
     clang_build_dir = 'clang-build'
     if incremental:
         f.addStep(buildbot.steps.shell.ShellCommand(
-                name='rm.clang-build', command=['rm', '-rfv', clang_build_dir],
+                name='rm.clang-build', command=['sudo', 'rm', '-rfv',
+                                                clang_build_dir],
                 haltOnFailure=False, description=['rm dir', clang_build_dir],
                 workdir=WithProperties('%(builddir)s'),
                 doStepIf=_did_last_build_fail))
     else:
         f.addStep(buildbot.steps.shell.ShellCommand(
-                name='rm.clang-build', command=['rm', '-rfv', clang_build_dir],
+                name='rm.clang-build', command=['sudo', 'rm', '-rfv',
+                                                clang_build_dir],
                 haltOnFailure=False, description=['rm dir', clang_build_dir],
                 workdir=WithProperties('%(builddir)s')))
     
