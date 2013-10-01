@@ -312,13 +312,14 @@ def _get_clang_builders():
                                                                test=False,
                                                                xfails=clang_x86_64_linux_xfails)},
 
-#         {'name': "clang-x86_64-freeBSD9.2",
-#          'slavenames':["as-bldslv5"],
-#         'builddir':"x86_64-freeBSD9.2",
-#         'factory' : NightlytestBuilder.getFastNightlyTestBuildFactory(triple='x86_64-unknown-freebsd9.2',
-#                                                               stage1_config='Release+Asserts',
-#                                                               merge_functions=True,
-#                                                               test=False)},
+         {'name': "clang-x86_64-freeBSD9.2",
+          'slavenames':["as-bldslv5"],
+         'builddir':"x86_64-freeBSD9.2",
+         'factory' : NightlytestBuilder.getFastNightlyTestBuildFactory(triple='x86_64-unknown-freebsd9.2',
+                                                               stage1_config='Release+Asserts',
+                                                               merge_functions=True,
+                                                               make='gmake',
+                                                               test=False)},
 
         # Clang cross builders.
         {'name' : "clang-x86_64-darwin11-cross-mingw32",
