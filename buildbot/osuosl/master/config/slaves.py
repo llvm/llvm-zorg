@@ -29,8 +29,8 @@ def get_build_slaves():
         # Windows 7 Professional x64
         create_slave("as-bldslv4", properties={'jobs' : 2}, max_builds=1),
 
-        # FreeBSD 9.2-PRERELEASE
-        create_slave("as-bldslv5", properties={'jobs' : 64}, max_builds=2),
+        # FreeBSD 9.2-RELEASE
+        create_slave("as-bldslv5", properties={'jobs' : 24}, max_builds=2),
 
         # Cortex-A9 check-all self-host
         create_slave("linaro-panda-02", properties={'jobs' : 2}, max_builds=1),

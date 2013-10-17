@@ -297,7 +297,7 @@ def _get_clang_builders():
                                                                test=False,
                                                                xfails=clang_x86_64_linux_xfails)},
 
-         {'name': "clang-x86_64-freeBSD9.2",
+         {'name': "clang-mergefunc-x86_64-freeBSD9.2",
           'slavenames':["as-bldslv5"],
          'builddir':"x86_64-freeBSD9.2",
          'factory' : NightlytestBuilder.getFastNightlyTestBuildFactory(triple='x86_64-unknown-freebsd9.2',
@@ -612,7 +612,7 @@ def _get_lld_builders():
         {'name': "lld-x86_64-freeBSD",
          'slavenames' :["as-bldslv5"],
          'builddir':"lld-x86_64-freeBSD",
-         'factory': LLDBuilder.getLLDBuildFactory(),
+         'factory': LLDBuilder.getLLDBuildFactory(jobs=32),
          'category'   : 'lld'},
 
          ]
