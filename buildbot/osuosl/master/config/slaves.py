@@ -32,14 +32,14 @@ def get_build_slaves():
         # FreeBSD 9.2-RELEASE
         create_slave("as-bldslv5", properties={'jobs' : 24}, max_builds=2),
 
+        # FreeBSD 8.2 X86_64
+        create_slave("as-bldslv6", properties={'jobs' : 2}, max_builds=1),
+
         # Cortex-A9 check-all self-host
         create_slave("linaro-panda-02", properties={'jobs' : 2}, max_builds=1),
 
         # Ubuntu Chromebook Cortex-A15 slaves
         create_slave("linaro-chrome-01", properties={'jobs' : 2}, max_builds=1),
-
-        # FreeBSD 8.2 X86_64
-        create_slave("kistanova7", properties={'jobs' : 2}, max_builds=1),
 
         # Windows 7 Ultimate
         create_slave("kistanova8", properties={'jobs' : 1}, max_builds=1),

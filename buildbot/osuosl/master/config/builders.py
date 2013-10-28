@@ -246,7 +246,7 @@ def _get_clang_builders():
                                               testerName='O3-vect', run_cxx_tests=True)},
 
         {'name': "clang-X86_64-freebsd",
-         'slavenames':["kistanova7"],
+         'slavenames':["as-bldslv6"],
          'builddir':"clang-X86_64-freebsd",
          'factory': NightlytestBuilder.getFastNightlyTestBuildFactory(triple='x86_64-unknown-freebsd8.2',
                                                                        stage1_config='Release+Asserts',
