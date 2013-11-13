@@ -86,10 +86,10 @@ def get_status_targets(standard_builders):
         InformativeMailNotifier(
             fromaddr = "llvm.buildmaster@lab.llvm.org",
             sendToInterestedUsers= False,
-            extraRecipients = ["brian.minard@intel.com"],
+            extraRecipients = ["denis.gnu@gmail.com"],
             subject="Build %(builder)s Failure",
             mode = "failing",
-            builders = ["clang-atom-d2700-ubuntu", "clang-atom-d2700-ubuntu-rel"],
+            builders = ["clang-atom-d525-fedora", "clang-atom-d525-fedora-rel"],
             addLogs=False,
             num_lines = 15),
         InformativeMailNotifier(

@@ -146,9 +146,9 @@ def get_build_slaves():
         # Intel(R) Pentium(R) CPU G620 @ 2.60GHz, Ubuntu i686
         create_slave("botether", properties={'jobs': 2}, max_builds=1),
 
-        # Intel(R) Atom(TM) CPU D2700 @ 2.13GHz, Ubuntu x86_64
-        create_slave("atom-buildbot", properties={'jobs': 4}, max_builds=1),
-        create_slave("atom1-buildbot", properties={'jobs': 4}, max_builds=1),
+        # Intel(R) Atom(TM) CPU D525 @ 1.8GHz, Fedora x86_64
+        create_slave("atom-buildbot", properties={'jobs': 2}, max_builds=1),
+        create_slave("atom1-buildbot", properties={'jobs': 2}, max_builds=1),
 
         # LLVM Lab slaves
         create_slave("lab-mini-01", properties={'jobs': 2}, max_builds=1),

@@ -206,9 +206,9 @@ def _get_clang_builders():
                                                                        test=False,
                                                                        xfails=clang_x86_64_linux_xfails)},
 
-        {'name': "clang-atom-d2700-ubuntu-rel",
+        {'name': "clang-atom-d525-fedora-rel",
          'slavenames':["atom1-buildbot"],
-         'builddir':"clang-atom-d2700-ubuntu-rel",
+         'builddir':"clang-atom-d525-fedora-rel",
          'factory' : ClangBuilder.getClangBuildFactory(stage1_config='Release+Asserts')},
 
         {'name': "clang-x86_64-ubuntu",
@@ -634,9 +634,9 @@ def _get_experimental_builders():
          'factory': LLVMBuilder.getLLVMBuildFactory("ppc64-linux-gnu", jobs=4, clean=False, timeout=20),
          'category' : 'llvm'},
 
-        {'name': "clang-atom-d2700-ubuntu",
+        {'name': "clang-atom-d525-fedora",
          'slavenames':["atom-buildbot"],
-         'builddir':"clang-atom-d2700-ubuntu",
+         'builddir':"clang-atom-d525-fedora",
          'factory' : ClangBuilder.getClangBuildFactory(extra_configure_args=['--enable-shared']),
          'category' : 'clang'},
 
