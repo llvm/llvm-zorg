@@ -57,7 +57,7 @@ def getNightlytestBuildFactory(submitAux=None, *args, **kwargs):
                                          }.update(merged_env)))
   return f
 
-def getFastNightlyTestBuildFactory(triple, xfails=[], clean=True, test=False, **kwargs):
+def getFastNightlyTestBuildFactory(triple, xfails=[], clean=True, test=False, make='make', **kwargs):
   # Build compiler to test.  
   f = ClangBuilder.getClangBuildFactory(
     triple, outOfDir=True, clean=clean, test=test,
@@ -109,7 +109,7 @@ def getFastNightlyTestBuildFactory(triple, xfails=[], clean=True, test=False, **
                          workdir       = ".",
                          env           = merged_env))
   f.addStep(NightlyTestCommand(name="make.test-suite",
-                               command=["make", WithProperties("-j%(jobs)s"),
+                               command=[make, WithProperties("-j%(jobs)s"),
                                         "ENABLE_PARALLEL_REPORT=1",
                                         "DISABLE_CBE=1", "DISABLE_JIT=1",
                                         "TEST=nightly", "report"],
