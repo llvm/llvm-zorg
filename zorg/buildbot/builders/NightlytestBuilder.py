@@ -61,7 +61,7 @@ def getFastNightlyTestBuildFactory(triple, xfails=[], clean=True, test=False, ma
   # Build compiler to test.  
   f = ClangBuilder.getClangBuildFactory(
     triple, outOfDir=True, clean=clean, test=test,
-    **kwargs)
+    make=make, **kwargs)
 
   # Prepare environmental variables. Set here all env we want everywhere.
   merged_env = {
