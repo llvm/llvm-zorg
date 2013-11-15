@@ -623,6 +623,12 @@ def _get_sanitizer_builders():
            'slavenames' :["sanitizer-buildbot2"],
            'builddir': "sanitizer-x86_64-linux-bootstrap",
            'factory': SanitizerBuilder.getSanitizerBuildFactory()},
+          {'name': "llvm-clang-lld-x86_64-ubuntu-13.04-sanitize-address",
+           'slavenames':["hexagon-build-03"],
+           'builddir':"llvm-clang-lld-x86_64-ubuntu-13.04-fsanitize-address",
+           'factory': ClangAndLLDBuilder.getClangAndLLDBuildFactory(Option='-fsanitize=address',
+                    env={'PATH':'/opt/usr/bin:/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games'},
+           jobs=12,loadaverage=32)},
           ]
 
 # Experimental and stopped builders

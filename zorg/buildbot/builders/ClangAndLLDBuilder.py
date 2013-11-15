@@ -10,7 +10,10 @@ from zorg.buildbot.commands.LitTestCommand import LitTestCommand
 
 def getClangAndLLDBuildFactory(
            clean=True,
-           env=None):
+           Option=None,
+           env=None,
+           jobs="%(jobs)s",
+           loadaverage="%(loadaverage)s"):
 
     llvm_srcdir = "llvm.src"
     llvm_objdir = "llvm.obj"
@@ -38,11 +41,11 @@ def getClangAndLLDBuildFactory(
                   baseURL='http://llvm.org/svn/llvm-project/llvm/',
                   defaultBranch='trunk',
                   workdir=llvm_srcdir))
-    f.addStep(SVN(name='svn-compiler-rt',
-                  mode='update',
-                  baseURL='http://llvm.org/svn/llvm-project/compiler-rt/',
-                  defaultBranch='trunk',
-                  workdir='%s/projects/compiler-rt' % llvm_srcdir))
+    #f.addStep(SVN(name='svn-compiler-rt',
+    #              mode='update',
+    #              baseURL='http://llvm.org/svn/llvm-project/compiler-rt/',
+    #              defaultBranch='trunk',
+    #              workdir='%s/projects/compiler-rt' % llvm_srcdir))
     f.addStep(SVN(name='svn-clang',
                   mode='update',
                   baseURL='http://llvm.org/svn/llvm-project/cfe/',
@@ -75,14 +78,23 @@ def getClangAndLLDBuildFactory(
                                description=["create build dir"],
                                workdir=".",
                                env=merged_env))
+
+    options = "-std=c++11 -Wdocumentation -Wno-documentation-deprecated-sync "
+
+    if (Option is not None):
+      options += Option
+
     cmakeCommand = [
         "cmake",
         "-DCMAKE_BUILD_TYPE=Release",
         "-DLLVM_ENABLE_ASSERTIONS=ON",
-        "-DCMAKE_CXX_FLAGS=\"-std=c++11 -Wdocumentation -Wno-documentation-deprecated-sync\"",
+        "-DCMAKE_C_COMPILER=clang",
+        "-DCMAKE_CXX_COMPILER=clang++",
+        "-DCMAKE_CXX_FLAGS=\"%s\"" %(options),
         "-DLLVM_LIT_ARGS=\"-v\"",
         "-G", "Ninja",
-        "../%s" % llvm_srcdir]
+        "../%s" %(llvm_srcdir)]
+
     # Note: ShellCommand does not pass the params with special symbols right.
     # The " ".join is a workaround for this bug.
     f.addStep(ShellCommand(name="cmake-configure",
@@ -94,7 +106,9 @@ def getClangAndLLDBuildFactory(
 
     # Build everything.
     f.addStep(WarningCountingShellCommand(name="build",
-                                          command=["nice", "-n", "10", "ninja"],
+                                          command=["ninja",
+                                          "-j %s" %(jobs),
+                                          "-l %s" %(loadaverage)],
                                           haltOnFailure=True,
                                           description=["build"],
                                           workdir=llvm_objdir,
@@ -102,7 +116,10 @@ def getClangAndLLDBuildFactory(
 
     # Test everything.
     f.addStep(LitTestCommand(name="test",
-                             command=["nice", "-n", "10", "ninja", "check-all"],
+                             command=["ninja",
+                             "-j %s" %(jobs),
+                             "-l %s" %(loadaverage),
+                             "check-all"],
                              haltOnFailure=True,
                              description=["test"],
                              workdir=llvm_objdir,
