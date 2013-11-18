@@ -623,6 +623,14 @@ def _get_sanitizer_builders():
            'slavenames' :["sanitizer-buildbot2"],
            'builddir': "sanitizer-x86_64-linux-bootstrap",
            'factory': SanitizerBuilder.getSanitizerBuildFactory()},
+
+          # hexagon-build-03: /opt/usr/bin contains clang-3.4 for sanitizer.
+          {'name': "llvm-clang-lld-x86_64-ubuntu-13.04-sanitize-address",
+           'slavenames':["hexagon-build-03"],
+           'builddir':"llvm-clang-lld-x86_64-ubuntu-13.04-fsanitize-address",
+           'factory': ClangAndLLDBuilder.getClangAndLLDBuildFactory(
+                                             buildWithSanitizerOptions=['-fsanitize=address'],
+                                             env={'PATH':'/opt/usr/bin:/usr/local/bin:/usr/bin:/bin'})},
           ]
 
 # Experimental and stopped builders

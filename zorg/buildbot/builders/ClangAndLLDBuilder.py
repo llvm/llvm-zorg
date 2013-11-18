@@ -2,15 +2,16 @@ import os
 
 import buildbot
 import buildbot.process.factory
-from buildbot.steps.source import SVN, Git
-from buildbot.steps.shell import Configure, ShellCommand
+from buildbot.steps.source import SVN
+from buildbot.steps.shell import ShellCommand
 from buildbot.steps.shell import WarningCountingShellCommand
 from buildbot.process.properties import WithProperties
 from zorg.buildbot.commands.LitTestCommand import LitTestCommand
 
 def getClangAndLLDBuildFactory(
            clean=True,
-           env=None):
+           env=None,
+           buildWithSanitizerOptions=None):
 
     llvm_srcdir = "llvm.src"
     llvm_objdir = "llvm.obj"
@@ -38,11 +39,15 @@ def getClangAndLLDBuildFactory(
                   baseURL='http://llvm.org/svn/llvm-project/llvm/',
                   defaultBranch='trunk',
                   workdir=llvm_srcdir))
-    f.addStep(SVN(name='svn-compiler-rt',
-                  mode='update',
-                  baseURL='http://llvm.org/svn/llvm-project/compiler-rt/',
-                  defaultBranch='trunk',
-                  workdir='%s/projects/compiler-rt' % llvm_srcdir))
+
+    # Sanitizer runtime in compiler-rt, and cannot be built with sanitizer compiler.
+    if buildWithSanitizerOptions is None:
+        f.addStep(SVN(name='svn-compiler-rt',
+                      mode='update',
+                      baseURL='http://llvm.org/svn/llvm-project/compiler-rt/',
+                      defaultBranch='trunk',
+                      workdir='%s/projects/compiler-rt' % llvm_srcdir))
+
     f.addStep(SVN(name='svn-clang',
                   mode='update',
                   baseURL='http://llvm.org/svn/llvm-project/cfe/',
@@ -71,18 +76,27 @@ def getClangAndLLDBuildFactory(
     # Create configuration files with cmake.
     f.addStep(ShellCommand(name="create-build-dir",
                                command=["mkdir", "-p", llvm_objdir],
-                               haltOnFailure=False,
+                               haltOnFailure=True,
                                description=["create build dir"],
                                workdir=".",
                                env=merged_env))
+
+    options = ["-std=c++11", "-Wdocumentation", "-Wno-documentation-deprecated-sync"]
+
+    if buildWithSanitizerOptions:
+        options += buildWithSanitizerOptions
+
     cmakeCommand = [
         "cmake",
         "-DCMAKE_BUILD_TYPE=Release",
         "-DLLVM_ENABLE_ASSERTIONS=ON",
-        "-DCMAKE_CXX_FLAGS=\"-std=c++11 -Wdocumentation -Wno-documentation-deprecated-sync\"",
+        "-DCMAKE_C_COMPILER=clang",
+        "-DCMAKE_CXX_COMPILER=clang++",
+        "-DCMAKE_CXX_FLAGS=\"%s\"" % (" ".join(options)),
         "-DLLVM_LIT_ARGS=\"-v\"",
         "-G", "Ninja",
         "../%s" % llvm_srcdir]
+
     # Note: ShellCommand does not pass the params with special symbols right.
     # The " ".join is a workaround for this bug.
     f.addStep(ShellCommand(name="cmake-configure",
@@ -92,9 +106,15 @@ def getClangAndLLDBuildFactory(
                                workdir=llvm_objdir,
                                env=merged_env))
 
+    ninjaCommand = [
+        "nice", "-n", "10",
+        "ninja",
+             WithProperties("%(jobs:+-j)s"),        WithProperties("%(jobs:-)s"),
+             WithProperties("%(loadaverage:+-l)s"), WithProperties("%(loadaverage:-)s")]
+
     # Build everything.
     f.addStep(WarningCountingShellCommand(name="build",
-                                          command=["nice", "-n", "10", "ninja"],
+                                          command=ninjaCommand,
                                           haltOnFailure=True,
                                           description=["build"],
                                           workdir=llvm_objdir,
@@ -102,7 +122,7 @@ def getClangAndLLDBuildFactory(
 
     # Test everything.
     f.addStep(LitTestCommand(name="test",
-                             command=["nice", "-n", "10", "ninja", "check-all"],
+                             command=ninjaCommand,
                              haltOnFailure=True,
                              description=["test"],
                              workdir=llvm_objdir,
