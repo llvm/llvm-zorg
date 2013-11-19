@@ -122,7 +122,7 @@ def getClangAndLLDBuildFactory(
 
     # Test everything.
     f.addStep(LitTestCommand(name="test",
-                             command=ninjaCommand,
+                             command=ninjaCommand + ["check-all"],
                              haltOnFailure=True,
                              description=["test"],
                              workdir=llvm_objdir,
