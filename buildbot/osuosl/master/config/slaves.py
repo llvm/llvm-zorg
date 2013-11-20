@@ -24,7 +24,6 @@ def get_build_slaves():
         create_slave("as-bldslv1", properties={'jobs' : 2}, max_builds=1),
         create_slave("as-bldslv2", properties={'jobs' : 2}, max_builds=1),
         create_slave("as-bldslv3", properties={'jobs' : 2}, max_builds=1),
-        create_slave("linaro-panda-01", properties={'jobs' : 2}, max_builds=1),
 
         # Windows 7 Professional x64
         create_slave("as-bldslv4", properties={'jobs' : 2}, max_builds=1),
@@ -35,11 +34,10 @@ def get_build_slaves():
         # FreeBSD 8.2 X86_64
         create_slave("as-bldslv6", properties={'jobs' : 2}, max_builds=1),
 
-        # Cortex-A9 check-all self-host
-        create_slave("linaro-panda-02", properties={'jobs' : 2}, max_builds=1),
-
-        # Ubuntu Chromebook Cortex-A15 slaves
+        # Chromebook Cortex-A15 slaves
         create_slave("linaro-chrome-01", properties={'jobs' : 2}, max_builds=1),
+        create_slave("linaro-chrome-02", properties={'jobs' : 2}, max_builds=1),
+        create_slave("linaro-chrome-03", properties={'jobs' : 2}, max_builds=1),
 
         # Windows 7 Ultimate
         create_slave("kistanova8", properties={'jobs' : 1}, max_builds=1),

@@ -217,7 +217,7 @@ def _get_clang_builders():
          'factory' : ClangBuilder.getClangBuildFactory(extra_configure_args=['--enable-shared'])},
 
         {'name': "clang-native-arm-cortex-a9",
-         'slavenames':["as-bldslv1", "as-bldslv2", "as-bldslv3", "linaro-panda-01"],
+         'slavenames':["as-bldslv1", "as-bldslv2", "as-bldslv3"],
          'builddir':"clang-native-arm-cortex-a9",
          'factory' : ClangBuilder.getClangBuildFactory(
                      stage1_config='Release+Asserts',
@@ -231,13 +231,27 @@ def _get_clang_builders():
                                            '--with-float=hard',
                                            '--enable-targets=arm'])},
 
+        {'name': "clang-native-arm-cortex-a15-self-host",
+         'slavenames':["linaro-chrome-02"],
+         'builddir':"clang-native-arm-cortex-a15-self-host",
+         'factory' : ClangBuilder.getClangBuildFactory(
+                     stage1_config='Release+Asserts',
+                     stage2_config='Release+Asserts',
+                     useTwoStage=True,
+                     clean=False,
+                     test=True,
+                     extra_configure_args=[ '--with-cpu=cortex-a15',
+                                            '--with-fpu=neon',
+                                            '--with-float=hard',
+                                            '--enable-targets=arm'])},
+
         {'name' : "clang-native-arm-lnt",
-         'slavenames':["linaro-chrome-01"],
+         'slavenames':["linaro-chrome-01", "linaro-chrome-03"],
          'builddir':"clang-native-arm-lnt",
          'factory' : LNTBuilder.getLNTFactory(triple='armv7l-unknown-linux-gnueabihf',
-                                              nt_flags=['--cflag', '-mcpu=cortex-a15'],
+                                              nt_flags=['--cflag', '-mcpu=cortex-a15', '-j2'],
                                               jobs=2, use_pty_in_tests=True, clean=False,
-                                              testerName='O3-vect', run_cxx_tests=True)},
+                                              testerName='LNT-TestOnly-O3', run_cxx_tests=True)},
 
         {'name': "clang-X86_64-freebsd",
          'slavenames':["as-bldslv6"],
