@@ -144,6 +144,25 @@ def get_build_slaves():
         # Intel(R) Pentium(R) CPU G620 @ 2.60GHz, Ubuntu i686
         create_slave("botether", properties={'jobs': 2}, max_builds=1),
 
+        # Polly perf servers
+        # Each is a:
+        # 8 x Intel(R) Xeon(R) CPU E5430  @ 2.66GHz, Debian x86_64 GNU/Linux
+        create_slave("pollyperf1", properties={'jobs': 8}, max_builds=1),
+        create_slave("pollyperf2", properties={'jobs': 8}, max_builds=1),
+        create_slave("pollyperf3", properties={'jobs': 8}, max_builds=1),
+        create_slave("pollyperf4", properties={'jobs': 8}, max_builds=1),
+        create_slave("pollyperf5", properties={'jobs': 8}, max_builds=1),
+        create_slave("pollyperf6", properties={'jobs': 8}, max_builds=1),
+        create_slave("pollyperf7", properties={'jobs': 8}, max_builds=1),
+        create_slave("pollyperf8", properties={'jobs': 8}, max_builds=1),
+        create_slave("pollyperf9", properties={'jobs': 8}, max_builds=1),
+        create_slave("pollyperf10", properties={'jobs': 8}, max_builds=1),
+        create_slave("pollyperf11", properties={'jobs': 8}, max_builds=1),
+        create_slave("pollyperf12", properties={'jobs': 8}, max_builds=1),
+        create_slave("pollyperf13", properties={'jobs': 8}, max_builds=1),
+        create_slave("pollyperf14", properties={'jobs': 8}, max_builds=1),
+        create_slave("pollyperf15", properties={'jobs': 8}, max_builds=1),
+
         # Intel(R) Atom(TM) CPU D525 @ 1.8GHz, Fedora x86_64
         create_slave("atom-buildbot", properties={'jobs': 2}, max_builds=1),
         create_slave("atom1-buildbot", properties={'jobs': 2}, max_builds=1),
