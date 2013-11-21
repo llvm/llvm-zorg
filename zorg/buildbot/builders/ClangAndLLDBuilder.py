@@ -7,6 +7,7 @@ from buildbot.steps.shell import ShellCommand
 from buildbot.steps.shell import WarningCountingShellCommand
 from buildbot.process.properties import WithProperties
 from zorg.buildbot.commands.LitTestCommand import LitTestCommand
+from zorg.buildbot.commands.NinjaCommand import NinjaCommand
 
 def getClangAndLLDBuildFactory(
            clean=True,
@@ -106,26 +107,21 @@ def getClangAndLLDBuildFactory(
                                workdir=llvm_objdir,
                                env=merged_env))
 
-    ninjaCommand = [
-        "nice", "-n", "10",
-        "ninja",
-             WithProperties("%(jobs:+-j)s"),        WithProperties("%(jobs:-)s"),
-             WithProperties("%(loadaverage:+-l)s"), WithProperties("%(loadaverage:-)s")]
-
     # Build everything.
-    f.addStep(WarningCountingShellCommand(name="build",
-                                          command=ninjaCommand,
-                                          haltOnFailure=True,
-                                          description=["build"],
-                                          workdir=llvm_objdir,
-                                          env=merged_env))
+    f.addStep(NinjaCommand(name="build",
+                           prefixCommand=["nice", "-n", "10"],
+                           haltOnFailure=True,
+                           description=["build"],
+                           workdir=llvm_objdir,
+                           env=merged_env))
 
     # Test everything.
-    f.addStep(LitTestCommand(name="test",
-                             command=ninjaCommand + ["check-all"],
-                             haltOnFailure=True,
-                             description=["test"],
-                             workdir=llvm_objdir,
-                             env=merged_env))
+    f.addStep(NinjaCommand(name="test",
+                           prefixCommand=["nice", "-n", "10"],
+                           targets=["check-all"],
+                           haltOnFailure=True,
+                           description=["test"],
+                           workdir=llvm_objdir,
+                           env=merged_env))
 
     return f
