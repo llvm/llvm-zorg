@@ -569,7 +569,20 @@ def _get_polly_builders():
         {'name': "polly-intel32-linux",
          'slavenames':["botether"],
          'builddir':"polly-intel32-linux",
-         'factory': PollyBuilder.getPollyBuildFactory()}
+         'factory': PollyBuilder.getPollyBuildFactory()},
+
+        {'name': "polly-perf-O3",
+         'slavenames':["pollyperf2"],
+         'builddir':"pollyperf-O3",
+         'factory': PollyBuilder.getPollyLNTFactory(triple="x86_64-pc-linux-gnu",
+                                                    nt_flags=['--multisample=3'],
+                                                    testerName='pollyperf-O3')},
+        {'name': "polly-perf-O3-polly",
+         'slavenames':["pollyperf3"],
+         'builddir':"pollyperf-O3-polly",
+         'factory': PollyBuilder.getPollyLNTFactory(triple="x86_64-pc-linux-gnu",
+                                                    nt_flags=['--multisample=3', '--mllvm=-polly'],
+                                                    testerName='pollyperf-O3-polly')}
        ]
 
 # LLDB builders.
