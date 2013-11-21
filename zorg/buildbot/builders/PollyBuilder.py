@@ -52,6 +52,7 @@ def getPollyBuildFactory():
     llvm_objdir = "llvm.obj"
     cloog_installdir = "cloog.install"
     polly_srcdir = '%s/tools/polly' % llvm_srcdir
+    clang_srcdir = '%s/tools/clang' % llvm_srcdir
 
     f = buildbot.process.factory.BuildFactory()
     # Determine the build directory.
@@ -60,12 +61,17 @@ def getPollyBuildFactory():
                                                property="builddir",
                                                description="set build dir",
                                                workdir="."))
-    # Get LLVM and Polly
+    # Get LLVM, clang and Polly
     f.addStep(SVN(name='svn-llvm',
                   mode='update',
                   baseURL='http://llvm.org/svn/llvm-project/llvm/',
                   defaultBranch='trunk',
                   workdir=llvm_srcdir))
+    f.addStep(SVN(name='svn-clang',
+                  mode='update',
+                  baseURL='http://llvm.org/svn/llvm-project/cfe/',
+                  defaultBranch='trunk',
+                  workdir=polly_srcdir))
     f.addStep(SVN(name='svn-polly',
                   mode='update',
                   baseURL='http://llvm.org/svn/llvm-project/polly/',
@@ -102,6 +108,12 @@ def getPollyBuildFactory():
                                command=["make", "polly-test"],
                                haltOnFailure=True,
                                description=["test polly"],
+                               workdir=llvm_objdir))
+    # Check formatting
+    f.addStep(ShellCommand(name="test_polly_format",
+                               command=["make", "polly-check-format"],
+                               haltOnFailure=False,
+                               description=["Check formatting"],
                                workdir=llvm_objdir))
     return f
 
