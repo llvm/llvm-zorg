@@ -1,5 +1,6 @@
 import re
 import urllib
+from os.path import basename
 import buildbot
 import buildbot.status.builder
 from buildbot.status.results import FAILURE, SUCCESS
@@ -58,8 +59,12 @@ class LitLogObserver(LogLineObserver):
         self.activeVerboseLog = ['%s: %s' % (code, name)]
 
       # Add the log to the build status.
-      self.step.addCompleteLog(name.replace('/', '__'),
-                               '\n'.join(self.activeVerboseLog))
+      # Make the test name short, the qualified test name is in the log anyway.
+      # Otherwise, we run out of the allowed name length on some hosts.
+      name_part = name.rpartition('::')
+      self.step.addCompleteLog(
+                  name_part[0].strip() + name_part[1] + basename(name_part[2]),
+                  '\n'.join(self.activeVerboseLog))
       self.numLogs += 1
 
     # Reset the current state.
