@@ -71,7 +71,7 @@ def getPollyBuildFactory():
                   mode='update',
                   baseURL='http://llvm.org/svn/llvm-project/cfe/',
                   defaultBranch='trunk',
-                  workdir=polly_srcdir))
+                  workdir=clang_srcdir))
     f.addStep(SVN(name='svn-polly',
                   mode='update',
                   baseURL='http://llvm.org/svn/llvm-project/polly/',
