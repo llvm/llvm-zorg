@@ -238,6 +238,9 @@ def get_build_slaves():
         # zEnterprise 196 (s390x), SLES 11 SP2
         create_slave("systemz-1", properties={'jobs': 4}, max_builds=1),
 
+        # Arch Linux ODROID-XU ARMv7 Cortex A15 Quad-Core @ 1.6 GHz 2 GB RAM
+        create_slave("mily-odroid-xu-1", properties={'jobs': 4}, max_builds=1),
+
         # Defunct.
         # Pentium Dual CPU T3400 @ 2.1GHz
         #create_slave("dumitrescu1", properties={'jobs' : 2}, max_builds=1),
