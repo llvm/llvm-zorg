@@ -87,12 +87,27 @@ def getClangAndLLDBuildFactory(
     if buildWithSanitizerOptions:
         options += buildWithSanitizerOptions
 
+    # FIXME: This is a temporary workaround till all the slaves will
+    # be configured to have C_COMPILER and CXX_COMPILER set locally.
+    # Will be rolled back later.
+    # cmakeCommand = [
+        # "cmake",
+        # "-DCMAKE_BUILD_TYPE=Release",
+        # "-DLLVM_ENABLE_ASSERTIONS=ON",
+        # "-DCMAKE_CXX_FLAGS=\"%s\"" % (" ".join(options)),
+        # "-DLLVM_LIT_ARGS=\"-v\"",
+        # "-G", "Ninja",
+        # "../%s" % llvm_srcdir]
+
     cmakeCommand = [
         "cmake",
         "-DCMAKE_BUILD_TYPE=Release",
-        "-DLLVM_ENABLE_ASSERTIONS=ON",
-        "-DCMAKE_C_COMPILER=clang",
-        "-DCMAKE_CXX_COMPILER=clang++",
+        "-DLLVM_ENABLE_ASSERTIONS=ON"]
+    if buildWithSanitizerOptions:
+        cmakeCommand += [
+            "-DCMAKE_C_COMPILER=clang",
+            "-DCMAKE_CXX_COMPILER=clang++"]
+    cmakeCommand += [
         "-DCMAKE_CXX_FLAGS=\"%s\"" % (" ".join(options)),
         "-DLLVM_LIT_ARGS=\"-v\"",
         "-G", "Ninja",
