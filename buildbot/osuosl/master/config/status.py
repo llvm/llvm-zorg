@@ -60,7 +60,8 @@ def get_status_targets(standard_builders):
             extraRecipients = ["tobias@grosser.es"],
             subject="Build %(builder)s Failure",
             mode = "failing",
-            builders = ["polly-amd64-linux"],
+            builders = ["polly-amd64-linux", "polly-intel32-linux",
+                        "polly-perf-O3", "polly-perf-O3-polly"],
             addLogs=False,
             num_lines = 15),
         InformativeMailNotifier(
