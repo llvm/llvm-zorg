@@ -368,7 +368,7 @@ def _get_clang_builders():
 
         {'name' : "clang-native-arm-cortex-a15-arch",
          'triple' : 'armv7l-unknown-linux-gnueabihf',
-         'slavenames' :["mily-odroid-xu-1"],
+         'slavenames' :["mily-odroid-xu-1", "linaro-odroidxu-01"],
          'builddir' :"clang-native-arm-cortex-a15-arch",
          'factory' : ClangBuilder.getClangBuildFactory(
                      stage1_config='Release+Asserts',

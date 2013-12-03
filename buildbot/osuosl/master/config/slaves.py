@@ -240,6 +240,7 @@ def get_build_slaves():
 
         # Arch Linux ODROID-XU ARMv7 Cortex A15 Quad-Core @ 1.6 GHz 2 GB RAM
         create_slave("mily-odroid-xu-1", properties={'jobs': 4}, max_builds=1),
+        create_slave("linaro-odroidxu-01", properties={'jobs' : 4}, max_builds=1),
 
         # Defunct.
         # Pentium Dual CPU T3400 @ 2.1GHz
