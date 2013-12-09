@@ -153,6 +153,12 @@ clang_x86_64_linux_xfails = [
     'LLC_compile.SingleSource/UnitTests/Vector/SSE/sse.stepfft',
 ]
 
+polly_x86_64_linux_xfails = [
+    'LLC.MultiSource/Applications/sgefa/sgefa',
+    'LLC/MultiSource/Benchmarks/7zip/7zip-benchmark',
+    'LLC_compile/MultiSource/Benchmarks/7zip/7zip-benchmark',
+]
+
 # Clang fast builders.
 def _get_clang_fast_builders():
     return [
@@ -597,6 +603,7 @@ def _get_polly_builders():
          'builddir':"pollyperf-O3-polly",
          'factory': PollyBuilder.getPollyLNTFactory(triple="x86_64-pc-linux-gnu",
                                                     nt_flags=['--multisample=3', '--mllvm=-polly'],
+                                                    xfails=polly_x86_64_linux_xfails,
                                                     testerName='pollyperf-O3-polly')}
        ]
 
