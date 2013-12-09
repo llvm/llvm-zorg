@@ -604,7 +604,14 @@ def _get_polly_builders():
          'factory': PollyBuilder.getPollyLNTFactory(triple="x86_64-pc-linux-gnu",
                                                     nt_flags=['--multisample=3', '--mllvm=-polly'],
                                                     xfails=polly_x86_64_linux_xfails,
-                                                    testerName='pollyperf-O3-polly')}
+                                                    testerName='pollyperf-O3-polly')},
+        {'name': "polly-perf-O3-polly-codegen-isl",
+         'slavenames':["pollyperf4"],
+         'builddir':"pollyperf-O3-polly-codegen-isl",
+         'factory': PollyBuilder.getPollyLNTFactory(triple="x86_64-pc-linux-gnu",
+                                                    nt_flags=['--multisample=3', '--mllvm=-polly', '--mllvm=-polly-code-generator=isl'],
+                                                    xfails=polly_x86_64_linux_xfails,
+                                                    testerName='pollyperf-O3-polly-codegen-isl')}
        ]
 
 # LLDB builders.
