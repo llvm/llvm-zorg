@@ -587,10 +587,11 @@ def _get_polly_builders():
          'builddir':"polly-amd64-linux",
          'factory': PollyBuilder.getPollyBuildFactory()},
 
-        {'name': "polly-intel32-linux",
-         'slavenames':["botether"],
-         'builddir':"polly-intel32-linux",
-         'factory': PollyBuilder.getPollyBuildFactory()},
+#        Disabled, as it is unavailable since several weeks.
+#        {'name': "polly-intel32-linux",
+#         'slavenames':["botether"],
+#         'builddir':"polly-intel32-linux",
+#         'factory': PollyBuilder.getPollyBuildFactory()},
 
         {'name': "polly-perf-O3",
          'slavenames':["pollyperf2"],
