@@ -13,7 +13,7 @@ def getLLDBuildFactory(
 
     # Prepare environmental variables. Set here all env we want everywhere.
     merged_env = {
-                   'C'    : "clang",
+                   'CC'    : "clang",
                    'CXX'  : "clang++",
                    'TERM' : 'dumb'     # Be cautious and disable color output from all tools.
                  }
