@@ -651,6 +651,17 @@ def _get_lld_builders():
          'factory': LLDBuilder.getLLDBuildFactory(jobs=32),
          'category'   : 'lld'},
 
+        {'name': "lld-powerpc-linux-debian",
+         'slavenames' :["mily-mini-1"],
+         'builddir': "lld-powerpc-linux-debian",
+         'factory': LLDBuilder.getLLDBuildFactory(clean=True,
+                                                  jobs=2, 
+                                                  env={ 
+                                                      'CC' : 'ccache gcc-4.8', 
+                                                      'CXX': 'ccache g++-4.8',
+                                                      'CCACHE_CPP2' : 'yes',
+                                                      'LD' : 'ld.gold'}),
+          'category' : 'lld'},
          ]
 
 # Sanitizer builders.

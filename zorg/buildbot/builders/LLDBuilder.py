@@ -8,7 +8,17 @@ from buildbot.process.properties import WithProperties
 
 def getLLDBuildFactory(
            clean = True,
-           jobs="%(jobs)s"):
+           jobs  = "%(jobs)s",
+           env   = {}):
+
+    # Prepare environmental variables. Set here all env we want everywhere.
+    merged_env = {
+                   'C'    : "clang",
+                   'CXX'  : "clang++",
+                   'TERM' : 'dumb'     # Be cautious and disable color output from all tools.
+                 }
+    if env is not None:
+        merged_env.update(env)  # Overwrite pre-set items with the given ones, so user can set anything.
 
     llvm_srcdir = "llvm.src"
     llvm_objdir = "llvm.obj"
@@ -19,6 +29,7 @@ def getLLDBuildFactory(
                                                command=["pwd"],
                                                property="builddir",
                                                description="set build dir",
+                                               env=merged_env,
                                                workdir="."))
     # Get LLVM and Lld
     f.addStep(SVN(name='svn-llvm',
@@ -57,9 +68,7 @@ def getLLDBuildFactory(
                                description=["cmake configure"],
                                haltOnFailure=True,
                                command=WithProperties(" ".join(cmakeCommand)),
-                               env={
-                                    'CXX': "clang++",
-                                    'C':   "clang"},
+                               env=merged_env,
                                workdir=llvm_objdir))
     # Build Lld
     f.addStep(ShellCommand(name="build_Lld",
@@ -67,12 +76,14 @@ def getLLDBuildFactory(
                                         'make', WithProperties("-j%s" % jobs)],
                                haltOnFailure=True,
                                description=["build lld"],
+                               env=merged_env,
                                workdir=llvm_objdir))
     # Test Lld
     f.addStep(ShellCommand(name="test_lld",
                                command=["make", "lld-test"],
                                haltOnFailure=True,
                                description=["test lld"],
+                               env=merged_env,
                                workdir=llvm_objdir))
 
     return f
