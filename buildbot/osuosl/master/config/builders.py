@@ -155,8 +155,11 @@ clang_x86_64_linux_xfails = [
 
 polly_x86_64_linux_xfails = [
     'LLC.MultiSource/Applications/sgefa/sgefa',
+    'MultiSource/Applications/sgefa/sgefa.execution_time',
     'LLC/MultiSource/Benchmarks/7zip/7zip-benchmark',
+    'MultiSource/Benchmarks/7zip/7zip-benchmark.execution_time',
     'LLC_compile/MultiSource/Benchmarks/7zip/7zip-benchmark',
+    'MultiSource/Benchmarks/7zip/7zip-benchmark.compile_time',
 ]
 
 # Clang fast builders.
