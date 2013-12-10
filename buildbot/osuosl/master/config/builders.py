@@ -166,7 +166,8 @@ def _get_clang_fast_builders():
          'slavenames':["gribozavr1"],
          'builddir':"clang-x86_64-debian-fast",
          'factory': ClangBuilder.getClangBuildFactory(
-                    env={'PATH':'/home/llvmbb/bin/clang-latest/bin:/home/llvmbb/bin:/usr/local/bin:/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games'},
+                    env={'PATH':'/home/llvmbb/bin/clang-latest/bin:/home/llvmbb/bin:/usr/local/bin:/usr/local/bin:/usr/bin:/bin',
+                         'CC': 'ccache clang', 'CXX': 'ccache clang++', 'CCACHE_CPP2': 'yes'},
                     stage1_config='Release+Asserts',
                     checkout_compiler_rt=True,
                     outOfDir=True)},
@@ -175,13 +176,15 @@ def _get_clang_fast_builders():
          'slavenames':["gribozavr1"],
          'builddir':"llvm-clang-lld-x86_64-debian-fast",
          'factory': ClangAndLLDBuilder.getClangAndLLDBuildFactory(
-                    env={'PATH':'/home/llvmbb/bin/clang-latest/bin:/home/llvmbb/bin:/usr/local/bin:/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games'})},
+                    env={'PATH':'/home/llvmbb/bin/clang-latest/bin:/home/llvmbb/bin:/usr/local/bin:/usr/local/bin:/usr/bin:/bin',
+                         'CC': 'ccache clang', 'CXX': 'ccache clang++', 'CCACHE_CPP2': 'yes'})},
 
         {'name': "llvm-clang-lld-x86_64-ubuntu-13.04",
          'slavenames':["gribozavr2"],
          'builddir':"llvm-clang-lld-x86_64-ubuntu-13.04",
          'factory': ClangAndLLDBuilder.getClangAndLLDBuildFactory(
-                    env={'PATH':'/home/llvmbb/bin/clang-latest/bin:/home/llvmbb/bin:/usr/local/bin:/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games'})},
+                    env={'PATH':'/home/llvmbb/bin/clang-latest/bin:/home/llvmbb/bin:/usr/local/bin:/usr/local/bin:/usr/bin:/bin',
+                         'CC': 'ccache clang', 'CXX': 'ccache clang++', 'CCACHE_CPP2': 'yes'})},
 
         ]
 
