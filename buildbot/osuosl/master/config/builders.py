@@ -160,6 +160,18 @@ polly_x86_64_linux_xfails = [
     'MultiSource/Benchmarks/7zip/7zip-benchmark.execution_time',
     'LLC_compile/MultiSource/Benchmarks/7zip/7zip-benchmark',
     'MultiSource/Benchmarks/7zip/7zip-benchmark.compile_time',
+    'MultiSource/Benchmarks/tramp3d-v4/tramp3d-v4.compile_time',
+    'MultiSource/Benchmarks/tramp3d-v4/tramp3d-v4.execution_time',
+]
+
+polly_perf_O3_polly_scev_codegen_xfails = [
+    'MultiSource/Benchmarks/tramp3d-v4/tramp3d-v4.execution_time',
+    'MultiSource/Benchmarks/tramp3d-v4/tramp3d-v4.compile_time',
+    'SingleSource/Benchmarks/Misc/oourafft.execution_time',
+    'SingleSource/Benchmarks/Misc/oourafft.compile_time',
+]
+
+polly_perf_O3_polly_detect_xfails = [
 ]
 
 # Clang fast builders.
@@ -600,25 +612,46 @@ def _get_polly_builders():
 #         'factory': PollyBuilder.getPollyBuildFactory()},
 
         {'name': "polly-perf-O3",
-         'slavenames':["pollyperf2"],
+         'slavenames':["pollyperf2", "pollyperf3", "pollyperf4", "pollyperf5"],
          'builddir':"pollyperf-O3",
          'factory': PollyBuilder.getPollyLNTFactory(triple="x86_64-pc-linux-gnu",
-                                                    nt_flags=['--multisample=3'],
+                                                    nt_flags=['--multisample=10'],
                                                     testerName='pollyperf-O3')},
         {'name': "polly-perf-O3-polly",
-         'slavenames':["pollyperf3"],
+         'slavenames':["pollyperf6"],
          'builddir':"pollyperf-O3-polly",
          'factory': PollyBuilder.getPollyLNTFactory(triple="x86_64-pc-linux-gnu",
-                                                    nt_flags=['--multisample=3', '--mllvm=-polly'],
+                                                    nt_flags=['--multisample=10', '--mllvm=-polly'],
                                                     xfails=polly_x86_64_linux_xfails,
                                                     testerName='pollyperf-O3-polly')},
         {'name': "polly-perf-O3-polly-codegen-isl",
-         'slavenames':["pollyperf4"],
+         'slavenames':["pollyperf7"],
          'builddir':"pollyperf-O3-polly-codegen-isl",
          'factory': PollyBuilder.getPollyLNTFactory(triple="x86_64-pc-linux-gnu",
-                                                    nt_flags=['--multisample=3', '--mllvm=-polly', '--mllvm=-polly-code-generator=isl'],
+                                                    nt_flags=['--multisample=10', '--mllvm=-polly', '--mllvm=-polly-code-generator=isl'],
                                                     xfails=polly_x86_64_linux_xfails,
-                                                    testerName='pollyperf-O3-polly-codegen-isl')}
+                                                    testerName='pollyperf-O3-polly-codegen-isl')},
+        {'name': "polly-perf-O3-polly-scev",
+         'slavenames':["pollyperf10"],
+         'builddir':"pollyperf-O3-polly-scev",
+         'factory': PollyBuilder.getPollyLNTFactory(triple="x86_64-pc-linux-gnu",
+                                                    nt_flags=['--multisample=10', '--mllvm=-polly', '--mllvm=-polly-codegen-scev'],
+                                                    xfails=polly_perf_O3_polly_scev_codegen_xfails,
+                                                    testerName='pollyperf-O3-polly-scev')},
+        {'name': "polly-perf-O3-polly-scev-codegen-isl",
+         'slavenames':["pollyperf11"],
+         'builddir':"pollyperf-O3-polly-svev-codegen-isl",
+         'factory': PollyBuilder.getPollyLNTFactory(triple="x86_64-pc-linux-gnu",
+                                                    nt_flags=['--multisample=10', '--mllvm=-polly', '--mllvm=-polly-code-generator=isl', '--mllvm=-polly-codegen-scev'],
+                                                    xfails=polly_perf_O3_polly_scev_codegen_xfails,
+                                                    testerName='pollyperf-O3-polly-scev-codegen-isl')},
+        {'name': "polly-perf-O3-polly-detect",
+         'slavenames':["pollyperf14"],
+         'builddir':"pollyperf-O3-polly-detect",
+         'factory': PollyBuilder.getPollyLNTFactory(triple="x86_64-pc-linux-gnu",
+                                                    nt_flags=['--multisample=10', '--mllvm=-polly', '--mllvm=-polly-code-generator=none', '--mllvm=-polly-optimizer=none'],
+                                                    xfails=polly_perf_O3_polly_detect_xfails,
+                                                    testerName='pollyperf-O3-polly-detect')}
        ]
 
 # LLDB builders.
