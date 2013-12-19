@@ -209,6 +209,7 @@ def getClangBuildFactory(
                                           command=['nice', '-n', '10',
                                                    make, WithProperties("-j%s" % jobs)],
                                           haltOnFailure=True,
+                                          flunkOnFailure=not run_gdb,
                                           description=["compiling", stage1_config],
                                           descriptionDone=["compile", stage1_config],
                                           workdir=llvm_1_objdir,
@@ -239,6 +240,7 @@ def getClangBuildFactory(
                                    command=[make, "check-all", "VERBOSE=1",
                                             WithProperties("LIT_ARGS=%s" % clangTestArgs),
                                             WithProperties("EXTRA_TESTDIRS=%s" % extraTestDirs)],
+                                   flunkOnFailure=not run_gdb,
                                    description=["checking"],
                                    descriptionDone=["checked"],
                                    workdir=llvm_1_objdir,
@@ -556,7 +558,7 @@ def addClangGCCTests(f, ignores={}, install_prefix="%(builddir)s/llvm.install",
             'CC_UNDER_TEST=%s/bin/clang' % install_prefix),
                  WithProperties(
             'CXX_UNDER_TEST=%s/bin/clang++' % install_prefix)]
-    f.addStep(SVN(name='svn-clang-tests', mode='update',
+    f.addStep(SVN(name='svn-clang-gcc-tests', mode='update',
                   baseURL='http://llvm.org/svn/llvm-project/clang-tests/',
                   defaultBranch='trunk', workdir='clang-tests'))
     gcc_dg_ignores = ignores.get('gcc-4_2-testsuite', {})
@@ -575,7 +577,7 @@ def addClangGDBTests(f, ignores={}, install_prefix="%(builddir)s/llvm.install"):
             'CC_UNDER_TEST=%s/bin/clang' % install_prefix),
                  WithProperties(
             'CXX_UNDER_TEST=%s/bin/clang++' % install_prefix)]
-    f.addStep(SVN(name='svn-clang-tests', mode='update',
+    f.addStep(SVN(name='svn-clang-gdb-tests', mode='update',
                   baseURL='http://llvm.org/svn/llvm-project/clang-tests/',
                   defaultBranch='trunk', workdir='clang-tests'))
     f.addStep(commands.SuppressionDejaGNUCommand.SuppressionDejaGNUCommand(
@@ -591,7 +593,7 @@ def addModernClangGDBTests(f, jobs, install_prefix):
                                 'CXX_FOR_TARGET=\'{0}/bin/clang++\' '
                                 'CFLAGS_FOR_TARGET=\'-w -fno-limit-debug-info\''
                                 .format(install_prefix))]
-    f.addStep(SVN(name='svn-clang-tests', mode='update',
+    f.addStep(SVN(name='svn-clang-modern-gdb-tests', mode='update',
                   svnurl='http://llvm.org/svn/llvm-project/clang-tests-external/trunk/gdb/7.5',
                   workdir='clang-tests/src'))
     f.addStep(Configure(command='../src/configure',
