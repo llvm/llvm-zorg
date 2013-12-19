@@ -153,6 +153,16 @@ clang_x86_64_linux_xfails = [
     'LLC_compile.SingleSource/UnitTests/Vector/SSE/sse.stepfft',
 ]
 
+# TODO: The following tests marked as expected failures on FreeBSD 9 temporarily.
+# Remove after http://llvm.org/bugs/show_bug.cgi?id=18089
+# and http://llvm.org/bugs/show_bug.cgi?id=18056 will be fixed and closed.
+clang_x86_64_freeBSD9_xfails = [
+    'MultiSource/Benchmarks/SciMark2-C/scimark2',
+    'MultiSource/Benchmarks/nbench/nbench',
+    'SingleSource/UnitTests/initp1',
+    'SingleSource/Benchmarks/Misc/mandel'
+]
+
 polly_x86_64_linux_xfails = [
     'LLC.MultiSource/Applications/sgefa/sgefa',
     'MultiSource/Applications/sgefa/sgefa.execution_time',
@@ -336,7 +346,8 @@ def _get_clang_builders():
                                                                stage1_config='Release+Asserts',
                                                                merge_functions=True,
                                                                make='gmake',
-                                                               test=False)},
+                                                               test=False,
+                                                               xfails=clang_x86_64_freeBSD9_xfails)},
 
         # Clang cross builders.
         {'name' : "clang-x86_64-darwin11-cross-mingw32",
