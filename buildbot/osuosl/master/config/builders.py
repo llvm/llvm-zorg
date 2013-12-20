@@ -157,10 +157,14 @@ clang_x86_64_linux_xfails = [
 # Remove after http://llvm.org/bugs/show_bug.cgi?id=18089
 # and http://llvm.org/bugs/show_bug.cgi?id=18056 will be fixed and closed.
 clang_x86_64_freeBSD9_xfails = [
-    'MultiSource/Benchmarks/SciMark2-C/scimark2',
-    'MultiSource/Benchmarks/nbench/nbench',
-    'SingleSource/UnitTests/initp1',
-    'SingleSource/Benchmarks/Misc/mandel'
+    'LLC.MultiSource/Benchmarks/SciMark2-C/scimark2',
+    'LLC_compile.MultiSource/Benchmarks/SciMark2-C/scimark2',
+    'LLC.MultiSource/Benchmarks/nbench/nbench',
+    'LLC_compile.MultiSource/Benchmarks/nbench/nbench',
+    'LLC.SingleSource/UnitTests/initp1',
+    'LLC_compile.SingleSource/UnitTests/initp1',
+    'LLC.SingleSource/Benchmarks/Misc/mandel',
+    'LLC_compile.SingleSource/Benchmarks/Misc/mandel',
 ]
 
 polly_x86_64_linux_xfails = [
