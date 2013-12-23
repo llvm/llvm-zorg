@@ -299,7 +299,7 @@ def _get_clang_builders():
                                                                        test=True)},
 
         {'name': "clang-native-mingw32-win7",
-         'slavenames':["kistanova8"],
+         'slavenames':["as-bldslv7"],
          'builddir':"clang-native-mingw32-win7",
          'factory' : ClangBuilder.getClangBuildFactory(triple='i686-pc-mingw32',
                                                        useTwoStage=True, test=False,
