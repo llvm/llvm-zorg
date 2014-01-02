@@ -38,9 +38,10 @@ def _get_liblto(status, stdin, stdout):
     return {}
 
 def getLNTFactory(triple, nt_flags, xfails=[], clean=True, test=False,
-                  **kwargs):
+                  reportBuildslave = True, **kwargs):
     lnt_args = {}
-    lnt_arg_names = ['submitURL', 'package_cache', 'testerName']
+    lnt_arg_names = ['submitURL', 'package_cache', 'testerName',
+                     'reportBuildslave']
 
     for argname in lnt_arg_names:
         if argname in kwargs:
@@ -73,6 +74,7 @@ def AddLNTTestsToFactory(f, nt_flags, cc_path, cxx_path, **kwargs):
     submitURL = kwargs.pop('submitURL', 'http://llvm.org/perf/submitRun')
     package_cache = kwargs.pop('package_cache', 'http://lab.llvm.org/packages')
     testerName = kwargs.pop('testerName', None)
+    reportBuildslave = kwargs.pop('reportBuildslave', True)
     env = kwargs.pop('env', {})
 
     # Create variables to refer to the compiler-under-test.
@@ -128,12 +130,14 @@ def AddLNTTestsToFactory(f, nt_flags, cc_path, cxx_path, **kwargs):
             haltOnFailure=True, description=['clean', 'LNT', 'sandbox'],
             workdir='tests'))
 
-    reportName = '%(slavename)s'
+    if reportBuildslave:
+        reportName = '%(slavename)s'
 
-    if testerName:
-        reportName += '__' + testerName
-
-    reportName = WithProperties(reportName)
+        if testerName:
+            reportName += '__' + testerName
+        reportName = WithProperties(reportName)
+    else:
+        reportName = testerName
 
     # Run the nightly test.
     args = [WithProperties('%(builddir)s/lnt.venv/bin/python'),

@@ -177,10 +177,10 @@ def AddExternalPollyBuildFactory(f, llvm_installdir):
                            description=["install polly"],
                            workdir=polly_objdir))
 
-def getPollyLNTFactory(triple, nt_flags, xfails=[], clean=True, test=False,
+def getPollyLNTFactory(triple, nt_flags, xfails=[], clean=False, test=False,
                   **kwargs):
     lnt_args = {}
-    lnt_arg_names = ['submitURL', 'package_cache', 'testerName']
+    lnt_arg_names = ['submitURL', 'package_cache', 'testerName', 'reportBuildslave']
 
     for argname in lnt_arg_names:
         if argname in kwargs:
