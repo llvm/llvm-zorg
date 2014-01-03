@@ -658,7 +658,7 @@ def phasedClang(config_options, is_bootstrap=True, use_lto=False,
     f = getBuildDir(f)
     # get rid of old archives from prior builds
     f.addStep(buildbot.steps.shell.ShellCommand(
-            name='rm.archives', command=['sh', '-c', 'rm -rfv *gz'],
+            name='rm.archives', command=['sh', '-c', 'sudo rm -rfv *gz'],
             haltOnFailure=False, description=['rm archives'],
             workdir=WithProperties('%(builddir)s')))
     # Clean the build directory.
@@ -685,24 +685,24 @@ def phasedClang(config_options, is_bootstrap=True, use_lto=False,
     # FIXME: Should file a Trac for this, but I am lazy.
     f.addStep(buildbot.steps.shell.ShellCommand(
             name='rm.clang-sources-link',
-            command=['rm', '-rfv', 'llvm/tools/clang'],
+            command=['sudo', 'rm', '-rfv', 'llvm/tools/clang'],
             haltOnFailure=False, description=['rm', 'clang sources link'],
             workdir=WithProperties('%(builddir)s')))
     f.addStep(buildbot.steps.shell.ShellCommand(
             name='rm.compiler-rt-sources-link',
-            command=['rm', '-rfv', 'llvm/projects/compiler-rt'],
+            command=['sudo', 'rm', '-rfv', 'llvm/projects/compiler-rt'],
             haltOnFailure=False, description=['rm', 'compiler-rt sources link'],
             workdir=WithProperties('%(builddir)s')))
     # TODO: We used to use a symlink here but it seems to not work. I am trying
     # to get this builder to work so I am just going to copy it instead.
     f.addStep(buildbot.steps.shell.ShellCommand(
               name='rm.clang-tools-extra-source',
-              command=['rm', '-rfv', 'clang.src/tools/extra'],
+              command=['sudo', 'rm', '-rfv', 'clang.src/tools/extra'],
               haltOnFailure=True, workdir=WithProperties('%(builddir)s'),
               description=['rm', 'clang-tools-extra sources']))
     f.addStep(buildbot.steps.shell.ShellCommand(
               name='rm.debuginfo-tests',
-              command=['rm', '-rfv', 'clang.src/test/debuginfo-tests'],
+              command=['sudo', 'rm', '-rfv', 'clang.src/test/debuginfo-tests'],
               haltOnFailure=True, workdir=WithProperties('%(builddir)s'),
               description=['rm', 'debuginfo-tests sources']))
 
@@ -777,7 +777,7 @@ def phasedClang(config_options, is_bootstrap=True, use_lto=False,
 
     # Clean the install directory.
     f.addStep(buildbot.steps.shell.ShellCommand(
-              name='rm.clang-install', command=['rm', '-rfv', 'clang-install'],
+              name='rm.clang-install', command=['sudo', 'rm', '-rfv', 'clang-install'],
               haltOnFailure=False, description=['rm dir', 'clang-install'],
               workdir=WithProperties('%(builddir)s')))
     # Construct the configure arguments.
