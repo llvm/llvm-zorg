@@ -310,7 +310,8 @@ def _get_clang_builders():
          'slavenames' :["chinook-clangslave1"],
          'builddir' :"clang-ppc64-1",
          'factory' : LNTBuilder.getLNTFactory(triple='ppc64-elf-linux1',
-                                              nt_flags=['--multisample=3'], jobs=4,  use_pty_in_tests=True,
+                                              nt_flags=['--multisample=3','-mcpu=native'],
+                                              jobs=4,  use_pty_in_tests=True,
                                               testerName='O3-plain', run_cxx_tests=True)},
 
         {'name' : "clang-ppc64-elf-linux2",
