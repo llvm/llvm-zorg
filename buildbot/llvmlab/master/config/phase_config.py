@@ -47,7 +47,7 @@ will be used to boot strap subsequent builds.
 The first phase is targeted to run on almost every commit and to react within at
 most 10 to 15 minutes to failures.""" })
 
-phase2_slaves=['xserve2','xserve4']
+phase2_slaves=['xserve2','xserve4','xserve5']
 phase2_builders = []
 
 phase2_builders.append(build('clang-x86_64-darwin11-DA', phase2_slaves))
@@ -75,17 +75,18 @@ The second phase is targeted to run on most commits and to react within at most
 
 # Phase 3
 
-phase3_slaves = ['xserve3']
+phase3_slaves = ['xserve2','xserve4','xserve5']
+phase3_slaves_lto = ['xserve3']
 phase3_builders = []
 
 # Add an i386 build.
-phase3_builders.append(build('clang-i386-darwin11-RA', ['xserve2']))
+phase3_builders.append(build('clang-i386-darwin11-RA', phase3_slaves))
 
 # Add a release (no asserts) build.
-phase3_builders.append(build('clang-x86_64-darwin11-R', ['xserve2']))
+phase3_builders.append(build('clang-x86_64-darwin11-R', phase3_slaves))
 
 # Add an lto release build.
-phase3_builders.append(build('clang-x86_64-darwin11-Rlto', ['xserve3']))
+phase3_builders.append(build('clang-x86_64-darwin11-Rlto', phase3_slaves_lto))
 
 # Add a reasonable matrix of nightlies on the final reference compiler.
 # for arch in ('i386', 'x86_64'):
