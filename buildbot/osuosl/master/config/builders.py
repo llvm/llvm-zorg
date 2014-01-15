@@ -269,6 +269,18 @@ def _get_clang_builders():
                                            '--with-float=hard',
                                            '--enable-targets=arm'])},
 
+        {'name': "clang-native-arm-cortex-a15",
+         'slavenames':["linaro-chrome-01"],
+         'builddir':"clang-native-arm-cortex-a15",
+         'factory' : ClangBuilder.getClangBuildFactory(
+                     stage1_config='Release+Asserts',
+                     clean=False,
+                     test=True,
+                     extra_configure_args=[ '--with-cpu=cortex-a15',
+                                            '--with-fpu=neon',
+                                            '--with-float=hard',
+                                            '--enable-targets=arm'])},
+
         {'name': "clang-native-arm-cortex-a15-self-host",
          'slavenames':["linaro-chrome-02"],
          'builddir':"clang-native-arm-cortex-a15-self-host",
@@ -284,7 +296,7 @@ def _get_clang_builders():
                                             '--enable-targets=arm'])},
 
         {'name' : "clang-native-arm-lnt",
-         'slavenames':["linaro-chrome-01", "linaro-chrome-03"],
+         'slavenames':["linaro-chrome-03"],
          'builddir':"clang-native-arm-lnt",
          'factory' : LNTBuilder.getLNTFactory(triple='armv7l-unknown-linux-gnueabihf',
                                               nt_flags=['--cflag', '-mcpu=cortex-a15', '-j2'],
@@ -408,7 +420,7 @@ def _get_clang_builders():
 
         {'name' : "clang-native-arm-cortex-a15-arch",
          'triple' : 'armv7l-unknown-linux-gnueabihf',
-         'slavenames' :["mily-odroid-xu-1", "linaro-odroidxu-01"],
+         'slavenames' :["mily-odroid-xu-1"],
          'builddir' :"clang-native-arm-cortex-a15-arch",
          'factory' : ClangBuilder.getClangBuildFactory(
                      stage1_config='Release+Asserts',

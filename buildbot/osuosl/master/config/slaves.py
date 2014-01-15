@@ -240,7 +240,6 @@ def get_build_slaves():
 
         # Arch Linux ODROID-XU ARMv7 Cortex A15 Quad-Core @ 1.6 GHz 2 GB RAM
         create_slave("mily-odroid-xu-1", properties={'jobs': 4}, max_builds=1),
-        create_slave("linaro-odroidxu-01", properties={'jobs' : 4}, max_builds=1),
 
         # Debian Linux Mac Mini PowerPC @ 1.25 GHz 1 GB RAM 30 GB HD
         create_slave("mily-mini-1", properties={'jobs' : 1}, max_builds=1),
