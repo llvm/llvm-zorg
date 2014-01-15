@@ -177,6 +177,7 @@ def getClangBuildFactory(
                                 '--host=%s' % triple]
     args = base_configure_args + [WithProperties("--prefix=%%(builddir)s/%s" % llvm_1_installdir)]
     args += builders_util.getConfigArgs(stage1_config)
+    args.append('--enable-libcpp')
     if not clean:
         f.addStep(SetProperty(name="Makefile_isready",
                               workdir=llvm_1_objdir,
