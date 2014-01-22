@@ -177,7 +177,6 @@ def getClangBuildFactory(
                                 '--host=%s' % triple]
     args = base_configure_args + [WithProperties("--prefix=%%(builddir)s/%s" % llvm_1_installdir)]
     args += builders_util.getConfigArgs(stage1_config)
-    args.append('--enable-libcpp')
     if not clean:
         f.addStep(SetProperty(name="Makefile_isready",
                               workdir=llvm_1_objdir,
@@ -313,7 +312,6 @@ def getClangBuildFactory(
     # Configure llvm (stage 2).
     args = base_configure_args + [WithProperties("--prefix=%(builddir)s/" + llvm_2_installdir)]
     args += builders_util.getConfigArgs(stage2_config)
-    args.append('--enable-libcpp')
     local_env = dict(merged_env)
     local_env.update({
         'CC'  : WithProperties("%%(builddir)s/%s/bin/clang"   % llvm_1_installdir),
@@ -787,7 +785,6 @@ def phasedClang(config_options, is_bootstrap=True, use_lto=False,
     configure_args.extend(config_options)
     configure_args.extend(['--disable-bindings',
                            '--enable-keep-symbols'])
-    configure_args.append('--enable-libcpp')
     configure_args.append(
         WithProperties('--prefix=%(builddir)s/clang-install'))    
     
