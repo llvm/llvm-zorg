@@ -364,6 +364,8 @@ def _get_clang_builders():
                                                                merge_functions=True,
                                                                make='gmake',
                                                                test=False,
+                                                               env={'CC'  : '/usr/local/bin/gcc47',
+                                                                    'CXX' : '/usr/local/bin/g++47'},
                                                                xfails=clang_x86_64_freeBSD9_xfails)},
 
         # Clang cross builders.
@@ -736,7 +738,8 @@ def _get_lld_builders():
         {'name': "lld-x86_64-freeBSD",
          'slavenames' :["as-bldslv5"],
          'builddir':"lld-x86_64-freeBSD",
-         'factory': LLDBuilder.getLLDBuildFactory(jobs=32),
+         'factory': LLDBuilder.getLLDBuildFactory(jobs=32,
+                                                  env={'CXXFLAGS' : "-stdlib=libc++"}),
          'category'   : 'lld'},
 
         {'name': "lld-powerpc-linux-debian",
