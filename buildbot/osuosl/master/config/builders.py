@@ -420,20 +420,6 @@ def _get_clang_builders():
                                            '--target=hexagon-unknown-elf',
                                            '--enable-targets=hexagon'])},
 
-        {'name' : "clang-native-arm-cortex-a15-arch",
-         'triple' : 'armv7l-unknown-linux-gnueabihf',
-         'slavenames' :["mily-odroid-xu-1"],
-         'builddir' :"clang-native-arm-cortex-a15-arch",
-         'factory' : ClangBuilder.getClangBuildFactory(
-                     stage1_config='Release+Asserts',
-                     clean=True,
-                     test=True,
-                     env = { 'CC' : 'ccache gcc', 'CXX' : 'ccache g++', 'CCACHE_CPP2' : 'yes' },
-                     extra_configure_args=[ '--with-cpu=cortex-a15',
-                                            '--with-fpu=neon',
-                                            '--with-float=hard',
-                                            '--enable-targets=arm'])},
-
         ]
 
 # Offline.
@@ -742,17 +728,6 @@ def _get_lld_builders():
                                                   env={'CXXFLAGS' : "-stdlib=libc++"}),
          'category'   : 'lld'},
 
-        {'name': "lld-powerpc-linux-debian",
-         'slavenames' :["mily-mini-1"],
-         'builddir': "lld-powerpc-linux-debian",
-         'factory': LLDBuilder.getLLDBuildFactory(clean=True,
-                                                  jobs=2, 
-                                                  env={ 
-                                                      'CC' : 'ccache gcc-4.8', 
-                                                      'CXX': 'ccache g++-4.8',
-                                                      'CCACHE_CPP2' : 'yes',
-                                                      'LD' : 'ld.gold'}),
-          'category' : 'lld'},
          ]
 
 # Sanitizer builders.
