@@ -46,6 +46,10 @@ from zorg.buildbot.builders import SanitizerBuilder
 reload(SanitizerBuilder)
 from zorg.buildbot.builders import SanitizerBuilder
 
+from zorg.buildbot.builders import SanitizerBuilderII
+reload(SanitizerBuilderII)
+from zorg.buildbot.builders import SanitizerBuilderII
+
 from buildbot.steps.source import SVN
 
 # Plain LLVM builders.
