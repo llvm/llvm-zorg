@@ -37,6 +37,9 @@ def get_build_slaves():
         # Windows 7 Ultimate
         create_slave("as-bldslv7", properties={'jobs' : 1}, max_builds=1),
 
+        # FreeBSD 8.2 X86_64
+        create_slave("as-bldslv8", properties={'jobs' : 2}, max_builds=1),
+
         # Chromebook Cortex-A15 slaves
         create_slave("linaro-chrome-01", properties={'jobs' : 2}, max_builds=1),
         create_slave("linaro-chrome-02", properties={'jobs' : 2}, max_builds=1),

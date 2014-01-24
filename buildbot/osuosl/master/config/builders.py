@@ -750,6 +750,15 @@ def _get_sanitizer_builders():
            'factory': ClangAndLLDBuilder.getClangAndLLDBuildFactory(
                                              buildWithSanitizerOptions=['-fsanitize=address'],
                                              env={'PATH':'/opt/usr/bin:/usr/local/bin:/usr/bin:/bin'})},
+
+          {'name': "sanitizer_x86_64-freeBSD9.2",
+           'slavenames':["as-bldslv8"],
+           'builddir':"sanitizer_x86_64-freeBSD9.2",
+           'factory' : SanitizerBuilderII.getSanitizerBuildFactoryII(
+                                             clean=False,
+                                             python_executable="/usr/local/bin/python",
+                                             env = { 'CC' : 'clang', 'CXX' : 'clang++'})},
+
           ]
 
 # Experimental and stopped builders
