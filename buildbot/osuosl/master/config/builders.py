@@ -517,19 +517,6 @@ def _get_dragonegg_builders():
                                                                       env={ 'CFLAGS' : '-march=native' }),
          'category'   : 'dragonegg'},
 
-        {'name' : "dragonegg-x86_64-linux-gcc-4.6-self-host",
-         'slavenames' : ["gcc15"],
-         'builddir'   : "dragonegg-x86_64-linux-gcc-4.6-self-host",
-         'factory'    : DragonEggBuilder.getDragonEggBootstrapFactory(gcc_repository='http://gcc.gnu.org/svn/gcc/branches/gcc-4_6-branch@194776',
-                                                                      extra_languages=['fortran', 'objc', 'obj-c++'],
-                                                                      extra_gcc_configure_args=['--disable-bootstrap', '--enable-checking',
-                                                                                                '--with-mpfr=/opt/cfarm/mpfr-2.4.1',
-                                                                                                '--with-gmp=/opt/cfarm/gmp-4.2.4',
-                                                                                                '--with-mpc=/opt/cfarm/mpc-0.8'],
-                                                                      extra_llvm_configure_args=['--enable-optimized', '--enable-assertions'],
-                                                                      env={ 'CFLAGS' : '-march=native' }),
-         'category'   : 'dragonegg'},
-
          {'name' : "dragonegg-x86_64-linux-gcc-4.6-self-host-checks",
          'slavenames' : ["gcc10"],
          'builddir'   : "dragonegg-x86_64-linux-gcc-4.6-self-host-checks",
@@ -586,35 +573,6 @@ def _get_dragonegg_builders():
                             env={'LD_LIBRARY_PATH' : '/home/baldrick/local/lib/gcc/x86_64-unknown-linux-gnu/4.6.3/:/home/baldrick/local/lib64/:/lib64/:/usr/lib64/:/home/baldrick/local/lib:/lib/:/usr/lib/'}
                         ),
          'category'   : 'dragonegg'},
-
-        {'name' : 'dragonegg-i686-linux-gcc-4.5-self-host',
-         'slavenames' : ['gcc16'],
-         'builddir'   : 'dragonegg-i686-linux-gcc-4.5-self-host',
-         'factory'    : DragonEggBuilder.getDragonEggBootstrapFactory(gcc_repository='http://gcc.gnu.org/svn/gcc/branches/gcc-4_5-branch@188355',
-                                                                      extra_languages=['fortran', 'objc', 'obj-c++'],
-                                                                      extra_gcc_configure_args=['--disable-bootstrap', '--disable-multilib', '--enable-checking',
-                                                                                                '--build=i686-pc-linux-gnu', '--enable-targets=all',
-                                                                                                '--with-mpfr=/home/baldrick/cfarm-32',
-                                                                                                '--with-gmp=/home/baldrick/cfarm-32',
-                                                                                                '--with-mpc=/home/baldrick/cfarm-32',
-                                                                                                '--with-libelf=/home/baldrick/cfarm-32'],
-                                                                      extra_llvm_configure_args=['--enable-optimized', '--enable-assertions',
-                                                                                                 '--build=i686-pc-linux-gnu'],
-                                                                      env={'CC' : 'gcc -m32', 'CXX' : 'g++ -m32',
-                                                                           'LD_LIBRARY_PATH' : '/home/baldrick/cfarm-32/lib',
-                                                                           'CPPFLAGS' : '-I/home/baldrick/cfarm-32/include'}),
-         'category'   : 'dragonegg'},
-
-        {'name' : 'dragonegg-x86_64-linux-gcc-4.5-self-host',
-         'slavenames' : ['gcc16'],
-         'builddir'   : 'dragonegg-x86_64-linux-gcc-4.5-self-host',
-         'factory'    : DragonEggBuilder.getDragonEggBootstrapFactory(gcc_repository='http://gcc.gnu.org/svn/gcc/branches/gcc-4_5-branch@188355',
-                                                                      extra_languages=['fortran', 'objc', 'obj-c++'],
-                                                                      extra_gcc_configure_args=['--disable-bootstrap', '--disable-multilib', '--enable-checking', '--with-mpfr=/opt/cfarm/mpfr', '--with-gmp=/opt/cfarm/gmp', '--with-mpc=/opt/cfarm/mpc', '--with-libelf=/opt/cfarm/libelf-0.8.12'],
-                                                                      extra_llvm_configure_args=['--enable-optimized', '--enable-assertions'],
-                                                                      env={'CPPFLAGS' : '-I/opt/cfarm/mpfr/include -I/opt/cfarm/gmp/include/ -I/opt/cfarm/mpc/include/'}),
-         'category'   : 'dragonegg'},
-
         ]
 
 # Polly builders.
