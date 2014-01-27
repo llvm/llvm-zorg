@@ -278,7 +278,7 @@ def _get_clang_builders():
          'builddir':"clang-native-arm-cortex-a15",
          'factory' : ClangBuilder.getClangBuildFactory(
                      stage1_config='Release+Asserts',
-                     clean=False,
+                     clean=True,
                      test=True,
                      extra_configure_args=[ '--with-cpu=cortex-a15',
                                             '--with-fpu=neon',
