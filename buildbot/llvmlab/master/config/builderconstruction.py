@@ -138,6 +138,9 @@ def construct_compiler_builder_from_name(name, use_lto=False,
 
     # build_cc must be set for a bootstrapped compiler
     if compiler == 'clang':
+        if host_os == 'darwin11':
+            config_options.extend(['--enable-libcpp'])
+
         return { 'factory' : ClangBuilder.phasedClang(config_options,
                                          is_bootstrap=(build_cc is None),
                                          use_lto=use_lto,
