@@ -224,6 +224,9 @@ def get_build_slaves():
         # Ubuntu 13.04 x86-64, Intel(R) Xeon(R) CPU 5160 @ 3.00GHz
         create_slave("gribozavr2", properties={'jobs': 4}, max_builds=1),
 
+        # CentOS 6.5 x86-64, VM on Intel(R) Core(TM) i5 CPU 750 @ 2.67GHz
+        create_slave("gribozavr3", properties={'jobs': 4}, max_builds=1),
+
         # Debian Testing x86-64, Intel Core i5-3570K (ivybridge) CPU @ 3.40GHz
         create_slave("obbligato-ellington", properties={'jobs': 2}, max_builds=1),
 

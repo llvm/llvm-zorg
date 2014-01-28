@@ -12,6 +12,7 @@ from zorg.buildbot.commands.NinjaCommand import NinjaCommand
 def getClangAndLLDBuildFactory(
            clean=True,
            env=None,
+           extraCompilerOptions=None,
            buildWithSanitizerOptions=None):
 
     llvm_srcdir = "llvm.src"
@@ -82,7 +83,10 @@ def getClangAndLLDBuildFactory(
                                workdir=".",
                                env=merged_env))
 
-    options = ["-std=c++11", "-Wdocumentation", "-Wno-documentation-deprecated-sync"]
+    options = ["-Wdocumentation", "-Wno-documentation-deprecated-sync"]
+
+    if extraCompilerOptions:
+        options += extraCompilerOptions
 
     if buildWithSanitizerOptions:
         options += buildWithSanitizerOptions
@@ -108,7 +112,8 @@ def getClangAndLLDBuildFactory(
             "-DCMAKE_C_COMPILER=clang",
             "-DCMAKE_CXX_COMPILER=clang++"]
     cmakeCommand += [
-        "-DCMAKE_CXX_FLAGS=\"%s\"" % (" ".join(options)),
+        "-DCMAKE_C_FLAGS=\"%s\"" % (" ".join(options)),
+        "-DCMAKE_CXX_FLAGS=\"-std=c++11 %s\"" % (" ".join(options)),
         "-DLLVM_LIT_ARGS=\"-v\"",
         "-G", "Ninja",
         "../%s" % llvm_srcdir]
