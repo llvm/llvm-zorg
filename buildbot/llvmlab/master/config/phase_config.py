@@ -47,7 +47,7 @@ will be used to boot strap subsequent builds.
 The first phase is targeted to run on almost every commit and to react within at
 most 10 to 15 minutes to failures.""" })
 
-phase2_slaves=['xserve2','xserve4', 'lab-mini-02']
+phase2_slaves=['xserve4']
 phase2_builders = []
 
 phase2_builders.append(build('clang-x86_64-darwin11-DA', phase2_slaves))
