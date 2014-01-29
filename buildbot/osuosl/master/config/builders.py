@@ -165,10 +165,11 @@ clang_x86_64_freeBSD9_xfails = [
     'LLC_compile.MultiSource/Benchmarks/SciMark2-C/scimark2',
     'LLC.MultiSource/Benchmarks/nbench/nbench',
     'LLC_compile.MultiSource/Benchmarks/nbench/nbench',
-    'LLC.SingleSource/UnitTests/initp1',
-    'LLC_compile.SingleSource/UnitTests/initp1',
-    'LLC.SingleSource/Benchmarks/Misc/mandel',
-    'LLC_compile.SingleSource/Benchmarks/Misc/mandel',
+    'LLC.SingleSource/Benchmarks/Misc-C++/Large/sphereflake',
+    'LLC_compile.SingleSource/Benchmarks/Misc-C++/Large/sphereflake',
+    'LLC.SingleSource/UnitTests/ms_struct_pack_layout',
+    'LLC_compile.SingleSource/UnitTests/ms_struct_pack_layout',
+
 ]
 
 polly_x86_64_linux_xfails = [
