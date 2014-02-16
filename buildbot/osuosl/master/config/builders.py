@@ -227,6 +227,7 @@ def _get_clang_fast_builders():
                     env={'PATH': '/opt/centos/devtoolset-1.1/root/usr/bin:/home/llvmbb/bin:/bin:/usr/bin',
                          'LD_LIBRARY_PATH': '/opt/centos/devtoolset-1.1/root/usr/lib64',
                          'CC': 'ccache clang', 'CXX': 'ccache clang++', 'CCACHE_CPP2': 'yes'},
+                    withLLD=False,
                     extraCompilerOptions=['--gcc-toolchain=/opt/centos/devtoolset-1.1/root/usr'])},
         ]
 

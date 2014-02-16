@@ -12,6 +12,7 @@ from zorg.buildbot.commands.NinjaCommand import NinjaCommand
 def getClangAndLLDBuildFactory(
            clean=True,
            env=None,
+           withLLD=True,
            extraCompilerOptions=None,
            buildWithSanitizerOptions=None):
 
@@ -60,11 +61,12 @@ def getClangAndLLDBuildFactory(
                   baseURL='http://llvm.org/svn/llvm-project/clang-tools-extra/',
                   defaultBranch='trunk',
                   workdir='%s/tools/clang/tools/extra' % llvm_srcdir))
-    f.addStep(SVN(name='svn-lld',
-                  mode='update',
-                  baseURL='http://llvm.org/svn/llvm-project/lld/',
-                  defaultBranch='trunk',
-                  workdir='%s/tools/lld' % llvm_srcdir))
+    if withLLD:
+        f.addStep(SVN(name='svn-lld',
+                      mode='update',
+                      baseURL='http://llvm.org/svn/llvm-project/lld/',
+                      defaultBranch='trunk',
+                      workdir='%s/tools/lld' % llvm_srcdir))
 
     # Clean directory, if requested.
     if clean:
