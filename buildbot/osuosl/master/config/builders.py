@@ -601,7 +601,7 @@ def _get_polly_builders():
 #         'factory': PollyBuilder.getPollyBuildFactory()},
 
         {'name': "polly-perf-O3",
-         'slavenames':["pollyperf2", "pollyperf3", "pollyperf4", "pollyperf5"],
+         'slavenames':["pollyperf2", "pollyperf3", "pollyperf4", "pollyperf5", "pollyperf15"],
          'builddir':"pollyperf-O3",
          'factory': PollyBuilder.getPollyLNTFactory(triple="x86_64-pc-linux-gnu",
                                                     nt_flags=['--multisample=10'],
