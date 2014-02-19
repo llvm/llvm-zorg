@@ -296,7 +296,7 @@ def PublishGoodBuild(f=None, validated_build_dir='validated_builds',
                 f.addStep(MasterShellCommand(
                     name='Publish.Latest.' + buildname,
                     haltOnFailure=True,
-                    command=['ln', '-sfv',
+                    command=['cp', '-v',
                              WithProperties(link_str,
                                             get_phase_id=determine_phase_id),
                              os.path.join(artifacts_dir, validated_build_dir,
@@ -317,7 +317,7 @@ def PublishGoodBuild(f=None, validated_build_dir='validated_builds',
 
                     f.addStep(MasterShellCommand(
                         name='Publish.'+ buildname, haltOnFailure = True,
-                        command = ['ln', '-sfv',
+                        command = ['cp', '-v',
                                    WithProperties(link_str,
                                                   get_phase_id=determine_phase_id),
                                    WithProperties(artifacts_str,
