@@ -30,6 +30,13 @@ def get_status_targets(standard_builders):
 
     default_email = config.options.get('Master Options', 'default_email')
 
+    # The polly performance buildbots have a very long delay and commonly fail
+    # late and if they fail, all of them fail together. As the same failures
+    # are are normally also catched by the faster polly bots, there is no need
+    # to warn everybody about failures in the performance bots. Tobias Grosser
+    # will keep track of such.
+    standard_builders = [b for b in standard_builders if not b.startswith('polly-perf')]
+
     return [
         buildbot.status.html.WebStatus(
             http_port = 8011, authz=authz_cfg),
@@ -61,7 +68,11 @@ def get_status_targets(standard_builders):
             subject="Build %(builder)s Failure",
             mode = "failing",
             builders = ["polly-amd64-linux", "polly-intel32-linux",
-                        "polly-perf-O3", "polly-perf-O3-polly"],
+                        "polly-perf-O3", "polly-perf-O3-polly",
+                        "polly-perf-O3-polly-codegen-isl",
+                        "polly-perf-O3-polly-scev",
+                        "polly-perf-O3-polly-scev-codegen-isl",
+                        "polly-perf-O3-polly-detect"]
             addLogs=False,
             num_lines = 15),
         InformativeMailNotifier(
