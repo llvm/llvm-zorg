@@ -72,7 +72,7 @@ def get_status_targets(standard_builders):
                         "polly-perf-O3-polly-codegen-isl",
                         "polly-perf-O3-polly-scev",
                         "polly-perf-O3-polly-scev-codegen-isl",
-                        "polly-perf-O3-polly-detect"]
+                        "polly-perf-O3-polly-detect"],
             addLogs=False,
             num_lines = 15),
         InformativeMailNotifier(
