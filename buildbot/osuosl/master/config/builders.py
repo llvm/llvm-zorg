@@ -731,7 +731,6 @@ def _get_sanitizer_builders():
                                              clean=False,
                                              python_executable="/usr/local/bin/python",
                                              env = { 'CC' : 'clang', 'CXX' : 'clang++'})},
-
           ]
 
 # Experimental and stopped builders
