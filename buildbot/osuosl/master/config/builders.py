@@ -172,27 +172,6 @@ clang_x86_64_freeBSD9_xfails = [
 
 ]
 
-polly_x86_64_linux_xfails = [
-    'LLC.MultiSource/Applications/sgefa/sgefa',
-    'MultiSource/Applications/sgefa/sgefa.execution_time',
-    'LLC/MultiSource/Benchmarks/7zip/7zip-benchmark',
-    'MultiSource/Benchmarks/7zip/7zip-benchmark.execution_time',
-    'LLC_compile/MultiSource/Benchmarks/7zip/7zip-benchmark',
-    'MultiSource/Benchmarks/7zip/7zip-benchmark.compile_time',
-    'MultiSource/Benchmarks/tramp3d-v4/tramp3d-v4.compile_time',
-    'MultiSource/Benchmarks/tramp3d-v4/tramp3d-v4.execution_time',
-]
-
-polly_perf_O3_polly_scev_codegen_xfails = [
-    'MultiSource/Benchmarks/tramp3d-v4/tramp3d-v4.execution_time',
-    'MultiSource/Benchmarks/tramp3d-v4/tramp3d-v4.compile_time',
-    'SingleSource/Benchmarks/Misc/oourafft.execution_time',
-    'SingleSource/Benchmarks/Misc/oourafft.compile_time',
-]
-
-polly_perf_O3_polly_detect_xfails = [
-]
-
 # Clang fast builders.
 def _get_clang_fast_builders():
     return [
@@ -613,7 +592,6 @@ def _get_polly_builders():
          'builddir':"pollyperf-O3-polly",
          'factory': PollyBuilder.getPollyLNTFactory(triple="x86_64-pc-linux-gnu",
                                                     nt_flags=['--multisample=10', '--mllvm=-polly'],
-                                                    xfails=polly_x86_64_linux_xfails,
                                                     reportBuildslave=False,
                                                     package_cache="http://parkas1.inria.fr/packages",
                                                     testerName='pollyperf-O3-polly')},
@@ -622,7 +600,6 @@ def _get_polly_builders():
          'builddir':"pollyperf-O3-polly-codegen-isl",
          'factory': PollyBuilder.getPollyLNTFactory(triple="x86_64-pc-linux-gnu",
                                                     nt_flags=['--multisample=10', '--mllvm=-polly', '--mllvm=-polly-code-generator=isl'],
-                                                    xfails=polly_x86_64_linux_xfails,
                                                     reportBuildslave=False,
                                                     package_cache="http://parkas1.inria.fr/packages",
                                                     testerName='pollyperf-O3-polly-codegen-isl')},
@@ -631,7 +608,6 @@ def _get_polly_builders():
          'builddir':"pollyperf-O3-polly-scev",
          'factory': PollyBuilder.getPollyLNTFactory(triple="x86_64-pc-linux-gnu",
                                                     nt_flags=['--multisample=10', '--mllvm=-polly', '--mllvm=-polly-codegen-scev'],
-                                                    xfails=polly_perf_O3_polly_scev_codegen_xfails,
                                                     reportBuildslave=False,
                                                     package_cache="http://parkas1.inria.fr/packages",
                                                     testerName='pollyperf-O3-polly-scev')},
@@ -640,7 +616,6 @@ def _get_polly_builders():
          'builddir':"pollyperf-O3-polly-svev-codegen-isl",
          'factory': PollyBuilder.getPollyLNTFactory(triple="x86_64-pc-linux-gnu",
                                                     nt_flags=['--multisample=10', '--mllvm=-polly', '--mllvm=-polly-code-generator=isl', '--mllvm=-polly-codegen-scev'],
-                                                    xfails=polly_perf_O3_polly_scev_codegen_xfails,
                                                     reportBuildslave=False,
                                                     package_cache="http://parkas1.inria.fr/packages",
                                                     testerName='pollyperf-O3-polly-scev-codegen-isl')},
@@ -649,7 +624,6 @@ def _get_polly_builders():
          'builddir':"pollyperf-O3-polly-detect",
          'factory': PollyBuilder.getPollyLNTFactory(triple="x86_64-pc-linux-gnu",
                                                     nt_flags=['--multisample=10', '--mllvm=-polly', '--mllvm=-polly-code-generator=none', '--mllvm=-polly-optimizer=none'],
-                                                    xfails=polly_perf_O3_polly_detect_xfails,
                                                     reportBuildslave=False,
                                                     package_cache="http://parkas1.inria.fr/packages",
                                                     testerName='pollyperf-O3-polly-detect')}
