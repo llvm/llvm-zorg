@@ -767,7 +767,7 @@ def phasedClang(config_options, is_bootstrap=True, use_lto=False,
               name='cp.clang-tools-extra-sources',
               command=['cp', '-Rfv', '../../clang-tools-extra.src', 'extra'],
               haltOnFailure=True, workdir='clang.src/tools',
-              description=['cp', 'clang-tools-extra sources']))    
+              description=['cp', 'clang-tools-extra sources']))
     f.addStep(buildbot.steps.shell.ShellCommand(
               name='cp.debuginfo-tests.sources',
               command=['cp', '-Rfv', 'debuginfo-tests.src',
@@ -868,7 +868,9 @@ def phasedClang(config_options, is_bootstrap=True, use_lto=False,
                                               description=['all', 'tests'],
                                               workdir=clang_build_dir))
     # Work around for lldb issue rdar://14929651
-    cmd_str = r"""make VERBOSE=1 LIT_ARGS="-j 1 -v --param run_long_tests=true --filter='debuginfo-tests'" check-all"""
+    # The crazy filter regex is to remove static-member[2].cpp, which requires xcode5 or later.
+    # radar://16295455 tracks the removal of this regex.
+    cmd_str = r"""make VERBOSE=1 LIT_ARGS="-j 1 -v --param run_long_tests=true  --filter='debuginfo-tests.(?!static-member)'" check-all"""
     f.addStep(lit_test_command.LitTestCommand(name='run.llvm.debuginfo-tests', haltOnFailure=True,
                                               command=cmd_str,
                                               description=['all', 'tests'],
