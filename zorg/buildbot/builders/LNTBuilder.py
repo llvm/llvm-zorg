@@ -71,7 +71,7 @@ def AddLNTTestsToFactory(f, nt_flags, cc_path, cxx_path, **kwargs):
 
     parallel = kwargs.pop('parallel', False)
     jobs = kwargs.pop('jobs', '$(jobs)s')
-    submitURL = kwargs.pop('submitURL', 'http://llvm.org/perf/submitRun')
+    submitURL = kwargs.pop('submitURL', None)
     package_cache = kwargs.pop('package_cache', 'http://lab.llvm.org/packages')
     testerName = kwargs.pop('testerName', None)
     reportBuildslave = kwargs.pop('reportBuildslave', True)
@@ -142,15 +142,19 @@ def AddLNTTestsToFactory(f, nt_flags, cc_path, cxx_path, **kwargs):
     # Run the nightly test.
     args = [WithProperties('%(builddir)s/lnt.venv/bin/python'),
             WithProperties('%(builddir)s/lnt.venv/bin/lnt'),
-            'runtest', '--verbose',
-            '--submit', submitURL,
-            '--commit=1',
-            'nt', '--sandbox', 'nt',
-            '--no-timestamp',
-            '--cc', cc_path, '--cxx', cxx_path,
-            '--without-llvm',
-            '--test-suite', WithProperties('%(builddir)s/test-suite'), 
-            '--no-machdep-info', reportName]
+            'runtest', '--verbose']
+
+    # Only submit if a URL has been specified
+    if submitURL is not None:
+      args += ['--submit', submitURL]
+
+    args += ['--commit=1',
+             'nt', '--sandbox', 'nt',
+             '--no-timestamp',
+             '--cc', cc_path, '--cxx', cxx_path,
+             '--without-llvm',
+             '--test-suite', WithProperties('%(builddir)s/test-suite'), 
+             '--no-machdep-info', reportName]
     if parallel:
         args.extend(['-j', WithProperties(jobs)])
     args.extend(nt_flags)

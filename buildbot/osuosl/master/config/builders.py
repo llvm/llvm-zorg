@@ -590,6 +590,7 @@ def _get_polly_builders():
                                                     nt_flags=['--multisample=10'],
                                                     reportBuildslave=False,
                                                     package_cache="http://parkas1.inria.fr/packages",
+                                                    submitURL='http://llvm.org/perf/submitRun',
                                                     testerName='pollyperf-O3')},
         {'name': "polly-perf-O3-polly",
          'slavenames':["pollyperf6"],
@@ -598,6 +599,7 @@ def _get_polly_builders():
                                                     nt_flags=['--multisample=10', '--mllvm=-polly'],
                                                     reportBuildslave=False,
                                                     package_cache="http://parkas1.inria.fr/packages",
+                                                    submitURL='http://llvm.org/perf/submitRun',
                                                     testerName='pollyperf-O3-polly')},
         {'name': "polly-perf-O3-polly-codegen-isl",
          'slavenames':["pollyperf7"],
@@ -606,6 +608,7 @@ def _get_polly_builders():
                                                     nt_flags=['--multisample=10', '--mllvm=-polly', '--mllvm=-polly-code-generator=isl'],
                                                     reportBuildslave=False,
                                                     package_cache="http://parkas1.inria.fr/packages",
+                                                    submitURL='http://llvm.org/perf/submitRun',
                                                     testerName='pollyperf-O3-polly-codegen-isl')},
         {'name': "polly-perf-O3-polly-scev",
          'slavenames':["pollyperf10"],
@@ -614,6 +617,7 @@ def _get_polly_builders():
                                                     nt_flags=['--multisample=10', '--mllvm=-polly', '--mllvm=-polly-codegen-scev'],
                                                     reportBuildslave=False,
                                                     package_cache="http://parkas1.inria.fr/packages",
+                                                    submitURL='http://llvm.org/perf/submitRun',
                                                     testerName='pollyperf-O3-polly-scev')},
         {'name': "polly-perf-O3-polly-scev-codegen-isl",
          'slavenames':["pollyperf11"],
@@ -622,6 +626,7 @@ def _get_polly_builders():
                                                     nt_flags=['--multisample=10', '--mllvm=-polly', '--mllvm=-polly-code-generator=isl', '--mllvm=-polly-codegen-scev'],
                                                     reportBuildslave=False,
                                                     package_cache="http://parkas1.inria.fr/packages",
+                                                    submitURL='http://llvm.org/perf/submitRun',
                                                     testerName='pollyperf-O3-polly-scev-codegen-isl')},
         {'name': "polly-perf-O3-polly-detect",
          'slavenames':["pollyperf14"],
@@ -630,6 +635,7 @@ def _get_polly_builders():
                                                     nt_flags=['--multisample=10', '--mllvm=-polly', '--mllvm=-polly-code-generator=none', '--mllvm=-polly-optimizer=none'],
                                                     reportBuildslave=False,
                                                     package_cache="http://parkas1.inria.fr/packages",
+                                                    submitURL='http://llvm.org/perf/submitRun',
                                                     testerName='pollyperf-O3-polly-detect')}
        ]
 
