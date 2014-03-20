@@ -146,15 +146,15 @@ def AddLNTTestsToFactory(f, nt_flags, cc_path, cxx_path, **kwargs):
 
     # Only submit if a URL has been specified
     if submitURL is not None:
-      args += ['--submit', submitURL]
+      args.extend(['--submit', submitURL])
 
-    args += ['--commit=1',
+    args.extend(['--commit=1',
              'nt', '--sandbox', 'nt',
              '--no-timestamp',
              '--cc', cc_path, '--cxx', cxx_path,
              '--without-llvm',
              '--test-suite', WithProperties('%(builddir)s/test-suite'), 
-             '--no-machdep-info', reportName]
+             '--no-machdep-info', reportName])
     if parallel:
         args.extend(['-j', WithProperties(jobs)])
     args.extend(nt_flags)
