@@ -50,6 +50,10 @@ from zorg.buildbot.builders import SanitizerBuilderII
 reload(SanitizerBuilderII)
 from zorg.buildbot.builders import SanitizerBuilderII
 
+from zorg.buildbot.builders import Libiomp5Builder
+reload(Libiomp5Builder)
+from zorg.buildbot.builders import Libiomp5Builder
+
 from buildbot.steps.source import SVN
 
 # Plain LLVM builders.
@@ -733,6 +737,18 @@ def _get_experimental_builders():
          'builddir':"clang-openbsd",
          'factory' : ClangBuilder.getClangBuildFactory(stage1_config='Release+Asserts'),
          'category' : 'clang'},
+
+        {'name': "libiomp5-gcc-x86_64-linux-debian",
+         'slavenames':["gribozavr4"],
+         'builddir':"libiomp5-gcc-x86_64-linux-debian",
+         'factory' : Libiomp5Builder.getLibiomp5BuildFactory(buildcompiler="gcc"),
+         'category' : 'libiomp5'},
+
+        {'name': "libiomp5-clang-x86_64-linux-debian",
+         'slavenames':["gribozavr4"],
+         'builddir':"libiomp5-clang-x86_64-linux-debian",
+         'factory' : Libiomp5Builder.getLibiomp5BuildFactory(buildcompiler="clang"),
+         'category' : 'libiomp5'},
         ]
 
 def get_builders():
