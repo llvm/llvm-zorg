@@ -14,6 +14,8 @@ def getLibiomp5BuildFactory(clean=True, env=None, buildcompiler="gcc"):
         'TERM' : 'dumb' # Make sure Clang doesn't use color escape sequences.
                  }
 
+    openmp_srcdir = "openmp.src"
+
     f = buildbot.process.factory.BuildFactory()
 
     # Determine the build directory.
@@ -29,7 +31,7 @@ def getLibiomp5BuildFactory(clean=True, env=None, buildcompiler="gcc"):
                   mode='update',
                   baseURL='http://llvm.org/svn/llvm-project/openmp',
                   defaultBranch='trunk',
-                  workdir='.'))
+                  workdir=openmp_srcdir))
 
     # Clean directory, if requested.
     if clean:
@@ -37,7 +39,7 @@ def getLibiomp5BuildFactory(clean=True, env=None, buildcompiler="gcc"):
                                command=["make", "clean"],
                                haltOnFailure=True,
                                description=["make clean"],
-                               workdir="runtime",
+                               workdir='%s/runtime' % openmp_srcdir,
                                env=merged_env))
 
     makeCommand = [
@@ -50,6 +52,6 @@ def getLibiomp5BuildFactory(clean=True, env=None, buildcompiler="gcc"):
                            description=["make build"],
                            haltOnFailure=True,
                            command=WithProperties(" ".join(makeCommand)),
-                           workdir='runtime',
+                           workdir='%s/runtime' % openmp_srcdir,
                            env=merged_env))
     return f
