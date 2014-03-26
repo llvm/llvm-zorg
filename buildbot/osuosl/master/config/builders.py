@@ -94,6 +94,8 @@ def _get_llvm_builders():
          'builddir':"llvm-mips-linux",
          'factory': LLVMBuilder.getLLVMBuildFactory("mips-linux-gnu", timeout=40, config_name='Release+Asserts',
                                                     extra_configure_args=["--with-extra-options=-mips32r2",
+                                                                          "CC=/mips/proj/build-compiler/clang-be-o32-latest/bin/clang",
+                                                                          "CXX=/mips/proj/build-compiler/clang-be-o32-latest/bin/clang++",
                                                                           "--with-extra-ld-options=-mips32r2"])},
         {'name': "llvm-aarch64-linux",
          'slavenames':["aarch64-foundation"],
