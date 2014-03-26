@@ -29,7 +29,7 @@ def getLibiomp5BuildFactory(clean=True, env=None, buildcompiler="gcc"):
     # Get libiomp5
     f.addStep(SVN(name='svn-libiomp5',
                   mode='update',
-                  baseURL='http://llvm.org/svn/llvm-project/openmp',
+                  baseURL='http://llvm.org/svn/llvm-project/openmp/',
                   defaultBranch='trunk',
                   workdir=openmp_srcdir))
 
