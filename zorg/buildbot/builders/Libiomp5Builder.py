@@ -13,6 +13,9 @@ def getLibiomp5BuildFactory(clean=True, env=None, buildcompiler="gcc"):
     merged_env = {
         'TERM' : 'dumb' # Make sure Clang doesn't use color escape sequences.
                  }
+    if env is not None:
+        # Overwrite pre-set items with the given ones, so user can set anything.
+        merged_env.update(env)
 
     openmp_srcdir = "openmp.src"
 
