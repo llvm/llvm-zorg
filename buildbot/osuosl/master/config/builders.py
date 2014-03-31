@@ -14,10 +14,6 @@ from zorg.buildbot.builders import LNTBuilder
 reload(LNTBuilder)
 from zorg.buildbot.builders import LNTBuilder
 
-from zorg.buildbot.builders import DragonEggBuilder
-reload(DragonEggBuilder)
-from zorg.buildbot.builders import DragonEggBuilder
-
 from zorg.buildbot.builders import NightlytestBuilder
 reload(NightlytestBuilder)
 from zorg.buildbot.builders import NightlytestBuilder
@@ -490,87 +486,6 @@ def _get_clang_builders():
                                                                      '--host=x86_64-apple-darwin11',
                                                                      '--target=i686-pc-linux-gnu '])},
 
-def _get_dragonegg_builders():
-    return [
-        {'name' : "dragonegg-x86_64-linux-gcc-4.7-self-host",
-         'slavenames' : ["gcc13"],
-         'builddir'   : "dragonegg-x86_64-linux-gcc-4.7-self-host",
-         'factory'    : DragonEggBuilder.getDragonEggBootstrapFactory(gcc_repository='http://gcc.gnu.org/svn/gcc/branches/gcc-4_7-branch@188917',
-                                                                      extra_languages=['fortran', 'objc', 'obj-c++'],
-                                                                      extra_gcc_configure_args=['--disable-bootstrap', '--enable-checking',
-                                                                                                '--with-mpc=/opt/cfarm/mpc-0.8/'],
-                                                                      extra_llvm_configure_args=['--enable-optimized', '--enable-assertions'],
-                                                                      env={ 'CFLAGS' : '-march=native' }),
-         'category'   : 'dragonegg'},
-
-        {'name' : "dragonegg-i686-linux-gcc-4.6-self-host",
-         'slavenames' : ["gcc45"],
-         'builddir'   : "dragonegg-i686-linux-gcc-4.6-self-host",
-         'factory'    : DragonEggBuilder.getDragonEggBootstrapFactory(gcc_repository='http://gcc.gnu.org/svn/gcc/branches/gcc-4_6-branch@194776',
-                                                                      extra_languages=['fortran', 'objc', 'obj-c++'],
-                                                                      extra_gcc_configure_args=['--disable-bootstrap', '--enable-checking'],
-                                                                      extra_llvm_configure_args=['--enable-optimized', '--enable-assertions'],
-                                                                      env={ 'CFLAGS' : '-march=native' }),
-         'category'   : 'dragonegg'},
-
-         {'name' : "dragonegg-x86_64-linux-gcc-4.6-self-host-checks",
-         'slavenames' : ["gcc10"],
-         'builddir'   : "dragonegg-x86_64-linux-gcc-4.6-self-host-checks",
-         'factory'    : DragonEggBuilder.getDragonEggBootstrapFactory(gcc_repository='http://gcc.gnu.org/svn/gcc/branches/gcc-4_6-branch@194776',
-                                                                      extra_languages=['fortran', 'objc', 'obj-c++'],
-                                                                      extra_gcc_configure_args=['--disable-bootstrap', '--enable-checking',
-                                                                                                '--with-mpfr=/opt/cfarm/mpfr',
-                                                                                                '--with-gmp=/opt/cfarm/gmp',
-                                                                                                '--with-mpc=/opt/cfarm/mpc'],
-                                                                      extra_llvm_configure_args=['--enable-optimized', '--enable-assertions', '--enable-expensive-checks'],
-                                                                      timeout=120),
-         'category'   : 'dragonegg'},
-
-        {'name' : "dragonegg-x86_64-linux-gcc-4.6-self-host-release",
-         'slavenames' : ["gcc14"],
-         'builddir'   : "dragonegg-x86_64-linux-gcc-4.6-self-host-release",
-         'factory'    : DragonEggBuilder.getDragonEggBootstrapFactory(gcc_repository='http://gcc.gnu.org/svn/gcc/branches/gcc-4_6-branch@194776',
-                                                                      extra_languages=['fortran', 'objc', 'obj-c++'],
-                                                                      extra_gcc_configure_args=['--disable-bootstrap', '--enable-checking',
-                                                                                                '--with-mpc=/opt/cfarm/mpc-0.8'],
-                                                                      extra_llvm_configure_args=['--enable-optimized', '--disable-assertions']),
-         'category'   : 'dragonegg'},
-
-        {'name' : "dragonegg-x86_64-linux-gcc-4.6-self-host-debug",
-         'slavenames' : ["gcc10"],
-         'builddir'   : "dragonegg-x86_64-linux-gcc-4.6-self-host-debug",
-         'factory'    : DragonEggBuilder.getDragonEggBootstrapFactory(gcc_repository='http://gcc.gnu.org/svn/gcc/branches/gcc-4_6-branch@194776',
-                                                                      extra_languages=['fortran', 'objc', 'obj-c++'],
-                                                                      extra_gcc_configure_args=['--disable-bootstrap', '--enable-checking',
-                                                                                                '--with-mpfr=/opt/cfarm/mpfr',
-                                                                                                '--with-gmp=/opt/cfarm/gmp',
-                                                                                                '--with-mpc=/opt/cfarm/mpc'],
-                                                                      extra_llvm_configure_args=['--disable-optimized', '--enable-assertions']),
-         'category'   : 'dragonegg'},
-
-        {'name' : 'dragonegg-x86_64-linux-gcc-4.6-fnt',
-         'slavenames' : ['gcc12'],
-         'builddir'   : 'dragonegg-x86_64-linux-gcc-4.6-fnt',
-         'factory'    : DragonEggBuilder.getDragonEggNightlyTestBuildFactory(llvm_configure_args=['--enable-optimized', '--enable-assertions'], testsuite_configure_args=['--with-externals=/home/baldrick/externals'], timeout=40),
-         'category'   : 'dragonegg'},
-
-        {'name' : 'dragonegg-x86_64-linux-gcc-4.6-test',
-         'slavenames' : ['gcc17'],
-         'builddir'   : 'dragonegg-x86_64-linux-gcc-4.6-test',
-         'factory'    : DragonEggBuilder.getDragonEggTestBuildFactory(
-                            gcc='/home/baldrick/local/bin/gcc',
-                            svn_testsuites = [
-                                              ['http://llvm.org/svn/llvm-project/cfe/trunk/test@158157', 'clang-testsuite'],
-                                              ['http://gcc.gnu.org/svn/gcc/branches/gcc-4_6-branch/libjava@194776', 'gcc-libjava'],
-                                              ['http://gcc.gnu.org/svn/gcc/branches/gcc-4_6-branch/gcc/testsuite@194776', 'gcc-testsuite'],
-                                              ['http://llvm.org/svn/llvm-project/test-suite/trunk@158157', 'llvm-testsuite']
-                                             ],
-                            llvm_configure_args=['--enable-optimized', '--enable-assertions', '--enable-debug-symbols'],
-                            env={'LD_LIBRARY_PATH' : '/home/baldrick/local/lib/gcc/x86_64-unknown-linux-gnu/4.6.3/:/home/baldrick/local/lib64/:/lib64/:/usr/lib64/:/home/baldrick/local/lib:/lib/:/usr/lib/'}
-                        ),
-         'category'   : 'dragonegg'},
-        ]
-
 # Polly builders.
 def _get_polly_builders():
     return [
@@ -762,10 +677,6 @@ def _get_experimental_builders():
 def get_builders():
     for b in _get_llvm_builders():
         b['category'] = 'llvm'
-        yield b
-
-    for b in _get_dragonegg_builders():
-        b['category'] = 'dragonegg'
         yield b
 
     for b in _get_clang_fast_builders():

@@ -47,22 +47,22 @@ def get_build_slaves():
 
         # GCC Compile Farm Slaves, see http://gcc.gnu.org/wiki/CompileFarm
 
-        # gcc10  2TB   2x12x1.5 GHz AMD Opteron Magny-Cours / 64 GB RAM / Supermicro AS-1022G-BTF / Debian x86-64
-        create_slave("gcc10", properties={'jobs' : 12}, max_builds=1),
+#        # gcc10  2TB   2x12x1.5 GHz AMD Opteron Magny-Cours / 64 GB RAM / Supermicro AS-1022G-BTF / Debian x86-64
+#        create_slave("gcc10", properties={'jobs' : 12}, max_builds=1),
 #        # gcc11  580G  2x 2x2.0 GHz AMD Opteron 2212 / 4GB RAM / Dell SC1345 / Debian x86-64
 #        create_slave("gcc11", properties={'jobs' : 2}, max_builds=1),
         # gcc12  580G  2x 2x2.0 GHz AMD Opteron 2212 / 4GB RAM / Dell SC1345 / Debian x86-64
         create_slave("gcc12", properties={'jobs' : 2}, max_builds=1),
         # gcc13  580G  2x2x2.0 GHz AMD Opteron 2212 / 4GB RAM / Dell SC1345 / Debian x86-64
         create_slave("gcc13", properties={'jobs' : 2}, max_builds=1),
-        # gcc14  750G  2x4x3.0 GHz Intel Xeon X5450 / 16GB RAM / Dell Poweredge 1950 / Debian x86-64
-        create_slave("gcc14", properties={'jobs' : 4}, max_builds=1),
+#        # gcc14  750G  2x4x3.0 GHz Intel Xeon X5450 / 16GB RAM / Dell Poweredge 1950 / Debian x86-64
+#        create_slave("gcc14", properties={'jobs' : 4}, max_builds=1),
         # gcc15  160G  1x2x2.8 GHz Intel Xeon 2.8 (Paxville DP) / 1 GB RAM / Dell SC1425 / Debian x86-64
         create_slave("gcc15", properties={'jobs' : 1}, max_builds=1),
         # gcc16  580G  2x4x2.2 GHz AMD Opteron 8354 (Barcelona B3) / 16 GB RAM / Debian x86-64
         create_slave("gcc16", properties={'jobs' : 4}, max_builds=1),
-        # gcc17  580G  2x4x2.2 GHz AMD Opteron 8354 (Barcelona B3) / 16 GB RAM / Debian x86-64
-        create_slave("gcc17", properties={'jobs' : 4}, max_builds=1),
+#        # gcc17  580G  2x4x2.2 GHz AMD Opteron 8354 (Barcelona B3) / 16 GB RAM / Debian x86-64
+#        create_slave("gcc17", properties={'jobs' : 4}, max_builds=1),
         # gcc20   1TB  2x6x2.93 GHz Intel Dual Xeon X5670 2.93 GHz 12 cores 24 threads / 24 GB RAM / Debian amd64
         create_slave("gcc20", properties={'jobs' : 6}, max_builds=1),
 #        # gcc30        17G     0.4  GHz Alpha EV56 / 2GB RAM / AlphaServer 1200 5/400 => offline, to relocate
@@ -87,8 +87,8 @@ def get_build_slaves():
         create_slave("gcc42", properties={'jobs' : 1}, max_builds=1),
 #        # gcc43  9093  60G     1.4  GHz Powerpc G4 7447A / 1GB RAM / Apple Mac Mini
 #        create_slave("gcc43", properties={'jobs' : 1}, max_builds=1),
-        # gcc45 19045  1TB   4x3.0  GHz AMD Athlon II X4 640 / 4 GB RAM / Debian i386
-        create_slave("gcc45", properties={'jobs' : 2}, max_builds=1),
+#        # gcc45 19045  1TB   4x3.0  GHz AMD Athlon II X4 640 / 4 GB RAM / Debian i386
+#        create_slave("gcc45", properties={'jobs' : 2}, max_builds=1),
 #        # gcc46  250G      1.66 GHz Intel Atom D510 2 cores 4 threads / 4 GB RAM / Debian amd64
 #        create_slave("gcc46", properties={'jobs' : 2}, max_builds=1),
 #        # gcc47  250G      1.66 GHz Intel Atom D510 2 cores 4 threads / 4 GB RAM / Debian amd64
