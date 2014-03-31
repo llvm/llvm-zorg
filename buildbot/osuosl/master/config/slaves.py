@@ -55,8 +55,8 @@ def get_build_slaves():
         create_slave("gcc12", properties={'jobs' : 2}, max_builds=1),
         # gcc13  580G  2x2x2.0 GHz AMD Opteron 2212 / 4GB RAM / Dell SC1345 / Debian x86-64
         create_slave("gcc13", properties={'jobs' : 2}, max_builds=1),
-#        # gcc14  750G  2x4x3.0 GHz Intel Xeon X5450 / 16GB RAM / Dell Poweredge 1950 / Debian x86-64
-#        create_slave("gcc14", properties={'jobs' : 4}, max_builds=1),
+        # gcc14  750G  2x4x3.0 GHz Intel Xeon X5450 / 16GB RAM / Dell Poweredge 1950 / Debian x86-64
+        create_slave("gcc14", properties={'jobs' : 4}, max_builds=1),
         # gcc15  160G  1x2x2.8 GHz Intel Xeon 2.8 (Paxville DP) / 1 GB RAM / Dell SC1425 / Debian x86-64
         create_slave("gcc15", properties={'jobs' : 1}, max_builds=1),
         # gcc16  580G  2x4x2.2 GHz AMD Opteron 8354 (Barcelona B3) / 16 GB RAM / Debian x86-64
