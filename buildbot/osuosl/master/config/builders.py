@@ -55,10 +55,6 @@ from buildbot.steps.source import SVN
 # Plain LLVM builders.
 def _get_llvm_builders():
     return [
-        {'name': "llvm-x86_64-linux",
-         'slavenames': ["gcc14"],
-         'builddir': "llvm-x86_64",
-         'factory': LLVMBuilder.getLLVMBuildFactory(triple="x86_64-pc-linux-gnu")},
         {'name': "llvm-x86_64-ubuntu",
          'slavenames':["arxan_davinci"],
          'builddir':"llvm-x86_64-ubuntu",
@@ -110,6 +106,10 @@ def _get_llvm_builders():
         ]
 
 # Offline.
+{'name': "llvm-x86_64-linux",
+ 'slavenames': ["gcc14"],
+ 'builddir': "llvm-x86_64",
+ 'factory': LLVMBuilder.getLLVMBuildFactory(triple="x86_64-pc-linux-gnu")},
 {'name': "llvm-alpha-linux",
  'slavenames':["andrew1"],
  'builddir':"llvm-alpha",
@@ -126,8 +126,6 @@ def _get_llvm_builders():
  'slavenames': ["dunbar1"],
  'builddir': "llvm-i686",
  'factory': LLVMBuilder.getLLVMBuildFactory("i686-pc-linux-gnu", jobs=2, enable_shared=True)},
-
-# Offline.
 {'name' : "llvm-gcc-i686-darwin10-selfhost",
  'slavenames':["dunbar-darwin10"],
  'builddir':"llvm-gcc-i686-darwin10-selfhost",
@@ -215,30 +213,7 @@ def _get_clang_fast_builders():
 # Clang builders.
 def _get_clang_builders():
 
-    LabPackageCache = 'http://10.1.1.2/packages/'
-
     return [
-        {'name': "clang-x86_64-debian",
-         'slavenames':["gcc12"],
-         'builddir':"clang-x86_64-debian",
-         'factory': ClangBuilder.getClangBuildFactory(extra_configure_args=['--enable-shared'])},
-
-        {'name' : "clang-x86_64-debian-selfhost-rel",
-         'slavenames' : ["gcc13"],
-         'builddir' : "clang-x86_64-debian-selfhost-rel",
-         'factory' : ClangBuilder.getClangBuildFactory(triple='x86_64-pc-linux-gnu',
-                                                       useTwoStage=True,
-                                                       stage1_config='Release+Asserts',
-                                                       stage2_config='Release+Asserts')},
-
-        {'name' : "clang-x86_64-debian-fnt",
-         'slavenames' : ['gcc20'],
-         'builddir' : "clang-x86_64-debian-fnt",
-         'factory' : NightlytestBuilder.getFastNightlyTestBuildFactory(triple='x86_64-pc-linux-gnu',
-                                                                       stage1_config='Release+Asserts',
-                                                                       test=False,
-                                                                       xfails=clang_x86_64_linux_xfails)},
-
         {'name': "clang-atom-d525-fedora-rel",
          'slavenames':["atom1-buildbot"],
          'builddir':"clang-atom-d525-fedora-rel",
@@ -297,13 +272,6 @@ def _get_clang_builders():
                                               nt_flags=['--cflag', '-mcpu=cortex-a15', '-j2'],
                                               jobs=2, use_pty_in_tests=True, clean=False,
                                               testerName='LNT-TestOnly-O3', run_cxx_tests=True)},
-
-        {'name': "clang-X86_64-freebsd",
-         'slavenames':["as-bldslv6"],
-         'builddir':"clang-X86_64-freebsd",
-         'factory': NightlytestBuilder.getFastNightlyTestBuildFactory(triple='x86_64-unknown-freebsd8.2',
-                                                                       stage1_config='Release+Asserts',
-                                                                       test=True)},
 
         {'name': "clang-native-mingw32-win7",
          'slavenames':["as-bldslv7"],
@@ -375,18 +343,6 @@ def _get_clang_builders():
                                                        extra_configure_args=['--build=x86_64-apple-darwin11',
                                                                              '--host=x86_64-apple-darwin11',
                                                                              '--target=i686-pc-mingw32'])},
-
-#        {'name': "clang-x86_64-darwin11-self-mingw32",
-#         'slavenames':["as-bldslv11"],
-#         'builddir':"clang-x86_64-darwin11-self-mingw32",
-#         'factory' : ClangBuilder.getClangBuildFactory(outOfDir=True, jobs=4, test=False,
-#                                                       env = { 'PATH' : "/mingw_build_tools/install_with_gcc/bin:/opt/local/bin:/opt/local/sbin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/usr/X11/bin",
-#                                                               'CC' : 'clang',
-#                                                               'CXX' : 'clang++',
-#                                                               'CXXFLAGS' : '-stdlib=libc++'},
-#                                                       extra_configure_args=['--build=x86_64-apple-darwin11',
-#                                                                             '--host=i686-pc-mingw32',
-#                                                                             '--target=i686-pc-mingw32'])},
 
         {'name' : "clang-x86_64-darwin11-cross-arm",
          'slavenames' :["as-bldslv11"],
@@ -485,6 +441,41 @@ def _get_clang_builders():
                                                extra_configure_args=['--build=x86_64-apple-darwin11',
                                                                      '--host=x86_64-apple-darwin11',
                                                                      '--target=i686-pc-linux-gnu '])},
+{'name': "clang-x86_64-debian",
+ 'slavenames':["gcc12"],
+ 'builddir':"clang-x86_64-debian",
+ 'factory': ClangBuilder.getClangBuildFactory(extra_configure_args=['--enable-shared'])},
+ {'name' : "clang-x86_64-debian-selfhost-rel",
+ 'slavenames' : ["gcc13"],
+ 'builddir' : "clang-x86_64-debian-selfhost-rel",
+ 'factory' : ClangBuilder.getClangBuildFactory(triple='x86_64-pc-linux-gnu',
+                                                useTwoStage=True,
+                                                stage1_config='Release+Asserts',
+                                                stage2_config='Release+Asserts')},
+{'name' : "clang-x86_64-debian-fnt",
+ 'slavenames' : ['gcc20'],
+ 'builddir' : "clang-x86_64-debian-fnt",
+ 'factory' : NightlytestBuilder.getFastNightlyTestBuildFactory(triple='x86_64-pc-linux-gnu',
+                                                               stage1_config='Release+Asserts',
+                                                               test=False,
+                                                               xfails=clang_x86_64_linux_xfails)},
+{'name': "clang-x86_64-darwin11-self-mingw32",
+ 'slavenames':["as-bldslv11"],
+ 'builddir':"clang-x86_64-darwin11-self-mingw32",
+ 'factory' : ClangBuilder.getClangBuildFactory(outOfDir=True, jobs=4, test=False,
+                                                       env = { 'PATH' : "/mingw_build_tools/install_with_gcc/bin:/opt/local/bin:/opt/local/sbin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/usr/X11/bin",
+                                                               'CC' : 'clang',
+                                                               'CXX' : 'clang++',
+                                                               'CXXFLAGS' : '-stdlib=libc++'},
+                                                       extra_configure_args=['--build=x86_64-apple-darwin11',
+                                                                             '--host=i686-pc-mingw32',
+                                                                             '--target=i686-pc-mingw32'])},
+{'name': "clang-X86_64-freebsd",
+ 'slavenames':["as-bldslv6"],
+ 'builddir':"clang-X86_64-freebsd",
+ 'factory': NightlytestBuilder.getFastNightlyTestBuildFactory(triple='x86_64-unknown-freebsd8.2',
+                                                              stage1_config='Release+Asserts',
+                                                              test=True)},
 
 # Polly builders.
 def _get_polly_builders():
@@ -493,12 +484,6 @@ def _get_polly_builders():
          'slavenames':["grosser1"],
          'builddir':"polly-amd64-linux",
          'factory': PollyBuilder.getPollyBuildFactory()},
-
-#        Disabled, as it is unavailable since several weeks.
-#        {'name': "polly-intel32-linux",
-#         'slavenames':["botether"],
-#         'builddir':"polly-intel32-linux",
-#         'factory': PollyBuilder.getPollyBuildFactory()},
 
         {'name': "polly-perf-O3",
          'slavenames':["pollyperf2", "pollyperf3", "pollyperf4", "pollyperf5", "pollyperf15"],
@@ -556,6 +541,12 @@ def _get_polly_builders():
                                                     testerName='pollyperf-O3-polly-detect')}
        ]
 
+# Offline.
+ {'name': "polly-intel32-linux",
+ 'slavenames':["botether"],
+ 'builddir':"polly-intel32-linux",
+ 'factory': PollyBuilder.getPollyBuildFactory()},
+
 # LLDB builders.
 def _get_lldb_builders():
 
@@ -570,21 +561,25 @@ def _get_lldb_builders():
          'factory': LLDBBuilder.getLLDBBuildFactory(triple=None, # use default
                                                     extra_configure_args=['--enable-cxx11', '--enable-optimized', '--enable-assertions'],
                                                     env={'PATH':'/home/llvmbb/bin/clang-latest/bin:/home/llvmbb/bin:/usr/local/bin:/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games'})},
-        {'name': "lldb-x86_64-linux",
-         'slavenames': ["gcc20"],
-         'builddir': "lldb-x86_64",
-         'factory': LLDBBuilder.getLLDBBuildFactory(triple="x86_64-pc-linux-gnu",
-                                                    env={'CXXFLAGS' : '-std=c++0x'})},
+
         {'name': "lldb-x86_64-darwin12",
          'slavenames': ["lab-mini-02"],
          'builddir': "build.lldb-x86_64-darwin12",
          'factory': LLDBBuilder.getLLDBxcodebuildFactory()},
-#       {'name': "lldb-i686-debian",
-#        'slavenames': ["gcc15"],
-#        'builddir': "lldb-i686-debian",
-#        'factory': LLDBBuilder.getLLDBBuildFactory(triple="i686-pc-linux-gnu",
-#                                                   env=gcc_m32_latest_env)}
+
        ]
+
+# Offline.
+{'name': "lldb-x86_64-linux",
+ 'slavenames': ["gcc20"],
+ 'builddir': "lldb-x86_64",
+ 'factory': LLDBBuilder.getLLDBBuildFactory(triple="x86_64-pc-linux-gnu",
+                                            env={'CXXFLAGS' : '-std=c++0x'})},
+{'name': "lldb-i686-debian",
+ 'slavenames': ["gcc15"],
+ 'builddir': "lldb-i686-debian",
+ 'factory': LLDBBuilder.getLLDBBuildFactory(triple="i686-pc-linux-gnu",
+                                            env=gcc_m32_latest_env)}
 
 # LLD builders.
 def _get_lld_builders():
@@ -798,7 +793,7 @@ def get_builders():
  'builddir':"clang-native-mingw64-win7",
  'factory' : ClangBuilder.getClangMinGWBuildFactory(),
  'category' : 'clang'},
-LabPackageCache = 'http://10.1.1.2/packages/'
+#LabPackageCache = 'http://10.1.1.2/packages/'
 {'name' : "clang-x86_64-darwin12-nt-O3-vectorize",
  'slavenames' :["lab-mini-03"],
  'builddir' :"clang-x86_64-darwin12-nt-O3-vectorize",
