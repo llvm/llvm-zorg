@@ -195,14 +195,14 @@ def get_build_slaves():
         create_slave("sschiffli1", properties={'jobs': 4}, max_builds=1),
 
         # POWER7 PowerPC (powerpc64), Fedora16.
-        create_slave("chinook", properties={'jobs': 12}, max_builds=4),
+        create_slave("chinook", properties={'jobs': 4}, max_builds=2),
         #    LNT slave
-        create_slave("chinook-clangslave1", properties={'jobs': 12}, max_builds=4),
+        create_slave("chinook-clangslave1", properties={'jobs': 4}, max_builds=2),
         #    Clang build slave
-        create_slave("chinook-clangslave2", properties={'jobs': 12}, max_builds=4),
+        create_slave("chinook-clangslave2", properties={'jobs': 4}, max_builds=2),
 
         # POWER7 PowerPC (powerpc64), Fedora16.
-        create_slave("coho", properties={'jobs': 12}, max_builds=4),
+        create_slave("coho", properties={'jobs': 4}, max_builds=2),
 
         # Debian 86_64, 2 x 6-core Opteron 2.6 GHz
         create_slave("osu8", properties={'jobs' : 6}, max_builds=2),

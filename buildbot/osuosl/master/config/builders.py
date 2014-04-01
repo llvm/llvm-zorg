@@ -72,7 +72,7 @@ def _get_llvm_builders():
         {'name': "llvm-ppc64-linux1",
          'slavenames':["chinook"],
          'builddir':"llvm-ppc64",
-         'factory': LLVMBuilder.getLLVMBuildFactory("ppc64-linux-gnu", jobs=4, clean=False, timeout=20)},
+         'factory': LLVMBuilder.getLLVMBuildFactory("ppc64-linux-gnu", jobs=2, clean=False, timeout=20)},
 
         {'name': "llvm-s390x-linux1",
          'slavenames':["systemz-1"],
@@ -318,7 +318,7 @@ def _get_clang_builders():
          'builddir' :"clang-ppc64-1",
          'factory' : LNTBuilder.getLNTFactory(triple='ppc64-elf-linux1',
                                               nt_flags=['--multisample=3','-mcpu=native'],
-                                              jobs=4,  use_pty_in_tests=True,
+                                              jobs=2,  use_pty_in_tests=True,
                                               testerName='O3-plain', run_cxx_tests=True)},
 
         {'name' : "clang-ppc64-elf-linux2",
@@ -646,7 +646,7 @@ def _get_experimental_builders():
         {'name': "llvm-ppc64-linux2",
          'slavenames':["coho"],
          'builddir':"llvm-ppc64-2",
-         'factory': LLVMBuilder.getLLVMBuildFactory("ppc64-linux-gnu", jobs=4, clean=False, timeout=20),
+         'factory': LLVMBuilder.getLLVMBuildFactory("ppc64-linux-gnu", jobs=2, clean=False, timeout=20),
          'category' : 'llvm'},
 
         {'name': "clang-atom-d525-fedora",
