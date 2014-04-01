@@ -445,7 +445,7 @@ def _get_clang_builders():
  'slavenames':["gcc12"],
  'builddir':"clang-x86_64-debian",
  'factory': ClangBuilder.getClangBuildFactory(extra_configure_args=['--enable-shared'])},
- {'name' : "clang-x86_64-debian-selfhost-rel",
+{'name' : "clang-x86_64-debian-selfhost-rel",
  'slavenames' : ["gcc13"],
  'builddir' : "clang-x86_64-debian-selfhost-rel",
  'factory' : ClangBuilder.getClangBuildFactory(triple='x86_64-pc-linux-gnu',
@@ -542,7 +542,7 @@ def _get_polly_builders():
        ]
 
 # Offline.
- {'name': "polly-intel32-linux",
+{'name': "polly-intel32-linux",
  'slavenames':["botether"],
  'builddir':"polly-intel32-linux",
  'factory': PollyBuilder.getPollyBuildFactory()},
@@ -575,11 +575,11 @@ def _get_lldb_builders():
  'builddir': "lldb-x86_64",
  'factory': LLDBBuilder.getLLDBBuildFactory(triple="x86_64-pc-linux-gnu",
                                             env={'CXXFLAGS' : '-std=c++0x'})},
-{'name': "lldb-i686-debian",
- 'slavenames': ["gcc15"],
- 'builddir': "lldb-i686-debian",
- 'factory': LLDBBuilder.getLLDBBuildFactory(triple="i686-pc-linux-gnu",
-                                            env=gcc_m32_latest_env)}
+#{'name': "lldb-i686-debian",
+# 'slavenames': ["gcc15"],
+# 'builddir': "lldb-i686-debian",
+# 'factory': LLDBBuilder.getLLDBBuildFactory(triple="i686-pc-linux-gnu",
+#                                            env=gcc_m32_latest_env)}
 
 # LLD builders.
 def _get_lld_builders():
@@ -793,7 +793,7 @@ def get_builders():
  'builddir':"clang-native-mingw64-win7",
  'factory' : ClangBuilder.getClangMinGWBuildFactory(),
  'category' : 'clang'},
-#LabPackageCache = 'http://10.1.1.2/packages/'
+LabPackageCache = 'http://10.1.1.2/packages/'
 {'name' : "clang-x86_64-darwin12-nt-O3-vectorize",
  'slavenames' :["lab-mini-03"],
  'builddir' :"clang-x86_64-darwin12-nt-O3-vectorize",
