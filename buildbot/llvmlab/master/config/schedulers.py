@@ -53,6 +53,7 @@ def _tracked_projects(change):
 #                'lnt',
 #                'polly',
                 'test-suite',
+                'openmp',
     ]
     if change.category:
         return False

@@ -635,6 +635,26 @@ def _get_sanitizer_builders():
                                              env = { 'CC' : 'clang', 'CXX' : 'clang++'})},
           ]
 
+def _get_openmp_builders():
+    return [
+        {'name': "libiomp5-gcc-x86_64-linux-debian",
+         'slavenames':["gribozavr4"],
+         'builddir':"libiomp5-gcc-x86_64-linux-debian",
+         'factory' : Libiomp5Builder.getLibiomp5BuildFactory(
+                         buildcompiler="gcc",
+                         env={'PATH':'/home/llvmbb/bin/clang-latest/bin:/home/llvmbb/bin:/usr/local/bin:/usr/local/bin:/usr/bin:/bin'}),
+         'category' : 'libiomp5'},
+
+        {'name': "libiomp5-clang-x86_64-linux-debian",
+         'slavenames':["gribozavr4"],
+         'builddir':"libiomp5-clang-x86_64-linux-debian",
+         'factory' : Libiomp5Builder.getLibiomp5BuildFactory(
+                         buildcompiler="clang",
+                         env={'PATH':'/home/llvmbb/bin/clang-latest/bin:/home/llvmbb/bin:/usr/local/bin:/usr/local/bin:/usr/bin:/bin'}),
+         'category' : 'libiomp5'},
+        ]
+
+
 # Experimental and stopped builders
 def _get_experimental_builders():
     return [
@@ -655,18 +675,6 @@ def _get_experimental_builders():
          'builddir':"clang-openbsd",
          'factory' : ClangBuilder.getClangBuildFactory(stage1_config='Release+Asserts'),
          'category' : 'clang'},
-
-        {'name': "libiomp5-gcc-x86_64-linux-debian",
-         'slavenames':["gribozavr4"],
-         'builddir':"libiomp5-gcc-x86_64-linux-debian",
-         'factory' : Libiomp5Builder.getLibiomp5BuildFactory(buildcompiler="gcc"),
-         'category' : 'libiomp5'},
-
-        {'name': "libiomp5-clang-x86_64-linux-debian",
-         'slavenames':["gribozavr4"],
-         'builddir':"libiomp5-clang-x86_64-linux-debian",
-         'factory' : Libiomp5Builder.getLibiomp5BuildFactory(buildcompiler="clang"),
-         'category' : 'libiomp5'},
         ]
 
 def get_builders():
@@ -696,6 +704,10 @@ def get_builders():
 
     for b in _get_sanitizer_builders():
         b['category'] = 'sanitizer'
+        yield b
+
+    for b in _get_openmp_builders():
+        b['category'] = 'openmp'
         yield b
 
     for b in _get_experimental_builders():

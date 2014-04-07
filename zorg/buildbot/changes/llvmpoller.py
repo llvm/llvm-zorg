@@ -236,7 +236,8 @@ class LLVMPoller(base.PollingChangeSource, util.ComparableMixin):
             'llvm-gcc-4.2' : 'llvm-gcc',
             'compiler-rt'  : 'compiler-rt',
             'dragonegg'    : 'dragonegg',
-            'lldb'         : 'lldb'
+            'lldb'         : 'lldb',
+            'openmp'       : 'openmp',
             }
 
         for el in new_logentries:
