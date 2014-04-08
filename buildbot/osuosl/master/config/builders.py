@@ -6,10 +6,6 @@ from zorg.buildbot.builders import LLVMBuilder
 reload(LLVMBuilder)
 from zorg.buildbot.builders import LLVMBuilder
 
-from zorg.buildbot.builders import LLVMGCCBuilder
-reload(LLVMGCCBuilder)
-from zorg.buildbot.builders import LLVMGCCBuilder
-
 from zorg.buildbot.builders import LNTBuilder
 reload(LNTBuilder)
 from zorg.buildbot.builders import LNTBuilder
@@ -17,10 +13,6 @@ from zorg.buildbot.builders import LNTBuilder
 from zorg.buildbot.builders import NightlytestBuilder
 reload(NightlytestBuilder)
 from zorg.buildbot.builders import NightlytestBuilder
-
-from zorg.buildbot.builders import ScriptedBuilder
-reload(ScriptedBuilder)
-from zorg.buildbot.builders import ScriptedBuilder
 
 from zorg.buildbot.builders import PollyBuilder
 reload(PollyBuilder)
@@ -49,8 +41,6 @@ from zorg.buildbot.builders import SanitizerBuilderII
 from zorg.buildbot.builders import Libiomp5Builder
 reload(Libiomp5Builder)
 from zorg.buildbot.builders import Libiomp5Builder
-
-from buildbot.steps.source import SVN
 
 # Plain LLVM builders.
 def _get_llvm_builders():
@@ -121,16 +111,6 @@ def _get_llvm_builders():
  'slavenames': ["dunbar1"],
  'builddir': "llvm-i686",
  'factory': LLVMBuilder.getLLVMBuildFactory("i686-pc-linux-gnu", jobs=2, enable_shared=True)},
-{'name' : "llvm-gcc-i686-darwin10-selfhost",
- 'slavenames':["dunbar-darwin10"],
- 'builddir':"llvm-gcc-i686-darwin10-selfhost",
- 'factory':LLVMGCCBuilder.getLLVMGCCBuildFactory(4, triple='i686-apple-darwin10',
-                                                 gxxincludedir='/usr/include/c++/4.2.1')},
-{'name' : "llvm-gcc-x86_64-darwin10-selfhost",
- 'slavenames':["dunbar-darwin10"],
- 'builddir':"llvm-gcc-x86_64-darwin10-selfhost",
- 'factory':LLVMGCCBuilder.getLLVMGCCBuildFactory(4, triple='x86_64-apple-darwin10',
-                                                 gxxincludedir='/usr/include/c++/4.2.1')},
 
 clang_i386_linux_xfails = [
     'LLC.MultiSource/Applications/oggenc/oggenc',

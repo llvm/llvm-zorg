@@ -7,4 +7,3 @@ options.read(os.path.join(os.path.dirname(__file__), 'local.cfg'))
 import builders
 import slaves
 import status
-

@@ -233,9 +233,7 @@ class LLVMPoller(base.PollingChangeSource, util.ComparableMixin):
             'llvm'         : 'llvm',
             'cfe'          : 'clang',
             'polly'        : 'polly',
-            'llvm-gcc-4.2' : 'llvm-gcc',
             'compiler-rt'  : 'compiler-rt',
-            'dragonegg'    : 'dragonegg',
             'lldb'         : 'lldb',
             'openmp'       : 'openmp',
             }

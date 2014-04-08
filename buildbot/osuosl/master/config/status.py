@@ -55,15 +55,6 @@ def get_status_targets(standard_builders):
         InformativeMailNotifier(
             fromaddr = "llvm.buildmaster@lab.llvm.org",
             sendToInterestedUsers= False,
-            extraRecipients = ["baldrick@free.fr"],
-            subject="Build %(builder)s Failure",
-            mode = "failing",
-            builders = ["dragonegg-i386-linux", "dragonegg-x86_64-linux"],
-            addLogs=False,
-            num_lines = 15),
-        InformativeMailNotifier(
-            fromaddr = "llvm.buildmaster@lab.llvm.org",
-            sendToInterestedUsers= False,
             extraRecipients = ["tobias@grosser.es"],
             subject="Build %(builder)s Failure",
             mode = "failing",
