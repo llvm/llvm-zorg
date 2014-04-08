@@ -10,13 +10,6 @@ def create_slave(name, *args, **kwargs):
 
 def get_build_slaves():
     return [
-        # CPU Marvell Kirkwood 88F6281 ARM Based armv5tejl running at 1.2Ghz
-        # Memory 512MB SDRAM
-        # Power 2.3w idle no attached devices, 7.0w running at 100% CPU utilization
-        # Storage 400Gb USB drive.
-        # OS Ubuntu Jaunty
-        create_slave("ranby1"),
-
         # Quad Core Mac Pro running Lion.
         create_slave("as-bldslv11", properties={'jobs' : 1}, max_builds=4),
 
