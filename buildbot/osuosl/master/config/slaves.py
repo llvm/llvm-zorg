@@ -104,12 +104,17 @@ def get_build_slaves():
         # Debian 86_64, 2 x 6-core Opteron 2.6 GHz
         create_slave("osu8", properties={'jobs' : 6}, max_builds=2),
 
-        # Ubuntu 12.04 x86-64, Intel(R) Xeon(R) CPU E5-2680 0 @ 2.70GHz
-        create_slave("hexagon-build-02", properties={'jobs': 12, 'loadaverage': 32},
+        # Windows 6.1.7601 x86-64, Intel(R) Xeon(R) CPU E5-2680 0 @ 2.70GHz
+        create_slave("hexagon-build-01", properties={'jobs': 4}, max_builds=2),
+
+        # Ubuntu x86-64, Intel(R) Xeon(R) CPU E5-2680 0 @ 2.70GHz
+        create_slave("hexagon-build-02", properties={'jobs': 12, 'loadaverage':
+32},
             max_builds=4),
-        # Ubuntu 13.04 x86-64, Intel(R) Xeon(R) CPU E5-2680 0 @ 2.70GHz
-        # hexagon-build-03: /opt/usr/bin contains clang-3.4 for sanitizer.
-        create_slave("hexagon-build-03", properties={'jobs': 16, 'loadaverage': 32},
+
+        # Ubuntu x86-64, Intel(R) Xeon(R) CPU E5-2680 0 @ 2.70GHz
+        create_slave("hexagon-build-03", properties={'jobs': 16, 'loadaverage':
+32},
             max_builds=2),
 
         # Cavium Octeon II V0.8, MIPS64 big endian, Debian squeeze (6.0.6)
