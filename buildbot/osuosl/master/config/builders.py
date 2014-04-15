@@ -575,7 +575,7 @@ def _get_lld_builders():
          'slavenames' :["as-bldslv5"],
          'builddir':"lld-x86_64-freeBSD",
          'factory': LLDBuilder.getLLDBuildFactory(jobs=32,
-                                                  env={'CXXFLAGS' : "-stdlib=libc++"}),
+                                                  env={'CXXFLAGS' : "-std=c++11 -stdlib=libc++"}),
          'category'   : 'lld'},
 
          ]

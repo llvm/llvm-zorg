@@ -13,7 +13,7 @@ def getLLDBuildFactory(
 
     # Prepare environmental variables. Set here all env we want everywhere.
     merged_env = {
-                   'CC'    : "clang",
+                   'CC'   : "clang",
                    'CXX'  : "clang++",
                    'TERM' : 'dumb'     # Be cautious and disable color output from all tools.
                  }
@@ -62,6 +62,7 @@ def getLLDBuildFactory(
         "-DCMAKE_BUILD_TYPE=Release",
         "-DLLVM_ENABLE_CXX11=ON",
         "-DLLVM_ENABLE_WERROR=ON",
+        "-DCMAKE_EXE_LINKER_FLAGS=-lcxxrt",
         "../%s" % llvm_srcdir]
     # Note: ShellCommand does not pass the params with special symbols right.
     # The " ".join is a workaround for this bug.
