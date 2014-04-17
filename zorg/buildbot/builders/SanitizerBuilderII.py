@@ -15,7 +15,6 @@ def getSanitizerBuildFactoryII(
            sanitizers=['sanitizer','asan','lsan','msan','tsan','ubsan','dfsan'],
            build_type="Release",
            common_cmake_options=None,
-           python_executable="/usr/bin/python",
            support_32_bit=True,
            env=None,
            jobs="%(jobs)s",
@@ -29,7 +28,6 @@ def getSanitizerBuildFactoryII(
     # Prepare environmental variables. Set here all env we want everywhere.
     merged_env = {
         'TERM' : 'dumb', # Make sure Clang doesn't use color escape sequences.
-        'PYTHON_EXECUTABLE' : python_executable
                  }
     if env is not None:
         # Overwrite pre-set items with the given ones, so user can set anything.
@@ -143,10 +141,10 @@ def getSanitizerBuildFactoryII(
             "-DCMAKE_BUILD_TYPE=%s" % build_type,
             "../%s" % llvm_srcdir]
 
-    # Note: ShellCommand does not pass the params with special symbols right.
+    # Note: ShellCommand does not pass the params with special symbols correctly.
     # The " ".join is a workaround for this bug.
-    f.addStep(ShellCommand(name="cmake-configure",
-                               description=["cmake configure"],
+    f.addStep(ShellCommand(name="cmake-configure-1",
+                               description=["cmake configure, phase 1"],
                                haltOnFailure=True,
                                command=WithProperties(" ".join(cmakeCommand)),
                                workdir=llvm_objdir,
@@ -184,8 +182,8 @@ def getSanitizerBuildFactoryII(
                                workdir=".",
                                env=merged_env))
 
-    #TODO: make it better way
-    clang_path="/usr/home/buildslave/slave_utility_master/sanitizer_test/%s/bin" % llvm_objdir
+    # Use just built compiler. 
+    clang_path = "%(builddir)s" + "/%s/bin" % llvm_objdir
 
     if common_cmake_options:
        cmakeCommand_llvm64 = [
@@ -203,9 +201,9 @@ def getSanitizerBuildFactoryII(
             "-DCMAKE_CXX_COMPILER=%s/clang++" % clang_path,
             "../%s" % llvm_srcdir]
 
-    # Note: ShellCommand does not pass the params with special symbols right.
+    # Note: ShellCommand does not pass the params with special symbols correctly.
     # The " ".join is a workaround for this bug.
-    f.addStep(ShellCommand(name="cmake-configure",
+    f.addStep(ShellCommand(name="cmake-configure-2",
                                description=["cmake configure 64-bit llvm"],
                                haltOnFailure=True,
                                command=WithProperties(" ".join(cmakeCommand_llvm64)),
@@ -226,7 +224,7 @@ def getSanitizerBuildFactoryII(
         asan_env = {
             'ASAN_PATH' : "%s/projects/compiler-rt/lib/asan" % llvm_objdir64,
             'ASAN_TESTS_PATH' : '${ASAN_PATH}/tests'
-                    }
+                   }
         merged_env.update(asan_env)
 
         f.addStep(WarningCountingShellCommand(name="make-check-asan",
@@ -281,7 +279,7 @@ def getSanitizerBuildFactoryII(
         sanitizer_env = {
             'SANITIZER_COMMON_PATH' : "%s/projects/compiler-rt/lib/sanitizer_common" % llvm_objdir64,
             'SANITIZER_COMMON_TESTS' : '${SANITIZER_COMMON_PATH}/tests'
-                    }
+                        }
         merged_env.update(sanitizer_env)
 
         f.addStep(WarningCountingShellCommand(name="make-check-sanitizer",
@@ -317,7 +315,7 @@ def getSanitizerBuildFactoryII(
     if 'msan' in sanitizers:
         msan_env = {
             'MSAN_PATH' : "%s/projects/compiler-rt/lib/msan" % llvm_objdir64,
-                    }
+                   }
         merged_env.update(msan_env)
 
         f.addStep(WarningCountingShellCommand(name="make-check-msan",
@@ -343,7 +341,7 @@ def getSanitizerBuildFactoryII(
     if 'tsan' in sanitizers:
         tsan_env = {
             'TSAN_PATH' : 'projects/compiler-rt/lib/tsan'
-                    }
+                   }
         merged_env.update(tsan_env)
 
         f.addStep(WarningCountingShellCommand(name="make-check-tsan",
@@ -378,7 +376,7 @@ def getSanitizerBuildFactoryII(
     if 'lsan' in sanitizers:
         lsan_env = {
             'LSAN_PATH' : 'projects/compiler-rt/lib/lsan'
-                    }
+                   }
         merged_env.update(lsan_env)
 
         f.addStep(WarningCountingShellCommand(name="make-check-lsan",
