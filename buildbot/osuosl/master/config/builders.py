@@ -81,7 +81,7 @@ def _get_llvm_builders():
                                                     outOfDir=True,
                                                     extra_configure_args=["--host=aarch64-linux-gnu"])},
         {'name': "llvm-hexagon-elf",
-         'slavenames':["hexagon-build-02"],
+         'slavenames':["hexagon-build-03"],
          'builddir':"llvm-hexagon-elf",
          'factory': LLVMBuilder.getLLVMBuildFactory("hexagon-unknown-elf", timeout=40, config_name='Release+Asserts',
                                                        extra_configure_args=['--build=x86_64-linux-gnu',
@@ -338,7 +338,7 @@ def _get_clang_builders():
          'factory' : ClangBuilder.getClangBuildFactory(stage1_config='Release+Asserts', run_modern_gdb=True, clean=False)},
 
         {'name' : "clang-hexagon-elf",
-         'slavenames' :["hexagon-build-02"],
+         'slavenames' :["hexagon-build-03"],
          'builddir' :"clang-hexagon-elf",
          'factory' : ClangBuilder.getClangBuildFactory(
                      triple='x86_64-linux-gnu',
@@ -593,13 +593,12 @@ def _get_sanitizer_builders():
            'builddir': "sanitizer-x86_64-linux-bootstrap",
            'factory': SanitizerBuilder.getSanitizerBuildFactory()},
 
-          # hexagon-build-03: /opt/usr/bin contains clang-3.4 for sanitizer.
-          {'name': "llvm-clang-lld-x86_64-ubuntu-13.04-sanitize-address",
-           'slavenames':["hexagon-build-03"],
-           'builddir':"llvm-clang-lld-x86_64-ubuntu-13.04-fsanitize-address",
-           'factory': ClangAndLLDBuilder.getClangAndLLDBuildFactory(
-                                             buildWithSanitizerOptions=['-fsanitize=address'],
-                                             env={'PATH':'/opt/usr/bin:/usr/local/bin:/usr/bin:/bin'})},
+          #{'name': "llvm-clang-lld-x86_64-ubuntu-sanitize-address",
+          # 'slavenames':["hexagon-build-03"],
+          # 'builddir':"llvm-clang-lld-x86_64-ubuntu-sanitize-address",
+          # 'factory': ClangAndLLDBuilder.getClangAndLLDBuildFactory(
+          #                                   buildWithSanitizerOptions=['-fsanitize=address'],
+          #                                   env={'PATH':'/usr/local/bin:/usr/bin:/bin'})},
 
           {'name': "sanitizer_x86_64-freeBSD9.2",
            'slavenames':["as-bldslv8"],

@@ -115,7 +115,7 @@ def get_build_slaves():
         # Ubuntu x86-64, Intel(R) Xeon(R) CPU E5-2680 0 @ 2.70GHz
         create_slave("hexagon-build-03", properties={'jobs': 16, 'loadaverage':
 32},
-            max_builds=2),
+            max_builds=4),
 
         # Cavium Octeon II V0.8, MIPS64 big endian, Debian squeeze (6.0.6)
         create_slave("mipsswbrd002", properties={'jobs' : 6}, max_builds=1),
