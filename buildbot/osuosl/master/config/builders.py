@@ -605,7 +605,7 @@ def _get_sanitizer_builders():
            'builddir':"sanitizer_x86_64-freeBSD9.2",
            'factory' : SanitizerBuilderII.getSanitizerBuildFactoryII(
                                              clean=False,
-                                             python_executable="/usr/local/bin/python",
+          #                                  python_executable="/usr/local/bin/python",
                                              env = { 'CC' : 'clang', 'CXX' : 'clang++'})},
           ]
 
