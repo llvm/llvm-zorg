@@ -45,11 +45,11 @@ from zorg.buildbot.builders import Libiomp5Builder
 # Plain LLVM builders.
 def _get_llvm_builders():
     return [
-        {'name': "llvm-x86_64-ubuntu",
-         'slavenames':["arxan_davinci"],
-         'builddir':"llvm-x86_64-ubuntu",
-         'factory': LLVMBuilder.getLLVMBuildFactory("x86_64-pc-linux-gnu", jobs=4,
-                                                    timeout=30)},
+#        {'name': "llvm-x86_64-ubuntu",
+#         'slavenames':["arxan_davinci"],
+#         'builddir':"llvm-x86_64-ubuntu",
+#         'factory': LLVMBuilder.getLLVMBuildFactory("x86_64-pc-linux-gnu", jobs=4,
+#                                                    timeout=30)},
         {'name': "llvm-ppc64-linux1",
          'slavenames':["chinook"],
          'builddir':"llvm-ppc64",
@@ -194,10 +194,10 @@ def _get_clang_builders():
          'builddir':"clang-atom-d525-fedora-rel",
          'factory' : ClangBuilder.getClangBuildFactory(stage1_config='Release+Asserts')},
 
-        {'name': "clang-x86_64-ubuntu",
-         'slavenames':["arxan_raphael"],
-         'builddir':"clang-x86_64-ubuntu",
-         'factory' : ClangBuilder.getClangBuildFactory(extra_configure_args=['--enable-shared'])},
+#        {'name': "clang-x86_64-ubuntu",
+#         'slavenames':["arxan_raphael"],
+#         'builddir':"clang-x86_64-ubuntu",
+#         'factory' : ClangBuilder.getClangBuildFactory(extra_configure_args=['--enable-shared'])},
 
         {'name': "clang-native-arm-cortex-a9",
          'slavenames':["as-bldslv1", "as-bldslv2", "as-bldslv3"],
