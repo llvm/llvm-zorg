@@ -601,12 +601,14 @@ def _get_sanitizer_builders():
           #                                   env={'PATH':'/usr/local/bin:/usr/bin:/bin'})},
 
           {'name': "sanitizer_x86_64-freeBSD9.2",
-           'slavenames':["as-bldslv8"],
+           'slavenames':["as-bldslv5"],
            'builddir':"sanitizer_x86_64-freeBSD9.2",
            'factory' : SanitizerBuilderII.getSanitizerBuildFactoryII(
-                                             clean=False,
-          #                                  python_executable="/usr/local/bin/python",
-                                             env = { 'CC' : 'clang', 'CXX' : 'clang++'})},
+                                          clean=False,
+                                          common_cmake_options='-DLLVM_ENABLE_CXX11=ON -DCMAKE_EXE_LINKER_FLAGS=-lcxxrt',
+                                          env = {'CC'       : 'clang',
+                                                 'CXX'      : 'clang++',
+                                                 'CXXFLAGS' : '-std=c++11 -stdlib=libc++'})},
           ]
 
 def _get_openmp_builders():
