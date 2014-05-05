@@ -559,11 +559,11 @@ def _get_lldb_builders():
 # LLD builders.
 def _get_lld_builders():
     return [
-        {'name': "lld-x86_64-darwin11",
-         'slavenames' :["as-bldslv11"],
-         'builddir':"lld-x86_64-darwin11",
-         'factory': LLDBuilder.getLLDBuildFactory(clean=False),
-         'category'   : 'lld'},
+#        {'name': "lld-x86_64-darwin11",
+#         'slavenames' :["as-bldslv11"],
+#         'builddir':"lld-x86_64-darwin11",
+#         'factory': LLDBuilder.getLLDBuildFactory(clean=False),
+#         'category'   : 'lld'},
 
         {'name': "lld-x86_64-win7",
          'slavenames' :["as-bldslv4"],
