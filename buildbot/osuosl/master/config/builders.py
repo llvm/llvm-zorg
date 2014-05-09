@@ -604,7 +604,7 @@ def _get_sanitizer_builders():
            'slavenames':["as-bldslv5"],
            'builddir':"sanitizer_x86_64-freeBSD9.2",
            'factory' : SanitizerBuilderII.getSanitizerBuildFactoryII(
-                                          clean=False,
+                                          clean=True,
                                           common_cmake_options='-DLLVM_ENABLE_CXX11=ON -DCMAKE_EXE_LINKER_FLAGS=-lcxxrt',
                                           env = {'CC'       : 'clang',
                                                  'CXX'      : 'clang++',
