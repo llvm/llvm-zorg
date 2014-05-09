@@ -221,9 +221,12 @@ def getSanitizerBuildFactoryII(
 
     # Run asan unit tests
     if 'asan' in sanitizers:
+        asan_path = "%s/projects/compiler-rt/lib/asan" % llvm_objdir64
+        asan_tests_path = "%s/tests" % asan_path
+
         asan_env = {
-            'ASAN_PATH' : "%s/projects/compiler-rt/lib/asan" % llvm_objdir64,
-            'ASAN_TESTS_PATH' : '${ASAN_PATH}/tests'
+            'ASAN_PATH' : asan_path,
+            'ASAN_TESTS_PATH' : asan_tests_path
                    }
         merged_env.update(asan_env)
 
@@ -238,7 +241,7 @@ def getSanitizerBuildFactoryII(
 
         # Run the unit test binaries
         f.addStep(WarningCountingShellCommand(name="asan-x86_64-Test",
-                                          command=['${ASAN_TESTS_PATH}/Asan-x86_64-Test',
+                                          command=["%s/Asan-x86_64-Test" % asan_tests_path,
                                                    WithProperties("-j%s" % jobs)],
                                           haltOnFailure=False,
                                           description=["asan-x86_64-Test"],
@@ -247,7 +250,7 @@ def getSanitizerBuildFactoryII(
                                           env=merged_env))
 
         f.addStep(WarningCountingShellCommand(name="Asan-x86_64-Noinst-Test",
-                                          command=['${ASAN_TESTS_PATH}/Asan-x86_64-Noinst-Test',
+                                          command=["%s/Asan-x86_64-Noinst-Test" % asan_tests_path,
                                                    WithProperties("-j%s" % jobs)],
                                           haltOnFailure=False,
                                           description=["Asan-x86_64-Noinst-Test"],
@@ -257,7 +260,7 @@ def getSanitizerBuildFactoryII(
 
         if support_32_bit:
             f.addStep(WarningCountingShellCommand(name="Asan-i386-Test",
-                                              command=['${ASAN_TESTS_PATH}/Asan-i386-Test',
+                                              command=["%s/Asan-i386-Test" % asan_tests_path,
                                                    WithProperties("-j%s" % jobs)],
                                               haltOnFailure=False,
                                               description=["Asan-i386-Test"],
@@ -266,7 +269,7 @@ def getSanitizerBuildFactoryII(
                                               env=merged_env))
 
             f.addStep(WarningCountingShellCommand(name="Asan-i386-Noinst-Test",
-                                              command=['${ASAN_TESTS_PATH}/Asan-i386-Noinst-Test',
+                                              command=["%s/Asan-i386-Noinst-Test" % asan_tests_path,
                                                    WithProperties("-j%s" % jobs)],
                                               haltOnFailure=False,
                                               description=["Asan-i386-Noinst-Test"],
@@ -274,11 +277,14 @@ def getSanitizerBuildFactoryII(
                                               workdir=llvm_objdir64,
                                               env=merged_env))
 
-    # Run sanitizer_common unit tests                                         
+    # Run sanitizer_common unit tests
     if 'sanitizer' in sanitizers:
+        sanitizer_common_path = "%s/projects/compiler-rt/lib/sanitizer_common" % llvm_objdir64
+        sanitizer_common_tests = "%s/tests" % sanitizer_common_path
+
         sanitizer_env = {
-            'SANITIZER_COMMON_PATH' : "%s/projects/compiler-rt/lib/sanitizer_common" % llvm_objdir64,
-            'SANITIZER_COMMON_TESTS' : '${SANITIZER_COMMON_PATH}/tests'
+            'SANITIZER_COMMON_PATH' : sanitizer_common_path,
+            'SANITIZER_COMMON_TESTS' : sanitizer_common_tests
                         }
         merged_env.update(sanitizer_env)
 
@@ -293,7 +299,7 @@ def getSanitizerBuildFactoryII(
 
         # Run the unit test binaries
         f.addStep(WarningCountingShellCommand(name="Sanitizer-x86_64-Test",
-                                          command=['${SANITIZER_COMMON_TESTS}/Sanitizer-x86_64-Test',
+                                          command=["%s/Sanitizer-x86_64-Test" % sanitizer_common_tests,
                                                    WithProperties("-j%s" % jobs)],
                                           haltOnFailure=False,
                                           description=["Sanitizer-x86_64-Test"],
@@ -303,7 +309,7 @@ def getSanitizerBuildFactoryII(
 
         if support_32_bit:
             f.addStep(WarningCountingShellCommand(name="Sanitizer-i386-Test",
-                                              command=['${SANITIZER_COMMON_TESTS}/Sanitizer-i386-Test',
+                                              command=["%s/Sanitizer-i386-Test" % sanitizer_common_tests,
                                                    WithProperties("-j%s" % jobs)],
                                               haltOnFailure=False,
                                               description=["Sanitizer-i386-Test"],
@@ -313,8 +319,9 @@ def getSanitizerBuildFactoryII(
 
     # Run msan unit tests
     if 'msan' in sanitizers:
+        msan_path = "%s/projects/compiler-rt/lib/msan" % llvm_objdir64
         msan_env = {
-            'MSAN_PATH' : "%s/projects/compiler-rt/lib/msan" % llvm_objdir64,
+            'MSAN_PATH' : msan_path,
                    }
         merged_env.update(msan_env)
 
@@ -329,7 +336,7 @@ def getSanitizerBuildFactoryII(
 
         # Run the unit test binaries
         f.addStep(WarningCountingShellCommand(name="Msan-x86_64-Test",
-                                          command=['${MSAN_PATH}/tests/Msan-x86_64-Test',
+                                          command=["%s/tests/Msan-x86_64-Test" % msan_path,
                                                    WithProperties("-j%s" % jobs)],
                                           haltOnFailure=False,
                                           description=["Msan-x86_64-Test"],
@@ -339,8 +346,9 @@ def getSanitizerBuildFactoryII(
 
     # Run 64-bit tsan unit tests
     if 'tsan' in sanitizers:
+        tsan_path = "%s/projects/compiler-rt/lib/tsan" % llvm_objdir64
         tsan_env = {
-            'TSAN_PATH' : 'projects/compiler-rt/lib/tsan'
+            'TSAN_PATH' : tsan_path
                    }
         merged_env.update(tsan_env)
 
@@ -355,7 +363,7 @@ def getSanitizerBuildFactoryII(
 
         # Run the unit test binaries
         f.addStep(WarningCountingShellCommand(name="TsanRtlTest",
-                                          command=['$TSAN_PATH/tests/rtl/TsanRtlTest',
+                                          command=["%s/tests/rtl/TsanRtlTest" % tsan_path,
                                                    WithProperties("-j%s" % jobs)],
                                           haltOnFailure=False,
                                           description=["TsanRtlTest"],
@@ -364,7 +372,7 @@ def getSanitizerBuildFactoryII(
                                           env=merged_env))
 
         f.addStep(WarningCountingShellCommand(name="TsanUnitTest",
-                                          command=['$TSAN_PATH/tests/unit/TsanUnitTest',
+                                          command=["%s/tests/unit/TsanUnitTest" % tsan_path,
                                                    WithProperties("-j%s" % jobs)],
                                           haltOnFailure=False,
                                           description=["TsanUnitTest"],
@@ -374,8 +382,9 @@ def getSanitizerBuildFactoryII(
 
     # Run 64-bit lsan unit tests
     if 'lsan' in sanitizers:
+        lsan_path = "%s/projects/compiler-rt/lib/lsan" % llvm_objdir64
         lsan_env = {
-            'LSAN_PATH' : 'projects/compiler-rt/lib/lsan'
+            'LSAN_PATH' : lsan_path
                    }
         merged_env.update(lsan_env)
 
@@ -390,7 +399,7 @@ def getSanitizerBuildFactoryII(
 
         # Run the unit test binaries
         f.addStep(WarningCountingShellCommand(name="Lsan-x86_64-Test",
-                                          command=['$LSAN_PATH/tests/Lsan-x86_64-Test',
+                                          command=["%s/tests/Lsan-x86_64-Test" % lsan_path,
                                                    WithProperties("-j%s" % jobs)],
                                           haltOnFailure=False,
                                           description=["Lsan-x86_64-Test"],
