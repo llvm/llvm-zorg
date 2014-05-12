@@ -128,17 +128,19 @@ def getSanitizerBuildFactoryII(
                                workdir=".",
                                env=merged_env))
 
-    # TODO: make it better way
+    # TODO: make it better way - use list for common_cmake_options and just merge.
     if common_cmake_options:
        cmakeCommand = [
             "cmake",
             "-DCMAKE_BUILD_TYPE=%s" % build_type,
+            "-DCMAKE_CXX_FLAGS='-std=c++11 -stdlib=libc++'",
             "%s" % common_cmake_options,
             "../%s" % llvm_srcdir]
     else:
        cmakeCommand = [
             "cmake",
             "-DCMAKE_BUILD_TYPE=%s" % build_type,
+            "-DCMAKE_CXX_FLAGS='-std=c++11 -stdlib=libc++'",
             "../%s" % llvm_srcdir]
 
     # Note: ShellCommand does not pass the params with special symbols correctly.
@@ -192,6 +194,7 @@ def getSanitizerBuildFactoryII(
             "%s" % common_cmake_options,
             "-DCMAKE_C_COMPILER=%s/clang" % clang_path,
             "-DCMAKE_CXX_COMPILER=%s/clang++" % clang_path,
+            "-DCMAKE_CXX_FLAGS='-I../%s/projects/libcxx/include -std=c++11 -stdlib=libc++'" % llvm_srcdir,
             "../%s" % llvm_srcdir]
     else:
        cmakeCommand_llvm64 = [
@@ -199,6 +202,7 @@ def getSanitizerBuildFactoryII(
             "-DCMAKE_BUILD_TYPE=%s" % build_type,
             "-DCMAKE_C_COMPILER=%s/clang" % clang_path,
             "-DCMAKE_CXX_COMPILER=%s/clang++" % clang_path,
+            "-DCMAKE_CXX_FLAGS='-I../%s/projects/libcxx/include -std=c++11 -stdlib=libc++'" % llvm_srcdir,
             "../%s" % llvm_srcdir]
 
     # Note: ShellCommand does not pass the params with special symbols correctly.

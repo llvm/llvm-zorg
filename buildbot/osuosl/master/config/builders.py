@@ -607,8 +607,7 @@ def _get_sanitizer_builders():
                                           clean=True,
                                           common_cmake_options='-DLLVM_ENABLE_CXX11=ON -DCMAKE_EXE_LINKER_FLAGS=-lcxxrt',
                                           env = {'CC'       : 'clang',
-                                                 'CXX'      : 'clang++',
-                                                 'CXXFLAGS' : '-std=c++11 -stdlib=libc++'})},
+                                                 'CXX'      : 'clang++'})},
           ]
 
 def _get_openmp_builders():
