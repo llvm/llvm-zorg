@@ -133,6 +133,8 @@ def getSanitizerBuildFactoryII(
        cmakeCommand = [
             "cmake",
             "-DCMAKE_BUILD_TYPE=%s" % build_type,
+            "-DCMAKE_C_COMPILER=clang",
+            "-DCMAKE_CXX_COMPILER=clang++",
             "-DCMAKE_CXX_FLAGS='-std=c++11 -stdlib=libc++'",
             "%s" % common_cmake_options,
             "../%s" % llvm_srcdir]
@@ -140,6 +142,8 @@ def getSanitizerBuildFactoryII(
        cmakeCommand = [
             "cmake",
             "-DCMAKE_BUILD_TYPE=%s" % build_type,
+            "-DCMAKE_C_COMPILER=clang",
+            "-DCMAKE_CXX_COMPILER=clang++",
             "-DCMAKE_CXX_FLAGS='-std=c++11 -stdlib=libc++'",
             "../%s" % llvm_srcdir]
 
@@ -194,7 +198,7 @@ def getSanitizerBuildFactoryII(
             "%s" % common_cmake_options,
             "-DCMAKE_C_COMPILER=%s/clang" % clang_path,
             "-DCMAKE_CXX_COMPILER=%s/clang++" % clang_path,
-            "-DCMAKE_CXX_FLAGS='-I../%s/projects/libcxx/include -std=c++11 -stdlib=libc++'" % llvm_srcdir,
+            "-DCMAKE_CXX_FLAGS=-I" + "%(builddir)s" + "/%s/projects/libcxx/include -std=c++11 -stdlib=libc++" % llvm_srcdir,
             "../%s" % llvm_srcdir]
     else:
        cmakeCommand_llvm64 = [
@@ -202,7 +206,7 @@ def getSanitizerBuildFactoryII(
             "-DCMAKE_BUILD_TYPE=%s" % build_type,
             "-DCMAKE_C_COMPILER=%s/clang" % clang_path,
             "-DCMAKE_CXX_COMPILER=%s/clang++" % clang_path,
-            "-DCMAKE_CXX_FLAGS='-I../%s/projects/libcxx/include -std=c++11 -stdlib=libc++'" % llvm_srcdir,
+            "-DCMAKE_CXX_FLAGS=-I" + "%(builddir)s" + "/%s/projects/libcxx/include -std=c++11 -stdlib=libc++" % llvm_srcdir,
             "../%s" % llvm_srcdir]
 
     # Note: ShellCommand does not pass the params with special symbols correctly.
@@ -232,7 +236,7 @@ def getSanitizerBuildFactoryII(
             'ASAN_PATH' : asan_path,
             'ASAN_TESTS_PATH' : asan_tests_path
                    }
-        merged_env.update(asan_env)
+        asan_env.update(merged_env)
 
         f.addStep(WarningCountingShellCommand(name="make-check-asan",
                                           command=['make', 'check-asan',
@@ -241,7 +245,7 @@ def getSanitizerBuildFactoryII(
                                           description=["make check-asan"],
                                           descriptionDone=["make check-asan"],
                                           workdir=llvm_objdir64,
-                                          env=merged_env))
+                                          env=asan_env))
 
         # Run the unit test binaries
         f.addStep(WarningCountingShellCommand(name="asan-x86_64-Test",
@@ -251,7 +255,7 @@ def getSanitizerBuildFactoryII(
                                           description=["asan-x86_64-Test"],
                                           descriptionDone=["asan-x86_64-Test"],
                                           workdir=llvm_objdir64,
-                                          env=merged_env))
+                                          env=asan_env))
 
         f.addStep(WarningCountingShellCommand(name="Asan-x86_64-Noinst-Test",
                                           command=["%s/Asan-x86_64-Noinst-Test" % asan_tests_path,
@@ -260,7 +264,7 @@ def getSanitizerBuildFactoryII(
                                           description=["Asan-x86_64-Noinst-Test"],
                                           descriptionDone=["Asan-x86_64-Noinst-Test"],
                                           workdir=llvm_objdir64,
-                                          env=merged_env))
+                                          env=asan_env))
 
         if support_32_bit:
             f.addStep(WarningCountingShellCommand(name="Asan-i386-Test",
@@ -270,7 +274,7 @@ def getSanitizerBuildFactoryII(
                                               description=["Asan-i386-Test"],
                                               descriptionDone=["Asan-i386-Test"],
                                               workdir=llvm_objdir64,
-                                              env=merged_env))
+                                              env=asan_env))
 
             f.addStep(WarningCountingShellCommand(name="Asan-i386-Noinst-Test",
                                               command=["%s/Asan-i386-Noinst-Test" % asan_tests_path,
@@ -279,7 +283,7 @@ def getSanitizerBuildFactoryII(
                                               description=["Asan-i386-Noinst-Test"],
                                               descriptionDone=["Asan-i386-Noinst-Test"],
                                               workdir=llvm_objdir64,
-                                              env=merged_env))
+                                              env=asan_env))
 
     # Run sanitizer_common unit tests
     if 'sanitizer' in sanitizers:
@@ -290,7 +294,7 @@ def getSanitizerBuildFactoryII(
             'SANITIZER_COMMON_PATH' : sanitizer_common_path,
             'SANITIZER_COMMON_TESTS' : sanitizer_common_tests
                         }
-        merged_env.update(sanitizer_env)
+        sanitizer_env.update(merged_env)
 
         f.addStep(WarningCountingShellCommand(name="make-check-sanitizer",
                                           command=['make', 'check-sanitizer',
@@ -299,7 +303,7 @@ def getSanitizerBuildFactoryII(
                                           description=["make check-sanitizer"],
                                           descriptionDone=["make check-sanitizer"],
                                           workdir=llvm_objdir64,
-                                          env=merged_env))
+                                          env=sanitizer_env))
 
         # Run the unit test binaries
         f.addStep(WarningCountingShellCommand(name="Sanitizer-x86_64-Test",
@@ -309,7 +313,7 @@ def getSanitizerBuildFactoryII(
                                           description=["Sanitizer-x86_64-Test"],
                                           descriptionDone=["Sanitizer-x86_64-Test"],
                                           workdir=llvm_objdir64,
-                                          env=merged_env))
+                                          env=sanitizer_env))
 
         if support_32_bit:
             f.addStep(WarningCountingShellCommand(name="Sanitizer-i386-Test",
@@ -319,7 +323,7 @@ def getSanitizerBuildFactoryII(
                                               description=["Sanitizer-i386-Test"],
                                               descriptionDone=["Sanitizer-i386-Test"],
                                               workdir=llvm_objdir64,
-                                              env=merged_env))
+                                              env=sanitizer_env))
 
     # Run msan unit tests
     if 'msan' in sanitizers:
@@ -327,7 +331,7 @@ def getSanitizerBuildFactoryII(
         msan_env = {
             'MSAN_PATH' : msan_path,
                    }
-        merged_env.update(msan_env)
+        msan_env.update(merged_env)
 
         f.addStep(WarningCountingShellCommand(name="make-check-msan",
                                           command=['make', 'check-msan',
@@ -336,7 +340,7 @@ def getSanitizerBuildFactoryII(
                                           description=["make check-msan"],
                                           descriptionDone=["make check-msan"],
                                           workdir=llvm_objdir64,
-                                          env=merged_env))
+                                          env=msan_env))
 
         # Run the unit test binaries
         f.addStep(WarningCountingShellCommand(name="Msan-x86_64-Test",
@@ -346,7 +350,7 @@ def getSanitizerBuildFactoryII(
                                           description=["Msan-x86_64-Test"],
                                           descriptionDone=["Msan-x86_64-Test"],
                                           workdir=llvm_objdir64,
-                                          env=merged_env))
+                                          env=msan_env))
 
     # Run 64-bit tsan unit tests
     if 'tsan' in sanitizers:
@@ -354,7 +358,7 @@ def getSanitizerBuildFactoryII(
         tsan_env = {
             'TSAN_PATH' : tsan_path
                    }
-        merged_env.update(tsan_env)
+        tsan_env.update(merged_env)
 
         f.addStep(WarningCountingShellCommand(name="make-check-tsan",
                                           command=['make', 'check-tsan',
@@ -363,7 +367,7 @@ def getSanitizerBuildFactoryII(
                                           description=["make check-tsan"],
                                           descriptionDone=["make check-tsan"],
                                           workdir=llvm_objdir64,
-                                          env=merged_env))
+                                          env= tsan_env))
 
         # Run the unit test binaries
         f.addStep(WarningCountingShellCommand(name="TsanRtlTest",
@@ -373,7 +377,7 @@ def getSanitizerBuildFactoryII(
                                           description=["TsanRtlTest"],
                                           descriptionDone=["TsanRtlTest"],
                                           workdir=llvm_objdir64,
-                                          env=merged_env))
+                                          env= tsan_env))
 
         f.addStep(WarningCountingShellCommand(name="TsanUnitTest",
                                           command=["%s/tests/unit/TsanUnitTest" % tsan_path,
@@ -382,7 +386,7 @@ def getSanitizerBuildFactoryII(
                                           description=["TsanUnitTest"],
                                           descriptionDone=["TsanUnitTest"],
                                           workdir=llvm_objdir64,
-                                          env=merged_env))
+                                          env= tsan_env))
 
     # Run 64-bit lsan unit tests
     if 'lsan' in sanitizers:
@@ -390,7 +394,7 @@ def getSanitizerBuildFactoryII(
         lsan_env = {
             'LSAN_PATH' : lsan_path
                    }
-        merged_env.update(lsan_env)
+        lsan_env.update(merged_env)
 
         f.addStep(WarningCountingShellCommand(name="make-check-lsan",
                                           command=['make', 'check-lsan',
@@ -399,7 +403,7 @@ def getSanitizerBuildFactoryII(
                                           description=["make check-lsan"],
                                           descriptionDone=["make check-lsan"],
                                           workdir=llvm_objdir64,
-                                          env=merged_env))
+                                          env=lsan_env))
 
         # Run the unit test binaries
         f.addStep(WarningCountingShellCommand(name="Lsan-x86_64-Test",
@@ -409,6 +413,6 @@ def getSanitizerBuildFactoryII(
                                           description=["Lsan-x86_64-Test"],
                                           descriptionDone=["Lsan-x86_64-Test"],
                                           workdir=llvm_objdir64,
-                                          env=merged_env))
+                                          env=lsan_env))
 
     return f
