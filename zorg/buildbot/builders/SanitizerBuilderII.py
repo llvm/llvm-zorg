@@ -198,7 +198,7 @@ def getSanitizerBuildFactoryII(
             "%s" % common_cmake_options,
             "-DCMAKE_C_COMPILER=%s/clang" % clang_path,
             "-DCMAKE_CXX_COMPILER=%s/clang++" % clang_path,
-            "-DCMAKE_CXX_FLAGS=-I" + "%(builddir)s" + "/%s/projects/libcxx/include -std=c++11 -stdlib=libc++" % llvm_srcdir,
+            "-DCMAKE_CXX_FLAGS='-I" + "%(builddir)s" + "/%s/projects/libcxx/include -std=c++11 -stdlib=libc++'" % llvm_srcdir,
             "../%s" % llvm_srcdir]
     else:
        cmakeCommand_llvm64 = [
@@ -206,7 +206,7 @@ def getSanitizerBuildFactoryII(
             "-DCMAKE_BUILD_TYPE=%s" % build_type,
             "-DCMAKE_C_COMPILER=%s/clang" % clang_path,
             "-DCMAKE_CXX_COMPILER=%s/clang++" % clang_path,
-            "-DCMAKE_CXX_FLAGS=-I" + "%(builddir)s" + "/%s/projects/libcxx/include -std=c++11 -stdlib=libc++" % llvm_srcdir,
+            "-DCMAKE_CXX_FLAGS='-I" + "%(builddir)s" + "/%s/projects/libcxx/include -std=c++11 -stdlib=libc++'" % llvm_srcdir,
             "../%s" % llvm_srcdir]
 
     # Note: ShellCommand does not pass the params with special symbols correctly.

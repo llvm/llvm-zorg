@@ -606,6 +606,7 @@ def _get_sanitizer_builders():
            'builddir':"sanitizer_x86_64-freeBSD9.2",
            'factory' : SanitizerBuilderII.getSanitizerBuildFactoryII(
                                           clean=True,
+                                          sanitizers=['sanitizer','lsan','msan','tsan','ubsan','dfsan'],
                                           common_cmake_options='-DCMAKE_EXE_LINKER_FLAGS=-lcxxrt')},
           ]
 
