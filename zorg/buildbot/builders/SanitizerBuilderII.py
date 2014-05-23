@@ -18,8 +18,7 @@ def getSanitizerBuildFactoryII(
            support_32_bit=True,
            env=None,
            jobs="%(jobs)s",
-           timeout=1200
-           ):
+           timeout=1200):
 
     llvm_srcdir   = "llvm.src"
     llvm_objdir   = "llvm.obj"
@@ -287,11 +286,11 @@ def getSanitizerBuildFactoryII(
 
     # Run sanitizer_common unit tests
     if 'sanitizer' in sanitizers:
-        sanitizer_common_path = "%s/projects/compiler-rt/lib/sanitizer_common" % llvm_objdir64
+        sanitizer_common_path = "./projects/compiler-rt/lib/sanitizer_common"
         sanitizer_common_tests = "%s/tests" % sanitizer_common_path
 
         sanitizer_env = {
-            'SANITIZER_COMMON_PATH' : sanitizer_common_path,
+            'SANITIZER_COMMON_PATH'  : sanitizer_common_path,
             'SANITIZER_COMMON_TESTS' : sanitizer_common_tests
                         }
         sanitizer_env.update(merged_env)
@@ -315,19 +314,19 @@ def getSanitizerBuildFactoryII(
                                           workdir=llvm_objdir64,
                                           env=sanitizer_env))
 
-        if support_32_bit:
-            f.addStep(WarningCountingShellCommand(name="Sanitizer-i386-Test",
-                                              command=["%s/Sanitizer-i386-Test" % sanitizer_common_tests,
-                                                   WithProperties("-j%s" % jobs)],
-                                              haltOnFailure=False,
-                                              description=["Sanitizer-i386-Test"],
-                                              descriptionDone=["Sanitizer-i386-Test"],
-                                              workdir=llvm_objdir64,
-                                              env=sanitizer_env))
+#        if support_32_bit:
+#            f.addStep(WarningCountingShellCommand(name="Sanitizer-i386-Test",
+#                                              command=["%s/Sanitizer-i386-Test" % sanitizer_common_tests,
+#                                                   WithProperties("-j%s" % jobs)],
+#                                              haltOnFailure=False,
+#                                              description=["Sanitizer-i386-Test"],
+#                                              descriptionDone=["Sanitizer-i386-Test"],
+#                                              workdir=llvm_objdir64,
+#                                              env=sanitizer_env))
 
     # Run msan unit tests
     if 'msan' in sanitizers:
-        msan_path = "%s/projects/compiler-rt/lib/msan" % llvm_objdir64
+        msan_path = "./projects/compiler-rt/lib/msan"
         msan_env = {
             'MSAN_PATH' : msan_path,
                    }
@@ -343,18 +342,18 @@ def getSanitizerBuildFactoryII(
                                           env=msan_env))
 
         # Run the unit test binaries
-        f.addStep(WarningCountingShellCommand(name="Msan-x86_64-Test",
-                                          command=["%s/tests/Msan-x86_64-Test" % msan_path,
-                                                   WithProperties("-j%s" % jobs)],
-                                          haltOnFailure=False,
-                                          description=["Msan-x86_64-Test"],
-                                          descriptionDone=["Msan-x86_64-Test"],
-                                          workdir=llvm_objdir64,
-                                          env=msan_env))
+#        f.addStep(WarningCountingShellCommand(name="Msan-x86_64-Test",
+#                                          command=["%s/tests/Msan-x86_64-Test" % msan_path,
+#                                                   WithProperties("-j%s" % jobs)],
+#                                          haltOnFailure=False,
+#                                          description=["Msan-x86_64-Test"],
+#                                          descriptionDone=["Msan-x86_64-Test"],
+#                                          workdir=llvm_objdir64,
+#                                          env=msan_env))
 
     # Run 64-bit tsan unit tests
     if 'tsan' in sanitizers:
-        tsan_path = "%s/projects/compiler-rt/lib/tsan" % llvm_objdir64
+        tsan_path = "./projects/compiler-rt/lib/tsan"
         tsan_env = {
             'TSAN_PATH' : tsan_path
                    }
@@ -370,40 +369,40 @@ def getSanitizerBuildFactoryII(
                                           env= tsan_env))
 
         # Run the unit test binaries
-        f.addStep(WarningCountingShellCommand(name="TsanRtlTest",
-                                          command=["%s/tests/rtl/TsanRtlTest" % tsan_path,
-                                                   WithProperties("-j%s" % jobs)],
-                                          haltOnFailure=False,
-                                          description=["TsanRtlTest"],
-                                          descriptionDone=["TsanRtlTest"],
-                                          workdir=llvm_objdir64,
-                                          env= tsan_env))
+#        f.addStep(WarningCountingShellCommand(name="TsanRtlTest",
+#                                          command=["%s/tests/rtl/TsanRtlTest" % tsan_path,
+#                                                   WithProperties("-j%s" % jobs)],
+#                                          haltOnFailure=False,
+#                                          description=["TsanRtlTest"],
+#                                          descriptionDone=["TsanRtlTest"],
+#                                          workdir=llvm_objdir64,
+#                                          env= tsan_env))
 
-        f.addStep(WarningCountingShellCommand(name="TsanUnitTest",
-                                          command=["%s/tests/unit/TsanUnitTest" % tsan_path,
-                                                   WithProperties("-j%s" % jobs)],
-                                          haltOnFailure=False,
-                                          description=["TsanUnitTest"],
-                                          descriptionDone=["TsanUnitTest"],
-                                          workdir=llvm_objdir64,
-                                          env= tsan_env))
+#        f.addStep(WarningCountingShellCommand(name="TsanUnitTest",
+#                                          command=["%s/tests/unit/TsanUnitTest" % tsan_path,
+#                                                   WithProperties("-j%s" % jobs)],
+#                                          haltOnFailure=False,
+#                                          description=["TsanUnitTest"],
+#                                          descriptionDone=["TsanUnitTest"],
+#                                          workdir=llvm_objdir64,
+#                                          env= tsan_env))
 
     # Run 64-bit lsan unit tests
     if 'lsan' in sanitizers:
-        lsan_path = "%s/projects/compiler-rt/lib/lsan" % llvm_objdir64
+        lsan_path = "./projects/compiler-rt/lib/lsan"
         lsan_env = {
             'LSAN_PATH' : lsan_path
                    }
         lsan_env.update(merged_env)
 
-        f.addStep(WarningCountingShellCommand(name="make-check-lsan",
-                                          command=['make', 'check-lsan',
-                                                   WithProperties("-j%s" % jobs)],
-                                          haltOnFailure=False,
-                                          description=["make check-lsan"],
-                                          descriptionDone=["make check-lsan"],
-                                          workdir=llvm_objdir64,
-                                          env=lsan_env))
+#        f.addStep(WarningCountingShellCommand(name="make-check-lsan",
+#                                          command=['make', 'check-lsan',
+#                                                   WithProperties("-j%s" % jobs)],
+#                                          haltOnFailure=False,
+#                                          description=["make check-lsan"],
+#                                          descriptionDone=["make check-lsan"],
+#                                          workdir=llvm_objdir64,
+#                                          env=lsan_env))
 
         # Run the unit test binaries
         f.addStep(WarningCountingShellCommand(name="Lsan-x86_64-Test",
