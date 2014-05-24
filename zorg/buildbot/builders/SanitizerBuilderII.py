@@ -405,13 +405,13 @@ def getSanitizerBuildFactoryII(
 #                                          env=lsan_env))
 
         # Run the unit test binaries
-        f.addStep(WarningCountingShellCommand(name="Lsan-x86_64-Test",
-                                          command=["%s/tests/Lsan-x86_64-Test" % lsan_path,
-                                                   WithProperties("-j%s" % jobs)],
-                                          haltOnFailure=False,
-                                          description=["Lsan-x86_64-Test"],
-                                          descriptionDone=["Lsan-x86_64-Test"],
-                                          workdir=llvm_objdir64,
-                                          env=lsan_env))
+#        f.addStep(WarningCountingShellCommand(name="Lsan-x86_64-Test",
+#                                          command=["%s/tests/Lsan-x86_64-Test" % lsan_path,
+#                                                   WithProperties("-j%s" % jobs)],
+#                                          haltOnFailure=False,
+#                                          description=["Lsan-x86_64-Test"],
+#                                          descriptionDone=["Lsan-x86_64-Test"],
+#                                          workdir=llvm_objdir64,
+#                                          env=lsan_env))
 
     return f
