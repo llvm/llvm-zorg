@@ -350,7 +350,7 @@ def _get_clang_builders():
 
         {'name' : "clang-aarch64-lnt",
          'slavenames' :["aarch64-qemu-lnt"],
-         'builddir' :["clang-aarch64-lnt"],
+         'builddir' :"clang-aarch64-lnt",
          'factory' : LNTBuilder.getLNTFactory(triple='aarch64-linux-gnu',
                                               nt_flags=['--llvm-arch=AArch64', '-j4'],
                                               package_cache="http://webkit.inf.u-szeged.hu/llvm/",
