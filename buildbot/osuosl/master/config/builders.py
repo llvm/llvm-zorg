@@ -348,6 +348,14 @@ def _get_clang_builders():
                                            '--target=hexagon-unknown-elf',
                                            '--enable-targets=hexagon'])},
 
+        {'name' : "clang-aarch64-lnt",
+         'slavenames' :["aarch64-qemu-lnt"],
+         'builddir' :["clang-aarch64-lnt"],
+         'factory' : LNTBuilder.getLNTFactory(triple='aarch64-linux-gnu',
+                                              nt_flags=['--llvm-arch=AArch64', '-j4'],
+                                              package_cache="http://webkit.inf.u-szeged.hu/llvm/",
+                                              jobs=4, use_pty_in_tests=True, clean=False,
+                                              testerName='LNT-TestOnly-AArch64', run_cxx_tests=True)},
         ]
 
 # Offline.
