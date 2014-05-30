@@ -26,7 +26,6 @@ phaseRunners = ['macpro1']
 phase1_slaves=['xserve5']
 phase1_builders = []
 
-#phase1_builders.append(build('clang-x86_64-darwin11-nobootstrap-RA', phase1_slaves))
 phase1_builders.append(build('clang-x86_64-darwin11-nobootstrap-RAincremental', phase1_slaves))
 
 phases.append(
@@ -52,8 +51,6 @@ phase2_builders = []
 
 phase2_builders.append(build('clang-x86_64-darwin11-DA', phase2_slaves))
 phase2_builders.append(build('clang-x86_64-darwin11-RA', phase2_slaves))
-#phase2_builders.append(test('lnt_clang-x86_64-darwin11-nobootstrap-RA_x86_64-O3',
-#                            phase2_slaves))
 
 phases.append(
     { 'number' : 2,
@@ -88,15 +85,6 @@ phase3_builders.append(build('clang-x86_64-darwin11-R', phase3_slaves))
 # Add an lto release build.
 phase3_builders.append(build('clang-x86_64-darwin11-Rlto', phase3_slaves_lto))
 
-# Add a reasonable matrix of nightlies on the final reference compiler.
-# for arch in ('i386', 'x86_64'):
-#     for flags in (['-O0','-g'],
-#                   ['-Os','-g'],
-#                   ['-O3']):
-#         phase3_builders.append(
-#             test('lnt_clang-x86_64-darwin11-RA_%s%s' % (arch,
-#                                                                ''.join(flags)),
-#                         phase3_slaves))
 phases.append(
     { 'number' : 3,
       'name' : 'tree health',
@@ -117,20 +105,7 @@ The third phase is targeted to react within at most 1 to 2 hours.""" })
 phase4_slaves = ['xserve4']
 phase4_builders = []
 
-# Test the compilers produced in phase 3.
-#phase4_builders.append(test('lnt_clang-i386-darwin11-RA_i386-O3', phase4_slaves))
-#phase4_builders.append(test('lnt_clang-x86_64-darwin11-R_i386-O0', phase4_slaves))
-#phase4_builders.append(test('lnt_clang-x86_64-darwin11-RA_x86_64-Os', phase4_slaves))
-#phase4_builders.append(test('lnt_clang-i386-darwin11-RA_i386-g', phase4_slaves))
-
-# Test the -DA compiler produced in phase 2. We delay this
-# to phase 4 because testing a -DA compiler is *very*
-# slow.
-#phase4_builders.append(test('lnt_clang-x86_64-darwin11-DA_x86_64-O3', phase4_slaves))
-
-#phase4_builders.append(experimental('lldb_clang-x86_64-darwin12-RA', ['lab-mini-02']))
 phase4_builders.append(test('libcxx_clang-x86_64-darwin11-RA', phase4_slaves))
-#phase4_builders.append(test('libcxx_clang-x86_64-darwin12-RA', ['lab-mini-02']))
 
 phases.append(
     { 'number' : 4,
