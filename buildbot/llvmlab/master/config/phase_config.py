@@ -20,7 +20,7 @@ phaseRunners = ['macpro1']
 # if any darwin11 slaves stop working, remember to fix the authorization settings
 # so that gdb will work properly by adding to group procmod with:
 # sudo dscl localhost -append /Local/Default/Groups/procmod GroupMembership [username]
-# also make sure the slave is runninf with an effective group of procmod in the 
+# also make sure the slave is runninf with an effective group of procmod in the
 # LauchDaemon plist
 
 phase1_slaves=['xserve5']
@@ -140,4 +140,3 @@ phases.append(
       'description' : """\
 The fourth and final phase is designed to validate that the tree is in a good
 enough state for a general release."""})
-
