@@ -73,17 +73,16 @@ The second phase is targeted to run on most commits and to react within at most
 # Phase 3
 
 phase3_slaves = ['xserve2','xserve4']
-phase3_slaves_lto = ['xserve3']
 phase3_builders = []
+
+# Run the libc++ tests.
+phase3_builders.append(test('libcxx_clang-x86_64-darwin11-RA', phase3_slaves))
 
 # Add an i386 build.
 phase3_builders.append(build('clang-i386-darwin11-RA', phase3_slaves))
 
 # Add a release (no asserts) build.
 phase3_builders.append(build('clang-x86_64-darwin11-R', phase3_slaves))
-
-# Add an lto release build.
-phase3_builders.append(build('clang-x86_64-darwin11-Rlto', phase3_slaves_lto))
 
 phases.append(
     { 'number' : 3,
@@ -102,10 +101,11 @@ The third phase is targeted to react within at most 1 to 2 hours.""" })
 
 # Phase 4
 
-phase4_slaves = ['xserve4']
+phase4_slaves = ['xserve3']
 phase4_builders = []
 
-phase4_builders.append(test('libcxx_clang-x86_64-darwin11-RA', phase4_slaves))
+# Add an lto release build.
+phase4_builders.append(build('clang-x86_64-darwin11-Rlto', phase4_slaves))
 
 phases.append(
     { 'number' : 4,
