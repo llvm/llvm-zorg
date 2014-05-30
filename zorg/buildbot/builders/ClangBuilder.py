@@ -651,7 +651,7 @@ from zorg.buildbot.builders.Util import _did_last_build_fail
 from buildbot.steps.source.svn import SVN as HostSVN
 
 def phasedClang(config_options, is_bootstrap=True, use_lto=False,
-                incremental=False, use_cxx11=False):
+                incremental=False):
     # Create an instance of the Builder.
     f = buildbot.process.factory.BuildFactory()
     # Determine the build directory.
@@ -820,9 +820,6 @@ def phasedClang(config_options, is_bootstrap=True, use_lto=False,
         configure_args.append(
           '--with-extra-options=-flto -gline-tables-only')
     
-    if use_cxx11:
-        configure_args.extend(['--enable-cxx11', '--enable-libcpp'])
-
     # Configure the LLVM build.
     if incremental:
         # *NOTE* This is a temporary work around. I am eventually going to just
