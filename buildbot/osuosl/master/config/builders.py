@@ -568,11 +568,11 @@ def _get_lldb_builders():
 # LLD builders.
 def _get_lld_builders():
     return [
-#        {'name': "lld-x86_64-darwin11",
-#         'slavenames' :["as-bldslv11"],
-#         'builddir':"lld-x86_64-darwin11",
-#         'factory': LLDBuilder.getLLDBuildFactory(clean=False),
-#         'category'   : 'lld'},
+        {'name': "lld-x86_64-darwin13",
+         'slavenames' :["as-bldslv9"],
+         'builddir':"lld-x86_64-darwin13",
+         'factory': LLDBuilder.getLLDBuildFactory(),
+         'category'   : 'lld'},
 
         {'name': "lld-x86_64-win7",
          'slavenames' :["as-bldslv4"],
@@ -584,6 +584,7 @@ def _get_lld_builders():
          'slavenames' :["as-bldslv5"],
          'builddir':"lld-x86_64-freeBSD",
          'factory': LLDBuilder.getLLDBuildFactory(jobs=32,
+                                                  extra_configure_args=['-DCMAKE_EXE_LINKER_FLAGS=-lcxxrt'],
                                                   env={'CXXFLAGS' : "-std=c++11 -stdlib=libc++"}),
          'category'   : 'lld'},
 

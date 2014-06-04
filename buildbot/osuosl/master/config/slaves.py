@@ -30,6 +30,9 @@ def get_build_slaves():
         # FreeBSD 8.2 X86_64
         create_slave("as-bldslv8", properties={'jobs' : 2}, max_builds=1),
 
+        # Mac Pro 2.7 GHz 12-Core Intel Xeon E5, Maverick 10.9.2
+        create_slave("as-bldslv9", properties={'jobs' : 16}, max_builds=4),
+
         # Chromebook Cortex-A15 slaves
         create_slave("linaro-chrome-01", properties={'jobs' : 2}, max_builds=1),
         create_slave("linaro-chrome-02", properties={'jobs' : 2}, max_builds=1),

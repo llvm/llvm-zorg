@@ -9,6 +9,7 @@ from buildbot.process.properties import WithProperties
 def getLLDBuildFactory(
            clean = True,
            jobs  = "%(jobs)s",
+           extra_configure_args=[],
            env   = {}):
 
     # Prepare environmental variables. Set here all env we want everywhere.
@@ -60,10 +61,8 @@ def getLLDBuildFactory(
     cmakeCommand = [
         "cmake",
         "-DCMAKE_BUILD_TYPE=Release",
-        "-DLLVM_ENABLE_CXX11=ON",
-        "-DLLVM_ENABLE_WERROR=ON",
-        "-DCMAKE_EXE_LINKER_FLAGS=-lcxxrt",
-        "../%s" % llvm_srcdir]
+        "-DLLVM_ENABLE_WERROR=ON"] + extra_configure_args + ["../%s" % llvm_srcdir]
+
     # Note: ShellCommand does not pass the params with special symbols right.
     # The " ".join is a workaround for this bug.
     f.addStep(ShellCommand(name="cmake-configure",
