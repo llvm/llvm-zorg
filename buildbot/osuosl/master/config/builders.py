@@ -245,7 +245,6 @@ def _get_clang_builders():
          'builddir':"clang-native-arm-lnt",
          'factory' : LNTBuilder.getLNTFactory(triple='armv7l-unknown-linux-gnueabihf',
                                               nt_flags=['--cflag', '-mcpu=cortex-a15', '-j2'],
-                                              submitURL='http://llvm.org/perf/submitRun',
                                               jobs=2, use_pty_in_tests=True, clean=False,
                                               testerName='LNT-TestOnly-O3', run_cxx_tests=True)},
 
