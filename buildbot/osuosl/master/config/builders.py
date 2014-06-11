@@ -576,7 +576,7 @@ def _get_lld_builders():
         {'name': "lld-x86_64-win7",
          'slavenames' :["as-bldslv4"],
          'builddir':"lld-x86_64-win7",
-         'factory': LLDBuilder.getLLDWinBuildFactory(clean=False),
+         'factory': LLDBuilder.getLLDWinBuildFactory(),
          'category'   : 'lld'},
 
         {'name': "lld-x86_64-freeBSD",
