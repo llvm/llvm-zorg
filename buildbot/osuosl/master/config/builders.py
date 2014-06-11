@@ -517,7 +517,7 @@ def _get_polly_builders():
          'slavenames':["pollyperf14"],
          'builddir':"pollyperf-O3-polly-detect",
          'factory': PollyBuilder.getPollyLNTFactory(triple="x86_64-pc-linux-gnu",
-                                                    nt_flags=['--multisample=10', '--mllvm=-polly', '--mllvm=-polly-code-generator=none', '--mllvm=-polly-optimizer=none'],
+                                                    nt_flags=['--multisample=10', '--mllvm=-polly', '--mllvm=-polly-code-generator=none', '--mllvm=-polly-optimizer=none', '--mllvm=-polly-run-dce=false'],
                                                     reportBuildslave=False,
                                                     package_cache="http://parkas1.inria.fr/packages",
                                                     submitURL='http://llvm.org/perf/submitRun',
