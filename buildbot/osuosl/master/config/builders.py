@@ -307,9 +307,9 @@ def _get_clang_builders():
                                                                xfails=clang_x86_64_freeBSD9_xfails)},
 
         # Clang cross builders.
-        {'name' : "clang-x86_64-darwin11-cross-mingw32",
+        {'name' : "clang-x86_64-darwin13-cross-mingw32",
          'slavenames' :["as-bldslv9"],
-         'builddir' :"clang-x86_64-darwin11-cross-mingw32",
+         'builddir' :"clang-x86_64-darwin13-cross-mingw32",
          'factory' : ClangBuilder.getClangBuildFactory(outOfDir=True, use_pty_in_tests=True,
                                                        test=False,
                                                        env = { 'CC' : 'clang',
@@ -319,9 +319,9 @@ def _get_clang_builders():
                                                                              '--host=x86_64-apple-darwin13',
                                                                              '--target=i686-pc-mingw32'])},
 
-        {'name' : "clang-x86_64-darwin11-cross-arm",
+        {'name' : "clang-x86_64-darwin13-cross-arm",
          'slavenames' :["as-bldslv9"],
-         'builddir' :"clang-x86_64-darwin11-cross-arm",
+         'builddir' :"clang-x86_64-darwin13-cross-arm",
          'factory' : ClangBuilder.getClangBuildFactory(outOfDir=True, use_pty_in_tests=True,
                                                        env = { 'CC' : 'clang',
                                                                'CXX' : 'clang++',
