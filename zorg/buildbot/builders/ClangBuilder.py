@@ -174,8 +174,7 @@ def getClangBuildFactory(
     base_configure_args += extra_configure_args
     if triple:
         base_configure_args += ['--build=%s' % triple,
-                                '--host=%s' % triple,
-                                '--enable-targets=x86,x86_64,arm,arm64,aarch64']
+                                '--host=%s' % triple]
     args = base_configure_args + [WithProperties("--prefix=%%(builddir)s/%s" % llvm_1_installdir)]
     args += builders_util.getConfigArgs(stage1_config)
     if not clean:
@@ -785,7 +784,8 @@ def phasedClang(config_options, is_bootstrap=True, use_lto=False,
     configure_args = ['../llvm/configure']
     configure_args.extend(config_options)
     configure_args.extend(['--disable-bindings',
-                           '--enable-keep-symbols'])
+                           '--enable-keep-symbols',
+                           '--enable-targets=x86,x86_64,arm,arm64,aarch64'])
     configure_args.append(
         WithProperties('--prefix=%(builddir)s/clang-install'))    
     
