@@ -174,7 +174,8 @@ def getClangBuildFactory(
     base_configure_args += extra_configure_args
     if triple:
         base_configure_args += ['--build=%s' % triple,
-                                '--host=%s' % triple]
+                                '--host=%s' % triple,
+                                '--enable-targets=x86,x86_64,arm,arm64,aarch64']
     args = base_configure_args + [WithProperties("--prefix=%%(builddir)s/%s" % llvm_1_installdir)]
     args += builders_util.getConfigArgs(stage1_config)
     if not clean:
