@@ -616,6 +616,12 @@ def _get_sanitizer_builders():
                                           clean=True,
                                           sanitizers=['sanitizer','lsan','msan','tsan','ubsan','dfsan'],
                                           common_cmake_options='-DCMAKE_EXE_LINKER_FLAGS=-lcxxrt')},
+
+          {'name': "sanitizer-ppc64-linux1",
+           'slavenames' :["sanitizer-ppc64-1"],
+           'builddir': "sanitizer-ppc64-1",
+           'factory': SanitizerBuilder.getSanitizerBuildFactory()},
+
           ]
 
 def _get_openmp_builders():

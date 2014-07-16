@@ -104,6 +104,8 @@ def get_build_slaves():
         # POWER7 PowerPC (powerpc64), Fedora16.
         create_slave("coho", properties={'jobs': 4}, max_builds=2),
 
+        create_slave("sanitizer-ppc64-1", properties={'jobs': 4}, max_builds=1),
+
         # Debian 86_64, 2 x 6-core Opteron 2.6 GHz
         create_slave("osu8", properties={'jobs' : 6}, max_builds=2),
 
