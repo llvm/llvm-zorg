@@ -132,10 +132,10 @@ clang_x86_64_linux_xfails = [
     'LLC_compile.SingleSource/UnitTests/Vector/SSE/sse.stepfft',
 ]
 
-# TODO: The following tests marked as expected failures on FreeBSD 9 temporarily.
+# TODO: The following tests marked as expected failures on FreeBSD temporarily.
 # Remove after http://llvm.org/bugs/show_bug.cgi?id=18089
 # and http://llvm.org/bugs/show_bug.cgi?id=18056 will be fixed and closed.
-clang_x86_64_freeBSD9_xfails = [
+clang_x86_64_freebsd_xfails = [
     'LLC.MultiSource/Benchmarks/SciMark2-C/scimark2',
     'LLC_compile.MultiSource/Benchmarks/SciMark2-C/scimark2',
     'LLC.MultiSource/Benchmarks/nbench/nbench',
@@ -294,17 +294,17 @@ def _get_clang_builders():
                                                                test=False,
                                                                xfails=clang_x86_64_linux_xfails)},
 
-         {'name': "clang-mergefunc-x86_64-freeBSD9.2",
+         {'name': "clang-mergefunc-x86_64-freebsd",
           'slavenames':["as-bldslv5"],
-         'builddir':"x86_64-freeBSD9.2",
-         'factory' : NightlytestBuilder.getFastNightlyTestBuildFactory(triple='x86_64-unknown-freebsd9.2',
+         'builddir':"clang-mergefunc-x86_64-freebsd",
+         'factory' : NightlytestBuilder.getFastNightlyTestBuildFactory(triple='x86_64-unknown-freebsd10.0',
                                                                stage1_config='Release+Asserts',
                                                                merge_functions=True,
                                                                make='gmake',
                                                                test=False,
-                                                               env={'CC'  : '/usr/local/bin/gcc47',
-                                                                    'CXX' : '/usr/local/bin/g++47'},
-                                                               xfails=clang_x86_64_freeBSD9_xfails)},
+                                                               env={'CC'  : '/usr/local/bin/gcc49',
+                                                                    'CXX' : '/usr/local/bin/g++49'},
+                                                               xfails=clang_x86_64_freebsd_xfails)},
 
         # Clang cross builders.
         {'name' : "clang-x86_64-darwin13-cross-mingw32",
@@ -550,6 +550,10 @@ def _get_lldb_builders():
          'builddir': "build.lldb-x86_64-darwin12",
          'factory': LLDBBuilder.getLLDBxcodebuildFactory()},
 
+        {'name': "lldb-x86_64-freebsd",
+         'slavenames': ["as-bldslv5"],
+         'builddir': "lldb-x86_64-freebsd",
+         'factory': LLDBBuilder.getLLDBxcodebuildFactory()},
        ]
 
 # Offline.
@@ -579,9 +583,9 @@ def _get_lld_builders():
          'factory': LLDBuilder.getLLDWinBuildFactory(),
          'category'   : 'lld'},
 
-        {'name': "lld-x86_64-freeBSD",
+        {'name': "lld-x86_64-freebsd",
          'slavenames' :["as-bldslv5"],
-         'builddir':"lld-x86_64-freeBSD",
+         'builddir':"lld-x86_64-freebsd",
          'factory': LLDBuilder.getLLDBuildFactory(jobs=32,
                                                   extra_configure_args=['-DCMAKE_EXE_LINKER_FLAGS=-lcxxrt'],
                                                   env={'CXXFLAGS' : "-std=c++11 -stdlib=libc++"}),
@@ -609,9 +613,9 @@ def _get_sanitizer_builders():
           #                                   buildWithSanitizerOptions=['-fsanitize=address'],
           #                                   env={'PATH':'/usr/local/bin:/usr/bin:/bin'})},
 
-          {'name': "sanitizer_x86_64-freeBSD9.2",
+          {'name': "sanitizer_x86_64-freebsd",
            'slavenames':["as-bldslv5"],
-           'builddir':"sanitizer_x86_64-freeBSD9.2",
+           'builddir':"sanitizer_x86_64-freebsd",
            'factory' : SanitizerBuilderII.getSanitizerBuildFactoryII(
                                           clean=True,
                                           sanitizers=['sanitizer','lsan','msan','tsan','ubsan','dfsan'],
