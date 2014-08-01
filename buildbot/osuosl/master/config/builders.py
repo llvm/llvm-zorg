@@ -554,7 +554,7 @@ def _get_lldb_builders():
          'slavenames': ["as-bldslv5"],
          'builddir': "lldb-x86_64-freebsd",
          'factory': LLDBBuilder.getLLDBBuildFactory(triple=None, # use default
-                                                    extra_configure_args=['--enable-cxx11', '--enable-optimized', '--enable-assertions']},
+                                                    extra_configure_args=['--enable-cxx11', '--enable-optimized', '--enable-assertions'])},
        ]
 
 # Offline.
