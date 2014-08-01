@@ -58,10 +58,14 @@ def getLLDBuildFactory(
                                haltOnFailure=False,
                                description=["create build dir"],
                                workdir="."))
-    cmakeCommand = [
-        "cmake",
-        "-DCMAKE_BUILD_TYPE=Release",
-        "-DLLVM_ENABLE_WERROR=ON"] + extra_configure_args + ["../%s" % llvm_srcdir]
+
+    cmakeCommand = ["cmake"]
+    # Reconsile configure args with the defaults we want.
+    if not any(a.startswith('-DCMAKE_BUILD_TYPE=')   for a in extra_configure_args):
+        cmakeCommand.append('-DCMAKE_BUILD_TYPE=Release')
+    if not any(a.startswith('-DLLVM_ENABLE_WERROR=') for a in extra_configure_args):
+        cmakeCommand.append('-DLLVM_ENABLE_WERROR=ON')
+    cmakeCommand += extra_configure_args + ["../%s" % llvm_srcdir]
 
     # Note: ShellCommand does not pass the params with special symbols right.
     # The " ".join is a workaround for this bug.

@@ -554,6 +554,7 @@ def _get_lldb_builders():
          'slavenames': ["as-bldslv5"],
          'builddir': "lldb-x86_64-freebsd",
          'factory': LLDBBuilder.getLLDBBuildFactory(triple=None, # use default
+                                                    make='gmake',
                                                     extra_configure_args=['--enable-cxx11', '--enable-optimized', '--enable-assertions'])},
        ]
 
@@ -588,7 +589,9 @@ def _get_lld_builders():
          'slavenames' :["as-bldslv5"],
          'builddir':"lld-x86_64-freebsd",
          'factory': LLDBuilder.getLLDBuildFactory(jobs=32,
-                                                  extra_configure_args=['-DCMAKE_EXE_LINKER_FLAGS=-lcxxrt'],
+                                                  extra_configure_args=[
+                                                      '-DCMAKE_EXE_LINKER_FLAGS=-lcxxrt',
+                                                      '-DLLVM_ENABLE_WERROR=OFF'],
                                                   env={'CXXFLAGS' : "-std=c++11 -stdlib=libc++"}),
          'category'   : 'lld'},
 

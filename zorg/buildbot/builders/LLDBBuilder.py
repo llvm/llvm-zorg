@@ -8,8 +8,16 @@ from buildbot.steps.shell import ShellCommand, WarningCountingShellCommand
 from buildbot.process.properties import WithProperties
 from zorg.buildbot.commands.LitTestCommand import LitTestCommand
 
-def getLLDBBuildFactory(triple, outOfDir=False, useTwoStage=False, jobs='%(jobs)s',
-                        extra_configure_args=[], env={}, *args, **kwargs):
+def getLLDBBuildFactory(
+            triple,
+            outOfDir=False,
+            useTwoStage=False,
+            make='make',
+            jobs='%(jobs)s',
+            extra_configure_args=[],
+            env={},
+            *args,
+            **kwargs):
 
     inDir = not outOfDir and not useTwoStage
     if inDir:
@@ -82,8 +90,7 @@ def getLLDBBuildFactory(triple, outOfDir=False, useTwoStage=False, jobs='%(jobs)
 
     f.addStep(WarningCountingShellCommand(name="compile",
                                           command=['nice', '-n', '10',
-                                          'make', WithProperties("-j%s" % jobs)
-                                          ],
+                                                   make, WithProperties("-j%s" % jobs)],
                                           env=env,
                                           haltOnFailure=True,
                                           workdir=llvm_objdir))
@@ -91,7 +98,7 @@ def getLLDBBuildFactory(triple, outOfDir=False, useTwoStage=False, jobs='%(jobs)
     # Test.
     f.addStep(LitTestCommand(name="test lldb",
                              command=['nice', '-n', '10',
-                                      'make'],
+                                      make],
                              description="test lldb",
                              env=env,
                              workdir='%s/tools/lldb/test' % llvm_objdir))
