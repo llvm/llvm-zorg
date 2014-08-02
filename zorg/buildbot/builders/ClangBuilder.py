@@ -785,7 +785,7 @@ def phasedClang(config_options, is_bootstrap=True, use_lto=False,
     configure_args.extend(config_options)
     configure_args.extend(['--disable-bindings',
                            '--enable-keep-symbols',
-                           '--enable-targets=x86,x86_64,arm,arm64,aarch64'])
+                           '--enable-targets=x86,x86_64,arm,aarch64'])
     configure_args.append(
         WithProperties('--prefix=%(builddir)s/clang-install'))    
     
