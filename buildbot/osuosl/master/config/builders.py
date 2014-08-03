@@ -151,7 +151,7 @@ clang_x86_64_freebsd_xfails = [
 def _get_clang_fast_builders():
     return [
         {'name': "clang-x86_64-debian-fast",
-         'slavenames':["gribozavr1"],
+         'slavenames':["gribozavr4"],
          'builddir':"clang-x86_64-debian-fast",
          'factory': ClangBuilder.getClangBuildFactory(
                     env={'PATH':'/home/llvmbb/bin/clang-latest/bin:/home/llvmbb/bin:/usr/local/bin:/usr/local/bin:/usr/bin:/bin',
@@ -161,7 +161,7 @@ def _get_clang_fast_builders():
                     outOfDir=True)},
 
         {'name': "llvm-clang-lld-x86_64-debian-fast",
-         'slavenames':["gribozavr1"],
+         'slavenames':["gribozavr4"],
          'builddir':"llvm-clang-lld-x86_64-debian-fast",
          'factory': ClangAndLLDBuilder.getClangAndLLDBuildFactory(
                     env={'PATH':'/home/llvmbb/bin/clang-latest/bin:/home/llvmbb/bin:/usr/local/bin:/usr/local/bin:/usr/bin:/bin',
