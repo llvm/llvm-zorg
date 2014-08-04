@@ -140,7 +140,10 @@ class LitTestCommand(Test):
   def describe(self, done=False):
     description = Test.describe(self, done)
     for name, count in self.logObserver.resultCounts.iteritems():
-        description.append('{0} {1}'.format(count, self.resultNames[name]))
+        if name in self.resultNames:
+            description.append('{0} {1}'.format(count, self.resultNames[name]))
+        else:
+            description.append('Unexpected test result output ' + name)
     return description
 
 ##
