@@ -661,7 +661,8 @@ def _get_libcxx_builders():
         {'name': 'libcxx-libcxxabi-x86_64-linux-debian',
          'slavenames': ['gribozavr4'],
          'builddir': 'libcxx-libcxxabi-x86_64-linux-debian',
-         'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(),
+         'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
+             env={'CC': 'clang', 'CXX': 'clang++'}),
          'category': 'libcxx'},
     ]
 

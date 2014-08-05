@@ -18,8 +18,10 @@ reload(phased_builder_utils)
 
 def getLibcxxWholeTree(f, src_root):
     llvm_path = src_root
-    libcxx_path = os.path.join(llvm_path, 'projects/libcxx')
-    libcxxabi_path = os.path.join(llvm_path, 'projects/libcxxabi')
+    libcxx_path = properties.WithProperties(
+        '%(builddir)s/llvm/projects/libcxx')
+    libcxxabi_path = properties.WithProperties(
+        '%(builddir)s/llvm/projects/libcxxabi')
 
     f = phased_builder_utils.SVNCleanupStep(f, llvm_path)
     f.addStep(SVN(name='svn-llvm',
@@ -52,8 +54,8 @@ def getLibcxxAndAbiBuilder(f=None, env={}):
         description="set build dir",
         workdir="."))
 
-    src_root = os.path.join(properties.Property('builddir'), 'llvm')
-    build_path = os.path.join(properties.Property('builddir'), 'build')
+    src_root = properties.WithProperties('%(builddir)s/llvm')
+    build_path = properties.WithProperties('%(builddir)s/build')
 
     f = getLibcxxWholeTree(f, src_root)
 
