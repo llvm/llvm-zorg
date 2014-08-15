@@ -140,14 +140,10 @@ clang_x86_64_linux_xfails = [
 # Remove after http://llvm.org/bugs/show_bug.cgi?id=18089
 # and http://llvm.org/bugs/show_bug.cgi?id=18056 will be fixed and closed.
 clang_x86_64_freebsd_xfails = [
-    'LLC.MultiSource/Benchmarks/SciMark2-C/scimark2',
-    'LLC_compile.MultiSource/Benchmarks/SciMark2-C/scimark2',
     'LLC.MultiSource/Benchmarks/nbench/nbench',
     'LLC_compile.MultiSource/Benchmarks/nbench/nbench',
-    'LLC.SingleSource/Benchmarks/Misc-C++/Large/sphereflake',
-    'LLC_compile.SingleSource/Benchmarks/Misc-C++/Large/sphereflake',
-    'LLC.SingleSource/UnitTests/ms_struct_pack_layout',
-    'LLC_compile.SingleSource/UnitTests/ms_struct_pack_layout',
+    'LLC.SingleSource/Benchmarks/Misc/mandel',
+    'LLC_compile.SingleSource/Benchmarks/Misc/mandel',
 
 ]
 
@@ -306,8 +302,6 @@ def _get_clang_builders():
                                                                merge_functions=True,
                                                                make='gmake',
                                                                test=False,
-                                                               env={'CC'  : '/usr/local/bin/gcc49',
-                                                                    'CXX' : '/usr/local/bin/g++49'},
                                                                xfails=clang_x86_64_freebsd_xfails)},
 
         # Clang cross builders.
