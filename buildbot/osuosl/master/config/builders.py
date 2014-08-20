@@ -46,6 +46,10 @@ from zorg.buildbot.builders import LibcxxAndAbiBuilder
 reload(LibcxxAndAbiBuilder)
 from zorg.buildbot.builders import LibcxxAndAbiBuilder
 
+from zorg.buildbot.builders import SphinxDocsBuilder
+reload(SphinxDocsBuilder)
+from zorg.buildbot.builders import SphinxDocsBuilder
+
 # Plain LLVM builders.
 def _get_llvm_builders():
     return [
@@ -683,6 +687,32 @@ def _get_experimental_builders():
          'category' : 'clang'},
         ]
 
+# Builders responsible building Sphinix documentation
+def _get_documentation_builders():
+    return [
+             {
+               'name':"llvm-sphinx-docs",
+               'slavenames':["gribozavr4"],
+               'builddir':"llvm-sphinx-docs",
+               'factory': SphinxDocsBuilder.getSphinxDocsBuildFactory(llvm_html=True, llvm_man=True),
+               'category' : 'llvm'
+             },
+             {
+               'name':"clang-sphinx-docs",
+               'slavenames':["gribozavr4"],
+               'builddir':"clang-sphinx-docs",
+               'factory': SphinxDocsBuilder.getSphinxDocsBuildFactory(clang_html=True),
+               'category' : 'clang'
+             },
+             {
+               'name':"lld-sphinx-docs",
+               'slavenames':["gribozavr4"],
+               'builddir':"lld-sphinx-docs",
+               'factory': SphinxDocsBuilder.getSphinxDocsBuildFactory(lld_html=True),
+               'category' : 'lld'
+             },
+           ]
+
 def get_builders():
     for b in _get_llvm_builders():
         b['category'] = 'llvm'
@@ -721,6 +751,9 @@ def get_builders():
         yield b
 
     for b in _get_experimental_builders():
+        yield b
+
+    for b in _get_documentation_builders():
         yield b
 
 # Random other unused builders...
