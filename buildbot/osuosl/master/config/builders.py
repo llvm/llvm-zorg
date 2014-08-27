@@ -662,6 +662,13 @@ def _get_libcxx_builders():
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
              env={'CC': 'clang', 'CXX': 'clang++'}),
          'category': 'libcxx'},
+
+        {'name': 'libcxx-libcxxabi-x86_64-linux-el6',
+         'slavenames': ['ericwf-buildslave'],
+         'builddir' : 'libcxx-libcxxabi-x86_64-linux-el6',
+         'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
+            env={'CC': clang, 'CXX': 'clang++'}),
+        'category': 'libcxx'},
     ]
 
 

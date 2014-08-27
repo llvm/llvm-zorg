@@ -160,6 +160,9 @@ def get_build_slaves():
         # zEnterprise 196 (s390x), SLES 11 SP2
         create_slave("systemz-1", properties={'jobs': 4}, max_builds=1),
 
+        # CentOS 6 x86_64, Intel(R) Core(TM) i5-3570S CPU @ 3.10GHz
+        create_slave("ericwf-buildslave", properties={'jobs': 4}, max_builds=1),
+
         # Defunct.
 
 #        # GCC Compile Farm Slaves, see http://gcc.gnu.org/wiki/CompileFarm
