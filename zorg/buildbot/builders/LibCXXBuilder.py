@@ -86,7 +86,7 @@ def getLibCXXBuilder(f=None, source_path=None,
             name='test.libcxx.system',
             command=[
                 properties.WithProperties('%(builddir)s/lit.venv/bin/lit'),
-                '-v',
+                '-v', '--show-xfail', '--show-unsupported',
                 properties.WithProperties(
                     '--param=cxx_under_test=%(cxx_path)s'),
                 '--param=use_system_lib=true',
@@ -97,7 +97,7 @@ def getLibCXXBuilder(f=None, source_path=None,
             name='test.libcxx.new',
             command=[
                 properties.WithProperties('%(builddir)s/lit.venv/bin/lit'),
-                '-v',
+                '-v', '--show-xfail', '--show-unsupported',
                 properties.WithProperties(
                     '--param=cxx_under_test=%(cxx_path)s'),
                 '--param=use_system_lib=false',
