@@ -389,6 +389,172 @@ def getClangBuildFactory(
 
     return f
 
+# CMake Linux builds
+def getClangCMakeBuildFactory(
+            clean=True,
+            test=True,
+            cmake='cmake',
+            jobs=None,
+
+            # Multi-stage compilation
+            useTwoStage=False,
+            testStage1=True,
+            stage1_config='Release',
+            stage2_config='Release',
+
+            # Environmental variables for all steps.
+            env={},
+            extra_cmake_args=[],
+
+            # Extra repositories
+            checkout_clang_tools_extra=True,
+            checkout_compiler_rt=True):
+
+    ############# PREPARING
+    f = buildbot.process.factory.BuildFactory()
+
+    # We *must* checkout at least Clang+LLVM
+    f.addStep(SVN(name='svn-llvm',
+                  mode='update', baseURL='http://llvm.org/svn/llvm-project/llvm/',
+                  defaultBranch='trunk',
+                  workdir='llvm'))
+    f.addStep(SVN(name='svn-clang',
+                  mode='update', baseURL='http://llvm.org/svn/llvm-project/cfe/',
+                  defaultBranch='trunk',
+                  workdir='llvm/tools/clang'))
+
+    # Extra stuff that will be built/tested
+    if checkout_clang_tools_extra:
+        f.addStep(SVN(name='svn-clang-tools-extra',
+                      mode='update', baseURL='http://llvm.org/svn/llvm-project/clang-tools-extra/',
+                      defaultBranch='trunk',
+                      workdir='llvm/tools/clang/tools/extra'))
+    if checkout_compiler_rt:
+        f.addStep(SVN(name='svn-compiler-rt',
+                      mode='update', baseURL='http://llvm.org/svn/llvm-project/compiler-rt/',
+                      defaultBranch='trunk',
+                      workdir='llvm/projects/compiler-rt'))
+
+    # If jobs not defined, Ninja will choose a suitable value
+    jobs_cmd=[]
+    lit_args="'-v"
+    if jobs is not None:
+        jobs_cmd=["-j"+str(jobs)]
+        lit_args+=" -j"+str(jobs)+"'"
+    else:
+        lit_args+="'"
+    ninja_cmd=['ninja'] + jobs_cmd
+    ninja_install_cmd=['ninja', 'install'] + jobs_cmd
+    ninja_check_cmd=['ninja', 'check-all'] + jobs_cmd
+
+    # Global configurations
+    stage1_build='stage1'
+    stage1_install='stage1.install'
+    stage2_build='stage2'
+
+    ############# CLEANING
+    if clean:
+        f.addStep(ShellCommand(name='clean stage 1',
+                               command=['rm','-rf',stage1_build],
+                               warnOnFailure=True,
+                               description='cleaning stage 1',
+                               descriptionDone='clean',
+                               workdir='.',
+                               env=env))
+    else:
+        f.addStep(SetProperty(name="check ninja files 1",
+                              workdir=stage1_build,
+                              command=["sh", "-c",
+                                       "test -e build.ninja && echo OK || echo Missing"],
+                              flunkOnFailure=False,
+                              property="exists_ninja_1"))
+
+
+    ############# STAGE 1
+    f.addStep(ShellCommand(name='cmake stage 1',
+                           command=[cmake, "-G", "Ninja", "../llvm",
+                                    "-DCMAKE_BUILD_TYPE="+stage1_config,
+                                    "-DLLVM_ENABLE_ASSERTIONS=True",
+                                    "-DLLVM_LIT_ARGS="+lit_args,
+                                    "-DCMAKE_INSTALL_PREFIX=../"+stage1_install]
+                                    + extra_cmake_args,
+                           haltOnFailure=True,
+                           description='cmake stage 1',
+                           workdir=stage1_build,
+                           doStepIf=lambda step: step.build.getProperty("exists_ninja_1") != "OK",
+                           env=env))
+
+    f.addStep(WarningCountingShellCommand(name='build stage 1',
+                                          command=ninja_cmd,
+                                          haltOnFailure=True,
+                                          description='ninja all',
+                                          workdir=stage1_build,
+                                          env=env))
+
+    if test and testStage1:
+        f.addStep(ShellCommand(name='check stage 1',
+                               command=ninja_check_cmd,
+                               description='ninja check-all',
+                               workdir=stage1_build,
+                               env=env))
+
+    if not useTwoStage:
+        return f
+
+    ############# STAGE 2
+    f.addStep(ShellCommand(name='install stage 1',
+                           command=ninja_install_cmd,
+                           description='ninja install',
+                           workdir=stage1_build,
+                           env=env))
+
+    if clean:
+        f.addStep(ShellCommand(name='clean stage 2',
+                               command=['rm','-rf',stage2_build],
+                               warnOnFailure=True,
+                               description='cleaning stage 2',
+                               descriptionDone='clean',
+                               workdir='.',
+                               env=env))
+    else:
+        f.addStep(SetProperty(name="check ninja files 2",
+                              workdir=stage2_build,
+                              command=["sh", "-c",
+                                       "test -e build.ninja && echo OK || echo Missing"],
+                              flunkOnFailure=False,
+                              property="exists_ninja_2"))
+
+ 
+    f.addStep(ShellCommand(name='cmake stage 2',
+                           command=[cmake, "-G", "Ninja", "../llvm",
+                                    "-DCMAKE_BUILD_TYPE="+stage2_config,
+                                    "-DLLVM_ENABLE_ASSERTIONS=True",
+                                    WithProperties("-DCMAKE_C_COMPILER=%(workdir)s/"+stage1_install+"/bin/clang"),
+                                    WithProperties("-DCMAKE_CXX_COMPILER=%(workdir)s/"+stage1_install+"/bin/clang++"),
+                                    "-DLLVM_LIT_ARGS="+lit_args]
+                                    + extra_cmake_args,
+                           haltOnFailure=True,
+                           description='cmake stage 2',
+                           workdir=stage2_build,
+                           doStepIf=lambda step: step.build.getProperty("exists_ninja_2") != "OK",
+                           env=env))
+ 
+    f.addStep(WarningCountingShellCommand(name='build stage 2',
+                                          command=ninja_cmd,
+                                          haltOnFailure=True,
+                                          description='ninja all',
+                                          workdir=stage2_build,
+                                          env=env))
+ 
+    if test:
+        f.addStep(ShellCommand(name='check stage 2',
+                               command=ninja_check_cmd,
+                               description='ninja check-all',
+                               workdir=stage2_build,
+                               env=env))
+
+    return f
+
 def getClangMSVCBuildFactory(update=True, clean=True, vcDrive='c', jobs=1, cmake=r"cmake"):
     f = buildbot.process.factory.BuildFactory()
 
