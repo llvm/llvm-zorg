@@ -667,8 +667,10 @@ def _get_libcxx_builders():
          'slavenames': ['gribozavr4'],
          'builddir': 'libcxx-libcxxabi-singlethreaded-x86_64-linux-debian',
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
-             env={'CC': 'clang', 'CXX': 'clang++',
-                  'CXXFLAGS' : '-D_LIBCPP_HAS_NO_THREADS -DLIBCXXABI_SINGLE_THREADED=1'}),
+             env={'CC': 'clang', 'CXX': 'clang++'},
+             additional_features=set(['libcxxabi-has-no-threads',
+                                      'libcpp-has-no-threads',
+                                      'libcpp-has-no-monotonic-clock'])),
          'category': 'libcxx'},
 
         {'name': 'libcxx-libcxxabi-x86_64-linux-ubuntu',

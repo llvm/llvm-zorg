@@ -42,7 +42,7 @@ def getLibcxxWholeTree(f, src_root):
     return f
 
 
-def getLibcxxAndAbiBuilder(f=None, env={}):
+def getLibcxxAndAbiBuilder(f=None, env={}, additional_features=set()):
     if f is None:
         f = buildbot.process.factory.BuildFactory()
 
@@ -58,6 +58,20 @@ def getLibcxxAndAbiBuilder(f=None, env={}):
     build_path = properties.WithProperties('%(builddir)s/build')
 
     f = getLibcxxWholeTree(f, src_root)
+
+    if 'libcxxabi-has-no-threads' in additional_features:
+        env['CXXFLAGS'] += ' -DLIBCXXABI_HAS_NO_THREADS=1'
+
+    if 'libcpp-has-no-threads' in additional_features:
+        env['CXXFLAGS'] += ' -D_LIBCPP_HAS_NO_THREADS'
+
+    if 'libcpp-has-no-monotonic-clock' in additional_features:
+        env['CXXFLAGS'] += ' -D_LIBCPP_HAS_NO_MONOTONIC_CLOCK'
+
+    litTestArgs = ''
+    if additional_features:
+        litTestArgs = ('--param=additional_features=' +
+                       ','.join(additional_features))
 
     # Nuke/remake build directory and run CMake
     f.addStep(buildbot.steps.shell.ShellCommand(
@@ -83,13 +97,14 @@ def getLibcxxAndAbiBuilder(f=None, env={}):
               haltOnFailure=True, workdir=build_path))
 
     # Test libc++abi
+    lit_flags = properties.WithProperties("LIT_ARGS=%s" % litTestArgs)
     f.addStep(buildbot.steps.shell.ShellCommand(
-        name='test.libcxxabi', command=['make', 'check-libcxxabi'],
+        name='test.libcxxabi', command=['make', lit_flags, 'check-libcxxabi'],
         workdir=build_path))
 
     # Test libc++
     f.addStep(buildbot.steps.shell.ShellCommand(
-        name='test.libcxx', command=['make', 'check-libcxx'],
+        name='test.libcxx', command=['make', lit_flags, 'check-libcxx'],
         workdir=build_path))
 
     return f
