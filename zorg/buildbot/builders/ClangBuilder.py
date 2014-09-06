@@ -492,11 +492,12 @@ def getClangCMakeBuildFactory(
                                           env=env))
 
     if test and testStage1:
-        f.addStep(ShellCommand(name='check stage 1',
-                               command=ninja_check_cmd,
-                               description='ninja check-all',
-                               workdir=stage1_build,
-                               env=env))
+        f.addStep(lit_test_command.LitTestCommand(name='ninja check 1',
+                                   command=ninja_check_cmd,
+                                   description=["checking stage 1"],
+                                   descriptionDone=["stage 1 checked"],
+                                   workdir=stage1_build,
+                                   env=env))
 
     if not useTwoStage:
         return f
@@ -547,11 +548,12 @@ def getClangCMakeBuildFactory(
                                           env=env))
  
     if test:
-        f.addStep(ShellCommand(name='check stage 2',
-                               command=ninja_check_cmd,
-                               description='ninja check-all',
-                               workdir=stage2_build,
-                               env=env))
+        f.addStep(lit_test_command.LitTestCommand(name='ninja check 2',
+                                   command=ninja_check_cmd,
+                                   description=["checking stage 2"],
+                                   descriptionDone=["stage 2 checked"],
+                                   workdir=stage2_build,
+                                   env=env))
 
     return f
 
