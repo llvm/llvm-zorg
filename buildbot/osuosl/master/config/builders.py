@@ -252,6 +252,47 @@ def _get_clang_builders():
                                               jobs=2, use_pty_in_tests=True, clean=False,
                                               testerName='LNT-TestOnly-O3', run_cxx_tests=True)},
 
+        ## Cortex-A15 check-all
+        {'name': "clang-cmake-armv7-a15",
+         'slavenames':["linaro-a15-01"],
+         'builddir':"clang-cmake-armv7-a15",
+         'factory' : ClangBuilder.getClangCMakeBuildFactory(
+                      jobs=4,
+                      clean=False,
+                      checkout_compiler_rt=False,
+                      env={'PATH':'/usr/lib/ccache:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'},
+                      extra_cmake_args=["-DCMAKE_C_FLAGS='-mcpu=cortex-a15 -mfpu=vfpv3'",
+                                        "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a15 -mfpu=vfpv3'",
+                                        "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'"])},
+
+        ## Cortex-A15 check-all self-host
+        {'name': "clang-cmake-armv7-a15-selfhost",
+         'slavenames':["linaro-a15-02"],
+         'builddir':"clang-cmake-armv7-a15-selfhost",
+         'factory' : ClangBuilder.getClangCMakeBuildFactory(
+                      jobs=4,
+                      clean=False,
+                      checkout_compiler_rt=False,
+                      useTwoStage=True,
+                      testStage1=False,
+                      env={'PATH':'/usr/lib/ccache:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'},
+                      extra_cmake_args=["-DCMAKE_C_FLAGS='-mcpu=cortex-a15 -mfpu=vfpv3'",
+                                        "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a15 -mfpu=vfpv3'",
+                                        "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'"])},
+
+        ## Cortex-A15 check-all full (compiler-rt)
+        {'name': "clang-cmake-armv7-a15-full",
+         'slavenames':["linaro-a15-03"],
+         'builddir':"clang-cmake-armv7-a15-full",
+         'factory' : ClangBuilder.getClangCMakeBuildFactory(
+                      jobs=4,
+                      clean=False,
+                      env={'PATH':'/usr/lib/ccache:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'},
+                      extra_cmake_args=["-DCMAKE_C_FLAGS='-mcpu=cortex-a15 -mfpu=vfpv3'",
+                                        "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a15 -mfpu=vfpv3'",
+                                        "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64;X86'"])},
+
+
         {'name': "clang-native-mingw32-win7",
          'slavenames':["as-bldslv7"],
          'builddir':"clang-native-mingw32-win7",
