@@ -60,13 +60,16 @@ def getLibcxxAndAbiBuilder(f=None, env={}, additional_features=set()):
     f = getLibcxxWholeTree(f, src_root)
 
     if 'libcxxabi-has-no-threads' in additional_features:
-        env['CXXFLAGS'] += ' -DLIBCXXABI_HAS_NO_THREADS=1'
+        env['CXXFLAGS'] = (env.get('CXXFLAGS', '') +
+                           ' -DLIBCXXABI_HAS_NO_THREADS=1')
 
     if 'libcpp-has-no-threads' in additional_features:
-        env['CXXFLAGS'] += ' -D_LIBCPP_HAS_NO_THREADS'
+        env['CXXFLAGS'] = (env.get('CXXFLAGS', '') +
+                           ' -D_LIBCPP_HAS_NO_THREADS')
 
     if 'libcpp-has-no-monotonic-clock' in additional_features:
-        env['CXXFLAGS'] += ' -D_LIBCPP_HAS_NO_MONOTONIC_CLOCK'
+        env['CXXFLAGS'] = (env.get('CXXFLAGS', '') +
+                           ' -D_LIBCPP_HAS_NO_MONOTONIC_CLOCK')
 
     litTestArgs = ''
     if additional_features:
