@@ -71,9 +71,9 @@ def getLibcxxAndAbiBuilder(f=None, env={}, additional_features=set()):
         env['CXXFLAGS'] = (env.get('CXXFLAGS', '') +
                            ' -D_LIBCPP_HAS_NO_MONOTONIC_CLOCK')
 
-    litTestArgs = ''
+    litTestArgs = '-sv --show-unsupported --show-xfail'
     if additional_features:
-        litTestArgs = ('--param=additional_features=' +
+        litTestArgs += (' --param=additional_features=' +
                        ','.join(additional_features))
 
     # Nuke/remake build directory and run CMake
@@ -85,8 +85,9 @@ def getLibcxxAndAbiBuilder(f=None, env={}, additional_features=set()):
         haltOnFailure=True, workdir=src_root))
 
     f.addStep(buildbot.steps.shell.ShellCommand(
-        name='cmake', command=['cmake', src_root], haltOnFailure=True,
-        workdir=build_path, env=env))
+        name='cmake', command=['cmake', src_root,
+                               '-DLLVM_LIT_ARGS="'+litTestArgs+'"'],
+        haltOnFailure=True, workdir=build_path, env=env))
 
     # Build libcxxabi
     jobs_flag = properties.WithProperties('-j%(jobs)s')
@@ -100,14 +101,13 @@ def getLibcxxAndAbiBuilder(f=None, env={}, additional_features=set()):
               haltOnFailure=True, workdir=build_path))
 
     # Test libc++abi
-    lit_flags = properties.WithProperties("LIT_ARGS=%s" % litTestArgs)
     f.addStep(buildbot.steps.shell.ShellCommand(
-        name='test.libcxxabi', command=['make', lit_flags, 'check-libcxxabi'],
+        name='test.libcxxabi', command=['make', 'check-libcxxabi'],
         workdir=build_path))
 
     # Test libc++
     f.addStep(buildbot.steps.shell.ShellCommand(
-        name='test.libcxx', command=['make', lit_flags, 'check-libcxx'],
+        name='test.libcxx', command=['make', 'check-libcxx'],
         workdir=build_path))
 
     return f
