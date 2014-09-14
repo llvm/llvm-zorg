@@ -224,7 +224,7 @@ def _get_clang_builders():
          'factory' : LNTBuilder.getLNTFactory(triple='armv7l-unknown-linux-gnueabihf',
                                               nt_flags=['--cflag', '-mcpu=cortex-a15',
                                                         '--threads=1', '--build-threads=2',
-                                                        '--benchmarking-only', '--multisample=3'],
+                                                        '--benchmarking-only', '--multisample=8'],
                                               jobs=2, use_pty_in_tests=True, clean=False,
                                               submitURL='http://llvm.org/perf/submitRun',
                                               testerName='LNT-ARMv7-A15-O3', run_cxx_tests=True)},
