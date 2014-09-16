@@ -86,7 +86,7 @@ def getLibcxxAndAbiBuilder(f=None, env={}, additional_features=set()):
 
     f.addStep(buildbot.steps.shell.ShellCommand(
         name='cmake', command=['cmake', src_root,
-                               '-DLLVM_LIT_ARGS="'+litTestArgs+'"'],
+                               '-DLLVM_LIT_ARGS='+litTestArgs],
         haltOnFailure=True, workdir=build_path, env=env))
 
     # Build libcxxabi
