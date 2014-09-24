@@ -21,8 +21,6 @@ def get_build_slaves():
     yield create_slave('macpro1', jobs = 1, max_builds = 8)
 
     # Builders.
-    yield create_slave('lab-mini-02', jobs = 4, max_builds = 1)
-    yield create_slave('xserve2', jobs = 4, max_builds = 2)
     yield create_slave('xserve3', jobs = 2, max_builds = 1)
     yield create_slave('xserve4', jobs = 4, max_builds = 1)
     yield create_slave('xserve5', jobs = 4, max_builds = 1)

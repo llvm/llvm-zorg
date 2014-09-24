@@ -97,21 +97,3 @@ able to work using sources which have passed this phase, and the tree should be
 good enough for many users.
 
 The third phase is targeted to react within at most 1 to 2 hours.""" })
-
-###
-
-# Phase 4
-
-phase4_slaves = ['xserve4']
-phase4_builders = []
-
-phase4_builders.append(test('libcxx_clang-x86_64-darwin11-RA', phase4_slaves))
-
-phases.append(
-    { 'number' : 4,
-      'name' : 'validation',
-      'title' : 'Validation',
-      'builders' : phase4_builders,
-      'description' : """\
-The fourth and final phase is designed to validate that the tree is in a good
-enough state for a general release."""})
