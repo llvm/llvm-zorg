@@ -72,7 +72,7 @@ The second phase is targeted to run on most commits and to react within at most
 
 # Phase 3
 
-phase3_slaves = ['xserve2','xserve4']
+phase3_slaves = ['xserve4']
 phase3_slaves_lto = ['xserve3']
 phase3_builders = []
 
