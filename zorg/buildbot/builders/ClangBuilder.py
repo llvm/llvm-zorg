@@ -221,7 +221,7 @@ def getClangBuildFactory(
                                                        make, WithProperties("-j%s" % jobs),
                                                        "BUILD_EXAMPLES=1"],
                                               haltOnFailure=True,
-                                              description=["compilinge", stage1_config, "examples"],
+                                              description=["compiling", stage1_config, "examples"],
                                               descriptionDone=["compile", stage1_config, "examples"],
                                               workdir=llvm_1_objdir,
                                               env=merged_env))
