@@ -392,6 +392,12 @@ def _get_clang_builders():
                                                     package_cache="http://parkas1.inria.fr/packages",
                                                     submitURL='http://llvm.org/perf/submitRun',
                                                     testerName='x86_64-penryn-O3')},
+        {'name' : "clang-native-aarch64",
+         'slavenames' :["juno-aarch64-01"],
+         'builddir' :"clang-native-aarch64",
+         'factory' : ClangBuilder.getClangBuildFactory(
+                     stage1_config='Release+Asserts',
+                     clean=False)},
         ]
 
 # Offline.

@@ -156,6 +156,9 @@ def get_build_slaves():
         # AArch64 Qemu LNT
         create_slave("aarch64-qemu-lnt", properties={'jobs': 4}, max_builds=1),
 
+        # AArch64 Clang, Juno ARM Development Platform
+        create_slave("juno-aarch64-01", properties={'jobs': 4}, max_builds=1),
+
         # Ubuntu x86-64, 12x Intel(R) Xeon(R) CPU X5650 @ 2.67GHz
         create_slave("sanitizer-buildbot1", properties={'jobs': 8}, max_builds=1),
         # Ubuntu x86-64, 24x Intel(R) Xeon(R) CPU X5650 @ 2.67GHz
