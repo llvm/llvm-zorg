@@ -395,9 +395,10 @@ def _get_clang_builders():
         {'name' : "clang-native-aarch64",
          'slavenames' :["juno-aarch64-01"],
          'builddir' :"clang-native-aarch64",
-         'factory' : ClangBuilder.getClangBuildFactory(
-                     stage1_config='Release+Asserts',
-                     clean=False)},
+         'factory' : ClangBuilder.getClangCMakeBuildFactory(
+                     jobs=4,
+                     clean=False,
+                     checkout_compiler_rt=False)},
         ]
 
 # Offline.
