@@ -23,7 +23,7 @@ reload(LLDBBuilder)
 from zorg.buildbot.builders import LLDBBuilder
 
 from zorg.buildbot.builders import LLDBuilder
-reload(LLDBBuilder)
+reload(LLDBuilder)
 from zorg.buildbot.builders import LLDBuilder
 
 from zorg.buildbot.builders import ClangAndLLDBuilder
@@ -656,7 +656,7 @@ def _get_sanitizer_builders():
            'builddir':"sanitizer_x86_64-freebsd",
            'factory' : SanitizerBuilderII.getSanitizerBuildFactoryII(
                                           clean=True,
-                                          sanitizers=['sanitizer','lsan','ubsan'],
+                                          sanitizers=['sanitizer','asan','lsan','ubsan'],
                                           common_cmake_options='-DCMAKE_EXE_LINKER_FLAGS=-lcxxrt')},
 
           {'name': "sanitizer-ppc64-linux1",
