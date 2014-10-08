@@ -275,7 +275,7 @@ def _get_clang_builders():
                       env={'PATH':'/usr/lib/ccache:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'},
                       extra_cmake_args=["-DCMAKE_C_FLAGS='-mcpu=cortex-a15 -mfpu=vfpv3'",
                                         "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a15 -mfpu=vfpv3'",
-                                        "-DLLVM_TARGETS_TO_BUILD='ARM;X86'"])},
+                                        "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64;X86'"])},
 
 
         {'name': "clang-native-mingw32-win7",
