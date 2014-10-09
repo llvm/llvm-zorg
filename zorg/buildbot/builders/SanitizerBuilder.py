@@ -38,13 +38,12 @@ def getSanitizerBuildFactory(
     # Get sanitizer buildbot scripts.
     f.addStep(SVN(name='svn-sanitizer-buildbot',
                   mode='update',
-                  baseURL='http://address-sanitizer.googlecode.com/svn/',
-                  defaultBranch='trunk',
+                  repourl='http://llvm.org/svn/llvm-project/zorg/trunk/'
+                          'zorg/buildbot/builders/sanitizers',
                   workdir=sanitizer_buildbot,
                   alwaysUseLatest=True))
 
-    sanitizer_script = os.path.join("..", sanitizer_buildbot, "build",
-                                    "scripts", "slave",
+    sanitizer_script = os.path.join("..", sanitizer_buildbot, "sanitizers",
                                     "buildbot_selector.py")
 
     # Run annotated command for sanitizer.
