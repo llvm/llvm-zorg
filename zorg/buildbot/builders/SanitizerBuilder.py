@@ -35,16 +35,16 @@ def getSanitizerBuildFactory(
                                                env=merged_env))
 
     sanitizer_buildbot = "sanitizer_buildbot"
+    sanitizer_script_dir = os.path.join(sanitizer_buildbot, "sanitizers")
     # Get sanitizer buildbot scripts.
     f.addStep(SVN(name='svn-sanitizer-buildbot',
                   mode='update',
-                  repourl='http://llvm.org/svn/llvm-project/zorg/trunk/'
-                          'zorg/buildbot/builders/sanitizers',
-                  workdir=sanitizer_buildbot,
+                  svnurl='http://llvm.org/svn/llvm-project/zorg/trunk/'
+                         'zorg/buildbot/builders/sanitizers',
+                  workdir=sanitizer_script_dir,
                   alwaysUseLatest=True))
 
-    sanitizer_script = os.path.join("..", sanitizer_buildbot, "sanitizers",
-                                    "buildbot_selector.py")
+    sanitizer_script = os.path.join("..", sanitizer_script_dir, "buildbot_selector.py")
 
     # Run annotated command for sanitizer.
     f.addStep(AnnotatedCommand(name="annotate",
