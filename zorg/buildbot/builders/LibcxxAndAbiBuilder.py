@@ -42,7 +42,7 @@ def getLibcxxWholeTree(f, src_root):
     return f
 
 
-def getLibcxxAndAbiBuilder(f=None, env={}, additional_features=set()):
+def getLibcxxAndAbiBuilder(f=None, env={}, additional_features=set(), cmake_extra_opts={}):
     if f is None:
         f = buildbot.process.factory.BuildFactory()
 
@@ -76,6 +76,10 @@ def getLibcxxAndAbiBuilder(f=None, env={}, additional_features=set()):
         litTestArgs += (' --param=additional_features=' +
                        ','.join(additional_features))
 
+    cmake_opts = ['-DLLVM_LIT_ARGS='+litTestArgs]
+    for key in cmake_extra_opts:
+        cmake_opts.append('-D' + key + '=' + cmake_extra_opts[key])
+
     # Nuke/remake build directory and run CMake
     f.addStep(buildbot.steps.shell.ShellCommand(
         name='rm.builddir', command=['rm', '-rf', build_path],
@@ -85,8 +89,7 @@ def getLibcxxAndAbiBuilder(f=None, env={}, additional_features=set()):
         haltOnFailure=True, workdir=src_root))
 
     f.addStep(buildbot.steps.shell.ShellCommand(
-        name='cmake', command=['cmake', src_root,
-                               '-DLLVM_LIT_ARGS='+litTestArgs],
+        name='cmake', command=['cmake', src_root] + cmake_opts,
         haltOnFailure=True, workdir=build_path, env=env))
 
     # Build libcxxabi
