@@ -203,6 +203,7 @@ def _get_clang_builders():
 #         'builddir':"clang-x86_64-ubuntu",
 #         'factory' : ClangBuilder.getClangBuildFactory(extra_configure_args=['--enable-shared'])},
 
+        # Cortex-A9 triple check-all bots with autoconf builder
         {'name': "clang-native-arm-cortex-a9",
          'slavenames':["as-bldslv1", "as-bldslv2", "as-bldslv3"],
          'builddir':"clang-native-arm-cortex-a9",
@@ -218,6 +219,7 @@ def _get_clang_builders():
                                            '--with-float=hard',
                                            '--enable-targets=arm'])},
 
+        # Cortex-A15 LNT test-suite in Benchmark mode
         {'name' : "clang-native-arm-lnt-perf",
          'slavenames':["linaro-chrome-02"],
          'builddir':"clang-native-arm-lnt-perf",
@@ -229,6 +231,7 @@ def _get_clang_builders():
                                               submitURL='http://llvm.org/perf/submitRun',
                                               testerName='LNT-ARMv7-A15-O3', run_cxx_tests=True)},
 
+        # Cortex-A15 LNT test-suite in test-only mode
         {'name' : "clang-native-arm-lnt",
          'slavenames':["linaro-chrome-03"],
          'builddir':"clang-native-arm-lnt",
@@ -237,7 +240,7 @@ def _get_clang_builders():
                                               jobs=2, use_pty_in_tests=True, clean=False,
                                               testerName='LNT-TestOnly-O3', run_cxx_tests=True)},
 
-        ## Cortex-A15 check-all
+        ## Cortex-A15 check-all with CMake builder
         {'name': "clang-cmake-armv7-a15",
          'slavenames':["linaro-a15-01"],
          'builddir':"clang-cmake-armv7-a15",
@@ -250,7 +253,7 @@ def _get_clang_builders():
                                         "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a15 -mfpu=vfpv3'",
                                         "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'"])},
 
-        ## Cortex-A15 check-all self-host
+        ## Cortex-A15 check-all self-host with CMake builder
         {'name': "clang-cmake-armv7-a15-selfhost",
          'slavenames':["linaro-a15-02"],
          'builddir':"clang-cmake-armv7-a15-selfhost",
@@ -265,7 +268,7 @@ def _get_clang_builders():
                                         "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a15 -mfpu=vfpv3'",
                                         "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'"])},
 
-        ## Cortex-A15 check-all full (compiler-rt); Needs x86 for ASAN tests
+        ## Cortex-A15 check-all full (compiler-rt) with CMake builder; Needs x86 for ASAN tests
         {'name': "clang-cmake-armv7-a15-full",
          'slavenames':["linaro-a15-03"],
          'builddir':"clang-cmake-armv7-a15-full",
