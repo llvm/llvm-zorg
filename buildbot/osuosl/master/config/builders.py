@@ -219,6 +219,15 @@ def _get_clang_builders():
                                            '--with-float=hard',
                                            '--enable-targets=arm'])},
 
+        # Cortex-A15 LibC++ and LibC++abi tests
+        {'name': 'libcxx-native-arm',
+         'slavenames': ['linaro-chrome-01'],
+         'builddir': 'libcxx-native-arm',
+         'category': 'libcxx',
+         'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
+                                              env={'CC': 'clang', 'CXX': 'clang++'},
+                                              cmake_extra_opts={'LIBCXXABI_USE_LLVM_UNWINDER': 'True'})},
+
         # Cortex-A15 LNT test-suite in Benchmark mode
         {'name' : "clang-native-arm-lnt-perf",
          'slavenames':["linaro-chrome-02"],
