@@ -234,6 +234,9 @@ class LLVMPoller(base.PollingChangeSource, util.ComparableMixin):
             'cfe'          : 'clang',
             'polly'        : 'polly',
             'compiler-rt'  : 'compiler-rt',
+            'libcxx'       : 'libcxx',
+            'libcxxabi'    : 'libcxxabi',
+            'lld'          : 'lld',
             'lldb'         : 'lldb',
             'openmp'       : 'openmp',
             }
