@@ -710,12 +710,32 @@ def _get_libcxx_builders():
                                       'libcpp-has-no-monotonic-clock'])),
          'category': 'libcxx'},
 
+        # EricWF's builders. A default configuration build
+        # As well as builders for c++03 and c++14
         {'name': 'libcxx-libcxxabi-x86_64-linux-ubuntu',
          'slavenames': ['ericwf-buildslave'],
          'builddir' : 'libcxx-libcxxabi-x86_64-linux-ubuntu',
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
             env={'PATH': '/usr/local/bin:/usr/bin:/bin',
                  'CC': 'clang', 'CXX': 'clang++'}),
+        'category': 'libcxx'},
+
+        {'name': 'libcxx-libcxxabi-x86_64-linux-ubuntu-cxx03',
+         'slavenames': ['ericwf-buildslave'],
+         'builddir' : 'libcxx-libcxxabi-x86_64-linux-ubuntu-cxx03',
+         'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
+            env={'PATH': '/usr/local/bin:/usr/bin:/bin',
+                 'CC': 'clang', 'CXX': 'clang++'},
+            lit_extra_opts={'std':'c++03'}),
+        'category': 'libcxx'},
+
+        {'name': 'libcxx-libcxxabi-x86_64-linux-ubuntu-cxx14',
+         'slavenames': ['ericwf-buildslave'],
+         'builddir' : 'libcxx-libcxxabi-x86_64-linux-ubuntu-cxx14',
+         'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
+            env={'PATH': '/usr/local/bin:/usr/bin:/bin',
+                 'CC': 'clang', 'CXX': 'clang++'},
+            lit_extra_opts={'std':'c++14'}),
         'category': 'libcxx'},
 
         # Cortex-A15 LibC++ and LibC++abi tests
