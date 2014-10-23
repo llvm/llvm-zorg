@@ -42,7 +42,8 @@ def getLibcxxWholeTree(f, src_root):
     return f
 
 
-def getLibcxxAndAbiBuilder(f=None, env={}, additional_features=set(), cmake_extra_opts={}):
+def getLibcxxAndAbiBuilder(f=None, env={}, additional_features=set(),
+                           cmake_extra_opts={}, lit_extra_opts={}):
     if f is None:
         f = buildbot.process.factory.BuildFactory()
 
@@ -75,6 +76,9 @@ def getLibcxxAndAbiBuilder(f=None, env={}, additional_features=set(), cmake_extr
     if additional_features:
         litTestArgs += (' --param=additional_features=' +
                        ','.join(additional_features))
+
+    for key in lit_extra_opts:
+        litTestArgs += (' --param=' + key + '=' + lit_extra_opts[key])
 
     cmake_opts = ['-DLLVM_LIT_ARGS='+litTestArgs]
     for key in cmake_extra_opts:
