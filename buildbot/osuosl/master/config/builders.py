@@ -738,14 +738,19 @@ def _get_libcxx_builders():
             lit_extra_opts={'std':'c++14'}),
         'category': 'libcxx'},
 
-        # Cortex-A15 LibC++ and LibC++abi tests
+        # Cortex-A15 LibC++ and LibC++abi tests (require Clang+RT)
         {'name': 'libcxx-libcxxabi-arm-linux',
          'slavenames': ['linaro-chrome-01'],
          'builddir': 'libcxx-libcxxabi-arm-linux',
          'category': 'libcxx',
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
             env={'CC': 'clang', 'CXX': 'clang++'},
-            cmake_extra_opts={'LIBCXXABI_USE_LLVM_UNWINDER': 'True'})},
+            # FIXME: there should be a way to merge autodetected with user-defined linker flags
+            # See: libcxxabi/test/lit.cfg
+            lit_extra_opts={'link_flags': '"-lc++abi -lc -lm -lpthread -lunwind -ldl -L/opt/llvm/lib/clang/3.6.0/lib/linux -lclang_rt.builtins-arm"'},
+            cmake_extra_opts={'LIBCXXABI_USE_LLVM_UNWINDER': 'True',
+                              'CMAKE_C_FLAGS': '-mcpu=cortex-a15',
+                              'CMAKE_CXX_FLAGS': '-mcpu=cortex-a15'})},
     ]
 
 
