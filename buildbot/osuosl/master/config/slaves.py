@@ -75,15 +75,6 @@ def get_build_slaves():
         create_slave("atom1-buildbot", properties={'jobs': 2}, max_builds=1),
 
         # LLVM Lab slaves
-        create_slave("lab-mini-01", properties={'jobs': 2}, max_builds=1),
-        create_slave("lab-mini-02", properties={'jobs': 2}, max_builds=1),
-        create_slave("lab-mini-03", properties={'jobs': 2}, max_builds=1),
-        create_slave("lab-mini-04", properties={'jobs': 2}, max_builds=1),
-        create_slave("xserve1", properties={'jobs': 4}, max_builds=1),
-        create_slave("xserve2", properties={'jobs': 4}, max_builds=1),
-        create_slave("xserve3", properties={'jobs': 4}, max_builds=1),
-        create_slave("xserve4", properties={'jobs': 4}, max_builds=1),
-        create_slave("xserve5", properties={'jobs': 4}, max_builds=1),
         create_slave("hpproliant1", properties={'jobs': 6}, max_builds=1),
 
         # Intel(R) Core(TM)2 CPU 6420  @ 2.13GHz, Ubuntu Oneiric x86_64
@@ -294,4 +285,14 @@ def get_build_slaves():
         #create_slave("freebsd1", properties={'jobs' : 1}, max_builds=1),
         # Debian, P4 2.8GHz, 1GB mem
         #create_slave("balint1", properties={'jobs' : 1}, max_builds=1),
+
+        # create_slave("lab-mini-01", properties={'jobs': 2}, max_builds=1),
+        # create_slave("lab-mini-02", properties={'jobs': 2}, max_builds=1),
+        # create_slave("lab-mini-03", properties={'jobs': 2}, max_builds=1),
+        # create_slave("lab-mini-04", properties={'jobs': 2}, max_builds=1),
+        # create_slave("xserve1", properties={'jobs': 4}, max_builds=1),
+        # create_slave("xserve2", properties={'jobs': 4}, max_builds=1),
+        # create_slave("xserve3", properties={'jobs': 4}, max_builds=1),
+        # create_slave("xserve4", properties={'jobs': 4}, max_builds=1),
+        # create_slave("xserve5", properties={'jobs': 4}, max_builds=1),
         ]

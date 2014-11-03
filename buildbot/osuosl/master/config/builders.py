@@ -583,12 +583,6 @@ def _get_lldb_builders():
          'factory': LLDBBuilder.getLLDBBuildFactory(triple=None, # use default
                                                     extra_configure_args=['--enable-cxx11', '--enable-optimized', '--enable-assertions'],
                                                     env={'PATH':'/home/llvmbb/bin/clang-latest/bin:/home/llvmbb/bin:/usr/local/bin:/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games'})},
-
-        {'name': "lldb-x86_64-darwin12",
-         'slavenames': ["lab-mini-02"],
-         'builddir': "build.lldb-x86_64-darwin12",
-         'factory': LLDBBuilder.getLLDBxcodebuildFactory()},
-
         {'name': "lldb-x86_64-freebsd",
          'slavenames': ["as-bldslv5"],
          'builddir': "lldb-x86_64-freebsd",
@@ -972,3 +966,7 @@ LabPackageCache = 'http://10.1.1.2/packages/'
                     extra_configure_args=['--enable-shared'],
                     timeout=600),
  'category' : 'llvm'},
+{'name': "lldb-x86_64-darwin12",
+'slavenames': ["lab-mini-02"],
+'builddir': "build.lldb-x86_64-darwin12",
+'factory': LLDBBuilder.getLLDBxcodebuildFactory()},
