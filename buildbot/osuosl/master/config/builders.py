@@ -732,6 +732,33 @@ def _get_libcxx_builders():
             lit_extra_opts={'std':'c++14'}),
         'category': 'libcxx'},
 
+        {'name': 'libcxx-libcxxabi-x86_64-linux-ubuntu-asan',
+         'slavenames': ['ericwf-buildslave'],
+         'builddir' : 'libcxx-libcxxabi-x86_64-linux-ubuntu-asan',
+         'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
+            env={'PATH': '/usr/local/bin:/usr/bin:/bin',
+                 'CC': 'clang', 'CXX': 'clang++'},
+            cmake_extra_opts={'LLVM_USE_SANITIZER': 'Address'}),
+        'category': 'libcxx'},
+
+        {'name': 'libcxx-libcxxabi-x86_64-linux-ubuntu-msan',
+         'slavenames': ['ericwf-buildslave'],
+         'builddir' : 'libcxx-libcxxabi-x86_64-linux-ubuntu-msan',
+         'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
+            env={'PATH': '/usr/local/bin:/usr/bin:/bin',
+                 'CC': 'clang', 'CXX': 'clang++'},
+            cmake_extra_opts={'LLVM_USE_SANITIZER': 'MemoryWithOrigins'}),
+        'category': 'libcxx'},
+
+        {'name': 'libcxx-libcxxabi-x86_64-linux-ubuntu-ubsan',
+         'slavenames': ['ericwf-buildslave'],
+         'builddir' : 'libcxx-libcxxabi-x86_64-linux-ubuntu-ubsan',
+         'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
+            env={'PATH': '/usr/local/bin:/usr/bin:/bin',
+                 'CC': 'clang', 'CXX': 'clang++'},
+            cmake_extra_opts={'LLVM_USE_SANITIZER': 'Undefined'}),
+        'category': 'libcxx'},
+
         # Cortex-A15 LibC++ and LibC++abi tests (require Clang+RT)
         {'name': 'libcxx-libcxxabi-arm-linux',
          'slavenames': ['linaro-chrome-01'],
