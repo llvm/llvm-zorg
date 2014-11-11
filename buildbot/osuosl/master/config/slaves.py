@@ -161,7 +161,7 @@ def get_build_slaves():
         # Ubuntu 14.04 x86_64, Intel(R) Xeon(R) CPU E5-1650 0 @ 3.20GHz
         create_slave("ericwf-buildslave", properties={'jobs': 4}, max_builds=2),
         # OS X 10.10 x86_64, Intel Core 2 Duo @ 2.40GHz
-        create_slave("ericwf-osx-slave", properties={'jobs': 2}, max_build=1),
+        create_slave("ericwf-osx-slave", properties={'jobs': 2}, max_builds=1),
         # Defunct.
 
 #        # GCC Compile Farm Slaves, see http://gcc.gnu.org/wiki/CompileFarm
