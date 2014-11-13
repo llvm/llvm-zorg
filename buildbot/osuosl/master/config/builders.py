@@ -759,6 +759,21 @@ def _get_libcxx_builders():
             cmake_extra_opts={'LLVM_USE_SANITIZER': 'Undefined'}),
         'category': 'libcxx'},
 
+        {'name': 'libcxx-libcxxabi-x86_64-apple-darwin14-system-clang',
+         'slavenames': ['ericwf-osx-slave'],
+         'builddir' : 'libcxx-libcxxabi-x86_64-apple-darwin14-system-clang',
+         'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
+            env={'CC': 'clang', 'CXX': 'clang++'}),
+        'category': 'libcxx'},
+
+        {'name': 'libcxx-libcxxabi-x86_64-apple-darwin14-tot-clang',
+         'slavenames': ['ericwf-osx-slave'],
+         'builddir' : 'libcxx-libcxxabi-x86_64-apple-darwin14-tot-clang',
+         'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
+            env={'CC': '/opt/llvm-tot/bin/clang',
+                 'CXX': '/opt/llvm-tot/bin/clang++'}),
+        'category': 'libcxx'},
+
         # Cortex-A15 LibC++ and LibC++abi tests (require Clang+RT)
         {'name': 'libcxx-libcxxabi-arm-linux',
          'slavenames': ['linaro-chrome-01'],
