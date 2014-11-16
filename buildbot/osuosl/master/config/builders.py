@@ -526,6 +526,17 @@ def _get_polly_builders():
                                                     submitURL='http://llvm.org/perf/submitRun',
                                                     testerName='x86_64-penryn-O3-polly-scev')},
 
+        {'name': "perf-x86_64-penryn-O3-polly-codegen-cloog-fast",
+         'slavenames':["pollyperf6"],
+         'builddir':"perf-x86_64-penryn-O3-polly-codegen-cloog-fast",
+         'factory': PollyBuilder.getPollyLNTFactory(triple="x86_64-pc-linux-gnu",
+                                                    nt_flags=['--multisample=1', '--mllvm=-polly', '--mllvm=-polly-code-generator=cloog', '-j16'],
+                                                    reportBuildslave=False,
+                                                    package_cache="http://parkas1.inria.fr/packages",
+                                                    submitURL='http://llvm.org/perf/submitRun',
+                                                    testerName='x86_64-penryn-O3-polly-codegen-cloog-fast')},
+
+
         {'name': "perf-x86_64-penryn-O3-polly-detect",
          'slavenames':["pollyperf14"],
          'builddir':"perf-x86_64-penryn-O3-polly-detect",
@@ -535,16 +546,6 @@ def _get_polly_builders():
                                                     package_cache="http://parkas1.inria.fr/packages",
                                                     submitURL='http://llvm.org/perf/submitRun',
                                                     testerName='x86_64-penryn-O3-polly-detect')},
-
-        {'name': "perf-x86_64-penryn-O3-polly",
-         'slavenames':["pollyperf6"],
-         'builddir':"perf-x86_64-penryn-O3-polly",
-         'factory': PollyBuilder.getPollyLNTFactory(triple="x86_64-pc-linux-gnu",
-                                                    nt_flags=['--multisample=10', '--mllvm=-polly', '--rerun'],
-                                                    reportBuildslave=False,
-                                                    package_cache="http://parkas1.inria.fr/packages",
-                                                    submitURL='http://llvm.org/perf/submitRun',
-                                                    testerName='x86_64-penryn-O3-polly')},
 
         {'name': "perf-x86_64-penryn-O3-polly-codegen-isl",
          'slavenames':["pollyperf7"],
