@@ -526,6 +526,16 @@ def _get_polly_builders():
                                                     submitURL='http://llvm.org/perf/submitRun',
                                                     testerName='x86_64-penryn-O3-polly-scev')},
 
+        {'name': "perf-x86_64-penryn-O3-polly-parallel-codegen-isl-fast",
+         'slavenames':["pollyperf6"],
+         'builddir': "perf-x86_64-penryn-O3-polly-parallel-codegen-isl-fast",
+         'factory': PollyBuilder.getPollyLNTFactory(triple="x86_64-pc-linux-gnu",
+                                                    nt_flags=['--multisample=1', '--mllvm=-polly', '--mllvm=-polly-parallel', '--mllvm=-polly-code-generator=isl', '-j16', '--cflag=-lgomp' ],
+                                                    reportBuildslave=False,
+                                                    package_cache="http://parkas1.inria.fr/packages",
+                                                    submitURL='http://llvm.org/perf/submitRun',
+                                                    testerName='x86_64-penryn-O3-polly-parallel-codegen-isl-fast')},
+
         {'name': "perf-x86_64-penryn-O3-polly-codegen-cloog-fast",
          'slavenames':["pollyperf6"],
          'builddir':"perf-x86_64-penryn-O3-polly-codegen-cloog-fast",
