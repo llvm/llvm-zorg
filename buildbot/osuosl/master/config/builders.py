@@ -338,6 +338,19 @@ def _get_clang_builders():
                                                                test=False,
                                                                xfails=clang_x86_64_freebsd_xfails)},
 
+        # Mips check-all with CMake builder
+        # We currently have to force CMAKE_HOST_TRIPLE and
+        # CMAKE_DEFAULT_TARGET_TRIPLE on this system. CMake gets the value
+        # correct for the processor but it's currently not possible to emit O32
+        # code using a mips64-* triple. This is a bug and should be fixed soon.
+        {'name': "clang-cmake-mips",
+         'slavenames':["mips-kl-m001"],
+         'builddir':"clang-cmake-mips",
+         'factory' : ClangBuilder.getClangCMakeBuildFactory(
+                         clean=False,
+                         extra_cmake_args=["-DCMAKE_HOST_TRIPLE=mips-unknown-linux-gnu",
+                                           "-DCMAKE_DEFAULT_TARGET_TRIPLE=mips-unknown-linux-gnu"])},
+
         # Clang cross builders.
         {'name' : "clang-x86_64-darwin13-cross-mingw32",
          'slavenames' :["as-bldslv9"],
