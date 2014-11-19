@@ -18,6 +18,7 @@ if [ "$BUILDBOT_CLOBBER" != "" ]; then
 fi
 
 MEMORY_SANITIZER_KIND="Memory"
+BUILDBOT_MSAN_ORIGINS=${BUILDBOT_MSAN_ORIGINS:-}
 if [ "$BUILDBOT_MSAN_ORIGINS" != "" ]; then
     MEMORY_SANITIZER_KIND="MemoryWithOrigins"
 fi
