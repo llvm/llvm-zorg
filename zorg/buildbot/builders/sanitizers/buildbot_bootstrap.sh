@@ -17,6 +17,11 @@ if [ "$BUILDBOT_CLOBBER" != "" ]; then
   rm -rf llvm_build0
 fi
 
+MEMORY_SANITIZER_KIND="Memory"
+if [ "$BUILDBOT_MSAN_ORIGINS" != "" ]; then
+    MEMORY_SANITIZER_KIND="MemoryWithOrigins"
+fi
+
 # CMake does not notice that the compiler itself has changed.
 # Anyway, incremental builds of stage2 and stage3 compilers don't make sense.
 # Clobber the build trees.
@@ -69,7 +74,7 @@ fi
 LIBCXX_INST=${LIBCXX}/inst
 (cd libcxx_build_msan && \
   cmake ${CMAKE_STAGE2_COMMON_OPTIONS} \
-    -DLLVM_USE_SANITIZER=Memory \
+    -DLLVM_USE_SANITIZER=${MEMORY_SANITIZER_KIND} \
     -DLIBCXX_CXX_ABI=libstdc++ \
     -DLIBCXX_LIBSUPCXX_INCLUDE_PATHS="/usr/local/include/c++/4.9.1;/usr/local/include/c++/4.9.1/x86_64-unknown-linux-gnu" \
     -DCMAKE_INSTALL_PREFIX=${LIBCXX_INST} \
@@ -86,7 +91,7 @@ MSAN_LINK_FLAGS="-lc++ -Wl,--rpath=${LIBCXX_INST}/lib -L${LIBCXX_INST}/lib"
 
 (cd llvm_build_msan && \
  cmake ${CMAKE_STAGE2_COMMON_OPTIONS} \
-   -DLLVM_USE_SANITIZER=Memory \
+   -DLLVM_USE_SANITIZER=${MEMORY_SANITIZER_KIND} \
    -DCMAKE_C_FLAGS="${MSAN_INCLUDE_FLAGS}" \
    -DCMAKE_CXX_FLAGS="${MSAN_INCLUDE_FLAGS}" \
    -DCMAKE_EXE_LINKER_FLAGS="${MSAN_LINK_FLAGS}" \
