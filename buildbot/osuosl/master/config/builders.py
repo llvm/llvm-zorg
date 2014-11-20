@@ -580,15 +580,15 @@ def _get_polly_builders():
                                                     submitURL='http://llvm.org/perf/submitRun',
                                                     testerName='x86_64-penryn-O3-polly-codegen-isl')},
 
-        {'name': "perf-x86_64-penryn-O3-polly-scev-codegen-isl",
+        {'name': "perf-x86_64-penryn-O3-polly",
          'slavenames':["pollyperf11"],
-         'builddir':"perf-x86_64-penryn-O3-polly-svev-codegen-isl",
+         'builddir':"perf-x86_64-penryn-O3-polly",
          'factory': PollyBuilder.getPollyLNTFactory(triple="x86_64-pc-linux-gnu",
-                                                    nt_flags=['--multisample=10', '--mllvm=-polly', '--mllvm=-polly-code-generator=isl', '--mllvm=-polly-codegen-scev=true', '--rerun'],
+                                                    nt_flags=['--multisample=10', '--mllvm=-polly', '--rerun'],
                                                     reportBuildslave=False,
                                                     package_cache="http://parkas1.inria.fr/packages",
                                                     submitURL='http://llvm.org/perf/submitRun',
-                                                    testerName='x86_64-penryn-O3-polly-scev-codegen-isl')}
+                                                    testerName='x86_64-penryn-O3-polly')}
        ]
 
 # Offline.
