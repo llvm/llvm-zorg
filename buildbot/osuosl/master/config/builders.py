@@ -348,6 +348,7 @@ def _get_clang_builders():
          'builddir':"clang-cmake-mips",
          'factory' : ClangBuilder.getClangCMakeBuildFactory(
                          clean=False,
+                         checkout_compiler_rt=False,
                          extra_cmake_args=["-DCMAKE_HOST_TRIPLE=mips-unknown-linux-gnu",
                                            "-DCMAKE_DEFAULT_TARGET_TRIPLE=mips-unknown-linux-gnu"])},
 
