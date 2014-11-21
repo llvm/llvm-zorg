@@ -385,7 +385,7 @@ class AnnotatedCommand(ProcessLogShellStep):
         'BUILDBOT_REVISION': WithProperties('%(revision:-None)s'),
         'BUILDBOT_SCHEDULER': WithProperties('%(scheduler:-None)s'),
         'BUILDBOT_SLAVENAME': WithProperties('%(slavename:-None)s'),
-        'BUILDBOT_MSAN_ORIGINS': WithProperties('%(msan_origins:-None)s'),
+        'BUILDBOT_MSAN_ORIGINS': WithProperties('%(msan_origins:-)s'),
     }
     # Apply the passed in environment on top.
     old_env = kwargs.get('env')
