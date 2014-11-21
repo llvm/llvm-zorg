@@ -50,8 +50,9 @@ echo @@@BUILD_STEP build stage1 clang@@@
 if [ ! -d llvm_build0 ]; then
   mkdir llvm_build0
 fi
+# Build cxx/cxxabi to fool the compiler check in MSan stage 2.
 (cd llvm_build0 && cmake ${CMAKE_STAGE1_OPTIONS} $LLVM && \
-  ninja clang && ninja compiler-rt && ninja llvm-symbolizer) || \
+  ninja clang compiler-rt llvm-symbolizer cxx cxxabi) || \
   echo @@@STEP_FAILURE@@@
 
 CLANG_PATH=$ROOT/llvm_build0/bin
@@ -88,7 +89,11 @@ MSAN_CFLAGS="-I${ROOT}/libcxx_build_msan/include"
 MSAN_CXXFLAGS="$MSAN_CFLAGS -stdlib=libc++"
 MSAN_LDFLAGS="-stdlib=libc++ -lc++abi -Wl,--rpath=${ROOT}/libcxx_build_msan/lib -L${ROOT}/libcxx_build_msan/lib"
 
+# The LDFLAGS setting below does not affect the build itself, but it is used in the CMake compiler check.
+# CMAKE_EXE_LINKER_FLAGS, on the other hand, affects the rest of the build, but not the compiler check.
+# This is crazy.
 (cd llvm_build_msan && \
+ LDFLAGS="-lc++abi" \
  cmake ${CMAKE_STAGE2_COMMON_OPTIONS} \
    -DLLVM_USE_SANITIZER=${MEMORY_SANITIZER_KIND} \
    -DCMAKE_C_FLAGS="${MSAN_CFLAGS}" \
