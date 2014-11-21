@@ -35,7 +35,6 @@ rm -rf llvm_build_ubsan
 
 MAKE_JOBS=${MAX_MAKE_JOBS:-16}
 LLVM=$ROOT/llvm
-LIBCXX=$LLVM/projects/libcxx
 
 type -a gcc
 type -a g++
@@ -72,30 +71,29 @@ if [ ! -d libcxx_build_msan ]; then
   mkdir libcxx_build_msan
 fi
 
-LIBCXX_INST=${LIBCXX}/inst
 (cd libcxx_build_msan && \
-  cmake ${CMAKE_STAGE2_COMMON_OPTIONS} \
+  cmake \
+    ${CMAKE_STAGE2_COMMON_OPTIONS} \
     -DLLVM_USE_SANITIZER=${MEMORY_SANITIZER_KIND} \
-    -DLIBCXX_CXX_ABI=libstdc++ \
-    -DLIBCXX_LIBSUPCXX_INCLUDE_PATHS="/usr/local/include/c++/4.9.1;/usr/local/include/c++/4.9.1/x86_64-unknown-linux-gnu" \
-    -DCMAKE_INSTALL_PREFIX=${LIBCXX_INST} \
-    ${LIBCXX} && \
-  ninja install) || echo @@@STEP_FAILURE@@@
+    $LLVM && \
+  ninja cxx cxxabi) || echo @@@STEP_FAILURE@@@
+
 
 echo @@@BUILD_STEP build clang/msan@@@
 if [ ! -d llvm_build_msan ]; then
   mkdir llvm_build_msan
 fi
 
-MSAN_INCLUDE_FLAGS="-I${LIBCXX_INST}/include/c++/v1"
-MSAN_LINK_FLAGS="-lc++ -Wl,--rpath=${LIBCXX_INST}/lib -L${LIBCXX_INST}/lib"
+MSAN_CFLAGS="-I${ROOT}/libcxx_build_msan/include"
+MSAN_CXXFLAGS="$MSAN_CFLAGS -stdlib=libc++"
+MSAN_LDFLAGS="-stdlib=libc++ -lc++abi -Wl,--rpath=${ROOT}/libcxx_build_msan/lib -L${ROOT}/libcxx_build_msan/lib"
 
 (cd llvm_build_msan && \
  cmake ${CMAKE_STAGE2_COMMON_OPTIONS} \
    -DLLVM_USE_SANITIZER=${MEMORY_SANITIZER_KIND} \
-   -DCMAKE_C_FLAGS="${MSAN_INCLUDE_FLAGS}" \
-   -DCMAKE_CXX_FLAGS="${MSAN_INCLUDE_FLAGS}" \
-   -DCMAKE_EXE_LINKER_FLAGS="${MSAN_LINK_FLAGS}" \
+   -DCMAKE_C_FLAGS="${MSAN_CFLAGS}" \
+   -DCMAKE_CXX_FLAGS="${MSAN_CXXFLAGS}" \
+   -DCMAKE_EXE_LINKER_FLAGS="${MSAN_LDFLAGS}" \
    $LLVM && \
  ninja clang) || echo @@@STEP_FAILURE@@@
 
