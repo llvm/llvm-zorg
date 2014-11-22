@@ -349,8 +349,8 @@ def _get_clang_builders():
          'factory' : ClangBuilder.getClangCMakeBuildFactory(
                          clean=False,
                          checkout_compiler_rt=False,
-                         extra_cmake_args=["-DCMAKE_HOST_TRIPLE=mips-unknown-linux-gnu",
-                                           "-DCMAKE_DEFAULT_TARGET_TRIPLE=mips-unknown-linux-gnu"])},
+                         extra_cmake_args=["-DLLVM_HOST_TRIPLE=mips-unknown-linux-gnu",
+                                           "-DLLVM_DEFAULT_TARGET_TRIPLE=mips-unknown-linux-gnu"])},
 
         # Clang cross builders.
         {'name' : "clang-x86_64-darwin13-cross-mingw32",
