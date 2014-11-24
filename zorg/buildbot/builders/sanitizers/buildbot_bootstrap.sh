@@ -93,7 +93,7 @@ MSAN_LDFLAGS="-stdlib=libc++ -lc++abi -Wl,--rpath=${ROOT}/libcxx_build_msan/lib 
 # CMAKE_EXE_LINKER_FLAGS, on the other hand, affects the rest of the build, but not the compiler check.
 # This is crazy.
 (cd llvm_build_msan && \
- LDFLAGS="${MSAN_LDFLAGS}" \
+ LDFLAGS="${MSAN_LDFLAGS} -fsanitize=memory" \
  cmake ${CMAKE_STAGE2_COMMON_OPTIONS} \
    -DLLVM_USE_SANITIZER=${MEMORY_SANITIZER_KIND} \
    -DCMAKE_C_FLAGS="${MSAN_CFLAGS}" \
