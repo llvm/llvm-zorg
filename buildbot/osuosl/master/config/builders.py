@@ -722,7 +722,8 @@ def _get_libcxx_builders():
              env={'CC': 'clang', 'CXX': 'clang++'},
              additional_features=set(['libcxxabi-has-no-threads',
                                       'libcpp-has-no-threads',
-                                      'libcpp-has-no-monotonic-clock'])),
+                                      'libcpp-has-no-monotonic-clock']),
+             cmake_extra_opts={'LIBCXXABI_ENABLE_THREADS' : 'OFF'}),
          'category': 'libcxx'},
 
         # EricWF's builders. A default configuration build
