@@ -85,19 +85,17 @@ if [ ! -d llvm_build_msan ]; then
   mkdir llvm_build_msan
 fi
 
-MSAN_CFLAGS="-I${ROOT}/libcxx_build_msan/include"
-MSAN_CXXFLAGS="$MSAN_CFLAGS -stdlib=libc++"
-MSAN_LDFLAGS="-stdlib=libc++ -lc++abi -Wl,--rpath=${ROOT}/libcxx_build_msan/lib -L${ROOT}/libcxx_build_msan/lib"
+MSAN_LDFLAGS="-lc++abi -Wl,--rpath=${ROOT}/libcxx_build_msan/lib -L${ROOT}/libcxx_build_msan/lib"
+# See http://llvm.org/bugs/show_bug.cgi?id=19071, http://www.cmake.org/Bug/view.php?id=15264
+CMAKE_BUG_WORKAROUND_CFLAGS="$MSAN_LDFLAGS -fsanitize=memory -w"
+MSAN_CFLAGS="-I${ROOT}/libcxx_build_msan/include -I${ROOT}/libcxx_build_msan/include/c++/v1 $CMAKE_BUG_WORKAROUND_CFLAGS"
 
-# The LDFLAGS setting below does not affect the build itself, but it is used in the CMake compiler check.
-# CMAKE_EXE_LINKER_FLAGS, on the other hand, affects the rest of the build, but not the compiler check.
-# This is crazy.
 (cd llvm_build_msan && \
- LDFLAGS="${MSAN_LDFLAGS} -fsanitize=memory" \
  cmake ${CMAKE_STAGE2_COMMON_OPTIONS} \
    -DLLVM_USE_SANITIZER=${MEMORY_SANITIZER_KIND} \
+   -DLLVM_ENABLE_LIBCXX=ON \
    -DCMAKE_C_FLAGS="${MSAN_CFLAGS}" \
-   -DCMAKE_CXX_FLAGS="${MSAN_CXXFLAGS}" \
+   -DCMAKE_CXX_FLAGS="${MSAN_CFLAGS}" \
    -DCMAKE_EXE_LINKER_FLAGS="${MSAN_LDFLAGS}" \
    $LLVM && \
  ninja clang) || echo @@@STEP_FAILURE@@@
