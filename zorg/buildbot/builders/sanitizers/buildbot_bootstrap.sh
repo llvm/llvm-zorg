@@ -176,7 +176,7 @@ CMAKE_STAGE3_ASAN_OPTIONS="${CMAKE_COMMON_OPTIONS} -DCMAKE_C_COMPILER=${CLANG_AS
 
 echo @@@BUILD_STEP check-all stage3/asan@@@
 
-export ASAN_OPTIONS="$ASAN_OPTIONS:detect_stack_use_after_return=0"
+export ASAN_OPTIONS="check_initialization_order=true:detect_leaks=1"
 
 (cd llvm_build2_asan && ninja check-all) || echo @@@STEP_FAILURE@@@
 
