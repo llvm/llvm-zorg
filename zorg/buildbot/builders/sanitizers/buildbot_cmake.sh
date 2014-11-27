@@ -168,8 +168,10 @@ fi
 if [ $BUILD_ANDROID == 1 ] ; then
     echo @@@BUILD_STEP build Android runtime and tests@@@
 
-    build_compiler_rt arm arm-linux-androideabi
-    build_llvm_symbolizer arm arm-linux-androideabi
+    # Testing armv7 instead of plain arm to work around
+    # https://code.google.com/p/android/issues/detail?id=68779
+    build_compiler_rt arm armv7-linux-androideabi
+    build_llvm_symbolizer arm armv7-linux-androideabi
     
     build_compiler_rt x86 i686-linux-android
     build_llvm_symbolizer x86 i686-linux-android
@@ -177,8 +179,6 @@ fi
 
 if [ $RUN_ANDROID == 1 ] ; then
     trap "android_emulator_cleanup" EXIT
-    # Testing armv7 instead of plain arm to work around
-    # https://code.google.com/p/android/issues/detail?id=68779
-    test_android armv7 arm-K @@@STEP_FAILURE@@@
+    test_android arm arm-K @@@STEP_FAILURE@@@
     test_android x86 x86-K @@@STEP_WARNINGS@@@
 fi
