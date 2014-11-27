@@ -102,7 +102,7 @@ MSAN_CFLAGS="-I${ROOT}/libcxx_build_msan/include -I${ROOT}/libcxx_build_msan/inc
 
 echo @@@BUILD_STEP check-llvm msan@@@
 
-(cd llvm_build_msan && ninja check-llvm) || echo @@@STEP_FAILURE@@@
+(cd llvm_build_msan && ninja check-llvm) || echo @@@STEP_WARNINGS@@@
 
 echo @@@BUILD_STEP check-clang msan@@@
 
