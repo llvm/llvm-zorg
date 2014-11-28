@@ -199,7 +199,7 @@ fi
   ninja clang) || echo @@@STEP_FAILURE@@@
 
 echo @@@BUILD_STEP check-llvm ubsan@@@
-(cd llvm_build_ubsan && ninja check-llvm) || echo @@@STEP_FAILURE@@@
+(cd llvm_build_ubsan && ninja check-llvm) || echo @@@STEP_WARNINGS@@@
 
 echo @@@BUILD_STEP check-clang ubsan@@@
-(cd llvm_build_ubsan && ninja check-clang) || echo @@@STEP_FAILURE@@@
+(cd llvm_build_ubsan && ninja check-clang) || echo @@@STEP_WARNINGS@@@
