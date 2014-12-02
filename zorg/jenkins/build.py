@@ -172,6 +172,14 @@ def clang_builder(target):
         footer()
         # run_cmd(conf.builddir(), make_check_debug)
 
+def lldb_builder():
+    """Do an Xcode build of lldb."""
+    xcodebuild_cmd = ["xcodebuild", "-configuration", "DebugClang", "-scheme", "lldb-tool"]
+
+    header("Make All")
+    run_cmd("lldb", xcodebuild_cmd)
+    footer()
+        
 def check_repo_state(path):
     """Check the SVN repo at the path has all the
     nessessary repos checked out.  Check this by
@@ -378,7 +386,7 @@ def run_cmd(working_dir, cmd):
 
 
 KNOWN_TARGETS = ['all', 'build', 'test', 'testlong']
-KNOWN_BUILDS = ['clang', 'cmake', 'derive', 'derive-lldb', 'fetch', 'artifact']
+KNOWN_BUILDS = ['clang', 'cmake', 'lldb', 'derive', 'derive-lldb', 'fetch', 'artifact']
 
 
 def parse_args():
@@ -410,6 +418,8 @@ def main():
     try:
         if args.build_type == 'clang':
             clang_builder(args.build_target)
+        elif args.build_type == 'lldb':
+            lldb_builder()
         elif args.build_type == 'cmake':
             cmake_builder(args.build_target)
         elif args.build_type == 'derive':
