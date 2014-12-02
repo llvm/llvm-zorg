@@ -150,7 +150,7 @@ def clang_builder(target):
 
     make_install = ["make", "install-clang", "-j", conf.j_level]
 
-    make_check = ["make", "VERBOSE=1", "check-all"]
+    make_check = ["make", "VERBOSE=1", "check-all", 'LIT_ARGS="--xunit-xml-output=testresults.xunit.xml"']
 
     if target == 'build' or target == 'all':
         header("Configure")
