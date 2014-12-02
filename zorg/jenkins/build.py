@@ -29,6 +29,7 @@ class Configuration(object):
         self._args = args
         self.workspace = os.environ.get('WORKSPACE', os.getcwd())    
         self._src_dir = os.environ.get('SRC_DIR', 'llvm')
+        self._lldb_src_dir = os.environ.get('SRC_DIR', 'lldb')
         self._build_dir = os.environ.get('BUILD_DIR', 'clang-build')
         self._install_dir = os.environ.get('BUILD_DIR', 'clang-install')
         self.j_level = os.environ.get('J_LEVEL', '4')
@@ -49,6 +50,10 @@ class Configuration(object):
     def srcdir(self):
         """The derived source directory for this build."""
         return os.path.join(self.workspace, self._src_dir)
+
+    def lldbsrcdir(self):
+        """The derived source directory for this lldb build."""
+        return os.path.join(self.workspace, self._lldb_src_dir)
 
     def installdir(self):
         """The install directory for the compile."""
@@ -250,6 +255,50 @@ def derive():
     run_cmd(conf.workspace, rsync_base_cmd + dbg_rsync)
     footer()
 
+def derive_lldb():
+    """Build a derived src tree from all the svn repos.
+
+    Try to do this in a way that is pretty fast if the 
+    derived tree is already there.
+
+    This is specific to LLDB builds
+    """
+    # Check for src dirs.
+    input_subpaths = ["llvm.src", "clang.src", "lldb.src"]
+
+    for p in input_subpaths:
+        full_path = os.path.join(conf.workspace, p)
+        if not os.path.exists(full_path):
+            logging.error("Cannot find Repo: in " + full_path)
+            sys.exit(1)
+
+    # Make sure destinations exist.
+    tree_paths = ["lldb/llvm/tools/clang",]
+    full_paths = [os.path.join(conf.srcdir(), x) for x in tree_paths]
+
+    for p in full_paths:
+        if not os.path.exists(p):
+            os.makedirs(p)
+
+    # Rsync from the .src folders into the build tree
+    header("Derive Source")
+    rsync_base_cmd = ["rsync", "-auvh", "--delete", "--exclude=.svn/"]
+
+    lldb_rsync = ["--exclude=/llvm",
+         conf.workspace + "/lldb.src/", conf.lldbsrcdir()]
+
+    llvm_rsync = ["--exclude=/tools/clang",
+         conf.workspace + "/llvm.src/", conf.lldbsrcdir() + "/llvm"]
+
+    clang_rsync = [
+         conf.workspace + "/clang.src/", conf.lldbsrcdir() + "/llvm/tools/clang"]
+
+    run_cmd(conf.workspace, rsync_base_cmd + lldb_rsync)
+    run_cmd(conf.workspace, rsync_base_cmd + llvm_rsync)
+    run_cmd(conf.workspace, rsync_base_cmd + clang_rsync)
+
+    footer()
+
 
 def create_builddirs():
     paths = [conf.builddir(), conf.installdir()]
@@ -329,7 +378,7 @@ def run_cmd(working_dir, cmd):
 
 
 KNOWN_TARGETS = ['all', 'build', 'test', 'testlong']
-KNOWN_BUILDS = ['clang', 'cmake', 'derive', 'fetch', 'artifact']
+KNOWN_BUILDS = ['clang', 'cmake', 'derive', 'derive-lldb', 'fetch', 'artifact']
 
 
 def parse_args():
@@ -365,6 +414,8 @@ def main():
             cmake_builder(args.build_target)
         elif args.build_type == 'derive':
             derive()
+        elif args.build_type == 'derive-lldb':
+            derive_lldb()
         elif args.build_type == 'fetch':
             fetch_compiler()
         elif args.build_type == 'artifact':
