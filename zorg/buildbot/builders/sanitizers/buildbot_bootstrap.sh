@@ -180,6 +180,12 @@ export ASAN_OPTIONS="check_initialization_order=true:detect_leaks=1"
 
 (cd llvm_build2_asan && ninja check-all) || echo @@@STEP_FAILURE@@@
 
+echo @@@BUILD_STEP check-all stage3/asan-uar@@@
+
+export ASAN_OPTIONS="check_initialization_order=true:detect_stack_use_after_return=1:detect_leaks=1"
+
+(cd llvm_build2_asan && ninja check-all) || echo @@@STEP_FAILURE@@@
+
 # Stage 2 / UndefinedBehaviorSanitizer
 echo @@@BUILD_STEP build clang/ubsan@@@
 
