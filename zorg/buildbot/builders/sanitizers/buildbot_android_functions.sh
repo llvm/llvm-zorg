@@ -80,7 +80,11 @@ function test_android { # ARCH AVD STEP_FAILURE
 
     $ADB devices # should be empty
     $ANDROID_SDK/tools/emulator -avd $_avd -no-window -noaudio -no-boot-anim -accel off &
-    sleep 10
+    # 30s is generally enough for the emulator to initialize.
+    # wait-for-device does not wait long enough, as it seems.
+    # Otherwise, /system sometimes mysteriously reverts to read-only right in
+    # the middle of asan_device_setup.
+    sleep 30
     $ADB wait-for-device
 
     echo "Device is up"
