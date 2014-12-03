@@ -94,7 +94,8 @@ def cmake_builder(target):
     cmake_cmd = ["/usr/local/bin/cmake",
         "-G", "Ninja", "-DCMAKE_BUILD_TYPE=Debug","-DLLVM_ENABLE_ASSERTIONS=On",
         "-DCMAKE_INSTALL_PREFIX=" + conf.installdir(),
-        conf.srcdir()]
+        conf.srcdir(),
+        "-DLLVM_LIT_ARGS=--xunit-xml-output=testresults.xunit.xml"]
 
     if target == 'all' or target == 'build':
         header("Cmake")
