@@ -174,7 +174,7 @@ def clang_builder(target):
 
 def lldb_builder():
     """Do an Xcode build of lldb."""
-    xcodebuild_cmd = ["xcodebuild", "-configuration", "DebugClang", "-scheme", "lldb-tool"]
+    xcodebuild_cmd = ["xcodebuild", "-configuration", "BuildAndIntegration", "-scheme", "lldb-tool"]
 
     header("Make All")
     run_cmd("lldb", xcodebuild_cmd)
