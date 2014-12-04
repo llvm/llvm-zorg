@@ -85,7 +85,7 @@ fi
 ### From now on we use just-built Clang as a host compiler ###
 CLANG_PATH=${ROOT}/clang_build/bin
 # Build self-hosted tree with fresh Clang and -Werror.
-CMAKE_CLANG_OPTIONS="${CMAKE_COMMON_OPTIONS} -DLLVM_ENABLE_WERROR=ON -DCMAKE_C_COMPILER=${CLANG_PATH}/clang -DCMAKE_CXX_COMPILER=${CLANG_PATH}/clang++"
+CMAKE_CLANG_OPTIONS="${CMAKE_COMMON_OPTIONS} -DLLVM_ENABLE_WERROR=ON -DCMAKE_C_COMPILER=${CLANG_PATH}/clang -DCMAKE_CXX_COMPILER=${CLANG_PATH}/clang++ -DCMAKE_C_FLAGS=-gmlt -DCMAKE_CXX_FLAGS=-gmlt"
 BUILD_TYPE=Release
 
 echo @@@BUILD_STEP bootstrap clang@@@
