@@ -7,6 +7,7 @@ import subprocess
 import datetime
 import argparse
 import urllib
+import shutil
 
 SERVER = "labmaster2.local"
 
@@ -185,8 +186,7 @@ def lldb_builder():
 
     header("Clean LLDB build directory")
     if os.path.exists(conf.lldbbuilddir()):
-        clean_cmd = ["rm", "-rf", conf.lldbbuilddir() + "/*"]
-        run_cmd(conf.workspace, clean_cmd)
+        shutil.rmtree(conf.lldbbuilddir())
     footer()
 
     # Build into the build folder
