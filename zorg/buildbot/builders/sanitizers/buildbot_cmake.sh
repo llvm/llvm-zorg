@@ -60,7 +60,7 @@ if [ ! -d clang_build ]; then
   mkdir clang_build
 fi
 (cd clang_build && cmake -DCMAKE_BUILD_TYPE=Release \
-    ${CMAKE_COMMON_OPTIONS} $LLVM_CHECKOUT)
+    ${CMAKE_COMMON_OPTIONS} -DCMAKE_C_FLAGS=-gmlt -DCMAKE_CXX_FLAGS=-gmlt $LLVM_CHECKOUT)
 (cd clang_build && make clang -j$MAKE_JOBS) || echo @@@STEP_FAILURE@@@
 
 # If we're building with libcxx, install the headers to clang_build/include.
