@@ -29,8 +29,9 @@ class Configuration(object):
         self._args = args
         self.workspace = os.environ.get('WORKSPACE', os.getcwd())    
         self._src_dir = os.environ.get('SRC_DIR', 'llvm')
-        self._lldb_src_dir = os.environ.get('SRC_DIR', 'lldb')
+        self._lldb_src_dir = os.environ.get('LLDB_SRC_DIR', 'lldb')
         self._build_dir = os.environ.get('BUILD_DIR', 'clang-build')
+        self._lldb_build_dir = os.environ.get('LLDB_BUILD_DIR', 'lldb-build')
         self._install_dir = os.environ.get('BUILD_DIR', 'clang-install')
         self.j_level = os.environ.get('J_LEVEL', '4')
         self.host_compiler_url = os.environ.get('HOST_URL',
@@ -50,6 +51,10 @@ class Configuration(object):
     def srcdir(self):
         """The derived source directory for this build."""
         return os.path.join(self.workspace, self._src_dir)
+
+    def lldbbuilddir(self):
+        """The derived source directory for this lldb build."""
+        return os.path.join(self.workspace, self._lldb_build_dir)
 
     def lldbsrcdir(self):
         """The derived source directory for this lldb build."""
@@ -175,9 +180,20 @@ def clang_builder(target):
 
 def lldb_builder():
     """Do an Xcode build of lldb."""
-    xcodebuild_cmd = ["xcodebuild", "-configuration", "BuildAndIntegration", "-scheme", "lldb-tool"]
 
-    header("Make All")
+    # Wipe the build folder
+
+    header("Clean LLDB build directory")
+    if os.path.exists(conf.lldbbuilddir()):
+        clean_cmd = ["rm", "-rf", conf.lldbbuilddir() + "/*"]
+        run_cmd(conf.workspace, clean_cmd)
+    footer()
+
+    # Build into the build folder
+
+    xcodebuild_cmd = ["xcodebuild", "-configuration", "BuildAndIntegration", "-scheme", "lldb-tool", "-derivedDataPath", conf.lldbbuilddir()]
+
+    header("Make lldb-tool")
     run_cmd("lldb", xcodebuild_cmd)
     footer()
         
