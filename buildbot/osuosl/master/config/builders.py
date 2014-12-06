@@ -720,10 +720,9 @@ def _get_libcxx_builders():
          'builddir': 'libcxx-libcxxabi-singlethreaded-x86_64-linux-debian',
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
              env={'CC': 'clang', 'CXX': 'clang++'},
-             additional_features=set(['libcxxabi-has-no-threads',
-                                      'libcpp-has-no-threads',
-                                      'libcpp-has-no-monotonic-clock']),
-             cmake_extra_opts={'LIBCXXABI_ENABLE_THREADS' : 'OFF'}),
+             cmake_extra_opts={'LIBCXX_ENABLE_THREADS': 'OFF',
+                               'LIBCXX_ENABLE_MONOTONIC_CLOCK': 'OFF',
+                               'LIBCXXABI_ENABLE_THREADS': 'OFF'}),
          'category': 'libcxx'},
 
         # EricWF's builders. A default configuration build
