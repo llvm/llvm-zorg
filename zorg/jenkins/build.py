@@ -20,8 +20,15 @@ def next_section(name):
 def header(name):
     print "@@@", name, "@@@"
 
+
 def footer():
     print "@@@@@@"
+
+
+def quote_sh_string(string):
+    """Make things that we print shell safe for copy and paste."""
+    return "\\'".join("'" + p + "'" for p in string.split("'"))
+
 
 class Configuration(object):
     """docstring for Configuration"""
@@ -388,7 +395,8 @@ def build_upload_artifact():
 def run_cmd(working_dir, cmd):
     """Run a command in a working directory, and make sure it returns zero."""
     old_cwd = os.getcwd()
-    sys.stdout.write("cd {}\n{}\n".format(working_dir, ' '.join(cmd)))
+    cmd_to_print = ' '.join([quote_sh_string(x) for x in cmd])
+    sys.stdout.write("cd {}\n{}\n".format(working_dir, cmd_to_print))
     sys.stdout.flush()
 
     start_time = datetime.datetime.now()
