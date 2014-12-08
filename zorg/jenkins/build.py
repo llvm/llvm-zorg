@@ -11,11 +11,20 @@ import shutil
 
 SERVER = "labmaster2.local"
 
+
+def readme_name(repo):
+    """Given a repo, return the name of the readme file."""
+    if repo == "libcxx":
+        return "LICENSE.TXT"
+    return "README.txt"
+
+
 def next_section(name):
     """Jenkins is setup to parse @@@ xyz @@@ as a new section of the buildlog
     with title xyz.  The section ends with @@@@@@ """
     footer()
     header(name)
+
 
 def header(name):
     print "@@@", name, "@@@"
@@ -214,124 +223,136 @@ def check_repo_state(path):
     if os.environ.get('TESTING', False):
         return
 
-    repo_readme_paths = ["llvm/README.txt",
-                         "llvm/tools/clang/README.txt",
-                         "llvm/tools/clang/tools/extra/README.txt",
-                         "llvm/projects/compiler-rt/README.txt",
-                         "llvm/projects/libcxx/LICENSE.TXT"]
-
-    for readme in repo_readme_paths:
-        full_readme_path = os.path.join(path, readme)
-        if not os.path.exists(full_readme_path):
-            logging.error("Cannot find Repo: " +
-                readme + " in " + full_readme_path)
-            sys.exit(1)
+    logging.info("Detecting repos in {}".format(path))
+    for r in ['llvm', 'clang', 'clang-tools-extra', 'debuginfo-tests', \
+            'compiler-rt', 'libcxx', 'debuginfo-tests']:
+        detected_path = derived_path('llvm', tree_path(tree=llvm, repo=r))
+        readme = os.path.join(path, detected_path, readme_name(repo=r))
+        if os.path.exists(readme):
+            logging.info(" - {} found at {}".format(r, detected_path))
+        else:
+            logging.info(" - {} not found".format(r))
 
 
-def derive():
+def checkout_path(workspace, repo):
+    """Get the checkout path for a repo"""
+    return workspace + "/" + repo + ".src"
+
+
+def tree_path(tree, repo):
+    """Get the derived path for a repo"""
+    if tree == "llvm":
+        if repo == "llvm":
+            return ""
+        if repo == "clang":
+            return "tools/clang"
+        if repo == "clang-tools-extra":
+            return "tools/clang/tools/extra"
+        if repo == "debuginfo-tests":
+            return "tools/clang/test/debuginfo-tests"
+        if repo == "compiler-rt":
+            return "projects/compiler-rt"
+        if repo == "libcxx":
+            return "projects/libcxx"
+
+    elif tree == "lldb":
+        if repo == "lldb":
+            return ""
+        if repo == "llvm":
+            return "llvm"
+        if repo == "clang":
+            return "llvm/tools/clang"
+
+    else:
+        logging.error("Unknown tree '{}'".format(tree))
+        sys.exit(1)
+
+    logging.error("Unknown repo '{}' in tree '{}".format(repo, tree))
+    sys.exit(1)
+
+
+def tree_srcdir(conf, tree):
+    """Get the srcdir for a tree"""
+    if tree == "llvm":
+        return conf.srcdir()
+
+    if tree == "lldb":
+        return conf.lldbsrcdir()
+
+    logging.error("Unknown tree '{}'".format(tree))
+    sys.exit(1)
+
+
+def derived_path(srcdir, tree_path):
+    """Get the derived path from a tree path"""
+    if tree_path:
+        return srcdir + "/" + tree_path
+    return srcdir
+
+
+def should_exclude(base_path, repo_path):
+    """Check wither a repo should be excluded in a given rsync"""
+    if base_path == repo_path:
+        return False
+    if not base_path:
+        return True
+    if repo_path.startswith(base_path + "/"):
+        return True
+    return False
+
+
+def rsync(conf, tree, repo, repos):
+    """rsync from the checkout to the derived path"""
+    cmd = ["rsync", "-auvh", "--delete", "--exclude=.svn/"]
+    path = tree_path(tree=tree, repo=repo)
+    for x in repos:
+        x_path = tree_path(tree=tree, repo=x)
+        if should_exclude(path, x_path):
+            cmd.append("--exclude=/" + x_path)
+
+    workspace = conf.workspace
+    srcdir = tree_srcdir(conf=conf, tree=tree)
+    cmd.append(checkout_path(workspace=workspace, repo=repo) + "/")
+    cmd.append(derived_path(srcdir=srcdir, tree_path=path))
+    run_cmd(working_dir=srcdir, cmd=cmd)
+
+
+def derive(tree, repos):
     """Build a derived src tree from all the svn repos.
 
     Try to do this in a way that is pretty fast if the 
     derived tree is already there.
     """
-    input_subpaths = ["llvm.src", "clang.src", "libcxx.src",
-        "clang-tools-extra.src", "compiler-rt.src", "libcxx.src",
-        "debuginfo-tests.src"]
+
     # Check for src dirs.
-    for p in input_subpaths:
-        full_path = os.path.join(conf.workspace, p)
+    for p in repos:
+        full_path = checkout_path(workspace=conf.workspace, repo=p)
         if not os.path.exists(full_path):
             logging.error("Cannot find Repo: in " + full_path)
             sys.exit(1)
+
     # Make sure destinations exist.
-    tree_paths = ["tools/clang/test/debuginfo-tests",
-                  "tools/clang/tools/extra",
-                  "projects/compiler-rt",
-                  "projects/libcxx",
-                  ""
-                  "tools/clang",]
+    srcdir = tree_srcdir(conf=conf, tree=tree)
+    for p in repos:
+        full_path = derived_path(srcdir=srcdir, tree_path=tree_path(tree=tree, repo=p))
+        if not os.path.exists(full_path):
+            os.makedirs(full_path)
 
-    full_paths = [os.path.join(conf.srcdir(), x) for x in tree_paths]
-
-    for p in full_paths:
-        if not os.path.exists(p):
-            os.makedirs(p)
     header("Derive Source")
-    rsync_base_cmd = ["rsync", "-auvh", "--delete", "--exclude=.svn/"]
-
-    llvm_rsync = ["--exclude=/tools/clang/",
-        "--exclude=/projects/compiler-rt/", "--exclude=/projects/libcxx/",
-         conf.workspace + "/llvm.src/", conf.srcdir()]
-
-    run_cmd(conf.workspace, rsync_base_cmd + llvm_rsync)
-
-    compile_rt_rsync = [ conf.workspace + "/compiler-rt.src/",
-        conf.srcdir() + "/projects/compiler-rt"]
-
-    run_cmd(conf.workspace, rsync_base_cmd + compile_rt_rsync)
-
-    libcxx_rsync = [conf.workspace + "/libcxx.src/",
-        conf.srcdir() + "/projects/libcxx"]
-
-    run_cmd(conf.workspace, rsync_base_cmd + libcxx_rsync)
-
-    clang_rsync = ["--exclude=/tools/extra", "--exclude=/test/debuginfo-tests/",
-        conf.workspace + "/clang.src/", conf.srcdir() + "/tools/clang"]
-
-    run_cmd(conf.workspace, rsync_base_cmd + clang_rsync)
-
-    extra_rsync = [conf.workspace + "/clang-tools-extra.src/", conf.srcdir() + "/tools/clang/tools/extra"]
-
-    run_cmd(conf.workspace, rsync_base_cmd + extra_rsync)
-
-    dbg_rsync = [conf.workspace + "/debuginfo-tests.src/", conf.srcdir() + "/tools/clang/test/debuginfo-tests"]
-
-    run_cmd(conf.workspace, rsync_base_cmd + dbg_rsync)
+    for repo in repos:
+        rsync(conf=conf, tree=tree, repo=repo, repos=repos)
     footer()
+
+
+def derive_llvm(repos=['llvm', 'clang', 'libcxx', 'clang-tools-extra', \
+        'compiler-rt', 'debuginfo-tests']):
+    """Build a derived src tree for LLVM"""
+    derive(tree='llvm', repos=repos)
+
 
 def derive_lldb():
-    """Build a derived src tree from all the svn repos.
-
-    Try to do this in a way that is pretty fast if the 
-    derived tree is already there.
-
-    This is specific to LLDB builds
-    """
-    # Check for src dirs.
-    input_subpaths = ["llvm.src", "clang.src", "lldb.src"]
-
-    for p in input_subpaths:
-        full_path = os.path.join(conf.workspace, p)
-        if not os.path.exists(full_path):
-            logging.error("Cannot find Repo: in " + full_path)
-            sys.exit(1)
-
-    # Make sure destinations exist.
-    tree_paths = ["lldb/llvm/tools/clang",]
-    full_paths = [os.path.join(conf.srcdir(), x) for x in tree_paths]
-
-    for p in full_paths:
-        if not os.path.exists(p):
-            os.makedirs(p)
-
-    # Rsync from the .src folders into the build tree
-    header("Derive Source")
-    rsync_base_cmd = ["rsync", "-auvh", "--delete", "--exclude=.svn/"]
-
-    lldb_rsync = ["--exclude=/llvm",
-         conf.workspace + "/lldb.src/", conf.lldbsrcdir()]
-
-    llvm_rsync = ["--exclude=/tools/clang",
-         conf.workspace + "/llvm.src/", conf.lldbsrcdir() + "/llvm"]
-
-    clang_rsync = [
-         conf.workspace + "/clang.src/", conf.lldbsrcdir() + "/llvm/tools/clang"]
-
-    run_cmd(conf.workspace, rsync_base_cmd + lldb_rsync)
-    run_cmd(conf.workspace, rsync_base_cmd + llvm_rsync)
-    run_cmd(conf.workspace, rsync_base_cmd + clang_rsync)
-
-    footer()
+    """Build a derived src tree for LLDB"""
+    derive(tree='lldb', repos=['lldb', 'llvm', 'clang'])
 
 
 def create_builddirs():
@@ -413,7 +434,8 @@ def run_cmd(working_dir, cmd):
 
 
 KNOWN_TARGETS = ['all', 'build', 'test', 'testlong']
-KNOWN_BUILDS = ['clang', 'cmake', 'lldb', 'derive', 'derive-lldb', 'fetch', 'artifact']
+KNOWN_BUILDS = ['clang', 'cmake', 'lldb', 'fetch', 'artifact', \
+        'derive', 'derive-llvm+clang', 'derive-lldb']
 
 
 def parse_args():
@@ -450,7 +472,9 @@ def main():
         elif args.build_type == 'cmake':
             cmake_builder(args.build_target)
         elif args.build_type == 'derive':
-            derive()
+            derive_llvm()
+        elif args.build_type == 'derive-llvm+clang':
+            derive_llvm(['llvm', 'clang'])
         elif args.build_type == 'derive-lldb':
             derive_lldb()
         elif args.build_type == 'fetch':
