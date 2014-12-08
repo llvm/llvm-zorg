@@ -32,7 +32,7 @@ $python ./build.py clang all --assertions
 
 
 $python ./build.py clang all --lto
-
+$python ./build.py clang build --lto
 
 $python ./build.py clang build
 $python ./build.py clang test
