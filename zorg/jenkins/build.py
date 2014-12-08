@@ -226,7 +226,7 @@ def check_repo_state(path):
     logging.info("Detecting repos in {}".format(path))
     for r in ['llvm', 'clang', 'clang-tools-extra', 'debuginfo-tests', \
             'compiler-rt', 'libcxx', 'debuginfo-tests']:
-        detected_path = derived_path('llvm', tree_path(tree=llvm, repo=r))
+        detected_path = derived_path('llvm', tree_path(tree='llvm', repo=r))
         readme = os.path.join(path, detected_path, readme_name(repo=r))
         if os.path.exists(readme):
             logging.info(" - {} found at {}".format(r, detected_path))
