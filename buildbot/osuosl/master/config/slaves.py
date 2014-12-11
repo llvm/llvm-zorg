@@ -163,6 +163,8 @@ def get_build_slaves():
 
         # Ubuntu 14.04 x86_64, Intel(R) Xeon(R) CPU E5-1650 0 @ 3.20GHz
         create_slave("ericwf-buildslave", properties={'jobs': 4}, max_builds=2),
+        # Ubuntu 14.10 x86_64, Intel(R) Xeon(R) CPU E3-1245 V2 @ 3.40GHz
+        create_slave('ericwf-buildslave2', properties={'jobs': 4}, max_builds=2),
         # OS X 10.10 x86_64, Intel Core 2 Duo @ 2.40GHz
         create_slave("ericwf-osx-slave", properties={'jobs': 2}, max_builds=1),
         # Defunct.

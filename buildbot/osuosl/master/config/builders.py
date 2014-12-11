@@ -725,8 +725,7 @@ def _get_libcxx_builders():
                                'LIBCXXABI_ENABLE_THREADS': 'OFF'}),
          'category': 'libcxx'},
 
-        # EricWF's builders. A default configuration build
-        # As well as builders for c++03 and c++14
+        # EricWF's builders on ericwf-buildslave
         {'name': 'libcxx-libcxxabi-x86_64-linux-ubuntu',
          'slavenames': ['ericwf-buildslave'],
          'builddir' : 'libcxx-libcxxabi-x86_64-linux-ubuntu',
@@ -780,6 +779,26 @@ def _get_libcxx_builders():
             cmake_extra_opts={'LLVM_USE_SANITIZER': 'Undefined'}),
         'category': 'libcxx'},
 
+        # EricWF's builders on ericwf-buildslave2
+        {'name': 'libcxx-libcxxabi-x86_64-linux-ubuntu-noexceptions',
+         'slavenames': ['ericwf-buildslave2'],
+         'builddir': 'libcxx-libcxxabi-x86_64-linux-ubuntu-noexceptions',
+         'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
+            env={'PATH': '/usr/local/bin:/usr/bin:/bin',
+                 'CC': 'clang', 'CXX': 'clang++'},
+            cmake_extra_opts={'LIBCXX_ENABLE_EXCEPTIONS': 'OFF'}),
+        'category': 'libcxx'},
+
+        {'name': 'libcxx-libcxxabi-x86_64-linux-ubuntu-nortti',
+         'slavenames': ['ericwf-buildslave2'],
+         'builddir': 'libcxx-libcxxabi-x86_64-linux-ubuntu-noexceptions',
+         'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
+            env={'PATH': '/usr/local/bin:/usr/bin:/bin',
+                 'CC': 'clang', 'CXX': 'clang++'},
+            cmake_extra_opts={'LIBCXX_ENABLE_RTTI': 'OFF'}),
+        'category': 'libcxx'},
+
+        # EricWF's builders on ericwf-osx-slave
         {'name': 'libcxx-libcxxabi-x86_64-apple-darwin14-system-clang',
          'slavenames': ['ericwf-osx-slave'],
          'builddir' : 'libcxx-libcxxabi-x86_64-apple-darwin14-system-clang',
