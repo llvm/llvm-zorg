@@ -791,7 +791,7 @@ def _get_libcxx_builders():
 
         {'name': 'libcxx-libcxxabi-x86_64-linux-ubuntu-nortti',
          'slavenames': ['ericwf-buildslave2'],
-         'builddir': 'libcxx-libcxxabi-x86_64-linux-ubuntu-noexceptions',
+         'builddir': 'libcxx-libcxxabi-x86_64-linux-ubuntu-nortti',
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
             env={'PATH': '/usr/local/bin:/usr/bin:/bin',
                  'CC': 'clang', 'CXX': 'clang++'},
