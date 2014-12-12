@@ -50,6 +50,10 @@ from zorg.buildbot.builders import SphinxDocsBuilder
 reload(SphinxDocsBuilder)
 from zorg.buildbot.builders import SphinxDocsBuilder
 
+from zorg.buildbot.builders import ABITestsuitBuilder
+reload(ABITestsuitBuilder)
+from zorg.buildbot.builders import ABITestsuitBuilder
+
 # Plain LLVM builders.
 def _get_llvm_builders():
     return [
@@ -337,6 +341,12 @@ def _get_clang_builders():
                          checkout_compiler_rt=False,
                          extra_cmake_args=["-DLLVM_HOST_TRIPLE=mips-unknown-linux-gnu",
                                            "-DLLVM_DEFAULT_TARGET_TRIPLE=mips-unknown-linux-gnu"])},
+
+        # ABI test-suite with CMake builder
+        {'name'       : "clang-x86_64-linux-selfhost-abi-test",
+         'slavenames' : ["as-bldslv8"],
+         'builddir'   : "clang-x86_64-linux-selfhost-abi-test",
+         'factory'    : ABITestsuitBuilder.getABITestsuitBuildFactory(jobs=64)},
 
         # Clang cross builders.
         {'name' : "clang-x86_64-darwin13-cross-mingw32",
