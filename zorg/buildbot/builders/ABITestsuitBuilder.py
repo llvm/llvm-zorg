@@ -4,7 +4,6 @@ from buildbot.steps.source       import SVN
 from zorg.buildbot.builders                import ClangBuilder
 from zorg.buildbot.commands.LitTestCommand import LitTestCommand
 
-
 def getABITestsuitBuildFactory(
             always_clean=True,
             test=True,
@@ -25,7 +24,8 @@ def getABITestsuitBuildFactory(
         # Overwrite pre-set items with the given ones, so user can set anything.
         merged_env.update(env)
 
-    stage2_build='stage2' # Should match the one defined in getClangCMakeBuildFactory.
+    source_dir       = 'llvm'   # Should match the one used in getClangCMakeBuildFactory.
+    stage2_build_dir = 'stage2' # Should match the one defined in getClangCMakeBuildFactory.
 
     # Bootstrap clang first.
     f = ClangBuilder.getClangCMakeBuildFactory(
@@ -47,8 +47,8 @@ def getABITestsuitBuildFactory(
 
     # Run the ABI test.
     abi_test_env = {
-        'PYTHONPATH' : "llvm/utils/lit:${PYTHONPATH}",
-        'PATH'       : WithProperties("%(workdir)s/" + stage2_build + "/bin:${PATH}"),
+        'PYTHONPATH' : WithProperties("%(workdir)s/" + source_dir + "/utils/lit:${PYTHONPATH}"),
+        'PATH'       : WithProperties("%(workdir)s/" + stage2_build_dir + "/bin:${PATH}"),
         }
     merged_env.update(abi_test_env)
 
