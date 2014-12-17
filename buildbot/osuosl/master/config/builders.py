@@ -412,7 +412,9 @@ def _get_clang_builders():
          'factory' : ClangBuilder.getClangCMakeBuildFactory(
                      jobs=4,
                      clean=False,
-                     checkout_compiler_rt=False)},
+                     checkout_compiler_rt=False,
+                     useTwoStage=True,
+                     testStage1=True)},
         ]
 
 # Offline.
