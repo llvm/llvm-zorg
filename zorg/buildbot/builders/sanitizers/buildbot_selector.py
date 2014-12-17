@@ -25,6 +25,7 @@ BOT_ASSIGNMENT = {
     'sanitizer-ppc64-linux1': bash('buildbot_cmake.sh'),
     'sanitizer-x86_64-linux': bash('buildbot_cmake.sh'),
     'sanitizer-x86_64-linux-bootstrap': bash('buildbot_bootstrap.sh'),
+    'sanitizer-x86_64-linux-fast': bash('buildbot_fast.sh'),
 }
 
 BOT_ADDITIONAL_ENV = {
@@ -39,6 +40,7 @@ BOT_ADDITIONAL_ENV = {
     'sanitizer-ppc64-linux1': { 'HAVE_NINJA': '0' },
     'sanitizer-x86_64-linux': { 'BUILD_ANDROID' : '1', 'RUN_ANDROID' : '1', 'HAVE_NINJA' : '1' },
     'sanitizer-x86_64-linux-bootstrap': {},
+    'sanitizer-x86_64-linux-fast': {},
 }
 
 def Main():

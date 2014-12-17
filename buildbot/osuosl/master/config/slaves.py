@@ -153,10 +153,12 @@ def get_build_slaves():
         # AArch64 Clang, Juno ARM Development Platform
         create_slave("juno-aarch64-01", properties={'jobs': 4}, max_builds=1),
 
-        # Ubuntu x86-64, 12x Intel(R) Xeon(R) CPU X5650 @ 2.67GHz
+        # Debian 7.7 x86_64 16-core GCE instance
         create_slave("sanitizer-buildbot1", properties={'jobs': 8}, max_builds=1),
-        # Ubuntu x86-64, 24x Intel(R) Xeon(R) CPU X5650 @ 2.67GHz
+        # Debian 7.7 x86_64 16-core GCE instance
         create_slave("sanitizer-buildbot2", properties={'jobs': 8}, max_builds=1),
+        # Debian 7.7 x86_64 8-core GCE instance
+        create_slave("sanitizer-buildbot3", properties={'jobs': 8}, max_builds=1),
 
         # zEnterprise 196 (s390x), SLES 11 SP2
         create_slave("systemz-1", properties={'jobs': 4}, max_builds=1),
