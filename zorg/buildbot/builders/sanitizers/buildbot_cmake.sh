@@ -112,6 +112,11 @@ COMPILER_RT_BUILD_PATH=projects/compiler-rt/src/compiler-rt-build
 echo @@@BUILD_STEP run asan tests@@@
 (cd llvm_build64 && make -j$MAKE_JOBS check-asan) || echo @@@STEP_FAILURE@@@
 
+if [ "$PLATFORM" == "Linux" ]; then
+  echo @@@BUILD_STEP run asan-dynamic tests@@@
+  (cd llvm_build64 && make -j$MAKE_JOBS check-asan-dynamic) || echo @@@STEP_FAILURE@@@
+fi
+
 if [ "$PLATFORM" == "Linux" -a "$ARCH" == "x86_64" ]; then
   echo @@@BUILD_STEP run msan unit tests@@@
   (cd llvm_build64 && make -j$MAKE_JOBS check-msan) || echo @@@STEP_FAILURE@@@
