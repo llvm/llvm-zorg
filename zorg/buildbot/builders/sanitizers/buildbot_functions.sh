@@ -93,3 +93,115 @@ function gclient_runhooks {
   gclient runhooks
   )
 }
+
+function build_stage1_clang {
+  mkdir -p ${STAGE1_DIR}
+  cmake_stage1_options="${CMAKE_COMMON_OPTIONS}"
+  (cd ${STAGE1_DIR} && cmake ${cmake_stage1_options} $LLVM && \
+    ninja clang compiler-rt llvm-symbolizer)
+}
+
+function common_stage2_variables {
+  local stage1_clang_path=$ROOT/${STAGE1_DIR}/bin
+  cmake_stage2_common_options="\
+    ${CMAKE_COMMON_OPTIONS} \
+    -DCMAKE_C_COMPILER=${stage1_clang_path}/clang \
+    -DCMAKE_CXX_COMPILER=${stage1_clang_path}/clang++ \
+    "
+  llvm_symbolizer_path=${stage1_clang_path}/llvm-symbolizer
+}
+
+function build_stage2_msan {
+  echo @@@BUILD_STEP build libcxx/msan@@@
+  
+  common_stage2_variables
+  export MSAN_SYMBOLIZER_PATH="${llvm_symbolizer_path}"
+  
+  local memory_sanitizer_kind="Memory"
+  BUILDBOT_MSAN_ORIGINS=${BUILDBOT_MSAN_ORIGINS:-}
+  if [ "$BUILDBOT_MSAN_ORIGINS" != "" ]; then
+      memory_sanitizer_kind="MemoryWithOrigins"
+  fi
+
+  mkdir -p ${STAGE2_LIBCXX_MSAN_DIR}
+  (cd ${STAGE2_LIBCXX_MSAN_DIR} && \
+    cmake \
+      ${cmake_stage2_common_options} \
+      -DLLVM_USE_SANITIZER=${memory_sanitizer_kind} \
+      $LLVM && \
+    ninja cxx cxxabi) || echo @@@STEP_FAILURE@@@
+
+  echo @@@BUILD_STEP build clang/msan@@@
+
+  local msan_ldflags="-lc++abi -Wl,--rpath=${ROOT}/${STAGE2_LIBCXX_MSAN_DIR}/lib -L${ROOT}/${STAGE2_LIBCXX_MSAN_DIR}/lib"
+  # See http://llvm.org/bugs/show_bug.cgi?id=19071, http://www.cmake.org/Bug/view.php?id=15264
+  local cmake_bug_workaround_cflags="$msan_ldflags -fsanitize=memory -w"
+  local msan_cflags="-I${ROOT}/${STAGE2_LIBCXX_MSAN_DIR}/include -I${ROOT}/${STAGE2_LIBCXX_MSAN_DIR}/include/c++/v1 $cmake_bug_workaround_cflags"
+  mkdir -p ${STAGE2_MSAN_DIR}
+  (cd ${STAGE2_MSAN_DIR} && \
+   cmake ${cmake_stage2_common_options} \
+     -DLLVM_USE_SANITIZER=${memory_sanitizer_kind} \
+     -DLLVM_ENABLE_LIBCXX=ON \
+     -DCMAKE_C_FLAGS="${msan_cflags}" \
+     -DCMAKE_CXX_FLAGS="${msan_cflags}" \
+     -DCMAKE_EXE_LINKER_FLAGS="${msan_ldflags}" \
+     $LLVM && \
+   ninja clang) || echo @@@STEP_FAILURE@@@
+}
+
+function build_stage2_asan {
+  echo @@@BUILD_STEP build clang/asan@@@
+
+  common_stage2_variables
+  # Turn on init-order checker as ASan runtime option.
+  export ASAN_SYMBOLIZER_PATH="${llvm_symbolizer_path}"
+  export ASAN_OPTIONS="check_initialization_order=true:detect_stack_use_after_return=1:detect_leaks=1"
+  local cmake_asan_options=" \
+    ${cmake_stage2_common_options} \
+    -DLLVM_USE_SANITIZER=Address \
+    "
+  mkdir -p ${STAGE2_ASAN_DIR}
+  (cd ${STAGE2_ASAN_DIR} && \
+   cmake ${cmake_asan_options} $LLVM && \
+   ninja clang) || echo @@@STEP_FAILURE@@@
+}
+
+function build_stage2_ubsan {
+  echo @@@BUILD_STEP build clang/ubsan@@@
+
+  common_stage2_variables
+  export UBSAN_OPTIONS="external_symbolizer_path=${llvm_symbolizer_path}:print_stacktrace=1"
+  local cmake_ubsan_options=" \
+    ${cmake_stage2_common_options} \
+    -DCMAKE_BUILD_TYPE=Debug \
+    -DLLVM_USE_SANITIZER=Undefined \
+    "
+  mkdir -p ${STAGE2_UBSAN_DIR}
+  (cd ${STAGE2_UBSAN_DIR} &&
+    cmake ${cmake_ubsan_options} $LLVM && \
+    ninja clang) || echo @@@STEP_FAILURE@@@
+}
+
+function check_stage2 {
+  local sanitizer_name=$1
+  local build_dir=$2
+  echo @@@BUILD_STEP check-llvm ${sanitizer_name}@@@
+
+  (cd ${build_dir} && ninja check-llvm) || echo @@@STEP_WARNINGS@@@
+
+  echo @@@BUILD_STEP check-clang ${sanitizer_name}@@@
+
+  (cd ${build_dir} && ninja check-clang) || echo @@@STEP_FAILURE@@@
+}
+
+function check_stage2_msan {
+  check_stage2 msan "${STAGE2_MSAN_DIR}"
+}
+
+function check_stage2_asan {
+  check_stage2 asan "${STAGE2_ASAN_DIR}"
+}
+
+function check_stage2_ubsan {
+  check_stage2 ubsan "${STAGE2_UBSAN_DIR}"
+}
