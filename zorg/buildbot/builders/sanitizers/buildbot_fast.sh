@@ -35,7 +35,7 @@ then
   echo @@@BUILD_STEP using pre-built stage1 clang at r$HOST_CLANG_REVISION@@@
 else
   echo @@@BUILD_STEP sync to r$HOST_CLANG_REVISION@@@
-  local real_buildbot_revision=$BUILDBOT_REVISION
+  real_buildbot_revision=$BUILDBOT_REVISION
   BUILDBOT_REVISION=$HOST_CLANG_REVISION
   buildbot_update
 
