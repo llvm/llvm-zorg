@@ -15,6 +15,7 @@ STAGE1_DIR=llvm_build0
 STAGE2_ASAN_DIR=llvm_build_asan
 STAGE2_MSAN_DIR=llvm_build_msan
 STAGE2_LIBCXX_MSAN_DIR=libcxx_build_msan
+STAGE2_LIBCXX_ASAN_DIR=libcxx_build_asan
 STAGE2_UBSAN_DIR=llvm_build_ubsan
 STAGE3_ASAN_DIR=llvm_build2_asan
 STAGE3_MSAN_DIR=llvm_build2_msan
@@ -32,6 +33,7 @@ fi
 # Anyway, incremental builds of stage2 and stage3 compilers don't make sense.
 # Clobber the build trees.
 rm -rf ${STAGE2_LIBCXX_MSAN_DIR}
+rm -rf ${STAGE2_LIBCXX_ASAN_DIR}
 rm -rf ${STAGE2_MSAN_DIR}
 rm -rf ${STAGE3_MSAN_DIR}
 rm -rf ${STAGE2_ASAN_DIR}

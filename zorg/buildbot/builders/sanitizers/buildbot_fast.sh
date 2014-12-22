@@ -15,6 +15,7 @@ STAGE1_DIR=llvm_build0
 STAGE2_ASAN_DIR=llvm_build_asan
 STAGE2_MSAN_DIR=llvm_build_msan
 STAGE2_LIBCXX_MSAN_DIR=libcxx_build_msan
+STAGE2_LIBCXX_ASAN_DIR=libcxx_build_asan
 HOST_CLANG_REVISION=223108
 MAKE_JOBS=${MAX_MAKE_JOBS:-16}
 LLVM=$ROOT/llvm
@@ -47,6 +48,7 @@ else
   # incremental builds of stage2 don't make sense if stage1 compiler has
   # changed. Clobber the build trees.
   rm -rf ${STAGE2_LIBCXX_MSAN_DIR}
+  rm -rf ${STAGE2_LIBCXX_ASAN_DIR}
   rm -rf ${STAGE2_MSAN_DIR}
   rm -rf ${STAGE2_ASAN_DIR}
 

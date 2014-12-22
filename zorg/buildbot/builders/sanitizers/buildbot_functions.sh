@@ -151,15 +151,35 @@ function build_stage2_msan {
 }
 
 function build_stage2_asan {
+  echo @@@BUILD_STEP build libcxx/asan@@@
+  
+  common_stage2_variables
+  export ASAN_SYMBOLIZER_PATH="${llvm_symbolizer_path}"
+  
+  mkdir -p ${STAGE2_LIBCXX_ASAN_DIR}
+  (cd ${STAGE2_LIBCXX_ASAN_DIR} && \
+    cmake \
+      ${cmake_stage2_common_options} \
+      -DLLVM_USE_SANITIZER=Address \
+      $LLVM && \
+    ninja cxx cxxabi) || echo @@@STEP_FAILURE@@@
+
+  
   echo @@@BUILD_STEP build clang/asan@@@
 
-  common_stage2_variables
   # Turn on init-order checker as ASan runtime option.
-  export ASAN_SYMBOLIZER_PATH="${llvm_symbolizer_path}"
   export ASAN_OPTIONS="check_initialization_order=true:detect_stack_use_after_return=1:detect_leaks=1"
+  local asan_ldflags="-lc++abi -Wl,--rpath=${ROOT}/${STAGE2_LIBCXX_ASAN_DIR}/lib -L${ROOT}/${STAGE2_LIBCXX_ASAN_DIR}/lib"
+  # See http://llvm.org/bugs/show_bug.cgi?id=19071, http://www.cmake.org/Bug/view.php?id=15264
+  local cmake_bug_workaround_cflags="$asan_ldflags -fsanitize=address"
+  local asan_cflags="-I${ROOT}/${STAGE2_LIBCXX_ASAN_DIR}/include -I${ROOT}/${STAGE2_LIBCXX_ASAN_DIR}/include/c++/v1 $cmake_bug_workaround_cflags"
   local cmake_asan_options=" \
     ${cmake_stage2_common_options} \
     -DLLVM_USE_SANITIZER=Address \
+    -DLLVM_ENABLE_LIBCXX=ON \
+    -DCMAKE_C_FLAGS=\"${asan_cflags}\" \
+    -DCMAKE_CXX_FLAGS=\"${asan_cflags}\" \
+    -DCMAKE_EXE_LINKER_FLAGS=\"${asan_ldflags}\" \
     "
   mkdir -p ${STAGE2_ASAN_DIR}
   (cd ${STAGE2_ASAN_DIR} && \
