@@ -1,39 +1,40 @@
 #!/usr/bin/env bash
 
+function update_or_checkout {
+  local rev_arg=$1
+  local repo=$2
+  local tree=$3
+  if [ -d ${subtree} ]; then
+    svn up "${subtree}" $rev_arg
+  else
+    svn co "${repo}" "${subtree}" $rev_arg
+  fi
+}
+
 function buildbot_update {
-    REV_ARG=
+    local rev_arg=
     if [ "$BUILDBOT_REVISION" != "" ]; then
-        REV_ARG="-r$BUILDBOT_REVISION"
+        rev_arg="-r$BUILDBOT_REVISION"
     fi
-    if [ -d llvm ]; then
-        svn cleanup llvm
-    fi
-    for subtree in llvm/tools/clang llvm/projects/compiler-rt llvm/projects/libcxx llvm/projects/libcxxabi
+    local tree
+    for tree in llvm llvm/tools/clang llvm/projects/compiler-rt llvm/projects/libcxx llvm/projects/libcxxabi llvm/tools/lld
     do
       if [ -d ${subtree} ]; then
         svn cleanup "${subtree}"
       fi
     done
 
-    if [ -d llvm -a -d llvm/projects/libcxxabi ]; then
-        svn up llvm $REV_ARG
-        if [ "$REV_ARG" == "" ]; then
-            REV_ARG="-r"$(svn info llvm | grep '^Revision:' | awk '{print $2}')
-        fi
-        for subtree in llvm/tools/clang llvm/projects/compiler-rt llvm/projects/libcxx llvm/projects/libcxxabi
-        do
-          svn up "${subtree}" $REV_ARG
-        done
-    else
-        svn co http://llvm.org/svn/llvm-project/llvm/trunk llvm $REV_ARG
-        if [ "$REV_ARG" == "" ]; then
-            REV_ARG="-r"$(svn info llvm | grep '^Revision:' | awk '{print $2}')
-        fi
-        svn co http://llvm.org/svn/llvm-project/cfe/trunk llvm/tools/clang $REV_ARG
-        svn co http://llvm.org/svn/llvm-project/compiler-rt/trunk llvm/projects/compiler-rt $REV_ARG
-        svn co http://llvm.org/svn/llvm-project/libcxx/trunk llvm/projects/libcxx $REV_ARG
-        svn co http://llvm.org/svn/llvm-project/libcxxabi/trunk llvm/projects/libcxxabi $REV_ARG
+    update_or_checkout "$rev_arg" http://llvm.org/svn/llvm-project/llvm/trunk llvm
+
+    if [ "$rev_arg" == "" ]; then
+        rev_arg="-r"$(svn info llvm | grep '^Revision:' | awk '{print $2}')
     fi
+
+    update_or_checkout "$rev_arg" http://llvm.org/svn/llvm-project/cfe/trunk llvm/tools/clang
+    update_or_checkout "$rev_arg" http://llvm.org/svn/llvm-project/compiler-rt/trunk llvm/projects/compiler-rt
+    update_or_checkout "$rev_arg" http://llvm.org/svn/llvm-project/libcxx/trunk llvm/projects/libcxx
+    update_or_checkout "$rev_arg" http://llvm.org/svn/llvm-project/libcxxabi/trunk llvm/projects/libcxxabi
+    update_or_checkout "$rev_arg" http://llvm.org/svn/llvm-project/lld/trunk llvm/tools/lld
 }
 
 function set_chrome_suid_sandbox {
@@ -146,7 +147,7 @@ function build_stage2_msan {
      -DCMAKE_CXX_FLAGS="${msan_cflags}" \
      -DCMAKE_EXE_LINKER_FLAGS="${msan_ldflags}" \
      $LLVM && \
-   ninja clang) || echo @@@STEP_FAILURE@@@
+   ninja clang lld) || echo @@@STEP_FAILURE@@@
 }
 
 function build_stage2_asan {
@@ -163,7 +164,7 @@ function build_stage2_asan {
   mkdir -p ${STAGE2_ASAN_DIR}
   (cd ${STAGE2_ASAN_DIR} && \
    cmake ${cmake_asan_options} $LLVM && \
-   ninja clang) || echo @@@STEP_FAILURE@@@
+   ninja clang lld) || echo @@@STEP_FAILURE@@@
 }
 
 function build_stage2_ubsan {
@@ -179,7 +180,7 @@ function build_stage2_ubsan {
   mkdir -p ${STAGE2_UBSAN_DIR}
   (cd ${STAGE2_UBSAN_DIR} &&
     cmake ${cmake_ubsan_options} $LLVM && \
-    ninja clang) || echo @@@STEP_FAILURE@@@
+    ninja clang lld) || echo @@@STEP_FAILURE@@@
 }
 
 function check_stage2 {
@@ -187,11 +188,17 @@ function check_stage2 {
   local build_dir=$2
   echo @@@BUILD_STEP check-llvm ${sanitizer_name}@@@
 
+  # TODO(eugenis): change this to STEP_FAILURE once green
   (cd ${build_dir} && ninja check-llvm) || echo @@@STEP_WARNINGS@@@
 
   echo @@@BUILD_STEP check-clang ${sanitizer_name}@@@
 
   (cd ${build_dir} && ninja check-clang) || echo @@@STEP_FAILURE@@@
+
+  echo @@@BUILD_STEP check-lld ${sanitizer_name}@@@
+
+  # TODO(smatveev): change this to STEP_FAILURE once green
+  (cd ${build_dir} && ninja check-lld) || echo @@@STEP_WARNINGS@@@
 }
 
 function check_stage2_msan {
