@@ -609,6 +609,40 @@ def _get_lldb_builders():
          'factory': LLDBBuilder.getLLDBBuildFactory(triple=None, # use default
                                                     make='gmake',
                                                     extra_configure_args=['--enable-cxx11', '--enable-optimized', '--enable-assertions'])},
+        {'name': "lldb-x86-windows-msvc",
+         'slavenames': ["zturner-win2008"],
+         'builddir': "lldb-windows-x86",
+         'factory': LLDBBuilder.getLLDBWindowsCMakeBuildFactory(triple=None, # use default
+                                                                config=Debug,
+                                                                # This sets up the environment to be identical to what would happen if you ran vcvarsall.bat
+                                                                # which is a required step before invoking the compiler, linker, or for CMake to even be
+                                                                # able to generate the relevant ninja.
+                                                                env={
+                                                                    'PATH': 'C:\\Program Files (x86)\\MSBuild\\12.0\\bin;' +
+                                                                            'C:\\Program Files (x86)\\Microsoft Visual Studio 12.0\\Common7\\IDE\\;' +
+                                                                            'C:\\Program Files (x86)\\Microsoft Visual Studio 12.0\\VC\\BIN;' +
+                                                                            'C:\\Program Files (x86)\\Microsoft Visual Studio 12.0\\Common7\\Tools;' +
+                                                                            'C:\\Windows\\Microsoft.NET\\Framework\\v4.0.30319;' +
+                                                                            'C:\\Program Files (x86)\\Microsoft Visual Studio 12.0\\VC\\VCPackages;' +
+                                                                            'C:\\Program Files (x86)\\Windows Kits\\8.1\\bin\\x86;',
+                                                                    'DevEnvDir': 'C:\\Program Files (x86)\\Microsoft Visual Studio 12.0\\Common7\\IDE\\',
+                                                                    'ExtensionSdkDir': 'C:\\Program Files (x86)\\Microsoft SDKs\\Windows\\v8.1\\ExtensionSDKs\\',
+                                                                    'Framework40Version': 'v4.0',
+                                                                    'FrameworkDir': 'C:\\Windows\\Microsoft.NET\\Framework\\',
+                                                                    'FrameworkDIR32': 'C:\\Windows\\Microsoft.NET\\Framework\\',
+                                                                    'FrameworkVersion': 'v4.0.30319',
+                                                                    'FrameworkVersion32': 'v4.0.30319',
+                                                                    'INCLUDE': 'C:\\Program Files (x86)\\Microsoft Visual Studio 12.0\\VC\\INCLUDE;C:\\Program Files (x86)\\Microsoft Visual Studio 12.0\\VC\\ATLMFC\\INCLUDE;C:\\Program Files (x86)\\Windows Kits\\8.1\\include\\shared;C:\\Program Files (x86)\\Windows Kits\\8.1\\include\\um;C:\\Program Files (x86)\\Windows Kits\\8.1\\include\\winrt;',
+                                                                    'LIB': 'C:\\Program Files (x86)\\Microsoft Visual Studio 12.0\\VC\\LIB;C:\\Program Files (x86)\\Microsoft Visual Studio 12.0\\VC\\ATLMFC\\LIB;C:\\Program Files (x86)\\Windows Kits\\8.1\\lib\\winv6.3\\um\\x86;',
+                                                                    'LIBPATH': 'C:\\Windows\\Microsoft.NET\\Framework\\v4.0.30319;C:\\Program Files (x86)\\Microsoft Visual Studio 12.0\\VC\\LIB;C:\\Program Files (x86)\\Microsoft Visual Studio 12.0\\VC\\ATLMFC\\LIB;',
+                                                                    'VCINSTALLDIR': 'C:\\Program Files (x86)\\Microsoft Visual Studio 12.0\\VC\\',
+                                                                    'VisualStudioVersion': '12.0',
+                                                                    'VSINSTALLDIR': 'C:\\Program Files (x86)\\Microsoft Visual Studio 12.0\\',
+                                                                    'WindowsSdkDir': 'C:\\Program Files (x86)\\Windows Kits\\8.1\\',
+                                                                    'WindowsSDK_ExecutablePath_x64': 'C:\\Program Files (x86)\\Microsoft SDKs\\Windows\\v8.1A\\bin\\NETFX 4.5.1 Tools\\x64\\',
+                                                                    'WindowsSDK_ExecutablePath_x86': 'C:\\Program Files (x86)\\Microsoft SDKs\\Windows\\v8.1A\\bin\\NETFX 4.5.1 Tools\\',
+                                                                }
+                                                                )},
        ]
 
 # Offline.

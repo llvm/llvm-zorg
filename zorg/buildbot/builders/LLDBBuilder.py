@@ -8,6 +8,84 @@ from buildbot.steps.shell import ShellCommand, WarningCountingShellCommand
 from buildbot.process.properties import WithProperties
 from zorg.buildbot.commands.LitTestCommand import LitTestCommand
 
+# CMake Windows builds
+def getLLDBWindowsCMakeBuildFactory(
+            clean=True,
+            cmake='cmake',
+            jobs=None,
+
+            config='Release',
+
+            # Environmental variables for all steps.
+            env={},
+            extra_cmake_args=[]):
+
+    ############# PREPARING
+    f = buildbot.process.factory.BuildFactory()
+
+    # We *must* checkout at least Clang, LLVM, and LLDB.  Once we add a step to run
+    # tests (e.g. ninja check-lldb), we will also need to add a step for LLD, since
+    # MSVC LD.EXE cannot link executables with DWARF debug info.
+    f.addStep(SVN(name='svn-llvm',
+                  mode='update', baseURL='http://llvm.org/svn/llvm-project/llvm/',
+                  defaultBranch='trunk',
+                  workdir='llvm'))
+    f.addStep(SVN(name='svn-clang',
+                  mode='update', baseURL='http://llvm.org/svn/llvm-project/cfe/',
+                  defaultBranch='trunk',
+                  workdir='llvm/tools/clang'))
+    f.addStep(SVN(name='svn-lldb',
+                  mode='update', baseURL='http://llvm.org/svn/llvm-project/lldb/',
+                  defaultBranch='trunk',
+                  workdir='llvm/tools/lldb'))
+
+    # If jobs not defined, Ninja will choose a suitable value
+    jobs_cmd=[]
+    if jobs is not None:
+        jobs_cmd=["-j"+str(jobs)]
+    ninja_cmd=['ninja'] + jobs_cmd
+
+    # Global configurations
+    build_dir='build'
+
+    ############# CLEANING
+    if clean:
+        f.addStep(ShellCommand(name='clean',
+                               command=['rmdir', '/S/Q', build_dir],
+                               warnOnFailure=True,
+                               description='Cleaning',
+                               descriptionDone='clean',
+                               workdir='.',
+                               env=env))
+
+    # Use batch files instead of ShellCommand directly, Windows quoting is
+    # borked. FIXME: See buildbot ticket #595 and buildbot ticket #377.
+    f.addStep(batch_file_download.BatchFileDownload(name='cmakegen',
+                                command=[cmake, "-G", "Ninja", "../llvm",
+                                         "-DCMAKE_BUILD_TYPE="+config,
+                                         # Need to use our custom built version of python
+                                         "-DPYTHON_LIBRARY=C:\\src\\python\\PCbuild\\python27_d.lib",
+                                         "-DPYTHON_INCLUDE_DIR=C:\\src\\python\\Include",
+                                         "-DPYTHON_EXECUTABLE=C:\\src\\python\\PCbuild\\python_d.exe"]
+                                         + extra_cmake_args,
+                                workdir=build_dir))
+
+    f.addStep(ShellCommand(name='cmake',
+                           command=['cmakegen.bat'],
+                           haltOnFailure=True,
+                           description='cmake gen',
+                           workdir=build_dir,
+                           env=env))
+
+    f.addStep(WarningCountingShellCommand(name='build',
+                                          command=ninja_cmd,
+                                          haltOnFailure=True,
+                                          description='ninja build',
+                                          workdir=build_dir,
+                                          env=env))
+
+    return f
+
 def getLLDBBuildFactory(
             triple,
             outOfDir=False,
