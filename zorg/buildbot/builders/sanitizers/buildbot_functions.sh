@@ -171,7 +171,7 @@ function build_stage2_asan {
   export ASAN_OPTIONS="check_initialization_order=true:detect_stack_use_after_return=1:detect_leaks=1"
   local asan_ldflags="-lc++abi -Wl,--rpath=${ROOT}/${STAGE2_LIBCXX_ASAN_DIR}/lib -L${ROOT}/${STAGE2_LIBCXX_ASAN_DIR}/lib"
   # See http://llvm.org/bugs/show_bug.cgi?id=19071, http://www.cmake.org/Bug/view.php?id=15264
-  local cmake_bug_workaround_cflags="$asan_ldflags -fsanitize=address"
+  local cmake_bug_workaround_cflags="$asan_ldflags -fsanitize=address -w"
   local asan_cflags="-I${ROOT}/${STAGE2_LIBCXX_ASAN_DIR}/include -I${ROOT}/${STAGE2_LIBCXX_ASAN_DIR}/include/c++/v1 $cmake_bug_workaround_cflags"
   mkdir -p ${STAGE2_ASAN_DIR}
   (cd ${STAGE2_ASAN_DIR} && \
