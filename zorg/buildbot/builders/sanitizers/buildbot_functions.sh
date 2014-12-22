@@ -173,17 +173,15 @@ function build_stage2_asan {
   # See http://llvm.org/bugs/show_bug.cgi?id=19071, http://www.cmake.org/Bug/view.php?id=15264
   local cmake_bug_workaround_cflags="$asan_ldflags -fsanitize=address"
   local asan_cflags="-I${ROOT}/${STAGE2_LIBCXX_ASAN_DIR}/include -I${ROOT}/${STAGE2_LIBCXX_ASAN_DIR}/include/c++/v1 $cmake_bug_workaround_cflags"
-  local cmake_asan_options=" \
-    ${cmake_stage2_common_options} \
-    -DLLVM_USE_SANITIZER=Address \
-    -DLLVM_ENABLE_LIBCXX=ON \
-    -DCMAKE_C_FLAGS=\"${asan_cflags}\" \
-    -DCMAKE_CXX_FLAGS=\"${asan_cflags}\" \
-    -DCMAKE_EXE_LINKER_FLAGS=\"${asan_ldflags}\" \
-    "
   mkdir -p ${STAGE2_ASAN_DIR}
   (cd ${STAGE2_ASAN_DIR} && \
-   cmake ${cmake_asan_options} $LLVM && \
+   cmake ${cmake_stage2_common_options} \
+     -DLLVM_USE_SANITIZER=Address \
+     -DLLVM_ENABLE_LIBCXX=ON \
+     -DCMAKE_C_FLAGS="${asan_cflags}" \
+     -DCMAKE_CXX_FLAGS="${asan_cflags}" \
+     -DCMAKE_EXE_LINKER_FLAGS="${asan_ldflags}" \
+   $LLVM && \
    ninja clang lld) || echo @@@STEP_FAILURE@@@
 }
 
