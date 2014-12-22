@@ -4,10 +4,10 @@ function update_or_checkout {
   local rev_arg=$1
   local repo=$2
   local tree=$3
-  if [ -d ${subtree} ]; then
-    svn up "${subtree}" $rev_arg
+  if [ -d ${tree} ]; then
+    svn up "${tree}" $rev_arg
   else
-    svn co "${repo}" "${subtree}" $rev_arg
+    svn co "${repo}" "${tree}" $rev_arg
   fi
 }
 
@@ -19,8 +19,8 @@ function buildbot_update {
     local tree
     for tree in llvm llvm/tools/clang llvm/projects/compiler-rt llvm/projects/libcxx llvm/projects/libcxxabi llvm/tools/lld
     do
-      if [ -d ${subtree} ]; then
-        svn cleanup "${subtree}"
+      if [ -d ${tree} ]; then
+        svn cleanup "${tree}"
       fi
     done
 
