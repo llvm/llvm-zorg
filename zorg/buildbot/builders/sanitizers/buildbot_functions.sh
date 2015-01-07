@@ -206,8 +206,12 @@ function check_stage2 {
   local build_dir=$2
   echo @@@BUILD_STEP check-llvm ${sanitizer_name}@@@
 
-  # TODO(eugenis): change this to STEP_FAILURE once green
-  (cd ${build_dir} && ninja check-llvm) || echo @@@STEP_WARNINGS@@@
+  # TODO(samsonov): change this to STEP_FAILURE once green
+  if [ "${sanitizer_name}" == "ubsan" ]; then
+    (cd ${build_dir} && ninja check-llvm) || echo @@@STEP_WARNINGS@@@
+  else
+    (cd ${build_dir} && ninja check-llvm) || echo @@@STEP_FAILURE@@@
+  fi
 
   echo @@@BUILD_STEP check-clang ${sanitizer_name}@@@
 
