@@ -1,4 +1,5 @@
 import os
+import subprocess
 
 import buildbot
 import buildbot.process.factory
@@ -6,7 +7,121 @@ from buildbot.steps.source import SVN
 from buildbot.steps.shell import Configure, SetProperty
 from buildbot.steps.shell import ShellCommand, WarningCountingShellCommand
 from buildbot.process.properties import WithProperties
+import zorg.buildbot.commands.BatchFileDownload as batch_file_download
 from zorg.buildbot.commands.LitTestCommand import LitTestCommand
+
+def generateVisualStudioEnvironment(vs_install_dir, target_arch):
+    arch_arg = {'x86': 'x86', 'x64': 'amd64', 'amd64': 'amd64'}.get(target_arch, None)
+    if arch_arg is None:
+        return None
+    
+    vcvars_command = "\"" + os.path.join(vs_install_dir, 'VC', 'vcvarsall.bat') + "\""
+    vcvars_command = "%s %s && set" % (vcvars_command, arch_arg)
+    process = subprocess.Popen(vcvars_command, shell = True, stdout=subprocess.PIPE, stderr = None)
+    (stdout, _) = process.communicate()
+    vars = stdout.splitlines()
+    env = {}
+    # At some point it may be worth trying to see if we can create an trimmed down whitelist of only
+    # those environment variables which are necessary in order for the parts of the toolchain that
+    # we need, such as the compiler and linker.
+    for var in vars:
+        keyval_pair = var.split('=')
+        key = keyval_pair[0]
+        value = keyval_pair[1]
+        env[key] = value
+
+    return env
+
+# CMake Windows builds
+def getLLDBWindowsCMakeBuildFactory(
+            clean=True,
+            cmake='cmake',
+            jobs="%(jobs)s",
+
+            # Source directory containing a built python
+            python_source_dir=r'C:\src\python',
+
+            # Default values for VS version and build configuration
+            vs_install_dir=r'C:\Program Files (x86)\Microsoft Visual Studio 12.0',
+            config='Release',
+            target_arch='x86',
+
+            extra_cmake_args=[]):
+
+    ############# PREPARING
+    f = buildbot.process.factory.BuildFactory()
+
+    env = generateVisualStudioEnvironment(vs_install_dir, target_arch)
+
+    # We *must* checkout at least Clang, LLVM, and LLDB.  Once we add a step to run
+    # tests (e.g. ninja check-lldb), we will also need to add a step for LLD, since
+    # MSVC LD.EXE cannot link executables with DWARF debug info.
+    f.addStep(SVN(name='svn-llvm',
+                  mode='update', baseURL='http://llvm.org/svn/llvm-project/llvm/',
+                  defaultBranch='trunk',
+                  workdir='llvm'))
+    f.addStep(SVN(name='svn-clang',
+                  mode='update', baseURL='http://llvm.org/svn/llvm-project/cfe/',
+                  defaultBranch='trunk',
+                  workdir='llvm/tools/clang'))
+    f.addStep(SVN(name='svn-lldb',
+                  mode='update', baseURL='http://llvm.org/svn/llvm-project/lldb/',
+                  defaultBranch='trunk',
+                  workdir='llvm/tools/lldb'))
+
+    ninja_cmd=['ninja', WithProperties("-j%s" % jobs)]
+
+    # Global configurations
+    build_dir='build'
+
+    ############# CLEANING
+    if clean:
+        f.addStep(ShellCommand(name='clean',
+                               command=['rmdir', '/S/Q', build_dir],
+                               warnOnFailure=True,
+                               description='Cleaning',
+                               descriptionDone='clean',
+                               workdir='.',
+                               env=env))
+
+    if config.lower() == 'release':
+        python_lib = 'python27.lib'
+        python_exe = 'python.exe'
+    elif config.lower() == 'debug':
+        python_lib = 'python27_d.lib'
+        python_exe = 'python_d.exe'
+
+    python_lib = os.path.join(python_source_dir, 'PCbuild', python_lib)
+    python_exe = os.path.join(python_source_dir, 'PCbuild', python_exe)
+    python_include = os.path.join(python_source_dir, 'Include')
+
+    # Use batch files instead of ShellCommand directly, Windows quoting is
+    # borked. FIXME: See buildbot ticket #595 and buildbot ticket #377.
+    f.addStep(batch_file_download.BatchFileDownload(name='cmakegen',
+                                command=[cmake, "-G", "Ninja", "../llvm",
+                                         "-DCMAKE_BUILD_TYPE="+config,
+                                         # Need to use our custom built version of python
+                                         '-DPYTHON_LIBRARY=' + python_lib,
+                                         '-DPYTHON_INCLUDE_DIR=' + python_include,
+                                         '-DPYTHON_EXECUTABLE=' + python_exe]
+                                         + extra_cmake_args,
+                                workdir=build_dir))
+
+    f.addStep(ShellCommand(name='cmake',
+                           command=['cmakegen.bat'],
+                           haltOnFailure=True,
+                           description='cmake gen',
+                           workdir=build_dir,
+                           env=env))
+
+    f.addStep(WarningCountingShellCommand(name='build',
+                                          command=ninja_cmd,
+                                          haltOnFailure=True,
+                                          description='ninja build',
+                                          workdir=build_dir,
+                                          env=env))
+
+    return f
 
 def getLLDBBuildFactory(
             triple,

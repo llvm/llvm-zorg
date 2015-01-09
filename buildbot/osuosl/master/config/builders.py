@@ -631,6 +631,10 @@ def _get_lldb_builders():
          'factory': LLDBBuilder.getLLDBBuildFactory(triple=None, # use default
                                                     make='gmake',
                                                     extra_configure_args=['--enable-cxx11', '--enable-optimized', '--enable-assertions'])},
+        {'name': "lldb-x86-windows-msvc",
+         'slavenames': ["zturner-win2008"],
+         'builddir': "lldb-windows-x86",
+         'factory': LLDBBuilder.getLLDBWindowsCMakeBuildFactory(config='Debug')},
        ]
 
 # Offline.
