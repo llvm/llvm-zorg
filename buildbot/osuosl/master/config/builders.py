@@ -67,6 +67,11 @@ def _get_llvm_builders():
          'builddir':"llvm-ppc64",
          'factory': LLVMBuilder.getLLVMBuildFactory("ppc64-linux-gnu", jobs=2, clean=False, timeout=20)},
 
+        {'name': "ppc64le-llvm",
+         'slavenames':["ppc64le-llvm"],
+         'builddir':"llvm-ppc64le-1",
+         'factory': LLVMBuilder.getLLVMBuildFactory("ppc64le-linux-gnu", jobs=4, clean=False, timeout=20)},
+
         {'name': "llvm-s390x-linux1",
          'slavenames':["systemz-1"],
          'builddir':"llvm-s390x-linux1",
@@ -292,6 +297,23 @@ def _get_clang_builders():
          'slavenames' :["chinook-clangslave2"],
          'builddir' :"clang-ppc64-2",
          'factory' : ClangBuilder.getClangBuildFactory(triple='ppc64-elf-linux',
+                                                       useTwoStage=True, test=True,
+                                                       checkout_compiler_rt=True,
+                                                       stage1_config='Release+Asserts',
+                                                       stage2_config='Release+Asserts')},
+
+        {'name' : "ppc64le-clanglnt",
+         'slavenames' :["ppc64le-clanglnt"],
+         'builddir' :"clang-lnt-ppc64le-1",
+         'factory' : LNTBuilder.getLNTFactory(triple='ppc64le-elf-linux1',
+                                              nt_flags=['--multisample=3','--cflag','-mcpu=native'],
+                                              jobs=4,  use_pty_in_tests=True,
+                                              testerName='ppc64le-plain', run_cxx_tests=True)},
+
+        {'name' : "ppc64le-clang",
+         'slavenames' :["ppc64le-clang"],
+         'builddir' :"clang-ppc64le-1",
+         'factory' : ClangBuilder.getClangBuildFactory(triple='ppc64le-elf-linux',
                                                        useTwoStage=True, test=True,
                                                        checkout_compiler_rt=True,
                                                        stage1_config='Release+Asserts',
@@ -686,6 +708,11 @@ def _get_sanitizer_builders():
           {'name': "sanitizer-ppc64-linux1",
            'slavenames' :["sanitizer-ppc64-1"],
            'builddir': "sanitizer-ppc64-1",
+           'factory': SanitizerBuilder.getSanitizerBuildFactory()},
+
+          {'name': "ppc64le-sanitizer",
+           'slavenames' :["ppc64le-sanitizer"],
+           'builddir': "sanitizer-ppc64le-1",
            'factory': SanitizerBuilder.getSanitizerBuildFactory()},
 
           ## Cortex-A15 check-all full (compiler-rt) with CMake builder; Needs x86 for ASAN tests
