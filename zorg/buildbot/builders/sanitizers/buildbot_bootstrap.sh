@@ -64,13 +64,14 @@ mkdir -p ${STAGE3_MSAN_DIR}
 clang_msan_path=$ROOT/${STAGE2_MSAN_DIR}/bin
 cmake_stage3_msan_options="${CMAKE_COMMON_OPTIONS} -DCMAKE_C_COMPILER=${clang_msan_path}/clang -DCMAKE_CXX_COMPILER=${clang_msan_path}/clang++ -DLLVM_PARALLEL_COMPILE_JOBS=15"
 
-(cd ${STAGE3_MSAN_DIR} && cmake ${cmake_stage3_msan_options} $LLVM && ninja) || \
+(cd ${STAGE3_MSAN_DIR} && cmake ${cmake_stage3_msan_options} $LLVM && ninja clang) || \
   echo @@@STEP_FAILURE@@@
 
 
-echo @@@BUILD_STEP check-all stage3/msan@@@
+echo @@@BUILD_STEP check-llvm check-clang stage3/msan@@@
 
-(cd ${STAGE3_MSAN_DIR} && ninja check-all) || echo @@@STEP_FAILURE@@@
+(cd ${STAGE3_MSAN_DIR} && ninja check-llvm) || echo @@@STEP_FAILURE@@@
+(cd ${STAGE3_MSAN_DIR} && ninja check-clang) || echo @@@STEP_FAILURE@@@
 
 
 # Stage 2 / AddressSanitizer
@@ -88,21 +89,23 @@ mkdir -p ${STAGE3_ASAN_DIR}
 clang_asan_path=$ROOT/${STAGE2_ASAN_DIR}/bin
 cmake_stage3_asan_options="${CMAKE_COMMON_OPTIONS} -DCMAKE_C_COMPILER=${clang_asan_path}/clang -DCMAKE_CXX_COMPILER=${clang_asan_path}/clang++ -DLLVM_PARALLEL_COMPILE_JOBS=10"
 
-(cd ${STAGE3_ASAN_DIR} && cmake ${cmake_stage3_asan_options} $LLVM && ninja) || \
+(cd ${STAGE3_ASAN_DIR} && cmake ${cmake_stage3_asan_options} $LLVM && ninja clang) || \
   echo @@@STEP_FAILURE@@@
 
 
-echo @@@BUILD_STEP check-all stage3/asan@@@
+echo @@@BUILD_STEP check-llvm check-clang stage3/asan@@@
 
 export ASAN_OPTIONS="check_initialization_order=true:detect_leaks=1"
 
-(cd ${STAGE3_ASAN_DIR} && ninja check-all) || echo @@@STEP_FAILURE@@@
+(cd ${STAGE3_ASAN_DIR} && ninja check-llvm) || echo @@@STEP_FAILURE@@@
+(cd ${STAGE3_ASAN_DIR} && ninja check-clang) || echo @@@STEP_FAILURE@@@
 
-echo @@@BUILD_STEP check-all stage3/asan-uar@@@
+echo @@@BUILD_STEP check-llvm check-clang stage3/asan-uar@@@
 
 export ASAN_OPTIONS="check_initialization_order=true:detect_stack_use_after_return=1:detect_leaks=1"
 
-(cd ${STAGE3_ASAN_DIR} && ninja check-all) || echo @@@STEP_FAILURE@@@
+(cd ${STAGE3_ASAN_DIR} && ninja check-llvm) || echo @@@STEP_FAILURE@@@
+(cd ${STAGE3_ASAN_DIR} && ninja check-clang) || echo @@@STEP_FAILURE@@@
 
 # Stage 2 / UndefinedBehaviorSanitizer
 
