@@ -16,6 +16,7 @@ STAGE2_ASAN_DIR=llvm_build_asan
 STAGE2_MSAN_DIR=llvm_build_msan
 STAGE2_LIBCXX_MSAN_DIR=libcxx_build_msan
 STAGE2_LIBCXX_ASAN_DIR=libcxx_build_asan
+STAGE2_LIBCXX_UBSAN_DIR=libcxx_build_ubsan
 STAGE2_UBSAN_DIR=llvm_build_ubsan
 STAGE3_ASAN_DIR=llvm_build2_asan
 STAGE3_MSAN_DIR=llvm_build2_msan

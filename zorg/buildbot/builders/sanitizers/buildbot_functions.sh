@@ -112,93 +112,77 @@ function common_stage2_variables {
   llvm_symbolizer_path=${stage1_clang_path}/llvm-symbolizer
 }
 
-function build_stage2_msan {
-  echo @@@BUILD_STEP build libcxx/msan@@@
-  
+function build_stage2 {
+  local sanitizer_name=$1
+  local libcxx_build_dir=$2
+  local build_dir=$3
+
+  echo @@@BUILD_STEP build libcxx/$sanitizer_name@@@
   common_stage2_variables
-  export MSAN_SYMBOLIZER_PATH="${llvm_symbolizer_path}"
-  
-  local memory_sanitizer_kind="Memory"
-  BUILDBOT_MSAN_ORIGINS=${BUILDBOT_MSAN_ORIGINS:-}
-  if [ "$BUILDBOT_MSAN_ORIGINS" != "" ]; then
-      memory_sanitizer_kind="MemoryWithOrigins"
+
+  if [ "$sanitizer_name" == "msan" ]; then
+    export MSAN_SYMBOLIZER_PATH="${llvm_symbolizer_path}"
+    local llvm_use_sanitizer="Memory"
+    local fsanitize_flag="-fsanitize=memory"
+    BUILDBOT_MSAN_ORIGINS=${BUILDBOT_MSAN_ORIGINS:-}
+    if [ "$BUILDBOT_MSAN_ORIGINS" != "" ]; then
+      llvm_use_sanitizer="MemoryWithOrigins"
+    fi
+    local build_type="Release"
+  elif [ "$sanitizer_name" == "asan" ]; then
+    export ASAN_SYMBOLIZER_PATH="${llvm_symbolizer_path}"
+    export ASAN_OPTIONS="check_initialization_order=true:detect_stack_use_after_return=1:detect_leaks=1"
+    local llvm_use_sanitizer="Address"
+    local fsanitize_flag="-fsanitize=address"
+    local build_type="Release"
+  elif [ "$sanitizer_name" == "ubsan" ]; then
+    export UBSAN_OPTIONS="external_symbolizer_path=${llvm_symbolizer_path}:print_stacktrace=1"
+    local llvm_use_sanitizer="Undefined"
+    local fsanitize_flag="-fsanitize=undefined"
+    local build_type="Debug"
+  else
+    echo "Unknown sanitizer!"
+    exit 1
   fi
 
-  mkdir -p ${STAGE2_LIBCXX_MSAN_DIR}
-  (cd ${STAGE2_LIBCXX_MSAN_DIR} && \
+  mkdir -p ${libcxx_build_dir}
+  (cd ${libcxx_build_dir} && \
     cmake \
       ${cmake_stage2_common_options} \
-      -DLLVM_USE_SANITIZER=${memory_sanitizer_kind} \
+      -DCMAKE_BUILD_TYPE=${build_type} \
+      -DLLVM_USE_SANITIZER=${llvm_use_sanitizer} \
       $LLVM && \
     ninja cxx cxxabi) || echo @@@STEP_FAILURE@@@
 
-  echo @@@BUILD_STEP build clang/msan@@@
+  echo @@@BUILD_STEP build clang/$sanitizer_name@@@
 
-  local msan_ldflags="-lc++abi -Wl,--rpath=${ROOT}/${STAGE2_LIBCXX_MSAN_DIR}/lib -L${ROOT}/${STAGE2_LIBCXX_MSAN_DIR}/lib"
+  local sanitizer_ldflags="-lc++abi -Wl,--rpath=${ROOT}/${libcxx_build_dir}/lib -L${ROOT}/${libcxx_build_dir}/lib"
   # See http://llvm.org/bugs/show_bug.cgi?id=19071, http://www.cmake.org/Bug/view.php?id=15264
-  local cmake_bug_workaround_cflags="$msan_ldflags -fsanitize=memory -w"
-  local msan_cflags="-I${ROOT}/${STAGE2_LIBCXX_MSAN_DIR}/include -I${ROOT}/${STAGE2_LIBCXX_MSAN_DIR}/include/c++/v1 $cmake_bug_workaround_cflags"
-  mkdir -p ${STAGE2_MSAN_DIR}
-  (cd ${STAGE2_MSAN_DIR} && \
+  local cmake_bug_workaround_cflags="$sanitizer_ldflags $fsanitize_flag -w"
+  local sanitizer_cflags="-I${ROOT}/${libcxx_build_dir}/include -I${ROOT}/${libcxx_build_dir}/include/c++/v1 $cmake_bug_workaround_cflags"
+  mkdir -p ${build_dir}
+  (cd ${build_dir} && \
    cmake ${cmake_stage2_common_options} \
-     -DLLVM_USE_SANITIZER=${memory_sanitizer_kind} \
+     -DCMAKE_BUILD_TYPE=${build_type} \
+     -DLLVM_USE_SANITIZER=${llvm_use_sanitizer} \
      -DLLVM_ENABLE_LIBCXX=ON \
-     -DCMAKE_C_FLAGS="${msan_cflags}" \
-     -DCMAKE_CXX_FLAGS="${msan_cflags}" \
-     -DCMAKE_EXE_LINKER_FLAGS="${msan_ldflags}" \
+     -DCMAKE_C_FLAGS="${sanitizer_cflags}" \
+     -DCMAKE_CXX_FLAGS="${sanitizer_cflags}" \
+     -DCMAKE_EXE_LINKER_FLAGS="${sanitizer_ldflags}" \
      $LLVM && \
    ninja clang lld) || echo @@@STEP_FAILURE@@@
 }
 
+function build_stage2_msan {
+  build_stage2 msan "${STAGE2_LIBCXX_MSAN_DIR}" "${STAGE2_MSAN_DIR}"
+}
+
 function build_stage2_asan {
-  echo @@@BUILD_STEP build libcxx/asan@@@
-  
-  common_stage2_variables
-  export ASAN_SYMBOLIZER_PATH="${llvm_symbolizer_path}"
-  
-  mkdir -p ${STAGE2_LIBCXX_ASAN_DIR}
-  (cd ${STAGE2_LIBCXX_ASAN_DIR} && \
-    cmake \
-      ${cmake_stage2_common_options} \
-      -DLLVM_USE_SANITIZER=Address \
-      $LLVM && \
-    ninja cxx cxxabi) || echo @@@STEP_FAILURE@@@
-
-  
-  echo @@@BUILD_STEP build clang/asan@@@
-
-  # Turn on init-order checker as ASan runtime option.
-  export ASAN_OPTIONS="check_initialization_order=true:detect_stack_use_after_return=1:detect_leaks=1"
-  local asan_ldflags="-lc++abi -Wl,--rpath=${ROOT}/${STAGE2_LIBCXX_ASAN_DIR}/lib -L${ROOT}/${STAGE2_LIBCXX_ASAN_DIR}/lib"
-  # See http://llvm.org/bugs/show_bug.cgi?id=19071, http://www.cmake.org/Bug/view.php?id=15264
-  local cmake_bug_workaround_cflags="$asan_ldflags -fsanitize=address -w"
-  local asan_cflags="-I${ROOT}/${STAGE2_LIBCXX_ASAN_DIR}/include -I${ROOT}/${STAGE2_LIBCXX_ASAN_DIR}/include/c++/v1 $cmake_bug_workaround_cflags"
-  mkdir -p ${STAGE2_ASAN_DIR}
-  (cd ${STAGE2_ASAN_DIR} && \
-   cmake ${cmake_stage2_common_options} \
-     -DLLVM_USE_SANITIZER=Address \
-     -DLLVM_ENABLE_LIBCXX=ON \
-     -DCMAKE_C_FLAGS="${asan_cflags}" \
-     -DCMAKE_CXX_FLAGS="${asan_cflags}" \
-     -DCMAKE_EXE_LINKER_FLAGS="${asan_ldflags}" \
-   $LLVM && \
-   ninja clang lld) || echo @@@STEP_FAILURE@@@
+  build_stage2 asan "${STAGE2_LIBCXX_ASAN_DIR}" "${STAGE2_ASAN_DIR}"
 }
 
 function build_stage2_ubsan {
-  echo @@@BUILD_STEP build clang/ubsan@@@
-
-  common_stage2_variables
-  export UBSAN_OPTIONS="external_symbolizer_path=${llvm_symbolizer_path}:print_stacktrace=1"
-  local cmake_ubsan_options=" \
-    ${cmake_stage2_common_options} \
-    -DCMAKE_BUILD_TYPE=Debug \
-    -DLLVM_USE_SANITIZER=Undefined \
-    "
-  mkdir -p ${STAGE2_UBSAN_DIR}
-  (cd ${STAGE2_UBSAN_DIR} &&
-    cmake ${cmake_ubsan_options} $LLVM && \
-    ninja clang lld) || echo @@@STEP_FAILURE@@@
+  build_stage2 ubsan "${STAGE2_LIBCXX_UBSAN_DIR}" "${STAGE2_UBSAN_DIR}"
 }
 
 function check_stage2 {
