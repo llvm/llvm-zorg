@@ -714,8 +714,8 @@ def _get_sanitizer_builders():
            'builddir': "sanitizer-ppc64-1",
            'factory': SanitizerBuilder.getSanitizerBuildFactory()},
 
-          {'name': "ppc64le-sanitizer",
-           'slavenames' :["ppc64le-sanitizer"],
+          {'name': "sanitizer-ppc64le-linux",
+           'slavenames' :["sanitizer-ppc64le-linux"],
            'builddir': "sanitizer-ppc64le-1",
            'factory': SanitizerBuilder.getSanitizerBuildFactory()},
 
