@@ -890,7 +890,8 @@ def _get_experimental_builders():
         {'name': "clang-atom-d525-fedora",
          'slavenames':["atom-buildbot"],
          'builddir':"clang-atom-d525-fedora",
-         'factory' : ClangBuilder.getClangBuildFactory(extra_configure_args=['--enable-shared']),
+         'factory' : ClangBuilder.getClangBuildFactory(extra_configure_args=["--enable-shared",
+                                                                             "--with-intel-jitevents"]),
          'category' : 'clang'},
 
         {'name': "clang-amd64-openbsd",
