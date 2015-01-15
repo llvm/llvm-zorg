@@ -635,6 +635,10 @@ def _get_lldb_builders():
          'slavenames': ["zturner-win2008"],
          'builddir': "lldb-windows-x86",
          'factory': LLDBBuilder.getLLDBWindowsCMakeBuildFactory(config='Debug')},
+        {'name': "lldb-x86-win7-msvc",
+         'slavenames': ["hexagon-build-01"],
+         'builddir': "builddir/lldb-win7-msvc",
+         'factory': LLDBBuilder.getLLDBWindowsCMakeBuildFactory(config='Debug')},
        ]
 
 # Offline.
