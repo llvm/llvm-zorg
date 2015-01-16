@@ -204,8 +204,8 @@ def _get_clang_builders():
     return [
         {'name': "clang-atom-d525-fedora-rel",
          'slavenames':["atom1-buildbot"],
-         'builddir':"clang-atom-d525-fedora-rel",
-         'factory' : ClangBuilder.getClangBuildFactory(stage1_config='Release+Asserts')},
+         'factory' : ClangBuilder.getClangBuildFactory(stage1_config='Release+Asserts',
+                                                       extra_configure_args=['--with-intel-jitevents'])},
 
 #        {'name': "clang-x86_64-ubuntu",
 #         'slavenames':["arxan_raphael"],
