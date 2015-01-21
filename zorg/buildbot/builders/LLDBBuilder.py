@@ -1,73 +1,76 @@
 import os
-import subprocess
 
 import buildbot
 import buildbot.process.factory
 from buildbot.steps.source import SVN
 from buildbot.steps.shell import Configure, SetProperty
 from buildbot.steps.shell import ShellCommand, WarningCountingShellCommand
-from buildbot.process.properties import WithProperties
+from buildbot.steps.slave import RemoveDirectory
+from buildbot.process.properties import WithProperties, Property
 import zorg.buildbot.commands.BatchFileDownload as batch_file_download
 from zorg.buildbot.commands.LitTestCommand import LitTestCommand
 
-def generateVisualStudioEnvironment(vs_install_dir, target_arch):
-    arch_arg = {'x86': 'x86', 'x64': 'amd64', 'amd64': 'amd64'}.get(target_arch, None)
-    if arch_arg is None:
-        return None
-    
-    vcvars_command = "\"" + os.path.join(vs_install_dir, 'VC', 'vcvarsall.bat') + "\""
-    vcvars_command = "%s %s && set" % (vcvars_command, arch_arg)
-    process = subprocess.Popen(vcvars_command, shell = True, stdout=subprocess.PIPE, stderr = None)
-    (stdout, _) = process.communicate()
-    vars = stdout.splitlines()
-    env = {}
-    # At some point it may be worth trying to see if we can create an trimmed down whitelist of only
-    # those environment variables which are necessary in order for the parts of the toolchain that
-    # we need, such as the compiler and linker.
-    for var in vars:
-        keyval_pair = var.split('=')
-        key = keyval_pair[0]
-        value = keyval_pair[1]
-        env[key] = value
+def slave_env_glob2list(rc, stdout, stderr):
+    '''Extract function for SetPropertyCommand. Loads Slave Environment
+    into a dictionary, and returns slave_env property for ShellCommands.'''
+    if not rc:
+        slave_env_dict = dict(l.strip().split('=',1) 
+            for l in stdout.split('\n') if len(l.split('=',1))==2)
+    return {'slave_env': slave_env_dict}
 
-    return env
+# We *must* checkout at least Clang, LLVM, and LLDB.  Once we add a step to run
+# tests (e.g. ninja check-lldb), we will also need to add a step for LLD, since
+# MSVC LD.EXE cannot link executables with DWARF debug info.
+def getLLDBSource(f,llvmTopDir='llvm'):
+    f.addStep(SVN(name='svn-llvm',
+                  mode='update', baseURL='http://llvm.org/svn/llvm-project/llvm/',
+                  defaultBranch='trunk',
+                  workdir=llvmTopDir))
+    f.addStep(SVN(name='svn-clang',
+                  mode='update', baseURL='http://llvm.org/svn/llvm-project/cfe/',
+                  defaultBranch='trunk',
+                  workdir='%s/tools/clang' % llvmTopDir))
+    f.addStep(SVN(name='svn-lldb',
+                  mode='update', baseURL='http://llvm.org/svn/llvm-project/lldb/',
+                  defaultBranch='trunk',
+                  workdir='%s/tools/lldb' % llvmTopDir))
+    return f
+
+def generateVisualStudioEnvironment(vs_common=r"%VS120COMNTOOLS%", target_arch=None):
+    arch_arg = {'x86': 'x86', 'x64': 'amd64', 'amd64': 'amd64'}.get(target_arch, '%PROCESSOR_ARCHITECTURE%')
+    
+    vcvars_command = "\"" + os.path.join(vs_common, '..','..','VC', 'vcvarsall.bat') + "\""
+    vcvars_command = "%s %s && set" % (vcvars_command, arch_arg)
+    return vcvars_command
 
 # CMake Windows builds
 def getLLDBWindowsCMakeBuildFactory(
-            clean=True,
+            clean=False,
             cmake='cmake',
             jobs="%(jobs)s",
 
             # Source directory containing a built python
-            python_source_dir=r'C:\src\python',
+            python_source_dir=r'C:/src/python',
 
-            # Default values for VS version and build configuration
-            vs_install_dir=r'C:\Program Files (x86)\Microsoft Visual Studio 12.0',
+            # Default values for VS devenv and build configuration
+            vs_common=r"%VS120COMNTOOLS%",
             config='Release',
             target_arch='x86',
 
-            extra_cmake_args=[]):
+            extra_cmake_args=[],
+            test='ignoreFail',
+            install=True):
 
     ############# PREPARING
     f = buildbot.process.factory.BuildFactory()
 
-    env = generateVisualStudioEnvironment(vs_install_dir, target_arch)
+    vcvars_command = generateVisualStudioEnvironment(vs_common,target_arch)
+    # Determine Slave Environment and Set MSVC environment.
+    f.addStep(SetProperty(
+        command=vcvars_command,
+        extract_fn=slave_env_glob2list))
 
-    # We *must* checkout at least Clang, LLVM, and LLDB.  Once we add a step to run
-    # tests (e.g. ninja check-lldb), we will also need to add a step for LLD, since
-    # MSVC LD.EXE cannot link executables with DWARF debug info.
-    f.addStep(SVN(name='svn-llvm',
-                  mode='update', baseURL='http://llvm.org/svn/llvm-project/llvm/',
-                  defaultBranch='trunk',
-                  workdir='llvm'))
-    f.addStep(SVN(name='svn-clang',
-                  mode='update', baseURL='http://llvm.org/svn/llvm-project/cfe/',
-                  defaultBranch='trunk',
-                  workdir='llvm/tools/clang'))
-    f.addStep(SVN(name='svn-lldb',
-                  mode='update', baseURL='http://llvm.org/svn/llvm-project/lldb/',
-                  defaultBranch='trunk',
-                  workdir='llvm/tools/lldb'))
+    f = getLLDBSource(f,'llvm')
 
     ninja_cmd=['ninja', WithProperties("-j%s" % jobs)]
 
@@ -75,14 +78,13 @@ def getLLDBWindowsCMakeBuildFactory(
     build_dir='build'
 
     ############# CLEANING
-    if clean:
-        f.addStep(ShellCommand(name='clean',
-                               command=['rmdir', '/S/Q', build_dir],
-                               warnOnFailure=True,
-                               description='Cleaning',
-                               descriptionDone='clean',
-                               workdir='.',
-                               env=env))
+    cleanBuildRequested = lambda step: step.build.getProperty("clean") or clean
+    f.addStep(RemoveDirectory(name='clean '+build_dir,
+                dir=build_dir,
+                haltOnFailure=False,
+                flunkOnFailure=False,
+                doStepIf=cleanBuildRequested
+                ))
 
     if config.lower() == 'release':
         python_lib = 'python27.lib'
@@ -103,7 +105,8 @@ def getLLDBWindowsCMakeBuildFactory(
                                          # Need to use our custom built version of python
                                          '-DPYTHON_LIBRARY=' + python_lib,
                                          '-DPYTHON_INCLUDE_DIR=' + python_include,
-                                         '-DPYTHON_EXECUTABLE=' + python_exe]
+                                         '-DPYTHON_EXECUTABLE=' + python_exe,
+                                         "-DCMAKE_INSTALL_PREFIX=../install"]
                                          + extra_cmake_args,
                                 workdir=build_dir))
 
@@ -112,14 +115,31 @@ def getLLDBWindowsCMakeBuildFactory(
                            haltOnFailure=True,
                            description='cmake gen',
                            workdir=build_dir,
-                           env=env))
+                           env=Property('slave_env')))
 
     f.addStep(WarningCountingShellCommand(name='build',
-                                          command=ninja_cmd,
-                                          haltOnFailure=True,
-                                          description='ninja build',
-                                          workdir=build_dir,
-                                          env=env))
+                          command=ninja_cmd,
+                          haltOnFailure=True,
+                          description='ninja build',
+                          workdir=build_dir,
+                          env=Property('slave_env')))
+
+    f.addStep(ShellCommand(name='install',
+                          command=[ninja_cmd,'install'],
+                          haltOnFailure=False,
+                          description='ninja install',
+                          workdir=build_dir,
+                          doStepIf=install,
+                          env=Property('slave_env')))
+
+    f.addStep(ShellCommand(name='test',
+                          command=[ninja_cmd,'check-lldb'],
+                          haltOnFailure=False,
+                          flunkOnFailure=(test == 'ignoreFail'),
+                          description='ninja test',
+                          workdir=build_dir,
+                          doStepIf=bool(test),
+                          env=Property('slave_env')))
 
     return f
 
