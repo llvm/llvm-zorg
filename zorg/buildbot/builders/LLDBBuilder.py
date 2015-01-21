@@ -135,7 +135,7 @@ def getLLDBWindowsCMakeBuildFactory(
     f.addStep(ShellCommand(name='test',
                           command=[ninja_cmd,'check-lldb'],
                           haltOnFailure=False,
-                          flunkOnFailure=(test == 'ignoreFail'),
+                          flunkOnFailure=bool(test != 'ignoreFail'),
                           description='ninja test',
                           workdir=build_dir,
                           doStepIf=bool(test),
