@@ -429,15 +429,15 @@ def _get_clang_builders():
                                                     package_cache="http://parkas1.inria.fr/packages",
                                                     submitURL='http://llvm.org/perf/submitRun',
                                                     testerName='x86_64-penryn-O3')},
-        {'name' : "clang-native-aarch64",
-         'slavenames' :["juno-aarch64-01"],
-         'builddir' :"clang-native-aarch64",
-         'factory' : ClangBuilder.getClangCMakeBuildFactory(
-                     jobs=4,
-                     clean=False,
-                     checkout_compiler_rt=False,
-                     useTwoStage=True,
-                     testStage1=True)},
+#        {'name' : "clang-native-aarch64",
+#         'slavenames' :["juno-aarch64-01"],
+#         'builddir' :"clang-native-aarch64",
+#         'factory' : ClangBuilder.getClangCMakeBuildFactory(
+#                     jobs=4,
+#                     clean=False,
+#                     checkout_compiler_rt=False,
+#                     useTwoStage=True,
+#                     testStage1=True)},
         ]
 
 # Offline.
@@ -735,7 +735,17 @@ def _get_sanitizer_builders():
                         extra_cmake_args=["-DCMAKE_C_FLAGS='-mcpu=cortex-a15 -mfpu=vfpv3'",
                                           "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a15 -mfpu=vfpv3'",
                                           "-DCOMPILER_RT_TEST_COMPILER_CFLAGS='-mcpu=cortex-a15 -mfpu=vfpv3'",
-                                          "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64;X86'"])}
+                                          "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64;X86'"])},
+
+          {'name' : "clang-native-aarch64-full",
+           'slavenames' :["juno-aarch64-01"],
+           'builddir':"clang-native-aarch64-full",
+           'factory' : ClangBuilder.getClangCMakeBuildFactory(
+                        jobs=4,
+                        clean=False,
+                        useTwoStage=True,
+                        testStage1=True,
+                        extra_cmake_args=["-DLLVM_TARGETS_TO_BUILD='ARM;AArch64;X86'"])},
 
           ]
 
