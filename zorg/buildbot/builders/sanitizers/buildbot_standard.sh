@@ -31,7 +31,7 @@ if [ ! -d llvm-build ]; then
 fi
 cd llvm-build
 CC=gcc CXX=g++ ../llvm/configure --enable-optimized
-make -j$MAKE_JOBS
+make -j$MAKE_JOBS ONLY_TOOLS=clang
 cd ..
 CLANG_BUILD=$ROOT/llvm-build/Release+Asserts
 
