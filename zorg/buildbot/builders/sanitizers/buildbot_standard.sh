@@ -30,7 +30,7 @@ if [ ! -d llvm-build ]; then
   mkdir llvm-build
 fi
 cd llvm-build
-../llvm/configure --enable-optimized
+CC=gcc CXX=g++ ../llvm/configure --enable-optimized
 make -j$MAKE_JOBS
 cd ..
 CLANG_BUILD=$ROOT/llvm-build/Release+Asserts
