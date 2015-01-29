@@ -704,6 +704,11 @@ def _get_sanitizer_builders():
            'builddir': "sanitizer-x86_64-linux-autoconf",
            'factory': SanitizerBuilder.getSanitizerBuildFactory()},
 
+          {'name': "sanitizer-x86_64-linux-fuzzer",
+           'slavenames' :["sanitizer-buildbot5"],
+           'builddir': "sanitizer-x86_64-linux-fuzzer",
+           'factory': SanitizerBuilder.getSanitizerBuildFactory()},
+
           #{'name': "llvm-clang-lld-x86_64-ubuntu-sanitize-address",
           # 'slavenames':["hexagon-build-03"],
           # 'builddir':"llvm-clang-lld-x86_64-ubuntu-sanitize-address",
