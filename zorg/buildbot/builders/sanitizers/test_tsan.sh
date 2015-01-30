@@ -26,7 +26,7 @@ echo @@@BUILD_STEP tsan output_tests@@@
 (cd ../../test/tsan && ./test_output.sh)
 
 echo @@@BUILD_STEP tsan analyze@@@
-./check_analyze.sh
+./check_analyze.sh || echo @@@STEP_WARNINGS@@@
 
 echo @@@BUILD_STEP tsan Go runtime@@@
 (cd go && ./buildgo.sh)
