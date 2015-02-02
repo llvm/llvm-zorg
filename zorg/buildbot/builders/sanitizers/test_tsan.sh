@@ -15,6 +15,16 @@ echo @@@BUILD_STEP tsan build with stats/output@@@
 make -f Makefile.old clean
 make -f Makefile.old DEBUG=1 CC=clang CXX=clang++ CFLAGS="-DTSAN_COLLECT_STATS=1 -DTSAN_DEBUG_OUTPUT=2"
 
+echo @@@BUILD_STEP tsan build release-clang@@@
+make -f Makefile.old clean
+make -f Makefile.old DEBUG=0 CC=clang CXX=clang++
+
+echo @@@BUILD_STEP tsan test release-clang@@@
+./tsan_test
+
+echo @@@BUILD_STEP tsan analyze@@@
+./check_analyze.sh || echo @@@STEP_WARNINGS@@@
+
 echo @@@BUILD_STEP tsan build release-gcc@@@
 make -f Makefile.old clean
 make -f Makefile.old DEBUG=0 CC=gcc CXX=g++
@@ -24,9 +34,6 @@ echo @@@BUILD_STEP tsan test release-gcc@@@
 
 echo @@@BUILD_STEP tsan output_tests@@@
 (cd ../../test/tsan && ./test_output.sh)
-
-echo @@@BUILD_STEP tsan analyze@@@
-./check_analyze.sh || echo @@@STEP_WARNINGS@@@
 
 echo @@@BUILD_STEP tsan Go runtime@@@
 (cd go && ./buildgo.sh)
