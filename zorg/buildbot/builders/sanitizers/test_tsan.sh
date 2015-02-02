@@ -23,7 +23,7 @@ echo @@@BUILD_STEP tsan test release-clang@@@
 ./tsan_test
 
 echo @@@BUILD_STEP tsan analyze@@@
-./check_analyze.sh || echo @@@STEP_WARNINGS@@@
+./check_analyze.sh || echo @@@STEP_FAILURE@@@
 
 echo @@@BUILD_STEP tsan build release-gcc@@@
 make -f Makefile.old clean
