@@ -640,6 +640,16 @@ def _get_lldb_builders():
          'slavenames': ["hexagon-build-01"],
          'builddir': "builddir/lldb-win7-msvc",
          'factory': LLDBBuilder.getLLDBWindowsCMakeBuildFactory(config='Debug')},
+        {'name': "lldb-x86_64-ubuntu-14.10",
+         'slavenames': ["hexagon-build-03"],
+         'builddir': "lldb-x86_64-ubuntu-14.10",
+         'factory': LLDBBuilder.getLLDBBuildFactory(
+                    triple=None,
+                    extra_configure_args=[
+                        '--enable-cxx11',
+                        '--enable-optimized',
+                        '--enable-assertions'],
+                    env={'SHELL':"/bin/bash"})},
        ]
 
 # Offline.
@@ -708,13 +718,6 @@ def _get_sanitizer_builders():
            'slavenames' :["sanitizer-buildbot5"],
            'builddir': "sanitizer-x86_64-linux-fuzzer",
            'factory': SanitizerBuilder.getSanitizerBuildFactory()},
-
-          #{'name': "llvm-clang-lld-x86_64-ubuntu-sanitize-address",
-          # 'slavenames':["hexagon-build-03"],
-          # 'builddir':"llvm-clang-lld-x86_64-ubuntu-sanitize-address",
-          # 'factory': ClangAndLLDBuilder.getClangAndLLDBuildFactory(
-          #                                   buildWithSanitizerOptions=['-fsanitize=address'],
-          #                                   env={'PATH':'/usr/local/bin:/usr/bin:/bin'})},
 
           {'name': "sanitizer_x86_64-freebsd",
            'slavenames':["as-bldslv5"],
