@@ -15,7 +15,9 @@ STAGE1_DIR=llvm_build0
 STAGE2_ASAN_DIR=llvm_build_asan
 MAKE_JOBS=${MAX_MAKE_JOBS:-16}
 LLVM=$ROOT/llvm
-CMAKE_COMMON_OPTIONS="-GNinja -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_ASSERTIONS=ON -DLLVM_PARALLEL_LINK_JOBS=3"
+# No assertions. Need to clean up the existing assertion failures first.
+# Also, the Fuzzer does not provide reproducers on assertion failures yet.
+CMAKE_COMMON_OPTIONS="-GNinja -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_ASSERTIONS=OFF -DLLVM_PARALLEL_LINK_JOBS=3"
 CLANG_FORMAT_CORPUS=$ROOT/clang-format-corpus
 
 if [ "$BUILDBOT_CLOBBER" != "" ]; then
