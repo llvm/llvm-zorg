@@ -16,6 +16,7 @@ STAGE2_ASAN_DIR=llvm_build_asan
 MAKE_JOBS=${MAX_MAKE_JOBS:-16}
 LLVM=$ROOT/llvm
 CMAKE_COMMON_OPTIONS="-GNinja -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_ASSERTIONS=ON -DLLVM_PARALLEL_LINK_JOBS=3"
+CLANG_FORMAT_CORPUS=$ROOT/clang-format-corpus
 
 if [ "$BUILDBOT_CLOBBER" != "" ]; then
   echo @@@BUILD_STEP clobber@@@
@@ -27,6 +28,11 @@ fi
 # Anyway, incremental builds of stage2 compilers don't make sense.
 # Clobber the build trees.
 rm -rf ${STAGE2_ASAN_DIR}
+
+# Create an empty directory for the corpus if it doesn't exist yet.
+# It will get populated with examples.
+# FIXME: synchronize this directory with some external persistent storage.
+mkdir -p $CLANG_FORMAT_CORPUS
 
 echo @@@BUILD_STEP update@@@
 buildbot_update
@@ -62,3 +68,8 @@ cmake_stage2_asan_options=" \
 echo @@@BUILD_STEP stage2/asan build clang-format-fuzzer@@@
 
 (cd ${STAGE2_ASAN_DIR} && ninja clang-format-fuzzer) || echo @@@STEP_FAILURE@@@
+
+echo @@@BUILD_STEP stage2/asan run clang-format-fuzzer@@@
+
+(${STAGE2_ASAN_DIR}/bin/clang-format-fuzzer -iterations=1 $CLANG_FORMAT_CORPUS) || \
+  echo @@@STEP_WARNINGS@@@
