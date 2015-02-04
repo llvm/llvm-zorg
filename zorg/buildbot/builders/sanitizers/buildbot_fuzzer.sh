@@ -73,5 +73,5 @@ echo @@@BUILD_STEP stage2/asan build clang-format-fuzzer@@@
 
 echo @@@BUILD_STEP stage2/asan run clang-format-fuzzer@@@
 
-(${STAGE2_ASAN_DIR}/bin/clang-format-fuzzer -iterations=1 $CLANG_FORMAT_CORPUS) || \
+(${STAGE2_ASAN_DIR}/bin/clang-format-fuzzer -iterations=1 -jobs=8 -workers=8 $CLANG_FORMAT_CORPUS) || \
   echo @@@STEP_WARNINGS@@@
