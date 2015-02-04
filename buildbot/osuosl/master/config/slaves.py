@@ -37,10 +37,13 @@ def get_build_slaves():
         create_slave("linaro-chrome-01", properties={'jobs' : 2}, max_builds=1),
         create_slave("linaro-chrome-02", properties={'jobs' : 2}, max_builds=1),
         create_slave("linaro-chrome-03", properties={'jobs' : 2}, max_builds=1),
+        create_slave("linaro-chrome-04", properties={'jobs' : 2}, max_builds=1),
 
         create_slave("linaro-a15-01", properties={'jobs' : 4}, max_builds=1),
         create_slave("linaro-a15-02", properties={'jobs' : 4}, max_builds=1),
         create_slave("linaro-a15-03", properties={'jobs' : 4}, max_builds=1),
+
+        create_slave("linaro-dragon-01", properties={'jobs' : 4}, max_builds=1),
 
         # AMD Athlon(tm) 64 X2 Dual Core 3800+, Ubuntu x86_64
         create_slave("grosser1", properties={'jobs': 2}, max_builds=1),
