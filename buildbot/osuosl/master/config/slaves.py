@@ -1,7 +1,7 @@
 import buildbot
 import buildbot.buildslave
 import os
- 
+
 import config
 
 def create_slave(name, *args, **kwargs):
@@ -10,9 +10,6 @@ def create_slave(name, *args, **kwargs):
 
 def get_build_slaves():
     return [
-        # Quad Core Mac Pro running Lion.
-        create_slave("as-bldslv11", properties={'jobs' : 1}, max_builds=4),
-
         # Ubuntu pandaboard cortex-a9 slaves
         create_slave("as-bldslv1", properties={'jobs' : 2}, max_builds=1),
         create_slave("as-bldslv2", properties={'jobs' : 2}, max_builds=1),
@@ -49,27 +46,24 @@ def get_build_slaves():
         create_slave("grosser1", properties={'jobs': 2}, max_builds=1),
 
         # Intel(R) Core(TM)2 Quad CPU Q6600  @ 2.40GHz, Debian x86_64 GNU/Linux
-        create_slave("grosser2", properties={'jobs': 4}, max_builds=1),
-
-        # Intel(R) Pentium(R) CPU G620 @ 2.60GHz, Ubuntu i686
-        create_slave("botether", properties={'jobs': 2}, max_builds=1),
+        #create_slave("grosser2", properties={'jobs': 4}, max_builds=1),
 
         # Polly perf servers
         # Each is a:
         # 8 x Intel(R) Xeon(R) CPU E5430  @ 2.66GHz, Debian x86_64 GNU/Linux
-        create_slave("pollyperf1", properties={'jobs': 8}, max_builds=1),
+        #create_slave("pollyperf1", properties={'jobs': 8}, max_builds=1),
         create_slave("pollyperf2", properties={'jobs': 8}, max_builds=1),
         create_slave("pollyperf3", properties={'jobs': 8}, max_builds=1),
         create_slave("pollyperf4", properties={'jobs': 8}, max_builds=1),
         create_slave("pollyperf5", properties={'jobs': 8}, max_builds=1),
         create_slave("pollyperf6", properties={'jobs': 8}, max_builds=1),
         create_slave("pollyperf7", properties={'jobs': 8}, max_builds=1),
-        create_slave("pollyperf8", properties={'jobs': 8}, max_builds=1),
-        create_slave("pollyperf9", properties={'jobs': 8}, max_builds=1),
+        #create_slave("pollyperf8", properties={'jobs': 8}, max_builds=1),
+        #create_slave("pollyperf9", properties={'jobs': 8}, max_builds=1),
         create_slave("pollyperf10", properties={'jobs': 8}, max_builds=1),
         create_slave("pollyperf11", properties={'jobs': 8}, max_builds=1),
-        create_slave("pollyperf12", properties={'jobs': 8}, max_builds=1),
-        create_slave("pollyperf13", properties={'jobs': 8}, max_builds=1),
+        #create_slave("pollyperf12", properties={'jobs': 8}, max_builds=1),
+        #create_slave("pollyperf13", properties={'jobs': 8}, max_builds=1),
         create_slave("pollyperf14", properties={'jobs': 8}, max_builds=1),
         create_slave("pollyperf15", properties={'jobs': 8}, max_builds=1),
 
@@ -79,18 +73,6 @@ def get_build_slaves():
 
         # LLVM Lab slaves
         create_slave("hpproliant1", properties={'jobs': 6}, max_builds=1),
-
-        # Intel(R) Core(TM)2 CPU 6420  @ 2.13GHz, Ubuntu Oneiric x86_64
-        create_slave("arxan_davinci", properties={'jobs': 4}, max_builds=1),
-
-        # Intel(R) Core(TM)2 CPU 6420  @ 2.13GHz, Ubuntu Oneiric x86_64
-        create_slave("arxan_raphael", properties={'jobs': 4}, max_builds=1),
-
-        # 2005 PowerPC Mac Mini, Mac OS X 10.5
-        #create_slave("arxan_bellini", properties={'jobs': 2}, max_builds=1),
-
-        # Intel(R) Core i7 920 @ 2.8GHz, 6 GB RAM, Windows 7 x64, Mingw64
-        create_slave("sschiffli1", properties={'jobs': 4}, max_builds=1),
 
         # POWER7 PowerPC (powerpc64), Fedora16.
         create_slave("chinook", properties={'jobs': 4}, max_builds=2),
@@ -117,7 +99,7 @@ def get_build_slaves():
         create_slave("hexagon-build-01", properties={'jobs': 4}, max_builds=2),
 
         # Ubuntu x86-64, Intel(R) Xeon(R) CPU E5-2680 0 @ 2.70GHz
-        create_slave("hexagon-build-02", properties={'jobs': 12, 'loadaverage':
+        #create_slave("hexagon-build-02", properties={'jobs': 12, 'loadaverage':
 32},
             max_builds=4),
 
@@ -133,7 +115,7 @@ def get_build_slaves():
         create_slave("mips-kl-m001", properties={'jobs' : 10}, max_builds=1),
 
         # Debian Testing x86-64, Intel(R) Core(TM) i7-2700K CPU @ 3.50GHz
-        create_slave("gribozavr1", properties={'jobs': 8}, max_builds=1),
+        #create_slave("gribozavr1", properties={'jobs': 8}, max_builds=1),
 
         # Ubuntu 13.04 x86-64, Intel(R) Xeon(R) CPU 5160 @ 3.00GHz
         create_slave("gribozavr2", properties={'jobs': 4}, max_builds=1),
@@ -146,9 +128,6 @@ def get_build_slaves():
 
         # Ubuntu 14.04 x86-64
         create_slave("gribozavr5", properties={'jobs': 6}, max_builds=1),
-
-        # Debian Testing x86-64, Intel Core i5-3570K (ivybridge) CPU @ 3.40GHz
-        create_slave("obbligato-ellington", properties={'jobs': 2}, max_builds=1),
 
         # OpenBSD
         create_slave("openbsd-buildslave", properties={'jobs': 2}, max_builds=1),
@@ -185,7 +164,25 @@ def get_build_slaves():
 
         # Windows Server 2008 R2, Quad 2.6GHz Intel Xeon(R) 4GB RAM
         create_slave("zturner-win2008", properties={'jobs': 4}, max_builds=1),
+
         # Defunct.
+        # Intel(R) Pentium(R) CPU G620 @ 2.60GHz, Ubuntu i686
+        #create_slave("botether", properties={'jobs': 2}, max_builds=1),
+
+        # Intel(R) Core(TM)2 CPU 6420  @ 2.13GHz, Ubuntu Oneiric x86_64
+        #create_slave("arxan_davinci", properties={'jobs': 4}, max_builds=1),
+
+        # Intel(R) Core(TM)2 CPU 6420  @ 2.13GHz, Ubuntu Oneiric x86_64
+        #create_slave("arxan_raphael", properties={'jobs': 4}, max_builds=1),
+
+        # 2005 PowerPC Mac Mini, Mac OS X 10.5
+        #create_slave("arxan_bellini", properties={'jobs': 2}, max_builds=1),
+
+        # Intel(R) Core i7 920 @ 2.8GHz, 6 GB RAM, Windows 7 x64, Mingw64
+        #create_slave("sschiffli1", properties={'jobs': 4}, max_builds=1),
+
+        # Debian Testing x86-64, Intel Core i5-3570K (ivybridge) CPU @ 3.40GHz
+        #create_slave("obbligato-ellington", properties={'jobs': 2}, max_builds=1),
 
 #        # GCC Compile Farm Slaves, see http://gcc.gnu.org/wiki/CompileFarm
 
