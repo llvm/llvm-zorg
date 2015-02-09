@@ -36,11 +36,11 @@ def getLLDBSource(f,llvmTopDir='llvm'):
                   workdir='%s/tools/lldb' % llvmTopDir))
     return f
 
-def generateVisualStudioEnvironment(vs_common=r"%VS120COMNTOOLS%", target_arch=None):
+def generateVisualStudioEnvironment(vs=r"""%VS120COMNTOOLS%""", target_arch=None):
     arch_arg = {'x86': 'x86', 'x64': 'amd64', 'amd64': 'amd64'}.get(target_arch, '%PROCESSOR_ARCHITECTURE%')
     
-    vcvars_command = "\"" + os.path.join(vs_common, '..','..','VC', 'vcvarsall.bat') + "\""
-    vcvars_command = "%s %s && set" % (vcvars_command, arch_arg)
+    vcvars_command = "\"" + r"\\".join((vs, '..','..','VC', 'vcvarsall.bat')) + "\""
+    vcvars_command = r"%s %s && set" % (vcvars_command, arch_arg)
     return vcvars_command
 
 # CMake Windows builds
@@ -53,18 +53,18 @@ def getLLDBWindowsCMakeBuildFactory(
             python_source_dir=r'C:/src/python',
 
             # Default values for VS devenv and build configuration
-            vs_common=r"%VS120COMNTOOLS%",
+            vs=r"""%VS120COMNTOOLS%""",
             config='Release',
             target_arch='x86',
 
             extra_cmake_args=[],
-            test='ignoreFail',
-            install=True):
+            test=False,
+            install=False):
 
     ############# PREPARING
     f = buildbot.process.factory.BuildFactory()
 
-    vcvars_command = generateVisualStudioEnvironment(vs_common,target_arch)
+    vcvars_command = generateVisualStudioEnvironment(vs,target_arch)
     # Determine Slave Environment and Set MSVC environment.
     f.addStep(SetProperty(
         command=vcvars_command,
@@ -72,7 +72,14 @@ def getLLDBWindowsCMakeBuildFactory(
 
     f = getLLDBSource(f,'llvm')
 
-    ninja_cmd=['ninja', WithProperties("-j%s" % jobs)]
+    build_cmd=['ninja']
+    install_cmd = ['ninja','install']
+    test_cmd = ['ninja','check-lldb']
+
+    if jobs:
+        build_cmd.append(WithProperties("-j%s" % jobs))
+        install_cmd.append(WithProperties("-j%s" % jobs))
+        test_cmd.append(WithProperties("-j%s" % jobs))
 
     # Global configurations
     build_dir='build'
@@ -118,24 +125,25 @@ def getLLDBWindowsCMakeBuildFactory(
                            env=Property('slave_env')))
 
     f.addStep(WarningCountingShellCommand(name='build',
-                          command=ninja_cmd,
+                          command=build_cmd,
                           haltOnFailure=True,
                           description='ninja build',
                           workdir=build_dir,
                           env=Property('slave_env')))
 
+    ignoreInstallFail = bool(install != 'ignoreFail')
     f.addStep(ShellCommand(name='install',
-                          command=[ninja_cmd,'install'],
-                          haltOnFailure=False,
+                          command=install_cmd,
+                          flunkOnFailure=ignoreInstallFail,
                           description='ninja install',
                           workdir=build_dir,
-                          doStepIf=install,
+                          doStepIf=bool(install),
                           env=Property('slave_env')))
 
+    ignoreTestFail = bool(test != 'ignoreFail')
     f.addStep(ShellCommand(name='test',
-                          command=[ninja_cmd,'check-lldb'],
-                          haltOnFailure=False,
-                          flunkOnFailure=bool(test != 'ignoreFail'),
+                          command=test_cmd,
+                          flunkOnFailure=ignoreTestFail,
                           description='ninja test',
                           workdir=build_dir,
                           doStepIf=bool(test),
