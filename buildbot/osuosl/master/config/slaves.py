@@ -99,9 +99,8 @@ def get_build_slaves():
         create_slave("hexagon-build-01", properties={'jobs': 4}, max_builds=2),
 
         # Ubuntu x86-64, Intel(R) Xeon(R) CPU E5-2680 0 @ 2.70GHz
-        #create_slave("hexagon-build-02", properties={'jobs': 12, 'loadaverage':
-32},
-            max_builds=4),
+        #create_slave("hexagon-build-02", properties={'jobs': 12, 'loadaverage': 32},
+        #    max_builds=4),
 
         # Ubuntu x86-64, Intel(R) Xeon(R) CPU E5-2680 0 @ 2.70GHz
         create_slave("hexagon-build-03", properties={'jobs': 16, 'loadaverage':
