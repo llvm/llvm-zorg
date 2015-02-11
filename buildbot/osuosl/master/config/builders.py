@@ -678,13 +678,6 @@ def _get_lldb_builders():
                         '--enable-optimized',
                         '--enable-assertions'],
                     env={'SHELL':"/bin/bash"})},
-	{'name': "lldb-x86_64-ubuntu-14.04",
-         'slavenames': ["lldb-build1-ubuntu-1404"],
-         'builddir': "buildWorkingDir",
-         'factory': LLDBBuilder.getLLDBUbuntuCMakeBuildFactory(
-                    triple=None,
-                    extra_configure_args=[],
-                    env={'SHELL':"/bin/bash"})},
        ]
 
 # Offline.
