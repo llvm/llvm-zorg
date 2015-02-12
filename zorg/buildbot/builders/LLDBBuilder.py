@@ -14,9 +14,9 @@ def slave_env_glob2list(rc, stdout, stderr):
     '''Extract function for SetPropertyCommand. Loads Slave Environment
     into a dictionary, and returns slave_env property for ShellCommands.'''
     if not rc:
-        slave_env_dict = dict(l.strip().split('=',1) 
+        slave_env_dict = dict(l.strip().split('=',1)
             for l in stdout.split('\n') if len(l.split('=',1))==2)
-    return {'slave_env': slave_env_dict}
+        return {'slave_env': slave_env_dict}
 
 # We *must* checkout at least Clang, LLVM, and LLDB.  Once we add a step to run
 # tests (e.g. ninja check-lldb), we will also need to add a step for LLD, since
@@ -38,9 +38,9 @@ def getLLDBSource(f,llvmTopDir='llvm'):
 
 def generateVisualStudioEnvironment(vs=r"""%VS120COMNTOOLS%""", target_arch=None):
     arch_arg = {'x86': 'x86', 'x64': 'amd64', 'amd64': 'amd64'}.get(target_arch, '%PROCESSOR_ARCHITECTURE%')
-    
-    vcvars_command = "\"" + r"\\".join((vs, '..','..','VC', 'vcvarsall.bat')) + "\""
-    vcvars_command = r"%s %s && set" % (vcvars_command, arch_arg)
+
+    vcvars_command = "\"" + "\\".join((vs, '..','..','VC', 'vcvarsall.bat')) + "\""
+    vcvars_command = "%s %s && set" % (vcvars_command, arch_arg)
     return vcvars_command
 
 # CMake Windows builds
@@ -314,23 +314,23 @@ def getLLDBUbuntuCMakeBuildFactory(
 
     # Run configure
     config_args = ["cmake",
- 		   "-GNinja",
-		   "-DCMAKE_C_COMPILER=clang",
-		   "-DCMAKE_CXX_COMPILER=clang++",
-  		   "-DCMAKE_BUILD_TYPE=Debug",
+                   "-GNinja",
+                   "-DCMAKE_C_COMPILER=clang",
+                   "-DCMAKE_CXX_COMPILER=clang++",
+                   "-DCMAKE_BUILD_TYPE=Debug",
                    WithProperties("../%s" %llvm_srcdir),
                   ]
     if triple:
         config_args += ['--build=%s' % triple]
     config_args += extra_configure_args
-    
+
     # Clean Build Folder
     f.addStep(ShellCommand(name="clean",
                              command="rm -rf *",
                              description="clear build folder",
                              env=env,
                              workdir='%s' % llvm_builddir))
-    
+
     # Configure
     f.addStep(Configure(name='configure/cmake',
         command=config_args,
@@ -389,7 +389,7 @@ def getLLDBxcodebuildFactory(use_cc=None):
                   defaultBranch='trunk',
                   workdir='%s/llvm/tools/clang' % lldb_srcdir))
 # setup keychain for codesign
-# In order for the codesigning to work inside of buildbot, security must be 
+# In order for the codesigning to work inside of buildbot, security must be
 # called to unlock the keychain, which requires a password.
 # I've set up a special keychain for this purpose, so as to not compromise
 # the login password of the buildslave.
@@ -406,9 +406,9 @@ def getLLDBxcodebuildFactory(use_cc=None):
                            haltOnFailure=True,
                            workdir=WithProperties('%(builddir)s')))
 # Building the sources
-# 
+#
     f.addStep(ShellCommand(name='lldb-build',
-                           command=['xcrun', 'xcodebuild', '-workspace', 
+                           command=['xcrun', 'xcodebuild', '-workspace',
                                     'lldb.xcworkspace', '-scheme', 'lldb-tool',
                                     '-configuration', 'Debug',
                                     WithProperties('SYMROOT=' + OBJROOT),
@@ -416,7 +416,7 @@ def getLLDBxcodebuildFactory(use_cc=None):
                            haltOnFailure=True,
                            workdir=lldb_srcdir))
 # Testing
-# 
+#
     if not use_cc:
         use_cc = '/Applications/Xcode.app/Contents/Developer/Toolchains/'
         use_cc += 'XcodeDefault.xctoolchain/usr/bin/clang'
@@ -431,7 +431,7 @@ def getLLDBxcodebuildFactory(use_cc=None):
                   property='use_cc',
                   description='set cc',
                   workdir=lldb_srcdir))
-    
+
     f.addStep(ShellCommand(name='lldb-test',
                            command=['./dotest.py', '-v', '-C',
                                     WithProperties('%(use_cc)s')],
@@ -439,8 +439,8 @@ def getLLDBxcodebuildFactory(use_cc=None):
                            workdir='%s/test' % lldb_srcdir))
 
 # Results go in a directory coded named according to the date and time of the test run, e.g.:
-# 
+#
 # 2012-10-16-11_26_48/Failure-x86_64-_Applications_Xcode.app_Contents_Developer_Toolchains_XcodeDefault.xctoolchain_usr_bin_clang-TestLogging.LogTestCase.test_with_dsym.log
-# 
+#
 # Possible results are ExpectedFailure, Failure, SkippedTest, UnexpectedSuccess, and Error.    return f
     return f
