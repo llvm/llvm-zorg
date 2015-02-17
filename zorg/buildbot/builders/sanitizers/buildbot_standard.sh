@@ -25,7 +25,7 @@ CHECK_TSAN=${CHECK_TSAN:-0}
 echo @@@BUILD_STEP update@@@
 buildbot_update
 
-echo @@@BUILD_STEP build llvm@@@
+echo @@@BUILD_STEP build clang@@@
 if [ ! -d llvm-build ]; then
   mkdir llvm-build
 fi
@@ -34,31 +34,6 @@ CC=gcc CXX=g++ ../llvm/configure --enable-optimized
 make -j$MAKE_JOBS ONLY_TOOLS=clang
 cd ..
 CLANG_BUILD=$ROOT/llvm-build/Release+Asserts
-
-echo @@@BUILD_STEP test llvm@@@
-(cd llvm-build && make check-all) || echo @@@STEP_WARNINGS@@@
-
-echo @@@BUILD_STEP sanity check for sanitizer tools@@@
-CLANGXX_BINARY=$CLANG_BUILD/bin/clang++
-echo -e "#include <stdio.h>\nint main(){ return 0; }" > temp.cc
-for xsan in address undefined; do
-  $CLANGXX_BINARY -fsanitize=$xsan -m64 temp.cc -o a.out
-  ./a.out
-  $CLANGXX_BINARY -fsanitize=$xsan -m32 temp.cc -o a.out
-  ./a.out
-done
-if [ "$PLATFORM" == "Linux" ]; then
-  for xsan in thread memory leak; do
-    $CLANGXX_BINARY -fsanitize=$xsan -m64 temp.cc -o a.out
-    ./a.out
-  done
-fi
-
-if [ $BUILD_ASAN_ANDROID == 1 ] ; then
-  echo @@@BUILD_STEP build asan/android runtime@@@
-  (cd llvm-build && make -j$MAKE_JOBS -C tools/clang/runtime/ \
-    LLVM_ANDROID_TOOLCHAIN_DIR=$ROOT/../../../android-ndk/standalone-arm)
-fi
 
 if [ $CHECK_TSAN == 1 ] ; then
   echo @@@BUILD_STEP prepare for testing tsan@@@
