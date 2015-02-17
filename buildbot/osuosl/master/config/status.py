@@ -46,8 +46,10 @@ def get_status_targets(standard_builders):
             http_port = 8011, authz=authz_cfg),
         buildbot.status.mail.MailNotifier(
             fromaddr = "llvm.buildmaster@lab.llvm.org",
+            extraRecipients = [default_email],
             lookup = ConfigEmailLookup(os.path.join(os.path.dirname(__file__),
-                                                    "llvmauthors.cfg")),
+                                                    "llvmauthors.cfg"),
+                                       default_email),
             mode = "problem",
             builders = standard_builders),
         buildbot.status.words.IRC(
