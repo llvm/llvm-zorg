@@ -38,6 +38,10 @@ from zorg.buildbot.builders import SanitizerBuilderII
 reload(SanitizerBuilderII)
 from zorg.buildbot.builders import SanitizerBuilderII
 
+from zorg.buildbot.builders import SanitizerBuilderWindows
+reload(SanitizerBuilderWindows)
+from zorg.buildbot.builders import SanitizerBuilderWindows
+
 from zorg.buildbot.builders import Libiomp5Builder
 reload(Libiomp5Builder)
 from zorg.buildbot.builders import Libiomp5Builder
@@ -772,6 +776,11 @@ def _get_sanitizer_builders():
            'slavenames' :["sanitizer-ppc64le-linux"],
            'builddir': "sanitizer-ppc64le-1",
            'factory': SanitizerBuilder.getSanitizerBuildFactory()},
+
+          {'name': "sanitizer-windows",
+           'slavenames' :["sanitizer-windows"],
+           'builddir': "sanitizer-windows",
+           'factory': SanitizerBuilderWindows.getSanitizerWindowsBuildFactory()},
 
           ## Cortex-A15 check-all full (compiler-rt) with CMake builder; Needs x86 for ASAN tests
           {'name': "clang-cmake-armv7-a15-full",

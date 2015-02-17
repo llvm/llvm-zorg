@@ -9,14 +9,8 @@ from buildbot.steps.slave import RemoveDirectory
 from buildbot.process.properties import WithProperties, Property
 import zorg.buildbot.commands.BatchFileDownload as batch_file_download
 from zorg.buildbot.commands.LitTestCommand import LitTestCommand
-
-def slave_env_glob2list(rc, stdout, stderr):
-    '''Extract function for SetPropertyCommand. Loads Slave Environment
-    into a dictionary, and returns slave_env property for ShellCommands.'''
-    if not rc:
-        slave_env_dict = dict(l.strip().split('=',1)
-            for l in stdout.split('\n') if len(l.split('=',1))==2)
-        return {'slave_env': slave_env_dict}
+from zorg.buildbot.builders.Util import getVisualStudioEnvironment
+from zorg.buildbot.builders.Util import extractSlaveEnvironment
 
 # We *must* checkout at least Clang, LLVM, and LLDB.  Once we add a step to run
 # tests (e.g. ninja check-lldb), we will also need to add a step for LLD, since
@@ -35,13 +29,6 @@ def getLLDBSource(f,llvmTopDir='llvm'):
                   defaultBranch='trunk',
                   workdir='%s/tools/lldb' % llvmTopDir))
     return f
-
-def generateVisualStudioEnvironment(vs=r"""%VS120COMNTOOLS%""", target_arch=None):
-    arch_arg = {'x86': 'x86', 'x64': 'amd64', 'amd64': 'amd64'}.get(target_arch, '%PROCESSOR_ARCHITECTURE%')
-
-    vcvars_command = "\"" + "\\".join((vs, '..','..','VC', 'vcvarsall.bat')) + "\""
-    vcvars_command = "%s %s && set" % (vcvars_command, arch_arg)
-    return vcvars_command
 
 # CMake Windows builds
 def getLLDBWindowsCMakeBuildFactory(
@@ -64,11 +51,10 @@ def getLLDBWindowsCMakeBuildFactory(
     ############# PREPARING
     f = buildbot.process.factory.BuildFactory()
 
-    vcvars_command = generateVisualStudioEnvironment(vs,target_arch)
     # Determine Slave Environment and Set MSVC environment.
     f.addStep(SetProperty(
-        command=vcvars_command,
-        extract_fn=slave_env_glob2list))
+        command=getVisualStudioEnvironment(vs, target_arch),
+        extract_fn=extractSlaveEnvironment))
 
     f = getLLDBSource(f,'llvm')
 

@@ -1,5 +1,19 @@
-
 import buildbot.status.results
+
+def getVisualStudioEnvironment(vs=r"""%VS120COMNTOOLS%""", target_arch=None):
+    arch_arg = {'x86': 'x86', 'x64': 'amd64', 'amd64': 'amd64'}.get(target_arch, '%PROCESSOR_ARCHITECTURE%')
+    vcvars_command = "\"" + "\\".join((vs, '..','..','VC', 'vcvarsall.bat')) + "\""
+    vcvars_command = "%s %s && set" % (vcvars_command, arch_arg)
+    return vcvars_command
+
+def extractSlaveEnvironment(exit_status, stdout, stderr):
+    '''Helper function for SetPropertyCommand. Loads Slave Environment
+    into a dictionary, and returns slave_env property for ShellCommands.'''
+    if exit_status:
+        return {}
+    slave_env_dict = dict(l.strip().split('=',1)
+        for l in stdout.split('\n') if len(l.split('=', 1)) == 2)
+    return {'slave_env': slave_env_dict}
 
 def getConfigArgs(origname):
   name = origname
