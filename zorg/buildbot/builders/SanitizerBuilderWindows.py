@@ -7,7 +7,6 @@ from buildbot.steps.shell import ShellCommand
 from buildbot.steps.slave import RemoveDirectory
 from buildbot.steps.source import SVN
 from buildbot.process.properties import Property
-import zorg.buildbot.commands.BatchFileDownload as batch_file_download
 from zorg.buildbot.builders.Util import getVisualStudioEnvironment
 from zorg.buildbot.builders.Util import extractSlaveEnvironment
 
