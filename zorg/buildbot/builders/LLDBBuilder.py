@@ -251,91 +251,59 @@ def getLLDBBuildFactory(
 #Cmake bulids on Ubuntu
 #Build command sequnce - cmake, ninja, ninja check-lldb
 def getLLDBUbuntuCMakeBuildFactory(
-            triple,
-            outOfDir=True,
+            build_compiler,
+            test_compiler,
+            build_type,
             jobs='%(jobs)s',
-            extra_configure_args=[],
-            env={},
+            env=None,
             *args,
             **kwargs):
 
-    if outOfDir:
-        llvm_srcdir = "llvm"
-        llvm_builddir = "build"
-    else:
-        llvm_srcdir = "llvm"
-        llvm_objdir = "llvm"
+    if env is None:
+        env={}
+
+    llvm_srcdir = "llvm"
+    llvm_builddir = "build"
 
     f = buildbot.process.factory.BuildFactory()
 
     # Determine the build directory.
     f.addStep(SetProperty(name="get_builddir",
-              command=["pwd"],
-              property="builddir",
-              description="set build dir",
-              workdir="."))
+                          command=["pwd"],
+                          property="builddir",
+                          description="set build dir",
+                          workdir="."))
+    # Get source code
+    f = getLLDBSource(f,llvm_srcdir)
 
-    # Find out what version of llvm and clang are needed to build this version
-    # of lldb. Right now we will assume they use the same version.
-    # XXX - could this be done directly on the master instead of the slave?
-    f.addStep(SetProperty(command='svn cat http://llvm.org/svn/llvm-project/lldb/trunk/scripts/build-llvm.pl | grep ^our.*llvm_revision | cut -d \\" -f 2',
-                          property='llvmrev'))
+    # Construct cmake
+    cmake_args = ["cmake", "-GNinja"]
+    if build_compiler == "clang":
+        cmake_args.append("-DCMAKE_C_COMPILER=clang")
+        cmake_args.append("-DCMAKE_CXX_COMPILER=clang++")
+    elif build_compiler == "gcc":
+        cmake_args.append("-DCMAKE_C_COMPILER=gcc")
+        cmake_args.append("-DCMAKE_CXX_COMPILER=g++")
 
-    # The SVN build step provides no mechanism to check out a specific revision
-    # based on a property, so just run the commands directly here.
+    if test_compiler == "clang":
+        cmake_args.append("-DLLDB_TEST_COMPILER=clang")
+    elif test_compiler == "gcc":
+        cmake_args.append("-DLLDB_TEST_COMPILER=gcc")
 
-    svn_co = ['svn', 'checkout', '--force']
-    svn_co += ['--revision', WithProperties('%(llvmrev)s')]
-
-    # build llvm svn checkout command
-    svn_co_llvm = svn_co + \
-     [WithProperties('http://llvm.org/svn/llvm-project/llvm/trunk@%(llvmrev)s'),
-                     llvm_srcdir]
-    # build clang svn checkout command
-    svn_co_clang = svn_co + \
-     [WithProperties('http://llvm.org/svn/llvm-project/cfe/trunk@%(llvmrev)s'),
-                     '%s/tools/clang' % llvm_srcdir]
-
-    f.addStep(ShellCommand(name='svn-llvm',
-                           command=svn_co_llvm,
-                           haltOnFailure=True,
-                           workdir='.'))
-    f.addStep(ShellCommand(name='svn-clang',
-                           command=svn_co_clang,
-                           haltOnFailure=True,
-                           workdir='.'))
-
-    f.addStep(SVN(name='svn-lldb',
-                  mode='update',
-                  baseURL='http://llvm.org/svn/llvm-project/lldb/',
-                  defaultBranch='trunk',
-                  always_purge=True,
-                  workdir='%s/tools/lldb' % llvm_srcdir))
-
-    # Run configure
-    config_args = ["cmake",
-                   "-GNinja",
-                   "-DCMAKE_C_COMPILER=clang",
-                   "-DCMAKE_CXX_COMPILER=clang++",
-                   "-DCMAKE_BUILD_TYPE=Debug",
-                   WithProperties("../%s" %llvm_srcdir),
-                  ]
-    if triple:
-        config_args += ['--build=%s' % triple]
-    config_args += extra_configure_args
+    cmake_args.append(WithProperties("-DCMAKE_BUILD_TYPE=%s" % build_type))
+    cmake_args.append(WithProperties("../%s" % llvm_srcdir))
 
     # Clean Build Folder
     f.addStep(ShellCommand(name="clean",
-                             command="rm -rf *",
-                             description="clear build folder",
-                             env=env,
-                             workdir='%s' % llvm_builddir))
-
+                           command="rm -rf *",
+                           description="clear build folder",
+                           env=env,
+                           workdir='%s' % llvm_builddir))
     # Configure
     f.addStep(Configure(name='configure/cmake',
-        command=config_args,
-        env=env,
-        workdir=llvm_builddir))
+                        command=cmake_args,
+                        env=env,
+                        workdir=llvm_builddir))
     # Compile
     f.addStep(WarningCountingShellCommand(name="compile/ninja",
                                           command=['nice', '-n', '10',
@@ -343,8 +311,7 @@ def getLLDBUbuntuCMakeBuildFactory(
                                           env=env,
                                           haltOnFailure=True,
                                           workdir=llvm_builddir))
-
-    # Test.
+    # Test
     f.addStep(LitTestCommand(name="test lldb",
                              command=['nice', '-n', '10',
                                       'ninja',
@@ -352,7 +319,6 @@ def getLLDBUbuntuCMakeBuildFactory(
                              description="test lldb",
                              env=env,
                              workdir='%s' % llvm_builddir))
-
     return f
 
 def getLLDBxcodebuildFactory(use_cc=None):

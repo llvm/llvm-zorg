@@ -678,12 +678,13 @@ def _get_lldb_builders():
                         '--enable-optimized',
                         '--enable-assertions'],
                     env={'SHELL':"/bin/bash"})},
-        {'name': "lldb-x86_64-ubuntu-14.04",
+        {'name': "lldb-x86_64-ubuntu-14.04-cmake",
          'slavenames': ["lldb-build1-ubuntu-1404"],
          'builddir': "buildWorkingDir",
          'factory': LLDBBuilder.getLLDBUbuntuCMakeBuildFactory(
-                    triple=None,
-                    extra_configure_args=[],
+                    build_compiler="clang",
+                    test_compiler="clang",
+                    build_type="Debug",
                     env={'SHELL':"/bin/bash"})},
        ]
 
