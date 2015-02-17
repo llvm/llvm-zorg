@@ -99,7 +99,7 @@ def AddExternalPollyBuildFactory(f, llvm_installdir):
     cmakeCommand = ["cmake", "../%s" % polly_srcdir]
 
     cmakeCommand.append('-DLLVM_INSTALL_ROOT=../' + llvm_installdir)
-    cmakeCommand.append('-DCMAKE_BUILD_TYPE=../' + build_type)
+    cmakeCommand.append('-DCMAKE_BUILD_TYPE=' + build_type)
     cmakeCommand.append('-DCMAKE_INSTALL_PREFIX=../' + polly_installdir)
     cmakeCommand.append('-DCMAKE_COLOR_MAKEFILE=OFF')
 
