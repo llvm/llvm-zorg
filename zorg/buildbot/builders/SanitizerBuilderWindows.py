@@ -9,6 +9,7 @@ from buildbot.steps.source import SVN
 from buildbot.process.properties import Property
 from zorg.buildbot.builders.Util import getVisualStudioEnvironment
 from zorg.buildbot.builders.Util import extractSlaveEnvironment
+from zorg.buildbot.commands.NinjaCommand import NinjaCommand
 
 def getSource(f,llvmTopDir='llvm'):
     f.addStep(SVN(name='svn-llvm',
@@ -71,7 +72,7 @@ def getSanitizerWindowsBuildFactory(
                            command=['cmakegen.bat'],
                            haltOnFailure=True,
                            description='cmake gen',
-                           workdir=build_dir,
+                           workdir=build_dir))
 
     # Build compiler-rt first to speed up detection of Windows-specific
     # compiler-time errors in the sanitizers runtime.
@@ -91,11 +92,11 @@ def getSanitizerWindowsBuildFactory(
     test_targets = ['check-asan','check-asan-dynamic','check-sanitizer']
     ignoreTestFail = bool(test != 'ignoreFail')
     f.addStep(NinjaCommand(name='run tests',
-                           targets=test_cmd,
+                           targets=test_targets,
                            flunkOnFailure=ignoreTestFail,
                            description='ninja test',
                            workdir=build_dir,
                            doStepIf=bool(test),
                            env=Property('slave_env')))
-    
+
     return f
