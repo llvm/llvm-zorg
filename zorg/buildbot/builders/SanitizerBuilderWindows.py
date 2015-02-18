@@ -24,7 +24,7 @@ def getSource(f,llvmTopDir='llvm'):
                   mode='update',
                   baseURL='http://llvm.org/svn/llvm-project/compiler-rt/',
                   defaultBranch='trunk',
-                  workdir='%s/tools/compiler-rt' % llvmTopDir))
+                  workdir='%s/projects/compiler-rt' % llvmTopDir))
     return f
 
 def getSanitizerWindowsBuildFactory(
@@ -61,17 +61,12 @@ def getSanitizerWindowsBuildFactory(
                 doStepIf=cleanBuildRequested
                 ))
 
-    f.addStep(ShellCommand(name='cmakegen',
+    f.addStep(ShellCommand(name='cmake',
                            command=[cmake, "-G", "Ninja", "../llvm",
                                     "-DCMAKE_BUILD_TYPE="+config,
                                     "-DLLVM_ENABLE_ASSERTIONS=ON"]
                                    + extra_cmake_args,
-                           workdir=build_dir))
-
-    f.addStep(ShellCommand(name='cmake',
-                           command=['cmakegen.bat'],
                            haltOnFailure=True,
-                           description='cmake gen',
                            workdir=build_dir))
 
     # Build compiler-rt first to speed up detection of Windows-specific
