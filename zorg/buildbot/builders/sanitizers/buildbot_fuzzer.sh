@@ -61,6 +61,8 @@ cmake_stage2_asan_options=" \
   -DLLVM_USE_SANITIZER=Address \
   -DLLVM_USE_SANITIZE_COVERAGE=YES \
 "
+common_stage2_variables
+export ASAN_SYMBOLIZER_PATH="${llvm_symbolizer_path}"
 
 (cd ${STAGE2_ASAN_DIR} && cmake ${cmake_stage2_asan_options} $LLVM) || \
   echo @@@STEP_FAILURE@@@
