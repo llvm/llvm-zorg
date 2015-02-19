@@ -36,8 +36,7 @@ def getSanitizerWindowsBuildFactory(
             config='Release',
             target_arch='x86',
 
-            extra_cmake_args=[],
-            test=False):
+            extra_cmake_args=[]):
 
     ############# PREPARING
     f = buildbot.process.factory.BuildFactory()
@@ -67,7 +66,8 @@ def getSanitizerWindowsBuildFactory(
                                     "-DLLVM_ENABLE_ASSERTIONS=ON"]
                                    + extra_cmake_args,
                            haltOnFailure=True,
-                           workdir=build_dir))
+                           workdir=build_dir,
+                           env=Property('slave_env')))
 
     # Build compiler-rt first to speed up detection of Windows-specific
     # compiler-time errors in the sanitizers runtime.
@@ -78,20 +78,14 @@ def getSanitizerWindowsBuildFactory(
                            workdir=build_dir,
                            env=Property('slave_env')))
 
-    f.addStep(NinjaCommand(name='build',
-                           haltOnFailure=True,
-                           description='ninja build',
-                           workdir=build_dir,
-                           env=Property('slave_env')))
-
+    # Only run sanitizer tests.
+    # Don't build targets that are not required in order to speed up the cycle.
     test_targets = ['check-asan','check-asan-dynamic','check-sanitizer']
-    ignoreTestFail = bool(test != 'ignoreFail')
     f.addStep(NinjaCommand(name='run tests',
                            targets=test_targets,
-                           flunkOnFailure=ignoreTestFail,
+                           haltOnFailure=True,
                            description='ninja test',
                            workdir=build_dir,
-                           doStepIf=bool(test),
                            env=Property('slave_env')))
 
     return f
