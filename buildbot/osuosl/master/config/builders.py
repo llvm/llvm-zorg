@@ -770,12 +770,12 @@ def _get_sanitizer_builders():
           {'name': "sanitizer-ppc64-linux1",
            'slavenames' :["sanitizer-ppc64-1"],
            'builddir': "sanitizer-ppc64-1",
-           'factory': SanitizerBuilder.getSanitizerBuildFactory()},
+           'factory': SanitizerBuilder.getSanitizerBuildFactory(timeout=1800)},
 
           {'name': "sanitizer-ppc64le-linux",
            'slavenames' :["sanitizer-ppc64le-linux"],
            'builddir': "sanitizer-ppc64le-1",
-           'factory': SanitizerBuilder.getSanitizerBuildFactory()},
+           'factory': SanitizerBuilder.getSanitizerBuildFactory(timeout=1800)},
 
           {'name': "sanitizer-windows",
            'slavenames' :["sanitizer-windows"],
