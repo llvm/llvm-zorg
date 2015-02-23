@@ -284,15 +284,15 @@ def _get_clang_builders():
 
         ## Cortex-A15 check-all with CMake T2 builder
         {'name': "clang-cmake-thumbv7-a15",
-         'slavenames':["linaro-dragon-01"],
+         'slavenames':["linaro-a15-04"],
          'builddir':"clang-cmake-thumbv7-a15",
          'factory' : ClangBuilder.getClangCMakeBuildFactory(
                       jobs=4,
                       clean=False,
                       checkout_compiler_rt=False,
                       env={'PATH':'/usr/lib/ccache:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'},
-                      extra_cmake_args=["-DCMAKE_C_FLAGS='-mcpu=cortex-a15 -mthumb'",
-                                        "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a15 -mthumb'",
+                      extra_cmake_args=["-DCMAKE_C_FLAGS='-mcpu=cortex-a15 -mfpu=vfpv3 -mthumb'",
+                                        "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a15 -mfpu=vfpv3 -mthumb'",
                                         "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'"])},
 
         ## Cortex-A15 check-all self-host with CMake builder
@@ -793,6 +793,21 @@ def _get_sanitizer_builders():
                         extra_cmake_args=["-DCMAKE_C_FLAGS='-mcpu=cortex-a15 -mfpu=vfpv3'",
                                           "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a15 -mfpu=vfpv3'",
                                           "-DCOMPILER_RT_TEST_COMPILER_CFLAGS='-mcpu=cortex-a15 -mfpu=vfpv3'",
+                                          "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64;X86'"])},
+
+          ## Cortex-A15 Thumb2 check-all full (compiler-rt) with CMake builder; Needs x86 for ASAN tests
+          {'name': "clang-cmake-thumbv7-a15-full-sh",
+           'slavenames':["linaro-chrome-05"],
+           'builddir':"clang-cmake-thumbv7-a15-full-sh",
+           'factory' : ClangBuilder.getClangCMakeBuildFactory(
+                        jobs=4,
+                        clean=False,
+                        useTwoStage=True,
+                        testStage1=True,
+                        env={'PATH':'/usr/lib/ccache:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'},
+                        extra_cmake_args=["-DCMAKE_C_FLAGS='-mcpu=cortex-a15 -mthumb'",
+                                          "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a15 -mthumb'",
+                                          "-DCOMPILER_RT_TEST_COMPILER_CFLAGS='-mcpu=cortex-a15 -mthumb'",
                                           "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64;X86'"])},
 
           # TODO: Temporary fix. Remove this when the Clang bootstrapping with backtraces issue will be fixed.

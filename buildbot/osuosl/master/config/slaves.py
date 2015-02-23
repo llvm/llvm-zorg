@@ -35,10 +35,12 @@ def get_build_slaves():
         create_slave("linaro-chrome-02", properties={'jobs' : 2}, max_builds=1),
         create_slave("linaro-chrome-03", properties={'jobs' : 2}, max_builds=1),
         create_slave("linaro-chrome-04", properties={'jobs' : 2}, max_builds=1),
+        create_slave("linaro-chrome-05", properties={'jobs' : 2}, max_builds=1),
 
         create_slave("linaro-a15-01", properties={'jobs' : 4}, max_builds=1),
         create_slave("linaro-a15-02", properties={'jobs' : 4}, max_builds=1),
         create_slave("linaro-a15-03", properties={'jobs' : 4}, max_builds=1),
+        create_slave("linaro-a15-04", properties={'jobs' : 4}, max_builds=1),
 
         create_slave("linaro-dragon-01", properties={'jobs' : 4}, max_builds=1),
 
