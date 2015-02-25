@@ -46,7 +46,9 @@ def getPollyBuildFactory():
                                description=["create build dir"],
                                workdir="."))
     cmakeCommand = ["cmake", "../%s" %llvm_srcdir,
-		    "-DCMAKE_COLOR_MAKEFILE=OFF", "-DPOLLY_TEST_DISABLE_BAR=ON"]
+		    "-DCMAKE_COLOR_MAKEFILE=OFF", "-DPOLLY_TEST_DISABLE_BAR=ON",
+		    "-DCMAKE_BUILD_TYPE=Release"]
+
     f.addStep(ShellCommand(name="cmake-configure",
                                command=cmakeCommand,
                                haltOnFailure=False,
