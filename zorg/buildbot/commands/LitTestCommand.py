@@ -19,9 +19,11 @@ class LitLogObserver(LogLineObserver):
 
   # These are the codes for which we will include the log output in the buildbot
   # step results.
-  failingCodes = set(['FAIL', 'XPASS', 'KPASS', 'UNRESOLVED'])
+  failingCodes = set(['FAIL', 'XPASS', 'KPASS', 'UNRESOLVED', 'TIMEOUT'])
+  # Regular expressions for start of summary marker.
+  kStartSummaryRE = re.compile(r'^Failing Tests \(\d*\)$')
 
-  def __init__(self, maxLogs=None):
+  def __init__(self, maxLogs=None, parseSummaryOnly=False):
     LogLineObserver.__init__(self)
     self.resultCounts = {}
     self.maxLogs = maxLogs
@@ -32,6 +34,8 @@ class LitLogObserver(LogLineObserver):
 
     # If non-null, a list of lines in the current log.
     self.activeVerboseLog = None
+    # Current line will be parsed as result steps only if parserStarted is True
+    self.parserStarted = not parseSummaryOnly
 
   def hadFailure(self):
     for code in self.failingCodes:
@@ -97,13 +101,19 @@ class LitLogObserver(LogLineObserver):
     if self.lastTestResult:
       self.testInfoFinished()
 
-    # Check for a new test status line.
-    m = self.kTestLineRE.match(line.strip())
-    if m:
-      # Remember the last test result and update the result counts.
-      self.lastTestResult = (code, name) = m.groups()
-      self.resultCounts[code] = self.resultCounts.get(code, 0) + 1
-      return
+    if self.kStartSummaryRE.match(line):
+      self.parserStarted = True;
+
+    #Assign result line only if summary marker has been matched
+    #Or if all lines should be parsed
+    if self.parserStarted is True:
+      # Check for a new test status line.
+      m = self.kTestLineRE.match(line.strip())
+      if m:
+        # Remember the last test result and update the result counts.
+        self.lastTestResult = (code, name) = m.groups()
+        self.resultCounts[code] = self.resultCounts.get(code, 0) + 1
+        return
 
 class LitTestCommand(Test):
   resultNames = {'FAIL':'unexpected failures',
@@ -118,12 +128,13 @@ class LitTestCommand(Test):
                  'IMPROVED':'runtime performance improvement',
                  'UNSUPPORTED':'unsupported tests'}
 
-  def __init__(self, ignore=[], flaky=[], max_logs=20,
+  def __init__(self, ignore=[], flaky=[], max_logs=20, parseSummaryOnly=False,
                *args, **kwargs):
     Test.__init__(self, *args, **kwargs)
     self.maxLogs = int(max_logs)
-    self.logObserver = LitLogObserver(self.maxLogs)
+    self.logObserver = LitLogObserver(self.maxLogs, parseSummaryOnly)
     self.addFactoryArguments(max_logs=max_logs)
+    self.addFactoryArguments(parseSummaryOnly=parseSummaryOnly)
     self.addLogObserver('stdio', self.logObserver)
 
   def evaluateCommand(self, cmd):

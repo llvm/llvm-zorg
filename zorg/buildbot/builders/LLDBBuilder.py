@@ -303,6 +303,7 @@ def getLLDBUbuntuCMakeBuildFactory(
                                       'ninja',
                                       'check-lldb'],
                              description="test lldb",
+                             parseSummaryOnly=True,
                              env=env,
                              workdir='%s' % llvm_builddir))
     return f
