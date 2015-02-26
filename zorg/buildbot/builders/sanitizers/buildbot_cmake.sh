@@ -38,6 +38,10 @@ if [ "$PLATFORM" == "Darwin" ]; then
   ENABLE_LIBCXX_FLAG="-DLLVM_ENABLE_LIBCXX=ON"
 fi
 
+if [ -e /usr/include/plugin-api.h ]; then
+  CMAKE_COMMON_OPTIONS="${CMAKE_COMMON_OPTIONS} -DLLVM_BINUTILS_INCDIR=/usr/include"
+fi
+
 BUILD_ANDROID=${BUILD_ANDROID:-0}
 RUN_ANDROID=${RUN_ANDROID:-0}
 if [ $BUILD_ANDROID == 1 -o $RUN_ANDROID == 1 ] ; then
@@ -81,6 +85,7 @@ if [ "$PLATFORM" == "Linux" ]; then
     (cd clang_build && make -j$MAKE_JOBS check-tsan) || echo @@@STEP_FAILURE@@@
     (cd clang_build && make -j$MAKE_JOBS check-ubsan) || echo @@@STEP_WARNINGS@@@
     (cd clang_build && make -j$MAKE_JOBS check-dfsan) || echo @@@STEP_WARNINGS@@@
+    (cd clang_build && make -j$MAKE_JOBS check-cfi-and-supported) || echo @@@STEP_FAILURE@@@
   fi
 fi
 
@@ -134,6 +139,11 @@ if [ "$PLATFORM" == "Linux" -a "$ARCH" == "x86_64" ]; then
   (cd llvm_build64 && make -j$MAKE_JOBS check-lsan) || echo @@@STEP_FAILURE@@@
 fi
 
+if [ "$PLATFORM" == "Linux" -a "$ARCH" == "x86_64" ]; then
+  echo @@@BUILD_STEP run 64-bit cfi unit tests@@@
+  (cd llvm_build64 && make -j$MAKE_JOBS check-cfi-and-supported) || echo @@@STEP_FAILURE@@@
+fi
+
 echo @@@BUILD_STEP run sanitizer_common tests@@@
 (cd llvm_build64 && make -j$MAKE_JOBS check-sanitizer) || echo @@@STEP_FAILURE@@@
 
@@ -170,6 +180,7 @@ if [ "$PLATFORM" == "Linux" -a $HAVE_NINJA == 1 ]; then
   (cd llvm_build_ninja && ninja check-lsan) || echo @@@STEP_FAILURE@@@
   (cd llvm_build_ninja && ninja check-ubsan) || echo @@@STEP_WARNINGS@@@
   (cd llvm_build_ninja && ninja check-dfsan) || echo @@@STEP_WARNINGS@@@
+  (cd llvm_build_ninja && ninja check-cfi-and-supported) || echo @@@STEP_FAILURE@@@
 fi
 
 if [ $BUILD_ANDROID == 1 ] ; then
