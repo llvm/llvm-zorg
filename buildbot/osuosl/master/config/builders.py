@@ -318,18 +318,18 @@ def _get_clang_builders():
                                                        stage1_config='Release+Asserts',
                                                        stage2_config='Release+Asserts')},
 
-        # This will ultimately be a self-host bot, even though the config does
-        # not reflect that today.
-        {'name': 'clang-x86-win2008-selfhost',
-         'slavenames': ['windows-gcebot1'],
-         'builddir': 'clang-x86-win2008-selfhost',
-         'factory' : ClangBuilder.getClangCMakeBuildFactory(
-                        triple='i686-pc-windows-msvc',
-                        clean=False,
-                        checkout_compiler_rt=False,
-                        testStage1=True,
-                        stage1_config='Release',
-                        extra_cmake_args=["-DLLVM_ENABLE_ASSERTIONS=ON"])},
+#        # This will ultimately be a self-host bot, even though the config does
+#        # not reflect that today.
+#        {'name': 'clang-x86-win2008-selfhost',
+#         'slavenames': ['windows-gcebot1'],
+#         'builddir': 'clang-x86-win2008-selfhost',
+#         'factory' : ClangBuilder.getClangCMakeBuildFactory(
+#                        triple='i686-pc-windows-msvc',
+#                        clean=False,
+#                        checkout_compiler_rt=False,
+#                        testStage1=True,
+#                        stage1_config='Release',
+#                        extra_cmake_args=["-DLLVM_ENABLE_ASSERTIONS=ON"])},
 
         {'name' : "clang-ppc64-elf-linux",
          'slavenames' :["chinook-clangslave1"],
