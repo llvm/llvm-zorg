@@ -154,6 +154,9 @@ def get_build_slaves():
         # Debian 7.7 x86_64 8-core GCE instance
         create_slave("sanitizer-buildbot5", properties={'jobs': 8}, max_builds=1),
 
+        # Debian 7.7 x86_64 GCE instance
+        create_slave("modules-slave-1", properties={'jobs': 1}, max_builds=1),
+
         # zEnterprise 196 (s390x), SLES 11 SP2
         create_slave("systemz-1", properties={'jobs': 4}, max_builds=1),
 
