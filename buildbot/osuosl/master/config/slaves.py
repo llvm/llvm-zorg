@@ -178,7 +178,8 @@ def get_build_slaves():
         create_slave("lldb-build1-ubuntu-1404", properties={'jobs': 16, 'loadaverage':
 32},
             max_builds=1),
-
+        # Darwin 13.4.0, x86_64
+        create_slave("lldb-x86_64-darwin-13.4", properties={'jobs': 16, 'loadaverage':32}, max_builds=1),
         # Defunct.
         # Intel(R) Pentium(R) CPU G620 @ 2.60GHz, Ubuntu i686
         #create_slave("botether", properties={'jobs': 2}, max_builds=1),

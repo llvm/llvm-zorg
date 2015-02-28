@@ -311,6 +311,12 @@ def getLLDBxcodebuildFactory(use_cc=None):
                           workdir='.'))
     lldb_srcdir = 'lldb.src'
     OBJROOT='%(builddir)s/' + lldb_srcdir + '/build'
+    f.addStep(SetProperty(name='get_bindir',
+                          command=['echo',
+                                   WithProperties('%(builddir)s/' + lldb_srcdir + '/build/Debug')],
+                          property='lldb_bindir',
+                          description='set bin dir',
+                          workdir='.'))
     # cleaning out the build directory is vital for codesigning.
     f.addStep(ShellCommand(name='clean.lldb-buid',
                            command=['rm', '-rf', WithProperties(OBJROOT)],
@@ -318,6 +324,10 @@ def getLLDBxcodebuildFactory(use_cc=None):
                            workdir=WithProperties('%(builddir)s')))
     f.addStep(ShellCommand(name='clean.llvm-buid',
                            command=['rm', '-rf', '%s/llvm-build' % lldb_srcdir ],
+                           haltOnFailure=True,
+                           workdir=WithProperties('%(builddir)s')))
+    f.addStep(ShellCommand(name='clean.test trace',
+                           command=['rm', '-rf', '%s/DerivedData/lldb-test-results' % lldb_srcdir ],
                            haltOnFailure=True,
                            workdir=WithProperties('%(builddir)s')))
     f.addStep(SVN(name='svn-lldb',
@@ -360,6 +370,17 @@ def getLLDBxcodebuildFactory(use_cc=None):
                                     '-configuration', 'Debug',
                                     WithProperties('SYMROOT=' + OBJROOT),
                                     WithProperties('OBJROOT=' + OBJROOT)],
+                           haltOnFailure=False,
+                           workdir=lldb_srcdir))
+
+# Currently the first build always fail, so ignore the first result and add retry as workaround
+
+    f.addStep(ShellCommand(name='lldb-build-Retry',
+                           command=['xcrun', 'xcodebuild', '-workspace',
+                                    'lldb.xcworkspace', '-scheme', 'lldb-tool',
+                                    '-configuration', 'Debug',
+                                    WithProperties('SYMROOT=' + OBJROOT),
+                                    WithProperties('OBJROOT=' + OBJROOT)],
                            haltOnFailure=True,
                            workdir=lldb_srcdir))
 # Testing
@@ -379,11 +400,13 @@ def getLLDBxcodebuildFactory(use_cc=None):
                   description='set cc',
                   workdir=lldb_srcdir))
 
-    f.addStep(ShellCommand(name='lldb-test',
-                           command=['./dotest.py', '-v', '-C',
-                                    WithProperties('%(use_cc)s')],
-                           haltOnFailure=True,
-                           workdir='%s/test' % lldb_srcdir))
+    f.addStep(LitTestCommand(name='lldb-test',
+                             command=['./dosep.py',
+                                      '--options',
+                                      WithProperties('-m --executable %(lldb_bindir)s/lldb --framework %(lldb_bindir)s/LLDB.framework -A x86_64 -C clang -s ../DerivedData/lldb-test-results')],
+                             haltOnFailure=True,
+                             workdir='%s/test' % lldb_srcdir,
+                             env={'DYLD_FRAMEWORK_PATH' : WithProperties('%(lldb_bindir)s')}))
 
 # Results go in a directory coded named according to the date and time of the test run, e.g.:
 #

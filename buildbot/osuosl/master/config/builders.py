@@ -714,6 +714,10 @@ def _get_lldb_builders():
                     test_compiler="clang",
                     build_type="Debug",
                     env={'SHELL':"/bin/bash"})},
+        {'name': "lldb-x86_64-darwin-13.4",
+         'slavenames': ["lldb-x86_64-darwin-13.4"],
+         'builddir': "buildDir",
+         'factory': LLDBBuilder.getLLDBxcodebuildFactory()},
        ]
 
 # Offline.
