@@ -29,8 +29,7 @@ def getLLVMBuildFactory(
                   llvmgccdir           = None,             # Path to llvm-gcc.
                   config_name          = 'Debug+Asserts',  # Configuration name.
                   env                  = {},               # Environmental variables for all steps.
-                  extra_configure_args = [],               # Extra args for the conigure step.
-                  outOfDir             = False):           # Enable out-of-dir build (for cross-compile builds).
+                  extra_configure_args = []):              # Extra args for the conigure step.
     # Prepare environmental variables. Set here all env we want everywhere.
     merged_env = {
                    'TERM' : 'dumb'     # Make sure Clang doesn't use color escape sequences.
@@ -38,12 +37,8 @@ def getLLVMBuildFactory(
     if env is not None:
         merged_env.update(env)  # Overwrite pre-set items with the given ones, so user can set anything.
 
-    if outOfDir:
-        llvm_srcdir = "llvm.src"
-        llvm_objdir = "llvm.obj"
-    else:
-        llvm_srcdir = "llvm"
-        llvm_objdir = "llvm"
+    llvm_srcdir = "llvm.src"
+    llvm_objdir = "llvm.obj"
 
     f = buildbot.process.factory.BuildFactory()
 

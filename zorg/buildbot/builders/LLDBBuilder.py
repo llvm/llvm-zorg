@@ -139,7 +139,6 @@ def getLLDBWindowsCMakeBuildFactory(
 
 def getLLDBBuildFactory(
             triple,
-            outOfDir=False,
             useTwoStage=False,
             make='make',
             jobs='%(jobs)s',
@@ -148,13 +147,8 @@ def getLLDBBuildFactory(
             *args,
             **kwargs):
 
-    inDir = not outOfDir and not useTwoStage
-    if inDir:
-        llvm_srcdir = "llvm"
-        llvm_objdir = "llvm"
-    else:
-        llvm_srcdir = "llvm.src"
-        llvm_objdir = "llvm.obj"
+    llvm_srcdir = "llvm.src"
+    llvm_objdir = "llvm.obj"
 
     f = buildbot.process.factory.BuildFactory()
 

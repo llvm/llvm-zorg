@@ -139,7 +139,7 @@ def getPollyLNTFactory(triple, nt_flags, xfails=[], clean=False, test=False,
     llvm_install_dir = 'llvm.install.1'
 
     f = ClangBuilder.getClangBuildFactory(
-        triple, outOfDir=True, clean=clean, test=test,
+        triple, clean=clean, test=test,
         stage1_config='Release+Asserts', **kwargs)
 
     f.addStep(ShellCommand(name="install-llvm-and-clang",

@@ -24,7 +24,6 @@ def getClangBuildFactory(
             examples=False,
             valgrind=False,
             valgrindLeakCheck=False,
-            outOfDir=False,
             useTwoStage=False,
             completely_clean=False, 
             make='make',
@@ -55,21 +54,11 @@ def getClangBuildFactory(
         # Overwrite pre-set items with the given ones, so user can set anything.
         merged_env.update(env)
 
-    if run_gdb or run_gcc or run_modern_gdb:
-        outOfDir = True
-        
-    # Don't use in-dir builds with a two stage build process.
-    inDir = not outOfDir and not useTwoStage
-    if inDir:
-        llvm_srcdir = "llvm"
-        llvm_1_objdir = "llvm"
-        llvm_1_installdir = None
-    else:
-        llvm_srcdir = "llvm.src"
-        llvm_1_objdir = "llvm.obj"
-        llvm_1_installdir = "llvm.install.1"
-        llvm_2_objdir = "llvm.obj.2"
-        llvm_2_installdir = "llvm.install"
+    llvm_srcdir = "llvm.src"
+    llvm_1_objdir = "llvm.obj"
+    llvm_1_installdir = "llvm.install.1"
+    llvm_2_objdir = "llvm.obj.2"
+    llvm_2_installdir = "llvm.install"
 
     f = buildbot.process.factory.BuildFactory()
 

@@ -60,7 +60,7 @@ def getNightlytestBuildFactory(submitAux=None, *args, **kwargs):
 def getFastNightlyTestBuildFactory(triple, xfails=[], clean=True, test=False, make='make', **kwargs):
   # Build compiler to test.  
   f = ClangBuilder.getClangBuildFactory(
-    triple, outOfDir=True, clean=clean, test=test,
+    triple, clean=clean, test=test,
     make=make, **kwargs)
 
   # Prepare environmental variables. Set here all env we want everywhere.
