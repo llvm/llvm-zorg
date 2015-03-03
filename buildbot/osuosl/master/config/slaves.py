@@ -73,6 +73,9 @@ def get_build_slaves():
         create_slave("atom-buildbot", properties={'jobs': 2}, max_builds=1),
         create_slave("atom1-buildbot", properties={'jobs': 2}, max_builds=1),
 
+        # Windows 7 Intel(R) Xeon(R) CPU E5-2680 (2.80GHz), 16GB of RAM
+        create_slave("windows7-buildbot", properties={'jobs': 2}, max_builds=1),
+
         # LLVM Lab slaves
         create_slave("hpproliant1", properties={'jobs': 6}, max_builds=1),
 
