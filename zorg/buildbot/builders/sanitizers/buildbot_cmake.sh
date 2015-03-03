@@ -85,7 +85,7 @@ if [ "$PLATFORM" == "Linux" ]; then
     (cd clang_build && make -j$MAKE_JOBS check-tsan) || echo @@@STEP_FAILURE@@@
     (cd clang_build && make -j$MAKE_JOBS check-ubsan) || echo @@@STEP_WARNINGS@@@
     (cd clang_build && make -j$MAKE_JOBS check-dfsan) || echo @@@STEP_WARNINGS@@@
-    (cd clang_build && make -j$MAKE_JOBS check-cfi-and-supported) || echo @@@STEP_FAILURE@@@
+    (cd clang_build && LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/x86_64 make -j$MAKE_JOBS check-cfi-and-supported) || echo @@@STEP_FAILURE@@@
   fi
 fi
 
@@ -141,7 +141,7 @@ fi
 
 if [ "$PLATFORM" == "Linux" -a "$ARCH" == "x86_64" ]; then
   echo @@@BUILD_STEP run 64-bit cfi unit tests@@@
-  (cd llvm_build64 && make -j$MAKE_JOBS check-cfi-and-supported) || echo @@@STEP_FAILURE@@@
+  (cd llvm_build64 && LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/x86_64 make -j$MAKE_JOBS check-cfi-and-supported) || echo @@@STEP_FAILURE@@@
 fi
 
 echo @@@BUILD_STEP run sanitizer_common tests@@@
@@ -180,7 +180,7 @@ if [ "$PLATFORM" == "Linux" -a $HAVE_NINJA == 1 ]; then
   (cd llvm_build_ninja && ninja check-lsan) || echo @@@STEP_FAILURE@@@
   (cd llvm_build_ninja && ninja check-ubsan) || echo @@@STEP_WARNINGS@@@
   (cd llvm_build_ninja && ninja check-dfsan) || echo @@@STEP_WARNINGS@@@
-  (cd llvm_build_ninja && ninja check-cfi-and-supported) || echo @@@STEP_FAILURE@@@
+  (cd llvm_build_ninja && LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/x86_64 ninja check-cfi-and-supported) || echo @@@STEP_FAILURE@@@
 fi
 
 if [ $BUILD_ANDROID == 1 ] ; then
