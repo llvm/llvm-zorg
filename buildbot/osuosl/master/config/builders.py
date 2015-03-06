@@ -828,7 +828,7 @@ def _get_sanitizer_builders():
            'slavenames':["linaro-chrome-05"],
            'builddir':"clang-cmake-thumbv7-a15-full-sh",
            'factory' : ClangBuilder.getClangCMakeBuildFactory(
-                        jobs=4,
+                        jobs=2,
                         clean=False,
                         useTwoStage=True,
                         testStage1=True,
