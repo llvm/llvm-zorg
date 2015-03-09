@@ -2,7 +2,7 @@ import buildbot
 import buildbot.process.factory
 import os
 
-from buildbot.process.properties import WithProperties
+from buildbot.process.properties import WithProperties, Property
 from buildbot.steps.shell import Configure, ShellCommand, SetProperty
 from buildbot.steps.shell import WarningCountingShellCommand
 from buildbot.steps.source import SVN
@@ -433,30 +433,7 @@ def getClangBuildFactory(
 
     return f
 
-# CMake Linux builds
-def getClangCMakeBuildFactory(
-            clean=True,
-            test=True,
-            cmake='cmake',
-            jobs=None,
-
-            # Multi-stage compilation
-            useTwoStage=False,
-            testStage1=True,
-            stage1_config='Release',
-            stage2_config='Release',
-
-            # Environmental variables for all steps.
-            env={},
-            extra_cmake_args=[],
-
-            # Extra repositories
-            checkout_clang_tools_extra=True,
-            checkout_compiler_rt=True):
-
-    ############# PREPARING
-    f = buildbot.process.factory.BuildFactory()
-
+def addSVNUpdateSteps(f, checkout_clang_tools_extra=True, checkout_compiler_rt=True):
     # We *must* checkout at least Clang+LLVM
     f.addStep(SVN(name='svn-llvm',
                   mode='update', baseURL='http://llvm.org/svn/llvm-project/llvm/',
@@ -479,6 +456,38 @@ def getClangCMakeBuildFactory(
                       defaultBranch='trunk',
                       workdir='llvm/projects/compiler-rt'))
 
+
+def getClangCMakeBuildFactory(
+            clean=True,
+            test=True,
+            cmake='cmake',
+            jobs=None,
+
+            # VS tools environment variable if using MSVC. For example,
+            # %VS120COMNTOOLS% selects the 2013 toolchain.
+            vs=None,
+            vs_target_arch='x86',
+
+            # Multi-stage compilation
+            useTwoStage=False,
+            testStage1=True,
+            stage1_config='Release',
+            stage2_config='Release',
+
+            # Environmental variables for all steps.
+            env={},
+            extra_cmake_args=[],
+
+            # Extra repositories
+            checkout_clang_tools_extra=True,
+            checkout_compiler_rt=True):
+
+    ############# PREPARING
+    f = buildbot.process.factory.BuildFactory()
+
+    addSVNUpdateSteps(f, checkout_clang_tools_extra=checkout_clang_tools_extra,
+                      checkout_compiler_rt=checkout_compiler_rt)
+
     # If jobs not defined, Ninja will choose a suitable value
     jobs_cmd=[]
     lit_args="'-v"
@@ -490,11 +499,25 @@ def getClangCMakeBuildFactory(
     ninja_cmd=['ninja'] + jobs_cmd
     ninja_install_cmd=['ninja', 'install'] + jobs_cmd
     ninja_check_cmd=['ninja', 'check-all'] + jobs_cmd
+    check_build_cmd = ["sh", "-c",
+                       "test -e build.ninja && echo OK || echo Missing"]
+    if vs:
+        check_build_cmd = ["cmd", "/c", "if exist build.ninja (echo OK) " +
+                           " else (echo Missing & exit 1)"]
 
     # Global configurations
     stage1_build='stage1'
     stage1_install='stage1.install'
     stage2_build='stage2'
+
+    # Set up VS environment, if appropriate.
+    if vs:
+        f.addStep(SetProperty(
+            command=builders_util.getVisualStudioEnvironment(vs, vs_target_arch),
+            extract_fn=builders_util.extractSlaveEnvironment))
+        assert not env, "Can't have custom builder env vars with VS"
+        env = Property('slave_env')
+
 
     ############# CLEANING
     if clean:
@@ -508,8 +531,7 @@ def getClangCMakeBuildFactory(
     else:
         f.addStep(SetProperty(name="check ninja files 1",
                               workdir=stage1_build,
-                              command=["sh", "-c",
-                                       "test -e build.ninja && echo OK || echo Missing"],
+                              command=check_build_cmd,
                               flunkOnFailure=False,
                               property="exists_ninja_1"))
 
@@ -564,33 +586,46 @@ def getClangCMakeBuildFactory(
     else:
         f.addStep(SetProperty(name="check ninja files 2",
                               workdir=stage2_build,
-                              command=["sh", "-c",
-                                       "test -e build.ninja && echo OK || echo Missing"],
+                              command=check_build_cmd,
                               flunkOnFailure=False,
                               property="exists_ninja_2"))
 
- 
+    # Compute the cmake define flag to set the C and C++ compiler to clang. Use
+    # clang-cl if we used MSVC for stage1.
+    if not vs:
+        cc = 'clang'
+        cxx = 'clang++'
+    else:
+        cc = 'clang-cl.exe'
+        cxx = 'clang-cl.exe'
+
+    # Set the compiler using the CC and CXX environment variables to work around
+    # backslash string escaping bugs somewhere between buildbot and cmake. The
+    # env.exe helper is required to run the tests, so hopefully it's already on
+    # PATH.
+    cmake_cmd2 = ['env',
+                  WithProperties('CC=%(workdir)s/'+stage1_install+'/bin/'+cc),
+                  WithProperties('CXX=%(workdir)s/'+stage1_install+'/bin/'+cxx),
+                  cmake, "-G", "Ninja", "../llvm",
+                  "-DCMAKE_BUILD_TYPE="+stage2_config,
+                  "-DLLVM_ENABLE_ASSERTIONS=True",
+                  "-DLLVM_LIT_ARGS="+lit_args] + extra_cmake_args
+
     f.addStep(ShellCommand(name='cmake stage 2',
-                           command=[cmake, "-G", "Ninja", "../llvm",
-                                    "-DCMAKE_BUILD_TYPE="+stage2_config,
-                                    "-DLLVM_ENABLE_ASSERTIONS=True",
-                                    WithProperties("-DCMAKE_C_COMPILER=%(workdir)s/"+stage1_install+"/bin/clang"),
-                                    WithProperties("-DCMAKE_CXX_COMPILER=%(workdir)s/"+stage1_install+"/bin/clang++"),
-                                    "-DLLVM_LIT_ARGS="+lit_args]
-                                    + extra_cmake_args,
+                           command=cmake_cmd2,
                            haltOnFailure=True,
                            description='cmake stage 2',
                            workdir=stage2_build,
                            doStepIf=lambda step: step.build.getProperty("exists_ninja_2") != "OK",
                            env=env))
- 
+
     f.addStep(WarningCountingShellCommand(name='build stage 2',
                                           command=ninja_cmd,
                                           haltOnFailure=True,
                                           description='ninja all',
                                           workdir=stage2_build,
                                           env=env))
- 
+
     if test:
         f.addStep(lit_test_command.LitTestCommand(name='ninja check 2',
                                    command=ninja_check_cmd,
