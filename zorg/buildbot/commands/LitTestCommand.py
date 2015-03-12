@@ -36,6 +36,7 @@ class LitLogObserver(LogLineObserver):
     self.activeVerboseLog = None
     # Current line will be parsed as result steps only if parserStarted is True
     self.parserStarted = not parseSummaryOnly
+    self.simplifiedLog = False
 
   def hadFailure(self):
     for code in self.failingCodes:
@@ -67,7 +68,7 @@ class LitLogObserver(LogLineObserver):
       # Otherwise, we run out of the allowed name length on some hosts.
       name_part = name.rpartition('::')
       self.step.addCompleteLog(
-                  name_part[0].strip() + name_part[1] + basename(name_part[2]),
+                  code + ': ' + name_part[0].strip() + name_part[1] + basename(name_part[2]),
                   '\n'.join(self.activeVerboseLog))
       self.numLogs += 1
 
@@ -75,7 +76,21 @@ class LitLogObserver(LogLineObserver):
     self.lastTestResult = None
     self.activeVerboseLog = None
 
+  def handleSimplifiedLogLine(self, line):
+    # Check for test status line
+    m = self.kTestLineRE.match(line.strip())
+    if m:
+      # Remember the last test result and update the result counts.
+      self.lastTestResult = (code, name) = m.groups()
+      self.resultCounts[code] = self.resultCounts.get(code, 0) + 1
+      self.testInfoFinished()
+    return
+
   def outLineReceived(self, line):
+    # Assert - Lines after "Failing Test (\d)" will be summary line and will not contain verbose message
+    if self.simplifiedLog is True:
+      self.handleSimplifiedLogLine(line)
+      return
     # If we are inside a verbose log, just accumulate lines until we reach the
     # stop marker.
     if self.activeVerboseLog is not None:
@@ -103,6 +118,7 @@ class LitLogObserver(LogLineObserver):
 
     if self.kStartSummaryRE.match(line):
       self.parserStarted = True;
+      self.simplifiedLog = True;
 
     #Assign result line only if summary marker has been matched
     #Or if all lines should be parsed
@@ -188,7 +204,7 @@ PASS: test-three (3 of 3)
 """)
 
     self.assertEqual(obs.resultCounts, { 'FAIL' : 1, 'PASS' : 2 })
-    self.assertEqual(obs.step.logs, [('test-two', 'FAIL: test-two')])
+    self.assertEqual(obs.step.logs, [('FAIL: test-two', 'FAIL: test-two')])
 
   def test_verbose_logs(self):
     obs = self.parse_log("""
@@ -202,12 +218,12 @@ FAIL: test-three (3 of 3)
 
     self.assertEqual(obs.resultCounts, { 'FAIL' : 3 })
     self.assertEqual(obs.step.logs, [
-        ('test-one', 'FAIL: test-one'),
-        ('test-two', """\
+        ('FAIL: test-one', 'FAIL: test-one'),
+        ('FAIL: test-two', """\
 **** TEST 'test-two' FAILED ****
 bla bla bla
 **********"""),
-        ('test-three', 'FAIL: test-three')])
+        ('FAIL: test-three', 'FAIL: test-three')])
 
 class TestCommand(unittest.TestCase):
   def parse_log(self, text, **kwargs):
@@ -233,7 +249,7 @@ class TestCommand(unittest.TestCase):
 FAIL: test-one (1 of 2)
 FAIL: test-two (2 of 2)
 """, max_logs=1)
-    self.assertEqual(cmd.logObserver.step.logs, [('test-one', 'FAIL: test-one')])
+    self.assertEqual(cmd.logObserver.step.logs, [('FAIL: test-one', 'FAIL: test-one')])
 
 if __name__ == '__main__':
   unittest.main()
