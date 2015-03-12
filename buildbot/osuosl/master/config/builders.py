@@ -26,6 +26,10 @@ from zorg.buildbot.builders import LLDBuilder
 reload(LLDBuilder)
 from zorg.buildbot.builders import LLDBuilder
 
+from zorg.buildbot.builders import LLGoBuilder
+reload(LLGoBuilder)
+from zorg.buildbot.builders import LLGoBuilder
+
 from zorg.buildbot.builders import ClangAndLLDBuilder
 reload(ClangAndLLDBuilder)
 from zorg.buildbot.builders import ClangAndLLDBuilder
@@ -762,6 +766,13 @@ def _get_lld_builders():
 
          ]
 
+
+# llgo builders.
+def _get_llgo_builders():
+    # No build slaves set up for llgo yet.
+    return []
+
+
 # Sanitizer builders.
 def _get_sanitizer_builders():
       return [
@@ -1071,6 +1082,10 @@ def get_builders():
 
     for b in _get_lldb_builders():
         b['category'] = 'lldb'
+        yield b
+
+    for b in _get_llgo_builders():
+        b['category'] = 'llgo'
         yield b
 
     for b in _get_sanitizer_builders():

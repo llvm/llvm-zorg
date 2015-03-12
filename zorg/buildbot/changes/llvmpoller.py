@@ -238,6 +238,7 @@ class LLVMPoller(base.PollingChangeSource, util.ComparableMixin):
             'libcxxabi'    : 'libcxxabi',
             'lld'          : 'lld',
             'lldb'         : 'lldb',
+            'llgo'         : 'llgo',
             'openmp'       : 'openmp',
             }
 
