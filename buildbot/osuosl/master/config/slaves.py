@@ -129,7 +129,7 @@ def get_build_slaves():
         create_slave("gribozavr3", properties={'jobs': 4}, max_builds=1),
 
         # Debian x86-64
-        create_slave("gribozavr4", properties={'jobs': 8}, max_builds=1),
+        create_slave("gribozavr4", properties={'jobs': 18}, max_builds=1),
 
         # Ubuntu 14.04 x86-64
         create_slave("gribozavr5", properties={'jobs': 6}, max_builds=1),
