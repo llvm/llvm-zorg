@@ -30,6 +30,16 @@ def getLLDBSource(f,llvmTopDir='llvm'):
                   workdir='%s/tools/lldb' % llvmTopDir))
     return f
 
+# Clean SVN source tree
+# SVN doesn't provide build-in commands to remove all untracked files
+# List all untracked files, and remove one by one
+def cleanSVNSourceTree(f, srcdir='llvm'):
+    f.addStep(ShellCommand(name='clean svn source %s' % srcdir,
+                           command="svn status --no-ignore | grep '^[I?]' | cut -c 9- | while IFS= read -r f; do echo \"$f\"; rm -rf \"$f\"; done",
+                           description="clean SVN source tree",
+                           workdir='%s' % srcdir))
+    return f
+
 # CMake Windows builds
 def getLLDBWindowsCMakeBuildFactory(
             clean=False,
@@ -228,12 +238,14 @@ def getLLDBBuildFactory(
 
     return f
 
-#Cmake bulids on Ubuntu
-#Build command sequnce - cmake, ninja, ninja check-lldb
+# Cmake bulid on Ubuntu
+# Build command sequence - cmake, ninja, ./dosep
+# Note: If test_archs or test_compilers is not specified, lldb-test will not be added to build factory
 def getLLDBUbuntuCMakeBuildFactory(
             build_compiler,
-            test_compiler,
             build_type,
+            test_archs=None,
+            test_compilers=None,
             jobs='%(jobs)s',
             env=None,
             *args,
@@ -265,11 +277,6 @@ def getLLDBUbuntuCMakeBuildFactory(
         cmake_args.append("-DCMAKE_C_COMPILER=gcc")
         cmake_args.append("-DCMAKE_CXX_COMPILER=g++")
 
-    if test_compiler == "clang":
-        cmake_args.append("-DLLDB_TEST_COMPILER=clang")
-    elif test_compiler == "gcc":
-        cmake_args.append("-DLLDB_TEST_COMPILER=gcc")
-
     cmake_args.append(WithProperties("-DCMAKE_BUILD_TYPE=%s" % build_type))
     cmake_args.append(WithProperties("../%s" % llvm_srcdir))
 
@@ -291,15 +298,38 @@ def getLLDBUbuntuCMakeBuildFactory(
                                           env=env,
                                           haltOnFailure=True,
                                           workdir=llvm_builddir))
-    # Test
-    f.addStep(LitTestCommand(name="test lldb",
-                             command=['nice', '-n', '10',
-                                      'ninja',
-                                      'check-lldb'],
-                             description="test lldb",
-                             parseSummaryOnly=True,
-                             env=env,
-                             workdir='%s' % llvm_builddir))
+    # Skip lldb-test if no test compiler or arch is specified
+    if not test_archs or not test_compilers:
+        return f
+
+    # TODO: it will be good to check that architectures listed in test_archs are compatible with host architecture
+    # For now, the caller of this function should make sure that each target architecture is supported by builder machine
+
+    # Run Test with list of compilers and archs
+    bindir='%(builddir)s/' + llvm_builddir + '/bin'
+
+    for compiler in test_compilers:
+        # find full path for top of tree clang
+        if compiler=='totclang':
+            compilerPath=bindir+'/clang'
+        else:
+            compilerPath = compiler
+        for arch in test_archs:
+            f.addStep(LitTestCommand(name="test lldb (%s-%s)" % (compiler, arch),
+                                     command=['../%s/tools/lldb/test/dosep.py' % llvm_srcdir,
+                                              '--options',
+                                              WithProperties(''.join(['-q ',
+                                                                      '--arch=%s ' % arch,
+                                                                      '--executable ' + bindir + '/lldb ',
+                                                                      '-C ' + compilerPath + ' ',
+                                                                      '-s lldb-test-traces-%s-%s ' % (compiler, arch),
+                                                                      '-u CXXFLAGS ',
+                                                                      '-u CFLAGS']))],
+                                     description="test lldb",
+                                     parseSummaryOnly=True,
+                                     env=env,
+                                     workdir='%s' % llvm_builddir))
+            f=cleanSVNSourceTree(f, '%s/tools/lldb' % llvm_srcdir)
     return f
 
 def getLLDBxcodebuildFactory(use_cc=None):

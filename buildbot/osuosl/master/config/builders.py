@@ -718,8 +718,9 @@ def _get_lldb_builders():
          'builddir': "buildWorkingDir",
          'factory': LLDBBuilder.getLLDBUbuntuCMakeBuildFactory(
                     build_compiler="clang",
-                    test_compiler="clang",
                     build_type="Debug",
+                    test_archs=['x86_64', 'i386'],
+                    test_compilers=['clang', 'totclang', 'gcc4.8.2'],
                     env={'SHELL':"/bin/bash"})},
         {'name': "lldb-x86_64-darwin-13.4",
          'slavenames': ["lldb-x86_64-darwin-13.4"],
