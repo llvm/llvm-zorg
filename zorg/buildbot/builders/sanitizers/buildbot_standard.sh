@@ -13,27 +13,28 @@ HERE="$(dirname $0)"
 if [ "$BUILDBOT_CLOBBER" != "" ]; then
   echo @@@BUILD_STEP clobber@@@
   rm -rf llvm
-  rm -rf llvm-build
+  rm -rf clang_build
 fi
 
 ROOT=`pwd`
 PLATFORM=`uname`
 MAKE_JOBS=${MAX_MAKE_JOBS:-8}
-BUILD_ASAN_ANDROID=${BUILD_ASAN_ANDROID:-0}
 CHECK_TSAN=${CHECK_TSAN:-0}
+
+LLVM_CHECKOUT=${ROOT}/llvm
+CMAKE_COMMON_OPTIONS="-DLLVM_ENABLE_ASSERTIONS=ON"
 
 echo @@@BUILD_STEP update@@@
 buildbot_update
 
-echo @@@BUILD_STEP build clang@@@
-if [ ! -d llvm-build ]; then
-  mkdir llvm-build
+echo @@@BUILD_STEP build fresh clang@@@
+if [ ! -d clang_build ]; then
+  mkdir clang_build
 fi
-cd llvm-build
-CC=gcc CXX=g++ ../llvm/configure --enable-optimized
-make -j$MAKE_JOBS ONLY_TOOLS=clang
-cd ..
-CLANG_BUILD=$ROOT/llvm-build/Release+Asserts
+(cd clang_build && CC=gcc CXX=g++ cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+  ${CMAKE_COMMON_OPTIONS} ${LLVM_CHECKOUT})
+(cd clang_build && make clang -j$MAKE_JOBS) || echo @@@STEP_FAILURE@@@
+CLANG_PATH=$ROOT/clang_build/bin
 
 if [ $CHECK_TSAN == 1 ] ; then
   echo @@@BUILD_STEP prepare for testing tsan@@@
@@ -41,7 +42,7 @@ if [ $CHECK_TSAN == 1 ] ; then
   TSAN_PATH=$ROOT/llvm/projects/compiler-rt/lib/tsan/
   (cd $TSAN_PATH && make -f Makefile.old install_deps)
 
-  export PATH=$CLANG_BUILD/bin:$PATH
+  export PATH=$CLANG_PATH:$PATH
   export MAKEFLAGS=-j$MAKE_JOBS
   gcc -v 2>tmp && grep "version" tmp
   clang -v 2>tmp && grep "version" tmp

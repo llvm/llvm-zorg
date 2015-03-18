@@ -190,7 +190,7 @@ if [ $BUILD_ANDROID == 1 ] ; then
     # https://code.google.com/p/android/issues/detail?id=68779
     build_compiler_rt arm armv7-linux-androideabi
     build_llvm_symbolizer arm armv7-linux-androideabi
-    
+
     build_compiler_rt x86 i686-linux-android
     build_llvm_symbolizer x86 i686-linux-android
 fi
