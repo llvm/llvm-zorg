@@ -1001,7 +1001,17 @@ def _get_libcxx_builders():
          'builddir' : 'libcxx-libcxxabi-x86_64-apple-darwin14-tot-clang',
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
             env={'CC': '/opt/llvm-tot/bin/clang',
-                 'CXX': '/opt/llvm-tot/bin/clang++'}),
+                 'CXX': '/opt/llvm-tot/bin/clang++'}
+            lit_extra_opts={'std': 'c++1z'}),
+        'category': 'libcxx'},
+
+        {'name': 'libcxx-libcxxabi-x86_64-apple-darwin14-system-lib',
+         'slavenames': ['ericwf-osx-slave'],
+         'builddir' : 'libcxx-libcxxabi-x86_64-apple-darwin14-system-lib',
+         'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
+            env={'CC': '/opt/llvm-tot/bin/clang',
+                 'CXX': '/opt/llvm-tot/bin/clang++'},
+            lit_extra_opts={'std':'c++1z', 'use_system_cxx_lib':'true'}),
         'category': 'libcxx'},
 
         # Cortex-A15 LibC++ and LibC++abi tests (require Clang+RT)
