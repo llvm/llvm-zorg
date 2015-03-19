@@ -31,9 +31,10 @@ echo @@@BUILD_STEP build fresh clang@@@
 if [ ! -d clang_build ]; then
   mkdir clang_build
 fi
+TARGETS="clang llvm-symbolizer compiler-rt FileCheck not"
 (cd clang_build && CC=gcc CXX=g++ cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo \
   ${CMAKE_COMMON_OPTIONS} ${LLVM_CHECKOUT})
-(cd clang_build && make -j$MAKE_JOBS) || echo @@@STEP_FAILURE@@@
+(cd clang_build && make -j$MAKE_JOBS ${TARGETS}) || echo @@@STEP_FAILURE@@@
 CLANG_PATH=$ROOT/clang_build/bin
 
 if [ $CHECK_TSAN == 1 ] ; then
