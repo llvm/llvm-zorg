@@ -33,7 +33,7 @@ if [ ! -d clang_build ]; then
 fi
 (cd clang_build && CC=gcc CXX=g++ cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo \
   ${CMAKE_COMMON_OPTIONS} ${LLVM_CHECKOUT})
-(cd clang_build && make clang -j$MAKE_JOBS) || echo @@@STEP_FAILURE@@@
+(cd clang_build && make -j$MAKE_JOBS) || echo @@@STEP_FAILURE@@@
 CLANG_PATH=$ROOT/clang_build/bin
 
 if [ $CHECK_TSAN == 1 ] ; then
