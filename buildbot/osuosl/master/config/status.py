@@ -37,10 +37,6 @@ def get_status_targets(standard_builders):
     # will keep track of such.
     standard_builders = [b for b in standard_builders if not b.startswith('perf-x86_64')]
 
-    # The sphinx buildbots are currently experimental so we don't
-    # want to notify everyone about build failures
-    standard_builders = [b for b in standard_builders if not b.endswith('-sphinx-docs')]
-
     return [
         buildbot.status.html.WebStatus(
             http_port = 8011, authz=authz_cfg),
@@ -115,18 +111,6 @@ def get_status_targets(standard_builders):
             subject="Build %(builder)s Failure",
             mode = "failing",
             builders = ["llvm-s390x-linux1"],
-            addLogs=False,
-            num_lines = 15),
-        InformativeMailNotifier(
-            fromaddr = "llvm.buildmaster@lab.llvm.org",
-            sendToInterestedUsers= False,
-            extraRecipients = ["dan@su-root.co.uk", "chisophugis@gmail.com"],
-            subject="Build %(builder)s Failure",
-            mode = "failing",
-            builders = ["llvm-sphinx-docs",
-                        "clang-sphinx-docs",
-                        "lld-sphinx-docs"
-                       ],
             addLogs=False,
             num_lines = 15),
         ]
