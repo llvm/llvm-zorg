@@ -85,7 +85,8 @@ if [ "$PLATFORM" == "Linux" ]; then
     (cd clang_build && make -j$MAKE_JOBS check-tsan) || echo @@@STEP_FAILURE@@@
     (cd clang_build && make -j$MAKE_JOBS check-ubsan) || echo @@@STEP_WARNINGS@@@
     (cd clang_build && make -j$MAKE_JOBS check-dfsan) || echo @@@STEP_WARNINGS@@@
-    (cd clang_build && LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/x86_64 make -j$MAKE_JOBS check-cfi-and-supported) || echo @@@STEP_FAILURE@@@
+    # FIXME: Reenable once cfi tests reliably work on the bot.
+    #(cd clang_build && LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/x86_64 make -j$MAKE_JOBS check-cfi-and-supported) || echo @@@STEP_FAILURE@@@
   fi
 fi
 
@@ -139,10 +140,11 @@ if [ "$PLATFORM" == "Linux" -a "$ARCH" == "x86_64" ]; then
   (cd llvm_build64 && make -j$MAKE_JOBS check-lsan) || echo @@@STEP_FAILURE@@@
 fi
 
-if [ "$PLATFORM" == "Linux" -a "$ARCH" == "x86_64" ]; then
-  echo @@@BUILD_STEP run 64-bit cfi unit tests@@@
-  (cd llvm_build64 && LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/x86_64 make -j$MAKE_JOBS check-cfi-and-supported) || echo @@@STEP_FAILURE@@@
-fi
+# FIXME: Reenable once cfi tests reliably work on the bot.
+#if [ "$PLATFORM" == "Linux" -a "$ARCH" == "x86_64" ]; then
+#  echo @@@BUILD_STEP run 64-bit cfi unit tests@@@
+#  (cd llvm_build64 && LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/x86_64 make -j$MAKE_JOBS check-cfi-and-supported) || echo @@@STEP_FAILURE@@@
+#fi
 
 echo @@@BUILD_STEP run sanitizer_common tests@@@
 (cd llvm_build64 && make -j$MAKE_JOBS check-sanitizer) || echo @@@STEP_FAILURE@@@
