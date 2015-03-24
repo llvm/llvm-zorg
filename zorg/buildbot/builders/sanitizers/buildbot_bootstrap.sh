@@ -35,6 +35,7 @@ fi
 # Clobber the build trees.
 rm -rf ${STAGE2_LIBCXX_MSAN_DIR}
 rm -rf ${STAGE2_LIBCXX_ASAN_DIR}
+rm -rf ${STAGE2_LIBCXX_UBSAN_DIR}
 rm -rf ${STAGE2_MSAN_DIR}
 rm -rf ${STAGE3_MSAN_DIR}
 rm -rf ${STAGE2_ASAN_DIR}
