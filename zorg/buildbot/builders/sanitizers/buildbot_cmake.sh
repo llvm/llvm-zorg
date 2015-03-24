@@ -182,7 +182,8 @@ if [ "$PLATFORM" == "Linux" -a $HAVE_NINJA == 1 ]; then
   (cd llvm_build_ninja && ninja check-lsan) || echo @@@STEP_FAILURE@@@
   (cd llvm_build_ninja && ninja check-ubsan) || echo @@@STEP_WARNINGS@@@
   (cd llvm_build_ninja && ninja check-dfsan) || echo @@@STEP_WARNINGS@@@
-  (cd llvm_build_ninja && LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/x86_64 ninja check-cfi-and-supported) || echo @@@STEP_FAILURE@@@
+  # FIXME: Reenable once cfi tests reliably work on the bot.
+  # (cd llvm_build_ninja && LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/x86_64 ninja check-cfi-and-supported) || echo @@@STEP_FAILURE@@@
 fi
 
 if [ $BUILD_ANDROID == 1 ] ; then
