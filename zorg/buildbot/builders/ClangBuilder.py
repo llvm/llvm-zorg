@@ -368,6 +368,18 @@ def getClangBuildFactory(
                                workdir=llvm_2_objdir,
                                env=merged_env))
 
+    if modules:
+        f.addStep(WarningCountingShellCommand(name="compile.llvm.stage2.intrinsics_gen",
+                                              command=['nice', '-n', '10',
+                                                       make, "intrinsics_gen", WithProperties("-j%s" % jobs)],
+                                              haltOnFailure=True,
+                                              description=["compiling", "(stage 2 intrinsics.gen)",
+                                                           stage2_config],
+                                              descriptionDone=["compile", "(stage 2 intrinsics.gen)",
+                                                               stage2_config],
+                                              workdir=llvm_2_objdir,
+                                              env=merged_env))
+
     # Build llvm (stage 2).
     f.addStep(WarningCountingShellCommand(name="compile.llvm.stage2",
                                           command=['nice', '-n', '10',
