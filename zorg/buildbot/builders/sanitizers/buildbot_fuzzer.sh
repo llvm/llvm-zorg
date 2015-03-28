@@ -19,6 +19,7 @@ LLVM=$ROOT/llvm
 # Also, the Fuzzer does not provide reproducers on assertion failures yet.
 CMAKE_COMMON_OPTIONS="-GNinja -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_ASSERTIONS=OFF -DLLVM_PARALLEL_LINK_JOBS=3"
 CLANG_FORMAT_CORPUS=$ROOT/clang-format-corpus
+CLANG_CORPUS=$ROOT/clang-corpus
 
 if [ "$BUILDBOT_CLOBBER" != "" ]; then
   echo @@@BUILD_STEP clobber@@@
@@ -35,6 +36,7 @@ rm -rf ${STAGE2_ASAN_DIR}
 # It will get populated with examples.
 # FIXME: synchronize this directory with some external persistent storage.
 mkdir -p $CLANG_FORMAT_CORPUS
+mkdir -p $CLANG_CORPUS
 
 echo @@@BUILD_STEP update@@@
 buildbot_update
@@ -69,11 +71,16 @@ export ASAN_SYMBOLIZER_PATH="${llvm_symbolizer_path}"
 
 (cd ${STAGE2_ASAN_DIR} && ninja check-fuzzer) || echo @@@STEP_FAILURE@@@
 
-echo @@@BUILD_STEP stage2/asan build clang-format-fuzzer@@@
+echo @@@BUILD_STEP stage2/asan build clang-format-fuzzer and clang-fuzzer@@@
 
-(cd ${STAGE2_ASAN_DIR} && ninja clang-format-fuzzer) || echo @@@STEP_FAILURE@@@
+(cd ${STAGE2_ASAN_DIR} && ninja clang-format-fuzzer clang-fuzzer) || echo @@@STEP_FAILURE@@@
 
 echo @@@BUILD_STEP stage2/asan run clang-format-fuzzer@@@
 
-(${STAGE2_ASAN_DIR}/bin/clang-format-fuzzer -jobs=32 -workers=8 -runs=524288 -use_counters=1 $CLANG_FORMAT_CORPUS) || \
+(${STAGE2_ASAN_DIR}/bin/clang-format-fuzzer -jobs=64 -workers=8 -runs=65536 -use_counters=1 $CLANG_FORMAT_CORPUS) || \
+  echo @@@STEP_WARNINGS@@@
+
+echo @@@BUILD_STEP stage2/asan run clang-fuzzer@@@
+
+(${STAGE2_ASAN_DIR}/bin/clang-fuzzer -jobs=64 -workers=8 -runs=65536 -use_counters=1 $CLANG_CORPUS) || \
   echo @@@STEP_WARNINGS@@@
