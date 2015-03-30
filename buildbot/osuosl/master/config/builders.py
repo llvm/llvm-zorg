@@ -853,7 +853,6 @@ def _get_sanitizer_builders():
                                           "-DCOMPILER_RT_TEST_COMPILER_CFLAGS='-mcpu=cortex-a15 -mthumb'",
                                           "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64;X86'"])},
 
-          # TODO: Temporary fix. Remove this when the Clang bootstrapping with backtraces issue will be fixed.
           {'name' : "clang-native-aarch64-full",
            'slavenames' :["juno-aarch64-01"],
            'builddir':"clang-native-aarch64-full",
@@ -862,8 +861,7 @@ def _get_sanitizer_builders():
                         clean=False,
                         useTwoStage=True,
                         testStage1=True,
-                        extra_cmake_args=["-DLLVM_TARGETS_TO_BUILD='ARM;AArch64;X86'",
-                                          "-DLLVM_ENABLE_BACKTRACES='OFF'"])},
+                        extra_cmake_args=["-DLLVM_TARGETS_TO_BUILD='ARM;AArch64;X86'"])},
 
           ]
 
