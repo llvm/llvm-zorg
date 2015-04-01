@@ -20,6 +20,8 @@ LLVM=$ROOT/llvm
 CMAKE_COMMON_OPTIONS="-GNinja -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_ASSERTIONS=OFF -DLLVM_PARALLEL_LINK_JOBS=3"
 CLANG_FORMAT_CORPUS=$ROOT/clang-format-corpus
 CLANG_CORPUS=$ROOT/clang-corpus
+CLANG_TOKENS_CORPUS=$ROOT/clang-tokens-corpus
+TOKENS_FILE=$LLVM/lib/Fuzzer/cxx_fuzzer_tokens.txt
 
 if [ "$BUILDBOT_CLOBBER" != "" ]; then
   echo @@@BUILD_STEP clobber@@@
@@ -37,6 +39,7 @@ rm -rf ${STAGE2_ASAN_DIR}
 # FIXME: synchronize this directory with some external persistent storage.
 mkdir -p $CLANG_FORMAT_CORPUS
 mkdir -p $CLANG_CORPUS
+mkdir -p $CLANG_TOKENS_CORPUS
 
 echo @@@BUILD_STEP update@@@
 buildbot_update
@@ -77,12 +80,16 @@ echo @@@BUILD_STEP stage2/asan build clang-format-fuzzer and clang-fuzzer@@@
 
 echo @@@BUILD_STEP stage2/asan run clang-format-fuzzer@@@
 
-(${STAGE2_ASAN_DIR}/bin/clang-format-fuzzer -jobs=64 -workers=8 -runs=65536 -use_counters=1 $CLANG_FORMAT_CORPUS) || \
+(${STAGE2_ASAN_DIR}/bin/clang-format-fuzzer -jobs=32 -workers=8 -runs=131072 -use_counters=1 $CLANG_FORMAT_CORPUS) || \
   echo @@@STEP_WARNINGS@@@
 
 echo @@@BUILD_STEP stage2/asan run clang-fuzzer@@@
 # leak detection is disabled until assertions from
 # https://llvm.org/bugs/show_bug.cgi?id=23057#c4 are fixed.
 # See also https://llvm.org/bugs/show_bug.cgi?id=23057#c12
-(ASAN_OPTIONS=detect_leaks=0 ${STAGE2_ASAN_DIR}/bin/clang-fuzzer -jobs=64 -workers=8 -runs=65536 -use_counters=1 $CLANG_CORPUS) || \
+(ASAN_OPTIONS=detect_leaks=0 ${STAGE2_ASAN_DIR}/bin/clang-fuzzer -jobs=32 -workers=8 -runs=131072 -use_counters=1 $CLANG_CORPUS) || \
+  echo @@@STEP_WARNINGS@@@
+
+echo @@@BUILD_STEP stage2/asan run clang-fuzzer with tokens@@@
+(ASAN_OPTIONS=detect_leaks=0 ${STAGE2_ASAN_DIR}/bin/clang-fuzzer -jobs=32 -workers=8 -runs=131072 -use_counters=1 -tokens=$TOKENS_FILE $CLANG_TOKENS_CORPUS) || \
   echo @@@STEP_WARNINGS@@@
