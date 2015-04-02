@@ -721,6 +721,8 @@ def _get_lldb_builders():
                     build_type="Debug",
                     test_archs=['x86_64', 'i386'],
                     test_compilers=['clang', 'totclang', 'gcc4.8.2'],
+                    remote_test_archs=['x86_64'],
+                    remote_test_compilers=['clang'],
                     env={'SHELL':"/bin/bash"})},
         {'name': "lldb-x86_64-darwin-13.4",
          'slavenames': ["lldb-x86_64-darwin-13.4"],

@@ -11,6 +11,7 @@ import zorg.buildbot.commands.BatchFileDownload as batch_file_download
 from zorg.buildbot.commands.LitTestCommand import LitTestCommand
 from zorg.buildbot.builders.Util import getVisualStudioEnvironment
 from zorg.buildbot.builders.Util import extractSlaveEnvironment
+import json
 
 # We *must* checkout at least Clang, LLVM, and LLDB.  Once we add a step to run
 # tests (e.g. ninja check-lldb), we will also need to add a step for LLD, since
@@ -237,25 +238,138 @@ def getLLDBBuildFactory(
                              workdir='%s/tools/lldb/test' % llvm_objdir))
 
     return f
+# Add test steps from list of compilers and archs
+def getLLDBTestSteps(f,
+                     isRemoteTest,
+                     bindir,
+                     test_archs,
+                     test_compilers,
+                     remote_host=None,
+                     remote_port=None,
+                     remote_dir=None,
+                     env=None):
+    # Skip test steps if no test compiler or arch is specified
+    if None in (test_archs, test_compilers):
+        return f
+    llvm_srcdir = "llvm"
+    llvm_builddir = "build"
+    for compiler in test_compilers:
+        # find full path for top of tree clang
+        if compiler=='totclang':
+            compilerPath=bindir+'/clang'
+        else:
+            compilerPath = compiler
+        for arch in test_archs:
+            DOTEST_OPTS=''.join(['--executable ' + bindir + '/lldb ',
+                                 '-A %s ' % arch,
+                                 '-C %s ' % compilerPath,
+                                 '-s lldb-test-traces-%s-%s ' % (compiler, arch),
+                                 '-u CXXFLAGS ',
+                                 '-u CFLAGS'])
+            testname = "local"
+            if(isRemoteTest):
+                DOTEST_OPTS+=''.join([' --platform-name remote-linux ',
+                                      '--platform-url connect://%(remote_host)s:%(remote_port)s ',
+                                      '--platform-working-dir %(remote_dir)s'])
+                testname = "remote"
+            f.addStep(LitTestCommand(name="test lldb %s (%s-%s)" % (testname, compiler, arch),
+                                     command=['../%s/tools/lldb/test/dosep.py' % llvm_srcdir,
+                                              '--options',
+                                              WithProperties(DOTEST_OPTS)],
+                                     description="test lldb",
+                                     parseSummaryOnly=True,
+                                     workdir='%s' % llvm_builddir))
+            f=cleanSVNSourceTree(f, '%s/tools/lldb' % llvm_srcdir)
+    return f
+
+# Add steps to run lldb test on remote target
+def getLLDBRemoteTestSteps(f,
+                           bindir,
+                           remote_test_archs,
+                           remote_test_compilers,
+                           env):
+
+    if None in (remote_test_archs, remote_test_compilers):
+        return f
+    llvm_srcdir = "llvm"
+    llvm_builddir = "build"
+    # get hostname
+    slave_hostname=None
+    f.addStep(SetProperty(name="get hostname",
+                          command=["hostname"],
+                          property="slave_hostname",
+                          description="set slave hostname",
+                          workdir="."))
+    # get configuration of remote target
+    # config file should be placed under builddir on builder machine
+    # file name: remote_cfg.json
+    # content: json format with keys "remote_host", "remote_port", and "remote_dir"
+    # example: {"remote_host":"remotehostname","remote_port":"1234","remote_dir":"/path/to/dir"}
+    def getRemoteCfg(rc, stdout, stderr):
+       return json.loads(stdout)
+    f.addStep(SetProperty(name="get remote target",
+                          command="cat remote_cfg.json",
+                          extract_fn=getRemoteCfg,
+                          description="get remote target",
+                          workdir="."))
+    # rsync
+    f.addStep(ShellCommand(name="rsync lldb-server",
+                           command=WithProperties("rsync -hav bin/lldb-server* %(remote_host)s:%(remote_dir)s"),
+                           description="rsync lldb-server",
+                           haltOnFailure=True,
+                           env=env,
+                           workdir='%s' % llvm_builddir))
+    f.addStep(ShellCommand(name="rsync python2.7",
+                           command=WithProperties("rsync -havL lib/python2.7 %(remote_host)s:%(remote_dir)s"),
+                           description="rsync python2.7",
+                           haltOnFailure=True,
+                           env=env,
+                           workdir='%s' % llvm_builddir))
+    # launch lldb-server
+    f.addStep(ShellCommand(name="launch lldb-server",
+                           command=WithProperties("ssh %(remote_host)s screen -d -m %(remote_dir)s/lldb-server platform --listen %(slave_hostname)s:%(remote_port)s --server"),
+                           description="launch lldb-server on remote host",
+                           env=env,
+                           haltOnFailure=True,
+                           workdir='%s' % llvm_builddir))
+    # test steps
+    f = getLLDBTestSteps(f,
+                         True,
+                         bindir,
+                         remote_test_archs,
+                         remote_test_compilers,
+                         '%(remote_host)s',
+                         '%(remote_port)s',
+                         '%(remote_dir)s',
+                         env)
+    # terminate lldb-server on remote host
+    f.addStep(ShellCommand(name="terminate lldb-server remote",
+                           command=WithProperties("ssh %(remote_host)s pkill lldb-server"),
+                           description="terminate lldb-server",
+                           env=env,
+                           workdir='%s' % llvm_builddir))
+    return f
 
 # Cmake bulid on Ubuntu
 # Build command sequence - cmake, ninja, ./dosep
 # Note: If test_archs or test_compilers is not specified, lldb-test will not be added to build factory
-def getLLDBUbuntuCMakeBuildFactory(
-            build_compiler,
-            build_type,
-            test_archs=None,
-            test_compilers=None,
-            jobs='%(jobs)s',
-            env=None,
-            *args,
-            **kwargs):
+def getLLDBUbuntuCMakeBuildFactory(build_compiler,
+                                   build_type,
+                                   test_archs=None,
+                                   test_compilers=None,
+                                   remote_test_archs=None,
+                                   remote_test_compilers=None,
+                                   jobs='%(jobs)s',
+                                   env=None,
+                                   *args,
+                                   **kwargs):
 
     if env is None:
         env={}
 
     llvm_srcdir = "llvm"
     llvm_builddir = "build"
+    bindir='%(builddir)s/' + llvm_builddir + '/bin'
 
     f = buildbot.process.factory.BuildFactory()
 
@@ -298,38 +412,22 @@ def getLLDBUbuntuCMakeBuildFactory(
                                           env=env,
                                           haltOnFailure=True,
                                           workdir=llvm_builddir))
-    # Skip lldb-test if no test compiler or arch is specified
-    if not test_archs or not test_compilers:
-        return f
 
     # TODO: it will be good to check that architectures listed in test_archs are compatible with host architecture
     # For now, the caller of this function should make sure that each target architecture is supported by builder machine
 
-    # Run Test with list of compilers and archs
-    bindir='%(builddir)s/' + llvm_builddir + '/bin'
-
-    for compiler in test_compilers:
-        # find full path for top of tree clang
-        if compiler=='totclang':
-            compilerPath=bindir+'/clang'
-        else:
-            compilerPath = compiler
-        for arch in test_archs:
-            f.addStep(LitTestCommand(name="test lldb (%s-%s)" % (compiler, arch),
-                                     command=['../%s/tools/lldb/test/dosep.py' % llvm_srcdir,
-                                              '--options',
-                                              WithProperties(''.join(['-q ',
-                                                                      '--arch=%s ' % arch,
-                                                                      '--executable ' + bindir + '/lldb ',
-                                                                      '-C ' + compilerPath + ' ',
-                                                                      '-s lldb-test-traces-%s-%s ' % (compiler, arch),
-                                                                      '-u CXXFLAGS ',
-                                                                      '-u CFLAGS']))],
-                                     description="test lldb",
-                                     parseSummaryOnly=True,
-                                     env=env,
-                                     workdir='%s' % llvm_builddir))
-            f=cleanSVNSourceTree(f, '%s/tools/lldb' % llvm_srcdir)
+    # Add local test steps
+    f = getLLDBTestSteps(f,
+                         False,
+                         bindir,
+                         test_archs,
+                         test_compilers)
+    # Remote test
+    f = getLLDBRemoteTestSteps(f,
+                               bindir,
+                               remote_test_archs,
+                               remote_test_compilers,
+                               env)
     return f
 
 def getLLDBxcodebuildFactory(use_cc=None):
