@@ -1,4 +1,5 @@
 import os
+import json
 
 import buildbot
 import buildbot.process.factory
@@ -11,7 +12,6 @@ import zorg.buildbot.commands.BatchFileDownload as batch_file_download
 from zorg.buildbot.commands.LitTestCommand import LitTestCommand
 from zorg.buildbot.builders.Util import getVisualStudioEnvironment
 from zorg.buildbot.builders.Util import extractSlaveEnvironment
-import json
 
 # We *must* checkout at least Clang, LLVM, and LLDB.  Once we add a step to run
 # tests (e.g. ninja check-lldb), we will also need to add a step for LLD, since
