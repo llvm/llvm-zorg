@@ -122,7 +122,7 @@ def cmake_builder(target):
     host_compiler_flags = []
     if conf.CC():
         host_compiler_flags.append('-DCMAKE_C_COMPILER=' + conf.CC())
-        host_compiler_flags.append('-DCMAKE_CXX_COMPOLER=' + conf.CC()+"++")
+        host_compiler_flags.append('-DCMAKE_CXX_COMPILER=' + conf.CC()+"++")
 
     type_flag = "-DCMAKE_BUILD_TYPE=Debug" if conf.debug else \
         "-DCMAKE_BUILD_TYPE=Release"
