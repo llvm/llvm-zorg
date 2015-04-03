@@ -113,5 +113,11 @@
 # RUN: cd %t.SANDBOX; python %{src_root}/zorg/jenkins/build.py derive-llvm+clang
 # RUN: cd %t.SANDBOX; python %{src_root}/zorg/jenkins/build.py derive-llvm
 
-# RUN: python %{src_root}/zorg/jenkins/build.py cmake all --lto
+# RUN: python %{src_root}/zorg/jenkins/build.py cmake all --lto > %t-cmake-lto.log
+# RUN: FileCheck --check-prefix CHECK-CMAKE < %t-cmake.log %s
+# CHECK-CMAKELTO: '/usr/local/bin/cmake' '-G' 'Ninja'
+# CHECK-CMAKELTO: '-DCMAKE_C_FLAGS=-flto' '-DCMAKE_CXX_FLAGS=-flto'
+# CHECK-CMAKELTO: '-DLLVM_PARALLEL_LINK_JOBS=1'
+# CHECK-CMAKELTO: '-DCMAKE_BUILD_TYPE=Release'
+
 # RUN: python %{src_root}/zorg/jenkins/build.py cmake all --cmake-type=RelWithDebugInfo

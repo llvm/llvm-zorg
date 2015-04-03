@@ -121,6 +121,8 @@ def cmake_builder(target):
                        conf.srcdir()]
     if conf.lto:
         cmake_cmd += ["-DCMAKE_C_FLAGS=-flto", "-DCMAKE_CXX_FLAGS=-flto"]
+        # TODO: We limit LTO links to 1. Should this be configurable?
+        cmake_cmd += ["-DLLVM_PARALLEL_LINK_JOBS=1"]
     if conf.CC():
         cmake_cmd += ['-DCMAKE_C_COMPILER=' + conf.CC(),
                       '-DCMAKE_CXX_COMPILER=' + conf.CC() + "++"]
