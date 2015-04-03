@@ -116,9 +116,10 @@ def cmake_builder(target):
         asserts = "-DLLVM_ENABLE_ASSERTIONS=Off"
 
     lto_flags = []
+    j_flag = []
     if conf.lto:
         lto_flags = ["-DCMAKE_C_FLAGS=-flto", "-DCMAKE_CXX_FLAGS=-flto"]
-
+        j_flag = ["-j1"]
     host_compiler_flags = []
     if conf.CC():
         host_compiler_flags.append('-DCMAKE_C_COMPILER=' + conf.CC())
@@ -148,18 +149,19 @@ def cmake_builder(target):
         run_cmd(conf.builddir(), cmake_cmd)
         footer()
         header("Ninja build")
-        run_cmd(conf.builddir(), env + ["/usr/local/bin/ninja"])
+        run_cmd(conf.builddir(), env + ["/usr/local/bin/ninja"] + j_flag)
         footer()
 
     if target == 'all' or target == 'test':
         header("Ninja test")
-        run_cmd(conf.builddir(), env + ["/usr/local/bin/ninja",
-                                        'check', 'check-clang'])
+        run_cmd(conf.builddir(), env + ["/usr/local/bin/ninja"] + j_flag +
+                ['check', 'check-clang'])
         footer()
 
     if target == 'all' or target == 'testlong':
         header("Ninja test")
-        run_cmd(conf.builddir(), env + ["/usr/local/bin/ninja", 'check-all'])
+        run_cmd(conf.builddir(), env + ["/usr/local/bin/ninja"] + j_flag +
+                ['check-all'])
         footer()
 
 
