@@ -44,7 +44,7 @@ class Configuration(object):
     def __init__(self, args):
         super(Configuration, self).__init__()
         self._args = args
-        self.workspace = os.environ.get('WORKSPACE', os.getcwd())    
+        self.workspace = os.environ.get('WORKSPACE', os.getcwd())
         self._src_dir = os.environ.get('SRC_DIR', 'llvm')
         self._lldb_src_dir = os.environ.get('LLDB_SRC_DIR', 'lldb')
         self._build_dir = os.environ.get('BUILD_DIR', 'clang-build')
@@ -111,13 +111,32 @@ def cmake_builder(target):
     """Run a build_type build using cmake and ninja."""
     check_repo_state(conf.workspace)
     if conf.assertions:
-        assert False, "Unimplemented, all builds have assertions"
+        asserts = "-DLLVM_ENABLE_ASSERTIONS=On"
+    else:
+        asserts = "-DLLVM_ENABLE_ASSERTIONS=Off"
+
+    lto_flags = []
+    if conf.lto:
+        lto_flags = ["-DCMAKE_C_FLAGS=-flto", "-DCMAKE_CXX_FLAGS=-flto"]
+
+    host_compiler_flags = []
+    if conf.CC():
+        host_compiler_flags.append('-DCMAKE_C_COMPILER=' + conf.CC())
+        host_compiler_flags.append('-DCMAKE_CXX_COMPOLER=' + conf.CC()+"++")
+
+    type_flag = "-DCMAKE_BUILD_TYPE=Debug" if conf.debug else \
+        "-DCMAKE_BUILD_TYPE=Release"
+
+    if conf.cmake_build_type:
+        type_flag = "-DCMAKE_BUILD_TYPE=" + conf.cmake_build_type
 
     cmake_cmd = ["/usr/local/bin/cmake",
-        "-G", "Ninja", "-DCMAKE_BUILD_TYPE=Debug","-DLLVM_ENABLE_ASSERTIONS=On",
-        "-DCMAKE_INSTALL_PREFIX=" + conf.installdir(),
-        conf.srcdir(),
-        '-DLLVM_LIT_ARGS=--xunit-xml-output=testresults.xunit.xml -v']
+                 "-G", "Ninja", type_flag,
+                 asserts,
+                 "-DCMAKE_INSTALL_PREFIX=" + conf.installdir(),
+                 conf.srcdir(),
+                 '-DLLVM_LIT_ARGS=--xunit-xml-output=testresults.xunit.xml -v'] \
+        + lto_flags + host_compiler_flags
 
     if target == 'all' or target == 'build':
         header("Cmake")
@@ -130,7 +149,7 @@ def cmake_builder(target):
     if target == 'all' or target == 'test':
         header("Ninja test")
         run_cmd(conf.builddir(), ["/usr/local/bin/ninja",
-            'check', 'check-clang'])
+                                  'check', 'check-clang'])
         footer()
 
     if target == 'all' or target == 'testlong':
@@ -159,7 +178,7 @@ def clang_builder(target):
         configure_cmd.append('CC='+conf.CC())
         configure_cmd.append('CXX='+conf.CC()+"++")
 
-    rev_str =  "CLANG_REPOSITORY_STRING={}".format(conf.job_name) 
+    rev_str =  "CLANG_REPOSITORY_STRING={}".format(conf.job_name)
     svn_rev_str = "SVN_REVISION={}".format(conf.svn_rev)
     llvm_rev = "LLVM_VERSION_INFO= ({}: trunk {})".format(
         conf.job_name, conf.svn_rev)
@@ -189,7 +208,7 @@ def clang_builder(target):
         header("Upload artifact")
         build_upload_artifact()
         footer()
-        
+
     if target == 'test' or target == 'all':
         header("Make Check")
         run_cmd(conf.builddir(), make_check)
@@ -320,7 +339,7 @@ def rsync(conf, tree, repo, repos):
 def derive(tree, repos):
     """Build a derived src tree from all the svn repos.
 
-    Try to do this in a way that is pretty fast if the 
+    Try to do this in a way that is pretty fast if the
     derived tree is already there.
     """
 
@@ -395,21 +414,21 @@ def build_upload_artifact():
     run_cmd(conf.installdir(), tar)
 
     upload_cmd = ["scp", artifact_name,
-        "buildslave@" + SERVER + ":/Library/WebServer/Documents/artifacts/" + 
+        "buildslave@" + SERVER + ":/Library/WebServer/Documents/artifacts/" +
         conf.job_name + "/"]
 
     run_cmd(conf.workspace, upload_cmd)
 
     upload_cmd = ["scp", prop_file,
-        "buildslave@" + SERVER + ":/Library/WebServer/Documents/artifacts/" + 
+        "buildslave@" + SERVER + ":/Library/WebServer/Documents/artifacts/" +
         conf.job_name + "/"]
 
     run_cmd(conf.workspace, upload_cmd)
 
-    ln_cmd = ["ssh", "buildslave@" + SERVER, 
-        "ln", "-fs", "/Library/WebServer/Documents/artifacts/" + 
+    ln_cmd = ["ssh", "buildslave@" + SERVER,
+        "ln", "-fs", "/Library/WebServer/Documents/artifacts/" +
         conf.job_name + "/" + artifact_name,
-        "/Library/WebServer/Documents/artifacts/" + 
+        "/Library/WebServer/Documents/artifacts/" +
         conf.job_name + "/latest" ]
 
     run_cmd(conf.workspace, ln_cmd)
@@ -428,14 +447,14 @@ def run_cmd(working_dir, cmd):
         subprocess.check_call(cmd)
         os.chdir(old_cwd)
     end_time = datetime.datetime.now()
-    
+
     logging.info("Command took {} seconds".format(
         (end_time-start_time).seconds))
 
 
 KNOWN_TARGETS = ['all', 'build', 'test', 'testlong']
-KNOWN_BUILDS = ['clang', 'cmake', 'lldb', 'fetch', 'artifact', \
-        'derive', 'derive-llvm+clang', 'derive-lldb']
+KNOWN_BUILDS = ['clang', 'cmake', 'lldb', 'fetch', 'artifact',
+                'derive', 'derive-llvm+clang', 'derive-lldb', 'derive-llvm']
 
 
 def parse_args():
@@ -445,14 +464,20 @@ def parse_args():
         description='Build and test compilers and other things.')
 
     parser.add_argument("build_type",
-        help="The kind of build to trigger.", choices=KNOWN_BUILDS)
+                        help="The kind of build to trigger.",
+                        choices=KNOWN_BUILDS)
 
-    parser.add_argument("build_target",  nargs='?',
-        help="The targets to call (build, check, etc).", choices=KNOWN_TARGETS)
+    parser.add_argument("build_target",
+                        nargs='?',
+                        help="The targets to call (build, check, etc).",
+                        choices=KNOWN_TARGETS)
 
     parser.add_argument('--assertions', dest='assertions', action='store_true')
     parser.add_argument('--lto', dest='lto', action='store_true')
-
+    parser.add_argument('--debug', dest='debug', action='store_true')
+    parser.add_argument('--cmake-type', dest='cmake_build_type',
+                        help="Override cmake type Release, Debug, "
+                        "RelWithDebInfo and MinSizeRel")
     args = parser.parse_args()
     return args
 
@@ -475,6 +500,8 @@ def main():
             derive_llvm()
         elif args.build_type == 'derive-llvm+clang':
             derive_llvm(['llvm', 'clang'])
+        elif args.build_type == 'derive-llvm':
+            derive_llvm(['llvm'])
         elif args.build_type == 'derive-lldb':
             derive_lldb()
         elif args.build_type == 'fetch':

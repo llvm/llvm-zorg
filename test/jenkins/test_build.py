@@ -65,9 +65,11 @@
 
 # CMake
 
-# RUN: python %{src_root}/zorg/jenkins/build.py cmake all > %t-cmake.log
+# RUN: python %{src_root}/zorg/jenkins/build.py cmake all --debug > %t-cmake.log
 # RUN: FileCheck --check-prefix CHECK-CMAKE < %t-cmake.log %s
-# CHECK-CMAKE: '/usr/local/bin/cmake' '-G' 'Ninja' '-DCMAKE_BUILD_TYPE=Debug' '-DLLVM_ENABLE_ASSERTIONS=On' '-DCMAKE_INSTALL_PREFIX=
+# CHECK-CMAKE: '/usr/local/bin/cmake' '-G' 'Ninja'
+# CHECK-CMAKE: '-DCMAKE_BUILD_TYPE=Debug'
+# CHECK-CMAKE: '-DLLVM_ENABLE_ASSERTIONS=Off'
 # CHECK-CMAKE: -DLLVM_LIT_ARGS=--xunit-xml-output=testresults.xunit.xml -v
 # CHECK-CMAKE: '/usr/local/bin/ninja'
 # CHECK-CMAKE: '/usr/local/bin/ninja' 'check' 'check-clang'
@@ -109,19 +111,7 @@
 
 # RUN: cd %t.SANDBOX; python %{src_root}/zorg/jenkins/build.py derive-lldb
 # RUN: cd %t.SANDBOX; python %{src_root}/zorg/jenkins/build.py derive-llvm+clang
+# RUN: cd %t.SANDBOX; python %{src_root}/zorg/jenkins/build.py derive-llvm
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+# RUN: python %{src_root}/zorg/jenkins/build.py cmake all --lto
+# RUN: python %{src_root}/zorg/jenkins/build.py cmake all --cmake-type=RelWithDebugInfo
