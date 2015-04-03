@@ -130,12 +130,17 @@ def cmake_builder(target):
     if conf.cmake_build_type:
         type_flag = "-DCMAKE_BUILD_TYPE=" + conf.cmake_build_type
 
-    cmake_cmd = ["/usr/local/bin/cmake",
-                 "-G", "Ninja", type_flag,
-                 asserts,
-                 "-DCMAKE_INSTALL_PREFIX=" + conf.installdir(),
-                 conf.srcdir(),
-                 '-DLLVM_LIT_ARGS=--xunit-xml-output=testresults.xunit.xml -v'] \
+    env = []
+    if conf.lto and conf.liblto():
+        dyld_path = conf.liblto()
+        env.extend(["env", "DYLD_LIBRARY_PATH=" + dyld_path])
+
+    cmake_cmd = env + ["/usr/local/bin/cmake",
+                       "-G", "Ninja", type_flag,
+                       asserts,
+                       "-DCMAKE_INSTALL_PREFIX=" + conf.installdir(),
+                       conf.srcdir(),
+                       '-DLLVM_LIT_ARGS=--xunit-xml-output=testresults.xunit.xml -v'] \
         + lto_flags + host_compiler_flags
 
     if target == 'all' or target == 'build':
@@ -143,18 +148,18 @@ def cmake_builder(target):
         run_cmd(conf.builddir(), cmake_cmd)
         footer()
         header("Ninja build")
-        run_cmd(conf.builddir(), ["/usr/local/bin/ninja"])
+        run_cmd(conf.builddir(), env + ["/usr/local/bin/ninja"])
         footer()
 
     if target == 'all' or target == 'test':
         header("Ninja test")
-        run_cmd(conf.builddir(), ["/usr/local/bin/ninja",
-                                  'check', 'check-clang'])
+        run_cmd(conf.builddir(), env + ["/usr/local/bin/ninja",
+                                        'check', 'check-clang'])
         footer()
 
     if target == 'all' or target == 'testlong':
         header("Ninja test")
-        run_cmd(conf.builddir(), ["/usr/local/bin/ninja", 'check-all'])
+        run_cmd(conf.builddir(), env + ["/usr/local/bin/ninja", 'check-all'])
         footer()
 
 
