@@ -50,7 +50,7 @@ class Configuration(object):
         self._build_dir = os.environ.get('BUILD_DIR', 'clang-build')
         self._lldb_build_dir = os.environ.get('LLDB_BUILD_DIR', 'lldb-build')
         self._install_dir = os.environ.get('BUILD_DIR', 'clang-install')
-        self.j_level = os.environ.get('J_LEVEL', '4')
+        self.j_level = os.environ.get('J_LEVEL', None)
         self.host_compiler_url = os.environ.get('HOST_URL',
             'http://labmaster2.local/artifacts/')
         self.artifact_url = os.environ.get('ARTIFACT', 'NONE')
@@ -110,59 +110,56 @@ conf = None
 def cmake_builder(target):
     """Run a build_type build using cmake and ninja."""
     check_repo_state(conf.workspace)
-    if conf.assertions:
-        asserts = "-DLLVM_ENABLE_ASSERTIONS=On"
-    else:
-        asserts = "-DLLVM_ENABLE_ASSERTIONS=Off"
-
-    lto_flags = []
-    j_flag = []
-    if conf.lto:
-        lto_flags = ["-DCMAKE_C_FLAGS=-flto", "-DCMAKE_CXX_FLAGS=-flto"]
-        j_flag = ["-j1"]
-    host_compiler_flags = []
-    if conf.CC():
-        host_compiler_flags.append('-DCMAKE_C_COMPILER=' + conf.CC())
-        host_compiler_flags.append('-DCMAKE_CXX_COMPILER=' + conf.CC()+"++")
-
-    if conf.cmake_build_type:
-        type_flag = "-DCMAKE_BUILD_TYPE=" + conf.cmake_build_type
-    elif conf.debug:
-        type_flag = "-DCMAKE_BUILD_TYPE=Debug"
-    else:
-        type_flag = "-DCMAKE_BUILD_TYPE=Release"
 
     env = []
     if conf.lto and conf.liblto():
         dyld_path = conf.liblto()
         env.extend(["env", "DYLD_LIBRARY_PATH=" + dyld_path])
 
-    cmake_cmd = env + ["/usr/local/bin/cmake",
-                       "-G", "Ninja", type_flag,
-                       asserts,
+    cmake_cmd = env + ["/usr/local/bin/cmake", "-G", "Ninja",
                        "-DCMAKE_INSTALL_PREFIX=" + conf.installdir(),
-                       conf.srcdir(),
-                       '-DLLVM_LIT_ARGS=--xunit-xml-output=testresults.xunit.xml -v'] \
-        + lto_flags + host_compiler_flags
+                       conf.srcdir()]
+    if conf.lto:
+        cmake_cmd += ["-DCMAKE_C_FLAGS=-flto", "-DCMAKE_CXX_FLAGS=-flto"]
+    if conf.CC():
+        cmake_cmd += ['-DCMAKE_C_COMPILER=' + conf.CC(),
+                      '-DCMAKE_CXX_COMPILER=' + conf.CC() + "++"]
+
+    if conf.cmake_build_type:
+        cmake_cmd += ["-DCMAKE_BUILD_TYPE=" + conf.cmake_build_type]
+    elif conf.debug:
+        cmake_cmd += ["-DCMAKE_BUILD_TYPE=Debug"]
+    else:
+        cmake_cmd += ["-DCMAKE_BUILD_TYPE=Release"]
+
+    if conf.assertions:
+        cmake_cmd += ["-DLLVM_ENABLE_ASSERTIONS=On"]
+    else:
+        cmake_cmd += ["-DLLVM_ENABLE_ASSERTIONS=Off"]
+
+    cmake_cmd += [
+        '-DLLVM_LIT_ARGS=--xunit-xml-output=testresults.xunit.xml -v']
+
+    ninja_cmd = env + ["/usr/local/bin/ninja"]
+    if conf.j_level is not None:
+        ninja_cmd += ["-j", conf.j_level]
 
     if target == 'all' or target == 'build':
         header("Cmake")
         run_cmd(conf.builddir(), cmake_cmd)
         footer()
         header("Ninja build")
-        run_cmd(conf.builddir(), env + ["/usr/local/bin/ninja"] + j_flag)
+        run_cmd(conf.builddir(), ninja_cmd)
         footer()
 
     if target == 'all' or target == 'test':
         header("Ninja test")
-        run_cmd(conf.builddir(), env + ["/usr/local/bin/ninja"] + j_flag +
-                ['check', 'check-clang'])
+        run_cmd(conf.builddir(), ninja_cmd + ['check', 'check-clang'])
         footer()
 
     if target == 'all' or target == 'testlong':
         header("Ninja test")
-        run_cmd(conf.builddir(), env + ["/usr/local/bin/ninja"] + j_flag +
-                ['check-all'])
+        run_cmd(conf.builddir(), ninja_cmd + ['check-all'])
         footer()
 
 
@@ -191,14 +188,16 @@ def clang_builder(target):
     llvm_rev = "LLVM_VERSION_INFO= ({}: trunk {})".format(
         conf.job_name, conf.svn_rev)
 
-    make_all = ["make", "-j", conf.j_level, "VERBOSE=1",
-        rev_str, svn_rev_str, llvm_rev]
+    j_number = "4" if conf.j_level is None else conf.j_level
+
+    make_all = ["make", "-j", j_number, "VERBOSE=1",
+                rev_str, svn_rev_str, llvm_rev]
 
     if conf.lto and conf.liblto():
         dyld_path = conf.liblto()
         make_all.append("DYLD_LIBRARY_PATH=" + dyld_path)
 
-    make_install = ["make", "install-clang", "-j", conf.j_level]
+    make_install = ["make", "install-clang", "-j", j_number]
 
     make_check = ["make", "VERBOSE=1", "check-all",
         'LIT_ARGS=--xunit-xml-output=testresults.xunit.xml -v']
