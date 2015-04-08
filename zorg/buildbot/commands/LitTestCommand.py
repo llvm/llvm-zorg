@@ -48,7 +48,7 @@ class LitLogObserver(LogLineObserver):
     self.activeVerboseLog.append(line)
 
     # If this is a stop marker, process the test info.
-    if self.kTestVerboseLogStopRE.match(line):
+    if self.kTestVerboseLogStopRE.match(line.strip()):
       self.testInfoFinished()
 
   def testInfoFinished(self):
@@ -223,6 +223,25 @@ FAIL: test-three (3 of 3)
 **** TEST 'test-two' FAILED ****
 bla bla bla
 **********"""),
+        ('FAIL: test-three', 'FAIL: test-three')])
+
+  def test_indented_log(self):
+    obs = self.parse_log("""
+    FAIL: test-one (1 of 3)
+    FAIL: test-two (2 of 3)
+    **** TEST 'test-two' FAILED ****
+    bla bla bla
+    **********
+    FAIL: test-three (3 of 3)
+""")
+
+    self.assertEqual(obs.resultCounts, { 'FAIL' : 3 })
+    self.assertEqual(obs.step.logs, [
+        ('FAIL: test-one', 'FAIL: test-one'),
+        ('FAIL: test-two', """\
+    **** TEST 'test-two' FAILED ****
+    bla bla bla
+    **********"""),
         ('FAIL: test-three', 'FAIL: test-three')])
 
 class TestCommand(unittest.TestCase):
