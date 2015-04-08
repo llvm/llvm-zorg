@@ -30,6 +30,7 @@ function buildbot_update {
         rev_arg="-r"$(svn info llvm | grep '^Revision:' | awk '{print $2}')
     fi
 
+    # XXX: Keep this list in sync with the change filter in buildbot/osuosl/master/master.cfg.
     update_or_checkout "$rev_arg" http://llvm.org/svn/llvm-project/cfe/trunk llvm/tools/clang
     update_or_checkout "$rev_arg" http://llvm.org/svn/llvm-project/compiler-rt/trunk llvm/projects/compiler-rt
     update_or_checkout "$rev_arg" http://llvm.org/svn/llvm-project/libcxx/trunk llvm/projects/libcxx
