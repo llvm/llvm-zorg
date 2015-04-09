@@ -113,4 +113,13 @@ def get_status_targets(standard_builders):
             builders = ["llvm-s390x-linux1"],
             addLogs=False,
             num_lines = 15),
+        InformativeMailNotifier(
+            fromaddr = "llvm.buildmaster@lab.llvm.org",
+            sendToInterestedUsers= False,
+            extraRecipients = ["axwalk@gmail.com","peter@pcc.me.uk"],
+            subject="Build %(builder)s Failure",
+            mode = "failing",
+            builders = ["llgo-x86_64-linux"],
+            addLogs=False,
+            num_lines = 15),
         ]

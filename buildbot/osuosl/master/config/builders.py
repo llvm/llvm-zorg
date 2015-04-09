@@ -772,8 +772,12 @@ def _get_lld_builders():
 
 # llgo builders.
 def _get_llgo_builders():
-    # No build slaves set up for llgo yet.
-    return []
+    return [
+          {'name': "llgo-x86_64-linux",
+           'slavenames': ["llgo-builder"],
+           'builddir': "llgo-x86_64-linux",
+           'factory': LLGoBuilder.getLLGoBuildFactory()},
+    ]
 
 
 # Sanitizer builders.
