@@ -142,6 +142,9 @@ def cmake_builder(target):
     cmake_cmd += [
         '-DLLVM_LIT_ARGS=--xunit-xml-output=testresults.xunit.xml -v']
 
+    # Build examples.
+    cmake_cmd += ['-DLLVM_BUILD_EXAMPLES=On']
+
     ninja_cmd = env + ["/usr/local/bin/ninja"]
     if conf.j_level is not None:
         ninja_cmd += ["-j", conf.j_level]

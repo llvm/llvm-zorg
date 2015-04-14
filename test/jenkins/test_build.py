@@ -71,6 +71,7 @@
 # CHECK-CMAKE: '-DCMAKE_BUILD_TYPE=Debug'
 # CHECK-CMAKE: '-DLLVM_ENABLE_ASSERTIONS=Off'
 # CHECK-CMAKE: -DLLVM_LIT_ARGS=--xunit-xml-output=testresults.xunit.xml -v
+# CHECK-CMAKE: -DLLVM_BUILD_EXAMPLES=On
 # CHECK-CMAKE: '/usr/local/bin/ninja'
 # CHECK-CMAKE: '/usr/local/bin/ninja' 'check' 'check-clang'
 # CHECK-CMAKE: '/usr/local/bin/ninja' 'check-all'
