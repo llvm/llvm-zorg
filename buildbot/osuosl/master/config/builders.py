@@ -501,6 +501,21 @@ def _get_clang_builders():
 #                     checkout_compiler_rt=False,
 #                     useTwoStage=True,
 #                     testStage1=True)},
+
+        {'name' : "clang-x64-ninja-win7",
+         'slavenames' : ["windows7-buildbot"],
+         'builddir' : "clang-x64-ninja-win7",
+         'factory' : ClangBuilder.getClangCMakeBuildFactory(
+                        clean=False,
+                        vs='%VS120COMNTOOLS%',
+                        vs_target_arch='x64',
+                        checkout_compiler_rt=False,
+                        testStage1=False,
+                        useTwoStage=True,
+                        stage1_config='Release',
+                        stage2_config='Release',
+                        extra_cmake_args=['-DLLVM_ENABLE_ASSERTIONS=ON',
+                                          '-DLLVM_TARGETS_TO_BUILD=X86'])},
         ]
 
 # Offline.
