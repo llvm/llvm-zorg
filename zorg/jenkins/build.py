@@ -123,6 +123,10 @@ def cmake_builder(target):
         cmake_cmd += ["-DCMAKE_C_FLAGS=-flto", "-DCMAKE_CXX_FLAGS=-flto"]
         # TODO: We limit LTO links to 1. Should this be configurable?
         cmake_cmd += ["-DLLVM_PARALLEL_LINK_JOBS=1"]
+        cmake_cmd += ['-DLLVM_BUILD_EXAMPLES=Off']
+    else:
+        cmake_cmd += ['-DLLVM_BUILD_EXAMPLES=On']
+
     if conf.CC():
         cmake_cmd += ['-DCMAKE_C_COMPILER=' + conf.CC(),
                       '-DCMAKE_CXX_COMPILER=' + conf.CC() + "++"]
@@ -141,9 +145,6 @@ def cmake_builder(target):
 
     cmake_cmd += [
         '-DLLVM_LIT_ARGS=--xunit-xml-output=testresults.xunit.xml -v']
-
-    # Build examples.
-    cmake_cmd += ['-DLLVM_BUILD_EXAMPLES=On']
 
     ninja_cmd = env + ["/usr/local/bin/ninja"]
     if conf.j_level is not None:

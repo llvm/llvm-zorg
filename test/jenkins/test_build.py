@@ -68,10 +68,10 @@
 # RUN: python %{src_root}/zorg/jenkins/build.py cmake all --debug > %t-cmake.log
 # RUN: FileCheck --check-prefix CHECK-CMAKE < %t-cmake.log %s
 # CHECK-CMAKE: '/usr/local/bin/cmake' '-G' 'Ninja'
+# CHECK-CMAKE: -DLLVM_BUILD_EXAMPLES=On
 # CHECK-CMAKE: '-DCMAKE_BUILD_TYPE=Debug'
 # CHECK-CMAKE: '-DLLVM_ENABLE_ASSERTIONS=Off'
 # CHECK-CMAKE: -DLLVM_LIT_ARGS=--xunit-xml-output=testresults.xunit.xml -v
-# CHECK-CMAKE: -DLLVM_BUILD_EXAMPLES=On
 # CHECK-CMAKE: '/usr/local/bin/ninja'
 # CHECK-CMAKE: '/usr/local/bin/ninja' 'check' 'check-clang'
 # CHECK-CMAKE: '/usr/local/bin/ninja' 'check-all'
@@ -119,6 +119,7 @@
 # CHECK-CMAKELTO: '/usr/local/bin/cmake' '-G' 'Ninja'
 # CHECK-CMAKELTO: '-DCMAKE_C_FLAGS=-flto' '-DCMAKE_CXX_FLAGS=-flto'
 # CHECK-CMAKELTO: '-DLLVM_PARALLEL_LINK_JOBS=1'
+# CHECK-CMAKELTO: '-DLLVM_BUILD_EXAMPLES=Off'
 # CHECK-CMAKELTO: '-DCMAKE_BUILD_TYPE=Release'
 
 # RUN: python %{src_root}/zorg/jenkins/build.py cmake all --cmake-type=RelWithDebugInfo
