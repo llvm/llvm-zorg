@@ -142,7 +142,8 @@ class LitTestCommand(Test):
                  'UNTESTED':'untested testcases',
                  'REGRESSED':'runtime performance regression',
                  'IMPROVED':'runtime performance improvement',
-                 'UNSUPPORTED':'unsupported tests'}
+                 'UNSUPPORTED':'unsupported tests',
+                 'TIMEOUT':'timeout waiting for results'}
 
   def __init__(self, ignore=[], flaky=[], max_logs=20, parseSummaryOnly=False,
                *args, **kwargs):
@@ -198,13 +199,14 @@ class TestLogObserver(unittest.TestCase):
 
   def test_basic(self):
     obs = self.parse_log("""
-PASS: test-one (1 of 3)
-FAIL: test-two (2 of 3)
-PASS: test-three (3 of 3)
+PASS: test-one (1 of 4)
+FAIL: test-two (2 of 4)
+PASS: test-three (3 of 4)
+TIMEOUT: test-four (4 of 4)
 """)
 
-    self.assertEqual(obs.resultCounts, { 'FAIL' : 1, 'PASS' : 2 })
-    self.assertEqual(obs.step.logs, [('FAIL: test-two', 'FAIL: test-two')])
+    self.assertEqual(obs.resultCounts, { 'FAIL' : 1, 'TIMEOUT' : 1, 'PASS' : 2 })
+    self.assertEqual(obs.step.logs, [('FAIL: test-two', 'FAIL: test-two'), ('TIMEOUT: test-four', 'TIMEOUT: test-four')])
 
   def test_verbose_logs(self):
     obs = self.parse_log("""
@@ -259,7 +261,7 @@ class TestCommand(unittest.TestCase):
 
     # If there were failing tests, the status should be an error (even if the
     # test command didn't report as such).
-    for failing_code in ('FAIL', 'XPASS', 'KPASS', 'UNRESOLVED'):
+    for failing_code in set(['FAIL', 'XPASS', 'KPASS', 'UNRESOLVED', 'TIMEOUT']):
       cmd = self.parse_log("""%s: test-one (1 of 1)""" % (failing_code,))
       self.assertEqual(cmd.evaluateCommand(RemoteCommandProxy(0)), FAILURE)
 
