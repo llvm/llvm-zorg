@@ -50,7 +50,7 @@ if [ $CHECK_TSAN == 1 ] ; then
 
   cd $ROOT
   if [ -d tsanv2 ]; then
-    (cd tsanv2 && svn up --ignore-externals)
+    (cd tsanv2 && svn cleanup && svn up --ignore-externals)
   else
     svn co http://data-race-test.googlecode.com/svn/trunk/ tsanv2
   fi
