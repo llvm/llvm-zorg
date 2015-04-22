@@ -123,4 +123,14 @@ def get_status_targets(standard_builders):
             builders = ["llgo-x86_64-linux"],
             addLogs=False,
             num_lines = 15),
+        InformativeMailNotifier(
+            fromaddr = "llvm.buildmaster@lab.llvm.org",
+            sendToInterestedUsers= False,
+            extraRecipients = ["lldb-build-police-gmt@grotations.appspotmail.com",
+                               "lldb-build-police-pst@grotations.appspotmail.com"],
+            subject="Build %(builder)s Failure",
+            mode = "failing",
+            builders = ["lldb-x86_64-ubuntu-14.04-cmake"],
+            addLogs=False,
+            num_lines = 15),
         ]
