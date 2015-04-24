@@ -636,7 +636,6 @@ def _get_polly_builders():
                                                     nt_flags=['--multisample=1', '--mllvm=-polly', '-j16' ],
                                                     reportBuildslave=False,
                                                     package_cache="http://parkas1.inria.fr/packages",
-                                                    submitURL='http://llvm.org/perf/submitRun',
                                                     testerName='x86_64-penryn-O3-polly-fast')},
 
         {'name': "perf-x86_64-penryn-O3-polly-parallel-fast",
@@ -646,7 +645,6 @@ def _get_polly_builders():
                                                     nt_flags=['--multisample=1', '--mllvm=-polly', '--mllvm=-polly-parallel', '-j16', '--cflag=-lgomp' ],
                                                     reportBuildslave=False,
                                                     package_cache="http://parkas1.inria.fr/packages",
-                                                    submitURL='http://llvm.org/perf/submitRun',
                                                     testerName='x86_64-penryn-O3-polly-parallel-fast')},
 
         {'name': "perf-x86_64-penryn-O3-polly-detect-only",
