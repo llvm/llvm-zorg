@@ -746,7 +746,7 @@ def _get_lldb_builders():
                     build_compiler="clang",
                     build_type="Debug",
                     test_archs=['x86_64', 'i386'],
-                    test_compilers=['clang', 'totclang', 'gcc4.8.2'],
+                    test_compilers=['clang', 'totclang', 'gcc4.8.2', 'gcc4.9.2'],
                     #remote_test_archs=['x86_64'],
                     #remote_test_compilers=['clang'],
                     env={'SHELL':"/bin/bash"})},
