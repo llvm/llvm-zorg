@@ -24,6 +24,8 @@ def getLibcxxWholeTree(f, src_root):
         '%(builddir)s/llvm/projects/libcxx')
     libcxxabi_path = properties.WithProperties(
         '%(builddir)s/llvm/projects/libcxxabi')
+    libunwind_path = properties.WithProperties(
+        '%(builddir)s/llvm/projects/libunwind')
 
     f = phased_builder_utils.SVNCleanupStep(f, llvm_path)
     f.addStep(SVN(name='svn-llvm',
@@ -41,6 +43,12 @@ def getLibcxxWholeTree(f, src_root):
                   baseURL='http://llvm.org/svn/llvm-project/libcxxabi/',
                   defaultBranch='trunk',
                   workdir=libcxxabi_path))
+    f.addStep(SVN(name='svn-libunwind',
+                  mode='full',
+                  baseURL='http://llvm.org/svn/llvm-project/libunwind/',
+                  defaultBranch='trunk',
+                  workdir=libunwind_path))
+
     return f
 
 

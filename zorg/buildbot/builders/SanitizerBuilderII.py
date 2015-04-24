@@ -65,7 +65,7 @@ def getSanitizerBuildFactoryII(
                                workdir=".",
                                env=merged_env))
 
-    # Get llvm, clang, ompiler-rt, libcxx, libcxxabi
+    # Get llvm, clang, ompiler-rt, libcxx, libcxxabi, libunwind
     f.addStep(SVN(name='svn-llvm',
                   mode='update',
                   description='svn-llvm',
@@ -105,6 +105,14 @@ def getSanitizerBuildFactoryII(
                   baseURL='http://llvm.org/svn/llvm-project/libcxxabi/',
                   defaultBranch='trunk',
                   workdir='%s/projects/libcxxabi' % llvm_srcdir))
+
+    f.addStep(SVN(name='svn-libunwind',
+                  mode='update',
+                  description='svn-libunwind',
+                  descriptionDone='svn-libunwind',
+                  baseURL='http://llvm.org/svn/llvm-project/libunwind/',
+                  defaultBranch='trunk',
+                  workdir='%s/projects/libunwind' % llvm_srcdir))
 
 
     lint_script = os.path.join("..", llvm_srcdir, "projects", "compiler-rt",

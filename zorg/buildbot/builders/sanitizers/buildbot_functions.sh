@@ -35,6 +35,7 @@ function buildbot_update {
     update_or_checkout "$rev_arg" http://llvm.org/svn/llvm-project/compiler-rt/trunk llvm/projects/compiler-rt
     update_or_checkout "$rev_arg" http://llvm.org/svn/llvm-project/libcxx/trunk llvm/projects/libcxx
     update_or_checkout "$rev_arg" http://llvm.org/svn/llvm-project/libcxxabi/trunk llvm/projects/libcxxabi
+    update_or_checkout "$rev_arg" http://llvm.org/svn/llvm-project/libunwind/trunk llvm/projects/libunwind
     update_or_checkout "$rev_arg" http://llvm.org/svn/llvm-project/lld/trunk llvm/tools/lld
 }
 
