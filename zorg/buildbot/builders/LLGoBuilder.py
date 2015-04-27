@@ -76,6 +76,25 @@ def getLLGoBuildFactory(
                            haltOnFailure=True,
                            description=["build llgo"],
                            workdir=llvm_objdir))
+    # Build libgo
+    f.addStep(NinjaCommand(name="build_libgo",
+                           targets=["libgo"],
+                           haltOnFailure=True,
+                           logfiles={
+                               'libgo-build-out': 'tools/llgo/libgo-prefix/src/libgo-stamp/libgo-build-out.log',
+                               'libgo-build-err': 'tools/llgo/libgo-prefix/src/libgo-stamp/libgo-build-err.log',
+                               'libgo-configure-out': 'tools/llgo/libgo-prefix/src/libgo-stamp/libgo-configure-out.log',
+                               'libgo-configure-err': 'tools/llgo/libgo-prefix/src/libgo-stamp/libgo-configure-err.log',
+                           },
+                           lazylogfiles=True,
+                           description=["build libgo"],
+                           workdir=llvm_objdir))
+    # Build llgoi
+    f.addStep(NinjaCommand(name="build_llgoi",
+                           targets=["llgoi"],
+                           haltOnFailure=True,
+                           description=["build llgoi"],
+                           workdir=llvm_objdir))
     # Test llgo
     f.addStep(NinjaCommand(name="test_llgo",
                            targets=["check-llgo"],
