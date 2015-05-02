@@ -185,6 +185,8 @@ def get_build_slaves():
         create_slave("lldb-x86_64-darwin-13.4", properties={'jobs': 16, 'loadaverage':32}, max_builds=1),
         # Ubuntu 14.04 x86_64, Intel(R) Xeon(R) CPU @ 2.30GHz
         create_slave("llgo-builder", properties={'jobs': 2}, max_builds=1),
+        # Ubuntu 14.04 x86_64, Intel(R) Xeon(R) CPU E5-2680 v2 @ 2.80GHz
+        create_slave("lldb-lab-linux01", properties={'jobs': 40}, max_builds=1),
         # Defunct.
         # Intel(R) Pentium(R) CPU G620 @ 2.60GHz, Ubuntu i686
         #create_slave("botether", properties={'jobs': 2}, max_builds=1),

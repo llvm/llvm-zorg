@@ -1,6 +1,6 @@
 import os
 import json
-
+import collections
 import buildbot
 import buildbot.process.factory
 from buildbot.steps.source import SVN
@@ -240,10 +240,10 @@ def getLLDBBuildFactory(
     return f
 # Add test steps from list of compilers and archs
 def getLLDBTestSteps(f,
-                     isRemoteTest,
                      bindir,
                      test_archs,
                      test_compilers,
+                     remote_platform=None,
                      remote_host=None,
                      remote_port=None,
                      remote_dir=None,
@@ -253,10 +253,18 @@ def getLLDBTestSteps(f,
         return f
     llvm_srcdir = "llvm"
     llvm_builddir = "build"
+    if env is None:
+        env = {}
+    extraTestFlag = ''
+    # TODO: for now, run tests with 8 threads and without mi tests on android
+    # come back when those issues are addressed
+    testenv=dict(env)
     for compiler in test_compilers:
         # find full path for top of tree clang
         if compiler=='totclang':
-            compilerPath=bindir+'/clang'
+            compilerPath=bindir + '/clang'
+        elif remote_platform is 'android':
+            compilerPath = '%(toolchain)s' + '/bin/' + compiler
         else:
             compilerPath = compiler
         for arch in test_archs:
@@ -267,34 +275,49 @@ def getLLDBTestSteps(f,
                                  '-u CXXFLAGS ',
                                  '-u CFLAGS'])
             testname = "local"
-            if(isRemoteTest):
-                DOTEST_OPTS+=''.join([' --platform-name remote-linux ',
-                                      '--platform-url connect://%(remote_host)s:%(remote_port)s ',
-                                      '--platform-working-dir %(remote_dir)s'])
-                testname = "remote"
+            if remote_platform is not None:
+                urlStr='connect://%(remote_host)s:%(remote_port)s'
+                if remote_platform is 'android':
+                    testenv['LLDB_TEST_THREADS'] = '8'
+                    extraTestFlag = ' -m'
+                    urlStr = 'adb://%(deviceid)s:%(remote_port)s'
+                DOTEST_OPTS += ''.join([' --platform-name remote-' + remote_platform,
+                                        ' --platform-url ' + urlStr,
+                                        ' --platform-working-dir %(remote_dir)s',
+                                        ' --env OS=' + remote_platform.title()])
+                testname = "remote-" + remote_platform
+            DOTEST_OPTS += extraTestFlag
             f.addStep(LitTestCommand(name="test lldb %s (%s-%s)" % (testname, compiler, arch),
                                      command=['../%s/tools/lldb/test/dosep.py' % llvm_srcdir,
                                               '--options',
                                               WithProperties(DOTEST_OPTS)],
                                      description="test lldb",
                                      parseSummaryOnly=True,
-                                     workdir='%s' % llvm_builddir))
+                                     workdir='%s' % llvm_builddir,
+                                     env=testenv))
             f=cleanSVNSourceTree(f, '%s/tools/lldb' % llvm_srcdir)
     return f
+
+# Define a structure to describe remote target
+# For example, RemoteConfig('linux','x86_64',['gcc4.8.2','clang'],['i386'])
+RemoteConfig = collections.namedtuple("RemoteConfig", ["platform", "host_arch", "test_compilers", "test_archs"])
 
 # Add steps to run lldb test on remote target
 def getLLDBRemoteTestSteps(f,
                            bindir,
-                           remote_test_archs,
-                           remote_test_compilers,
+                           build_type,
+                           remote_config,
                            env):
-
-    if None in (remote_test_archs, remote_test_compilers):
+    if None in (remote_config.test_archs, remote_config.test_compilers):
+        return f
+    # only supports linux and android as remote target at this time
+    if remote_config.platform not in ('linux', 'android'):
         return f
     llvm_srcdir = "llvm"
     llvm_builddir = "build"
+    stepDesc = remote_config.platform + "-" + remote_config.host_arch
     # get hostname
-    slave_hostname=None
+    slave_hostname = None
     f.addStep(SetProperty(name="get hostname",
                           command=["hostname"],
                           property="slave_hostname",
@@ -303,51 +326,111 @@ def getLLDBRemoteTestSteps(f,
     # get configuration of remote target
     # config file should be placed under builddir on builder machine
     # file name: remote_cfg.json
-    # content: json format with keys "remote_host", "remote_port", and "remote_dir"
-    # example: {"remote_host":"remotehostname","remote_port":"1234","remote_dir":"/path/to/dir"}
+    # content: json format with keys [remote_platform]-[remote_arch]
+    # the value for each key defines "remote_host", "remote_port", "remote_dir", "toolchain", "deviceId"
+    # example: {"android-i386": {"remote_host":"localhost",
+    #                            "remote_port":"5430",
+    #                            "remote_dir":"/data/local/tmp/lldb",
+    #                            "toolchain":"/home/lldb_build/Toolchains/i386-android-toolchain",
+    #                            "deviceid":"XXXXXXX"},
+
     def getRemoteCfg(rc, stdout, stderr):
-       return json.loads(stdout)
-    f.addStep(SetProperty(name="get remote target",
+        return json.loads(stdout)[stepDesc]
+    f.addStep(SetProperty(name="get remote target " + stepDesc,
                           command="cat remote_cfg.json",
                           extract_fn=getRemoteCfg,
                           description="get remote target",
                           workdir="."))
     # rsync
-    f.addStep(ShellCommand(name="rsync lldb-server",
-                           command=WithProperties("rsync -hav bin/lldb-server* %(remote_host)s:%(remote_dir)s"),
-                           description="rsync lldb-server",
-                           haltOnFailure=True,
-                           env=env,
-                           workdir='%s' % llvm_builddir))
-    f.addStep(ShellCommand(name="rsync python2.7",
-                           command=WithProperties("rsync -havL lib/python2.7 %(remote_host)s:%(remote_dir)s"),
-                           description="rsync python2.7",
-                           haltOnFailure=True,
-                           env=env,
-                           workdir='%s' % llvm_builddir))
+    if remote_config.platform is 'linux':
+        shellcmd = ['ssh',
+                    WithProperties('%(remote_host)s')]
+        hostname = '%(slave_hostname)s'
+        launchcmd = shellcmd + ['screen', '-d', '-m']
+        terminatecmd = shellcmd + ['pkill', 'lldb-server']
+        cleandircmd = WithProperties('ssh %(remote_host)s rm -rf %(remote_dir)s/*')
+        f.addStep(ShellCommand(name="rsync lldb-server",
+                               command=['rsync',
+                                        '-havL',
+                                        'bin/lldb-server',
+                                        WithProperties('%(remote_host)s:%(remote_dir)s')],
+                               description="rsync lldb-server " + stepDesc,
+                               haltOnFailure=True,
+                               env=env,
+                               workdir='%s' % llvm_builddir))
+        f.addStep(ShellCommand(name="rsync python2.7",
+                               command=['rsync',
+                                        '-havL',
+                                        'lib/python2.7',
+                                        WithProperties('%(remote_host)s:%(remote_dir)s')],
+                               description="rsync python2.7 " + stepDesc,
+                               haltOnFailure=True,
+                               env=env,
+                               workdir='%s' % llvm_builddir))
+    elif remote_config.platform is 'android':
+        shellcmd = ['adb',
+                    '-s',
+                    WithProperties('%(deviceid)s'),
+                    'shell']
+        hostname = 'localhost'
+        launchcmd = ['screen', '-d', '-m']  + shellcmd
+        terminatecmd = 'ps | grep lldb-server | awk \'{print $2}\' | xargs'
+        terminatecmd = WithProperties('adb -s %(deviceid)s shell ' + terminatecmd + ' adb -s %(deviceid)s shell kill')
+        cleandircmd = WithProperties('adb -s %(deviceid)s shell rm -rf %(remote_dir)s/*')
+        # compile lldb-server for target platform
+        f = getLLDBCmakeAndCompileSteps(f,
+                                        'gcc',
+                                        build_type,
+                                        ['lldb-server'],
+                                        bindir,
+                                        remote_config.platform,
+                                        remote_config.host_arch,
+                                        env)
+
+        f.addStep(ShellCommand(name="adb push lldb-server " + stepDesc,
+                               command=['adb',
+                                        '-s',
+                                        WithProperties('%(deviceid)s'),
+                                        'push',
+                                        remote_config.platform+'-' + remote_config.host_arch + '/bin/lldb-server',
+                                        WithProperties('%(remote_dir)s/')],
+                               description="lldb-server",
+                               env=env,
+                               haltOnFailure=True,
+                               workdir='%s' % llvm_builddir))
     # launch lldb-server
-    f.addStep(ShellCommand(name="launch lldb-server",
-                           command=WithProperties("ssh %(remote_host)s screen -d -m %(remote_dir)s/lldb-server platform --listen %(slave_hostname)s:%(remote_port)s --server"),
+    f.addStep(ShellCommand(name="launch lldb-server " + stepDesc,
+                           command=launchcmd +
+                                   [WithProperties('%(remote_dir)s/lldb-server'),
+                                    'platform',
+                                    '--listen',
+                                    WithProperties(hostname + ':%(remote_port)s'),
+                                    '--server'],
                            description="launch lldb-server on remote host",
                            env=env,
                            haltOnFailure=True,
                            workdir='%s' % llvm_builddir))
     # test steps
     f = getLLDBTestSteps(f,
-                         True,
                          bindir,
-                         remote_test_archs,
-                         remote_test_compilers,
+                         remote_config.test_archs,
+                         remote_config.test_compilers,
+                         remote_config.platform,
                          '%(remote_host)s',
                          '%(remote_port)s',
                          '%(remote_dir)s',
                          env)
     # terminate lldb-server on remote host
-    f.addStep(ShellCommand(name="terminate lldb-server remote",
-                           command=WithProperties("ssh %(remote_host)s pkill lldb-server"),
+    f.addStep(ShellCommand(name="terminate lldb-server " + stepDesc,
+                           command=terminatecmd,
                            description="terminate lldb-server",
                            env=env,
                            workdir='%s' % llvm_builddir))
+    # clean remote test directory
+    f.addStep(ShellCommand(name="clean remote dir " + stepDesc,
+                           command=cleandircmd,
+                           description="clean remote dir",
+                           env=env))
     return f
 
 # Cmake bulid on Ubuntu
@@ -355,17 +438,30 @@ def getLLDBRemoteTestSteps(f,
 # Note: If test_archs or test_compilers is not specified, lldb-test will not be added to build factory
 def getLLDBUbuntuCMakeBuildFactory(build_compiler,
                                    build_type,
-                                   test_archs=None,
-                                   test_compilers=None,
-                                   remote_test_archs=None,
-                                   remote_test_compilers=None,
+                                   local_test_archs=None,
+                                   local_test_compilers=None,
+                                   remote_configs=None,
                                    jobs='%(jobs)s',
-                                   env=None,
-                                   *args,
-                                   **kwargs):
+                                   env=None):
+    """Generate factory steps for ubuntu cmake builder
 
+       Arguments:
+       build_compiler       -- string of compile name, example 'clang',
+                               the compiler will be used to build binaries for host platform
+       build_type           -- 'Debug' or 'Release',
+                               used to define build type for host platform as well as remote platform if any
+       local_test_archs     -- list of architectures, example ['i386','x86_64'],
+                               defines architectures to run local tests against, if None, local tests won't be executed
+       local_test_compiler  -- list of compilers, example ['clang','gcc4.8.2'],
+                               definds compilers to run local tests with, if None, local tests won't be executed
+       remote_configs       -- list of RemoteConfig objects, example [RemoteConfig(...)], if None, remote tests won't be executed
+       jobs                 -- number of threads for compilation step, example 40
+                               default value is jobs number defined during slave creation
+       env                  -- environment variables passed to shell commands
+
+    """
     if env is None:
-        env={}
+        env = {}
 
     llvm_srcdir = "llvm"
     llvm_builddir = "build"
@@ -382,52 +478,163 @@ def getLLDBUbuntuCMakeBuildFactory(build_compiler,
     # Get source code
     f = getLLDBSource(f,llvm_srcdir)
 
-    # Construct cmake
-    cmake_args = ["cmake", "-GNinja"]
-    if build_compiler == "clang":
-        cmake_args.append("-DCMAKE_C_COMPILER=clang")
-        cmake_args.append("-DCMAKE_CXX_COMPILER=clang++")
-    elif build_compiler == "gcc":
-        cmake_args.append("-DCMAKE_C_COMPILER=gcc")
-        cmake_args.append("-DCMAKE_CXX_COMPILER=g++")
-
-    cmake_args.append(WithProperties("-DCMAKE_BUILD_TYPE=%s" % build_type))
-    cmake_args.append(WithProperties("../%s" % llvm_srcdir))
-
     # Clean Build Folder
     f.addStep(ShellCommand(name="clean",
                            command="rm -rf *",
                            description="clear build folder",
                            env=env,
                            workdir='%s' % llvm_builddir))
-    # Configure
-    f.addStep(Configure(name='configure/cmake',
-                        command=cmake_args,
-                        env=env,
-                        workdir=llvm_builddir))
-    # Compile
-    f.addStep(WarningCountingShellCommand(name="compile/ninja",
-                                          command=['nice', '-n', '10',
-                                                   'ninja', WithProperties("-j%s" % jobs)],
-                                          env=env,
-                                          haltOnFailure=True,
-                                          workdir=llvm_builddir))
+
+    f = getLLDBCmakeAndCompileSteps(f,
+                                    build_compiler,
+                                    build_type,
+                                    [],
+                                    bindir,
+                                    'linux',
+                                    'x86_64',
+                                    env)
 
     # TODO: it will be good to check that architectures listed in test_archs are compatible with host architecture
     # For now, the caller of this function should make sure that each target architecture is supported by builder machine
 
     # Add local test steps
     f = getLLDBTestSteps(f,
-                         False,
                          bindir,
-                         test_archs,
-                         test_compilers)
-    # Remote test
-    f = getLLDBRemoteTestSteps(f,
-                               bindir,
-                               remote_test_archs,
-                               remote_test_compilers,
-                               env)
+                         local_test_archs,
+                         local_test_compilers)
+    # Remote test steps
+    if remote_configs is not None:
+        for config in remote_configs:
+            f = getLLDBRemoteTestSteps(f,
+                                       bindir,
+                                       build_type,
+                                       config,
+                                       env)
+
+    return f
+
+# for cmake and compile
+def getLLDBCmakeAndCompileSteps(f,
+                                build_compiler,
+                                build_type,
+                                ninja_target,
+                                bindir,
+                                target_platform,
+                                target_arch,
+                                env=None):
+
+    if env is None:
+        env={}
+    llvm_builddir = 'build'
+    if target_platform is 'android':
+        llvm_builddir = 'build/android-' + target_arch
+    # Configure
+    f = getLLDBCMakeStep(f,
+                         build_compiler,
+                         build_type,
+                         bindir,
+                         target_platform,
+                         target_arch,
+                         env)
+    # Compile
+    f.addStep(WarningCountingShellCommand(name='ninja-%s-%s'%(target_platform, target_arch),
+                                          command=['nice','-n', '10',
+                                                   'ninja',
+                                                   WithProperties('-j%(jobs)s')] + ninja_target,
+                                          env=env,
+                                          haltOnFailure=True,
+                                          workdir=llvm_builddir))
+    return f
+
+def getLLDBCMakeStep(f,
+                     build_compiler,
+                     build_type,
+                     bindir,
+                     target_platform,
+                     target_arch,
+                     env=None):
+    if target_platform is 'linux':
+        return getLLDBLinuxCMakeStep(f,
+                                     build_compiler,
+                                     build_type,
+                                     target_arch,
+                                     env)
+    elif target_platform is 'android':
+        return getLLDBAndroidCMakeStep(f,
+                                       build_compiler,
+                                       build_type,
+                                       bindir,
+                                       target_arch,
+                                       env)
+
+def getCCompilerCmd(compiler):
+  if compiler == "clang":
+    return "clang"
+  elif compiler == "gcc":
+    return "gcc"
+
+def getCxxCompilerCmd(compiler):
+  if compiler == "clang":
+    return "clang++"
+  elif compiler == "gcc":
+    return "g++"
+
+def getLLDBLinuxCMakeStep(f,
+                          build_compiler,
+                          build_type,
+                          target_arch,
+                          env=None):
+    if env is None:
+        env = {}
+    llvm_srcdir = 'llvm'
+    llvm_builddir = 'build'
+    # Construct cmake
+    cmake_args = ["cmake", "-GNinja"]
+    cmake_args.append(WithProperties("-DCMAKE_BUILD_TYPE=%s" % build_type))
+    cmake_args.append(WithProperties('%(builddir)s/' + llvm_srcdir))
+    cmake_args.append("-DCMAKE_C_COMPILER=%s" % getCCompilerCmd(build_compiler))
+    cmake_args.append("-DCMAKE_CXX_COMPILER=%s" % getCxxCompilerCmd(build_compiler))
+
+    f.addStep(Configure(name='cmake-linux-%s' % (target_arch),
+                        command=cmake_args,
+                        env=env,
+                        haltOnFailure=True,
+                        workdir=llvm_builddir))
+    return f
+
+def getLLDBAndroidCMakeStep(f,
+                            build_compiler,
+                            build_type,
+                            bindir,
+                            target_arch,
+                            env):
+    if env is None:
+        env = {}
+    llvm_srcdir = 'llvm'
+    llvm_builddir = 'build/android-' + target_arch
+    abiMap={
+            'i386':'x86',
+            'arm':'armeabi',
+            'aarch64':'aarch64'
+           }
+    # Construct cmake
+    cmake_args = ["cmake", "-GNinja"]
+    cmake_args.append(WithProperties("-DCMAKE_BUILD_TYPE=%s" % build_type))
+    cmake_args.append(WithProperties('%(builddir)s/' + llvm_srcdir))
+    cmake_args.append(WithProperties('-DCMAKE_TOOLCHAIN_FILE=' + '%(builddir)s/' + llvm_srcdir + '/tools/lldb/cmake/platforms/Android.cmake'))
+    cmake_args.append(WithProperties('-DANDROID_TOOLCHAIN_DIR=' + '%(toolchain)s'))
+    cmake_args.append('-DANDROID_ABI=' + abiMap[target_arch])
+    cmake_args.append('-DCMAKE_CXX_COMPILER_VERSION=4.9')
+    cmake_args.append('-DLLVM_TARGET_ARCH=' + target_arch)
+    cmake_args.append('-DLLVM_HOST_TRIPLE=' + target_arch + '-unknown-linux-android')
+    cmake_args.append(WithProperties('-DLLVM_TABLEGEN=' + bindir + '/llvm-tblgen'))
+    cmake_args.append(WithProperties('-DCLANG_TABLEGEN=' + bindir + '/clang-tblgen'))
+
+    f.addStep(Configure(name='cmake-android-%s' % target_arch,
+                        command=cmake_args,
+                        env=env,
+                        haltOnFailure=True,
+                        workdir=llvm_builddir))
     return f
 
 def getLLDBxcodebuildFactory(use_cc=None):

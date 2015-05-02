@@ -21,6 +21,7 @@ from zorg.buildbot.builders import PollyBuilder
 from zorg.buildbot.builders import LLDBBuilder
 reload(LLDBBuilder)
 from zorg.buildbot.builders import LLDBBuilder
+from zorg.buildbot.builders.LLDBBuilder import RemoteConfig
 
 from zorg.buildbot.builders import LLDBuilder
 reload(LLDBuilder)
@@ -745,15 +746,26 @@ def _get_lldb_builders():
          'factory': LLDBBuilder.getLLDBUbuntuCMakeBuildFactory(
                     build_compiler="clang",
                     build_type="Debug",
-                    test_archs=['x86_64', 'i386'],
-                    test_compilers=['clang', 'totclang', 'gcc4.8.2', 'gcc4.9.2'],
-                    #remote_test_archs=['x86_64'],
-                    #remote_test_compilers=['clang'],
+                    local_test_archs=['x86_64', 'i386'],
+                    local_test_compilers=['clang', 'totclang', 'gcc4.8.2', 'gcc4.9.2'],
+                    #remote_configs=[RemoteConfig('linux','x86_64',['clang'],['x86_64'])],
                     env={'SHELL':"/bin/bash"})},
         {'name': "lldb-x86_64-darwin-13.4",
          'slavenames': ["lldb-x86_64-darwin-13.4"],
          'builddir': "buildDir",
          'factory': LLDBBuilder.getLLDBxcodebuildFactory()},
+        {'name': "lldb-x86_64-ubuntu-14.04-cross-compilation",
+         'slavenames': ["lldb-lab-linux01"],
+         'builddir': "lldb-cross-compile",
+         'factory': LLDBBuilder.getLLDBUbuntuCMakeBuildFactory(
+                    build_compiler="clang",
+                    build_type="Debug",
+                    remote_configs= [
+                                     RemoteConfig('android', 'i386', ['i686-linux-android-gcc'], ['i386']),
+                                     RemoteConfig('android', 'arm', ['arm-linux-androideabi-gcc'], ['arm']),
+                                     RemoteConfig('android', 'aarch64', ['aarch64-linux-android-gcc'], ['aarch64'])
+                                    ],
+                    env={'SHELL':"/bin/bash"})},
        ]
 
 # Offline.
