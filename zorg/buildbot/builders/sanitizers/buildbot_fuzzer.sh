@@ -13,6 +13,7 @@ export PATH="/usr/local/bin:$PATH"
 
 STAGE1_DIR=llvm_build0
 STAGE2_ASAN_DIR=llvm_build_asan
+STAGE2_ASAN_ASSERTIONS_DIR=llvm_build_asan_assertions
 MAKE_JOBS=${MAX_MAKE_JOBS:-16}
 LLVM=$ROOT/llvm
 # No assertions. Need to clean up the existing assertion failures first.
@@ -33,6 +34,7 @@ fi
 # Anyway, incremental builds of stage2 compilers don't make sense.
 # Clobber the build trees.
 rm -rf ${STAGE2_ASAN_DIR}
+rm -rf ${STAGE2_ASAN_ASSERTIONS_DIR}
 
 # Create an empty directory for the corpus if it doesn't exist yet.
 # It will get populated with examples.
@@ -93,3 +95,32 @@ echo @@@BUILD_STEP stage2/asan run clang-fuzzer@@@
 echo @@@BUILD_STEP stage2/asan run clang-fuzzer with tokens@@@
 (ASAN_OPTIONS=detect_leaks=0 ${STAGE2_ASAN_DIR}/bin/clang-fuzzer -jobs=32 -workers=8 -runs=131072 -use_counters=1 -tokens=$TOKENS_FILE $CLANG_TOKENS_CORPUS) || \
   echo @@@STEP_WARNINGS@@@
+
+# Stage 3 / AddressSanitizer + assertions
+mkdir -p ${STAGE2_ASAN_ASSERTIONS_DIR}
+echo @@@BUILD_STEP stage2/asan+assertions check-fuzzer@@@
+cmake_stage2_asan_assertions_options="$cmake_stage2_asan_options -DLLVM_ENABLE_ASSERTIONS=ON"
+
+(cd ${STAGE2_ASAN_ASSERTIONS_DIR} && cmake ${cmake_stage2_asan_assertions_options} $LLVM) || \
+  echo @@@STEP_FAILURE@@@
+
+(cd ${STAGE2_ASAN_ASSERTIONS_DIR} && ninja check-fuzzer) || echo @@@STEP_FAILURE@@@
+
+echo @@@BUILD_STEP stage2/asan+assertions build clang-format-fuzzer and clang-fuzzer@@@
+
+(cd ${STAGE2_ASAN_ASSERTIONS_DIR} && ninja clang-format-fuzzer clang-fuzzer) || echo @@@STEP_FAILURE@@@
+
+echo @@@BUILD_STEP stage2/asan+assertions run clang-format-fuzzer@@@
+
+(${STAGE2_ASAN_ASSERTIONS_DIR}/bin/clang-format-fuzzer -jobs=8 -workers=8 -runs=131072 -use_counters=1 $CLANG_FORMAT_CORPUS) || \
+  echo @@@STEP_WARNINGS@@@
+
+echo @@@BUILD_STEP stage2/asan+assertions run clang-fuzzer@@@
+(${STAGE2_ASAN_ASSERTIONS_DIR}/bin/clang-fuzzer -jobs=8 -workers=8 -runs=131072 -use_counters=1 $CLANG_CORPUS) || \
+  echo @@@STEP_WARNINGS@@@
+
+echo @@@BUILD_STEP stage2/asan+assertions run clang-fuzzer with tokens@@@
+(${STAGE2_ASAN_ASSERTIONS_DIR}/bin/clang-fuzzer -jobs=8 -workers=8 -runs=131072 -use_counters=1 -tokens=$TOKENS_FILE $CLANG_TOKENS_CORPUS) || \
+  echo @@@STEP_WARNINGS@@@
+
+
