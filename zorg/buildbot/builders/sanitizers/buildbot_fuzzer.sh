@@ -43,6 +43,10 @@ mkdir -p $CLANG_FORMAT_CORPUS
 mkdir -p $CLANG_CORPUS
 mkdir -p $CLANG_TOKENS_CORPUS
 
+# Make sure asan intercepts SIGABRT so that the fuzzer can print the test cases
+# for assertion failures.
+export ASAN_OPTIONS=handle_abort=1
+
 echo @@@BUILD_STEP update@@@
 buildbot_update
 
@@ -89,11 +93,11 @@ echo @@@BUILD_STEP stage2/asan run clang-fuzzer@@@
 # leak detection is disabled until assertions from
 # https://llvm.org/bugs/show_bug.cgi?id=23057#c4 are fixed.
 # See also https://llvm.org/bugs/show_bug.cgi?id=23057#c12
-(ASAN_OPTIONS=detect_leaks=0 ${STAGE2_ASAN_DIR}/bin/clang-fuzzer -jobs=32 -workers=8 -runs=131072 -use_counters=1 $CLANG_CORPUS) || \
+(ASAN_OPTIONS=$ASAN_OPTIONS:detect_leaks=0 ${STAGE2_ASAN_DIR}/bin/clang-fuzzer -jobs=32 -workers=8 -runs=131072 -use_counters=1 $CLANG_CORPUS) || \
   echo @@@STEP_WARNINGS@@@
 
 echo @@@BUILD_STEP stage2/asan run clang-fuzzer with tokens@@@
-(ASAN_OPTIONS=detect_leaks=0 ${STAGE2_ASAN_DIR}/bin/clang-fuzzer -jobs=32 -workers=8 -runs=131072 -use_counters=1 -tokens=$TOKENS_FILE $CLANG_TOKENS_CORPUS) || \
+(ASAN_OPTIONS=$ASAN_OPTIONS:detect_leaks=0 ${STAGE2_ASAN_DIR}/bin/clang-fuzzer -jobs=32 -workers=8 -runs=131072 -use_counters=1 -tokens=$TOKENS_FILE $CLANG_TOKENS_CORPUS) || \
   echo @@@STEP_WARNINGS@@@
 
 # Stage 3 / AddressSanitizer + assertions
