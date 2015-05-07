@@ -754,7 +754,7 @@ def _get_lldb_builders():
          'slavenames': ["lldb-x86_64-darwin-13.4"],
          'builddir': "buildDir",
          'factory': LLDBBuilder.getLLDBxcodebuildFactory()},
-        {'name': "lldb-x86_64-ubuntu-14.04-cross-compilation",
+        {'name': "lldb-x86_64-ubuntu-14.04-android",
          'slavenames': ["lldb-lab-linux01"],
          'builddir': "lldb-cross-compile",
          'factory': LLDBBuilder.getLLDBUbuntuCMakeBuildFactory(
