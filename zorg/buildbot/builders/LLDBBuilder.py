@@ -510,7 +510,26 @@ def getLLDBUbuntuCMakeBuildFactory(build_compiler,
                                        build_type,
                                        config,
                                        env)
+    # archive test traces
+    f = archiveLLDBTestTraces(f)
+    return f
 
+# zip and upload test traces to google storage
+def archiveLLDBTestTraces(f):
+    llvm_builddir = 'build'
+    f.addStep(ShellCommand(name="compress test traces",
+                           command=WithProperties("zip -r build-%(buildnumber)s lldb-test-traces-*"),
+                           description="zip",
+                           haltOnFailure=False,
+                           workdir='%s' % llvm_builddir))
+    f.addStep(ShellCommand(name="upload test traces",
+                           command=['gsutil',
+                                    'mv',
+                                    WithProperties('build-%(buildnumber)s.zip'),
+                                    WithProperties('gs://lldb_test_traces/%(buildername)s/')],
+                           description="upload to Google Storage",
+                           haltOnFailure=False,
+                           workdir='%s' % llvm_builddir))
     return f
 
 # for cmake and compile
