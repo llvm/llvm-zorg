@@ -281,6 +281,17 @@ def getLLDBTestSteps(f,
                     testenv['LLDB_TEST_THREADS'] = '8'
                     extraTestFlag = ' -m'
                     urlStr = 'adb://%(deviceid)s:%(remote_port)s'
+                    # for Android, remove all forwarded ports before running test
+                    # it is noticed that forwarded socket connections were not cleaned for certain crashed tests
+                    # clean it here to avoid too many "LISTEN" ports left on slave
+                    f.addStep(ShellCommand(name="remove port forwarding %s" % arch,
+                                           command=['adb',
+                                                    'forward',
+                                                    '--remove-all'],
+                                           description="Remove port forwarding",
+                                           env=env,
+                                           haltOnFailure=False,
+                                           workdir='%s' % llvm_builddir))
                 DOTEST_OPTS += ''.join([' --platform-name remote-' + remote_platform,
                                         ' --platform-url ' + urlStr,
                                         ' --platform-working-dir %(remote_dir)s',
