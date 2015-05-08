@@ -478,7 +478,7 @@ def _get_clang_builders():
                                                     nt_flags=['--multisample=10', '--rerun'],
                                                     reportBuildslave=False,
                                                     package_cache="http://parkas1.inria.fr/packages",
-                                                    submitURL='http://llvm.org/perf/submitRun',
+                                                    submitURL='http://gcc12.fsffrance.org:8808/submitRun',
                                                     testerName='x86_64-penryn-O3')},
         {'name' : "clang-x86_64-linux-selfhost-modules",
          'slavenames' : ["modules-slave-1"],
@@ -668,7 +668,7 @@ def _get_polly_builders():
                                                     nt_flags=['--multisample=10', '--mllvm=-polly', '--mllvm=-polly-code-generator=none', '--mllvm=-polly-optimizer=none', '--mllvm=-polly-run-dce=false', '--rerun'],
                                                     reportBuildslave=False,
                                                     package_cache="http://parkas1.inria.fr/packages",
-                                                    submitURL='http://llvm.org/perf/submitRun',
+                                                    submitURL='http://gcc12.fsffrance.org:8808/submitRun',
                                                     testerName='x86_64-penryn-O3-polly-detect-only')},
 
         {'name': "perf-x86_64-penryn-O3-polly-detect-and-dependences-only",
@@ -682,7 +682,7 @@ def _get_polly_builders():
                                                               '--rerun'],
                                                     reportBuildslave=False,
                                                     package_cache="http://parkas1.inria.fr/packages",
-                                                    submitURL='http://llvm.org/perf/submitRun',
+                                                    submitURL='http://gcc12.fsffrance.org:8808/submitRun',
                                                     testerName='x86_64-penryn-O3-polly-detect-and-dependences-only')},
 
         {'name': "perf-x86_64-penryn-O3-polly",
@@ -692,7 +692,7 @@ def _get_polly_builders():
                                                     nt_flags=['--multisample=10', '--mllvm=-polly', '--rerun'],
                                                     reportBuildslave=False,
                                                     package_cache="http://parkas1.inria.fr/packages",
-                                                    submitURL='http://llvm.org/perf/submitRun',
+                                                    submitURL='http://gcc12.fsffrance.org:8808/submitRun',
                                                     testerName='x86_64-penryn-O3-polly')}
        ]
 
