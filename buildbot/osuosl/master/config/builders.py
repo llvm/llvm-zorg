@@ -696,18 +696,6 @@ def _get_lldb_builders():
 #   gcc_m32_latest_env['CXX'] += ' -m32'
 #
     return [
-        {'name': "lldb-x86_64-debian-clang",
-         'slavenames': ["gribozavr5"],
-         'builddir': "lldb-x86_64-clang-ubuntu-14.04",
-         'factory': LLDBBuilder.getLLDBBuildFactory(triple=None, # use default
-                                                    extra_configure_args=['--enable-cxx11', '--enable-optimized', '--enable-assertions'],
-                                                    env={'PATH':'/home/llvmbb/bin/clang-latest/bin:/home/llvmbb/bin:/usr/local/bin:/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games'})},
-        {'name': "lldb-x86_64-freebsd",
-         'slavenames': ["as-bldslv5"],
-         'builddir': "lldb-x86_64-freebsd",
-         'factory': LLDBBuilder.getLLDBBuildFactory(triple=None, # use default
-                                                    make='gmake',
-                                                    extra_configure_args=['--enable-cxx11', '--enable-optimized', '--enable-assertions'])},
         {'name': "lldb-x86-windows-msvc",
          'slavenames': ["zturner-win2008"],
          'builddir': "lldb-windows-x86",
@@ -716,42 +704,6 @@ def _get_lldb_builders():
          'slavenames': ["hexagon-build-01"],
          'builddir': "builddir/lldb-win7-msvc",
          'factory': LLDBBuilder.getLLDBWindowsCMakeBuildFactory(config='Debug')},
-        {'name': "lldb-x86_64-ubuntu-14.10",
-         'slavenames': ["hexagon-build-03"],
-         'builddir': "lldb-x86_64-ubuntu-14.10",
-         'factory': LLDBBuilder.getLLDBBuildFactory(
-                    triple=None,
-                    extra_configure_args=[
-                        '--enable-cxx11',
-                        '--enable-optimized',
-                        '--enable-assertions'],
-                    env={'SHELL':"/bin/bash"})},
-        {'name': "lldb-x86_64-ubuntu-14.04-cmake",
-         'slavenames': ["lldb-build1-ubuntu-1404"],
-         'builddir': "buildWorkingDir",
-         'factory': LLDBBuilder.getLLDBUbuntuCMakeBuildFactory(
-                    build_compiler="clang",
-                    build_type="Debug",
-                    local_test_archs=['x86_64', 'i386'],
-                    local_test_compilers=['clang', 'totclang', 'gcc4.8.2', 'gcc4.9.2'],
-                    #remote_configs=[RemoteConfig('linux','x86_64',['clang'],['x86_64'])],
-                    env={'SHELL':"/bin/bash"})},
-        {'name': "lldb-x86_64-darwin-13.4",
-         'slavenames': ["lldb-x86_64-darwin-13.4"],
-         'builddir': "buildDir",
-         'factory': LLDBBuilder.getLLDBxcodebuildFactory()},
-        {'name': "lldb-x86_64-ubuntu-14.04-android",
-         'slavenames': ["lldb-lab-linux01"],
-         'builddir': "lldb-cross-compile",
-         'factory': LLDBBuilder.getLLDBUbuntuCMakeBuildFactory(
-                    build_compiler="clang",
-                    build_type="Debug",
-                    remote_configs= [
-                                     RemoteConfig('android', 'i386', ['i686-linux-android-gcc'], ['i386']),
-                                     RemoteConfig('android', 'arm', ['arm-linux-androideabi-gcc'], ['arm']),
-                                     RemoteConfig('android', 'aarch64', ['aarch64-linux-android-gcc'], ['aarch64'])
-                                    ],
-                    env={'SHELL':"/bin/bash"})},
        ]
 
 # Offline.
@@ -1080,6 +1032,62 @@ def _get_experimental_builders():
          'builddir':"clang-openbsd",
          'factory' : ClangBuilder.getClangBuildFactory(stage1_config='Release+Asserts'),
          'category' : 'clang'},
+
+        # lldb builders
+        {'name': "lldb-x86_64-debian-clang",
+         'slavenames': ["gribozavr5"],
+         'builddir': "lldb-x86_64-clang-ubuntu-14.04",
+         'category' : 'lldb',
+         'factory': LLDBBuilder.getLLDBBuildFactory(triple=None, # use default
+                                                    extra_configure_args=['--enable-cxx11', '--enable-optimized', '--enable-assertions'],
+                                                    env={'PATH':'/home/llvmbb/bin/clang-latest/bin:/home/llvmbb/bin:/usr/local/bin:/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games'})},
+        {'name': "lldb-x86_64-freebsd",
+         'slavenames': ["as-bldslv5"],
+         'builddir': "lldb-x86_64-freebsd",
+         'category' : 'lldb',
+         'factory': LLDBBuilder.getLLDBBuildFactory(triple=None, # use default
+                                                    make='gmake',
+                                                    extra_configure_args=['--enable-cxx11', '--enable-optimized', '--enable-assertions'])},
+        {'name': "lldb-x86_64-ubuntu-14.10",
+         'slavenames': ["hexagon-build-03"],
+         'builddir': "lldb-x86_64-ubuntu-14.10",
+         'category' : 'lldb',
+         'factory': LLDBBuilder.getLLDBBuildFactory(
+                    triple=None,
+                    extra_configure_args=[
+                        '--enable-cxx11',
+                        '--enable-optimized',
+                        '--enable-assertions'],
+                    env={'SHELL':"/bin/bash"})},
+        {'name': "lldb-x86_64-ubuntu-14.04-cmake",
+         'slavenames': ["lldb-build1-ubuntu-1404"],
+         'builddir': "buildWorkingDir",
+         'category' : 'lldb',
+         'factory': LLDBBuilder.getLLDBUbuntuCMakeBuildFactory(
+                    build_compiler="clang",
+                    build_type="Debug",
+                    local_test_archs=['x86_64', 'i386'],
+                    local_test_compilers=['clang', 'totclang', 'gcc4.8.2', 'gcc4.9.2'],
+                    #remote_configs=[RemoteConfig('linux','x86_64',['clang'],['x86_64'])],
+                    env={'SHELL':"/bin/bash"})},
+        {'name': "lldb-x86_64-darwin-13.4",
+         'slavenames': ["lldb-x86_64-darwin-13.4"],
+         'builddir': "buildDir",
+         'category' : 'lldb',
+         'factory': LLDBBuilder.getLLDBxcodebuildFactory()},
+        {'name': "lldb-x86_64-ubuntu-14.04-android",
+         'slavenames': ["lldb-lab-linux01"],
+         'builddir': "lldb-cross-compile",
+         'category' : 'lldb',
+         'factory': LLDBBuilder.getLLDBUbuntuCMakeBuildFactory(
+                    build_compiler="clang",
+                    build_type="Debug",
+                    remote_configs= [
+                                     RemoteConfig('android', 'i386', ['i686-linux-android-gcc'], ['i386']),
+                                     RemoteConfig('android', 'arm', ['arm-linux-androideabi-gcc'], ['arm']),
+                                     RemoteConfig('android', 'aarch64', ['aarch64-linux-android-gcc'], ['aarch64'])
+                                    ],
+                    env={'SHELL':"/bin/bash"})},
         ]
 
 # Builders responsible building Sphinix documentation
@@ -1149,10 +1157,12 @@ def get_builders():
         b['category'] = 'libcxx'
         yield b
 
-    for b in _get_experimental_builders():
+    for b in _get_documentation_builders():
         yield b
 
-    for b in _get_documentation_builders():
+    for b in _get_experimental_builders():
+        if not b.get('category', '').endswith('.exp'):
+           b['category'] = b.get('category', '') + '.exp'
         yield b
 
 # Random other unused builders...
