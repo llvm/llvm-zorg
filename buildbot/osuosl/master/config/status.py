@@ -12,7 +12,7 @@ from zorg.buildbot.util.InformativeMailNotifier import InformativeMailNotifier
 # pushed to these targets. buildbot/status/*.py has a variety to choose from,
 # including web pages, email senders, and IRC bots.
 
-def get_status_targets(standard_builders):
+def get_status_targets(standard_builders, standard_categories=None):
 
     from buildbot.status import html
     from buildbot.status.web import auth, authz
@@ -29,18 +29,6 @@ def get_status_targets(standard_builders):
                       )
 
     default_email = config.options.get('Master Options', 'default_email')
-
-    # The LNT performance buildbots have a very long delay and commonly fail
-    # late and if they fail, all of them fail together. As the same failures
-    # are are normally also catched by the faster non-LNT bots, there is no need
-    # to warn everybody about failures in the performance bots. Tobias Grosser
-    # will keep track of such.
-    standard_builders = [b for b in standard_builders if not b.startswith('perf-x86_64')]
-
-    # TODO: Fix buildbot.status.words.IRC to accept a list of builders to report
-    # instead of defining categories to report. Otherwise we could report more
-    # than requested.    
-    standard_categories = [b['category'] for b in standard_builders]
 
     return [
         buildbot.status.html.WebStatus(
