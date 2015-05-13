@@ -37,9 +37,16 @@ def get_status_targets(standard_builders):
     # will keep track of such.
     standard_builders = [b for b in standard_builders if not b.startswith('perf-x86_64')]
 
+    # TODO: Fix buildbot.status.words.IRC to accept a list of builders to report
+    # instead of defining categories to report. Otherwise we could report more
+    # than requested.    
+    standard_categories = [b['category'] for b in standard_builders]
+
     return [
         buildbot.status.html.WebStatus(
             http_port = 8011, authz=authz_cfg),
+
+        # All the standard builders send e-mail and IRC notifications.
         buildbot.status.mail.MailNotifier(
             fromaddr = "llvm.buildmaster@lab.llvm.org",
             extraRecipients = [default_email],
@@ -51,7 +58,11 @@ def get_status_targets(standard_builders):
         buildbot.status.words.IRC(
             host = "irc.oftc.net", nick = "llvmbb", channels = ["#llvm"],
             allowForce = True,
+            categories = standard_categories,
             notify_events = ['successToFailure', 'failureToSuccess']),
+
+        # In addition to that the following notifiers are defined for special
+        # cases.
         InformativeMailNotifier(
             fromaddr = "llvm.buildmaster@lab.llvm.org",
             sendToInterestedUsers= False,
