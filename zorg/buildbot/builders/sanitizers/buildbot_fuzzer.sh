@@ -133,7 +133,7 @@ echo @@@BUILD_STEP stage2/asan+assertions run clang-fuzzer with tokens@@@
   echo @@@STEP_WARNINGS@@@
 
 echo @@@BUILD_STEP push corpus updates@@@
-$(LLVM)/lib/Fuzzer/pull_and_push_fuzz_corpus.sh $CLANG_FORMAT_CORPUS
-$(LLVM)/lib/Fuzzer/pull_and_push_fuzz_corpus.sh $CLANG_CORPUS
-$(LLVM)/lib/Fuzzer/pull_and_push_fuzz_corpus.sh $CLANG_TOKENS_CORPUS
+$LLVM/lib/Fuzzer/pull_and_push_fuzz_corpus.sh $CLANG_FORMAT_CORPUS
+$LLVM/lib/Fuzzer/pull_and_push_fuzz_corpus.sh $CLANG_CORPUS
+$LLVM/lib/Fuzzer/pull_and_push_fuzz_corpus.sh $CLANG_TOKENS_CORPUS
 
