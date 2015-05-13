@@ -187,22 +187,22 @@ def _get_clang_fast_builders():
                     env={'PATH':'/home/llvmbb/bin/clang-latest/bin:/home/llvmbb/bin:/usr/local/bin:/usr/local/bin:/usr/bin:/bin',
                          'CC': 'ccache clang', 'CXX': 'ccache clang++', 'CCACHE_CPP2': 'yes'})},
 
-        {'name': "llvm-clang-lld-x86_64-ubuntu-13.04",
-         'slavenames':["gribozavr2"],
-         'builddir':"llvm-clang-lld-x86_64-ubuntu-13.04",
-         'factory': ClangAndLLDBuilder.getClangAndLLDBuildFactory(
-                    env={'PATH':'/home/llvmbb/bin/clang-latest/bin:/home/llvmbb/bin:/usr/local/bin:/usr/local/bin:/usr/bin:/bin',
-                         'CC': 'ccache clang', 'CXX': 'ccache clang++', 'CCACHE_CPP2': 'yes'})},
+#        {'name': "llvm-clang-lld-x86_64-ubuntu-13.04",
+#         'slavenames':["gribozavr2"],
+#         'builddir':"llvm-clang-lld-x86_64-ubuntu-13.04",
+#         'factory': ClangAndLLDBuilder.getClangAndLLDBuildFactory(
+#                    env={'PATH':'/home/llvmbb/bin/clang-latest/bin:/home/llvmbb/bin:/usr/local/bin:/usr/local/bin:/usr/bin:/bin',
+#                         'CC': 'ccache clang', 'CXX': 'ccache clang++', 'CCACHE_CPP2': 'yes'})},
 
-        {'name': "llvm-clang-lld-x86_64-centos-6.5",
-         'slavenames':["gribozavr3"],
-         'builddir':"llvm-clang-lld-x86_64-centos-6.5",
-         'factory': ClangAndLLDBuilder.getClangAndLLDBuildFactory(
-                    env={'PATH': '/opt/centos/devtoolset-1.1/root/usr/bin:/home/llvmbb/bin:/bin:/usr/bin',
-                         'LD_LIBRARY_PATH': '/opt/centos/devtoolset-1.1/root/usr/lib64',
-                         'CC': 'ccache clang', 'CXX': 'ccache clang++', 'CCACHE_CPP2': 'yes'},
-                    withLLD=False,
-                    extraCompilerOptions=['--gcc-toolchain=/opt/centos/devtoolset-1.1/root/usr'])},
+#        {'name': "llvm-clang-lld-x86_64-centos-6.5",
+#         'slavenames':["gribozavr3"],
+#         'builddir':"llvm-clang-lld-x86_64-centos-6.5",
+#         'factory': ClangAndLLDBuilder.getClangAndLLDBuildFactory(
+#                    env={'PATH': '/opt/centos/devtoolset-1.1/root/usr/bin:/home/llvmbb/bin:/bin:/usr/bin',
+#                         'LD_LIBRARY_PATH': '/opt/centos/devtoolset-1.1/root/usr/lib64',
+#                         'CC': 'ccache clang', 'CXX': 'ccache clang++', 'CCACHE_CPP2': 'yes'},
+#                    withLLD=False,
+#                    extraCompilerOptions=['--gcc-toolchain=/opt/centos/devtoolset-1.1/root/usr'])},
         ]
 
 # Clang builders.
