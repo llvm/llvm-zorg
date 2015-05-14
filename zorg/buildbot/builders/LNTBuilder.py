@@ -146,7 +146,11 @@ def AddLNTTestsToFactory(f, nt_flags, cc_path, cxx_path, **kwargs):
 
     # Only submit if a URL has been specified
     if submitURL is not None:
-      args.extend(['--submit', submitURL])
+      if type(submitURL) != type([]):
+        submitURL = [submitURL]
+
+      for url in submitURL:
+        args.extend(['--submit', url])
 
     args.extend(['--commit=1',
              'nt', '--sandbox', 'nt',
