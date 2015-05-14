@@ -526,17 +526,17 @@ def getLLDBUbuntuCMakeBuildFactory(build_compiler,
                                        config,
                                        env)
     # archive test traces
-    f = archiveLLDBTestTraces(f)
+    f = archiveLLDBTestTraces(f, "build/lldb-test-traces-*")
     return f
 
 # zip and upload test traces to google storage
-def archiveLLDBTestTraces(f):
-    llvm_builddir = 'build'
+def archiveLLDBTestTraces(f, test_trace):
     f.addStep(ShellCommand(name="compress test traces",
-                           command=WithProperties("zip -r build-%(buildnumber)s lldb-test-traces-*"),
+                           command=WithProperties("zip -r build-%(buildnumber)s " + test_trace),
                            description="zip",
                            haltOnFailure=False,
-                           workdir='%s' % llvm_builddir))
+                           flunkOnFailure=False,
+                           workdir='.'))
     f.addStep(ShellCommand(name="upload test traces",
                            command=['gsutil',
                                     'mv',
@@ -544,7 +544,8 @@ def archiveLLDBTestTraces(f):
                                     WithProperties('gs://lldb_test_traces/%(buildername)s/')],
                            description="upload to Google Storage",
                            haltOnFailure=False,
-                           workdir='%s' % llvm_builddir))
+                           flunkOnFailure=False,
+                           workdir='.'))
     return f
 
 # for cmake and compile
@@ -733,25 +734,21 @@ def getLLDBxcodebuildFactory(use_cc=None):
                            workdir=WithProperties('%(builddir)s')))
 # Building the sources
 #
+    buildcmd = ' '.join(['xcrun',
+                         'xcodebuild',
+                         '-workspace',
+                         'lldb.xcworkspace',
+                         '-scheme',
+                         'lldb-tool',
+                         '-configuration',
+                         'Debug',
+                         'SYMROOT=' + OBJROOT,
+                         'OBJROOT=' + OBJROOT])
     f.addStep(ShellCommand(name='lldb-build',
-                           command=['xcrun', 'xcodebuild', '-workspace',
-                                    'lldb.xcworkspace', '-scheme', 'lldb-tool',
-                                    '-configuration', 'Debug',
-                                    WithProperties('SYMROOT=' + OBJROOT),
-                                    WithProperties('OBJROOT=' + OBJROOT)],
-                           haltOnFailure=False,
-                           workdir=lldb_srcdir))
-
-# Currently the first build always fail, so ignore the first result and add retry as workaround
-
-    f.addStep(ShellCommand(name='lldb-build-Retry',
-                           command=['xcrun', 'xcodebuild', '-workspace',
-                                    'lldb.xcworkspace', '-scheme', 'lldb-tool',
-                                    '-configuration', 'Debug',
-                                    WithProperties('SYMROOT=' + OBJROOT),
-                                    WithProperties('OBJROOT=' + OBJROOT)],
+                           command=WithProperties(buildcmd + " || " + buildcmd),
                            haltOnFailure=True,
                            workdir=lldb_srcdir))
+
 # Testing
 #
     if not use_cc:
@@ -768,14 +765,22 @@ def getLLDBxcodebuildFactory(use_cc=None):
                   property='use_cc',
                   description='set cc',
                   workdir=lldb_srcdir))
-
+    DOTEST_OPTS = ' '.join(['-m',
+                            '--executable',
+                            '%(lldb_bindir)s/lldb',
+                            '--framework', '%(lldb_bindir)s/LLDB.framework',
+                            '-A', 'x86_64',
+                            '-C', 'clang',
+                            '-s', '../DerivedData/lldb-test-results'])
     f.addStep(LitTestCommand(name='lldb-test',
                              command=['./dosep.py',
                                       '--options',
-                                      WithProperties('-m --executable %(lldb_bindir)s/lldb --framework %(lldb_bindir)s/LLDB.framework -A x86_64 -C clang -s ../DerivedData/lldb-test-results')],
-                             haltOnFailure=True,
+                                      WithProperties(DOTEST_OPTS)],
+                             haltOnFailure=False,
                              workdir='%s/test' % lldb_srcdir,
                              env={'DYLD_FRAMEWORK_PATH' : WithProperties('%(lldb_bindir)s')}))
+# Compress and upload test log
+    f = archiveLLDBTestTraces(f, "lldb.src/DerivedData/lldb-test-results")
 
 # Results go in a directory coded named according to the date and time of the test run, e.g.:
 #
