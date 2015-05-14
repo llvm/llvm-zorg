@@ -273,7 +273,11 @@ def getLLDBTestSteps(f,
                                  '-C %s ' % compilerPath,
                                  '-s lldb-test-traces-%s-%s ' % (compiler, arch),
                                  '-u CXXFLAGS ',
-                                 '-u CFLAGS'])
+                                 '-u CFLAGS ',
+                                 '--channel ',
+                                 '"gdb-remote packets" ',
+                                 '--channel ',
+                                 '"lldb all"'])
             testname = "local"
             if remote_platform is not None:
                 urlStr='connect://%(remote_host)s:%(remote_port)s'
