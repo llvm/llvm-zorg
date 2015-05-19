@@ -129,7 +129,8 @@ def get_status_targets(standard_builders, standard_categories=None):
                                "lldb-build-police-pst@grotations.appspotmail.com"],
             subject="Build %(builder)s Failure",
             mode = "failing",
-            builders = ["lldb-x86_64-ubuntu-14.04-cmake"],
+            builders = ["lldb-x86_64-ubuntu-14.04-cmake",
+                        "lldb-x86_64-darwin-13.4"],
             addLogs=False,
             num_lines = 15),
         ]
