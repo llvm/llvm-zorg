@@ -728,8 +728,7 @@ def _get_lld_builders():
         {'name': "lld-x86_64-freebsd",
          'slavenames' :["as-bldslv5"],
          'builddir':"lld-x86_64-freebsd",
-         'factory': LLDBuilder.getLLDBuildFactory(jobs=32,
-                                                  extra_configure_args=[
+         'factory': LLDBuilder.getLLDBuildFactory(extra_configure_args=[
                                                       '-DCMAKE_EXE_LINKER_FLAGS=-lcxxrt',
                                                       '-DLLVM_ENABLE_WERROR=OFF'],
                                                   env={'CXXFLAGS' : "-std=c++11 -stdlib=libc++"}),
