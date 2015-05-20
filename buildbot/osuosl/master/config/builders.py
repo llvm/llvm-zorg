@@ -740,10 +740,10 @@ def _get_lld_builders():
 # llgo builders.
 def _get_llgo_builders():
     return [
-          {'name': "llgo-x86_64-linux",
-           'slavenames': ["llgo-builder"],
-           'builddir': "llgo-x86_64-linux",
-           'factory': LLGoBuilder.getLLGoBuildFactory()},
+    #      {'name': "llgo-x86_64-linux",
+    #       'slavenames': ["llgo-builder"],
+    #       'builddir': "llgo-x86_64-linux",
+    #       'factory': LLGoBuilder.getLLGoBuildFactory()},
     ]
 
 
