@@ -118,6 +118,7 @@ function build_stage2 {
   local sanitizer_name=$1
   local libcxx_build_dir=$2
   local build_dir=$3
+  local step_result=$4
 
   echo @@@BUILD_STEP build libcxx/$sanitizer_name@@@
   common_stage2_variables
@@ -154,7 +155,7 @@ function build_stage2 {
       -DCMAKE_BUILD_TYPE=${build_type} \
       -DLLVM_USE_SANITIZER=${llvm_use_sanitizer} \
       $LLVM && \
-    ninja cxx cxxabi) || echo @@@STEP_FAILURE@@@
+    ninja cxx cxxabi) || echo $step_result
 
   echo @@@BUILD_STEP build clang/$sanitizer_name@@@
 
@@ -172,36 +173,33 @@ function build_stage2 {
      -DCMAKE_CXX_FLAGS="${sanitizer_cflags}" \
      -DCMAKE_EXE_LINKER_FLAGS="${sanitizer_ldflags}" \
      $LLVM && \
-   ninja clang lld) || echo @@@STEP_FAILURE@@@
+   ninja clang lld) || echo $step_result
 }
 
 function build_stage2_msan {
-  build_stage2 msan "${STAGE2_LIBCXX_MSAN_DIR}" "${STAGE2_MSAN_DIR}"
+  build_stage2 msan "${STAGE2_LIBCXX_MSAN_DIR}" "${STAGE2_MSAN_DIR}" @@@STEP_FAILURE@@@
 }
 
 function build_stage2_asan {
-  build_stage2 asan "${STAGE2_LIBCXX_ASAN_DIR}" "${STAGE2_ASAN_DIR}"
+  build_stage2 asan "${STAGE2_LIBCXX_ASAN_DIR}" "${STAGE2_ASAN_DIR}" @@@STEP_FAILURE@@@
 }
 
 function build_stage2_ubsan {
-  build_stage2 ubsan "${STAGE2_LIBCXX_UBSAN_DIR}" "${STAGE2_UBSAN_DIR}"
+  # TODO(samsonov): change this to STEP_FAILURE once green
+  build_stage2 ubsan "${STAGE2_LIBCXX_UBSAN_DIR}" "${STAGE2_UBSAN_DIR}" @@@STEP_WARNINGS@@@
 }
 
 function check_stage2 {
   local sanitizer_name=$1
   local build_dir=$2
+  local step_result=$3
   echo @@@BUILD_STEP check-llvm ${sanitizer_name}@@@
 
-  (cd ${build_dir} && ninja check-llvm) || echo @@@STEP_FAILURE@@@
+  (cd ${build_dir} && ninja check-llvm) || echo $step_result
 
   echo @@@BUILD_STEP check-clang ${sanitizer_name}@@@
 
-  # TODO(samsonov): change this to STEP_FAILURE once green
-  if [ "${sanitizer_name}" == "ubsan" ]; then
-    (cd ${build_dir} && ninja check-clang) || echo @@@STEP_WARNINGS@@@
-  else
-    (cd ${build_dir} && ninja check-clang) || echo @@@STEP_FAILURE@@@
-  fi
+  (cd ${build_dir} && ninja check-clang) || echo $step_result
 
   echo @@@BUILD_STEP check-lld ${sanitizer_name}@@@
 
@@ -210,13 +208,14 @@ function check_stage2 {
 }
 
 function check_stage2_msan {
-  check_stage2 msan "${STAGE2_MSAN_DIR}"
+  check_stage2 msan "${STAGE2_MSAN_DIR}" @@@STEP_FAILURE@@@
 }
 
 function check_stage2_asan {
-  check_stage2 asan "${STAGE2_ASAN_DIR}"
+  check_stage2 asan "${STAGE2_ASAN_DIR}" @@@STEP_FAILURE@@@
 }
 
 function check_stage2_ubsan {
-  check_stage2 ubsan "${STAGE2_UBSAN_DIR}"
+  # TODO(samsonov): change this to STEP_FAILURE once green
+  check_stage2 ubsan "${STAGE2_UBSAN_DIR}" @@@STEP_WARNINGS@@@
 }
