@@ -933,14 +933,6 @@ def _get_libcxx_builders():
             cmake_extra_opts={'LLVM_USE_SANITIZER': 'MemoryWithOrigins'}),
         'category': 'libcxx'},
 
-        {'name': 'libcxx-libcxxabi-x86_64-linux-ubuntu-ubsan',
-         'slavenames': ['ericwf-buildslave2'],
-         'builddir' : 'libcxx-libcxxabi-x86_64-linux-ubuntu-ubsan',
-         'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
-            env={'PATH': '/usr/local/bin:/usr/bin:/bin',
-                 'CC': 'clang', 'CXX': 'clang++'},
-            cmake_extra_opts={'LLVM_USE_SANITIZER': 'Undefined'}),
-        'category': 'libcxx'},
 
         {'name': 'libcxx-libcxxabi-x86_64-linux-ubuntu-tsan',
          'slavenames': ['ericwf-buildslave2'],
@@ -949,41 +941,6 @@ def _get_libcxx_builders():
             env={'PATH': '/usr/local/bin:/usr/bin:/bin',
                  'CC': 'clang', 'CXX': 'clang++'},
             cmake_extra_opts={'LLVM_USE_SANITIZER': 'Thread'}),
-        'category': 'libcxx'},
-
-        {'name': 'libcxx-libcxxabi-x86_64-linux-ubuntu-gcc',
-         'slavenames': ['ericwf-buildslave2'],
-         'builddir' : 'libcxx-libcxxabi-x86_64-linux-ubuntu-gcc',
-         'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
-            env={'PATH': '/usr/local/bin:/usr/bin:/bin',
-                 'CC': 'clang', 'CXX': 'clang++'},
-            lit_extra_opts={'cxx_under_test': '/usr/bin/g++'}),
-        'category': 'libcxx'},
-
-        # EricWF's builders on ericwf-osx-slave
-        {'name': 'libcxx-libcxxabi-x86_64-apple-darwin14-system-clang',
-         'slavenames': ['ericwf-osx-slave'],
-         'builddir' : 'libcxx-libcxxabi-x86_64-apple-darwin14-system-clang',
-         'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
-            env={'CC': 'clang', 'CXX': 'clang++'}),
-        'category': 'libcxx'},
-
-        {'name': 'libcxx-libcxxabi-x86_64-apple-darwin14-tot-clang',
-         'slavenames': ['ericwf-osx-slave'],
-         'builddir' : 'libcxx-libcxxabi-x86_64-apple-darwin14-tot-clang',
-         'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
-            env={'CC': '/opt/llvm-tot/bin/clang',
-                 'CXX': '/opt/llvm-tot/bin/clang++'},
-            lit_extra_opts={'std': 'c++1z'}),
-        'category': 'libcxx'},
-
-        {'name': 'libcxx-libcxxabi-x86_64-apple-darwin14-system-lib',
-         'slavenames': ['ericwf-osx-slave'],
-         'builddir' : 'libcxx-libcxxabi-x86_64-apple-darwin14-system-lib',
-         'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
-            env={'CC': '/opt/llvm-tot/bin/clang',
-                 'CXX': '/opt/llvm-tot/bin/clang++'},
-            lit_extra_opts={'std':'c++1z', 'use_system_cxx_lib':'true'}),
         'category': 'libcxx'},
 
         # Cortex-A15 LibC++ and LibC++abi tests (require Clang+RT)
