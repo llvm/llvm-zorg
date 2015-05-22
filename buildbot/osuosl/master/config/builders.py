@@ -1013,7 +1013,7 @@ def _get_experimental_builders():
          'category' : 'lldb',
          'factory': LLDBBuilder.getLLDBUbuntuCMakeBuildFactory(
                     build_compiler="clang",
-                    build_type="Debug",
+                    build_type="Release",
                     local_test_archs=['x86_64', 'i386'],
                     local_test_compilers=['clang', 'totclang', 'gcc4.8.2', 'gcc4.9.2'],
                     #remote_configs=[RemoteConfig('linux','x86_64',['clang'],['x86_64'])],
@@ -1029,7 +1029,7 @@ def _get_experimental_builders():
          'category' : 'lldb',
          'factory': LLDBBuilder.getLLDBUbuntuCMakeBuildFactory(
                     build_compiler="clang",
-                    build_type="Debug",
+                    build_type="Release",
                     remote_configs= [
                                      RemoteConfig('android', 'i386', ['i686-linux-android-gcc'], ['i386']),
                                      RemoteConfig('android', 'arm', ['arm-linux-androideabi-gcc'], ['arm']),
