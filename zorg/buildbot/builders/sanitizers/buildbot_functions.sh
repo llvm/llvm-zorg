@@ -20,7 +20,7 @@ function buildbot_update {
     # Currently we do not want to fetch nor build libunwind, libcxx, libcxxabi, and lld on powerpc64 buildbots
     local subdirs="llvm llvm/tools/clang llvm/projects/compiler-rt"
     if [ "$BUILDBOT_BUILDERNAME" != "sanitizer-ppc64-linux1" -a "$BUILDBOT_BUILDERNAME" != "sanitizer-ppc64le-linux" ]; then
-      subdirs=${subdirs} llvm/projects/libcxx llvm/projects/libcxxabi llvm/tools/lld
+      subdirs="${subdirs} llvm/projects/libcxx llvm/projects/libcxxabi llvm/tools/lld"
     fi
     for tree in ${subdirs}
     do
@@ -178,7 +178,7 @@ function build_stage2 {
   # Currently we do not want to fetch nor build libunwind, libcxx, libcxxabi, and lld on powerpc64 buildbots
   local extra_dir
   if [ "$BUILDBOT_BUILDERNAME" != "sanitizer-ppc64-linux1" -a "$BUILDBOT_BUILDERNAME" != "sanitizer-ppc64le-linux" ]; then
-    extra_dir=lld
+    extra_dir="lld"
   fi
   (cd ${build_dir} && \
    cmake ${cmake_stage2_common_options} \
