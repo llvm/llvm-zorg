@@ -133,4 +133,15 @@ def get_status_targets(standard_builders, standard_categories=None):
                         "lldb-x86_64-darwin-13.4"],
             addLogs=False,
             num_lines = 15),
+        InformativeMailNotifier(
+            fromaddr = "llvm.buildmaster@lab.llvm.org",
+            sendToInterestedUsers= False,
+            extraRecipients = ["sunil_srivastava@playstation.sony.com",
+                               "warren_ristow@playstation.sony.com",
+                               "gkistanova@gmail.com"],
+            subject="Build %(builder)s Failure",
+            mode = "failing",
+            builders = ["clang-x86_64-linux-selfhost-abi-test"],
+            addLogs=False,
+            num_lines = 15),
         ]
