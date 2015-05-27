@@ -407,6 +407,8 @@ def _get_clang_builders():
         # CMAKE_DEFAULT_TARGET_TRIPLE on this system. CMake gets the value
         # correct for the processor but it's currently not possible to emit O32
         # code using a mips64-* triple. This is a bug and should be fixed soon.
+        # We must also force LLVM_TARGET_ARCH so that the ExecutionEngine tests
+        # run.
         {'name': "clang-cmake-mips",
          'slavenames':["mips-kl-m001"],
          'builddir':"clang-cmake-mips",
@@ -414,7 +416,8 @@ def _get_clang_builders():
                          clean=False,
                          checkout_compiler_rt=False,
                          extra_cmake_args=["-DLLVM_HOST_TRIPLE=mips-unknown-linux-gnu",
-                                           "-DLLVM_DEFAULT_TARGET_TRIPLE=mips-unknown-linux-gnu"])},
+                                           "-DLLVM_DEFAULT_TARGET_TRIPLE=mips-unknown-linux-gnu",
+                                           "-DLLVM_TARGET_ARCH=Mips"])},
 
         # ABI test-suite with CMake builder
         {'name'       : "clang-x86_64-linux-selfhost-abi-test",
