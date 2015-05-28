@@ -43,11 +43,14 @@ def get_status_targets(standard_builders, standard_categories=None):
                                        default_email),
             mode = "problem",
             builders = standard_builders),
-        buildbot.status.words.IRC(
-            host = "irc.oftc.net", nick = "llvmbb", channels = ["#llvm"],
-            allowForce = True,
-            categories = standard_categories,
-            notify_events = ['successToFailure', 'failureToSuccess']),
+        # FIXME: It looks like the current IRC notifications annoy people more
+        # than help. I disable it for now till we would decide if we want them
+        # at all, and what channel they should go if we do.
+        #buildbot.status.words.IRC(
+        #    host = "irc.oftc.net", nick = "llvmbb", channels = ["#llvm"],
+        #    allowForce = True,
+        #    categories = standard_categories,
+        #    notify_events = ['successToFailure', 'failureToSuccess']),
 
         # In addition to that the following notifiers are defined for special
         # cases.
