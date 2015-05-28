@@ -313,14 +313,6 @@ def _get_clang_builders():
                                         "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a15 -mfpu=vfpv3'",
                                         "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'"])},
 
-        {'name': "clang-native-mingw32-win7",
-         'slavenames':["as-bldslv7"],
-         'builddir':"clang-native-mingw32-win7",
-         'factory' : ClangBuilder.getClangBuildFactory(triple='i686-pc-mingw32',
-                                                       useTwoStage=True, test=False,
-                                                       stage1_config='Release+Asserts',
-                                                       stage2_config='Release+Asserts')},
-
         # This will ultimately be a self-host bot, even though the config does
         # not reflect that today.
         {'name': 'clang-x86-win2008-selfhost',
@@ -963,7 +955,19 @@ def _get_libcxx_builders():
 
 
 # Experimental and stopped builders
-def _get_experimental_builders():
+def _get_on_demand_builders():
+    return [
+        {'name': "clang-native-mingw32-win7",
+         'slavenames':["as-bldslv7"],
+         'builddir':"clang-native-mingw32-win7",
+         'category':'clang',
+         'factory' : ClangBuilder.getClangBuildFactory(triple='i686-pc-mingw32',
+                                                       useTwoStage=True, test=False,
+                                                       stage1_config='Release+Asserts',
+                                                       stage2_config='Release+Asserts')},
+        ]
+
+def _get_experimental_scheduled_builders():
     return [
         {'name': "llvm-ppc64-linux2",
          'slavenames':["coho"],
@@ -1111,9 +1115,14 @@ def get_builders():
     for b in _get_documentation_builders():
         yield b
 
-    for b in _get_experimental_builders():
+    for b in _get_experimental_scheduled_builders():
         if not b.get('category', '').endswith('.exp'):
            b['category'] = b.get('category', '') + '.exp'
+        yield b
+
+    for b in _get_on_demand_builders():
+        if not b.get('category', '').endswith('.on-demand'):
+           b['category'] = b.get('category', '') + '.on-demand'
         yield b
 
 # Random other unused builders...
