@@ -255,6 +255,7 @@ def getLLDBTestSteps(f,
     llvm_builddir = "build"
     if env is None:
         env = {}
+    flunkTestFailure = True
     extraTestFlag = ''
     # TODO: for now, run tests with 8 threads and without mi tests on android
     # come back when those issues are addressed
@@ -282,6 +283,8 @@ def getLLDBTestSteps(f,
             if remote_platform is not None:
                 urlStr='connect://%(remote_host)s:%(remote_port)s'
                 if remote_platform is 'android':
+                    #i386/x86_64 are the only android archs that are expected to pass at this time
+                    flunkTestFailure = arch in ('i386', 'x86_64')
                     testenv['LLDB_TEST_THREADS'] = '8'
                     extraTestFlag = ' -m'
                     urlStr = 'adb://%(deviceid)s:%(remote_port)s'
@@ -308,6 +311,8 @@ def getLLDBTestSteps(f,
                                               WithProperties(DOTEST_OPTS)],
                                      description="test lldb",
                                      parseSummaryOnly=True,
+                                     flunkOnFailure=flunkTestFailure,
+                                     warnOnFailure=flunkTestFailure,
                                      workdir='%s' % llvm_builddir,
                                      env=testenv))
             f=cleanSVNSourceTree(f, '%s/tools/lldb' % llvm_srcdir)
