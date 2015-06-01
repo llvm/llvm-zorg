@@ -314,6 +314,7 @@ def getLLDBTestSteps(f,
                                      flunkOnFailure=flunkTestFailure,
                                      warnOnFailure=flunkTestFailure,
                                      workdir='%s' % llvm_builddir,
+                                     timeout=1800,
                                      env=testenv))
             f=cleanSVNSourceTree(f, '%s/tools/lldb' % llvm_srcdir)
     return f
