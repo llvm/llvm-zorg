@@ -51,6 +51,7 @@ class Configuration(object):
         self._lldb_build_dir = os.environ.get('LLDB_BUILD_DIR', 'lldb-build')
         self._install_dir = os.environ.get('BUILD_DIR', 'clang-install')
         self.j_level = os.environ.get('J_LEVEL', None)
+        self.max_parallel_links = os.environ.get('MAX_PARALLEL_LINKS', None)
         self.host_compiler_url = os.environ.get('HOST_URL',
             'http://labmaster2.local/artifacts/')
         self.artifact_url = os.environ.get('ARTIFACT', 'NONE')
@@ -119,13 +120,18 @@ def cmake_builder(target):
     cmake_cmd = env + ["/usr/local/bin/cmake", "-G", "Ninja",
                        "-DCMAKE_INSTALL_PREFIX=" + conf.installdir(),
                        conf.srcdir()]
+
+    max_parallel_links = conf.max_parallel_links
     if conf.lto:
         cmake_cmd += ["-DCMAKE_C_FLAGS=-flto", "-DCMAKE_CXX_FLAGS=-flto"]
-        # TODO: We limit LTO links to 1. Should this be configurable?
-        cmake_cmd += ["-DLLVM_PARALLEL_LINK_JOBS=1"]
         cmake_cmd += ['-DLLVM_BUILD_EXAMPLES=Off']
+        if not max_parallel_links:
+            max_parallel_links = 1
     else:
         cmake_cmd += ['-DLLVM_BUILD_EXAMPLES=On']
+
+    if max_parallel_links is not None:
+        cmake_cmd += ["-DLLVM_PARALLEL_LINK_JOBS={}".format(max_parallel_links)]
 
     if conf.CC():
         cmake_cmd += ['-DCMAKE_C_COMPILER=' + conf.CC(),
