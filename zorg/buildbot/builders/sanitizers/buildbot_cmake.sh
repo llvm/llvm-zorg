@@ -76,16 +76,23 @@ fi
 # Do a sanity check on Linux: build and test sanitizers using gcc as a host
 # compiler.
 if [ "$PLATFORM" == "Linux" ]; then
-  echo @@@BUILD_STEP run sanitizer tests in gcc build@@@
+  echo @@@BUILD_STEP check-sanitizer in gcc build@@@
   (cd clang_build && make -j$MAKE_JOBS check-sanitizer) || echo @@@STEP_FAILURE@@@
+  echo @@@BUILD_STEP check-asan in gcc build@@@
   (cd clang_build && make -j$MAKE_JOBS check-asan) || echo @@@STEP_FAILURE@@@
+  echo @@@BUILD_STEP check-ubsan in gcc build@@@
   (cd clang_build && make -j$MAKE_JOBS check-ubsan) || echo @@@STEP_WARNINGS@@@
   if [ "$ARCH" == "x86_64" ]; then
+    echo @@@BUILD_STEP check-lsan in gcc build@@@
     (cd clang_build && make -j$MAKE_JOBS check-lsan) || echo @@@STEP_FAILURE@@@
+    echo @@@BUILD_STEP check-msan in gcc build@@@
     (cd clang_build && make -j$MAKE_JOBS check-msan) || echo @@@STEP_FAILURE@@@
+    echo @@@BUILD_STEP check-tsan in gcc build@@@
     (cd clang_build && make -j$MAKE_JOBS check-tsan) || echo @@@STEP_FAILURE@@@
+    echo @@@BUILD_STEP check-dfsan in gcc build@@@
     (cd clang_build && make -j$MAKE_JOBS check-dfsan) || echo @@@STEP_WARNINGS@@@
     # FIXME: Reenable once cfi tests reliably work on the bot.
+    # echo @@@BUILD_STEP check-cfi-and-supported in gcc build@@@
     #(cd clang_build && LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/x86_64 make -j$MAKE_JOBS check-cfi-and-supported) || echo @@@STEP_FAILURE@@@
   fi
 fi
@@ -167,7 +174,7 @@ echo @@@BUILD_STEP test standalone compiler-rt@@@
 
 HAVE_NINJA=${HAVE_NINJA:-1}
 if [ "$PLATFORM" == "Linux" -a $HAVE_NINJA == 1 ]; then
-  echo @@@BUILD_STEP run tests in ninja build tree@@@
+  echo @@@BUILD_STEP build with ninja@@@
   if [ ! -d llvm_build_ninja ]; then
     mkdir llvm_build_ninja
   fi
@@ -175,26 +182,36 @@ if [ "$PLATFORM" == "Linux" -a $HAVE_NINJA == 1 ]; then
   (cd llvm_build_ninja && cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
       ${CMAKE_NINJA_OPTIONS} $LLVM_CHECKOUT)
   ln -sf llvm_build_ninja/compile_commands.json $LLVM_CHECKOUT
+  (cd llvm_build_ninja && ninja) || echo @@@STEP_FAILURE@@@
+  echo @@@BUILD_STEP ninja check-asan@@@
   (cd llvm_build_ninja && ninja check-asan) || echo @@@STEP_FAILURE@@@
+  echo @@@BUILD_STEP ninja check-sanitizer@@@
   (cd llvm_build_ninja && ninja check-sanitizer) || echo @@@STEP_FAILURE@@@
+  echo @@@BUILD_STEP ninja check-tsan@@@
   (cd llvm_build_ninja && ninja check-tsan) || echo @@@STEP_FAILURE@@@
+  echo @@@BUILD_STEP ninja check-msan@@@
   (cd llvm_build_ninja && ninja check-msan) || echo @@@STEP_FAILURE@@@
+  echo @@@BUILD_STEP ninja check-lsan@@@
   (cd llvm_build_ninja && ninja check-lsan) || echo @@@STEP_FAILURE@@@
+  echo @@@BUILD_STEP ninja check-ubsan@@@
   (cd llvm_build_ninja && ninja check-ubsan) || echo @@@STEP_WARNINGS@@@
+  echo @@@BUILD_STEP ninja check-dfsan@@@
   (cd llvm_build_ninja && ninja check-dfsan) || echo @@@STEP_WARNINGS@@@
   # FIXME: Reenable once cfi tests reliably work on the bot.
   # (cd llvm_build_ninja && LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/x86_64 ninja check-cfi-and-supported) || echo @@@STEP_FAILURE@@@
 fi
 
 if [ $BUILD_ANDROID == 1 ] ; then
-    echo @@@BUILD_STEP build Android runtime and tests@@@
-
     # Testing armv7 instead of plain arm to work around
     # https://code.google.com/p/android/issues/detail?id=68779
+    echo @@@BUILD_STEP build compiler-rt android/arm@@@
     build_compiler_rt arm armv7-linux-androideabi
+    echo @@@BUILD_STEP build llvm-symbolizer android/arm@@@
     build_llvm_symbolizer arm armv7-linux-androideabi
 
+    echo @@@BUILD_STEP build compiler-rt android/x86@@@
     build_compiler_rt x86 i686-linux-android
+    echo @@@BUILD_STEP build llvm-symbolizer android/x86@@@
     build_llvm_symbolizer x86 i686-linux-android
 fi
 
