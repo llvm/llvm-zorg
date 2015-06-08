@@ -213,6 +213,11 @@ if [ $BUILD_ANDROID == 1 ] ; then
     build_compiler_rt x86 i686-linux-android
     echo @@@BUILD_STEP build llvm-symbolizer android/x86@@@
     build_llvm_symbolizer x86 i686-linux-android
+
+    echo @@@BUILD_STEP build compiler-rt android/aarch64@@@
+    build_compiler_rt aarch64 aarch64-linux-android
+    echo @@@BUILD_STEP build llvm-symbolizer android/aarch64@@@
+    build_llvm_symbolizer aarch64 aarch64-linux-android
 fi
 
 if [ $RUN_ANDROID == 1 ] ; then
