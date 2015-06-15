@@ -262,7 +262,7 @@ def _get_clang_builders():
          'slavenames':["linaro-chrome-04"],
          'builddir':"clang-cmake-armv7-a15-selfhost-neon",
          'factory' : ClangBuilder.getClangCMakeBuildFactory(
-                      jobs=4,
+                      jobs=2,
                       clean=False,
                       checkout_compiler_rt=False,
                       useTwoStage=True,
