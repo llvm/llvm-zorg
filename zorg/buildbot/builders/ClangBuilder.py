@@ -445,7 +445,10 @@ def getClangBuildFactory(
 
     return f
 
-def addSVNUpdateSteps(f, checkout_clang_tools_extra=True, checkout_compiler_rt=True):
+def addSVNUpdateSteps(f,
+                      checkout_clang_tools_extra,
+                      checkout_compiler_rt,
+                      checkout_test_suite):
     # We *must* checkout at least Clang+LLVM
     f.addStep(SVN(name='svn-llvm',
                   mode='update', baseURL='http://llvm.org/svn/llvm-project/llvm/',
@@ -467,6 +470,15 @@ def addSVNUpdateSteps(f, checkout_clang_tools_extra=True, checkout_compiler_rt=T
                       mode='update', baseURL='http://llvm.org/svn/llvm-project/compiler-rt/',
                       defaultBranch='trunk',
                       workdir='llvm/projects/compiler-rt'))
+    if checkout_test_suite:
+        f.addStep(SVN(name='svn-lnt',
+                      mode='update', baseURL='http://llvm.org/svn/llvm-project/lnt/',
+                      defaultBranch='trunk',
+                      workdir='test/lnt'))
+        f.addStep(SVN(name='svn-test-suite',
+                      mode='update', baseURL='http://llvm.org/svn/llvm-project/test-suite/',
+                      defaultBranch='trunk',
+                      workdir='test/test-suite'))
 
 
 def getClangCMakeBuildFactory(
@@ -486,6 +498,12 @@ def getClangCMakeBuildFactory(
             stage1_config='Release',
             stage2_config='Release',
 
+            # Test-suite
+            runTestSuite=False,
+            nt_flags=[],
+            submitURL=None,
+            testerName=None,
+
             # Environmental variables for all steps.
             env={},
             extra_cmake_args=[],
@@ -497,8 +515,10 @@ def getClangCMakeBuildFactory(
     ############# PREPARING
     f = buildbot.process.factory.BuildFactory()
 
-    addSVNUpdateSteps(f, checkout_clang_tools_extra=checkout_clang_tools_extra,
-                      checkout_compiler_rt=checkout_compiler_rt)
+    addSVNUpdateSteps(f,
+                      checkout_clang_tools_extra=checkout_clang_tools_extra,
+                      checkout_compiler_rt=checkout_compiler_rt,
+                      checkout_test_suite=runTestSuite)
 
     # If jobs not defined, Ninja will choose a suitable value
     jobs_cmd=[]
@@ -521,6 +541,7 @@ def getClangCMakeBuildFactory(
     stage1_build='stage1'
     stage1_install='stage1.install'
     stage2_build='stage2'
+    stage2_install='stage2.install'
 
     # Set up VS environment, if appropriate.
     if vs:
@@ -572,35 +593,18 @@ def getClangCMakeBuildFactory(
     if test and testStage1:
         f.addStep(lit_test_command.LitTestCommand(name='ninja check 1',
                                    command=ninja_check_cmd,
+                                   haltOnFailure=not runTestSuite,
                                    description=["checking stage 1"],
                                    descriptionDone=["stage 1 checked"],
                                    workdir=stage1_build,
                                    env=env))
 
-    if not useTwoStage:
-        return f
-
-    ############# STAGE 2
-    f.addStep(ShellCommand(name='install stage 1',
-                           command=ninja_install_cmd,
-                           description='ninja install',
-                           workdir=stage1_build,
-                           env=env))
-
-    if clean:
-        f.addStep(ShellCommand(name='clean stage 2',
-                               command=['rm','-rf',stage2_build],
-                               warnOnFailure=True,
-                               description='cleaning stage 2',
-                               descriptionDone='clean',
-                               workdir='.',
+    if useTwoStage or runTestSuite:
+        f.addStep(ShellCommand(name='install stage 1',
+                               command=ninja_install_cmd,
+                               description='ninja install',
+                               workdir=stage1_build,
                                env=env))
-    else:
-        f.addStep(SetProperty(name="check ninja files 2",
-                              workdir=stage2_build,
-                              command=check_build_cmd,
-                              flunkOnFailure=False,
-                              property="exists_ninja_2"))
 
     # Compute the cmake define flag to set the C and C++ compiler to clang. Use
     # clang-cl if we used MSVC for stage1.
@@ -611,40 +615,141 @@ def getClangCMakeBuildFactory(
         cc = 'clang-cl.exe'
         cxx = 'clang-cl.exe'
 
-    # Set the compiler using the CC and CXX environment variables to work around
-    # backslash string escaping bugs somewhere between buildbot and cmake. The
-    # env.exe helper is required to run the tests, so hopefully it's already on
-    # PATH.
-    cmake_cmd2 = ['env',
-                  WithProperties('CC=%(workdir)s/'+stage1_install+'/bin/'+cc),
-                  WithProperties('CXX=%(workdir)s/'+stage1_install+'/bin/'+cxx),
-                  cmake, "-G", "Ninja", "../llvm",
-                  "-DCMAKE_BUILD_TYPE="+stage2_config,
-                  "-DLLVM_ENABLE_ASSERTIONS=True",
-                  "-DLLVM_LIT_ARGS="+lit_args] + extra_cmake_args
 
-    f.addStep(ShellCommand(name='cmake stage 2',
-                           command=cmake_cmd2,
-                           haltOnFailure=True,
-                           description='cmake stage 2',
-                           workdir=stage2_build,
-                           doStepIf=lambda step: step.build.getProperty("exists_ninja_2") != "OK",
-                           env=env))
+    ############# STAGE 2
+    if useTwoStage:
+        if clean:
+            f.addStep(ShellCommand(name='clean stage 2',
+                                   command=['rm','-rf',stage2_build],
+                                   warnOnFailure=True,
+                                   description='cleaning stage 2',
+                                   descriptionDone='clean',
+                                   workdir='.',
+                                   env=env))
+        else:
+            f.addStep(SetProperty(name="check ninja files 2",
+                                  workdir=stage2_build,
+                                  command=check_build_cmd,
+                                  flunkOnFailure=False,
+                                  property="exists_ninja_2"))
 
-    f.addStep(WarningCountingShellCommand(name='build stage 2',
-                                          command=ninja_cmd,
-                                          haltOnFailure=True,
-                                          description='ninja all',
-                                          workdir=stage2_build,
-                                          env=env))
+        # Set the compiler using the CC and CXX environment variables to work around
+        # backslash string escaping bugs somewhere between buildbot and cmake. The
+        # env.exe helper is required to run the tests, so hopefully it's already on
+        # PATH.
+        cmake_cmd2 = ['env',
+                      WithProperties('CC=%(workdir)s/'+stage1_install+'/bin/'+cc),
+                      WithProperties('CXX=%(workdir)s/'+stage1_install+'/bin/'+cxx),
+                      cmake, "-G", "Ninja", "../llvm",
+                      "-DCMAKE_BUILD_TYPE="+stage2_config,
+                      "-DLLVM_ENABLE_ASSERTIONS=True",
+                      "-DLLVM_LIT_ARGS="+lit_args,
+                      "-DCMAKE_INSTALL_PREFIX=../"+stage2_install] + extra_cmake_args
 
-    if test:
-        f.addStep(lit_test_command.LitTestCommand(name='ninja check 2',
-                                   command=ninja_check_cmd,
-                                   description=["checking stage 2"],
-                                   descriptionDone=["stage 2 checked"],
+        f.addStep(ShellCommand(name='cmake stage 2',
+                               command=cmake_cmd2,
+                               haltOnFailure=True,
+                               description='cmake stage 2',
+                               workdir=stage2_build,
+                               doStepIf=lambda step: step.build.getProperty("exists_ninja_2") != "OK",
+                               env=env))
+
+        f.addStep(WarningCountingShellCommand(name='build stage 2',
+                                              command=ninja_cmd,
+                                              haltOnFailure=True,
+                                              description='ninja all',
+                                              workdir=stage2_build,
+                                              env=env))
+
+        if test:
+            f.addStep(lit_test_command.LitTestCommand(name='ninja check 2',
+                                       command=ninja_check_cmd,
+                                       haltOnFailure=not runTestSuite,
+                                       description=["checking stage 2"],
+                                       descriptionDone=["stage 2 checked"],
+                                       workdir=stage2_build,
+                                       env=env))
+
+    ############# TEST SUITE
+    ## Test-Suite (stage 2 if built, stage 1 otherwise)
+    if runTestSuite:
+        compiler_path = stage1_install
+        if useTwoStage:
+            compiler_path=stage2_install
+            f.addStep(ShellCommand(name='install stage 2',
+                                   command=ninja_install_cmd,
+                                   description='ninja install 2',
                                    workdir=stage2_build,
                                    env=env))
+
+        # Get generated python, lnt
+        python = WithProperties('%(workdir)s/test/sandbox/bin/python')
+        lnt = WithProperties('%(workdir)s/test/sandbox/bin/lnt')
+        lnt_setup = WithProperties('%(workdir)s/test/lnt/setup.py')
+
+        # Paths
+        sandbox = WithProperties('%(workdir)s/test/sandbox')
+        test_suite_dir = WithProperties('%(workdir)s/test/test-suite')
+
+        # Get latest built Clang (stage1 or stage2)
+        cc = WithProperties('%(workdir)s/'+compiler_path+'/bin/'+cc)
+        cxx = WithProperties('%(workdir)s/'+compiler_path+'/bin/'+cxx)
+
+        # LNT Command line
+        if jobs is None:
+            jobs = 1
+        test_suite_cmd = [python, lnt, 'runtest', 'nt',
+                          '-j'+str(jobs),
+                          '--no-timestamp',
+                          '--sandbox', sandbox,
+                          '--test-suite', test_suite_dir,
+                          '--cc', cc,
+                          '--cxx', cxx]
+        # Append any option provided by the user
+        test_suite_cmd.extend(nt_flags)
+        # Only submit if a URL has been specified
+        if submitURL is not None:
+            if not isinstance(submitURL, list):
+                submitURL = [submitURL]
+            for url in submitURL:
+                test_suite_cmd.extend(['--submit', url])
+            if testerName:
+                test_suite_cmd.extend(['--no-machdep-info', testerName])
+        # CC and CXX are needed as env for build-tools
+        test_suite_env = env
+        test_suite_env['CC'] = cc
+        test_suite_env['CXX'] = cxx
+
+        # Steps to prepare, build and run LNT
+        f.addStep(ShellCommand(name='clean sandbox',
+                               command=['rm', '-rf', 'sandbox'],
+                               haltOnFailure=True,
+                               description='removing sandbox directory',
+                               workdir='test',
+                               env=env))
+        f.addStep(ShellCommand(name='recreate sandbox',
+                               command=['virtualenv', 'sandbox'],
+                               haltOnFailure=True,
+                               description='recreating sandbox',
+                               workdir='test',
+                               env=env))
+        f.addStep(ShellCommand(name='setup lit',
+                               command=[python, lnt_setup, 'develop'],
+                               haltOnFailure=True,
+                               description='setting up LNT in sandbox',
+                               workdir='test/sandbox',
+                               env=env))
+        f.addStep(commands.LitTestCommand.LitTestCommand(
+                               name='test-suite',
+                               command=test_suite_cmd,
+                               haltOnFailure=True,
+                               description=['running the test suite'],
+                               workdir='test/sandbox',
+                               logfiles={'configure.log'   : 'build/configure.log',
+                                         'build-tools.log' : 'build/build-tools.log',
+                                         'test.log'        : 'build/test.log',
+                                         'report.json'     : 'build/report.json'},
+                               env=test_suite_env))
 
     return f
 
