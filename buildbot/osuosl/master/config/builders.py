@@ -237,6 +237,7 @@ def _get_clang_builders():
                                            '--enable-targets=arm'])},
 
         # Cortex-A15 LNT test-suite in Benchmark mode
+        # FIXME: Move this to CMake (see below)
         {'name' : "clang-native-arm-lnt-perf",
          'slavenames':["linaro-chrome-02"],
          'builddir':"clang-native-arm-lnt-perf",
@@ -252,10 +253,18 @@ def _get_clang_builders():
         {'name' : "clang-native-arm-lnt",
          'slavenames':["linaro-chrome-03"],
          'builddir':"clang-native-arm-lnt",
-         'factory' : LNTBuilder.getLNTFactory(triple='armv7l-unknown-linux-gnueabihf',
-                                              nt_flags=['--cflag', '-mcpu=cortex-a15', '-j2'],
-                                              jobs=2, use_pty_in_tests=True, clean=False,
-                                              testerName='LNT-TestOnly-O3', run_cxx_tests=True)},
+         'factory' : ClangBuilder.getClangCMakeBuildFactory(
+                      jobs=2,
+                      clean=False,
+                      checkout_compiler_rt=False,
+                      test=False,
+                      useTwoStage=False,
+                      runTestSuite=True,
+                      env={'PATH':'/usr/lib/ccache:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'},
+                      nt_flags=['--cflag', '-mcpu=cortex-a15'],
+                      extra_cmake_args=["-DCMAKE_C_FLAGS='-mcpu=cortex-a15'",
+                                        "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a15'",
+                                        "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'"])},
 
         ## Cortex-A15 check-all self-host NEON with CMake builder
         {'name': "clang-cmake-armv7-a15-selfhost-neon",
