@@ -521,16 +521,16 @@ def getClangCMakeBuildFactory(
                       checkout_test_suite=runTestSuite)
 
     # If jobs not defined, Ninja will choose a suitable value
-    jobs_cmd=[]
-    lit_args="'-v"
+    jobs_cmd = []
+    lit_args = "'-v"
     if jobs is not None:
-        jobs_cmd=["-j"+str(jobs)]
-        lit_args+=" -j"+str(jobs)+"'"
+        jobs_cmd = ["-j"+str(jobs)]
+        lit_args += " -j"+str(jobs)+"'"
     else:
-        lit_args+="'"
-    ninja_cmd=['ninja'] + jobs_cmd
-    ninja_install_cmd=['ninja', 'install'] + jobs_cmd
-    ninja_check_cmd=['ninja', 'check-all'] + jobs_cmd
+        lit_args += "'"
+    ninja_cmd = ['ninja'] + jobs_cmd
+    ninja_install_cmd = ['ninja', 'install'] + jobs_cmd
+    ninja_check_cmd = ['ninja', 'check-all'] + jobs_cmd
     check_build_cmd = ["sh", "-c",
                        "test -e build.ninja && echo OK || echo Missing"]
     if vs:
@@ -538,10 +538,10 @@ def getClangCMakeBuildFactory(
                            " else (echo Missing & exit 1)"]
 
     # Global configurations
-    stage1_build='stage1'
-    stage1_install='stage1.install'
-    stage2_build='stage2'
-    stage2_install='stage2.install'
+    stage1_build = 'stage1'
+    stage1_install = 'stage1.install'
+    stage2_build = 'stage2'
+    stage2_install = 'stage2.install'
 
     # Set up VS environment, if appropriate.
     if vs:
