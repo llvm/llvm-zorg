@@ -997,6 +997,16 @@ def _get_experimental_scheduled_builders():
          'factory' : ClangBuilder.getClangBuildFactory(stage1_config='Release+Asserts'),
          'category' : 'clang'},
 
+        {'name' : "clang-bpf-build",
+         'slavenames' : ["bpf-build-slave01"],
+         'builddir' : "clang-bpf-build",
+         'factory' : ClangBuilder.getClangBuildFactory(useTwoStage=False,
+                                                       clean=False,
+                                                       test=True,
+                                                       stage1_config='Release+Asserts',
+                                                       cmake='cmake'),
+         'category' : 'clang'},
+
         # lldb builders
         {'name': "lldb-x86_64-debian-clang",
          'slavenames': ["gribozavr5"],
