@@ -142,7 +142,8 @@ def AddLNTTestsToFactory(f, nt_flags, cc_path, cxx_path, **kwargs):
     # Run the nightly test.
     args = [WithProperties('%(builddir)s/lnt.venv/bin/python'),
             WithProperties('%(builddir)s/lnt.venv/bin/lnt'),
-            'runtest', '--verbose']
+            'runtest', 'nt', '--verbose']
+
 
     # Only submit if a URL has been specified
     if submitURL is not None:
@@ -153,7 +154,7 @@ def AddLNTTestsToFactory(f, nt_flags, cc_path, cxx_path, **kwargs):
         args.extend(['--submit', url])
 
     args.extend(['--commit=1',
-             'nt', '--sandbox', 'nt',
+             '--sandbox', 'nt',
              '--no-timestamp',
              '--cc', cc_path, '--cxx', cxx_path,
              '--without-llvm',
