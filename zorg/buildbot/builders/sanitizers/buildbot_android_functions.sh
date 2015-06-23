@@ -76,7 +76,7 @@ function test_android { # ARCH ABI STEP_FAILURE
       if [[ $ABILIST == *"$_abi"* ]]; then
         BUILD_ID=$(adb -s $SERIAL shell getprop ro.build.id | tr -d '\r')
         BUILD_FLAVOR=$(adb -s $SERIAL shell getprop ro.build.flavor | tr -d '\r')
-        test_android_on_device "$_arch" "$SERIAL" "$BUILD_ID" "$BUILD_FLAVOR" "$STEP_FAILURE"
+        test_android_on_device "$_arch" "$SERIAL" "$BUILD_ID" "$BUILD_FLAVOR" "$_step_failure"
       fi
     done
 }
