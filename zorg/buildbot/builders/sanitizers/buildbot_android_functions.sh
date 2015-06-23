@@ -65,10 +65,30 @@ function build_compiler_rt { # ARCH triple
     cd ..
 }
 
-function test_android { # ARCH AVD STEP_FAILURE
+
+function test_android { # ARCH ABI STEP_FAILURE
     local _arch=$1
-    local _avd=$2
-    local _step_failure=$3 # @@@STEP_FAILURE@@@ or @@@STEP_WARNINGS@@@
+    local _abi=$2
+    local _step_failure=$3
+    ANDROID_DEVICES=$(adb devices | grep 'device$' | awk '{print $1}')
+    for SERIAL in $ANDROID_DEVICES; do
+      ABILIST=$(adb -s $SERIAL shell getprop ro.product.cpu.abilist)
+      if [[ $ABILIST == *"$_abi"* ]]; then
+        BUILD_ID=$(adb -s $SERIAL shell getprop ro.build.id | tr -d '\r')
+        BUILD_FLAVOR=$(adb -s $SERIAL shell getprop ro.build.flavor | tr -d '\r')
+        test_android_on_device "$_arch" "$SERIAL" "$BUILD_ID" "$BUILD_FLAVOR" "$STEP_FAILURE"
+      fi
+    done
+}
+
+function test_android_on_device { # ARCH SERIAL BUILD_ID BUILD_FLAVOR STEP_FAILURE
+    local _arch=$1
+    local _serial=$2
+    local _build_id=$3
+    local _build_flavor=$4
+    local _step_failure=$5 # @@@STEP_FAILURE@@@ or @@@STEP_WARNINGS@@@
+
+    DEVICE_DESCRIPTION=$_arch/$_build_flavor/$_build_id
 
     ANDROID_SDK=$ROOT/../../../android-sdk-linux/
     SYMBOLIZER_BIN=$ROOT/llvm_build_android_$_arch/bin/llvm-symbolizer
@@ -76,15 +96,11 @@ function test_android { # ARCH AVD STEP_FAILURE
     ADB=$ANDROID_SDK/platform-tools/adb
     DEVICE_ROOT=/data/local/asan_test
 
-    echo @@@BUILD_STEP device setup [$_avd]@@@
+    export ADB_SERIAL=$_serial
+    echo "Serial $_serial"
 
-    $ADB devices # should be empty
-    $ANDROID_SDK/tools/emulator -avd $_avd -no-window -noaudio -no-boot-anim -accel off &
-    # 30s is generally enough for the emulator to initialize.
-    # wait-for-device does not wait long enough, as it seems.
-    # Otherwise, /system sometimes mysteriously reverts to read-only right in
-    # the middle of asan_device_setup.
-    sleep 30
+    echo @@@BUILD_STEP device setup [$DEVICE_DESCRIPTION]@@@
+
     $ADB wait-for-device
 
     echo "Device is up"
@@ -99,11 +115,11 @@ function test_android { # ARCH AVD STEP_FAILURE
     $ADB shell rm -rf $DEVICE_ROOT
     $ADB shell mkdir $DEVICE_ROOT
 
-    echo @@@BUILD_STEP run asan lit tests [Android/$_avd]@@@
+    echo @@@BUILD_STEP run asan lit tests [$DEVICE_DESCRIPTION]@@@
 
     (cd $COMPILER_RT_BUILD_DIR && ninja check-asan) || echo $_step_failure
 
-    # echo @@@BUILD_STEP run sanitizer_common tests [Android/$_avd]@@@
+    # echo @@@BUILD_STEP run sanitizer_common tests [$DEVICE_DESCRIPTION]@@@
 
     # $ADB push $COMPILER_RT_BUILD_DIR/lib/sanitizer_common/tests/SanitizerTest $DEVICE_ROOT/
 
@@ -111,7 +127,7 @@ function test_android { # ARCH AVD STEP_FAILURE
     #     echo \$? >$DEVICE_ROOT/error_code"
     # $ADB pull $DEVICE_ROOT/error_code error_code && (exit `cat error_code`) || echo @@@STEP_WARNINGS@@@
 
-    echo @@@BUILD_STEP run asan tests [Android/$_avd]@@@
+    echo @@@BUILD_STEP run asan tests [$DEVICE_DESCRIPTION]@@@
 
     $ADB push $COMPILER_RT_BUILD_DIR/lib/asan/tests/AsanTest $DEVICE_ROOT/
     $ADB push $COMPILER_RT_BUILD_DIR/lib/asan/tests/AsanNoinstTest $DEVICE_ROOT/
@@ -132,13 +148,7 @@ function test_android { # ARCH AVD STEP_FAILURE
         $ADB pull $DEVICE_ROOT/error_code error_code && echo && (exit `cat error_code`) || echo @@@STEP_WARNINGS@@@
     done
 
-    echo "Killing emulator"
-    $ADB emu kill
     sleep 2
 
     $ADB devices
-}
-
-function android_emulator_cleanup {
-    $ADB emu kill || true
 }

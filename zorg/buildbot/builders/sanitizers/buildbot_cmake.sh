@@ -221,7 +221,6 @@ if [ $BUILD_ANDROID == 1 ] ; then
 fi
 
 if [ $RUN_ANDROID == 1 ] ; then
-    trap "android_emulator_cleanup" EXIT
-    test_android arm arm-K @@@STEP_FAILURE@@@
-    test_android x86 x86-K @@@STEP_WARNINGS@@@
+    test_android arm armeabi-v7a @@@STEP_WARNINGS@@@
+#    test_android x86 x86 @@@STEP_WARNINGS@@@
 fi
