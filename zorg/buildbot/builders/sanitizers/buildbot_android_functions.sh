@@ -93,7 +93,7 @@ function test_android_on_device { # ARCH SERIAL BUILD_ID BUILD_FLAVOR STEP_FAILU
     ANDROID_SDK=$ROOT/../../../android-sdk-linux/
     SYMBOLIZER_BIN=$ROOT/llvm_build_android_$_arch/bin/llvm-symbolizer
     COMPILER_RT_BUILD_DIR=$ROOT/compiler_rt_build_android_$_arch
-    ADB=$ANDROID_SDK/platform-tools/adb
+    ADB=$ROOT/../../../bin/adb
     DEVICE_ROOT=/data/local/asan_test
 
     export ADB_SERIAL=$_serial
