@@ -120,13 +120,13 @@ function test_android_on_device { # ARCH SERIAL BUILD_ID BUILD_FLAVOR STEP_FAILU
 
     (cd $COMPILER_RT_BUILD_DIR && ninja check-asan) || echo $_step_failure
 
-    # echo @@@BUILD_STEP run sanitizer_common tests [$DEVICE_DESCRIPTION]@@@
+    echo @@@BUILD_STEP run sanitizer_common tests [$DEVICE_DESCRIPTION]@@@
 
-    # $ADB push $COMPILER_RT_BUILD_DIR/lib/sanitizer_common/tests/SanitizerTest $DEVICE_ROOT/
+    $ADB push $COMPILER_RT_BUILD_DIR/lib/sanitizer_common/tests/SanitizerTest $DEVICE_ROOT/
 
-    # $ADB shell "$DEVICE_ROOT/SanitizerTest; \
-    #     echo \$? >$DEVICE_ROOT/error_code"
-    # $ADB pull $DEVICE_ROOT/error_code error_code && (exit `cat error_code`) || echo @@@STEP_WARNINGS@@@
+    $ADB shell "$DEVICE_ROOT/SanitizerTest; \
+        echo \$? >$DEVICE_ROOT/error_code"
+    $ADB pull $DEVICE_ROOT/error_code error_code && (exit `cat error_code`) || echo $_step_failure
 
     echo @@@BUILD_STEP run asan tests [$DEVICE_DESCRIPTION]@@@
 
@@ -140,13 +140,13 @@ function test_android_on_device { # ARCH SERIAL BUILD_ID BUILD_FLAVOR STEP_FAILU
           GTEST_SHARD_INDEX=$SHARD \
           asanwrapper $DEVICE_ROOT/AsanTest; \
           echo \$? >$DEVICE_ROOT/error_code"
-        $ADB pull $DEVICE_ROOT/error_code error_code && echo && (exit `cat error_code`) || echo @@@STEP_WARNINGS@@@
+        $ADB pull $DEVICE_ROOT/error_code error_code && echo && (exit `cat error_code`) || echo $_step_failure
         $ADB shell " \
           GTEST_TOTAL_SHARDS=$NUM_SHARDS \
           GTEST_SHARD_INDEX=$SHARD \
           $DEVICE_ROOT/AsanNoinstTest; \
           echo \$? >$DEVICE_ROOT/error_code"
-        $ADB pull $DEVICE_ROOT/error_code error_code && echo && (exit `cat error_code`) || echo @@@STEP_WARNINGS@@@
+        $ADB pull $DEVICE_ROOT/error_code error_code && echo && (exit `cat error_code`) || echo $_step_failure
     done
 
     sleep 2
