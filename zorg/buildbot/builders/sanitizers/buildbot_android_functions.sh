@@ -17,6 +17,7 @@ function build_llvm_symbolizer { # ARCH triple
         -DCMAKE_CXX_COMPILER=$ROOT/llvm_build64/bin/clang++ \
         -DCMAKE_C_FLAGS="$ANDROID_FLAGS" \
         -DCMAKE_CXX_FLAGS="$ANDROID_FLAGS" \
+        -DCMAKE_EXE_LINKER_FLAGS="-pie" \
         -DANDROID=1 \
         -DLLVM_BUILD_RUNTIME=OFF \
         -DLLVM_TABLEGEN=$ROOT/llvm_build64/bin/llvm-tblgen \
