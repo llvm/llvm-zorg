@@ -6,7 +6,8 @@ from zorg.buildbot.commands.LitTestCommand import LitTestCommand
 
 def getABITestsuitBuildFactory(
             always_clean=True,
-            test=True,
+            test=False,
+            useTwoStage=False,
             cmake='cmake',
             extra_cmake_args=[], # Extra CMake args for all stages.
             jobs=None,
@@ -25,9 +26,15 @@ def getABITestsuitBuildFactory(
         merged_env.update(env)
 
     source_dir       = 'llvm'   # Should match the one used in getClangCMakeBuildFactory.
+    stage1_build_dir = 'stage1' # Should match the one defined in getClangCMakeBuildFactory.
     stage2_build_dir = 'stage2' # Should match the one defined in getClangCMakeBuildFactory.
 
-    # Bootstrap clang first.
+    if useTwoStage:
+        clang_build_dir = stage2_build_dir
+    else:
+        clang_build_dir = stage1_build_dir
+
+    # Build clang first.
     f = ClangBuilder.getClangCMakeBuildFactory(
             clean=always_clean,
             test=test,
@@ -35,7 +42,7 @@ def getABITestsuitBuildFactory(
             extra_cmake_args=extra_cmake_args,
             jobs=jobs,
             env=merged_env,
-            useTwoStage=True,
+            useTwoStage=useTwoStage,
             stage1_config=stage1_config,
             stage2_config=stage2_config)
 
@@ -48,7 +55,7 @@ def getABITestsuitBuildFactory(
     # Run the ABI test.
     abi_test_env = {
         'PYTHONPATH' : WithProperties("%(workdir)s/" + source_dir + "/utils/lit:${PYTHONPATH}"),
-        'PATH'       : WithProperties("%(workdir)s/" + stage2_build_dir + "/bin:${PATH}"),
+        'PATH'       : WithProperties("%(workdir)s/" + clang_build_dir + "/bin:${PATH}"),
         }
     merged_env.update(abi_test_env)
 
