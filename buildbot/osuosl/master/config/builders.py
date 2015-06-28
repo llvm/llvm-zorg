@@ -421,10 +421,11 @@ def _get_clang_builders():
                                            "-DLLVM_TARGET_ARCH=Mips"])},
 
         # ABI test-suite with CMake builder
-        {'name'       : "clang-x86_64-linux-selfhost-abi-test",
-         'slavenames' : ["as-bldslv8"],
-         'builddir'   : "clang-x86_64-linux-selfhost-abi-test",
-         'factory'    : ABITestsuitBuilder.getABITestsuitBuildFactory()},
+        {'name'          : "clang-x86_64-linux-abi-test",
+         'mergeRequests' : False,
+         'slavenames'    : ["as-bldslv8"],
+         'builddir'      : "clang-x86_64-linux-abi-test",
+         'factory'       : ABITestsuitBuilder.getABITestsuitBuildFactory()},
 
         # Clang cross builders.
         {'name' : "clang-x86_64-darwin13-cross-mingw32",
