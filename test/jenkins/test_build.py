@@ -116,15 +116,15 @@
 
 # RUN: python %{src_root}/zorg/jenkins/build.py cmake all --lto | FileCheck --check-prefix CHECK-CMAKELTO %s
 # CHECK-CMAKELTO: '/usr/local/bin/cmake' '-G' 'Ninja'
-# CHECK-CMAKELTO: '-DCMAKE_C_FLAGS=-flto' '-DCMAKE_CXX_FLAGS=-flto'
 # CHECK-CMAKELTO: '-DLLVM_BUILD_EXAMPLES=Off'
+# CHECK-CMAKELTO: '-DCMAKE_C_FLAGS=-flto' '-DCMAKE_CXX_FLAGS=-flto'
 # CHECK-CMAKELTO: '-DLLVM_PARALLEL_LINK_JOBS=1'
 # CHECK-CMAKELTO: '-DCMAKE_BUILD_TYPE=Release'
 
 # RUN: env MAX_PARALLEL_LINKS=2 python %{src_root}/zorg/jenkins/build.py cmake all --lto | FileCheck --check-prefix CHECK-CMAKE-PAR-LTO %s
 # CHECK-CMAKE-PAR-LTO: '/usr/local/bin/cmake' '-G' 'Ninja'
-# CHECK-CMAKE-PAR-LTO: '-DCMAKE_C_FLAGS=-flto' '-DCMAKE_CXX_FLAGS=-flto'
 # CHECK-CMAKE-PAR-LTO: '-DLLVM_BUILD_EXAMPLES=Off'
+# CHECK-CMAKE-PAR-LTO: '-DCMAKE_C_FLAGS=-flto' '-DCMAKE_CXX_FLAGS=-flto'
 # CHECK-CMAKE-PAR-LTO: '-DLLVM_PARALLEL_LINK_JOBS=2'
 # CHECK-CMAKE-PAR-LTO: '-DCMAKE_BUILD_TYPE=Release'
 

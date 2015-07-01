@@ -121,14 +121,19 @@ def cmake_builder(target):
                        "-DCMAKE_INSTALL_PREFIX=" + conf.installdir(),
                        conf.srcdir()]
 
+    compiler_flags = conf.compiler_flags
     max_parallel_links = conf.max_parallel_links
     if conf.lto:
-        cmake_cmd += ["-DCMAKE_C_FLAGS=-flto", "-DCMAKE_CXX_FLAGS=-flto"]
+        compiler_flags += ['-flto']
         cmake_cmd += ['-DLLVM_BUILD_EXAMPLES=Off']
         if not max_parallel_links:
             max_parallel_links = 1
     else:
         cmake_cmd += ['-DLLVM_BUILD_EXAMPLES=On']
+
+    if compiler_flags:
+        cmake_cmd += ["-DCMAKE_C_FLAGS={}".format(' '.join(compiler_flags)),
+                      "-DCMAKE_CXX_FLAGS={}".format(' '.join(compiler_flags))]
 
     if max_parallel_links is not None:
         cmake_cmd += ["-DLLVM_PARALLEL_LINK_JOBS={}".format(max_parallel_links)]
@@ -143,6 +148,9 @@ def cmake_builder(target):
         cmake_cmd += ["-DCMAKE_BUILD_TYPE=Debug"]
     else:
         cmake_cmd += ["-DCMAKE_BUILD_TYPE=Release"]
+
+    for flag in conf.cmake_flags:
+        cmake_cmd += flag
 
     if conf.assertions:
         cmake_cmd += ["-DLLVM_ENABLE_ASSERTIONS=On"]
@@ -185,8 +193,13 @@ def clang_builder(target):
     else:
         configure_cmd.append("--disable-assertions")
 
+    compiler_flags = conf.compiler_flags
     if conf.lto:
-        configure_cmd.extend(['--with-extra-options=-flto -gline-tables-only'])
+        compiler_flags += ['-flto', '-gline-tables-only']
+
+    if compiler_flags:
+        configure_cmd.extend(
+            ['--with-extra-options={}'.format(' '.join(compiler_flags))])
 
     configure_cmd.extend(["--enable-optimized",
         "--disable-bindings", "--enable-targets=x86,x86_64,arm,aarch64",
@@ -497,6 +510,12 @@ def parse_args():
     parser.add_argument('--cmake-type', dest='cmake_build_type',
                         help="Override cmake type Release, Debug, "
                         "RelWithDebInfo and MinSizeRel")
+    parser.add_argument('--cmake-flag', dest='cmake_flags',
+                        action='append', default=[],
+                        help='Set an arbitrary cmake flag')
+    parser.add_argument('--compiler-flag', dest='compiler_flags',
+                        action='append', default=[],
+                        help='Set an arbitrary compiler flag')
     args = parser.parse_args()
     return args
 
