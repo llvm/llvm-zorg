@@ -150,7 +150,7 @@ def cmake_builder(target):
         cmake_cmd += ["-DCMAKE_BUILD_TYPE=Release"]
 
     for flag in conf.cmake_flags:
-        cmake_cmd += flag
+        cmake_cmd += [flag]
 
     if conf.assertions:
         cmake_cmd += ["-DLLVM_ENABLE_ASSERTIONS=On"]
