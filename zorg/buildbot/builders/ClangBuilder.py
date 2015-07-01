@@ -1,5 +1,6 @@
 import buildbot
 import buildbot.process.factory
+import copy
 import os
 
 from buildbot.process.properties import WithProperties, Property
@@ -716,7 +717,7 @@ def getClangCMakeBuildFactory(
             if testerName:
                 test_suite_cmd.extend(['--no-machdep-info', testerName])
         # CC and CXX are needed as env for build-tools
-        test_suite_env = env
+        test_suite_env = copy.deepcopy(env)
         test_suite_env['CC'] = cc
         test_suite_env['CXX'] = cxx
 
