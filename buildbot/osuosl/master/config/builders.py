@@ -976,14 +976,14 @@ def _get_libcxx_builders():
 # Experimental and stopped builders
 def _get_on_demand_builders():
     return [
-        {'name': "clang-native-mingw32-win7",
-         'slavenames':["as-bldslv7"],
-         'builddir':"clang-native-mingw32-win7",
-         'category':'clang',
-         'factory' : ClangBuilder.getClangBuildFactory(triple='i686-pc-mingw32',
-                                                       useTwoStage=True, test=False,
-                                                       stage1_config='Release+Asserts',
-                                                       stage2_config='Release+Asserts')},
+#        {'name': "clang-native-mingw32-win7",
+#         'slavenames':["as-bldslv7"],
+#         'builddir':"clang-native-mingw32-win7",
+#         'category':'clang',
+#         'factory' : ClangBuilder.getClangBuildFactory(triple='i686-pc-mingw32',
+#                                                       useTwoStage=True, test=False,
+#                                                       stage1_config='Release+Asserts',
+#                                                       stage2_config='Release+Asserts')},
         ]
 
 def _get_experimental_scheduled_builders():
@@ -1001,11 +1001,11 @@ def _get_experimental_scheduled_builders():
                                                                              "--with-intel-jitevents"]),
          'category' : 'clang'},
 
-        {'name': "clang-amd64-openbsd",
-         'slavenames':["openbsd-buildslave"],
-         'builddir':"clang-openbsd",
-         'factory' : ClangBuilder.getClangBuildFactory(stage1_config='Release+Asserts'),
-         'category' : 'clang'},
+#        {'name': "clang-amd64-openbsd",
+#         'slavenames':["openbsd-buildslave"],
+#         'builddir':"clang-openbsd",
+#         'factory' : ClangBuilder.getClangBuildFactory(stage1_config='Release+Asserts'),
+#         'category' : 'clang'},
 
         {'name' : "clang-bpf-build",
          'slavenames' : ["bpf-build-slave01"],
