@@ -1025,13 +1025,6 @@ def _get_experimental_scheduled_builders():
          'factory': LLDBBuilder.getLLDBBuildFactory(triple=None, # use default
                                                     extra_configure_args=['--enable-cxx11', '--enable-optimized', '--enable-assertions'],
                                                     env={'PATH':'/home/llvmbb/bin/clang-latest/bin:/home/llvmbb/bin:/usr/local/bin:/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games'})},
-        {'name': "lldb-x86_64-freebsd",
-         'slavenames': ["as-bldslv5"],
-         'builddir': "lldb-x86_64-freebsd",
-         'category' : 'lldb',
-         'factory': LLDBBuilder.getLLDBBuildFactory(triple=None, # use default
-                                                    make='gmake',
-                                                    extra_configure_args=['--enable-cxx11', '--enable-optimized', '--enable-assertions'])},
         {'name': "lldb-x86_64-ubuntu-14.10",
          'slavenames': ["hexagon-build-03"],
          'builddir': "lldb-x86_64-ubuntu-14.10",
@@ -1155,6 +1148,15 @@ def get_builders():
         yield b
 
 # Random other unused builders...
+{'name': "lldb-x86_64-freebsd",
+ 'slavenames': ["as-bldslv5"],
+ 'builddir': "lldb-x86_64-freebsd",
+ 'category' : 'lldb',
+ 'factory': LLDBBuilder.getLLDBBuildFactory(triple=None, # use default
+                                            make='gmake',
+                                            extra_configure_args=['--enable-cxx11',
+                                                                  '--enable-optimized',
+                                                                  '--enable-assertions'])},
 {'name': "clang-x86_64-openbsd",
  'slavenames':["ocean1"],
  'builddir':"clang-x86_64-openbsd",
