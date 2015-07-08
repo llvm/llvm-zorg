@@ -316,7 +316,7 @@ def getLLDBTestSteps(f,
                                      workdir='%s' % llvm_builddir,
                                      timeout=1800,
                                      env=testenv))
-            f=cleanSVNSourceTree(f, '%s/tools/lldb' % llvm_srcdir)
+            f=cleanSVNSourceTree(f, '%s/tools/lldb/test' % llvm_srcdir)
     return f
 
 # Define a structure to describe remote target
@@ -369,7 +369,7 @@ def getLLDBRemoteTestSteps(f,
         hostname = '%(slave_hostname)s'
         launchcmd = shellcmd + ['screen', '-d', '-m']
         terminatecmd = shellcmd + ['pkill', 'lldb-server']
-        cleandircmd = WithProperties('ssh %(remote_host)s rm -rf %(remote_dir)s/*')
+        cleandircmd = WithProperties('ssh %(remote_host)s rm -r %(remote_dir)s/*')
         f.addStep(ShellCommand(name="rsync lldb-server",
                                command=['rsync',
                                         '-havL',
@@ -495,6 +495,12 @@ def getLLDBUbuntuCMakeBuildFactory(build_compiler,
                           command=["pwd"],
                           property="builddir",
                           description="set build dir",
+                          workdir="."))
+    # Determine the binary directory of *-tblgen.
+    f.addStep(SetProperty(name="get tblgen dir",
+                          command=["echo", WithProperties(bindir)],
+                          property="tblgen_bindir",
+                          description="set tblgen dir",
                           workdir="."))
     # Get source code
     f = getLLDBSource(f,llvm_srcdir)
@@ -668,8 +674,8 @@ def getLLDBAndroidCMakeStep(f,
     cmake_args.append('-DCMAKE_CXX_COMPILER_VERSION=4.9')
     cmake_args.append('-DLLVM_TARGET_ARCH=' + target_arch)
     cmake_args.append('-DLLVM_HOST_TRIPLE=' + target_arch + '-unknown-linux-android')
-    cmake_args.append(WithProperties('-DLLVM_TABLEGEN=' + bindir + '/llvm-tblgen'))
-    cmake_args.append(WithProperties('-DCLANG_TABLEGEN=' + bindir + '/clang-tblgen'))
+    cmake_args.append(WithProperties('-DLLVM_TABLEGEN=%(tblgen_bindir)s/llvm-tblgen'))
+    cmake_args.append(WithProperties('-DCLANG_TABLEGEN=%(tblgen_bindir)s/clang-tblgen'))
 
     f.addStep(Configure(name='cmake-android-%s' % target_arch,
                         command=cmake_args,
@@ -677,19 +683,42 @@ def getLLDBAndroidCMakeStep(f,
                         haltOnFailure=True,
                         workdir=llvm_builddir))
     return f
+# Set symbolic links, so the folder structure will be llvm, llvm/tools/clang, llvm/tools/lldb
+def getSymbLinkSteps(f, lldb_srcdir):
+    f.addStep(ShellCommand(name='set symbolic link clang',
+                           command=['ln', '-nfs',
+                                    WithProperties('%(builddir)s/' + lldb_srcdir + '/llvm/tools/clang'),
+                                    'clang'],
+                           workdir=WithProperties('%(builddir)s')))
+    f.addStep(ShellCommand(name='set symbolic link lldb',
+                           command=['ln', '-nfs',
+                                    WithProperties('%(builddir)s/' + lldb_srcdir),
+                                    lldb_srcdir + '/llvm/tools/lldb'],
+                           workdir=WithProperties('%(builddir)s')))
+    f.addStep(ShellCommand(name='set symbolic link llvm',
+                           command=['ln', '-nfs',
+                                    WithProperties('%(builddir)s/' + lldb_srcdir + '/llvm'),
+                                    'llvm'],
+                           workdir=WithProperties('%(builddir)s')))
+    return f
 
-def getLLDBxcodebuildFactory(use_cc=None):
+def getLLDBxcodebuildFactory(use_cc=None,
+                             build_type='Debug',
+                             remote_configs=None,
+                             env=None):
+    if env is None:
+        env = {}
     f = buildbot.process.factory.BuildFactory()
     f.addStep(SetProperty(name='get_builddir',
                           command=['pwd'],
                           property='builddir',
                           description='set build dir',
                           workdir='.'))
-    lldb_srcdir = 'lldb.src'
+    lldb_srcdir = 'lldb'
     OBJROOT='%(builddir)s/' + lldb_srcdir + '/build'
     f.addStep(SetProperty(name='get_bindir',
                           command=['echo',
-                                   WithProperties('%(builddir)s/' + lldb_srcdir + '/build/Debug')],
+                                   WithProperties('%(builddir)s/' + lldb_srcdir + '/build/' + build_type)],
                           property='lldb_bindir',
                           description='set bin dir',
                           workdir='.'))
@@ -703,7 +732,7 @@ def getLLDBxcodebuildFactory(use_cc=None):
                            haltOnFailure=True,
                            workdir=WithProperties('%(builddir)s')))
     f.addStep(ShellCommand(name='clean.test trace',
-                           command=['rm', '-rf', '%s/DerivedData/lldb-test-results' % lldb_srcdir ],
+                           command='rm -rf %s/build/*' % lldb_srcdir,
                            haltOnFailure=True,
                            workdir=WithProperties('%(builddir)s')))
     f.addStep(SVN(name='svn-lldb',
@@ -728,7 +757,6 @@ def getLLDBxcodebuildFactory(use_cc=None):
 # the login password of the buildslave.
 # This means I have to set the special keychain as the default and unlock it
 # prior to building the sources.
-
     f.addStep(ShellCommand(name='check.keychain',
                            command=['security', 'default-keychain'],
                            haltOnFailure=True,
@@ -747,7 +775,7 @@ def getLLDBxcodebuildFactory(use_cc=None):
                          '-scheme',
                          'lldb-tool',
                          '-configuration',
-                         'Debug',
+                         build_type,
                          'SYMROOT=' + OBJROOT,
                          'OBJROOT=' + OBJROOT])
     f.addStep(ShellCommand(name='lldb-build',
@@ -777,7 +805,7 @@ def getLLDBxcodebuildFactory(use_cc=None):
                             '--framework', '%(lldb_bindir)s/LLDB.framework',
                             '-A', 'x86_64',
                             '-C', 'clang',
-                            '-s', '../DerivedData/lldb-test-results'])
+                            '-s', '../../build/lldb-test-traces'])
     f.addStep(LitTestCommand(name='lldb-test',
                              command=['./dosep.py',
                                       '--options',
@@ -785,8 +813,31 @@ def getLLDBxcodebuildFactory(use_cc=None):
                              haltOnFailure=False,
                              workdir='%s/test' % lldb_srcdir,
                              env={'DYLD_FRAMEWORK_PATH' : WithProperties('%(lldb_bindir)s')}))
+# Remote test steps
+    if remote_configs is not None:
+        # Source structure to use cmake command
+        f.addStep(SetProperty(name='get tblgen bindir',
+                              command=['echo',
+                                       WithProperties('%(builddir)s/' + lldb_srcdir + '/llvm-build/Release+Asserts/x86_64/Release+Asserts/bin')],
+                              property='tblgen_bindir',
+                              description='set tblgen binaries dir',
+                              workdir='.'))
+        f = getSymbLinkSteps(f, lldb_srcdir)
+        for config in remote_configs:
+            f = getLLDBRemoteTestSteps(f,
+                                       '%(lldb_bindir)s',
+                                       build_type,
+                                       config,
+                                       env={'DYLD_FRAMEWORK_PATH' : WithProperties('%(lldb_bindir)s')})
+        # Remove symbolic link to lldb, otherwise xcodebuild will have circular dependency in next build
+        f.addStep(ShellCommand(name='remove symbolic link lldb',
+                               command=['rm',
+                                        lldb_srcdir + '/llvm/tools/lldb'],
+                               haltOnFailure=False,
+                               flunkOnFailure=False,
+                               workdir=WithProperties('%(builddir)s')))
 # Compress and upload test log
-    f = archiveLLDBTestTraces(f, "lldb.src/DerivedData/lldb-test-results")
+    f = archiveLLDBTestTraces(f, "build/lldb-test-traces*")
 
 # Results go in a directory coded named according to the date and time of the test run, e.g.:
 #

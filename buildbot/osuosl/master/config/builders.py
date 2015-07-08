@@ -1051,7 +1051,10 @@ def _get_experimental_scheduled_builders():
          'slavenames': ["lldb-x86_64-darwin-13.4"],
          'builddir': "buildDir",
          'category' : 'lldb',
-         'factory': LLDBBuilder.getLLDBxcodebuildFactory()},
+         'factory': LLDBBuilder.getLLDBxcodebuildFactory(
+                    build_type='Release',
+                    remote_configs=[RemoteConfig('android', 'arm', ['arm-linux-androideabi-gcc'], ['arm'])],
+                    env={'SHELL':"/bin/bash"})},
         {'name': "lldb-x86_64-ubuntu-14.04-android",
          'slavenames': ["lldb-lab-linux01"],
          'builddir': "lldb-cross-compile",
