@@ -419,6 +419,17 @@ def getLLDBRemoteTestSteps(f,
                                env=env,
                                haltOnFailure=True,
                                workdir='%s' % llvm_builddir))
+        f.addStep(ShellCommand(name="Build fingerprint " + stepDesc,
+                               command=['adb',
+                                        '-s',
+                                        WithProperties('%(deviceid)s'),
+                                        'shell',
+                                        'getprop',
+                                        'ro.build.fingerprint'],
+                               description="get build fingerprint",
+                               env=env,
+                               haltOnFailure=False,
+                               workdir='%s' % llvm_builddir))
     # launch lldb-server
     f.addStep(ShellCommand(name="launch lldb-server " + stepDesc,
                            command=launchcmd +
