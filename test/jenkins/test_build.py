@@ -128,4 +128,8 @@
 # CHECK-CMAKE-PAR-LTO: '-DLLVM_PARALLEL_LINK_JOBS=2'
 # CHECK-CMAKE-PAR-LTO: '-DCMAKE_BUILD_TYPE=Release'
 
+# RUN: env MAX_PARALLEL_TESTS=2 python %{src_root}/zorg/jenkins/build.py cmake all | FileCheck --check-prefix CHECK-CMAKE-2-TESTS %s
+# CHECK-CMAKE-2-TESTS: '/usr/local/bin/cmake' '-G' 'Ninja'
+# CHECK-CMAKE-2-TESTS: '-DLLVM_LIT_ARGS=--xunit-xml-output=testresults.xunit.xml -v -j 2'
+
 # RUN: python %{src_root}/zorg/jenkins/build.py cmake all --cmake-type=RelWithDebugInfo

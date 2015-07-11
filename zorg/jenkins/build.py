@@ -51,6 +51,7 @@ class Configuration(object):
         self._lldb_build_dir = os.environ.get('LLDB_BUILD_DIR', 'lldb-build')
         self._install_dir = os.environ.get('BUILD_DIR', 'clang-install')
         self.j_level = os.environ.get('J_LEVEL', None)
+        self.max_parallel_tests = os.environ.get('MAX_PARALLEL_TESTS', None)
         self.max_parallel_links = os.environ.get('MAX_PARALLEL_LINKS', None)
         self.host_compiler_url = os.environ.get('HOST_URL',
             'http://labmaster2.local/artifacts/')
@@ -157,8 +158,10 @@ def cmake_builder(target):
     else:
         cmake_cmd += ["-DLLVM_ENABLE_ASSERTIONS=Off"]
 
-    cmake_cmd += [
-        '-DLLVM_LIT_ARGS=--xunit-xml-output=testresults.xunit.xml -v']
+    lit_flags = ['--xunit-xml-output=testresults.xunit.xml', '-v']
+    if conf.max_parallel_tests:
+        lit_flags += ['-j', conf.max_parallel_tests]
+    cmake_cmd += ['-DLLVM_LIT_ARGS={}'.format(' '.join(lit_flags))]
 
     ninja_cmd = env + ["/usr/local/bin/ninja"]
     if conf.j_level is not None:
