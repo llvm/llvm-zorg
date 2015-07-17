@@ -265,7 +265,7 @@ def getLLDBTestSteps(f,
         if compiler=='totclang':
             compilerPath=bindir + '/clang'
         elif remote_platform is 'android':
-            compilerPath = '%(toolchain)s' + '/bin/' + compiler
+            compilerPath = os.path.join('%(toolchain_test)s', 'bin', compiler)
         else:
             compilerPath = compiler
         for arch in test_archs:
@@ -352,7 +352,8 @@ def getLLDBRemoteTestSteps(f,
     # example: {"android-i386": {"remote_host":"localhost",
     #                            "remote_port":"5430",
     #                            "remote_dir":"/data/local/tmp/lldb",
-    #                            "toolchain":"/home/lldb_build/Toolchains/i386-android-toolchain",
+    #                            "toolchain_build":"/home/lldb_build/Toolchains/i386-android-toolchain-21",
+    #                            "toolchain_test":"/home/lldb_build/Toolchains/i386-android-toolchain-16",
     #                            "deviceid":"XXXXXXX"},
 
     def getRemoteCfg(rc, stdout, stderr):
@@ -680,7 +681,7 @@ def getLLDBAndroidCMakeStep(f,
     cmake_args.append(WithProperties("-DCMAKE_BUILD_TYPE=%s" % build_type))
     cmake_args.append(WithProperties('%(builddir)s/' + llvm_srcdir))
     cmake_args.append(WithProperties('-DCMAKE_TOOLCHAIN_FILE=' + '%(builddir)s/' + llvm_srcdir + '/tools/lldb/cmake/platforms/Android.cmake'))
-    cmake_args.append(WithProperties('-DANDROID_TOOLCHAIN_DIR=' + '%(toolchain)s'))
+    cmake_args.append(WithProperties('-DANDROID_TOOLCHAIN_DIR=' + '%(toolchain_build)s'))
     cmake_args.append('-DANDROID_ABI=' + abiMap[target_arch])
     cmake_args.append('-DCMAKE_CXX_COMPILER_VERSION=4.9')
     cmake_args.append('-DLLVM_TARGET_ARCH=' + target_arch)
