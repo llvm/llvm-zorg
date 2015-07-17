@@ -747,6 +747,13 @@ def getLLDBxcodebuildFactory(use_cc=None,
                            command='rm -rf %s/build/*' % lldb_srcdir,
                            haltOnFailure=True,
                            workdir=WithProperties('%(builddir)s')))
+    # Remove symbolic link to lldb, otherwise xcodebuild will have circular dependency
+    f.addStep(ShellCommand(name='remove symbolic link lldb',
+                           command=['rm',
+                                    lldb_srcdir + '/llvm/tools/lldb'],
+                           haltOnFailure=False,
+                           flunkOnFailure=False,
+                           workdir=WithProperties('%(builddir)s')))
     f.addStep(SVN(name='svn-lldb',
                   mode='update',
                   baseURL='http://llvm.org/svn/llvm-project/lldb/',
@@ -838,13 +845,6 @@ def getLLDBxcodebuildFactory(use_cc=None,
                                        build_type,
                                        config,
                                        env={'DYLD_FRAMEWORK_PATH' : WithProperties('%(lldb_bindir)s')})
-        # Remove symbolic link to lldb, otherwise xcodebuild will have circular dependency in next build
-        f.addStep(ShellCommand(name='remove symbolic link lldb',
-                               command=['rm',
-                                        lldb_srcdir + '/llvm/tools/lldb'],
-                               haltOnFailure=False,
-                               flunkOnFailure=False,
-                               workdir=WithProperties('%(builddir)s')))
 # Compress and upload test log
     f = archiveLLDBTestTraces(f, "build/lldb-test-traces*")
 
