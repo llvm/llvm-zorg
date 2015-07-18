@@ -394,7 +394,7 @@ def getLLDBRemoteTestSteps(f,
                     '-s',
                     WithProperties('%(deviceid)s'),
                     'shell']
-        hostname = 'localhost'
+        hostname = '127.0.0.1'
         launchcmd = ['screen', '-d', '-m'] + shellcmd + [WithProperties("TMPDIR=%(remote_dir)s/tmp")]
         terminatecmd = 'ps | grep lldb-server | awk \'{print $2}\' | xargs'
         terminatecmd = WithProperties('adb -s %(deviceid)s shell ' + terminatecmd + ' adb -s %(deviceid)s shell kill')
