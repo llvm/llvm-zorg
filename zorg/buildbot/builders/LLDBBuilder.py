@@ -744,9 +744,10 @@ def getLLDBxcodebuildFactory(use_cc=None,
                            haltOnFailure=True,
                            workdir=WithProperties('%(builddir)s')))
     f.addStep(ShellCommand(name='clean.test trace',
-                           command='rm -rf %s/build/*' % lldb_srcdir,
-                           haltOnFailure=True,
-                           workdir=WithProperties('%(builddir)s')))
+                           command='rm -rf build/*',
+                           haltOnFailure=False,
+                           flunkOnFailure=False,
+                           workdir='.'))
     # Remove symbolic link to lldb, otherwise xcodebuild will have circular dependency
     f.addStep(ShellCommand(name='remove symbolic link lldb',
                            command=['rm',
