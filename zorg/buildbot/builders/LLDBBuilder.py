@@ -952,7 +952,9 @@ def getLLDBScriptCommandsFactory(
         getTestSteps(f, scriptExt)
         # upload test traces
         getShellCommandStep(f, name='upload test traces',
-                            command=['uploadTestTrace' + scriptExt],
+                            command=['uploadTestTrace' + scriptExt,
+                                     WithProperties('%(buildnumber)s'),
+                                     WithProperties('%(buildername)s')],
                             flunkOnFailure=False)
 
     # Upload lldb-server binaries and trigger android builders
