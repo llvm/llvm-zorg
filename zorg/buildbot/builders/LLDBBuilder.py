@@ -8,6 +8,7 @@ from buildbot.steps.shell import Configure, SetProperty
 from buildbot.steps.shell import ShellCommand, WarningCountingShellCommand
 from buildbot.steps.slave import RemoveDirectory
 from buildbot.process.properties import WithProperties, Property
+from buildbot.steps import trigger
 import zorg.buildbot.commands.BatchFileDownload as batch_file_download
 from zorg.buildbot.commands.LitTestCommand import LitTestCommand
 from zorg.buildbot.builders.Util import getVisualStudioEnvironment
@@ -854,4 +855,110 @@ def getLLDBxcodebuildFactory(use_cc=None,
 # 2012-10-16-11_26_48/Failure-x86_64-_Applications_Xcode.app_Contents_Developer_Toolchains_XcodeDefault.xctoolchain_usr_bin_clang-TestLogging.LogTestCase.test_with_dsym.log
 #
 # Possible results are ExpectedFailure, Failure, SkippedTest, UnexpectedSuccess, and Error.    return f
+    return f
+
+def getShellCommandStep(f,
+                        name,
+                        command,
+                        description="",
+                        flunkOnFailure=True,
+                        haltOnFailure=True,
+                        workdir='scripts',
+                        env=None):
+    if env is None:
+        env = {}
+    f.addStep(ShellCommand(name=name,
+                           command=command,
+                           description=description,
+                           env=env,
+                           flunkOnFailure=flunkOnFailure,
+                           haltOnFailure=haltOnFailure,
+                           workdir=workdir))
+
+# get configuration of tests
+# config file should be placed under builddir on builder machine
+# file name: test_cfg.json
+# content: json format with keys test[num]:target-compiler-architecture
+# example: {"test1":"android-gcc4.9-i386",
+#           "test2":"local-clang-x86",
+#           "test3":"local-clang-i386"}
+def getTestConfig(f):
+    def getRemoteCfg(rc, stdout, stderr):
+        return json.loads(stdout)
+    f.addStep(SetProperty(name="get test config",
+                          command="cat test_cfg.json",
+                          extract_fn=getRemoteCfg,
+                          description="get remote target",
+                          workdir="scripts"))
+    return f
+def getTestSteps(f, scriptExt):
+    # buildbot doesn't support dynamic step creation, so create 8 test steps as place holder
+    # then each builder will define available tests in test_cfg.json
+    # if there're less than 8 tests defined on certain builder, extra steps will be skipped and hidden from test details view
+    # **hide step is not supported by buildbot 0.8.5
+    # flunkOnFailure only takes boolean value, and cannot take configurable property.
+    # workaround: don't flunk the last two tests
+    # put non flunkable tests as the last two, test7 and test8
+    getTestConfig(f)
+    for x in range(1, 9):
+        test='test'+str(x)
+        f.addStep(LitTestCommand(name=test,
+                                 command=['test' + scriptExt,
+                                          Property(test)],
+                                 description="",
+                                 doStepIf=lambda step: step.build.hasProperty(step.name),
+                                 flunkOnFailure=(x<7),
+                                 warnOnFailure=(x<7),
+                                 workdir='scripts'))
+
+def getLLDBScriptCommandsFactory(
+                       downloadBinary=True,
+                       buildAndroid=False,
+                       runTest=True,
+                       scriptExt='.sh',
+                       ):
+    f = buildbot.process.factory.BuildFactory()
+
+    # Checkout source code
+    getShellCommandStep(f, name='checkout source code',
+                        command=['checkoutSource' + scriptExt,
+                                 WithProperties('%(revision)s')])
+
+    # Set source revision
+    f.addStep(SetProperty(name="set revision",
+              command=['svnversion'],
+              property="got_revision",
+              workdir="llvm"))
+
+    # Configure
+    getShellCommandStep(f, name='cmake local',
+                        command=['cmake' + scriptExt])
+
+    # Build
+    getShellCommandStep(f, name='ninja build local',
+                        command=['buildLocal' + scriptExt])
+    if buildAndroid:
+        getShellCommandStep(f, name='build android',
+                            command=['buildAndroid' + scriptExt])
+
+    # Get lldb-server binaries
+    if downloadBinary:
+        getShellCommandStep(f, name='get lldb-server binaries',
+                            command=['downloadBinaries' + scriptExt,
+                                      WithProperties('%(revision)s')])
+
+    # Test
+    if runTest:
+        getTestSteps(f, scriptExt)
+        # upload test traces
+        getShellCommandStep(f, name='upload test traces',
+                            command=['uploadTestTrace' + scriptExt],
+                            flunkOnFailure=False)
+
+    # Upload lldb-server binaries and trigger android builders
+    if buildAndroid:
+        getShellCommandStep(f, name='upload lldb-server binaries',
+                            command=['uploadBinaries' + scriptExt])
+        f.addStep(trigger.Trigger(schedulerNames=['lldb_android_scheduler'],
+                                  waitForFinish=False))
     return f

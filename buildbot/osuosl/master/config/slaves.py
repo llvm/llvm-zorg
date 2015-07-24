@@ -186,6 +186,10 @@ def get_build_slaves():
         # Ubuntu 14.04 x86_64, Intel(R) Xeon(R) CPU E5-2680 v2 @ 2.80GHz
         create_slave("lldb-lab-linux01", properties={'jobs': 40}, max_builds=1),
 
+        # Windows 7 x86_64
+        create_slave("lldb-lab-win01", properties={'jobs': 40}, max_builds=1),
+        # Ubuntu 14.04 x86_64
+        create_slave("lldb-linux-android-buildserver", properties={'jobs': 40}, max_builds=1),
         # Ubuntu 14.04 x86_64, Intel(R) Xeon(R) CPU L5520 @ 2.27GHz
         create_slave("bpf-build-slave01", properties={'jobs': 16}, max_builds=1),
 

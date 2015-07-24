@@ -130,6 +130,8 @@ def get_status_targets(standard_builders, standard_categories=None):
             subject="Build %(builder)s Failure",
             mode = "failing",
             builders = ["lldb-x86_64-ubuntu-14.04-cmake",
+                        "lldb-x86_64-ubuntu-14.04-buildserver",
+                        "lldb-windows7-android",
                         "lldb-x86_64-darwin-13.4",
                         "lldb-x86_64-ubuntu-14.04-android"],
             addLogs=False,

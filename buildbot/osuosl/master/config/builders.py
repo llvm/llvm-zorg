@@ -1040,34 +1040,43 @@ def _get_experimental_scheduled_builders():
          'slavenames': ["lldb-build1-ubuntu-1404"],
          'builddir': "buildWorkingDir",
          'category' : 'lldb',
-         'factory': LLDBBuilder.getLLDBUbuntuCMakeBuildFactory(
-                    build_compiler="clang",
-                    build_type="Release",
-                    local_test_archs=['x86_64', 'i386'],
-                    local_test_compilers=['clang', 'totclang', 'gcc4.8.2', 'gcc4.9.2'],
-                    #remote_configs=[RemoteConfig('linux','x86_64',['clang'],['x86_64'])],
-                    env={'SHELL':"/bin/bash"})},
+         'factory': LLDBBuilder.getLLDBScriptCommandsFactory(
+                    downloadBinary=False,
+                    buildAndroid=False,
+                    runTest=True)},
         {'name': "lldb-x86_64-darwin-13.4",
          'slavenames': ["lldb-x86_64-darwin-13.4"],
          'builddir': "buildDir",
          'category' : 'lldb',
-         'factory': LLDBBuilder.getLLDBxcodebuildFactory(
-                    build_type='Release',
-                    remote_configs=[RemoteConfig('android', 'arm', ['arm-linux-androideabi-gcc'], ['arm'])],
-                    env={'SHELL':"/bin/bash"})},
+         'factory': LLDBBuilder.getLLDBScriptCommandsFactory(
+                    downloadBinary=True,
+                    buildAndroid=False,
+                    runTest=True)},
         {'name': "lldb-x86_64-ubuntu-14.04-android",
          'slavenames': ["lldb-lab-linux01"],
          'builddir': "lldb-cross-compile",
          'category' : 'lldb',
-         'factory': LLDBBuilder.getLLDBUbuntuCMakeBuildFactory(
-                    build_compiler="clang",
-                    build_type="Release",
-                    remote_configs= [
-                                     RemoteConfig('android', 'i386', ['i686-linux-android-gcc'], ['i386']),
-                                     RemoteConfig('android', 'arm', ['arm-linux-androideabi-gcc'], ['arm']),
-                                     RemoteConfig('android', 'aarch64', ['aarch64-linux-android-gcc'], ['aarch64'])
-                                    ],
-                    env={'SHELL':"/bin/bash"})},
+         'factory': LLDBBuilder.getLLDBScriptCommandsFactory(
+                    downloadBinary=True,
+                    buildAndroid=False,
+                    runTest=True)},
+        {'name': "lldb-windows7-android",
+         'slavenames': ["lldb-lab-win01"],
+         'builddir': "lldb-win7-android",
+         'category': "lldb",
+         'factory': LLDBBuilder.getLLDBScriptCommandsFactory(
+                    downloadBinary=True,
+                    buildAndroid=False,
+                    runTest=True,
+                    scriptExt='.bat')},
+        {'name': "lldb-x86_64-ubuntu-14.04-buildserver",
+         'slavenames': ["lldb-linux-android-buildserver"],
+         'builddir': "lldb-android-buildserver",
+         'category' : 'lldb',
+         'factory': LLDBBuilder.getLLDBScriptCommandsFactory(
+                    downloadBinary=False,
+                    buildAndroid=True,
+                    runTest=False)}
         ]
 
 # Builders responsible building Sphinix documentation
