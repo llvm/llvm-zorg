@@ -221,6 +221,6 @@ if [ $BUILD_ANDROID == 1 ] ; then
 fi
 
 if [ $RUN_ANDROID == 1 ] ; then
-    test_android arm armeabi-v7a @@@STEP_WARNINGS@@@
+    test_android arm armeabi-v7a @@@STEP_FAILURE@@@
 #    test_android x86 x86 @@@STEP_WARNINGS@@@
 fi

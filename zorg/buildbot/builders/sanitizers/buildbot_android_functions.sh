@@ -23,8 +23,8 @@ function build_llvm_symbolizer { # ARCH triple
         -DLLVM_BUILD_RUNTIME=OFF \
         -DLLVM_TABLEGEN=$ROOT/llvm_build64/bin/llvm-tblgen \
         ${CMAKE_COMMON_OPTIONS} \
-        $LLVM_CHECKOUT || echo @@@STEP_WARNINGS@@@
-    ninja llvm-symbolizer || echo @@@STEP_WARNINGS@@@
+        $LLVM_CHECKOUT || echo @@@STEP_FAILURE@@@
+    ninja llvm-symbolizer || echo @@@STEP_FAILURE@@@
 
     cd ..
 }
@@ -59,10 +59,10 @@ function build_compiler_rt { # ARCH triple
         -DCOMPILER_RT_OUTPUT_DIR="$ANDROID_LIBRARY_OUTPUT_DIR" \
         -DCOMPILER_RT_EXEC_OUTPUT_DIR="$ANDROID_EXEC_OUTPUT_DIR" \
         ${CMAKE_COMMON_OPTIONS} \
-        $LLVM_CHECKOUT/projects/compiler-rt || echo @@@STEP_WARNINGS@@@
-    ninja asan || echo @@@STEP_WARNINGS@@@
+        $LLVM_CHECKOUT/projects/compiler-rt || echo @@@STEP_FAILURE@@@
+    ninja asan || echo @@@STEP_FAILURE@@@
     ls "$ANDROID_LIBRARY_OUTPUT_DIR"
-    ninja AsanUnitTests SanitizerUnitTests || echo @@@STEP_WARNINGS@@@
+    ninja AsanUnitTests SanitizerUnitTests || echo @@@STEP_FAILURE@@@
 
     cd ..
 }
