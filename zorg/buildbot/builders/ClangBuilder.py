@@ -592,9 +592,10 @@ def getClangCMakeBuildFactory(
                                           env=env))
 
     if test and testStage1:
+        haltOnStage1Check = not useTwoStage and not runTestSuite
         f.addStep(lit_test_command.LitTestCommand(name='ninja check 1',
                                    command=ninja_check_cmd,
-                                   haltOnFailure=not runTestSuite,
+                                   haltOnFailure=haltOnStage1Check,
                                    description=["checking stage 1"],
                                    descriptionDone=["stage 1 checked"],
                                    workdir=stage1_build,
