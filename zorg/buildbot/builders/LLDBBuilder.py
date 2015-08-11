@@ -926,9 +926,9 @@ def getLLDBScriptCommandsFactory(
 
     # Set source revision
     f.addStep(SetProperty(name="set revision",
-              command=['svnversion'],
+              command=['getRevision' + scriptExt],
               property="got_revision",
-              workdir="llvm"))
+              workdir="scripts"))
 
     # Configure
     getShellCommandStep(f, name='cmake local',
@@ -945,7 +945,7 @@ def getLLDBScriptCommandsFactory(
     if downloadBinary:
         getShellCommandStep(f, name='get lldb-server binaries',
                             command=['downloadBinaries' + scriptExt,
-                                      WithProperties('%(revision)s')])
+                                      WithProperties('%(got_revision)s')])
 
     # Test
     if runTest:
@@ -962,5 +962,6 @@ def getLLDBScriptCommandsFactory(
         getShellCommandStep(f, name='upload lldb-server binaries',
                             command=['uploadBinaries' + scriptExt])
         f.addStep(trigger.Trigger(schedulerNames=['lldb_android_scheduler'],
+                                  updateSourceStamp=False,
                                   waitForFinish=False))
     return f
