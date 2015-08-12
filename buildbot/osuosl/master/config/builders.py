@@ -710,6 +710,14 @@ def _get_lldb_builders():
          'slavenames': ["hexagon-build-01"],
          'builddir': "builddir/lldb-win7-msvc",
          'factory': LLDBBuilder.getLLDBWindowsCMakeBuildFactory(config='Debug')},
+        {'name': "lldb-x86_64-ubuntu-14.04-buildserver",
+         'slavenames': ["lldb-linux-android-buildserver"],
+         'builddir': "lldb-android-buildserver",
+         'category' : 'lldb',
+         'factory': LLDBBuilder.getLLDBScriptCommandsFactory(
+                    downloadBinary=False,
+                    buildAndroid=True,
+                    runTest=False)}
        ]
 
 # Offline.
@@ -1069,14 +1077,6 @@ def _get_experimental_scheduled_builders():
                     buildAndroid=False,
                     runTest=True,
                     scriptExt='.bat')},
-        {'name': "lldb-x86_64-ubuntu-14.04-buildserver",
-         'slavenames': ["lldb-linux-android-buildserver"],
-         'builddir': "lldb-android-buildserver",
-         'category' : 'lldb',
-         'factory': LLDBBuilder.getLLDBScriptCommandsFactory(
-                    downloadBinary=False,
-                    buildAndroid=True,
-                    runTest=False)}
         ]
 
 # Builders responsible building Sphinix documentation
