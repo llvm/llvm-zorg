@@ -863,6 +863,7 @@ def getShellCommandStep(f,
                         description="",
                         flunkOnFailure=True,
                         haltOnFailure=True,
+                        alwaysRun=False,
                         workdir='scripts',
                         env=None):
     if env is None:
@@ -873,6 +874,7 @@ def getShellCommandStep(f,
                            env=env,
                            flunkOnFailure=flunkOnFailure,
                            haltOnFailure=haltOnFailure,
+                           alwaysRun=alwaysRun,
                            workdir=workdir))
 
 # get configuration of tests
@@ -920,6 +922,13 @@ def getLLDBScriptCommandsFactory(
                        ):
     f = buildbot.process.factory.BuildFactory()
 
+    # Acquire lock
+    if downloadBinary:
+        getShellCommandStep(f, name='acquire lock',
+                            command=['acquireLock' + scriptExt,
+                                     WithProperties('%(scheduler:-none)s')],
+                            description='get')
+
     # Checkout source code
     getShellCommandStep(f, name='checkout source code',
                         command=['checkoutSource' + scriptExt,
@@ -965,4 +974,11 @@ def getLLDBScriptCommandsFactory(
         f.addStep(trigger.Trigger(schedulerNames=['lldb_android_scheduler'],
                                   updateSourceStamp=False,
                                   waitForFinish=False))
+    # Release lock
+    if downloadBinary:
+        getShellCommandStep(f, name='release lock',
+                            command=['releaseLock' + scriptExt,
+                                     WithProperties('%(scheduler:-none)s')],
+                            description='release',
+                            alwaysRun=True)
     return f
