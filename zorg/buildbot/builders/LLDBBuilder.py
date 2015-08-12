@@ -926,7 +926,7 @@ def getLLDBScriptCommandsFactory(
     if downloadBinary:
         getShellCommandStep(f, name='acquire lock',
                             command=['acquireLock' + scriptExt,
-                                     WithProperties('%(scheduler:-none)s')],
+                                     'totBuild'],
                             description='get')
 
     # Checkout source code
@@ -978,7 +978,7 @@ def getLLDBScriptCommandsFactory(
     if downloadBinary:
         getShellCommandStep(f, name='release lock',
                             command=['releaseLock' + scriptExt,
-                                     WithProperties('%(scheduler:-none)s')],
+                                     'totBuild'],
                             description='release',
                             alwaysRun=True)
     return f
