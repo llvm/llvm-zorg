@@ -30,7 +30,7 @@ def get_build_slaves():
         # Mac Pro 2.7 GHz 12-Core Intel Xeon E5, Maverick 10.9.2
         create_slave("as-bldslv9", properties={'jobs' : 8}, max_builds=4),
 
-        # Cortex-A15 slaves
+        # ARMv7 Linaro slaves
         create_slave("linaro-chrome-01", properties={'jobs' : 2}, max_builds=1),
         create_slave("linaro-chrome-02", properties={'jobs' : 2}, max_builds=1),
         create_slave("linaro-chrome-03", properties={'jobs' : 2}, max_builds=1),
@@ -42,7 +42,11 @@ def get_build_slaves():
         create_slave("linaro-a15-03", properties={'jobs' : 4}, max_builds=1),
         create_slave("linaro-a15-04", properties={'jobs' : 4}, max_builds=1),
 
-        create_slave("linaro-dragon-01", properties={'jobs' : 4}, max_builds=1),
+        # AArch64 Linaro slaves
+        create_slave("linaro-apm-01", properties={'jobs' : 8}, max_builds=1),
+        create_slave("linaro-apm-02", properties={'jobs' : 8}, max_builds=1),
+        create_slave("linaro-apm-03", properties={'jobs' : 8}, max_builds=1),
+        create_slave("linaro-apm-04", properties={'jobs' : 8}, max_builds=1),
 
         # AMD Athlon(tm) 64 X2 Dual Core 3800+, Ubuntu x86_64
         create_slave("grosser1", properties={'jobs': 2}, max_builds=1),
