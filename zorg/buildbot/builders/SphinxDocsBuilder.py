@@ -6,10 +6,11 @@ from buildbot.process.properties import WithProperties
 from zorg.buildbot.commands.NinjaCommand import NinjaCommand
 
 def getSphinxDocsBuildFactory(
-        llvm_html  = False, # Build LLVM HTML documentation
-        llvm_man   = False, # Build LLVM man pages
-        clang_html = False, # Build Clang HTML documentation
-        lld_html   = False  # Build LLD HTML documentation
+        llvm_html   = False, # Build LLVM HTML documentation
+        llvm_man    = False, # Build LLVM man pages
+        clang_html  = False, # Build Clang HTML documentation
+        lld_html    = False, # Build LLD HTML documentation
+        libcxx_html = False  # Build Libc++ HTML documentation
         ):
 
     f = buildbot.process.factory.BuildFactory()
@@ -18,6 +19,8 @@ def getSphinxDocsBuildFactory(
     llvm_objdir = 'llvm/build'
     clang_srcdir = llvm_srcdir + '/tools/clang'
     lld_srcdir = llvm_srcdir + '/tools/lld'
+    libcxx_srcdir = llvm_srcdir + '/projects/libcxx'
+    libcxxabi_srcdir = llvm_srcdir + '/projects/libcxxabi'
 
     # Get LLVM. This is essential for all builds
     # because we build all subprojects in tree
@@ -40,6 +43,18 @@ def getSphinxDocsBuildFactory(
                       baseURL='http://llvm.org/svn/llvm-project/lld/',
                       defaultBranch='trunk',
                       workdir=lld_srcdir))
+
+    if libcxx_html:
+        f.addStep(SVN(name='svn-libcxx',
+                      mode='update',
+                      baseURL='http://llvm.org/svn/llvm-project/libcxx/',
+                      defaultBranch='trunk',
+                      workdir=libcxx_srcdir))
+        f.addStep(SVN(name='svn-libcxxabi',
+                      mode='update',
+                      baseURL='http://llvm.org/svn/llvm-project/libcxxabi/',
+                      defaultBranch='trunk',
+                      workdir=libcxxabi_srcdir))
 
     f.addStep(ShellCommand(name="create-build-dir",
                                command=["mkdir", "-p", llvm_objdir],
@@ -90,6 +105,14 @@ def getSphinxDocsBuildFactory(
                                description=["Build LLD Sphinx HTML documentation"],
                                workdir=llvm_objdir,
                                targets=['docs-lld-html']
+                              ))
+
+    if libcxx_html:
+        f.addStep(NinjaCommand(name="docs-libcxx-html",
+                               haltOnFailure=True,
+                               description=["Build Libc++ Sphinx HTML documentation"],
+                               workdir=llvm_objdir,
+                               targets=['docs-libcxx-html']
                               ))
 
     return f

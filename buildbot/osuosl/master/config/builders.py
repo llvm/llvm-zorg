@@ -1161,6 +1161,13 @@ def _get_documentation_builders():
                'factory': SphinxDocsBuilder.getSphinxDocsBuildFactory(lld_html=True),
                'category' : 'lld'
              },
+             {
+               'name':"libcxx-sphinx-docs",
+               'slavenames':["ericwf-buildslave2],
+               'builddir':"libcxx-sphinx-docs",
+               'factory': SphinxDocsBuilder.getSphinxDocsBuildFactory(libcxx_html=True),
+               'category' : 'libcxx'
+             }
            ]
 
 def get_builders():
