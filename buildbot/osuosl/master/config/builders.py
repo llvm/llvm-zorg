@@ -1163,7 +1163,7 @@ def _get_documentation_builders():
              },
              {
                'name':"libcxx-sphinx-docs",
-               'slavenames':["ericwf-buildslave2],
+               'slavenames':["ericwf-buildslave2"],
                'builddir':"libcxx-sphinx-docs",
                'factory': SphinxDocsBuilder.getSphinxDocsBuildFactory(libcxx_html=True),
                'category' : 'libcxx'
