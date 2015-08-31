@@ -23,6 +23,7 @@ CORPUS_ROOT=$ROOT/fuzzing-with-sanitizers/llvm
 CLANG_FORMAT_CORPUS=$CORPUS_ROOT/clang-format/C1
 CLANG_CORPUS=$CORPUS_ROOT/clang/C1
 CLANG_TOKENS_CORPUS=$CORPUS_ROOT/clang/TOK1
+LLVM_AS_CORPUS=$CORPUS_ROOT/llvm-as/C1
 TOKENS_FILE=$LLVM/lib/Fuzzer/cxx_fuzzer_tokens.txt
 
 if [ "$BUILDBOT_CLOBBER" != "" ]; then
@@ -91,19 +92,19 @@ echo @@@BUILD_STEP pull test corpuses @@@
 
 echo @@@BUILD_STEP stage2/asan run clang-format-fuzzer@@@
 
-(${STAGE2_ASAN_DIR}/bin/clang-format-fuzzer -jobs=32 -workers=8 -runs=131072 $CLANG_FORMAT_CORPUS) || \
-  echo @@@STEP_WARNINGS@@@
+#(${STAGE2_ASAN_DIR}/bin/clang-format-fuzzer -jobs=32 -workers=8 -runs=131072 $CLANG_FORMAT_CORPUS) || \
+#  echo @@@STEP_WARNINGS@@@
 
 echo @@@BUILD_STEP stage2/asan run clang-fuzzer@@@
 # leak detection is disabled until assertions from
 # https://llvm.org/bugs/show_bug.cgi?id=23057#c4 are fixed.
 # See also https://llvm.org/bugs/show_bug.cgi?id=23057#c12
-(ASAN_OPTIONS=$ASAN_OPTIONS:detect_leaks=0 ${STAGE2_ASAN_DIR}/bin/clang-fuzzer -jobs=32 -workers=8 -runs=131072 $CLANG_CORPUS) || \
-  echo @@@STEP_WARNINGS@@@
+#(ASAN_OPTIONS=$ASAN_OPTIONS:detect_leaks=0 ${STAGE2_ASAN_DIR}/bin/clang-fuzzer -jobs=8 -workers=8 -runs=131072 $CLANG_CORPUS) || \
+#  echo @@@STEP_WARNINGS@@@
 
 echo @@@BUILD_STEP stage2/asan run clang-fuzzer with tokens@@@
-(ASAN_OPTIONS=$ASAN_OPTIONS:detect_leaks=0 ${STAGE2_ASAN_DIR}/bin/clang-fuzzer -jobs=32 -workers=8 -runs=131072 -tokens=$TOKENS_FILE $CLANG_TOKENS_CORPUS) || \
-  echo @@@STEP_WARNINGS@@@
+#(ASAN_OPTIONS=$ASAN_OPTIONS:detect_leaks=0 ${STAGE2_ASAN_DIR}/bin/clang-fuzzer -jobs=8 -workers=8 -runs=131072 -tokens=$TOKENS_FILE $CLANG_TOKENS_CORPUS) || \
+#  echo @@@STEP_WARNINGS@@@
 
 # Stage 3 / AddressSanitizer + assertions
 mkdir -p ${STAGE2_ASAN_ASSERTIONS_DIR}
@@ -117,23 +118,25 @@ cmake_stage2_asan_assertions_options="$cmake_stage2_asan_options -DLLVM_ENABLE_A
 
 echo @@@BUILD_STEP stage2/asan+assertions build clang-format-fuzzer and clang-fuzzer@@@
 
-(cd ${STAGE2_ASAN_ASSERTIONS_DIR} && ninja clang-format-fuzzer clang-fuzzer) || echo @@@STEP_FAILURE@@@
+(cd ${STAGE2_ASAN_ASSERTIONS_DIR} && ninja clang-format-fuzzer clang-fuzzer llvm-as-fuzzer) || echo @@@STEP_FAILURE@@@
 
 echo @@@BUILD_STEP stage2/asan+assertions run clang-format-fuzzer@@@
 
-(${STAGE2_ASAN_ASSERTIONS_DIR}/bin/clang-format-fuzzer -jobs=8 -workers=8 -runs=131072 $CLANG_FORMAT_CORPUS) || \
-  echo @@@STEP_WARNINGS@@@
+#(${STAGE2_ASAN_ASSERTIONS_DIR}/bin/clang-format-fuzzer -jobs=8 -workers=8 -runs=131072 $CLANG_FORMAT_CORPUS) || \
+#  echo @@@STEP_WARNINGS@@@
 
 echo @@@BUILD_STEP stage2/asan+assertions run clang-fuzzer@@@
-(${STAGE2_ASAN_ASSERTIONS_DIR}/bin/clang-fuzzer -jobs=8 -workers=8 -runs=131072 $CLANG_CORPUS) || \
-  echo @@@STEP_WARNINGS@@@
+#(${STAGE2_ASAN_ASSERTIONS_DIR}/bin/clang-fuzzer -jobs=8 -workers=8 -runs=131072 $CLANG_CORPUS) || \
+#  echo @@@STEP_WARNINGS@@@
 
 echo @@@BUILD_STEP stage2/asan+assertions run clang-fuzzer with tokens@@@
-(${STAGE2_ASAN_ASSERTIONS_DIR}/bin/clang-fuzzer -jobs=8 -workers=8 -runs=131072 -tokens=$TOKENS_FILE $CLANG_TOKENS_CORPUS) || \
+#(${STAGE2_ASAN_ASSERTIONS_DIR}/bin/clang-fuzzer -jobs=8 -workers=8 -runs=131072 -tokens=$TOKENS_FILE $CLANG_TOKENS_CORPUS) || \
+#  echo @@@STEP_WARNINGS@@@
+
+echo @@@BUILD_STEP stage2/asan+assertions run llvm-as-fuzzer@@@
+(${STAGE2_ASAN_ASSERTIONS_DIR}/bin/llvm-as-fuzzer -jobs=8 -workers=8 -runs=10000000 -ascii_only=1 $LLVM_AS_CORPUS) || \
   echo @@@STEP_WARNINGS@@@
 
 echo @@@BUILD_STEP push corpus updates@@@
-$LLVM/lib/Fuzzer/pull_and_push_fuzz_corpus.sh $CLANG_FORMAT_CORPUS
-$LLVM/lib/Fuzzer/pull_and_push_fuzz_corpus.sh $CLANG_CORPUS
-$LLVM/lib/Fuzzer/pull_and_push_fuzz_corpus.sh $CLANG_TOKENS_CORPUS
+$LLVM/lib/Fuzzer/pull_and_push_fuzz_corpus.sh $CORPUS_ROOT
 
