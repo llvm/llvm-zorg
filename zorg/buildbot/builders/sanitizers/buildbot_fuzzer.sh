@@ -134,7 +134,7 @@ echo @@@BUILD_STEP stage2/asan+assertions run clang-fuzzer with tokens@@@
 #  echo @@@STEP_WARNINGS@@@
 
 echo @@@BUILD_STEP stage2/asan+assertions run llvm-as-fuzzer@@@
-(${STAGE2_ASAN_ASSERTIONS_DIR}/bin/llvm-as-fuzzer -jobs=8 -workers=8 -runs=10000000 -ascii_only=1 $LLVM_AS_CORPUS) || \
+(${STAGE2_ASAN_ASSERTIONS_DIR}/bin/llvm-as-fuzzer -jobs=8 -workers=8 -runs=10000000 -only_ascii=1 $LLVM_AS_CORPUS) || \
   echo @@@STEP_WARNINGS@@@
 
 echo @@@BUILD_STEP push corpus updates@@@
