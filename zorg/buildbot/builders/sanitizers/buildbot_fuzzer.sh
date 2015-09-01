@@ -131,8 +131,9 @@ echo @@@BUILD_STEP stage2/asan+assertions run clang-fuzzer with tokens@@@
 (${STAGE2_ASAN_ASSERTIONS_DIR}/bin/clang-fuzzer -jobs=8 -workers=8 -runs=131072 -tokens=$TOKENS_FILE $CLANG_TOKENS_CORPUS) || \
   echo @@@STEP_WARNINGS@@@
 
+# No leak detection due to https://llvm.org/bugs/show_bug.cgi?id=24639#c5
 echo @@@BUILD_STEP stage2/asan+assertions run llvm-as-fuzzer@@@
-(${STAGE2_ASAN_ASSERTIONS_DIR}/bin/llvm-as-fuzzer -jobs=8 -workers=8 -runs=10000000 -only_ascii=1 $LLVM_AS_CORPUS) || \
+(ASAN_OPTIONS=$ASAN_OPTIONS:detect_leaks=0 ${STAGE2_ASAN_ASSERTIONS_DIR}/bin/llvm-as-fuzzer -jobs=8 -workers=8 -runs=10000000 -only_ascii=1 $LLVM_AS_CORPUS) || \
   echo @@@STEP_WARNINGS@@@
 
 echo @@@BUILD_STEP push corpus updates@@@
