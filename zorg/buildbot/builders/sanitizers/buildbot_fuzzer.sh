@@ -124,11 +124,11 @@ echo @@@BUILD_STEP stage2/asan+assertions run clang-format-fuzzer@@@
   echo @@@STEP_WARNINGS@@@
 
 echo @@@BUILD_STEP stage2/asan+assertions run clang-fuzzer@@@
-(${STAGE2_ASAN_ASSERTIONS_DIR}/bin/clang-fuzzer -jobs=8 -workers=8 -runs=131072 $CLANG_CORPUS) || \
+(${STAGE2_ASAN_ASSERTIONS_DIR}/bin/clang-fuzzer -jobs=8 -workers=8 -only_ascii=1 -runs=131072 $CLANG_CORPUS) || \
   echo @@@STEP_WARNINGS@@@
 
 echo @@@BUILD_STEP stage2/asan+assertions run clang-fuzzer with tokens@@@
-(${STAGE2_ASAN_ASSERTIONS_DIR}/bin/clang-fuzzer -jobs=8 -workers=8 -runs=131072 -tokens=$TOKENS_FILE $CLANG_TOKENS_CORPUS) || \
+(${STAGE2_ASAN_ASSERTIONS_DIR}/bin/clang-fuzzer -jobs=8 -workers=8 -only_ascii=1 -runs=131072 -tokens=$TOKENS_FILE $CLANG_TOKENS_CORPUS) || \
   echo @@@STEP_WARNINGS@@@
 
 # No leak detection due to https://llvm.org/bugs/show_bug.cgi?id=24639#c5
