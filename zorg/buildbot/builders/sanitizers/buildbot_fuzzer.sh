@@ -22,9 +22,7 @@ CMAKE_COMMON_OPTIONS="-GNinja -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_ASSERTION
 CORPUS_ROOT=$ROOT/fuzzing-with-sanitizers/llvm
 CLANG_FORMAT_CORPUS=$CORPUS_ROOT/clang-format/C1
 CLANG_CORPUS=$CORPUS_ROOT/clang/C1
-CLANG_TOKENS_CORPUS=$CORPUS_ROOT/clang/TOK1
 LLVM_AS_CORPUS=$CORPUS_ROOT/llvm-as/C1
-TOKENS_FILE=$LLVM/lib/Fuzzer/cxx_fuzzer_tokens.txt
 
 if [ "$BUILDBOT_CLOBBER" != "" ]; then
   echo @@@BUILD_STEP clobber@@@
@@ -43,7 +41,6 @@ rm -rf ${STAGE2_ASAN_ASSERTIONS_DIR}
 # FIXME: synchronize this directory with some external persistent storage.
 mkdir -p $CLANG_FORMAT_CORPUS
 mkdir -p $CLANG_CORPUS
-mkdir -p $CLANG_TOKENS_CORPUS
 
 # Make sure asan intercepts SIGABRT so that the fuzzer can print the test cases
 # for assertion failures.
@@ -100,10 +97,6 @@ export ASAN_SYMBOLIZER_PATH="${llvm_symbolizer_path}"
 #(ASAN_OPTIONS=$ASAN_OPTIONS:detect_leaks=0 ${STAGE2_ASAN_DIR}/bin/clang-fuzzer -jobs=8 -workers=8 -runs=131072 $CLANG_CORPUS) || \
 #  echo @@@STEP_WARNINGS@@@
 
-#echo @@@BUILD_STEP stage2/asan run clang-fuzzer with tokens@@@
-#(ASAN_OPTIONS=$ASAN_OPTIONS:detect_leaks=0 ${STAGE2_ASAN_DIR}/bin/clang-fuzzer -jobs=8 -workers=8 -runs=131072 -tokens=$TOKENS_FILE $CLANG_TOKENS_CORPUS) || \
-#  echo @@@STEP_WARNINGS@@@
-
 # Stage 3 / AddressSanitizer + assertions
 mkdir -p ${STAGE2_ASAN_ASSERTIONS_DIR}
 echo @@@BUILD_STEP stage2/asan+assertions check-fuzzer@@@
@@ -125,10 +118,6 @@ echo @@@BUILD_STEP stage2/asan+assertions run clang-format-fuzzer@@@
 
 echo @@@BUILD_STEP stage2/asan+assertions run clang-fuzzer@@@
 (${STAGE2_ASAN_ASSERTIONS_DIR}/bin/clang-fuzzer -jobs=8 -workers=8 -only_ascii=1 -runs=131072 $CLANG_CORPUS) || \
-  echo @@@STEP_WARNINGS@@@
-
-echo @@@BUILD_STEP stage2/asan+assertions run clang-fuzzer with tokens@@@
-(${STAGE2_ASAN_ASSERTIONS_DIR}/bin/clang-fuzzer -jobs=8 -workers=8 -only_ascii=1 -runs=131072 -tokens=$TOKENS_FILE $CLANG_TOKENS_CORPUS) || \
   echo @@@STEP_WARNINGS@@@
 
 # No leak detection due to https://llvm.org/bugs/show_bug.cgi?id=24639#c5
