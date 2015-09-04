@@ -110,7 +110,7 @@ function test_android_on_device { # ARCH SERIAL BUILD_ID BUILD_FLAVOR STEP_FAILU
     ADB=$ROOT/../../../bin/adb
     DEVICE_ROOT=/data/local/asan_test
 
-    export ADB_SERIAL=$_serial
+    export ANDROID_SERIAL=$_serial
     echo "Serial $_serial"
 
     echo @@@BUILD_STEP device setup [$DEVICE_DESCRIPTION]@@@
