@@ -67,6 +67,17 @@ function build_compiler_rt { # ARCH triple
     cd ..
 }
 
+# If a multiarch device has x86 as the first arch, remove everything else from
+# the list. This captures cases like [x86,armeabi-v7a], where the arm part is
+# software emulation and incompatible with ASan.
+function patch_abilist { # IN OUT
+    local _abilist=$1
+    local _out=$2
+    if [[ "$_abilist" == "x86,"* ]]; then
+      _abilist="x86"
+    fi
+    eval $_out="'$_abilist'"
+}
 
 function test_android { # ARCH ABI STEP_FAILURE
     local _arch=$1
@@ -75,6 +86,7 @@ function test_android { # ARCH ABI STEP_FAILURE
     ANDROID_DEVICES=$(adb devices | grep 'device$' | awk '{print $1}')
     for SERIAL in $ANDROID_DEVICES; do
       ABILIST=$(adb -s $SERIAL shell getprop ro.product.cpu.abilist)
+      patch_abilist $ABILIST ABILIST
       if [[ $ABILIST == *"$_abi"* ]]; then
         BUILD_ID=$(adb -s $SERIAL shell getprop ro.build.id | tr -d '\r')
         BUILD_FLAVOR=$(adb -s $SERIAL shell getprop ro.build.flavor | tr -d '\r')
