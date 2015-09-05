@@ -956,14 +956,6 @@ def _get_libcxx_builders():
          'category': 'libcxx'},
 
         # EricWF's builders on ericwf-buildslave
-        {'name': 'libcxx-libcxxabi-x86_64-linux-ubuntu',
-         'slavenames': ['ericwf-buildslave'],
-         'builddir' : 'libcxx-libcxxabi-x86_64-linux-ubuntu',
-         'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
-            env={'PATH': '/usr/local/bin:/usr/bin:/bin',
-                 'CC': 'clang', 'CXX': 'clang++'}),
-        'category': 'libcxx'},
-
         {'name': 'libcxx-libcxxabi-x86_64-linux-ubuntu-cxx03',
          'slavenames': ['ericwf-buildslave'],
          'builddir' : 'libcxx-libcxxabi-x86_64-linux-ubuntu-cxx03',
@@ -971,6 +963,15 @@ def _get_libcxx_builders():
             env={'PATH': '/usr/local/bin:/usr/bin:/bin',
                  'CC': 'clang', 'CXX': 'clang++'},
             lit_extra_opts={'std':'c++03'}),
+        'category': 'libcxx'},
+
+        {'name': 'libcxx-libcxxabi-x86_64-linux-ubuntu-cxx11',
+         'slavenames': ['ericwf-buildslave'],
+         'builddir' : 'libcxx-libcxxabi-x86_64-linux-ubuntu-cxx11',
+         'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
+            env={'PATH': '/usr/local/bin:/usr/bin:/bin',
+                 'CC': 'clang', 'CXX': 'clang++'},
+            lit_extra_opts={'std': 'c++11'}),
         'category': 'libcxx'},
 
         {'name': 'libcxx-libcxxabi-x86_64-linux-ubuntu-cxx14',
