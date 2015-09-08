@@ -420,16 +420,6 @@ def _get_clang_builders():
 #                                                               test=False,
 #                                                               xfails=clang_x86_64_linux_xfails)},
 
-         {'name': "clang-mergefunc-x86_64-freebsd",
-          'slavenames':["as-bldslv5"],
-         'builddir':"clang-mergefunc-x86_64-freebsd",
-         'factory' : NightlytestBuilder.getFastNightlyTestBuildFactory(triple='x86_64-unknown-freebsd10.0',
-                                                               stage1_config='Release+Asserts',
-                                                               merge_functions=True,
-                                                               make='gmake',
-                                                               test=False,
-                                                               xfails=clang_x86_64_freebsd_xfails)},
-
         # Mips check-all with CMake builder
         # We currently have to force CMAKE_HOST_TRIPLE and
         # CMAKE_DEFAULT_TARGET_TRIPLE on this system. CMake gets the value
@@ -567,6 +557,15 @@ def _get_clang_builders():
         ]
 
 # Offline.
+{'name': "clang-mergefunc-x86_64-freebsd",
+ 'slavenames':["as-bldslv5"],
+ 'builddir':"clang-mergefunc-x86_64-freebsd",
+ 'factory' : NightlytestBuilder.getFastNightlyTestBuildFactory(triple='x86_64-unknown-freebsd10.0',
+                                         stage1_config='Release+Asserts',
+                                         merge_functions=True,
+                                         make='gmake',
+                                         test=False,
+                                         xfails=clang_x86_64_freebsd_xfails)},
 {'name': "clang-native-arm-cortex-a15",
  'slavenames':["linaro-chrome-01"],
  'builddir':"clang-native-arm-cortex-a15",
