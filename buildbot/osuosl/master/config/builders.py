@@ -1080,7 +1080,7 @@ def _get_experimental_scheduled_builders():
          'factory' : ClangBuilder.getClangBuildFactory(useTwoStage=False,
                                                        clean=False,
                                                        test=True,
-                                                       stage1_config='Release+Asserts',
+                                                       stage1_config='Release',
                                                        cmake='cmake'),
          'category' : 'clang'},
 
