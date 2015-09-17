@@ -123,6 +123,21 @@ def _get_clang_fast_builders():
                     env={'PATH':'/home/llvmbb/bin/clang-latest/bin:/home/llvmbb/bin:/usr/local/bin:/usr/local/bin:/usr/bin:/bin',
                          'CC': 'ccache clang', 'CXX': 'ccache clang++', 'CCACHE_CPP2': 'yes'})},
 
+        {'name': "llvm-clang-lld-x86_64-scei-ps4-ubuntu-fast",
+         'slavenames': ["ps4-buildslave1"],
+         'builddir': "llvm-clang-lld-x86_64-scei-ps4-ubuntu-fast",
+         'factory': ClangAndLLDBuilder.getClangAndLLDBuildFactory(
+                     extraCmakeOptions=["-DCMAKE_C_COMPILER=clang",
+                                        "-DCMAKE_CXX_COMPILER=clang++",
+                                        "-DCOMPILER_RT_BUILD_BUILTINS:BOOL=OFF",
+                                        "-DCOMPILER_RT_BUILD_SANITIZERS:BOOL=OFF",
+                                        "-DCOMPILER_RT_CAN_EXECUTE_TESTS:BOOL=OFF",
+                                        "-DCOMPILER_RT_INCLUDE_TESTS:BOOL=OFF",
+                                        "-DLLVM_TOOL_COMPILER_RT_BUILD:BOOL=OFF",
+                                        "-DLLVM_TARGETS_TO_BUILD=X86"],
+                     triple="x86_64-scei-ps4",
+                     env={'PATH':'/opt/llvm_37/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'})},
+
         ]
 
 # Clang builders.

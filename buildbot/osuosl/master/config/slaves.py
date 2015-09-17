@@ -197,6 +197,9 @@ def get_build_slaves():
         # Ubuntu 14.04 x86_64, Intel(R) Xeon(R) CPU L5520 @ 2.27GHz
         create_slave("bpf-build-slave01", properties={'jobs': 16}, max_builds=1),
 
+        # Ubuntu 14.04 x86_64-scei-ps4, 2 x Intel(R) Xeon(R) CPU E5-2699 v3 @ 2.30GHz
+        create_slave("ps4-buildslave1", properties={'jobs': 64}, max_builds=1),
+
         # Defunct.
         # Intel(R) Pentium(R) CPU G620 @ 2.60GHz, Ubuntu i686
         #create_slave("botether", properties={'jobs': 2}, max_builds=1),
