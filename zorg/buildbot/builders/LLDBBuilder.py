@@ -893,7 +893,7 @@ def getTestConfig(f):
                           description="get remote target",
                           workdir="scripts"))
     return f
-def getTestSteps(f, scriptExt):
+def getTestSteps(f, scriptExt, pathSep):
     # buildbot doesn't support dynamic step creation, so create 8 test steps as place holder
     # then each builder will define available tests in test_cfg.json
     # if there're less than 8 tests defined on certain builder, extra steps will be skipped and hidden from test details view
@@ -905,7 +905,7 @@ def getTestSteps(f, scriptExt):
     for x in range(1, 9):
         test='test'+str(x)
         f.addStep(LitTestCommand(name=test,
-                                 command=['test' + scriptExt,
+                                 command=[pathSep + 'test' + scriptExt,
                                           Property(test)],
                                  description=["testing"],
                                  descriptionDone=[WithProperties('%('+test+':-)s')],
@@ -922,47 +922,56 @@ def getLLDBScriptCommandsFactory(
                        ):
     f = buildbot.process.factory.BuildFactory()
 
+    if scriptExt is '.bat':
+        pathSep = '.\\'
+    else:
+        pathSep = './'
+
+    # Update scripts
+    getShellCommandStep(f, name='update scripts',
+                        command=['updateScripts' + scriptExt])
+
     # Acquire lock
     if downloadBinary:
         getShellCommandStep(f, name='acquire lock',
-                            command=['acquireLock' + scriptExt,
+                            command=[pathSep + 'acquireLock' + scriptExt,
                                      'totBuild'],
                             description='get')
 
     # Checkout source code
     getShellCommandStep(f, name='checkout source code',
-                        command=['checkoutSource' + scriptExt,
+                        command=[pathSep + 'checkoutSource' + scriptExt,
                                  WithProperties('%(revision)s')])
 
     # Set source revision
     f.addStep(SetProperty(name="set revision",
-              command=['getRevision' + scriptExt],
+              command=[pathSep + 'getRevision' + scriptExt],
               property="got_revision",
               workdir="scripts"))
 
     # Configure
     getShellCommandStep(f, name='cmake local',
-                        command=['cmake' + scriptExt])
+                        command=[pathSep + 'cmake' + scriptExt])
 
     # Build
     getShellCommandStep(f, name='ninja build local',
-                        command=['buildLocal' + scriptExt])
+                        command=[pathSep + 'buildLocal' + scriptExt])
     if buildAndroid:
         getShellCommandStep(f, name='build android',
-                            command=['buildAndroid' + scriptExt])
+                            command=[pathSep + 'buildAndroid' + scriptExt])
 
     # Get lldb-server binaries
     if downloadBinary:
         getShellCommandStep(f, name='get lldb-server binaries',
-                            command=['downloadBinaries' + scriptExt,
+                            command=[pathSep + 'downloadBinaries' + scriptExt,
                                       WithProperties('%(got_revision)s')])
 
     # Test
     if runTest:
-        getTestSteps(f, scriptExt)
+        getTestSteps(f, scriptExt, pathSep)
         # upload test traces
         getShellCommandStep(f, name='upload test traces',
-                            command=['uploadTestTrace' + scriptExt,
+                            command=[pathSep + 'uploadTestTrace' + scriptExt,
                                      WithProperties('%(buildnumber)s'),
                                      WithProperties('%(buildername)s')],
                             flunkOnFailure=False)
@@ -970,14 +979,14 @@ def getLLDBScriptCommandsFactory(
     # Upload lldb-server binaries and trigger android builders
     if buildAndroid:
         getShellCommandStep(f, name='upload lldb-server binaries',
-                            command=['uploadBinaries' + scriptExt])
+                            command=[pathSep + 'uploadBinaries' + scriptExt])
         f.addStep(trigger.Trigger(schedulerNames=['lldb_android_scheduler'],
                                   updateSourceStamp=False,
                                   waitForFinish=False))
     # Release lock
     if downloadBinary:
         getShellCommandStep(f, name='release lock',
-                            command=['releaseLock' + scriptExt,
+                            command=[pathSep + 'releaseLock' + scriptExt,
                                      'totBuild'],
                             description='release',
                             alwaysRun=True)
