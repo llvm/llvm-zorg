@@ -125,6 +125,9 @@ function test_android_on_device { # ARCH SERIAL BUILD_ID BUILD_FLAVOR STEP_FAILU
     ADB=$ADB $ROOT/llvm_build64/bin/asan_device_setup
     sleep 2
 
+    # Kill leftover symbolizers. TODO: figure out what's going on.
+    $ADB shell ps | grep llvm-symbolizer | awk '{print $2}' | xargs $ADB shell kill
+
     $ADB push $SYMBOLIZER_BIN /system/bin/
     $ADB shell rm -rf $DEVICE_ROOT
     $ADB shell mkdir $DEVICE_ROOT
