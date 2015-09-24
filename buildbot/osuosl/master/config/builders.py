@@ -668,21 +668,23 @@ def _get_sanitizer_builders():
 
 def _get_openmp_builders():
     return [
-        {'name': "libiomp5-gcc-x86_64-linux-debian",
+        {'name': "libomp-gcc-x86_64-linux-debian",
          'slavenames':["gribozavr4"],
-         'builddir':"libiomp5-gcc-x86_64-linux-debian",
-         'factory' : Libiomp5Builder.getLibiomp5BuildFactory(
-                         buildcompiler="gcc",
+         'builddir':"libomp-gcc-x86_64-linux-debian",
+         'factory' : Libiomp5Builder.getLibompCMakeBuildFactory(
+                         c_compiler="gcc",
+                         cxx_compiler="g++",
                          env={'PATH':'/home/llvmbb/bin/clang-latest/bin:/home/llvmbb/bin:/usr/local/bin:/usr/local/bin:/usr/bin:/bin'}),
-         'category' : 'libiomp5'},
+         'category' : 'libomp'},
 
-        {'name': "libiomp5-clang-x86_64-linux-debian",
+        {'name': "libomp-clang-x86_64-linux-debian",
          'slavenames':["gribozavr4"],
-         'builddir':"libiomp5-clang-x86_64-linux-debian",
-         'factory' : Libiomp5Builder.getLibiomp5BuildFactory(
-                         buildcompiler="clang",
+         'builddir':"libomp-clang-x86_64-linux-debian",
+         'factory' : Libiomp5Builder.getLibompCMakeBuildFactory(
+                         c_compiler="clang",
+                         cxx_compiler="clang++",
                          env={'PATH':'/home/llvmbb/bin/clang-latest/bin:/home/llvmbb/bin:/usr/local/bin:/usr/local/bin:/usr/bin:/bin'}),
-         'category' : 'libiomp5'},
+         'category' : 'libomp'},
         ]
 
 def _get_libcxx_builders():

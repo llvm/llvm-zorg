@@ -7,7 +7,11 @@ from buildbot.steps.shell import ShellCommand
 from buildbot.steps.shell import WarningCountingShellCommand
 from buildbot.process.properties import WithProperties
 
-def getLibiomp5BuildFactory(clean=True, env=None, buildcompiler="gcc"):
+import zorg.buildbot.commands as commands
+import zorg.buildbot.commands.LitTestCommand as lit_test_command
+
+
+def getLibompCMakeBuildFactory(clean=True, env=None, test=True, c_compiler="gcc", cxx_compiler="g++"):
 
     # Prepare environmental variables. Set here all env we want everywhere.
     merged_env = {
@@ -18,19 +22,12 @@ def getLibiomp5BuildFactory(clean=True, env=None, buildcompiler="gcc"):
         merged_env.update(env)
 
     openmp_srcdir = "openmp.src"
+    openmp_builddir = "openmp.build"
 
     f = buildbot.process.factory.BuildFactory()
 
-    # Determine the build directory.
-    f.addStep(buildbot.steps.shell.SetProperty(name="get_builddir",
-                                               command=["pwd"],
-                                               property="builddir",
-                                               description="set build dir",
-                                               workdir=".",
-                                               env=merged_env))
-
-    # Get libiomp5
-    f.addStep(SVN(name='svn-libiomp5',
+    # Get libomp
+    f.addStep(SVN(name='svn-libomp',
                   mode='update',
                   baseURL='http://llvm.org/svn/llvm-project/openmp/',
                   defaultBranch='trunk',
@@ -38,23 +35,39 @@ def getLibiomp5BuildFactory(clean=True, env=None, buildcompiler="gcc"):
 
     # Clean directory, if requested.
     if clean:
-        f.addStep(ShellCommand(name="make clean",
-                               command=["make", "clean"],
-                               haltOnFailure=True,
-                               description=["make clean"],
-                               workdir='%s/runtime' % openmp_srcdir,
+        f.addStep(ShellCommand(name="clean",
+                               command=["rm", "-rf",openmp_builddir],
+                               warnOnFailure=True,
+                               description=["clean"],
+                               workdir='.',
                                env=merged_env))
 
-    makeCommand = [
-        "make",
-        "compiler=\"%s\"" % buildcompiler]
-
-    # Note: ShellCommand does not pass the params with special symbols right.
-    # The " ".join is a workaround for this bug.
-    f.addStep(ShellCommand(name="make build",
-                           description=["make build"],
+    # CMake
+    f.addStep(ShellCommand(name='cmake',
+                           command=["cmake", "../"+openmp_srcdir,
+                                    "-DCMAKE_C_COMPILER="+c_compiler,
+                                    "-DCMAKE_CXX_COMPILER="+cxx_compiler],
                            haltOnFailure=True,
-                           command=WithProperties(" ".join(makeCommand)),
-                           workdir='%s/runtime' % openmp_srcdir,
+                           description='cmake',
+                           workdir=openmp_builddir,
                            env=merged_env))
+
+    # Make
+    f.addStep(WarningCountingShellCommand(name='make build',
+                                          command=['make'],
+                                          haltOnFailure=True,
+                                          description='make build',
+                                          workdir=openmp_builddir,
+                                          env=merged_env))
+
+    # Test, if requested
+    if test:
+        f.addStep(lit_test_command.LitTestCommand(name='make check-libomp',
+                                                  command=['make', 'check-libomp'],
+                                                  haltOnFailure=True,
+                                                  description=["make check-libomp"],
+                                                  descriptionDone=["build checked"],
+                                                  workdir=openmp_builddir,
+                                                  env=merged_env))
+
     return f
