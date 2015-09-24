@@ -24,7 +24,7 @@ CLANG_FORMAT_CORPUS=$CORPUS_ROOT/clang-format/C1
 CLANG_CORPUS=$CORPUS_ROOT/clang/C1
 LLVM_AS_CORPUS=$CORPUS_ROOT/llvm-as/C1
 
-GS_ROOT=gs://fuzzing-with-sanitizers
+GS_ROOT=gs://fuzzing-with-sanitizers/llvm
 
 syncFromGs() {
   mkdir -p $CORPUS_ROOT/$1
