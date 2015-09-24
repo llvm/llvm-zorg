@@ -4,6 +4,9 @@ set -x
 set -e
 set -u
 
+# Set HOME for gsutil to work
+export HOME=/var/lib/buildbot
+
 HERE="$(cd $(dirname $0) && pwd)"
 . ${HERE}/buildbot_functions.sh
 
