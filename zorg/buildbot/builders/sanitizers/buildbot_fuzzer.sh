@@ -19,10 +19,21 @@ LLVM=$ROOT/llvm
 # No assertions. Need to clean up the existing assertion failures first.
 # Also, the Fuzzer does not provide reproducers on assertion failures yet.
 CMAKE_COMMON_OPTIONS="-GNinja -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_ASSERTIONS=OFF -DLLVM_PARALLEL_LINK_JOBS=3"
-CORPUS_ROOT=$ROOT/fuzzing-with-sanitizers/llvm
+CORPUS_ROOT=$ROOT/CORPORA/llvm
 CLANG_FORMAT_CORPUS=$CORPUS_ROOT/clang-format/C1
 CLANG_CORPUS=$CORPUS_ROOT/clang/C1
 LLVM_AS_CORPUS=$CORPUS_ROOT/llvm-as/C1
+
+GS_ROOT=gs://fuzzing-with-sanitizers
+
+syncFromGs() {
+  mkdir -p $CORPUS_ROOT/$1
+  gsutil -m rsync $GS_ROOT/$1 $CORPUS_ROOT/$1
+}
+
+syncToGs() {
+  gsutil -m rsync $CORPUS_ROOT/$1 $GS_ROOT/$1
+}
 
 if [ "$BUILDBOT_CLOBBER" != "" ]; then
   echo @@@BUILD_STEP clobber@@@
@@ -35,12 +46,6 @@ fi
 # Clobber the build trees.
 rm -rf ${STAGE2_ASAN_DIR}
 rm -rf ${STAGE2_ASAN_ASSERTIONS_DIR}
-
-# Create an empty directory for the corpus if it doesn't exist yet.
-# It will get populated with examples.
-# FIXME: synchronize this directory with some external persistent storage.
-mkdir -p $CLANG_FORMAT_CORPUS
-mkdir -p $CLANG_CORPUS
 
 # Make sure asan intercepts SIGABRT so that the fuzzer can print the test cases
 # for assertion failures.
@@ -56,7 +61,9 @@ echo @@@BUILD_STEP build clang@@@
 build_stage1_clang
 
 echo @@@BUILD_STEP pull test corpuses @@@
-(cd $CORPUS_ROOT && git pull --no-edit)
+syncFromGs clang/C1
+syncFromGs clang-format/C1
+syncFromGs llvm-as/C1
 
 # Stage 2 / AddressSanitizer
 
@@ -126,5 +133,7 @@ echo @@@BUILD_STEP stage2/asan+assertions run llvm-as-fuzzer@@@
   echo @@@STEP_WARNINGS@@@
 
 echo @@@BUILD_STEP push corpus updates@@@
-$LLVM/lib/Fuzzer/pull_and_push_fuzz_corpus.sh $CORPUS_ROOT
+syncToGs clang/C1
+syncToGs clang-format/C1
+syncToGs llvm-as/C1
 
