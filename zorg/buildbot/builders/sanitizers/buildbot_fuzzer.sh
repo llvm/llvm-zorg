@@ -68,12 +68,6 @@ syncFromGs clang/C1
 syncFromGs clang-format/C1
 syncFromGs llvm-as/C1
 
-# Stage 2 / AddressSanitizer
-
-#echo @@@BUILD_STEP stage2/asan check-fuzzer@@@
-
-#mkdir -p ${STAGE2_ASAN_DIR}
-
 # TODO(smatveev): merge this with build_stage2()
 clang_path=$ROOT/${STAGE1_DIR}/bin
 cmake_stage2_asan_options=" \
@@ -86,28 +80,7 @@ cmake_stage2_asan_options=" \
 common_stage2_variables
 export ASAN_SYMBOLIZER_PATH="${llvm_symbolizer_path}"
 
-#(cd ${STAGE2_ASAN_DIR} && cmake ${cmake_stage2_asan_options} $LLVM) || \
-#  echo @@@STEP_FAILURE@@@
-
-#(cd ${STAGE2_ASAN_DIR} && ninja check-fuzzer) || echo @@@STEP_FAILURE@@@
-
-#echo @@@BUILD_STEP stage2/asan build clang-format-fuzzer and clang-fuzzer@@@
-
-#(cd ${STAGE2_ASAN_DIR} && ninja clang-format-fuzzer clang-fuzzer) || echo @@@STEP_FAILURE@@@
-
-#echo @@@BUILD_STEP stage2/asan run clang-format-fuzzer@@@
-
-#(${STAGE2_ASAN_DIR}/bin/clang-format-fuzzer -jobs=32 -workers=8 -runs=131072 $CLANG_FORMAT_CORPUS) || \
-#  echo @@@STEP_WARNINGS@@@
-
-#echo @@@BUILD_STEP stage2/asan run clang-fuzzer@@@
-# leak detection is disabled until assertions from
-# https://llvm.org/bugs/show_bug.cgi?id=23057#c4 are fixed.
-# See also https://llvm.org/bugs/show_bug.cgi?id=23057#c12
-#(ASAN_OPTIONS=$ASAN_OPTIONS:detect_leaks=0 ${STAGE2_ASAN_DIR}/bin/clang-fuzzer -jobs=8 -workers=8 -runs=131072 $CLANG_CORPUS) || \
-#  echo @@@STEP_WARNINGS@@@
-
-# Stage 3 / AddressSanitizer + assertions
+# Stage 2 / AddressSanitizer + assertions
 mkdir -p ${STAGE2_ASAN_ASSERTIONS_DIR}
 echo @@@BUILD_STEP stage2/asan+assertions check-fuzzer@@@
 cmake_stage2_asan_assertions_options="$cmake_stage2_asan_options -DLLVM_ENABLE_ASSERTIONS=ON"
@@ -132,7 +105,7 @@ echo @@@BUILD_STEP stage2/asan+assertions run clang-fuzzer@@@
 
 # No leak detection due to https://llvm.org/bugs/show_bug.cgi?id=24639#c5
 echo @@@BUILD_STEP stage2/asan+assertions run llvm-as-fuzzer@@@
-(ASAN_OPTIONS=$ASAN_OPTIONS:detect_leaks=0 ${STAGE2_ASAN_ASSERTIONS_DIR}/bin/llvm-as-fuzzer -jobs=8 -workers=8 -runs=10000000 -only_ascii=1 $LLVM_AS_CORPUS) || \
+(ASAN_OPTIONS=$ASAN_OPTIONS:detect_leaks=0 ${STAGE2_ASAN_ASSERTIONS_DIR}/bin/llvm-as-fuzzer -jobs=8 -workers=8 -runs=0 -only_ascii=1 $LLVM_AS_CORPUS) || \
   echo @@@STEP_WARNINGS@@@
 
 echo @@@BUILD_STEP push corpus updates@@@
