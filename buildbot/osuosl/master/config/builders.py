@@ -150,22 +150,6 @@ def _get_clang_builders():
          'factory' : ClangBuilder.getClangBuildFactory(stage1_config='Release+Asserts',
                                                        extra_configure_args=['--with-intel-jitevents'])},
 
-        # Cortex-A9 triple check-all bots with autoconf builder
-        {'name': "clang-native-arm-cortex-a9",
-         'slavenames':["as-bldslv1", "as-bldslv2", "as-bldslv3"],
-         'builddir':"clang-native-arm-cortex-a9",
-         'factory' : ClangBuilder.getClangBuildFactory(
-                     stage1_config='Release+Asserts',
-                     clean=False,
-                     env = { 'CXXFLAGS' : '-Wno-psabi', 'CFLAGS' : '-Wno-psabi'},
-                     extra_configure_args=['--build=armv7l-unknown-linux-gnueabihf',
-                                           '--host=armv7l-unknown-linux-gnueabihf',
-                                           '--target=armv7l-unknown-linux-gnueabihf',
-                                           '--with-cpu=cortex-a9',
-                                           '--with-fpu=neon',
-                                           '--with-float=hard',
-                                           '--enable-targets=arm'])},
-
         # Cortex-A15 LNT test-suite in Benchmark mode
         # FIXME: Move this to CMake (see below)
         {'name' : "clang-native-arm-lnt-perf",
@@ -441,6 +425,22 @@ def _get_clang_builders():
                         extra_cmake_args=['-DLLVM_ENABLE_ASSERTIONS=ON',
                                           '-DLLVM_TARGETS_TO_BUILD=X86'])},
         ]
+# Offline
+# Cortex-A9 triple check-all bots with autoconf builder
+{'name': "clang-native-arm-cortex-a9",
+ 'slavenames':["as-bldslv1", "as-bldslv2", "as-bldslv3"],
+ 'builddir':"clang-native-arm-cortex-a9",
+ 'factory' : ClangBuilder.getClangBuildFactory(
+               stage1_config='Release+Asserts',
+               clean=False,
+               env = { 'CXXFLAGS' : '-Wno-psabi', 'CFLAGS' : '-Wno-psabi'},
+               extra_configure_args=['--build=armv7l-unknown-linux-gnueabihf',
+                                     '--host=armv7l-unknown-linux-gnueabihf',
+                                     '--target=armv7l-unknown-linux-gnueabihf',
+                                     '--with-cpu=cortex-a9',
+                                     '--with-fpu=neon',
+                                     '--with-float=hard',
+                                     '--enable-targets=arm'])},
 
 # Polly builders.
 def _get_polly_builders():
