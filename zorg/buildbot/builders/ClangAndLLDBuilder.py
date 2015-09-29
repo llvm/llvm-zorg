@@ -16,7 +16,9 @@ def getClangAndLLDBuildFactory(
            extraCmakeOptions=None,
            extraCompilerOptions=None,
            buildWithSanitizerOptions=None,
-           triple=None):
+           triple=None,
+           prefixCommand=["nice", "-n", "10"] # For backward compatibility.
+    ):
 
     llvm_srcdir = "llvm.src"
     llvm_objdir = "llvm.obj"
@@ -140,7 +142,7 @@ def getClangAndLLDBuildFactory(
 
     # Build everything.
     f.addStep(NinjaCommand(name="build",
-                           prefixCommand=["nice", "-n", "10"],
+                           prefixCommand=prefixCommand,
                            haltOnFailure=True,
                            description=["build"],
                            workdir=llvm_objdir,
@@ -148,7 +150,7 @@ def getClangAndLLDBuildFactory(
 
     # Test everything.
     f.addStep(NinjaCommand(name="test",
-                           prefixCommand=["nice", "-n", "10"],
+                           prefixCommand=prefixCommand,
                            targets=["check-all"],
                            haltOnFailure=True,
                            description=["test"],
