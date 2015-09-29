@@ -137,7 +137,7 @@ def _get_clang_fast_builders():
                                         "-DLLVM_TOOL_COMPILER_RT_BUILD:BOOL=OFF",
                                         "-DLLVM_BUILD_TESTS:BOOL=ON",
                                         "-DLLVM_BUILD_EXAMPLES:BOOL=ON",
-                                        "-CLANG_BUILD_EXAMPLES:BOOL=ON",
+                                        "-DCLANG_BUILD_EXAMPLES:BOOL=ON",
                                         "-DLLVM_TARGETS_TO_BUILD=X86"],
                      triple="x86_64-scei-ps4",
                      prefixCommand=None, # This is a designaed builder, so no need to be nice.
