@@ -23,6 +23,8 @@ def getLibompCMakeBuildFactory(clean=True, env=None, test=True, c_compiler="gcc"
 
     openmp_srcdir = "openmp.src"
     openmp_builddir = "openmp.build"
+    llvm_srcdir = "llvm.src"
+    llvm_builddir = "llvm.build"
 
     f = buildbot.process.factory.BuildFactory()
 
@@ -33,30 +35,61 @@ def getLibompCMakeBuildFactory(clean=True, env=None, test=True, c_compiler="gcc"
                   defaultBranch='trunk',
                   workdir=openmp_srcdir))
 
+    # Get llvm to build llvm-lit
+    f.addStep(SVN(name='svn-llvm',
+                  mode='update',
+                  baseURL='http://llvm.org/svn/llvm-project/llvm/',
+                  defaultBranch='trunk',
+                  workdir=llvm_srcdir))
+
     # Clean directory, if requested.
     if clean:
         f.addStep(ShellCommand(name="clean",
-                               command=["rm", "-rf",openmp_builddir],
+                               command=["rm", "-rf",openmp_builddir,llvm_builddir],
                                warnOnFailure=True,
                                description=["clean"],
                                workdir='.',
                                env=merged_env))
 
-    # CMake
-    f.addStep(ShellCommand(name='cmake',
+    # CMake llvm
+    f.addStep(ShellCommand(name='cmake llvm',
+                           command=["cmake", "../"+llvm_srcdir,
+                                    "-DCMAKE_C_COMPILER="+c_compiler,
+                                    "-DCMAKE_CXX_COMPILER="+cxx_compiler],
+                           haltOnFailure=True,
+                           description='cmake llvm',
+                           workdir=llvm_builddir,
+                           env=merged_env))
+
+    # Make llvm utils
+    f.addStep(WarningCountingShellCommand(name='make llvm utils build',
+                                          command=['make LLVMX86Utils -j8'],
+                                          haltOnFailure=True,
+                                          description='make llvm utils build',
+                                          workdir=llvm_builddir,
+                                          env=merged_env))
+
+    # Add llvm-lit to PATH
+    llvm_lit_env = { 
+        'PATH' : WithProperties("${PATH}:" + "%(workdir)s/" + llvm_builddir + "/bin"),
+        }
+    merged_env.update(llvm_lit_env)
+
+    # CMake libomp
+    f.addStep(ShellCommand(name='cmake libomp',
                            command=["cmake", "../"+openmp_srcdir,
                                     "-DCMAKE_C_COMPILER="+c_compiler,
                                     "-DCMAKE_CXX_COMPILER="+cxx_compiler],
                            haltOnFailure=True,
-                           description='cmake',
+                           description='cmake libomp',
                            workdir=openmp_builddir,
                            env=merged_env))
 
-    # Make
-    f.addStep(WarningCountingShellCommand(name='make build',
+    # Make libomp
+    f.addStep(WarningCountingShellCommand(name='make libomp build',
                                           command=['make'],
                                           haltOnFailure=True,
-                                          description='make build',
+                                          description='make libomp build',
                                           workdir=openmp_builddir,
                                           env=merged_env))
 
