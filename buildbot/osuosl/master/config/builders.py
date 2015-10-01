@@ -69,12 +69,12 @@ def _get_llvm_builders():
         {'name': "llvm-ppc64-linux1",
          'slavenames':["chinook"],
          'builddir':"llvm-ppc64",
-         'factory': LLVMBuilder.getLLVMBuildFactory("ppc64-linux-gnu", jobs=2, clean=False, timeout=20)},
+         'factory': LLVMBuilder.getLLVMBuildFactory("ppc64-linux-gnu", jobs=2, clean=False, timeout=20, config_name='Release+Asserts')},
 
         {'name': "ppc64le-llvm",
          'slavenames':["ppc64le-llvm"],
          'builddir':"llvm-ppc64le-1",
-         'factory': LLVMBuilder.getLLVMBuildFactory("ppc64le-linux-gnu", jobs=4, clean=False, timeout=20)},
+         'factory': LLVMBuilder.getLLVMBuildFactory("ppc64le-linux-gnu", jobs=4, clean=False, timeout=20, config_name='Release+Asserts')},
 
         {'name': "llvm-s390x-linux1",
          'slavenames':["systemz-1"],
@@ -822,7 +822,7 @@ def _get_experimental_scheduled_builders():
         {'name': "llvm-ppc64-linux2",
          'slavenames':["coho"],
          'builddir':"llvm-ppc64-2",
-         'factory': LLVMBuilder.getLLVMBuildFactory("ppc64-linux-gnu", jobs=2, clean=False, timeout=20),
+         'factory': LLVMBuilder.getLLVMBuildFactory("ppc64-linux-gnu", jobs=2, clean=False, timeout=20, config_name='Release+Asserts'),
          'category' : 'llvm'},
 
         {'name': "clang-atom-d525-fedora",
