@@ -63,17 +63,14 @@ def getLibompCMakeBuildFactory(clean=True, env=None, test=True, c_compiler="gcc"
 
     # Make llvm utils
     f.addStep(WarningCountingShellCommand(name='make llvm utils build',
-                                          command=['make LLVMX86Utils -j8'],
+                                          command=['make', 'LLVMX86Utils', '-j8'],
                                           haltOnFailure=True,
                                           description='make llvm utils build',
                                           workdir=llvm_builddir,
                                           env=merged_env))
 
     # Add llvm-lit to PATH
-    llvm_lit_env = { 
-        'PATH' : WithProperties("${PATH}:" + "%(workdir)s/" + llvm_builddir + "/bin"),
-        }
-    merged_env.update(llvm_lit_env)
+    merged_env.update( { 'PATH' : WithProperties("${PATH}:" + "%(workdir)s/" + llvm_builddir + "/bin")} )
 
     # CMake libomp
     f.addStep(ShellCommand(name='cmake libomp',
