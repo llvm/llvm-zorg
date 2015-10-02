@@ -83,23 +83,18 @@ def get_build_slaves():
         # LLVM Lab slaves
         create_slave("hpproliant1", properties={'jobs': 6}, max_builds=1),
 
-        # POWER7 PowerPC (powerpc64), Fedora16.
-        create_slave("chinook", properties={'jobs': 4}, max_builds=2),
-        #    LNT slave
-        create_slave("chinook-clangslave1", properties={'jobs': 4}, max_builds=2),
-        #    Clang build slave
-        create_slave("chinook-clangslave2", properties={'jobs': 4}, max_builds=2),
+        # POWER7 PowerPC big endian (powerpc64)
+        create_slave("ppc64be-llvm", properties={'jobs': 8}, max_builds=2),
+        create_slave("ppc64be-clang-lnt-test", properties={'jobs': 8}, max_builds=2),
+        create_slave("ppc64be-clang-multistage-test", properties={'jobs': 8}, max_builds=2),
+        create_slave("ppc64be-sanitizer", properties={'jobs': 8}, max_builds=1),
+        create_slave("ppc64be-llvm-quick", properties={'jobs': 8}, max_builds=2),
 
-        # POWER7 PowerPC (powerpc64), Fedora16.
-        create_slave("coho", properties={'jobs': 4}, max_builds=2),
-
-        create_slave("sanitizer-ppc64-1", properties={'jobs': 4}, max_builds=1),
-
-        # ppc64le slaves.  
-        create_slave("ppc64le-llvm", properties={'jobs': 8}, max_builds=1),
-        create_slave("ppc64le-clang", properties={'jobs': 8}, max_builds=1),
-        create_slave("ppc64le-clanglnt", properties={'jobs': 8}, max_builds=1),
-        create_slave("sanitizer-ppc64le-linux", properties={'jobs': 8}, max_builds=1),
+        # POWER 8 PowerPC little endian (powerpc64le)
+        create_slave("ppc64le-llvm", properties={'jobs': 4}, max_builds=1),
+        create_slave("ppc64le-clang-lnt-test", properties={'jobs': 4}, max_builds=1),
+        create_slave("ppc64le-clang-multistage-test", properties={'jobs': 4}, max_builds=1),
+        create_slave("ppc64le-sanitizer", properties={'jobs': 4}, max_builds=1),
 
         # Debian 86_64, 2 x 6-core Opteron 2.6 GHz
         create_slave("osu8", properties={'jobs' : 6}, max_builds=2),

@@ -67,14 +67,14 @@ from zorg.buildbot.builders import ABITestsuitBuilder
 def _get_llvm_builders():
     return [
         {'name': "llvm-ppc64-linux1",
-         'slavenames':["chinook"],
+         'slavenames':["ppc64be-llvm"],
          'builddir':"llvm-ppc64",
-         'factory': LLVMBuilder.getLLVMBuildFactory("ppc64-linux-gnu", jobs=2, clean=False, timeout=20, config_name='Release+Asserts')},
+         'factory': LLVMBuilder.getLLVMBuildFactory("ppc64-linux-gnu", jobs=4, clean=False, timeout=20, config_name='Release+Asserts')},
 
         {'name': "ppc64le-llvm",
          'slavenames':["ppc64le-llvm"],
          'builddir':"llvm-ppc64le-1",
-         'factory': LLVMBuilder.getLLVMBuildFactory("ppc64le-linux-gnu", jobs=4, clean=False, timeout=20, config_name='Release+Asserts')},
+         'factory': LLVMBuilder.getLLVMBuildFactory("ppc64le-linux-gnu", jobs=2, clean=False, timeout=20, config_name='Release+Asserts')},
 
         {'name': "llvm-s390x-linux1",
          'slavenames':["systemz-1"],
@@ -285,15 +285,15 @@ def _get_clang_builders():
                         extra_cmake_args=["-DLLVM_ENABLE_ASSERTIONS=ON"])},
 
         {'name' : "clang-ppc64-elf-linux",
-         'slavenames' :["chinook-clangslave1"],
+         'slavenames' :["ppc64be-clang-lnt-test"],
          'builddir' :"clang-ppc64-1",
          'factory' : LNTBuilder.getLNTFactory(triple='ppc64-elf-linux1',
                                               nt_flags=['--multisample=3','--cflag','-mcpu=native'],
-                                              jobs=2,  use_pty_in_tests=True,
+                                              jobs=4,  use_pty_in_tests=True,
                                               testerName='O3-plain', run_cxx_tests=True)},
 
         {'name' : "clang-ppc64-elf-linux2",
-         'slavenames' :["chinook-clangslave2"],
+         'slavenames' :["ppc64be-clang-multistage-test"],
          'builddir' :"clang-ppc64-2",
          'factory' : ClangBuilder.getClangBuildFactory(triple='ppc64-elf-linux',
                                                        useTwoStage=True, test=True,
@@ -302,7 +302,7 @@ def _get_clang_builders():
                                                        stage2_config='Release+Asserts')},
 
         {'name' : "ppc64le-clanglnt",
-         'slavenames' :["ppc64le-clanglnt"],
+         'slavenames' :["ppc64le-clang-lnt-test"],
          'builddir' :"clang-lnt-ppc64le-1",
          'factory' : LNTBuilder.getLNTFactory(triple='ppc64le-elf-linux1',
                                               nt_flags=['--multisample=3','--cflag','-mcpu=native'],
@@ -310,7 +310,7 @@ def _get_clang_builders():
                                               testerName='ppc64le-plain', run_cxx_tests=True)},
 
         {'name' : "ppc64le-clang",
-         'slavenames' :["ppc64le-clang"],
+         'slavenames' :["ppc64le-clang-multistage-test"],
          'builddir' :"clang-ppc64le-1",
          'factory' : ClangBuilder.getClangBuildFactory(triple='ppc64le-elf-linux',
                                                        useTwoStage=True, test=True,
@@ -589,12 +589,12 @@ def _get_sanitizer_builders():
                                               '-DLIBCXXABI_USE_LLVM_UNWINDER=ON'])},
 
           {'name': "sanitizer-ppc64-linux1",
-           'slavenames' :["sanitizer-ppc64-1"],
+           'slavenames' :["ppc64be-sanitizer"],
            'builddir': "sanitizer-ppc64-1",
            'factory': SanitizerBuilder.getSanitizerBuildFactory(timeout=1800)},
 
           {'name': "sanitizer-ppc64le-linux",
-           'slavenames' :["sanitizer-ppc64le-linux"],
+           'slavenames' :["ppc64le-sanitizer"],
            'builddir': "sanitizer-ppc64le-1",
            'factory': SanitizerBuilder.getSanitizerBuildFactory(timeout=1800)},
 
@@ -820,9 +820,9 @@ def _get_on_demand_builders():
 def _get_experimental_scheduled_builders():
     return [
         {'name': "llvm-ppc64-linux2",
-         'slavenames':["coho"],
+         'slavenames':["ppc64be-llvm-quick"],
          'builddir':"llvm-ppc64-2",
-         'factory': LLVMBuilder.getLLVMBuildFactory("ppc64-linux-gnu", jobs=2, clean=False, timeout=20, config_name='Release+Asserts'),
+         'factory': LLVMBuilder.getLLVMBuildFactory("ppc64-linux-gnu", jobs=4, clean=False, timeout=20, config_name='Release+Asserts'),
          'category' : 'llvm'},
 
         {'name': "clang-atom-d525-fedora",
