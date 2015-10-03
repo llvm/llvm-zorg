@@ -121,7 +121,7 @@ def _get_clang_fast_builders():
          'builddir':"llvm-clang-lld-x86_64-debian-fast",
          'factory': ClangAndLLDBuilder.getClangAndLLDBuildFactory(
                     env={'PATH':'/home/llvmbb/bin/clang-latest/bin:/home/llvmbb/bin:/usr/local/bin:/usr/local/bin:/usr/bin:/bin',
-                         'CC': 'ccache clang', 'CXX': 'ccache clang++', 'CCACHE_CPP2': 'yes'})},
+                         'CC': 'ccache clang', 'CXX': 'ccache clang++', 'CCACHE_CPP2': 'yes', 'ASM': 'clang'})},
 
         {'name': "llvm-clang-lld-x86_64-scei-ps4-ubuntu-fast",
          'mergeRequests': False,
