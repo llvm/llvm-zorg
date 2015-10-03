@@ -158,6 +158,10 @@ def cmake_builder(target):
     else:
         cmake_cmd += ["-DLLVM_ENABLE_ASSERTIONS=Off"]
 
+    # Workaround for PR14109: CMake build for compiler-rt should use
+    # just-built clang.
+    cmake_cmd += ["-DCOMPILER_RT_BUILD_BUILTINS=Off"]
+
     lit_flags = ['--xunit-xml-output=testresults.xunit.xml', '-v']
     if conf.max_parallel_tests:
         lit_flags += ['-j', conf.max_parallel_tests]
