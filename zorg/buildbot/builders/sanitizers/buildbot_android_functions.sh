@@ -125,6 +125,14 @@ function test_android_on_device { # ARCH SERIAL BUILD_ID BUILD_FLAVOR STEP_FAILU
     ADB=$ADB $ROOT/llvm_build64/bin/asan_device_setup
     sleep 2
 
+    # Nexus Player does not have enough RAM to run ASan tests reliably.
+    # Luckily, none of our tests need the application runtime, and killing
+    # that can free several hundred megs of RAM.
+    if [[ $_build_flavor == fugu* ]]; then
+      $ADB shell stop
+      sleep 2
+    fi
+
     # Kill leftover symbolizers. TODO: figure out what's going on.
     $ADB shell ps | grep llvm-symbolizer | awk '{print $2}' | xargs $ADB shell kill
 
