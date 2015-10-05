@@ -146,5 +146,13 @@ def get_status_targets(standard_builders, standard_categories=None):
             builders = ["clang-x86_64-linux-abi-test"],
             addLogs=False,
             num_lines = 15),
-
+        InformativeMailNotifier(
+            fromaddr = "llvm.buildmaster@lab.llvm.org",
+            sendToInterestedUsers= False,
+            extraRecipients = ["daniel.sanders@imgtec.com"],
+            subject="Build %(builder)s Failure",
+            mode = "failing",
+            builders = ["llvm-mips-linux", "clang-cmake-mips"],
+            addLogs=False,
+            num_lines = 15),
         ]
