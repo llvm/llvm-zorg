@@ -112,8 +112,8 @@ def get_build_slaves():
 32},
             max_builds=4),
 
-        # Cavium Octeon II V0.8, MIPS64r2 big endian, Debian squeeze (6.0.6)
-        create_slave("mipsswbrd002", properties={'jobs' : 6}, max_builds=1),
+        # Cavium Octeon II V0.1, MIPS64r2 big endian, Debian Wheezy
+        create_slave("mipsswbrd002", properties={'jobs' : 2}, max_builds=1),
 
         # Cavium Octeon II V0.2, MIPS64r2 big endian, Debian Jessie
         create_slave("mips-kl-m001", properties={'jobs' : 10}, max_builds=1),
