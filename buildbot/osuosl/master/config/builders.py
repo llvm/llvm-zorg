@@ -477,7 +477,7 @@ def _get_polly_builders():
          'slavenames':["pollyperf6"],
          'builddir': "perf-x86_64-penryn-O3-polly-unprofitable",
          'factory': PollyBuilder.getPollyLNTFactory(triple="x86_64-pc-linux-gnu",
-                                                    nt_flags=['--multisample=1', '--mllvm=-polly', '--mllvm=-polly-detect-unprofitable', '--mllvm=-polly-no-early-exit' ],
+                                                    nt_flags=['--multisample=1', '--mllvm=-polly', '--mllvm=-polly-process-unprofitable' ],
                                                     reportBuildslave=False,
                                                     package_cache="http://parkas1.inria.fr/packages",
                                                     testerName='x86_64-penryn-O3-polly-unprofitable')},
