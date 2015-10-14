@@ -787,6 +787,15 @@ def _get_libcxx_builders():
             cmake_extra_opts={'LLVM_USE_SANITIZER': 'Thread'},
             lit_extra_opts={'std':'c++1z'}),
         'category': 'libcxx'},
+        
+        {'name': 'libcxx-libcxxabi-x86_64-linux-ubuntu-unstable-abi',
+         'slavenames': ['ericwf-buildslave2'],
+         'builddir' : 'libcxx-libcxxabi-x86_64-linux-ubuntu-unstable-abi',
+         'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
+            env={'PATH': '/usr/local/bin:/usr/bin:/bin',
+                 'CC': 'clang', 'CXX': 'clang++'},
+            cmake_extra_opts={'LIBCXX_ABI_UNSTABLE': 'ON'}),
+        'category': 'libcxx'},
 
         # Cortex-A15 LibC++ and LibC++abi tests (require Clang+RT)
         {'name': 'libcxx-libcxxabi-arm-linux',
