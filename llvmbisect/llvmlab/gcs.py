@@ -17,10 +17,11 @@ def fetch_builders():
     List all the folders in the bucket, which is our list of possible
     compilers.
     """
-    params = {'delimiter': "/", 'fields': "prefixes"}
+    params = {'delimiter': "/", 'fields': "prefixes,nextPageToken"}
     r = requests.get(GCS + "b/" + BUCKET + "/o", params=params)
     r.raise_for_status()
     reply_data = r.json()
+    assert "nextPageToken" not in reply_data.keys(), "Too many builders!"
     folders = reply_data['prefixes']
     no_slashes = [x.replace("/", "") for x in folders]
     return no_slashes
@@ -31,13 +32,21 @@ def fetch_builds(project):
     builder.
     """
     assert project is not None
+    all_data = {'items':[]}
     params = {'delimiter': "/",
-              "fields": "kind,items(name, mediaLink)",
-              'prefix': project + "/"}
+             "fields": "nextPageToken,kind,items(name, mediaLink)",
+             'prefix': project + "/"}
     r = requests.get(GCS + "b/" + BUCKET + "/o", params=params)
     r.raise_for_status()
     reply_data = r.json()
-    return reply_data
+    all_data['items'].extend(reply_data['items'])
+    while reply_data.get('nextPageToken'):
+        params['pageToken'] = reply_data['nextPageToken']
+        r = requests.get(GCS + "b/" + BUCKET + "/o", params=params)
+        r.raise_for_status()
+        reply_data = r.json()
+        all_data['items'].extend(reply_data['items'])
+    return all_data
 
 #  Dunno what this could be moved up to?
 CHUNK_SIZE = 5124288
