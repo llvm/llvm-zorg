@@ -512,6 +512,12 @@ def _get_lldb_builders():
          'factory': LLDBBuilder.getLLDBScriptCommandsFactory(
                     downloadBinary=False,
                     buildAndroid=True,
+                    runTest=False)},
+        {'name': "lldb-amd64-ninja-netbsd7",
+         'slavenames': ["lldb-amd64-ninja-netbsd7"],
+         'builddir': "build",
+         'category' : 'lldb',
+         'factory': LLDBBuilder.getLLDBScriptCommandsFactory(
                     runTest=False)}
        ]
 

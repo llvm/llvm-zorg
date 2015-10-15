@@ -195,6 +195,9 @@ def get_build_slaves():
         # Ubuntu 14.04 x86_64-scei-ps4, 2 x Intel(R) Xeon(R) CPU E5-2699 v3 @ 2.30GHz
         create_slave("ps4-buildslave1", properties={'jobs': 64}, max_builds=1),
 
+        # NetBSD 7.0 amd64
+        create_slave("lldb-amd64-ninja-netbsd7", properties={'jobs': 3}, max_builds=1),
+
         # Defunct.
         # Intel(R) Pentium(R) CPU G620 @ 2.60GHz, Ubuntu i686
         #create_slave("botether", properties={'jobs': 2}, max_builds=1),
