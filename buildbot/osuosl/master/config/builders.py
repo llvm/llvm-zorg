@@ -289,7 +289,7 @@ def _get_clang_builders():
          'builddir' :"clang-ppc64-1",
          'factory' : LNTBuilder.getLNTFactory(triple='ppc64-elf-linux1',
                                               nt_flags=['--cflag','-mcpu=native', '-j8'],
-                                              jobs=4,  use_pty_in_tests=True,
+                                              jobs=16,  use_pty_in_tests=True,
                                               testerName='O3-plain', run_cxx_tests=True)},
 
         {'name' : "clang-ppc64-elf-linux2",
@@ -305,8 +305,8 @@ def _get_clang_builders():
          'slavenames' :["ppc64le-clang-lnt-test"],
          'builddir' :"clang-lnt-ppc64le-1",
          'factory' : LNTBuilder.getLNTFactory(triple='ppc64le-elf-linux1',
-                                              nt_flags=['--cflag','-mcpu=native'],
-                                              jobs=4,  use_pty_in_tests=True,
+                                              nt_flags=['--cflag','-mcpu=native', '-j6'],
+                                              jobs=6,  use_pty_in_tests=True,
                                               testerName='ppc64le-plain', run_cxx_tests=True)},
 
         {'name' : "ppc64le-clang",
