@@ -461,6 +461,7 @@ def _get_polly_builders():
          'factory': PollyBuilder.getPollyLNTFactory(triple="x86_64-pc-linux-gnu",
                                                     nt_flags=['--multisample=1', '--mllvm=-polly', '-j16' ],
                                                     reportBuildslave=False,
+                                                    build_type='Release+Asserts',
                                                     package_cache="http://parkas1.inria.fr/packages",
                                                     testerName='x86_64-penryn-O3-polly-fast')},
 
@@ -470,6 +471,7 @@ def _get_polly_builders():
          'factory': PollyBuilder.getPollyLNTFactory(triple="x86_64-pc-linux-gnu",
                                                     nt_flags=['--multisample=1', '--mllvm=-polly', '--mllvm=-polly-parallel', '-j16', '--cflag=-lgomp' ],
                                                     reportBuildslave=False,
+                                                    build_type='Release+Asserts',
                                                     package_cache="http://parkas1.inria.fr/packages",
                                                     testerName='x86_64-penryn-O3-polly-parallel-fast')},
 
@@ -479,6 +481,7 @@ def _get_polly_builders():
          'factory': PollyBuilder.getPollyLNTFactory(triple="x86_64-pc-linux-gnu",
                                                     nt_flags=['--multisample=1', '--mllvm=-polly', '--mllvm=-polly-process-unprofitable', '-j16'],
                                                     reportBuildslave=False,
+                                                    build_type='Release+Asserts',
                                                     package_cache="http://parkas1.inria.fr/packages",
                                                     testerName='x86_64-penryn-O3-polly-unprofitable')},
 

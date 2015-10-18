@@ -74,11 +74,10 @@ def getPollyBuildFactory():
                                workdir=llvm_objdir))
     return f
 
-def AddExternalPollyBuildFactory(f, llvm_installdir):
+def AddExternalPollyBuildFactory(f, llvm_installdir, build_type = "Release"):
     polly_srcdir = 'polly.src'
     polly_objdir = 'polly.obj'
     polly_installdir = 'polly.install'
-    build_type = 'Release'
 
     # Determine the build directory.
     f.addStep(buildbot.steps.shell.SetProperty(name="get_builddir",
@@ -128,7 +127,7 @@ def AddExternalPollyBuildFactory(f, llvm_installdir):
                            workdir=polly_objdir))
 
 def getPollyLNTFactory(triple, nt_flags, xfails=[], clean=False, test=False,
-                  **kwargs):
+                       build_type="Release", **kwargs):
     lnt_args = {}
     lnt_arg_names = ['submitURL', 'package_cache', 'testerName', 'reportBuildslave']
 
@@ -140,7 +139,7 @@ def getPollyLNTFactory(triple, nt_flags, xfails=[], clean=False, test=False,
 
     f = ClangBuilder.getClangBuildFactory(
         triple, clean=clean, test=test,
-        stage1_config='Release', **kwargs)
+        stage1_config=build_type, **kwargs)
 
     f.addStep(ShellCommand(name="install-llvm-and-clang",
                            command=["make", "install"],
@@ -148,7 +147,7 @@ def getPollyLNTFactory(triple, nt_flags, xfails=[], clean=False, test=False,
                            description=["install llvm and clang"],
                            workdir="llvm.obj"))
 
-    AddExternalPollyBuildFactory(f, llvm_install_dir)
+    AddExternalPollyBuildFactory(f, llvm_install_dir, build_type)
 
     nt_flags.append('--cflag=' + '-Xclang')
     nt_flags.append('--cflag=' + '-load')
