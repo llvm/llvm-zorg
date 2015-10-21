@@ -521,6 +521,7 @@ def _get_lldb_builders():
          'builddir': "build",
          'category' : 'lldb',
          'factory': LLDBBuilder.getLLDBScriptCommandsFactory(
+                    downloadBinary=False,
                     runTest=False)}
        ]
 
