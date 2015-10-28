@@ -266,7 +266,13 @@ def lldb_builder():
 
     # Build into the build folder
 
-    xcodebuild_cmd = ["xcodebuild", "-arch", "x86_64", "-configuration", "BuildAndIntegration", "-scheme", "lldb-tool", "-derivedDataPath", conf.lldbbuilddir()]
+    xcodebuild_cmd = [
+        "xcodebuild",
+        "-arch", "x86_64",
+        "-configuration", "Debug",
+        "-scheme", "lldb-tool",
+        "-derivedDataPath", conf.lldbbuilddir(),
+        "DEBUGSERVER_USE_FROM_SYSTEM=1"]
 
     header("Make lldb-tool")
     run_cmd("lldb", xcodebuild_cmd)
