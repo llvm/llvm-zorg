@@ -200,7 +200,7 @@ def _get_clang_builders():
          'builddir':"clang-cmake-armv7-a15-selfhost-neon",
          'factory' : ClangBuilder.getClangCMakeBuildFactory(
                       jobs=2,
-                      clean=False,
+                      clean=True,
                       checkout_compiler_rt=False,
                       useTwoStage=True,
                       testStage1=True,
@@ -241,7 +241,7 @@ def _get_clang_builders():
          'builddir':"clang-cmake-armv7-a15-selfhost",
          'factory' : ClangBuilder.getClangCMakeBuildFactory(
                       jobs=4,
-                      clean=False,
+                      clean=True,
                       checkout_compiler_rt=False,
                       useTwoStage=True,
                       testStage1=False,
@@ -652,7 +652,7 @@ def _get_sanitizer_builders():
            'builddir':"clang-cmake-thumbv7-a15-full-sh",
            'factory' : ClangBuilder.getClangCMakeBuildFactory(
                         jobs=2,
-                        clean=False,
+                        clean=True,
                         useTwoStage=True,
                         testStage1=True,
                         env={'PATH':'/usr/lib/ccache:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'},
@@ -667,7 +667,7 @@ def _get_sanitizer_builders():
          'builddir':"clang-cmake-aarch64-full",
          'factory' : ClangBuilder.getClangCMakeBuildFactory(
                       jobs=8,
-                      clean=False,
+                      clean=True,
                       checkout_compiler_rt=True,
                       test=True,
                       useTwoStage=True,
@@ -703,7 +703,7 @@ def _get_sanitizer_builders():
            'builddir':"clang-native-aarch64-full",
            'factory' : ClangBuilder.getClangCMakeBuildFactory(
                         jobs=4,
-                        clean=False,
+                        clean=True,
                         useTwoStage=True,
                         testStage1=True,
                         extra_cmake_args=["-DLLVM_TARGETS_TO_BUILD='ARM;AArch64;X86'"])},
