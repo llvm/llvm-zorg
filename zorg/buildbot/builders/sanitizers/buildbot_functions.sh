@@ -173,7 +173,7 @@ function build_stage2 {
   local sanitizer_ldflags="-lc++abi -Wl,--rpath=${ROOT}/${libcxx_build_dir}/lib -L${ROOT}/${libcxx_build_dir}/lib"
   # See http://llvm.org/bugs/show_bug.cgi?id=19071, http://www.cmake.org/Bug/view.php?id=15264
   local cmake_bug_workaround_cflags="$sanitizer_ldflags $fsanitize_flag -w"
-  local sanitizer_cflags="-I${ROOT}/${libcxx_build_dir}/include -I${ROOT}/${libcxx_build_dir}/include/c++/v1 $cmake_bug_workaround_cflags"
+  local sanitizer_cflags="-nostdinc++ -isystem ${ROOT}/${libcxx_build_dir}/include -isystem ${ROOT}/${libcxx_build_dir}/include/c++/v1 $cmake_bug_workaround_cflags"
   mkdir -p ${build_dir}
   # Currently we do not want to fetch nor build libunwind, libcxx, libcxxabi, and lld on powerpc64 buildbots
   local extra_dir
