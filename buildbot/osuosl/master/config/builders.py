@@ -740,6 +740,15 @@ def _get_libcxx_builders():
              env={'CC': 'clang', 'CXX': 'clang++'}),
          'category': 'libcxx'},
 
+        # x86_64 -fno-exceptions libcxx builder
+        {'name': 'libcxx-libcxxabi-x86_64-linux-debian-noexceptions',
+         'slavenames': ['gribozavr4'],
+         'builddir': 'libcxx-libcxxabi-x86_64-linux-debian-noexceptions',
+         'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
+             env={'CC': 'clang', 'CXX': 'clang++'},
+             cmake_extra_opts={'LIBCXX_ENABLE_EXCEPTIONS': 'OFF'}),
+         'category': 'libcxx'},
+
         {'name': 'libcxx-libcxxabi-singlethreaded-x86_64-linux-debian',
          'slavenames': ['gribozavr4'],
          'builddir': 'libcxx-libcxxabi-singlethreaded-x86_64-linux-debian',
