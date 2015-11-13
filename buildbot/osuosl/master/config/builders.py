@@ -318,23 +318,6 @@ def _get_clang_builders():
                                                        stage1_config='Release+Asserts',
                                                        stage2_config='Release+Asserts')},
 
-        # Mips check-all with CMake builder
-        # We currently have to force CMAKE_HOST_TRIPLE and
-        # CMAKE_DEFAULT_TARGET_TRIPLE on this system. CMake gets the value
-        # correct for the processor but it's currently not possible to emit O32
-        # code using a mips64-* triple. This is a bug and should be fixed soon.
-        # We must also force LLVM_TARGET_ARCH so that the ExecutionEngine tests
-        # run.
-        {'name': "clang-cmake-mips",
-         'slavenames':["mips-kl-m001"],
-         'builddir':"clang-cmake-mips",
-         'factory' : ClangBuilder.getClangCMakeBuildFactory(
-                         clean=False,
-                         checkout_compiler_rt=True,
-                         extra_cmake_args=["-DLLVM_HOST_TRIPLE=mips-unknown-linux-gnu",
-                                           "-DLLVM_DEFAULT_TARGET_TRIPLE=mips-unknown-linux-gnu",
-                                           "-DLLVM_TARGET_ARCH=Mips"])},
-
         # ABI test-suite with CMake builder
         {'name'          : "clang-x86_64-linux-abi-test",
          'mergeRequests' : False,
@@ -708,6 +691,22 @@ def _get_sanitizer_builders():
                         testStage1=True,
                         extra_cmake_args=["-DLLVM_TARGETS_TO_BUILD='ARM;AArch64;X86'"])},
 
+          # Mips check-all with CMake builder
+          # We currently have to force CMAKE_HOST_TRIPLE and
+          # CMAKE_DEFAULT_TARGET_TRIPLE on this system. CMake gets the value
+          # correct for the processor but it's currently not possible to emit O32
+          # code using a mips64-* triple. This is a bug and should be fixed soon.
+          # We must also force LLVM_TARGET_ARCH so that the ExecutionEngine tests
+          # run.
+          {'name': "clang-cmake-mips",
+           'slavenames':["mips-kl-m001"],
+           'builddir':"clang-cmake-mips",
+           'factory' : ClangBuilder.getClangCMakeBuildFactory(
+                           clean=False,
+                           checkout_compiler_rt=True,
+                           extra_cmake_args=["-DLLVM_HOST_TRIPLE=mips-unknown-linux-gnu",
+                                             "-DLLVM_DEFAULT_TARGET_TRIPLE=mips-unknown-linux-gnu",
+                                             "-DLLVM_TARGET_ARCH=Mips"])},
           ]
 
 def _get_openmp_builders():
