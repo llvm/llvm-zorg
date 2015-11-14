@@ -223,6 +223,6 @@ fi
 if [ $RUN_ANDROID == 1 ] ; then
     test_android arm armeabi-v7a @@@STEP_FAILURE@@@
     test_android x86 x86 @@@STEP_FAILURE@@@
-    test_android aarch64 arm64-v8a @@@STEP_WARNINGS@@@
+    test_android aarch64 arm64-v8a @@@STEP_FAILURE@@@
 fi
 
