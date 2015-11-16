@@ -319,16 +319,16 @@ def getClangBuildFactory(
 
     # Clean up llvm (stage 2).
     #
-    # FIXME: It does not make much sense to skip this for a bootstrap builder.
-    # Check whether there is any reason to skip cleaning here and if not, remove
-    # this condition.
-    if clean or cmake:
-        f.addStep(ShellCommand(name="rm-llvm.obj.stage2",
-                               command=["rm", "-rf", llvm_2_objdir],
-                               haltOnFailure=True,
-                               description=["rm build dir", "llvm", "(stage 2)"],
-                               workdir=".",
-                               env=merged_env))
+    # We always cleanly build the stage 2. If the compiler has been
+    # changed on the stage 1, we cannot trust any of the intermediate file
+    # from the old compiler. And if the stage 1 compiler is the same, we should
+    # not build in the first place.
+    f.addStep(ShellCommand(name="rm-llvm.obj.stage2",
+                           command=["rm", "-rf", llvm_2_objdir],
+                           haltOnFailure=True,
+                           description=["rm build dir", "llvm", "(stage 2)"],
+                           workdir=".",
+                           env=merged_env))
 
     # Configure llvm (stage 2).
     if not cmake:
@@ -620,20 +620,17 @@ def getClangCMakeBuildFactory(
 
     ############# STAGE 2
     if useTwoStage:
-        if clean:
-            f.addStep(ShellCommand(name='clean stage 2',
-                                   command=['rm','-rf',stage2_build],
-                                   warnOnFailure=True,
-                                   description='cleaning stage 2',
-                                   descriptionDone='clean',
-                                   workdir='.',
-                                   env=env))
-        else:
-            f.addStep(SetProperty(name="check ninja files 2",
-                                  workdir=stage2_build,
-                                  command=check_build_cmd,
-                                  flunkOnFailure=False,
-                                  property="exists_ninja_2"))
+        # We always cleanly build the stage 2. If the compiler has been
+        # changed on the stage 1, we cannot trust any of the intermediate file
+        # from the old compiler. And if the stage 1 compiler is the same, we
+        # should not build in the first place.
+        f.addStep(ShellCommand(name='clean stage 2',
+                               command=['rm','-rf',stage2_build],
+                               warnOnFailure=True,
+                               description='cleaning stage 2',
+                               descriptionDone='clean',
+                               workdir='.',
+                               env=env))
 
         # Set the compiler using the CC and CXX environment variables to work around
         # backslash string escaping bugs somewhere between buildbot and cmake. The
