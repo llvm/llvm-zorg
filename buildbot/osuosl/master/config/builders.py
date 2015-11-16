@@ -79,7 +79,7 @@ def _get_llvm_builders():
         {'name': "llvm-s390x-linux1",
          'slavenames':["systemz-1"],
          'builddir':"llvm-s390x-linux1",
-         'factory': LLVMBuilder.getLLVMBuildFactory("s390x-linux-gnu", jobs=4, clean=False, timeout=20)},
+         'factory': LLVMBuilder.getLLVMBuildFactory("s390x-linux-gnu", jobs=4, clean=False, timeout=20, config_name='Release+Asserts')},
 
         {'name': "llvm-mips-linux",
          'slavenames':["mipsswbrd002"],
