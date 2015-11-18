@@ -70,18 +70,6 @@ def getLibcxxAndAbiBuilder(f=None, env={}, additional_features=set(),
 
     f = getLibcxxWholeTree(f, src_root)
 
-    if 'libcxxabi-has-no-threads' in additional_features:
-        env['CXXFLAGS'] = (env.get('CXXFLAGS', '') +
-                           ' -DLIBCXXABI_HAS_NO_THREADS=1')
-
-    if 'libcpp-has-no-threads' in additional_features:
-        env['CXXFLAGS'] = (env.get('CXXFLAGS', '') +
-                           ' -D_LIBCPP_HAS_NO_THREADS')
-
-    if 'libcpp-has-no-monotonic-clock' in additional_features:
-        env['CXXFLAGS'] = (env.get('CXXFLAGS', '') +
-                           ' -D_LIBCPP_HAS_NO_MONOTONIC_CLOCK')
-
     # Specify the max number of threads using properties so LIT doesn't use
     # all the threads on the system.
     litTestArgs = '-sv --show-unsupported --show-xfail --threads=%(jobs)s'
