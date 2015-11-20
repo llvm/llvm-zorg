@@ -20,6 +20,10 @@ def getSource(f,llvmTopDir='llvm'):
                   mode='update', baseURL='http://llvm.org/svn/llvm-project/cfe/',
                   defaultBranch='trunk',
                   workdir='%s/tools/clang' % llvmTopDir))
+    f.addStep(SVN(name='svn-lld',
+                  mode='update', baseURL='http://llvm.org/svn/llvm-project/lld/',
+                  defaultBranch='trunk',
+                  workdir='%s/tools/lld' % llvmTopDir))
     f.addStep(SVN(name='svn-compiler-rt',
                   mode='update',
                   baseURL='http://llvm.org/svn/llvm-project/compiler-rt/',
@@ -80,7 +84,7 @@ def getSanitizerWindowsBuildFactory(
 
     # Only run sanitizer tests.
     # Don't build targets that are not required in order to speed up the cycle.
-    test_targets = ['check-asan','check-asan-dynamic','check-sanitizer']
+    test_targets = ['check-asan','check-asan-dynamic','check-sanitizer', 'check-cfi']
     f.addStep(NinjaCommand(name='run tests',
                            targets=test_targets,
                            haltOnFailure=True,
