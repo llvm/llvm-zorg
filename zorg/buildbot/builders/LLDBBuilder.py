@@ -902,7 +902,7 @@ def getTestSteps(f, scriptExt, pathSep):
     # workaround: don't flunk the last two tests
     # put non flunkable tests as the last two, test7 and test8
     getTestConfig(f)
-    for x in range(1, 9):
+    for x in range(1, 10):
         test='test'+str(x)
         f.addStep(LitTestCommand(name=test,
                                  command=[pathSep + 'test' + scriptExt,
