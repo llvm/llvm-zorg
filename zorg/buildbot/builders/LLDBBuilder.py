@@ -894,13 +894,13 @@ def getTestConfig(f):
                           workdir="scripts"))
     return f
 def getTestSteps(f, scriptExt, pathSep):
-    # buildbot doesn't support dynamic step creation, so create 8 test steps as place holder
+    # buildbot doesn't support dynamic step creation, so create 9 test steps as place holder
     # then each builder will define available tests in test_cfg.json
-    # if there're less than 8 tests defined on certain builder, extra steps will be skipped and hidden from test details view
+    # if there're less than 9 tests defined on certain builder, extra steps will be skipped and hidden from test details view
     # **hide step is not supported by buildbot 0.8.5
     # flunkOnFailure only takes boolean value, and cannot take configurable property.
-    # workaround: don't flunk the last two tests
-    # put non flunkable tests as the last two, test7 and test8
+    # workaround: don't flunk the last three tests
+    # put non flunkable tests at the last three, test7, test8, test9
     getTestConfig(f)
     for x in range(1, 10):
         test='test'+str(x)
