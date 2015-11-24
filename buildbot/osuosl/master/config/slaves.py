@@ -197,6 +197,8 @@ def get_build_slaves():
 
         # NetBSD 7.0 amd64
         create_slave("lldb-amd64-ninja-netbsd7", properties={'jobs': 3}, max_builds=1),
+        # FreeBSD 11.0-CURRENT amd64
+        create_slave("lldb-amd64-ninja-freebsd11", properties={'jobs': 3}, max_builds=1),
 
         # Defunct.
         # Intel(R) Pentium(R) CPU G620 @ 2.60GHz, Ubuntu i686

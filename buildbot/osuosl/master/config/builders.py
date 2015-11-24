@@ -525,7 +525,13 @@ def _get_lldb_builders():
          'category' : 'lldb',
          'factory': LLDBBuilder.getLLDBScriptCommandsFactory(
                     downloadBinary=False,
-                    runTest=False)}
+                    runTest=False)},
+        {'name': "lldb-amd64-ninja-freebsd11",
+         'slavenames': ["lldb-amd64-ninja-freebsd11"],
+         'builddir': "scratch",
+         'category' : 'lldb',
+         'factory': LLDBBuilder.getLLDBScriptCommandsFactory(
+                    downloadBinary=False)}
        ]
 
 # LLD builders.
