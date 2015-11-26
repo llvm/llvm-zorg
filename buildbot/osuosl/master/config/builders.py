@@ -531,7 +531,8 @@ def _get_lldb_builders():
          'builddir': "scratch",
          'category' : 'lldb',
          'factory': LLDBBuilder.getLLDBScriptCommandsFactory(
-                    downloadBinary=False)}
+                    downloadBinary=False,
+                    runTest=False)}
        ]
 
 # LLD builders.
