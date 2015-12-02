@@ -128,7 +128,6 @@ function build_stage2 {
   local build_dir=$3
   local step_result=$4
 
-  echo @@@BUILD_STEP build libcxx/$sanitizer_name@@@
   common_stage2_variables
 
   if [ "$sanitizer_name" == "msan" ]; then
@@ -156,9 +155,17 @@ function build_stage2 {
     exit 1
   fi
 
-  mkdir -p ${libcxx_build_dir}
-  # Currently we do not want to fetch nor build libunwind, libcxx, libcxxabi, and lld on powerpc64 buildbots
-  if [ "$BUILDBOT_BUILDERNAME" != "sanitizer-ppc64-linux1" -a "$BUILDBOT_BUILDERNAME" != "sanitizer-ppc64le-linux" ]; then
+  local sanitizer_ldflags=""
+  local sanitizer_cflags=""
+  local cmake_libcxx_flag="-DLLVM_ENABLE_LIBCXX=OFF"
+
+  # Don't use libc++/libc++abi on PowerPC, and in UBSan builds (due to known
+  # bugs).
+  if [ "$BUILDBOT_BUILDERNAME" != "sanitizer-ppc64-linux1" -a \
+       "$BUILDBOT_BUILDERNAME" != "sanitizer-ppc64le-linux" -a \
+       "$sanitizer_name" != "ubsan" ]; then
+    echo @@@BUILD_STEP build libcxx/$sanitizer_name@@@
+    mkdir -p ${libcxx_build_dir}
     (cd ${libcxx_build_dir} && \
       cmake \
         ${cmake_stage2_common_options} \
@@ -166,25 +173,30 @@ function build_stage2 {
         -DLLVM_USE_SANITIZER=${llvm_use_sanitizer} \
         $LLVM && \
       ninja cxx cxxabi) || echo $step_result
+    sanitizer_ldflags="$sanitizer_ldflags -lc++abi -Wl,--rpath=${ROOT}/${libcxx_build_dir}/lib -L${ROOT}/${libcxx_build_dir}/lib"
+    sanitizer_cflags="$sanitizer_cflags -nostdinc++ -isystem ${ROOT}/${libcxx_build_dir}/include -isystem ${ROOT}/${libcxx_build_dir}/include/c++/v1"
+    cmake_libcxx_flag="-DLLVM_ENABLE_LIBCXX=ON"
   fi
 
   echo @@@BUILD_STEP build clang/$sanitizer_name@@@
 
-  local sanitizer_ldflags="-lc++abi -Wl,--rpath=${ROOT}/${libcxx_build_dir}/lib -L${ROOT}/${libcxx_build_dir}/lib"
   # See http://llvm.org/bugs/show_bug.cgi?id=19071, http://www.cmake.org/Bug/view.php?id=15264
   local cmake_bug_workaround_cflags="$sanitizer_ldflags $fsanitize_flag -w"
-  local sanitizer_cflags="-nostdinc++ -isystem ${ROOT}/${libcxx_build_dir}/include -isystem ${ROOT}/${libcxx_build_dir}/include/c++/v1 $cmake_bug_workaround_cflags"
+  sanitizer_cflags="$sanitizer_cflags $cmake_bug_workaround_cflags"
+
   mkdir -p ${build_dir}
   # Currently we do not want to fetch nor build libunwind, libcxx, libcxxabi, and lld on powerpc64 buildbots
   local extra_dir
-  if [ "$BUILDBOT_BUILDERNAME" != "sanitizer-ppc64-linux1" -a "$BUILDBOT_BUILDERNAME" != "sanitizer-ppc64le-linux" ]; then
+  if [ "$BUILDBOT_BUILDERNAME" != "sanitizer-ppc64-linux1" -a \
+       "$BUILDBOT_BUILDERNAME" != "sanitizer-ppc64le-linux" -a \
+       "$CHECK_LLD" != "0" ]; then
     extra_dir="lld"
   fi
   (cd ${build_dir} && \
    cmake ${cmake_stage2_common_options} \
      -DCMAKE_BUILD_TYPE=${build_type} \
      -DLLVM_USE_SANITIZER=${llvm_use_sanitizer} \
-     -DLLVM_ENABLE_LIBCXX=ON \
+     ${cmake_libcxx_flag} \
      -DCMAKE_C_FLAGS="${sanitizer_cflags}" \
      -DCMAKE_CXX_FLAGS="${sanitizer_cflags}" \
      -DCMAKE_EXE_LINKER_FLAGS="${sanitizer_ldflags}" \
