@@ -634,7 +634,7 @@ def _get_sanitizer_builders():
                         extra_cmake_args=["-DCMAKE_C_FLAGS='-mcpu=cortex-a15 -mfpu=vfpv3'",
                                           "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a15 -mfpu=vfpv3'",
                                           "-DCOMPILER_RT_TEST_COMPILER_CFLAGS='-mcpu=cortex-a15 -mfpu=vfpv3'",
-                                          "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64;X86'"])},
+                                          "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'"])},
 
           ## Cortex-A15 Thumb2 check-all full (compiler-rt) with CMake builder; Needs x86 for ASAN tests
           {'name': "clang-cmake-thumbv7-a15-full-sh",
@@ -649,7 +649,7 @@ def _get_sanitizer_builders():
                         extra_cmake_args=["-DCMAKE_C_FLAGS='-mcpu=cortex-a15 -mthumb'",
                                           "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a15 -mthumb'",
                                           "-DCOMPILER_RT_TEST_COMPILER_CFLAGS='-mcpu=cortex-a15 -mthumb'",
-                                          "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64;X86'"])},
+                                          "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'"])},
 
         # AArch64 Clang+LLVM+RT check-all + test-suite + self-hosting
         {'name': "clang-cmake-aarch64-full",
@@ -696,7 +696,7 @@ def _get_sanitizer_builders():
                         clean=True,
                         useTwoStage=True,
                         testStage1=True,
-                        extra_cmake_args=["-DLLVM_TARGETS_TO_BUILD='ARM;AArch64;X86'"])},
+                        extra_cmake_args=["-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'"])},
 
           # Mips check-all with CMake builder
           # We currently have to force CMAKE_HOST_TRIPLE and
