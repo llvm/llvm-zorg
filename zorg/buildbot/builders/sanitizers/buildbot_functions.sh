@@ -17,10 +17,12 @@ function buildbot_update {
         rev_arg="-r$BUILDBOT_REVISION"
     fi
     local tree
-    # Currently we do not want to fetch nor build libunwind, libcxx, libcxxabi, and lld on powerpc64 buildbots
     local subdirs="llvm llvm/tools/clang llvm/projects/compiler-rt"
-    if [ "$BUILDBOT_BUILDERNAME" != "sanitizer-ppc64-linux1" -a "$BUILDBOT_BUILDERNAME" != "sanitizer-ppc64le-linux" ]; then
-      subdirs="${subdirs} llvm/projects/libcxx llvm/projects/libcxxabi llvm/tools/lld"
+    if [ "$CHECK_LIBCXX" != "0" ]; then
+      subdirs="${subdirs} llvm/projects/libcxx llvm/projects/libcxxabi llvm/projects/libunwind"
+    fi
+    if [ "$CHECK_LLD" != "0" ]; then
+      subdirs="${subdirs} llvm/tools/lld"
     fi
     for tree in ${subdirs}
     do
@@ -38,11 +40,12 @@ function buildbot_update {
     # XXX: Keep this list in sync with the change filter in buildbot/osuosl/master/master.cfg.
     update_or_checkout "$rev_arg" http://llvm.org/svn/llvm-project/cfe/trunk llvm/tools/clang
     update_or_checkout "$rev_arg" http://llvm.org/svn/llvm-project/compiler-rt/trunk llvm/projects/compiler-rt
-    # Currently we do not want to fetch nor build libunwind, libcxx, libcxxabi, and lld on powerpc64 buildbots
-    if [ "$BUILDBOT_BUILDERNAME" != "sanitizer-ppc64-linux1" -a "$BUILDBOT_BUILDERNAME" != "sanitizer-ppc64le-linux" ]; then
+    if [ "$CHECK_LIBCXX" != "0" ]; then
       update_or_checkout "$rev_arg" http://llvm.org/svn/llvm-project/libcxx/trunk llvm/projects/libcxx
       update_or_checkout "$rev_arg" http://llvm.org/svn/llvm-project/libcxxabi/trunk llvm/projects/libcxxabi
       update_or_checkout "$rev_arg" http://llvm.org/svn/llvm-project/libunwind/trunk llvm/projects/libunwind
+    fi
+    if [ "$CHECK_LLD" != "0" ]; then
       update_or_checkout "$rev_arg" http://llvm.org/svn/llvm-project/lld/trunk llvm/tools/lld
     fi
 }
@@ -159,10 +162,8 @@ function build_stage2 {
   local sanitizer_cflags=""
   local cmake_libcxx_flag="-DLLVM_ENABLE_LIBCXX=OFF"
 
-  # Don't use libc++/libc++abi on PowerPC, and in UBSan builds (due to known
-  # bugs).
-  if [ "$BUILDBOT_BUILDERNAME" != "sanitizer-ppc64-linux1" -a \
-       "$BUILDBOT_BUILDERNAME" != "sanitizer-ppc64le-linux" -a \
+  # Don't use libc++/libc++abi in UBSan builds (due to known bugs).
+  if [ "$CHECK_LIBCXX" != "0" -a \
        "$sanitizer_name" != "ubsan" ]; then
     echo @@@BUILD_STEP build libcxx/$sanitizer_name@@@
     mkdir -p ${libcxx_build_dir}
@@ -185,11 +186,8 @@ function build_stage2 {
   sanitizer_cflags="$sanitizer_cflags $cmake_bug_workaround_cflags"
 
   mkdir -p ${build_dir}
-  # Currently we do not want to fetch nor build libunwind, libcxx, libcxxabi, and lld on powerpc64 buildbots
   local extra_dir
-  if [ "$BUILDBOT_BUILDERNAME" != "sanitizer-ppc64-linux1" -a \
-       "$BUILDBOT_BUILDERNAME" != "sanitizer-ppc64le-linux" -a \
-       "$CHECK_LLD" != "0" ]; then
+  if [ "$CHECK_LLD" != "0" ]; then
     extra_dir="lld"
   fi
   (cd ${build_dir} && \
@@ -229,10 +227,8 @@ function check_stage2 {
 
   (cd ${build_dir} && ninja check-clang) || echo $step_result
 
-  # Currently we do not want to fetch nor build libunwind, libcxx, libcxxabi, and lld on powerpc64 buildbots
-  if [ "$BUILDBOT_BUILDERNAME" != "sanitizer-ppc64-linux1" -a "$BUILDBOT_BUILDERNAME" != "sanitizer-ppc64le-linux" ]; then
+  if [ "$CHECK_LLD" != "0" ]; then
     echo @@@BUILD_STEP check-lld ${sanitizer_name}@@@
-
     # TODO(smatveev): change this to STEP_FAILURE once green
     (cd ${build_dir} && ninja check-lld) || echo @@@STEP_WARNINGS@@@
   fi
