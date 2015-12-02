@@ -211,8 +211,7 @@ function build_stage2_asan {
 }
 
 function build_stage2_ubsan {
-  # TODO(samsonov): change this to STEP_FAILURE once green
-  build_stage2 ubsan "${STAGE2_LIBCXX_UBSAN_DIR}" "${STAGE2_UBSAN_DIR}" @@@STEP_WARNINGS@@@
+  build_stage2 ubsan "${STAGE2_LIBCXX_UBSAN_DIR}" "${STAGE2_UBSAN_DIR}" @@@STEP_FAILURE@@@
 }
 
 function check_stage2 {
@@ -243,6 +242,5 @@ function check_stage2_asan {
 }
 
 function check_stage2_ubsan {
-  # TODO(samsonov): change this to STEP_FAILURE once green
-  check_stage2 ubsan "${STAGE2_UBSAN_DIR}" @@@STEP_WARNINGS@@@
+  check_stage2 ubsan "${STAGE2_UBSAN_DIR}" @@@STEP_FAILURE@@@
 }
