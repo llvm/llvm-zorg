@@ -47,6 +47,8 @@ RUN_ANDROID=${RUN_ANDROID:-0}
 if [ $BUILD_ANDROID == 1 -o $RUN_ANDROID == 1 ] ; then
   . ${HERE}/buildbot_android_functions.sh
 fi
+CHECK_LIBCXX=${CHECK_LIBCXX:-1}
+CHECK_LLD=${CHECK_LLD:-1}
 
 
 echo @@@BUILD_STEP update@@@
