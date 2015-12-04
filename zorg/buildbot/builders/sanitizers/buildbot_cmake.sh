@@ -83,7 +83,7 @@ if [ "$PLATFORM" == "Linux" ]; then
   echo @@@BUILD_STEP check-asan in gcc build@@@
   (cd clang_build && make -j$MAKE_JOBS check-asan) || echo @@@STEP_FAILURE@@@
   echo @@@BUILD_STEP check-ubsan in gcc build@@@
-  (cd clang_build && make -j$MAKE_JOBS check-ubsan) || echo @@@STEP_WARNINGS@@@
+  (cd clang_build && make -j$MAKE_JOBS check-ubsan) || echo @@@STEP_FAILURE@@@
   if [ "$ARCH" == "x86_64" ]; then
     echo @@@BUILD_STEP check-lsan in gcc build@@@
     (cd clang_build && make -j$MAKE_JOBS check-lsan) || echo @@@STEP_FAILURE@@@
@@ -196,7 +196,7 @@ if [ "$PLATFORM" == "Linux" -a $HAVE_NINJA == 1 ]; then
   echo @@@BUILD_STEP ninja check-lsan@@@
   (cd llvm_build_ninja && ninja check-lsan) || echo @@@STEP_FAILURE@@@
   echo @@@BUILD_STEP ninja check-ubsan@@@
-  (cd llvm_build_ninja && ninja check-ubsan) || echo @@@STEP_WARNINGS@@@
+  (cd llvm_build_ninja && ninja check-ubsan) || echo @@@STEP_FAILURE@@@
   echo @@@BUILD_STEP ninja check-dfsan@@@
   (cd llvm_build_ninja && ninja check-dfsan) || echo @@@STEP_WARNINGS@@@
   # FIXME: Reenable once cfi tests reliably work on the bot.
