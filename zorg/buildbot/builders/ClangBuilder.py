@@ -2,6 +2,7 @@ import buildbot
 import buildbot.process.factory
 import copy
 import os
+from datetime import datetime
 
 from buildbot.process.properties import WithProperties, Property
 from buildbot.steps.shell import Configure, ShellCommand, SetProperty
@@ -481,6 +482,99 @@ def addSVNUpdateSteps(f,
                       defaultBranch='trunk',
                       workdir='test/test-suite'))
 
+def addGCSUploadSteps(f, package_name, install_prefix, gcs_directory, env,
+                      gcs_url_property=None):
+    """
+    Add steps to upload to the Google Cloud Storage bucket.
+
+    f - The BuildFactory to modify.
+    package_name - The name of this package for the descriptions (e.g.
+                   'stage 1')
+    install_prefix - The directory the build has been installed to.
+    gcs_directory - The subdirectory of the bucket root to upload to. This
+                    should match the builder name.
+    env - The environment to use. Set BOTO_CONFIG to use a configuration file
+          in a non-standard location, and BUCKET to use a different GCS bucket.
+    gcs_url_property - Property to assign the GCS url to.
+    """
+
+    gcs_url_fmt = ('gs://%(gcs_bucket)s/%(gcs_directory)s/'
+                   'clang-r%(got_revision)s-t%(now)s-b%(buildnumber)s.tar.xz')
+    time_fmt = '%Y-%m-%d_%H-%M-%S'
+    gcs_url = \
+        WithProperties(
+            gcs_url_fmt,
+            gcs_bucket=lambda _: env.get('BUCKET', 'llvm-build-artifacts'),
+            gcs_directory=lambda _: gcs_directory,
+            now=lambda _: datetime.utcnow().strftime(time_fmt))
+
+    if gcs_url_property:
+        f.addStep(SetProperty(
+                      name="record GCS url for " + package_name,
+                      command=['echo', gcs_url],
+                      property=gcs_url_property))
+
+    f.addStep(ShellCommand(name='package ' + package_name,
+                           command=['tar', 'cvfJ', '../install.tar.xz', '.'],
+                           description='packaging ' + package_name + '...',
+                           workdir=install_prefix,
+                           env=env))
+
+    f.addStep(ShellCommand(
+                  name='upload ' + package_name + ' to storage bucket',
+                  command=['gsutil', 'cp', '../install.tar.xz', gcs_url],
+                  description=('uploading ' + package_name +
+                               'to storage bucket ...'),
+                  workdir=install_prefix,
+                  env=env))
+
+def getClangCMakeGCSBuildFactory(
+            clean=True,
+            test=True,
+            cmake='cmake',
+            jobs=None,
+
+            # VS tools environment variable if using MSVC. For example,
+            # %VS120COMNTOOLS% selects the 2013 toolchain.
+            vs=None,
+            vs_target_arch='x86',
+
+            # Multi-stage compilation
+            useTwoStage=False,
+            testStage1=True,
+            stage1_config='Release',
+            stage2_config='Release',
+
+            # Test-suite
+            runTestSuite=False,
+            nt_flags=[],
+            submitURL=None,
+            testerName=None,
+
+            # Environmental variables for all steps.
+            env={},
+            extra_cmake_args=[],
+
+            # Extra repositories
+            checkout_clang_tools_extra=True,
+            checkout_compiler_rt=True,
+
+            # Upload artifacts to Google Cloud Storage (for the llvmbisect tool)
+            stage1_upload_directory=None,
+
+            # Triggers
+            trigger_after_stage1=[]):
+    return _getClangCMakeBuildFactory(
+               clean=clean, test=test, cmake=cmake, jobs=jobs, vs=vs,
+               vs_target_arch=vs_target_arch, useTwoStage=useTwoStage,
+               testStage1=testStage1, stage1_config=stage1_config,
+               stage2_config=stage2_config, runTestSuite=runTestSuite,
+               nt_flags=nt_flags, submitURL=submitURL, testerName=testerName,
+               env=env, extra_cmake_args=extra_cmake_args,
+               checkout_clang_tools_extra=checkout_clang_tools_extra,
+               checkout_compiler_rt=checkout_compiler_rt,
+               stage1_upload_directory=stage1_upload_directory,
+               trigger_after_stage1=trigger_after_stage1)
 
 def getClangCMakeBuildFactory(
             clean=True,
@@ -512,6 +606,52 @@ def getClangCMakeBuildFactory(
             # Extra repositories
             checkout_clang_tools_extra=True,
             checkout_compiler_rt=True):
+    return _getClangCMakeBuildFactory(
+               clean=clean, test=test, cmake=cmake, jobs=jobs, vs=vs,
+               vs_target_arch=vs_target_arch, useTwoStage=useTwoStage,
+               testStage1=testStage1, stage1_config=stage1_config,
+               stage2_config=stage2_config, runTestSuite=runTestSuite,
+               nt_flags=nt_flags, submitURL=submitURL, testerName=testerName,
+               env=env, extra_cmake_args=extra_cmake_args,
+               checkout_clang_tools_extra=checkout_clang_tools_extra,
+               checkout_compiler_rt=checkout_compiler_rt)
+
+def _getClangCMakeBuildFactory(
+            clean=True,
+            test=True,
+            cmake='cmake',
+            jobs=None,
+
+            # VS tools environment variable if using MSVC. For example,
+            # %VS120COMNTOOLS% selects the 2013 toolchain.
+            vs=None,
+            vs_target_arch='x86',
+
+            # Multi-stage compilation
+            useTwoStage=False,
+            testStage1=True,
+            stage1_config='Release',
+            stage2_config='Release',
+
+            # Test-suite
+            runTestSuite=False,
+            nt_flags=[],
+            submitURL=None,
+            testerName=None,
+
+            # Environmental variables for all steps.
+            env={},
+            extra_cmake_args=[],
+
+            # Extra repositories
+            checkout_clang_tools_extra=True,
+            checkout_compiler_rt=True,
+
+            # Upload artifacts to Google Cloud Storage (for the llvmbisect tool)
+            stage1_upload_directory=None,
+
+            # Triggers
+            trigger_after_stage1=[]):
 
     ############# PREPARING
     f = buildbot.process.factory.BuildFactory()
@@ -601,12 +741,16 @@ def getClangCMakeBuildFactory(
                                    workdir=stage1_build,
                                    env=env))
 
-    if useTwoStage or runTestSuite:
+    if useTwoStage or runTestSuite or stage1_upload_directory:
         f.addStep(ShellCommand(name='install stage 1',
                                command=ninja_install_cmd,
                                description='ninja install',
                                workdir=stage1_build,
                                env=env))
+
+    if stage1_upload_directory:
+        addGCSUploadSteps(f, 'stage 1', stage1_install, stage1_upload_directory,
+                          env, gcs_url_property='stage1_package_gcs_url')
 
     # Compute the cmake define flag to set the C and C++ compiler to clang. Use
     # clang-cl if we used MSVC for stage1.
