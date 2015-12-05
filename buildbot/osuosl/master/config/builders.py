@@ -708,14 +708,14 @@ def _get_sanitizer_builders():
           {'name': "clang-cmake-mips",
            'slavenames':["mips-kl-m001"],
            'builddir':"clang-cmake-mips",
-           'factory' : ClangBuilder.getClangCMakeBuildFactory(
+           'factory' : ClangBuilder.getClangCMakeGCSBuildFactory(
                            clean=False,
                            checkout_compiler_rt=True,
                            extra_cmake_args=["-DLLVM_HOST_TRIPLE=mips-unknown-linux-gnu",
                                              "-DLLVM_DEFAULT_TARGET_TRIPLE=mips-unknown-linux-gnu",
                                              "-DLLVM_TARGET_ARCH=Mips"],
                            stage1_upload_directory='clang-cmake-mips',
-                           env = {'BOTO_CONFIG': '/var/buildbot/llvmlab-build-artifacts.boto'},
+                           env = {'BOTO_CONFIG': '/var/buildbot/llvmlab-build-artifacts.boto'})},
           ]
 
 def _get_openmp_builders():
