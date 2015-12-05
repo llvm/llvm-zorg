@@ -10,10 +10,13 @@ env
 HERE="$(dirname $0)"
 . ${HERE}/buildbot_functions.sh
 
+TSAN_FULL_DEBUG_BUILD_DIR=tsan_full_debug_build
+
 if [ "$BUILDBOT_CLOBBER" != "" ]; then
   echo @@@BUILD_STEP clobber@@@
   rm -rf llvm
   rm -rf clang_build
+  rm -rf $TSAN_FULL_DEBUG_BUILD_DIR
 fi
 
 ROOT=`pwd`
@@ -41,6 +44,17 @@ CLANG_PATH=$ROOT/clang_build/bin
 
 echo @@@BUILD_STEP test tsan in debug compiler-rt build@@@
 (cd clang_build && make -j$MAKE_JOBS check-tsan) || echo @@@STEP_FAILURE@@@
+
+echo @@@BUILD_STEP build tsan with stats and debug output@@@
+if [ ! -d $TSAN_FULL_DEBUG_BUILD_DIR ]; then
+  mkdir $TSAN_FULL_DEBUG_BUILD_DIR
+fi
+(cd $TSAN_FULL_DEBUG_BUILD_DIR && CC=gcc CXX=g++ cmake -DCMAKE_BUILD_TYPE=Release \
+  ${CMAKE_COMMON_OPTIONS} -DCOMPILER_RT_DEBUG=ON \
+  -DCOMPILER_RT_TSAN_DEBUG_OUTPUT=ON -DLLVM_INCLUDE_TESTS=OFF \
+  ${LLVM_CHECKOUT})
+(cd $TSAN_FULL_DEBUG_BUILD_DIR && make -j$MAKE_JOBS ${TARGETS}) || echo @@@STEP_FAILURE@@@
+(cd $TSAN_FULL_DEBUG_BUILD_DIR && make -j$MAKE_JOBS tsan) || echo @@@STEP_FAILURE@@@
 
 echo @@@BUILD_STEP prepare for testing tsan@@@
 
