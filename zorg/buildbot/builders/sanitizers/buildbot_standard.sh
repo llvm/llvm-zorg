@@ -32,7 +32,7 @@ echo @@@BUILD_STEP build fresh clang + debug compiler-rt@@@
 if [ ! -d clang_build ]; then
   mkdir clang_build
 fi
-TARGETS="clang llvm-symbolizer compiler-rt FileCheck not"
+TARGETS="clang llvm-symbolizer llvm-config FileCheck not"
 (cd clang_build && CC=gcc CXX=g++ cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo \
   ${CMAKE_COMMON_OPTIONS} -DCOMPILER_RT_DEBUG=ON ${LLVM_CHECKOUT})
 
