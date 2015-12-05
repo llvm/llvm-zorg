@@ -23,20 +23,24 @@ CHECK_LIBCXX=${CHECK_LIBCXX:-1}
 CHECK_LLD=${CHECK_LLD:-1}
 
 LLVM_CHECKOUT=${ROOT}/llvm
-CMAKE_COMMON_OPTIONS="-DLLVM_ENABLE_ASSERTIONS=ON"
+CMAKE_COMMON_OPTIONS="-DLLVM_ENABLE_ASSERTIONS=ON -DLLVM_BUILD_EXTERNAL_COMPILER_RT=ON"
 
 echo @@@BUILD_STEP update@@@
 buildbot_update
 
-echo @@@BUILD_STEP build fresh clang@@@
+echo @@@BUILD_STEP build fresh clang + debug compiler-rt@@@
 if [ ! -d clang_build ]; then
   mkdir clang_build
 fi
 TARGETS="clang llvm-symbolizer compiler-rt FileCheck not"
 (cd clang_build && CC=gcc CXX=g++ cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo \
-  ${CMAKE_COMMON_OPTIONS} ${LLVM_CHECKOUT})
+  ${CMAKE_COMMON_OPTIONS} -DCOMPILER_RT_DEBUG=ON ${LLVM_CHECKOUT})
+
 (cd clang_build && make -j$MAKE_JOBS ${TARGETS}) || echo @@@STEP_FAILURE@@@
 CLANG_PATH=$ROOT/clang_build/bin
+
+echo @@@BUILD_STEP test tsan in debug compiler-rt build@@@
+(cd clang_build && make -j$MAKE_JOBS check-tsan) || echo @@@STEP_FAILURE@@@
 
 echo @@@BUILD_STEP prepare for testing tsan@@@
 
