@@ -43,6 +43,7 @@ TARGETS="clang llvm-symbolizer llvm-config FileCheck not"
 CLANG_PATH=$ROOT/clang_build/bin
 
 echo @@@BUILD_STEP test tsan in debug compiler-rt build@@@
+(cd clang_build && make compiler-rt-clear) || echo @@@STEP_FAILURE@@@
 (cd clang_build && make -j$MAKE_JOBS check-tsan) || echo @@@STEP_FAILURE@@@
 
 echo @@@BUILD_STEP build tsan with stats and debug output@@@
@@ -54,6 +55,7 @@ fi
   -DCOMPILER_RT_TSAN_DEBUG_OUTPUT=ON -DLLVM_INCLUDE_TESTS=OFF \
   ${LLVM_CHECKOUT})
 (cd $TSAN_FULL_DEBUG_BUILD_DIR && make -j$MAKE_JOBS ${TARGETS}) || echo @@@STEP_FAILURE@@@
+(cd $TSAN_FULL_DEBUG_BUILD_DIR && make compiler-rt-clear) || echo @@@STEP_FAILURE@@@
 (cd $TSAN_FULL_DEBUG_BUILD_DIR && make -j$MAKE_JOBS tsan) || echo @@@STEP_FAILURE@@@
 
 echo @@@BUILD_STEP prepare for testing tsan@@@
