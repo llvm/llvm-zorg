@@ -63,12 +63,10 @@ build_tsan "${TSAN_RELEASE_BUILD_DIR}" "-DCOMPILER_RT_DEBUG=OFF"
 
 echo @@@BUILD_STEP prepare for testing tsan@@@
 TSAN_PATH=$ROOT/llvm/projects/compiler-rt/lib/tsan/
-(cd $TSAN_PATH && make -f Makefile.old install_deps)
 
 CLANG_PATH=$ROOT/$TSAN_RELEASE_BUILD_DIR/bin
 export PATH=$CLANG_PATH:$PATH
 export MAKEFLAGS=-j$MAKE_JOBS
-gcc -v 2>tmp && grep "version" tmp
 clang -v 2>tmp && grep "version" tmp
 
 cd $ROOT
