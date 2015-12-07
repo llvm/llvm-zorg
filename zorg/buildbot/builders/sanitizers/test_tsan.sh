@@ -9,18 +9,12 @@ BIN=$(mktemp -t tsan_exe.XXXXXXXX)
 echo "int main() {return 0;}" | clang -x c++ - -fsanitize=thread -O2 -o ${BIN}
 ./check_analyze.sh ${BIN} || echo @@@STEP_FAILURE@@@
 
-echo @@@BUILD_STEP tsan build release-gcc@@@
-make -f Makefile.old clean
-make -f Makefile.old DEBUG=0 CC=gcc CXX=g++
-
 echo @@@BUILD_STEP tsan racecheck_unittest@@@
-TSAN_PATH=`pwd`
-LIBTSAN_A=$TSAN_PATH/rtl/libtsan.a
 SUPPRESS_WARNINGS="-Wno-format-security -Wno-null-dereference -Wno-unused-private-field"
 EXTRA_COMPILER_FLAGS="-fsanitize=thread -DTHREAD_SANITIZER -fPIC -g -O2 $SUPPRESS_WARNINGS"
 (cd $RACECHECK_UNITTEST_PATH && \
 make clean && \
-OMIT_DYNAMIC_ANNOTATIONS_IMPL=1 make l64 -j16 CC=clang CXX=clang++ LDOPT="-pie -Wl,--whole-archive $LIBTSAN_A -Wl,--no-whole-archive -ldl" OMIT_CPP0X=1 EXTRA_CFLAGS="$EXTRA_COMPILER_FLAGS" EXTRA_CXXFLAGS="$EXTRA_COMPILER_FLAGS" && \
+OMIT_DYNAMIC_ANNOTATIONS_IMPL=1 make l64 -j16 CC=clang CXX=clang++ LD=clang++ LDOPT="-fsanitize=thread" OMIT_CPP0X=1 EXTRA_CFLAGS="$EXTRA_COMPILER_FLAGS" EXTRA_CXXFLAGS="$EXTRA_COMPILER_FLAGS" && \
 bin/racecheck_unittest-linux-amd64-O0 --gtest_filter=-*Ignore*:*Suppress*:*EnableRaceDetectionTest*:*Rep*Test*:*NotPhb*:*Barrier*:*Death*:*PositiveTests_RaceInSignal*:StressTests.FlushStateTest:*Mmap84GTest:*.LibcStringFunctions:LockTests.UnlockingALockHeldByAnotherThread:LockTests.UnlockTwice:PrintfTests.RaceOnPutsArgument)
 
 #Ignore: ignores do not work yet
