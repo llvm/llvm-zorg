@@ -4,10 +4,6 @@ set -x
 set -e
 set -u
 
-echo @@@BUILD_STEP tsan build release-clang@@@
-make -f Makefile.old clean
-make -f Makefile.old DEBUG=0 CC=clang CXX=clang++
-
 echo @@@BUILD_STEP tsan analyze@@@
 BIN=$(mktemp -t tsan_exe.XXXXXXXX)
 echo "int main() {return 0;}" | clang -x c++ - -fsanitize=thread -O2 -o ${BIN}
