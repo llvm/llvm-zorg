@@ -9,7 +9,9 @@ make -f Makefile.old clean
 make -f Makefile.old DEBUG=0 CC=clang CXX=clang++
 
 echo @@@BUILD_STEP tsan analyze@@@
-./check_analyze.sh || echo @@@STEP_FAILURE@@@
+BIN=$(mktemp -t tsan_exe.XXXXXXXX)
+echo "int main() {return 0;}" | clang -x c++ - -fsanitize=thread -O2 -o ${BIN}
+./check_analyze.sh ${BIN} || echo @@@STEP_FAILURE@@@
 
 echo @@@BUILD_STEP tsan build release-gcc@@@
 make -f Makefile.old clean
