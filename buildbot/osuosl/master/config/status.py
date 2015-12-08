@@ -152,7 +152,8 @@ def get_status_targets(standard_builders, standard_categories=None):
             extraRecipients = ["daniel.sanders@imgtec.com"],
             subject="Build %(builder)s Failure",
             mode = "failing",
-            builders = ["llvm-mips-linux", "clang-cmake-mips"],
+            builders = ["llvm-mips-linux", "clang-cmake-mips",
+                        "clang-cmake-mipsel"],
             addLogs=False,
             num_lines = 15),
         ]
