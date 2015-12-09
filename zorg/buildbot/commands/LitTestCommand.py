@@ -19,7 +19,7 @@ class LitLogObserver(LogLineObserver):
 
   # These are the codes for which we will include the log output in the buildbot
   # step results.
-  failingCodes = set(['FAIL', 'XPASS', 'KPASS', 'UNRESOLVED', 'TIMEOUT'])
+  failingCodes = set(['FAIL', 'XPASS', 'KPASS', 'UNRESOLVED', 'TIMEOUT', 'ERROR'])
   # Regular expressions for start of summary marker.
   kStartSummaryRE = re.compile(r'^Failing Tests \(\d*\)$')
 
