@@ -128,7 +128,7 @@ function test_android_on_device { # ARCH SERIAL BUILD_ID BUILD_FLAVOR STEP_FAILU
     # Nexus Player does not have enough RAM to run ASan tests reliably.
     # Luckily, none of our tests need the application runtime, and killing
     # that can free several hundred megs of RAM.
-    if [[ $_build_flavor == fugu* ]]; then
+    if [[ $_build_flavor == fugu* || $_build_flavor == volantis* ]]; then
       $ADB shell stop
       sleep 2
     fi
