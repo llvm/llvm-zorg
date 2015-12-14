@@ -93,7 +93,7 @@ def get_build_slaves():
         # POWER 8 PowerPC little endian (powerpc64le)
         create_slave("ppc64le-llvm", properties={'jobs': 4}, max_builds=1),
         create_slave("ppc64le-clang-lnt-test", properties={'jobs': 6}, max_builds=1),
-        create_slave("ppc64le-clang-multistage-test", properties={'jobs': 6}, max_builds=1),
+        create_slave("ppc64le-clang-multistage-test", properties={'jobs': 12}, max_builds=1),
         create_slave("ppc64le-sanitizer", properties={'jobs': 4}, max_builds=1),
 
         # Debian 86_64, 2 x 6-core Opteron 2.6 GHz
