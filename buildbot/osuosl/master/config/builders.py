@@ -732,8 +732,7 @@ def _get_sanitizer_builders():
                            extra_cmake_args=["-DLLVM_HOST_TRIPLE=mipsel-unknown-linux-gnu",
                                              "-DLLVM_DEFAULT_TARGET_TRIPLE=mipsel-unknown-linux-gnu",
                                              "-DLLVM_TARGET_ARCH=Mips"],
-                           # Don't upload for the first few builds.
-                           #stage1_upload_directory='clang-cmake-mipsel',
+                           stage1_upload_directory='clang-cmake-mipsel',
                            env = {'BOTO_CONFIG': '/var/buildbot/llvmlab-build-artifacts.boto'})},
           ]
 
