@@ -268,8 +268,6 @@ def _get_clang_builders():
                       nt_flags=['--cflag', '-mcpu=cortex-a57'],
                )},
 
-        # This will ultimately be a self-host bot, even though the config does
-        # not reflect that today.
         {'name': 'clang-x86-win2008-selfhost',
          'slavenames': ['windows-gcebot1'],
          'builddir': 'clang-x86-win2008-selfhost',
@@ -278,7 +276,7 @@ def _get_clang_builders():
                         vs='%VS120COMNTOOLS%',
                         vs_target_arch='x86',
                         checkout_compiler_rt=False,
-                        testStage1=False,
+                        testStage1=True,
                         useTwoStage=True,
                         stage1_config='Release',
                         stage2_config='Release',
