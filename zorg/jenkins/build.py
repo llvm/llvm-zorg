@@ -270,7 +270,7 @@ def lldb_builder():
         "xcodebuild",
         "-arch", "x86_64",
         "-configuration", "Debug",
-        "-target", "desktop",
+        "-scheme", "desktop",
         "-derivedDataPath", conf.lldbbuilddir(),
         "DEBUGSERVER_USE_FROM_SYSTEM=1"]
 
@@ -284,11 +284,11 @@ def lldb_builder():
         "xcodebuild",
         "-arch", "x86_64",
         "-configuration", "Debug",
-        "-target", "lldb-gtest",
+        "-scheme", "lldb-gtest",
         "-derivedDataPath", conf.lldbbuilddir(),
         "DEBUGSERVER_USE_FROM_SYSTEM=1"]
 
-    header("Build Xcode lldb-gtest target")
+    header("Build Xcode lldb-gtest scheme")
     run_cmd("lldb", xcodebuild_cmd)
     footer()
 
@@ -298,7 +298,7 @@ def lldb_builder():
         "xcodebuild",
         "-arch", "x86_64",
         "-configuration", "Debug",
-        "-target", "lldb-python-test-suite",
+        "-scheme", "lldb-python-test-suite",
         "-derivedDataPath", conf.lldbbuilddir(),
         "DEBUGSERVER_USE_FROM_SYSTEM=1"]
 
