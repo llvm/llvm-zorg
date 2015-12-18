@@ -270,7 +270,7 @@ def lldb_builder():
         "xcodebuild",
         "-arch", "x86_64",
         "-configuration", "Debug",
-        "-scheme", "desktop",
+        "-target", "desktop",
         "-derivedDataPath", conf.lldbbuilddir(),
         "DEBUGSERVER_USE_FROM_SYSTEM=1"]
 
