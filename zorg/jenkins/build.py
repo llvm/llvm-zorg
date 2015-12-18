@@ -270,14 +270,41 @@ def lldb_builder():
         "xcodebuild",
         "-arch", "x86_64",
         "-configuration", "Debug",
-        "-scheme", "lldb-tool",
+        "-scheme", "desktop",
         "-derivedDataPath", conf.lldbbuilddir(),
         "DEBUGSERVER_USE_FROM_SYSTEM=1"]
 
-    header("Make lldb-tool")
+    header("Build Xcode desktop scheme")
     run_cmd("lldb", xcodebuild_cmd)
     footer()
 
+    # Run C++ test suite (gtests)
+
+    xcodebuild_cmd = [
+        "xcodebuild",
+        "-arch", "x86_64",
+        "-configuration", "Debug",
+        "-target", "lldb-gtest",
+        "-derivedDataPath", conf.lldbbuilddir(),
+        "DEBUGSERVER_USE_FROM_SYSTEM=1"]
+
+    header("Build Xcode lldb-gtest target")
+    run_cmd("lldb", xcodebuild_cmd)
+    footer()
+
+    # Run LLDB Python test suite
+
+    xcodebuild_cmd = [
+        "xcodebuild",
+        "-arch", "x86_64",
+        "-configuration", "Debug",
+        "-target", "lldb-python-test-suite",
+        "-derivedDataPath", conf.lldbbuilddir(),
+        "DEBUGSERVER_USE_FROM_SYSTEM=1"]
+
+    header("Build Xcode lldb-python-test-suite target")
+    run_cmd("lldb", xcodebuild_cmd)
+    footer()
 
 def check_repo_state(path):
     """Check the SVN repo at the path has all the
