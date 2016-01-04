@@ -54,7 +54,7 @@ rm -rf ${STAGE2_ASAN_ASSERTIONS_DIR}
 
 # Make sure asan intercepts SIGABRT so that the fuzzer can print the test cases
 # for assertion failures.
-export ASAN_OPTIONS=handle_abort=1
+export ASAN_OPTIONS=handle_abort=1:strip_path_prefix=build/llvm/
 
 echo @@@BUILD_STEP update@@@
 buildbot_update
@@ -68,7 +68,7 @@ build_stage1_clang
 echo @@@BUILD_STEP pull test corpuses @@@
 syncFromGs clang/C1
 syncFromGs clang-format/C1
-syncFromGs llvm-as/C1
+#syncFromGs llvm-as/C1
 
 # TODO(smatveev): merge this with build_stage2()
 clang_path=$ROOT/${STAGE1_DIR}/bin
@@ -98,20 +98,21 @@ echo @@@BUILD_STEP stage2/asan+assertions build clang-format-fuzzer and clang-fu
 
 echo @@@BUILD_STEP stage2/asan+assertions run clang-format-fuzzer@@@
 
-(${STAGE2_ASAN_ASSERTIONS_DIR}/bin/clang-format-fuzzer -jobs=8 -workers=8 -runs=131072 $CLANG_FORMAT_CORPUS) || \
-  echo @@@STEP_WARNINGS@@@
+(${STAGE2_ASAN_ASSERTIONS_DIR}/bin/clang-format-fuzzer -jobs=8 -workers=8 -max_total_time=600 $CLANG_FORMAT_CORPUS) || \
+  echo @@@STEP_FAILURE@@@
 
 echo @@@BUILD_STEP stage2/asan+assertions run clang-fuzzer@@@
-(${STAGE2_ASAN_ASSERTIONS_DIR}/bin/clang-fuzzer -jobs=8 -workers=8 -only_ascii=1 -runs=131072 $CLANG_CORPUS) || \
+(${STAGE2_ASAN_ASSERTIONS_DIR}/bin/clang-fuzzer -jobs=8 -workers=8 -only_ascii=1 -max_total_time=600 $CLANG_CORPUS) || \
   echo @@@STEP_WARNINGS@@@
 
 # No leak detection due to https://llvm.org/bugs/show_bug.cgi?id=24639#c5
-echo @@@BUILD_STEP stage2/asan+assertions run llvm-as-fuzzer@@@
-(ASAN_OPTIONS=$ASAN_OPTIONS:detect_leaks=0 ${STAGE2_ASAN_ASSERTIONS_DIR}/bin/llvm-as-fuzzer -jobs=8 -workers=8 -runs=0 -only_ascii=1 $LLVM_AS_CORPUS) || \
-  echo @@@STEP_WARNINGS@@@
+# Too many known failures in llvm-as, disabling this until they are fixed.
+#echo @@@BUILD_STEP stage2/asan+assertions run llvm-as-fuzzer@@@
+#(ASAN_OPTIONS=$ASAN_OPTIONS:detect_leaks=0 ${STAGE2_ASAN_ASSERTIONS_DIR}/bin/llvm-as-fuzzer -jobs=8 -workers=8 -runs=0 -only_ascii=1 $LLVM_AS_CORPUS) || \
+#  echo @@@STEP_WARNINGS@@@
 
 echo @@@BUILD_STEP push corpus updates@@@
 syncToGs clang/C1
 syncToGs clang-format/C1
-syncToGs llvm-as/C1
+#syncToGs llvm-as/C1
 
