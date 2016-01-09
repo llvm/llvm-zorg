@@ -133,3 +133,10 @@
 # CHECK-CMAKE-2-TESTS: '-DLLVM_LIT_ARGS=--xunit-xml-output=testresults.xunit.xml -v -j 2'
 
 # RUN: python %{src_root}/zorg/jenkins/build.py cmake all --cmake-type=RelWithDebugInfo
+
+
+# RUN: python %{src_root}/zorg/jenkins/build.py static-analyzer-benchmarks | FileCheck --check-prefix CHECK-STATIC-ANALYZER-BENCHMARKS %s
+# CHECK-STATIC-ANALYZER-BENCHMARKS: @@@ Static Analyzer Benchmarks @@@
+# CHECK-STATIC-ANALYZER-BENCHMARKS: cd [[WORKSPACE:.*]]/clang-analyzer-benchmarks/
+# CHECK-STATIC-ANALYZER-BENCHMARKS: '[[WORKSPACE]]/utils-analyzer/SATestBuild.py' '--strictness' '2'
+# CHECK-STATIC-ANALYZER-BENCHMARKS: @@@@@@
