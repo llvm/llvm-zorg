@@ -411,22 +411,6 @@ def _get_clang_builders():
                         extra_cmake_args=['-DLLVM_ENABLE_ASSERTIONS=ON',
                                           '-DLLVM_TARGETS_TO_BUILD=X86'])},
         ]
-# Offline
-# Cortex-A9 triple check-all bots with autoconf builder
-{'name': "clang-native-arm-cortex-a9",
- 'slavenames':["as-bldslv1", "as-bldslv2", "as-bldslv3"],
- 'builddir':"clang-native-arm-cortex-a9",
- 'factory' : ClangBuilder.getClangBuildFactory(
-               stage1_config='Release+Asserts',
-               clean=False,
-               env = { 'CXXFLAGS' : '-Wno-psabi', 'CFLAGS' : '-Wno-psabi'},
-               extra_configure_args=['--build=armv7l-unknown-linux-gnueabihf',
-                                     '--host=armv7l-unknown-linux-gnueabihf',
-                                     '--target=armv7l-unknown-linux-gnueabihf',
-                                     '--with-cpu=cortex-a9',
-                                     '--with-fpu=neon',
-                                     '--with-float=hard',
-                                     '--enable-targets=arm'])},
 
 # Polly builders.
 def _get_polly_builders():
@@ -879,15 +863,6 @@ def _get_libcxx_builders():
 def _get_on_demand_builders():
     return [
         ]
-# Offline
-{'name': "clang-native-mingw32-win7",
- 'slavenames':["as-bldslv7"],
- 'builddir':"clang-native-mingw32-win7",
- 'category':'clang',
- 'factory' : ClangBuilder.getClangBuildFactory(triple='i686-pc-mingw32',
-                                                       useTwoStage=True, test=False,
-                                                       stage1_config='Release+Asserts',
-                                                       stage2_config='Release+Asserts')},
 
 def _get_experimental_scheduled_builders():
     return [
@@ -1092,8 +1067,31 @@ def get_builders():
  'slavenames': ["dunbar1"],
  'builddir': "llvm-i686",
  'factory': LLVMBuilder.getLLVMBuildFactory("i686-pc-linux-gnu", jobs=2, enable_shared=True)},
- 
+
 # Clang builders
+{'name': "clang-native-mingw32-win7",
+ 'slavenames':["as-bldslv7"],
+ 'builddir':"clang-native-mingw32-win7",
+ 'category':'clang',
+ 'factory' : ClangBuilder.getClangBuildFactory(triple='i686-pc-mingw32',
+                                                       useTwoStage=True, test=False,
+                                                       stage1_config='Release+Asserts',
+                                                       stage2_config='Release+Asserts')},
+# Cortex-A9 triple check-all bots with autoconf builder
+{'name': "clang-native-arm-cortex-a9",
+ 'slavenames':["as-bldslv1", "as-bldslv2", "as-bldslv3"],
+ 'builddir':"clang-native-arm-cortex-a9",
+ 'factory' : ClangBuilder.getClangBuildFactory(
+               stage1_config='Release+Asserts',
+               clean=False,
+               env = { 'CXXFLAGS' : '-Wno-psabi', 'CFLAGS' : '-Wno-psabi'},
+               extra_configure_args=['--build=armv7l-unknown-linux-gnueabihf',
+                                     '--host=armv7l-unknown-linux-gnueabihf',
+                                     '--target=armv7l-unknown-linux-gnueabihf',
+                                     '--with-cpu=cortex-a9',
+                                     '--with-fpu=neon',
+                                     '--with-float=hard',
+                                     '--enable-targets=arm'])},
 {'name' : "clang-x64-ninja-win7-debug",
  'slavenames' : ["windows7-buildbot"],
  'builddir' : "clang-x64-ninja-win7-debug",

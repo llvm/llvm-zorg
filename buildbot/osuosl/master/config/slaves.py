@@ -10,19 +10,11 @@ def create_slave(name, *args, **kwargs):
 
 def get_build_slaves():
     return [
-        # Ubuntu pandaboard cortex-a9 slaves
-        create_slave("as-bldslv1", properties={'jobs' : 2}, max_builds=1),
-        create_slave("as-bldslv2", properties={'jobs' : 2}, max_builds=1),
-        create_slave("as-bldslv3", properties={'jobs' : 2}, max_builds=1),
-
         # Windows 7 Professional x64
         create_slave("as-bldslv4", properties={'jobs' : 2}, max_builds=1),
 
         # FreeBSD 11.0-CURRENT
         create_slave("as-bldslv5", properties={'jobs' : 24}, max_builds=2),
-
-        # Windows 7 Ultimate
-        create_slave("as-bldslv7", properties={'jobs' : 1}, max_builds=1),
 
         # Linux Ubuntu 14.04 LTS
         create_slave("as-bldslv8"),
