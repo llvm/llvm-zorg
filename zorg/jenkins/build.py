@@ -314,9 +314,12 @@ def static_analyzer_benchmarks_builder():
   benchmarks_dir = conf.workspace + "/clang-analyzer-benchmarks/"
 
   compiler_bin_dir = conf.workspace + "/host_compiler/bin/"
+  scanbuild_bin_dir = conf.workspace + "/tools-scanbuild/bin/"
 
   old_path = os.environ.get("PATH", "")
-  env = dict(os.environ, PATH=compiler_bin_dir + os.pathsep + old_path)
+  env = dict(os.environ, PATH=compiler_bin_dir + os.pathsep +
+                              scanbuild_bin_dir + os.pathsep +
+                              old_path)
 
   benchmark_cmd = [benchmark_script,
                    "--strictness", "2"
