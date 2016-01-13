@@ -303,7 +303,9 @@ def lldb_builder():
         "DEBUGSERVER_USE_FROM_SYSTEM=1"]
 
     header("Build Xcode lldb-python-test-suite target")
-    run_cmd("lldb", xcodebuild_cmd)
+    # For the unit tests, we don't want to stop the build if there are
+    # build errors.  We allow the JUnit/xUnit parser to pick this up.
+    run_cmd_errors_okay("lldb", xcodebuild_cmd)
     footer()
 
 def static_analyzer_benchmarks_builder():
@@ -545,6 +547,27 @@ def run_cmd(working_dir, cmd, env=None):
     logging.info("Command took {} seconds".format(
         (end_time-start_time).seconds))
 
+
+def run_cmd_errors_okay(working_dir, cmd, env=None):
+    """Run a command in a working directory, reporting return value.
+    Non-zero exit codes do not generate an exception.
+    """
+    old_cwd = os.getcwd()
+    cmd_to_print = ' '.join([quote_sh_string(x) for x in cmd])
+    sys.stdout.write("cd {}\n{}\n".format(working_dir, cmd_to_print))
+    sys.stdout.flush()
+
+    start_time = datetime.datetime.now()
+    if not os.environ.get('TESTING', False):
+        try:
+            os.chdir(working_dir)
+            result = subprocess.call(cmd, env=env)
+        finally:
+            os.chdir(old_cwd)
+    end_time = datetime.datetime.now()
+
+    logging.info("Command took {} seconds: return code {}".format(
+        (end_time-start_time).seconds, result))
 
 KNOWN_TARGETS = ['all', 'build', 'test', 'testlong']
 KNOWN_BUILDS = ['clang', 'cmake', 'lldb', 'fetch', 'artifact',
