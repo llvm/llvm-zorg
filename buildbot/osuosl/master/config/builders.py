@@ -66,16 +66,6 @@ from zorg.buildbot.builders import ABITestsuitBuilder
 # Plain LLVM builders.
 def _get_llvm_builders():
     return [
-        {'name': "llvm-ppc64-linux1",
-         'slavenames':["ppc64be-llvm"],
-         'builddir':"llvm-ppc64",
-         'factory': LLVMBuilder.getLLVMBuildFactory("ppc64-linux-gnu", jobs=4, clean=False, timeout=20, config_name='Release+Asserts')},
-
-        {'name': "ppc64le-llvm",
-         'slavenames':["ppc64le-llvm"],
-         'builddir':"llvm-ppc64le-1",
-         'factory': LLVMBuilder.getLLVMBuildFactory("ppc64le-linux-gnu", jobs=2, clean=False, timeout=20, config_name='Release+Asserts')},
-
         {'name': "llvm-s390x-linux1",
          'slavenames':["systemz-1"],
          'builddir':"llvm-s390x-linux1",
@@ -142,8 +132,7 @@ def _get_clang_fast_builders():
                      triple="x86_64-scei-ps4",
                      prefixCommand=None, # This is a designaed builder, so no need to be nice.
                      env={'PATH':'/opt/llvm_37/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'})},
-
-        ]
+       ]
 
 # Clang builders.
 def _get_clang_builders():
@@ -282,39 +271,57 @@ def _get_clang_builders():
                         stage2_config='Release',
                         extra_cmake_args=["-DLLVM_ENABLE_ASSERTIONS=ON"])},
 
-        {'name' : "clang-ppc64-elf-linux",
+        {'name' : "clang-ppc64be-linux-lnt",
          'slavenames' :["ppc64be-clang-lnt-test"],
-         'builddir' :"clang-ppc64-1",
+         'builddir' :"clang-ppc64be-lnt",
          'factory' : LNTBuilder.getLNTFactory(triple='ppc64-elf-linux1',
-                                              nt_flags=['--cflag','-mcpu=native', '-j8'],
+                                              nt_flags=['--cflag','-mcpu=native', '-j16'],
                                               jobs=16,  use_pty_in_tests=True,
                                               testerName='O3-plain', run_cxx_tests=True)},
 
-        {'name' : "clang-ppc64-elf-linux2",
-         'slavenames' :["ppc64be-clang-multistage-test"],
-         'builddir' :"clang-ppc64-2",
-         'factory' : ClangBuilder.getClangCMakeBuildFactory(clean=False,
-                                                            useTwoStage=True,
-                                                            stage1_config='Release',
-                                                            stage2_config='Release',
-                                                            extra_cmake_args=["-DLLVM_ENABLE_ASSERTIONS=ON"])},
-
-        {'name' : "ppc64le-clanglnt",
+        {'name' : "clang-ppc64le-linux-lnt",
          'slavenames' :["ppc64le-clang-lnt-test"],
-         'builddir' :"clang-lnt-ppc64le-1",
+         'builddir' :"clang-ppc64le-lnt",
          'factory' : LNTBuilder.getLNTFactory(triple='ppc64le-elf-linux1',
                                               nt_flags=['--cflag','-mcpu=native', '-j6'],
                                               jobs=6,  use_pty_in_tests=True,
                                               testerName='ppc64le-plain', run_cxx_tests=True)},
 
-        {'name' : "ppc64le-clang",
-         'slavenames' :["ppc64le-clang-multistage-test"],
-         'builddir' :"clang-ppc64le-1",
+        {'name' : "clang-ppc64be-linux-multistage",
+         'slavenames' :["ppc64be-clang-multistage-test"],
+         'builddir' :"clang-ppc64be-multistage",
          'factory' : ClangBuilder.getClangCMakeBuildFactory(clean=False,
                                                             useTwoStage=True,
                                                             stage1_config='Release',
                                                             stage2_config='Release',
                                                             extra_cmake_args=["-DLLVM_ENABLE_ASSERTIONS=ON"])},
+
+        {'name' : "clang-ppc64le-linux-multistage",
+         'slavenames' :["ppc64le-clang-multistage-test"],
+         'builddir' :"clang-ppc64le-multistage",
+         'factory' : ClangBuilder.getClangCMakeBuildFactory(clean=False,
+                                                            useTwoStage=True,
+                                                            stage1_config='Release',
+                                                            stage2_config='Release',
+                                                            extra_cmake_args=["-DLLVM_ENABLE_ASSERTIONS=ON"])},
+
+        {'name': "clang-ppc64be-linux",
+         'slavenames':["ppc64be-clang-test"],
+         'builddir':"clang-ppc64be",
+         'factory' : ClangBuilder.getClangCMakeBuildFactory(clean=False,
+                                                            useTwoStage=False,
+                                                            stage1_config='Release',
+                                                            extra_cmake_args=["-DLLVM_ENABLE_ASSERTIONS=ON"]),
+         'category' : 'clang'},
+
+        {'name': "clang-ppc64le-linux",
+         'slavenames':["ppc64le-clang-test"],
+         'builddir':"clang-ppc64le",
+         'factory' : ClangBuilder.getClangCMakeBuildFactory(clean=False,
+                                                            useTwoStage=False,
+                                                            stage1_config='Release',
+                                                            extra_cmake_args=["-DLLVM_ENABLE_ASSERTIONS=ON"]),
+         'category' : 'clang'},
 
         # ABI test-suite with CMake builder
         {'name'          : "clang-x86_64-linux-abi-test",
@@ -590,14 +597,14 @@ def _get_sanitizer_builders():
                         common_cmake_options=['-DCMAKE_EXE_LINKER_FLAGS=-lcxxrt',
                                               '-DLIBCXXABI_USE_LLVM_UNWINDER=ON'])},
 
-          {'name': "sanitizer-ppc64-linux1",
+          {'name': "sanitizer-ppc64be-linux",
            'slavenames' :["ppc64be-sanitizer"],
-           'builddir': "sanitizer-ppc64-1",
+           'builddir': "sanitizer-ppc64be",
            'factory': SanitizerBuilder.getSanitizerBuildFactory(timeout=1800)},
 
           {'name': "sanitizer-ppc64le-linux",
            'slavenames' :["ppc64le-sanitizer"],
-           'builddir': "sanitizer-ppc64le-1",
+           'builddir': "sanitizer-ppc64le",
            'factory': SanitizerBuilder.getSanitizerBuildFactory(timeout=1800)},
 
           {'name': "sanitizer-windows",
@@ -866,15 +873,6 @@ def _get_on_demand_builders():
 
 def _get_experimental_scheduled_builders():
     return [
-        {'name': "llvm-ppc64-linux2",
-         'slavenames':["ppc64be-llvm-quick"],
-         'builddir':"llvm-ppc64-2",
-         'factory' : ClangBuilder.getClangCMakeBuildFactory(clean=False,
-                                                            useTwoStage=False,
-                                                            stage1_config='Release',
-                                                            extra_cmake_args=["-DLLVM_ENABLE_ASSERTIONS=ON"]),
-         'category' : 'clang'},
-
         {'name': "clang-atom-d525-fedora",
          'slavenames':["atom-buildbot"],
          'builddir':"clang-atom-d525-fedora",
