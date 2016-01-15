@@ -26,7 +26,7 @@ LLVM=$ROOT/llvm
 CMAKE_COMMON_OPTIONS="-GNinja -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_ASSERTIONS=OFF -DLLVM_PARALLEL_LINK_JOBS=3"
 CORPUS_ROOT=$ROOT/CORPORA/llvm
 CLANG_FORMAT_CORPUS=$CORPUS_ROOT/clang-format/C1
-CLANG_CORPUS=$CORPUS_ROOT/clang/C1
+CLANG_CORPUS=$CORPUS_ROOT/clang/C2
 LLVM_AS_CORPUS=$CORPUS_ROOT/llvm-as/C1
 
 GS_ROOT=gs://fuzzing-with-sanitizers/llvm
@@ -66,7 +66,7 @@ echo @@@BUILD_STEP build clang@@@
 build_stage1_clang
 
 echo @@@BUILD_STEP pull test corpuses @@@
-syncFromGs clang/C1
+syncFromGs clang/C2
 syncFromGs clang-format/C1
 #syncFromGs llvm-as/C1
 
@@ -112,7 +112,7 @@ echo @@@BUILD_STEP stage2/asan+assertions run clang-fuzzer@@@
 #  echo @@@STEP_WARNINGS@@@
 
 echo @@@BUILD_STEP push corpus updates@@@
-syncToGs clang/C1
+syncToGs clang/C2
 syncToGs clang-format/C1
 #syncToGs llvm-as/C1
 
