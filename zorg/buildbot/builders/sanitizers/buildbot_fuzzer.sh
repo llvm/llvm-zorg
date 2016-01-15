@@ -99,7 +99,7 @@ echo @@@BUILD_STEP stage2/asan+assertions build clang-format-fuzzer and clang-fu
 echo @@@BUILD_STEP stage2/asan+assertions run clang-format-fuzzer@@@
 
 (${STAGE2_ASAN_ASSERTIONS_DIR}/bin/clang-format-fuzzer -jobs=8 -workers=8 -max_total_time=600 $CLANG_FORMAT_CORPUS) || \
-  echo @@@STEP_FAILURE@@@
+  echo @@@STEP_WARNINGS@@@
 
 echo @@@BUILD_STEP stage2/asan+assertions run clang-fuzzer@@@
 (${STAGE2_ASAN_ASSERTIONS_DIR}/bin/clang-fuzzer -jobs=8 -workers=8 -only_ascii=1 -max_total_time=600 $CLANG_CORPUS) || \
