@@ -851,6 +851,15 @@ def _get_libcxx_builders():
             cmake_extra_opts={'LIBCXX_ABI_UNSTABLE': 'ON'}),
         'category': 'libcxx'},
 
+        {'name': 'libcxx-libcxxabi-x86_64-linux-ubuntu-gcc49-cxx11',
+         'slavenames': ['ericwf-buildslave2'],
+         'builddir' : 'libcxx-libcxxabi-x86_64-linux-ubuntu-gcc49-cxx11',
+         'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
+            env={'PATH': '/usr/local/bin:/usr/bin:/bin',
+                 'CC': 'gcc-4.9', 'CXX': 'g++-4.9'},
+            lit_extra_opts={'std': 'c++11'}),
+        'category': 'libcxx'},
+
         # Cortex-A15 LibC++ and LibC++abi tests (require Clang+RT)
         {'name': 'libcxx-libcxxabi-arm-linux',
          'slavenames': ['linaro-chrome-01'],
