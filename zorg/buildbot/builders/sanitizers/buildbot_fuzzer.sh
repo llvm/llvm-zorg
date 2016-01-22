@@ -19,11 +19,11 @@ CHECK_LLD=${CHECK_LLD:-1}
 STAGE1_DIR=llvm_build0
 STAGE2_ASAN_DIR=llvm_build_asan
 STAGE2_ASAN_ASSERTIONS_DIR=llvm_build_asan_assertions
-MAKE_JOBS=${MAX_MAKE_JOBS:-16}
+MAKE_JOBS=${MAX_MAKE_JOBS:-8}
 LLVM=$ROOT/llvm
 # No assertions. Need to clean up the existing assertion failures first.
 # Also, the Fuzzer does not provide reproducers on assertion failures yet.
-CMAKE_COMMON_OPTIONS="-GNinja -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_ASSERTIONS=OFF -DLLVM_PARALLEL_LINK_JOBS=3"
+CMAKE_COMMON_OPTIONS="-GNinja -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_ASSERTIONS=OFF -DLLVM_PARALLEL_LINK_JOBS=8"
 CORPUS_ROOT=$ROOT/CORPORA/llvm
 CLANG_FORMAT_CORPUS=$CORPUS_ROOT/clang-format/C1
 CLANG_CORPUS=$CORPUS_ROOT/clang/C2
