@@ -313,7 +313,7 @@ def static_analyzer_benchmarks_builder():
   header("Static Analyzer Benchmarks")
 
   benchmark_script = conf.workspace + "/utils-analyzer/SATestBuild.py"
-  benchmarks_dir = conf.workspace + "/clang-analyzer-benchmarks/"
+  benchmarks_dir = conf.workspace + "/test-suite-ClangAnalyzer/"
 
   compiler_bin_dir = conf.workspace + "/host_compiler/bin/"
   scanbuild_bin_dir = conf.workspace + "/tools-scanbuild/bin/"
