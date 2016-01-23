@@ -315,8 +315,8 @@ def static_analyzer_benchmarks_builder():
   benchmark_script = conf.workspace + "/utils-analyzer/SATestBuild.py"
   benchmarks_dir = conf.workspace + "/test-suite-ClangAnalyzer/"
 
-  compiler_bin_dir = conf.workspace + "/host_compiler/bin/"
-  scanbuild_bin_dir = conf.workspace + "/tools-scanbuild/bin/"
+  compiler_bin_dir = conf.workspace + "/host-compiler/bin/"
+  scanbuild_bin_dir = conf.workspace + "/tools-scan-build/bin/"
 
   old_path = os.environ.get("PATH", "")
   env = dict(os.environ, PATH=compiler_bin_dir + os.pathsep +
