@@ -187,13 +187,15 @@ def _get_clang_builders():
         {'name': "clang-cmake-armv7-a15-selfhost-neon",
          'slavenames':["linaro-chrome-04"],
          'builddir':"clang-cmake-armv7-a15-selfhost-neon",
-         'factory' : ClangBuilder.getClangCMakeBuildFactory(
+         'factory' : ClangBuilder.getClangCMakeGCSBuildFactory(
                       jobs=2,
                       clean=True,
                       checkout_compiler_rt=False,
                       useTwoStage=True,
                       testStage1=True,
-                      env={'PATH':'/usr/lib/ccache:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'},
+                      stage1_upload_directory='clang-cmake-armv7a',
+                      env={'PATH':'/usr/lib/ccache:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin',
+                           'BOTO_CONFIG':'/var/buildbot/llvmlab-build-artifacts.boto'},
                       extra_cmake_args=["-DCMAKE_C_FLAGS=-mcpu=cortex-a15",
                                         "-DCMAKE_CXX_FLAGS=-mcpu=cortex-a15",
                                         "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'"])},
