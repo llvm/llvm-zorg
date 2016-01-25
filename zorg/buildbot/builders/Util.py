@@ -1,7 +1,9 @@
 import buildbot.status.results
 
 def getVisualStudioEnvironment(vs=r"""%VS120COMNTOOLS%""", target_arch=None):
-    arch_arg = {'x86': 'x86', 'x64': 'amd64', 'amd64': 'amd64'}.get(target_arch, '%PROCESSOR_ARCHITECTURE%')
+    # x86 builds should use the 64 bit -> x86 cross compilation toolchain to avoid
+    # out of memory linker errors
+    arch_arg = {'x86': 'amd64_x86', 'x64': 'amd64', 'amd64': 'amd64'}.get(target_arch, '%PROCESSOR_ARCHITECTURE%')
     vcvars_command = "\"" + "\\".join((vs, '..','..','VC', 'vcvarsall.bat')) + "\""
     vcvars_command = "%s %s && set" % (vcvars_command, arch_arg)
     return vcvars_command
