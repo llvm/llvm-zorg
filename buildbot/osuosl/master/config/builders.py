@@ -245,7 +245,7 @@ def _get_clang_builders():
         {'name': "clang-cmake-aarch64-quick",
          'slavenames':["linaro-apm-01"],
          'builddir':"clang-cmake-aarch64-quick",
-         'factory' : ClangBuilder.getClangCMakeBuildFactory(
+         'factory' : ClangBuilder.getClangCMakeGCSBuildFactory(
                       jobs=8,
                       clean=False,
                       checkout_compiler_rt=False,
