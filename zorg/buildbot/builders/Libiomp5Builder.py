@@ -42,6 +42,14 @@ def getLibompCMakeBuildFactory(clean=True, env=None, test=True, c_compiler="gcc"
                   defaultBranch='trunk',
                   workdir=llvm_srcdir))
 
+    # Get clang  if c/c++ compilers is clang/clang++
+    if c_compiler == "clang":
+        f.addStep(SVN(name='svn-clang',
+                      mode='update',
+                      baseURL='http://llvm.org/svn/llvm-project/cfe/',
+                      defaultBranch='trunk',
+                      workdir='%s/tools/clang' % llvm_srcdir))
+
     # Clean directory, if requested.
     if clean:
         f.addStep(ShellCommand(name="clean",
@@ -61,16 +69,24 @@ def getLibompCMakeBuildFactory(clean=True, env=None, test=True, c_compiler="gcc"
                            workdir=llvm_builddir,
                            env=merged_env))
 
-    # Make llvm utils
-    f.addStep(WarningCountingShellCommand(name='make llvm utils build',
-                                          command=['make', 'LLVMX86Utils', '-j8'],
-                                          haltOnFailure=True,
-                                          description='make llvm utils build',
-                                          workdir=llvm_builddir,
-                                          env=merged_env))
+    # Make clang build or just llvm utils build
+    if c_compiler == "clang": 
+        f.addStep(WarningCountingShellCommand(name='make clang build',
+                                              command=['make', '-j8'],
+                                              haltOnFailure=True,
+                                              description='make clang build',
+                                              workdir=llvm_builddir,
+                                              env=merged_env))
+    else:
+        f.addStep(WarningCountingShellCommand(name='make llvm utils build',
+                                              command=['make', 'LLVMX86Utils', '-j8'],
+                                              haltOnFailure=True,
+                                              description='make llvm utils build',
+                                              workdir=llvm_builddir,
+                                              env=merged_env))
 
-    # Add llvm-lit to PATH
-    merged_env.update( { 'PATH' : WithProperties("${PATH}:" + "%(workdir)s/" + llvm_builddir + "/bin")} )
+    # Add clang/llvm-lit to PATH
+    merged_env.update( { 'PATH' : WithProperties("%(workdir)s/" + llvm_builddir + "/bin:" + "${PATH}")} )
 
     # CMake libomp
     f.addStep(ShellCommand(name='cmake libomp',
