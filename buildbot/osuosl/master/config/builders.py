@@ -70,15 +70,26 @@ def _get_llvm_builders():
          'slavenames':["systemz-1"],
          'builddir':"llvm-s390x-linux1",
          'factory': LLVMBuilder.getLLVMBuildFactory("s390x-linux-gnu", jobs=4, clean=False, timeout=20, config_name='Release+Asserts')},
-
+        # We currently have to force LLVM_HOST_TRIPLE and
+        # LLVM_DEFAULT_TARGET_TRIPLE on this system. CMake gets the value
+        # correct for the processor but it's currently not possible to emit O32
+        # code using a mips64-* triple. This is a bug and should be fixed soon.
+        # We must also force LLVM_TARGET_ARCH so that the ExecutionEngine tests
+        # run.
         {'name': "llvm-mips-linux",
          'slavenames':["mipsswbrd002"],
          'builddir':"llvm-mips-linux",
-         'factory': LLVMBuilder.getLLVMBuildFactory("mips-linux-gnu", timeout=40, config_name='Release+Asserts',
-                                                    extra_configure_args=["--with-extra-options=-mips32r2",
-                                                                          "CC=/mips/proj/build-compiler/clang-be-o32-latest/bin/clang",
-                                                                          "CXX=/mips/proj/build-compiler/clang-be-o32-latest/bin/clang++",
-                                                                          "--with-extra-ld-options=-mips32r2"])},
+         'factory': LLVMBuilder.getLLVMCMakeBuildFactory(
+                        timeout=40, config_name='Release',
+                        enable_shared=True,
+                        extra_cmake_args=["-DLLVM_HOST_TRIPLE=mips-linux-gnu",
+                                          "-DLLVM_DEFAULT_TARGET_TRIPLE=mips-linux-gnu",
+                                          "-DLLVM_TARGET_ARCH=Mips",
+                                          "-DLLVM_ENABLE_ASSERTIONS=ON",
+                                          "-DLLVM_PARALLEL_LINK_JOBS=1"],
+                        env={'CC': '/mips/proj/build-compiler/clang-be-o32-latest/bin/clang',
+                             'CXX': '/mips/proj/build-compiler/clang-be-o32-latest/bin/clang++',
+                            })},
         {'name': "llvm-aarch64-linux",
          'slavenames':["aarch64-foundation"],
          'builddir':"llvm-aarch64-linux",
@@ -692,8 +703,8 @@ def _get_sanitizer_builders():
                         extra_cmake_args=["-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'"])},
 
           # Mips check-all with CMake builder
-          # We currently have to force CMAKE_HOST_TRIPLE and
-          # CMAKE_DEFAULT_TARGET_TRIPLE on this system. CMake gets the value
+          # We currently have to force LLVM_HOST_TRIPLE and
+          # LLVM_DEFAULT_TARGET_TRIPLE on this system. CMake gets the value
           # correct for the processor but it's currently not possible to emit O32
           # code using a mips64-* triple. This is a bug and should be fixed soon.
           # We must also force LLVM_TARGET_ARCH so that the ExecutionEngine tests
@@ -710,8 +721,8 @@ def _get_sanitizer_builders():
                            stage1_upload_directory='clang-cmake-mips',
                            env = {'BOTO_CONFIG': '/var/buildbot/llvmlab-build-artifacts.boto'})},
           # Mips check-all with CMake builder
-          # We currently have to force CMAKE_HOST_TRIPLE and
-          # CMAKE_DEFAULT_TARGET_TRIPLE on this system. CMake gets the value
+          # We currently have to force LLVM_HOST_TRIPLE and
+          # LLVM_DEFAULT_TARGET_TRIPLE on this system. CMake gets the value
           # correct for the processor but it's currently not possible to emit O32
           # code using a mips64-* triple. This is a bug and should be fixed soon.
           # We must also force LLVM_TARGET_ARCH so that the ExecutionEngine tests
