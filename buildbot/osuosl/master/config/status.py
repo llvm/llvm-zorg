@@ -110,7 +110,7 @@ def get_status_targets(standard_builders, standard_categories=None):
             extraRecipients = ["Ulrich.Weigand@de.ibm.com"],
             subject="Build %(builder)s Failure",
             mode = "failing",
-            builders = ["llvm-s390x-linux1"],
+            builders = ["clang-s390x-linux"],
             addLogs=False,
             num_lines = 15),
         InformativeMailNotifier(

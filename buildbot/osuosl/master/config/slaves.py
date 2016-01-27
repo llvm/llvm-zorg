@@ -153,7 +153,7 @@ def get_build_slaves():
         # Debian 7.7 x86_64 GCE instance
         create_slave("modules-slave-1", properties={'jobs': 16}, max_builds=1),
 
-        # zEnterprise 196 (s390x), SLES 11 SP2
+        # zEnterprise 196 (s390x), SLES 12
         create_slave("systemz-1", properties={'jobs': 4}, max_builds=1),
 
         # Ubuntu 14.04 x86_64, Intel(R) Xeon(R) CPU E5-1650 0 @ 3.20GHz

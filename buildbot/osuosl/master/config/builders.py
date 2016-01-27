@@ -66,10 +66,6 @@ from zorg.buildbot.builders import ABITestsuitBuilder
 # Plain LLVM builders.
 def _get_llvm_builders():
     return [
-        {'name': "llvm-s390x-linux1",
-         'slavenames':["systemz-1"],
-         'builddir':"llvm-s390x-linux1",
-         'factory': LLVMBuilder.getLLVMBuildFactory("s390x-linux-gnu", jobs=4, clean=False, timeout=20, config_name='Release+Asserts')},
         # We currently have to force LLVM_HOST_TRIPLE and
         # LLVM_DEFAULT_TARGET_TRIPLE on this system. CMake gets the value
         # correct for the processor but it's currently not possible to emit O32
@@ -332,6 +328,15 @@ def _get_clang_builders():
         {'name': "clang-ppc64le-linux",
          'slavenames':["ppc64le-clang-test"],
          'builddir':"clang-ppc64le",
+         'factory' : ClangBuilder.getClangCMakeBuildFactory(clean=False,
+                                                            useTwoStage=False,
+                                                            stage1_config='Release',
+                                                            extra_cmake_args=["-DLLVM_ENABLE_ASSERTIONS=ON"]),
+         'category' : 'clang'},
+
+        {'name': "clang-s390x-linux",
+         'slavenames':["systemz-1"],
+         'builddir':"clang-s390x-linux",
          'factory' : ClangBuilder.getClangCMakeBuildFactory(clean=False,
                                                             useTwoStage=False,
                                                             stage1_config='Release',
