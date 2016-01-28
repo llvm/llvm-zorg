@@ -178,7 +178,7 @@ def getLLVMCMakeBuildFactory(
             workdir       = llvm_srcdir))
 
     cmake_args = ['cmake']
-    cmake_args += ["-DCMAKE_BUILD_TYPE="+config_name],
+    cmake_args += ["-DCMAKE_BUILD_TYPE="+config_name]
     if enable_shared:
         cmake_args.append('-DBUILD_SHARED_LIBS=ON')
     cmake_args.extend(extra_cmake_args)
