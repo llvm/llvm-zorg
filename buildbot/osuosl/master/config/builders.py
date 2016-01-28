@@ -108,10 +108,10 @@ def _get_clang_fast_builders():
          'slavenames':["gribozavr4"],
          'builddir':"clang-x86_64-debian-fast",
          'factory': ClangBuilder.getClangBuildFactory(
-                    env={'PATH':'/home/llvmbb/bin/clang-latest/bin:/home/llvmbb/bin:/usr/local/bin:/usr/local/bin:/usr/bin:/bin',
-                         'CC': 'ccache clang', 'CXX': 'ccache clang++', 'CCACHE_CPP2': 'yes'},
-                    stage1_config='Release+Asserts',
-                    checkout_compiler_rt=True)},
+                     withLLD=False,
+                     prefixCommand=None, # This is a designated builder, so no need to be nice.
+                     env={'PATH':'/home/llvmbb/bin/clang-latest/bin:/home/llvmbb/bin:/usr/local/bin:/usr/local/bin:/usr/bin:/bin',
+                         'CC': 'ccache clang', 'CXX': 'ccache clang++', 'CCACHE_CPP2': 'yes'}),
 
         {'name': "llvm-clang-lld-x86_64-debian-fast",
          'slavenames':["gribozavr4"],
