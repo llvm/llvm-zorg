@@ -107,11 +107,11 @@ def _get_clang_fast_builders():
         {'name': "clang-x86_64-debian-fast",
          'slavenames':["gribozavr4"],
          'builddir':"clang-x86_64-debian-fast",
-         'factory': ClangBuilder.getClangBuildFactory(
+         'factory': ClangAndLLDBuilder.getClangAndLLDBuildFactory(
                      withLLD=False,
                      prefixCommand=None, # This is a designated builder, so no need to be nice.
                      env={'PATH':'/home/llvmbb/bin/clang-latest/bin:/home/llvmbb/bin:/usr/local/bin:/usr/local/bin:/usr/bin:/bin',
-                         'CC': 'ccache clang', 'CXX': 'ccache clang++', 'CCACHE_CPP2': 'yes'}),
+                         'CC': 'ccache clang', 'CXX': 'ccache clang++', 'CCACHE_CPP2': 'yes'})},
 
         {'name': "llvm-clang-lld-x86_64-debian-fast",
          'slavenames':["gribozavr4"],
@@ -148,8 +148,15 @@ def _get_clang_builders():
         {'name': "clang-atom-d525-fedora-rel",
          'slavenames':["atom1-buildbot"],
          'builddir':"clang-atom-d525-fedora-rel",
-         'factory' : ClangBuilder.getClangBuildFactory(stage1_config='Release+Asserts',
-                                                       extra_configure_args=['--with-intel-jitevents'])},
+         'factory' : ClangBuilder.getClangCMakeBuildFactory(
+                       clean=True,
+                       checkout_compiler_rt=False,
+                       useTwoStage=False,
+                       stage1_config='Release',
+                       test=True,
+                       testStage1=True,
+                       extra_cmake_args=['-DLLVM_ENABLE_ASSERTIONS=ON',
+                                         '-DLLVM_USE_INTEL_JITEVENTS=TRUE'])},
 
         # Cortex-A15 LNT test-suite in Benchmark mode
         # FIXME: Move this to CMake (see below)
@@ -898,8 +905,15 @@ def _get_experimental_scheduled_builders():
         {'name': "clang-atom-d525-fedora",
          'slavenames':["atom-buildbot"],
          'builddir':"clang-atom-d525-fedora",
-         'factory' : ClangBuilder.getClangBuildFactory(extra_configure_args=["--enable-shared",
-                                                                             "--with-intel-jitevents"]),
+         'factory' : ClangBuilder.getClangCMakeBuildFactory(
+                       clean=True,
+                       checkout_compiler_rt=False,
+                       useTwoStage=False,
+                       stage1_config='Debug',
+                       test=True,
+                       testStage1=True,
+                       extra_cmake_args=['-DLLVM_ENABLE_ASSERTIONS=ON',
+                                         '-DLLVM_USE_INTEL_JITEVENTS=TRUE']),
          'category' : 'clang'},
 
         {'name' : "clang-bpf-build",

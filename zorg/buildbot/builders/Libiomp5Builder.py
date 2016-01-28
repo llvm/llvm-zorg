@@ -62,6 +62,7 @@ def getLibompCMakeBuildFactory(clean=True, env=None, test=True, c_compiler="gcc"
     # CMake llvm
     f.addStep(ShellCommand(name='cmake llvm',
                            command=["cmake", "../"+llvm_srcdir,
+                                    "-G Ninja",
                                     "-DCMAKE_C_COMPILER="+c_compiler,
                                     "-DCMAKE_CXX_COMPILER="+cxx_compiler],
                            haltOnFailure=True,
@@ -72,14 +73,14 @@ def getLibompCMakeBuildFactory(clean=True, env=None, test=True, c_compiler="gcc"
     # Make clang build or just llvm utils build
     if c_compiler == "clang": 
         f.addStep(WarningCountingShellCommand(name='make clang build',
-                                              command=['make', '-j8'],
+                                              command=['ninja'],
                                               haltOnFailure=True,
                                               description='make clang build',
                                               workdir=llvm_builddir,
                                               env=merged_env))
     else:
         f.addStep(WarningCountingShellCommand(name='make llvm utils build',
-                                              command=['make', 'LLVMX86Utils', '-j8'],
+                                              command=['ninja', 'LLVMX86Utils'],
                                               haltOnFailure=True,
                                               description='make llvm utils build',
                                               workdir=llvm_builddir,
