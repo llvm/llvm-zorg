@@ -175,6 +175,9 @@ echo @@@BUILD_STEP test standalone compiler-rt@@@
 (cd compiler_rt_build && make -j$MAKE_JOBS check-all) || echo @@@STEP_FAILURE@@@
 
 HAVE_NINJA=${HAVE_NINJA:-1}
+SKIP_MSAN=${SKIP_MSAN:-1}
+SKIP_LSAN=${SKIP_LSAN:-1}
+SKIP_DFSAN=${SKIP_DFSAN:-1}
 if [ "$PLATFORM" == "Linux" -a $HAVE_NINJA == 1 ]; then
   echo @@@BUILD_STEP build with ninja@@@
   if [ ! -d llvm_build_ninja ]; then
@@ -191,14 +194,20 @@ if [ "$PLATFORM" == "Linux" -a $HAVE_NINJA == 1 ]; then
   (cd llvm_build_ninja && ninja check-sanitizer) || echo @@@STEP_FAILURE@@@
   echo @@@BUILD_STEP ninja check-tsan@@@
   (cd llvm_build_ninja && ninja check-tsan) || echo @@@STEP_FAILURE@@@
-  echo @@@BUILD_STEP ninja check-msan@@@
-  (cd llvm_build_ninja && ninja check-msan) || echo @@@STEP_FAILURE@@@
-  echo @@@BUILD_STEP ninja check-lsan@@@
-  (cd llvm_build_ninja && ninja check-lsan) || echo @@@STEP_FAILURE@@@
   echo @@@BUILD_STEP ninja check-ubsan@@@
   (cd llvm_build_ninja && ninja check-ubsan) || echo @@@STEP_FAILURE@@@
-  echo @@@BUILD_STEP ninja check-dfsan@@@
-  (cd llvm_build_ninja && ninja check-dfsan) || echo @@@STEP_WARNINGS@@@
+  if [ "$SKIP_MSAN" != 1 ]; then
+    echo @@@BUILD_STEP ninja check-msan@@@
+    (cd llvm_build_ninja && ninja check-msan) || echo @@@STEP_FAILURE@@@
+  fi
+  if [ "$SKIP_LSAN" != 1 ]; then
+    echo @@@BUILD_STEP ninja check-lsan@@@
+    (cd llvm_build_ninja && ninja check-lsan) || echo @@@STEP_FAILURE@@@
+  fi
+  if [ "$SKIP_DFSAN" != 1 ]; then
+    echo @@@BUILD_STEP ninja check-dfsan@@@
+    (cd llvm_build_ninja && ninja check-dfsan) || echo @@@STEP_WARNINGS@@@
+  fi
   # FIXME: Reenable once cfi tests reliably work on the bot.
   # (cd llvm_build_ninja && LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/x86_64 ninja check-cfi-and-supported) || echo @@@STEP_FAILURE@@@
 fi
