@@ -149,7 +149,7 @@ def _get_clang_builders():
          'slavenames':["atom1-buildbot"],
          'builddir':"clang-atom-d525-fedora-rel",
          'factory' : ClangBuilder.getClangCMakeBuildFactory(
-                       clean=True,
+                       clean=False,
                        checkout_compiler_rt=False,
                        useTwoStage=False,
                        stage1_config='Release',
@@ -912,7 +912,7 @@ def _get_experimental_scheduled_builders():
          'slavenames':["atom-buildbot"],
          'builddir':"clang-atom-d525-fedora",
          'factory' : ClangBuilder.getClangCMakeBuildFactory(
-                       clean=True,
+                       clean=False,
                        checkout_compiler_rt=False,
                        useTwoStage=False,
                        stage1_config='Debug',
