@@ -1367,7 +1367,7 @@ def phasedClang(config_options, is_bootstrap=True, use_lto=False,
     # Save artifacts of this build for use by other builders.
     f = artifacts.uploadArtifacts(f)
     # Run the LLVM and Clang regression tests.
-    cmd_str = r"""make VERBOSE=1 LIT_ARGS="-v --param run_long_tests=true --filter='^(?!.*debuginfo-tests)'" check-all"""
+    cmd_str = r"""make VERBOSE=1 LIT_ARGS="-v --param run_long_tests=true --param enable_console=1 --filter='^(?!.*debuginfo-tests)'" check-all"""
     f.addStep(lit_test_command.LitTestCommand(name='run.llvm.tests', haltOnFailure=True,
                                               command=cmd_str,
                                               description=['all', 'tests'],
@@ -1375,7 +1375,7 @@ def phasedClang(config_options, is_bootstrap=True, use_lto=False,
     # Work around for lldb issue rdar://14929651
     # The crazy filter regex is to remove static-member[2].cpp, which requires xcode5 or later.
     # radar://16295455 tracks the removal of this regex.
-    cmd_str = r"""make VERBOSE=1 LIT_ARGS="-j 1 -v --param run_long_tests=true  --filter='debuginfo-tests.(?!static-member)'" check-all"""
+    cmd_str = r"""make VERBOSE=1 LIT_ARGS="-j 1 -v --param run_long_tests=true --param enable_console=1 --filter='debuginfo-tests.(?!static-member)'" check-all"""
     f.addStep(lit_test_command.LitTestCommand(name='run.llvm.debuginfo-tests', haltOnFailure=True,
                                               command=cmd_str,
                                               description=['all', 'tests'],
