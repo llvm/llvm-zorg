@@ -109,6 +109,11 @@ def _get_clang_fast_builders():
          'builddir':"clang-x86_64-debian-fast",
          'factory': ClangAndLLDBuilder.getClangAndLLDBuildFactory(
                      withLLD=False,
+                     extraCmakeOptions=[
+                       "-DCOMPILER_RT_BUILD_BUILTINS:BOOL=OFF",
+                       "-DCOMPILER_RT_BUILD_SANITIZERS:BOOL=OFF",
+                       "-DCOMPILER_RT_CAN_EXECUTE_TESTS:BOOL=OFF",
+                       "-DCOMPILER_RT_INCLUDE_TESTS:BOOL=OFF"],
                      prefixCommand=None, # This is a designated builder, so no need to be nice.
                      env={'PATH':'/home/llvmbb/bin/clang-latest/bin:/home/llvmbb/bin:/usr/local/bin:/usr/local/bin:/usr/bin:/bin',
                          'CC': 'ccache clang', 'CXX': 'ccache clang++', 'CCACHE_CPP2': 'yes'})},
