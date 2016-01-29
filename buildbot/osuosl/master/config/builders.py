@@ -530,7 +530,7 @@ def _get_polly_builders():
 # LLDB builders.
 def _get_lldb_builders():
     return [
-        {'name': "lldb-x86-windows-msvc",
+        {'name': "lldb-x86-windows-msvc2015",
          'slavenames': ["zturner-win2008"],
          'builddir': "lldb-windows-x86",
          'factory': LLDBBuilder.getLLDBWindowsCMakeBuildFactory(config='Debug')},

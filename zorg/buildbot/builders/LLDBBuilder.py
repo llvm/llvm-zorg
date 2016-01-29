@@ -49,10 +49,10 @@ def getLLDBWindowsCMakeBuildFactory(
             jobs="%(jobs)s",
 
             # Source directory containing a built python
-            python_source_dir=r'C:/src/python',
+            python_source_dir=r'C:/Python35',
 
             # Default values for VS devenv and build configuration
-            vs=r"""%VS120COMNTOOLS%""",
+            vs=r"""%VS140COMNTOOLS%""",
             config='Release',
             target_arch='x86',
 
@@ -91,26 +91,12 @@ def getLLDBWindowsCMakeBuildFactory(
                 doStepIf=cleanBuildRequested
                 ))
 
-    if config.lower() == 'release':
-        python_lib = 'python27.lib'
-        python_exe = 'python.exe'
-    elif config.lower() == 'debug':
-        python_lib = 'python27_d.lib'
-        python_exe = 'python_d.exe'
-
-    python_lib = os.path.join(python_source_dir, 'PCbuild', python_lib)
-    python_exe = os.path.join(python_source_dir, 'PCbuild', python_exe)
-    python_include = os.path.join(python_source_dir, 'Include')
-
     # Use batch files instead of ShellCommand directly, Windows quoting is
     # borked. FIXME: See buildbot ticket #595 and buildbot ticket #377.
     f.addStep(batch_file_download.BatchFileDownload(name='cmakegen',
                                 command=[cmake, "-G", "Ninja", "../llvm",
                                          "-DCMAKE_BUILD_TYPE="+config,
-                                         # Need to use our custom built version of python
-                                         '-DPYTHON_LIBRARY=' + python_lib,
-                                         '-DPYTHON_INCLUDE_DIR=' + python_include,
-                                         '-DPYTHON_EXECUTABLE=' + python_exe,
+                                         '-DPYTHON_HOME=' + python_source_dir,
                                          "-DCMAKE_INSTALL_PREFIX=../install"]
                                          + extra_cmake_args,
                                 workdir=build_dir))
