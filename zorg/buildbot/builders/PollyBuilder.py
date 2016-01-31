@@ -127,7 +127,7 @@ def AddExternalPollyBuildFactory(f, llvm_installdir, build_type = "Release"):
                            workdir=polly_objdir))
 
 def getPollyLNTFactory(triple, nt_flags, xfails=[], clean=False, test=False,
-                       build_type="Release", **kwargs):
+                       build_type="Release", extra_cmake_args=[], **kwargs):
     lnt_args = {}
     lnt_arg_names = ['submitURL', 'package_cache', 'testerName', 'reportBuildslave']
 
@@ -135,17 +135,22 @@ def getPollyLNTFactory(triple, nt_flags, xfails=[], clean=False, test=False,
         if argname in kwargs:
             lnt_args[argname] = kwargs.pop(argname)
 
-    llvm_install_dir = 'llvm.install.1'
+    llvm_install_dir = 'stage1.install'
 
-    f = ClangBuilder.getClangBuildFactory(
-        triple, clean=clean, test=test,
-        stage1_config=build_type, **kwargs)
+    f = ClangBuilder.getClangCMakeBuildFactory(
+        test=False,
+        useTwoStage=False,
+        clean=clean,
+        checkout_clang_tools_extra=False,
+        checkout_compiler_rt=False,
+        extra_cmake_args=extra_cmake_args,
+        stage1_config=build_type)
 
     f.addStep(ShellCommand(name="install-llvm-and-clang",
-                           command=["make", "install"],
+                           command=["ninja", "install"],
                            haltOnFailure=True,
                            description=["install llvm and clang"],
-                           workdir="llvm.obj"))
+                           workdir="stage1"))
 
     AddExternalPollyBuildFactory(f, llvm_install_dir, build_type)
 
