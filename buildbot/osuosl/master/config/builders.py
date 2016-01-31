@@ -466,7 +466,7 @@ def _get_polly_builders():
          'factory': PollyBuilder.getPollyBuildFactory()},
 
         {'name': "perf-x86_64-penryn-O3-polly-fast",
-         'slavenames':["pollyperf10"],
+         'slavenames':["pollyperf2"],
          'builddir': "perf-x86_64-penryn-O3-polly-fast",
          'factory': PollyBuilder.getPollyLNTFactory(triple="x86_64-pc-linux-gnu",
                                                     nt_flags=['--multisample=1', '--mllvm=-polly', '-j16' ],
