@@ -188,6 +188,9 @@ def get_build_slaves():
         # FreeBSD 11.0-CURRENT amd64
         create_slave("lldb-amd64-ninja-freebsd11", properties={'jobs': 3}, max_builds=1),
 
+        # FreeBSD 11.0-CURRENT amd64, Intel(R) Xeon(R) CPU E3-1230 v3 @ 3.30GHz
+        create_slave("freebsd01", properties={'jobs': 3}, max_builds=1),
+
         # Defunct.
         # Intel(R) Pentium(R) CPU G620 @ 2.60GHz, Ubuntu i686
         #create_slave("botether", properties={'jobs': 2}, max_builds=1),
