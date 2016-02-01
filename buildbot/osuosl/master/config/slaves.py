@@ -130,12 +130,6 @@ def get_build_slaves():
         # OpenBSD
         create_slave("openbsd-buildslave", properties={'jobs': 2}, max_builds=1),
 
-        # Aarch64 Foundation Model
-        create_slave("aarch64-foundation", properties={'jobs': 4}, max_builds=1),
-
-        # AArch64 Qemu LNT
-        create_slave("aarch64-qemu-lnt", properties={'jobs': 4}, max_builds=1),
-
         # AArch64 Clang, Juno ARM Development Platform
         create_slave("juno-aarch64-01", properties={'jobs': 4}, max_builds=1),
 
