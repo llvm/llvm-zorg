@@ -586,15 +586,6 @@ def _get_lld_builders():
                                                   env={'CXXFLAGS' : "-std=c++11 -stdlib=libc++"}),
          'category'   : 'lld'},
 
-        {'name': "lld-x86_64-freebsd",
-         'slavenames' :["freebsd01"],
-         'builddir':"lld-x86_64-freebsd",
-         'factory': LLDBuilder.getLLDBuildFactory(extra_configure_args=[
-                                                      '-DCMAKE_EXE_LINKER_FLAGS=-lcxxrt',
-                                                      '-DLLVM_ENABLE_WERROR=OFF'],
-                                                  env={'CXXFLAGS' : "-std=c++11 -stdlib=libc++"}),
-         'category'   : 'lld'},
-
          ]
 
 # llgo builders.
@@ -637,15 +628,6 @@ def _get_sanitizer_builders():
 
           {'name': "sanitizer_x86_64-freebsd",
            'slavenames':["as-bldslv5"],
-           'builddir':"sanitizer_x86_64-freebsd",
-           'factory' : SanitizerBuilderII.getSanitizerBuildFactoryII(
-                        clean=True,
-                        sanitizers=['sanitizer','asan','lsan','tsan','ubsan'],
-                        common_cmake_options=['-DCMAKE_EXE_LINKER_FLAGS=-lcxxrt',
-                                              '-DLIBCXXABI_USE_LLVM_UNWINDER=ON'])},
-
-          {'name': "sanitizer_x86_64-freebsd",
-           'slavenames':["freebsd01"],
            'builddir':"sanitizer_x86_64-freebsd",
            'factory' : SanitizerBuilderII.getSanitizerBuildFactoryII(
                         clean=True,
@@ -1256,16 +1238,6 @@ clang_x86_64_freebsd_xfails = [
                                          test=False,
                                          xfails=clang_x86_64_freebsd_xfails)},
 
-{'name': "clang-mergefunc-x86_64-freebsd",
- 'slavenames':["freebsd01"],
- 'builddir':"clang-mergefunc-x86_64-freebsd",
- 'factory' : NightlytestBuilder.getFastNightlyTestBuildFactory(triple='x86_64-unknown-freebsd10.0',
-                                         stage1_config='Release+Asserts',
-                                         merge_functions=True,
-                                         make='gmake',
-                                         test=False,
-                                         xfails=clang_x86_64_freebsd_xfails)},
-
 {'name': "clang-native-arm-cortex-a15",
  'slavenames':["linaro-chrome-01"],
  'builddir':"clang-native-arm-cortex-a15",
@@ -1374,13 +1346,6 @@ clang_i386_linux_xfails = [
                                                               stage1_config='Release+Asserts',
                                                               test=True)},
 
-{'name': "clang-X86_64-freebsd",
- 'slavenames':["freebsd01"],
- 'builddir':"clang-X86_64-freebsd",
- 'factory': NightlytestBuilder.getFastNightlyTestBuildFactory(triple='x86_64-unknown-freebsd8.2',
-                                                              stage1_config='Release+Asserts',
-                                                              test=True)},
-
 # Polly builders
 {'name': "polly-intel32-linux",
  'slavenames':["botether"],
@@ -1411,15 +1376,6 @@ clang_i386_linux_xfails = [
 
 {'name': "lldb-x86_64-freebsd",
  'slavenames': ["as-bldslv5"],
- 'builddir': "lldb-x86_64-freebsd",
- 'category' : 'lldb',
- 'factory': LLDBBuilder.getLLDBBuildFactory(triple=None, # use default
-                                            make='gmake',
-                                            extra_configure_args=['--enable-cxx11',
-                                                                  '--enable-optimized',
-                                                                  '--enable-assertions'])},
-{'name': "lldb-x86_64-freebsd",
- 'slavenames': ["freebsd01"],
  'builddir': "lldb-x86_64-freebsd",
  'category' : 'lldb',
  'factory': LLDBBuilder.getLLDBBuildFactory(triple=None, # use default
