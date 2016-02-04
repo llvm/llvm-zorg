@@ -8,8 +8,12 @@ import datetime
 import argparse
 import urllib
 import shutil
+import math
 
 SERVER = "labmaster2.local"
+
+BUILD_RECORD_TEMPLATE = '/clang.build'
+NINJA = "/usr/local/bin/ninja"
 
 
 def readme_name(repo):
@@ -60,7 +64,11 @@ class Configuration(object):
         self.build_id = os.environ.get('BUILD_ID', 'NONE')
         self.build_number = os.environ.get('BUILD_NUMBER', 'NONE')
         self.svn_rev = os.environ.get('LLVM_REV', 'NONE')
+        self.nobootstrap = True
+        self.device = None
+        self._svn_url = None
 
+        # Import all of the command line arguments into the config object
         self.__dict__.update(vars(args))
 
     def builddir(self):
@@ -105,12 +113,37 @@ class Configuration(object):
         else:
             return False
 
+    def branch(self):
+        """Figure out the branch name from the SVN_URL."""
+        try:
+            return os.environ['BRANCH']
+        except:
+            assert self._svn_url is not None
+            BRANCH_MARKER = "/branches/"
+            if BRANCH_MARKER in self._svn_url:
+                wo_branch = self._svn_url.split(BRANCH_MARKER, 1)[1]
+                branch = wo_branch.rsplit("@", 1)[0]
+                return branch
+            else:
+                return "master"
+
+
+    def link_memory_usage(self):
+        """Guesstimate the maximum link memory usage for this build.
+           We are only building master here so we will just use that value
+        """
+        #  Determinited experimentally.
+        usages = {'master': 3.5}
+        if self.branch() == 'master':
+            return usages['master']
+        else:
+            raise NotImplementedError("Unknown link memory usage." + self.branch())
+
+
 # Global storage for configuration object.
 conf = None
 
-
 def cmake_builder(target):
-    """Run a build_type build using cmake and ninja."""
     check_repo_state(conf.workspace)
 
     env = []
@@ -191,68 +224,106 @@ def cmake_builder(target):
 
 
 def clang_builder(target):
-    """Do a configure + make build of clang. Target is the type of build."""
+    """Build to set of commands to compile and test apple-clang"""
     check_repo_state(conf.workspace)
-    configure_cmd = [conf.srcdir() + "/configure"]
+    # get rid of old archives from prior builds
 
-    if conf.assertions:
-        configure_cmd.append("--enable-assertions")
-    else:
-        configure_cmd.append("--disable-assertions")
+    run_ws(['sh', '-c', 'rm -rfv *gz'])
 
-    compiler_flags = conf.compiler_flags
-    if conf.lto:
-        compiler_flags += ['-flto', '-gline-tables-only']
+    if target == "all" or target == "build":
+        # Clean the build directory.
+        run_ws(['rm', '-rf', 'clang.roots'])
 
-    if compiler_flags:
-        configure_cmd.extend(
-            ['--with-extra-options={}'.format(' '.join(compiler_flags))])
+        debug_src_dir = 'debuginfo-tests.src'
 
-    configure_cmd.extend(["--enable-optimized",
-        "--disable-bindings", "--enable-targets=x86,x86_64,arm,aarch64",
-        "--prefix=" + conf.installdir(), "--enable-libcpp"])
-    if conf.CC():
-        configure_cmd.append('CC='+conf.CC())
-        configure_cmd.append('CXX='+conf.CC()+"++")
+        sdk_name = 'macosx'
 
-    rev_str =  "CLANG_REPOSITORY_STRING={}".format(conf.job_name)
-    svn_rev_str = "SVN_REVISION={}".format(conf.svn_rev)
-    llvm_rev = "LLVM_VERSION_INFO= ({}: trunk {})".format(
-        conf.job_name, conf.svn_rev)
+        sdkroot = query_sdk_path(sdk_name)
 
-    j_number = "4" if conf.j_level is None else conf.j_level
+        next_section("Setup debug-info tests")
+        run_ws(['rm', '-rf', 'llvm/tools/clang/test/debuginfo-tests'])
+        run_cmd(os.path.join(conf.workspace, 'llvm/tools/clang/test'),
+                ['ln', '-sf', conf.workspace + debug_src_dir,
+                'debuginfo-tests'])
 
-    make_all = ["make", "-j", j_number, "VERBOSE=1",
-                rev_str, svn_rev_str, llvm_rev]
+        project = 'clang'
 
-    if conf.lto and conf.liblto():
-        dyld_path = conf.liblto()
-        make_all.append("DYLD_LIBRARY_PATH=" + dyld_path)
+        clang_br = conf.workspace + BUILD_RECORD_TEMPLATE.format(project)
+        next_section("Build Directory")
+        run_ws(["mkdir", "-p", clang_br])
 
-    make_install = ["make", "install-clang", "-j", j_number]
+        toolchain = '/Applications/Xcode.app/Contents/Developer' \
+            '/Toolchains/XcodeDefault.xctoolchain'
 
-    make_check = ["make", "VERBOSE=1", "check-all",
-        'LIT_ARGS=--xunit-xml-output=testresults.xunit.xml -v']
+        next_section("Build Clang")
+        if conf.nobootstrap:
+            if conf.debug or conf.device:
+                assert False, "Invalid parameter for clang-builder."
+            run_cmd(clang_br, ['mkdir',
+                           './Build',
+                           './Root'])
+            install_prefix =  conf.installdir()
+            cmake_command = ["/usr/bin/xcrun", "cmake", '-G', 'Ninja', '-C',
+            '{}/llvm/tools/clang/cmake/caches/Apple-stage2.cmake'.format(conf.workspace),
+            '-DLLVM_ENABLE_ASSERTIONS:BOOL={}'.format("TRUE" if conf.assertions else "FALSE"),
+            '-DCMAKE_BUILD_TYPE=RelWithDebInfo',
+            '-DCMAKE_MAKE_PROGRAM=' + NINJA,
+            '-DLLVM_VERSION_PATCH=99',
+            '-DLLVM_VERSION_SUFFIX=""',
+            '-DLLVM_BUILD_EXTERNAL_COMPILER_RT=On',
+            '-DCLANG_COMPILER_RT_CMAKE_ARGS={}/llvm/tools/clang/cmake/caches/Apple-stage2.cmake'.format(conf.workspace),
+            '-DCMAKE_INSTALL_PREFIX={}'.format(install_prefix),
+            '-DLLVM_ENABLE_PIC=On', 
+            '-DLLVM_REPOSITORY={}'.format(conf._svn_url),
+            '-DSVN_REVISION={}'.format(conf.svn_rev),
+            '-DLLVM_BUILD_TESTS=On',
+            '-DLLVM_INCLUDE_TESTS=On',
+            '-DCLANG_INCLUDE_TESTS=On',
+            '-DLLVM_INCLUDE_UTILS=On'
+            ]
 
-    if target == 'build' or target == 'all':
-        header("Configure")
-        run_cmd(conf.builddir(), configure_cmd)
-        footer()
-        header("Make All")
-        run_cmd(conf.builddir(), make_all)
-        footer()
-        header("Make Install")
-        run_cmd(conf.builddir(), make_install)
-        footer()
-        header("Upload artifact")
-        build_upload_artifact()
-        footer()
+            if conf.lto:
+                cmake_command.extend([
+                    '-DCMAKE_C_FLAGS_RELWITHDEBINFO:STRING=-O2 -flto -gline-tables-only -DNDEBUG',
+                    '-DCMAKE_CXX_FLAGS_RELWITHDEBINFO:STRING=-O2 -flto -gline-tables-only -DNDEBUG'])
+                cmake_command.extend(["-DLLVM_PARALLEL_LINK_JOBS=" + str(max_link_jobs())])
+            else:
+                cmake_command.extend([
+                    '-DCMAKE_C_FLAGS_RELWITHDEBINFO:STRING=-O2 -gline-tables-only -DNDEBUG',
+                    '-DCMAKE_CXX_FLAGS_RELWITHDEBINFO:STRING=-O2 -gline-tables-only -DNDEBUG'])
 
-    if target == 'test' or target == 'all':
-        header("Make Check")
-        run_cmd(conf.builddir(), make_check)
-        footer()
-        # run_cmd(conf.builddir(), make_check_debug)
+
+            cmake_command.append("{}/llvm".format(conf.workspace))
+            run_cmd(os.path.join(clang_br, 'Build'), cmake_command)
+            next_section("Ninja")
+            run_cmd(os.path.join(clang_br, 'Build'), [NINJA, '-v', 'install'])
+
+            build_upload_artifact()
+
+        else:
+            # Two stage build, via the make files.
+            print 'Stage two compile TBD in near future'
+
+
+    if not conf.device and (target == "test" or target == "all"):
+        # Add steps to run the tests.
+        next_section("Tests")
+        # Auto detect bootstrap and non-bootstrap.
+        obj_dir = '/clang.build/Objects/obj-llvm/tools/clang/stage2-bins/'
+        obj_dir = conf.workspace + obj_dir
+        if not os.path.exists(obj_dir):
+            obj_dir = '/clang.build/Build/'
+            obj_dir = conf.workspace + obj_dir
+
+        cmd = [NINJA, '-v', 'check-all']
+
+        if conf.assertions:
+            cmd[-1] += ' --param use_gmalloc=1 ' \
+                '--param gmalloc_path=$(xcodebuild -find-library' \
+                ' libgmalloc.dylib)'
+        print os.environ.get("PATH", "")
+        run_cmd(obj_dir, cmd, env={'MALLOC_LOG_FILE': '/dev/null'})
+
 
 def lldb_builder():
     """Do an Xcode build of lldb."""
@@ -494,6 +565,9 @@ def fetch_compiler():
 
 def build_upload_artifact():
     """Create artifact for this build, and upload to server."""
+    if conf.noupload:
+        print 'Not uploading artificats'
+        return
     assert conf.svn_rev != "NONE"
     prop_file = "last_good_build.properties"
 
@@ -529,24 +603,39 @@ def build_upload_artifact():
 
     run_cmd(conf.workspace, ln_cmd)
 
-
-def run_cmd(working_dir, cmd, env=None):
+def run_cmd(working_dir, cmd, env=None, sudo=False, err_okay=False):
     """Run a command in a working directory, and make sure it returns zero."""
+    assert type(cmd) == list, "Not a list: {}".format(type(cmd))
     old_cwd = os.getcwd()
+    if env:
+        envs = []
+        for key, value in env.items():
+            envs.append("{}={}".format(key, value))
+        cmd = ["env"] + envs + cmd
+    if sudo:
+        cmd = ['sudo'] + cmd
+
     cmd_to_print = ' '.join([quote_sh_string(x) for x in cmd])
     sys.stdout.write("cd {}\n{}\n".format(working_dir, cmd_to_print))
     sys.stdout.flush()
-
+    return_code = 0
     start_time = datetime.datetime.now()
     if not os.environ.get('TESTING', False):
-        os.chdir(working_dir)
-        subprocess.check_call(cmd, env=env)
-        os.chdir(old_cwd)
+        try:
+            os.chdir(working_dir)
+            subprocess.check_call(cmd)
+            os.chdir(old_cwd)
+        except subprocess.CalledProcessError as excpt:
+            if not err_okay:
+                raise excpt
+            else:
+                logging.info("Ignoring failed command.")
+                return_code = excpt.returncode
     end_time = datetime.datetime.now()
 
     logging.info("Command took {} seconds".format(
         (end_time-start_time).seconds))
-
+    return return_code
 
 def run_cmd_errors_okay(working_dir, cmd, env=None):
     """Run a command in a working directory, reporting return value.
@@ -573,6 +662,60 @@ KNOWN_TARGETS = ['all', 'build', 'test', 'testlong']
 KNOWN_BUILDS = ['clang', 'cmake', 'lldb', 'fetch', 'artifact',
                 'derive', 'derive-llvm+clang', 'derive-lldb', 'derive-llvm',
                 'static-analyzer-benchmarks']
+
+def query_sdk_path(sdk_name):
+    """Get the path to the sdk named using xcrun.
+
+    When $TESTING define, just give a dummy back.  We do this because xcrun
+    could fail if the sdk you want is not installed, and that is silly for
+    testing.
+    """
+
+    if not os.environ.get('TESTING', False):
+        cmd = ['xcrun', '--sdk', sdk_name, '--show-sdk-path']
+        return run_collect_output(cmd).strip()
+    else:
+        return "/Applications/Xcode.app/Contents/Developer/Platforms/" \
+            "MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk"
+
+def max_link_jobs():
+    """Link jobs take about 3.6GB of memory, max."""
+    mem_str = run_collect_output(["sysctl", "hw.memsize"])
+    mem = float(mem_str.split()[1].strip())
+    mem = mem / (1024.0**3)  # Conver to GBs.
+    return int(math.ceil(mem/conf.link_memory_usage()))
+
+TEST_VALS = {"sysctl hw.ncpu": "hw.ncpu: 8\n",
+             "sysctl hw.memsize": "hw.memsize: 8589934592\n",
+             "xcrun --sdk iphoneos --show-sdk-path": "/Foo/bar",
+             }
+
+def run_collect_output(cmd):
+    """Run cmd, and return the output"""
+    if os.getenv("TESTING"):
+        return TEST_VALS[' '.join(cmd)]
+
+    return subprocess.check_output(cmd)
+
+def query_sys_tool(sdk_name, tool_name):
+    """Get the path of system tool
+
+    When $TESTING define, just give a dummy back.
+    """
+
+    if not os.environ.get('TESTING', False):
+        cmd = ['xcrun', '--sdk', sdk_name, '--find', tool_name]
+        return run_collect_output(cmd).strip()
+    else:
+        return "/usr/bin/" + tool_name
+
+def run_ws(cmd, env=None):
+    """Wrapper to call run_cmd in local workspace.
+
+    Since 99 percent of the time, that is where you want to call things from.
+    """
+    return run_cmd(conf.workspace, cmd, env)
+
 
 
 def parse_args():
@@ -602,6 +745,9 @@ def parse_args():
     parser.add_argument('--compiler-flag', dest='compiler_flags',
                         action='append', default=[],
                         help='Set an arbitrary compiler flag')
+    parser.add_argument('--noupload', dest='noupload',
+                        action='store_true')
+
     args = parser.parse_args()
     return args
 

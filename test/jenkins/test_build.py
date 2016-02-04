@@ -3,58 +3,72 @@
 # RUN: export TESTING=1
 # RUN: export JOB_NAME="FOO"
 # RUN: export BUILD_NUMBER=321
+# RUN: export BRANCH=master
 # Tell build.py to just print commands instead of running.
 # RUN: export LLVM_REV=1234
 # RUN: mkdir -p %t.SANDBOX/host-compiler/lib %t.SANDBOX/host-compiler/bin %t.SANDBOX/llvm.src %t.SANDBOX/clang.src %t.SANDBOX/libcxx.src %t.SANDBOX/compiler-rt.src %t.SANDBOX/debuginfo-tests.src %t.SANDBOX/clang-tools-extra.src %t.SANDBOX/lldb.src
 # RUN: touch %t.SANDBOX/host-compiler/bin/clang
 # RUN: python %{src_root}/zorg/jenkins/build.py clang all > %t.log
 # RUN: FileCheck --check-prefix CHECK-SIMPLE < %t.log %s
-# CHECK-SIMPLE: @@@ Configure @@@
+# CHECK-SIMPLE: @@@ Setup debug-info tests @@@
 # CHECK-SIMPLE: cd
-# CHECK-SIMPLE: configure' '--disable-assertions' '--enable-optimized' '--disable-bindings' '--enable-targets=x86,x86_64,arm,aarch64' '--prefix=/
+# CHECK-SIMPLE: 'rm' '-rf' 'llvm/tools/clang/test/debuginfo-tests'
+# CHECK-SIMPLE: cd 
+# CHECK-SIMPLE: 'ln' 
 # CHECK-SIMPLE: @@@@@@
-# CHECK-SIMPLE: @@@ Make All @@@
-# CHECK-SIMPLE: 'make' '-j' '4' 'VERBOSE=1' 'CLANG_REPOSITORY_STRING=FOO' 'SVN_REVISION=1234' 'LLVM_VERSION_INFO= (FOO: trunk 1234)'
+# CHECK-SIMPLE: @@@ Build Directory @@@
+# CHECK-SIMPLE: cd 
+# CHECK-SIMPLE: 'mkdir' '-p' 
 # CHECK-SIMPLE: @@@@@@
-# CHECK-SIMPLE: @@@ Make Install @@@
-# CHECK-SIMPLE: 'make' 'install-clang' '-j' '4'
+# CHECK-SIMPLE: @@@ Build Clang @@@
+# CHECK-SIMPLE: cd 
+# CHECK-SIMPLE: 'mkdir' './Build' './Root'
+# CHECK-SIMPLE: cd 
+# CHECK-SIMPLE: '/usr/bin/xcrun' 'cmake' '-G' 'Ninja' '-C' 
+# CHECK-SIMPLE: '-DLLVM_ENABLE_ASSERTIONS:BOOL=FALSE'
+# CHECK-SIMPLE: '-DCMAKE_BUILD_TYPE=RelWithDebInfo'
+# CHECK-SIMPLE: '-DCMAKE_MAKE_PROGRAM=/usr/local/bin/ninja'
+# CHECK-SIMPLE: '-DLLVM_VERSION_PATCH=99'
+# CHECK-SIMPLE: '-DLLVM_VERSION_SUFFIX=""'
+# CHECK-SIMPLE: '-DLLVM_BUILD_EXTERNAL_COMPILER_RT=On'
+# CHECK-SIMPLE: '-DCLANG_COMPILER_RT_CMAKE_ARGS
+# CHECK-SIMPLE: '-DCMAKE_INSTALL_PREFIX
+# CHECK-SIMPLE: '-DLLVM_ENABLE_PIC=On'
+# CHECK-SIMPLE: '-DLLVM_REPOSITORY=None'
+# CHECK-SIMPLE: '-DSVN_REVISION=1234'
+# CHECK-SIMPLE: '-DLLVM_BUILD_TESTS=On'
+# CHECK-SIMPLE: '-DLLVM_INCLUDE_TESTS=On'
+# CHECK-SIMPLE: '-DCLANG_INCLUDE_TESTS=On'
+# CHECK-SIMPLE: '-DLLVM_INCLUDE_UTILS=On'
+# CHECK-SIMPLE: '-DCMAKE_C_FLAGS_RELWITHDEBINFO:STRING=-O2 -gline-tables-only -DNDEBUG'
+# CHECK-SIMPLE: '-DCMAKE_CXX_FLAGS_RELWITHDEBINFO:STRING=-O2 -gline-tables-only -DNDEBUG'
+# CHECK-SIMPLE-NOT: '-DCMAKE_C_FLAGS_RELWITHDEBINFO:STRING=-O2 -flto -gline-tables-only -DNDEBUG'
+# CHECK-SIMPLE-NOT: '-DCMAKE_CXX_FLAGS_RELWITHDEBINFO:STRING=-O2 -flto -gline-tables-only -DNDEBUG'
+# CHECK-SIMPLE-NOT: -DLLVM_PARALLEL_LINK_JOBS
 # CHECK-SIMPLE: @@@@@@
-# CHECK-SIMPLE: @@@ Upload artifact @@@
-# CHECK-SIMPLE: 'tar' 'zcvf' '../clang-r1234-tNONE-b321.tar.gz' '.'
-# CHECK-SIMPLE: cd
-# CHECK-SIMPLE: 'scp' 'clang-r1234-tNONE-b321.tar.gz' 'buildslave@labmaster2.local:/Library/WebServer/Documents/artifacts/FOO/'
-# CHECK-SIMPLE: cd
-# CHECK-SIMPLE: 'scp' 'last_good_build.properties' 'buildslave@labmaster2.local:/Library/WebServer/Documents/artifacts/FOO/'
-# CHECK-SIMPLE: cd
-# CHECK-SIMPLE: 'ssh' 'buildslave@labmaster2.local' 'ln' '-fs' '/Library/WebServer/Documents/artifacts/FOO/clang-r1234-tNONE-b321.tar.gz' '/Library/WebServer/Documents/artifacts/FOO/latest'
+# CHECK-SIMPLE: @@@ Ninja @@@
+# CHECK-SIMPLE: cd 
+# CHECK-SIMPLE: '/usr/local/bin/ninja' '-v' 'install'
 # CHECK-SIMPLE: @@@@@@
-# CHECK-SIMPLE: @@@ Make Check @@@
-# CHECK-SIMPLE: cd
-# CHECK-SIMPLE: 'make' 'VERBOSE=1' 'check-all' 'LIT_ARGS=--xunit-xml-output=testresults.xunit.xml -v'
-# CHECK-SIMPLE: @@@@@@
+# CHECK-SIMPLE: @@@ Tests @@@
+# CHECK-SIMPLE: /usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
+# CHECK-SIMPLE: cd 
+# CHECK-SIMPLE: 'env' 'MALLOC_LOG_FILE=/dev/null' '/usr/local/bin/ninja' '-v' 'check-all'
 
 # Now Check Assertion Buiilds have --enable assertions
 
-
 # RUN: python %{src_root}/zorg/jenkins/build.py clang all --assertions > %t-assert.log
 # RUN: FileCheck --check-prefix CHECK-ASSERT < %t-assert.log %s
-# CHECK-ASSERT: configure' '--enable-assertions' '--enable-optimized' '--disable-bindings' '--enable-targets=x86,x86_64,arm,aarch64' '--prefix=
-# CHECK-ASSERT: clang-install' '--enable-libcpp'
-# CHECK-ASSERT: 'make' '-j' '4' 'VERBOSE=1' 'CLANG_REPOSITORY_STRING=FOO' 'SVN_REVISION=1234' 'LLVM_VERSION_INFO= (FOO: trunk 1234)'
-# CHECK-ASSERT: 'make' 'install-clang' '-j' '4'
-# CHECK-ASSERT: 'make' 'VERBOSE=1' 'check-all' 'LIT_ARGS=--xunit-xml-output=testresults.xunit.xml -v'
-
+# CHECK-ASSERT: '/usr/bin/xcrun' 'cmake' '-G' 'Ninja' '-C'
+# CHECK-ASSERT: '-DLLVM_ENABLE_ASSERTIONS:BOOL=TRUE'
 
 # Check LTO
 
 # RUN: python %{src_root}/zorg/jenkins/build.py clang all --lto > %t-lto.log
 # RUN: FileCheck --check-prefix CHECK-LTO < %t-lto.log %s
-# CHECK-LTO: configure' '--disable-assertions' '--with-extra-options=-flto -gline-tables-only' '--enable-optimized' '--disable-bindings' '--enable-targets=x86,x86_64,arm,aarch64' '--prefix=
-# CHECK-LTO: clang-install' '--enable-libcpp'
-# CHECK-LTO: 'make' '-j' '4' 'VERBOSE=1' 'CLANG_REPOSITORY_STRING=FOO' 'SVN_REVISION=1234' 'LLVM_VERSION_INFO= (FOO: trunk 1234)'
-# CHECK-LTO: 'make' 'install-clang' '-j' '4'
-# CHECK-LTO: 'make' 'VERBOSE=1' 'check-all' 'LIT_ARGS=--xunit-xml-output=testresults.xunit.xml -v'
-
+# CHECK-LTO: '-DCMAKE_C_FLAGS_RELWITHDEBINFO:STRING=-O2 -flto -gline-tables-only -DNDEBUG'
+# CHECK-LTO: '-DCMAKE_CXX_FLAGS_RELWITHDEBINFO:STRING=-O2 -flto -gline-tables-only -DNDEBUG'
+# CHECK-LTO: -DLLVM_PARALLEL_LINK_JOBS
 
 # Now try just a build
 # RUN: python %{src_root}/zorg/jenkins/build.py clang build --lto
