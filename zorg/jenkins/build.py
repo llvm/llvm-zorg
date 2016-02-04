@@ -263,7 +263,7 @@ def clang_builder(target):
                            './Build',
                            './Root'])
             install_prefix =  conf.installdir()
-            cmake_command = ["/usr/bin/xcrun", "cmake", '-G', 'Ninja', '-C',
+            cmake_command = ["/usr/local/bin/cmake", '-G', 'Ninja', '-C',
             '{}/llvm/tools/clang/cmake/caches/Apple-stage2.cmake'.format(conf.workspace),
             '-DLLVM_ENABLE_ASSERTIONS:BOOL={}'.format("TRUE" if conf.assertions else "FALSE"),
             '-DCMAKE_BUILD_TYPE=RelWithDebInfo',
@@ -280,6 +280,9 @@ def clang_builder(target):
             '-DLLVM_INCLUDE_TESTS=On',
             '-DCLANG_INCLUDE_TESTS=On',
             '-DLLVM_INCLUDE_UTILS=On'
+            '-DLIBCXX_INSTALL_HEADERS=On',
+            '-DLIBCXX_OVERRIDE_DARWIN_INSTALL=On',
+            '-DLIBCXX_INSTALL_LIBRARY=Off',
             ]
 
             if conf.lto:
