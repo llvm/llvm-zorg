@@ -137,8 +137,27 @@ def _get_clang_fast_builders():
                                         "-DCLANG_BUILD_EXAMPLES:BOOL=ON",
                                         "-DLLVM_TARGETS_TO_BUILD=X86"],
                      triple="x86_64-scei-ps4",
-                     prefixCommand=None, # This is a designaed builder, so no need to be nice.
+                     prefixCommand=None, # This is a designated builder, so no need to be nice.
                      env={'PATH':'/opt/llvm_37/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'})},
+
+        {'name': "llvm-clang-lld-x86_64-scei-ps4-windows10pro-fast",
+         'mergeRequests': False,
+         'slavenames': ["ps4-buildslave2"],
+         'builddir': "llvm-clang-lld-x86_64-scei-ps4-ubuntu-fast",
+         'factory': ClangAndLLDBuilder.getClangAndLLDBuildFactory(
+                     extraCmakeOptions=["-DCMAKE_C_COMPILER=cl.exe",
+                                        "-DCMAKE_CXX_COMPILER=cl.exe",
+                                        "-DCOMPILER_RT_BUILD_BUILTINS:BOOL=OFF",
+                                        "-DCOMPILER_RT_BUILD_SANITIZERS:BOOL=OFF",
+                                        "-DCOMPILER_RT_CAN_EXECUTE_TESTS:BOOL=OFF",
+                                        "-DCOMPILER_RT_INCLUDE_TESTS:BOOL=OFF",
+                                        "-DLLVM_TOOL_COMPILER_RT_BUILD:BOOL=OFF",
+                                        "-DLLVM_BUILD_TESTS:BOOL=ON",
+                                        "-DLLVM_BUILD_EXAMPLES:BOOL=ON",
+                                        "-DCLANG_BUILD_EXAMPLES:BOOL=ON",
+                                        "-DLLVM_TARGETS_TO_BUILD=X86"],
+                     triple="x86_64-scei-ps4",
+                     prefixCommand=None)}, # This is a designated builder, so no need to be nice.
        ]
 
 # Clang builders.
@@ -567,6 +586,15 @@ def _get_lld_builders():
                                                   env={'CXXFLAGS' : "-std=c++11 -stdlib=libc++"}),
          'category'   : 'lld'},
 
+        {'name': "lld-x86_64-freebsd",
+         'slavenames' :["freebsd01"],
+         'builddir':"lld-x86_64-freebsd",
+         'factory': LLDBuilder.getLLDBuildFactory(extra_configure_args=[
+                                                      '-DCMAKE_EXE_LINKER_FLAGS=-lcxxrt',
+                                                      '-DLLVM_ENABLE_WERROR=OFF'],
+                                                  env={'CXXFLAGS' : "-std=c++11 -stdlib=libc++"}),
+         'category'   : 'lld'},
+
          ]
 
 # llgo builders.
@@ -609,6 +637,15 @@ def _get_sanitizer_builders():
 
           {'name': "sanitizer_x86_64-freebsd",
            'slavenames':["as-bldslv5"],
+           'builddir':"sanitizer_x86_64-freebsd",
+           'factory' : SanitizerBuilderII.getSanitizerBuildFactoryII(
+                        clean=True,
+                        sanitizers=['sanitizer','asan','lsan','tsan','ubsan'],
+                        common_cmake_options=['-DCMAKE_EXE_LINKER_FLAGS=-lcxxrt',
+                                              '-DLIBCXXABI_USE_LLVM_UNWINDER=ON'])},
+
+          {'name': "sanitizer_x86_64-freebsd",
+           'slavenames':["freebsd01"],
            'builddir':"sanitizer_x86_64-freebsd",
            'factory' : SanitizerBuilderII.getSanitizerBuildFactoryII(
                         clean=True,
@@ -1218,6 +1255,17 @@ clang_x86_64_freebsd_xfails = [
                                          make='gmake',
                                          test=False,
                                          xfails=clang_x86_64_freebsd_xfails)},
+
+{'name': "clang-mergefunc-x86_64-freebsd",
+ 'slavenames':["freebsd01"],
+ 'builddir':"clang-mergefunc-x86_64-freebsd",
+ 'factory' : NightlytestBuilder.getFastNightlyTestBuildFactory(triple='x86_64-unknown-freebsd10.0',
+                                         stage1_config='Release+Asserts',
+                                         merge_functions=True,
+                                         make='gmake',
+                                         test=False,
+                                         xfails=clang_x86_64_freebsd_xfails)},
+
 {'name': "clang-native-arm-cortex-a15",
  'slavenames':["linaro-chrome-01"],
  'builddir':"clang-native-arm-cortex-a15",
@@ -1326,6 +1374,13 @@ clang_i386_linux_xfails = [
                                                               stage1_config='Release+Asserts',
                                                               test=True)},
 
+{'name': "clang-X86_64-freebsd",
+ 'slavenames':["freebsd01"],
+ 'builddir':"clang-X86_64-freebsd",
+ 'factory': NightlytestBuilder.getFastNightlyTestBuildFactory(triple='x86_64-unknown-freebsd8.2',
+                                                              stage1_config='Release+Asserts',
+                                                              test=True)},
+
 # Polly builders
 {'name': "polly-intel32-linux",
  'slavenames':["botether"],
@@ -1353,6 +1408,7 @@ clang_i386_linux_xfails = [
  'builddir':"clang-openbsd",
  'factory' : ClangBuilder.getClangBuildFactory(stage1_config='Release+Asserts'),
  'category' : 'clang'},
+
 {'name': "lldb-x86_64-freebsd",
  'slavenames': ["as-bldslv5"],
  'builddir': "lldb-x86_64-freebsd",
@@ -1362,6 +1418,16 @@ clang_i386_linux_xfails = [
                                             extra_configure_args=['--enable-cxx11',
                                                                   '--enable-optimized',
                                                                   '--enable-assertions'])},
+{'name': "lldb-x86_64-freebsd",
+ 'slavenames': ["freebsd01"],
+ 'builddir': "lldb-x86_64-freebsd",
+ 'category' : 'lldb',
+ 'factory': LLDBBuilder.getLLDBBuildFactory(triple=None, # use default
+                                            make='gmake',
+                                            extra_configure_args=['--enable-cxx11',
+                                                                  '--enable-optimized',
+                                                                  '--enable-assertions'])},
+
 {'name': "clang-x86_64-openbsd",
  'slavenames':["ocean1"],
  'builddir':"clang-x86_64-openbsd",
