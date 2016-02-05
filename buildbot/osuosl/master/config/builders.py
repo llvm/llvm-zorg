@@ -151,6 +151,7 @@ def _get_clang_fast_builders():
                                         "-DCLANG_BUILD_EXAMPLES:BOOL=ON",
                                         "-DLLVM_TARGETS_TO_BUILD=X86"],
                      triple="x86_64-scei-ps4",
+                     isMSVC=True,
                      prefixCommand=None)}, # This is a designated builder, so no need to be nice.
        ]
 

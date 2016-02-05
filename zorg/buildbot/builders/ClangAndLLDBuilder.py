@@ -17,6 +17,7 @@ def getClangAndLLDBuildFactory(
            extraCompilerOptions=None,
            buildWithSanitizerOptions=None,
            triple=None,
+           isMSVC=False,
            prefixCommand=["nice", "-n", "10"] # For backward compatibility.
     ):
 
@@ -82,15 +83,19 @@ def getClangAndLLDBuildFactory(
                                env=merged_env))
 
     # Create configuration files with cmake.
+    shellCommand = ["mkdir", "-p", llvm_objdir]
+    if isMSVC:
+        shellCommand = ["mkdir", llvm_objdir]
     f.addStep(ShellCommand(name="create-build-dir",
-                               command=["mkdir", "-p", llvm_objdir],
+                               command=shellCommand,
                                haltOnFailure=True,
                                description=["create build dir"],
                                workdir=".",
                                env=merged_env))
 
     options = ["-Wdocumentation", "-Wno-documentation-deprecated-sync"]
-
+    if isMSVC:
+        options = []
     if extraCompilerOptions:
         options += extraCompilerOptions
 
@@ -124,12 +129,16 @@ def getClangAndLLDBuildFactory(
     if extraCmakeOptions:
         cmakeCommand += extraCmakeOptions
 
+    if not isMSVC:
+        cmakeCommand += [
+            "-DCMAKE_C_FLAGS=\"%s\"" % (" ".join(options)),
+            "-DCMAKE_CXX_FLAGS=\"-std=c++11 %s\"" % (" ".join(options)),
+        ]
     cmakeCommand += [
-        "-DCMAKE_C_FLAGS=\"%s\"" % (" ".join(options)),
-        "-DCMAKE_CXX_FLAGS=\"-std=c++11 %s\"" % (" ".join(options)),
         "-DLLVM_LIT_ARGS=\"-v\"",
         "-G", "Ninja",
-        "../%s" % llvm_srcdir]
+        "../%s" % llvm_srcdir
+    ]
 
     # Note: ShellCommand does not pass the params with special symbols right.
     # The " ".join is a workaround for this bug.
