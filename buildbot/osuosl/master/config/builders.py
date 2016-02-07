@@ -481,7 +481,7 @@ def _get_polly_builders():
          'slavenames':["pollyperf6"],
          'builddir': "perf-x86_64-penryn-O3-polly-parallel-fast",
          'factory': PollyBuilder.getPollyLNTFactory(triple="x86_64-pc-linux-gnu",
-                                                    nt_flags=['--multisample=1', '--mllvm=-polly', '--mllvm=-polly-parallel', '-j2', '--cflag=-lgomp' ],
+                                                    nt_flags=['--multisample=1', '--mllvm=-polly', '--mllvm=-polly-parallel', '-j16', '--cflag=-lgomp' ],
                                                     reportBuildslave=False,
                                                     extra_cmake_args=['-DLLVM_ENABLE_ASSERTIONS=ON'],
                                                     package_cache="http://parkas1.inria.fr/packages",
