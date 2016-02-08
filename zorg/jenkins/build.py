@@ -243,7 +243,7 @@ def clang_builder(target):
         next_section("Setup debug-info tests")
         run_ws(['rm', '-rf', 'llvm/tools/clang/test/debuginfo-tests'])
         run_cmd(os.path.join(conf.workspace, 'llvm/tools/clang/test'),
-                ['ln', '-sf', os.path.join([conf.workspace, debug_src_dir]),
+                ['ln', '-sf', os.path.join(conf.workspace, debug_src_dir),
                 'debuginfo-tests'])
 
         project = 'clang'
