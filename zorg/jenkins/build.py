@@ -307,15 +307,13 @@ def clang_builder(target):
             # Two stage build, via the make files.
             print 'Stage two compile TBD in near future'
 
-
     if not conf.device and (target == "test" or target == "all"):
         # Add steps to run the tests.
         next_section("Tests")
         # Auto detect bootstrap and non-bootstrap.
-        obj_dir = '/clang.build/Objects/obj-llvm/tools/clang/stage2-bins/'
-        obj_dir = conf.workspace + obj_dir
+        obj_dir = os.path.join(conf._build_dir, 'Objects/obj-llvm/tools/clang/stage2-bins/')
         if not os.path.exists(obj_dir):
-            obj_dir = '/clang.build/Build/'
+            obj_dir = os.path.join(conf._build_dir, 'Build/')
             obj_dir = conf.workspace + obj_dir
 
         cmd = [NINJA, '-v', 'check-all']
@@ -324,7 +322,6 @@ def clang_builder(target):
             cmd[-1] += ' --param use_gmalloc=1 ' \
                 '--param gmalloc_path=$(xcodebuild -find-library' \
                 ' libgmalloc.dylib)'
-        print os.environ.get("PATH", "")
         run_cmd(obj_dir, cmd, env={'MALLOC_LOG_FILE': '/dev/null'})
 
 

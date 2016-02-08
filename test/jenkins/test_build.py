@@ -51,7 +51,6 @@
 # CHECK-SIMPLE: '/usr/local/bin/ninja' '-v' 'install'
 # CHECK-SIMPLE: @@@@@@
 # CHECK-SIMPLE: @@@ Tests @@@
-# CHECK-SIMPLE: /usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
 
 # CHECK-SIMPLE: cd
 # CHECK-SIMPLE: 'env' 'MALLOC_LOG_FILE=/dev/null' '/usr/local/bin/ninja' '-v' 'check-all'
