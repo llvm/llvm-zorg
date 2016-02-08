@@ -9,6 +9,7 @@ from buildbot.process.properties import WithProperties, Property
 from zorg.buildbot.builders.Util import getVisualStudioEnvironment
 from zorg.buildbot.builders.Util import extractSlaveEnvironment
 from zorg.buildbot.commands.NinjaCommand import NinjaCommand
+from zorg.buildbot.conditions.FileConditions import FileDoesNotExist
 
 def getLLDBuildFactory(
            clean = True,
@@ -134,30 +135,6 @@ def getLLDWinBuildFactory(
                 doStepIf=cleanBuildRequested
                 ))
 
-    f.addStep(ShellCommand(name="create-build-dir",
-                command=["if", "not", "exist", llvm_objdir,
-                         "mkdir", llvm_objdir],
-                haltOnFailure=True,
-                description=["create build dir"],
-                workdir="."))
-
-    # Is CMake configuration already done?
-    checkCMakeCommand = [
-        "dir", "CMakeCache.txt", ">", "NUL",
-        "&&", "echo", "Yes",
-        "||", "echo", "No", ">", "NUL"]
-
-    # Note: ShellCommand does not pass the params with special symbols right.
-    # The " ".join is a workaround for this bug.
-    f.addStep(SetProperty(name="CMake_done",
-                          workdir=llvm_objdir,
-                          command=WithProperties(" ".join(checkCMakeCommand)),
-                                   #"cmd", "/C",
-                                   #" ".join(checkCMakeCommand)],
-                          haltOnFailure=True,
-                          description=["check CMake_done"],
-                          property="CMake_done"))
-
     # If set up environment step is requested, do this now.
     if vs:
         f.addStep(SetProperty(
@@ -186,14 +163,16 @@ def getLLDWinBuildFactory(
         name="cmake-configure",
         description=["cmake configure"],
         haltOnFailure=True,
+        warnOnWarnings=True,
         command=WithProperties(" ".join(cmakeCommand)),
         env=env,
         workdir=llvm_objdir,
-        doStepIf=lambda step: step.build.getProperty("CMake_done") != "Yes"))
+        doStepIf=FileDoesNotExist("./%s/CMakeCache.txt" % llvm_objdir)))
 
     # Build Lld.
     f.addStep(NinjaCommand(name='build lld',
                            haltOnFailure=True,
+                           warnOnWarnings=True,
                            description='build lld',
                            workdir=llvm_objdir,
                            env=env))
@@ -202,6 +181,7 @@ def getLLDWinBuildFactory(
     f.addStep(NinjaCommand(name='test lld',
                            targets=['lld-test'],
                            haltOnFailure=True,
+                           warnOnWarnings=True,
                            description='test lld',
                            workdir=llvm_objdir,
                            env=env))
