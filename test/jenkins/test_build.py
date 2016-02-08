@@ -13,18 +13,18 @@
 # CHECK-SIMPLE: @@@ Setup debug-info tests @@@
 # CHECK-SIMPLE: cd
 # CHECK-SIMPLE: 'rm' '-rf' 'llvm/tools/clang/test/debuginfo-tests'
-# CHECK-SIMPLE: cd 
-# CHECK-SIMPLE: 'ln' 
+# CHECK-SIMPLE: cd
+# CHECK-SIMPLE: 'ln'
 # CHECK-SIMPLE: @@@@@@
 # CHECK-SIMPLE: @@@ Build Directory @@@
-# CHECK-SIMPLE: cd 
-# CHECK-SIMPLE: 'mkdir' '-p' 
+# CHECK-SIMPLE: cd
+# CHECK-SIMPLE: 'mkdir' '-p'
 # CHECK-SIMPLE: @@@@@@
 # CHECK-SIMPLE: @@@ Build Clang @@@
-# CHECK-SIMPLE: cd 
+# CHECK-SIMPLE: cd
 # CHECK-SIMPLE: 'mkdir' './Build' './Root'
-# CHECK-SIMPLE: cd 
-# CHECK-SIMPLE: '/usr/local/bin/cmake' '-G' 'Ninja' '-C' 
+# CHECK-SIMPLE: cd
+# CHECK-SIMPLE: '/usr/local/bin/cmake' '-G' 'Ninja' '-C'
 # CHECK-SIMPLE: '-DLLVM_ENABLE_ASSERTIONS:BOOL=FALSE'
 # CHECK-SIMPLE: '-DCMAKE_BUILD_TYPE=RelWithDebInfo'
 # CHECK-SIMPLE: '-DCMAKE_MAKE_PROGRAM=/usr/local/bin/ninja'
@@ -47,12 +47,13 @@
 # CHECK-SIMPLE-NOT: -DLLVM_PARALLEL_LINK_JOBS
 # CHECK-SIMPLE: @@@@@@
 # CHECK-SIMPLE: @@@ Ninja @@@
-# CHECK-SIMPLE: cd 
+# CHECK-SIMPLE: cd
 # CHECK-SIMPLE: '/usr/local/bin/ninja' '-v' 'install'
 # CHECK-SIMPLE: @@@@@@
 # CHECK-SIMPLE: @@@ Tests @@@
 # CHECK-SIMPLE: /usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
-# CHECK-SIMPLE: cd 
+
+# CHECK-SIMPLE: cd
 # CHECK-SIMPLE: 'env' 'MALLOC_LOG_FILE=/dev/null' '/usr/local/bin/ninja' '-v' 'check-all'
 
 # Now Check Assertion Buiilds have --enable assertions
