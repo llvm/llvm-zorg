@@ -75,8 +75,11 @@ def getClangAndLLDBuildFactory(
 
     # Clean directory, if requested.
     if clean:
+        shellCommand = ["rm", "-rf", llvm_objdir]
+        if isMSVC:
+            shellCommand = ["rmdir", "/S", "/Q", llvm_objdir]
         f.addStep(ShellCommand(name="rm-llvm_objdir",
-                               command=["rm", "-rf", llvm_objdir],
+                               command=shellCommand,
                                haltOnFailure=True,
                                description=["rm build dir", "llvm"],
                                workdir=".",
