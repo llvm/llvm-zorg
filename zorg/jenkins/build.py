@@ -314,7 +314,7 @@ def clang_builder(target):
         obj_dir = os.path.join(conf._build_dir, 'Objects/obj-llvm/tools/clang/stage2-bins/')
         if not os.path.exists(obj_dir):
             obj_dir = os.path.join(conf._build_dir, 'Build/')
-            obj_dir = conf.workspace + obj_dir
+            obj_dir = os.path.join(conf.workspace, obj_dir)
 
         cmd = [NINJA, '-v', 'check-all']
 
