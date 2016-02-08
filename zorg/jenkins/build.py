@@ -512,6 +512,11 @@ def derive(tree, repos):
     Try to do this in a way that is pretty fast if the
     derived tree is already there.
     """
+    if 'debuginfo-tests' in repos:
+        dest_path = conf.workspace + "/" + 'llvm/tools/clang/test/debuginfo-tests'
+        if os.path.exists(dest_path):
+            print 'Remove debuginfo-tests from derived source if it exists'
+            run_ws(['rm', '-rf', dest_path])
 
     # Check for src dirs.
     for p in repos:
