@@ -24,7 +24,7 @@
 # CHECK-SIMPLE: cd 
 # CHECK-SIMPLE: 'mkdir' './Build' './Root'
 # CHECK-SIMPLE: cd 
-# CHECK-SIMPLE: '/usr/bin/xcrun' 'cmake' '-G' 'Ninja' '-C' 
+# CHECK-SIMPLE: '/usr/local/bin/cmake' '-G' 'Ninja' '-C' 
 # CHECK-SIMPLE: '-DLLVM_ENABLE_ASSERTIONS:BOOL=FALSE'
 # CHECK-SIMPLE: '-DCMAKE_BUILD_TYPE=RelWithDebInfo'
 # CHECK-SIMPLE: '-DCMAKE_MAKE_PROGRAM=/usr/local/bin/ninja'
@@ -59,7 +59,7 @@
 
 # RUN: python %{src_root}/zorg/jenkins/build.py clang all --assertions > %t-assert.log
 # RUN: FileCheck --check-prefix CHECK-ASSERT < %t-assert.log %s
-# CHECK-ASSERT: '/usr/bin/xcrun' 'cmake' '-G' 'Ninja' '-C'
+# CHECK-ASSERT: '/usr/local/bin/cmake' '-G' 'Ninja' '-C'
 # CHECK-ASSERT: '-DLLVM_ENABLE_ASSERTIONS:BOOL=TRUE'
 
 # Check LTO

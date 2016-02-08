@@ -12,7 +12,7 @@ import math
 
 SERVER = "labmaster2.local"
 
-BUILD_RECORD_TEMPLATE = '/clang.build'
+
 NINJA = "/usr/local/bin/ninja"
 
 
@@ -233,7 +233,7 @@ def clang_builder(target):
     if target == "all" or target == "build":
         # Clean the build directory.
         run_ws(['rm', '-rf', 'clang.roots'])
-
+        
         debug_src_dir = 'debuginfo-tests.src'
 
         sdk_name = 'macosx'
@@ -248,7 +248,7 @@ def clang_builder(target):
 
         project = 'clang'
 
-        clang_br = conf.workspace + BUILD_RECORD_TEMPLATE.format(project)
+        clang_br = os.path.join(conf.workspace, conf._build_dir)
         next_section("Build Directory")
         run_ws(["mkdir", "-p", clang_br])
 
@@ -279,7 +279,7 @@ def clang_builder(target):
             '-DLLVM_BUILD_TESTS=On',
             '-DLLVM_INCLUDE_TESTS=On',
             '-DCLANG_INCLUDE_TESTS=On',
-            '-DLLVM_INCLUDE_UTILS=On'
+            '-DLLVM_INCLUDE_UTILS=On',
             '-DLIBCXX_INSTALL_HEADERS=On',
             '-DLIBCXX_OVERRIDE_DARWIN_INSTALL=On',
             '-DLIBCXX_INSTALL_LIBRARY=Off',
