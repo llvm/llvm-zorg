@@ -567,6 +567,7 @@ def _get_lld_builders():
          'category'   : 'lld'},
 
         {'name': "lld-x86_64-win7",
+         'mergeRequests': False,
          'slavenames' :["as-bldslv4"],
          'builddir':"lld-x86_64-win7",
          'factory': LLDBuilder.getLLDWinBuildFactory(
