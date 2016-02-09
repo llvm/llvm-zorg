@@ -285,6 +285,11 @@ def clang_builder(target):
             '-DLIBCXX_INSTALL_LIBRARY=Off',
             ]
 
+            lit_flags = ['--xunit-xml-output=testresults.xunit.xml', '-v']
+            if conf.max_parallel_tests:
+                lit_flags += ['-j', conf.max_parallel_tests]
+            cmake_command.extend(['-DLLVM_LIT_ARGS={}'.format(' '.join(lit_flags))])
+
             if conf.lto:
                 cmake_command.extend([
                     '-DCMAKE_C_FLAGS_RELWITHDEBINFO:STRING=-O2 -flto -gline-tables-only -DNDEBUG',
