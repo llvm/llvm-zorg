@@ -285,6 +285,10 @@ def clang_builder(target):
             '-DLIBCXX_INSTALL_LIBRARY=Off',
             ]
 
+            if conf.CC():
+                cmake_command.extend(['-DCMAKE_C_COMPILER=' + conf.CC(),
+                          '-DCMAKE_CXX_COMPILER=' + conf.CC() + "++"])
+
             lit_flags = ['--xunit-xml-output=testresults.xunit.xml', '-v']
             if conf.max_parallel_tests:
                 lit_flags += ['-j', conf.max_parallel_tests]
