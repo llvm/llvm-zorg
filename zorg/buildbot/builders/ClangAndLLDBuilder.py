@@ -136,10 +136,10 @@ def getClangAndLLDBuildFactory(
         cmakeCommand += [
             "-DCMAKE_C_FLAGS=\"%s\"" % (" ".join(options)),
             "-DCMAKE_CXX_FLAGS=\"-std=c++11 %s\"" % (" ".join(options)),
+            "-DLLVM_LIT_ARGS=\"-v\"",
         ]
     cmakeCommand += [
-        "-DLLVM_LIT_ARGS=\"-v\"",
-        "-G", "Ninja",
+       "-G", "Ninja",
         "../%s" % llvm_srcdir
     ]
 
