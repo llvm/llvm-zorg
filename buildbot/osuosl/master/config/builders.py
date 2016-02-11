@@ -457,6 +457,12 @@ def _get_clang_builders():
                         stage2_config='Release',
                         extra_cmake_args=['-DLLVM_ENABLE_ASSERTIONS=ON',
                                           '-DLLVM_TARGETS_TO_BUILD=X86'])},
+
+        {'name' : "clang-x86_64-freebsd11",
+         'slavenames' : ["freebsd01"],
+         'builddir' : "clang-x86_64-freebsd",
+         'factory': ClangBuilder.getClangBuildFactory(
+                       clean=False)},
         ]
 
 # Polly builders.
@@ -1345,12 +1351,6 @@ clang_i386_linux_xfails = [
                                                        extra_configure_args=['--build=x86_64-apple-darwin11',
                                                                              '--host=i686-pc-mingw32',
                                                                              '--target=i686-pc-mingw32'])},
-{'name': "clang-X86_64-freebsd",
- 'slavenames':["as-bldslv6"],
- 'builddir':"clang-X86_64-freebsd",
- 'factory': NightlytestBuilder.getFastNightlyTestBuildFactory(triple='x86_64-unknown-freebsd8.2',
-                                                              stage1_config='Release+Asserts',
-                                                              test=True)},
 
 # Polly builders
 {'name': "polly-intel32-linux",
