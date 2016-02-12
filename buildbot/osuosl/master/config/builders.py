@@ -461,7 +461,7 @@ def _get_clang_builders():
         {'name' : "clang-x86_64-freebsd11",
          'slavenames' : ["freebsd01"],
          'builddir' : "clang-x86_64-freebsd",
-         'factory': ClangBuilder.getClangBuildFactory(
+         'factory': ClangBuilder.getClangCMakeBuildFactory(
                        clean=False)},
         ]
 
