@@ -154,3 +154,7 @@
 # CHECK-STATIC-ANALYZER-BENCHMARKS: cd [[WORKSPACE:.*]]/test-suite-ClangAnalyzer/
 # CHECK-STATIC-ANALYZER-BENCHMARKS: '[[WORKSPACE]]/utils-analyzer/SATestBuild.py' '--strictness' '2'
 # CHECK-STATIC-ANALYZER-BENCHMARKS: @@@@@@
+
+# RUN: python %{src_root}/zorg/jenkins/build.py cmake all --globalisel | FileCheck --check-prefix CHECK-GISEL %s
+# CHECK-GISEL: '/usr/local/bin/cmake' '-G' 'Ninja'
+# CHECK-GISEL: '-DLLVM_BUILD_GLOBAL_ISEL=ON'

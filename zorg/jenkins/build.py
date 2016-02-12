@@ -190,6 +190,9 @@ def cmake_builder(target):
         cmake_cmd += ["-DLLVM_ENABLE_ASSERTIONS=On"]
     else:
         cmake_cmd += ["-DLLVM_ENABLE_ASSERTIONS=Off"]
+        
+    if conf.globalisel:
+        cmake_cmd += ["-DLLVM_BUILD_GLOBAL_ISEL=ON"]
 
     # Workaround for PR14109: CMake build for compiler-rt should use
     # just-built clang.
@@ -761,6 +764,9 @@ def parse_args():
                         help='Set an arbitrary compiler flag')
     parser.add_argument('--noupload', dest='noupload',
                         action='store_true')
+    parser.add_argument('--globalisel', dest='globalisel',
+                        action='store_true', help="Turn on the experimental"
+                        " GlobalISel CMake flag.")
 
     args = parser.parse_args()
     return args
