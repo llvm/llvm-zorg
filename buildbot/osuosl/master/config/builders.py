@@ -96,7 +96,6 @@ def _get_llvm_builders():
                         enable_shared=False,
                         env={'LD_LIBRARY_PATH': '/local/clang+llvm-3.7.1-x86_64-linux-gnu-ubuntu-14.04/lib'},
                         extra_cmake_args=[
-                          "-G 'Ninja'",
                           "-DCMAKE_BUILD_TYPE:STRING=Release",
                           "-DLLVM_TARGETS_TO_BUILD:STRING=Hexagon",
                           "-DTARGET_TRIPLE:STRING=hexagon-unknown-elf",
@@ -445,7 +444,6 @@ def _get_clang_builders():
             checkout_compiler_rt=False,
             env={'LD_LIBRARY_PATH': '/local/clang+llvm-3.7.1-x86_64-linux-gnu-ubuntu-14.04/lib'},
             extra_cmake_args=[
-              "-G 'Ninja'",
               "-DCMAKE_BUILD_TYPE:STRING=Release",
               "-DLLVM_TARGETS_TO_BUILD:STRING=Hexagon",
               "-DTARGET_TRIPLE:STRING=hexagon-unknown-elf",
