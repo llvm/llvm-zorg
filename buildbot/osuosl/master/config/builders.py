@@ -1012,16 +1012,6 @@ def _get_experimental_scheduled_builders():
          'factory': LLDBBuilder.getLLDBBuildFactory(triple=None, # use default
                                                     extra_configure_args=['--enable-cxx11', '--enable-optimized', '--enable-assertions'],
                                                     env={'PATH':'/home/llvmbb/bin/clang-latest/bin:/home/llvmbb/bin:/usr/local/bin:/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games'})},
-        {'name': "lldb-x86_64-ubuntu-14.10",
-         'slavenames': ["hexagon-build-03"],
-         'builddir': "lldb-x86_64-ubuntu-14.10",
-         'category' : 'lldb',
-         'factory': LLDBBuilder.getLLDBUbuntuCMakeBuildFactory(
-                    build_compiler="/local/clang+llvm-3.7.1-x86_64-linux-gnu-ubuntu-14.04/bin/clang",
-                    build_type="Release",
-                    jobs=8,
-                    env={'SHELL': '/bin/bash',
-                         'LD_LIBRARY_PATH': '/local/clang+llvm-3.7.1-x86_64-linux-gnu-ubuntu-14.04/lib'})},
         {'name': "lldb-x86_64-ubuntu-14.04-cmake",
          'slavenames': ["lldb-build1-ubuntu-1404"],
          'builddir': "buildWorkingDir",
