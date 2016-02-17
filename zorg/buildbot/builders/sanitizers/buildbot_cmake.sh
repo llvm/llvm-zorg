@@ -67,7 +67,7 @@ if [ ! -d clang_build ]; then
 fi
 (cd clang_build && cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo \
     ${CMAKE_COMMON_OPTIONS} $LLVM_CHECKOUT)
-(cd clang_build && make clang -j$MAKE_JOBS) || echo @@@STEP_FAILURE@@@
+(cd clang_build && make clang -j$MAKE_JOBS) || (echo @@@STEP_FAILURE@@@ ; exit 1)
 
 # If we're building with libcxx, install the headers to clang_build/include.
 if [ ! -z ${ENABLE_LIBCXX_FLAG} ]; then
