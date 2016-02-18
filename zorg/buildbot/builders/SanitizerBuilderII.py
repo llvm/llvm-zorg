@@ -93,8 +93,8 @@ def getSanitizerBuildFactoryII(
     # Run annotated command for sanitizer.
     if sanity_check:
         f.addStep(
-	        AnnotatedCommand(
-		        name="lint check",
+            AnnotatedCommand(
+                name="lint check",
                 description="lint check",
                 timeout=timeout,
                 haltOnFailure=False, #True,
