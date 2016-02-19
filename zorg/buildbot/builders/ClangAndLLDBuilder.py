@@ -13,12 +13,13 @@ def getClangAndLLDBuildFactory(
            clean=True,
            env=None,
            withLLD=True,
-           extraCmakeOptions=None,
+           extraCmakeOptions=[],
            extraCompilerOptions=None,
            buildWithSanitizerOptions=None,
            triple=None,
            isMSVC=False,
-           prefixCommand=["nice", "-n", "10"] # For backward compatibility.
+           prefixCommand=["nice", "-n", "10"], # For backward compatibility.
+           extraLitArgs=None
     ):
 
     llvm_srcdir = "llvm.src"
@@ -100,44 +101,39 @@ def getClangAndLLDBuildFactory(
     if isMSVC:
         options = []
     if extraCompilerOptions:
+        assert not any(a.startswith('-DLLVM_LIT_ARGS=') for a in extraCmakeOptions), "Please use extraLitArgs for LIT arguments instead of defining them in extraCmakeOptions."       
         options += extraCompilerOptions
 
     if buildWithSanitizerOptions:
         options += buildWithSanitizerOptions
 
-    # FIXME: This is a temporary workaround till all the slaves will
-    # be configured to have C_COMPILER and CXX_COMPILER set locally.
-    # Will be rolled back later.
-    # cmakeCommand = [
-        # "cmake",
-        # "-DCMAKE_BUILD_TYPE=Release",
-        # "-DLLVM_ENABLE_ASSERTIONS=ON",
-        # "-DCMAKE_CXX_FLAGS=\"%s\"" % (" ".join(options)),
-        # "-DLLVM_LIT_ARGS=\"-v\"",
-        # "-G", "Ninja",
-        # "../%s" % llvm_srcdir]
+    lit_args = ["-v"]
+    if extraLitArgs:
+        lit_args += extraLitArgs
+    lit_args_str = "-DLLVM_LIT_ARGS=\"%s\"" % (" ".join(lit_args))
 
     cmakeCommand = [
         "cmake",
         "-DCMAKE_BUILD_TYPE=Release",
-        "-DLLVM_ENABLE_ASSERTIONS=ON"]
+        "-DLLVM_ENABLE_ASSERTIONS=ON"
+    ]
     if buildWithSanitizerOptions:
         cmakeCommand += [
             "-DCMAKE_C_COMPILER=clang",
-            "-DCMAKE_CXX_COMPILER=clang++"]
+            "-DCMAKE_CXX_COMPILER=clang++"
+        ]
     if triple:
         cmakeCommand += [
-            "-DLLVM_DEFAULT_TARGET_TRIPLE=%s" % triple]
-
+            "-DLLVM_DEFAULT_TARGET_TRIPLE=%s" % triple
+        ]
     if extraCmakeOptions:
         cmakeCommand += extraCmakeOptions
-
     if not isMSVC:
         cmakeCommand += [
             "-DCMAKE_C_FLAGS=\"%s\"" % (" ".join(options)),
             "-DCMAKE_CXX_FLAGS=\"-std=c++11 %s\"" % (" ".join(options)),
-            "-DLLVM_LIT_ARGS=\"-v\"",
         ]
+    cmakeCommand += lit_args_str
     cmakeCommand += [
        "-G", "Ninja",
         "../%s" % llvm_srcdir
