@@ -4,6 +4,7 @@ from buildbot.steps.shell import ShellCommand
 from buildbot.steps.shell import WarningCountingShellCommand
 from buildbot.process.factory import BuildFactory
 from buildbot.process.properties import WithProperties
+from zorg.buildbot.commands.NinjaCommand import NinjaCommand
 
 def get3StageClangLTOBuildFactory(
            clean=True,
@@ -59,13 +60,15 @@ def get3StageClangLTOBuildFactory(
     # Clean directory, if requested.
     cleanBuildRequested = lambda step: step.build.getProperty("clean") or clean
     f.addStep(
-        doStepIf=cleanBuildRequested,
-        name="rm-llvm_objdir",
-        command=["rm", "-rf", llvm_objdir],
-        haltOnFailure=True,
-        description=["rm build dir", "llvm"],
-        workdir=".",
-        env=merged_env
+        ShellCommand(
+            doStepIf=cleanBuildRequested,
+            name="rm-llvm_objdir",
+            command=["rm", "-rf", llvm_objdir],
+            haltOnFailure=True,
+            description=["rm build dir", "llvm"],
+            workdir=".",
+            env=merged_env
+        )
     )
 
     cmake_command = ["cmake"]
