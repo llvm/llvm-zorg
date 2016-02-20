@@ -177,12 +177,12 @@ def _get_clang_fast_builders():
                                         "-DLLVM_TARGETS_TO_BUILD=X86"],
                      triple="x86_64-scei-ps4",
                      isMSVC=True,
-                     prefixCommand=None)}, # This is a designated builder, so no need to be nice.
-       ]
+                     prefixCommand=None, # This is a designated builder, so no need to be nice.
+                     extraLitArgs=["--use-processes", "-j 80"])},
+    ]
 
 # Clang builders.
 def _get_clang_builders():
-
     return [
         {'name': "clang-atom-d525-fedora-rel",
          'slavenames':["atom1-buildbot"],
