@@ -63,7 +63,7 @@ from zorg.buildbot.builders import ABITestsuitBuilder
 reload(ABITestsuitBuilder)
 from zorg.buildbot.builders import ABITestsuitBuilder
 
-from zorg.buildbot.builders import ClangLTO3StageBuilder
+from zorg.buildbot.builders import ClangLTOBuilder3Stage
 
 # Plain LLVM builders.
 def _get_llvm_builders():
@@ -517,7 +517,7 @@ def _get_clang_builders():
         {'name' : "clang-3stage-ubuntu",
             'slavenames' : ["ps4-buildslave1"],
             'builddir' : "clang-3stage-ubuntu",
-            'factory': ClangLTO3StageBuilder.get3StageClangLTOBuildFactory(
+            'factory': ClangLTOBuilder3Stage.get3StageClangLTOBuildFactory(
                 clean=True,
                 env=None,
                 build_gold=True,
