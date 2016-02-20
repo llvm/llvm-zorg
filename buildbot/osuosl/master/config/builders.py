@@ -63,6 +63,8 @@ from zorg.buildbot.builders import ABITestsuitBuilder
 reload(ABITestsuitBuilder)
 from zorg.buildbot.builders import ABITestsuitBuilder
 
+from zorg.buildbot.builders import ClangLTO3StageBuilder
+
 # Plain LLVM builders.
 def _get_llvm_builders():
     return [
@@ -511,7 +513,17 @@ def _get_clang_builders():
          'builddir' : "clang-x86_64-freebsd",
          'factory': ClangBuilder.getClangCMakeBuildFactory(
                        clean=False)},
-        ]
+
+        {'name' : "clang-3stage-ubuntu",
+            'slavenames' : ["ps4-buildslave1"],
+            'builddir' : "clang-3stage-ubuntu",
+            'factory': ClangLTO3StageBuilder.get3StageClangLTOBuildFactory(
+                clean=True,
+                env=None,
+                build_gold=True,
+                cmake_cache_file="../llvm.src/tools/clang/cmake/caches/3-stage.cmake",
+                extra_cmake_options=["-DLLVM_TARGETS_TO_BUILD=all", "-DLLVM_BINUTILS_INCDIR=/opt/binutils/include"])},
+    ]
 
 # Polly builders.
 def _get_polly_builders():
