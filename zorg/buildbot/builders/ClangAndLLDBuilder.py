@@ -13,7 +13,7 @@ def getClangAndLLDBuildFactory(
            clean=True,
            env=None,
            withLLD=True,
-           extraCmakeOptions=[],
+           extraCmakeOptions=None,
            extraCompilerOptions=None,
            buildWithSanitizerOptions=None,
            triple=None,
@@ -101,7 +101,6 @@ def getClangAndLLDBuildFactory(
     if isMSVC:
         options = []
     if extraCompilerOptions:
-        assert not any(a.startswith('-DLLVM_LIT_ARGS=') for a in extraCmakeOptions), "Please use extraLitArgs for LIT arguments instead of defining them in extraCmakeOptions."       
         options += extraCompilerOptions
 
     if buildWithSanitizerOptions:
@@ -126,8 +125,11 @@ def getClangAndLLDBuildFactory(
         cmakeCommand += [
             "-DLLVM_DEFAULT_TARGET_TRIPLE=%s" % triple
         ]
+
     if extraCmakeOptions:
+        assert not any(a.startswith('-DLLVM_LIT_ARGS=') for a in extraCmakeOptions), "Please use extraLitArgs for LIT arguments instead of defining them in extraCmakeOptions."       
         cmakeCommand += extraCmakeOptions
+
     if not isMSVC:
         cmakeCommand += [
             "-DCMAKE_C_FLAGS=\"%s\"" % (" ".join(options)),
