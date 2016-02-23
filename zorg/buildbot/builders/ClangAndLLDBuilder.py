@@ -109,7 +109,8 @@ def getClangAndLLDBuildFactory(
     lit_args = ["-v"]
     if extraLitArgs:
         lit_args += extraLitArgs
-    lit_args_str = "-DLLVM_LIT_ARGS=\"%s\"" % (" ".join(lit_args))
+
+    lit_args = ["-DLLVM_LIT_ARGS=\"%s\"" % " ".join(lit_args)]
 
     cmakeCommand = [
         "cmake",
@@ -122,12 +123,11 @@ def getClangAndLLDBuildFactory(
             "-DCMAKE_CXX_COMPILER=clang++"
         ]
     if triple:
-        cmakeCommand += [
-            "-DLLVM_DEFAULT_TARGET_TRIPLE=%s" % triple
-        ]
+        cmakeCommand += ["-DLLVM_DEFAULT_TARGET_TRIPLE=%s" % triple]
 
     if extraCmakeOptions:
-        assert not any(a.startswith('-DLLVM_LIT_ARGS=') for a in extraCmakeOptions), "Please use extraLitArgs for LIT arguments instead of defining them in extraCmakeOptions."       
+        assert not any(a.startswith('-DLLVM_LIT_ARGS=') for a in extraCmakeOptions), \
+            "Please use extraLitArgs for LIT arguments instead of defining them in extraCmakeOptions."
         cmakeCommand += extraCmakeOptions
 
     if not isMSVC:
@@ -135,9 +135,9 @@ def getClangAndLLDBuildFactory(
             "-DCMAKE_C_FLAGS=\"%s\"" % (" ".join(options)),
             "-DCMAKE_CXX_FLAGS=\"-std=c++11 %s\"" % (" ".join(options)),
         ]
-    cmakeCommand += lit_args_str
+    cmakeCommand += lit_args
     cmakeCommand += [
-       "-G", "Ninja",
+       "-GNinja",
         "../%s" % llvm_srcdir
     ]
 
