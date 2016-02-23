@@ -180,7 +180,7 @@ def _get_clang_fast_builders():
                      triple="x86_64-scei-ps4",
                      isMSVC=True,
                      prefixCommand=None, # This is a designated builder, so no need to be nice.
-                     extraLitArgs=["--use-processes", "-j 80"])},
+                     extraLitArgs=["--use-processes", "-j80"])},
     ]
 
 # Clang builders.
@@ -522,7 +522,10 @@ def _get_clang_builders():
                 env=None,
                 build_gold=True,
                 cmake_cache_file="../llvm.src/tools/clang/cmake/caches/3-stage.cmake",
-                extra_cmake_options=["-DLLVM_TARGETS_TO_BUILD=all", "-DLLVM_BINUTILS_INCDIR=/opt/binutils/include"])},
+                extra_cmake_options=[
+                    '-GNinja',
+                    '-DLLVM_TARGETS_TO_BUILD=all',
+                    '-DLLVM_BINUTILS_INCDIR=/opt/binutils/include'])},
     ]
 
 # Polly builders.
