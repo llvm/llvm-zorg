@@ -72,9 +72,9 @@ def get3StageClangLTOBuildFactory(
     )
 
     cmake_command = ["cmake"]
-    
+
     if cmake_cache_file:
-        cmake_command += "-C %s" % (" ".join(cmake_cache_file))
+        cmake_command += ['-C', cmake_cache_file]
 
     if extra_cmake_options:
         cmake_command += extra_cmake_options
@@ -128,7 +128,12 @@ def get3StageClangLTOBuildFactory(
     )
 
     # Compare stage2 & stage3 clang
-    shell_command = ["diff", "-q", "tools/clang/stage2-bins/bin/clang-%(llvm_ver)s", "tools/clang/stage2-bins/tools/clang/stage3-bins/bin/clang-%(llvm_ver)s"]
+    shell_command = [
+        "diff",
+        "-q",
+        "tools/clang/stage2-bins/bin/clang-%(llvm_ver)s",
+        "tools/clang/stage2-bins/tools/clang/stage3-bins/bin/clang-%(llvm_ver)s"
+    ]
     f.addStep(
         ShellCommand(
             name="compare",
