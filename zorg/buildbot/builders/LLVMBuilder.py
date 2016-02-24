@@ -217,6 +217,7 @@ def getLLVMCMakeBuildFactory(
             LitTestCommand(
                 name            = 'test-llvm',
                 command         = [make, "check-all", "VERBOSE=1",
+                                   WithProperties("-j%s" % jobs),
                                    WithProperties("LIT_ARGS=%s" % litTestArgs)],
                 description     = ["testing", "llvm"],
                 descriptionDone = ["test",    "llvm"],
