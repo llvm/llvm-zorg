@@ -165,6 +165,9 @@ def cmake_builder(target):
     else:
         cmake_cmd += ['-DLLVM_BUILD_EXAMPLES=On']
 
+    cmake_cmd += ["-DPACKAGE_VERSION=3.8.0",
+                  "-DCMAKE_MACOSX_RPATH=On"]
+
     if compiler_flags:
         cmake_cmd += ["-DCMAKE_C_FLAGS={}".format(' '.join(compiler_flags)),
                       "-DCMAKE_CXX_FLAGS={}".format(' '.join(compiler_flags))]
@@ -287,6 +290,8 @@ def clang_builder(target):
             '-DLIBCXX_INSTALL_HEADERS=On',
             '-DLIBCXX_OVERRIDE_DARWIN_INSTALL=On',
             '-DLIBCXX_INSTALL_LIBRARY=Off',
+             '-DPACKAGE_VERSION=3.8.0',
+             '-DCMAKE_MACOSX_RPATH=On',
             ]
 
             if conf.CC():
