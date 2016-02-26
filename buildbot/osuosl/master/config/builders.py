@@ -704,15 +704,6 @@ def _get_sanitizer_builders():
            'builddir': "sanitizer-x86_64-linux-fuzzer",
            'factory': SanitizerBuilder.getSanitizerBuildFactory()},
 
-          {'name': "sanitizer_x86_64-freebsd",
-           'slavenames':["as-bldslv5"],
-           'builddir':"sanitizer_x86_64-freebsd",
-           'factory' : SanitizerBuilderII.getSanitizerBuildFactoryII(
-                        clean=True,
-                        sanitizers=['sanitizer','asan','lsan','tsan','ubsan'],
-                        common_cmake_options=['-DCMAKE_EXE_LINKER_FLAGS=-lcxxrt',
-                                              '-DLIBCXXABI_USE_LLVM_UNWINDER=ON'])},
-
           {'name': "sanitizer-ppc64be-linux",
            'slavenames' :["ppc64be-sanitizer"],
            'builddir': "sanitizer-ppc64be",
@@ -1063,6 +1054,16 @@ def _get_experimental_scheduled_builders():
                     buildAndroid=False,
                     runTest=True,
                     scriptExt='.bat')},
+
+        {'name': "sanitizer_x86_64-freebsd",
+         'slavenames':["as-bldslv5"],
+         'builddir':"sanitizer_x86_64-freebsd",
+         'factory' : SanitizerBuilderII.getSanitizerBuildFactoryII(
+                    clean=True,
+                    sanitizers=['sanitizer','asan','lsan','tsan','ubsan'],
+                    common_cmake_options=['-DCMAKE_EXE_LINKER_FLAGS=-lcxxrt',
+                                          '-DLIBCXXABI_USE_LLVM_UNWINDER=ON']),
+         'category' : 'sanitizer'},
         ]
 
 # Builders responsible building Sphinix documentation
