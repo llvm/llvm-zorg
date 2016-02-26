@@ -514,6 +514,9 @@ def _get_clang_builders():
          'factory': ClangBuilder.getClangCMakeBuildFactory(
                        clean=False)},
 
+# FIXME: This builder is not ready to be in production yet.
+# An alternate slave will be setup so this builder can be brought up on
+# the silent build master first
 #        {'name' : "clang-3stage-ubuntu",
 #            'slavenames' : ["ps4-buildslave1"],
 #            'builddir' : "clang-3stage-ubuntu",
