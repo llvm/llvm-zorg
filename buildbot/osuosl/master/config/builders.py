@@ -514,21 +514,18 @@ def _get_clang_builders():
          'factory': ClangBuilder.getClangCMakeBuildFactory(
                        clean=False)},
 
-# FIXME: This builder is not ready to be in production yet.
-# An alternate slave will be setup so this builder can be brought up on
-# the silent build master first
-#        {'name' : "clang-3stage-ubuntu",
-#            'slavenames' : ["ps4-buildslave1"],
-#            'builddir' : "clang-3stage-ubuntu",
-#            'factory': ClangLTOBuilder3Stage.get3StageClangLTOBuildFactory(
-#                clean=True,
-#                env=None,
-#                build_gold=True,
-#                cmake_cache_file="../llvm.src/tools/clang/cmake/caches/3-stage.cmake",
-#                extra_cmake_options=[
-#                    '-GNinja',
-#                    '-DLLVM_TARGETS_TO_BUILD=all',
-#                    '-DLLVM_BINUTILS_INCDIR=/opt/binutils/include'])},
+        {'name' : "clang-3stage-ubuntu",
+         'slavenames' : ["ps4-buildslave1a"],
+         'builddir' : "clang-3stage-ubuntu",
+         'factory': ClangLTOBuilder3Stage.get3StageClangLTOBuildFactory(
+               clean=True,
+               env=None,
+               build_gold=True,
+               cmake_cache_file="../llvm.src/tools/clang/cmake/caches/3-stage.cmake",
+               extra_cmake_options=[
+                   '-GNinja',
+                   '-DLLVM_TARGETS_TO_BUILD=all',
+                   '-DLLVM_BINUTILS_INCDIR=/opt/binutils/include'])},
     ]
 
 # Polly builders.
