@@ -46,12 +46,22 @@ def get3StageClangLTOBuildFactory(
     )
 
     # We have to programatically determine the current llvm version.
+    def getClangVer(exit_status, stdout, stderr):
+        # We expect something like this:
+        # release = '3.9'
+        if exit_status:
+            return {}
+        k,v = stdout.split('=')
+        llvm_ver = v.strip().strip("\'\"")
+        return { 'clang_ver' : clang_ver }
+
     f.addStep(
         SetProperty(
-            name="get_llvm_ver",
-            command=["grep 'release =' %s/tools/clang/docs/conf.py | awk '{print $3;}' | sed \"s/'//g\"" % llvm_srcdir],
-            property="llvm_ver",
-            description="get llvm release ver",
+            name="get_clang_ver",
+            command=["grep", "release =", "./tools/clang/docs/conf.py"],
+            extract_fn=getClangVer,
+            property="clang_ver",
+            description="get clang release ver",
             workdir=llvm_srcdir,
             env=merged_env
         )
@@ -98,7 +108,7 @@ def get3StageClangLTOBuildFactory(
 
     if build_gold:
         f.addStep(
-            NinjaCommand(name='build',
+            NinjaCommand(name='build-LLVMgold.so',
                 targets=['lib/LLVMgold.so'],
                 haltOnFailure=True,
                 warnOnWarnings=True,
@@ -108,7 +118,7 @@ def get3StageClangLTOBuildFactory(
         )
 
     f.addStep(
-        NinjaCommand(name='build',
+        NinjaCommand(name='build-stage3-clang',
             targets=['stage3-clang'],
             haltOnFailure=True,
             warnOnWarnings=True,
@@ -118,7 +128,7 @@ def get3StageClangLTOBuildFactory(
     )
 
     f.addStep(
-        NinjaCommand(name='build',
+        NinjaCommand(name='build-stage3-check-clang',
             targets=['stage3-check-clang'],
             haltOnFailure=True,
             warnOnWarnings=True,
@@ -131,12 +141,12 @@ def get3StageClangLTOBuildFactory(
     shell_command = [
         "diff",
         "-q",
-        "tools/clang/stage2-bins/bin/clang-%(llvm_ver)s",
-        "tools/clang/stage2-bins/tools/clang/stage3-bins/bin/clang-%(llvm_ver)s"
+        "tools/clang/stage2-bins/bin/clang-%(clang_ver)s",
+        "tools/clang/stage2-bins/tools/clang/stage3-bins/bin/clang-%(clang_ver)s"
     ]
     f.addStep(
         ShellCommand(
-            name="compare",
+            name="compare-clang",
             description=["comapre stage2 & stage3 clang"],
             haltOnFailure=True,
             command=WithProperties(" ".join(shell_command)),
