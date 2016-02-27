@@ -60,7 +60,6 @@ def get3StageClangLTOBuildFactory(
             name="get_clang_ver",
             command=["grep", "release =", "./tools/clang/docs/conf.py"],
             extract_fn=getClangVer,
-            property="clang_ver",
             description="get clang release ver",
             workdir=llvm_srcdir,
             env=merged_env
