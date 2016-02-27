@@ -52,7 +52,7 @@ def get3StageClangLTOBuildFactory(
         if exit_status:
             return {}
         k,v = stdout.split('=')
-        llvm_ver = v.strip().strip("\'\"")
+        clang_ver = v.strip().strip("\'\"")
         return { 'clang_ver' : clang_ver }
 
     f.addStep(
