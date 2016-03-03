@@ -1004,6 +1004,7 @@ def _get_experimental_scheduled_builders():
          'builddir':"clang-atom-d525-fedora",
          'factory' : ClangBuilder.getClangCMakeBuildFactory(
                        clean=False,
+                       jobs=1,
                        checkout_compiler_rt=False,
                        useTwoStage=False,
                        stage1_config='Debug',
