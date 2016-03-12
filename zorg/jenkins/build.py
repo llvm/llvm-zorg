@@ -9,6 +9,7 @@ import argparse
 import urllib
 import shutil
 import math
+import xml.etree.ElementTree as ET
 
 SERVER = "labmaster2.local"
 
@@ -66,7 +67,7 @@ class Configuration(object):
         self.svn_rev = os.environ.get('LLVM_REV', 'NONE')
         self.nobootstrap = True
         self.device = None
-        self._svn_url = None
+        self._svn_url_cache = None
 
         # Import all of the command line arguments into the config object
         self.__dict__.update(vars(args))
@@ -127,6 +128,26 @@ class Configuration(object):
             else:
                 return "master"
 
+    @property
+    def _svn_url(self):
+        if self._svn_url_cache:
+            return self._svn_url_cache
+        # Jenkins uses SVN_URL, and for more than one repo builds, numbers them.
+        svn_url = os.environ.get('SVN_URL',
+                                 os.environ.get('SVN_URL_1', None))
+        if svn_url is None:
+            svn_url = self.grab_svn_url()
+        self._svn_url_cache = svn_url
+        return svn_url
+
+    def grab_svn_url(self):
+        if os.environ.get('TESTING', False):
+            return '/foo/workspace/llvm.src'
+        cmd = ['svn', 'info', '--xml', os.path.join(self.workspace,'llvm.src')]
+        out = run_collect_output(cmd)
+        x = ET.fromstring(out)
+        url = x.find('entry').find('url').text
+        return url
 
     def link_memory_usage(self):
         """Guesstimate the maximum link memory usage for this build.
@@ -716,6 +737,7 @@ TEST_VALS = {"sysctl hw.ncpu": "hw.ncpu: 8\n",
 def run_collect_output(cmd):
     """Run cmd, and return the output"""
     if os.getenv("TESTING"):
+        print 'TV: ' + ' '.join(cmd)
         return TEST_VALS[' '.join(cmd)]
 
     return subprocess.check_output(cmd)
