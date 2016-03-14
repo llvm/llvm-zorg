@@ -303,6 +303,8 @@ def clang_builder(target):
             '-DCMAKE_INSTALL_PREFIX={}'.format(install_prefix),
             '-DLLVM_ENABLE_PIC=On', 
             '-DLLVM_REPOSITORY={}'.format(conf._svn_url),
+            '-DCLANG_REPOSITORY_STRING={}'.format(conf.branch()),
+            '-DCLANG_APPEND_VC_REV=On',
             '-DSVN_REVISION={}'.format(conf.svn_rev),
             '-DLLVM_BUILD_TESTS=On',
             '-DLLVM_INCLUDE_TESTS=On',
