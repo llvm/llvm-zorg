@@ -45,10 +45,7 @@
 # CHECK-SIMPLE: '-DLLVM_INCLUDE_UTILS=On'
 # CHECK-SIMPLE: '-DPACKAGE_VERSION=3.8.0'
 # CHECK-SIMPLE: '-DCMAKE_MACOSX_RPATH=On'
-# CHECK-SIMPLE: '-DCMAKE_C_FLAGS_RELWITHDEBINFO:STRING=-O2 -gline-tables-only -DNDEBUG'
-# CHECK-SIMPLE: '-DCMAKE_CXX_FLAGS_RELWITHDEBINFO:STRING=-O2 -gline-tables-only -DNDEBUG'
-# CHECK-SIMPLE-NOT: '-DCMAKE_C_FLAGS_RELWITHDEBINFO:STRING=-O2 -flto -gline-tables-only -DNDEBUG'
-# CHECK-SIMPLE-NOT: '-DCMAKE_CXX_FLAGS_RELWITHDEBINFO:STRING=-O2 -flto -gline-tables-only -DNDEBUG'
+# CHECK-SIMPLE: '-DLLVM_ENABLE_LTO=Off
 # CHECK-SIMPLE-NOT: -DLLVM_PARALLEL_LINK_JOBS
 # CHECK-SIMPLE: @@@@@@
 # CHECK-SIMPLE: @@@ Ninja @@@
@@ -71,9 +68,8 @@
 
 # RUN: python %{src_root}/zorg/jenkins/build.py clang all --lto > %t-lto.log
 # RUN: FileCheck --check-prefix CHECK-LTO < %t-lto.log %s
-# CHECK-LTO: '-DCMAKE_C_FLAGS_RELWITHDEBINFO:STRING=-O2 -flto -gline-tables-only -DNDEBUG'
-# CHECK-LTO: '-DCMAKE_CXX_FLAGS_RELWITHDEBINFO:STRING=-O2 -flto -gline-tables-only -DNDEBUG'
 # CHECK-LTO: -DLLVM_PARALLEL_LINK_JOBS
+# CHECK-LTO-NOT:: '-DLLVM_ENABLE_LTO=Off
 
 # Now try just a build
 # RUN: python %{src_root}/zorg/jenkins/build.py clang build --lto
@@ -136,14 +132,14 @@
 # RUN: python %{src_root}/zorg/jenkins/build.py cmake all --lto | FileCheck --check-prefix CHECK-CMAKELTO %s
 # CHECK-CMAKELTO: '/usr/local/bin/cmake' '-G' 'Ninja'
 # CHECK-CMAKELTO: '-DLLVM_BUILD_EXAMPLES=Off'
-# CHECK-CMAKELTO: '-DCMAKE_C_FLAGS=-flto' '-DCMAKE_CXX_FLAGS=-flto'
+# CHECK-CMAKELTO-NOT:: '-DLLVM_ENABLE_LTO=Off
 # CHECK-CMAKELTO: '-DLLVM_PARALLEL_LINK_JOBS=1'
 # CHECK-CMAKELTO: '-DCMAKE_BUILD_TYPE=Release'
 
 # RUN: env MAX_PARALLEL_LINKS=2 python %{src_root}/zorg/jenkins/build.py cmake all --lto | FileCheck --check-prefix CHECK-CMAKE-PAR-LTO %s
 # CHECK-CMAKE-PAR-LTO: '/usr/local/bin/cmake' '-G' 'Ninja'
 # CHECK-CMAKE-PAR-LTO: '-DLLVM_BUILD_EXAMPLES=Off'
-# CHECK-CMAKE-PAR-LTO: '-DCMAKE_C_FLAGS=-flto' '-DCMAKE_CXX_FLAGS=-flto'
+# CHECK-CMAKE-PAR-LTO-NOT:: '-DLLVM_ENABLE_LTO=Off
 # CHECK-CMAKE-PAR-LTO: '-DLLVM_PARALLEL_LINK_JOBS=2'
 # CHECK-CMAKE-PAR-LTO: '-DCMAKE_BUILD_TYPE=Release'
 
