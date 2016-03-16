@@ -178,12 +178,14 @@ def cmake_builder(target):
 
     compiler_flags = conf.compiler_flags
     max_parallel_links = conf.max_parallel_links
+
     if conf.lto:
-        compiler_flags += ['-flto']
+        cmake_cmd += ["-DLLVM_PARALLEL_LINK_JOBS=" + str(max_link_jobs())]
         cmake_cmd += ['-DLLVM_BUILD_EXAMPLES=Off']
         if not max_parallel_links:
             max_parallel_links = 1
     else:
+        cmake_cmd += ['-DLLVM_ENABLE_LTO=Off']
         cmake_cmd += ['-DLLVM_BUILD_EXAMPLES=On']
 
     cmake_cmd += ["-DPACKAGE_VERSION=3.8.0",
@@ -325,17 +327,11 @@ def clang_builder(target):
             if conf.max_parallel_tests:
                 lit_flags += ['-j', conf.max_parallel_tests]
             cmake_command.extend(['-DLLVM_LIT_ARGS={}'.format(' '.join(lit_flags))])
-
+              
             if conf.lto:
-                cmake_command.extend([
-                    '-DCMAKE_C_FLAGS_RELWITHDEBINFO:STRING=-O2 -flto -gline-tables-only -DNDEBUG',
-                    '-DCMAKE_CXX_FLAGS_RELWITHDEBINFO:STRING=-O2 -flto -gline-tables-only -DNDEBUG'])
                 cmake_command.extend(["-DLLVM_PARALLEL_LINK_JOBS=" + str(max_link_jobs())])
             else:
-                cmake_command.extend([
-                    '-DCMAKE_C_FLAGS_RELWITHDEBINFO:STRING=-O2 -gline-tables-only -DNDEBUG',
-                    '-DCMAKE_CXX_FLAGS_RELWITHDEBINFO:STRING=-O2 -gline-tables-only -DNDEBUG'])
-
+                cmake_command.extend('-DLLVM_ENABLE_LTO=Off')
 
             cmake_command.append("{}/llvm".format(conf.workspace))
             run_cmd(os.path.join(clang_br, 'Build'), cmake_command)
