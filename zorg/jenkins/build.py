@@ -331,7 +331,7 @@ def clang_builder(target):
             if conf.lto:
                 cmake_command.extend(["-DLLVM_PARALLEL_LINK_JOBS=" + str(max_link_jobs())])
             else:
-                cmake_command.extend('-DLLVM_ENABLE_LTO=Off')
+                cmake_command.extend(['-DLLVM_ENABLE_LTO=Off'])
 
             cmake_command.append("{}/llvm".format(conf.workspace))
             run_cmd(os.path.join(clang_br, 'Build'), cmake_command)
