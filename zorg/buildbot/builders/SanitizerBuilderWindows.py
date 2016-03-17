@@ -49,9 +49,10 @@ def getSanitizerWindowsBuildFactory(
     # stale processes, the build will fail during linking. This can happen to
     # any process, but it is most likely to happen to llvm-symbolizer if its
     # pipe isn't closed.
+    taskkill_cmd = 'taskkill /f /im llvm-symbolizer || exit /b 0'
     f.addStep(ShellCommand(name='taskkill',
                            description='kill stale processes',
-                           command=['taskkill', '/f', '/im', 'llvm-symbolizer'],
+                           command=['cmd', '/c', taskkill_cmd],
                            haltOnFailure=False))
 
     # Determine Slave Environment and Set MSVC environment.
