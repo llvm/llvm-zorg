@@ -228,8 +228,7 @@ function check_stage2 {
 
   if [ "$CHECK_LLD" != "0" ]; then
     echo @@@BUILD_STEP check-lld ${sanitizer_name}@@@
-    # TODO(smatveev): change this to STEP_FAILURE once green
-    (cd ${build_dir} && ninja check-lld) || echo @@@STEP_WARNINGS@@@
+    (cd ${build_dir} && ninja check-lld) || echo $step_result
   fi
 }
 
