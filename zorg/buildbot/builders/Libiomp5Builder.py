@@ -63,6 +63,7 @@ def getLibompCMakeBuildFactory(clean=True, env=None, test=True, c_compiler="gcc"
     f.addStep(ShellCommand(name='cmake llvm',
                            command=["cmake", "../"+llvm_srcdir,
                                     "-G", "Ninja",
+                                    "-DCMAKE_BUILD_TYPE=Release+Asserts",
                                     "-DCMAKE_C_COMPILER="+c_compiler,
                                     "-DCMAKE_CXX_COMPILER="+cxx_compiler],
                            haltOnFailure=True,
