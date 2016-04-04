@@ -485,6 +485,10 @@ def tree_path(tree, repo):
             return "llvm"
         if repo == "clang":
             return "llvm/tools/clang"
+        if repo == "compiler-rt":
+            return "llvm/projects/compiler-rt"
+        if repo == "libcxx":
+            return "llvm/projects/libcxx"
 
     else:
         logging.error("Unknown tree '{}'".format(tree))
@@ -580,7 +584,8 @@ def derive_llvm(repos=['llvm', 'clang', 'libcxx', 'clang-tools-extra', \
 
 def derive_lldb():
     """Build a derived src tree for LLDB"""
-    derive(tree='lldb', repos=['lldb', 'llvm', 'clang'])
+    derive(tree='lldb', repos=['lldb', 'llvm', 'clang', 'libcxx',
+        'compiler-rt'])
 
 
 def create_builddirs():
