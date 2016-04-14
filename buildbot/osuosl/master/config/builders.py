@@ -440,8 +440,7 @@ def _get_clang_builders():
                                                        extra_configure_args=['-DCMAKE_C_COMPILER=clang',
                                                                              '-DCMAKE_CXX_COMPILER=clang++',
                                                                              '-DCMAKE_CXX_FLAGS=-stdlib=libc++',
-                                                                             '-DLLVM_ENABLE_ASSERTIONS=ON'],
-                                                       cmake='cmake')},
+                                                                             '-DLLVM_ENABLE_ASSERTIONS=ON'])},
 
         {'name' : "clang-x64-ninja-win7",
          'slavenames' : ["windows7-buildbot"],
@@ -969,8 +968,7 @@ def _get_experimental_scheduled_builders():
          'factory' : ClangBuilder.getClangBuildFactory(useTwoStage=False,
                                                        clean=False,
                                                        test=True,
-                                                       stage1_config='Release',
-                                                       cmake='cmake'),
+                                                       stage1_config='Release'),
          'category' : 'clang'},
 
         # lldb builders

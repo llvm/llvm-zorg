@@ -42,9 +42,8 @@ def getClangBuildFactory(
             run_gdb=False,
             run_modern_gdb=False,
             run_gcc=False,
-            cmake=None,
             modules=False):
-    assert not modules or (cmake and useTwoStage), \
+    assert not modules or useTwoStage, \
            "modules build requires 2 stage cmake build for now"
 
     # Prepare environmental variables. Set here all env we want everywhere.
@@ -147,49 +146,28 @@ def getClangBuildFactory(
                                env=merged_env))
 
     if not clean:
-        if cmake:
-            expected_makefile = 'Makefile'
-        else:
-            expected_makefile = 'Makefile.config'
+        expected_makefile = 'Makefile'
         f.addStep(SetProperty(name="Makefile_isready",
                               workdir=llvm_1_objdir,
                               command=["sh", "-c",
                                        "test -e %s && echo OK || echo Missing" % expected_makefile],
                               flunkOnFailure=False,
-                          property="exists_Makefile"))
+                              property="exists_Makefile"))
 
-    if not cmake:
-        # Force without llvm-gcc so we don't run afoul of Frontend test failures.
-        base_configure_args = [WithProperties("%%(builddir)s/%s/configure" % llvm_srcdir),
-                               '--disable-bindings']
-        base_configure_args += extra_configure_args
-        if triple:
-            base_configure_args += ['--build=%s' % triple,
-                                    '--host=%s' % triple]
-        args = base_configure_args + [WithProperties("--prefix=%%(builddir)s/%s" % llvm_1_installdir)]
-        args += builders_util.getConfigArgs(stage1_config)
-
-        f.addStep(Configure(command=args,
-                            workdir=llvm_1_objdir,
-                            description=['configuring',stage1_config],
-                            descriptionDone=['configure',stage1_config],
-                            env=merged_env,
-                            doStepIf=lambda step: step.build.getProperty("exists_Makefile") != "OK"))
-    else:
-        cmake_triple_arg = []
-        if triple:
-            cmake_triple_arg = ['-DLLVM_HOST_TRIPLE=%s' % triple]
-        f.addStep(ShellCommand(name='cmake',
-                               command=[cmake,
-                                        '-DLLVM_BUILD_TESTS=ON',
-                                        '-DCMAKE_BUILD_TYPE=%s' % stage1_config] +
-                                       cmake_triple_arg +
-                                       extra_configure_args +
-                                       ["../" + llvm_srcdir],
-                               description='cmake stage1',
-                               workdir=llvm_1_objdir,
-                               env=merged_env,
-                               doStepIf=lambda step: step.build.getProperty("exists_Makefile") != "OK"))
+    cmake_triple_arg = []
+    if triple:
+        cmake_triple_arg = ['-DLLVM_HOST_TRIPLE=%s' % triple]
+    f.addStep(ShellCommand(name='cmake',
+                           command=['cmake',
+                                    '-DLLVM_BUILD_TESTS=ON',
+                                    '-DCMAKE_BUILD_TYPE=%s' % stage1_config] +
+                                   cmake_triple_arg +
+                                   extra_configure_args +
+                                   ["../" + llvm_srcdir],
+                           description='cmake stage1',
+                           workdir=llvm_1_objdir,
+                           env=merged_env,
+                           doStepIf=lambda step: step.build.getProperty("exists_Makefile") != "OK"))
 
     # Make clean if using in-dir builds.
     if clean and llvm_srcdir == llvm_1_objdir:
@@ -247,22 +225,7 @@ def getClangBuildFactory(
                                    usePTY=use_pty_in_tests,
                                    env=merged_env))
 
-    # Install llvm and clang.
-    if llvm_1_installdir and not cmake: # FIXME: install for cmake build
-        f.addStep(ShellCommand(name="rm-install.clang.stage1",
-                               command=["rm", "-rf", llvm_1_installdir],
-                               haltOnFailure=True,
-                               description=["rm install dir", "clang"],
-                               workdir=".",
-                               env=merged_env))
-        f.addStep(WarningCountingShellCommand(name="install.clang.stage1",
-                                              command = ['nice', '-n', '10',
-                                                         make, 'install-clang'],
-                                              haltOnFailure=True,
-                                              description=["install", "clang",
-                                                           stage1_config],
-                                              workdir=llvm_1_objdir,
-                                              env=merged_env))
+    # TODO: Install llvm and clang for stage1.
 
     if run_gdb or run_gcc or run_modern_gdb:
         ignores = getClangTestsIgnoresFromPath(os.path.expanduser('~/public/clang-tests'), 'clang-x86_64-darwin10')
@@ -314,43 +277,27 @@ def getClangBuildFactory(
                            env=merged_env))
 
     # Configure llvm (stage 2).
-    if not cmake:
-        args = base_configure_args + [WithProperties("--prefix=%(builddir)s/" + llvm_2_installdir)]
-        args += builders_util.getConfigArgs(stage2_config)
-        local_env = dict(merged_env)
-        local_env.update({
-            'CC'  : WithProperties("%%(builddir)s/%s/bin/clang"   % llvm_1_installdir),
-            'CXX' : WithProperties("%%(builddir)s/%s/bin/clang++" % llvm_1_installdir)})
+    c_flags = ''
+    cxx_flags = ''
+    extra_args = []
+    if modules:
+        c_flags += '-fmodules-cache-path=%%(builddir)s/%s/module-cache' % llvm_2_objdir
+        # Modules requires libc++ for now (we don't have a module map for libstdc++ yet).
+        cxx_flags += '-stdlib=libc++'
+        extra_args = ['-DLLVM_ENABLE_MODULES=1']
 
-        f.addStep(Configure(name="configure.llvm.stage2",
-                            command=args,
-                            haltOnFailure=True,
-                            workdir=llvm_2_objdir,
-                            description=["configure", "llvm", "(stage 2)",
-                                         stage2_config],
-                            env=local_env))
-    else:
-        c_flags = ''
-        cxx_flags = ''
-        extra_args = []
-        if modules:
-            c_flags += '-fmodules-cache-path=%%(builddir)s/%s/module-cache' % llvm_2_objdir
-            # Modules requires libc++ for now (we don't have a module map for libstdc++ yet).
-            cxx_flags += '-stdlib=libc++'
-            extra_args = ['-DLLVM_ENABLE_MODULES=1']
-
-        f.addStep(ShellCommand(name='cmake',
-                               command=[cmake] + extra_args + [
-                                        '-DLLVM_BUILD_TESTS=ON',
-                                        WithProperties('-DCMAKE_C_COMPILER=%%(builddir)s/%s/bin/clang' % llvm_1_objdir), # FIXME use installdir
-                                        WithProperties('-DCMAKE_CXX_COMPILER=%%(builddir)s/%s/bin/clang++' % llvm_1_objdir),
-                                        '-DCMAKE_BUILD_TYPE=%s' % stage2_config,
-                                        WithProperties('-DCMAKE_C_FLAGS=%s' % c_flags),
-                                        WithProperties('-DCMAKE_CXX_FLAGS=%s %s' % (c_flags, cxx_flags)),
-                                        "../" + llvm_srcdir],
-                               description='cmake stage2',
-                               workdir=llvm_2_objdir,
-                               env=merged_env))
+    f.addStep(ShellCommand(name='cmake',
+                           command=['cmake'] + extra_args + [
+                                    '-DLLVM_BUILD_TESTS=ON',
+                                    WithProperties('-DCMAKE_C_COMPILER=%%(builddir)s/%s/bin/clang' % llvm_1_objdir), # FIXME use installdir
+                                    WithProperties('-DCMAKE_CXX_COMPILER=%%(builddir)s/%s/bin/clang++' % llvm_1_objdir),
+                                    '-DCMAKE_BUILD_TYPE=%s' % stage2_config,
+                                    WithProperties('-DCMAKE_C_FLAGS=%s' % c_flags),
+                                    WithProperties('-DCMAKE_CXX_FLAGS=%s %s' % (c_flags, cxx_flags)),
+                                    "../" + llvm_srcdir],
+                           description='cmake stage2',
+                           workdir=llvm_2_objdir,
+                           env=merged_env))
 
     if modules:
         f.addStep(WarningCountingShellCommand(name="compile.llvm.stage2.intrinsics_gen",
@@ -387,22 +334,7 @@ def getClangBuildFactory(
                                    usePTY=use_pty_in_tests,
                                    env=merged_env))
 
-    if llvm_2_installdir and not cmake: # FIXME: install for cmake build
-        # Install clang (stage 2).
-        f.addStep(ShellCommand(name="rm-install.clang.stage2",
-                               command=["rm", "-rf", llvm_2_installdir],
-                               haltOnFailure=True,
-                               description=["rm install dir", "clang"],
-                               workdir=".",
-                               env=merged_env))
-        f.addStep(WarningCountingShellCommand(name="install.clang.stage2",
-                                              command = ['nice', '-n', '10',
-                                                         make, 'install-clang'],
-                                              haltOnFailure=True,
-                                              description=["install", "clang",
-                                                           "(stage 2)"],
-                                              workdir=llvm_2_objdir,
-                                              env=merged_env))
+    # TODO: Install llvm and clang for stage2.
 
     if package_dst:
         name = WithProperties(
