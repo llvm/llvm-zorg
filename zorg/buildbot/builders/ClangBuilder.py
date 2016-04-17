@@ -281,7 +281,6 @@ def getClangBuildFactory(
     cxx_flags = ''
     extra_args = []
     if modules:
-        c_flags += '-fmodules-cache-path=%%(builddir)s/%s/module-cache' % llvm_2_objdir
         # Modules requires libc++ for now (we don't have a module map for libstdc++ yet).
         cxx_flags += '-stdlib=libc++'
         extra_args = ['-DLLVM_ENABLE_MODULES=1']
