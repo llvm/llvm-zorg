@@ -798,8 +798,7 @@ def _get_openmp_builders():
          'factory' : Libiomp5Builder.getLibompCMakeBuildFactory(
                          c_compiler="gcc",
                          cxx_compiler="g++",
-                         env={'PATH':'/home/llvmbb/bin/clang-latest/bin:/home/llvmbb/bin:/usr/local/bin:/usr/local/bin:/usr/bin:/bin'}),
-         'category' : 'libomp'},
+                         env={'PATH':'/home/llvmbb/bin/clang-latest/bin:/home/llvmbb/bin:/usr/local/bin:/usr/local/bin:/usr/bin:/bin'})},
 
         {'name': "libomp-clang-x86_64-linux-debian",
          'slavenames':["gribozavr4"],
@@ -807,8 +806,25 @@ def _get_openmp_builders():
          'factory' : Libiomp5Builder.getLibompCMakeBuildFactory(
                          c_compiler="clang",
                          cxx_compiler="clang++",
-                         env={'PATH':'/home/llvmbb/bin/clang-latest/bin:/home/llvmbb/bin:/usr/local/bin:/usr/local/bin:/usr/bin:/bin'}),
-         'category' : 'libomp'},
+                         env={'PATH':'/home/llvmbb/bin/clang-latest/bin:/home/llvmbb/bin:/usr/local/bin:/usr/local/bin:/usr/bin:/bin'})},
+
+        {'name': "libomp-ompt-gcc-x86_64-linux-debian",
+         'slavenames':["gribozavr4"],
+         'builddir':"libomp-ompt-gcc-x86_64-linux-debian",
+         'factory' : Libiomp5Builder.getLibompCMakeBuildFactory(
+                         c_compiler="gcc",
+                         cxx_compiler="g++",
+                         ompt=True,
+                         env={'PATH':'/home/llvmbb/bin/clang-latest/bin:/home/llvmbb/bin:/usr/local/bin:/usr/local/bin:/usr/bin:/bin'})},
+
+        {'name': "libomp-ompt-clang-x86_64-linux-debian",
+         'slavenames':["gribozavr4"],
+         'builddir':"libomp-ompt-clang-x86_64-linux-debian",
+         'factory' : Libiomp5Builder.getLibompCMakeBuildFactory(
+                         c_compiler="clang",
+                         cxx_compiler="clang++",
+                         ompt=True
+                         env={'PATH':'/home/llvmbb/bin/clang-latest/bin:/home/llvmbb/bin:/usr/local/bin:/usr/local/bin:/usr/bin:/bin'})},
         ]
 
 def _get_libcxx_builders():

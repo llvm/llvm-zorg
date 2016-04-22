@@ -11,7 +11,7 @@ import zorg.buildbot.commands as commands
 import zorg.buildbot.commands.LitTestCommand as lit_test_command
 
 
-def getLibompCMakeBuildFactory(clean=True, env=None, test=True, c_compiler="gcc", cxx_compiler="g++"):
+def getLibompCMakeBuildFactory(clean=True, env=None, ompt=False, test=True, c_compiler="gcc", cxx_compiler="g++"):
 
     # Prepare environmental variables. Set here all env we want everywhere.
     merged_env = {
@@ -88,14 +88,25 @@ def getLibompCMakeBuildFactory(clean=True, env=None, test=True, c_compiler="gcc"
                                               workdir=llvm_builddir,
                                               env=merged_env))
 
+    if ompt:
+        f.addStep(WarningCountingShellCommand(name='make ompt test utils',
+                                              command=['ninja', 'FileCheck'],
+                                              haltOnFailure=True,
+                                              description='make ompt test utils',
+                                              workdir=llvm_builddir,
+                                              env=merged_env))
+
     # Add clang/llvm-lit to PATH
     merged_env.update( { 'PATH' : WithProperties("%(workdir)s/" + llvm_builddir + "/bin:" + "${PATH}")} )
 
     # CMake libomp
+    command=["cmake", "../"+openmp_srcdir,
+             "-DCMAKE_C_COMPILER="+c_compiler,
+             "-DCMAKE_CXX_COMPILER="+cxx_compiler]
+    if ompt:
+        command.append("-DLIBOMP_OMPT_SUPPORT=ON")
     f.addStep(ShellCommand(name='cmake libomp',
-                           command=["cmake", "../"+openmp_srcdir,
-                                    "-DCMAKE_C_COMPILER="+c_compiler,
-                                    "-DCMAKE_CXX_COMPILER="+cxx_compiler],
+                           command=command,
                            haltOnFailure=True,
                            description='cmake libomp',
                            workdir=openmp_builddir,
