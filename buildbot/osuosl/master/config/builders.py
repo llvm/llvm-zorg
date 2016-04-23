@@ -823,7 +823,7 @@ def _get_openmp_builders():
          'factory' : Libiomp5Builder.getLibompCMakeBuildFactory(
                          c_compiler="clang",
                          cxx_compiler="clang++",
-                         ompt=True
+                         ompt=True,
                          env={'PATH':'/home/llvmbb/bin/clang-latest/bin:/home/llvmbb/bin:/usr/local/bin:/usr/local/bin:/usr/bin:/bin'})},
         ]
 
