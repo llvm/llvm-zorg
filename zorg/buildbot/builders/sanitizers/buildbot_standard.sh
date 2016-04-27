@@ -69,13 +69,13 @@ export PATH=$CLANG_PATH:$PATH
 export MAKEFLAGS=-j$MAKE_JOBS
 clang -v 2>tmp && grep "version" tmp
 
-cd $ROOT
-if [ -d tsanv2 ]; then
-  (cd tsanv2 && svn cleanup && svn up --ignore-externals)
-else
-  svn co http://data-race-test.googlecode.com/svn/trunk/ tsanv2
-fi
-export RACECHECK_UNITTEST_PATH=$ROOT/tsanv2/unittest
-
-cp $ROOT/../sanitizer_buildbot/sanitizers/test_tsan.sh $TSAN_PATH
-(cd $TSAN_PATH && ./test_tsan.sh)
+#cd $ROOT
+#if [ -d tsanv2 ]; then
+#  (cd tsanv2 && svn cleanup && svn up --ignore-externals)
+#else
+#  svn co http://data-race-test.googlecode.com/svn/trunk/ tsanv2
+#fi
+#export RACECHECK_UNITTEST_PATH=$ROOT/tsanv2/unittest
+#
+#cp $ROOT/../sanitizer_buildbot/sanitizers/test_tsan.sh $TSAN_PATH
+#(cd $TSAN_PATH && ./test_tsan.sh)
