@@ -6,9 +6,8 @@ from buildbot.steps.source import SVN
 from buildbot.steps.shell import ShellCommand
 from buildbot.steps.shell import WarningCountingShellCommand
 from buildbot.process.properties import WithProperties
-
-import zorg.buildbot.commands as commands
-import zorg.buildbot.commands.LitTestCommand as lit_test_command
+from zorg.buildbot.commands.LitTestCommand import LitTestCommand
+from zorg.buildbot.commands.NinjaCommand import NinjaCommand
 
 
 def getLibompCMakeBuildFactory(clean=True, env=None, ompt=False, test=True, c_compiler="gcc", cxx_compiler="g++"):
@@ -74,27 +73,26 @@ def getLibompCMakeBuildFactory(clean=True, env=None, ompt=False, test=True, c_co
 
     # Make clang build or just llvm utils build
     if c_compiler == "clang": 
-        f.addStep(WarningCountingShellCommand(name='make clang build',
-                                              command=['ninja'],
-                                              haltOnFailure=True,
-                                              description='make clang build',
-                                              workdir=llvm_builddir,
-                                              env=merged_env))
+        f.addStep(NinjaCommand(name="make clang build",
+                               haltOnFailure=True,
+                               description=["make clang build"],
+                               workdir=llvm_builddir,
+                               env=merged_env))
     else:
-        f.addStep(WarningCountingShellCommand(name='make llvm utils build',
-                                              command=['ninja', 'LLVMX86Utils'],
-                                              haltOnFailure=True,
-                                              description='make llvm utils build',
-                                              workdir=llvm_builddir,
-                                              env=merged_env))
+        f.addStep(NinjaCommand(name="make llvm utils build",
+                               targets=["LLVMX86Utils"],
+                               haltOnFailure=True,
+                               description=["make llvm utils build"],
+                               workdir=llvm_builddir,
+                               env=merged_env))
 
     if ompt:
-        f.addStep(WarningCountingShellCommand(name='make ompt test utils',
-                                              command=['ninja', 'FileCheck'],
-                                              haltOnFailure=True,
-                                              description='make ompt test utils',
-                                              workdir=llvm_builddir,
-                                              env=merged_env))
+        f.addStep(NinjaCommand(name="make ompt test utils",
+                               targets=["FileCheck"],
+                               haltOnFailure=True,
+                               description=["make ompt test utils"],
+                               workdir=llvm_builddir,
+                               env=merged_env))
 
     # Add clang/llvm-lit to PATH
     merged_env.update( { 'PATH' : WithProperties("%(workdir)s/" + llvm_builddir + "/bin:" + "${PATH}")} )
@@ -122,12 +120,12 @@ def getLibompCMakeBuildFactory(clean=True, env=None, ompt=False, test=True, c_co
 
     # Test, if requested
     if test:
-        f.addStep(lit_test_command.LitTestCommand(name='make check-libomp',
-                                                  command=['make', 'check-libomp'],
-                                                  haltOnFailure=True,
-                                                  description=["make check-libomp"],
-                                                  descriptionDone=["build checked"],
-                                                  workdir=openmp_builddir,
-                                                  env=merged_env))
+        f.addStep(LitTestCommand(name="make check-libomp",
+                                 command=["make", "check-libomp"],
+                                 haltOnFailure=True,
+                                 description=["make check-libomp"],
+                                 descriptionDone=["build checked"],
+                                 workdir=openmp_builddir,
+                                 env=merged_env))
 
     return f
