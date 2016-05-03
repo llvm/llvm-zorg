@@ -38,7 +38,7 @@ function build_tsan {
   if [ ! -d $build_dir ]; then
     mkdir $build_dir
   fi
-  (cd $build_dir && CC=gcc CXX=g++ cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+  (cd $build_dir && CC="$3" CXX="$4" cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo \
     ${CMAKE_COMMON_OPTIONS} ${extra_cmake_args} \
     ${LLVM_CHECKOUT})
   (cd $build_dir && make -j$MAKE_JOBS ${targets}) || echo @@@STEP_FAILURE@@@
@@ -50,32 +50,18 @@ echo @@@BUILD_STEP update@@@
 buildbot_update
 
 echo @@@BUILD_STEP build fresh clang + debug compiler-rt@@@
-build_tsan "${TSAN_DEBUG_BUILD_DIR}" "-DCOMPILER_RT_DEBUG=ON"
+build_tsan "${TSAN_DEBUG_BUILD_DIR}" "-DCOMPILER_RT_DEBUG=ON" gcc g++
 
 echo @@@BUILD_STEP test tsan in debug compiler-rt build@@@
 (cd $TSAN_DEBUG_BUILD_DIR && make -j$MAKE_JOBS check-tsan) || echo @@@STEP_FAILURE@@@
 
 echo @@@BUILD_STEP build tsan with stats and debug output@@@
-build_tsan "${TSAN_FULL_DEBUG_BUILD_DIR}" "-DCOMPILER_RT_DEBUG=ON -DCOMPILER_RT_TSAN_DEBUG_OUTPUT=ON -DLLVM_INCLUDE_TESTS=OFF"
+build_tsan "${TSAN_FULL_DEBUG_BUILD_DIR}" "-DCOMPILER_RT_DEBUG=ON -DCOMPILER_RT_TSAN_DEBUG_OUTPUT=ON -DLLVM_INCLUDE_TESTS=OFF" gcc g++
 
 echo @@@BUILD_STEP build release tsan with clang@@@
-build_tsan "${TSAN_RELEASE_BUILD_DIR}" "-DCOMPILER_RT_DEBUG=OFF"
+build_tsan "${TSAN_RELEASE_BUILD_DIR}" "-DCOMPILER_RT_DEBUG=OFF" "$ROOT/$TSAN_DEBUG_BUILD_DIR/bin/clang" "$ROOT/$TSAN_DEBUG_BUILD_DIR/bin/clang++"
 
-echo @@@BUILD_STEP prepare for testing tsan@@@
-TSAN_PATH=$ROOT/llvm/projects/compiler-rt/lib/tsan/
-
-CLANG_PATH=$ROOT/$TSAN_RELEASE_BUILD_DIR/bin
-export PATH=$CLANG_PATH:$PATH
-export MAKEFLAGS=-j$MAKE_JOBS
-clang -v 2>tmp && grep "version" tmp
-
-#cd $ROOT
-#if [ -d tsanv2 ]; then
-#  (cd tsanv2 && svn cleanup && svn up --ignore-externals)
-#else
-#  svn co http://data-race-test.googlecode.com/svn/trunk/ tsanv2
-#fi
-#export RACECHECK_UNITTEST_PATH=$ROOT/tsanv2/unittest
-#
-#cp $ROOT/../sanitizer_buildbot/sanitizers/test_tsan.sh $TSAN_PATH
-#(cd $TSAN_PATH && ./test_tsan.sh)
+echo @@@BUILD_STEP tsan analyze@@@
+BIN=$(mktemp -t tsan_exe.XXXXXXXX)
+echo "int main() {return 0;}" | $TSAN_RELEASE_BUILD_DIR/bin/clang -x c++ - -fsanitize=thread -O2 -o ${BIN}
+$LLVM_CHECKOUT/projects/compiler-rt/lib/tsan/check_analyze.sh ${BIN} || echo @@@STEP_FAILURE@@@
