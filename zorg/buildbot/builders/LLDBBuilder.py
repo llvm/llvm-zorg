@@ -14,9 +14,8 @@ from zorg.buildbot.commands.LitTestCommand import LitTestCommand
 from zorg.buildbot.builders.Util import getVisualStudioEnvironment
 from zorg.buildbot.builders.Util import extractSlaveEnvironment
 
-# We *must* checkout at least Clang, LLVM, and LLDB.  Once we add a step to run
-# tests (e.g. ninja check-lldb), we will also need to add a step for LLD, since
-# MSVC LD.EXE cannot link executables with DWARF debug info.
+# We *must* checkout at least Clang, LLVM, and LLDB.  Also check out LLD since
+# it is needed to run the LLDB test suite.
 def getLLDBSource(f,llvmTopDir='llvm'):
     f.addStep(SVN(name='svn-llvm',
                   mode='update', baseURL='http://llvm.org/svn/llvm-project/llvm/',
@@ -26,6 +25,10 @@ def getLLDBSource(f,llvmTopDir='llvm'):
                   mode='update', baseURL='http://llvm.org/svn/llvm-project/cfe/',
                   defaultBranch='trunk',
                   workdir='%s/tools/clang' % llvmTopDir))
+    f.addStep(SVN(name='svn-lld',
+                  mode='update', baseURL='http://llvm.org/svn/llvm-project/lld/',
+                  defaultBranch='trunk',
+                  workdir='%s/tools/lld' % llvmTopDir))
     f.addStep(SVN(name='svn-lldb',
                   mode='update', baseURL='http://llvm.org/svn/llvm-project/lldb/',
                   defaultBranch='trunk',
