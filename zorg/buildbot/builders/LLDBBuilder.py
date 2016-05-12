@@ -93,7 +93,7 @@ def getLLDBWindowsCMakeBuildFactory(
 
     # Use batch files instead of ShellCommand directly, Windows quoting is
     # borked. FIXME: See buildbot ticket #595 and buildbot ticket #377.
-    clang_exe = 'build_dir/bin/clang.exe'    # ./bin/clang.exe
+    clang_exe = 'bin/clang.exe'    # ./bin/clang.exe
     f.addStep(batch_file_download.BatchFileDownload(name='cmakegen',
                                 command=[cmake, "-G", "Ninja", "../llvm",
                                          "-DCMAKE_BUILD_TYPE="+config,
