@@ -10,6 +10,7 @@ from zorg.buildbot.builders.Util import getVisualStudioEnvironment
 from zorg.buildbot.builders.Util import extractSlaveEnvironment
 from zorg.buildbot.commands.NinjaCommand import NinjaCommand
 from zorg.buildbot.conditions.FileConditions import FileDoesNotExist
+from zorg.buildbot.process.factory import LLVMBuildFactory
 
 def getLLDBuildFactory(
            clean = True,
@@ -38,16 +39,8 @@ def getLLDBuildFactory(
                                                env=merged_env,
                                                workdir="."))
     # Get LLVM and Lld
-    f.addStep(SVN(name='svn-llvm',
-                  mode='update',
-                  baseURL='http://llvm.org/svn/llvm-project/llvm/',
-                  defaultBranch='trunk',
-                  workdir=llvm_srcdir))
-    f.addStep(SVN(name='svn-lld',
-                  mode='update',
-                  baseURL='http://llvm.org/svn/llvm-project/lld/',
-                  defaultBranch='trunk',
-                  workdir='%s/tools/lld' % llvm_srcdir))
+    f = LLVMBuildFactory(depends_on_projects=['llvm', 'lld'])
+    f.addSVNSteps(llvm_srcdir=llvm_srcdir)
 
     # Clean directory, if requested.
     if clean:
