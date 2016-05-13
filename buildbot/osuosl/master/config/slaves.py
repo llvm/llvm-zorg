@@ -93,15 +93,13 @@ def get_build_slaves():
         # Windows 6.1.7601 x86-64, Intel(R) Xeon(R) CPU E5-2680 0 @ 2.70GHz
         create_slave("hexagon-build-01", properties={'jobs': 4}, max_builds=2),
 
-        # TODO: This slave is idle for now. Review the usage later.
         # Ubuntu x86-64, Intel(R) Xeon(R) CPU E5-2680 0 @ 2.70GHz
         create_slave("hexagon-build-02", properties={'jobs': 12, 'loadaverage': 32},
-            max_builds=4),
+            max_builds=1),
 
         # Ubuntu x86-64, Intel(R) Xeon(R) CPU E5-2680 0 @ 2.70GHz
-        create_slave("hexagon-build-03", properties={'jobs': 16, 'loadaverage':
-32},
-            max_builds=4),
+        create_slave("hexagon-build-03", properties={'jobs': 16, 'loadaverage':32},
+            max_builds=1),
 
         # Cavium Octeon II V0.8, MIPS64r2 big endian, Debian Jessie
         create_slave("mipsswbrd002", properties={'jobs' : 6}, max_builds=1),

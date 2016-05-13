@@ -38,7 +38,7 @@ def _get_llvm_builders():
                              'CXX': '/mips/proj/build-compiler/clang-be-o32-latest/bin/clang++',
                             })},
         {'name': "llvm-hexagon-elf",
-         'slavenames':["hexagon-build-03"],
+         'slavenames':["hexagon-build-02", "hexagon-build-03"],
          'builddir':"llvm-hexagon-elf",
          'factory': LLVMBuilder.getLLVMCMakeBuildFactory(
                         timeout=40, config_name='Release',
@@ -387,7 +387,7 @@ def _get_clang_builders():
          'factory' : ClangBuilder.getClangBuildFactory(stage1_config='Release+Asserts', run_modern_gdb=True, clean=False)},
 
         {'name' : "clang-hexagon-elf",
-         'slavenames' :["hexagon-build-03"],
+         'slavenames' :["hexagon-build-02", "hexagon-build-03"],
          'builddir' :"clang-hexagon-elf",
          'factory' : ClangBuilder.getClangCMakeBuildFactory(
             jobs=16,
