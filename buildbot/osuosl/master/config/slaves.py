@@ -145,6 +145,9 @@ def get_build_slaves():
         # Debian 7.7 x86_64 GCE instance
         create_slave("modules-slave-1", properties={'jobs': 16}, max_builds=1),
 
+        # Debian 7.7 x86_64 GCE instance
+        create_slave("modules-slave-2", properties={'jobs': 16}, max_builds=1),
+
         # zEnterprise 196 (s390x), SLES 12
         create_slave("systemz-1", properties={'jobs': 4}, max_builds=1),
 
