@@ -59,7 +59,7 @@ def getLLDBWindowsCMakeBuildFactory(
             config='Release',
             target_arch='x86',
 
-            extra_cmake_args=[],
+            extra_cmake_args=None,
             test=False,
             install=False):
 
@@ -101,22 +101,22 @@ def getLLDBWindowsCMakeBuildFactory(
                 doStepIf=cleanBuildRequested
                 ))
 
-    # Use batch files instead of ShellCommand directly, Windows quoting is
-    # borked. FIXME: See buildbot ticket #595 and buildbot ticket #377.
-
-    f.addStep(batch_file_download.BatchFileDownload(name='cmakegen',
-                                command=[cmake, "-G", "Ninja", "../llvm",
-                                         "-DCMAKE_BUILD_TYPE="+config,
-                                         '-DPYTHON_HOME=' + python_source_dir,
-                                         "-DCMAKE_INSTALL_PREFIX=../install",
-                                         WithProperties('-DLLDB_TEST_COMPILER=%(builddir)s/bin/clang.exe')]
-                                         + extra_cmake_args,
-                                workdir=build_dir))
-
-    f.addStep(ShellCommand(name='cmake',
-                           command=['cmakegen.bat'],
+    cmake_cmd = [
+        "cmake", "-G", "Ninja", "../llvm",
+        "-DCMAKE_BUILD_TYPE=" + config,
+        "-DPYTHON_HOME=" + python_source_dir,
+        "-DCMAKE_INSTALL_PREFIX=../install",
+        "-DLLDB_TEST_COMPILER=\"%(builddir)s/bin/clang.exe\""
+        ]
+    if extra_cmake_args:
+        cmake_cmd += extra_cmake_args
+    # Note: ShellCommand does not pass the params with special symbols right.
+    # The " ".join is a workaround for this bug.
+    f.addStep(ShellCommand(name="cmake-configure",
+                           description=["cmake configure"],
+                           command=WithProperties(" ".join(cmake_cmd)),
                            haltOnFailure=True,
-                           description='cmake gen',
+                           warnOnWarnings=True,
                            workdir=build_dir,
                            env=Property('slave_env')))
 
