@@ -103,14 +103,13 @@ def getLLDBWindowsCMakeBuildFactory(
 
     # Use batch files instead of ShellCommand directly, Windows quoting is
     # borked. FIXME: See buildbot ticket #595 and buildbot ticket #377.
-    clang_exe = WithProperties('%(builddir)s/bin/clang.exe')
 
     f.addStep(batch_file_download.BatchFileDownload(name='cmakegen',
                                 command=[cmake, "-G", "Ninja", "../llvm",
                                          "-DCMAKE_BUILD_TYPE="+config,
                                          '-DPYTHON_HOME=' + python_source_dir,
                                          "-DCMAKE_INSTALL_PREFIX=../install",
-                                         '-DLLDB_TEST_COMPILER="' + clang_exe + '"']
+                                         WithProperties('-DLLDB_TEST_COMPILER=%(builddir)s/bin/clang.exe')]
                                          + extra_cmake_args,
                                 workdir=build_dir))
 
