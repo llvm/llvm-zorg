@@ -373,11 +373,12 @@ def lldb_builder():
     footer()
 
     # Build into the build folder
+    build_configuration = "Release"
 
     xcodebuild_cmd = [
         "xcodebuild",
         "-arch", "x86_64",
-        "-configuration", "Debug",
+        "-configuration", build_configuration,
         "-scheme", "desktop",
         "-derivedDataPath", conf.lldbbuilddir(),
         "DEBUGSERVER_USE_FROM_SYSTEM=1"]
@@ -391,7 +392,7 @@ def lldb_builder():
     xcodebuild_cmd = [
         "xcodebuild",
         "-arch", "x86_64",
-        "-configuration", "Debug",
+        "-configuration", build_configuration,
         "-scheme", "lldb-gtest",
         "-derivedDataPath", conf.lldbbuilddir(),
         "DEBUGSERVER_USE_FROM_SYSTEM=1"]
@@ -405,7 +406,7 @@ def lldb_builder():
     xcodebuild_cmd = [
         "xcodebuild",
         "-arch", "x86_64",
-        "-configuration", "Debug",
+        "-configuration", build_configuration,
         "-scheme", "lldb-python-test-suite",
         "-derivedDataPath", conf.lldbbuilddir(),
         "DEBUGSERVER_USE_FROM_SYSTEM=1"]
