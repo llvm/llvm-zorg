@@ -565,7 +565,7 @@ def _get_lldb_builders():
         {'name': "lldb-x86-windows-msvc2015",
          'slavenames': ["zturner-win2008"],
          'builddir': "lldb-windows-x86",
-         'factory': LLDBBuilder.getLLDBWindowsCMakeBuildFactory()},
+         'factory': LLDBBuilder.getLLDBWindowsCMakeBuildFactory(test=True)},
         # Disable the builder till we fix the cmake configuration
         #{'name': "lldb-x86-win7-msvc",
         #'slavenames': ["hexagon-build-01"],
