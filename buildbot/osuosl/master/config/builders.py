@@ -442,7 +442,7 @@ def _get_clang_builders():
                                                                              '-DCMAKE_CXX_FLAGS=-stdlib=libc++',
                                                                              '-DLLVM_ENABLE_ASSERTIONS=ON'])},
 
-	{'name' : "clang-x86_64-linux-selfhost-modules-2",
+        {'name' : "clang-x86_64-linux-selfhost-modules-2",
          'slavenames' : ["modules-slave-2"],
          'builddir' : "clang-x86_64-linux-selfhost-modules-2",
          'factory' : ClangBuilder.getClangBuildFactory(triple='x86_64-pc-linux-gnu',
