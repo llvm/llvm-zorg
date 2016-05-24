@@ -281,8 +281,6 @@ def getClangBuildFactory(
     cxx_flags = ''
     extra_args = []
     if modules:
-        # Modules requires libc++ for now (we don't have a module map for libstdc++ yet).
-        cxx_flags += '-stdlib=libc++'
         extra_args = ['-DLLVM_ENABLE_MODULES=1']
 
     f.addStep(ShellCommand(name='cmake',
