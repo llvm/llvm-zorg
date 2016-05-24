@@ -140,6 +140,7 @@ def getLLDBWindowsCMakeBuildFactory(
     f.addStep(ShellCommand(name='test',
                           command=test_cmd,
                           flunkOnFailure=ignoreTestFail,
+                          timeout=2400,
                           description='ninja test',
                           workdir=build_dir,
                           doStepIf=bool(test),
