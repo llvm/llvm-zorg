@@ -34,6 +34,7 @@ def getClangBuildFactory(
             stage2_config='Release+Asserts',
             env={}, # Environmental variables for all steps.
             extra_configure_args=[],
+            stage2_extra_configure_args=[],
             use_pty_in_tests=False,
             trunk_revision=None,
             force_checkout=False,
@@ -277,20 +278,12 @@ def getClangBuildFactory(
                            env=merged_env))
 
     # Configure llvm (stage 2).
-    c_flags = ''
-    cxx_flags = ''
-    extra_args = []
-    if modules:
-        extra_args = ['-DLLVM_ENABLE_MODULES=1']
-
     f.addStep(ShellCommand(name='cmake',
-                           command=['cmake'] + extra_args + [
+                           command=['cmake'] + stage2_extra_configure_args + [
                                     '-DLLVM_BUILD_TESTS=ON',
                                     WithProperties('-DCMAKE_C_COMPILER=%%(builddir)s/%s/bin/clang' % llvm_1_objdir), # FIXME use installdir
                                     WithProperties('-DCMAKE_CXX_COMPILER=%%(builddir)s/%s/bin/clang++' % llvm_1_objdir),
                                     '-DCMAKE_BUILD_TYPE=%s' % stage2_config,
-                                    WithProperties('-DCMAKE_C_FLAGS=%s' % c_flags),
-                                    WithProperties('-DCMAKE_CXX_FLAGS=%s %s' % (c_flags, cxx_flags)),
                                     "../" + llvm_srcdir],
                            description='cmake stage2',
                            workdir=llvm_2_objdir,

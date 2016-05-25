@@ -440,7 +440,9 @@ def _get_clang_builders():
                                                        extra_configure_args=['-DCMAKE_C_COMPILER=clang',
                                                                              '-DCMAKE_CXX_COMPILER=clang++',
                                                                              '-DCMAKE_CXX_FLAGS=-stdlib=libc++',
-                                                                             '-DLLVM_ENABLE_ASSERTIONS=ON'])},
+                                                                             '-DLLVM_ENABLE_ASSERTIONS=ON'],
+                                                       stage2_extra_configure_args=['-DCMAKE_CXX_FLAGS=-stdlib=libc++',
+                                                                                    '-DLLVM_ENABLE_MODULES=1'])},
 
         {'name' : "clang-x86_64-linux-selfhost-modules-2",
          'slavenames' : ["modules-slave-2"],
@@ -454,7 +456,9 @@ def _get_clang_builders():
                                                        extra_configure_args=['-DCMAKE_C_COMPILER=clang',
                                                                              '-DCMAKE_CXX_COMPILER=clang++',
                                                                              '-DCMAKE_CXX_FLAGS=-stdlib=libstdc++',
-                                                                             '-DLLVM_ENABLE_ASSERTIONS=ON'])},
+                                                                             '-DLLVM_ENABLE_ASSERTIONS=ON'],
+                                                       stage2_extra_configure_args=['-DCMAKE_CXX_FLAGS=-stdlib=libstdc++',
+                                                                                    '-DLLVM_ENABLE_MODULES=1'])},
 
         {'name' : "clang-x64-ninja-win7",
          'slavenames' : ["windows7-buildbot"],
