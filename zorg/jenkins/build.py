@@ -303,7 +303,6 @@ def clang_builder(target):
             '-DCLANG_COMPILER_RT_CMAKE_ARGS={}/llvm/projects/compiler-rt/cmake/caches/Apple.cmake'.format(conf.workspace),
             '-DCOMPILER_RT_BUILD_SANITIZERS=On',
             '-DCMAKE_INSTALL_PREFIX={}'.format(install_prefix),
-            '-DLLVM_ENABLE_PIC=On', 
             '-DLLVM_REPOSITORY={}'.format(conf._svn_url),
             '-DCLANG_REPOSITORY_STRING={}'.format(conf.branch()),
             '-DCLANG_APPEND_VC_REV=On',
