@@ -848,6 +848,7 @@ def _get_openmp_builders():
 
 def _get_libcxx_builders():
     return [
+        # gribozavr's builders on gribozavr4 
         {'name': 'libcxx-libcxxabi-x86_64-linux-debian',
          'slavenames': ['gribozavr4'],
          'builddir': 'libcxx-libcxxabi-x86_64-linux-debian',
@@ -855,13 +856,20 @@ def _get_libcxx_builders():
              env={'CC': 'clang', 'CXX': 'clang++'}),
          'category': 'libcxx'},
 
-        # x86_64 -fno-exceptions libcxx builder
         {'name': 'libcxx-libcxxabi-x86_64-linux-debian-noexceptions',
          'slavenames': ['gribozavr4'],
          'builddir': 'libcxx-libcxxabi-x86_64-linux-debian-noexceptions',
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
              env={'CC': 'clang', 'CXX': 'clang++'},
              cmake_extra_opts={'LIBCXX_ENABLE_EXCEPTIONS': 'OFF'}),
+         'category': 'libcxx'},
+
+        {'name': 'libcxx-libcxxabi-libunwind-x86_64-linux-debian',
+         'slavenames': ['gribozavr4'],
+         'builddir': 'libcxx-libcxxabi-libunwind-x86_64-linux-debian',
+         'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
+             env={'CC': 'clang', 'CXX': 'clang++'},
+             cmake_extra_opts={'LIBCXXABI_USE_LLVM_UNWINDER': 'ON'}),
          'category': 'libcxx'},
 
         {'name': 'libcxx-libcxxabi-singlethreaded-x86_64-linux-debian',
@@ -932,6 +940,15 @@ def _get_libcxx_builders():
             lit_extra_opts={'std':'c++1z'}),
         'category': 'libcxx'},
 
+        {'name': 'libcxx-libcxxabi-libunwind-x86_64-linux-ubuntu',
+         'slavenames': ['ericwf-buildslave2'],
+         'builddir' : 'libcxx-libcxxabi-libunwind-x86_64-linux-ubuntu',
+         'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
+            env={'PATH': '/usr/local/bin:/usr/bin:/bin',
+                 'CC': 'clang', 'CXX': 'clang++'},
+            cmake_extra_opts={'LIBCXXABI_USE_LLVM_UNWINDER': 'ON'}),
+        'category': 'libcxx'},
+
         {'name': 'libcxx-libcxxabi-x86_64-linux-ubuntu-tsan',
          'slavenames': ['ericwf-buildslave2'],
          'builddir' : 'libcxx-libcxxabi-x86_64-linux-ubuntu-tsan',
@@ -970,7 +987,7 @@ def _get_libcxx_builders():
             # FIXME: there should be a way to merge autodetected with user-defined linker flags
             # See: libcxxabi/test/lit.cfg
             lit_extra_opts={'link_flags': '"-lc++abi -lc -lm -lpthread -lunwind -ldl -L/opt/llvm/lib/clang/3.6.0/lib/linux -lclang_rt.builtins-arm"'},
-            cmake_extra_opts={'LIBCXXABI_USE_LLVM_UNWINDER': 'True',
+            cmake_extra_opts={'LIBCXXABI_USE_LLVM_UNWINDER': 'ON',
                               'CMAKE_C_FLAGS': '-mcpu=cortex-a15',
                               'CMAKE_CXX_FLAGS': '-mcpu=cortex-a15'})},
     ]
