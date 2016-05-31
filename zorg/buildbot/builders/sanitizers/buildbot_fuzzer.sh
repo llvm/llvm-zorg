@@ -28,6 +28,7 @@ CORPUS_ROOT=$ROOT/CORPORA/llvm
 CLANG_FORMAT_CORPUS=$CORPUS_ROOT/clang-format/C1
 CLANG_CORPUS=$CORPUS_ROOT/clang/C2
 LLVM_AS_CORPUS=$CORPUS_ROOT/llvm-as/C1
+LLVM_PDBDUMP_CORPUS=$CORPUS_ROOT/llvm-pdbdump/C1
 
 GS_ROOT=gs://fuzzing-with-sanitizers/llvm
 
@@ -68,6 +69,7 @@ build_stage1_clang
 echo @@@BUILD_STEP pull test corpuses @@@
 syncFromGs clang/C2
 syncFromGs clang-format/C1
+syncFromGs llvm-pdbdump/C1
 #syncFromGs llvm-as/C1
 
 # TODO(smatveev): merge this with build_stage2()
@@ -101,6 +103,11 @@ echo @@@BUILD_STEP stage2/asan+assertions run clang-format-fuzzer@@@
 (${STAGE2_ASAN_ASSERTIONS_DIR}/bin/clang-format-fuzzer -max_len=64 -jobs=8 -workers=8 -max_total_time=600 $CLANG_FORMAT_CORPUS) || \
   echo @@@STEP_WARNINGS@@@
 
+echo @@@BUILD_STEP stage2/asan+assertions run llvm-pdbdump-fuzzer@@@
+
+(${STAGE2_ASAN_ASSERTIONS_DIR}/bin/llvm-pdbdump-fuzzer -max_len=405504 -jobs=8 -workers=8 -max_total_time=600 $LLVM_PDBDUMP_CORPUS $LLVM/test/DebugInfo/PDB/Inputs/) || \
+  echo @@@STEP_WARNINGS@@@
+
 echo @@@BUILD_STEP stage2/asan+assertions run clang-fuzzer@@@
 (${STAGE2_ASAN_ASSERTIONS_DIR}/bin/clang-fuzzer -max_len=64 -detect_leaks=0 -jobs=8 -workers=8 -only_ascii=1 -max_total_time=1200 $CLANG_CORPUS) || \
   echo @@@STEP_WARNINGS@@@
@@ -114,5 +121,6 @@ echo @@@BUILD_STEP stage2/asan+assertions run clang-fuzzer@@@
 echo @@@BUILD_STEP push corpus updates@@@
 syncToGs clang/C2
 syncToGs clang-format/C1
+syncToGs llvm-pdbdump/C1
 #syncToGs llvm-as/C1
 
