@@ -105,7 +105,7 @@ echo @@@BUILD_STEP stage2/asan+assertions run clang-format-fuzzer@@@
 
 echo @@@BUILD_STEP stage2/asan+assertions run llvm-pdbdump-fuzzer@@@
 
-(${STAGE2_ASAN_ASSERTIONS_DIR}/bin/llvm-pdbdump-fuzzer -max_len=405504 -jobs=8 -workers=8 -max_total_time=600 $LLVM_PDBDUMP_CORPUS $LLVM/test/DebugInfo/PDB/Inputs/) || \
+(${STAGE2_ASAN_ASSERTIONS_DIR}/bin/llvm-pdbdump-fuzzer -max_len=50000 -rss_limit_mb=3000 -jobs=8 -workers=8 -max_total_time=600 $LLVM_PDBDUMP_CORPUS $LLVM/test/DebugInfo/PDB/Inputs/) || \
   echo @@@STEP_WARNINGS@@@
 
 echo @@@BUILD_STEP stage2/asan+assertions run clang-fuzzer@@@
