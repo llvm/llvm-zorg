@@ -196,6 +196,9 @@ def get_build_slaves():
         # FreeBSD 11.0-CURRENT amd64, Intel(R) Xeon(R) CPU E3-1230 v3 @ 3.30GHz
         create_slave("freebsd01", properties={'jobs': 3}, max_builds=1),
 
+        # Ubuntu 16.04 x86_64, 2 x Intel(R) Xeon(R) CPU E5-2690 v3 @ 2.60GHz, 64GB of RAM
+        create_slave("cuda-build-test-01", properties={'jobs': 72}, max_builds=1),
+
         # Defunct.
         # Intel(R) Pentium(R) CPU G620 @ 2.60GHz, Ubuntu i686
         #create_slave("botether", properties={'jobs': 2}, max_builds=1),

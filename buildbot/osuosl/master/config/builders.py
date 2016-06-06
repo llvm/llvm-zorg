@@ -1023,6 +1023,21 @@ def _get_experimental_scheduled_builders():
                                                        stage1_config='Release'),
          'category' : 'clang'},
 
+        {'name' : "clang-cuda-build",
+         'slavenames' : ["cuda-build-test-01"],
+         'builddir' : "clang-cuda-build",
+         'factory' : ClangBuilder.getClangBuildFactory(
+                     useTwoStage=False,
+                     clean=False,
+                     test=True,
+                     stage1_config='Release',
+                     extra_cmake_args=[
+                         '-DLLVM_ENABLE_ASSERTIONS=ON',
+                         "-DCMAKE_C_COMPILER:FILEPATH=/usr/bin/clang-3.8",
+                         "-DCMAKE_CXX_COMPILER:FILEPATH=/usr/bin/clang++-3.8"
+                     ]),
+         'category' : 'clang'},
+
         # lldb builders
         {'name': "lldb-x86_64-debian-clang",
          'slavenames': ["gribozavr5"],
