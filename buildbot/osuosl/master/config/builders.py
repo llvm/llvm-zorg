@@ -1026,7 +1026,7 @@ def _get_experimental_scheduled_builders():
         {'name' : "clang-cuda-build",
          'slavenames' : ["cuda-build-test-01"],
          'builddir' : "clang-cuda-build",
-         'factory' : ClangBuilder.getClangBuildFactory(
+         'factory' : ClangBuilder.getClangCMakeBuildFactory(
                      useTwoStage=False,
                      clean=False,
                      test=True,
