@@ -196,6 +196,8 @@ if [ "$PLATFORM" == "Linux" -a $HAVE_NINJA == 1 ]; then
   (cd llvm_build_ninja && ninja check-tsan) || echo @@@STEP_FAILURE@@@
   echo @@@BUILD_STEP ninja check-ubsan@@@
   (cd llvm_build_ninja && ninja check-ubsan) || echo @@@STEP_FAILURE@@@
+  echo @@@BUILD_STEP ninja check-scudo@@@
+  (cd llvm_build_ninja && ninja check-scudo) || echo @@@STEP_FAILURE@@@
   if [ "$SKIP_MSAN" != 1 ]; then
     echo @@@BUILD_STEP ninja check-msan@@@
     (cd llvm_build_ninja && ninja check-msan) || echo @@@STEP_FAILURE@@@
