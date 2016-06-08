@@ -178,6 +178,7 @@ HAVE_NINJA=${HAVE_NINJA:-1}
 SKIP_MSAN=${SKIP_MSAN:-1}
 SKIP_LSAN=${SKIP_LSAN:-1}
 SKIP_DFSAN=${SKIP_DFSAN:-1}
+SKIP_SCUDO=${SKIP_SCUDO:-1}
 if [ "$PLATFORM" == "Linux" -a $HAVE_NINJA == 1 ]; then
   echo @@@BUILD_STEP build with ninja@@@
   if [ ! -d llvm_build_ninja ]; then
@@ -196,8 +197,10 @@ if [ "$PLATFORM" == "Linux" -a $HAVE_NINJA == 1 ]; then
   (cd llvm_build_ninja && ninja check-tsan) || echo @@@STEP_FAILURE@@@
   echo @@@BUILD_STEP ninja check-ubsan@@@
   (cd llvm_build_ninja && ninja check-ubsan) || echo @@@STEP_FAILURE@@@
-  echo @@@BUILD_STEP ninja check-scudo@@@
-  (cd llvm_build_ninja && ninja check-scudo) || echo @@@STEP_FAILURE@@@
+  if [ "$SKIP_SCUDO" != 1 ]; then
+    echo @@@BUILD_STEP ninja check-scudo@@@
+    (cd llvm_build_ninja && ninja check-scudo) || echo @@@STEP_FAILURE@@@
+  fi
   if [ "$SKIP_MSAN" != 1 ]; then
     echo @@@BUILD_STEP ninja check-msan@@@
     (cd llvm_build_ninja && ninja check-msan) || echo @@@STEP_FAILURE@@@
