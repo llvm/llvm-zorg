@@ -96,12 +96,16 @@ cmake_stage2_asan_assertions_options="$cmake_stage2_asan_options -DLLVM_ENABLE_A
 
 echo @@@BUILD_STEP stage2/asan+assertions build clang-format-fuzzer and clang-fuzzer@@@
 
-(cd ${STAGE2_ASAN_ASSERTIONS_DIR} && ninja clang-format-fuzzer clang-fuzzer llvm-as-fuzzer llvm-pdbdump-fuzzer) || echo @@@STEP_FAILURE@@@
+(cd ${STAGE2_ASAN_ASSERTIONS_DIR} && ninja clang-format-fuzzer clang-fuzzer llvm-as-fuzzer) || echo @@@STEP_FAILURE@@@
 
 echo @@@BUILD_STEP stage2/asan+assertions run clang-format-fuzzer@@@
 
 (${STAGE2_ASAN_ASSERTIONS_DIR}/bin/clang-format-fuzzer -max_len=64 -jobs=8 -workers=8 -max_total_time=600 $CLANG_FORMAT_CORPUS) || \
   echo @@@STEP_WARNINGS@@@
+
+echo @@@BUILD_STEP stage2/asan+assertions build llvm-pdbdump-fuzzer @@@
+
+(cd ${STAGE2_ASAN_ASSERTIONS_DIR} && ninja llvm-pdbdump-fuzzer) || echo @@@STEP_WARNINGS@@@
 
 echo @@@BUILD_STEP stage2/asan+assertions run llvm-pdbdump-fuzzer@@@
 
