@@ -967,6 +967,13 @@ def getLLDBScriptCommandsFactory(
 
     # Test
     if runTest:
+        f.addStep(LitTestCommand(name="run unit tests",
+                                 command=[pathSep + 'testUnit' + scriptExt],
+                                 description=["testing"],
+                                 descriptionDone=["unit test"],
+                                 flunkOnFailure=False,
+                                 warnOnFailure=False,
+                                 workdir='scripts'))
         getTestSteps(f, scriptExt, pathSep)
         # upload test traces
         getShellCommandStep(f, name='upload test traces',
