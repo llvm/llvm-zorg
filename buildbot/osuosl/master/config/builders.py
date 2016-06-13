@@ -308,7 +308,7 @@ def _get_clang_builders():
                                                             useTwoStage=True,
                                                             stage1_config='Release',
                                                             stage2_config='Release',
-                                                            extra_cmake_args=['-DLLVM_ENABLE_ASSERTIONS=ON', '-DBUILD_SHARED_LIBS=ON']),
+                                                            extra_cmake_args=['-DLLVM_ENABLE_ASSERTIONS=ON']),
          'category' : 'clang'},
 
         {'name' : "clang-ppc64le-linux-multistage",
