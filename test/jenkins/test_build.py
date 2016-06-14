@@ -158,3 +158,6 @@
 # RUN: python %{src_root}/zorg/jenkins/build.py cmake all --globalisel | FileCheck --check-prefix CHECK-GISEL %s
 # CHECK-GISEL: '/usr/local/bin/cmake' '-G' 'Ninja'
 # CHECK-GISEL: '-DLLVM_BUILD_GLOBAL_ISEL=ON'
+
+# RUN: python %{src_root}/zorg/jenkins/build.py clang all --lto --cmake-flag="-DFOO" | FileCheck --check-prefix CHECK-CMAKEFLAGS %s
+# CHECK-CMAKEFLAGS: '-DFOO'

@@ -331,6 +331,12 @@ def clang_builder(target):
                 cmake_command.extend(["-DLLVM_PARALLEL_LINK_JOBS=" + str(max_link_jobs())])
             else:
                 cmake_command.extend(['-DLLVM_ENABLE_LTO=Off'])
+                cmake_command.extend([
+                    '-DCMAKE_C_FLAGS_RELWITHDEBINFO:STRING=-O2 -gline-tables-only -DNDEBUG',
+                    '-DCMAKE_CXX_FLAGS_RELWITHDEBINFO:STRING=-O2 -gline-tables-only -DNDEBUG'])
+
+            for flag in conf.cmake_flags:
+                cmake_command += [flag]
 
             cmake_command.append("{}/llvm".format(conf.workspace))
             run_cmd(os.path.join(clang_br, 'Build'), cmake_command)
