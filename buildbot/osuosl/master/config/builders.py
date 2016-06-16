@@ -117,7 +117,7 @@ def _get_clang_fast_builders():
                      env={'PATH':'/opt/llvm_37/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'})},
 
         {'name': "llvm-clang-lld-x86_64-scei-ps4-windows10pro-fast",
-         'mergeRequests': False,
+         'mergeRequests': True,
          'slavenames': ["ps4-buildslave2"],
          'builddir': "llvm-clang-lld-x86_64-scei-ps4-windows10pro-fast",
          'factory': ClangAndLLDBuilder.getClangAndLLDBuildFactory(
