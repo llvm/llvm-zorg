@@ -28,14 +28,18 @@ class LLVMBuildFactory(BuildFactory):
         BuildFactory.__init__(self, steps)
 
         if depends_on_projects is None:
-            self.depends_on_projects = ['llvm']
+            self.depends_on_projects = frozenset(['llvm'])
         else:
-            self.depends_on_projects = depends_on_projects
+            self.depends_on_projects = frozenset(depends_on_projects)
 
         # Preserve all the given extra attributes if any, so we could
         # expand the factory later.
         for k,v in kwargs.items():
             setattr(self, k, v)
+
+        # Default source code directory.
+        if kwargs.get('llvm_srcdir', None) is None:
+            self.llvm_srcdir = "llvm.src"
 
     # llvm_srcdir - Path to the root of the unified source tree.
     # mode - SVN checkout mode.
@@ -43,7 +47,7 @@ class LLVMBuildFactory(BuildFactory):
     # and so on, see the list of the SVN params. 
     def addSVNSteps(self, llvm_srcdir=None, **kwargs):
         if llvm_srcdir is None:
-            llvm_srcdir = "llvm.src"
+            llvm_srcdir = self.llvm_srcdir
         if not kwargs.get('mode', None):
             kwargs['mode'] = 'update'
         if not kwargs.get('defaultBranch', None):

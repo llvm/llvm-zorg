@@ -14,9 +14,15 @@ from zorg.buildbot.process.factory import LLVMBuildFactory
 
 def getLLDBuildFactory(
            clean = True,
-           jobs  = "%(jobs)s",
-           extra_configure_args=[],
-           env   = {}):
+           jobs  = None,
+           extra_configure_args = None,
+           env   = None):
+
+    # Set defaults
+    if jobs is None:
+        jobs = "%(jobs)s"
+    if extra_configure_args is None:
+        extra_configure_args = []
 
     # Prepare environmental variables. Set here all env we want everywhere.
     merged_env = {
@@ -25,69 +31,61 @@ def getLLDBuildFactory(
                    'TERM' : 'dumb'     # Be cautious and disable color output from all tools.
                  }
     if env is not None:
-        merged_env.update(env)  # Overwrite pre-set items with the given ones, so user can set anything.
+        # Overwrite pre-set items with the given ones, so user can set anything.
+        merged_env.update(env)
 
-    llvm_srcdir = "llvm.src"
-    llvm_objdir = "llvm.obj"
+    f = LLVMBuildFactory(
+            depends_on_projects=['llvm', 'lld'],
+            llvm_srcdir="llvm.src",
+            llvm_objdir="llvm.obj")
 
-    f = buildbot.process.factory.BuildFactory()
-    # Determine the build directory.
-    f.addStep(buildbot.steps.shell.SetProperty(name="get_builddir",
-                                               command=["pwd"],
-                                               property="builddir",
-                                               description="set build dir",
-                                               env=merged_env,
-                                               workdir="."))
     # Get LLVM and Lld
-    f = LLVMBuildFactory(depends_on_projects=['llvm', 'lld'])
-    f.addSVNSteps(llvm_srcdir=llvm_srcdir)
+    f.addSVNSteps()
 
     # Clean directory, if requested.
-    if clean:
-        f.addStep(ShellCommand(name="rm-llvm_objdir",
-                               command=["rm", "-rf", llvm_objdir],
-                               haltOnFailure=True,
-                               description=["rm build dir", "llvm"],
-                               workdir="."))
+    cleanBuildRequested = lambda step: step.build.getProperty("clean") or clean
+    f.addStep(RemoveDirectory(name='clean ' + f.llvm_objdir,
+              dir=f.llvm_objdir,
+              haltOnFailure=False,
+              flunkOnFailure=False,
+              doStepIf=cleanBuildRequested
+              ))
 
     # Create configuration files with cmake
-    f.addStep(ShellCommand(name="create-build-dir",
-                               command=["mkdir", "-p", llvm_objdir],
-                               haltOnFailure=False,
-                               description=["create build dir"],
-                               workdir="."))
-
     cmakeCommand = ["cmake"]
     # Reconsile configure args with the defaults we want.
     if not any(a.startswith('-DCMAKE_BUILD_TYPE=')   for a in extra_configure_args):
         cmakeCommand.append('-DCMAKE_BUILD_TYPE=Release')
     if not any(a.startswith('-DLLVM_ENABLE_WERROR=') for a in extra_configure_args):
         cmakeCommand.append('-DLLVM_ENABLE_WERROR=ON')
-    cmakeCommand += extra_configure_args + ["../%s" % llvm_srcdir]
+    cmakeCommand += extra_configure_args + ["../%s" % f.llvm_srcdir]
 
     # Note: ShellCommand does not pass the params with special symbols right.
     # The " ".join is a workaround for this bug.
     f.addStep(ShellCommand(name="cmake-configure",
-                               description=["cmake configure"],
-                               haltOnFailure=True,
-                               command=WithProperties(" ".join(cmakeCommand)),
-                               env=merged_env,
-                               workdir=llvm_objdir))
+                           description=["cmake configure"],
+                           haltOnFailure=False, # TODO: change to True
+                           command=WithProperties(" ".join(cmakeCommand)),
+                           env=merged_env,
+                           workdir=f.llvm_objdir,
+                           doStepIf=FileDoesNotExist("./%s/CMakeCache.txt" % f.llvm_objdir)))
+
     # Build Lld
     f.addStep(ShellCommand(name="build_Lld",
-                               command=['nice', '-n', '10',
-                                        'make', WithProperties("-j%s" % jobs)],
-                               haltOnFailure=True,
-                               description=["build lld"],
-                               env=merged_env,
-                               workdir=llvm_objdir))
+                           command=['nice', '-n', '10',
+                                    'make', WithProperties("-j%s" % jobs)],
+                           haltOnFailure=False, # TODO: change to True
+                           description=["build lld"],
+                           env=merged_env,
+                           workdir=f.llvm_objdir))
+
     # Test Lld
     f.addStep(ShellCommand(name="test_lld",
-                               command=["make", "lld-test"],
-                               haltOnFailure=True,
-                               description=["test lld"],
-                               env=merged_env,
-                               workdir=llvm_objdir))
+                           command=["make", "lld-test"],
+                           haltOnFailure=False, # TODO: change to True
+                           description=["test lld"],
+                           env=merged_env,
+                           workdir=f.llvm_objdir))
 
     return f
 
@@ -96,37 +94,36 @@ def getLLDWinBuildFactory(
            clean = True,
 
            # Default values for VS devenv and build configuration
-           vs = r"""%VS140COMNTOOLS%""",   # Visual Studio 2015.
-           target_arch = None,             # Native.
+           vs = None,          # What to run to configure Visual Studio utils.
+           target_arch = None, # Native.
 
-           extra_configure_args=[],
-           env   = {}):
+           extra_configure_args = None,
+           env   = None):
 
-    llvm_srcdir = "llvm.src"
-    llvm_objdir = "llvm.obj"
+    # Set defaults
+    if vs is None:
+        vs = r"""%VS140COMNTOOLS%"""   # Visual Studio 2015.
+    if extra_configure_args is None:
+        extra_configure_args = []
+    if env is None:
+        env = {}
 
-    f = buildbot.process.factory.BuildFactory()
+    f = LLVMBuildFactory(
+            depends_on_projects=['llvm', 'lld'],
+            llvm_srcdir="llvm.src",
+            llvm_objdir="llvm.obj")
 
     # Get LLVM and Lld
-    f.addStep(SVN(name='svn-llvm',
-                  mode='update',
-                  baseURL='http://llvm.org/svn/llvm-project/llvm/',
-                  defaultBranch='trunk',
-                  workdir=llvm_srcdir))
-    f.addStep(SVN(name='svn-lld',
-                  mode='update',
-                  baseURL='http://llvm.org/svn/llvm-project/lld/',
-                  defaultBranch='trunk',
-                  workdir='%s/tools/lld' % llvm_srcdir))
+    f.addSVNSteps()
 
     # Clean directory, if requested.
     cleanBuildRequested = lambda step: step.build.getProperty("clean") or clean
-    f.addStep(RemoveDirectory(name='clean '+llvm_objdir,
-                dir=llvm_objdir,
-                haltOnFailure=False,
-                flunkOnFailure=False,
-                doStepIf=cleanBuildRequested
-                ))
+    f.addStep(RemoveDirectory(name='clean ' + f.llvm_objdir,
+              dir=f.llvm_objdir,
+              haltOnFailure=False,
+              flunkOnFailure=False,
+              doStepIf=cleanBuildRequested
+              ))
 
     # If set up environment step is requested, do this now.
     if vs:
@@ -148,7 +145,7 @@ def getLLDWinBuildFactory(
     if not any(a.startswith('-DLLVM_LIT_ARGS=') for a in extra_configure_args):
         cmakeCommand.append('-DLLVM_LIT_ARGS=\"-v\"')
 
-    cmakeCommand += extra_configure_args + ["../%s" % llvm_srcdir]
+    cmakeCommand += extra_configure_args + ["../%s" % f.llvm_srcdir]
 
     # Note: ShellCommand does not pass the params with special symbols right.
     # The " ".join is a workaround for this bug.
@@ -159,15 +156,15 @@ def getLLDWinBuildFactory(
         warnOnWarnings=True,
         command=WithProperties(" ".join(cmakeCommand)),
         env=env,
-        workdir=llvm_objdir,
-        doStepIf=FileDoesNotExist("./%s/CMakeCache.txt" % llvm_objdir)))
+        workdir=f.llvm_objdir,
+        doStepIf=FileDoesNotExist("./%s/CMakeCache.txt" % f.llvm_objdir)))
 
     # Build Lld.
     f.addStep(NinjaCommand(name='build lld',
                            haltOnFailure=True,
                            warnOnWarnings=True,
                            description='build lld',
-                           workdir=llvm_objdir,
+                           workdir=f.llvm_objdir,
                            env=env))
 
     # Test Lld
@@ -176,7 +173,7 @@ def getLLDWinBuildFactory(
                            haltOnFailure=True,
                            warnOnWarnings=True,
                            description='test lld',
-                           workdir=llvm_objdir,
+                           workdir=f.llvm_objdir,
                            env=env))
 
     return f
