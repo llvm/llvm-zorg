@@ -159,11 +159,11 @@ if [ "$PLATFORM" == "Linux" ]; then
     echo @@@BUILD_STEP check-dfsan in gcc build@@@
     (cd clang_build && make -j$MAKE_JOBS check-dfsan) || echo @@@STEP_WARNINGS@@@
   fi
-  if [ "$ARCH" == "x86_64" ]; then
-    # FIXME: Reenable once cfi tests reliably work on the bot.
-    # echo @@@BUILD_STEP check-cfi-and-supported in gcc build@@@
-    #(cd clang_build && LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/x86_64 make -j$MAKE_JOBS check-cfi-and-supported) || echo @@@STEP_FAILURE@@@
-  fi
+  #if [ "$ARCH" == "x86_64" ]; then
+  #   FIXME: Reenable once cfi tests reliably work on the bot.
+  #   echo @@@BUILD_STEP check-cfi-and-supported in gcc build@@@
+  #  (cd clang_build && LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/x86_64 make -j$MAKE_JOBS check-cfi-and-supported) || echo @@@STEP_FAILURE@@@
+  #fi
 fi
 
 ### From now on we use just-built Clang as a host compiler ###
