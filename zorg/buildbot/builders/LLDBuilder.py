@@ -8,6 +8,7 @@ from buildbot.steps.slave import RemoveDirectory
 from buildbot.process.properties import WithProperties, Property
 from zorg.buildbot.builders.Util import getVisualStudioEnvironment
 from zorg.buildbot.builders.Util import extractSlaveEnvironment
+from zorg.buildbot.commands.CmakeCommand import CmakeCommand
 from zorg.buildbot.commands.NinjaCommand import NinjaCommand
 from zorg.buildbot.conditions.FileConditions import FileDoesNotExist
 from zorg.buildbot.process.factory import LLVMBuildFactory
@@ -52,23 +53,15 @@ def getLLDBuildFactory(
               ))
 
     # Create configuration files with cmake
-    cmakeCommand = ["cmake"]
-    # Reconsile configure args with the defaults we want.
-    if not any(a.startswith('-DCMAKE_BUILD_TYPE=')   for a in extra_configure_args):
-        cmakeCommand.append('-DCMAKE_BUILD_TYPE=Release')
-    if not any(a.startswith('-DLLVM_ENABLE_WERROR=') for a in extra_configure_args):
-        cmakeCommand.append('-DLLVM_ENABLE_WERROR=ON')
-    cmakeCommand += extra_configure_args + ["../%s" % f.llvm_srcdir]
-
-    # Note: ShellCommand does not pass the params with special symbols right.
-    # The " ".join is a workaround for this bug.
-    f.addStep(ShellCommand(name="cmake-configure",
+    f.addStep(CmakeCommand(name="cmake-configure",
                            description=["cmake configure"],
                            haltOnFailure=False, # TODO: change to True
-                           command=WithProperties(" ".join(cmakeCommand)),
+                           options=extra_configure_args,
+                           path="../%s" % f.llvm_srcdir,
                            env=merged_env,
                            workdir=f.llvm_objdir,
-                           doStepIf=FileDoesNotExist("./%s/CMakeCache.txt" % f.llvm_objdir)))
+                           doStepIf=FileDoesNotExist(
+                                        "./%s/CMakeCache.txt" % f.llvm_objdir)))
 
     # Build Lld
     f.addStep(ShellCommand(name="build_Lld",
@@ -134,30 +127,31 @@ def getLLDWinBuildFactory(
         env = Property('slave_env')
 
     # Always build with ninja.
-    cmakeCommand = ["cmake", "-G", "Ninja"]
+    cmake_options = ["-G", "Ninja"]
     # Reconsile configure args with the defaults we want.
     if not any(a.startswith('-DCMAKE_BUILD_TYPE=')   for a in extra_configure_args):
-        cmakeCommand.append('-DCMAKE_BUILD_TYPE=Release')
+        cmake_options.append('-DCMAKE_BUILD_TYPE=Release')
     if not any(a.startswith('-DLLVM_ENABLE_WERROR=') for a in extra_configure_args):
-        cmakeCommand.append('-DLLVM_ENABLE_WERROR=ON')
+        cmake_options.append('-DLLVM_ENABLE_WERROR=ON')
     if not any(a.startswith('-DLLVM_ENABLE_ASSERTIONS=') for a in extra_configure_args):
-        cmakeCommand.append('-DLLVM_ENABLE_ASSERTIONS=ON')
+        cmake_options.append('-DLLVM_ENABLE_ASSERTIONS=ON')
     if not any(a.startswith('-DLLVM_LIT_ARGS=') for a in extra_configure_args):
-        cmakeCommand.append('-DLLVM_LIT_ARGS=\"-v\"')
+        cmake_options.append('-DLLVM_LIT_ARGS=\"-v\"')
 
-    cmakeCommand += extra_configure_args + ["../%s" % f.llvm_srcdir]
+    cmake_options += extra_configure_args
 
     # Note: ShellCommand does not pass the params with special symbols right.
     # The " ".join is a workaround for this bug.
-    f.addStep(ShellCommand(
-        name="cmake-configure",
-        description=["cmake configure"],
-        haltOnFailure=True,
-        warnOnWarnings=True,
-        command=WithProperties(" ".join(cmakeCommand)),
-        env=env,
-        workdir=f.llvm_objdir,
-        doStepIf=FileDoesNotExist("./%s/CMakeCache.txt" % f.llvm_objdir)))
+    f.addStep(CmakeCommand(name="cmake-configure",
+                           description=["cmake configure"],
+                           haltOnFailure=True,
+                           warnOnWarnings=True,
+                           options=cmake_options,
+                           path="../%s" % f.llvm_srcdir,
+                           env=env,
+                           workdir=f.llvm_objdir,
+                           doStepIf=FileDoesNotExist(
+                                        "./%s/CMakeCache.txt" % f.llvm_objdir)))
 
     # Build Lld.
     f.addStep(NinjaCommand(name='build lld',
