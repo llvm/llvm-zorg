@@ -55,7 +55,7 @@ def getLLDBuildFactory(
     # Create configuration files with cmake
     f.addStep(CmakeCommand(name="cmake-configure",
                            description=["cmake configure"],
-                           haltOnFailure=False, # TODO: change to True
+                           haltOnFailure=True,
                            options=extra_configure_args,
                            path="../%s" % f.llvm_srcdir,
                            env=merged_env,
@@ -67,7 +67,7 @@ def getLLDBuildFactory(
     f.addStep(ShellCommand(name="build_Lld",
                            command=['nice', '-n', '10',
                                     'make', WithProperties("-j%s" % jobs)],
-                           haltOnFailure=False, # TODO: change to True
+                           haltOnFailure=True,
                            description=["build lld"],
                            env=merged_env,
                            workdir=f.llvm_objdir))
@@ -75,7 +75,7 @@ def getLLDBuildFactory(
     # Test Lld
     f.addStep(ShellCommand(name="test_lld",
                            command=["make", "lld-test"],
-                           haltOnFailure=False, # TODO: change to True
+                           haltOnFailure=True,
                            description=["test lld"],
                            env=merged_env,
                            workdir=f.llvm_objdir))
