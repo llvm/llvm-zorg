@@ -49,6 +49,61 @@ if [ $BUILD_ANDROID == 1 -o $RUN_ANDROID == 1 ] ; then
 fi
 CHECK_LIBCXX=${CHECK_LIBCXX:-1}
 CHECK_LLD=${CHECK_LLD:-1}
+CHECK_ASAN=0
+CHECK_UBSAN=0
+CHECK_MSAN=0
+CHECK_TSAN=0
+CHECK_LSAN=0
+CHECK_DFSAN=0
+CHECK_SCUDO=0
+case "$ARCH" in
+  x86_64)
+    CHECK_ASAN=1
+    CHECK_UBSAN=1
+    CHECK_MSAN=1
+    CHECK_TSAN=1
+    CHECK_LSAN=1
+    CHECK_DFSAN=1
+    CHECK_SCUDO=1
+  ;;
+  aarch64)
+    CHECK_ASAN=1
+    CHECK_UBSAN=1
+    CHECK_MSAN=1
+    CHECK_TSAN=1
+    CHECK_LSAN=1
+    CHECK_DFSAN=1
+  ;;
+  mips64*)
+    CHECK_ASAN=1
+    CHECK_UBSAN=1
+    CHECK_MSAN=1
+    CHECK_TSAN=1
+    CHECK_LSAN=1
+    CHECK_DFSAN=1
+  ;;
+  ppc64*)
+    CHECK_ASAN=1
+    CHECK_UBSAN=1
+    CHECK_MSAN=1
+    CHECK_TSAN=1
+  ;;
+  i*86)
+    CHECK_UBSAN=1
+    CHECK_ASAN=1
+  ;;
+  mips*)
+    CHECK_UBSAN=1
+    CHECK_ASAN=1
+  ;;
+  arm*)
+    CHECK_UBSAN=1
+    CHECK_ASAN=1
+  ;;
+  s390x)
+    CHECK_UBSAN=1
+  ;;
+esac
 
 
 echo @@@BUILD_STEP update@@@
@@ -80,19 +135,31 @@ fi
 if [ "$PLATFORM" == "Linux" ]; then
   echo @@@BUILD_STEP check-sanitizer in gcc build@@@
   (cd clang_build && make -j$MAKE_JOBS check-sanitizer) || echo @@@STEP_FAILURE@@@
-  echo @@@BUILD_STEP check-asan in gcc build@@@
-  (cd clang_build && make -j$MAKE_JOBS check-asan) || echo @@@STEP_FAILURE@@@
-  echo @@@BUILD_STEP check-ubsan in gcc build@@@
-  (cd clang_build && make -j$MAKE_JOBS check-ubsan) || echo @@@STEP_FAILURE@@@
-  if [ "$ARCH" == "x86_64" ]; then
+  if [ "$CHECK_ASAN" == "1" ]; then
+    echo @@@BUILD_STEP check-asan in gcc build@@@
+    (cd clang_build && make -j$MAKE_JOBS check-asan) || echo @@@STEP_FAILURE@@@
+  fi
+  if [ "$CHECK_UBSAN" == "1" ]; then
+    echo @@@BUILD_STEP check-ubsan in gcc build@@@
+    (cd clang_build && make -j$MAKE_JOBS check-ubsan) || echo @@@STEP_FAILURE@@@
+  fi
+  if [ "$CHECK_LSAN" == "1" ]; then
     echo @@@BUILD_STEP check-lsan in gcc build@@@
     (cd clang_build && make -j$MAKE_JOBS check-lsan) || echo @@@STEP_FAILURE@@@
+  fi
+  if [ "$CHECK_MSAN" == "1" ]; then
     echo @@@BUILD_STEP check-msan in gcc build@@@
     (cd clang_build && make -j$MAKE_JOBS check-msan) || echo @@@STEP_FAILURE@@@
+  fi
+  if [ "$CHECK_TSAN" == "1" ]; then
     echo @@@BUILD_STEP check-tsan in gcc build@@@
     (cd clang_build && make -j$MAKE_JOBS check-tsan) || echo @@@STEP_FAILURE@@@
+  fi
+  if [ "$CHECK_SCUDO" == "1" ]; then
     echo @@@BUILD_STEP check-dfsan in gcc build@@@
     (cd clang_build && make -j$MAKE_JOBS check-dfsan) || echo @@@STEP_WARNINGS@@@
+  fi
+  if [ "$ARCH" == "x86_64" ]; then
     # FIXME: Reenable once cfi tests reliably work on the bot.
     # echo @@@BUILD_STEP check-cfi-and-supported in gcc build@@@
     #(cd clang_build && LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/x86_64 make -j$MAKE_JOBS check-cfi-and-supported) || echo @@@STEP_FAILURE@@@
@@ -126,27 +193,34 @@ fi
 FRESH_CLANG_PATH=${ROOT}/llvm_build64/bin
 COMPILER_RT_BUILD_PATH=projects/compiler-rt/src/compiler-rt-build
 
-echo @@@BUILD_STEP run asan tests@@@
-(cd llvm_build64 && make -j$MAKE_JOBS check-asan) || echo @@@STEP_FAILURE@@@
+if [ "$CHECK_ASAN" == "1" ]; then
+  echo @@@BUILD_STEP run asan tests@@@
+  (cd llvm_build64 && make -j$MAKE_JOBS check-asan) || echo @@@STEP_FAILURE@@@
+fi
 
-if [ "$PLATFORM" == "Linux" ]; then
+if [ "$PLATFORM" == "Linux" -a "$CHECK_ASAN" == "1" ]; then
   echo @@@BUILD_STEP run asan-dynamic tests@@@
   (cd llvm_build64 && make -j$MAKE_JOBS check-asan-dynamic) || echo @@@STEP_FAILURE@@@
 fi
 
-if [ "$PLATFORM" == "Linux" -a "$ARCH" == "x86_64" ]; then
+if [ "$PLATFORM" == "Linux" -a "$CHECK_MSAN" == "1" ]; then
   echo @@@BUILD_STEP run msan unit tests@@@
   (cd llvm_build64 && make -j$MAKE_JOBS check-msan) || echo @@@STEP_FAILURE@@@
 fi
 
-if [ "$PLATFORM" == "Linux" -a "$ARCH" == "x86_64" ]; then
+if [ "$PLATFORM" == "Linux" -a "$CHECK_TSAN" == "1" ]; then
   echo @@@BUILD_STEP run 64-bit tsan unit tests@@@
   (cd llvm_build64 && make -j$MAKE_JOBS check-tsan) || echo @@@STEP_FAILURE@@@
 fi
 
-if [ "$PLATFORM" == "Linux" -a "$ARCH" == "x86_64" ]; then
+if [ "$PLATFORM" == "Linux" -a "$CHECK_LSAN" == "1" ]; then
   echo @@@BUILD_STEP run 64-bit lsan unit tests@@@
   (cd llvm_build64 && make -j$MAKE_JOBS check-lsan) || echo @@@STEP_FAILURE@@@
+fi
+
+if [ "$PLATFORM" == "Linux" -a "$CHECK_DFSAN" == "1" ]; then
+  echo @@@BUILD_STEP run 64-bit dfsan unit tests@@@
+  (cd llvm_build64 && make -j$MAKE_JOBS check-dfsan) || echo @@@STEP_FAILURE@@@
 fi
 
 # FIXME: Reenable once cfi tests reliably work on the bot.
@@ -175,10 +249,6 @@ echo @@@BUILD_STEP test standalone compiler-rt@@@
 (cd compiler_rt_build && make -j$MAKE_JOBS check-all) || echo @@@STEP_FAILURE@@@
 
 HAVE_NINJA=${HAVE_NINJA:-1}
-SKIP_MSAN=${SKIP_MSAN:-1}
-SKIP_LSAN=${SKIP_LSAN:-1}
-SKIP_DFSAN=${SKIP_DFSAN:-1}
-SKIP_SCUDO=${SKIP_SCUDO:-1}
 if [ "$PLATFORM" == "Linux" -a $HAVE_NINJA == 1 ]; then
   echo @@@BUILD_STEP build with ninja@@@
   if [ ! -d llvm_build_ninja ]; then
@@ -189,27 +259,33 @@ if [ "$PLATFORM" == "Linux" -a $HAVE_NINJA == 1 ]; then
       ${CMAKE_NINJA_OPTIONS} $LLVM_CHECKOUT)
   ln -sf llvm_build_ninja/compile_commands.json $LLVM_CHECKOUT
   (cd llvm_build_ninja && ninja) || echo @@@STEP_FAILURE@@@
-  echo @@@BUILD_STEP ninja check-asan@@@
-  (cd llvm_build_ninja && ninja check-asan) || echo @@@STEP_FAILURE@@@
   echo @@@BUILD_STEP ninja check-sanitizer@@@
   (cd llvm_build_ninja && ninja check-sanitizer) || echo @@@STEP_FAILURE@@@
-  echo @@@BUILD_STEP ninja check-tsan@@@
-  (cd llvm_build_ninja && ninja check-tsan) || echo @@@STEP_FAILURE@@@
-  echo @@@BUILD_STEP ninja check-ubsan@@@
-  (cd llvm_build_ninja && ninja check-ubsan) || echo @@@STEP_FAILURE@@@
-  if [ "$SKIP_SCUDO" != 1 ]; then
+  if [ "$CHECK_ASAN" == 1 ]; then
+    echo @@@BUILD_STEP ninja check-asan@@@
+    (cd llvm_build_ninja && ninja check-asan) || echo @@@STEP_FAILURE@@@
+  fi
+  if [ "$CHECK_UBSAN" == 1 ]; then
+    echo @@@BUILD_STEP ninja check-ubsan@@@
+    (cd llvm_build_ninja && ninja check-ubsan) || echo @@@STEP_FAILURE@@@
+  fi
+  if [ "$CHECK_TSAN" == 1 ]; then
+    echo @@@BUILD_STEP ninja check-tsan@@@
+    (cd llvm_build_ninja && ninja check-tsan) || echo @@@STEP_FAILURE@@@
+  fi
+  if [ "$CHECK_SCUDO" == 1 ]; then
     echo @@@BUILD_STEP ninja check-scudo@@@
     (cd llvm_build_ninja && ninja check-scudo) || echo @@@STEP_FAILURE@@@
   fi
-  if [ "$SKIP_MSAN" != 1 ]; then
+  if [ "$CHECK_MSAN" == 1 ]; then
     echo @@@BUILD_STEP ninja check-msan@@@
     (cd llvm_build_ninja && ninja check-msan) || echo @@@STEP_FAILURE@@@
   fi
-  if [ "$SKIP_LSAN" != 1 ]; then
+  if [ "$CHECK_LSAN" == 1 ]; then
     echo @@@BUILD_STEP ninja check-lsan@@@
     (cd llvm_build_ninja && ninja check-lsan) || echo @@@STEP_FAILURE@@@
   fi
-  if [ "$SKIP_DFSAN" != 1 ]; then
+  if [ "$CHECK_DFSAN" == 1 ]; then
     echo @@@BUILD_STEP ninja check-dfsan@@@
     (cd llvm_build_ninja && ninja check-dfsan) || echo @@@STEP_WARNINGS@@@
   fi
