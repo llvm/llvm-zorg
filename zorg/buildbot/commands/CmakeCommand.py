@@ -45,3 +45,4 @@ class CmakeCommand(WarningCountingShellCommand):
         # which we could get because of WithProperties rendered as empty strings.
         self.command = filter(bool, self.command)
         # Then upcall.
+        WarningCountingShellCommand.start(self)
