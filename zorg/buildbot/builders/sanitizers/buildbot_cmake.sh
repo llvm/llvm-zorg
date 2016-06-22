@@ -155,7 +155,7 @@ if [ "$PLATFORM" == "Linux" ]; then
     echo @@@BUILD_STEP check-tsan in gcc build@@@
     (cd clang_build && make -j$MAKE_JOBS check-tsan) || echo @@@STEP_FAILURE@@@
   fi
-  if [ "$CHECK_SCUDO" == "1" ]; then
+  if [ "$CHECK_DFSAN" == "1" ]; then
     echo @@@BUILD_STEP check-dfsan in gcc build@@@
     (cd clang_build && make -j$MAKE_JOBS check-dfsan) || echo @@@STEP_WARNINGS@@@
   fi
