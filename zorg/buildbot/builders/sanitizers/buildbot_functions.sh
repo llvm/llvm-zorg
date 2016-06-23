@@ -6,6 +6,8 @@ function update_or_checkout {
   local tree=$3
   if [ -d ${tree} ]; then
     svn up "${tree}" $rev_arg
+    # Remove untracked files from tree
+    svn status "${tree}" --no-ignore | grep '^[I?]' | cut -c 9- | while IFS= read -r f; do rm -rf "$f"; done
   else
     svn co "${repo}" "${tree}" $rev_arg
   fi
