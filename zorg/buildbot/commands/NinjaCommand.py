@@ -1,8 +1,6 @@
 from buildbot.process.properties import WithProperties
 from buildbot.steps.shell import WarningCountingShellCommand
 
-from twisted.python import log
-
 class NinjaCommand(WarningCountingShellCommand):
 
     def __init__(self, prefixCommand=None, targets=None, **kwargs):
@@ -29,6 +27,15 @@ class NinjaCommand(WarningCountingShellCommand):
 
         self.addFactoryArguments(prefixCommand=prefixCommand,
                                  targets=targets)
+
+    def setupEnvironment(self, cmd):
+        # First upcall to get everything prepared.
+        WarningCountingShellCommand.setupEnvironment(self, cmd)
+
+        # Set default status format string.
+        if cmd.args['env'] is None:
+            cmd.args['env'] = {}
+        cmd.args['env']['NINJA_STATUS'] = cmd.args['env'].get('NINJA_STATUS', "%e [%u/%r/%f] ")
 
     def start(self):
         # Don't forget to remove all the empty items from the command,
