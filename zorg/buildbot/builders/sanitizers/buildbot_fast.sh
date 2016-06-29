@@ -20,7 +20,7 @@ STAGE2_UBSAN_DIR=llvm_build_ubsan
 STAGE2_LIBCXX_MSAN_DIR=libcxx_build_msan
 STAGE2_LIBCXX_ASAN_DIR=libcxx_build_asan
 STAGE2_LIBCXX_UBSAN_DIR=libcxx_build_ubsan
-HOST_CLANG_REVISION=253530
+HOST_CLANG_REVISION=273260
 LLVM=$ROOT/llvm
 CMAKE_COMMON_OPTIONS="-GNinja -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_ASSERTIONS=ON -DLLVM_PARALLEL_LINK_JOBS=20"
 
@@ -28,6 +28,7 @@ if [ "$BUILDBOT_CLOBBER" != "" ]; then
   echo @@@BUILD_STEP clobber@@@
   rm -rf llvm
   rm -rf ${STAGE1_DIR}
+  rm -f host_clang_revision
 fi
 
 # Stage 1
