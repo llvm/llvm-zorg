@@ -381,10 +381,10 @@ def _get_clang_builders():
 #                                                                             '--target=arm-eabi',
 #                                                                             '--enable-targets=arm'])},
 
-        {'name' : "clang-x86_64-ubuntu-gdb-75",
-         'slavenames' :["hpproliant1"],
-         'builddir' :"clang-x86_64-ubuntu-gdb-75",
-         'factory' : ClangBuilder.getClangBuildFactory(stage1_config='Release+Asserts', run_modern_gdb=True, clean=False)},
+#        {'name' : "clang-x86_64-ubuntu-gdb-75",
+#         'slavenames' :["hpproliant1"],
+#         'builddir' :"clang-x86_64-ubuntu-gdb-75",
+#         'factory' : ClangBuilder.getClangBuildFactory(stage1_config='Release+Asserts', run_modern_gdb=True, clean=False)},
 
         {'name' : "clang-hexagon-elf",
          'slavenames' :["hexagon-build-02", "hexagon-build-03"],
