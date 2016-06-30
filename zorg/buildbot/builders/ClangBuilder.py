@@ -42,11 +42,7 @@ def getClangBuildFactory(
             checkout_compiler_rt=False,
             run_gdb=False,
             run_modern_gdb=False,
-            run_gcc=False,
-            modules=False):
-    assert not modules or useTwoStage, \
-           "modules build requires 2 stage cmake build for now"
-
+            run_gcc=False):
     # Prepare environmental variables. Set here all env we want everywhere.
     merged_env = {
         'TERM' : 'dumb' # Make sure Clang doesn't use color escape sequences.
@@ -288,18 +284,6 @@ def getClangBuildFactory(
                            description='cmake stage2',
                            workdir=llvm_2_objdir,
                            env=merged_env))
-
-    if modules:
-        f.addStep(WarningCountingShellCommand(name="compile.llvm.stage2.intrinsics_gen",
-                                              command=['nice', '-n', '10',
-                                                       make, "intrinsics_gen", WithProperties("-j%s" % jobs)],
-                                              haltOnFailure=True,
-                                              description=["compiling", "(stage 2 intrinsics.gen)",
-                                                           stage2_config],
-                                              descriptionDone=["compile", "(stage 2 intrinsics.gen)",
-                                                               stage2_config],
-                                              workdir=llvm_2_objdir,
-                                              env=merged_env))
 
     # Build llvm (stage 2).
     f.addStep(WarningCountingShellCommand(name="compile.llvm.stage2",
