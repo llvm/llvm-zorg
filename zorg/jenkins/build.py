@@ -239,6 +239,8 @@ def cmake_builder(target):
         footer()
         header("Ninja build")
         run_cmd(conf.builddir(), ninja_cmd)
+        header("Ninja install")
+        run_cmd(conf.builddir(), ninja_cmd + ['install'])
         footer()
 
     if target == 'all' or target == 'test':
