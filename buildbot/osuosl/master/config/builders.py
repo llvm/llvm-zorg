@@ -984,7 +984,7 @@ def _get_libcxx_builders():
             env={'CC': 'clang', 'CXX': 'clang++'},
             # FIXME: there should be a way to merge autodetected with user-defined linker flags
             # See: libcxxabi/test/lit.cfg
-            lit_extra_opts={'link_flags': '"-lc++abi -lpthread -lunwind -ldl -lc -lm -L/opt/llvm/lib/clang/3.6.0/lib/linux -lclang_rt.builtins-arm"'},
+            lit_extra_opts={'link_flags': '"-lc++abi -lc -lm -lpthread -lunwind -ldl -L/opt/llvm/lib/clang/3.6.0/lib/linux -lclang_rt.builtins-arm"'},
             cmake_extra_opts={'LIBCXXABI_USE_LLVM_UNWINDER': 'ON',
                               'CMAKE_C_FLAGS': '-mcpu=cortex-a15',
                               'CMAKE_CXX_FLAGS': '-mcpu=cortex-a15'})},
@@ -997,7 +997,7 @@ def _get_libcxx_builders():
             env={'CC': 'clang', 'CXX': 'clang++'},
             # FIXME: there should be a way to merge autodetected with user-defined linker flags
             # See: libcxxabi/test/lit.cfg
-            lit_extra_opts={'link_flags': '"-lc++abi -lpthread -lunwind -ldl -lc -lm -L/opt/llvm/lib/clang/3.6.0/lib/linux -lclang_rt.builtins-arm"'},
+            lit_extra_opts={'link_flags': '"-lc++abi -lc -lm -lpthread -lunwind -ldl -L/opt/llvm/lib/clang/3.6.0/lib/linux -lclang_rt.builtins-arm"'},
             cmake_extra_opts={'LIBCXXABI_USE_LLVM_UNWINDER': 'ON',
                               'LIBCXX_ENABLE_EXCEPTIONS': 'OFF',
                               'CMAKE_C_FLAGS': '-mcpu=cortex-a15',
