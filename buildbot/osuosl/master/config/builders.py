@@ -1011,21 +1011,6 @@ def _get_on_demand_builders():
 
 def _get_experimental_scheduled_builders():
     return [
-        {'name': "clang-atom-d525-fedora",
-         'slavenames':["atom-buildbot"],
-         'builddir':"clang-atom-d525-fedora",
-         'factory' : ClangBuilder.getClangCMakeBuildFactory(
-                       clean=False,
-                       jobs=1,
-                       checkout_compiler_rt=False,
-                       useTwoStage=False,
-                       stage1_config='Debug',
-                       test=True,
-                       testStage1=True,
-                       extra_cmake_args=['-DLLVM_ENABLE_ASSERTIONS=ON',
-                                         '-DLLVM_USE_INTEL_JITEVENTS=TRUE']),
-         'category' : 'clang'},
-
         {'name' : "clang-bpf-build",
          'slavenames' : ["bpf-build-slave01"],
          'builddir' : "clang-bpf-build",

@@ -66,7 +66,7 @@ def get_build_slaves():
         create_slave("pollyperf15", properties={'jobs': 8}, max_builds=1),
 
         # Intel(R) Atom(TM) CPU D525 @ 1.8GHz, Fedora x86_64
-        create_slave("atom-buildbot", properties={'jobs': 2}, max_builds=1),
+        #create_slave("atom-buildbot", properties={'jobs': 2}, max_builds=1),
         create_slave("atom1-buildbot", properties={'jobs': 2}, max_builds=1),
 
         # Windows 7 Intel(R) Xeon(R) CPU E5-2680 (2.80GHz), 16GB of RAM
