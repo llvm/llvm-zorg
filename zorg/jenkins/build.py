@@ -54,7 +54,7 @@ class Configuration(object):
         self._lldb_src_dir = os.environ.get('LLDB_SRC_DIR', 'lldb')
         self._build_dir = os.environ.get('BUILD_DIR', 'clang-build')
         self._lldb_build_dir = os.environ.get('LLDB_BUILD_DIR', 'lldb-build')
-        self._install_dir = os.environ.get('BUILD_DIR', 'clang-install')
+        self._install_dir = os.environ.get('INSTALL_DIR', 'clang-install')
         self.j_level = os.environ.get('J_LEVEL', None)
         self.max_parallel_tests = os.environ.get('MAX_PARALLEL_TESTS', None)
         self.max_parallel_links = os.environ.get('MAX_PARALLEL_LINKS', None)
