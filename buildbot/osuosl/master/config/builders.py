@@ -927,6 +927,17 @@ def _get_libcxx_builders():
             lit_extra_opts={'std':'c++1z'}),
         'category': 'libcxx'},
 
+        {'name': 'libcxx-libcxxabi-x86_64-linux-ubuntu-ubsan',
+         'slavenames': ['ericwf-buildslave'],
+         'builddir' : 'libcxx-libcxxabi-x86_64-linux-ubuntu-ubsan',
+         'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
+            env={'PATH': '/usr/local/bin:/usr/bin:/bin',
+                 'CC': 'clang', 'CXX': 'clang++'},
+            cmake_extra_opts={'LLVM_USE_SANITIZER': 'Undefined',
+                              'LIBCXX_ABI_UNSTABLE': 'ON'},
+            lit_extra_opts={'std':'c++1z'}),
+        'category': 'libcxx'},
+
         # EricWF's builders on ericwf-buildslave2
         {'name': 'libcxx-libcxxabi-x86_64-linux-ubuntu-msan',
          'slavenames': ['ericwf-buildslave2'],
