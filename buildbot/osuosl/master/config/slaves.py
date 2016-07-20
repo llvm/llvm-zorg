@@ -107,6 +107,9 @@ def get_build_slaves():
         # Cavium Octeon II V0.2, MIPS64r2 big endian, Debian Jessie
         create_slave("mips-kl-m001", properties={'jobs' : 10}, max_builds=1),
 
+        # Cavium Octeon II V0.2, MIPS64r2 big endian, Debian Jessie
+        create_slave("mips-kl-m002", properties={'jobs' : 10}, max_builds=1),
+
         # Cavium Octeon II V0.1, MIPS64r2 little endian, Debian Jessie
         create_slave("mips-kl-erpro001", properties={'jobs' : 2}, max_builds=1),
 

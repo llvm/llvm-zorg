@@ -777,7 +777,7 @@ def _get_sanitizer_builders():
           # We must also force LLVM_TARGET_ARCH so that the ExecutionEngine tests
           # run.
           {'name': "clang-cmake-mips",
-           'slavenames':["mips-kl-m001"],
+           'slavenames':["mips-kl-m001","mips-kl-m002"],
            'builddir':"clang-cmake-mips",
            'factory' : ClangBuilder.getClangCMakeGCSBuildFactory(
                            clean=False,
