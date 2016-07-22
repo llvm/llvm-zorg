@@ -191,6 +191,10 @@ def cmake_builder(target):
     cmake_cmd += ["-DPACKAGE_VERSION=3.8.0",
                   "-DCMAKE_MACOSX_RPATH=On"]
 
+    libtool_path = query_sys_tool("macosx", "libtool")
+    if libtool_path:
+        cmake_cmd += ['-DCMAKE_LIBTOOL=' + libtool_path]
+
     if compiler_flags:
         cmake_cmd += ["-DCMAKE_C_FLAGS={}".format(' '.join(compiler_flags)),
                       "-DCMAKE_CXX_FLAGS={}".format(' '.join(compiler_flags))]
@@ -270,6 +274,7 @@ def clang_builder(target):
         sdk_name = 'macosx'
 
         sdkroot = query_sdk_path(sdk_name)
+        libtool_path = query_sys_tool(sdk_name, "libtool")
 
         next_section("Setup debug-info tests")
         run_ws(['rm', '-rf', 'llvm/tools/clang/test/debuginfo-tests'])
@@ -319,6 +324,9 @@ def clang_builder(target):
              '-DPACKAGE_VERSION=3.8.0',
              '-DCMAKE_MACOSX_RPATH=On',
             ]
+
+            if libtool_path:
+                cmake_command += ['-DCMAKE_LIBTOOL=' + libtool_path]
 
             if conf.CC():
                 cmake_command.extend(['-DCMAKE_C_COMPILER=' + conf.CC(),
