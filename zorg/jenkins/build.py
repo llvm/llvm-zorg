@@ -291,6 +291,11 @@ def clang_builder(target):
         toolchain = '/Applications/Xcode.app/Contents/Developer' \
             '/Toolchains/XcodeDefault.xctoolchain'
 
+        env = []
+        if conf.lto and conf.liblto():
+            dyld_path = conf.liblto()
+            env.extend(["env", "DYLD_LIBRARY_PATH=" + dyld_path])
+
         next_section("Build Clang")
         if conf.nobootstrap:
             if conf.debug or conf.device:
@@ -299,7 +304,7 @@ def clang_builder(target):
                            './Build',
                            './Root'])
             install_prefix =  conf.installdir()
-            cmake_command = ["/usr/local/bin/cmake", '-G', 'Ninja', '-C',
+            cmake_command = env + ["/usr/local/bin/cmake", '-G', 'Ninja', '-C',
             '{}/llvm/tools/clang/cmake/caches/Apple-stage2.cmake'.format(conf.workspace),
             '-DLLVM_ENABLE_ASSERTIONS:BOOL={}'.format("TRUE" if conf.assertions else "FALSE"),
             '-DCMAKE_BUILD_TYPE=RelWithDebInfo',
