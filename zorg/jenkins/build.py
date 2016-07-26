@@ -168,6 +168,7 @@ def cmake_builder(target):
     check_repo_state(conf.workspace)
 
     env = []
+    dyld_path = ""
     if conf.lto and conf.liblto():
         dyld_path = conf.liblto()
         env.extend(["env", "DYLD_LIBRARY_PATH=" + dyld_path])
@@ -184,6 +185,8 @@ def cmake_builder(target):
         cmake_cmd += ['-DLLVM_BUILD_EXAMPLES=Off']
         if not max_parallel_links:
             max_parallel_links = 1
+        if dyld_path:
+            cmake_cmd += ['-DDYLD_LIBRARY_PATH=' + dyld_path]
     else:
         cmake_cmd += ['-DLLVM_ENABLE_LTO=Off']
         cmake_cmd += ['-DLLVM_BUILD_EXAMPLES=On']
