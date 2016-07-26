@@ -295,6 +295,7 @@ def clang_builder(target):
             '/Toolchains/XcodeDefault.xctoolchain'
 
         env = []
+        dyld_path = ""
         if conf.lto and conf.liblto():
             dyld_path = conf.liblto()
             env.extend(["env", "DYLD_LIBRARY_PATH=" + dyld_path])
@@ -332,6 +333,9 @@ def clang_builder(target):
              '-DPACKAGE_VERSION=3.8.0',
              '-DCMAKE_MACOSX_RPATH=On',
             ]
+
+            if dyld_path:
+                cmake_command += ['-DDYLD_LIBRARY_PATH=' + dyld_path]
 
             if libtool_path:
                 cmake_command += ['-DCMAKE_LIBTOOL=' + libtool_path]
