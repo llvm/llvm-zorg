@@ -83,6 +83,7 @@ def _get_clang_fast_builders():
                      extraCmakeOptions=[
                        "-DCOMPILER_RT_BUILD_BUILTINS:BOOL=OFF",
                        "-DCOMPILER_RT_BUILD_SANITIZERS:BOOL=OFF",
+                       "-DCOMPILER_RT_BUILD_XRAY:BOOL=OFF",
                        "-DCOMPILER_RT_CAN_EXECUTE_TESTS:BOOL=OFF",
                        "-DCOMPILER_RT_INCLUDE_TESTS:BOOL=OFF"],
                      prefixCommand=None, # This is a designated builder, so no need to be nice.
