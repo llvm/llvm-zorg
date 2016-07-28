@@ -191,8 +191,7 @@ def cmake_builder(target):
         cmake_cmd += ['-DLLVM_ENABLE_LTO=Off']
         cmake_cmd += ['-DLLVM_BUILD_EXAMPLES=On']
 
-    cmake_cmd += ["-DPACKAGE_VERSION=3.8.0",
-                  "-DCMAKE_MACOSX_RPATH=On"]
+    cmake_cmd += ["-DCMAKE_MACOSX_RPATH=On"]
 
     libtool_path = query_sys_tool("macosx", "libtool")
     if libtool_path:
@@ -330,8 +329,7 @@ def clang_builder(target):
             '-DLIBCXX_INSTALL_HEADERS=On',
             '-DLIBCXX_OVERRIDE_DARWIN_INSTALL=On',
             '-DLIBCXX_INSTALL_LIBRARY=Off',
-             '-DPACKAGE_VERSION=3.8.0',
-             '-DCMAKE_MACOSX_RPATH=On',
+            '-DCMAKE_MACOSX_RPATH=On',
             ]
 
             if dyld_path:
