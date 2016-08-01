@@ -38,7 +38,7 @@ def get_build_slaves():
         create_slave("linaro-apm-01", properties={'jobs' : 8}, max_builds=1),
         create_slave("linaro-apm-02", properties={'jobs' : 8}, max_builds=1),
         create_slave("linaro-apm-03", properties={'jobs' : 8}, max_builds=1),
-        create_slave("linaro-apm-04", properties={'jobs' : 8}, max_builds=1),
+        #create_slave("linaro-apm-04", properties={'jobs' : 8}, max_builds=1),
 
         # AMD Athlon(tm) 64 X2 Dual Core 3800+, Ubuntu x86_64
         create_slave("grosser1", properties={'jobs': 2}, max_builds=1),
@@ -58,7 +58,7 @@ def get_build_slaves():
         create_slave("pollyperf7", properties={'jobs': 8}, max_builds=1),
         #create_slave("pollyperf8", properties={'jobs': 8}, max_builds=1),
         #create_slave("pollyperf9", properties={'jobs': 8}, max_builds=1),
-        create_slave("pollyperf10", properties={'jobs': 8}, max_builds=1),
+        #create_slave("pollyperf10", properties={'jobs': 8}, max_builds=1),
         create_slave("pollyperf11", properties={'jobs': 8}, max_builds=1),
         #create_slave("pollyperf12", properties={'jobs': 8}, max_builds=1),
         #create_slave("pollyperf13", properties={'jobs': 8}, max_builds=1),
@@ -72,9 +72,6 @@ def get_build_slaves():
         # Windows 7 Intel(R) Xeon(R) CPU E5-2680 (2.80GHz), 16GB of RAM
         create_slave("windows7-buildbot", properties={'jobs': 2}, max_builds=1),
 
-        # LLVM Lab slaves
-        create_slave("hpproliant1", properties={'jobs': 6}, max_builds=1),
-
         # POWER7 PowerPC big endian (powerpc64)
         create_slave("ppc64be-clang-test", properties={'jobs': 16}, max_builds=1),
         create_slave("ppc64be-clang-lnt-test", properties={'jobs': 16}, max_builds=1),
@@ -86,12 +83,6 @@ def get_build_slaves():
         create_slave("ppc64le-clang-lnt-test", properties={'jobs': 6}, max_builds=1),
         create_slave("ppc64le-clang-multistage-test", properties={'jobs': 8}, max_builds=1),
         create_slave("ppc64le-sanitizer", properties={'jobs': 4}, max_builds=1),
-
-        # Debian 86_64, 2 x 6-core Opteron 2.6 GHz
-        create_slave("osu8", properties={'jobs' : 6}, max_builds=2),
-
-        # Windows 6.1.7601 x86-64, Intel(R) Xeon(R) CPU E5-2680 0 @ 2.70GHz
-        create_slave("hexagon-build-01", properties={'jobs': 4}, max_builds=2),
 
         # Ubuntu x86-64, Intel(R) Xeon(R) CPU E5-2680 0 @ 2.70GHz
         create_slave("hexagon-build-02", properties={'jobs': 12, 'loadaverage': 32},
@@ -116,20 +107,11 @@ def get_build_slaves():
         # Debian Testing x86-64, Intel(R) Core(TM) i7-2700K CPU @ 3.50GHz
         #create_slave("gribozavr1", properties={'jobs': 8}, max_builds=1),
 
-        # Ubuntu 13.04 x86-64, Intel(R) Xeon(R) CPU 5160 @ 3.00GHz
-        create_slave("gribozavr2", properties={'jobs': 4}, max_builds=1),
-
-        # CentOS 6.5 x86-64, VM on Intel(R) Core(TM) i5 CPU 750 @ 2.67GHz
-        create_slave("gribozavr3", properties={'jobs': 4}, max_builds=1),
-
         # Debian x86-64
         create_slave("gribozavr4", properties={'jobs': 18}, max_builds=1),
 
         # Ubuntu 14.04 x86-64
         create_slave("gribozavr5", properties={'jobs': 6}, max_builds=1),
-
-        # OpenBSD
-        create_slave("openbsd-buildslave", properties={'jobs': 2}, max_builds=1),
 
         # AArch64 Clang, Juno ARM Development Platform
         create_slave("juno-aarch64-01", properties={'jobs': 4}, max_builds=1),
@@ -158,8 +140,6 @@ def get_build_slaves():
         create_slave("ericwf-buildslave", properties={'jobs': 4}, max_builds=2),
         # Ubuntu 14.10 x86_64, Intel(R) Xeon(R) CPU E3-1245 V2 @ 3.40GHz
         create_slave('ericwf-buildslave2', properties={'jobs': 4}, max_builds=2),
-        # OS X 10.10 x86_64, Intel Core 2 Duo @ 2.40GHz
-        create_slave("ericwf-osx-slave", properties={'jobs': 2}, max_builds=1),
 
         # Windows Server 2008 R2, Quad 2.6GHz Intel Xeon(R) 4GB RAM
         create_slave("zturner-win2008", properties={'jobs': 4}, max_builds=1),
@@ -172,8 +152,6 @@ def get_build_slaves():
         create_slave("lldb-build1-ubuntu-1404", properties={'jobs': 32, 'loadaverage':32}, max_builds=1),
         # Darwin 13.4.0, x86_64
         create_slave("lldb-x86_64-darwin-13.4", properties={'jobs': 16, 'loadaverage':32}, max_builds=1),
-        # Ubuntu 14.04 x86_64, Intel(R) Xeon(R) CPU @ 2.30GHz
-        create_slave("llgo-builder", properties={'jobs': 2}, max_builds=1),
         # Ubuntu 14.04 x86_64, Intel(R) Xeon(R) CPU E5-2680 v2 @ 2.80GHz
         create_slave("lldb-lab-linux01", properties={'jobs': 40}, max_builds=1),
 
@@ -203,6 +181,30 @@ def get_build_slaves():
         create_slave("cuda-build-test-01", properties={'jobs': 72}, max_builds=1),
 
         # Defunct.
+        # Debian 86_64, 2 x 6-core Opteron 2.6 GHz
+        #create_slave("osu8", properties={'jobs' : 6}, max_builds=2),
+
+        # OpenBSD
+        #create_slave("openbsd-buildslave", properties={'jobs': 2}, max_builds=1),
+
+        # Ubuntu 14.04 x86_64, Intel(R) Xeon(R) CPU @ 2.30GHz
+        #create_slave("llgo-builder", properties={'jobs': 2}, max_builds=1),
+
+        # LLVM Lab slaves
+        #create_slave("hpproliant1", properties={'jobs': 6}, max_builds=1),
+
+        # Windows 6.1.7601 x86-64, Intel(R) Xeon(R) CPU E5-2680 0 @ 2.70GHz
+        #create_slave("hexagon-build-01", properties={'jobs': 4}, max_builds=2),
+
+        # Ubuntu 13.04 x86-64, Intel(R) Xeon(R) CPU 5160 @ 3.00GHz
+        #create_slave("gribozavr2", properties={'jobs': 4}, max_builds=1),
+
+        # CentOS 6.5 x86-64, VM on Intel(R) Core(TM) i5 CPU 750 @ 2.67GHz
+        #create_slave("gribozavr3", properties={'jobs': 4}, max_builds=1),
+
+        # OS X 10.10 x86_64, Intel Core 2 Duo @ 2.40GHz
+        #create_slave("ericwf-osx-slave", properties={'jobs': 2}, max_builds=1),
+
         # Intel(R) Pentium(R) CPU G620 @ 2.60GHz, Ubuntu i686
         #create_slave("botether", properties={'jobs': 2}, max_builds=1),
 
