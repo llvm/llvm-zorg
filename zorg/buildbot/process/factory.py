@@ -41,6 +41,16 @@ class LLVMBuildFactory(BuildFactory):
         if kwargs.get('llvm_srcdir', None) is None:
             self.llvm_srcdir = "llvm.src"
 
+
+    @staticmethod
+    def pathRelativeToBuild(path, buildPath):
+        if path.startswith('/'):
+            # The path is absolute. Don't touch it.
+            return path
+        else:
+            return "../" * buildPath.count("/") + path
+
+
     # llvm_srcdir - Path to the root of the unified source tree.
     # mode - SVN checkout mode.
     # defaultBranch - the default branch to checkout.
