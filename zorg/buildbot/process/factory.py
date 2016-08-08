@@ -48,7 +48,7 @@ class LLVMBuildFactory(BuildFactory):
             # The path is absolute. Don't touch it.
             return path
         else:
-            return "../" * buildPath.count("/") + path
+            return "../" * (buildPath.count("/") + 1) + path
 
 
     # llvm_srcdir - Path to the root of the unified source tree.
