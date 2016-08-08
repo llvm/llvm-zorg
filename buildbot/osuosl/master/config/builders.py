@@ -640,6 +640,12 @@ def _get_lld_builders():
                                                   env={'CXXFLAGS' : "-std=c++11 -stdlib=libc++"}),
          'category'   : 'lld'},
 
+        {'name' : "clang-with-lto-ubuntu",
+         'slavenames' : ["ps4-buildslave1a"],
+         'builddir' : "clang-with-lto-ubuntu",
+         'factory': ClangLTOBuilder.getClangWithLTOBuildFactory()
+         'category'   : 'lld'},
+
          ]
 
 # llgo builders.
