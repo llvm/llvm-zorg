@@ -11,12 +11,21 @@ class CmakeCommand(WarningCountingShellCommand):
         # where all the values are properly formatted to terminate
         # control symbols.
         # TODO: Support cmake params with types, like -DCMAKE_CXX_FLAGS:STRING='-stdlib=libc++'.
-        options = [
-            a
-            for a in options
-            if not any(stripQuotationMarks(a).startswith(r) for r,_ in required)
-        ]
-        + [k + v for k,v in required]
+        for k,v in required:
+
+            o = None
+            for i,a in enumerate(options):
+                # Strip surraunding quotation marks if any.
+                a = stripQuotationMarks(a)
+                if a.startswith(k):
+                    # Replace the existing one by the one from required.
+                    o = options[i] = k + v
+
+            if o is None:
+                # We do not have the option to replace,
+                # so, let's just add a new one.
+                options.append(k + v)
+
 
     @staticmethod
     def applyDefaultOptions(options, defaults):
@@ -29,6 +38,7 @@ class CmakeCommand(WarningCountingShellCommand):
         for k,v in defaults:
             if not any(stripQuotationMarks(a).startswith(k) for a in options):
                 options.append(k + v)
+
 
     @staticmethod
     def appendFlags(options, append):
@@ -69,6 +79,7 @@ class CmakeCommand(WarningCountingShellCommand):
                 append_this[1] = flags
                 options.append('='.join(append_this))
 
+
     def __init__(self, prefixCommand=None, options=None, path=None, **kwargs):
         self.prefixCommand = prefixCommand
         self.path = [path]
@@ -106,6 +117,7 @@ class CmakeCommand(WarningCountingShellCommand):
         self.addFactoryArguments(prefixCommand=prefixCommand,
                                  options=self.options,
                                  path=path)
+
 
     def start(self):
         # Don't forget to remove all the empty items from the command,
