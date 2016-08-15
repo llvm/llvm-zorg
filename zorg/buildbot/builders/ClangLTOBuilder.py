@@ -1,7 +1,6 @@
 from buildbot.steps.shell import ShellCommand
-from buildbot.steps.shell import ShellCommand
 from buildbot.steps.slave import RemoveDirectory
-from buildbot.process.properties import WithProperties, Property
+from buildbot.process.properties import WithProperties
 
 from zorg.buildbot.commands.CmakeCommand import CmakeCommand
 from zorg.buildbot.commands.NinjaCommand import NinjaCommand
@@ -127,7 +126,7 @@ def _addSteps4StagedCompiler(
     obj_dir = f.stage_objdirs[stage_idx]
     src_dir = LLVMBuildFactory.pathRelativeToBuild(f.llvm_srcdir, obj_dir)
     install_dir = LLVMBuildFactory.pathRelativeToBuild(f.stage_installdirs[stage_idx], obj_dir)
-    staged_install = LLVMBuildFactory.pathRelativeToBuild(f.stage_installdirs[use_stage_idx], obj_dir)
+    staged_install = f.stage_installdirs[use_stage_idx]
 
     # Always do a clean build for the staged compiler.
     f.addStep(RemoveDirectory(name='clean-%s-dir' % obj_dir,
@@ -157,17 +156,27 @@ def _addSteps4StagedCompiler(
         ('-DLLVM_BUILD_TESTS=',        'ON'),
         ('-DLLVM_ENABLE_ASSERTIONS=',  'ON'),
         ('-DLLVM_OPTIMIZED_TABLEGEN=', 'ON'),
-        # LTO Plugin dependency:
-        ('-DLLVM_BINUTILS_INCDIR=',    '/opt/binutils/include'),
         ])
+    if withLTOSupport:
+        CmakeCommand.applyDefaultOptions(cmake_args, [
+            # LTO Plugin dependency:
+            ('-DLLVM_BINUTILS_INCDIR=',    '/opt/binutils/include'),
+            ])
 
     # Some options are required for this stage no matter what.
     CmakeCommand.applyRequiredOptions(cmake_args, [
         ('-G',                      'Ninja'),
         ('-DCMAKE_INSTALL_PREFIX=', install_dir),
-        ('-DCMAKE_CXX_COMPILER=',   "%s/bin/clang++" % staged_install),
-        ('-DCMAKE_C_COMPILER=',     "%s/bin/clang"   % staged_install),
         ])
+
+    cmake_args.append(
+        WithProperties(
+            "-DCMAKE_CXX_COMPILER=%(workdir)s/" + staged_install + "/bin/clang++"
+        ))
+    cmake_args.append(
+        WithProperties(
+            "-DCMAKE_C_COMPILER=%(workdir)s/" + staged_install + "/bin/clang"
+        ))
 
     # Create configuration files with cmake
     f.addStep(CmakeCommand(name="cmake-configure-stage%s" % stage_num,
@@ -193,6 +202,7 @@ def _addSteps4StagedCompiler(
     f.addStep(NinjaCommand(name="build-stage%s-compiler" % stage_num,
                            haltOnFailure=True,
                            description=["build stage%s compiler" % stage_num],
+                           timeout=10800, # LTO could take time.
                            env=env,
                            workdir=obj_dir,
                            ))
@@ -202,6 +212,7 @@ def _addSteps4StagedCompiler(
                            targets=["check-all"],
                            haltOnFailure=True,
                            description=["test stage%s compiler" % stage_num],
+                           timeout=10800, # LTO could take time.
                            env=env,
                            workdir=obj_dir,
                            ))
@@ -211,6 +222,7 @@ def _addSteps4StagedCompiler(
                            targets=["install"],
                            haltOnFailure=True,
                            description=["install stage%s compiler" % stage_num],
+                           timeout=10800, # LTO could take time.
                            env=env,
                            workdir=obj_dir,
                            ))
@@ -302,17 +314,18 @@ def getClangWithLTOBuildFactory(
 
     # The rest are test stages, which depend on the staged compiler we are ultimately after.
     s = f.staged_compiler_idx + 1 
+    staged_install = f.stage_installdirs[f.staged_compiler_idx]
     for i in range(s, len(f.stage_objdirs[s:]) + s):
         configure_args = extra_configure_args[:]
 
-        staged_install = LLVMBuildFactory.pathRelativeToBuild(
-                             f.stage_installdirs[f.staged_compiler_idx],
-                             f.stage_objdirs[i])
-
-        CmakeCommand.applyDefaultOptions(configure_args, [
-            ('-DCMAKE_AR=',     '%s/bin/llvm-ar' % staged_install),
-            ('-DCMAKE_RANLIB=', '%s/bin/llvm-ar' % staged_install),
-            ])
+        configure_args.append(
+            WithProperties(
+                "-DCMAKE_AR=%(workdir)s/" + staged_install + "/bin/llvm-ar"
+            ))
+        configure_args.append(
+            WithProperties(
+                "-DCMAKE_RANLIB=%(workdir)s/" + staged_install + "/bin/llvm-ranlib"
+            ))
 
         _addSteps4StagedCompiler(f,
                                  stage_idx=i,
@@ -326,8 +339,8 @@ def getClangWithLTOBuildFactory(
         diff_command = [
             "diff",
             "-q",
-            "%s/clang" % f.stage_installdirs[-2],
-            "%s/clang" % f.stage_installdirs[-1],
+            f.stage_installdirs[-2] + "/bin/clang",
+            f.stage_installdirs[-1] + "/bin/clang",
         ]
         f.addStep(
             ShellCommand(
