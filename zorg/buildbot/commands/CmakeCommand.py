@@ -1,4 +1,3 @@
-from buildbot.process.properties import WithProperties
 from buildbot.steps.shell import WarningCountingShellCommand
 
 from zorg.buildbot.util.helpers import stripQuotationMarks
@@ -15,11 +14,17 @@ class CmakeCommand(WarningCountingShellCommand):
 
             o = None
             for i,a in enumerate(options):
-                # Strip surraunding quotation marks if any.
-                a = stripQuotationMarks(a)
-                if a.startswith(k):
-                    # Replace the existing one by the one from required.
-                    o = options[i] = k + v
+                # We cannot process some options because of WithProperties and such,
+                # but let's at least work around them gracefully.
+                try:
+                    # Strip surraunding quotation marks if any.
+                    a = stripQuotationMarks(a)
+                    if a.startswith(k):
+                        # Replace the existing one by the one from required.
+                        o = options[i] = k + v
+                        break
+                except Exception:
+                    pass 
 
             if o is None:
                 # We do not have the option to replace,
@@ -36,7 +41,21 @@ class CmakeCommand(WarningCountingShellCommand):
         # control symbols.
         # TODO: Support cmake params with types, like -DCMAKE_CXX_FLAGS:STRING='-stdlib=libc++'.
         for k,v in defaults:
-            if not any(stripQuotationMarks(a).startswith(k) for a in options):
+
+            o = None
+            for i,a in enumerate(options):
+                # We cannot process some options because of WithProperties and such,
+                # but let's at least work around them gracefully.
+                try:
+                    if stripQuotationMarks(a).startswith(k):
+                        o = options[i]
+                        break
+                except Exception:
+                    pass
+
+            if o is None:
+                # We do not have the option already set,
+                # so, apply the default one.
                 options.append(k + v)
 
 
@@ -52,29 +71,31 @@ class CmakeCommand(WarningCountingShellCommand):
 
             o = None
             for i,a in enumerate(options):
-                # Strip surraunding quotation marks if any.
-                a = stripQuotationMarks(a)
-                if a.startswith(k):
-                    append_to = a.split("=", 1)
-                    flags = stripQuotationMarks(append_to[1]).split() + v
-                    seen = set()
-                    seen_add = seen.add # To avoid resolving in the loop.
-                    flags = [
-                        f for f in flags
-                        if not (f in seen or seen_add(f))
-                        ]
-                    flags = ' '.join(flags)
-                    if ' ' in flags:
-                        flags = "\"%s\"" % flags
-                    append_to[1] = flags
-                    o = options[i] = '='.join(append_to)
+                # We cannot process some options because of WithProperties and such,
+                # but let's at least work around them gracefully.
+                try:
+                    # Strip surraunding quotation marks if any.
+                    a = stripQuotationMarks(a)
+                    if a.startswith(k):
+                        append_to = a.split("=", 1)
+                        flags = stripQuotationMarks(append_to[1]).split() + v
+                        seen = set()
+                        seen_add = seen.add # To avoid resolving in the loop.
+                        flags = [
+                            f for f in flags
+                            if not (f in seen or seen_add(f))
+                            ]
+                        flags = ' '.join(flags)
+                        append_to[1] = flags
+                        o = options[i] = '='.join(append_to)
+                        break
+                except Exception:
+                    pass
 
             if o is None:
                 # We do not have the option to merge with,
                 # so, let's just set it.
                 flags = ' '.join(v)
-                if ' ' in flags:
-                    flags = "\"%s\"" % flags
                 append_this = k.split("=", 1)
                 append_this[1] = flags
                 options.append('='.join(append_this))
