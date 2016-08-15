@@ -14,6 +14,8 @@ from zorg.buildbot.builders import SphinxDocsBuilder
 from zorg.buildbot.builders import ABITestsuitBuilder
 from zorg.buildbot.builders import ClangLTOBuilder3Stage
 
+from zorg.buildbot.builders import ClangLTOBuilder
+
 # Plain LLVM builders.
 def _get_llvm_builders():
     return [
@@ -641,9 +643,9 @@ def _get_lld_builders():
          'category'   : 'lld'},
 
         {'name' : "clang-with-lto-ubuntu",
-         'slavenames' : ["ps4-buildslave1a"],
+         'slavenames' : ["ps4-buildslave1b"],
          'builddir' : "clang-with-lto-ubuntu",
-         'factory': ClangLTOBuilder.getClangWithLTOBuildFactory()
+         'factory': ClangLTOBuilder.getClangWithLTOBuildFactory(),
          'category'   : 'lld'},
 
          ]

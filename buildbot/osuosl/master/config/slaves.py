@@ -165,6 +165,7 @@ def get_build_slaves():
         # Ubuntu 14.04 x86_64-scei-ps4, 2 x Intel(R) Xeon(R) CPU E5-2699 v3 @ 2.30GHz
         create_slave("ps4-buildslave1", properties={'jobs': 72}, max_builds=1),
         create_slave("ps4-buildslave1a", properties={'jobs': 72}, max_builds=1),
+        create_slave("ps4-buildslave1b", properties={'jobs': 2}, max_builds=1),
 
         # Windows 10 Pro x86_64-scei-ps4, 2 x Intel(R) Xeon(R) CPU E5-2699 v3 @ 2.30GHz
         create_slave("ps4-buildslave2", properties={'jobs': 72}, max_builds=1),
