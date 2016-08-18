@@ -147,6 +147,8 @@ def get_build_slaves():
         create_slave("sanitizer-windows", properties={'jobs': 4}, max_builds=1),
         # Windows Server 2008 R2, Quad 2.6GHz Intel Xeon(R) 8GB RAM
         create_slave("windows-gcebot1", properties={'jobs': 8}, max_builds=1),
+        # Windows Server 2012 x86_64 32-core GCE instance
+        create_slave("windows-gcebot2", properties={'jobs': 32}, max_builds=1),
 
         # Ubuntu x86-64, 51GiB System memory Intel(R) Xeon(R) CPU @ 2.60GHz
         create_slave("lldb-build1-ubuntu-1404", properties={'jobs': 32, 'loadaverage':32}, max_builds=1),
