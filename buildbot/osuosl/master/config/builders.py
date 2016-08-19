@@ -657,7 +657,7 @@ def _get_lld_builders():
          'category'   : 'lld'},
 
         {'name' : "clang-with-lto-ubuntu",
-         'slavenames' : ["ps4-buildslave1"],
+         'slavenames' : ["ps4-buildslave1a"],
          'builddir' : "clang-with-lto-ubuntu",
          'factory': ClangLTOBuilder.getClangWithLTOBuildFactory(),
          'category'   : 'lld'},
