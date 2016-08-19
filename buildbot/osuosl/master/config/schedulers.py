@@ -3,6 +3,10 @@ from twisted.python import log
 from buildbot.schedulers.filter import ChangeFilter
 from buildbot.schedulers.basic import SingleBranchScheduler
 
+def getProjectsToFilter(projects):
+    # Here we could have "clang" project. In this case replace it by "cfe".
+    return [ p if p != "clang" else "cfe" for p in projects ]
+
 # Since we have many parametric builders, we dynamically build the minimum set
 # of schedulers, which covers all actually used combinations of dependencies.
 def getSingleBranchSchedulers(builders, schedulers, **kwargs):
@@ -46,18 +50,20 @@ def getSingleBranchSchedulers(builders, schedulers, **kwargs):
                 if frozenset(getattr(b['factory'], 'depends_on_projects')) == projects
             ]
 
+            projects_to_filter = getProjectsToFilter(projects)
+
             automatic_schedulers.append(
                 SingleBranchScheduler(
                     name="auto_scheduler_%x" % hash(projects),
                     treeStableTimer=treeStableTimer,
                     builderNames=sch_builders,
-                    change_filter=ChangeFilter(project=list(projects))
+                    change_filter=ChangeFilter(project=projects_to_filter)
                 )
             )
 
             log.msg(
                 "Generated SingleBranchScheduler: { name='auto_scheduler_%x'" % hash(projects),
                 ", builderNames=", sch_builders,
-                ", change_filter=", list(projects),
+                ", change_filter=", projects_to_filter,
                 "}")
     return automatic_schedulers
