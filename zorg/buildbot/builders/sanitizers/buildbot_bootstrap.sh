@@ -98,7 +98,7 @@ cmake_stage3_asan_options="${CMAKE_COMMON_OPTIONS} -DCMAKE_C_COMPILER=${clang_as
 
 echo @@@BUILD_STEP check-llvm check-clang stage3/asan@@@
 
-export ASAN_OPTIONS="check_initialization_order=true:detect_leaks=1"
+export ASAN_OPTIONS="check_initialization_order=true:detect_stack_use_after_return=0:detect_leaks=1"
 
 (cd ${STAGE3_ASAN_DIR} && ninja check-llvm) || echo @@@STEP_FAILURE@@@
 (cd ${STAGE3_ASAN_DIR} && ninja check-clang) || echo @@@STEP_FAILURE@@@
