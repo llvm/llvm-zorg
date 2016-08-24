@@ -633,6 +633,8 @@ def fetch_compiler():
     print "Decompressing..."
     if not os.path.exists(conf.workspace + "/host-compiler"):
         os.mkdir(conf.workspace + "/host-compiler")
+    else:
+        shutil.rmtree(conf.workspace + "/host-compiler")
     run_cmd(conf.workspace + "/host-compiler/", ['tar', 'zxf', "../" + local_name])
     os.unlink(local_name)
     footer()
@@ -677,6 +679,7 @@ def build_upload_artifact():
         conf.job_name + "/latest" ]
 
     run_cmd(conf.workspace, ln_cmd)
+
 
 def run_cmd(working_dir, cmd, env=None, sudo=False, err_okay=False):
     """Run a command in a working directory, and make sure it returns zero."""
