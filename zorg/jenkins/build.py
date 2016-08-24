@@ -632,10 +632,9 @@ def fetch_compiler():
     urllib.urlretrieve (url, conf.workspace + "/" + local_name)
     print "done."
     print "Decompressing..."
-    if not os.path.exists(conf.workspace + "/host-compiler"):
-        os.mkdir(conf.workspace + "/host-compiler")
-    else:
+    if os.path.exists(conf.workspace + "/host-compiler"):
         shutil.rmtree(conf.workspace + "/host-compiler")
+    os.mkdir(conf.workspace + "/host-compiler")
     run_cmd(conf.workspace + "/host-compiler/", ['tar', 'zxf', "../" + local_name])
     os.unlink(local_name)
     footer()
