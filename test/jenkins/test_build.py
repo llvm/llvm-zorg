@@ -53,7 +53,7 @@
 # CHECK-SIMPLE: @@@ Tests @@@
 
 # CHECK-SIMPLE: cd
-# CHECK-SIMPLE: 'env' 'MALLOC_LOG_FILE=/dev/null' '/usr/local/bin/ninja' '-v' 'check-all'
+# CHECK-SIMPLE: 'env' 'MALLOC_LOG_FILE=/dev/null' '/usr/local/bin/ninja' '-v' '-k' '0' 'check-all'
 
 # Now Check Assertion Buiilds have --enable assertions
 
@@ -86,8 +86,8 @@
 # CHECK-CMAKE: '-DLLVM_ENABLE_ASSERTIONS=Off'
 # CHECK-CMAKE: -DLLVM_LIT_ARGS=--xunit-xml-output=testresults.xunit.xml -v
 # CHECK-CMAKE: '/usr/local/bin/ninja'
-# CHECK-CMAKE: '/usr/local/bin/ninja' 'check' 'check-clang'
-# CHECK-CMAKE: '/usr/local/bin/ninja' 'check-all'
+# CHECK-CMAKE: '/usr/local/bin/ninja' '-k' '0' '-v' 'check' 'check-clang'
+# CHECK-CMAKE: '/usr/local/bin/ninja' '-k' '0' '-v' 'check-all'
 
 
 # RUN: python %{src_root}/zorg/jenkins/build.py cmake build

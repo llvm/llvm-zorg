@@ -250,7 +250,8 @@ def cmake_builder(target):
         header("Ninja install")
         run_cmd(conf.builddir(), ninja_cmd + ['install'])
         footer()
-
+    # Run all the test targets.
+    ninja_cmd.extend(['-k', '0', '-v'])
     if target == 'all' or target == 'test':
         header("Ninja test")
         run_cmd(conf.builddir(), ninja_cmd + ['check', 'check-clang'])
@@ -380,7 +381,7 @@ def clang_builder(target):
             obj_dir = os.path.join(conf._build_dir, 'Build/')
             obj_dir = os.path.join(conf.workspace, obj_dir)
 
-        cmd = [NINJA, '-v', 'check-all']
+        cmd = [NINJA, '-v', '-k', '0', 'check-all']
 
         if conf.assertions:
             cmd[-1] += ' --param use_gmalloc=1 ' \
