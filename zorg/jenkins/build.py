@@ -408,8 +408,15 @@ def lldb_builder():
         "-arch", "x86_64",
         "-configuration", build_configuration,
         "-scheme", "desktop",
-        "-derivedDataPath", conf.lldbbuilddir(),
-        "DEBUGSERVER_USE_FROM_SYSTEM=1"]
+        "-derivedDataPath", conf.lldbbuilddir()
+        # It is too fragile to use the Xcode debugserver.  If we add new
+        # command line arguments to debugserver, the older Xcode debugserver
+        # will fall over and not run.  By commenting out this flag, we
+        # are requiring the builder to have the lldb_codesign code signing
+        # certificate and we are ensuring we are testing the latest debugserver
+        # from lldb.
+        # "DEBUGSERVER_USE_FROM_SYSTEM=1"
+        ]
 
     header("Build Xcode desktop scheme")
     run_cmd("lldb", xcodebuild_cmd)
