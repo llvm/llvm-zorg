@@ -164,6 +164,7 @@ class Configuration(object):
 # Global storage for configuration object.
 conf = None
 
+
 def cmake_builder(target):
     check_repo_state(conf.workspace)
 
@@ -174,6 +175,7 @@ def cmake_builder(target):
         env.extend(["env", "DYLD_LIBRARY_PATH=" + dyld_path])
 
     cmake_cmd = env + ["/usr/local/bin/cmake", "-G", "Ninja",
+                       '-DCMAKE_MAKE_PROGRAM=' + NINJA,
                        "-DCMAKE_INSTALL_PREFIX=" + conf.installdir(),
                        conf.srcdir()]
 
