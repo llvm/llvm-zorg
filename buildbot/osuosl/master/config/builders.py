@@ -1140,6 +1140,13 @@ def _get_documentation_builders():
                'category' : 'clang'
              },
              {
+               'name':"clang-tools-sphinx-docs",
+               'slavenames':["gribozavr4"],
+               'builddir':"clang-tools-sphinx-docs",
+               'factory': SphinxDocsBuilder.getSphinxDocsBuildFactory(clang_tools_html=True),
+               'category' : 'clang'
+             },
+             {
                'name':"lld-sphinx-docs",
                'slavenames':["gribozavr4"],
                'builddir':"lld-sphinx-docs",

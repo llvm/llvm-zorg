@@ -6,11 +6,12 @@ from buildbot.process.properties import WithProperties
 from zorg.buildbot.commands.NinjaCommand import NinjaCommand
 
 def getSphinxDocsBuildFactory(
-        llvm_html   = False, # Build LLVM HTML documentation
-        llvm_man    = False, # Build LLVM man pages
-        clang_html  = False, # Build Clang HTML documentation
-        lld_html    = False, # Build LLD HTML documentation
-        libcxx_html = False  # Build Libc++ HTML documentation
+        llvm_html         = False, # Build LLVM HTML documentation
+        llvm_man          = False, # Build LLVM man pages
+        clang_html        = False, # Build Clang HTML documentation
+        clang_tools_html  = False, # Build Clang Extra Tools HTML documentation
+        lld_html          = False, # Build LLD HTML documentation
+        libcxx_html       = False  # Build Libc++ HTML documentation
         ):
 
     f = buildbot.process.factory.BuildFactory()
@@ -18,6 +19,7 @@ def getSphinxDocsBuildFactory(
     llvm_srcdir = 'llvm/src'
     llvm_objdir = 'llvm/build'
     clang_srcdir = llvm_srcdir + '/tools/clang'
+    clang_tools_srcdir = llvm_srcdir + '/tools/clang/tools/extra'
     lld_srcdir = llvm_srcdir + '/tools/lld'
     libcxx_srcdir = llvm_srcdir + '/projects/libcxx'
     libcxxabi_srcdir = llvm_srcdir + '/projects/libcxxabi'
@@ -36,6 +38,13 @@ def getSphinxDocsBuildFactory(
                       baseURL='http://llvm.org/svn/llvm-project/cfe/',
                       defaultBranch='trunk',
                       workdir=clang_srcdir))
+
+    if clang_tools_html:
+        f.addStep(SVN(name='svn-clang-tools',
+                      mode='update',
+                      baseURL='http://llvm.org/svn/llvm-project/clang-tools-extra/',
+                      defaultBranch='trunk',
+                      workdir=clang_tools_srcdir))
 
     if lld_html:
         f.addStep(SVN(name='svn-lld',
@@ -97,6 +106,14 @@ def getSphinxDocsBuildFactory(
                                description=["Build Clang Sphinx HTML documentation"],
                                workdir=llvm_objdir,
                                targets=['docs-clang-html']
+                              ))
+
+    if clang_tools_html:
+        f.addStep(NinjaCommand(name="docs-clang-tools-html",
+                               haltOnFailure=True,
+                               description=["Build Clang Extra Tools Sphinx HTML documentation"],
+                               workdir=llvm_objdir,
+                               targets=['docs-clang-tools-html']
                               ))
 
     if lld_html:
