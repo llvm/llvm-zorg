@@ -144,8 +144,8 @@
 # CHECK-CMAKE-2-TESTS: '/usr/local/bin/cmake' '-G' 'Ninja'
 # CHECK-CMAKE-2-TESTS: '-DLLVM_LIT_ARGS=--xunit-xml-output=testresults.xunit.xml -v -j 2'
 
-# RUN: python %{src_root}/zorg/jenkins/build.py cmake all --cmake-type=RelWithDebugInfo
-
+# RUN: python %{src_root}/zorg/jenkins/build.py cmake all --cmake-type=RelWithDebugInfo | FileCheck --check-prefix CHECK-CMAKE-UPLOADS %s
+# CHECK-CMAKE-UPLOADS: @@@ Uploading Artifact @@@
 
 # RUN: python %{src_root}/zorg/jenkins/build.py static-analyzer-benchmarks | FileCheck --check-prefix CHECK-STATIC-ANALYZER-BENCHMARKS %s
 # CHECK-STATIC-ANALYZER-BENCHMARKS: @@@ Static Analyzer Benchmarks @@@

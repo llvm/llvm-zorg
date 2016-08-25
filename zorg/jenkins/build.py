@@ -249,6 +249,7 @@ def cmake_builder(target):
         run_cmd(conf.builddir(), ninja_cmd)
         header("Ninja install")
         run_cmd(conf.builddir(), ninja_cmd + conf.cmake_build_targets)
+        build_upload_artifact()
         footer()
     # Run all the test targets.
     ninja_cmd.extend(['-k', '0', '-v'])
@@ -648,6 +649,7 @@ def build_upload_artifact():
     if conf.noupload:
         print 'Not uploading artificats'
         return
+    header("Uploading Artifact")
     assert conf.svn_rev != "NONE"
     prop_file = "last_good_build.properties"
 
