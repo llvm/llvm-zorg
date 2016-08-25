@@ -86,8 +86,7 @@
 # CHECK-CMAKE: '-DLLVM_ENABLE_ASSERTIONS=Off'
 # CHECK-CMAKE: -DLLVM_LIT_ARGS=--xunit-xml-output=testresults.xunit.xml -v
 # CHECK-CMAKE: '/usr/local/bin/ninja'
-# CHECK-CMAKE: '/usr/local/bin/ninja' '-k' '0' '-v' 'check' 'check-clang'
-# CHECK-CMAKE: '/usr/local/bin/ninja' '-k' '0' '-v' 'check-all'
+# CHECK-CMAKE: '/usr/local/bin/ninja' '-k' '0' '-v' 'check' 'check-clang' 'check-all'
 
 
 # RUN: python %{src_root}/zorg/jenkins/build.py cmake build
@@ -160,3 +159,9 @@
 
 # RUN: python %{src_root}/zorg/jenkins/build.py clang all --lto --cmake-flag="-DFOO" | FileCheck --check-prefix CHECK-CMAKEFLAGS %s
 # CHECK-CMAKEFLAGS: '-DFOO'
+
+# RUN: python %{src_root}/zorg/jenkins/build.py cmake all --cmake-build-target foo --cmake-build-target bar | FileCheck --check-prefix CHECK-BTARGETS %s
+# CHECK-BTARGETS: 'foo' 'bar'
+
+# RUN: python %{src_root}/zorg/jenkins/build.py cmake all --cmake-test-target foo --cmake-test-target bar | FileCheck --check-prefix CHECK-TTARGETS %s
+# CHECK-TTARGETS: 'foo' 'bar'

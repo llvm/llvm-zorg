@@ -248,18 +248,14 @@ def cmake_builder(target):
         header("Ninja build")
         run_cmd(conf.builddir(), ninja_cmd)
         header("Ninja install")
-        run_cmd(conf.builddir(), ninja_cmd + ['install'])
+        run_cmd(conf.builddir(), ninja_cmd + conf.cmake_build_targets)
         footer()
     # Run all the test targets.
     ninja_cmd.extend(['-k', '0', '-v'])
-    if target == 'all' or target == 'test':
+    if target == 'all' or target == 'test' or target == 'testlong':
         header("Ninja test")
-        run_cmd(conf.builddir(), ninja_cmd + ['check', 'check-clang'])
-        footer()
-
-    if target == 'all' or target == 'testlong':
-        header("Ninja test")
-        run_cmd(conf.builddir(), ninja_cmd + ['check-all'])
+        long = ['check-all'] if target == 'testlong' or target == 'all' else []
+        run_cmd(conf.builddir(), ninja_cmd + conf.cmake_test_targets + long)
         footer()
 
 
@@ -803,7 +799,6 @@ def run_ws(cmd, env=None):
     return run_cmd(conf.workspace, cmd, env)
 
 
-
 def parse_args():
     """Get the command line arguments, and make sure they are correct."""
 
@@ -828,6 +823,12 @@ def parse_args():
     parser.add_argument('--cmake-flag', dest='cmake_flags',
                         action='append', default=[],
                         help='Set an arbitrary cmake flag')
+    parser.add_argument('--cmake-test-target', dest='cmake_test_targets',
+                        action='append', default=['check', 'check-clang'],
+                        help='Targets to build during testing')
+    parser.add_argument('--cmake-build-target', dest='cmake_build_targets',
+                        action='append', default=['install'],
+                        help='Targets to build during building.')
     parser.add_argument('--compiler-flag', dest='compiler_flags',
                         action='append', default=[],
                         help='Set an arbitrary compiler flag')
