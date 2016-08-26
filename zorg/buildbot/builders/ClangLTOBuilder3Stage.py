@@ -122,6 +122,7 @@ def get3StageClangLTOBuildFactory(
             haltOnFailure=True,
             warnOnWarnings=True,
             description=["3 Stage Build Clang"],
+            timeout=3600, # Default value is not enough.
             workdir=llvm_objdir,
             env=merged_env)
     )
