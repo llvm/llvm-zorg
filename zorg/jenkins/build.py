@@ -237,7 +237,7 @@ def cmake_builder(target):
         lit_flags += ['-j', conf.max_parallel_tests]
     cmake_cmd += ['-DLLVM_LIT_ARGS={}'.format(' '.join(lit_flags))]
 
-    ninja_cmd = env + ["/usr/local/bin/ninja"]
+    ninja_cmd = env + ["/usr/local/bin/ninja", '-v']
     if conf.j_level is not None:
         ninja_cmd += ["-j", conf.j_level]
 
@@ -246,17 +246,28 @@ def cmake_builder(target):
         run_cmd(conf.builddir(), cmake_cmd)
         footer()
         header("Ninja build")
-        run_cmd(conf.builddir(), ninja_cmd)
+
+        # Build all if nothing is passed by the user.
+        passed_target = conf.cmake_build_targets
+        build_target = passed_target if passed_target else ['all']
+        run_cmd(conf.builddir(), ninja_cmd + build_target)
         header("Ninja install")
-        run_cmd(conf.builddir(), ninja_cmd + conf.cmake_build_targets)
+        run_cmd(conf.builddir(), ninja_cmd + ['install'])
         build_upload_artifact()
         footer()
     # Run all the test targets.
-    ninja_cmd.extend(['-k', '0', '-v'])
+    ninja_cmd.extend(['-k', '0'])
     if target == 'all' or target == 'test' or target == 'testlong':
         header("Ninja test")
-        long = ['check-all'] if target == 'testlong' or target == 'all' else []
-        run_cmd(conf.builddir(), ninja_cmd + conf.cmake_test_targets + long)
+
+        targets = ['check-all'] if target == 'testlong' or target == 'all' else conf.cmake_test_targets
+
+        if not targets:
+            # testlong and all do check all, otherwise check and check-clang
+            # unless the user asked for something else.
+            targets = ['check', 'check-clang']
+
+        run_cmd(conf.builddir(), ninja_cmd + targets)
         footer()
 
 
@@ -826,10 +837,10 @@ def parse_args():
                         action='append', default=[],
                         help='Set an arbitrary cmake flag')
     parser.add_argument('--cmake-test-target', dest='cmake_test_targets',
-                        action='append', default=['check', 'check-clang'],
+                        action='append', default=[],
                         help='Targets to build during testing')
     parser.add_argument('--cmake-build-target', dest='cmake_build_targets',
-                        action='append', default=['install'],
+                        action='append', default=[],
                         help='Targets to build during building.')
     parser.add_argument('--compiler-flag', dest='compiler_flags',
                         action='append', default=[],

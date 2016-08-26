@@ -85,8 +85,8 @@
 # CHECK-CMAKE: '-DCMAKE_BUILD_TYPE=Debug'
 # CHECK-CMAKE: '-DLLVM_ENABLE_ASSERTIONS=Off'
 # CHECK-CMAKE: -DLLVM_LIT_ARGS=--xunit-xml-output=testresults.xunit.xml -v
-# CHECK-CMAKE: '/usr/local/bin/ninja'
-# CHECK-CMAKE: '/usr/local/bin/ninja' '-k' '0' '-v' 'check' 'check-clang' 'check-all'
+# CHECK-CMAKE: '/usr/local/bin/ninja' '-v' 'all'
+# CHECK-CMAKE: '/usr/local/bin/ninja' '-v' '-k' '0' 'check-all'
 
 
 # RUN: python %{src_root}/zorg/jenkins/build.py cmake build
@@ -160,8 +160,14 @@
 # RUN: python %{src_root}/zorg/jenkins/build.py clang all --lto --cmake-flag="-DFOO" | FileCheck --check-prefix CHECK-CMAKEFLAGS %s
 # CHECK-CMAKEFLAGS: '-DFOO'
 
-# RUN: python %{src_root}/zorg/jenkins/build.py cmake all --cmake-build-target foo --cmake-build-target bar | FileCheck --check-prefix CHECK-BTARGETS %s
-# CHECK-BTARGETS: 'foo' 'bar'
+# Make sure you can pass new build targetss.
+# RUN: python %{src_root}/zorg/jenkins/build.py cmake  build --cmake-build-target foo --cmake-build-target bar | FileCheck --check-prefix CHECK-BTARGETS %s
+# CHECK-BTARGETS: '/usr/local/bin/ninja' '-v' 'foo' 'bar'
 
-# RUN: python %{src_root}/zorg/jenkins/build.py cmake all --cmake-test-target foo --cmake-test-target bar | FileCheck --check-prefix CHECK-TTARGETS %s
-# CHECK-TTARGETS: 'foo' 'bar'
+# Make sure you can pass new test targets.
+# RUN: python %{src_root}/zorg/jenkins/build.py cmake test --cmake-test-target foo --cmake-test-target bar | FileCheck --check-prefix CHECK-TTARGETS %s
+# CHECK-TTARGETS: '/usr/local/bin/ninja' '-v' '-k' '0' 'foo' 'bar'
+
+# Test long should always do check-all, since that is what many bots expect.
+# RUN: python %{src_root}/zorg/jenkins/build.py cmake testlong  | FileCheck --check-prefix CHECK-TTARGETS2 %s
+# CHECK-TTARGETS2: '/usr/local/bin/ninja' '-v' '-k' '0' 'check-all'
