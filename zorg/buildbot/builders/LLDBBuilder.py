@@ -948,6 +948,13 @@ def getLLDBScriptCommandsFactory(
               property="got_revision",
               workdir="scripts"))
 
+    # Update NDK and create toolchains
+    getShellCommandStep(f, name='ndk download and toolchains update',
+                        command=[pathSep + 'updateToolChain' + scriptExt],
+                        description=["Update NDK toolchain"],
+                        flunkOnFailure=False,
+                        warnOnFailure=False)
+
     # Configure
     getShellCommandStep(f, name='cmake local',
                         command=[pathSep + 'cmake' + scriptExt])
