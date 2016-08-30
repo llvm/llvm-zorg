@@ -953,7 +953,7 @@ def getLLDBScriptCommandsFactory(
                         command=[pathSep + 'updateToolChain' + scriptExt],
                         description=["Update NDK toolchain"],
                         flunkOnFailure=False,
-                        warnOnFailure=False)
+                        haltOnFailure=False)
 
     # Configure
     getShellCommandStep(f, name='cmake local',
