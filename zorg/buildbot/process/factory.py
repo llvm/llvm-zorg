@@ -1,22 +1,24 @@
+from collections import OrderedDict
+
 from buildbot.process.factory import BuildFactory
 from buildbot.steps.source import SVN
 
-svn_repos = {
-  'llvm'              : ("%(llvm_srcdir)s",                         'http://llvm.org/svn/llvm-project/llvm/'),
-  'clang'             : ("%(llvm_srcdir)s/tools/clang",             'http://llvm.org/svn/llvm-project/cfe/'),
-  'clang-tools-extra' : ("%(llvm_srcdir)s/tools/clang/tools/extra", 'http://llvm.org/svn/llvm-project/clang-tools-extra/'),
-  'compiler-rt'       : ("%(llvm_srcdir)s/projects/compiler-rt",    'http://llvm.org/svn/llvm-project/compiler-rt/'),
-  'lld'               : ("%(llvm_srcdir)s/tools/lld",               'http://llvm.org/svn/llvm-project/lld/'),
-  'lnt'               : ("%(llvm_srcdir)s/test/lnt",                'http://llvm.org/svn/llvm-project/lnt/'),
-  'test-suite'        : ("%(llvm_srcdir)s/test/test-suite",         'http://llvm.org/svn/llvm-project/test-suite/'),
-  'libcxx'            : ("%(llvm_srcdir)s/llvm/projects/libcxx",    'http://llvm.org/svn/llvm-project/libcxx/'),
-  'libcxxabi'         : ("%(llvm_srcdir)s/llvm/projects/libcxxabi", 'http://llvm.org/svn/llvm-project/libcxxabi/'),
-  'libunwind'         : ("%(llvm_srcdir)s/llvm/projects/libunwind", 'http://llvm.org/svn/llvm-project/libunwind/'),
-  'lldb'              : ("%(llvm_srcdir)s/tools/lldb",              'http://llvm.org/svn/llvm-project/lldb/'),
-  'llgo'              : ("%(llvm_srcdir)s/tools/llgo",              'http://llvm.org/svn/llvm-project/llgo/'),
-  'polly'             : ("%(llvm_srcdir)s/tools/polly",             'http://llvm.org/svn/llvm-project/polly/'),
-  'openmp'            : ("%(llvm_srcdir)s/tools/openmp",            'http://llvm.org/svn/llvm-project/openmp/'),
-}
+svn_repos = OrderedDict([
+  ('llvm'             , ("%(llvm_srcdir)s",                         'http://llvm.org/svn/llvm-project/llvm/')),
+  ('clang'            , ("%(llvm_srcdir)s/tools/clang",             'http://llvm.org/svn/llvm-project/cfe/')),
+  ('clang-tools-extra', ("%(llvm_srcdir)s/tools/clang/tools/extra", 'http://llvm.org/svn/llvm-project/clang-tools-extra/')),
+  ('compiler-rt'      , ("%(llvm_srcdir)s/projects/compiler-rt",    'http://llvm.org/svn/llvm-project/compiler-rt/')),
+  ('libcxx'           , ("%(llvm_srcdir)s/llvm/projects/libcxx",    'http://llvm.org/svn/llvm-project/libcxx/')),
+  ('libcxxabi'        , ("%(llvm_srcdir)s/llvm/projects/libcxxabi", 'http://llvm.org/svn/llvm-project/libcxxabi/')),
+  ('libunwind'        , ("%(llvm_srcdir)s/llvm/projects/libunwind", 'http://llvm.org/svn/llvm-project/libunwind/')),
+  ('lld'              , ("%(llvm_srcdir)s/tools/lld",               'http://llvm.org/svn/llvm-project/lld/')),
+  ('lnt'              , ("%(llvm_srcdir)s/test/lnt",                'http://llvm.org/svn/llvm-project/lnt/')),
+  ('test-suite'       , ("%(llvm_srcdir)s/test/test-suite",         'http://llvm.org/svn/llvm-project/test-suite/')),
+  ('lldb'             , ("%(llvm_srcdir)s/tools/lldb",              'http://llvm.org/svn/llvm-project/lldb/')),
+  ('llgo'             , ("%(llvm_srcdir)s/tools/llgo",              'http://llvm.org/svn/llvm-project/llgo/')),
+  ('polly'            , ("%(llvm_srcdir)s/tools/polly",             'http://llvm.org/svn/llvm-project/polly/')),
+  ('openmp'           , ("%(llvm_srcdir)s/tools/openmp",            'http://llvm.org/svn/llvm-project/openmp/')),
+  ])
 
 class LLVMBuildFactory(BuildFactory):
     """
@@ -63,12 +65,13 @@ class LLVMBuildFactory(BuildFactory):
         if not kwargs.get('defaultBranch', None):
             kwargs['defaultBranch'] = 'trunk'
 
-       # Add a SVM step for each project this builder depends on. 
-        for project in self.depends_on_projects:
-            workdir, baseURL = svn_repos[project]
-            self.addStep(
-                SVN(name='svn-%s' % project,
-                    workdir=workdir % {'llvm_srcdir' : llvm_srcdir},
-                    baseURL=baseURL,
-                    **kwargs))
-
+        # Add a SVM step for each project this builder depends on.
+        # We want the projects be always checked out in a certain order.
+        for project in svn_repos.keys():
+            if project in self.depends_on_projects:
+                workdir, baseURL = svn_repos[project]
+                self.addStep(
+                    SVN(name='svn-%s' % project,
+                        workdir=workdir % {'llvm_srcdir' : llvm_srcdir},
+                        baseURL=baseURL,
+                        **kwargs))
