@@ -53,7 +53,8 @@ def getLibcxxWholeTree(f, src_root):
 
 
 def getLibcxxAndAbiBuilder(f=None, env={}, additional_features=set(),
-                           cmake_extra_opts={}, lit_extra_opts={}):
+                           cmake_extra_opts={}, lit_extra_opts={},
+                           lit_extra_args=[]):
     if f is None:
         f = buildbot.process.factory.BuildFactory()
 
@@ -73,6 +74,8 @@ def getLibcxxAndAbiBuilder(f=None, env={}, additional_features=set(),
     # Specify the max number of threads using properties so LIT doesn't use
     # all the threads on the system.
     litTestArgs = '-sv --show-unsupported --show-xfail --threads=%(jobs)s'
+    if lit_extra_args:
+        litTestArgs += ' ' + ' '.join(lit_extra_args)
 
     if additional_features:
         litTestArgs += (' --param=additional_features=' +

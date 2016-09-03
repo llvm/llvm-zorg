@@ -882,7 +882,8 @@ def _get_libcxx_builders():
          'slavenames': ['gribozavr4'],
          'builddir': 'libcxx-libcxxabi-x86_64-linux-debian',
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
-             env={'CC': 'clang', 'CXX': 'clang++'}),
+             env={'CC': 'clang', 'CXX': 'clang++'},
+             lit_extra_args=['--shuffle']),
          'category': 'libcxx'},
 
         {'name': 'libcxx-libcxxabi-x86_64-linux-debian-noexceptions',
@@ -890,7 +891,8 @@ def _get_libcxx_builders():
          'builddir': 'libcxx-libcxxabi-x86_64-linux-debian-noexceptions',
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
              env={'CC': 'clang', 'CXX': 'clang++'},
-             cmake_extra_opts={'LIBCXX_ENABLE_EXCEPTIONS': 'OFF'}),
+             cmake_extra_opts={'LIBCXX_ENABLE_EXCEPTIONS': 'OFF'},
+             lit_extra_args=['--shuffle']),
          'category': 'libcxx'},
 
         {'name': 'libcxx-libcxxabi-libunwind-x86_64-linux-debian',
@@ -898,7 +900,8 @@ def _get_libcxx_builders():
          'builddir': 'libcxx-libcxxabi-libunwind-x86_64-linux-debian',
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
              env={'CC': 'clang', 'CXX': 'clang++'},
-             cmake_extra_opts={'LIBCXXABI_USE_LLVM_UNWINDER': 'ON'}),
+             cmake_extra_opts={'LIBCXXABI_USE_LLVM_UNWINDER': 'ON'},
+             lit_extra_args=['--shuffle']),
          'category': 'libcxx'},
 
         {'name': 'libcxx-libcxxabi-singlethreaded-x86_64-linux-debian',
