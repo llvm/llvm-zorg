@@ -8,10 +8,7 @@ from buildbot.process.properties import WithProperties, Property
 from buildbot.steps.shell import Configure, ShellCommand, SetProperty
 from buildbot.steps.shell import WarningCountingShellCommand
 from buildbot.steps.source import SVN
-from buildbot.steps.slave import RemoveDirectory
 from buildbot.steps.transfer import FileDownload
-
-from zorg.buildbot.process.factory import LLVMBuildFactory
 
 import zorg.buildbot.util.artifacts as artifacts
 import zorg.buildbot.builders.Util as builders_util
@@ -19,7 +16,6 @@ import zorg.buildbot.util.phasedbuilderutils as phasedbuilderutils
 import zorg.buildbot.commands as commands
 import zorg.buildbot.commands.BatchFileDownload as batch_file_download
 import zorg.buildbot.commands.LitTestCommand as lit_test_command
-
 
 def getClangBuildFactory(
             triple=None,
@@ -339,6 +335,40 @@ def getClangBuildFactory(
 
     return f
 
+def addSVNUpdateSteps(f,
+                      checkout_clang_tools_extra,
+                      checkout_compiler_rt,
+                      checkout_test_suite):
+    # We *must* checkout at least Clang+LLVM
+    f.addStep(SVN(name='svn-llvm',
+                  mode='update', baseURL='http://llvm.org/svn/llvm-project/llvm/',
+                  defaultBranch='trunk',
+                  workdir='llvm'))
+    f.addStep(SVN(name='svn-clang',
+                  mode='update', baseURL='http://llvm.org/svn/llvm-project/cfe/',
+                  defaultBranch='trunk',
+                  workdir='llvm/tools/clang'))
+
+    # Extra stuff that will be built/tested
+    if checkout_clang_tools_extra:
+        f.addStep(SVN(name='svn-clang-tools-extra',
+                      mode='update', baseURL='http://llvm.org/svn/llvm-project/clang-tools-extra/',
+                      defaultBranch='trunk',
+                      workdir='llvm/tools/clang/tools/extra'))
+    if checkout_compiler_rt:
+        f.addStep(SVN(name='svn-compiler-rt',
+                      mode='update', baseURL='http://llvm.org/svn/llvm-project/compiler-rt/',
+                      defaultBranch='trunk',
+                      workdir='llvm/projects/compiler-rt'))
+    if checkout_test_suite:
+        f.addStep(SVN(name='svn-lnt',
+                      mode='update', baseURL='http://llvm.org/svn/llvm-project/lnt/',
+                      defaultBranch='trunk',
+                      workdir='test/lnt'))
+        f.addStep(SVN(name='svn-test-suite',
+                      mode='update', baseURL='http://llvm.org/svn/llvm-project/test-suite/',
+                      defaultBranch='trunk',
+                      workdir='test/test-suite'))
 
 def addGCSUploadSteps(f, package_name, install_prefix, gcs_directory, env,
                       gcs_url_property=None):
@@ -386,33 +416,32 @@ def addGCSUploadSteps(f, package_name, install_prefix, gcs_directory, env,
                   workdir=install_prefix,
                   env=env))
 
-
 def getClangCMakeGCSBuildFactory(
             clean=True,
             test=True,
-            cmake=None,
+            cmake='cmake',
             jobs=None,
 
             # VS tools environment variable if using MSVC. For example,
             # %VS120COMNTOOLS% selects the 2013 toolchain.
             vs=None,
-            vs_target_arch=None,
+            vs_target_arch='x86',
 
             # Multi-stage compilation
             useTwoStage=False,
             testStage1=True,
-            stage1_config=None,
-            stage2_config=None,
+            stage1_config='Release',
+            stage2_config='Release',
 
             # Test-suite
             runTestSuite=False,
-            nt_flags=None,
+            nt_flags=[],
             submitURL=None,
             testerName=None,
 
             # Environmental variables for all steps.
-            env=None,
-            extra_cmake_args=None,
+            env={},
+            extra_cmake_args=[],
 
             # Extra repositories
             checkout_clang_tools_extra=True,
@@ -420,7 +449,9 @@ def getClangCMakeGCSBuildFactory(
 
             # Upload artifacts to Google Cloud Storage (for the llvmbisect tool)
             stage1_upload_directory=None,
-            ):
+
+            # Triggers
+            trigger_after_stage1=[]):
     return _getClangCMakeBuildFactory(
                clean=clean, test=test, cmake=cmake, jobs=jobs, vs=vs,
                vs_target_arch=vs_target_arch, useTwoStage=useTwoStage,
@@ -431,35 +462,34 @@ def getClangCMakeGCSBuildFactory(
                checkout_clang_tools_extra=checkout_clang_tools_extra,
                checkout_compiler_rt=checkout_compiler_rt,
                stage1_upload_directory=stage1_upload_directory,
-               )
-
+               trigger_after_stage1=trigger_after_stage1)
 
 def getClangCMakeBuildFactory(
             clean=True,
             test=True,
-            cmake=None,
+            cmake='cmake',
             jobs=None,
 
             # VS tools environment variable if using MSVC. For example,
             # %VS120COMNTOOLS% selects the 2013 toolchain.
             vs=None,
-            vs_target_arch=None,
+            vs_target_arch='x86',
 
             # Multi-stage compilation
             useTwoStage=False,
             testStage1=True,
-            stage1_config=None,
-            stage2_config=None,
+            stage1_config='Release',
+            stage2_config='Release',
 
             # Test-suite
             runTestSuite=False,
-            nt_flags=None,
+            nt_flags=[],
             submitURL=None,
             testerName=None,
 
             # Environmental variables for all steps.
-            env=None,
-            extra_cmake_args=None,
+            env={},
+            extra_cmake_args=[],
 
             # Extra repositories
             checkout_clang_tools_extra=True,
@@ -474,33 +504,32 @@ def getClangCMakeBuildFactory(
                checkout_clang_tools_extra=checkout_clang_tools_extra,
                checkout_compiler_rt=checkout_compiler_rt)
 
-
 def _getClangCMakeBuildFactory(
             clean=True,
             test=True,
-            cmake=None,
+            cmake='cmake',
             jobs=None,
 
             # VS tools environment variable if using MSVC. For example,
             # %VS120COMNTOOLS% selects the 2013 toolchain.
             vs=None,
-            vs_target_arch=None,
+            vs_target_arch='x86',
 
             # Multi-stage compilation
             useTwoStage=False,
             testStage1=True,
-            stage1_config=None,
-            stage2_config=None,
+            stage1_config='Release',
+            stage2_config='Release',
 
             # Test-suite
             runTestSuite=False,
-            nt_flags=None,
+            nt_flags=[],
             submitURL=None,
             testerName=None,
 
             # Environmental variables for all steps.
-            env=None,
-            extra_cmake_args=None,
+            env={},
+            extra_cmake_args=[],
 
             # Extra repositories
             checkout_clang_tools_extra=True,
@@ -508,44 +537,17 @@ def _getClangCMakeBuildFactory(
 
             # Upload artifacts to Google Cloud Storage (for the llvmbisect tool)
             stage1_upload_directory=None,
-            ):
 
-    if cmake is None:
-        cmake = 'cmake'
-    if env is None:
-        env = {}
-    if stage1_config is None:
-        stage1_config='Release'
-
-    if extra_cmake_args is None:
-        extra_cmake_args=[]
-
-    depends_on_projects=['llvm', 'clang']
-    if checkout_clang_tools_extra:
-        depends_on_projects.append("clang-tools-extra")
-    if checkout_compiler_rt:
-        depends_on_projects.append("compiler-rt")
-    if runTestSuite:
-        depends_on_projects.extend(["lnt", "test-suite"])
+            # Triggers
+            trigger_after_stage1=[]):
 
     ############# PREPARING
-    f = LLVMBuildFactory(
-            depends_on_projects=depends_on_projects,
-            llvm_srcdir="llvm.src",
-            )
+    f = buildbot.process.factory.BuildFactory()
 
-    cleanBuildRequested = lambda step: step.build.getProperty("clean") or clean
-
-    # Do a clean checkout only if requested by the build property.
-    f.addStep(RemoveDirectory(name='clean-src-dir',
-              dir=f.llvm_srcdir,
-              haltOnFailure=False,
-              flunkOnFailure=False,
-              doStepIf=lambda step: step.build.getProperty("clean") or False,
-              ))
-
-    # Get the source code.
-    f.addSVNSteps()
+    addSVNUpdateSteps(f,
+                      checkout_clang_tools_extra=checkout_clang_tools_extra,
+                      checkout_compiler_rt=checkout_compiler_rt,
+                      checkout_test_suite=runTestSuite)
 
     # If jobs not defined, Ninja will choose a suitable value
     jobs_cmd = []
@@ -560,7 +562,6 @@ def _getClangCMakeBuildFactory(
     ninja_check_cmd = ['ninja', 'check-all'] + jobs_cmd
     check_build_cmd = ["sh", "-c",
                        "test -e build.ninja && echo OK || echo Missing"]
-
     if vs:
         check_build_cmd = ["cmd", "/c", "if exist build.ninja (echo OK) " +
                            " else (echo Missing & exit 1)"]
@@ -573,14 +574,12 @@ def _getClangCMakeBuildFactory(
 
     # Set up VS environment, if appropriate.
     if vs:
-        if vs_target_arch is None:
-            vs_target_arch = 'x86'
-
         f.addStep(SetProperty(
             command=builders_util.getVisualStudioEnvironment(vs, vs_target_arch),
             extract_fn=builders_util.extractSlaveEnvironment))
         assert not env, "Can't have custom builder env vars with VS"
         env = Property('slave_env')
+
 
     ############# CLEANING
     if clean:
@@ -650,11 +649,9 @@ def _getClangCMakeBuildFactory(
         cc = 'clang-cl.exe'
         cxx = 'clang-cl.exe'
 
+
     ############# STAGE 2
     if useTwoStage:
-        if stage2_config is None:
-            stage2_config='Release'
-
         # We always cleanly build the stage 2. If the compiler has been
         # changed on the stage 1, we cannot trust any of the intermediate file
         # from the old compiler. And if the stage 1 compiler is the same, we
@@ -739,11 +736,8 @@ def _getClangCMakeBuildFactory(
                           '--test-suite', test_suite_dir,
                           '--cc', cc,
                           '--cxx', cxx]
-
         # Append any option provided by the user
-        if nt_flags:
-            test_suite_cmd.extend(nt_flags)
-
+        test_suite_cmd.extend(nt_flags)
         # Only submit if a URL has been specified
         if submitURL is not None:
             if not isinstance(submitURL, list):
@@ -789,7 +783,6 @@ def _getClangCMakeBuildFactory(
                                env=test_suite_env))
 
     return f
-
 
 def getClangMSVCBuildFactory(update=True, clean=True, vcDrive='c', jobs=1, cmake=r"cmake"):
     f = buildbot.process.factory.BuildFactory()
@@ -869,7 +862,6 @@ def getClangMSVCBuildFactory(update=True, clean=True, vcDrive='c', jobs=1, cmake
 
     return f
 
-
 def addClangGCCTests(f, ignores={}, install_prefix="%(builddir)s/llvm.install",
                      languages = ('gcc', 'g++', 'objc', 'obj-c++')):
     make_vars = [WithProperties(
@@ -890,7 +882,6 @@ def addClangGCCTests(f, ignores={}, install_prefix="%(builddir)s/llvm.install",
                        '%s.log' % lang : 'obj/%s/%s.log' % (lang, lang)},
             ignore=gcc_dg_ignores.get(lang, [])))
 
-
 def addClangGDBTests(f, ignores={}, install_prefix="%(builddir)s/llvm.install"):
     make_vars = [WithProperties(
             'CC_UNDER_TEST=%s/bin/clang' % install_prefix),
@@ -906,7 +897,6 @@ def addClangGDBTests(f, ignores={}, install_prefix="%(builddir)s/llvm.install"):
             workdir='clang-tests/gdb-1472-testsuite',
             logfiles={ 'dg.sum' : 'obj/filtered.gdb.sum',
                        'gdb.log' : 'obj/gdb.log' }))
-
 
 def addModernClangGDBTests(f, jobs, install_prefix):
     make_vars = [WithProperties('RUNTESTFLAGS=CC_FOR_TARGET=\'{0}/bin/clang\' '
@@ -933,7 +923,6 @@ def addModernClangGDBTests(f, jobs, install_prefix):
 
 # FIXME: Deprecated.
 addClangTests = addClangGCCTests
-
 
 def getClangTestsIgnoresFromPath(path, key):
     def readList(path):
