@@ -673,7 +673,7 @@ def build_upload_artifact():
         prop_fd.write("ARTIFACT={}\n".format(new_url))
 
     # The .a's are big and we don't need them later. Drop them.
-    tar = ["tar", "zcvf", '--exclude=*.a', "../" + artifact_name, "."]
+    tar = ["tar", "zcvf", "../" + artifact_name, '--exclude=*.a',  "."]
 
     run_cmd(conf.installdir(), tar)
 
