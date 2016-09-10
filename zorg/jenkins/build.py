@@ -672,7 +672,8 @@ def build_upload_artifact():
         prop_fd.write("LLVM_REV={}\n".format(conf.svn_rev))
         prop_fd.write("ARTIFACT={}\n".format(new_url))
 
-    tar = ["tar", "zcvf", "../" + artifact_name, "."]
+    # The .a's are big and we don't need them later. Drop them.
+    tar = ["tar", "zcvf", '--exclude=*.a', "../" + artifact_name, "."]
 
     run_cmd(conf.installdir(), tar)
 
