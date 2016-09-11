@@ -64,4 +64,4 @@ build_tsan "${TSAN_RELEASE_BUILD_DIR}" "-DCOMPILER_RT_DEBUG=OFF" "$ROOT/$TSAN_DE
 echo @@@BUILD_STEP tsan analyze@@@
 BIN=$(mktemp -t tsan_exe.XXXXXXXX)
 echo "int main() {return 0;}" | $TSAN_RELEASE_BUILD_DIR/bin/clang -x c++ - -fsanitize=thread -O2 -o ${BIN}
-$LLVM_CHECKOUT/projects/compiler-rt/lib/tsan/check_analyze.sh ${BIN} || echo @@@STEP_WARNINGS@@@
+$LLVM_CHECKOUT/projects/compiler-rt/lib/tsan/check_analyze.sh ${BIN} || echo @@@STEP_FAILURE@@@
