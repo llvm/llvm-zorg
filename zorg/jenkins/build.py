@@ -672,8 +672,10 @@ def build_upload_artifact():
         prop_fd.write("LLVM_REV={}\n".format(conf.svn_rev))
         prop_fd.write("ARTIFACT={}\n".format(new_url))
 
-    # The .a's are big and we don't need them later. Drop them.
-    tar = ["tar", "zcvf", "../" + artifact_name, '--exclude=*.a',  "."]
+    # The .a's are big and we don't need them later. Drop the LLVM and clang
+    # libraries, but keep the libraries from compiler-rt.
+    tar = ["tar", "zcvf", "../" + artifact_name, "--exclude=*libLLVM*.a",
+           "--exclude=*libclang[A-Z]*.a", "."]
 
     run_cmd(conf.installdir(), tar)
 
