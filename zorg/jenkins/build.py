@@ -476,7 +476,7 @@ def static_analyzer_benchmarks_builder():
                               old_path)
 
   benchmark_cmd = [benchmark_script,
-                   "--strictness", "2"
+                   "--strictness", "0"
                   ]
   run_cmd(benchmarks_dir, benchmark_cmd, env=env)
 

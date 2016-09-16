@@ -150,7 +150,7 @@
 # RUN: python %{src_root}/zorg/jenkins/build.py static-analyzer-benchmarks | FileCheck --check-prefix CHECK-STATIC-ANALYZER-BENCHMARKS %s
 # CHECK-STATIC-ANALYZER-BENCHMARKS: @@@ Static Analyzer Benchmarks @@@
 # CHECK-STATIC-ANALYZER-BENCHMARKS: cd [[WORKSPACE:.*]]/test-suite-ClangAnalyzer/
-# CHECK-STATIC-ANALYZER-BENCHMARKS: '[[WORKSPACE]]/utils-analyzer/SATestBuild.py' '--strictness' '2'
+# CHECK-STATIC-ANALYZER-BENCHMARKS: '[[WORKSPACE]]/utils-analyzer/SATestBuild.py' '--strictness' '0'
 # CHECK-STATIC-ANALYZER-BENCHMARKS: @@@@@@
 
 # RUN: python %{src_root}/zorg/jenkins/build.py cmake all --globalisel | FileCheck --check-prefix CHECK-GISEL %s
