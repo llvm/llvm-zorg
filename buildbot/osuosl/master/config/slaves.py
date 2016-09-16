@@ -34,6 +34,16 @@ def get_build_slaves():
         create_slave("linaro-a15-03", properties={'jobs' : 4}, max_builds=1),
         create_slave("linaro-a15-04", properties={'jobs' : 4}, max_builds=1),
 
+        create_slave("linaro-tk1-01", properties={'jobs' : 4}, max_builds=1),
+        create_slave("linaro-tk1-02", properties={'jobs' : 4}, max_builds=1),
+        create_slave("linaro-tk1-03", properties={'jobs' : 4}, max_builds=1),
+        create_slave("linaro-tk1-04", properties={'jobs' : 4}, max_builds=1),
+        create_slave("linaro-tk1-05", properties={'jobs' : 4}, max_builds=1),
+        create_slave("linaro-tk1-06", properties={'jobs' : 4}, max_builds=1),
+        create_slave("linaro-tk1-07", properties={'jobs' : 4}, max_builds=1),
+        create_slave("linaro-tk1-08", properties={'jobs' : 4}, max_builds=1),
+        create_slave("linaro-tk1-09", properties={'jobs' : 4}, max_builds=1),
+
         # AArch64 Linaro slaves
         create_slave("linaro-apm-01", properties={'jobs' : 8}, max_builds=1),
         create_slave("linaro-apm-02", properties={'jobs' : 8}, max_builds=1),

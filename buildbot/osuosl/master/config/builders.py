@@ -152,9 +152,8 @@ def _get_clang_builders():
                                          '-DLLVM_USE_INTEL_JITEVENTS=TRUE'])},
 
         # Cortex-A15 LNT test-suite in Benchmark mode
-        # FIXME: Move this to CMake (see below)
         {'name' : "clang-native-arm-lnt-perf",
-         'slavenames':["linaro-chrome-02"],
+         'slavenames':["linaro-chrome-02", "linaro-tk1-02"],
          'builddir':"clang-native-arm-lnt-perf",
          'factory' : ClangBuilder.getClangCMakeBuildFactory(
                       jobs=2,
@@ -169,13 +168,14 @@ def _get_clang_builders():
                                 '--benchmarking-only', '--multisample=8'],
                       extra_cmake_args=["-DCMAKE_C_FLAGS='-mcpu=cortex-a15'",
                                         "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a15'",
-                                        "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'"],
+                                        "-DLLVM_TARGETS_TO_BUILD='ARM'",
+                                        "-DLLVM_PARALLEL_LINK_JOBS=2"],
                       submitURL='http://llvm.org/perf/submitRun',
                       testerName='LNT-ARMv7-A15-O3')},
 
         # Cortex-A15 LNT test-suite in test-only mode
         {'name' : "clang-native-arm-lnt",
-         'slavenames':["linaro-chrome-03"],
+         'slavenames':["linaro-chrome-03", "linaro-tk1-03"],
          'builddir':"clang-native-arm-lnt",
          'factory' : ClangBuilder.getClangCMakeBuildFactory(
                       jobs=2,
@@ -188,28 +188,30 @@ def _get_clang_builders():
                       nt_flags=['--cflag', '-mcpu=cortex-a15'],
                       extra_cmake_args=["-DCMAKE_C_FLAGS='-mcpu=cortex-a15'",
                                         "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a15'",
-                                        "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'"])},
+                                        "-DLLVM_TARGETS_TO_BUILD='ARM'",
+                                        "-DLLVM_PARALLEL_LINK_JOBS=2"])},
 
         ## Cortex-A15 check-all self-host NEON with CMake builder
         {'name': "clang-cmake-armv7-a15-selfhost-neon",
-         'slavenames':["linaro-chrome-04"],
+         'slavenames':["linaro-chrome-04", "linaro-tk1-04"],
          'builddir':"clang-cmake-armv7-a15-selfhost-neon",
-         'factory' : ClangBuilder.getClangCMakeGCSBuildFactory(
+         'factory' : ClangBuilder.getClangCMakeBuildFactory(
                       jobs=2,
-                      clean=True,
+                      clean=False,
                       checkout_compiler_rt=False,
                       useTwoStage=True,
                       testStage1=False,
-                      stage1_upload_directory='clang-cmake-armv7a',
                       env={'PATH':'/usr/lib/ccache:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin',
                            'BOTO_CONFIG':'/var/buildbot/llvmlab-build-artifacts.boto'},
                       extra_cmake_args=["-DCMAKE_C_FLAGS=-mcpu=cortex-a15",
                                         "-DCMAKE_CXX_FLAGS=-mcpu=cortex-a15",
-                                        "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'"])},
+                                        "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'",
+                                        "-DLLVM_LIT_ARGS='-sv -j2'",
+                                        "-DLLVM_PARALLEL_LINK_JOBS=2"])},
 
         ## Cortex-A15 check-all with CMake builder
         {'name': "clang-cmake-armv7-a15",
-         'slavenames':["linaro-a15-01"],
+         'slavenames':["linaro-a15-01", "linaro-tk1-06"],
          'builddir':"clang-cmake-armv7-a15",
          'factory' : ClangBuilder.getClangCMakeBuildFactory(
                       jobs=4,
@@ -218,11 +220,13 @@ def _get_clang_builders():
                       env={'PATH':'/usr/lib/ccache:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'},
                       extra_cmake_args=["-DCMAKE_C_FLAGS='-mcpu=cortex-a15 -mfpu=vfpv3'",
                                         "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a15 -mfpu=vfpv3'",
-                                        "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'"])},
+                                        "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'",
+                                        "-DLLVM_LIT_ARGS='-sv -j4'",
+                                        "-DLLVM_PARALLEL_LINK_JOBS=2"])},
 
         ## Cortex-A15 check-all with CMake T2 builder
         {'name': "clang-cmake-thumbv7-a15",
-         'slavenames':["linaro-a15-04"],
+         'slavenames':["linaro-a15-04", "linaro-tk1-09"],
          'builddir':"clang-cmake-thumbv7-a15",
          'factory' : ClangBuilder.getClangCMakeBuildFactory(
                       jobs=4,
@@ -231,35 +235,38 @@ def _get_clang_builders():
                       env={'PATH':'/usr/lib/ccache:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'},
                       extra_cmake_args=["-DCMAKE_C_FLAGS='-mcpu=cortex-a15 -mfpu=vfpv3 -mthumb'",
                                         "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a15 -mfpu=vfpv3 -mthumb'",
-                                        "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'"])},
+                                        "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'",
+                                        "-DLLVM_LIT_ARGS='-sv -j4'",
+                                        "-DLLVM_PARALLEL_LINK_JOBS=2"])},
 
         ## Cortex-A15 check-all self-host with CMake builder
         {'name': "clang-cmake-armv7-a15-selfhost",
-         'slavenames':["linaro-a15-02"],
+         'slavenames':["linaro-a15-02", "linaro-tk1-07"],
          'builddir':"clang-cmake-armv7-a15-selfhost",
          'factory' : ClangBuilder.getClangCMakeBuildFactory(
                       jobs=4,
-                      clean=True,
+                      clean=False,
                       checkout_compiler_rt=False,
                       useTwoStage=True,
                       testStage1=False,
                       env={'PATH':'/usr/lib/ccache:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'},
                       extra_cmake_args=["-DCMAKE_C_FLAGS='-mcpu=cortex-a15 -mfpu=vfpv3'",
                                         "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a15 -mfpu=vfpv3'",
-                                        "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'"])},
+                                        "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'",
+                                        "-DLLVM_LIT_ARGS='-sv -j4'",
+                                        "-DLLVM_PARALLEL_LINK_JOBS=2"])},
 
         ## AArch64 Clang+LLVM check-all + test-suite
         {'name': "clang-cmake-aarch64-quick",
          'slavenames':["linaro-apm-01"],
          'builddir':"clang-cmake-aarch64-quick",
-         'factory' : ClangBuilder.getClangCMakeGCSBuildFactory(
+         'factory' : ClangBuilder.getClangCMakeBuildFactory(
                       jobs=8,
                       clean=False,
                       checkout_compiler_rt=False,
                       test=True,
                       useTwoStage=False,
                       runTestSuite=True,
-                      stage1_upload_directory='clang-cmake-aarch64',
                       env={'PATH':'/usr/lib64/ccache:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin',
                            'BOTO_CONFIG':'/var/buildbot/llvmlab-build-artifacts.boto'},
                       extra_cmake_args=["-DCMAKE_C_FLAGS='-mcpu=cortex-a57'",
@@ -727,7 +734,7 @@ def _get_sanitizer_builders():
 
           ## Cortex-A15 check-all full (compiler-rt) with CMake builder; Needs x86 for ASAN tests
           {'name': "clang-cmake-armv7-a15-full",
-           'slavenames':["linaro-a15-03"],
+           'slavenames':["linaro-a15-03", "linaro-tk1-08"],
            'builddir':"clang-cmake-armv7-a15-full",
            'factory' : ClangBuilder.getClangCMakeBuildFactory(
                         jobs=4,
@@ -736,22 +743,26 @@ def _get_sanitizer_builders():
                         extra_cmake_args=["-DCMAKE_C_FLAGS='-mcpu=cortex-a15 -mfpu=vfpv3'",
                                           "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a15 -mfpu=vfpv3'",
                                           "-DCOMPILER_RT_TEST_COMPILER_CFLAGS='-mcpu=cortex-a15 -mfpu=vfpv3'",
-                                          "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'"])},
+                                          "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'",
+                                          "-DLLVM_LIT_ARGS='-sv -j4'",
+                                          "-DLLVM_PARALLEL_LINK_JOBS=2"])},
 
           ## Cortex-A15 Thumb2 check-all full (compiler-rt) with CMake builder; Needs x86 for ASAN tests
           {'name': "clang-cmake-thumbv7-a15-full-sh",
-           'slavenames':["linaro-chrome-05"],
+           'slavenames':["linaro-chrome-05", "linaro-tk1-05"],
            'builddir':"clang-cmake-thumbv7-a15-full-sh",
            'factory' : ClangBuilder.getClangCMakeBuildFactory(
                         jobs=2,
-                        clean=True,
+                        clean=False,
                         useTwoStage=True,
                         testStage1=False,
                         env={'PATH':'/usr/lib/ccache:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'},
                         extra_cmake_args=["-DCMAKE_C_FLAGS='-mcpu=cortex-a15 -mthumb'",
                                           "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a15 -mthumb'",
                                           "-DCOMPILER_RT_TEST_COMPILER_CFLAGS='-mcpu=cortex-a15 -mthumb'",
-                                          "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'"])},
+                                          "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'",
+                                          "-DLLVM_LIT_ARGS='-sv -j2'",
+                                          "-DLLVM_PARALLEL_LINK_JOBS=2"])},
 
         # AArch64 Clang+LLVM+RT check-all + test-suite + self-hosting
         {'name': "clang-cmake-aarch64-full",
@@ -1013,31 +1024,33 @@ def _get_libcxx_builders():
 
         # Cortex-A15 LibC++ and LibC++abi tests (require Clang+RT)
         {'name': 'libcxx-libcxxabi-libunwind-arm-linux',
-         'slavenames': ['linaro-chrome-01'],
+         'slavenames': ['linaro-chrome-01', 'linaro-tk1-01'],
          'builddir': 'libcxx-libcxxabi-libunwind-arm-linux',
          'category': 'libcxx',
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
-            env={'CC': 'clang', 'CXX': 'clang++'},
+            env={'CC': 'clang', 'CXX': 'clang++', 'PATH': '/usr/lib/ccache:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/llvm/bin'},
             # FIXME: there should be a way to merge autodetected with user-defined linker flags
             # See: libcxxabi/test/lit.cfg
-            lit_extra_opts={'link_flags': '"-lc++abi -lc -lm -lpthread -lunwind -ldl -L/opt/llvm/lib/clang/3.6.0/lib/linux -lclang_rt.builtins-arm"'},
+            lit_extra_opts={'link_flags': '"-lc++abi -lc -lm -lpthread -lunwind -ldl -L/opt/llvm/lib/clang/3.9.0/lib/linux -lclang_rt.builtins-arm"'},
             cmake_extra_opts={'LIBCXXABI_USE_LLVM_UNWINDER': 'ON',
                               'CMAKE_C_FLAGS': '-mcpu=cortex-a15',
-                              'CMAKE_CXX_FLAGS': '-mcpu=cortex-a15'})},
+                              'CMAKE_CXX_FLAGS': '-mcpu=cortex-a15',
+                              'LLVM_PARALLEL_LINK_JOBS': '2'})},
 
         {'name': 'libcxx-libcxxabi-libunwind-arm-linux-noexceptions',
-         'slavenames': ['linaro-chrome-01'],
+         'slavenames': ['linaro-chrome-01', 'linaro-tk1-01'],
          'builddir': 'libcxx-libcxxabi-libunwind-arm-linux-noexceptions',
          'category': 'libcxx',
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
-            env={'CC': 'clang', 'CXX': 'clang++'},
+            env={'CC': 'clang', 'CXX': 'clang++', 'PATH': '/usr/lib/ccache:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/llvm/bin'},
             # FIXME: there should be a way to merge autodetected with user-defined linker flags
             # See: libcxxabi/test/lit.cfg
-            lit_extra_opts={'link_flags': '"-lc++abi -lc -lm -lpthread -lunwind -ldl -L/opt/llvm/lib/clang/3.6.0/lib/linux -lclang_rt.builtins-arm"'},
+            lit_extra_opts={'link_flags': '"-lc++abi -lc -lm -lpthread -lunwind -ldl -L/opt/llvm/lib/clang/3.9.0/lib/linux -lclang_rt.builtins-arm"'},
             cmake_extra_opts={'LIBCXXABI_USE_LLVM_UNWINDER': 'ON',
                               'LIBCXX_ENABLE_EXCEPTIONS': 'OFF',
                               'CMAKE_C_FLAGS': '-mcpu=cortex-a15',
-                              'CMAKE_CXX_FLAGS': '-mcpu=cortex-a15'})},
+                              'CMAKE_CXX_FLAGS': '-mcpu=cortex-a15',
+                              'LLVM_PARALLEL_LINK_JOBS': '2'})},
     ]
 
 # Experimental and stopped builders
