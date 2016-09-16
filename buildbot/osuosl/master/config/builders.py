@@ -952,7 +952,7 @@ def _get_libcxx_builders():
         'category': 'libcxx'},
 
         {'name': 'libcxx-libcxxabi-x86_64-linux-ubuntu-asan',
-         'slavenames': ['ericwf-buildslave'],
+         'slavenames': ['ericwf-buildslave2'],
          'builddir' : 'libcxx-libcxxabi-x86_64-linux-ubuntu-asan',
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
             env={'PATH': '/usr/local/bin:/usr/bin:/bin',
@@ -962,7 +962,7 @@ def _get_libcxx_builders():
         'category': 'libcxx'},
 
         {'name': 'libcxx-libcxxabi-x86_64-linux-ubuntu-ubsan',
-         'slavenames': ['ericwf-buildslave'],
+         'slavenames': ['ericwf-buildslave2'],
          'builddir' : 'libcxx-libcxxabi-x86_64-linux-ubuntu-ubsan',
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
             env={'PATH': '/usr/local/bin:/usr/bin:/bin',
@@ -1000,15 +1000,6 @@ def _get_libcxx_builders():
                  'CC': 'clang', 'CXX': 'clang++'},
             cmake_extra_opts={'LLVM_USE_SANITIZER': 'Thread'},
             lit_extra_opts={'std':'c++1z'}),
-        'category': 'libcxx'},
-        
-        {'name': 'libcxx-libcxxabi-x86_64-linux-ubuntu-unstable-abi',
-         'slavenames': ['ericwf-buildslave2'],
-         'builddir' : 'libcxx-libcxxabi-x86_64-linux-ubuntu-unstable-abi',
-         'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
-            env={'PATH': '/usr/local/bin:/usr/bin:/bin',
-                 'CC': 'clang', 'CXX': 'clang++'},
-            cmake_extra_opts={'LIBCXX_ABI_UNSTABLE': 'ON'}),
         'category': 'libcxx'},
 
         {'name': 'libcxx-libcxxabi-x86_64-linux-ubuntu-gcc49-cxx11',
