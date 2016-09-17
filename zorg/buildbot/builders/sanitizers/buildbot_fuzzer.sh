@@ -98,23 +98,23 @@ echo @@@BUILD_STEP stage2/asan+assertions build clang-format-fuzzer and clang-fu
 
 (cd ${STAGE2_ASAN_ASSERTIONS_DIR} && ninja clang-format-fuzzer clang-fuzzer llvm-as-fuzzer) || echo @@@STEP_FAILURE@@@
 
-echo @@@BUILD_STEP stage2/asan+assertions run clang-format-fuzzer@@@
+#echo @@@BUILD_STEP stage2/asan+assertions run clang-format-fuzzer@@@
 
-(${STAGE2_ASAN_ASSERTIONS_DIR}/bin/clang-format-fuzzer -max_len=64 -jobs=8 -workers=8 -max_total_time=600 $CLANG_FORMAT_CORPUS) || \
-  echo @@@STEP_WARNINGS@@@
+#(${STAGE2_ASAN_ASSERTIONS_DIR}/bin/clang-format-fuzzer -max_len=64 -jobs=8 -workers=8 -max_total_time=600 $CLANG_FORMAT_CORPUS) || \
+#  echo @@@STEP_WARNINGS@@@
 
-echo @@@BUILD_STEP stage2/asan+assertions build llvm-pdbdump-fuzzer @@@
+#echo @@@BUILD_STEP stage2/asan+assertions build llvm-pdbdump-fuzzer @@@
 
-(cd ${STAGE2_ASAN_ASSERTIONS_DIR} && ninja llvm-pdbdump-fuzzer) || echo @@@STEP_WARNINGS@@@
+#(cd ${STAGE2_ASAN_ASSERTIONS_DIR} && ninja llvm-pdbdump-fuzzer) || echo @@@STEP_WARNINGS@@@
 
-echo @@@BUILD_STEP stage2/asan+assertions run llvm-pdbdump-fuzzer@@@
+#echo @@@BUILD_STEP stage2/asan+assertions run llvm-pdbdump-fuzzer@@@
 
-(${STAGE2_ASAN_ASSERTIONS_DIR}/bin/llvm-pdbdump-fuzzer -max_len=50000 -rss_limit_mb=4000 -jobs=6 -workers=6 -max_total_time=600 $LLVM_PDBDUMP_CORPUS $LLVM/test/DebugInfo/PDB/Inputs/) || \
-  echo @@@STEP_WARNINGS@@@
+#(${STAGE2_ASAN_ASSERTIONS_DIR}/bin/llvm-pdbdump-fuzzer -max_len=50000 -rss_limit_mb=4000 -jobs=6 -workers=6 -max_total_time=600 $LLVM_PDBDUMP_CORPUS $LLVM/test/DebugInfo/PDB/Inputs/) || \
+#  echo @@@STEP_WARNINGS@@@
 
-echo @@@BUILD_STEP stage2/asan+assertions run clang-fuzzer@@@
-(${STAGE2_ASAN_ASSERTIONS_DIR}/bin/clang-fuzzer -max_len=64 -detect_leaks=0 -jobs=8 -workers=8 -only_ascii=1 -max_total_time=1200 $CLANG_CORPUS) || \
-  echo @@@STEP_WARNINGS@@@
+#echo @@@BUILD_STEP stage2/asan+assertions run clang-fuzzer@@@
+#(${STAGE2_ASAN_ASSERTIONS_DIR}/bin/clang-fuzzer -max_len=64 -detect_leaks=0 -jobs=8 -workers=8 -only_ascii=1 -max_total_time=1200 $CLANG_CORPUS) || \
+#  echo @@@STEP_WARNINGS@@@
 
 # No leak detection due to https://llvm.org/bugs/show_bug.cgi?id=24639#c5
 # Too many known failures in llvm-as, disabling this until they are fixed.
@@ -123,8 +123,8 @@ echo @@@BUILD_STEP stage2/asan+assertions run clang-fuzzer@@@
 #  echo @@@STEP_WARNINGS@@@
 
 echo @@@BUILD_STEP push corpus updates@@@
-syncToGs clang/C2
-syncToGs clang-format/C1
-syncToGs llvm-pdbdump/C1
+#syncToGs clang/C2
+#syncToGs clang-format/C1
+#syncToGs llvm-pdbdump/C1
 #syncToGs llvm-as/C1
 
