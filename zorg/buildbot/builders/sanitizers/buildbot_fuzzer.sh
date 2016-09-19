@@ -83,7 +83,7 @@ cmake_stage2_asan_options=" \
 "
 common_stage2_variables
 export ASAN_SYMBOLIZER_PATH="${llvm_symbolizer_path}"
-export PATH="${llvm_symbolizer_path}:$PATH"
+export PATH="${clang_path}:$PATH"
 
 # Stage 2 / AddressSanitizer + assertions
 mkdir -p ${STAGE2_ASAN_ASSERTIONS_DIR}
