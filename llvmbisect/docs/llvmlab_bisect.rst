@@ -19,11 +19,22 @@ Getting the tool
 ~~~~~~~~~~~~~~~~
 
 The tool is in our tools repo::
-    $ svn checkout https://llvm.org/svn/llvm-project/zorg
-    $ cd zorg/llvmbisect
-    $ sudo python setup.py install
-    $ llvmlab ls
 
+  $ svn checkout https://llvm.org/svn/llvm-project/zorg/trunk/ zorg
+  $ cd zorg/llvmbisect
+  $ sudo python setup.py install
+  $ llvmlab ls
+
+If you prefer a non-sudo install, replace ``sudo python setup.py install`` step
+with::
+
+  $ LOCAL_PYTHON_INSTALL_PATH=$(pwd)/local_python_packages/lib/python2.7/site-packages/
+  $ mkdir -p $LOCAL_PYTHON_INSTALL_PATH
+  $ export PYTHONPATH=$LOCAL_PYTHON_INSTALL_PATH:$PYTHONPATH
+  $ python setup.py install --prefix=$(pwd)/local_python_packages
+  $ export PATH=$(pwd)/bin:$PATH
+
+Note that you should export ``PYTHONPATH`` and ``PATH`` to use ``llvmlab``.
 
 The Bisection Process
 ~~~~~~~~~~~~~~~~~~~~~
