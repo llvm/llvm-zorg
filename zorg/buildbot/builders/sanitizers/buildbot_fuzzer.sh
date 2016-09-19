@@ -66,10 +66,10 @@ echo @@@BUILD_STEP build clang@@@
 
 build_stage1_clang
 
-echo @@@BUILD_STEP pull test corpuses @@@
-syncFromGs clang/C2
-syncFromGs clang-format/C1
-syncFromGs llvm-pdbdump/C1
+#echo @@@BUILD_STEP pull test corpuses @@@
+#syncFromGs clang/C2
+#syncFromGs clang-format/C1
+#syncFromGs llvm-pdbdump/C1
 #syncFromGs llvm-as/C1
 
 # TODO(smatveev): merge this with build_stage2()
@@ -83,6 +83,7 @@ cmake_stage2_asan_options=" \
 "
 common_stage2_variables
 export ASAN_SYMBOLIZER_PATH="${llvm_symbolizer_path}"
+export PATH="${llvm_symbolizer_path}:$PATH"
 
 # Stage 2 / AddressSanitizer + assertions
 mkdir -p ${STAGE2_ASAN_ASSERTIONS_DIR}
