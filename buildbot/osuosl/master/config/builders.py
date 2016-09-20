@@ -1031,7 +1031,7 @@ def _get_libcxx_builders():
             env={'CC': 'clang', 'CXX': 'clang++', 'PATH': '/usr/lib/ccache:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/llvm/bin'},
             # FIXME: there should be a way to merge autodetected with user-defined linker flags
             # See: libcxxabi/test/lit.cfg
-            lit_extra_opts={'link_flags': '"-lc++abi -lc -lm -lpthread -lunwind -ldl -L/opt/llvm/lib/clang/3.9.0/lib/linux -lclang_rt.builtins-arm"'},
+            lit_extra_opts={'link_flags': '"-lc++abi -lc -lm -lpthread -lunwind -ldl -L/opt/llvm/lib/clang/3.9.0/lib/linux -lclang_rt.builtins-armhf"'},
             cmake_extra_opts={'LIBCXXABI_USE_LLVM_UNWINDER': 'ON',
                               'CMAKE_C_FLAGS': '-mcpu=cortex-a15',
                               'CMAKE_CXX_FLAGS': '-mcpu=cortex-a15',
@@ -1045,7 +1045,7 @@ def _get_libcxx_builders():
             env={'CC': 'clang', 'CXX': 'clang++', 'PATH': '/usr/lib/ccache:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/llvm/bin'},
             # FIXME: there should be a way to merge autodetected with user-defined linker flags
             # See: libcxxabi/test/lit.cfg
-            lit_extra_opts={'link_flags': '"-lc++abi -lc -lm -lpthread -lunwind -ldl -L/opt/llvm/lib/clang/3.9.0/lib/linux -lclang_rt.builtins-arm"'},
+            lit_extra_opts={'link_flags': '"-lc++abi -lc -lm -lpthread -lunwind -ldl -L/opt/llvm/lib/clang/3.9.0/lib/linux -lclang_rt.builtins-armhf"'},
             cmake_extra_opts={'LIBCXXABI_USE_LLVM_UNWINDER': 'ON',
                               'LIBCXX_ENABLE_EXCEPTIONS': 'OFF',
                               'CMAKE_C_FLAGS': '-mcpu=cortex-a15',
