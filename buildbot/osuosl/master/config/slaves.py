@@ -121,7 +121,7 @@ def get_build_slaves():
         create_slave("gribozavr4", properties={'jobs': 18}, max_builds=1),
 
         # Ubuntu 14.04 x86-64
-        create_slave("gribozavr5", properties={'jobs': 6}, max_builds=1),
+        #create_slave("gribozavr5", properties={'jobs': 6}, max_builds=1),
 
         # AArch64 Clang, Juno ARM Development Platform
         create_slave("juno-aarch64-01", properties={'jobs': 4}, max_builds=1),

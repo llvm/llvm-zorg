@@ -1085,13 +1085,6 @@ def _get_experimental_scheduled_builders():
          'category' : 'clang'},
 
         # lldb builders
-        {'name': "lldb-x86_64-debian-clang",
-         'slavenames': ["gribozavr5"],
-         'builddir': "lldb-x86_64-clang-ubuntu-14.04",
-         'category' : 'lldb',
-         'factory': LLDBBuilder.getLLDBBuildFactory(triple=None, # use default
-                                                    extra_configure_args=['--enable-cxx11', '--enable-optimized', '--enable-assertions'],
-                                                    env={'PATH':'/home/llvmbb/bin/clang-latest/bin:/home/llvmbb/bin:/usr/local/bin:/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games'})},
         {'name': "lldb-x86_64-darwin-13.4",
          'slavenames': ["lldb-x86_64-darwin-13.4"],
          'builddir': "buildDir",
