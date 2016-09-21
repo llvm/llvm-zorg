@@ -726,11 +726,9 @@ def _getClangCMakeBuildFactory(
         cc = WithProperties('%(workdir)s/'+compiler_path+'/bin/'+cc)
         cxx = WithProperties('%(workdir)s/'+compiler_path+'/bin/'+cxx)
 
-        # LNT Command line
-        if jobs is None:
-            jobs = 1
+        # LNT Command line (don't pass -jN. Users need to pass both --threads
+        # and --build-threads in nt_flags to get the same effect)
         test_suite_cmd = [python, lnt, 'runtest', 'nt',
-                          '-j'+str(jobs),
                           '--no-timestamp',
                           '--sandbox', sandbox,
                           '--test-suite', test_suite_dir,
