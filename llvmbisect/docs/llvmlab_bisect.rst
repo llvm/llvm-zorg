@@ -7,7 +7,7 @@ Automatic compiler bisecting with llvmlab bisect
 when a regression was introduced in any build of Clang, or LLVM
 produced by one of our Buildbots or Jenkins jobs.
 
-The basics of the tool are very simple, you must provided it with a "test case"
+The basics of the tool are very simple, you must provide it with a "test case"
 which will reproduce the problem you are seeing. Once you have done that, the
 tool will automatically download compiler packages from the cloud
 (typically produced by our continuous integration system) and will check whether
@@ -78,8 +78,8 @@ are x86_64 compilers built on Yosemite in release asserts mode.  Generally, you
 should make sure your test explicitly sets anything which could impact the test 
 (like the architecture).
 
-The other way this impacts your tests is that some packages are layed out
-differently than others. Most compiler packages are layed out in a "Unix" style,
+The other way this impacts your tests is that some packages are laid out
+differently than others. Most compiler packages are laid out in a "Unix" style,
 with ``bin`` and ``lib`` subdirectories. One easy way to see the package layout
 is to use ``llvmlab fetch`` to grab a build from the particular builder you
 are using and poke at it. For example::
@@ -94,7 +94,7 @@ See ``llvmlab fetch --help`` for more information on the ``fetch`` tool.
 
 The main exception to remember is that Apple style builds generally will have
 "root" style layouts, where the package is meant to be installed directly into
-``/``, and will be layed out with ``usr/bin`` and ``Developer/usr/bin``
+``/``, and will be laid out with ``usr/bin`` and ``Developer/usr/bin``
 subdirectories.
 
 
