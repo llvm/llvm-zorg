@@ -226,7 +226,9 @@ fi
 
 if [ "$PLATFORM" == "Linux" -a "$CHECK_CFI" == "1" ]; then
   echo @@@BUILD_STEP run 64-bit cfi unit tests@@@
-  (cd llvm_build64 && make -j$MAKE_JOBS check-cfi-and-supported) || echo @@@STEP_FAILURE@@@
+  # FIXME: Make these true dependencies of check-cfi-and-supported when
+  # compiler-rt is configured as an external project.
+  (cd llvm_build64 && make -j$MAKE_JOBS LLVMgold opt sanstats && make -j$MAKE_JOBS check-cfi-and-supported) || echo @@@STEP_FAILURE@@@
 fi
 
 echo @@@BUILD_STEP run sanitizer_common tests@@@
