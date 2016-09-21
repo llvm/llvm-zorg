@@ -56,6 +56,7 @@ CHECK_TSAN=0
 CHECK_LSAN=0
 CHECK_DFSAN=0
 CHECK_SCUDO=0
+CHECK_CFI=0
 case "$ARCH" in
   x86_64)
     CHECK_ASAN=1
@@ -65,6 +66,7 @@ case "$ARCH" in
     CHECK_LSAN=1
     CHECK_DFSAN=1
     CHECK_SCUDO=1
+    CHECK_CFI=1
   ;;
   aarch64)
     CHECK_ASAN=1
@@ -159,11 +161,10 @@ if [ "$PLATFORM" == "Linux" ]; then
     echo @@@BUILD_STEP check-dfsan in gcc build@@@
     (cd clang_build && make -j$MAKE_JOBS check-dfsan) || echo @@@STEP_WARNINGS@@@
   fi
-  #if [ "$ARCH" == "x86_64" ]; then
-  #   FIXME: Reenable once cfi tests reliably work on the bot.
-  #   echo @@@BUILD_STEP check-cfi-and-supported in gcc build@@@
-  #  (cd clang_build && LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/x86_64 make -j$MAKE_JOBS check-cfi-and-supported) || echo @@@STEP_FAILURE@@@
-  #fi
+  if [ "$CHECK_CFI" == "1" ]; then
+    echo @@@BUILD_STEP check-cfi-and-supported in gcc build@@@
+    (cd clang_build && make -j$MAKE_JOBS check-cfi-and-supported) || echo @@@STEP_FAILURE@@@
+  fi
 fi
 
 ### From now on we use just-built Clang as a host compiler ###
@@ -223,11 +224,10 @@ if [ "$PLATFORM" == "Linux" -a "$CHECK_DFSAN" == "1" ]; then
   (cd llvm_build64 && make -j$MAKE_JOBS check-dfsan) || echo @@@STEP_FAILURE@@@
 fi
 
-# FIXME: Reenable once cfi tests reliably work on the bot.
-#if [ "$PLATFORM" == "Linux" -a "$ARCH" == "x86_64" ]; then
-#  echo @@@BUILD_STEP run 64-bit cfi unit tests@@@
-#  (cd llvm_build64 && LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/x86_64 make -j$MAKE_JOBS check-cfi-and-supported) || echo @@@STEP_FAILURE@@@
-#fi
+if [ "$PLATFORM" == "Linux" -a "$CHECK_CFI" == "1" ]; then
+  echo @@@BUILD_STEP run 64-bit cfi unit tests@@@
+  (cd llvm_build64 && make -j$MAKE_JOBS check-cfi-and-supported) || echo @@@STEP_FAILURE@@@
+fi
 
 echo @@@BUILD_STEP run sanitizer_common tests@@@
 (cd llvm_build64 && make -j$MAKE_JOBS check-sanitizer) || echo @@@STEP_FAILURE@@@
@@ -289,8 +289,10 @@ if [ "$PLATFORM" == "Linux" -a $HAVE_NINJA == 1 ]; then
     echo @@@BUILD_STEP ninja check-dfsan@@@
     (cd llvm_build_ninja && ninja check-dfsan) || echo @@@STEP_WARNINGS@@@
   fi
-  # FIXME: Reenable once cfi tests reliably work on the bot.
-  # (cd llvm_build_ninja && LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/x86_64 ninja check-cfi-and-supported) || echo @@@STEP_FAILURE@@@
+  if [ "$CHECK_CFI" == 1 ]; then
+    echo @@@BUILD_STEP ninja check-cfi-and-supported@@@
+    (cd llvm_build_ninja && ninja check-cfi-and-supported) || echo @@@STEP_FAILURE@@@
+  fi
 fi
 
 if [ $BUILD_ANDROID == 1 ] ; then
