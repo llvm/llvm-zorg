@@ -269,13 +269,12 @@ def _get_clang_builders():
                       test=True,
                       useTwoStage=False,
                       runTestSuite=True,
-                      nt_flags=['--threads=8', '--build-threads=8'],
+                      nt_flags=['--cflag', '-mcpu=cortex-a57', '--threads=8', '--build-threads=8'],
                       env={'PATH':'/usr/lib64/ccache:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin',
                            'BOTO_CONFIG':'/var/buildbot/llvmlab-build-artifacts.boto'},
                       extra_cmake_args=["-DCMAKE_C_FLAGS='-mcpu=cortex-a57'",
                                         "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a57'",
                                         "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'"],
-                      nt_flags=['--cflag', '-mcpu=cortex-a57'],
                )},
 
         {'name': 'clang-x86-win2008-selfhost',
@@ -781,12 +780,11 @@ def _get_sanitizer_builders():
                       useTwoStage=True,
                       testStage1=False,
                       runTestSuite=True,
-                      nt_flags=['--threads=8', '--build-threads=8'],
+                      nt_flags=['--cflag', '-mcpu=cortex-a57', '--threads=8', '--build-threads=8'],
                       env={'PATH':'/usr/lib64/ccache:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'},
                       extra_cmake_args=["-DCMAKE_C_FLAGS='-mcpu=cortex-a57'",
                                         "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a57'",
                                         "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'"],
-                      nt_flags=['--cflag', '-mcpu=cortex-a57'],
                )},
 
         # AArch64 Clang+LLVM+RT check-all at 42-bits VMA
