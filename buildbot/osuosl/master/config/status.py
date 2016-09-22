@@ -37,7 +37,6 @@ def get_status_targets(standard_builders, standard_categories=None):
         # All the standard builders send e-mail and IRC notifications.
         buildbot.status.mail.MailNotifier(
             fromaddr = "llvm.buildmaster@lab.llvm.org",
-            extraRecipients = [default_email],
             lookup = ConfigEmailLookup(os.path.join(os.path.dirname(__file__),
                                                     "llvmauthors.cfg"),
                                        default_email),
@@ -156,4 +155,17 @@ def get_status_targets(standard_builders, standard_categories=None):
                         "clang-cmake-mipsel"],
             addLogs=False,
             num_lines = 15),
+        InformativeMailNotifier(
+            fromaddr = "llvm.buildmaster@lab.llvm.org",
+            sendToInterestedUsers= False,
+            extraRecipients = ["gkistanova@gmail.com"],
+            subject="Build %(builder)s Failure",
+            mode = "failing",
+            builders = ["lld-x86_64-win7", "clang-x86_64-linux-abi-test",
+                        "lld-x86_64-freebsd", "sanitizer_x86_64-freebsd",
+                        "lld-x86_64-darwin13", "clang-3stage-ubuntu",
+                        "llvm-clang-lld-x86_64-scei-ps4-ubuntu-fast",
+                        "llvm-clang-lld-x86_64-scei-ps4-windows10pro-fast",
+                        "clang-with-lto-ubuntu"],
+            addLogs=False),
         ]
