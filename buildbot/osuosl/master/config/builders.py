@@ -207,7 +207,7 @@ def _get_clang_builders():
                       env={'PATH':'/usr/lib/ccache:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin',
                            'BOTO_CONFIG':'/var/buildbot/llvmlab-build-artifacts.boto'},
                       extra_cmake_args=["-DCMAKE_C_FLAGS='-mcpu=cortex-a15 -marm'",
-                                        "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a15 -marm''",
+                                        "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a15 -marm'",
                                         "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'",
                                         "-DLLVM_LIT_ARGS='-sv -j2'",
                                         "-DLLVM_PARALLEL_LINK_JOBS=2"])},
