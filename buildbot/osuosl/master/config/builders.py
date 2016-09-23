@@ -163,7 +163,7 @@ def _get_clang_builders():
                       useTwoStage=False,
                       runTestSuite=True,
                       env={'PATH':'/usr/lib/ccache:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'},
-                      nt_flags=['--cflag', '-mcpu=cortex-a15 -mthumb',
+                      nt_flags=['--cflag', '-mcpu=cortex-a15', '--cflag', '-mthumb',
                                 '--threads=1', '--build-threads=4', '--use-perf',
                                 '--benchmarking-only', '--multisample=3',
                                 '--exclude-stat-from-submission=compile',
@@ -173,7 +173,7 @@ def _get_clang_builders():
                                         "-DLLVM_TARGETS_TO_BUILD='ARM'",
                                         "-DLLVM_PARALLEL_LINK_JOBS=2"],
                       submitURL='http://llvm.org/perf/submitRun',
-                      testerName='LNT-Thumbv7-A15-O3')},
+                      testerName='LNT-Thumb2v7-A15-O3')},
 
         # Cortex-A15 LNT test-suite in test-only mode
         {'name' : "clang-native-arm-lnt",
