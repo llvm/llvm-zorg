@@ -99,7 +99,7 @@ cmake_stage2_asan_assertions_options="$cmake_stage2_asan_options -DLLVM_ENABLE_A
 
 TARGET="re2-2014-12-09"
 echo @@@BUILD_STEP test $TARGET fuzzer@@@
-(T=$LIBFUZZER_TEST_SUITE/$TARGET; DIR="RUN-$TARGET" && mkdir -p $DIR && cd $DIR && $T/build.sh && $T/test.sh) || echo @@@STEP_WARNINGS@@@
+(T=$FUZZER_TEST_SUITE/$TARGET; DIR="RUN-$TARGET" && mkdir -p $DIR && cd $DIR && $T/build.sh && $T/test.sh) || echo @@@STEP_WARNINGS@@@
 
 echo @@@BUILD_STEP stage2/asan+assertions build clang-format-fuzzer and clang-fuzzer@@@
 
