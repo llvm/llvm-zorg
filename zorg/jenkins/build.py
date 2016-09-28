@@ -444,7 +444,7 @@ def lldb_builder():
     run_cmd("lldb", xcodebuild_cmd)
     footer()
 
-    # Run LLDB Python test suite
+    # Run LLDB Python test suite (x86_64 inferiors)
 
     xcodebuild_cmd = [
         "xcodebuild",
@@ -452,9 +452,27 @@ def lldb_builder():
         "-configuration", build_configuration,
         "-scheme", "lldb-python-test-suite",
         "-derivedDataPath", conf.lldbbuilddir(),
+        "LLDB_PYTHON_TESTSUITE_ARCH=x86_64",
         "DEBUGSERVER_USE_FROM_SYSTEM=1"]
 
-    header("Build Xcode lldb-python-test-suite target")
+    header("Build Xcode lldb-python-test-suite (64-bit) target")
+    # For the unit tests, we don't want to stop the build if there are
+    # build errors.  We allow the JUnit/xUnit parser to pick this up.
+    run_cmd_errors_okay("lldb", xcodebuild_cmd)
+    footer()
+
+    # Run LLDB Python test suite (i386 inferiors)
+
+    xcodebuild_cmd = [
+        "xcodebuild",
+        "-arch", "x86_64",
+        "-configuration", build_configuration,
+        "-scheme", "lldb-python-test-suite",
+        "-derivedDataPath", conf.lldbbuilddir(),
+        "LLDB_PYTHON_TESTSUITE_ARCH=i386",
+        "DEBUGSERVER_USE_FROM_SYSTEM=1"]
+
+    header("Build Xcode lldb-python-test-suite (32-bit) target")
     # For the unit tests, we don't want to stop the build if there are
     # build errors.  We allow the JUnit/xUnit parser to pick this up.
     run_cmd_errors_okay("lldb", xcodebuild_cmd)
