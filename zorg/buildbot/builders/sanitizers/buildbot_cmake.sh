@@ -31,7 +31,7 @@ SUPPORTS_32_BITS=${SUPPORTS_32_BITS:-1}
 MAKE_JOBS=${MAX_MAKE_JOBS:-16}
 LLVM_CHECKOUT=$ROOT/llvm
 COMPILER_RT_CHECKOUT=$LLVM_CHECKOUT/projects/compiler-rt
-CMAKE_COMMON_OPTIONS="-DLLVM_ENABLE_ASSERTIONS=ON"
+CMAKE_COMMON_OPTIONS="-DLLVM_ENABLE_ASSERTIONS=ON -DLLVM_PARALLEL_LINK_JOBS=10"
 ENABLE_LIBCXX_FLAG=
 if [ "$PLATFORM" == "Darwin" ]; then
   CMAKE_COMMON_OPTIONS="${CMAKE_COMMON_OPTIONS} -DPYTHON_EXECUTABLE=/usr/bin/python"
@@ -135,36 +135,22 @@ fi
 # Do a sanity check on Linux: build and test sanitizers using gcc as a host
 # compiler.
 if [ "$PLATFORM" == "Linux" ]; then
-  echo @@@BUILD_STEP check-sanitizer in gcc build@@@
-  (cd clang_build && make -j$MAKE_JOBS check-sanitizer) || echo @@@STEP_FAILURE@@@
-  if [ "$CHECK_ASAN" == "1" ]; then
-    echo @@@BUILD_STEP check-asan in gcc build@@@
-    (cd clang_build && make -j$MAKE_JOBS check-asan) || echo @@@STEP_FAILURE@@@
-  fi
-  if [ "$CHECK_UBSAN" == "1" ]; then
-    echo @@@BUILD_STEP check-ubsan in gcc build@@@
-    (cd clang_build && make -j$MAKE_JOBS check-ubsan) || echo @@@STEP_FAILURE@@@
-  fi
-  if [ "$CHECK_LSAN" == "1" ]; then
-    echo @@@BUILD_STEP check-lsan in gcc build@@@
-    (cd clang_build && make -j$MAKE_JOBS check-lsan) || echo @@@STEP_FAILURE@@@
-  fi
-  if [ "$CHECK_MSAN" == "1" ]; then
-    echo @@@BUILD_STEP check-msan in gcc build@@@
-    (cd clang_build && make -j$MAKE_JOBS check-msan) || echo @@@STEP_FAILURE@@@
-  fi
-  if [ "$CHECK_TSAN" == "1" ]; then
-    echo @@@BUILD_STEP check-tsan in gcc build@@@
-    (cd clang_build && make -j$MAKE_JOBS check-tsan) || echo @@@STEP_FAILURE@@@
-  fi
-  if [ "$CHECK_DFSAN" == "1" ]; then
-    echo @@@BUILD_STEP check-dfsan in gcc build@@@
-    (cd clang_build && make -j$MAKE_JOBS check-dfsan) || echo @@@STEP_WARNINGS@@@
-  fi
-  if [ "$CHECK_CFI" == "1" ]; then
-    echo @@@BUILD_STEP check-cfi-and-supported in gcc build@@@
-    (cd clang_build && make -j$MAKE_JOBS check-cfi-and-supported) || echo @@@STEP_FAILURE@@@
-  fi
+  check_in_gcc() {
+    CONDITION=$1
+    SANITIZER=$2
+    if [ "$CONDITION" == "1" ]; then
+      echo @@@BUILD_STEP check-$SANITIZER in gcc build@@@
+      (cd clang_build && make -j$MAKE_JOBS check-$SANITIZER) || echo @@@STEP_FAILURE@@@
+    fi
+  }
+  check_in_gcc 1 sanitizer
+  check_in_gcc $CHECK_ASAN asan
+  check_in_gcc $CHECK_CFI cfi-and-supported
+  check_in_gcc $CHECK_DFSAN dfsan
+  check_in_gcc $CHECK_LSAN lsan
+  check_in_gcc $CHECK_MSAN msan
+  check_in_gcc $CHECK_TSAN tsan
+  check_in_gcc $CHECK_UBSAN ubsan
 fi
 
 ### From now on we use just-built Clang as a host compiler ###
@@ -180,6 +166,7 @@ fi
 (cd llvm_build64 && cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
     ${CMAKE_CLANG_OPTIONS} -DLLVM_BUILD_EXTERNAL_COMPILER_RT=ON \
     ${ENABLE_LIBCXX_FLAG} $LLVM_CHECKOUT)
+
 # First, build only Clang.
 (cd llvm_build64 && make -j$MAKE_JOBS clang) || echo @@@STEP_FAILURE@@@
 
@@ -191,48 +178,33 @@ fi
 
 # Now build everything else.
 (cd llvm_build64 && make -j$MAKE_JOBS) || echo @@@STEP_FAILURE@@@
+# FIXME: Make these true dependencies of check-cfi-and-supported when
+# compiler-rt is configured as an external project.
+(cd llvm_build64 && make -j$MAKE_JOBS LLVMgold opt sanstats) || echo @@@STEP_FAILURE@@@
+
 FRESH_CLANG_PATH=${ROOT}/llvm_build64/bin
 COMPILER_RT_BUILD_PATH=projects/compiler-rt/src/compiler-rt-build
 
-if [ "$CHECK_ASAN" == "1" ]; then
-  echo @@@BUILD_STEP run asan tests@@@
-  (cd llvm_build64 && make -j$MAKE_JOBS check-asan) || echo @@@STEP_FAILURE@@@
-fi
+check_64bit() {
+  CONDITION=$1
+  SANITIZER=$2
+  if [ "$CONDITION" == "1" ]; then
+    echo @@@BUILD_STEP 64-bit check-$SANITIZER@@@
+    (cd llvm_build64 && make -j$MAKE_JOBS check-$SANITIZER) || echo @@@STEP_FAILURE@@@
+  fi
+}
 
-if [ "$PLATFORM" == "Linux" -a "$CHECK_ASAN" == "1" ]; then
-  echo @@@BUILD_STEP run asan-dynamic tests@@@
-  (cd llvm_build64 && make -j$MAKE_JOBS check-asan-dynamic) || echo @@@STEP_FAILURE@@@
+check_64bit 1 sanitizer
+check_64bit $CHECK_ASAN asan
+if [ "$PLATFORM" == "Linux" ]; then
+  check_64bit $CHECK_ASAN asan-dynamic
+  check_64bit $CHECK_CFI cfi-and-supported
+  check_64bit $CHECK_DFSAN dfsan
+  check_64bit $CHECK_LSAN lsan
+  check_64bit $CHECK_MSAN msan
+  check_64bit $CHECK_TSAN tsan
+  check_64bit $CHECK_UBSAN ubsan
 fi
-
-if [ "$PLATFORM" == "Linux" -a "$CHECK_MSAN" == "1" ]; then
-  echo @@@BUILD_STEP run msan unit tests@@@
-  (cd llvm_build64 && make -j$MAKE_JOBS check-msan) || echo @@@STEP_FAILURE@@@
-fi
-
-if [ "$PLATFORM" == "Linux" -a "$CHECK_TSAN" == "1" ]; then
-  echo @@@BUILD_STEP run 64-bit tsan unit tests@@@
-  (cd llvm_build64 && make -j$MAKE_JOBS check-tsan) || echo @@@STEP_FAILURE@@@
-fi
-
-if [ "$PLATFORM" == "Linux" -a "$CHECK_LSAN" == "1" ]; then
-  echo @@@BUILD_STEP run 64-bit lsan unit tests@@@
-  (cd llvm_build64 && make -j$MAKE_JOBS check-lsan) || echo @@@STEP_FAILURE@@@
-fi
-
-if [ "$PLATFORM" == "Linux" -a "$CHECK_DFSAN" == "1" ]; then
-  echo @@@BUILD_STEP run 64-bit dfsan unit tests@@@
-  (cd llvm_build64 && make -j$MAKE_JOBS check-dfsan) || echo @@@STEP_FAILURE@@@
-fi
-
-if [ "$PLATFORM" == "Linux" -a "$CHECK_CFI" == "1" ]; then
-  echo @@@BUILD_STEP run 64-bit cfi unit tests@@@
-  # FIXME: Make these true dependencies of check-cfi-and-supported when
-  # compiler-rt is configured as an external project.
-  (cd llvm_build64 && make -j$MAKE_JOBS LLVMgold opt sanstats && make -j$MAKE_JOBS check-cfi-and-supported) || echo @@@STEP_FAILURE@@@
-fi
-
-echo @@@BUILD_STEP run sanitizer_common tests@@@
-(cd llvm_build64 && make -j$MAKE_JOBS check-sanitizer) || echo @@@STEP_FAILURE@@@
 
 echo @@@BUILD_STEP build standalone compiler-rt@@@
 if [ ! -d compiler_rt_build ]; then
@@ -261,59 +233,41 @@ if [ "$PLATFORM" == "Linux" -a $HAVE_NINJA == 1 ]; then
       ${CMAKE_NINJA_OPTIONS} $LLVM_CHECKOUT)
   ln -sf llvm_build_ninja/compile_commands.json $LLVM_CHECKOUT
   (cd llvm_build_ninja && ninja) || echo @@@STEP_FAILURE@@@
-  echo @@@BUILD_STEP ninja check-sanitizer@@@
-  (cd llvm_build_ninja && ninja check-sanitizer) || echo @@@STEP_FAILURE@@@
-  if [ "$CHECK_ASAN" == 1 ]; then
-    echo @@@BUILD_STEP ninja check-asan@@@
-    (cd llvm_build_ninja && ninja check-asan) || echo @@@STEP_FAILURE@@@
-  fi
-  if [ "$CHECK_UBSAN" == 1 ]; then
-    echo @@@BUILD_STEP ninja check-ubsan@@@
-    (cd llvm_build_ninja && ninja check-ubsan) || echo @@@STEP_FAILURE@@@
-  fi
-  if [ "$CHECK_TSAN" == 1 ]; then
-    echo @@@BUILD_STEP ninja check-tsan@@@
-    (cd llvm_build_ninja && ninja check-tsan) || echo @@@STEP_FAILURE@@@
-  fi
-  if [ "$CHECK_SCUDO" == 1 ]; then
-    echo @@@BUILD_STEP ninja check-scudo@@@
-    (cd llvm_build_ninja && ninja check-scudo) || echo @@@STEP_FAILURE@@@
-  fi
-  if [ "$CHECK_MSAN" == 1 ]; then
-    echo @@@BUILD_STEP ninja check-msan@@@
-    (cd llvm_build_ninja && ninja check-msan) || echo @@@STEP_FAILURE@@@
-  fi
-  if [ "$CHECK_LSAN" == 1 ]; then
-    echo @@@BUILD_STEP ninja check-lsan@@@
-    (cd llvm_build_ninja && ninja check-lsan) || echo @@@STEP_FAILURE@@@
-  fi
-  if [ "$CHECK_DFSAN" == 1 ]; then
-    echo @@@BUILD_STEP ninja check-dfsan@@@
-    (cd llvm_build_ninja && ninja check-dfsan) || echo @@@STEP_WARNINGS@@@
-  fi
-  if [ "$CHECK_CFI" == 1 ]; then
-    echo @@@BUILD_STEP ninja check-cfi-and-supported@@@
-    (cd llvm_build_ninja && ninja check-cfi-and-supported) || echo @@@STEP_FAILURE@@@
-  fi
+
+  check_ninja() {
+    CONDITION=$1
+    SANITIZER=$2
+    if [ "$CONDITION" == "1" ]; then
+      echo @@@BUILD_STEP ninja check-$SANITIZER@@@
+      (cd llvm_build_ninja && ninja check-$SANITIZER) || echo @@@STEP_FAILURE@@@
+    fi
+  }
+
+  check_ninja 1 sanitizer
+  check_ninja $CHECK_ASAN asan
+  check_ninja $CHECK_CFI cfi-and-supported
+  check_ninja $CHECK_DFSAN dfsan
+  check_ninja $CHECK_LSAN lsan
+  check_ninja $CHECK_MSAN msan
+  check_ninja $CHECK_TSAN tsan
+  check_ninja $CHECK_UBSAN ubsan
 fi
 
 if [ $BUILD_ANDROID == 1 ] ; then
+    build_android() {
+      CPU=$1
+      TRIPLE=$2
+      echo @@@BUILD_STEP build compiler-rt android/$CPU@@@
+      build_compiler_rt $CPU $TRIPLE
+
+      echo @@@BUILD_STEP build llvm-symbolizer android/$CPU@@@
+      build_llvm_symbolizer $CPU $TRIPLE
+    }
     # Testing armv7 instead of plain arm to work around
     # https://code.google.com/p/android/issues/detail?id=68779
-    echo @@@BUILD_STEP build compiler-rt android/arm@@@
-    build_compiler_rt arm armv7-linux-androideabi
-    echo @@@BUILD_STEP build llvm-symbolizer android/arm@@@
-    build_llvm_symbolizer arm armv7-linux-androideabi
-
-    echo @@@BUILD_STEP build compiler-rt android/x86@@@
-    build_compiler_rt x86 i686-linux-android
-    echo @@@BUILD_STEP build llvm-symbolizer android/x86@@@
-    build_llvm_symbolizer x86 i686-linux-android
-
-    echo @@@BUILD_STEP build compiler-rt android/aarch64@@@
-    build_compiler_rt aarch64 aarch64-linux-android
-    echo @@@BUILD_STEP build llvm-symbolizer android/aarch64@@@
-    build_llvm_symbolizer aarch64 aarch64-linux-android
+    build_android arm armv7-linux-androideabi
+    build_android x86 i686-linux-android
+    build_android aarch64 aarch64-linux-android
 fi
 
 if [ $RUN_ANDROID == 1 ] ; then
