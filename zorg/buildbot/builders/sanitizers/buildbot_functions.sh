@@ -7,7 +7,9 @@ function update_or_checkout {
   if [ -d ${tree} ]; then
     svn up "${tree}" $rev_arg
   else
-    svn co "${repo}" "${tree}" $rev_arg
+    mkdir -p svn_checkout
+    DIR=$(mktemp -d -p `pwd`/svn_checkout XXXXXX)
+    svn co "${repo}" $DIR/${tree} $rev_arg
   fi
 }
 
@@ -31,22 +33,33 @@ function buildbot_update {
       fi
     done
 
-    update_or_checkout "$rev_arg" http://llvm.org/svn/llvm-project/llvm/trunk llvm
-
     if [ "$rev_arg" == "" ]; then
-        rev_arg="-r"$(svn info llvm | grep '^Revision:' | awk '{print $2}')
+        rev_arg="-r"$(svn info http://llvm.org/svn/llvm-project/llvm/trunk | grep '^Revision:' | awk '{print $2}')
     fi
+
+    rm -rf svn_checkout
+
+    update_or_checkout "$rev_arg" http://llvm.org/svn/llvm-project/llvm/trunk llvm &
 
     # XXX: Keep this list in sync with the change filter in buildbot/osuosl/master/master.cfg.
-    update_or_checkout "$rev_arg" http://llvm.org/svn/llvm-project/cfe/trunk llvm/tools/clang
-    update_or_checkout "$rev_arg" http://llvm.org/svn/llvm-project/compiler-rt/trunk llvm/projects/compiler-rt
+    update_or_checkout "$rev_arg" http://llvm.org/svn/llvm-project/cfe/trunk llvm/tools/clang &
+    update_or_checkout "$rev_arg" http://llvm.org/svn/llvm-project/compiler-rt/trunk llvm/projects/compiler-rt &
     if [ "$CHECK_LIBCXX" != "0" ]; then
-      update_or_checkout "$rev_arg" http://llvm.org/svn/llvm-project/libcxx/trunk llvm/projects/libcxx
-      update_or_checkout "$rev_arg" http://llvm.org/svn/llvm-project/libcxxabi/trunk llvm/projects/libcxxabi
-      update_or_checkout "$rev_arg" http://llvm.org/svn/llvm-project/libunwind/trunk llvm/projects/libunwind
+      update_or_checkout "$rev_arg" http://llvm.org/svn/llvm-project/libcxx/trunk llvm/projects/libcxx &
+      update_or_checkout "$rev_arg" http://llvm.org/svn/llvm-project/libcxxabi/trunk llvm/projects/libcxxabi &
+      update_or_checkout "$rev_arg" http://llvm.org/svn/llvm-project/libunwind/trunk llvm/projects/libunwind &
     fi
     if [ "$CHECK_LLD" != "0" ]; then
-      update_or_checkout "$rev_arg" http://llvm.org/svn/llvm-project/lld/trunk llvm/tools/lld
+      update_or_checkout "$rev_arg" http://llvm.org/svn/llvm-project/lld/trunk llvm/tools/lld &
+    fi
+    wait
+
+    # Merge checked out temporarily directories.
+    if [ -d svn_checkout ]; then
+      for D in svn_checkout/*; do
+        cp -rfl $D/* .
+      done
+      rm -rf svn_checkout
     fi
 }
 
