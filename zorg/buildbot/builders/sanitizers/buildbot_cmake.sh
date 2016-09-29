@@ -181,9 +181,12 @@ fi
 # Symbolizer dependencies.
 (cd llvm_build64 && make -j$MAKE_JOBS llvm-ar llvm-link llvm-tblgen opt) || echo @@@STEP_FAILURE@@@
 
-# FIXME: Make these true dependencies of check-cfi-and-supported when
-# compiler-rt is configured as an external project.
-(cd llvm_build64 && make -j$MAKE_JOBS LLVMgold opt sanstats) || echo @@@STEP_FAILURE@@@
+
+if [ "$CHECK_CFI" == "1" ]; then
+  # FIXME: Make these true dependencies of check-cfi-and-supported when
+  # compiler-rt is configured as an external project.
+  (cd llvm_build64 && make -j$MAKE_JOBS LLVMgold opt sanstats) || echo @@@STEP_FAILURE@@@
+fi
 
 check_64bit() {
   CONDITION=$1
