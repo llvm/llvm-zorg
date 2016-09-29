@@ -119,8 +119,7 @@ echo @@@BUILD_STEP build fresh clang@@@
 if [ ! -d clang_build ]; then
   mkdir clang_build
 fi
-(cd clang_build && cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo \
-    ${CMAKE_COMMON_OPTIONS} $LLVM_CHECKOUT)
+(cd clang_build && cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo ${CMAKE_COMMON_OPTIONS} $LLVM_CHECKOUT)
 (cd clang_build && make clang -j$MAKE_JOBS) || (echo @@@STEP_FAILURE@@@ ; exit 1)
 
 # If we're building with libcxx, install the headers to clang_build/include.
@@ -179,9 +178,6 @@ fi
 # compiler-rt is configured as an external project.
 (cd llvm_build64 && make -j$MAKE_JOBS LLVMgold opt sanstats) || echo @@@STEP_FAILURE@@@
 
-FRESH_CLANG_PATH=${ROOT}/llvm_build64/bin
-COMPILER_RT_BUILD_PATH=projects/compiler-rt/src/compiler-rt-build
-
 check_64bit() {
   CONDITION=$1
   SANITIZER=$2
@@ -202,6 +198,8 @@ if [ "$PLATFORM" == "Linux" ]; then
   check_64bit $CHECK_TSAN tsan
   check_64bit $CHECK_UBSAN ubsan
 fi
+
+FRESH_CLANG_PATH=${ROOT}/llvm_build64/bin
 
 echo @@@BUILD_STEP build standalone compiler-rt@@@
 if [ ! -d compiler_rt_build ]; then
