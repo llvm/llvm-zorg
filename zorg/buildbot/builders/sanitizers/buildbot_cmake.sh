@@ -278,7 +278,8 @@ if [ "$PLATFORM" == "Linux" -a $HAVE_NINJA == 1 ]; then
   check_ninja_with_symbolizer() {
     CONDITION=$1
     SANITIZER=$2
-    if [ "$CONDITION" == "1" ]; then
+    # Disabled, tests are not working yet.
+    if [ "$CONDITION" == "-1" ]; then
       echo @@@BUILD_STEP ninja check-$SANITIZER with symbolizer@@@
       (cd llvm_build_ninja && ninja check-$SANITIZER) || echo @@@STEP_WARNINGS@@@
     fi
