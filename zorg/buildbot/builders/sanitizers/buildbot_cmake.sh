@@ -46,6 +46,7 @@ if [ $BUILD_ANDROID == 1 -o $RUN_ANDROID == 1 ] ; then
   . ${HERE}/buildbot_android_functions.sh
 fi
 CHECK_LIBCXX=${CHECK_LIBCXX:-1}
+CHECK_SYMBOLIZER=${CHECK_SYMBOLIZER:-${CHECK_LIBCXX}}
 CHECK_LLD=${CHECK_LLD:-1}
 CHECK_ASAN=0
 CHECK_UBSAN=0
@@ -108,9 +109,6 @@ esac
 
 echo @@@BUILD_STEP update@@@
 buildbot_update
-
-echo @@@BUILD_STEP update zlib@@@
-git -C $ZLIB pull --rebase || git clone https://github.com/madler/zlib.git $ZLIB || echo @@@STEP_WARNINGS@@@
 
 echo @@@BUILD_STEP lint@@@
 CHECK_LINT=${COMPILER_RT_CHECKOUT}/lib/sanitizer_common/scripts/check_lint.sh
@@ -238,11 +236,17 @@ build_symbolizer() {
     bash -eux $COMPILER_RT_CHECKOUT/lib/sanitizer_common/symbolizer/scripts/build_symbolizer.sh \
       $(dirname $(find ../$2/ -name libclang_rt.*.a | head -n1)) || echo @@@STEP_WARNINGS@@@)
 }
-build_symbolizer 32 compiler_rt_build
-build_symbolizer 64 compiler_rt_build
 
-echo @@@BUILD_STEP test standalone compiler-rt with symbolizer@@@
-(cd compiler_rt_build && make -j$MAKE_JOBS check-all) || echo @@@STEP_WARNINGS@@@
+if [ "$CHECK_SYMBOLIZER" == "1" ]; then
+  echo @@@BUILD_STEP update zlib@@@
+  git -C $ZLIB pull --rebase || git clone https://github.com/madler/zlib.git $ZLIB || echo @@@STEP_WARNINGS@@@
+
+  build_symbolizer 32 compiler_rt_build
+  build_symbolizer 64 compiler_rt_build
+
+  echo @@@BUILD_STEP test standalone compiler-rt with symbolizer@@@
+  (cd compiler_rt_build && make -j$MAKE_JOBS check-all) || echo @@@STEP_WARNINGS@@@
+fi
 
 HAVE_NINJA=${HAVE_NINJA:-1}
 if [ "$PLATFORM" == "Linux" -a $HAVE_NINJA == 1 ]; then
@@ -275,28 +279,30 @@ if [ "$PLATFORM" == "Linux" -a $HAVE_NINJA == 1 ]; then
   check_ninja $CHECK_TSAN tsan
   check_ninja $CHECK_UBSAN ubsan
 
-  build_symbolizer 32 llvm_build_ninja
-  build_symbolizer 64 llvm_build_ninja
+  if [ "$CHECK_SYMBOLIZER" == "1" ]; then
+    build_symbolizer 32 llvm_build_ninja
+    build_symbolizer 64 llvm_build_ninja
 
-  check_ninja_with_symbolizer() {
-    CONDITION=$1
-    SANITIZER=$2
-    # Disabled, tests are not working yet.
-    if [ "$CONDITION" == "-1" ]; then
-      echo @@@BUILD_STEP ninja check-$SANITIZER with symbolizer@@@
-      (cd llvm_build_ninja && ninja check-$SANITIZER) || echo @@@STEP_WARNINGS@@@
-    fi
-  }
+    check_ninja_with_symbolizer() {
+      CONDITION=$1
+      SANITIZER=$2
+      # Disabled, tests are not working yet.
+      if [ "$CONDITION" == "-1" ]; then
+        echo @@@BUILD_STEP ninja check-$SANITIZER with symbolizer@@@
+        (cd llvm_build_ninja && ninja check-$SANITIZER) || echo @@@STEP_WARNINGS@@@
+      fi
+    }
 
-  check_ninja_with_symbolizer 1 sanitizer
-  check_ninja_with_symbolizer $CHECK_ASAN asan
-  check_ninja_with_symbolizer $CHECK_CFI cfi-and-supported
-  check_ninja_with_symbolizer $CHECK_DFSAN dfsan
-  check_ninja_with_symbolizer $CHECK_LSAN lsan
-  check_ninja_with_symbolizer $CHECK_MSAN msan
-  check_ninja_with_symbolizer $CHECK_SCUDO scudo
-  check_ninja_with_symbolizer $CHECK_TSAN tsan
-  check_ninja_with_symbolizer $CHECK_UBSAN ubsan
+    check_ninja_with_symbolizer 1 sanitizer
+    check_ninja_with_symbolizer $CHECK_ASAN asan
+    check_ninja_with_symbolizer $CHECK_CFI cfi-and-supported
+    check_ninja_with_symbolizer $CHECK_DFSAN dfsan
+    check_ninja_with_symbolizer $CHECK_LSAN lsan
+    check_ninja_with_symbolizer $CHECK_MSAN msan
+    check_ninja_with_symbolizer $CHECK_SCUDO scudo
+    check_ninja_with_symbolizer $CHECK_TSAN tsan
+    check_ninja_with_symbolizer $CHECK_UBSAN ubsan
+  fi
 fi
 
 if [ $BUILD_ANDROID == 1 ] ; then
