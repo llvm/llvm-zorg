@@ -23,13 +23,7 @@ STAGE2_UBSAN_DIR=llvm_build_ubsan
 STAGE3_ASAN_DIR=llvm_build2_asan
 STAGE3_MSAN_DIR=llvm_build2_msan
 LLVM=$ROOT/llvm
-ZLIB=$ROOT/zlib
-CMAKE_COMMON_OPTIONS="-GNinja -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_ASSERTIONS=ON -DLLVM_PARALLEL_LINK_JOBS=10"
-
-function build_symbolizer {
-  check_stage2 msan "${STAGE2_MSAN_DIR}" @@@STEP_FAILURE@@@
-  (cd $1 && $LLVM/ninja check-llvm) || echo @@@STEP_FAILURE@@@
-}
+CMAKE_COMMON_OPTIONS="-GNinja -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_ASSERTIONS=ON -DLLVM_PARALLEL_LINK_JOBS=20"
 
 if [ "$BUILDBOT_CLOBBER" != "" ]; then
   echo @@@BUILD_STEP clobber@@@
@@ -40,20 +34,17 @@ fi
 # CMake does not notice that the compiler itself has changed.
 # Anyway, incremental builds of stage2 and stage3 compilers don't make sense.
 # Clobber the build trees.
-# rm -rf ${STAGE2_LIBCXX_MSAN_DIR}
-# rm -rf ${STAGE2_LIBCXX_ASAN_DIR}
-# rm -rf ${STAGE2_LIBCXX_UBSAN_DIR}
-# rm -rf ${STAGE2_MSAN_DIR}
-# rm -rf ${STAGE3_MSAN_DIR}
-# rm -rf ${STAGE2_ASAN_DIR}
-# rm -rf ${STAGE3_ASAN_DIR}
-# rm -rf ${STAGE2_UBSAN_DIR}
+rm -rf ${STAGE2_LIBCXX_MSAN_DIR}
+rm -rf ${STAGE2_LIBCXX_ASAN_DIR}
+rm -rf ${STAGE2_LIBCXX_UBSAN_DIR}
+rm -rf ${STAGE2_MSAN_DIR}
+rm -rf ${STAGE3_MSAN_DIR}
+rm -rf ${STAGE2_ASAN_DIR}
+rm -rf ${STAGE3_ASAN_DIR}
+rm -rf ${STAGE2_UBSAN_DIR}
 
 echo @@@BUILD_STEP update@@@
 buildbot_update
-
-echo @@@BUILD_STEP update zlib@@@
-git -C $ZLIB pull --rebase || git clone  https://github.com/madler/zlib.git $ZLIB || echo @@@STEP_FAILURE@@@
 
 # Stage 1
 
@@ -66,12 +57,6 @@ build_stage1_clang
 build_stage2_msan
 
 check_stage2_msan
-
-build_symbolizer "${STAGE2_MSAN_DIR}"
-
-check_stage2_msan
-
-exit 1
 
 # Stage 3 / MemorySanitizer
 
