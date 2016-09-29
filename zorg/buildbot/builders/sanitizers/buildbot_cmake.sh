@@ -145,6 +145,7 @@ if [ "$PLATFORM" == "Linux" ]; then
   check_in_gcc $CHECK_DFSAN dfsan
   check_in_gcc $CHECK_LSAN lsan
   check_in_gcc $CHECK_MSAN msan
+  check_in_gcc $CHECK_SCUDO scudo
   check_in_gcc $CHECK_TSAN tsan
   check_in_gcc $CHECK_UBSAN ubsan
 fi
@@ -195,6 +196,7 @@ if [ "$PLATFORM" == "Linux" ]; then
   check_64bit $CHECK_DFSAN dfsan
   check_64bit $CHECK_LSAN lsan
   check_64bit $CHECK_MSAN msan
+  # check_64bit $CHECK_SCUDO scudo, No check-scudo target for this config
   check_64bit $CHECK_TSAN tsan
   check_64bit $CHECK_UBSAN ubsan
 fi
@@ -244,6 +246,7 @@ if [ "$PLATFORM" == "Linux" -a $HAVE_NINJA == 1 ]; then
   check_ninja $CHECK_DFSAN dfsan
   check_ninja $CHECK_LSAN lsan
   check_ninja $CHECK_MSAN msan
+  check_ninja $CHECK_SCUDO scudo
   check_ninja $CHECK_TSAN tsan
   check_ninja $CHECK_UBSAN ubsan
 fi
