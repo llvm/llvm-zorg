@@ -18,14 +18,11 @@ export ANDROID_SDK_HOME=$ROOT/../../..
 
 if [ "$BUILDBOT_CLOBBER" != "" ]; then
   echo @@@BUILD_STEP clobber@@@
-  rm -rf llvm
-  rm -rf clang_build
+  rm -rf llvm clang_build
 fi
 
 # Always clobber bootstrap build trees.
-rm -rf compiler_rt_build
-rm -rf llvm_build64
-rm -rf llvm_build_ninja
+rm -rf compiler_rt_build llvm_build64 llvm_build_ninja
 
 SUPPORTS_32_BITS=${SUPPORTS_32_BITS:-1}
 MAKE_JOBS=${MAX_MAKE_JOBS:-16}
