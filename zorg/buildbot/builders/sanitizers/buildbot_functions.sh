@@ -5,6 +5,8 @@ function update_or_checkout {
   local repo=$2
   local tree=$3
   if [ -d ${tree} ]; then
+    svn cleanup "${tree}"
+    svn revert -R "${tree}"
     svn up "${tree}" $rev_arg
   else
     mkdir -p svn_checkout
@@ -18,20 +20,6 @@ function buildbot_update {
     if [ "$BUILDBOT_REVISION" != "" ]; then
         rev_arg="-r$BUILDBOT_REVISION"
     fi
-    local tree
-    local subdirs="llvm llvm/tools/clang llvm/projects/compiler-rt"
-    if [ "$CHECK_LIBCXX" != "0" ]; then
-      subdirs="${subdirs} llvm/projects/libcxx llvm/projects/libcxxabi llvm/projects/libunwind"
-    fi
-    if [ "$CHECK_LLD" != "0" ]; then
-      subdirs="${subdirs} llvm/tools/lld"
-    fi
-    for tree in ${subdirs}
-    do
-      if [ -d ${tree} ]; then
-        svn cleanup "${tree}"
-      fi
-    done
 
     if [ "$rev_arg" == "" ]; then
         rev_arg="-r"$(svn info http://llvm.org/svn/llvm-project/llvm/trunk | grep '^Revision:' | awk '{print $2}')
