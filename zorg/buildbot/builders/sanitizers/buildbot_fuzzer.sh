@@ -97,13 +97,19 @@ cmake_stage2_asan_assertions_options="$cmake_stage2_asan_options -DLLVM_ENABLE_A
 
 (cd ${STAGE2_ASAN_ASSERTIONS_DIR} && ninja check-fuzzer) || echo @@@STEP_FAILURE@@@
 
-TARGET="re2-2014-12-09"
-echo @@@BUILD_STEP test $TARGET fuzzer@@@
-(T=$FUZZER_TEST_SUITE/$TARGET; DIR="RUN-$TARGET" && mkdir -p $DIR && cd $DIR && $T/build.sh && $T/test.sh) || echo @@@STEP_WARNINGS@@@
+RunFuzzerTest() {
+  echo @@@BUILD_STEP test $TARGET fuzzer@@@
+  $FUZZER_TEST_SUITE/build-and-test.sh "$1"
+}
 
-echo @@@BUILD_STEP stage2/asan+assertions build clang-format-fuzzer and clang-fuzzer@@@
+RunFuzzerTest re2-2014-12-09       || echo @@@STEP_WARNINGS@@@
+RunFuzzerTest c-ares-CVE-2016-5180 || echo @@@STEP_WARNINGS@@@
+RunFuzzerTest openssl-1.0.1f       || echo @@@STEP_WARNINGS@@@
+RunFuzzerTest openssl-1.0.2d       || echo @@@STEP_WARNINGS@@@
 
-(cd ${STAGE2_ASAN_ASSERTIONS_DIR} && ninja clang-format-fuzzer clang-fuzzer llvm-as-fuzzer) || echo @@@STEP_FAILURE@@@
+#echo @@@BUILD_STEP stage2/asan+assertions build clang-format-fuzzer and clang-fuzzer@@@
+
+#(cd ${STAGE2_ASAN_ASSERTIONS_DIR} && ninja clang-format-fuzzer clang-fuzzer llvm-as-fuzzer) || echo @@@STEP_FAILURE@@@
 
 #echo @@@BUILD_STEP stage2/asan+assertions run clang-format-fuzzer@@@
 
@@ -129,7 +135,7 @@ echo @@@BUILD_STEP stage2/asan+assertions build clang-format-fuzzer and clang-fu
 #(ASAN_OPTIONS=$ASAN_OPTIONS:detect_leaks=0 ${STAGE2_ASAN_ASSERTIONS_DIR}/bin/llvm-as-fuzzer -jobs=8 -workers=8 -runs=0 -only_ascii=1 $LLVM_AS_CORPUS) || \
 #  echo @@@STEP_WARNINGS@@@
 
-echo @@@BUILD_STEP push corpus updates@@@
+#echo @@@BUILD_STEP push corpus updates@@@
 #syncToGs clang/C2
 #syncToGs clang-format/C1
 #syncToGs llvm-pdbdump/C1
