@@ -98,7 +98,7 @@ cmake_stage2_asan_assertions_options="$cmake_stage2_asan_options -DLLVM_ENABLE_A
 (cd ${STAGE2_ASAN_ASSERTIONS_DIR} && ninja check-fuzzer) || echo @@@STEP_FAILURE@@@
 
 RunFuzzerTest() {
-  echo @@@BUILD_STEP test $TARGET fuzzer@@@
+  echo @@@BUILD_STEP test "$1" fuzzer@@@
   $FUZZER_TEST_SUITE/build-and-test.sh "$1"
 }
 
