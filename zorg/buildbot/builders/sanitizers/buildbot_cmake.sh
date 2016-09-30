@@ -239,7 +239,8 @@ build_symbolizer() {
 
 if [ "$CHECK_SYMBOLIZER" == "1" ]; then
   echo @@@BUILD_STEP update zlib@@@
-  git -C $ZLIB pull --rebase || git clone https://github.com/madler/zlib.git $ZLIB || echo @@@STEP_WARNINGS@@@
+  (cd $ZLIB && git pull --rebase) || \
+      git clone https://github.com/madler/zlib.git $ZLIB || echo @@@STEP_WARNINGS@@@
 
   build_symbolizer 32 compiler_rt_build
   build_symbolizer 64 compiler_rt_build
