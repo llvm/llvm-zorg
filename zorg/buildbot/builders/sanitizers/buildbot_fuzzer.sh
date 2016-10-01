@@ -106,6 +106,7 @@ RunFuzzerTest re2-2014-12-09       || echo @@@STEP_WARNINGS@@@
 RunFuzzerTest c-ares-CVE-2016-5180 || echo @@@STEP_WARNINGS@@@
 RunFuzzerTest openssl-1.0.1f       || echo @@@STEP_WARNINGS@@@
 RunFuzzerTest openssl-1.0.2d       || echo @@@STEP_WARNINGS@@@
+RunFuzzerTest libxml2-v2.9.2       || echo @@@STEP_WARNINGS@@@
 
 #echo @@@BUILD_STEP stage2/asan+assertions build clang-format-fuzzer and clang-fuzzer@@@
 
