@@ -9,6 +9,7 @@ import argparse
 import urllib
 import shutil
 import math
+import re
 import xml.etree.ElementTree as ET
 
 SERVER = "labmaster2.local"
@@ -398,6 +399,21 @@ def clang_builder(target):
         run_cmd(obj_dir, cmd, env={'MALLOC_LOG_FILE': '/dev/null'})
 
 
+def parse_settings_from_output(working_dir, cmd):
+    old_dir = os.getcwd()
+    try:
+        os.chdir(working_dir)
+        assignment_regex = re.compile(r"^\s+([^\s=]+)\s*=\s*(.+)$")
+        settings = {}
+        for line in subprocess.check_output(cmd).splitlines(True):
+            match = assignment_regex.match(line)
+            if match:
+                settings[match.group(1)] = match.group(2)
+        return settings
+    finally:
+        os.chdir(old_dir)
+
+
 def lldb_builder():
     """Do an Xcode build of lldb."""
 
@@ -430,6 +446,27 @@ def lldb_builder():
     run_cmd("lldb", xcodebuild_cmd)
     footer()
 
+    header("Gather Xcode build settings")
+    xcodebuild_cmd.append("-showBuildSettings")
+    settings = parse_settings_from_output("lldb", xcodebuild_cmd)
+    footer()
+
+    build_dir = settings.get("BUILD_DIR", None)
+    built_products_dir = settings.get("BUILT_PRODUCTS_DIR", None)
+    if build_dir is None or built_products_dir is None:
+        raise Exception("failed to retrieve build-related directories "
+                        "from Xcode")
+
+    llvm_build_dir = settings.get("LLVM_BUILD_DIR", None)
+    llvm_build_dir_arch = settings.get("LLVM_BUILD_DIR_ARCH", None)
+    if llvm_build_dir is None or llvm_build_dir_arch is None:
+        raise Exception("failed to retrieve LLVM build-related settings "
+                        "from Xcode")
+    built_clang_path = os.path.join(llvm_build_dir, llvm_build_dir_arch,
+                                    "bin", "clang")
+    effective_clang = os.environ.get("LLDB_PYTHON_TESTSUITE_CC",
+                                     built_clang_path)
+
     # Run C++ test suite (gtests)
 
     xcodebuild_cmd = [
@@ -438,7 +475,9 @@ def lldb_builder():
         "-configuration", build_configuration,
         "-scheme", "lldb-gtest",
         "-derivedDataPath", conf.lldbbuilddir(),
-        "DEBUGSERVER_USE_FROM_SYSTEM=1"]
+        # See notes above.
+        # "DEBUGSERVER_USE_FROM_SYSTEM=1"
+        ]
 
     header("Build Xcode lldb-gtest scheme")
     run_cmd("lldb", xcodebuild_cmd)
@@ -446,36 +485,46 @@ def lldb_builder():
 
     # Run LLDB Python test suite (x86_64 inferiors)
 
-    xcodebuild_cmd = [
-        "xcodebuild",
-        "-arch", "x86_64",
-        "-configuration", build_configuration,
-        "-scheme", "lldb-python-test-suite",
-        "-derivedDataPath", conf.lldbbuilddir(),
-        "LLDB_PYTHON_TESTSUITE_ARCH=x86_64",
-        "DEBUGSERVER_USE_FROM_SYSTEM=1"]
+    python_testsuite_cmd_x86_64 = [
+        "/usr/bin/python",
+        "test/dotest.py",
+        "--executable", os.path.join(built_products_dir, "lldb"),
+        "-C", effective_clang,
+        "--arch", "x86_64",
+        "--session-file-format", "fm",
+        "--results-formatter", "lldbsuite.test_event.formatter.xunit.XunitFormatter",
+        "--results-file", os.path.join(build_dir, "test-results-x86_64.xml"),
+        "--rerun-all-issues",
+        "--env", "TERM=vt100",
+        "-O--xpass=ignore"
+    ]
 
-    header("Build Xcode lldb-python-test-suite (64-bit) target")
+    header("Run LLDB Python-based test suite (x86_64 targets)")
     # For the unit tests, we don't want to stop the build if there are
     # build errors.  We allow the JUnit/xUnit parser to pick this up.
-    run_cmd_errors_okay("lldb", xcodebuild_cmd)
+    run_cmd_errors_okay("lldb", python_testsuite_cmd_x86_64)
     footer()
 
     # Run LLDB Python test suite (i386 inferiors)
 
-    xcodebuild_cmd = [
-        "xcodebuild",
-        "-arch", "x86_64",
-        "-configuration", build_configuration,
-        "-scheme", "lldb-python-test-suite",
-        "-derivedDataPath", conf.lldbbuilddir(),
-        "LLDB_PYTHON_TESTSUITE_ARCH=i386",
-        "DEBUGSERVER_USE_FROM_SYSTEM=1"]
+    python_testsuite_cmd_i386 = [
+        "/usr/bin/python",
+        "test/dotest.py",
+        "--executable", os.path.join(built_products_dir, "lldb"),
+        "-C", effective_clang,
+        "--arch", "i386",
+        "--session-file-format", "fm",
+        "--results-formatter", "lldbsuite.test_event.formatter.xunit.XunitFormatter",
+        "--results-file", os.path.join(build_dir, "test-results-i386.xml"),
+        "--rerun-all-issues",
+        "--env", "TERM=vt100",
+        "-O--xpass=ignore"
+    ]
 
-    header("Build Xcode lldb-python-test-suite (32-bit) target")
+    header("Run LLDB Python-based test suite (i386 targets)")
     # For the unit tests, we don't want to stop the build if there are
     # build errors.  We allow the JUnit/xUnit parser to pick this up.
-    run_cmd_errors_okay("lldb", xcodebuild_cmd)
+    run_cmd_errors_okay("lldb", python_testsuite_cmd_i386)
     footer()
 
 def static_analyzer_benchmarks_builder():
