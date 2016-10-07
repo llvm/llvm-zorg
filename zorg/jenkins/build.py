@@ -789,6 +789,14 @@ def build_upload_artifact():
 
     run_cmd(conf.workspace, ln_cmd)
 
+    lnr_cmd = ["ssh", "buildslave@" + SERVER,
+               "ln", "-fs", "/Library/WebServer/Documents/artifacts/" +
+               conf.job_name + "/" + artifact_name,
+               "/Library/WebServer/Documents/artifacts/" +
+               conf.job_name + "/r" + conf.svn_rev()]
+
+    run_cmd(conf.workspace, lnr_cmd)
+
 
 def run_cmd(working_dir, cmd, env=None, sudo=False, err_okay=False):
     """Run a command in a working directory, and make sure it returns zero."""
