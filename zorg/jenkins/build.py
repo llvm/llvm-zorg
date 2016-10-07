@@ -15,7 +15,6 @@ from urllib2 import urlopen, URLError, HTTPError
 
 SERVER = "labmaster2.local"
 
-
 NINJA = "/usr/local/bin/ninja"
 
 
@@ -48,6 +47,7 @@ def quote_sh_string(string):
 
 class Configuration(object):
     """docstring for Configuration"""
+
     def __init__(self, args):
         super(Configuration, self).__init__()
         self._args = args
@@ -61,7 +61,7 @@ class Configuration(object):
         self.max_parallel_tests = os.environ.get('MAX_PARALLEL_TESTS', None)
         self.max_parallel_links = os.environ.get('MAX_PARALLEL_LINKS', None)
         self.host_compiler_url = os.environ.get('HOST_URL',
-            'http://labmaster2.local/artifacts/')
+                                                'http://labmaster2.local/artifacts/')
         self.artifact_url = os.environ.get('ARTIFACT', 'NONE')
         self.job_name = os.environ.get('JOB_NAME', 'NONE')
         self.build_id = os.environ.get('BUILD_ID', 'NONE')
@@ -100,7 +100,7 @@ class Configuration(object):
         if os.path.exists(cc_basedir):
             clang_exec_path = os.path.join(cc_basedir, 'bin/clang')
             assert os.path.exists(clang_exec_path), "host-compiler present," \
-                " but has no clang executable."
+                                                    " but has no clang executable."
             return clang_exec_path
         else:
             return False
@@ -111,7 +111,7 @@ class Configuration(object):
         if os.path.exists(cc_basedir):
             clang_liblto_path = os.path.join(cc_basedir, 'lib/')
             assert os.path.exists(clang_liblto_path), "host-compiler present," \
-                " but has no liblto."
+                                                      " but has no liblto."
             return clang_liblto_path
         else:
             return False
@@ -145,7 +145,7 @@ class Configuration(object):
     def grab_svn_url(self):
         if os.environ.get('TESTING', False):
             return '/foo/workspace/llvm.src'
-        cmd = ['svn', 'info', '--xml', os.path.join(self.workspace,'llvm.src')]
+        cmd = ['svn', 'info', '--xml', os.path.join(self.workspace, 'llvm.src')]
         out = run_collect_output(cmd)
         x = ET.fromstring(out)
         url = x.find('entry').find('url').text
@@ -160,11 +160,12 @@ class Configuration(object):
         if self.branch() == 'master':
             return usages['master']
         else:
-            raise NotImplementedError("Unknown link memory usage." + self.branch())
+            raise NotImplementedError(
+                "Unknown link memory usage." + self.branch())
 
 
 # Global storage for configuration object.
-conf = None
+conf = None  # type: Configuration
 
 
 def cmake_builder(target):
@@ -226,7 +227,7 @@ def cmake_builder(target):
         cmake_cmd += ["-DLLVM_ENABLE_ASSERTIONS=On"]
     else:
         cmake_cmd += ["-DLLVM_ENABLE_ASSERTIONS=Off"]
-        
+
     if conf.globalisel:
         cmake_cmd += ["-DLLVM_BUILD_GLOBAL_ISEL=ON"]
 
@@ -262,7 +263,8 @@ def cmake_builder(target):
     if target == 'all' or target == 'test' or target == 'testlong':
         header("Ninja test")
 
-        targets = ['check-all'] if target == 'testlong' or target == 'all' else conf.cmake_test_targets
+        targets = [
+            'check-all'] if target == 'testlong' or target == 'all' else conf.cmake_test_targets
 
         if not targets:
             # testlong and all do check all, otherwise check and check-clang
@@ -283,7 +285,7 @@ def clang_builder(target):
     if target == "all" or target == "build":
         # Clean the build directory.
         run_ws(['rm', '-rf', 'clang.roots'])
-        
+
         debug_src_dir = 'debuginfo-tests.src'
 
         sdk_name = 'macosx'
@@ -295,7 +297,7 @@ def clang_builder(target):
         run_ws(['rm', '-rf', 'llvm/tools/clang/test/debuginfo-tests'])
         run_cmd(os.path.join(conf.workspace, 'llvm/tools/clang/test'),
                 ['ln', '-sf', os.path.join(conf.workspace, debug_src_dir),
-                'debuginfo-tests'])
+                 'debuginfo-tests'])
 
         project = 'clang'
 
@@ -304,7 +306,7 @@ def clang_builder(target):
         run_ws(["mkdir", "-p", clang_br])
 
         toolchain = '/Applications/Xcode.app/Contents/Developer' \
-            '/Toolchains/XcodeDefault.xctoolchain'
+                    '/Toolchains/XcodeDefault.xctoolchain'
 
         env = []
         dyld_path = ""
@@ -317,33 +319,38 @@ def clang_builder(target):
             if conf.debug or conf.device:
                 assert False, "Invalid parameter for clang-builder."
             run_cmd(clang_br, ['mkdir',
-                           './Build',
-                           './Root'])
-            install_prefix =  conf.installdir()
+                               './Build',
+                               './Root'])
+            install_prefix = conf.installdir()
             cmake_command = env + ["/usr/local/bin/cmake", '-G', 'Ninja', '-C',
-            '{}/llvm/tools/clang/cmake/caches/Apple-stage2.cmake'.format(conf.workspace),
-            '-DLLVM_ENABLE_ASSERTIONS:BOOL={}'.format("TRUE" if conf.assertions else "FALSE"),
-            '-DCMAKE_BUILD_TYPE=RelWithDebInfo',
-            '-DCMAKE_MAKE_PROGRAM=' + NINJA,
-            '-DLLVM_VERSION_PATCH=99',
-            '-DLLVM_VERSION_SUFFIX=""',
-            '-DLLVM_BUILD_EXTERNAL_COMPILER_RT=On',
-            '-DCLANG_COMPILER_RT_CMAKE_ARGS={}/llvm/projects/compiler-rt/cmake/caches/Apple.cmake'.format(conf.workspace),
-            '-DCOMPILER_RT_BUILD_SANITIZERS=On',
-            '-DCMAKE_INSTALL_PREFIX={}'.format(install_prefix),
-            '-DLLVM_REPOSITORY={}'.format(conf._svn_url),
-            '-DCLANG_REPOSITORY_STRING={}'.format(conf.branch()),
-            '-DCLANG_APPEND_VC_REV=On',
-            '-DSVN_REVISION={}'.format(conf.svn_rev),
-            '-DLLVM_BUILD_TESTS=On',
-            '-DLLVM_INCLUDE_TESTS=On',
-            '-DCLANG_INCLUDE_TESTS=On',
-            '-DLLVM_INCLUDE_UTILS=On',
-            '-DLIBCXX_INSTALL_HEADERS=On',
-            '-DLIBCXX_OVERRIDE_DARWIN_INSTALL=On',
-            '-DLIBCXX_INSTALL_LIBRARY=Off',
-            '-DCMAKE_MACOSX_RPATH=On',
-            ]
+                                   '{}/llvm/tools/clang/cmake/caches/Apple-stage2.cmake'.format(
+                                       conf.workspace),
+                                   '-DLLVM_ENABLE_ASSERTIONS:BOOL={}'.format(
+                                       "TRUE" if conf.assertions else "FALSE"),
+                                   '-DCMAKE_BUILD_TYPE=RelWithDebInfo',
+                                   '-DCMAKE_MAKE_PROGRAM=' + NINJA,
+                                   '-DLLVM_VERSION_PATCH=99',
+                                   '-DLLVM_VERSION_SUFFIX=""',
+                                   '-DLLVM_BUILD_EXTERNAL_COMPILER_RT=On',
+                                   '-DCLANG_COMPILER_RT_CMAKE_ARGS={}/llvm/projects/compiler-rt/cmake/caches/Apple.cmake'.format(
+                                       conf.workspace),
+                                   '-DCOMPILER_RT_BUILD_SANITIZERS=On',
+                                   '-DCMAKE_INSTALL_PREFIX={}'.format(
+                                       install_prefix),
+                                   '-DLLVM_REPOSITORY={}'.format(conf._svn_url),
+                                   '-DCLANG_REPOSITORY_STRING={}'.format(
+                                       conf.branch()),
+                                   '-DCLANG_APPEND_VC_REV=On',
+                                   '-DSVN_REVISION={}'.format(conf.svn_rev),
+                                   '-DLLVM_BUILD_TESTS=On',
+                                   '-DLLVM_INCLUDE_TESTS=On',
+                                   '-DCLANG_INCLUDE_TESTS=On',
+                                   '-DLLVM_INCLUDE_UTILS=On',
+                                   '-DLIBCXX_INSTALL_HEADERS=On',
+                                   '-DLIBCXX_OVERRIDE_DARWIN_INSTALL=On',
+                                   '-DLIBCXX_INSTALL_LIBRARY=Off',
+                                   '-DCMAKE_MACOSX_RPATH=On',
+                                   ]
 
             if dyld_path:
                 cmake_command += ['-DDYLD_LIBRARY_PATH=' + dyld_path]
@@ -353,15 +360,17 @@ def clang_builder(target):
 
             if conf.CC():
                 cmake_command.extend(['-DCMAKE_C_COMPILER=' + conf.CC(),
-                          '-DCMAKE_CXX_COMPILER=' + conf.CC() + "++"])
+                                      '-DCMAKE_CXX_COMPILER=' + conf.CC() + "++"])
 
             lit_flags = ['--xunit-xml-output=testresults.xunit.xml', '-v']
             if conf.max_parallel_tests:
                 lit_flags += ['-j', conf.max_parallel_tests]
-            cmake_command.extend(['-DLLVM_LIT_ARGS={}'.format(' '.join(lit_flags))])
-              
+            cmake_command.extend(
+                ['-DLLVM_LIT_ARGS={}'.format(' '.join(lit_flags))])
+
             if conf.lto:
-                cmake_command.extend(["-DLLVM_PARALLEL_LINK_JOBS=" + str(max_link_jobs())])
+                cmake_command.extend(
+                    ["-DLLVM_PARALLEL_LINK_JOBS=" + str(max_link_jobs())])
             else:
                 cmake_command.extend(['-DLLVM_ENABLE_LTO=Off'])
                 cmake_command.extend([
@@ -386,7 +395,8 @@ def clang_builder(target):
         # Add steps to run the tests.
         next_section("Tests")
         # Auto detect bootstrap and non-bootstrap.
-        obj_dir = os.path.join(conf._build_dir, 'Objects/obj-llvm/tools/clang/stage2-bins/')
+        obj_dir = os.path.join(conf._build_dir,
+                               'Objects/obj-llvm/tools/clang/stage2-bins/')
         if not os.path.exists(obj_dir):
             obj_dir = os.path.join(conf._build_dir, 'Build/')
             obj_dir = os.path.join(conf.workspace, obj_dir)
@@ -395,8 +405,8 @@ def clang_builder(target):
 
         if conf.assertions:
             cmd[-1] += ' --param use_gmalloc=1 ' \
-                '--param gmalloc_path=$(xcodebuild -find-library' \
-                ' libgmalloc.dylib)'
+                       '--param gmalloc_path=$(xcodebuild -find-library' \
+                       ' libgmalloc.dylib)'
         run_cmd(obj_dir, cmd, env={'MALLOC_LOG_FILE': '/dev/null'})
 
 
@@ -441,7 +451,7 @@ def lldb_builder():
         # certificate and we are ensuring we are testing the latest debugserver
         # from lldb.
         # "DEBUGSERVER_USE_FROM_SYSTEM=1"
-        ]
+    ]
 
     header("Build Xcode desktop scheme")
     run_cmd("lldb", xcodebuild_cmd)
@@ -478,7 +488,7 @@ def lldb_builder():
         "-derivedDataPath", conf.lldbbuilddir(),
         # See notes above.
         # "DEBUGSERVER_USE_FROM_SYSTEM=1"
-        ]
+    ]
 
     header("Build Xcode lldb-gtest scheme")
     run_cmd("lldb", xcodebuild_cmd)
@@ -493,7 +503,8 @@ def lldb_builder():
         "-C", effective_clang,
         "--arch", "x86_64",
         "--session-file-format", "fm",
-        "--results-formatter", "lldbsuite.test_event.formatter.xunit.XunitFormatter",
+        "--results-formatter",
+        "lldbsuite.test_event.formatter.xunit.XunitFormatter",
         "--results-file", os.path.join(build_dir, "test-results-x86_64.xml"),
         "--rerun-all-issues",
         "--env", "TERM=vt100",
@@ -515,7 +526,8 @@ def lldb_builder():
         "-C", effective_clang,
         "--arch", "i386",
         "--session-file-format", "fm",
-        "--results-formatter", "lldbsuite.test_event.formatter.xunit.XunitFormatter",
+        "--results-formatter",
+        "lldbsuite.test_event.formatter.xunit.XunitFormatter",
         "--results-file", os.path.join(build_dir, "test-results-i386.xml"),
         "--rerun-all-issues",
         "--env", "TERM=vt100",
@@ -528,27 +540,29 @@ def lldb_builder():
     run_cmd_errors_okay("lldb", python_testsuite_cmd_i386)
     footer()
 
+
 def static_analyzer_benchmarks_builder():
-  """Run static analyzer benchmarks"""
-  header("Static Analyzer Benchmarks")
+    """Run static analyzer benchmarks"""
+    header("Static Analyzer Benchmarks")
 
-  benchmark_script = conf.workspace + "/utils-analyzer/SATestBuild.py"
-  benchmarks_dir = conf.workspace + "/test-suite-ClangAnalyzer/"
+    benchmark_script = conf.workspace + "/utils-analyzer/SATestBuild.py"
+    benchmarks_dir = conf.workspace + "/test-suite-ClangAnalyzer/"
 
-  compiler_bin_dir = conf.workspace + "/host-compiler/bin/"
-  scanbuild_bin_dir = conf.workspace + "/tools-scan-build/bin/"
+    compiler_bin_dir = conf.workspace + "/host-compiler/bin/"
+    scanbuild_bin_dir = conf.workspace + "/tools-scan-build/bin/"
 
-  old_path = os.environ.get("PATH", "")
-  env = dict(os.environ, PATH=compiler_bin_dir + os.pathsep +
-                              scanbuild_bin_dir + os.pathsep +
-                              old_path)
+    old_path = os.environ.get("PATH", "")
+    env = dict(os.environ, PATH=compiler_bin_dir + os.pathsep +
+                                scanbuild_bin_dir + os.pathsep +
+                                old_path)
 
-  benchmark_cmd = [benchmark_script,
-                   "--strictness", "0"
-                  ]
-  run_cmd(benchmarks_dir, benchmark_cmd, env=env)
+    benchmark_cmd = [benchmark_script,
+                     "--strictness", "0"
+                     ]
+    run_cmd(benchmarks_dir, benchmark_cmd, env=env)
 
-  footer()
+    footer()
+
 
 def check_repo_state(path):
     """Check the SVN repo at the path has all the
@@ -560,7 +574,7 @@ def check_repo_state(path):
 
     logging.info("Detecting repos in {}".format(path))
     for r in ['llvm', 'clang', 'clang-tools-extra', 'debuginfo-tests', \
-            'compiler-rt', 'libcxx', 'debuginfo-tests']:
+              'compiler-rt', 'libcxx', 'debuginfo-tests']:
         detected_path = derived_path('llvm', tree_path(tree='llvm', repo=r))
         readme = os.path.join(path, detected_path, readme_name(repo=r))
         if os.path.exists(readme):
@@ -702,7 +716,8 @@ def derive(tree, repos):
     # Make sure destinations exist.
     srcdir = tree_srcdir(conf=conf, tree=tree)
     for p in repos:
-        full_path = derived_path(srcdir=srcdir, tree_path=tree_path(tree=tree, repo=p))
+        full_path = derived_path(srcdir=srcdir,
+                                 tree_path=tree_path(tree=tree, repo=p))
         if not os.path.exists(full_path):
             os.makedirs(full_path)
 
@@ -713,7 +728,7 @@ def derive(tree, repos):
 
 
 def derive_llvm(repos=['llvm', 'clang', 'libcxx', 'clang-tools-extra', \
-        'compiler-rt', 'debuginfo-tests']):
+                       'compiler-rt', 'debuginfo-tests']):
     """Build a derived src tree for LLVM"""
     derive(tree='llvm', repos=repos)
 
@@ -721,7 +736,7 @@ def derive_llvm(repos=['llvm', 'clang', 'libcxx', 'clang-tools-extra', \
 def derive_lldb():
     """Build a derived src tree for LLDB"""
     derive(tree='lldb', repos=['lldb', 'llvm', 'clang', 'libcxx',
-        'compiler-rt'])
+                               'compiler-rt'])
 
 
 def create_builddirs():
@@ -740,7 +755,8 @@ def fetch_compiler():
     if os.path.exists(conf.workspace + "/host-compiler"):
         shutil.rmtree(conf.workspace + "/host-compiler")
     os.mkdir(conf.workspace + "/host-compiler")
-    run_cmd(conf.workspace + "/host-compiler/", ['tar', 'zxf', "../" + local_name])
+    run_cmd(conf.workspace + "/host-compiler/",
+            ['tar', 'zxf', "../" + local_name])
     os.unlink(local_name)
     footer()
 
@@ -755,7 +771,8 @@ def build_upload_artifact():
     prop_file = "last_good_build.properties"
 
     artifact_name = "clang-r{}-t{}-b{}.tar.gz".format(conf.svn_rev,
-        conf.build_id, conf.build_number)
+                                                      conf.build_id,
+                                                      conf.build_number)
     new_url = conf.job_name + "/" + artifact_name
 
     with open(prop_file, 'w') as prop_fd:
@@ -770,22 +787,22 @@ def build_upload_artifact():
     run_cmd(conf.installdir(), tar)
 
     upload_cmd = ["scp", artifact_name,
-        "buildslave@" + SERVER + ":/Library/WebServer/Documents/artifacts/" +
-        conf.job_name + "/"]
+                  "buildslave@" + SERVER + ":/Library/WebServer/Documents/artifacts/" +
+                  conf.job_name + "/"]
 
     run_cmd(conf.workspace, upload_cmd)
 
     upload_cmd = ["scp", prop_file,
-        "buildslave@" + SERVER + ":/Library/WebServer/Documents/artifacts/" +
-        conf.job_name + "/"]
+                  "buildslave@" + SERVER + ":/Library/WebServer/Documents/artifacts/" +
+                  conf.job_name + "/"]
 
     run_cmd(conf.workspace, upload_cmd)
 
     ln_cmd = ["ssh", "buildslave@" + SERVER,
-        "ln", "-fs", "/Library/WebServer/Documents/artifacts/" +
-        conf.job_name + "/" + artifact_name,
-        "/Library/WebServer/Documents/artifacts/" +
-        conf.job_name + "/latest" ]
+              "ln", "-fs", "/Library/WebServer/Documents/artifacts/" +
+              conf.job_name + "/" + artifact_name,
+              "/Library/WebServer/Documents/artifacts/" +
+              conf.job_name + "/latest"]
 
     run_cmd(conf.workspace, ln_cmd)
 
@@ -829,8 +846,9 @@ def run_cmd(working_dir, cmd, env=None, sudo=False, err_okay=False):
     end_time = datetime.datetime.now()
 
     logging.info("Command took {} seconds".format(
-        (end_time-start_time).seconds))
+        (end_time - start_time).seconds))
     return return_code
+
 
 def run_cmd_errors_okay(working_dir, cmd, env=None):
     """Run a command in a working directory, reporting return value.
@@ -851,12 +869,14 @@ def run_cmd_errors_okay(working_dir, cmd, env=None):
     end_time = datetime.datetime.now()
 
     logging.info("Command took {} seconds: return code {}".format(
-        (end_time-start_time).seconds, result))
+        (end_time - start_time).seconds, result))
+
 
 KNOWN_TARGETS = ['all', 'build', 'test', 'testlong']
 KNOWN_BUILDS = ['clang', 'cmake', 'lldb', 'fetch', 'artifact',
                 'derive', 'derive-llvm+clang', 'derive-lldb', 'derive-llvm',
                 'static-analyzer-benchmarks']
+
 
 def query_sdk_path(sdk_name):
     """Get the path to the sdk named using xcrun.
@@ -871,19 +891,22 @@ def query_sdk_path(sdk_name):
         return run_collect_output(cmd).strip()
     else:
         return "/Applications/Xcode.app/Contents/Developer/Platforms/" \
-            "MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk"
+               "MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk"
+
 
 def max_link_jobs():
     """Link jobs take about 3.6GB of memory, max."""
     mem_str = run_collect_output(["sysctl", "hw.memsize"])
     mem = float(mem_str.split()[1].strip())
-    mem = mem / (1024.0**3)  # Conver to GBs.
-    return int(math.ceil(mem/conf.link_memory_usage()))
+    mem = mem / (1024.0 ** 3)  # Conver to GBs.
+    return int(math.ceil(mem / conf.link_memory_usage()))
+
 
 TEST_VALS = {"sysctl hw.ncpu": "hw.ncpu: 8\n",
              "sysctl hw.memsize": "hw.memsize: 8589934592\n",
              "xcrun --sdk iphoneos --show-sdk-path": "/Foo/bar",
              }
+
 
 def run_collect_output(cmd):
     """Run cmd, and return the output"""
@@ -892,6 +915,7 @@ def run_collect_output(cmd):
         return TEST_VALS[' '.join(cmd)]
 
     return subprocess.check_output(cmd)
+
 
 def query_sys_tool(sdk_name, tool_name):
     """Get the path of system tool
@@ -904,6 +928,7 @@ def query_sys_tool(sdk_name, tool_name):
         return run_collect_output(cmd).strip()
     else:
         return "/usr/bin/" + tool_name
+
 
 def run_ws(cmd, env=None):
     """Wrapper to call run_cmd in local workspace.
@@ -933,7 +958,7 @@ def parse_args():
     parser.add_argument('--debug', dest='debug', action='store_true')
     parser.add_argument('--cmake-type', dest='cmake_build_type',
                         help="Override cmake type Release, Debug, "
-                        "RelWithDebInfo and MinSizeRel")
+                             "RelWithDebInfo and MinSizeRel")
     parser.add_argument('--cmake-flag', dest='cmake_flags',
                         action='append', default=[],
                         help='Set an arbitrary cmake flag')
@@ -950,7 +975,7 @@ def parse_args():
                         action='store_true')
     parser.add_argument('--globalisel', dest='globalisel',
                         action='store_true', help="Turn on the experimental"
-                        " GlobalISel CMake flag.")
+                                                  " GlobalISel CMake flag.")
 
     args = parser.parse_args()
     return args
