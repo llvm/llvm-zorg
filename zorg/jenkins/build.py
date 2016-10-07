@@ -809,7 +809,7 @@ def build_upload_artifact():
                "ln", "-fs", "/Library/WebServer/Documents/artifacts/" +
                conf.job_name + "/" + artifact_name,
                "/Library/WebServer/Documents/artifacts/" +
-               conf.job_name + "/r" + conf.svn_rev()]
+               conf.job_name + "/r" + conf.svn_rev]
 
     run_cmd(conf.workspace, lnr_cmd)
 
