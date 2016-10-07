@@ -11,6 +11,7 @@ import shutil
 import math
 import re
 import xml.etree.ElementTree as ET
+from urllib2 import urlopen, URLError, HTTPError
 
 SERVER = "labmaster2.local"
 
@@ -639,6 +640,30 @@ def should_exclude(base_path, repo_path):
     return False
 
 
+def http_download(url, dest):
+    """Safely download url to dest.
+
+    Print error and exit if download fails.
+    """
+    try:
+        print "GETting", url, "to", dest, "...",
+        f = urlopen(url)
+        # Open our local file for writing
+        with open(dest, "wb") as local_file:
+            local_file.write(f.read())
+
+    except HTTPError, e:
+        print
+        print "HTTP Error:", e.code, url
+        sys.exit(1)
+
+    except URLError, e:
+        print
+        print "URL Error:", e.reason, url
+        sys.exit(1)
+    print "done."
+
+
 def rsync(conf, tree, repo, repos):
     """rsync from the checkout to the derived path"""
     cmd = ["rsync", "-auvh", "--delete", "--exclude=.svn/"]
@@ -710,9 +735,7 @@ def fetch_compiler():
     local_name = "host-compiler.tar.gz"
     url = conf.host_compiler_url + "/" + conf.artifact_url
     header("Fetching Compiler")
-    print "Fetching:", url,
-    urllib.urlretrieve (url, conf.workspace + "/" + local_name)
-    print "done."
+    http_download(url, conf.workspace + "/" + local_name)
     print "Decompressing..."
     if os.path.exists(conf.workspace + "/host-compiler"):
         shutil.rmtree(conf.workspace + "/host-compiler")
