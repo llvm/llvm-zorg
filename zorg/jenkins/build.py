@@ -6,7 +6,6 @@ import os
 import subprocess
 import datetime
 import argparse
-import urllib
 import shutil
 import math
 import re
