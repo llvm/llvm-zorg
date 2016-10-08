@@ -984,7 +984,9 @@ def _get_libcxx_builders():
                  'CC': 'clang', 'CXX': 'clang++'},
             cmake_extra_opts={'LLVM_USE_SANITIZER': 'Undefined',
                               'LIBCXX_ABI_UNSTABLE': 'ON'},
-            lit_extra_opts={'std':'c++1z'}),
+            # FIXME This is a workaround for PR30643 (See http://llvm.org/PR30643)
+            lit_extra_opts={'std':'c++1z',
+                            'link_flags': '/usr/local/lib/clang/4.0.0/lib/linux/libclang_rt.builtins-x86_64.a'}),
         'category': 'libcxx'},
 
         # EricWF's builders on ericwf-buildslave2
