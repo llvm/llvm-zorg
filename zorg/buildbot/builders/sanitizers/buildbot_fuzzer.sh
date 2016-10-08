@@ -22,7 +22,6 @@ STAGE2_ASAN_ASSERTIONS_DIR=llvm_build_asan_assertions
 MAKE_JOBS=${MAX_MAKE_JOBS:-8}
 LLVM=$ROOT/llvm
 LIBFUZZER=$LLVM/lib/Fuzzer
-FUZZER_TEST_SUITE=$LIBFUZZER/fuzzer-test-suite
 # No assertions. Need to clean up the existing assertion failures first.
 # Also, the Fuzzer does not provide reproducers on assertion failures yet.
 CMAKE_COMMON_OPTIONS="-GNinja -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_ASSERTIONS=OFF -DLLVM_PARALLEL_LINK_JOBS=8"
@@ -97,9 +96,14 @@ cmake_stage2_asan_assertions_options="$cmake_stage2_asan_options -DLLVM_ENABLE_A
 
 (cd ${STAGE2_ASAN_ASSERTIONS_DIR} && ninja check-fuzzer) || echo @@@STEP_FAILURE@@@
 
+echo @@@BUILD_STEP get fuzzer-test-suite @@@
+[ ! -e fuzzer-test-suite ] && git clone https://github.com/google/fuzzer-test-suite.git
+(cd fuzzer-test-suite && git pull)
+
 RunFuzzerTest() {
   echo @@@BUILD_STEP test "$1" fuzzer@@@
-  $FUZZER_TEST_SUITE/build-and-test.sh "$1"
+  ln -sf $LIBFUZZER .
+  `pwd`/fuzzer-test-suite/build-and-test.sh "$1"
 }
 
 RunFuzzerTest re2-2014-12-09       || echo @@@STEP_WARNINGS@@@
