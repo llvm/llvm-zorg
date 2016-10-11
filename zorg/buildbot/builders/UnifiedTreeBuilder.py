@@ -201,7 +201,6 @@ def getCmakeWithMakeBuildFactory(
            obj_dir = None,
            install_dir=None,
            clean = False,
-           jobs  = None,
            extra_configure_args = None,
            env = None,
            **kwargs):
