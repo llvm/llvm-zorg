@@ -1,3 +1,5 @@
+import re
+
 from buildbot.process.properties import WithProperties
 from buildbot.steps.shell import WarningCountingShellCommand
 
@@ -25,24 +27,31 @@ class MakeCommand(WarningCountingShellCommand):
         self.prefixCommand = prefixCommand
         self.targets = targets
 
-        if options is None:
-            self.options = list()
-        else:
-            self.options = list(options)
-
-        if kwargs.get('jobs', None):
-             self.options += ["-j", kwargs['jobs']]
-        else:
-             self.options += [
-                 WithProperties("%(jobs:+-j)s"),
-                 WithProperties("%(jobs:-)s"),
-                 ]
-
         command = []
         if prefixCommand:
             command += prefixCommand
 
         command += ["make"]
+
+        if options is None:
+            self.options = list()
+        else:
+            self.options = list(options)
+
+        j_opt = re.compile(r'^-j$|^-j\d+$')
+
+        # We can get jobs in the options. If so, we would use that.
+        if not any(j_opt.search(opt) for opt in self.options if isinstance(opt, basestring)):
+            # Otherwise let's see if we got it in the kwargs.
+            if kwargs.get('jobs', None):
+                self.options += ["-j", kwargs['jobs']]
+            else:
+                # Use the property if option was not explicitly
+                # specified.
+                command += [
+                    WithProperties("%(jobs:+-j)s"),
+                    WithProperties("%(jobs:-)s"),
+                    ]
 
         if self.options:
             command += self.options
