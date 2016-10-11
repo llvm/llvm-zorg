@@ -1,3 +1,5 @@
+import re
+
 from buildbot.process.properties import WithProperties
 from buildbot.steps.shell import WarningCountingShellCommand
 
@@ -26,32 +28,42 @@ class NinjaCommand(WarningCountingShellCommand):
         self.prefixCommand = prefixCommand
         self.targets = targets
 
-        if options is None:
-            self.options = list()
-        else:
-            self.options = list(options)
-
-        if kwargs.get('jobs', None):
-             self.options += ["-j", kwargs['jobs']]
-        else:
-             self.options += [
-                 WithProperties("%(jobs:+-j)s"),
-                 WithProperties("%(jobs:-)s"),
-                 ]
-
-        if kwargs.get('loadaverage', None):
-            self.options += ["-l", kwargs['loadaverage']]
-        else:
-            self.options += [
-                WithProperties("%(loadaverage:+-l)s"),
-                WithProperties("%(loadaverage:-)s"),
-                ]
-
         command = []
         if prefixCommand:
             command += prefixCommand
 
         command += ["ninja"]
+
+        if options is None:
+            self.options = list()
+        else:
+            self.options = list(options)
+
+        j_opt = re.compile(r'^-j$|^-j\d+$')
+        l_opt = re.compile(r'^-l$|^-l\d+(\.(\d+)?)?$')
+
+        # We can get jobs in the options. If so, we would use that.
+        if not any(j_opt.search(opt) for opt in self.options if isinstance(opt, basestring)):
+            # Otherwise let's see if we got it in the kwargs.
+            if kwargs.get('jobs', None):
+                self.options += ["-j", kwargs['jobs']]
+            else:
+                # Use the property if option was not explicitly
+                # specified.
+                command += [
+                    WithProperties("%(jobs:+-j)s"),
+                    WithProperties("%(jobs:-)s"),
+                    ]
+
+        # The same logic is for hanling the loadaverage option.
+        if not any(l_opt.search(opt) for opt in self.options if isinstance(opt, basestring)):
+            if kwargs.get('loadaverage', None):
+                self.options += ["-l", kwargs['loadaverage']]
+            else:
+                command += [
+                    WithProperties("%(loadaverage:+-l)s"),
+                    WithProperties("%(loadaverage:-)s"),
+                    ]
 
         if self.options:
             command += self.options
