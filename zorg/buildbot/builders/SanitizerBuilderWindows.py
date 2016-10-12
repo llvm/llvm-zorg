@@ -84,7 +84,7 @@ def getSanitizerWindowsBuildFactory(
                            env=Property('slave_env')))
 
     # Build compiler-rt first to speed up detection of Windows-specific
-    # compiler-time errors in the sanitizers runtime.
+    # compiler-time errors in the sanitizer runtimes.
     f.addStep(NinjaCommand(name='build compiler-rt',
                            targets=['compiler-rt'],
                            haltOnFailure=True,
@@ -92,9 +92,19 @@ def getSanitizerWindowsBuildFactory(
                            workdir=build_dir,
                            env=Property('slave_env')))
 
+    # Build Clang and LLD next so that most compilation errors occur in a build
+    # step.
+    f.addStep(NinjaCommand(name='build clang lld',
+                           targets=['clang', 'lld'],
+                           haltOnFailure=True,
+                           description='ninja clang lld',
+                           workdir=build_dir,
+                           env=Property('slave_env')))
+
     # Only run sanitizer tests.
     # Don't build targets that are not required in order to speed up the cycle.
-    test_targets = ['check-asan','check-asan-dynamic','check-sanitizer', 'check-cfi']
+    test_targets = ['check-asan', 'check-asan-dynamic', 'check-sanitizer',
+                    'check-cfi']
     f.addStep(NinjaCommand(name='run tests',
                            targets=test_targets,
                            haltOnFailure=True,
