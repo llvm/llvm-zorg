@@ -734,7 +734,8 @@ def _get_sanitizer_builders():
           {'name': "sanitizer-windows",
            'slavenames' :["sanitizer-windows"],
            'builddir': "sanitizer-windows",
-           'factory': SanitizerBuilderWindows.getSanitizerWindowsBuildFactory()},
+           'factory': SanitizerBuilderWindows.getSanitizerWindowsBuildFactory(
+                        vs='%VS140COMNTOOLS%')},
 
           ## Cortex-A15 check-all full (compiler-rt) with CMake builder; Needs x86 for ASAN tests
           {'name': "clang-cmake-armv7-a15-full",

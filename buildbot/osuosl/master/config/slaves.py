@@ -153,9 +153,8 @@ def get_build_slaves():
 
         # Windows Server 2008 R2, Quad 2.6GHz Intel Xeon(R) 4GB RAM
         create_slave("zturner-win2008", properties={'jobs': 4}, max_builds=1),
-        # Windows Server 2008 R2, Quad 2.6GHz Intel Xeon(R) 8GB RAM
-        create_slave("sanitizer-windows", properties={'jobs': 4}, max_builds=1),
-        # Windows Server 2008 R2, Quad 2.6GHz Intel Xeon(R) 8GB RAM
+        # Windows Server 2012 x86_64 16-core GCE instance
+        create_slave("sanitizer-windows", properties={'jobs': 16}, max_builds=1),
         create_slave("windows-gcebot1", properties={'jobs': 8}, max_builds=1),
         # Windows Server 2012 x86_64 32-core GCE instance
         create_slave("windows-gcebot2", properties={'jobs': 32}, max_builds=1),
