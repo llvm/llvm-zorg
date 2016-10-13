@@ -233,6 +233,7 @@ def getClangWithLTOBuildFactory(
            jobs  = None,
            extra_configure_args = None,
            compare_last_2_stages = True,
+           lto = None, # The string gets passed to -flto flag as is. Like -flto=thin.
            env = None):
 
     # Set defaults
@@ -305,11 +306,16 @@ def getClangWithLTOBuildFactory(
     # Build all the remaining stages with exactly the same configuration.
 
     # Set proper compile and link flags.
+    if lto:
+        lto = '-flto=%s' % lto
+    else:
+        lto = '-flto'
+
     CmakeCommand.appendFlags(extra_configure_args, [
-        ('-DCMAKE_CXX_FLAGS=',           ['-flto']),
-        ('-DCMAKE_EXE_LINKER_FLAGS=',    ['-flto', '-fuse-ld=lld']),
-        ('-DCMAKE_MODULE_LINKER_FLAGS=', ['-flto', '-fuse-ld=lld']),
-        ('-DCMAKE_SHARED_LINKER_FLAGS=', ['-flto', '-fuse-ld=lld']),
+        ('-DCMAKE_CXX_FLAGS=',           [lto]),
+        ('-DCMAKE_EXE_LINKER_FLAGS=',    [lto, '-fuse-ld=lld']),
+        ('-DCMAKE_MODULE_LINKER_FLAGS=', [lto, '-fuse-ld=lld']),
+        ('-DCMAKE_SHARED_LINKER_FLAGS=', [lto, '-fuse-ld=lld']),
         ])
 
     # The rest are test stages, which depend on the staged compiler we are ultimately after.
