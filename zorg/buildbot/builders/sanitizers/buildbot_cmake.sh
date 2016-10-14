@@ -234,19 +234,19 @@ build_symbolizer() {
   (cd symbolizer_build$1 && ZLIB_SRC=$ZLIB FLAGS=-m$1 \
     CLANG=${FRESH_CLANG_PATH}/clang \
     bash -eux $COMPILER_RT_CHECKOUT/lib/sanitizer_common/symbolizer/scripts/build_symbolizer.sh \
-      $(dirname $(find ../$2/ -name libclang_rt.*.a | head -n1)) || echo @@@STEP_WARNINGS@@@)
+      $(dirname $(find ../$2/ -name libclang_rt.*.a | head -n1)) || echo @@@STEP_FAILURE@@@)
 }
 
 if [ "$CHECK_SYMBOLIZER" == "1" ]; then
   echo @@@BUILD_STEP update zlib@@@
   (cd $ZLIB && git pull --rebase) || \
-      git clone https://github.com/madler/zlib.git $ZLIB || echo @@@STEP_WARNINGS@@@
+      git clone https://github.com/madler/zlib.git $ZLIB || echo @@@STEP_FAILURE@@@
 
   build_symbolizer 32 compiler_rt_build
   build_symbolizer 64 compiler_rt_build
 
   echo @@@BUILD_STEP test standalone compiler-rt with symbolizer@@@
-  (cd compiler_rt_build && make -j$MAKE_JOBS check-all) || echo @@@STEP_WARNINGS@@@
+  (cd compiler_rt_build && make -j$MAKE_JOBS check-all) || echo @@@STEP_FAILURE@@@
 fi
 
 HAVE_NINJA=${HAVE_NINJA:-1}
@@ -290,7 +290,7 @@ if [ "$PLATFORM" == "Linux" -a $HAVE_NINJA == 1 ]; then
       # Disabled, tests are not working yet.
       if [ "$CONDITION" == "-1" ]; then
         echo @@@BUILD_STEP ninja check-$SANITIZER with symbolizer@@@
-        (cd llvm_build_ninja && ninja check-$SANITIZER) || echo @@@STEP_WARNINGS@@@
+        (cd llvm_build_ninja && ninja check-$SANITIZER) || echo @@@STEP_FAILURE@@@
       fi
     }
 
