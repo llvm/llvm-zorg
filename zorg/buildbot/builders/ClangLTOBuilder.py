@@ -229,6 +229,7 @@ def _addSteps4StagedCompiler(
 
 
 def getClangWithLTOBuildFactory(
+           depends_on_projects = None,
            clean = False,
            jobs  = None,
            extra_configure_args = None,
@@ -237,6 +238,12 @@ def getClangWithLTOBuildFactory(
            env = None):
 
     # Set defaults
+    if depends_on_projects:
+        depends_on_projects = list(depends_on_projects)
+    else:
+        # By default we link with LLD.
+        depends_on_projects = ['llvm', 'clang', 'lld']
+
     if jobs is None:
         jobs = "%(jobs)s"
 
@@ -258,7 +265,7 @@ def getClangWithLTOBuildFactory(
         merged_env.update(env)
 
     f = LLVMBuildFactory(
-            depends_on_projects=['llvm', 'clang', 'lld'],
+            depends_on_projects=depends_on_projects,
             llvm_srcdir="llvm.src",
             stage_objdirs=[
                 "build/stage1",
