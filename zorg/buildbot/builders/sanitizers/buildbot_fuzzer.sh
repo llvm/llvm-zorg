@@ -108,7 +108,7 @@ RunFuzzerTest() {
 
 RunFuzzerTest re2-2014-12-09       || echo @@@STEP_FAILURE@@@
 RunFuzzerTest c-ares-CVE-2016-5180 || echo @@@STEP_FAILURE@@@
-RunFuzzerTest openssl-1.0.1f       || echo @@@STEP_FAILURE@@@
+RunFuzzerTest openssl-1.0.1f       || echo @@@STEP_WARNINGS@@@  # Flaky build failures
 RunFuzzerTest openssl-1.0.2d       || echo @@@STEP_FAILURE@@@
 RunFuzzerTest libxml2-v2.9.2       || echo @@@STEP_FAILURE@@@
 
