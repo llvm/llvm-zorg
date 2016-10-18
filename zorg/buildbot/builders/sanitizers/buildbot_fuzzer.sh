@@ -111,6 +111,7 @@ RunFuzzerTest c-ares-CVE-2016-5180 || echo @@@STEP_FAILURE@@@
 RunFuzzerTest openssl-1.0.1f       || echo @@@STEP_WARNINGS@@@  # Flaky build failures
 RunFuzzerTest openssl-1.0.2d       || echo @@@STEP_FAILURE@@@
 RunFuzzerTest libxml2-v2.9.2       || echo @@@STEP_FAILURE@@@
+RunFuzzerTest libpng-1.2.56        || echo @@@STEP_WARNINGS@@@  # Evaluating
 
 #echo @@@BUILD_STEP stage2/asan+assertions build clang-format-fuzzer and clang-fuzzer@@@
 
