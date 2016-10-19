@@ -511,6 +511,7 @@ def _get_clang_builders():
          'builddir' : "clang-3stage-ubuntu",
          'factory': ClangLTOBuilder3Stage.get3StageClangLTOBuildFactory(
                clean=True,
+               jobs=16,
                env=None,
                build_gold=True,
                cmake_cache_file="../llvm.src/tools/clang/cmake/caches/3-stage.cmake",
@@ -679,6 +680,12 @@ def _get_lld_builders():
          'slavenames' : ["ps4-buildslave1a"],
          'builddir' : "clang-with-lto-ubuntu",
          'factory': ClangLTOBuilder.getClangWithLTOBuildFactory(),
+         'category'   : 'lld'},
+
+        {'name' : "clang-with-thin-lto-ubuntu",
+         'slavenames' : ["ps4-buildslave1a"],
+         'builddir' : "clang-with-thin-lto-ubuntu",
+         'factory': ClangLTOBuilder.getClangWithLTOBuildFactory(lto='thin', jobs=16),
          'category'   : 'lld'},
 
          ]
