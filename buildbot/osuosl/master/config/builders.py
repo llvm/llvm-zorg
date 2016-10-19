@@ -491,7 +491,7 @@ def _get_clang_builders():
          'builddir' : "clang-x64-ninja-win7",
          'factory' : ClangBuilder.getClangCMakeBuildFactory(
                         clean=False,
-                        vs='%VS120COMNTOOLS%',
+                        vs='%VS140COMNTOOLS%',
                         vs_target_arch='x64',
                         testStage1=True,
                         useTwoStage=True,
