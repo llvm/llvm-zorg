@@ -277,20 +277,6 @@ def _get_clang_builders():
                                         "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'"],
                )},
 
-        {'name': 'clang-x86-win2008-selfhost',
-         'slavenames': ['windows-gcebot1'],
-         'builddir': 'clang-x86-win2008-selfhost',
-         'factory' : ClangBuilder.getClangCMakeBuildFactory(
-                        clean=False,
-                        vs='%VS120COMNTOOLS%',
-                        vs_target_arch='x86',
-                        checkout_compiler_rt=False,
-                        testStage1=True,
-                        useTwoStage=True,
-                        stage1_config='Release',
-                        stage2_config='Release',
-                        extra_cmake_args=["-DLLVM_ENABLE_ASSERTIONS=ON"])},
-
         {'name': 'clang-x86-windows-msvc2015',
          'slavenames': ['windows-gcebot2'],
          'builddir': 'clang-x86-windows-msvc2015',
