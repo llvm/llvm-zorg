@@ -785,6 +785,10 @@ def build_upload_artifact():
 
     run_cmd(conf.installdir(), tar)
 
+    mkdir_cmd = ["ssh", "buildslave@" + SERVER, "mkdir", "-p", "/Library/WebServer/Documents/artifacts/" + conf.job_name]
+
+    run_cmd(conf.workspace, mkdir_cmd)
+
     upload_cmd = ["scp", artifact_name,
                   "buildslave@" + SERVER + ":/Library/WebServer/Documents/artifacts/" +
                   conf.job_name + "/"]
