@@ -249,6 +249,8 @@ def getClangWithLTOBuildFactory(
 
     if extra_configure_args is None:
         extra_configure_args = []
+    else:
+        extra_configure_args = list(extra_configure_args)
 
     # Make sure CMAKE_INSTALL_PREFIX and -G are not specified
     # in the extra_configure_args. We set them internally as needed.
@@ -312,18 +314,16 @@ def getClangWithLTOBuildFactory(
 
     # Build all the remaining stages with exactly the same configuration.
 
-    # Set proper compile and link flags.
-    if lto:
-        lto = '-flto=%s' % lto
-    else:
-        lto = '-flto'
-
-    CmakeCommand.appendFlags(extra_configure_args, [
-        ('-DCMAKE_CXX_FLAGS=',           [lto]),
-        ('-DCMAKE_EXE_LINKER_FLAGS=',    [lto, '-fuse-ld=lld']),
-        ('-DCMAKE_MODULE_LINKER_FLAGS=', [lto, '-fuse-ld=lld']),
-        ('-DCMAKE_SHARED_LINKER_FLAGS=', [lto, '-fuse-ld=lld']),
+    CmakeCommand.applyRequiredOptions(extra_configure_args, [
+        ('-DLLVM_ENABLE_LTO=', lto.upper() or 'ON'),
         ])
+
+    # If we build LLD, we would link with LLD.
+    # Otherwise we link with the system linker.
+    if 'lld' in depends_on_projects:
+        CmakeCommand.applyRequiredOptions(extra_configure_args, [
+            ('-DLLVM_ENABLE_LLD=', 'ON'),
+            ])
 
     # The rest are test stages, which depend on the staged compiler we are ultimately after.
     s = f.staged_compiler_idx + 1 
