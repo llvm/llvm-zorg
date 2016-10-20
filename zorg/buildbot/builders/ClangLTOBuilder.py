@@ -244,6 +244,9 @@ def getClangWithLTOBuildFactory(
         # By default we link with LLD.
         depends_on_projects = ['llvm', 'clang', 'lld']
 
+    if lto is None:
+        lto = 'ON'
+
     if jobs is None:
         jobs = "%(jobs)s"
 
@@ -315,7 +318,7 @@ def getClangWithLTOBuildFactory(
     # Build all the remaining stages with exactly the same configuration.
 
     CmakeCommand.applyRequiredOptions(extra_configure_args, [
-        ('-DLLVM_ENABLE_LTO=', lto.upper() or 'ON'),
+        ('-DLLVM_ENABLE_LTO=', lto),
         ])
 
     # If we build LLD, we would link with LLD.
