@@ -48,7 +48,9 @@ def get_build_slaves():
         create_slave("linaro-apm-01", properties={'jobs' : 8}, max_builds=1),
         create_slave("linaro-apm-02", properties={'jobs' : 8}, max_builds=1),
         create_slave("linaro-apm-03", properties={'jobs' : 8}, max_builds=1),
-        #create_slave("linaro-apm-04", properties={'jobs' : 8}, max_builds=1),
+        create_slave("linaro-apm-04", properties={'jobs' : 8}, max_builds=1),
+        create_slave("linaro-apm-05", properties={'jobs' : 8}, max_builds=1),
+        create_slave("linaro-apm-06", properties={'jobs' : 8}, max_builds=1),
 
         # AMD Athlon(tm) 64 X2 Dual Core 3800+, Ubuntu x86_64
         create_slave("grosser1", properties={'jobs': 2}, max_builds=1),
