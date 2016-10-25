@@ -767,7 +767,7 @@ def _get_sanitizer_builders():
          'builddir':"clang-cmake-aarch64-full",
          'factory' : ClangBuilder.getClangCMakeBuildFactory(
                       jobs=8,
-                      clean=True,
+                      clean=False,
                       checkout_compiler_rt=True,
                       test=True,
                       useTwoStage=True,
