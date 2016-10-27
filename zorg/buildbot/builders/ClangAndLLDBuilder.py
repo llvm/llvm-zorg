@@ -87,16 +87,6 @@ def getClangAndLLDBuildFactory(
                                env=merged_env))
 
     # Create configuration files with cmake.
-    shellCommand = ["mkdir", "-p", llvm_objdir]
-    if isMSVC:
-        shellCommand = ["mkdir", llvm_objdir]
-    f.addStep(ShellCommand(name="create-build-dir",
-                               command=shellCommand,
-                               haltOnFailure=True,
-                               description=["create build dir"],
-                               workdir=".",
-                               env=merged_env))
-
     options = ["-Wdocumentation", "-Wno-documentation-deprecated-sync"]
     if isMSVC:
         options = []
