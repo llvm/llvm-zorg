@@ -6,6 +6,7 @@ from buildbot.steps.source import SVN
 from buildbot.steps.shell import ShellCommand
 from buildbot.steps.shell import WarningCountingShellCommand
 from buildbot.process.properties import WithProperties
+from buildbot.steps.slave import RemoveDirectory
 from zorg.buildbot.commands.LitTestCommand import LitTestCommand
 from zorg.buildbot.commands.NinjaCommand import NinjaCommand
 
@@ -75,16 +76,16 @@ def getClangAndLLDBuildFactory(
                       workdir='%s/tools/lld' % llvm_srcdir))
 
     # Clean directory, if requested.
-    if clean:
-        shellCommand = ["rm", "-rf", llvm_objdir]
-        if isMSVC:
-            shellCommand = ["rmdir", "/S", "/Q", llvm_objdir]
-        f.addStep(ShellCommand(name="rm-llvm_objdir",
-                               command=shellCommand,
-                               haltOnFailure=False,
-                               description=["rm build dir", "llvm"],
-                               workdir=".",
-                               env=merged_env))
+    cleanBuildRequested = lambda step: step.build.getProperty("clean") or clean
+
+    # This is an incremental build, unless otherwise has been requested.
+    # Remove obj and install dirs for a clean build.
+    f.addStep(RemoveDirectory(name='rm-llvm_objdir',
+              dir=llvm_objdir,
+              haltOnFailure=False,
+              flunkOnFailure=False,
+              doStepIf=cleanBuildRequested,
+              ))
 
     # Create configuration files with cmake.
     options = ["-Wdocumentation", "-Wno-documentation-deprecated-sync"]
