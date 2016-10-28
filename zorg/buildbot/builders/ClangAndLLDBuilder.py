@@ -82,6 +82,7 @@ def getClangAndLLDBuildFactory(
         f.addStep(ShellCommand(name="rm-llvm_objdir",
                                command=shellCommand,
                                haltOnFailure=False,
+                               flunkOnFailure=False,
                                description=["rm build dir", "llvm"],
                                workdir=".",
                                env=merged_env))
