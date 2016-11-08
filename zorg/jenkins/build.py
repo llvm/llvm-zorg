@@ -734,8 +734,7 @@ def derive_llvm(repos=['llvm', 'clang', 'libcxx', 'clang-tools-extra', \
 
 def derive_lldb():
     """Build a derived src tree for LLDB"""
-    derive(tree='lldb', repos=['lldb', 'llvm', 'clang', 'libcxx',
-                               'compiler-rt'])
+    derive(tree='lldb', repos=['lldb', 'llvm', 'clang'])
 
 
 def create_builddirs():
