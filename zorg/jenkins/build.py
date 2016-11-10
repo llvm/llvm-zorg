@@ -5,6 +5,7 @@ import logging
 import os
 import subprocess
 import datetime
+import time
 import argparse
 import shutil
 import math
@@ -36,6 +37,7 @@ def header(name):
 
 
 def footer():
+    print "Completed at: " + time.strftime("%FT%T")
     print "@@@@@@"
 
 
