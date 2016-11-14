@@ -908,7 +908,8 @@ def _get_libcxx_builders():
          'builddir': 'libcxx-libcxxabi-x86_64-linux-debian',
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
              env={'CC': 'clang', 'CXX': 'clang++'},
-             lit_extra_args=['--shuffle']),
+             lit_extra_args=['--shuffle'],
+             check_libcxx_abilist=True),
          'category': 'libcxx'},
 
         {'name': 'libcxx-libcxxabi-x86_64-linux-debian-noexceptions',
@@ -946,7 +947,8 @@ def _get_libcxx_builders():
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
             env={'PATH': '/usr/local/bin:/usr/bin:/bin',
                  'CC': 'clang', 'CXX': 'clang++'},
-            lit_extra_opts={'std':'c++03'}),
+            lit_extra_opts={'std':'c++03'},
+            check_libcxx_abilist=True),
         'category': 'libcxx'},
 
         {'name': 'libcxx-libcxxabi-x86_64-linux-ubuntu-cxx11',
@@ -955,7 +957,8 @@ def _get_libcxx_builders():
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
             env={'PATH': '/usr/local/bin:/usr/bin:/bin',
                  'CC': 'clang', 'CXX': 'clang++'},
-            lit_extra_opts={'std': 'c++11', 'enable_warnings': 'true'}),
+            lit_extra_opts={'std': 'c++11', 'enable_warnings': 'true'},
+            check_libcxx_abilist=True),
         'category': 'libcxx'},
 
         {'name': 'libcxx-libcxxabi-x86_64-linux-ubuntu-cxx14',
@@ -964,7 +967,8 @@ def _get_libcxx_builders():
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
             env={'PATH': '/usr/local/bin:/usr/bin:/bin',
                  'CC': 'clang', 'CXX': 'clang++'},
-            lit_extra_opts={'std': 'c++14', 'enable_warnings': 'true'}),
+            lit_extra_opts={'std': 'c++14', 'enable_warnings': 'true'},
+            check_libcxx_abilist=True),
         'category': 'libcxx'},
 
         {'name': 'libcxx-libcxxabi-x86_64-linux-ubuntu-cxx1z',
@@ -973,7 +977,8 @@ def _get_libcxx_builders():
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
             env={'PATH': '/usr/local/bin:/usr/bin:/bin',
                  'CC': 'clang', 'CXX': 'clang++'},
-            lit_extra_opts={'std': 'c++1z', 'enable_warnings': 'true'}),
+            lit_extra_opts={'std': 'c++1z', 'enable_warnings': 'true'},
+            check_libcxx_abilist=True),
         'category': 'libcxx'},
 
         {'name': 'libcxx-libcxxabi-x86_64-linux-ubuntu-asan',

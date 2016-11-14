@@ -54,7 +54,7 @@ def getLibcxxWholeTree(f, src_root):
 
 def getLibcxxAndAbiBuilder(f=None, env={}, additional_features=set(),
                            cmake_extra_opts={}, lit_extra_opts={},
-                           lit_extra_args=[]):
+                           lit_extra_args=[], check_libcxx_abilist=False):
     if f is None:
         f = buildbot.process.factory.BuildFactory()
 
@@ -87,6 +87,11 @@ def getLibcxxAndAbiBuilder(f=None, env={}, additional_features=set(),
     cmake_opts = [properties.WithProperties('-DLLVM_LIT_ARGS='+litTestArgs)]
     for key in cmake_extra_opts:
         cmake_opts.append('-D' + key + '=' + cmake_extra_opts[key])
+
+    # FIXME: The libc++ abilist's are generated in release mode with debug
+    # symbols Other configurations may contain additional non-inlined symbols.
+    if check_libcxx_abilist and not 'CMAKE_BUILD_TYPE' in cmake_extra_opts:
+       cmake_opts.append('-DCMAKE_BUILD_TYPE=RELWITHDEBINFO')
 
     # Nuke/remake build directory and run CMake
     f.addStep(buildbot.steps.shell.ShellCommand(
@@ -125,6 +130,14 @@ def getLibcxxAndAbiBuilder(f=None, env={}, additional_features=set(),
         command         = ['make', 'check-libcxx'],
         description     = ['testing', 'libcxx'],
         descriptionDone = ['test', 'libcxx'],
+        workdir         = build_path))
+
+    if check_libcxx_abilist:
+        f.addStep(buildbot.steps.shell.ShellCommand(
+        name            = 'test.libcxx.abilist',
+        command         = ['make', 'check-cxx-abilist'],
+        description     = ['testing', 'libcxx', 'abi'],
+        descriptionDone = ['test', 'libcxx', 'abi'],
         workdir         = build_path))
 
     return f
