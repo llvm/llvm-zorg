@@ -1146,35 +1146,35 @@ def _get_documentation_builders():
     return [
              {
                'name':"llvm-sphinx-docs",
-               'slavenames':["gribozavr4"],
+               'slavenames':["gribozavr3"],
                'builddir':"llvm-sphinx-docs",
                'factory': SphinxDocsBuilder.getSphinxDocsBuildFactory(llvm_html=True, llvm_man=True),
                'category' : 'llvm'
              },
              {
                'name':"clang-sphinx-docs",
-               'slavenames':["gribozavr4"],
+               'slavenames':["gribozavr3"],
                'builddir':"clang-sphinx-docs",
                'factory': SphinxDocsBuilder.getSphinxDocsBuildFactory(clang_html=True),
                'category' : 'clang'
              },
              {
                'name':"clang-tools-sphinx-docs",
-               'slavenames':["gribozavr4"],
+               'slavenames':["gribozavr3"],
                'builddir':"clang-tools-sphinx-docs",
                'factory': SphinxDocsBuilder.getSphinxDocsBuildFactory(clang_tools_html=True),
                'category' : 'clang'
              },
              {
                'name':"lld-sphinx-docs",
-               'slavenames':["gribozavr4"],
+               'slavenames':["gribozavr3"],
                'builddir':"lld-sphinx-docs",
                'factory': SphinxDocsBuilder.getSphinxDocsBuildFactory(lld_html=True),
                'category' : 'lld'
              },
              {
                'name':"libcxx-sphinx-docs",
-               'slavenames':["ericwf-buildslave2"],
+               'slavenames':["gribozavr3"],
                'builddir':"libcxx-sphinx-docs",
                'factory': SphinxDocsBuilder.getSphinxDocsBuildFactory(libcxx_html=True),
                'category' : 'libcxx'

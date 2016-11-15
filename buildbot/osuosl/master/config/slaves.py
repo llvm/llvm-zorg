@@ -119,6 +119,9 @@ def get_build_slaves():
         # Debian Testing x86-64, Intel(R) Core(TM) i7-2700K CPU @ 3.50GHz
         #create_slave("gribozavr1", properties={'jobs': 8}, max_builds=1),
 
+        # Debian Jessie x86-64 GCE instance.
+        create_slave("gribozavr3", properties={'jobs': 1}, max_builds=2),
+
         # Debian x86-64
         create_slave("gribozavr4", properties={'jobs': 18}, max_builds=1),
 
@@ -211,9 +214,6 @@ def get_build_slaves():
 
         # Ubuntu 13.04 x86-64, Intel(R) Xeon(R) CPU 5160 @ 3.00GHz
         #create_slave("gribozavr2", properties={'jobs': 4}, max_builds=1),
-
-        # CentOS 6.5 x86-64, VM on Intel(R) Core(TM) i5 CPU 750 @ 2.67GHz
-        #create_slave("gribozavr3", properties={'jobs': 4}, max_builds=1),
 
         # OS X 10.10 x86_64, Intel Core 2 Duo @ 2.40GHz
         #create_slave("ericwf-osx-slave", properties={'jobs': 2}, max_builds=1),
