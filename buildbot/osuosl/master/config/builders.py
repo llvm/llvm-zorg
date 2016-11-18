@@ -71,7 +71,7 @@ def _get_llvm_builders():
                           "-DPOLLY_BUILD_SHARED_LIB:BOOL=OFF",
                           "-DCMAKE_C_COMPILER:FILEPATH=/local/clang+llvm-3.7.1-x86_64-linux-gnu-ubuntu-14.04/bin/clang",
                           "-DCMAKE_CXX_COMPILER:FILEPATH=/local/clang+llvm-3.7.1-x86_64-linux-gnu-ubuntu-14.04/bin/clang++"
-                        ])}
+                        ])},
         {'name': "llvm-avr-linux",
          'slavenames':["avr-build-01"],
          'builddir':"llvm-avr-linux",
