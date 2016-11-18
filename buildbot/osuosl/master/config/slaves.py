@@ -104,6 +104,9 @@ def get_build_slaves():
         create_slave("hexagon-build-03", properties={'jobs': 16, 'loadaverage':32},
             max_builds=1),
 
+        # Ubuntu x86-64
+        create_slave("avr-build-01", properties={'jobs': 2}, max_builds=1),
+
         # Cavium Octeon II V0.8, MIPS64r2 big endian, Debian Jessie
         create_slave("mipsswbrd002", properties={'jobs' : 6}, max_builds=1),
 

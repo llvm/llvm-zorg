@@ -72,6 +72,18 @@ def _get_llvm_builders():
                           "-DCMAKE_C_COMPILER:FILEPATH=/local/clang+llvm-3.7.1-x86_64-linux-gnu-ubuntu-14.04/bin/clang",
                           "-DCMAKE_CXX_COMPILER:FILEPATH=/local/clang+llvm-3.7.1-x86_64-linux-gnu-ubuntu-14.04/bin/clang++"
                         ])}
+        {'name': "llvm-avr-linux",
+         'slavenames':["avr-build-01"],
+         'builddir':"llvm-avr-linux",
+         'factory': LLVMBuilder.getLLVMCMakeBuildFactory(
+                        timeout=40, config_name='Release',
+                        enable_shared=True,
+                        extra_cmake_args=[
+                          "-G", "Unix Makefiles",
+                          "-DCMAKE_BUILD_TYPE:STRING=Release",
+                          "-DLLVM_TARGETS_TO_BUILD:STRING=AVR",
+                          "-DLLVM_EXPERIMENTAL_TARGETS_TO_BUILD:STRING=AVR",
+                        ])}
         ]
 
 # Clang fast builders.
