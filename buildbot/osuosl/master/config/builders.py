@@ -81,7 +81,8 @@ def _get_llvm_builders():
                         extra_cmake_args=[
                           "-G", "Unix Makefiles",
                           "-DCMAKE_BUILD_TYPE:STRING=Release",
-                          "-DLLVM_TARGETS_TO_BUILD:STRING=AVR",
+                          # We need to compile the X86 backend due to a few generic CodeGen tests.
+                          "-DLLVM_TARGETS_TO_BUILD:STRING=AVR;X86",
                           "-DLLVM_EXPERIMENTAL_TARGETS_TO_BUILD:STRING=AVR",
                         ])}
         ]
