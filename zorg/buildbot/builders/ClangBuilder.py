@@ -338,7 +338,8 @@ def getClangBuildFactory(
 def addSVNUpdateSteps(f,
                       checkout_clang_tools_extra,
                       checkout_compiler_rt,
-                      checkout_test_suite):
+                      checkout_test_suite,
+                      checkout_lld):
     # We *must* checkout at least Clang+LLVM
     f.addStep(SVN(name='svn-llvm',
                   mode='update', baseURL='http://llvm.org/svn/llvm-project/llvm/',
@@ -369,6 +370,11 @@ def addSVNUpdateSteps(f,
                       mode='update', baseURL='http://llvm.org/svn/llvm-project/test-suite/',
                       defaultBranch='trunk',
                       workdir='test/test-suite'))
+    if checkout_lld:
+        f.addStep(SVN(name='svn-lld',
+                      mode='update', baseURL='http://llvm.org/svn/llvm-project/lld/',
+                      defaultBranch='trunk',
+                      workdir='llvm/tools/lld'))
 
 def addGCSUploadSteps(f, package_name, install_prefix, gcs_directory, env,
                       gcs_url_property=None):
@@ -446,6 +452,7 @@ def getClangCMakeGCSBuildFactory(
             # Extra repositories
             checkout_clang_tools_extra=True,
             checkout_compiler_rt=True,
+            checkout_lld=True,
 
             # Upload artifacts to Google Cloud Storage (for the llvmbisect tool)
             stage1_upload_directory=None,
@@ -461,6 +468,7 @@ def getClangCMakeGCSBuildFactory(
                env=env, extra_cmake_args=extra_cmake_args,
                checkout_clang_tools_extra=checkout_clang_tools_extra,
                checkout_compiler_rt=checkout_compiler_rt,
+               checkout_lld=checkout_lld,
                stage1_upload_directory=stage1_upload_directory,
                trigger_after_stage1=trigger_after_stage1)
 
@@ -493,7 +501,8 @@ def getClangCMakeBuildFactory(
 
             # Extra repositories
             checkout_clang_tools_extra=True,
-            checkout_compiler_rt=True):
+            checkout_compiler_rt=True,
+            checkout_lld=True):
     return _getClangCMakeBuildFactory(
                clean=clean, test=test, cmake=cmake, jobs=jobs, vs=vs,
                vs_target_arch=vs_target_arch, useTwoStage=useTwoStage,
@@ -502,6 +511,7 @@ def getClangCMakeBuildFactory(
                nt_flags=nt_flags, submitURL=submitURL, testerName=testerName,
                env=env, extra_cmake_args=extra_cmake_args,
                checkout_clang_tools_extra=checkout_clang_tools_extra,
+               checkout_lld=checkout_lld,
                checkout_compiler_rt=checkout_compiler_rt)
 
 def _getClangCMakeBuildFactory(
@@ -534,6 +544,7 @@ def _getClangCMakeBuildFactory(
             # Extra repositories
             checkout_clang_tools_extra=True,
             checkout_compiler_rt=True,
+            checkout_lld=True,
 
             # Upload artifacts to Google Cloud Storage (for the llvmbisect tool)
             stage1_upload_directory=None,
@@ -547,6 +558,7 @@ def _getClangCMakeBuildFactory(
     addSVNUpdateSteps(f,
                       checkout_clang_tools_extra=checkout_clang_tools_extra,
                       checkout_compiler_rt=checkout_compiler_rt,
+                      checkout_lld=checkout_lld,
                       checkout_test_suite=runTestSuite)
 
     # If jobs not defined, Ninja will choose a suitable value
