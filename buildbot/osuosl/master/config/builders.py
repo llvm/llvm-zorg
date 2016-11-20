@@ -298,6 +298,28 @@ def _get_clang_builders():
                                         "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'"],
                )},
 
+        ## AArch64 Self-hosting Clang+LLVM check-all + LLD + test-suite
+        ## TODO: Remove the X86 back-end after fixing the 90 bad tests
+        ## TODO: Add Compiler-RT after fixing all the failures
+        {'name': "clang-cmake-aarch64-lld",
+         'slavenames':["linaro-apm-04"],
+         'builddir':"clang-cmake-aarch64-lld",
+         'factory' : ClangBuilder.getClangCMakeBuildFactory(
+                      jobs=8,
+                      clean=False,
+                      checkout_compiler_rt=False,
+                      checkout_lld=True,
+                      test=True,
+                      useTwoStage=True,
+                      runTestSuite=True,
+                      nt_flags=['--cflag', '-mcpu=cortex-a57', '--cflag', '-fuse-ld=lld', '--threads=8', '--build-threads=8'],
+                      env={'PATH':'/usr/lib64/ccache:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'},
+                      extra_cmake_args=["-DCMAKE_C_FLAGS='-mcpu=cortex-a57'",
+                                        "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a57'",
+                                        "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64;X86'",
+                                        "-DLLVM_ENABLE_LLD=True"],
+               )},
+
         {'name': 'clang-x86-windows-msvc2015',
          'slavenames': ['windows-gcebot2'],
          'builddir': 'clang-x86-windows-msvc2015',
