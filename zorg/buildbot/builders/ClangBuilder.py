@@ -40,6 +40,7 @@ def getClangBuildFactory(
             force_checkout=False,
             extra_clean_step=None,
             checkout_compiler_rt=False,
+            checkout_lld=False,
             run_gdb=False,
             run_modern_gdb=False,
             run_gcc=False):
