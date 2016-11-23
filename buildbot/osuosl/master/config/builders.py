@@ -1135,6 +1135,35 @@ def _get_libcxx_builders():
                               'CMAKE_C_FLAGS': '-mcpu=cortex-a15 -mthumb',
                               'CMAKE_CXX_FLAGS': '-mcpu=cortex-a15 -mthumb',
                               'LLVM_PARALLEL_LINK_JOBS': '2'})},
+
+        # AArch64 LibC++ and LibC++abi tests (require Clang+RT)
+        {'name': 'libcxx-libcxxabi-libunwind-aarch64-linux',
+         'slavenames': ['linaro-apm-03'],
+         'builddir': 'libcxx-libcxxabi-libunwind-aarch64-linux',
+         'category': 'libcxx',
+         'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
+            # FIXME: CFLAGS / CXXFLAGS are here because cmake_extra_opts doesn't quote correctly
+            env={'CC': 'clang', 'CXX': 'clang++', 'CFLAGS': '-mcpu=cortex-a57', 'CXXFLAGS': '-mcpu=cortex-a57'},
+            # FIXME: there should be a way to merge autodetected with user-defined linker flags
+            # See: libcxxabi/test/lit.cfg
+            lit_extra_opts={'link_flags': '"-lc++abi -lc -lm -lpthread -lunwind -ldl -L/opt/llvm/lib/clang/3.9.0/lib/linux -lclang_rt.builtins-aarch64"'},
+            cmake_extra_opts={'LIBCXXABI_USE_LLVM_UNWINDER': 'ON',
+                              'LLVM_PARALLEL_LINK_JOBS': '4'})},
+
+        {'name': 'libcxx-libcxxabi-libunwind-aarch64-linux-noexceptions',
+         'slavenames': ['linaro-apm-03'],
+         'builddir': 'libcxx-libcxxabi-libunwind-aarch64-linux-noexceptions',
+         'category': 'libcxx',
+         'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
+            # FIXME: CFLAGS / CXXFLAGS are here because cmake_extra_opts doesn't quote correctly
+            env={'CC': 'clang', 'CXX': 'clang++', 'CFLAGS': '-mcpu=cortex-a57', 'CXXFLAGS': '-mcpu=cortex-a57'},
+            # FIXME: there should be a way to merge autodetected with user-defined linker flags
+            # See: libcxxabi/test/lit.cfg
+            lit_extra_opts={'link_flags': '"-lc++abi -lc -lm -lpthread -lunwind -ldl -L/opt/llvm/lib/clang/3.9.0/lib/linux -lclang_rt.builtins-aarch64"'},
+            cmake_extra_opts={'LIBCXXABI_USE_LLVM_UNWINDER': 'ON',
+                              'LIBCXX_ENABLE_EXCEPTIONS': 'OFF',
+                              'LLVM_PARALLEL_LINK_JOBS': '4'})},
+
     ]
 
 # Experimental and stopped builders
