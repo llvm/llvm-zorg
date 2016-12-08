@@ -312,7 +312,7 @@ def _get_clang_builders():
                       checkout_lld=True,
                       test=True,
                       useTwoStage=True,
-                      runTestSuite=False,
+                      runTestSuite=True,
                       nt_flags=['--cflag', '-mcpu=cortex-a57', '--cflag', '-fuse-ld=lld', '--threads=8', '--build-threads=8'],
                       env={'PATH':'/usr/lib64/ccache:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'},
                       extra_cmake_args=["-DCMAKE_C_FLAGS='-mcpu=cortex-a57'",
