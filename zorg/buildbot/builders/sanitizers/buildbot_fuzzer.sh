@@ -14,7 +14,7 @@ ROOT=`pwd`
 PLATFORM=`uname`
 export PATH="/usr/local/bin:$PATH"
 
-CHECK_LIBCXX=${CHECK_LIBCXX:-1}
+CHECK_LIBCXX=${CHECK_LIBCXX:-0}
 CHECK_LLD=${CHECK_LLD:-1}
 STAGE1_DIR=llvm_build0
 STAGE2_ASAN_DIR=llvm_build_asan
