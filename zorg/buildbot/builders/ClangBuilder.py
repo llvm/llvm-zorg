@@ -340,7 +340,8 @@ def addSVNUpdateSteps(f,
                       checkout_clang_tools_extra,
                       checkout_compiler_rt,
                       checkout_test_suite,
-                      checkout_lld):
+                      checkout_lld,
+                      checkout_libcxx):
     # We *must* checkout at least Clang+LLVM
     f.addStep(SVN(name='svn-llvm',
                   mode='update', baseURL='http://llvm.org/svn/llvm-project/llvm/',
@@ -376,6 +377,22 @@ def addSVNUpdateSteps(f,
                       mode='update', baseURL='http://llvm.org/svn/llvm-project/lld/',
                       defaultBranch='trunk',
                       workdir='llvm/tools/lld'))
+    if checkout_libcxx:
+        f.addStep(SVN(name='svn-libcxx',
+                      mode='update',
+                      baseURL='http://llvm.org/svn/llvm-project/libcxx/',
+                      defaultBranch='trunk',
+                      workdir='llvm/projects/libcxx'))
+        f.addStep(SVN(name='svn-libcxxabi',
+                      mode='update',
+                      baseURL='http://llvm.org/svn/llvm-project/libcxxabi/',
+                      defaultBranch='trunk',
+                      workdir='llvm/projects/libcxxabi'))
+        f.addStep(SVN(name='svn-libunwind',
+                      mode='update',
+                      baseURL='http://llvm.org/svn/llvm-project/libunwind/',
+                      defaultBranch='trunk',
+                      workdir='llvm/projects/libunwind'))
 
 def addGCSUploadSteps(f, package_name, install_prefix, gcs_directory, env,
                       gcs_url_property=None):
@@ -503,7 +520,9 @@ def getClangCMakeBuildFactory(
             # Extra repositories
             checkout_clang_tools_extra=True,
             checkout_compiler_rt=True,
-            checkout_lld=True):
+            checkout_lld=True,
+            checkout_libcxx=False,
+            checkout_test_suite=False):
     return _getClangCMakeBuildFactory(
                clean=clean, test=test, cmake=cmake, jobs=jobs, vs=vs,
                vs_target_arch=vs_target_arch, useTwoStage=useTwoStage,
@@ -513,7 +532,9 @@ def getClangCMakeBuildFactory(
                env=env, extra_cmake_args=extra_cmake_args,
                checkout_clang_tools_extra=checkout_clang_tools_extra,
                checkout_lld=checkout_lld,
-               checkout_compiler_rt=checkout_compiler_rt)
+               checkout_compiler_rt=checkout_compiler_rt,
+               checkout_libcxx=checkout_libcxx,
+               checkout_test_suite=checkout_test_suite)
 
 def _getClangCMakeBuildFactory(
             clean=True,
@@ -546,6 +567,8 @@ def _getClangCMakeBuildFactory(
             checkout_clang_tools_extra=True,
             checkout_compiler_rt=True,
             checkout_lld=True,
+            checkout_libcxx=False,
+            checkout_test_suite=False,
 
             # Upload artifacts to Google Cloud Storage (for the llvmbisect tool)
             stage1_upload_directory=None,
@@ -560,7 +583,8 @@ def _getClangCMakeBuildFactory(
                       checkout_clang_tools_extra=checkout_clang_tools_extra,
                       checkout_compiler_rt=checkout_compiler_rt,
                       checkout_lld=checkout_lld,
-                      checkout_test_suite=runTestSuite)
+                      checkout_test_suite=runTestSuite or checkout_test_suite,
+                      checkout_libcxx=checkout_libcxx)
 
     # If jobs not defined, Ninja will choose a suitable value
     jobs_cmd = []
@@ -966,4 +990,3 @@ def getClangTestsIgnoresFromPath(path, key):
     ignores['gdb-1472-testsuite' ] = gdb_dg_ignores
 
     return ignores
-
