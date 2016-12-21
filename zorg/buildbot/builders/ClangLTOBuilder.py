@@ -192,6 +192,7 @@ def _addSteps4StagedCompiler(
         # Build LTO plugin if requested.
         f.addStep(NinjaCommand(name="build-stage%s-LLVMgold.so" % stage_num,
                                targets=['lib/LLVMgold.so'],
+                               jobs=jobs,
                                haltOnFailure=True,
                                description=["stage%s build LLVMgold.so" % stage_num],
                                env=env,
@@ -200,6 +201,7 @@ def _addSteps4StagedCompiler(
 
     # Build clang by the staged compiler
     f.addStep(NinjaCommand(name="build-stage%s-compiler" % stage_num,
+                           jobs=jobs,
                            haltOnFailure=True,
                            description=["build stage%s compiler" % stage_num],
                            timeout=10800, # LTO could take time.
@@ -210,6 +212,7 @@ def _addSteps4StagedCompiler(
     # Test just built compiler
     f.addStep(NinjaCommand(name="test-stage%s-compiler"% stage_num,
                            targets=["check-all"],
+                           jobs=jobs,
                            haltOnFailure=True,
                            description=["test stage%s compiler" % stage_num],
                            timeout=10800, # LTO could take time.
@@ -220,6 +223,7 @@ def _addSteps4StagedCompiler(
     # Install just built compiler
     f.addStep(NinjaCommand(name="install-stage%s-compiler"% stage_num,
                            targets=["install"],
+                           jobs=jobs,
                            haltOnFailure=True,
                            description=["install stage%s compiler" % stage_num],
                            timeout=10800, # LTO could take time.
