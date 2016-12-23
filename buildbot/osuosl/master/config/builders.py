@@ -15,6 +15,7 @@ from zorg.buildbot.builders import ABITestsuitBuilder
 from zorg.buildbot.builders import ClangLTOBuilder3Stage
 
 from zorg.buildbot.builders import ClangLTOBuilder
+from zorg.buildbot.builders import UnifiedTreeBuilder
 
 # Plain LLVM builders.
 def _get_llvm_builders():
@@ -728,6 +729,13 @@ def _get_lld_builders():
          'slavenames' : ["ps4-buildslave1a"],
          'builddir' : "clang-with-thin-lto-ubuntu",
          'factory': ClangLTOBuilder.getClangWithLTOBuildFactory(lto='thin'),
+         'category'   : 'lld'},
+
+        {'name' : "clang-lld-x86_64-2stage",
+         'slavenames' : ["am1i-slv3"],
+         'builddir' : "clang-lld-x86_64-2stage",
+         'factory': UnifiedTreeBuilder.getCmakeWithNinjaMultistageBuildFactory(
+                                  depends_on_projects=['llvm', 'clang', 'lld']),
          'category'   : 'lld'},
 
          ]

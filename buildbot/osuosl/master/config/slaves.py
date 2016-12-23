@@ -199,6 +199,9 @@ def get_build_slaves():
         # Ubuntu 16.04 x86_64, 2 x Intel(R) Xeon(R) CPU E5-2690 v3 @ 2.60GHz, 64GB of RAM
         create_slave("cuda-build-test-01", properties={'jobs': 72}, max_builds=1),
 
+        # Ubuntu 14.04 x86_64
+        create_slave("am1i-slv3"),
+
         # Defunct.
         # Debian 86_64, 2 x 6-core Opteron 2.6 GHz
         #create_slave("osu8", properties={'jobs' : 6}, max_builds=2),
