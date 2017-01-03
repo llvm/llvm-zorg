@@ -13,9 +13,9 @@ from zorg.buildbot.builders import LibcxxAndAbiBuilder
 from zorg.buildbot.builders import SphinxDocsBuilder
 from zorg.buildbot.builders import ABITestsuitBuilder
 from zorg.buildbot.builders import ClangLTOBuilder3Stage
-
 from zorg.buildbot.builders import ClangLTOBuilder
 from zorg.buildbot.builders import UnifiedTreeBuilder
+from zorg.buildbot.builders import CUDATestsuiteBuilder
 
 # Plain LLVM builders.
 def _get_llvm_builders():
@@ -1194,17 +1194,21 @@ def _get_experimental_scheduled_builders():
         {'name' : "clang-cuda-build",
          'slavenames' : ["cuda-build-test-01"],
          'builddir' : "clang-cuda-build",
-         'factory' : ClangBuilder.getClangCMakeBuildFactory(
-                     checkout_lld=False,
+         'factory' : CUDATestsuiteBuilder.getCUDATestsuiteBuildFactory(
                      useTwoStage=False,
-                     clean=False,
                      test=True,
                      stage1_config='Release',
                      extra_cmake_args=[
                          '-DLLVM_ENABLE_ASSERTIONS=ON',
                          "-DCMAKE_C_COMPILER:FILEPATH=/usr/bin/clang-3.8",
                          "-DCMAKE_CXX_COMPILER:FILEPATH=/usr/bin/clang++-3.8"
-                     ]),
+                     ],
+                     externals="/home/botanist/bots/externals",
+                     gpu_arch_list=["sm_35"],
+                     gpu_devices=[0],   # K40c.
+                     extra_ts_cmake_args=[],
+                     enable_thrust_tests=False,
+         ),
          'category' : 'clang'},
 
         # lldb builders
