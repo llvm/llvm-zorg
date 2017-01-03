@@ -110,7 +110,7 @@ def addCmakeSteps(
 
     f.addStep(CmakeCommand(name=step_name,
                            description=["Cmake", "configure", stage_name],
-                           haltOnFailure=False, #TODO: change it
+                           haltOnFailure=True,
                            options=cmake_args,
                            path=src_dir,
                            env=env,
@@ -136,7 +136,7 @@ def addNinjaSteps(
         obj_dir = f.obj_dir
 
     f.addStep(NinjaCommand(name="build-%sunified-tree" % step_name,
-                           haltOnFailure=False, #TODO: change it
+                           haltOnFailure=True,
                            description=["Build", stage_name, "unified", "tree"],
                            env=env,
                            workdir=obj_dir,
@@ -146,7 +146,7 @@ def addNinjaSteps(
     # Test just built components
     f.addStep(NinjaCommand(name="test-%scheck-all" % step_name,
                            targets=["check-all"],
-                           haltOnFailure=False, #TODO: change it
+                           haltOnFailure=True,
                            description=["Test", "just", "built", "components"],
                            env=env,
                            workdir=obj_dir,
@@ -156,7 +156,7 @@ def addNinjaSteps(
     # Install just built components
     f.addStep(NinjaCommand(name="install-%sall" % step_name,
                            targets=["install"],
-                           haltOnFailure=False, #TODO: change it
+                           haltOnFailure=True,
                            description=["Install", "just", "built", "components"],
                            env=env,
                            workdir=obj_dir,
@@ -315,7 +315,7 @@ def getCmakeWithNinjaMultistageBuildFactory(
         ])
 
     # The stage 1 is special, though. We use the system compiler and
-    # do incremental build, unless a clean one requested.
+    # do incremental build, unless a clean one has been requested.
     cmake_args_stage1 = cmake_args[:]
     CmakeCommand.applyDefaultOptions(cmake_args_stage1, [
         # Do not expect warning free build by the system toolchain.
@@ -342,7 +342,7 @@ def getCmakeWithNinjaMultistageBuildFactory(
     # Build the rest stage by stage, using just built compiler to compile
     # the next stage.
     CmakeCommand.applyDefaultOptions(cmake_args, [
-            # Though, we should build without warnings by just built compiler.
+            # We should be warnings free when use just built compiler.
             ('-DLLVM_ENABLE_WERROR=', 'ON'),
             ])
     # If we build LLD, we would link with LLD.
@@ -354,13 +354,13 @@ def getCmakeWithNinjaMultistageBuildFactory(
 
     for stage_idx in range(1, stages):
 
-        # Directories to use on this stage.
+        # Directories to use in this stage.
         obj_dir = f.stage_objdirs[stage_idx]
         src_dir = LLVMBuildFactory.pathRelativeToBuild(f.llvm_srcdir, obj_dir)
         install_dir = LLVMBuildFactory.pathRelativeToBuild(f.stage_installdirs[stage_idx], obj_dir)
         staged_install = f.stage_installdirs[stage_idx - 1]
 
-        # TODO: Configure the compiler to use in this stage.
+        # Configure the compiler to use in this stage.
         cmake_args_stageN = cmake_args[:]
         CmakeCommand.applyRequiredOptions(cmake_args_stageN, [
             ('-DCMAKE_INSTALL_PREFIX=', install_dir),
