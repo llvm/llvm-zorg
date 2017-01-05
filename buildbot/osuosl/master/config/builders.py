@@ -192,10 +192,10 @@ def _get_clang_builders():
 
         # Cortex-A15 LNT test-suite in test-only mode
         {'name' : "clang-native-arm-lnt",
-         'slavenames':["linaro-chrome-03", "linaro-tk1-03"],
+         'slavenames':["linaro-tk1-03"],
          'builddir':"clang-native-arm-lnt",
          'factory' : ClangBuilder.getClangCMakeBuildFactory(
-                      jobs=2,
+                      jobs=4,
                       clean=False,
                       checkout_compiler_rt=False,
                       checkout_lld=False,
@@ -212,10 +212,10 @@ def _get_clang_builders():
 
         ## Cortex-A15 check-all self-host NEON with CMake builder
         {'name': "clang-cmake-armv7-a15-selfhost-neon",
-         'slavenames':["linaro-chrome-04", "linaro-tk1-04"],
+         'slavenames':["linaro-tk1-04"],
          'builddir':"clang-cmake-armv7-a15-selfhost-neon",
          'factory' : ClangBuilder.getClangCMakeBuildFactory(
-                      jobs=2,
+                      jobs=4,
                       clean=False,
                       checkout_compiler_rt=False,
                       checkout_lld=False,
@@ -812,10 +812,10 @@ def _get_sanitizer_builders():
 
           ## Cortex-A15 Thumb2 check-all full (compiler-rt) with CMake builder; Needs x86 for ASAN tests
           {'name': "clang-cmake-thumbv7-a15-full-sh",
-           'slavenames':["linaro-chrome-05", "linaro-tk1-05"],
+           'slavenames':["linaro-tk1-05"],
            'builddir':"clang-cmake-thumbv7-a15-full-sh",
            'factory' : ClangBuilder.getClangCMakeBuildFactory(
-                        jobs=2,
+                        jobs=4,
                         clean=False,
                         checkout_lld=False,
                         useTwoStage=True,
@@ -1116,7 +1116,7 @@ def _get_libcxx_builders():
 
         # Cortex-A15 LibC++ and LibC++abi tests (require Clang+RT)
         {'name': 'libcxx-libcxxabi-libunwind-arm-linux',
-         'slavenames': ['linaro-chrome-01', 'linaro-tk1-01'],
+         'slavenames': ['linaro-tk1-01'],
          'builddir': 'libcxx-libcxxabi-libunwind-arm-linux',
          'category': 'libcxx',
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
@@ -1130,7 +1130,7 @@ def _get_libcxx_builders():
                               'LLVM_PARALLEL_LINK_JOBS': '2'})},
 
         {'name': 'libcxx-libcxxabi-libunwind-arm-linux-noexceptions',
-         'slavenames': ['linaro-chrome-01', 'linaro-tk1-01'],
+         'slavenames': ['linaro-tk1-01'],
          'builddir': 'libcxx-libcxxabi-libunwind-arm-linux-noexceptions',
          'category': 'libcxx',
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
