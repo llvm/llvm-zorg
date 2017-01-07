@@ -728,7 +728,7 @@ def _get_lld_builders():
         {'name' : "clang-with-thin-lto-ubuntu",
          'slavenames' : ["ps4-buildslave1a"],
          'builddir' : "clang-with-thin-lto-ubuntu",
-         'factory': ClangLTOBuilder.getClangWithLTOBuildFactory(lto='thin'),
+         'factory': ClangLTOBuilder.getClangWithLTOBuildFactory(jobs=32, lto='thin'),
          'category'   : 'lld'},
 
         {'name' : "clang-lld-x86_64-2stage",
