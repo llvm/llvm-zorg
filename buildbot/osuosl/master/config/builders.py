@@ -971,6 +971,15 @@ def _get_openmp_builders():
                          cxx_compiler="clang++",
                          ompt=True,
                          env={'PATH':'/home/llvmbb/bin/clang-latest/bin:/home/llvmbb/bin:/usr/local/bin:/usr/local/bin:/usr/bin:/bin'})},
+                         
+        {'name': "libomp-clang-ppc64le-linux-debian",
+         'slavenames':["ppc64le-nvidia-K40"],
+         'builddir':"libomp-clang-ppc64le-linux-debian",
+         'factory' : Libiomp5Builder.getLibompCMakeBuildFactory(
+                         c_compiler="/home/bbot/opt/clang/bin/clang",
+                         cxx_compiler="/home/bbot/opt/clang/bin/clang++",
+                         env={'PATH':'/home/bbot/opt/cmake/bin:/home/bbot/opt/ninja/bin:/usr/local/bin:/usr/bin:/bin'})},
+
         ]
 
 def _get_libcxx_builders():

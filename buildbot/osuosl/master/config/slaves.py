@@ -95,6 +95,9 @@ def get_build_slaves():
         create_slave("ppc64le-clang-lnt-test", properties={'jobs': 6}, max_builds=1),
         create_slave("ppc64le-clang-multistage-test", properties={'jobs': 8}, max_builds=1),
         create_slave("ppc64le-sanitizer", properties={'jobs': 4}, max_builds=1),
+        
+        # POWER 8 PowerPC little endian (powerpc64le) with NVIDIA GPUs
+        create_slave("ppc64le-nvidia-K40", properties={'jobs': 4}, max_builds=1),
 
         # Ubuntu x86-64, Intel(R) Xeon(R) CPU E5-2680 0 @ 2.70GHz
         create_slave("hexagon-build-02", properties={'jobs': 12, 'loadaverage': 32},
