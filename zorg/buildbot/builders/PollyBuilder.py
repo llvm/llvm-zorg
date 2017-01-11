@@ -9,11 +9,28 @@ from buildbot.process.properties import WithProperties
 from zorg.buildbot.builders import LNTBuilder
 from zorg.buildbot.builders import ClangBuilder
 
-def getPollyBuildFactory():
+def getPollyBuildFactory(
+    clean=False,
+    install=False,
+    make='make',
+    jobs=None,
+    checkFormat=True,
+    extraCmakeArgs=[]):
     llvm_srcdir = "llvm.src"
     llvm_objdir = "llvm.obj"
+    llvm_instdir = "llvm.inst"
     polly_srcdir = '%s/tools/polly' % llvm_srcdir
     clang_srcdir = '%s/tools/clang' % llvm_srcdir
+    jobs_cmd = []
+    if jobs is not None:
+        jobs_cmd = ["-j"+str(jobs)]
+    build_cmd = [make] + jobs_cmd
+    install_cmd = [make, 'install'] + jobs_cmd
+    check_cmd = [make, 'check-polly'] + jobs_cmd
+    check_format_cmd = [make, 'polly-check-format'] + jobs_cmd
+    cmake_install = []
+    if install:
+        cmake_install = ["-DCMAKE_INSTALL_PREFIX=../%s" % llvm_instdir]
 
     f = buildbot.process.factory.BuildFactory()
     # Determine the build directory.
@@ -22,7 +39,7 @@ def getPollyBuildFactory():
                                                property="builddir",
                                                description="set build dir",
                                                workdir="."))
-    # Get LLVM, clang and Polly
+    # Get LLVM, Clang and Polly
     f.addStep(SVN(name='svn-llvm',
                   mode='update',
                   baseURL='http://llvm.org/svn/llvm-project/llvm/',
@@ -39,38 +56,66 @@ def getPollyBuildFactory():
                   defaultBranch='trunk',
                   workdir=polly_srcdir))
 
+    # Clean build dir
+    if clean:
+        f.addStep(ShellCommand(name='clean-build-dir',
+                               command=['rm', '-rf', llvm_objdir],
+                               warnOnFailure=True,
+                               description=["clean build dir"],
+                               workdir='.'))
+
     # Create configuration files with cmake
     f.addStep(ShellCommand(name="create-build-dir",
-                               command=["mkdir", "-p", llvm_objdir],
-                               haltOnFailure=False,
-                               description=["create build dir"],
-                               workdir="."))
+                           command=["mkdir", "-p", llvm_objdir],
+                           haltOnFailure=False,
+                           description=["create build dir"],
+                           workdir="."))
     cmakeCommand = ["cmake", "../%s" %llvm_srcdir,
-		    "-DCMAKE_COLOR_MAKEFILE=OFF", "-DPOLLY_TEST_DISABLE_BAR=ON",
-		    "-DCMAKE_BUILD_TYPE=Release"]
-
+                    "-DCMAKE_COLOR_MAKEFILE=OFF",
+                    "-DPOLLY_TEST_DISABLE_BAR=ON",
+                    "-DCMAKE_BUILD_TYPE=Release"] + cmake_install + extraCmakeArgs
     f.addStep(ShellCommand(name="cmake-configure",
-                               command=cmakeCommand,
+                           command=cmakeCommand,
+                           haltOnFailure=False,
+                           description=["cmake configure"],
+                           workdir=llvm_objdir))
+
+    # Build
+    f.addStep(ShellCommand(name="build",
+                           command=build_cmd,
+                           haltOnFailure=True,
+                           description=["build"],
+                           workdir=llvm_objdir))
+
+    # Clean install dir
+    if install and clean:
+        f.addStep(ShellCommand(name='clean-install-dir',
+                               command=['rm', '-rf', llvm_instdir],
                                haltOnFailure=False,
-                               description=["cmake configure"],
+                               description=["clean install dir"],
+                               workdir='.'))
+
+    # Install
+    if install:
+        f.addStep(ShellCommand(name="install",
+                               command=install_cmd,
+                               haltOnFailure=False,
+                               description=["install"],
                                workdir=llvm_objdir))
-    # Build Polly
-    f.addStep(ShellCommand(name="build_polly",
-                               command=["make"],
-                               haltOnFailure=True,
-                               description=["build polly"],
-                               workdir=llvm_objdir))
+
     # Test Polly
     f.addStep(ShellCommand(name="test_polly",
-                               command=["make", "polly-test"],
-                               haltOnFailure=True,
-                               description=["test polly"],
-                               workdir=llvm_objdir))
+                           command=check_cmd,
+                           haltOnFailure=True,
+                           description=["test polly"],
+                           workdir=llvm_objdir))
+
     # Check formatting
-    f.addStep(ShellCommand(name="test_polly_format",
-                               command=["make", "polly-check-format"],
+    if checkFormat:
+        f.addStep(ShellCommand(name="test_polly_format",
+                               command=check_format_cmd,
                                haltOnFailure=False,
-                               description=["Check formatting"],
+                               description=["check formatting"],
                                workdir=llvm_objdir))
     return f
 

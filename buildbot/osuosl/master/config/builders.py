@@ -644,7 +644,24 @@ def _get_polly_builders():
                                                     reportBuildslave=False,
                                                     package_cache="http://parkas1.inria.fr/packages",
                                                     submitURL=['http://gcc12.fsffrance.org:8808/submitRun','http://llvm.org/perf/submitRun'],
-                                                    testerName='x86_64-penryn-O3-polly-before-vectorizer-detect-only')}
+                                                    testerName='x86_64-penryn-O3-polly-before-vectorizer-detect-only')},
+
+        {'name': "polly-arm-linux",
+         'slavenames': ["hexagon-build-02", "hexagon-build-03"],
+         'builddir': "polly-arm-linux",
+         'factory': PollyBuilder.getPollyBuildFactory(
+                clean=True,
+                install=True,
+                make='ninja',
+                jobs=16,
+                checkFormat=False,
+                extraCmakeArgs=["-G", "Ninja",
+                                "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'",
+                                "-DLLVM_DEFAULT_TARGET_TRIPLE=arm-linux-gnueabi",
+                                "-DLLVM_TARGET_ARCH=arm-linux-gnueabi",
+                                "-DLLVM_ENABLE_ASSERTIONS=True",
+                                "-DCMAKE_C_COMPILER:FILEPATH=/local/clang+llvm-3.7.1-x86_64-linux-gnu-ubuntu-14.04/bin/clang",
+                                "-DCMAKE_CXX_COMPILER:FILEPATH=/local/clang+llvm-3.7.1-x86_64-linux-gnu-ubuntu-14.04/bin/clang++"])}
        ]
 
 # LLDB builders.

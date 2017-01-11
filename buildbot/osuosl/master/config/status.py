@@ -168,4 +168,13 @@ def get_status_targets(standard_builders, standard_categories=None):
                         "llvm-clang-lld-x86_64-scei-ps4-windows10pro-fast",
                         "clang-with-lto-ubuntu"],
             addLogs=False),
+        InformativeMailNotifier(
+            fromaddr = "llvm.buildmaster@lab.llvm.org",
+            sendToInterestedUsers= False,
+            extraRecipients = ["efriedma@codeaurora.org"],
+            subject="Build %(builder)s Failure",
+            mode = "failing",
+            builders = ["polly-arm-linux"],
+            addLogs=False,
+            num_lines = 15),
         ]
