@@ -259,6 +259,7 @@ def _get_clang_builders():
                                         "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a15 -mfpu=vfpv3 -mthumb'",
                                         "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'",
                                         "-DLLVM_LIT_ARGS='-sv -j4'",
+                                        "-DLLVM_BUILD_GLOBAL_ISEL=ON",
                                         "-DLLVM_PARALLEL_LINK_JOBS=2"])},
 
         ## Cortex-A15 check-all self-host with CMake builder
@@ -898,6 +899,7 @@ def _get_sanitizer_builders():
                       env={'PATH':'/usr/lib64/ccache:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'},
                       extra_cmake_args=["-DCMAKE_C_FLAGS='-mcpu=cortex-a57 -DSANITIZER_AARCH64_VMA=39'",
                                         "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a57 -DSANITIZER_AARCH64_VMA=39'",
+                                        "-DLLVM_BUILD_GLOBAL_ISEL=ON",
                                         "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'"],
                )},
 
