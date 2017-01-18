@@ -147,7 +147,7 @@ function build_stage2 {
     export ASAN_SYMBOLIZER_PATH="${llvm_symbolizer_path}"
     export ASAN_OPTIONS="check_initialization_order=true:detect_stack_use_after_return=1:detect_leaks=1"
     local llvm_use_sanitizer="Address"
-    local fsanitize_flag="-fsanitize=address -fsanitize-address-use-after-scope"
+    local fsanitize_flag="-fsanitize=address"
     local build_type="Release"
   elif [ "$sanitizer_name" == "ubsan" ]; then
     export UBSAN_OPTIONS="external_symbolizer_path=${llvm_symbolizer_path}:print_stacktrace=1"
