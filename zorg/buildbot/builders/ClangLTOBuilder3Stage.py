@@ -45,27 +45,6 @@ def get3StageClangLTOBuildFactory(
         )
     )
 
-    # We have to programatically determine the current llvm version.
-    def getClangVer(exit_status, stdout, stderr):
-        # We expect something like this:
-        # release = '3.9'
-        if exit_status:
-            return {}
-        k,v = stdout.split('=')
-        clang_ver = v.strip().strip("\'\"")
-        return { 'clang_ver' : clang_ver }
-
-    f.addStep(
-        SetProperty(
-            name="get_clang_ver",
-            command=["grep", "release =", "./tools/clang/docs/conf.py"],
-            extract_fn=getClangVer,
-            description="get clang release ver",
-            workdir=llvm_srcdir,
-            env=merged_env
-        )
-    )
-
     # Clean directory, if requested.
     cleanBuildRequested = lambda step: step.build.getProperty("clean") or clean
     f.addStep(
@@ -142,8 +121,8 @@ def get3StageClangLTOBuildFactory(
     shell_command = [
         "diff",
         "-q",
-        "tools/clang/stage2-bins/bin/clang-%(clang_ver)s",
-        "tools/clang/stage2-bins/tools/clang/stage3-bins/bin/clang-%(clang_ver)s"
+        "tools/clang/stage2-bins/bin/clang",
+        "tools/clang/stage2-bins/tools/clang/stage3-bins/bin/clang"
     ]
     f.addStep(
         ShellCommand(
