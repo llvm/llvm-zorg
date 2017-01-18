@@ -278,6 +278,7 @@ def _get_clang_builders():
                                         "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a15 -mfpu=vfpv3 -marm'",
                                         "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'",
                                         "-DLLVM_LIT_ARGS='-sv -j4'",
+                                        "-DLLVM_BUILD_GLOBAL_ISEL=ON",
                                         "-DLLVM_PARALLEL_LINK_JOBS=2"])},
 
         ## AArch64 Clang+LLVM check-all + test-suite
@@ -297,6 +298,7 @@ def _get_clang_builders():
                            'BOTO_CONFIG':'/var/buildbot/llvmlab-build-artifacts.boto'},
                       extra_cmake_args=["-DCMAKE_C_FLAGS='-mcpu=cortex-a57'",
                                         "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a57'",
+                                        "-DLLVM_BUILD_GLOBAL_ISEL=ON",
                                         "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'"],
                )},
 
@@ -826,6 +828,7 @@ def _get_sanitizer_builders():
                                           "-DCOMPILER_RT_TEST_COMPILER_CFLAGS='-mcpu=cortex-a15 -mfpu=vfpv3 -marm'",
                                           "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'",
                                           "-DLLVM_LIT_ARGS='-sv -j4'",
+                                          "-DLLVM_BUILD_GLOBAL_ISEL=ON",
                                           "-DLLVM_PARALLEL_LINK_JOBS=2"])},
 
           ## Cortex-A15 Thumb2 check-all full (compiler-rt) with CMake builder; Needs x86 for ASAN tests
@@ -881,6 +884,7 @@ def _get_sanitizer_builders():
                       env={'PATH':'/usr/lib64/ccache:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'},
                       extra_cmake_args=["-DCMAKE_C_FLAGS='-mcpu=cortex-a57 -DSANITIZER_AARCH64_VMA=42'",
                                         "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a57 -DSANITIZER_AARCH64_VMA=42'",
+                                        "-DLLVM_BUILD_GLOBAL_ISEL=ON",
                                         "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'"],
                )},
 
