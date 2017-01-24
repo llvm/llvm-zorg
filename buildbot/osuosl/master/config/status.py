@@ -177,4 +177,13 @@ def get_status_targets(standard_builders, standard_categories=None):
             builders = ["polly-arm-linux"],
             addLogs=False,
             num_lines = 15),
+        InformativeMailNotifier(
+            fromaddr = "llvm.buildmaster@lab.llvm.org",
+            sendToInterestedUsers= False,
+            extraRecipients = ["tra+buildbot@google.com"],
+            subject="Build %(builder)s Failure",
+            mode = "failing",
+            builders = ["clang-cuda-build"],
+            addLogs=False,
+            num_lines = 15),
         ]
