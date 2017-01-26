@@ -174,7 +174,8 @@ def get_status_targets(standard_builders, standard_categories=None):
             extraRecipients = ["efriedma@codeaurora.org"],
             subject="Build %(builder)s Failure",
             mode = "failing",
-            builders = ["polly-arm-linux"],
+            builders = ["polly-arm-linux",
+                        "aosp-O3-polly-before-vectorizer-unprofitable"],
             addLogs=False,
             num_lines = 15),
         InformativeMailNotifier(

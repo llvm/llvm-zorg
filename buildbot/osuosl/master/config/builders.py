@@ -16,6 +16,7 @@ from zorg.buildbot.builders import ClangLTOBuilder3Stage
 from zorg.buildbot.builders import ClangLTOBuilder
 from zorg.buildbot.builders import UnifiedTreeBuilder
 from zorg.buildbot.builders import CUDATestsuiteBuilder
+from zorg.buildbot.builders import AOSPBuilder
 
 # Plain LLVM builders.
 def _get_llvm_builders():
@@ -666,6 +667,33 @@ def _get_polly_builders():
                                 "-DCMAKE_C_COMPILER:FILEPATH=/local/clang+llvm-3.7.1-x86_64-linux-gnu-ubuntu-14.04/bin/clang",
                                 "-DCMAKE_CXX_COMPILER:FILEPATH=/local/clang+llvm-3.7.1-x86_64-linux-gnu-ubuntu-14.04/bin/clang++"])}
        ]
+
+# AOSP builders.
+def _get_aosp_builders():
+    return [
+        {'name': "aosp-O3-polly-before-vectorizer-unprofitable",
+         'slavenames': ["hexagon-build-03"],
+         'builddir': "aosp",
+         'factory': AOSPBuilder.getAOSPBuildFactory(
+                device="angler",
+                build_clang=True,
+                extra_cmake_args=["-G", "Ninja",
+                                  "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'",
+                                  "-DLLVM_DEFAULT_TARGET_TRIPLE=arm-linux-androideabi",
+                                  "-DLLVM_TARGET_ARCH=arm-linux-androideabi",
+                                  "-DLLVM_ENABLE_ASSERTIONS=True",
+                                  "-DCMAKE_C_COMPILER:FILEPATH=/local/clang+llvm-3.7.1-x86_64-linux-gnu-ubuntu-14.04/bin/clang",
+                                  "-DCMAKE_CXX_COMPILER:FILEPATH=/local/clang+llvm-3.7.1-x86_64-linux-gnu-ubuntu-14.04/bin/clang++"])}
+                timeout=180,
+                target_clang=None,
+                target_flags="-Wno-error -O3 -mllvm -polly -mllvm -polly-position=before-vectorizer -mllvm -polly-process-unprofitable",
+                jobs=16,
+                extra_make_args=None,
+                env={},
+                clean=False,
+                sync=False,
+                patch=None)}
+    ]
 
 # LLDB builders.
 def _get_lldb_builders():
@@ -1336,6 +1364,10 @@ def get_builders():
 
     for b in _get_polly_builders():
         b['category'] = 'polly'
+        yield b
+
+    for b in _get_aosp_builders():
+        b['category'] = 'aosp'
         yield b
 
     for b in _get_lld_builders():
