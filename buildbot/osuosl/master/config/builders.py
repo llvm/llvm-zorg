@@ -205,7 +205,7 @@ def _get_clang_builders():
                       runTestSuite=True,
                       env={'PATH':'/usr/lib/ccache:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'},
                       nt_flags=['--cflag', '-mcpu=cortex-a15 -marm',
-                                '--threads=2', '--build-threads=2'],
+                                '--threads=4', '--build-threads=4'],
                       extra_cmake_args=["-DCMAKE_C_FLAGS='-mcpu=cortex-a15 -marm'",
                                         "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a15 -marm'",
                                         "-DLLVM_TARGETS_TO_BUILD='ARM'",
