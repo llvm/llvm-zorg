@@ -232,9 +232,7 @@ def cmake_builder(target):
     if conf.globalisel:
         cmake_cmd += ["-DLLVM_BUILD_GLOBAL_ISEL=ON"]
 
-    # Workaround for PR14109: CMake build for compiler-rt should use
-    # just-built clang.
-    cmake_cmd += ["-DCOMPILER_RT_BUILD_BUILTINS=Off"]
+    cmake_cmd += ["-DLLVM_BUILD_EXTERNAL_COMPILER_RT=On"]
 
     lit_flags = ['--xunit-xml-output=testresults.xunit.xml', '-v']
     if conf.max_parallel_tests:
