@@ -1,4 +1,5 @@
 import buildbot.status.results
+import re
 
 def getVisualStudioEnvironment(vs=r"""%VS120COMNTOOLS%""", target_arch=None):
     # x86 builds should use the 64 bit -> x86 cross compilation toolchain to avoid
@@ -16,6 +17,16 @@ def extractSlaveEnvironment(exit_status, stdout, stderr):
     slave_env_dict = dict(l.strip().split('=',1)
         for l in stdout.split('\n') if len(l.split('=', 1)) == 2)
     return {'slave_env': slave_env_dict}
+
+def extractClangVersion(exit_status, stdout, stderr):
+    '''Helper function for SetPropertyCommand. Receives "clang --version" output
+    and returns clang_version property for ShellCommands.'''
+    if exit_status:
+        return {}
+    res = re.search(r"version\s*(\S+)", stdout)
+    if res:
+        return {'clang_version': res.group(1)}
+    return {}
 
 def getConfigArgs(origname):
   name = origname

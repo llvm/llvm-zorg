@@ -7,8 +7,10 @@ from buildbot.steps.shell import ShellCommand
 from buildbot.steps.slave import RemoveDirectory
 from buildbot.steps.source import SVN
 from buildbot.process.properties import Property
+from buildbot.process.properties import WithProperties
 from zorg.buildbot.builders.Util import getVisualStudioEnvironment
 from zorg.buildbot.builders.Util import extractSlaveEnvironment
+from zorg.buildbot.builders.Util import extractClangVersion
 from zorg.buildbot.commands.NinjaCommand import NinjaCommand
 
 def getSource(f,llvmTopDir='llvm'):
@@ -64,6 +66,7 @@ def getSanitizerWindowsBuildFactory(
 
     # Global configurations
     build_dir='build'
+    build_fuzzer_dir='build-fuzzer'
 
     ############# CLEANING
     cleanBuildRequested = lambda step: step.build.getProperty("clean") or clean
@@ -110,6 +113,63 @@ def getSanitizerWindowsBuildFactory(
                            haltOnFailure=True,
                            description='ninja test',
                            workdir=build_dir,
+                           env=Property('slave_env')))
+
+    # Clean fuzzer build dir.
+    f.addStep(RemoveDirectory(name='clean '+build_fuzzer_dir,
+                dir=build_fuzzer_dir,
+                haltOnFailure=False,
+                flunkOnFailure=False,
+                doStepIf=cleanBuildRequested
+                ))
+
+    # Build path.
+    build_path = "%(workdir)s\\" + build_dir
+    # Get binary dir.
+    bin_path = build_path + "\\bin"
+
+    # Get clang version.
+    f.addStep(SetProperty(command=WithProperties(bin_path+"\\clang --version"),
+                          extract_fn=extractClangVersion))
+
+    # Get compiler-rt's libraries dir.
+    dll_path = build_path + "\\lib\\clang\\%(clang_version)s\\lib\\windows"
+
+    # Update slave_env to add fresh clang, tools and compiler-rt dlls to path.
+    update_path_cmd = "set Path=\""+bin_path+";"+dll_path+";%Path%\" && set"
+    f.addStep(SetProperty(command=WithProperties(update_path_cmd),
+                          extract_fn=extractSlaveEnvironment,
+                          env=Property('slave_env')))
+
+    # Get absolute path to clang-cl.
+    clang_cl = "%(workdir)s/" + build_dir + "/bin/clang-cl"
+    f.addStep(ShellCommand(name='cmake',
+                           command=[cmake, "-G", "Ninja", "../llvm",
+                               "-DCMAKE_BUILD_TYPE="+config,
+                               "-DLLVM_ENABLE_ASSERTIONS=ON",
+                               WithProperties("-DCMAKE_C_COMPILER="+clang_cl),
+                               WithProperties("-DCMAKE_CXX_COMPILER="+clang_cl),
+                               "-DLLVM_USE_SANITIZER=Address",
+                               "-DLLVM_USE_SANITIZE_COVERAGE=YES"]
+                               + extra_cmake_args,
+                           haltOnFailure=False,
+                           workdir=build_fuzzer_dir,
+                           env=Property('slave_env')))
+
+    # Build libFuzzer.
+    f.addStep(NinjaCommand(name='build LLVMFuzzer',
+                           targets=['LLVMFuzzer'],
+                           haltOnFailure=False,
+                           description='ninja LLVMFuzzer',
+                           workdir=build_fuzzer_dir,
+                           env=Property('slave_env')))
+
+    # Run libFuzzer's tests.
+    f.addStep(NinjaCommand(name='run fuzzer tests',
+                           targets=['check-fuzzer'],
+                           haltOnFailure=False,
+                           description='ninja check-fuzzer',
+                           workdir=build_fuzzer_dir,
                            env=Property('slave_env')))
 
     return f
