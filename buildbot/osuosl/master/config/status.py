@@ -43,7 +43,8 @@ def get_status_targets(standard_builders, standard_categories=None):
             mode = "problem",
             builders = standard_builders),
         buildbot.status.words.IRC(
-            host = "irc.oftc.net", nick = "llvmbb", channels = ["#llvm"],
+            host = "irc.oftc.net", nick = "llvmbb",
+            channels = ["#llvm", "#llvm-build"],
             allowForce = True,
             categories = standard_categories,
             notify_events = ['successToFailure', 'failureToSuccess']),
