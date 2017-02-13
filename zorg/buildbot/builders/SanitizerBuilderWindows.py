@@ -136,7 +136,7 @@ def getSanitizerWindowsBuildFactory(
     dll_path = build_path + "\\lib\\clang\\%(clang_version)s\\lib\\windows"
 
     # Update slave_env to add fresh clang, tools and compiler-rt dlls to path.
-    update_path_cmd = "set Path=\""+bin_path+";"+dll_path+";%%Path%%\" && set"
+    update_path_cmd = "set Path="+bin_path+";"+dll_path+";%%Path%% && set"
     f.addStep(SetProperty(command=WithProperties(update_path_cmd),
                           extract_fn=extractSlaveEnvironment,
                           env=Property('slave_env')))
