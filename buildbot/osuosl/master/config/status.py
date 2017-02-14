@@ -44,7 +44,16 @@ def get_status_targets(standard_builders, standard_categories=None):
             builders = standard_builders),
         buildbot.status.words.IRC(
             host = "irc.oftc.net", nick = "llvmbb",
-            channels = ["#llvm", "#llvm-build"],
+            channels = ["#llvm"],
+            allowForce = True,
+            categories = standard_categories,
+            notify_events = ['successToFailure', 'failureToSuccess']),
+        # Use different nick's in the different channels to support ignoring
+        # one bot or the other.
+        # (Note: /ignore applies to all channels on the network)
+        buildbot.status.words.IRC(
+            host = "irc.oftc.net", nick = "llvmbb-llvm-build",
+            channels = ["#llvm-build"],
             allowForce = True,
             categories = standard_categories,
             notify_events = ['successToFailure', 'failureToSuccess']),
