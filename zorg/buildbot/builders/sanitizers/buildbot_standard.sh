@@ -31,6 +31,12 @@ CHECK_LLD=${CHECK_LLD:-1}
 LLVM_CHECKOUT=${ROOT}/llvm
 CMAKE_COMMON_OPTIONS="-DLLVM_ENABLE_ASSERTIONS=ON -DLLVM_BUILD_EXTERNAL_COMPILER_RT=ON"
 
+export CCACHE_DIR=$ROOT/ccache
+export CCACHE_COMPILERCHECK=content
+if ccache -sM 20 ; then
+  CMAKE_COMMON_OPTIONS="$CMAKE_COMMON_OPTIONS -DLLVM_CCACHE_BUILD=ON"
+fi
+
 function build_tsan {
   local build_dir=$1
   local extra_cmake_args=$2
