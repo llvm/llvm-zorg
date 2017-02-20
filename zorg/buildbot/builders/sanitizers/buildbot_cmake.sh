@@ -40,12 +40,6 @@ if [ -e /usr/include/plugin-api.h ]; then
   CMAKE_COMMON_OPTIONS="${CMAKE_COMMON_OPTIONS} -DLLVM_BINUTILS_INCDIR=/usr/include"
 fi
 
-export CCACHE_DIR=$ROOT/ccache
-export CCACHE_COMPILERCHECK=content
-if ccache -sM 20 ; then
-  CMAKE_COMMON_OPTIONS="${CMAKE_COMMON_OPTIONS} -DLLVM_CCACHE_BUILD=ON"
-fi
-
 BUILD_ANDROID=${BUILD_ANDROID:-0}
 RUN_ANDROID=${RUN_ANDROID:-0}
 if [ $BUILD_ANDROID == 1 -o $RUN_ANDROID == 1 ] ; then
