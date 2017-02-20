@@ -25,6 +25,12 @@ STAGE3_MSAN_DIR=llvm_build2_msan
 LLVM=$ROOT/llvm
 CMAKE_COMMON_OPTIONS="-GNinja -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_ASSERTIONS=ON -DLLVM_PARALLEL_LINK_JOBS=20"
 
+export CCACHE_DIR=$ROOT/ccache
+export CCACHE_COMPILERCHECK=content
+if ccache -sM 20 ; then
+  CMAKE_COMMON_OPTIONS="${CMAKE_COMMON_OPTIONS} -DLLVM_CCACHE_BUILD=ON"
+fi
+
 if [ "$BUILDBOT_CLOBBER" != "" ]; then
   echo @@@BUILD_STEP clobber@@@
   rm -rf llvm
