@@ -143,19 +143,12 @@ def getSanitizerWindowsBuildFactory(
 
     # Get absolute path to clang-cl.
     clang_cl = "%(workdir)s/" + build_dir + "/bin/clang-cl"
-    # Cmake does not accept Windows directory separators in arguments,
-    # and does not normalize the input paths to make them cmake-friendly.
-    # To work around this issue we define env CC and CXX vars for the
-    # built compiler rather than passing that with CMAKE_C_COMPILER, and
-    # CMAKE_CXX_COMPILER args.
     f.addStep(ShellCommand(name='cmake',
-                           command=[
-                               "env",
-                               WithProperties("CC=" + clang_cl),
-                               WithProperties("CXX=" + clang_cl),
-                               cmake, "-G", "Ninja", "../llvm",
+                           command=[cmake, "-G", "Ninja", "../llvm",
                                "-DCMAKE_BUILD_TYPE="+config,
                                "-DLLVM_ENABLE_ASSERTIONS=ON",
+                               WithProperties("-DCMAKE_C_COMPILER="+clang_cl),
+                               WithProperties("-DCMAKE_CXX_COMPILER="+clang_cl),
                                "-DLLVM_USE_SANITIZER=Address",
                                "-DLLVM_USE_SANITIZE_COVERAGE=YES"]
                                + extra_cmake_args,
