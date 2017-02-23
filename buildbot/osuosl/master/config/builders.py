@@ -1044,7 +1044,8 @@ def _get_libcxx_builders():
          'builddir': 'libcxx-libcxxabi-x86_64-linux-debian-noexceptions',
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
              env={'CC': 'clang', 'CXX': 'clang++'},
-             cmake_extra_opts={'LIBCXX_ENABLE_EXCEPTIONS': 'OFF'},
+             cmake_extra_opts={'LIBCXX_ENABLE_EXCEPTIONS': 'OFF',
+                               'LIBCXXABI_ENABLE_EXCEPTIONS': 'OFF'},
              lit_extra_args=['--shuffle']),
          'category': 'libcxx'},
 
@@ -1194,6 +1195,7 @@ def _get_libcxx_builders():
             lit_extra_opts={'link_flags': '"-lc++abi -lc -lm -lpthread -lunwind -ldl -L/opt/llvm/lib/clang/3.9.0/lib/linux -lclang_rt.builtins-armhf"'},
             cmake_extra_opts={'LIBCXXABI_USE_LLVM_UNWINDER': 'ON',
                               'LIBCXX_ENABLE_EXCEPTIONS': 'OFF',
+                              'LIBCXXABI_ENABLE_EXCEPTIONS': 'OFF',
                               'CMAKE_C_FLAGS': '-mcpu=cortex-a15 -mthumb',
                               'CMAKE_CXX_FLAGS': '-mcpu=cortex-a15 -mthumb',
                               'LLVM_PARALLEL_LINK_JOBS': '2'})},
@@ -1224,6 +1226,7 @@ def _get_libcxx_builders():
             lit_extra_opts={'link_flags': '"-lc++abi -lc -lm -lpthread -lunwind -ldl -L/opt/llvm/lib/clang/3.9.0/lib/linux -lclang_rt.builtins-aarch64"'},
             cmake_extra_opts={'LIBCXXABI_USE_LLVM_UNWINDER': 'ON',
                               'LIBCXX_ENABLE_EXCEPTIONS': 'OFF',
+                              'LIBCXXABI_ENABLE_EXCEPTIONS': 'OFF',
                               'LLVM_PARALLEL_LINK_JOBS': '4'})},
 
     ]
