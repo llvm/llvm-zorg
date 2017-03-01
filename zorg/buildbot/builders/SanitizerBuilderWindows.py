@@ -141,14 +141,14 @@ def getSanitizerWindowsBuildFactory(
                           extract_fn=extractSlaveEnvironment,
                           env=Property('slave_env')))
 
-    # Get absolute path to clang-cl.
-    clang_cl = "%(workdir)s/" + build_dir + "/bin/clang-cl"
+    # clang-cl.exe should already be on the path (because of the previous step)
+    # so we don't need to specify its path, cmake should be able to find it.
     f.addStep(ShellCommand(name='cmake',
                            command=[cmake, "-G", "Ninja", "../llvm",
                                "-DCMAKE_BUILD_TYPE="+config,
                                "-DLLVM_ENABLE_ASSERTIONS=ON",
-                               WithProperties("-DCMAKE_C_COMPILER="+clang_cl),
-                               WithProperties("-DCMAKE_CXX_COMPILER="+clang_cl),
+                               "-DCMAKE_C_COMPILER=clang-cl.exe",
+                               "-DCMAKE_CXX_COMPILER=clang-cl.exe",
                                "-DLLVM_USE_SANITIZER=Address",
                                "-DLLVM_USE_SANITIZE_COVERAGE=YES"]
                                + extra_cmake_args,
