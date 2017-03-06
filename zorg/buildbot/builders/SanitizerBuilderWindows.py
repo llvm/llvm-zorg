@@ -11,6 +11,8 @@ from buildbot.process.properties import WithProperties
 from zorg.buildbot.builders.Util import getVisualStudioEnvironment
 from zorg.buildbot.builders.Util import extractSlaveEnvironment
 from zorg.buildbot.builders.Util import extractClangVersion
+from zorg.buildbot.process.properties import InterpolateToNativePath, InterpolateToPosixPath
+from zorg.buildbot.commands.CmakeCommand import CmakeCommand
 from zorg.buildbot.commands.NinjaCommand import NinjaCommand
 
 def getSource(f,llvmTopDir='llvm'):
@@ -136,19 +138,21 @@ def getSanitizerWindowsBuildFactory(
     dll_path = build_path + "\\lib\\clang\\%(clang_version)s\\lib\\windows"
 
     # Update slave_env to add fresh clang, tools and compiler-rt dlls to path.
+    # A path with the native to a buildslave path separator should be used.
     update_path_cmd = "set Path="+bin_path+";"+dll_path+";%%Path%% && set"
-    f.addStep(SetProperty(command=WithProperties(update_path_cmd),
+    f.addStep(SetProperty(command=InterpolateToNativePath(update_path_cmd),
                           extract_fn=extractSlaveEnvironment,
                           env=Property('slave_env')))
 
-    # clang-cl.exe should already be on the path (because of the previous step)
-    # so we don't need to specify its path, cmake should be able to find it.
+    # Get absolute path to clang-cl.
+    clang_cl = "%(workdir)s/" + build_dir + "/bin/clang-cl"
+    # Note: Cmake expects POSIX-style paths as an input.
     f.addStep(ShellCommand(name='cmake',
                            command=[cmake, "-G", "Ninja", "../llvm",
                                "-DCMAKE_BUILD_TYPE="+config,
                                "-DLLVM_ENABLE_ASSERTIONS=ON",
-                               "-DCMAKE_C_COMPILER=clang-cl.exe",
-                               "-DCMAKE_CXX_COMPILER=clang-cl.exe",
+                               InterpolateToPosixPath("-DCMAKE_C_COMPILER=" + clang_cl),
+                               InterpolateToPosixPath("-DCMAKE_CXX_COMPILER=" + clang_cl),
                                "-DLLVM_USE_SANITIZER=Address",
                                "-DLLVM_USE_SANITIZE_COVERAGE=YES"]
                                + extra_cmake_args,
