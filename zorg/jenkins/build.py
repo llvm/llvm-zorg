@@ -187,7 +187,10 @@ def cmake_builder(target):
     max_parallel_links = conf.max_parallel_links
 
     if conf.lto:
-        cmake_cmd += ["-DLLVM_PARALLEL_LINK_JOBS=" + str(max_link_jobs())]
+        if conf.thinlto:
+            cmake_cmd += ["-DLLVM_PARALLEL_LINK_JOBS=1"]
+        else:
+            cmake_cmd += ["-DLLVM_PARALLEL_LINK_JOBS=" + str(max_link_jobs())]
         cmake_cmd += ['-DLLVM_BUILD_EXAMPLES=Off']
         if not max_parallel_links:
             max_parallel_links = 1
@@ -374,7 +377,9 @@ def clang_builder(target):
             cmake_command.extend(
                 ['-DLLVM_LIT_ARGS={}'.format(' '.join(lit_flags))])
 
-            if conf.lto:
+            if conf.thinlto:
+                cmake_command.extend(["-DLLVM_PARALLEL_LINK_JOBS=1"])
+            elif conf.lto:
                 cmake_command.extend(
                     ["-DLLVM_PARALLEL_LINK_JOBS=" + str(max_link_jobs())])
             else:
