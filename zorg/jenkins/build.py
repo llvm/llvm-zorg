@@ -321,9 +321,16 @@ def clang_builder(target):
                                './Build',
                                './Root'])
             install_prefix = conf.installdir()
+            
+            # Infer which CMake cache file to use. If ThinLTO we select a specific one.
+            cmake_cachefile_thinlto = ''
+            if conf.thinlto:
+                cmake_cachefile_thinlto = '-ThinLTO'
+            cmake_cachefile = '{}/llvm/tools/clang/cmake/caches/Apple-stage2{}.cmake'.format(
+                                       conf.workspace, cmake_cachefile_thinlto)
+
             cmake_command = env + ["/usr/local/bin/cmake", '-G', 'Ninja', '-C',
-                                   '{}/llvm/tools/clang/cmake/caches/Apple-stage2.cmake'.format(
-                                       conf.workspace),
+                                   cmake_cachefile,
                                    '-DLLVM_ENABLE_ASSERTIONS:BOOL={}'.format(
                                        "TRUE" if conf.assertions else "FALSE"),
                                    '-DCMAKE_BUILD_TYPE=RelWithDebInfo',
@@ -957,6 +964,7 @@ def parse_args():
 
     parser.add_argument('--assertions', dest='assertions', action='store_true')
     parser.add_argument('--lto', dest='lto', action='store_true')
+    parser.add_argument('--thinlto', dest='thinlto', action='store_true')
     parser.add_argument('--debug', dest='debug', action='store_true')
     parser.add_argument('--cmake-type', dest='cmake_build_type',
                         help="Override cmake type Release, Debug, "
@@ -980,6 +988,8 @@ def parse_args():
                                                   " GlobalISel CMake flag.")
 
     args = parser.parse_args()
+    if args.thinlto:
+        args.lto = True
     return args
 
 
