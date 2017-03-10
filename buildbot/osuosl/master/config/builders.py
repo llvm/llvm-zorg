@@ -153,7 +153,9 @@ def _get_clang_fast_builders():
          'slavenames':["ps4-buildslave2"],
          'builddir':"llvm-clang-x86_64-expensive-checks-win",
          'factory': UnifiedTreeBuilder.getCmakeWithNinjaWithMSVCBuildFactory(
-                extra_configure_args = ["-DLLVM_ENABLE_EXPENSIVE_CHECKS=ON", "-DLLVM_ENABLE_ASSERTIONS=ON"])},
+                extra_configure_args = ["-DLLVM_ENABLE_EXPENSIVE_CHECKS=ON",
+                                        "-DLLVM_ENABLE_ASSERTIONS=ON",
+                                        "-DLLVM_LIT_ARGS='-v'"])},
     ]
 
 # Clang builders.
