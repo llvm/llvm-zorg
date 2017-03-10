@@ -148,6 +148,12 @@ def _get_clang_fast_builders():
                      isMSVC=True,
                      prefixCommand=None, # This is a designated builder, so no need to be nice.
                      extraLitArgs=["--use-processes", "-j80"])},
+
+        {'name': "llvm-clang-x86_64-expensive-checks-win",
+         'slavenames':["ps4-buildslave2"],
+         'builddir':"llvm-clang-x86_64-expensive-checks-win",
+         'factory': UnifiedTreeBuilder.getCmakeWithNinjaWithMSVCBuildFactory(
+                extra_configure_args = ["-DLLVM_ENABLE_EXPENSIVE_CHECKS=ON", "-DLLVM_ENABLE_ASSERTIONS=ON"])},
     ]
 
 # Clang builders.
