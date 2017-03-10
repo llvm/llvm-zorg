@@ -107,6 +107,7 @@ def addCmakeSteps(
     if stage_name:
         step_name = "cmake-configure-%s" % stage_name
     else:
+        stage_name = ""
         step_name = "cmake-configure"
 
     src_dir = LLVMBuildFactory.pathRelativeToBuild(f.llvm_srcdir, obj_dir)
@@ -133,6 +134,7 @@ def addNinjaSteps(
     if stage_name:
         step_name = "%s-" % stage_name
     else:
+        stage_name = ""
         step_name = ""
 
     if obj_dir is None:
