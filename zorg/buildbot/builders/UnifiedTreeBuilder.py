@@ -1,11 +1,14 @@
 from buildbot.steps.slave import RemoveDirectory
-from buildbot.process.properties import WithProperties
+from buildbot.process.properties import WithProperties, Property
+from buildbot.steps.shell import SetProperty
 
 from zorg.buildbot.commands.CmakeCommand import CmakeCommand
 from zorg.buildbot.commands.NinjaCommand import NinjaCommand
 
 from zorg.buildbot.conditions.FileConditions import FileDoesNotExist
 from zorg.buildbot.process.factory import LLVMBuildFactory
+
+import zorg.buildbot.builders.Util as builders_util
 
 def getLLVMBuildFactoryAndSVNSteps(
            depends_on_projects = None,
@@ -202,6 +205,7 @@ def getCmakeBuildFactory(
 
     return f
 
+
 def getCmakeWithNinjaBuildFactory(
            depends_on_projects = None,
            llvm_srcdir = None,
@@ -232,6 +236,70 @@ def getCmakeWithNinjaBuildFactory(
             extra_configure_args=cmake_args,
             env=env,
             **kwargs) # Pass through all the extra arguments.
+
+    addNinjaSteps(
+           f,
+           obj_dir=obj_dir,
+           env=env,
+           **kwargs)
+
+    return f
+
+def getCmakeWithNinjaWithMSVCBuildFactory(
+           depends_on_projects = None,
+           llvm_srcdir = None,
+           obj_dir = None,
+           install_dir = None,
+           clean = False,
+           extra_configure_args = None,
+           # VS tools environment variable if using MSVC. For example,
+           # %VS140COMNTOOLS% selects the 2015 toolchain.
+           vs=None,
+           target_arch=None,
+           env = None,
+           **kwargs):
+
+    assert not env, "Can't have custom builder env vars with MSVC build"
+
+    # Make a local copy of the configure args, as we are going to modify that.
+    if extra_configure_args:
+        cmake_args = extra_configure_args[:]
+    else:
+        cmake_args = list()
+
+    # Set up VS environment, if appropriate.
+    if not vs:
+        # We build by Visual Studio 2015, unless otherwise is requested.
+        vs=r"""%VS140COMNTOOLS%"""
+
+    cleanBuildRequested = lambda step: step.build.getProperty("clean") or clean
+
+    f = getLLVMBuildFactoryAndSVNSteps(
+            depends_on_projects=depends_on_projects,
+            llvm_srcdir=llvm_srcdir,
+            obj_dir=obj_dir,
+            install_dir=install_dir,
+            cleanBuildRequested=cleanBuildRequested,
+            **kwargs) # Pass through all the extra arguments.
+
+    f.addStep(SetProperty(
+        command=builders_util.getVisualStudioEnvironment(vs, target_arch),
+        extract_fn=builders_util.extractSlaveEnvironment))
+    env = Property('slave_env')
+
+    # Some options are required for this build no matter what.
+    CmakeCommand.applyRequiredOptions(cmake_args, [
+        ('-G',                      'Ninja'),
+        ])
+
+    addCmakeSteps(
+        f,
+        f.cleanBuildRequested,
+        obj_dir=f.obj_dir,
+        install_dir=f.install_dir,
+        extra_configure_args=cmake_args,
+        env=env,
+        **kwargs)
 
     addNinjaSteps(
            f,
