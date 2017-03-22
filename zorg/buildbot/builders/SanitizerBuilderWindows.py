@@ -106,14 +106,14 @@ def getSanitizerWindowsBuildFactory(
 
     # Only run sanitizer tests.
     # Don't build targets that are not required in order to speed up the cycle.
-    test_targets = ['check-asan', 'check-asan-dynamic', 'check-sanitizer',
-                    'check-cfi']
-    f.addStep(NinjaCommand(name='run tests',
-                           targets=test_targets,
-                           haltOnFailure=True,
-                           description='ninja test',
-                           workdir=build_dir,
-                           env=Property('slave_env')))
+    for target in ['check-asan', 'check-asan-dynamic', 'check-sanitizer',
+                   'check-cfi']:
+      f.addStep(NinjaCommand(name='run %s' % target,
+                             targets=[ target ],
+                             haltOnFailure=False,
+                             description='ninja %s' % target,
+                             workdir=build_dir,
+                             env=Property('slave_env')))
 
     # Clean fuzzer build dir.
     f.addStep(RemoveDirectory(name='clean '+build_fuzzer_dir,
