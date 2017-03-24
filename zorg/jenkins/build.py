@@ -520,6 +520,7 @@ def lldb_builder():
         "--rerun-all-issues",
         "--env", "TERM=vt100",
         "--threads", "1",
+        "--log-success",
         "-O--xpass=ignore"
     ]
 
