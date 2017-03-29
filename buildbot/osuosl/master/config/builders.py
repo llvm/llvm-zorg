@@ -1353,6 +1353,13 @@ def _get_documentation_builders():
                'builddir':"libcxx-sphinx-docs",
                'factory': SphinxDocsBuilder.getSphinxDocsBuildFactory(libcxx_html=True),
                'category' : 'libcxx'
+             },
+             {
+               'name':"libunwind-sphinx-docs",
+               'slavenames':["gribozavr3"],
+               'builddir':"libunwind-sphinx-docs",
+               'factory': SphinxDocsBuilder.getSphinxDocsBuildFactory(libunwind_html=True),
+               'category' : 'libunwind'
              }
            ]
 

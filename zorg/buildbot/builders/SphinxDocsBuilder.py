@@ -11,7 +11,8 @@ def getSphinxDocsBuildFactory(
         clang_html        = False, # Build Clang HTML documentation
         clang_tools_html  = False, # Build Clang Extra Tools HTML documentation
         lld_html          = False, # Build LLD HTML documentation
-        libcxx_html       = False  # Build Libc++ HTML documentation
+        libcxx_html       = False, # Build Libc++ HTML documentation
+        libunwind_html    = False  # Build libunwind HTML documentation
         ):
 
     f = buildbot.process.factory.BuildFactory()
@@ -23,6 +24,7 @@ def getSphinxDocsBuildFactory(
     lld_srcdir = llvm_srcdir + '/tools/lld'
     libcxx_srcdir = llvm_srcdir + '/projects/libcxx'
     libcxxabi_srcdir = llvm_srcdir + '/projects/libcxxabi'
+    libunwind_srcdir = llvm_srcdir + '/projects/libunwind'
 
     # Get LLVM. This is essential for all builds
     # because we build all subprojects in tree
@@ -64,6 +66,13 @@ def getSphinxDocsBuildFactory(
                       baseURL='http://llvm.org/svn/llvm-project/libcxxabi/',
                       defaultBranch='trunk',
                       workdir=libcxxabi_srcdir))
+
+    if libunwind_html:
+        f.addStep(SVN(name='svn-libunwind',
+                      mode='update',
+                      baseURL='http://llvm.org/svn/llvm-project/libunwind/',
+                      defaultBranch='trunk',
+                      workdir=libunwind_srcdir))
 
     f.addStep(ShellCommand(name="create-build-dir",
                                command=["mkdir", "-p", llvm_objdir],
@@ -130,6 +139,14 @@ def getSphinxDocsBuildFactory(
                                description=["Build Libc++ Sphinx HTML documentation"],
                                workdir=llvm_objdir,
                                targets=['docs-libcxx-html']
+                              ))
+
+    if libunwind_html:
+        f.addStep(NinjaCommand(name="docs-libunwind-html",
+                               haltOnFailure=True,
+                               description=["Build libunwind Sphinx HTML documentation"],
+                               workdir=llvm_objdir,
+                               targets=['docs-libunwind-html']
                               ))
 
     return f
