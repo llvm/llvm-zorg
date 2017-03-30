@@ -519,8 +519,6 @@ def lldb_builder():
         "--results-file", os.path.join(build_dir, "test-results-x86_64.xml"),
         "--rerun-all-issues",
         "--env", "TERM=vt100",
-        "--threads", "1",
-        "--log-success",
         "-O--xpass=ignore"
     ]
 
