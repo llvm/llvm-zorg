@@ -240,7 +240,7 @@ def _get_clang_builders():
 
         ## Cortex-A15 check-all with CMake builder
         {'name': "clang-cmake-armv7-a15",
-         'slavenames':["linaro-a15-01", "linaro-tk1-06"],
+         'slavenames':["linaro-tk1-06"],
          'builddir':"clang-cmake-armv7-a15",
          'factory' : ClangBuilder.getClangCMakeBuildFactory(
                       jobs=4,
@@ -256,7 +256,7 @@ def _get_clang_builders():
 
         ## Cortex-A15 check-all with CMake T2 builder
         {'name': "clang-cmake-thumbv7-a15",
-         'slavenames':["linaro-a15-04", "linaro-tk1-09"],
+         'slavenames':["linaro-tk1-09"],
          'builddir':"clang-cmake-thumbv7-a15",
          'factory' : ClangBuilder.getClangCMakeBuildFactory(
                       jobs=4,
@@ -272,7 +272,7 @@ def _get_clang_builders():
 
         ## Cortex-A15 check-all self-host with CMake builder
         {'name': "clang-cmake-armv7-a15-selfhost",
-         'slavenames':["linaro-a15-02", "linaro-tk1-07"],
+         'slavenames':["linaro-tk1-07"],
          'builddir':"clang-cmake-armv7-a15-selfhost",
          'factory' : ClangBuilder.getClangCMakeBuildFactory(
                       jobs=4,
@@ -852,7 +852,7 @@ def _get_sanitizer_builders():
 
           ## Cortex-A15 check-all full (compiler-rt) with CMake builder; Needs x86 for ASAN tests
           {'name': "clang-cmake-armv7-a15-full",
-           'slavenames':["linaro-a15-03", "linaro-tk1-08"],
+           'slavenames':["linaro-tk1-08"],
            'builddir':"clang-cmake-armv7-a15-full",
            'factory' : ClangBuilder.getClangCMakeBuildFactory(
                         jobs=4,
