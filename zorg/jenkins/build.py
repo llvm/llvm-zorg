@@ -224,6 +224,8 @@ def cmake_builder(target):
     else:
         cmake_cmd += ["-DCMAKE_BUILD_TYPE=Release"]
 
+    cmake_cmd += ["-DLLVM_BUILD_EXTERNAL_COMPILER_RT=On"]
+
     for flag in conf.cmake_flags:
         cmake_cmd += [flag]
 
@@ -234,8 +236,6 @@ def cmake_builder(target):
 
     if conf.globalisel:
         cmake_cmd += ["-DLLVM_BUILD_GLOBAL_ISEL=ON"]
-
-    cmake_cmd += ["-DLLVM_BUILD_EXTERNAL_COMPILER_RT=On"]
 
     lit_flags = ['--xunit-xml-output=testresults.xunit.xml', '-v']
     if conf.max_parallel_tests:
