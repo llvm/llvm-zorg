@@ -10,6 +10,7 @@ from buildbot.changes import base
 
 import xml.dom.minidom
 import os, urllib, collections
+import re
 
 class LLVMPoller(base.PollingChangeSource, util.ComparableMixin):
     """
@@ -35,6 +36,8 @@ class LLVMPoller(base.PollingChangeSource, util.ComparableMixin):
                  pollInterval=2*60, histmax=10,
                  svnbin='svn', revlinktmpl=_revlinktmpl, category=None,
                  projects=None, cachepath=None):
+
+        self.cleanRe = re.compile(r"Require(?:s?)\s*.*\s*clean build", re.IGNORECASE + re.MULTILINE)
 
         # projects is a list of projects to watch or None to watch all.
         if projects:
@@ -298,6 +301,10 @@ class LLVMPoller(base.PollingChangeSource, util.ComparableMixin):
                 if action == u'D' and number_of_files_changed == 1 and files[0] == '':
                     log.msg("LLVMPoller(%s): Ignoring deletion of branch '%s'" % (self.svnurl, branch))
                 else:
+                    properties = dict()
+                    if self.cleanRe.search(comments):
+                        log.msg(">>>>> Create a change with the 'clean' property for r%s" % revision)
+                        properties['clean'] = (True, "change")
                     chdict = dict(author=author,
                                   files=files,
                                   comments=comments,
@@ -306,7 +313,8 @@ class LLVMPoller(base.PollingChangeSource, util.ComparableMixin):
                                   revlink=revlink,
                                   category=categories.get(project, None),
                                   repository=self.svnurl,
-                                  project=project)
+                                  project=project,
+                                  properties=properties)
                     changes.append(chdict)
 
         return changes
