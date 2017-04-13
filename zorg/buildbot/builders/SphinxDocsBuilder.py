@@ -74,12 +74,6 @@ def getSphinxDocsBuildFactory(
                       defaultBranch='trunk',
                       workdir=libunwind_srcdir))
 
-    f.addStep(ShellCommand(name="create-build-dir",
-                               command=["mkdir", "-p", llvm_objdir],
-                               haltOnFailure=False, # We might of already created the directory in a previous build
-                               description=["create build dir"],
-                               workdir="."))
-
     # Use CMake to configure
     cmakeCommand = [ "cmake",
                      WithProperties('%s/' + llvm_srcdir, 'workdir'),
