@@ -16,6 +16,7 @@ import zorg.buildbot.util.phasedbuilderutils as phasedbuilderutils
 import zorg.buildbot.commands as commands
 import zorg.buildbot.commands.BatchFileDownload as batch_file_download
 import zorg.buildbot.commands.LitTestCommand as lit_test_command
+from zorg.buildbot.conditions.FileConditions import FileDoesNotExist
 
 def getClangBuildFactory(
             triple=None,
@@ -579,6 +580,8 @@ def _getClangCMakeBuildFactory(
     ############# PREPARING
     f = buildbot.process.factory.BuildFactory()
 
+    clean_build_requested = lambda step: clean or step.build.getProperty("clean")
+
     addSVNUpdateSteps(f,
                       checkout_clang_tools_extra=checkout_clang_tools_extra,
                       checkout_compiler_rt=checkout_compiler_rt,
@@ -597,11 +600,6 @@ def _getClangCMakeBuildFactory(
     ninja_cmd = ['ninja'] + jobs_cmd
     ninja_install_cmd = ['ninja', 'install'] + jobs_cmd
     ninja_check_cmd = ['ninja', 'check-all'] + jobs_cmd
-    check_build_cmd = ["sh", "-c",
-                       "test -e build.ninja && echo OK || echo Missing"]
-    if vs:
-        check_build_cmd = ["cmd", "/c", "if exist build.ninja (echo OK) " +
-                           " else (echo Missing & exit 1)"]
 
     # Global configurations
     stage1_build = 'stage1'
@@ -619,20 +617,15 @@ def _getClangCMakeBuildFactory(
 
 
     ############# CLEANING
-    if clean:
-        f.addStep(ShellCommand(name='clean stage 1',
-                               command=['rm','-rf',stage1_build],
-                               warnOnFailure=True,
-                               description='cleaning stage 1',
-                               descriptionDone='clean',
-                               workdir='.',
-                               env=env))
-    else:
-        f.addStep(SetProperty(name="check ninja files 1",
-                              workdir=stage1_build,
-                              command=check_build_cmd,
-                              flunkOnFailure=False,
-                              property="exists_ninja_1"))
+    f.addStep(ShellCommand(name='clean stage 1',
+                           command=['rm','-rf',stage1_build],
+                           warnOnFailure=True,
+                           haltOnFailure=False,
+                           flunkOnFailure=False,
+                           description='cleaning stage 1',
+                           descriptionDone='clean',
+                           workdir='.',
+                           doStepIf=clean_build_requested))
 
 
     ############# STAGE 1
@@ -646,7 +639,7 @@ def _getClangCMakeBuildFactory(
                            haltOnFailure=True,
                            description='cmake stage 1',
                            workdir=stage1_build,
-                           doStepIf=lambda step: step.build.getProperty("exists_ninja_1") != "OK",
+                           doStepIf=FileDoesNotExist("build.ninja"),
                            env=env))
 
     f.addStep(WarningCountingShellCommand(name='build stage 1',
@@ -667,6 +660,14 @@ def _getClangCMakeBuildFactory(
                                    env=env))
 
     if useTwoStage or runTestSuite or stage1_upload_directory:
+        f.addStep(ShellCommand(name='clean stage 1 install',
+                               command=['rm','-rf',stage1_install],
+                               warnOnFailure=True,
+                               haltOnFailure=False,
+                               flunkOnFailure=False,
+                               description='cleaning stage 1 install',
+                               descriptionDone='clean',
+                               workdir='.'))
         f.addStep(ShellCommand(name='install stage 1',
                                command=ninja_install_cmd,
                                description='ninja install',
@@ -698,8 +699,7 @@ def _getClangCMakeBuildFactory(
                                warnOnFailure=True,
                                description='cleaning stage 2',
                                descriptionDone='clean',
-                               workdir='.',
-                               env=env))
+                               workdir='.'))
 
         # Set the compiler using the CC and CXX environment variables to work around
         # backslash string escaping bugs somewhere between buildbot and cmake. The
@@ -719,7 +719,6 @@ def _getClangCMakeBuildFactory(
                                haltOnFailure=True,
                                description='cmake stage 2',
                                workdir=stage2_build,
-                               doStepIf=lambda step: step.build.getProperty("exists_ninja_2") != "OK",
                                env=env))
 
         f.addStep(WarningCountingShellCommand(name='build stage 2',
@@ -744,6 +743,12 @@ def _getClangCMakeBuildFactory(
         compiler_path = stage1_install
         if useTwoStage:
             compiler_path=stage2_install
+            f.addStep(ShellCommand(name='clean stage 2 install',
+                                   command=['rm','-rf',stage2_install],
+                                   warnOnFailure=True,
+                                   description='cleaning stage 2 install',
+                                   descriptionDone='clean',
+                                   workdir='.'))
             f.addStep(ShellCommand(name='install stage 2',
                                    command=ninja_install_cmd,
                                    description='ninja install 2',
