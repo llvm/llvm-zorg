@@ -45,7 +45,7 @@ function buildbot_update {
     # Merge checked out temporarily directories.
     if [ -d svn_checkout ]; then
       for D in svn_checkout/*; do
-        cp -rfl $D/* .
+        cp -rflP $D/* .
       done
       rm -rf svn_checkout
     fi
