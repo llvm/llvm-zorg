@@ -256,9 +256,13 @@ def cmake_builder(target):
         passed_target = conf.cmake_build_targets
         build_target = passed_target if passed_target else ['all']
         run_cmd(conf.builddir(), ninja_cmd + build_target)
-        header("Ninja install")
-        run_cmd(conf.builddir(), ninja_cmd + ['install'])
-        build_upload_artifact()
+        footer()
+        if conf.noinstall:
+            header("Skip install")
+        else:
+            header("Ninja install")
+            run_cmd(conf.builddir(), ninja_cmd + ['install'])
+            build_upload_artifact()
         footer()
     # Run all the test targets.
     ninja_cmd.extend(['-k', '0'])
@@ -986,8 +990,9 @@ def parse_args():
     parser.add_argument('--compiler-flag', dest='compiler_flags',
                         action='append', default=[],
                         help='Set an arbitrary compiler flag')
-    parser.add_argument('--noupload', dest='noupload',
-                        action='store_true')
+    parser.add_argument('--noupload', dest='noupload', action='store_true')
+    parser.add_argument('--noinstall', dest='noinstall', action='store_true',
+                        help="Disable the install stage, build only.")
     parser.add_argument('--globalisel', dest='globalisel',
                         action='store_true', help="Turn on the experimental"
                                                   " GlobalISel CMake flag.")
