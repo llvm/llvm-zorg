@@ -207,4 +207,14 @@ def get_status_targets(standard_builders, standard_categories=None):
             builders = ["clang-cuda-build"],
             addLogs=False,
             num_lines = 15),
+        InformativeMailNotifier(
+            fromaddr = "llvm.buildmaster@lab.llvm.org",
+            sendToInterestedUsers= False,
+            extraRecipients = ["n54@gmx.com"],
+            subject="Build %(builder)s Failure",
+            mode = "failing",
+            builders = ["lldb-amd64-ninja-netbsd7",
+                        "lldb-amd64-ninja-netbsd8"],
+            addLogs=False,
+            num_lines = 15),
         ]
