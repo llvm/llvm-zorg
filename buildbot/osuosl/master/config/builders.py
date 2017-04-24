@@ -726,7 +726,7 @@ def _get_lldb_builders():
                     runTest=False)},
         {'name': "lldb-amd64-ninja-netbsd8",
          'slavenames': ["lldb-amd64-ninja-netbsd8"],
-         'builddir': "build",
+         'builddir': "netbsd8",
          'category' : 'lldb',
          'factory': LLDBBuilder.getLLDBScriptCommandsFactory(
                     downloadBinary=False,
