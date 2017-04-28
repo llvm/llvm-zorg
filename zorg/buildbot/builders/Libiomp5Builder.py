@@ -50,13 +50,15 @@ def getLibompCMakeBuildFactory(clean=True, env=None, ompt=False, test=True, c_co
                       workdir='%s/tools/clang' % llvm_srcdir))
 
     # Clean directory, if requested.
-    if clean:
-        f.addStep(ShellCommand(name="clean",
-                               command=["rm", "-rf",openmp_builddir,llvm_builddir],
-                               warnOnFailure=True,
-                               description=["clean"],
-                               workdir='.',
-                               env=merged_env))
+    cleanBuildRequested = lambda step: clean or step.build.getProperty("clean")
+
+    f.addStep(ShellCommand(name="clean",
+                           command=["rm", "-rf",openmp_builddir,llvm_builddir],
+                           warnOnFailure=True,
+                           description=["clean"],
+                           doStepIf=cleanBuildRequested,
+                           workdir='.',
+                           env=merged_env))
 
     # CMake llvm
     f.addStep(ShellCommand(name='cmake llvm',
