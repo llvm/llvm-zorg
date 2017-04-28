@@ -194,6 +194,9 @@ def get_build_slaves():
         create_slave("cuda-build-test-01", properties={'jobs': 72}, max_builds=1),
 
         # Ubuntu 14.04 x86_64
+        create_slave("am1i-slv1"),
+
+        # Ubuntu 14.04 x86_64
         create_slave("am1i-slv3"),
 
         # Defunct.
