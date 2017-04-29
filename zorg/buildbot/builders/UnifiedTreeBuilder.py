@@ -100,6 +100,7 @@ def addCmakeSteps(
         ('-DLLVM_BUILD_TESTS=',        'ON'),
         ('-DLLVM_ENABLE_ASSERTIONS=',  'ON'),
         ('-DLLVM_OPTIMIZED_TABLEGEN=', 'ON'),
+        ('-DLLVM_LIT_ARGS=',           '"-v"'),
         ])
 
     # Create configuration files with cmake, unless this has been already done
@@ -186,14 +187,15 @@ def getCmakeBuildFactory(
         # Overwrite pre-set items with the given ones, so user can set anything.
         merged_env.update(env)
 
-    cleanBuildRequested = lambda step: step.build.getProperty("clean") or clean
+    cleanBuildRequested = lambda step: clean or step.build.getProperty("clean")
 
     f = getLLVMBuildFactoryAndSVNSteps(
             depends_on_projects=depends_on_projects,
             llvm_srcdir=llvm_srcdir,
             obj_dir=obj_dir,
             install_dir=install_dir,
-            cleanBuildRequested=cleanBuildRequested,
+            # We want a clean checkout only if requested by the property.
+            cleanBuildRequested=step.build.getProperty("clean"),
             **kwargs) # Pass through all the extra arguments.
 
     addCmakeSteps(
