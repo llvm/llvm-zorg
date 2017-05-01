@@ -180,6 +180,7 @@ def update_svn_checkouts():
     """
     next_section("SVN upgrade")
     working_dir = conf.srcdir()
+    out = ""
     try:
         out = run_collect_output(["/usr/bin/xcrun", "svn", "upgrade"],
                                  working_dir=working_dir)
