@@ -11,6 +11,7 @@ import shutil
 import math
 import re
 import xml.etree.ElementTree as ET
+from contextlib import contextmanager
 from urllib2 import urlopen, URLError, HTTPError
 
 SERVER = "labmaster2.local"
@@ -71,6 +72,7 @@ class Configuration(object):
         self.nobootstrap = True
         self.device = None
         self._svn_url_cache = None
+        self.node_name = os.environ.get('NODE_NAME', None)
 
         # Import all of the command line arguments into the config object
         self.__dict__.update(vars(args))
@@ -169,8 +171,29 @@ class Configuration(object):
 conf = None  # type: Configuration
 
 
+def update_svn_checkouts():
+    """Upgrade the svn version.
+    
+    We always run this upgrade because this
+    helps us avoid bot breakage when we
+    upgrade Xcode.
+    """
+    next_section("SVN upgrade")
+    working_dir = conf.srcdir()
+    try:
+        out = run_collect_output(["/usr/bin/xcrun", "svn", "upgrade"],
+                                 working_dir=working_dir)
+    except subprocess.CalledProcessError as e:
+        msg = """Process return code: {}\n
+              The working path was: {}\n
+              The error was: {}.\n"""
+        msg = msg.format(e.returncode, working_dir, out)
+        print msg
+
+
 def cmake_builder(target):
     check_repo_state(conf.workspace)
+    update_svn_checkouts()
 
     env = []
     dyld_path = ""
@@ -284,8 +307,9 @@ def cmake_builder(target):
 def clang_builder(target):
     """Build to set of commands to compile and test apple-clang"""
     check_repo_state(conf.workspace)
-    # get rid of old archives from prior builds
+    update_svn_checkouts()
 
+    # get rid of old archives from prior builds
     run_ws(['sh', '-c', 'rm -rfv *gz'])
 
     if target == "all" or target == "build":
@@ -328,7 +352,7 @@ def clang_builder(target):
                                './Build',
                                './Root'])
             install_prefix = conf.installdir()
-            
+
             # Infer which CMake cache file to use. If ThinLTO we select a specific one.
             cmake_cachefile_thinlto = ''
             if conf.thinlto:
@@ -926,13 +950,29 @@ TEST_VALS = {"sysctl hw.ncpu": "hw.ncpu: 8\n",
              }
 
 
-def run_collect_output(cmd):
-    """Run cmd, and return the output"""
+@contextmanager
+def cwd(path):
+    last_cwd = os.getcwd()
+    if path:
+        os.chdir(path)
+    try:
+        yield
+    finally:
+        os.chdir(last_cwd)
+
+
+def run_collect_output(cmd, working_dir=None, stderr=None):
+    """Run cmd and then return the output.
+    
+    If working_dir is supplied the cmd will run in
+    with a context manager in working_dir.
+    """
     if os.getenv("TESTING"):
         print 'TV: ' + ' '.join(cmd)
         return TEST_VALS[' '.join(cmd)]
 
-    return subprocess.check_output(cmd)
+    with cwd(working_dir):
+        return subprocess.check_output(cmd, stderr=stderr)
 
 
 def query_sys_tool(sdk_name, tool_name):
