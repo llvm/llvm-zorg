@@ -171,7 +171,7 @@ class Configuration(object):
 conf = None  # type: Configuration
 
 
-def update_svn_checkouts():
+def update_svn_checkout(working_dir):
     """Upgrade the svn version.
     
     We always run this upgrade because this
@@ -179,11 +179,10 @@ def update_svn_checkouts():
     upgrade Xcode.
     """
     next_section("SVN upgrade")
-    working_dir = conf.srcdir()
     out = ""
     try:
-        out = run_collect_output(["/usr/bin/xcrun", "svn", "upgrade"],
-                                 working_dir=working_dir)
+        run_collect_output(["/usr/bin/xcrun", "svn", "upgrade"],
+                           working_dir=working_dir)
     except subprocess.CalledProcessError as e:
         msg = """Process return code: {}\n
               The working path was: {}\n
@@ -194,7 +193,6 @@ def update_svn_checkouts():
 
 def cmake_builder(target):
     check_repo_state(conf.workspace)
-    update_svn_checkouts()
 
     env = []
     dyld_path = ""
@@ -308,7 +306,6 @@ def cmake_builder(target):
 def clang_builder(target):
     """Build to set of commands to compile and test apple-clang"""
     check_repo_state(conf.workspace)
-    update_svn_checkouts()
 
     # get rid of old archives from prior builds
     run_ws(['sh', '-c', 'rm -rfv *gz'])
@@ -749,6 +746,7 @@ def derive(tree, repos):
     # Check for src dirs.
     for p in repos:
         full_path = checkout_path(workspace=conf.workspace, repo=p)
+        update_svn_checkout(working_dir=full_path)
         if not os.path.exists(full_path):
             logging.error("Cannot find Repo: in " + full_path)
             sys.exit(1)
@@ -948,6 +946,7 @@ def max_link_jobs():
 TEST_VALS = {"sysctl hw.ncpu": "hw.ncpu: 8\n",
              "sysctl hw.memsize": "hw.memsize: 8589934592\n",
              "xcrun --sdk iphoneos --show-sdk-path": "/Foo/bar",
+             "/usr/bin/xcrun svn upgrade": "",
              }
 
 
