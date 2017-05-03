@@ -19,12 +19,15 @@ def getLLVMBuildFactoryAndSVNSteps(
            env = None,
            **kwargs):
 
+    def cleanBuildRequestedByProperty(step):
+      return step.build.getProperty("clean")
+
     # Set defaults
     if not depends_on_projects:
         depends_on_projects=['llvm', 'clang']
 
     if cleanBuildRequested is None:
-        cleanBuildRequested = lambda step: step.build.getProperty("clean")
+        cleanBuildRequested = cleanBuildRequestedByProperty
 
     f = LLVMBuildFactory(
             depends_on_projects=depends_on_projects,
@@ -34,14 +37,14 @@ def getLLVMBuildFactoryAndSVNSteps(
             cleanBuildRequested=cleanBuildRequested,
             **kwargs) # Pass through all the extra arguments.
 
-    # Do a clean checkout if requested.
+    # Do a clean checkout if requested by a build property.
     # TODO: Some Windows slaves do not handle RemoveDirectory command well.
     # So, consider running "rmdir /S /Q <dir>" if the build runs on Windows.
     f.addStep(RemoveDirectory(name='clean-src-dir',
               dir=f.llvm_srcdir,
               haltOnFailure=False,
               flunkOnFailure=False,
-              doStepIf=cleanBuildRequested,
+              doStepIf=cleanBuildRequestedByProperty,
               ))
 
     # Get the source code.
@@ -195,7 +198,7 @@ def getCmakeBuildFactory(
             obj_dir=obj_dir,
             install_dir=install_dir,
             # We want a clean checkout only if requested by the property.
-            cleanBuildRequested=step.build.getProperty("clean"),
+            cleanBuildRequested=cleanBuildRequested,
             **kwargs) # Pass through all the extra arguments.
 
     addCmakeSteps(
