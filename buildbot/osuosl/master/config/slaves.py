@@ -81,7 +81,7 @@ def get_build_slaves():
 
         # POWER 8 PowerPC little endian (powerpc64le)
         create_slave("ppc64le-clang-test", properties={'jobs': 4}, max_builds=1),
-        create_slave("ppc64le-clang-lnt-test", properties={'jobs': 6}, max_builds=1),
+        create_slave("ppc64le-clang-lnt-test", properties={'jobs': 8}, max_builds=1),
         create_slave("ppc64le-clang-multistage-test", properties={'jobs': 8}, max_builds=1),
         create_slave("ppc64le-sanitizer", properties={'jobs': 4}, max_builds=1),
         

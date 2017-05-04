@@ -352,7 +352,6 @@ def _get_clang_builders():
          'slavenames' :["ppc64be-clang-lnt-test"],
          'builddir' :"clang-ppc64be-lnt",
          'factory' : ClangBuilder.getClangCMakeBuildFactory(clean=False,
-                                                            jobs=16,
                                                             checkout_lld=False,
                                                             useTwoStage=False,
                                                             runTestSuite=True,
@@ -371,6 +370,19 @@ def _get_clang_builders():
                                                             stage2_config='Release',
                                                             extra_cmake_args=['-DLLVM_ENABLE_ASSERTIONS=ON']),
          'category' : 'clang'},
+
+        {'name' : "clang-ppc64le-linux-lnt",
+         'slavenames' :["ppc64le-clang-lnt-test"],
+         'builddir' :"clang-ppc64le-lnt",
+         'factory' : ClangBuilder.getClangCMakeBuildFactory(clean=False,
+                                                            checkout_lld=False,
+                                                            useTwoStage=False,
+                                                            runTestSuite=True,
+                                                            stage1_config='Release',
+                                                            nt_flags=['--threads=16', '--build-threads=16'],
+                                                            extra_cmake_args=["-DLLVM_ENABLE_ASSERTIONS=ON"]),
+         'category' : 'clang'},
+
 
         {'name' : "clang-ppc64le-linux-multistage",
          'slavenames' :["ppc64le-clang-multistage-test"],
