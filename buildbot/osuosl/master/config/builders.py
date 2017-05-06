@@ -1186,6 +1186,15 @@ def _get_libcxx_builders():
             lit_extra_opts={'std': 'c++11'}),
         'category': 'libcxx'},
 
+        {'name': 'libcxx-libcxxabi-x86_64-linux-ubuntu-gcc-tot-cxx1z',
+         'slavenames': ['ericwf-buildslave'],
+         'builddir' : 'libcxx-libcxxabi-x86_64-linux-ubuntu-gcc-tot-cxx1z',
+         'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
+            env={'PATH': '/usr/local/bin:/usr/bin:/bin',
+                 'CC': '/opt/gcc-tot/bin/gcc', 'CXX': '/opt/gcc-tot/bin/g++'},
+            lit_extra_opts={'std': 'c++1z'}),
+        'category': 'libcxx'},
+
         # Cortex-A15 LibC++ and LibC++abi tests (require Clang+RT)
         {'name': 'libcxx-libcxxabi-libunwind-arm-linux',
          'slavenames': ['linaro-tk1-01'],
