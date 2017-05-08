@@ -41,7 +41,7 @@ class LLVMBuildFactory(BuildFactory):
 
         # Default source code directory.
         if kwargs.get('llvm_srcdir', None) is None:
-            self.llvm_srcdir = "llvm.src"
+            self.llvm_srcdir = "llvm"
 
 
     @staticmethod
