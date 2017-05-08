@@ -430,7 +430,9 @@ def _get_clang_builders():
          'mergeRequests' : False,
          'slavenames'    : ["as-bldslv8"],
          'builddir'      : "clang-x86_64-linux-abi-test",
-         'factory'       : ABITestsuitBuilder.getABITestsuitBuildFactory()},
+         'factory'       : ABITestsuitBuilder.getABITestsuitBuildFactory(
+                               # TODO: Enable Werror once all the warnings are cleaned.
+                               extra_configure_args = ["-DLLVM_ENABLE_WERROR=OFF"])},
 
         # Clang cross builders.
 #        {'name' : "clang-x86_64-darwin13-cross-mingw32",
