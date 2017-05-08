@@ -130,6 +130,7 @@ def addCmakeSteps(
 def addNinjaSteps(
            f,
            obj_dir = None,
+           install_dir = None,
            env = None,
            stage_name = None,
            **kwargs):
@@ -163,14 +164,15 @@ def addNinjaSteps(
                            ))
 
     # Install just built components
-    f.addStep(NinjaCommand(name="install-%sall" % step_name,
-                           targets=["install"],
-                           haltOnFailure=True,
-                           description=["Install", "just", "built", "components"],
-                           env=env,
-                           workdir=obj_dir,
-                           **kwargs # Pass through all the extra arguments.
-                           ))
+    if install_dir:
+        f.addStep(NinjaCommand(name="install-%sall" % step_name,
+                               targets=["install"],
+                               haltOnFailure=True,
+                               description=["Install", "just", "built", "components"],
+                               env=env,
+                               workdir=obj_dir,
+                               **kwargs # Pass through all the extra arguments.
+                               ))
 
 def getCmakeBuildFactory(
            depends_on_projects = None,
@@ -247,6 +249,7 @@ def getCmakeWithNinjaBuildFactory(
     addNinjaSteps(
            f,
            obj_dir=obj_dir,
+           install_dir=f.install_dir,
            env=env,
            **kwargs)
 
@@ -311,6 +314,7 @@ def getCmakeWithNinjaWithMSVCBuildFactory(
     addNinjaSteps(
            f,
            obj_dir=obj_dir,
+           install_dir=f.install_dir,
            env=env,
            **kwargs)
 
@@ -410,6 +414,7 @@ def getCmakeWithNinjaMultistageBuildFactory(
     addNinjaSteps(
            f,
            obj_dir=stage_objdirs[0],
+           install_dir=stage_installdirs[0],
            env=env,
            stage_name=stage_names[0],
            **kwargs)
@@ -462,6 +467,7 @@ def getCmakeWithNinjaMultistageBuildFactory(
         addNinjaSteps(
            f,
            obj_dir=stage_objdirs[stage_idx],
+           install_dir=stage_installdirs[stage_idx],
            env=env,
            stage_name=stage_names[stage_idx],
            **kwargs)
