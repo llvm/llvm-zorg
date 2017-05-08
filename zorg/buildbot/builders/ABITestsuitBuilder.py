@@ -48,7 +48,7 @@ def getABITestsuitBuildFactory(
 
 
     f.addStep(NinjaCommand(name="build-unified-tree",
-                           haltOnFailure=False, ##
+                           haltOnFailure=True,
                            description=["Build", "unified", "tree"],
                            env=merged_env,
                            workdir=f.obj_dir,
