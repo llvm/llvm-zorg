@@ -86,6 +86,7 @@ def _get_llvm_builders():
                           # We need to compile the X86 backend due to a few generic CodeGen tests.
                           "-DLLVM_TARGETS_TO_BUILD:STRING=AVR;X86",
                           "-DLLVM_EXPERIMENTAL_TARGETS_TO_BUILD:STRING=AVR",
+                          "-DBUILD_SHARED_LIBS=ON",
                         ])}
         ]
 
