@@ -148,7 +148,7 @@ def _get_clang_fast_builders():
                      triple="x86_64-scei-ps4",
                      isMSVC=True,
                      prefixCommand=None, # This is a designated builder, so no need to be nice.
-                     extraLitArgs=["--use-processes", "-j80"])},
+                     extraLitArgs=["-j80"])},
 
         {'name': "llvm-clang-x86_64-expensive-checks-win",
          'slavenames':["ps4-buildslave2"],
