@@ -73,6 +73,7 @@ buildbot_update
 build_stage2_msan
 
 check_stage2_msan
+exit
 
 # Stage 2 / AddressSanitizer
 
