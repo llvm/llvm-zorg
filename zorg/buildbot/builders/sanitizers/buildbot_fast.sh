@@ -58,6 +58,10 @@ else
   rm -rf ${STAGE2_ASAN_DIR}
   rm -rf ${STAGE2_UBSAN_DIR}
 
+  # Usually it happens rarely and revisions are very different, so incremental
+  # build does not make sense here as well.
+  rm -rf ${STAGE1_DIR}
+
   build_stage1_clang
 
   echo $HOST_CLANG_REVISION > host_clang_revision
