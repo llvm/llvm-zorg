@@ -58,8 +58,6 @@ build_stage2_msan
 
 check_stage2_msan
 
-exit
-
 # Stage 3 / MemorySanitizer
 
 echo @@@BUILD_STEP build stage3/msan clang@@@
