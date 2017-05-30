@@ -37,6 +37,7 @@ def get_status_targets(standard_builders, standard_categories=None):
         # All the standard builders send e-mail and IRC notifications.
         buildbot.status.mail.MailNotifier(
             fromaddr = "llvm.buildmaster@lab.llvm.org",
+            extraRecipients = [default_email],
             lookup = ConfigEmailLookup(os.path.join(os.path.dirname(__file__),
                                                     "llvmauthors.cfg"),
                                        default_email),
