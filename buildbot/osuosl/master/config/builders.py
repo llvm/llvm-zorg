@@ -17,6 +17,7 @@ from zorg.buildbot.builders import ClangLTOBuilder
 from zorg.buildbot.builders import UnifiedTreeBuilder
 from zorg.buildbot.builders import CUDATestsuiteBuilder
 from zorg.buildbot.builders import AOSPBuilder
+from zorg.buildbot.builders import AnnotatedBuilder
 
 # Plain LLVM builders.
 def _get_llvm_builders():
