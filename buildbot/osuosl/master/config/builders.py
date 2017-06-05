@@ -965,24 +965,6 @@ def _get_sanitizer_builders():
                                         "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'"],
                )},
 
-        # AArch64 Clang+LLVM+RT check-all at 39-bits VMA
-        {'name': "clang-cmake-aarch64-39vma",
-         'slavenames':["linaro-apm-06"],
-         'builddir':"clang-cmake-aarch64-39vma",
-         'factory' : ClangBuilder.getClangCMakeBuildFactory(
-                      jobs=8,
-                      clean=False,
-                      checkout_compiler_rt=True,
-                      checkout_lld=False,
-                      test=True,
-                      useTwoStage=False,
-                      runTestSuite=False,
-                      env={'PATH':'/usr/lib64/ccache:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'},
-                      extra_cmake_args=["-DCMAKE_C_FLAGS='-mcpu=cortex-a57 -DSANITIZER_AARCH64_VMA=39'",
-                                        "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a57 -DSANITIZER_AARCH64_VMA=39'",
-                                        "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'"],
-               )},
-
           # Juno
           {'name' : "clang-native-aarch64-full",
            'slavenames' :["juno-aarch64-01"],
