@@ -38,6 +38,7 @@ class LLVMPoller(base.PollingChangeSource, util.ComparableMixin):
                  projects=None, cachepath=None):
 
         self.cleanRe = re.compile(r"Require(?:s?)\s*.*\s*clean build", re.IGNORECASE + re.MULTILINE)
+        self.cleanCfg = re.compile(r"(CMakeLists\.txt$|\.cmake$|\.cmake\.in$)")
 
         # projects is a list of projects to watch or None to watch all.
         if projects:
@@ -302,8 +303,9 @@ class LLVMPoller(base.PollingChangeSource, util.ComparableMixin):
                     log.msg("LLVMPoller(%s): Ignoring deletion of branch '%s'" % (self.svnurl, branch))
                 else:
                     properties = dict()
-                    if self.cleanRe.search(comments):
-                        log.msg(">>>>> Create a change with the 'clean' property for r%s" % revision)
+                    if self.cleanRe.search(comments) or \
+                       any([m for f in files for m in [self.cleanCfg.search(f)] if m]):
+                        log.msg("Creating a change with the 'clean' property for r%s" % revision)
                         properties['clean'] = (True, "change")
                     chdict = dict(author=author,
                                   files=files,
