@@ -1064,6 +1064,7 @@ def _get_openmp_builders():
         ]
 
 def _get_libcxx_builders():
+    ericwf_slaves = ['ericwf-buildslave2', 'ericwf-buildslave-fast']
     return [
         # gribozavr's builders on gribozavr4 
         {'name': 'libcxx-libcxxabi-x86_64-linux-debian',
@@ -1146,7 +1147,7 @@ def _get_libcxx_builders():
         'category': 'libcxx'},
 
         {'name': 'libcxx-libcxxabi-x86_64-linux-ubuntu-asan',
-         'slavenames': ['ericwf-buildslave2'],
+         'slavenames': ericwf_slaves,
          'builddir' : 'libcxx-libcxxabi-x86_64-linux-ubuntu-asan',
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
             env={'PATH': '/usr/local/bin:/usr/bin:/bin',
@@ -1156,7 +1157,7 @@ def _get_libcxx_builders():
         'category': 'libcxx'},
 
         {'name': 'libcxx-libcxxabi-x86_64-linux-ubuntu-ubsan',
-         'slavenames': ['ericwf-buildslave2'],
+         'slavenames': ericwf_slaves,
          'builddir' : 'libcxx-libcxxabi-x86_64-linux-ubuntu-ubsan',
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
             env={'PATH': '/usr/local/bin:/usr/bin:/bin',
@@ -1168,7 +1169,7 @@ def _get_libcxx_builders():
 
         # EricWF's builders on ericwf-buildslave2
         {'name': 'libcxx-libcxxabi-x86_64-linux-ubuntu-msan',
-         'slavenames': ['ericwf-buildslave2'],
+         'slavenames': ericwf_slaves,
          'builddir' : 'libcxx-libcxxabi-x86_64-linux-ubuntu-msan',
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
             env={'PATH': '/usr/local/bin:/usr/bin:/bin',
@@ -1178,7 +1179,7 @@ def _get_libcxx_builders():
         'category': 'libcxx'},
 
         {'name': 'libcxx-libcxxabi-libunwind-x86_64-linux-ubuntu',
-         'slavenames': ['ericwf-buildslave2'],
+         'slavenames': ericwf_slaves,
          'builddir' : 'libcxx-libcxxabi-libunwind-x86_64-linux-ubuntu',
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
             env={'PATH': '/usr/local/bin:/usr/bin:/bin',
@@ -1187,7 +1188,7 @@ def _get_libcxx_builders():
         'category': 'libcxx'},
 
         {'name': 'libcxx-libcxxabi-x86_64-linux-ubuntu-tsan',
-         'slavenames': ['ericwf-buildslave2'],
+         'slavenames': ericwf_slaves,
          'builddir' : 'libcxx-libcxxabi-x86_64-linux-ubuntu-tsan',
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
             env={'PATH': '/usr/local/bin:/usr/bin:/bin',
@@ -1197,7 +1198,7 @@ def _get_libcxx_builders():
         'category': 'libcxx'},
 
         {'name': 'libcxx-libcxxabi-x86_64-linux-ubuntu-gcc49-cxx11',
-         'slavenames': ['ericwf-buildslave2'],
+         'slavenames': ericwf_slaves,
          'builddir' : 'libcxx-libcxxabi-x86_64-linux-ubuntu-gcc49-cxx11',
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
             env={'PATH': '/usr/local/bin:/usr/bin:/bin',

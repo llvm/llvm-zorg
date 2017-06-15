@@ -150,6 +150,8 @@ def get_build_slaves():
         create_slave("ericwf-buildslave", properties={'jobs': 4}, max_builds=2),
         # Ubuntu 14.10 x86_64, Intel(R) Xeon(R) CPU E3-1245 V2 @ 3.40GHz
         create_slave('ericwf-buildslave2', properties={'jobs': 4}, max_builds=2),
+        # Ubuntu 16.04 x86_64, Intel(R) Xeon(R) CPU E5649  @ 2.53GHz (24 threads)
+        create_slave('ericwf-buildslave-fast', properties={'jobs': 24}, max_builds=1),
 
         # Windows Server 2008 R2, Quad 2.6GHz Intel Xeon(R) 4GB RAM
         create_slave("zturner-win2008", properties={'jobs': 4}, max_builds=1),
@@ -219,9 +221,6 @@ def get_build_slaves():
 
         # Ubuntu 13.04 x86-64, Intel(R) Xeon(R) CPU 5160 @ 3.00GHz
         #create_slave("gribozavr2", properties={'jobs': 4}, max_builds=1),
-
-        # OS X 10.10 x86_64, Intel Core 2 Duo @ 2.40GHz
-        #create_slave("ericwf-osx-slave", properties={'jobs': 2}, max_builds=1),
 
         # Intel(R) Pentium(R) CPU G620 @ 2.60GHz, Ubuntu i686
         #create_slave("botether", properties={'jobs': 2}, max_builds=1),
