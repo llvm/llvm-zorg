@@ -1,16 +1,17 @@
 import os
 
 import buildbot
-import buildbot.process.factory
 from buildbot.process.properties import WithProperties
 from buildbot.steps.shell import SetProperty, ShellCommand
 from buildbot.steps.source import SVN
 from zorg.buildbot.commands.AnnotatedCommand import AnnotatedCommand
+from zorg.buildbot.process.factory import LLVMBuildFactory
 
 
 def getAnnotatedBuildFactory(
     script,
     clean=False,
+    depends_on_projects=None,
     env=None,
     timeout=1200):
     """
@@ -19,7 +20,9 @@ def getAnnotatedBuildFactory(
     not require a buildmaster restart to update.
     """
 
-    f = buildbot.process.factory.BuildFactory()
+    f = LLVMBuildFactory(
+        depends_on_projects=depends_on_projects,
+        llvm_srcdir='llvm.src')
 
     if clean:
       f.addStep(SetProperty(property='clean', command='echo 1'))

@@ -826,7 +826,8 @@ def _get_lld_builders():
          'slavenames' :["windows-lld-thinlto-1"],
          'builddir': "clang-with-thin-lto-windows",
          'factory': AnnotatedBuilder.getAnnotatedBuildFactory(
-             script="clang-with-thin-lto-windows.py"),
+             script="clang-with-thin-lto-windows.py",
+             depends_on_projects=['llvm', 'clang', 'lld']),
          'category'   : 'lld'},
 
         {'name' : "clang-lld-x86_64-2stage",
