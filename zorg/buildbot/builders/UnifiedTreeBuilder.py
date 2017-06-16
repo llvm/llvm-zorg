@@ -118,7 +118,6 @@ def addCmakeSteps(
 
     f.addStep(CmakeCommand(name=step_name,
                            description=["Cmake", "configure", stage_name],
-                           haltOnFailure=True,
                            options=cmake_args,
                            path=src_dir,
                            env=env,
@@ -146,7 +145,6 @@ def addNinjaSteps(
         obj_dir = f.obj_dir
 
     f.addStep(NinjaCommand(name="build-%sunified-tree" % step_name,
-                           haltOnFailure=True,
                            description=["Build", stage_name, "unified", "tree"],
                            env=env,
                            workdir=obj_dir,
@@ -156,7 +154,6 @@ def addNinjaSteps(
     # Test just built components
     f.addStep(NinjaCommand(name="test-%scheck-all" % step_name,
                            targets=["check-all"],
-                           haltOnFailure=True,
                            description=["Test", "just", "built", "components"],
                            env=env,
                            workdir=obj_dir,
@@ -167,7 +164,6 @@ def addNinjaSteps(
     if install_dir:
         f.addStep(NinjaCommand(name="install-%sall" % step_name,
                                targets=["install"],
-                               haltOnFailure=True,
                                description=["Install", "just", "built", "components"],
                                env=env,
                                workdir=obj_dir,
