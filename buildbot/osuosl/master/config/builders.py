@@ -590,6 +590,26 @@ def _get_clang_builders():
                        checkout_lld=False,
                        clean=False)},
 
+        {'name': "ubuntu-gcc7.1-werror",
+         'slavenames':["am1i-slv2"],
+         'builddir':"ubuntu-gcc7.1-werror",
+         'factory': UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
+            depends_on_projects = ['llvm', 'clang'],
+            clean = False,
+            checks = [],
+            extra_configure_args = [
+               "-DLLVM_ENABLE_WERROR=ON",
+               "-DCMAKE_C_COMPILER=gcc-7.1",
+               "-DCMAKE_CXX_COMPILER=g++-7.1",
+               # Webuild with c++11, no need in c++17 warnings.
+               "-DCMAKE_CXX_FLAGS=-Wno-noexcept-type",
+               "-DBUILD_SHARED_LIBS=ON",
+               "-DLLVM_BUILD_TESTS=ON",
+               "-DLLVM_BUILD_EXAMPLES=OFF",
+               "-DCLANG_BUILD_EXAMPLES=OFF",
+               "-DLLVM_TARGETS_TO_BUILD=X86",
+            ])},
+
 #        {'name' : "clang-3stage-ubuntu",
 #         'slavenames' : ["ps4-buildslave1a"],
 #         'builddir' : "clang-3stage-ubuntu",
