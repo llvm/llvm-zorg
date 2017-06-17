@@ -129,6 +129,7 @@ def addCmakeSteps(
 def addNinjaSteps(
            f,
            obj_dir = None,
+           checks = None,
            install_dir = None,
            env = None,
            stage_name = None,
@@ -151,14 +152,15 @@ def addNinjaSteps(
                            **kwargs # Pass through all the extra arguments.
                            ))
 
-    # Test just built components
-    f.addStep(NinjaCommand(name="test-%scheck-all" % step_name,
-                           targets=["check-all"],
-                           description=["Test", "just", "built", "components"],
-                           env=env,
-                           workdir=obj_dir,
-                           **kwargs # Pass through all the extra arguments.
-                           ))
+    # Test just built components if requested.
+    if checks:
+      f.addStep(NinjaCommand(name="test-%scheck-all" % step_name,
+                             targets=checks,
+                             description=["Test", "just", "built", "components"],
+                             env=env,
+                             workdir=obj_dir,
+                             **kwargs # Pass through all the extra arguments.
+                             ))
 
     # Install just built components
     if install_dir:
@@ -215,6 +217,7 @@ def getCmakeWithNinjaBuildFactory(
            depends_on_projects = None,
            llvm_srcdir = None,
            obj_dir = None,
+           checks = None,
            install_dir = None,
            clean = False,
            extra_configure_args = None,
@@ -226,6 +229,9 @@ def getCmakeWithNinjaBuildFactory(
         cmake_args = extra_configure_args[:]
     else:
         cmake_args = list()
+
+    if checks is None:
+        checks = ['check-all']
 
     # Some options are required for this build no matter what.
     CmakeCommand.applyRequiredOptions(cmake_args, [
@@ -245,6 +251,7 @@ def getCmakeWithNinjaBuildFactory(
     addNinjaSteps(
            f,
            obj_dir=obj_dir,
+           checks=checks,
            install_dir=f.install_dir,
            env=env,
            **kwargs)
@@ -255,6 +262,7 @@ def getCmakeWithNinjaWithMSVCBuildFactory(
            depends_on_projects = None,
            llvm_srcdir = None,
            obj_dir = None,
+           checks = None,
            install_dir = None,
            clean = False,
            extra_configure_args = None,
@@ -272,6 +280,9 @@ def getCmakeWithNinjaWithMSVCBuildFactory(
         cmake_args = extra_configure_args[:]
     else:
         cmake_args = list()
+
+    if checks is None:
+        checks = ['check-all']
 
     # Set up VS environment, if appropriate.
     if not vs:
@@ -310,6 +321,7 @@ def getCmakeWithNinjaWithMSVCBuildFactory(
     addNinjaSteps(
            f,
            obj_dir=obj_dir,
+           checks=checks,
            install_dir=f.install_dir,
            env=env,
            **kwargs)
@@ -320,6 +332,7 @@ def getCmakeWithNinjaMultistageBuildFactory(
            depends_on_projects = None,
            llvm_srcdir = None,
            obj_dir = None,
+           checks = None,
            install_dir = None,
            clean = False,
            extra_configure_args = None,
@@ -354,6 +367,9 @@ def getCmakeWithNinjaMultistageBuildFactory(
         obj_dir = "build"
     if install_dir is None:
         install_dir = "install"
+
+    if checks is None:
+        checks = ['check-all']
 
     stage_objdirs = list()
     stage_installdirs = list()
@@ -410,6 +426,7 @@ def getCmakeWithNinjaMultistageBuildFactory(
     addNinjaSteps(
            f,
            obj_dir=stage_objdirs[0],
+           checks=checks,
            install_dir=stage_installdirs[0],
            env=env,
            stage_name=stage_names[0],
@@ -463,6 +480,7 @@ def getCmakeWithNinjaMultistageBuildFactory(
         addNinjaSteps(
            f,
            obj_dir=stage_objdirs[stage_idx],
+           checks=checks,
            install_dir=stage_installdirs[stage_idx],
            env=env,
            stage_name=stage_names[stage_idx],
