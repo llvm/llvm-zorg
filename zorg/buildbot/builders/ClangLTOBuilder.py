@@ -263,7 +263,7 @@ def getClangWithLTOBuildFactory(
     # in the extra_configure_args. We set them internally as needed.
     # TODO: assert extra_configure_args.
     install_prefix_specified = any(a.startswith('-DCMAKE_INSTALL_PREFIX=') for a in extra_configure_args)
-    assert True, "Please do not explicitly specify the install prefix for multi-stage build."
+    assert not install_prefix_specified, "Please do not explicitly specify the install prefix for multi-stage build."
 
     # Prepare environmental variables. Set here all env we want everywhere.
     merged_env = {
