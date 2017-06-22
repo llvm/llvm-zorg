@@ -116,6 +116,31 @@ function build_stage1_clang {
     ninja clang compiler-rt llvm-symbolizer)
 }
 
+function build_stage1_clang_at_revison {
+  local HOST_CLANG_REVISION=$1
+  if  [ -r ${STAGE1_DIR}/host_clang_revision ] && \
+      [ "$(cat ${STAGE1_DIR}/host_clang_revision)" == $HOST_CLANG_REVISION ]
+  then
+    echo @@@BUILD_STEP using pre-built stage1 clang at r$HOST_CLANG_REVISION@@@
+  else
+    echo @@@BUILD_STEP sync to r$HOST_CLANG_REVISION@@@
+    real_buildbot_revision=$BUILDBOT_REVISION
+    BUILDBOT_REVISION=$HOST_CLANG_REVISION
+    buildbot_update
+
+    echo @@@BUILD_STEP Clear ${STAGE1_DIR} ${STAGE1_CLOBBER}
+    rm -rf ${STAGE1_DIR} ${STAGE1_CLOBBER}
+
+    echo @@@BUILD_STEP build stage1 clang at r$HOST_CLANG_REVISION@@@
+
+    build_stage1_clang
+
+    echo $HOST_CLANG_REVISION > ${STAGE1_DIR}/host_clang_revision
+
+    BUILDBOT_REVISION=$real_buildbot_revision
+  fi
+}
+
 function common_stage2_variables {
   local stage1_clang_path=$ROOT/${STAGE1_DIR}/bin
   cmake_stage2_common_options="\
