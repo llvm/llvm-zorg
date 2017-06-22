@@ -11,7 +11,7 @@ ROOT=`pwd`
 PLATFORM=`uname`
 export PATH="/usr/local/bin:$PATH"
 
-LLVM_CHECKOUT=$ROOT/llvm
+LLVM=$ROOT/llvm
 CLANG_BUILD=$ROOT/clang_build
 SPEC_DIRNAME=SPEC_CPU2006v1.2
 SPEC_SRC="${ROOT}/${SPEC_DIRNAME}"
@@ -45,7 +45,7 @@ if [ ! -d $CLANG_BUILD ]; then
 fi
 cd $CLANG_BUILD
 export PATH="$PATH:$ROOT/../../../ninja"
-cmake -DCMAKE_BUILD_TYPE=Release ${CMAKE_COMMON_OPTIONS} $LLVM_CHECKOUT
+cmake -DCMAKE_BUILD_TYPE=Release ${CMAKE_COMMON_OPTIONS} $LLVM
 ninja clang || echo @@@STEP_FAILURE@@@
 # TODO(glider): build other targets depending on the platform.
 # See https://code.google.com/p/address-sanitizer/wiki/HowToBuild.

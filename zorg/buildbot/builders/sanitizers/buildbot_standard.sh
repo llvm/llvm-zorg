@@ -28,7 +28,7 @@ MAKE_JOBS=${MAX_MAKE_JOBS:-8}
 CHECK_LIBCXX=${CHECK_LIBCXX:-1}
 CHECK_LLD=${CHECK_LLD:-1}
 
-LLVM_CHECKOUT=${ROOT}/llvm
+LLVM=${ROOT}/llvm
 CMAKE_COMMON_OPTIONS="-DLLVM_ENABLE_ASSERTIONS=ON -DLLVM_BUILD_EXTERNAL_COMPILER_RT=ON"
 
 function build_tsan {
@@ -40,7 +40,7 @@ function build_tsan {
   fi
   (cd $build_dir && CC="$3" CXX="$4" cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo \
     ${CMAKE_COMMON_OPTIONS} ${extra_cmake_args} \
-    ${LLVM_CHECKOUT})
+    ${LLVM})
   (cd $build_dir && make -j$MAKE_JOBS ${targets}) || echo @@@STEP_FAILURE@@@
   (cd $build_dir && make compiler-rt-clear) || echo @@@STEP_FAILURE@@@
   (cd $build_dir && make -j$MAKE_JOBS tsan) || echo @@@STEP_FAILURE@@@
@@ -64,4 +64,4 @@ build_tsan "${TSAN_RELEASE_BUILD_DIR}" "-DCOMPILER_RT_DEBUG=OFF" "$ROOT/$TSAN_DE
 echo @@@BUILD_STEP tsan analyze@@@
 BIN=$(mktemp -t tsan_exe.XXXXXXXX)
 echo "int main() {return 0;}" | $TSAN_RELEASE_BUILD_DIR/bin/clang -x c++ - -fsanitize=thread -O2 -o ${BIN}
-$LLVM_CHECKOUT/projects/compiler-rt/lib/tsan/check_analyze.sh ${BIN} || echo @@@STEP_FAILURE@@@
+$LLVM/projects/compiler-rt/lib/tsan/check_analyze.sh ${BIN} || echo @@@STEP_FAILURE@@@

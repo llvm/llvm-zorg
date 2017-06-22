@@ -67,11 +67,11 @@ function fetch_depot_tools {
 }
 
 function check_out_chromium {
-  CHROME_CHECKOUT=$1
+  CHROME=$1
   (
-  if [ ! -d $CHROME_CHECKOUT ]; then
-    mkdir $CHROME_CHECKOUT
-    pushd $CHROME_CHECKOUT
+  if [ ! -d $CHROME ]; then
+    mkdir $CHROME
+    pushd $CHROME
     fetch --nohooks chromium --nosvn=True 
 
     # Sync to LKGR, see http://crbug.com/109191
@@ -81,7 +81,7 @@ function check_out_chromium {
     rm .gclient-tmp
     popd
   fi
-  cd $CHROME_CHECKOUT/src
+  cd $CHROME/src
   git checkout master
   git pull
   gclient sync --nohooks --jobs=16
@@ -89,11 +89,11 @@ function check_out_chromium {
 }
 
 function gclient_runhooks {
-  CHROME_CHECKOUT=$1
+  CHROME=$1
   CLANG_BUILD=$2
   CUSTOM_GYP_DEFINES=$3
   (
-  cd $CHROME_CHECKOUT/src
+  cd $CHROME/src
   
   # Clobber Chromium to catch possible LLVM regressions early.
   rm -rf out/Release
