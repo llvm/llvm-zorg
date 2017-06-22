@@ -1,14 +1,51 @@
 #!/usr/bin/env bash
 
+function download_android_tools {
+  local VERSION=android-ndk-$1
+  local FILE_NAME=${VERSION}-linux-x86_64.zip
+  local NDK_URL=https://dl.google.com/android/repository/${FILE_NAME}
+  local NDK_DIR=android_ndk
+  if  [[ "$(cat ${NDK_DIR}/android_ndk_url)" != ${NDK_URL} ]] ; then
+    echo @@@BUILD_STEP downloading Android NDK@@@
+    [[ -d ${NDK_DIR} ]] && rm -rf ${NDK_DIR}
+    [[ -d ${VERSION} ]] && rm -rf ${VERSION}
+    [[ -f ${FILE_NAME} ]] && rm -f ${FILE_NAME}
+    wget ${NDK_URL}
+    unzip ${FILE_NAME} > /dev/null
+    mv ${VERSION} ${NDK_DIR}
+    echo ${NDK_URL} > ${NDK_DIR}/android_ndk_url
+  fi
+
+  if  [[ ! -d platform-tools ]] ; then
+    echo @@@BUILD_STEP downloading Android Platform Tools@@@
+    local FILE_NAME=platform-tools-latest-linux.zip
+    [[ -f ${FILE_NAME} ]] && rm -f ${FILE_NAME}
+    wget https://dl.google.com/android/repository/${FILE_NAME}
+    unzip ${FILE_NAME} > /dev/null
+  fi
+  export PATH=$ROOT/platform-tools/:$PATH
+}
+
+function build_android_ndk {
+    local NDK_DIR=android_ndk
+    local _arch=$1
+    if [[ ! -d $NDK_DIR/standalone-$_arch ]] ; then 
+      echo @@@BUILD_STEP building Android NDK for $_arch@@@
+      $NDK_DIR/build/tools/make_standalone_toolchain.py --api 24 --force --arch $_arch --install-dir $NDK_DIR/standalone-$_arch
+    fi
+}
+
 function build_llvm_symbolizer { # ARCH triple
     local _arch=$1
     local _triple=$2
+
+    echo @@@BUILD_STEP build llvm-symbolizer android/$_arch@@@
     
     rm -rf llvm_build_android_$_arch
     mkdir llvm_build_android_$_arch
     cd llvm_build_android_$_arch
 
-    local ANDROID_TOOLCHAIN=$ROOT/../../../android-ndk/standalone-$_arch
+    local ANDROID_TOOLCHAIN=$ROOT/android_ndk/standalone-$_arch
     local ANDROID_FLAGS="--target=$_triple --sysroot=$ANDROID_TOOLCHAIN/sysroot -B$ANDROID_TOOLCHAIN"
     cmake -GNinja \
         -DCMAKE_BUILD_TYPE=Release \
@@ -19,7 +56,6 @@ function build_llvm_symbolizer { # ARCH triple
         -DCMAKE_CXX_FLAGS="$ANDROID_FLAGS" \
         -DCMAKE_EXE_LINKER_FLAGS="-pie" \
         -DCMAKE_SKIP_RPATH=ON \
-        -DANDROID=1 \
         -DLLVM_BUILD_RUNTIME=OFF \
         -DLLVM_TABLEGEN=$ROOT/llvm_build64/bin/llvm-tblgen \
         ${CMAKE_COMMON_OPTIONS} \
@@ -33,7 +69,9 @@ function build_compiler_rt { # ARCH triple
     local _arch=$1
     local _triple=$2
 
-    local ANDROID_TOOLCHAIN=$ROOT/../../../android-ndk/standalone-$_arch
+    echo @@@BUILD_STEP build compiler-rt android/$_arch@@@
+
+    local ANDROID_TOOLCHAIN=$ROOT/android_ndk/standalone-$_arch
     local ANDROID_LIBRARY_OUTPUT_DIR=$(ls -d $ROOT/llvm_build64/lib/clang/* | tail -1)
     local ANDROID_EXEC_OUTPUT_DIR=$ROOT/llvm_build64/bin
     local ANDROID_FLAGS="--target=$_triple --sysroot=$ANDROID_TOOLCHAIN/sysroot -B$ANDROID_TOOLCHAIN"
@@ -83,13 +121,14 @@ function test_android { # ARCH ABI STEP_FAILURE
     local _arch=$1
     local _abi=$2
     local _step_failure=$3
-    ANDROID_DEVICES=$(adb devices | grep 'device$' | awk '{print $1}')
+    ADB=adb
+    ANDROID_DEVICES=$(${ADB} devices | grep 'device$' | awk '{print $1}')
     for SERIAL in $ANDROID_DEVICES; do
-      ABILIST=$(adb -s $SERIAL shell getprop ro.product.cpu.abilist)
+      ABILIST=$(${ADB} -s $SERIAL shell getprop ro.product.cpu.abilist)
       patch_abilist $ABILIST ABILIST
       if [[ $ABILIST == *"$_abi"* ]]; then
-        BUILD_ID=$(adb -s $SERIAL shell getprop ro.build.id | tr -d '\r')
-        BUILD_FLAVOR=$(adb -s $SERIAL shell getprop ro.build.flavor | tr -d '\r')
+        BUILD_ID=$(${ADB} -s $SERIAL shell getprop ro.build.id | tr -d '\r')
+        BUILD_FLAVOR=$(${ADB} -s $SERIAL shell getprop ro.build.flavor | tr -d '\r')
         test_android_on_device "$_arch" "$SERIAL" "$BUILD_ID" "$BUILD_FLAVOR" "$_step_failure"
       fi
     done
@@ -104,10 +143,9 @@ function test_android_on_device { # ARCH SERIAL BUILD_ID BUILD_FLAVOR STEP_FAILU
 
     DEVICE_DESCRIPTION=$_arch/$_build_flavor/$_build_id
 
-    ANDROID_SDK=$ROOT/../../../android-sdk-linux/
     SYMBOLIZER_BIN=$ROOT/llvm_build_android_$_arch/bin/llvm-symbolizer
     COMPILER_RT_BUILD_DIR=$ROOT/compiler_rt_build_android_$_arch
-    ADB=$ROOT/../../../bin/adb
+    ADB=adb
     DEVICE_ROOT=/data/local/asan_test
 
     export ANDROID_SERIAL=$_serial
@@ -120,7 +158,8 @@ function test_android_on_device { # ARCH SERIAL BUILD_ID BUILD_FLAVOR STEP_FAILU
     echo "Device is up"
     $ADB devices
 
-    sleep 2
+    ($ADB disable-verity | grep "already disabled") || $ADB reboot
+    $ADB wait-for-device
 
     ADB=$ADB $ROOT/llvm_build64/bin/asan_device_setup
     sleep 2
@@ -134,7 +173,7 @@ function test_android_on_device { # ARCH SERIAL BUILD_ID BUILD_FLAVOR STEP_FAILU
     fi
 
     # Kill leftover symbolizers. TODO: figure out what's going on.
-    $ADB shell ps | grep llvm-symbolizer | awk '{print $2}' | xargs $ADB shell kill
+    $ADB shell pkill llvm-symbolizer || true
 
     $ADB push $SYMBOLIZER_BIN /system/bin/
     $ADB shell rm -rf $DEVICE_ROOT

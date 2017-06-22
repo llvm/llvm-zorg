@@ -40,11 +40,6 @@ if [ -e /usr/include/plugin-api.h ]; then
   CMAKE_COMMON_OPTIONS="${CMAKE_COMMON_OPTIONS} -DLLVM_BINUTILS_INCDIR=/usr/include"
 fi
 
-BUILD_ANDROID=${BUILD_ANDROID:-0}
-RUN_ANDROID=${RUN_ANDROID:-0}
-if [ $BUILD_ANDROID == 1 -o $RUN_ANDROID == 1 ] ; then
-  . ${HERE}/buildbot_android_functions.sh
-fi
 CHECK_LIBCXX=${CHECK_LIBCXX:-1}
 CHECK_SYMBOLIZER=${CHECK_SYMBOLIZER:-$CHECK_LIBCXX}
 CHECK_LLD=${CHECK_LLD:-1}
@@ -305,27 +300,3 @@ if [ "$PLATFORM" == "Linux" -a $HAVE_NINJA == 1 ]; then
     check_ninja_with_symbolizer $CHECK_UBSAN ubsan
   fi
 fi
-
-if [ $BUILD_ANDROID == 1 ] ; then
-    build_android() {
-      CPU=$1
-      TRIPLE=$2
-      echo @@@BUILD_STEP build compiler-rt android/$CPU@@@
-      build_compiler_rt $CPU $TRIPLE
-
-      echo @@@BUILD_STEP build llvm-symbolizer android/$CPU@@@
-      build_llvm_symbolizer $CPU $TRIPLE
-    }
-    # Testing armv7 instead of plain arm to work around
-    # https://code.google.com/p/android/issues/detail?id=68779
-    build_android arm armv7-linux-androideabi
-    build_android x86 i686-linux-android
-    build_android aarch64 aarch64-linux-android
-fi
-
-if [ $RUN_ANDROID == 1 ] ; then
-    test_android arm armeabi-v7a @@@STEP_FAILURE@@@
-    test_android x86 x86 @@@STEP_FAILURE@@@
-    test_android aarch64 arm64-v8a @@@STEP_FAILURE@@@
-fi
-
