@@ -898,6 +898,11 @@ def _get_sanitizer_builders():
            'builddir': "sanitizer-x86_64-linux-fuzzer",
            'factory': SanitizerBuilder.getSanitizerBuildFactory()},
 
+           {'name': "sanitizer-x86_64-linux-android",
+           'slavenames' :["sanitizer-buildbot6"],
+           'builddir': "sanitizer-x86_64-linux-android",
+           'factory': SanitizerBuilder.getSanitizerBuildFactory()},
+
           {'name': "sanitizer-ppc64be-linux",
            'slavenames' :["ppc64be-sanitizer"],
            'builddir': "sanitizer-ppc64be",

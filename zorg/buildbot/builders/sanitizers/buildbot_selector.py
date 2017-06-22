@@ -21,6 +21,7 @@ BOT_ASSIGNMENT = {
     'sanitizer-x86_64-linux-fast': bash('buildbot_fast.sh'),
     'sanitizer-x86_64-linux-autoconf': bash('buildbot_standard.sh'),
     'sanitizer-x86_64-linux-fuzzer': bash('buildbot_fuzzer.sh'),
+    'sanitizer-x86_64-linux-android': bash('buildbot_android.sh'),
 }
 
 BOT_ADDITIONAL_ENV = {
@@ -31,6 +32,7 @@ BOT_ADDITIONAL_ENV = {
     'sanitizer-x86_64-linux-fast': {},
     'sanitizer-x86_64-linux-autoconf': {},
     'sanitizer-x86_64-linux-fuzzer': {},
+    'sanitizer-x86_64-linux-android': {},
 }
 
 def Main():
