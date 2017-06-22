@@ -32,7 +32,7 @@ fi
 
 # Stage 1
 
-build_stage1_clang_at_revison 303753
+build_stage1_clang_at_revison 305968
 
 echo @@@BUILD_STEP update@@@
 buildbot_update
