@@ -69,6 +69,12 @@ build_android arm armv7-linux-androideabi armeabi-v7a
 build_android x86 i686-linux-android x86
 build_android arm64 aarch64-linux-android arm64-v8a
 
+echo @@@BUILD_STEP restart adb@@@
+export USER=$( id -un )
+export HOME=$( getent passwd "$USER" | cut -d: -f6 )
+ADB_TRACE=all adb kill-server || true
+ADB_TRACE=all adb devices || true
+
 test_android arm armeabi-v7a @@@STEP_FAILURE@@@
 test_android x86 x86 @@@STEP_FAILURE@@@
 test_android arm64 arm64-v8a @@@STEP_FAILURE@@@
