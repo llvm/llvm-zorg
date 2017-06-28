@@ -334,6 +334,24 @@ def _get_clang_builders():
                ),
          'category'   : 'lld'},
 
+        ## AArch64 Clang+LLVM run test-suite with GlobalISel enabled
+        {'name': "clang-cmake-aarch64-global-isel",
+         'slavenames':["linaro-apm-06"],
+         'builddir':"clang-cmake-aarch64-global-isel",
+         'factory' : ClangBuilder.getClangCMakeBuildFactory(
+                      jobs=8,
+                      clean=False,
+                      checkout_compiler_rt=False,
+                      checkout_lld=False,
+                      test=True,
+                      useTwoStage=False,
+                      runTestSuite=True,
+                      nt_flags=['--cflag', '-mcpu=cortex-a57', '--cflag', '-O0', '--mllvm=-global-isel', '--mllvm=-global-isel-abort=0', '--threads=8', '--build-threads=8'],
+                      env={'PATH':'/usr/lib64/ccache:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'},
+                      extra_cmake_args=["-DCMAKE_C_FLAGS='-mcpu=cortex-a57'",
+                                        "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a57'",
+                                        "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'"],
+               )},
 
         {'name': 'clang-x86-windows-msvc2015',
          'slavenames': ['windows-gcebot2'],
