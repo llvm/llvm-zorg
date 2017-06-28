@@ -198,7 +198,7 @@ def _get_clang_builders():
                                         "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a15 -mthumb'",
                                         "-DLLVM_TARGETS_TO_BUILD='ARM'",
                                         "-DLLVM_PARALLEL_LINK_JOBS=2"],
-                      submitURL='http://llvm.org/perf/submitRun',
+                      submitURL='http://lnt.llvm.org/submitRun',
                       testerName='LNT-Thumb2v7-A15-O3')},
 
         # Cortex-A15 LNT test-suite in test-only mode
@@ -534,7 +534,7 @@ def _get_clang_builders():
                                                     nt_flags=['--multisample=10'],
                                                     reportBuildslave=False,
                                                     package_cache="http://parkas1.inria.fr/packages",
-                                                    submitURL=['http://gcc12.fsffrance.org:8808/submitRun','http://llvm.org/perf/submitRun'],
+                                                    submitURL=['http://gcc12.fsffrance.org:8808/submitRun','http://lnt.llvm.org/submitRun'],
                                                     testerName='x86_64-penryn-O3')},
         {'name' : "clang-x86_64-linux-selfhost-modules",
          'slavenames' : ["modules-slave-1"],
@@ -672,7 +672,7 @@ def _get_polly_builders():
                                                     nt_flags=['--multisample=10', '--mllvm=-polly'],
                                                     reportBuildslave=False,
                                                     package_cache="http://parkas1.inria.fr/packages",
-                                                    submitURL=['http://gcc12.fsffrance.org:8808/submitRun','http://llvm.org/perf/submitRun'],
+                                                    submitURL=['http://gcc12.fsffrance.org:8808/submitRun','http://lnt.llvm.org/submitRun'],
                                                     testerName='x86_64-penryn-O3-polly')},
         {'name': "perf-x86_64-penryn-O3-polly-before-vectorizer",
          'slavenames':["pollyperf15"],
@@ -682,7 +682,7 @@ def _get_polly_builders():
                                                     nt_flags=['--multisample=10', '--mllvm=-polly', '--mllvm=-polly-position=before-vectorizer', '--mllvm=-polly-enable-delicm', '--mllvm=-polly-unprofitable-scalar-accs=0' ],
                                                     reportBuildslave=False,
                                                     package_cache="http://parkas1.inria.fr/packages",
-                                                    submitURL=['http://gcc12.fsffrance.org:8808/submitRun','http://llvm.org/perf/submitRun'],
+                                                    submitURL=['http://gcc12.fsffrance.org:8808/submitRun','http://lnt.llvm.org/submitRun'],
                                                     testerName='x86_64-penryn-O3-polly-before-vectorizer')},
 
         {'name': "perf-x86_64-penryn-O3-polly-before-vectorizer-unprofitable",
@@ -693,7 +693,7 @@ def _get_polly_builders():
                                                     reportBuildslave=False,
                                                     package_cache="http://parkas1.inria.fr/packages",
                                                     extra_cmake_args=['-DLLVM_ENABLE_ASSERTIONS=ON'],
-                                                    submitURL=['http://gcc12.fsffrance.org:8808/submitRun','http://llvm.org/perf/submitRun'],
+                                                    submitURL=['http://gcc12.fsffrance.org:8808/submitRun','http://lnt.llvm.org/submitRun'],
                                                     testerName='x86_64-penryn-O3-polly-before-vectorizer-unprofitable')},
 
 
@@ -705,7 +705,7 @@ def _get_polly_builders():
                                                     nt_flags=['--multisample=10', '--mllvm=-polly', '--mllvm=-polly-position=before-vectorizer', '--mllvm=-polly-only-scop-detection'],
                                                     reportBuildslave=False,
                                                     package_cache="http://parkas1.inria.fr/packages",
-                                                    submitURL=['http://gcc12.fsffrance.org:8808/submitRun','http://llvm.org/perf/submitRun'],
+                                                    submitURL=['http://gcc12.fsffrance.org:8808/submitRun','http://lnt.llvm.org/submitRun'],
                                                     testerName='x86_64-penryn-O3-polly-before-vectorizer-detect-only')},
 
         {'name': "polly-arm-linux",
