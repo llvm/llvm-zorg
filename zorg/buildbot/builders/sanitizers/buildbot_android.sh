@@ -29,9 +29,6 @@ if [ "$BUILDBOT_CLOBBER" != "" ]; then
 fi
 
 download_android_tools r15
-ADB_TRACE=all adb kill-server || true
-ADB_TRACE=all adb devices || true
-exit 0
 
 # Stage 1
 
