@@ -851,13 +851,13 @@ def _get_lld_builders():
          'category'   : 'lld'},
 
         {'name' : "clang-with-lto-ubuntu",
-         'slavenames' : ["ps4-buildslave1a"],
+         'slavenames' : ["ps4-buildslave1"],
          'builddir' : "clang-with-lto-ubuntu",
          'factory': ClangLTOBuilder.getClangWithLTOBuildFactory(jobs=32),
          'category'   : 'lld'},
 
         {'name' : "clang-with-thin-lto-ubuntu",
-         'slavenames' : ["ps4-buildslave1a"],
+         'slavenames' : ["ps4-buildslave1"],
          'builddir' : "clang-with-thin-lto-ubuntu",
          'factory': ClangLTOBuilder.getClangWithLTOBuildFactory(jobs=16, lto='thin'),
          'category'   : 'lld'},
