@@ -63,15 +63,10 @@ build_android() {
 # Testing armv7 instead of plain arm to work around
 # https://code.google.com/p/android/issues/detail?id=68779
 build_android arm armv7-linux-androideabi armeabi-v7a
-build_android x86 i686-linux-android x86
-build_android arm64 aarch64-linux-android arm64-v8a
-
-echo @@@BUILD_STEP restart adb@@@
-export USER=$( id -un )
-export HOME=$( getent passwd "$USER" | cut -d: -f6 )
-ADB_TRACE=all adb kill-server || true
-ADB_TRACE=all adb devices || true
-
 test_android arm armeabi-v7a @@@STEP_FAILURE@@@
-test_android x86 x86 @@@STEP_FAILURE@@@
+
+build_android arm64 aarch64-linux-android arm64-v8a
 test_android arm64 arm64-v8a @@@STEP_FAILURE@@@
+
+build_android x86 i686-linux-android x86
+test_android x86 x86 @@@STEP_FAILURE@@@

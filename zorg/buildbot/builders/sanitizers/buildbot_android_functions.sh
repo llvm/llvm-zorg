@@ -122,6 +122,7 @@ function test_android { # ARCH ABI STEP_FAILURE
   local _abi=$2
   local _step_failure=$3
   ADB=adb
+  $ADB kill-server
   ANDROID_DEVICES=$(${ADB} devices | grep 'device$' | awk '{print $1}')
   for SERIAL in $ANDROID_DEVICES; do
     ABILIST=$(${ADB} -s $SERIAL shell getprop ro.product.cpu.abilist)
@@ -144,25 +145,17 @@ function test_android_on_device { # ARCH SERIAL BUILD_ID BUILD_FLAVOR STEP_FAILU
   DEVICE_DESCRIPTION=$_arch/$_build_flavor/$_build_id
 
   SYMBOLIZER_BIN=$ROOT/llvm_build_android_$_arch/bin/llvm-symbolizer
+  ASAN_RT=$(find $ROOT/llvm_build64/lib/ -name libclang_rt.asan-$_arch-android.so)
   COMPILER_RT_BUILD_DIR=$ROOT/compiler_rt_build_android_$_arch
   ADB=adb
-  DEVICE_ROOT=/data/local/asan_test
+  DEVICE_ROOT=/data/local/tmp/Output
 
   export ANDROID_SERIAL=$_serial
   echo "Serial $_serial"
 
   echo @@@BUILD_STEP device setup [$DEVICE_DESCRIPTION]@@@
-
   $ADB wait-for-device
-
-  echo "Device is up"
   $ADB devices
-
-  ($ADB disable-verity | grep "already disabled") || $ADB reboot
-  $ADB wait-for-device
-
-  ADB=$ADB $ROOT/llvm_build64/bin/asan_device_setup
-  sleep 2
 
   # Nexus Player does not have enough RAM to run ASan tests reliably.
   # Luckily, none of our tests need the application runtime, and killing
@@ -175,33 +168,28 @@ function test_android_on_device { # ARCH SERIAL BUILD_ID BUILD_FLAVOR STEP_FAILU
   # Kill leftover symbolizers. TODO: figure out what's going on.
   $ADB shell pkill llvm-symbolizer || true
 
-  $ADB push $SYMBOLIZER_BIN /system/bin/
   $ADB shell rm -rf $DEVICE_ROOT
   $ADB shell mkdir $DEVICE_ROOT
+  $ADB push $SYMBOLIZER_BIN $DEVICE_ROOT/
+  $ADB push $ASAN_RT $DEVICE_ROOT/
+  $ADB push $COMPILER_RT_BUILD_DIR/lib/sanitizer_common/tests/SanitizerTest $DEVICE_ROOT/
+  $ADB push $COMPILER_RT_BUILD_DIR/lib/asan/tests/AsanTest $DEVICE_ROOT/
+  $ADB push $COMPILER_RT_BUILD_DIR/lib/asan/tests/AsanNoinstTest $DEVICE_ROOT/
 
   echo @@@BUILD_STEP run asan lit tests [$DEVICE_DESCRIPTION]@@@
-
   (cd $COMPILER_RT_BUILD_DIR && ninja check-asan) || echo $_step_failure
 
   echo @@@BUILD_STEP run sanitizer_common tests [$DEVICE_DESCRIPTION]@@@
-
-  $ADB push $COMPILER_RT_BUILD_DIR/lib/sanitizer_common/tests/SanitizerTest $DEVICE_ROOT/
-
   $ADB shell "$DEVICE_ROOT/SanitizerTest; \
     echo \$? >$DEVICE_ROOT/error_code"
   $ADB pull $DEVICE_ROOT/error_code error_code && (exit `cat error_code`) || echo $_step_failure
 
   echo @@@BUILD_STEP run asan tests [$DEVICE_DESCRIPTION]@@@
-
-  $ADB push $COMPILER_RT_BUILD_DIR/lib/asan/tests/AsanTest $DEVICE_ROOT/
-  $ADB push $COMPILER_RT_BUILD_DIR/lib/asan/tests/AsanNoinstTest $DEVICE_ROOT/
-
   if [[ $_arch == aarch64 || $_arch == x86_64 ]]; then
     ASANWRAPPER=
   else
     ASANWRAPPER=asanwrapper
   fi
-
   NUM_SHARDS=7
   for ((SHARD=0; SHARD < $NUM_SHARDS; SHARD++)); do
     $ADB shell "ASAN_OPTIONS=start_deactivated=1 \
@@ -217,8 +205,4 @@ function test_android_on_device { # ARCH SERIAL BUILD_ID BUILD_FLAVOR STEP_FAILU
       echo \$? >$DEVICE_ROOT/error_code"
     $ADB pull $DEVICE_ROOT/error_code error_code && echo && (exit `cat error_code`) || echo $_step_failure
   done
-
-  sleep 2
-
-  $ADB devices
 }
