@@ -124,6 +124,7 @@ function test_android { # ARCH ABI STEP_FAILURE
   ADB=adb
   $ADB kill-server
   ANDROID_DEVICES=$(${ADB} devices | grep 'device$' | awk '{print $1}')
+  local FOUND=0
   for SERIAL in $ANDROID_DEVICES; do
     ABILIST=$(${ADB} -s $SERIAL shell getprop ro.product.cpu.abilist)
     patch_abilist $ABILIST ABILIST
@@ -131,11 +132,14 @@ function test_android { # ARCH ABI STEP_FAILURE
       BUILD_ID=$(${ADB} -s $SERIAL shell getprop ro.build.id | tr -d '\r')
       BUILD_FLAVOR=$(${ADB} -s $SERIAL shell getprop ro.build.flavor | tr -d '\r')
       test_android_on_device "$_arch" "$SERIAL" "$BUILD_ID" "$BUILD_FLAVOR" "$_step_failure"
-    else
-      echo @@@BUILD_STEP unavailable device $_abi@@@
-      echo @@@STEP_WARNINGS@@@
+      FOUND=1
     fi
   done
+
+  if [[ $FOUND != "1" ]]; then
+    echo @@@BUILD_STEP unavailable device android/$_arch@@@
+    echo @@@STEP_WARNINGS@@@
+  fi
 }
 
 function test_android_on_device { # ARCH SERIAL BUILD_ID BUILD_FLAVOR STEP_FAILURE
