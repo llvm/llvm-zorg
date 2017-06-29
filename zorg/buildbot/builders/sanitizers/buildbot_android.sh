@@ -58,18 +58,18 @@ CMAKE_COMMON_OPTIONS=-DLLVM_ENABLE_ASSERTIONS=ON
 build_android() {
   CPU=$1
   TRIPLE=$2
-  build_android_ndk $CPU
+  NDK_ARCH=$3
+  ABI=$4
+  build_android_ndk $CPU $NDK_ARCH
   build_compiler_rt $CPU $TRIPLE
   build_llvm_symbolizer $CPU $TRIPLE
+  test_android $CPU $ABI @@@STEP_FAILURE@@@
 }
+
+build_android aarch64 aarch64-linux-android arm64 arm64-v8a
 
 # Testing armv7 instead of plain arm to work around
 # https://code.google.com/p/android/issues/detail?id=68779
-build_android arm armv7-linux-androideabi armeabi-v7a
-test_android arm armeabi-v7a @@@STEP_FAILURE@@@
+build_android arm armv7-linux-androideabi arm armeabi-v7a
 
-build_android arm64 aarch64-linux-android arm64-v8a
-test_android arm64 arm64-v8a @@@STEP_FAILURE@@@
-
-build_android x86 i686-linux-android x86
-test_android x86 x86 @@@STEP_FAILURE@@@
+build_android i686 i686-linux-android x86 i686

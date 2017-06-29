@@ -29,9 +29,10 @@ function download_android_tools {
 function build_android_ndk {
   local NDK_DIR=android_ndk
   local _arch=$1
+  local _ndk_arch=$2
   if [[ ! -d $NDK_DIR/standalone-$_arch ]] ; then 
     echo @@@BUILD_STEP building Android NDK for $_arch@@@
-    $NDK_DIR/build/tools/make_standalone_toolchain.py --api 24 --force --arch $_arch --install-dir $NDK_DIR/standalone-$_arch
+    $NDK_DIR/build/tools/make_standalone_toolchain.py --api 24 --force --arch $_ndk_arch --install-dir $NDK_DIR/standalone-$_arch
   fi
 }
 
