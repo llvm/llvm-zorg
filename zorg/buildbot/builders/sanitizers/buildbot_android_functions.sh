@@ -131,6 +131,9 @@ function test_android { # ARCH ABI STEP_FAILURE
       BUILD_ID=$(${ADB} -s $SERIAL shell getprop ro.build.id | tr -d '\r')
       BUILD_FLAVOR=$(${ADB} -s $SERIAL shell getprop ro.build.flavor | tr -d '\r')
       test_android_on_device "$_arch" "$SERIAL" "$BUILD_ID" "$BUILD_FLAVOR" "$_step_failure"
+    else
+      echo @@@BUILD_STEP unavailable device $_abi@@@
+      echo @@@STEP_WARNINGS@@@
     fi
   done
 }
