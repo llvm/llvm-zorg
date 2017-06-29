@@ -128,9 +128,9 @@ function test_android { # ARCH ABI STEP_FAILURE
     ABILIST=$(${ADB} -s $SERIAL shell getprop ro.product.cpu.abilist)
     patch_abilist $ABILIST ABILIST
     if [[ $ABILIST == *"$_abi"* ]]; then
-    BUILD_ID=$(${ADB} -s $SERIAL shell getprop ro.build.id | tr -d '\r')
-    BUILD_FLAVOR=$(${ADB} -s $SERIAL shell getprop ro.build.flavor | tr -d '\r')
-    test_android_on_device "$_arch" "$SERIAL" "$BUILD_ID" "$BUILD_FLAVOR" "$_step_failure"
+      BUILD_ID=$(${ADB} -s $SERIAL shell getprop ro.build.id | tr -d '\r')
+      BUILD_FLAVOR=$(${ADB} -s $SERIAL shell getprop ro.build.flavor | tr -d '\r')
+      test_android_on_device "$_arch" "$SERIAL" "$BUILD_ID" "$BUILD_FLAVOR" "$_step_failure"
     fi
   done
 }
