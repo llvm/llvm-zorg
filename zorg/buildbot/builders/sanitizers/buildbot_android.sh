@@ -72,4 +72,4 @@ build_android aarch64 aarch64-linux-android arm64 arm64-v8a
 # https://code.google.com/p/android/issues/detail?id=68779
 build_android arm armv7-linux-androideabi arm armeabi-v7a
 
-build_android i686 i686-linux-android x86 i686
+build_android i686 i686-linux-android x86 x86
