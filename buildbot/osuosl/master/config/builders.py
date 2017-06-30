@@ -118,7 +118,7 @@ def _get_clang_fast_builders():
 
         {'name': "llvm-clang-lld-x86_64-scei-ps4-ubuntu-fast",
          'mergeRequests': False,
-         'slavenames': ["ps4-buildslave1"],
+         'slavenames': ["ps4-buildslave1a"],
          'builddir': "llvm-clang-lld-x86_64-scei-ps4-ubuntu-fast",
          'factory': ClangAndLLDBuilder.getClangAndLLDBuildFactory(
                      extraCmakeOptions=["-DCMAKE_C_COMPILER=clang",
@@ -851,13 +851,13 @@ def _get_lld_builders():
          'category'   : 'lld'},
 
         {'name' : "clang-with-lto-ubuntu",
-         'slavenames' : ["ps4-buildslave1"],
+         'slavenames' : ["ps4-buildslave1a"],
          'builddir' : "clang-with-lto-ubuntu",
          'factory': ClangLTOBuilder.getClangWithLTOBuildFactory(jobs=32),
          'category'   : 'lld'},
 
         {'name' : "clang-with-thin-lto-ubuntu",
-         'slavenames' : ["ps4-buildslave1"],
+         'slavenames' : ["ps4-buildslave1a"],
          'builddir' : "clang-with-thin-lto-ubuntu",
          'factory': ClangLTOBuilder.getClangWithLTOBuildFactory(jobs=16, lto='thin'),
          'category'   : 'lld'},
