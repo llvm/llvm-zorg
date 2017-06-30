@@ -195,17 +195,12 @@ function test_android_on_device { # ARCH SERIAL BUILD_ID BUILD_FLAVOR STEP_FAILU
   $ADB pull $DEVICE_ROOT/error_code error_code && (exit `cat error_code`) || echo $_step_failure
 
   echo @@@BUILD_STEP run asan tests [$DEVICE_DESCRIPTION]@@@
-  if [[ $_arch == aarch64 || $_arch == x86_64 ]]; then
-    ASANWRAPPER=
-  else
-    ASANWRAPPER=asanwrapper
-  fi
   NUM_SHARDS=7
   for ((SHARD=0; SHARD < $NUM_SHARDS; SHARD++)); do
     $ADB shell "ASAN_OPTIONS=start_deactivated=1 \
       GTEST_TOTAL_SHARDS=$NUM_SHARDS \
       GTEST_SHARD_INDEX=$SHARD \
-      $ASANWRAPPER $DEVICE_ROOT/AsanTest; \
+      $DEVICE_ROOT/AsanTest; \
       echo \$? >$DEVICE_ROOT/error_code"
     $ADB pull $DEVICE_ROOT/error_code error_code && echo && (exit `cat error_code`) || echo $_step_failure
     $ADB shell " \
