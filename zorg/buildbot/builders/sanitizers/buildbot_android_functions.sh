@@ -169,8 +169,9 @@ function test_android_on_device { # ARCH SERIAL BUILD_ID BUILD_FLAVOR STEP_FAILU
   # Luckily, none of our tests need the application runtime, and killing
   # that can free several hundred megs of RAM.
   if [[ $_build_flavor == fugu* || $_build_flavor == volantis* ]]; then
+    $ADB root
     $ADB shell stop
-    sleep 2
+    $ADB wait-for-device
   fi
 
   # Kill leftover symbolizers. TODO: figure out what's going on.
