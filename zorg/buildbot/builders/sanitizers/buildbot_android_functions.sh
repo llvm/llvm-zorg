@@ -171,6 +171,7 @@ function test_android_on_device { # ARCH SERIAL BUILD_ID BUILD_FLAVOR STEP_FAILU
   if [[ $_build_flavor == fugu* || $_build_flavor == volantis* ]]; then
     $ADB root
     $ADB shell stop
+    $ADB unroot
     $ADB wait-for-device
   fi
 
