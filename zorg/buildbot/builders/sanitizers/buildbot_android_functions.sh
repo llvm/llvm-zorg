@@ -122,7 +122,11 @@ function test_android { # ARCH ABI STEP_FAILURE
   local _abi=$2
   local _step_failure=$3
   ADB=adb
+  echo @@@BUILD_STEP find device for android/$_arch@@@
   $ADB kill-server
+  sleep 2
+  $ADB start-server
+  sleep 2
   ANDROID_DEVICES=$(${ADB} devices | grep 'device$' | awk '{print $1}')
   local FOUND=0
   for SERIAL in $ANDROID_DEVICES; do
