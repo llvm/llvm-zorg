@@ -143,6 +143,13 @@ function test_android { # ARCH ABI STEP_FAILURE
   fi
 }
 
+function run_command_on_device {
+  local _cmd=$1
+  local EXIT_CODE=$($ADB shell "mktemp $DEVICE_ROOT/exit_code.XXXXXX") 
+  $ADB shell "$_cmd ; echo \$? >$EXIT_CODE"
+  return $($ADB shell "cat $EXIT_CODE")
+}
+
 function test_android_on_device { # ARCH SERIAL BUILD_ID BUILD_FLAVOR STEP_FAILURE
   local _arch=$1
   local _serial=$2
@@ -155,9 +162,8 @@ function test_android_on_device { # ARCH SERIAL BUILD_ID BUILD_FLAVOR STEP_FAILU
   SYMBOLIZER_BIN=$ROOT/llvm_build_android_$_arch/bin/llvm-symbolizer
   ASAN_RT=$(find $ROOT/llvm_build64/lib/ -name libclang_rt.asan-$_arch-android.so)
   COMPILER_RT_BUILD_DIR=$ROOT/compiler_rt_build_android_$_arch
-  ADB=adb
-  DEVICE_ROOT=/data/local/tmp/Output
-
+  export ADB=adb
+  export DEVICE_ROOT=/data/local/tmp/Output
   export ANDROID_SERIAL=$_serial
   echo "Serial $_serial"
 
@@ -165,49 +171,29 @@ function test_android_on_device { # ARCH SERIAL BUILD_ID BUILD_FLAVOR STEP_FAILU
   $ADB wait-for-device
   $ADB devices
 
-  # Nexus Player does not have enough RAM to run ASan tests reliably.
-  # Luckily, none of our tests need the application runtime, and killing
-  # that can free several hundred megs of RAM.
-  if [[ $_build_flavor == fugu* || $_build_flavor == volantis* ]]; then
-    $ADB root
-    $ADB shell stop
-    $ADB unroot
-    $ADB wait-for-device
-  fi
-
   # Kill leftover symbolizers. TODO: figure out what's going on.
   $ADB shell pkill llvm-symbolizer || true
 
   $ADB shell rm -rf $DEVICE_ROOT
   $ADB shell mkdir $DEVICE_ROOT
-  $ADB push $SYMBOLIZER_BIN $DEVICE_ROOT/
-  $ADB push $ASAN_RT $DEVICE_ROOT/
-  $ADB push $COMPILER_RT_BUILD_DIR/lib/sanitizer_common/tests/SanitizerTest $DEVICE_ROOT/
-  $ADB push $COMPILER_RT_BUILD_DIR/lib/asan/tests/AsanTest $DEVICE_ROOT/
-  $ADB push $COMPILER_RT_BUILD_DIR/lib/asan/tests/AsanNoinstTest $DEVICE_ROOT/
+  $ADB push $SYMBOLIZER_BIN $DEVICE_ROOT/ &
+  $ADB push $ASAN_RT $DEVICE_ROOT/ &
+  $ADB push $COMPILER_RT_BUILD_DIR/lib/sanitizer_common/tests/SanitizerTest $DEVICE_ROOT/ &
+  $ADB push $COMPILER_RT_BUILD_DIR/lib/asan/tests/AsanTest $DEVICE_ROOT/ &
+  $ADB push $COMPILER_RT_BUILD_DIR/lib/asan/tests/AsanNoinstTest $DEVICE_ROOT/ &
+  wait
 
   echo @@@BUILD_STEP run asan lit tests [$DEVICE_DESCRIPTION]@@@
   (cd $COMPILER_RT_BUILD_DIR && ninja check-asan) || echo $_step_failure
 
   echo @@@BUILD_STEP run sanitizer_common tests [$DEVICE_DESCRIPTION]@@@
-  $ADB shell "$DEVICE_ROOT/SanitizerTest; \
-    echo \$? >$DEVICE_ROOT/error_code"
-  $ADB pull $DEVICE_ROOT/error_code error_code && (exit `cat error_code`) || echo $_step_failure
+  run_command_on_device $DEVICE_ROOT/SanitizerTest || echo $_step_failure
 
   echo @@@BUILD_STEP run asan tests [$DEVICE_DESCRIPTION]@@@
   NUM_SHARDS=7
   for ((SHARD=0; SHARD < $NUM_SHARDS; SHARD++)); do
-    $ADB shell "ASAN_OPTIONS=start_deactivated=1 \
-      GTEST_TOTAL_SHARDS=$NUM_SHARDS \
-      GTEST_SHARD_INDEX=$SHARD \
-      $DEVICE_ROOT/AsanTest; \
-      echo \$? >$DEVICE_ROOT/error_code"
-    $ADB pull $DEVICE_ROOT/error_code error_code && echo && (exit `cat error_code`) || echo $_step_failure
-    $ADB shell " \
-      GTEST_TOTAL_SHARDS=$NUM_SHARDS \
-      GTEST_SHARD_INDEX=$SHARD \
-      $DEVICE_ROOT/AsanNoinstTest; \
-      echo \$? >$DEVICE_ROOT/error_code"
-    $ADB pull $DEVICE_ROOT/error_code error_code && echo && (exit `cat error_code`) || echo $_step_failure
+    local ENV="GTEST_TOTAL_SHARDS=$NUM_SHARDS GTEST_SHARD_INDEX=$SHARD LD_LIBRARY_PATH=$DEVICE_ROOT"
+    run_command_on_device "ASAN_OPTIONS=start_deactivated=1 $ENV $DEVICE_ROOT/AsanTest" || echo $_step_failure
+    run_command_on_device "$ENV $DEVICE_ROOT/AsanNoinstTest" || echo $_step_failure
   done
 }
