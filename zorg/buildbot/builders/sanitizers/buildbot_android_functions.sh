@@ -99,9 +99,8 @@ function build_compiler_rt { # ARCH triple
     -DCOMPILER_RT_EXEC_OUTPUT_DIR="$ANDROID_EXEC_OUTPUT_DIR" \
     ${CMAKE_COMMON_OPTIONS} \
     $LLVM/projects/compiler-rt || echo @@@STEP_FAILURE@@@
-  ninja asan || echo @@@STEP_FAILURE@@@
+  ninja asan AsanUnitTests SanitizerUnitTests || echo @@@STEP_FAILURE@@@
   ls "$ANDROID_LIBRARY_OUTPUT_DIR"
-  ninja AsanUnitTests SanitizerUnitTests || echo @@@STEP_FAILURE@@@
 
   cd ..
 }
