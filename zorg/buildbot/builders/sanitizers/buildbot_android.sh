@@ -53,10 +53,10 @@ CMAKE_COMMON_OPTIONS="$CMAKE_COMMON_OPTIONS -DLLVM_ENABLE_ASSERTIONS=ON"
 CMAKE_OPTIONS="${CMAKE_COMMON_OPTIONS} -DLLVM_ENABLE_WERROR=ON -DCMAKE_C_COMPILER=${CLANG_PATH}/clang -DCMAKE_CXX_COMPILER=${CLANG_PATH}/clang++ -DCMAKE_C_FLAGS=-gmlt -DCMAKE_CXX_FLAGS=-gmlt"
 
 echo @@@BUILD_STEP bootstrap clang@@@
-if  [[ "$(cat llvm_build64/CMAKE_OPTIONS)" != ${CMAKE_OPTIONS} ]] ; then
-  mkdir -p llvm_build64
+mkdir -p llvm_build64
+if  [[ "$(cat llvm_build64/CMAKE_OPTIONS)" != "${CMAKE_OPTIONS}" ]] ; then
   (cd llvm_build64 && cmake ${CMAKE_OPTIONS} -DLLVM_BUILD_EXTERNAL_COMPILER_RT=ON $LLVM && \
-     echo ${CMAKE_OPTIONS} > llvm_build64/CMAKE_OPTIONS) || echo @@@STEP_FAILURE@@
+     echo ${CMAKE_OPTIONS} > CMAKE_OPTIONS) || echo @@@STEP_FAILURE@@
 fi
 ninja -C llvm_build64 || echo @@@STEP_FAILURE@@
 
