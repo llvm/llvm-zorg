@@ -45,10 +45,15 @@ function configure_android { # ARCH triple
   local ANDROID_EXEC_OUTPUT_DIR=$ROOT/llvm_build64/bin
   local ANDROID_FLAGS="--target=$_triple --sysroot=$ANDROID_TOOLCHAIN/sysroot -B$ANDROID_TOOLCHAIN"
 
+  # Always clobber android build tree.
+  # It has a hidden dependency on clang (through CXX) which is not known to
+  # the build system.
+  rm -rf compiler_rt_build_android_$_arch
+  mkdir -p compiler_rt_build_android_$_arch
   rm -rf llvm_build_android_$_arch
   mkdir -p llvm_build_android_$_arch
-  (cd llvm_build_android_$_arch && cmake -GNinja \
-    -DCMAKE_BUILD_TYPE=Release \
+
+  (cd llvm_build_android_$_arch && cmake \
     -DLLVM_ENABLE_WERROR=OFF \
     -DCMAKE_C_COMPILER=$ROOT/llvm_build64/bin/clang \
     -DCMAKE_CXX_COMPILER=$ROOT/llvm_build64/bin/clang++ \
@@ -61,12 +66,7 @@ function configure_android { # ARCH triple
     ${CMAKE_COMMON_OPTIONS} \
     $LLVM || echo @@@STEP_FAILURE@@@) &
   
-  # Always clobber android build tree.
-  # It has a hidden dependency on clang (through CXX) which is not known to
-  # the build system.
-  rm -rf compiler_rt_build_android_$_arch
-  mkdir compiler_rt_build_android_$_arch
-  (cd compiler_rt_build_android_$_arch && cmake -GNinja -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
+  (cd compiler_rt_build_android_$_arch && cmake \
     -DCMAKE_C_COMPILER=$ROOT/llvm_build64/bin/clang \
     -DCMAKE_CXX_COMPILER=$ROOT/llvm_build64/bin/clang++ \
     -DLLVM_CONFIG_PATH=$ROOT/llvm_build64/bin/llvm-config \

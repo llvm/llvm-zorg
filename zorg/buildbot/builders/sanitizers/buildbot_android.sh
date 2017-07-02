@@ -21,7 +21,12 @@ STAGE1_DIR=llvm_build0
 STAGE1_CLOBBER="llvm_build64 compiler_rt_build_android_* llvm_build_android_*"
 LLVM=$ROOT/llvm
 CMAKE_COMMON_OPTIONS="-GNinja -DCMAKE_BUILD_TYPE=Release -DLLVM_PARALLEL_LINK_JOBS=20 -DLLVM_APPEND_VC_REV=OFF"
-BUILD_TYPE=Release
+
+export CCACHE_DIR=$ROOT/ccache
+export CCACHE_COMPILERCHECK=content
+if ccache -sM 20 ; then
+  CMAKE_COMMON_OPTIONS="${CMAKE_COMMON_OPTIONS} -DLLVM_CCACHE_BUILD=ON"
+fi
 
 if [ "$BUILDBOT_CLOBBER" != "" ]; then
   echo @@@BUILD_STEP clobber@@@
@@ -48,12 +53,12 @@ CMAKE_COMMON_OPTIONS="$CMAKE_COMMON_OPTIONS -DLLVM_ENABLE_ASSERTIONS=ON"
 CMAKE_OPTIONS="${CMAKE_COMMON_OPTIONS} -DLLVM_ENABLE_WERROR=ON -DCMAKE_C_COMPILER=${CLANG_PATH}/clang -DCMAKE_CXX_COMPILER=${CLANG_PATH}/clang++ -DCMAKE_C_FLAGS=-gmlt -DCMAKE_CXX_FLAGS=-gmlt"
 
 echo @@@BUILD_STEP bootstrap clang@@@
-if [ ! -d llvm_build64 ]; then
-  mkdir llvm_build64
+if  [[ "$(cat llvm_build64/CMAKE_OPTIONS)" != ${CMAKE_OPTIONS} ]] ; then
+  mkdir -p llvm_build64
+  (cd llvm_build64 && cmake ${CMAKE_OPTIONS} -DLLVM_BUILD_EXTERNAL_COMPILER_RT=ON $LLVM && \
+     echo ${CMAKE_OPTIONS} > llvm_build64/CMAKE_OPTIONS) || echo @@@STEP_FAILURE@@
 fi
-(cd llvm_build64 && cmake ${CMAKE_OPTIONS} -DLLVM_BUILD_EXTERNAL_COMPILER_RT=ON $LLVM && ninja) || echo @@@STEP_FAILURE@@
-
-CMAKE_COMMON_OPTIONS=-DLLVM_ENABLE_ASSERTIONS=ON
+ninja -C llvm_build64 || echo @@@STEP_FAILURE@@
 
 build_android_ndk aarch64 arm64
 build_android_ndk arm arm
