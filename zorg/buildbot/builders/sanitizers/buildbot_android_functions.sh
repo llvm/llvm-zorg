@@ -36,19 +36,18 @@ function build_android_ndk {
   fi
 }
 
-function build_llvm_symbolizer { # ARCH triple
+function configure_android { # ARCH triple
   local _arch=$1
   local _triple=$2
 
-  echo @@@BUILD_STEP build llvm-symbolizer android/$_arch@@@
-  
-  rm -rf llvm_build_android_$_arch
-  mkdir llvm_build_android_$_arch
-  cd llvm_build_android_$_arch
-
   local ANDROID_TOOLCHAIN=$ROOT/android_ndk/standalone-$_arch
+  local ANDROID_LIBRARY_OUTPUT_DIR=$(ls -d $ROOT/llvm_build64/lib/clang/* | tail -1)
+  local ANDROID_EXEC_OUTPUT_DIR=$ROOT/llvm_build64/bin
   local ANDROID_FLAGS="--target=$_triple --sysroot=$ANDROID_TOOLCHAIN/sysroot -B$ANDROID_TOOLCHAIN"
-  cmake -GNinja \
+
+  rm -rf llvm_build_android_$_arch
+  mkdir -p llvm_build_android_$_arch
+  (cd llvm_build_android_$_arch && cmake -GNinja \
     -DCMAKE_BUILD_TYPE=Release \
     -DLLVM_ENABLE_WERROR=OFF \
     -DCMAKE_C_COMPILER=$ROOT/llvm_build64/bin/clang \
@@ -60,31 +59,14 @@ function build_llvm_symbolizer { # ARCH triple
     -DLLVM_BUILD_RUNTIME=OFF \
     -DLLVM_TABLEGEN=$ROOT/llvm_build64/bin/llvm-tblgen \
     ${CMAKE_COMMON_OPTIONS} \
-    $LLVM || echo @@@STEP_FAILURE@@@
-  ninja llvm-symbolizer || echo @@@STEP_FAILURE@@@
-
-  cd ..
-}
-
-function build_compiler_rt { # ARCH triple
-  local _arch=$1
-  local _triple=$2
-
-  echo @@@BUILD_STEP build compiler-rt android/$_arch@@@
-
-  local ANDROID_TOOLCHAIN=$ROOT/android_ndk/standalone-$_arch
-  local ANDROID_LIBRARY_OUTPUT_DIR=$(ls -d $ROOT/llvm_build64/lib/clang/* | tail -1)
-  local ANDROID_EXEC_OUTPUT_DIR=$ROOT/llvm_build64/bin
-  local ANDROID_FLAGS="--target=$_triple --sysroot=$ANDROID_TOOLCHAIN/sysroot -B$ANDROID_TOOLCHAIN"
-
+    $LLVM || echo @@@STEP_FAILURE@@@) &
+  
   # Always clobber android build tree.
   # It has a hidden dependency on clang (through CXX) which is not known to
   # the build system.
   rm -rf compiler_rt_build_android_$_arch
   mkdir compiler_rt_build_android_$_arch
-  cd compiler_rt_build_android_$_arch
-
-  cmake -GNinja -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
+  (cd compiler_rt_build_android_$_arch && cmake -GNinja -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
     -DCMAKE_C_COMPILER=$ROOT/llvm_build64/bin/clang \
     -DCMAKE_CXX_COMPILER=$ROOT/llvm_build64/bin/clang++ \
     -DLLVM_CONFIG_PATH=$ROOT/llvm_build64/bin/llvm-config \
@@ -98,11 +80,15 @@ function build_compiler_rt { # ARCH triple
     -DCOMPILER_RT_OUTPUT_DIR="$ANDROID_LIBRARY_OUTPUT_DIR" \
     -DCOMPILER_RT_EXEC_OUTPUT_DIR="$ANDROID_EXEC_OUTPUT_DIR" \
     ${CMAKE_COMMON_OPTIONS} \
-    $LLVM/projects/compiler-rt || echo @@@STEP_FAILURE@@@
-  ninja asan AsanUnitTests SanitizerUnitTests || echo @@@STEP_FAILURE@@@
-  ls "$ANDROID_LIBRARY_OUTPUT_DIR"
+    $LLVM/projects/compiler-rt || echo @@@STEP_FAILURE@@@) &
+}
 
-  cd ..
+function build_android {
+  local _arch=$1
+  wait
+  echo @@@BUILD_STEP build android/$_arch@@@
+  ninja -C llvm_build_android_$_arch llvm-symbolizer || echo @@@STEP_FAILURE@@@
+  ninja -C compiler_rt_build_android_$_arch asan AsanUnitTests SanitizerUnitTests || echo @@@STEP_FAILURE@@@
 }
 
 # If a multiarch device has x86 as the first arch, remove everything else from
@@ -117,16 +103,20 @@ function patch_abilist { # IN OUT
   eval $_out="'$_abilist'"
 }
 
-function test_android { # ARCH ABI STEP_FAILURE
-  local _arch=$1
-  local _abi=$2
-  local _step_failure=$3
+function restart_adb_server {
   ADB=adb
-  echo @@@BUILD_STEP find device for android/$_arch@@@
+  echo @@@BUILD_STEP restart adb server@@@
   $ADB kill-server
   sleep 2
   $ADB start-server
   sleep 2
+}
+
+function test_android {
+  local _arch=$1
+  local _abi=$2
+  ADB=adb
+  echo @@@BUILD_STEP find device for android/$_arch@@@
   ANDROID_DEVICES=$(${ADB} devices | grep 'device$' | awk '{print $1}')
   local FOUND=0
   for SERIAL in $ANDROID_DEVICES; do
@@ -135,7 +125,7 @@ function test_android { # ARCH ABI STEP_FAILURE
     if [[ $ABILIST == *"$_abi"* ]]; then
       BUILD_ID=$(${ADB} -s $SERIAL shell getprop ro.build.id | tr -d '\r')
       BUILD_FLAVOR=$(${ADB} -s $SERIAL shell getprop ro.build.flavor | tr -d '\r')
-      test_android_on_device "$_arch" "$SERIAL" "$BUILD_ID" "$BUILD_FLAVOR" "$_step_failure"
+      test_android_on_device "$_arch" "$SERIAL" "$BUILD_ID" "$BUILD_FLAVOR"
       FOUND=1
     fi
   done
@@ -153,12 +143,11 @@ function run_command_on_device {
   return $($ADB shell "cat $EXIT_CODE")
 }
 
-function test_android_on_device { # ARCH SERIAL BUILD_ID BUILD_FLAVOR STEP_FAILURE
+function test_android_on_device {
   local _arch=$1
   local _serial=$2
   local _build_id=$3
   local _build_flavor=$4
-  local _step_failure=$5 # @@@STEP_FAILURE@@@ or @@@STEP_WARNINGS@@@
 
   DEVICE_DESCRIPTION=$_arch/$_build_flavor/$_build_id
 
@@ -187,16 +176,16 @@ function test_android_on_device { # ARCH SERIAL BUILD_ID BUILD_FLAVOR STEP_FAILU
   wait
 
   echo @@@BUILD_STEP run asan lit tests [$DEVICE_DESCRIPTION]@@@
-  (cd $COMPILER_RT_BUILD_DIR && ninja check-asan) || echo $_step_failure
+  (cd $COMPILER_RT_BUILD_DIR && ninja check-asan) || echo @@@STEP_FAILURE@@@
 
   echo @@@BUILD_STEP run sanitizer_common tests [$DEVICE_DESCRIPTION]@@@
-  run_command_on_device $DEVICE_ROOT/SanitizerTest || echo $_step_failure
+  run_command_on_device $DEVICE_ROOT/SanitizerTest || echo @@@STEP_FAILURE@@@
 
   echo @@@BUILD_STEP run asan tests [$DEVICE_DESCRIPTION]@@@
   NUM_SHARDS=7
   for ((SHARD=0; SHARD < $NUM_SHARDS; SHARD++)); do
     local ENV="GTEST_TOTAL_SHARDS=$NUM_SHARDS GTEST_SHARD_INDEX=$SHARD LD_LIBRARY_PATH=$DEVICE_ROOT"
-    run_command_on_device "ASAN_OPTIONS=start_deactivated=1 $ENV $DEVICE_ROOT/AsanTest" || echo $_step_failure
-    run_command_on_device "$ENV $DEVICE_ROOT/AsanNoinstTest" || echo $_step_failure
+    run_command_on_device "ASAN_OPTIONS=start_deactivated=1 $ENV $DEVICE_ROOT/AsanTest" || echo @@@STEP_FAILURE@@@
+    run_command_on_device "$ENV $DEVICE_ROOT/AsanNoinstTest" || echo @@@STEP_FAILURE@@@
   done
 }
