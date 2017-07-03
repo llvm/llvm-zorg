@@ -73,11 +73,6 @@ build_android aarch64
 build_android arm
 build_android i686
 
-restart_adb_server
-
-test_android i686 x86
-test_android aarch64 arm64-v8a
 # Testing armv7 instead of plain arm to work around
 # https://code.google.com/p/android/issues/detail?id=68779
-test_android arm armeabi-v7a
-
+test_android i686:x86 aarch64:arm64-v8a arm:armeabi-v7a

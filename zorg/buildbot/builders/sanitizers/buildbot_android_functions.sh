@@ -113,27 +113,38 @@ function restart_adb_server {
 }
 
 function test_android {
-  local _arch=$1
-  local _abi=$2
+  restart_adb_server
+
+  declare -A tested
+  for _arg in "$@"; do
+    tested["$_arg"]=0
+  done
+  
   ADB=adb
-  echo @@@BUILD_STEP find device for android/$_arch@@@
+  echo @@@BUILD_STEP find devices@@@
   ANDROID_DEVICES=$(${ADB} devices | grep 'device$' | awk '{print $1}')
-  local FOUND=0
+
   for SERIAL in $ANDROID_DEVICES; do
     ABILIST=$(${ADB} -s $SERIAL shell getprop ro.product.cpu.abilist)
     patch_abilist $ABILIST ABILIST
-    if [[ $ABILIST == *"$_abi"* ]]; then
-      BUILD_ID=$(${ADB} -s $SERIAL shell getprop ro.build.id | tr -d '\r')
-      BUILD_FLAVOR=$(${ADB} -s $SERIAL shell getprop ro.build.flavor | tr -d '\r')
-      test_android_on_device "$_arch" "$SERIAL" "$BUILD_ID" "$BUILD_FLAVOR"
-      FOUND=1
-    fi
+    for _arg in "$@"; do
+      local _arch=${_arg%:*}
+      local _abi=${_arg#*:}
+      if [[ $ABILIST == *"$_abi"* ]]; then
+        BUILD_ID=$(${ADB} -s $SERIAL shell getprop ro.build.id | tr -d '\r')
+        BUILD_FLAVOR=$(${ADB} -s $SERIAL shell getprop ro.build.flavor | tr -d '\r')
+        test_android_on_device "$_arch" "$SERIAL" "$BUILD_ID" "$BUILD_FLAVOR"
+        tested["$_arg"]=1
+      fi
+    done
   done
 
-  if [[ $FOUND != "1" ]]; then
-    echo @@@BUILD_STEP unavailable device android/$_arch@@@
-    echo @@@STEP_WARNINGS@@@
-  fi
+  for _arg in "$@"; do
+    if [[ ${tested["$_arg"]} != 1 ]]; then
+      echo @@@BUILD_STEP unavailable device android/$_arg@@@
+      echo @@@STEP_WARNINGS@@@
+    fi
+  done
 }
 
 function run_command_on_device {
