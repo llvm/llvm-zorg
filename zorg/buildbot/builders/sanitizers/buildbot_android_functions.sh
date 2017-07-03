@@ -207,19 +207,19 @@ function test_arch_on_device {
   for ((SHARD=0; SHARD < $NUM_SHARDS; SHARD++)); do
     local ENV="GTEST_TOTAL_SHARDS=$NUM_SHARDS GTEST_SHARD_INDEX=$SHARD"
     ( (run_command_on_device "$ENV $DEVICE_ROOT/AsanNoinstTest" || echo @@@STEP_FAILURE@@@) \
-       >$_log_prefix_$SHARD 2>&1 ) &
+       >${_log_prefix}_$SHARD 2>&1 ) &
   done
 
   wait
-  cat $_log_prefix_* || true
+  cat ${_log_prefix}_* || true
 
   local _log_prefix=$(mktemp shards_XXXX_)
   echo @@@BUILD_STEP run instrumented asan tests [$DEVICE_DESCRIPTION]@@@
   for ((SHARD=0; SHARD < $NUM_SHARDS; SHARD++)); do
     local ENV="GTEST_TOTAL_SHARDS=$NUM_SHARDS GTEST_SHARD_INDEX=$SHARD LD_LIBRARY_PATH=$DEVICE_ROOT ASAN_OPTIONS=start_deactivated=1"
     ( (run_command_on_device "$ENV $DEVICE_ROOT/AsanTest" || echo @@@STEP_FAILURE@@@) \
-      >$_log_prefix_$SHARD 2>&1 ) &
+      >${_log_prefix}_$SHARD 2>&1 ) &
   done
   wait
-  cat $_log_prefix_* || true
+  cat ${_log_prefix}_* || true
 }
