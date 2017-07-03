@@ -115,8 +115,6 @@ function restart_adb_server {
 function test_on_device {
   local _serial=$1
   shift
-  local _out=$1
-  shift
 
   ABILIST=$(${ADB} -s $_serial shell getprop ro.product.cpu.abilist)
   patch_abilist $ABILIST ABILIST
@@ -127,7 +125,7 @@ function test_on_device {
       BUILD_ID=$(${ADB} -s $_serial shell getprop ro.build.id | tr -d '\r')
       BUILD_FLAVOR=$(${ADB} -s $_serial shell getprop ro.build.flavor | tr -d '\r')
       test_arch_on_device "$_arch" "$_serial" "$BUILD_ID" "$BUILD_FLAVOR"
-      eval $_out["$_arg"]=1
+      echo "$_serial" >> tested_arch_$_arch
     fi
   done
 }
@@ -135,26 +133,23 @@ function test_on_device {
 function test_android {
   restart_adb_server
 
-  declare -A _tested
-  for _arg in "$@"; do
-    _tested["$_arg"]=0
-  done
-
   ADB=adb
   echo @@@BUILD_STEP run tests@@@
   ANDROID_DEVICES=$(${ADB} devices | grep 'device$' | awk '{print $1}')
 
   rm -rf test_android_*.log
+  rm -rf tested_arch_*
   for SERIAL in $ANDROID_DEVICES; do
-    (test_on_device "$SERIAL" _tested $@ >$(mktemp test_android_XXXX.log) 2>&1) &
+    (test_on_device "$SERIAL" $@ >$(mktemp test_android_XXXX.log) 2>&1) &
   done
 
   wait
   cat test_android_*.log || true
 
   for _arg in "$@"; do
-    if [[ ${_tested["$_arg"]} != 1 ]]; then
-      echo @@@BUILD_STEP unavailable device android/$_arg@@@
+    local _arch=${_arg%:*}
+    if [[ ! -f tested_arch_$_arch ]]; then
+      echo @@@BUILD_STEP unavailable device android/$_arch@@@
       echo @@@STEP_WARNINGS@@@
     fi
   done
