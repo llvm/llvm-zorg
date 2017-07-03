@@ -150,7 +150,7 @@ function test_android {
   done
 
   wait
-  find -name test_android_*.log | xargs cat
+  cat test_android_*.log || true
 
   for _arg in "$@"; do
     if [[ ${_tested["$_arg"]} != 1 ]]; then
