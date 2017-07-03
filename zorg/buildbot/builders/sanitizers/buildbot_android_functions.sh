@@ -114,7 +114,9 @@ function restart_adb_server {
 
 function test_on_device {
   local _serial=$1
-  local _out=$2
+  shift
+  local _out=$1
+  shift
 
   ABILIST=$(${ADB} -s $_serial shell getprop ro.product.cpu.abilist)
   patch_abilist $ABILIST ABILIST
@@ -144,7 +146,7 @@ function test_android {
 
   local _counter=0
   for SERIAL in $ANDROID_DEVICES; do
-    (test_on_device "$SERIAL" _tested 2>&1 > test_device_${_counter}.log) &
+    (test_on_device "$SERIAL" _tested $@ 2>&1 > test_device_${_counter}.log) &
     counter=$((counter+1))
   done
 
