@@ -144,19 +144,13 @@ function test_android {
   echo @@@BUILD_STEP run tests@@@
   ANDROID_DEVICES=$(${ADB} devices | grep 'device$' | awk '{print $1}')
 
-  local _counter=0
+  rm -rf test_android_*.log
   for SERIAL in $ANDROID_DEVICES; do
-    (test_on_device "$SERIAL" _tested $@ 2>&1 > test_device_${_counter}.log) &
-    counter=$((counter+1))
+    (test_on_device "$SERIAL" _tested $@ 2>&1 > $(mktemp test_android_XXXX.log)) &
   done
 
   wait
-
-  counter=0
-  for SERIAL in $ANDROID_DEVICES; do
-    cat test_device_${_counter}.log
-    counter=$((counter+1))
-  done
+  find -name test_android_*.log | xargs cat
 
   for _arg in "$@"; do
     if [[ ${_tested["$_arg"]} != 1 ]]; then
