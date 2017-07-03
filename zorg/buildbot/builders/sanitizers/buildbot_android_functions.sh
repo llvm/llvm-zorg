@@ -112,35 +112,52 @@ function restart_adb_server {
   sleep 2
 }
 
+function test_on_device {
+  local _serial=$1
+  local _out=$2
+
+  ABILIST=$(${ADB} -s $_serial shell getprop ro.product.cpu.abilist)
+  patch_abilist $ABILIST ABILIST
+  for _arg in "$@"; do
+    local _arch=${_arg%:*}
+    local _abi=${_arg#*:}
+    if [[ $ABILIST == *"$_abi"* ]]; then
+      BUILD_ID=$(${ADB} -s $_serial shell getprop ro.build.id | tr -d '\r')
+      BUILD_FLAVOR=$(${ADB} -s $_serial shell getprop ro.build.flavor | tr -d '\r')
+      test_arch_on_device "$_arch" "$_serial" "$BUILD_ID" "$BUILD_FLAVOR"
+      eval $_out["$_arg"]=1
+    fi
+  done
+}
+
 function test_android {
   restart_adb_server
 
-  declare -A tested
+  declare -A _tested
   for _arg in "$@"; do
-    tested["$_arg"]=0
+    _tested["$_arg"]=0
   done
-  
+
   ADB=adb
-  echo @@@BUILD_STEP find devices@@@
+  echo @@@BUILD_STEP run tests@@@
   ANDROID_DEVICES=$(${ADB} devices | grep 'device$' | awk '{print $1}')
 
+  local _counter=0
   for SERIAL in $ANDROID_DEVICES; do
-    ABILIST=$(${ADB} -s $SERIAL shell getprop ro.product.cpu.abilist)
-    patch_abilist $ABILIST ABILIST
-    for _arg in "$@"; do
-      local _arch=${_arg%:*}
-      local _abi=${_arg#*:}
-      if [[ $ABILIST == *"$_abi"* ]]; then
-        BUILD_ID=$(${ADB} -s $SERIAL shell getprop ro.build.id | tr -d '\r')
-        BUILD_FLAVOR=$(${ADB} -s $SERIAL shell getprop ro.build.flavor | tr -d '\r')
-        test_android_on_device "$_arch" "$SERIAL" "$BUILD_ID" "$BUILD_FLAVOR"
-        tested["$_arg"]=1
-      fi
-    done
+    (test_on_device "$SERIAL" _tested 2>&1 > test_device_${_counter}.log) &
+    counter=$((counter+1))
+  done
+
+  wait
+
+  counter=0
+  for SERIAL in $ANDROID_DEVICES; do
+    cat test_device_${_counter}.log
+    counter=$((counter+1))
   done
 
   for _arg in "$@"; do
-    if [[ ${tested["$_arg"]} != 1 ]]; then
+    if [[ ${_tested["$_arg"]} != 1 ]]; then
       echo @@@BUILD_STEP unavailable device android/$_arg@@@
       echo @@@STEP_WARNINGS@@@
     fi
@@ -154,7 +171,7 @@ function run_command_on_device {
   return $($ADB shell "cat $EXIT_CODE")
 }
 
-function test_android_on_device {
+function test_arch_on_device {
   local _arch=$1
   local _serial=$2
   local _build_id=$3
