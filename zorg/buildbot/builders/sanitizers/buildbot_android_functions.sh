@@ -146,7 +146,7 @@ function test_android {
 
   rm -rf test_android_*.log
   for SERIAL in $ANDROID_DEVICES; do
-    (test_on_device "$SERIAL" _tested $@ 2>&1 > $(mktemp test_android_XXXX.log)) &
+    (test_on_device "$SERIAL" _tested $@ >$(mktemp test_android_XXXX.log) 2>&1) &
   done
 
   wait
