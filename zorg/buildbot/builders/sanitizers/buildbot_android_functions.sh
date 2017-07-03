@@ -137,14 +137,15 @@ function test_android {
   echo @@@BUILD_STEP run tests@@@
   ANDROID_DEVICES=$(${ADB} devices | grep 'device$' | awk '{print $1}')
 
-  rm -rf test_android_*.log
+  rm -rf test_android_log_*
   rm -rf tested_arch_*
+  rm -rf shards_log_*
   for SERIAL in $ANDROID_DEVICES; do
-    (test_on_device "$SERIAL" $@ >$(mktemp test_android_XXXX.log) 2>&1) &
+    (test_on_device "$SERIAL" $@ >$(mktemp test_android_log_XXXX) 2>&1) &
   done
 
   wait
-  cat test_android_*.log || true
+  cat test_android_log_* || true
 
   for _arg in "$@"; do
     local _arch=${_arg%:*}
@@ -200,11 +201,25 @@ function test_arch_on_device {
   echo @@@BUILD_STEP run sanitizer_common tests [$DEVICE_DESCRIPTION]@@@
   run_command_on_device $DEVICE_ROOT/SanitizerTest || echo @@@STEP_FAILURE@@@
 
+  NUM_SHARDS=4
+  local _log_prefix=$(mktemp shards_XXXX_)
   echo @@@BUILD_STEP run asan tests [$DEVICE_DESCRIPTION]@@@
-  NUM_SHARDS=7
   for ((SHARD=0; SHARD < $NUM_SHARDS; SHARD++)); do
-    local ENV="GTEST_TOTAL_SHARDS=$NUM_SHARDS GTEST_SHARD_INDEX=$SHARD LD_LIBRARY_PATH=$DEVICE_ROOT"
-    run_command_on_device "ASAN_OPTIONS=start_deactivated=1 $ENV $DEVICE_ROOT/AsanTest" || echo @@@STEP_FAILURE@@@
-    run_command_on_device "$ENV $DEVICE_ROOT/AsanNoinstTest" || echo @@@STEP_FAILURE@@@
+    local ENV="GTEST_TOTAL_SHARDS=$NUM_SHARDS GTEST_SHARD_INDEX=$SHARD"
+    ( (run_command_on_device "$ENV $DEVICE_ROOT/AsanNoinstTest" || echo @@@STEP_FAILURE@@@) \
+       >$_log_prefix_$SHARD 2>&1 ) &
   done
+
+  wait
+  cat $_log_prefix_* || true
+
+  local _log_prefix=$(mktemp shards_XXXX_)
+  echo @@@BUILD_STEP run instrumented asan tests [$DEVICE_DESCRIPTION]@@@
+  for ((SHARD=0; SHARD < $NUM_SHARDS; SHARD++)); do
+    local ENV="GTEST_TOTAL_SHARDS=$NUM_SHARDS GTEST_SHARD_INDEX=$SHARD LD_LIBRARY_PATH=$DEVICE_ROOT ASAN_OPTIONS=start_deactivated=1"
+    ( (run_command_on_device "$ENV $DEVICE_ROOT/AsanTest" || echo @@@STEP_FAILURE@@@) \
+      >$_log_prefix_$SHARD 2>&1 ) &
+  done
+  wait
+  cat $_log_prefix_* || true
 }
