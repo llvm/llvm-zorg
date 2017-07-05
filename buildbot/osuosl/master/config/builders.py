@@ -1193,6 +1193,17 @@ def _get_libcxx_builders():
             check_libcxx_abilist=True),
         'category': 'libcxx'},
 
+        {'name': 'libcxx-libcxxabi-x86_64-linux-ubuntu-cxx1z-32bit',
+         'slavenames': ericwf_slaves,
+         'builddir' : 'libcxx-libcxxabi-x86_64-linux-ubuntu-cxx1z-32bit',
+         'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
+            env={'PATH': '/usr/local/bin:/usr/bin:/bin',
+                 'CC': 'clang', 'CXX': 'clang++'},
+            cmake_extra_opts={'LLVM_BUILD_32_BITS': 'ON'},
+            lit_extra_opts={'std': 'c++1z', 'enable_warnings': 'true'},
+            check_libcxx_abilist=False),
+        'category': 'libcxx'},
+
         {'name': 'libcxx-libcxxabi-x86_64-linux-ubuntu-asan',
          'slavenames': ericwf_slaves,
          'builddir' : 'libcxx-libcxxabi-x86_64-linux-ubuntu-asan',
