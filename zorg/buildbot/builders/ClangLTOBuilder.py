@@ -1,5 +1,6 @@
 from buildbot.steps.shell import ShellCommand
 from buildbot.steps.slave import RemoveDirectory
+from buildbot.status.results import FAILURE
 from buildbot.process.properties import WithProperties
 
 from zorg.buildbot.commands.CmakeCommand import CmakeCommand
@@ -333,7 +334,7 @@ def getClangWithLTOBuildFactory(
             ])
 
     # The rest are test stages, which depend on the staged compiler we are ultimately after.
-    s = f.staged_compiler_idx + 1 
+    s = f.staged_compiler_idx + 1
     staged_install = f.stage_installdirs[f.staged_compiler_idx]
     for i in range(s, len(f.stage_objdirs[s:]) + s):
         configure_args = extra_configure_args[:]
@@ -372,10 +373,43 @@ def getClangWithLTOBuildFactory(
                     "stage%d" % len(f.stage_installdirs),
                     "compilers",
                     ],
-                haltOnFailure=True,
+                haltOnFailure=False,
                 command=WithProperties(" ".join(diff_command)),
                 workdir=".",
                 env=merged_env
+            )
+        )
+
+        # Only if the compare-compilers step has failed.
+        def _prevStepFailed(step):
+            steps = step.build.getStatus().getSteps()
+            prev_step = steps[-2]
+            (result, _) = prev_step.getResults()
+            return (result == FAILURE)
+
+        dir1 = f.stage_objdirs[-2]
+        dir2 = f.stage_objdirs[-1]
+        inc_pattern = "-type f -not -name *.inc -printf '%f\n'"
+        find_cmd = "find %s %s" % (dir1, dir2)
+        diff_cmd = "diff -ru %s %s -x '*.tmp*' -X -" % (dir1, dir2)
+
+        # Note: Use a string here as we want the command executed by a shell.
+        diff_tablegen_inc_files_command = "%s %s | %s" % (find_cmd, inc_pattern, diff_cmd)
+
+        f.addStep(
+            ShellCommand(
+                name="compare-tablegen-inc-files",
+                description=[
+                    "compare",
+                    "stage%d" % (len(f.stage_installdirs)-1),
+                    "and",
+                    "stage%d" % len(f.stage_installdirs),
+                    "Tablegen inc files",
+                    ],
+                command=diff_tablegen_inc_files_command,
+                workdir=".",
+                env=merged_env,
+                doStepIf=_prevStepFailed,
             )
         )
 
