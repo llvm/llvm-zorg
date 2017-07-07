@@ -1399,15 +1399,6 @@ def _get_experimental_scheduled_builders():
                     runTest=True,
                     scriptExt='.bat')},
 
-        {'name': "sanitizer_x86_64-freebsd",
-         'slavenames':["as-bldslv5"],
-         'builddir':"sanitizer_x86_64-freebsd",
-         'factory' : SanitizerBuilderII.getSanitizerBuildFactoryII(
-                    clean=True,
-                    sanitizers=['sanitizer','asan','lsan','tsan','ubsan'],
-                    common_cmake_options=['-DCMAKE_EXE_LINKER_FLAGS=-lcxxrt',
-                                          '-DLIBCXXABI_USE_LLVM_UNWINDER=ON']),
-         'category' : 'sanitizer'},
         ]
 
 # Builders responsible building Sphinix documentation
