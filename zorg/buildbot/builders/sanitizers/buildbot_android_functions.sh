@@ -131,7 +131,9 @@ function test_on_device {
 }
 
 function test_android {
-  restart_adb_server
+  if [[ "${BUILDBOT_SLAVENAME:-}" != "" ]]; then
+    restart_adb_server
+  fi
 
   ADB=adb
   echo @@@BUILD_STEP run tests@@@
