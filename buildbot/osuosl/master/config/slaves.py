@@ -208,6 +208,10 @@ def get_build_slaves():
         # Ubuntu 14.04 x86_64, AMD Athlon(tm) 5150 APU with Radeon(tm) R3, 8GiB RAM
         create_slave("am1i-slv3", properties={'jobs': 8}),
 
+
+        # X86_64 AVX2, Ubuntu 16.04.2, Intel(R) Xeon(R) CPU E5-2699 v4 @ 2.20GHz
+        create_slave("avx2-intel64", properties={'jobs': 80}, max_builds=1),
+
         # Defunct.
         # Debian 86_64, 2 x 6-core Opteron 2.6 GHz
         #create_slave("osu8", properties={'jobs' : 6}, max_builds=2),
