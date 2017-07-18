@@ -551,6 +551,7 @@ def lldb_builder():
     header("Run LLDB Python-based test suite (x86_64 targets)")
     # For the unit tests, we don't want to stop the build if there are
     # build errors.  We allow the JUnit/xUnit parser to pick this up.
+    print repr(python_testsuite_cmd_x86_64)
     run_cmd_errors_okay("lldb", python_testsuite_cmd_x86_64)
     footer()
 
