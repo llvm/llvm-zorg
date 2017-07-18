@@ -153,7 +153,7 @@ def AddLNTTestsToFactory(f, nt_flags, cc_path, cxx_path, **kwargs):
       for url in submitURL:
         args.extend(['--submit', url])
 
-    args.extend(['--commit=1',
+    args.extend(['--commit', '1',
              '--sandbox', 'nt',
              '--no-timestamp',
              '--cc', cc_path, '--cxx', cxx_path,
