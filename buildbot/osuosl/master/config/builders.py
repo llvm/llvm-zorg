@@ -649,6 +649,26 @@ def _get_clang_builders():
                                "-DCMAKE_CXX_FLAGS='-march=broadwell'",
                                "-DLLVM_TARGETS_TO_BUILD='X86'"])},
 
+        ## X86_64 Clang+LLVM Run test-suite targeting AVX512 on SDE (Emulator)
+        {'name': "clang-cmake-x86_64-sde-avx512-linux",
+         'slavenames':["sde-avx512-intel64"],
+         'builddir':"clang-cmake-x86_64-sde-avx512-linux",
+         'factory' : ClangBuilder.getClangCMakeBuildFactory(
+             clean=False,
+             checkout_clang_tools_extra=False,
+             checkout_compiler_rt=False,
+             checkout_lld=False,
+             test=True,
+             useTwoStage=False,
+             runTestSuite=True,
+             nt_flags=['--cflag', '-march=skylake-avx512', '--threads=80',
+                 '--build-threads=80', '--make-param', 'RUNUNDER="sde64 -skx --"', '--make-param', 'USER_MODE_EMULATION=1'],
+             env={'PATH':'~/tools/sde/latest:/usr/bin/ccache:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'},
+             extra_cmake_args=["-DLLVM_ENABLE_ASSERTIONS=ON",
+                               "-DCMAKE_C_FLAGS='-march=broadwell'",
+                               "-DCMAKE_CXX_FLAGS='-march=broadwell'",
+                               "-DLLVM_TARGETS_TO_BUILD='X86'"])},
+
 #        {'name' : "clang-3stage-ubuntu",
 #         'slavenames' : ["ps4-buildslave1a"],
 #         'builddir' : "clang-3stage-ubuntu",
