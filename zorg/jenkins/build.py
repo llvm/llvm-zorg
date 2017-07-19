@@ -73,6 +73,7 @@ class Configuration(object):
         self.device = None
         self._svn_url_cache = None
         self.node_name = os.environ.get('NODE_NAME', None)
+        self.lldb_test_archs = os.environ.get('LLDB_TEST_ARCHS', 'x86_64').split()
 
         # Import all of the command line arguments into the config object
         self.__dict__.update(vars(args))
@@ -531,52 +532,31 @@ def lldb_builder():
     run_cmd("lldb", xcodebuild_cmd)
     footer()
 
-    # Run LLDB Python test suite (x86_64 inferiors)
+    # Run LLDB Python test suite for archs defined in LLDB_TEST_ARCHS
+    for arch in conf.lldb_test_archs:
+        results_file = os.path.join(build_dir,
+                "test-results-{}.xml".format(arch))
+        python_testsuite_cmd = [
+            "/usr/bin/python",
+            "test/dotest.py",
+            "--executable", os.path.join(built_products_dir, "lldb"),
+            "-C", effective_clang,
+            "--arch", arch,
+            "--session-file-format", "fm",
+            "--results-formatter",
+            "lldbsuite.test_event.formatter.xunit.XunitFormatter",
+            "--results-file", results_file,
+            "--rerun-all-issues",
+            "--env", "TERM=vt100",
+            "-O--xpass=ignore"
+        ]
 
-    python_testsuite_cmd_x86_64 = [
-        "/usr/bin/python",
-        "test/dotest.py",
-        "--executable", os.path.join(built_products_dir, "lldb"),
-        "-C", effective_clang,
-        "--arch", "x86_64",
-        "--session-file-format", "fm",
-        "--results-formatter",
-        "lldbsuite.test_event.formatter.xunit.XunitFormatter",
-        "--results-file", os.path.join(build_dir, "test-results-x86_64.xml"),
-        "--rerun-all-issues",
-        "--env", "TERM=vt100",
-        "-O--xpass=ignore"
-    ]
-
-    header("Run LLDB Python-based test suite (x86_64 targets)")
-    # For the unit tests, we don't want to stop the build if there are
-    # build errors.  We allow the JUnit/xUnit parser to pick this up.
-    print repr(python_testsuite_cmd_x86_64)
-    run_cmd_errors_okay("lldb", python_testsuite_cmd_x86_64)
-    footer()
-
-    # Run LLDB Python test suite (i386 inferiors)
-
-    python_testsuite_cmd_i386 = [
-        "/usr/bin/python",
-        "test/dotest.py",
-        "--executable", os.path.join(built_products_dir, "lldb"),
-        "-C", effective_clang,
-        "--arch", "i386",
-        "--session-file-format", "fm",
-        "--results-formatter",
-        "lldbsuite.test_event.formatter.xunit.XunitFormatter",
-        "--results-file", os.path.join(build_dir, "test-results-i386.xml"),
-        "--rerun-all-issues",
-        "--env", "TERM=vt100",
-        "-O--xpass=ignore"
-    ]
-
-    header("Run LLDB Python-based test suite (i386 targets)")
-    # For the unit tests, we don't want to stop the build if there are
-    # build errors.  We allow the JUnit/xUnit parser to pick this up.
-    run_cmd_errors_okay("lldb", python_testsuite_cmd_i386)
-    footer()
+        header("Run LLDB Python-based test suite ({} targets)".format(arch))
+        # For the unit tests, we don't want to stop the build if there are
+        # build errors.  We allow the JUnit/xUnit parser to pick this up.
+        print repr(python_testsuite_cmd)
+        run_cmd_errors_okay("lldb", python_testsuite_cmd)
+        footer()
 
 
 def static_analyzer_benchmarks_builder():
