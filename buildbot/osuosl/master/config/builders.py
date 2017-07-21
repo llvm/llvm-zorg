@@ -608,6 +608,15 @@ def _get_clang_builders():
                        checkout_lld=False,
                        clean=False)},
 
+        {'name' : "clang-freebsd11-amd64",
+         'slavenames' : ["freebsd11-amd64"],
+         'builddir' : "clang-freebsd11-amd64",
+         'factory': ClangBuilder.getClangCMakeBuildFactory(
+                       checkout_lld=False,
+                       clean=True,
+                       extra_cmake_args=['-DLLVM_ENABLE_ASSERTIONS=ON',
+                                         '-DCMAKE_BUILD_TYPE:STRING=Release'])},
+
         {'name': "ubuntu-gcc7.1-werror",
          'slavenames':["am1i-slv2"],
          'builddir':"ubuntu-gcc7.1-werror",
