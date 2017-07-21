@@ -60,6 +60,9 @@ if  [[ "$(cat llvm_build64/CMAKE_OPTIONS)" != "${CMAKE_OPTIONS}" ]] ; then
 fi
 ninja -C llvm_build64 || echo @@@STEP_FAILURE@@
 
+# Android NDK has no iconv.h which is requred by LIBXML2.
+CMAKE_COMMON_OPTIONS="${CMAKE_COMMON_OPTIONS} -DLLVM_LIBXML2_ENABLED=OFF"
+
 build_android_ndk aarch64 arm64
 build_android_ndk arm arm
 build_android_ndk i686 x86
