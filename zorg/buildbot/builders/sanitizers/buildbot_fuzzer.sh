@@ -101,6 +101,8 @@ RunFuzzerTest() {
   `pwd`/fuzzer-test-suite/build-and-test.sh "$1"
 }
 
+ulimit -t 3600
+
 RunFuzzerTest re2-2014-12-09       || echo @@@STEP_FAILURE@@@
 RunFuzzerTest c-ares-CVE-2016-5180 || echo @@@STEP_FAILURE@@@
 RunFuzzerTest openssl-1.0.1f       || echo @@@STEP_FAILURE@@@
