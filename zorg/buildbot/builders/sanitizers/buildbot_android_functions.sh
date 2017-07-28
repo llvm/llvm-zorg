@@ -141,7 +141,7 @@ function test_android {
 
   rm -rf test_android_log_*
   rm -rf tested_arch_*
-  rm -rf shards_log_*
+  rm -rf shards_*
   for SERIAL in $ANDROID_DEVICES; do
     (test_on_device "$SERIAL" $@ >$(mktemp test_android_log_XXXX) 2>&1) &
   done
