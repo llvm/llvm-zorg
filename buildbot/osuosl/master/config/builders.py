@@ -693,7 +693,7 @@ def _get_clang_builders():
              runTestSuite=True,
              nt_flags=['--cflag', '-march=skylake-avx512', '--threads=80',
                  '--build-threads=80', '--make-param', "RUNUNDER='sde64 -skx --'", '--make-param', 'USER_MODE_EMULATION=1'],
-             env={'PATH':'~/tools/sde/latest:/usr/bin/ccache:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'},
+             env={'PATH':'/home/ssglocal/tools/sde/latest:/usr/bin/ccache:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'},
              extra_cmake_args=["-DLLVM_ENABLE_ASSERTIONS=ON",
                                "-DCMAKE_C_FLAGS='-march=broadwell'",
                                "-DCMAKE_CXX_FLAGS='-march=broadwell'",
