@@ -839,6 +839,24 @@ def _get_aosp_builders():
                 patch=None)}
     ]
 
+# Reverse iteration builders.
+def _get_rev_iter_builders():
+    return [
+        {'name': "reverse-iteration",
+         'slavenames': ["hexagon-build-03"],
+         'builddir': "reverse-iteration",
+         'factory': PollyBuilder.getPollyBuildFactory(
+                clean=True,
+                make='ninja',
+                jobs=16,
+                checkAll=True,
+                extraCmakeArgs=["-G", "Ninja",
+                                "-DLLVM_REVERSE_ITERATION:BOOL=ON",
+                                "-DLLVM_ENABLE_ASSERTIONS=True",
+                                "-DCMAKE_C_COMPILER:FILEPATH=/local/clang+llvm-3.7.1-x86_64-linux-gnu-ubuntu-14.04/bin/clang",
+                                "-DCMAKE_CXX_COMPILER:FILEPATH=/local/clang+llvm-3.7.1-x86_64-linux-gnu-ubuntu-14.04/bin/clang++"])}
+    ]
+
 # LLDB builders.
 def _get_lldb_builders():
     return [
@@ -1535,6 +1553,10 @@ def get_builders():
 
     for b in _get_aosp_builders():
         b['category'] = 'aosp'
+        yield b
+
+    for b in _get_rev_iter_builders():
+        b['category'] = 'rev_iter'
         yield b
 
     for b in _get_lld_builders():

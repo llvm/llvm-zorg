@@ -202,6 +202,15 @@ def get_status_targets(standard_builders, standard_categories=None):
         InformativeMailNotifier(
             fromaddr = "llvm.buildmaster@lab.llvm.org",
             sendToInterestedUsers= False,
+            extraRecipients = ["mgrang@codeaurora.org"],
+            subject="Build %(builder)s Failure",
+            mode = "failing",
+            builders = ["reverse-iteration"],
+            addLogs=False,
+            num_lines = 15),
+        InformativeMailNotifier(
+            fromaddr = "llvm.buildmaster@lab.llvm.org",
+            sendToInterestedUsers= False,
             extraRecipients = ["tra+buildbot@google.com"],
             subject="Build %(builder)s Failure",
             mode = "failing",
