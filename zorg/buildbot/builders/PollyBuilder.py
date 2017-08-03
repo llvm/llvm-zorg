@@ -14,6 +14,7 @@ def getPollyBuildFactory(
     install=False,
     make='make',
     jobs=None,
+    checkAll=False,
     extraCmakeArgs=[]):
     llvm_srcdir = "llvm.src"
     llvm_objdir = "llvm.obj"
@@ -25,7 +26,8 @@ def getPollyBuildFactory(
         jobs_cmd = ["-j"+str(jobs)]
     build_cmd = [make] + jobs_cmd
     install_cmd = [make, 'install'] + jobs_cmd
-    check_cmd = [make, 'check-polly'] + jobs_cmd
+    check_all_cmd = [make, 'check-all'] + jobs_cmd
+    check_polly_cmd = [make, 'check-polly'] + jobs_cmd
     cmake_install = []
     if install:
         cmake_install = ["-DCMAKE_INSTALL_PREFIX=../%s" % llvm_instdir]
@@ -101,12 +103,19 @@ def getPollyBuildFactory(
                                description=["install"],
                                workdir=llvm_objdir))
 
-    # Test Polly
-    f.addStep(ShellCommand(name="test_polly",
-                           command=check_cmd,
-                           haltOnFailure=False,
-                           description=["test polly"],
-                           workdir=llvm_objdir))
+    # Test
+    if checkAll:
+        f.addStep(ShellCommand(name="check_all",
+                               command=check_all_cmd,
+                               haltOnFailure=False,
+                               description=["check all"],
+                               workdir=llvm_objdir))
+    else:
+        f.addStep(ShellCommand(name="check_polly",
+                               command=check_polly_cmd,
+                               haltOnFailure=False,
+                               description=["check polly"],
+                               workdir=llvm_objdir))
 
     return f
 
