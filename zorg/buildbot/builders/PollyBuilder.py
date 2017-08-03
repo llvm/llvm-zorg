@@ -14,7 +14,6 @@ def getPollyBuildFactory(
     install=False,
     make='make',
     jobs=None,
-    checkFormat=True,
     extraCmakeArgs=[]):
     llvm_srcdir = "llvm.src"
     llvm_objdir = "llvm.obj"
@@ -27,7 +26,6 @@ def getPollyBuildFactory(
     build_cmd = [make] + jobs_cmd
     install_cmd = [make, 'install'] + jobs_cmd
     check_cmd = [make, 'check-polly'] + jobs_cmd
-    check_format_cmd = [make, 'polly-check-format'] + jobs_cmd
     cmake_install = []
     if install:
         cmake_install = ["-DCMAKE_INSTALL_PREFIX=../%s" % llvm_instdir]
@@ -106,17 +104,10 @@ def getPollyBuildFactory(
     # Test Polly
     f.addStep(ShellCommand(name="test_polly",
                            command=check_cmd,
-                           haltOnFailure=True,
+                           haltOnFailure=False,
                            description=["test polly"],
                            workdir=llvm_objdir))
 
-    # Check formatting
-    if checkFormat:
-        f.addStep(ShellCommand(name="test_polly_format",
-                               command=check_format_cmd,
-                               haltOnFailure=False,
-                               description=["check formatting"],
-                               workdir=llvm_objdir))
     return f
 
 def AddExternalPollyBuildFactory(f, llvm_installdir, build_type = "Release"):

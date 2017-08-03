@@ -803,7 +803,6 @@ def _get_polly_builders():
                 install=True,
                 make='ninja',
                 jobs=16,
-                checkFormat=False,
                 extraCmakeArgs=["-G", "Ninja",
                                 "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'",
                                 "-DLLVM_DEFAULT_TARGET_TRIPLE=arm-linux-gnueabi",

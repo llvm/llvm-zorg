@@ -68,7 +68,6 @@ def getAOSPBuildFactory(
                                               install=True,
                                               make='ninja',
                                               jobs=jobs,
-                                              checkFormat=False,
                                               extraCmakeArgs=extra_cmake_args)
         clang_dir = 'llvm.inst/bin'
 
