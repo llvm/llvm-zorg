@@ -19,7 +19,7 @@ LLVM=$ROOT/llvm
 LIBFUZZER=$LLVM/lib/Fuzzer
 # No assertions. Need to clean up the existing assertion failures first.
 # Also, the Fuzzer does not provide reproducers on assertion failures yet.
-CMAKE_COMMON_OPTIONS="-GNinja -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_ASSERTIONS=OFF -DLLVM_PARALLEL_LINK_JOBS=8 -DLLVM_APPEND_VC_REV=OFF"
+CMAKE_COMMON_OPTIONS="-GNinja -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_ASSERTIONS=OFF -DLLVM_PARALLEL_LINK_JOBS=8 -DLLVM_APPEND_VC_REV=OFF -DLIBFUZZER_ENABLE_TESTS=ON"
 
 if [ "$BUILDBOT_CLOBBER" != "" ]; then
   echo @@@BUILD_STEP clobber@@@
