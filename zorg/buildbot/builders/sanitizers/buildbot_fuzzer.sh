@@ -61,10 +61,10 @@ RunFuzzerTest() {
 ulimit -t 3600
 
 RunFuzzerTest re2-2014-12-09       || echo @@@STEP_FAILURE@@@
-#RunFuzzerTest c-ares-CVE-2016-5180 || echo @@@STEP_FAILURE@@@
-#RunFuzzerTest openssl-1.0.1f       || echo @@@STEP_FAILURE@@@
-#RunFuzzerTest openssl-1.0.2d       || echo @@@STEP_FAILURE@@@
-#RunFuzzerTest libxml2-v2.9.2       || echo @@@STEP_FAILURE@@@
-#RunFuzzerTest libpng-1.2.56        || echo @@@STEP_FAILURE@@@
-#RunFuzzerTest libssh-2017-1272     || echo @@@STEP_WARNINGS@@@ # evaluating
+RunFuzzerTest c-ares-CVE-2016-5180 || echo @@@STEP_FAILURE@@@
+RunFuzzerTest openssl-1.0.1f       || echo @@@STEP_FAILURE@@@
+RunFuzzerTest openssl-1.0.2d       || echo @@@STEP_FAILURE@@@
+RunFuzzerTest libxml2-v2.9.2       || echo @@@STEP_FAILURE@@@
+RunFuzzerTest libpng-1.2.56        || echo @@@STEP_FAILURE@@@
+RunFuzzerTest libssh-2017-1272     || echo @@@STEP_FAILURE@@@
 #RunFuzzerTest woff2-2016-05-06     || echo @@@STEP_WARNINGS@@@  # Often can't find the bug in the given time.
