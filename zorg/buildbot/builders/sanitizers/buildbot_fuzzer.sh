@@ -55,6 +55,9 @@ echo @@@BUILD_STEP get fuzzer-test-suite @@@
 RunFuzzerTest() {
   echo @@@BUILD_STEP test "$1" fuzzer@@@
   ln -sf $LIBFUZZER .
+  CUSTOM_FLAGS="-O2 -fno-omit-frame-pointer -g -fsanitize=address -fsanitize-coverage=trace-pc-guard,trace-cmp,trace-gep,trace-div,pc-table"
+  export CFLAGS="$CUSTOM_FLAGS"
+  export CXXFLAGS="$CUSTOM_FLAGS"
   `pwd`/fuzzer-test-suite/build-and-test.sh "$1"
 }
 
