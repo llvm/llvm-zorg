@@ -461,6 +461,7 @@ def getClangCMakeGCSBuildFactory(
             # Test-suite
             runTestSuite=False,
             nt_flags=[],
+            testsuite_flags=[],
             submitURL=None,
             testerName=None,
 
@@ -483,7 +484,8 @@ def getClangCMakeGCSBuildFactory(
                vs_target_arch=vs_target_arch, useTwoStage=useTwoStage,
                testStage1=testStage1, stage1_config=stage1_config,
                stage2_config=stage2_config, runTestSuite=runTestSuite,
-               nt_flags=nt_flags, submitURL=submitURL, testerName=testerName,
+               nt_flags=nt_flags, testsuite_flags=testsuite_flags,
+               submitURL=submitURL, testerName=testerName,
                env=env, extra_cmake_args=extra_cmake_args,
                checkout_clang_tools_extra=checkout_clang_tools_extra,
                checkout_compiler_rt=checkout_compiler_rt,
@@ -511,6 +513,7 @@ def getClangCMakeBuildFactory(
             # Test-suite
             runTestSuite=False,
             nt_flags=[],
+            testsuite_flags=[],
             submitURL=None,
             testerName=None,
 
@@ -529,7 +532,8 @@ def getClangCMakeBuildFactory(
                vs_target_arch=vs_target_arch, useTwoStage=useTwoStage,
                testStage1=testStage1, stage1_config=stage1_config,
                stage2_config=stage2_config, runTestSuite=runTestSuite,
-               nt_flags=nt_flags, submitURL=submitURL, testerName=testerName,
+               nt_flags=nt_flags, testsuite_flags=testsuite_flags,
+               submitURL=submitURL, testerName=testerName,
                env=env, extra_cmake_args=extra_cmake_args,
                checkout_clang_tools_extra=checkout_clang_tools_extra,
                checkout_lld=checkout_lld,
@@ -557,6 +561,7 @@ def _getClangCMakeBuildFactory(
             # Test-suite
             runTestSuite=False,
             nt_flags=[],
+            testsuite_flags=[],
             submitURL=None,
             testerName=None,
 
@@ -769,22 +774,37 @@ def _getClangCMakeBuildFactory(
         cxx = WithProperties('%(workdir)s/'+compiler_path+'/bin/'+cxx)
 
         # LNT Command line (don't pass -jN. Users need to pass both --threads
-        # and --build-threads in nt_flags to get the same effect)
-        test_suite_cmd = [python, lnt, 'runtest', 'nt',
-                          '--no-timestamp',
-                          '--sandbox', sandbox,
-                          '--test-suite', test_suite_dir,
-                          '--cc', cc,
-                          '--cxx', cxx]
-        # Append any option provided by the user
-        test_suite_cmd.extend(nt_flags)
+        # and --build-threads in nt_flags/test_suite_flags to get the same effect)
+        use_runtest_testsuite = len(nt_flags) == 0
+        if not use_runtest_testsuite:
+            test_suite_cmd = [python, lnt, 'runtest', 'nt',
+                              '--no-timestamp',
+                              '--sandbox', sandbox,
+                              '--test-suite', test_suite_dir,
+                              '--cc', cc,
+                              '--cxx', cxx]
+            # Append any option provided by the user
+            test_suite_cmd.extend(nt_flags)
+        else:
+            lit = WithProperties('%(workdir)s/'+stage1_build+'/bin/llvm-lit')
+            test_suite_cmd = [python, lnt, 'runtest', 'test-suite',
+                              '--no-timestamp',
+                              '--sandbox', sandbox,
+                              '--test-suite', test_suite_dir,
+                              '--cc', cc,
+                              '--cxx', cxx,
+                              '--use-lit', lit]
+            # Append any option provided by the user
+            test_suite_cmd.extend(testsuite_flags)
+
         # Only submit if a URL has been specified
         if submitURL is not None:
             if not isinstance(submitURL, list):
                 submitURL = [submitURL]
             for url in submitURL:
                 test_suite_cmd.extend(['--submit', url])
-            if testerName:
+            # lnt runtest test-suite doesn't understand --no-machdep-info:
+            if testerName and not use_runtest_testsuite:
                 test_suite_cmd.extend(['--no-machdep-info', testerName])
         # CC and CXX are needed as env for build-tools
         test_suite_env = copy.deepcopy(env)
