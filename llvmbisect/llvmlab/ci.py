@@ -336,7 +336,11 @@ the most recent build is fetched.
 
 The available builders can be listed using:
 
-  %%prog ci ls""" % locals())
+  %%prog ls
+
+The available builds can be listed using:
+
+  %%prog ls builder""" % locals())
     parser.add_option("-f", "--force", dest="force",
                       help=("always download and extract, overwriting any"
                             "existing files"),
