@@ -60,7 +60,7 @@ def update():
 
 @task
 def log():
-    sudo('tail -n 500 /srv/lnt/install/lnt.log')
+    sudo('cat /srv/lnt/install/lnt.log')
 
 
 @task
