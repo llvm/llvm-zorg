@@ -14,6 +14,7 @@ here = os.path.dirname(os.path.realpath(__file__))
 home = expanduser("~")
 
 env.use_ssh_config = True
+env.output_prefix = False
 
 # The remote LNT venv location.
 LNT_VENV = "/srv/lnt/sandbox"
