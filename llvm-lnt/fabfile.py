@@ -8,6 +8,8 @@ from os.path import expanduser
 
 from fabric.api import env, cd, task, run, put
 from fabric.api import sudo
+from fabric.context_managers import hide
+from fabric.operations import get, local
 
 here = os.path.dirname(os.path.realpath(__file__))
 
@@ -60,8 +62,22 @@ def update():
 
 @task
 def log():
-    sudo('cat /srv/lnt/install/lnt.log')
+    get('/srv/lnt/install/lnt.log', 'lnt.log')
+    local('cat lnt.log')
 
+
+@task
+def new_log():
+    """Show only lines since the last time the log was echoed."""
+    if os.path.exists("lnt.log"):
+        lines = {line for line in open("lnt.log", 'r').readlines()}
+    else:
+        lines = {}
+    with hide('warnings'):
+        get('/srv/lnt/install/lnt.log', 'lnt.log', )
+    new_lines = {line for line in open("lnt.log", 'r').readlines()}
+    for l in new_lines - lines:
+        print ' '.join(l.split()[2:]),
 
 @task
 def ps():
