@@ -72,7 +72,7 @@ def new_log():
     if os.path.exists("lnt.log"):
         lines = {line for line in open("lnt.log", 'r').readlines()}
     else:
-        lines = {}
+        lines = set()
     with hide('warnings'):
         get('/srv/lnt/install/lnt.log', 'lnt.log', )
     new_lines = {line for line in open("lnt.log", 'r').readlines()}
