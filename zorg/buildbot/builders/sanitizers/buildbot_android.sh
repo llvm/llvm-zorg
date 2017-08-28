@@ -69,6 +69,8 @@ build_android_ndk i386 x86
 
 echo @@@BUILD_STEP run cmake@@@
 configure_android aarch64 aarch64-linux-android
+# Testing armv7 instead of plain arm to work around
+# https://code.google.com/p/android/issues/detail?id=68779
 configure_android arm armv7-linux-androideabi
 configure_android i386 i686-linux-android
 
@@ -76,6 +78,4 @@ build_android aarch64
 build_android arm
 build_android i386
 
-# Testing armv7 instead of plain arm to work around
-# https://code.google.com/p/android/issues/detail?id=68779
 test_android i386:x86 aarch64:arm64-v8a arm:armeabi-v7a
