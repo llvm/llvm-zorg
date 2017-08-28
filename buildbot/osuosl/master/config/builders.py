@@ -808,7 +808,7 @@ def _get_aosp_builders():
                                   "-DLLVM_ENABLE_ASSERTIONS=True",
                                   "-DCMAKE_C_COMPILER:FILEPATH=/local/clang+llvm-3.7.1-x86_64-linux-gnu-ubuntu-14.04/bin/clang",
                                   "-DCMAKE_CXX_COMPILER:FILEPATH=/local/clang+llvm-3.7.1-x86_64-linux-gnu-ubuntu-14.04/bin/clang++"],
-                timeout=180,
+                timeout=240,
                 target_clang=None,
                 target_flags="-Wno-error -O3 -mllvm -polly -mllvm -polly-position=before-vectorizer -mllvm -polly-process-unprofitable",
                 jobs=16,
