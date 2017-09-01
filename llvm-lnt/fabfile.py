@@ -6,6 +6,7 @@
 import os
 from os.path import expanduser
 
+import re
 from fabric.api import env, cd, task, run, put
 from fabric.api import sudo
 from fabric.context_managers import hide
@@ -56,7 +57,7 @@ def update():
     put(here + "/kill_zombies.py", "/tmp/kill_zombies.py")
     sudo("mv /tmp/kill_zombies.py /etc/cron.hourly/kill_zombies")
     sudo("chmod +x /etc/cron.hourly/kill_zombies")
-
+    rotate_log()
     service_restart()
 
 
@@ -79,9 +80,20 @@ def new_log():
     for l in new_lines - lines:
         print ' '.join(l.split()[2:]),
 
+
 @task
 def ps():
     sudo('ps auxxxf | grep gunicorn')
+
+
+@task
+def rotate_log():
+    """Rotate the LNT log."""
+    sudo('rm -rf /srv/lnt/install/gunicorn.error.log')
+    out = sudo('ps auxxxf | grep "gunicorn: master"')
+    pid = re.search(r'lnt\s+(?P<pid>\d+)\s+', out).groupdict()['pid']
+    print pid
+    sudo('kill -USR1 ' + pid)
 
 
 @task
