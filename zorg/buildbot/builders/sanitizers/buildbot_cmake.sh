@@ -144,6 +144,7 @@ if [ "$PLATFORM" == "Linux" ]; then
   check_in_gcc $CHECK_SCUDO scudo
   check_in_gcc $CHECK_TSAN tsan
   check_in_gcc $CHECK_UBSAN ubsan
+  check_in_gcc $CHECK_UBSAN ubsan-minimal
 fi
 
 ### From now on we use just-built Clang as a host compiler ###
@@ -201,6 +202,7 @@ if [ "$PLATFORM" == "Linux" ]; then
   # check_64bit $CHECK_SCUDO scudo, No check-scudo target for this config
   check_64bit $CHECK_TSAN tsan
   check_64bit $CHECK_UBSAN ubsan
+  check_64bit $CHECK_UBSAN ubsan-minimal
 fi
 
 FRESH_CLANG_PATH=${ROOT}/llvm_build64/bin
@@ -274,6 +276,7 @@ if [ "$PLATFORM" == "Linux" -a $HAVE_NINJA == 1 ]; then
   check_ninja $CHECK_SCUDO scudo
   check_ninja $CHECK_TSAN tsan
   check_ninja $CHECK_UBSAN ubsan
+  check_ninja $CHECK_UBSAN ubsan-minimal
 
   if [ "$CHECK_SYMBOLIZER" == "1" ]; then
     build_symbolizer 32 llvm_build_ninja
