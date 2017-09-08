@@ -811,7 +811,7 @@ def _get_aosp_builders():
                 timeout=240,
                 target_clang=None,
                 target_flags="-Wno-error -O3 -mllvm -polly -mllvm -polly-position=before-vectorizer -mllvm -polly-process-unprofitable",
-                jobs=16,
+                jobs=8,
                 extra_make_args=None,
                 env={},
                 clean=False,
