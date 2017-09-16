@@ -70,6 +70,7 @@ function configure_android { # ARCH triple
     -DCMAKE_C_COMPILER=$ROOT/llvm_build64/bin/clang \
     -DCMAKE_CXX_COMPILER=$ROOT/llvm_build64/bin/clang++ \
     -DLLVM_CONFIG_PATH=$ROOT/llvm_build64/bin/llvm-config \
+    -DCOMPILER_RT_BUILD_BUILTINS=OFF \
     -DCOMPILER_RT_INCLUDE_TESTS=ON \
     -DCOMPILER_RT_ENABLE_WERROR=ON \
     -DCMAKE_C_FLAGS="$ANDROID_FLAGS" \
@@ -88,7 +89,7 @@ function build_android {
   wait
   echo @@@BUILD_STEP build android/$_arch@@@
   ninja -C llvm_build_android_$_arch llvm-symbolizer || echo @@@STEP_FAILURE@@@
-  ninja -C compiler_rt_build_android_$_arch asan AsanUnitTests SanitizerUnitTests || echo @@@STEP_FAILURE@@@
+  ninja -C compiler_rt_build_android_$_arch compiler-rt AsanUnitTests SanitizerUnitTests || echo @@@STEP_FAILURE@@@
 }
 
 # If a multiarch device has x86 as the first arch, remove everything else from
@@ -196,6 +197,9 @@ function test_arch_on_device {
   $ADB push $COMPILER_RT_BUILD_DIR/lib/asan/tests/AsanTest $DEVICE_ROOT/ &
   $ADB push $COMPILER_RT_BUILD_DIR/lib/asan/tests/AsanNoinstTest $DEVICE_ROOT/ &
   wait
+
+  echo @@@BUILD_STEP run sanitizer lit tests [$DEVICE_DESCRIPTION]@@@
+  (cd $COMPILER_RT_BUILD_DIR && ninja check-sanitizer) || echo @@@STEP_FAILURE@@@
 
   echo @@@BUILD_STEP run asan lit tests [$DEVICE_DESCRIPTION]@@@
   (cd $COMPILER_RT_BUILD_DIR && ninja check-asan) || echo @@@STEP_FAILURE@@@
