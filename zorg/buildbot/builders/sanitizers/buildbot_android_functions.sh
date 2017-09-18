@@ -204,6 +204,9 @@ function test_arch_on_device {
   echo @@@BUILD_STEP run asan lit tests [$DEVICE_DESCRIPTION]@@@
   (cd $COMPILER_RT_BUILD_DIR && ninja check-asan) || echo @@@STEP_FAILURE@@@
 
+  echo @@@BUILD_STEP run scudo lit tests [$DEVICE_DESCRIPTION]@@@
+  (cd $COMPILER_RT_BUILD_DIR && ninja check-scudo) || echo @@@STEP_FAILURE@@@
+
   echo @@@BUILD_STEP run sanitizer_common tests [$DEVICE_DESCRIPTION]@@@
   run_command_on_device $DEVICE_ROOT/SanitizerTest || echo @@@STEP_FAILURE@@@
 
