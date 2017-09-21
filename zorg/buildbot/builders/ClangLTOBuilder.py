@@ -56,12 +56,11 @@ def _addSteps4SystemCompiler(
         ('-DLLVM_OPTIMIZED_TABLEGEN=', 'ON'),
         # Do not expect warning free build by the system toolchain.
         ('-DLLVM_ENABLE_WERROR=',      'OFF'),
-        ('-DCMAKE_COLOR_MAKEFILE=',    'OFF'),
         ])
 
     # Some options are required for this stage no matter what.
     CmakeCommand.applyRequiredOptions(cmake_args, [
-        ('-G',                      'Unix Makefiles'),
+        ('-G',                      'Ninja'),
         ('-DCMAKE_INSTALL_PREFIX=', install_dir),
         ])
 
@@ -78,34 +77,39 @@ def _addSteps4SystemCompiler(
                            path=src_dir,
                            env=env,
                            workdir=obj_dir,
-                           doStepIf=FileDoesNotExist("CMakeCache.txt")))
+                           doStepIf=FileDoesNotExist("CMakeCache.txt")
+                           ))
 
     # Build clang by the system compiler
-    f.addStep(ShellCommand(name="build-stage%s-compiler"% stage_num,
-                           command=['make', WithProperties("-j%s" % jobs), "-k"],
+    f.addStep(NinjaCommand(name="build-stage%s-compiler" % stage_num,
+                           jobs=jobs,
                            haltOnFailure=True,
                            flunkOnWarnings=False,
                            description=["build stage%s compiler" % stage_num],
                            env=env,
-                           workdir=obj_dir))
+                           workdir=obj_dir,
+                           ))
 
     # Test stage1 compiler
-    f.addStep(ShellCommand(name="test-stage%s-compiler"% stage_num,
-                           command=["make", WithProperties("-j%s" % jobs), "check-all"], # or "check-llvm", "check-clang"
+    f.addStep(NinjaCommand(name="test-stage%s-compiler"% stage_num,
+                           targets=["check-all"], # or "check-llvm", "check-clang"
+                           jobs=jobs,
                            haltOnFailure=True,
                            flunkOnWarnings=False,
                            description=["test stage%s compiler" % stage_num],
                            env=env,
-                           workdir=obj_dir))
+                           workdir=obj_dir,
+                           ))
 
     # Install stage1 compiler
-    f.addStep(ShellCommand(name="install-stage%s-compiler"% stage_num,
-                           command=["make", WithProperties("-j%s" % jobs), "install"],
+    f.addStep(NinjaCommand(name="install-stage%s-compiler"% stage_num,
+                           targets=["install"],
+                           jobs=jobs,
                            haltOnFailure=True,
-                           flunkOnWarnings=False,
                            description=["install stage%s compiler" % stage_num],
                            env=env,
-                           workdir=obj_dir))
+                           workdir=obj_dir,
+                           ))
 
 
 def _addSteps4StagedCompiler(
