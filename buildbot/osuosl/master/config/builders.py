@@ -823,7 +823,7 @@ def _get_aosp_builders():
 def _get_rev_iter_builders():
     return [
         {'name': "reverse-iteration",
-         'slavenames': ["hexagon-build-03"],
+         'slavenames': ["hexagon-build-02", "hexagon-build-03"],
          'builddir': "reverse-iteration",
          'factory': PollyBuilder.getPollyBuildFactory(
                 clean=True,
