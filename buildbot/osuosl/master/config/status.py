@@ -120,7 +120,8 @@ def get_status_targets(standard_builders, standard_categories=None):
             extraRecipients = ["Ulrich.Weigand@de.ibm.com"],
             subject="Build %(builder)s Failure",
             mode = "failing",
-            builders = ["clang-s390x-linux"],
+            builders = ["clang-s390x-linux", "clang-s390x-linux-multistage",
+                        "clang-s390x-linux-lnt"],
             addLogs=False,
             num_lines = 15),
         InformativeMailNotifier(
