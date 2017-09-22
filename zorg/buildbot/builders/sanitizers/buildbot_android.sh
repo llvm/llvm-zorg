@@ -40,7 +40,7 @@ download_android_tools r15
 
 # Stage 1
 
-build_stage1_clang_at_revison 305968
+build_stage1_clang_at_revison
 ### From now on we use just-built Clang as a host compiler ###
 CLANG_PATH=${ROOT}/${STAGE1_DIR}/bin
 

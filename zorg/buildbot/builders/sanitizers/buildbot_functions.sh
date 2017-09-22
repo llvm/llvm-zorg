@@ -117,7 +117,8 @@ function build_stage1_clang {
 }
 
 function build_stage1_clang_at_revison {
-  local HOST_CLANG_REVISION=$1
+  local HOST_CLANG_REVISION=313978
+
   if  [ -r ${STAGE1_DIR}/host_clang_revision ] && \
       [ "$(cat ${STAGE1_DIR}/host_clang_revision)" == $HOST_CLANG_REVISION ]
   then

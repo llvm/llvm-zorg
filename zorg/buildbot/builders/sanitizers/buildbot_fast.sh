@@ -32,7 +32,7 @@ fi
 
 # Stage 1
 
-build_stage1_clang_at_revison 305968
+build_stage1_clang_at_revison
 
 CMAKE_COMMON_OPTIONS="$CMAKE_COMMON_OPTIONS -DLLVM_ENABLE_ASSERTIONS=ON"
 
