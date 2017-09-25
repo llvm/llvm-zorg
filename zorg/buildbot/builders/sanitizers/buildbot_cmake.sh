@@ -101,9 +101,6 @@ case "$ARCH" in
   ;;
 esac
 
-if [ "$CHECK_CFI" == "1" ]; then
-  CMAKE_COMMON_OPTIONS="$CMAKE_COMMON_OPTIONS -DLLVM_USE_LINKER=gold"
-fi
 
 echo @@@BUILD_STEP update@@@
 buildbot_update
