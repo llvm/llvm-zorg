@@ -152,7 +152,7 @@ def _get_clang_fast_builders():
                      extraLitArgs=["-j80"])},
 
         {'name': "llvm-clang-x86_64-expensive-checks-win",
-         'slavenames':["ps4-buildslave2"],
+         'slavenames':["am1i-slv4"],
          'builddir':"llvm-clang-x86_64-expensive-checks-win",
          'factory': UnifiedTreeBuilder.getCmakeWithNinjaWithMSVCBuildFactory(
                 extra_configure_args = ["-DLLVM_ENABLE_EXPENSIVE_CHECKS=ON",
