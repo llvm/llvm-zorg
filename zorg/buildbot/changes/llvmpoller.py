@@ -306,7 +306,7 @@ class LLVMPoller(base.PollingChangeSource, util.ComparableMixin):
                     if self.cleanRe.search(comments) or \
                        any([m for f in files for m in [self.cleanCfg.search(f)] if m]):
                         log.msg("Creating a change with the 'clean' property for r%s" % revision)
-                        properties['clean'] = (True, "change")
+                        properties['clean_obj'] = (True, "change")
                     chdict = dict(author=author,
                                   files=files,
                                   comments=comments,
