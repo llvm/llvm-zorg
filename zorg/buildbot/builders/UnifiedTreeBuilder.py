@@ -27,7 +27,8 @@ def getLLVMBuildFactoryAndSVNSteps(
         depends_on_projects=['llvm', 'clang']
 
     if cleanBuildRequested is None:
-        cleanBuildRequested = cleanBuildRequestedByProperty
+       # We want a clean checkout only if requested by the property.
+       cleanBuildRequested = cleanBuildRequestedByProperty
 
     f = LLVMBuildFactory(
             depends_on_projects=depends_on_projects,
@@ -120,6 +121,7 @@ def addCmakeSteps(
                            description=["Cmake", "configure", stage_name],
                            options=cmake_args,
                            path=src_dir,
+                           haltOnFailure=kwargs.get('haltOnFailure', True),
                            env=env,
                            workdir=obj_dir,
                            doStepIf=FileDoesNotExist("CMakeCache.txt"),
@@ -147,6 +149,7 @@ def addNinjaSteps(
 
     f.addStep(NinjaCommand(name="build-%sunified-tree" % step_name,
                            description=["Build", stage_name, "unified", "tree"],
+                           haltOnFailure=kwargs.get('haltOnFailure', True),
                            env=env,
                            workdir=obj_dir,
                            **kwargs # Pass through all the extra arguments.
@@ -157,6 +160,7 @@ def addNinjaSteps(
       f.addStep(NinjaCommand(name="test-%scheck-all" % step_name,
                              targets=checks,
                              description=["Test", "just", "built", "components"],
+                             haltOnFailure=kwargs.get('haltOnFailure', True),
                              env=env,
                              workdir=obj_dir,
                              **kwargs # Pass through all the extra arguments.
@@ -167,6 +171,7 @@ def addNinjaSteps(
         f.addStep(NinjaCommand(name="install-%sall" % step_name,
                                targets=["install"],
                                description=["Install", "just", "built", "components"],
+                               haltOnFailure=kwargs.get('haltOnFailure', True),
                                env=env,
                                workdir=obj_dir,
                                **kwargs # Pass through all the extra arguments.
@@ -190,17 +195,14 @@ def getCmakeBuildFactory(
         # Overwrite pre-set items with the given ones, so user can set anything.
         merged_env.update(env)
 
-    cleanBuildRequested = lambda step: clean or step.build.getProperty("clean")
-
     f = getLLVMBuildFactoryAndSVNSteps(
             depends_on_projects=depends_on_projects,
             llvm_srcdir=llvm_srcdir,
             obj_dir=obj_dir,
             install_dir=install_dir,
-            # We want a clean checkout only if requested by the property.
-            cleanBuildRequested=cleanBuildRequested,
             **kwargs) # Pass through all the extra arguments.
 
+    cleanBuildRequested = lambda step: step.build.getProperty("clean", default=step.build.getProperty("clean_obj")) or clean
     addCmakeSteps(
         f,
         cleanBuildRequested=cleanBuildRequested,
@@ -289,14 +291,11 @@ def getCmakeWithNinjaWithMSVCBuildFactory(
         # We build by Visual Studio 2015, unless otherwise is requested.
         vs=r"""%VS140COMNTOOLS%"""
 
-    cleanBuildRequested = lambda step: step.build.getProperty("clean") or clean
-
     f = getLLVMBuildFactoryAndSVNSteps(
             depends_on_projects=depends_on_projects,
             llvm_srcdir=llvm_srcdir,
             obj_dir=obj_dir,
             install_dir=install_dir,
-            cleanBuildRequested=cleanBuildRequested,
             **kwargs) # Pass through all the extra arguments.
 
     f.addStep(SetProperty(
@@ -309,9 +308,11 @@ def getCmakeWithNinjaWithMSVCBuildFactory(
         ('-G',                      'Ninja'),
         ])
 
+    cleanBuildRequested = lambda step: step.build.getProperty("clean", default=step.build.getProperty("clean_obj")) or clean
+
     addCmakeSteps(
         f,
-        f.cleanBuildRequested,
+        cleanBuildRequested=cleanBuildRequested,
         obj_dir=f.obj_dir,
         install_dir=f.install_dir,
         extra_configure_args=cmake_args,
@@ -377,14 +378,11 @@ def getCmakeWithNinjaMultistageBuildFactory(
         stage_objdirs.append("%s/%s" % (obj_dir, s))
         stage_installdirs.append("%s/%s" % (install_dir, s))
 
-    cleanBuildRequested = lambda step: step.build.getProperty("clean") or clean
-
     f = getLLVMBuildFactoryAndSVNSteps(
             depends_on_projects=depends_on_projects,
             llvm_srcdir=llvm_srcdir,
             obj_dir=obj_dir,
             install_dir=install_dir,
-            cleanBuildRequested=cleanBuildRequested,
             env=env,
             stage_objdirs=stage_objdirs,
             stage_installdirs=stage_installdirs,
@@ -413,9 +411,11 @@ def getCmakeWithNinjaMultistageBuildFactory(
         ('-DLLVM_ENABLE_WERROR=',      'OFF'),
         ])
 
+    cleanBuildRequested = lambda step: step.build.getProperty("clean", default=step.build.getProperty("clean_obj")) or clean
+
     addCmakeSteps(
            f,
-           f.cleanBuildRequested,
+           cleanBuildRequested=cleanBuildRequested,
            obj_dir=stage_objdirs[0],
            install_dir=stage_installdirs[0],
            extra_configure_args=cmake_args_stage1,
