@@ -32,7 +32,7 @@ function build_android_ndk {
   local _ndk_arch=$2
   if [[ ! -d $NDK_DIR/standalone-$_arch ]] ; then 
     echo @@@BUILD_STEP building Android NDK for $_arch@@@
-    $NDK_DIR/build/tools/make_standalone_toolchain.py --api 24 --force --arch $_ndk_arch --install-dir $NDK_DIR/standalone-$_arch
+    $NDK_DIR/build/tools/make_standalone_toolchain.py --api 24 --force --arch $_ndk_arch --stl=libc++ --install-dir $NDK_DIR/standalone-$_arch
   fi
 }
 
@@ -174,6 +174,8 @@ function test_arch_on_device {
 
   DEVICE_DESCRIPTION=$_arch/$_build_flavor/$_build_id
 
+  ANDROID_TOOLCHAIN=$ROOT/android_ndk/standalone-$_arch
+  LIBCXX_SHARED=$(find $ANDROID_TOOLCHAIN/ -name libc++_shared.so | head -1)
   SYMBOLIZER_BIN=$ROOT/llvm_build_android_$_arch/bin/llvm-symbolizer
   ASAN_RT=$(find $ROOT/llvm_build64/lib/ -name libclang_rt.asan-$_arch-android.so)
   COMPILER_RT_BUILD_DIR=$ROOT/compiler_rt_build_android_$_arch
@@ -193,6 +195,7 @@ function test_arch_on_device {
   $ADB shell mkdir $DEVICE_ROOT
   $ADB push $SYMBOLIZER_BIN $DEVICE_ROOT/ &
   $ADB push $ASAN_RT $DEVICE_ROOT/ &
+  $ADB push $LIBCXX_SHARED $DEVICE_ROOT/ &
   $ADB push $COMPILER_RT_BUILD_DIR/lib/sanitizer_common/tests/SanitizerTest $DEVICE_ROOT/ &
   $ADB push $COMPILER_RT_BUILD_DIR/lib/asan/tests/AsanTest $DEVICE_ROOT/ &
   $ADB push $COMPILER_RT_BUILD_DIR/lib/asan/tests/AsanNoinstTest $DEVICE_ROOT/ &
@@ -208,13 +211,13 @@ function test_arch_on_device {
   (cd $COMPILER_RT_BUILD_DIR && ninja check-scudo) || echo @@@STEP_FAILURE@@@
 
   echo @@@BUILD_STEP run sanitizer_common tests [$DEVICE_DESCRIPTION]@@@
-  run_command_on_device $DEVICE_ROOT/SanitizerTest || echo @@@STEP_FAILURE@@@
+  run_command_on_device "LD_LIBRARY_PATH=$DEVICE_ROOT $DEVICE_ROOT/SanitizerTest" || echo @@@STEP_FAILURE@@@
 
   NUM_SHARDS=4
   local _log_prefix=$(mktemp shards_XXXX_)
   echo @@@BUILD_STEP run asan tests [$DEVICE_DESCRIPTION]@@@
   for ((SHARD=0; SHARD < $NUM_SHARDS; SHARD++)); do
-    local ENV="GTEST_TOTAL_SHARDS=$NUM_SHARDS GTEST_SHARD_INDEX=$SHARD"
+    local ENV="GTEST_TOTAL_SHARDS=$NUM_SHARDS GTEST_SHARD_INDEX=$SHARD LD_LIBRARY_PATH=$DEVICE_ROOT"
     ( (run_command_on_device "$ENV $DEVICE_ROOT/AsanNoinstTest" || echo @@@STEP_FAILURE@@@) \
        >${_log_prefix}_$SHARD 2>&1 ) &
   done
