@@ -178,6 +178,7 @@ function test_arch_on_device {
   LIBCXX_SHARED=$(find $ANDROID_TOOLCHAIN/ -name libc++_shared.so | head -1)
   SYMBOLIZER_BIN=$ROOT/llvm_build_android_$_arch/bin/llvm-symbolizer
   ASAN_RT=$(find $ROOT/llvm_build64/lib/ -name libclang_rt.asan-$_arch-android.so)
+  UBSAN_RT=$(find $ROOT/llvm_build64/lib/ -name libclang_rt.ubsan_standalone-$_arch-android.so)
   COMPILER_RT_BUILD_DIR=$ROOT/compiler_rt_build_android_$_arch
   export ADB=adb
   export DEVICE_ROOT=/data/local/tmp/Output
@@ -195,6 +196,7 @@ function test_arch_on_device {
   $ADB shell mkdir $DEVICE_ROOT
   $ADB push $SYMBOLIZER_BIN $DEVICE_ROOT/ &
   $ADB push $ASAN_RT $DEVICE_ROOT/ &
+  $ADB push $UBSAN_RT $DEVICE_ROOT/ &
   $ADB push $LIBCXX_SHARED $DEVICE_ROOT/ &
   $ADB push $COMPILER_RT_BUILD_DIR/lib/sanitizer_common/tests/SanitizerTest $DEVICE_ROOT/ &
   $ADB push $COMPILER_RT_BUILD_DIR/lib/asan/tests/AsanTest $DEVICE_ROOT/ &
@@ -206,6 +208,12 @@ function test_arch_on_device {
 
   echo @@@BUILD_STEP run asan lit tests [$DEVICE_DESCRIPTION]@@@
   (cd $COMPILER_RT_BUILD_DIR && ninja check-asan) || echo @@@STEP_FAILURE@@@
+
+  echo @@@BUILD_STEP run ubsan lit tests [$DEVICE_DESCRIPTION]@@@
+  (cd $COMPILER_RT_BUILD_DIR && ninja check-ubsan) || echo @@@STEP_FAILURE@@@
+
+  echo @@@BUILD_STEP run cfi lit tests [$DEVICE_DESCRIPTION]@@@
+  (cd $COMPILER_RT_BUILD_DIR && ninja check-cfi) || echo @@@STEP_FAILURE@@@
 
   echo @@@BUILD_STEP run scudo lit tests [$DEVICE_DESCRIPTION]@@@
   (cd $COMPILER_RT_BUILD_DIR && ninja check-scudo) || echo @@@STEP_FAILURE@@@
