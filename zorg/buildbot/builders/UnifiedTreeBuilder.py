@@ -124,7 +124,7 @@ def addCmakeSteps(
                            haltOnFailure=kwargs.get('haltOnFailure', True),
                            env=env,
                            workdir=obj_dir,
-                           doStepIf=FileDoesNotExist("CMakeCache.txt"),
+                           doStepIf=FileDoesNotExist("%s/CMakeCache.txt" % objdir),
                            **kwargs # Pass through all the extra arguments.
                            ))
 
