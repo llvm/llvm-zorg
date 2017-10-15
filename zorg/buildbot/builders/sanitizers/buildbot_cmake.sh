@@ -25,7 +25,7 @@ fi
 rm -rf compiler_rt_build llvm_build64 llvm_build_ninja symbolizer_build*
 
 SUPPORTS_32_BITS=${SUPPORTS_32_BITS:-1}
-MAKE_JOBS=${MAX_MAKE_JOBS:-$(grep -c '^processor' /proc/cpuinfo)}
+MAKE_JOBS=${MAX_MAKE_JOBS:-$(nproc)}
 LLVM=$ROOT/llvm
 ZLIB=$ROOT/zlib
 COMPILER_RT=$LLVM/projects/compiler-rt
