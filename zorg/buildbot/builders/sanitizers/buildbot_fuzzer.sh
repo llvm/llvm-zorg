@@ -14,7 +14,7 @@ export PATH="/usr/local/bin:$PATH"
 CHECK_LIBCXX=${CHECK_LIBCXX:-0}
 CHECK_LLD=${CHECK_LLD:-1}
 STAGE1_DIR=llvm_build0
-MAKE_JOBS=${MAX_MAKE_JOBS:-8}
+MAKE_JOBS=${MAX_MAKE_JOBS:-$(grep -c '^processor' /proc/cpuinfo)}
 LLVM=$ROOT/llvm
 LIBFUZZER=$LLVM/lib/Fuzzer
 # No assertions. Need to clean up the existing assertion failures first.

@@ -24,7 +24,7 @@ fi
 
 ROOT=`pwd`
 PLATFORM=`uname`
-MAKE_JOBS=${MAX_MAKE_JOBS:-8}
+MAKE_JOBS=${MAX_MAKE_JOBS:-$(grep -c '^processor' /proc/cpuinfo)}
 CHECK_LIBCXX=${CHECK_LIBCXX:-1}
 CHECK_LLD=${CHECK_LLD:-1}
 
