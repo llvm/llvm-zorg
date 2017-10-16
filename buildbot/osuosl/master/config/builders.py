@@ -970,6 +970,16 @@ def _get_sanitizer_builders():
            'builddir': "sanitizer-x86_64-linux-bootstrap",
            'factory': SanitizerBuilder.getSanitizerBuildFactory()},
 
+           {'name': "sanitizer-x86_64-linux-bootstrap-msan",
+           'slavenames' :["sanitizer-buildbot7"],
+           'builddir': "sanitizer-x86_64-linux-bootstrap-msan",
+           'factory': SanitizerBuilder.getSanitizerBuildFactory()},
+
+           {'name': "sanitizer-x86_64-linux-bootstrap-ubsan",
+           'slavenames' :["sanitizer-buildbot8"],
+           'builddir': "sanitizer-x86_64-linux-bootstrap-ubsan",
+           'factory': SanitizerBuilder.getSanitizerBuildFactory()},
+
           {'name': "sanitizer-x86_64-linux-fast",
            'slavenames' :["sanitizer-buildbot3"],
            'builddir': "sanitizer-x86_64-linux-fast",
