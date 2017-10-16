@@ -65,7 +65,7 @@ echo @@@BUILD_STEP build stage3/msan clang@@@
 mkdir -p ${STAGE3_MSAN_DIR}
 
 clang_msan_path=$ROOT/${STAGE2_MSAN_DIR}/bin
-cmake_stage3_msan_options="${CMAKE_COMMON_OPTIONS} -DCMAKE_C_COMPILER=${clang_msan_path}/clang -DCMAKE_CXX_COMPILER=${clang_msan_path}/clang++ -DLLVM_PARALLEL_COMPILE_JOBS=32"
+cmake_stage3_msan_options="${CMAKE_COMMON_OPTIONS} -DCMAKE_C_COMPILER=${clang_msan_path}/clang -DCMAKE_CXX_COMPILER=${clang_msan_path}/clang++"
 
 (cd ${STAGE3_MSAN_DIR} && cmake ${cmake_stage3_msan_options} $LLVM && ninja clang) || \
   echo @@@STEP_FAILURE@@@
@@ -90,7 +90,7 @@ echo @@@BUILD_STEP build stage3/asan clang@@@
 mkdir -p ${STAGE3_ASAN_DIR}
 
 clang_asan_path=$ROOT/${STAGE2_ASAN_DIR}/bin
-cmake_stage3_asan_options="${CMAKE_COMMON_OPTIONS} -DCMAKE_C_COMPILER=${clang_asan_path}/clang -DCMAKE_CXX_COMPILER=${clang_asan_path}/clang++ -DLLVM_PARALLEL_COMPILE_JOBS=32"
+cmake_stage3_asan_options="${CMAKE_COMMON_OPTIONS} -DCMAKE_C_COMPILER=${clang_asan_path}/clang -DCMAKE_CXX_COMPILER=${clang_asan_path}/clang++"
 
 (cd ${STAGE3_ASAN_DIR} && cmake ${cmake_stage3_asan_options} $LLVM && ninja clang) || \
   echo @@@STEP_FAILURE@@@
