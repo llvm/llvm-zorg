@@ -54,7 +54,7 @@ echo @@@BUILD_STEP build stage3/ubsan clang@@@
 
 mkdir -p ${STAGE3_UBSAN_DIR}
 
-clang_ubsan_path=$ROOT/${STAGE3_UBSAN_DIR}/bin
+clang_ubsan_path=$ROOT/${STAGE2_UBSAN_DIR}/bin
 cmake_stage3_ubsan_options="${CMAKE_COMMON_OPTIONS} -DCMAKE_C_COMPILER=${clang_ubsan_path}/clang -DCMAKE_CXX_COMPILER=${clang_ubsan_path}/clang++"
 
 (cd ${STAGE3_UBSAN_DIR} && cmake ${cmake_stage3_ubsan_options} $LLVM && ninja clang) || \
