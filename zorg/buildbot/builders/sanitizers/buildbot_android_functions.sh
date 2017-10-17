@@ -80,6 +80,7 @@ function configure_android { # ARCH triple
     -DCOMPILER_RT_TEST_TARGET_TRIPLE=$_triple \
     -DCOMPILER_RT_OUTPUT_DIR="$ANDROID_LIBRARY_OUTPUT_DIR" \
     -DCOMPILER_RT_EXEC_OUTPUT_DIR="$ANDROID_EXEC_OUTPUT_DIR" \
+    -DLLVM_LIT_ARGS="-sv --show-unsupported --show-xfail" \
     ${CMAKE_COMMON_OPTIONS} \
     $LLVM/projects/compiler-rt || echo @@@STEP_FAILURE@@@) &
 }
