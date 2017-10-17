@@ -22,6 +22,10 @@ STAGE1_CLOBBER="llvm_build64 compiler_rt_build_android_* llvm_build_android_*"
 LLVM=$ROOT/llvm
 CMAKE_COMMON_OPTIONS="-GNinja -DCMAKE_BUILD_TYPE=Release -DLLVM_PARALLEL_LINK_JOBS=20"
 
+if [ -e /usr/include/plugin-api.h ]; then
+  CMAKE_COMMON_OPTIONS="${CMAKE_COMMON_OPTIONS} -DLLVM_BINUTILS_INCDIR=/usr/include"
+fi
+
 export CCACHE_DIR=$ROOT/ccache
 export CCACHE_COMPILERCHECK=content
 if ccache -sM 20 ; then
