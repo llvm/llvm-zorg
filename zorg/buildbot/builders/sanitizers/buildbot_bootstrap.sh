@@ -57,20 +57,13 @@ mkdir -p ${STAGE3_ASAN_DIR}
 clang_asan_path=$ROOT/${STAGE2_ASAN_DIR}/bin
 cmake_stage3_asan_options="${CMAKE_COMMON_OPTIONS} -DCMAKE_C_COMPILER=${clang_asan_path}/clang -DCMAKE_CXX_COMPILER=${clang_asan_path}/clang++"
 
+export ASAN_OPTIONS="check_initialization_order=true:detect_stack_use_after_return=1:detect_leaks=1"
+
 (cd ${STAGE3_ASAN_DIR} && cmake ${cmake_stage3_asan_options} $LLVM && ninja clang) || \
   echo @@@STEP_FAILURE@@@
 
-
 echo @@@BUILD_STEP check-llvm check-clang stage3/asan@@@
 
-export ASAN_OPTIONS="check_initialization_order=true:detect_stack_use_after_return=0:detect_leaks=1"
-
 (cd ${STAGE3_ASAN_DIR} && ninja check-llvm) || echo @@@STEP_FAILURE@@@
 (cd ${STAGE3_ASAN_DIR} && ninja check-clang) || echo @@@STEP_FAILURE@@@
 
-echo @@@BUILD_STEP check-llvm check-clang stage3/asan-uar@@@
-
-export ASAN_OPTIONS="check_initialization_order=true:detect_stack_use_after_return=1:detect_leaks=1"
-
-(cd ${STAGE3_ASAN_DIR} && ninja check-llvm) || echo @@@STEP_FAILURE@@@
-(cd ${STAGE3_ASAN_DIR} && ninja check-clang) || echo @@@STEP_FAILURE@@@
