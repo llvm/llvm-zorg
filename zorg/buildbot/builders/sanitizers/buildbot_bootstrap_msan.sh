@@ -4,6 +4,8 @@ set -x
 set -e
 set -u
 
+BUILDBOT_MSAN_ORIGINS=1
+
 HERE="$(cd $(dirname $0) && pwd)"
 . ${HERE}/buildbot_functions.sh
 
