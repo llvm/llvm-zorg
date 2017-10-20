@@ -131,9 +131,9 @@ def get_build_slaves():
         # Debian 7.7 x86_64 GCE instance
         create_slave("sanitizer-buildbot2", properties={'jobs': 16}, max_builds=1),
         # Debian 7.7 x86_64 GCE instance
-        create_slave("sanitizer-buildbot3", properties={'jobs': 8}, max_builds=1),
+        create_slave("sanitizer-buildbot3", properties={'jobs': 8}, max_builds=2),
         # Debian 7.7 x86_64 GCE instance
-        create_slave("sanitizer-buildbot4", properties={'jobs': 8}, max_builds=1),
+        create_slave("sanitizer-buildbot4", properties={'jobs': 8}, max_builds=2),
         # Debian 7.7 x86_64 GCE instance
         create_slave("sanitizer-buildbot5", properties={'jobs': 8}, max_builds=1),
         # Ubuntu 14.04 x86_64 6-core z440 workstation
