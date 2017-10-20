@@ -986,7 +986,7 @@ def _get_sanitizer_builders():
            'factory': SanitizerBuilder.getSanitizerBuildFactory()},
 
           {'name': "sanitizer-x86_64-linux-autoconf",
-           'slavenames' :["sanitizer-buildbot4"],
+           'slavenames' :["sanitizer-buildbot4", "sanitizer-buildbot3"],
            'builddir': "sanitizer-x86_64-linux-autoconf",
            'factory': SanitizerBuilder.getSanitizerBuildFactory()},
 
