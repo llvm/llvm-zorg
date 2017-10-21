@@ -179,7 +179,7 @@ function build_stage2 {
     export UBSAN_OPTIONS="external_symbolizer_path=${llvm_symbolizer_path}:print_stacktrace=1"
     local llvm_use_sanitizer="Undefined"
     local fsanitize_flag="-fsanitize=undefined"
-    local build_type="Debug"
+    local build_type="Release"
   else
     echo "Unknown sanitizer!"
     exit 1
