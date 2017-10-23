@@ -1,8 +1,5 @@
 #!/usr/bin/env bash
 
-ulimit -aS
-ulimit -aH
-
 function update_or_checkout {
   local rev_arg=$1
   local repo=$2
