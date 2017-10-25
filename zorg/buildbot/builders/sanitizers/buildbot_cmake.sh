@@ -142,7 +142,7 @@ if [ "$PLATFORM" == "Linux" ]; then
   check_in_gcc $CHECK_LSAN lsan
   check_in_gcc $CHECK_MSAN msan
   check_in_gcc $CHECK_SCUDO scudo
-  check_in_gcc $CHECK_TSAN tsan
+  LDFLAGS=-no-pie check_in_gcc $CHECK_TSAN tsan
   check_in_gcc $CHECK_UBSAN ubsan
   check_in_gcc $CHECK_UBSAN ubsan-minimal
 fi
