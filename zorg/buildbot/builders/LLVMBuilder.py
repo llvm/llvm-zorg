@@ -20,7 +20,7 @@ def getLLVMCMakeBuildFactory(
                   enable_shared        = False,            # Enable shared (-DBUILD_SHARED_LIBS=ON configure parameters added) if true.
                   defaultBranch        = 'trunk',          # Branch to build.
                   config_name          = 'Debug',          # Configuration name.
-                  env                  = {},               # Environmental variables for all steps.
+                  env                  = None,             # Environmental variables for all steps.
                   extra_cmake_args = []):                  # Extra args for the cmake step.
     # Prepare environmental variables. Set here all env we want everywhere.
     merged_env = {
