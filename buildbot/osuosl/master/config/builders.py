@@ -8,7 +8,7 @@ from zorg.buildbot.builders import ClangAndLLDBuilder
 from zorg.buildbot.builders import SanitizerBuilder
 from zorg.buildbot.builders import SanitizerBuilderII
 from zorg.buildbot.builders import SanitizerBuilderWindows
-from zorg.buildbot.builders import Libiomp5Builder
+from zorg.buildbot.builders import OpenMPBuilder
 from zorg.buildbot.builders import LibcxxAndAbiBuilder
 from zorg.buildbot.builders import SphinxDocsBuilder
 from zorg.buildbot.builders import ABITestsuitBuilder
@@ -1126,46 +1126,51 @@ def _get_sanitizer_builders():
 
 def _get_openmp_builders():
     return [
-        {'name': "libomp-gcc-x86_64-linux-debian",
+        {'name': "openmp-gcc-x86_64-linux-debian",
          'slavenames':["gribozavr4"],
-         'builddir':"libomp-gcc-x86_64-linux-debian",
-         'factory' : Libiomp5Builder.getLibompCMakeBuildFactory(
+         'builddir':"openmp-gcc-x86_64-linux-debian",
+         'factory' : OpenMPBuilder.getOpenMPCMakeBuildFactory(
                          c_compiler="gcc",
                          cxx_compiler="g++",
+                         libomptarget=True,
                          env={'PATH':'/home/llvmbb/bin/clang-latest/bin:/home/llvmbb/bin:/usr/local/bin:/usr/local/bin:/usr/bin:/bin'})},
 
-        {'name': "libomp-clang-x86_64-linux-debian",
+        {'name': "openmp-clang-x86_64-linux-debian",
          'slavenames':["gribozavr4"],
-         'builddir':"libomp-clang-x86_64-linux-debian",
-         'factory' : Libiomp5Builder.getLibompCMakeBuildFactory(
+         'builddir':"openmp-clang-x86_64-linux-debian",
+         'factory' : OpenMPBuilder.getOpenMPCMakeBuildFactory(
                          c_compiler="clang",
                          cxx_compiler="clang++",
+                         libomptarget=True,
+                         test_libomptarget=True,
                          env={'PATH':'/home/llvmbb/bin/clang-latest/bin:/home/llvmbb/bin:/usr/local/bin:/usr/local/bin:/usr/bin:/bin'})},
 
-        {'name': "libomp-ompt-gcc-x86_64-linux-debian",
+        {'name': "openmp-ompt-gcc-x86_64-linux-debian",
          'slavenames':["gribozavr4"],
-         'builddir':"libomp-ompt-gcc-x86_64-linux-debian",
-         'factory' : Libiomp5Builder.getLibompCMakeBuildFactory(
+         'builddir':"openmp-ompt-gcc-x86_64-linux-debian",
+         'factory' : OpenMPBuilder.getOpenMPCMakeBuildFactory(
                          c_compiler="gcc",
                          cxx_compiler="g++",
                          ompt=True,
                          env={'PATH':'/home/llvmbb/bin/clang-latest/bin:/home/llvmbb/bin:/usr/local/bin:/usr/local/bin:/usr/bin:/bin'})},
 
-        {'name': "libomp-ompt-clang-x86_64-linux-debian",
+        {'name': "openmp-ompt-clang-x86_64-linux-debian",
          'slavenames':["gribozavr4"],
-         'builddir':"libomp-ompt-clang-x86_64-linux-debian",
-         'factory' : Libiomp5Builder.getLibompCMakeBuildFactory(
+         'builddir':"openmp-ompt-clang-x86_64-linux-debian",
+         'factory' : OpenMPBuilder.getOpenMPCMakeBuildFactory(
                          c_compiler="clang",
                          cxx_compiler="clang++",
                          ompt=True,
                          env={'PATH':'/home/llvmbb/bin/clang-latest/bin:/home/llvmbb/bin:/usr/local/bin:/usr/local/bin:/usr/bin:/bin'})},
-                         
-        {'name': "libomp-clang-ppc64le-linux-debian",
+
+        {'name': "openmp-clang-ppc64le-linux-debian",
          'slavenames':["ppc64le-nvidia-K40"],
-         'builddir':"libomp-clang-ppc64le-linux-debian",
-         'factory' : Libiomp5Builder.getLibompCMakeBuildFactory(
-                         c_compiler="/home/bbot/opt/clang/bin/clang",
-                         cxx_compiler="/home/bbot/opt/clang/bin/clang++",
+         'builddir':"openmp-clang-ppc64le-linux-debian",
+         'factory' : OpenMPBuilder.getOpenMPCMakeBuildFactory(
+                         c_compiler="clang",
+                         cxx_compiler="clang++",
+                         libomptarget=True,
+                         test_libomptarget=True,
                          env={'PATH':'/home/bbot/opt/cmake/bin:/home/bbot/opt/ninja/bin:/usr/local/bin:/usr/bin:/bin'})},
 
         ]
