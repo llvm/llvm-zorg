@@ -1178,7 +1178,7 @@ def _get_openmp_builders():
 def _get_libcxx_builders():
     ericwf_slaves = ['ericwf-buildslave2', 'ericwf-buildslave-fast']
     return [
-        # gribozavr's builders on gribozavr4 
+        # gribozavr's builders on gribozavr4
         {'name': 'libcxx-libcxxabi-x86_64-linux-debian',
          'slavenames': ['gribozavr4'],
          'builddir': 'libcxx-libcxxabi-x86_64-linux-debian',
