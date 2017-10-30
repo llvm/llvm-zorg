@@ -120,6 +120,13 @@ def getOpenMPCMakeBuildFactory(
         cmake_args += ['-DOPENMP_ENABLE_LIBOMPTARGET=ON']
     if ompt:
         cmake_args += ['-DLIBOMP_OMPT_SUPPORT=ON']
+
+    if test:
+        lit_args = WithProperties('-v --show-unsupported --show-xfail -j %s' % jobs)
+        cmake_args += ['-DLIBOMP_LIT_ARGS="%s"' % lit_args]
+        if test_libomptarget:
+            cmake_args += ['-DLIBOMPTARGET_LIT_ARGS="%s"' % lit_args]
+
     f.addStep(
         Configure(
             name        = 'configure-openmp',
@@ -138,8 +145,7 @@ def getOpenMPCMakeBuildFactory(
 
     # Test OpenMP runtime libraries, if requested.
     if test:
-        ninja_test_args  = ['ninja', WithProperties('-j %s' % jobs)]
-        ninja_test_args += [WithProperties('LIT_ARGS=-v -j %s' % jobs)]
+        ninja_test_args = ['ninja', WithProperties('-j %s' % jobs)]
         f.addStep(
             LitTestCommand(
                 name        = 'test-libomp',
