@@ -160,7 +160,7 @@ def get_status_targets(standard_builders, standard_categories=None):
         InformativeMailNotifier(
             fromaddr = "llvm.buildmaster@lab.llvm.org",
             sendToInterestedUsers= False,
-            extraRecipients = ["simon.dardis@imgtec.com"],
+            extraRecipients = ["simon.dardis@mips.com"],
             subject="Build %(builder)s Failure",
             mode = "failing",
             builders = ["llvm-mips-linux", "clang-cmake-mips",
