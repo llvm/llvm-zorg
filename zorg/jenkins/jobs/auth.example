@@ -1,0 +1,4 @@
+# You can find this information on the jenkins homepage:
+#   Click on Username (top right) -> Configure -> Show API Token...
+JENKINS_USER="XXXX"
+JENKINS_TOKEN="YYYY"

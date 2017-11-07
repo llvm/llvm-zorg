@@ -1,0 +1,2 @@
+URL="http://lab.llvm.org:8080/green/"
+PIPELINE_SVN_URL="http://llvm.org/svn/llvm-project/zorg/trunk"

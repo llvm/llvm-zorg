@@ -1,0 +1,9 @@
+#!/usr/bin/env groovy
+def benchmark = evaluate readTrusted('zorg/jenkins/benchmark.groovy')
+benchmark.testsuite_pipeline(label: 'green-dragon-04') {
+    sh """
+LNT_FLAGS+=" -C config/zorg/tasks/cmake/caches/target-arm64-iphoneos.cmake"
+LNT_FLAGS+=" -C config/zorg/tasks/cmake/caches/opt-O0-g.cmake"
+config/tasks/task jenkinsrun config/tasks/lnt-ctmark.sh -a compiler="${params.ARTIFACT}" -D LNT_FLAG="\${LNT_FLAGS}"
+    """
+}

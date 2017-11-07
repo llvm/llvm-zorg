@@ -1,0 +1,3 @@
+#!/usr/bin/env groovy
+def relay = evaluate readTrusted('zorg/jenkins/relay.groovy')
+relay.pipeline "lnt-test-suite-(.+)"

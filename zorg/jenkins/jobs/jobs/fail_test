@@ -1,0 +1,18 @@
+#!/usr/bin/env groovy
+def benchmark = evaluate readTrusted('zorg/jenkins/benchmark.groovy')
+benchmark.pipeline('green-dragon-03') {
+    stage('main') {
+        sh """
+    echo "XPASS: Pick this line"
+    echo "    warning: Danger"
+    echo "IOError: BlaBLa"
+    echo "  error: error"
+    echo "..."
+    echo "clang (LLVM option parsing): Unknown command line argument '--foobar'.  Try: 'clang (LLVM option parsing) -help'"
+    echo "..."
+    if [ -n "${params.ARTIFACT}" ]; then
+        exit 1
+    fi
+        """
+    }
+}
