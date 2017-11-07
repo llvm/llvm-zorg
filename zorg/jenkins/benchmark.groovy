@@ -22,7 +22,11 @@ private def post_build() {
     def base_url = 'http://labmaster2:8080/green'
     def build_url = currentBuild.getRawBuild().getUrl()
     def log_url = "${base_url}/${build_url}consoleText"
-    sh "curl '${log_url}' -s | config/zorg/jenkins/inspect_log.py > log_summary.html"
+    def ret = sh \
+        script: "curl '${log_url}' -s | config/zorg/jenkins/inspect_log.py > log_summary.html",
+        returnStatus: true
+    if (ret != 0 && currentBuild.currentResult == 'SUCCESS')
+        currentBuild.result = 'UNSTABLE'
     def log_summary = readFile 'log_summary.html'
 
     // Update job description.

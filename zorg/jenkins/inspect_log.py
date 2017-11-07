@@ -109,7 +109,7 @@ def _make_html_snippets(matches, limit):
 
     matches = list(matches)
     if len(matches) == 0:
-        return
+        return False
 
     sys.stdout.write('<div style="margin-bottom: 2em;">Found %d issues:</div>\n' % (len(matches), ))
 
@@ -137,6 +137,8 @@ def _make_html_snippets(matches, limit):
     if limited:
         sys.stdout.write('<b>... (limited to first %d issues)</b>\n' % limit)
 
+    return True
+
 
 if __name__ == '__main__':
     lines_before = 5
@@ -146,4 +148,6 @@ if __name__ == '__main__':
                                   lines_before=lines_before,
                                   lines_after=lines_after)
     limit = 12 # Limit the amount of issues we show.
-    _make_html_snippets(matches, limit)
+    had_issues = _make_html_snippets(matches, limit)
+    if had_issues:
+        sys.exit(1)
