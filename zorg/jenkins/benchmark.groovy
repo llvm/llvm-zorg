@@ -83,7 +83,7 @@ def testsuite_pipeline(label, body) {
             svn url: 'http://llvm.org/svn/llvm-project/lnt/trunk', poll: false
         }
         dir('test-suite') {
-            svn url: 'http://llvm.org/svn/llvm-project/test-suite/trunk'
+            svn url: 'http://llvm.org/svn/llvm-project/test-suite/trunk', poll: false
         }
         body()
     }

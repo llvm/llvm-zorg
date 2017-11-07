@@ -46,7 +46,7 @@ curl -fksSO "${last_good_properties_url}"
 
 def pipeline(job_pattern,
         artifact_url='http://labmaster2.local/artifacts/',
-        last_good_properties_url='http://labmaster2.local/artifacts/clang-stage1-configure-RA_build/last_good_build.properties') {
+        last_good_properties_url='http://labmaster2.local/artifacts/clang-stage1-configure-RA/last_good_build.properties') {
     node('master') {
         stage('main') {
             relay_steps(job_pattern, artifact_url,
