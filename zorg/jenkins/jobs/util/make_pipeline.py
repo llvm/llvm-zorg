@@ -3,7 +3,7 @@ import sys
 import re
 from xml.sax.saxutils import escape
 
-pipeline_svn_url = sys.argv[1]
+pipeline_git_url = sys.argv[1]
 pipeline_git_path = sys.argv[2]
 description = open(sys.argv[3]).read()
 
@@ -23,24 +23,21 @@ template = '''\
     {extra_properties}
   </properties>
   <definition class="org.jenkinsci.plugins.workflow.cps.CpsScmFlowDefinition" plugin="workflow-cps@2.41">
-    <scm class="hudson.scm.SubversionSCM" plugin="subversion@2.9">
-      <locations>
-        <hudson.scm.SubversionSCM_-ModuleLocation>
-          <remote>{pipeline_svn_url}</remote>
-          <credentialsId></credentialsId>
-          <local>.</local>
-          <depthOption>infinity</depthOption>
-          <ignoreExternalsOption>true</ignoreExternalsOption>
-        </hudson.scm.SubversionSCM_-ModuleLocation>
-      </locations>
-      <excludedRegions></excludedRegions>
-      <includedRegions></includedRegions>
-      <excludedUsers></excludedUsers>
-      <excludedRevprop></excludedRevprop>
-      <excludedCommitMessages></excludedCommitMessages>
-      <workspaceUpdater class="hudson.scm.subversion.UpdateUpdater"/>
-      <ignoreDirPropChanges>false</ignoreDirPropChanges>
-      <filterChangelog>false</filterChangelog>
+    <scm class="hudson.plugins.git.GitSCM" plugin="git@3.6.1">
+      <configVersion>2</configVersion>
+      <userRemoteConfigs>
+        <hudson.plugins.git.UserRemoteConfig>
+          <url>{pipeline_git_url}</url>
+        </hudson.plugins.git.UserRemoteConfig>
+      </userRemoteConfigs>
+      <branches>
+        <hudson.plugins.git.BranchSpec>
+          <name>*/master</name>
+        </hudson.plugins.git.BranchSpec>
+      </branches>
+      <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
+      <submoduleCfg class="list"/>
+      <extensions/>
     </scm>
     <scriptPath>{pipeline_git_path}</scriptPath>
     <lightweight>true</lightweight>
@@ -66,7 +63,7 @@ if 'relay' in pipeline_git_path:
 '''
 
 variables = {
-    "pipeline_svn_url": escape(pipeline_svn_url),
+    "pipeline_git_url": escape(pipeline_git_url),
     "pipeline_git_path": escape(pipeline_git_path),
     "extra_properties": extra_properties,
 }

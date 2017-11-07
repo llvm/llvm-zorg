@@ -16,7 +16,7 @@ for i in jobs/*; do
     fi
 
     echo "GEN ${DESTFILE}"
-    util/make_pipeline.py "${PIPELINE_SVN_URL}" "${PIPELINE_GIT_PATH}" description.txt > "$DESTFILE"
+    util/make_pipeline.py "${PIPELINE_GIT_URL}" "${PIPELINE_GIT_PATH}" description.txt > "$DESTFILE"
 done
 
 if test "${1-}" = "-d"; then
