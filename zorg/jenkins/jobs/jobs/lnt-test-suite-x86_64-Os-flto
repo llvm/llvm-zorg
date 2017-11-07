@@ -2,7 +2,7 @@
 def benchmark = evaluate readTrusted('zorg/jenkins/benchmark.groovy')
 benchmark.testsuite_pipeline(label: 'green-dragon-07') {
     sh """
-LNT_FLAGS+=" -C config/tasks/cmake/caches/target-x86_64-macosx.cmake"
+LNT_FLAGS+=" -C config/tasks/cmake/caches/target-x86_64-macos.cmake"
 LNT_FLAGS+=" -C config/tasks/cmake/caches/opt-Os-flto.cmake"
 config/tasks/task jenkinsrun config/tasks/lnt-test-suite.sh -a compiler="${params.ARTIFACT}" -D LNT_FLAGS="\${LNT_FLAGS}"
     """
