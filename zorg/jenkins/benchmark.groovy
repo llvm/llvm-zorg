@@ -42,6 +42,8 @@ private def post_build() {
         def email_template = readTrusted 'zorg/jenkins/email.template'
         def body = render_template(email_template, log_summary)
         emailext subject: '$DEFAULT_SUBJECT',
+            presendScript: '$DEFAULT_PRESEND_SCRIPT',
+            postsendScript: '$DEFAULT_POSTSEND_SCRIPT',
             recipientProviders: [
                 [$class: 'CulpritsRecipientProvider'],
                 [$class: 'DevelopersRecipientProvider'],
