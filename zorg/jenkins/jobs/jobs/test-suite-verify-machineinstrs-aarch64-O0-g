@@ -4,6 +4,6 @@ benchmark.testsuite_pipeline(label: 'green-dragon-12') {
     sh """
 LNT_FLAGS+=" -C zorg/tasks/cmake/caches/target-arm64-iphoneos.cmake"
 LNT_FLAGS+=" -C zorg/tasks/cmake/caches/opt-O0-g.cmake"
-config/tasks/task jenkinsrun config/tasks/test-suite-verify-machineinstrs.sh -a compiler="${params.ARTIFACT}" -D LNT_FLAG="\${LNT_FLAGS}"
+config/tasks/task jenkinsrun config/tasks/test-suite-verify-machineinstrs.sh -a compiler="${params.ARTIFACT}" -D LNT_FLAGS="\${LNT_FLAGS}"
     """
 }
