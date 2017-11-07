@@ -1,0 +1,19 @@
+#!/bin/sh
+set -eu
+
+USERDIR="$1"
+TASKSCRIPT="$2"
+BUILDCONFIG="$3"
+
+TASK_DIR="$(dirname "${TASKSCRIPT}")"
+export GIT_WORK_TREE="$(git -C "${TASK_DIR}" rev-parse --show-toplevel)"
+GIT_DIR="$(git -C "${TASK_DIR}" rev-parse --git-dir)"
+export GIT_DIR="$(cd "${TASK_DIR}" ; cd "${GIT_DIR}" ; pwd)"
+
+. check-clean-repo.sh
+
+CONFIG_URL="${GIT_WORK_TREE}"
+CONFIG_REV="$(git rev-parse HEAD)"
+
+. mk-build-id.sh
+. mk-build-common.sh

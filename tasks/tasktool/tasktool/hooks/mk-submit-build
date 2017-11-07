@@ -1,0 +1,43 @@
+#!/bin/bash
+set -eu
+
+USERDIR="$1"
+TASKSCRIPT="$2"
+BUILDCONFIG="$3"
+
+TASK_DIR="$(dirname "${TASKSCRIPT}")"
+export GIT_WORK_TREE="$(git -C "${TASK_DIR}" rev-parse --show-toplevel)"
+GIT_DIR="$(git -C "${TASK_DIR}" rev-parse --git-dir)"
+export GIT_DIR="$(cd "${TASK_DIR}" ; cd "${GIT_DIR}" ; pwd)"
+
+. check-config.sh
+. "${USERDIR}/config"
+
+. check-clean-repo.sh
+
+# We need a branch name for remote submission
+BRANCH="$(git symbolic-ref HEAD)"
+BRANCH="${BRANCH##refs/heads/}"
+if test "$(git rev-parse HEAD)" != "$(git rev-parse $BRANCH)"; then
+    echo 1>&2 "HEAD is not at branch for submission"
+    exit 1
+fi
+
+# Make sure the branch is actually pushed to the remote
+if [ -z ${REMOTE+x} ]; then
+    REMOTE="$(git config branch.${BRANCH}.remote)"
+    if [ -z ${REMOTE+x} ]; then
+        REMOTE="origin"
+    fi
+fi
+if [ "$(git rev-parse $REMOTE/$BRANCH)" != "$(git rev-parse $BRANCH)" ]; then
+    echo 1>&2 "Branch $BRANCH is not up to date on remote $REMOTE"
+    exit 1
+fi
+
+CONFIG_URL="$(git remote get-url $REMOTE)"
+CONFIG_REV="$BRANCH"
+
+. mk-build-id.sh
+tail -n +4 header_submit
+. mk-build-common.sh

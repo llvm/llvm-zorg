@@ -1,0 +1,21 @@
+# This file is prepended to all `task sshrun` builds. It is intended to clean
+# up the jenkins environment apropriately.
+
+# Check lock file to avoid running multiple tasks at once.
+set -eu
+SSHRUN_LOCKFILE="$HOME/.task_sshrun_lock"
+if [ -e "$SSHRUN_LOCKFILE" ]; then
+    echo 1>&2 "task sshrun: Already a task running on this machine"
+    echo 1>&2 "Note: Remove '${SSHRUN_LOCKFILE}' if this is wrong"
+    exit 1
+fi
+function cleanup_lock {
+    rm -f "${SSHRUN_LOCKFILE}"
+}
+trap cleanup_lock EXIT
+touch "${SSHRUN_LOCKFILE}"
+
+: ${REMOTE_TRYDIR:="$TMPDIR"}
+WORKSPACE="${REMOTE_TRYDIR/#\~/$HOME}/${BUILDNAME}"
+mkdir -p "${WORKSPACE}"
+cd "${WORKSPACE}"

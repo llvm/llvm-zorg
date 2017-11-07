@@ -1,0 +1,20 @@
+#!/bin/sh
+set -eu
+
+USERDIR="$1"
+BUILDNAME="$2"
+
+. check-config.sh
+. "${USERDIR}/config"
+
+# Produce commands that gather and send the results
+echo ''
+echo '# Create result artifact and upload'
+echo 'if [ -d "${WORKSPACE}/result" ]; then'
+echo '  cd "${WORKSPACE}/result"'
+# TODO: We could be fancier and stream directly to the destination instead of
+# creating a .tar.gz intermediate file...
+echo '  shopt -s dotglob nullglob'
+echo '  tar -c --gzip -f ../result.tar.gz *'
+echo "  curl -s -S -f -X POST -F file=@\"\${WORKSPACE}/result.tar.gz\" '${SUBMIT_RESULTS_URL}/${BUILDNAME}.tar.gz'"
+echo 'fi'

@@ -1,0 +1,13 @@
+#!/bin/sh
+set -eu
+
+USERDIR="$1"
+TASKSCRIPT="$2"
+BUILDCONFIG="$3"
+
+ABSOLUTE_TASKDIR="$(dirname "${TASKSCRIPT}")"
+
+. mk-build-id.sh
+echo "TASKDIR=\"${ABSOLUTE_TASKDIR}\""
+tail -n +4 header_jenkinsrun
+cat "${TASKSCRIPT}"

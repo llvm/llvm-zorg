@@ -1,0 +1,20 @@
+# This file is prepended to all `task submit` builds. It is intended to clean
+# up the jenkins environment apropriately.
+
+# Jenkins does not start with a clean workspace, so we clean it ourself
+export PATH="$PATH:/usr/local/bin"
+rm -rf "${WORKSPACE}"
+mkdir "${WORKSPACE}"
+cd "${WORKSPACE}"
+
+# Jobs should not know/rely on jenkins details in submit mode.
+unset JOB_NAME
+unset NODE_NAME
+unset BUILD_ID
+unset BUILD_URL
+unset JENKINS_URL
+unset EXECUTOR_NUMBER
+unset SVN_REVISION
+unset GIT_COMMIT
+unset GIT_URL
+unset GIT_BRANCH

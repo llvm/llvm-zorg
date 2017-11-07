@@ -1,0 +1,14 @@
+# This file is prepended to all builds. It is intended to perform some common
+# envornment setup.
+
+# Choose some safer shell execution modes (abort when using uninitialized vars,
+# abort on non-zero exit codes).
+set -eux
+
+# First things first: Get config repository (use plain git for that as we do
+# not have the advanced scripts available yet).
+git clone -n "${config_url}" config
+(cd config ; git checkout -q "${config_rev}")
+
+# Bring the tools into our PATH
+export PATH="${TASKDIR}/bin:$PATH"

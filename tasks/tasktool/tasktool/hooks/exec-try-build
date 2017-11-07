@@ -1,0 +1,54 @@
+#!/bin/bash
+set -eu
+
+USERDIR="$1"
+BUILDSCRIPT="$2"
+BUILDNAME="$3"
+
+# Import config if present.
+[ -e "${USERDIR}/config" ] && . "${USERDIR}/config"
+
+# Create workspace directory.
+if [ -z ${TRYDIR+x} ]; then
+    TRYDIR="$TMPDIR"
+    if [ -z ${TRYDIR+x} ]; then
+        TRYDIR="/tmp"
+    fi
+fi
+
+export WORKSPACE="${TRYDIR}/${BUILDNAME}"
+mkdir "${TRYDIR}/${BUILDNAME}"
+echo "Workspace: ${WORKSPACE}"
+
+# Work with a minimum PATH
+export PATH="/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+
+# Clear environment from some typical user-specific settings.
+# TODO: Should we rather start with a blank environment?
+unset CPATH
+unset LIBRARY_PATH
+unset MANPATH
+unset PKG_CONFIG_PATH
+
+LOGFILE="${WORKSPACE}/log.txt"
+SANDBOXPROFILE="$(pwd)/try.sb"
+cd "${WORKSPACE}"
+: ${HOME:=/tmp}
+
+if [ -z "${TASK_TRY_NO_SANDBOX:-}" ]; then
+    /bin/sh "${BUILDSCRIPT}" 2>&1 | tee "$LOGFILE"
+else
+    # Note that sandboxes don't work recursively, so we set TASK_TRY_NO_SANDBOX
+    # for the child.
+    TASK_TRY_NO_SANDBOX=1 sandbox-exec -f "${SANDBOXPROFILE}" -D WORKSPACE="$WORKSPACE" -D HOME="$HOME" /bin/sh "${BUILDSCRIPT}" 2>&1 | tee "$LOGFILE"
+fi
+
+# Gather results
+if [ -d "${WORKSPACE}/result" ]; then
+    mkdir -p "${USERDIR}/results"
+    RESULTFILE="${USERDIR}/results/${BUILDNAME}.tar.xz"
+    cd "${WORKSPACE}/result"
+    shopt -s dotglob nullglob
+    tar -c --xz -f "${RESULTFILE}" *
+    echo 1>&2 "Results written to ${RESULTFILE}"
+fi

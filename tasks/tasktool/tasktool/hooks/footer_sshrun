@@ -1,0 +1,7 @@
+# This file is appended to all `task sshrun` builds. It is intended to clean
+# up the jenkins environment apropriately.
+
+if [ -d "${WORKSPACE}/result" ]; then
+    cd "${WORKSPACE}/result"
+    tar -c --xz * | ssh "${RESULT_HOST}" "cat > '${RESULT_FILE}'"
+fi

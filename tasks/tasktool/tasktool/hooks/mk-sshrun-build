@@ -1,0 +1,34 @@
+#!/bin/sh
+set -eu
+
+USERDIR="$1"
+TASKSCRIPT="$2"
+BUILDCONFIG="$3"
+BUILDNAME="$4"
+
+TASK_DIR="$(dirname "${TASKSCRIPT}")"
+export GIT_WORK_TREE="$(git -C "${TASK_DIR}" rev-parse --show-toplevel)"
+GIT_DIR="$(git -C "${TASK_DIR}" rev-parse --git-dir)"
+export GIT_DIR="$(cd "${TASK_DIR}" ; cd "${GIT_DIR}" ; pwd)"
+
+. check-config.sh
+. "${USERDIR}/config"
+
+. check-clean-repo.sh
+
+HOST="$(whoami)@$(hostname -f)"
+CONFIG_URL="${HOST}:${GIT_WORK_TREE}"
+CONFIG_REV="$(git rev-parse HEAD)"
+
+. mk-build-id.sh
+echo "BUILDNAME=\"${BUILDNAME}_${BUILDID}\""
+if [ -n "${REMOTE_TRYDIR+x}" ]; then
+    echo "REMOTE_TRYDIR=\"${REMOTE_TRYDIR}\""
+fi
+tail -n +4 header_sshrun
+. mk-build-common.sh
+
+mkdir -p "${USERDIR}/results"
+echo "RESULT_HOST='${HOST}'"
+echo "RESULT_FILE='${USERDIR}/results/${BUILDNAME}_${BUILDID}.tar.xz'"
+tail -n +4 footer_sshrun

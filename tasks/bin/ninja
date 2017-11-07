@@ -1,0 +1,3 @@
+#!/bin/sh
+# We expect cmake to be installed in /usr/local/bin/cmake
+/usr/local/bin/ninja "$@"

@@ -1,0 +1,39 @@
+#!/bin/sh
+set -eu -o pipefail
+
+USERDIR="$1"
+BUILDSCRIPT="$2"
+BUILDNAME="$3"
+
+. check-config.sh
+. "${USERDIR}/config"
+
+CURL_ARGS=" -s -XPOST"
+CURL_ARGS+=" -i"
+CURL_ARGS+=" -u \"${JENKINS_USER}:${JENKINS_TOKEN}\""
+CURL_ARGS+=" \"${JENKINS_URL}/job/${JENKINS_SUBMIT_PROJECT}/buildWithParameters\""
+CURL_ARGS+=" --data-urlencode BUILDSCRIPT@\"$BUILDSCRIPT\""
+CURL_ARGS+=" --data-urlencode BUILDNAME=\"${BUILDNAME}\""
+if [ -n "${JENKINS_SUBMIT_NODE+}" ]; then
+    CURL_ARGS+=" --data-urlencode where=\"${JENKINS_SUBMIT_NODE}\""
+fi
+
+eval curl $CURL_ARGS | grep Location
+
+# TODO: Get a handle on something that allows us to track the build as it goes
+# through jenkins. This is hard to do because:
+# - Jenkins gives us back a handle for the build in the Queue (the "Location"
+#   header in the answer)
+# - Once the build is executed the queue handle gets updated with a handle
+#   to the actual build. However queue handle becomes invalid after a while.
+# => You have to actively poll/query for the queue item changing into a build to
+#    catch it :-/
+#
+# Alternatively our builds are annotated with a unique ID and we set the jenkins
+# build name to that. We could search all the jenkins builds to find a specific
+# ID (probably good enough for a single node, is that efficient when we have
+# to search mutliple or all nodes?).
+
+# For now the user has to search/track himself:
+echo ""
+echo "Note: Build results at ${JENKINS_URL}/job/${JENKINS_SUBMIT_PROJECT}"

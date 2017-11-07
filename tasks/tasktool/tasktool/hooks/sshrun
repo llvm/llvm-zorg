@@ -1,0 +1,10 @@
+#!/bin/sh
+set -eu -o pipefail
+
+REMOTE_HOSTNAME="$1"
+BUILDSCRIPT="$2"
+
+# FIXME: Passing the buildscript as a big commandline argument is dangerous:
+# Most shells limit the maximum length of a commandline.
+echo "ssh -A \"${REMOTE_HOSTNAME}\""
+ssh -A "${REMOTE_HOSTNAME}" "$(cat "${BUILDSCRIPT}")"

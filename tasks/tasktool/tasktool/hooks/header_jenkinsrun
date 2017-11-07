@@ -1,0 +1,20 @@
+# This file is prepended to all builds. It is intended to perform some common
+# envornment setup.
+
+if [ -z ${WORKSPACE+x} ]; then
+    echo 1>&2 "Error: WORKSPACE environment variable not defined"
+    exit 1
+fi
+if [ ! -d config ]; then
+    echo 1>&2 "Error: $(pwd)/config directory does not exist"
+    exit 1
+fi
+
+# Choose some safer shell execution modes (abort when using uninitialized vars,
+# abort on non-zero exit codes).
+set -eux
+
+# Bring the tools into our PATH
+export PATH="${TASKDIR}/bin:$PATH"
+
+build clean

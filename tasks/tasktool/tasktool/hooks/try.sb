@@ -1,0 +1,33 @@
+;; Sandbox profile for try executions so they can only write/remove stuff
+;; within their workspace directory (TODO: Restrict reading too)
+(version 1)
+(allow default)
+
+(define (home-regex home-relative-regex)
+    (regex (string-append "^" (regex-quote (param "HOME")) home-relative-regex)))
+(define (home-subpath home-relative-subpath)
+    (subpath (string-append (param "HOME") home-relative-subpath)))
+(define (home-literal home-relative-literal)
+    (literal (string-append (param "HOME") home-relative-literal)))
+
+(deny file-write*)
+(allow file-write*
+    (subpath (param "WORKSPACE"))
+    ; temp files/dirs
+    (subpath "/private/tmp")
+    (subpath "/private/var/folders")
+    (subpath "/private/var/tmp")
+    (home-subpath "/Library/Caches/pip")
+    ; for /dev/null, /dev/dtracehelper possibly others
+    (subpath "/dev")
+)
+
+;; TODO: Restrict reading to a minimum. Something like:
+;;(deny file-read*)
+;;(allow file-read*
+;;  (subpath "/bin")
+;;  (subpath "/sbin")
+;;  (subpath "/usr/bin")
+;;  (subpath "/usr/local/bin")
+;;  (subpath "/Applications/Xcode.app")
+;;)
