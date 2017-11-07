@@ -1,7 +1,6 @@
 echo "@@@ LNT @@@"
 
 mkdir "lnt-sandbox"
-cd "lnt-sandbox"
 
 LNT_FLAGS+=" --sandbox ${WORKSPACE}/lnt-sandbox"
 LNT_FLAGS+=" --no-timestamp"
@@ -21,5 +20,4 @@ fi
 
 eval lnt runtest test-suite ${LNT_FLAGS}
 
-cd "${WORKSPACE}"
 echo "@@@@@@"
