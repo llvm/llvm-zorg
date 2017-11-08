@@ -2,113 +2,38 @@
 <head>
   <title>Report</title>
   <style>
-				body {
-								-webkit-font-smoothing: antialiased;
-								font-family: "Helvetica Neue", sans-serif;
-								font-weight: 300;
-								color: #393939;
-								margin: 0;
-								padding: 20px;
-				}
-				.header {
-								margin-left: 20px;
-								padding: 20px 20px 20px 0;
-								border-bottom: 1px solid #e5e5e5;
-				}
-				.report-title{
-								font-family: "Helvetica Neue", sans-serif;
-								display: inline-block;
-								float: left;
-								margin: 20px 0;
-								font-size: 24px;
-								color: #55a3fd;
-				}
-				.title {
-								font-size: 24px;
-				}
-				.content {
-								padding: 20px;
-				}
-				.display {
-								width: 100%;
-								height: 100%;
-				}
-				.commit-message {
-								font-family: "Menlo", fixed;
-				}
-        .title {
-                text-align: center;
-        }
-        .date {
-                text-align: left;
-        }
-        .display {
-                display: inline-block;
-                width: auto;
-        }
-        .header {
-                overflow: auto;
-                padding: 20px 20px 5px 0;
-                width: 660px;
-        }
-        a {
-          color: #007aff;
-          text-decoration: none;
-        }
-        tr {
-            text-align: left;
-        }
-        .links a {
-                text-decoration: none;
-                color: white;
-                font-weight: 500;
-                padding: 15px;
-                background: #55a3fd;
-                font-size: 14px;
-        }
-
-        @-webkit-keyframes toRed {
-         from {color: black;}
-         to {color: red;}
-        }
-        @-webkit-keyframes toGreen {
-         from {color: black;}
-         to {color: green;}
-        }
-
-        .FAILURE {
-           color: red;
-           -webkit-animation-name: toRed; /* Chrome, Safari, Opera */
-           -webkit-animation-duration: 2s; /* Chrome, Safari, Opera */
-        }
-        .SUCCESS {
-           color: green;
-           -webkit-animation-name: toGreen; /* Chrome, Safari, Opera */
-           -webkit-animation-duration: 2s; /* Chrome, Safari, Opera */
-        }
+    body {
+      font-family: "Helvetica Neue", sans-serif;
+    }
+    th {
+      text-align: left;
+    }
+    .FAILURE {
+      color: red;
+    }
+    .SUCCESS {
+      color: green;
+    }
                         
-        </style>
- <head>
- <body>
- <h1>[<font class="${currentBuild.currentResult}">${currentBuild.currentResult}</font>] ${env.JOB_NAME} [#${env.BUILD_NUMBER}]</h1>
+  </style>
+</head>
+<body>
+<h1>[<font class="${currentBuild.currentResult}">${currentBuild.currentResult}</font>] ${env.JOB_NAME} [${env.BUILD_DISPLAY_NAME}]</h1>
 
-<table style="align=left;">
+<table>
   <tr><th>Build URL:</th><td><a href="${env.BUILD_URL}">${env.BUILD_URL}</a></td></tr>
   <tr><th>Project:</th><td>${env.JOB_NAME}</td></tr>
-  <tr><th>Date of build:</th><td>{it.timestampString}</td></tr>
-  <tr><th>Build duration:</th><td>{build.durationString}</td></tr>
+  <tr><th>Build duration:</th><td>${hudson.Util.getTimeSpanString(System.currentTimeMillis() - currentBuild.startTimeInMillis)}</td></tr>
 </table>
 
-<% if (log_summary != "") { %>
 <h2>Issues</h2>
+<% if (log_summary == "") { %>
+    <p>No known issues detected</p>
+<% } else { %>
 ${log_summary}
 <% } %>
+<p><a href="${env.BUILD_URL}console">Build Log</a></p>
 
-<!-- This was using BUILD_FAILURE_ANALYZER(includeTitle: true, includeIndications: true, useHtmlFormat: true), but that doesn't work for pipeline based jobs -->
-
-<!-- JUnit TEMPLATE -->
-
-<!-- CHANGE SET -->
 <h2>Changes</h2>
 <ul>
 <% def changeSets = currentBuild.getChangeSets()
@@ -116,16 +41,16 @@ def hadChanges = false
 changeSets.each { changeSet ->
 %>
 <% changeSet.each { cs ->
-    hadChanges = true
-    aUser = cs.author %>
-      <li>Commit <b>${cs.revision}</b> by <b><%= aUser != null ? aUser.displayName : it.author.displayName %>:</b> <p class="commit-message" style="white-space: pre-wrap;">${cs.msg}</p>
-        <ul>
-<%        cs.affectedFiles.each { %>
-          <li class="change-${it.editType.name}"><b>${it.editType.name}</b>: ${it.path}</li>
-<%        } %>
-        </ul>
-      </li>
-     <br>
+  hadChanges = true
+  aUser = cs.author %>
+    <li>Commit <b>${cs.revision}</b> by <b><%= aUser != null ? aUser.displayName : it.author.displayName %>:</b> <p class="commit-message" style="white-space: pre-wrap;">${cs.msg}</p>
+      <ul>
+<%      cs.affectedFiles.each { %>
+        <li class="change-${it.editType.name}"><b>${it.editType.name}</b>: ${it.path}</li>
+<%      } %>
+      </ul>
+    </li>
+   <br>
 <%  }
 }
 
@@ -134,4 +59,4 @@ if (!hadChanges) { %>
 <% } %>
 </ul>
 
- </body>
+</body>
