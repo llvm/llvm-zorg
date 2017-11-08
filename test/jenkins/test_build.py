@@ -132,6 +132,7 @@
 # CHECK-CMAKELTO-NOT:: '-DLLVM_ENABLE_LTO=Off
 # CHECK-CMAKELTO: '-DLLVM_PARALLEL_LINK_JOBS=1'
 # CHECK-CMAKELTO: '-DCMAKE_BUILD_TYPE=Release'
+# CHECK-CMAKELTO: '-DSVN_REVISION=1234'
 
 # RUN: env MAX_PARALLEL_LINKS=2 python %{src_root}/zorg/jenkins/build.py cmake all --lto | FileCheck --check-prefix CHECK-CMAKE-PAR-LTO %s
 # CHECK-CMAKE-PAR-LTO: '/usr/local/bin/cmake' '-G' 'Ninja'

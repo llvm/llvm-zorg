@@ -260,6 +260,9 @@ def cmake_builder(target):
     if conf.globalisel:
         cmake_cmd += ["-DLLVM_BUILD_GLOBAL_ISEL=ON"]
 
+    if conf.svn_rev != 'NONE':
+        cmake_cmd += ["-DSVN_REVISION={}".format(conf.svn_rev)]
+
     lit_flags = ['--xunit-xml-output=testresults.xunit.xml', '-v']
     if conf.max_parallel_tests:
         lit_flags += ['-j', conf.max_parallel_tests]
