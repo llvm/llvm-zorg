@@ -4,7 +4,7 @@ benchmark.testsuite_pipeline(label: 'green-dragon-21') {
     sh """
 CMAKE_FLAGS+=" -C ../config/tasks/cmake/caches/target-arm64-iphoneos.cmake"
 CMAKE_FLAGS+=" -C ../config/tasks/cmake/caches/opt-O0-g.cmake"
-CMAKE_FLAGS+=" -C ../config/tasks/cmake/caches/global-isel.cmake.cmake"
+CMAKE_FLAGS+=" -C ../config/tasks/cmake/caches/global-isel.cmake"
 config/tasks/task jenkinsrun config/tasks/test-suite-verify-machineinstrs.sh -a compiler="${params.ARTIFACT}" -D CMAKE_FLAGS="\${CMAKE_FLAGS}"
     """
 }
