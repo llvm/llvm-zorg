@@ -4,4 +4,4 @@
 <% } else { %>
 ${log_summary}
 <% } %>
-<p><a href="${env.BUILD_URL}console">Build Log</a></p>
+<p><a href="${env.BUILD_URL}consoleFull">Build Log</a></p>
