@@ -73,8 +73,13 @@ def pipeline(label, body) {
                 }
                 body()
             }
-        } catch(Exception e) {
+        } catch(hudson.AbortException e) {
+            // No need to print the exception if something fails inside a 'sh'
+            // step.
             currentBuild.result = 'FAILURE'
+        } catch (Exception e) {
+            currentBuild.result = 'FAILURE'
+            throw e
         } finally {
             stage('post') {
                 post_build()
