@@ -155,7 +155,7 @@ function test_android {
     local _arch=${_arg%:*}
     if [[ ! -f tested_arch_$_arch ]]; then
       echo @@@BUILD_STEP unavailable device android/$_arch@@@
-      echo @@@STEP_WARNINGS@@@
+      echo @@@STEP_EXCEPTION@@@
     fi
   done
 }
