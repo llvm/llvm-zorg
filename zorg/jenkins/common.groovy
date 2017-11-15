@@ -17,6 +17,33 @@ private def render_template(template_text, log_summary) {
     return template_eng.toString()
 }
 
+// Checkout an svn repository with depth 0 to get at the changelog without
+// actually writing files to disk.
+private def pseudo_svn_checkout(name, url) {
+    dir("pseudo-checkout-${name}") {
+        checkout poll: false, changelog: true, scm: [
+            $class: 'SubversionSCM',
+            locations: [[
+                remote: url,
+                depthOption: 'empty',
+            ]]
+        ]
+    }
+}
+
+// Do a pseudo checkout of an llvm repo to get the blamelist filled. This is
+// necessary for relay jobs as with current jenkins we do not want to trigger
+// the relay job with any parameters or blamelists. (If we would do that then
+// jenkins won't merge requests anymore and we would be forced to test
+// every single revision for which we don't have the hardware right now).
+private def pseudo_clang_checkout(revision) {
+    pseudo_svn_checkout 'llvm', "http://llvm.org/svn/llvm-project/llvm/trunk@${revision}"
+    pseudo_svn_checkout 'cfe', "http://llvm.org/svn/llvm-project/cfe/trunk@${revision}"
+    pseudo_svn_checkout 'clang-tools-extra', "http://llvm.org/svn/llvm-project/clang-tools-extra/trunk@${revision}"
+    pseudo_svn_checkout 'compiler-rt', "http://llvm.org/svn/llvm-project/compiler-rt/trunk@${revision}"
+    pseudo_svn_checkout 'libcxx', "http://llvm.org/svn/llvm-project/libcxx/trunk@${revision}"
+}
+
 private def post_build() {
     // Analyze build log.
     def base_url = 'http://labmaster2:8080/green'
@@ -85,12 +112,13 @@ def task_pipeline(label, body) {
 def benchmark_pipeline(label, body) {
     properties([
         parameters([
-            string(name: 'ARTIFACT',
-                   defaultValue: 'http://labmaster2.local/artifacts/clang-stage1-configure-RA_build/latest')
+            string(name: 'ARTIFACT'),
+            string(name: 'LLVM_REV'),
         ])
     ])
 
     currentBuild.displayName = basename(params.ARTIFACT)
+    pseudo_clang_checkout(params.LLVM_REV)
     task_pipeline(label, body)
 }
 
