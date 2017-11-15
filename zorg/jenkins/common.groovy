@@ -118,8 +118,10 @@ def benchmark_pipeline(label, body) {
     ])
 
     currentBuild.displayName = basename(params.ARTIFACT)
-    pseudo_clang_checkout(params.LLVM_REV)
-    task_pipeline(label, body)
+    task_pipeline(label) {
+        pseudo_clang_checkout(params.LLVM_REV)
+        body()
+    }
 }
 
 def testsuite_pipeline(label, body) {
