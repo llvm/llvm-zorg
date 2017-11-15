@@ -37,7 +37,9 @@ private def post_build() {
     currentBuild.description += descr_body
 
     // Send notification email.
-    if (currentBuild.getPreviousBuild().result != currentBuild.currentResult &&
+    def prev_build = currentBuild.getPreviousBuild()
+    if ((prev_build == null ||
+         prev_build.result != currentBuild.currentResult) &&
         currentBuild.currentResult == 'FAILURE') {
         def email_template = readTrusted 'zorg/jenkins/email.template'
         def body = render_template(email_template, log_summary)
