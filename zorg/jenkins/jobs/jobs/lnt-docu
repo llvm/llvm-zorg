@@ -1,0 +1,8 @@
+#!/usr/bin/env groovy
+def common = evaluate readTrusted('zorg/jenkins/common.groovy')
+common.task_pipeline('green-dragon-03') {
+    dir('lnt') {
+        svn url: 'http://llvm.org/svn/llvm-project/lnt/trunk', poll: true
+    }
+    sh 'config/tasks/task jenkinsrun config/tasks/lnt-docu.sh'
+}

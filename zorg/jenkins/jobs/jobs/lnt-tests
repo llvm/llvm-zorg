@@ -1,0 +1,8 @@
+#!/usr/bin/env groovy
+def common = evaluate readTrusted('zorg/jenkins/common.groovy')
+common.task_pipeline('master') {
+    dir('lnt') {
+        svn url: 'http://llvm.org/svn/llvm-project/lnt/trunk', poll: true
+    }
+    sh 'config/tasks/task jenkinsrun config/tasks/lnt-tests.sh'
+}
