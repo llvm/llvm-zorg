@@ -1,6 +1,6 @@
 #!/usr/bin/env groovy
-def benchmark = evaluate readTrusted('zorg/jenkins/benchmark.groovy')
-benchmark.testsuite_pipeline(label: 'green-dragon-06') {
+def common = evaluate readTrusted('zorg/jenkins/common.groovy')
+common.testsuite_pipeline(label: 'green-dragon-06') {
     sh """
 LNT_FLAGS+=" -C config/tasks/cmake/caches/target-x86_64-macos.cmake"
 LNT_FLAGS+=" -C config/tasks/cmake/caches/opt-O3-flto.cmake"

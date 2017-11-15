@@ -58,15 +58,7 @@ private def post_build() {
     // TODO: Notify IRC.
 }
 
-def pipeline(label, body) {
-    properties([
-        parameters([
-            string(name: 'ARTIFACT',
-                   defaultValue: 'http://labmaster2.local/artifacts/clang-stage1-configure-RA_build/latest')
-        ])
-    ])
-
-    currentBuild.displayName = basename(params.ARTIFACT)
+def task_pipeline(label, body) {
     node(label) {
         try {
             stage('main') {
@@ -90,8 +82,20 @@ def pipeline(label, body) {
     }
 }
 
+def benchmark_pipeline(label, body) {
+    properties([
+        parameters([
+            string(name: 'ARTIFACT',
+                   defaultValue: 'http://labmaster2.local/artifacts/clang-stage1-configure-RA_build/latest')
+        ])
+    ])
+
+    currentBuild.displayName = basename(params.ARTIFACT)
+    task_pipeline(label, body)
+}
+
 def testsuite_pipeline(label, body) {
-    pipeline(label) {
+    benchmark_pipeline(label) {
         dir('lnt') {
             svn url: 'http://llvm.org/svn/llvm-project/lnt/trunk', poll: false
         }
