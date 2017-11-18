@@ -1268,14 +1268,14 @@ def _get_libcxx_builders():
             check_libcxx_abilist=True),
         'category': 'libcxx'},
 
-        {'name': 'libcxx-libcxxabi-x86_64-linux-ubuntu-cxx1z-32bit',
+        {'name': 'libcxx-libcxxabi-x86_64-linux-ubuntu-32bit',
          'slavenames': ericwf_slaves,
-         'builddir' : 'libcxx-libcxxabi-x86_64-linux-ubuntu-cxx1z-32bit',
+         'builddir' : 'libcxx-libcxxabi-x86_64-linux-ubuntu-32bit',
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
             env={'PATH': '/usr/local/bin:/usr/bin:/bin',
                  'CC': 'clang', 'CXX': 'clang++'},
             cmake_extra_opts={'LLVM_BUILD_32_BITS': 'ON'},
-            lit_extra_opts={'std': 'c++1z', 'enable_warnings': 'true'},
+            lit_extra_opts={'enable_warnings': 'true'},
             check_libcxx_abilist=False),
         'category': 'libcxx'},
 
@@ -1285,8 +1285,7 @@ def _get_libcxx_builders():
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
             env={'PATH': '/usr/local/bin:/usr/bin:/bin',
                  'CC': 'clang', 'CXX': 'clang++'},
-            cmake_extra_opts={'LLVM_USE_SANITIZER': 'Address'},
-            lit_extra_opts={'std':'c++1z'}),
+            cmake_extra_opts={'LLVM_USE_SANITIZER': 'Address'}),
         'category': 'libcxx'},
 
         {'name': 'libcxx-libcxxabi-x86_64-linux-ubuntu-ubsan',
@@ -1296,8 +1295,7 @@ def _get_libcxx_builders():
             env={'PATH': '/usr/local/bin:/usr/bin:/bin',
                  'CC': 'clang', 'CXX': 'clang++'},
             cmake_extra_opts={'LLVM_USE_SANITIZER': 'Undefined',
-                              'LIBCXX_ABI_UNSTABLE': 'ON'},
-            lit_extra_opts={'std':'c++1z'}),
+                              'LIBCXX_ABI_UNSTABLE': 'ON'}),
         'category': 'libcxx'},
 
         # EricWF's builders on ericwf-buildslave2
@@ -1307,8 +1305,7 @@ def _get_libcxx_builders():
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
             env={'PATH': '/usr/local/bin:/usr/bin:/bin',
                  'CC': 'clang', 'CXX': 'clang++'},
-            cmake_extra_opts={'LLVM_USE_SANITIZER': 'MemoryWithOrigins'},
-            lit_extra_opts={'std':'c++1z'}),
+            cmake_extra_opts={'LLVM_USE_SANITIZER': 'MemoryWithOrigins'}),
         'category': 'libcxx'},
 
         {'name': 'libcxx-libcxxabi-libunwind-x86_64-linux-ubuntu',
@@ -1326,8 +1323,7 @@ def _get_libcxx_builders():
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
             env={'PATH': '/usr/local/bin:/usr/bin:/bin',
                  'CC': 'clang', 'CXX': 'clang++'},
-            cmake_extra_opts={'LLVM_USE_SANITIZER': 'Thread'},
-            lit_extra_opts={'std':'c++1z'}),
+            cmake_extra_opts={'LLVM_USE_SANITIZER': 'Thread'}),
         'category': 'libcxx'},
 
         {'name': 'libcxx-libcxxabi-x86_64-linux-ubuntu-gcc49-cxx11',
@@ -1339,13 +1335,12 @@ def _get_libcxx_builders():
             lit_extra_opts={'std': 'c++11'}),
         'category': 'libcxx'},
 
-        {'name': 'libcxx-libcxxabi-x86_64-linux-ubuntu-gcc-tot-cxx1z',
+        {'name': 'libcxx-libcxxabi-x86_64-linux-ubuntu-gcc-tot-latest-std',
          'slavenames': ericwf_slaves,
-         'builddir' : 'libcxx-libcxxabi-x86_64-linux-ubuntu-gcc-tot-cxx1z',
+         'builddir' : 'libcxx-libcxxabi-x86_64-linux-ubuntu-gcc-tot-latest-std',
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
             env={'PATH': '/usr/local/bin:/usr/bin:/bin',
-                 'CC': '/opt/gcc-tot/bin/gcc', 'CXX': '/opt/gcc-tot/bin/g++'},
-            lit_extra_opts={'std': 'c++1z'}),
+                 'CC': '/opt/gcc-tot/bin/gcc', 'CXX': '/opt/gcc-tot/bin/g++'}),
         'category': 'libcxx'},
 
         # Cortex-A15 LibC++ and LibC++abi tests (require Clang+RT)
