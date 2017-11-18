@@ -1248,13 +1248,23 @@ def _get_libcxx_builders():
             check_libcxx_abilist=True),
         'category': 'libcxx'},
 
-        {'name': 'libcxx-libcxxabi-x86_64-linux-ubuntu-cxx1z',
+        {'name': 'libcxx-libcxxabi-x86_64-linux-ubuntu-cxx17',
          'slavenames': ericwf_slaves,
-         'builddir' : 'libcxx-libcxxabi-x86_64-linux-ubuntu-cxx1z',
+         'builddir' : 'libcxx-libcxxabi-x86_64-linux-ubuntu-cxx17',
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
             env={'PATH': '/usr/local/bin:/usr/bin:/bin',
                  'CC': 'clang', 'CXX': 'clang++'},
-            lit_extra_opts={'std': 'c++1z', 'enable_warnings': 'true'},
+            lit_extra_opts={'std': 'c++17', 'enable_warnings': 'true'},
+            check_libcxx_abilist=True),
+        'category': 'libcxx'},
+
+        {'name': 'libcxx-libcxxabi-x86_64-linux-ubuntu-cxx2a',
+         'slavenames': ericwf_slaves,
+         'builddir' : 'libcxx-libcxxabi-x86_64-linux-ubuntu-cxx2a',
+         'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
+            env={'PATH': '/usr/local/bin:/usr/bin:/bin',
+                 'CC': 'clang', 'CXX': 'clang++'},
+            lit_extra_opts={'std': 'c++2a', 'enable_warnings': 'true'},
             check_libcxx_abilist=True),
         'category': 'libcxx'},
 
