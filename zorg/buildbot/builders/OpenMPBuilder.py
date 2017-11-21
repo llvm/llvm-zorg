@@ -122,10 +122,10 @@ def getOpenMPCMakeBuildFactory(
         cmake_args += ['-DLIBOMP_OMPT_SUPPORT=ON']
 
     if test:
-        lit_args = WithProperties('-v --show-unsupported --show-xfail -j %s' % jobs)
-        cmake_args += ['-DLIBOMP_LIT_ARGS="%s"' % lit_args]
+        lit_args = '-v --show-unsupported --show-xfail -j %s' % jobs
+        cmake_args += [WithProperties('-DLIBOMP_LIT_ARGS="%s"' % lit_args)]
         if test_libomptarget:
-            cmake_args += ['-DLIBOMPTARGET_LIT_ARGS="%s"' % lit_args]
+            cmake_args += [WithProperties('-DLIBOMPTARGET_LIT_ARGS="%s"' % lit_args)]
 
     f.addStep(
         Configure(
