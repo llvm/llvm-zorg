@@ -57,7 +57,7 @@ def getOpenMPCMakeBuildFactory(
             workdir         = llvm_srcdir))
 
     # Get Clang sources, if requested.
-    if build_clang == 'clang':
+    if build_clang:
         f.addStep(
             SVN(
                 name            = 'svn-clang',
