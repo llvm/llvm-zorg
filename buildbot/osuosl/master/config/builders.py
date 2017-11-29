@@ -481,7 +481,7 @@ def _get_clang_builders():
         # ABI test-suite with CMake builder
         {'name'          : "clang-x86_64-linux-abi-test",
          'mergeRequests' : False,
-         'slavenames'    : ["as-bldslv8"],
+         'slavenames'    : ["ps4-buildslave1a"],
          'builddir'      : "clang-x86_64-linux-abi-test",
          'factory'       : ABITestsuitBuilder.getABITestsuitBuildFactory(
                                # TODO: Enable Werror once all the warnings are cleaned.
