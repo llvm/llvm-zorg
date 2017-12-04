@@ -16,10 +16,8 @@ def getOpenMPCMakeBuildFactory(
         jobs                = '%(jobs)s',   # Number of concurrent jobs.
         clean               = True,         # "clean" step is requested if true
         env                 = None,         # Environmental variables for all steps.
-        libomptarget        = False,        # Build libomptarget.
         ompt                = False,        # Whether to enable the OpenMP Tools Interface.
         test                = True,         # Test the built libraries.
-        test_libomptarget   = False,        # Test the built libraries.
     ):
 
     # Prepare environmental variables. Set here all env we want everywhere.
@@ -116,16 +114,12 @@ def getOpenMPCMakeBuildFactory(
     cmake_args  = ['cmake', '-G', 'Ninja', '../%s' % openmp_srcdir]
     cmake_args += ['-DCMAKE_C_COMPILER=%s' % c_compiler]
     cmake_args += ['-DCMAKE_CXX_COMPILER=%s' % cxx_compiler]
-    if libomptarget:
-        cmake_args += ['-DOPENMP_ENABLE_LIBOMPTARGET=ON']
     if ompt:
         cmake_args += ['-DLIBOMP_OMPT_SUPPORT=ON']
 
     if test:
         lit_args = '-v --show-unsupported --show-xfail -j %s' % jobs
-        cmake_args += [WithProperties('-DLIBOMP_LIT_ARGS=%s' % lit_args)]
-        if test_libomptarget:
-            cmake_args += [WithProperties('-DLIBOMPTARGET_LIT_ARGS=%s' % lit_args)]
+        cmake_args += [WithProperties('-DOPENMP_LIT_ARGS=%s' % lit_args)]
 
     f.addStep(
         Configure(
@@ -148,19 +142,10 @@ def getOpenMPCMakeBuildFactory(
         ninja_test_args = ['ninja', WithProperties('-j %s' % jobs)]
         f.addStep(
             LitTestCommand(
-                name        = 'test-libomp',
-                command     = ninja_test_args + ['check-libomp'],
-                description = 'test libomp',
+                name        = 'test-openmp',
+                command     = ninja_test_args + ['check-openmp'],
+                description = 'test openmp',
                 workdir     = openmp_builddir,
                 env         = merged_env))
-
-        if test_libomptarget:
-            f.addStep(
-                LitTestCommand(
-                    name        = 'test-libomptarget',
-                    command     = ninja_test_args + ['check-libomptarget'],
-                    description = 'test libomptarget',
-                    workdir     = openmp_builddir,
-                    env         = merged_env))
 
     return f

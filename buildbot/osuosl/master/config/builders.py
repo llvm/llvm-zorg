@@ -1132,7 +1132,6 @@ def _get_openmp_builders():
          'factory' : OpenMPBuilder.getOpenMPCMakeBuildFactory(
                          c_compiler="gcc",
                          cxx_compiler="g++",
-                         libomptarget=True,
                          env={'PATH':'/home/llvmbb/bin/clang-latest/bin:/home/llvmbb/bin:/usr/local/bin:/usr/local/bin:/usr/bin:/bin'})},
 
         {'name': "openmp-clang-x86_64-linux-debian",
@@ -1141,8 +1140,6 @@ def _get_openmp_builders():
          'factory' : OpenMPBuilder.getOpenMPCMakeBuildFactory(
                          c_compiler="clang",
                          cxx_compiler="clang++",
-                         libomptarget=True,
-                         test_libomptarget=True,
                          env={'PATH':'/home/llvmbb/bin/clang-latest/bin:/home/llvmbb/bin:/usr/local/bin:/usr/local/bin:/usr/bin:/bin'})},
 
         {'name': "openmp-ompt-gcc-x86_64-linux-debian",
@@ -1169,8 +1166,6 @@ def _get_openmp_builders():
          'factory' : OpenMPBuilder.getOpenMPCMakeBuildFactory(
                          c_compiler="clang",
                          cxx_compiler="clang++",
-                         libomptarget=True,
-                         test_libomptarget=True,
                          env={'PATH':'/home/bbot/opt/cmake/bin:/home/bbot/opt/ninja/bin:/usr/local/bin:/usr/bin:/bin'})},
 
         ]
