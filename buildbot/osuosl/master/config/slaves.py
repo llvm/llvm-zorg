@@ -189,7 +189,7 @@ def get_build_slaves():
         create_slave("ps4-buildslave2", properties={'jobs': 72}, max_builds=1),
 
         # Ubuntu 16.04.3 LTS x86_64-scei-ps4, 2 x Intel(R) Xeon(R) CPU E5-2699 v3 @ 2.30GHz
-        create_slave("ps4-buildslave4", properties={'jobs': 72}, max_builds=1),
+        create_slave("ps4-buildslave4"),
 
         # NetBSD 7.x amd64
         create_slave("lldb-amd64-ninja-netbsd7", properties={'jobs': 8}, max_builds=1),
