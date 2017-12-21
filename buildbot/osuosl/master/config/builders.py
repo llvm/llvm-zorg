@@ -88,6 +88,23 @@ def _get_llvm_builders():
                           "-DLLVM_TARGETS_TO_BUILD:STRING=AVR;X86",
                           "-DLLVM_EXPERIMENTAL_TARGETS_TO_BUILD:STRING=AVR",
                           "-DBUILD_SHARED_LIBS=ON",
+                        ])},
+        {'name': "llvm-riscv-linux",
+         'slavenames':["riscv-build-01"],
+         'builddir':"llvm-riscv-linux",
+         'factory': LLVMBuilder.getLLVMCMakeBuildFactory(
+                        timeout=40, config_name='Release',
+                        enable_shared=True,
+                        extra_cmake_args=[
+                          "-G", "Ninja",
+                          "-DCMAKE_BUILD_TYPE:STRING=Release",
+                          # We need to compile the X86 backend due to a few generic CodeGen tests.
+                          "-DLLVM_TARGETS_TO_BUILD:STRING=RISCV;X86",
+                          "-DLLVM_EXPERIMENTAL_TARGETS_TO_BUILD:STRING=RISCV",
+                          "-DBUILD_SHARED_LIBS=ON",
+                          "-DCMAKE_C_COMPILER='clang'",
+                          "-DCMAKE_CXX_COMPILER='clang++'",
+                          "-DLLVM_ENABLE_LLD=True",
                         ])}
         ]
 

@@ -228,4 +228,13 @@ def get_status_targets(standard_builders, standard_categories=None):
                         "lldb-amd64-ninja-netbsd8"],
             addLogs=False,
             num_lines = 15),
+        InformativeMailNotifier(
+            fromaddr = "llvm.buildmaster@lab.llvm.org",
+            sendToInterestedUsers = False,
+            extraRecipients = ["asb@lowrisc.org"],
+            subject="Build %(builder)s Failure",
+            mode = "failing",
+            builders = ["llvm-riscv-linux"],
+            addLogs=False,
+            num_lines = 15),
         ]
