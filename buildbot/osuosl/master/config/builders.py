@@ -94,6 +94,7 @@ def _get_llvm_builders():
          'builddir':"llvm-riscv-linux",
          'factory': LLVMBuilder.getLLVMCMakeBuildFactory(
                         timeout=40, config_name='Release',
+                        make='ninja',
                         enable_shared=True,
                         extra_cmake_args=[
                           "-G", "Ninja",
