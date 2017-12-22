@@ -94,10 +94,9 @@ def _get_llvm_builders():
          'builddir':"llvm-riscv-linux",
          'factory': LLVMBuilder.getLLVMCMakeBuildFactory(
                         timeout=40, config_name='Release',
-                        make='ninja',
                         enable_shared=True,
                         extra_cmake_args=[
-                          "-G", "Ninja",
+                          "-G", "Unix Makefiles",
                           "-DCMAKE_BUILD_TYPE:STRING=Release",
                           # We need to compile the X86 backend due to a few generic CodeGen tests.
                           "-DLLVM_TARGETS_TO_BUILD:STRING=RISCV;X86",
