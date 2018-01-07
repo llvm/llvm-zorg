@@ -1169,24 +1169,6 @@ def _get_openmp_builders():
                          cxx_compiler="clang++",
                          env={'PATH':'/home/llvmbb/bin/clang-latest/bin:/home/llvmbb/bin:/usr/local/bin:/usr/local/bin:/usr/bin:/bin'})},
 
-        {'name': "openmp-ompt-gcc-x86_64-linux-debian",
-         'slavenames':["gribozavr4"],
-         'builddir':"openmp-ompt-gcc-x86_64-linux-debian",
-         'factory' : OpenMPBuilder.getOpenMPCMakeBuildFactory(
-                         c_compiler="gcc",
-                         cxx_compiler="g++",
-                         ompt=True,
-                         env={'PATH':'/home/llvmbb/bin/clang-latest/bin:/home/llvmbb/bin:/usr/local/bin:/usr/local/bin:/usr/bin:/bin'})},
-
-        {'name': "openmp-ompt-clang-x86_64-linux-debian",
-         'slavenames':["gribozavr4"],
-         'builddir':"openmp-ompt-clang-x86_64-linux-debian",
-         'factory' : OpenMPBuilder.getOpenMPCMakeBuildFactory(
-                         c_compiler="clang",
-                         cxx_compiler="clang++",
-                         ompt=True,
-                         env={'PATH':'/home/llvmbb/bin/clang-latest/bin:/home/llvmbb/bin:/usr/local/bin:/usr/local/bin:/usr/bin:/bin'})},
-
         {'name': "openmp-clang-ppc64le-linux-debian",
          'slavenames':["ppc64le-nvidia-K40"],
          'builddir':"openmp-clang-ppc64le-linux-debian",
