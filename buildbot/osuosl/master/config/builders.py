@@ -887,7 +887,8 @@ def _get_lldb_builders():
          'factory': LLDBBuilder.getLLDBScriptCommandsFactory(
                     downloadBinary=False,
                     buildAndroid=True,
-                    runTest=False)},
+                    runTest=False,
+                    extra_cmake_args=['-DLLVM_ENABLE_ASSERTIONS=ON'])},
         {'name': "lldb-x86_64-ubuntu-14.04-cmake",
          'slavenames': ["lldb-build1-ubuntu-1404"],
          'builddir': "buildWorkingDir",

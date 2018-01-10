@@ -918,6 +918,7 @@ def getLLDBScriptCommandsFactory(
                        buildAndroid=False,
                        runTest=True,
                        scriptExt='.sh',
+                       extra_cmake_args=None,
                        ):
     f = buildbot.process.factory.BuildFactory()
 
@@ -925,6 +926,9 @@ def getLLDBScriptCommandsFactory(
         pathSep = '.\\'
     else:
         pathSep = './'
+
+    if extra_cmake_args is None:
+        extra_cmake_args = []
 
     # Update scripts
     getShellCommandStep(f, name='update scripts',
@@ -948,16 +952,9 @@ def getLLDBScriptCommandsFactory(
               property="got_revision",
               workdir="scripts"))
 
-    # Update NDK and create toolchains
-    getShellCommandStep(f, name='ndk download and toolchains update',
-                        command=[pathSep + 'updateToolChain' + scriptExt],
-                        description=["Update NDK toolchain"],
-                        flunkOnFailure=False,
-                        haltOnFailure=False)
-
     # Configure
     getShellCommandStep(f, name='cmake local',
-                        command=[pathSep + 'cmake' + scriptExt])
+                        command=[pathSep + 'cmake' + scriptExt] + extra_cmake_args)
 
     # Build
     getShellCommandStep(f, name='ninja build local',
