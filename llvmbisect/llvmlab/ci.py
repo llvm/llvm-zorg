@@ -447,7 +447,7 @@ name, list the available builds for that builder.\
                                                         min_rev, max_rev))
         return available_builds
 
-DEFAULT_BUILDER = "clang-stage1-configure-RA_build"
+DEFAULT_BUILDER = "clang-stage1-configure-RA"
 
 
 def action_bisect(name, args):
