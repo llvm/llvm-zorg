@@ -1,0 +1,17 @@
+# We build in an explicit config manager version check, since it will not be deployed in
+config_manager >= 0.1
+
+# Also get more includes from:
+include ./some_other_file
+# Use the following sources for installing.
+source brew http://git.llvm.org/git/some-cask.git
+source pip https://pypi.llvm.org
+source root https://llvm.org/resources/
+# Dependenceis.
+brew scons >= 3.0.1
+brew_cask Filecheck >= 5.0
+
+os_version == 10.11.6
+pythontool lnt https://git.llvm.org/git/lnt.git
+
+device_ssh <ecid>
