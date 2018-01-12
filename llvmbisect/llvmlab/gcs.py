@@ -6,7 +6,10 @@ import requests
 import urllib3
 
 # Root URL to use for our queries.
-GCS = "https://www.googleapis.com/storage/v1/"
+DEFAULT_GCS = "https://www.googleapis.com/storage/v1/"
+
+# Specify a different root URL if compilers are hosted elsewhere.
+GCS = os.getenv("GCS_SERVER", DEFAULT_GCS)
 
 DEFAULT_BUCKET = "llvm-build-artifacts"
 
