@@ -475,7 +475,8 @@ def _get_clang_builders():
                                                             checkout_lld=False,
                                                             useTwoStage=False,
                                                             stage1_config='Release',
-                                                            extra_cmake_args=["-DLLVM_ENABLE_ASSERTIONS=ON"]),
+                                                            extra_cmake_args=["-DLLVM_ENABLE_ASSERTIONS=ON",
+                                                                              "-DLLVM_LIT_ARGS='-v -j4 --param run_long_tests=true'"]),
          'category' : 'clang'},
 
         {'name' : "clang-s390x-linux-multistage",
