@@ -897,7 +897,8 @@ def _get_lldb_builders():
          'factory': LLDBBuilder.getLLDBScriptCommandsFactory(
                     downloadBinary=False,
                     buildAndroid=False,
-                    runTest=True)},
+                    runTest=True,
+                    extra_cmake_args=['-DLLVM_ENABLE_ASSERTIONS=ON'])},
         {'name': "lldb-amd64-ninja-netbsd7",
          'slavenames': ["lldb-amd64-ninja-netbsd7"],
          'builddir': "build",
