@@ -20,6 +20,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import argparse
+import collections
 import json
 import platform
 import re
@@ -370,9 +371,142 @@ class Brew(Dependency):
         return "{} {} {}".format(self.str_kind, self.package, self.version)
 
 
+class Xcode(Dependency):
+    """Verify and Inject Xcode version dependencies."""
+
+    # xcode <operator> <version>.  Operator may not have spaces around it.
+    xcode_dep_re = re.compile(r'(?P<command>\w+)\s+(?P<operator>>=|<=|==)\s*(?P<version_text>[\d.-_]+)')
+
+    def __init__(self, line, kind):
+        # type: (Line, Text) -> None
+        """Parse and xcode version installed.
+
+        :param line: the Line with the deceleration of the dependency.
+        :param kind: the detected dependency kind.
+        """
+        super(Xcode, self).__init__(line, kind)
+        self.command = None
+        self.operator = None
+        self.version = None
+        self.version_text = None
+        self.installed_version = None
+
+    def parse(self):
+        """Parse this dependency."""
+        text = self.line.text
+        match = self.xcode_dep_re.match(text)
+        if not match:
+            raise MalformedDependency("Expression does not compile in {}: {}".format(self.__class__.__name__,
+                                                                                     self.line))
+        self.__dict__.update(match.groupdict())
+
+        self.version = Version(self.version_text)
+
+    def verify(self):
+        """Verify the installed Xcode matches this dependency."""
+        installed_version_output = subprocess.check_output(['/usr/bin/xcrun', 'xcodebuild', "-version"])
+        installed_version_re = re.compile(r"^Xcode\s(?P<version_text>[\d/.]+)")
+        match = installed_version_re.match(installed_version_output)
+        if not match:
+            raise MissingDependencyError(self, "Did not find Xcode version in output:" + installed_version_output)
+        version = match.groupdict().get('version_text')
+        if not version:
+            # The package is not installed at all.
+            raise AssertionError("No version text found.")
+        self.installed_version = Version(version)
+        return check_version(self.installed_version, self.operator, self.version)
+
+    def inject(self):
+        """Not implemented."""
+        raise NotImplementedError()
+
+    def __str__(self):
+        """Dependency kind, package and version, for printing in error messages."""
+        return "{} {}".format(self.str_kind, self.version)
+
+
+class Sdk(Dependency):
+    """Verify and Inject Sdk version dependencies."""
+
+    # sdk <operator> <version>.  Operator may not have spaces around it.
+    sdk_dep_re = re.compile(r'(?P<command>\w+)\s+(?P<sdk>[\w/.]+)\s*(?P<operator>>=|<=|==)\s*(?P<version_text>[\d.-_]+)')
+
+    def __init__(self, line, kind):
+        # type: (Line, Text) -> None
+        """Parse and sdk version installed.
+
+        :param line: the Line with the deceleration of the dependency.
+        :param kind: the detected dependency kind.
+        """
+        super(Sdk, self).__init__(line, kind)
+        self.command = None
+        self.sdk = None
+        self.operator = None
+        self.version = None
+        self.version_text = None
+        self.installed_version = None
+
+    def parse(self):
+        """Parse this dependency."""
+        text = self.line.text
+        match = self.sdk_dep_re.match(text)
+        if not match:
+            raise MalformedDependency("Expression does not compile in {}: {}".format(self.__class__.__name__,
+                                                                                     self.line))
+        self.__dict__.update(match.groupdict())
+
+        self.version = Version(self.version_text)
+
+    def verify(self):
+        """Verify the installed Sdk matches this dependency."""
+        installed_version_output = subprocess.check_output(['/usr/bin/xcrun', 'xcodebuild', "-showsdks"])
+        installed_version_re = re.compile(r".*-sdk\s+(?P<sdk_text>\S+)")
+
+        matches = [installed_version_re.match(l).groupdict()['sdk_text']
+                   for l in installed_version_output.split('\n') if installed_version_re.match(l)]
+
+        if not matches:
+            raise MissingDependencyError(self, "Did not find Sdk version in output:" + installed_version_output)
+
+        extract_version_names = re.compile(r'(?P<pre>\D*)(?P<version_text>[\d+/.]*)(?P<post>.*)')
+
+        sdks = [extract_version_names.match(sdk_text).groupdict()
+                for sdk_text in matches if extract_version_names.match(sdk_text)]
+
+        installed_sdks = collections.defaultdict(list)
+        for sdk in sdks:
+            name = sdk['pre']
+            if sdk.get('post'):
+                name += "." + sdk.get('post')
+            if sdk.get('version_text'):
+                version = Version(sdk['version_text'].rstrip('.'))
+            else:
+                continue
+            installed_sdks[name].append(version)
+
+        if self.sdk not in installed_sdks.keys():
+            raise MissingDependencyError("{} not found in installed SDKs.".format(self.sdk))
+
+        self.installed_version = installed_sdks[self.sdk]
+
+        satisfied = [check_version(s, self.operator, self.version) for s in self.installed_version]
+        return any(satisfied)
+
+    def inject(self):
+        """Not implemented."""
+        raise NotImplementedError()
+
+    def __str__(self):
+        """Dependency kind, package and version, for printing in error messages."""
+        return "{} {}".format(self.str_kind, self.version)
+
+
 dependencies_implementations = {'brew': Brew,
                                 'os_version': HostOSVersion,
-                                'config_manager': ConMan}
+                                'config_manager': ConMan,
+                                'xcode': Xcode,
+                                'sdk': Sdk,
+                                }
 
 
 def dependency_factory(line):

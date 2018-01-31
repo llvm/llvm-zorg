@@ -9,7 +9,7 @@ import sys
 import pytest
 
 import dep
-from dep import Line, Brew, Version, MissingDependencyError, ConMan, HostOSVersion
+from dep import Line, Brew, Version, MissingDependencyError, ConMan, HostOSVersion, Xcode, Sdk
 
 here = os.path.dirname(os.path.realpath(__file__))
 
@@ -132,3 +132,93 @@ def test_host_os_version_requirement(mocker):
     bad.parse()
     with pytest.raises(MissingDependencyError):
         bad.verify_and_act()
+
+
+XCODE_VERSION_OUTPUT = """Xcode 1.0
+Build version 1A123b
+"""
+
+
+def test_xcode_version_requirement(mocker):
+    """Unittest of the Xcode version check."""
+    line = Line("foo.c", 11, "xcode == 1.0", "test")
+    mocker.patch('dep.subprocess.check_output')
+    dep.subprocess.check_output.return_value = XCODE_VERSION_OUTPUT
+    b = Xcode(line, "xcode")
+    b.parse()
+    assert b.operator == "=="
+    assert b.command == "xcode"
+    assert b.version_text == "1.0"
+
+    b.verify_and_act()
+
+    line = Line("foo.c", 10, "xcode == 2.0", "test")
+    bad = Xcode(line, "xcode")
+    bad.parse()
+    with pytest.raises(MissingDependencyError):
+        bad.verify_and_act()
+
+
+SDK_VERSION_OUTPUT = """iOS SDKs:
+	iOS 1.0                      	-sdk iphoneos1.0
+
+iOS Simulator SDKs:
+	Simulator - iOS 1.0          	-sdk iphonesimulator1.0
+
+macOS SDKs:
+	macOS 10.11                   	-sdk macosx10.11
+	macOS 10.12                   	-sdk macosx10.12
+
+macOS Additional SDKs:
+	iDishwasher SDK                	-sdk iwash
+"""  # noqa This is literal output, it is okay to mix tabs.
+
+
+def test_sdk_version_requirement(mocker):
+    """Unittest of the SDK version check."""
+    line = Line("foo.c", 11, "sdk iphoneos == 1.0", "test")
+    mocker.patch('dep.subprocess.check_output')
+    dep.subprocess.check_output.return_value = SDK_VERSION_OUTPUT
+    b = Sdk(line, "sdk")
+    b.parse()
+    assert b.operator == "=="
+    assert b.command == "sdk"
+    assert b.sdk == "iphoneos"
+    assert b.version_text == "1.0"
+
+    b.verify_and_act()
+
+    line = Line("foo.c", 10, "sdk iphoneos == 2.0", "test")
+    bad = Sdk(line, "sdk")
+    bad.parse()
+    with pytest.raises(MissingDependencyError):
+        bad.verify_and_act()
+
+    b = Sdk(Line("foo.c", 11, "sdk iphoneos == 1.0", "test"), "sdk")
+    b.parse()
+    b.verify_and_act()
+
+    b = Sdk(Line("foo.c", 11, "sdk iphoneos <= 1.0", "test"), "sdk")
+    b.parse()
+    b.verify_and_act()
+
+    b = Sdk(Line("foo.c", 11, "sdk iphonesimulator <= 1.0", "test"), "sdk")
+    b.parse()
+    b.verify_and_act()
+
+    b = Sdk(Line("foo.c", 11, "sdk iwash == 1.0", "test"), "sdk")
+    b.parse()
+    # TODO handle unversioned SDKs.
+    with pytest.raises(MissingDependencyError):
+        b.verify_and_act()
+
+    b = Sdk(Line("foo.c", 11, "sdk macosx == 10.12", "test"), "sdk")
+    b.parse()
+    b.verify_and_act()
+
+    b = Sdk(Line("foo.c", 11, "sdk macosx == 10.11", "test"), "sdk")
+    b.parse()
+    b.verify_and_act()
+
+
+
