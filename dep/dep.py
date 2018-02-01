@@ -347,7 +347,10 @@ class Brew(Dependency):
 
     def verify(self):
         """Verify the packages in brew match this dependency."""
-        brew_package_config = brew_cmd(['/usr/local/bin/brew', 'info', self.package, "--json=v1"])
+        try:
+            brew_package_config = brew_cmd(['/usr/local/bin/brew', 'info', self.package, "--json=v1"])
+        except OSError:
+            raise MissingDependencyError(self, "Can't find brew command")
         version = None
         for brew_package in brew_package_config:
             name = brew_package['name']

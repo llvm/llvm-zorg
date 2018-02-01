@@ -42,6 +42,11 @@ def test_brew_cmake_requirement(mocker):
     b.verify_and_act()
     assert dep.brew_cmd.called
 
+    mocker.patch('dep.brew_cmd')
+    dep.brew_cmd.side_effect = OSError()
+    with pytest.raises(MissingDependencyError):
+        b.verify_and_act()
+
 
 def test_brew_ninja_not_installed_requirement(mocker):
     """Detailed check of a unmatched brew requirement."""
