@@ -75,12 +75,7 @@ def getCUDATestsuiteBuildFactory(
         'PATH': WithProperties("%(workdir)s/" + clang_build_dir +
                                "/bin:${PATH}"),
     }
-    # Limit GPUs visible to CUDA.
-    if gpu_devices:
-        cuda_test_env["CUDA_VISIBLE_DEVICES"] = ",".join(
-            str(x) for x in gpu_devices)
     merged_env.update(cuda_test_env)
-
     ts_build_dir = 'test-suite-build'
 
     # Completely remove test suite build dir.
@@ -147,15 +142,32 @@ def getCUDATestsuiteBuildFactory(
         workdir=ts_build_dir,
         env=merged_env))
 
-    f.addStep(NinjaCommand(
-        name='run simple CUDA tests',
-        targets=["check-cuda-simple"],
-        jobs=1, # lit will parallelize the jobs
-        haltOnFailure=True,
-        description=["Running simple CUDA tests"],
-        descriptionDone=["simple CUDA tests done."],
-        workdir=ts_build_dir,
-        env=merged_env))
+    # Limit GPUs visible to CUDA.
+    if gpu_devices:
+        for gpu_id in gpu_devices:
+            # make ID a string as it may be either an integer or a UUID string.
+            gpu_id = str(gpu_id)
+            gpu_env = dict(merged_env)
+            gpu_env["CUDA_VISIBLE_DEVICES"] = gpu_id
+            f.addStep(NinjaCommand(
+                name='run simple CUDA tests on gpu %s' % gpu_id,
+                targets=["check-cuda-simple"],
+                jobs=1, # lit will parallelize the jobs
+                haltOnFailure=True,
+                description=["Running simple CUDA tests on GPU %s" % gpu_id],
+                descriptionDone=["simple CUDA tests on GPU %s done." % gpu_id],
+                workdir=ts_build_dir,
+                env=gpu_env))
+    else:
+        f.addStep(NinjaCommand(
+            name='run simple CUDA tests',
+            targets=["check-cuda-simple"],
+            jobs=1, # lit will parallelize the jobs
+            haltOnFailure=True,
+            description=["Running simple CUDA tests"],
+            descriptionDone=["simple CUDA tests done."],
+            workdir=ts_build_dir,
+            env=merged_env))
 
     # If we've enabled thrust tests, build them now.
     # WARNING: This takes a lot of time to build.

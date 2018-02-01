@@ -1375,12 +1375,12 @@ def _get_experimental_scheduled_builders():
                      stage1_config='Release',
                      extra_cmake_args=[
                          '-DLLVM_ENABLE_ASSERTIONS=ON',
-                         "-DCMAKE_C_COMPILER:FILEPATH=/usr/bin/clang-3.8",
-                         "-DCMAKE_CXX_COMPILER:FILEPATH=/usr/bin/clang++-3.8"
+                         "-DCMAKE_C_COMPILER:FILEPATH=/usr/bin/clang",
+                         "-DCMAKE_CXX_COMPILER:FILEPATH=/usr/bin/clang"
                      ],
                      externals="/home/botanist/bots/externals",
-                     gpu_arch_list=["sm_35"],
-                     gpu_devices=[0],   # K40c.
+                     gpu_arch_list=["sm_35", "sm_61"],
+                     gpu_devices=[2, 0], # K40c(sm_35), GTX1070(sm_61)
                      extra_ts_cmake_args=[],
                      enable_thrust_tests=False,
          ),
