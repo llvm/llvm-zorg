@@ -7,6 +7,7 @@ import json
 import os
 import sys
 import pytest
+import subprocess
 
 import dep
 from dep import Line, Brew, Version, MissingDependencyError, ConMan, HostOSVersion, Xcode, Sdk
@@ -189,36 +190,64 @@ def test_sdk_version_requirement(mocker):
     b.verify_and_act()
 
     line = Line("foo.c", 10, "sdk iphoneos == 2.0", "test")
-    bad = Sdk(line, "sdk")
+    bad = dep.Sdk(line, "sdk")
     bad.parse()
     with pytest.raises(MissingDependencyError):
         bad.verify_and_act()
 
-    b = Sdk(Line("foo.c", 11, "sdk iphoneos == 1.0", "test"), "sdk")
+    b = dep.Sdk(Line("foo.c", 11, "sdk iphoneos == 1.0", "test"), "sdk")
     b.parse()
     b.verify_and_act()
 
-    b = Sdk(Line("foo.c", 11, "sdk iphoneos <= 1.0", "test"), "sdk")
+    b = dep.Sdk(Line("foo.c", 11, "sdk iphoneos <= 1.0", "test"), "sdk")
     b.parse()
     b.verify_and_act()
 
-    b = Sdk(Line("foo.c", 11, "sdk iphonesimulator <= 1.0", "test"), "sdk")
+    b = dep.Sdk(Line("foo.c", 11, "sdk iphonesimulator <= 1.0", "test"), "sdk")
     b.parse()
     b.verify_and_act()
 
-    b = Sdk(Line("foo.c", 11, "sdk iwash == 1.0", "test"), "sdk")
+    b = dep.Sdk(Line("foo.c", 11, "sdk iwash == 1.0", "test"), "sdk")
     b.parse()
     # TODO handle unversioned SDKs.
     with pytest.raises(MissingDependencyError):
         b.verify_and_act()
 
-    b = Sdk(Line("foo.c", 11, "sdk macosx == 10.12", "test"), "sdk")
+    b = dep.Sdk(Line("foo.c", 11, "sdk macosx == 10.12", "test"), "sdk")
     b.parse()
     b.verify_and_act()
 
-    b = Sdk(Line("foo.c", 11, "sdk macosx == 10.11", "test"), "sdk")
+    b = dep.Sdk(Line("foo.c", 11, "sdk macosx == 10.11", "test"), "sdk")
     b.parse()
     b.verify_and_act()
 
 
+def test_pip_requirement(mocker):
+    """Detailed check of a pip packages dependency."""
+    line = Line("foo.c", 10, "pip pytest <= 3.3.1", "test")
 
+    b = dep.Pip(line, "pip")
+    b.parse()
+    assert b.operator == "<="
+    assert b.command == "pip"
+    assert b.package == "pytest"
+    assert b.version_text == "3.3.1"
+    mocker.patch('dep.subprocess.check_output')
+    dep.subprocess.check_output.return_value = open(here + '/assets/pip_output.json').read()
+    b.verify_and_act()
+    assert dep.subprocess.check_output.called
+
+    b = dep.Pip(Line("foo.c", 10, "pip pytest == 3.3.1", "test"), "pip")
+    b.parse()
+    b.verify_and_act()
+
+    b = dep.Pip(Line("foo.c", 10, "pip pytest <= 3.3.0", "test"), "pip")
+    b.parse()
+    with pytest.raises(MissingDependencyError):
+        b.verify_and_act()
+
+    mocker.patch('dep.subprocess.check_output')
+    no_pip = "/usr/bin/python: No module named pip"
+    dep.subprocess.check_output.side_effect = subprocess.CalledProcessError(1, [], output=no_pip)
+    with pytest.raises(MissingDependencyError):
+        b.verify_and_act()

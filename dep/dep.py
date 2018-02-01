@@ -502,11 +502,71 @@ class Sdk(Dependency):
         return "{} {}".format(self.str_kind, self.version)
 
 
+class Pip(Dependency):
+    """Verify and Inject pip package dependencies."""
+
+    # pip <package> <operator> <version>.  Operator may not have spaces around it.
+    pip_re = re.compile(r'(?P<command>\w+)\s+(?P<package>\w+)\s*(?P<operator>>=|<=|==)\s*(?P<version_text>[\d.-_]+)')
+
+    def __init__(self, line, kind):
+        # type: (Line, Text) -> None
+        """Parse and verify pip package is installed.
+
+        :param line: the Line with the deceleration of the dependency.
+        :param kind: the detected dependency kind.
+        """
+        super(Pip, self).__init__(line, kind)
+        self.command = None
+        self.operator = None
+        self.package = None
+        self.version = None
+        self.version_text = None
+        self.installed_version = None
+
+    def parse(self):
+        """Parse this dependency."""
+        text = self.line.text
+        match = self.pip_re.match(text)
+        if not match:
+            raise MalformedDependency("Expression does not compile in {}: {}".format(self.__class__.__name__,
+                                                                                     self.line))
+        self.__dict__.update(match.groupdict())
+
+        self.version = Version(self.version_text)
+
+    def verify(self):
+        """Verify the packages in pip match this dependency."""
+        try:
+            pip_package_config = json.loads(subprocess.check_output(["/usr/bin/env",
+                                                                     "python", "-m", "pip", "list", "--format=json"]))
+        except (subprocess.CalledProcessError, OSError):
+            raise MissingDependencyError(self, "Cannot find pip")
+
+        installed = {p['name']: p['version'] for p in pip_package_config}  # type: Dict[Text, Text]
+
+        package = installed.get(self.package)
+
+        if not package:
+            # The package is not installed at all.
+            raise MissingDependencyError(self, "not in package list")
+        self.installed_version = Version(package)
+        return check_version(self.installed_version, self.operator, self.version)
+
+    def inject(self):
+        """Not implemented."""
+        raise NotImplementedError()
+
+    def __str__(self):
+        """Dependency kind, package and version, for printing in error messages."""
+        return "{} {} {}".format(self.str_kind, self.package, self.version)
+
+
 dependencies_implementations = {'brew': Brew,
                                 'os_version': HostOSVersion,
                                 'config_manager': ConMan,
                                 'xcode': Xcode,
                                 'sdk': Sdk,
+                                'pip': Pip,
                                 }
 
 
