@@ -28,9 +28,9 @@ import subprocess
 
 
 try:
-    from typing import List, Text, Union, Dict, Type, Optional
+    # noinspection PyUnresolvedReferences
+    from typing import List, Text, Union, Dict, Type, Optional  # noqa
 except ImportError as e:
-    Optional = Type = Dict = List = Text = Union = None
     pass  # Not really needed at runtime, so okay to not have installed.
 
 
@@ -156,7 +156,7 @@ class MalformedDependency(Exception):
 
 
 def brew_cmd(command):
-    # type: (List[Text]) -> Dict[Text, object]
+    # type: (List[Text]) -> List[Dict[Text, object]]
     """Help run a brew command, and parse the output.
 
     Brew has a json output option which we use.  Run the command and parse the stdout
@@ -429,7 +429,8 @@ class Sdk(Dependency):
     """Verify and Inject Sdk version dependencies."""
 
     # sdk <operator> <version>.  Operator may not have spaces around it.
-    sdk_dep_re = re.compile(r'(?P<command>\w+)\s+(?P<sdk>[\w/.]+)\s*(?P<operator>>=|<=|==)\s*(?P<version_text>[\d.-_]+)')
+    sdk_dep_re = re.compile(r'(?P<command>\w+)\s+(?P<sdk>[\w/.]+)\s*'
+                            r'(?P<operator>>=|<=|==)\s*(?P<version_text>[\d.-_]+)')
 
     def __init__(self, line, kind):
         # type: (Line, Text) -> None
@@ -485,7 +486,7 @@ class Sdk(Dependency):
             installed_sdks[name].append(version)
 
         if self.sdk not in installed_sdks.keys():
-            raise MissingDependencyError("{} not found in installed SDKs.".format(self.sdk))
+            raise MissingDependencyError(self, "{} not found in installed SDKs.".format(self.sdk))
 
         self.installed_version = installed_sdks[self.sdk]
 
