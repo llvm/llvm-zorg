@@ -1356,9 +1356,6 @@ def _get_libcxx_builders():
          'builddir': 'libcxx-libcxxabi-libunwind-arm-linux',
          'category': 'libcxx',
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
-            # FIXME: there should be a way to merge autodetected with user-defined linker flags
-            # See: libcxxabi/test/lit.cfg
-            lit_extra_opts={'link_flags': '"-lc++abi -lc -lm -lpthread -lunwind -ldl -L/opt/llvm/lib/clang/3.9.0/lib/linux -lclang_rt.builtins-armhf"'},
             cmake_extra_opts={'CMAKE_C_COMPILER_LAUNCHER': 'ccache',
                               'CMAKE_CXX_COMPILER_LAUNCHER': 'ccache',
                               'CMAKE_C_COMPILER': 'clang',
@@ -1373,9 +1370,6 @@ def _get_libcxx_builders():
          'builddir': 'libcxx-libcxxabi-libunwind-arm-linux-noexceptions',
          'category': 'libcxx',
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
-            # FIXME: there should be a way to merge autodetected with user-defined linker flags
-            # See: libcxxabi/test/lit.cfg
-            lit_extra_opts={'link_flags': '"-lc++abi -lc -lm -lpthread -lunwind -ldl -L/opt/llvm/lib/clang/3.9.0/lib/linux -lclang_rt.builtins-armhf"'},
             cmake_extra_opts={'CMAKE_C_COMPILER_LAUNCHER': 'ccache',
                               'CMAKE_CXX_COMPILER_LAUNCHER': 'ccache',
                               'CMAKE_C_COMPILER': 'clang',
@@ -1393,9 +1387,6 @@ def _get_libcxx_builders():
          'builddir': 'libcxx-libcxxabi-libunwind-aarch64-linux',
          'category': 'libcxx',
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
-            # FIXME: there should be a way to merge autodetected with user-defined linker flags
-            # See: libcxxabi/test/lit.cfg
-            lit_extra_opts={'link_flags': '"-lc++abi -lc -lm -lpthread -lunwind -ldl -L/opt/llvm/lib/clang/3.9.0/lib/linux -lclang_rt.builtins-aarch64"'},
             cmake_extra_opts={'CMAKE_C_COMPILER_LAUNCHER': 'ccache',
                               'CMAKE_CXX_COMPILER_LAUNCHER': 'ccache',
                               'CMAKE_C_COMPILER': 'clang',
@@ -1410,9 +1401,6 @@ def _get_libcxx_builders():
          'builddir': 'libcxx-libcxxabi-libunwind-aarch64-linux-noexceptions',
          'category': 'libcxx',
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
-            # FIXME: there should be a way to merge autodetected with user-defined linker flags
-            # See: libcxxabi/test/lit.cfg
-            lit_extra_opts={'link_flags': '"-lc++abi -lc -lm -lpthread -lunwind -ldl -L/opt/llvm/lib/clang/3.9.0/lib/linux -lclang_rt.builtins-aarch64"'},
             cmake_extra_opts={'CMAKE_C_COMPILER_LAUNCHER': 'ccache',
                               'CMAKE_CXX_COMPILER_LAUNCHER': 'ccache',
                               'CMAKE_C_COMPILER': 'clang',
