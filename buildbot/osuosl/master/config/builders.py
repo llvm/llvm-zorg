@@ -296,7 +296,7 @@ def _get_clang_builders():
 
         ## AArch64 Clang+LLVM check-all + test-suite
         {'name': "clang-cmake-aarch64-quick",
-         'slavenames':["linaro-apm-01", "linaro-d05-01-quick"],
+         'slavenames':["linaro-apm-01", "linaro-armv8-01-aarch64-quick"],
          'builddir':"clang-cmake-aarch64-quick",
          'factory' : ClangBuilder.getClangCMakeBuildFactory(
                       clean=False,
@@ -320,7 +320,7 @@ def _get_clang_builders():
         ## TODO: Add Compiler-RT after fixing all the failures
         ## TODO: Fix the three remaining test-suite failures
         {'name': "clang-cmake-aarch64-lld",
-         'slavenames':["linaro-apm-04", "linaro-d05-01-lld"],
+         'slavenames':["linaro-apm-04", "linaro-armv8-01-aarch64-lld"],
          'builddir':"clang-cmake-aarch64-lld",
          'factory' : ClangBuilder.getClangCMakeBuildFactory(
                       clean=False,
@@ -345,7 +345,7 @@ def _get_clang_builders():
 
         ## AArch64 Clang+LLVM run test-suite with GlobalISel enabled
         {'name': "clang-cmake-aarch64-global-isel",
-         'slavenames':["linaro-apm-06", "linaro-d05-01-global-isel"],
+         'slavenames':["linaro-apm-06", "linaro-armv8-01-aarch64-global-isel"],
          'builddir':"clang-cmake-aarch64-global-isel",
          'factory' : ClangBuilder.getClangCMakeBuildFactory(
                       clean=False,
@@ -1060,7 +1060,7 @@ def _get_sanitizer_builders():
 
         # AArch64 Clang+LLVM+RT check-all + test-suite + self-hosting
         {'name': "clang-cmake-aarch64-full",
-         'slavenames':["linaro-apm-02", "linaro-apm-05", "linaro-d05-01-full"],
+         'slavenames':["linaro-apm-02", "linaro-apm-05", "linaro-armv8-01-aarch64-full"],
          'builddir':"clang-cmake-aarch64-full",
          'factory' : ClangBuilder.getClangCMakeBuildFactory(
                       clean=False,
@@ -1360,7 +1360,7 @@ def _get_libcxx_builders():
 
         # AArch64 LibC++ and LibC++abi tests (require Clang+RT)
         {'name': 'libcxx-libcxxabi-libunwind-aarch64-linux',
-         'slavenames': ['linaro-apm-03', 'linaro-d05-01-libcxx'],
+         'slavenames': ['linaro-apm-03', 'linaro-armv8-01-aarch64-libcxx'],
          'builddir': 'libcxx-libcxxabi-libunwind-aarch64-linux',
          'category': 'libcxx',
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
@@ -1374,7 +1374,7 @@ def _get_libcxx_builders():
                               'LLVM_PARALLEL_LINK_JOBS': '4'})},
 
         {'name': 'libcxx-libcxxabi-libunwind-aarch64-linux-noexceptions',
-         'slavenames': ['linaro-apm-03', 'linaro-d05-01-libcxx-noexceptions'],
+         'slavenames': ['linaro-apm-03', 'linaro-armv8-01-aarch64-libcxx-noeh'],
          'builddir': 'libcxx-libcxxabi-libunwind-aarch64-linux-noexceptions',
          'category': 'libcxx',
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(

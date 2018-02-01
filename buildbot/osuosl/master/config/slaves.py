@@ -40,12 +40,12 @@ def get_build_slaves():
         create_slave("linaro-apm-04", properties={'jobs' : 8}, max_builds=1),
         create_slave("linaro-apm-05", properties={'jobs' : 8}, max_builds=1),
         create_slave("linaro-apm-06", properties={'jobs' : 8}, max_builds=1),
-        create_slave("linaro-d05-01-quick", properties={'jobs' : 64}, max_builds=1),
-        create_slave("linaro-d05-01-full", properties={'jobs' : 64}, max_builds=1),
-        create_slave("linaro-d05-01-global-isel", properties={'jobs' : 64}, max_builds=1),
-        create_slave("linaro-d05-01-lld", properties={'jobs' : 64}, max_builds=1),
-        create_slave("linaro-d05-01-libcxx", properties={'jobs' : 64}, max_builds=1),
-        create_slave("linaro-d05-01-libcxx-noexceptions", properties={'jobs' : 64}, max_builds=1),
+        create_slave("linaro-armv8-01-aarch64-quick", properties={'jobs' : 64}, max_builds=1),
+        create_slave("linaro-armv8-01-aarch64-full", properties={'jobs' : 64}, max_builds=1),
+        create_slave("linaro-armv8-01-aarch64-global-isel", properties={'jobs' : 64}, max_builds=1),
+        create_slave("linaro-armv8-01-aarch64-lld", properties={'jobs' : 64}, max_builds=1),
+        create_slave("linaro-armv8-01-aarch64-libcxx", properties={'jobs' : 64}, max_builds=1),
+        create_slave("linaro-armv8-01-aarch64-libcxx-noeh", properties={'jobs' : 64}, max_builds=1),
 
         # AMD Athlon(tm) 64 X2 Dual Core 3800+, Ubuntu x86_64
         create_slave("grosser1", properties={'jobs': 2}, max_builds=1),
