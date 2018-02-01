@@ -226,7 +226,6 @@ def _get_clang_builders():
          'slavenames':["linaro-tk1-03"],
          'builddir':"clang-native-arm-lnt",
          'factory' : ClangBuilder.getClangCMakeBuildFactory(
-                      jobs=4,
                       clean=False,
                       checkout_compiler_rt=False,
                       checkout_lld=False,
@@ -247,7 +246,6 @@ def _get_clang_builders():
          'slavenames':["linaro-tk1-04"],
          'builddir':"clang-cmake-armv7-a15-selfhost-neon",
          'factory' : ClangBuilder.getClangCMakeBuildFactory(
-                      jobs=4,
                       clean=False,
                       checkout_compiler_rt=False,
                       checkout_lld=False,
@@ -267,7 +265,6 @@ def _get_clang_builders():
          'slavenames':["linaro-tk1-06"],
          'builddir':"clang-cmake-armv7-a15",
          'factory' : ClangBuilder.getClangCMakeBuildFactory(
-                      jobs=4,
                       clean=False,
                       checkout_compiler_rt=False,
                       checkout_lld=False,
@@ -284,7 +281,6 @@ def _get_clang_builders():
          'slavenames':["linaro-tk1-09"],
          'builddir':"clang-cmake-thumbv7-a15",
          'factory' : ClangBuilder.getClangCMakeBuildFactory(
-                      jobs=4,
                       clean=False,
                       checkout_compiler_rt=False,
                       checkout_lld=False,
@@ -301,7 +297,6 @@ def _get_clang_builders():
          'slavenames':["linaro-tk1-07"],
          'builddir':"clang-cmake-armv7-a15-selfhost",
          'factory' : ClangBuilder.getClangCMakeBuildFactory(
-                      jobs=4,
                       clean=False,
                       checkout_compiler_rt=False,
                       checkout_lld=False,
@@ -1050,7 +1045,6 @@ def _get_sanitizer_builders():
            'slavenames':["linaro-tk1-08"],
            'builddir':"clang-cmake-armv7-a15-full",
            'factory' : ClangBuilder.getClangCMakeBuildFactory(
-                        jobs=4,
                         clean=False,
                         checkout_lld=False,
                         extra_cmake_args=["-DCMAKE_C_COMPILER_LAUNCHER='ccache'",
@@ -1067,7 +1061,6 @@ def _get_sanitizer_builders():
            'slavenames':["linaro-tk1-05"],
            'builddir':"clang-cmake-thumbv7-a15-full-sh",
            'factory' : ClangBuilder.getClangCMakeBuildFactory(
-                        jobs=4,
                         clean=False,
                         checkout_lld=False,
                         useTwoStage=True,
