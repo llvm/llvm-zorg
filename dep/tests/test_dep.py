@@ -10,7 +10,7 @@ import pytest
 import subprocess
 
 import dep
-from dep import Line, Brew, Version, MissingDependencyError, ConMan, HostOSVersion, Xcode, Sdk
+from dep import Line, Version, MissingDependencyError
 
 here = os.path.dirname(os.path.realpath(__file__))
 
@@ -31,7 +31,7 @@ def test_brew_cmake_requirement(mocker):
     """Detailed check of a brew cmake dependency."""
     line = Line("foo.c", 10, "brew cmake <= 3.10.0", "test")
 
-    b = Brew(line, "brew")
+    b = dep.Brew(line, "brew")
     b.parse()
     assert b.operator == "<="
     assert b.command == "brew"
@@ -47,7 +47,7 @@ def test_brew_ninja_not_installed_requirement(mocker):
     """Detailed check of a unmatched brew requirement."""
     line = Line("foo.c", 11, "brew ninja <= 1.8.2", "We use ninja as clang's build system.")
 
-    b = Brew(line, "brew")
+    b = dep.Brew(line, "brew")
     b.parse()
     assert b.operator == "<="
     assert b.command == "brew"
@@ -96,7 +96,7 @@ def test_self_version_requirement():
     """Unittest of the self version check."""
     line = Line("foo.c", 10, "config_manager <= 0.1", "test")
 
-    b = ConMan(line, "config_manager")
+    b = dep.ConMan(line, "config_manager")
     b.parse()
     assert b.operator == "<="
     assert b.command == "config_manager"
@@ -105,12 +105,12 @@ def test_self_version_requirement():
     b.verify_and_act()
 
     line = Line("foo.c", 10, "config_manager <= 0.0.1", "test")
-    bad = ConMan(line, "config_manager")
+    bad = dep.ConMan(line, "config_manager")
     bad.parse()
     with pytest.raises(MissingDependencyError):
         bad.verify_and_act()
     line = Line("foo.c", 10, "config_manager == " + dep.VERSION, "test")
-    good = ConMan(line, "config_manager")
+    good = dep.ConMan(line, "config_manager")
     good.parse()
     good.verify_and_act()
 
@@ -120,7 +120,7 @@ def test_host_os_version_requirement(mocker):
     line = Line("foo.c", 11, "os_version == 10.13.2", "test")
     mocker.patch('dep.platform.mac_ver')
     dep.platform.mac_ver.return_value = ('10.13.2', "", "")
-    b = HostOSVersion(line, "os_version")
+    b = dep.HostOSVersion(line, "os_version")
     b.parse()
     assert b.operator == "=="
     assert b.command == "os_version"
@@ -129,7 +129,7 @@ def test_host_os_version_requirement(mocker):
     b.verify_and_act()
 
     line = Line("foo.c", 10, "os_version == 10.13.1", "test")
-    bad = HostOSVersion(line, "os_version")
+    bad = dep.HostOSVersion(line, "os_version")
     bad.parse()
     with pytest.raises(MissingDependencyError):
         bad.verify_and_act()
@@ -145,7 +145,7 @@ def test_xcode_version_requirement(mocker):
     line = Line("foo.c", 11, "xcode == 1.0", "test")
     mocker.patch('dep.subprocess.check_output')
     dep.subprocess.check_output.return_value = XCODE_VERSION_OUTPUT
-    b = Xcode(line, "xcode")
+    b = dep.Xcode(line, "xcode")
     b.parse()
     assert b.operator == "=="
     assert b.command == "xcode"
@@ -154,7 +154,7 @@ def test_xcode_version_requirement(mocker):
     b.verify_and_act()
 
     line = Line("foo.c", 10, "xcode == 2.0", "test")
-    bad = Xcode(line, "xcode")
+    bad = dep.Xcode(line, "xcode")
     bad.parse()
     with pytest.raises(MissingDependencyError):
         bad.verify_and_act()
@@ -180,7 +180,7 @@ def test_sdk_version_requirement(mocker):
     line = Line("foo.c", 11, "sdk iphoneos == 1.0", "test")
     mocker.patch('dep.subprocess.check_output')
     dep.subprocess.check_output.return_value = SDK_VERSION_OUTPUT
-    b = Sdk(line, "sdk")
+    b = dep.Sdk(line, "sdk")
     b.parse()
     assert b.operator == "=="
     assert b.command == "sdk"
