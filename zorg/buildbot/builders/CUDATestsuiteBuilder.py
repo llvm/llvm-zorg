@@ -7,10 +7,10 @@ except:
   from buildbot.plugins import steps
   RemoveDirectory = steps.RemoveDirectory
 
+from string import split
 from zorg.buildbot.builders import ClangBuilder
 from zorg.buildbot.commands.CmakeCommand import CmakeCommand
 from zorg.buildbot.commands.NinjaCommand import NinjaCommand
-
 
 def getCUDATestsuiteBuildFactory(
         externals,  # Directory with CUDA, thrust and gcc versions for testing.
@@ -137,8 +137,8 @@ def getCUDATestsuiteBuildFactory(
         targets=["cuda-tests-simple"],
         jobs=jobs,
         haltOnFailure=True,
-        description=["building simple CUDA tests"],
-        descriptionDone=["simple CUDA tests built."],
+        description=split("building simple CUDA tests"),
+        descriptionDone=split("simple CUDA tests built."),
         workdir=ts_build_dir,
         env=merged_env))
 
@@ -154,8 +154,8 @@ def getCUDATestsuiteBuildFactory(
                 targets=["check-cuda-simple"],
                 jobs=1, # lit will parallelize the jobs
                 haltOnFailure=True,
-                description=["Running simple CUDA tests on GPU %s" % gpu_id],
-                descriptionDone=["simple CUDA tests on GPU %s done." % gpu_id],
+                description=split("Running simple CUDA tests on GPU %s" % gpu_id),
+                descriptionDone=split("simple CUDA tests on GPU %s done." % gpu_id),
                 workdir=ts_build_dir,
                 env=gpu_env))
     else:
@@ -164,8 +164,8 @@ def getCUDATestsuiteBuildFactory(
             targets=["check-cuda-simple"],
             jobs=1, # lit will parallelize the jobs
             haltOnFailure=True,
-            description=["Running simple CUDA tests"],
-            descriptionDone=["simple CUDA tests done."],
+            description=split("Running simple CUDA tests"),
+            descriptionDone=split("simple CUDA tests done."),
             workdir=ts_build_dir,
             env=merged_env))
 
@@ -177,8 +177,8 @@ def getCUDATestsuiteBuildFactory(
             targets=["cuda-tests-thrust"],
             jobs=jobs,
             haltOnFailure=True,
-            description=["building thrust tests"],
-            descriptionDone=["thrust tests built."],
+            description=split("building thrust tests"),
+            descriptionDone=split("thrust tests built."),
             workdir=ts_build_dir,
             env=merged_env))
         # Run them. That also takes a while.
@@ -190,8 +190,8 @@ def getCUDATestsuiteBuildFactory(
                 targets=["check"],
                 jobs=1, # lit will parallelize the jobs.
                 haltOnFailure=True,
-                description=["running all CUDA tests."],
-                descriptionDone=["all cuda tests done."],
+                description=split("running all CUDA tests."),
+                descriptionDone=split("all cuda tests done."),
                 workdir=ts_build_dir,
                 env=merged_env))
 
