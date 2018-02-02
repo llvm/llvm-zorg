@@ -539,7 +539,16 @@ class Pip(Dependency):
 
     def verify(self):
         """Verify the packages in pip match this dependency."""
+
         try:
+            pip_version = subprocess.check_output(["/usr/bin/env", "python", "-m", "pip", "--version"])
+            pip_tokens = pip_version.split()
+            assert pip_tokens[0] == "pip"
+            pip_version = Version(pip_tokens[1])
+
+            if pip_version < Version("9.0.0"):
+                raise MissingDependencyError("Version of pip too old.")
+
             pip_package_config = json.loads(subprocess.check_output(["/usr/bin/env",
                                                                      "python", "-m", "pip", "list", "--format=json"]))
         except (subprocess.CalledProcessError, OSError):

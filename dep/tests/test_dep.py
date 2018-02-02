@@ -237,8 +237,18 @@ def test_pip_requirement(mocker):
     assert b.command == "pip"
     assert b.package == "pytest"
     assert b.version_text == "3.3.1"
+
+    # Check an old version of pip raises a dependency error.
     mocker.patch('dep.subprocess.check_output')
-    dep.subprocess.check_output.return_value = open(here + '/assets/pip_output.json').read()
+    dep.subprocess.check_output.side_effect = ["pip 1.2.3 from /Python/pip-1.3.1-py2.7.egg (python 2.7)",
+                                               open(here + '/assets/pip_output.json').read()]
+    with pytest.raises(MissingDependencyError):
+        b.verify_and_act()
+
+    num_of_checks = 4
+    mocker.patch('dep.subprocess.check_output')
+    dep.subprocess.check_output.side_effect = ["pip 9.0.1 from /Python/pip-1.3.1-py2.7.egg (python 2.7)",
+                                               open(here + '/assets/pip_output.json').read()] * num_of_checks
     b.verify_and_act()
     assert dep.subprocess.check_output.called
 
