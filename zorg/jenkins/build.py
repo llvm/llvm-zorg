@@ -19,11 +19,11 @@ SERVER = "labmaster2.local"
 NINJA = "/usr/local/bin/ninja"
 
 # Add dependency checker to the Python path.
-sys.path.append(os.path.abspath("../../dep/"))
-import dep  # noqa
-
 # For relative reference to the dependency file.
 here = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.abspath(here + "/../../dep/"))
+import dep  # noqa
+
 
 
 def readme_name(repo):
