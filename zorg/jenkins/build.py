@@ -18,6 +18,13 @@ SERVER = "labmaster2.local"
 
 NINJA = "/usr/local/bin/ninja"
 
+# Add dependency checker to the Python path.
+sys.path.append(os.path.abspath("../../dep/"))
+import dep  # noqa
+
+# For relative reference to the dependency file.
+here = os.path.dirname(os.path.abspath(__file__))
+
 
 def readme_name(repo):
     """Given a repo, return the name of the readme file."""
@@ -194,6 +201,8 @@ def update_svn_checkout(working_dir):
 
 def cmake_builder(target):
     check_repo_state(conf.workspace)
+
+    dep.parse_dependencies([here + "/clang_build_dependencies.dep"])
 
     env = []
     dyld_path = ""
