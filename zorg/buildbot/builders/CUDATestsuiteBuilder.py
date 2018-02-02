@@ -66,7 +66,10 @@ def getCUDATestsuiteBuildFactory(
             useTwoStage=useTwoStage,
             stage1_config=stage1_config,
             stage2_config=stage2_config,
+            checkout_clang_tools_extra=False,
+            checkout_compiler_rt=False,
             checkout_libcxx=enable_libcxx,
+            checkout_lld=False,
             checkout_test_suite=True)
 
     cuda_test_env = {
