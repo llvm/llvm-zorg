@@ -26,6 +26,7 @@ import platform
 import re
 import subprocess
 
+import os
 
 try:
     # noinspection PyUnresolvedReferences
@@ -615,7 +616,7 @@ class Line(object):
 
     def __repr__(self):
         """Reconstruct the line for pretty printing."""
-        return "{}:{}: {}{}".format(self.filename,
+        return "{}:{}: {}{}".format(os.path.basename(self.filename),
                                     self.line_number,
                                     self.text,
                                     " # " + self.comment if self.comment else "")
