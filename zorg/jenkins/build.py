@@ -201,8 +201,8 @@ def update_svn_checkout(working_dir):
 
 def cmake_builder(target):
     check_repo_state(conf.workspace)
-
-    dep.parse_dependencies([here + "/clang_build_dependencies.dep"])
+    if not os.getenv("TESTING"):
+        dep.parse_dependencies([here + "/clang_build_dependencies.dep"])
 
     env = []
     dyld_path = ""
