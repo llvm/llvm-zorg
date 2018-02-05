@@ -1376,7 +1376,7 @@ def _get_experimental_scheduled_builders():
                      extra_cmake_args=[
                          '-DLLVM_ENABLE_ASSERTIONS=ON',
                          "-DCMAKE_C_COMPILER:FILEPATH=/usr/bin/clang",
-                         "-DCMAKE_CXX_COMPILER:FILEPATH=/usr/bin/clang"
+                         "-DCMAKE_CXX_COMPILER:FILEPATH=/usr/bin/clang++"
                      ],
                      externals="/home/botanist/bots/externals",
                      gpu_arch_list=["sm_35", "sm_61"],
