@@ -687,7 +687,9 @@ def main():
 
     args = parser.parse_args()
 
-    parse_dependencies(args.dependencies)
+    full_file_paths = [os.path.abspath(path) for path in args.dependencies]
+
+    parse_dependencies(full_file_paths)
 
     return True
 
