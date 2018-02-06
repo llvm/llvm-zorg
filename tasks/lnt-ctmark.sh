@@ -13,7 +13,11 @@ LNT_FLAGS="$(build arg --optional LNT_FLAGS)"
 build get compiler
 build get test-suite
 build get lnt
+build get zorg
 
+
+DEPENDENCY_FILES="${TASKDIR}"/lnt-testsuite.dep
+. "${TASKDIR}"/utils/check_dependencies.sh
 . "${TASKDIR}"/utils/normalize_compiler.sh
 . "${TASKDIR}"/utils/venv.sh
 . "${TASKDIR}"/utils/venv_lit.sh
