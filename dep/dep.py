@@ -355,9 +355,12 @@ class Brew(Dependency):
         version = None
         for brew_package in brew_package_config:
             name = brew_package['name']
+            linked_keg = brew_package["linked_keg"]
+
             install_info = brew_package.get('installed')
             for versions in install_info:
-                version = versions['version'] if versions else None
+                if linked_keg == versions['version']:
+                    version = versions['version']
             if name == self.package:
                 break
         if not version:
