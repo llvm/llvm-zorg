@@ -551,7 +551,7 @@ class Pip(Dependency):
             pip_version = Version(pip_tokens[1])
 
             if pip_version < Version("9.0.0"):
-                raise MissingDependencyError("Version of pip too old.")
+                raise MissingDependencyError(self, "Version of pip too old.")
 
             pip_package_config = json.loads(subprocess.check_output(["/usr/bin/env",
                                                                      "python", "-m", "pip", "list", "--format=json"]))
