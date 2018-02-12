@@ -18,6 +18,7 @@ from zorg.buildbot.builders import UnifiedTreeBuilder
 from zorg.buildbot.builders import CUDATestsuiteBuilder
 from zorg.buildbot.builders import AOSPBuilder
 from zorg.buildbot.builders import AnnotatedBuilder
+from zorg.buildbot.builders import LLDPerformanceTestsuite
 
 # Plain LLVM builders.
 def _get_llvm_builders():
@@ -936,6 +937,11 @@ def _get_lld_builders():
                                   depends_on_projects=['llvm', 'clang', 'lld']),
          'category'   : 'lld'},
 
+        {'name' : "lld-perf-testsuite",
+         'slavenames' : ["as-bldslv8"],
+         'builddir' : "lld-perf-testsuite",
+         'factory': LLDPerformanceTestsuite.getFactory(),
+         'category'   : 'lld'},
 
          ]
 
