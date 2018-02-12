@@ -391,11 +391,15 @@ def getCmakeWithNinjaMultistageBuildFactory(
     # Set proper defaults.
     CmakeCommand.applyDefaultOptions(cmake_args, [
         ('-DCMAKE_BUILD_TYPE=',        'Release'),
-        ('-DCLANG_BUILD_EXAMPLES=',    'OFF'),
         ('-DLLVM_BUILD_TESTS=',        'ON'),
         ('-DLLVM_ENABLE_ASSERTIONS=',  'OFF'),
         ('-DLLVM_OPTIMIZED_TABLEGEN=', 'ON'),
         ])
+
+    if 'clang' in depends_on_projects:
+        CmakeCommand.applyDefaultOptions(cmake_args, [
+            ('-DCLANG_BUILD_EXAMPLES=',    'OFF'),
+            ])
 
     # Some options are required for this build no matter what.
     CmakeCommand.applyRequiredOptions(cmake_args, [
