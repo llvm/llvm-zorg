@@ -621,8 +621,9 @@ def _get_clang_builders():
                "-DLLVM_ENABLE_WERROR=ON",
                "-DCMAKE_C_COMPILER=gcc-7.1",
                "-DCMAKE_CXX_COMPILER=g++-7.1",
-               # We build with c++11, no need in c++17 warnings.
-               "-DCMAKE_CXX_FLAGS=-Wno-noexcept-type",
+               # We build with c++11, no need in c++17 warnings
+               # + workaround for gcc bug - https://gcc.gnu.org/bugzilla/show_bug.cgi?id=80916.
+               "-DCMAKE_CXX_FLAGS='-Wno-noexcept-type -O1'",
                # We want the given CXXFLAGS be used for the tablegen as well.
                "-DLLVM_OPTIMIZED_TABLEGEN=OFF",
                "-DBUILD_SHARED_LIBS=ON",
