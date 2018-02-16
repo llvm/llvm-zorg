@@ -298,6 +298,37 @@ def _get_clang_builders():
                       checkout_lld=False,
                       extra_cmake_args=["-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'"])},
 
+        ## ARMv7 Clang + LLVM run test-suite with GlobalISel enabled
+        {'name' : "clang-cmake-armv7-global-isel",
+         'slavenames':["linaro-tk1-09"],
+         'builddir':"clang-cmake-armv7-global-isel",
+         'factory' : ClangBuilder.getClangCMakeBuildFactory(
+                      clean=False,
+                      checkout_compiler_rt=False,
+                      checkout_lld=False,
+                      test=True,
+                      useTwoStage=False,
+                      runTestSuite=True,
+                      testsuite_flags=['--cppflags', '-mcpu=cortex-a15 -marm -O0 -mllvm -global-isel -mllvm -global-isel-abort=0',
+                                       '--threads=4', '--build-threads=4'],
+                      extra_cmake_args=["-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'",
+                                        "-DLLVM_PARALLEL_LINK_JOBS=2"])},
+
+        ## ARMv8 Clang + LLVM run test-suite with GlobalISel enabled
+        {'name' : "clang-cmake-armv8-global-isel",
+         'slavenames':["linaro-armv8-01-arm-global-isel"],
+         'builddir':"clang-cmake-armv8-global-isel",
+         'factory' : ClangBuilder.getClangCMakeBuildFactory(
+                      clean=False,
+                      checkout_compiler_rt=False,
+                      checkout_lld=False,
+                      test=True,
+                      useTwoStage=False,
+                      runTestSuite=True,
+                      testsuite_flags=['--cppflags', '-O0 -mllvm -global-isel -mllvm -global-isel-abort=0',
+                                       '--threads=64', '--build-threads=64'],
+                      extra_cmake_args=["-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'"])},
+
         ## ARMv7 check-all self-host with CMake builder
         ## No ARMv8 VFP builder since NEON is mandatory in ARMv8.
         {'name': "clang-cmake-armv7-selfhost",
@@ -1037,7 +1068,7 @@ def _get_sanitizer_builders():
 
           ## ARMv7 check-all full (compiler-rt) with CMake builder; Needs x86 for ASAN tests
           {'name': "clang-cmake-armv7-full",
-           'slavenames':["linaro-tk1-08", "linaro-tk1-09"],
+           'slavenames':["linaro-tk1-08"],
            'builddir':"clang-cmake-armv7-full",
            'factory' : ClangBuilder.getClangCMakeBuildFactory(
                         clean=False,

@@ -35,6 +35,7 @@ def get_build_slaves():
         create_slave("linaro-armv8-01-arm-lnt", properties={'jobs' : 64}, max_builds=1),
         create_slave("linaro-armv8-01-arm-selfhost-neon", properties={'jobs' : 64}, max_builds=1),
         create_slave("linaro-armv8-01-arm-quick", properties={'jobs' : 64}, max_builds=1),
+        create_slave("linaro-armv8-01-arm-global-isel", properties={'jobs' : 64}, max_builds=1),
         create_slave("linaro-armv8-01-arm-full", properties={'jobs' : 64}, max_builds=1),
         create_slave("linaro-armv8-01-arm-full-selfhost", properties={'jobs' : 64}, max_builds=1),
         create_slave("linaro-armv8-01-arm-libcxx", properties={'jobs' : 64}, max_builds=1),
