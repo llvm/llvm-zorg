@@ -201,7 +201,6 @@ def _get_clang_builders():
          'slavenames':["linaro-tk1-02"],
          'builddir':"clang-native-arm-lnt-perf",
          'factory' : ClangBuilder.getClangCMakeBuildFactory(
-                      jobs=4,
                       clean=False,
                       checkout_compiler_rt=False,
                       checkout_lld=False,
@@ -213,9 +212,7 @@ def _get_clang_builders():
                                 '--use-perf=all',
                                 '--benchmarking-only', '--exec-multisample=3',
                                 '--exclude-stat-from-submission=compile'],
-                      extra_cmake_args=["-DCMAKE_C_FLAGS='-mcpu=cortex-a15 -mthumb'",
-                                        "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a15 -mthumb'",
-                                        "-DLLVM_TARGETS_TO_BUILD='ARM'",
+                      extra_cmake_args=["-DLLVM_TARGETS_TO_BUILD='ARM'",
                                         "-DLLVM_PARALLEL_LINK_JOBS=2"],
                       submitURL='http://lnt.llvm.org/submitRun',
                       testerName='LNT-Thumb2v7-A15-O3')},
@@ -233,9 +230,7 @@ def _get_clang_builders():
                       runTestSuite=True,
                       testsuite_flags=['--cppflags', '-mcpu=cortex-a15 -marm',
                                        '--threads=4', '--build-threads=4'],
-                      extra_cmake_args=["-DCMAKE_C_FLAGS='-mcpu=cortex-a15 -marm'",
-                                        "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a15 -marm'",
-                                        "-DLLVM_TARGETS_TO_BUILD='ARM'",
+                      extra_cmake_args=["-DLLVM_TARGETS_TO_BUILD='ARM'",
                                         "-DLLVM_PARALLEL_LINK_JOBS=2"])},
 
         ## Cortex-A15 check-all self-host NEON with CMake builder
@@ -251,7 +246,6 @@ def _get_clang_builders():
                       extra_cmake_args=["-DCMAKE_C_FLAGS='-mcpu=cortex-a15 -marm'",
                                         "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a15 -marm'",
                                         "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'",
-                                        "-DLLVM_LIT_ARGS='-sv -j2'",
                                         "-DLLVM_PARALLEL_LINK_JOBS=2"])},
 
         ## Cortex-A15 check-all with CMake builder
@@ -262,10 +256,7 @@ def _get_clang_builders():
                       clean=False,
                       checkout_compiler_rt=False,
                       checkout_lld=False,
-                      extra_cmake_args=["-DCMAKE_C_FLAGS='-mcpu=cortex-a15 -mfpu=vfpv3 -marm'",
-                                        "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a15 -mfpu=vfpv3 -marm'",
-                                        "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'",
-                                        "-DLLVM_LIT_ARGS='-sv -j4'",
+                      extra_cmake_args=["-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'",
                                         "-DLLVM_PARALLEL_LINK_JOBS=2"])},
 
         ## Cortex-A15 check-all self-host with CMake builder
@@ -281,7 +272,6 @@ def _get_clang_builders():
                       extra_cmake_args=["-DCMAKE_C_FLAGS='-mcpu=cortex-a15 -mfpu=vfpv3 -marm'",
                                         "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a15 -mfpu=vfpv3 -marm'",
                                         "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'",
-                                        "-DLLVM_LIT_ARGS='-sv -j4'",
                                         "-DLLVM_PARALLEL_LINK_JOBS=2"])},
 
         ## AArch64 Clang+LLVM check-all + test-suite
@@ -297,9 +287,7 @@ def _get_clang_builders():
                       runTestSuite=True,
                       testsuite_flags=['--cppflags', '-mcpu=cortex-a57',
                                        '--threads=8', '--build-threads=8'],
-                      extra_cmake_args=["-DCMAKE_C_FLAGS='-mcpu=cortex-a57'",
-                                        "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a57'",
-                                        "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'"],
+                      extra_cmake_args=["-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'"],
                )},
 
         ## AArch64 Self-hosting Clang+LLVM check-all + LLD + test-suite
@@ -316,8 +304,7 @@ def _get_clang_builders():
                       test=True,
                       useTwoStage=True,
                       runTestSuite=True,
-                      testsuite_flags=['--cppflags',
-                                       '-mcpu=cortex-a57 -fuse-ld=lld',
+                      testsuite_flags=['--cppflags', '-mcpu=cortex-a57 -fuse-ld=lld',
                                        '--threads=8', '--build-threads=8'],
                       extra_cmake_args=["-DCMAKE_C_FLAGS='-mcpu=cortex-a57'",
                                         "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a57'",
@@ -326,7 +313,7 @@ def _get_clang_builders():
                ),
          'category'   : 'lld'},
 
-        ## AArch64 Clang+LLVM run test-suite with GlobalISel enabled
+        ## AArch64 Clang+LLVM run test-suite at -O0 (GlobalISel is now default).
         {'name': "clang-cmake-aarch64-global-isel",
          'slavenames':["linaro-apm-06", "linaro-armv8-01-aarch64-global-isel"],
          'builddir':"clang-cmake-aarch64-global-isel",
@@ -337,12 +324,9 @@ def _get_clang_builders():
                       test=True,
                       useTwoStage=False,
                       runTestSuite=True,
-                      testsuite_flags=['--cppflags',
-                                       '-mcpu=cortex-a57 -O0 -mllvm -global-isel -mllvm -global-isel-abort=0',
+                      testsuite_flags=['--cppflags', '-O0',
                                        '--threads=8', '--build-threads=8'],
-                      extra_cmake_args=["-DCMAKE_C_FLAGS='-mcpu=cortex-a57'",
-                                        "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a57'",
-                                        "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'"],
+                      extra_cmake_args=["-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'"],
                )},
 
         {'name': 'clang-x86-windows-msvc2015',
@@ -1018,11 +1002,8 @@ def _get_sanitizer_builders():
            'factory' : ClangBuilder.getClangCMakeBuildFactory(
                         clean=False,
                         checkout_lld=False,
-                        extra_cmake_args=["-DCMAKE_C_FLAGS='-mcpu=cortex-a15 -mfpu=vfpv3 -marm'",
-                                          "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a15 -mfpu=vfpv3 -marm'",
-                                          "-DCOMPILER_RT_TEST_COMPILER_CFLAGS='-mcpu=cortex-a15 -mfpu=vfpv3 -marm'",
+                        extra_cmake_args=["-DCOMPILER_RT_TEST_COMPILER_CFLAGS='-mcpu=cortex-a15 -mfpu=vfpv3 -marm'",
                                           "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'",
-                                          "-DLLVM_LIT_ARGS='-sv -j4'",
                                           "-DLLVM_PARALLEL_LINK_JOBS=2"])},
 
           ## Cortex-A15 Thumb2 check-all full (compiler-rt) with CMake builder; Needs x86 for ASAN tests
@@ -1038,7 +1019,6 @@ def _get_sanitizer_builders():
                                           "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a15 -mthumb'",
                                           "-DCOMPILER_RT_TEST_COMPILER_CFLAGS='-mcpu=cortex-a15 -mthumb'",
                                           "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'",
-                                          "-DLLVM_LIT_ARGS='-sv -j2'",
                                           "-DLLVM_PARALLEL_LINK_JOBS=2"])},
 
         # AArch64 Clang+LLVM+RT check-all + test-suite + self-hosting
