@@ -130,6 +130,7 @@ def addCmakeSteps(
 def addNinjaSteps(
            f,
            obj_dir = None,
+           targets = None,
            checks = None,
            install_dir = None,
            env = None,
@@ -147,6 +148,7 @@ def addNinjaSteps(
         obj_dir = f.obj_dir
 
     f.addStep(NinjaCommand(name="build-%sunified-tree" % step_name,
+                           targets=targets,
                            description=["Build", stage_name, "unified", "tree"],
                            haltOnFailure=kwargs.get('haltOnFailure', True),
                            env=env,
