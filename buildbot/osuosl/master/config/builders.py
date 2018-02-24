@@ -996,10 +996,10 @@ def _get_lld_builders():
         {'name' : "lld-perf-testsuite",
          'slavenames' : ["as-bldslv8"],
          'builddir' : "lld-perf-testsuite",
-         'factory': LLDPerformanceTestsuite.getFactory(),
+         'factory': LLDPerformanceTestsuite.getFactory(targets=["bin/lld"]),
          'category'   : 'lld'},
 
-         ]
+        ]
 
 # llgo builders.
 def _get_llgo_builders():
