@@ -357,7 +357,7 @@ def _get_clang_builders():
                       useTwoStage=False,
                       runTestSuite=True,
                       testsuite_flags=['--cppflags', '-mcpu=cortex-a57',
-                                       '--threads=8', '--build-threads=8'],
+                                       '--threads=64', '--build-threads=64'],
                       extra_cmake_args=["-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'"],
                )},
 
@@ -376,7 +376,7 @@ def _get_clang_builders():
                       useTwoStage=True,
                       runTestSuite=True,
                       testsuite_flags=['--cppflags', '-mcpu=cortex-a57 -fuse-ld=lld',
-                                       '--threads=8', '--build-threads=8'],
+                                       '--threads=64', '--build-threads=64'],
                       extra_cmake_args=["-DCMAKE_C_FLAGS='-mcpu=cortex-a57'",
                                         "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a57'",
                                         "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64;X86'",
@@ -396,7 +396,7 @@ def _get_clang_builders():
                       useTwoStage=False,
                       runTestSuite=True,
                       testsuite_flags=['--cppflags', '-O0',
-                                       '--threads=8', '--build-threads=8'],
+                                       '--threads=64', '--build-threads=64'],
                       extra_cmake_args=["-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'"],
                )},
 
@@ -1129,7 +1129,7 @@ def _get_sanitizer_builders():
                       testStage1=False,
                       runTestSuite=True,
                       testsuite_flags=['--cppflags', '-mcpu=cortex-a57',
-                                       '--threads=8', '--build-threads=8'],
+                                       '--threads=64', '--build-threads=64'],
                       extra_cmake_args=["-DCMAKE_C_FLAGS='-mcpu=cortex-a57'",
                                         "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a57'",
                                         "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'"],
@@ -1437,8 +1437,7 @@ def _get_libcxx_builders():
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
             cmake_extra_opts={'LIBCXXABI_USE_LLVM_UNWINDER': 'ON',
                               'CMAKE_C_FLAGS': '-mcpu=cortex-a57',
-                              'CMAKE_CXX_FLAGS': '-mcpu=cortex-a57',
-                              'LLVM_PARALLEL_LINK_JOBS': '4'})},
+                              'CMAKE_CXX_FLAGS': '-mcpu=cortex-a57'})},
 
         {'name': 'libcxx-libcxxabi-libunwind-aarch64-linux-noexceptions',
          'slavenames': ['linaro-apm-03', 'linaro-armv8-01-aarch64-libcxx-noeh'],
@@ -1449,8 +1448,7 @@ def _get_libcxx_builders():
                               'LIBCXX_ENABLE_EXCEPTIONS': 'OFF',
                               'LIBCXXABI_ENABLE_EXCEPTIONS': 'OFF',
                               'CMAKE_C_FLAGS': '-mcpu=cortex-a57',
-                              'CMAKE_CXX_FLAGS': '-mcpu=cortex-a57',
-                              'LLVM_PARALLEL_LINK_JOBS': '4'})},
+                              'CMAKE_CXX_FLAGS': '-mcpu=cortex-a57'})},
 
     ]
 
