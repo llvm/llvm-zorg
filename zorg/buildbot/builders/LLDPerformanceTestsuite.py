@@ -2,10 +2,12 @@ from buildbot.process.properties import WithProperties
 from buildbot.steps.shell import ShellCommand
 
 from zorg.buildbot.builders import UnifiedTreeBuilder
-from zorg.buildbot.commands.CmakeCommand   import CmakeCommand
+from zorg.buildbot.commands.CmakeCommand import CmakeCommand
+from zorg.buildbot.commands.NinjaCommand import NinjaCommand
 
 def getFactory(
         depends_on_projects = None,
+        targets = None,
         checks = None,
         clean = False,
         extra_configure_args = None,
@@ -37,15 +39,45 @@ def getFactory(
     CmakeCommand.applyRequiredOptions(cmake_args, [
         ('-G', 'Ninja'),
         ('-DLLVM_OPTIMIZED_TABLEGEN=', 'OFF'),
+        ('-DLLVM_BUILD_STATIC=',       'ON'),
+        ('-DLLVM_ENABLE_PIC=',         'OFF'),
         ])
 
-    f = UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
+    f = UnifiedTreeBuilder.getCmakeBuildFactory(
             depends_on_projects=depends_on_projects,
-            checks=checks,
             clean=clean,
             extra_configure_args=cmake_args,
             env=merged_env,
             **kwargs) # Pass through all the extra arguments.
+
+    if targets:
+        step_name = "build-%s" % ("-".join(targets))
+        step_description=["Build"]
+        step_description.extend(targets)
+    else:
+        step_name = "build-unified-tree"
+        step_description=["Build", "unified", "tree"]
+
+    f.addStep(NinjaCommand(name=step_name,
+                           targets=targets,
+                           description=step_description,
+                           haltOnFailure=kwargs.get('haltOnFailure', True),
+                           env=merged_env,
+                           workdir=f.obj_dir,
+                           **kwargs # Pass through all the extra arguments.
+                           ))
+
+    # Test just built components if requested.
+    if checks:
+        f.addStep(NinjaCommand(name="test-%s" % ("-".join(checks)),
+                               targets=checks,
+                               description=[
+                                   "Test", "just", "built", "components"],
+                               haltOnFailure=kwargs.get('haltOnFailure', True),
+                               env=merged_env,
+                               workdir=f.obj_dir,
+                               **kwargs # Pass through all the extra arguments.
+                               ))
 
     # Copy just built LLD executable to the test suite directory
     # to avoid load from a hard drive overhead.
@@ -53,7 +85,8 @@ def getFactory(
         ShellCommand(
             name="copy-lld-to-test-suite",
             description=[
-                "Copy", "LLD", "executable", "to", "the", "performance","test","suite",
+                "Copy", "LLD", "executable", "to", "the", "performance",
+                "test", "suite",
                 ],
             command=[
                 "cp", "-aL", "./bin/ld.lld", "../lld-speed-test/ld.lld"
