@@ -149,8 +149,8 @@ def _get_clang_fast_builders():
                                         "-DLLVM_BUILD_TESTS:BOOL=ON",
                                         "-DLLVM_BUILD_EXAMPLES:BOOL=ON",
                                         "-DCLANG_BUILD_EXAMPLES:BOOL=ON",
-                                        "-DLLVM_TARGETS_TO_BUILD=X86",
-                                        "-DLLVM_LIT_ARGS='-v -j36'"],
+                                        "-DLLVM_TARGETS_TO_BUILD=X86"],
+                     extraLitArgs=['-v', '-j36'],
                      triple="x86_64-scei-ps4",
                      prefixCommand=None, # This is a designated builder, so no need to be nice.
                      env={'PATH':'/opt/llvm_37/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'})},
