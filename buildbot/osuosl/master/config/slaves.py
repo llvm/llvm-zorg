@@ -17,7 +17,7 @@ def get_build_slaves():
         create_slave("as-bldslv5", properties={'jobs' : 24}, max_builds=2),
 
         # Linux Ubuntu 14.04 LTS
-        create_slave("as-bldslv8"),
+        create_slave("as-bldslv8", properties={'jobs' : 16}),
 
         # Mac Pro 2.7 GHz 12-Core Intel Xeon E5, Maverick 10.9.2
         create_slave("as-bldslv9", properties={'jobs' : 8}, max_builds=4),
