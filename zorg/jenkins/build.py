@@ -14,7 +14,7 @@ import xml.etree.ElementTree as ET
 from contextlib import contextmanager
 from urllib2 import urlopen, URLError, HTTPError
 
-SERVER = "labmaster2.local"
+SERVER = "labmaster2.lab.llvm.org"
 
 NINJA = "/usr/local/bin/ninja"
 
