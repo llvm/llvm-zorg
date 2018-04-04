@@ -370,7 +370,7 @@ def addSVNUpdateSteps(f,
                       defaultBranch='trunk',
                       workdir='test/lnt'))
         f.addStep(SVN(name='svn-test-suite',
-                      mode='update', baseURL='http://llvm.org/svn/llvm-project/test-suite/',
+                      mode='update', baseURL='https://llvm.org/svn/llvm-project/test-suite/',
                       defaultBranch='trunk',
                       workdir='test/test-suite'))
     if checkout_lld:
