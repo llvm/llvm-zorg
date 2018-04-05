@@ -193,7 +193,7 @@ def get_status_targets(standard_builders, standard_categories=None):
         InformativeMailNotifier(
             fromaddr = "llvm.buildmaster@lab.llvm.org",
             sendToInterestedUsers= False,
-            extraRecipients = ["efriedma@codeaurora.org"],
+            extraRecipients = ["efriedma@codeaurora.org", "huihuiz@codeaurora.org"],
             subject="Build %(builder)s Failure",
             mode = "failing",
             builders = ["polly-arm-linux",
