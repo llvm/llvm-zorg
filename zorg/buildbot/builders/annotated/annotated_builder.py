@@ -35,7 +35,9 @@ class AnnotatedBuilder:
     def report_build_step(self, step):
         util.report('@@@BUILD_STEP %s@@@' % (step,))
 
-    def report_step_exception(self):
+    def report_step_exception(self, exn=None):
+        if exn:
+            util.report(str(exn))
         util.report('@@@STEP_EXCEPTION@@@')
 
     def build_and_check_stage(
@@ -123,10 +125,9 @@ class AnnotatedBuilder:
         self.halt_on_failure()
         try:
             util.clean_dir(build_dir)
-        except OSError as e:
-            if e.errno != errno.ENOENT:
-                self.report_step_exception()
-                raise
+        except Exception as e:
+          self.report_step_exception(e)
+          raise
 
     def cmake(
         self,
@@ -233,8 +234,8 @@ class AnnotatedBuilder:
 
             for var in sorted(os.environ.keys()):
                 util.report('%s=%s' % (var, os.environ[var]))
-        except:
-            self.report_step_exception()
+        except Exception as e:
+            self.report_step_exception(e)
             raise
 
     def update_sources(self, source_dir, projects, revision=None, svn='svn'):
@@ -258,8 +259,8 @@ class AnnotatedBuilder:
                     util.mkdirp(path)
                     cmd = [svn, 'co'] + revision_args + [uri, '.']
                 util.report_run_cmd(cmd, cwd=path)
-        except:
-            self.report_step_exception()
+        except Exception as e:
+            self.report_step_exception(e)
             raise
 
     def run_steps(
