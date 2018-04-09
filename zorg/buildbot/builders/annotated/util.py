@@ -10,11 +10,11 @@ import sys
 
 def clean_dir(path):
     """
-    Remove directory path if it exists and create a new, empty directory
-    in its place.
+    Removes directory at path (and all its subdirectories) if it exists,
+    and creates an empty directory in its place.
     """
     try:
-        shutil.rmtree(path)
+        rmtree(path)
     except OSError as e:
         if e.errno != errno.ENOENT:
             raise
@@ -56,6 +56,24 @@ def mkdirp(path):
     except OSError as e:
         if e.errno != errno.EEXIST:
             raise
+
+
+def rmtree(path):
+    """
+    Remove directory path and all its subdirectories. This differs from
+    shutil.rmtree() in that it tries to adjust permissions so that deletion
+    will succeed.
+    """
+    # Some files will not be deletable, so we set permissions that allow
+    # deletion before we try deleting files.
+    for root, dirs, files in os.walk(path):
+        os.chmod(root, 0o755)
+        for f in files:
+            p = os.path.join(root, f)
+            os.chmod(p, 0o644)
+            os.unlink(p)
+    # At this point, we should have a tree of deletable directories.
+    shutil.rmtree(path)
 
 
 def safe_pjoin(dirname, *args):
