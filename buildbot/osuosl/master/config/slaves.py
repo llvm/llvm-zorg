@@ -38,8 +38,10 @@ def get_build_slaves():
         create_slave("linaro-armv8-01-arm-global-isel", properties={'jobs' : 64}, max_builds=1),
         create_slave("linaro-armv8-01-arm-full", properties={'jobs' : 64}, max_builds=1),
         create_slave("linaro-armv8-01-arm-full-selfhost", properties={'jobs' : 64}, max_builds=1),
-        create_slave("linaro-armv8-01-arm-libcxx", properties={'jobs' : 64}, max_builds=1),
-        create_slave("linaro-armv8-01-arm-libcxx-noeh", properties={'jobs' : 64}, max_builds=1),
+        # Libcxx testsuite has tests with timing assumptions.  Run single-threaded to make
+        # sure we have plenty CPU cycle to satisfy timing assumptions.
+        create_slave("linaro-armv8-01-arm-libcxx", properties={'jobs' : 1}, max_builds=1),
+        create_slave("linaro-armv8-01-arm-libcxx-noeh", properties={'jobs' : 1}, max_builds=1),
 
         # AArch64 Linaro slaves
         create_slave("linaro-apm-01", properties={'jobs' : 8}, max_builds=1),
@@ -52,8 +54,10 @@ def get_build_slaves():
         create_slave("linaro-armv8-01-aarch64-full", properties={'jobs' : 64}, max_builds=1),
         create_slave("linaro-armv8-01-aarch64-global-isel", properties={'jobs' : 64}, max_builds=1),
         create_slave("linaro-armv8-01-aarch64-lld", properties={'jobs' : 64}, max_builds=1),
-        create_slave("linaro-armv8-01-aarch64-libcxx", properties={'jobs' : 64}, max_builds=1),
-        create_slave("linaro-armv8-01-aarch64-libcxx-noeh", properties={'jobs' : 64}, max_builds=1),
+        # Libcxx testsuite has tests with timing assumptions.  Run single-threaded to make
+        # sure we have plenty CPU cycle to satisfy timing assumptions.
+        create_slave("linaro-armv8-01-aarch64-libcxx", properties={'jobs' : 1}, max_builds=1),
+        create_slave("linaro-armv8-01-aarch64-libcxx-noeh", properties={'jobs' : 1}, max_builds=1),
 
         # AMD Athlon(tm) 64 X2 Dual Core 3800+, Ubuntu x86_64
         create_slave("grosser1", properties={'jobs': 2}, max_builds=1),
