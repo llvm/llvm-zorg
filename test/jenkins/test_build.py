@@ -84,7 +84,7 @@
 # CHECK-CMAKE: -DLLVM_BUILD_EXAMPLES=On
 # CHECK-CMAKE: '-DCMAKE_BUILD_TYPE=Debug'
 # CHECK-CMAKE: '-DLLVM_ENABLE_ASSERTIONS=Off'
-# CHECK-CMAKE: -DLLVM_LIT_ARGS=--xunit-xml-output=testresults.xunit.xml -v
+# CHECK-CMAKE: -DLLVM_LIT_ARGS=--xunit-xml-output=testresults.xunit.xml -v --timeout=600
 # CHECK-CMAKE: '/usr/local/bin/ninja' '-v' 'all'
 # CHECK-CMAKE: '/usr/local/bin/ninja' '-v' '-k' '0' 'check-all'
 
@@ -143,7 +143,7 @@
 
 # RUN: env MAX_PARALLEL_TESTS=2 python %{src_root}/zorg/jenkins/build.py cmake all | FileCheck --check-prefix CHECK-CMAKE-2-TESTS %s
 # CHECK-CMAKE-2-TESTS: '/usr/local/bin/cmake' '-G' 'Ninja'
-# CHECK-CMAKE-2-TESTS: '-DLLVM_LIT_ARGS=--xunit-xml-output=testresults.xunit.xml -v -j 2'
+# CHECK-CMAKE-2-TESTS: '-DLLVM_LIT_ARGS=--xunit-xml-output=testresults.xunit.xml -v --timeout=600 -j 2'
 
 # RUN: python %{src_root}/zorg/jenkins/build.py cmake all --cmake-type=RelWithDebugInfo | FileCheck --check-prefix CHECK-CMAKE-UPLOADS %s
 # CHECK-CMAKE-UPLOADS: @@@ Uploading Artifact @@@
