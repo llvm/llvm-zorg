@@ -266,3 +266,15 @@ def test_pip_requirement(mocker):
     dep.subprocess.check_output.side_effect = subprocess.CalledProcessError(1, [], output=no_pip)
     with pytest.raises(MissingDependencyError):
         b.verify_and_act()
+
+
+def test_device_requirement(mocker):
+    """Detailed check of a device udid dependency."""
+    line = Line("foo.c", 10, "device aaabbbeeeec5fffff38bc8511112c2225f7333d44", "test")
+    b = dep.Device(line, "device")
+    b.parse()
+    with pytest.raises(MissingDependencyError):
+        b.verify_and_act()
+    mocker.patch('dep.subprocess.check_output')
+    dep.subprocess.check_output.side_effect = [open(here + '/assets/instruments_output.txt').read()]
+    b.verify_and_act()

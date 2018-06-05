@@ -577,12 +577,66 @@ class Pip(Dependency):
         return "{} {} {}".format(self.str_kind, self.package, self.version)
 
 
+class Device(Dependency):
+    """Verify correct device is attached to this machine."""
+
+    # device somelongudidstring.
+    # We will filter dashes if they are added.
+    device_re = re.compile(r'(?P<command>\w+)\s+(?P<udid>.*)')
+
+    def __init__(self, line, kind):
+        # type: (Line, Text) -> None
+        """Parse and verify device is attached.
+
+        :param line: the Line with the deceleration of the dependency.
+        :param kind: the detected dependency kind.
+        """
+        super(Device, self).__init__(line, kind)
+        self.command = None
+        self.udid = None
+        self.installed_version = None
+
+    def parse(self):
+        """Parse this dependency."""
+        text = self.line.text
+        match = self.device_re.match(text)
+        if not match:
+            raise MalformedDependency("Expression does not compile in {}: {}".format(self.__class__.__name__,
+                                                                                     self.line))
+        self.__dict__.update(match.groupdict())
+        # Sometimes people put dashes in these, lets not compare with dashes.
+        self.udid = self.udid.replace("-", "")
+
+    def verify(self):
+        """Verify the device is attached."""
+
+        try:
+            instruments_output = subprocess.check_output(["xcrun", "instruments", "-s", "devices"]).decode("utf-8")
+        except (subprocess.CalledProcessError, OSError):
+            raise MissingDependencyError(self, "Cannot find instruments")
+        # Convert udids with dashes to without for comparison.
+        cleaned_instruments_output = instruments_output.replace(u"-", u"")
+        if self.udid not in cleaned_instruments_output:
+            # The device is not in instruments.
+            raise MissingDependencyError(self, "")
+        return True
+
+    def inject(self):
+        """Not implemented."""
+        raise NotImplementedError()
+
+    def __str__(self):
+        """Dependency kind, package and version, for printing in error messages."""
+        return "{} {} {}".format(self.str_kind, self.udid, "")
+
+
 dependencies_implementations = {'brew': Brew,
                                 'os_version': HostOSVersion,
                                 'config_manager': ConMan,
                                 'xcode': Xcode,
                                 'sdk': Sdk,
                                 'pip': Pip,
+                                'device': Device,
                                 }
 
 
