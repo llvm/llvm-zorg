@@ -73,6 +73,7 @@ def getPollyBuildFactory(
     cmakeCommand = ["cmake", "../%s" %llvm_srcdir,
                     "-DCMAKE_COLOR_MAKEFILE=OFF",
                     "-DPOLLY_TEST_DISABLE_BAR=ON",
+                    "-DPOLLY_ENABLE_GPGPU_CODEGEN=ON",
                     "-DCMAKE_BUILD_TYPE=Release"] + cmake_install + extraCmakeArgs
     f.addStep(ShellCommand(name="cmake-configure",
                            command=cmakeCommand,
