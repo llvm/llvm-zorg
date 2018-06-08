@@ -516,7 +516,7 @@ def _get_clang_builders():
                                                             useTwoStage=False,
                                                             runTestSuite=True,
                                                             stage1_config='Release',
-                                                            nt_flags=['--threads=4', '--build-threads=4'],
+                                                            testsuite_flags=['--threads=4', '--build-threads=4'],
                                                             extra_cmake_args=["-DLLVM_ENABLE_ASSERTIONS=ON"]),
          'category' : 'clang'},
 
