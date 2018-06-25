@@ -396,7 +396,8 @@ def addSVNUpdateSteps(f,
                       workdir='llvm/projects/libunwind'))
 
 def addGCSUploadSteps(f, package_name, install_prefix, gcs_directory, env,
-                      gcs_url_property=None):
+                      gcs_url_property=None, use_pixz_compression=False,
+                      xz_compression_factor=6):
     """
     Add steps to upload to the Google Cloud Storage bucket.
 
@@ -414,6 +415,8 @@ def addGCSUploadSteps(f, package_name, install_prefix, gcs_directory, env,
     gcs_url_fmt = ('gs://%(gcs_bucket)s/%(gcs_directory)s/'
                    'clang-r%(got_revision)s-t%(now)s-b%(buildnumber)s.tar.xz')
     time_fmt = '%Y-%m-%d_%H-%M-%S'
+    output_file_name = '../install.tar.xz'
+
     gcs_url = \
         WithProperties(
             gcs_url_fmt,
@@ -427,8 +430,15 @@ def addGCSUploadSteps(f, package_name, install_prefix, gcs_directory, env,
                       command=['echo', gcs_url],
                       property=gcs_url_property))
 
+    if use_pixz_compression:
+        # tweak the xz compression level to generate packages faster
+        tar_command = ['tar', '-Ipixz', '-cvf', output_file_name, '.']
+    else:
+        xz_command = 'xz -{0}'.format(xz_compression_factor)
+        tar_command = ['tar', '-I', xz_command, '-cvf', output_file_name, '.']
+
     f.addStep(ShellCommand(name='package ' + package_name,
-                           command=['tar', 'cvfJ', '../install.tar.xz', '.'],
+                           command=tar_command,
                            description='packaging ' + package_name + '...',
                            workdir=install_prefix,
                            env=env))
@@ -473,9 +483,15 @@ def getClangCMakeGCSBuildFactory(
             checkout_clang_tools_extra=True,
             checkout_compiler_rt=True,
             checkout_lld=True,
+            checkout_libcxx=False,
 
             # Upload artifacts to Google Cloud Storage (for the llvmbisect tool)
             stage1_upload_directory=None,
+
+            # Use a lower compression level to generate the build-cache package faster.
+            # defuault is 6 according to xz documentation
+            xz_compression_factor=6,
+            use_pixz_compression=False,
 
             # Triggers
             trigger_after_stage1=[]):
@@ -490,7 +506,10 @@ def getClangCMakeGCSBuildFactory(
                checkout_clang_tools_extra=checkout_clang_tools_extra,
                checkout_compiler_rt=checkout_compiler_rt,
                checkout_lld=checkout_lld,
+               checkout_libcxx=checkout_libcxx,
                stage1_upload_directory=stage1_upload_directory,
+               xz_compression_factor=xz_compression_factor,
+               use_pixz_compression=use_pixz_compression,
                trigger_after_stage1=trigger_after_stage1)
 
 def getClangCMakeBuildFactory(
@@ -578,6 +597,11 @@ def _getClangCMakeBuildFactory(
 
             # Upload artifacts to Google Cloud Storage (for the llvmbisect tool)
             stage1_upload_directory=None,
+
+            # Use a lower compression level to generate the build-cache package faster
+            # default is 6 according to documentation
+            xz_compression_factor=6,
+            use_pixz_compression=False,
 
             # Triggers
             trigger_after_stage1=[]):
@@ -681,7 +705,9 @@ def _getClangCMakeBuildFactory(
 
     if stage1_upload_directory:
         addGCSUploadSteps(f, 'stage 1', stage1_install, stage1_upload_directory,
-                          env, gcs_url_property='stage1_package_gcs_url')
+                          env, gcs_url_property='stage1_package_gcs_url',
+                          use_pixz_compression=use_pixz_compression,
+                          xz_compression_factor=xz_compression_factor)
 
     # Compute the cmake define flag to set the C and C++ compiler to clang. Use
     # clang-cl if we used MSVC for stage1.

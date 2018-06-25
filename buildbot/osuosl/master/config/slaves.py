@@ -59,6 +59,13 @@ def get_build_slaves():
         create_slave("linaro-armv8-01-aarch64-libcxx", properties={'jobs' : 1}, max_builds=1),
         create_slave("linaro-armv8-01-aarch64-libcxx-noeh", properties={'jobs' : 1}, max_builds=1),
 
+        # ARMv7 build cache slave
+        create_slave("packet-linux-armv7-slave-1", properties={'jobs' : 64}, max_builds=1),
+
+        # AArch64 build cache slave
+        create_slave("packet-linux-aarch64-slave-1", properties={'jobs' : 64}, max_builds=1),
+
+
         # AMD Athlon(tm) 64 X2 Dual Core 3800+, Ubuntu x86_64
         create_slave("grosser1", properties={'jobs': 2}, max_builds=1),
 

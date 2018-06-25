@@ -89,6 +89,15 @@ def get_status_targets(standard_builders, standard_categories=None):
         InformativeMailNotifier(
             fromaddr = "llvm.buildmaster@lab.llvm.org",
             sendToInterestedUsers= False,
+            extraRecipients = ["leandro.nunes@arm.com"],
+            subject="Build %(builder)s Failure",
+            mode = "failing",
+            builders = ["clang-aarch64-linux-build-cache", "clang-armv7-linux-build-cache"],
+            addLogs=False,
+            num_lines = 15),
+        InformativeMailNotifier(
+            fromaddr = "llvm.buildmaster@lab.llvm.org",
+            sendToInterestedUsers= False,
             extraRecipients = ["gribozavr@gmail.com"],
             subject="Build %(builder)s Failure",
             mode = "failing",

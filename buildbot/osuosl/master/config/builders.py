@@ -762,6 +762,57 @@ def _get_clang_builders():
 #                   '-GNinja',
 #                   '-DLLVM_TARGETS_TO_BUILD=all',
 #                   '-DLLVM_BINUTILS_INCDIR=/opt/binutils/include'])},
+
+        ## Armv7 build cache
+        {'name': "clang-armv7-linux-build-cache",
+         'slavenames':["packet-linux-armv7-slave-1"],
+         'builddir':"clang-armv7-linux-build-cache",
+         'factory' : ClangBuilder.getClangCMakeGCSBuildFactory(
+                      stage1_config='Release',
+                      clean=True,
+                      checkout_compiler_rt=False,
+                      test=False,
+                      useTwoStage=False,
+                      runTestSuite=False,
+                      checkout_lld=True,
+                      checkout_libcxx=True,
+                      checkout_clang_tools_extra=False,
+                      use_pixz_compression=False,
+                      xz_compression_factor=0,
+                      #stage1_upload_directory='',
+                      extra_cmake_args=[
+                          "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64;X86'",
+                          "-DCMAKE_C_FLAGS='-mthumb'",
+                          "-DCMAKE_CXX_FLAGS='-mthumb'",
+                          ],
+                      #env={'BUCKET': ''}
+               ),
+         'category': 'clang'},
+
+        ## AArch64 build cache
+        {'name': "clang-aarch64-linux-build-cache",
+         'slavenames':["packet-linux-aarch64-slave-1"],
+         'builddir':"clang-aarch64-linux-build-cache",
+         'factory' : ClangBuilder.getClangCMakeGCSBuildFactory(
+                      stage1_config='Release',
+                      clean=True,
+                      checkout_compiler_rt=False,
+                      test=False,
+                      useTwoStage=False,
+                      runTestSuite=False,
+                      checkout_lld=True,
+                      checkout_libcxx=True,
+                      checkout_clang_tools_extra=False,
+                      #stage1_upload_directory='',
+                      use_pixz_compression=True,
+                      extra_cmake_args=[
+                          "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64;X86'",
+                          #"-DCMAKE_C_FLAGS=''",
+                          #"-DCMAKE_CXX_FLAGS=''",
+                          ],
+                      #env={'BUCKET': ''}
+               ),
+         'category': 'clang'},
     ]
 
 # Polly builders.
