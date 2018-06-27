@@ -40,7 +40,7 @@ if [ "$BUILDBOT_CLOBBER" != "" ]; then
   rm -rf platform-tools
 fi
 
-download_android_tools r15
+download_android_tools r16
 
 # Stage 1
 
