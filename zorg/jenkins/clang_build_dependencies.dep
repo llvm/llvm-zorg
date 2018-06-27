@@ -1,5 +1,5 @@
-os_version == 10.13.4 # Oldest CI nodes are currently 10.11.6
+os_version == 10.13.5 # Oldest CI nodes are currently 10.13.3
 brew cmake >= 3.11.2 # LLVM docs state this is the minimum version required.
 brew ninja >= 1.8.2 # Stage2 verbose output
 pip psutil >= 5.4.5 # Required for timeouts in the GTest Suite.
-xcode == 9.3.1
+xcode == 9.4.1
