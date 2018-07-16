@@ -157,7 +157,7 @@ def _get_clang_fast_builders():
 
         {'name': "llvm-clang-lld-x86_64-scei-ps4-windows10pro-fast",
          'mergeRequests': True,
-         'slavenames': ["ps4-buildslave2"],
+         'slavenames': ["am1i-slv2"],
          'builddir': "llvm-clang-lld-x86_64-scei-ps4-windows10pro-fast",
          'factory': ClangAndLLDBuilder.getClangAndLLDBuildFactory(
                      extraCmakeOptions=["-DLLVM_TOOL_COMPILER_RT_BUILD:BOOL=OFF",
