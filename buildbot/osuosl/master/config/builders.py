@@ -1266,7 +1266,7 @@ def _get_openmp_builders():
                          env={'PATH':'/home/bbot/opt/cmake/bin:/home/bbot/opt/ninja/bin:/usr/local/bin:/usr/bin:/bin'})},
 
         {'name': "openmp-clang-ppc64le-linux-rhel",
-         'slavenames':["ppc64le_nvidia_P100"],
+         'slavenames':["ppc64le-nvidia-P100"],
          'builddir':"openmp-clang-ppc64le-linux-rhel",
          'factory' : OpenMPBuilder.getOpenMPCMakeBuildFactory(
                          c_compiler="clang",
