@@ -113,6 +113,9 @@ def get_build_slaves():
         # POWER 8 PowerPC little endian (powerpc64le) with NVIDIA GPUs
         create_slave("ppc64le-nvidia-K40", properties={'jobs': 4}, max_builds=1),
 
+        # POWER 8 PowerPC little endian (powerpc64le) with NVIDIA Pascal GPUs
+        create_slave("ppc64le-nvidia-P100", properties={'jobs': 4}, max_builds=1),
+
         # Ubuntu x86-64, Intel(R) Xeon(R) CPU E5-2680 0 @ 2.70GHz
         create_slave("hexagon-build-02", properties={'jobs': 12, 'loadaverage': 32},
             max_builds=1),

@@ -1265,6 +1265,14 @@ def _get_openmp_builders():
                          cxx_compiler="clang++",
                          env={'PATH':'/home/bbot/opt/cmake/bin:/home/bbot/opt/ninja/bin:/usr/local/bin:/usr/bin:/bin'})},
 
+        {'name': "openmp-clang-ppc64le-linux-rhel",
+         'slavenames':["ppc64le_nvidia_P100"],
+         'builddir':"openmp-clang-ppc64le-linux-rhel",
+         'factory' : OpenMPBuilder.getOpenMPCMakeBuildFactory(
+                         c_compiler="clang",
+                         cxx_compiler="clang++",
+                         env={'PATH':'/opt/llvm/bin:/opt/at11.0/bin:/usr/local/bin:/usr/bin:/bin'})},
+
         ]
 
 def _get_libcxx_builders():
