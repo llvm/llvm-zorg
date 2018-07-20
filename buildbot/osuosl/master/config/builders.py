@@ -1554,7 +1554,9 @@ def _get_experimental_scheduled_builders():
                      ],
                      externals="/home/botanist/bots/externals",
                      gpu_arch_list=["sm_35", "sm_61"],
-                     gpu_devices=[2, 0], # K40c(sm_35), GTX1070(sm_61)
+                     gpu_devices=["GPU-af66efa4",  # K40c(sm_35),
+                                  "GPU-44fe2444"   # GTX1070(sm_61)
+                     ],
                      extra_ts_cmake_args=[],
                      enable_thrust_tests=False,
          ),
