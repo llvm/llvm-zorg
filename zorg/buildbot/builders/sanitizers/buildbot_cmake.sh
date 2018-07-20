@@ -84,6 +84,7 @@ case "$ARCH" in
     CHECK_UBSAN=1
     CHECK_MSAN=1
     CHECK_TSAN=1
+    CHECK_SCUDO=1
   ;;
   i*86)
     CHECK_UBSAN=1
