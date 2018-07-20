@@ -69,6 +69,7 @@ case "$ARCH" in
     CHECK_TSAN=1
     CHECK_LSAN=1
     CHECK_DFSAN=1
+    CHECK_SCUDO=1
   ;;
   mips64*)
     CHECK_ASAN=1
