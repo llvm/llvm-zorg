@@ -204,7 +204,7 @@ function build_stage2 {
         $LLVM && \
       ninja cxx cxxabi) || echo $step_result
     sanitizer_ldflags="$sanitizer_ldflags -lc++abi -Wl,--rpath=${ROOT}/${libcxx_build_dir}/lib -L${ROOT}/${libcxx_build_dir}/lib"
-    sanitizer_cflags="$sanitizer_cflags -nostdinc++ -isystem ${ROOT}/${libcxx_build_dir}/include -isystem ${ROOT}/${libcxx_build_dir}/include/c++/v1"
+    sanitizer_cflags="$sanitizer_cflags -nostdinc++ -isystem ${ROOT}/${libcxx_build_dir}/include -isystem ${ROOT}/${libcxx_build_dir}/projects/libcxx/include/c++/v1"
     cmake_libcxx_flag="-DLLVM_ENABLE_LIBCXX=ON"
   fi
 
