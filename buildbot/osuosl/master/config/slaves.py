@@ -261,7 +261,7 @@ def get_build_slaves():
         #create_slave("osu8", properties={'jobs' : 6}, max_builds=2),
 
         # OpenBSD 6.3 amd64
-        create_slave("clang-openbsd63-amd64", properties={'jobs': 2}, max_builds=1),
+        create_slave("openbsd63-amd64", properties={'jobs': 2}, max_builds=1),
 
         # Ubuntu 14.04 x86_64, Intel(R) Xeon(R) CPU @ 2.30GHz
         #create_slave("llgo-builder", properties={'jobs': 2}, max_builds=1),
