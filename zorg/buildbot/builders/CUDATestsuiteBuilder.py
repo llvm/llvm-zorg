@@ -49,6 +49,7 @@ def getCUDATestsuiteBuildFactory(
     source_dir = 'llvm'   # Should match the one used in getClangCMakeBuildFactory.
     stage1_build_dir = 'stage1'  # Should match the one defined in getClangCMakeBuildFactory.
     stage2_build_dir = 'stage2'  # Should match the one defined in getClangCMakeBuildFactory.
+    install_dir = 'clang.install'
 
     if useTwoStage:
         clang_build_dir = stage2_build_dir
@@ -75,11 +76,27 @@ def getCUDATestsuiteBuildFactory(
     cuda_test_env = {
         'PYTHONPATH': WithProperties("%(workdir)s/" + source_dir +
                                      "/utils/lit:${PYTHONPATH}"),
-        'PATH': WithProperties("%(workdir)s/" + clang_build_dir +
-                               "/bin:${PATH}"),
+        'DESTDIR': WithProperties("%(workdir)s/" + install_dir),
+        'PATH': WithProperties("%(workdir)s/" + install_dir +
+                               "/usr/local/bin:${PATH}"),
     }
     merged_env.update(cuda_test_env)
     ts_build_dir = 'test-suite-build'
+
+    f.addStep(
+        RemoveDirectory(name="Remove old clang install directory",
+                        dir=install_dir))
+
+    # Install clang into directory pointed by $DESTDIR
+    f.addStep(NinjaCommand(
+        name='ninja install clang',
+        targets=["install"],
+        jobs=jobs,
+        haltOnFailure=True,
+        description=split("installing clang"),
+        descriptionDone=split("Clang installation is done."),
+        workdir=clang_build_dir,
+        env=merged_env))
 
     # Completely remove test suite build dir.
     f.addStep(
