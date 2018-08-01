@@ -998,7 +998,14 @@ def _get_lldb_builders():
          'category' : 'lldb',
          'factory': LLDBBuilder.getLLDBScriptCommandsFactory(
                     downloadBinary=False,
-                    runTest=False)}
+                    runTest=False)},
+        {'name': "lldb-x86_64-fedora-28-cmake",
+         'slavenames': ["lldb-x86_64-fedora-28-cmake"],
+         'builddir': "lldb-x86_64-fedora-28-cmake",
+         'category' : 'lldb',
+         'factory': LLDBBuilder.getLLDBScriptCommandsFactory(
+                    downloadBinary=False,
+                    runTest=True)}
        ]
 
 # LLD builders.

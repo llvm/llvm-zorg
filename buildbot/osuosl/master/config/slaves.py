@@ -263,6 +263,9 @@ def get_build_slaves():
         # OpenBSD 6.3 amd64
         create_slave("openbsd63-amd64", properties={'jobs': 2}, max_builds=1),
 
+        # test only: Fedora 28 x86_64, Intel Xeon E5-2630v3, 32 HT cores, 64GB RAM
+        create_slave("lldb-x86_64-fedora-28-cmake", properties={'jobs': 16}, max_builds=1),
+
         # Ubuntu 14.04 x86_64, Intel(R) Xeon(R) CPU @ 2.30GHz
         #create_slave("llgo-builder", properties={'jobs': 2}, max_builds=1),
 
