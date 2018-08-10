@@ -1186,6 +1186,29 @@ def _get_sanitizer_builders():
                                           "-DCOMPILER_RT_TEST_COMPILER_CFLAGS='-mcpu=cortex-a57 -mthumb'",
                                           "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'"])},
 
+        ## AArch32 Self-hosting Clang+LLVM check-all + LLD + test-suite
+        ## TODO: Remove the X86 back-end after fixing the 90 bad tests
+        ## TODO: Add Compiler-RT after fixing all the failures
+        ## TODO: Fix the three remaining test-suite failures
+        {'name': "clang-cmake-armv8-lld",
+         'slavenames':["linaro-armv8-01-arm-lld"],
+         'builddir':"clang-cmake-armv8-lld",
+         'factory' : ClangBuilder.getClangCMakeBuildFactory(
+                      clean=False,
+                      checkout_compiler_rt=False,
+                      checkout_lld=True,
+                      test=True,
+                      useTwoStage=True,
+                      runTestSuite=True,
+                      testsuite_flags=['--cppflags', '-mcpu=cortex-a57 -fuse-ld=lld',
+                                       '--threads=64', '--build-threads=64'],
+                      extra_cmake_args=["-DCMAKE_C_FLAGS='-mcpu=cortex-a57'",
+                                        "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a57'",
+                                        "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64;X86'",
+                                        "-DLLVM_ENABLE_LLD=True"],
+               ),
+         'category'   : 'lld'},
+
         # AArch64 Clang+LLVM+RT check-all + test-suite + self-hosting
         {'name': "clang-cmake-aarch64-full",
          'slavenames':["linaro-apm-02", "linaro-apm-05", "linaro-armv8-01-aarch64-full"],
