@@ -363,15 +363,12 @@ def _get_clang_builders():
                )},
 
         ## AArch64 Self-hosting Clang+LLVM check-all + LLD + test-suite
-        ## TODO: Remove the X86 back-end after fixing the 90 bad tests
-        ## TODO: Add Compiler-RT after fixing all the failures
-        ## TODO: Fix the three remaining test-suite failures
         {'name': "clang-cmake-aarch64-lld",
          'slavenames':["linaro-thx1-01-aarch64-lld", "linaro-armv8-01-aarch64-lld"],
          'builddir':"clang-cmake-aarch64-lld",
          'factory' : ClangBuilder.getClangCMakeBuildFactory(
                       clean=False,
-                      checkout_compiler_rt=False,
+                      checkout_compiler_rt=True,
                       checkout_lld=True,
                       test=True,
                       useTwoStage=True,
@@ -380,7 +377,7 @@ def _get_clang_builders():
                                        '--threads=64', '--build-threads=64'],
                       extra_cmake_args=["-DCMAKE_C_FLAGS='-mcpu=cortex-a57'",
                                         "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a57'",
-                                        "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64;X86'",
+                                        "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'",
                                         "-DLLVM_ENABLE_LLD=True"],
                ),
          'category'   : 'lld'},
@@ -1187,15 +1184,12 @@ def _get_sanitizer_builders():
                                           "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'"])},
 
         ## AArch32 Self-hosting Clang+LLVM check-all + LLD + test-suite
-        ## TODO: Remove the X86 back-end after fixing the 90 bad tests
-        ## TODO: Add Compiler-RT after fixing all the failures
-        ## TODO: Fix the three remaining test-suite failures
         {'name': "clang-cmake-armv8-lld",
          'slavenames':["linaro-armv8-01-arm-lld"],
          'builddir':"clang-cmake-armv8-lld",
          'factory' : ClangBuilder.getClangCMakeBuildFactory(
                       clean=False,
-                      checkout_compiler_rt=False,
+                      checkout_compiler_rt=True,
                       checkout_lld=True,
                       test=True,
                       useTwoStage=True,
@@ -1204,7 +1198,7 @@ def _get_sanitizer_builders():
                                        '--threads=64', '--build-threads=64'],
                       extra_cmake_args=["-DCMAKE_C_FLAGS='-mcpu=cortex-a57'",
                                         "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a57'",
-                                        "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64;X86'",
+                                        "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'",
                                         "-DLLVM_ENABLE_LLD=True"],
                ),
          'category'   : 'lld'},
