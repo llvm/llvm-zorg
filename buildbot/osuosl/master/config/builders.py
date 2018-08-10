@@ -348,7 +348,7 @@ def _get_clang_builders():
 
         ## AArch64 Clang+LLVM check-all + test-suite
         {'name': "clang-cmake-aarch64-quick",
-         'slavenames':["linaro-apm-01", "linaro-armv8-01-aarch64-quick"],
+         'slavenames':["linaro-thx1-01-aarch64-quick", "linaro-armv8-01-aarch64-quick"],
          'builddir':"clang-cmake-aarch64-quick",
          'factory' : ClangBuilder.getClangCMakeBuildFactory(
                       clean=False,
@@ -367,7 +367,7 @@ def _get_clang_builders():
         ## TODO: Add Compiler-RT after fixing all the failures
         ## TODO: Fix the three remaining test-suite failures
         {'name': "clang-cmake-aarch64-lld",
-         'slavenames':["linaro-apm-04", "linaro-armv8-01-aarch64-lld"],
+         'slavenames':["linaro-thx1-01-aarch64-lld", "linaro-armv8-01-aarch64-lld"],
          'builddir':"clang-cmake-aarch64-lld",
          'factory' : ClangBuilder.getClangCMakeBuildFactory(
                       clean=False,
@@ -387,7 +387,7 @@ def _get_clang_builders():
 
         ## AArch64 Clang+LLVM run test-suite at -O0 (GlobalISel is now default).
         {'name': "clang-cmake-aarch64-global-isel",
-         'slavenames':["linaro-apm-06", "linaro-armv8-01-aarch64-global-isel"],
+         'slavenames':["linaro-thx1-01-aarch64-global-isel", "linaro-armv8-01-aarch64-global-isel"],
          'builddir':"clang-cmake-aarch64-global-isel",
          'factory' : ClangBuilder.getClangCMakeBuildFactory(
                       clean=False,
@@ -1211,7 +1211,7 @@ def _get_sanitizer_builders():
 
         # AArch64 Clang+LLVM+RT check-all + test-suite + self-hosting
         {'name': "clang-cmake-aarch64-full",
-         'slavenames':["linaro-apm-02", "linaro-apm-05", "linaro-armv8-01-aarch64-full"],
+         'slavenames':["linaro-thx1-01-aarch64-full", "linaro-armv8-01-aarch64-full"],
          'builddir':"clang-cmake-aarch64-full",
          'factory' : ClangBuilder.getClangCMakeBuildFactory(
                       clean=False,
@@ -1532,7 +1532,7 @@ def _get_libcxx_builders():
 
         # AArch64 LibC++ and LibC++abi tests (require Clang+RT)
         {'name': 'libcxx-libcxxabi-libunwind-aarch64-linux',
-         'slavenames': ['linaro-apm-03', 'linaro-armv8-01-aarch64-libcxx'],
+         'slavenames': ['linaro-thx1-01-aarch64-libcxx', 'linaro-armv8-01-aarch64-libcxx'],
          'builddir': 'libcxx-libcxxabi-libunwind-aarch64-linux',
          'category': 'libcxx',
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
@@ -1541,7 +1541,7 @@ def _get_libcxx_builders():
                               'CMAKE_CXX_FLAGS': '-mcpu=cortex-a57'})},
 
         {'name': 'libcxx-libcxxabi-libunwind-aarch64-linux-noexceptions',
-         'slavenames': ['linaro-apm-03', 'linaro-armv8-01-aarch64-libcxx-noeh'],
+         'slavenames': ['linaro-thx1-01-aarch64-libcxx-noeh', 'linaro-armv8-01-aarch64-libcxx-noeh'],
          'builddir': 'libcxx-libcxxabi-libunwind-aarch64-linux-noexceptions',
          'category': 'libcxx',
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(

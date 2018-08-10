@@ -45,20 +45,20 @@ def get_build_slaves():
         create_slave("linaro-armv8-01-arm-libcxx-noeh", properties={'jobs' : 1}, max_builds=1),
 
         # AArch64 Linaro slaves
-        create_slave("linaro-apm-01", properties={'jobs' : 8}, max_builds=1),
-        create_slave("linaro-apm-02", properties={'jobs' : 8}, max_builds=1),
-        create_slave("linaro-apm-03", properties={'jobs' : 8}, max_builds=1),
-        create_slave("linaro-apm-04", properties={'jobs' : 8}, max_builds=1),
-        create_slave("linaro-apm-05", properties={'jobs' : 8}, max_builds=1),
-        create_slave("linaro-apm-06", properties={'jobs' : 8}, max_builds=1),
         create_slave("linaro-armv8-01-aarch64-quick", properties={'jobs' : 64}, max_builds=1),
+        create_slave("linaro-thx1-01-aarch64-quick", properties={'jobs' : 96}, max_builds=1),
         create_slave("linaro-armv8-01-aarch64-full", properties={'jobs' : 64}, max_builds=1),
+        create_slave("linaro-thx1-01-aarch64-full", properties={'jobs' : 96}, max_builds=1),
         create_slave("linaro-armv8-01-aarch64-global-isel", properties={'jobs' : 64}, max_builds=1),
+        create_slave("linaro-thx1-01-aarch64-global-isel", properties={'jobs' : 96}, max_builds=1),
         create_slave("linaro-armv8-01-aarch64-lld", properties={'jobs' : 64}, max_builds=1),
+        create_slave("linaro-thx1-01-aarch64-lld", properties={'jobs' : 96}, max_builds=1),
         # Libcxx testsuite has tests with timing assumptions.  Run single-threaded to make
         # sure we have plenty CPU cycle to satisfy timing assumptions.
         create_slave("linaro-armv8-01-aarch64-libcxx", properties={'jobs' : 1}, max_builds=1),
+        create_slave("linaro-thx1-01-aarch64-libcxx", properties={'jobs' : 1}, max_builds=1),
         create_slave("linaro-armv8-01-aarch64-libcxx-noeh", properties={'jobs' : 1}, max_builds=1),
+        create_slave("linaro-thx1-01-aarch64-libcxx-noeh", properties={'jobs' : 1}, max_builds=1),
 
         # ARMv7 build cache slave
         create_slave("packet-linux-armv7-slave-1", properties={'jobs' : 64}, max_builds=1),
