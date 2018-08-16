@@ -571,6 +571,46 @@ def lldb_builder():
         footer()
 
 
+def lldb_cmake_builder():
+    """Do a CMake build of lldb."""
+
+    test_dir = os.path.join(conf.lldbbuilddir(), 'test')
+    log_dir = os.path.join(test_dir, 'log')
+    results_file = os.path.join(test_dir, 'results.xml')
+    dest_dir = os.path.join(conf.lldbbuilddir(), 'results', 'lldb')
+    run_ws(["mkdir", "-p", conf.lldbbuilddir()])
+
+    header("Configure")
+    dotest_args=['--arch', 'x86_64', '--build-dir',
+                 conf.lldbbuilddir()+'/lldb-test-build.noindex',
+                 '--session-file-format' , 'fm',
+                 '-s='+log_dir,
+                 '--results-file', results_file,
+                 '--env', 'TERM=vt100']
+    cmake_cmd = ["/usr/local/bin/cmake", '-G', 'Ninja',
+                 '-DLLVM_ENABLE_ASSERTIONS:BOOL={}'.format(
+                     "TRUE" if conf.assertions else "FALSE"),
+                 '-DCMAKE_BUILD_TYPE=RelWithDebInfo',
+                 '-DCMAKE_MAKE_PROGRAM=' + NINJA,
+                 '-DLLVM_VERSION_PATCH=99',
+                 '-DLLVM_VERSION_SUFFIX=""',
+                 '-DCMAKE_EXPORT_COMPILE_COMMANDS=ON',
+                 '-DCMAKE_INSTALL_PREFIX="%s"'%dest_dir,
+                 '-DLLDB_TEST_USER_ARGS="%s"'%';'.join(dotest_args),
+                 '-DLLVM_LIT_ARGS="--xunit-xml-output=%s -v"'%results_file]
+
+    run_cmd(conf.lldbbuilddir(), cmake_cmd)
+    footer()
+
+    header("Build")
+    run_cmd(conf.lldbbuilddir(), [NINJA])
+    footer()
+
+    header("Run Tests")
+    run_cmd(conf.lldbbuilddir(), ['/usr/bin/env', 'TERM=vt100', NINJA, 'check-lldb'])
+    footer()
+
+
 def static_analyzer_benchmarks_builder():
     """Run static analyzer benchmarks"""
     header("Static Analyzer Benchmarks")
@@ -907,7 +947,7 @@ def run_cmd_errors_okay(working_dir, cmd, env=None):
 
 
 KNOWN_TARGETS = ['all', 'build', 'test', 'testlong']
-KNOWN_BUILDS = ['clang', 'cmake', 'lldb', 'fetch', 'artifact',
+KNOWN_BUILDS = ['clang', 'cmake', 'lldb', 'lldb-cmake', 'fetch', 'artifact',
                 'derive', 'derive-llvm+clang', 'derive-lldb', 'derive-llvm',
                 'static-analyzer-benchmarks']
 
@@ -1048,6 +1088,8 @@ def main():
             clang_builder(args.build_target)
         elif args.build_type == 'lldb':
             lldb_builder()
+        elif args.build_type == 'lldb-cmake':
+            lldb_cmake_builder()
         elif args.build_type == 'cmake':
             cmake_builder(args.build_target)
         elif args.build_type == 'derive':
