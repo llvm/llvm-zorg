@@ -588,6 +588,7 @@ def lldb_cmake_builder():
                  '--results-file', results_file,
                  '--env', 'TERM=vt100']
     cmake_cmd = ["/usr/local/bin/cmake", '-G', 'Ninja',
+                 conf.lldbsrcdir(),
                  '-DLLVM_ENABLE_ASSERTIONS:BOOL={}'.format(
                      "TRUE" if conf.assertions else "FALSE"),
                  '-DCMAKE_BUILD_TYPE=RelWithDebInfo',
