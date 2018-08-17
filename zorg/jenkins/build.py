@@ -810,6 +810,11 @@ def derive_lldb():
     derive(tree='lldb', repos=['lldb', 'llvm', 'clang'])
 
 
+def derive_lldb_cmake():
+    """Build a derived src tree for LLDB"""
+    derive(tree='lldb', repos=['lldb', 'llvm', 'clang', 'libcxx'])
+
+
 def create_builddirs():
     paths = [conf.builddir(), conf.installdir()]
     for p in paths:
@@ -949,8 +954,8 @@ def run_cmd_errors_okay(working_dir, cmd, env=None):
 
 KNOWN_TARGETS = ['all', 'build', 'test', 'testlong']
 KNOWN_BUILDS = ['clang', 'cmake', 'lldb', 'lldb-cmake', 'fetch', 'artifact',
-                'derive', 'derive-llvm+clang', 'derive-lldb', 'derive-llvm',
-                'static-analyzer-benchmarks']
+                'derive', 'derive-llvm+clang', 'derive-lldb', 'derive-lldb-cmake',
+                'derive-llvm', 'static-analyzer-benchmarks']
 
 
 def query_sdk_path(sdk_name):
@@ -1101,6 +1106,8 @@ def main():
             derive_llvm(['llvm'])
         elif args.build_type == 'derive-lldb':
             derive_lldb()
+        elif args.build_type == 'derive-lldb-cmake':
+            derive_lldb_cmake()
         elif args.build_type == 'fetch':
             fetch_compiler()
         elif args.build_type == 'artifact':
