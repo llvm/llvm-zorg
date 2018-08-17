@@ -679,6 +679,8 @@ def tree_path(tree, repo):
             return "projects/compiler-rt"
         if repo == "libcxx":
             return "projects/libcxx"
+        if repo == "lldb":
+            return "tools/lldb"
 
     elif tree == "lldb":
         if repo == "lldb":
