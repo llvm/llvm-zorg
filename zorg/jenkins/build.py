@@ -595,10 +595,15 @@ def lldb_cmake_builder():
                  '-DCMAKE_MAKE_PROGRAM=' + NINJA,
                  '-DLLVM_VERSION_PATCH=99',
                  '-DLLVM_VERSION_SUFFIX=""',
+                 '-DLLVM_ENABLE_MODULES=On',
                  '-DCMAKE_EXPORT_COMPILE_COMMANDS=ON',
                  '-DCMAKE_INSTALL_PREFIX="%s"'%dest_dir,
                  '-DLLDB_TEST_USER_ARGS="%s"'%';'.join(dotest_args),
                  '-DLLVM_LIT_ARGS="--xunit-xml-output=%s -v"'%results_file]
+
+    if conf.CC():
+        cmake_cmd.extend(['-DCMAKE_C_COMPILER=' + conf.CC(),
+                          '-DCMAKE_CXX_COMPILER=' + conf.CC() + "++"])
 
     run_cmd(conf.lldbbuilddir(), cmake_cmd)
     footer()
