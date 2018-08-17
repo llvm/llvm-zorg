@@ -816,8 +816,8 @@ def derive_lldb():
 
 
 def derive_lldb_cmake():
-    """Build a derived src tree for LLDB"""
-    derive(tree='lldb', repos=['lldb', 'llvm', 'clang', 'libcxx'])
+    """Build a derived src tree for LLDB for building with CMake"""
+    derive(tree='llvm', repos=['lldb', 'llvm', 'clang', 'libcxx'])
 
 
 def create_builddirs():
