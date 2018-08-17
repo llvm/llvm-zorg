@@ -574,21 +574,21 @@ def lldb_builder():
 def lldb_cmake_builder():
     """Do a CMake build of lldb."""
 
-    test_dir = os.path.join(conf.builddir(), 'test')
+    test_dir = os.path.join(conf.llbuilddir(), 'test')
     log_dir = os.path.join(test_dir, 'log')
     results_file = os.path.join(test_dir, 'results.xml')
-    dest_dir = os.path.join(conf.builddir(), 'results', 'lldb')
-    run_ws(["mkdir", "-p", conf.builddir()])
+    dest_dir = os.path.join(conf.lldbbuilddir(), 'results', 'lldb')
+    run_ws(["mkdir", "-p", conf.lldbbuilddir()])
 
     header("Configure")
     dotest_args=['--arch', 'x86_64', '--build-dir',
-                 conf.builddir()+'/lldb-test-build.noindex',
+                 conf.lldbbuilddir()+'/lldb-test-build.noindex',
                  '--session-file-format' , 'fm',
                  '-s='+log_dir,
                  '--results-file', results_file,
                  '--env', 'TERM=vt100']
     cmake_cmd = ["/usr/local/bin/cmake", '-G', 'Ninja',
-                 conf.lldbsrcdir(),
+                 conf.srcdir(),
                  '-DLLVM_ENABLE_ASSERTIONS:BOOL={}'.format(
                      "TRUE" if conf.assertions else "FALSE"),
                  '-DCMAKE_BUILD_TYPE=RelWithDebInfo',
@@ -605,15 +605,15 @@ def lldb_cmake_builder():
         cmake_cmd.extend(['-DCMAKE_C_COMPILER=' + conf.CC(),
                           '-DCMAKE_CXX_COMPILER=' + conf.CC() + "++"])
 
-    run_cmd(conf.builddir(), cmake_cmd)
+    run_cmd(conf.lldbbuilddir(), cmake_cmd)
     footer()
 
     header("Build")
-    run_cmd(conf.builddir(), [NINJA])
+    run_cmd(conf.lldbbuilddir(), [NINJA])
     footer()
 
     header("Run Tests")
-    run_cmd(conf.builddir(), ['/usr/bin/env', 'TERM=vt100', NINJA, 'check-lldb'])
+    run_cmd(conf.lldbbuilddir(), ['/usr/bin/env', 'TERM=vt100', NINJA, 'check-lldb'])
     footer()
 
 
