@@ -574,7 +574,7 @@ def lldb_builder():
 def lldb_cmake_builder():
     """Do a CMake build of lldb."""
 
-    test_dir = os.path.join(conf.lldbbuilddir(), 'test')
+    test_dir = os.path.join(conf.workspace, 'test')
     log_dir = os.path.join(test_dir, 'log')
     results_file = os.path.join(test_dir, 'results.xml')
     dest_dir = os.path.join(conf.lldbbuilddir(), 'results', 'lldb')
