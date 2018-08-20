@@ -577,7 +577,7 @@ def lldb_cmake_builder():
     test_dir = os.path.join(conf.workspace, 'test')
     log_dir = os.path.join(test_dir, 'logs')
     results_file = os.path.join(test_dir, 'results.xml')
-    dest_dir = os.path.join(conf.lldbbuilddir(), 'results', 'lldb')
+    dest_dir = os.path.join(conf.workspace, 'results', 'lldb')
     run_ws(["mkdir", "-p", conf.lldbbuilddir()])
 
     header("Configure")
@@ -598,7 +598,7 @@ def lldb_cmake_builder():
                  '-DCMAKE_EXPORT_COMPILE_COMMANDS=ON',
                  '-DCMAKE_INSTALL_PREFIX="%s"'%dest_dir,
                  '-DLLDB_TEST_USER_ARGS='+';'.join(dotest_args),
-                 '-DLLVM_LIT_ARGS="--xunit-xml-output=%s -v"'%results_file]
+                 '-DLLVM_LIT_ARGS=--xunit-xml-output=%s -v'%results_file]
 
     if conf.CC():
         cmake_cmd.extend(['-DCMAKE_C_COMPILER=' + conf.CC(),
