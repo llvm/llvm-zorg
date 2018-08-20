@@ -585,7 +585,6 @@ def lldb_cmake_builder():
                  conf.lldbbuilddir()+'/lldb-test-build.noindex',
                  '--session-file-format' , 'fm',
                  '-s='+log_dir,
-                 '--results-file', results_file,
                  '--env', 'TERM=vt100']
     cmake_cmd = ["/usr/local/bin/cmake", '-G', 'Ninja',
                  conf.srcdir(),
