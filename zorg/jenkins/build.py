@@ -597,6 +597,7 @@ def lldb_cmake_builder():
                  '-DCMAKE_INSTALL_PREFIX="%s"'%dest_dir,
                  '-DLLDB_TEST_USER_ARGS='+';'.join(dotest_args),
                  '-DLLVM_LIT_ARGS=--xunit-xml-output=%s -v'%results_file]
+    cmake_cmd.extend(conf.cmake_flags)
 
     if conf.CC():
         cmake_cmd.extend(['-DCMAKE_C_COMPILER=' + conf.CC(),
