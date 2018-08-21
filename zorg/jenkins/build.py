@@ -560,7 +560,8 @@ def lldb_builder():
             "--results-file", results_file,
             "--rerun-all-issues",
             "--env", "TERM=vt100",
-            "-O--xpass=ignore"
+            "-O--xpass=ignore",
+            "--dsymutil="+os.path.join(os.path.dirname(effective_clang), 'dsymutil')
         ]
 
         header("Run LLDB Python-based test suite ({} targets)".format(arch))
