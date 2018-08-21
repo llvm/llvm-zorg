@@ -592,8 +592,6 @@ def lldb_cmake_builder():
                      "TRUE" if conf.assertions else "FALSE"),
                  '-DCMAKE_BUILD_TYPE=RelWithDebInfo',
                  '-DCMAKE_MAKE_PROGRAM=' + NINJA,
-                 '-DLLVM_VERSION_PATCH=99',
-                 '-DLLVM_VERSION_SUFFIX=""',
                  '-DLLVM_ENABLE_MODULES=On',
                  '-DCMAKE_EXPORT_COMPILE_COMMANDS=ON',
                  '-DCMAKE_INSTALL_PREFIX="%s"'%dest_dir,
