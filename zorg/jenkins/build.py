@@ -579,7 +579,7 @@ def lldb_cmake_builder():
     results_file = os.path.join(test_dir, 'results.xml')
     dest_dir = os.path.join(conf.workspace, 'results', 'lldb')
     run_ws(["mkdir", "-p", conf.lldbbuilddir()])
-
+    cmake_build_type = conf.cmake_build_type if conf.cmake_build_type else 'RelWithDebInfo'
     header("Configure")
     dotest_args=['--arch', 'x86_64', '--build-dir',
                  conf.lldbbuilddir()+'/lldb-test-build.noindex',
@@ -591,7 +591,7 @@ def lldb_cmake_builder():
                  conf.srcdir(),
                  '-DLLVM_ENABLE_ASSERTIONS:BOOL={}'.format(
                      "TRUE" if conf.assertions else "FALSE"),
-                 '-DCMAKE_BUILD_TYPE=RelWithDebInfo',
+                 '-DCMAKE_BUILD_TYPE='+cmake_build_type,
                  '-DCMAKE_MAKE_PROGRAM=' + NINJA,
                  '-DLLVM_ENABLE_MODULES=On',
                  '-DCMAKE_EXPORT_COMPILE_COMMANDS=ON',
