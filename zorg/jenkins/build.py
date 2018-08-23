@@ -588,6 +588,7 @@ def lldb_cmake_builder():
                  '-s='+log_dir,
                  '-t',
                  '--env', 'TERM=vt100']
+    dotest_args.extend(conf.dotest_flags)
     cmake_cmd = ["/usr/local/bin/cmake", '-G', 'Ninja',
                  conf.srcdir(),
                  '-DLLVM_ENABLE_ASSERTIONS:BOOL={}'.format(
@@ -1068,6 +1069,9 @@ def parse_args():
     parser.add_argument('--cmake-flag', dest='cmake_flags',
                         action='append', default=[],
                         help='Set an arbitrary cmake flag')
+    parser.add_argument('--dotest-flag', dest='dotest_flags',
+                        action='append', default=[],
+                        help='Set an arbitrary lldb dotest.py flag')
     parser.add_argument('--cmake-test-target', dest='cmake_test_targets',
                         action='append', default=[],
                         help='Targets to build during testing')
