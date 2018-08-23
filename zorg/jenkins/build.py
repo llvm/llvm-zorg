@@ -611,11 +611,11 @@ def lldb_cmake_builder():
     footer()
 
     header("Build")
-    run_cmd(conf.lldbbuilddir(), [NINJA])
+    run_cmd(conf.lldbbuilddir(), [NINJA, '-v'])
     footer()
 
     header("Run Tests")
-    run_cmd(conf.lldbbuilddir(), ['/usr/bin/env', 'TERM=vt100', NINJA, 'check-lldb'])
+    run_cmd(conf.lldbbuilddir(), ['/usr/bin/env', 'TERM=vt100', NINJA, '-v', 'check-lldb'])
     footer()
 
 
