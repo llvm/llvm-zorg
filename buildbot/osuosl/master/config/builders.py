@@ -1172,6 +1172,7 @@ def _get_sanitizer_builders():
                                           "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'"])},
 
         ## AArch32 Self-hosting Clang+LLVM check-all + LLD + test-suite
+        # Sanitizers build disabled due to PR38690
         {'name': "clang-cmake-armv8-lld",
          'slavenames':["linaro-armv8-01-arm-lld"],
          'builddir':"clang-cmake-armv8-lld",
@@ -1187,6 +1188,7 @@ def _get_sanitizer_builders():
                       extra_cmake_args=["-DCMAKE_C_FLAGS='-mcpu=cortex-a57'",
                                         "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a57'",
                                         "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'",
+                                        "-DCOMPILER_RT_BUILD_SANITIZERS=OFF",
                                         "-DLLVM_ENABLE_LLD=True"],
                ),
          'category'   : 'lld'},
