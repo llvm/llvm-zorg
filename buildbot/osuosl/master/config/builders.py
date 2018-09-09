@@ -990,7 +990,9 @@ def _get_lldb_builders():
          'category' : 'lldb',
          'factory': LLDBBuilder.getLLDBScriptCommandsFactory(
                     downloadBinary=False,
-                    runTest=True)}
+                    runTest=True,
+                    extra_cmake_args=["-DLLVM_ENABLE_ASSERTIONS=True",
+                                      "-DLLVM_USE_LINKER=gold"])}
        ]
 
 # LLD builders.
