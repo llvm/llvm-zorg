@@ -391,20 +391,12 @@ def _get_clang_builders():
                       extra_cmake_args=["-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'"],
                )},
 
-        {'name': 'clang-x86-windows-msvc2015',
+        {'name': 'clang-x64-windows-msvc',
          'slavenames': ['windows-gcebot2'],
-         'builddir': 'clang-x86-windows-msvc2015',
-         'factory' : ClangBuilder.getClangCMakeBuildFactory(
-                        clean=False,
-                        vs='%VS140COMNTOOLS%',
-                        vs_target_arch='x86',
-                        checkout_compiler_rt=False,
-                        checkout_lld=False,
-                        testStage1=True,
-                        useTwoStage=True,
-                        stage1_config='RelWithDebInfo',
-                        stage2_config='RelWithDebInfo',
-                        extra_cmake_args=["-DLLVM_ENABLE_ASSERTIONS=ON"])},
+         'builddir': 'clang-x64-windows-msvc',
+         'factory' : AnnotatedBuilder.getAnnotatedBuildFactory(
+             script="clang-windows.py",
+             depends_on_projects=['llvm', 'clang', 'lld'])},
 
         {'name' : "clang-ppc64be-linux-lnt",
          'slavenames' :["ppc64be-clang-lnt-test"],

@@ -12,6 +12,8 @@ import sys
 
 from os.path import join as pjoin
 
+VSWHERE_PATH = "C:/Program Files (x86)/Microsoft Visual Studio/Installer/vswhere.exe"
+
 def get_argument_parser(*args, **kwargs):
     ap = argparse.ArgumentParser(*args, **kwargs)
     ap.add_argument('--jobs', help='Number of concurrent jobs to run')
@@ -212,19 +214,7 @@ class AnnotatedBuilder:
                 'TERM': 'dumb',
             }
             if os.name == 'nt':
-                if vs_tools is None:
-                    vs_tools = os.path.expandvars('%VS140COMNTOOLS%')
-                if arch is None:
-                    arch = os.environ['PROCESSOR_ARCHITECTURE'].lower()
-                else:
-                    arch = arch.lower()
-                vcvars_path = pjoin(
-                    vs_tools, '..', '..', 'VC', 'vcvarsall.bat')
-                cmd = util.shquote_cmd([vcvars_path, arch]) + ' && set'
-                output = subprocess.check_output(cmd, shell=True)
-                for line in output.splitlines():
-                    var, val = line.split('=', 1)
-                    new_env[var] = val
+                new_env.update(get_vcvars(vs_tools, arch))
 
             if env is not None:
                 new_env.epdate(env)
@@ -309,6 +299,13 @@ class AnnotatedBuilder:
 
         self.set_environment(env)
 
+        # On Windows, if we're building clang-cl, make sure stage1 is built with
+        # MSVC (cl.exe), and not gcc from mingw. CMake will prefer gcc if it is
+        # available.
+        if c_compiler == 'clang-cl':
+            stage1_extra_cmake_args += ['-DCMAKE_C_COMPILER=cl',
+                                        '-DCMAKE_CXX_COMPILER=cl']
+
         # Update sources.
         cwd = os.getcwd()
         source_dir = pjoin(cwd, 'llvm.src')
@@ -340,6 +337,42 @@ class AnnotatedBuilder:
             jobs)
 
         return 0
+
+
+def get_vcvars(vs_tools, arch):
+    """Get the VC tools environment using vswhere.exe from VS 2017
+
+    This code is following the guidelines from strategy 1 in this blog post:
+        https://blogs.msdn.microsoft.com/vcblog/2017/03/06/finding-the-visual-c-compiler-tools-in-visual-studio-2017/
+
+    It doesn't work when VS is not installed at the default location.
+    """
+    if not arch:
+        arch = os.environ['PROCESSOR_ARCHITECTURE'].lower()
+    else:
+        arch = arch.lower()
+
+    # Use vswhere.exe if it exists.
+    if os.path.exists(VSWHERE_PATH):
+        vs_path = subprocess.check_output([VSWHERE_PATH, "-latest", "-property",
+                                          "installationPath"]).strip()
+        if not os.path.isdir(vs_path):
+            raise ValueError("VS install path does not exist: " + vs_path)
+        vcvars_path = pjoin(vs_path, 'VC', 'Auxiliary', 'Build',
+                            'vcvarsall.bat')
+    elif vs_tools is None:
+        vs_tools = os.path.expandvars('%VS140COMNTOOLS%')
+        vcvars_path = pjoin(vs_tools, '..', '..', 'VC', 'vcvarsall.bat')
+
+    # Newer vcvarsall.bat scripts aren't quiet, so direct them to NUL, aka
+    # Windows /dev/null.
+    cmd = util.shquote_cmd([vcvars_path, arch]) + ' > NUL && set'
+    output = subprocess.check_output(cmd, shell=True)
+    new_env = {}
+    for line in output.splitlines():
+        var, val = line.split('=', 1)
+        new_env[var] = val
+    return new_env
 
 
 def main(argv):
