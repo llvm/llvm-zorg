@@ -523,8 +523,9 @@ def lldb_builder():
     if llvm_build_dir is None or llvm_build_dir_arch is None:
         raise Exception("failed to retrieve LLVM build-related settings "
                         "from Xcode")
-    built_clang_path = os.path.join(llvm_build_dir, llvm_build_dir_arch,
-                                    "bin", "clang")
+    llvm_build_bin_dir = os.path.join(llvm_build_dir, llvm_build_dir_arch, "bin")
+    built_clang_path = os.path.join(llvm_build_bin_dir, "clang")
+    built_filecheck_path = os.path.join(llvm_build_bin_dir, "FileCheck")
     effective_clang = os.environ.get("LLDB_PYTHON_TESTSUITE_CC",
                                      built_clang_path)
 
@@ -562,7 +563,7 @@ def lldb_builder():
             "--env", "TERM=vt100",
             "-O--xpass=ignore",
             "--dsymutil="+os.path.join(os.path.dirname(effective_clang), 'dsymutil'),
-            "--filecheck="+os.path.join(os.path.dirname(effective_clang), 'FileCheck')
+            "--filecheck="+built_filecheck_path
         ]
 
         header("Run LLDB Python-based test suite ({} targets)".format(arch))
