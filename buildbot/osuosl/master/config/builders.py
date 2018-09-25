@@ -792,14 +792,16 @@ def _get_clang_builders():
          'category': 'clang'},
 
         # OpenBSD
-        {'name' : "clang-openbsd63-amd64",
-         'slavenames' : ["openbsd63-amd64"],
-         'builddir' : "clang-openbsd63-amd64",
+        {'name' : "clang-openbsd-amd64",
+         'slavenames' : ["openbsd-amd64"],
+         'builddir' : "clang-openbsd-amd64",
          'factory': ClangBuilder.getClangCMakeBuildFactory(
                        checkout_lld=False,
                        clean=True,
                        extra_cmake_args=['-DLLVM_ENABLE_ASSERTIONS=ON',
-                                         '-DCMAKE_BUILD_TYPE:STRING=Release'])},
+                                         '-DCMAKE_BUILD_TYPE:STRING=Release',
+                                         '-DCLANG_BUILD_TOOLS=OFF',
+                                         '-DCLANG_ENABLE_ARCMT=OFF'])},
 
     ]
 
