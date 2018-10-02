@@ -228,7 +228,7 @@ class AnnotatedBuilder:
             self.report_step_exception(e)
             raise
 
-    def update_sources(self, source_dir, projects, revision=None, svn='svn'):
+    def update_sources(self, source_dir, projects, revision, svn='svn'):
         self.report_build_step('update-sources')
         self.halt_on_failure()
         try:
@@ -237,17 +237,13 @@ class AnnotatedBuilder:
                     path = source_dir
                 elif not os.path.isabs(path):
                     path = pjoin(source_dir, path)
-                util.report(
-                    "Updating %s at %s from %s" % (project, util.shquote(path), uri))
-                if not revision:
-                    revision_args = []
-                else:
-                    revision_args = ['-r', revision]
+                util.report("Updating %s to %s at %s from %s" %
+                            (project, revision, util.shquote(path), uri))
                 if os.path.exists(pjoin(path, '.svn')):
-                    cmd = [svn, 'up'] + revision_args
+                    cmd = [svn, 'up', '-r', revision]
                 else:
                     util.mkdirp(path)
-                    cmd = [svn, 'co'] + revision_args + [uri, '.']
+                    cmd = [svn, 'co', '-r', revision, uri, '.']
                 util.report_run_cmd(cmd, cwd=path)
         except Exception as e:
             self.report_step_exception(e)
@@ -290,7 +286,7 @@ class AnnotatedBuilder:
             check_stages = [True] * stages
         if extra_cmake_args is None:
             extra_cmake_args = []
-        if revision is None:
+        if not revision:
             revision = os.environ.get('BUILDBOT_REVISION')
         if stage1_extra_cmake_args is None:
             stage1_extra_cmake_args = extra_cmake_args
@@ -306,11 +302,28 @@ class AnnotatedBuilder:
             stage1_extra_cmake_args += ['-DCMAKE_C_COMPILER=cl',
                                         '-DCMAKE_CXX_COMPILER=cl']
 
+        if not revision:
+            cmd = ['svn', 'info', 'https://llvm.org/svn/llvm-project/']
+            try:
+                svninfo = subprocess.check_output(cmd)
+            except subprocess.CalledProcessError as e:
+                util.report("Failed to get most recent SVN rev: " + str(e))
+                return 1
+            m = svninfo.match('^Revision: ([0-9]+)$')
+            if m:
+                revision = m.group(1)
+            else:
+                util.report("Failed to find svn revision in svn info output:\n"
+                            + svninfo)
+                return 1
+        if not revision.isdigit():
+            util.report("SVN revision %s is not a positive integer" % (revision,))
+
         # Update sources.
         cwd = os.getcwd()
         source_dir = pjoin(cwd, 'llvm.src')
         build_dir = pjoin(cwd, 'build')
-        svn_uri_pattern = 'http://llvm.org/svn/llvm-project/%s/trunk'
+        svn_uri_pattern = 'https://llvm.org/svn/llvm-project/%s/trunk'
         projects = []
         projects.append(('llvm', None, svn_uri_pattern % ('llvm',)))
         projects.append(
@@ -319,7 +332,7 @@ class AnnotatedBuilder:
         for p in ['lld']:
             projects.append((p, pjoin('tools', p), svn_uri_pattern % (p,)))
 
-        self.update_sources(source_dir, projects, revision=revision)
+        self.update_sources(source_dir, projects, revision)
 
         # Build and check stages.
         self.build_and_check_stages(
