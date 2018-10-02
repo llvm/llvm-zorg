@@ -309,7 +309,7 @@ class AnnotatedBuilder:
             except subprocess.CalledProcessError as e:
                 util.report("Failed to get most recent SVN rev: " + str(e))
                 return 1
-            m = svninfo.match('^Revision: ([0-9]+)$')
+            m = re.search('Revision: ([0-9]+)', svninfo)
             if m:
                 revision = m.group(1)
             else:
