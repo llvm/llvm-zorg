@@ -361,7 +361,11 @@ def get_vcvars(vs_tools, arch):
     It doesn't work when VS is not installed at the default location.
     """
     if not arch:
-        arch = os.environ['PROCESSOR_ARCHITECTURE'].lower()
+        # First check the wow64 processor architecture, since python is probably
+        # 32-bit, then fall back to PROCESSOR_ARCHITECTURE.
+        arch = os.environ['PROCESSOR_ARCHITEW6432'].lower()
+        if not arch:
+            arch = os.environ['PROCESSOR_ARCHITECTURE'].lower()
     else:
         arch = arch.lower()
 
