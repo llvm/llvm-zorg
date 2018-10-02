@@ -1567,6 +1567,7 @@ def _get_experimental_scheduled_builders():
                      gpu_devices=["GPU-af66efa4",  # K40c(sm_35),
                                   "GPU-44fe2444"   # GTX1070(sm_61)
                      ],
+                     cuda_jobs = 4, # Speeds up test execution time by ~2x.
                      extra_ts_cmake_args=[],
                      enable_thrust_tests=False,
          ),
