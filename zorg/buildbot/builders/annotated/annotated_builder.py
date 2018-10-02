@@ -239,7 +239,7 @@ class AnnotatedBuilder:
                     path = pjoin(source_dir, path)
                 util.report(
                     "Updating %s at %s from %s" % (project, util.shquote(path), uri))
-                if revision is None:
+                if not revision:
                     revision_args = []
                 else:
                     revision_args = ['-r', revision]
