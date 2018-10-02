@@ -367,8 +367,10 @@ def get_vcvars(vs_tools, arch):
 
     # Use vswhere.exe if it exists.
     if os.path.exists(VSWHERE_PATH):
-        vs_path = subprocess.check_output([VSWHERE_PATH, "-latest", "-property",
-                                          "installationPath"]).strip()
+        cmd = [VSWHERE_PATH, "-latest", "-property", "installationPath"]
+        vs_path = subprocess.check_output(cmd).strip()
+        util.report("Running vswhere to find VS: " + repr(cmd))
+        util.report("vswhere output: " + vs_path)
         if not os.path.isdir(vs_path):
             raise ValueError("VS install path does not exist: " + vs_path)
         vcvars_path = pjoin(vs_path, 'VC', 'Auxiliary', 'Build',
@@ -380,6 +382,7 @@ def get_vcvars(vs_tools, arch):
     # Newer vcvarsall.bat scripts aren't quiet, so direct them to NUL, aka
     # Windows /dev/null.
     cmd = util.shquote_cmd([vcvars_path, arch]) + ' > NUL && set'
+    util.report("Running vcvars: " + cmd)
     output = subprocess.check_output(cmd, shell=True)
     new_env = {}
     for line in output.splitlines():
