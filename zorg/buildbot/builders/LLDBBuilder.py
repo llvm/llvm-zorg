@@ -105,8 +105,7 @@ def getLLDBWindowsCMakeBuildFactory(
         "cmake", "-G", "Ninja", "../llvm",
         "-DCMAKE_BUILD_TYPE=" + config,
         "-DPYTHON_HOME=" + python_source_dir,
-        "-DCMAKE_INSTALL_PREFIX=../install",
-        "-DLLDB_TEST_COMPILER=\"%(builddir)s/bin/clang.exe\""
+        "-DCMAKE_INSTALL_PREFIX=../install"
         ]
     if extra_cmake_args:
         cmake_cmd += extra_cmake_args
