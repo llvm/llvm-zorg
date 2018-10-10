@@ -99,6 +99,9 @@ def get_build_slaves():
         # Windows 7 Intel(R) Xeon(R) CPU E5-2680 (2.80GHz), 16GB of RAM
         create_slave("windows7-buildbot", properties={'jobs': 2}, max_builds=1),
 
+        # Windows Server 2016 Intel Xeon(R) Quad 2.30 GHz, 56GB of RAM
+        create_slave("win-py3-buildbot", properties={'jobs' : 64}, max_builds=1),
+
         # POWER7 PowerPC big endian (powerpc64)
         create_slave("ppc64be-clang-test", properties={'jobs': 16}, max_builds=1),
         create_slave("ppc64be-clang-lnt-test", properties={'jobs': 16}, max_builds=1),

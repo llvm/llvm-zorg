@@ -986,7 +986,18 @@ def _get_lldb_builders():
                     downloadBinary=False,
                     runTest=True,
                     extra_cmake_args=["-DLLVM_ENABLE_ASSERTIONS=True",
-                                      "-DLLVM_USE_LINKER=gold"])}
+                                      "-DLLVM_USE_LINKER=gold"])},
+        {'name': "lldb-x64-windows-ninja",
+         'slavenames': ["win-py3-buildbot"],
+         'builddir': "lldb-x64-windows-ninja",
+         'category' : 'lldb',
+         'factory': LLDBBuilder.getLLDBWindowsCMakeBuildFactory(
+                    clean=True,
+                    python_source_dir="C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\Python36_64",
+                    vs='%VS150COMNTOOLS%',
+                    target_arch='x64',
+                    test=True,
+                    extra_cmake_args=['-DLLVM_ENABLE_ASSERTIONS=OFF'])}
        ]
 
 # LLD builders.
