@@ -43,7 +43,8 @@ function configure_android { # ARCH triple
   local ANDROID_TOOLCHAIN=$ROOT/android_ndk/standalone-$_arch
   local ANDROID_LIBRARY_OUTPUT_DIR=$(ls -d $ROOT/llvm_build64/lib/clang/* | tail -1)
   local ANDROID_EXEC_OUTPUT_DIR=$ROOT/llvm_build64/bin
-  local ANDROID_FLAGS="--target=$_triple -stdlib=libstdc++ --sysroot=$ANDROID_TOOLCHAIN/sysroot -B$ANDROID_TOOLCHAIN"
+  local ANDROID_FLAGS="--target=$_triple --sysroot=$ANDROID_TOOLCHAIN/sysroot -B$ANDROID_TOOLCHAIN"
+  local ANDROID_CXX_FLAGS="$ANDROID_FLAGS -stdlib=libstdc++"
 
   # Always clobber android build tree.
   # It has a hidden dependency on clang (through CXX) which is not known to
@@ -58,7 +59,7 @@ function configure_android { # ARCH triple
     -DCMAKE_C_COMPILER=$ROOT/llvm_build64/bin/clang \
     -DCMAKE_CXX_COMPILER=$ROOT/llvm_build64/bin/clang++ \
     -DCMAKE_C_FLAGS="$ANDROID_FLAGS" \
-    -DCMAKE_CXX_FLAGS="$ANDROID_FLAGS" \
+    -DCMAKE_CXX_FLAGS="$ANDROID_CXX_FLAGS" \
     -DCMAKE_EXE_LINKER_FLAGS="-pie" \
     -DCMAKE_SKIP_RPATH=ON \
     -DLLVM_BUILD_RUNTIME=OFF \
@@ -74,7 +75,7 @@ function configure_android { # ARCH triple
     -DCOMPILER_RT_INCLUDE_TESTS=ON \
     -DCOMPILER_RT_ENABLE_WERROR=ON \
     -DCMAKE_C_FLAGS="$ANDROID_FLAGS" \
-    -DCMAKE_CXX_FLAGS="$ANDROID_FLAGS" \
+    -DCMAKE_CXX_FLAGS="$ANDROID_CXX_FLAGS" \
     -DANDROID=1 \
     -DCOMPILER_RT_TEST_COMPILER_CFLAGS="$ANDROID_FLAGS" \
     -DCOMPILER_RT_TEST_TARGET_TRIPLE=$_triple \
