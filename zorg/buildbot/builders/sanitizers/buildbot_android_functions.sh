@@ -43,7 +43,7 @@ function configure_android { # ARCH triple
   local ANDROID_TOOLCHAIN=$ROOT/android_ndk/standalone-$_arch
   local ANDROID_LIBRARY_OUTPUT_DIR=$(ls -d $ROOT/llvm_build64/lib/clang/* | tail -1)
   local ANDROID_EXEC_OUTPUT_DIR=$ROOT/llvm_build64/bin
-  local ANDROID_FLAGS="--target=$_triple --sysroot=$ANDROID_TOOLCHAIN/sysroot -B$ANDROID_TOOLCHAIN"
+  local ANDROID_FLAGS="--target=$_triple -stdlib=libstdc++ --sysroot=$ANDROID_TOOLCHAIN/sysroot -B$ANDROID_TOOLCHAIN"
 
   # Always clobber android build tree.
   # It has a hidden dependency on clang (through CXX) which is not known to
