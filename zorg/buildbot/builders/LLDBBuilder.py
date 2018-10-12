@@ -269,6 +269,7 @@ def getLLDBTestSteps(f,
             compilerPath = compiler
         for arch in test_archs:
             DOTEST_OPTS=''.join(['--executable ' + bindir + '/lldb ',
+                                 '--filecheck ' + bindir + '/FileCheck ',
                                  '-A %s ' % arch,
                                  '-C %s ' % compilerPath,
                                  '-s lldb-test-traces-%s-%s ' % (compiler, arch),
@@ -818,6 +819,7 @@ def getLLDBxcodebuildFactory(use_cc=None,
                   workdir=lldb_srcdir))
     DOTEST_OPTS = ' '.join(['--executable',
                             '%(lldb_bindir)s/lldb',
+                            '%(lldb_bindir)s/FileCheck',
                             '--framework', '%(lldb_bindir)s/LLDB.framework',
                             '-A', 'x86_64',
                             '-C', 'clang',
