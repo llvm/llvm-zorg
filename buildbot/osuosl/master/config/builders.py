@@ -993,8 +993,7 @@ def _get_lldb_builders():
          'category' : 'lldb',
          'factory': LLDBBuilder.getLLDBWindowsCMakeBuildFactory(
                     clean=True,
-                    python_source_dir="C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\Python36_64",
-                    vs='%VS150COMNTOOLS%',
+                    python_source_dir=r'"C:\Program Files (x86)\Microsoft Visual Studio\Shared\Python36_64"',
                     target_arch='x64',
                     test=True,
                     extra_cmake_args=['-DLLVM_ENABLE_ASSERTIONS=OFF'])}
