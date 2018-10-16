@@ -57,6 +57,7 @@ function configure_android { # ARCH triple
     -DLLVM_ENABLE_WERROR=OFF \
     -DCMAKE_C_COMPILER=$ROOT/llvm_build64/bin/clang \
     -DCMAKE_CXX_COMPILER=$ROOT/llvm_build64/bin/clang++ \
+    -DCMAKE_ASM_FLAGS="$ANDROID_FLAGS" \
     -DCMAKE_C_FLAGS="$ANDROID_FLAGS" \
     -DCMAKE_CXX_FLAGS="$ANDROID_FLAGS" \
     -DCMAKE_EXE_LINKER_FLAGS="-pie" \
@@ -73,6 +74,7 @@ function configure_android { # ARCH triple
     -DCOMPILER_RT_BUILD_BUILTINS=OFF \
     -DCOMPILER_RT_INCLUDE_TESTS=ON \
     -DCOMPILER_RT_ENABLE_WERROR=ON \
+    -DCMAKE_ASM_FLAGS="$ANDROID_FLAGS" \
     -DCMAKE_C_FLAGS="$ANDROID_FLAGS" \
     -DCMAKE_CXX_FLAGS="$ANDROID_FLAGS" \
     -DANDROID=1 \
