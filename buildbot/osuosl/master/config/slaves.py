@@ -189,8 +189,14 @@ def get_build_slaves():
 
         # Ubuntu 14.10 x86_64, Intel(R) Xeon(R) CPU E3-1245 V2 @ 3.40GHz
         create_slave('ericwf-buildslave2', properties={'jobs': 4}, max_builds=2),
-        # Ubuntu 16.04 x86_64, Intel(R) Xeon(R) CPU E5649  @ 2.53GHz (24 threads)
-        create_slave('ericwf-buildslave-fast', properties={'jobs': 24}, max_builds=1),
+
+        # Debian 9, Docker based build. See libcxx/utils/docker.
+        create_slave('libcxx-cloud1', properties={'jobs': 64}, max_builds=1),
+        create_slave('libcxx-cloud2', properties={'jobs': 64}, max_builds=1),
+        create_slave('libcxx-cloud3', properties={'jobs': 64}, max_builds=1),
+        create_slave('libcxx-cloud4', properties={'jobs': 64}, max_builds=1),
+        create_slave('libcxx-cloud5', properties={'jobs': 64}, max_builds=1),
+
 
         # Windows Server 2008 R2, Quad 2.6GHz Intel Xeon(R) 4GB RAM
         create_slave("zturner-win2008", properties={'jobs': 4}, max_builds=1),
