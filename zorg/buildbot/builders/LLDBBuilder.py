@@ -820,6 +820,7 @@ def getLLDBxcodebuildFactory(use_cc=None,
                   workdir=lldb_srcdir))
     DOTEST_OPTS = ' '.join(['--executable',
                             '%(lldb_bindir)s/lldb',
+                            '--filecheck',
                             '%(lldb_bindir)s/FileCheck',
                             '--framework', '%(lldb_bindir)s/LLDB.framework',
                             '-A', 'x86_64',
