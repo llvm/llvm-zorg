@@ -461,6 +461,7 @@ def getClangCMakeGCSBuildFactory(
             # %VS120COMNTOOLS% selects the 2013 toolchain.
             vs=None,
             vs_target_arch='x86',
+            autodetectVS=False,
 
             # Multi-stage compilation
             useTwoStage=False,
@@ -496,8 +497,9 @@ def getClangCMakeGCSBuildFactory(
             # Triggers
             trigger_after_stage1=[]):
     return _getClangCMakeBuildFactory(
-               clean=clean, test=test, cmake=cmake, jobs=jobs, vs=vs,
-               vs_target_arch=vs_target_arch, useTwoStage=useTwoStage,
+               clean=clean, test=test, cmake=cmake, jobs=jobs,
+               vs=vs, vs_target_arch=vs_target_arch, autodetectVS=autodetectVS,
+               useTwoStage=useTwoStage,
                testStage1=testStage1, stage1_config=stage1_config,
                stage2_config=stage2_config, runTestSuite=runTestSuite,
                nt_flags=nt_flags, testsuite_flags=testsuite_flags,
@@ -522,6 +524,7 @@ def getClangCMakeBuildFactory(
             # %VS120COMNTOOLS% selects the 2013 toolchain.
             vs=None,
             vs_target_arch='x86',
+            autodetectVS=False,
 
             # Multi-stage compilation
             useTwoStage=False,
@@ -547,8 +550,9 @@ def getClangCMakeBuildFactory(
             checkout_libcxx=False,
             checkout_test_suite=False):
     return _getClangCMakeBuildFactory(
-               clean=clean, test=test, cmake=cmake, jobs=jobs, vs=vs,
-               vs_target_arch=vs_target_arch, useTwoStage=useTwoStage,
+               clean=clean, test=test, cmake=cmake, jobs=jobs,
+               vs=vs, vs_target_arch=vs_target_arch, autodetectVS=autodetectVS,
+               useTwoStage=useTwoStage,
                testStage1=testStage1, stage1_config=stage1_config,
                stage2_config=stage2_config, runTestSuite=runTestSuite,
                nt_flags=nt_flags, testsuite_flags=testsuite_flags,
@@ -570,6 +574,7 @@ def _getClangCMakeBuildFactory(
             # %VS120COMNTOOLS% selects the 2013 toolchain.
             vs=None,
             vs_target_arch='x86',
+            autodetectVS=False,
 
             # Multi-stage compilation
             useTwoStage=False,
@@ -637,9 +642,9 @@ def _getClangCMakeBuildFactory(
     stage2_install = 'stage2.install'
 
     # Set up VS environment, if appropriate.
-    if vs:
+    if vs or autodetectVS:
         f.addStep(SetProperty(
-            command=builders_util.getVisualStudioEnvironment(vs, vs_target_arch),
+            command=builders_util.getVisualStudioEnvironment(vs, vs_target_arch, autodetectVS),
             extract_fn=builders_util.extractSlaveEnvironment))
         assert not env, "Can't have custom builder env vars with VS"
         env = Property('slave_env')

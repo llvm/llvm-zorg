@@ -1,11 +1,33 @@
 import buildbot.status.results
+import os
 import re
+import subprocess
 
-def getVisualStudioEnvironment(vs=r"""%VS120COMNTOOLS%""", target_arch=None):
+from os.path import join as pjoin
+
+VSWHERE_PATH = "C:/Program Files (x86)/Microsoft Visual Studio/Installer/vswhere.exe"
+
+def getVisualStudioEnvironment(vs=r"""%VS120COMNTOOLS%""", target_arch=None, autodetectVS=False):
     # x86 builds should use the 64 bit -> x86 cross compilation toolchain to avoid
     # out of memory linker errors
     arch_arg = {'x86': 'amd64_x86', 'x64': 'amd64', 'amd64': 'amd64'}.get(target_arch, '%PROCESSOR_ARCHITECTURE%')
-    vcvars_command = "\"" + "\\".join((vs, '..','..','VC', 'vcvarsall.bat')) + "\""
+
+    """Get the VC tools environment using vswhere.exe from VS 2017 if it exists and was requested.
+    Otherwise, use the vs argument to construct a path to the expected location of vcvarsall.bat
+
+    This code is following the guidelines from strategy 1 in this blog post:
+        https://blogs.msdn.microsoft.com/vcblog/2017/03/06/finding-the-visual-c-compiler-tools-in-visual-studio-2017/
+
+    It doesn't work when VS is not installed at the default location.
+    """
+    # Use vswhere.exe if it exists.
+    if autodetectVS and os.path.exists(VSWHERE_PATH):
+        cmd = [VSWHERE_PATH, "-latest", "-property", "installationPath"]
+        vs_path = subprocess.check_output(cmd).strip()
+        vcvars_command = pjoin(vs_path, 'VC', 'Auxiliary', 'Build', 'vcvarsall.bat')
+    else:
+        vcvars_command = "\"" + "\\".join((vs, '..','..','VC', 'vcvarsall.bat')) + "\""
+
     vcvars_command = "%s %s && set" % (vcvars_command, arch_arg)
     return vcvars_command
 

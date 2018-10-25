@@ -58,6 +58,7 @@ def getLLDBWindowsCMakeBuildFactory(
             vs=r"""%VS140COMNTOOLS%""",
             config='Release',
             target_arch='x86',
+            autodetectVS=False,
 
             extra_cmake_args=None,
             test=False,
@@ -68,7 +69,7 @@ def getLLDBWindowsCMakeBuildFactory(
 
     # Determine Slave Environment and Set MSVC environment.
     f.addStep(SetProperty(
-        command=getVisualStudioEnvironment(vs, target_arch),
+        command=getVisualStudioEnvironment(vs, target_arch, autodetectVS),
         extract_fn=extractSlaveEnvironment))
 
     f = getLLDBSource(f,'llvm')
