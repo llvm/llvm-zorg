@@ -273,7 +273,6 @@ def getCmakeWithNinjaWithMSVCBuildFactory(
            # %VS140COMNTOOLS% selects the 2015 toolchain.
            vs=None,
            target_arch=None,
-           autodetectVS=False,
            env = None,
            **kwargs):
 
@@ -301,7 +300,7 @@ def getCmakeWithNinjaWithMSVCBuildFactory(
             **kwargs) # Pass through all the extra arguments.
 
     f.addStep(SetProperty(
-        command=builders_util.getVisualStudioEnvironment(vs, target_arch, autodetectVS),
+        command=builders_util.getVisualStudioEnvironment(vs, target_arch),
         extract_fn=builders_util.extractSlaveEnvironment))
     env = Property('slave_env')
 

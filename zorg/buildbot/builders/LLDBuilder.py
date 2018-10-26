@@ -87,9 +87,8 @@ def getLLDWinBuildFactory(
            clean = True,
 
            # Default values for VS devenv and build configuration
-           vs = None,            # What to run to configure Visual Studio utils.
-           autodetectVS = False, # Don't try to auto detect a VS installation.
-           target_arch = None,   # Native.
+           vs = None,          # What to run to configure Visual Studio utils.
+           target_arch = None, # Native.
 
            extra_configure_args = None,
            env   = None):
@@ -120,9 +119,9 @@ def getLLDWinBuildFactory(
               ))
 
     # If set up environment step is requested, do this now.
-    if vs or autodetectVS:
+    if vs:
         f.addStep(SetProperty(
-            command=getVisualStudioEnvironment(vs, target_arch, autodetectVS),
+            command=getVisualStudioEnvironment(vs, target_arch),
             extract_fn=extractSlaveEnvironment))
         assert not env, "Can't have custom builder env vars with VS"
         env = Property('slave_env')

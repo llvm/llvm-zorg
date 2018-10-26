@@ -41,7 +41,6 @@ def getSanitizerWindowsBuildFactory(
             vs=r"""%VS120COMNTOOLS%""",
             config='Release',
             target_arch='x86',
-            autodetectVS=False,
 
             extra_cmake_args=[]):
 
@@ -60,7 +59,7 @@ def getSanitizerWindowsBuildFactory(
 
     # Determine Slave Environment and Set MSVC environment.
     f.addStep(SetProperty(
-        command=getVisualStudioEnvironment(vs, target_arch, autodetectVS),
+        command=getVisualStudioEnvironment(vs, target_arch),
         extract_fn=extractSlaveEnvironment))
 
     f = getSource(f,'llvm')
