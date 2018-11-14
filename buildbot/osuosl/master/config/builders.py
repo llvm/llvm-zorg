@@ -1306,6 +1306,8 @@ def _get_libcxx_builders():
         'libcxx-cloud1', 'libcxx-cloud2', 'libcxx-cloud3', 'libcxx-cloud4',
         'libcxx-cloud5'
     ]
+    benchmark_opts = ';'.join(
+        ['--benchmark_min_time=0.01', '--benchmark_color=false'])
     return [
         # gribozavr's builders on gribozavr4
         {'name': 'libcxx-libcxxabi-x86_64-linux-debian',
@@ -1383,8 +1385,10 @@ def _get_libcxx_builders():
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
             env={'PATH': '/usr/local/bin:/usr/bin:/bin',
                  'CC': 'clang', 'CXX': 'clang++'},
+            cmake_extra_opts={'LIBCXX_BENCHMARK_TEST_ARGS': benchmark_opts},
             lit_extra_opts={'std': 'c++17', 'enable_warnings': 'true'},
-            check_libcxx_abilist=True),
+            check_libcxx_abilist=True,
+            check_libcxx_benchmarks=True),
         'category': 'libcxx'},
 
         {'name': 'libcxx-libcxxabi-x86_64-linux-ubuntu-cxx2a',
@@ -1393,8 +1397,10 @@ def _get_libcxx_builders():
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
             env={'PATH': '/usr/local/bin:/usr/bin:/bin',
                  'CC': 'clang', 'CXX': 'clang++'},
+            cmake_extra_opts={'LIBCXX_BENCHMARK_TEST_ARGS': benchmark_opts},
             lit_extra_opts={'std': 'c++2a', 'enable_warnings': 'true'},
-            check_libcxx_abilist=True),
+            check_libcxx_abilist=True,
+            check_libcxx_benchmarks=True),
         'category': 'libcxx'},
 
         {'name': 'libcxx-libcxxabi-x86_64-linux-ubuntu-32bit',
@@ -1414,7 +1420,9 @@ def _get_libcxx_builders():
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
             env={'PATH': '/usr/local/bin:/usr/bin:/bin',
                  'CC': 'clang', 'CXX': 'clang++'},
-            cmake_extra_opts={'LLVM_USE_SANITIZER': 'Address'}),
+            cmake_extra_opts={'LLVM_USE_SANITIZER': 'Address',
+                              'LIBCXX_BENCHMARK_TEST_ARGS': benchmark_opts},
+            check_libcxx_benchmarks=True),
         'category': 'libcxx'},
 
         {'name': 'libcxx-libcxxabi-x86_64-linux-ubuntu-ubsan',
@@ -1424,17 +1432,20 @@ def _get_libcxx_builders():
             env={'PATH': '/usr/local/bin:/usr/bin:/bin',
                  'CC': 'clang', 'CXX': 'clang++'},
             cmake_extra_opts={'LLVM_USE_SANITIZER': 'Undefined',
-                              'LIBCXX_ABI_UNSTABLE': 'ON'}),
+                              'LIBCXX_ABI_UNSTABLE': 'ON',
+                              'LIBCXX_BENCHMARK_TEST_ARGS': benchmark_opts},
+            check_libcxx_benchmarks=True),
         'category': 'libcxx'},
 
-        # EricWF's builders on ericwf-buildslave2
         {'name': 'libcxx-libcxxabi-x86_64-linux-ubuntu-msan',
          'slavenames': ericwf_slaves + docker_slaves,
          'builddir' : 'libcxx-libcxxabi-x86_64-linux-ubuntu-msan',
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
             env={'PATH': '/usr/local/bin:/usr/bin:/bin',
                  'CC': 'clang', 'CXX': 'clang++'},
-            cmake_extra_opts={'LLVM_USE_SANITIZER': 'MemoryWithOrigins'}),
+            cmake_extra_opts={'LLVM_USE_SANITIZER': 'MemoryWithOrigins',
+                              'LIBCXX_BENCHMARK_TEST_ARGS': benchmark_opts},
+            check_libcxx_benchmarks=True),
         'category': 'libcxx'},
 
         {'name': 'libcxx-libcxxabi-libunwind-x86_64-linux-ubuntu',

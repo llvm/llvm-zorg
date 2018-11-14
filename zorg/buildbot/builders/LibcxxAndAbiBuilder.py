@@ -54,7 +54,8 @@ def getLibcxxWholeTree(f, src_root):
 
 def getLibcxxAndAbiBuilder(f=None, env={}, additional_features=set(),
                            cmake_extra_opts={}, lit_extra_opts={},
-                           lit_extra_args=[], check_libcxx_abilist=False):
+                           lit_extra_args=[], check_libcxx_abilist=False,
+                           check_libcxx_benchmarks=False):
     if f is None:
         f = buildbot.process.factory.BuildFactory()
 
@@ -139,5 +140,20 @@ def getLibcxxAndAbiBuilder(f=None, env={}, additional_features=set(),
         description     = ['testing', 'libcxx', 'abi'],
         descriptionDone = ['test', 'libcxx', 'abi'],
         workdir         = build_path))
+
+    if check_libcxx_benchmarks:
+      # Build the libc++ benchmarks
+      f.addStep(buildbot.steps.shell.ShellCommand(
+          name='build.libcxx.benchmarks',
+          command=['make', jobs_flag, 'cxx-benchmarks'],
+          haltOnFailure=True, workdir=build_path))
+
+      # Run the benchmarks
+      f.addStep(LitTestCommand(
+          name            = 'test.libcxx.benchmarks',
+          command         = ['make', jobs_flag, 'check-cxx-benchmarks'],
+          description     = ['testing', 'libcxx', 'benchmarks'],
+          descriptionDone = ['test', 'libcxx', 'benchmarks'],
+          workdir         = build_path))
 
     return f
