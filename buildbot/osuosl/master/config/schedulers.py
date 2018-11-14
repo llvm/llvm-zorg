@@ -50,11 +50,12 @@ def getSingleBranchSchedulers(builders, schedulers, **kwargs):
                 if frozenset(getattr(b['factory'], 'depends_on_projects')) == projects
             ]
 
+            automatic_scheduler_name = ",".join(sorted(projects))
             projects_to_filter = getProjectsToFilter(projects)
 
             automatic_schedulers.append(
                 SingleBranchScheduler(
-                    name="auto_scheduler_%x" % hash(projects),
+                    name=automatic_scheduler_name,
                     treeStableTimer=treeStableTimer,
                     builderNames=sch_builders,
                     change_filter=ChangeFilter(project=projects_to_filter)
@@ -62,7 +63,7 @@ def getSingleBranchSchedulers(builders, schedulers, **kwargs):
             )
 
             log.msg(
-                "Generated SingleBranchScheduler: { name='auto_scheduler_%x'" % hash(projects),
+                "Generated SingleBranchScheduler: { name='%s'" % automatic_scheduler_name,
                 ", builderNames=", sch_builders,
                 ", change_filter=", projects_to_filter,
                 "}")
