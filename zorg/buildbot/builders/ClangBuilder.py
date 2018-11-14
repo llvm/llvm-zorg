@@ -17,6 +17,7 @@ import zorg.buildbot.commands as commands
 import zorg.buildbot.commands.BatchFileDownload as batch_file_download
 import zorg.buildbot.commands.LitTestCommand as lit_test_command
 from zorg.buildbot.conditions.FileConditions import FileDoesNotExist
+from zorg.buildbot.process.factory import LLVMBuildFactory
 
 def getClangBuildFactory(
             triple=None,
@@ -337,64 +338,6 @@ def getClangBuildFactory(
 
     return f
 
-def addSVNUpdateSteps(f,
-                      checkout_clang_tools_extra,
-                      checkout_compiler_rt,
-                      checkout_test_suite,
-                      checkout_lld,
-                      checkout_libcxx):
-    # We *must* checkout at least Clang+LLVM
-    f.addStep(SVN(name='svn-llvm',
-                  mode='update', baseURL='http://llvm.org/svn/llvm-project/llvm/',
-                  defaultBranch='trunk',
-                  workdir='llvm'))
-    f.addStep(SVN(name='svn-clang',
-                  mode='update', baseURL='http://llvm.org/svn/llvm-project/cfe/',
-                  defaultBranch='trunk',
-                  workdir='llvm/tools/clang'))
-
-    # Extra stuff that will be built/tested
-    if checkout_clang_tools_extra:
-        f.addStep(SVN(name='svn-clang-tools-extra',
-                      mode='update', baseURL='http://llvm.org/svn/llvm-project/clang-tools-extra/',
-                      defaultBranch='trunk',
-                      workdir='llvm/tools/clang/tools/extra'))
-    if checkout_compiler_rt:
-        f.addStep(SVN(name='svn-compiler-rt',
-                      mode='update', baseURL='http://llvm.org/svn/llvm-project/compiler-rt/',
-                      defaultBranch='trunk',
-                      workdir='llvm/projects/compiler-rt'))
-    if checkout_test_suite:
-        f.addStep(SVN(name='svn-lnt',
-                      mode='update', baseURL='http://llvm.org/svn/llvm-project/lnt/',
-                      defaultBranch='trunk',
-                      workdir='test/lnt'))
-        f.addStep(SVN(name='svn-test-suite',
-                      mode='update', baseURL='https://llvm.org/svn/llvm-project/test-suite/',
-                      defaultBranch='trunk',
-                      workdir='test/test-suite'))
-    if checkout_lld:
-        f.addStep(SVN(name='svn-lld',
-                      mode='update', baseURL='http://llvm.org/svn/llvm-project/lld/',
-                      defaultBranch='trunk',
-                      workdir='llvm/tools/lld'))
-    if checkout_libcxx:
-        f.addStep(SVN(name='svn-libcxx',
-                      mode='update',
-                      baseURL='http://llvm.org/svn/llvm-project/libcxx/',
-                      defaultBranch='trunk',
-                      workdir='llvm/projects/libcxx'))
-        f.addStep(SVN(name='svn-libcxxabi',
-                      mode='update',
-                      baseURL='http://llvm.org/svn/llvm-project/libcxxabi/',
-                      defaultBranch='trunk',
-                      workdir='llvm/projects/libcxxabi'))
-        f.addStep(SVN(name='svn-libunwind',
-                      mode='update',
-                      baseURL='http://llvm.org/svn/llvm-project/libunwind/',
-                      defaultBranch='trunk',
-                      workdir='llvm/projects/libunwind'))
-
 def addGCSUploadSteps(f, package_name, install_prefix, gcs_directory, env,
                       gcs_url_property=None, use_pixz_compression=False,
                       xz_compression_factor=6):
@@ -607,16 +550,33 @@ def _getClangCMakeBuildFactory(
             trigger_after_stage1=[]):
 
     ############# PREPARING
-    f = buildbot.process.factory.BuildFactory()
+    clean_build_requested = lambda step: \
+        step.build.getProperty( \
+            "clean", \
+            default=step.build.getProperty("clean_obj") \
+        ) or clean
 
-    clean_build_requested = lambda step: clean or step.build.getProperty("clean")
+    # We *must* checkout at least Clang+LLVM
+    depends_on_projects = ['llvm', 'clang']
+    if checkout_clang_tools_extra:
+        depends_on_projects.append('clang-tools-extra')
+    if checkout_compiler_rt:
+        depends_on_projects.append('compiler-rt')
+    if checkout_lld:
+        depends_on_projects.append('lld')
+    if runTestSuite or checkout_test_suite:
+        depends_on_projects.append('lnt')
+        depends_on_projects.append('test-suite')
+    if checkout_libcxx:
+        depends_on_projects.append('libcxx')
+        depends_on_projects.append('libcxxabi')
+        depends_on_projects.append('libunwind')
 
-    addSVNUpdateSteps(f,
-                      checkout_clang_tools_extra=checkout_clang_tools_extra,
-                      checkout_compiler_rt=checkout_compiler_rt,
-                      checkout_lld=checkout_lld,
-                      checkout_test_suite=runTestSuite or checkout_test_suite,
-                      checkout_libcxx=checkout_libcxx)
+    f = LLVMBuildFactory(
+            depends_on_projects=depends_on_projects,
+            llvm_srcdir='llvm')
+
+    f.addSVNSteps()
 
     # If jobs not defined, Ninja will choose a suitable value
     jobs_cmd = []
