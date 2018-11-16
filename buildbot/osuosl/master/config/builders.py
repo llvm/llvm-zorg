@@ -1223,45 +1223,6 @@ def _get_sanitizer_builders():
                         useTwoStage=True,
                         testStage1=True,
                         extra_cmake_args=["-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'"])},
-
-          # Mips check-all with CMake builder
-          # We currently have to force LLVM_HOST_TRIPLE and
-          # LLVM_DEFAULT_TARGET_TRIPLE on this system. CMake gets the value
-          # correct for the processor but it's currently not possible to emit O32
-          # code using a mips64-* triple. This is a bug and should be fixed soon.
-          # We must also force LLVM_TARGET_ARCH so that the ExecutionEngine tests
-          # run.
-          {'name': "clang-cmake-mips",
-           'slavenames':["mips-kl-m001","mips-kl-m002"],
-           'builddir':"clang-cmake-mips",
-           'factory' : ClangBuilder.getClangCMakeGCSBuildFactory(
-                           clean=False,
-                           checkout_compiler_rt=True,
-                           checkout_lld=False,
-                           extra_cmake_args=["-DLLVM_HOST_TRIPLE=mips-unknown-linux-gnu",
-                                             "-DLLVM_DEFAULT_TARGET_TRIPLE=mips-unknown-linux-gnu",
-                                             "-DLLVM_TARGET_ARCH=Mips"],
-                           stage1_upload_directory='clang-cmake-mips',
-                           env = {'BOTO_CONFIG': '/var/buildbot/llvmlab-build-artifacts.boto'})},
-          # Mips check-all with CMake builder
-          # We currently have to force LLVM_HOST_TRIPLE and
-          # LLVM_DEFAULT_TARGET_TRIPLE on this system. CMake gets the value
-          # correct for the processor but it's currently not possible to emit O32
-          # code using a mips64-* triple. This is a bug and should be fixed soon.
-          # We must also force LLVM_TARGET_ARCH so that the ExecutionEngine tests
-          # run.
-          {'name': "clang-cmake-mipsel",
-           'slavenames':["mips-kl-erpro001"],
-           'builddir':"clang-cmake-mipsel",
-           'factory' : ClangBuilder.getClangCMakeGCSBuildFactory(
-                           clean=False,
-                           checkout_compiler_rt=True,
-                           checkout_lld=False,
-                           extra_cmake_args=["-DLLVM_HOST_TRIPLE=mipsel-unknown-linux-gnu",
-                                             "-DLLVM_DEFAULT_TARGET_TRIPLE=mipsel-unknown-linux-gnu",
-                                             "-DLLVM_TARGET_ARCH=Mips"],
-                           stage1_upload_directory='clang-cmake-mipsel',
-                           env = {'BOTO_CONFIG': '/var/buildbot/llvmlab-build-artifacts.boto'})},
           ]
 
 def _get_openmp_builders():
