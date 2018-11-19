@@ -756,13 +756,13 @@ def _get_clang_builders():
                       checkout_clang_tools_extra=False,
                       use_pixz_compression=False,
                       xz_compression_factor=0,
-                      #stage1_upload_directory='',
+                      stage1_upload_directory='clang-armv7-linux',
                       extra_cmake_args=[
                           "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64;X86'",
                           "-DCMAKE_C_FLAGS='-mthumb'",
                           "-DCMAKE_CXX_FLAGS='-mthumb'",
                           ],
-                      #env={'BUCKET': ''}
+                      env={'BUCKET': 'llvm-build-artifacts'}
                ),
          'category': 'clang'},
 
@@ -780,14 +780,14 @@ def _get_clang_builders():
                       checkout_lld=True,
                       checkout_libcxx=True,
                       checkout_clang_tools_extra=False,
-                      #stage1_upload_directory='',
+                      stage1_upload_directory='clang-aarch64-linux',
                       use_pixz_compression=True,
                       extra_cmake_args=[
                           "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64;X86'",
                           #"-DCMAKE_C_FLAGS=''",
                           #"-DCMAKE_CXX_FLAGS=''",
                           ],
-                      #env={'BUCKET': ''}
+                      env={'BUCKET': 'llvm-build-artifacts'}
                ),
          'category': 'clang'},
 
