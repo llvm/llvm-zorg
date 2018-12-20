@@ -131,20 +131,14 @@ function build_stage1_clang_at_revison {
     echo @@@BUILD_STEP using pre-built stage1 clang at r$HOST_CLANG_REVISION@@@
   else
     echo @@@BUILD_STEP sync to r$HOST_CLANG_REVISION@@@
-    real_buildbot_revision=$BUILDBOT_REVISION
-    BUILDBOT_REVISION=$HOST_CLANG_REVISION
-    buildbot_update
+    (BUILDBOT_REVISION=$HOST_CLANG_REVISION buildbot_update)
 
     echo @@@BUILD_STEP Clear ${STAGE1_DIR} ${STAGE1_CLOBBER}
     rm -rf ${STAGE1_DIR} ${STAGE1_CLOBBER}
 
     echo @@@BUILD_STEP build stage1 clang at r$HOST_CLANG_REVISION@@@
-
     build_stage1_clang
-
     echo $HOST_CLANG_REVISION > ${STAGE1_DIR}/host_clang_revision
-
-    BUILDBOT_REVISION=$real_buildbot_revision
   fi
 }
 
