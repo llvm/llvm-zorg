@@ -197,12 +197,18 @@ function test_arch_on_device {
 
   $ADB shell rm -rf $DEVICE_ROOT
   $ADB shell mkdir $DEVICE_ROOT
-  $ADB push $SYMBOLIZER_BIN $DEVICE_ROOT/ &
-  $ADB push $RT_DIR/libclang_rt.*-android.so $DEVICE_ROOT/ &
-  $ADB push $LIBCXX_SHARED $DEVICE_ROOT/ &
-  $ADB push $COMPILER_RT_BUILD_DIR/lib/sanitizer_common/tests/SanitizerTest $DEVICE_ROOT/ &
-  $ADB push $COMPILER_RT_BUILD_DIR/lib/asan/tests/AsanTest $DEVICE_ROOT/ &
-  $ADB push $COMPILER_RT_BUILD_DIR/lib/asan/tests/AsanNoinstTest $DEVICE_ROOT/ &
+
+  FILES="$SYMBOLIZER_BIN
+         $RT_DIR/libclang_rt.*-android.so
+         $LIBCXX_SHARED
+         $COMPILER_RT_BUILD_DIR/lib/sanitizer_common/tests/SanitizerTest
+         $COMPILER_RT_BUILD_DIR/lib/asan/tests/AsanTest
+         $COMPILER_RT_BUILD_DIR/lib/asan/tests/AsanNoinstTest"
+
+  for F in $FILES ; do
+    ( $ADB push $F $DEVICE_ROOT/ || echo @@@STEP_FAILURE@@@ )&
+  done
+
   wait
 
   echo @@@BUILD_STEP run lit tests [$DEVICE_DESCRIPTION]@@@
