@@ -18,6 +18,10 @@ function update_or_checkout {
 }
 
 function buildbot_update {
+    if [ "$BUILDBOT_REVISION" == "-" ]; then
+        return
+    fi
+
     local rev_arg=
     if [ "$BUILDBOT_REVISION" != "" ]; then
         rev_arg="-r$BUILDBOT_REVISION"
