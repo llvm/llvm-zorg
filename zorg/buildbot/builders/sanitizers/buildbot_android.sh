@@ -62,7 +62,7 @@ if  [[ "$(cat llvm_build64/CMAKE_OPTIONS)" != "${CMAKE_OPTIONS}" ]] ; then
   (cd llvm_build64 && cmake ${CMAKE_OPTIONS} -DLLVM_BUILD_EXTERNAL_COMPILER_RT=ON $LLVM && \
      echo ${CMAKE_OPTIONS} > CMAKE_OPTIONS) || echo @@@STEP_FAILURE@@@
 fi
-ninja -C llvm_build64 || echo @@@STEP_FAILURE@@
+ninja -C llvm_build64 || echo @@@STEP_FAILURE@@@
 
 # Android NDK has no iconv.h which is requred by LIBXML2.
 CMAKE_COMMON_OPTIONS="${CMAKE_COMMON_OPTIONS} -DLLVM_LIBXML2_ENABLED=OFF"
