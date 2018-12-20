@@ -7,13 +7,13 @@ function update_or_checkout {
   local repo=$2
   local tree=$3
   if [ -d ${tree} ]; then
-    svn cleanup "${tree}"
-    svn revert -R "${tree}"
-    svn up "${tree}" $rev_arg
+    svn cleanup "${tree}" || echo @@@STEP_EXCEPTION@@@
+    svn revert -R "${tree}" || echo @@@STEP_EXCEPTION@@@
+    svn up "${tree}" $rev_arg || echo @@@STEP_EXCEPTION@@@
   else
     mkdir -p svn_checkout
     DIR=$(mktemp -d -p `pwd`/svn_checkout XXXXXX)
-    svn co "${repo}" $DIR/${tree} $rev_arg
+    svn co "${repo}" $DIR/${tree} $rev_arg || echo @@@STEP_EXCEPTION@@@
   fi
 }
 
