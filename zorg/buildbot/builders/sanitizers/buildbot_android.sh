@@ -60,7 +60,7 @@ echo @@@BUILD_STEP bootstrap clang@@@
 mkdir -p llvm_build64
 if  [[ "$(cat llvm_build64/CMAKE_OPTIONS)" != "${CMAKE_OPTIONS}" ]] ; then
   (cd llvm_build64 && cmake ${CMAKE_OPTIONS} -DLLVM_BUILD_EXTERNAL_COMPILER_RT=ON $LLVM && \
-     echo ${CMAKE_OPTIONS} > CMAKE_OPTIONS) || echo @@@STEP_FAILURE@@
+     echo ${CMAKE_OPTIONS} > CMAKE_OPTIONS) || echo @@@STEP_FAILURE@@@
 fi
 ninja -C llvm_build64 || echo @@@STEP_FAILURE@@
 
