@@ -13,6 +13,7 @@ HERE="$(cd $(dirname $0) && pwd)"
 
 ROOT=`pwd`
 PLATFORM=`uname`
+LOCAL_IP=`hostname --ip-address`
 export PATH="/usr/local/bin:$PATH"
 
 CHECK_LIBCXX=${CHECK_LIBCXX:-1}
