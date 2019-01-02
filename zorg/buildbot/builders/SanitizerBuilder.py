@@ -15,8 +15,6 @@ def getSanitizerBuildFactory(
     merged_env = {
         "TERM" : "dumb", # Make sure Clang doesn't use color escape sequences.
                  }
-    # Use env variables defined in the system.
-    merged_env.update(os.environ)
     # Clobber bot if we need a clean build.
     if clean:
         merged_env["BUILDBOT_CLOBBER"] = "1"
