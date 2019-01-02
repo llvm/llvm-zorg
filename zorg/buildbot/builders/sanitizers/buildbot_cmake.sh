@@ -44,6 +44,7 @@ CHECK_LIBCXX=${CHECK_LIBCXX:-1}
 CHECK_SYMBOLIZER=${CHECK_SYMBOLIZER:-$CHECK_LIBCXX}
 CHECK_LLD=${CHECK_LLD:-1}
 CHECK_ASAN=0
+CHECK_HWASAN=0
 CHECK_UBSAN=0
 CHECK_MSAN=0
 CHECK_TSAN=0
@@ -54,6 +55,7 @@ CHECK_CFI=0
 case "$ARCH" in
   x86_64)
     CHECK_ASAN=1
+    CHECK_HWASAN=1
     CHECK_UBSAN=1
     CHECK_MSAN=1
     CHECK_TSAN=1
@@ -139,6 +141,7 @@ if [ "$PLATFORM" == "Linux" ]; then
   }
   check_in_gcc 1 sanitizer
   check_in_gcc $CHECK_ASAN asan
+  check_in_gcc $CHECK_HWASAN hwasan
   check_in_gcc $CHECK_CFI cfi-and-supported
   check_in_gcc $CHECK_DFSAN dfsan
   check_in_gcc $CHECK_LSAN lsan
@@ -197,6 +200,7 @@ check_64bit 1 sanitizer
 check_64bit $CHECK_ASAN asan
 if [ "$PLATFORM" == "Linux" ]; then
   check_64bit $CHECK_ASAN asan-dynamic
+  check_64bit $CHECK_HWASAN hwasan
   check_64bit $CHECK_CFI cfi-and-supported
   check_64bit $CHECK_DFSAN dfsan
   check_64bit $CHECK_LSAN lsan
@@ -271,6 +275,7 @@ if [ "$PLATFORM" == "Linux" -a $HAVE_NINJA == 1 ]; then
 
   check_ninja 1 sanitizer
   check_ninja $CHECK_ASAN asan
+  check_ninja $CHECK_HWASAN hwasan
   check_ninja $CHECK_CFI cfi-and-supported
   check_ninja $CHECK_DFSAN dfsan
   check_ninja $CHECK_LSAN lsan
@@ -296,6 +301,7 @@ if [ "$PLATFORM" == "Linux" -a $HAVE_NINJA == 1 ]; then
 
     check_ninja_with_symbolizer 1 sanitizer
     check_ninja_with_symbolizer $CHECK_ASAN asan
+    check_ninja_with_symbolizer $CHECK_HWASAN hwasan
     check_ninja_with_symbolizer $CHECK_CFI cfi-and-supported
     check_ninja_with_symbolizer $CHECK_DFSAN dfsan
     check_ninja_with_symbolizer $CHECK_LSAN lsan
