@@ -4,9 +4,6 @@ set -x
 set -e
 set -u
 
-USER=$( id -un )
-HOME=$( getent passwd "$USER" | cut -d: -f6 )
-
 HERE="$(cd $(dirname $0) && pwd)"
 . ${HERE}/buildbot_functions.sh
 . ${HERE}/buildbot_android_functions.sh
