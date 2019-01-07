@@ -151,10 +151,10 @@ function test_android {
   for SERIAL in $ANDROID_DEVICES; do
     LOG="$(mktemp test_android_log_XXXX)"
     LOGS="$LOGS $LOG"
-    # Replace BUILD_STEP marker to report entire thing as a single step. We run
-    # tests in parallel so we have not way to split tests correctly. We do that
-    # after all test complete. We still want to keep error markers alive.
-    (test_on_device "$SERIAL" $@ 2>&1 | sed -ue "s/@@@BUILD_STEP /%%%BUILD_STEP /g" | tee "$LOG") &
+    # Remove BUILD_STEP marker to report entire thing as a single step. We run
+    # tests in parallel so we can't split tests correctly. We will sprint and
+    # report them later. We still want to keep error markers.
+    (test_on_device "$SERIAL" $@ 2>&1 | tee "$LOG" | grep --line-buffered -v "@@@BUILD_STEP") &
   done
 
   wait
@@ -167,8 +167,7 @@ function test_android {
     fi
   done
 
-  # Printout all logs recovering BUILD_STEP markers.
-  sed -e "s/%%%/@@@/g" $LOGS || true
+  cat $LOGS || true
 }
 
 function run_command_on_device {
