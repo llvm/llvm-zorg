@@ -141,18 +141,23 @@ function test_android {
   fi
 
   ADB=adb
-  echo @@@BUILD_STEP run tests@@@
+  echo @@@BUILD_STEP run all tests@@@
   ANDROID_DEVICES=$(${ADB} devices | grep 'device$' | awk '{print $1}')
 
   rm -rf test_android_log_*
   rm -rf tested_arch_*
   rm -rf shards_*
+  LOGS=
   for SERIAL in $ANDROID_DEVICES; do
-    (test_on_device "$SERIAL" $@ >$(mktemp test_android_log_XXXX) 2>&1) &
+    LOG="$(mktemp test_android_log_XXXX)"
+    LOGS="$LOGS $LOG"
+    # Replace BUILD_STEP marker to report entire thing as a single step. We run
+    # tests in parallel so we have not way to split tests correctly. We do that
+    # after all test complete. We still want to keep error markers alive.
+    (test_on_device "$SERIAL" $@ 2>&1 | sed -ue "s/@@@BUILD_STEP /%%%BUILD_STEP /g" | tee "$LOG") &
   done
 
   wait
-  cat test_android_log_* || true
 
   for _arg in "$@"; do
     local _arch=${_arg%:*}
@@ -161,6 +166,9 @@ function test_android {
       echo @@@STEP_EXCEPTION@@@
     fi
   done
+
+  # Printout all logs recovering BUILD_STEP markers.
+  sed -e "s/%%%/@@@/g" $LOGS || true
 }
 
 function run_command_on_device {
@@ -206,7 +214,7 @@ function test_arch_on_device {
          $COMPILER_RT_BUILD_DIR/lib/asan/tests/AsanNoinstTest"
 
   for F in $FILES ; do
-    ( $ADB push $F $DEVICE_ROOT/ || echo @@@STEP_FAILURE@@@ )&
+    ( $ADB push $F $DEVICE_ROOT/ >/dev/null || echo @@@STEP_FAILURE@@@ )&
   done
 
   wait
