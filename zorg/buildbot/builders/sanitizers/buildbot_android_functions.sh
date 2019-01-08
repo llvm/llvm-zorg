@@ -135,6 +135,15 @@ function test_on_device {
   done
 }
 
+function tail_pids {
+  for LOG_PID in $1; do
+    PID=${LOG_PID#*,}
+    LOG=${LOG_PID%,*}
+    tail -n +1 -F $LOG --pid=$PID
+  done
+  wait
+}
+
 function test_android {
   if [[ "${BUILDBOT_SLAVENAME:-}" != "" ]]; then
     restart_adb_server
@@ -150,14 +159,10 @@ function test_android {
   LOGS=
   for SERIAL in $ANDROID_DEVICES; do
     LOG="$(mktemp test_android_log_XXXX)"
-    LOGS="$LOGS $LOG"
-    # Remove BUILD_STEP marker to report entire thing as a single step. We run
-    # tests in parallel so we can't split tests correctly. We will sprint and
-    # report them later. We still want to keep error markers.
-    (test_on_device "$SERIAL" $@ 2>&1 | tee "$LOG" | grep --line-buffered -v "@@@BUILD_STEP") &
+    (test_on_device "$SERIAL" $@ 2>&1 >"$LOG") &
+    LOGS="$LOGS $LOG,$!"
   done
-
-  wait
+  tail_pids "$LOGS"
 
   for _arg in "$@"; do
     local _arch=${_arg%:*}
@@ -166,8 +171,6 @@ function test_android {
       echo @@@STEP_EXCEPTION@@@
     fi
   done
-
-  cat $LOGS || true
 }
 
 function run_command_on_device {
@@ -177,13 +180,31 @@ function run_command_on_device {
   return $($ADB shell "cat $EXIT_CODE")
 }
 
+function run_tests_sharded {
+  local _test_name=$1
+  local _test=$2
+  local _env=$3
+
+  local NUM_SHARDS=4
+  local _log_prefix=$(mktemp shards_XXXX_)
+  echo @@@BUILD_STEP run $_test_name tests [$DEVICE_DESCRIPTION]@@@
+  LOGS=
+  for ((SHARD=0; SHARD < $NUM_SHARDS; SHARD++)); do
+    LOG=${_log_prefix}_$SHARD
+    local ENV="$_env GTEST_TOTAL_SHARDS=$NUM_SHARDS GTEST_SHARD_INDEX=$SHARD LD_LIBRARY_PATH=$DEVICE_ROOT"
+    ( (run_command_on_device "$ENV $DEVICE_ROOT/$_test" || echo @@@STEP_FAILURE@@@) 2>&1 >${_log_prefix}_$SHARD ) &
+    LOGS="$LOGS $LOG,$!"
+  done
+  tail_pids "$LOGS" || true
+}
+
 function test_arch_on_device {
   local _arch=$1
   local _serial=$2
   local _build_id=$3
   local _build_flavor=$4
 
-  DEVICE_DESCRIPTION=$_arch/$_build_flavor/$_build_id
+  export DEVICE_DESCRIPTION=$_arch/$_build_flavor/$_build_id
 
   ANDROID_TOOLCHAIN=$ROOT/android_ndk/standalone-$_arch
   LIBCXX_SHARED=$(find $ANDROID_TOOLCHAIN/ -name libc++_shared.so | head -1)
@@ -215,34 +236,12 @@ function test_arch_on_device {
   for F in $FILES ; do
     ( $ADB push $F $DEVICE_ROOT/ >/dev/null || echo @@@STEP_FAILURE@@@ )&
   done
-
   wait
 
   echo @@@BUILD_STEP run lit tests [$DEVICE_DESCRIPTION]@@@
   (cd $COMPILER_RT_BUILD_DIR && ninja check-all) || echo @@@STEP_FAILURE@@@
 
-  echo @@@BUILD_STEP run sanitizer_common tests [$DEVICE_DESCRIPTION]@@@
-  run_command_on_device "LD_LIBRARY_PATH=$DEVICE_ROOT $DEVICE_ROOT/SanitizerTest" || echo @@@STEP_FAILURE@@@
-
-  NUM_SHARDS=4
-  local _log_prefix=$(mktemp shards_XXXX_)
-  echo @@@BUILD_STEP run asan tests [$DEVICE_DESCRIPTION]@@@
-  for ((SHARD=0; SHARD < $NUM_SHARDS; SHARD++)); do
-    local ENV="GTEST_TOTAL_SHARDS=$NUM_SHARDS GTEST_SHARD_INDEX=$SHARD LD_LIBRARY_PATH=$DEVICE_ROOT"
-    ( (run_command_on_device "$ENV $DEVICE_ROOT/AsanNoinstTest" || echo @@@STEP_FAILURE@@@) \
-       >${_log_prefix}_$SHARD 2>&1 ) &
-  done
-
-  wait
-  cat ${_log_prefix}_* || true
-
-  local _log_prefix=$(mktemp shards_XXXX_)
-  echo @@@BUILD_STEP run instrumented asan tests [$DEVICE_DESCRIPTION]@@@
-  for ((SHARD=0; SHARD < $NUM_SHARDS; SHARD++)); do
-    local ENV="GTEST_TOTAL_SHARDS=$NUM_SHARDS GTEST_SHARD_INDEX=$SHARD LD_LIBRARY_PATH=$DEVICE_ROOT ASAN_OPTIONS=start_deactivated=1"
-    ( (run_command_on_device "$ENV $DEVICE_ROOT/AsanTest" || echo @@@STEP_FAILURE@@@) \
-      >${_log_prefix}_$SHARD 2>&1 ) &
-  done
-  wait
-  cat ${_log_prefix}_* || true
+  run_tests_sharded sanitizer_common SanitizerTest ""
+  run_tests_sharded asan AsanNoinstTest ""
+  run_tests_sharded "instrumented asan" AsanTest "ASAN_OPTIONS=start_deactivated=1"
 }
