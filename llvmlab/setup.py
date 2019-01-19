@@ -16,7 +16,7 @@ setup(
     author = llvmlab.__author__,
     author_email = llvmlab.__email__,
     url = 'http://lab.llvm.org',
-    license = 'BSD',
+    license = 'Apache-2.0 with LLVM exception',
 
     description = "lab.llvm.org Web App",
     keywords = 'web testing performance development llvm',
@@ -25,8 +25,7 @@ setup(
         'Development Status :: 1 - Planning',
         'Environment :: Web Environment',
         'Intended Audience :: Developers',
-        ('License :: OSI Approved :: '
-         'University of Illinois/NCSA Open Source License'),
+        'License :: OSI Approved :: Apache-2.0 with LLVM exception',
         'Natural Language :: English',
         'Operating System :: OS Independent',
         'Progamming Language :: Python',

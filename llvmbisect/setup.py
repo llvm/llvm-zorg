@@ -15,7 +15,7 @@ setup(
     author = "Daniel Dunbar and Chris Matthews",
     author_email = "chris.matthews@apple.com",
     url = 'http://lab.llvm.org',
-    license = 'BSD',
+    license = 'Apache-2.0 with LLVM exception',
 
     description = "Compiler bisection service.",
     keywords = 'testing compiler performance development llvm',
@@ -24,8 +24,7 @@ setup(
         'Development Status :: 4 - Beta',
         'Environment :: Console',
         'Intended Audience :: Developers',
-        ('License :: OSI Approved :: '
-         'University of Illinois/NCSA Open Source License'),
+        'License :: OSI Approved :: Apache-2.0 with LLVM exception',
         'Natural Language :: English',
         'Operating System :: OS Independent',
         'Progamming Language :: Python',
