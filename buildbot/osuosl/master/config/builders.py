@@ -19,6 +19,7 @@ from zorg.buildbot.builders import CUDATestsuiteBuilder
 from zorg.buildbot.builders import AOSPBuilder
 from zorg.buildbot.builders import AnnotatedBuilder
 from zorg.buildbot.builders import LLDPerformanceTestsuite
+from zorg.buildbot.builders import FuchsiaBuilder
 
 # Plain LLVM builders.
 def _get_llvm_builders():
@@ -1513,6 +1514,16 @@ def _get_libcxx_builders():
 
     ]
 
+# Toolchain builders.
+def _get_toolchain_builders():
+      return [
+          {'name': "fuchsia-x86_64-linux",
+           'slavenames' :["fuchsia-debian-64-us-central1-a-1", "fuchsia-debian-64-us-central1-b-1"],
+           'builddir': "fuchsia-x86_64-linux",
+           'factory': FuchsiaBuilder.getToolchainBuildFactory()
+           'category': 'fuchsia'},
+        ]
+
 # Experimental and stopped builders
 def _get_on_demand_builders():
     return [
@@ -1676,6 +1687,10 @@ def get_builders():
 
     for b in _get_libcxx_builders():
         b['category'] = 'libcxx'
+        yield b
+
+    for b in _get_toolchain_builders():
+        b['category'] = 'toolchain'
         yield b
 
     for b in _get_documentation_builders():

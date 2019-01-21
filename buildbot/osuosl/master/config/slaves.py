@@ -255,6 +255,10 @@ def get_build_slaves():
         # FreeBSD 11 amd64
         create_slave("freebsd11-amd64", properties={'jobs': 2}, max_builds=1),
 
+        # Debian 9.0 x86_64 64-core GCE instances
+        create_slave("fuchsia-debian-64-us-central1-a-1", properties={'jobs': 64}, max_builds=1),
+        create_slave("fuchsia-debian-64-us-central1-b-1", properties={'jobs': 64}, max_builds=1),
+
         # Defunct.
         # Debian 86_64, 2 x 6-core Opteron 2.6 GHz
         #create_slave("osu8", properties={'jobs' : 6}, max_builds=2),

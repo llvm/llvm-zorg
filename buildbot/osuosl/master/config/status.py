@@ -264,4 +264,12 @@ def get_status_targets(standard_builders, standard_categories=None):
             builders = ["lldb-x64-windows-ninja"],
             addLogs=False,
             num_lines = 15),
+        InformativeMailNotifier(
+            fromaddr = "llvm.buildmaster@lab.llvm.org",
+            sendToInterestedUsers= False,
+            extraRecipients = ["phosek@google.com"],
+            subject="Build %(builder)s Failure",
+            mode = "failing",
+            builders = ["fuchsia-x86_64-linux"]
+            addLogs=False),
         ]
