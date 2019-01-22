@@ -2,6 +2,7 @@ import platform
 
 from buildbot.process.properties import WithProperties
 from buildbot.steps.shell import ShellCommand
+from buildbot.steps.slave import RemoveDirectory
 from buildbot.steps.source import SVN
 
 from zorg.buildbot.commands.CmakeCommand import CmakeCommand
@@ -55,7 +56,6 @@ def getToolchainBuildFactory(
     f.addStep(RemoveDirectory(name="clean-sdk",
                               dir=sdk_dir,
                               haltOnFailure=True,
-                              description=["remove", "fuchsia sdk"],
                               doStepIf=FileExists(sdk_dir)))
 
     f.addStep(ShellCommand(name="fetch-sdk",
@@ -64,7 +64,7 @@ def getToolchainBuildFactory(
                            workdir=sdk_dir))
 
     f.addStep(ShellCommand(name="extract-sdk",
-                           command=["unzip", "sdk.cipd"]
+                           command=["unzip", "sdk.cipd"],
                            description=["extract", "fuchsia sdk"],
                            workdir=sdk_dir))
 
@@ -74,7 +74,6 @@ def getToolchainBuildFactory(
     f.addStep(RemoveDirectory(name="clean-llvm.src",
                               dir=src_dir,
                               haltOnFailure=True,
-                              description=["rm", "src", "dir"],
                               doStepIf=cleanCheckoutRequested))
 
     # Get sources.
@@ -90,7 +89,6 @@ def getToolchainBuildFactory(
     f.addStep(RemoveDirectory(name="clean-llvm.obj",
                               dir=obj_dir,
                               haltOnFailure=True,
-                              description=["rm", "build", "dir"],
                               doStepIf=cleanBuildRequested))
 
     # Configure.
@@ -145,7 +143,7 @@ def getToolchainBuildFactory(
                            haltOnFailure=True,
                            description=["check"],
                            workdir=obj_dir,
-                           env=merged_env
+                           env=merged_env,
                            doStepIf=test))
 
     # Install distribution.

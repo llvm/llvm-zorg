@@ -270,6 +270,6 @@ def get_status_targets(standard_builders, standard_categories=None):
             extraRecipients = ["phosek@google.com"],
             subject="Build %(builder)s Failure",
             mode = "failing",
-            builders = ["fuchsia-x86_64-linux"]
+            builders = ["fuchsia-x86_64-linux"],
             addLogs=False),
         ]
