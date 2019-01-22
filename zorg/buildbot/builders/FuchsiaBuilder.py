@@ -112,8 +112,11 @@ def getToolchainBuildFactory(
 
     cmake_options.append(
         WithProperties(
-            "-DCMAKE_INSTALL_PREFIX=%(workdir)s/" + install_dir,
-            "-DFUCHSIA_SDK=%(workdir)s/" + sdk_dir,
+            "-DCMAKE_INSTALL_PREFIX=%(workdir)s/" + install_dir
+        ))
+    cmake_options.append(
+        WithProperties(
+            "-DFUCHSIA_SDK=%(workdir)s/" + sdk_dir
         ))
 
     CmakeCommand.applyRequiredOptions(cmake_options, [
