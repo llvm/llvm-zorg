@@ -7,7 +7,7 @@ from buildbot.steps.source import SVN
 
 from zorg.buildbot.commands.CmakeCommand import CmakeCommand
 from zorg.buildbot.commands.NinjaCommand import NinjaCommand
-from zorg.buildbot.conditions.FileConditions import FileExists, FileDoesNotExist
+from zorg.buildbot.conditions.FileConditions import FileDoesNotExist
 from zorg.buildbot.process.factory import LLVMBuildFactory, svn_repos
 
 def getToolchainBuildFactory(
@@ -55,8 +55,7 @@ def getToolchainBuildFactory(
 
     f.addStep(RemoveDirectory(name="clean-sdk",
                               dir=sdk_dir,
-                              haltOnFailure=True,
-                              doStepIf=FileExists(sdk_dir)))
+                              haltOnFailure=True))
 
     f.addStep(ShellCommand(name="fetch-sdk",
                            command=["curl", "-SLf", "-o", "sdk.cipd", sdk_url],
@@ -64,7 +63,7 @@ def getToolchainBuildFactory(
                            workdir=sdk_dir))
 
     f.addStep(ShellCommand(name="extract-sdk",
-                           command=["unzip", "sdk.cipd"],
+                           command=["unzip", "-fo", "sdk.cipd"],
                            description=["extract", "fuchsia sdk"],
                            workdir=sdk_dir))
 
