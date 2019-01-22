@@ -1,0 +1,91 @@
+#!/usr/bin/env groovy
+pipeline {
+    agent {label 'green-dragon-23'}
+    stages {
+        stage('Subversion Checkout') {
+            steps {
+                timeout(activity: true, time: 30) {
+                    checkout([$class: 'SubversionSCM',
+                              locations: [
+                                  [local: 'llvm.src', 
+                                   remote: 'http://llvm.org/svn/llvm-project/llvm/trunk'],
+                                  [local: 'lldb.src', 
+                                   remote: 'http://llvm.org/svn/llvm-project/lldb/trunk'],
+                                  [local: 'clang.src', 
+                                   remote: 'http://llvm.org/svn/llvm-project/cfe/trunk'],
+                                  [cancelProcessOnExternalsFail: true,
+                                   credentialsId: '', depthOption: 'infinity',
+                                   ignoreExternalsOption: true, local: 'libcxx.src', 
+                                   remote: 'http://llvm.org/svn/llvm-project/libcxx/trunk']],
+                              quietOperation: false,
+                              workspaceUpdater: [$class: 'UpdateUpdater']])
+                }
+            }
+        }
+        stage('Build') {
+            steps {
+                timeout(activity: true, time: 30) {
+                    sh '''
+set -u
+
+if [ "$CLEAN" = true ] ; then
+   rm -rf llvm
+fi
+
+export
+python $SCRIPT_PATH/build.py fetch
+'''
+                    sh '''
+bash ${SCRIPT_PATH}/jobs/jobs/lldb-cmake-matrix-stage1
+'''
+                }
+            }
+        }
+        stage('LLDB CMake Matrix Stage 2, Clang 5.0.2') {
+            steps {
+                timeout(activity: true, time: 30) {
+                    checkout([$class: 'SubversionSCM',
+                              locations: [
+                                  [local: 'src/history/clang-5.0.2', 
+                                   remote: 'http://llvm.org/svn/llvm-project/llvm/tags/RELEASE_502/final'],
+                                  [local: 'src/history/clang-5.0.2/tools/clang', 
+                                   remote: 'http://llvm.org/svn/llvm-project/cfe/tags/RELEASE_502/final'],
+                                  [local: 'src/history/clang-5.0.2/projects/libcxx', 
+                                   remote: 'http://llvm.org/svn/llvm-project/libcxx/tags/RELEASE_502/final']],
+                              quietOperation: false,
+                              workspaceUpdater: [$class: 'UpdateUpdater']])
+                }
+                timeout(activity: true, time: 30) {
+                    sh '''
+export HISTORIC_COMPILER=clang-5.0.2
+bash ${SCRIPT_PATH}/jobs/jobs/lldb-cmake-matrix-stage2
+'''
+                    junit 'test-clang-5.0.2/results.xml'
+                }
+            }
+        }
+        stage('LLDB CMake Matrix Stage 2, Clang 6.0.1') {
+            steps {
+                timeout(activity: true, time: 30) {
+                    checkout([$class: 'SubversionSCM',
+                              locations: [
+                                  [local: 'src/history/clang-6.0.1', 
+                                   remote: 'http://llvm.org/svn/llvm-project/llvm/tags/RELEASE_601/final'],
+                                  [local: 'src/history/clang-6.0.1/tools/clang', 
+                                   remote: 'http://llvm.org/svn/llvm-project/cfe/tags/RELEASE_601/final'],
+                                  [local: 'src/history/clang-6.0.1/projects/libcxx', 
+                                   remote: 'http://llvm.org/svn/llvm-project/libcxx/tags/RELEASE_601/final']],
+                              quietOperation: false,
+                              workspaceUpdater: [$class: 'UpdateUpdater']])
+                }
+                timeout(activity: true, time: 30) {
+                    sh '''
+export HISTORIC_COMPILER=clang-6.0.1
+bash ${SCRIPT_PATH}/jobs/jobs/lldb-cmake-matrix-stage2
+'''
+                    junit 'test-clang-6.0.1/results.xml'
+                }
+            }
+        }
+    }
+}
