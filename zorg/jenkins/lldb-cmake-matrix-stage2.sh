@@ -67,7 +67,7 @@ echo "@@@ Setup @@@"
 
 echo "@@@@@@"
 
-echo "@@@ Building historical clangs @@@"
+echo "@@@ Building historical ${HISTORIC_COMPILER} @@@"
 function build_clang() {
   CLANG_NAME=$1
   mkdir -p history/$CLANG_NAME
@@ -101,7 +101,7 @@ set -eux
 
 python $SCRIPT_PATH/build.py derive-lldb-cmake
 
-echo "@@@ CMake @@@"
+echo "@@@ CMake test suite for ${HISTORIC_COMPILER} @@@"
 rsync -av --delete $BASE_BUILD/bin $BUILD/
 cmake $WORKSPACE/llvm \
     -DCMAKE_BUILD_TYPE=Release \
@@ -120,7 +120,7 @@ cmake $WORKSPACE/llvm \
 echo "@@@@@@"
 
 
-echo "@@@ Running tests @@@"
+echo "@@@ Running tests using ${HISTORIC_COMPILER} @@@"
 set +e
 # FIXME: The LIT tests don't pick the right compiler yet.
 python $BUILD/bin/llvm-lit --xunit-xml-output=$RESULTS_FILE \
@@ -130,7 +130,7 @@ set -e
 echo "@@@@@@"
 
 
-echo "@@@ Archiving Test Logs @@@"
+echo "@@@ Archiving test logs from ${HISTORIC_COMPILER} @@@"
 tar zcf "$RESULTS/test_logs.tgz" -C "${LOGS_DIR}" .
 
 if [ $EXIT_STATUS -ne 0 ]; then
