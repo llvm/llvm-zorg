@@ -87,5 +87,15 @@ bash ${SCRIPT_PATH}/lldb-cmake-matrix-stage2.sh
                 }
             }
         }
+        stage('LLDB CMake Matrix Stage 2, Upstream Clang + DWARF 5') {
+            steps {
+                timeout(activity: true, time: 30) {
+                    sh '''
+bash ${SCRIPT_PATH}/lldb-cmake-matrix-dwarf5.sh
+'''
+                    junit 'test-dwarf5/results.xml'
+                }
+            }
+        }
     }
 }
