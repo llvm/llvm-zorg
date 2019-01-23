@@ -119,7 +119,7 @@ def getToolchainBuildFactory(
         ))
 
     CmakeCommand.applyRequiredOptions(cmake_options, [
-        ("-C", "../" + src_dir + "clang/cmake/caches/Fuchsia.cmake"),
+        ("-C", "../" + src_dir + "/clang/cmake/caches/Fuchsia.cmake"),
         ])
 
     f.addStep(CmakeCommand(name="cmake-configure",
