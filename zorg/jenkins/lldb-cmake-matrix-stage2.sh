@@ -135,7 +135,9 @@ tar zcf "$RESULTS/test_logs.tgz" -C "${LOGS_DIR}" .
 
 if [ $EXIT_STATUS -ne 0 ]; then
     echo "CHECK-LLDB Failed!\n"
-    exit 1
+    # Exit with zero if only LIT failed.
+    # The junit plugin will turn the build yellow.
+    # exit 1
 fi
 
 # Delete directories that would get deleted first thing by the next build anyway.
