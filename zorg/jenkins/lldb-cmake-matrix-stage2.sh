@@ -125,7 +125,7 @@ set +e
 # FIXME: The LIT tests don't pick the right compiler yet.
 env PYTHONPATH=/usr/local/lib/python2.7/site-packages \
     python $BUILD/bin/llvm-lit --xunit-xml-output=$RESULTS_FILE \
-        -v $WORKSPACE/llvm/tools/lldb/lit --filter=lldb-Suite --timeout 30
+        -v $WORKSPACE/llvm/tools/lldb/lit --filter=lldb-Suite --timeout 600
 EXIT_STATUS=$?
 set -e
 echo "@@@@@@"
