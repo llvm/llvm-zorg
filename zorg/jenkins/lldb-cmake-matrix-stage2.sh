@@ -2,6 +2,7 @@ set -eux
 
 # Avoid the python in /usr/local/bin.
 PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/jbin
+PYTHONPATH=/usr/local/lib/python2.7/site-packages
 
 if [ -z "HISTORIC_COMPILER" ]; then
     echo "HISTORIC_COMPILER is not set."
@@ -94,7 +95,7 @@ HISTORIC_CLANG=${BUILD}/history/${HISTORIC_COMPILER}/bin/clang
 echo "@@@@@@"
 
 set +x
-echo "@@@ Environment @@@"
+echo "@@@ Environment for ${HISTORIC_COMPILER} @@@"
 env | sort
 echo "@@@@@@"
 set -eux
@@ -124,7 +125,7 @@ echo "@@@ Running tests using ${HISTORIC_COMPILER} @@@"
 set +e
 # FIXME: The LIT tests don't pick the right compiler yet.
 python $BUILD/bin/llvm-lit --xunit-xml-output=$RESULTS_FILE \
-    -v $WORKSPACE/llvm/tools/lldb/lit --filter=lldb-Suite
+    -v $WORKSPACE/llvm/tools/lldb/lit --filter=lldb-Suite --timeout 30
 EXIT_STATUS=$?
 set -e
 echo "@@@@@@"
