@@ -74,10 +74,10 @@ echo "@@@ CMake test suite for DWARF 5 @@@"
 rsync -av --delete $BASE_BUILD/bin $BUILD/
 
 WRAPPER=$BUILD/bin/clang-dwarf5
-echo '!#/bin/sh'>${WRAPPER}
-echo '!#/bin/sh'>${WRAPPER}++
-echo '$BASE_BUILD/bin/clang -gdwarf-5 $*'>>${WRAPPER}
-echo '$BASE_BUILD/bin/clang++ -gdwarf-5 $*'>>${WRAPPER}++
+echo '#!/bin/sh'>${WRAPPER}
+echo '#!/bin/sh'>${WRAPPER}++
+echo $BASE_BUILD'/bin/clang -gdwarf-5 $*'>>${WRAPPER}
+echo $BASE_BUILD'/bin/clang++ -gdwarf-5 $*'>>${WRAPPER}++
 chmod u+x ${WRAPPER} ${WRAPPER}++
 
 cmake $WORKSPACE/llvm \
