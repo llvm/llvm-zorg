@@ -81,7 +81,7 @@ bash ${SCRIPT_PATH}/lldb-cmake-matrix-stage2.sh
                 timeout(activity: true, time: 30) {
                     sh '''
 export HISTORIC_COMPILER=clang-6.0.1
-bash ${SCRIPT_PATH}/jobs/jobs/lldb-cmake-matrix-stage2.sh
+bash ${SCRIPT_PATH}/lldb-cmake-matrix-stage2.sh
 '''
                     junit 'test-clang-6.0.1/results.xml'
                 }
