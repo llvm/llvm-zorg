@@ -26,22 +26,17 @@ pipeline {
             steps {
                 timeout(activity: true, time: 30) {
                     sh '''
-set -u
-
-if [ "$CLEAN" = true ] ; then
-   rm -rf llvm
-fi
-
-export
-python $SCRIPT_PATH/build.py fetch
-'''
+                       set -u
+                       export
+                       python $SCRIPT_PATH/build.py fetch
+                       '''
                     sh '''
-bash $SCRIPT_PATH/lldb-cmake-matrix-stage1.sh
-'''
+                       bash $SCRIPT_PATH/lldb-cmake-matrix-stage1.sh
+                       '''
                 }
             }
         }
-        stage('Test against Clang 5.0.2') {
+        stage('Clang 5.0.2') {
             steps {
                 timeout(activity: true, time: 30) {
                     checkout([$class: 'SubversionSCM',
@@ -57,14 +52,14 @@ bash $SCRIPT_PATH/lldb-cmake-matrix-stage1.sh
                 }
                 timeout(activity: true, time: 30) {
                     sh '''
-export HISTORIC_COMPILER=clang-5.0.2
-bash ${SCRIPT_PATH}/lldb-cmake-matrix-stage2.sh
-'''
+                       export HISTORIC_COMPILER=clang-5.0.2
+                       bash ${SCRIPT_PATH}/lldb-cmake-matrix-stage2.sh
+                       '''
                     junit 'test-clang-5.0.2/results.xml'
                 }
             }
         }
-        stage('Test against Clang 6.0.1') {
+        stage('Clang 6.0.1') {
             steps {
                 timeout(activity: true, time: 30) {
                     checkout([$class: 'SubversionSCM',
@@ -80,14 +75,14 @@ bash ${SCRIPT_PATH}/lldb-cmake-matrix-stage2.sh
                 }
                 timeout(activity: true, time: 30) {
                     sh '''
-export HISTORIC_COMPILER=clang-6.0.1
-bash ${SCRIPT_PATH}/lldb-cmake-matrix-stage2.sh
-'''
+                       export HISTORIC_COMPILER=clang-6.0.1
+                       bash ${SCRIPT_PATH}/lldb-cmake-matrix-stage2.sh
+                       '''
                     junit 'test-clang-6.0.1/results.xml'
                 }
             }
         }
-        stage('Run tests against Clang 7.0.1') {
+        stage('Clang 7.0.1') {
             steps {
                 timeout(activity: true, time: 30) {
                     checkout([$class: 'SubversionSCM',
@@ -103,19 +98,42 @@ bash ${SCRIPT_PATH}/lldb-cmake-matrix-stage2.sh
                 }
                 timeout(activity: true, time: 30) {
                     sh '''
-export HISTORIC_COMPILER=clang-7.0.1
-bash ${SCRIPT_PATH}/lldb-cmake-matrix-stage2.sh
-'''
+                       export HISTORIC_COMPILER=clang-7.0.1
+                       bash ${SCRIPT_PATH}/lldb-cmake-matrix-stage2.sh
+                       '''
                     junit 'test-clang-7.0.1/results.xml'
                 }
             }
         }
-        stage('Test against Upstream Clang + DWARF 5') {
+        stage('Upstream Clang + DWARF 2') {
             steps {
                 timeout(activity: true, time: 30) {
                     sh '''
-bash ${SCRIPT_PATH}/lldb-cmake-matrix-dwarf5.sh
-'''
+                       export DWARF_VERSION=2
+                       bash ${SCRIPT_PATH}/lldb-cmake-matrix-dwarf.sh
+                       '''
+                    junit 'test-dwarf2/results.xml'
+                }
+            }
+        }
+        stage('Upstream Clang + DWARF 4') {
+            steps {
+                timeout(activity: true, time: 30) {
+                    sh '''
+                       export DWARF_VERSION=4
+                       bash ${SCRIPT_PATH}/lldb-cmake-matrix-dwarf.sh
+                       '''
+                    junit 'test-dwarf4/results.xml'
+                }
+            }
+        }
+        stage('Upstream Clang + DWARF 5') {
+            steps {
+                timeout(activity: true, time: 30) {
+                    sh '''
+                       export DWARF_VERSION=5
+                       bash ${SCRIPT_PATH}/lldb-cmake-matrix-dwarf.sh
+                       '''
                     junit 'test-dwarf5/results.xml'
                 }
             }

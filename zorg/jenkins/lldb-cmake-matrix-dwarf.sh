@@ -8,11 +8,16 @@ if [ -z "WORKSPACE" ]; then
     exit 1
 fi
 
+if [ -z "DWARF_VERSION" ]; then
+    echo "DWARF_VERSION is not set."
+    exit 1
+fi
+
 SRC="$WORKSPACE/src"
 BASE_BUILD="$WORKSPACE/lldb-build"
-BUILD="$WORKSPACE/lldb-build-dwarf5"
-TEST="$WORKSPACE/test-dwarf5"
-RESULTS="$WORKSPACE/results-dwarf5"
+BUILD="$WORKSPACE/lldb-build-dwarf${DWARF_VERSION}"
+TEST="$WORKSPACE/test-dwarf${DWARF_VERSION}"
+RESULTS="$WORKSPACE/results-dwarf${DWARF_VERSION}"
 DEST="$RESULTS/lldb"
 
 LLVM_SRC="$SRC/llvm"
@@ -63,21 +68,21 @@ echo "@@@ Setup @@@"
 echo "@@@@@@"
 
 set +x
-echo "@@@ Environment for DWARF 5 @@@"
+echo "@@@ Environment for DWARF ${DWARF_VERSION} @@@"
 env | sort
 echo "@@@@@@"
 set -eux
 
 python $SCRIPT_PATH/build.py derive-lldb-cmake
 
-echo "@@@ CMake test suite for DWARF 5 @@@"
+echo "@@@ CMake test suite for DWARF ${DWARF_VERSION} @@@"
 rsync -av --delete $BASE_BUILD/bin $BUILD/
 
-WRAPPER=$BUILD/bin/clang-dwarf5
+WRAPPER=$BUILD/bin/clang-dwarf${DWARF_VERSION}
 echo '#!/bin/sh'>${WRAPPER}
 echo '#!/bin/sh'>${WRAPPER}++
-echo $BASE_BUILD'/bin/clang -gdwarf-5 $*'>>${WRAPPER}
-echo $BASE_BUILD'/bin/clang++ -gdwarf-5 $*'>>${WRAPPER}++
+echo ${BASE_BUILD}/bin/clang -gdwarf-${DWARF_VERSION} '$*'>>${WRAPPER}
+echo ${BASE_BUILD}/bin/clang++ -gdwarf-${DWARF_VERSION} '$*'>>${WRAPPER}++
 chmod u+x ${WRAPPER} ${WRAPPER}++
 
 cmake $WORKSPACE/llvm \
@@ -97,7 +102,7 @@ cmake $WORKSPACE/llvm \
 echo "@@@@@@"
 
 
-echo "@@@ Running tests using DWARF 5 @@@"
+echo "@@@ Running tests using DWARF ${DWARF_VERSION} @@@"
 set +e
 # FIXME: The LIT tests don't pick the right compiler yet.
 env PYTHONPATH=/usr/local/lib/python2.7/site-packages \
@@ -108,7 +113,7 @@ set -e
 echo "@@@@@@"
 
 
-echo "@@@ Archiving test logs from DWARF 5 @@@"
+echo "@@@ Archiving test logs from DWARF ${DWARF_VERSION} @@@"
 tar zcf "$RESULTS/test_logs.tgz" -C "${LOGS_DIR}" .
 
 if [ $EXIT_STATUS -ne 0 ]; then
