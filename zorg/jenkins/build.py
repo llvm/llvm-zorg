@@ -555,7 +555,6 @@ def lldb_builder():
             "--executable", os.path.join(built_products_dir, "lldb"),
             "-C", effective_clang,
             "--arch", arch,
-            "--session-file-format", "fm",
             "--results-formatter",
             "lldbsuite.test_event.formatter.xunit.XunitFormatter",
             "--results-file", results_file,
@@ -586,7 +585,6 @@ def lldb_cmake_builder():
     header("Configure")
     dotest_args=['--arch', 'x86_64', '--build-dir',
                  conf.lldbbuilddir()+'/lldb-test-build.noindex',
-                 '--session-file-format' , 'fm',
                  '-s='+log_dir,
                  '-t',
                  '--env', 'TERM=vt100']
