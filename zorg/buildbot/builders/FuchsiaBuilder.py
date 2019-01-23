@@ -124,7 +124,7 @@ def getToolchainBuildFactory(
 
     f.addStep(CmakeCommand(name="cmake-configure",
                            options=cmake_options,
-                           path='../' + src_dir,
+                           path='../' + src_dir + '/llvm',
                            haltOnFailure=True,
                            description=["configure"],
                            workdir=obj_dir,
