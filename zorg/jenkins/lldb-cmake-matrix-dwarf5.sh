@@ -2,7 +2,6 @@ set -eux
 
 # Avoid the python in /usr/local/bin.
 PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/jbin
-PYTHONPATH=/usr/local/lib/python2.7/site-packages
 
 if [ -z "WORKSPACE" ]; then
     echo "WORKSPACE is not set."
@@ -101,8 +100,9 @@ echo "@@@@@@"
 echo "@@@ Running tests using DWARF 5 @@@"
 set +e
 # FIXME: The LIT tests don't pick the right compiler yet.
-python $BUILD/bin/llvm-lit --xunit-xml-output=$RESULTS_FILE \
-    -v $WORKSPACE/llvm/tools/lldb/lit --filter=lldb-Suite --timeout 30
+env PYTHONPATH=/usr/local/lib/python2.7/site-packages \
+    python $BUILD/bin/llvm-lit --xunit-xml-output=$RESULTS_FILE \
+        -v $WORKSPACE/llvm/tools/lldb/lit --filter=lldb-Suite --timeout 30
 EXIT_STATUS=$?
 set -e
 echo "@@@@@@"
