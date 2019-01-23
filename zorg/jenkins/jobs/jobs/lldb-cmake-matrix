@@ -36,7 +36,7 @@ export
 python $SCRIPT_PATH/build.py fetch
 '''
                     sh '''
-bash ${SCRIPT_PATH}/jobs/jobs/lldb-cmake-matrix-stage1
+bash $SCRIPT_PATH/lldb-cmake-matrix-stage1
 '''
                 }
             }
@@ -58,7 +58,7 @@ bash ${SCRIPT_PATH}/jobs/jobs/lldb-cmake-matrix-stage1
                 timeout(activity: true, time: 30) {
                     sh '''
 export HISTORIC_COMPILER=clang-5.0.2
-bash ${SCRIPT_PATH}/jobs/jobs/lldb-cmake-matrix-stage2
+bash ${SCRIPT_PATH}/lldb-cmake-matrix-stage2
 '''
                     junit 'test-clang-5.0.2/results.xml'
                 }
