@@ -15,6 +15,7 @@ def getPollyBuildFactory(
     make='make',
     jobs=None,
     checkAll=False,
+    env=None,
     extraCmakeArgs=[]):
     llvm_srcdir = "llvm.src"
     llvm_objdir = "llvm.obj"
@@ -31,6 +32,12 @@ def getPollyBuildFactory(
     cmake_install = []
     if install:
         cmake_install = ["-DCMAKE_INSTALL_PREFIX=../%s" % llvm_instdir]
+    # Prepare environmental variables. Set here all env we want everywhere.
+    merged_env = {
+                   'TERM' : 'dumb'     # Make sure Clang doesn't use color escape sequences.
+                 }
+    if env:
+        merged_env.update(env)  # Overwrite pre-set items with the given ones, so user can set anything.
 
     f = buildbot.process.factory.BuildFactory()
     # Determine the build directory.
@@ -62,14 +69,16 @@ def getPollyBuildFactory(
                                command=['rm', '-rf', llvm_objdir],
                                warnOnFailure=True,
                                description=["clean build dir"],
-                               workdir='.'))
+                               workdir='.',
+                               env=merged_env))
 
     # Create configuration files with cmake
     f.addStep(ShellCommand(name="create-build-dir",
                            command=["mkdir", "-p", llvm_objdir],
                            haltOnFailure=False,
                            description=["create build dir"],
-                           workdir="."))
+                           workdir=".",
+                           env=merged_env))
     cmakeCommand = ["cmake", "../%s" %llvm_srcdir,
                     "-DCMAKE_COLOR_MAKEFILE=OFF",
                     "-DPOLLY_TEST_DISABLE_BAR=ON",
@@ -79,14 +88,16 @@ def getPollyBuildFactory(
                            command=cmakeCommand,
                            haltOnFailure=False,
                            description=["cmake configure"],
-                           workdir=llvm_objdir))
+                           workdir=llvm_objdir,
+                           env=merged_env))
 
     # Build
     f.addStep(ShellCommand(name="build",
                            command=build_cmd,
                            haltOnFailure=True,
                            description=["build"],
-                           workdir=llvm_objdir))
+                           workdir=llvm_objdir,
+                           env=merged_env))
 
     # Clean install dir
     if install and clean:
@@ -94,7 +105,8 @@ def getPollyBuildFactory(
                                command=['rm', '-rf', llvm_instdir],
                                haltOnFailure=False,
                                description=["clean install dir"],
-                               workdir='.'))
+                               workdir='.',
+                               env=merged_env))
 
     # Install
     if install:
@@ -102,7 +114,8 @@ def getPollyBuildFactory(
                                command=install_cmd,
                                haltOnFailure=False,
                                description=["install"],
-                               workdir=llvm_objdir))
+                               workdir=llvm_objdir,
+                               env=merged_env))
 
     # Test
     if checkAll:
@@ -110,13 +123,15 @@ def getPollyBuildFactory(
                                command=check_all_cmd,
                                haltOnFailure=False,
                                description=["check all"],
-                               workdir=llvm_objdir))
+                               workdir=llvm_objdir,
+                               env=merged_env))
     else:
         f.addStep(ShellCommand(name="check_polly",
                                command=check_polly_cmd,
                                haltOnFailure=False,
                                description=["check polly"],
-                               workdir=llvm_objdir))
+                               workdir=llvm_objdir,
+                               env=merged_env))
 
     return f
 
