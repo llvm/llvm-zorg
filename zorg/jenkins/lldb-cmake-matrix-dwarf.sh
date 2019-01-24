@@ -81,8 +81,8 @@ rsync -av --delete $BASE_BUILD/bin $BUILD/
 WRAPPER=$BUILD/bin/clang-dwarf${DWARF_VERSION}
 echo '#!/bin/sh'>${WRAPPER}
 echo '#!/bin/sh'>${WRAPPER}++
-echo env CCC_OVERRIDE_OPTIONS='"'s/-g/-gdwarf-${DWARF_VERSION}/'"' ${BASE_BUILD}/bin/clang '$*'>>${WRAPPER}
-echo env CCC_OVERRIDE_OPTIONS='"'s/-g/-gdwarf-${DWARF_VERSION}/'"' ${BASE_BUILD}/bin/clang++ '$*'>>${WRAPPER}++
+echo env CCC_OVERRIDE_OPTIONS='"s/-g(lldb)?$/'-gdwarf-${DWARF_VERSION}/'"' ${BASE_BUILD}/bin/clang '$*'>>${WRAPPER}
+echo env CCC_OVERRIDE_OPTIONS='"s/-g(lldb)?$/'-gdwarf-${DWARF_VERSION}/'"' ${BASE_BUILD}/bin/clang++ '$*'>>${WRAPPER}++
 chmod u+x ${WRAPPER} ${WRAPPER}++
 
 cmake $WORKSPACE/llvm \
