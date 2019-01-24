@@ -96,7 +96,7 @@ cmake $WORKSPACE/llvm \
     -G Ninja \
     -DLLDB_TEST_C_COMPILER="${WRAPPER}" \
     -DLLDB_TEST_CXX_COMPILER="${WRAPPER}++" \
-    -DLLDB_TEST_USER_ARGS="--framework;$BASE_BUILD/bin/LLDB.framework;--executable;$BASE_BUILD/bin/lldb;--skip-category;gmodules;--arch=x86_64;--build-dir;$BUILD;-s=$LOGS_DIR;--env;TERM=vt100;" \
+    -DLLDB_TEST_USER_ARGS="--framework;$BASE_BUILD/bin/LLDB.framework;--executable;$BASE_BUILD/bin/lldb;--skip-category;gmodules;--skip-category;dsym;--arch=x86_64;--build-dir;$BUILD;-s=$LOGS_DIR;--env;TERM=vt100;" \
     -DLLVM_LIT_ARGS="--xunit-xml-output=$RESULTS_FILE -v"
 
 echo "@@@@@@"
