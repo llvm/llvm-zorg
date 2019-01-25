@@ -134,7 +134,8 @@ pipeline {
                        export DWARF_VERSION=5
                        bash ${SCRIPT_PATH}/lldb-cmake-matrix-dwarf.sh
                        '''
-                    junit 'test-dwarf5/results.xml'
+                    junit(healthScaleFactor: 0.0,
+                          testResults: 'test-dwarf5/results.xml')
                 }
             }
         }
