@@ -230,7 +230,7 @@ def get_status_targets(standard_builders, standard_categories=None):
         InformativeMailNotifier(
             fromaddr = "llvm.buildmaster@lab.llvm.org",
             sendToInterestedUsers= False,
-            extraRecipients = ["n54@gmx.com", "mgorny@gentoo.org"],
+            extraRecipients = ["n54@gmx.com", "mgorny@NetBSD.org"],
             subject="Build %(builder)s Failure",
             mode = "failing",
             builders = ["lldb-amd64-ninja-netbsd7",
