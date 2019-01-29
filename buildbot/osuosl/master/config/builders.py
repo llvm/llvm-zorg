@@ -7,7 +7,6 @@ from zorg.buildbot.builders import LLGoBuilder
 from zorg.buildbot.builders import ClangAndLLDBuilder
 from zorg.buildbot.builders import SanitizerBuilder
 from zorg.buildbot.builders import SanitizerBuilderII
-from zorg.buildbot.builders import SanitizerBuilderWindows
 from zorg.buildbot.builders import OpenMPBuilder
 from zorg.buildbot.builders import LibcxxAndAbiBuilder
 from zorg.buildbot.builders import SphinxDocsBuilder
@@ -1119,8 +1118,9 @@ def _get_sanitizer_builders():
           {'name': "sanitizer-windows",
            'slavenames' :["sanitizer-windows"],
            'builddir': "sanitizer-windows",
-           'factory': SanitizerBuilderWindows.getSanitizerWindowsBuildFactory(
-                        vs='%VS140COMNTOOLS%')},
+           'factory': AnnotatedBuilder.getAnnotatedBuildFactory(
+             script="sanitizer-windows.py",
+             depends_on_projects=["llvm", "clang", "lld", "compiler-rt"])},
 
           ## ARMv7 check-all full (compiler-rt) with CMake builder; Needs x86 for ASAN tests
           {'name': "clang-cmake-armv7-full",

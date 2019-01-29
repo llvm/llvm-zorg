@@ -231,12 +231,29 @@ class AnnotatedBuilder:
     def update_sources(self, source_dir, projects, revision, svn='svn'):
         self.report_build_step('update-sources')
         self.halt_on_failure()
+
+        # TODO: This needs to be updated to use the monorepo.
+        # Where to check the project out relative to an LLVM checkout.
+        checkout_locations = {
+            'llvm': '',
+            'clang': 'tools/clang',
+            'lld': 'tools/lld',
+            'compiler-rt': 'projects/compiler-rt',
+            }
+        # If the project is named differently in svn, put it here.
+        svn_locations = { 'clang': 'cfe' }
+        svn_uri_pattern = 'https://llvm.org/svn/llvm-project/%s/trunk'
+
         try:
-            for (project, path, uri) in projects:
-                if path is None:
+            for project in projects:
+                # TODO: Fail the build and report an error if we don't know the
+                # checkout location.
+                path = checkout_locations[project]
+                if not path:
                     path = source_dir
                 elif not os.path.isabs(path):
                     path = pjoin(source_dir, path)
+                uri = svn_uri_pattern % (svn_locations.get(project, project),)
                 util.report("Updating %s to %s at %s from %s" %
                             (project, revision, util.shquote(path), uri))
                 if os.path.exists(pjoin(path, '.svn')):
@@ -252,6 +269,7 @@ class AnnotatedBuilder:
     def run_steps(
         self,
         stages=1,
+        projects=None,
         check_targets=None,
         check_stages=None,
         extra_cmake_args=None,
@@ -263,6 +281,8 @@ class AnnotatedBuilder:
         jobs=None):
         """
         stages: number of stages to run (default: 1)
+        projects: which subprojects to check out from SVN
+            llvm must be first in the list (default: ['llvm', 'clang', 'lld'])
         check_targets: targets to run during the check phase (default: ['check-all'])
         check_stages: stages for which to run the check phase
             (array of bool, default: all True)
@@ -290,6 +310,8 @@ class AnnotatedBuilder:
             revision = os.environ.get('BUILDBOT_REVISION')
         if stage1_extra_cmake_args is None:
             stage1_extra_cmake_args = extra_cmake_args
+        if projects is None:
+            projects = ['llvm', 'clang', 'lld']
 
         c_compiler, cxx_compiler = self.compiler_binaries(compiler)
 
@@ -323,14 +345,7 @@ class AnnotatedBuilder:
         cwd = os.getcwd()
         source_dir = pjoin(cwd, 'llvm.src')
         build_dir = pjoin(cwd, 'build')
-        svn_uri_pattern = 'https://llvm.org/svn/llvm-project/%s/trunk'
-        projects = []
-        projects.append(('llvm', None, svn_uri_pattern % ('llvm',)))
-        projects.append(
-            ('clang', pjoin('tools', 'clang'), svn_uri_pattern % ('cfe',)))
         cmake_args = ['-GNinja']
-        for p in ['lld']:
-            projects.append((p, pjoin('tools', p), svn_uri_pattern % (p,)))
 
         self.update_sources(source_dir, projects, revision)
 
@@ -363,9 +378,9 @@ def get_vcvars(vs_tools, arch):
     if not arch:
         # First check the wow64 processor architecture, since python is probably
         # 32-bit, then fall back to PROCESSOR_ARCHITECTURE.
-        arch = os.environ['PROCESSOR_ARCHITEW6432'].lower()
+        arch = os.environ.get('PROCESSOR_ARCHITEW6432', '').lower()
         if not arch:
-            arch = os.environ['PROCESSOR_ARCHITECTURE'].lower()
+            arch = os.environ.get('PROCESSOR_ARCHITECTURE', '').lower()
     else:
         arch = arch.lower()
 
