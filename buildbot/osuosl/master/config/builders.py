@@ -1007,6 +1007,7 @@ def _get_lld_builders():
          'slavenames' :["as-bldslv4"],
          'builddir':"lld-x86_64-win7",
          'factory': LLDBuilder.getLLDWinBuildFactory(
+                        vs="autodetect",
                         extra_configure_args = [
                           '-DLLVM_ENABLE_WERROR=OFF'
                         ]),
