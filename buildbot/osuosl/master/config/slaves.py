@@ -113,10 +113,10 @@ def get_build_slaves():
         create_slave("ppc64le-clang-lnt-test", properties={'jobs': 8}, max_builds=1),
         create_slave("ppc64le-clang-multistage-test", properties={'jobs': 8}, max_builds=1),
         create_slave("ppc64le-sanitizer", properties={'jobs': 4}, max_builds=1),
+        create_slave("ppc64le-lld-multistage-test", properties={'jobs': 40}, max_builds=1),
         
         # POWER 8 PowerPC little endian (powerpc64le) with NVIDIA GPUs
         create_slave("ppc64le-nvidia-K40", properties={'jobs': 4}, max_builds=1),
-
         # POWER 8 PowerPC little endian (powerpc64le) with NVIDIA Pascal GPUs
         create_slave("ppc64le-nvidia-P100", properties={'jobs': 4}, max_builds=1),
 

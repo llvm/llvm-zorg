@@ -1054,6 +1054,16 @@ def _get_lld_builders():
          'factory': LLDPerformanceTestsuite.getFactory(targets=["bin/lld"]),
          'category'   : 'lld'},
 
+        {'name' : "ppc64le-lld-multistage-test",
+         'slavenames' : ["ppc64le-lld-multistage-test"],
+         'builddir' : "ppc64le-lld-multistage-test",
+         'factory': UnifiedTreeBuilder.getCmakeWithNinjaMultistageBuildFactory(
+                                    extra_configure_args=[
+                                        '-DLLVM_ENABLE_ASSERTIONS=ON',
+                                        '-DBUILD_SHARED_LIBS=ON'],
+                                    depends_on_projects=['llvm', 'clang', 'lld']),
+         'category'   : 'lld'},
+
         ]
 
 # llgo builders.
