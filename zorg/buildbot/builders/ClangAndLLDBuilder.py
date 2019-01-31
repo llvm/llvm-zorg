@@ -5,9 +5,12 @@ import buildbot.process.factory
 from buildbot.steps.source import SVN
 from buildbot.steps.shell import ShellCommand
 from buildbot.steps.shell import WarningCountingShellCommand
-from buildbot.process.properties import WithProperties
+from buildbot.steps.shell import SetProperty
+from buildbot.process.properties import WithProperties, Property
 from zorg.buildbot.commands.LitTestCommand import LitTestCommand
 from zorg.buildbot.commands.NinjaCommand import NinjaCommand
+
+import zorg.buildbot.builders.Util as builders_util
 
 def getClangAndLLDBuildFactory(
            clean=True,
@@ -18,6 +21,11 @@ def getClangAndLLDBuildFactory(
            buildWithSanitizerOptions=None,
            triple=None,
            isMSVC=False,
+           # Choose VS tools to build with. For example,
+           # "autodetect" to find the latest installed Visual Studio, or
+           # %VS140COMNTOOLS% to selects the 2015 toolchain.
+           vs=None,
+           target_arch=None,
            prefixCommand=["nice", "-n", "10"], # For backward compatibility.
            extraLitArgs=None
     ):
@@ -30,6 +38,7 @@ def getClangAndLLDBuildFactory(
         'TERM' : 'dumb' # Make sure Clang doesn't use color escape sequences.
                  }
     if env is not None:
+        assert not (isMSVC and vs), "Can't have custom builder env vars with VS"
         # Overwrite pre-set items with the given ones, so user can set anything.
         merged_env.update(env)
 
@@ -131,6 +140,13 @@ def getClangAndLLDBuildFactory(
        "-GNinja",
         "../%s" % llvm_srcdir
     ]
+
+    if isMSVC and vs:
+        # Set up VS environment, if requested.
+        f.addStep(SetProperty(
+            command=builders_util.getVisualStudioEnvironment(vs, target_arch),
+            extract_fn=builders_util.extractSlaveEnvironment))
+        merged_env = Property('slave_env')
 
     # Note: ShellCommand does not pass the params with special symbols right.
     # The " ".join is a workaround for this bug.
