@@ -42,6 +42,7 @@ def main(argv):
     ]
     extra_cmake_args = stage1_extra_cmake_args + [
         '-DLLVM_USE_LINKER=lld',
+        '-DLLVM_TEMPORARILY_ALLOW_OLD_TOOLCHAIN=ON',
     ]
     check_targets = ['check-asan', 'check-asan-dynamic', 'check-sanitizer',
                      'check-cfi']
