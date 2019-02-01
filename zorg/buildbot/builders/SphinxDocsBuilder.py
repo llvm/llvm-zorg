@@ -80,7 +80,8 @@ def getSphinxDocsBuildFactory(
                      '-G', 'Ninja',
                      '-DLLVM_ENABLE_SPHINX:BOOL=ON',
                      '-DSPHINX_OUTPUT_HTML:BOOL=ON',
-                     '-DSPHINX_OUTPUT_MAN:BOOL=ON'
+                     '-DSPHINX_OUTPUT_MAN:BOOL=ON',
+                     '-DLLVM_TEMPORARILY_ALLOW_OLD_TOOLCHAIN=ON',
                    ]
     f.addStep(ShellCommand(name="cmake-configure",
                                command=cmakeCommand,
