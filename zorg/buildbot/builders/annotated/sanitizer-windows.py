@@ -45,7 +45,7 @@ def main(argv):
         '-DLLVM_USE_LINKER=lld',
     ]
     check_targets = ['check-asan', 'check-asan-dynamic', 'check-sanitizer',
-                     'check-ubsan', 'check-cfi']
+                     'check-ubsan', 'check-fuzzer', 'check-cfi']
 
     # These arguments are a bit misleading, they really mean use cl.exe for
     # stage1 instead of GCC.
