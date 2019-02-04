@@ -813,7 +813,7 @@ def _get_polly_builders():
         {'name': "polly-amd64-linux",
          'slavenames':["grosser1"],
          'builddir':"polly-amd64-linux",
-         'factory': PollyBuilder.getPollyBuildFactory()},
+         'factory': PollyBuilder.getPollyBuildFactory(extraCmakeArgs=['-DLLVM_TEMPORARILY_ALLOW_OLD_TOOLCHAIN=ON'])},
 
         {'name': "perf-x86_64-penryn-O3-polly-fast",
          'slavenames':["pollyperf2"],
@@ -880,6 +880,7 @@ def _get_polly_builders():
                                 "-DLLVM_DEFAULT_TARGET_TRIPLE=arm-linux-gnueabi",
                                 "-DLLVM_TARGET_ARCH=arm-linux-gnueabi",
                                 "-DLLVM_ENABLE_ASSERTIONS=True",
+                                '-DLLVM_TEMPORARILY_ALLOW_OLD_TOOLCHAIN=ON',
                                 "-DCMAKE_C_COMPILER:FILEPATH=/local/clang+llvm-3.7.1-x86_64-linux-gnu-ubuntu-14.04/bin/clang",
                                 "-DCMAKE_CXX_COMPILER:FILEPATH=/local/clang+llvm-3.7.1-x86_64-linux-gnu-ubuntu-14.04/bin/clang++"])}
        ]
