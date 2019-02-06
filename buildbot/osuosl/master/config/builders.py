@@ -1639,6 +1639,13 @@ def _get_documentation_builders():
                'category' : 'lld'
              },
              {
+               'name':"lldb-sphinx-docs",
+               'slavenames':["gribozavr3"],
+               'builddir':"lldb-sphinx-docs",
+               'factory': SphinxDocsBuilder.getSphinxDocsBuildFactory(lldb_html=True),
+               'category' : 'lldb'
+             },
+             {
                'name':"libcxx-sphinx-docs",
                'slavenames':["gribozavr3"],
                'builddir':"libcxx-sphinx-docs",
