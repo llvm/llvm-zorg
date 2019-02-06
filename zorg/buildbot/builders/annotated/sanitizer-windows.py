@@ -39,7 +39,6 @@ def main(argv):
         '-DLLVM_ENABLE_PDB=ON',
         '-DLLVM_ENABLE_ASSERTIONS=ON',
         '-DLLVM_TARGETS_TO_BUILD=X86',
-        '-DLLVM_TEMPORARILY_ALLOW_OLD_TOOLCHAIN=ON',
     ]
     extra_cmake_args = stage1_extra_cmake_args + [
         '-DLLVM_USE_LINKER=lld',
