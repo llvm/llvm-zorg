@@ -12,7 +12,8 @@ def getSphinxDocsBuildFactory(
         clang_tools_html  = False, # Build Clang Extra Tools HTML documentation
         lld_html          = False, # Build LLD HTML documentation
         libcxx_html       = False, # Build Libc++ HTML documentation
-        libunwind_html    = False  # Build libunwind HTML documentation
+        libunwind_html    = False, # Build libunwind HTML documentation
+        lldb_html         = False  # Build LLDB HTML documentation
         ):
 
     f = buildbot.process.factory.BuildFactory()
@@ -22,6 +23,7 @@ def getSphinxDocsBuildFactory(
     clang_srcdir = llvm_srcdir + '/tools/clang'
     clang_tools_srcdir = llvm_srcdir + '/tools/clang/tools/extra'
     lld_srcdir = llvm_srcdir + '/tools/lld'
+    lldb_srcdir = llvm_srcdir + '/tools/lldb'
     libcxx_srcdir = llvm_srcdir + '/projects/libcxx'
     libcxxabi_srcdir = llvm_srcdir + '/projects/libcxxabi'
     libunwind_srcdir = llvm_srcdir + '/projects/libunwind'
@@ -54,6 +56,13 @@ def getSphinxDocsBuildFactory(
                       baseURL='http://llvm.org/svn/llvm-project/lld/',
                       defaultBranch='trunk',
                       workdir=lld_srcdir))
+
+    if lldb_html:
+        f.addStep(SVN(name='svn-lldb',
+                      mode='update',
+                      baseURL='http://llvm.org/svn/llvm-project/lldb/',
+                      defaultBranch='trunk',
+                      workdir=lldb_srcdir))
 
     if libcxx_html:
         f.addStep(SVN(name='svn-libcxx',
@@ -126,6 +135,14 @@ def getSphinxDocsBuildFactory(
                                description=["Build LLD Sphinx HTML documentation"],
                                workdir=llvm_objdir,
                                targets=['docs-lld-html']
+                              ))
+
+    if lldb_html:
+        f.addStep(NinjaCommand(name="docs-lldb-html",
+                               haltOnFailure=True,
+                               description=["Build LLDB Sphinx HTML documentation"],
+                               workdir=llvm_objdir,
+                               targets=['docs-lldb-html']
                               ))
 
     if libcxx_html:
