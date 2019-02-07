@@ -38,6 +38,20 @@ class AnnotatedBuilder:
         util.report('@@@BUILD_STEP %s@@@' % (step,))
 
     def report_step_exception(self, exn=None):
+        # Don't print a stack trace if a command ('ninja check') exited with a
+        # non-zero exit code. That is non-exceptional expected behavior, so just
+        # print the return code and fail the step.
+        if exn and isinstance(exn, subprocess.CalledProcessError):
+            cmd = ""
+            try:
+                cmd = repr(exn.cmd[0])
+            except:
+                pass
+            util.report("Command " + cmd + " failed with return code " +
+                        str(exn.returncode))
+            util.report('@@@STEP_FAILURE@@@')
+            return
+
         if exn:
             util.report(str(exn))
         util.report('@@@STEP_EXCEPTION@@@')
@@ -244,27 +258,23 @@ class AnnotatedBuilder:
         svn_locations = { 'clang': 'cfe' }
         svn_uri_pattern = 'https://llvm.org/svn/llvm-project/%s/trunk'
 
-        try:
-            for project in projects:
-                # TODO: Fail the build and report an error if we don't know the
-                # checkout location.
-                path = checkout_locations[project]
-                if not path:
-                    path = source_dir
-                elif not os.path.isabs(path):
-                    path = pjoin(source_dir, path)
-                uri = svn_uri_pattern % (svn_locations.get(project, project),)
-                util.report("Updating %s to %s at %s from %s" %
-                            (project, revision, util.shquote(path), uri))
-                if os.path.exists(pjoin(path, '.svn')):
-                    cmd = [svn, 'up', '-r', revision]
-                else:
-                    util.mkdirp(path)
-                    cmd = [svn, 'co', '-r', revision, uri, '.']
-                util.report_run_cmd(cmd, cwd=path)
-        except Exception as e:
-            self.report_step_exception(e)
-            raise
+        for project in projects:
+            # TODO: Fail the build and report an error if we don't know the
+            # checkout location.
+            path = checkout_locations[project]
+            if not path:
+                path = source_dir
+            elif not os.path.isabs(path):
+                path = pjoin(source_dir, path)
+            uri = svn_uri_pattern % (svn_locations.get(project, project),)
+            util.report("Updating %s to %s at %s from %s" %
+                        (project, revision, util.shquote(path), uri))
+            if os.path.exists(pjoin(path, '.svn')):
+                cmd = [svn, 'up', '-r', revision]
+            else:
+                util.mkdirp(path)
+                cmd = [svn, 'co', '-r', revision, uri, '.']
+            util.report_run_cmd(cmd, cwd=path)
 
     def run_steps(
         self,
@@ -347,22 +357,26 @@ class AnnotatedBuilder:
         build_dir = pjoin(cwd, 'build')
         cmake_args = ['-GNinja']
 
-        self.update_sources(source_dir, projects, revision)
+        try:
+            self.update_sources(source_dir, projects, revision)
 
-        # Build and check stages.
-        self.build_and_check_stages(
-            stages,
-            build_dir,
-            source_dir,
-            cmake_args,
-            extra_cmake_args,
-            c_compiler,
-            cxx_compiler,
-            linker,
-            check_stages,
-            check_targets,
-            stage1_extra_cmake_args,
-            jobs)
+            # Build and check stages.
+            self.build_and_check_stages(
+                stages,
+                build_dir,
+                source_dir,
+                cmake_args,
+                extra_cmake_args,
+                c_compiler,
+                cxx_compiler,
+                linker,
+                check_stages,
+                check_targets,
+                stage1_extra_cmake_args,
+                jobs)
+        except Exception as e:
+            self.report_step_exception(e)
+            return 1
 
         return 0
 
