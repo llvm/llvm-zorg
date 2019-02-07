@@ -91,6 +91,7 @@ def getSphinxDocsBuildFactory(
                      '-DSPHINX_OUTPUT_HTML:BOOL=ON',
                      '-DSPHINX_OUTPUT_MAN:BOOL=ON',
                      '-DLLVM_TEMPORARILY_ALLOW_OLD_TOOLCHAIN=ON',
+                     '-DLLDB_INCLUDE_TESTS=OFF',
                    ]
     f.addStep(ShellCommand(name="cmake-configure",
                                command=cmakeCommand,
