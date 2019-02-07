@@ -925,11 +925,13 @@ def _get_rev_iter_builders():
                 make='ninja',
                 jobs=16,
                 checkAll=True,
+                env={'LD_LIBRARY_PATH': '/local/clang+llvm-6.0.1-x86_64-linux-gnu-ubuntu-14.04/lib'},
                 extraCmakeArgs=["-G", "Ninja",
                                 "-DLLVM_REVERSE_ITERATION:BOOL=ON",
                                 "-DLLVM_ENABLE_ASSERTIONS=True",
-                                "-DCMAKE_C_COMPILER:FILEPATH=/local/clang+llvm-3.7.1-x86_64-linux-gnu-ubuntu-14.04/bin/clang",
-                                "-DCMAKE_CXX_COMPILER:FILEPATH=/local/clang+llvm-3.7.1-x86_64-linux-gnu-ubuntu-14.04/bin/clang++"])}
+                                "-DLLVM_ENABLE_LIBCXX:BOOL=ON",
+                                "-DCMAKE_C_COMPILER:FILEPATH=/local/clang+llvm-6.0.1-x86_64-linux-gnu-ubuntu-14.04/bin/clang",
+                                "-DCMAKE_CXX_COMPILER:FILEPATH=/local/clang+llvm-6.0.1-x86_64-linux-gnu-ubuntu-14.04/bin/clang++"])}
     ]
 
 # LLDB builders.
