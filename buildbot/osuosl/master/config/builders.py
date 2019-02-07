@@ -875,14 +875,15 @@ def _get_polly_builders():
                 install=True,
                 make='ninja',
                 jobs=16,
+                env={'LD_LIBRARY_PATH': '/local/clang+llvm-6.0.1-x86_64-linux-gnu-ubuntu-14.04/lib'},
                 extraCmakeArgs=["-G", "Ninja",
                                 "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'",
                                 "-DLLVM_DEFAULT_TARGET_TRIPLE=arm-linux-gnueabi",
                                 "-DLLVM_TARGET_ARCH=arm-linux-gnueabi",
                                 "-DLLVM_ENABLE_ASSERTIONS=True",
-                                '-DLLVM_TEMPORARILY_ALLOW_OLD_TOOLCHAIN=ON',
-                                "-DCMAKE_C_COMPILER:FILEPATH=/local/clang+llvm-3.7.1-x86_64-linux-gnu-ubuntu-14.04/bin/clang",
-                                "-DCMAKE_CXX_COMPILER:FILEPATH=/local/clang+llvm-3.7.1-x86_64-linux-gnu-ubuntu-14.04/bin/clang++"])}
+                                "-DLLVM_ENABLE_LIBCXX:BOOL=ON",
+                                "-DCMAKE_C_COMPILER:FILEPATH=/local/clang+llvm-6.0.1-x86_64-linux-gnu-ubuntu-14.04/bin/clang",
+                                "-DCMAKE_CXX_COMPILER:FILEPATH=/local/clang+llvm-6.0.1-x86_64-linux-gnu-ubuntu-14.04/bin/clang++"])}
        ]
 
 # AOSP builders.
@@ -899,14 +900,15 @@ def _get_aosp_builders():
                                   "-DLLVM_DEFAULT_TARGET_TRIPLE=arm-linux-androideabi",
                                   "-DLLVM_TARGET_ARCH=arm-linux-androideabi",
                                   "-DLLVM_ENABLE_ASSERTIONS=True",
-                                  "-DCMAKE_C_COMPILER:FILEPATH=/local/clang+llvm-3.7.1-x86_64-linux-gnu-ubuntu-14.04/bin/clang",
-                                  "-DCMAKE_CXX_COMPILER:FILEPATH=/local/clang+llvm-3.7.1-x86_64-linux-gnu-ubuntu-14.04/bin/clang++"],
+                                  "-DLLVM_ENABLE_LIBCXX:BOOL=ON",
+                                  "-DCMAKE_C_COMPILER:FILEPATH=/local/clang+llvm-6.0.1-x86_64-linux-gnu-ubuntu-14.04/bin/clang",
+                                  "-DCMAKE_CXX_COMPILER:FILEPATH=/local/clang+llvm-6.0.1-x86_64-linux-gnu-ubuntu-14.04/bin/clang++"],
                 timeout=240,
                 target_clang=None,
                 target_flags="-Wno-error -O3 -mllvm -polly -mllvm -polly-position=before-vectorizer -mllvm -polly-process-unprofitable",
                 jobs=8,
                 extra_make_args=None,
-                env={},
+                env={'LD_LIBRARY_PATH': '/local/clang+llvm-6.0.1-x86_64-linux-gnu-ubuntu-14.04/lib'},
                 clean=False,
                 sync=False,
                 patch=None)}
