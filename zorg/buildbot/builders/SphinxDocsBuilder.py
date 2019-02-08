@@ -36,7 +36,7 @@ def getSphinxDocsBuildFactory(
                   defaultBranch='trunk',
                   workdir=llvm_srcdir))
 
-    if clang_html or clang_tools_html:
+    if clang_html or clang_tools_html or lld_html:
         f.addStep(SVN(name='svn-clang',
                       mode='update',
                       baseURL='http://llvm.org/svn/llvm-project/cfe/',
