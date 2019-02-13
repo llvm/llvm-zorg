@@ -99,7 +99,7 @@ def getToolchainBuildFactory(
     # Some options are required for this stage no matter what.
     CmakeCommand.applyRequiredOptions(cmake_options, [
         ("-G",                      "Ninja"),
-        ("-DLLVM_ENABLE_PROJECTS=", "clang;lld"),
+        ("-DLLVM_ENABLE_PROJECTS=", "clang;clang-tools-extra;lld"),
         ("-DLLVM_ENABLE_RUNTIMES=", "compiler-rt;libcxx;libcxxabi;libunwind"),
         ])
 
