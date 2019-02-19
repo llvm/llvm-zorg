@@ -186,6 +186,7 @@ cmake -L $LLDB_SRC \
     -DLLVM_DIR=${WORKSPACE}/llvm-buildtree/lib/cmake/llvm \
     -DClang_DIR=${WORKSPACE}/llvm-buildtree/lib/cmake/clang \
     -DLLDB_BUILD_FRAMEWORK=On \
+    -DPYTHON_EXECUTABLE=/usr/bin/python2.7 \
     -G Ninja
 echo "@@@@@@"
 
@@ -233,6 +234,7 @@ cmake -L $LLDB_SRC \
     -DLLVM_DIR=${DEST}/lib/cmake/llvm \
     -DClang_DIR=${DEST}/lib/cmake/clang \
     -DLLDB_BUILD_FRAMEWORK=On \
+    -DPYTHON_EXECUTABLE=/usr/bin/python2.7 \
     -G Ninja
 echo "@@@@@@"
 
