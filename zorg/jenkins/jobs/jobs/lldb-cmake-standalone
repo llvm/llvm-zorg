@@ -139,6 +139,10 @@ cmake $LLVM_SRC \
     -DLLVM_TARGETS_TO_BUILD='X86;ARM;AArch64' \
     -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
     -DCMAKE_INSTALL_PREFIX="$DEST" \
+    -DPYTHON_EXECUTABLE=/usr/bin/python2.7 \
+    -DPYTHON_LIBRARY=/System/Library/Frameworks/Python.framework/Versions/2.7/lib/libpython2.7.dylib \
+    -DPYTHON_INCLUDE_DIR=/System/Library/Frameworks/Python.framework/Versions/2.7/include/python2.7 \
+    -DPYTHON_LIBRARY_DEBUG=/System/Library/Frameworks/Python.framework/Versions/2.7/lib/libpython2.7.dylib \
     -G Ninja
 echo "@@@@@@"
 
