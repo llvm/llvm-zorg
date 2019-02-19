@@ -45,17 +45,17 @@ def cleanSVNSourceTree(f, srcdir='llvm'):
                            workdir='%s' % srcdir))
     return f
 
-# CMake Windows builds
-def getLLDBWindowsCMakeBuildFactory(
+# CMake builds
+def getLLDBCMakeBuildFactory(
             clean=False,
             cmake='cmake',
             jobs="%(jobs)s",
 
             # Source directory containing a built python
-            python_source_dir=r'C:/Python35',
+            python_source_dir=None,
 
             # Default values for VS devenv and build configuration
-            vs=r"""%VS140COMNTOOLS%""",
+            vs=None,
             config='Release',
             target_arch='x86',
 
@@ -67,9 +67,10 @@ def getLLDBWindowsCMakeBuildFactory(
     f = buildbot.process.factory.BuildFactory()
 
     # Determine Slave Environment and Set MSVC environment.
-    f.addStep(SetProperty(
-        command=getVisualStudioEnvironment(vs, target_arch),
-        extract_fn=extractSlaveEnvironment))
+    if vs:
+        f.addStep(SetProperty(
+            command=getVisualStudioEnvironment(vs, target_arch),
+            extract_fn=extractSlaveEnvironment))
 
     f = getLLDBSource(f,'llvm')
 
@@ -104,9 +105,10 @@ def getLLDBWindowsCMakeBuildFactory(
     cmake_cmd = [
         "cmake", "-G", "Ninja", "../llvm",
         "-DCMAKE_BUILD_TYPE=" + config,
-        "-DPYTHON_HOME=" + python_source_dir,
         "-DCMAKE_INSTALL_PREFIX=../install"
         ]
+    if python_source_dir:
+        cmake_cmd.append("-DPYTHON_HOME=" + python_source_dir)
     if extra_cmake_args:
         cmake_cmd += extra_cmake_args
     # Note: ShellCommand does not pass the params with special symbols right.

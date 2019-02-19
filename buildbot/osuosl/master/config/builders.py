@@ -940,12 +940,18 @@ def _get_lldb_builders():
         {'name': "lldb-x86-windows-msvc2015",
          'slavenames': ["zturner-win2008"],
          'builddir': "lldb-windows-x86",
-         'factory': LLDBBuilder.getLLDBWindowsCMakeBuildFactory(test=False)},
+         'factory': LLDBBuilder.getLLDBCMakeBuildFactory(
+                    test=False,
+                    python_source_dir=r'C:/Python35',
+                    vs=r"""%VS140COMNTOOLS%""")},
         # Disable the builder till we fix the cmake configuration
         #{'name': "lldb-x86-win7-msvc",
         #'slavenames': ["hexagon-build-01"],
         #'builddir': "builddir/lldb-win7-msvc",
-        #'factory': LLDBBuilder.getLLDBWindowsCMakeBuildFactory(config='Debug')},
+        #'factory': LLDBBuilder.getLLDBCMakeBuildFactory(
+        #           config='Debug',
+        #           python_source_dir=r'C:/Python35',
+        #           vs=r"""%VS140COMNTOOLS%""")},
         {'name': "lldb-x86_64-ubuntu-14.04-buildserver",
          'slavenames': ["lldb-linux-android-buildserver"],
          'builddir': "lldb-android-buildserver",
@@ -978,20 +984,20 @@ def _get_lldb_builders():
          'factory': LLDBBuilder.getLLDBScriptCommandsFactory(
                     downloadBinary=False,
                     runTest=False)},
-        {'name': "lldb-x86_64-fedora-28-cmake",
-         'slavenames': ["lldb-x86_64-fedora-28-cmake"],
-         'builddir': "lldb-x86_64-fedora-28-cmake",
+        {'name': "lldb-x86_64-fedora",
+         'slavenames': ["lldb-x86_64-fedora"],
+         'builddir': "lldb-x86_64-fedora",
          'category' : 'lldb',
-         'factory': LLDBBuilder.getLLDBScriptCommandsFactory(
-                    downloadBinary=False,
-                    runTest=True,
-                    extra_cmake_args=["-DLLVM_ENABLE_ASSERTIONS=True",
-                                      "-DLLVM_USE_LINKER=gold"])},
+         'factory': LLDBBuilder.getLLDBCMakeBuildFactory(
+                    clean=True,
+                    test=True,
+                    extra_cmake_args=['-DLLVM_ENABLE_ASSERTIONS=True',
+                                      '-DLLVM_USE_LINKER=gold'])},
         {'name': "lldb-x64-windows-ninja",
          'slavenames': ["win-py3-buildbot"],
          'builddir': "lldb-x64-windows-ninja",
          'category' : 'lldb',
-         'factory': LLDBBuilder.getLLDBWindowsCMakeBuildFactory(
+         'factory': LLDBBuilder.getLLDBCMakeBuildFactory(
                     clean=True,
                     python_source_dir=r'"C:\Program Files (x86)\Microsoft Visual Studio\Shared\Python36_64"',
                     target_arch='x64',

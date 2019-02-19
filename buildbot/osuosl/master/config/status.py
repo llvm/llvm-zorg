@@ -272,4 +272,12 @@ def get_status_targets(standard_builders, standard_categories=None):
             mode = "failing",
             builders = ["fuchsia-x86_64-linux"],
             addLogs=False),
+        InformativeMailNotifier(
+            fromaddr = "llvm.buildmaster@lab.llvm.org",
+            sendToInterestedUsers = True,
+            extraRecipients = ["jan.kratochvil@redhat.com"],
+            subject="Build %(builder)s Failure",
+            mode = "failing",
+            builders = ["lldb-x86_64-fedora"],
+            addLogs=False),
         ]
