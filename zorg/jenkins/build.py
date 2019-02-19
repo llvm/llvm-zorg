@@ -1114,6 +1114,8 @@ def main():
             derive_llvm()
         elif args.build_type == 'derive-llvm+clang':
             derive_llvm(['llvm', 'clang'])
+        elif args.build_type == 'derive-llvm+clang+libcxx':
+            derive_llvm(['llvm', 'clang', 'libcxx'])
         elif args.build_type == 'derive-llvm':
             derive_llvm(['llvm'])
         elif args.build_type == 'derive-lldb':

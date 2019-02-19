@@ -1,0 +1,270 @@
+#!/usr/bin/env groovy
+pipeline {
+    agent {label 'green-dragon-23'}
+    stages {
+        stage('Subversion Checkout') {
+            steps {
+                timeout(activity: true, time: 30) {
+                    checkout([$class: 'SubversionSCM',
+                              locations: [
+                                  [local: 'llvm.src',
+                                   remote: 'http://llvm.org/svn/llvm-project/llvm/trunk'],
+                                  [local: 'lldb.src',
+                                   remote: 'http://llvm.org/svn/llvm-project/lldb/trunk'],
+                                  [local: 'clang.src',
+                                   remote: 'http://llvm.org/svn/llvm-project/cfe/trunk'],
+                                  [cancelProcessOnExternalsFail: true,
+                                   credentialsId: '', depthOption: 'infinity',
+                                   ignoreExternalsOption: true, local: 'libcxx.src',
+                                   remote: 'http://llvm.org/svn/llvm-project/libcxx/trunk']],
+                              quietOperation: false,
+                              workspaceUpdater: [$class: 'UpdateUpdater']])
+                }
+            }
+        }
+        stage('Setup LLDB') {
+            steps {
+                timeout(activity: true, time: 30) {
+                    sh '''
+                       set -u
+                       export
+                       python $SCRIPT_PATH/build.py fetch
+                       '''
+                    sh '''
+set -eux
+
+# Avoid the python in /usr/local/bin.
+PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/jbin
+
+if [ -z "WORKSPACE" ]; then
+    echo "WORKSPACE is not set."
+    exit 1
+fi
+
+SRC="$WORKSPACE"
+BUILD="$WORKSPACE/lldb-build"
+TEST="$WORKSPACE/test"
+RESULTS="$WORKSPACE/results"
+DEST="$RESULTS/llvm"
+
+LLVM_SRC="$SRC/llvm"
+LLDB_SRC="$SRC/llvm/tools/lldb"
+TESTCASES_DIR="$LLDB_SRC/test/testcases"
+LOGS_DIR="$TEST/logs"
+RESULTS_FILE="$TEST/results.xml"
+
+CC="$WORKSPACE/host-compiler/bin/clang"
+CXX="$WORKSPACE/host-compiler/bin/clang++"
+
+TOOLS="clang lldb"
+PROJECTS=""
+
+
+echo "@@@ Clean @@@"
+
+CLEAN_DIRS="$TEST $DEST $LOGS_DIR $RESULTS $BUILD/lldb-test-build.noindex"
+
+if [ "$CLEAN" = "true" ]; then
+  CLEAN_DIRS="$BUILD $CLEAN_DIRS"
+fi
+
+for dir in $CLEAN_DIRS; do
+  if [ -d $dir ]; then
+    rm -rf $dir
+  fi
+  mkdir -p $dir
+done
+
+MODULE_CACHE=$(xcrun clang -fmodules -x c - -o /dev/null '-###' 2>&1 | grep -Eo '\\-fmodules-cache-path=[^"]+' | cut -d'=' -f2)
+if [ -d $MODULE_CACHE ]; then
+  rm -rf $MODULE_CACHE
+fi
+rm -rf $BUILD/*/module.cache
+
+rm -f $WORKSPACE/*.tgz
+
+echo "@@@@@@"
+
+mkdir -p $BUILD
+cd $BUILD
+
+echo "@@@ Setup @@@"
+
+{ /usr/local/bin/lldbsign unlock; } 2>/dev/null
+
+echo "@@@@@@"
+
+set +x
+echo "@@@ Environment @@@"
+env | sort
+echo "@@@@@@"
+set -eux
+
+python $SCRIPT_PATH/build.py derive-llvm+clang+libcxx
+rsync -auvh --delete --exclude=.svn/ ${WORKSPACE}/lldb.src/ ${WORKSPACE}/lldb
+
+                       '''
+                }
+            }
+        }
+        stage('Build LLVM, Clang, libcxx') {
+            steps {
+                timeout(activity: true, time: 30) {
+                    sh '''
+set -eux
+
+# Avoid the python in /usr/local/bin.
+PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/jbin
+
+if [ -z "WORKSPACE" ]; then
+    echo "WORKSPACE is not set."
+    exit 1
+fi
+
+SRC="$WORKSPACE"
+TEST="$WORKSPACE/test"
+DEST="$WORKSPACE/llvm-install"
+LLVM_SRC="$SRC/llvm"
+
+mkdir -p llvm-buildtree
+cd llvm-buildtree
+
+echo "@@@ CMake @@@"
+cmake $LLVM_SRC \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DLLVM_INSTALL_UTILS=ON \
+    -DLLVM_ENABLE_ASSERTIONS=On \
+    -DLLVM_ENABLE_MODULES=On \
+    -DLLVM_VERSION_PATCH=99 \
+    -DLLVM_TARGETS_TO_BUILD='X86;ARM;AArch64' \
+    -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+    -DCMAKE_INSTALL_PREFIX="$DEST" \
+    -G Ninja
+echo "@@@@@@"
+
+echo "@@@ Compile @@@"
+ninja
+echo "@@@@@@"
+
+                       '''
+                }
+            }
+        }
+        stage('Build LLDB against buildtree') {
+            steps {
+                timeout(activity: true, time: 30) {
+                    sh '''
+set -eux
+
+
+# Avoid the python in /usr/local/bin.
+PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/jbin
+
+if [ -z "WORKSPACE" ]; then
+    echo "WORKSPACE is not set."
+    exit 1
+fi
+
+SRC="$WORKSPACE"
+BUILD="$WORKSPACE/lldb-against-buildtree"
+TEST="$WORKSPACE/test"
+DEST="$WORKSPACE/lldb-install"
+LLDB_SRC="$SRC/lldb"
+
+mkdir -p $BUILD
+cd $BUILD
+
+echo "@@@ CMake @@@"
+cmake $LLDB_SRC \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DLLVM_ENABLE_ASSERTIONS=On \
+    -DLLVM_ENABLE_MODULES=On \
+    -DLLVM_VERSION_PATCH=99 \
+    -DLLVM_TARGETS_TO_BUILD='X86;ARM;AArch64' \
+    -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+    -DCMAKE_INSTALL_PREFIX="$DEST" \
+    -DLLVM_DIR=${WORKSPACE}/llvm-buildtree/lib/cmake/llvm \
+    -DCLANG_DIR=${WORKSPACE}/llvm-buildtree/lib/cmake/clang \
+    -DLLDB_BUILD_FRAMEWORK=On \
+    -G Ninja
+echo "@@@@@@"
+
+echo "@@@ Compile @@@"
+ninja
+echo "@@@@@@"
+
+                       '''
+                }
+            }
+        }
+        stage('Build LLDB against installtree') {
+            steps {
+                timeout(activity: true, time: 30) {
+                    sh '''
+set -eux
+
+# Avoid the python in /usr/local/bin.
+PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/jbin
+
+if [ -z "WORKSPACE" ]; then
+    echo "WORKSPACE is not set."
+    exit 1
+fi
+
+SRC="$WORKSPACE"
+BUILD="$WORKSPACE/lldb-build"
+TEST="$WORKSPACE/test"
+DEST="$WORKSPACE/lldb-install"
+LLDB_SRC="$SRC/lldb"
+
+cd $BUILD
+mkdir -p lldb-against-installtree
+cd lldb-against-installtree
+
+echo "@@@ CMake @@@"
+cmake $LLDB_SRC \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DLLVM_ENABLE_ASSERTIONS=On \
+    -DLLVM_ENABLE_MODULES=On \
+    -DLLVM_VERSION_PATCH=99 \
+    -DLLVM_TARGETS_TO_BUILD='X86;ARM;AArch64' \
+    -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+    -DCMAKE_INSTALL_PREFIX="$DEST" \
+    -DLLVM_DIR=${DEST}/lib/cmake/llvm \
+    -DCLANG_DIR=${DEST}/lib/cmake/clang \
+    -DLLDB_BUILD_FRAMEWORK=On \
+    -G Ninja
+echo "@@@@@@"
+
+echo "@@@ Compile @@@"
+ninja
+echo "@@@@@@"
+
+                       '''
+                }
+            }
+        }
+        stage('Cleanup') {
+            steps {
+                timeout(activity: true, time: 30) {
+                    sh '''
+set -eux
+# Avoid the python in /usr/local/bin.
+PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/jbin
+
+if [ -z "WORKSPACE" ]; then
+    echo "WORKSPACE is not set."
+    exit 1
+fi
+
+SRC="$WORKSPACE"
+BUILD="$WORKSPACE/lldb-build"
+
+# Delete directories that would get deleted first thing by the next build anyway.
+rm -rf $BUILD/*/lldb-test-build.noindex $BUILD/*/module.cache
+                       '''
+                }
+            }
+        }
+    }
+}
