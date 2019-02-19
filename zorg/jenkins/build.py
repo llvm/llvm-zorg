@@ -963,7 +963,8 @@ def run_cmd_errors_okay(working_dir, cmd, env=None):
 
 KNOWN_TARGETS = ['all', 'build', 'test', 'testlong']
 KNOWN_BUILDS = ['clang', 'cmake', 'lldb', 'lldb-cmake', 'fetch', 'artifact',
-                'derive', 'derive-llvm+clang', 'derive-lldb', 'derive-lldb-cmake',
+                'derive', 'derive-llvm+clang', 'derive-llvm+clang+libcxx', 
+                'derive-lldb', 'derive-lldb-cmake',
                 'derive-llvm', 'static-analyzer-benchmarks']
 
 
