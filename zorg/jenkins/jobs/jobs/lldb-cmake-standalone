@@ -175,7 +175,7 @@ mkdir -p $BUILD
 cd $BUILD
 
 echo "@@@ CMake @@@"
-cmake $LLDB_SRC \
+cmake -L $LLDB_SRC \
     -DCMAKE_BUILD_TYPE=Release \
     -DLLVM_ENABLE_ASSERTIONS=On \
     -DLLVM_ENABLE_MODULES=On \
@@ -184,7 +184,7 @@ cmake $LLDB_SRC \
     -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
     -DCMAKE_INSTALL_PREFIX="$DEST" \
     -DLLVM_DIR=${WORKSPACE}/llvm-buildtree/lib/cmake/llvm \
-    -DCLANG_DIR=${WORKSPACE}/llvm-buildtree/lib/cmake/clang \
+    -DClang_DIR=${WORKSPACE}/llvm-buildtree/lib/cmake/clang \
     -DLLDB_BUILD_FRAMEWORK=On \
     -G Ninja
 echo "@@@@@@"
@@ -222,7 +222,7 @@ mkdir -p lldb-against-installtree
 cd lldb-against-installtree
 
 echo "@@@ CMake @@@"
-cmake $LLDB_SRC \
+cmake -L $LLDB_SRC \
     -DCMAKE_BUILD_TYPE=Release \
     -DLLVM_ENABLE_ASSERTIONS=On \
     -DLLVM_ENABLE_MODULES=On \
@@ -231,7 +231,7 @@ cmake $LLDB_SRC \
     -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
     -DCMAKE_INSTALL_PREFIX="$DEST" \
     -DLLVM_DIR=${DEST}/lib/cmake/llvm \
-    -DCLANG_DIR=${DEST}/lib/cmake/clang \
+    -DClang_DIR=${DEST}/lib/cmake/clang \
     -DLLDB_BUILD_FRAMEWORK=On \
     -G Ninja
 echo "@@@@@@"
