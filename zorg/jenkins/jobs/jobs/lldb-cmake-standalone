@@ -187,7 +187,10 @@ cmake -L $LLDB_SRC \
     -DClang_DIR=${WORKSPACE}/llvm-buildtree/lib/cmake/clang \
     -DLLDB_BUILD_FRAMEWORK=On \
     -DPYTHON_EXECUTABLE=/usr/bin/python2.7 \
-    -G Ninja
+    -DPYTHON_LIBRARY=/System/Library/Frameworks/Python.framework/Versions/2.7/lib/libpython2.7.dylib \
+    -DPYTHON_INCLUDE_DIR=/System/Library/Frameworks/Python.framework/Versions/2.7/include/python2.7" \
+    -DPYTHON_LIBRARY_DEBUG=/System/Library/Frameworks/Python.framework/Versions/2.7/lib/libpython2.7.dylib \
+     -G Ninja
 echo "@@@@@@"
 
 echo "@@@ Compile @@@"
@@ -235,6 +238,9 @@ cmake -L $LLDB_SRC \
     -DClang_DIR=${DEST}/lib/cmake/clang \
     -DLLDB_BUILD_FRAMEWORK=On \
     -DPYTHON_EXECUTABLE=/usr/bin/python2.7 \
+    -DPYTHON_LIBRARY=/System/Library/Frameworks/Python.framework/Versions/2.7/lib/libpython2.7.dylib \
+    -DPYTHON_INCLUDE_DIR=/System/Library/Frameworks/Python.framework/Versions/2.7/include/python2.7" \
+    -DPYTHON_LIBRARY_DEBUG=/System/Library/Frameworks/Python.framework/Versions/2.7/lib/libpython2.7.dylib \
     -G Ninja
 echo "@@@@@@"
 
