@@ -222,14 +222,13 @@ if [ -z "WORKSPACE" ]; then
 fi
 
 SRC="$WORKSPACE"
-BUILD="$WORKSPACE/lldb-build"
+BUILD="$WORKSPACE/lldb-against-installtree"
 TEST="$WORKSPACE/test"
 DEST="$WORKSPACE/lldb-install"
 LLDB_SRC="$SRC/lldb"
 
+mkdir -p $BUILD
 cd $BUILD
-mkdir -p lldb-against-installtree
-cd lldb-against-installtree
 
 echo "@@@ CMake @@@"
 echo FIXME: The module map in an install tree seems to still have problems.
