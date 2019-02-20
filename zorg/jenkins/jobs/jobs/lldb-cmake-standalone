@@ -238,6 +238,7 @@ cmake -L $LLDB_SRC \
     -DLLVM_ENABLE_MODULES=On \
     -DLLVM_VERSION_PATCH=99 \
     -DLLVM_TARGETS_TO_BUILD='X86;ARM;AArch64' \
+    -DLLVM_EXTERNAL_LIT=${WORKSPACE}/lldb-build/bin/llvm-lit
     -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
     -DLLVM_DIR=${WORKSPACE}/llvm-install/lib/cmake/llvm \
     -DClang_DIR=${WORKSPACE}/llvm-install/lib/cmake/clang \
