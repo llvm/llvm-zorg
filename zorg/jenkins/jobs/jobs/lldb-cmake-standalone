@@ -241,8 +241,8 @@ cmake -L $LLDB_SRC \
     -DLLVM_TARGETS_TO_BUILD='X86;ARM;AArch64' \
     -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
     -DCMAKE_INSTALL_PREFIX="$DEST" \
-    -DLLVM_DIR=${DEST}/lib/cmake/llvm \
-    -DClang_DIR=${DEST}/lib/cmake/clang \
+    -DLLVM_DIR=${WORKSPACE}/llvm-install/lib/cmake/llvm \
+    -DClang_DIR=${WORKSPACE}/llvm-install/lib/cmake/clang \
     -DLLDB_BUILD_FRAMEWORK=On \
     -DPYTHON_EXECUTABLE=/usr/bin/python2.7 \
     -DPYTHON_LIBRARY=/System/Library/Frameworks/Python.framework/Versions/2.7/lib/libpython2.7.dylib \
