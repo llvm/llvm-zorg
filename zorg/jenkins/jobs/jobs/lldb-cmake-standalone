@@ -146,10 +146,13 @@ cmake $LLVM_SRC \
     -G Ninja
 echo "@@@@@@"
 
-echo "@@@ Compile @@@"
+echo "@@@ Build @@@"
 ninja
 echo "@@@@@@"
 
+echo "@@@ Install @@@"
+ninja install
+echo "@@@@@@"
                        '''
                 }
             }
