@@ -232,8 +232,10 @@ mkdir -p lldb-against-installtree
 cd lldb-against-installtree
 
 echo "@@@ CMake @@@"
+echo FIXME: The module map in an install tree seems to still have problems.
 cmake -L $LLDB_SRC \
     -DCMAKE_BUILD_TYPE=Release \
+    -DLLVM_ENABLE_MODULES=Off \
     -DLLVM_ENABLE_ASSERTIONS=On \
     -DLLVM_ENABLE_MODULES=On \
     -DLLVM_VERSION_PATCH=99 \
