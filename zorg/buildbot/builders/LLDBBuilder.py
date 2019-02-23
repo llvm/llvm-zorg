@@ -13,6 +13,7 @@ import zorg.buildbot.commands.BatchFileDownload as batch_file_download
 from zorg.buildbot.commands.LitTestCommand import LitTestCommand
 from zorg.buildbot.builders.Util import getVisualStudioEnvironment
 from zorg.buildbot.builders.Util import extractSlaveEnvironment
+from zorg.buildbot.process.factory import LLVMBuildFactory
 
 # We *must* checkout at least Clang, LLVM, and LLDB.  Also check out LLD since
 # it is needed to run the LLDB test suite.
@@ -923,9 +924,8 @@ def getLLDBScriptCommandsFactory(
                        runTest=True,
                        scriptExt='.sh',
                        extra_cmake_args=None,
+                       depends_on_projects=None,
                        ):
-    f = buildbot.process.factory.BuildFactory()
-
     if scriptExt is '.bat':
         pathSep = '.\\'
     else:
@@ -933,6 +933,12 @@ def getLLDBScriptCommandsFactory(
 
     if extra_cmake_args is None:
         extra_cmake_args = []
+
+    if depends_on_projects is None:
+        f = buildbot.process.factory.BuildFactory()
+    else:
+        f = LLVMBuildFactory(
+                depends_on_projects=depends_on_projects)
 
     # Update scripts
     getShellCommandStep(f, name='update scripts',
