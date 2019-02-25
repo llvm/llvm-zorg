@@ -1073,8 +1073,7 @@ def _get_lld_builders():
          'builddir' : "ppc64le-lld-multistage-test",
          'factory': UnifiedTreeBuilder.getCmakeWithNinjaMultistageBuildFactory(
                                     extra_configure_args=[
-                                        '-DLLVM_ENABLE_ASSERTIONS=ON',
-                                        '-DBUILD_SHARED_LIBS=ON'],
+                                        '-DLLVM_ENABLE_ASSERTIONS=ON'],
                                     depends_on_projects=['llvm', 'clang', 'lld']),
          'category'   : 'lld'},
 
