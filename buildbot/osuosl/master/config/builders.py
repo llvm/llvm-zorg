@@ -970,13 +970,6 @@ def _get_lldb_builders():
                     buildAndroid=False,
                     runTest=True,
                     extra_cmake_args=['-DLLVM_ENABLE_ASSERTIONS=ON'])},
-        {'name': "lldb-amd64-ninja-netbsd8",
-         'slavenames': ["lldb-amd64-ninja-netbsd8"],
-         'builddir': "netbsd8",
-         'category' : 'lldb',
-         'factory': LLDBBuilder.getLLDBScriptCommandsFactory(
-                    downloadBinary=False,
-                    runTest=True)},
         {'name': "lldb-amd64-ninja-freebsd11",
          'slavenames': ["lldb-amd64-ninja-freebsd11"],
          'builddir': "scratch",
@@ -1545,6 +1538,26 @@ def _get_toolchain_builders():
            'builddir': "fuchsia-x86_64-linux",
            'factory': FuchsiaBuilder.getToolchainBuildFactory(),
            'category': 'fuchsia'},
+          {'name': "netbsd-amd64",
+           'slavenames': ["netbsd-amd64"],
+           'builddir': "netbsd8",
+           'category' : 'netbsd',
+           'factory': LLDBBuilder.getLLDBScriptCommandsFactory(
+                      downloadBinary=False,
+                      runTest=True,
+                      depends_on_projects=[
+                          "cfe",
+                          "clang-tools-extra",
+                          "compiler-rt",
+                          "libcxx",
+                          "libcxxabi",
+                          "libunwind",
+                          "lld",
+                          "lldb",
+                          "llvm",
+                          "openmp",
+                          "polly",
+                      ])},
         ]
 
 # Experimental and stopped builders

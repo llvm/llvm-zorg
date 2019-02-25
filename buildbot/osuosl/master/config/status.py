@@ -233,8 +233,7 @@ def get_status_targets(standard_builders, standard_categories=None):
             extraRecipients = ["n54@gmx.com", "mgorny@NetBSD.org"],
             subject="Build %(builder)s Failure",
             mode = "failing",
-            builders = ["lldb-amd64-ninja-netbsd7",
-                        "lldb-amd64-ninja-netbsd8"],
+            builders = ["netbsd-amd64"],
             addLogs=False,
             num_lines = 15),
         InformativeMailNotifier(
