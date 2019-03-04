@@ -1444,12 +1444,12 @@ def _get_libcxx_builders():
             cmake_extra_opts={'LLVM_USE_SANITIZER': 'Thread'}),
         'category': 'libcxx'},
 
-        {'name': 'libcxx-libcxxabi-x86_64-linux-ubuntu-gcc49-cxx11',
+        {'name': 'libcxx-libcxxabi-x86_64-linux-ubuntu-gcc5-cxx11',
          'slavenames': ericwf_slaves + docker_slaves,
-         'builddir' : 'libcxx-libcxxabi-x86_64-linux-ubuntu-gcc49-cxx11',
+         'builddir' : 'libcxx-libcxxabi-x86_64-linux-ubuntu-gcc5-cxx11',
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
             env={'PATH': '/usr/local/bin:/usr/bin:/bin',
-                 'CC': 'gcc-4.9', 'CXX': 'g++-4.9'},
+                 'CC': '/opt/gcc-5/bin/gcc', 'CXX': '/opt/gcc-5/bin/g++'},
             lit_extra_opts={'std': 'c++11'}),
         'category': 'libcxx'},
 
