@@ -597,7 +597,6 @@ def lldb_cmake_builder():
                  '-DCMAKE_MAKE_PROGRAM=' + NINJA,
                  '-DLLVM_VERSION_PATCH=99',
                  '-DLLVM_ENABLE_MODULES=On',
-                 '-DLLVM_ENABLE_LOCAL_SUBMODULE_VISIBILITY=On',
                  '-DCMAKE_EXPORT_COMPILE_COMMANDS=ON',
                  '-DCMAKE_INSTALL_PREFIX="%s"'%dest_dir,
                  '-DLLDB_TEST_USER_ARGS='+';'.join(dotest_args),
