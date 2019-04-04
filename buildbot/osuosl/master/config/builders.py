@@ -937,39 +937,6 @@ def _get_rev_iter_builders():
 # LLDB builders.
 def _get_lldb_builders():
     return [
-        {'name': "lldb-x86-windows-msvc2015",
-         'slavenames': ["zturner-win2008"],
-         'builddir': "lldb-windows-x86",
-         'factory': LLDBBuilder.getLLDBCMakeBuildFactory(
-                    test=False,
-                    python_source_dir=r'C:/Python35',
-                    vs=r"""%VS140COMNTOOLS%""")},
-        # Disable the builder till we fix the cmake configuration
-        #{'name': "lldb-x86-win7-msvc",
-        #'slavenames': ["hexagon-build-01"],
-        #'builddir': "builddir/lldb-win7-msvc",
-        #'factory': LLDBBuilder.getLLDBCMakeBuildFactory(
-        #           config='Debug',
-        #           python_source_dir=r'C:/Python35',
-        #           vs=r"""%VS140COMNTOOLS%""")},
-        {'name': "lldb-x86_64-ubuntu-14.04-buildserver",
-         'slavenames': ["lldb-linux-android-buildserver"],
-         'builddir': "lldb-android-buildserver",
-         'category' : 'lldb',
-         'factory': LLDBBuilder.getLLDBScriptCommandsFactory(
-                    downloadBinary=False,
-                    buildAndroid=True,
-                    runTest=False,
-                    extra_cmake_args=['-DLLVM_ENABLE_ASSERTIONS=ON'])},
-        {'name': "lldb-x86_64-ubuntu-14.04-cmake",
-         'slavenames': ["lldb-build1-ubuntu-1404"],
-         'builddir': "buildWorkingDir",
-         'category' : 'lldb',
-         'factory': LLDBBuilder.getLLDBScriptCommandsFactory(
-                    downloadBinary=False,
-                    buildAndroid=False,
-                    runTest=True,
-                    extra_cmake_args=['-DLLVM_ENABLE_ASSERTIONS=ON'])},
         {'name': "lldb-amd64-ninja-freebsd11",
          'slavenames': ["lldb-amd64-ninja-freebsd11"],
          'builddir': "scratch",
@@ -1599,34 +1566,6 @@ def _get_experimental_scheduled_builders():
                      enable_thrust_tests=False,
          ),
          'category' : 'clang'},
-
-        # lldb builders
-        {'name': "lldb-x86_64-darwin-13.4",
-         'slavenames': ["lldb-x86_64-darwin-13.4"],
-         'builddir': "buildDir",
-         'category' : 'lldb',
-         'factory': LLDBBuilder.getLLDBScriptCommandsFactory(
-                    downloadBinary=True,
-                    buildAndroid=False,
-                    runTest=True)},
-        {'name': "lldb-x86_64-ubuntu-14.04-android",
-         'slavenames': ["lldb-lab-linux01"],
-         'builddir': "lldb-cross-compile",
-         'category' : 'lldb',
-         'factory': LLDBBuilder.getLLDBScriptCommandsFactory(
-                    downloadBinary=True,
-                    buildAndroid=False,
-                    runTest=True)},
-        {'name': "lldb-windows7-android",
-         'slavenames': ["lldb-lab-win01"],
-         'builddir': "lldb-win7-android",
-         'category': "lldb",
-         'factory': LLDBBuilder.getLLDBScriptCommandsFactory(
-                    downloadBinary=True,
-                    buildAndroid=False,
-                    runTest=True,
-                    scriptExt='.bat')},
-
         ]
 
 # Builders responsible building Sphinix documentation

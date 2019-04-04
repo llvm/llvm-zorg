@@ -189,8 +189,6 @@ def get_build_slaves():
         create_slave('libcxx-cloud5', properties={'jobs': 64}, max_builds=1),
 
 
-        # Windows Server 2008 R2, Quad 2.6GHz Intel Xeon(R) 4GB RAM
-        create_slave("zturner-win2008", properties={'jobs': 4}, max_builds=1),
         # Windows Server 2012 x86_64 16-core GCE instance
         create_slave("sanitizer-windows", properties={'jobs': 16}, max_builds=1),
         create_slave("windows-gcebot1", properties={'jobs': 8}, max_builds=1),
@@ -199,17 +197,6 @@ def get_build_slaves():
         # Windows Server 2016 x86_64 16-core GCE instance
         create_slave("windows-lld-thinlto-1", max_builds=1),
 
-        # Ubuntu x86-64, 51GiB System memory Intel(R) Xeon(R) CPU @ 2.60GHz
-        create_slave("lldb-build1-ubuntu-1404", properties={'jobs': 32, 'loadaverage':32}, max_builds=1),
-        # Darwin 13.4.0, x86_64
-        create_slave("lldb-x86_64-darwin-13.4", properties={'jobs': 16, 'loadaverage':32}, max_builds=1),
-        # Ubuntu 14.04 x86_64, Intel(R) Xeon(R) CPU E5-2680 v2 @ 2.80GHz
-        create_slave("lldb-lab-linux01", properties={'jobs': 40}, max_builds=1),
-
-        # Windows 7 x86_64
-        create_slave("lldb-lab-win01", properties={'jobs': 40}, max_builds=1),
-        # Ubuntu 14.04 x86_64
-        create_slave("lldb-linux-android-buildserver", properties={'jobs': 40}, max_builds=1),
         # Ubuntu 14.04 x86_64, Intel(R) Xeon(R) CPU L5520 @ 2.27GHz
         create_slave("bpf-build-slave01", properties={'jobs': 16}, max_builds=1),
 
