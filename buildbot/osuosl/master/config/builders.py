@@ -1047,6 +1047,17 @@ def _get_lld_builders():
                                     depends_on_projects=['llvm', 'clang', 'lld']),
          'category'   : 'lld'},
 
+        {'name' : "lld-x86_64-ubuntu-fast",
+         'slavenames' : ["as-builder-4"],
+         'builddir' : "lld-x86_64-ubuntu-fast",
+         'mergeRequests': False,
+         'factory': UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
+                                    clean=True,
+                                    extra_configure_args=[
+                                        '-DLLVM_ENABLE_WERROR=OFF'],
+                                    depends_on_projects=['llvm', 'lld']),
+         'category' : 'lld'},
+
         ]
 
 # llgo builders.

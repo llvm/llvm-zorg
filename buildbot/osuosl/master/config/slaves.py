@@ -114,7 +114,7 @@ def get_build_slaves():
         create_slave("ppc64le-clang-multistage-test", properties={'jobs': 8}, max_builds=1),
         create_slave("ppc64le-sanitizer", properties={'jobs': 4}, max_builds=1),
         create_slave("ppc64le-lld-multistage-test", properties={'jobs': 40}, max_builds=1),
-        
+
         # POWER 8 PowerPC little endian (powerpc64le) with NVIDIA GPUs
         create_slave("ppc64le-nvidia-K40", properties={'jobs': 4}, max_builds=1),
         # POWER 8 PowerPC little endian (powerpc64le) with NVIDIA Pascal GPUs
@@ -258,6 +258,9 @@ def get_build_slaves():
 
         # Debian x86_64 Buster Xeon(R) Gold 6154 CPU @ 3.00GHz, 192GB RAM
         create_slave("lldb-x86_64-debian", properties={'jobs': 72}, max_builds=1),
+
+        # Ubuntu 18.04.2 LTS x86_64 Intel(R) Xeon(R) Gold CPU @ 2.1GHz, 128GB RAM
+        create_slave("as-builder-4", properties={'jobs': 64}, max_builds=1),
 
         # Ubuntu 14.04 x86_64, Intel(R) Xeon(R) CPU @ 2.30GHz
         #create_slave("llgo-builder", properties={'jobs': 2}, max_builds=1),
