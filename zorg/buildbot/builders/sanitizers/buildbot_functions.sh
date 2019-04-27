@@ -6,6 +6,7 @@ function update_or_checkout {
   local rev_arg=$1
   local repo=$2
   local tree=$3
+  
   if [ -d ${tree} ]; then
     svn cleanup "${tree}" || echo @@@STEP_EXCEPTION@@@
     svn revert -R "${tree}" || echo @@@STEP_EXCEPTION@@@
@@ -16,6 +17,30 @@ function update_or_checkout {
     svn co "${repo}" $DIR/${tree} $rev_arg || echo @@@STEP_EXCEPTION@@@
   fi
 }
+
+function get_sources {
+  local rev_arg=$1
+  local repo_name=$2
+  local tree=$3
+
+  BUILDBOT_MONO_REPO_PATH=${BUILDBOT_MONO_REPO_PATH:-}
+  if [ -d "$BUILDBOT_MONO_REPO_PATH" ]; then
+    # Excludes are needed only for llvm but they should not hurt for the rest.
+    rsync -avh --delete \
+          --exclude=projects/compiler-rt/ \
+          --exclude=projects/libcxx/ \
+          --exclude=projects/libcxxabi/ \
+          --exclude=projects/libunwind/ \
+          --exclude=tools/clang/ \
+          --exclude=tools/lld/ \
+        $BUILDBOT_MONO_REPO_PATH/${repo_name/cfe/clang}/ \
+        $tree/ || exit 1
+    return
+  fi
+
+  update_or_checkout "$rev_arg" http://llvm.org/svn/llvm-project/$repo_name/trunk $tree &
+}
+
 
 function buildbot_update {
     if [ "$BUILDBOT_REVISION" == "-" ]; then
@@ -33,18 +58,18 @@ function buildbot_update {
 
     rm -rf svn_checkout
 
-    update_or_checkout "$rev_arg" http://llvm.org/svn/llvm-project/llvm/trunk llvm &
+    get_sources "$rev_arg" llvm llvm
 
     # XXX: Keep this list in sync with the change filter in buildbot/osuosl/master/master.cfg.
-    update_or_checkout "$rev_arg" http://llvm.org/svn/llvm-project/cfe/trunk llvm/tools/clang &
-    update_or_checkout "$rev_arg" http://llvm.org/svn/llvm-project/compiler-rt/trunk llvm/projects/compiler-rt &
+    get_sources "$rev_arg" cfe llvm/tools/clang
+    get_sources "$rev_arg" compiler-rt llvm/projects/compiler-rt
     if [ "$CHECK_LIBCXX" != "0" ]; then
-      update_or_checkout "$rev_arg" http://llvm.org/svn/llvm-project/libcxx/trunk llvm/projects/libcxx &
-      update_or_checkout "$rev_arg" http://llvm.org/svn/llvm-project/libcxxabi/trunk llvm/projects/libcxxabi &
-      update_or_checkout "$rev_arg" http://llvm.org/svn/llvm-project/libunwind/trunk llvm/projects/libunwind &
+      get_sources "$rev_arg" libcxx llvm/projects/libcxx
+      get_sources "$rev_arg" libcxxabi llvm/projects/libcxxabi
+      get_sources "$rev_arg" libunwind llvm/projects/libunwind
     fi
     if [ "$CHECK_LLD" != "0" ]; then
-      update_or_checkout "$rev_arg" http://llvm.org/svn/llvm-project/lld/trunk llvm/tools/lld &
+      get_sources "$rev_arg" lld llvm/tools/lld
     fi
     wait
 
