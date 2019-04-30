@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+echo
+echo "How to reproduce locally: https://github.com/google/sanitizers/wiki/SanitizerBotReproduceBuild"
+echo
+
 uptime
 
 function update_or_checkout {
