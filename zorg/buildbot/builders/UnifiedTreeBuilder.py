@@ -158,7 +158,7 @@ def addNinjaSteps(
 
     # Test just built components if requested.
     if checks:
-      f.addStep(NinjaCommand(name="test-%scheck-all" % step_name,
+      f.addStep(NinjaCommand(name="test-%s%s" % (step_name,"-".join(checks)),
                              targets=checks,
                              description=["Test", "just", "built", "components"],
                              haltOnFailure=kwargs.get('haltOnFailure', True),
