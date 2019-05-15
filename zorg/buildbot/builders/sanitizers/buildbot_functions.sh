@@ -12,9 +12,8 @@ function update_or_checkout {
   local tree=$3
   
   if [ -d ${tree} ]; then
-    svn cleanup "${tree}" || echo @@@STEP_EXCEPTION@@@
-    svn revert -R "${tree}" || echo @@@STEP_EXCEPTION@@@
-    svn up "${tree}" $rev_arg || echo @@@STEP_EXCEPTION@@@
+    (svn cleanup "${tree}" && svn revert -R "${tree}" && svn up "${tree}" $rev_arg) || \
+      (rm -rf ${tree} && update_or_checkout $@)
   else
     mkdir -p svn_checkout
     DIR=$(mktemp -d -p `pwd`/svn_checkout XXXXXX)
@@ -22,12 +21,13 @@ function update_or_checkout {
   fi
 }
 
+BUILDBOT_MONO_REPO_PATH=${BUILDBOT_MONO_REPO_PATH:-}
+
 function get_sources {
   local rev_arg=$1
   local repo_name=$2
   local tree=$3
 
-  BUILDBOT_MONO_REPO_PATH=${BUILDBOT_MONO_REPO_PATH:-}
   if [ -d "$BUILDBOT_MONO_REPO_PATH" ]; then
     # Excludes are needed only for llvm but they should not hurt for the rest.
     rsync -avh --delete \
@@ -47,8 +47,12 @@ function get_sources {
 
 
 function buildbot_update {
-    if [ "$BUILDBOT_REVISION" == "-" ]; then
+    if [[ -d "$BUILDBOT_MONO_REPO_PATH" ]]; then
+      BUILDBOT_REVISION="-"
+    else
+      if [[ "$BUILDBOT_REVISION" == "-" ]]; then
         return
+      fi
     fi
 
     local rev_arg=
