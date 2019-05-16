@@ -273,4 +273,12 @@ def get_status_targets(standard_builders, standard_categories=None):
             mode = "failing",
             builders = ["lldb-x86_64-debian"],
             addLogs=False),
+        InformativeMailNotifier(
+            fromaddr = "llvm.buildmaster@lab.llvm.org",
+            sendToInterestedUsers= False,
+            extraRecipients = ["vitalybuka@google.com", "eugenis@google.com"],
+            subject="Build %(builder)s Failure",
+            mode = "failing",
+            builders = ["sanitizer-x86_64-linux-gn"],
+            addLogs=False),
         ]
