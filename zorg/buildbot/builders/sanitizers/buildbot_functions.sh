@@ -152,11 +152,11 @@ function build_stage1_clang {
   mkdir -p ${STAGE1_DIR}
   cmake_stage1_options="${CMAKE_COMMON_OPTIONS}"
   (cd ${STAGE1_DIR} && cmake ${cmake_stage1_options} $LLVM && \
-    ninja clang compiler-rt llvm-symbolizer)
+    ninja clang lld compiler-rt llvm-symbolizer)
 }
 
 function build_stage1_clang_at_revison {
-  local HOST_CLANG_REVISION=349610
+  local HOST_CLANG_REVISION=360832
 
   if  [ -r ${STAGE1_DIR}/host_clang_revision ] && \
       [ "$(cat ${STAGE1_DIR}/host_clang_revision)" == $HOST_CLANG_REVISION ]
