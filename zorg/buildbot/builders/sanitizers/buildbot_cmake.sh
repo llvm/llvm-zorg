@@ -107,6 +107,10 @@ case "$ARCH" in
   ;;
 esac
 
+if [[ "$CHECK_CFI" == "1" ]]; then
+  # We need this after https://reviews.llvm.org/D62050
+  CMAKE_COMMON_OPTIONS="$CMAKE_COMMON_OPTIONS -DLLVM_BUILD_LLVM_DYLIB=ON"
+fi
 
 echo @@@BUILD_STEP update@@@
 buildbot_update
