@@ -90,6 +90,29 @@ function buildbot_update {
     fi
 }
 
+function buildbot_update_git {
+  if [[ -d "$BUILDBOT_MONO_REPO_PATH" ]]; then
+    LLVM=$BUILDBOT_MONO_REPO_PATH/llvm
+  else
+    (
+      [[ -d llvm-project ]] || git clone https://github.com/llvm/llvm-project.git
+      cd llvm-project
+      git fetch
+      git clean -fd
+      if [[ "$BUILDBOT_REVISION" == "" ]] ; then
+        REV=origin/master
+      else
+        REV=$(git log --format="%H" -n1 --grep "^llvm-svn: ${BUILDBOT_REVISION}$" origin/master)
+        [[ "$REV" != "" ]] || exit 1
+      fi
+      git checkout $REV
+      git status
+      git log -n1 --oneline
+    ) || { echo @@@STEP_EXCEPTION@@@ ; exit 1 ; }
+    LLVM=$ROOT/llvm-project/llvm
+  fi
+}
+
 function set_chrome_suid_sandbox {
   export CHROME_DEVEL_SANDBOX=/usr/local/sbin/chrome-devel-sandbox
 }
