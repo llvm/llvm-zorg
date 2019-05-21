@@ -116,7 +116,6 @@ def _addSteps4StagedCompiler(
            f,
            stage_idx = 1,
            use_stage_idx = -1,
-           withLTOSupport = False,
            jobs = None,
            extra_configure_args = None,
            env = None):
@@ -162,11 +161,6 @@ def _addSteps4StagedCompiler(
         ('-DLLVM_ENABLE_ASSERTIONS=',  'ON'),
         ('-DLLVM_OPTIMIZED_TABLEGEN=', 'ON'),
         ])
-    if withLTOSupport:
-        CmakeCommand.applyDefaultOptions(cmake_args, [
-            # LTO Plugin dependency:
-            ('-DLLVM_BINUTILS_INCDIR=',    '/opt/binutils/include'),
-            ])
 
     # Some options are required for this stage no matter what.
     CmakeCommand.applyRequiredOptions(cmake_args, [
@@ -193,16 +187,6 @@ def _addSteps4StagedCompiler(
                            workdir=obj_dir,
                            doStepIf=FileDoesNotExist("CMakeCache.txt")
                            ))
-    if withLTOSupport:
-        # Build LTO plugin if requested.
-        f.addStep(NinjaCommand(name="build-stage%s-LLVMgold.so" % stage_num,
-                               targets=['lib/LLVMgold.so'],
-                               jobs=jobs,
-                               haltOnFailure=True,
-                               description=["stage%s build LLVMgold.so" % stage_num],
-                               env=env,
-                               workdir=obj_dir,
-                               ))
 
     # Build clang by the staged compiler
     f.addStep(NinjaCommand(name="build-stage%s-compiler" % stage_num,
@@ -319,7 +303,6 @@ def getClangWithLTOBuildFactory(
     # Then build the compiler we would use for the bootstrap.
     _addSteps4StagedCompiler(f,
                              stage_idx=1,
-                             withLTOSupport=True,
                              jobs=jobs,
                              extra_configure_args=extra_configure_args,
                              env=merged_env)
