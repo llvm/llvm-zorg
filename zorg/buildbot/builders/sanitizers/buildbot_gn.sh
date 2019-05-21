@@ -53,10 +53,8 @@ buildbot_update_git
 
 (
   cd $STAGE2_DIR
-  echo @@@BUILD_STEP build all@@@
-
   for TARGET in "" $(ninja -t targets | grep -o "^check-[^:]*") ; do
-    echo @@@BUILD_STEP $TARGET@@@
+    echo @@@BUILD_STEP ninja $TARGET@@@
     ninja $TARGET || echo @@@STEP_FAILURE@@@
   done
 )
