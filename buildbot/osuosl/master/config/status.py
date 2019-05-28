@@ -275,6 +275,14 @@ def get_status_targets(standard_builders, standard_categories=None):
             addLogs=False),
         InformativeMailNotifier(
             fromaddr = "llvm.buildmaster@lab.llvm.org",
+            sendToInterestedUsers = True,
+            extraRecipients = ["omair.javaid@linaro.org"],
+            subject="Build %(builder)s Failure",
+            mode = "failing",
+            builders = ["lldb-aarch64-ubuntu"],
+            addLogs=False),
+        InformativeMailNotifier(
+            fromaddr = "llvm.buildmaster@lab.llvm.org",
             sendToInterestedUsers= False,
             extraRecipients = ["vitalybuka@google.com", "eugenis@google.com"],
             subject="Build %(builder)s Failure",
