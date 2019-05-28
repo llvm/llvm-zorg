@@ -398,7 +398,7 @@ def _get_clang_builders():
          'builddir': 'clang-x64-windows-msvc',
          'factory' : AnnotatedBuilder.getAnnotatedBuildFactory(
              script="clang-windows.py",
-             depends_on_projects=['llvm', 'clang', 'lld'])},
+             depends_on_projects=['llvm', 'clang', 'lld', 'debuginfo-tests'])},
 
         {'name' : "clang-ppc64be-linux-lnt",
          'slavenames' :["ppc64be-clang-lnt-test"],

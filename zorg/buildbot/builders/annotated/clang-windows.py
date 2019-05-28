@@ -8,6 +8,7 @@ def main(argv):
     ap = annotated_builder.get_argument_parser()
     args = ap.parse_args(argv[1:])
 
+    projects = ['llvm', 'clang', 'lld', 'debuginfo-tests']
     stages = 2
     stage1_extra_cmake_args = [
         '-DCMAKE_BUILD_TYPE=Release',
@@ -18,7 +19,7 @@ def main(argv):
     extra_cmake_args = stage1_extra_cmake_args + [
         '-DLLVM_USE_LINKER=lld',
     ]
-    check_targets = ['check-llvm', 'check-clang', 'check-lld']
+    check_targets = ['check-llvm', 'check-clang', 'check-lld', 'check-debuginfo']
 
     # Check both stage 1 and stage 2.
     check_stages = [True] * stages
