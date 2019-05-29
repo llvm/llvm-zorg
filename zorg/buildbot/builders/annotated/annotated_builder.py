@@ -253,6 +253,7 @@ class AnnotatedBuilder:
             'clang': 'tools/clang',
             'lld': 'tools/lld',
             'compiler-rt': 'projects/compiler-rt',
+            'debuginfo-tests': 'projects/debuginfo-tests',
             }
         # If the project is named differently in svn, put it here.
         svn_locations = { 'clang': 'cfe' }
