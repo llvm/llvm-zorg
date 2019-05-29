@@ -28,7 +28,8 @@ def main(argv):
     linker = 'lld-link'
 
     builder = annotated_builder.AnnotatedBuilder()
-    builder.run_steps(stages=stages,
+    builder.run_steps(projects=projects,
+                      stages=stages,
                       extra_cmake_args=extra_cmake_args,
                       stage1_extra_cmake_args=stage1_extra_cmake_args,
                       check_targets=check_targets,
