@@ -123,8 +123,9 @@ fi
 
 SRC="$WORKSPACE"
 TEST="$WORKSPACE/test"
-DEST="$WORKSPACE/llvm-install"
+DEST="$WORKSPACE/llvm-installtree"
 LLVM_SRC="$SRC/llvm"
+LLDB_SRC="$SRC/lldb"
 
 mkdir -p llvm-buildtree
 cd llvm-buildtree
@@ -133,14 +134,11 @@ echo FIXME: The module map in an install tree seems to still have problems.
 
 echo "@@@ CMake @@@"
 cmake $LLVM_SRC \
+    -C $LLDB_SRC/cmake/caches/Apple-lldb-macOS.cmake \
     -DCMAKE_BUILD_TYPE=Release \
-    -DLLVM_INSTALL_UTILS=ON \
-    -DLLVM_ENABLE_ASSERTIONS=On \
+    -DLLVM_INSTALL_UTILS=On \
     -DLLVM_ENABLE_MODULES=Off \
     -DLLVM_VERSION_PATCH=99 \
-    -DLLVM_TARGETS_TO_BUILD='X86;ARM;AArch64' \
-    -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
-    -DCMAKE_INSTALL_PREFIX="$DEST" \
     -DPYTHON_EXECUTABLE=/usr/bin/python2.7 \
     -DPYTHON_LIBRARY=/System/Library/Frameworks/Python.framework/Versions/2.7/lib/libpython2.7.dylib \
     -DPYTHON_INCLUDE_DIR=/System/Library/Frameworks/Python.framework/Versions/2.7/include/python2.7 \
@@ -153,7 +151,7 @@ ninja
 echo "@@@@@@"
 
 echo "@@@ Install @@@"
-ninja install
+DESTDIR=$DEST ninja install
 echo "@@@@@@"
                        '''
                 }
@@ -185,15 +183,11 @@ cd $BUILD
 
 echo "@@@ CMake @@@"
 cmake -L $LLDB_SRC \
+    -C $LLDB_SRC/cmake/caches/Apple-lldb-macOS.cmake \
     -DCMAKE_BUILD_TYPE=Release \
-    -DLLVM_ENABLE_ASSERTIONS=On \
-    -DLLVM_ENABLE_MODULES=On \
     -DLLVM_VERSION_PATCH=99 \
-    -DLLVM_TARGETS_TO_BUILD='X86;ARM;AArch64' \
-    -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
     -DLLVM_DIR=${WORKSPACE}/llvm-buildtree/lib/cmake/llvm \
     -DClang_DIR=${WORKSPACE}/llvm-buildtree/lib/cmake/clang \
-    -DLLDB_BUILD_FRAMEWORK=On \
     -DPYTHON_EXECUTABLE=/usr/bin/python2.7 \
     -DPYTHON_LIBRARY=/System/Library/Frameworks/Python.framework/Versions/2.7/lib/libpython2.7.dylib \
     -DPYTHON_INCLUDE_DIR=/System/Library/Frameworks/Python.framework/Versions/2.7/include/python2.7 \
@@ -234,16 +228,13 @@ cd $BUILD
 
 echo "@@@ CMake @@@"
 cmake -L $LLDB_SRC \
+    -C $LLDB_SRC/cmake/caches/Apple-lldb-macOS.cmake \
     -DCMAKE_BUILD_TYPE=Release \
     -DLLVM_ENABLE_MODULES=Off \
-    -DLLVM_ENABLE_ASSERTIONS=On \
     -DLLVM_VERSION_PATCH=99 \
-    -DLLVM_TARGETS_TO_BUILD='X86;ARM;AArch64' \
     -DLLVM_EXTERNAL_LIT=${WORKSPACE}/llvm-buildtree/bin/llvm-lit \
-    -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
-    -DLLVM_DIR=${WORKSPACE}/llvm-install/lib/cmake/llvm \
-    -DClang_DIR=${WORKSPACE}/llvm-install/lib/cmake/clang \
-    -DLLDB_BUILD_FRAMEWORK=On \
+    -DLLVM_DIR=${WORKSPACE}/llvm-installtree/lib/cmake/llvm \
+    -DClang_DIR=${WORKSPACE}/llvm-installtree/lib/cmake/clang \
     -DPYTHON_EXECUTABLE=/usr/bin/python2.7 \
     -DPYTHON_LIBRARY=/System/Library/Frameworks/Python.framework/Versions/2.7/lib/libpython2.7.dylib \
     -DPYTHON_INCLUDE_DIR=/System/Library/Frameworks/Python.framework/Versions/2.7/include/python2.7 \
