@@ -134,7 +134,7 @@ echo FIXME: The module map in an install tree seems to still have problems.
 
 echo "@@@ CMake @@@"
 cmake $LLVM_SRC \
-    -C $LLDB_SRC/cmake/caches/Apple-lldb-macOS.cmake \
+    -C$LLDB_SRC/cmake/caches/Apple-lldb-macOS.cmake \
     -DCMAKE_BUILD_TYPE=Release \
     -DLLVM_INSTALL_UTILS=On \
     -DLLVM_ENABLE_MODULES=Off \
@@ -183,7 +183,7 @@ cd $BUILD
 
 echo "@@@ CMake @@@"
 cmake -L $LLDB_SRC \
-    -C $LLDB_SRC/cmake/caches/Apple-lldb-macOS.cmake \
+    -C$LLDB_SRC/cmake/caches/Apple-lldb-macOS.cmake \
     -DCMAKE_BUILD_TYPE=Release \
     -DLLVM_VERSION_PATCH=99 \
     -DLLVM_DIR=${WORKSPACE}/llvm-buildtree/lib/cmake/llvm \
@@ -228,7 +228,7 @@ cd $BUILD
 
 echo "@@@ CMake @@@"
 cmake -L $LLDB_SRC \
-    -C $LLDB_SRC/cmake/caches/Apple-lldb-macOS.cmake \
+    -C$LLDB_SRC/cmake/caches/Apple-lldb-macOS.cmake \
     -DCMAKE_BUILD_TYPE=Release \
     -DLLVM_ENABLE_MODULES=Off \
     -DLLVM_VERSION_PATCH=99 \
@@ -276,7 +276,7 @@ cd $BUILD
 
 echo "@@@ CMake @@@"
 cmake -L $LLDB_SRC \
-    -C $LLDB_SRC/cmake/caches/Apple-lldb-macOS.cmake \
+    -C$LLDB_SRC/cmake/caches/Apple-lldb-macOS.cmake \
     -DCMAKE_BUILD_TYPE=Release \
     -DLLVM_VERSION_PATCH=99 \
     -DLLVM_DIR=${WORKSPACE}/llvm-buildtree/lib/cmake/llvm \
