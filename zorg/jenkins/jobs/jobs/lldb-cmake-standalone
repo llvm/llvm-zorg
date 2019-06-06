@@ -276,11 +276,14 @@ LLDB_SRC="$SRC/lldb"
 mkdir -p $BUILD
 cd $BUILD
 
+echo FIXME: Apparently Xcode doesn't currently respect LLDB_FRAMEWORK_BUILD_DIR
+
 echo "@@@ CMake @@@"
 cmake -L $LLDB_SRC \
     -C$LLDB_SRC/cmake/caches/Apple-lldb-macOS.cmake \
     -DCMAKE_BUILD_TYPE=Release \
     -DLLVM_VERSION_PATCH=99 \
+    -DLLDB_BUILD_FRAMEWORK=Off \
     -DLLVM_DIR=${WORKSPACE}/llvm-buildtree/lib/cmake/llvm \
     -DClang_DIR=${WORKSPACE}/llvm-buildtree/lib/cmake/clang \
     -DPYTHON_EXECUTABLE=/usr/bin/python2.7 \
