@@ -197,8 +197,12 @@ cmake -L $LLDB_SRC \
      -G Ninja
 echo "@@@@@@"
 
-echo "@@@ Compile @@@"
+echo "@@@ Build @@@"
 ninja
+echo "@@@@@@"
+
+echo "@@@ Test @@@"
+ninja check-lldb
 echo "@@@@@@"
 
                        '''
