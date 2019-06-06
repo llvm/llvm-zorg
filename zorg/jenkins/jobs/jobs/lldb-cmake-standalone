@@ -276,7 +276,7 @@ LLDB_SRC="$SRC/lldb"
 mkdir -p $BUILD
 cd $BUILD
 
-echo FIXME: Apparently Xcode doesn't currently respect LLDB_FRAMEWORK_BUILD_DIR
+echo "FIXME: Apparently Xcode does not currently respect LLDB_FRAMEWORK_BUILD_DIR"
 
 echo "@@@ CMake @@@"
 cmake -L $LLDB_SRC \
