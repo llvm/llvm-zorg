@@ -203,6 +203,7 @@ echo "@@@@@@"
 
 echo "@@@ Test @@@"
 ninja check-lldb
+cd $LLDB_SRC/lit && /usr/bin/python2.7 ${WORKSPACE}/llvm-buildtree/bin/llvm-lit --verbose $LLDB_SRC/lit
 echo "@@@@@@"
 
                        '''
