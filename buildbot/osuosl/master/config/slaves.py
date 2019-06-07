@@ -72,20 +72,6 @@ def get_build_slaves():
         # AMD Athlon(tm) 64 X2 Dual Core 3800+, Ubuntu x86_64
         create_slave("grosser1", properties={'jobs': 2}, max_builds=1),
 
-        # Polly perf servers
-        # Each is a:
-        # 8 x Intel(R) Xeon(R) CPU E5430  @ 2.66GHz, Debian x86_64 GNU/Linux
-        #create_slave("pollyperf1", properties={'jobs': 8}, max_builds=1),
-        create_slave("pollyperf2", properties={'jobs': 8}, max_builds=1),
-        create_slave("pollyperf3", properties={'jobs': 8}, max_builds=1),
-        create_slave("pollyperf4", properties={'jobs': 8}, max_builds=1),
-        create_slave("pollyperf5", properties={'jobs': 8}, max_builds=1),
-        create_slave("pollyperf6", properties={'jobs': 8}, max_builds=1),
-        create_slave("pollyperf7", properties={'jobs': 8}, max_builds=1),
-        create_slave("pollyperf11", properties={'jobs': 8}, max_builds=1),
-        create_slave("pollyperf14", properties={'jobs': 8}, max_builds=1),
-        create_slave("pollyperf15", properties={'jobs': 8}, max_builds=1),
-
         # Intel(R) Atom(TM) CPU D525 @ 1.8GHz, Fedora x86_64
         create_slave("atom1-buildbot", properties={'jobs': 2}, max_builds=1),
 
@@ -127,17 +113,11 @@ def get_build_slaves():
         # Arch Linux x86-64
         create_slave("riscv-build-01", properties={'jobs': 8}, max_builds=1),
 
-        # Cavium Octeon II V0.8, MIPS64r2 big endian, Debian Jessie
-        create_slave("mipsswbrd002", properties={'jobs' : 6}, max_builds=1),
-
         # Debian Jessie x86-64 GCE instance.
         create_slave("gribozavr3", properties={'jobs': 1}, max_builds=2),
 
         # Debian x86-64
         create_slave("gribozavr4", properties={'jobs': 96}, max_builds=2),
-
-        # AArch64 Clang, Juno ARM Development Platform
-        create_slave("juno-aarch64-01", properties={'jobs': 4}, max_builds=1),
 
         # Debian 7.7 x86_64 GCE instance
         create_slave("sanitizer-buildbot1", properties={'jobs': 64}, max_builds=3),
@@ -184,9 +164,6 @@ def get_build_slaves():
         # Windows Server 2016 x86_64 16-core GCE instance
         create_slave("windows-lld-thinlto-1", max_builds=1),
 
-        # Ubuntu 14.04 x86_64, Intel(R) Xeon(R) CPU L5520 @ 2.27GHz
-        create_slave("bpf-build-slave01", properties={'jobs': 16}, max_builds=1),
-
         # Ubuntu 14.04 x86_64-scei-ps4, 2 x Intel(R) Xeon(R) CPU E5-2699 v3 @ 2.30GHz
         create_slave("ps4-buildslave1"),
         create_slave("ps4-buildslave1a", properties={'jobs': 64}, max_builds=2),
@@ -199,8 +176,6 @@ def get_build_slaves():
 
         # NetBSD amd64
         create_slave("netbsd-amd64", properties={'jobs': 8}, max_builds=1),
-        # FreeBSD 11.0-CURRENT amd64
-        create_slave("lldb-amd64-ninja-freebsd11", properties={'jobs': 3}, max_builds=1),
 
         # FreeBSD 11.0-CURRENT amd64, Intel(R) Xeon(R) CPU E3-1230 v3 @ 3.30GHz
         create_slave("freebsd01", properties={'jobs': 3}, max_builds=1),
@@ -232,9 +207,6 @@ def get_build_slaves():
         # Debian 9.0 x86_64 64-core GCE instances
         create_slave("fuchsia-debian-64-us-central1-a-1", properties={'jobs': 64}, max_builds=1),
         create_slave("fuchsia-debian-64-us-central1-b-1", properties={'jobs': 64}, max_builds=1),
-
-        # OpenBSD amd64
-        create_slave("openbsd-amd64", properties={'jobs': 2}, max_builds=1),
 
         # test only: Fedora latest stable x86_64, Intel i5-2500, 4 cores, 12GB RAM
         create_slave("lldb-x86_64-fedora", properties={'jobs': 4}, max_builds=1),

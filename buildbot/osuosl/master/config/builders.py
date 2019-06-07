@@ -29,20 +29,7 @@ def _get_llvm_builders():
         # code using a mips64-* triple. This is a bug and should be fixed soon.
         # We must also force LLVM_TARGET_ARCH so that the ExecutionEngine tests
         # run.
-        {'name': "llvm-mips-linux",
-         'slavenames':["mipsswbrd002"],
-         'builddir':"llvm-mips-linux",
-         'factory': LLVMBuilder.getLLVMCMakeBuildFactory(
-                        timeout=40, config_name='Release',
-                        enable_shared=True,
-                        extra_cmake_args=["-DLLVM_HOST_TRIPLE=mips-linux-gnu",
-                                          "-DLLVM_DEFAULT_TARGET_TRIPLE=mips-linux-gnu",
-                                          "-DLLVM_TARGET_ARCH=Mips",
-                                          "-DLLVM_ENABLE_ASSERTIONS=ON",
-                                          "-DLLVM_PARALLEL_LINK_JOBS=1"],
-                        env={'CC': '/mips/proj/build-compiler/clang-be-o32-latest/bin/clang',
-                             'CXX': '/mips/proj/build-compiler/clang-be-o32-latest/bin/clang++',
-                            })},
+
         {'name': "llvm-hexagon-elf",
          'slavenames':["hexagon-build-02", "hexagon-build-03"],
          'builddir':"llvm-hexagon-elf",
@@ -541,16 +528,6 @@ def _get_clang_builders():
               "-DCMAKE_C_COMPILER:FILEPATH=/local/clang+llvm-6.0.1-x86_64-linux-gnu-ubuntu-14.04/bin/clang",
               "-DCMAKE_CXX_COMPILER:FILEPATH=/local/clang+llvm-6.0.1-x86_64-linux-gnu-ubuntu-14.04/bin/clang++"])},
 
-        {'name': "perf-x86_64-penryn-O3",
-         'slavenames':["pollyperf2", "pollyperf3", "pollyperf4", "pollyperf5"],
-         'builddir':"perf-x86_64-penryn-O3",
-         'factory': PollyBuilder.getPollyLNTFactory(triple="x86_64-pc-linux-gnu",
-                                                    #nt_flags=['--multisample=10', '--rerun'],
-                                                    nt_flags=['--multisample=10'],
-                                                    reportBuildslave=False,
-                                                    package_cache="http://parkas1.inria.fr/packages",
-                                                    submitURL=['http://gcc12.fsffrance.org:8808/submitRun','http://lnt.llvm.org/submitRun'],
-                                                    testerName='x86_64-penryn-O3')},
         {'name' : "clang-x86_64-linux-selfhost-modules",
          'slavenames' : ["modules-slave-1"],
          'builddir' : "clang-x86_64-linux-selfhost-modules",
@@ -749,18 +726,6 @@ def _get_clang_builders():
                ),
          'category': 'clang'},
 
-        # OpenBSD
-        {'name' : "clang-openbsd-amd64",
-         'slavenames' : ["openbsd-amd64"],
-         'builddir' : "clang-openbsd-amd64",
-         'factory': ClangBuilder.getClangCMakeBuildFactory(
-                       checkout_lld=False,
-                       clean=True,
-                       extra_cmake_args=['-DLLVM_ENABLE_ASSERTIONS=ON',
-                                         '-DCMAKE_BUILD_TYPE:STRING=Release',
-                                         '-DCLANG_BUILD_TOOLS=OFF',
-                                         '-DCLANG_ENABLE_ARCMT=OFF'])},
-
     ]
 
 # Polly builders.
@@ -770,58 +735,6 @@ def _get_polly_builders():
          'slavenames':["grosser1"],
          'builddir':"polly-amd64-linux",
          'factory': PollyBuilder.getPollyBuildFactory(extraCmakeArgs=['-DLLVM_TEMPORARILY_ALLOW_OLD_TOOLCHAIN=ON'])},
-
-        {'name': "perf-x86_64-penryn-O3-polly-fast",
-         'slavenames':["pollyperf2"],
-         'builddir': "perf-x86_64-penryn-O3-polly-fast",
-         'factory': PollyBuilder.getPollyLNTFactory(triple="x86_64-pc-linux-gnu",
-                                                    nt_flags=['--multisample=1', '--mllvm=-polly', '-j16' ],
-                                                    reportBuildslave=False,
-                                                    extra_cmake_args=['-DLLVM_ENABLE_ASSERTIONS=ON'],
-                                                    package_cache="http://parkas1.inria.fr/packages",
-                                                    testerName='x86_64-penryn-O3-polly-fast')},
-
-        {'name': "perf-x86_64-penryn-O3-polly-parallel-fast",
-         'slavenames':["pollyperf6", "pollyperf14"],
-         'builddir': "perf-x86_64-penryn-O3-polly-parallel-fast",
-         'factory': PollyBuilder.getPollyLNTFactory(triple="x86_64-pc-linux-gnu",
-                                                    nt_flags=['--multisample=1', '--mllvm=-polly', '--mllvm=-polly-parallel', '-j16', '--cflag=-lgomp' ],
-                                                    reportBuildslave=False,
-                                                    extra_cmake_args=['-DLLVM_ENABLE_ASSERTIONS=ON'],
-                                                    package_cache="http://parkas1.inria.fr/packages",
-                                                    testerName='x86_64-penryn-O3-polly-parallel-fast')},
-
-        {'name': "perf-x86_64-penryn-O3-polly-unprofitable",
-         'slavenames':["pollyperf6", "pollyperf14"],
-         'builddir': "perf-x86_64-penryn-O3-polly-unprofitable",
-         'factory': PollyBuilder.getPollyLNTFactory(triple="x86_64-pc-linux-gnu",
-                                                    nt_flags=['--multisample=1', '--mllvm=-polly', '--mllvm=-polly-process-unprofitable', '-j16'],
-                                                    reportBuildslave=False,
-                                                    extra_cmake_args=['-DLLVM_ENABLE_ASSERTIONS=ON'],
-                                                    package_cache="http://parkas1.inria.fr/packages",
-                                                    testerName='x86_64-penryn-O3-polly-unprofitable')},
-
-        {'name': "perf-x86_64-penryn-O3-polly",
-         'slavenames':["pollyperf11", "pollyperf7", "pollyperf15"],
-         'builddir':"perf-x86_64-penryn-O3-polly",
-         'factory': PollyBuilder.getPollyLNTFactory(triple="x86_64-pc-linux-gnu",
-                                                    #nt_flags=['--multisample=10', '--mllvm=-polly', '--rerun'],
-                                                    nt_flags=['--multisample=10', '--mllvm=-polly'],
-                                                    reportBuildslave=False,
-                                                    package_cache="http://parkas1.inria.fr/packages",
-                                                    submitURL=['http://gcc12.fsffrance.org:8808/submitRun','http://lnt.llvm.org/submitRun'],
-                                                    testerName='x86_64-penryn-O3-polly')},
-
-        {'name': "perf-x86_64-penryn-O3-polly-detect-only",
-         'slavenames':["pollyperf15"],
-         'builddir':"perf-x86_64-penryn-O3-polly-detect-only",
-         'factory': PollyBuilder.getPollyLNTFactory(triple="x86_64-pc-linux-gnu",
-                                                    #nt_flags=['--multisample=10', '--mllvm=-polly', '--rerun'],
-                                                    nt_flags=['--multisample=10', '--mllvm=-polly', '--mllvm=-polly-only-scop-detection'],
-                                                    reportBuildslave=False,
-                                                    package_cache="http://parkas1.inria.fr/packages",
-                                                    submitURL=['http://gcc12.fsffrance.org:8808/submitRun','http://lnt.llvm.org/submitRun'],
-                                                    testerName='x86_64-penryn-O3-polly-before-vectorizer-detect-only')},
 
         {'name': "polly-arm-linux",
          'slavenames': ["hexagon-build-02", "hexagon-build-03"],
@@ -893,13 +806,6 @@ def _get_rev_iter_builders():
 # LLDB builders.
 def _get_lldb_builders():
     return [
-        {'name': "lldb-amd64-ninja-freebsd11",
-         'slavenames': ["lldb-amd64-ninja-freebsd11"],
-         'builddir': "scratch",
-         'category' : 'lldb',
-         'factory': LLDBBuilder.getLLDBScriptCommandsFactory(
-                    downloadBinary=False,
-                    runTest=False)},
         {'name': "lldb-x86_64-fedora",
          'slavenames': ["lldb-x86_64-fedora"],
          'builddir': "lldb-x86_64-fedora",
@@ -1189,17 +1095,6 @@ def _get_sanitizer_builders():
                                         "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'"],
                )},
 
-          # Juno
-          {'name' : "clang-native-aarch64-full",
-           'slavenames' :["juno-aarch64-01"],
-           'builddir':"clang-native-aarch64-full",
-           'factory' : ClangBuilder.getClangCMakeBuildFactory(
-                        jobs=4,
-                        clean=True,
-                        checkout_lld=False,
-                        useTwoStage=True,
-                        testStage1=True,
-                        extra_cmake_args=["-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'"])},
           ]
 
 def _get_openmp_builders():
@@ -1527,16 +1422,6 @@ def _get_on_demand_builders():
 
 def _get_experimental_scheduled_builders():
     return [
-        {'name' : "clang-bpf-build",
-         'slavenames' : ["bpf-build-slave01"],
-         'builddir' : "clang-bpf-build",
-         'factory' : ClangBuilder.getClangCMakeBuildFactory(useTwoStage=False,
-                                                            checkout_lld=False,
-                                                            clean=False,
-                                                            test=True,
-                                                            stage1_config='Release'),
-         'category' : 'clang'},
-
         {'name' : "clang-cuda-build",
          'slavenames' : ["cuda-build-test-01"],
          'builddir' : "clang-cuda-build",
