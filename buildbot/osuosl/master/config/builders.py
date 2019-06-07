@@ -513,37 +513,6 @@ def _get_clang_builders():
                                # TODO: Enable Werror once all the warnings are cleaned.
                                extra_configure_args = ["-DLLVM_ENABLE_WERROR=OFF"])},
 
-        # Clang cross builders.
-#        {'name' : "clang-x86_64-darwin13-cross-mingw32",
-#         'slavenames' :["as-bldslv9"],
-#         'builddir' :"clang-x86_64-darwin13-cross-mingw32",
-#         'factory' : ClangBuilder.getClangBuildFactory(use_pty_in_tests=True,
-#                                                       test=False,
-#                                                       env = { 'CC' : 'clang',
-#                                                               'CXX' : 'clang++',
-#                                                               'CXXFLAGS' : '-stdlib=libc++'},
-#                                                       extra_configure_args=['--build=x86_64-apple-darwin13',
-#                                                                             '--host=x86_64-apple-darwin13',
-#                                                                             '--target=i686-pc-mingw32'])},
-
-#        {'name' : "clang-x86_64-darwin13-cross-arm",
-#         'slavenames' :["as-bldslv9"],
-#         'builddir' :"clang-x86_64-darwin13-cross-arm",
-#         'factory' : ClangBuilder.getClangBuildFactory(use_pty_in_tests=True,
-#                                                       env = { 'CC' : 'clang',
-#                                                               'CXX' : 'clang++',
-#                                                               'CXXFLAGS' : '-stdlib=libc++'},
-#                                                       test=False,
-#                                                       extra_configure_args=['--build=x86_64-apple-darwin13',
-#                                                                             '--host=x86_64-apple-darwin13',
-#                                                                             '--target=arm-eabi',
-#                                                                             '--enable-targets=arm'])},
-
-#        {'name' : "clang-x86_64-ubuntu-gdb-75",
-#         'slavenames' :["hpproliant1"],
-#         'builddir' :"clang-x86_64-ubuntu-gdb-75",
-#         'factory' : ClangBuilder.getClangBuildFactory(stage1_config='Release+Asserts', run_modern_gdb=True, clean=False)},
-
         {'name' : "clang-hexagon-elf",
          'slavenames' :["hexagon-build-02", "hexagon-build-03"],
          'builddir' :"clang-hexagon-elf",
@@ -728,19 +697,6 @@ def _get_clang_builders():
                                "-DCMAKE_C_FLAGS='-march=broadwell'",
                                "-DCMAKE_CXX_FLAGS='-march=broadwell'",
                                "-DLLVM_TARGETS_TO_BUILD='X86'"])},
-
-#        {'name' : "clang-3stage-ubuntu",
-#         'slavenames' : ["ps4-buildslave1a"],
-#         'builddir' : "clang-3stage-ubuntu",
-#         'factory': ClangLTOBuilder3Stage.get3StageClangLTOBuildFactory(
-#               clean=True,
-#               env=None,
-#               build_gold=True,
-#               cmake_cache_file="../llvm.src/tools/clang/cmake/caches/3-stage.cmake",
-#               extra_cmake_options=[
-#                   '-GNinja',
-#                   '-DLLVM_TARGETS_TO_BUILD=all',
-#                   '-DLLVM_BINUTILS_INCDIR=/opt/binutils/include'])},
 
         ## Armv7 build cache
         {'name': "clang-armv7-linux-build-cache",
