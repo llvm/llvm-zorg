@@ -160,6 +160,25 @@ def _get_clang_fast_builders():
                                             "-DLLVM_ENABLE_WERROR=OFF",
                                             "-DCMAKE_BUILD_TYPE=Debug",
                                             "-DLLVM_LIT_ARGS='-v'"])},
+
+        {'name' : "llvm-clang-x86_64-win-fast",
+         'slavenames' : ["as-builder-3"],
+         'builddir' : "llvm-clang-x86_64-win-fast",
+         'mergeRequests': False,
+         'factory': UnifiedTreeBuilder.getCmakeWithNinjaWithMSVCBuildFactory(
+                      vs="autodetect",
+                      depends_on_projects=['llvm', 'clang'],
+                      clean=True,
+                      checks=[
+                        "check-llvm-unit",
+                        "check-clang-unit"],
+                      extra_configure_args=[
+                        "-DLLVM_ENABLE_WERROR=OFF",
+                        "-DLLVM_TARGETS_TO_BUILD=ARM",
+                        "-DLLVM_DEFAULT_TARGET_TRIPLE=armv7-unknown-linux-eabihf",
+                        "-DLLVM_ENABLE_ASSERTIONS=OFF",
+                        "-DLLVM_OPTIMIZED_TABLEGEN=OFF",
+                        "-DLLVM_LIT_ARGS='-v --threads=32'"])},
     ]
 
 # Clang builders.
