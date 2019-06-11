@@ -202,6 +202,7 @@ ninja
 echo "@@@@@@"
 
 echo "@@@ Test @@@"
+ninja lldb-test-deps
 cd ${BUILD}/lit && /usr/bin/python2.7 ${WORKSPACE}/llvm-buildtree/bin/llvm-lit --verbose ${BUILD}/lit
 echo "@@@@@@"
 
