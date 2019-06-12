@@ -13,9 +13,7 @@ pipeline {
                                    remote: 'http://llvm.org/svn/llvm-project/lldb/trunk'],
                                   [local: 'clang.src',
                                    remote: 'http://llvm.org/svn/llvm-project/cfe/trunk'],
-                                  [cancelProcessOnExternalsFail: true,
-                                   credentialsId: '', depthOption: 'infinity',
-                                   ignoreExternalsOption: true, local: 'libcxx.src',
+                                  [local: 'libcxx.src',
                                    remote: 'http://llvm.org/svn/llvm-project/libcxx/trunk']],
                               quietOperation: false,
                               workspaceUpdater: [$class: 'UpdateUpdater']])
