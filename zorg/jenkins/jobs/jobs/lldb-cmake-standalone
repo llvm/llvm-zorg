@@ -254,7 +254,7 @@ echo "@@@@@@"
                 }
             }
         }
-        stage('LLDB generated Xcode project against buildtree') {
+        stage('CMake-generated Xcode project against buildtree') {
             steps {
                 timeout(activity: true, time: 30) {
                     sh '''
@@ -295,8 +295,12 @@ cmake -L $LLDB_SRC \
      -G Xcode
 echo "@@@@@@"
 
-echo "@@@ Compile @@@"
-xcodebuild -configuration Release
+echo "@@@ Build @@@"
+cmake --build . --config Release
+echo "@@@@@@"
+
+echo "@@@ Test @@@"
+/usr/bin/env TERM=vt100 cmake --build . --config Release --target check-lldb
 echo "@@@@@@"
 
                        '''
