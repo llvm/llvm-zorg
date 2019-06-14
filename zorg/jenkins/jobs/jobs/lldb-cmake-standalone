@@ -200,7 +200,7 @@ ninja
 echo "@@@@@@"
 
 echo "@@@ Test @@@"
-/usr/bin/env TERM=vt100 ninja --verbose check-lldb
+/usr/bin/env TERM=vt100 ninja -v check-lldb
 echo "@@@@@@"
 
                        '''
