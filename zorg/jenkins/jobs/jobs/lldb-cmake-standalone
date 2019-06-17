@@ -298,7 +298,8 @@ cmake --build . --config Release
 echo "@@@@@@"
 
 echo "@@@ Test @@@"
-/usr/bin/env TERM=vt100 cmake --build . --config Release --target check-lldb
+cmake --build . --config Release --target lldb-test-deps
+cd ${BUILD}/lit && /usr/bin/env TERM=vt100 /usr/bin/python2.7 ${WORKSPACE}/llvm-buildtree/bin/llvm-lit --verbose --param build_mode=Release ${BUILD}/lit
 echo "@@@@@@"
 
                        '''
