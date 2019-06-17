@@ -880,7 +880,7 @@ def _get_lld_builders():
 
         {'name': "lld-x86_64-win7",
          'mergeRequests': False,
-         'slavenames' :["as-bldslv4"],
+         'slavenames' :["ps4-buildslave2"],
          'builddir':"lld-x86_64-win7",
          'factory': LLDBuilder.getLLDWinBuildFactory(
                         vs="autodetect",

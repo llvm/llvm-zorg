@@ -10,9 +10,6 @@ def create_slave(name, *args, **kwargs):
 
 def get_build_slaves():
     return [
-        # Windows 7 Professional x64
-        create_slave("as-bldslv4"),
-
         # FreeBSD 11.0-CURRENT
         create_slave("as-bldslv5", properties={'jobs' : 24}, max_builds=2),
 
