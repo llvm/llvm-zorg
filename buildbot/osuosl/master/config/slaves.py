@@ -40,6 +40,7 @@ def get_build_slaves():
         # sure we have plenty CPU cycle to satisfy timing assumptions.
         create_slave("linaro-armv8-01-arm-libcxx", properties={'jobs' : 1}, max_builds=1),
         create_slave("linaro-armv8-01-arm-libcxx-noeh", properties={'jobs' : 1}, max_builds=1),
+        create_slave("linaro-armv8-01-lldb-arm", properties={'jobs' : 64}, max_builds=1),
         # Packet.Net ThunderX1 for LLDB buildbot - Ubuntu Xenial 16.04 arm64 container
         create_slave("linaro-thx1-lldb-aarch64", properties={'jobs': 16}, max_builds=1),
 

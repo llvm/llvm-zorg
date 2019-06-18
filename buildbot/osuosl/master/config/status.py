@@ -279,7 +279,7 @@ def get_status_targets(standard_builders, standard_categories=None):
             extraRecipients = ["omair.javaid@linaro.org"],
             subject="Build %(builder)s Failure",
             mode = "failing",
-            builders = ["lldb-aarch64-ubuntu"],
+            builders = ["lldb-arm-ubuntu","lldb-aarch64-ubuntu"],
             addLogs=False),
         InformativeMailNotifier(
             fromaddr = "llvm.buildmaster@lab.llvm.org",
