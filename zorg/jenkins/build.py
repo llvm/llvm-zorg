@@ -615,7 +615,7 @@ def lldb_cmake_builder():
     footer()
 
     header("Run Tests")
-    run_cmd(conf.lldbbuilddir(), ['/usr/bin/env', 'TERM=vt100', NINJA, '-v', 'check-lldb'])
+    run_cmd(conf.lldbbuilddir(), ['/usr/bin/env', 'TERM=vt100', NINJA, '-v', 'check-debuginfo check-lldb'])
     footer()
 
 
@@ -821,7 +821,7 @@ def derive_lldb():
 
 def derive_lldb_cmake():
     """Build a derived src tree for LLDB for building with CMake"""
-    derive(tree='llvm', repos=['lldb', 'llvm', 'clang', 'libcxx'])
+    derive(tree='llvm', repos=['lldb', 'llvm', 'clang', 'libcxx', 'debuginfo-tests'])
 
 
 def create_builddirs():
