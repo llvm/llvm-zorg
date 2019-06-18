@@ -809,7 +809,7 @@ def derive(tree, repos):
 
 
 def derive_llvm(repos=['llvm', 'clang', 'libcxx', 'clang-tools-extra', \
-                       'compiler-rt', 'debuginfo-tests']):
+                       'compiler-rt']):
     """Build a derived src tree for LLVM"""
     derive(tree='llvm', repos=repos)
 
