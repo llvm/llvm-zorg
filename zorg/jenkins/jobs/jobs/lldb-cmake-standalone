@@ -105,7 +105,7 @@ rsync -auvh --delete --exclude=.svn/ ${WORKSPACE}/lldb.src/ ${WORKSPACE}/lldb
                 }
             }
         }
-        stage('Build LLVM, Clang, libcxx') {
+        stage('Build+Install LLVM, Clang, libcxx (Ninja, RelWithDebInfo)') {
             steps {
                 timeout(activity: true, time: 30) {
                     sh '''
@@ -156,7 +156,7 @@ echo "@@@@@@"
                 }
             }
         }
-        stage('Build LLDB against buildtree') {
+        stage('Build+Test against build-tree (Ninja, Release)') {
             steps {
                 timeout(activity: true, time: 30) {
                     sh '''
@@ -206,7 +206,7 @@ echo "@@@@@@"
                 }
             }
         }
-        stage('Build LLDB against installtree') {
+        stage('Build against install-tree (Ninja, Release)') {
             steps {
                 timeout(activity: true, time: 30) {
                     sh '''
@@ -253,7 +253,7 @@ echo "@@@@@@"
                 }
             }
         }
-        stage('CMake-generated Xcode project against buildtree') {
+        stage('Build+Test against build-tree (Xcode, Debug)') {
             steps {
                 timeout(activity: true, time: 30) {
                     sh '''
