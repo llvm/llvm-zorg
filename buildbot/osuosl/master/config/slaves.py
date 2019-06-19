@@ -218,4 +218,8 @@ def get_build_slaves():
         # Ubuntu 18.04.2 LTS x86_64 Intel(R) Xeon(R) Gold CPU @ 2.1GHz, 128GB RAM
         create_slave("as-builder-4", properties={'jobs': 64}, max_builds=1),
 
+        # Solaris 11
+        create_slave("solaris11-amd64", properties={'jobs' : 8}, max_builds=1),
+        create_slave("solaris11-sparcv9", properties={'jobs' : 8}, max_builds=1),
+
         ]
