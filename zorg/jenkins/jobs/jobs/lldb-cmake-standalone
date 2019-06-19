@@ -133,7 +133,6 @@ echo FIXME: The module map in an install tree seems to still have problems.
 echo "@@@ CMake @@@"
 cmake $LLVM_SRC \
     -C$LLDB_SRC/cmake/caches/Apple-lldb-macOS.cmake \
-    -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_INSTALL_PREFIX="" \
     -DLLVM_INSTALL_UTILS=On \
     -DLLVM_INSTALL_TOOLCHAIN_ONLY=Off \
