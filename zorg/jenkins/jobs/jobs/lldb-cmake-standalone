@@ -280,7 +280,6 @@ cd $BUILD
 echo "@@@ CMake @@@"
 cmake -L $LLDB_SRC \
     -C$LLDB_SRC/cmake/caches/Apple-lldb-macOS.cmake \
-    -DCMAKE_BUILD_TYPE=Release \
     -DLLVM_VERSION_PATCH=99 \
     -DLLVM_DIR=${WORKSPACE}/llvm-buildtree/lib/cmake/llvm \
     -DClang_DIR=${WORKSPACE}/llvm-buildtree/lib/cmake/clang \
@@ -292,12 +291,12 @@ cmake -L $LLDB_SRC \
 echo "@@@@@@"
 
 echo "@@@ Build @@@"
-cmake --build . --config Release
+cmake --build . --config Debug
 echo "@@@@@@"
 
 echo "@@@ Test @@@"
-cmake --build . --config Release --target lldb-test-deps
-cd ${BUILD}/lit && /usr/bin/env TERM=vt100 /usr/bin/python2.7 ${WORKSPACE}/llvm-buildtree/bin/llvm-lit --verbose --param build_mode=Release ${BUILD}/lit
+cmake --build . --config Debug --target lldb-test-deps
+cd ${BUILD}/lit && /usr/bin/env TERM=vt100 /usr/bin/python2.7 ${WORKSPACE}/llvm-buildtree/bin/llvm-lit --verbose --param build_mode=Debug ${BUILD}/lit
 echo "@@@@@@"
 
                        '''
