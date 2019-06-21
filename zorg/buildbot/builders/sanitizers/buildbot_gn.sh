@@ -55,6 +55,11 @@ buildbot_update_git
   cd $STAGE2_DIR
   for TARGET in "" $(ninja -t targets | grep -o "^check-[^:]*") ; do
     echo @@@BUILD_STEP ninja $TARGET@@@
-    ninja $TARGET || echo @@@STEP_FAILURE@@@
+    if [[ "$TARGET" == "check-clang-tools" ]] ; then
+      STEP_ERROR=@@@STEP_WARNINGS@@@
+    else
+      STEP_ERROR=@@@STEP_FAILURE@@@
+    fi
+    ninja $TARGET || echo $STEP_ERROR
   done
 )
