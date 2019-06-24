@@ -100,10 +100,10 @@
 # CHECK-DERIVE: @@@ Derive Source @@@
 # CHECK-DERIVE: cd
 # CHCEK-DERIVE: Output/test_build.py.tmp.SANDBOX/llvm
-# CHECK-DERIVE: 'rsync' '-auvh' '--delete' '--exclude=.svn/' '--exclude=/tools/clang' '--exclude=/projects/libcxx' '--exclude=/tools/clang/tools/extra' '--exclude=/projects/compiler-rt' '--exclude=/tools/clang/test/debuginfo-tests'
+# CHECK-DERIVE: 'rsync' '-auvh' '--delete' '--exclude=.svn/' '--exclude=/tools/clang' '--exclude=/projects/libcxx' '--exclude=/tools/clang/tools/extra' '--exclude=/projects/compiler-rt'
 # CHECK-DERIVE: /llvm.src/'
 # CHECK-DERIVE: test_build.py.tmp.SANDBOX/llvm'
-# CHECK-DERIVE: 'rsync' '-auvh' '--delete' '--exclude=.svn/' '--exclude=/tools/clang/tools/extra' '--exclude=/tools/clang/test/debuginfo-tests'
+# CHECK-DERIVE: 'rsync' '-auvh' '--delete' '--exclude=.svn/' '--exclude=/tools/clang/tools/extra'
 # CHECK-DERIVE: test_build.py.tmp.SANDBOX/clang.src/'
 # CHECK-DERIVE: test_build.py.tmp.SANDBOX/llvm/tools/clang'
 # CHECK-DERIVE: 'rsync' '-auvh' '--delete' '--exclude=.svn/'
@@ -115,9 +115,6 @@
 # CHECK-DERIVE: 'rsync' '-auvh' '--delete' '--exclude=.svn/'
 # CHECK-DERIVE: test_build.py.tmp.SANDBOX/compiler-rt.src/'
 # CHECK-DERIVE: test_build.py.tmp.SANDBOX/llvm/projects/compiler-rt'
-# CHECK-DERIVE: 'rsync' '-auvh' '--delete' '--exclude=.svn/'
-# CHECK-DERIVE: test_build.py.tmp.SANDBOX/debuginfo-tests.src/'
-# CHECK-DERIVE: test_build.py.tmp.SANDBOX/llvm/tools/clang/test/debuginfo-tests'
 # CHECK-DERIVE: @@@@@@
 
 
