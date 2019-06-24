@@ -13,6 +13,8 @@ pipeline {
                                    remote: 'http://llvm.org/svn/llvm-project/lldb/trunk'],
                                   [local: 'clang.src',
                                    remote: 'http://llvm.org/svn/llvm-project/cfe/trunk'],
+                                  [local: 'debuginfo-tests.src',
+                                   remote: 'http://llvm.org/svn/llvm-project/debuginfo-tests/trunk'],
                                   [cancelProcessOnExternalsFail: true,
                                    credentialsId: '', depthOption: 'infinity',
                                    ignoreExternalsOption: true, local: 'libcxx.src',
