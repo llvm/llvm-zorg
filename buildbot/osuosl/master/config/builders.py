@@ -749,21 +749,27 @@ def _get_clang_builders():
          'slavenames' : ["solaris11-amd64"],
          'builddir' : "clang-solaris11-amd64",
          'factory': ClangBuilder.getClangCMakeBuildFactory(
+                      jobs=8,
                       clean=False,
                       checkout_lld=False,
                       extra_cmake_args=['-DLLVM_ENABLE_ASSERTIONS=ON',
                                         '-DLLVM_TARGETS_TO_BUILD=X86',
-                                        '-DCLANG_DEFAULT_LINKER=/usr/bin/ld'])},
+                                        '-DLLVM_HOST_TRIPLE=x86_64-pc-solaris2.11',
+                                        '-DCLANG_DEFAULT_LINKER=/usr/bin/ld',
+                                        '-DLLVM_PARALLEL_LINK_JOBS=4'])},
 
         {'name' : "clang-solaris11-sparcv9",
          'slavenames' : ["solaris11-sparcv9"],
          'builddir' : "clang-solaris11-sparcv9",
          'factory': ClangBuilder.getClangCMakeBuildFactory(
+                      jobs=8,
                       clean=False,
                       checkout_lld=False,
                       extra_cmake_args=['-DLLVM_ENABLE_ASSERTIONS=ON',
                                         '-DLLVM_TARGETS_TO_BUILD=Sparc',
-                                        '-DCLANG_DEFAULT_LINKER=/usr/bin/ld'])},
+                                        '-DLLVM_HOST_TRIPLE=sparcv9-pc-solaris2.11',
+                                        '-DCLANG_DEFAULT_LINKER=/usr/bin/ld',
+                                        '-DLLVM_PARALLEL_LINK_JOBS=4'])},
     ]
 
 # Polly builders.
