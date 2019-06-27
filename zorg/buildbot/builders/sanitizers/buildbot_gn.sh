@@ -34,14 +34,20 @@ echo @@@BUILD_STEP build GN@@@
 (
   export PATH="$PATH:$(readlink -f $STAGE1_DIR)/bin"
   cd gn
-  # Does not work with 0d038c2e0a32a528713d3dfaf1f1e0cdfe87fd46
-  git checkout 0d038c2e0a32a528713d3dfaf1f1e0cdfe87fd46^
+  git checkout d3304fbba9e39a5e996cbc8c769499a1079a8743
   python build/gen.py
   ninja -C out
 ) || { echo @@@STEP_EXCEPTION@@@ ; exit 1 ; }
 
 echo @@@BUILD_STEP update@@@
 buildbot_update_git
+
+(
+  echo @@@BUILD_STEP sync sources from cmake@@@
+  export PATH=$(readlink -f gn/out/):$PATH
+  cd $LLVM/..
+  $LLVM/utils/gn/build/sync_source_lists_from_cmake.py
+) || echo @@@STEP_WARNINGS@@@
 
 (
   echo @@@BUILD_STEP configure@@@
