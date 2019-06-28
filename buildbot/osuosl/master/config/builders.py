@@ -1009,10 +1009,6 @@ def _get_sanitizer_builders():
            'slavenames' :["sanitizer-buildbot1", "sanitizer-buildbot2"],
            'builddir': "sanitizer-x86_64-linux-fast",
            'factory': SanitizerBuilder.getSanitizerBuildFactory()},
-          {'name': "sanitizer-x86_64-linux-gn",
-           'slavenames' :["sanitizer-buildbot1", "sanitizer-buildbot2"],
-           'builddir': "sanitizer-x86_64-linux-gn",
-           'factory': SanitizerBuilder.getSanitizerBuildFactory()},
 
           {'name': "sanitizer-x86_64-linux-bootstrap",
            'slavenames' :["sanitizer-buildbot3", "sanitizer-buildbot4"],
@@ -1499,6 +1495,11 @@ def _get_experimental_scheduled_builders():
                      enable_thrust_tests=False,
          ),
          'category' : 'clang'},
+         {'name' : "sanitizer-x86_64-linux-gn",
+           'slavenames' : ["sanitizer-buildbot1", "sanitizer-buildbot2"],
+           'builddir' : "sanitizer-x86_64-linux-gn",
+           'factory' : SanitizerBuilder.getSanitizerBuildFactory(),
+           'category' : 'clang'},
         ]
 
 # Builders responsible building Sphinix documentation
