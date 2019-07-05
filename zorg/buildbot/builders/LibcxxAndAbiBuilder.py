@@ -94,6 +94,10 @@ def getLibcxxAndAbiBuilder(f=None, env={}, additional_features=set(),
     if check_libcxx_abilist and not 'CMAKE_BUILD_TYPE' in cmake_extra_opts:
        cmake_opts.append('-DCMAKE_BUILD_TYPE=RELWITHDEBINFO')
 
+    # Force libc++ to use the in-tree libc++abi unless otherwise specified.
+    if 'LIBCXX_CXX_ABI' not in cmake_extra_opts:
+        cmake_opts.append('-DLIBCXX_CXX_ABI=libcxxabi')
+
     # Nuke/remake build directory and run CMake
     f.addStep(buildbot.steps.shell.ShellCommand(
         name='rm.builddir', command=['rm', '-rf', build_path],
