@@ -2,22 +2,23 @@ from collections import OrderedDict
 
 from buildbot.process.factory import BuildFactory
 from buildbot.steps.source import SVN
+from buildbot.steps.shell import WithProperties
 
 svn_repos = OrderedDict([
-  ('llvm'             , ("%(llvm_srcdir)s",                         'http://llvm.org/svn/llvm-project/llvm/')),
-  ('clang'            , ("%(llvm_srcdir)s/tools/clang",             'http://llvm.org/svn/llvm-project/cfe/')),
-  ('clang-tools-extra', ("%(llvm_srcdir)s/tools/clang/tools/extra", 'http://llvm.org/svn/llvm-project/clang-tools-extra/')),
-  ('compiler-rt'      , ("%(llvm_srcdir)s/projects/compiler-rt",    'http://llvm.org/svn/llvm-project/compiler-rt/')),
-  ('libcxx'           , ("%(llvm_srcdir)s/projects/libcxx",    'http://llvm.org/svn/llvm-project/libcxx/')),
-  ('libcxxabi'        , ("%(llvm_srcdir)s/projects/libcxxabi", 'http://llvm.org/svn/llvm-project/libcxxabi/')),
-  ('libunwind'        , ("%(llvm_srcdir)s/projects/libunwind", 'http://llvm.org/svn/llvm-project/libunwind/')),
-  ('lld'              , ("%(llvm_srcdir)s/tools/lld",               'http://llvm.org/svn/llvm-project/lld/')),
-  ('lnt'              , ("test/lnt",                                'http://llvm.org/svn/llvm-project/lnt/')),
-  ('test-suite'       , ("test/test-suite",                         'http://llvm.org/svn/llvm-project/test-suite/')),
-  ('lldb'             , ("%(llvm_srcdir)s/tools/lldb",              'http://llvm.org/svn/llvm-project/lldb/')),
-  ('llgo'             , ("%(llvm_srcdir)s/tools/llgo",              'http://llvm.org/svn/llvm-project/llgo/')),
-  ('polly'            , ("%(llvm_srcdir)s/tools/polly",             'http://llvm.org/svn/llvm-project/polly/')),
-  ('openmp'           , ("%(llvm_srcdir)s/tools/openmp",            'http://llvm.org/svn/llvm-project/openmp/')),
+  ('llvm'             , ("%(llvm_srcdir)s",                         '%(vcs_protocol:-http)s://llvm.org/svn/llvm-project/llvm/')),
+  ('clang'            , ("%(llvm_srcdir)s/tools/clang",             '%(vcs_protocol:-http)s://llvm.org/svn/llvm-project/cfe/')),
+  ('clang-tools-extra', ("%(llvm_srcdir)s/tools/clang/tools/extra", '%(vcs_protocol:-http)s://llvm.org/svn/llvm-project/clang-tools-extra/')),
+  ('compiler-rt'      , ("%(llvm_srcdir)s/projects/compiler-rt",    '%(vcs_protocol:-http)s://llvm.org/svn/llvm-project/compiler-rt/')),
+  ('libcxx'           , ("%(llvm_srcdir)s/projects/libcxx",         '%(vcs_protocol:-http)s://llvm.org/svn/llvm-project/libcxx/')),
+  ('libcxxabi'        , ("%(llvm_srcdir)s/projects/libcxxabi",      '%(vcs_protocol:-http)s://llvm.org/svn/llvm-project/libcxxabi/')),
+  ('libunwind'        , ("%(llvm_srcdir)s/projects/libunwind",      '%(vcs_protocol:-http)s://llvm.org/svn/llvm-project/libunwind/')),
+  ('lld'              , ("%(llvm_srcdir)s/tools/lld",               '%(vcs_protocol:-http)s://llvm.org/svn/llvm-project/lld/')),
+  ('lnt'              , ("test/lnt",                                '%(vcs_protocol:-http)s://llvm.org/svn/llvm-project/lnt/')),
+  ('test-suite'       , ("test/test-suite",                         '%(vcs_protocol:-http)s://llvm.org/svn/llvm-project/test-suite/')),
+  ('lldb'             , ("%(llvm_srcdir)s/tools/lldb",              '%(vcs_protocol:-http)s://llvm.org/svn/llvm-project/lldb/')),
+  ('llgo'             , ("%(llvm_srcdir)s/tools/llgo",              '%(vcs_protocol:-http)s://llvm.org/svn/llvm-project/llgo/')),
+  ('polly'            , ("%(llvm_srcdir)s/tools/polly",             '%(vcs_protocol:-http)s://llvm.org/svn/llvm-project/polly/')),
+  ('openmp'           , ("%(llvm_srcdir)s/tools/openmp",            '%(vcs_protocol:-http)s://llvm.org/svn/llvm-project/openmp/')),
   ])
 
 class LLVMBuildFactory(BuildFactory):
@@ -73,5 +74,5 @@ class LLVMBuildFactory(BuildFactory):
                 self.addStep(
                     SVN(name='svn-%s' % project,
                         workdir=workdir % {'llvm_srcdir' : llvm_srcdir},
-                        baseURL=baseURL,
+                        baseURL=WithProperties(baseURL),
                         **kwargs))
