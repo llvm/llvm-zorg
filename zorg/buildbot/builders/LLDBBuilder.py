@@ -62,6 +62,7 @@ def getLLDBCMakeBuildFactory(
 
             extra_cmake_args=None,
             test=False,
+            testTimeout=2400,
             install=False):
 
     ############# PREPARING
@@ -142,7 +143,7 @@ def getLLDBCMakeBuildFactory(
     f.addStep(ShellCommand(name='test',
                           command=test_cmd,
                           flunkOnFailure=ignoreTestFail,
-                          timeout=2400,
+                          timeout=testTimeout,
                           description='ninja test',
                           workdir=build_dir,
                           doStepIf=bool(test),

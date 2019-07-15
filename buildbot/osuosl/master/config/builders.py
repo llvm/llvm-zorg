@@ -855,8 +855,10 @@ def _get_lldb_builders():
          'builddir': "lldb-x86_64-fedora",
          'category' : 'lldb',
          'factory': LLDBBuilder.getLLDBCMakeBuildFactory(
+                    config='RelWithDebInfo',
                     clean=True,
                     test=True,
+                    testTimeout=30*24*3600,
                     extra_cmake_args=['-DLLVM_ENABLE_ASSERTIONS=True',
                                       '-DLLVM_USE_LINKER=gold',
                                       '-DLLVM_LIT_ARGS="-v"'])},
