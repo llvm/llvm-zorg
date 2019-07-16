@@ -279,7 +279,7 @@ cd $BUILD
 
 echo "@@@ CMake @@@"
 cmake -L $LLDB_SRC \
-    -C$LLDB_SRC/cmake/caches/Apple-lldb-macOS.cmake \
+    -C$LLDB_SRC/cmake/caches/Apple-lldb-Xcode.cmake \
     -DLLVM_VERSION_PATCH=99 \
     -DLLVM_DIR=${WORKSPACE}/llvm-buildtree/lib/cmake/llvm \
     -DClang_DIR=${WORKSPACE}/llvm-buildtree/lib/cmake/clang \
