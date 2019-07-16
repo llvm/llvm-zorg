@@ -81,7 +81,7 @@ def get_build_slaves():
 
         # POWER7 PowerPC big endian (powerpc64)
         create_slave("ppc64be-clang-test", properties={'jobs': 16}, max_builds=1),
-        create_slave("ppc64be-clang-lnt-test", properties={'jobs': 16}, max_builds=1),
+        create_slave("ppc64be-clang-lnt-test", properties={'jobs': 16, 'vcs_protocol': 'https'}, max_builds=1),
         create_slave("ppc64be-clang-multistage-test", properties={'jobs': 16}, max_builds=1),
         create_slave("ppc64be-sanitizer", properties={'jobs': 16}, max_builds=1),
 
