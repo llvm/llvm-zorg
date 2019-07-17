@@ -77,6 +77,7 @@ class Configuration(object):
         self.build_id = os.environ.get('BUILD_ID', 'NONE')
         self.build_number = os.environ.get('BUILD_NUMBER', 'NONE')
         self.git_sha = os.environ.get('GIT_SHA', 'NONE')
+        self.git_distance = os.environ.get('GIT_DISTANCE', 'NONE')
         self.nobootstrap = True
         self.device = None
         self.node_name = os.environ.get('NODE_NAME', None)
@@ -642,9 +643,10 @@ def build_upload_artifact():
     header("Uploading Artifact")
     prop_file = "last_good_build.properties"
 
-    # TODO : azhar : Update artifact name
-    artifact_name = "clang-t{}-b{}.tar.gz".format(conf.build_id,
-                                                  conf.build_number)
+    artifact_name = "clang-d{}-g{}-t{}-b{}.tar.gz".format(conf.git_distance,
+                                                          conf.git_sha,
+                                                          conf.build_id,
+                                                          conf.build_number)
     new_url = conf.job_name + "/" + artifact_name
 
     with open(prop_file, 'w') as prop_fd:
