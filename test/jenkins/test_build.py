@@ -55,7 +55,7 @@
 # CHECK-SIMPLE: cd
 # CHECK-SIMPLE: 'env' 'MALLOC_LOG_FILE=/dev/null' '/usr/local/bin/ninja' '-v' '-k' '0' 'check-all'
 
-# Now Check Assertion Buiilds have --enable assertions
+# Now Check Assertion Builds have --enable assertions
 
 # RUN: python %{src_root}/zorg/jenkins/build.py clang all --assertions > %t-assert.log
 # RUN: FileCheck --check-prefix CHECK-ASSERT < %t-assert.log %s
