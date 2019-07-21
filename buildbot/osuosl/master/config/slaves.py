@@ -141,7 +141,7 @@ def get_build_slaves():
         create_slave("modules-slave-2", properties={'jobs': 16}, max_builds=1),
 
         # IBM z13 (s390x), Ubuntu 16.04.2
-        create_slave("systemz-1", properties={'jobs': 4}, max_builds=4),
+        create_slave("systemz-1", properties={'jobs': 4, 'vcs_protocol': 'https'}, max_builds=4),
 
         # Ubuntu 14.10 x86_64, Intel(R) Xeon(R) CPU E3-1245 V2 @ 3.40GHz
         create_slave('ericwf-buildslave2', properties={'jobs': 4}, max_builds=2),
