@@ -650,6 +650,7 @@ def build_upload_artifact():
     new_url = conf.job_name + "/" + artifact_name
 
     with open(prop_file, 'w') as prop_fd:
+        prop_fd.write("GIT_DISTANCE={}\n".format(conf.git_distance))
         prop_fd.write("GIT_SHA={}\n".format(conf.git_sha))
         prop_fd.write("ARTIFACT={}\n".format(new_url))
 
