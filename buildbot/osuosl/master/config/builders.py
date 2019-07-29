@@ -3,7 +3,6 @@ from zorg.buildbot.builders import LLVMBuilder
 from zorg.buildbot.builders import PollyBuilder
 from zorg.buildbot.builders import LLDBBuilder
 from zorg.buildbot.builders import LLDBuilder
-from zorg.buildbot.builders import LLGoBuilder
 from zorg.buildbot.builders import ClangAndLLDBuilder
 from zorg.buildbot.builders import SanitizerBuilder
 from zorg.buildbot.builders import SanitizerBuilderII
@@ -988,16 +987,6 @@ def _get_lld_builders():
 
         ]
 
-# llgo builders.
-def _get_llgo_builders():
-    return [
-    ]
-#Offline
-{'name': "llgo-x86_64-linux",
- 'slavenames': ["llgo-builder"],
- 'builddir': "llgo-x86_64-linux",
- 'factory': LLGoBuilder.getLLGoBuildFactory()},
-
 # Sanitizer builders.
 def _get_sanitizer_builders():
       return [
@@ -1587,10 +1576,6 @@ def get_builders():
 
     for b in _get_lldb_builders():
         b['category'] = 'lldb'
-        yield b
-
-    for b in _get_llgo_builders():
-        b['category'] = 'llgo'
         yield b
 
     for b in _get_sanitizer_builders():
