@@ -29,7 +29,7 @@ curl -fksSO "${last_good_properties_url}"
 """
     def props = readProperties file: propfile
     def artifact = "http://labmaster2.local/artifacts/${props.ARTIFACT}"
-    currentBuild.setDisplayName("r${props.LLVM_REV}")
+    currentBuild.setDisplayName("${props.GIT_DISTANCE}-${props.GIT_SHA}")
 
     // Trigger all jobs with names matching the `job_pattern` regex.
     def joblist = get_matching_jobs(job_pattern)
@@ -43,8 +43,11 @@ curl -fksSO "${last_good_properties_url}"
                  name: 'ARTIFACT',
                  value: artifact],
                 [$class: 'StringParameterValue',
-                 name: 'LLVM_REV',
-                 value: props.LLVM_REV],
+                 name: 'GIT_SHA',
+                 value: props.GIT_SHA],
+                [$class: 'StringParameterValue',
+                 name: 'GIT_DISTANCE',
+                 value: props.GIT_DISTANCE],
             ]
             build job: jobname, parameters: job_params
         }
