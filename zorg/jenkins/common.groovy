@@ -30,7 +30,7 @@ private def clone_llvm_project(name, sha) {
         checkout poll: false, changelog: true, scm: [
             $class: 'GitSCM',
             branches: [[name: sha ]],
-            userRemoteConfigs: [[url: 'https://github.com/llvm/llvm-project.git']]
+            userRemoteConfigs: [[url: 'http://labmaster3.local/git/llvm-project.git']]
         ]
     }
 }
