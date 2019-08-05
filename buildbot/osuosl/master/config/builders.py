@@ -36,7 +36,7 @@ def _get_llvm_builders():
                         timeout=40, config_name='Release',
                         jobs=16,
                         enable_shared=False,
-                        env={'LD_LIBRARY_PATH': '/local/clang+llvm-6.0.1-x86_64-linux-gnu-ubuntu-14.04/lib'},
+                        env={'LD_LIBRARY_PATH': '/local/clang+llvm-8.0.0-x86_64-linux-gnu-ubuntu-14.04/lib'},
                         extra_cmake_args=[
                           "-G", "Unix Makefiles",
                           "-DCMAKE_BUILD_TYPE:STRING=Release",
@@ -52,8 +52,8 @@ def _get_llvm_builders():
                           "-DLLVM_LIT_ARGS:STRING=-v",
                           "-DLLVM_ENABLE_LIBCXX:BOOL=ON",
                           "-DWITH_POLLY:BOOL=OFF",
-                          "-DCMAKE_C_COMPILER:FILEPATH=/local/clang+llvm-6.0.1-x86_64-linux-gnu-ubuntu-14.04/bin/clang",
-                          "-DCMAKE_CXX_COMPILER:FILEPATH=/local/clang+llvm-6.0.1-x86_64-linux-gnu-ubuntu-14.04/bin/clang++"
+                          "-DCMAKE_C_COMPILER:FILEPATH=/local/clang+llvm-8.0.0-x86_64-linux-gnu-ubuntu-14.04/bin/clang",
+                          "-DCMAKE_CXX_COMPILER:FILEPATH=/local/clang+llvm-8.0.0-x86_64-linux-gnu-ubuntu-14.04/bin/clang++"
                         ])},
         {'name': "llvm-avr-linux",
          'slavenames':["avr-build-01"],
@@ -526,7 +526,7 @@ def _get_clang_builders():
             checkout_clang_tools_extra=False,
             checkout_compiler_rt=False,
             checkout_lld=False,
-            env={'LD_LIBRARY_PATH': '/local/clang+llvm-6.0.1-x86_64-linux-gnu-ubuntu-14.04/lib'},
+            env={'LD_LIBRARY_PATH': '/local/clang+llvm-8.0.0-x86_64-linux-gnu-ubuntu-14.04/lib'},
             extra_cmake_args=[
               "-DCMAKE_BUILD_TYPE:STRING=Release",
               "-DLLVM_TARGETS_TO_BUILD:STRING=Hexagon",
@@ -543,8 +543,8 @@ def _get_clang_builders():
               "-DWITH_POLLY:BOOL=OFF",
               "-DLINK_POLLY_INTO_TOOLS:BOOL=OFF",
               "-DPOLLY_BUILD_SHARED_LIB:BOOL=OFF",
-              "-DCMAKE_C_COMPILER:FILEPATH=/local/clang+llvm-6.0.1-x86_64-linux-gnu-ubuntu-14.04/bin/clang",
-              "-DCMAKE_CXX_COMPILER:FILEPATH=/local/clang+llvm-6.0.1-x86_64-linux-gnu-ubuntu-14.04/bin/clang++"])},
+              "-DCMAKE_C_COMPILER:FILEPATH=/local/clang+llvm-8.0.0-x86_64-linux-gnu-ubuntu-14.04/bin/clang",
+              "-DCMAKE_CXX_COMPILER:FILEPATH=/local/clang+llvm-8.0.0-x86_64-linux-gnu-ubuntu-14.04/bin/clang++"])},
 
         {'name' : "clang-x86_64-linux-selfhost-modules",
          'slavenames' : ["modules-slave-1"],
@@ -749,15 +749,15 @@ def _get_polly_builders():
                 install=True,
                 make='ninja',
                 jobs=16,
-                env={'LD_LIBRARY_PATH': '/local/clang+llvm-6.0.1-x86_64-linux-gnu-ubuntu-14.04/lib'},
+                env={'LD_LIBRARY_PATH': '/local/clang+llvm-8.0.0-x86_64-linux-gnu-ubuntu-14.04/lib'},
                 extraCmakeArgs=["-G", "Ninja",
                                 "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'",
                                 "-DLLVM_DEFAULT_TARGET_TRIPLE=arm-linux-gnueabi",
                                 "-DLLVM_TARGET_ARCH=arm-linux-gnueabi",
                                 "-DLLVM_ENABLE_ASSERTIONS=True",
                                 "-DLLVM_ENABLE_LIBCXX:BOOL=ON",
-                                "-DCMAKE_C_COMPILER:FILEPATH=/local/clang+llvm-6.0.1-x86_64-linux-gnu-ubuntu-14.04/bin/clang",
-                                "-DCMAKE_CXX_COMPILER:FILEPATH=/local/clang+llvm-6.0.1-x86_64-linux-gnu-ubuntu-14.04/bin/clang++"])}
+                                "-DCMAKE_C_COMPILER:FILEPATH=/local/clang+llvm-8.0.0-x86_64-linux-gnu-ubuntu-14.04/bin/clang",
+                                "-DCMAKE_CXX_COMPILER:FILEPATH=/local/clang+llvm-8.0.0-x86_64-linux-gnu-ubuntu-14.04/bin/clang++"])}
        ]
 
 # AOSP builders.
@@ -775,14 +775,14 @@ def _get_aosp_builders():
                                   "-DLLVM_TARGET_ARCH=arm-linux-androideabi",
                                   "-DLLVM_ENABLE_ASSERTIONS=True",
                                   "-DLLVM_ENABLE_LIBCXX:BOOL=ON",
-                                  "-DCMAKE_C_COMPILER:FILEPATH=/local/clang+llvm-6.0.1-x86_64-linux-gnu-ubuntu-14.04/bin/clang",
-                                  "-DCMAKE_CXX_COMPILER:FILEPATH=/local/clang+llvm-6.0.1-x86_64-linux-gnu-ubuntu-14.04/bin/clang++"],
+                                  "-DCMAKE_C_COMPILER:FILEPATH=/local/clang+llvm-8.0.0-x86_64-linux-gnu-ubuntu-14.04/bin/clang",
+                                  "-DCMAKE_CXX_COMPILER:FILEPATH=/local/clang+llvm-8.0.0-x86_64-linux-gnu-ubuntu-14.04/bin/clang++"],
                 timeout=240,
                 target_clang=None,
                 target_flags="-Wno-error -O3 -mllvm -polly -mllvm -polly-position=before-vectorizer -mllvm -polly-process-unprofitable",
                 jobs=8,
                 extra_make_args=None,
-                env={'LD_LIBRARY_PATH': '/local/clang+llvm-6.0.1-x86_64-linux-gnu-ubuntu-14.04/lib'},
+                env={'LD_LIBRARY_PATH': '/local/clang+llvm-8.0.0-x86_64-linux-gnu-ubuntu-14.04/lib'},
                 clean=False,
                 sync=False,
                 patch=None)}
@@ -799,13 +799,13 @@ def _get_rev_iter_builders():
                 make='ninja',
                 jobs=16,
                 checkAll=True,
-                env={'LD_LIBRARY_PATH': '/local/clang+llvm-6.0.1-x86_64-linux-gnu-ubuntu-14.04/lib'},
+                env={'LD_LIBRARY_PATH': '/local/clang+llvm-8.0.0-x86_64-linux-gnu-ubuntu-14.04/lib'},
                 extraCmakeArgs=["-G", "Ninja",
                                 "-DLLVM_REVERSE_ITERATION:BOOL=ON",
                                 "-DLLVM_ENABLE_ASSERTIONS=True",
                                 "-DLLVM_ENABLE_LIBCXX:BOOL=ON",
-                                "-DCMAKE_C_COMPILER:FILEPATH=/local/clang+llvm-6.0.1-x86_64-linux-gnu-ubuntu-14.04/bin/clang",
-                                "-DCMAKE_CXX_COMPILER:FILEPATH=/local/clang+llvm-6.0.1-x86_64-linux-gnu-ubuntu-14.04/bin/clang++"])}
+                                "-DCMAKE_C_COMPILER:FILEPATH=/local/clang+llvm-8.0.0-x86_64-linux-gnu-ubuntu-14.04/bin/clang",
+                                "-DCMAKE_CXX_COMPILER:FILEPATH=/local/clang+llvm-8.0.0-x86_64-linux-gnu-ubuntu-14.04/bin/clang++"])}
     ]
 
 # LLDB builders.
