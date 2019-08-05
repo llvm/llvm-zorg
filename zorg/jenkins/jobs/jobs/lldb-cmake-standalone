@@ -1,6 +1,9 @@
 #!/usr/bin/env groovy
 pipeline {
     agent {label 'green-dragon-23'}
+    parameters {
+        string(name: 'ARTIFACT', defaultValue: 'clang-stage1-RA/latest', description: 'Compiler artifact to use for building the project')
+    }
     stages {
         stage('Subversion Checkout') {
             steps {
