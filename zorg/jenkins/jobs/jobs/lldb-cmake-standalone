@@ -4,7 +4,7 @@ pipeline {
     parameters {
         string(name: 'ARTIFACT', defaultValue: 'clang-stage1-RA/latest', description: 'Compiler artifact to use for building the project')
         string(name: 'BUILD_TYPE', defaultValue: 'Release', description: 'Default CMake build type; one of: Release, Debug, ...')
-        string(name: 'CLEAN', defaultValue: false, description: 'Whether or not to clean the build directory before building')
+        booleanParam(name: 'CLEAN', defaultValue: false, description: 'Whether or not to clean the build directory before building')
     }
     stages {
         stage('Subversion Checkout') {
