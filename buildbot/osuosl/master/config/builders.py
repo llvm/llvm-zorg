@@ -562,44 +562,6 @@ def _get_clang_builders():
                                                        stage2_extra_configure_args=['-DCMAKE_CXX_FLAGS=-stdlib=libc++',
                                                                                     '-DLLVM_ENABLE_MODULES=1'])},
 
-        {'name' : "clang-x86_64-linux-selfhost-modules-2",
-         'slavenames' : ["modules-slave-2"],
-         'builddir' : "clang-x86_64-linux-selfhost-modules-2",
-         'factory' : ClangBuilder.getClangBuildFactory(triple='x86_64-pc-linux-gnu',
-                                                       checkout_lld=False,
-                                                       useTwoStage=True,
-                                                       clean=False,
-                                                       stage1_config='Release',
-                                                       stage2_config='Release',
-                                                       extra_configure_args=['-DCMAKE_C_COMPILER=clang',
-                                                                             '-DCMAKE_CXX_COMPILER=clang++',
-                                                                             '-DCMAKE_CXX_FLAGS=-stdlib=libstdc++',
-                                                                             '-DLLVM_ENABLE_ASSERTIONS=ON'],
-                                                       stage2_extra_configure_args=['-DCMAKE_CXX_FLAGS=-stdlib=libstdc++',
-                                                                                    '-DLLVM_ENABLE_MODULES=1'])},
-
-        {'name' : "clang-x64-ninja-win7",
-         'slavenames' : ["windows7-buildbot"],
-         'builddir' : "clang-x64-ninja-win7",
-         'factory' : ClangBuilder.getClangCMakeBuildFactory(
-                        clean=False,
-                        checkout_lld=False,
-                        vs='%VS140COMNTOOLS%',
-                        vs_target_arch='x64',
-                        testStage1=True,
-                        useTwoStage=True,
-                        stage1_config='Release',
-                        stage2_config='Release',
-                        extra_cmake_args=['-DLLVM_ENABLE_ASSERTIONS=ON',
-                                          '-DLLVM_TARGETS_TO_BUILD=X86'])},
-
-        {'name' : "clang-x86_64-freebsd11",
-         'slavenames' : ["freebsd01"],
-         'builddir' : "clang-x86_64-freebsd",
-         'factory': ClangBuilder.getClangCMakeBuildFactory(
-                       checkout_lld=False,
-                       clean=False)},
-
         {'name' : "clang-freebsd11-amd64",
          'slavenames' : ["freebsd11-amd64"],
          'builddir' : "clang-freebsd11-amd64",
@@ -1153,22 +1115,6 @@ def _get_openmp_builders():
                          c_compiler="clang",
                          cxx_compiler="clang++",
                          env={'PATH':'/home/llvmbb/bin/clang-latest/bin:/home/llvmbb/bin:/usr/local/bin:/usr/local/bin:/usr/bin:/bin'})},
-
-        {'name': "openmp-clang-ppc64le-linux-debian",
-         'slavenames':["ppc64le-nvidia-K40"],
-         'builddir':"openmp-clang-ppc64le-linux-debian",
-         'factory' : OpenMPBuilder.getOpenMPCMakeBuildFactory(
-                         c_compiler="clang",
-                         cxx_compiler="clang++",
-                         env={'PATH':'/home/bbot/opt/cmake/bin:/home/bbot/opt/ninja/bin:/usr/local/bin:/usr/bin:/bin'})},
-
-        {'name': "openmp-clang-ppc64le-linux-rhel",
-         'slavenames':["ppc64le-nvidia-P100"],
-         'builddir':"openmp-clang-ppc64le-linux-rhel",
-         'factory' : OpenMPBuilder.getOpenMPCMakeBuildFactory(
-                         c_compiler="clang",
-                         cxx_compiler="clang++",
-                         env={'PATH':'/opt/llvm/bin:/opt/at11.0/bin:/usr/local/bin:/usr/bin:/bin'})},
 
         ]
 

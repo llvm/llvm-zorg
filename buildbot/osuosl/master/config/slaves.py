@@ -73,9 +73,6 @@ def get_build_slaves():
         # Intel(R) Atom(TM) CPU D525 @ 1.8GHz, Fedora x86_64
         create_slave("atom1-buildbot", properties={'jobs': 2}, max_builds=1),
 
-        # Windows 7 Intel(R) Xeon(R) CPU E5-2680 (2.80GHz), 16GB of RAM
-        create_slave("windows7-buildbot", properties={'jobs': 2}, max_builds=1),
-
         # Windows Server 2016 Intel Xeon(R) Quad 2.30 GHz, 56GB of RAM
         create_slave("win-py3-buildbot", properties={'jobs' : 64}, max_builds=1),
 
@@ -91,11 +88,6 @@ def get_build_slaves():
         create_slave("ppc64le-clang-multistage-test", properties={'jobs': 8}, max_builds=1),
         create_slave("ppc64le-sanitizer", properties={'jobs': 4}, max_builds=1),
         create_slave("ppc64le-lld-multistage-test", properties={'jobs': 40}, max_builds=1),
-
-        # POWER 8 PowerPC little endian (powerpc64le) with NVIDIA GPUs
-        create_slave("ppc64le-nvidia-K40", properties={'jobs': 4}, max_builds=1),
-        # POWER 8 PowerPC little endian (powerpc64le) with NVIDIA Pascal GPUs
-        create_slave("ppc64le-nvidia-P100", properties={'jobs': 4}, max_builds=1),
 
         # Ubuntu x86-64, Intel(R) Xeon(R) CPU E5-2680 0 @ 2.70GHz
         create_slave("hexagon-build-02", properties={'jobs': 12, 'loadaverage': 32},
@@ -137,9 +129,6 @@ def get_build_slaves():
         # Debian 7.7 x86_64 GCE instance
         create_slave("modules-slave-1", properties={'jobs': 16}, max_builds=1),
 
-        # Debian 7.7 x86_64 GCE instance
-        create_slave("modules-slave-2", properties={'jobs': 16}, max_builds=1),
-
         # IBM z13 (s390x), Ubuntu 16.04.2
         create_slave("systemz-1", properties={'jobs': 4, 'vcs_protocol': 'https'}, max_builds=4),
 
@@ -174,9 +163,6 @@ def get_build_slaves():
 
         # NetBSD amd64
         create_slave("netbsd-amd64", properties={'jobs': 8}, max_builds=1),
-
-        # FreeBSD 11.0-CURRENT amd64, Intel(R) Xeon(R) CPU E3-1230 v3 @ 3.30GHz
-        create_slave("freebsd01", properties={'jobs': 3}, max_builds=1),
 
         # Ubuntu 16.04 x86_64, 2 x Intel(R) Xeon(R) CPU E5-2690 v3 @ 2.60GHz, 64GB of RAM
         create_slave("cuda-build-test-01", properties={'jobs': 72}, max_builds=1),
