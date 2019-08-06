@@ -76,6 +76,7 @@ class Configuration(object):
         self.job_name = os.environ.get('JOB_NAME', 'NONE')
         self.build_id = os.environ.get('BUILD_ID', 'NONE')
         self.build_number = os.environ.get('BUILD_NUMBER', 'NONE')
+        self.svn_rev = os.environ.get('LLVM_REV', 'NONE')
         self.git_sha = os.environ.get('GIT_SHA', 'NONE')
         self.git_distance = os.environ.get('GIT_DISTANCE', 'NONE')
         self.nobootstrap = True
@@ -650,6 +651,7 @@ def build_upload_artifact():
     new_url = conf.job_name + "/" + artifact_name
 
     with open(prop_file, 'w') as prop_fd:
+        prop_fd.write("LLVM_REV={}\n".format(conf.svn_rev))
         prop_fd.write("GIT_DISTANCE={}\n".format(conf.git_distance))
         prop_fd.write("GIT_SHA={}\n".format(conf.git_sha))
         prop_fd.write("ARTIFACT={}\n".format(new_url))
