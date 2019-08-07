@@ -536,7 +536,7 @@ def lldb_cmake_builder():
                  '--env', 'TERM=vt100']
     dotest_args.extend(conf.dotest_flags)
     cmake_cmd = ["/usr/local/bin/cmake", '-G', 'Ninja',
-                 conf.srcdir(),
+                 conf.llvmsrcdir(),
                  '-DLLVM_ENABLE_ASSERTIONS:BOOL={}'.format(
                      "TRUE" if conf.assertions else "FALSE"),
                  '-DLLVM_ENABLE_PROJECTS='+conf.llvm_enable_projects,
