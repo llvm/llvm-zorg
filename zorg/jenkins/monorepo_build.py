@@ -421,104 +421,6 @@ def parse_settings_from_output(working_dir, cmd):
         os.chdir(old_dir)
 
 
-def lldb_builder():
-    """Do an Xcode build of lldb."""
-
-    # Wipe the build folder
-
-    header("Clean LLDB build directory")
-    if os.path.exists(conf.lldbbuilddir()):
-        shutil.rmtree(conf.lldbbuilddir())
-    footer()
-
-    # Build into the build folder
-    build_configuration = "Release"
-
-    xcodebuild_cmd = [
-        "xcodebuild",
-        "-arch", "x86_64",
-        "-configuration", build_configuration,
-        "-scheme", "desktop",
-        "-derivedDataPath", conf.lldbbuilddir()
-        # It is too fragile to use the Xcode debugserver.  If we add new
-        # command line arguments to debugserver, the older Xcode debugserver
-        # will fall over and not run.  By commenting out this flag, we
-        # are requiring the builder to have the lldb_codesign code signing
-        # certificate and we are ensuring we are testing the latest debugserver
-        # from lldb.
-        # "DEBUGSERVER_USE_FROM_SYSTEM=1"
-    ]
-
-    header("Build Xcode desktop scheme")
-    run_cmd("lldb", xcodebuild_cmd)
-    footer()
-
-    header("Gather Xcode build settings")
-    xcodebuild_cmd.append("-showBuildSettings")
-    settings = parse_settings_from_output("lldb", xcodebuild_cmd)
-    footer()
-
-    build_dir = settings.get("BUILD_DIR", None)
-    built_products_dir = settings.get("BUILT_PRODUCTS_DIR", None)
-    if build_dir is None or built_products_dir is None:
-        raise Exception("failed to retrieve build-related directories "
-                        "from Xcode")
-
-    llvm_build_dir = settings.get("LLVM_BUILD_DIR", None)
-    llvm_build_dir_arch = settings.get("LLVM_BUILD_DIR_ARCH", None)
-    if llvm_build_dir is None or llvm_build_dir_arch is None:
-        raise Exception("failed to retrieve LLVM build-related settings "
-                        "from Xcode")
-    llvm_build_bin_dir = os.path.join(llvm_build_dir, llvm_build_dir_arch, "bin")
-    built_clang_path = os.path.join(llvm_build_bin_dir, "clang")
-    built_filecheck_path = os.path.join(llvm_build_bin_dir, "FileCheck")
-    effective_clang = os.environ.get("LLDB_PYTHON_TESTSUITE_CC",
-                                     built_clang_path)
-
-    # Run C++ test suite (gtests)
-
-    xcodebuild_cmd = [
-        "xcodebuild",
-        "-arch", "x86_64",
-        "-configuration", build_configuration,
-        "-scheme", "lldb-gtest",
-        "-derivedDataPath", conf.lldbbuilddir(),
-        # See notes above.
-        # "DEBUGSERVER_USE_FROM_SYSTEM=1"
-    ]
-
-    header("Build Xcode lldb-gtest scheme")
-    run_cmd("lldb", xcodebuild_cmd)
-    footer()
-
-    # Run LLDB Python test suite for archs defined in LLDB_TEST_ARCHS
-    for arch in conf.lldb_test_archs:
-        results_file = os.path.join(build_dir,
-                "test-results-{}.xml".format(arch))
-        python_testsuite_cmd = [
-            "/usr/bin/python",
-            "test/dotest.py",
-            "--executable", os.path.join(built_products_dir, "lldb"),
-            "-C", effective_clang,
-            "--arch", arch,
-            "--results-formatter",
-            "lldbsuite.test_event.formatter.xunit.XunitFormatter",
-            "--results-file", results_file,
-            "--rerun-all-issues",
-            "--env", "TERM=vt100",
-            "-O--xpass=ignore",
-            "--dsymutil="+os.path.join(os.path.dirname(effective_clang), 'dsymutil'),
-            "--filecheck="+built_filecheck_path
-        ]
-
-        header("Run LLDB Python-based test suite ({} targets)".format(arch))
-        # For the unit tests, we don't want to stop the build if there are
-        # build errors.  We allow the JUnit/xUnit parser to pick this up.
-        print repr(python_testsuite_cmd)
-        run_cmd_errors_okay("lldb", python_testsuite_cmd)
-        footer()
-
-
 def lldb_cmake_builder(target):
     """Do a CMake build of lldb."""
 
@@ -755,7 +657,7 @@ def run_cmd_errors_okay(working_dir, cmd, env=None):
 
 
 KNOWN_TARGETS = ['all', 'build', 'test', 'testlong']
-KNOWN_BUILDS = ['clang', 'cmake', 'lldb', 'lldb-cmake', 'fetch', 'artifact',
+KNOWN_BUILDS = ['clang', 'cmake', 'lldb-cmake', 'fetch', 'artifact',
                 'static-analyzer-benchmarks']
 
 
@@ -899,8 +801,6 @@ def main():
     try:
         if args.build_type == 'clang':
             clang_builder(args.build_target)
-        elif args.build_type == 'lldb':
-            lldb_builder()
         elif args.build_type == 'lldb-cmake':
             lldb_cmake_builder(args.build_target)
         elif args.build_type == 'cmake':
