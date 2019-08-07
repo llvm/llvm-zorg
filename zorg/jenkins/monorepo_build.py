@@ -519,7 +519,7 @@ def lldb_builder():
         footer()
 
 
-def lldb_cmake_builder():
+def lldb_cmake_builder(target):
     """Do a CMake build of lldb."""
 
     test_dir = os.path.join(conf.workspace, 'test')
@@ -902,7 +902,7 @@ def main():
         elif args.build_type == 'lldb':
             lldb_builder()
         elif args.build_type == 'lldb-cmake':
-            lldb_cmake_builder()
+            lldb_cmake_builder(args.build_target)
         elif args.build_type == 'cmake':
             cmake_builder(args.build_target)
         elif args.build_type == 'fetch':
