@@ -528,7 +528,6 @@ def lldb_cmake_builder():
     dest_dir = os.path.join(conf.workspace, 'results', 'lldb')
     run_ws(["mkdir", "-p", conf.lldbbuilddir()])
     cmake_build_type = conf.cmake_build_type if conf.cmake_build_type else 'RelWithDebInfo'
-    header("Configure")
     dotest_args=['--arch', 'x86_64', '--build-dir',
                  conf.lldbbuilddir()+'/lldb-test-build.noindex',
                  '-s='+log_dir,
@@ -554,18 +553,21 @@ def lldb_cmake_builder():
         cmake_cmd.extend(['-DCMAKE_C_COMPILER=' + conf.CC(),
                           '-DCMAKE_CXX_COMPILER=' + conf.CC() + "++"])
 
-    run_cmd(conf.lldbbuilddir(), cmake_cmd)
-    footer()
+    if target == 'all' or target == 'build':
+	header("Cmake")
+	run_cmd(conf.lldbbuilddir(), cmake_cmd)
+	footer()
 
-    header("Build")
-    run_cmd(conf.lldbbuilddir(), [NINJA, '-v'])
-    footer()
+	header("Build")
+	run_cmd(conf.lldbbuilddir(), [NINJA, '-v'])
+	footer()
 
-    header("Run Tests")
-    run_cmd(conf.lldbbuilddir(), [NINJA, '-v', 'check-debuginfo'])
-    run_cmd(conf.lldbbuilddir(), ['/usr/bin/env', 'TERM=vt100', NINJA, '-v',
-                                  'check-lldb'])
-    footer()
+    if target == 'all' or target == 'test' or target == 'testlong':
+	header("Run Tests")
+	run_cmd(conf.lldbbuilddir(), [NINJA, '-v', 'check-debuginfo'])
+	run_cmd(conf.lldbbuilddir(), ['/usr/bin/env', 'TERM=vt100', NINJA, '-v',
+				      'check-lldb'])
+	footer()
 
 
 def static_analyzer_benchmarks_builder():
