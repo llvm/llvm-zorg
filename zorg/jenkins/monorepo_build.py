@@ -559,6 +559,8 @@ def lldb_cmake_xcode_builder(target):
 
     create_dirs([conf.lldbxcodebuilddir()])
 
+    cmake_build_type = conf.cmake_build_type if conf.cmake_build_type else 'RelWithDebInfo'
+
     llvm_dir = os.path.join(conf.installdir(), 'lib', 'cmake', 'llvm')
     clang_dir = os.path.join(conf.installdir(), 'lib', 'cmake', 'clang')
     xcode_cache = os.path.join(conf.lldbsrcdir(), 'cmake', 'caches', 'Apple-lldb-Xcode.cmake')
