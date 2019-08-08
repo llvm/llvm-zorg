@@ -505,13 +505,12 @@ def lldb_cmake_standalone_builder(target):
                  '--env', 'TERM=vt100']
     dotest_args.extend(conf.dotest_flags)
 
-    source_dir = os.path.join(conf.llvmsrcdir(), 'lldb')
     llvm_dir = os.path.join(conf.installdir(), 'lib', 'cmake', 'llvm')
     clang_dir = os.path.join(conf.installdir(), 'lib', 'cmake', 'clang')
     external_lit = os.path.join(conf.installdir(), 'bin', 'llvm-lit')
 
     cmake_cmd = ['/usr/local/bin/cmake', '-G', 'Ninja',
-                 source_dir,
+                 conf.lldbsrcdir(),
                  '-DCMAKE_BUILD_TYPE={}'.format(cmake_build_type),
                  '-DCMAKE_EXPORT_COMPILE_COMMANDS=ON',
                  '-DCMAKE_MAKE_PROGRAM={}'.format(NINJA),
