@@ -73,6 +73,7 @@ class Configuration(object):
         self._build_dir = os.environ.get('BUILD_DIR', 'clang-build')
         self._lldb_build_dir = os.environ.get('LLDB_BUILD_DIR', 'lldb-build')
         self._lldb_standalone_build_dir = os.environ.get('LLDB_BUILD_DIR', 'lldb-standalone-build')
+        self._lldb_xcode_build_dir = os.environ.get('LLDB_BUILD_DIR', 'lldb-xcode-build')
         self._lldb_install_dir = os.environ.get('LLDB_INSTALL_DIR', 'lldb-install')
         self._install_dir = os.environ.get('INSTALL_DIR', 'clang-install')
         self.j_level = os.environ.get('J_LEVEL', None)
@@ -114,6 +115,10 @@ class Configuration(object):
     def lldbstandalonebuilddir(self):
         """The derived source directory for this lldb standalone build."""
         return os.path.join(self.workspace, self._lldb_standalone_build_dir)
+
+    def lldbxcodebuilddir(self):
+        """The derived source directory for this lldb Xcode build."""
+        return os.path.join(self.workspace, self._lldb_xcode_build_dir)
 
     def lldbsrcdir(self):
         """The derived source directory for this lldb build."""
@@ -548,6 +553,44 @@ def lldb_cmake_standalone_builder(target):
                 ['/usr/bin/env', 'TERM=vt100', NINJA, '-v', 'check-lldb'])
         footer()
 
+
+def lldb_cmake_xcode_builder(target):
+    """Do a CMake standalone build of lldb using the Xcode generator."""
+
+    create_dirs([conf.lldbxcodebuilddir()])
+
+    llvm_dir = os.path.join(conf.installdir(), 'lib', 'cmake', 'llvm')
+    clang_dir = os.path.join(conf.installdir(), 'lib', 'cmake', 'clang')
+    xcode_cache = os.path.join(conf.lldbsrcdir(), 'cmake', 'caches', 'Apple-lldb-Xcode.cmake')
+
+    cmake_cmd = ['/usr/local/bin/cmake', '-G', 'Xcode',
+                 conf.lldbsrcdir(),
+    '-C{}'.format(xcode_cache),
+                 '-DLLVM_ENABLE_ASSERTIONS:BOOL={}'.format("TRUE" if conf.assertions else "FALSE"),
+                 '-DLLVM_ENABLE_MODULES=Off',
+                 '-DLLVM_DIR={}'.format(llvm_dir),
+                 '-DClang_DIR={}'.format(clang_dir),
+                 '-DLLVM_VERSION_PATCH=99']
+    cmake_cmd.extend(conf.cmake_flags)
+
+    build_cmd = ['/usr/local/bin/cmake',
+    '--build', '.',
+    '--config', cmake_build_type]
+
+    if conf.CC():
+        cmake_cmd.extend(['-DCMAKE_C_COMPILER=' + conf.CC(),
+                          '-DCMAKE_CXX_COMPILER=' + conf.CC() + "++"])
+
+    if target == 'all' or target == 'build':
+        header("CMake")
+        run_cmd(conf.lldbxcodebuilddir(), cmake_cmd)
+        footer()
+
+        header("Build")
+        run_cmd(conf.lldbxcodebuilddir(), build_cmd)
+        footer()
+
+
 def static_analyzer_benchmarks_builder():
     """Run static analyzer benchmarks"""
     header("Static Analyzer Benchmarks")
@@ -731,8 +774,8 @@ def run_cmd_errors_okay(working_dir, cmd, env=None):
 
 KNOWN_TARGETS = ['all', 'build', 'test', 'testlong', 'install']
 KNOWN_BUILDS = [
-    'clang', 'cmake', 'lldb-cmake', 'lldb-cmake-standalone', 'fetch',
-    'artifact', 'static-analyzer-benchmarks'
+    'clang', 'cmake', 'lldb-cmake', 'lldb-cmake-standalone',
+    'lldb-cmake-xcode', 'fetch', 'artifact', 'static-analyzer-benchmarks'
 ]
 
 
