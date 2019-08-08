@@ -72,6 +72,7 @@ class Configuration(object):
         self._lldb_src_dir = os.environ.get('LLDB_SRC_DIR', 'lldb')
         self._build_dir = os.environ.get('BUILD_DIR', 'clang-build')
         self._lldb_build_dir = os.environ.get('LLDB_BUILD_DIR', 'lldb-build')
+        self._lldb_standalone_build_dir = os.environ.get('LLDB_BUILD_DIR', 'lldb-standalone-build')
         self._lldb_install_dir = os.environ.get('LLDB_INSTALL_DIR', 'lldb-install')
         self._install_dir = os.environ.get('INSTALL_DIR', 'clang-install')
         self.j_level = os.environ.get('J_LEVEL', None)
@@ -109,6 +110,10 @@ class Configuration(object):
     def lldbbuilddir(self):
         """The derived source directory for this lldb build."""
         return os.path.join(self.workspace, self._lldb_build_dir)
+
+    def lldbstandalonebuilddir(self):
+        """The derived source directory for this lldb standalone build."""
+        return os.path.join(self.workspace, self._lldb_standalone_build_dir)
 
     def lldbsrcdir(self):
         """The derived source directory for this lldb build."""
@@ -496,13 +501,13 @@ def lldb_cmake_standalone_builder(target):
     test_dir = os.path.join(conf.workspace, 'test')
     log_dir = os.path.join(test_dir, 'logs')
     results_file = os.path.join(test_dir, 'results.xml')
-    create_dirs([conf.lldbbuilddir(), test_dir, log_dir])
+    test_build_dir = os.path.join(conf.lldbstandalonebuilddir(), 'lldb-test-build.noindex')
+    create_dirs([conf.lldbstandalonebuilddir(), test_dir, log_dir, test_build_dir])
     cmake_build_type = conf.cmake_build_type if conf.cmake_build_type else 'RelWithDebInfo'
-    dotest_args=['--arch', 'x86_64', '--build-dir',
-                 conf.lldbbuilddir()+'/lldb-test-build.noindex',
-                 '-s='+log_dir,
-                 '-t',
-                 '--env', 'TERM=vt100']
+    dotest_args = [
+        '--arch', 'x86_64', '--build-dir', test_build_dir,
+        '-s={}'.format(log_dir), '-t', '--env', 'TERM=vt100'
+    ]
     dotest_args.extend(conf.dotest_flags)
 
     llvm_dir = os.path.join(conf.installdir(), 'lib', 'cmake', 'llvm')
@@ -519,7 +524,7 @@ def lldb_cmake_standalone_builder(target):
                  '-DLLVM_ENABLE_MODULES=Off',
                  '-DLLVM_DIR={}'.format(llvm_dir),
                  '-DClang_DIR={}'.format(clang_dir),
-		 '-DLLVM_EXTERNAL_LIT={}'.format(external_lit),
+                 '-DLLVM_EXTERNAL_LIT={}'.format(external_lit),
                  '-DLLVM_LIT_ARGS=--xunit-xml-output={} -v'.format(results_file),
                  '-DLLVM_VERSION_PATCH=99']
     cmake_cmd.extend(conf.cmake_flags)
@@ -530,16 +535,16 @@ def lldb_cmake_standalone_builder(target):
 
     if target == 'all' or target == 'build':
         header("CMake")
-        run_cmd(conf.lldbbuilddir(), cmake_cmd)
+        run_cmd(conf.lldbstandalonebuilddir(), cmake_cmd)
         footer()
 
         header("Build")
-        run_cmd(conf.lldbbuilddir(), [NINJA, '-v'])
+        run_cmd(conf.lldbstandalonebuilddir(), [NINJA, '-v'])
         footer()
 
     if target == 'all' or target == 'test' or target == 'testlong':
         header("Run Tests")
-        run_cmd(conf.lldbbuilddir(),
+        run_cmd(conf.lldbstandalonebuilddir(),
                 ['/usr/bin/env', 'TERM=vt100', NINJA, '-v', 'check-lldb'])
         footer()
 
