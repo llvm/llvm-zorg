@@ -72,6 +72,7 @@ class Configuration(object):
         self._lldb_src_dir = os.environ.get('LLDB_SRC_DIR', 'lldb')
         self._build_dir = os.environ.get('BUILD_DIR', 'clang-build')
         self._lldb_build_dir = os.environ.get('LLDB_BUILD_DIR', 'lldb-build')
+        self._lldb_install_dir = os.environ.get('LLDB_INSTALL_DIR', 'lldb-install')
         self._install_dir = os.environ.get('INSTALL_DIR', 'clang-install')
         self.j_level = os.environ.get('J_LEVEL', None)
         self.max_parallel_tests = os.environ.get('MAX_PARALLEL_TESTS', None)
@@ -112,6 +113,10 @@ class Configuration(object):
     def lldbsrcdir(self):
         """The derived source directory for this lldb build."""
         return os.path.join(self.workspace, self._lldb_src_dir)
+
+    def lldbinstalldir(self):
+        """The install directory for the lldb build."""
+        return os.path.join(self.workspace, self._lldb_install_dir)
 
     def installdir(self):
         """The install directory for the compile."""
@@ -432,7 +437,6 @@ def lldb_cmake_builder(target):
 
     test_dir = os.path.join(conf.workspace, 'test')
     log_dir = os.path.join(test_dir, 'logs')
-    dest_dir = os.path.join(conf.workspace, 'results', 'lldb')
     results_file = os.path.join(test_dir, 'results.xml')
     create_dirs([conf.lldbbuilddir(), test_dir, log_dir])
     cmake_build_type = conf.cmake_build_type if conf.cmake_build_type else 'RelWithDebInfo'
@@ -444,15 +448,15 @@ def lldb_cmake_builder(target):
     dotest_args.extend(conf.dotest_flags)
     cmake_cmd = ["/usr/local/bin/cmake", '-G', 'Ninja',
                  conf.llvmsrcdir(),
-                 '-DCMAKE_BUILD_TYPE='+cmake_build_type,
+                 '-DCMAKE_BUILD_TYPE={}'.format(cmake_build_type),
                  '-DCMAKE_EXPORT_COMPILE_COMMANDS=ON',
-                 '-DCMAKE_INSTALL_PREFIX="%s"'%dest_dir,
-                 '-DCMAKE_MAKE_PROGRAM=' + NINJA,
+                 '-DCMAKE_INSTALL_PREFIX={}'.format(conf.lldbinstalldir()),
+                 '-DCMAKE_MAKE_PROGRAM={}'.format(NINJA),
                  '-DLLDB_TEST_USER_ARGS='+';'.join(dotest_args),
                  '-DLLVM_ENABLE_ASSERTIONS:BOOL={}'.format("TRUE" if conf.assertions else "FALSE"),
                  '-DLLVM_ENABLE_MODULES=On',
-                 '-DLLVM_ENABLE_PROJECTS='+conf.llvm_enable_projects,
-                 '-DLLVM_LIT_ARGS=--xunit-xml-output=%s -v'%results_file,
+                 '-DLLVM_ENABLE_PROJECTS={}'.format(conf.llvm_enable_projects),
+                 '-DLLVM_LIT_ARGS=--xunit-xml-output={} -v'.format(results_file),
                  '-DLLVM_VERSION_PATCH=99']
     cmake_cmd.extend(conf.cmake_flags)
 
