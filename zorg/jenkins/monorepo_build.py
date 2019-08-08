@@ -54,6 +54,12 @@ def quote_sh_string(string):
     return "\\'".join("'" + p + "'" for p in string.split("'"))
 
 
+def create_dirs(paths):
+    for p in paths:
+        if not os.path.exists(p):
+            os.makedirs(p)
+
+
 class Configuration(object):
     """docstring for Configuration"""
 
@@ -428,9 +434,7 @@ def lldb_cmake_builder(target):
     log_dir = os.path.join(test_dir, 'logs')
     dest_dir = os.path.join(conf.workspace, 'results', 'lldb')
     results_file = os.path.join(test_dir, 'results.xml')
-    run_ws(["mkdir", "-p", test_dir])
-    run_ws(["mkdir", "-p", log_dir])
-    run_ws(["mkdir", "-p", conf.lldbbuilddir()])
+    create_dirs([conf.lldbbuilddir(), test_dir, log_dir])
     cmake_build_type = conf.cmake_build_type if conf.cmake_build_type else 'RelWithDebInfo'
     dotest_args=['--arch', 'x86_64', '--build-dir',
                  conf.lldbbuilddir()+'/lldb-test-build.noindex',
@@ -521,10 +525,7 @@ def http_download(url, dest):
 
 
 def create_builddirs():
-    paths = [conf.builddir(), conf.installdir()]
-    for p in paths:
-        if not os.path.exists(p):
-            os.makedirs(p)
+    create_dirs([conf.builddir(), conf.installdir()]);
 
 
 def fetch_compiler():
