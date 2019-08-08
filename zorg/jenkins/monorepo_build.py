@@ -448,8 +448,8 @@ def lldb_cmake_builder(target):
                  '-DLLVM_ENABLE_ASSERTIONS:BOOL={}'.format("TRUE" if conf.assertions else "FALSE"),
                  '-DLLVM_ENABLE_MODULES=On',
                  '-DLLVM_ENABLE_PROJECTS='+conf.llvm_enable_projects,
-                 '-DLLVM_LIT_ARGS=--xunit-xml-output=%s -v'%results_file]
-                 '-DLLVM_VERSION_PATCH=99',
+                 '-DLLVM_LIT_ARGS=--xunit-xml-output=%s -v'%results_file,
+                 '-DLLVM_VERSION_PATCH=99']
     cmake_cmd.extend(conf.cmake_flags)
 
     if conf.CC():
@@ -706,7 +706,7 @@ def cwd(path):
 
 def run_collect_output(cmd, working_dir=None, stderr=None):
     """Run cmd and then return the output.
-    
+
     If working_dir is supplied the cmd will run in
     with a context manager in working_dir.
     """
