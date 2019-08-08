@@ -469,6 +469,11 @@ def lldb_cmake_builder(target):
 	run_cmd(conf.lldbbuilddir(), [NINJA, '-v'])
 	footer()
 
+    if target == 'all' or target == 'install':
+	header("Install")
+	run_cmd(conf.lldbbuilddir(), [NINJA, '-v', 'install'])
+	footer()
+
     if target == 'all' or target == 'testlong':
 	header("Run Debug Info Tests")
 	run_cmd(conf.lldbbuilddir(), [NINJA, '-v', 'check-debuginfo'])
@@ -662,7 +667,7 @@ def run_cmd_errors_okay(working_dir, cmd, env=None):
         (end_time - start_time).seconds, result))
 
 
-KNOWN_TARGETS = ['all', 'build', 'test', 'testlong']
+KNOWN_TARGETS = ['all', 'build', 'test', 'testlong', 'install']
 KNOWN_BUILDS = ['clang', 'cmake', 'lldb-cmake', 'fetch', 'artifact',
                 'static-analyzer-benchmarks']
 
