@@ -465,29 +465,29 @@ def lldb_cmake_builder(target):
                           '-DCMAKE_CXX_COMPILER=' + conf.CC() + "++"])
 
     if target == 'all' or target == 'build':
-	header("Cmake")
-	run_cmd(conf.lldbbuilddir(), cmake_cmd)
-	footer()
+        header("Cmake")
+        run_cmd(conf.lldbbuilddir(), cmake_cmd)
+        footer()
 
-	header("Build")
-	run_cmd(conf.lldbbuilddir(), [NINJA, '-v'])
-	footer()
+        header("Build")
+        run_cmd(conf.lldbbuilddir(), [NINJA, '-v'])
+        footer()
 
     if target == 'all' or target == 'install':
-	header("Install")
-	run_cmd(conf.lldbbuilddir(), [NINJA, '-v', 'install'])
-	footer()
+        header("Install")
+        run_cmd(conf.lldbbuilddir(), [NINJA, '-v', 'install'])
+        footer()
 
     if target == 'all' or target == 'testlong':
-	header("Run Debug Info Tests")
-	run_cmd(conf.lldbbuilddir(), [NINJA, '-v', 'check-debuginfo'])
-	footer()
+        header("Run Debug Info Tests")
+        run_cmd(conf.lldbbuilddir(), [NINJA, '-v', 'check-debuginfo'])
+        footer()
 
     if target == 'all' or target == 'test' or target == 'testlong':
-	header("Run Tests")
-	run_cmd(conf.lldbbuilddir(), ['/usr/bin/env', 'TERM=vt100', NINJA, '-v',
-				      'check-lldb'])
-	footer()
+        header("Run Tests")
+        run_cmd(conf.lldbbuilddir(),
+                ['/usr/bin/env', 'TERM=vt100', NINJA, '-v', 'check-lldb'])
+        footer()
 
 
 def static_analyzer_benchmarks_builder():
