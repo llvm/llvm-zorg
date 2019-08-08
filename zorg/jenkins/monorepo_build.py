@@ -490,6 +490,58 @@ def lldb_cmake_builder(target):
         footer()
 
 
+def lldb_cmake_standalone_builder(target):
+    """Do a CMake standalone build of lldb."""
+
+    test_dir = os.path.join(conf.workspace, 'test')
+    log_dir = os.path.join(test_dir, 'logs')
+    results_file = os.path.join(test_dir, 'results.xml')
+    create_dirs([conf.lldbbuilddir(), test_dir, log_dir])
+    cmake_build_type = conf.cmake_build_type if conf.cmake_build_type else 'RelWithDebInfo'
+    dotest_args=['--arch', 'x86_64', '--build-dir',
+                 conf.lldbbuilddir()+'/lldb-test-build.noindex',
+                 '-s='+log_dir,
+                 '-t',
+                 '--env', 'TERM=vt100']
+    dotest_args.extend(conf.dotest_flags)
+
+    source_dir = os.path.join(conf.llvmsrcdir(), 'lldb')
+    llvm_dir = os.path.join(conf.installdir(), 'lib', 'cmake', 'llvm')
+    clang_dir = os.path.join(conf.installdir(), 'lib', 'cmake', 'clang')
+
+    cmake_cmd = ['/usr/local/bin/cmake', '-G', 'Ninja',
+                 source_dir,
+                 '-DCMAKE_BUILD_TYPE={}'.format(cmake_build_type),
+                 '-DCMAKE_EXPORT_COMPILE_COMMANDS=ON',
+                 '-DCMAKE_MAKE_PROGRAM={}'.format(NINJA),
+                 '-DLLDB_TEST_USER_ARGS='+';'.join(dotest_args),
+                 '-DLLVM_ENABLE_ASSERTIONS:BOOL={}'.format("TRUE" if conf.assertions else "FALSE"),
+                 '-DLLVM_ENABLE_MODULES=Off',
+                 '-DLLVM_DIR={}'.format(llvm_dir),
+                 '-DClang_DIR={}'.format(clang_dir),
+                 '-DLLVM_LIT_ARGS=--xunit-xml-output={} -v'.format(results_file),
+                 '-DLLVM_VERSION_PATCH=99']
+    cmake_cmd.extend(conf.cmake_flags)
+
+    if conf.CC():
+        cmake_cmd.extend(['-DCMAKE_C_COMPILER=' + conf.CC(),
+                          '-DCMAKE_CXX_COMPILER=' + conf.CC() + "++"])
+
+    if target == 'all' or target == 'build':
+        header("CMake")
+        run_cmd(conf.lldbbuilddir(), cmake_cmd)
+        footer()
+
+        header("Build")
+        run_cmd(conf.lldbbuilddir(), [NINJA, '-v'])
+        footer()
+
+    if target == 'all' or target == 'test' or target == 'testlong':
+        header("Run Tests")
+        run_cmd(conf.lldbbuilddir(),
+                ['/usr/bin/env', 'TERM=vt100', NINJA, '-v', 'check-lldb'])
+        footer()
+
 def static_analyzer_benchmarks_builder():
     """Run static analyzer benchmarks"""
     header("Static Analyzer Benchmarks")
@@ -672,8 +724,10 @@ def run_cmd_errors_okay(working_dir, cmd, env=None):
 
 
 KNOWN_TARGETS = ['all', 'build', 'test', 'testlong', 'install']
-KNOWN_BUILDS = ['clang', 'cmake', 'lldb-cmake', 'fetch', 'artifact',
-                'static-analyzer-benchmarks']
+KNOWN_BUILDS = [
+    'clang', 'cmake', 'lldb-cmake', 'lldb-cmake-standalone', 'fetch',
+    'artifact', 'static-analyzer-benchmarks'
+]
 
 
 def query_sdk_path(sdk_name):
@@ -818,6 +872,8 @@ def main():
             clang_builder(args.build_target)
         elif args.build_type == 'lldb-cmake':
             lldb_cmake_builder(args.build_target)
+        elif args.build_type == 'lldb-cmake-standalone':
+            lldb_cmake_standalone_builder(args.build_target)
         elif args.build_type == 'cmake':
             cmake_builder(args.build_target)
         elif args.build_type == 'fetch':
