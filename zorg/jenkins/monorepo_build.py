@@ -469,9 +469,13 @@ def lldb_cmake_builder(target):
 	run_cmd(conf.lldbbuilddir(), [NINJA, '-v'])
 	footer()
 
+    if target == 'all' or target == 'testlong':
+	header("Run Debug Info Tests")
+	run_cmd(conf.lldbbuilddir(), [NINJA, '-v', 'check-debuginfo'])
+	footer()
+
     if target == 'all' or target == 'test' or target == 'testlong':
 	header("Run Tests")
-	run_cmd(conf.lldbbuilddir(), [NINJA, '-v', 'check-debuginfo'])
 	run_cmd(conf.lldbbuilddir(), ['/usr/bin/env', 'TERM=vt100', NINJA, '-v',
 				      'check-lldb'])
 	footer()
