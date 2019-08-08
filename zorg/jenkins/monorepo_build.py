@@ -512,7 +512,7 @@ def lldb_cmake_standalone_builder(target):
 
     llvm_dir = os.path.join(conf.installdir(), 'lib', 'cmake', 'llvm')
     clang_dir = os.path.join(conf.installdir(), 'lib', 'cmake', 'clang')
-    external_lit = os.path.join(conf.installdir(), 'bin', 'llvm-lit')
+    external_lit = os.path.join(conf.builddir(), 'bin', 'llvm-lit')
 
     cmake_cmd = ['/usr/local/bin/cmake', '-G', 'Ninja',
                  conf.lldbsrcdir(),
