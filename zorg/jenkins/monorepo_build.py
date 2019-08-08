@@ -112,7 +112,7 @@ class Configuration(object):
 
     def lldbsrcdir(self):
         """The derived source directory for this lldb build."""
-        return os.path.join(self.workspace, self._lldb_src_dir)
+        return os.path.join(self.workspace, self._src_dir, self._lldb_src_dir)
 
     def lldbinstalldir(self):
         """The install directory for the lldb build."""
