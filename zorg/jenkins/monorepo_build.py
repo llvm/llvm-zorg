@@ -923,6 +923,8 @@ def main():
             lldb_cmake_builder(args.build_target)
         elif args.build_type == 'lldb-cmake-standalone':
             lldb_cmake_standalone_builder(args.build_target)
+        elif args.build_type == 'lldb-cmake-xcode':
+            lldb_cmake_xcode_builder(args.build_target)
         elif args.build_type == 'cmake':
             cmake_builder(args.build_target)
         elif args.build_type == 'fetch':
