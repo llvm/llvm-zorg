@@ -426,8 +426,10 @@ def lldb_cmake_builder(target):
 
     test_dir = os.path.join(conf.workspace, 'test')
     log_dir = os.path.join(test_dir, 'logs')
-    results_file = os.path.join(test_dir, 'results.xml')
     dest_dir = os.path.join(conf.workspace, 'results', 'lldb')
+    results_file = os.path.join(test_dir, 'results.xml')
+    run_ws(["mkdir", "-p", test_dir])
+    run_ws(["mkdir", "-p", log_dir])
     run_ws(["mkdir", "-p", conf.lldbbuilddir()])
     cmake_build_type = conf.cmake_build_type if conf.cmake_build_type else 'RelWithDebInfo'
     dotest_args=['--arch', 'x86_64', '--build-dir',
@@ -438,17 +440,16 @@ def lldb_cmake_builder(target):
     dotest_args.extend(conf.dotest_flags)
     cmake_cmd = ["/usr/local/bin/cmake", '-G', 'Ninja',
                  conf.llvmsrcdir(),
-                 '-DLLVM_ENABLE_ASSERTIONS:BOOL={}'.format(
-                     "TRUE" if conf.assertions else "FALSE"),
-                 '-DLLVM_ENABLE_PROJECTS='+conf.llvm_enable_projects,
                  '-DCMAKE_BUILD_TYPE='+cmake_build_type,
-                 '-DCMAKE_MAKE_PROGRAM=' + NINJA,
-                 '-DLLVM_VERSION_PATCH=99',
-                 '-DLLVM_ENABLE_MODULES=On',
                  '-DCMAKE_EXPORT_COMPILE_COMMANDS=ON',
                  '-DCMAKE_INSTALL_PREFIX="%s"'%dest_dir,
+                 '-DCMAKE_MAKE_PROGRAM=' + NINJA,
                  '-DLLDB_TEST_USER_ARGS='+';'.join(dotest_args),
+                 '-DLLVM_ENABLE_ASSERTIONS:BOOL={}'.format("TRUE" if conf.assertions else "FALSE"),
+                 '-DLLVM_ENABLE_MODULES=On',
+                 '-DLLVM_ENABLE_PROJECTS='+conf.llvm_enable_projects,
                  '-DLLVM_LIT_ARGS=--xunit-xml-output=%s -v'%results_file]
+                 '-DLLVM_VERSION_PATCH=99',
     cmake_cmd.extend(conf.cmake_flags)
 
     if conf.CC():
