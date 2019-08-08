@@ -508,6 +508,7 @@ def lldb_cmake_standalone_builder(target):
     source_dir = os.path.join(conf.llvmsrcdir(), 'lldb')
     llvm_dir = os.path.join(conf.installdir(), 'lib', 'cmake', 'llvm')
     clang_dir = os.path.join(conf.installdir(), 'lib', 'cmake', 'clang')
+    external_lit = os.path.join(conf.installdir(), 'bin', 'llvm-lit')
 
     cmake_cmd = ['/usr/local/bin/cmake', '-G', 'Ninja',
                  source_dir,
@@ -519,6 +520,7 @@ def lldb_cmake_standalone_builder(target):
                  '-DLLVM_ENABLE_MODULES=Off',
                  '-DLLVM_DIR={}'.format(llvm_dir),
                  '-DClang_DIR={}'.format(clang_dir),
+		 '-DLLVM_EXTERNAL_LIT={}'.format(external_lit),
                  '-DLLVM_LIT_ARGS=--xunit-xml-output={} -v'.format(results_file),
                  '-DLLVM_VERSION_PATCH=99']
     cmake_cmd.extend(conf.cmake_flags)
