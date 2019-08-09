@@ -18,6 +18,8 @@ SERVER = "labmaster2.lab.llvm.org"
 
 NINJA = "/usr/local/bin/ninja"
 
+MODULE_CACHE_REGEX = re.compile(r'-fmodules-cache-path=([^\"]+)')
+
 # Add dependency checker to the Python path.
 # For relative reference to the dependency file.
 here = os.path.dirname(os.path.abspath(__file__))
@@ -58,6 +60,38 @@ def create_dirs(paths):
     for p in paths:
         if not os.path.exists(p):
             os.makedirs(p)
+
+
+def find_system_compiler_module_cache():
+    cmd = [
+        'xcrun', 'clang', '-fmodules', '-x', 'c', '-', '-o', '/dev/null',
+        '-###'
+    ]
+    output = subprocess.check_output(
+        cmd, stderr=subprocess.STDOUT).decode('utf-8')
+    module_cache = MODULE_CACHE_REGEX.findall(output)
+    if not module_cache:
+        return None
+    return module_cache[0]
+
+
+def find_module_caches(path):
+    caches = []
+    for root, dirs, _ in os.walk(path):
+        for d in dirs:
+            if d == "module.cache":
+                caches.append(os.path.join(root, d))
+    return caches
+
+def delete_module_caches(workspace):
+    caches = find_module_caches(workspace)
+    system_cache = find_system_compiler_module_cache()
+    if system_cache:
+        caches.append(system_cache)
+    for cache in caches:
+	if (os.path.exists(cache)):
+	    print 'Removing module cache: {}'.format(cache)
+	    shutil.rmtree(cache)
 
 
 class Configuration(object):
@@ -474,6 +508,10 @@ def lldb_cmake_builder(target):
         cmake_cmd.extend(['-DCMAKE_C_COMPILER=' + conf.CC(),
                           '-DCMAKE_CXX_COMPILER=' + conf.CC() + "++"])
 
+    header("Clean")
+    delete_module_caches(conf.workspace)
+    footer()
+
     if target == 'all' or target == 'build':
         header("Cmake")
         run_cmd(conf.lldbbuilddir(), cmake_cmd)
@@ -538,6 +576,10 @@ def lldb_cmake_standalone_builder(target):
         cmake_cmd.extend(['-DCMAKE_C_COMPILER=' + conf.CC(),
                           '-DCMAKE_CXX_COMPILER=' + conf.CC() + "++"])
 
+    header("Clean")
+    delete_module_caches(conf.workspace)
+    footer()
+
     if target == 'all' or target == 'build':
         header("CMake")
         run_cmd(conf.lldbstandalonebuilddir(), cmake_cmd)
@@ -582,6 +624,10 @@ def lldb_cmake_xcode_builder(target):
     if conf.CC():
         cmake_cmd.extend(['-DCMAKE_C_COMPILER=' + conf.CC(),
                           '-DCMAKE_CXX_COMPILER=' + conf.CC() + "++"])
+
+    header("Clean")
+    delete_module_caches(conf.workspace)
+    footer()
 
     if target == 'all' or target == 'build':
         header("CMake")
