@@ -609,13 +609,13 @@ def lldb_cmake_xcode_builder(target):
 
     cmake_cmd = ['/usr/local/bin/cmake',
                  '-C', xcode_cache,
-		 '-G', 'Xcode',
                  '-L', conf.lldbsrcdir(),
                  '-DLLVM_ENABLE_ASSERTIONS:BOOL={}'.format("TRUE" if conf.assertions else "FALSE"),
                  '-DLLVM_ENABLE_MODULES=Off',
                  '-DLLVM_DIR={}'.format(llvm_dir),
                  '-DClang_DIR={}'.format(clang_dir),
-                 '-DLLVM_VERSION_PATCH=99']
+                 '-DLLVM_VERSION_PATCH=99',
+		 '-G', 'Xcode']
     cmake_cmd.extend(conf.cmake_flags)
 
     build_cmd = ['/usr/local/bin/cmake',
