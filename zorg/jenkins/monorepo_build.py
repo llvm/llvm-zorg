@@ -89,9 +89,9 @@ def delete_module_caches(workspace):
     if system_cache:
         caches.append(system_cache)
     for cache in caches:
-	if (os.path.exists(cache)):
-	    print 'Removing module cache: {}'.format(cache)
-	    shutil.rmtree(cache)
+        if (os.path.exists(cache)):
+            print 'Removing module cache: {}'.format(cache)
+            shutil.rmtree(cache)
 
 
 class Configuration(object):
@@ -603,24 +603,24 @@ def lldb_cmake_xcode_builder(target):
 
     cmake_build_type = conf.cmake_build_type if conf.cmake_build_type else 'RelWithDebInfo'
 
-    llvm_dir = os.path.join(conf.installdir(), 'lib', 'cmake', 'llvm')
-    clang_dir = os.path.join(conf.installdir(), 'lib', 'cmake', 'clang')
+    llvm_dir = os.path.join(conf.builddir(), 'lib', 'cmake', 'llvm')
+    clang_dir = os.path.join(conf.builddir(), 'lib', 'cmake', 'clang')
     xcode_cache = os.path.join(conf.lldbsrcdir(), 'cmake', 'caches', 'Apple-lldb-Xcode.cmake')
 
     cmake_cmd = ['/usr/local/bin/cmake',
                  '-C', xcode_cache,
+                 '-G', 'Xcode',
                  '-L', conf.lldbsrcdir(),
                  '-DLLVM_ENABLE_ASSERTIONS:BOOL={}'.format("TRUE" if conf.assertions else "FALSE"),
                  '-DLLVM_ENABLE_MODULES=Off',
                  '-DLLVM_DIR={}'.format(llvm_dir),
                  '-DClang_DIR={}'.format(clang_dir),
-                 '-DLLVM_VERSION_PATCH=99',
-		 '-G', 'Xcode']
+                 '-DLLVM_VERSION_PATCH=99']
     cmake_cmd.extend(conf.cmake_flags)
 
     build_cmd = ['/usr/local/bin/cmake',
-    '--build', '.',
-    '--config', cmake_build_type]
+                 '--build', '.',
+                 '--config', cmake_build_type]
 
     if conf.CC():
         cmake_cmd.extend(['-DCMAKE_C_COMPILER=' + conf.CC(),
