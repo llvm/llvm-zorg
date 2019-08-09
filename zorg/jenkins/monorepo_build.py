@@ -567,7 +567,7 @@ def lldb_cmake_xcode_builder(target):
 
     cmake_cmd = ['/usr/local/bin/cmake', '-G', 'Xcode',
                  conf.lldbsrcdir(),
-    '-C{}'.format(xcode_cache),
+                 '-C', xcode_cache,
                  '-DLLVM_ENABLE_ASSERTIONS:BOOL={}'.format("TRUE" if conf.assertions else "FALSE"),
                  '-DLLVM_ENABLE_MODULES=Off',
                  '-DLLVM_DIR={}'.format(llvm_dir),
