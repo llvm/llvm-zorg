@@ -481,20 +481,32 @@ def parse_settings_from_output(working_dir, cmd):
         os.chdir(old_dir)
 
 
-def lldb_cmake_builder(target):
+def lldb_cmake_builder(target, variant=None):
     """Do a CMake build of lldb."""
 
     test_dir = os.path.join(conf.workspace, 'test')
     log_dir = os.path.join(test_dir, 'logs')
     results_file = os.path.join(test_dir, 'results.xml')
     create_dirs([conf.lldbbuilddir(), test_dir, log_dir])
+
     cmake_build_type = conf.cmake_build_type if conf.cmake_build_type else 'RelWithDebInfo'
+
+    # Construct dotest.py arguments.
     dotest_args=['--arch', 'x86_64', '--build-dir',
                  conf.lldbbuilddir()+'/lldb-test-build.noindex',
                  '-s='+log_dir,
                  '-t',
                  '--env', 'TERM=vt100']
     dotest_args.extend(conf.dotest_flags)
+
+    # Construct lit arguments.
+    lit_args = ['--xunit-xml-output={}'.format(results_file), '-v']
+    if conf.max_parallel_tests:
+        lit_args.extend(['-j', conf.max_parallel_tests])
+    if variant == 'sanitized':
+        lit_args.extend(['--timeout 600'])
+
+    # Construct CMake invocation.
     cmake_cmd = ["/usr/local/bin/cmake", '-G', 'Ninja',
                  conf.llvmsrcdir(),
                  '-DCMAKE_BUILD_TYPE={}'.format(cmake_build_type),
@@ -505,13 +517,26 @@ def lldb_cmake_builder(target):
                  '-DLLVM_ENABLE_ASSERTIONS:BOOL={}'.format("TRUE" if conf.assertions else "FALSE"),
                  '-DLLVM_ENABLE_MODULES=On',
                  '-DLLVM_ENABLE_PROJECTS={}'.format(conf.llvm_enable_projects),
-                 '-DLLVM_LIT_ARGS=--xunit-xml-output={} -v'.format(results_file),
+                 '-DLLVM_LIT_ARGS={}'.format(' '.join(lit_args)),
                  '-DLLVM_VERSION_PATCH=99']
+
+    if variant == 'sanitized':
+        cmake_cmd.extend(['-DLLVM_TARGETS_TO_BUILD=X86',
+                          '-DLLVM_USE_SANITIZER=Address;Undefined'])
+	# There is no need to compile the lldb tests with an asanified compiler
+	# if we have a host compiler available.
+	if conf.CC():
+	    cmake_cmd.extend(['-DLLDB_TEST_USE_CUSTOM_C_COMPILER=On',
+		              '-DLLDB_TEST_USE_CUSTOM_CXX_COMPILER=On',
+		              '-DLLDB_TEST_C_COMPILER=' + conf.CC(),
+		              '-DLLDB_TEST_CXX_COMPILER=' + conf.CC() + "++"])
+
     cmake_cmd.extend(conf.cmake_flags)
 
     if conf.CC():
         cmake_cmd.extend(['-DCMAKE_C_COMPILER=' + conf.CC(),
                           '-DCMAKE_CXX_COMPILER=' + conf.CC() + "++"])
+
 
     header("Clean")
     delete_module_caches(conf.workspace)
@@ -837,7 +862,8 @@ def run_cmd_errors_okay(working_dir, cmd, env=None):
 KNOWN_TARGETS = ['all', 'build', 'test', 'testlong', 'install']
 KNOWN_BUILDS = [
     'clang', 'cmake', 'lldb-cmake', 'lldb-cmake-standalone',
-    'lldb-cmake-xcode', 'fetch', 'artifact', 'static-analyzer-benchmarks'
+    'lldb-cmake-xcode', 'lldb-cmake-sanitized', 'fetch', 'artifact',
+    'static-analyzer-benchmarks'
 ]
 
 
@@ -983,6 +1009,8 @@ def main():
             clang_builder(args.build_target)
         elif args.build_type == 'lldb-cmake':
             lldb_cmake_builder(args.build_target)
+        elif args.build_type == 'lldb-cmake-sanitized':
+            lldb_cmake_builder(args.build_target, 'sanitized')
         elif args.build_type == 'lldb-cmake-standalone':
             lldb_cmake_standalone_builder(args.build_target)
         elif args.build_type == 'lldb-cmake-xcode':
