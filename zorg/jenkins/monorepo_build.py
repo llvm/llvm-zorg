@@ -106,8 +106,9 @@ class Configuration(object):
         self._lldb_src_dir = os.environ.get('LLDB_SRC_DIR', 'lldb')
         self._build_dir = os.environ.get('BUILD_DIR', 'clang-build')
         self._lldb_build_dir = os.environ.get('LLDB_BUILD_DIR', 'lldb-build')
-        self._lldb_standalone_build_dir = os.environ.get('LLDB_BUILD_DIR', 'lldb-standalone-build')
-        self._lldb_xcode_build_dir = os.environ.get('LLDB_BUILD_DIR', 'lldb-xcode-build')
+        self._lldb_standalone_build_dir = os.environ.get('LLDB_STANDALONE_BUILD_DIR', 'lldb-standalone-build')
+        self._lldb_standalone_type = os.environ.get('LLDB_STANDALONE_TYPE', 'build-tree')
+        self._lldb_xcode_build_dir = os.environ.get('LLDB_XCODE_BUILD_DIR', 'lldb-xcode-build')
         self._lldb_install_dir = os.environ.get('LLDB_INSTALL_DIR', 'lldb-install')
         self._install_dir = os.environ.get('INSTALL_DIR', 'clang-install')
         self.j_level = os.environ.get('J_LEVEL', None)
@@ -146,9 +147,9 @@ class Configuration(object):
         """The derived source directory for this lldb build."""
         return os.path.join(self.workspace, self._lldb_build_dir)
 
-    def lldbstandalonebuilddir(self):
+    def lldbstandalonebuilddir(self, standalone_type):
         """The derived source directory for this lldb standalone build."""
-        return os.path.join(self.workspace, self._lldb_standalone_build_dir)
+        return os.path.join(self.workspace, standalone_type, self._lldb_standalone_build_dir)
 
     def lldbxcodebuilddir(self):
         """The derived source directory for this lldb Xcode build."""
@@ -165,6 +166,10 @@ class Configuration(object):
     def installdir(self):
         """The install directory for the compile."""
         return os.path.join(self.workspace, self._install_dir)
+
+    def lldbstandalonetype(self):
+        """The type of standalone build: against the build or install tree."""
+        return self._lldb_standalone_type;
 
     def CC(self):
         """Location of the host compiler, if one is present in this build."""
@@ -541,11 +546,24 @@ def lldb_cmake_builder(target):
 def lldb_cmake_standalone_builder(target):
     """Do a CMake standalone build of lldb."""
 
+    standalone_type = conf.lldbstandalonetype()
+    if standalone_type == "install-tree":
+        llvm_dir = os.path.join(conf.installdir(), 'lib', 'cmake', 'llvm')
+        clang_dir = os.path.join(conf.installdir(), 'lib', 'cmake', 'clang')
+    elif standalone_type == "build-tree":
+        llvm_dir = os.path.join(conf.builddir(), 'lib', 'cmake', 'llvm')
+        clang_dir = os.path.join(conf.builddir(), 'lib', 'cmake', 'clang')
+    else:
+        raise RuntimeError(
+            'Unknown standalone build type: {}'.format(standalone_type))
+
     test_dir = os.path.join(conf.workspace, 'test')
     log_dir = os.path.join(test_dir, 'logs')
     results_file = os.path.join(test_dir, 'results.xml')
-    test_build_dir = os.path.join(conf.lldbstandalonebuilddir(), 'lldb-test-build.noindex')
-    create_dirs([conf.lldbstandalonebuilddir(), test_dir, log_dir, test_build_dir])
+    test_build_dir = os.path.join(conf.lldbstandalonebuilddir(
+        standalone_type), 'lldb-test-build.noindex')
+    create_dirs([conf.lldbstandalonebuilddir(standalone_type),
+                 test_dir, log_dir, test_build_dir])
     cmake_build_type = conf.cmake_build_type if conf.cmake_build_type else 'RelWithDebInfo'
     dotest_args = [
         '--arch', 'x86_64', '--build-dir', test_build_dir,
@@ -553,24 +571,25 @@ def lldb_cmake_standalone_builder(target):
     ]
     dotest_args.extend(conf.dotest_flags)
 
-    llvm_dir = os.path.join(conf.installdir(), 'lib', 'cmake', 'llvm')
-    clang_dir = os.path.join(conf.installdir(), 'lib', 'cmake', 'clang')
-    external_lit = os.path.join(conf.builddir(), 'bin', 'llvm-lit')
-
     cmake_cmd = ['/usr/local/bin/cmake', '-G', 'Ninja',
                  conf.lldbsrcdir(),
                  '-DCMAKE_BUILD_TYPE={}'.format(cmake_build_type),
                  '-DCMAKE_EXPORT_COMPILE_COMMANDS=ON',
                  '-DCMAKE_MAKE_PROGRAM={}'.format(NINJA),
                  '-DLLDB_TEST_USER_ARGS='+';'.join(dotest_args),
-                 '-DLLVM_ENABLE_ASSERTIONS:BOOL={}'.format("TRUE" if conf.assertions else "FALSE"),
+                 '-DLLVM_ENABLE_ASSERTIONS:BOOL={}'.format(
+                     "TRUE" if conf.assertions else "FALSE"),
                  '-DLLVM_ENABLE_MODULES=Off',
                  '-DLLVM_DIR={}'.format(llvm_dir),
                  '-DClang_DIR={}'.format(clang_dir),
-                 '-DLLVM_EXTERNAL_LIT={}'.format(external_lit),
-                 '-DLLVM_LIT_ARGS=--xunit-xml-output={} -v'.format(results_file),
+                 '-DLLVM_LIT_ARGS=--xunit-xml-output={} -v'.format(
+                     results_file),
                  '-DLLVM_VERSION_PATCH=99']
     cmake_cmd.extend(conf.cmake_flags)
+
+    if standalone_type == "install-tree":
+        external_lit = os.path.join(conf.builddir(), 'bin', 'llvm-lit')
+        cmake_cmd.extend(['-DLLVM_LIT_ARGS=--xunit-xml-output={} -v'.format(results_file)])
 
     if conf.CC():
         cmake_cmd.extend(['-DCMAKE_C_COMPILER=' + conf.CC(),
@@ -582,17 +601,11 @@ def lldb_cmake_standalone_builder(target):
 
     if target == 'all' or target == 'build':
         header("CMake")
-        run_cmd(conf.lldbstandalonebuilddir(), cmake_cmd)
+        run_cmd(conf.lldbstandalonebuilddir(standalone_type), cmake_cmd)
         footer()
 
         header("Build")
-        run_cmd(conf.lldbstandalonebuilddir(), [NINJA, '-v'])
-        footer()
-
-    if target == 'all' or target == 'test' or target == 'testlong':
-        header("Run Tests")
-        run_cmd(conf.lldbstandalonebuilddir(),
-                ['/usr/bin/env', 'TERM=vt100', NINJA, '-v', 'check-lldb'])
+        run_cmd(conf.lldbstandalonebuilddir(standalone_type), [NINJA, '-v'])
         footer()
 
 
