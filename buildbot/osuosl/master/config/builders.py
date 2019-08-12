@@ -906,14 +906,6 @@ def _get_lld_builders():
          'factory': ClangLTOBuilder.getClangWithLTOBuildFactory(jobs=72, lto='thin'),
          'category'   : 'lld'},
 
-        {'name': "clang-with-thin-lto-windows",
-         'slavenames' :["windows-lld-thinlto-1"],
-         'builddir': "clang-with-thin-lto-windows",
-         'factory': AnnotatedBuilder.getAnnotatedBuildFactory(
-             script="clang-with-thin-lto-windows.py",
-             depends_on_projects=['llvm', 'clang', 'lld']),
-         'category'   : 'lld'},
-
         {'name' : "clang-lld-x86_64-2stage",
          'slavenames' : ["am1i-slv1", "am1i-slv3", "am1i-slv4"],
          'builddir' : "clang-lld-x86_64-2stage",

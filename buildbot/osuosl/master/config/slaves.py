@@ -148,8 +148,6 @@ def get_build_slaves():
         create_slave("windows-gcebot1", properties={'jobs': 8}, max_builds=1),
         # Windows Server 2012 x86_64 32-core GCE instance
         create_slave("windows-gcebot2", properties={'jobs': 32}, max_builds=1),
-        # Windows Server 2016 x86_64 16-core GCE instance
-        create_slave("windows-lld-thinlto-1", max_builds=1),
 
         # Ubuntu 14.04 x86_64-scei-ps4, 2 x Intel(R) Xeon(R) CPU E5-2699 v3 @ 2.30GHz
         create_slave("ps4-buildslave1"),
