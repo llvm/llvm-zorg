@@ -106,13 +106,6 @@ def _get_clang_fast_builders():
                      env={'PATH':'/home/llvmbb/bin/clang-latest/bin:/home/llvmbb/bin:/usr/local/bin:/usr/local/bin:/usr/bin:/bin',
                          'CC': 'ccache clang', 'CXX': 'ccache clang++', 'CCACHE_CPP2': 'yes'})},
 
-        {'name': "llvm-clang-lld-x86_64-debian-fast",
-         'slavenames':["gribozavr4"],
-         'builddir':"llvm-clang-lld-x86_64-debian-fast",
-         'factory': ClangAndLLDBuilder.getClangAndLLDBuildFactory(
-                    env={'PATH':'/home/llvmbb/bin/clang-latest/bin:/home/llvmbb/bin:/usr/local/bin:/usr/local/bin:/usr/bin:/bin',
-                         'CC': 'ccache clang', 'CXX': 'ccache clang++', 'CCACHE_CPP2': 'yes', 'ASM': 'clang'})},
-
         {'name': "llvm-clang-lld-x86_64-scei-ps4-ubuntu-fast",
          'mergeRequests': False,
          'slavenames': ["ps4-buildslave4"],
@@ -570,29 +563,6 @@ def _get_clang_builders():
                        clean=True,
                        extra_cmake_args=['-DLLVM_ENABLE_ASSERTIONS=ON',
                                          '-DCMAKE_BUILD_TYPE:STRING=Release'])},
-
-        {'name': "ubuntu-gcc7.1-werror",
-         'slavenames':["am1i-slv2"],
-         'builddir':"ubuntu-gcc7.1-werror",
-         'factory': UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
-            depends_on_projects = ['llvm', 'clang'],
-            clean = False,
-            checks = [],
-            extra_configure_args = [
-               "-DLLVM_ENABLE_WERROR=ON",
-               "-DCMAKE_C_COMPILER=gcc-7.1",
-               "-DCMAKE_CXX_COMPILER=g++-7.1",
-               # We build with c++11, no need in c++17 warnings
-               # + workaround for gcc bug - https://gcc.gnu.org/bugzilla/show_bug.cgi?id=80916.
-               "-DCMAKE_CXX_FLAGS='-Wno-noexcept-type -O1'",
-               # We want the given CXXFLAGS be used for the tablegen as well.
-               "-DLLVM_OPTIMIZED_TABLEGEN=OFF",
-               "-DBUILD_SHARED_LIBS=ON",
-               "-DLLVM_BUILD_TESTS=ON",
-               "-DLLVM_BUILD_EXAMPLES=OFF",
-               "-DCLANG_BUILD_EXAMPLES=OFF",
-               "-DLLVM_TARGETS_TO_BUILD=X86",
-            ])},
 
         ## X86_64 AVX2 Clang+LLVM check-all + test-suite
         {'name': "clang-cmake-x86_64-avx2-linux",
