@@ -578,6 +578,11 @@ def lldb_cmake_builder(target, variant=None):
                 ['/usr/bin/env', 'TERM=vt100', NINJA, '-v', 'check-lldb'])
         footer()
 
+    for test_target in conf.cmake_test_targets:
+        header("Run Custom Test: {0}".format(test_target))
+        run_cmd(conf.lldbbuilddir(), [NINJA, '-v', test_target])
+        footer()
+
 
 def lldb_cmake_standalone_builder(target):
     """Do a CMake standalone build of lldb."""
