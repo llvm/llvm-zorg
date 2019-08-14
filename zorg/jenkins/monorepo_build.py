@@ -110,6 +110,7 @@ class Configuration(object):
         self._lldb_standalone_type = os.environ.get('LLDB_STANDALONE_TYPE', 'build-tree')
         self._lldb_xcode_build_dir = os.environ.get('LLDB_XCODE_BUILD_DIR', 'lldb-xcode-build')
         self._lldb_install_dir = os.environ.get('LLDB_INSTALL_DIR', 'lldb-install')
+        self._lldb_test_compiler = os.environ.get('LLDB_TEST_COMPILER', '')
         self._install_dir = os.environ.get('INSTALL_DIR', 'clang-install')
         self.j_level = os.environ.get('J_LEVEL', None)
         self.max_parallel_tests = os.environ.get('MAX_PARALLEL_TESTS', None)
@@ -162,6 +163,10 @@ class Configuration(object):
     def lldbinstalldir(self):
         """The install directory for the lldb build."""
         return os.path.join(self.workspace, self._lldb_install_dir)
+
+    def lldbtestcompiler(self):
+        """The compiler used to build LLDB tests."""
+        return self._lldb_test_compiler
 
     def installdir(self):
         """The install directory for the compile."""
@@ -523,13 +528,19 @@ def lldb_cmake_builder(target, variant=None):
     if variant == 'sanitized':
         cmake_cmd.extend(['-DLLVM_TARGETS_TO_BUILD=X86',
                           '-DLLVM_USE_SANITIZER=Address;Undefined'])
-	# There is no need to compile the lldb tests with an asanified compiler
-	# if we have a host compiler available.
-	if conf.CC():
-	    cmake_cmd.extend(['-DLLDB_TEST_USE_CUSTOM_C_COMPILER=On',
-		              '-DLLDB_TEST_USE_CUSTOM_CXX_COMPILER=On',
-		              '-DLLDB_TEST_C_COMPILER=' + conf.CC(),
-		              '-DLLDB_TEST_CXX_COMPILER=' + conf.CC() + "++"])
+        # There is no need to compile the lldb tests with an asanified compiler
+        # if we have a host compiler available.
+        if conf.CC():
+            cmake_cmd.extend(['-DLLDB_TEST_USE_CUSTOM_C_COMPILER=On',
+                       '-DLLDB_TEST_USE_CUSTOM_CXX_COMPILER=On',
+                       '-DLLDB_TEST_C_COMPILER=' + conf.CC(),
+                       '-DLLDB_TEST_CXX_COMPILER=' + conf.CC() + "++"])
+
+    if variant == 'matrix' and conf.lldbtestcompiler():
+        cmake_cmd.extend(['-DLLDB_TEST_USE_CUSTOM_C_COMPILER=On',
+            '-DLLDB_TEST_USE_CUSTOM_CXX_COMPILER=On',
+            '-DLLDB_TEST_C_COMPILER=' + conf.lldbtestcompiler(),
+            '-DLLDB_TEST_CXX_COMPILER=' + conf.lldbtestcompiler() + "++"])
 
     cmake_cmd.extend(conf.cmake_flags)
 
@@ -862,8 +873,8 @@ def run_cmd_errors_okay(working_dir, cmd, env=None):
 KNOWN_TARGETS = ['all', 'build', 'test', 'testlong', 'install']
 KNOWN_BUILDS = [
     'clang', 'cmake', 'lldb-cmake', 'lldb-cmake-standalone',
-    'lldb-cmake-xcode', 'lldb-cmake-sanitized', 'fetch', 'artifact',
-    'static-analyzer-benchmarks'
+    'lldb-cmake-xcode', 'lldb-cmake-sanitized', 'lldb-cmake-matrix', 'fetch',
+    'artifact', 'static-analyzer-benchmarks'
 ]
 
 
@@ -1011,6 +1022,8 @@ def main():
             lldb_cmake_builder(args.build_target)
         elif args.build_type == 'lldb-cmake-sanitized':
             lldb_cmake_builder(args.build_target, 'sanitized')
+        elif args.build_type == 'lldb-cmake-matrix':
+            lldb_cmake_builder(args.build_target, 'matrix')
         elif args.build_type == 'lldb-cmake-standalone':
             lldb_cmake_standalone_builder(args.build_target)
         elif args.build_type == 'lldb-cmake-xcode':
