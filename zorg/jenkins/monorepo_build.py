@@ -304,10 +304,12 @@ def cmake_builder(target):
     if conf.j_level is not None:
         ninja_cmd += ["-j", conf.j_level]
 
-    if target == 'all' or target == 'build':
+    if target == 'all' or target == 'configure' or target == 'build':
         header("Cmake")
         run_cmd(conf.builddir(), cmake_cmd)
         footer()
+
+    if target == 'all' or target == 'build':
         header("Ninja build")
 
         # Build all if nothing is passed by the user.
@@ -553,11 +555,12 @@ def lldb_cmake_builder(target, variant=None):
     delete_module_caches(conf.workspace)
     footer()
 
-    if target == 'all' or target == 'build':
+    if target == 'all' or target == 'configure' or target == 'build':
         header("Cmake")
         run_cmd(conf.lldbbuilddir(), cmake_cmd)
         footer()
 
+    if target == 'all' or target == 'build':
         header("Build")
         run_cmd(conf.lldbbuilddir(), [NINJA, '-v'])
         footer()
@@ -875,7 +878,7 @@ def run_cmd_errors_okay(working_dir, cmd, env=None):
         (end_time - start_time).seconds, result))
 
 
-KNOWN_TARGETS = ['all', 'build', 'test', 'testlong', 'install']
+KNOWN_TARGETS = ['all', 'configure', 'build', 'test', 'testlong', 'install']
 KNOWN_BUILDS = [
     'clang', 'cmake', 'lldb-cmake', 'lldb-cmake-standalone',
     'lldb-cmake-xcode', 'lldb-cmake-sanitized', 'lldb-cmake-matrix', 'fetch',
