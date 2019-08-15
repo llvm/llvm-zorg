@@ -527,28 +527,43 @@ def lldb_cmake_builder(target, variant=None):
                  '-DLLVM_LIT_ARGS={}'.format(' '.join(lit_args)),
                  '-DLLVM_VERSION_PATCH=99']
 
+
     if variant == 'sanitized':
-        cmake_cmd.extend(['-DLLVM_TARGETS_TO_BUILD=X86',
-                          '-DLLVM_USE_SANITIZER=Address;Undefined'])
+        cmake_cmd.extend([
+            '-DLLVM_TARGETS_TO_BUILD=X86',
+            '-DLLVM_USE_SANITIZER=Address;Undefined'
+        ])
         # There is no need to compile the lldb tests with an asanified compiler
         # if we have a host compiler available.
         if conf.CC():
-            cmake_cmd.extend(['-DLLDB_TEST_USE_CUSTOM_C_COMPILER=On',
-                       '-DLLDB_TEST_USE_CUSTOM_CXX_COMPILER=On',
-                       '-DLLDB_TEST_C_COMPILER=' + conf.CC(),
-                       '-DLLDB_TEST_CXX_COMPILER=' + conf.CC() + "++"])
+            cmake_cmd.extend([
+                '-DLLDB_TEST_USE_CUSTOM_C_COMPILER=On',
+                '-DLLDB_TEST_USE_CUSTOM_CXX_COMPILER=On',
+                '-DLLDB_TEST_C_COMPILER=' + conf.CC(),
+                '-DLLDB_TEST_CXX_COMPILER=' + conf.CC() + "++"
+            ])
 
-    if variant == 'matrix' and conf.lldbtestcompiler():
-        cmake_cmd.extend(['-DLLDB_TEST_USE_CUSTOM_C_COMPILER=On',
+    if conf.compiler_flags:
+        cmake_cmd.extend([
+            "-DCMAKE_C_FLAGS={}".format(' '.join(conf.compiler_flags)),
+            "-DCMAKE_CXX_FLAGS={}".format(' '.join(conf.compiler_flags))
+        ])
+
+    if conf.lldbtestcompiler():
+        cmake_cmd.extend([
+            '-DLLDB_TEST_USE_CUSTOM_C_COMPILER=On',
             '-DLLDB_TEST_USE_CUSTOM_CXX_COMPILER=On',
             '-DLLDB_TEST_C_COMPILER=' + conf.lldbtestcompiler(),
-            '-DLLDB_TEST_CXX_COMPILER=' + conf.lldbtestcompiler() + "++"])
+            '-DLLDB_TEST_CXX_COMPILER=' + conf.lldbtestcompiler() + "++"
+        ])
 
     cmake_cmd.extend(conf.cmake_flags)
 
     if conf.CC():
-        cmake_cmd.extend(['-DCMAKE_C_COMPILER=' + conf.CC(),
-                          '-DCMAKE_CXX_COMPILER=' + conf.CC() + "++"])
+        cmake_cmd.extend([
+            '-DCMAKE_C_COMPILER=' + conf.CC(),
+            '-DCMAKE_CXX_COMPILER=' + conf.CC() + "++"
+        ])
 
 
     header("Clean")
