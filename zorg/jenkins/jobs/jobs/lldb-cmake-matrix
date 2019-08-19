@@ -59,6 +59,77 @@ pipeline {
                 }
             }
         }
+        stage('Test DWARF2') {
+            steps {
+                timeout(60) {
+                    sh '''
+                    export PATH=$PATH:/usr/bin:/usr/local/bin
+                    python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix configure \
+                      --assertions \
+                      --projects="clang;libcxx;libcxxabi;lldb"  \
+                      --cmake-type=Release \
+                      --dotest-flag="--skip-category" \
+                      --dotest-flag="gmodules" \
+                      --dotest-flag="--skip-category" \
+                      --dotest-flag="watchpoint" \
+                      --dotest-flag="--arch=x86_64" \
+                      --dotest=flag="--dwarf-version=2"
+
+                    set +e
+                    python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix test
+                    set -e
+                    '''
+                }
+                junit 'test/results.xml'
+            }
+        }
+        stage('Test DWARF4') {
+            steps {
+                timeout(60) {
+                    sh '''
+                    export PATH=$PATH:/usr/bin:/usr/local/bin
+                    python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix configure \
+                      --assertions \
+                      --projects="clang;libcxx;libcxxabi;lldb"  \
+                      --cmake-type=Release \
+                      --dotest-flag="--skip-category" \
+                      --dotest-flag="gmodules" \
+                      --dotest-flag="--skip-category" \
+                      --dotest-flag="watchpoint" \
+                      --dotest-flag="--arch=x86_64" \
+                      --dotest=flag="--dwarf-version=4"
+
+                    set +e
+                    python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix test
+                    set -e
+                    '''
+                }
+                junit 'test/results.xml'
+            }
+        }
+        stage('Test DWARF5') {
+            steps {
+                timeout(60) {
+                    sh '''
+                    export PATH=$PATH:/usr/bin:/usr/local/bin
+                    python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix configure \
+                      --assertions \
+                      --projects="clang;libcxx;libcxxabi;lldb"  \
+                      --cmake-type=Release \
+                      --dotest-flag="--skip-category" \
+                      --dotest-flag="gmodules" \
+                      --dotest-flag="--skip-category" \
+                      --dotest-flag="watchpoint" \
+                      --dotest-flag="--arch=x86_64" \
+                      --dotest=flag="--dwarf-version=5"
+
+                    set +e
+                    python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix test
+                    set -e
+                    '''
+                }
+            }
+        }
         stage('Build Clang 5.0.2') {
             steps {
                 dir('clang_502') {
