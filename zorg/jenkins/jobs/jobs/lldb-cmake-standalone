@@ -2,331 +2,145 @@
 pipeline {
     agent {label 'green-dragon-23'}
     parameters {
+        string(name: 'GIT_REVISION', defaultValue: '*/master', description: 'Git revision to build')
         string(name: 'ARTIFACT', defaultValue: 'clang-stage1-RA/latest', description: 'Compiler artifact to use for building the project')
         string(name: 'BUILD_TYPE', defaultValue: 'Release', description: 'Default CMake build type; one of: Release, Debug, ...')
         string(name: 'CLEAN', defaultValue: "false", description: 'Whether or not to clean the build directory before building')
     }
     stages {
-        stage('Subversion Checkout') {
+        stage('Checkout') {
             steps {
-                timeout(activity: true, time: 30) {
-                    checkout([$class: 'SubversionSCM',
-                              locations: [
-                                  [local: 'llvm.src',
-                                   remote: 'http://llvm.org/svn/llvm-project/llvm/trunk'],
-                                  [local: 'lldb.src',
-                                   remote: 'http://llvm.org/svn/llvm-project/lldb/trunk'],
-                                  [local: 'clang.src',
-                                   remote: 'http://llvm.org/svn/llvm-project/cfe/trunk'],
-                                  [local: 'libcxx.src',
-                                   remote: 'http://llvm.org/svn/llvm-project/libcxx/trunk']],
-                              quietOperation: false,
-                              workspaceUpdater: [$class: 'UpdateUpdater']])
+                dir('llvm-project') {
+                    checkout([$class: 'GitSCM', branches: [[name: params.GIT_REVISION]], userRemoteConfigs: [[url: 'http://labmaster3.local/git/llvm-project.git']]])
+                }
+                dir('llvm-zorg') {
+                    checkout([$class: 'GitSCM', branches: [[name: '*/master']], userRemoteConfigs: [[url: 'http://labmaster3.local/git/llvm-zorg.git']]])
                 }
             }
         }
-        stage('Setup LLDB') {
+        stage('Fetch') {
             steps {
-                timeout(activity: true, time: 30) {
-                    sh '''
-                       set -u
-                       export
-                       python $SCRIPT_PATH/build.py fetch
-                       '''
-                    sh '''
-set -eux
-
-# Avoid the python in /usr/local/bin.
-PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/jbin
-
-if [ -z "WORKSPACE" ]; then
-    echo "WORKSPACE is not set."
-    exit 1
-fi
-
-SRC="$WORKSPACE"
-BUILD="$WORKSPACE/lldb-build"
-TEST="$WORKSPACE/test"
-RESULTS="$WORKSPACE/results"
-DEST="$RESULTS/llvm"
-
-LLVM_SRC="$SRC/llvm"
-LLDB_SRC="$SRC/llvm/tools/lldb"
-TESTCASES_DIR="$LLDB_SRC/test/testcases"
-LOGS_DIR="$TEST/logs"
-RESULTS_FILE="$TEST/results.xml"
-
-CC="$WORKSPACE/host-compiler/bin/clang"
-CXX="$WORKSPACE/host-compiler/bin/clang++"
-
-TOOLS="clang lldb"
-PROJECTS=""
-
-
-echo "@@@ Clean @@@"
-
-CLEAN_DIRS="$TEST $DEST $LOGS_DIR $RESULTS $BUILD/lldb-test-build.noindex"
-
-if [ "$CLEAN" = "true" ]; then
-  CLEAN_DIRS="$BUILD $CLEAN_DIRS"
-fi
-
-for dir in $CLEAN_DIRS; do
-  if [ -d $dir ]; then
-    rm -rf $dir
-  fi
-  mkdir -p $dir
-done
-
-MODULE_CACHE=$(xcrun clang -fmodules -x c - -o /dev/null '-###' 2>&1 | grep -Eo '\\-fmodules-cache-path=[^"]+' | cut -d'=' -f2)
-if [ -d $MODULE_CACHE ]; then
-  rm -rf $MODULE_CACHE
-fi
-rm -rf $BUILD/*/module.cache
-
-rm -f $WORKSPACE/*.tgz
-
-echo "@@@@@@"
-
-mkdir -p $BUILD
-cd $BUILD
-
-echo "@@@ Setup @@@"
-
-{ /usr/local/bin/lldbsign unlock; } 2>/dev/null
-
-echo "@@@@@@"
-
-set +x
-echo "@@@ Environment @@@"
-env | sort
-echo "@@@@@@"
-set -eux
-
-python $SCRIPT_PATH/build.py derive-llvm+clang+libcxx
-rsync -auvh --delete --exclude=.svn/ ${WORKSPACE}/lldb.src/ ${WORKSPACE}/lldb
-
-                       '''
+              timeout(90) {
+                  sh '''
+                  python llvm-zorg/zorg/jenkins/monorepo_build.py fetch
+                  '''
                 }
             }
         }
-        stage('Build+Install LLVM, Clang, libcxx (Ninja, RelWithDebInfo)') {
+        stage('Clang Build') {
             steps {
-                timeout(activity: true, time: 30) {
+                timeout(90) {
                     sh '''
-set -eux
+                    set -u
+                    rm -rf build.properties
 
-# Avoid the python in /usr/local/bin.
-PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/jbin
+                    cd llvm-project
+                    git tag -a -m "First Commit" first_commit 97724f18c79c7cc81ced24239eb5e883bf1398ef || true
 
-if [ -z "WORKSPACE" ]; then
-    echo "WORKSPACE is not set."
-    exit 1
-fi
+                    git_desc=$(git describe --match "first_commit")
 
-SRC="$WORKSPACE"
-TEST="$WORKSPACE/test"
-DEST="$WORKSPACE/llvm-installtree"
-LLVM_SRC="$SRC/llvm"
-LLDB_SRC="$SRC/lldb"
+                    export GIT_DISTANCE=$(echo ${git_desc} | cut -f 2 -d "-")
 
-mkdir -p llvm-buildtree
-cd llvm-buildtree
+                    sha=$(echo ${git_desc} | cut -f 3 -d "-")
+                    export GIT_SHA=${sha:1}
 
-echo FIXME: The module map in an install tree seems to still have problems.
+                    cd -
 
-echo "@@@ CMake @@@"
-cmake $LLVM_SRC \
-    -C$LLDB_SRC/cmake/caches/Apple-lldb-base.cmake \
-    -DCMAKE_INSTALL_PREFIX="" \
-    -DLLVM_INSTALL_UTILS=On \
-    -DLLVM_INSTALL_TOOLCHAIN_ONLY=Off \
-    -DLLVM_ENABLE_MODULES=Off \
-    -DLLVM_VERSION_PATCH=99 \
-    -DPYTHON_EXECUTABLE=/usr/bin/python2.7 \
-    -DPYTHON_LIBRARY=/System/Library/Frameworks/Python.framework/Versions/2.7/lib/libpython2.7.dylib \
-    -DPYTHON_INCLUDE_DIR=/System/Library/Frameworks/Python.framework/Versions/2.7/include/python2.7 \
-    -DPYTHON_LIBRARY_DEBUG=/System/Library/Frameworks/Python.framework/Versions/2.7/lib/libpython2.7.dylib \
-    -G Ninja
-echo "@@@@@@"
+                    export PATH=$PATH:/usr/bin:/usr/local/bin
 
-echo "@@@ Build @@@"
-ninja
-echo "@@@@@@"
-
-echo "@@@ Install @@@"
-DESTDIR=$DEST ninja install
-echo "@@@@@@"
-                       '''
+                    python llvm-zorg/zorg/jenkins/monorepo_build.py cmake build \
+                      --assertions \
+                      --noupload \
+                      --projects="clang;libcxx;libcxxabi" \
+                      --cmake-flag="-DLLVM_INSTALL_UTILS=On" \
+                      --cmake-flag="-DLLVM_INSTALL_TOOLCHAIN_ONLY=Off"
+                    '''
                 }
             }
         }
-        stage('Build+Test against build-tree (Ninja, Release)') {
+        stage('Ninja Standalone Build (build tree)') {
             steps {
-                timeout(activity: true, time: 30) {
+                timeout(90) {
                     sh '''
-set -eux
+                    set -u
+                    rm -rf build.properties
 
+                    cd llvm-project
+                    git tag -a -m "First Commit" first_commit 97724f18c79c7cc81ced24239eb5e883bf1398ef || true
 
-# Avoid the python in /usr/local/bin.
-PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/jbin
+                    git_desc=$(git describe --match "first_commit")
 
-if [ -z "WORKSPACE" ]; then
-    echo "WORKSPACE is not set."
-    exit 1
-fi
+                    export GIT_DISTANCE=$(echo ${git_desc} | cut -f 2 -d "-")
 
-SRC="$WORKSPACE"
-BUILD="$WORKSPACE/lldb-against-buildtree"
-TEST="$WORKSPACE/test"
-DEST="$WORKSPACE/lldb-install"
-LLDB_SRC="$SRC/lldb"
+                    sha=$(echo ${git_desc} | cut -f 3 -d "-")
+                    export GIT_SHA=${sha:1}
 
-mkdir -p $BUILD
-cd $BUILD
+                    cd -
 
-echo "@@@ CMake @@@"
-cmake -L $LLDB_SRC \
-    -C$LLDB_SRC/cmake/caches/Apple-lldb-macOS.cmake \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DLLVM_VERSION_PATCH=99 \
-    -DLLVM_DIR=${WORKSPACE}/llvm-buildtree/lib/cmake/llvm \
-    -DClang_DIR=${WORKSPACE}/llvm-buildtree/lib/cmake/clang \
-    -DPYTHON_EXECUTABLE=/usr/bin/python2.7 \
-    -DPYTHON_LIBRARY=/System/Library/Frameworks/Python.framework/Versions/2.7/lib/libpython2.7.dylib \
-    -DPYTHON_INCLUDE_DIR=/System/Library/Frameworks/Python.framework/Versions/2.7/include/python2.7 \
-    -DPYTHON_LIBRARY_DEBUG=/System/Library/Frameworks/Python.framework/Versions/2.7/lib/libpython2.7.dylib \
-     -G Ninja
-echo "@@@@@@"
+                    export PATH=$PATH:/usr/bin:/usr/local/bin
+                    export LLDB_STANDALONE_TYPE="build-tree"
 
-echo "@@@ Build @@@"
-ninja
-echo "@@@@@@"
-
-echo "@@@ Test @@@"
-/usr/bin/env TERM=vt100 ninja -v check-lldb
-echo "@@@@@@"
-
-                       '''
+                    python $WORKSPACE/llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-standalone build \
+                      --assertions \
+                      --cmake-type=Release
+                    '''
                 }
             }
         }
-        stage('Build against install-tree (Ninja, Release)') {
+        stage('Ninja Standalone Build (install tree)') {
             steps {
-                timeout(activity: true, time: 30) {
+                timeout(90) {
                     sh '''
-set -eux
+                    set -u
+                    rm -rf build.properties
 
-# Avoid the python in /usr/local/bin.
-PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/jbin
+                    cd llvm-project
+                    git tag -a -m "First Commit" first_commit 97724f18c79c7cc81ced24239eb5e883bf1398ef || true
 
-if [ -z "WORKSPACE" ]; then
-    echo "WORKSPACE is not set."
-    exit 1
-fi
+                    git_desc=$(git describe --match "first_commit")
 
-SRC="$WORKSPACE"
-BUILD="$WORKSPACE/lldb-against-installtree"
-TEST="$WORKSPACE/test"
-DEST="$WORKSPACE/lldb-install"
-LLDB_SRC="$SRC/lldb"
+                    export GIT_DISTANCE=$(echo ${git_desc} | cut -f 2 -d "-")
 
-mkdir -p $BUILD
-cd $BUILD
+                    sha=$(echo ${git_desc} | cut -f 3 -d "-")
+                    export GIT_SHA=${sha:1}
 
-echo "@@@ CMake @@@"
-cmake -L $LLDB_SRC \
-    -C$LLDB_SRC/cmake/caches/Apple-lldb-macOS.cmake \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DLLVM_ENABLE_MODULES=Off \
-    -DLLVM_VERSION_PATCH=99 \
-    -DLLVM_EXTERNAL_LIT=${WORKSPACE}/llvm-buildtree/bin/llvm-lit \
-    -DLLVM_DIR=${WORKSPACE}/llvm-installtree/lib/cmake/llvm \
-    -DClang_DIR=${WORKSPACE}/llvm-installtree/lib/cmake/clang \
-    -DPYTHON_EXECUTABLE=/usr/bin/python2.7 \
-    -DPYTHON_LIBRARY=/System/Library/Frameworks/Python.framework/Versions/2.7/lib/libpython2.7.dylib \
-    -DPYTHON_INCLUDE_DIR=/System/Library/Frameworks/Python.framework/Versions/2.7/include/python2.7 \
-    -DPYTHON_LIBRARY_DEBUG=/System/Library/Frameworks/Python.framework/Versions/2.7/lib/libpython2.7.dylib \
-    -G Ninja
-echo "@@@@@@"
+                    cd -
 
-echo "@@@ Compile @@@"
-ninja
-echo "@@@@@@"
+                    export PATH=$PATH:/usr/bin:/usr/local/bin
+                    export LLDB_STANDALONE_TYPE="install-tree"
 
-                       '''
+                    python $WORKSPACE/llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-standalone build \
+                      --assertions \
+                      --cmake-type=Release
+                    '''
                 }
             }
         }
-        stage('Build+Test against build-tree (Xcode, Debug)') {
+        stage('Xcode Standalone Build (build tree)') {
             steps {
-                timeout(activity: true, time: 30) {
+                timeout(90) {
                     sh '''
-set -eux
+                    set -u
+                    rm -rf build.properties
 
+                    cd llvm-project
+                    git tag -a -m "First Commit" first_commit 97724f18c79c7cc81ced24239eb5e883bf1398ef || true
 
-# Avoid the python in /usr/local/bin.
-PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/jbin
+                    git_desc=$(git describe --match "first_commit")
 
-if [ -z "WORKSPACE" ]; then
-    echo "WORKSPACE is not set."
-    exit 1
-fi
+                    export GIT_DISTANCE=$(echo ${git_desc} | cut -f 2 -d "-")
 
-SRC="$WORKSPACE"
-BUILD="$WORKSPACE/lldb-xcode-against-buildtree"
-TEST="$WORKSPACE/test"
-DEST="$WORKSPACE/lldb-install"
-LLDB_SRC="$SRC/lldb"
+                    sha=$(echo ${git_desc} | cut -f 3 -d "-")
+                    export GIT_SHA=${sha:1}
 
-mkdir -p $BUILD
-cd $BUILD
+                    cd -
 
-echo "@@@ CMake @@@"
-cmake -L $LLDB_SRC \
-    -C$LLDB_SRC/cmake/caches/Apple-lldb-Xcode.cmake \
-    -DLLVM_VERSION_PATCH=99 \
-    -DLLVM_DIR=${WORKSPACE}/llvm-buildtree/lib/cmake/llvm \
-    -DClang_DIR=${WORKSPACE}/llvm-buildtree/lib/cmake/clang \
-    -DPYTHON_EXECUTABLE=/usr/bin/python2.7 \
-    -DPYTHON_LIBRARY=/System/Library/Frameworks/Python.framework/Versions/2.7/lib/libpython2.7.dylib \
-    -DPYTHON_INCLUDE_DIR=/System/Library/Frameworks/Python.framework/Versions/2.7/include/python2.7 \
-    -DPYTHON_LIBRARY_DEBUG=/System/Library/Frameworks/Python.framework/Versions/2.7/lib/libpython2.7.dylib \
-     -G Xcode
-echo "@@@@@@"
+                    export PATH=$PATH:/usr/bin:/usr/local/bin
 
-echo "@@@ Build @@@"
-cmake --build . --config Debug
-echo "@@@@@@"
-
-echo "@@@ Test @@@"
-cmake --build . --config Debug --target lldb-test-deps
-cd ${BUILD}/lit && /usr/bin/env TERM=vt100 /usr/bin/python2.7 ${WORKSPACE}/llvm-buildtree/bin/llvm-lit --verbose --param build_mode=Debug ${BUILD}/lit
-echo "@@@@@@"
-
-                       '''
-                }
-            }
-        }
-        stage('Cleanup') {
-            steps {
-                timeout(activity: true, time: 30) {
-                    sh '''
-set -eux
-# Avoid the python in /usr/local/bin.
-PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/jbin
-
-if [ -z "WORKSPACE" ]; then
-    echo "WORKSPACE is not set."
-    exit 1
-fi
-
-SRC="$WORKSPACE"
-BUILD="$WORKSPACE/lldb-build"
-
-# Delete directories that would get deleted first thing by the next build anyway.
-rm -rf $BUILD/*/lldb-test-build.noindex $BUILD/*/module.cache
-                       '''
+                    python $WORKSPACE/llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-xcode build \
+                      --assertions \
+                      --cmake-type=Release
+                    '''
                 }
             }
         }

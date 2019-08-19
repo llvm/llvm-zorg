@@ -1,150 +1,194 @@
 #!/usr/bin/env groovy
+
 pipeline {
-    agent {label 'green-dragon-23'}
+    agent { label 'green-dragon-23' }
     parameters {
+        string(name: 'GIT_REVISION', defaultValue: '*/master', description: 'Git revision to build')
         string(name: 'ARTIFACT', defaultValue: 'clang-stage1-RA/latest', description: 'Compiler artifact to use for building the project')
         string(name: 'BUILD_TYPE', defaultValue: 'Release', description: 'Default CMake build type; one of: Release, Debug, ...')
         string(name: 'CLEAN', defaultValue: "false", description: 'Whether or not to clean the build directory before building')
     }
     stages {
-        stage('Subversion Checkout') {
+        stage('Checkout') {
             steps {
-                timeout(activity: true, time: 30) {
-                    checkout([$class: 'SubversionSCM',
-                              locations: [
-                                  [local: 'llvm.src',
-                                   remote: 'http://llvm.org/svn/llvm-project/llvm/trunk'],
-                                  [local: 'lldb.src',
-                                   remote: 'http://llvm.org/svn/llvm-project/lldb/trunk'],
-                                  [local: 'clang.src',
-                                   remote: 'http://llvm.org/svn/llvm-project/cfe/trunk'],
-                                  [local: 'debuginfo-tests.src',
-                                   remote: 'http://llvm.org/svn/llvm-project/debuginfo-tests/trunk'],
-                                  [cancelProcessOnExternalsFail: true,
-                                   credentialsId: '', depthOption: 'infinity',
-                                   ignoreExternalsOption: true, local: 'libcxx.src',
-                                   remote: 'http://llvm.org/svn/llvm-project/libcxx/trunk']],
-                              quietOperation: false,
-                              workspaceUpdater: [$class: 'UpdateUpdater']])
+                dir('llvm-project') {
+                    checkout([$class: 'GitSCM', branches: [[name: params.GIT_REVISION]], userRemoteConfigs: [[url: 'http://labmaster3.local/git/llvm-project.git']]])
                 }
+                dir('llvm-zorg') {
+                    checkout([$class: 'GitSCM', branches: [[name: '*/master']], userRemoteConfigs: [[url: 'http://labmaster3.local/git/llvm-zorg.git']]])
+                }
+            }
+        }
+        stage('Fetch') {
+            steps {
+                timeout(10) {
+                    sh '''
+                        python llvm-zorg/zorg/jenkins/monorepo_build.py fetch
+                    '''
+                    }
             }
         }
         stage('Build LLDB') {
             steps {
-                timeout(activity: true, time: 30) {
+                timeout(60) {
                     sh '''
-                       set -u
-                       export
-                       python $SCRIPT_PATH/build.py fetch
-                       '''
-                    sh '''
-                       bash $SCRIPT_PATH/lldb-cmake-matrix-stage1.sh
-                       '''
+                    set -u
+                    rm -rf build.properties
+
+                    cd llvm-project
+                    git tag -a -m "First Commit" first_commit 97724f18c79c7cc81ced24239eb5e883bf1398ef || true
+
+                    git_desc=$(git describe --match "first_commit")
+
+                    export GIT_DISTANCE=$(echo ${git_desc} | cut -f 2 -d "-")
+
+                    sha=$(echo ${git_desc} | cut -f 3 -d "-")
+                    export GIT_SHA=${sha:1}
+
+                    cd -
+
+                    export PATH=$PATH:/usr/bin:/usr/local/bin
+
+                    python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake build \
+                      --assertions \
+                      --projects="clang;libcxx;libcxxabi;lldb"  \
+                      --cmake-type=Release \
+                      --dotest-flag="--skip-category gmodules" \
+                      --dotest-flag="--arch=x86_64"
+                    '''
                 }
             }
         }
-        stage('Clang 5.0.2') {
+        stage('Build Clang 5.0.2') {
             steps {
-                timeout(activity: true, time: 30) {
-                    checkout([$class: 'SubversionSCM',
-                              locations: [
-                                  [local: 'src/history/clang-5.0.2',
-                                   remote: 'http://llvm.org/svn/llvm-project/llvm/tags/RELEASE_502/final'],
-                                  [local: 'src/history/clang-5.0.2/tools/clang',
-                                   remote: 'http://llvm.org/svn/llvm-project/cfe/tags/RELEASE_502/final'],
-                                  [local: 'src/history/clang-5.0.2/projects/libcxx',
-                                   remote: 'http://llvm.org/svn/llvm-project/libcxx/tags/RELEASE_502/final']],
-                              quietOperation: false,
-                              workspaceUpdater: [$class: 'UpdateUpdater']])
+                dir('clang_502') {
+                    checkout([$class: 'GitSCM', branches: [[name: "llvmorg-5.0.2"]], userRemoteConfigs: [[url: 'http://labmaster3.local/git/llvm-project.git']]])
                 }
-                timeout(activity: true, time: 30) {
+                timeout(60) {
                     sh '''
-                       export HISTORIC_COMPILER=clang-5.0.2
-                       bash ${SCRIPT_PATH}/lldb-cmake-matrix-stage2.sh
-                       '''
-                    junit 'test-clang-5.0.2/results.xml'
+                    export PATH=$PATH:/usr/bin:/usr/local/bin
+                    export SRC_DIR='clang_502'
+                    export BUILD_DIR='clang_502_build'
+
+                    python llvm-zorg/zorg/jenkins/monorepo_build.py cmake build \
+                      --assertions \
+                      --noupload \
+                      --noinstall \
+                      --projects="clang;libcxx;libcxxabi"
+                    '''
                 }
             }
         }
-        stage('Clang 6.0.1') {
+        stage('Test Clang 5.0.2') {
             steps {
-                timeout(activity: true, time: 30) {
-                    checkout([$class: 'SubversionSCM',
-                              locations: [
-                                  [local: 'src/history/clang-6.0.1',
-                                   remote: 'http://llvm.org/svn/llvm-project/llvm/tags/RELEASE_601/final'],
-                                  [local: 'src/history/clang-6.0.1/tools/clang',
-                                   remote: 'http://llvm.org/svn/llvm-project/cfe/tags/RELEASE_601/final'],
-                                  [local: 'src/history/clang-6.0.1/projects/libcxx',
-                                   remote: 'http://llvm.org/svn/llvm-project/libcxx/tags/RELEASE_601/final']],
-                              quietOperation: false,
-                              workspaceUpdater: [$class: 'UpdateUpdater']])
-                }
-                timeout(activity: true, time: 30) {
+                timeout(60) {
                     sh '''
-                       export HISTORIC_COMPILER=clang-6.0.1
-                       bash ${SCRIPT_PATH}/lldb-cmake-matrix-stage2.sh
-                       '''
-                    junit 'test-clang-6.0.1/results.xml'
+                    export PATH=$PATH:/usr/bin:/usr/local/bin
+                    export LLDB_TEST_COMPILER="$WORKSPACE/clang_502_build/bin/clang"
+                    python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix configure \
+                      --assertions \
+                      --projects="clang;libcxx;libcxxabi;lldb"  \
+                      --cmake-type=Release \
+                      --dotest-flag="--skip-category" \
+                      --dotest-flag="gmodules" \
+                      --dotest-flag="--skip-category" \
+                      --dotest-flag="watchpoint" \
+                      --dotest-flag="--arch=x86_64"
+
+                    set +e
+                    python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix test
+                    set -e
+                    '''
+                }
+                junit 'test/results.xml'
+            }
+        }
+        stage('Build Clang 6.0.1') {
+            steps {
+                dir('clang_601') {
+                    checkout([$class: 'GitSCM', branches: [[name: "llvmorg-6.0.1"]], userRemoteConfigs: [[url: 'http://labmaster3.local/git/llvm-project.git']]])
+                }
+                timeout(60) {
+                    sh '''
+                    export PATH=$PATH:/usr/bin:/usr/local/bin
+                    export SRC_DIR='clang_601'
+                    export BUILD_DIR='clang_601_build'
+
+                    python llvm-zorg/zorg/jenkins/monorepo_build.py cmake build \
+                      --assertions \
+                      --noupload \
+                      --noinstall \
+                      --projects="clang;libcxx;libcxxabi"
+                    '''
                 }
             }
         }
-        stage('Clang 7.0.1') {
+        stage('Test Clang 6.0.1') {
             steps {
-                timeout(activity: true, time: 30) {
-                    checkout([$class: 'SubversionSCM',
-                              locations: [
-                                  [local: 'src/history/clang-7.0.1',
-                                   remote: 'http://llvm.org/svn/llvm-project/llvm/tags/RELEASE_701/final'],
-                                  [local: 'src/history/clang-7.0.1/tools/clang',
-                                   remote: 'http://llvm.org/svn/llvm-project/cfe/tags/RELEASE_701/final'],
-                                  [local: 'src/history/clang-7.0.1/projects/libcxx',
-                                   remote: 'http://llvm.org/svn/llvm-project/libcxx/tags/RELEASE_701/final']],
-                              quietOperation: false,
-                              workspaceUpdater: [$class: 'UpdateUpdater']])
-                }
-                timeout(activity: true, time: 30) {
+                timeout(60) {
                     sh '''
-                       export HISTORIC_COMPILER=clang-7.0.1
-                       bash ${SCRIPT_PATH}/lldb-cmake-matrix-stage2.sh
-                       '''
-                    junit 'test-clang-7.0.1/results.xml'
+                    export PATH=$PATH:/usr/bin:/usr/local/bin
+                    export LLDB_TEST_COMPILER="$WORKSPACE/clang_601_build/bin/clang"
+                    python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix configure \
+                      --assertions \
+                      --projects="clang;libcxx;libcxxabi;lldb"  \
+                      --cmake-type=Release \
+                      --dotest-flag="--skip-category" \
+                      --dotest-flag="gmodules" \
+                      --dotest-flag="--skip-category" \
+                      --dotest-flag="watchpoint" \
+                      --dotest-flag="--arch=x86_64"
+
+                    set +e
+                    python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix test
+                    set -e
+                    '''
+                }
+                junit 'test/results.xml'
+            }
+        }
+        stage('Build Clang 7.0.1') {
+            steps {
+                dir('clang_701') {
+                    checkout([$class: 'GitSCM', branches: [[name: "llvmorg-7.0.1"]], userRemoteConfigs: [[url: 'http://labmaster3.local/git/llvm-project.git']]])
+                }
+                timeout(60) {
+                    sh '''
+                    export PATH=$PATH:/usr/bin:/usr/local/bin
+                    export SRC_DIR='clang_701'
+                    export BUILD_DIR='clang_701_build'
+
+                    python llvm-zorg/zorg/jenkins/monorepo_build.py cmake build \
+                      --assertions \
+                      --noupload \
+                      --noinstall \
+                      --projects="clang;libcxx;libcxxabi"
+                    '''
                 }
             }
         }
-        stage('Upstream Clang + DWARF 2') {
+        stage('Test Clang 7.0.1') {
             steps {
-                timeout(activity: true, time: 30) {
+                timeout(60) {
                     sh '''
-                       export DWARF_VERSION=2
-                       bash ${SCRIPT_PATH}/lldb-cmake-matrix-dwarf.sh
-                       '''
-                    junit 'test-dwarf2/results.xml'
+                    export PATH=$PATH:/usr/bin:/usr/local/bin
+                    export LLDB_TEST_COMPILER="$WORKSPACE/clang_701_build/bin/clang"
+                    python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix configure \
+                      --assertions \
+                      --projects="clang;libcxx;libcxxabi;lldb"  \
+                      --cmake-type=Release \
+                      --dotest-flag="--skip-category" \
+                      --dotest-flag="gmodules" \
+                      --dotest-flag="--skip-category" \
+                      --dotest-flag="watchpoint" \
+                      --dotest-flag="--arch=x86_64"
+
+                    set +e
+                    python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix test
+                    set -e
+                    '''
                 }
-            }
-        }
-        stage('Upstream Clang + DWARF 4') {
-            steps {
-                timeout(activity: true, time: 30) {
-                    sh '''
-                       export DWARF_VERSION=4
-                       bash ${SCRIPT_PATH}/lldb-cmake-matrix-dwarf.sh
-                       '''
-                    junit 'test-dwarf4/results.xml'
-                }
-            }
-        }
-        stage('Upstream Clang + DWARF 5') {
-            steps {
-                timeout(activity: true, time: 30) {
-                    sh '''
-                       export DWARF_VERSION=5
-                       bash ${SCRIPT_PATH}/lldb-cmake-matrix-dwarf.sh
-                       '''
-// Commented out to avoid distraction while most of the tests fail.
-//                    junit(healthScaleFactor: 0.0,
-//                          testResults: 'test-dwarf5/results.xml')
-                }
+                junit 'test/results.xml'
             }
         }
     }
