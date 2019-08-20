@@ -213,7 +213,7 @@ def _get_clang_builders():
 
         # ARMv7 LNT test-suite in test-only mode
         {'name' : "clang-cmake-armv7-lnt",
-         'slavenames':["linaro-tk1-03"],
+         'slavenames':["linaro-armv8-01-arm-lnt"],
          'builddir':"clang-cmake-armv7-lnt",
          'factory' : ClangBuilder.getClangCMakeBuildFactory(
                       clean=False,
@@ -227,24 +227,9 @@ def _get_clang_builders():
                       extra_cmake_args=["-DLLVM_TARGETS_TO_BUILD='ARM'",
                                         "-DLLVM_PARALLEL_LINK_JOBS=2"])},
 
-        # ARMv8 LNT test-suite in test-only mode
-        {'name' : "clang-cmake-armv8-lnt",
-         'slavenames':["linaro-armv8-01-arm-lnt"],
-         'builddir':"clang-cmake-armv8-lnt",
-         'factory' : ClangBuilder.getClangCMakeBuildFactory(
-                      clean=False,
-                      checkout_compiler_rt=False,
-                      checkout_lld=False,
-                      test=False,
-                      useTwoStage=False,
-                      runTestSuite=True,
-                      testsuite_flags=['--cppflags', '-mcpu=cortex-a57 -marm',
-                                       '--threads=64', '--build-threads=64'],
-                      extra_cmake_args=["-DLLVM_TARGETS_TO_BUILD='ARM'"])},
-
         ## ARMv7 check-all self-host NEON with CMake builder
         {'name': "clang-cmake-armv7-selfhost-neon",
-         'slavenames':["linaro-tk1-04"],
+         'slavenames':["linaro-armv8-01-arm-selfhost-neon"],
          'builddir':"clang-cmake-armv7-selfhost-neon",
          'factory' : ClangBuilder.getClangCMakeBuildFactory(
                       clean=False,
@@ -257,23 +242,9 @@ def _get_clang_builders():
                                         "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'",
                                         "-DLLVM_PARALLEL_LINK_JOBS=2"])},
 
-        ## ARMv8 check-all self-host NEON with CMake builder
-        {'name': "clang-cmake-armv8-selfhost-neon",
-         'slavenames':["linaro-armv8-01-arm-selfhost-neon"],
-         'builddir':"clang-cmake-armv8-selfhost-neon",
-         'factory' : ClangBuilder.getClangCMakeBuildFactory(
-                      clean=False,
-                      checkout_compiler_rt=False,
-                      checkout_lld=False,
-                      useTwoStage=True,
-                      testStage1=False,
-                      extra_cmake_args=["-DCMAKE_C_FLAGS='-mcpu=cortex-a57 -marm'",
-                                        "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a57 -marm'",
-                                        "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'"])},
-
         ## ARMv7 check-all with CMake builder
         {'name': "clang-cmake-armv7-quick",
-         'slavenames':["linaro-tk1-06"],
+         'slavenames':["linaro-armv8-01-arm-quick"],
          'builddir':"clang-cmake-armv7-quick",
          'factory' : ClangBuilder.getClangCMakeBuildFactory(
                       clean=False,
@@ -282,19 +253,9 @@ def _get_clang_builders():
                       extra_cmake_args=["-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'",
                                         "-DLLVM_PARALLEL_LINK_JOBS=2"])},
 
-        ## ARMv8 check-all with CMake builder
-        {'name': "clang-cmake-armv8-quick",
-         'slavenames':["linaro-armv8-01-arm-quick"],
-         'builddir':"clang-cmake-armv8-quick",
-         'factory' : ClangBuilder.getClangCMakeBuildFactory(
-                      clean=False,
-                      checkout_compiler_rt=False,
-                      checkout_lld=False,
-                      extra_cmake_args=["-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'"])},
-
         ## ARMv7 Clang + LLVM run test-suite with GlobalISel enabled
         {'name' : "clang-cmake-armv7-global-isel",
-         'slavenames':["linaro-tk1-09"],
+         'slavenames':["linaro-armv8-01-arm-global-isel"],
          'builddir':"clang-cmake-armv7-global-isel",
          'factory' : ClangBuilder.getClangCMakeBuildFactory(
                       clean=False,
@@ -308,25 +269,9 @@ def _get_clang_builders():
                       extra_cmake_args=["-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'",
                                         "-DLLVM_PARALLEL_LINK_JOBS=2"])},
 
-        ## ARMv8 Clang + LLVM run test-suite with GlobalISel enabled
-        {'name' : "clang-cmake-armv8-global-isel",
-         'slavenames':["linaro-armv8-01-arm-global-isel"],
-         'builddir':"clang-cmake-armv8-global-isel",
-         'factory' : ClangBuilder.getClangCMakeBuildFactory(
-                      clean=False,
-                      checkout_compiler_rt=False,
-                      checkout_lld=False,
-                      test=True,
-                      useTwoStage=False,
-                      runTestSuite=True,
-                      testsuite_flags=['--cppflags', '-O0 -mllvm -global-isel -mllvm -global-isel-abort=0',
-                                       '--threads=64', '--build-threads=64'],
-                      extra_cmake_args=["-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'"])},
-
         ## ARMv7 check-all self-host with CMake builder
-        ## No ARMv8 VFP builder since NEON is mandatory in ARMv8.
         {'name': "clang-cmake-armv7-selfhost",
-         'slavenames':["linaro-tk1-07"],
+         'slavenames':["linaro-armv8-01-arm-selfhost-neon"],
          'builddir':"clang-cmake-armv7-selfhost",
          'factory' : ClangBuilder.getClangCMakeBuildFactory(
                       clean=False,
@@ -341,7 +286,7 @@ def _get_clang_builders():
 
         ## AArch64 Clang+LLVM check-all + test-suite
         {'name': "clang-cmake-aarch64-quick",
-         'slavenames':["linaro-thx1-01-aarch64-quick", "linaro-armv8-01-aarch64-quick"],
+         'slavenames':["linaro-armv8-01-aarch64-quick"],
          'builddir':"clang-cmake-aarch64-quick",
          'factory' : ClangBuilder.getClangCMakeBuildFactory(
                       clean=False,
@@ -357,7 +302,7 @@ def _get_clang_builders():
 
         ## AArch64 Self-hosting Clang+LLVM check-all + LLD + test-suite
         {'name': "clang-cmake-aarch64-lld",
-         'slavenames':["linaro-thx1-01-aarch64-lld", "linaro-armv8-01-aarch64-lld"],
+         'slavenames':["linaro-armv8-01-aarch64-lld"],
          'builddir':"clang-cmake-aarch64-lld",
          'factory' : ClangBuilder.getClangCMakeBuildFactory(
                       clean=False,
@@ -377,7 +322,7 @@ def _get_clang_builders():
 
         ## AArch64 Clang+LLVM run test-suite at -O0 (GlobalISel is now default).
         {'name': "clang-cmake-aarch64-global-isel",
-         'slavenames':["linaro-thx1-01-aarch64-global-isel", "linaro-armv8-01-aarch64-global-isel"],
+         'slavenames':["linaro-armv8-01-aarch64-global-isel"],
          'builddir':"clang-cmake-aarch64-global-isel",
          'factory' : ClangBuilder.getClangCMakeBuildFactory(
                       clean=False,
@@ -389,6 +334,83 @@ def _get_clang_builders():
                       testsuite_flags=['--cppflags', '-O0',
                                        '--threads=96', '--build-threads=96'],
                       extra_cmake_args=["-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'"],
+               )},
+
+          ## ARMv7 without neon; check-all 2-stage full compiler-rt + testsuite
+          {'name': "clang-cmake-armv7-full",
+           'slavenames':["linaro-tk1-06", "linaro-tk1-07", "linaro-tk1-08", "linaro-tk1-09"],
+           'builddir':"clang-cmake-armv7-full",
+           'factory' : ClangBuilder.getClangCMakeBuildFactory(
+                        clean=False,
+                        checkout_lld=False,
+                        checkout_compiler_rt=True,
+                        testStage1=False,
+                        useTwoStage=True,
+                        runTestSuite=True,
+                        testsuite_flags=['--cppflags', '-mcpu=cortex-a15 -mfpu=vfpv3 -marm',
+                                         '--threads=4', '--build-threads=4'],
+                        extra_cmake_args=["-DCOMPILER_RT_TEST_COMPILER_CFLAGS='-mcpu=cortex-a15 -mfpu=vfpv3 -marm'",
+                                          "-DLLVM_TARGETS_TO_BUILD='ARM'",
+                                          "-DLLVM_PARALLEL_LINK_JOBS=2"])},
+
+          ## ARMv7 Thumb2 with neon; check-all 2-stage full compiler-rt + testsuite
+          {'name': "clang-cmake-thumbv7-full-sh",
+           'slavenames':["linaro-tk1-01", "linaro-tk1-03", "linaro-tk1-04", "linaro-tk1-05"],
+           'builddir':"clang-cmake-thumbv7-full-sh",
+           'factory' : ClangBuilder.getClangCMakeBuildFactory(
+                        clean=False,
+                        checkout_lld=False,
+                        checkout_compiler_rt=True,
+                        testStage1=False,
+                        useTwoStage=True,
+                        runTestSuite=True,
+                        testsuite_flags=['--cppflags', '-mcpu=cortex-a15 -mthumb',
+                                         '--threads=4', '--build-threads=4'],
+                        extra_cmake_args=["-DCMAKE_C_FLAGS='-mcpu=cortex-a15 -mthumb'",
+                                          "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a15 -mthumb'",
+                                          "-DCOMPILER_RT_TEST_COMPILER_CFLAGS='-mcpu=cortex-a15 -mthumb'",
+                                          "-DLLVM_TARGETS_TO_BUILD='ARM'",
+                                          "-DLLVM_PARALLEL_LINK_JOBS=2"])},
+
+        ## AArch32 Self-hosting Clang+LLVM check-all + LLD + test-suite
+        # Sanitizers build disabled due to PR38690
+        {'name': "clang-cmake-armv8-lld",
+         'slavenames':["linaro-armv8-01-arm-lld"],
+         'builddir':"clang-cmake-armv8-lld",
+         'factory' : ClangBuilder.getClangCMakeBuildFactory(
+                      clean=False,
+                      checkout_compiler_rt=True,
+                      checkout_lld=True,
+                      test=True,
+                      useTwoStage=True,
+                      runTestSuite=True,
+                      testsuite_flags=['--cppflags', '-mcpu=cortex-a57 -fuse-ld=lld',
+                                       '--threads=64', '--build-threads=64'],
+                      extra_cmake_args=["-DCMAKE_C_FLAGS='-mcpu=cortex-a57'",
+                                        "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a57'",
+                                        "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'",
+                                        "-DCOMPILER_RT_BUILD_SANITIZERS=OFF",
+                                        "-DLLVM_ENABLE_LLD=True"],
+               ),
+         'category'   : 'lld'},
+
+        # AArch64 Clang+LLVM+RT check-all + test-suite + self-hosting
+        {'name': "clang-cmake-aarch64-full",
+         'slavenames':["linaro-armv8-01-aarch64-full"],
+         'builddir':"clang-cmake-aarch64-full",
+         'factory' : ClangBuilder.getClangCMakeBuildFactory(
+                      clean=False,
+                      checkout_compiler_rt=True,
+                      checkout_lld=False,
+                      test=True,
+                      useTwoStage=True,
+                      testStage1=False,
+                      runTestSuite=True,
+                      testsuite_flags=['--cppflags', '-mcpu=cortex-a57',
+                                       '--threads=96', '--build-threads=96'],
+                      extra_cmake_args=["-DCMAKE_C_FLAGS='-mcpu=cortex-a57'",
+                                        "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a57'",
+                                        "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'"],
                )},
 
         {'name': 'clang-x64-windows-msvc',
@@ -972,97 +994,6 @@ def _get_sanitizer_builders():
            'builddir': "sanitizer-aarch64-linux-mte",
            'factory': SanitizerBuilder.getSanitizerBuildFactory()},
 
-          ## ARMv7 check-all full (compiler-rt) with CMake builder; Needs x86 for ASAN tests
-          {'name': "clang-cmake-armv7-full",
-           'slavenames':["linaro-tk1-08"],
-           'builddir':"clang-cmake-armv7-full",
-           'factory' : ClangBuilder.getClangCMakeBuildFactory(
-                        clean=False,
-                        checkout_lld=False,
-                        extra_cmake_args=["-DCOMPILER_RT_TEST_COMPILER_CFLAGS='-mcpu=cortex-a15 -mfpu=vfpv3 -marm'",
-                                          "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'",
-                                          "-DLLVM_PARALLEL_LINK_JOBS=2"])},
-
-          ## ARMv8 check-all full (compiler-rt) with CMake builder; Needs x86 for ASAN tests
-          {'name': "clang-cmake-armv8-full",
-           'slavenames':["linaro-armv8-01-arm-full"],
-           'builddir':"clang-cmake-armv8-full",
-           'factory' : ClangBuilder.getClangCMakeBuildFactory(
-                        clean=False,
-                        checkout_lld=False,
-                        extra_cmake_args=["-DCOMPILER_RT_TEST_COMPILER_CFLAGS='-mcpu=cortex-a57 -marm'",
-                                          "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'"])},
-
-          ## ARMv7 Thumb2 check-all full (compiler-rt) with CMake builder; Needs x86 for ASAN tests
-          {'name': "clang-cmake-thumbv7-full-sh",
-           'slavenames':["linaro-tk1-05"],
-           'builddir':"clang-cmake-thumbv7-full-sh",
-           'factory' : ClangBuilder.getClangCMakeBuildFactory(
-                        clean=False,
-                        checkout_lld=False,
-                        useTwoStage=True,
-                        testStage1=False,
-                        extra_cmake_args=["-DCMAKE_C_FLAGS='-mcpu=cortex-a15 -mthumb'",
-                                          "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a15 -mthumb'",
-                                          "-DCOMPILER_RT_TEST_COMPILER_CFLAGS='-mcpu=cortex-a15 -mthumb'",
-                                          "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'",
-                                          "-DLLVM_PARALLEL_LINK_JOBS=2"])},
-
-          ## ARMv8 Thumb2 check-all full (compiler-rt) with CMake builder; Needs x86 for ASAN tests
-          {'name': "clang-cmake-thumbv8-full-sh",
-           'slavenames':["linaro-armv8-01-arm-full-selfhost"],
-           'builddir':"clang-cmake-thumbv8-full-sh",
-           'factory' : ClangBuilder.getClangCMakeBuildFactory(
-                        clean=False,
-                        checkout_lld=False,
-                        useTwoStage=True,
-                        testStage1=False,
-                        extra_cmake_args=["-DCMAKE_C_FLAGS='-mcpu=cortex-a57 -mthumb'",
-                                          "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a57 -mthumb'",
-                                          "-DCOMPILER_RT_TEST_COMPILER_CFLAGS='-mcpu=cortex-a57 -mthumb'",
-                                          "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'"])},
-
-        ## AArch32 Self-hosting Clang+LLVM check-all + LLD + test-suite
-        # Sanitizers build disabled due to PR38690
-        {'name': "clang-cmake-armv8-lld",
-         'slavenames':["linaro-armv8-01-arm-lld"],
-         'builddir':"clang-cmake-armv8-lld",
-         'factory' : ClangBuilder.getClangCMakeBuildFactory(
-                      clean=False,
-                      checkout_compiler_rt=True,
-                      checkout_lld=True,
-                      test=True,
-                      useTwoStage=True,
-                      runTestSuite=True,
-                      testsuite_flags=['--cppflags', '-mcpu=cortex-a57 -fuse-ld=lld',
-                                       '--threads=64', '--build-threads=64'],
-                      extra_cmake_args=["-DCMAKE_C_FLAGS='-mcpu=cortex-a57'",
-                                        "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a57'",
-                                        "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'",
-                                        "-DCOMPILER_RT_BUILD_SANITIZERS=OFF",
-                                        "-DLLVM_ENABLE_LLD=True"],
-               ),
-         'category'   : 'lld'},
-
-        # AArch64 Clang+LLVM+RT check-all + test-suite + self-hosting
-        {'name': "clang-cmake-aarch64-full",
-         'slavenames':["linaro-thx1-01-aarch64-full", "linaro-armv8-01-aarch64-full"],
-         'builddir':"clang-cmake-aarch64-full",
-         'factory' : ClangBuilder.getClangCMakeBuildFactory(
-                      clean=False,
-                      checkout_compiler_rt=True,
-                      checkout_lld=False,
-                      test=True,
-                      useTwoStage=True,
-                      testStage1=False,
-                      runTestSuite=True,
-                      testsuite_flags=['--cppflags', '-mcpu=cortex-a57',
-                                       '--threads=96', '--build-threads=96'],
-                      extra_cmake_args=["-DCMAKE_C_FLAGS='-mcpu=cortex-a57'",
-                                        "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a57'",
-                                        "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'"],
-               )},
-
           ]
 
 def _get_openmp_builders():
@@ -1270,7 +1201,7 @@ def _get_libcxx_builders():
 
         # ARMv7 LibC++ and LibC++abi tests (require Clang+RT)
         {'name': 'libcxx-libcxxabi-libunwind-armv7-linux',
-         'slavenames': ['linaro-tk1-01'],
+         'slavenames': ['linaro-tk1-02'],
          'builddir': 'libcxx-libcxxabi-libunwind-armv7-linux',
          'category': 'libcxx',
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
@@ -1291,7 +1222,7 @@ def _get_libcxx_builders():
 
         # ARMv7 LibC++ and LibC++abi tests w/o EH (require Clang+RT)
         {'name': 'libcxx-libcxxabi-libunwind-armv7-linux-noexceptions',
-         'slavenames': ['linaro-tk1-01'],
+         'slavenames': ['linaro-tk1-02'],
          'builddir': 'libcxx-libcxxabi-libunwind-armv7-linux-noexceptions',
          'category': 'libcxx',
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
@@ -1316,7 +1247,7 @@ def _get_libcxx_builders():
 
         # AArch64 LibC++ and LibC++abi tests (require Clang+RT)
         {'name': 'libcxx-libcxxabi-libunwind-aarch64-linux',
-         'slavenames': ['linaro-thx1-01-aarch64-libcxx', 'linaro-armv8-01-aarch64-libcxx'],
+         'slavenames': ['linaro-armv8-01-aarch64-libcxx'],
          'builddir': 'libcxx-libcxxabi-libunwind-aarch64-linux',
          'category': 'libcxx',
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
@@ -1325,7 +1256,7 @@ def _get_libcxx_builders():
                               'CMAKE_CXX_FLAGS': '-mcpu=cortex-a57'})},
 
         {'name': 'libcxx-libcxxabi-libunwind-aarch64-linux-noexceptions',
-         'slavenames': ['linaro-thx1-01-aarch64-libcxx-noeh', 'linaro-armv8-01-aarch64-libcxx-noeh'],
+         'slavenames': ['linaro-armv8-01-aarch64-libcxx-noeh'],
          'builddir': 'libcxx-libcxxabi-libunwind-aarch64-linux-noexceptions',
          'category': 'libcxx',
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
