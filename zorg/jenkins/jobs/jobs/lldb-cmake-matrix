@@ -73,7 +73,7 @@ pipeline {
                       --dotest-flag="--skip-category" \
                       --dotest-flag="watchpoint" \
                       --dotest-flag="--arch=x86_64" \
-                      --dotest=flag="--dwarf-version=2"
+                      --dotest-flag="--dwarf-version=2"
 
                     set +e
                     python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix test
@@ -97,7 +97,7 @@ pipeline {
                       --dotest-flag="--skip-category" \
                       --dotest-flag="watchpoint" \
                       --dotest-flag="--arch=x86_64" \
-                      --dotest=flag="--dwarf-version=4"
+                      --dotest-flag="--dwarf-version=4"
 
                     set +e
                     python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix test
@@ -121,7 +121,7 @@ pipeline {
                       --dotest-flag="--skip-category" \
                       --dotest-flag="watchpoint" \
                       --dotest-flag="--arch=x86_64" \
-                      --dotest=flag="--dwarf-version=5"
+                      --dotest-flag="--dwarf-version=5"
 
                     set +e
                     python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix test
