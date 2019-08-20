@@ -537,8 +537,6 @@ def lldb_cmake_builder(target, variant=None):
         # if we have a host compiler available.
         if conf.CC():
             cmake_cmd.extend([
-                '-DLLDB_TEST_USE_CUSTOM_C_COMPILER=On',
-                '-DLLDB_TEST_USE_CUSTOM_CXX_COMPILER=On',
                 '-DLLDB_TEST_C_COMPILER=' + conf.CC(),
                 '-DLLDB_TEST_CXX_COMPILER=' + conf.CC() + "++"
             ])
@@ -551,8 +549,6 @@ def lldb_cmake_builder(target, variant=None):
 
     if conf.lldbtestcompiler():
         cmake_cmd.extend([
-            '-DLLDB_TEST_USE_CUSTOM_C_COMPILER=On',
-            '-DLLDB_TEST_USE_CUSTOM_CXX_COMPILER=On',
             '-DLLDB_TEST_C_COMPILER=' + conf.lldbtestcompiler(),
             '-DLLDB_TEST_CXX_COMPILER=' + conf.lldbtestcompiler() + "++"
         ])
