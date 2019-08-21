@@ -594,7 +594,7 @@ def lldb_cmake_builder(target, variant=None):
 
     for test_target in conf.cmake_test_targets:
         header("Run Custom Test: {0}".format(test_target))
-        run_cmd(conf.lldbbuilddir(), [NINJA, '-v', test_target])
+        run_cmd(conf.lldbbuilddir(), [NINJA, '-k', '0', '-v', test_target])
         footer()
 
 
