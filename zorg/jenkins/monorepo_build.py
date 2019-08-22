@@ -594,7 +594,7 @@ def lldb_cmake_builder(target, variant=None):
 
     for test_target in conf.cmake_test_targets:
         header("Run Custom Test: {0}".format(test_target))
-        run_cmd(conf.lldbbuilddir(), [NINJA, '-k', '0', '-v', test_target])
+        run_cmd(conf.lldbbuilddir(), [NINJA, '-k', '0', '-v', test_target], err_okay=True)
         footer()
 
 
@@ -865,28 +865,6 @@ def run_cmd(working_dir, cmd, env=None, sudo=False, err_okay=False):
     logging.info("Command took {} seconds".format(
         (end_time - start_time).seconds))
     return return_code
-
-
-def run_cmd_errors_okay(working_dir, cmd, env=None):
-    """Run a command in a working directory, reporting return value.
-    Non-zero exit codes do not generate an exception.
-    """
-    old_cwd = os.getcwd()
-    cmd_to_print = ' '.join([quote_sh_string(x) for x in cmd])
-    sys.stdout.write("cd {}\n{}\n".format(working_dir, cmd_to_print))
-    sys.stdout.flush()
-
-    start_time = datetime.datetime.now()
-    if not os.environ.get('TESTING', False):
-        try:
-            os.chdir(working_dir)
-            result = subprocess.call(cmd, env=env)
-        finally:
-            os.chdir(old_cwd)
-    end_time = datetime.datetime.now()
-
-    logging.info("Command took {} seconds: return code {}".format(
-        (end_time - start_time).seconds, result))
 
 
 KNOWN_TARGETS = ['all', 'configure', 'build', 'test', 'testlong', 'install']
