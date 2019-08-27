@@ -35,6 +35,7 @@ fi
 if [ "$BUILDBOT_CLOBBER" != "" ]; then
   echo @@@BUILD_STEP clobber@@@
   rm -rf llvm
+  rm -rf llvm-project
   rm -rf ${STAGE1_DIR}
   rm -rf android_ndk
   rm -rf platform-tools

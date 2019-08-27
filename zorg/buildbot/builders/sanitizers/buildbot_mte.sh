@@ -22,6 +22,7 @@ CMAKE_COMMON_OPTIONS="-GNinja -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_ASSERTION
 if [ "$BUILDBOT_CLOBBER" != "" ]; then
   echo @@@BUILD_STEP clobber@@@
   rm -rf llvm
+  rm -rf llvm-project
   rm -rf ${STAGE1_DIR}
 fi
 
