@@ -16,9 +16,7 @@ USE_GIT=0
 CHECK_LIBCXX=${CHECK_LIBCXX:-1}
 CHECK_LLD=${CHECK_LLD:-1}
 STAGE1_DIR=llvm_build0
-STAGE2_MSAN_DIR=llvm_build_msan
-STAGE2_LIBCXX_MSAN_DIR=libcxx_build_msan
-STAGE3_MSAN_DIR=llvm_build2_msan
+STAGE3_DIR=llvm_build2_msan
 LLVM=$ROOT/llvm
 CMAKE_COMMON_OPTIONS="-GNinja -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_ASSERTIONS=ON -DLLVM_PARALLEL_LINK_JOBS=20"
 
@@ -32,9 +30,8 @@ fi
 # CMake does not notice that the compiler itself has changed.
 # Anyway, incremental builds of stage2 and stage3 compilers don't make sense.
 # Clobber the build trees.
-rm -rf ${STAGE2_LIBCXX_MSAN_DIR}
-rm -rf ${STAGE2_MSAN_DIR}
-rm -rf ${STAGE3_MSAN_DIR}
+rm -rf llvm_build_* libcxx_build_*
+rm -rf ${STAGE3_DIR}
 
 echo @@@BUILD_STEP update@@@
 buildbot_update
@@ -55,16 +52,16 @@ check_stage2_msan
 
 echo @@@BUILD_STEP build stage3/msan clang@@@
 
-mkdir -p ${STAGE3_MSAN_DIR}
+mkdir -p ${STAGE3_DIR}
 
-clang_msan_path=$ROOT/${STAGE2_MSAN_DIR}/bin
+clang_msan_path=$ROOT/${STAGE2_DIR}/bin
 cmake_stage3_msan_options="${CMAKE_COMMON_OPTIONS} -DCMAKE_C_COMPILER=${clang_msan_path}/clang -DCMAKE_CXX_COMPILER=${clang_msan_path}/clang++"
 
-(cd ${STAGE3_MSAN_DIR} && cmake ${cmake_stage3_msan_options} $LLVM && ninja clang) || \
+(cd ${STAGE3_DIR} && cmake ${cmake_stage3_msan_options} $LLVM && ninja clang) || \
   echo @@@STEP_FAILURE@@@
 
 
 echo @@@BUILD_STEP check-llvm check-clang stage3/msan@@@
 
-(cd ${STAGE3_MSAN_DIR} && ninja check-llvm) || echo @@@STEP_FAILURE@@@
-(cd ${STAGE3_MSAN_DIR} && ninja check-clang) || echo @@@STEP_FAILURE@@@
+(cd ${STAGE3_DIR} && ninja check-llvm) || echo @@@STEP_FAILURE@@@
+(cd ${STAGE3_DIR} && ninja check-clang) || echo @@@STEP_FAILURE@@@

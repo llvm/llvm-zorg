@@ -16,21 +16,15 @@ USE_GIT=1
 CHECK_LIBCXX=${CHECK_LIBCXX:-1}
 CHECK_LLD=${CHECK_LLD:-1}
 STAGE1_DIR=llvm_build0
-STAGE2_ASAN_DIR=llvm_build_asan
-STAGE2_MSAN_DIR=llvm_build_msan
-STAGE2_UBSAN_DIR=llvm_build_ubsan
-STAGE2_LIBCXX_MSAN_DIR=libcxx_build_msan
-STAGE2_LIBCXX_ASAN_DIR=libcxx_build_asan
-STAGE2_LIBCXX_UBSAN_DIR=libcxx_build_ubsan
-STAGE1_CLOBBER="${STAGE2_LIBCXX_MSAN_DIR} ${STAGE2_LIBCXX_ASAN_DIR} ${STAGE2_LIBCXX_UBSAN_DIR} ${STAGE2_MSAN_DIR} ${STAGE2_ASAN_DIR} ${STAGE2_UBSAN_DIR}"
 LLVM=$ROOT/llvm
+STAGE1_CLOBBER="llvm_build_* libcxx_build_*"
 CMAKE_COMMON_OPTIONS="-GNinja -DCMAKE_BUILD_TYPE=Release -DLLVM_PARALLEL_LINK_JOBS=20"
 
 if [ "$BUILDBOT_CLOBBER" != "" ]; then
   echo @@@BUILD_STEP clobber@@@
   rm -rf llvm
   rm -rf llvm-project
-  rm -rf ${STAGE1_DIR}
+  rm -rf ${STAGE1_CLOBBER}
 fi
 
 # Stage 1

@@ -217,9 +217,10 @@ function common_stage2_variables {
 
 function build_stage2 {
   local sanitizer_name=$1
-  local libcxx_build_dir=$2
-  local build_dir=$3
-  local step_result=$4
+  local step_result=$2
+  local libcxx_build_dir=libcxx_build_${sanitizer_name}
+  local build_dir=llvm_build_${sanitizer_name}
+  export STAGE2_DIR=${build_dir}
 
   common_stage2_variables
 
@@ -308,21 +309,22 @@ function build_stage2 {
 }
 
 function build_stage2_msan {
-  build_stage2 msan "${STAGE2_LIBCXX_MSAN_DIR}" "${STAGE2_MSAN_DIR}" @@@STEP_FAILURE@@@
+  build_stage2 msan @@@STEP_FAILURE@@@
 }
 
 function build_stage2_asan {
-  build_stage2 asan "${STAGE2_LIBCXX_ASAN_DIR}" "${STAGE2_ASAN_DIR}" @@@STEP_FAILURE@@@
+  build_stage2 asan @@@STEP_FAILURE@@@
 }
 
 function build_stage2_ubsan {
-  build_stage2 ubsan "${STAGE2_LIBCXX_UBSAN_DIR}" "${STAGE2_UBSAN_DIR}" @@@STEP_FAILURE@@@
+  build_stage2 ubsan @@@STEP_FAILURE@@@
 }
 
 function check_stage2 {
   local sanitizer_name=$1
-  local build_dir=$2
-  local step_result=$3
+  local step_result=$2
+  local build_dir=${STAGE2_DIR}
+  
   echo @@@BUILD_STEP check-llvm ${sanitizer_name}@@@
 
   (cd ${build_dir} && ninja check-llvm) || echo $step_result
@@ -338,13 +340,13 @@ function check_stage2 {
 }
 
 function check_stage2_msan {
-  check_stage2 msan "${STAGE2_MSAN_DIR}" @@@STEP_FAILURE@@@
+  check_stage2 msan @@@STEP_FAILURE@@@
 }
 
 function check_stage2_asan {
-  check_stage2 asan "${STAGE2_ASAN_DIR}" @@@STEP_FAILURE@@@
+  check_stage2 asan @@@STEP_FAILURE@@@
 }
 
 function check_stage2_ubsan {
-  check_stage2 ubsan "${STAGE2_UBSAN_DIR}" @@@STEP_FAILURE@@@
+  check_stage2 ubsan @@@STEP_FAILURE@@@
 }
