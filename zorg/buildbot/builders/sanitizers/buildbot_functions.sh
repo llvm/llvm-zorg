@@ -47,6 +47,10 @@ function get_sources {
 
 
 function buildbot_update {
+    if [[ "$USE_GIT" != "0" ]]; then
+      buildbot_update_git
+      return
+    fi
     if [[ -d "$BUILDBOT_MONO_REPO_PATH" ]]; then
       BUILDBOT_REVISION="-"
     else
@@ -173,7 +177,10 @@ function gclient_runhooks {
 
 function build_stage1_clang {
   mkdir -p ${STAGE1_DIR}
-  cmake_stage1_options="${CMAKE_COMMON_OPTIONS}"
+  local cmake_stage1_options="${CMAKE_COMMON_OPTIONS}"
+  if [[ "$USE_GIT" != "0" ]]; then
+    cmake_stage1_options="${cmake_stage1_options} -DLLVM_ENABLE_PROJECTS='clang;compiler-rt;lld'"
+  fi
   (cd ${STAGE1_DIR} && cmake ${cmake_stage1_options} $LLVM && \
     ninja clang lld compiler-rt llvm-symbolizer)
 }
@@ -187,7 +194,7 @@ function build_stage1_clang_at_revison {
     echo @@@BUILD_STEP using pre-built stage1 clang at r$HOST_CLANG_REVISION@@@
   else
     echo @@@BUILD_STEP sync to r$HOST_CLANG_REVISION@@@
-    (BUILDBOT_REVISION=$HOST_CLANG_REVISION buildbot_update)
+    BUILDBOT_REVISION=$HOST_CLANG_REVISION buildbot_update
 
     echo @@@BUILD_STEP Clear ${STAGE1_DIR} ${STAGE1_CLOBBER}
     rm -rf ${STAGE1_DIR} ${STAGE1_CLOBBER}
@@ -250,9 +257,14 @@ function build_stage2 {
        "$sanitizer_name" != "ubsan" ]; then
     echo @@@BUILD_STEP build libcxx/$sanitizer_name@@@
     mkdir -p ${libcxx_build_dir}
+    local cmake_stage2_libcxx_options=
+    if [[ "$USE_GIT" != "0" ]]; then
+      cmake_stage2_libcxx_options="-DLLVM_ENABLE_PROJECTS='libcxx;libcxxabi'"
+    fi
     (cd ${libcxx_build_dir} && \
       cmake \
         ${cmake_stage2_common_options} \
+        ${cmake_stage2_libcxx_options} \
         -DCMAKE_BUILD_TYPE=${build_type} \
         -DLLVM_USE_SANITIZER=${llvm_use_sanitizer} \
         $LLVM && \
@@ -273,8 +285,18 @@ function build_stage2 {
   if [ "$CHECK_LLD" != "0" ]; then
     extra_dir="lld"
   fi
+  local cmake_stage2_clang_options=
+  if [[ "$USE_GIT" != "0" ]]; then
+    local projects=clang
+    if [[ "$CHECK_LLD" != "0" ]]; then
+      projects="${projects};lld"
+    fi
+    cmake_stage2_clang_options="-DLLVM_ENABLE_PROJECTS='${projects}'"
+  fi
   (cd ${build_dir} && \
-   cmake ${cmake_stage2_common_options} \
+   cmake \
+     ${cmake_stage2_common_options} \
+     ${cmake_stage2_clang_options} \
      -DCMAKE_BUILD_TYPE=${build_type} \
      -DLLVM_USE_SANITIZER=${llvm_use_sanitizer} \
      ${cmake_libcxx_flag} \

@@ -11,6 +11,8 @@ ROOT=`pwd`
 PLATFORM=`uname`
 export PATH="/usr/local/bin:$PATH"
 
+USE_GIT=0
+
 CHECK_LIBCXX=${CHECK_LIBCXX:-1}
 CHECK_LLD=${CHECK_LLD:-1}
 STAGE1_DIR=llvm_build0

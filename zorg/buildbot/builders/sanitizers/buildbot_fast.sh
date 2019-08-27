@@ -11,6 +11,8 @@ ROOT=`pwd`
 PLATFORM=`uname`
 export PATH="/usr/local/bin:$PATH"
 
+USE_GIT=1
+
 CHECK_LIBCXX=${CHECK_LIBCXX:-1}
 CHECK_LLD=${CHECK_LLD:-1}
 STAGE1_DIR=llvm_build0
@@ -27,6 +29,7 @@ CMAKE_COMMON_OPTIONS="-GNinja -DCMAKE_BUILD_TYPE=Release -DLLVM_PARALLEL_LINK_JO
 if [ "$BUILDBOT_CLOBBER" != "" ]; then
   echo @@@BUILD_STEP clobber@@@
   rm -rf llvm
+  rm -rf llvm-project
   rm -rf ${STAGE1_DIR}
 fi
 
@@ -37,7 +40,7 @@ build_stage1_clang_at_revison
 CMAKE_COMMON_OPTIONS="$CMAKE_COMMON_OPTIONS -DLLVM_ENABLE_ASSERTIONS=ON"
 
 echo @@@BUILD_STEP update@@@
-buildbot_update
+buildbot_update_git
 
 # Stage 2 / Memory Sanitizer
 

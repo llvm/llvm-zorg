@@ -11,6 +11,8 @@ ROOT=`pwd`
 PLATFORM=`uname`
 export PATH="/usr/local/bin:$PATH"
 
+USE_GIT=0
+
 LLVM=$ROOT/llvm
 CLANG_BUILD=$ROOT/clang_build
 SPEC_DIRNAME=SPEC_CPU2006v1.2
