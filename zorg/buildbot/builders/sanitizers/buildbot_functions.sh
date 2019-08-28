@@ -175,6 +175,13 @@ function gclient_runhooks {
   )
 }
 
+function common_stage1_variables {
+  STAGE1_DIR=llvm_build0
+  stage1_clang_path=$ROOT/${STAGE1_DIR}/bin
+  llvm_symbolizer_path=${stage1_clang_path}/llvm-symbolizer
+  STAGE1_AS_COMPILER="-DCMAKE_C_COMPILER=${stage1_clang_path}/clang -DCMAKE_CXX_COMPILER=${stage1_clang_path}/clang++"
+}
+
 function build_stage1_clang_impl {
   mkdir -p ${STAGE1_DIR}
   local cmake_stage1_options="${CMAKE_COMMON_OPTIONS}"
@@ -187,11 +194,14 @@ function build_stage1_clang_impl {
 
 function build_stage1_clang {
   echo @@@BUILD_STEP build stage1 clang@@@
+  export STAGE1_DIR=llvm_build0
+  common_stage1_variables
   build_stage1_clang_impl
 }
 
 function build_stage1_clang_at_revison {
   local HOST_CLANG_REVISION=360832
+  common_stage1_variables
 
   if  [ -r ${STAGE1_DIR}/host_clang_revision ] && \
       [ "$(cat ${STAGE1_DIR}/host_clang_revision)" == $HOST_CLANG_REVISION ]
@@ -211,13 +221,8 @@ function build_stage1_clang_at_revison {
 }
 
 function common_stage2_variables {
-  local stage1_clang_path=$ROOT/${STAGE1_DIR}/bin
   cmake_stage2_common_options="\
-    ${CMAKE_COMMON_OPTIONS} \
-    -DCMAKE_C_COMPILER=${stage1_clang_path}/clang \
-    -DCMAKE_CXX_COMPILER=${stage1_clang_path}/clang++ \
-    "
-  llvm_symbolizer_path=${stage1_clang_path}/llvm-symbolizer
+    ${CMAKE_COMMON_OPTIONS} ${STAGE1_AS_COMPILER}"
 }
 
 function build_stage2 {

@@ -15,7 +15,6 @@ USE_GIT=1
 
 CHECK_LIBCXX=${CHECK_LIBCXX:-0}
 CHECK_LLD=${CHECK_LLD:-1}
-STAGE1_DIR=llvm_build0
 MAKE_JOBS=${MAX_MAKE_JOBS:-$(nproc)}
 LLVM=$ROOT/llvm
 LIBFUZZER=$LLVM/lib/Fuzzer
@@ -27,7 +26,7 @@ if [ "$BUILDBOT_CLOBBER" != "" ]; then
   echo @@@BUILD_STEP clobber@@@
   rm -rf llvm
   rm -rf llvm-project
-  rm -rf ${STAGE1_DIR}
+  rm -rf llvm_build0
 fi
 
 # Make sure asan intercepts SIGABRT so that the fuzzer can print the test cases
@@ -41,9 +40,8 @@ buildbot_update
 
 build_stage1_clang
 
-clang_path=$ROOT/${STAGE1_DIR}/bin
 # export ASAN_SYMBOLIZER_PATH="${llvm_symbolizer_path}"
-export PATH="${clang_path}:$PATH"
+export PATH="$(readlink -f ${STAGE1_DIR}/bin):$PATH"
 
 echo @@@BUILD_STEP check-fuzzer@@@
 

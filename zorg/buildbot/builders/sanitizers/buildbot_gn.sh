@@ -10,7 +10,6 @@ PLATFORM=`uname`
 
 CHECK_LIBCXX=${CHECK_LIBCXX:-0}
 CHECK_LLD=${CHECK_LLD:-1}
-STAGE1_DIR=llvm_build0
 STAGE1_CLOBBER=
 STAGE2_DIR=llvm_build
 
@@ -19,7 +18,7 @@ if [ "$BUILDBOT_CLOBBER" != "" ]; then
   rm -rf llvm
   rm -rf llvm-project
   rm -rf gn
-  rm -rf ${STAGE1_DIR}
+  rm -rf llvm_build0
   rm -rf ${STAGE2_DIR}
 fi
 
@@ -32,7 +31,7 @@ fi
 echo @@@BUILD_STEP build GN@@@
 [[ -d gn ]] || git clone https://gn.googlesource.com/gn
 (
-  export PATH="$PATH:$(readlink -f $STAGE1_DIR)/bin"
+  export PATH="$PATH:$(readlink -f ${STAGE1_DIR}/bin)"
   cd gn
   git checkout d3304fbba9e39a5e996cbc8c769499a1079a8743
   python build/gen.py
@@ -54,7 +53,7 @@ buildbot_update_git
   export PATH=$(readlink -f gn/out/):$PATH
   $LLVM/utils/gn/gn.py gen ${STAGE2_DIR} \
     --list --short --overrides-only \
-    --args="clang_base_path=\"$(readlink -f $STAGE1_DIR)\""
+    --args="clang_base_path=\"$(readlink -f ${STAGE1_DIR})\""
 ) || echo @@@STEP_FAILURE@@@
 
 (
