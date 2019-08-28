@@ -25,7 +25,6 @@ if [ "$BUILDBOT_CLOBBER" != "" ]; then
   rm -rf llvm_build0
 fi
 
-echo @@@BUILD_STEP update@@@
 buildbot_update
 
 build_stage1_clang

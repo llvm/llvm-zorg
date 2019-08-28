@@ -33,7 +33,6 @@ fi
 # for assertion failures.
 # export ASAN_OPTIONS=handle_abort=1:strip_path_prefix=build/llvm/
 
-echo @@@BUILD_STEP update@@@
 buildbot_update
 
 # Stage 1

@@ -47,7 +47,6 @@ download_android_tools r16
 build_stage1_clang_at_revison
 ### From now on we use just-built Clang as a host compiler ###
 
-echo @@@BUILD_STEP update@@@
 buildbot_update
 
 CMAKE_COMMON_OPTIONS="$CMAKE_COMMON_OPTIONS -DLLVM_ENABLE_ASSERTIONS=ON"

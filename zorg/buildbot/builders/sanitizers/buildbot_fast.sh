@@ -32,7 +32,6 @@ build_stage1_clang_at_revison
 
 CMAKE_COMMON_OPTIONS="$CMAKE_COMMON_OPTIONS -DLLVM_ENABLE_ASSERTIONS=ON"
 
-echo @@@BUILD_STEP update@@@
 buildbot_update
 
 # Stage 2 / Memory Sanitizer

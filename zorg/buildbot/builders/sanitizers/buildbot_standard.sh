@@ -50,7 +50,6 @@ function build_tsan {
   (cd $build_dir && make -j$MAKE_JOBS tsan) || echo @@@STEP_FAILURE@@@
 }
 
-echo @@@BUILD_STEP update@@@
 buildbot_update
 
 echo @@@BUILD_STEP build fresh clang + debug compiler-rt@@@

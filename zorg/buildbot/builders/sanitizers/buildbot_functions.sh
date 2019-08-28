@@ -47,6 +47,7 @@ function get_sources {
 
 
 function buildbot_update {
+    echo @@@BUILD_STEP update $BUILDBOT_REVISION@@@
     if [[ "$USE_GIT" != "0" ]]; then
       buildbot_update_git
       return
@@ -208,7 +209,6 @@ function build_stage1_clang_at_revison {
   then
     echo @@@BUILD_STEP using pre-built stage1 clang at r$HOST_CLANG_REVISION@@@
   else
-    echo @@@BUILD_STEP sync to r$HOST_CLANG_REVISION@@@
     BUILDBOT_REVISION=$HOST_CLANG_REVISION buildbot_update
 
     echo @@@BUILD_STEP Clear ${STAGE1_DIR} ${STAGE1_CLOBBER}

@@ -114,7 +114,6 @@ if [[ "$CHECK_CFI" == "1" ]]; then
   CMAKE_COMMON_OPTIONS="$CMAKE_COMMON_OPTIONS -DLLVM_BUILD_LLVM_DYLIB=ON"
 fi
 
-echo @@@BUILD_STEP update@@@
 buildbot_update
 
 echo @@@BUILD_STEP lint@@@

@@ -30,7 +30,6 @@ fi
 # Clobber the build trees.
 rm -rf llvm_build_* libcxx_build_* llvm_build2_*
 
-echo @@@BUILD_STEP update@@@
 buildbot_update
 
 # Stage 1

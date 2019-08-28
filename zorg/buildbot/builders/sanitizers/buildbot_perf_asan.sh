@@ -25,7 +25,6 @@ CMAKE_COMMON_OPTIONS="-GNinja -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_ASSERTION
 CHECK_LIBCXX=${CHECK_LIBCXX:-1}
 CHECK_LLD=${CHECK_LLD:-1}
 
-echo @@@BUILD_STEP update@@@
 buildbot_update
 
 # LLVM build requires ninja.
