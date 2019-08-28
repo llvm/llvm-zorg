@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
 CLOBBER="android_ndk android-ndk-* platform-tools *.zip shards_* test_android_* tested_arch_*"
-STAGE1_CLOBBER="llvm_build64 compiler_rt_build_android_* llvm_build_android_*"
+STAGE2_CLOBBER="compiler_rt_build_android_* llvm_build_android_*"
+STAGE1_CLOBBER="llvm_build64 ${STAGE2_CLOBBER}"
 
 function download_android_tools {
   local VERSION=android-ndk-$1
@@ -29,11 +30,16 @@ function download_android_tools {
   export PATH=$ROOT/platform-tools/:$PATH
 }
 
-function build_clang64() {
+function build_stage2_android() {
   # Build self-hosted tree with fresh Clang and -Werror.
   local CMAKE_OPTIONS="${CMAKE_COMMON_OPTIONS} -DLLVM_ENABLE_WERROR=ON ${STAGE1_AS_COMPILER} -DCMAKE_C_FLAGS=-gmlt -DCMAKE_CXX_FLAGS=-gmlt"
+  if [[ "$USE_GIT" != "0" ]]; then
+    CMAKE_OPTIONS="${CMAKE_OPTIONS} -DLLVM_ENABLE_PROJECTS='clang;compiler-rt;lld'"
+  fi
 
   echo @@@BUILD_STEP bootstrap clang@@@
+  rm -rf ${STAGE2_CLOBBER}
+
   mkdir -p llvm_build64
   if  [[ "$(cat llvm_build64/CMAKE_OPTIONS)" != "${CMAKE_OPTIONS}" ]] ; then
     (cd llvm_build64 && cmake ${CMAKE_OPTIONS} -DLLVM_BUILD_EXTERNAL_COMPILER_RT=ON $LLVM && \
@@ -83,6 +89,11 @@ function configure_android { # ARCH triple
     -DLLVM_TABLEGEN=$ROOT/llvm_build64/bin/llvm-tblgen \
     ${CMAKE_COMMON_OPTIONS} \
     $LLVM || echo @@@STEP_FAILURE@@@) &
+
+  local COMPILER_RT_OPTIONS="$LLVM/projects/compiler-rt"
+  if [[ "$USE_GIT" != "0" ]]; then
+    COMPILER_RT_OPTIONS="$(readlink -f $LLVM/../compiler-rt)"
+  fi
   
   (cd compiler_rt_build_android_$_arch && cmake \
     -DCMAKE_C_COMPILER=$ROOT/llvm_build64/bin/clang \
@@ -101,7 +112,7 @@ function configure_android { # ARCH triple
     -DCOMPILER_RT_EXEC_OUTPUT_DIR="$ANDROID_EXEC_OUTPUT_DIR" \
     -DLLVM_LIT_ARGS="-sv --show-unsupported --show-xfail" \
     ${CMAKE_COMMON_OPTIONS} \
-    $LLVM/projects/compiler-rt || echo @@@STEP_FAILURE@@@) &
+    ${COMPILER_RT_OPTIONS} || echo @@@STEP_FAILURE@@@) &
 }
 
 function build_android {
