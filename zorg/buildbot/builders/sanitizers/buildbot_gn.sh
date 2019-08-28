@@ -24,11 +24,9 @@ if [ "$BUILDBOT_CLOBBER" != "" ]; then
   rm -rf ${STAGE2_DIR}
 fi
 
-(
-  LLVM=$ROOT/llvm
-  CMAKE_COMMON_OPTIONS="-GNinja -DCMAKE_BUILD_TYPE=Release -DLLVM_PARALLEL_LINK_JOBS=20"
-  build_stage1_clang_at_revison
-)
+LLVM=$ROOT/llvm
+CMAKE_COMMON_OPTIONS="-GNinja -DCMAKE_BUILD_TYPE=Release -DLLVM_PARALLEL_LINK_JOBS=20"
+build_stage1_clang_at_revison
 
 echo @@@BUILD_STEP build GN@@@
 [[ -d gn ]] || git clone https://gn.googlesource.com/gn
