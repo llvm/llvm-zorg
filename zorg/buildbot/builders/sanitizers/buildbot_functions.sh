@@ -350,3 +350,52 @@ function check_stage2_asan {
 function check_stage2_ubsan {
   check_stage2 ubsan @@@STEP_FAILURE@@@
 }
+
+function build_stage3 {
+  local sanitizer_name=$1
+  local step_result=$2
+  local build_dir=llvm_build2_${sanitizer_name}
+
+  local clang_path=$ROOT/${STAGE2_DIR}/bin
+  local cmake_stage3_options="${CMAKE_COMMON_OPTIONS} -DCMAKE_C_COMPILER=${clang_path}/clang -DCMAKE_CXX_COMPILER=${clang_path}/clang++"
+
+  echo @@@BUILD_STEP build stage3/$sanitizer_name clang@@@
+  (mkdir -p ${build_dir} && cd ${build_dir} && cmake ${cmake_stage3_options} $LLVM && ninja clang) || \
+      echo $step_result
+}
+
+function build_stage3_msan {
+  build_stage3 msan @@@STEP_FAILURE@@@
+}
+
+function build_stage3_asan {
+  build_stage3 asan @@@STEP_FAILURE@@@
+}
+
+function build_stage3_ubsan {
+  build_stage3 ubsan @@@STEP_FAILURE@@@
+}
+
+function check_stage3 {
+  local sanitizer_name=$1
+  local step_result=$2
+  local build_dir=llvm_build2_${sanitizer_name}
+
+  echo @@@BUILD_STEP stage3/$sanitizer_name check-llvm@@@
+  (cd ${build_dir} && ninja check-llvm) || echo $step_result
+
+  echo @@@BUILD_STEP stage3/$sanitizer_name check-clang@@@
+  (cd ${build_dir} && ninja check-clang) || echo $step_result
+}
+
+function check_stage3_msan {
+  check_stage3 msan @@@STEP_FAILURE@@@
+}
+
+function check_stage3_asan {
+  check_stage3 asan @@@STEP_FAILURE@@@
+}
+
+function check_stage3_ubsan {
+  check_stage3 ubsan @@@STEP_FAILURE@@@
+}
