@@ -16,11 +16,11 @@ ARCH=`uname -m`
 export PATH="/usr/local/bin:$PATH"
 export ANDROID_SDK_HOME=$ROOT/../../..
 
-CLOBBER="zlib clang_build"
-clobber
-
 # Always clobber bootstrap build trees.
 rm -rf compiler_rt_build llvm_build64 llvm_build_ninja symbolizer_build*
+
+CLOBBER="zlib clang_build"
+clobber
 
 SUPPORTS_32_BITS=${SUPPORTS_32_BITS:-1}
 MAKE_JOBS=${MAX_MAKE_JOBS:-$(nproc)}

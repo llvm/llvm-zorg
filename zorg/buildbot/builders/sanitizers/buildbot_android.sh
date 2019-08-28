@@ -17,19 +17,11 @@ USE_GIT=0
 
 CHECK_LIBCXX=${CHECK_LIBCXX:-1}
 CHECK_LLD=${CHECK_LLD:-1}
-CLOBBER="android_ndk platform-tools"
-STAGE1_CLOBBER="llvm_build64 compiler_rt_build_android_* llvm_build_android_*"
 LLVM=$ROOT/llvm
 CMAKE_COMMON_OPTIONS="-GNinja -DCMAKE_BUILD_TYPE=Release -DLLVM_PARALLEL_LINK_JOBS=20"
 
 if [ -e /usr/include/plugin-api.h ]; then
   CMAKE_COMMON_OPTIONS="${CMAKE_COMMON_OPTIONS} -DLLVM_BINUTILS_INCDIR=/usr/include"
-fi
-
-export CCACHE_DIR=$ROOT/ccache
-export CCACHE_COMPILERCHECK=content
-if ccache -sM 20 ; then
-  CMAKE_COMMON_OPTIONS="${CMAKE_COMMON_OPTIONS} -DLLVM_CCACHE_BUILD=ON"
 fi
 
 clobber
@@ -45,16 +37,7 @@ buildbot_update
 
 CMAKE_COMMON_OPTIONS="$CMAKE_COMMON_OPTIONS -DLLVM_ENABLE_ASSERTIONS=ON"
 
-# Build self-hosted tree with fresh Clang and -Werror.
-CMAKE_OPTIONS="${CMAKE_COMMON_OPTIONS} -DLLVM_ENABLE_WERROR=ON ${STAGE1_AS_COMPILER} -DCMAKE_C_FLAGS=-gmlt -DCMAKE_CXX_FLAGS=-gmlt"
-
-echo @@@BUILD_STEP bootstrap clang@@@
-mkdir -p llvm_build64
-if  [[ "$(cat llvm_build64/CMAKE_OPTIONS)" != "${CMAKE_OPTIONS}" ]] ; then
-  (cd llvm_build64 && cmake ${CMAKE_OPTIONS} -DLLVM_BUILD_EXTERNAL_COMPILER_RT=ON $LLVM && \
-     echo ${CMAKE_OPTIONS} > CMAKE_OPTIONS) || echo @@@STEP_FAILURE@@@
-fi
-ninja -C llvm_build64 || echo @@@STEP_FAILURE@@@
+build_clang64
 
 # Android NDK has no iconv.h which is requred by LIBXML2.
 CMAKE_COMMON_OPTIONS="${CMAKE_COMMON_OPTIONS} -DLLVM_LIBXML2_ENABLED=OFF"
