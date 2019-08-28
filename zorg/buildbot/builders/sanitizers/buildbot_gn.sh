@@ -40,8 +40,7 @@ echo @@@BUILD_STEP build GN@@@
   ninja -C out
 ) || { echo @@@STEP_EXCEPTION@@@ ; exit 1 ; }
 
-echo @@@BUILD_STEP update@@@
-buildbot_update_git
+buildbot_update
 
 (
   echo @@@BUILD_STEP sync sources from cmake@@@
