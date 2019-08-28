@@ -10,6 +10,8 @@ env
 HERE="$(dirname $0)"
 . ${HERE}/buildbot_functions.sh
 
+USE_GIT=1
+
 TSAN_DEBUG_BUILD_DIR=tsan_debug_build
 TSAN_FULL_DEBUG_BUILD_DIR=tsan_full_debug_build
 TSAN_RELEASE_BUILD_DIR=tsan_release_build
@@ -20,8 +22,6 @@ clobber
 ROOT=`pwd`
 PLATFORM=`uname`
 MAKE_JOBS=${MAX_MAKE_JOBS:-$(nproc)}
-
-USE_GIT=0
 
 CHECK_LIBCXX=${CHECK_LIBCXX:-1}
 CHECK_LLD=${CHECK_LLD:-1}
@@ -35,6 +35,9 @@ function build_tsan {
   local targets="clang llvm-symbolizer llvm-config FileCheck not"
   if [ ! -d $build_dir ]; then
     mkdir $build_dir
+  fi
+  if [[ "$USE_GIT" != "0" ]]; then
+    extra_cmake_args="${extra_cmake_args} -DLLVM_ENABLE_PROJECTS='clang;compiler-rt'"
   fi
   (cd $build_dir && CC="$3" CXX="$4" cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo \
     ${CMAKE_COMMON_OPTIONS} ${extra_cmake_args} \
@@ -61,4 +64,8 @@ build_tsan "${TSAN_RELEASE_BUILD_DIR}" "-DCOMPILER_RT_DEBUG=OFF" "$ROOT/$TSAN_DE
 echo @@@BUILD_STEP tsan analyze@@@
 BIN=$(mktemp -t tsan_exe.XXXXXXXX)
 echo "int main() {return 0;}" | $TSAN_RELEASE_BUILD_DIR/bin/clang -x c++ - -fsanitize=thread -O2 -o ${BIN}
-$LLVM/projects/compiler-rt/lib/tsan/check_analyze.sh ${BIN} || echo @@@STEP_FAILURE@@@
+COMPILER_RT=$LLVM/projects/compiler-rt
+if [[ "$USE_GIT" != "0" ]]; then
+  COMPILER_RT=$LLVM/../compiler-rt
+fi
+$COMPILER_RT/lib/tsan/check_analyze.sh ${BIN} || echo @@@STEP_FAILURE@@@
