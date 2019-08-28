@@ -175,7 +175,7 @@ function gclient_runhooks {
   )
 }
 
-function build_stage1_clang {
+function build_stage1_clang_impl {
   mkdir -p ${STAGE1_DIR}
   local cmake_stage1_options="${CMAKE_COMMON_OPTIONS}"
   if [[ "$USE_GIT" != "0" ]]; then
@@ -183,6 +183,11 @@ function build_stage1_clang {
   fi
   (cd ${STAGE1_DIR} && cmake ${cmake_stage1_options} $LLVM && \
     ninja clang lld compiler-rt llvm-symbolizer)
+}
+
+function build_stage1_clang {
+  echo @@@BUILD_STEP build stage1 clang@@@
+  build_stage1_clang_impl
 }
 
 function build_stage1_clang_at_revison {
@@ -200,8 +205,8 @@ function build_stage1_clang_at_revison {
     rm -rf ${STAGE1_DIR} ${STAGE1_CLOBBER}
 
     echo @@@BUILD_STEP build stage1 clang at r$HOST_CLANG_REVISION@@@
-    build_stage1_clang
-    echo $HOST_CLANG_REVISION > ${STAGE1_DIR}/host_clang_revision
+    build_stage1_clang_impl && \
+      ( echo $HOST_CLANG_REVISION > ${STAGE1_DIR}/host_clang_revision )
   fi
 }
 

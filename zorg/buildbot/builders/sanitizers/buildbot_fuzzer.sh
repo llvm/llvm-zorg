@@ -39,8 +39,6 @@ buildbot_update
 
 # Stage 1
 
-echo @@@BUILD_STEP build clang@@@
-
 build_stage1_clang
 
 clang_path=$ROOT/${STAGE1_DIR}/bin

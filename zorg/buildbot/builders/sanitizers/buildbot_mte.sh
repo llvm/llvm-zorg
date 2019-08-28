@@ -29,7 +29,6 @@ fi
 echo @@@BUILD_STEP update@@@
 buildbot_update
 
-echo @@@BUILD_STEP build@@@
 build_stage1_clang
 
 echo @@@BUILD_STEP check-llvm@@@

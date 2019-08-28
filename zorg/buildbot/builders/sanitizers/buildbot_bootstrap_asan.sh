@@ -36,8 +36,6 @@ buildbot_update
 
 # Stage 1
 
-echo @@@BUILD_STEP build stage1 clang@@@
-
 build_stage1_clang
 
 # Stage 2 / AddressSanitizer
