@@ -22,6 +22,8 @@ LIBFUZZER=$LLVM/lib/Fuzzer
 # Also, the Fuzzer does not provide reproducers on assertion failures yet.
 CMAKE_COMMON_OPTIONS="-GNinja -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_ASSERTIONS=OFF -DLLVM_PARALLEL_LINK_JOBS=8 -DLIBFUZZER_ENABLE_TESTS=ON"
 
+CLOBBER=fuzzer-test-suite
+STAGE1_CLOBBER="RUNDIR-*"
 clobber
 
 # Make sure asan intercepts SIGABRT so that the fuzzer can print the test cases
