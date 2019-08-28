@@ -382,6 +382,9 @@ function build_stage3 {
 
   local clang_path=$ROOT/${STAGE2_DIR}/bin
   local cmake_stage3_options="${CMAKE_COMMON_OPTIONS} -DCMAKE_C_COMPILER=${clang_path}/clang -DCMAKE_CXX_COMPILER=${clang_path}/clang++"
+  if [[ "$USE_GIT" != "0" ]]; then
+    cmake_stage3_options="${cmake_stage3_options} -DLLVM_ENABLE_PROJECTS='clang'"
+  fi
 
   echo @@@BUILD_STEP build stage3/$sanitizer_name clang@@@
   (mkdir -p ${build_dir} && cd ${build_dir} && cmake ${cmake_stage3_options} $LLVM && ninja clang) || \

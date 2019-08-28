@@ -11,7 +11,7 @@ ROOT=`pwd`
 PLATFORM=`uname`
 export PATH="/usr/local/bin:$PATH"
 
-USE_GIT=0
+USE_GIT=1
 
 CHECK_LIBCXX=${CHECK_LIBCXX:-1}
 CHECK_LLD=${CHECK_LLD:-1}
