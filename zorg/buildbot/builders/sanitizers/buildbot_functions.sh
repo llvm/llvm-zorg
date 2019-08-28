@@ -13,7 +13,7 @@ function stage1_clobber {
 function clobber {
   if [ "$BUILDBOT_CLOBBER" != "" ]; then
     echo @@@BUILD_STEP clobber@@@
-    rm -rf llvm llvm-project llvm_build0 ${CLOBBER:-}
+    rm -rf svn_checkout llvm llvm-project llvm_build0 ${CLOBBER:-}
     stage1_clobber
     ! test "$(ls -A .)" || echo @@@STEP_EXCEPTION@@@
   fi
