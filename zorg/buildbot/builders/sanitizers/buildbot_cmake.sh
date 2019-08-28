@@ -19,6 +19,8 @@ export ANDROID_SDK_HOME=$ROOT/../../..
 # Always clobber bootstrap build trees.
 rm -rf compiler_rt_build llvm_build64 llvm_build_ninja symbolizer_build*
 
+USE_GIT=0
+
 CLOBBER="zlib clang_build"
 clobber
 
@@ -37,8 +39,6 @@ fi
 if [ -e /usr/include/plugin-api.h ]; then
   CMAKE_COMMON_OPTIONS="${CMAKE_COMMON_OPTIONS} -DLLVM_BINUTILS_INCDIR=/usr/include"
 fi
-
-USE_GIT=0
 
 CHECK_LIBCXX=${CHECK_LIBCXX:-1}
 CHECK_SYMBOLIZER=${CHECK_SYMBOLIZER:-$CHECK_LIBCXX}
