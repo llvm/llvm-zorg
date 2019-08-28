@@ -511,7 +511,7 @@ def lldb_cmake_builder(target, variant=None):
     if conf.max_parallel_tests:
         lit_args.extend(['-j', conf.max_parallel_tests])
     if variant == 'sanitized':
-        lit_args.extend(['--timeout 600'])
+        lit_args.extend(['--timeout 1200'])
 
     # Construct CMake invocation.
     cmake_cmd = ["/usr/local/bin/cmake", '-G', 'Ninja',
