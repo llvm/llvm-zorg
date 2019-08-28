@@ -16,10 +16,8 @@ ARCH=`uname -m`
 export PATH="/usr/local/bin:$PATH"
 export ANDROID_SDK_HOME=$ROOT/../../..
 
-if [ "$BUILDBOT_CLOBBER" != "" ]; then
-  echo @@@BUILD_STEP clobber@@@
-  rm -rf llvm zlib clang_build llvm-project
-fi
+CLOBBER="zlib clang_build"
+clobber
 
 # Always clobber bootstrap build trees.
 rm -rf compiler_rt_build llvm_build64 llvm_build_ninja symbolizer_build*

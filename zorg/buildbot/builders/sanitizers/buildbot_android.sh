@@ -17,6 +17,7 @@ USE_GIT=0
 
 CHECK_LIBCXX=${CHECK_LIBCXX:-1}
 CHECK_LLD=${CHECK_LLD:-1}
+CLOBBER="android_ndk platform-tools"
 STAGE1_CLOBBER="llvm_build64 compiler_rt_build_android_* llvm_build_android_*"
 LLVM=$ROOT/llvm
 CMAKE_COMMON_OPTIONS="-GNinja -DCMAKE_BUILD_TYPE=Release -DLLVM_PARALLEL_LINK_JOBS=20"
@@ -31,14 +32,7 @@ if ccache -sM 20 ; then
   CMAKE_COMMON_OPTIONS="${CMAKE_COMMON_OPTIONS} -DLLVM_CCACHE_BUILD=ON"
 fi
 
-if [ "$BUILDBOT_CLOBBER" != "" ]; then
-  echo @@@BUILD_STEP clobber@@@
-  rm -rf llvm
-  rm -rf llvm-project
-  rm -rf llvm_build0
-  rm -rf android_ndk
-  rm -rf platform-tools
-fi
+clobber
 
 download_android_tools r16
 

@@ -16,15 +16,9 @@ USE_GIT=1
 CHECK_LIBCXX=${CHECK_LIBCXX:-1}
 CHECK_LLD=${CHECK_LLD:-1}
 LLVM=$ROOT/llvm
-STAGE1_CLOBBER="llvm_build_* libcxx_build_*"
 CMAKE_COMMON_OPTIONS="-GNinja -DCMAKE_BUILD_TYPE=Release -DLLVM_PARALLEL_LINK_JOBS=20"
 
-if [ "$BUILDBOT_CLOBBER" != "" ]; then
-  echo @@@BUILD_STEP clobber@@@
-  rm -rf llvm
-  rm -rf llvm-project
-  rm -rf ${STAGE1_CLOBBER}
-fi
+clobber
 
 # Stage 1
 

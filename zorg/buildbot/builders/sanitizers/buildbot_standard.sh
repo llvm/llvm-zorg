@@ -14,14 +14,8 @@ TSAN_DEBUG_BUILD_DIR=tsan_debug_build
 TSAN_FULL_DEBUG_BUILD_DIR=tsan_full_debug_build
 TSAN_RELEASE_BUILD_DIR=tsan_release_build
 
-if [ "$BUILDBOT_CLOBBER" != "" ]; then
-  echo @@@BUILD_STEP clobber@@@
-  rm -rf llvm
-  rm -rf llvm-project
-  rm -rf $TSAN_DEBUG_BUILD_DIR
-  rm -rf $TSAN_FULL_DEBUG_BUILD_DIR
-  rm -rf $TSAN_RELEASE_BUILD_DIR
-fi
+CLOBBER="$TSAN_DEBUG_BUILD_DIR $TSAN_FULL_DEBUG_BUILD_DIR $TSAN_RELEASE_BUILD_DIR"
+clobber
 
 ROOT=`pwd`
 PLATFORM=`uname`

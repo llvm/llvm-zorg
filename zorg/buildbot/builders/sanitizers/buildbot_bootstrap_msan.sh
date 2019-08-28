@@ -18,17 +18,7 @@ CHECK_LLD=${CHECK_LLD:-1}
 LLVM=$ROOT/llvm
 CMAKE_COMMON_OPTIONS="-GNinja -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_ASSERTIONS=ON -DLLVM_PARALLEL_LINK_JOBS=20"
 
-if [ "$BUILDBOT_CLOBBER" != "" ]; then
-  echo @@@BUILD_STEP clobber@@@
-  rm -rf llvm
-  rm -rf llvm-project
-  rm -rf llvm_build0
-fi
-
-# CMake does not notice that the compiler itself has changed.
-# Anyway, incremental builds of stage2 and stage3 compilers don't make sense.
-# Clobber the build trees.
-rm -rf llvm_build_* libcxx_build_* llvm_build2_*
+clobber
 
 buildbot_update
 

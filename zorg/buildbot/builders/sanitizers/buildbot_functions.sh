@@ -6,6 +6,19 @@ echo
 
 uptime
 
+function stage1_clobber {
+  rm -rf llvm_build2_* llvm_build_* libcxx_build_* ${STAGE1_CLOBBER:-}
+}
+
+function clobber {
+  if [ "$BUILDBOT_CLOBBER" != "" ]; then
+    echo @@@BUILD_STEP clobber@@@
+    rm -rf llvm llvm-project ${CLOBBER:-}
+    stage1_clobber
+    ! test "$(ls -A .)" || echo @@@STEP_EXCEPTION@@@
+  fi
+}
+
 function update_or_checkout {
   local rev_arg=$1
   local repo=$2
@@ -198,6 +211,9 @@ function build_stage1_clang {
   export STAGE1_DIR=llvm_build0
   common_stage1_variables
   build_stage1_clang_impl
+
+  echo @@@BUILD_STEP Clobber stage1 users
+  stage1_clobber
 }
 
 function build_stage1_clang_at_revison {
@@ -211,9 +227,7 @@ function build_stage1_clang_at_revison {
   else
     BUILDBOT_REVISION=$HOST_CLANG_REVISION buildbot_update
 
-    echo @@@BUILD_STEP Clear ${STAGE1_DIR} ${STAGE1_CLOBBER}
-    rm -rf ${STAGE1_DIR} ${STAGE1_CLOBBER}
-
+    rm -rf ${STAGE1_DIR}
     echo @@@BUILD_STEP build stage1 clang at r$HOST_CLANG_REVISION@@@
     build_stage1_clang_impl && \
       ( echo $HOST_CLANG_REVISION > ${STAGE1_DIR}/host_clang_revision )

@@ -18,12 +18,7 @@ CHECK_LLD=${CHECK_LLD:-1}
 LLVM=$ROOT/llvm
 CMAKE_COMMON_OPTIONS="-GNinja -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_ASSERTIONS=ON -DLLVM_PARALLEL_COMPILE_JOBS=100 -DLLVM_PARALLEL_LINK_JOBS=20"
 
-if [ "$BUILDBOT_CLOBBER" != "" ]; then
-  echo @@@BUILD_STEP clobber@@@
-  rm -rf llvm
-  rm -rf llvm-project
-  rm -rf llvm_build0
-fi
+clobber
 
 buildbot_update
 

@@ -15,14 +15,8 @@ CHECK_LLD=${CHECK_LLD:-1}
 STAGE1_CLOBBER=
 STAGE2_DIR=llvm_build
 
-if [ "$BUILDBOT_CLOBBER" != "" ]; then
-  echo @@@BUILD_STEP clobber@@@
-  rm -rf llvm
-  rm -rf llvm-project
-  rm -rf gn
-  rm -rf llvm_build0
-  rm -rf ${STAGE2_DIR}
-fi
+CLOBBER="gn ${STAGE2_DIR}"
+clobber
 
 LLVM=$ROOT/llvm
 CMAKE_COMMON_OPTIONS="-GNinja -DCMAKE_BUILD_TYPE=Release -DLLVM_PARALLEL_LINK_JOBS=20"
