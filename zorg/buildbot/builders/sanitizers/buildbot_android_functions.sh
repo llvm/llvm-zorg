@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-CLOBBER="android_ndk platform-tools *.zip shards_* test_android_* tested_arch_*"
+CLOBBER="android_ndk android-ndk-* platform-tools *.zip shards_* test_android_* tested_arch_*"
 STAGE1_CLOBBER="llvm_build64 compiler_rt_build_android_* llvm_build_android_*"
 
 function download_android_tools {
