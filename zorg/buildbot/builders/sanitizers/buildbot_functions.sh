@@ -11,6 +11,15 @@ function stage1_clobber {
 }
 
 function clobber {
+  # Clobber if USE_GIT was changed
+  local clobber_if_exists=llvm-project
+  if [[ "$USE_GIT" != "0" ]]; then
+    clobber_if_exists=llvm
+  fi
+  if [[ -d $clobber_if_exists ]]; then
+    BUILDBOT_CLOBBER=1
+  fi
+
   if [ "$BUILDBOT_CLOBBER" != "" ]; then
     echo @@@BUILD_STEP clobber@@@
     rm -rf svn_checkout llvm llvm-project llvm_build0 ${CLOBBER:-}
