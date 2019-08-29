@@ -122,19 +122,30 @@ function buildbot_update_git {
     LLVM=$BUILDBOT_MONO_REPO_PATH/llvm
   else
     (
-      [[ -d llvm-project ]] || git clone https://github.com/llvm/llvm-project.git
+      local DEPTH=10
+      [[ -d llvm-project ]] || git clone --depth $DEPTH https://github.com/llvm/llvm-project.git
       cd llvm-project
       git fetch
       git clean -fd
+      local REV=
       if [[ "$BUILDBOT_REVISION" == "" ]] ; then
         REV=origin/master
       else
-        REV=$(git log --format="%H" -n1 --grep "^llvm-svn: ${BUILDBOT_REVISION}$" origin/master)
-        [[ "$REV" != "" ]] || exit 1
+        while true ; do
+          REV=$(git log --format="%H" -n1 --grep "^llvm-svn: ${BUILDBOT_REVISION}$" origin/master)
+          [[ "$REV" == "" ]] || break
+          git rev-list --pretty --max-count=1 origin/master
+          git rev-list --pretty --max-parents=0 origin/master
+          echo "DEPTH=$DEPTH is too small"
+          echo @@@STEP_EXCEPTION@@@
+          [[ "$DEPTH" -le "1000000" ]] || exit 1
+          DEPTH=$(( $DEPTH * 10 ))
+          git fetch --depth $DEPTH
+        done
       fi
       git checkout $REV
       git status
-      git log -n1 --oneline
+      git rev-list --pretty --max-count=1 HEAD
     ) || { echo @@@STEP_EXCEPTION@@@ ; exit 1 ; }
     LLVM=$ROOT/llvm-project/llvm
   fi
