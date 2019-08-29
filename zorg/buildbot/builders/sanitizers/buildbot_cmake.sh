@@ -19,17 +19,14 @@ export ANDROID_SDK_HOME=$ROOT/../../..
 # Always clobber bootstrap build trees.
 rm -rf compiler_rt_build llvm_build64 llvm_build_ninja symbolizer_build*
 
-USE_GIT=0
-
-CLOBBER="zlib clang_build"
-clobber
+USE_GIT=1
 
 SUPPORTS_32_BITS=${SUPPORTS_32_BITS:-1}
 MAKE_JOBS=${MAX_MAKE_JOBS:-$(nproc)}
 LLVM=$ROOT/llvm
 ZLIB=$ROOT/zlib
-COMPILER_RT=$LLVM/projects/compiler-rt
-CMAKE_COMMON_OPTIONS="-DLLVM_ENABLE_ASSERTIONS=ON -DLLVM_PARALLEL_LINK_JOBS=10"
+
+CMAKE_COMMON_OPTIONS="${CMAKE_COMMON_OPTIONS:-} -DLLVM_ENABLE_ASSERTIONS=ON -DLLVM_PARALLEL_LINK_JOBS=10"
 ENABLE_LIBCXX_FLAG=
 if [ "$PLATFORM" == "Darwin" ]; then
   CMAKE_COMMON_OPTIONS="${CMAKE_COMMON_OPTIONS} -DPYTHON_EXECUTABLE=/usr/bin/python"
@@ -38,6 +35,10 @@ fi
 
 if [ -e /usr/include/plugin-api.h ]; then
   CMAKE_COMMON_OPTIONS="${CMAKE_COMMON_OPTIONS} -DLLVM_BINUTILS_INCDIR=/usr/include"
+fi
+
+if [[ "$USE_GIT" != "0" ]]; then
+  CMAKE_COMMON_OPTIONS="${CMAKE_COMMON_OPTIONS} -DLLVM_ENABLE_PROJECTS='clang;compiler-rt'"
 fi
 
 CHECK_LIBCXX=${CHECK_LIBCXX:-1}
@@ -107,16 +108,37 @@ case "$ARCH" in
   ;;
 esac
 
+if [[ "$USE_GIT" != "0" ]]; then
+  PROJECTS="clang;compiler-rt;libcxx;libcxxabi"
+  if [[ "$CHECK_LLD" != "0" ]]; then
+    PROJECTS="${PROJECTS};lld"
+  fi
+  CMAKE_COMMON_OPTIONS="${CMAKE_COMMON_OPTIONS} -DLLVM_ENABLE_PROJECTS='${PROJECTS}'"
+fi
+
 if [[ "$CHECK_CFI" == "1" ]]; then
   # We need this after https://reviews.llvm.org/D62050
   CMAKE_COMMON_OPTIONS="$CMAKE_COMMON_OPTIONS -DLLVM_BUILD_LLVM_DYLIB=ON"
 fi
 
+CLOBBER="zlib clang_build"
+clobber
+
 buildbot_update
+
+COMPILER_RT=$LLVM/projects/compiler-rt
+if [[ "$USE_GIT" != "0" ]]; then
+  COMPILER_RT=$LLVM/../compiler-rt
+fi
+
+LIBCXX=$LLVM/projects/libcxx
+if [[ "$USE_GIT" != "0" ]]; then
+  LIBCXX=$LLVM/../libcxx
+fi
 
 echo @@@BUILD_STEP lint@@@
 CHECK_LINT=${COMPILER_RT}/lib/sanitizer_common/scripts/check_lint.sh
-(LLVM=${LLVM} ${CHECK_LINT}) || echo @@@STEP_WARNINGS@@@
+${CHECK_LINT} || echo @@@STEP_WARNINGS@@@
 
 # Use both gcc and just-built Clang as a host compiler for sanitizer tests.
 # Assume that self-hosted build tree should compile with -Werror.
@@ -124,12 +146,12 @@ echo @@@BUILD_STEP build fresh clang@@@
 if [ ! -d clang_build ]; then
   mkdir clang_build
 fi
-(cd clang_build && cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo ${CMAKE_COMMON_OPTIONS} $LLVM)
-(cd clang_build && make clang -j$MAKE_JOBS) || (echo @@@STEP_FAILURE@@@ ; exit 1)
+(cd clang_build && cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo ${CMAKE_COMMON_OPTIONS} $LLVM) || echo @@@STEP_FAILURE@@@
+(cd clang_build && make clang -j$MAKE_JOBS) || (echo @@@STEP_FAILURE@@@ ; exit 1) || echo @@@STEP_FAILURE@@@
 
 # If we're building with libcxx, install the headers to clang_build/include.
 if [ ! -z ${ENABLE_LIBCXX_FLAG} ]; then
-(cd clang_build && make -C ${LLVM}/projects/libcxx installheaders \
+(cd clang_build && make -C ${LIBCXX} installheaders \
   HEADER_DIR=${PWD}/include) || echo @@@STEP_FAILURE@@@
 fi
 
@@ -170,15 +192,15 @@ if [ ! -d llvm_build64 ]; then
 fi
 (cd llvm_build64 && cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
     ${CMAKE_CLANG_OPTIONS} -DLLVM_BUILD_EXTERNAL_COMPILER_RT=ON \
-    ${ENABLE_LIBCXX_FLAG} $LLVM)
+    ${ENABLE_LIBCXX_FLAG} $LLVM) || echo @@@STEP_FAILURE@@@
 
 # First, build only Clang.
 (cd llvm_build64 && make -j$MAKE_JOBS clang) || echo @@@STEP_FAILURE@@@
 
 # If needed, install the headers to clang_build/include.
 if [ ! -z ${ENABLE_LIBCXX_FLAG} ]; then
-(cd llvm_build64 && make -C ${LLVM}/projects/libcxx installheaders \
-  HEADER_DIR=${PWD}/include) || echo @@@STEP_FAILURE@@@
+  (cd llvm_build64 && make -C ${LIBCXX} installheaders \
+    HEADER_DIR=${PWD}/include) || echo @@@STEP_FAILURE@@@
 fi
 
 # Now build everything else.
@@ -229,7 +251,7 @@ fi
   -DCOMPILER_RT_INCLUDE_TESTS=ON \
   -DCOMPILER_RT_ENABLE_WERROR=ON \
   -DLLVM_CONFIG_PATH=${FRESH_CLANG_PATH}/llvm-config \
-  $COMPILER_RT)
+  $COMPILER_RT) || echo @@@STEP_FAILURE@@@
 (cd compiler_rt_build && make -j$MAKE_JOBS) || echo @@@STEP_FAILURE@@@
 
 echo @@@BUILD_STEP test standalone compiler-rt@@@
@@ -266,7 +288,7 @@ if [ "$PLATFORM" == "Linux" -a $HAVE_NINJA == 1 ]; then
   fi
   CMAKE_NINJA_OPTIONS="${CMAKE_CLANG_OPTIONS} -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -G Ninja"
   (cd llvm_build_ninja && cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
-      ${CMAKE_NINJA_OPTIONS} $LLVM)
+      ${CMAKE_NINJA_OPTIONS} $LLVM) || echo @@@STEP_FAILURE@@@
   ln -sf llvm_build_ninja/compile_commands.json $LLVM
   (cd llvm_build_ninja && ninja) || echo @@@STEP_FAILURE@@@
 
