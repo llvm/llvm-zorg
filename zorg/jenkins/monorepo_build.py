@@ -644,7 +644,7 @@ def lldb_cmake_standalone_builder(target):
 
     if standalone_type == "install-tree":
         external_lit = os.path.join(conf.builddir(), 'bin', 'llvm-lit')
-        cmake_cmd.extend(['-DLLVM_LIT_ARGS=--xunit-xml-output={} -v'.format(results_file)])
+        cmake_cmd.extend(['-DLLVM_LIT_ARGS=--xunit-xml-output={} -v --time-tests --shuffle'.format(results_file)])
 
     if conf.CC():
         cmake_cmd.extend(['-DCMAKE_C_COMPILER=' + conf.CC(),
