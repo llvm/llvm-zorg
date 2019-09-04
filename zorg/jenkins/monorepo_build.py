@@ -507,7 +507,8 @@ def lldb_cmake_builder(target, variant=None):
     dotest_args.extend(conf.dotest_flags)
 
     # Construct lit arguments.
-    lit_args = ['--xunit-xml-output={}'.format(results_file), '-v']
+    lit_args = ['-v', '--time-tests', '--shuffle',
+		'--xunit-xml-output={}'.format(results_file), '-v']
     if conf.max_parallel_tests:
         lit_args.extend(['-j', conf.max_parallel_tests])
     if variant == 'sanitized':
@@ -641,10 +642,6 @@ def lldb_cmake_standalone_builder(target):
                      results_file),
                  '-DLLVM_VERSION_PATCH=99']
     cmake_cmd.extend(conf.cmake_flags)
-
-    if standalone_type == "install-tree":
-        external_lit = os.path.join(conf.builddir(), 'bin', 'llvm-lit')
-        cmake_cmd.extend(['-DLLVM_LIT_ARGS=--xunit-xml-output={} -v --time-tests --shuffle'.format(results_file)])
 
     if conf.CC():
         cmake_cmd.extend(['-DCMAKE_C_COMPILER=' + conf.CC(),
