@@ -81,19 +81,5 @@ pipeline {
             scanForIssues tool: clang()
             junit 'test/results.xml'
         }
-        failure {
-            emailext
-            subject: '$DEFAULT_SUBJECT',
-            presendScript: '$DEFAULT_PRESEND_SCRIPT',
-            postsendScript: '$DEFAULT_POSTSEND_SCRIPT',
-            recipientProviders: [
-                    [$class: 'CulpritsRecipientProvider'],
-                    [$class: 'DevelopersRecipientProvider'],
-                    [$class: 'RequesterRecipientProvider'],
-            ],
-            replyTo: '$DEFAULT_REPLYTO',
-            to: 'jdevlieghere@apple.com', // $DEFAULT_RECIPIENTS
-            body:'$DEFAULT_CONTENT'
-        }
     }
 }
