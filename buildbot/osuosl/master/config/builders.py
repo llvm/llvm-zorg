@@ -731,7 +731,7 @@ def _get_clang_builders():
                         clean=False,
                         checkout_lld=False,
                         vs="autodetect",
-                        target_arch='x64',
+                        vs_target_arch='x64',
                         testStage1=True,
                         useTwoStage=True,
                         stage1_config='Release',
