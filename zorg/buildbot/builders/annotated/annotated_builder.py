@@ -268,9 +268,12 @@ class AnnotatedBuilder:
             elif not os.path.isabs(path):
                 path = pjoin(source_dir, path)
             uri = svn_uri_pattern % (svn_locations.get(project, project),)
+            util.report_run_cmd([svn, 'cleanup'], cwd=path)
             util.report("Updating %s to %s at %s from %s" %
                         (project, revision, util.shquote(path), uri))
             if os.path.exists(pjoin(path, '.svn')):
+                util.report("Cleaning up in case of svn errors...")
+                util.report_run_cmd([svn, 'cleanup'], cwd=path)
                 cmd = [svn, 'up', '-r', revision]
             else:
                 util.mkdirp(path)
