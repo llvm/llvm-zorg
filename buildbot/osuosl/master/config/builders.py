@@ -723,6 +723,21 @@ def _get_clang_builders():
                                         '-DLLVM_HOST_TRIPLE=sparcv9-pc-solaris2.11',
                                         '-DCLANG_DEFAULT_LINKER=/usr/bin/ld',
                                         '-DLLVM_PARALLEL_LINK_JOBS=4'])},
+
+        {'name' : "clang-x64-ninja-win7",
+         'slavenames' : ["windows7-buildbot"],
+         'builddir' : "clang-x64-ninja-win7",
+         'factory' : ClangBuilder.getClangCMakeBuildFactory(
+                        clean=False,
+                        checkout_lld=False,
+                        vs="autodetect",
+                        target_arch='x64',
+                        testStage1=True,
+                        useTwoStage=True,
+                        stage1_config='Release',
+                        stage2_config='Release',
+                        extra_cmake_args=['-DLLVM_ENABLE_ASSERTIONS=ON',
+                                          '-DLLVM_TARGETS_TO_BUILD=X86'])},
     ]
 
 # Polly builders.

@@ -94,7 +94,7 @@ def get_status_targets(standard_builders, standard_categories=None):
             extraRecipients = ["mstester.llvm@gmail.com"],
             subject="Build %(builder)s Failure",
             mode = "failing",
-            builders = ["clang-atom-d525-fedora-rel"],
+            builders = ["clang-atom-d525-fedora-rel", "clang-x64-ninja-win7"],
             addLogs=False,
             num_lines = 15),
         InformativeMailNotifier(

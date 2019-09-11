@@ -203,4 +203,6 @@ def get_build_slaves():
         create_slave("solaris11-amd64", properties={'jobs' : 8}, max_builds=1),
         create_slave("solaris11-sparcv9", properties={'jobs' : 8}, max_builds=1),
 
+        # Windows 7 Intel(R) Core(TM) CPU i7-4790K (4.00GHz), 16GB of RAM
+        create_slave("windows7-buildbot", properties={'jobs': 2}, max_builds=1),
         ]
