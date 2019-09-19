@@ -933,7 +933,7 @@ def _get_lld_builders():
          'factory': UnifiedTreeBuilder.getCmakeWithNinjaMultistageBuildFactory(
                                     extra_configure_args=[
                                         '-DLLVM_ENABLE_ASSERTIONS=ON',
-                                        '-DLLVM_LIT_ARGS="-sv --threads=10"'],
+                                        '-DLLVM_LIT_ARGS="-svj 10"'],
                                     depends_on_projects=['llvm', 'clang', 'lld']),
          'category'   : 'lld'},
 
