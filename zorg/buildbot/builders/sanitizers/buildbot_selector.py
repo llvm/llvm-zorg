@@ -25,7 +25,6 @@ BOT_ASSIGNMENT = {
     'sanitizer-x86_64-linux-bootstrap-msan': bash('buildbot_bootstrap_msan.sh'),
     'sanitizer-x86_64-linux-bootstrap-ubsan': bash('buildbot_bootstrap_ubsan.sh'),
     'sanitizer-x86_64-linux-gn': 'true',
-    'sanitizer-aarch64-linux-mte': bash('buildbot_mte.sh'),
 }
 
 BOT_ADDITIONAL_ENV = {
@@ -40,7 +39,6 @@ BOT_ADDITIONAL_ENV = {
     'sanitizer-x86_64-linux-bootstrap-msan': {},
     'sanitizer-x86_64-linux-bootstrap-ubsan': {},
     'sanitizer-x86_64-linux-gn': {},
-    'sanitizer-aarch64-linux-mte': {},
 }
 
 def Main():

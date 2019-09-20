@@ -1006,11 +1006,6 @@ def _get_sanitizer_builders():
              script="sanitizer-windows.py",
              depends_on_projects=["llvm", "clang", "lld", "compiler-rt"])},
 
-          {'name': "sanitizer-aarch64-linux-mte",
-           'slavenames' :["sanitizer-buildbot5"],
-           'builddir': "sanitizer-aarch64-linux-mte",
-           'factory': SanitizerBuilder.getSanitizerBuildFactory()},
-
           ]
 
 def _get_openmp_builders():
