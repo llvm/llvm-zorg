@@ -81,7 +81,7 @@ pipeline {
             scanForIssues tool: clang()
             junit 'test/results.xml'
         }
-        failure {
+        changed {
             emailext subject: '$DEFAULT_SUBJECT',
                     presendScript: '$DEFAULT_PRESEND_SCRIPT',
                     postsendScript: '$DEFAULT_POSTSEND_SCRIPT',
