@@ -179,8 +179,14 @@ def get_build_slaves():
         create_slave("fuchsia-debian-64-us-central1-a-1", properties={'jobs': 64}, max_builds=1),
         create_slave("fuchsia-debian-64-us-central1-b-1", properties={'jobs': 64}, max_builds=1),
 
-        # test only: Fedora latest stable x86_64, Intel i5-2500, 4 cores, 12GB RAM
+        # Fedora latest stable x86_64, Intel i5-2500, 4 cores, 12GB RAM
         create_slave("lldb-x86_64-fedora", properties={'jobs': 4}, max_builds=1),
+
+        # Fedora latest stable s390x, IBM/S390 machine = 2964, 4 cores, 10GB RAM
+        create_slave("lldb-s390x-fedora", properties={'jobs': 4}, max_builds=1),
+
+        # Fedora latest stable ppc64le, POWER8 (architected), 2 cores, 4GB RAM
+        create_slave("lldb-ppc64le-fedora", properties={'jobs': 2}, max_builds=1),
 
         # Debian x86_64 Buster Xeon(R) Gold 6154 CPU @ 3.00GHz, 192GB RAM
         create_slave("lldb-x86_64-debian", properties={'jobs': 72}, max_builds=1),
