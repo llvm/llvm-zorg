@@ -91,7 +91,7 @@ pipeline {
                             [$class: 'RequesterRecipientProvider'],
                     ],
                     replyTo: '$DEFAULT_REPLYTO',
-                    to: 'jdevlieghere@apple.com', // $DEFAULT_RECIPIENTS
+                    to: '$DEFAULT_RECIPIENTS',
                     body:'$DEFAULT_CONTENT'
         }
     }
