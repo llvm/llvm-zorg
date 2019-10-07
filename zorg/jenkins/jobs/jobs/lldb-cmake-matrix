@@ -174,50 +174,6 @@ pipeline {
                 junit 'test/results.xml'
             }
         }
-        stage('Build Clang 6.0.1') {
-            steps {
-                dir('clang_601') {
-                    checkout([$class: 'GitSCM', branches: [[name: "llvmorg-6.0.1"]], userRemoteConfigs: [[url: 'http://labmaster3.local/git/llvm-project.git']]])
-                }
-                timeout(90) {
-                    sh '''
-                    export PATH=$PATH:/usr/bin:/usr/local/bin
-                    export SRC_DIR='clang_601'
-                    export BUILD_DIR='clang_601_build'
-
-                    python llvm-zorg/zorg/jenkins/monorepo_build.py cmake build \
-                      --assertions \
-                      --noupload \
-                      --noinstall \
-                      --projects="clang;libcxx;libcxxabi"
-                    '''
-                }
-            }
-        }
-        stage('Test Clang 6.0.1') {
-            steps {
-                timeout(60) {
-                    sh '''
-                    export PATH=$PATH:/usr/bin:/usr/local/bin
-                    export LLDB_TEST_COMPILER="$WORKSPACE/clang_601_build/bin/clang"
-                    python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix configure \
-                      --assertions \
-                      --projects="clang;libcxx;libcxxabi;lldb"  \
-                      --cmake-type=Release \
-                      --dotest-flag="--skip-category" \
-                      --dotest-flag="gmodules" \
-                      --dotest-flag="--skip-category" \
-                      --dotest-flag="watchpoint" \
-                      --dotest-flag="--arch=x86_64"
-
-                    set +e
-                    python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix test
-                    set -e
-                    '''
-                }
-                junit 'test/results.xml'
-            }
-        }
         stage('Build Clang 7.0.1') {
             steps {
                 dir('clang_701') {
@@ -244,6 +200,50 @@ pipeline {
                     sh '''
                     export PATH=$PATH:/usr/bin:/usr/local/bin
                     export LLDB_TEST_COMPILER="$WORKSPACE/clang_701_build/bin/clang"
+                    python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix configure \
+                      --assertions \
+                      --projects="clang;libcxx;libcxxabi;lldb"  \
+                      --cmake-type=Release \
+                      --dotest-flag="--skip-category" \
+                      --dotest-flag="gmodules" \
+                      --dotest-flag="--skip-category" \
+                      --dotest-flag="watchpoint" \
+                      --dotest-flag="--arch=x86_64"
+
+                    set +e
+                    python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix test
+                    set -e
+                    '''
+                }
+                junit 'test/results.xml'
+            }
+        }
+        stage('Build Clang 9.0.0') {
+            steps {
+                dir('clang_900') {
+                    checkout([$class: 'GitSCM', branches: [[name: "llvmorg-9.0.0"]], userRemoteConfigs: [[url: 'http://labmaster3.local/git/llvm-project.git']]])
+                }
+                timeout(90) {
+                    sh '''
+                    export PATH=$PATH:/usr/bin:/usr/local/bin
+                    export SRC_DIR='clang_900'
+                    export BUILD_DIR='clang_900_build'
+
+                    python llvm-zorg/zorg/jenkins/monorepo_build.py cmake build \
+                      --assertions \
+                      --noupload \
+                      --noinstall \
+                      --projects="clang;libcxx;libcxxabi"
+                    '''
+                }
+            }
+        }
+        stage('Test Clang 9.0.0') {
+            steps {
+                timeout(60) {
+                    sh '''
+                    export PATH=$PATH:/usr/bin:/usr/local/bin
+                    export LLDB_TEST_COMPILER="$WORKSPACE/clang_900_build/bin/clang"
                     python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix configure \
                       --assertions \
                       --projects="clang;libcxx;libcxxabi;lldb"  \
