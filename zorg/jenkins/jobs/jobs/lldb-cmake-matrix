@@ -80,7 +80,6 @@ pipeline {
                     set -e
                     '''
                 }
-                junit 'test/results.xml'
             }
         }
         stage('Test DWARF4') {
@@ -104,7 +103,6 @@ pipeline {
                     set -e
                     '''
                 }
-                junit 'test/results.xml'
             }
         }
         stage('Test DWARF5') {
@@ -171,7 +169,6 @@ pipeline {
                     set -e
                     '''
                 }
-                junit 'test/results.xml'
             }
         }
         stage('Build Clang 7.0.1') {
@@ -215,7 +212,6 @@ pipeline {
                     set -e
                     '''
                 }
-                junit 'test/results.xml'
             }
         }
         stage('Build Clang 9.0.0') {
@@ -259,8 +255,22 @@ pipeline {
                     set -e
                     '''
                 }
-                junit 'test/results.xml'
             }
+        }
+    }
+    post {
+        changed {
+            emailext subject: '$DEFAULT_SUBJECT',
+                    presendScript: '$DEFAULT_PRESEND_SCRIPT',
+                    postsendScript: '$DEFAULT_POSTSEND_SCRIPT',
+                    recipientProviders: [
+                            [$class: 'CulpritsRecipientProvider'],
+                            [$class: 'DevelopersRecipientProvider'],
+                            [$class: 'RequesterRecipientProvider'],
+                    ],
+                    replyTo: '$DEFAULT_REPLYTO',
+                    to: '$DEFAULT_RECIPIENTS',
+                    body:'$DEFAULT_CONTENT'
         }
     }
 }
