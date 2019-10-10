@@ -188,6 +188,9 @@ def get_build_slaves():
         # Debian x86_64 Buster Xeon(R) Gold 6154 CPU @ 3.00GHz, 192GB RAM
         create_slave("lldb-x86_64-debian", properties={'jobs': 72}, max_builds=1),
 
+        # Debian x86_64 Intel Broadwell 32 CPUs, 120 GB RAM
+        create_slave("libc-x86_64-debian", properties={'jobs': 32}, max_builds=2),
+
         # Windows dellfx2-sled3
         create_slave("as-builder-3", max_builds=1),
 

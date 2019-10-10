@@ -18,6 +18,7 @@ from zorg.buildbot.builders import AOSPBuilder
 from zorg.buildbot.builders import AnnotatedBuilder
 from zorg.buildbot.builders import LLDPerformanceTestsuite
 from zorg.buildbot.builders import FuchsiaBuilder
+from zorg.buildbot.builders import LibcBuilder
 
 # Plain LLVM builders.
 def _get_llvm_builders():
@@ -1337,6 +1338,20 @@ def _get_toolchain_builders():
                           "openmp",
                           "polly",
                       ])},
+        ]
+
+def _get_libc_builders():
+    return [
+        {'name': "libc-x86_64-debian",
+         'slavenames': ["libc-x86_64-debian"],
+         'builddir': "libc-x86_64-debian",
+         'category' : 'libc',
+         'factory': LibcBuilder.getBuildFactory(clean=False)},
+        {'name': "libc-x86_64-debian-asan",
+         'slavenames': ["libc-x86_64-debian"],
+         'builddir': "libc-x86_64-debian-asan",
+         'category' : 'libc',
+         'factory': LibcBuilder.getBuildFactory(clean=False, asan=True)},
         ]
 
 # Experimental and stopped builders
