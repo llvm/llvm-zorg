@@ -110,38 +110,39 @@ def _get_clang_fast_builders():
          'mergeRequests': False,
          'slavenames': ["ps4-buildslave4"],
          'builddir': "llvm-clang-lld-x86_64-scei-ps4-ubuntu-fast",
-         'factory': ClangAndLLDBuilder.getClangAndLLDBuildFactory(
-                     extraCmakeOptions=["-DCMAKE_C_COMPILER=clang",
-                                        "-DCMAKE_CXX_COMPILER=clang++",
-                                        "-DCOMPILER_RT_BUILD_BUILTINS:BOOL=OFF",
-                                        "-DCOMPILER_RT_BUILD_SANITIZERS:BOOL=OFF",
-                                        "-DCOMPILER_RT_CAN_EXECUTE_TESTS:BOOL=OFF",
-                                        "-DCOMPILER_RT_INCLUDE_TESTS:BOOL=OFF",
-                                        "-DLLVM_TOOL_COMPILER_RT_BUILD:BOOL=OFF",
-                                        "-DLLVM_BUILD_TESTS:BOOL=ON",
-                                        "-DLLVM_BUILD_EXAMPLES:BOOL=ON",
-                                        "-DCLANG_BUILD_EXAMPLES:BOOL=ON",
-                                        "-DLLVM_TARGETS_TO_BUILD=X86"],
-                     extraLitArgs=['-v', '-j36'],
-                     triple="x86_64-scei-ps4",
-                     prefixCommand=None, # This is a designated builder, so no need to be nice.
-                     env={'PATH':'/opt/llvm_37/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'})},
+         'factory': UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
+                        depends_on_projects=['llvm','clang','clang-tools-extra','compiler-rt','lld'],
+                        extraCmakeOptions=["-DCMAKE_C_COMPILER=clang",
+                                           "-DCMAKE_CXX_COMPILER=clang++",
+                                           "-DCOMPILER_RT_BUILD_BUILTINS=OFF",
+                                           "-DCOMPILER_RT_BUILD_SANITIZERS=OFF",
+                                           "-DCOMPILER_RT_CAN_EXECUTE_TESTS=OFF",
+                                           "-DCOMPILER_RT_INCLUDE_TESTS=OFF",
+                                           "-DLLVM_TOOL_COMPILER_RT_BUILD=OFF", # TODO: Check why we depend on compiler-rt then?
+                                           "-DLLVM_BUILD_TESTS=ON",
+                                           "-DLLVM_BUILD_EXAMPLES=ON",
+                                           "-DCLANG_BUILD_EXAMPLES=ON",
+                                           "-DLLVM_TARGETS_TO_BUILD=X86",
+                                           "-DLLVM_DEFAULT_TARGET_TRIPLE=x86_64-scei-ps4",
+                                           "-DCMAKE_C_FLAGS='-Wdocumentation -Wno-documentation-deprecated-sync'",
+                                           "-DCMAKE_CXX_FLAGS='-std=c++11 -Wdocumentation -Wno-documentation-deprecated-sync'",
+                                           "-DLLVM_LIT_ARGS='-v -j36'"],
+                        env={'PATH':'/opt/llvm_37/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'})},
 
         {'name': "llvm-clang-lld-x86_64-scei-ps4-windows10pro-fast",
          'mergeRequests': True,
          'slavenames': ["ps4-buildslave2"],
          'builddir': "llvm-clang-lld-x86_64-scei-ps4-windows10pro-fast",
-         'factory': ClangAndLLDBuilder.getClangAndLLDBuildFactory(
-                     extraCmakeOptions=["-DLLVM_TOOL_COMPILER_RT_BUILD:BOOL=OFF",
-                                        "-DLLVM_BUILD_TESTS:BOOL=ON",
-                                        "-DLLVM_BUILD_EXAMPLES:BOOL=ON",
-                                        "-DCLANG_BUILD_EXAMPLES:BOOL=ON",
-                                        "-DLLVM_TARGETS_TO_BUILD=X86"],
-                     triple="x86_64-scei-ps4",
-                     isMSVC=True,
-                     vs="autodetect",
-                     prefixCommand=None, # This is a designated builder, so no need to be nice.
-                     extraLitArgs=["-j80"])},
+         'factory': UnifiedTreeBuilder.getCmakeWithNinjaWithMSVCBuildFactory(
+                        vs="autodetect",
+                        depends_on_projects=['llvm','clang','clang-tools-extra','compiler-rt','lld'],
+                        extraCmakeOptions=["-DLLVM_TOOL_COMPILER_RT_BUILD=OFF", # TODO: Check why we depend on compiler-rt then?
+                                           "-DLLVM_BUILD_TESTS=ON",
+                                           "-DLLVM_BUILD_EXAMPLES=ON",
+                                           "-DCLANG_BUILD_EXAMPLES=ON",
+                                           "-DLLVM_TARGETS_TO_BUILD=X86",
+                                           "-DLLVM_DEFAULT_TARGET_TRIPLE=x86_64-scei-ps4",
+                                           "-DLLVM_LIT_ARGS='-v -j80'"])},
 
         {'name': "llvm-clang-x86_64-expensive-checks-win",
          'slavenames':["ps4-buildslave2"],
@@ -900,26 +901,35 @@ def _get_lld_builders():
         {'name': "lld-x86_64-darwin13",
          'slavenames' :["as-bldslv9"],
          'builddir':"lld-x86_64-darwin13",
-         'factory': LLDBuilder.getLLDBuildFactory(),
+         'factory': UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
+                        clean=True,
+                        depends_on_projects=['llvm', 'lld'],
+                        extra_configure_args=[
+                            '-DLLVM_ENABLE_WERROR=OFF',
+                        ]),
          'category'   : 'lld'},
 
         {'name': "lld-x86_64-win7",
          'slavenames' :["ps4-buildslave2"],
          'builddir':"lld-x86_64-win7",
-         'factory': LLDBuilder.getLLDWinBuildFactory(
+         'factory': UnifiedTreeBuilder.getCmakeWithNinjaWithMSVCBuildFactory(
+                        depends_on_projects=['llvm', 'lld'],
                         vs="autodetect",
                         extra_configure_args = [
-                          '-DLLVM_ENABLE_WERROR=OFF'
+                            '-DLLVM_ENABLE_WERROR=OFF',
                         ]),
          'category'   : 'lld'},
 
         {'name': "lld-x86_64-freebsd",
          'slavenames' :["as-bldslv5"],
          'builddir':"lld-x86_64-freebsd",
-         'factory': LLDBuilder.getLLDBuildFactory(extra_configure_args=[
-                                                      '-DCMAKE_EXE_LINKER_FLAGS=-lcxxrt',
-                                                      '-DLLVM_ENABLE_WERROR=OFF'],
-                                                  env={'CXXFLAGS' : "-std=c++11 -stdlib=libc++"}),
+         'factory': UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
+                        depends_on_projects=['llvm', 'lld'],
+                        extra_configure_args=[
+                            '-DCMAKE_EXE_LINKER_FLAGS=-lcxxrt',
+                            '-DLLVM_ENABLE_WERROR=OFF',
+                        ],
+                        env={'CXXFLAGS' : "-std=c++11 -stdlib=libc++"}),
          'category'   : 'lld'},
 
         {'name' : "clang-with-lto-ubuntu",
