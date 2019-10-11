@@ -26,8 +26,10 @@ def getSingleBranchSchedulers(builders, schedulers, **kwargs):
     for builder in builders:
         # Only for the builders created with LLVMBuildFactory or similar.
         if getattr(builder['factory'], 'depends_on_projects', None):
-            # And only if this builder does not yet have an assigned scheduler.
-            if builder['name'] not in builders_with_schedulers:
+            # And only if this builder is in the legacy mode and
+            # does not yet have an assigned scheduler.
+            if getattr(builder['factory'], 'is_legacy_mode', True) and \
+               builder['name'] not in builders_with_schedulers:
                 # This builder is a candidate for an automatic scheduler.
                 builders_with_automatic_schedulers.append(builder)
 
