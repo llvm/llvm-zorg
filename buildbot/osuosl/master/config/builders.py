@@ -112,21 +112,22 @@ def _get_clang_fast_builders():
          'builddir': "llvm-clang-lld-x86_64-scei-ps4-ubuntu-fast",
          'factory': UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                         depends_on_projects=['llvm','clang','clang-tools-extra','compiler-rt','lld'],
-                        extraCmakeOptions=["-DCMAKE_C_COMPILER=clang",
-                                           "-DCMAKE_CXX_COMPILER=clang++",
-                                           "-DCOMPILER_RT_BUILD_BUILTINS=OFF",
-                                           "-DCOMPILER_RT_BUILD_SANITIZERS=OFF",
-                                           "-DCOMPILER_RT_CAN_EXECUTE_TESTS=OFF",
-                                           "-DCOMPILER_RT_INCLUDE_TESTS=OFF",
-                                           "-DLLVM_TOOL_COMPILER_RT_BUILD=OFF", # TODO: Check why we depend on compiler-rt then?
-                                           "-DLLVM_BUILD_TESTS=ON",
-                                           "-DLLVM_BUILD_EXAMPLES=ON",
-                                           "-DCLANG_BUILD_EXAMPLES=ON",
-                                           "-DLLVM_TARGETS_TO_BUILD=X86",
-                                           "-DLLVM_DEFAULT_TARGET_TRIPLE=x86_64-scei-ps4",
-                                           "-DCMAKE_C_FLAGS='-Wdocumentation -Wno-documentation-deprecated-sync'",
-                                           "-DCMAKE_CXX_FLAGS='-std=c++11 -Wdocumentation -Wno-documentation-deprecated-sync'",
-                                           "-DLLVM_LIT_ARGS='-v -j36'"],
+                        extra_configure_args=[
+                            "-DCMAKE_C_COMPILER=clang",
+                            "-DCMAKE_CXX_COMPILER=clang++",
+                            "-DCOMPILER_RT_BUILD_BUILTINS=OFF",
+                            "-DCOMPILER_RT_BUILD_SANITIZERS=OFF",
+                            "-DCOMPILER_RT_CAN_EXECUTE_TESTS=OFF",
+                            "-DCOMPILER_RT_INCLUDE_TESTS=OFF",
+                            "-DLLVM_TOOL_COMPILER_RT_BUILD=OFF", # TODO: Check why we depend on compiler-rt then?
+                            "-DLLVM_BUILD_TESTS=ON",
+                            "-DLLVM_BUILD_EXAMPLES=ON",
+                            "-DCLANG_BUILD_EXAMPLES=ON",
+                            "-DLLVM_TARGETS_TO_BUILD=X86",
+                            "-DLLVM_DEFAULT_TARGET_TRIPLE=x86_64-scei-ps4",
+                            "-DCMAKE_C_FLAGS='-Wdocumentation -Wno-documentation-deprecated-sync'",
+                            "-DCMAKE_CXX_FLAGS='-std=c++11 -Wdocumentation -Wno-documentation-deprecated-sync'",
+                            "-DLLVM_LIT_ARGS='-v -j36'"],
                         env={'PATH':'/opt/llvm_37/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'})},
 
         {'name': "llvm-clang-lld-x86_64-scei-ps4-windows10pro-fast",
@@ -136,13 +137,14 @@ def _get_clang_fast_builders():
          'factory': UnifiedTreeBuilder.getCmakeWithNinjaWithMSVCBuildFactory(
                         vs="autodetect",
                         depends_on_projects=['llvm','clang','clang-tools-extra','compiler-rt','lld'],
-                        extraCmakeOptions=["-DLLVM_TOOL_COMPILER_RT_BUILD=OFF", # TODO: Check why we depend on compiler-rt then?
-                                           "-DLLVM_BUILD_TESTS=ON",
-                                           "-DLLVM_BUILD_EXAMPLES=ON",
-                                           "-DCLANG_BUILD_EXAMPLES=ON",
-                                           "-DLLVM_TARGETS_TO_BUILD=X86",
-                                           "-DLLVM_DEFAULT_TARGET_TRIPLE=x86_64-scei-ps4",
-                                           "-DLLVM_LIT_ARGS='-v -j80'"])},
+                        extra_configure_args=[
+                            "-DLLVM_TOOL_COMPILER_RT_BUILD=OFF", # TODO: Check why we depend on compiler-rt then?
+                            "-DLLVM_BUILD_TESTS=ON",
+                            "-DLLVM_BUILD_EXAMPLES=ON",
+                            "-DCLANG_BUILD_EXAMPLES=ON",
+                            "-DLLVM_TARGETS_TO_BUILD=X86",
+                            "-DLLVM_DEFAULT_TARGET_TRIPLE=x86_64-scei-ps4",
+                            "-DLLVM_LIT_ARGS='-v -j80'"])},
 
         {'name': "llvm-clang-x86_64-expensive-checks-win",
          'slavenames':["ps4-buildslave2"],
