@@ -135,13 +135,6 @@ class CmakeCommand(WarningCountingShellCommand):
 
         command += ["cmake"]
 
-        # Set some default options.
-        CmakeCommand.applyDefaultOptions(self.options, [
-            ('-DCMAKE_BUILD_TYPE=',        'Release'),
-            ('-DLLVM_ENABLE_WERROR=',      'ON'),
-            ('-DLLVM_OPTIMIZED_TABLEGEN=', 'ON'),
-            ])
-
         if self.options:
             command += self.options
 
