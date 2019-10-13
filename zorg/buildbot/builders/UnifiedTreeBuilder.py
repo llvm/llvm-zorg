@@ -100,10 +100,7 @@ def addCmakeSteps(
     # Set proper defaults.
     CmakeCommand.applyDefaultOptions(cmake_args, [
         ('-DCMAKE_BUILD_TYPE=',        'Release'),
-        ('-DCLANG_BUILD_EXAMPLES=',    'OFF'),
-        ('-DLLVM_BUILD_TESTS=',        'ON'),
         ('-DLLVM_ENABLE_ASSERTIONS=',  'ON'),
-        ('-DLLVM_OPTIMIZED_TABLEGEN=', 'ON'),
         ('-DLLVM_LIT_ARGS=',           '"-v"'),
         ])
 
