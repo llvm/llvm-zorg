@@ -97,6 +97,7 @@ def _get_clang_fast_builders():
          'factory': UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                         llvm_srcdir="llvm.src",
                         obj_dir="llvm.obj",
+                        clean=True,
                         depends_on_projects=['llvm','clang','clang-tools-extra','compiler-rt'],
                         extra_configure_args=[
                             "-DCOMPILER_RT_BUILD_BUILTINS:BOOL=OFF",
