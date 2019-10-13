@@ -65,6 +65,9 @@ def addCmakeSteps(
     else:
         cmake_args = list()
 
+    if obj_dir is None:
+        obj_dir = f.obj_dir
+
     # This is an incremental build, unless otherwise has been requested.
     # Remove obj and install dirs for a clean build.
     # TODO: Some Windows slaves do not handle RemoveDirectory command well.
@@ -242,7 +245,7 @@ def getCmakeWithNinjaBuildFactory(
 
     addNinjaSteps(
            f,
-           obj_dir=obj_dir,
+           obj_dir=f.obj_dir,
            checks=checks,
            install_dir=f.install_dir,
            env=env,

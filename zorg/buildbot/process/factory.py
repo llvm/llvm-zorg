@@ -44,6 +44,10 @@ class LLVMBuildFactory(BuildFactory):
         if kwargs.get('llvm_srcdir', None) is None:
             self.llvm_srcdir = "llvm"
 
+        # Default build directory.
+        if kwargs.get('obj_dir', None) is None:
+            self.obj_dir = "build"
+
 
     @staticmethod
     def pathRelativeToBuild(path, buildPath):
