@@ -149,7 +149,7 @@ def _get_clang_fast_builders():
                             "-DCLANG_BUILD_EXAMPLES=ON",
                             "-DLLVM_TARGETS_TO_BUILD=X86",
                             "-DLLVM_DEFAULT_TARGET_TRIPLE=x86_64-scei-ps4",
-                            "-DLLVM_LIT_ARGS="-v -j80\""])},
+                            "-DLLVM_LIT_ARGS=\"-v -j80\""])},
 
         {'name': "llvm-clang-x86_64-expensive-checks-win",
          'slavenames':["ps4-buildslave2"],
