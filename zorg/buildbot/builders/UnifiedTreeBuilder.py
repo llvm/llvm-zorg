@@ -10,7 +10,7 @@ from zorg.buildbot.process.factory import LLVMBuildFactory
 
 import zorg.buildbot.builders.Util as builders_util
 
-def getLLVMBuildFactoryAndSVNSteps(
+def getLLVMBuildFactoryAndPrepareForSourcecodeSteps(
            depends_on_projects = None,
            llvm_srcdir = None,
            obj_dir = None,
@@ -43,6 +43,25 @@ def getLLVMBuildFactoryAndSVNSteps(
               flunkOnFailure=False,
               doStepIf=cleanBuildRequestedByProperty,
               ))
+
+    return f
+
+def getLLVMBuildFactoryAndSVNSteps(
+           depends_on_projects = None,
+           llvm_srcdir = None,
+           obj_dir = None,
+           install_dir = None,
+           cleanBuildRequested = None,
+           env = None,
+           **kwargs):
+
+    f = getLLVMBuildFactoryAndPrepareForSourcecodeSteps(
+            depends_on_projects=depends_on_projects,
+            llvm_srcdir=llvm_srcdir,
+            obj_dir=obj_dir,
+            install_dir=install_dir,
+            cleanBuildRequested=cleanBuildRequested,
+            **kwargs) # Pass through all the extra arguments.
 
     # Get the source code.
     f.addSVNSteps()
