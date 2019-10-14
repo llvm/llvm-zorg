@@ -1,8 +1,5 @@
-import os
-import buildbot.process.factory
-from buildbot.steps.source import SVN
-from buildbot.steps.shell import ShellCommand
-from buildbot.process.properties import WithProperties
+from zorg.buildbot.builders import UnifiedTreeBuilder
+from zorg.buildbot.commands.CmakeCommand import CmakeCommand
 from zorg.buildbot.commands.NinjaCommand import NinjaCommand
 
 def getSphinxDocsBuildFactory(
@@ -13,90 +10,50 @@ def getSphinxDocsBuildFactory(
         lld_html          = False, # Build LLD HTML documentation
         libcxx_html       = False, # Build Libc++ HTML documentation
         libunwind_html    = False, # Build libunwind HTML documentation
-        lldb_html         = False  # Build LLDB HTML documentation
-        ):
+        lldb_html         = False, # Build LLDB HTML documentation
+        extra_configure_args = None,
+        **kwargs):
 
-    f = buildbot.process.factory.BuildFactory()
+    if extra_configure_args:
+        cmake_args = extra_configure_args[:]
+    else:
+        cmake_args = list()
+
+    # Set proper defaults for the config flags.
+    CmakeCommand.applyDefaultOptions(cmake_args, [
+      ('-G',                    'Ninja'),
+      ('-DLLVM_ENABLE_SPHINX=', 'ON'),
+      ('-DSPHINX_OUTPUT_HTML=', 'ON'),
+      ('-DSPHINX_OUTPUT_MAN=',  'ON'),
+      ('-DLLDB_INCLUDE_TESTS=', 'OFF'),
+      ('-DLLVM_TEMPORARILY_ALLOW_OLD_TOOLCHAIN=', 'ON'),
+      ('-DLLVM_ENABLE_ASSERTIONS=',  'OFF'),
+      ])
 
     llvm_srcdir = 'llvm/src'
     llvm_objdir = 'llvm/build'
-    clang_srcdir = llvm_srcdir + '/tools/clang'
-    clang_tools_srcdir = llvm_srcdir + '/tools/clang/tools/extra'
-    lld_srcdir = llvm_srcdir + '/tools/lld'
-    lldb_srcdir = llvm_srcdir + '/tools/lldb'
-    libcxx_srcdir = llvm_srcdir + '/projects/libcxx'
-    libcxxabi_srcdir = llvm_srcdir + '/projects/libcxxabi'
-    libunwind_srcdir = llvm_srcdir + '/projects/libunwind'
 
-    # Get LLVM. This is essential for all builds
-    # because we build all subprojects in tree
-    f.addStep(SVN(name='svn-llvm',
-                  mode='update',
-                  baseURL='http://llvm.org/svn/llvm-project/llvm/',
-                  defaultBranch='trunk',
-                  workdir=llvm_srcdir))
-
+    depends_on_projects = ['llvm']
     if clang_html or clang_tools_html or lldb_html:
-        f.addStep(SVN(name='svn-clang',
-                      mode='update',
-                      baseURL='http://llvm.org/svn/llvm-project/cfe/',
-                      defaultBranch='trunk',
-                      workdir=clang_srcdir))
-
+        depends_on_projects.append('clang')
     if clang_tools_html:
-        f.addStep(SVN(name='svn-clang-tools',
-                      mode='update',
-                      baseURL='http://llvm.org/svn/llvm-project/clang-tools-extra/',
-                      defaultBranch='trunk',
-                      workdir=clang_tools_srcdir))
-
+        depends_on_projects.append('clang-tools-extra')
     if lld_html:
-        f.addStep(SVN(name='svn-lld',
-                      mode='update',
-                      baseURL='http://llvm.org/svn/llvm-project/lld/',
-                      defaultBranch='trunk',
-                      workdir=lld_srcdir))
-
+        depends_on_projects.append('lld')
     if lldb_html:
-        f.addStep(SVN(name='svn-lldb',
-                      mode='update',
-                      baseURL='http://llvm.org/svn/llvm-project/lldb/',
-                      defaultBranch='trunk',
-                      workdir=lldb_srcdir))
-
+        depends_on_projects.append('lldb')
     if libcxx_html:
-        f.addStep(SVN(name='svn-libcxx',
-                      mode='update',
-                      baseURL='http://llvm.org/svn/llvm-project/libcxx/',
-                      defaultBranch='trunk',
-                      workdir=libcxx_srcdir))
-        f.addStep(SVN(name='svn-libcxxabi',
-                      mode='update',
-                      baseURL='http://llvm.org/svn/llvm-project/libcxxabi/',
-                      defaultBranch='trunk',
-                      workdir=libcxxabi_srcdir))
-
+        depends_on_projects.append('libcxx')
+        depends_on_projects.append('libcxxabi')
     if libunwind_html:
-        f.addStep(SVN(name='svn-libunwind',
-                      mode='update',
-                      baseURL='http://llvm.org/svn/llvm-project/libunwind/',
-                      defaultBranch='trunk',
-                      workdir=libunwind_srcdir))
+        depends_on_projects.append('libunwind')
 
-    # Use CMake to configure
-    cmakeCommand = [ "cmake",
-                     WithProperties('%s/' + llvm_srcdir, 'workdir'),
-                     '-G', 'Ninja',
-                     '-DLLVM_ENABLE_SPHINX:BOOL=ON',
-                     '-DSPHINX_OUTPUT_HTML:BOOL=ON',
-                     '-DSPHINX_OUTPUT_MAN:BOOL=ON',
-                     '-DLLVM_TEMPORARILY_ALLOW_OLD_TOOLCHAIN=ON',
-                     '-DLLDB_INCLUDE_TESTS=OFF',
-                   ]
-    f.addStep(ShellCommand(name="cmake-configure",
-                               command=cmakeCommand,
-                               description=["cmake configure"],
-                               workdir=llvm_objdir))
+    f = UnifiedTreeBuilder.getCmakeBuildFactory(
+            depends_on_projects=depends_on_projects,
+            llvm_srcdir=llvm_srcdir,
+            obj_dir=llvm_objdir,
+            extra_configure_args=cmake_args,
+            **kwargs) # Pass through all the extra arguments.
 
     if llvm_html:
         f.addStep(NinjaCommand(name="docs-llvm-html",
