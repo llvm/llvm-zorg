@@ -4,6 +4,7 @@ from buildbot.process.factory import BuildFactory
 from buildbot.steps.source import SVN
 from buildbot.steps.shell import WithProperties
 
+# NOTE: svn_repos is deprecated and will be removed.
 svn_repos = OrderedDict([
   ('llvm'             , ("%(llvm_srcdir)s",                         '%(vcs_protocol:-http)s://llvm.org/svn/llvm-project/llvm/')),
   ('clang'            , ("%(llvm_srcdir)s/tools/clang",             '%(vcs_protocol:-http)s://llvm.org/svn/llvm-project/cfe/')),
@@ -62,6 +63,7 @@ class LLVMBuildFactory(BuildFactory):
     # mode - SVN checkout mode.
     # defaultBranch - the default branch to checkout.
     # and so on, see the list of the SVN params. 
+    # NOTE: addSVNSteps is deprecated and will be removed. Please use addGetSourcecodeSteps instead.
     def addSVNSteps(self, llvm_srcdir=None, **kwargs):
         if llvm_srcdir is None:
             llvm_srcdir = self.llvm_srcdir
@@ -80,3 +82,6 @@ class LLVMBuildFactory(BuildFactory):
                         workdir=workdir % {'llvm_srcdir' : llvm_srcdir},
                         baseURL=WithProperties(baseURL),
                         **kwargs))
+
+    def addGetSourcecodeSteps(self, **kwargs):
+        self.addSVNSteps(**kwargs)

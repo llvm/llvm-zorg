@@ -46,7 +46,7 @@ def getLLVMBuildFactoryAndPrepareForSourcecodeSteps(
 
     return f
 
-def getLLVMBuildFactoryAndSVNSteps(
+def getLLVMBuildFactoryAndSourcecodeSteps(
            depends_on_projects = None,
            llvm_srcdir = None,
            obj_dir = None,
@@ -64,8 +64,14 @@ def getLLVMBuildFactoryAndSVNSteps(
             **kwargs) # Pass through all the extra arguments.
 
     # Get the source code.
-    f.addSVNSteps()
+    f.addGetSourcecodeSteps(**kwargs)
 
+    return f
+
+# NOTE: getLLVMBuildFactoryAndSVNSteps is deprecated and will be removed.
+# Please use getLLVMBuildFactoryAndSourcecodeSteps instead.
+def getLLVMBuildFactoryAndSVNSteps(**kwargs):
+    f = getgetLLVMBuildFactoryAndSourcecodeSteps(**kwargs) # Pass through all the extra arguments.
     return f
 
 def addCmakeSteps(
@@ -207,7 +213,7 @@ def getCmakeBuildFactory(
         # Overwrite pre-set items with the given ones, so user can set anything.
         merged_env.update(env)
 
-    f = getLLVMBuildFactoryAndSVNSteps(
+    f = getgetLLVMBuildFactoryAndSourcecodeSteps
             depends_on_projects=depends_on_projects,
             llvm_srcdir=llvm_srcdir,
             obj_dir=obj_dir,
@@ -303,7 +309,7 @@ def getCmakeWithNinjaWithMSVCBuildFactory(
         # We build by Visual Studio 2015, unless otherwise is requested.
         vs=r"""%VS140COMNTOOLS%"""
 
-    f = getLLVMBuildFactoryAndSVNSteps(
+    f = getLLVMBuildFactoryAndSourcecodeSteps(
             depends_on_projects=depends_on_projects,
             llvm_srcdir=llvm_srcdir,
             obj_dir=obj_dir,
@@ -390,7 +396,7 @@ def getCmakeWithNinjaMultistageBuildFactory(
         stage_objdirs.append("%s/%s" % (obj_dir, s))
         stage_installdirs.append("%s/%s" % (install_dir, s))
 
-    f = getLLVMBuildFactoryAndSVNSteps(
+    f = getLLVMBuildFactoryAndSourcecodeSteps(
             depends_on_projects=depends_on_projects,
             llvm_srcdir=llvm_srcdir,
             obj_dir=obj_dir,
