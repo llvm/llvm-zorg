@@ -213,7 +213,7 @@ def getCmakeBuildFactory(
         # Overwrite pre-set items with the given ones, so user can set anything.
         merged_env.update(env)
 
-    f = getgetLLVMBuildFactoryAndSourcecodeSteps
+    f = getLLVMBuildFactoryAndSourcecodeSteps(
             depends_on_projects=depends_on_projects,
             llvm_srcdir=llvm_srcdir,
             obj_dir=obj_dir,
@@ -396,7 +396,7 @@ def getCmakeWithNinjaMultistageBuildFactory(
         stage_objdirs.append("%s/%s" % (obj_dir, s))
         stage_installdirs.append("%s/%s" % (install_dir, s))
 
-    f = getLLVMBuildFactoryAndSourcecodeSteps(
+    f = getLLVMBuildFactoryAndPrepareForSourcecodeSteps(
             depends_on_projects=depends_on_projects,
             llvm_srcdir=llvm_srcdir,
             obj_dir=obj_dir,
@@ -406,6 +406,11 @@ def getCmakeWithNinjaMultistageBuildFactory(
             stage_installdirs=stage_installdirs,
             stage_names=stage_names,
             **kwargs) # Pass through all the extra arguments.
+
+    # Get the source code.
+    # We have consumed kwargs specific to this factory, so
+    # it is safe to pass all the remaining kwargs down.
+    f.addGetSourcecodeSteps(**kwargs)
 
     # Set proper defaults.
     CmakeCommand.applyDefaultOptions(cmake_args, [
