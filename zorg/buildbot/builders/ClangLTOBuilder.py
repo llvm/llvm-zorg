@@ -264,7 +264,6 @@ def getClangWithLTOBuildFactory(
 
     f = LLVMBuildFactory(
             depends_on_projects=depends_on_projects,
-            llvm_srcdir="llvm.src",
             stage_objdirs=[
                 "build/stage1",
                 "build/stage2",
@@ -290,7 +289,7 @@ def getClangWithLTOBuildFactory(
               ))
 
     # Get the source code.
-    f.addSVNSteps()
+    f.addGetSourcecodeSteps()
 
     # Build with the system compiler first
     _addSteps4SystemCompiler(f,
