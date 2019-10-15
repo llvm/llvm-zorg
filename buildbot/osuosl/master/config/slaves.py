@@ -118,9 +118,6 @@ def get_build_slaves():
         # Debian 7.7 x86_64 GCE instance
         create_slave("sanitizer-buildbot8", properties={'jobs': 64}, max_builds=3),
 
-        # Debian 7.7 x86_64 GCE instance
-        create_slave("modules-slave-1", properties={'jobs': 16}, max_builds=1),
-
         # IBM z13 (s390x), Ubuntu 16.04.2
         create_slave("systemz-1", properties={'jobs': 4, 'vcs_protocol': 'https'}, max_builds=4),
 
