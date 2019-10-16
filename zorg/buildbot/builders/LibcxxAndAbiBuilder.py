@@ -1,76 +1,51 @@
-import os
-
-import buildbot
-import buildbot.process.factory
 import buildbot.steps.shell
 import buildbot.process.properties as properties
-
-from buildbot.steps.source.svn import SVN
 
 import zorg.buildbot.commands.LitTestCommand as lit_test_command
 import zorg.buildbot.util.artifacts as artifacts
 import zorg.buildbot.util.phasedbuilderutils as phased_builder_utils
 
 from zorg.buildbot.commands.LitTestCommand import LitTestCommand
+from zorg.buildbot.commands.CmakeCommand import CmakeCommand
+from zorg.buildbot.process.factory import LLVMBuildFactory
+from zorg.buildbot.builders import UnifiedTreeBuilder
 
 reload(lit_test_command)
 reload(artifacts)
 reload(phased_builder_utils)
 
+def getLibcxxAndAbiBuilder(f=None, env=None, additional_features=None,
+                           cmake_extra_opts=None, lit_extra_opts=None,
+                           lit_extra_args=None, check_libcxx_abilist=False,
+                           check_libcxx_benchmarks=None,
+                           depends_on_projects=None,
+                           **kwargs):
 
-def getLibcxxWholeTree(f, src_root):
-    llvm_path = src_root
-    libcxx_path = properties.WithProperties(
-        '%(builddir)s/llvm/projects/libcxx')
-    libcxxabi_path = properties.WithProperties(
-        '%(builddir)s/llvm/projects/libcxxabi')
-    libunwind_path = properties.WithProperties(
-        '%(builddir)s/llvm/projects/libunwind')
+    if env is None:
+        env = {}
+    if additional_features is None:
+        additional_features = set()
+    if cmake_extra_opts is None:
+        cmake_extra_opts = {}
+    if lit_extra_opts is None:
+        lit_extra_opts = {}
+    if lit_extra_args is None:
+        lit_extra_args = []
 
-    f = phased_builder_utils.SVNCleanupStep(f, llvm_path)
-    f.addStep(SVN(name='svn-llvm',
-                  mode='full',
-                  baseURL='http://llvm.org/svn/llvm-project/llvm/',
-                  defaultBranch='trunk',
-                  workdir=llvm_path))
-    f.addStep(SVN(name='svn-libcxx',
-                  mode='full',
-                  baseURL='http://llvm.org/svn/llvm-project/libcxx/',
-                  defaultBranch='trunk',
-                  workdir=libcxx_path))
-    f.addStep(SVN(name='svn-libcxxabi',
-                  mode='full',
-                  baseURL='http://llvm.org/svn/llvm-project/libcxxabi/',
-                  defaultBranch='trunk',
-                  workdir=libcxxabi_path))
-    f.addStep(SVN(name='svn-libunwind',
-                  mode='full',
-                  baseURL='http://llvm.org/svn/llvm-project/libunwind/',
-                  defaultBranch='trunk',
-                  workdir=libunwind_path))
+    if depends_on_projects is None:
+        depends_on_projects = ['llvm','libcxx','libcxxabi','libunwind']
 
-    return f
+    src_root = 'llvm'
+    build_path = 'build'
 
-
-def getLibcxxAndAbiBuilder(f=None, env={}, additional_features=set(),
-                           cmake_extra_opts={}, lit_extra_opts={},
-                           lit_extra_args=[], check_libcxx_abilist=False,
-                           check_libcxx_benchmarks=False):
     if f is None:
-        f = buildbot.process.factory.BuildFactory()
+        f = UnifiedTreeBuilder.getLLVMBuildFactoryAndSourcecodeSteps(
+                depends_on_projects=depends_on_projects,
+                llvm_srcdir=src_root,
+                obj_dir=build_path,
+                **kwargs) # Pass through all the extra arguments.
 
-    # Determine the build directory.
-    f.addStep(buildbot.steps.shell.SetProperty(
-        name="get_builddir",
-        command=["pwd"],
-        property="builddir",
-        description="set build dir",
-        workdir="."))
-
-    src_root = properties.WithProperties('%(builddir)s/llvm')
-    build_path = properties.WithProperties('%(builddir)s/build')
-
-    f = getLibcxxWholeTree(f, src_root)
+    rel_src_dir = LLVMBuildFactory.pathRelativeToBuild(f.llvm_srcdir, build_path)
 
     # Specify the max number of threads using properties so LIT doesn't use
     # all the threads on the system.
@@ -101,13 +76,16 @@ def getLibcxxAndAbiBuilder(f=None, env={}, additional_features=set(),
     # Nuke/remake build directory and run CMake
     f.addStep(buildbot.steps.shell.ShellCommand(
         name='rm.builddir', command=['rm', '-rf', build_path],
-        haltOnFailure=False, workdir=src_root))
-    f.addStep(buildbot.steps.shell.ShellCommand(
-        name='make.builddir', command=['mkdir', build_path],
-        haltOnFailure=True, workdir=src_root))
+        workdir=".",
+        haltOnFailure=False))
+
+    if not f.is_legacy_mode:
+        CmakeCommand.applyRequiredOptions(cmake_opts, [
+            ('-DLLVM_ENABLE_PROJECTS=', ";".join(f.depends_on_projects)),
+            ])
 
     f.addStep(buildbot.steps.shell.ShellCommand(
-        name='cmake', command=['cmake', src_root] + cmake_opts,
+        name='cmake', command=['cmake', rel_src_dir] + cmake_opts,
         haltOnFailure=True, workdir=build_path, env=env))
 
     # Build libcxxabi
