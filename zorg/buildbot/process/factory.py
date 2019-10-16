@@ -36,6 +36,9 @@ class LLVMBuildFactory(BuildFactory):
         else:
             self.depends_on_projects = frozenset(depends_on_projects)
 
+        # By default LLVMBuildFactory works in the legacy mode.
+        self.is_legacy_mode = kwargs.pop('is_legacy_mode', True)
+
         # Preserve all the given extra attributes if any, so we could
         # expand the factory later.
         for k,v in kwargs.items():
