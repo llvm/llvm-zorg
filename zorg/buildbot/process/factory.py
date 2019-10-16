@@ -1,7 +1,7 @@
 from collections import OrderedDict
 
 from buildbot.process.factory import BuildFactory
-from buildbot.steps.source import SVN
+from buildbot.steps.source import SVN, Git
 from buildbot.steps.shell import WithProperties
 
 # NOTE: svn_repos is deprecated and will be removed.
@@ -39,14 +39,30 @@ class LLVMBuildFactory(BuildFactory):
         # By default LLVMBuildFactory works in the legacy mode.
         self.is_legacy_mode = kwargs.pop('is_legacy_mode', True)
 
-        # Preserve all the given extra attributes if any, so we could
+        # Directories.
+        self.llvm_srcdir = kwargs.pop('llvm_srcdir', None)
+        self.obj_dir = kwargs.pop('llvm_srcdir', None)
+        self.install_dir = kwargs.pop('llvm_srcdir', None)
+
+        # Preserve the rest of the given extra attributes if any, so we could
         # expand the factory later.
         for k,v in kwargs.items():
             setattr(self, k, v)
 
-        # Default source code directory.
-        if kwargs.get('llvm_srcdir', None) is None:
-            self.llvm_srcdir = "llvm"
+        if self.is_legacy_mode:
+            self.llvm_srcdir = self.llvm_srcdir or "llvm"
+            self.obj_dir = self.obj_dir or "build"
+        else:
+            self.monorepo_dir = self.llvm_srcdir or "llvm-project"
+            self.llvm_srcdir = \
+                "%(monorepo_dir)s/llvm" % {'monorepo_dir' : self.monorepo_dir}
+            self.obj_dir = \
+                self.obj_dir or \
+                "%(monorepo_dir)s/build" % {'monorepo_dir' : self.monorepo_dir}
+
+            # Repourl could be specified per builder. Otherwise we use github.
+            self.repourl = kwargs.pop('repourl', 'https://github.com/llvm/llvm-%s.git')
+
 
         # Default build directory.
         if kwargs.get('obj_dir', None) is None:
@@ -59,7 +75,28 @@ class LLVMBuildFactory(BuildFactory):
             # The path is absolute. Don't touch it.
             return path
         else:
-            return "../" * (buildPath.count("/") + 1) + path
+            # Remove "current dir" placeholders if any.
+            path_nodes = list(filter(lambda x: x != ".", path.split('/')))
+            buildPath_nodes = list(filter(lambda x: x != ".", buildPath.split('/')))
+
+            # Handle edge cases.
+            if len(buildPath_nodes) == 0:
+                return "/".join(path_nodes)
+            if len(path_nodes) == 0:
+                return "."
+
+            # Skip a common part of the two paths.
+            for i in range(0, min(len(path_nodes), len(buildPath_nodes))):
+                if path_nodes[i] != buildPath_nodes[i]:
+                    rel_path = \
+                        "../" * (len(buildPath_nodes) - i) + \
+                        "/".join(path_nodes[i:])
+                    break
+            else:
+                # Everything matches.
+                rel_path = '.'
+
+            return rel_path
 
 
     # llvm_srcdir - Path to the root of the unified source tree.
@@ -86,5 +123,62 @@ class LLVMBuildFactory(BuildFactory):
                         baseURL=WithProperties(baseURL),
                         **kwargs))
 
+
     def addGetSourcecodeSteps(self, **kwargs):
-        self.addSVNSteps(**kwargs)
+        # Remove 'is_legacy_mode' if it leaked in to kwargs.
+        kwargs.pop('is_legacy_mode', None)
+
+        # Bail out if we are in the legacy mode and SVN checkout is required.
+        if self.is_legacy_mode:
+            self.addSVNSteps(**kwargs)
+            return
+
+        # Checkout the monorepo.
+        _repourl = self.repourl
+        if '%' in _repourl:
+            _repourl = _repourl % 'project'
+        self.addStep(
+            Git(name='Checkout the source code',
+                repourl=_repourl,
+                progress=True,
+                workdir=WithProperties(self.monorepo_dir),
+                **kwargs))
+
+
+    # Checkout a given LLVM project to the given directory.
+    # TODO: Handle clean property and self.clean attribute.
+    def addGetSourcecodeForProject(self, project, srcdir=None, **kwargs):
+        # Bail out if we are in the legacy mode and SVN checkout is required.
+        if self.is_legacy_mode:
+            workdir, baseURL = svn_repos[project]
+
+            # Check out to the given directory if any.
+            # Otherwise this is a part of the unified source tree.
+            if srcdir is None:
+                srcdir = workdir % {'llvm_srcdir' : self.llvm_srcdir}
+
+            self.addStep(
+                SVN(name='svn-%s' % project,
+                    workdir=workdir % {'llvm_srcdir' : srcdir},
+                    baseURL=WithProperties(baseURL),
+                    **kwargs))
+        else:
+            # project contains a repo name which is not a part of the monorepo.
+            #  We do not enforce it here, though.
+            _repourl = kwargs.pop('repourl', self.repourl)
+            if '%' in _repourl:
+                _repourl = _repourl % project
+
+            # Check out to the given directory if any.
+            # Otherwise this is a part of the unified source tree.
+            if srcdir is None:
+                srcdir = 'llvm-%s' % project
+
+            # Ignore workdir if given. We check out to srcdir.
+            kwargs.pop('workdir', None)
+
+            self.addStep(
+                Git(name='Checkout the %s' % project,
+                    progress=True,
+                    workdir=WithProperties(srcdir),
+                    **kwargs))
