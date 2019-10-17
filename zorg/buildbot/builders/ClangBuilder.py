@@ -413,14 +413,14 @@ def getClangCMakeGCSBuildFactory(
 
             # Test-suite
             runTestSuite=False,
-            nt_flags=[],
-            testsuite_flags=[],
+            nt_flags=None,
+            testsuite_flags=None,
             submitURL=None,
             testerName=None,
 
             # Environmental variables for all steps.
-            env={},
-            extra_cmake_args=[],
+            env=None,
+            extra_cmake_args=None,
 
             # Extra repositories
             checkout_clang_tools_extra=True,
@@ -437,7 +437,7 @@ def getClangCMakeGCSBuildFactory(
             use_pixz_compression=False,
 
             # Triggers
-            trigger_after_stage1=[]):
+            trigger_after_stage1=None):
     return _getClangCMakeBuildFactory(
                clean=clean, test=test, cmake=cmake, jobs=jobs, vs=vs,
                vs_target_arch=vs_target_arch, useTwoStage=useTwoStage,
@@ -474,14 +474,14 @@ def getClangCMakeBuildFactory(
 
             # Test-suite
             runTestSuite=False,
-            nt_flags=[],
-            testsuite_flags=[],
+            nt_flags=None,
+            testsuite_flags=None,
             submitURL=None,
             testerName=None,
 
             # Environmental variables for all steps.
-            env={},
-            extra_cmake_args=[],
+            env=None,
+            extra_cmake_args=None,
 
             # Extra repositories
             checkout_clang_tools_extra=True,
@@ -522,14 +522,14 @@ def _getClangCMakeBuildFactory(
 
             # Test-suite
             runTestSuite=False,
-            nt_flags=[],
-            testsuite_flags=[],
+            nt_flags=None,
+            testsuite_flags=None,
             submitURL=None,
             testerName=None,
 
             # Environmental variables for all steps.
-            env={},
-            extra_cmake_args=[],
+            env=None,
+            extra_cmake_args=None,
 
             # Extra repositories
             checkout_clang_tools_extra=True,
@@ -547,9 +547,20 @@ def _getClangCMakeBuildFactory(
             use_pixz_compression=False,
 
             # Triggers
-            trigger_after_stage1=[]):
+            trigger_after_stage1=None):
 
     ############# PREPARING
+    if nt_flags is None:
+        nt_flags = []
+    if testsuite_flags is None:
+        testsuite_flags = []
+    if env is None:
+        env = {}
+    if extra_cmake_args is None:
+        extra_cmake_args = []
+    if trigger_after_stage1 is None:
+        trigger_after_stage1 = []
+
     clean_build_requested = lambda step: \
         step.build.getProperty( \
             "clean", \
