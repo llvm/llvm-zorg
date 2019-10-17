@@ -39,6 +39,12 @@ class ConfigEmailLookup(buildbot.util.ComparableMixin):
 
   def getAddress(self, name):
 
+    # For a multiple types of pollers/schedulers we can get an email address or
+    # a fully qualified name/email in 'name' parameter. Check and return name if it
+    # contains email address.
+    if name is not None and '@' in name:
+        return name
+
     try:
 
       if (datetime.utcnow() - self.time_checked) >= timedelta(minutes=1):
