@@ -1,5 +1,4 @@
 from buildbot.process.properties import WithProperties
-from buildbot.steps.source       import SVN
 
 from zorg.buildbot.builders                import UnifiedTreeBuilder
 from zorg.buildbot.commands.CmakeCommand   import CmakeCommand
@@ -46,6 +45,9 @@ def getABITestsuitBuildFactory(
             env=merged_env,
             **kwargs) # Pass through all the extra arguments.
 
+    # Consume is_legacy_mode if given.
+    # TODO: Remove this once legacy mode gets dropped.
+    kwargs.pop('is_legacy_mode', None)
 
     f.addStep(NinjaCommand(name="build-unified-tree",
                            haltOnFailure=True,
@@ -56,10 +58,11 @@ def getABITestsuitBuildFactory(
                            ))
 
     # Checkout the test-suite.
-    f.addStep(SVN(name='svn-test-suite',
-                  mode='update', baseURL='http://llvm.org/svn/llvm-project/test-suite/',
-                  defaultBranch='trunk',
-                  workdir='test-suite'))
+    f.addGetSourcecodeForProject(
+        project='test-suite',
+        src_dir='test-suite',
+        alwaysUseLatest=True,
+        **kwargs)
 
     # Run the ABI test.
     abi_test_env = {
