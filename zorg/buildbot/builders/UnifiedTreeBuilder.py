@@ -26,11 +26,7 @@ def getLLVMBuildFactoryAndPrepareForSourcecodeSteps(
         # We want a clean checkout only if requested by the property.
         cleanBuildRequested = cleanBuildRequestedByProperty
 
-    # By default UnifiedTreeBuilder works in the legacy mode yet.
-    is_legacy_mode = kwargs.pop('is_legacy_mode', True)
-
     f = LLVMBuildFactory(
-            is_legacy_mode=is_legacy_mode,
             depends_on_projects=depends_on_projects,
             llvm_srcdir=llvm_srcdir,
             obj_dir=obj_dir,
@@ -42,7 +38,7 @@ def getLLVMBuildFactoryAndPrepareForSourcecodeSteps(
     # TODO: Some Windows slaves do not handle RemoveDirectory command well.
     # So, consider running "rmdir /S /Q <dir>" if the build runs on Windows.
     f.addStep(RemoveDirectory(name='clean-src-dir',
-              dir=f.llvm_srcdir if f.is_legacy_mode else f.monorepo_dir,
+              dir=f.llvm_srcdir,
               haltOnFailure=False,
               flunkOnFailure=False,
               doStepIf=cleanBuildRequestedByProperty,
@@ -56,6 +52,7 @@ def getLLVMBuildFactoryAndSourcecodeSteps(
            obj_dir = None,
            install_dir = None,
            cleanBuildRequested = None,
+           env = None,
            **kwargs):
 
     f = getLLVMBuildFactoryAndPrepareForSourcecodeSteps(
@@ -87,10 +84,6 @@ def addCmakeSteps(
            stage_name = None,
            **kwargs):
 
-    # Consume is_legacy_mode if given.
-    # TODO: Remove this once legacy mode gets dropped.
-    kwargs.pop('is_legacy_mode', None)
-
     # Make a local copy of the configure args, as we are going to modify that.
     if extra_configure_args:
         cmake_args = extra_configure_args[:]
@@ -110,11 +103,6 @@ def addCmakeSteps(
               flunkOnFailure=False,
               doStepIf=cleanBuildRequested,
               ))
-
-    if not f.is_legacy_mode:
-        CmakeCommand.applyRequiredOptions(cmake_args, [
-            ('-DLLVM_ENABLE_PROJECTS=', ";".join(f.depends_on_projects)),
-            ])
 
     if install_dir:
         install_dir_rel = LLVMBuildFactory.pathRelativeToBuild(
@@ -168,10 +156,6 @@ def addNinjaSteps(
            env = None,
            stage_name = None,
            **kwargs):
-
-    # Consume is_legacy_mode if given.
-    # TODO: Remove this once legacy mode gets dropped.
-    kwargs.pop('is_legacy_mode', None)
 
     # Build the unified tree.
     if stage_name:
