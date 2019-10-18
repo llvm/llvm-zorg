@@ -36,18 +36,37 @@ def getABITestsuitBuildFactory(
         ('-G',                      'Ninja'),
         ])
 
-    f = UnifiedTreeBuilder.getCmakeBuildFactory(
+    cleanBuildRequested = lambda step: step.build.getProperty("clean", default=step.build.getProperty("clean_obj")) or clean
+
+    f = UnifiedTreeBuilder.getLLVMBuildFactoryAndPrepareForSourcecodeSteps(
             depends_on_projects=depends_on_projects,
             llvm_srcdir="llvm",
             obj_dir="build",
-            clean=clean,
-            extra_configure_args=cmake_args,
+            cleanBuildRequested=cleanBuildRequested,
             env=merged_env,
             **kwargs) # Pass through all the extra arguments.
 
     # Consume is_legacy_mode if given.
     # TODO: Remove this once legacy mode gets dropped.
     kwargs.pop('is_legacy_mode', None)
+
+    # First of all, we shall checkout the latest test-suite.
+    f.addGetSourcecodeForProject(
+        project='test-suite',
+        src_dir='test-suite',
+        alwaysUseLatest=True,
+        **kwargs)
+
+    # Then get the LLVM source code revision this particular build is for.
+    f.addGetSourcecodeSteps(**kwargs)
+
+    UnifiedTreeBuilder.addCmakeSteps(
+        f,
+        cleanBuildRequested=cleanBuildRequested,
+        obj_dir=f.obj_dir,
+        extra_configure_args=extra_configure_args,
+        env=env,
+        **kwargs)
 
     f.addStep(NinjaCommand(name="build-unified-tree",
                            haltOnFailure=True,
@@ -56,13 +75,6 @@ def getABITestsuitBuildFactory(
                            workdir=f.obj_dir,
                            **kwargs # Pass through all the extra arguments.
                            ))
-
-    # Checkout the test-suite.
-    f.addGetSourcecodeForProject(
-        project='test-suite',
-        src_dir='test-suite',
-        alwaysUseLatest=True,
-        **kwargs)
 
     # Run the ABI test.
     abi_test_env = {
