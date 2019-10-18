@@ -10,14 +10,11 @@ def main(argv):
 
     projects = ['llvm', 'clang', 'lld', 'debuginfo-tests']
     stages = 2
-    stage1_extra_cmake_args = [
+    extra_cmake_args = [
         '-DCMAKE_BUILD_TYPE=Release',
         '-DLLVM_ENABLE_PDB=ON',
         '-DLLVM_ENABLE_ASSERTIONS=ON',
         '-DLLVM_TARGETS_TO_BUILD=all',
-    ]
-    extra_cmake_args = stage1_extra_cmake_args + [
-        '-DLLVM_USE_LINKER=lld',
     ]
     check_targets = ['check-llvm', 'check-clang', 'check-lld', 'check-debuginfo']
 
@@ -31,7 +28,6 @@ def main(argv):
     builder.run_steps(projects=projects,
                       stages=stages,
                       extra_cmake_args=extra_cmake_args,
-                      stage1_extra_cmake_args=stage1_extra_cmake_args,
                       check_targets=check_targets,
                       check_stages=check_stages,
                       compiler=compiler,

@@ -34,14 +34,11 @@ def main(argv):
 
     projects = ['llvm', 'clang', 'lld', 'compiler-rt']
     stages = 1
-    stage1_extra_cmake_args = [
+    extra_cmake_args = [
         '-DCMAKE_BUILD_TYPE=Release',
         '-DLLVM_ENABLE_PDB=ON',
         '-DLLVM_ENABLE_ASSERTIONS=ON',
         '-DLLVM_TARGETS_TO_BUILD=X86',
-    ]
-    extra_cmake_args = stage1_extra_cmake_args + [
-        '-DLLVM_USE_LINKER=lld',
     ]
     check_targets = ['check-asan', 'check-asan-dynamic', 'check-sanitizer',
                      'check-ubsan', 'check-fuzzer', 'check-cfi',
@@ -56,7 +53,6 @@ def main(argv):
     builder.run_steps(stages=stages,
                       projects=projects,
                       extra_cmake_args=extra_cmake_args,
-                      stage1_extra_cmake_args=stage1_extra_cmake_args,
                       check_targets=check_targets,
                       compiler=compiler,
                       linker=linker,
