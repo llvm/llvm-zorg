@@ -17,8 +17,10 @@ import zorg.buildbot.commands as commands
 import zorg.buildbot.commands.BatchFileDownload as batch_file_download
 import zorg.buildbot.commands.LitTestCommand as lit_test_command
 from zorg.buildbot.conditions.FileConditions import FileDoesNotExist
+from zorg.buildbot.commands.CmakeCommand import CmakeCommand
 from zorg.buildbot.process.factory import LLVMBuildFactory
 
+# FIXME: This method is deprecated and will be removed. Please use getClangCMakeBuildFactory instead.
 def getClangBuildFactory(
             triple=None,
             clean=True,
@@ -456,6 +458,7 @@ def getClangCMakeGCSBuildFactory(
                trigger_after_stage1=trigger_after_stage1)
 
 def getClangCMakeBuildFactory(
+            is_legacy_mode=True,
             clean=True,
             test=True,
             cmake='cmake',
@@ -490,6 +493,7 @@ def getClangCMakeBuildFactory(
             checkout_libcxx=False,
             checkout_test_suite=False):
     return _getClangCMakeBuildFactory(
+               is_legacy_mode=is_legacy_mode,
                clean=clean, test=test, cmake=cmake, jobs=jobs, vs=vs,
                vs_target_arch=vs_target_arch, useTwoStage=useTwoStage,
                testStage1=testStage1, stage1_config=stage1_config,
@@ -504,6 +508,7 @@ def getClangCMakeBuildFactory(
                checkout_test_suite=checkout_test_suite)
 
 def _getClangCMakeBuildFactory(
+            is_legacy_mode=True,
             clean=True,
             test=True,
             cmake='cmake',
@@ -575,19 +580,39 @@ def _getClangCMakeBuildFactory(
         depends_on_projects.append('compiler-rt')
     if checkout_lld:
         depends_on_projects.append('lld')
-    if runTestSuite or checkout_test_suite:
-        depends_on_projects.append('lnt')
-        depends_on_projects.append('test-suite')
     if checkout_libcxx:
         depends_on_projects.append('libcxx')
         depends_on_projects.append('libcxxabi')
         depends_on_projects.append('libunwind')
 
+    # Some projects are not a part of the monorepo.
+    # So, depending on the legacy mode, we
+    # would have to checkout them differently.
+    if is_legacy_mode and (runTestSuite or checkout_test_suite):
+        depends_on_projects.append('lnt')
+        depends_on_projects.append('test-suite')
+
     f = LLVMBuildFactory(
+            is_legacy_mode=is_legacy_mode,
             depends_on_projects=depends_on_projects,
             llvm_srcdir='llvm')
 
-    f.addSVNSteps()
+    # If we get the source code form the monorepo,
+    # we need to checkout the latest code for LNT
+    # and the test-suite separately. Le's do this first,
+    # so we wouldn't poison got_revision property.
+    if not is_legacy_mode and (runTestSuite or checkout_test_suite):
+        f.addGetSourcecodeForProject(
+            project='lnt',
+            src_dir='lnt',
+            alwaysUseLatest=True)
+        f.addGetSourcecodeForProject(
+            project='test-suite',
+            src_dir='test-suite',
+            alwaysUseLatest=True)
+
+    # Then get the LLVM source code revision this particular build is for.
+    f.addGetSourcecodeSteps()
 
     # If jobs not defined, Ninja will choose a suitable value
     jobs_cmd = []
@@ -629,8 +654,14 @@ def _getClangCMakeBuildFactory(
 
 
     ############# STAGE 1
+    if not f.is_legacy_mode:
+        CmakeCommand.applyRequiredOptions(extra_cmake_args, [
+            ('-DLLVM_ENABLE_PROJECTS=', ";".join(f.depends_on_projects)),
+            ])
+    rel_src_dir = LLVMBuildFactory.pathRelativeToBuild(f.llvm_srcdir, stage1_build)
+
     f.addStep(ShellCommand(name='cmake stage 1',
-                           command=[cmake, "-G", "Ninja", "../llvm",
+                           command=[cmake, "-G", "Ninja", rel_src_dir,
                                     "-DCMAKE_BUILD_TYPE="+stage1_config,
                                     "-DLLVM_ENABLE_ASSERTIONS=True",
                                     "-DLLVM_LIT_ARGS="+lit_args,
@@ -707,10 +738,11 @@ def _getClangCMakeBuildFactory(
         # backslash string escaping bugs somewhere between buildbot and cmake. The
         # env.exe helper is required to run the tests, so hopefully it's already on
         # PATH.
+        rel_src_dir = LLVMBuildFactory.pathRelativeToBuild(f.llvm_srcdir, stage2_build)
         cmake_cmd2 = ['env',
                       WithProperties('CC=%(workdir)s/'+stage1_install+'/bin/'+cc),
                       WithProperties('CXX=%(workdir)s/'+stage1_install+'/bin/'+cxx),
-                      cmake, "-G", "Ninja", "../llvm",
+                      cmake, "-G", "Ninja", rel_src_dir,
                       "-DCMAKE_BUILD_TYPE="+stage2_config,
                       "-DLLVM_ENABLE_ASSERTIONS=True",
                       "-DLLVM_LIT_ARGS="+lit_args,
@@ -841,6 +873,7 @@ def _getClangCMakeBuildFactory(
 
     return f
 
+# FIXME: Deprecated.
 def addClangGCCTests(f, ignores={}, install_prefix="%(builddir)s/llvm.install",
                      languages = ('gcc', 'g++', 'objc', 'obj-c++')):
     make_vars = [WithProperties(
@@ -861,6 +894,7 @@ def addClangGCCTests(f, ignores={}, install_prefix="%(builddir)s/llvm.install",
                        '%s.log' % lang : 'obj/%s/%s.log' % (lang, lang)},
             ignore=gcc_dg_ignores.get(lang, [])))
 
+# FIXME: Deprecated.
 def addClangGDBTests(f, ignores={}, install_prefix="%(builddir)s/llvm.install"):
     make_vars = [WithProperties(
             'CC_UNDER_TEST=%s/bin/clang' % install_prefix),
@@ -877,6 +911,7 @@ def addClangGDBTests(f, ignores={}, install_prefix="%(builddir)s/llvm.install"):
             logfiles={ 'dg.sum' : 'obj/filtered.gdb.sum',
                        'gdb.log' : 'obj/gdb.log' }))
 
+# FIXME: Deprecated.
 def addModernClangGDBTests(f, jobs, install_prefix):
     make_vars = [WithProperties('RUNTESTFLAGS=CC_FOR_TARGET=\'{0}/bin/clang\' '
                                 'CXX_FOR_TARGET=\'{0}/bin/clang++\' '
