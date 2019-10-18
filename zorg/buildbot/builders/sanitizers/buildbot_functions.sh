@@ -122,7 +122,7 @@ function buildbot_update_git {
     LLVM=$BUILDBOT_MONO_REPO_PATH/llvm
   else
     (
-      local DEPTH=10
+      local DEPTH=100
       [[ -d llvm-project ]] || git clone --depth $DEPTH https://github.com/llvm/llvm-project.git
       cd llvm-project
       git fetch
