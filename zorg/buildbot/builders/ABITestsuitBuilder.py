@@ -64,7 +64,7 @@ def getABITestsuitBuildFactory(
         f,
         cleanBuildRequested=cleanBuildRequested,
         obj_dir=f.obj_dir,
-        extra_configure_args=extra_configure_args,
+        extra_configure_args=cmake_args,
         env=env,
         **kwargs)
 
