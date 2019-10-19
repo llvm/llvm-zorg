@@ -145,7 +145,7 @@ class LLVMBuildFactory(BuildFactory):
 
     # Checkout a given LLVM project to the given directory.
     # TODO: Handle clean property and self.clean attribute.
-    def addGetSourcecodeForProject(self, project, src_dir=None, **kwargs):
+    def addGetSourcecodeForProject(self, project, name=None, src_dir=None, **kwargs):
         # Remove 'is_legacy_mode' if it leaked in to kwargs.
         kwargs.pop('is_legacy_mode', None)
 
@@ -153,13 +153,16 @@ class LLVMBuildFactory(BuildFactory):
         if self.is_legacy_mode:
             workdir, baseURL = svn_repos[project]
 
+            if not name:
+                name = 'svn-%s' % project
+
             # Check out to the given directory if any.
             # Otherwise this is a part of the unified source tree.
             if src_dir is None:
                 src_dir = workdir % {'llvm_srcdir' : self.llvm_srcdir}
 
             self.addStep(
-                SVN(name='svn-%s' % project,
+                SVN(name=name,
                     workdir=src_dir,
                     baseURL=WithProperties(baseURL),
                     **kwargs))
@@ -170,6 +173,9 @@ class LLVMBuildFactory(BuildFactory):
             if not _repourl:
                 _repourl = self.repourl_prefix + "llvm-%s.git" % project
 
+            if not name:
+                name = 'Checkout %s' % project
+
             # Check out to the given directory if any.
             # Otherwise this is a part of the unified source tree.
             if src_dir is None:
@@ -179,7 +185,7 @@ class LLVMBuildFactory(BuildFactory):
             kwargs.pop('workdir', None)
 
             self.addStep(
-                Git(name='Checkout the %s' % project,
+                Git(name=name,
                     repourl=_repourl,
                     progress=True,
                     workdir=WithProperties(src_dir),
