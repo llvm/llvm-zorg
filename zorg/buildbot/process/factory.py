@@ -20,6 +20,7 @@ svn_repos = OrderedDict([
   ('llgo'             , ("%(llvm_srcdir)s/tools/llgo",              '%(vcs_protocol:-http)s://llvm.org/svn/llvm-project/llgo/')),
   ('polly'            , ("%(llvm_srcdir)s/tools/polly",             '%(vcs_protocol:-http)s://llvm.org/svn/llvm-project/polly/')),
   ('openmp'           , ("%(llvm_srcdir)s/tools/openmp",            '%(vcs_protocol:-http)s://llvm.org/svn/llvm-project/openmp/')),
+  ('zorg'             , ("zorg",                                    '%(vcs_protocol:-http)s://llvm.org/svn/llvm-project/zorg/')),
   ])
 
 class LLVMBuildFactory(BuildFactory):
