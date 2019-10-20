@@ -7,6 +7,7 @@ from zorg.buildbot.commands.CmakeCommand import CmakeCommand
 from zorg.buildbot.commands.NinjaCommand import NinjaCommand
 from zorg.buildbot.conditions.FileConditions import FileDoesNotExist
 from zorg.buildbot.process.factory import LLVMBuildFactory
+from zorg.buildbot.builders import UnifiedTreeBuilder
 
 def _addSteps4SystemCompiler(
            f,
@@ -63,6 +64,11 @@ def _addSteps4SystemCompiler(
         ('-G',                      'Ninja'),
         ('-DCMAKE_INSTALL_PREFIX=', install_dir),
         ])
+
+    if not f.is_legacy_mode:
+        CmakeCommand.applyRequiredOptions(cmake_args, [
+            ('-DLLVM_ENABLE_PROJECTS=', ";".join(f.depends_on_projects)),
+            ])
 
     # Note: On this stage we do not care of warnings, as we build with
     # a system toolchain and cannot control the environment.
@@ -177,6 +183,11 @@ def _addSteps4StagedCompiler(
             "-DCMAKE_C_COMPILER=%(workdir)s/" + staged_install + "/bin/clang"
         ))
 
+    if not f.is_legacy_mode:
+        CmakeCommand.applyRequiredOptions(cmake_args, [
+            ('-DLLVM_ENABLE_PROJECTS=', ";".join(f.depends_on_projects)),
+            ])
+
     # Create configuration files with cmake
     f.addStep(CmakeCommand(name="cmake-configure-stage%s" % stage_num,
                            description=["stage%s cmake configure" % stage_num],
@@ -228,7 +239,8 @@ def getClangWithLTOBuildFactory(
            extra_configure_args = None,
            compare_last_2_stages = True,
            lto = None, # The string gets passed to -flto flag as is. Like -flto=thin.
-           env = None):
+           env = None,
+           **kwargs):
 
     # Set defaults
     if depends_on_projects:
@@ -262,7 +274,7 @@ def getClangWithLTOBuildFactory(
         # Overwrite pre-set items with the given ones, so user can set anything.
         merged_env.update(env)
 
-    f = LLVMBuildFactory(
+    f = UnifiedTreeBuilder.getLLVMBuildFactoryAndPrepareForSourcecodeSteps(
             depends_on_projects=depends_on_projects,
             stage_objdirs=[
                 "build/stage1",
@@ -276,17 +288,14 @@ def getClangWithLTOBuildFactory(
                 "install/stage3",
                 "install/stage4",
                 ],
-            staged_compiler_idx = 1)
+            staged_compiler_idx = 1,
+            **kwargs)
 
-    cleanBuildRequested = lambda step: step.build.getProperty("clean") or clean
+    # Consume is_legacy_mode if given.
+    # TODO: Remove this once legacy mode gets dropped.
+    kwargs.pop('is_legacy_mode', None)
 
-    # Do a clean checkout if requested.
-    f.addStep(RemoveDirectory(name='clean-src-dir',
-              dir=f.llvm_srcdir,
-              haltOnFailure=False,
-              flunkOnFailure=False,
-              doStepIf=cleanBuildRequested,
-              ))
+    cleanBuildRequested = lambda step: clean or step.build.getProperty("clean", default=step.build.getProperty("clean_obj"))
 
     # Get the source code.
     f.addGetSourcecodeSteps()
