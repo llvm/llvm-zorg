@@ -117,15 +117,10 @@ def _get_clang_fast_builders():
          'slavenames': ["ps4-buildslave4"],
          'builddir': "llvm-clang-lld-x86_64-scei-ps4-ubuntu-fast",
          'factory': UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
-                        depends_on_projects=['llvm','clang','clang-tools-extra','compiler-rt','lld'],
+                        depends_on_projects=['llvm','clang','clang-tools-extra','lld'],
                         extra_configure_args=[
                             "-DCMAKE_C_COMPILER=clang",
                             "-DCMAKE_CXX_COMPILER=clang++",
-                            "-DCOMPILER_RT_BUILD_BUILTINS=OFF",
-                            "-DCOMPILER_RT_BUILD_SANITIZERS=OFF",
-                            "-DCOMPILER_RT_CAN_EXECUTE_TESTS=OFF",
-                            "-DCOMPILER_RT_INCLUDE_TESTS=OFF",
-                            "-DLLVM_TOOL_COMPILER_RT_BUILD=OFF", # TODO: Check why we depend on compiler-rt then?
                             "-DLLVM_BUILD_TESTS=ON",
                             "-DLLVM_BUILD_EXAMPLES=ON",
                             "-DCLANG_BUILD_EXAMPLES=ON",
@@ -142,9 +137,8 @@ def _get_clang_fast_builders():
          'builddir': "llvm-clang-lld-x86_64-scei-ps4-windows10pro-fast",
          'factory': UnifiedTreeBuilder.getCmakeWithNinjaWithMSVCBuildFactory(
                         vs="autodetect",
-                        depends_on_projects=['llvm','clang','clang-tools-extra','compiler-rt','lld'],
+                        depends_on_projects=['llvm','clang','clang-tools-extra','lld'],
                         extra_configure_args=[
-                            "-DLLVM_TOOL_COMPILER_RT_BUILD=OFF", # TODO: Check why we depend on compiler-rt then?
                             "-DLLVM_BUILD_TESTS=ON",
                             "-DLLVM_BUILD_EXAMPLES=ON",
                             "-DCLANG_BUILD_EXAMPLES=ON",
