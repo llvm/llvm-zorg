@@ -383,7 +383,8 @@ class LLVMPoller(base.PollingChangeSource):
                        branch=self.branch,
                        category=self._categories.get(where_project, self.category),
                        project=where_project,
-                       repository=self.repourl,
+                       # Always promote an external github url of the LLVM project with the changes.
+                       repository=self._repourl,
                        src='git',
                        properties=properties)
                 wfd = defer.waitForDeferred(d)
