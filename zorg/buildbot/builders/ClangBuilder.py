@@ -604,11 +604,11 @@ def _getClangCMakeBuildFactory(
     if not is_legacy_mode and (runTestSuite or checkout_test_suite):
         f.addGetSourcecodeForProject(
             project='lnt',
-            src_dir='lnt',
+            src_dir='test/lnt',
             alwaysUseLatest=True)
         f.addGetSourcecodeForProject(
             project='test-suite',
-            src_dir='test-suite',
+            src_dir='test/test-suite',
             alwaysUseLatest=True)
 
     # Then get the LLVM source code revision this particular build is for.
