@@ -156,6 +156,18 @@ def _get_clang_fast_builders():
                                             "-DCMAKE_BUILD_TYPE=Debug",
                                             "-DLLVM_LIT_ARGS='-v'"])},
 
+        {'name': "llvm-clang-x86_64-expensive-checks-ubuntu",
+         'slavenames': ["as-builder-4"],
+         'builddir':"llvm-clang-x86_64-expensive-checks-ubuntu",
+         'factory': UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
+                      depends_on_projects=["llvm"],
+                      clean=True,
+                      extra_configure_args=["-DLLVM_ENABLE_EXPENSIVE_CHECKS=ON",
+                                            "-DLLVM_ENABLE_WERROR=OFF",
+                                            "-DCMAKE_BUILD_TYPE=Debug",
+                                            "-DCMAKE_CXX_FLAGS='-U_GLIBCXX_DEBUG'",
+                                            "-DLLVM_LIT_ARGS='-v -j32'"])},
+
         {'name' : "llvm-clang-x86_64-win-fast",
          'slavenames' : ["as-builder-3"],
          'builddir' : "llvm-clang-x86_64-win-fast",

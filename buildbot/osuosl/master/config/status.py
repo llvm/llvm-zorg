@@ -147,7 +147,8 @@ def get_status_targets(standard_builders, standard_categories=None):
                         "llvm-clang-lld-x86_64-scei-ps4-ubuntu-fast",
                         "clang-with-lto-ubuntu", "clang-with-thin-lto-ubuntu",
                         "llvm-clang-lld-x86_64-scei-ps4-windows10pro-fast",
-                        "llvm-clang-x86_64-expensive-checks-win"],
+                        "llvm-clang-x86_64-expensive-checks-win",
+                        "llvm-clang-x86_64-expensive-checks-ubuntu"],
             addLogs=False),
         InformativeMailNotifier(
             fromaddr = "llvm.buildmaster@lab.llvm.org",
@@ -242,6 +243,7 @@ def get_status_targets(standard_builders, standard_categories=None):
             extraRecipients = ["vvereschaka@accesssoftek.com"],
             subject="Build %(builder)s Failure",
             mode = "failing",
-            builders = ["llvm-clang-x86_64-win-fast","lld-x86_64-ubuntu-fast"],
+            builders = ["llvm-clang-x86_64-win-fast","lld-x86_64-ubuntu-fast",
+                        "llvm-clang-x86_64-expensive-checks-ubuntu"],
             addLogs=False),
         ]
