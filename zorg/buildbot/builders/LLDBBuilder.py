@@ -66,7 +66,9 @@ def getLLDBCMakeBuildFactory(
             install=False):
 
     ############# PREPARING
-    f = buildbot.process.factory.BuildFactory()
+    f = LLVMBuildFactory(
+            is_legacy_mode=False,
+            depends_on_projects=["llvm", "clang", "lldb", "lld"])
 
     # Determine Slave Environment and Set MSVC environment.
     if vs:
@@ -74,7 +76,7 @@ def getLLDBCMakeBuildFactory(
             command=getVisualStudioEnvironment(vs, target_arch),
             extract_fn=extractSlaveEnvironment))
 
-    f = getLLDBSource(f,'llvm')
+    f.addGetSourcecodeSteps()
 
     build_cmd=['ninja']
     install_cmd = ['ninja','install']
@@ -105,7 +107,7 @@ def getLLDBCMakeBuildFactory(
                 ))
 
     cmake_cmd = [
-        "cmake", "-G", "Ninja", "../llvm",
+        "cmake", "-G", "Ninja", os.path.join(os.pardir, f.monorepo_dir, "llvm"),
         "-DCMAKE_BUILD_TYPE=" + config,
         "-DCMAKE_INSTALL_PREFIX=../install"
         ]
