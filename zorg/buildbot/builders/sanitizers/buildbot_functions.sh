@@ -123,14 +123,19 @@ function buildbot_update_git {
   else
     (
       local DEPTH=100
-      [[ -d llvm-project ]] || git clone --depth $DEPTH https://github.com/llvm/llvm-project.git
+      [[ -d llvm-project ]] || (
+        mkdir -p llvm-project
+        cd llvm-project
+        git init
+        git remote add origin https://github.com/llvm/llvm-project.git
+      )
       cd llvm-project
-      git fetch
       git clean -fd
       local REV=
       if [[ "$BUILDBOT_REVISION" == "" ]] ; then
         REV=origin/master
-      else
+        git fetch origin
+      elif echo ${BUILDBOT_REVISION} | grep -P "^[0-9]{1,7}$"; then
         while true ; do
           REV=$(git log --format="%H" -n1 --grep "^llvm-svn: ${BUILDBOT_REVISION}$" origin/master)
           [[ "$REV" == "" ]] || break
@@ -140,8 +145,11 @@ function buildbot_update_git {
           echo @@@STEP_EXCEPTION@@@
           [[ "$DEPTH" -le "1000000" ]] || exit 1
           DEPTH=$(( $DEPTH * 10 ))
-          git fetch --depth $DEPTH
+          git fetch --depth $DEPTH origin
         done
+      else
+        REV=${BUILDBOT_REVISION}
+        git fetch --depth 1 origin $REV
       fi
       git checkout $REV
       git status
@@ -237,7 +245,7 @@ function build_stage1_clang {
 }
 
 function build_stage1_clang_at_revison {
-  local HOST_CLANG_REVISION=360832
+  local HOST_CLANG_REVISION=e7ab59eda98094183cd4d75f5edde9e07e27072b
   common_stage1_variables
 
   if  [ -r ${STAGE1_DIR}/host_clang_revision ] && \
