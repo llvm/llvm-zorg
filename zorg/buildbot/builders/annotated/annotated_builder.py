@@ -157,7 +157,7 @@ class AnnotatedBuilder:
         cmd = [cmake]
         if cmake_args is not None:
             cmd += cmake_args
-        cmd += [source_dir]
+        cmd += [util.cmake_pjoin(source_dir, 'llvm')]
         util.mkdirp(build_dir)
         util.report_run_cmd(cmd, cwd=build_dir)
 
@@ -242,44 +242,6 @@ class AnnotatedBuilder:
             self.report_step_exception(e)
             raise
 
-    def update_sources(self, source_dir, projects, revision, svn='svn'):
-        self.report_build_step('update-sources')
-        self.halt_on_failure()
-
-        # TODO: This needs to be updated to use the monorepo.
-        # Where to check the project out relative to an LLVM checkout.
-        checkout_locations = {
-            'llvm': '',
-            'clang': 'tools/clang',
-            'lld': 'tools/lld',
-            'compiler-rt': 'projects/compiler-rt',
-            'debuginfo-tests': 'projects/debuginfo-tests',
-            }
-        # If the project is named differently in svn, put it here.
-        svn_locations = { 'clang': 'cfe' }
-        svn_uri_pattern = 'https://llvm.org/svn/llvm-project/%s/trunk'
-
-        for project in projects:
-            # TODO: Fail the build and report an error if we don't know the
-            # checkout location.
-            path = checkout_locations[project]
-            if not path:
-                path = source_dir
-            elif not os.path.isabs(path):
-                path = pjoin(source_dir, path)
-            uri = svn_uri_pattern % (svn_locations.get(project, project),)
-            util.report_run_cmd([svn, 'cleanup'], cwd=path)
-            util.report("Updating %s to %s at %s from %s" %
-                        (project, revision, util.shquote(path), uri))
-            if os.path.exists(pjoin(path, '.svn')):
-                util.report("Cleaning up in case of svn errors...")
-                util.report_run_cmd([svn, 'cleanup'], cwd=path)
-                cmd = [svn, 'up', '-r', revision]
-            else:
-                util.mkdirp(path)
-                cmd = [svn, 'co', '-r', revision, uri, '.']
-            util.report_run_cmd(cmd, cwd=path)
-
     def run_steps(
         self,
         stages=1,
@@ -288,14 +250,13 @@ class AnnotatedBuilder:
         check_stages=None,
         extra_cmake_args=None,
         stage1_extra_cmake_args=None,
-        revision=None,
         compiler='clang',
         linker='ld.lld',
         env=None,
         jobs=None):
         """
         stages: number of stages to run (default: 1)
-        projects: which subprojects to check out from SVN
+        projects: which subprojects to enable
             llvm must be first in the list (default: ['llvm', 'clang', 'lld'])
         check_targets: targets to run during the check phase (default: ['check-all'])
         check_stages: stages for which to run the check phase
@@ -303,8 +264,6 @@ class AnnotatedBuilder:
         extra_cmake_args: extra arguments to pass to cmake (default: [])
         stage1_extra_cmake_args: extra arguments to pass to cmake for stage 1
             (default: use extra_cmake_args)
-        revision: revision to check out (default: os.environ['BUILDBOT_REVISION'],
-            or, if that is unset, the latest revision)
         compiler: compiler to use after stage 1
             ('clang' or 'clang-cl'; default 'clang')
         linker: linker to use after stage 1
@@ -320,8 +279,6 @@ class AnnotatedBuilder:
             check_stages = [True] * stages
         if extra_cmake_args is None:
             extra_cmake_args = []
-        if not revision:
-            revision = os.environ.get('BUILDBOT_REVISION')
         if stage1_extra_cmake_args is None:
             stage1_extra_cmake_args = extra_cmake_args
         if projects is None:
@@ -338,32 +295,12 @@ class AnnotatedBuilder:
             stage1_extra_cmake_args += ['-DCMAKE_C_COMPILER=cl',
                                         '-DCMAKE_CXX_COMPILER=cl']
 
-        if not revision:
-            cmd = ['svn', 'info', 'https://llvm.org/svn/llvm-project/']
-            try:
-                svninfo = subprocess.check_output(cmd)
-            except subprocess.CalledProcessError as e:
-                util.report("Failed to get most recent SVN rev: " + str(e))
-                return 1
-            m = re.search('Revision: ([0-9]+)', svninfo)
-            if m:
-                revision = m.group(1)
-            else:
-                util.report("Failed to find svn revision in svn info output:\n"
-                            + svninfo)
-                return 1
-        if not revision.isdigit():
-            util.report("SVN revision %s is not a positive integer" % (revision,))
-
-        # Update sources.
         cwd = os.getcwd()
-        source_dir = pjoin(cwd, 'llvm.src')
+        source_dir = pjoin(cwd, 'llvm-project')
         build_dir = pjoin(cwd, 'build')
-        cmake_args = ['-GNinja']
+        cmake_args = ['-GNinja', '-DLLVM_ENABLE_PROJECTS=' + ';'.join(projects)]
 
         try:
-            self.update_sources(source_dir, projects, revision)
-
             # Build and check stages.
             self.build_and_check_stages(
                 stages,

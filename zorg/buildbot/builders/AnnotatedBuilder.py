@@ -47,15 +47,17 @@ def getAnnotatedBuildFactory(
         merged_env.update(env)
 
     scripts_dir = "annotated"
-    f.addStep(SVN(name='update-annotate-scripts',
-                  mode='update',
-                  svnurl='http://llvm.org/svn/llvm-project/zorg/trunk/'
-                         'zorg/buildbot/builders/annotated',
-                  workdir=scripts_dir,
-                  alwaysUseLatest=True))
+
+    # Check out zorg so we can run the annotator scripts.
+    f.addGetSourcecodeForProject(
+        project='llvm-zorg',
+        src_dir='llvm-zorg',
+        alwaysUseLatest=True)
+
+    f.addGetSourcecodeSteps()
 
     # Explicitly use '/' as separator, because it works on *nix and Windows.
-    script_path = "../%s/%s" % (scripts_dir, script)
+    script_path = "llvm-zorg/zorg/buildbot/builders/annotated/%s" % (script)
     f.addStep(AnnotatedCommand(name="annotate",
                                description="annotate",
                                timeout=timeout,
