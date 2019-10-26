@@ -77,6 +77,13 @@ class ProcessLogShellStep(shell.ShellCommand):
 
     Adds a link for the activity that points to report ULR.
     """
+
+    # got_revision could be poisoned by checking out the script itself.
+    # So, let's assume that we will get the exactly the same revision
+    # this build has been triggered for, and let the script report
+    # the revision it checked out.
+    self.setProperty('got_revision', self.getProperty('revision'), 'Source')
+
     self._CreateReportLinkIfNeccessary()
     shell.ShellCommand.start(self)
 
