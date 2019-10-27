@@ -1,13 +1,11 @@
-import os
-
-import buildbot
-import buildbot.process.factory
-from buildbot.steps.source import SVN, Git
+from buildbot.steps.shell import SetProperty
 from buildbot.process.properties import WithProperties
 from zorg.buildbot.commands.AnnotatedCommand import AnnotatedCommand
+from zorg.buildbot.process.factory import LLVMBuildFactory
 
 def getSanitizerBuildFactory(
     clean=False,
+    depends_on_projects=None,
     env=None,
     timeout=1200):
 
@@ -22,27 +20,40 @@ def getSanitizerBuildFactory(
     if env is not None:
         merged_env.update(env)
 
-    f = buildbot.process.factory.BuildFactory()
+    if depends_on_projects is None:
+        depends_on_projects = [
+            "llvm",
+            "clang",
+            "compiler-rt",
+            "libcxx",
+            "libcxxabi",
+            "libunwind",
+            "lld"]
+
+    # Explicitly use '/' as separator, because it works on *nix and Windows.
+    sanitizer_script_dir = "sanitizer_buildbot/sanitizers"
+    sanitizer_script = "../%s/zorg/buildbot/builders/sanitizers/%s" % (sanitizer_script_dir, "buildbot_selector.py")
+
+    f = LLVMBuildFactory(
+        is_legacy_mode=False,
+        clean=clean,
+        depends_on_projects=depends_on_projects,
+        llvm_srcdir=sanitizer_script_dir)
 
     # Determine the build directory.
-    f.addStep(buildbot.steps.shell.SetProperty(name="get_builddir",
-                                               command=["pwd"],
-                                               property="builddir",
-                                               description="set build dir",
-                                               workdir=".",
-                                               env=merged_env))
+    f.addStep(SetProperty(name="get_builddir",
+                          command=["pwd"],
+                          property="builddir",
+                          description="set build dir",
+                          workdir=".",
+                          env=merged_env))
 
-    sanitizer_buildbot = "sanitizer_buildbot"
-    sanitizer_script_dir = os.path.join(sanitizer_buildbot, "sanitizers")
     # Get sanitizer buildbot scripts.
-    f.addStep(SVN(name='svn-sanitizer-buildbot',
-                  mode='update',
-                  svnurl='http://llvm.org/svn/llvm-project/zorg/trunk/'
-                         'zorg/buildbot/builders/sanitizers',
-                  workdir=sanitizer_script_dir,
-                  alwaysUseLatest=True))
-
-    sanitizer_script = os.path.join("..", sanitizer_script_dir, "buildbot_selector.py")
+    f.addGetSourcecodeForProject(
+        name='update-annotate-scripts',
+        project='zorg',
+        src_dir=sanitizer_script_dir,
+        alwaysUseLatest=True)
 
     # Run annotated command for sanitizer.
     f.addStep(AnnotatedCommand(name="annotate",
