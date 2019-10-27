@@ -32,6 +32,7 @@ def get_status_targets(standard_builders, standard_categories=None):
 
     return [
         buildbot.status.html.WebStatus(
+            order_console_by_time=True,
             http_port = 8011, authz=authz_cfg),
 
         # All the standard builders send e-mail and IRC notifications.
