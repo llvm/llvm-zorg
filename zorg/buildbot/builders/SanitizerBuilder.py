@@ -7,7 +7,8 @@ def getSanitizerBuildFactory(
     clean=False,
     depends_on_projects=None,
     env=None,
-    timeout=1200):
+    timeout=1200,
+    is_legacy_mode=False):
 
     # Prepare environmental variables. Set here all env we want everywhere.
     merged_env = {
@@ -35,7 +36,7 @@ def getSanitizerBuildFactory(
     sanitizer_script = "../%s/zorg/buildbot/builders/sanitizers/%s" % (sanitizer_script_dir, "buildbot_selector.py")
 
     f = LLVMBuildFactory(
-        is_legacy_mode=False,
+        is_legacy_mode=is_legacy_mode,
         clean=clean,
         depends_on_projects=depends_on_projects,
         llvm_srcdir=sanitizer_script_dir)
