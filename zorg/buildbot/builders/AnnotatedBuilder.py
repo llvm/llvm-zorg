@@ -1,9 +1,5 @@
-import os
-
-import buildbot
 from buildbot.process.properties import WithProperties
-from buildbot.steps.shell import SetProperty, ShellCommand
-from buildbot.steps.source import SVN
+from buildbot.steps.shell import SetProperty
 from zorg.buildbot.commands.AnnotatedCommand import AnnotatedCommand
 from zorg.buildbot.process.factory import LLVMBuildFactory
 
@@ -13,14 +9,27 @@ def getAnnotatedBuildFactory(
     clean=False,
     depends_on_projects=None,
     env=None,
-    timeout=1200):
+    timeout=1200,
+    is_legacy_mode=False):
     """
     Returns a new build factory that uses AnnotatedCommand, which
     allows the build to be run by version-controlled scripts that do
     not require a buildmaster restart to update.
     """
 
+    if depends_on_projects is None:
+        depends_on_projects = [
+            "llvm",
+            "clang",
+            "compiler-rt",
+            "libcxx",
+            "libcxxabi",
+            "libunwind",
+            "lld"]
+
     f = LLVMBuildFactory(
+        is_legacy_mode=is_legacy_mode,
+        clean=clean,
         depends_on_projects=depends_on_projects,
         llvm_srcdir='llvm.src')
 
@@ -50,6 +59,7 @@ def getAnnotatedBuildFactory(
 
     # Check out zorg so we can run the annotator scripts.
     f.addGetSourcecodeForProject(
+        name='update-annotated-scripts',
         project='llvm-zorg',
         src_dir='llvm-zorg',
         alwaysUseLatest=True)
