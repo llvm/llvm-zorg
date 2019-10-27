@@ -49,7 +49,7 @@ def getLibcxxAndAbiBuilder(f=None, env=None, additional_features=None,
 
     # Specify the max number of threads using properties so LIT doesn't use
     # all the threads on the system.
-    litTestArgs = '-sv --show-unsupported --show-xfail --threads=%(jobs)s'
+    litTestArgs = '-vv --show-unsupported --show-xfail --threads=%(jobs)s'
     if lit_extra_args:
         litTestArgs += ' ' + ' '.join(lit_extra_args)
 
