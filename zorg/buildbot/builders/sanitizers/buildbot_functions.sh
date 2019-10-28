@@ -149,7 +149,17 @@ function buildbot_update_git {
         done
       else
         REV=${BUILDBOT_REVISION}
-        git fetch --depth 1 origin $REV
+        #git fetch --depth 1 origin $REV
+        while true ; do
+          git checkout $REV && break
+          git rev-list --pretty --max-count=1 origin/master
+          git rev-list --pretty --max-parents=0 origin/master
+          echo "DEPTH=$DEPTH is too small"
+          echo @@@STEP_EXCEPTION@@@
+          [[ "$DEPTH" -le "1000000" ]] || exit 1
+          DEPTH=$(( $DEPTH * 10 ))
+          git fetch --depth $DEPTH origin
+        done
       fi
       git checkout $REV
       git status
