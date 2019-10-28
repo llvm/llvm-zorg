@@ -161,6 +161,11 @@ class LLVMBuildFactory(BuildFactory):
             if src_dir is None:
                 src_dir = workdir % {'llvm_srcdir' : self.llvm_srcdir}
 
+            if not kwargs.get('mode', None):
+                kwargs['mode'] = 'update'
+            if not kwargs.get('defaultBranch', None):
+                kwargs['defaultBranch'] = 'trunk'
+
             self.addStep(
                 SVN(name=name,
                     workdir=src_dir,
