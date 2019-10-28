@@ -67,7 +67,7 @@ def getAnnotatedBuildFactory(
     f.addGetSourcecodeSteps()
 
     # Explicitly use '/' as separator, because it works on *nix and Windows.
-    script_path = "llvm-zorg/zorg/buildbot/builders/annotated/%s" % (script)
+    script_path = "../llvm-zorg/zorg/buildbot/builders/annotated/%s" % (script)
     f.addStep(AnnotatedCommand(name="annotate",
                                description="annotate",
                                timeout=timeout,
