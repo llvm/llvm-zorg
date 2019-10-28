@@ -60,7 +60,7 @@ def getAnnotatedBuildFactory(
     # Check out zorg so we can run the annotator scripts.
     f.addGetSourcecodeForProject(
         name='update-annotated-scripts',
-        project='llvm-zorg',
+        project='zorg',
         src_dir='llvm-zorg',
         alwaysUseLatest=True)
 
