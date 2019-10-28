@@ -128,6 +128,7 @@ function buildbot_update_git {
         cd llvm-project
         git init
         git remote add origin https://github.com/llvm/llvm-project.git
+        git fetch --depth $DEPTH origin
       )
       cd llvm-project
       git clean -fd
@@ -149,7 +150,7 @@ function buildbot_update_git {
         done
       else
         REV=${BUILDBOT_REVISION}
-        #git fetch --depth 1 origin $REV
+        # "git fetch --depth 1 origin $REV" does not work with 2.11 on bots
         while true ; do
           git checkout $REV && break
           git rev-list --pretty --max-count=1 origin/master
