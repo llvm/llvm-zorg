@@ -30,8 +30,7 @@ def getAnnotatedBuildFactory(
     f = LLVMBuildFactory(
         is_legacy_mode=is_legacy_mode,
         clean=clean,
-        depends_on_projects=depends_on_projects,
-        llvm_srcdir='llvm.src')
+        depends_on_projects=depends_on_projects)
 
     if clean:
       f.addStep(SetProperty(property='clean', command='echo 1'))
