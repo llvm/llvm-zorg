@@ -297,11 +297,12 @@ class AnnotatedBuilder:
 
         cwd = os.getcwd()
         source_dir = pjoin(cwd, 'llvm-project')
+        build_dir = pjoin(cwd, 'build')
         # If llvm-project doesn't exist, use llvm.src, the old location.
         # TODO: Remove this after a master restart.
         if not os.path.exists(source_dir):
-            source_dir = pjoin(cwd, 'llvm.src')
-        build_dir = pjoin(cwd, 'build')
+            source_dir = pjoin(cwd, '../llvm.src')
+            build_dir = cwd
         cmake_args = ['-GNinja', '-DLLVM_ENABLE_PROJECTS=' + ';'.join(projects)]
 
         try:
