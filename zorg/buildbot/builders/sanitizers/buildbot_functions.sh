@@ -128,8 +128,8 @@ function buildbot_update_git {
         cd llvm-project
         git init
         git remote add origin https://github.com/llvm/llvm-project.git
-        git fetch --depth $DEPTH origin
       )
+      git fetch --depth $DEPTH origin
       cd llvm-project
       git clean -fd
       local REV=
