@@ -9,8 +9,9 @@ from buildbot.steps.shell import ShellCommand, WarningCountingShellCommand
 from buildbot.steps.slave import RemoveDirectory
 from buildbot.process.properties import WithProperties, Property
 from buildbot.steps import trigger
-import zorg.buildbot.commands.BatchFileDownload as batch_file_download
 from zorg.buildbot.commands.LitTestCommand import LitTestCommand
+from zorg.buildbot.commands.CmakeCommand import CmakeCommand
+from zorg.buildbot.conditions.FileConditions import FileDoesNotExist
 from zorg.buildbot.builders.Util import getVisualStudioEnvironment
 from zorg.buildbot.builders.Util import extractSlaveEnvironment
 from zorg.buildbot.process.factory import LLVMBuildFactory
@@ -106,24 +107,27 @@ def getLLDBCMakeBuildFactory(
                 doStepIf=cleanBuildRequested
                 ))
 
-    cmake_cmd = [
-        "cmake", "-G", "Ninja", os.path.join(os.pardir, f.monorepo_dir, "llvm"),
+    path = os.path.join(os.pardir, f.monorepo_dir, "llvm")
+    cmake_options = [
+        "-G", "Ninja",
         "-DCMAKE_BUILD_TYPE=" + config,
-        "-DCMAKE_INSTALL_PREFIX=../install"
+        "-DCMAKE_INSTALL_PREFIX=../install",
+        "-DLLVM_ENABLE_PROJECTS=" + ";".join(f.depends_on_projects),
         ]
     if python_source_dir:
-        cmake_cmd.append("-DPYTHON_HOME=" + python_source_dir)
+        cmake_options.append("-DPYTHON_HOME=" + python_source_dir)
     if extra_cmake_args:
-        cmake_cmd += extra_cmake_args
-    # Note: ShellCommand does not pass the params with special symbols right.
-    # The " ".join is a workaround for this bug.
-    f.addStep(ShellCommand(name="cmake-configure",
+        cmake_options += extra_cmake_args
+
+    f.addStep(CmakeCommand(name="cmake-configure",
                            description=["cmake configure"],
-                           command=WithProperties(" ".join(cmake_cmd)),
                            haltOnFailure=True,
-                           warnOnWarnings=True,
+                           options=cmake_options,
+                           path="../%s" % f.llvm_srcdir,
+                           env=Property('slave_env'),
                            workdir=build_dir,
-                           env=Property('slave_env')))
+                           doStepIf=FileDoesNotExist(
+                                        "./%s/CMakeCache.txt" % build_dir)))
 
     f.addStep(WarningCountingShellCommand(name='build',
                           command=build_cmd,
