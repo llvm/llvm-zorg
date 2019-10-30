@@ -151,6 +151,7 @@ def _get_clang_fast_builders():
          'builddir':"llvm-clang-x86_64-expensive-checks-win",
          'factory': UnifiedTreeBuilder.getCmakeWithNinjaWithMSVCBuildFactory(
                       vs="autodetect",
+                      clean=True,
                       extra_configure_args=["-DLLVM_ENABLE_EXPENSIVE_CHECKS=ON",
                                             "-DLLVM_ENABLE_WERROR=OFF",
                                             "-DCMAKE_BUILD_TYPE=Debug",
