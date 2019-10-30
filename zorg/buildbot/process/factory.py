@@ -42,8 +42,8 @@ class LLVMBuildFactory(BuildFactory):
 
         # Directories.
         self.llvm_srcdir = kwargs.pop('llvm_srcdir', None)
-        self.obj_dir = kwargs.pop('llvm_srcdir', None)
-        self.install_dir = kwargs.pop('llvm_srcdir', None)
+        self.obj_dir = kwargs.pop('obj_dir', None)
+        self.install_dir = kwargs.pop('install_dir', None)
 
         # Preserve the rest of the given extra attributes if any, so we could
         # expand the factory later.
@@ -63,11 +63,6 @@ class LLVMBuildFactory(BuildFactory):
 
             # Repourl_prefix could be specified per builder. Otherwise we use github.
             self.repourl_prefix = kwargs.pop('repourl_prefix', 'https://github.com/llvm/')
-
-
-        # Default build directory.
-        if kwargs.get('obj_dir', None) is None:
-            self.obj_dir = "build"
 
 
     @staticmethod
