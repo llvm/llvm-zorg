@@ -50,7 +50,6 @@ def cleanSVNSourceTree(f, srcdir='llvm'):
 # CMake builds
 def getLLDBCMakeBuildFactory(
             clean=False,
-            cmake='cmake',
             jobs="%(jobs)s",
 
             # Source directory containing a built python
@@ -67,9 +66,14 @@ def getLLDBCMakeBuildFactory(
             install=False):
 
     ############# PREPARING
+
+    # Global configurations
+    build_dir='build'
+
     f = LLVMBuildFactory(
             is_legacy_mode=False,
-            depends_on_projects=["llvm", "clang", "lldb", "lld"])
+            depends_on_projects=["llvm", "clang", "lldb", "lld"],
+            obj_dir=build_dir)
 
     # Determine Slave Environment and Set MSVC environment.
     if vs:
@@ -88,18 +92,8 @@ def getLLDBCMakeBuildFactory(
         install_cmd.append(WithProperties("-j%s" % jobs))
         test_cmd.append(WithProperties("-j%s" % jobs))
 
-    # Global configurations
-    build_dir='build'
-
-    # get full path to build directory
-    f.addStep(SetProperty(name="get_builddir",
-                          command=["pwd"],
-                          property="builddir",
-                          description="set build dir",
-                          workdir=build_dir))
-
     ############# CLEANING
-    cleanBuildRequested = lambda step: step.build.getProperty("clean") or clean
+    cleanBuildRequested = lambda step: clean or step.build.getProperty("clean", default=step.build.getProperty("clean_obj"))
     f.addStep(RemoveDirectory(name='clean '+build_dir,
                 dir=build_dir,
                 haltOnFailure=False,
@@ -107,12 +101,12 @@ def getLLDBCMakeBuildFactory(
                 doStepIf=cleanBuildRequested
                 ))
 
-    path = os.path.join(os.pardir, f.monorepo_dir, "llvm")
+    rel_src_dir = LLVMBuildFactory.pathRelativeToBuild(f.llvm_srcdir, f.obj_dir)
     cmake_options = [
         "-G", "Ninja",
         "-DCMAKE_BUILD_TYPE=" + config,
         "-DCMAKE_INSTALL_PREFIX=../install",
-        "-DLLVM_ENABLE_PROJECTS=" + ";".join(f.depends_on_projects),
+        "'-DLLVM_ENABLE_PROJECTS=%s'" % ";".join(f.depends_on_projects),
         ]
     if python_source_dir:
         cmake_options.append("-DPYTHON_HOME=" + python_source_dir)
@@ -123,11 +117,9 @@ def getLLDBCMakeBuildFactory(
                            description=["cmake configure"],
                            haltOnFailure=True,
                            options=cmake_options,
-                           path="../%s" % f.llvm_srcdir,
+                           path=rel_src_dir,
                            env=Property('slave_env'),
-                           workdir=build_dir,
-                           doStepIf=FileDoesNotExist(
-                                        "./%s/CMakeCache.txt" % build_dir)))
+                           workdir=build_dir))
 
     f.addStep(WarningCountingShellCommand(name='build',
                           command=build_cmd,
