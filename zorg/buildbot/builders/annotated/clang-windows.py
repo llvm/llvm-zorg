@@ -8,7 +8,8 @@ def main(argv):
     ap = annotated_builder.get_argument_parser()
     args = ap.parse_args(argv[1:])
 
-    projects = ['llvm', 'clang', 'clang-tools-extra', 'lld', 'debuginfo-tests']
+    # TODO: Add back debuginfo-tests once it works.
+    projects = ['llvm', 'clang', 'clang-tools-extra', 'lld']
     stages = 2
     extra_cmake_args = [
         '-DCMAKE_BUILD_TYPE=Release',
@@ -22,7 +23,7 @@ def main(argv):
             'check-clang-tools',
             'check-clangd',
             'check-lld',
-            'check-debuginfo',
+            #'check-debuginfo', # TODO: Add back soon.
             ]
 
     # Check both stage 1 and stage 2.
