@@ -12,7 +12,7 @@ import math
 import re
 import xml.etree.ElementTree as ET
 from contextlib import contextmanager
-from urllib2 import urlopen, URLError, HTTPError
+from six.moves import urllib
 
 SERVER = "labmaster2.lab.llvm.org"
 
@@ -43,12 +43,12 @@ def next_section(name):
 
 
 def header(name):
-    print "@@@", name, "@@@"
+    print("@@@", name, "@@@")
 
 
 def footer():
-    print "Completed at: " + time.strftime("%FT%T")
-    print "@@@@@@"
+    print("Completed at: " + time.strftime("%FT%T"))
+    print("@@@@@@")
 
 
 def quote_sh_string(string):
@@ -90,7 +90,7 @@ def delete_module_caches(workspace):
         caches.append(system_cache)
     for cache in caches:
         if (os.path.exists(cache)):
-            print 'Removing module cache: {}'.format(cache)
+            print('Removing module cache: {}'.format(cache))
             shutil.rmtree(cache)
 
 
@@ -452,7 +452,7 @@ def clang_builder(target):
 
         else:
             # Two stage build, via the make files.
-            print 'Stage two compile TBD in near future'
+            print('Stage two compile TBD in near future')
 
     if not conf.device and (target == "test" or target == "all"):
         # Add steps to run the tests.
@@ -734,22 +734,20 @@ def http_download(url, dest):
     Print error and exit if download fails.
     """
     try:
-        print "GETting", url, "to", dest, "...",
-        f = urlopen(url)
+        print("GETting", url, "to", dest, "...")
+        f = urllib.urlopen(url)
         # Open our local file for writing
         with open(dest, "wb") as local_file:
             local_file.write(f.read())
 
-    except HTTPError, e:
-        print
-        print "HTTP Error:", e.code, url
+    except urllib.HTTPError as e:
+        print("HTTP Error:", e.code, url)
         sys.exit(1)
 
-    except URLError, e:
-        print
-        print "URL Error:", e.reason, url
+    except urllib.URLError as e:
+        print("URL Error:", e.reason, url)
         sys.exit(1)
-    print "done."
+    print("done.")
 
 
 def create_builddirs():
@@ -761,7 +759,7 @@ def fetch_compiler():
     url = conf.host_compiler_url + "/" + conf.artifact_url
     header("Fetching Compiler")
     http_download(url, conf.workspace + "/" + local_name)
-    print "Decompressing..."
+    print("Decompressing...")
     if os.path.exists(conf.workspace + "/host-compiler"):
         shutil.rmtree(conf.workspace + "/host-compiler")
     os.mkdir(conf.workspace + "/host-compiler")
@@ -773,7 +771,7 @@ def fetch_compiler():
 def build_upload_artifact():
     """Create artifact for this build, and upload to server."""
     if conf.noupload:
-        print 'Not uploading artificats'
+        print('Not uploading artificats')
         return
     header("Uploading Artifact")
     prop_file = "last_good_build.properties"
@@ -921,7 +919,7 @@ def run_collect_output(cmd, working_dir=None, stderr=None):
     with a context manager in working_dir.
     """
     if os.getenv("TESTING"):
-        print 'TV: ' + ' '.join(cmd)
+        print('TV: ' + ' '.join(cmd))
         return TEST_VALS[' '.join(cmd)]
 
     with cwd(working_dir):
@@ -1031,8 +1029,8 @@ def main():
         elif args.build_type == 'static-analyzer-benchmarks':
             static_analyzer_benchmarks_builder()
     except subprocess.CalledProcessError as exct:
-        print "Command failed", exct.message
-        print "Command:", exct.cmd
+        print('Command failed: {}'.format(exct))
+        print('Command:', exct.cmd)
         sys.exit(1)
 
 
