@@ -155,7 +155,7 @@ def _get_clang_fast_builders():
                       extra_configure_args=["-DLLVM_ENABLE_EXPENSIVE_CHECKS=ON",
                                             "-DLLVM_ENABLE_WERROR=OFF",
                                             "-DCMAKE_BUILD_TYPE=Debug",
-                                            "-DLLVM_LIT_ARGS='-v'"])},
+                                            "'-DLLVM_LIT_ARGS=-vv'"])},
 
         {'name': "llvm-clang-x86_64-expensive-checks-ubuntu",
          'slavenames': ["as-builder-4"],
@@ -167,7 +167,7 @@ def _get_clang_fast_builders():
                                             "-DLLVM_ENABLE_WERROR=OFF",
                                             "-DCMAKE_BUILD_TYPE=Debug",
                                             "-DCMAKE_CXX_FLAGS='-U_GLIBCXX_DEBUG'",
-                                            "-DLLVM_LIT_ARGS='-v -j32'"])},
+                                            "'-DLLVM_LIT_ARGS=-vv -j32'"])},
 
         {'name' : "llvm-clang-x86_64-win-fast",
          'slavenames' : ["as-builder-3"],
@@ -547,7 +547,7 @@ def _get_clang_builders():
          'builddir'      : "clang-x86_64-linux-abi-test",
          'factory'       : ABITestsuitBuilder.getABITestsuitBuildFactory(
                                # TODO: Enable Werror once all the warnings are cleaned.
-                               extra_configure_args = ["-DLLVM_ENABLE_WERROR=OFF"])},
+                               extra_configure_args = ["-DLLVM_ENABLE_WERROR=OFF","-GNinja"])},
 
         {'name' : "clang-hexagon-elf",
          'slavenames' :["hexagon-build-02", "hexagon-build-03"],
