@@ -106,7 +106,7 @@ def getLLDBCMakeBuildFactory(
         "-G", "Ninja",
         "-DCMAKE_BUILD_TYPE=" + config,
         "-DCMAKE_INSTALL_PREFIX=../install",
-        "'-DLLVM_ENABLE_PROJECTS=%s'" % ";".join(f.depends_on_projects),
+        "-DLLVM_ENABLE_PROJECTS=%s" % ";".join(f.depends_on_projects),
         ]
     if python_source_dir:
         cmake_options.append("-DPYTHON_HOME=" + python_source_dir)
