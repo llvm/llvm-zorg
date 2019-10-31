@@ -46,15 +46,9 @@ pipeline {
 
                     cd -
 
-                    export PATH=$PATH:/usr/bin:/usr/local/bin
-
                     python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake build \
                       --assertions \
                       --projects="clang;libcxx;libcxxabi;compiler-rt;lld;lldb;debuginfo-tests"  \
-                      --cmake-flag="-DPYTHON_LIBRARY=/usr/local/Cellar/python/3.7.0/Frameworks/Python.framework/Versions/3.7/lib/libpython3.7.dylib" \
-                      --cmake-flag="-DPYTHON_INCLUDE_DIR=/usr/local/Cellar/python/3.7.0/Frameworks/Python.framework/Versions/3.7/include/python3.7m" \
-                      --cmake-flag="-DPYTHON_LIBRARY_DEBUG=/usr/local/Cellar/python/3.7.0/Frameworks/Python.framework/Versions/3.7/lib/libpython3.7.dylib" \
-                      --cmake-flag="-DPYTHON_EXECUTABLE=/usr/local/Cellar/python/3.7.0/bin/python3.7" \
                       --compiler-flag="-Wdocumentation" \
                       --cmake-type=Release
                     '''
