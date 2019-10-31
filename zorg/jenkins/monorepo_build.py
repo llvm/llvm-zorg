@@ -738,7 +738,7 @@ def http_download(url, dest):
     """
     try:
         print("GETting", url, "to", dest, "...")
-        f = urllib.urlopen(url)
+        f = urllib.request.urlopen(url)
         # Open our local file for writing
         with open(dest, "wb") as local_file:
             local_file.write(f.read())
