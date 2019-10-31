@@ -458,7 +458,7 @@ def getClangCMakeGCSBuildFactory(
                trigger_after_stage1=trigger_after_stage1)
 
 def getClangCMakeBuildFactory(
-            is_legacy_mode=True,
+            is_legacy_mode=False,
             clean=True,
             test=True,
             cmake='cmake',
@@ -508,7 +508,7 @@ def getClangCMakeBuildFactory(
                checkout_test_suite=checkout_test_suite)
 
 def _getClangCMakeBuildFactory(
-            is_legacy_mode=True,
+            is_legacy_mode=False,
             clean=True,
             test=True,
             cmake='cmake',

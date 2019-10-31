@@ -38,7 +38,7 @@ class LLVMBuildFactory(BuildFactory):
             self.depends_on_projects = frozenset(depends_on_projects)
 
         # By default LLVMBuildFactory works in the legacy mode.
-        self.is_legacy_mode = kwargs.pop('is_legacy_mode', True)
+        self.is_legacy_mode = kwargs.pop('is_legacy_mode', False)
 
         # Directories.
         self.llvm_srcdir = kwargs.pop('llvm_srcdir', None)

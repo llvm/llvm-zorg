@@ -27,7 +27,7 @@ def getLLVMBuildFactoryAndPrepareForSourcecodeSteps(
         cleanBuildRequested = cleanBuildRequestedByProperty
 
     # By default UnifiedTreeBuilder works in the legacy mode yet.
-    is_legacy_mode = kwargs.pop('is_legacy_mode', True)
+    is_legacy_mode = kwargs.pop('is_legacy_mode', False)
 
     f = LLVMBuildFactory(
             is_legacy_mode=is_legacy_mode,
