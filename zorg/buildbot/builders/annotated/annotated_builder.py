@@ -280,7 +280,7 @@ class AnnotatedBuilder:
         if extra_cmake_args is None:
             extra_cmake_args = []
         if stage1_extra_cmake_args is None:
-            stage1_extra_cmake_args = extra_cmake_args
+            stage1_extra_cmake_args = list(extra_cmake_args)
         if projects is None:
             projects = ['llvm', 'clang', 'lld']
 
