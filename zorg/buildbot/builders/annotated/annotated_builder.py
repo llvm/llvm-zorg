@@ -296,8 +296,8 @@ class AnnotatedBuilder:
                                         '-DCMAKE_CXX_COMPILER=cl']
 
         cwd = os.getcwd()
-        source_dir = pjoin(cwd, 'llvm-project')
-        build_dir = pjoin(cwd, 'build')
+        source_dir = pjoin(cwd, '../llvm-project')
+        build_dir = cwd
         cmake_args = ['-GNinja', '-DLLVM_ENABLE_PROJECTS=' + ';'.join(projects)]
 
         try:
