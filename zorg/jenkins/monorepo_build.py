@@ -491,6 +491,9 @@ def parse_settings_from_output(working_dir, cmd):
 def lldb_cmake_builder(target, variant=None):
     """Do a CMake build of lldb."""
 
+    if not os.getenv("TESTING"):
+        dep.parse_dependencies([here + "/clang_build_dependencies.dep"])
+
     test_dir = os.path.join(conf.workspace, 'test')
     log_dir = os.path.join(test_dir, 'logs')
     results_file = os.path.join(test_dir, 'results.xml')
