@@ -1,4 +1,4 @@
-#!/usr/bin/python2.7
+#!/usr/bin/env python
 """
 Dependency manager for llvm CI builds.
 
@@ -9,8 +9,8 @@ Developer notes:
 
 - We are trying to keep package dependencies to a minimum in this project. So it
 does not require an installer. It should be able to be run as a stand alone script
-when checked out of VCS. So, don't import anything not in the Python 2.7
-standard library.
+when checked out of VCS. So, don't import anything not in the Python standard
+library.
 
 """
 
@@ -22,11 +22,11 @@ from __future__ import unicode_literals
 import argparse
 import collections
 import json
+import os
 import platform
 import re
 import subprocess
-
-import os
+import sys
 
 try:
     # noinspection PyUnresolvedReferences
@@ -545,7 +545,7 @@ class Pip(Dependency):
         """Verify the packages in pip match this dependency."""
 
         try:
-            pip_version = subprocess.check_output(["/usr/bin/env", "python", "-m", "pip", "--version"])
+            pip_version = subprocess.check_output([sys.argv[1:], "-m", "pip", "--version"])
             pip_tokens = pip_version.split()
             assert pip_tokens[0] == "pip"
             pip_version = Version(pip_tokens[1])
@@ -553,8 +553,11 @@ class Pip(Dependency):
             if pip_version < Version("9.0.0"):
                 raise MissingDependencyError(self, "Version of pip too old.")
 
-            pip_package_config = json.loads(subprocess.check_output(["/usr/bin/env",
-                                                                     "python", "-m", "pip", "list", "--format=json"]))
+            pip_package_config = json.loads(subprocess.check_output([sys.argv[1:],
+                                                                     "-m",
+                                                                     "pip",
+                                                                     "list",
+                                                                     "--format=json"]))
         except (subprocess.CalledProcessError, OSError):
             raise MissingDependencyError(self, "Cannot find pip")
 
