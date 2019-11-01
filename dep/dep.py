@@ -166,7 +166,7 @@ def brew_cmd(command):
     :return:
     """
     assert "--json=v1" in command, "Must pass JSON arg so we can parse the output."
-    out = subprocess.check_output(command)
+    out = subprocess.check_output(command).decode("utf-8")
     brew_info = json.loads(out)
     return brew_info
 
@@ -411,7 +411,7 @@ class Xcode(Dependency):
 
     def verify(self):
         """Verify the installed Xcode matches this dependency."""
-        installed_version_output = subprocess.check_output(['/usr/bin/xcrun', 'xcodebuild', "-version"])
+        installed_version_output = subprocess.check_output(['/usr/bin/xcrun', 'xcodebuild', "-version"]).decode("utf-8")
         installed_version_re = re.compile(r"^Xcode\s(?P<version_text>[\d/.]+)")
         match = installed_version_re.match(installed_version_output)
         if not match:
@@ -467,7 +467,7 @@ class Sdk(Dependency):
 
     def verify(self):
         """Verify the installed Sdk matches this dependency."""
-        installed_version_output = subprocess.check_output(['/usr/bin/xcrun', 'xcodebuild', "-showsdks"])
+        installed_version_output = subprocess.check_output(['/usr/bin/xcrun', 'xcodebuild', "-showsdks"]).decode("utf-8")
         installed_version_re = re.compile(r".*-sdk\s+(?P<sdk_text>\S+)")
 
         matches = [installed_version_re.match(l).groupdict()['sdk_text']
@@ -545,7 +545,7 @@ class Pip(Dependency):
         """Verify the packages in pip match this dependency."""
 
         try:
-            pip_version = subprocess.check_output([sys.argv[1:], "-m", "pip", "--version"])
+            pip_version = subprocess.check_output([sys.argv[1:], "-m", "pip", "--version"]).decode("utf-8")
             pip_tokens = pip_version.split()
             assert pip_tokens[0] == "pip"
             pip_version = Version(pip_tokens[1])
@@ -557,7 +557,7 @@ class Pip(Dependency):
                                                                      "-m",
                                                                      "pip",
                                                                      "list",
-                                                                     "--format=json"]))
+                                                                     "--format=json"]).decode("utf-8"))
         except (subprocess.CalledProcessError, OSError):
             raise MissingDependencyError(self, "Cannot find pip")
 
