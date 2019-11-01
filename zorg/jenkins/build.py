@@ -181,7 +181,7 @@ conf = None  # type: Configuration
 
 def update_svn_checkout(working_dir):
     """Upgrade the svn version.
-    
+
     We always run this upgrade because this
     helps us avoid bot breakage when we
     upgrade Xcode.
@@ -466,7 +466,7 @@ def parse_settings_from_output(working_dir, cmd):
         os.chdir(working_dir)
         assignment_regex = re.compile(r"^\s+([^\s=]+)\s*=\s*(.+)$")
         settings = {}
-        for line in subprocess.check_output(cmd).splitlines(True):
+        for line in subprocess.check_output(cmd).decode("utf-8").splitlines(True):
             match = assignment_regex.match(line)
             if match:
                 settings[match.group(1)] = match.group(2)
@@ -965,7 +965,7 @@ def run_cmd_errors_okay(working_dir, cmd, env=None):
 
 KNOWN_TARGETS = ['all', 'build', 'test', 'testlong']
 KNOWN_BUILDS = ['clang', 'cmake', 'lldb', 'lldb-cmake', 'fetch', 'artifact',
-                'derive', 'derive-llvm+clang', 'derive-llvm+clang+libcxx', 
+                'derive', 'derive-llvm+clang', 'derive-llvm+clang+libcxx',
                 'derive-lldb', 'derive-lldb-cmake',
                 'derive-llvm', 'static-analyzer-benchmarks']
 
@@ -1014,7 +1014,7 @@ def cwd(path):
 
 def run_collect_output(cmd, working_dir=None, stderr=None):
     """Run cmd and then return the output.
-    
+
     If working_dir is supplied the cmd will run in
     with a context manager in working_dir.
     """
@@ -1023,7 +1023,7 @@ def run_collect_output(cmd, working_dir=None, stderr=None):
         return TEST_VALS[' '.join(cmd)]
 
     with cwd(working_dir):
-        return subprocess.check_output(cmd, stderr=stderr)
+        return subprocess.check_output(cmd, stderr=stderr).decode("utf-8")
 
 
 def query_sys_tool(sdk_name, tool_name):

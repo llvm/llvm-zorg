@@ -479,7 +479,7 @@ def parse_settings_from_output(working_dir, cmd):
         os.chdir(working_dir)
         assignment_regex = re.compile(r"^\s+([^\s=]+)\s*=\s*(.+)$")
         settings = {}
-        for line in subprocess.check_output(cmd).splitlines(True):
+        for line in subprocess.check_output(cmd).decode("utf-8").splitlines(True):
             match = assignment_regex.match(line)
             if match:
                 settings[match.group(1)] = match.group(2)
@@ -923,7 +923,7 @@ def run_collect_output(cmd, working_dir=None, stderr=None):
         return TEST_VALS[' '.join(cmd)]
 
     with cwd(working_dir):
-        return subprocess.check_output(cmd, stderr=stderr)
+        return subprocess.check_output(cmd, stderr=stderr).decode("utf-8")
 
 
 def query_sys_tool(sdk_name, tool_name):
