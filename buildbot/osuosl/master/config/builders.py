@@ -22,39 +22,6 @@ from zorg.buildbot.builders import FuchsiaBuilder
 # Plain LLVM builders.
 def _get_llvm_builders():
     return [
-        # We currently have to force LLVM_HOST_TRIPLE and
-        # LLVM_DEFAULT_TARGET_TRIPLE on this system. CMake gets the value
-        # correct for the processor but it's currently not possible to emit O32
-        # code using a mips64-* triple. This is a bug and should be fixed soon.
-        # We must also force LLVM_TARGET_ARCH so that the ExecutionEngine tests
-        # run.
-
-        {'name': "llvm-hexagon-elf",
-         'slavenames':["hexagon-build-02", "hexagon-build-03"],
-         'builddir':"llvm-hexagon-elf",
-         'factory': LLVMBuilder.getLLVMCMakeBuildFactory(
-                        timeout=40, config_name='Release',
-                        jobs=16,
-                        enable_shared=False,
-                        env={'LD_LIBRARY_PATH': '/local/clang+llvm-8.0.0-x86_64-linux-gnu-ubuntu-14.04/lib'},
-                        extra_cmake_args=[
-                          "-G", "Unix Makefiles",
-                          "-DCMAKE_BUILD_TYPE:STRING=Release",
-                          "-DLLVM_TARGETS_TO_BUILD:STRING=Hexagon",
-                          "-DTARGET_TRIPLE:STRING=hexagon-unknown-elf",
-                          "-DLLVM_DEFAULT_TARGET_TRIPLE:STRING=hexagon-unknown-elf",
-                          "-DLLVM_TARGET_ARCH:STRING=hexagon-unknown-elf",
-                          "-DLLVM_BUILD_RUNTIME:BOOL=OFF",
-                          "-DCMAKE_VERBOSE_MAKEFILE:BOOL=ON",
-                          "-DLLVM_ENABLE_PIC:BOOL=ON",
-                          "-DLLVM_ENABLE_ASSERTIONS:BOOL=ON",
-                          "-DLLVM_INCLUDE_TOOLS:BOOL=ON",
-                          "-DLLVM_LIT_ARGS:STRING=-v",
-                          "-DLLVM_ENABLE_LIBCXX:BOOL=ON",
-                          "-DWITH_POLLY:BOOL=OFF",
-                          "-DCMAKE_C_COMPILER:FILEPATH=/local/clang+llvm-8.0.0-x86_64-linux-gnu-ubuntu-14.04/bin/clang",
-                          "-DCMAKE_CXX_COMPILER:FILEPATH=/local/clang+llvm-8.0.0-x86_64-linux-gnu-ubuntu-14.04/bin/clang++"
-                        ])},
         {'name': "llvm-avr-linux",
          'slavenames':["avr-build-01"],
          'builddir':"llvm-avr-linux",
@@ -192,20 +159,6 @@ def _get_clang_fast_builders():
 # Clang builders.
 def _get_clang_builders():
     return [
-        {'name': "clang-atom-d525-fedora-rel",
-         'slavenames':["atom1-buildbot"],
-         'builddir':"clang-atom-d525-fedora-rel",
-         'factory' : ClangBuilder.getClangCMakeBuildFactory(
-                       clean=False,
-                       checkout_compiler_rt=False,
-                       checkout_lld=False,
-                       useTwoStage=False,
-                       stage1_config='Release',
-                       test=True,
-                       testStage1=True,
-                       extra_cmake_args=['-DLLVM_ENABLE_ASSERTIONS=ON',
-                                         '-DLLVM_USE_INTEL_JITEVENTS=TRUE'])},
-
         # Cortex-A15 LNT test-suite in Benchmark mode
         {'name' : "clang-native-arm-lnt-perf",
          'slavenames':["linaro-tk1-02"],
@@ -723,31 +676,11 @@ def _get_clang_builders():
                                         '-DLLVM_HOST_TRIPLE=sparcv9-pc-solaris2.11',
                                         '-DCLANG_DEFAULT_LINKER=/usr/bin/ld',
                                         '-DLLVM_PARALLEL_LINK_JOBS=4'])},
-
-        {'name' : "clang-x64-ninja-win7",
-         'slavenames' : ["windows7-buildbot"],
-         'builddir' : "clang-x64-ninja-win7",
-         'factory' : ClangBuilder.getClangCMakeBuildFactory(
-                        clean=False,
-                        checkout_lld=False,
-                        vs="autodetect",
-                        vs_target_arch='x64',
-                        testStage1=True,
-                        useTwoStage=True,
-                        stage1_config='Release',
-                        stage2_config='Release',
-                        extra_cmake_args=['-DLLVM_ENABLE_ASSERTIONS=ON',
-                                          '-DLLVM_TARGETS_TO_BUILD=X86'])},
     ]
 
 # Polly builders.
 def _get_polly_builders():
     return [
-        {'name': "polly-amd64-linux",
-         'slavenames':["grosser1"],
-         'builddir':"polly-amd64-linux",
-         'factory': PollyBuilder.getPollyBuildFactory(extraCmakeArgs=['-DLLVM_TEMPORARILY_ALLOW_OLD_TOOLCHAIN=ON'])},
-
         {'name': "polly-arm-linux",
          'slavenames': ["hexagon-build-02", "hexagon-build-03"],
          'builddir': "polly-arm-linux",
