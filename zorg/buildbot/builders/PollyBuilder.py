@@ -8,6 +8,7 @@ from buildbot.process.properties import WithProperties
 
 from zorg.buildbot.builders import LNTBuilder
 from zorg.buildbot.builders import ClangBuilder
+from zorg.buildbot.process.factory import LLVMBuildFactory
 
 def getPollyBuildFactory(
     clean=False,
@@ -16,12 +17,14 @@ def getPollyBuildFactory(
     jobs=None,
     checkAll=False,
     env=None,
-    extraCmakeArgs=[]):
+    extraCmakeArgs=None,
+    **kwargs):
+
+    if extraCmakeArgs is None:
+        extraCmakeArgs=[],
     llvm_srcdir = "llvm.src"
     llvm_objdir = "llvm.obj"
     llvm_instdir = "llvm.inst"
-    polly_srcdir = '%s/tools/polly' % llvm_srcdir
-    clang_srcdir = '%s/tools/clang' % llvm_srcdir
     jobs_cmd = []
     if jobs is not None:
         jobs_cmd = ["-j"+str(jobs)]
@@ -39,51 +42,47 @@ def getPollyBuildFactory(
     if env:
         merged_env.update(env)  # Overwrite pre-set items with the given ones, so user can set anything.
 
-    f = buildbot.process.factory.BuildFactory()
-    # Determine the build directory.
-    f.addStep(buildbot.steps.shell.SetProperty(name="get_builddir",
-                                               command=["pwd"],
-                                               property="builddir",
-                                               description="set build dir",
-                                               workdir="."))
-    # Get LLVM, Clang and Polly
-    f.addStep(SVN(name='svn-llvm',
-                  mode='update',
-                  baseURL='http://llvm.org/svn/llvm-project/llvm/',
-                  defaultBranch='trunk',
-                  workdir=llvm_srcdir))
-    f.addStep(SVN(name='svn-clang',
-                  mode='update',
-                  baseURL='http://llvm.org/svn/llvm-project/cfe/',
-                  defaultBranch='trunk',
-                  workdir=clang_srcdir))
-    f.addStep(SVN(name='svn-polly',
-                  mode='update',
-                  baseURL='http://llvm.org/svn/llvm-project/polly/',
-                  defaultBranch='trunk',
-                  workdir=polly_srcdir))
+    depends_on_projects = ['llvm','clang','polly']
+
+    cleanBuildRequestedByProperty = lambda step: step.build.getProperty("clean", False)
+    cleanBuildRequested = lambda step: clean or step.build.getProperty("clean", default=step.build.getProperty("clean_obj"))
+
+    f = LLVMBuildFactory(
+            depends_on_projects=depends_on_projects,
+            llvm_srcdir=llvm_srcdir,
+            obj_dir=llvm_objdir,
+            install_dir=llvm_instdir,
+            cleanBuildRequested=cleanBuildRequested,
+            **kwargs) # Pass through all the extra arguments.
+
+    f.addStep(ShellCommand(name='clean-src-dir',
+                           command=['rm', '-rf', f.monorepo_dir],
+                           warnOnFailure=True,
+                           description=["clean src dir"],
+                           workdir='.',
+                           env=merged_env,
+                           doStepIf=cleanBuildRequestedByProperty))
+
+    # Get the source code.
+    f.addGetSourcecodeSteps(**kwargs)
 
     # Clean build dir
-    if clean:
-        f.addStep(ShellCommand(name='clean-build-dir',
-                               command=['rm', '-rf', llvm_objdir],
-                               warnOnFailure=True,
-                               description=["clean build dir"],
-                               workdir='.',
-                               env=merged_env))
+    f.addStep(ShellCommand(name='clean-build-dir',
+                           command=['rm', '-rf', llvm_objdir],
+                           warnOnFailure=True,
+                           description=["clean build dir"],
+                           workdir='.',
+                           env=merged_env,
+                           doStepIf=cleanBuildRequested))
 
     # Create configuration files with cmake
-    f.addStep(ShellCommand(name="create-build-dir",
-                           command=["mkdir", "-p", llvm_objdir],
-                           haltOnFailure=False,
-                           description=["create build dir"],
-                           workdir=".",
-                           env=merged_env))
-    cmakeCommand = ["cmake", "../%s" %llvm_srcdir,
+    cmakeCommand = ["cmake", "../%s/llvm" % llvm_srcdir,
                     "-DCMAKE_COLOR_MAKEFILE=OFF",
                     "-DPOLLY_TEST_DISABLE_BAR=ON",
                     "-DPOLLY_ENABLE_GPGPU_CODEGEN=ON",
-                    "-DCMAKE_BUILD_TYPE=Release"] + cmake_install + extraCmakeArgs
+                    "-DCMAKE_BUILD_TYPE=Release",
+                    "-DLLVM_ENABLE_PROJECTS=%s" % ";".join(f.depends_on_projects),
+                   ] + cmake_install + extraCmakeArgs
     f.addStep(ShellCommand(name="cmake-configure",
                            command=cmakeCommand,
                            haltOnFailure=False,
@@ -100,16 +99,15 @@ def getPollyBuildFactory(
                            env=merged_env))
 
     # Clean install dir
-    if install and clean:
+    if install:
         f.addStep(ShellCommand(name='clean-install-dir',
                                command=['rm', '-rf', llvm_instdir],
                                haltOnFailure=False,
                                description=["clean install dir"],
                                workdir='.',
-                               env=merged_env))
+                               env=merged_env,
+                               doStepIf=cleanBuildRequested))
 
-    # Install
-    if install:
         f.addStep(ShellCommand(name="install",
                                command=install_cmd,
                                haltOnFailure=False,
@@ -135,6 +133,7 @@ def getPollyBuildFactory(
 
     return f
 
+# DEPRECATED: PollyBuilder.AddExternalPollyBuildFactory has been deprecated and will be removed soon.
 def AddExternalPollyBuildFactory(f, llvm_installdir, build_type = "Release"):
     polly_srcdir = 'polly.src'
     polly_objdir = 'polly.obj'
@@ -187,6 +186,7 @@ def AddExternalPollyBuildFactory(f, llvm_installdir, build_type = "Release"):
                            description=["install polly"],
                            workdir=polly_objdir))
 
+# DEPRECATED: PollyBuilder.getPollyLNTFactory has been deprecated and will be removed soon.
 def getPollyLNTFactory(triple, nt_flags, xfails=[], clean=False, test=False,
                        build_type="Release", extra_cmake_args=[], **kwargs):
     lnt_args = {}
