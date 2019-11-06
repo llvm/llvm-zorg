@@ -854,7 +854,7 @@ def run_cmd(working_dir, cmd, env=None, sudo=False, err_okay=False):
             subprocess.check_call(cmd)
             os.chdir(old_cwd)
         except subprocess.CalledProcessError as excpt:
-            if not err_okay and not ignore_errors_override::
+            if not err_okay and not ignore_errors_override:
                 raise excpt
             else:
                 logging.info("Ignoring failed command.")
