@@ -11,6 +11,8 @@ def getFactory(
         checks = None,
         clean = False,
         extra_configure_args = None,
+        llvm_srcdir = None,
+        obj_dir = None,
         env = None,
         **kwargs):
 
@@ -37,15 +39,22 @@ def getFactory(
 
     # Some options are required for this build no matter what.
     CmakeCommand.applyRequiredOptions(cmake_args, [
-        ('-G', 'Ninja'),
         ('-DLLVM_OPTIMIZED_TABLEGEN=', 'OFF'),
         ('-DLLVM_BUILD_STATIC=',       'ON'),
         ('-DLLVM_ENABLE_PIC=',         'OFF'),
         ])
 
+    # Set proper defaults.
+    CmakeCommand.applyDefaultOptions(cmake_args, [
+        ('-G', 'Ninja'),
+        ('-DLLVM_LIT_ARGS=', '-v -vv'),
+        ])
+
     f = UnifiedTreeBuilder.getCmakeBuildFactory(
             depends_on_projects=depends_on_projects,
             clean=clean,
+            llvm_srcdir=llvm_srcdir,
+            obj_dir=obj_dir,
             extra_configure_args=cmake_args,
             env=merged_env,
             **kwargs) # Pass through all the extra arguments.
@@ -93,10 +102,10 @@ def getFactory(
                 "test", "suite",
                 ],
             command=[
-                "cp", "-aL", "./bin/ld.lld", "../lld-speed-test/ld.lld"
+                "cp", "-aL", "./%s/bin/ld.lld" % f.obj_dir, "./lld-speed-test/ld.lld"
                 ],
-            workdir=f.obj_dir,
-            env=merged_env
+            env=merged_env,
+            workdir='.'
         )
     )
 
