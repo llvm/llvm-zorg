@@ -112,7 +112,7 @@ def addCmakeSteps(
               ))
 
     if not f.is_legacy_mode:
-        CmakeCommand.applyRequiredOptions(cmake_args, [
+        CmakeCommand.applyDefaultOptions(cmake_args, [
             ('-DLLVM_ENABLE_PROJECTS=', ";".join(f.depends_on_projects)),
             ])
 
@@ -151,6 +151,7 @@ def addCmakeSteps(
     src_dir = LLVMBuildFactory.pathRelativeToBuild(f.llvm_srcdir, obj_dir)
 
     f.addStep(CmakeCommand(name=step_name,
+                           haltOnFailure=True,
                            description=["Cmake", "configure", stage_name],
                            options=cmake_args,
                            path=src_dir,
@@ -184,6 +185,7 @@ def addNinjaSteps(
         obj_dir = f.obj_dir
 
     f.addStep(NinjaCommand(name="build-%sunified-tree" % step_name,
+                           haltOnFailure=True,
                            targets=targets,
                            description=["Build", stage_name, "unified", "tree"],
                            env=env,
@@ -192,10 +194,13 @@ def addNinjaSteps(
                            ))
 
     # Test just built components if requested.
-    if checks:
-      f.addStep(NinjaCommand(name="test-%s%s" % (step_name,"-".join(checks)),
-                             targets=checks,
-                             description=["Test", "just", "built", "components"],
+    for check in checks:
+      f.addStep(NinjaCommand(name="test-%s%s" % (step_name, check),
+                             targets=[check],
+                             description=[
+                                 "Test", "just", "built", "components", "for",
+                                 check,
+                                 ],
                              env=env,
                              workdir=obj_dir,
                              **kwargs # Pass through all the extra arguments.
