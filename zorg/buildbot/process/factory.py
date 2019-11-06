@@ -58,8 +58,7 @@ class LLVMBuildFactory(BuildFactory):
             self.llvm_srcdir = \
                 "%(monorepo_dir)s/llvm" % {'monorepo_dir' : self.monorepo_dir}
             self.obj_dir = \
-                self.obj_dir or \
-                "%(monorepo_dir)s/build" % {'monorepo_dir' : self.monorepo_dir}
+                self.obj_dir or "build"
 
             # Repourl_prefix could be specified per builder. Otherwise we use github.
             self.repourl_prefix = kwargs.pop('repourl_prefix', 'https://github.com/llvm/')
