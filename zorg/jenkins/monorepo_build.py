@@ -598,7 +598,7 @@ def lldb_cmake_builder(target, variant=None):
 
     for test_target in conf.cmake_test_targets:
         header("Run Custom Test: {0}".format(test_target))
-        run_cmd(conf.lldbbuilddir(), [NINJA, '-k', '0', '-v', test_target], err_okay=True)
+        run_cmd(conf.lldbbuilddir(), [NINJA, '-k', '0', '-v', test_target])
         footer()
 
 
@@ -847,13 +847,14 @@ def run_cmd(working_dir, cmd, env=None, sudo=False, err_okay=False):
     sys.stdout.flush()
     return_code = 0
     start_time = datetime.datetime.now()
+    ignore_errors_override = os.environ.get('IGNORE_ERRORS_OVERRIDE', False)
     if not os.environ.get('TESTING', False):
         try:
             os.chdir(working_dir)
             subprocess.check_call(cmd)
             os.chdir(old_cwd)
         except subprocess.CalledProcessError as excpt:
-            if not err_okay:
+            if not err_okay and not ignore_errors_override::
                 raise excpt
             else:
                 logging.info("Ignoring failed command.")
