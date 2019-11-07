@@ -140,14 +140,14 @@ echo @@@BUILD_STEP lint@@@
 CHECK_LINT=${COMPILER_RT}/lib/sanitizer_common/scripts/check_lint.sh
 ${CHECK_LINT} || echo @@@STEP_WARNINGS@@@
 
-# Use both gcc and just-built Clang as a host compiler for sanitizer tests.
-# Assume that self-hosted build tree should compile with -Werror.
+# Use both gcc and just-built Clang/LLD as a host compiler/linker for sanitizer
+# tests. Assume that self-hosted build tree should compile with -Werror.
 echo @@@BUILD_STEP build fresh clang@@@
 if [ ! -d clang_build ]; then
   mkdir clang_build
 fi
 (cd clang_build && cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo ${CMAKE_COMMON_OPTIONS} $LLVM) || echo @@@STEP_FAILURE@@@
-(cd clang_build && make clang -j$MAKE_JOBS) || (echo @@@STEP_FAILURE@@@ ; exit 1) || echo @@@STEP_FAILURE@@@
+(cd clang_build && make clang lld -j$MAKE_JOBS) || (echo @@@STEP_FAILURE@@@ ; exit 1) || echo @@@STEP_FAILURE@@@
 
 # If we're building with libcxx, install the headers to clang_build/include.
 if [ ! -z ${ENABLE_LIBCXX_FLAG} ]; then
