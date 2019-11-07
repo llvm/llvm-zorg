@@ -142,7 +142,7 @@ ${CHECK_LINT} || echo @@@STEP_WARNINGS@@@
 
 # Use both gcc and just-built Clang/LLD as a host compiler/linker for sanitizer
 # tests. Assume that self-hosted build tree should compile with -Werror.
-echo @@@BUILD_STEP build fresh clang (and maybe lld)@@@
+echo @@@BUILD_STEP build fresh toolchain@@@
 if [ ! -d clang_build ]; then
   mkdir clang_build
 fi
