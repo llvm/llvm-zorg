@@ -1248,7 +1248,7 @@ def _get_toolchain_builders():
           {'name': "fuchsia-x86_64-linux",
            'slavenames' :["fuchsia-debian-64-us-central1-a-1", "fuchsia-debian-64-us-central1-b-1"],
            'builddir': "fuchsia-x86_64-linux",
-           'factory': FuchsiaBuilder.getToolchainBuildFactory(),
+           'factory': FuchsiaBuilder.getFuchsiaToolchainBuildFactory(),
            'category': 'fuchsia'},
           {'name': "netbsd-amd64",
            'slavenames': ["netbsd-amd64"],

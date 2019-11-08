@@ -3,18 +3,17 @@ import platform
 from buildbot.process.properties import WithProperties
 from buildbot.steps.shell import ShellCommand
 from buildbot.steps.slave import RemoveDirectory
-from buildbot.steps.source import SVN
 
+from zorg.buildbot.builders import UnifiedTreeBuilder
 from zorg.buildbot.commands.CmakeCommand import CmakeCommand
 from zorg.buildbot.commands.NinjaCommand import NinjaCommand
 from zorg.buildbot.conditions.FileConditions import FileDoesNotExist
-from zorg.buildbot.process.factory import LLVMBuildFactory, svn_repos
 
-def getToolchainBuildFactory(
-        clean=False,
+def getFuchsiaToolchainBuildFactory(
         test=True,
         env=None, # Environmental variables for all steps.
-        extra_configure_args=None):
+        extra_configure_args=None,
+        **kwargs):
     # Prepare environmental variables. Set here all env we want everywhere.
     merged_env = {
         "TERM" : "dumb", # Make sure Clang doesn't use color escape sequences.
@@ -27,7 +26,7 @@ def getToolchainBuildFactory(
     obj_dir = "llvm.obj"
     install_dir = "llvm.install"
 
-    f = LLVMBuildFactory(
+    f = UnifiedTreeBuilder.getLLVMBuildFactoryAndSourcecodeSteps(
             depends_on_projects=[
                 "llvm",
                 "clang",
@@ -37,7 +36,11 @@ def getToolchainBuildFactory(
                 "libcxxabi",
                 "libunwind",
                 "lld"
-            ])
+            ],
+            llvm_srcdir=src_dir,
+            obj_dir=_obj_dir,
+            install_dir=install_dir,
+            **kwargs) # Pass through all the extra arguments.
 
     # Get Fuchsia SDK.
     sdk_dir = "fuchsia.sdk"
@@ -67,26 +70,16 @@ def getToolchainBuildFactory(
                            description=["extract", "fuchsia sdk"],
                            workdir=sdk_dir))
 
-    cleanCheckoutRequested = lambda step: step.build.getProperty("clean", default=False) or clean
-
-    # Clean up llvm sources.
-    f.addStep(RemoveDirectory(name="clean-llvm.src",
-                              dir=src_dir,
-                              haltOnFailure=True,
-                              doStepIf=cleanCheckoutRequested))
-
-    # Get sources.
-    for project in f.depends_on_projects:
-        _, baseURL = svn_repos[project]
-        f.addStep(SVN(name="svn-%s" % project,
-                      workdir=src_dir + "/" + project,
-                      baseURL=baseURL))
-
-    cleanBuildRequested = lambda step: step.build.getProperty("clean", default=step.build.getProperty("clean_obj")) or clean
+    cleanBuildRequested = lambda step: step.build.getProperty("clean", default=True)
 
     # Clean up llvm build.
     f.addStep(RemoveDirectory(name="clean-llvm.obj",
                               dir=obj_dir,
+                              haltOnFailure=True,
+                              doStepIf=cleanBuildRequested))
+
+    f.addStep(RemoveDirectory(name="clean-llvm.install",
+                              dir=install_dir,
                               haltOnFailure=True,
                               doStepIf=cleanBuildRequested))
 
