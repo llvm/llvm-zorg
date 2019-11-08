@@ -33,7 +33,7 @@ def getLibcxxAndAbiBuilder(f=None, env=None, additional_features=None,
         lit_extra_args = []
 
     if depends_on_projects is None:
-        depends_on_projects = ['llvm','libcxx','libcxxabi','libunwind']
+        depends_on_projects = ['libcxx','libcxxabi','libunwind']
 
     src_root = 'llvm'
     build_path = 'build'
