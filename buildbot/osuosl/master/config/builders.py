@@ -799,7 +799,7 @@ def _get_lldb_builders():
          'factory': LLDBBuilder.getLLDBCMakeBuildFactory(
                     test=True,
                     extra_cmake_args=['-DLLVM_ENABLE_ASSERTIONS=True',
-                                      "'-DLLVM_LIT_ARGS=-vv --threads=8 --timeout=200'",
+                                      '-DLLVM_LIT_ARGS="-v --threads=8"',
                                       '-DLLVM_USE_LINKER=gold',
                                       '-DCMAKE_C_COMPILER=clang',
                                       '-DCMAKE_CXX_COMPILER=clang++'])},
@@ -810,7 +810,7 @@ def _get_lldb_builders():
          'factory': LLDBBuilder.getLLDBCMakeBuildFactory(
                     test=True,
                     extra_cmake_args=['-DLLVM_ENABLE_ASSERTIONS=True',
-                                      "'-DLLVM_LIT_ARGS=-vv --threads=8 --timeout=200'",
+                                      '-DLLVM_LIT_ARGS="-v --threads=8"',
                                       '-DLLVM_USE_LINKER=gold',
                                       '-DCMAKE_C_COMPILER=clang',
                                       '-DCMAKE_CXX_COMPILER=clang++'])},
