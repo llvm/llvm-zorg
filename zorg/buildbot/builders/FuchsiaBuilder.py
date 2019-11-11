@@ -38,7 +38,7 @@ def getFuchsiaToolchainBuildFactory(
                 "lld"
             ],
             llvm_srcdir=src_dir,
-            obj_dir=_obj_dir,
+            obj_dir=obj_dir,
             install_dir=install_dir,
             **kwargs) # Pass through all the extra arguments.
 
