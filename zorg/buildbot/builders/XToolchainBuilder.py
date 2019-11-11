@@ -180,7 +180,7 @@ def getCmakeWithMSVCBuildFactory(
             LitTestCommand(
                 haltOnFailure=False, # We want to test as much as we could.
                 name='test-%s' % check,
-                command=["ninja", "%e [%u/%r/%f]", WithProperties(check)],
+                command=["ninja", WithProperties(check)],
                 description=[
                     "Testing", "just", "built", "components", "for", check],
                 descriptionDone=[
