@@ -18,6 +18,7 @@ from zorg.buildbot.builders import AOSPBuilder
 from zorg.buildbot.builders import AnnotatedBuilder
 from zorg.buildbot.builders import LLDPerformanceTestsuite
 from zorg.buildbot.builders import FuchsiaBuilder
+from zorg.buildbot.builders import XToolchainBuilder
 
 # Plain LLVM builders.
 def _get_llvm_builders():
@@ -154,6 +155,34 @@ def _get_clang_fast_builders():
                         "-DLLVM_ENABLE_ASSERTIONS=OFF",
                         "-DLLVM_OPTIMIZED_TABLEGEN=OFF",
                         "-DLLVM_LIT_ARGS='-v --threads=32'"])},
+
+        {'name' : "llvm-clang-win-x-armv7l",
+         'slavenames' : ["as-builder-1"],
+         'builddir' : "llvm-clang-win-x-armv7l",
+         'mergeRequests': False,
+         'factory': XToolchainBuilder.getCmakeWithMSVCBuildFactory(
+                      vs="autodetect",
+                      clean=True,
+                      extra_configure_args=[
+                        "-DDEFAULT_SYSROOT=C:/buildbot/.arm-ubuntu",
+                        "-DLLVM_LIT_ARGS=-v -vv --threads=32",
+                      ],
+                      cmake_cache="../llvm-project/clang/cmake/caches/CrossWinToARMLinux.cmake")},
+
+        {'name' : "llvm-clang-win-x-aarch64",
+         'slavenames' : ["as-builder-2"],
+         'builddir' : "llvm-clang-win-x-aarch64",
+         'mergeRequests': False,
+         'factory': XToolchainBuilder.getCmakeWithMSVCBuildFactory(
+                      vs="autodetect",
+                      clean=True,
+                      extra_configure_args=[
+                        "-DLLVM_TARGETS_TO_BUILD=AArch64",
+                        "-DCMAKE_C_COMPILER_TARGET=aarch64-linux-gnu",
+                        "-DDEFAULT_SYSROOT=C:/buildbot/.aarch64-ubuntu",
+                        "-DLLVM_LIT_ARGS=-v -vv --threads=32",
+                      ],
+                      cmake_cache="../llvm-project/clang/cmake/caches/CrossWinToARMLinux.cmake")},
     ]
 
 # Clang builders.
