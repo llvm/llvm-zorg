@@ -23,37 +23,6 @@ from zorg.buildbot.builders import XToolchainBuilder
 # Plain LLVM builders.
 def _get_llvm_builders():
     return [
-        {'name': "llvm-avr-linux",
-         'slavenames':["avr-build-01"],
-         'builddir':"llvm-avr-linux",
-         'factory': LLVMBuilder.getLLVMCMakeBuildFactory(
-                        timeout=40, config_name='Release',
-                        enable_shared=True,
-                        extra_cmake_args=[
-                          "-G", "Unix Makefiles",
-                          "-DCMAKE_BUILD_TYPE:STRING=Release",
-                          # We need to compile the X86 backend due to a few generic CodeGen tests.
-                          "-DLLVM_TARGETS_TO_BUILD:STRING=AVR;X86",
-                          "-DLLVM_EXPERIMENTAL_TARGETS_TO_BUILD:STRING=AVR",
-                          "-DBUILD_SHARED_LIBS=ON",
-                        ])},
-        {'name': "llvm-riscv-linux",
-         'slavenames':["riscv-build-01"],
-         'builddir':"llvm-riscv-linux",
-         'factory': LLVMBuilder.getLLVMCMakeBuildFactory(
-                        timeout=40, config_name='Release',
-                        enable_shared=True,
-                        extra_cmake_args=[
-                          "-G", "Unix Makefiles",
-                          "-DCMAKE_BUILD_TYPE:STRING=Release",
-                          # We need to compile the X86 backend due to a few generic CodeGen tests.
-                          "-DLLVM_TARGETS_TO_BUILD:STRING=RISCV;X86",
-                          "-DLLVM_EXPERIMENTAL_TARGETS_TO_BUILD:STRING=RISCV",
-                          "-DBUILD_SHARED_LIBS=ON",
-                          "-DCMAKE_C_COMPILER='clang'",
-                          "-DCMAKE_CXX_COMPILER='clang++'",
-                          "-DLLVM_ENABLE_LLD=True",
-                        ])}
         ]
 
 # Clang fast builders.
@@ -558,15 +527,6 @@ def _get_clang_builders():
               "-DPOLLY_BUILD_SHARED_LIB:BOOL=OFF",
               "-DCMAKE_C_COMPILER:FILEPATH=/local/clang+llvm-8.0.0-x86_64-linux-gnu-ubuntu-14.04/bin/clang",
               "-DCMAKE_CXX_COMPILER:FILEPATH=/local/clang+llvm-8.0.0-x86_64-linux-gnu-ubuntu-14.04/bin/clang++"])},
-
-        {'name' : "clang-freebsd11-amd64",
-         'slavenames' : ["freebsd11-amd64"],
-         'builddir' : "clang-freebsd11-amd64",
-         'factory': ClangBuilder.getClangCMakeBuildFactory(
-                       checkout_lld=False,
-                       clean=True,
-                       extra_cmake_args=['-DLLVM_ENABLE_ASSERTIONS=ON',
-                                         '-DCMAKE_BUILD_TYPE:STRING=Release'])},
 
         ## X86_64 AVX2 Clang+LLVM check-all + test-suite
         {'name': "clang-cmake-x86_64-avx2-linux",
