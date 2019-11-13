@@ -6,7 +6,6 @@ from buildbot.interfaces import IRenderable
 from buildbot.process.properties import WithProperties
 from zope.interface import implements
 
-
 class InterpolateToNativePath(WithProperties):
     """
     This is a marker class, used to indicate that we
@@ -57,9 +56,9 @@ class InterpolateToPosixPath(WithProperties):
             # change the path meaning if links used.
             p = slave.path_module.normcase(p)
         elif slave.slave_system in ('win32', 'nt'):
-            # Normalize the path first, then replace
+            # Preserve the case, only replace
             # the path separator to the POSIX one.
-            p = slave.path_module.normcase(p).replace('\\','/')
+            p = p.replace('\\','/')
         else:
             # Return the string as is.
             pass
