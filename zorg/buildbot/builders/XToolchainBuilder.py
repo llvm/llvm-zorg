@@ -1,6 +1,7 @@
 from buildbot.steps.shell import ShellCommand, SetProperty
 from buildbot.process.properties import WithProperties, Property
 
+from zorg.buildbot.process.properties import InterpolateToPosixPath
 from zorg.buildbot.commands.CmakeCommand   import CmakeCommand
 from zorg.buildbot.commands.NinjaCommand   import NinjaCommand
 from zorg.buildbot.commands.LitTestCommand import LitTestCommand
@@ -119,7 +120,7 @@ def getCmakeWithMSVCBuildFactory(
 
     # Since this is a build of a cross toolchain, we build only the host-side
     # tools first by the host system compiler. Libraries will be cross-compiled.
-    cmake_args.append(WithProperties(
+    cmake_args.append(InterpolateToPosixPath(
         '-DLLVM_AR=%(workdir)s/' + f.obj_dir + '/bin/llvm-ar.exe')),
 
     CmakeCommand.applyDefaultOptions(cmake_args, [
