@@ -157,6 +157,20 @@ def _get_clang_fast_builders():
 # Clang builders.
 def _get_clang_builders():
     return [
+        {'name': "clang-atom-d525-fedora-rel",
+         'slavenames':["atom1-buildbot"],
+         'builddir':"clang-atom-d525-fedora-rel",
+         'factory' : ClangBuilder.getClangCMakeBuildFactory(
+                       clean=False,
+                       checkout_compiler_rt=False,
+                       checkout_lld=False,
+                       useTwoStage=False,
+                       stage1_config='Release',
+                       test=True,
+                       testStage1=True,
+                       extra_cmake_args=['-DLLVM_ENABLE_ASSERTIONS=ON',
+                                         '-DLLVM_USE_INTEL_JITEVENTS=TRUE'])},
+
         # Cortex-A15 LNT test-suite in Benchmark mode
         {'name' : "clang-native-arm-lnt-perf",
          'slavenames':["linaro-tk1-02"],
@@ -665,6 +679,21 @@ def _get_clang_builders():
                                         '-DLLVM_HOST_TRIPLE=sparcv9-pc-solaris2.11',
                                         '-DCLANG_DEFAULT_LINKER=/usr/bin/ld',
                                         '-DLLVM_PARALLEL_LINK_JOBS=4'])},
+
+        {'name' : "clang-x64-ninja-win7",
+         'slavenames' : ["windows7-buildbot"],
+         'builddir' : "clang-x64-ninja-win7",
+         'factory' : ClangBuilder.getClangCMakeBuildFactory(
+                        clean=False,
+                        checkout_lld=False,
+                        vs="autodetect",
+                        vs_target_arch='x64',
+                        testStage1=True,
+                        useTwoStage=True,
+                        stage1_config='Release',
+                        stage2_config='Release',
+                        extra_cmake_args=['-DLLVM_ENABLE_ASSERTIONS=ON',
+                                          '-DLLVM_TARGETS_TO_BUILD=X86'])},
     ]
 
 # Polly builders.

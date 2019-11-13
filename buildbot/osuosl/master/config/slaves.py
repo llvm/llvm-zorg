@@ -58,6 +58,9 @@ def get_build_slaves():
         # AArch64 build cache slave
         create_slave("packet-linux-aarch64-slave-1", properties={'jobs' : 64}, max_builds=1),
 
+        # Intel(R) Atom(TM) CPU D525 @ 1.8GHz, Fedora x86_64
+        create_slave("atom1-buildbot", properties={'jobs': 2}, max_builds=1),
+
         # Windows Server 2016 Intel Xeon(R) Quad 2.30 GHz, 56GB of RAM
         create_slave("win-py3-buildbot", properties={'jobs' : 64}, max_builds=1),
 
@@ -196,4 +199,7 @@ def get_build_slaves():
         # Solaris 11
         create_slave("solaris11-amd64", properties={'jobs' : 8}, max_builds=1),
         create_slave("solaris11-sparcv9", properties={'jobs' : 8}, max_builds=1),
+
+        # Windows 7 Intel(R) Core(TM) CPU i7-4790K (4.00GHz), 16GB of RAM
+        create_slave("windows7-buildbot", properties={'jobs': 2}, max_builds=1),
         ]

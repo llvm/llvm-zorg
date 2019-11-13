@@ -83,6 +83,15 @@ def get_status_targets(standard_builders, standard_categories=None):
         InformativeMailNotifier(
             fromaddr = "llvm.buildmaster@lab.llvm.org",
             sendToInterestedUsers= False,
+            extraRecipients = ["mstester.llvm@gmail.com"],
+            subject="Build %(builder)s Failure",
+            mode = "failing",
+            builders = ["clang-atom-d525-fedora-rel", "clang-x64-ninja-win7"],
+            addLogs=False,
+            num_lines = 15),
+        InformativeMailNotifier(
+            fromaddr = "llvm.buildmaster@lab.llvm.org",
+            sendToInterestedUsers= False,
             extraRecipients = ["llvm.buildmaster@quicinc.com"],
             subject="Build %(builder)s Failure",
             mode = "failing",
