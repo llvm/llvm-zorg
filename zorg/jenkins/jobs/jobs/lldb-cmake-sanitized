@@ -66,7 +66,7 @@ pipeline {
                     rm -rf test/results.xml
 
                     # Running too many asanified threads is too stressful for the kernel and we get >90% system time.
-                    export MAX_PARALLEL_TESTS=$(sysctl hw.physicalcpu |awk '{print $2}')
+                    export MAX_PARALLEL_TESTS=$(sysctl hw.physicalcpu |awk '{print int(($2+1)/2)}')
 
                     python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-sanitized test
                     '''
