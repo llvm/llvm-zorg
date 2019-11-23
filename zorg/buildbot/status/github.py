@@ -201,7 +201,7 @@ class GitHubStatus(StatusReceiverMultiService):
         state = _getGitHubState(results)
         startTime, endTime = build.getTimes()
         duration = _human_readable_delta(startTime, endTime)
-        description = build.render(self._endDescription or '%s' % builderName)
+        description = build.render(self._endDescription or 'Elapsed %s.' % duration)
 
         status.update({
             'state': state,
@@ -253,7 +253,7 @@ class GitHubStatus(StatusReceiverMultiService):
             state=status['state'].encode('utf-8'),
             target_url=status['targetURL'].encode('utf-8'),
             description=status['description'].encode('utf-8'),
-            context='buildbot',
+            context=status['builderName'].encode('utf-8'),
         )
 
         success_message = (
@@ -267,4 +267,3 @@ class GitHubStatus(StatusReceiverMultiService):
         d.addCallback(lambda result: log.msg(success_message))
         d.addErrback(lambda failure: log.err(failure, error_message))
         return d
-
