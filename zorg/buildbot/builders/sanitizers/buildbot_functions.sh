@@ -11,15 +11,6 @@ function stage1_clobber {
 }
 
 function clobber {
-  # Clobber if USE_GIT was changed
-  local clobber_if_exists=llvm-project
-  if [[ "$USE_GIT" != "0" ]]; then
-    clobber_if_exists=llvm
-  fi
-  if [[ -d $clobber_if_exists ]]; then
-    BUILDBOT_CLOBBER=1
-  fi
-
   if [ "$BUILDBOT_CLOBBER" != "" ]; then
     echo @@@BUILD_STEP clobber@@@
     rm -rf svn_checkout llvm llvm-project llvm_build0 ${CLOBBER:-}
@@ -70,10 +61,9 @@ function get_sources {
 
 function buildbot_update {
     echo @@@BUILD_STEP update $BUILDBOT_REVISION@@@
-    if [[ "$USE_GIT" != "0" ]]; then
-      buildbot_update_git
-      return
-    fi
+    buildbot_update_git
+    return
+
     if [[ -d "$BUILDBOT_MONO_REPO_PATH" ]]; then
       BUILDBOT_REVISION="-"
     else
@@ -236,9 +226,7 @@ function common_stage1_variables {
 function build_stage1_clang_impl {
   mkdir -p ${STAGE1_DIR}
   local cmake_stage1_options="${CMAKE_COMMON_OPTIONS}"
-  if [[ "$USE_GIT" != "0" ]]; then
-    cmake_stage1_options="${cmake_stage1_options} -DLLVM_ENABLE_PROJECTS='clang;compiler-rt;lld'"
-  fi
+  cmake_stage1_options="${cmake_stage1_options} -DLLVM_ENABLE_PROJECTS='clang;compiler-rt;lld'"
   (cd ${STAGE1_DIR} && cmake ${cmake_stage1_options} $LLVM && \
     ninja clang lld compiler-rt llvm-symbolizer)
 }
@@ -319,10 +307,7 @@ function build_stage2 {
        "$sanitizer_name" != "ubsan" ]; then
     echo @@@BUILD_STEP build libcxx/$sanitizer_name@@@
     mkdir -p ${libcxx_build_dir}
-    local cmake_stage2_libcxx_options=
-    if [[ "$USE_GIT" != "0" ]]; then
-      cmake_stage2_libcxx_options="-DLLVM_ENABLE_PROJECTS='libcxx;libcxxabi'"
-    fi
+    local cmake_stage2_libcxx_options="-DLLVM_ENABLE_PROJECTS='libcxx;libcxxabi'"
     (cd ${libcxx_build_dir} && \
       cmake \
         ${cmake_stage2_common_options} \
@@ -347,14 +332,11 @@ function build_stage2 {
   if [ "$CHECK_LLD" != "0" ]; then
     extra_dir="lld"
   fi
-  local cmake_stage2_clang_options=
-  if [[ "$USE_GIT" != "0" ]]; then
-    local projects=clang
-    if [[ "$CHECK_LLD" != "0" ]]; then
-      projects="${projects};lld"
-    fi
-    cmake_stage2_clang_options="-DLLVM_ENABLE_PROJECTS='${projects}'"
+  local projects=clang
+  if [[ "$CHECK_LLD" != "0" ]]; then
+    projects="${projects};lld"
   fi
+  local cmake_stage2_clang_options="-DLLVM_ENABLE_PROJECTS='${projects}'"
   (cd ${build_dir} && \
    cmake \
      ${cmake_stage2_common_options} \
@@ -419,10 +401,8 @@ function build_stage3 {
 
   local clang_path=$ROOT/${STAGE2_DIR}/bin
   local cmake_stage3_options="${CMAKE_COMMON_OPTIONS} -DCMAKE_C_COMPILER=${clang_path}/clang -DCMAKE_CXX_COMPILER=${clang_path}/clang++"
-  if [[ "$USE_GIT" != "0" ]]; then
-    cmake_stage3_options="${cmake_stage3_options} -DLLVM_ENABLE_PROJECTS='clang'"
-  fi
-
+  cmake_stage3_options="${cmake_stage3_options} -DLLVM_ENABLE_PROJECTS='clang'"
+  
   echo @@@BUILD_STEP build stage3/$sanitizer_name clang@@@
   (mkdir -p ${build_dir} && cd ${build_dir} && cmake ${cmake_stage3_options} $LLVM && ninja clang) || \
       echo $step_result

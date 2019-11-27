@@ -8,8 +8,6 @@ HERE="$(cd $(dirname $0) && pwd)"
 ROOT=`pwd`
 PLATFORM=`uname`
 
-USE_GIT=1
-
 CHECK_LIBCXX=${CHECK_LIBCXX:-0}
 CHECK_LLD=${CHECK_LLD:-1}
 STAGE1_CLOBBER=

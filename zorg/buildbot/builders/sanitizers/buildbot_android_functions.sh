@@ -33,9 +33,7 @@ function download_android_tools {
 function build_stage2_android() {
   # Build self-hosted tree with fresh Clang and -Werror.
   local CMAKE_OPTIONS="${CMAKE_COMMON_OPTIONS} -DLLVM_ENABLE_WERROR=ON ${STAGE1_AS_COMPILER} -DCMAKE_C_FLAGS=-gmlt -DCMAKE_CXX_FLAGS=-gmlt"
-  if [[ "$USE_GIT" != "0" ]]; then
-    CMAKE_OPTIONS="${CMAKE_OPTIONS} -DLLVM_ENABLE_PROJECTS='clang;compiler-rt;lld'"
-  fi
+  CMAKE_OPTIONS="${CMAKE_OPTIONS} -DLLVM_ENABLE_PROJECTS='clang;compiler-rt;lld'"
 
   echo @@@BUILD_STEP bootstrap clang@@@
   rm -rf ${STAGE2_CLOBBER}
@@ -90,10 +88,7 @@ function configure_android { # ARCH triple
     ${CMAKE_COMMON_OPTIONS} \
     $LLVM || echo @@@STEP_FAILURE@@@) &
 
-  local COMPILER_RT_OPTIONS="$LLVM/projects/compiler-rt"
-  if [[ "$USE_GIT" != "0" ]]; then
-    COMPILER_RT_OPTIONS="$(readlink -f $LLVM/../compiler-rt)"
-  fi
+  local COMPILER_RT_OPTIONS="$(readlink -f $LLVM/../compiler-rt)"
   
   (cd compiler_rt_build_android_$_arch && cmake \
     -DCMAKE_C_COMPILER=$ROOT/llvm_build64/bin/clang \

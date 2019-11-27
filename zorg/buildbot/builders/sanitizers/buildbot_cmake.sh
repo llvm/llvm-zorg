@@ -19,8 +19,6 @@ export ANDROID_SDK_HOME=$ROOT/../../..
 # Always clobber bootstrap build trees.
 rm -rf compiler_rt_build llvm_build64 llvm_build_ninja symbolizer_build*
 
-USE_GIT=1
-
 SUPPORTS_32_BITS=${SUPPORTS_32_BITS:-1}
 MAKE_JOBS=${MAX_MAKE_JOBS:-$(nproc)}
 LLVM=$ROOT/llvm
@@ -37,9 +35,7 @@ if [ -e /usr/include/plugin-api.h ]; then
   CMAKE_COMMON_OPTIONS="${CMAKE_COMMON_OPTIONS} -DLLVM_BINUTILS_INCDIR=/usr/include"
 fi
 
-if [[ "$USE_GIT" != "0" ]]; then
-  CMAKE_COMMON_OPTIONS="${CMAKE_COMMON_OPTIONS} -DLLVM_ENABLE_PROJECTS='clang;compiler-rt'"
-fi
+CMAKE_COMMON_OPTIONS="${CMAKE_COMMON_OPTIONS} -DLLVM_ENABLE_PROJECTS='clang;compiler-rt'"
 
 CHECK_LIBCXX=${CHECK_LIBCXX:-1}
 CHECK_SYMBOLIZER=${CHECK_SYMBOLIZER:-$CHECK_LIBCXX}
@@ -108,13 +104,11 @@ case "$ARCH" in
   ;;
 esac
 
-if [[ "$USE_GIT" != "0" ]]; then
-  PROJECTS="clang;compiler-rt;libcxx;libcxxabi"
-  if [[ "$CHECK_LLD" != "0" ]]; then
-    PROJECTS="${PROJECTS};lld"
-  fi
-  CMAKE_COMMON_OPTIONS="${CMAKE_COMMON_OPTIONS} -DLLVM_ENABLE_PROJECTS='${PROJECTS}'"
+PROJECTS="clang;compiler-rt;libcxx;libcxxabi"
+if [[ "$CHECK_LLD" != "0" ]]; then
+  PROJECTS="${PROJECTS};lld"
 fi
+CMAKE_COMMON_OPTIONS="${CMAKE_COMMON_OPTIONS} -DLLVM_ENABLE_PROJECTS='${PROJECTS}'"
 
 if [[ "$CHECK_CFI" == "1" ]]; then
   # We need this after https://reviews.llvm.org/D62050
@@ -126,15 +120,8 @@ clobber
 
 buildbot_update
 
-COMPILER_RT=$LLVM/projects/compiler-rt
-if [[ "$USE_GIT" != "0" ]]; then
-  COMPILER_RT=$LLVM/../compiler-rt
-fi
-
-LIBCXX=$LLVM/projects/libcxx
-if [[ "$USE_GIT" != "0" ]]; then
-  LIBCXX=$LLVM/../libcxx
-fi
+COMPILER_RT=$LLVM/../compiler-rt
+LIBCXX=$LLVM/../libcxx
 
 echo @@@BUILD_STEP lint@@@
 CHECK_LINT=${COMPILER_RT}/lib/sanitizer_common/scripts/check_lint.sh

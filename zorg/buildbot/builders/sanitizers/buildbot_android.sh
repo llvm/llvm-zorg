@@ -13,8 +13,6 @@ PLATFORM=`uname`
 LOCAL_IPS=`hostname -I`
 export PATH="/usr/local/bin:$PATH"
 
-USE_GIT=1
-
 CHECK_LIBCXX=${CHECK_LIBCXX:-1}
 CHECK_LLD=${CHECK_LLD:-1}
 LLVM=$ROOT/llvm
