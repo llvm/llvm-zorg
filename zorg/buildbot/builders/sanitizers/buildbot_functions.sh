@@ -19,95 +19,10 @@ function clobber {
   fi
 }
 
-function update_or_checkout {
-  local rev_arg=$1
-  local repo=$2
-  local tree=$3
-  
-  if [ -d ${tree} ]; then
-    (svn cleanup "${tree}" && svn revert -R "${tree}" && svn up "${tree}" $rev_arg) || \
-      (rm -rf ${tree} && update_or_checkout $@)
-  else
-    mkdir -p svn_checkout
-    DIR=$(mktemp -d -p `pwd`/svn_checkout XXXXXX)
-    svn co "${repo}" $DIR/${tree} $rev_arg || echo @@@STEP_EXCEPTION@@@
-  fi
-}
-
 BUILDBOT_MONO_REPO_PATH=${BUILDBOT_MONO_REPO_PATH:-}
 
-function get_sources {
-  local rev_arg=$1
-  local repo_name=$2
-  local tree=$3
-
-  if [ -d "$BUILDBOT_MONO_REPO_PATH" ]; then
-    # Excludes are needed only for llvm but they should not hurt for the rest.
-    rsync -avh --delete \
-          --exclude=projects/compiler-rt/ \
-          --exclude=projects/libcxx/ \
-          --exclude=projects/libcxxabi/ \
-          --exclude=projects/libunwind/ \
-          --exclude=tools/clang/ \
-          --exclude=tools/lld/ \
-        $BUILDBOT_MONO_REPO_PATH/${repo_name/cfe/clang}/ \
-        $tree/ || exit 1
-    return
-  fi
-
-  update_or_checkout "$rev_arg" http://llvm.org/svn/llvm-project/$repo_name/trunk $tree &
-}
-
-
 function buildbot_update {
-    echo @@@BUILD_STEP update $BUILDBOT_REVISION@@@
-    buildbot_update_git
-    return
-
-    if [[ -d "$BUILDBOT_MONO_REPO_PATH" ]]; then
-      BUILDBOT_REVISION="-"
-    else
-      if [[ "$BUILDBOT_REVISION" == "-" ]]; then
-        return
-      fi
-    fi
-
-    local rev_arg=
-    if [ "$BUILDBOT_REVISION" != "" ]; then
-        rev_arg="-r$BUILDBOT_REVISION"
-    fi
-
-    if [ "$rev_arg" == "" ]; then
-        rev_arg="-r"$(svn info http://llvm.org/svn/llvm-project/llvm/trunk | grep '^Revision:' | awk '{print $2}')
-    fi
-
-    rm -rf svn_checkout
-
-    get_sources "$rev_arg" llvm llvm
-
-    # XXX: Keep this list in sync with the change filter in buildbot/osuosl/master/master.cfg.
-    get_sources "$rev_arg" cfe llvm/tools/clang
-    get_sources "$rev_arg" compiler-rt llvm/projects/compiler-rt
-    if [ "$CHECK_LIBCXX" != "0" ]; then
-      get_sources "$rev_arg" libcxx llvm/projects/libcxx
-      get_sources "$rev_arg" libcxxabi llvm/projects/libcxxabi
-      get_sources "$rev_arg" libunwind llvm/projects/libunwind
-    fi
-    if [ "$CHECK_LLD" != "0" ]; then
-      get_sources "$rev_arg" lld llvm/tools/lld
-    fi
-    wait
-
-    # Merge checked out temporarily directories.
-    if [ -d svn_checkout ]; then
-      for D in svn_checkout/*; do
-        cp -rflP $D/* .
-      done
-      rm -rf svn_checkout
-    fi
-}
-
-function buildbot_update_git {
+  echo @@@BUILD_STEP update $BUILDBOT_REVISION@@@
   if [[ -d "$BUILDBOT_MONO_REPO_PATH" ]]; then
     LLVM=$BUILDBOT_MONO_REPO_PATH/llvm
   else
