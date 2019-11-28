@@ -40,18 +40,6 @@ function buildbot_update {
       local REV=
       if [[ "$BUILDBOT_REVISION" == "" ]] ; then
         REV=origin/master
-        git fetch origin
-      elif echo ${BUILDBOT_REVISION} | grep -P "^[0-9]{1,7}$"; then
-        while true ; do
-          REV=$(git log --format="%H" -n1 --grep "^llvm-svn: ${BUILDBOT_REVISION}$" origin/master)
-          [[ "$REV" == "" ]] || break
-          git rev-list --pretty --max-count=1 origin/master
-          git rev-list --pretty --max-parents=0 origin/master
-          echo "DEPTH=$DEPTH is too small"
-          [[ "$DEPTH" -le "1000000" ]] || exit 1
-          DEPTH=$(( $DEPTH * 10 ))
-          git fetch --depth $DEPTH origin
-        done
       else
         REV=${BUILDBOT_REVISION}
         # "git fetch --depth 1 origin $REV" does not work with 2.11 on bots
