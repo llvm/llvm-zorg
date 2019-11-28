@@ -87,21 +87,12 @@ function build_stage1_clang {
 }
 
 function build_stage1_clang_at_revison {
-  local HOST_CLANG_REVISION=e7ab59eda98094183cd4d75f5edde9e07e27072b
   common_stage1_variables
 
-  if  [ -r ${STAGE1_DIR}/host_clang_revision ] && \
-      [ "$(cat ${STAGE1_DIR}/host_clang_revision)" == $HOST_CLANG_REVISION ]
-  then
-    echo @@@BUILD_STEP using pre-built stage1 clang at r$HOST_CLANG_REVISION@@@
-  else
-    BUILDBOT_REVISION=$HOST_CLANG_REVISION buildbot_update
+  curl -s https://raw.githubusercontent.com/chromium/chromium/master/tools/clang/scripts/update.py \
+    | python - --output-dir=${STAGE1_DIR}
 
-    rm -rf ${STAGE1_DIR}
-    echo @@@BUILD_STEP build stage1 clang at r$HOST_CLANG_REVISION@@@
-    build_stage1_clang_impl && \
-      ( echo $HOST_CLANG_REVISION > ${STAGE1_DIR}/host_clang_revision )
-  fi
+  echo @@@BUILD_STEP using pre-built stage1 clang at $(cat ${STAGE1_DIR}/cr_build_revision)@@@
 }
 
 function common_stage2_variables {
