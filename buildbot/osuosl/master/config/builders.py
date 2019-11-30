@@ -29,6 +29,7 @@ def _get_llvm_builders():
 def _get_clang_fast_builders():
     return [
         {'name': "clang-x86_64-debian-fast",
+         'mergeRequests': False,
          'slavenames':["gribozavr4"],
          'builddir':"clang-x86_64-debian-fast",
          'factory': UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
@@ -41,6 +42,28 @@ def _get_clang_fast_builders():
                             "-DCOMPILER_RT_BUILD_SANITIZERS:BOOL=OFF",
                             "-DCOMPILER_RT_BUILD_XRAY:BOOL=OFF",
                             "-DCOMPILER_RT_INCLUDE_TESTS:BOOL=OFF",
+                            "-DCMAKE_C_FLAGS=-Wdocumentation -Wno-documentation-deprecated-sync",
+                            "-DCMAKE_CXX_FLAGS=-std=c++11 -Wdocumentation -Wno-documentation-deprecated-sync",
+                        ],
+                        env={
+                            'PATH':'/home/llvmbb/bin/clang-latest/bin:/home/llvmbb/bin:/usr/local/bin:/usr/local/bin:/usr/bin:/bin',
+                            'CC': 'ccache clang', 'CXX': 'ccache clang++', 'CCACHE_CPP2': 'yes',
+                        })},
+
+        {'name': "clang-x86_64-debian-new-pass-manager-fast",
+         'slavenames':["gribozavr5"],
+         'builddir':"clang-x86_64-debian-new-pass-manager-fast",
+         'factory': UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
+                        llvm_srcdir="llvm.src",
+                        obj_dir="llvm.obj",
+                        clean=True,
+                        depends_on_projects=['llvm','clang','clang-tools-extra','compiler-rt'],
+                        extra_configure_args=[
+                            "-DCOMPILER_RT_BUILD_BUILTINS:BOOL=OFF",
+                            "-DCOMPILER_RT_BUILD_SANITIZERS:BOOL=OFF",
+                            "-DCOMPILER_RT_BUILD_XRAY:BOOL=OFF",
+                            "-DCOMPILER_RT_INCLUDE_TESTS:BOOL=OFF",
+                            "-DENABLE_EXPERIMENTAL_NEW_PASS_MANAGER=ON",
                             "-DCMAKE_C_FLAGS=-Wdocumentation -Wno-documentation-deprecated-sync",
                             "-DCMAKE_CXX_FLAGS=-std=c++11 -Wdocumentation -Wno-documentation-deprecated-sync",
                         ],
@@ -105,6 +128,23 @@ def _get_clang_fast_builders():
                                             "-DCMAKE_BUILD_TYPE=Debug",
                                             "-DCMAKE_CXX_FLAGS='-U_GLIBCXX_DEBUG'",
                                             "'-DLLVM_LIT_ARGS=-vv -j32'"])},
+
+        {'name': "llvm-clang-x86_64-expensive-checks-debian",
+         'mergeRequests': False,
+         'slavenames': ["gribozavr5"],
+         'builddir':"llvm-clang-x86_64-expensive-checks-debian",
+         'factory': UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
+                      depends_on_projects=["llvm"],
+                      clean=True,
+                      extra_configure_args=["-DLLVM_ENABLE_EXPENSIVE_CHECKS=ON",
+                                            "-DLLVM_ENABLE_WERROR=OFF",
+                                            "-DCMAKE_BUILD_TYPE=Release",
+                                            "-DCMAKE_CXX_FLAGS=-U_GLIBCXX_DEBUG",
+                                            "-DLLVM_LIT_ARGS=-v -vv -j96"],
+                      env={
+                          'PATH':'/home/llvmbb/bin/clang-latest/bin:/home/llvmbb/bin:/usr/local/bin:/usr/local/bin:/usr/bin:/bin',
+                          'CC': 'ccache clang', 'CXX': 'ccache clang++', 'CCACHE_CPP2': 'yes',
+                      })},
 
         {'name' : "llvm-clang-x86_64-win-fast",
          'slavenames' : ["as-builder-3"],
