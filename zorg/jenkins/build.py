@@ -41,12 +41,12 @@ def next_section(name):
 
 
 def header(name):
-    print "@@@", name, "@@@"
+    print("@@@", name, "@@@")
 
 
 def footer():
-    print "Completed at: " + time.strftime("%FT%T")
-    print "@@@@@@"
+    print("Completed at: " + time.strftime("%FT%T"))
+    print("@@@@@@")
 
 
 def quote_sh_string(string):
@@ -196,7 +196,7 @@ def update_svn_checkout(working_dir):
               The working path was: {}\n
               The error was: {}.\n"""
         msg = msg.format(e.returncode, working_dir, out)
-        print msg
+        print(msg)
 
 
 def cmake_builder(target):
@@ -439,7 +439,7 @@ def clang_builder(target):
 
         else:
             # Two stage build, via the make files.
-            print 'Stage two compile TBD in near future'
+            print('Stage two compile TBD in near future')
 
     if not conf.device and (target == "test" or target == "all"):
         # Add steps to run the tests.
@@ -568,7 +568,7 @@ def lldb_builder():
         header("Run LLDB Python-based test suite ({} targets)".format(arch))
         # For the unit tests, we don't want to stop the build if there are
         # build errors.  We allow the JUnit/xUnit parser to pick this up.
-        print repr(python_testsuite_cmd)
+        print(repr(python_testsuite_cmd))
         run_cmd_errors_okay("lldb", python_testsuite_cmd)
         footer()
 
@@ -742,22 +742,22 @@ def http_download(url, dest):
     Print error and exit if download fails.
     """
     try:
-        print "GETting", url, "to", dest, "...",
+        print("GETting", url, "to", dest, "...", end=' ')
         f = urlopen(url)
         # Open our local file for writing
         with open(dest, "wb") as local_file:
             local_file.write(f.read())
 
-    except HTTPError, e:
-        print
-        print "HTTP Error:", e.code, url
+    except HTTPError as e:
+        print()
+        print("HTTP Error:", e.code, url)
         sys.exit(1)
 
-    except URLError, e:
-        print
-        print "URL Error:", e.reason, url
+    except URLError as e:
+        print()
+        print("URL Error:", e.reason, url)
         sys.exit(1)
-    print "done."
+    print("done.")
 
 
 def rsync(conf, tree, repo, repos):
@@ -785,7 +785,7 @@ def derive(tree, repos):
     if 'debuginfo-tests' in repos:
         dest_path = conf.workspace + "/" + 'llvm/tools/clang/test/debuginfo-tests'
         if os.path.exists(dest_path):
-            print 'Remove debuginfo-tests from derived source if it exists'
+            print('Remove debuginfo-tests from derived source if it exists')
             run_ws(['rm', '-rf', dest_path])
 
     # Check for src dirs.
@@ -838,7 +838,7 @@ def fetch_compiler():
     url = conf.host_compiler_url + "/" + conf.artifact_url
     header("Fetching Compiler")
     http_download(url, conf.workspace + "/" + local_name)
-    print "Decompressing..."
+    print("Decompressing...")
     if os.path.exists(conf.workspace + "/host-compiler"):
         shutil.rmtree(conf.workspace + "/host-compiler")
     os.mkdir(conf.workspace + "/host-compiler")
@@ -851,7 +851,7 @@ def fetch_compiler():
 def build_upload_artifact():
     """Create artifact for this build, and upload to server."""
     if conf.noupload:
-        print 'Not uploading artificats'
+        print('Not uploading artificats')
         return
     header("Uploading Artifact")
     assert conf.svn_rev != "NONE"
@@ -912,7 +912,7 @@ def run_cmd(working_dir, cmd, env=None, sudo=False, err_okay=False):
     old_cwd = os.getcwd()
     if env:
         envs = []
-        for key, value in env.items():
+        for key, value in list(env.items()):
             envs.append("{}={}".format(key, value))
         cmd = ["env"] + envs + cmd
     if sudo:
@@ -1019,7 +1019,7 @@ def run_collect_output(cmd, working_dir=None, stderr=None):
     with a context manager in working_dir.
     """
     if os.getenv("TESTING"):
-        print 'TV: ' + ' '.join(cmd)
+        print('TV: ' + ' '.join(cmd))
         return TEST_VALS[' '.join(cmd)]
 
     with cwd(working_dir):
@@ -1132,8 +1132,8 @@ def main():
         elif args.build_type == 'static-analyzer-benchmarks':
             static_analyzer_benchmarks_builder()
     except subprocess.CalledProcessError as exct:
-        print "Command failed", exct.message
-        print "Command:", exct.cmd
+        print("Command failed", exct.message)
+        print("Command:", exct.cmd)
         sys.exit(1)
 
 
