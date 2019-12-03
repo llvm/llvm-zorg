@@ -33,7 +33,6 @@ def getOpenMPCMakeBuildFactory(
 
     llvm_srcdir = 'llvm.src'
     llvm_builddir = 'llvm.build'
-    build_clang = c_compiler == 'clang'
 
     cleanBuildRequested = lambda step: clean or step.build.getProperty("clean", default=step.build.getProperty("clean_obj"))
 
