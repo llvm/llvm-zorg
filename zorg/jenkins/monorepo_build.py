@@ -43,11 +43,11 @@ def next_section(name):
 
 
 def header(name):
-    print(("@@@", name, "@@@"))
+    print("@@@", name, "@@@")
 
 
 def footer():
-    print(("Completed at: " + time.strftime("%FT%T")))
+    print("Completed at: " + time.strftime("%FT%T"))
     print("@@@@@@")
 
 
@@ -90,7 +90,7 @@ def delete_module_caches(workspace):
         caches.append(system_cache)
     for cache in caches:
         if (os.path.exists(cache)):
-            print(('Removing module cache: {}'.format(cache)))
+            print('Removing module cache: {}'.format(cache))
             shutil.rmtree(cache)
 
 
@@ -737,18 +737,18 @@ def http_download(url, dest):
     Print error and exit if download fails.
     """
     try:
-        print(("GETting", url, "to", dest, "..."))
+        print("GETting", url, "to", dest, "...")
         f = urllib.request.urlopen(url)
         # Open our local file for writing
         with open(dest, "wb") as local_file:
             local_file.write(f.read())
 
     except urllib.HTTPError as e:
-        print(("HTTP Error:", e.code, url))
+        print("HTTP Error:", e.code, url)
         sys.exit(1)
 
     except urllib.URLError as e:
-        print(("URL Error:", e.reason, url))
+        print("URL Error:", e.reason, url)
         sys.exit(1)
     print("done.")
 
@@ -836,7 +836,7 @@ def run_cmd(working_dir, cmd, env=None, sudo=False, err_okay=False):
     old_cwd = os.getcwd()
     if env:
         envs = []
-        for key, value in list(env.items()):
+        for key, value in env.items():
             envs.append("{}={}".format(key, value))
         cmd = ["env"] + envs + cmd
     if sudo:
@@ -923,7 +923,7 @@ def run_collect_output(cmd, working_dir=None, stderr=None):
     with a context manager in working_dir.
     """
     if os.getenv("TESTING"):
-        print(('TV: ' + ' '.join(cmd)))
+        print('TV: ' + ' '.join(cmd))
         return TEST_VALS[' '.join(cmd)]
 
     with cwd(working_dir):
@@ -1033,8 +1033,8 @@ def main():
         elif args.build_type == 'static-analyzer-benchmarks':
             static_analyzer_benchmarks_builder()
     except subprocess.CalledProcessError as exct:
-        print(('Command failed: {}'.format(exct)))
-        print(('Command:', exct.cmd))
+        print('Command failed: {}'.format(exct))
+        print('Command:', exct.cmd)
         sys.exit(1)
 
 
