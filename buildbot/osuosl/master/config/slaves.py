@@ -97,7 +97,11 @@ def get_build_slaves():
 
         # Debian x86-64
         create_slave("gribozavr4", properties={'jobs': 96}, max_builds=2),
-        create_slave("gribozavr5", properties={'jobs': 96}, max_builds=2),
+        create_slave("gribozavr5", properties={'jobs': 96}, max_builds=2,
+                     missing_timeout=300, # notify after 5 minutes of missing
+                     notify_on_missing=[
+                         "gribozavr@gmail.com",
+                         "gkistanova@gmail.com"]),
 
         # Debian 7.7 x86_64 GCE instance
         create_slave("sanitizer-buildbot1", properties={'jobs': 64}, max_builds=3),
