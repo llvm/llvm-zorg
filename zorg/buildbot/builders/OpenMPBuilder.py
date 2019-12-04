@@ -13,8 +13,6 @@ from zorg.buildbot.builders import UnifiedTreeBuilder
 from zorg.buildbot.process.factory import LLVMBuildFactory
 
 def getOpenMPCMakeBuildFactory(
-        c_compiler          = 'gcc',        # The C compiler to use.
-        cxx_compiler        = 'g++',        # The C++ compiler to use.
         jobs                = '%(jobs)s',   # Number of concurrent jobs.
         clean               = True,         # "clean" step is requested if true
         env                 = None,         # Environmental variables for all steps.
@@ -61,8 +59,6 @@ def getOpenMPCMakeBuildFactory(
     # Configure LLVM and OpenMP (and Clang, if requested).
     cmake_args  = ['cmake', '-G', 'Ninja']
     cmake_args += ['-DCMAKE_BUILD_TYPE=Release', '-DLLVM_ENABLE_ASSERTIONS=ON']
-    cmake_args += ['-DCMAKE_C_COMPILER=%s' % c_compiler]
-    cmake_args += ['-DCMAKE_CXX_COMPILER=%s' % cxx_compiler]
     if ompt:
         cmake_args += ['-DLIBOMP_OMPT_SUPPORT=ON']
     if test:

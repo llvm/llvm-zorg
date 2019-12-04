@@ -1050,8 +1050,6 @@ def _get_openmp_builders():
          'slavenames':["gribozavr4"],
          'builddir':"openmp-gcc-x86_64-linux-debian",
          'factory' : OpenMPBuilder.getOpenMPCMakeBuildFactory(
-                         c_compiler="ccache gcc",
-                         cxx_compiler="ccache g++",
                          env={
                              'PATH':'/home/llvmbb/bin/clang-latest/bin:/home/llvmbb/bin:/usr/local/bin:/usr/local/bin:/usr/bin:/bin',
                              'CC': 'ccache clang', 'CXX': 'ccache clang++', 'CCACHE_CPP2': 'yes',
@@ -1061,8 +1059,6 @@ def _get_openmp_builders():
          'slavenames':["gribozavr4"],
          'builddir':"openmp-clang-x86_64-linux-debian",
          'factory' : OpenMPBuilder.getOpenMPCMakeBuildFactory(
-                         c_compiler="ccache clang",
-                         cxx_compiler="ccache clang++",
                          env={
                              'PATH':'/home/llvmbb/bin/clang-latest/bin:/home/llvmbb/bin:/usr/local/bin:/usr/local/bin:/usr/bin:/bin',
                              'CC': 'ccache clang', 'CXX': 'ccache clang++', 'CCACHE_CPP2': 'yes',
