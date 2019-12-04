@@ -43,6 +43,11 @@ def get_status_targets(standard_builders, standard_categories=None):
             repoName='llvm-project',
             builders_to_report = [
                 "llvm-clang-lld-x86_64-scei-ps4-ubuntu-fast",
+                "llvm-clang-lld-x86_64-scei-ps4-windows10pro-fast",
+                "llvm-clang-x86_64-expensive-checks-ubuntu",
+                "llvm-clang-x86_64-win-fast",
+                "clang-x86_64-debian-fast",
+                "llvm-clang-x86_64-expensive-checks-debian",
             ]),
 
         # All the standard builders send e-mail and IRC notifications.
