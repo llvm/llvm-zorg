@@ -11,11 +11,13 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                dir('llvm-project') {
-                    checkout([$class: 'GitSCM', branches: [[name: params.GIT_REVISION]], userRemoteConfigs: [[url: 'http://labmaster3.local/git/llvm-project.git']]])
-                }
-                dir('llvm-zorg') {
-                    checkout([$class: 'GitSCM', branches: [[name: '*/master']], userRemoteConfigs: [[url: 'http://labmaster3.local/git/llvm-zorg.git']]])
+                timeout(30) {
+                    dir('llvm-project') {
+                        checkout([$class: 'GitSCM', branches: [[name: params.GIT_REVISION]], userRemoteConfigs: [[url: 'http://labmaster3.local/git/llvm-project.git']]])
+                    }
+                    dir('llvm-zorg') {
+                        checkout([$class: 'GitSCM', branches: [[name: '*/master']], userRemoteConfigs: [[url: 'http://labmaster3.local/git/llvm-zorg.git']]])
+                    }
                 }
             }
         }
@@ -132,8 +134,10 @@ pipeline {
         }
         stage('Build Clang 5.0.2') {
             steps {
-                dir('clang_502') {
-                    checkout([$class: 'GitSCM', branches: [[name: "llvmorg-5.0.2"]], userRemoteConfigs: [[url: 'http://labmaster3.local/git/llvm-project.git']]])
+                timeout(30) {
+                    dir('clang_502') {
+                        checkout([$class: 'GitSCM', branches: [[name: "llvmorg-5.0.2"]], userRemoteConfigs: [[url: 'http://labmaster3.local/git/llvm-project.git']]])
+                    }
                 }
                 timeout(90) {
                     sh '''
@@ -176,8 +180,10 @@ pipeline {
         }
         stage('Build Clang 7.0.1') {
             steps {
-                dir('clang_701') {
-                    checkout([$class: 'GitSCM', branches: [[name: "llvmorg-7.0.1"]], userRemoteConfigs: [[url: 'http://labmaster3.local/git/llvm-project.git']]])
+                timeout(30) {
+                    dir('clang_701') {
+                        checkout([$class: 'GitSCM', branches: [[name: "llvmorg-7.0.1"]], userRemoteConfigs: [[url: 'http://labmaster3.local/git/llvm-project.git']]])
+                    }
                 }
                 timeout(90) {
                     sh '''
@@ -220,8 +226,10 @@ pipeline {
         }
         stage('Build Clang 9.0.0') {
             steps {
-                dir('clang_900') {
-                    checkout([$class: 'GitSCM', branches: [[name: "llvmorg-9.0.0"]], userRemoteConfigs: [[url: 'http://labmaster3.local/git/llvm-project.git']]])
+                timeout(30) {
+                    dir('clang_900') {
+                        checkout([$class: 'GitSCM', branches: [[name: "llvmorg-9.0.0"]], userRemoteConfigs: [[url: 'http://labmaster3.local/git/llvm-project.git']]])
+                    }
                 }
                 timeout(90) {
                     sh '''
