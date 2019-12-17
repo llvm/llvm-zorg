@@ -1,3 +1,5 @@
+from buildbot.process.properties import WithProperties
+
 from zorg.buildbot.builders import ClangBuilder
 from zorg.buildbot.builders import LLVMBuilder
 from zorg.buildbot.builders import PollyBuilder
@@ -172,9 +174,17 @@ def _get_clang_fast_builders():
          'factory': XToolchainBuilder.getCmakeWithMSVCBuildFactory(
                       vs="autodetect",
                       clean=True,
+                      checks=[
+                        "check-llvm",
+                        "check-clang",
+                        "check-lld",
+                        "check-unwind",
+                      ],
                       extra_configure_args=[
                         "-DDEFAULT_SYSROOT=C:/buildbot/.arm-ubuntu",
                         "-DLLVM_LIT_ARGS=-v -vv --threads=32",
+                        WithProperties("%(remote_test_host:+-DREMOTE_TEST_HOST=)s%(remote_test_host:-)s"),
+                        WithProperties("%(remote_test_user:+-DREMOTE_TEST_USER=)s%(remote_test_user:-)s"),
                       ],
                       cmake_cache="../llvm-project/clang/cmake/caches/CrossWinToARMLinux.cmake")},
 
@@ -190,6 +200,8 @@ def _get_clang_fast_builders():
                         "-DCMAKE_C_COMPILER_TARGET=aarch64-linux-gnu",
                         "-DDEFAULT_SYSROOT=C:/buildbot/.aarch64-ubuntu",
                         "-DLLVM_LIT_ARGS=-v -vv --threads=32",
+                        WithProperties("%(remote_test_host:+-DREMOTE_TEST_HOST=)s%(remote_test_host:-)s"),
+                        WithProperties("%(remote_test_user:+-DREMOTE_TEST_USER=)s%(remote_test_user:-)s"),
                       ],
                       cmake_cache="../llvm-project/clang/cmake/caches/CrossWinToARMLinux.cmake")},
     ]

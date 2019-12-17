@@ -191,7 +191,11 @@ def get_build_slaves():
         create_slave("lldb-x86_64-debian", properties={'jobs': 72}, max_builds=1),
 
         # Windows Server on Xeon Gold 6130 (2x2.1GHz), 128Gb of RAM
-        create_slave("as-builder-1", max_builds=1),
+        create_slave("as-builder-1", properties={
+                        'remote_test_host': 'jetson6.lab.llvm.org',
+                        'remote_test_user': 'ubuntu'
+                     },
+                     max_builds=1),
 
         # Windows Server on Xeon Gold 6130 (2x2.1GHz), 128Gb of RAM
         create_slave("as-builder-2", max_builds=1),
