@@ -90,7 +90,7 @@ parameter called `llvm` we could have a `repos/llvm.json` configuration file
 to query the latest revision of a git repository:
 ```json
 {
-    "url": "https://github.com/llvm-mirror/llvm.git",
+    "url": "https://github.com/my-project.git",
     "type": "git",
     "default_rev": "refs/heads/master"
 }
