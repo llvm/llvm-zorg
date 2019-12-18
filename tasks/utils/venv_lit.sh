@@ -1,3 +1,3 @@
 echo "@@@ Install VirtualEnv Lit @@@"
-. "${TASKDIR}"/utils/pip_install.sh svn+http://llvm.org/svn/llvm-project/llvm/trunk/utils/lit/
+. "${TASKDIR}"/utils/pip_install.sh svn+https://github.com/llvm/llvm-project/trunk/llvm/utils/lit/
 echo "@@@@@@"
