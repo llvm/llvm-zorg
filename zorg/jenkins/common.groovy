@@ -81,7 +81,7 @@ def task_pipeline(label, body) {
         try {
             stage('main') {
                 dir('config') {
-                    svn url: 'http://llvm.org/svn/llvm-project/zorg/trunk', poll: false
+                    git url: 'https://github.com/llvm/llvm-zorg.git', branch: 'master', poll: false
                 }
                 body()
             }
@@ -119,10 +119,10 @@ def benchmark_pipeline(label, body) {
 def testsuite_pipeline(label, body) {
     benchmark_pipeline(label) {
         dir('lnt') {
-            svn url: 'http://llvm.org/svn/llvm-project/lnt/trunk', poll: false
+            git url: 'https://github.com/llvm/llvm-lnt.git', branch: 'master', poll: false
         }
         dir('test-suite') {
-            svn url: 'http://llvm.org/svn/llvm-project/test-suite/trunk', poll: false
+            git url: 'https://github.com/llvm/llvm-test-suite.git', branch: 'master', poll: false
         }
         body()
     }
