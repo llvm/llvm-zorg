@@ -1,3 +1,4 @@
 echo "@@@ Install VirtualEnv Lit @@@"
-. "${TASKDIR}"/utils/pip_install.sh --trusted-host github.com svn+https://github.com/llvm/llvm-project/trunk/llvm/utils/lit/
+svn checkout -q --trust-server-cert-failures=unknown-ca --non-interactive https://github.com/llvm/llvm-project/trunk/llvm/utils/lit/ lit-src
+. "${TASKDIR}"/utils/pip_install.sh lit-src/
 echo "@@@@@@"
