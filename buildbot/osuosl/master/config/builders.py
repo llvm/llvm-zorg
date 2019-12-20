@@ -866,7 +866,6 @@ def _get_lldb_builders():
                     test=True,
                     extra_cmake_args=['-DLLVM_ENABLE_ASSERTIONS=True',
                                       '-DLLVM_USE_LINKER=gold',
-                                      '-DLLDB_ENABLE_CURSES=False',
                                       '-DCMAKE_C_COMPILER=clang',
                                       '-DCMAKE_CXX_COMPILER=clang++'])},
         {'name': "lldb-aarch64-ubuntu",
