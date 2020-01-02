@@ -900,7 +900,8 @@ def _get_lldb_builders():
                     target_arch='x64',
                     vs="autodetect",
                     test=True,
-                    extra_cmake_args=['-DLLVM_ENABLE_ASSERTIONS=OFF'])}
+                    extra_cmake_args=['-DLLVM_ENABLE_ASSERTIONS=OFF',
+                                      '-DLLVM_ENABLE_ZLIB=NO'])}
        ]
 
 # LLD builders.
