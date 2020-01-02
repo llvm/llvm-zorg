@@ -526,6 +526,7 @@ def lldb_cmake_builder(target, variant=None):
                  '-DCMAKE_INSTALL_PREFIX={}'.format(conf.lldbinstalldir()),
                  '-DCMAKE_MAKE_PROGRAM={}'.format(NINJA),
                  '-DLLDB_TEST_USER_ARGS='+';'.join(dotest_args),
+                 '-DLLDB_ENABLE_PYTHON=On',
                  '-DLLVM_ENABLE_ASSERTIONS:BOOL={}'.format("TRUE" if conf.assertions else "FALSE"),
                  '-DLLVM_ENABLE_MODULES=On',
                  '-DLLVM_ENABLE_PROJECTS={}'.format(conf.llvm_enable_projects),

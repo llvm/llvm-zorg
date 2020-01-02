@@ -866,6 +866,7 @@ def _get_lldb_builders():
                     test=True,
                     extra_cmake_args=['-DLLVM_ENABLE_ASSERTIONS=True',
                                       '-DLLVM_USE_LINKER=gold',
+                                      '-DLLDB_ENABLE_PYTHON=True',
                                       '-DCMAKE_C_COMPILER=clang',
                                       '-DCMAKE_CXX_COMPILER=clang++'])},
         {'name': "lldb-aarch64-ubuntu",
@@ -901,7 +902,8 @@ def _get_lldb_builders():
                     vs="autodetect",
                     test=True,
                     extra_cmake_args=['-DLLVM_ENABLE_ASSERTIONS=OFF',
-                                      '-DLLVM_ENABLE_ZLIB=NO'])}
+                                      '-DLLVM_ENABLE_ZLIB=FALSE',
+                                      '-DLLDB_ENABLE_PYTHON=TRUE'])}
        ]
 
 # LLD builders.
