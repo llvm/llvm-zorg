@@ -1395,6 +1395,20 @@ def _get_experimental_scheduled_builders():
                      enable_thrust_tests=False,
          ),
          'category' : 'clang'},
+
+        {'name': "clang-ve-ninja",
+         'slavenames':["nec-arrproto41"],
+         'builddir':"clang-ve-ninja",
+         'factory': UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
+                        clean=True,
+                        depends_on_projects=['llvm','clang'],
+                        extra_configure_args=[
+                            "-DLLVM_TARGETS_TO_BUILD=X86",
+                            "-DLLVM_EXPERIMENTAL_TARGETS_TO_BUILD=VE",
+                            "-DLLVM_ENABLE_PROJECTS=clang",
+                        ],
+         ),
+         'category' : 'clang'},
         ]
 
 # Builders responsible building Sphinix documentation
