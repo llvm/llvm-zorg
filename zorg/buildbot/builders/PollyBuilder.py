@@ -76,6 +76,7 @@ def getPollyBuildFactory(
                     "-DPOLLY_TEST_DISABLE_BAR=ON",
                     "-DPOLLY_ENABLE_GPGPU_CODEGEN=ON",
                     "-DCMAKE_BUILD_TYPE=Release",
+                    "-DLLVM_POLLY_LINK_INTO_TOOLS=ON",
                     "-DLLVM_ENABLE_PROJECTS=%s" % ";".join(f.depends_on_projects),
                    ] + cmake_install + extraCmakeArgs
     f.addStep(ShellCommand(name="cmake-configure",
