@@ -725,6 +725,19 @@ def _get_clang_builders():
                ),
          'category': 'clang'},
 
+        {'name' : "llvm-avr-linux",
+         'slavenames' : ["avr-build-01"],
+         'builddir' : "llvm-avr-linux",
+         'factory': ClangBuilder.getClangCMakeBuildFactory(
+                      jobs=8,
+                      clean=False,
+                      checkout_lld=False,
+                      extra_cmake_args=['-DLLVM_ENABLE_ASSERTIONS=ON',
+                                        # We need to compile the X86 backend due to a few generic CodeGen tests.
+                                        '-DLLVM_TARGETS_TO_BUILD=X86',
+                                        '-DLLVM_EXPERIMENTAL_TARGETS_TO_BUILD=AVR',
+                                        '-DBUILD_SHARED_LIBS=ON'])},
+
         {'name' : "clang-solaris11-amd64",
          'slavenames' : ["solaris11-amd64"],
          'builddir' : "clang-solaris11-amd64",
