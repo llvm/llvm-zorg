@@ -146,6 +146,20 @@ pipeline {
                 }
             }
         }
+        stage('Xcode Standalone Test (build tree)') {
+            steps {
+                timeout(30) {
+                    sh '''
+                    set -u
+                    export PATH=$PATH:/usr/bin:/usr/local/bin
+
+                    python $WORKSPACE/llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-xcode test \
+                      --assertions \
+                      --cmake-type=Release
+                    '''
+                }
+            }
+        }
     }
     post {
         changed {
