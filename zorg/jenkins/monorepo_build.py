@@ -696,7 +696,7 @@ def lldb_cmake_xcode_builder(target):
                 '/usr/local/bin/cmake',
                 '--build', '.',
                 '--config', cmake_build_type,
-                '--target', 'check-lldb']
+                '--target', 'check-lldb-shell']
 
     if conf.CC():
         cmake_cmd.extend(['-DCMAKE_C_COMPILER=' + conf.CC(),
