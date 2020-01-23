@@ -72,6 +72,18 @@ pipeline {
                 }
             }
         }
+        stage('Test Reproducers') {
+            steps {
+                timeout(10) {
+                    sh '''
+                    set -u
+                    export PATH=$PATH:/usr/bin:/usr/local/bin
+                    python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake
+                        --cmake-test-target check-lldb-repro
+                    '''
+                }
+            }
+        }
     }
     post {
         always {
