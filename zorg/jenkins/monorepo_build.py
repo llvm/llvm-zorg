@@ -534,7 +534,7 @@ def lldb_cmake_builder(target, variant=None):
                  '-DLLVM_VERSION_PATCH=99']
 
 
-    if variant in 'sanitized', 'matrix':
+    if variant == 'sanitized':
         cmake_cmd.append('-DLLVM_TARGETS_TO_BUILD=X86')
 
     if variant == 'sanitized':
