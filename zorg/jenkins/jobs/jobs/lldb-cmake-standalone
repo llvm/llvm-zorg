@@ -56,6 +56,7 @@ pipeline {
                       --projects="clang;libcxx;libcxxabi" \
                       --cmake-flag="-DLLVM_INSTALL_UTILS=On" \
                       --cmake-flag="-DLLVM_INSTALL_TOOLCHAIN_ONLY=Off"
+                      --cmake-flag="-DLLVM_TARGETS_TO_BUILD=X86"
                     '''
                 }
             }

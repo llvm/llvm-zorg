@@ -51,7 +51,7 @@ pipeline {
 
                     export PATH=$PATH:/usr/bin:/usr/local/bin
 
-                    python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake build \
+                    python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix build \
                       --assertions \
                       --projects="clang;libcxx;libcxxabi;lldb"  \
                       --cmake-type=Release \
