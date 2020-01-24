@@ -51,12 +51,13 @@ pipeline {
 
                     export PATH=$PATH:/usr/bin:/usr/local/bin
 
-                    python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix build \
+                    python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake build \
                       --assertions \
                       --projects="clang;libcxx;libcxxabi;lldb"  \
                       --cmake-type=Release \
                       --dotest-flag="--skip-category gmodules" \
-                      --dotest-flag="--arch=x86_64"
+                      --dotest-flag="--arch=x86_64" \
+                      --cmake-flag="-DLLVM_TARGETS_TO_BUILD=X86"
                     '''
                 }
             }
