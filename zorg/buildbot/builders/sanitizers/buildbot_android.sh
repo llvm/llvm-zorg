@@ -25,7 +25,7 @@ fi
 
 clobber
 
-download_android_tools r21
+download_android_tools r16
 
 # Stage 1
 
