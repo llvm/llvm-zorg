@@ -179,6 +179,7 @@ def _get_clang_fast_builders():
                         "check-clang",
                         "check-lld",
                         "check-unwind",
+                        "check-cxxabi",
                       ],
                       extra_configure_args=[
                         "-DDEFAULT_SYSROOT=C:/buildbot/.arm-ubuntu",
