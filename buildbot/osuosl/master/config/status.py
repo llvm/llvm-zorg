@@ -251,7 +251,8 @@ def get_status_targets(standard_builders, standard_categories=None):
             subject="Build %(builder)s Failure",
             mode = "failing",
             builders = ["llvm-clang-x86_64-win-fast","lld-x86_64-ubuntu-fast",
-                        "llvm-clang-x86_64-expensive-checks-ubuntu"],
+                        "llvm-clang-x86_64-expensive-checks-ubuntu",
+                        "llvm-clang-win-x-armv7l", "llvm-clang-win-x-aarch64"],
             addLogs=False),
         InformativeMailNotifier(
             fromaddr = "llvm.buildmaster@lab.llvm.org",
