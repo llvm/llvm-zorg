@@ -170,7 +170,7 @@ def _get_clang_fast_builders():
         {'name' : "llvm-clang-win-x-armv7l",
          'slavenames' : ["as-builder-1"],
          'builddir' : "llvm-clang-win-x-armv7l",
-         'mergeRequests': False,
+         'mergeRequests': True,
          'factory': XToolchainBuilder.getCmakeWithMSVCBuildFactory(
                       vs="autodetect",
                       clean=True,
@@ -192,7 +192,7 @@ def _get_clang_fast_builders():
         {'name' : "llvm-clang-win-x-aarch64",
          'slavenames' : ["as-builder-2"],
          'builddir' : "llvm-clang-win-x-aarch64",
-         'mergeRequests': False,
+         'mergeRequests': True,
          'factory': XToolchainBuilder.getCmakeWithMSVCBuildFactory(
                       vs="autodetect",
                       clean=True,
