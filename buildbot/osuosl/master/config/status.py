@@ -206,7 +206,7 @@ def get_status_targets(standard_builders, standard_categories=None):
         InformativeMailNotifier(
             fromaddr = "llvm.buildmaster@lab.llvm.org",
             sendToInterestedUsers = False,
-            extraRecipients = ["stilis@microsoft.com"],
+            extraRecipients = ["stilis@microsoft.com", "jonas@devlieghere.com"],
             subject="Build %(builder)s Failure",
             mode = "failing",
             builders = ["lldb-x64-windows-ninja"],
