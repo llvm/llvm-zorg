@@ -9,12 +9,23 @@ def getAnnotatedBuildFactory(
     clean=False,
     depends_on_projects=None,
     env=None,
+    extra_args=None,
     timeout=1200,
     is_legacy_mode=False):
     """
     Returns a new build factory that uses AnnotatedCommand, which
     allows the build to be run by version-controlled scripts that do
     not require a buildmaster restart to update.
+
+    script: script under "builders/annotated" to be run by python
+    clean: set to true for a clean build of llvm
+    depends_on_projects: which subprojects to enable
+        llvm must be first in the list
+        (default: ["llvm", "clang", "compiler-rt", "libcxx",
+                   "libcxxabi", "libunwind", "lld"])
+    env: environment overrides (map; default is no overrides)
+    extra_args: extra arguments to pass to the script (default: [])
+    timeout: specifies the builder's timeout in seconds (default: 1200)
     """
 
     if depends_on_projects is None:
@@ -26,6 +37,8 @@ def getAnnotatedBuildFactory(
             "libcxxabi",
             "libunwind",
             "lld"]
+    if extra_args is None:
+        extra_args = []
 
     f = LLVMBuildFactory(
         is_legacy_mode=is_legacy_mode,
@@ -33,7 +46,7 @@ def getAnnotatedBuildFactory(
         depends_on_projects=depends_on_projects)
 
     if clean:
-      f.addStep(SetProperty(property='clean', command='echo 1'))
+        f.addStep(SetProperty(property='clean', command='echo 1'))
 
     # We normally use the clean property to indicate that we want a
     # clean build, but AnnotatedCommand uses the clobber property
@@ -65,14 +78,17 @@ def getAnnotatedBuildFactory(
 
     f.addGetSourcecodeSteps()
 
+
+    extra_args_with_props = [WithProperties(arg) for arg in extra_args]
     # Explicitly use '/' as separator, because it works on *nix and Windows.
     script_path = "../llvm-zorg/zorg/buildbot/builders/annotated/%s" % (script)
     f.addStep(AnnotatedCommand(name="annotate",
                                description="annotate",
                                timeout=timeout,
                                haltOnFailure=True,
-                               command=WithProperties(
-                                   "python %(script)s --jobs=%(jobs:-)s",
-                                   script=lambda _: script_path),
+                               command=["python",
+                                        script_path,
+                                        WithProperties("--jobs=%(jobs:-)s")]
+                                        + extra_args_with_props,
                                env=merged_env))
     return f
