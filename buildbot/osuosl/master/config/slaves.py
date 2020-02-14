@@ -215,4 +215,7 @@ def get_build_slaves():
 
         # CentOS 7.5.1804 on Intel(R) Xeon(R) Gold 6126 CPU @ 2.60GHz, 96GB RAM
         create_slave("nec-arrproto41", properties={'jobs': 12}, max_builds=1),
+
+        # Uubntu 18.04 amd64 on Google Cloud, 16 core, Nvidia Tesla T4
+        create_slave("mlir-nvidia", properties={'jobs': 16}, max_builds=1),
         ]

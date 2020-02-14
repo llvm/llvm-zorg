@@ -1018,6 +1018,33 @@ def _get_lld_builders():
 
         ]
 
+# Builders for MLIR
+def _get_mlir_builders():
+    return [
+        {'name': "mlir-nvidia",
+        'mergeRequests': False,
+        'slavenames':["mlir-nvidia"],
+        'builddir':"mlir-nvidia",
+        'factory': UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
+                        llvm_srcdir="llvm.src",
+                        obj_dir="llvm.obj",
+                        clean=True,
+                        depends_on_projects=['llvm','mlir'],
+                        extra_configure_args=[
+                            '-DLLVM_BUILD_EXAMPLES=ON'
+                            '-DLLVM_ENABLE_CXX1Y=Y '
+                            '-DLLVM_TARGETS_TO_BUILD="host;NVPTX"'
+                            '-DLLVM_ENABLE_PROJECTS=mlir'
+                            '-DMLIR_CUDA_RUNNER_ENABLED=1'
+                            '-DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc'
+                        ],
+                        env={
+                            'CC':'clang',
+                            'CXX': 'clang++',
+                            'LD': 'lld',
+                        })},
+    ]
+
 # Sanitizer builders.
 def _get_sanitizer_builders():
       return [
@@ -1511,6 +1538,10 @@ def get_builders():
 
     for b in _get_lldb_builders():
         b['category'] = 'lldb'
+        yield b
+
+    for b in _get_mlir_builders():
+        b['category'] = 'mlir'
         yield b
 
     for b in _get_sanitizer_builders():
