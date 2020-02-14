@@ -190,6 +190,9 @@ def get_build_slaves():
         # Debian x86_64 Buster Xeon(R) Gold 6154 CPU @ 3.00GHz, 192GB RAM
         create_slave("lldb-x86_64-debian", properties={'jobs': 72}, max_builds=1),
 
+        # Debian x86_64 Intel Broadwell 32 CPUs, 120 GB RAM
+        create_slave("libc-x86_64-debian", properties={'jobs': 32}, max_builds=2),
+
         # Windows Server on Xeon Gold 6130 (2x2.1GHz), 128Gb of RAM
         create_slave("as-builder-1", properties={
                         'remote_test_host': 'jetson6.lab.llvm.org',

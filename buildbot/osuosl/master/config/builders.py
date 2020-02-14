@@ -1406,6 +1406,26 @@ def _get_toolchain_builders():
                       ])},
         ]
 
+# libc Builders
+def _get_libc_builders():
+    return [
+        {'name': 'libc-x86_64-debian',
+         'slavenames': ['libc-x86_64-debian'],
+         'builddir': 'libc-x86_64-debian',
+         'category': 'libc',
+         'factory' : AnnotatedBuilder.getAnnotatedBuildFactory(
+             script="libc-linux.py",
+             depends_on_projects=['llvm', 'libc'])},
+
+        {'name': "libc-x86_64-debian-asan",
+         'slavenames': ["libc-x86_64-debian"],
+         'builddir': "libc-x86_64-debian-asan",
+         'category' : 'libc',
+         'factory' : AnnotatedBuilder.getAnnotatedBuildFactory(
+             script="libc-linux.py",
+             depends_on_projects=['llvm', 'libc'],
+             extra_args=['--asan'])},
+    ]
 
 # Experimental and stopped builders
 def _get_on_demand_builders():
@@ -1558,6 +1578,10 @@ def get_builders():
 
     for b in _get_toolchain_builders():
         b['category'] = 'toolchain'
+        yield b
+
+    for b in _get_libc_builders():
+        b['category'] = 'libc'
         yield b
 
     for b in _get_documentation_builders():
