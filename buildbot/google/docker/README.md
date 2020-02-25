@@ -11,7 +11,7 @@ Build a docker image and run it locally
 
 ## build_deploy.sh
 Build a docker image, increment the version number, tag it and upload it to
-the registry.
+the registry. This updates the `VERSION` file to track the version numbers.
 
 # Secrets
 
