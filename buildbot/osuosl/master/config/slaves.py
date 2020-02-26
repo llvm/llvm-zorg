@@ -221,4 +221,11 @@ def get_build_slaves():
 
         # Uubntu 18.04 amd64 on Google Cloud, 16 core, Nvidia Tesla T4
         create_slave("mlir-nvidia", properties={'jobs': 16}, max_builds=1),
+
+        # Ubuntu 18.04.LTS x86_64, GCE instance
+        create_slave("polly-x86_64-gce1", properties={'jobs': 2}, max_builds=1),
+        create_slave("polly-x86_64-gce2", properties={'jobs': 2}, max_builds=1),
+
+        # Ubuntu 18.04.LTS x86_64, Intel(R) Xeon(R) CPU X3460 @ 2.80GHz, 32 GiB RAM
+        create_slave("polly-x86_64-fdcserver", properties={'jobs': 8, 'loadaverage': 8}, max_builds=1),
         ]
