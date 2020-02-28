@@ -196,6 +196,13 @@ def _get_clang_fast_builders():
          'factory': XToolchainBuilder.getCmakeWithMSVCBuildFactory(
                       vs="autodetect",
                       clean=True,
+                      checks=[
+                        "check-llvm",
+                        "check-clang",
+                        "check-lld",
+                        "check-unwind",
+                        "check-cxxabi",
+                      ],
                       extra_configure_args=[
                         "-DLLVM_TARGETS_TO_BUILD=AArch64",
                         "-DCMAKE_C_COMPILER_TARGET=aarch64-linux-gnu",

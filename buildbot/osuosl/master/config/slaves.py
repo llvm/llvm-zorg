@@ -201,7 +201,11 @@ def get_build_slaves():
                      max_builds=1),
 
         # Windows Server on Xeon Gold 6130 (2x2.1GHz), 128Gb of RAM
-        create_slave("as-builder-2", max_builds=1),
+        create_slave("as-builder-2", properties={
+                        'remote_test_host': 'jetson9.lab.llvm.org',
+                        'remote_test_user': 'ubuntu'
+                     },
+                     max_builds=1),
 
         # Windows dellfx2-sled3
         create_slave("as-builder-3", max_builds=1),
