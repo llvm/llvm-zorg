@@ -1544,6 +1544,14 @@ def _get_documentation_builders():
                'builddir':"libunwind-sphinx-docs",
                'factory': SphinxDocsBuilder.getSphinxDocsBuildFactory(libunwind_html=True),
                'category' : 'libunwind'
+             },
+             # Sphinx doc Publisher
+             {
+               'name':"publish-sphinx-docs",
+               'slavenames':["as-bldslv5"],
+               'builddir':"publish-sphinx-docs",
+               'factory': SphinxDocsBuilder.getLLVMDocsBuildFactory(clean=True),
+               'category' : 'doc'
              }
            ]
 
