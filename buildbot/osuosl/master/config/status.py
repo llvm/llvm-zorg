@@ -214,6 +214,15 @@ def get_status_targets(standard_builders, standard_categories=None):
             num_lines = 15),
         InformativeMailNotifier(
             fromaddr = "llvm.buildmaster@lab.llvm.org",
+            sendToInterestedUsers = False,
+            extraRecipients = ["stilis@microsoft.com", "namcvica@microsoft.com"],
+            subject="Build %(builder)s Failure",
+            mode = "failing",
+            builders = ["mlir-windows"],
+            addLogs=False,
+            num_lines = 15),
+        InformativeMailNotifier(
+            fromaddr = "llvm.buildmaster@lab.llvm.org",
             sendToInterestedUsers= False,
             extraRecipients = ["phosek@google.com"],
             subject="Build %(builder)s Failure",

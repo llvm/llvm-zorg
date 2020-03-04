@@ -1063,6 +1063,21 @@ def _get_mlir_builders():
                             'CXX': 'clang++',
                             'LD': 'lld',
                         })},
+        {'name': "mlir-windows",
+        'mergeRequests': False,
+        'slavenames':["win-mlir-buildbot"],
+        'builddir': "mlir-x64-windows-ninja",
+        'category' : 'mlir',
+        'factory': UnifiedTreeBuilder.getCmakeWithNinjaWithMSVCBuildFactory(
+                        clean=True,
+                        depends_on_projects=['llvm','mlir'],
+                        vs="autodetect",
+                        checks=['check-mlir'],
+                        extra_configure_args=[
+                            '-DLLVM_BUILD_EXAMPLES=ON',
+                            '-DLLVM_ENABLE_PROJECTS=mlir',
+                            '-DLLVM_TARGETS_TO_BUILD="host;NVPTX;AMDGPU"',
+                        ]},
     ]
 
 # Sanitizer builders.
