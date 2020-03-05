@@ -1077,7 +1077,7 @@ def _get_mlir_builders():
                             '-DLLVM_BUILD_EXAMPLES=ON',
                             '-DLLVM_ENABLE_PROJECTS=mlir',
                             '-DLLVM_TARGETS_TO_BUILD="host;NVPTX;AMDGPU"',
-                        ]},
+                        ])},
     ]
 
 # Sanitizer builders.
