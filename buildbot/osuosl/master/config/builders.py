@@ -1074,9 +1074,9 @@ def _get_mlir_builders():
                         vs="autodetect",
                         checks=['check-mlir'],
                         extra_configure_args=[
-                            '-DLLVM_BUILD_EXAMPLES=ON',
-                            '-DLLVM_ENABLE_PROJECTS=mlir',
-                            '-DLLVM_TARGETS_TO_BUILD="host;NVPTX;AMDGPU"',
+                            "-DLLVM_BUILD_EXAMPLES=ON",
+                            "-DLLVM_ENABLE_PROJECTS=mlir",
+                            "-DLLVM_TARGETS_TO_BUILD='host;NVPTX;AMDGPU'",
                         ])},
     ]
 
