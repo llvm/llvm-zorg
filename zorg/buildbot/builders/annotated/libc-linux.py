@@ -10,10 +10,9 @@ def main(argv):
     ap.add_argument('--asan', action='store_true', default=False)
     args = ap.parse_args(argv[1:])
 
+    extra_cmake_args = ['-DCMAKE_BUILD_TYPE=Debug']
     if args.asan:
-        extra_cmake_args = ['-DLLVM_ENABLE_SANITIZER=Address']
-    else:
-        extra_cmake_args = []
+        extra_cmake_args.append('-DLLVM_USE_SANITIZER=Address')
 
     projects = ['llvm', 'libc']
     check_targets = ['check-libc']
