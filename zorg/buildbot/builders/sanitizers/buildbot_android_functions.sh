@@ -149,10 +149,10 @@ function test_on_device {
     local _arch=${_arg%:*}
     local _abi=${_arg#*:}
     if [[ $ABILIST == *"$_abi"* ]]; then
+      echo "$_serial" >> tested_arch_$_arch
       BUILD_ID=$(${ADB} -s $_serial shell getprop ro.build.id | tr -d '\r')
       BUILD_FLAVOR=$(${ADB} -s $_serial shell getprop ro.build.flavor | tr -d '\r')
       test_arch_on_device "$_arch" "$_serial" "$BUILD_ID" "$BUILD_FLAVOR"
-      echo "$_serial" >> tested_arch_$_arch
     fi
   done
 }
