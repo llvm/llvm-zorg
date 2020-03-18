@@ -742,8 +742,8 @@ def _get_clang_builders():
                       checkout_lld=False,
                       extra_cmake_args=['-DLLVM_ENABLE_ASSERTIONS=ON',
                                         # We need to compile the X86 backend due to a few generic CodeGen tests.
-                                        '-DLLVM_TARGETS_TO_BUILD=AVR;X86',
-                                        '-DLLVM_DEFAULT_TARGET_TRIPLE=avr-unknown-unknown',
+                                        '-DLLVM_TARGETS_TO_BUILD=X86',
+                                        '-DLLVM_EXPERIMENTAL_TARGETS_TO_BUILD=AVR',
                                         '-DBUILD_SHARED_LIBS=ON'])},
 
         {'name' : "clang-solaris11-amd64",
