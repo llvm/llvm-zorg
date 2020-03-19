@@ -842,7 +842,7 @@ def _get_aosp_builders():
                                   "-DCMAKE_CXX_COMPILER:FILEPATH=/local/clang+llvm-8.0.0-x86_64-linux-gnu-ubuntu-14.04/bin/clang++"],
                 timeout=240,
                 target_clang=None,
-                target_flags="-Wno-error -O3 -mllvm -polly -mllvm -polly-position=before-vectorizer -mllvm -polly-process-unprofitable",
+                target_flags="-Wno-error -O3 -mllvm -polly -mllvm -polly-position=before-vectorizer -mllvm -polly-process-unprofitable -fcommon",
                 jobs=8,
                 extra_make_args=None,
                 env={'LD_LIBRARY_PATH': '/local/clang+llvm-8.0.0-x86_64-linux-gnu-ubuntu-14.04/lib'},
