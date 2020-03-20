@@ -1053,7 +1053,7 @@ def _get_mlir_builders():
                         extra_configure_args=[
                             '-DLLVM_BUILD_EXAMPLES=ON',
                             '-DLLVM_ENABLE_CXX1Y=Y',
-                            '-DLLVM_TARGETS_TO_BUILD="host;NVPTX"',
+                            '-DLLVM_TARGETS_TO_BUILD=host;NVPTX',
                             '-DLLVM_ENABLE_PROJECTS=mlir',
                             '-DMLIR_CUDA_RUNNER_ENABLED=1',
                             '-DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc',
