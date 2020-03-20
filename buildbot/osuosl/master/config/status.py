@@ -280,3 +280,12 @@ def get_status_targets(standard_builders, standard_categories=None):
             builders = ["libc-x86_64-debian", "libc-x86_64_debian-asan"],
             addLogs=False),
         ]
+         InformativeMailNotifier(
+            fromaddr = "llvm.buildmaster@lab.llvm.org",
+            sendToInterestedUsers = True,
+            extraRecipients = ["aaron@aaronballman.com"],
+            subject="Sphinx build %(builder)s Failure",
+            mode = "failing",
+            builders = ["publish-sphinx-docs"],
+            addLogs=False),
+        ]
