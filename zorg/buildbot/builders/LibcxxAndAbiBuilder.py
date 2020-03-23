@@ -102,7 +102,7 @@ def getLibcxxAndAbiBuilder(f=None, env=None, additional_features=None,
     # Test libc++abi
     f.addStep(LitTestCommand(
         name            = 'test.libcxxabi',
-        command         = ['make', jobs_flag, 'check-libcxxabi'],
+        command         = ['make', jobs_flag, 'check-cxxabi'],
         description     = ['testing', 'libcxxabi'],
         descriptionDone = ['test', 'libcxxabi'],
         workdir         = build_path))
@@ -110,7 +110,7 @@ def getLibcxxAndAbiBuilder(f=None, env=None, additional_features=None,
     # Test libc++
     f.addStep(LitTestCommand(
         name            = 'test.libcxx',
-        command         = ['make', jobs_flag, 'check-libcxx'],
+        command         = ['make', jobs_flag, 'check-cxx'],
         description     = ['testing', 'libcxx'],
         descriptionDone = ['test', 'libcxx'],
         workdir         = build_path))
