@@ -53,7 +53,7 @@ def _get_clang_fast_builders():
                         })},
 
         {'name': "clang-x86_64-debian-new-pass-manager-fast",
-         'slavenames':["gribozavr5"],
+         'slavenames':["gribozavr4"],
          'builddir':"clang-x86_64-debian-new-pass-manager-fast",
          'factory': UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                         llvm_srcdir="llvm.src",
@@ -133,7 +133,7 @@ def _get_clang_fast_builders():
 
         {'name': "llvm-clang-x86_64-expensive-checks-debian",
          'mergeRequests': False,
-         'slavenames': ["gribozavr5"],
+         'slavenames': ["gribozavr4"],
          'builddir':"llvm-clang-x86_64-expensive-checks-debian",
          'factory': UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                       depends_on_projects=["llvm"],
