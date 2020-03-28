@@ -4,6 +4,7 @@ from buildbot.steps.shell import SetProperty
 
 from zorg.buildbot.commands.CmakeCommand import CmakeCommand
 from zorg.buildbot.commands.NinjaCommand import NinjaCommand
+from zorg.buildbot.commands.LitTestCommand import LitTestCommand
 
 from zorg.buildbot.conditions.FileConditions import FileDoesNotExist
 from zorg.buildbot.process.factory import LLVMBuildFactory
@@ -195,19 +196,20 @@ def addNinjaSteps(
 
     # Test just built components if requested.
     for check in checks:
-      f.addStep(NinjaCommand(name="test-%s%s" % (step_name, check),
-                             targets=[check],
-                             description=[
-                                 "Test", "just", "built", "components", "for",
-                                 check,
+        f.addStep(LitTestCommand(name="test-%s%s" % (step_name, check),
+                                 command=['ninja', check],
+                                 description=[
+                                   "Test", "just", "built", "components", "for",
+                                   check,
                                  ],
-                             env=env,
-                             workdir=obj_dir,
-                             **kwargs # Pass through all the extra arguments.
-                             ))
+                                 env=env,
+                                 workdir=obj_dir,
+                                 **kwargs # Pass through all the extra arguments.
+                                 ))
 
     # Install just built components
     if install_dir:
+        # TODO: Run this step only if none of the prevous failed.
         f.addStep(NinjaCommand(name="install-%sall" % step_name,
                                targets=["install"],
                                description=["Install", "just", "built", "components"],
