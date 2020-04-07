@@ -17,8 +17,7 @@ def main(argv):
 
     source_dir = os.path.join('..', 'llvm-project')
 
-    # Cmake step
-    with step('cmake'):
+    with step('cmake', halt_on_fail=True):
         projects = ['llvm', 'libc']
 
         cmake_args = ['-GNinja', '-DCMAKE_BUILD_TYPE=Debug']
@@ -28,24 +27,22 @@ def main(argv):
 
         run_command(['cmake', os.path.join(source_dir, 'llvm')] + cmake_args)
 
-    # Build and test step
-    with step('ninja: build and check'):
+    with step('build llvmlibc', halt_on_fail=True):
+        run_command(['ninja', 'llvmlibc'])
+
+    with step('check-libc'):
         run_command(['ninja', 'check-libc'])
 
-    # AOR tests step
     if not args.asan:
-        # Loader tests step
-        with step('Loader Tests', halt_on_fail=False):
+        with step('Loader Tests'):
             run_command(['ninja', 'libc_loader_tests'])
-        # AOR tests step
         with step('AOR Tests'):
             aor_dir = os.path.join(source_dir, 'libc', 'AOR_v20.02')
             run_command(['make', 'check'], directory=aor_dir)
 
 
-
 @contextmanager
-def step(step_name, halt_on_fail=True):
+def step(step_name, halt_on_fail=False):
     util.report('@@@BUILD_STEP {}@@@'.format(step_name))
     if halt_on_fail:
         util.report('@@@HALT_ON_FAILURE@@@')
@@ -62,6 +59,7 @@ def step(step_name, halt_on_fail=True):
         util.report('@@@STEP_FAILURE@@@')
     finally:
         sys.stdout.flush()
+
 
 def run_command(cmd, directory='.'):
     util.report_run_cmd(cmd, cwd=directory)
