@@ -14,23 +14,33 @@ def main(argv):
     ap.add_argument('--asan', action='store_true', default=False)
     args = ap.parse_args(argv[1:])
 
-    extra_cmake_args = ['-DCMAKE_BUILD_TYPE=Debug']
-    if args.asan:
-        extra_cmake_args.append('-DLLVM_USE_SANITIZER=Address')
+    source_dir = os.path.join('..', 'llvm-project')
 
-    projects = ['llvm', 'libc']
-    check_targets = ['check-libc']
+    # Cmake step
+    with step('cmake'):
+        projects = ['llvm', 'libc']
 
-    builder = annotated_builder.AnnotatedBuilder()
-    builder.run_steps(projects=projects,
-                      check_targets=check_targets,
-                      extra_cmake_args=extra_cmake_args)
+        cmake_args = ['-GNinja', '-DCMAKE_BUILD_TYPE=Debug']
+        if args.asan:
+            cmake_args.append('-DLLVM_USE_SANITIZER=Address')
+        cmake_args.append('-DLLVM_ENABLE_PROJECTS={}'.format(';'.join(projects)))
+
+        run_command(['cmake', os.path.join(source_dir, 'llvm')] + cmake_args)
+
+    # Build and test step
+    with step('ninja: build and check'):
+        run_command(['ninja', 'check-libc'])
 
     # AOR tests step
     if not args.asan:
+        # Loader tests step
+        with step('Loader Tests', halt_on_fail=False):
+            run_command(['ninja', 'libc_loader_tests'])
+        # AOR tests step
         with step('AOR Tests'):
-            aor_dir = os.path.join('..', 'llvm-project', 'libc', 'AOR_v20.02')
+            aor_dir = os.path.join(source_dir, 'libc', 'AOR_v20.02')
             run_command(['make', 'check'], directory=aor_dir)
+
 
 
 @contextmanager
