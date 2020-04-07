@@ -1,17 +1,18 @@
 #!/usr/bin/python
 
+import argparse
 import os
 import subprocess
 import sys
 import traceback
 import util
 from contextlib import contextmanager
-import annotated_builder
 
 
 def main(argv):
-    ap = annotated_builder.get_argument_parser()
-    ap.add_argument('--asan', action='store_true', default=False)
+    ap = argparse.ArgumentParser()
+    ap.add_argument('--asan', action='store_true', default=False,
+                    help='Build with address sanitizer enabled.')
     args = ap.parse_args(argv[1:])
 
     source_dir = os.path.join('..', 'llvm-project')
