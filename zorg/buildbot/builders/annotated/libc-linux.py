@@ -13,7 +13,7 @@ def main(argv):
     ap = argparse.ArgumentParser()
     ap.add_argument('--asan', action='store_true', default=False,
                     help='Build with address sanitizer enabled.')
-    args = ap.parse_args(argv[1:])
+    args, _ = ap.parse_known_args()
 
     source_dir = os.path.join('..', 'llvm-project')
 
