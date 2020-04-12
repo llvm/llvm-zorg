@@ -956,9 +956,9 @@ def _get_lldb_builders():
 # LLD builders.
 def _get_lld_builders():
     return [
-        {'name': "lld-x86_64-darwin13",
+        {'name': "lld-x86_64-darwin",
          'slavenames' :["as-bldslv9"],
-         'builddir':"lld-x86_64-darwin13",
+         'builddir':"lld-x86_64-darwin",
          'factory': UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                         clean=True,
                         depends_on_projects=['llvm', 'lld'],
@@ -967,9 +967,9 @@ def _get_lld_builders():
                         ]),
          'category'   : 'lld'},
 
-        {'name': "lld-x86_64-win7",
+        {'name': "lld-x86_64-win",
          'slavenames' :["ps4-buildslave2"],
-         'builddir':"lld-x86_64-win7",
+         'builddir':"lld-x86_64-win",
          'factory': UnifiedTreeBuilder.getCmakeWithNinjaWithMSVCBuildFactory(
                         depends_on_projects=['llvm', 'lld'],
                         vs="autodetect",
