@@ -235,6 +235,7 @@ def getLLVMDocsBuildFactory(
                     '--delete', '--force', '--delay-updates', '--delete-delay',
                     '--ignore-times',
                     '--checksum',
+                    '-p', '--chmod=Du=rwx,Dg=rwx,Do=rx,Fu=rw,Fg=rw,Fo=r',
                     "%s" % local_path,
                     "lists.llvm.org:web/%s" % remote_path,
                     ],
