@@ -18,7 +18,7 @@ def main(argv):
     source_dir = os.path.join('..', 'llvm-project')
 
     with step('cmake', halt_on_fail=True):
-        projects = ['llvm', 'libc']
+        projects = ['llvm', 'libc', 'clang', 'clang-tools-extra']
 
         cmake_args = ['-GNinja', '-DCMAKE_BUILD_TYPE=Debug']
         if args.asan:
