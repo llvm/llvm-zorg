@@ -181,6 +181,13 @@ def _get_clang_fast_builders():
                         "check-unwind",
                         "check-cxxabi",
                       ],
+                      checks_on_target = [
+                        ("libc++",
+                         ['python', 'bin/llvm-lit.py',
+                          '-v', '-vv', '--threads=32',
+                          'runtimes/runtimes-bins/libcxx/test',
+                         ])
+                      ],
                       extra_configure_args=[
                         "-DDEFAULT_SYSROOT=C:/buildbot/.arm-ubuntu",
                         "-DLLVM_LIT_ARGS=-v -vv --threads=32",
