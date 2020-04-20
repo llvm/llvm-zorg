@@ -604,6 +604,7 @@ def _get_clang_builders():
          'slavenames' :["hexagon-build-02", "hexagon-build-03"],
          'builddir' :"clang-hexagon-elf",
          'factory' : ClangBuilder.getClangCMakeBuildFactory(
+            cmake='/local/cmake-3.17.0/bin/cmake',
             jobs=16,
             checkout_clang_tools_extra=False,
             checkout_compiler_rt=False,
@@ -802,6 +803,7 @@ def _get_polly_builders():
          'slavenames': ["hexagon-build-02", "hexagon-build-03"],
          'builddir': "polly-arm-linux",
          'factory': PollyBuilder.getPollyBuildFactory(
+                cmake='/local/cmake-3.17.0/bin/cmake',
                 clean=True,
                 install=True,
                 make='ninja',
@@ -839,6 +841,7 @@ def _get_aosp_builders():
          'factory': AOSPBuilder.getAOSPBuildFactory(
                 device="angler",
                 build_clang=True,
+                cmake='/local/cmake-3.17.0/bin/cmake',
                 extra_cmake_args=["-G", "Ninja",
                                   "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'",
                                   "-DLLVM_DEFAULT_TARGET_TRIPLE=arm-linux-androideabi",
@@ -865,6 +868,7 @@ def _get_rev_iter_builders():
          'slavenames': ["hexagon-build-02", "hexagon-build-03"],
          'builddir': "reverse-iteration",
          'factory': PollyBuilder.getPollyBuildFactory(
+                cmake='/local/cmake-3.17.0/bin/cmake',
                 clean=True,
                 make='ninja',
                 jobs=16,

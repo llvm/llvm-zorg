@@ -6,6 +6,7 @@ from zorg.buildbot.builders import ClangBuilder
 from zorg.buildbot.process.factory import LLVMBuildFactory
 
 def getPollyBuildFactory(
+    cmake='cmake',
     clean=False,
     install=False,
     make='make',
@@ -71,7 +72,7 @@ def getPollyBuildFactory(
                            doStepIf=cleanBuildRequested))
 
     # Create configuration files with cmake
-    cmakeCommand = ["cmake", "../%s/llvm" % llvm_srcdir,
+    cmakeCommand = [cmake, "../%s/llvm" % llvm_srcdir,
                     "-DCMAKE_COLOR_MAKEFILE=OFF",
                     "-DPOLLY_TEST_DISABLE_BAR=ON",
                     "-DPOLLY_ENABLE_GPGPU_CODEGEN=ON",

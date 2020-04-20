@@ -46,6 +46,7 @@ def getAOSPBuildCommand(
 def getAOSPBuildFactory(
     device,                # Target device for AOSP build
     build_clang=False,     # Flag to control building Clang for AOSP target build
+    cmake='cmake',         # Cmake executable
     extra_cmake_args=[],   # Extra args for the LLVM cmake command
                            # This flag is ignored if build_clang is False
     timeout=None,          # Maximum CPU time in seconds, umlimited if 'None'
@@ -64,7 +65,8 @@ def getAOSPBuildFactory(
 
     # Build Clang for AOSP target build
     if build_clang:
-        f = PollyBuilder.getPollyBuildFactory(clean=True,
+        f = PollyBuilder.getPollyBuildFactory(cmake=cmake,
+                                              clean=True,
                                               install=True,
                                               make='ninja',
                                               jobs=jobs,
