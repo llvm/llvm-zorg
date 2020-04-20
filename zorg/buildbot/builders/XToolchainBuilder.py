@@ -18,6 +18,8 @@ def getCmakeWithMSVCBuildFactory(
         obj_dir = None,              # Build tree root directory.
         install_dir = None,          # Directory to install the results to.
         checks = None,               # List of checks to test the build.
+        checks_on_target = None,     # [(<name>,[<command tokens>])] array of
+                                     # check name and command to run on target.
         jobs = None,                 # Restrict a degree of parallelism.
         env  = None,                 # Environmental variables for all steps.
         # VS tools environment variable if using MSVC.
@@ -190,6 +192,23 @@ def getCmakeWithMSVCBuildFactory(
                 env=merged_env,
                 **kwargs # Pass through all the extra arguments.
                 ))
+
+    # Run commands on a target if requested.
+    if checks_on_target:
+        for check, cmd in checks_on_target:
+            f.addStep(
+                LitTestCommand(
+                    haltOnFailure=False, # We want to test as much as we could.
+                    name='test-%s' % check,
+                    command=cmd,
+                    description=[
+                        "Testing", "just", "built", "components", "for", check],
+                    descriptionDone=[
+                        "Test", "just", "built", "components", "for", check,
+                        "completed"],
+                    env=merged_env,
+                    **kwargs # Pass through all the extra arguments.
+                    ))
 
     # Install just built components
     if install_dir:
