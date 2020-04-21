@@ -39,7 +39,7 @@ def main(argv):
         with step('AOR Tests'):
             aor_dir = os.path.join(source_dir, 'libc', 'AOR_v20.02')
             # Remove the AOR build dir.
-            util.rmtree(os.path.join(aor_dir, 'build'))
+            util.clean_dir(os.path.join(aor_dir, 'build'))
             run_command(['make', 'check'], directory=aor_dir)
 
 
