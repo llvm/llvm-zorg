@@ -35,7 +35,7 @@ function buildbot_update {
         git remote add origin https://github.com/llvm/llvm-project.git
       )
       cd llvm-project
-      git fetch --depth $DEPTH origin
+      git fetch --depth $DEPTH origin master
       git clean -fd
       local REV=
       if [[ "$BUILDBOT_REVISION" == "" ]] ; then
