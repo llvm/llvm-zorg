@@ -50,6 +50,7 @@ RunFuzzerTest() {
   ln -sf $LIBFUZZER .
   export FUZZING_ENGINE=fsanitize_fuzzer
   `pwd`/fuzzer-test-suite/build-and-test.sh "$1"
+  echo
 }
 
 ulimit -t 3600
