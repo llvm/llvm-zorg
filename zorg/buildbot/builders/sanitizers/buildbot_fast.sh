@@ -29,7 +29,6 @@ buildbot_update
 # Stage 2 / Memory Sanitizer
 
 build_stage2_msan
-exit 0
 
 check_stage2_msan
 
