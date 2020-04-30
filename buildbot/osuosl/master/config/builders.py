@@ -1519,11 +1519,11 @@ def _get_experimental_scheduled_builders():
          'builddir':"clang-ve-ninja",
          'factory': UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                         clean=True,
-                        depends_on_projects=['llvm','clang'],
+                        depends_on_projects=['llvm','clang','openmp'],
                         extra_configure_args=[
                             "-DLLVM_TARGETS_TO_BUILD=X86",
                             "-DLLVM_EXPERIMENTAL_TARGETS_TO_BUILD=VE",
-                            "-DLLVM_ENABLE_PROJECTS=clang",
+                            "-DLLVM_ENABLE_PROJECTS=clang;openmp",
                         ],
          ),
          'category' : 'clang'},
