@@ -235,4 +235,7 @@ def get_build_slaves():
 
         # Ubuntu 18.04.LTS x86_64, Intel(R) Xeon(R) CPU X3460 @ 2.80GHz, 32 GiB RAM
         create_slave("polly-x86_64-fdcserver", properties={'jobs': 8, 'loadaverage': 8}, max_builds=1),
+
+        create_slave("flang-aarch64-ubuntu-build"),
+        create_slave("nersc-flang"),
         ]
