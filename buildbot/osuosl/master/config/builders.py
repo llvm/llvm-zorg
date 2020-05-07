@@ -1483,6 +1483,38 @@ def _get_libc_builders():
              extra_args=['--asan'])},
     ]
 
+# Flang builders.
+def _get_flang_builders():
+    return [
+        {'name': "flang-aarch64-ubuntu",
+         'slavenames':["flang-aarch64-ubuntu-build"],
+         'builddir':"flang-aarch64-ubuntu-build",
+         'factory': UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
+                        clean=True,
+                        depends_on_projects=['llvm','mlir','clang','flang'],
+                        extra_configure_args=[
+                            "-DLLVM_TARGETS_TO_BUILD=AArch64",
+                            "-DCMAKE_C_COMPILER=/usr/bin/gcc-9",
+                            "-DCMAKE_CXX_COMPILER=/usr/bin/g++-9",
+                            "-DLLVM_INSTALL_UTILS=ON",
+                            "-DCMAKE_CXX_STANDARD=17",
+                        ],
+         ),
+         'category' : 'flang'},
+
+        {'name': "flang-x86_64-linux",
+         'slavenames':["nersc-flang"],
+         'builddir':"flang-x86_64-linux",
+         'factory': UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
+                        depends_on_projects=['llvm','mlir','clang','flang'],
+                        extra_configure_args=[
+                            "-DLLVM_INSTALL_UTILS=ON",
+                            "-DCMAKE_CXX_STANDARD=17",
+                        ],
+         ),
+         'category' : 'flang'},
+        ]
+
 # Experimental and stopped builders
 def _get_on_demand_builders():
     return [
@@ -1646,6 +1678,10 @@ def get_builders():
 
     for b in _get_libc_builders():
         b['category'] = 'libc'
+        yield b
+
+    for b in _get_flang_builders():
+        b['category'] = 'flang'
         yield b
 
     for b in _get_documentation_builders():
