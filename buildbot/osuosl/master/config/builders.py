@@ -1555,7 +1555,6 @@ def _get_experimental_scheduled_builders():
                         extra_configure_args=[
                             "-DLLVM_TARGETS_TO_BUILD=X86",
                             "-DLLVM_EXPERIMENTAL_TARGETS_TO_BUILD=VE",
-                            "-DLLVM_ENABLE_PROJECTS=clang;openmp",
                         ],
          ),
          'category' : 'clang'},
