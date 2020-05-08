@@ -13,6 +13,8 @@ def main(argv):
     ap = argparse.ArgumentParser()
     ap.add_argument('--asan', action='store_true', default=False,
                     help='Build with address sanitizer enabled.')
+    ap.add_argument('--debug', action='store_true', default=False,
+                    help='Build in debug mode.')
     args, _ = ap.parse_known_args()
 
     source_dir = os.path.join('..', 'llvm-project')
@@ -20,9 +22,15 @@ def main(argv):
     with step('cmake', halt_on_fail=True):
         projects = ['llvm', 'libc', 'clang', 'clang-tools-extra']
 
-        cmake_args = ['-GNinja', '-DCMAKE_BUILD_TYPE=Debug']
+        cmake_args = ['-GNinja']
+        if args.debug:
+            cmake_args.append('-DCMAKE_BUILD_TYPE=Debug')
+        else:
+            cmake_args.append('-DCMAKE_BUILD_TYPE=Release')
+
         if args.asan:
             cmake_args.append('-DLLVM_USE_SANITIZER=Address')
+
         cmake_args.append('-DLLVM_ENABLE_PROJECTS={}'.format(';'.join(projects)))
 
         run_command(['cmake', os.path.join(source_dir, 'llvm')] + cmake_args)

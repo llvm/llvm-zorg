@@ -1471,16 +1471,25 @@ def _get_libc_builders():
          'category': 'libc',
          'factory' : AnnotatedBuilder.getAnnotatedBuildFactory(
              script="libc-linux.py",
-             depends_on_projects=['llvm', 'libc'])},
+             depends_on_projects=['llvm', 'libc', 'clang', 'clang-tools-extra'])},
 
-        {'name': "libc-x86_64-debian-asan",
+        {'name': "libc-x86_64-debian-dbg",
          'slavenames': ["libc-x86_64-debian"],
-         'builddir': "libc-x86_64-debian-asan",
+         'builddir': "libc-x86_64-debian-dbg",
          'category' : 'libc',
          'factory' : AnnotatedBuilder.getAnnotatedBuildFactory(
              script="libc-linux.py",
-             depends_on_projects=['llvm', 'libc'],
-             extra_args=['--asan'])},
+             depends_on_projects=['llvm', 'libc', 'clang', 'clang-tools-extra'],
+             extra_args=['--debug'])},
+
+        {'name': "libc-x86_64-debian-dbg-asan",
+         'slavenames': ["libc-x86_64-debian"],
+         'builddir': "libc-x86_64-debian-dbg-asan",
+         'category' : 'libc',
+         'factory' : AnnotatedBuilder.getAnnotatedBuildFactory(
+             script="libc-linux.py",
+             depends_on_projects=['llvm', 'libc', 'clang', 'clang-tools-extra'],
+             extra_args=['--debug', '--asan'])},
     ]
 
 # Flang builders.
