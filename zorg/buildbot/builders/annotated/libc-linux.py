@@ -50,6 +50,10 @@ def main(argv):
             util.clean_dir(os.path.join(aor_dir, 'build'))
             run_command(['make', 'check'], directory=aor_dir)
 
+    if not args.debug:
+        with step('Benchmark Utils Tests'):
+            run_command(['ninja', 'libc-benchmark-util-tests'])
+
 
 @contextmanager
 def step(step_name, halt_on_fail=False):
