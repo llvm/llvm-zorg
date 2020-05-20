@@ -830,7 +830,7 @@ def _get_polly_builders():
                                 "-DCMAKE_C_COMPILER:FILEPATH=/local/clang+llvm-8.0.0-x86_64-linux-gnu-ubuntu-14.04/bin/clang",
                                 "-DCMAKE_CXX_COMPILER:FILEPATH=/local/clang+llvm-8.0.0-x86_64-linux-gnu-ubuntu-14.04/bin/clang++"])},
         {'name': "polly-x86_64-linux",
-         'slavenames': ["polly-x86_64-fdcserver", "polly-x86_64-gce1", "polly-x86_64-gce2"],
+         'slavenames': ["polly-x86_64-fdcserver", "polly-x86_64-gce1"],
          'builddir': "polly-x86_64-linux",
          'factory': PollyBuilder.getPollyBuildFactory(
                 clean=False,
@@ -841,7 +841,23 @@ def _get_polly_builders():
                                 "-DLLVM_TARGETS_TO_BUILD='X86;NVPTX'",
                                 "-DCLANG_ENABLE_ARCMT=OFF",
                                 "-DCLANG_ENABLE_STATIC_ANALYZER=OFF",
-                                ])}
+                                ])},
+        {'name': "polly-x86_64-linux-test-suite",
+         'slavenames': ["polly-x86_64-fdcserver", "polly-x86_64-gce2"],
+         'builddir':"polly-x86_64-linux-test-suite",
+         'factory': PollyBuilder.getPollyBuildFactory(
+                clean=False,
+                install=False,
+                make='ninja',
+                extraCmakeArgs=["-G", "Ninja",
+                                "-DLLVM_ENABLE_ASSERTIONS=True",
+                                "-DLLVM_TARGETS_TO_BUILD='X86;NVPTX'",
+                                "-DCLANG_ENABLE_ARCMT=OFF",
+                                "-DCLANG_ENABLE_STATIC_ANALYZER=OFF",
+                                ],
+                testsuite=True,
+                extraTestsuiteCmakeArgs=["-G", "Ninja"]
+                )}
        ]
 
 # AOSP builders.
