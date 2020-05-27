@@ -285,9 +285,8 @@ def _get_clang_builders():
                       useTwoStage=False,
                       runTestSuite=True,
                       testsuite_flags=['--cppflags', '-mcpu=cortex-a15 -marm',
-                                       '--threads=4', '--build-threads=4'],
-                      extra_cmake_args=["-DLLVM_TARGETS_TO_BUILD='ARM'",
-                                        "-DLLVM_PARALLEL_LINK_JOBS=2"])},
+                                       '--threads=32', '--build-threads=32'],
+                      extra_cmake_args=["-DLLVM_TARGETS_TO_BUILD='ARM'"])},
 
         ## ARMv7 check-all self-host NEON with CMake builder
         {'name': "clang-cmake-armv7-selfhost-neon",
@@ -301,8 +300,7 @@ def _get_clang_builders():
                       testStage1=False,
                       extra_cmake_args=["-DCMAKE_C_FLAGS='-mcpu=cortex-a15 -marm'",
                                         "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a15 -marm'",
-                                        "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'",
-                                        "-DLLVM_PARALLEL_LINK_JOBS=2"])},
+                                        "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'"])},
 
         ## ARMv7 check-all with CMake builder
         {'name': "clang-cmake-armv7-quick",
@@ -312,8 +310,7 @@ def _get_clang_builders():
                       clean=False,
                       checkout_compiler_rt=False,
                       checkout_lld=False,
-                      extra_cmake_args=["-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'",
-                                        "-DLLVM_PARALLEL_LINK_JOBS=2"])},
+                      extra_cmake_args=["-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'"])},
 
         ## ARMv7 Clang + LLVM run test-suite with GlobalISel enabled
         {'name' : "clang-cmake-armv7-global-isel",
@@ -327,9 +324,8 @@ def _get_clang_builders():
                       useTwoStage=False,
                       runTestSuite=True,
                       testsuite_flags=['--cppflags', '-mcpu=cortex-a15 -marm -O0 -mllvm -global-isel -mllvm -global-isel-abort=0',
-                                       '--threads=4', '--build-threads=4'],
-                      extra_cmake_args=["-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'",
-                                        "-DLLVM_PARALLEL_LINK_JOBS=2"])},
+                                       '--threads=32', '--build-threads=32'],
+                      extra_cmake_args=["-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'"])},
 
         ## ARMv7 check-all self-host with CMake builder
         {'name': "clang-cmake-armv7-selfhost",
@@ -343,8 +339,7 @@ def _get_clang_builders():
                       testStage1=False,
                       extra_cmake_args=["-DCMAKE_C_FLAGS='-mcpu=cortex-a15 -mfpu=vfpv3 -marm'",
                                         "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a15 -mfpu=vfpv3 -marm'",
-                                        "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'",
-                                        "-DLLVM_PARALLEL_LINK_JOBS=2"])},
+                                        "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'"])},
 
         ## AArch64 Clang+LLVM check-all + test-suite
         {'name': "clang-cmake-aarch64-quick",
@@ -358,7 +353,7 @@ def _get_clang_builders():
                       useTwoStage=False,
                       runTestSuite=True,
                       testsuite_flags=['--cppflags', '-mcpu=cortex-a57',
-                                       '--threads=96', '--build-threads=96'],
+                                       '--threads=32', '--build-threads=32'],
                       extra_cmake_args=["-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'"],
                )},
 
@@ -374,7 +369,7 @@ def _get_clang_builders():
                       useTwoStage=True,
                       runTestSuite=True,
                       testsuite_flags=['--cppflags', '-mcpu=cortex-a57 -fuse-ld=lld',
-                                       '--threads=96', '--build-threads=96'],
+                                       '--threads=32', '--build-threads=32'],
                       extra_cmake_args=["-DCMAKE_C_FLAGS='-mcpu=cortex-a57'",
                                         "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a57'",
                                         "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'",
@@ -394,7 +389,7 @@ def _get_clang_builders():
                       useTwoStage=False,
                       runTestSuite=True,
                       testsuite_flags=['--cppflags', '-O0',
-                                       '--threads=96', '--build-threads=96'],
+                                       '--threads=32', '--build-threads=32'],
                       extra_cmake_args=["-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'"],
                )},
 
@@ -447,7 +442,7 @@ def _get_clang_builders():
                       useTwoStage=True,
                       runTestSuite=True,
                       testsuite_flags=['--cppflags', '-mcpu=cortex-a57 -fuse-ld=lld',
-                                       '--threads=64', '--build-threads=64'],
+                                       '--threads=32', '--build-threads=32'],
                       extra_cmake_args=["-DCMAKE_C_FLAGS='-mcpu=cortex-a57'",
                                         "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a57'",
                                         "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'",
@@ -469,7 +464,7 @@ def _get_clang_builders():
                       testStage1=False,
                       runTestSuite=True,
                       testsuite_flags=['--cppflags', '-mcpu=cortex-a57',
-                                       '--threads=96', '--build-threads=96'],
+                                       '--threads=32', '--build-threads=32'],
                       extra_cmake_args=["-DCMAKE_C_FLAGS='-mcpu=cortex-a57'",
                                         "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a57'",
                                         "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'"],
