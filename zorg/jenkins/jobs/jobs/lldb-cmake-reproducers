@@ -76,18 +76,5 @@ pipeline {
             scanForIssues tool: clang()
             junit 'test/results.xml'
         }
-        changed {
-            emailext subject: '$DEFAULT_SUBJECT',
-                    presendScript: '$DEFAULT_PRESEND_SCRIPT',
-                    postsendScript: '$DEFAULT_POSTSEND_SCRIPT',
-                    recipientProviders: [
-                            [$class: 'CulpritsRecipientProvider'],
-                            [$class: 'DevelopersRecipientProvider'],
-                            [$class: 'RequesterRecipientProvider'],
-                    ],
-                    replyTo: '$DEFAULT_REPLYTO',
-                    to: '$DEFAULT_RECIPIENTS',
-                    body:'$DEFAULT_CONTENT'
-        }
     }
 }
