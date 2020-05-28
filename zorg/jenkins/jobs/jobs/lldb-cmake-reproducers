@@ -1,0 +1,93 @@
+#!/usr/bin/env groovy
+pipeline {
+    agent { label 'green-dragon-23' }
+    parameters {
+        string(name: 'GIT_REVISION', defaultValue: '*/master', description: 'Git revision to build')
+        string(name: 'ARTIFACT', defaultValue: 'clang-stage1-RA/latest', description: 'Compiler artifact to use for building the project')
+        string(name: 'BUILD_TYPE', defaultValue: 'Release', description: 'Default CMake build type; one of: Release, Debug, ...')
+        string(name: 'CLEAN', defaultValue: "false", description: 'Whether or not to clean the build directory before building')
+    }
+    stages {
+        stage('Checkout') {
+            steps {
+                timeout(30) {
+                    dir('llvm-project') {
+                        checkout([$class: 'GitSCM', branches: [[name: params.GIT_REVISION]], userRemoteConfigs: [[url: 'http://labmaster3.local/git/llvm-project.git']]])
+                    }
+                    dir('llvm-zorg') {
+                        checkout([$class: 'GitSCM', branches: [[name: '*/master']], userRemoteConfigs: [[url: 'http://labmaster3.local/git/llvm-zorg.git']]])
+                    }
+                }
+            }
+        }
+        stage('Fetch Host Compiler') {
+        steps {
+            timeout(10) {
+                    sh '''
+                    python llvm-zorg/zorg/jenkins/monorepo_build.py fetch
+                    '''
+                }
+            }
+        }
+        stage('Build') {
+            steps {
+                timeout(90) {
+                    sh '''
+                    set -u
+                    rm -rf build.properties
+
+                    cd llvm-project
+                    git tag -a -m "First Commit" first_commit 97724f18c79c7cc81ced24239eb5e883bf1398ef || true
+
+                    git_desc=$(git describe --match "first_commit")
+
+                    export GIT_DISTANCE=$(echo ${git_desc} | cut -f 2 -d "-")
+
+                    sha=$(echo ${git_desc} | cut -f 3 -d "-")
+                    export GIT_SHA=${sha:1}
+
+                    cd -
+
+                    python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake build \
+                      --assertions \
+                      --projects="clang;libcxx;libcxxabi;compiler-rt;lld;lldb;debuginfo-tests"  \
+                      --compiler-flag="-Wdocumentation" \
+                      --cmake-type=Release
+                    '''
+                }
+            }
+        }
+        stage('Test Reproducers') {
+            steps {
+                timeout(120) {
+                    sh '''
+                    set -u
+                    export PATH=$PATH:/usr/bin:/usr/local/bin
+                    rm -rf test/results.xml
+                    python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake \
+                        --cmake-test-target check-lldb-reproducers
+                    '''
+                }
+            }
+        }
+    }
+    post {
+        always {
+            scanForIssues tool: clang()
+            junit 'test/results.xml'
+        }
+        changed {
+            emailext subject: '$DEFAULT_SUBJECT',
+                    presendScript: '$DEFAULT_PRESEND_SCRIPT',
+                    postsendScript: '$DEFAULT_POSTSEND_SCRIPT',
+                    recipientProviders: [
+                            [$class: 'CulpritsRecipientProvider'],
+                            [$class: 'DevelopersRecipientProvider'],
+                            [$class: 'RequesterRecipientProvider'],
+                    ],
+                    replyTo: '$DEFAULT_REPLYTO',
+                    to: '$DEFAULT_RECIPIENTS',
+                    body:'$DEFAULT_CONTENT'
+        }
+    }
+}
