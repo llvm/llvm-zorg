@@ -19,7 +19,7 @@ def get_build_slaves():
         # Mac Pro 2.7 GHz 12-Core Intel Xeon E5, Maverick 10.9.2
         create_slave("as-bldslv9", properties={'jobs' : 8}, max_builds=4),
 
-        # ARMv7 Linaro slaves
+        # ARMv7/ARMv8 Linaro slaves
         create_slave("linaro-tk1-01", properties={'jobs' : 4}, max_builds=1),
         create_slave("linaro-tk1-02", properties={'jobs' : 4}, max_builds=1),
         create_slave("linaro-tk1-03", properties={'jobs' : 4}, max_builds=1),
@@ -29,28 +29,25 @@ def get_build_slaves():
         create_slave("linaro-tk1-07", properties={'jobs' : 4}, max_builds=1),
         create_slave("linaro-tk1-08", properties={'jobs' : 4}, max_builds=1),
         create_slave("linaro-tk1-09", properties={'jobs' : 4}, max_builds=1),
-        create_slave("linaro-armv8-01-arm-lnt", properties={'jobs' : 64}, max_builds=1),
-        create_slave("linaro-armv8-01-arm-selfhost-neon", properties={'jobs' : 64}, max_builds=1),
-        create_slave("linaro-armv8-01-arm-quick", properties={'jobs' : 64}, max_builds=1),
-        create_slave("linaro-armv8-01-arm-global-isel", properties={'jobs' : 64}, max_builds=1),
-        create_slave("linaro-armv8-01-arm-lld", properties={'jobs' : 64}, max_builds=1),
+        create_slave("linaro-armv7-lnt", properties={'jobs' : 32}, max_builds=1),
+        create_slave("linaro-armv7-selfhost", properties={'jobs' : 32}, max_builds=1),
+        create_slave("linaro-armv7-quick", properties={'jobs' : 32}, max_builds=1),
+        create_slave("linaro-armv7-global-isel", properties={'jobs' : 32}, max_builds=1),
+        create_slave("linaro-armv8-lld", properties={'jobs' : 32}, max_builds=1),
         # Libcxx testsuite has tests with timing assumptions.  Run single-threaded to make
         # sure we have plenty CPU cycle to satisfy timing assumptions.
-        create_slave("linaro-armv8-01-arm-libcxx", properties={'jobs' : 1}, max_builds=1),
-        create_slave("linaro-armv8-01-arm-libcxx-noeh", properties={'jobs' : 1}, max_builds=1),
-        create_slave("linaro-armv8-01-lldb-arm", properties={'jobs' : 8}, max_builds=1),
-        # Packet.Net ThunderX1 for LLDB buildbot - Ubuntu Xenial 16.04 arm64 container
-        create_slave("linaro-thx1-lldb-aarch64", properties={'jobs': 32}, max_builds=1),
+        create_slave("linaro-armv8-libcxx", properties={'jobs' : 1}, max_builds=1),
+        create_slave("linaro-arm-lldb", properties={'jobs' : 32}, max_builds=1),
 
         # AArch64 Linaro slaves
-        create_slave("linaro-armv8-01-aarch64-quick", properties={'jobs' : 64}, max_builds=1),
-        create_slave("linaro-armv8-01-aarch64-full", properties={'jobs' : 64}, max_builds=1),
-        create_slave("linaro-armv8-01-aarch64-global-isel", properties={'jobs' : 64}, max_builds=1),
-        create_slave("linaro-armv8-01-aarch64-lld", properties={'jobs' : 64}, max_builds=1),
+        create_slave("linaro-aarch64-quick", properties={'jobs' : 32}, max_builds=1),
+        create_slave("linaro-aarch64-full", properties={'jobs' : 32}, max_builds=1),
+        create_slave("linaro-aarch64-global-isel", properties={'jobs' : 32}, max_builds=1),
+        create_slave("linaro-aarch64-lld", properties={'jobs' : 32}, max_builds=1),
         # Libcxx testsuite has tests with timing assumptions.  Run single-threaded to make
         # sure we have plenty CPU cycle to satisfy timing assumptions.
-        create_slave("linaro-armv8-01-aarch64-libcxx", properties={'jobs' : 1}, max_builds=1),
-        create_slave("linaro-armv8-01-aarch64-libcxx-noeh", properties={'jobs' : 1}, max_builds=1),
+        create_slave("linaro-aarch64-libcxx", properties={'jobs' : 1}, max_builds=1),
+        create_slave("linaro-aarch64-lldb", properties={'jobs': 32}, max_builds=1),
 
         # ARMv7 build cache slave
         create_slave("packet-linux-armv7-slave-1", properties={'jobs' : 64}, max_builds=1),

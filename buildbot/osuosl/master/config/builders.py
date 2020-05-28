@@ -275,7 +275,7 @@ def _get_clang_builders():
 
         # ARMv7 LNT test-suite in test-only mode
         {'name' : "clang-cmake-armv7-lnt",
-         'slavenames':["linaro-armv8-01-arm-lnt"],
+         'slavenames':["linaro-armv7-lnt"],
          'builddir':"clang-cmake-armv7-lnt",
          'factory' : ClangBuilder.getClangCMakeBuildFactory(
                       clean=False,
@@ -290,7 +290,7 @@ def _get_clang_builders():
 
         ## ARMv7 check-all self-host NEON with CMake builder
         {'name': "clang-cmake-armv7-selfhost-neon",
-         'slavenames':["linaro-armv8-01-arm-selfhost-neon"],
+         'slavenames':["linaro-armv7-selfhost"],
          'builddir':"clang-cmake-armv7-selfhost-neon",
          'factory' : ClangBuilder.getClangCMakeBuildFactory(
                       clean=False,
@@ -304,7 +304,7 @@ def _get_clang_builders():
 
         ## ARMv7 check-all with CMake builder
         {'name': "clang-cmake-armv7-quick",
-         'slavenames':["linaro-armv8-01-arm-quick"],
+         'slavenames':["linaro-armv7-quick"],
          'builddir':"clang-cmake-armv7-quick",
          'factory' : ClangBuilder.getClangCMakeBuildFactory(
                       clean=False,
@@ -314,7 +314,7 @@ def _get_clang_builders():
 
         ## ARMv7 Clang + LLVM run test-suite with GlobalISel enabled
         {'name' : "clang-cmake-armv7-global-isel",
-         'slavenames':["linaro-armv8-01-arm-global-isel"],
+         'slavenames':["linaro-armv7-global-isel"],
          'builddir':"clang-cmake-armv7-global-isel",
          'factory' : ClangBuilder.getClangCMakeBuildFactory(
                       clean=False,
@@ -329,7 +329,7 @@ def _get_clang_builders():
 
         ## ARMv7 check-all self-host with CMake builder
         {'name': "clang-cmake-armv7-selfhost",
-         'slavenames':["linaro-armv8-01-arm-selfhost-neon"],
+         'slavenames':["linaro-armv7-selfhost"],
          'builddir':"clang-cmake-armv7-selfhost",
          'factory' : ClangBuilder.getClangCMakeBuildFactory(
                       clean=False,
@@ -343,7 +343,7 @@ def _get_clang_builders():
 
         ## AArch64 Clang+LLVM check-all + test-suite
         {'name': "clang-cmake-aarch64-quick",
-         'slavenames':["linaro-armv8-01-aarch64-quick"],
+         'slavenames':["linaro-aarch64-quick"],
          'builddir':"clang-cmake-aarch64-quick",
          'factory' : ClangBuilder.getClangCMakeBuildFactory(
                       clean=False,
@@ -359,7 +359,7 @@ def _get_clang_builders():
 
         ## AArch64 Self-hosting Clang+LLVM check-all + LLD + test-suite
         {'name': "clang-cmake-aarch64-lld",
-         'slavenames':["linaro-armv8-01-aarch64-lld"],
+         'slavenames':["linaro-aarch64-lld"],
          'builddir':"clang-cmake-aarch64-lld",
          'factory' : ClangBuilder.getClangCMakeBuildFactory(
                       clean=False,
@@ -379,7 +379,7 @@ def _get_clang_builders():
 
         ## AArch64 Clang+LLVM run test-suite at -O0 (GlobalISel is now default).
         {'name': "clang-cmake-aarch64-global-isel",
-         'slavenames':["linaro-armv8-01-aarch64-global-isel"],
+         'slavenames':["linaro-aarch64-global-isel"],
          'builddir':"clang-cmake-aarch64-global-isel",
          'factory' : ClangBuilder.getClangCMakeBuildFactory(
                       clean=False,
@@ -432,7 +432,7 @@ def _get_clang_builders():
         ## AArch32 Self-hosting Clang+LLVM check-all + LLD + test-suite
         # Sanitizers build disabled due to PR38690
         {'name': "clang-cmake-armv8-lld",
-         'slavenames':["linaro-armv8-01-arm-lld"],
+         'slavenames':["linaro-armv8-lld"],
          'builddir':"clang-cmake-armv8-lld",
          'factory' : ClangBuilder.getClangCMakeBuildFactory(
                       clean=False,
@@ -453,7 +453,7 @@ def _get_clang_builders():
 
         # AArch64 Clang+LLVM+RT check-all + test-suite + self-hosting
         {'name': "clang-cmake-aarch64-full",
-         'slavenames':["linaro-armv8-01-aarch64-full"],
+         'slavenames':["linaro-aarch64-full"],
          'builddir':"clang-cmake-aarch64-full",
          'factory' : ClangBuilder.getClangCMakeBuildFactory(
                       clean=False,
@@ -949,7 +949,7 @@ def _get_lldb_builders():
                                       '-DCMAKE_C_COMPILER=clang',
                                       '-DCMAKE_CXX_COMPILER=clang++'])},
         {'name': "lldb-aarch64-ubuntu",
-         'slavenames': ["linaro-thx1-lldb-aarch64"],
+         'slavenames': ["linaro-aarch64-lldb"],
          'builddir': "lldb-cmake-aarch64",
          'category' : 'lldb',
          'factory': LLDBBuilder.getLLDBCMakeBuildFactory(
@@ -962,7 +962,7 @@ def _get_lldb_builders():
                                       '-DCMAKE_C_COMPILER=clang',
                                       '-DCMAKE_CXX_COMPILER=clang++'])},
         {'name': "lldb-arm-ubuntu",
-         'slavenames': ["linaro-armv8-01-lldb-arm"],
+         'slavenames': ["linaro-arm-lldb"],
          'builddir': "lldb-cmake-arm",
          'category' : 'lldb',
          'factory': LLDBBuilder.getLLDBCMakeBuildFactory(
@@ -1391,7 +1391,7 @@ def _get_libcxx_builders():
 
         # ARMv8 LibC++ and LibC++abi tests (require Clang+RT)
         {'name': 'libcxx-libcxxabi-libunwind-armv8-linux',
-         'slavenames': ['linaro-armv8-01-arm-libcxx'],
+         'slavenames': ['linaro-armv8-libcxx'],
          'builddir': 'libcxx-libcxxabi-libunwind-armv8-linux',
          'category': 'libcxx',
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
@@ -1414,7 +1414,7 @@ def _get_libcxx_builders():
 
         # ARMv8 LibC++ and LibC++abi tests w/o EH (require Clang+RT)
         {'name': 'libcxx-libcxxabi-libunwind-armv8-linux-noexceptions',
-         'slavenames': ['linaro-armv8-01-arm-libcxx-noeh'],
+         'slavenames': ['linaro-armv8-libcxx'],
          'builddir': 'libcxx-libcxxabi-libunwind-armv8-linux-noexceptions',
          'category': 'libcxx',
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
@@ -1426,7 +1426,7 @@ def _get_libcxx_builders():
 
         # AArch64 LibC++ and LibC++abi tests (require Clang+RT)
         {'name': 'libcxx-libcxxabi-libunwind-aarch64-linux',
-         'slavenames': ['linaro-armv8-01-aarch64-libcxx'],
+         'slavenames': ['linaro-aarch64-libcxx'],
          'builddir': 'libcxx-libcxxabi-libunwind-aarch64-linux',
          'category': 'libcxx',
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
@@ -1435,7 +1435,7 @@ def _get_libcxx_builders():
                               'CMAKE_CXX_FLAGS': '-mcpu=cortex-a57'})},
 
         {'name': 'libcxx-libcxxabi-libunwind-aarch64-linux-noexceptions',
-         'slavenames': ['linaro-armv8-01-aarch64-libcxx-noeh'],
+         'slavenames': ['linaro-aarch64-libcxx'],
          'builddir': 'libcxx-libcxxabi-libunwind-aarch64-linux-noexceptions',
          'category': 'libcxx',
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
