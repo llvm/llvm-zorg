@@ -22,11 +22,11 @@ pipeline {
         }
         stage('Fetch Host Compiler') {
         steps {
-        	timeout(10) {
+            timeout(10) {
                     sh '''
-        			python llvm-zorg/zorg/jenkins/monorepo_build.py fetch
-        			'''
-        		}
+                    python llvm-zorg/zorg/jenkins/monorepo_build.py fetch
+                    '''
+                }
             }
         }
         stage('Build') {
