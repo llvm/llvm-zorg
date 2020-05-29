@@ -288,4 +288,13 @@ def get_status_targets(standard_builders, standard_categories=None):
             mode = "failing",
             builders = ["publish-sphinx-docs"],
             addLogs=False),
+        InformativeMailNotifier(fromaddr="llvm.buildmaster@lab.llvm.org",
+            sendToInterestedUsers=True,
+            extraRecipients=[
+                "mlcompileropt-buildbot@google.com"],
+            subject="ML Compiler Opt Failure: %(builder)s",
+            mode="failing",
+            builders=[
+                "ml-opt-dev-x86_64", "ml-opt-rel-x86_64", "ml-opt-devrel-x86_64"],
+            addLogs=False),
         ]

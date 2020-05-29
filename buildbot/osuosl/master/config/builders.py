@@ -1646,6 +1646,43 @@ def _get_documentation_builders():
              }
            ]
 
+# Builders for ML-driven compiler optimizations.
+def _get_ml_compiler_opt_builders():
+    common_extra_args = ["-DCMAKE_BUILD_TYPE=Release", ]
+    return [
+        {'name': "ml-opt-dev-x86_64",
+         'mergeRequests': False,
+         'slavenames':["ml-opt-dev-x86_64-b1"],
+         'builddir':"ml-opt-dev-x86_64-b1",
+         'factory': UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
+                        clean=True,
+                        depends_on_projects=['llvm'],
+                        extra_configure_args=common_extra_args + [
+                            "-DTENSORFLOW_API_PATH=${TENSORFLOW_API_PATH}"
+                        ])},
+        {'name': "ml-opt-rel-x86_64",
+         'mergeRequests': False,
+         'slavenames':["ml-opt-rel-x86_64-b1"],
+         'builddir':"ml-opt-rel-x86_64-b1",
+         'factory': UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
+                        clean=True,
+                        depends_on_projects=['llvm'],
+                        extra_configure_args=common_extra_args + [
+                            "-DTENSORFLOW_AOT_PATH=${TENSORFLOW_AOT_PATH}"
+                        ])},
+        {'name': "ml-opt-devrel-x86_64",
+         'mergeRequests': False,
+         'slavenames':["ml-opt-devrel-x86_64-b1"],
+         'builddir':"ml-opt-devrel-x86_64-b1",
+         'factory': UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
+                        clean=True,
+                        depends_on_projects=['llvm'],
+                        extra_configure_args=common_extra_args + [
+                            "-DTENSORFLOW_API_PATH=${TENSORFLOW_API_PATH}",
+                            "-DTENSORFLOW_AOT_PATH=${TENSORFLOW_AOT_PATH}"
+                        ])},
+    ]
+
 def get_builders():
     for b in _get_llvm_builders():
         b['category'] = 'llvm'
