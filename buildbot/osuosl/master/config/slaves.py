@@ -237,10 +237,10 @@ def get_build_slaves():
         create_slave("nersc-flang"),
 
         # ML-Driven Compiler Optimizations build slave (Ubuntu x86_64)
-        create_slave("ml-opt-dev-x86_64-b1",
+        create_slave("ml-opt-dev-x86-64-b1",
                      properties={'jobs': 64}, max_builds=1),
-        create_slave("ml-opt-rel-x86_64-b1",
+        create_slave("ml-opt-rel-x86-64-b1",
                      properties={'jobs': 64}, max_builds=1),
-        create_slave("ml-opt-devrel-x86_64-b1",
+        create_slave("ml-opt-devrel-x86-64-b1",
                      properties={'jobs': 64}, max_builds=1),
         ]

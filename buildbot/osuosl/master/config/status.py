@@ -295,6 +295,6 @@ def get_status_targets(standard_builders, standard_categories=None):
             subject="ML Compiler Opt Failure: %(builder)s",
             mode="failing",
             builders=[
-                "ml-opt-dev-x86_64", "ml-opt-rel-x86_64", "ml-opt-devrel-x86_64"],
+                "ml-opt-dev-x86-64", "ml-opt-rel-x86-64", "ml-opt-devrel-x86-64"],
             addLogs=False),
         ]
