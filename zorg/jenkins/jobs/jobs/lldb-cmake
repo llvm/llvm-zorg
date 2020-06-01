@@ -91,5 +91,12 @@ pipeline {
                     to: '$DEFAULT_RECIPIENTS',
                     body:'$DEFAULT_CONTENT'
         }
+        success {
+            parallel (
+                reproducers: {
+                    build job: 'lldb-cmake-reproducers', parameters: [string(name: 'GIT_REVISION', value: params.GIT_REVISION)]
+                },
+                failFast: false)
+        }
     }
 }
