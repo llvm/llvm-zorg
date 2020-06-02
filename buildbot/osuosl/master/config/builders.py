@@ -1526,6 +1526,22 @@ def _get_flang_builders():
          ),
          'category' : 'flang'},
 
+        {'name': "flang-aarch64-ubuntu-clang",
+         'slavenames':["flang-aarch64-ubuntu-clang-build"],
+         'builddir':"flang-aarch64-ubuntu-clang",
+         'factory': UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
+                        clean=True,
+                        depends_on_projects=['llvm','mlir','clang','flang'],
+                        extra_configure_args=[
+                            "-DLLVM_TARGETS_TO_BUILD=AArch64",
+                            "-DCMAKE_C_COMPILER=/usr/bin/clang-8",
+                            "-DCMAKE_CXX_COMPILER=/usr/bin/clang++-8",
+                            "-DLLVM_INSTALL_UTILS=ON",
+                            "-DCMAKE_CXX_STANDARD=17",
+                        ],
+         ),
+         'category' : 'flang'},
+
         {'name': "flang-x86_64-linux",
          'slavenames':["nersc-flang"],
          'builddir':"flang-x86_64-linux",

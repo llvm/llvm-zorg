@@ -234,5 +234,6 @@ def get_build_slaves():
         create_slave("polly-x86_64-fdcserver", properties={'jobs': 8, 'loadaverage': 8}, max_builds=1),
 
         create_slave("flang-aarch64-ubuntu-build"),
+        create_slave("flang-aarch64-ubuntu-clang-build"),
         create_slave("nersc-flang"),
         ]
