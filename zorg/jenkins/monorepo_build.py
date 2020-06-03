@@ -954,12 +954,12 @@ def query_sys_tool(sdk_name, tool_name):
         return "/usr/bin/" + tool_name
 
 
-def run_ws(cmd, env=None):
+def run_ws(cmd, env=None, sudo=False, err_okay=False):
     """Wrapper to call run_cmd in local workspace.
 
     Since 99 percent of the time, that is where you want to call things from.
     """
-    return run_cmd(conf.workspace, cmd, env)
+    return run_cmd(conf.workspace, cmd, env, sudo=sudo, err_okay=err_okay)
 
 
 def parse_args():
