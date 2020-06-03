@@ -1662,6 +1662,54 @@ def _get_documentation_builders():
              }
            ]
 
+# Builders for ML-driven compiler optimizations.
+def _get_ml_compiler_opt_builders():
+    common_extra_args = [
+        "-DCMAKE_BUILD_TYPE=Release",
+        "-DLLVM_CACHE_BUILD=ON",
+        "-DLLVM_ENABLE_ASSERTIONS=ON", ]
+
+    return [
+        # Development mode build bot: tensorflow C APIs are present, and 
+        # we can dynamically load models, and produce training logs.
+        {'name': "ml-opt-dev-x86-64",
+         'mergeRequests': False,
+         'slavenames':["ml-opt-dev-x86-64-b1"],
+         'builddir':"ml-opt-dev-x86-64-b1",
+         'factory': UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
+                        clean=True,
+                        depends_on_projects=['llvm'],
+                        extra_configure_args=common_extra_args + [
+                            "-DTENSORFLOW_API_PATH=${TENSORFLOW_API_PATH}"
+                        ])},
+        # Release mode build bot: the model is pre-built and linked in the
+        # compiler. Only the tensorflow pip package is needed, and out of it,
+        # only saved_model_cli (the model compiler) and the thin C++ wrappers
+        # in xla_aot_runtime_src (and include files)
+        {'name': "ml-opt-rel-x86-64",
+         'mergeRequests': False,
+         'slavenames':["ml-opt-rel-x86-64-b1"],
+         'builddir':"ml-opt-rel-x86-64-b1",
+         'factory': UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
+                        clean=True,
+                        depends_on_projects=['llvm'],
+                        extra_configure_args=common_extra_args + [
+                            "-DTENSORFLOW_AOT_PATH=${TENSORFLOW_AOT_PATH}"
+                        ])},
+        # Both tensorflow C library, and the pip package, are present.
+        {'name': "ml-opt-devrel-x86-64",
+         'mergeRequests': False,
+         'slavenames':["ml-opt-devrel-x86-64-b1"],
+         'builddir':"ml-opt-devrel-x86-64-b1",
+         'factory': UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
+                        clean=True,
+                        depends_on_projects=['llvm'],
+                        extra_configure_args=common_extra_args + [
+                            "-DTENSORFLOW_API_PATH=${TENSORFLOW_API_PATH}",
+                            "-DTENSORFLOW_AOT_PATH=${TENSORFLOW_AOT_PATH}"
+                        ])},
+    ]
+
 def get_builders():
     for b in _get_llvm_builders():
         b['category'] = 'llvm'
@@ -1697,6 +1745,10 @@ def get_builders():
 
     for b in _get_mlir_builders():
         b['category'] = 'mlir'
+        yield b
+    
+    for b in _get_ml_compiler_opt_builders():
+        b['category'] = 'ml_opt'
         yield b
 
     for b in _get_sanitizer_builders():
