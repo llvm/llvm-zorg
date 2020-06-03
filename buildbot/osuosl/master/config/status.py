@@ -182,7 +182,7 @@ def get_status_targets(standard_builders, standard_categories=None):
             extraRecipients = ["tra+buildbot@google.com"],
             subject="Build %(builder)s Failure",
             mode = "failing",
-            builders = ["clang-cuda-build"],
+            builders = ["clang-cuda-k80", "clang-cuda-p4", "clang-cuda-t4"],
             addLogs=False,
             num_lines = 15),
         InformativeMailNotifier(

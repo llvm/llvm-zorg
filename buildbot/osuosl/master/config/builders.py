@@ -1568,30 +1568,24 @@ def _get_on_demand_builders():
 
 def _get_experimental_scheduled_builders():
     return [
-        {'name' : "clang-cuda-build",
-         'slavenames' : ["cuda-build-test-01"],
-         'builddir' : "clang-cuda-build",
-         'factory' : CUDATestsuiteBuilder.getCUDATestsuiteBuildFactory(
-                     useTwoStage=False,
-                     test=True,
-                     stage1_config='Release',
-                     extra_cmake_args=[
-                         '-DLLVM_ENABLE_ASSERTIONS=ON',
-                         "-DCMAKE_C_COMPILER:FILEPATH=/usr/bin/clang",
-                         "-DCMAKE_CXX_COMPILER:FILEPATH=/usr/bin/clang++",
-                         "-DLIBUNWIND_LIBCXX_PATH=../llvm/libcxx",
-                     ],
-                     externals="/home/botanist/bots/externals",
-                     gpu_arch_list=["sm_35", "sm_61"],
-                     gpu_devices=["GPU-af66efa4",  # K40c(sm_35),
-                                  "GPU-44fe2444"   # GTX1070(sm_61)
-                     ],
-                     cuda_jobs = 4, # Speeds up test execution time by ~2x.
-                     extra_ts_cmake_args=[],
-                     enable_thrust_tests=False,
-         ),
+        {'name': "clang-cuda-k80",
+         'slavenames' :["cuda-k80-0"],
+         'builddir': "clang-cuda-k80",
+         'factory': AnnotatedBuilder.getAnnotatedBuildFactory(script="/buildbot/cuda-build",
+                                                              checkout_llvm_sources=False),
          'category' : 'clang'},
-
+        {'name': "clang-cuda-p4",
+         'slavenames' :["cuda-gce-p4-0"],
+         'builddir': "clang-cuda-p4",
+         'factory': AnnotatedBuilder.getAnnotatedBuildFactory(script="/buildbot/cuda-build",
+                                                              checkout_llvm_sources=False),
+         'category' : 'clang'},
+        {'name': "clang-cuda-t4",
+         'slavenames' :["cuda-t4-0"],
+         'builddir': "clang-cuda-t4",
+         'factory': AnnotatedBuilder.getAnnotatedBuildFactory(script="/buildbot/cuda-build",
+                                                              checkout_llvm_sources=False),
+         'category' : 'clang'},
         {'name': "clang-ve-ninja",
          'slavenames':["nec-arrproto41"],
          'builddir':"clang-ve-ninja",
