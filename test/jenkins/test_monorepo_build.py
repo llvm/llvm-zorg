@@ -54,6 +54,13 @@
 # CHECK-ASSERT: '/usr/local/bin/cmake' '-G' 'Ninja' '-C'
 # CHECK-ASSERT: '-DLLVM_ENABLE_ASSERTIONS:BOOL=TRUE'
 
+# Check that sccache is enabled when --sccache arg is passed
+# RUN: python %{src_root}/zorg/jenkins/monorepo_build.py clang all --sccache > %t-sccache.log
+# RUN: FileCheck --check-prefix CHECK-SCCACHE < %t-sccache.log %s
+# CHECK-SCCACHE: '/usr/local/bin/cmake' '-G' 'Ninja' '-C'
+# CHECK-SCCACHE: '-DCMAKE_C_COMPILER_LAUNCHER=/usr/local/bin/sccache'
+# CHECK-SCCACHE: '-DCMAKE_CXX_COMPILER_LAUNCHER=/usr/local/bin/sccache'
+
 # Check LTO
 
 # RUN: python %{src_root}/zorg/jenkins/monorepo_build.py clang all --lto > %t-lto.log

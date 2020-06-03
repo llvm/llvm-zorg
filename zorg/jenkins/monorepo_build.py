@@ -100,6 +100,8 @@ class Configuration(object):
 
     def __init__(self, args):
         super(Configuration, self).__init__()
+        self.sccache_path = "/usr/local/bin/sccache"
+
         self._args = args
         self.workspace = os.environ.get('WORKSPACE', os.getcwd())
         self._src_dir = os.environ.get('SRC_DIR', 'llvm-project')
@@ -296,6 +298,12 @@ def cmake_builder(target):
     if conf.globalisel:
         cmake_cmd += ["-DLLVM_BUILD_GLOBAL_ISEL=ON"]
 
+    if conf.sccache:
+        run_ws([conf.sccache_path, "--stop-server"], env={"SCCACHE_IDLE_TIMEOUT": "0"}, err_okay=True)
+        run_ws([conf.sccache_path, "--start-server"], env={"SCCACHE_IDLE_TIMEOUT": "0"})
+        cmake_cmd += ['-DCMAKE_C_COMPILER_LAUNCHER=' + conf.sccache_path]
+        cmake_cmd += ['-DCMAKE_CXX_COMPILER_LAUNCHER=' + conf.sccache_path]
+
     lit_flags = ['--xunit-xml-output=testresults.xunit.xml', '-v', '--timeout=600']
     if conf.max_parallel_tests:
         lit_flags += ['-j', conf.max_parallel_tests]
@@ -341,6 +349,9 @@ def cmake_builder(target):
         run_cmd(conf.builddir(), ninja_cmd + targets)
         footer()
 
+    if conf.sccache:
+        run_ws([conf.sccache_path, "--stop-server"])
+
 
 def clang_builder(target):
     """Build to set of commands to compile and test apple-clang"""
@@ -371,6 +382,11 @@ def clang_builder(target):
             env.extend(["env", "DYLD_LIBRARY_PATH=" + dyld_path])
 
         next_section("Build Clang")
+
+        if conf.sccache:
+            run_ws([conf.sccache_path, "--stop-server"], env={"SCCACHE_IDLE_TIMEOUT": "0"}, err_okay=True)
+            run_ws([conf.sccache_path, "--start-server"], env={"SCCACHE_IDLE_TIMEOUT": "0"})
+
         if conf.nobootstrap:
             if conf.debug or conf.device:
                 assert False, "Invalid parameter for clang-builder."
@@ -413,6 +429,10 @@ def clang_builder(target):
                                    '-DLIBCXX_INSTALL_LIBRARY=Off',
                                    '-DCMAKE_MACOSX_RPATH=On',
                                    ]
+
+            if conf.sccache:
+                cmake_command.append('-DCMAKE_C_COMPILER_LAUNCHER=' + conf.sccache_path)
+                cmake_command.append('-DCMAKE_CXX_COMPILER_LAUNCHER=' + conf.sccache_path)
 
             if dyld_path:
                 cmake_command += ['-DDYLD_LIBRARY_PATH=' + dyld_path]
@@ -472,6 +492,9 @@ def clang_builder(target):
                        '--param gmalloc_path=$(xcodebuild -find-library' \
                        ' libgmalloc.dylib)'
         run_cmd(obj_dir, cmd, env={'MALLOC_LOG_FILE': '/dev/null'})
+
+    if conf.sccache:
+        run_ws([conf.sccache_path, "--stop-server"])
 
 
 def parse_settings_from_output(working_dir, cmd):
@@ -1002,6 +1025,9 @@ def parse_args():
     parser.add_argument('--noupload', dest='noupload', action='store_true')
     parser.add_argument('--noinstall', dest='noinstall', action='store_true',
                         help="Disable the install stage, build only.")
+    parser.add_argument('--sccache', dest='sccache',
+                        action='store_true', default=False,
+                        help="If the builds supports it, use sccache.")
     parser.add_argument('--globalisel', dest='globalisel',
                         action='store_true', help="Turn on the experimental"
                                                   " GlobalISel CMake flag.")
