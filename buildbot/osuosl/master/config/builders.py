@@ -1548,6 +1548,7 @@ def _get_flang_builders():
          'factory': UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                         depends_on_projects=['llvm','mlir','clang','flang'],
                         extra_configure_args=[
+                            "-DLLVM_TARGETS_TO_BUILD=X86",
                             "-DLLVM_INSTALL_UTILS=ON",
                             "-DCMAKE_CXX_STANDARD=17",
                         ],
