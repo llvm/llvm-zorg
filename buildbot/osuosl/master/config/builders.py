@@ -1260,7 +1260,7 @@ def _get_libcxx_builders():
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
             env={'PATH': '/usr/local/bin:/usr/bin:/bin',
                  'CC': 'clang', 'CXX': 'clang++'},
-            lit_extra_opts={'std': 'c++11', 'enable_warnings': 'true'},
+            lit_extra_opts={'std': 'c++11'},
             check_libcxx_abilist=True),
         'category': 'libcxx'},
 
@@ -1270,7 +1270,7 @@ def _get_libcxx_builders():
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
             env={'PATH': '/usr/local/bin:/usr/bin:/bin',
                  'CC': 'clang', 'CXX': 'clang++'},
-            lit_extra_opts={'std': 'c++14', 'enable_warnings': 'true'},
+            lit_extra_opts={'std': 'c++14'},
             check_libcxx_abilist=True),
         'category': 'libcxx'},
 
@@ -1281,7 +1281,7 @@ def _get_libcxx_builders():
             env={'PATH': '/usr/local/bin:/usr/bin:/bin',
                  'CC': 'clang', 'CXX': 'clang++'},
             cmake_extra_opts={'LIBCXX_BENCHMARK_TEST_ARGS': benchmark_opts},
-            lit_extra_opts={'std': 'c++17', 'enable_warnings': 'true'},
+            lit_extra_opts={'std': 'c++17'},
             check_libcxx_abilist=True,
             check_libcxx_benchmarks=True),
         'category': 'libcxx'},
@@ -1293,7 +1293,7 @@ def _get_libcxx_builders():
             env={'PATH': '/usr/local/bin:/usr/bin:/bin',
                  'CC': 'clang', 'CXX': 'clang++'},
             cmake_extra_opts={'LIBCXX_BENCHMARK_TEST_ARGS': benchmark_opts},
-            lit_extra_opts={'std': 'c++2a', 'enable_warnings': 'true'},
+            lit_extra_opts={'std': 'c++2a'},
             check_libcxx_abilist=True,
             check_libcxx_benchmarks=True),
         'category': 'libcxx'},
@@ -1305,7 +1305,6 @@ def _get_libcxx_builders():
             env={'PATH': '/usr/local/bin:/usr/bin:/bin',
                  'CC': 'clang', 'CXX': 'clang++'},
             cmake_extra_opts={'LLVM_BUILD_32_BITS': 'ON'},
-            lit_extra_opts={'enable_warnings': 'true'},
             check_libcxx_abilist=False),
         'category': 'libcxx'},
 
