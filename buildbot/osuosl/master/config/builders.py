@@ -1219,8 +1219,7 @@ def _get_libcxx_builders():
          'builddir': 'libcxx-libcxxabi-x86_64-linux-debian-noexceptions',
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
              env={'CC': 'clang', 'CXX': 'clang++'},
-             cmake_extra_opts={'LIBCXX_ENABLE_EXCEPTIONS': 'OFF',
-                               'LIBCXXABI_ENABLE_EXCEPTIONS': 'OFF'},
+             use_cache='Generic-noexceptions.cmake',
              lit_extra_args=['--shuffle']),
          'category': 'libcxx'},
 
@@ -1238,9 +1237,7 @@ def _get_libcxx_builders():
          'builddir': 'libcxx-libcxxabi-singlethreaded-x86_64-linux-debian',
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
              env={'CC': 'clang', 'CXX': 'clang++'},
-             cmake_extra_opts={'LIBCXX_ENABLE_THREADS': 'OFF',
-                               'LIBCXX_ENABLE_MONOTONIC_CLOCK': 'OFF',
-                               'LIBCXXABI_ENABLE_THREADS': 'OFF'}),
+             use_cache='Generic-singlethreaded.cmake'),
          'category': 'libcxx'},
 
         # EricWF's builders
@@ -1250,7 +1247,7 @@ def _get_libcxx_builders():
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
             env={'PATH': '/usr/local/bin:/usr/bin:/bin',
                  'CC': 'clang', 'CXX': 'clang++'},
-            lit_extra_opts={'std':'c++03'},
+            use_cache='Generic-cxx03.cmake',
             check_libcxx_abilist=True),
         'category': 'libcxx'},
 
@@ -1260,7 +1257,7 @@ def _get_libcxx_builders():
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
             env={'PATH': '/usr/local/bin:/usr/bin:/bin',
                  'CC': 'clang', 'CXX': 'clang++'},
-            lit_extra_opts={'std': 'c++11'},
+            use_cache='Generic-cxx11.cmake',
             check_libcxx_abilist=True),
         'category': 'libcxx'},
 
@@ -1270,7 +1267,7 @@ def _get_libcxx_builders():
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
             env={'PATH': '/usr/local/bin:/usr/bin:/bin',
                  'CC': 'clang', 'CXX': 'clang++'},
-            lit_extra_opts={'std': 'c++14'},
+            use_cache='Generic-cxx14.cmake',
             check_libcxx_abilist=True),
         'category': 'libcxx'},
 
@@ -1281,7 +1278,7 @@ def _get_libcxx_builders():
             env={'PATH': '/usr/local/bin:/usr/bin:/bin',
                  'CC': 'clang', 'CXX': 'clang++'},
             cmake_extra_opts={'LIBCXX_BENCHMARK_TEST_ARGS': benchmark_opts},
-            lit_extra_opts={'std': 'c++17'},
+            use_cache='Generic-cxx17.cmake',
             check_libcxx_abilist=True,
             check_libcxx_benchmarks=True),
         'category': 'libcxx'},
@@ -1293,7 +1290,7 @@ def _get_libcxx_builders():
             env={'PATH': '/usr/local/bin:/usr/bin:/bin',
                  'CC': 'clang', 'CXX': 'clang++'},
             cmake_extra_opts={'LIBCXX_BENCHMARK_TEST_ARGS': benchmark_opts},
-            lit_extra_opts={'std': 'c++2a'},
+            use_cache='Generic-cxx2a.cmake',
             check_libcxx_abilist=True,
             check_libcxx_benchmarks=True),
         'category': 'libcxx'},
@@ -1304,7 +1301,7 @@ def _get_libcxx_builders():
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
             env={'PATH': '/usr/local/bin:/usr/bin:/bin',
                  'CC': 'clang', 'CXX': 'clang++'},
-            cmake_extra_opts={'LLVM_BUILD_32_BITS': 'ON'},
+            use_cache='Generic-32bits.cmake',
             check_libcxx_abilist=False),
         'category': 'libcxx'},
 
@@ -1314,8 +1311,8 @@ def _get_libcxx_builders():
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
             env={'PATH': '/usr/local/bin:/usr/bin:/bin',
                  'CC': 'clang', 'CXX': 'clang++'},
-            cmake_extra_opts={'LLVM_USE_SANITIZER': 'Address',
-                              'LIBCXX_BENCHMARK_TEST_ARGS': benchmark_opts},
+            cmake_extra_opts={'LIBCXX_BENCHMARK_TEST_ARGS': benchmark_opts},
+            use_cache='Generic-asan.cmake',
             check_libcxx_benchmarks=True),
         'category': 'libcxx'},
 
@@ -1325,9 +1322,8 @@ def _get_libcxx_builders():
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
             env={'PATH': '/usr/local/bin:/usr/bin:/bin',
                  'CC': 'clang', 'CXX': 'clang++'},
-            cmake_extra_opts={'LLVM_USE_SANITIZER': 'Undefined',
-                              'LIBCXX_ABI_UNSTABLE': 'ON',
-                              'LIBCXX_BENCHMARK_TEST_ARGS': benchmark_opts},
+            cmake_extra_opts={'LIBCXX_BENCHMARK_TEST_ARGS': benchmark_opts},
+            use_cache='Generic-ubsan.cmake',
             check_libcxx_benchmarks=True),
         'category': 'libcxx'},
 
@@ -1337,8 +1333,8 @@ def _get_libcxx_builders():
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
             env={'PATH': '/usr/local/bin:/usr/bin:/bin',
                  'CC': 'clang', 'CXX': 'clang++'},
-            cmake_extra_opts={'LLVM_USE_SANITIZER': 'MemoryWithOrigins',
-                              'LIBCXX_BENCHMARK_TEST_ARGS': benchmark_opts},
+            cmake_extra_opts={'LIBCXX_BENCHMARK_TEST_ARGS': benchmark_opts},
+            use_cache='Generic-msan.cmake',
             check_libcxx_benchmarks=True),
         'category': 'libcxx'},
 
@@ -1357,7 +1353,7 @@ def _get_libcxx_builders():
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
             env={'PATH': '/usr/local/bin:/usr/bin:/bin',
                  'CC': 'clang', 'CXX': 'clang++'},
-            cmake_extra_opts={'LLVM_USE_SANITIZER': 'Thread'}),
+            use_cache='Generic-tsan.cmake'),
         'category': 'libcxx'},
 
         {'name': 'libcxx-libcxxabi-x86_64-linux-ubuntu-gcc5-cxx11',
@@ -1366,7 +1362,7 @@ def _get_libcxx_builders():
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
             env={'PATH': '/usr/local/bin:/usr/bin:/bin',
                  'CC': '/opt/gcc-5/bin/gcc', 'CXX': '/opt/gcc-5/bin/g++'},
-            lit_extra_opts={'std': 'c++11'}),
+            use_cache='Generic-cxx11.cmake'),
         'category': 'libcxx'},
 
         {'name': 'libcxx-libcxxabi-x86_64-linux-ubuntu-gcc-tot-latest-std',
@@ -1670,7 +1666,7 @@ def _get_ml_compiler_opt_builders():
         "-DLLVM_ENABLE_ASSERTIONS=ON", ]
 
     return [
-        # Development mode build bot: tensorflow C APIs are present, and 
+        # Development mode build bot: tensorflow C APIs are present, and
         # we can dynamically load models, and produce training logs.
         {'name': "ml-opt-dev-x86-64",
          'mergeRequests': False,
@@ -1746,7 +1742,7 @@ def get_builders():
     for b in _get_mlir_builders():
         b['category'] = 'mlir'
         yield b
-    
+
     for b in _get_ml_compiler_opt_builders():
         b['category'] = 'ml_opt'
         yield b
