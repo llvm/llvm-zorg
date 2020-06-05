@@ -207,8 +207,12 @@ class Configuration(object):
            remote name too.
         """
         if not os.environ.get('TESTING', False):
-            cmd = ['git', '-C', conf.srcdir(), 'symbolic-ref', '--short', 'HEAD']
-            out = run_collect_output(cmd).strip()
+            try:
+                cmd = ['git', '-C', conf.srcdir(), 'symbolic-ref', '--short', 'HEAD']
+                out = run_collect_output(cmd, stderr=subprocess.STDOUT).strip()
+            except subprocess.CalledProcessError:
+                cmd = ['git', '-C', conf.srcdir(), 'rev-parse', 'HEAD']
+                out = run_collect_output(cmd, stderr=subprocess.STDOUT).strip()
             return out
         return 'master'
 
