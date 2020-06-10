@@ -308,7 +308,7 @@ def cmake_builder(target):
         cmake_cmd += ['-DCMAKE_C_COMPILER_LAUNCHER=' + conf.sccache_path]
         cmake_cmd += ['-DCMAKE_CXX_COMPILER_LAUNCHER=' + conf.sccache_path]
 
-    lit_flags = ['--xunit-xml-output=testresults.xunit.xml', '-v', '--timeout=600']
+    lit_flags = ['--xunit-xml-output=testresults.xunit.xml', '-v', '-vv', '--timeout=600']
     if conf.max_parallel_tests:
         lit_flags += ['-j', conf.max_parallel_tests]
     cmake_cmd += ['-DLLVM_LIT_ARGS={}'.format(' '.join(lit_flags))]
@@ -448,7 +448,7 @@ def clang_builder(target):
                 cmake_command.extend(['-DCMAKE_C_COMPILER=' + conf.CC(),
                                       '-DCMAKE_CXX_COMPILER=' + conf.CC() + "++"])
 
-            lit_flags = ['--xunit-xml-output=testresults.xunit.xml', '-v', '--timeout=600']
+            lit_flags = ['--xunit-xml-output=testresults.xunit.xml', '-v', '-vv', '--timeout=600']
             if conf.max_parallel_tests:
                 lit_flags += ['-j', conf.max_parallel_tests]
             cmake_command.extend(
