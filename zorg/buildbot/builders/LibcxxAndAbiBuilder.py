@@ -66,8 +66,8 @@ def getLibcxxAndAbiBuilder(f=None, env=None, additional_features=None,
         cmake_opts.append('-D' + key + '=' + cmake_extra_opts[key])
 
     if use_cache:
-      libcxx_cache_dir = os.path.join(rel_src_dir, '..', 'libcxx', 'cmake', 'caches')
-      cache = os.path.join(libcxx_cache_dir, use_cache)
+      libcxx_cache_dir = '%s/../libcxx/cmake/caches' % rel_src_dir
+      cache = '%s/%s' % (libcxx_cache_dir, use_cache)
       cmake_opts.append('-C' + cache)
 
     # FIXME: The libc++ abilist's are generated in release mode with debug
