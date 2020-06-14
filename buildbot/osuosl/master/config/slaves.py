@@ -37,7 +37,7 @@ def get_build_slaves():
         # Libcxx testsuite has tests with timing assumptions.  Run single-threaded to make
         # sure we have plenty CPU cycle to satisfy timing assumptions.
         create_slave("linaro-armv8-libcxx", properties={'jobs' : 1}, max_builds=1),
-        create_slave("linaro-arm-lldb", properties={'jobs' : 32}, max_builds=1),
+        create_slave("linaro-arm-lldb", properties={'jobs' : 8}, max_builds=1),
 
         # AArch64 Linaro slaves
         create_slave("linaro-aarch64-quick", properties={'jobs' : 32}, max_builds=1),
