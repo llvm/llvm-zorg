@@ -72,15 +72,6 @@ pipeline {
                 }
             }
         }
-        stage('Trigger Downstream Jobs') {
-            steps {
-                parallel (
-                    reproducers: {
-                        build job: 'lldb-cmake-reproducers', parameters: [string(name: 'GIT_REVISION', value: params.GIT_REVISION)], wait: false
-                    },
-                    failFast: true)
-            }
-        }
     }
     post {
         always {
