@@ -25,13 +25,17 @@ WORKER_PASSWORD=$(cat /secrets/token)
   cmake --version | head -n1 
 ) > ${WORKER_NAME}/info/host 
 
-# FIXME(kuhnel):
 # It looks like GKE sometimes deploys the container before the NVIDIA drivers 
 # are loaded on the host. In this case the GPU is not available during the 
 # entire lifecycle of the container. Not sure how to fix this properly. 
-# Maybe the above entry is enough as it depends on a working `nvidia-smi`. 
-# If not a workaround might be to check for the graphics card in this script and 
-# exit immediately if it's not available.
+
+RETURN_CODE=$(nvidia-smi > /dev/null ; echo $?)
+if [[ "$RETURN_CODE" != "0" ]] ; then
+  echo "ERROR: Failed to access NVIDIA graphics card."
+  echo "Exiting in 30 secs..."
+  sleep 30
+  exit 1
+fi
 
 # create the folder structure
 buildslave create-slave --keepalive=200 "${WORKER_NAME}" \
