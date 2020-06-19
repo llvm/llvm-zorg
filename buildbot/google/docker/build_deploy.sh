@@ -22,7 +22,7 @@ cd "${DIR}/${IMAGE_NAME}"
 # get version numbers from repository
 # FIXME: use variables to configure URL
 ALL_VERSIONS=$(gcloud container images list-tags gcr.io/sanitizer-bots/${IMAGE_NAME} --format=text | \
-  awk '/tags.*:\W+[0-9]+/ {print $2}')
+  awk '/tags.*:\W+[0-9]+$/ {print $2}')
 # read local version number from file and add it to the array
 ALL_VERSIONS+=($(cat VERSION))
 # find maximum version number and increment it

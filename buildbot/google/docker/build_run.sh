@@ -25,4 +25,5 @@ fi
 
 cd "${DIR}/${IMAGE_NAME}"
 
+docker build -t "${IMAGE_NAME}:latest" .
 docker run -it -v "${SECRET_STORAGE}":/secrets "${IMAGE_NAME}" ${CMD}
