@@ -20,14 +20,14 @@ to machines. The software installed on the build machines is defined
 in *Docker* images. An image is a (layered) file system with all the tools and
 settings required for the worker. 
 
-The images are stored in a "regsitry" (gcr.io in this case) and are then 
+The images are stored in a "registry" (gcr.io in this case) and are then 
 pulled from the machines where they are executed. The 
 images can be versioned so that we can pick exactly which version of the image
 we want to run.
 
-The contets of a Docker image is again defined in a config file called 
+The contents of a Docker image is again defined in a config file called 
 `Dockerfile`. A Dockerfile is a sort of script defining on how to install and
-configure the software for a machine. We keep those files in this repositry as 
+configure the software for a machine. We keep those files in this repository as 
 well so we can review changes and revert changes if something breaks.
 
 The docker images also allow contributors to reproduce a failing test locally, 
