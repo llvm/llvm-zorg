@@ -13,15 +13,23 @@
 #     pod name fragement : 
 #             part of the name of the pod to log in, eg. name of the 
 #             deployment, if we have only one of them
+#     command (optional):
+#             Command to be run in the container. Default: /bin/bash
 #===----------------------------------------------------------------------===//
 
 set -eu
 
 WORKLOAD_NAME=$1
+CMD="/bin/bash"
+if [ "$#" -eq 2 ];
+then
+    CMD="$2"
+fi
+
 # get name of the pod
 POD=$(kubectl get pod -o name | grep "$1")
 
 # FIXME: exit if more than one pod is returned
 
 # login to the pod
-kubectl exec --stdin --tty "${POD}" -- /bin/bash
+kubectl exec --stdin --tty "${POD}" -- "${CMD}"

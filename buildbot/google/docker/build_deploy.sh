@@ -15,19 +15,17 @@ set -eu
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 IMAGE_NAME="${1%/}"
-
-# increment version number
 cd "${DIR}/${IMAGE_NAME}"
 
-# get version numbers from repository
-# FIXME: use variables to configure URL
-ALL_VERSIONS=$(gcloud container images list-tags gcr.io/sanitizer-bots/${IMAGE_NAME} --format=text | \
-  awk '/tags.*:\W+[0-9]+$/ {print $2}')
-# read local version number from file and add it to the array
-ALL_VERSIONS+=($(cat VERSION))
-# find maximum version number and increment it
-VERSION=$(echo "${ALL_VERSIONS[*]}" | sort -nr | head -n1)
-VERSION=$(( ${VERSION} + 1 ))
+# read local version number from file and increment it
+# TODO: maybe also get latest version number from repository and take the 
+#       maximum of local and repo versions.
+VERSION=$(( $(cat VERSION) + 1 ))
+
+# on Windows: USER=$USERNAME
+if [[ "${OS}" == "Windows_NT" ]] ; then
+  USER="${USERNAME}"
+fi
 
 # get the git hash and add some suffixes
 GIT_HASH=$(git rev-parse HEAD)

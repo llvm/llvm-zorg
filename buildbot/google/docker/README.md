@@ -21,3 +21,6 @@ the secrets in a secure place and during runtime mount that secure place into
 the container. The secret file shall just contain the password in plain text.
 
 Kubernetes offers a [mechanism to handle secrets](https://kubernetes.io/docs/concepts/configuration/secret/).
+
+# Setting up Windows VM for development
+See [windows.md](windows.md).

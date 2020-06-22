@@ -12,7 +12,7 @@
 #     optional: <command to be executed in the container>
 #===----------------------------------------------------------------------===//
 
-set -eux
+set -eu
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 IMAGE_NAME="${1%/}"
@@ -25,5 +25,24 @@ fi
 
 cd "${DIR}/${IMAGE_NAME}"
 
+# Mount a volume "workertest" to persit across test runs.
+# Use this to keep e.g.  a git checkout or partial build across runs
+if [[ $(docker volume ls | grep workertest | wc -l) == 0 ]] ; then
+    docker volume create workertest
+fi
+
+# Volume to presist the build cache e.g. ccache or sccache.
+# This will speed up local testing.
+if [[ $(docker volume ls | grep workercache | wc -l) == 0 ]] ; then
+    docker volume create workercache
+fi
+
+# Define arguments for mounting the volumes
+# These differ on Windows and Linux
+VOLUMES="-v ${SECRET_STORAGE}:/secrets -v workertest:/test"
+if [[ "${OS}" == "Windows_NT" ]] ; then
+    VOLUMES="-v ${SECRET_STORAGE}:c:\\volumes\\secrets -v workertest:c:\volumes\\test -v workercache:c:\sccache"
+fi
+
 docker build -t "${IMAGE_NAME}:latest" .
-docker run -it -v "${SECRET_STORAGE}":/secrets "${IMAGE_NAME}" ${CMD}
+docker run -it ${VOLUMES} "${IMAGE_NAME}:latest" ${CMD}
