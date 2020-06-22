@@ -43,11 +43,12 @@ VOLUME /secrets
 # create user account, some test fail if run as root
 RUN useradd buildbot --create-home
 WORKDIR /home/buildbot
-USER buildbot
 
 # copy startup script
 COPY run.sh /home/buildbot/
+RUN chmod a+rx /home/buildbot/run.sh
 
+USER buildbot
 ENV WORKER_NAME="mlir-nvidia"
 
 # Set up buildbot host and maintainer info.

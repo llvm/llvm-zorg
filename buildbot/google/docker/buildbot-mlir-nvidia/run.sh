@@ -38,8 +38,10 @@ if [[ "$RETURN_CODE" != "0" ]] ; then
 fi
 
 # create the folder structure
+# port 9990 for production
+# port 9994 for staging
 buildslave create-slave --keepalive=200 "${WORKER_NAME}" \
-  lab.llvm.org:9994 "${WORKER_NAME}" "${WORKER_PASSWORD}"
+  lab.llvm.org:9990 "${WORKER_NAME}" "${WORKER_PASSWORD}"
 
 # start the daemon, this command return immetiately
 buildslave start "${WORKER_NAME}"
