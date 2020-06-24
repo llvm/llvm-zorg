@@ -1668,7 +1668,7 @@ def _get_ml_compiler_opt_builders():
                         clean=True,
                         depends_on_projects=['llvm'],
                         extra_configure_args=common_extra_args + [
-                            "-DTENSORFLOW_API_PATH=${TENSORFLOW_API_PATH}"
+                            "-DTENSORFLOW_API_PATH=/tmp/tensorflow"
                         ])},
         # Release mode build bot: the model is pre-built and linked in the
         # compiler. Only the tensorflow pip package is needed, and out of it,
@@ -1682,7 +1682,7 @@ def _get_ml_compiler_opt_builders():
                         clean=True,
                         depends_on_projects=['llvm'],
                         extra_configure_args=common_extra_args + [
-                            "-DTENSORFLOW_AOT_PATH=${TENSORFLOW_AOT_PATH}"
+                            "-DTENSORFLOW_AOT_PATH=/var/lib/buildbot/.local/lib/python3.7/site-packages/tensorflow"
                         ])},
         # Both tensorflow C library, and the pip package, are present.
         {'name': "ml-opt-devrel-x86-64",
@@ -1693,8 +1693,8 @@ def _get_ml_compiler_opt_builders():
                         clean=True,
                         depends_on_projects=['llvm'],
                         extra_configure_args=common_extra_args + [
-                            "-DTENSORFLOW_API_PATH=${TENSORFLOW_API_PATH}",
-                            "-DTENSORFLOW_AOT_PATH=${TENSORFLOW_AOT_PATH}"
+                            "-DTENSORFLOW_API_PATH=/tmp/tensorflow",
+                            "-DTENSORFLOW_AOT_PATH=/var/lib/buildbot/.local/lib/python3.7/site-packages/tensorflow"
                         ])},
     ]
 
