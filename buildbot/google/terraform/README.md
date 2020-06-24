@@ -52,3 +52,23 @@ used as a volume of type `secret` and then mounted at `/secrets`. During the
 runtime of the docker container, the script 
 [run.sh](../docker/buildbot-mlir-nvidia/run.sh) reads the secret from the file
 `/secrets/token` and uses it to create the worker configuration.
+
+
+# Using GPUs on Google Cloud
+
+Terraform does not support deployments on GCP using a GPU at the moment.
+So we need to deploy such cases using plain Kubernetes configuration files.
+See this [issue](https://github.com/terraform-providers/terraform-provider-kubernetes/issues/149) 
+for more details.
+The buildbot mlir-nvidia is configured in `deployment-mlir-nvidia.yaml` in this
+folder. 
+
+For all non-GPU cases add a `"kubernetes_deployment"` to `main.tf`. 
+The contents is identical to the the Kubernetes file, just the markup is 
+different.
+
+Kubernetes files are also declarative, so you can re-deploy them when you made
+a change. They can be deployed with:
+```bash
+kubectl apply -f myfile.yaml
+```

@@ -24,6 +24,9 @@ resource "google_container_cluster" "primary" {
 }
 
 # Create machines for mlir-nvidia
+# Note: The buildbot mlir-nividia is deployed using a kubernetes file. See
+# the README.md for details on GPUs.
+
 resource "google_container_node_pool" "nvidia_16core_pool_nodes" {
   name       = "nvidia-16core-pool"
   # specify a zone here (e.g. "-a") to avoid a redundant deployment
@@ -59,86 +62,6 @@ resource "google_container_node_pool" "nvidia_16core_pool_nodes" {
     # during deployment
     labels = {
       pool = "nvidia-16core-pool"
-    }
-  }
-}
-
-
-resource "kubernetes_deployment" "mlir-nvidia" {
-# FIXME: move to kubernetes yaml file, as terraform does not support GPU
-# resources on GKE.
-
-  metadata {
-    name = "mlir-nvidia"
-  }
-
-  spec {
-    replicas = 1
-
-    selector {
-      match_labels = {
-       app = "buildbot-mlir-nvidia"
-      }
-    }
-
-    template {
-      metadata {
-        labels = {
-          app = "buildbot-mlir-nvidia"
-          }
-        }
-      spec {
-        container {
-          name = "mlir-nvidia"
-          # Specify version number for docker image, this ensures sure you're
-          # deploying the right version of the image.
-          image = "${var.gcp_config.gcr_prefix}/buildbot-mlir-nvidia:3"
-
-          resources {
-            requests {
-              cpu = 15
-              memory = "10Gi"
-            }
-           limits {
-              cpu = 15
-              memory = "10Gi"
-              # FIXME: does not work in terraform
-              # https://github.com/terraform-providers/terraform-provider-kubernetes/issues/149
-              # We probably need to use native Kubernetes for all deployments
-              # with GPUs until this is implemented.
-              # nvidia.com/gpu = 1
-           }
-          }
-
-            volume_mount {
-              mount_path = "/secrets"
-              name = "buildbot-token"
-            }
-          }
-          volume {
-            name = "buildbot-token"
-            secret {
-              secret_name = "buildbot-token-mlir-nvidia"
-            }
-          }
-          # Nodes with a GPU are automatically get a "taint". We need to
-          # "tolerate" this taint, otherwise we can't deploy to that node.
-          # This is a safe guard to only deploy container that require GPUs 
-          # to machines with GPUs. More details: 
-          #  * https://cloud.google.com/kubernetes-engine/docs/how-to/gpus
-          #  * https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/
-          toleration {
-            key = "nvidia.com/gpu"
-            operator = "Equal"
-            value = "present"
-            effect = "NoSchedule"
-          }
-          # select which machines to deploy to, this is using the node pool
-          # defined above
-          node_selector = {
-            pool = "nvidia-16core-pool"
-          }
-      }
     }
   }
 }
