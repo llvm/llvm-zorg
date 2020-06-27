@@ -1654,7 +1654,7 @@ def _get_documentation_builders():
 def _get_ml_compiler_opt_builders():
     common_extra_args = [
         "-DCMAKE_BUILD_TYPE=Release",
-        "-DLLVM_CACHE_BUILD=ON",
+        "-DLLVM_CCACHE_BUILD=ON",
         "-DLLVM_ENABLE_ASSERTIONS=ON", ]
 
     return [
