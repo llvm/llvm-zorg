@@ -17,8 +17,13 @@ steps:
    Cloud SDK.
 1. To configure the GCP credetianls for terraform run: 
    ```bash
-    export GOOGLE_CREDENTIALS=~/.config/gcloud/legacy_credentials/<your email>/adc.json
+    export GOOGLE_APPLICATION_CREDENTIALS=~/.config/gcloud/legacy_credentials/<your email>/adc.json
+    export GOOGLE_CLOUD_KEYFILE_JSON=$GOOGLE_APPLICATION_CREDENTIALS
     ```
+    Note: Some documentation recommends `GOOGLE_CREDENTIALS` for this, however
+    this does not work for accessing the Google Cloud Storage backend in 
+    terraform. You need to set both variables, as they are required by different
+    tools
 
 # Deploying to new Google Cloud project
 
@@ -30,6 +35,15 @@ manual steps are required:
   Container Registry for that project.
 * GPUs need to be enabled on Kubernetes by following these
 [instructions](https://cloud.google.com/kubernetes-engine/docs/how-to/gpus#installing_drivers).
+* Terraform needs to share a "state" between all users. The "backend" for this
+  can be a "bucket" on Google Cloud Storage. So you need to create that bucket
+  and give all users write access. In addition, you should enable "object
+  versioning" to be able to access previous versions of the state in case it
+  gets corrupted: 
+  ```bash
+  gsutil versioning set on gs://<bucket name>
+  ````
+* Store the secrets (see next section).
 
 
 # Secrets
