@@ -955,7 +955,7 @@ def _get_lldb_builders():
          'factory': LLDBBuilder.getLLDBCMakeBuildFactory(
                     test=True,
                     extra_cmake_args=['-DLLVM_ENABLE_ASSERTIONS=True',
-                                      '-DLLVM_LIT_ARGS="-svj 16"',
+                                      '-DLLVM_LIT_ARGS="-svj 8"',
                                       '-DLLVM_USE_LINKER=gold'])},
         {'name': "lldb-arm-ubuntu",
          'slavenames': ["linaro-arm-lldb"],
@@ -964,7 +964,7 @@ def _get_lldb_builders():
          'factory': LLDBBuilder.getLLDBCMakeBuildFactory(
                     test=True,
                     extra_cmake_args=['-DLLVM_ENABLE_ASSERTIONS=True',
-                                      '-DLLVM_LIT_ARGS="-svj 16"',
+                                      '-DLLVM_LIT_ARGS="-svj 8"',
                                       '-DLLVM_USE_LINKER=gold'])},
         {'name': "lldb-x64-windows-ninja",
          'slavenames': ["win-py3-buildbot"],
