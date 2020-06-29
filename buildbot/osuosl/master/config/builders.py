@@ -802,6 +802,25 @@ def _get_clang_builders():
                         stage2_config='Release',
                         extra_cmake_args=['-DLLVM_ENABLE_ASSERTIONS=ON',
                                           '-DLLVM_TARGETS_TO_BUILD=X86'])},
+
+        {'name' : "clang-x86-ninja-win10",
+         'slavenames' : ["windows10-vs2019"],
+         'builddir' : "clang-x86-ninja-win10",
+         'factory' : ClangBuilder.getClangCMakeBuildFactory(
+                        clean=True,
+                        checkout_lld=False,
+                        vs="autodetect",
+                        vs_target_arch='x86',
+                        testStage1=True,
+                        useTwoStage=True,
+                        stage1_config='Release',
+                        stage2_config='Release',
+                        extra_cmake_args=['-DLLVM_ENABLE_ASSERTIONS=ON',
+                                          '-DLLVM_TARGETS_TO_BUILD=X86',
+                                          '-DCMAKE_C_COMPILER_LAUNCHER=sccache',
+                                          '-DCMAKE_CXX_COMPILER_LAUNCHER=sccache',
+                                          ])},
+
     ]
 
 # Polly builders.

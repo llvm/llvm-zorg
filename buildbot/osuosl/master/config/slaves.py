@@ -220,6 +220,9 @@ def get_build_slaves():
         # Windows 7 Intel(R) Core(TM) CPU i7-4790K (4.00GHz), 16GB of RAM
         create_slave("windows7-buildbot", properties={'jobs': 2}, max_builds=1),
 
+        # Windows 10, Visual Studio 2019, Google Cloud 16 cores
+        create_slave("windows10-vs2019", properties={'jobs': 16}, max_builds=1),
+
         # CentOS 7.5.1804 on Intel(R) Xeon(R) Gold 6126 CPU @ 2.60GHz, 96GB RAM
         create_slave("nec-arrproto41", properties={'jobs': 12}, max_builds=1),
 
