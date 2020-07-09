@@ -11,7 +11,8 @@ def getAnnotatedBuildFactory(
     env=None,
     extra_args=None,
     timeout=1200,
-    is_legacy_mode=False):
+    is_legacy_mode=False,
+    checkout_llvm_sources=True):
     """
     Returns a new build factory that uses AnnotatedCommand, which
     allows the build to be run by version-controlled scripts that do
@@ -76,19 +77,22 @@ def getAnnotatedBuildFactory(
         src_dir='llvm-zorg',
         alwaysUseLatest=True)
 
-    f.addGetSourcecodeSteps()
-
+    if checkout_llvm_sources:
+      f.addGetSourcecodeSteps()
 
     extra_args_with_props = [WithProperties(arg) for arg in extra_args]
     # Explicitly use '/' as separator, because it works on *nix and Windows.
-    script_path = "../llvm-zorg/zorg/buildbot/builders/annotated/%s" % (script)
+    if script.startswith('/'):
+      command = [script]
+    else:
+      script_path = "../llvm-zorg/zorg/buildbot/builders/annotated/%s" % (script)
+      command = ["python", script_path, WithProperties("--jobs=%(jobs:-)s")]
+    command += extra_args_with_props
+
     f.addStep(AnnotatedCommand(name="annotate",
                                description="annotate",
                                timeout=timeout,
                                haltOnFailure=True,
-                               command=["python",
-                                        script_path,
-                                        WithProperties("--jobs=%(jobs:-)s")]
-                                        + extra_args_with_props,
+                               command=command,
                                env=merged_env))
     return f
