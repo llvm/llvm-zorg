@@ -14,7 +14,7 @@ reload(lit_test_command)
 reload(artifacts)
 reload(phased_builder_utils)
 
-def getLibcxxAndAbiBuilder(f=None, env=None, additional_features=None,
+def getLibcxxAndAbiBuilder(f=None, env=None,
                            cmake_extra_opts=None, lit_extra_opts=None,
                            lit_extra_args=None, check_libcxx_abilist=False,
                            check_libcxx_benchmarks=None,
@@ -24,8 +24,6 @@ def getLibcxxAndAbiBuilder(f=None, env=None, additional_features=None,
 
     if env is None:
         env = {}
-    if additional_features is None:
-        additional_features = set()
     if cmake_extra_opts is None:
         cmake_extra_opts = {}
     if lit_extra_opts is None:
@@ -53,10 +51,6 @@ def getLibcxxAndAbiBuilder(f=None, env=None, additional_features=None,
     litTestArgs = '-vv --show-unsupported --show-xfail --threads=%(jobs)s'
     if lit_extra_args:
         litTestArgs += ' ' + ' '.join(lit_extra_args)
-
-    if additional_features:
-        litTestArgs += (' --param=additional_features=' +
-                       ','.join(additional_features))
 
     for key in lit_extra_opts:
         litTestArgs += (' --param=' + key + '=' + lit_extra_opts[key])
