@@ -33,6 +33,15 @@ RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/nul
     apt-get update ;\
     apt-get install -y cmake
 
+# Get the Vulkan SDK from LunarG. The CUDA meta package already pulls in NVIDIA
+# Vulkan ICD.
+RUN wget -qO - http://packages.lunarg.com/lunarg-signing-key-pub.asc 2>/dev/null | \
+       apt-key add - ;\
+    wget -qO /etc/apt/sources.list.d/lunarg-vulkan-1.2.141-bionic.list \
+       http://packages.lunarg.com/vulkan/1.2.141/lunarg-vulkan-1.2.141-bionic.list;\
+    apt-get update ;\
+    apt-get install -y vulkan-sdk
+
 # install (old) build bot version
 # this version of build bot requires python2!
 RUN pip install buildbot-slave==0.8.11
