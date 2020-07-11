@@ -22,7 +22,9 @@ WORKER_PASSWORD=$(cat /secrets/token)
   lsb_release -d | cut -f 2- ; \
   clang --version | head -n1 ; \
   ld.lld-8 --version ; \
-  cmake --version | head -n1 
+  cmake --version | head -n1  \
+  vulkaninfo 2>/dev/null | grep "Vulkan Instance" \
+  vulkaninfo 2>/dev/null | grep "apiVersion" | cut -d= -f2 | awk '{printf "NVIDIA Vulkan ICD Version: " $2 "\n"}'
 ) > ${WORKER_NAME}/info/host 
 
 # It looks like GKE sometimes deploys the container before the NVIDIA drivers 
