@@ -19,12 +19,14 @@ def getVisualStudioEnvironment(vs=None, target_arch=None):
         It doesn't work when VS is not installed at the default location.
         """
 
-        # TODO: Implement autodetect for VS versions other than 2017
+        # LLVM code base requires VS 2017 or later.
+        # This means vswhere.exe later than 1.0.40, so we add `-products *` to include Build Tools in the search
+        # to support build-tools only installations.
         vcvars_command = "for /f \"tokens=* USEBACKQ\" %%F in " \
-                            "(`\"%ProgramFiles(x86)%\\Microsoft Visual Studio\\Installer\\vswhere.exe\" -latest -property installationPath`) DO " \
+                            "(`\"%ProgramFiles(x86)%\\Microsoft Visual Studio\\Installer\\vswhere.exe\" -products * -latest -property installationPath`) DO " \
                             "\"%%F\"\\VC\\Auxiliary\\Build\\vcvarsall.bat"
     else:
-        # Older versions of VS
+        # Note: Support for older versions of VS is deprecated and will be removed.
         vcvars_command = "\"" + "\\".join((vs, '..','..','VC', 'vcvarsall.bat')) + "\""
 
     vcvars_command = "%s %s && set" % (vcvars_command, arch_arg)
