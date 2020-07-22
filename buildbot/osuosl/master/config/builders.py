@@ -4,7 +4,6 @@ from zorg.buildbot.builders import ClangBuilder
 from zorg.buildbot.builders import LLVMBuilder
 from zorg.buildbot.builders import PollyBuilder
 from zorg.buildbot.builders import LLDBBuilder
-from zorg.buildbot.builders import LLDBuilder
 from zorg.buildbot.builders import ClangAndLLDBuilder
 from zorg.buildbot.builders import SanitizerBuilder
 from zorg.buildbot.builders import SanitizerBuilderII
