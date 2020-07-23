@@ -1,7 +1,6 @@
 from buildbot.process.properties import WithProperties
 
 from zorg.buildbot.builders import ClangBuilder
-from zorg.buildbot.builders import LLVMBuilder
 from zorg.buildbot.builders import PollyBuilder
 from zorg.buildbot.builders import LLDBBuilder
 from zorg.buildbot.builders import ClangAndLLDBuilder
