@@ -1,27 +1,8 @@
 from collections import OrderedDict
 
 from buildbot.process.factory import BuildFactory
-from buildbot.steps.source import SVN, Git
+from buildbot.steps.source import Git
 from buildbot.steps.shell import WithProperties
-
-# NOTE: svn_repos is deprecated and will be removed.
-svn_repos = OrderedDict([
-  ('llvm'             , ("%(llvm_srcdir)s",                         '%(vcs_protocol:-http)s://llvm.org/svn/llvm-project/llvm/')),
-  ('clang'            , ("%(llvm_srcdir)s/tools/clang",             '%(vcs_protocol:-http)s://llvm.org/svn/llvm-project/cfe/')),
-  ('clang-tools-extra', ("%(llvm_srcdir)s/tools/clang/tools/extra", '%(vcs_protocol:-http)s://llvm.org/svn/llvm-project/clang-tools-extra/')),
-  ('compiler-rt'      , ("%(llvm_srcdir)s/projects/compiler-rt",    '%(vcs_protocol:-http)s://llvm.org/svn/llvm-project/compiler-rt/')),
-  ('libcxx'           , ("%(llvm_srcdir)s/projects/libcxx",         '%(vcs_protocol:-http)s://llvm.org/svn/llvm-project/libcxx/')),
-  ('libcxxabi'        , ("%(llvm_srcdir)s/projects/libcxxabi",      '%(vcs_protocol:-http)s://llvm.org/svn/llvm-project/libcxxabi/')),
-  ('libunwind'        , ("%(llvm_srcdir)s/projects/libunwind",      '%(vcs_protocol:-http)s://llvm.org/svn/llvm-project/libunwind/')),
-  ('lld'              , ("%(llvm_srcdir)s/tools/lld",               '%(vcs_protocol:-http)s://llvm.org/svn/llvm-project/lld/')),
-  ('lnt'              , ("test/lnt",                                '%(vcs_protocol:-http)s://llvm.org/svn/llvm-project/lnt/')),
-  ('test-suite'       , ("test/test-suite",                         '%(vcs_protocol:-http)s://llvm.org/svn/llvm-project/test-suite/')),
-  ('lldb'             , ("%(llvm_srcdir)s/tools/lldb",              '%(vcs_protocol:-http)s://llvm.org/svn/llvm-project/lldb/')),
-  ('llgo'             , ("%(llvm_srcdir)s/tools/llgo",              '%(vcs_protocol:-http)s://llvm.org/svn/llvm-project/llgo/')),
-  ('polly'            , ("%(llvm_srcdir)s/tools/polly",             '%(vcs_protocol:-http)s://llvm.org/svn/llvm-project/polly/')),
-  ('openmp'           , ("%(llvm_srcdir)s/tools/openmp",            '%(vcs_protocol:-http)s://llvm.org/svn/llvm-project/openmp/')),
-  ('zorg'             , ("zorg",                                    '%(vcs_protocol:-http)s://llvm.org/svn/llvm-project/zorg/')),
-  ])
 
 class LLVMBuildFactory(BuildFactory):
     """
@@ -37,7 +18,7 @@ class LLVMBuildFactory(BuildFactory):
         else:
             self.depends_on_projects = frozenset(depends_on_projects)
 
-        # By default LLVMBuildFactory works in the legacy mode.
+        # FIXME: legacy mode is deprecated and will be removed.
         self.is_legacy_mode = kwargs.pop('is_legacy_mode', False)
 
         # Directories.
@@ -50,18 +31,14 @@ class LLVMBuildFactory(BuildFactory):
         for k,v in kwargs.items():
             setattr(self, k, v)
 
-        if self.is_legacy_mode:
-            self.llvm_srcdir = self.llvm_srcdir or "llvm"
-            self.obj_dir = self.obj_dir or "build"
-        else:
-            self.monorepo_dir = self.llvm_srcdir or "llvm-project"
-            self.llvm_srcdir = \
+        self.monorepo_dir = self.llvm_srcdir or "llvm-project"
+        self.llvm_srcdir = \
                 "%(monorepo_dir)s/llvm" % {'monorepo_dir' : self.monorepo_dir}
-            self.obj_dir = \
+        self.obj_dir = \
                 self.obj_dir or "build"
 
-            # Repourl_prefix could be specified per builder. Otherwise we use github.
-            self.repourl_prefix = kwargs.pop('repourl_prefix', 'https://github.com/llvm/')
+        # Repourl_prefix could be specified per builder. Otherwise we use github.
+        self.repourl_prefix = kwargs.pop('repourl_prefix', 'https://github.com/llvm/')
 
 
     @staticmethod
@@ -94,39 +71,9 @@ class LLVMBuildFactory(BuildFactory):
             return rel_path
 
 
-    # llvm_srcdir - Path to the root of the unified source tree.
-    # mode - SVN checkout mode.
-    # defaultBranch - the default branch to checkout.
-    # and so on, see the list of the SVN params. 
-    # NOTE: addSVNSteps is deprecated and will be removed. Please use addGetSourcecodeSteps instead.
-    def addSVNSteps(self, llvm_srcdir=None, **kwargs):
-        if llvm_srcdir is None:
-            llvm_srcdir = self.llvm_srcdir
-        if not kwargs.get('mode', None):
-            kwargs['mode'] = 'update'
-        if not kwargs.get('defaultBranch', None):
-            kwargs['defaultBranch'] = 'trunk'
-
-        # Add a SVM step for each project this builder depends on.
-        # We want the projects be always checked out in a certain order.
-        for project in svn_repos.keys():
-            if project in self.depends_on_projects:
-                workdir, baseURL = svn_repos[project]
-                self.addStep(
-                    SVN(name='svn-%s' % project,
-                        workdir=workdir % {'llvm_srcdir' : llvm_srcdir},
-                        baseURL=WithProperties(baseURL),
-                        **kwargs))
-
-
     def addGetSourcecodeSteps(self, **kwargs):
         # Remove 'is_legacy_mode' if it leaked in to kwargs.
         kwargs.pop('is_legacy_mode', None)
-
-        # Bail out if we are in the legacy mode and SVN checkout is required.
-        if self.is_legacy_mode:
-            self.addSVNSteps(**kwargs)
-            return
 
         # Checkout the monorepo.
         self.addStep(
@@ -143,49 +90,26 @@ class LLVMBuildFactory(BuildFactory):
         # Remove 'is_legacy_mode' if it leaked in to kwargs.
         kwargs.pop('is_legacy_mode', None)
 
-        # Bail out if we are in the legacy mode and SVN checkout is required.
-        if self.is_legacy_mode:
-            workdir, baseURL = svn_repos[project]
+        # project contains a repo name which is not a part of the monorepo.
+        #  We do not enforce it here, though.
+        _repourl = kwargs.pop('repourl', None)
+        if not _repourl:
+            _repourl = self.repourl_prefix + "llvm-%s.git" % project
 
-            if not name:
-                name = 'svn-%s' % project
+        if not name:
+            name = 'Checkout %s' % project
 
-            # Check out to the given directory if any.
-            # Otherwise this is a part of the unified source tree.
-            if src_dir is None:
-                src_dir = workdir % {'llvm_srcdir' : self.llvm_srcdir}
+        # Check out to the given directory if any.
+        # Otherwise this is a part of the unified source tree.
+        if src_dir is None:
+            src_dir = 'llvm-%s' % project
 
-            if not kwargs.get('mode', None):
-                kwargs['mode'] = 'update'
-            if not kwargs.get('defaultBranch', None):
-                kwargs['defaultBranch'] = 'trunk'
+        # Ignore workdir if given. We check out to src_dir.
+        kwargs.pop('workdir', None)
 
-            self.addStep(
-                SVN(name=name,
-                    workdir=src_dir,
-                    baseURL=WithProperties(baseURL),
-                    **kwargs))
-        else:
-            # project contains a repo name which is not a part of the monorepo.
-            #  We do not enforce it here, though.
-            _repourl = kwargs.pop('repourl', None)
-            if not _repourl:
-                _repourl = self.repourl_prefix + "llvm-%s.git" % project
-
-            if not name:
-                name = 'Checkout %s' % project
-
-            # Check out to the given directory if any.
-            # Otherwise this is a part of the unified source tree.
-            if src_dir is None:
-                src_dir = 'llvm-%s' % project
-
-            # Ignore workdir if given. We check out to src_dir.
-            kwargs.pop('workdir', None)
-
-            self.addStep(
-                Git(name=name,
-                    repourl=_repourl,
-                    progress=True,
-                    workdir=WithProperties(src_dir),
-                    **kwargs))
+        self.addStep(
+            Git(name=name,
+                repourl=_repourl,
+                progress=True,
+                workdir=WithProperties(src_dir),
+                **kwargs))
