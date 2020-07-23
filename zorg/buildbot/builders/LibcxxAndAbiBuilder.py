@@ -1,18 +1,10 @@
 import buildbot.steps.shell
 import buildbot.process.properties as properties
 
-import zorg.buildbot.commands.LitTestCommand as lit_test_command
-import zorg.buildbot.util.artifacts as artifacts
-import zorg.buildbot.util.phasedbuilderutils as phased_builder_utils
-
 from zorg.buildbot.commands.LitTestCommand import LitTestCommand
 from zorg.buildbot.commands.CmakeCommand import CmakeCommand
 from zorg.buildbot.process.factory import LLVMBuildFactory
 from zorg.buildbot.builders import UnifiedTreeBuilder
-
-reload(lit_test_command)
-reload(artifacts)
-reload(phased_builder_utils)
 
 def getLibcxxAndAbiBuilder(f=None, env=None,
                            cmake_extra_opts=None, lit_extra_opts=None,
