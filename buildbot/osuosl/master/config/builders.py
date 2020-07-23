@@ -1575,7 +1575,7 @@ def _get_experimental_scheduled_builders():
                                                               checkout_llvm_sources=False),
          'category' : 'clang'},
         {'name': "clang-cuda-p4",
-         'slavenames' :["cuda-gce-p4-0"],
+         'slavenames' :["cuda-p4-0"],
          'builddir': "clang-cuda-p4",
          'factory': AnnotatedBuilder.getAnnotatedBuildFactory(script="/buildbot/cuda-build",
                                                               checkout_llvm_sources=False),
