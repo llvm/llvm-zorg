@@ -11,7 +11,6 @@ from zorg.buildbot.builders import OpenMPBuilder
 from zorg.buildbot.builders import LibcxxAndAbiBuilder
 from zorg.buildbot.builders import SphinxDocsBuilder
 from zorg.buildbot.builders import ABITestsuitBuilder
-from zorg.buildbot.builders import ClangLTOBuilder3Stage
 from zorg.buildbot.builders import ClangLTOBuilder
 from zorg.buildbot.builders import UnifiedTreeBuilder
 from zorg.buildbot.builders import CUDATestsuiteBuilder
