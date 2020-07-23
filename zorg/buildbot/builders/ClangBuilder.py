@@ -1,344 +1,16 @@
-import buildbot
-import buildbot.process.factory
 import copy
-import os
 from datetime import datetime
 
 from buildbot.process.properties import WithProperties, Property
-from buildbot.steps.shell import Configure, ShellCommand, SetProperty
+from buildbot.steps.shell import ShellCommand, SetProperty
 from buildbot.steps.shell import WarningCountingShellCommand
-from buildbot.steps.source import SVN
-from buildbot.steps.transfer import FileDownload
 
-import zorg.buildbot.util.artifacts as artifacts
 import zorg.buildbot.builders.Util as builders_util
-import zorg.buildbot.util.phasedbuilderutils as phasedbuilderutils
-import zorg.buildbot.commands as commands
-import zorg.buildbot.commands.BatchFileDownload as batch_file_download
-import zorg.buildbot.commands.LitTestCommand as lit_test_command
+
+from zorg.buildbot.commands.LitTestCommand import LitTestCommand
 from zorg.buildbot.conditions.FileConditions import FileDoesNotExist
 from zorg.buildbot.commands.CmakeCommand import CmakeCommand
 from zorg.buildbot.process.factory import LLVMBuildFactory
-
-# FIXME: This method is deprecated and will be removed. Please use getClangCMakeBuildFactory instead.
-def getClangBuildFactory(
-            triple=None,
-            clean=True,
-            test=True,
-            package_dst=None,
-            run_cxx_tests=False,
-            examples=False,
-            valgrind=False,
-            valgrindLeakCheck=False,
-            useTwoStage=False,
-            completely_clean=False, 
-            make='make',
-            jobs="%(jobs)s",
-            stage1_config='Debug+Asserts',
-            stage2_config='Release+Asserts',
-            env={}, # Environmental variables for all steps.
-            extra_configure_args=[],
-            stage2_extra_configure_args=[],
-            use_pty_in_tests=False,
-            trunk_revision=None,
-            force_checkout=False,
-            extra_clean_step=None,
-            checkout_compiler_rt=False,
-            checkout_lld=False,
-            run_gdb=False,
-            run_modern_gdb=False,
-            run_gcc=False):
-    # Prepare environmental variables. Set here all env we want everywhere.
-    merged_env = {
-        'TERM' : 'dumb' # Make sure Clang doesn't use color escape sequences.
-                 }
-    if env is not None:
-        # Overwrite pre-set items with the given ones, so user can set anything.
-        merged_env.update(env)
-
-    llvm_srcdir = "llvm.src"
-    llvm_1_objdir = "llvm.obj"
-    llvm_1_installdir = "llvm.install.1"
-    llvm_2_objdir = "llvm.obj.2"
-    llvm_2_installdir = "llvm.install"
-
-    f = buildbot.process.factory.BuildFactory()
-
-    # Determine the build directory.
-    f.addStep(buildbot.steps.shell.SetProperty(name="get_builddir",
-                                               command=["pwd"],
-                                               property="builddir",
-                                               description="set build dir",
-                                               workdir=".",
-                                               env=merged_env))
-
-    # Blow away completely, if requested.
-    if completely_clean:
-        f.addStep(ShellCommand(name="rm-llvm.src",
-                               command=["rm", "-rf", llvm_srcdir],
-                               haltOnFailure=True,
-                               description=["rm src dir", "llvm"],
-                               workdir=".",
-                               env=merged_env))
-
-    # Checkout sources.
-    if trunk_revision:
-        # The SVN build step provides no mechanism to check out a specific revision
-        # based on a property, so just run the commands directly here.
-        svn_co = ['svn', 'checkout']
-        if force_checkout:
-            svn_co += ['--force']
-        svn_co += ['--revision', WithProperties(trunk_revision)]
-
-        svn_co_llvm = svn_co + \
-          [WithProperties('http://llvm.org/svn/llvm-project/llvm/trunk@%s' %
-                          trunk_revision),
-           llvm_srcdir]
-        svn_co_clang = svn_co + \
-          [WithProperties('http://llvm.org/svn/llvm-project/cfe/trunk@%s' %
-                          trunk_revision),
-           '%s/tools/clang' % llvm_srcdir]
-        svn_co_clang_tools_extra = svn_co + \
-          [WithProperties('http://llvm.org/svn/llvm-project/clang-tools-extra/trunk@%s' %
-                          trunk_revision),
-           '%s/tools/clang/tools/extra' % llvm_srcdir]
-
-        f.addStep(ShellCommand(name='svn-llvm',
-                               command=svn_co_llvm,
-                               haltOnFailure=True,
-                               workdir='.'))
-        f.addStep(ShellCommand(name='svn-clang',
-                               command=svn_co_clang,
-                               haltOnFailure=True,
-                               workdir='.'))
-        f.addStep(ShellCommand(name='svn-clang-tools-extra',
-                               command=svn_co_clang_tools_extra,
-                               haltOnFailure=True,
-                               workdir='.'))
-    else:
-        f.addStep(SVN(name='svn-llvm',
-                      mode='update',
-                      baseURL='http://llvm.org/svn/llvm-project/llvm/',
-                      defaultBranch='trunk',
-                      workdir=llvm_srcdir))
-        f.addStep(SVN(name='svn-clang',
-                      mode='update',
-                      baseURL='http://llvm.org/svn/llvm-project/cfe/',
-                      defaultBranch='trunk',
-                      workdir='%s/tools/clang' % llvm_srcdir))
-        f.addStep(SVN(name='svn-clang-tools-extra',
-                      mode='update',
-                      baseURL='http://llvm.org/svn/llvm-project/clang-tools-extra/',
-                      defaultBranch='trunk',
-                      workdir='%s/tools/clang/tools/extra' % llvm_srcdir))
-        if checkout_compiler_rt:
-            f.addStep(SVN(name='svn-compiler-rt',
-                          mode='update',
-                          baseURL='http://llvm.org/svn/llvm-project/compiler-rt/',
-                          defaultBranch='trunk',
-                          workdir='%s/projects/compiler-rt' % llvm_srcdir))
-
-    # Clean up llvm (stage 1); unless in-dir.
-    if clean and llvm_srcdir != llvm_1_objdir:
-        f.addStep(ShellCommand(name="rm-llvm.obj.stage1",
-                               command=["rm", "-rf", llvm_1_objdir],
-                               haltOnFailure=True,
-                               description=["rm build dir", "llvm"],
-                               workdir=".",
-                               env=merged_env))
-
-    if not clean:
-        expected_makefile = 'Makefile'
-        f.addStep(SetProperty(name="Makefile_isready",
-                              workdir=llvm_1_objdir,
-                              command=["sh", "-c",
-                                       "test -e %s && echo OK || echo Missing" % expected_makefile],
-                              flunkOnFailure=False,
-                              property="exists_Makefile"))
-
-    cmake_triple_arg = []
-    if triple:
-        cmake_triple_arg = ['-DLLVM_HOST_TRIPLE=%s' % triple]
-    f.addStep(ShellCommand(name='cmake',
-                           command=['cmake',
-                                    '-DLLVM_BUILD_TESTS=ON',
-                                    '-DCMAKE_BUILD_TYPE=%s' % stage1_config] +
-                                   cmake_triple_arg +
-                                   extra_configure_args +
-                                   ["../" + llvm_srcdir],
-                           description='cmake stage1',
-                           workdir=llvm_1_objdir,
-                           env=merged_env,
-                           doStepIf=lambda step: step.build.getProperty("exists_Makefile") != "OK"))
-
-    # Make clean if using in-dir builds.
-    if clean and llvm_srcdir == llvm_1_objdir:
-        f.addStep(WarningCountingShellCommand(name="clean-llvm",
-                                              command=[make, "clean"],
-                                              haltOnFailure=True,
-                                              description="cleaning llvm",
-                                              descriptionDone="clean llvm",
-                                              workdir=llvm_1_objdir,
-                                              doStepIf=clean,
-                                              env=merged_env))
-
-    if extra_clean_step:
-        f.addStep(extra_clean_step)
-
-    f.addStep(WarningCountingShellCommand(name="compile",
-                                          command=['nice', '-n', '10',
-                                                   make, WithProperties("-j%s" % jobs)],
-                                          haltOnFailure=True,
-                                          flunkOnFailure=not run_gdb,
-                                          description=["compiling", stage1_config],
-                                          descriptionDone=["compile", stage1_config],
-                                          workdir=llvm_1_objdir,
-                                          env=merged_env))
-
-    if examples:
-        f.addStep(WarningCountingShellCommand(name="compile.examples",
-                                              command=['nice', '-n', '10',
-                                                       make, WithProperties("-j%s" % jobs),
-                                                       "BUILD_EXAMPLES=1"],
-                                              haltOnFailure=True,
-                                              description=["compiling", stage1_config, "examples"],
-                                              descriptionDone=["compile", stage1_config, "examples"],
-                                              workdir=llvm_1_objdir,
-                                              env=merged_env))
-
-    clangTestArgs = '-v -j %s' % jobs
-    if valgrind:
-        clangTestArgs += ' --vg'
-        if valgrindLeakCheck:
-            clangTestArgs += ' --vg-leak'
-        clangTestArgs += ' --vg-arg --suppressions=%(builddir)s/llvm/tools/clang/utils/valgrind/x86_64-pc-linux-gnu_gcc-4.3.3.supp --vg-arg --suppressions=%(builddir)s/llvm/utils/valgrind/x86_64-pc-linux-gnu.supp'
-    extraTestDirs = ''
-    if run_cxx_tests:
-        extraTestDirs += '%(builddir)s/llvm/tools/clang/utils/C++Tests'
-    if test:
-        f.addStep(lit_test_command.LitTestCommand(name='check-all',
-                                   command=[make, "check-all", "VERBOSE=1",
-                                            WithProperties("LIT_ARGS=%s" % clangTestArgs),
-                                            WithProperties("EXTRA_TESTDIRS=%s" % extraTestDirs)],
-                                   flunkOnFailure=not run_gdb,
-                                   description=["checking"],
-                                   descriptionDone=["checked"],
-                                   workdir=llvm_1_objdir,
-                                   usePTY=use_pty_in_tests,
-                                   env=merged_env))
-
-    # TODO: Install llvm and clang for stage1.
-
-    if run_gdb or run_gcc or run_modern_gdb:
-        ignores = getClangTestsIgnoresFromPath(os.path.expanduser('~/public/clang-tests'), 'clang-x86_64-darwin10')
-        install_prefix = "%%(builddir)s/%s" % llvm_1_installdir
-        if run_gdb:
-            addClangGDBTests(f, ignores, install_prefix)
-        if run_modern_gdb:
-            addModernClangGDBTests(f, jobs, install_prefix)
-        if run_gcc:
-            addClangGCCTests(f, ignores, install_prefix)
-
-    if not useTwoStage:
-        if package_dst:
-            name = WithProperties(
-                "%(builddir)s/" + llvm_1_objdir +
-                "/clang-r%(got_revision)s-b%(buildnumber)s.tgz")
-            f.addStep(ShellCommand(name='pkg.tar',
-                                   description="tar root",
-                                   command=["tar", "zcvf", name, "./"],
-                                   workdir=llvm_1_installdir,
-                                   warnOnFailure=True,
-                                   flunkOnFailure=False,
-                                   haltOnFailure=False,
-                                   env=merged_env))
-            f.addStep(ShellCommand(name='pkg.upload',
-                                   description="upload root",
-                                   command=["scp", name,
-                                            WithProperties(
-                            package_dst + "/%(buildername)s")],
-                                   workdir=".",
-                                   warnOnFailure=True,
-                                   flunkOnFailure=False,
-                                   haltOnFailure=False,
-                                   env=merged_env))
-
-        return f
-
-    # Clean up llvm (stage 2).
-    #
-    # We always cleanly build the stage 2. If the compiler has been
-    # changed on the stage 1, we cannot trust any of the intermediate file
-    # from the old compiler. And if the stage 1 compiler is the same, we should
-    # not build in the first place.
-    f.addStep(ShellCommand(name="rm-llvm.obj.stage2",
-                           command=["rm", "-rf", llvm_2_objdir],
-                           haltOnFailure=True,
-                           description=["rm build dir", "llvm", "(stage 2)"],
-                           workdir=".",
-                           env=merged_env))
-
-    # Configure llvm (stage 2).
-    f.addStep(ShellCommand(name='cmake',
-                           command=['cmake'] + stage2_extra_configure_args + [
-                                    '-DLLVM_BUILD_TESTS=ON',
-                                    WithProperties('-DCMAKE_C_COMPILER=%%(builddir)s/%s/bin/clang' % llvm_1_objdir), # FIXME use installdir
-                                    WithProperties('-DCMAKE_CXX_COMPILER=%%(builddir)s/%s/bin/clang++' % llvm_1_objdir),
-                                    '-DCMAKE_BUILD_TYPE=%s' % stage2_config,
-                                    "../" + llvm_srcdir],
-                           description='cmake stage2',
-                           workdir=llvm_2_objdir,
-                           env=merged_env))
-
-    # Build llvm (stage 2).
-    f.addStep(WarningCountingShellCommand(name="compile.llvm.stage2",
-                                          command=['nice', '-n', '10',
-                                                   make, WithProperties("-j%s" % jobs)],
-                                          haltOnFailure=True,
-                                          description=["compiling", "(stage 2)",
-                                                       stage2_config],
-                                          descriptionDone=["compile", "(stage 2)",
-                                                           stage2_config],
-                                          workdir=llvm_2_objdir,
-                                          env=merged_env))
-
-    if test:
-        f.addStep(lit_test_command.LitTestCommand(name='check-all',
-                                   command=[make, "check-all", "VERBOSE=1",
-                                            WithProperties("LIT_ARGS=%s" % clangTestArgs),
-                                            WithProperties("EXTRA_TESTDIRS=%s" % extraTestDirs)],
-                                   description=["checking"],
-                                   descriptionDone=["checked"],
-                                   workdir=llvm_2_objdir,
-                                   usePTY=use_pty_in_tests,
-                                   env=merged_env))
-
-    # TODO: Install llvm and clang for stage2.
-
-    if package_dst:
-        name = WithProperties(
-            "%(builddir)s/" + llvm_2_objdir +
-            "/clang-r%(got_revision)s-b%(buildnumber)s.tgz")
-        f.addStep(ShellCommand(name='pkg.tar',
-                               description="tar root",
-                               command=["tar", "zcvf", name, "./"],
-                               workdir=llvm_2_installdir,
-                               warnOnFailure=True,
-                               flunkOnFailure=False,
-                               haltOnFailure=False,
-                               env=merged_env))
-        f.addStep(ShellCommand(name='pkg.upload',
-                               description="upload root",
-                               command=["scp", name,
-                                        WithProperties(
-                        package_dst + "/%(buildername)s")],
-                               workdir=".",
-                               warnOnFailure=True,
-                               flunkOnFailure=False,
-                               haltOnFailure=False,
-                               env=merged_env))
-
-    return f
 
 def addGCSUploadSteps(f, package_name, install_prefix, gcs_directory, env,
                       gcs_url_property=None, use_pixz_compression=False,
@@ -682,13 +354,13 @@ def _getClangCMakeBuildFactory(
 
     if test and testStage1:
         haltOnStage1Check = not useTwoStage and not runTestSuite
-        f.addStep(lit_test_command.LitTestCommand(name='ninja check 1',
-                                   command=ninja_check_cmd,
-                                   haltOnFailure=haltOnStage1Check,
-                                   description=["checking stage 1"],
-                                   descriptionDone=["stage 1 checked"],
-                                   workdir=stage1_build,
-                                   env=env))
+        f.addStep(LitTestCommand(name='ninja check 1',
+                                 command=ninja_check_cmd,
+                                 haltOnFailure=haltOnStage1Check,
+                                 description=["checking stage 1"],
+                                 descriptionDone=["stage 1 checked"],
+                                 workdir=stage1_build,
+                                 env=env))
 
     if useTwoStage or runTestSuite or stage1_upload_directory:
         f.addStep(ShellCommand(name='clean stage 1 install',
@@ -763,13 +435,13 @@ def _getClangCMakeBuildFactory(
                                               env=env))
 
         if test:
-            f.addStep(lit_test_command.LitTestCommand(name='ninja check 2',
-                                       command=ninja_check_cmd,
-                                       haltOnFailure=not runTestSuite,
-                                       description=["checking stage 2"],
-                                       descriptionDone=["stage 2 checked"],
-                                       workdir=stage2_build,
-                                       env=env))
+            f.addStep(LitTestCommand(name='ninja check 2',
+                                     command=ninja_check_cmd,
+                                     haltOnFailure=not runTestSuite,
+                                     description=["checking stage 2"],
+                                     descriptionDone=["stage 2 checked"],
+                                     workdir=stage2_build,
+                                     env=env))
 
     ############# TEST SUITE
     ## Test-Suite (stage 2 if built, stage 1 otherwise)
@@ -859,7 +531,7 @@ def _getClangCMakeBuildFactory(
                                description='setting up LNT in sandbox',
                                workdir='test/sandbox',
                                env=env))
-        f.addStep(commands.LitTestCommand.LitTestCommand(
+        f.addStep(LitTestCommand(
                                name='test-suite',
                                command=test_suite_cmd,
                                haltOnFailure=True,
@@ -872,100 +544,3 @@ def _getClangCMakeBuildFactory(
                                env=test_suite_env))
 
     return f
-
-# FIXME: Deprecated.
-def addClangGCCTests(f, ignores={}, install_prefix="%(builddir)s/llvm.install",
-                     languages = ('gcc', 'g++', 'objc', 'obj-c++')):
-    make_vars = [WithProperties(
-            'CC_UNDER_TEST=%s/bin/clang' % install_prefix),
-                 WithProperties(
-            'CXX_UNDER_TEST=%s/bin/clang++' % install_prefix)]
-    f.addStep(SVN(name='svn-clang-gcc-tests', mode='update',
-                  baseURL='http://llvm.org/svn/llvm-project/clang-tests/',
-                  defaultBranch='trunk', workdir='clang-tests'))
-    gcc_dg_ignores = ignores.get('gcc-4_2-testsuite', {})
-    for lang in languages:
-        f.addStep(commands.SuppressionDejaGNUCommand.SuppressionDejaGNUCommand(
-            name='test-gcc-4_2-testsuite-%s' % lang,
-            command=["make", "-k", "check-%s" % lang] + make_vars,
-            description="gcc-4_2-testsuite (%s)" % lang,
-            workdir='clang-tests/gcc-4_2-testsuite',
-            logfiles={ 'dg.sum' : 'obj/%s/%s.sum' % (lang, lang),
-                       '%s.log' % lang : 'obj/%s/%s.log' % (lang, lang)},
-            ignore=gcc_dg_ignores.get(lang, [])))
-
-# FIXME: Deprecated.
-def addClangGDBTests(f, ignores={}, install_prefix="%(builddir)s/llvm.install"):
-    make_vars = [WithProperties(
-            'CC_UNDER_TEST=%s/bin/clang' % install_prefix),
-                 WithProperties(
-            'CXX_UNDER_TEST=%s/bin/clang++' % install_prefix)]
-    f.addStep(SVN(name='svn-clang-gdb-tests', mode='update',
-                  baseURL='http://llvm.org/svn/llvm-project/clang-tests/',
-                  defaultBranch='trunk', workdir='clang-tests'))
-    f.addStep(commands.SuppressionDejaGNUCommand.SuppressionDejaGNUCommand(
-            name='test-gdb-1472-testsuite',
-            command=["make", "-k", "check"] + make_vars,
-            description="gdb-1472-testsuite",
-            workdir='clang-tests/gdb-1472-testsuite',
-            logfiles={ 'dg.sum' : 'obj/filtered.gdb.sum',
-                       'gdb.log' : 'obj/gdb.log' }))
-
-# FIXME: Deprecated.
-def addModernClangGDBTests(f, jobs, install_prefix):
-    make_vars = [WithProperties('RUNTESTFLAGS=CC_FOR_TARGET=\'{0}/bin/clang\' '
-                                'CXX_FOR_TARGET=\'{0}/bin/clang++\' '
-                                'CFLAGS_FOR_TARGET=\'-w -fno-limit-debug-info\''
-                                .format(install_prefix))]
-    f.addStep(SVN(name='svn-clang-modern-gdb-tests', mode='update',
-                  svnurl='http://llvm.org/svn/llvm-project/clang-tests-external/trunk/gdb/7.5',
-                  workdir='clang-tests/src'))
-    f.addStep(Configure(command='../src/configure',
-                        workdir='clang-tests/build/'))
-    f.addStep(WarningCountingShellCommand(name='gdb-75-build',
-                                          command=['make', WithProperties('-j%s' % jobs)],
-                                          haltOnFailure=True,
-                                          workdir='clang-tests/build'))
-    f.addStep(commands.DejaGNUCommand.DejaGNUCommand(
-            name='gdb-75-check',
-            command=['make', '-k', WithProperties('-j%s' % jobs), 'check'] + make_vars,
-            workdir='clang-tests/build',
-            logfiles={'dg.sum':'gdb/testsuite/gdb.sum', 
-                      'gdb.log':'gdb/testsuite/gdb.log'}))
-
-
-
-# FIXME: Deprecated.
-addClangTests = addClangGCCTests
-
-def getClangTestsIgnoresFromPath(path, key):
-    def readList(path):
-        if not os.path.exists(path):
-            return []
-
-        f = open(path)
-        lines = [ln.strip() for ln in f]
-        f.close()
-        return lines
-
-    ignores = {}
-
-    gcc_dg_ignores = {}
-    for lang in ('gcc', 'g++', 'objc', 'obj-c++'):
-        lang_path = os.path.join(path, 'gcc-4_2-testsuite', 'expected_results',
-                                 key, lang)
-        gcc_dg_ignores[lang] = (
-            readList(os.path.join(lang_path, 'FAIL.txt')) +
-            readList(os.path.join(lang_path, 'UNRESOLVED.txt')) +
-            readList(os.path.join(lang_path, 'XPASS.txt')))
-    ignores['gcc-4_2-testsuite' ] = gcc_dg_ignores
-
-    ignores_path = os.path.join(path, 'gdb-1472-testsuite', 'expected_results',
-                                key)
-    gdb_dg_ignores = (
-        readList(os.path.join(ignores_path, 'FAIL.txt')) +
-        readList(os.path.join(ignores_path, 'UNRESOLVED.txt')) +
-        readList(os.path.join(ignores_path, 'XPASS.txt')))
-    ignores['gdb-1472-testsuite' ] = gdb_dg_ignores
-
-    return ignores
