@@ -6,7 +6,6 @@ from zorg.buildbot.builders import PollyBuilder
 from zorg.buildbot.builders import LLDBBuilder
 from zorg.buildbot.builders import ClangAndLLDBuilder
 from zorg.buildbot.builders import SanitizerBuilder
-from zorg.buildbot.builders import SanitizerBuilderII
 from zorg.buildbot.builders import OpenMPBuilder
 from zorg.buildbot.builders import LibcxxAndAbiBuilder
 from zorg.buildbot.builders import SphinxDocsBuilder
