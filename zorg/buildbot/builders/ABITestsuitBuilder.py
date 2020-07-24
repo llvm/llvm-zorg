@@ -46,10 +46,6 @@ def getABITestsuitBuildFactory(
             env=merged_env,
             **kwargs) # Pass through all the extra arguments.
 
-    # Consume is_legacy_mode if given.
-    # TODO: Remove this once legacy mode gets dropped.
-    kwargs.pop('is_legacy_mode', None)
-
     # First of all, we shall checkout the latest test-suite.
     f.addGetSourcecodeForProject(
         project='test-suite',
