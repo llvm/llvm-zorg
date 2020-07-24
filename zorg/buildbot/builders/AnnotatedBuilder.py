@@ -11,7 +11,6 @@ def getAnnotatedBuildFactory(
     env=None,
     extra_args=None,
     timeout=1200,
-    is_legacy_mode=False,
     checkout_llvm_sources=True):
     """
     Returns a new build factory that uses AnnotatedCommand, which
@@ -42,7 +41,6 @@ def getAnnotatedBuildFactory(
         extra_args = []
 
     f = LLVMBuildFactory(
-        is_legacy_mode=is_legacy_mode,
         clean=clean,
         depends_on_projects=depends_on_projects)
 
