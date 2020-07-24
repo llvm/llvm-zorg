@@ -71,7 +71,6 @@ def getLLDBCMakeBuildFactory(
     build_dir='build'
 
     f = LLVMBuildFactory(
-            is_legacy_mode=False,
             depends_on_projects=["llvm", "clang", "lldb", "lld"],
             obj_dir=build_dir)
 
