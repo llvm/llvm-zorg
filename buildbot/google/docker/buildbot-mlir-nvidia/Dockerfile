@@ -5,6 +5,9 @@
 #
 #===----------------------------------------------------------------------===//
 # Docker image used for the mlir-nvidia builder
+# 
+# Environment variables configurable at runtime:
+#    BUILDBOT_PORT - server port to connect to
 #===----------------------------------------------------------------------===//
 
 # Use the image from NVIDIA as base
@@ -59,6 +62,13 @@ RUN chmod a+rx /home/buildbot/run.sh
 
 USER buildbot
 ENV WORKER_NAME="mlir-nvidia"
+
+# Allow the server port of this agent to be configurable during deployment.
+# This way we can connect the same image to production and integration. 
+# Ports:
+#   9990 - production
+#   9994 - integration
+ENV BUILDBOT_PORT="9990"
 
 # Set up buildbot host and maintainer info.
 RUN mkdir -p "${WORKER_NAME}/info/" ;\

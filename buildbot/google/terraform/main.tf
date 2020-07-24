@@ -63,7 +63,7 @@ resource "google_container_node_pool" "nvidia_16core_pool_nodes" {
   # use autoscaling to only create a machine when there is a deployment
   autoscaling {
     min_node_count = 0
-    max_node_count = 1
+    max_node_count = 2
   }
   
   node_config {
