@@ -18,9 +18,6 @@ class LLVMBuildFactory(BuildFactory):
         else:
             self.depends_on_projects = frozenset(depends_on_projects)
 
-        # FIXME: legacy mode is deprecated and will be removed.
-        self.is_legacy_mode = kwargs.pop('is_legacy_mode', False)
-
         # Directories.
         self.llvm_srcdir = kwargs.pop('llvm_srcdir', None)
         self.obj_dir = kwargs.pop('obj_dir', None)
@@ -72,9 +69,6 @@ class LLVMBuildFactory(BuildFactory):
 
 
     def addGetSourcecodeSteps(self, **kwargs):
-        # Remove 'is_legacy_mode' if it leaked in to kwargs.
-        kwargs.pop('is_legacy_mode', None)
-
         # Checkout the monorepo.
         self.addStep(
             Git(name='Checkout the source code',
@@ -87,9 +81,6 @@ class LLVMBuildFactory(BuildFactory):
     # Checkout a given LLVM project to the given directory.
     # TODO: Handle clean property and self.clean attribute.
     def addGetSourcecodeForProject(self, project, name=None, src_dir=None, **kwargs):
-        # Remove 'is_legacy_mode' if it leaked in to kwargs.
-        kwargs.pop('is_legacy_mode', None)
-
         # project contains a repo name which is not a part of the monorepo.
         #  We do not enforce it here, though.
         _repourl = kwargs.pop('repourl', None)
