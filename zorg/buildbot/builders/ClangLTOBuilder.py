@@ -65,10 +65,9 @@ def _addSteps4SystemCompiler(
         ('-DCMAKE_INSTALL_PREFIX=', install_dir),
         ])
 
-    if not f.is_legacy_mode:
-        CmakeCommand.applyRequiredOptions(cmake_args, [
-            ('-DLLVM_ENABLE_PROJECTS=', ";".join(f.depends_on_projects)),
-            ])
+    CmakeCommand.applyRequiredOptions(cmake_args, [
+        ('-DLLVM_ENABLE_PROJECTS=', ";".join(f.depends_on_projects)),
+        ])
 
     # Note: On this stage we do not care of warnings, as we build with
     # a system toolchain and cannot control the environment.
@@ -183,10 +182,9 @@ def _addSteps4StagedCompiler(
             "-DCMAKE_C_COMPILER=%(workdir)s/" + staged_install + "/bin/clang"
         ))
 
-    if not f.is_legacy_mode:
-        CmakeCommand.applyRequiredOptions(cmake_args, [
-            ('-DLLVM_ENABLE_PROJECTS=', ";".join(f.depends_on_projects)),
-            ])
+    CmakeCommand.applyRequiredOptions(cmake_args, [
+        ('-DLLVM_ENABLE_PROJECTS=', ";".join(f.depends_on_projects)),
+        ])
 
     # Create configuration files with cmake
     f.addStep(CmakeCommand(name="cmake-configure-stage%s" % stage_num,
@@ -290,10 +288,6 @@ def getClangWithLTOBuildFactory(
                 ],
             staged_compiler_idx = 1,
             **kwargs)
-
-    # Consume is_legacy_mode if given.
-    # TODO: Remove this once legacy mode gets dropped.
-    kwargs.pop('is_legacy_mode', None)
 
     cleanBuildRequested = lambda step: clean or step.build.getProperty("clean", default=step.build.getProperty("clean_obj"))
 
