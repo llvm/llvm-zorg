@@ -130,7 +130,6 @@ def getClangCMakeGCSBuildFactory(
                trigger_after_stage1=trigger_after_stage1)
 
 def getClangCMakeBuildFactory(
-            is_legacy_mode=False,
             clean=True,
             test=True,
             cmake='cmake',
@@ -165,7 +164,6 @@ def getClangCMakeBuildFactory(
             checkout_libcxx=False,
             checkout_test_suite=False):
     return _getClangCMakeBuildFactory(
-               is_legacy_mode=is_legacy_mode,
                clean=clean, test=test, cmake=cmake, jobs=jobs, vs=vs,
                vs_target_arch=vs_target_arch, useTwoStage=useTwoStage,
                testStage1=testStage1, stage1_config=stage1_config,
@@ -180,7 +178,6 @@ def getClangCMakeBuildFactory(
                checkout_test_suite=checkout_test_suite)
 
 def _getClangCMakeBuildFactory(
-            is_legacy_mode=False,
             clean=True,
             test=True,
             cmake='cmake',
@@ -257,23 +254,14 @@ def _getClangCMakeBuildFactory(
         depends_on_projects.append('libcxxabi')
         depends_on_projects.append('libunwind')
 
-    # Some projects are not a part of the monorepo.
-    # So, depending on the legacy mode, we
-    # would have to checkout them differently.
-    if is_legacy_mode and (runTestSuite or checkout_test_suite):
-        depends_on_projects.append('lnt')
-        depends_on_projects.append('test-suite')
-
     f = LLVMBuildFactory(
-            is_legacy_mode=is_legacy_mode,
             depends_on_projects=depends_on_projects,
             llvm_srcdir='llvm')
 
-    # If we get the source code form the monorepo,
-    # we need to checkout the latest code for LNT
+    # Checkout the latest code for LNT
     # and the test-suite separately. Le's do this first,
     # so we wouldn't poison got_revision property.
-    if not is_legacy_mode and (runTestSuite or checkout_test_suite):
+    if runTestSuite or checkout_test_suite:
         f.addGetSourcecodeForProject(
             project='lnt',
             src_dir='test/lnt',
@@ -326,10 +314,9 @@ def _getClangCMakeBuildFactory(
 
 
     ############# STAGE 1
-    if not f.is_legacy_mode:
-        CmakeCommand.applyRequiredOptions(extra_cmake_args, [
-            ('-DLLVM_ENABLE_PROJECTS=', ";".join(f.depends_on_projects)),
-            ])
+    CmakeCommand.applyRequiredOptions(extra_cmake_args, [
+        ('-DLLVM_ENABLE_PROJECTS=', ";".join(f.depends_on_projects)),
+        ])
     rel_src_dir = LLVMBuildFactory.pathRelativeToBuild(f.llvm_srcdir, stage1_build)
 
     f.addStep(ShellCommand(name='cmake stage 1',
