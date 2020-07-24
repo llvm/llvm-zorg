@@ -71,10 +71,9 @@ def getLibcxxAndAbiBuilder(f=None, env=None,
         workdir=".",
         haltOnFailure=False))
 
-    if not f.is_legacy_mode:
-        CmakeCommand.applyRequiredOptions(cmake_opts, [
-            ('-DLLVM_ENABLE_PROJECTS=', ";".join(f.depends_on_projects)),
-            ])
+    CmakeCommand.applyRequiredOptions(cmake_opts, [
+        ('-DLLVM_ENABLE_PROJECTS=', ";".join(f.depends_on_projects)),
+        ])
 
     f.addStep(buildbot.steps.shell.ShellCommand(
         name='cmake', command=['cmake', rel_src_dir] + cmake_opts,
