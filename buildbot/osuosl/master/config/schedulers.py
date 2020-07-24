@@ -23,32 +23,16 @@ def getSingleBranchSchedulers(builders, schedulers, **kwargs):
     }
 
     builders_with_automatic_schedulers = []
-    legacy_builders_with_automatic_schedulers = []
     for builder in builders:
-        # Only for the builders created with LLVMBuildFactory or similar.
+        # For the builders created with LLVMBuildFactory or similar.
         if getattr(builder['factory'], 'depends_on_projects', None):
-            if getattr(builder['factory'], 'is_legacy_mode', True):
-                # Only if this builder is in the legacy mode and
-                # does not yet have an assigned scheduler.
-                if builder['name'] not in builders_with_schedulers:
-                    legacy_builders_with_automatic_schedulers.append(builder)
-            else:
-                # There are no manually assigned schedulers in this case.
-                builders_with_automatic_schedulers.append(builder)
+            # We always use automatic schedulers.
+            builders_with_automatic_schedulers.append(builder)
 
-    automatic_schedulers = []
-    automatic_schedulers.extend(
-         _getSingleBranchAutomaticSchedulers(
-            builders_with_automatic_schedulers,
-            filter_branch='master',     # git monorepo branch.
-            treeStableTimer=kwargs.get('treeStableTimer', 2*60)))
-    automatic_schedulers.extend(
-        _getSingleBranchAutomaticSchedulers(
-            legacy_builders_with_automatic_schedulers,
-            filter_branch='trunk',      # svn repo branch.
-            treeStableTimer=kwargs.get('treeStableTimer', 2*60)))
-
-    return automatic_schedulers
+    return _getSingleBranchAutomaticSchedulers(
+                builders_with_automatic_schedulers,
+                filter_branch='master',     # git monorepo branch.
+                treeStableTimer=kwargs.get('treeStableTimer', None)))
 
 def _getSingleBranchAutomaticSchedulers(
         builders_with_automatic_schedulers,
