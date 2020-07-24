@@ -40,9 +40,15 @@ fi
 # Define arguments for mounting the volumes
 # These differ on Windows and Linux
 VOLUMES="-v ${SECRET_STORAGE}:/secrets -v workertest:/test"
-if [[ "${OS}" == "Windows_NT" ]] ; then
+if [ -n "${OS+x}" ] && [[  "${OS+x}" == "Windows_NT" ]] ; then
     VOLUMES="-v ${SECRET_STORAGE}:c:\\volumes\\secrets -v workertest:c:\volumes\\test -v workercache:c:\sccache"
 fi
 
+# Set container arguments, if they are set in the environment:
+ARGS=""
+if [ -n "${BUILDBOT_PORT+x}" ] ; then
+    ARGS+=" -e BUILDBOT_PORT=${BUILDBOT_PORT}"
+fi
+
 docker build -t "${IMAGE_NAME}:latest" .
-docker run -it ${VOLUMES} "${IMAGE_NAME}:latest" ${CMD}
+docker run -it ${VOLUMES} ${ARGS} "${IMAGE_NAME}:latest" ${CMD}

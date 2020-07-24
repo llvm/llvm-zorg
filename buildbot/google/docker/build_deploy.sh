@@ -23,7 +23,7 @@ cd "${DIR}/${IMAGE_NAME}"
 VERSION=$(( $(cat VERSION) + 1 ))
 
 # on Windows: USER=$USERNAME
-if [[ "${OS}" == "Windows_NT" ]] ; then
+if [ -n "${OS+x}" ] && [[  "${OS+x}" == "Windows_NT" ]] ; then
   USER="${USERNAME}"
 fi
 

@@ -1,14 +1,17 @@
 ---
+# deployment for staging, this connects the agent to the staging
+# environment at http://lab.llvm.org:8014/
+# the deployment for production is in a separate file
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: mlir-nvidia
+  name: mlir-nvidia-staging
 spec:
   # number of instances we want to run
   replicas: 1
   selector:
     matchLabels:
-      app: buildbot-mlir-nvidia
+      app: mlir-nvidia-staging
   # define strategy for updating the images
   strategy:
     rollingUpdate:
@@ -21,12 +24,17 @@ spec:
   template:
     metadata:
       labels:
-        app: buildbot-mlir-nvidia
+        app: mlir-nvidia-staging
     spec:
       containers:
       # the image and version we want to run   
-      - image: gcr.io/sanitizer-bots/buildbot-mlir-nvidia:9
-        name: mlir-nvidia
+      - image: gcr.io/sanitizer-bots/buildbot-mlir-nvidia:14
+        name: mlir-nvidia-staging
+        # set environment variables
+        env:
+          # connect to staging environment, running at port 9994 (instead of 9990)
+          - name: BUILDBOT_PORT
+            value: "9994"
         # reserve "<number of cores>-1" for this image, kubernetes also
         # needs <1 core for management tools
         resources:
@@ -49,12 +57,6 @@ spec:
       nodeSelector:
         pool: nvidia-16core-pool
       restartPolicy: Always
-      # FIXME: do we need this if we requested a GPU?
-      #tolerations:
-      #- effect: NoSchedule
-      #  key: nvidia.com/gpu
-      #  operator: Equal
-      #  value: present
       volumes:
       # declare the secret as a volume so we can mount it
       - name: buildbot-token

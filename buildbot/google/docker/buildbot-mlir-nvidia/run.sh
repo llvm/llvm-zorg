@@ -6,6 +6,7 @@
 #
 #===----------------------------------------------------------------------===//
 # This script will start the buildbot worker
+# 
 #===----------------------------------------------------------------------===//
 
 set -eu
@@ -22,10 +23,19 @@ WORKER_PASSWORD=$(cat /secrets/token)
   lsb_release -d | cut -f 2- ; \
   clang --version | head -n1 ; \
   ld.lld-8 --version ; \
-  cmake --version | head -n1  \
-  vulkaninfo 2>/dev/null | grep "Vulkan Instance" \
+  cmake --version | head -n1 ; \
+  vulkaninfo 2>/dev/null | grep "Vulkan Instance" ; \
   vulkaninfo 2>/dev/null | grep "apiVersion" | cut -d= -f2 | awk '{printf "NVIDIA Vulkan ICD Version: " $2 "\n"}'
 ) > ${WORKER_NAME}/info/host 
+
+echo "Full nvidia-smi output:"
+nvidia-smi
+
+echo "Full vulkaninfo:"
+vulkaninfo
+
+echo "Host information:"
+cat ${WORKER_NAME}/info/host
 
 # It looks like GKE sometimes deploys the container before the NVIDIA drivers 
 # are loaded on the host. In this case the GPU is not available during the 
@@ -40,14 +50,15 @@ if [[ "$RETURN_CODE" != "0" ]] ; then
 fi
 
 # create the folder structure
-# port 9990 for production
-# port 9994 for staging
+echo "creating worker ${WORKER_NAME} at port ${BUILDBOT_PORT}..."
 buildslave create-slave --keepalive=200 "${WORKER_NAME}" \
-  lab.llvm.org:9990 "${WORKER_NAME}" "${WORKER_PASSWORD}"
+  lab.llvm.org:${BUILDBOT_PORT} "${WORKER_NAME}" "${WORKER_PASSWORD}"
 
 # start the daemon, this command return immetiately
+echo "starting worker..."
 buildslave start "${WORKER_NAME}"
 
 # To keep the container running and produce log outputs: dump the worker
 # log to stdout
+echo "Following worker log..."
 tail -f ${WORKER_NAME}/twistd.log
