@@ -1,5 +1,5 @@
 # escape=`
-FROM gcr.io/sanitizer-bots/windows-base-vscode2019:5
+FROM gcr.io/sanitizer-bots/windows-base-vscode2019:6
 
 ENV WORKER_NAME=windows10-vs2019
 
@@ -17,6 +17,8 @@ ENV SCCACHE_DIR="C:\volumes\sccache"
 ENV SCCACHE_CACHE_SIZE="5G"
 
 # Configure 32bit tools ("x86") instead of 64bit ("amd64")
-ENTRYPOINT ["C:\\BuildTools\\Common7\\Tools\\VsDevCmd.bat", "-arch=x86", "-host_arch=amd64", "&&", "powershell.exe", "-NoLogo", "-ExecutionPolicy", "Bypass"]
+ENTRYPOINT ["C:\\BuildTools\\Common7\\Tools\\VsDevCmd.bat", "-arch=x86", `
+    "-host_arch=amd64", "&&", "powershell.exe", "-NoLogo", `
+    "-ExecutionPolicy", "Bypass"]
 
 CMD ["c:\\buildbot\\run.ps1"]

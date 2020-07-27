@@ -30,6 +30,11 @@ RUN C:\TEMP\vs_buildtools.exe --quiet --wait --norestart --nocache `
     --add Microsoft.VisualStudio.Component.VC.ATL `
     || IF "%ERRORLEVEL%"=="3010" EXIT 0
 
+# Register DIA dll (Debug Interface Access) so it can be used to symbolize 
+# the stack traces.
+# see https://developercommunity.visualstudio.com/content/problem/290674/msdia140dll-is-not-registered-on-vs2017-hosts.html
+RUN regsvr32 /S "C:\BuildTools\DIA SDK\bin\amd64\msdia140.dll"
+
 # install chocolately as package manager
 RUN powershell -NoProfile -InputFormat None -Command `
     iex ((new-object net.webclient).DownloadString('https://chocolatey.org/install.ps1')) ; `
@@ -79,4 +84,6 @@ RUN git config --system core.longpaths true & `
 #
 # For running manually:
 # C:\BuildTools\Common7\Tools\VsDevCmd.bat -arch=amd64 -host_arch=amd64
-ENTRYPOINT ["C:\\BuildTools\\Common7\\Tools\\VsDevCmd.bat", "-arch=amd64", "-host_arch=amd64", "&&", "powershell.exe", "-NoLogo", "-ExecutionPolicy", "Bypass"]
+ENTRYPOINT ["C:\\BuildTools\\Common7\\Tools\\VsDevCmd.bat", "-arch=amd64", `
+    "-host_arch=amd64", "&&", "powershell.exe", "-NoLogo", `
+    "-ExecutionPolicy", "Bypass"]
