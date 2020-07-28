@@ -1,5 +1,5 @@
 # escape=`
-FROM gcr.io/sanitizer-bots/windows-base-vscode2019:6
+FROM gcr.io/sanitizer-bots/windows-base-vscode2019:7
 
 ENV WORKER_NAME=windows10-vs2019
 
