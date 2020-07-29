@@ -32,7 +32,7 @@ def getSingleBranchSchedulers(builders, schedulers, **kwargs):
     return _getSingleBranchAutomaticSchedulers(
                 builders_with_automatic_schedulers,
                 filter_branch='master',     # git monorepo branch.
-                treeStableTimer=kwargs.get('treeStableTimer', None)))
+                treeStableTimer=kwargs.get('treeStableTimer', None))
 
 def _getSingleBranchAutomaticSchedulers(
         builders_with_automatic_schedulers,
