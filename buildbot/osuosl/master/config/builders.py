@@ -1097,7 +1097,6 @@ def _get_mlir_builders():
                         depends_on_projects=['llvm','mlir'],
                         extra_configure_args=[
                             '-DLLVM_BUILD_EXAMPLES=ON',
-                            '-DLLVM_ENABLE_CXX1Y=Y',
                             '-DLLVM_TARGETS_TO_BUILD=host;NVPTX',
                             '-DLLVM_ENABLE_PROJECTS=mlir',
                             '-DMLIR_CUDA_RUNNER_ENABLED=1',
