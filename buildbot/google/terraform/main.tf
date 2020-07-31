@@ -178,7 +178,7 @@ resource "kubernetes_deployment" "windows10_vs2019" {
 
       spec {
         container {
-          image = "${var.gcp_config.gcr_prefix}/buildbot-windows10-vs2019:4"
+          image = "${var.gcp_config.gcr_prefix}/buildbot-windows10-vs2019:9"
           name  = "windows10-vs2019"
 
           # reserve "<number of cores>-1" for this image, kubernetes also
@@ -199,6 +199,14 @@ resource "kubernetes_deployment" "windows10_vs2019" {
             mount_path = "c:\\volumes\\secrets"
             name = "buildbot-token"
           }
+          volume_mount {
+            mount_path = "c:\\volumes\\sccache"
+            name = "sccache-vol"
+          }
+          volume_mount {
+            mount_path = "c:\\volumes\\buildbot"
+            name = "buildbot-vol"
+          }
         }
         # select which node pool to deploy to
         node_selector = {
@@ -214,8 +222,16 @@ resource "kubernetes_deployment" "windows10_vs2019" {
               optional = false
               secret_name = "password-windows10-vs2019"
             }
-
         }
+        volume {
+          name = "sccache-vol"
+          empty_dir {}
+        }
+        volume {
+          name = "buildbot-vol"
+          empty_dir {}
+        }
+
         # Windows nodes from the node pool are marked with the taint 
         # "node.kubernetes.io/os=windows". So we need to "tolerate" this to
         # deploy to such nodes.
