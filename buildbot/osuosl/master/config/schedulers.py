@@ -9,7 +9,10 @@ def getProjectsToFilter(projects):
 
 # Since we have many parametric builders, we dynamically build the minimum set
 # of schedulers, which covers all actually used combinations of dependencies.
-def getSingleBranchSchedulers(builders, schedulers, **kwargs):
+def getSingleBranchSchedulers(
+    builders,
+    explicitly_set_schedulers = None,
+    **kwargs):
     """
     I'm taking over all of not yet assigned builders with the
     declared source code dependencies, and automatically generate
@@ -17,17 +20,20 @@ def getSingleBranchSchedulers(builders, schedulers, **kwargs):
     source code dependency combinations.
     """
 
-    # Prepare a list of builders which already have been assigned to schedulers.
-    builders_with_schedulers = {
-        b for s in schedulers for b in s.builderNames
-    }
+    builders_with_explicit_schedulers = set()
+    if explicitly_set_schedulers:
+        # TODO: Make a list of builder names with already set schedulers.
+        # builders_with_explicit_schedulers.add(builder)
+        pass
 
-    builders_with_automatic_schedulers = []
-    for builder in builders:
-        # For the builders created with LLVMBuildFactory or similar.
-        if getattr(builder['factory'], 'depends_on_projects', None):
-            # We always use automatic schedulers.
-            builders_with_automatic_schedulers.append(builder)
+    # For the builders created with LLVMBuildFactory or similar,
+    # we always use automatic schedulers,
+    # unless schedulers already explicitly set.
+    builders_with_automatic_schedulers = [
+        builder for builder in builders
+        if builder['name'] not in builders_with_explicit_schedulers
+        if getattr(builder['factory'], 'depends_on_projects', None)
+    ]
 
     return _getSingleBranchAutomaticSchedulers(
                 builders_with_automatic_schedulers,
@@ -73,5 +79,6 @@ def _getSingleBranchAutomaticSchedulers(
                 "Generated SingleBranchScheduler: { name='%s'" % automatic_scheduler_name,
                 ", builderNames=", sch_builders,
                 ", change_filter=", projects_to_filter, " (branch: %s)" % filter_branch,
+                ", treeStableTimer=%s" % treeStableTimer,
                 "}")
     return automatic_schedulers
