@@ -4,9 +4,12 @@ $ErrorActionPreference = "Stop"
 # Read password from file
 $WORKER_PASSWORD=Get-Content "C:\volumes\secrets\token"
 
+#Create short drive alias "Q:" for worker dir, to keep path lengths <260 
+New-PSDrive -Name "Q" -PSProvider filesystem -Root "C:\volumes\buildbot\"
+
 # chdir to the volume storing the temporary data
 # This is a mounted volume
-Set-Location c:\volumes\buildbot
+Set-Location Q:\
 
 # Write host and admin information
 # configure powershell output to use UTF-8, otherwiese buildbot can't read the file
