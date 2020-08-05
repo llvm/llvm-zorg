@@ -43,7 +43,7 @@ resource "google_container_cluster" "primary" {
   node_config {
     # FIXME(kuhnel): turn this into a private cluster, without external IP
     # We need at least 2 vCPU to run all kubernetes services
-    machine_type = "n1-standard-2"
+    machine_type = "e2-medium"
     # use preemptible, as this saves costs
     preemptible = true
   }
@@ -109,7 +109,7 @@ resource "google_container_node_pool" "windows_32core_pool_nodes" {
   node_config {
     # use preemptible, as this saves costs
     preemptible  = true
-    machine_type = "n1-highcpu-32"
+    machine_type = "e2-highcpu-32"
     # Windows deployments tend to require more disk space, so using 300GB here.
     disk_size_gb = 300
     # FIXME: test if SSDs are actually faster than HDDs for our use case
