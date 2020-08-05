@@ -50,6 +50,18 @@ resource "google_container_cluster" "primary" {
 
 }
 
+resource "null_resource" "update_cluster" {
+  # Add NVIDIA driver daemonset.
+  depends_on = [google_container_cluster.primary]
+  # Update kubectl context for the cluster and apply nvidia's daemonset.
+  provisioner "local-exec" {
+      command = <<EOT
+        gcloud container clusters get-credentials cudabot
+        kubectl apply -f https://raw.githubusercontent.com/GoogleCloudPlatform/container-engine-accelerators/master/nvidia-driver-installer/cos/daemonset-preloaded.yaml
+      EOT
+  }
+}
+
 # Create machines for mlir-nvidia
 # Note: The buildbot mlir-nividia is deployed using a kubernetes file. See
 # the README.md for details on GPUs.
@@ -69,6 +81,7 @@ resource "google_container_node_pool" "nvidia_16core_pool_nodes" {
   node_config {
     # use preemptible, as this saves costs
     preemptible  = true
+    # FIXME upgrade to "n1-custom-24-32768"
     machine_type = "n1-highcpu-16"
     disk_size_gb = 100
     # FIXME: test if SSDs are actually faster than HDDs for our use case
@@ -90,6 +103,20 @@ resource "google_container_node_pool" "nvidia_16core_pool_nodes" {
     labels = {
       pool = "nvidia-16core-pool"
     }
+  }
+}
+
+resource "null_resource" "deployment-mlir-nvidia" {
+  # Add NVIDIA driver daemonset.
+  depends_on = [null_resource.update_cluster]
+  triggers = {
+    t4_contents = filemd5("${path.module}/deployment-mlir-nvidia-production.yaml")
+  }
+  # Add NVIDIA daemonset and deploy mlir-nvidia.
+  # Using this workaround as terraform does not support GPUs on Google Cloud.
+  # https://github.com/terraform-providers/terraform-provider-kubernetes/issues/149
+  provisioner "local-exec" {
+      command = "kubectl apply -f ${path.module}/deployment-mlir-nvidia-production.yaml"
   }
 }
 
