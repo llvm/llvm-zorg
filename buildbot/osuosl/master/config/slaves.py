@@ -242,6 +242,7 @@ def get_build_slaves():
 
         create_slave("flang-aarch64-ubuntu-build"),
         create_slave("flang-aarch64-ubuntu-clang-build"),
+        create_slave("flang-aarch64-ubuntu-gcc10-build"),
         create_slave("nersc-flang"),
 
         # ML-Driven Compiler Optimizations build slave (Ubuntu x86_64)

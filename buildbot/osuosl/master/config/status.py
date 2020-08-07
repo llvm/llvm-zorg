@@ -297,4 +297,15 @@ def get_status_targets(standard_builders, standard_categories=None):
             builders=[
                 "ml-opt-dev-x86-64", "ml-opt-rel-x86-64", "ml-opt-devrel-x86-64"],
             addLogs=False),
+        InformativeMailNotifier(
+            fromaddr = "llvm.buildmaster@lab.llvm.org",
+            sendToInterestedUsers = False,
+            extraRecipients = ["caroline.concatto@arm.com"],
+            subject="Build %(builder)s Failure",
+            mode = "failing",
+            builders = [
+                "flang-aarch64-ubuntu", "flang-aarch64-ubuntu-clang", 
+                "flang-aarch64-ubuntu-gcc10"],
+            addLogs=False,
+            num_lines = 15),
         ]
