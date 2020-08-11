@@ -53,8 +53,12 @@ pipeline {
                       --assertions \
                       --projects="clang;libcxx;libcxxabi;compiler-rt;lld;lldb;debuginfo-tests"  \
                       --compiler-flag="-Wdocumentation" \
-                      --cmake-type=Release
-                    '''
+                      --cmake-type=Release || (echo "Retrying. debuginfo-tests may have failed due to high load."; sleep 30; python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake build \
+                      --assertions \
+                      --projects="clang;libcxx;libcxxabi;compiler-rt;lld;lldb;debuginfo-tests"  \
+                      --compiler-flag="-Wdocumentation" \
+                      --cmake-type=Release)
+                      '''
                 }
             }
         }
