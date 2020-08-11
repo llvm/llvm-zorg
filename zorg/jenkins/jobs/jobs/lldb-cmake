@@ -60,7 +60,7 @@ pipeline {
         }
         stage('Test') {
             steps {
-                timeout(60) {
+                timeout(90) {
                     sh '''
                     set -u
                     export PATH=$PATH:/usr/bin:/usr/local/bin
