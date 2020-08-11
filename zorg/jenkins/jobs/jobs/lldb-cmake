@@ -48,7 +48,7 @@ pipeline {
 
                     cd -
 
-                    export MAX_PARALLEL_TESTS=1
+                    export MAX_PARALLEL_TESTS=$(sysctl hw.physicalcpu |awk '{print $2}')
                     python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake build \
                       --assertions \
                       --projects="clang;libcxx;libcxxabi;compiler-rt;lld;lldb;debuginfo-tests"  \
