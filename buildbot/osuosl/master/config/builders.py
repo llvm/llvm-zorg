@@ -1557,8 +1557,8 @@ def _get_flang_builders():
                         depends_on_projects=['llvm','mlir','clang','flang'],
                         extra_configure_args=[
                             "-DLLVM_TARGETS_TO_BUILD=AArch64",
-                            "-DCMAKE_C_COMPILER=/usr/local/clang-10",
-                            "-DCMAKE_CXX_COMPILER=/usr/bin/clang++",
+                            "-DCMAKE_C_COMPILER=/usr/local/bin/clang",
+                            "-DCMAKE_CXX_COMPILER=/usr/local/bin/clang++",
                             "-DLLVM_INSTALL_UTILS=ON",
                             "-DCMAKE_CXX_STANDARD=17",
                             "-DLLVM_ENABLE_WERROR=ON",
@@ -1578,8 +1578,8 @@ def _get_flang_builders():
                         depends_on_projects=['llvm','mlir','clang','flang'],
                         extra_configure_args=[
                             "-DLLVM_TARGETS_TO_BUILD=AArch64",
-                            "-DCMAKE_C_COMPILER=/usr/local/gcc-10",
-                            "-DCMAKE_CXX_COMPILER=/usr/bin/gcc++-10",
+                            "-DCMAKE_C_COMPILER=/usr/local/bin/gcc-10",
+                            "-DCMAKE_CXX_COMPILER=/usr/local/bin/g++-10",
                             "-DLLVM_INSTALL_UTILS=ON",
                             "-DCMAKE_CXX_STANDARD=17",
                             "-DLLVM_ENABLE_WERROR=OFF",
