@@ -1556,7 +1556,6 @@ def _get_flang_builders():
          'builddir':"flang-aarch64-ubuntu-clang",
          'factory': UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                         clean=True,
-                        jobs=8,
                         depends_on_projects=['llvm','mlir','clang','flang'],
                         extra_configure_args=[
                             "-DLLVM_TARGETS_TO_BUILD=AArch64",
@@ -1578,7 +1577,6 @@ def _get_flang_builders():
          'builddir':"flang-aarch64-ubuntu-gcc10",
          'factory': UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                         clean=True,
-                        jobs=8,
                         depends_on_projects=['llvm','mlir','clang','flang'],
                         extra_configure_args=[
                             "-DLLVM_TARGETS_TO_BUILD=AArch64",
