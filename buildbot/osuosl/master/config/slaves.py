@@ -75,8 +75,9 @@ def get_build_slaves():
         create_slave("ppc64le-clang-lnt-test", properties={'jobs': 8}, max_builds=1),
         create_slave("ppc64le-clang-multistage-test", properties={'jobs': 8}, max_builds=1),
         create_slave("ppc64le-sanitizer", properties={'jobs': 4}, max_builds=1),
-        create_slave("ppc64le-lld-multistage-test", properties={'jobs': 40}, max_builds=1),
+        create_slave("ppc64le-lld-multistage-test", max_builds=1),
         create_slave("ppc64le-clang-rhel-test", properties={'jobs': 4}, max_builds=1),
+        create_slave("ppc64le-flang+mlir-rhel-test", max_builds=1),
 
         # Ubuntu x86-64, Intel(R) Xeon(R) CPU E5-2680 0 @ 2.70GHz
         create_slave("hexagon-build-02", properties={'jobs': 12, 'loadaverage': 32},
