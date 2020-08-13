@@ -767,8 +767,7 @@ def _get_clang_builders():
                       checkout_lld=False,
                       extra_cmake_args=['-DLLVM_ENABLE_ASSERTIONS=ON',
                                         '-DLLVM_TARGETS_TO_BUILD=X86',
-                                        '-DLLVM_HOST_TRIPLE=x86_64-pc-solaris2.11',
-                                        '-DCLANG_DEFAULT_LINKER=/usr/bin/ld',
+                                        '-DLLVM_HOST_TRIPLE=amd64-pc-solaris2.11',
                                         '-DLLVM_PARALLEL_LINK_JOBS=4'])},
 
         {'name' : "clang-solaris11-sparcv9",
@@ -780,8 +779,7 @@ def _get_clang_builders():
                       checkout_lld=False,
                       extra_cmake_args=['-DLLVM_ENABLE_ASSERTIONS=ON',
                                         '-DLLVM_TARGETS_TO_BUILD=Sparc',
-                                        '-DLLVM_HOST_TRIPLE=sparcv9-pc-solaris2.11',
-                                        '-DCLANG_DEFAULT_LINKER=/usr/bin/ld',
+                                        '-DLLVM_HOST_TRIPLE=sparcv9-sun-solaris2.11',
                                         '-DLLVM_PARALLEL_LINK_JOBS=4'])},
 
         {'name' : "clang-x64-ninja-win7",
