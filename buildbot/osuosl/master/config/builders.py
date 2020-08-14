@@ -556,7 +556,7 @@ def _get_clang_builders():
                                                                               "-DCMAKE_C_COMPILER_EXTERNAL_TOOLCHAIN:PATH=/opt/rh/devtoolset-7/root/usr",
                                                                               "-DCMAKE_CXX_COMPILER_EXTERNAL_TOOLCHAIN:PATH=/opt/rh/devtoolset-7/root/usr",
                                                                               "-DLLVM_BINUTILS_INCDIR=/usr/include", "-DBUILD_SHARED_LIBS=ON", "-DLLVM_ENABLE_WERROR=ON",
-                                                                              '-DLLVM_LIT_ARGS="-v -j256"']),
+                                                                              '-DLLVM_LIT_ARGS="-vj 256"']),
          'category' : 'clang'},
 
         {'name': "clang-s390x-linux",
@@ -1065,7 +1065,7 @@ def _get_lld_builders():
          'factory': UnifiedTreeBuilder.getCmakeWithNinjaMultistageBuildFactory(
                                     extra_configure_args=[
                                         '-DLLVM_ENABLE_ASSERTIONS=ON',
-                                        '-DLLVM_LIT_ARGS="-sv -j256"'],
+                                        '-DLLVM_LIT_ARGS="-svj 256"'],
                                     depends_on_projects=['llvm', 'clang', 'lld']),
          'category'   : 'lld'},
 
@@ -1135,7 +1135,7 @@ def _get_mlir_builders():
                             '-DLLVM_INSTALL_UTILS=ON',
                             '-DCMAKE_CXX_STANDARD=17',
                             '-DLLVM_ENABLE_PROJECTS="mlir"',
-                            '-DLLVM_LIT_ARGS="-v -j256"',
+                            '-DLLVM_LIT_ARGS="-vj 256"',
                         ],
                         env={
                               'CC': 'clang',
@@ -1616,7 +1616,7 @@ def _get_flang_builders():
                              '-DLLVM_INSTALL_UTILS=ON',
                              '-DCMAKE_CXX_STANDARD=17',
                              '-DLLVM_ENABLE_PROJECTS="flang"',
-                             '-DLLVM_LIT_ARGS="-v -j256"'
+                             '-DLLVM_LIT_ARGS="-vj 256"'
                          ],
                          env={
                              'CC': 'clang',
