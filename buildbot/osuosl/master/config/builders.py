@@ -1131,7 +1131,7 @@ def _get_mlir_builders():
                         depends_on_projects=['llvm', 'mlir'],
                         checks=['check-mlir'],
                         extra_configure_args=[
-                            '-DLLVM_TARGETS_TO_BUILD="PowerPC"',
+                            '-DLLVM_TARGETS_TO_BUILD=PowerPC',
                             '-DLLVM_INSTALL_UTILS=ON',
                             '-DCMAKE_CXX_STANDARD=17',
                             '-DLLVM_ENABLE_PROJECTS="mlir"',
@@ -1612,7 +1612,7 @@ def _get_flang_builders():
                          depends_on_projects=['llvm', 'mlir', 'clang', 'flang'],
                          checks=['check-flang'],
                          extra_configure_args=[
-                             '-DLLVM_TARGETS_TO_BUILD="PowerPC"',
+                             '-DLLVM_TARGETS_TO_BUILD=PowerPC',
                              '-DLLVM_INSTALL_UTILS=ON',
                              '-DCMAKE_CXX_STANDARD=17',
                              '-DLLVM_ENABLE_PROJECTS="flang"',
