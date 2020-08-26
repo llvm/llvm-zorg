@@ -1086,7 +1086,6 @@ def _get_lld_builders():
 def _get_mlir_builders():
     return [
         {'name': "mlir-nvidia",
-        'mergeRequests': False,
         'slavenames':["mlir-nvidia"],
         'builddir':"mlir-nvidia",
         'factory': UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
@@ -1108,7 +1107,6 @@ def _get_mlir_builders():
                             'LD': 'lld',
                         })},
         {'name': "mlir-windows",
-        'mergeRequests': False,
         'slavenames':["win-mlir-buildbot"],
         'builddir': "mlir-x64-windows-ninja",
         'category' : 'mlir',
