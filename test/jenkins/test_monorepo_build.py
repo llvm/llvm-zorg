@@ -137,3 +137,13 @@
 # Test long should always do check-all, since that is what many bots expect.
 # RUN: python %{src_root}/zorg/jenkins/monorepo_build.py cmake testlong  | FileCheck --check-prefix CHECK-TTARGETS2 %s
 # CHECK-TTARGETS2: '/usr/local/bin/ninja' '-v' '-k' '0' 'check-all'
+
+# Test to check if timeout flag is actually being set.
+# RUN: python %{src_root}/zorg/jenkins/monorepo_build.py cmake all --timeout=900 > %t-timeout.log
+# RUN: FileCheck --check-prefix CHECK-TIMEOUT < %t-timeout.log %s
+# CHECK-TIMEOUT: --timeout=900
+
+# Test to check if default timeout is being set to 600.
+# RUN: python %{src_root}/zorg/jenkins/monorepo_build.py cmake all > %t-timeout-default.log
+# RUN: FileCheck --check-prefix CHECK-TIMEOUT-DEFAULT < %t-timeout-default.log %s
+# CHECK-TIMEOUT-DEFAULT: --timeout=600

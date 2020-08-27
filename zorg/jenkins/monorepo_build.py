@@ -28,7 +28,6 @@ sys.path.append(os.path.abspath(here + "/../../dep/"))
 import dep  # noqa
 
 
-
 def readme_name(repo):
     """Given a repo, return the name of the readme file."""
     if repo == "libcxx":
@@ -308,7 +307,8 @@ def cmake_builder(target):
         cmake_cmd += ['-DCMAKE_C_COMPILER_LAUNCHER=' + conf.sccache_path]
         cmake_cmd += ['-DCMAKE_CXX_COMPILER_LAUNCHER=' + conf.sccache_path]
 
-    lit_flags = ['--xunit-xml-output=testresults.xunit.xml', '-v', '-vv', '--timeout=600']
+    timeout_flag = '--timeout=' + str(conf.timeout)
+    lit_flags = ['--xunit-xml-output=testresults.xunit.xml', '-v', '-vv', timeout_flag]
     if conf.max_parallel_tests:
         lit_flags += ['-j', conf.max_parallel_tests]
     cmake_cmd += ['-DLLVM_LIT_ARGS={}'.format(' '.join(lit_flags))]
@@ -448,7 +448,9 @@ def clang_builder(target):
                 cmake_command.extend(['-DCMAKE_C_COMPILER=' + conf.CC(),
                                       '-DCMAKE_CXX_COMPILER=' + conf.CC() + "++"])
 
-            lit_flags = ['--xunit-xml-output=testresults.xunit.xml', '-v', '-vv', '--timeout=600']
+            timeout_flag = '--timeout=' + str(conf.timeout)
+            lit_flags = ['--xunit-xml-output=testresults.xunit.xml', '-v', '-vv', timeout_flag]
+
             if conf.max_parallel_tests:
                 lit_flags += ['-j', conf.max_parallel_tests]
             cmake_command.extend(
@@ -590,7 +592,6 @@ def lldb_cmake_builder(target, variant=None):
             '-DCMAKE_C_COMPILER=' + conf.CC(),
             '-DCMAKE_CXX_COMPILER=' + conf.CC() + "++"
         ])
-
 
     header("Clean")
     delete_module_caches(conf.workspace)
@@ -1038,7 +1039,8 @@ def parse_args():
     parser.add_argument('--projects', dest='llvm_enable_projects',
                         default="clang;clang-tools-extra;compiler-rt;libcxx",
                         help="Semicolon seperated list of projects to build.")
-
+    parser.add_argument('--timeout', dest='timeout', type=int, default='600',
+                        help='Individual test timeout in seconds.')
     args = parser.parse_args()
     if args.thinlto:
         args.lto = True
