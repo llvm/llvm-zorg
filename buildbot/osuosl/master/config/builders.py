@@ -1121,7 +1121,7 @@ def _get_mlir_builders():
                             "-DLLVM_TARGETS_TO_BUILD='host;NVPTX;AMDGPU'",
                         ])},
        {'name': 'ppc64le-mlir-rhel-clang',
-        'mergeRquests': False,
+        'mergeRequests': False,
         'slavenames': ['ppc64le-flang+mlir-rhel-test'],
         'builddir': 'ppc64le-mlir-rhel-clang-build',
         'factory': UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
@@ -1602,7 +1602,7 @@ def _get_flang_builders():
          ),
          'category' : 'flang'},
         {'name': 'ppc64le-flang-rhel-clang',
-         'mergeRquests': False,
+         'mergeRequests': False,
          'slavenames': ['ppc64le-flang+mlir-rhel-test'],
          'builddir': 'ppc64le-flang-rhel-clang-build',
          'factory': UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
