@@ -162,6 +162,7 @@ def getClangCMakeBuildFactory(
             checkout_compiler_rt=True,
             checkout_lld=True,
             checkout_libcxx=False,
+            checkout_flang=False,
             checkout_test_suite=False):
     return _getClangCMakeBuildFactory(
                clean=clean, test=test, cmake=cmake, jobs=jobs, vs=vs,
@@ -175,6 +176,7 @@ def getClangCMakeBuildFactory(
                checkout_lld=checkout_lld,
                checkout_compiler_rt=checkout_compiler_rt,
                checkout_libcxx=checkout_libcxx,
+               checkout_flang=checkout_flang,
                checkout_test_suite=checkout_test_suite)
 
 def _getClangCMakeBuildFactory(
@@ -211,6 +213,7 @@ def _getClangCMakeBuildFactory(
             checkout_lld=True,
             checkout_libcxx=False,
             checkout_test_suite=False,
+            checkout_flang=False,
 
             # Upload artifacts to Google Cloud Storage (for the llvmbisect tool)
             stage1_upload_directory=None,
@@ -253,6 +256,9 @@ def _getClangCMakeBuildFactory(
         depends_on_projects.append('libcxx')
         depends_on_projects.append('libcxxabi')
         depends_on_projects.append('libunwind')
+    if checkout_flang:
+        depends_on_projects.append('flang')
+        depends_on_projects.append('mlir')
 
     f = LLVMBuildFactory(
             depends_on_projects=depends_on_projects,

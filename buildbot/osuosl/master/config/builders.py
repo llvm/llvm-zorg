@@ -446,13 +446,14 @@ def _get_clang_builders():
                ),
          'category'   : 'lld'},
 
-        # AArch64 Clang+LLVM+RT check-all + test-suite + self-hosting
+        # AArch64 Clang+LLVM+RT check-all + flang + test-suite + self-hosting
         {'name': "clang-cmake-aarch64-full",
          'slavenames':["linaro-aarch64-full"],
          'builddir':"clang-cmake-aarch64-full",
          'factory' : ClangBuilder.getClangCMakeBuildFactory(
                       clean=False,
                       checkout_compiler_rt=True,
+                      checkout_flang=True,
                       checkout_lld=False,
                       test=True,
                       useTwoStage=True,
