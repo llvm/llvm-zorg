@@ -218,6 +218,11 @@ def _get_clang_fast_builders():
                          ["python", "bin/llvm-lit.py",
                           "-v", "-vv", "--threads=32",
                           "runtimes/runtimes-bins/libcxxabi/test"]),
+                        ("libc++",
+                         ['python', 'bin/llvm-lit.py',
+                          '-v', '-vv', '--threads=32',
+                          'runtimes/runtimes-bins/libcxx/test',
+                         ])
                       ],
                       extra_configure_args=[
                         "-DLLVM_TARGETS_TO_BUILD=AArch64",
