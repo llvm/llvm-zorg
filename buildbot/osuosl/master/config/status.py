@@ -278,7 +278,8 @@ def get_status_targets(standard_builders, standard_categories=None):
         InformativeMailNotifier(
             fromaddr = "llvm.buildmaster@lab.llvm.org",
             sendToInterestedUsers = False,
-            extraRecipients = ["caroline.concatto@arm.com"],
+            extraRecipients = [
+                "caroline.concatto@arm.com", "flang_llvm_buildbots@arm.com"],
             subject="Build %(builder)s Failure",
             mode = "failing",
             builders = [
