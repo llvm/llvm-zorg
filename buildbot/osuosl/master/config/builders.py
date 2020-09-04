@@ -200,6 +200,7 @@ def _get_clang_fast_builders():
         {'name' : "llvm-clang-win-x-aarch64",
          'slavenames' : ["as-builder-2"],
          'builddir' : "clang-win-x-aarch64",
+         'slavebuilddir' : "x-aarch64",
          'mergeRequests': True,
          'factory': XToolchainBuilder.getCmakeWithMSVCBuildFactory(
                       vs="autodetect",
