@@ -3,8 +3,11 @@ from buildbot.master import BuildMaster
 import os
 
 basedir = os.path.dirname(os.path.abspath(__file__))
-rotateLength = 10000000 # 10 MiB
-maxRotatedFiles = 20
+#rotateLength = 10000000 # 10 MiB
+#maxRotatedFiles = 20
+rotateLength = 100000000 # 100 MiB
+maxRotatedFiles = 50
+
 configfile = r'master.cfg'
 
 application = service.Application('buildmaster')
