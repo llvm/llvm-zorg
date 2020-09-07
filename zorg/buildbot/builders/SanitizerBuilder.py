@@ -39,14 +39,6 @@ def getSanitizerBuildFactory(
         depends_on_projects=depends_on_projects,
         llvm_srcdir=sanitizer_script_dir)
 
-    # Determine the build directory.
-    f.addStep(SetProperty(name="get_builddir",
-                          command=["pwd"],
-                          property="builddir",
-                          description="set build dir",
-                          workdir=".",
-                          env=merged_env))
-
     # Get sanitizer buildbot scripts.
     f.addGetSourcecodeForProject(
         name='update-annotate-scripts',
