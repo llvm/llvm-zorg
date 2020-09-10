@@ -158,15 +158,6 @@ def get_build_slaves():
         create_slave("cuda-p4-0", max_builds=1),
         create_slave("cuda-t4-0", max_builds=1),
 
-        # Ubuntu 14.04 x86_64, AMD Athlon(tm) 5150 APU with Radeon(tm) R3, 8GiB RAM
-        create_slave("am1i-slv1", properties={'jobs': 8}),
-
-        # Ubuntu 14.04 x86_64, AMD Athlon(tm) 5150 APU with Radeon(tm) R3, 8GiB RAM
-        create_slave("am1i-slv3", properties={'jobs': 8}),
-
-        # Ubuntu 14.04 x86_64, AMD Athlon(tm) 5150 APU with Radeon(tm) R3, 8GiB RAM
-        create_slave("am1i-slv4", properties={'jobs': 8}),
-
         # X86_64 AVX2, Ubuntu 16.04.2, Intel(R) Xeon(R) CPU E5-2699 v4 @ 2.20GHz
         create_slave("avx2-intel64", properties={'jobs': 80}, max_builds=1),
 

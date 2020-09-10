@@ -1053,13 +1053,6 @@ def _get_lld_builders():
          'factory': ClangLTOBuilder.getClangWithLTOBuildFactory(jobs=72, lto='thin'),
          'category'   : 'lld'},
 
-        {'name' : "clang-lld-x86_64-2stage",
-         'slavenames' : ["am1i-slv1", "am1i-slv3", "am1i-slv4"],
-         'builddir' : "clang-lld-x86_64-2stage",
-         'factory': UnifiedTreeBuilder.getCmakeWithNinjaMultistageBuildFactory(
-                                  depends_on_projects=['llvm', 'clang', 'lld']),
-         'category'   : 'lld'},
-
         {'name' : "lld-perf-testsuite",
          'slavenames' : ["as-bldslv8"],
          'builddir' : "lld-perf-testsuite",
