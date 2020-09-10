@@ -239,20 +239,6 @@ def _get_clang_fast_builders():
 # Clang builders.
 def _get_clang_builders():
     return [
-        {'name': "clang-atom-d525-fedora-rel",
-         'slavenames':["atom1-buildbot"],
-         'builddir':"clang-atom-d525-fedora-rel",
-         'factory' : ClangBuilder.getClangCMakeBuildFactory(
-                       clean=False,
-                       checkout_compiler_rt=False,
-                       checkout_lld=False,
-                       useTwoStage=False,
-                       stage1_config='Release',
-                       test=True,
-                       testStage1=True,
-                       extra_cmake_args=['-DLLVM_ENABLE_ASSERTIONS=ON',
-                                         '-DLLVM_USE_INTEL_JITEVENTS=TRUE'])},
-
         # Cortex-A15 LNT test-suite in Benchmark mode
         {'name' : "clang-native-arm-lnt-perf",
          'slavenames':["linaro-tk1-02"],
@@ -939,27 +925,6 @@ def _get_lldb_builders():
                     extra_cmake_args=['-DLLVM_ENABLE_ASSERTIONS=True',
                                       '-DLLVM_USE_LINKER=gold',
                                       '-DLLVM_LIT_ARGS="-v"'])},
-        {'name': "lldb-s390x-fedora",
-         'slavenames': ["lldb-s390x-fedora"],
-         'builddir': "lldb-s390x-fedora",
-         'category' : 'lldb',
-         'factory': LLDBBuilder.getLLDBCMakeBuildFactory(
-                    clean=True,
-                    test=True,
-                    extra_cmake_args=['-DLLVM_ENABLE_ASSERTIONS=True',
-                                      '-DLLVM_USE_LINKER=gold',
-                                      '-DLLVM_LIT_ARGS="-v"'])},
-        {'name': "lldb-ppc64le-fedora",
-         'slavenames': ["lldb-ppc64le-fedora"],
-         'builddir': "lldb-ppc64le-fedora",
-         'category' : 'lldb',
-         'factory': LLDBBuilder.getLLDBCMakeBuildFactory(
-                    clean=True,
-                    test=True,
-                    extra_cmake_args=['-DLLVM_ENABLE_ASSERTIONS=True',
-                                      '-DLLVM_USE_LINKER=gold',
-                                      '-DLLVM_LIT_ARGS="-v"'])},
-        {'name': "lldb-x86_64-debian",
          'slavenames': ["lldb-x86_64-debian"],
          'builddir': "lldb-x86_64-debian",
          'category' : 'lldb',

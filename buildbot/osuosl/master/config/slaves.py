@@ -55,9 +55,6 @@ def get_build_slaves():
         # AArch64 build cache slave
         create_slave("packet-linux-aarch64-slave-1", properties={'jobs' : 64}, max_builds=1),
 
-        # Intel(R) Atom(TM) CPU D525 @ 1.8GHz, Fedora x86_64
-        create_slave("atom1-buildbot", properties={'jobs': 2}, max_builds=1),
-
         # Windows Server 2016 Intel Xeon(R) Quad 2.30 GHz, 56GB of RAM
         create_slave("win-py3-buildbot", properties={'jobs' : 64}, max_builds=1),
 
@@ -90,9 +87,6 @@ def get_build_slaves():
         # Ubuntu x86-64
         create_slave("avr-build-01", properties={'jobs': 10}, max_builds=1),
 
-        # Arch Linux x86-64
-        create_slave("riscv-build-01", properties={'jobs': 8}, max_builds=1),
-
         # Debian Jessie x86-64 GCE instance.
         create_slave("gribozavr3", properties={'jobs': 1}, max_builds=2),
 
@@ -112,8 +106,6 @@ def get_build_slaves():
         create_slave("sanitizer-buildbot3", properties={'jobs': 64}, max_builds=2),
         # Debian 7.7 x86_64 GCE instance
         create_slave("sanitizer-buildbot4", properties={'jobs': 64}, max_builds=2),
-        # AArch64 server
-        create_slave("sanitizer-buildbot5", properties={'jobs': 96}, max_builds=1),
         # Ubuntu 14.04 x86_64 6-core z440 workstation
         create_slave("sanitizer-buildbot6", properties={'jobs': 6}, max_builds=1),
         # Debian 7.7 x86_64 GCE instance
@@ -123,9 +115,6 @@ def get_build_slaves():
 
         # IBM z13 (s390x), Ubuntu 16.04.2
         create_slave("systemz-1", properties={'jobs': 4, 'vcs_protocol': 'https'}, max_builds=4),
-
-        # Ubuntu 14.10 x86_64, Intel(R) Xeon(R) CPU E3-1245 V2 @ 3.40GHz
-        create_slave('ericwf-buildslave2', properties={'jobs': 4}, max_builds=2),
 
         # Debian 9, Docker based build. See libcxx/utils/docker.
         create_slave('libcxx-cloud1', properties={'jobs': 64}, max_builds=1),
@@ -137,7 +126,6 @@ def get_build_slaves():
 
         # Windows Server 2012 x86_64 16-core GCE instance
         create_slave("sanitizer-windows", properties={'jobs': 16}, max_builds=1),
-        create_slave("windows-gcebot1", properties={'jobs': 8}, max_builds=1),
         # Windows Server 2012 x86_64 32-core GCE instance
         create_slave("windows-gcebot2", properties={'jobs': 32}, max_builds=1),
 
@@ -151,8 +139,6 @@ def get_build_slaves():
         # Ubuntu 16.04.3 LTS x86_64-scei-ps4, 2 x Intel(R) Xeon(R) CPU E5-2699 v3 @ 2.30GHz
         create_slave("ps4-buildslave4"),
 
-        # Ubuntu 16.04 x86_64, 2 x Intel(R) Xeon(R) CPU E5-2690 v3 @ 2.60GHz, 64GB of RAM
-        create_slave("cuda-build-test-01", properties={'jobs': 72}, max_builds=1),
         # WIP migration of the CUDA buildbot to GCE.
         create_slave("cuda-k80-0", max_builds=1),
         create_slave("cuda-p4-0", max_builds=1),
@@ -164,21 +150,12 @@ def get_build_slaves():
         # X86_64 with SDE, Ubuntu 16.04.2, Intel(R) Xeon(R) CPU E5-2699 v4 @ 2.20GHz
         create_slave("sde-avx512-intel64", properties={'jobs': 80}, max_builds=1),
 
-        # FreeBSD 11 amd64
-        create_slave("freebsd11-amd64", properties={'jobs': 2}, max_builds=1),
-
         # Debian 9.0 x86_64 64-core GCE instances
         create_slave("fuchsia-debian-64-us-central1-a-1", properties={'jobs': 64}, max_builds=1),
         create_slave("fuchsia-debian-64-us-central1-b-1", properties={'jobs': 64}, max_builds=1),
 
         # Fedora latest stable x86_64, Intel i5-2500, 4 cores, 12GB RAM
         create_slave("lldb-x86_64-fedora", properties={'jobs': 4}, max_builds=1),
-
-        # Fedora latest stable s390x, IBM/S390 machine = 2964, 4 cores, 10GB RAM
-        create_slave("lldb-s390x-fedora", properties={'jobs': 4}, max_builds=1),
-
-        # Fedora latest stable ppc64le, POWER8 (architected), 2 cores, 4GB RAM
-        create_slave("lldb-ppc64le-fedora", properties={'jobs': 2}, max_builds=1),
 
         # Debian x86_64 Buster Xeon(R) Gold 6154 CPU @ 3.00GHz, 192GB RAM
         create_slave("lldb-x86_64-debian", properties={'jobs': 72}, max_builds=1),
