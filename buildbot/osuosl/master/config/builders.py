@@ -1483,26 +1483,6 @@ def _get_toolchain_builders():
            'builddir': "fuchsia-x86_64-linux",
            'factory': FuchsiaBuilder.getFuchsiaToolchainBuildFactory(),
            'category': 'fuchsia'},
-          {'name': "netbsd-amd64",
-           'slavenames': ["netbsd-amd64"],
-           'builddir': "netbsd8",
-           'category' : 'netbsd',
-           'factory': LLDBBuilder.getLLDBScriptCommandsFactory(
-                      downloadBinary=False,
-                      runTest=True,
-                      depends_on_projects=[
-                          "cfe",
-                          "clang-tools-extra",
-                          "compiler-rt",
-                          "libcxx",
-                          "libcxxabi",
-                          "libunwind",
-                          "lld",
-                          "lldb",
-                          "llvm",
-                          "openmp",
-                          "polly",
-                      ])},
         ]
 
 # libc Builders
