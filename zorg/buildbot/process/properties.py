@@ -2,36 +2,33 @@
 # See https://llvm.org/LICENSE.txt for license information.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+from zope.interface import implementer
+
 from buildbot.interfaces import IRenderable
 from buildbot.process.properties import WithProperties
-from zope.interface import implements
 
+
+@implementer(IRenderable)
 class InterpolateToNativePath(WithProperties):
     """
     This is a marker class, used to indicate that we
     want to interpolate build properties as a paths with
-    the correct buildslave path separator.
+    the correct worker path separator.
     """
-
-    implements(IRenderable)
-    compare_attrs = ('fmtstring', 'args')
-
-    def __init__(self, fmtstring, *args, **lambda_subs):
-        WithProperties.__init__(self, fmtstring, *args, **lambda_subs)
 
     def getRenderingFor(self, build):
         # Upcall the base class first.
-        p = WithProperties.getRenderingFor(self, build)
+        p = super().getRenderingFor(build)
 
         # Then we need to normalize the path for
-        # watever is native on the buildslave.
+        # watever is native on that worker.
         # Note: Do not call normpath here, as it could
-        # change the path meaning if links used.
-        slave = build.build.slavebuilder.slave
+        # change the path meaning if links are used.
+        worker = build.getBuild().workerforbuilder.worker
+        return worker.path_module.normcase(p)
 
-        return slave.path_module.normcase(p)
 
-
+@implementer(IRenderable)
 class InterpolateToPosixPath(WithProperties):
     """
     This is a marker class, used to indicate that we
@@ -39,23 +36,17 @@ class InterpolateToPosixPath(WithProperties):
     POSIX path separator.
     """
 
-    implements(IRenderable)
-    compare_attrs = ('fmtstring', 'args')
-
-    def __init__(self, fmtstring, *args, **lambda_subs):
-        WithProperties.__init__(self, fmtstring, *args, **lambda_subs)
-
     def getRenderingFor(self, build):
         # Upcall the base class first.
-        p = WithProperties.getRenderingFor(self, build)
+        p = super().getRenderingFor(build)
 
         # Then we need to figure out the buildslave OS:
-        slave = build.build.slavebuilder.slave
-        if slave.slave_system == 'posix':
+        worker = build.getBuild().workerforbuilder.worker
+        if worker.worker_system == 'posix':
             # Note: Do not call normpath here, as it could
             # change the path meaning if links used.
-            p = slave.path_module.normcase(p)
-        elif slave.slave_system in ('win32', 'nt'):
+            p = worker.path_module.normcase(p)
+        elif worker.worker_system in ('win32', 'nt'):
             # Preserve the case, only replace
             # the path separator to the POSIX one.
             p = p.replace('\\','/')
