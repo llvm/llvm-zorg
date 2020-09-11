@@ -136,9 +136,6 @@ def get_build_slaves():
         # Windows 10 Pro x86_64-scei-ps4, 2 x Intel(R) Xeon(R) CPU E5-2699 v3 @ 2.30GHz
         create_slave("ps4-buildslave2", properties={'jobs': 36}, max_builds=1),
 
-        # Ubuntu 16.04.3 LTS x86_64-scei-ps4, 2 x Intel(R) Xeon(R) CPU E5-2699 v3 @ 2.30GHz
-        create_slave("ps4-buildslave4"),
-
         # WIP migration of the CUDA buildbot to GCE.
         create_slave("cuda-k80-0", max_builds=1),
         create_slave("cuda-p4-0", max_builds=1),

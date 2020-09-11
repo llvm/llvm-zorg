@@ -69,40 +69,6 @@ def _get_clang_fast_builders():
                             'CC': 'ccache clang', 'CXX': 'ccache clang++', 'CCACHE_CPP2': 'yes',
                         })},
 
-        {'name': "llvm-clang-lld-x86_64-scei-ps4-ubuntu-fast",
-         'mergeRequests': False,
-         'slavenames': ["ps4-buildslave4"],
-         'builddir': "llvm-clang-lld-x86_64-scei-ps4-ubuntu-fast",
-         'factory': UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
-                        depends_on_projects=['llvm','clang','clang-tools-extra','lld'],
-                        extra_configure_args=[
-                            "-DCMAKE_C_COMPILER=clang",
-                            "-DCMAKE_CXX_COMPILER=clang++",
-                            "-DLLVM_BUILD_TESTS=ON",
-                            "-DLLVM_BUILD_EXAMPLES=ON",
-                            "-DCLANG_BUILD_EXAMPLES=ON",
-                            "-DLLVM_TARGETS_TO_BUILD=X86",
-                            "-DLLVM_DEFAULT_TARGET_TRIPLE=x86_64-scei-ps4",
-                            "-DCMAKE_C_FLAGS=-Wdocumentation -Wno-documentation-deprecated-sync",
-                            "-DCMAKE_CXX_FLAGS=-std=c++11 -Wdocumentation -Wno-documentation-deprecated-sync",
-                            "-DLLVM_LIT_ARGS=-v -j36"],
-                        env={'PATH':'/opt/llvm_37/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'})},
-
-        {'name': "llvm-clang-lld-x86_64-scei-ps4-windows10pro-fast",
-         'mergeRequests': True,
-         'slavenames': ["ps4-buildslave2"],
-         'builddir': "llvm-clang-lld-x86_64-scei-ps4-windows10pro-fast",
-         'factory': UnifiedTreeBuilder.getCmakeWithNinjaWithMSVCBuildFactory(
-                        vs="autodetect",
-                        depends_on_projects=['llvm','clang','clang-tools-extra','lld'],
-                        extra_configure_args=[
-                            "-DLLVM_BUILD_TESTS=ON",
-                            "-DLLVM_BUILD_EXAMPLES=ON",
-                            "-DCLANG_BUILD_EXAMPLES=ON",
-                            "-DLLVM_TARGETS_TO_BUILD=X86",
-                            "-DLLVM_DEFAULT_TARGET_TRIPLE=x86_64-scei-ps4",
-                            "-DLLVM_LIT_ARGS=-v -j80"])},
-
         {'name': "llvm-clang-x86_64-expensive-checks-win",
          'slavenames':["ps4-buildslave2"],
          'builddir':"llvm-clang-x86_64-expensive-checks-win",
