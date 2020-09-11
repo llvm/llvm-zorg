@@ -891,6 +891,7 @@ def _get_lldb_builders():
                     extra_cmake_args=['-DLLVM_ENABLE_ASSERTIONS=True',
                                       '-DLLVM_USE_LINKER=gold',
                                       '-DLLVM_LIT_ARGS="-v"'])},
+        {'name': "lldb-x86_64-debian",
          'slavenames': ["lldb-x86_64-debian"],
          'builddir': "lldb-x86_64-debian",
          'category' : 'lldb',
@@ -1153,7 +1154,6 @@ def _get_openmp_builders():
         ]
 
 def _get_libcxx_builders():
-    ericwf_slaves = ['ericwf-buildslave2']
     docker_slaves = [
         'libcxx-cloud1', 'libcxx-cloud2', 'libcxx-cloud3', 'libcxx-cloud4',
         'libcxx-cloud5'
@@ -1199,7 +1199,7 @@ def _get_libcxx_builders():
 
         # EricWF's builders
         {'name': 'libcxx-libcxxabi-x86_64-linux-ubuntu-cxx03',
-         'slavenames': ericwf_slaves + docker_slaves,
+         'slavenames': docker_slaves,
          'builddir' : 'libcxx-libcxxabi-x86_64-linux-ubuntu-cxx03',
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
             env={'PATH': '/usr/local/bin:/usr/bin:/bin',
@@ -1209,7 +1209,7 @@ def _get_libcxx_builders():
         'category': 'libcxx'},
 
         {'name': 'libcxx-libcxxabi-x86_64-linux-ubuntu-cxx11',
-         'slavenames': ericwf_slaves + docker_slaves,
+         'slavenames': docker_slaves,
          'builddir' : 'libcxx-libcxxabi-x86_64-linux-ubuntu-cxx11',
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
             env={'PATH': '/usr/local/bin:/usr/bin:/bin',
@@ -1219,7 +1219,7 @@ def _get_libcxx_builders():
         'category': 'libcxx'},
 
         {'name': 'libcxx-libcxxabi-x86_64-linux-ubuntu-cxx14',
-         'slavenames': ericwf_slaves + docker_slaves,
+         'slavenames': docker_slaves,
          'builddir' : 'libcxx-libcxxabi-x86_64-linux-ubuntu-cxx14',
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
             env={'PATH': '/usr/local/bin:/usr/bin:/bin',
@@ -1229,7 +1229,7 @@ def _get_libcxx_builders():
         'category': 'libcxx'},
 
         {'name': 'libcxx-libcxxabi-x86_64-linux-ubuntu-cxx17',
-         'slavenames': ericwf_slaves + docker_slaves,
+         'slavenames': docker_slaves,
          'builddir' : 'libcxx-libcxxabi-x86_64-linux-ubuntu-cxx17',
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
             env={'PATH': '/usr/local/bin:/usr/bin:/bin',
@@ -1241,7 +1241,7 @@ def _get_libcxx_builders():
         'category': 'libcxx'},
 
         {'name': 'libcxx-libcxxabi-x86_64-linux-ubuntu-cxx2a',
-         'slavenames': ericwf_slaves + docker_slaves,
+         'slavenames': docker_slaves,
          'builddir' : 'libcxx-libcxxabi-x86_64-linux-ubuntu-cxx2a',
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
             env={'PATH': '/usr/local/bin:/usr/bin:/bin',
@@ -1253,7 +1253,7 @@ def _get_libcxx_builders():
         'category': 'libcxx'},
 
         {'name': 'libcxx-libcxxabi-x86_64-linux-ubuntu-32bit',
-         'slavenames': ericwf_slaves + docker_slaves,
+         'slavenames': docker_slaves,
          'builddir' : 'libcxx-libcxxabi-x86_64-linux-ubuntu-32bit',
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
             env={'PATH': '/usr/local/bin:/usr/bin:/bin',
@@ -1263,7 +1263,7 @@ def _get_libcxx_builders():
         'category': 'libcxx'},
 
         {'name': 'libcxx-libcxxabi-x86_64-linux-ubuntu-asan',
-         'slavenames': ericwf_slaves + docker_slaves,
+         'slavenames': docker_slaves,
          'builddir' : 'libcxx-libcxxabi-x86_64-linux-ubuntu-asan',
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
             env={'PATH': '/usr/local/bin:/usr/bin:/bin',
@@ -1274,7 +1274,7 @@ def _get_libcxx_builders():
         'category': 'libcxx'},
 
         {'name': 'libcxx-libcxxabi-x86_64-linux-ubuntu-ubsan',
-         'slavenames': ericwf_slaves + docker_slaves,
+         'slavenames': docker_slaves,
          'builddir' : 'libcxx-libcxxabi-x86_64-linux-ubuntu-ubsan',
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
             env={'PATH': '/usr/local/bin:/usr/bin:/bin',
@@ -1285,7 +1285,7 @@ def _get_libcxx_builders():
         'category': 'libcxx'},
 
         {'name': 'libcxx-libcxxabi-x86_64-linux-ubuntu-msan',
-         'slavenames': ericwf_slaves + docker_slaves,
+         'slavenames': docker_slaves,
          'builddir' : 'libcxx-libcxxabi-x86_64-linux-ubuntu-msan',
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
             env={'PATH': '/usr/local/bin:/usr/bin:/bin',
@@ -1296,7 +1296,7 @@ def _get_libcxx_builders():
         'category': 'libcxx'},
 
         {'name': 'libcxx-libcxxabi-libunwind-x86_64-linux-ubuntu',
-         'slavenames': ericwf_slaves + docker_slaves,
+         'slavenames': docker_slaves,
          'builddir' : 'libcxx-libcxxabi-libunwind-x86_64-linux-ubuntu',
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
             env={'PATH': '/usr/local/bin:/usr/bin:/bin',
@@ -1305,7 +1305,7 @@ def _get_libcxx_builders():
         'category': 'libcxx'},
 
         {'name': 'libcxx-libcxxabi-x86_64-linux-ubuntu-tsan',
-         'slavenames': ericwf_slaves + docker_slaves,
+         'slavenames': docker_slaves,
          'builddir' : 'libcxx-libcxxabi-x86_64-linux-ubuntu-tsan',
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
             env={'PATH': '/usr/local/bin:/usr/bin:/bin',
@@ -1314,7 +1314,7 @@ def _get_libcxx_builders():
         'category': 'libcxx'},
 
         {'name': 'libcxx-libcxxabi-x86_64-linux-ubuntu-gcc5-cxx11',
-         'slavenames': ericwf_slaves + docker_slaves,
+         'slavenames': docker_slaves,
          'builddir' : 'libcxx-libcxxabi-x86_64-linux-ubuntu-gcc5-cxx11',
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
             env={'PATH': '/usr/local/bin:/usr/bin:/bin',
@@ -1323,7 +1323,7 @@ def _get_libcxx_builders():
         'category': 'libcxx'},
 
         {'name': 'libcxx-libcxxabi-x86_64-linux-ubuntu-gcc-tot-latest-std',
-         'slavenames': ericwf_slaves + docker_slaves,
+         'slavenames': docker_slaves,
          'builddir' : 'libcxx-libcxxabi-x86_64-linux-ubuntu-gcc-tot-latest-std',
          'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
             env={'PATH': '/usr/local/bin:/usr/bin:/bin',
