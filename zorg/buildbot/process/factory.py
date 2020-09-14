@@ -1,8 +1,9 @@
+# TODO: Change WithProperties to Interpolate
+# TODO: Consider setting codebase to llvm-project.
 from collections import OrderedDict
 
 from buildbot.process.factory import BuildFactory
-from buildbot.steps.source import Git
-from buildbot.steps.shell import WithProperties
+from buildbot.plugins import util, steps
 
 class LLVMBuildFactory(BuildFactory):
     """
@@ -70,11 +71,11 @@ class LLVMBuildFactory(BuildFactory):
 
     def addGetSourcecodeSteps(self, **kwargs):
         # Checkout the monorepo.
-        self.addStep(
-            Git(name='Checkout the source code',
+        self.addStep(steps.Git(
+                name='Checkout the source code',
                 repourl=self.repourl_prefix + "llvm-project.git",
                 progress=True,
-                workdir=WithProperties(self.monorepo_dir),
+                workdir=util.WithProperties(self.monorepo_dir),
                 **kwargs))
 
 
@@ -98,9 +99,9 @@ class LLVMBuildFactory(BuildFactory):
         # Ignore workdir if given. We check out to src_dir.
         kwargs.pop('workdir', None)
 
-        self.addStep(
-            Git(name=name,
+        self.addStep(steps.Git(
+                name=name,
                 repourl=_repourl,
                 progress=True,
-                workdir=WithProperties(src_dir),
+                workdir=util.WithProperties(src_dir),
                 **kwargs))
