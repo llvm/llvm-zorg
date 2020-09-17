@@ -772,9 +772,7 @@ def _get_clang_builders():
                                           '-DLLVM_TARGETS_TO_BUILD=X86',
                                           '-DCMAKE_C_COMPILER_LAUNCHER=sccache',
                                           '-DCMAKE_CXX_COMPILER_LAUNCHER=sccache',
-                                          # FIXME: DIA is not working on this machine, so disabling it until we 
-                                          #        have a proper fix
-                                          '-D LLVM_ENABLE_DIA_SDK=OFF',
+                                          '-DLLVM_ENABLE_ZLIB=OFF',
                                           ])},
 
     ]
