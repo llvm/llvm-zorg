@@ -405,7 +405,7 @@ def _getClangCMakeBuildFactory(
         # PATH.
         rel_src_dir = LLVMBuildFactory.pathRelativeToBuild(f.llvm_srcdir, stage2_build)
         cmake_cmd2 = [cmake, "-G", "Ninja", rel_src_dir,
-                      WithProperties("-DCMAKE_CXX_COMPILER=%(workdir)s/"+stage1_install+"/bin/"+cc),
+                      WithProperties("-DCMAKE_C_COMPILER=%(workdir)s/"+stage1_install+"/bin/"+cc),
                       WithProperties("-DCMAKE_CXX_COMPILER=%(workdir)s/"+stage1_install+"/bin/"+cxx),
                       "-DCMAKE_BUILD_TYPE="+stage2_config,
                       "-DLLVM_ENABLE_ASSERTIONS=True",
