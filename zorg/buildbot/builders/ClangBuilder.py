@@ -404,10 +404,9 @@ def _getClangCMakeBuildFactory(
         # env.exe helper is required to run the tests, so hopefully it's already on
         # PATH.
         rel_src_dir = LLVMBuildFactory.pathRelativeToBuild(f.llvm_srcdir, stage2_build)
-        cmake_cmd2 = ['env',
-                      WithProperties('CC=%(workdir)s/'+stage1_install+'/bin/'+cc),
-                      WithProperties('CXX=%(workdir)s/'+stage1_install+'/bin/'+cxx),
-                      cmake, "-G", "Ninja", rel_src_dir,
+        cmake_cmd2 = [cmake, "-G", "Ninja", rel_src_dir,
+                      WithProperties("-DCMAKE_CXX_COMPILER=%(workdir)s/"+stage1_install+"/bin/"+cc),
+                      WithProperties("-DCMAKE_CXX_COMPILER=%(workdir)s/"+stage1_install+"/bin/"+cxx),
                       "-DCMAKE_BUILD_TYPE="+stage2_config,
                       "-DLLVM_ENABLE_ASSERTIONS=True",
                       "-DLLVM_LIT_ARGS="+lit_args,
