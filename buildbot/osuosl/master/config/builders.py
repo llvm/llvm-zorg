@@ -200,6 +200,18 @@ def _get_clang_fast_builders():
                         WithProperties("%(remote_test_user:+-DREMOTE_TEST_USER=)s%(remote_test_user:-)s"),
                       ],
                       cmake_cache="../llvm-project/clang/cmake/caches/CrossWinToARMLinux.cmake")},
+
+        {'name': "clang-arm64-windows-msvc",
+         'slavenames':["linaro-armv8-windows-msvc-01", "linaro-armv8-windows-msvc-02"],
+         'builddir':"clang-arm64-windows-msvc",
+         'factory' : ClangBuilder.getClangCMakeBuildFactory(
+                      vs="manual",
+                      test=False, # Disable testing until MCJIT failures are fixed
+                      extra_cmake_args=["-DLLVM_DEFAULT_TARGET_TRIPLE=aarch64-windows-msvc",
+                                        "-DLLVM_HOST_TRIPLE=aarch64-windows-msvc",
+                                        "-DLLVM_TARGET_ARCH=AArch64",
+                                        "-DCOMPILER_RT_BUILD_SANITIZERS=OFF",
+                                        "-DCOMPILER_RT_BUILD_XRAY=OFF"])},
     ]
 
 # Clang builders.
@@ -423,6 +435,20 @@ def _get_clang_builders():
                                         "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a57'",
                                         "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'"],
                )},
+
+        {'name': "clang-arm64-windows-msvc-2stage",
+         'slavenames':["linaro-armv8-windows-msvc-01", "linaro-armv8-windows-msvc-02"],
+         'builddir':"clang-arm64-windows-msvc-2stage",
+         'factory' : ClangBuilder.getClangCMakeBuildFactory(
+                      vs="manual",
+                      test=False, # Disable testing until MCJIT failures are fixed
+                      useTwoStage=True,
+                      testStage1=False,
+                      extra_cmake_args=["-DLLVM_DEFAULT_TARGET_TRIPLE=aarch64-windows-msvc",
+                                        "-DLLVM_HOST_TRIPLE=aarch64-windows-msvc",
+                                        "-DLLVM_TARGET_ARCH=AArch64",
+                                        "-DCOMPILER_RT_BUILD_SANITIZERS=OFF",
+                                        "-DCOMPILER_RT_BUILD_XRAY=OFF"])},
 
         {'name': 'clang-x64-windows-msvc',
          'slavenames': ['windows-gcebot2'],

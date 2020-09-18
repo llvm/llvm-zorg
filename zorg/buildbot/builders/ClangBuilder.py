@@ -299,7 +299,7 @@ def _getClangCMakeBuildFactory(
     stage2_install = 'stage2.install'
 
     # Set up VS environment, if appropriate.
-    if vs:
+    if vs and vs != "manual":
         f.addStep(SetProperty(
             command=builders_util.getVisualStudioEnvironment(vs, vs_target_arch),
             extract_fn=builders_util.extractSlaveEnvironment))

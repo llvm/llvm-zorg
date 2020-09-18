@@ -49,6 +49,10 @@ def get_build_slaves():
         create_slave("linaro-aarch64-libcxx", properties={'jobs' : 1}, max_builds=1),
         create_slave("linaro-aarch64-lldb", properties={'jobs': 16}, max_builds=1),
 
+        # AArch64
+        create_slave("linaro-armv8-windows-msvc-01", properties={'jobs' : 8}, max_builds=1),
+        create_slave("linaro-armv8-windows-msvc-02", properties={'jobs' : 8}, max_builds=1),
+
         # ARMv7 build cache slave
         create_slave("packet-linux-armv7-slave-1", properties={'jobs' : 64}, max_builds=1),
 
