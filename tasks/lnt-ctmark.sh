@@ -6,7 +6,8 @@ LNT_FLAGS="$(build arg --optional LNT_FLAGS)"
 
 # Set defaults for missing/empty parameters.
 : ${SUBMIT_URL:='http://104.154.54.203/db_default/v4/nts/submitRun'}
-: ${SUBMIT_NAME:="${JOB_NAME-}"}
+: ${SUBMIT_NAME:="${NODE_NAME-}_${JOB_NAME-}"}
+: ${SUBMIT_ORDER:="${GIT_DISTANCE-}"}
 
 # A generic ctmark run designed to run as a recurring jenkins job with varying
 # cmake caches and submission to an lnt server.
