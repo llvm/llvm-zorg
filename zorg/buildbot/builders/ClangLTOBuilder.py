@@ -22,8 +22,8 @@ def _addSteps4SystemCompiler(
 
     # Directories to use on this stage.
     obj_dir = f.stage_objdirs[stage_idx]
-    src_dir = LLVMBuildFactory.pathRelativeToBuild(f.llvm_srcdir, obj_dir)
-    install_dir = LLVMBuildFactory.pathRelativeToBuild(f.stage_installdirs[stage_idx], obj_dir)
+    src_dir = LLVMBuildFactory.pathRelativeTo(f.llvm_srcdir, obj_dir)
+    install_dir = LLVMBuildFactory.pathRelativeTo(f.stage_installdirs[stage_idx], obj_dir)
 
     # This stage could use incremental build.
     # Clean stage1, only if requested.
@@ -133,8 +133,8 @@ def _addSteps4StagedCompiler(
 
     # Directories to use on this stage.
     obj_dir = f.stage_objdirs[stage_idx]
-    src_dir = LLVMBuildFactory.pathRelativeToBuild(f.llvm_srcdir, obj_dir)
-    install_dir = LLVMBuildFactory.pathRelativeToBuild(f.stage_installdirs[stage_idx], obj_dir)
+    src_dir = LLVMBuildFactory.pathRelativeTo(f.llvm_srcdir, obj_dir)
+    install_dir = LLVMBuildFactory.pathRelativeTo(f.stage_installdirs[stage_idx], obj_dir)
     staged_install = f.stage_installdirs[use_stage_idx]
 
     # Always do a clean build for the staged compiler.

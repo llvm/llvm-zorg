@@ -61,7 +61,7 @@ def getLLDBCMakeBuildFactory(
                 doStepIf=cleanBuildRequested
                 ))
 
-    rel_src_dir = LLVMBuildFactory.pathRelativeToBuild(f.llvm_srcdir, f.obj_dir)
+    rel_src_dir = LLVMBuildFactory.pathRelativeTo(f.llvm_srcdir, f.obj_dir)
     cmake_options = [
         "-G", "Ninja",
         "-DCMAKE_BUILD_TYPE=" + config,

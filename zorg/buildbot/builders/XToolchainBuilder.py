@@ -135,7 +135,7 @@ def getCmakeWithMSVCBuildFactory(
         ])
 
     if install_dir:
-        install_dir_rel = LLVMBuildFactory.pathRelativeToBuild(
+        install_dir_rel = LLVMBuildFactory.pathRelativeTo(
                               install_dir,
                               f.obj_dir)
         CmakeCommand.applyRequiredOptions(cmake_args, [
@@ -153,7 +153,7 @@ def getCmakeWithMSVCBuildFactory(
                            env=merged_env,
                            doStepIf=clean_build_requested))
 
-    src_dir_rel = LLVMBuildFactory.pathRelativeToBuild(f.llvm_srcdir, f.obj_dir)
+    src_dir_rel = LLVMBuildFactory.pathRelativeTo(f.llvm_srcdir, f.obj_dir)
 
     # Add given cmake cache at the very end.
     if cmake_cache:

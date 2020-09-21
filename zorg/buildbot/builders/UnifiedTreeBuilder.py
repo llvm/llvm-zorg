@@ -103,7 +103,7 @@ def addCmakeSteps(
         ])
 
     if install_dir:
-        install_dir_rel = LLVMBuildFactory.pathRelativeToBuild(
+        install_dir_rel = LLVMBuildFactory.pathRelativeTo(
                               install_dir,
                               obj_dir)
         CmakeCommand.applyRequiredOptions(cmake_args, [
@@ -134,7 +134,7 @@ def addCmakeSteps(
         stage_name = ""
         step_name = "cmake-configure"
 
-    src_dir = LLVMBuildFactory.pathRelativeToBuild(f.llvm_srcdir, obj_dir)
+    src_dir = LLVMBuildFactory.pathRelativeTo(f.llvm_srcdir, obj_dir)
 
     f.addStep(CmakeCommand(name=step_name,
                            haltOnFailure=True,
@@ -480,8 +480,8 @@ def getCmakeWithNinjaMultistageBuildFactory(
 
         # Directories to use in this stage.
         obj_dir = f.stage_objdirs[stage_idx]
-        src_dir = LLVMBuildFactory.pathRelativeToBuild(f.llvm_srcdir, obj_dir)
-        install_dir = LLVMBuildFactory.pathRelativeToBuild(f.stage_installdirs[stage_idx], obj_dir)
+        src_dir = LLVMBuildFactory.pathRelativeTo(f.llvm_srcdir, obj_dir)
+        install_dir = LLVMBuildFactory.pathRelativeTo(f.stage_installdirs[stage_idx], obj_dir)
         staged_install = f.stage_installdirs[stage_idx - 1]
 
         # Configure the compiler to use in this stage.

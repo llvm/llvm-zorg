@@ -36,7 +36,7 @@ def getLibcxxAndAbiBuilder(f=None, env=None,
                 obj_dir=build_path,
                 **kwargs) # Pass through all the extra arguments.
 
-    rel_src_dir = LLVMBuildFactory.pathRelativeToBuild(f.llvm_srcdir, build_path)
+    rel_src_dir = LLVMBuildFactory.pathRelativeTo(f.llvm_srcdir, build_path)
 
     # Specify the max number of threads using properties so LIT doesn't use
     # all the threads on the system.

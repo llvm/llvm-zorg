@@ -39,26 +39,26 @@ class LLVMBuildFactory(BuildFactory):
 
 
     @staticmethod
-    def pathRelativeToBuild(path, buildPath):
+    def pathRelativeTo(path, basePath):
         if path.startswith('/'):
             # The path is absolute. Don't touch it.
             return path
         else:
             # Remove "current dir" placeholders if any.
             path_nodes = list(filter(lambda x: x != ".", path.split('/')))
-            buildPath_nodes = list(filter(lambda x: x != ".", buildPath.split('/')))
+            basePath_nodes = list(filter(lambda x: x != ".", basePath.split('/')))
 
             # Handle edge cases.
-            if len(buildPath_nodes) == 0:
+            if len(basePath_nodes) == 0:
                 return "/".join(path_nodes)
             if len(path_nodes) == 0:
                 return "."
 
             # Skip a common part of the two paths.
-            for i in range(0, min(len(path_nodes), len(buildPath_nodes))):
-                if path_nodes[i] != buildPath_nodes[i]:
+            for i in range(0, min(len(path_nodes), len(basePath_nodes))):
+                if path_nodes[i] != basePath_nodes[i]:
                     rel_path = \
-                        "../" * (len(buildPath_nodes) - i) + \
+                        "../" * (len(basePath_nodes) - i) + \
                         "/".join(path_nodes[i:])
                     break
             else:

@@ -73,7 +73,7 @@ def getOpenMPCMakeBuildFactory(
     merged_env.update({
         'PATH': WithProperties('%(workdir)s/' + llvm_builddir + '/bin:${PATH}')})
 
-    src_dir = LLVMBuildFactory.pathRelativeToBuild(f.llvm_srcdir, f.obj_dir)
+    src_dir = LLVMBuildFactory.pathRelativeTo(f.llvm_srcdir, f.obj_dir)
 
     f.addStep(CmakeCommand(name='configure-openmp',
                            description=['configure','openmp'],
