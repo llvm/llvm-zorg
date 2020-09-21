@@ -13,7 +13,11 @@ Get-PSDrive
 Set-Location Q:\
 
 # Write host and admin information
+# delete old folder if it exists
 # configure powershell output to use UTF-8, otherwiese buildbot can't read the file
+if ( Test-Path -Path 'info\' -PathType Container ) { 
+  Remove-Item -Recurse -Force info 
+}
 mkdir "info\"
 $HOST_FILE="info\host"
 $PSDefaultParameterValues['Out-File:Encoding'] = 'utf8'
