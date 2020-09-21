@@ -1,6 +1,6 @@
 #!/usr/bin/env groovy
 def common = evaluate readTrusted('zorg/jenkins/common.groovy')
-common.testsuite_pipeline(label: 'green-dragon-05') {
+common.testsuite_pipeline(label: 'green-dragon-12') {
     sh """
 LNT_FLAGS+=" -C config/tasks/cmake/caches/target-arm64-iphoneos.cmake"
 LNT_FLAGS+=" -C config/tasks/cmake/caches/opt-O0-g.cmake"
