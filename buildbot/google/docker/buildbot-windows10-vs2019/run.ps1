@@ -35,6 +35,12 @@ buildslave create-slave --keepalive=200 Q: `
 # Note: Powershell does NOT exit on non-zero return codes, so we need to check manually.
 if ($LASTEXITCODE -ne 0) { throw "Exit code is $LASTEXITCODE" }
 
+# Replace backward slashes with forward slashes on buildbot.tac
+# Otherwise Cmake will go into infinite re-configuration loops
+$buildbottac=Get-Content -Path "buildbot.tac"
+$buildbottac=$buildbottac -replace "\\\\", "/"
+$buildbottac | Set-Content -Path "buildbot.tac"
+
 # start the daemon, as this does not print and logs to std out, run it in the background
 Write-Output "starting worker..."
 cmd /c Start /B buildslave start Q:
