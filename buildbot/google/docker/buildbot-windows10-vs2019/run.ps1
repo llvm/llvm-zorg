@@ -22,7 +22,7 @@ mkdir "info\"
 $HOST_FILE="info\host"
 $PSDefaultParameterValues['Out-File:Encoding'] = 'utf8'
 Write-Output "Windows version: $(cmd /c ver)" > $HOST_FILE
-Write-Output "VCTools version: $env:VCToolsVersion" >> $HOST_FILE
+Write-Output "VCTools version: $(ls C:\BuildTools\VC\Tools\MSVC | Select -ExpandProperty Name)" >> $HOST_FILE
 Write-Output "Cores          : $((Get-CimInstance Win32_ComputerSystem).NumberOfLogicalProcessors)" >> $HOST_FILE
 Write-Output "RAM            : $([int][Math]::Round((Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory / 1073741824)) GB" >> $HOST_FILE
 Write-Output "Christian Kühnel <kuhnel@google.com>" > "info\admin"
