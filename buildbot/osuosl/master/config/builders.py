@@ -1100,7 +1100,7 @@ def _get_mlir_builders():
        {'name': 'x86_64-fedora-clang',
         'mergeRequests': False,
         'slavenames': ['fedora-llvm-x86_64'],
-        'builddir': 'x86_64-fedora-clang',
+        'builddir': 'fedora-llvm-x86_64',
         'factory': UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                         clean=True,
                         depends_on_projects=['llvm', 'clang', 'clang-tools-extra', 'compiler-rt', 'lld', 'mlir'],
