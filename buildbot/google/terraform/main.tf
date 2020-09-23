@@ -205,7 +205,7 @@ resource "kubernetes_deployment" "windows10_vs2019" {
 
       spec {
         container {
-          image = "${var.gcp_config.gcr_prefix}/buildbot-windows10-vs2019:16"
+          image = "${var.gcp_config.gcr_prefix}/buildbot-windows10-vs2019:17"
           name  = "windows10-vs2019"
 
           # reserve "<number of cores>-1" for this image, kubernetes also

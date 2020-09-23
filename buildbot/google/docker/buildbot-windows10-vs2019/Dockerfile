@@ -5,6 +5,7 @@ ENV WORKER_NAME=windows10-vs2019
 
 # copy script to start the agent
 COPY run.ps1 .
+COPY fix_buildbot_tac_paths.py .
 
 # Set location for sccache cache
 ENV SCCACHE_DIR="C:\volumes\sccache"
