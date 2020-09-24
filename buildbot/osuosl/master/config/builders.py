@@ -788,7 +788,6 @@ def _get_clang_builders():
          'builddir' : "clang-x86-ninja-win10",
          'factory' : ClangBuilder.getClangCMakeBuildFactory(
                         clean=True,
-                        checkout_lld=False,
                         vs="autodetect",
                         vs_target_arch='x86',
                         testStage1=True,
