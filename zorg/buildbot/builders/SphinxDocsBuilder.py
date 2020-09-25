@@ -15,6 +15,7 @@ llvm_docs = OrderedDict([
   ("libunwind",         ("docs-libunwind-html",   "projects/libunwind/docs/html/",      "libunwind")),
   ("lld",               ("docs-lld-html",         "tools/lld/docs/html/",               "lld")),
   ("lldb",              ("docs-lldb-html",        "tools/lldb/docs/html/",              "lldb")),
+  ("openmp",            ("docs-openmp-html",      "projects/openmp/docs/html/",         "openmp")),
   ("polly",             ("docs-polly-html",       "tools/polly/docs/html/",             "polly")),
 ])
 
@@ -157,6 +158,7 @@ def getLLVMDocsBuildFactory(
             "libunwind",
             "lld",
             "lldb",
+            "openmp",
             "polly",
         ]
     else:
