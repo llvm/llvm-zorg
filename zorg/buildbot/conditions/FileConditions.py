@@ -1,11 +1,10 @@
-from buildbot.process.buildstep import LoggedRemoteCommand
-from buildbot.interfaces import BuildSlaveTooOldError
+from buildbot.process.remotecommand import RemoteCommand
+from buildbot.interfaces import WorkerTooOldError
 import stat
 
-from twisted.python import log
 
 class FileExists(object):
-    """I check a file existence on the buildslave. I return True if the file
+    """I check a file existence on the worker. I return True if the file
     with the given name exists, False if the file does not exist or that is
     a directory.
 
@@ -19,31 +18,28 @@ class FileExists(object):
         self.filename = filename
 
     def __call__(self, step):
-        slavever = step.slaveVersion('stat')
-        if not slavever:
-            raise BuildSlaveTooOldError("slave is too old, does not know "
-                                        "about stat")
-
-        def commandComplete(cmd):
-            if cmd.rc != 0:
-                return False
-
-            s = cmd.updates["stat"][-1]
-            filemode = s[stat.ST_MODE]
-            if stat.S_ISREG(filemode) or stat.S_ISLNK(filemode):
-                # True only if this is a file or a link and not any other file
-                # system object.
-                return True
-            else:
-                return False
-
-        cmd = LoggedRemoteCommand('stat', {'file': self.filename})
+        step.checkWorkerHasCommand('stat')
+        cmd = RemoteCommand('stat', {'file': self.filename})
         d = step.runCommand(cmd)
-        d.addCallback(lambda res: commandComplete(cmd))
+        d.addCallback(lambda res: self.commandComplete(cmd))
         return d
 
+    def commandComplete(self, cmd):
+        if cmd.didFail():
+            return False
+
+        s = cmd.updates["stat"][-1]
+        filemode = s[stat.ST_MODE]
+        if stat.S_ISREG(filemode) or stat.S_ISLNK(filemode):
+            # True only if this is a file or a link and not any other file
+            # system object.
+            return True
+        else:
+            return False
+
+
 class FileDoesNotExist(object):
-    """I check a file existence on the buildslave. I return False if
+    """I check a file existence on the worker. I return False if
     the file with the given name exists or that is a directory, True if the
     file does not exist.
 
@@ -57,16 +53,12 @@ class FileDoesNotExist(object):
         self.filename = filename
 
     def __call__(self, step):
-        slavever = step.slaveVersion('stat')
-        if not slavever:
-            raise BuildSlaveTooOldError("slave is too old, does not know "
-                                        "about stat")
-
-        def commandComplete(cmd):
-            # False if any filesystem object with the given name exists.
-            return (cmd.rc != 0)
-
-        cmd = LoggedRemoteCommand('stat', {'file': self.filename})
+        step.checkWorkerHasCommand('stat')
+        cmd = RemoteCommand('stat', {'file': self.filename})
         d = step.runCommand(cmd)
-        d.addCallback(lambda res: commandComplete(cmd))
+        d.addCallback(lambda res: self.commandComplete(cmd))
         return d
+
+    def commandComplete(self, cmd):
+        # False if any filesystem object with the given name exists.
+        return cmd.didFail()
