@@ -44,6 +44,7 @@ def get_build_slaves():
         create_slave("linaro-aarch64-full", properties={'jobs' : 32}, max_builds=1),
         create_slave("linaro-aarch64-global-isel", properties={'jobs' : 32}, max_builds=1),
         create_slave("linaro-aarch64-lld", properties={'jobs' : 32}, max_builds=1),
+        create_slave("linaro-aarch64-flang-oot", properties={'jobs' : 32}, max_builds=1),
         # Libcxx testsuite has tests with timing assumptions.  Run single-threaded to make
         # sure we have plenty CPU cycle to satisfy timing assumptions.
         create_slave("linaro-aarch64-libcxx", properties={'jobs' : 1}, max_builds=1),

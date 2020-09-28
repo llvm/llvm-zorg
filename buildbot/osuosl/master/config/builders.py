@@ -1,6 +1,7 @@
 from buildbot.process.properties import WithProperties
 
 from zorg.buildbot.builders import ClangBuilder
+from zorg.buildbot.builders import FlangBuilder
 from zorg.buildbot.builders import PollyBuilder
 from zorg.buildbot.builders import LLDBBuilder
 from zorg.buildbot.builders import SanitizerBuilder
@@ -1552,6 +1553,24 @@ def _get_flang_builders():
                         ],
          ),
          'category' : 'flang'},
+
+        {'name': "flang-aarch64-ubuntu-out-of-tree",
+         'slavenames':["linaro-aarch64-flang-oot"],
+         'builddir':"flang-aarch64-out-of-tree",
+         'factory': FlangBuilder.getFlangOutOfTreeBuildFactory(
+             llvm_extra_configure_args=[
+                 "-DLLVM_TARGETS_TO_BUILD=AArch64",
+                 "-DCMAKE_CXX_STANDARD=17",
+                 "-DLLVM_ENABLE_WERROR=OFF",
+                 "-DLLVM_ENABLE_ASSERTIONS=ON",
+                 "-DCMAKE_BUILD_TYPE=Release",
+             ],
+             flang_extra_configure_args=[
+                 "-DFLANG_ENABLE_WERROR=ON",
+                 "-DCMAKE_BUILD_TYPE=Release",
+            ],
+        ),
+        'category' : 'flang'},
 
         {'name': "flang-x86_64-linux",
          'slavenames':["nersc-flang"],
