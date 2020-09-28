@@ -1,11 +1,11 @@
 from buildbot.steps.shell import SetProperty
 from buildbot.steps.shell import ShellCommand, WarningCountingShellCommand
-from buildbot.steps.slave import RemoveDirectory
 from buildbot.process.properties import WithProperties, Property
+from buildbot.plugins import steps
 
 from zorg.buildbot.commands.CmakeCommand import CmakeCommand
 from zorg.buildbot.builders.Util import getVisualStudioEnvironment
-from zorg.buildbot.builders.Util import extractSlaveEnvironment
+from zorg.buildbot.builders.Util import extractVSEnvironment
 from zorg.buildbot.process.factory import LLVMBuildFactory
 
 # CMake builds
@@ -35,11 +35,13 @@ def getLLDBCMakeBuildFactory(
             depends_on_projects=["llvm", "clang", "lldb", "lld"],
             obj_dir=build_dir)
 
+    env = {}
     # Determine Slave Environment and Set MSVC environment.
-    if vs:
+    if vs and vs != 'manual':
         f.addStep(SetProperty(
             command=getVisualStudioEnvironment(vs, target_arch),
-            extract_fn=extractSlaveEnvironment))
+            extract_fn=extractVSEnvironment))
+        env = Property('vs_env')
 
     f.addGetSourcecodeSteps()
 
@@ -54,7 +56,7 @@ def getLLDBCMakeBuildFactory(
 
     ############# CLEANING
     cleanBuildRequested = lambda step: clean or step.build.getProperty("clean", default=step.build.getProperty("clean_obj"))
-    f.addStep(RemoveDirectory(name='clean '+build_dir,
+    f.addStep(steps.RemoveDirectory(name='clean '+build_dir,
                 dir=build_dir,
                 haltOnFailure=False,
                 flunkOnFailure=False,
@@ -78,7 +80,7 @@ def getLLDBCMakeBuildFactory(
                            haltOnFailure=True,
                            options=cmake_options,
                            path=rel_src_dir,
-                           env=Property('slave_env'),
+                           env=env,
                            workdir=build_dir))
 
     f.addStep(WarningCountingShellCommand(name='build',
@@ -86,7 +88,7 @@ def getLLDBCMakeBuildFactory(
                           haltOnFailure=True,
                           description='ninja build',
                           workdir=build_dir,
-                          env=Property('slave_env')))
+                          env=env))
 
     ignoreInstallFail = bool(install != 'ignoreFail')
     f.addStep(ShellCommand(name='install',
@@ -95,7 +97,7 @@ def getLLDBCMakeBuildFactory(
                           description='ninja install',
                           workdir=build_dir,
                           doStepIf=bool(install),
-                          env=Property('slave_env')))
+                          env=env))
 
     ignoreTestFail = bool(test != 'ignoreFail')
     f.addStep(ShellCommand(name='test',
@@ -105,6 +107,6 @@ def getLLDBCMakeBuildFactory(
                           description='ninja test',
                           workdir=build_dir,
                           doStepIf=bool(test),
-                          env=Property('slave_env')))
+                          env=env))
 
     return f
