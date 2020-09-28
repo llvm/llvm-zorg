@@ -2,7 +2,7 @@ import platform
 
 from buildbot.process.properties import WithProperties
 from buildbot.steps.shell import ShellCommand
-from buildbot.steps.slave import RemoveDirectory
+from buildbot.plugins import steps
 
 from zorg.buildbot.builders import UnifiedTreeBuilder
 from zorg.buildbot.commands.CmakeCommand import CmakeCommand
@@ -56,7 +56,7 @@ def getFuchsiaToolchainBuildFactory(
         sdk_platform=lambda _: sdk_platform,
         sdk_version=lambda _: sdk_version)
 
-    f.addStep(RemoveDirectory(name="clean-sdk",
+    f.addStep(steps.RemoveDirectory(name="clean-sdk",
                               dir=sdk_dir,
                               haltOnFailure=True))
 
@@ -73,12 +73,12 @@ def getFuchsiaToolchainBuildFactory(
     cleanBuildRequested = lambda step: step.build.getProperty("clean", default=True)
 
     # Clean up llvm build.
-    f.addStep(RemoveDirectory(name="clean-llvm.obj",
+    f.addStep(steps.RemoveDirectory(name="clean-llvm.obj",
                               dir=obj_dir,
                               haltOnFailure=True,
                               doStepIf=cleanBuildRequested))
 
-    f.addStep(RemoveDirectory(name="clean-llvm.install",
+    f.addStep(steps.RemoveDirectory(name="clean-llvm.install",
                               dir=install_dir,
                               haltOnFailure=True,
                               doStepIf=cleanBuildRequested))
@@ -104,11 +104,11 @@ def getFuchsiaToolchainBuildFactory(
 
     cmake_options.append(
         WithProperties(
-            "-DCMAKE_INSTALL_PREFIX=%(workdir)s/" + install_dir
+            "-DCMAKE_INSTALL_PREFIX=%(builddir)s/" + install_dir
         ))
     cmake_options.append(
         WithProperties(
-            "-DFUCHSIA_SDK=%(workdir)s/" + sdk_dir
+            "-DFUCHSIA_SDK=%(builddir)s/" + sdk_dir
         ))
 
     CmakeCommand.applyRequiredOptions(cmake_options, [
