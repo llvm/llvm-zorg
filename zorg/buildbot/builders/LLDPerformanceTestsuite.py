@@ -20,7 +20,7 @@ def getFactory(
     merged_env = {
         'TERM' : 'dumb' # Make sure Clang doesn't use color escape sequences.
         }
-    if env is not None:
+    if env:
         # Overwrite pre-set items with the given ones, so user can set anything.
         merged_env.update(env)
 
@@ -60,7 +60,7 @@ def getFactory(
             **kwargs) # Pass through all the extra arguments.
 
     if targets:
-        step_name = "build-%s" % ("-".join(targets))
+        step_name = "build-{}".format("-".join(targets))
         step_description=["Build"]
         step_description.extend(targets)
     else:
@@ -78,7 +78,7 @@ def getFactory(
 
     # Test just built components if requested.
     if checks:
-        f.addStep(NinjaCommand(name="test-%s" % ("-".join(checks)),
+        f.addStep(NinjaCommand(name="test-{}".format("-".join(checks)),
                                targets=checks,
                                description=[
                                    "Test", "just", "built", "components"],
@@ -98,7 +98,7 @@ def getFactory(
                 "test", "suite",
                 ],
             command=[
-                "cp", "-aL", "./%s/bin/ld.lld" % f.obj_dir, "./lld-speed-test/ld.lld"
+                "cp", "-aL", "./{}/bin/ld.lld".format(f.obj_dir), "./lld-speed-test/ld.lld"
                 ],
             env=merged_env,
             workdir='.'
@@ -108,8 +108,8 @@ def getFactory(
     # Run the performance test suite.
     perf_command = [
         "python",
-        "%(workdir)s/lld-benchmark.py",
-        "--machine=%(slavename)s",
+        "%(builddir)s/lld-benchmark.py",
+        "--machine=%(workername)s",
         "--revision=%(got_revision)s",
         "--linker=./ld.lld",
         ".",
