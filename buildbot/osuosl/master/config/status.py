@@ -221,7 +221,7 @@ def get_status_targets(standard_builders, standard_categories=None):
             extraRecipients = ["kkleine@redhat.com"],
             subject="Build %(builder)s Failure",
             mode = "failing",
-            builders = ["fedora-llvm-x86_64"],
+            builders = ["fedora-llvm-x86_64", "x86_64-fedora-clang"],
             addLogs=False),
         InformativeMailNotifier(
             fromaddr = "llvm.buildmaster@lab.llvm.org",
