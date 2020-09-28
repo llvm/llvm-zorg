@@ -1,4 +1,4 @@
-from buildbot.steps.shell import SetProperty
+# TODO: Change WithProperties to Interpolate
 from buildbot.process.properties import WithProperties
 from zorg.buildbot.commands.AnnotatedCommand import AnnotatedCommand
 from zorg.buildbot.process.factory import LLVMBuildFactory
