@@ -1,8 +1,8 @@
-from buildbot.steps.shell import WarningCountingShellCommand
+from buildbot.steps.cmake import CMake
 
 from zorg.buildbot.util.helpers import stripQuotationMarks
 
-class CmakeCommand(WarningCountingShellCommand):
+class CmakeCommand(CMake):
 
     @staticmethod
     def sanitize_kwargs(kwargs):
@@ -43,7 +43,7 @@ class CmakeCommand(WarningCountingShellCommand):
                         o = options[i] = k + v
                         break
                 except Exception:
-                    pass 
+                    pass
 
             if o is None:
                 # We do not have the option to replace,
@@ -120,45 +120,19 @@ class CmakeCommand(WarningCountingShellCommand):
                 options.append('='.join(append_this))
 
 
-    def __init__(self, prefixCommand=None, options=None, path=None, **kwargs):
-        self.prefixCommand = prefixCommand
-        self.path = [path]
-
-        if options is None:
-            self.options = list()
-        else:
-            self.options = list(options)
-
-        command = []
-        if prefixCommand:
-            command += prefixCommand
-
-        command += ["cmake"]
-
-        if self.options:
-            command += self.options
-
-        if self.path:
-            command += self.path
+    def __init__(self, path=None, generator=None, definitions=None,
+                 options=None, cmake=CMake.DEFAULT_CMAKE, **kwargs):
 
         # Remove here all the kwargs any of our LLVM buildbot command could consume.
         # Note: We will remove all the empty items from the command at start, as we
         # still didn't get yet WithProperties rendered.
         sanitized_kwargs = self.sanitize_kwargs(kwargs)
 
-        sanitized_kwargs["command"] = command
-
         # And upcall to let the base class do its work
-        WarningCountingShellCommand.__init__(self, **sanitized_kwargs)
-
-        self.addFactoryArguments(prefixCommand=prefixCommand,
-                                 options=self.options,
-                                 path=path)
-
-
-    def start(self):
-        # Don't forget to remove all the empty items from the command,
-        # which we could get because of WithProperties rendered as empty strings.
-        self.command = filter(bool, self.command)
-        # Then upcall.
-        WarningCountingShellCommand.start(self)
+        super().__init__(
+                    path=path,
+                    generator=generator,
+                    definitions=definitions,
+                    options=options,
+                    cmake=cmake,
+                    **sanitized_kwargs)
