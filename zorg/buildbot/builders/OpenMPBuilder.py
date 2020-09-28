@@ -1,11 +1,6 @@
-import os
-
-import buildbot
-import buildbot.process.factory
-from buildbot.steps.source import SVN
-from buildbot.steps.shell import Configure, ShellCommand
-from buildbot.steps.shell import WarningCountingShellCommand
+from buildbot.steps.shell import ShellCommand
 from buildbot.process.properties import WithProperties
+
 from zorg.buildbot.commands.LitTestCommand import LitTestCommand
 from zorg.buildbot.commands.CmakeCommand import CmakeCommand
 from zorg.buildbot.commands.NinjaCommand import NinjaCommand
@@ -57,8 +52,7 @@ def getOpenMPCMakeBuildFactory(
             env             = merged_env))
 
     # Configure LLVM and OpenMP (and Clang, if requested).
-    cmake_args  = ['cmake', '-G', 'Ninja']
-    cmake_args += ['-DCMAKE_BUILD_TYPE=Release', '-DLLVM_ENABLE_ASSERTIONS=ON']
+    cmake_args = ['-DCMAKE_BUILD_TYPE=Release', '-DLLVM_ENABLE_ASSERTIONS=ON']
     if ompt:
         cmake_args += ['-DLIBOMP_OMPT_SUPPORT=ON']
     if test:
@@ -71,12 +65,13 @@ def getOpenMPCMakeBuildFactory(
 
     # Add llvm-lit and clang (if built) to PATH
     merged_env.update({
-        'PATH': WithProperties('%(workdir)s/' + llvm_builddir + '/bin:${PATH}')})
+        'PATH': WithProperties('%(builddir)s/' + llvm_builddir + '/bin:${PATH}')})
 
     src_dir = LLVMBuildFactory.pathRelativeTo(f.llvm_srcdir, f.obj_dir)
 
     f.addStep(CmakeCommand(name='configure-openmp',
                            description=['configure','openmp'],
+                           generator='Ninja',
                            options=cmake_args,
                            path=src_dir,
                            env=merged_env,
@@ -98,7 +93,7 @@ def getOpenMPCMakeBuildFactory(
     if test:
         # Add llvm-lit and clang (if built) to PATH
         merged_env.update({
-            'PATH': WithProperties('%(workdir)s/' + llvm_builddir + '/bin:${PATH}')})
+            'PATH': WithProperties('%(builddir)s/' + llvm_builddir + '/bin:${PATH}')})
 
         ninja_test_args = ['ninja', WithProperties('-j %s' % jobs)]
         f.addStep(
