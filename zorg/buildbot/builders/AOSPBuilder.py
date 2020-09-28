@@ -1,6 +1,4 @@
-import buildbot
 from buildbot.steps.shell import ShellCommand
-from buildbot.steps.source import SVN
 from zorg.buildbot.builders import PollyBuilder
 
 # Setting up the build envrionment for building AOSP on Ubuntu (>=15.04).
@@ -45,7 +43,6 @@ def getAOSPBuildCommand(
 
 def getAOSPBuildFactory(
     device,                # Target device for AOSP build
-    build_clang=False,     # Flag to control building Clang for AOSP target build
     extra_cmake_args=[],   # Extra args for the LLVM cmake command
                            # This flag is ignored if build_clang is False
     timeout=None,          # Maximum CPU time in seconds, umlimited if 'None'
@@ -59,18 +56,17 @@ def getAOSPBuildFactory(
     clean=False,           # Flag to control whether AOSP repo is cleaned
     sync=False,            # Flag to control whether AOSP repo is synced
     patch=None):           # Name of the patch to apply to AOSP source
-    f = buildbot.process.factory.BuildFactory()
+
     clang_dir = target_clang
 
     # Build Clang for AOSP target build
-    if build_clang:
-        f = PollyBuilder.getPollyBuildFactory(clean=True,
-                                              install=True,
-                                              make='ninja',
-                                              jobs=jobs,
-                                              env=env,
-                                              extraCmakeArgs=extra_cmake_args)
-        clang_dir = 'llvm.inst/bin'
+    f = PollyBuilder.getPollyBuildFactory(clean=True,
+                                          install=True,
+                                          make='ninja',
+                                          jobs=jobs,
+                                          env=env,
+                                          extraCmakeArgs=extra_cmake_args)
+    clang_dir = 'llvm.inst/bin'
 
     # Restore AOSP repo to a clean state
     if clean:
