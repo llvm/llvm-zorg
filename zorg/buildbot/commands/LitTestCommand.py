@@ -1,12 +1,14 @@
 import re
-import urllib
 from os.path import basename
-import buildbot
-import buildbot.status.builder
-from buildbot.status.results import FAILURE, SUCCESS
-import buildbot.steps.shell
-from buildbot.process.buildstep import LogLineObserver
+
+from twisted.python import log
+
+from buildbot.process.results import SUCCESS
+from buildbot.process.results import FAILURE
+
 from buildbot.steps.shell import Test
+
+from buildbot.process.logobserver import LogLineObserver
 
 class LitLogObserver(LogLineObserver):
   # Regular expressions for a regular test line.
@@ -24,7 +26,8 @@ class LitLogObserver(LogLineObserver):
   kStartSummaryRE = re.compile(r'^Failing Tests \(\d*\)$')
 
   def __init__(self, maxLogs=None, parseSummaryOnly=False):
-    LogLineObserver.__init__(self)
+    log.msg(">>> LitLogObserver._init__(maxLogs=%s, parseSummaryOnly=%s)" % (maxLogs, parseSummaryOnly))
+    super().__init__()
     self.resultCounts = {}
     self.maxLogs = maxLogs
     self.numLogs = 0
@@ -156,7 +159,8 @@ class LitTestCommand(Test):
 
   def __init__(self, ignore=[], flaky=[], max_logs=20, parseSummaryOnly=False,
                *args, **kwargs):
-    Test.__init__(self, *args, **kwargs)
+    log.msg(">>> LitTestCommand._init__(ignore=%s,flaky=%s,max_logs=%s,parseSummaryOnly=%s,kwargs=%s)" % (ignore, flaky, max_logs, parseSummaryOnly, kwargs))
+    super().__init__(*args, **kwargs)
     self.maxLogs = int(max_logs)
     self.logObserver = LitLogObserver(self.maxLogs, parseSummaryOnly)
     self.addFactoryArguments(max_logs=max_logs)
@@ -176,13 +180,14 @@ class LitTestCommand(Test):
 
   def describe(self, done=False):
     description = Test.describe(self, done)
-    for name, count in self.logObserver.resultCounts.iteritems():
+    for name, count in self.logObserver.resultCounts.items():
         if name in self.resultNames:
             description.append('{0} {1}'.format(count, self.resultNames[name]))
         else:
             description.append('Unexpected test result output ' + name)
     return description
 
+## TODO: Move these unit tests to the untit tests suite.
 ##
 
 import unittest
