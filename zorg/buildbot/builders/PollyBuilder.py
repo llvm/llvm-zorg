@@ -1,8 +1,6 @@
-import os
-
 from buildbot.process.properties import WithProperties
-from buildbot.steps.shell import Configure, ShellCommand, WarningCountingShellCommand, SetProperty
-from buildbot.steps.slave import RemoveDirectory
+from buildbot.steps.shell import ShellCommand, WarningCountingShellCommand
+from buildbot.plugins import steps
 from zorg.buildbot.commands.LitTestCommand import LitTestCommand
 from zorg.buildbot.process.factory import LLVMBuildFactory
 
@@ -30,7 +28,7 @@ def getPollyBuildFactory(
 
     jobs_cmd = []
     if jobs is not None:
-        jobs_cmd = ["-j"+str(jobs)]
+        jobs_cmd = ["-j{}".format(jobs)]
     build_cmd = [make] + jobs_cmd
     install_cmd = [make, 'install'] + jobs_cmd
     check_all_cmd = [make, 'check-all'] + jobs_cmd
@@ -61,7 +59,7 @@ def getPollyBuildFactory(
             cleanBuildRequested=cleanBuildRequested,
             **kwargs) # Pass through all the extra arguments.
 
-    f.addStep(RemoveDirectory(name='clean-src-dir',
+    f.addStep(steps.RemoveDirectory(name='clean-src-dir',
                            dir=f.monorepo_dir,
                            warnOnFailure=True,
                            doStepIf=cleanBuildRequestedByProperty))
@@ -70,7 +68,7 @@ def getPollyBuildFactory(
     f.addGetSourcecodeSteps(**kwargs)
 
     # Clean build dir
-    f.addStep(RemoveDirectory(name='clean-build-dir',
+    f.addStep(steps.RemoveDirectory(name='clean-build-dir',
                            dir=llvm_objdir,
                            warnOnFailure=True,
                            doStepIf=cleanBuildRequested))
@@ -99,14 +97,14 @@ def getPollyBuildFactory(
                            workdir=llvm_objdir,
                            env=merged_env))
 
-    clangexe = "%(workdir)s/" + llvm_objdir + "/bin/clang"
-    clangxxexe = "%(workdir)s/" + llvm_objdir + "/bin/clang++"
-    litexe = "%(workdir)s/" + llvm_objdir + "/bin/llvm-lit"
-    sizeexe = "%(workdir)s/" + llvm_objdir + "/bin/llvm-size"
+    clangexe = "%(builddir)s/" + llvm_objdir + "/bin/clang"
+    clangxxexe = "%(builddir)s/" + llvm_objdir + "/bin/clang++"
+    litexe = "%(builddir)s/" + llvm_objdir + "/bin/llvm-lit"
+    sizeexe = "%(builddir)s/" + llvm_objdir + "/bin/llvm-size"
 
     # Clean install dir
     if install:
-        f.addStep(RemoveDirectory(name='clean-install-dir',
+        f.addStep(steps.RemoveDirectory(name='clean-install-dir',
                                dir=llvm_instdir,
                                haltOnFailure=False,
                                doStepIf=cleanBuildRequested))
@@ -119,9 +117,9 @@ def getPollyBuildFactory(
                                env=merged_env))
 
         # If installing, use the installed version of clang.
-        clangexe = "%(workdir)s/" + llvm_instdir + "/bin/clang"
-        clangxxexe = "%(workdir)s/" + llvm_instdir + "/bin/clang++"
-        sizeexe = "%(workdir)s/" + llvm_instdir + "/bin/llvm-size"
+        clangexe = "%(builddir)s/" + llvm_instdir + "/bin/clang"
+        clangxxexe = "%(builddir)s/" + llvm_instdir + "/bin/clang++"
+        sizeexe = "%(builddir)s/" + llvm_instdir + "/bin/llvm-size"
 
     # Test
     if checkAll:
@@ -140,7 +138,7 @@ def getPollyBuildFactory(
                                env=merged_env))
 
     if testsuite:
-        f.addStep(RemoveDirectory(name='test-suite_clean-src-dir',
+        f.addStep(steps.RemoveDirectory(name='test-suite_clean-src-dir',
                            dir=testsuite_srcdir,
                            haltOnFailure=False,
                            warnOnFailure=True,
@@ -151,7 +149,7 @@ def getPollyBuildFactory(
             src_dir=testsuite_srcdir,
             alwaysUseLatest=True)
 
-        f.addStep(RemoveDirectory(name='test-suite_clean-build-dir',
+        f.addStep(steps.RemoveDirectory(name='test-suite_clean-build-dir',
                            dir=testsuite_builddir,
                            haltOnFailure=False,
                            warnOnFailure=True))
