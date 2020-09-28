@@ -1,4 +1,4 @@
-from buildbot.steps.shell import ShellCommand, SetProperty
+from buildbot.steps.shell import ShellCommand, SetPropertyFromCommand
 from buildbot.process.properties import WithProperties, Property
 
 from zorg.buildbot.process.properties import InterpolateToPosixPath
@@ -115,15 +115,15 @@ def getCmakeWithMSVCBuildFactory(
 
     if vs:
         # Configure MSVC environment if requested.
-        f.addStep(SetProperty(
+        f.addStep(SetPropertyFromCommand(
             command=builders_util.getVisualStudioEnvironment(vs, None),
-            extract_fn=builders_util.extractSlaveEnvironment))
-        merged_env = Property('slave_env')
+            extract_fn=builders_util.extractVSEnvironment))
+        merged_env = Property('vs_env')
 
     # Since this is a build of a cross toolchain, we build only the host-side
     # tools first by the host system compiler. Libraries will be cross-compiled.
     cmake_args.append(InterpolateToPosixPath(
-        '-DLLVM_AR=%(workdir)s/' + f.obj_dir + '/bin/llvm-ar.exe')),
+        '-DLLVM_AR=%(builddir)s/' + f.obj_dir + '/bin/llvm-ar.exe')),
 
     CmakeCommand.applyDefaultOptions(cmake_args, [
         ('-G', 'Ninja'),
