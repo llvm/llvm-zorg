@@ -74,8 +74,8 @@ def getABITestsuitBuildFactory(
 
     # Run the ABI test.
     abi_test_env = {
-        'PYTHONPATH' : WithProperties("%(workdir)s/" + f.llvm_srcdir + "/utils/lit:${PYTHONPATH}"),
-        'PATH'       : WithProperties("%(workdir)s/" + f.obj_dir + "/bin:${PATH}"),
+        'PYTHONPATH' : WithProperties("%(builddir)s/" + f.llvm_srcdir + "/utils/lit:${PYTHONPATH}"),
+        'PATH'       : WithProperties("%(builddir)s/" + f.obj_dir + "/bin:${PATH}"),
         }
     merged_env.update(abi_test_env)
 
