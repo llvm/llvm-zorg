@@ -1,7 +1,5 @@
 from zorg.buildbot.commands.CmakeCommand import CmakeCommand
-
 from zorg.buildbot.process.factory import LLVMBuildFactory
-
 from zorg.buildbot.builders.UnifiedTreeBuilder import addNinjaSteps, getCmakeWithNinjaBuildFactory
 
 def getFlangOutOfTreeBuildFactory(
@@ -11,6 +9,9 @@ def getFlangOutOfTreeBuildFactory(
            flang_extra_configure_args = None,
            env = None,
            **kwargs):
+
+    if env is None:
+        env = dict()
 
     f = getCmakeWithNinjaBuildFactory(
             depends_on_projects=['llvm','mlir'],
@@ -36,11 +37,11 @@ def getFlangOutOfTreeBuildFactory(
         ])
 
     flang_obj_dir = "build_flang"
-    flang_src_dir = "%s/flang" % f.monorepo_dir
+    flang_src_dir = "{}/flang".format(f.monorepo_dir)
 
     # Add LLVM_DIR and MLIR_DIR to the CMake invocation.
-    llvm_dir = "%s/lib/cmake/llvm" % f.obj_dir
-    mlir_dir = "%s/lib/cmake/mlir" % f.obj_dir
+    llvm_dir = "{}/lib/cmake/llvm".format(f.obj_dir)
+    mlir_dir = "{}/lib/cmake/mlir".format(f.obj_dir)
     CmakeCommand.applyRequiredOptions(flang_cmake_args, [
         # We actually need the paths to be relative to the source directory,
         # otherwise find_package can't locate the config files.
