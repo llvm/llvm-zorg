@@ -1,81 +1,43 @@
-import buildbot
-from buildbot import util, interfaces
-from zope.interface import implements
-from buildbot.status import builder, mail
+# TODO: Add support for clang crash dumps.
+# TODO: Better handle unit/regression tests failures
 
-if buildbot.version[:5] >= '0.8.7':
-    def get_change_string(build):
-        data = ''
-        ss_list = build.getSourceStamps()
-        if ss_list:
-            data += 'CHANGES:\n'
-            for ss in ss_list:
-                data += '\n\n'.join([c.asText() for c in ss.changes])
-            data += '\n\n'
-        else:
-            data += 'NO SOURCE STAMP (CHANGES UNAVAILABLE)'
-            data += '\n\n'
-        return data
-else:
-    def get_change_string(build):
-        data = ''
-        ss = build.getSourceStamp()
-        if ss:
-            data += 'CHANGES:\n'
-            data += '\n\n'.join([c.asText() for c in ss.changes])
-            data += '\n\n'
-        else:
-            data += 'NO SOURCE STAMP (CHANGES UNAVAILABLE)'
-            data += '\n\n'
-        return data
+# TODO: For debug purposes. Remove this later.
+from twisted.python import log
 
-class InformativeMailNotifier(mail.MailNotifier):
-    """MailNotifier subclass which provides additional information about the
-    build failure inside the email."""
+from buildbot.plugins import reporters
 
-    implements(interfaces.IEmailSender)
-    compare_attrs = (mail.MailNotifier.compare_attrs +
-                     ["num_lines", "only_failure_logs"])
+def _get_logs_and_tracebacks_from_build(build):
+    # TODO: Implement interesting parts of the logs and tracebacks extraction.
+    return dict()
 
-    # Remove messageFormatter from the compare_attrs, that would lead to
-    # recursion, and is checked by the class test.
-    compare_attrs.remove("messageFormatter")
+MAIL_TEMPLATE = """\
+The Buildbot has detected a {{ status_detected }} on builder {{ buildername }} while building {{ projects }}.
+Full details are available at:
+    {{ build_url }}
+Buildbot URL: {{ buildbot_url }}
+Worker for this Build: {{ workername }}
+Build Reason: {{ build['properties'].get('reason', ["<unknown>"])[0] }}
+Blamelist: {{ ", ".join(blamelist) }}
+{{ summary }}
+Sincerely,
+LLVM Buildbot
+"""
 
-    def __init__(self, 
-                 num_lines = 10, only_failure_logs = True,
-                 *attrs, **kwargs):
-        mail.MailNotifier.__init__(self,
-                                   messageFormatter=self.informative_formatter, 
-                                   *attrs, **kwargs)
-        self.num_lines = num_lines
-        self.only_failure_logs = only_failure_logs
-        
-        # Adapt to work with 0.8.3...
-        if not hasattr(self, 'defaultMessage'):
-            self.defaultMessage = mail.defaultMessage
+class LLVMMessageFormatter(reporters.MessageFormatter):
+    def buildAdditionalContext(self, master, ctx):
+        #log.msg(">>> LLVMMessageFormatter.buildAdditionalContext got ctx={}".format(ctx))
+        ctx.update(self.ctx)
 
-    def informative_formatter(self, mode, name, build, results, status):
-        # Get the standard message.
-        data = self.defaultMessage(mode, name, build, results, status)['body']
-        data += '\n' + '='*80 + '\n\n'
+        build = ctx["build"]
+        build_interesting_data = _get_logs_and_tracebacks_from_build(build)
+        #log.msg(">>> LLVMMessageFormatter.buildAdditionalContext build_interesting_data={}",format(build_interesting_data))
+        ctx["build"].update(build_interesting_data)
 
-        # Append additional information on the changes.
-        data += get_change_string(build)
 
-        # Append log files.
-        if self.num_lines:
-            data += 'LOGS:\n'
-            for logf in build.getLogs():
-                logStep = logf.getStep()
-                logStatus,_ = logStep.getResults()
-                if (self.only_failure_logs and logStatus != builder.FAILURE):
-                    continue
-                
-                trailingLines = logf.getText().splitlines()[-self.num_lines:]
-                data += "Last %d lines of '%s':\n" % (self.num_lines,
-                                                      logf.getName())
-                data += '\t' + '\n\t'.join(trailingLines)
-                data += '\n\n'
-
-        return { 'body' : data,
-                 'type' : 'plain' }
+LLVMInformativeMailNotifier = LLVMMessageFormatter(
+    template=MAIL_TEMPLATE,
+    template_type="plain",
+    wantLogs=True,
+    wantProperties=True,
+    wantSteps=True,
+)
