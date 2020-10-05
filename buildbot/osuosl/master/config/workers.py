@@ -39,7 +39,7 @@ def get_all():
         create_worker("linaro-armv8-libcxx", properties={'jobs' : 1}, max_builds=1),
         create_worker("linaro-arm-lldb", properties={'jobs' : 16}, max_builds=1),
 
-        # AArch64 Linaro slaves
+        # AArch64 Linaro workers
         create_worker("linaro-aarch64-quick", properties={'jobs' : 32}, max_builds=1),
         create_worker("linaro-aarch64-full", properties={'jobs' : 32}, max_builds=1),
         create_worker("linaro-aarch64-global-isel", properties={'jobs' : 32}, max_builds=1),
@@ -54,7 +54,7 @@ def get_all():
         create_worker("linaro-armv8-windows-msvc-01", properties={'jobs' : 8}, max_builds=1),
         create_worker("linaro-armv8-windows-msvc-02", properties={'jobs' : 8}, max_builds=1),
 
-        # ARMv7 build cache slave
+        # ARMv7 build cache workers
         create_worker("packet-linux-armv7-slave-1", properties={'jobs' : 64}, max_builds=1),
 
         # AArch64 build cache worker

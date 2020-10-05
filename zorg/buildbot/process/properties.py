@@ -40,7 +40,7 @@ class InterpolateToPosixPath(WithProperties):
         # Upcall the base class first.
         p = super().getRenderingFor(build)
 
-        # Then we need to figure out the buildslave OS:
+        # Then we need to figure out the worker OS:
         worker = build.getBuild().workerforbuilder.worker
         if worker.worker_system == 'posix':
             # Note: Do not call normpath here, as it could

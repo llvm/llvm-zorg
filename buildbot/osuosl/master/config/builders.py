@@ -1,3 +1,4 @@
+# TODO: Rename workers with "slave" as a part of the name.
 from buildbot.process.properties import WithProperties
 
 from zorg.buildbot.builders import ClangBuilder
@@ -20,7 +21,7 @@ from zorg.buildbot.builders import XToolchainBuilder
 from buildbot.plugins import util
 
 # For Libc++ builders
-docker_slaves = [
+docker_workers = [
     'libcxx-cloud1', 'libcxx-cloud2', 'libcxx-cloud3', 'libcxx-cloud4',
     'libcxx-cloud5'
 ]
@@ -1239,7 +1240,7 @@ all = [
     # EricWF's builders
     {'name' : 'libcxx-libcxxabi-x86_64-linux-ubuntu-cxx03',
     'tags'  : ["libcxx"],
-    'workernames' : docker_slaves,
+    'workernames' : docker_workers,
     'builddir': 'libcxx-libcxxabi-x86_64-linux-ubuntu-cxx03',
     'factory' : LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
                     env={
@@ -1250,7 +1251,7 @@ all = [
 
     {'name' : 'libcxx-libcxxabi-x86_64-linux-ubuntu-cxx11',
     'tags'  : ["libcxx"],
-    'workernames' : docker_slaves,
+    'workernames' : docker_workers,
     'builddir': 'libcxx-libcxxabi-x86_64-linux-ubuntu-cxx11',
     'factory' : LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
                     env={
@@ -1261,7 +1262,7 @@ all = [
 
     {'name' : 'libcxx-libcxxabi-x86_64-linux-ubuntu-cxx14',
     'tags'  : ["libcxx"],
-    'workernames' : docker_slaves,
+    'workernames' : docker_workers,
     'builddir': 'libcxx-libcxxabi-x86_64-linux-ubuntu-cxx14',
     'factory' : LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
                     env={
@@ -1272,7 +1273,7 @@ all = [
 
     {'name' : 'libcxx-libcxxabi-x86_64-linux-ubuntu-cxx17',
     'tags'  : ["libcxx"],
-    'workernames' : docker_slaves,
+    'workernames' : docker_workers,
     'builddir': 'libcxx-libcxxabi-x86_64-linux-ubuntu-cxx17',
     'factory' : LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
                     env={
@@ -1285,7 +1286,7 @@ all = [
 
     {'name' : 'libcxx-libcxxabi-x86_64-linux-ubuntu-cxx2a',
     'tags'  : ["libcxx"],
-    'workernames' : docker_slaves,
+    'workernames' : docker_workers,
     'builddir': 'libcxx-libcxxabi-x86_64-linux-ubuntu-cxx2a',
     'factory' : LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
                     env={
@@ -1298,7 +1299,7 @@ all = [
 
     {'name' : 'libcxx-libcxxabi-x86_64-linux-ubuntu-32bit',
     'tags'  : ["libcxx"],
-    'workernames' : docker_slaves,
+    'workernames' : docker_workers,
     'builddir': 'libcxx-libcxxabi-x86_64-linux-ubuntu-32bit',
     'factory' : LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
                     env={
@@ -1309,7 +1310,7 @@ all = [
 
     {'name' : 'libcxx-libcxxabi-x86_64-linux-ubuntu-asan',
     'tags'  : ["libcxx"],
-    'workernames' : docker_slaves,
+    'workernames' : docker_workers,
     'builddir': 'libcxx-libcxxabi-x86_64-linux-ubuntu-asan',
     'factory' : LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
                     env={
@@ -1321,7 +1322,7 @@ all = [
 
     {'name' : 'libcxx-libcxxabi-x86_64-linux-ubuntu-ubsan',
     'tags'  : ["libcxx"],
-    'workernames' : docker_slaves,
+    'workernames' : docker_workers,
     'builddir': 'libcxx-libcxxabi-x86_64-linux-ubuntu-ubsan',
     'factory' : LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
                     env={
@@ -1333,7 +1334,7 @@ all = [
 
     {'name' : 'libcxx-libcxxabi-x86_64-linux-ubuntu-msan',
     'tags'  : ["libcxx"],
-    'workernames' : docker_slaves,
+    'workernames' : docker_workers,
     'builddir': 'libcxx-libcxxabi-x86_64-linux-ubuntu-msan',
     'factory' : LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
                     env={
@@ -1345,7 +1346,7 @@ all = [
 
     {'name' : 'libcxx-libcxxabi-libunwind-x86_64-linux-ubuntu',
     'tags'  : ["libcxx"],
-    'workernames' : docker_slaves,
+    'workernames' : docker_workers,
     'builddir': 'libcxx-libcxxabi-libunwind-x86_64-linux-ubuntu',
     'factory' : LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
                     env={
@@ -1355,7 +1356,7 @@ all = [
 
     {'name' : 'libcxx-libcxxabi-x86_64-linux-ubuntu-tsan',
     'tags'  : ["libcxx"],
-    'workernames' : docker_slaves,
+    'workernames' : docker_workers,
     'builddir': 'libcxx-libcxxabi-x86_64-linux-ubuntu-tsan',
     'factory' : LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
                     env={
@@ -1365,7 +1366,7 @@ all = [
 
     {'name' : 'libcxx-libcxxabi-x86_64-linux-ubuntu-gcc5-cxx11',
     'tags'  : ["libcxx"],
-    'workernames' : docker_slaves,
+    'workernames' : docker_workers,
     'builddir': 'libcxx-libcxxabi-x86_64-linux-ubuntu-gcc5-cxx11',
     'factory' : LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
                     env={
@@ -1375,7 +1376,7 @@ all = [
 
     {'name' : 'libcxx-libcxxabi-x86_64-linux-ubuntu-gcc-tot-latest-std',
     'tags'  : ["libcxx"],
-    'workernames' : docker_slaves,
+    'workernames' : docker_workers,
     'builddir': 'libcxx-libcxxabi-x86_64-linux-ubuntu-gcc-tot-latest-std',
     'factory' : LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
                     env={
