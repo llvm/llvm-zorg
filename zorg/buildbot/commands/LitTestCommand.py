@@ -179,7 +179,7 @@ class LitTestCommand(Test):
     return SUCCESS
 
   def describe(self, done=False):
-    description = Test.describe(self, done)
+    description = Test.describe(self, done) or list()
     for name, count in self.logObserver.resultCounts.items():
         if name in self.resultNames:
             description.append('{0} {1}'.format(count, self.resultNames[name]))
