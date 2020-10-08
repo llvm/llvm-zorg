@@ -11,7 +11,7 @@ def getAuth():
         clientSecret=str(config.options.get('GitHub Auth', 'clientSecret')),
         apiVersion=4,
         getTeamsMembership=True,
-        debug=True, # TODO: Turn this to false once validated working.
+        debug=False,
     )
     return auth
 
