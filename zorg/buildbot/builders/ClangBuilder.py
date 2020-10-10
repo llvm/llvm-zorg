@@ -10,6 +10,7 @@ import zorg.buildbot.builders.Util as builders_util
 from zorg.buildbot.commands.LitTestCommand import LitTestCommand
 from zorg.buildbot.conditions.FileConditions import FileDoesNotExist
 from zorg.buildbot.commands.CmakeCommand import CmakeCommand
+from zorg.buildbot.process.properties import InterpolateToPosixPath
 from zorg.buildbot.process.factory import LLVMBuildFactory
 
 def addGCSUploadSteps(f, package_name, install_prefix, gcs_directory, env,
@@ -399,14 +400,22 @@ def _getClangCMakeBuildFactory(
                                descriptionDone='clean',
                                workdir='.'))
 
-        # Set the compiler using the CC and CXX environment variables to work around
-        # backslash string escaping bugs somewhere between buildbot and cmake. The
-        # env.exe helper is required to run the tests, so hopefully it's already on
-        # PATH.
+        # Absolute paths to just built compilers.
+        # Note: Backslash path separators do not work well with cmake and ninja.
+        # Forward slash path separator works on Windows as well.
+        stage1_cc = InterpolateToPosixPath(
+                        "-DCMAKE_C_COMPILER=%(builddir)s/{}/bin/{}".format(
+                            stage1_install,
+                            cc))
+        stage1_cxx = InterpolateToPosixPath(
+                        "-DCMAKE_CXX_COMPILER=%(builddir)s/{}/bin/{}".format(
+                            stage1_install,
+                            cxx))
+
         rel_src_dir = LLVMBuildFactory.pathRelativeTo(f.llvm_srcdir, stage2_build)
         cmake_cmd2 = [cmake, "-G", "Ninja", rel_src_dir,
-                      WithProperties("-DCMAKE_C_COMPILER=%(builddir)s/"+stage1_install+"/bin/"+cc),
-                      WithProperties("-DCMAKE_CXX_COMPILER=%(builddir)s/"+stage1_install+"/bin/"+cxx),
+                      stage1_cc,
+                      stage1_cxx,
                       "-DCMAKE_BUILD_TYPE="+stage2_config,
                       "-DLLVM_ENABLE_ASSERTIONS=True",
                       "-DLLVM_LIT_ARGS="+lit_args,
