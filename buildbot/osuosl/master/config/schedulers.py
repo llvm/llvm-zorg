@@ -105,16 +105,16 @@ def getForceSchedulers(builders):
                 name            = "force-build-scheduler",
                 label           = "Force Build",
                 buttonName      = "Force Build",
-                reason                 = util.ChoiceStringParameter(
-                    name               = "reason",
-                    label              = "reason:",
-                    required           = True,
-                    choices            = [
-                        "Build a particular revision",
-                        "Force clean build",
-                        "Narrow down blamelist",
-                    ],
-                    default            = "Build a particular revision"
+                reason = util.ChoiceStringParameter(
+                            name        = "reason",
+                            label       = "reason:",
+                            required    = True,
+                            choices     = [
+                                "Build a particular revision",
+                                "Force clean build",
+                                "Narrow down blamelist",
+                            ],
+                            default     = "Build a particular revision"
                 ),
                 builderNames    = scheduler_builders,
                 codebases       = [
