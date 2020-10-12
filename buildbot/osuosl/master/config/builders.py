@@ -1123,6 +1123,7 @@ def _get_mlir_builders():
                             '-DLLVM_LINK_LLVM_DYLIB=On',
                             '-DCLANG_LINK_CLANG_DYLIB=On',
                             '-DBUILD_SHARED_LIBS=Off',
+                            '-DLLVM_ENABLE_LLD=ON',
                         ])},
     ]
 
