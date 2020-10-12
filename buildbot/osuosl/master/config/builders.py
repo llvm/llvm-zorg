@@ -1105,7 +1105,7 @@ def _get_mlir_builders():
         'builddir': 'x86_64-fedora-clang',
         'factory': UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                         clean=True,
-                        depends_on_projects=['llvm', 'clang', 'clang-tools-extra', 'compiler-rt', 'lld'],
+                        depends_on_projects=['llvm', 'clang', 'clang-tools-extra', 'compiler-rt', 'lld', 'mlir'],
                         checks=['check-all'],
                         extra_configure_args=[
                             '-DCMAKE_BUILD_TYPE=Release',
