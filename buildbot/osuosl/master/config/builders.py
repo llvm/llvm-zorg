@@ -959,7 +959,7 @@ def _get_lldb_builders():
                     test=True,
                     extra_cmake_args=['-DLLVM_ENABLE_ASSERTIONS=OFF',
                                       '-DLLVM_ENABLE_ZLIB=FALSE',
-                                      '-DLLDB_ENABLE_PYTHON=TRUE'])}.
+                                      '-DLLDB_ENABLE_PYTHON=TRUE'])},
         {'name': "lldb-x86_64-freebsd",
          'slavenames': [],
          'builddir': "lldb-x86_64-freebsd",
