@@ -1,4 +1,5 @@
 # TODO: Rename workers with "slave" as a part of the name.
+
 from buildbot.process.properties import WithProperties
 
 from zorg.buildbot.builders import ClangBuilder
@@ -112,8 +113,8 @@ all = [
                         "-DLLVM_ENABLE_EXPENSIVE_CHECKS=ON",
                         "-DLLVM_ENABLE_WERROR=OFF",
                         "-DCMAKE_BUILD_TYPE=Debug",
-                        "-DCMAKE_CXX_FLAGS='-U_GLIBCXX_DEBUG'",
-                        "'-DLLVM_LIT_ARGS=-vv -j32'"])},
+                        "-DCMAKE_CXX_FLAGS=-U_GLIBCXX_DEBUG",
+                        "-DLLVM_LIT_ARGS=-vv -j32"])},
 
     {'name' : "llvm-clang-x86_64-expensive-checks-win",
     'tags'  : ["llvm", "clang", "expensive-checks"],
@@ -126,7 +127,7 @@ all = [
                         "-DLLVM_ENABLE_EXPENSIVE_CHECKS=ON",
                         "-DLLVM_ENABLE_WERROR=OFF",
                         "-DCMAKE_BUILD_TYPE=Debug",
-                        "'-DLLVM_LIT_ARGS=-vv'"])},
+                        "-DLLVM_LIT_ARGS=-vv"])},
 
     {'name' : "llvm-clang-x86_64-expensive-checks-debian",
     'tags'  : ["llvm", "expensive-checks"],
@@ -596,7 +597,7 @@ all = [
                         "-DCMAKE_C_COMPILER_EXTERNAL_TOOLCHAIN:PATH=/opt/rh/devtoolset-7/root/usr",
                         "-DCMAKE_CXX_COMPILER_EXTERNAL_TOOLCHAIN:PATH=/opt/rh/devtoolset-7/root/usr",
                         "-DLLVM_BINUTILS_INCDIR=/usr/include", "-DBUILD_SHARED_LIBS=ON", "-DLLVM_ENABLE_WERROR=ON",
-                        '-DLLVM_LIT_ARGS=-vj 256'])},
+                        '-DLLVM_LIT_ARGS=-vj 20'])},
 
     {'name' : "clang-s390x-linux",
     'tags'  : ["clang"],
@@ -1654,7 +1655,7 @@ all = [
     'tags'  : ['mlir'],
     'collapseRequests': False,
     'workernames': ['fedora-llvm-x86_64'],
-    'builddir': 'fedora-llvm-x86_64',
+    'builddir': 'x86_64-fedora-clang',
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                     clean=True,
                     depends_on_projects=['llvm', 'clang', 'clang-tools-extra', 'compiler-rt', 'lld', 'mlir'],
@@ -1675,6 +1676,7 @@ all = [
                         '-DLLVM_LINK_LLVM_DYLIB=On',
                         '-DCLANG_LINK_CLANG_DYLIB=On',
                         '-DBUILD_SHARED_LIBS=Off',
+                        '-DLLVM_ENABLE_LLD=ON',
                     ])},
 
     {'name' : "clang-solaris11-amd64",
@@ -1720,6 +1722,7 @@ all = [
                                         '-DCMAKE_C_COMPILER_LAUNCHER=sccache',
                                         '-DCMAKE_CXX_COMPILER_LAUNCHER=sccache',
                                         '-DLLVM_ENABLE_ZLIB=OFF',
+                                        '-DLLVM_LIT_TOOLS_DIR="C:\\Program Files\\GnuWin32\\usr\\bin"',
                                         ])},
 
 # Flang builders.
@@ -1737,7 +1740,8 @@ all = [
                         "-DCMAKE_CXX_COMPILER=/usr/bin/clang++-10",
                         "-DLLVM_INSTALL_UTILS=ON",
                         "-DCMAKE_CXX_STANDARD=17",
-                        "-DLLVM_ENABLE_WERROR=ON",
+                        "-DLLVM_ENABLE_WERROR=OFF",
+                        "-DFLANG_ENABLE_WERROR=ON",
                         "-DBUILD_SHARED_LIBS=ON",
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
                         "-DLLVM_ENABLE_LIBCXX=On",
