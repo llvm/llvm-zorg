@@ -35,6 +35,10 @@ function build_stage2_android() {
   local CMAKE_OPTIONS="${CMAKE_COMMON_OPTIONS} -DLLVM_ENABLE_WERROR=ON ${STAGE1_AS_COMPILER} -DCMAKE_C_FLAGS=-gmlt -DCMAKE_CXX_FLAGS=-gmlt"
   CMAKE_OPTIONS="${CMAKE_OPTIONS} -DLLVM_ENABLE_PROJECTS='clang;compiler-rt;lld'"
 
+  if ccache -s ; then
+    CMAKE_OPTIONS="${CMAKE_OPTIONS} -DLLVM_CCACHE_BUILD=ON"
+  fi
+
   echo @@@BUILD_STEP bootstrap clang@@@
   rm -rf ${STAGE2_CLOBBER}
 
