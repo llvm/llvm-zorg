@@ -1746,6 +1746,7 @@ all = [
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                     clean=True,
                     depends_on_projects=['llvm','mlir','clang','flang'],
+                    checks=['check-flang'],
                     extra_configure_args=[
                         "-DLLVM_TARGETS_TO_BUILD=AArch64",
                         "-DCMAKE_C_COMPILER=/usr/bin/clang-10",
