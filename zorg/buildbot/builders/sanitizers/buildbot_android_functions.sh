@@ -37,6 +37,7 @@ function build_stage2_android() {
 
   if ccache -s ; then
     CMAKE_OPTIONS="${CMAKE_OPTIONS} -DLLVM_CCACHE_BUILD=ON"
+    rm -rf llvm_build64
   fi
 
   echo @@@BUILD_STEP bootstrap clang@@@
