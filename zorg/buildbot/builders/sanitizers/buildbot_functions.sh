@@ -71,9 +71,13 @@ function common_stage1_variables {
 }
 
 function build_stage1_clang_impl {
+  rm -rf ${STAGE1_DIR}
   mkdir -p ${STAGE1_DIR}
   local cmake_stage1_options="${CMAKE_COMMON_OPTIONS}"
   cmake_stage1_options="${cmake_stage1_options} -DLLVM_ENABLE_PROJECTS='clang;compiler-rt;lld'"
+  if ccache -s ; then
+    cmake_stage1_options="${cmake_stage1_options} -DLLVM_CCACHE_BUILD=ON"
+  fi
   (cd ${STAGE1_DIR} && cmake ${cmake_stage1_options} $LLVM && \
     ninja clang lld compiler-rt llvm-symbolizer)
 }
@@ -144,6 +148,7 @@ function build_stage2 {
   if [ "$CHECK_LIBCXX" != "0" -a \
        "$sanitizer_name" != "ubsan" ]; then
     echo @@@BUILD_STEP build libcxx/$sanitizer_name@@@
+    rm -rf ${libcxx_build_dir}
     mkdir -p ${libcxx_build_dir}
     local cmake_stage2_libcxx_options="-DLLVM_ENABLE_PROJECTS='libcxx;libcxxabi'"
     (cd ${libcxx_build_dir} && \
@@ -165,6 +170,7 @@ function build_stage2 {
   local cmake_bug_workaround_cflags="$sanitizer_ldflags $fsanitize_flag -w"
   sanitizer_cflags="$sanitizer_cflags $cmake_bug_workaround_cflags"
 
+  rm -rf ${build_dir}
   mkdir -p ${build_dir}
   local extra_dir
   if [ "$CHECK_LLD" != "0" ]; then
@@ -242,7 +248,9 @@ function build_stage3 {
   cmake_stage3_options="${cmake_stage3_options} -DLLVM_ENABLE_PROJECTS='clang'"
   
   echo @@@BUILD_STEP build stage3/$sanitizer_name clang@@@
-  (mkdir -p ${build_dir} && cd ${build_dir} && cmake ${cmake_stage3_options} $LLVM && ninja clang) || \
+  rm -rf ${build_dir}
+  mkdir -p ${build_dir}
+  (cd ${build_dir} && cmake ${cmake_stage3_options} $LLVM && ninja clang) || \
       echo $step_result
 }
 
