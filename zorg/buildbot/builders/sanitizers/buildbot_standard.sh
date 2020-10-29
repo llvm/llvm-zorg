@@ -44,14 +44,18 @@ function build_tsan {
 
 buildbot_update
 
-echo @@@BUILD_STEP build fresh clang + debug compiler-rt@@@
-build_tsan "${TSAN_DEBUG_BUILD_DIR}" "-DCOMPILER_RT_DEBUG=ON" gcc g++
+USE_CCACHE=
+if ccache -s ; then
+  USE_CCACHE="-DLLVM_CCACHE_BUILD=ON"
+fi
 
+echo @@@BUILD_STEP build fresh clang + debug compiler-rt@@@
+build_tsan "${TSAN_DEBUG_BUILD_DIR}" "-DCOMPILER_RT_DEBUG=ON $USE_CCACHE" gcc g++
 echo @@@BUILD_STEP test tsan in debug compiler-rt build@@@
 (cd $TSAN_DEBUG_BUILD_DIR && make -j$MAKE_JOBS check-tsan) || echo @@@STEP_FAILURE@@@
 
 echo @@@BUILD_STEP build tsan with stats and debug output@@@
-build_tsan "${TSAN_FULL_DEBUG_BUILD_DIR}" "-DCOMPILER_RT_DEBUG=ON -DCOMPILER_RT_TSAN_DEBUG_OUTPUT=ON -DLLVM_INCLUDE_TESTS=OFF" gcc g++
+build_tsan "${TSAN_FULL_DEBUG_BUILD_DIR}" "-DCOMPILER_RT_DEBUG=ON -DCOMPILER_RT_TSAN_DEBUG_OUTPUT=ON -DLLVM_INCLUDE_TESTS=OFF $USE_CCACHE" gcc g++
 
 echo @@@BUILD_STEP build release tsan with clang@@@
 build_tsan "${TSAN_RELEASE_BUILD_DIR}" "-DCOMPILER_RT_DEBUG=OFF" "$ROOT/$TSAN_DEBUG_BUILD_DIR/bin/clang" "$ROOT/$TSAN_DEBUG_BUILD_DIR/bin/clang++"
