@@ -640,6 +640,18 @@ all = [
                     testsuite_flags=['--threads=4', '--build-threads=4'],
                     extra_cmake_args=["-DLLVM_ENABLE_ASSERTIONS=ON"])},
 
+    {'name' : "clang-sparc64-linux-multistage",
+    'tags'  : ["clang"],
+    'workernames' : ["debian-stadler-sparc64"],
+    'builddir': "clang-sparc64-linux-multistage",
+    'factory' : ClangBuilder.getClangCMakeBuildFactory(
+                    clean=False,
+                    checkout_lld=False,
+                    useTwoStage=True,
+                    stage1_config='Release',
+                    stage2_config='Release',
+                    extra_cmake_args=['-DLLVM_ENABLE_ASSERTIONS=ON'])},
+
     {'name' : "clang-hexagon-elf",
     'tags'  : ["clang"],
     'workernames' : ["hexagon-build-02", "hexagon-build-03"],

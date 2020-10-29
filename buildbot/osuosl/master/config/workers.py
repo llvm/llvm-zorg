@@ -81,6 +81,9 @@ def get_all():
         create_worker("ppc64le-clang-rhel-test", properties={'jobs': 4}, max_builds=1),
         create_worker("ppc64le-flang-mlir-rhel-test", max_builds=1),
 
+        # SPARC 64-bit big endian (sparc64)
+        create_worker("debian-stadler-sparc64", properties={'jobs': 4}, max_builds=1),
+
         # Ubuntu x86-64, Intel(R) Xeon(R) CPU E5-2680 0 @ 2.70GHz
         create_worker("hexagon-build-02", properties={'jobs': 12, 'loadaverage': 32},
             max_builds=1),
