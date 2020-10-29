@@ -25,7 +25,7 @@ CHECK_LIBCXX=${CHECK_LIBCXX:-1}
 CHECK_LLD=${CHECK_LLD:-1}
 
 LLVM=${ROOT}/llvm
-CMAKE_COMMON_OPTIONS="-DLLVM_ENABLE_ASSERTIONS=ON -DLLVM_BUILD_EXTERNAL_COMPILER_RT=ON"
+CMAKE_COMMON_OPTIONS="-GNinja -DLLVM_ENABLE_ASSERTIONS=ON -DLLVM_BUILD_EXTERNAL_COMPILER_RT=ON -DLLVM_USE_LINKER=gold"
 
 function build_tsan {
   local build_dir=$1
@@ -37,9 +37,9 @@ function build_tsan {
   (cd $build_dir && CC="$3" CXX="$4" cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo \
     ${CMAKE_COMMON_OPTIONS} ${extra_cmake_args} \
     ${LLVM})
-  (cd $build_dir && make -j$MAKE_JOBS ${targets}) || echo @@@STEP_FAILURE@@@
-  (cd $build_dir && make compiler-rt-clear) || echo @@@STEP_FAILURE@@@
-  (cd $build_dir && make -j$MAKE_JOBS tsan) || echo @@@STEP_FAILURE@@@
+  (cd $build_dir && ninja ${targets}) || echo @@@STEP_FAILURE@@@
+  (cd $build_dir && ninja compiler-rt-clear) || echo @@@STEP_FAILURE@@@
+  (cd $build_dir && ninja tsan) || echo @@@STEP_FAILURE@@@
 }
 
 buildbot_update
