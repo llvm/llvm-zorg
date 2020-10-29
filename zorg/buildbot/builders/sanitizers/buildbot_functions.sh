@@ -5,6 +5,9 @@ echo "How to reproduce locally: https://github.com/google/sanitizers/wiki/Saniti
 echo
 
 uptime
+ulimit -a
+ulimit -n 100000
+ulimit -a
 
 function stage1_clobber {
   rm -rf llvm_build2_* llvm_build_* libcxx_build_* ${STAGE1_CLOBBER:-}
