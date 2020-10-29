@@ -5,8 +5,7 @@ echo "How to reproduce locally: https://github.com/google/sanitizers/wiki/Saniti
 echo
 
 uptime
-ulimit -a
-ulimit -n 100000
+ulimit -n 100000 || true
 ulimit -a
 
 function stage1_clobber {
