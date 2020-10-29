@@ -506,7 +506,7 @@ all = [
                     depends_on_projects=['llvm', 'clang', 'lld', 'debuginfo-tests'])},
 
     {'name' : "clang-ppc64be-linux-lnt",
-    'tags'  : ["clang"],
+    'tags'  : ["clang", "ppc"],
     'workernames' : ["ppc64be-clang-lnt-test"],
     'builddir': "clang-ppc64be-lnt",
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
@@ -519,7 +519,7 @@ all = [
                     extra_cmake_args=["-DLLVM_ENABLE_ASSERTIONS=ON"])},
 
     {'name' : "clang-ppc64be-linux-multistage",
-    'tags'  : ["clang"],
+    'tags'  : ["clang", "ppc"],
     'workernames' : ["ppc64be-clang-multistage-test"],
     'builddir': "clang-ppc64be-multistage",
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
@@ -531,7 +531,7 @@ all = [
                     extra_cmake_args=['-DLLVM_ENABLE_ASSERTIONS=ON'])},
 
     {'name' : "clang-ppc64le-linux-lnt",
-    'tags'  : ["clang"],
+    'tags'  : ["clang", "ppc", "ppc64le"],
     'workernames' : ["ppc64le-clang-lnt-test"],
     'builddir': "clang-ppc64le-lnt",
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
@@ -544,7 +544,7 @@ all = [
                     extra_cmake_args=["-DLLVM_ENABLE_ASSERTIONS=ON"])},
 
     {'name' : "clang-ppc64le-linux-multistage",
-    'tags'  : ["clang"],
+    'tags'  : ["clang", "ppc", "ppc64le"],
     'workernames' : ["ppc64le-clang-multistage-test"],
     'builddir': "clang-ppc64le-multistage",
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
@@ -556,7 +556,7 @@ all = [
                     extra_cmake_args=['-DLLVM_ENABLE_ASSERTIONS=ON', '-DBUILD_SHARED_LIBS=ON'])},
 
     {'name' : "clang-ppc64be-linux",
-    'tags'  : ["clang"],
+    'tags'  : ["clang", "ppc"],
     'workernames' : ["ppc64be-clang-test"],
     'builddir': "clang-ppc64be",
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
@@ -567,7 +567,7 @@ all = [
                     extra_cmake_args=["-DLLVM_ENABLE_ASSERTIONS=ON"])},
 
     {'name' : "clang-ppc64le-linux",
-    'tags'  : ["clang"],
+    'tags'  : ["clang", "ppc", "ppc64le"],
     'workernames' : ["ppc64le-clang-test"],
     'builddir': "clang-ppc64le",
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
@@ -578,7 +578,7 @@ all = [
                     extra_cmake_args=["-DLLVM_ENABLE_ASSERTIONS=ON"])},
 
     {'name' : "clang-ppc64le-rhel",
-    'tags'  : ["clang"],
+    'tags'  : ["clang", "ppc", "ppc64le"],
     'workernames' : ["ppc64le-clang-rhel-test"],
     'builddir': "clang-ppc64le-rhel",
     'factory' : ClangBuilder.getClangCMakeBuildFactory(clean=False,
@@ -1020,7 +1020,7 @@ all = [
                     env={'CXXFLAGS' : "-std=c++11 -stdlib=libc++"})},
 
     {'name' : "ppc64le-lld-multistage-test",
-    'tags'  : ["lld"],
+    'tags'  : ["lld", "ppc", "ppc64le"],
     'workernames' : ["ppc64le-lld-multistage-test"],
     'builddir': "ppc64le-lld-multistage-test",
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaMultistageBuildFactory(
@@ -1101,7 +1101,7 @@ all = [
                     ])},
 
     {'name' : 'ppc64le-mlir-rhel-clang',
-    'tags'  : ["mlir"],
+    'tags'  : ["mlir", "ppc", "ppc64le"],
     'collapseRequests' : False,
     'workernames' : ['ppc64le-flang-mlir-rhel-test'],
     'builddir': 'ppc64le-mlir-rhel-clang-build',
@@ -1173,13 +1173,13 @@ all = [
     'factory' : SanitizerBuilder.getSanitizerBuildFactory()},
 
     {'name' : "sanitizer-ppc64be-linux",
-    'tags'  : ["sanitizer"],
+    'tags'  : ["sanitizer", "ppc"],
     'workernames' : ["ppc64be-sanitizer"],
     'builddir': "sanitizer-ppc64be",
     'factory' : SanitizerBuilder.getSanitizerBuildFactory(timeout=1800)},
 
     {'name' : "sanitizer-ppc64le-linux",
-    'tags'  : ["sanitizer"],
+    'tags'  : ["sanitizer", "ppc", "ppc64le"],
     'workernames' : ["ppc64le-sanitizer"],
     'builddir': "sanitizer-ppc64le",
     'factory' : SanitizerBuilder.getSanitizerBuildFactory(timeout=1800)},
@@ -1551,7 +1551,7 @@ all = [
                     ])},
 
     {'name' : 'ppc64le-flang-rhel-clang',
-    'tags'  : ["flang"],
+    'tags'  : ["flang", "ppc", "ppc64le"],
     'collapseRequests' : False,
     'workernames' : ['ppc64le-flang-mlir-rhel-test'],
     'builddir': 'ppc64le-flang-rhel-clang-build',
