@@ -49,7 +49,7 @@ fi
 echo @@@BUILD_STEP build fresh clang + debug compiler-rt@@@
 build_tsan "${TSAN_DEBUG_BUILD_DIR}" "-DCOMPILER_RT_DEBUG=ON $USE_CCACHE" gcc g++
 echo @@@BUILD_STEP test tsan in debug compiler-rt build@@@
-(cd $TSAN_DEBUG_BUILD_DIR && make -j$MAKE_JOBS check-tsan) || echo @@@STEP_FAILURE@@@
+(cd $TSAN_DEBUG_BUILD_DIR && ninja check-tsan) || echo @@@STEP_FAILURE@@@
 
 echo @@@BUILD_STEP build tsan with stats and debug output@@@
 build_tsan "${TSAN_FULL_DEBUG_BUILD_DIR}" "-DCOMPILER_RT_DEBUG=ON -DCOMPILER_RT_TSAN_DEBUG_OUTPUT=ON -DLLVM_INCLUDE_TESTS=OFF $USE_CCACHE" gcc g++
