@@ -174,7 +174,7 @@ function build_stage2 {
      -DCMAKE_CXX_FLAGS="${sanitizer_cflags}" \
      -DCMAKE_EXE_LINKER_FLAGS="${sanitizer_ldflags}" \
      $LLVM && \
-   ninja || echo $step_result)
+   ninja) || echo $step_result
 }
 
 function build_stage2_msan {
@@ -219,13 +219,14 @@ function build_stage3 {
   echo @@@BUILD_STEP build stage3/$sanitizer_name build@@@
   rm -rf ${build_dir}
   mkdir -p ${build_dir}
-  (cd ${build_dir} &&
-    cmake ${CMAKE_COMMON_OPTIONS} \
-    -DLLVM_ENABLE_PROJECTS='clang' \
-    -DCMAKE_C_COMPILER=${clang_path}/clang \
-    -DCMAKE_CXX_COMPILER=${clang_path}/clang++ \
-    -DLLVM_USE_LINKER=lld \
-    $LLVM && \
+  (cd ${build_dir} && \
+   cmake \
+     ${CMAKE_COMMON_OPTIONS} \
+     -DLLVM_ENABLE_PROJECTS='clang' \
+     -DCMAKE_C_COMPILER=${clang_path}/clang \
+     -DCMAKE_CXX_COMPILER=${clang_path}/clang++ \
+     -DLLVM_USE_LINKER=lld \
+     $LLVM && \
   ninja clang) || echo $step_result
 }
 
