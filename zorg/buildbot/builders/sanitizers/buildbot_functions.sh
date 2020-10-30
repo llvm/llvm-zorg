@@ -78,12 +78,11 @@ function build_stage1_clang_impl {
   if ccache -s ; then
     cmake_stage1_options="${cmake_stage1_options} -DLLVM_CCACHE_BUILD=ON"
   fi
-  (cd ${STAGE1_DIR} && cmake ${cmake_stage1_options} $LLVM && \
-    ninja clang lld compiler-rt llvm-symbolizer)
+  (cd ${STAGE1_DIR} && cmake ${cmake_stage1_options} $LLVM && ninja)
 }
 
 function build_stage1_clang {
-  echo @@@BUILD_STEP build stage1 clang@@@
+  echo @@@BUILD_STEP stage1 build all@@@
   export STAGE1_DIR=llvm_build0
   common_stage1_variables
   build_stage1_clang_impl
@@ -141,7 +140,7 @@ function build_stage2 {
   fi
 
   # Don't use libc++/libc++abi in UBSan builds (due to known bugs).
-  echo @@@BUILD_STEP build libcxx/$sanitizer_name@@@
+  echo @@@BUILD_STEP stage2/$sanitizer_name build libcxx@@@
   rm -rf ${libcxx_build_dir}
   mkdir -p ${libcxx_build_dir}
   (cd ${libcxx_build_dir} && \
@@ -154,7 +153,8 @@ function build_stage2 {
     ninja cxx cxxabi) || echo $step_result
   local sanitizer_ldflags="-lc++abi -Wl,--rpath=${ROOT}/${libcxx_build_dir}/lib -L${ROOT}/${libcxx_build_dir}/lib"
   local sanitizer_cflags="-nostdinc++ -isystem ${ROOT}/${libcxx_build_dir}/include -isystem ${ROOT}/${libcxx_build_dir}/include/c++/v1"
-  echo @@@BUILD_STEP build clang/$sanitizer_name@@@
+
+  echo @@@BUILD_STEP stage2/$sanitizer_name build@@@
 
   # See http://llvm.org/bugs/show_bug.cgi?id=19071, http://www.cmake.org/Bug/view.php?id=15264
   local cmake_bug_workaround_cflags="$sanitizer_ldflags $fsanitize_flag -w"
@@ -194,14 +194,8 @@ function check_stage2 {
   local step_result=$2
   local build_dir=${STAGE2_DIR}
   
-  echo @@@BUILD_STEP check-llvm ${sanitizer_name}@@@
-  (cd ${build_dir} && ninja check-llvm) || echo $step_result
-
-  echo @@@BUILD_STEP check-clang ${sanitizer_name}@@@
-  (cd ${build_dir} && ninja check-clang) || echo $step_result
-
-  echo @@@BUILD_STEP check-lld ${sanitizer_name}@@@
-  (cd ${build_dir} && ninja check-lld) || echo $step_result
+  echo @@@BUILD_STEP stage2/$sanitizer_name check@@@
+  ninja -C ${build_dir} check-all || echo $step_result
 }
 
 function check_stage2_msan {
@@ -222,7 +216,7 @@ function build_stage3 {
   local build_dir=llvm_build2_${sanitizer_name}
 
   local clang_path=$ROOT/${STAGE2_DIR}/bin
-  echo @@@BUILD_STEP build stage3/$sanitizer_name clang@@@
+  echo @@@BUILD_STEP build stage3/$sanitizer_name build@@@
   rm -rf ${build_dir}
   mkdir -p ${build_dir}
   (cd ${build_dir} &&
@@ -232,8 +226,7 @@ function build_stage3 {
     -DCMAKE_CXX_COMPILER=${clang_path}/clang++ \
     -DLLVM_USE_LINKER=lld \
     $LLVM && \
-  ninja clang) || \
-      echo $step_result
+  ninja clang) || echo $step_result
 }
 
 function build_stage3_msan {
@@ -253,11 +246,8 @@ function check_stage3 {
   local step_result=$2
   local build_dir=llvm_build2_${sanitizer_name}
 
-  echo @@@BUILD_STEP stage3/$sanitizer_name check-llvm@@@
-  (cd ${build_dir} && ninja check-llvm) || echo $step_result
-
-  echo @@@BUILD_STEP stage3/$sanitizer_name check-clang@@@
-  (cd ${build_dir} && ninja check-clang) || echo $step_result
+  echo @@@BUILD_STEP stage3/$sanitizer_name check@@@
+  (cd ${build_dir} && ninja check-clang check-llvm) || echo $step_result
 }
 
 function check_stage3_msan {
