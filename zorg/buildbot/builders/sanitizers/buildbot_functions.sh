@@ -140,29 +140,20 @@ function build_stage2 {
     exit 1
   fi
 
-  local sanitizer_ldflags=""
-  local sanitizer_cflags=""
-  local cmake_libcxx_flag="-DLLVM_ENABLE_LIBCXX=OFF"
-
   # Don't use libc++/libc++abi in UBSan builds (due to known bugs).
-  if [ "$sanitizer_name" != "ubsan" ]; then
-    echo @@@BUILD_STEP build libcxx/$sanitizer_name@@@
-    rm -rf ${libcxx_build_dir}
-    mkdir -p ${libcxx_build_dir}
-    local cmake_stage2_libcxx_options="-DLLVM_ENABLE_PROJECTS='libcxx;libcxxabi'"
-    (cd ${libcxx_build_dir} && \
-      cmake \
-        ${cmake_stage2_common_options} \
-        ${cmake_stage2_libcxx_options} \
-        -DCMAKE_BUILD_TYPE=${build_type} \
-        -DLLVM_USE_SANITIZER=${llvm_use_sanitizer} \
-        $LLVM && \
-      ninja cxx cxxabi) || echo $step_result
-    sanitizer_ldflags="$sanitizer_ldflags -lc++abi -Wl,--rpath=${ROOT}/${libcxx_build_dir}/lib -L${ROOT}/${libcxx_build_dir}/lib"
-    sanitizer_cflags="$sanitizer_cflags -nostdinc++ -isystem ${ROOT}/${libcxx_build_dir}/include -isystem ${ROOT}/${libcxx_build_dir}/include/c++/v1"
-    cmake_libcxx_flag="-DLLVM_ENABLE_LIBCXX=ON"
-  fi
-
+  echo @@@BUILD_STEP build libcxx/$sanitizer_name@@@
+  rm -rf ${libcxx_build_dir}
+  mkdir -p ${libcxx_build_dir}
+  (cd ${libcxx_build_dir} && \
+    cmake \
+      ${cmake_stage2_common_options} \
+      -DLLVM_ENABLE_PROJECTS='libcxx;libcxxabi' \
+      -DCMAKE_BUILD_TYPE=${build_type} \
+      -DLLVM_USE_SANITIZER=${llvm_use_sanitizer} \
+      $LLVM && \
+    ninja cxx cxxabi) || echo $step_result
+  local sanitizer_ldflags="-lc++abi -Wl,--rpath=${ROOT}/${libcxx_build_dir}/lib -L${ROOT}/${libcxx_build_dir}/lib"
+  local sanitizer_cflags="-nostdinc++ -isystem ${ROOT}/${libcxx_build_dir}/include -isystem ${ROOT}/${libcxx_build_dir}/include/c++/v1"
   echo @@@BUILD_STEP build clang/$sanitizer_name@@@
 
   # See http://llvm.org/bugs/show_bug.cgi?id=19071, http://www.cmake.org/Bug/view.php?id=15264
@@ -178,7 +169,7 @@ function build_stage2 {
      ${cmake_stage2_clang_options} \
      -DCMAKE_BUILD_TYPE=${build_type} \
      -DLLVM_USE_SANITIZER=${llvm_use_sanitizer} \
-     ${cmake_libcxx_flag} \
+     -DLLVM_ENABLE_LIBCXX=ON \
      -DCMAKE_C_FLAGS="${sanitizer_cflags}" \
      -DCMAKE_CXX_FLAGS="${sanitizer_cflags}" \
      -DCMAKE_EXE_LINKER_FLAGS="${sanitizer_ldflags}" \
