@@ -145,8 +145,7 @@ function build_stage2 {
   local cmake_libcxx_flag="-DLLVM_ENABLE_LIBCXX=OFF"
 
   # Don't use libc++/libc++abi in UBSan builds (due to known bugs).
-  if [ "$CHECK_LIBCXX" != "0" -a \
-       "$sanitizer_name" != "ubsan" ]; then
+  if [ "$sanitizer_name" != "ubsan" ]; then
     echo @@@BUILD_STEP build libcxx/$sanitizer_name@@@
     rm -rf ${libcxx_build_dir}
     mkdir -p ${libcxx_build_dir}
@@ -172,15 +171,7 @@ function build_stage2 {
 
   rm -rf ${build_dir}
   mkdir -p ${build_dir}
-  local extra_dir
-  if [ "$CHECK_LLD" != "0" ]; then
-    extra_dir="lld"
-  fi
-  local projects=clang
-  if [[ "$CHECK_LLD" != "0" ]]; then
-    projects="${projects};lld"
-  fi
-  local cmake_stage2_clang_options="-DLLVM_ENABLE_PROJECTS='${projects}'"
+  local cmake_stage2_clang_options="-DLLVM_ENABLE_PROJECTS='clang;lld'"
   (cd ${build_dir} && \
    cmake \
      ${cmake_stage2_common_options} \
@@ -192,7 +183,7 @@ function build_stage2 {
      -DCMAKE_CXX_FLAGS="${sanitizer_cflags}" \
      -DCMAKE_EXE_LINKER_FLAGS="${sanitizer_ldflags}" \
      $LLVM && \
-   ninja clang ${extra_dir}) || echo $step_result
+   ninja || echo $step_result)
 }
 
 function build_stage2_msan {
@@ -213,17 +204,13 @@ function check_stage2 {
   local build_dir=${STAGE2_DIR}
   
   echo @@@BUILD_STEP check-llvm ${sanitizer_name}@@@
-
   (cd ${build_dir} && ninja check-llvm) || echo $step_result
 
   echo @@@BUILD_STEP check-clang ${sanitizer_name}@@@
-
   (cd ${build_dir} && ninja check-clang) || echo $step_result
 
-  if [ "$CHECK_LLD" != "0" ]; then
-    echo @@@BUILD_STEP check-lld ${sanitizer_name}@@@
-    (cd ${build_dir} && ninja check-lld) || echo $step_result
-  fi
+  echo @@@BUILD_STEP check-lld ${sanitizer_name}@@@
+  (cd ${build_dir} && ninja check-lld) || echo $step_result
 }
 
 function check_stage2_msan {

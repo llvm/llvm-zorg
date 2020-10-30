@@ -11,8 +11,6 @@ ROOT=`pwd`
 PLATFORM=`uname`
 export PATH="/usr/local/bin:$PATH"
 
-CHECK_LIBCXX=${CHECK_LIBCXX:-1}
-CHECK_LLD=${CHECK_LLD:-1}
 LLVM=$ROOT/llvm
 CMAKE_COMMON_OPTIONS="-GNinja -DCMAKE_BUILD_TYPE=Release"
 

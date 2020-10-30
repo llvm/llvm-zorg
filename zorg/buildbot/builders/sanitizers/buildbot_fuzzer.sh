@@ -11,8 +11,6 @@ ROOT=`pwd`
 PLATFORM=`uname`
 export PATH="/usr/local/bin:$PATH"
 
-CHECK_LIBCXX=${CHECK_LIBCXX:-0}
-CHECK_LLD=${CHECK_LLD:-1}
 MAKE_JOBS=${MAX_MAKE_JOBS:-$(nproc)}
 LLVM=$ROOT/llvm
 LIBFUZZER=$LLVM/lib/Fuzzer
