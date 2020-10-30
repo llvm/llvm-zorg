@@ -103,7 +103,7 @@ function build_stage1_clang_at_revison {
 
 function common_stage2_variables {
   cmake_stage2_common_options="\
-    ${CMAKE_COMMON_OPTIONS} ${STAGE1_AS_COMPILER}"
+    ${CMAKE_COMMON_OPTIONS} ${STAGE1_AS_COMPILER} -DLLVM_USE_LINKER=lld"
 }
 
 function build_stage2 {
@@ -222,13 +222,17 @@ function build_stage3 {
   local build_dir=llvm_build2_${sanitizer_name}
 
   local clang_path=$ROOT/${STAGE2_DIR}/bin
-  local cmake_stage3_options="${CMAKE_COMMON_OPTIONS} -DCMAKE_C_COMPILER=${clang_path}/clang -DCMAKE_CXX_COMPILER=${clang_path}/clang++"
-  cmake_stage3_options="${cmake_stage3_options} -DLLVM_ENABLE_PROJECTS='clang'"
-  
   echo @@@BUILD_STEP build stage3/$sanitizer_name clang@@@
   rm -rf ${build_dir}
   mkdir -p ${build_dir}
-  (cd ${build_dir} && cmake ${cmake_stage3_options} $LLVM && ninja clang) || \
+  (cd ${build_dir} &&
+    cmake ${CMAKE_COMMON_OPTIONS} \
+    -DLLVM_ENABLE_PROJECTS='clang' \
+    -DCMAKE_C_COMPILER=${clang_path}/clang \
+    -DCMAKE_CXX_COMPILER=${clang_path}/clang++ \
+    -DLLVM_USE_LINKER=lld \
+    $LLVM && \
+  ninja clang) || \
       echo $step_result
 }
 
