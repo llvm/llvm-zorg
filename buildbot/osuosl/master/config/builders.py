@@ -151,7 +151,7 @@ all = [
 # Cross builders.
 
     {'name' : "llvm-clang-win-x-armv7l",
-    'tags'  : ["clang", "llvm", "cross"," armv7l"],
+    'tags'  : ["clang", "llvm", "compiler-rt", "cross"," armv7l"],
     'workernames' : ["as-builder-1"],
     'builddir': "x-armv7l",
     'factory' : XToolchainBuilder.getCmakeWithMSVCBuildFactory(
@@ -161,6 +161,7 @@ all = [
                     "check-llvm",
                     "check-clang",
                     "check-lld",
+                    "compiler-rt"
                     ],
                     checks_on_target = [
                         ("libunwind",
@@ -186,7 +187,7 @@ all = [
                     cmake_cache="../llvm-project/clang/cmake/caches/CrossWinToARMLinux.cmake")},
 
     {'name' : "llvm-clang-win-x-aarch64",
-    'tags'  : ["clang", "llvm", "cross"," aarch64"],
+    'tags'  : ["clang", "llvm", "compiler-rt", "cross"," aarch64"],
     'workernames' : ["as-builder-2"],
     'builddir': "x-aarch64",
     'factory' : XToolchainBuilder.getCmakeWithMSVCBuildFactory(
@@ -196,6 +197,7 @@ all = [
                     "check-llvm",
                     "check-clang",
                     "check-lld",
+                    "compiler-rt"
                     ],
                     checks_on_target = [
                         ("libunwind",
