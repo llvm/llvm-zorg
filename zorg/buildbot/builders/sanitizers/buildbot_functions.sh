@@ -1,14 +1,20 @@
 #!/usr/bin/env bash
 
-echo @@@BUILD_STEP Prepare@@@
+echo @@@BUILD_STEP Info@@@
+env
+echo
 uptime
+echo
 ulimit -n 100000 || true
 ulimit -a
+echo
 df -h
+echo
 ccache -s || true
 echo
 echo "How to reproduce locally: https://github.com/google/sanitizers/wiki/SanitizerBotReproduceBuild"
 echo
+echo @@@BUILD_STEP Prepare@@@
 
 function stage1_clobber {
   rm -rf llvm_build2_* llvm_build_* libcxx_build_* ${STAGE1_CLOBBER:-}

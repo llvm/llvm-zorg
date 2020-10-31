@@ -4,9 +4,6 @@ set -x
 set -e
 set -u
 
-# dump buildbot env
-env
-
 HERE="$(dirname $0)"
 . ${HERE}/buildbot_functions.sh
 
