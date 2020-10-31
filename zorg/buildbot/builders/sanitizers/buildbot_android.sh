@@ -23,7 +23,7 @@ fi
 
 clobber
 
-download_android_tools r16
+download_android_tools
 
 # Stage 1
 
@@ -35,13 +35,6 @@ buildbot_update
 CMAKE_COMMON_OPTIONS="$CMAKE_COMMON_OPTIONS -DLLVM_ENABLE_ASSERTIONS=ON"
 
 build_stage2_android
-
-# Android NDK has no iconv.h which is requred by LIBXML2.
-CMAKE_COMMON_OPTIONS="${CMAKE_COMMON_OPTIONS}"
-
-build_android_ndk aarch64 arm64
-build_android_ndk arm arm
-build_android_ndk i686 x86
 
 echo @@@BUILD_STEP run cmake@@@
 configure_android aarch64 aarch64-linux-android

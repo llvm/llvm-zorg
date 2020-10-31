@@ -4,11 +4,14 @@ CLOBBER="android_ndk android-ndk-* platform-tools *.zip shards_* test_android_* 
 STAGE2_CLOBBER="compiler_rt_build_android_* llvm_build_android_*"
 STAGE1_CLOBBER="llvm_build64 ${STAGE2_CLOBBER}"
 
+ANDROID_NDK_VERSION=21
+ANDROID_API=24
+NDK_DIR=android_ndk
+
 function download_android_tools {
-  local VERSION=android-ndk-$1
+  local VERSION=android-ndk-r${ANDROID_NDK_VERSION}d
   local FILE_NAME=${VERSION}-linux-x86_64.zip
   local NDK_URL=https://dl.google.com/android/repository/${FILE_NAME}
-  local NDK_DIR=android_ndk
   if  [[ "$(cat ${NDK_DIR}/android_ndk_url)" != ${NDK_URL} ]] ; then
     echo @@@BUILD_STEP downloading Android NDK@@@
     [[ -d ${NDK_DIR} ]] && rm -rf ${NDK_DIR}
@@ -51,25 +54,20 @@ function build_stage2_android() {
   ninja -C llvm_build64 || echo @@@STEP_FAILURE@@@
 }
 
-function build_android_ndk {
-  local NDK_DIR=android_ndk
-  local _arch=$1
-  local _ndk_arch=$2
-  if [[ ! -d $NDK_DIR/standalone-$_arch ]] ; then 
-    echo @@@BUILD_STEP building Android NDK for $_arch@@@
-    $NDK_DIR/build/tools/make_standalone_toolchain.py --api 24 --force --arch $_ndk_arch --stl=libc++ --install-dir $NDK_DIR/standalone-$_arch
-  fi
-}
-
 function configure_android { # ARCH triple
   local _arch=$1
   local _triple=$2
 
-  local ANDROID_TOOLCHAIN=$ROOT/android_ndk/standalone-$_arch
+  ANDROID_TOOLCHAIN=$ROOT/$NDK_DIR/toolchains/llvm/prebuilt/linux-x86_64
+  echo "Building for Android API level $ANDROID_API"
+
   local ANDROID_LIBRARY_OUTPUT_DIR=$(ls -d $ROOT/llvm_build64/lib/clang/* | tail -1)
   local ANDROID_EXEC_OUTPUT_DIR=$ROOT/llvm_build64/bin
-  local ANDROID_FLAGS="--target=$_triple --sysroot=$ANDROID_TOOLCHAIN/sysroot -B$ANDROID_TOOLCHAIN"
-  local ANDROID_CXX_FLAGS="$ANDROID_FLAGS -stdlib=libstdc++"
+  local ANDROID_FLAGS="--target=${_triple}${ANDROID_API} --sysroot=$ANDROID_TOOLCHAIN/sysroot -gcc-toolchain $ANDROID_TOOLCHAIN  -B$ANDROID_TOOLCHAIN"
+  local ANDROID_CXX_FLAGS="$ANDROID_FLAGS -stdlib=libc++ -I/$ANDROID_TOOLCHAIN/sysroot/usr/include/c++/v1"
+
+  local CLANG_PATH=$ROOT/llvm_build64/bin/clang
+  local CLANGXX_PATH=$ROOT/llvm_build64/bin/clang++
 
   # Always clobber android build tree.
   # It has a hidden dependency on clang (through CXX) which is not known to
@@ -81,11 +79,12 @@ function configure_android { # ARCH triple
 
   (cd llvm_build_android_$_arch && cmake \
     -DLLVM_ENABLE_WERROR=OFF \
-    -DCMAKE_C_COMPILER=$ROOT/llvm_build64/bin/clang \
-    -DCMAKE_CXX_COMPILER=$ROOT/llvm_build64/bin/clang++ \
+    -DCMAKE_C_COMPILER=$CLANG_PATH \
+    -DCMAKE_CXX_COMPILER=$CLANGXX_PATH \
     -DCMAKE_ASM_FLAGS="$ANDROID_FLAGS" \
     -DCMAKE_C_FLAGS="$ANDROID_FLAGS" \
     -DCMAKE_CXX_FLAGS="$ANDROID_CXX_FLAGS" \
+    -DANDROID_NDK_VERSION=$ANDROID_NDK_VERSION \
     -DLLVM_BINUTILS_INCDIR=/usr/include \
     -DCMAKE_EXE_LINKER_FLAGS="-pie" \
     -DCMAKE_SKIP_RPATH=ON \
@@ -97,8 +96,8 @@ function configure_android { # ARCH triple
   local COMPILER_RT_OPTIONS="$(readlink -f $LLVM/../compiler-rt)"
   
   (cd compiler_rt_build_android_$_arch && cmake \
-    -DCMAKE_C_COMPILER=$ROOT/llvm_build64/bin/clang \
-    -DCMAKE_CXX_COMPILER=$ROOT/llvm_build64/bin/clang++ \
+    -DCMAKE_C_COMPILER=$CLANG_PATH \
+    -DCMAKE_CXX_COMPILER=$CLANGXX_PATH \
     -DLLVM_CONFIG_PATH=$ROOT/llvm_build64/bin/llvm-config \
     -DCOMPILER_RT_BUILD_BUILTINS=OFF \
     -DCOMPILER_RT_INCLUDE_TESTS=ON \
@@ -106,6 +105,8 @@ function configure_android { # ARCH triple
     -DCMAKE_ASM_FLAGS="$ANDROID_FLAGS" \
     -DCMAKE_C_FLAGS="$ANDROID_FLAGS" \
     -DCMAKE_CXX_FLAGS="$ANDROID_CXX_FLAGS" \
+    -DANDROID_NDK_VERSION=$ANDROID_NDK_VERSION \
+    -DSANITIZER_CXX_ABI="libcxxabi" \
     -DANDROID=1 \
     -DCOMPILER_RT_TEST_COMPILER_CFLAGS="$ANDROID_FLAGS" \
     -DCOMPILER_RT_TEST_TARGET_TRIPLE=$_triple \
@@ -234,11 +235,10 @@ function test_arch_on_device {
 
   export DEVICE_DESCRIPTION=$_arch/$_build_flavor/$_build_id
 
-  ANDROID_TOOLCHAIN=$ROOT/android_ndk/standalone-$_arch
-  LIBCXX_SHARED=$(find $ANDROID_TOOLCHAIN/ -name libc++_shared.so | head -1)
-  SYMBOLIZER_BIN=$ROOT/llvm_build_android_$_arch/bin/llvm-symbolizer
-  RT_DIR=$($ROOT/llvm_build64/bin/clang -print-resource-dir)/lib/linux
-  COMPILER_RT_BUILD_DIR=$ROOT/compiler_rt_build_android_$_arch
+  local LIBCXX_SHARED=$ANDROID_TOOLCHAIN/sysroot/usr/lib/${_arch}-linux-android/libc++_shared.so
+  local SYMBOLIZER_BIN=$ROOT/llvm_build_android_$_arch/bin/llvm-symbolizer
+  local RT_DIR=$($ROOT/llvm_build64/bin/clang -print-resource-dir)/lib/linux
+  local COMPILER_RT_BUILD_DIR=$ROOT/compiler_rt_build_android_$_arch
   export ADB=adb
   export DEVICE_ROOT=/data/local/tmp/Output
   export ANDROID_SERIAL=$_serial
