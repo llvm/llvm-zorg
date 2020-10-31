@@ -21,7 +21,7 @@ from zorg.buildbot.builders import XToolchainBuilder
 
 from buildbot.plugins import util
 
-# For Libc++ builders
+# For Libc++ builders.
 docker_workers = [
     'libcxx-cloud1', 'libcxx-cloud2', 'libcxx-cloud3', 'libcxx-cloud4',
     'libcxx-cloud5'
@@ -1060,7 +1060,7 @@ all = [
     'builddir': "clang-with-lto-ubuntu",
     'factory' : ClangLTOBuilder.getClangWithLTOBuildFactory(jobs=72)},
 
-# Builders for MLIR
+# Builders for MLIR.
 
     {'name' : "mlir-nvidia",
     'tags'  : ["mlir"],
@@ -1214,7 +1214,6 @@ all = [
 
 # Libc++ builders.
 
-    # gribozavr's builders on gribozavr4
     {'name': 'libcxx-libcxxabi-x86_64-linux-debian',
     'tags'  : ["libcxx"],
     'workernames': ['gribozavr4'],
@@ -1475,7 +1474,7 @@ all = [
     'builddir': "fuchsia-x86_64-linux",
     'factory': FuchsiaBuilder.getFuchsiaToolchainBuildFactory()},
 
-# libc Builders
+# libc Builders.
 
     {'name' : 'libc-x86_64-debian',
     'tags'  : ["libc"],
@@ -1572,7 +1571,7 @@ all = [
                         'LD': 'lld'
                     })},
 
-# Builders responsible building Sphinix documentation
+# Builders responsible building Sphinix documentation.
 
     {'name' : "llvm-sphinx-docs",
     'tags'  : ["llvm", "doc"],
@@ -1623,8 +1622,7 @@ all = [
     'builddir': "publish-sphinx-docs",
     'factory' : SphinxDocsBuilder.getLLVMDocsBuildFactory(clean=True)},
 
-############################################################################
-# Staged builders not yet reliable to be a part of the production buildbot.
+# CUDA builders.
 
     {'name' : "clang-cuda-k80",
     'tags'  : ["clang"],
@@ -1662,7 +1660,8 @@ all = [
                         "-DLLVM_EXPERIMENTAL_TARGETS_TO_BUILD=VE",
                     ])},
 
-    # Latest stable fedora running on Red Hat internal OpenShift cluster (PSI)
+# Latest stable fedora running on Red Hat internal OpenShift cluster (PSI).
+
     {'name' : 'x86_64-fedora-clang',
     'tags'  : ['mlir'],
     'collapseRequests': False,
