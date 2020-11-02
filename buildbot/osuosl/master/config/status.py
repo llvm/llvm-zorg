@@ -238,6 +238,14 @@ all = [
         builders = [
             "flang-aarch64-ubuntu", "flang-aarch64-ubuntu-clang",
             "flang-aarch64-ubuntu-gcc10"]),
+    reporters.MailNotifier(
+        fromaddr="llvm.buildmaster@lab.llvm.org",
+        sendToInterestedUsers = False,
+        extraRecipients=[
+            "tejohnson@google.com"],
+        subject = "ThinLTO WPD Failure: %(builder)s",
+        mode = "failing",
+        builders = ["thinlto-x86-64-bot1"]),
 
 ]
 

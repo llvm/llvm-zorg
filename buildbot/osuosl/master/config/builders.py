@@ -1060,6 +1060,19 @@ all = [
     'builddir': "clang-with-thin-lto-ubuntu",
     'factory' : ClangLTOBuilder.getClangWithLTOBuildFactory(jobs=72, lto='thin')},
 
+    {'name' : "clang-with-thin-lto-wpd-ubuntu",
+    'tags'  : ["clang","lld","LTO"],
+    'workernames' : ["thinlto-x86-64-bot1"],
+    'builddir': "clang-with-thin-lto-wpd-ubuntu",
+    'factory' : ClangLTOBuilder.getClangWithLTOBuildFactory(
+                    jobs=72,
+                    lto='thin',
+                    extra_configure_args=[
+                        '-DLLVM_CCACHE_BUILD=ON',
+                        '-DCMAKE_CXX_FLAGS="-O3 -Xclang -fwhole-program-vtables -fno-split-lto-unit"',
+                        '-DCMAKE_C_FLAGS="-O3 -Xclang -fwhole-program-vtables -fno-split-lto-unit"',
+                        '-DCMAKE_EXE_LINKER_FLAGS="-Wl,--lto-whole-program-visibility"'])},
+
     {'name' : "clang-with-lto-ubuntu",
     'tags'  : ["clang","lld","LTO"],
     'workernames' : ["as-worker-91"],
