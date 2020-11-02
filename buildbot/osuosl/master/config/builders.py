@@ -593,6 +593,8 @@ all = [
                     stage1_config='Release',
                     nt_flags=['--threads=16', '--build-threads=16'],
                     extra_cmake_args=[
+                        '-DLLVM_ENABLE_PROJECTS=clang;llvm;clang-tools-extra;lld',
+                        '-DLLVM_ENABLE_RUNTIMES=compiler-rt',
                         "-DLLVM_ENABLE_ASSERTIONS=On", "-DCMAKE_C_COMPILER=clang",
                         "-DCMAKE_CXX_COMPILER=clang++",
                         "-DCLANG_DEFAULT_LINKER=lld",
