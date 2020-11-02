@@ -230,7 +230,7 @@ function build_stage3 {
   (cd ${build_dir} && \
    cmake \
      ${CMAKE_COMMON_OPTIONS} \
-     -DLLVM_ENABLE_PROJECTS='clang' \
+     -DLLVM_ENABLE_PROJECTS='clang;lld,clang-tools-extra' \
      -DCMAKE_C_COMPILER=${clang_path}/clang \
      -DCMAKE_CXX_COMPILER=${clang_path}/clang++ \
      -DLLVM_USE_LINKER=lld \
@@ -256,7 +256,7 @@ function check_stage3 {
   local build_dir=llvm_build2_${sanitizer_name}
 
   echo @@@BUILD_STEP stage3/$sanitizer_name check@@@
-  (cd ${build_dir} && ninja check-clang check-llvm) || echo $step_result
+  (cd ${build_dir} && ninja check-all) || echo $step_result
 }
 
 function check_stage3_msan {
