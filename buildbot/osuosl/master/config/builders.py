@@ -1388,7 +1388,8 @@ all = [
                     env={
                         'PATH': '/usr/local/bin:/usr/bin:/bin',
                         'CC': '/opt/gcc-5/bin/gcc', 'CXX': '/opt/gcc-5/bin/g++'},
-                    use_cache='Generic-cxx11.cmake')},
+                    use_cache='Generic-cxx11.cmake',
+                    lit_extra_opts={'enable_warnings': 'False'})},
 
     {'name' : 'libcxx-libcxxabi-x86_64-linux-ubuntu-gcc-tot-latest-std',
     'tags'  : ["libcxx"],
