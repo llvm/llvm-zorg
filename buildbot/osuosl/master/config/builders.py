@@ -585,7 +585,7 @@ all = [
     'builddir': "clang-ppc64le-rhel",
     'factory' : ClangBuilder.getClangCMakeBuildFactory(clean=False,
                     checkout_clang_tools_extra=True,
-                    checkout_compiler_rt=True,
+                    checkout_compiler_rt=False,
                     checkout_lld=True,
                     checkout_libcxx=False,
                     useTwoStage=False,
