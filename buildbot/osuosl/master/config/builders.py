@@ -655,7 +655,8 @@ all = [
                     stage1_config='Release',
                     stage2_config='Release',
                     extra_cmake_args=['-DLLVM_ENABLE_ASSERTIONS=ON',
-                                      '-DLLVM_PARALLEL_LINK_JOBS=4'])},
+                                      '-DLLVM_PARALLEL_LINK_JOBS=4',
+                                      '-DLLVM_TARGETS_TO_BUILD=Sparc'])},
 
     {'name' : "clang-hexagon-elf",
     'tags'  : ["clang"],
