@@ -36,7 +36,7 @@ function download_android_tools {
 function build_stage2_android() {
   # Build self-hosted tree with fresh Clang and -Werror.
   local CMAKE_OPTIONS="${CMAKE_COMMON_OPTIONS} -DLLVM_ENABLE_WERROR=ON ${STAGE1_AS_COMPILER} -DCMAKE_C_FLAGS=-gmlt -DCMAKE_CXX_FLAGS=-gmlt"
-  CMAKE_OPTIONS="${CMAKE_OPTIONS} -DLLVM_ENABLE_PROJECTS='clang;compiler-rt;lld' -DLLVM_BINUTILS_INCDIR=/usr/include"
+  CMAKE_OPTIONS="${CMAKE_OPTIONS} -DLLVM_ENABLE_PROJECTS='clang;compiler-rt;lld' -DLLVM_USE_LINKER=lld"
 
   if ccache -s ; then
     CMAKE_OPTIONS="${CMAKE_OPTIONS} -DLLVM_CCACHE_BUILD=ON"
