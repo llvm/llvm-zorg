@@ -161,7 +161,7 @@ all = [
                     "check-llvm",
                     "check-clang",
                     "check-lld",
-                    "compiler-rt"
+                    "check-compiler-rt"
                     ],
                     checks_on_target = [
                         ("libunwind",
@@ -197,7 +197,7 @@ all = [
                     "check-llvm",
                     "check-clang",
                     "check-lld",
-                    "compiler-rt"
+                    "check-compiler-rt"
                     ],
                     checks_on_target = [
                         ("libunwind",
