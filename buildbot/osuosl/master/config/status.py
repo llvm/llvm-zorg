@@ -242,8 +242,8 @@ all = [
 ]
 
 # Returns a list of Status Targets. The results of each build will be
-# pushed to these targets. buildbot/status/*.py has a variety to choose from,
-# including email senders, and IRC bots.
+# pushed to these targets. buildbot.plugins reporters has a variety
+# to choose from, including email senders, and IRC bots.
 def getReporters():
     if config.options.getboolean('Master Options', 'is_production'):
         return all
