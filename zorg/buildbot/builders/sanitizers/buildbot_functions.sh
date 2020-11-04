@@ -20,14 +20,18 @@ echo @@@BUILD_STEP Info@@@
 )
 echo @@@BUILD_STEP Prepare@@@
 
+function rm_dirs {
+  while ! rm -rf $@ ; do sleep 1; done
+}
+
 function stage1_clobber {
-  rm -rf llvm_build2_* llvm_build_* libcxx_build_* ${STAGE1_CLOBBER:-}
+  rm_dirs llvm_build2_* llvm_build_* libcxx_build_* ${STAGE1_CLOBBER:-}
 }
 
 function clobber {
   if [ "$BUILDBOT_CLOBBER" != "" ]; then
     echo @@@BUILD_STEP clobber@@@
-    rm -rf svn_checkout llvm llvm-project llvm_build0 ${CLOBBER:-}
+    rm_dirs svn_checkout llvm llvm-project llvm_build0 ${CLOBBER:-}
     stage1_clobber
     ! test "$(ls -A .)" || echo @@@STEP_EXCEPTION@@@
   fi
