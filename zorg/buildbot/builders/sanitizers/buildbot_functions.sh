@@ -1,19 +1,23 @@
 #!/usr/bin/env bash
 
 echo @@@BUILD_STEP Info@@@
-env
-echo
-uptime
-echo
-ulimit -n 100000 || true
-ulimit -a
-echo
-df -h
-echo
-ccache -s || true
-echo
-echo "How to reproduce locally: https://github.com/google/sanitizers/wiki/SanitizerBotReproduceBuild"
-echo
+(
+  set +e
+  env
+  echo
+  uptime
+  echo
+  ulimit -n 100000
+  ulimit -a
+  echo
+  df -h
+  echo
+  ccache -s
+  echo
+  echo "How to reproduce locally: https://github.com/google/sanitizers/wiki/SanitizerBotReproduceBuild"
+  echo
+  exit 0
+)
 echo @@@BUILD_STEP Prepare@@@
 
 function stage1_clobber {
