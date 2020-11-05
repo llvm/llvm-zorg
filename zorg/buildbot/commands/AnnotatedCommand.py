@@ -122,13 +122,20 @@ class AnnotatedBuildStep(buildstep.BuildStep):
         yield self.finishUnfinishedLogs()
 
     @defer.inlineCallbacks
-    def startStep(self, remote):
+    def startStep(self, remote, done=False):
+        debuglog("AnnotatedBuildStep::startStep() starting '%s': "
+                 "buildid=%s, done=%s" % (
+                 self.name, self.build.buildid, done))
+
         try:
             yield self.addStep()
 
             try:
                 self.realUpdateSummary()
-
+                # The "main" step has finished already.
+                # Do only necessary work.
+                #NOTE: we can get 'request finish' flag before the step started.
+                self._request_finish = self._request_finish or done
                 self._running = True
                 self.results = yield self.run()
             finally:
@@ -205,6 +212,10 @@ class AnnotatedBuildStep(buildstep.BuildStep):
 
     @defer.inlineCallbacks
     def run(self):
+        debuglog("AnnotatedBuildStep::run() starting '%s' step: "
+                 "stepid=%s, buildid=%s" % (
+                 self.name, self.stepid, self.build.buildid))
+
         # Save previously collected log lines.
         yield self._flushLogs()
 
@@ -391,8 +402,8 @@ class AnnotatedCommand(buildstep.ShellMixin, buildstep.BuildStep):
 
     @deferredLocked("initLock")
     @defer.inlineCallbacks
-    def _execStep(self, step):
-        yield step.startStep(remote=None)
+    def _execStep(self, step, done):
+        yield step.startStep(remote=None, done=done)
 
     @defer.inlineCallbacks
     def _walkOverScheduledAnnotatedSteps(self):
@@ -400,16 +411,13 @@ class AnnotatedCommand(buildstep.ShellMixin, buildstep.BuildStep):
 
         while self.annotated_steps or not self._annotated_finished:
             if self.annotated_steps:
-                if self._annotated_finished:
-                    # Reset a status for all unprocessed annotated steps to
-                    # the common annotate status.
-                    self.annotated_steps[0].updateStatus(self.annotate_status)
-                yield self._execStep(self.annotated_steps[0])
+                yield self._execStep(self.annotated_steps[0], done=self._annotated_finished)
                 last_step = self.annotated_steps.pop(0)
                 if last_step.results == results.EXCEPTION:
                     raise Exception("Annotated step exception")
 
-            yield asyncSleep(.1)
+            if not self._annotated_finished:
+                yield asyncSleep(.1)
 
         debuglog(">>> AnnotatedCommand::_walkOverScheduledAnnotatedSteps: finished")
 
@@ -487,9 +495,6 @@ class AnnotatedCommand(buildstep.ShellMixin, buildstep.BuildStep):
 
                 self.processAnnotatedCommand(ln)
             except GeneratorExit:
-                # Done with log, the last active annotated step should get everything we got.
-                # Just stop it and let the "main" step get completed.
-                self._fixupActiveAnnotatedStep()
                 return
 
     def processAnnotatedCommand(self, line):
