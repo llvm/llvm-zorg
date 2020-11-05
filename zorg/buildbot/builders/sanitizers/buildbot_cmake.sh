@@ -19,7 +19,6 @@ rm -rf compiler_rt_build llvm_build* symbolizer_build*
 USE_CCACHE=
 if ccache -s ; then
   USE_CCACHE="-DLLVM_CCACHE_BUILD=ON"
-else
   rm -rf clang_build
 fi
 
