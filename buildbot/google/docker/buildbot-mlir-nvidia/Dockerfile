@@ -18,7 +18,7 @@ FROM nvidia/cuda:10.2-base-ubuntu18.04
 RUN apt-get update; \
     apt-get install -y software-properties-common apt-transport-https ca-certificates \
       clang-8 lld-8 ninja-build git wget gnupg ccache \
-      python python-pip python-psutil ;\
+      python python-pip python-psutil pybind11-dev ;\
     update-alternatives --install /usr/bin/clang clang /usr/bin/clang-8 100 ;\
     update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-8 100 ;\
     update-alternatives --install /usr/bin/lld lld /usr/bin/lld-8 100
