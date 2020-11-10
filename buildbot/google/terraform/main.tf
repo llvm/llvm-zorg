@@ -272,3 +272,134 @@ resource "kubernetes_deployment" "windows10_vs2019" {
     }
   }
 }
+
+
+resource "google_container_node_pool" "nvidia_16core_pool_nodes" {
+  name       = "nvidia-16core-pool"
+  # specify a zone here (e.g. "-a") to avoid a redundant deployment
+  location   = var.gcp_config.zone_a
+  cluster    = google_container_cluster.primary.name
+  
+  # use autoscaling to only create a machine when there is a deployment
+  autoscaling {
+    min_node_count = 0
+    max_node_count = 2
+  }
+  
+  node_config {
+    # use preemptible, as this saves costs
+    preemptible  = true
+    machine_type = "n1-highcpu-16"
+    disk_size_gb = 100
+    disk_type = "pd-ssd"
+
+    # set the premissions required for the deployment later
+    oauth_scopes = [
+      "https://www.googleapis.com/auth/logging.write",
+      "https://www.googleapis.com/auth/monitoring",
+      "https://www.googleapis.com/auth/devstorage.read_only",
+    ]
+
+    # add a label to all machines of this type, so we can select them 
+    # during deployment
+    labels = {
+      pool = "linux-generic-pool"
+    }
+  }
+}
+
+
+resource "kubernetes_deployment" "ubuntu_clang" {
+  metadata {
+    name = "ubuntu-clang"
+    labels = {
+      app = "ubuntu-clang"
+    }
+  }
+
+  spec {
+    # create one instance of this container
+    replicas = 1
+
+    selector {
+      match_labels = {
+        app = "ubuntu-clang"
+      }
+    }
+    strategy{
+      rolling_update{
+        # do not deploy more replicas, as the buildbot server 
+        # can't handle multiple workers with the same credentials
+        max_surge = 0
+        # Allow to have 0 replicas during updates. 
+        max_unavailable = 1
+        }
+      type = "RollingUpdate"
+    }
+    template {
+      metadata {
+        labels = {
+          app = "ubuntu-clang"
+        }
+      }
+
+      spec {
+        container {
+          image = "${var.gcp_config.gcr_prefix}/buildbot-ubuntu-clang:1"
+          name  = "buildbot-ubuntu-clang"
+
+          # reserve "<number of cores>-1" for this image, kubernetes also
+          # needs <1 core for management tools
+          resources {
+            limits {
+              cpu    = "15"
+              memory = "10Gi"
+            }
+            requests {
+              cpu    = "15"
+              memory = "10Gi"
+            }
+          }
+
+          # mount the secrets into a folder  
+          volume_mount {
+            mount_path = "/vol/secrets"
+            name = "buildbot-token"
+          }
+          volume_mount {
+            mount_path = "/vol/cccache"
+            name = "ccache-vol"
+          }
+          volume_mount {
+            mount_path = "/vol/buildbot"
+            name = "buildbot-vol"
+          }
+        }
+        # select which node pool to deploy to
+        node_selector = {
+          pool = "linux-generic-pool"
+        }
+        # restart in case of any crashes
+        restart_policy = "Always"
+        
+        # select the secret to be mounted
+        volume {
+          name = "buildbot-token"
+            secret {
+              optional = false
+              secret_name = "password-windows10-vs2019"
+            }
+        }
+        volume {
+          name = "sccache-vol"
+          empty_dir {}
+        }
+        volume {
+          name = "buildbot-vol"
+          empty_dir {}
+        }
+
+      }
+    }
+  }
+}

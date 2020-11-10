@@ -22,8 +22,9 @@ RUN apt-get update; \
     ccache \
     # install python for buildbot and LIT
     python3 python3-pip python3-psutil \
-    # clangd requires libgrpc and protobuf for remote index
-    libgrpc++-dev protobuf-compiler-grpc ; \
+    # clangd requires libgrpc and protobuf for remote index, see
+    # https://github.com/llvm/llvm-project/tree/master/clang-tools-extra/clangd/index/remote#system-installed-libraries
+    libgrpc++-dev libprotobuf-dev protobuf-compiler protobuf-compiler-grpc ; \
     # clean apt cache to reduce image size
     apt-get clean
 
@@ -71,7 +72,7 @@ COPY run.sh /home/buildbot/
 RUN chmod a+rx /home/buildbot/run.sh
 
 USER buildbot
-ENV WORKER_NAME="ubuntu-clang"
+ENV WORKER_NAME="clangd-ubuntu-clang"
 
 # Allow the server port of this agent to be configurable during deployment.
 # This way we can connect the same image to production and integration. 
@@ -79,6 +80,11 @@ ENV WORKER_NAME="ubuntu-clang"
 #   9990 - production
 #   9994 - integration
 ENV BUILDBOT_PORT="9994"
+
+#configure LLVM tools
+ENV CC=clang
+ENV CXX=clang++
+ENV LD=LLD
 
 # run startup script
 CMD /home/buildbot/run.sh
