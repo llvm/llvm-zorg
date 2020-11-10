@@ -1556,6 +1556,18 @@ all = [
                         "-DCMAKE_CXX_STANDARD=17",
                     ])},
 
+    {'name' : "flang-x86_64-knl-linux",
+    'tags'  : ["flang"],
+    'workernames' : ["alcf-theta-flang"],
+    'builddir': "flang-x86_64-linux",
+    'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
+                    depends_on_projects=['llvm','mlir','clang','flang'],
+                    extra_configure_args=[
+                        "-DLLVM_TARGETS_TO_BUILD=X86",
+                        "-DLLVM_INSTALL_UTILS=ON",
+                        "-DCMAKE_CXX_STANDARD=17",
+                    ])},
+
     {'name' : 'ppc64le-flang-rhel-clang',
     'tags'  : ["flang", "ppc", "ppc64le"],
     'collapseRequests' : False,

@@ -218,6 +218,7 @@ def get_all():
         create_worker("flang-aarch64-ubuntu-clang-build", properties={'jobs': 14}),
         create_worker("flang-aarch64-ubuntu-gcc10-build", properties={'jobs': 14}),
         create_worker("nersc-flang"),
+        create_worker("alcf-theta-flang", properties={'jobs': 32}),
 
         # ML-Driven Compiler Optimizations build workers (Ubuntu x86_64)
         create_worker("ml-opt-dev-x86-64-b1",
