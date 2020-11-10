@@ -345,7 +345,7 @@ resource "kubernetes_deployment" "clangd-ubuntu-clang" {
 
       spec {
         container {
-          image = "${var.gcp_config.gcr_prefix}/buildbot-clangd-ubuntu-clang:1"
+          image = "${var.gcp_config.gcr_prefix}/buildbot-clangd-ubuntu-clang:2"
           name  = "buildbot-clangd-ubuntu-clang"
 
           # reserve "<number of cores>-1" for this image, kubernetes also
@@ -371,8 +371,8 @@ resource "kubernetes_deployment" "clangd-ubuntu-clang" {
             name = "ccache-vol"
           }
           volume_mount {
-            mount_path = "/vol/buildbot"
-            name = "buildbot-vol"
+            mount_path = "/vol/worker"
+            name = "worker-vol"
           }
         }
         # select which node pool to deploy to
@@ -395,7 +395,7 @@ resource "kubernetes_deployment" "clangd-ubuntu-clang" {
           empty_dir {}
         }
         volume {
-          name = "buildbot-vol"
+          name = "worker-vol"
           empty_dir {}
         }
 
