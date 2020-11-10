@@ -204,8 +204,12 @@ def get_all():
         # CentOS 7.5.1804 on Intel(R) Xeon(R) Gold 6126 CPU @ 2.60GHz, 96GB RAM
         create_worker("nec-arrproto41", properties={'jobs': 12}, max_builds=1),
 
-        # Uubntu 18.04 amd64 on Google Cloud, 16 core, Nvidia Tesla T4
+        # Ubuntu 18.04 amd64 on Google Cloud, 16 core, Nvidia Tesla T4
         create_worker("mlir-nvidia", properties={'jobs': 16}, max_builds=1),
+
+        # Ubuntu 18.04 on Google Cloud, for machine configuration check
+        # buildbot/google/terraform/main.tf
+        create_worker("clangd-ubuntu-clang", max_builds=1),
 
         # Ubuntu 18.04.LTS x86_64, GCE instance
         create_worker("polly-x86_64-gce1", properties={'jobs': 2}, max_builds=1),

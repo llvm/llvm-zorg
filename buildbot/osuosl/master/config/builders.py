@@ -1871,4 +1871,22 @@ all = [
                         "-DTENSORFLOW_AOT_PATH=/var/lib/buildbot/.local/lib/python3.7/site-packages/tensorflow"
                     ])},
 
+    # build clangd with remote-index enabled and check with TSan
+    {'name': "clangd-ubuntu-tsan",
+     'tags': ["clangd"],
+     'workernames': ["clangd-ubuntu-clang"],
+     'builddir': "clangd-ubuntu-tsan",
+     'factory': UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
+         clean=True,
+         depends_on_projects=['"clang;clang-tools-extra'],
+         checks=['check-clangd'],
+         extra_configure_args=[
+             '-DLLVM_CCACHE_BUILD="ON"',
+             '-DLLVM_USE_SANITIZER="Thread"',
+             '-DCMAKE_BUILD_TYPE="RELEASE"',
+             '-DCLANGD_ENABLE_REMOTE="ON"',
+             '-DLLVM_ENABLE_ASSERTIONS="ON"',
+         ])},
+
+
 ]
