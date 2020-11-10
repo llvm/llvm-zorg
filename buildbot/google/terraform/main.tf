@@ -274,8 +274,8 @@ resource "kubernetes_deployment" "windows10_vs2019" {
 }
 
 
-resource "google_container_node_pool" "nvidia_16core_pool_nodes" {
-  name       = "nvidia-16core-pool"
+resource "google_container_node_pool" "linux_16_core_pool" {
+  name       = "linux-16-core-pool"
   # specify a zone here (e.g. "-a") to avoid a redundant deployment
   location   = var.gcp_config.zone_a
   cluster    = google_container_cluster.primary.name
@@ -303,17 +303,17 @@ resource "google_container_node_pool" "nvidia_16core_pool_nodes" {
     # add a label to all machines of this type, so we can select them 
     # during deployment
     labels = {
-      pool = "linux-generic-pool"
+      pool = "linux-16-core-pool"
     }
   }
 }
 
 
-resource "kubernetes_deployment" "ubuntu_clang" {
+resource "kubernetes_deployment" "clangd-ubuntu-clang" {
   metadata {
-    name = "ubuntu-clang"
+    name = "clangd-ubuntu-clang"
     labels = {
-      app = "ubuntu-clang"
+      app = "clangd-ubuntu-clang"
     }
   }
 
@@ -323,7 +323,7 @@ resource "kubernetes_deployment" "ubuntu_clang" {
 
     selector {
       match_labels = {
-        app = "ubuntu-clang"
+        app = "clangd-ubuntu-clang"
       }
     }
     strategy{
@@ -339,14 +339,14 @@ resource "kubernetes_deployment" "ubuntu_clang" {
     template {
       metadata {
         labels = {
-          app = "ubuntu-clang"
+          app = "clangd-ubuntu-clang"
         }
       }
 
       spec {
         container {
-          image = "${var.gcp_config.gcr_prefix}/buildbot-ubuntu-clang:1"
-          name  = "buildbot-ubuntu-clang"
+          image = "${var.gcp_config.gcr_prefix}/buildbot-clangd-ubuntu-clang:1"
+          name  = "buildbot-clangd-ubuntu-clang"
 
           # reserve "<number of cores>-1" for this image, kubernetes also
           # needs <1 core for management tools
@@ -377,7 +377,7 @@ resource "kubernetes_deployment" "ubuntu_clang" {
         }
         # select which node pool to deploy to
         node_selector = {
-          pool = "linux-generic-pool"
+          pool = "linux-16-core-pool"
         }
         # restart in case of any crashes
         restart_policy = "Always"
@@ -387,11 +387,11 @@ resource "kubernetes_deployment" "ubuntu_clang" {
           name = "buildbot-token"
             secret {
               optional = false
-              secret_name = "password-windows10-vs2019"
+              secret_name = "password-clangd-ubuntu-clang"
             }
         }
         volume {
-          name = "sccache-vol"
+          name = "ccache-vol"
           empty_dir {}
         }
         volume {

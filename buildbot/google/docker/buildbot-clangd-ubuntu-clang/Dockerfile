@@ -43,7 +43,9 @@ RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/nul
     tee /etc/apt/trusted.gpg.d/kitware.gpg >/dev/null ;\
     apt-add-repository 'deb https://apt.kitware.com/ubuntu/ bionic main' ;\
     apt-get update ;\
-    apt-get install -y cmake
+    apt-get install -y cmake ;\
+    # clean apt cache to reduce image size
+    apt-get clean
 
 # install build bot (server was at 2.8.5-dev at time of writing)
 RUN pip3 install buildbot-worker==2.8.4
