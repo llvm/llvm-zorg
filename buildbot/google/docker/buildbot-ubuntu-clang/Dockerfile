@@ -17,13 +17,20 @@ FROM ubuntu:18.04
 # install build tools
 RUN apt-get update; \
     apt-get install -y software-properties-common apt-transport-https ca-certificates \
-    ninja-build git wget gnupg ccache \
-    python3 python3-pip python3-psutil
+    ninja-build git wget gnupg \
+    # install ccache for local caching of builds
+    ccache \
+    # install python for buildbot and LIT
+    python3 python3-pip python3-psutil \
+    # clangd requires libgrpc and protobuf for remote index
+    libgrpc++-dev protobuf-compiler-grpc ; \
+    # clean apt cache to reduce image size
+    apt-get clean
 
-# install latest clang release
+# install latest LLVM release
 RUN bash -c "$(wget -O - https://apt.llvm.org/llvm.sh)"
 
-# configure default versions
+# configure default versions of LLVM tools
 RUN update-alternatives --install /usr/bin/clang clang /usr/bin/clang-11 100 ;\
     update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-11 100 ;\
     update-alternatives --install /usr/bin/lld lld /usr/bin/lld-11 100
@@ -37,7 +44,7 @@ RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/nul
     apt-get update ;\
     apt-get install -y cmake
 
-# install build bot version (server was at 2.8.5-dev)
+# install build bot (server was at 2.8.5-dev at time of writing)
 RUN pip3 install buildbot-worker==2.8.4
 
 # Workaround permissions issues when writing to named volumes
@@ -47,11 +54,12 @@ RUN mkdir -p /vol/test /vol/ccache /vol/worker ; \
 
 # Volume to mount secrets into the container
 VOLUME /vol/secrets
-# Volume to store data for local, manual of testing the container
+# Volume to store data for local, manual testing of the container
 VOLUME /vol//test
 # Volume to store ccache
 VOLUME /vol/ccache
-# Volume for worker working directory (root of the buildbot files) 
+ENV CCACHE_DIR=/vol/ccache
+# Volume for worker working directory
 VOLUME /vol/worker
 
 # create user account, some test fail if run as root
@@ -72,4 +80,5 @@ ENV WORKER_NAME="ubuntu-clang"
 #   9994 - integration
 ENV BUILDBOT_PORT="9994"
 
+# run startup script
 CMD /home/buildbot/run.sh
