@@ -1559,7 +1559,7 @@ all = [
     {'name' : "flang-x86_64-knl-linux",
     'tags'  : ["flang"],
     'workernames' : ["alcf-theta-flang"],
-    'builddir': "flang-x86_64-linux",
+    'builddir': "flang-x86_64-knl-linux",
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                     depends_on_projects=['llvm','mlir','clang','flang'],
                     extra_configure_args=[
