@@ -345,7 +345,7 @@ resource "kubernetes_deployment" "clangd-ubuntu-clang" {
 
       spec {
         container {
-          image = "${var.gcp_config.gcr_prefix}/buildbot-clangd-ubuntu-clang:2"
+          image = "${var.gcp_config.gcr_prefix}/buildbot-clangd-ubuntu-clang:3"
           name  = "buildbot-clangd-ubuntu-clang"
 
           # reserve "<number of cores>-1" for this image, kubernetes also
