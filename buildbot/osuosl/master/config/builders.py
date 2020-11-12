@@ -1896,7 +1896,7 @@ all = [
          extra_configure_args=[
              '-DLLVM_CCACHE_BUILD="ON"',
              '-DLLVM_USE_SANITIZER="Thread"',
-             '-DCMAKE_BUILD_TYPE="RELEASE"',
+             '-DCMAKE_BUILD_TYPE="Release"',
              '-DCLANGD_ENABLE_REMOTE="ON"',
              '-DLLVM_ENABLE_ASSERTIONS="ON"',
          ])},
