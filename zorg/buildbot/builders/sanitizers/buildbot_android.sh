@@ -48,4 +48,4 @@ build_android arm
 build_android i686
 
 # Arm hardware is temporarily offline
-test_android i686:x86 # aarch64:arm64-v8a arm:armeabi-v7a
+test_android i686:x86 aarch64:arm64-v8a arm:armeabi-v7a
