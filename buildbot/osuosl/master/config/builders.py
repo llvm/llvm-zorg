@@ -1059,11 +1059,11 @@ all = [
     'factory' : ClangLTOBuilder.getClangWithLTOBuildFactory(
                     jobs=72,
                     lto='thin',
-                    extra_configure_args=[
+                    extra_configure_args_lto_stage=[
                         '-DLLVM_CCACHE_BUILD=ON',
-                        '-DCMAKE_CXX_FLAGS="-O3 -Xclang -fwhole-program-vtables -fno-split-lto-unit"',
-                        '-DCMAKE_C_FLAGS="-O3 -Xclang -fwhole-program-vtables -fno-split-lto-unit"',
-                        '-DCMAKE_EXE_LINKER_FLAGS="-Wl,--lto-whole-program-visibility"'])},
+                        '-DCMAKE_CXX_FLAGS=-O3 -Xclang -fwhole-program-vtables -fno-split-lto-unit',
+                        '-DCMAKE_C_FLAGS=-O3 -Xclang -fwhole-program-vtables -fno-split-lto-unit',
+                        '-DCMAKE_EXE_LINKER_FLAGS=-Wl,--lto-whole-program-visibility'])},
 
     {'name' : "clang-with-lto-ubuntu",
     'tags'  : ["clang","lld","LTO"],

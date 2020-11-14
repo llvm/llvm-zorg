@@ -233,6 +233,7 @@ def getClangWithLTOBuildFactory(
            clean = False,
            jobs  = None,
            extra_configure_args = None,
+           extra_configure_args_lto_stage = None,
            compare_last_2_stages = True,
            lto = None, # The string gets passed to -flto flag as is. Like -flto=thin.
            env = None,
@@ -253,10 +254,16 @@ def getClangWithLTOBuildFactory(
     else:
         extra_configure_args = list(extra_configure_args)
 
+    if extra_configure_args_lto_stage is None:
+        extra_configure_args_lto_stage = []
+    else:
+        extra_configure_args_lto_stage = list(extra_configure_args_lto_stage)
+
     # Make sure CMAKE_INSTALL_PREFIX and -G are not specified
     # in the extra_configure_args. We set them internally as needed.
     # TODO: assert extra_configure_args.
-    install_prefix_specified = any(a.startswith('-DCMAKE_INSTALL_PREFIX=') for a in extra_configure_args)
+    install_prefix_specified = (any(a.startswith('-DCMAKE_INSTALL_PREFIX=') for a in extra_configure_args) or
+                                any(a.startswith('-DCMAKE_INSTALL_PREFIX=') for a in extra_configure_args_lto_stage))
     assert not install_prefix_specified, "Please do not explicitly specify the install prefix for multi-stage build."
 
     # Prepare environmental variables. Set here all env we want everywhere.
@@ -321,7 +328,7 @@ def getClangWithLTOBuildFactory(
     s = f.staged_compiler_idx + 1
     staged_install = f.stage_installdirs[f.staged_compiler_idx]
     for i in range(s, len(f.stage_objdirs[s:]) + s):
-        configure_args = extra_configure_args[:]
+      configure_args = extra_configure_args[:] + extra_configure_args_lto_stage[:]
 
         configure_args.append(
             WithProperties(
