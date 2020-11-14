@@ -177,7 +177,7 @@ function test_android {
 
   ADB=adb
   echo @@@BUILD_STEP run all tests@@@
-  ANDROID_DEVICES=$(${ADB} devices | grep 'device$' | awk '{print $1}')
+  ANDROID_DEVICES=$(${ADB} devices | grep 'device$' | sort -r | awk '{print $1}')
 
   rm -rf test_android_log_*
   rm -rf tested_arch_*
