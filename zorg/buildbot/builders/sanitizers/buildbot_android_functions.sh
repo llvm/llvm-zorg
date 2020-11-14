@@ -232,10 +232,9 @@ function test_arch_on_device {
 
   export DEVICE_DESCRIPTION=$_arch/$_build_flavor/$_build_id
 
-  if [[ -f $ANDROID_TOOLCHAIN/sysroot/usr/lib/${_arch}-linux-android/libc++_shared.so ]] ; then
+  local LIBCXX_SHARED=$ANDROID_TOOLCHAIN/sysroot/usr/lib/${_arch}-linux-androideabi/libc++_shared.so
+  if [[ ! -f $LIBCXX_SHARED ]] ; then
     local LIBCXX_SHARED=$ANDROID_TOOLCHAIN/sysroot/usr/lib/${_arch}-linux-android/libc++_shared.so
-  else
-    local LIBCXX_SHARED=$ANDROID_TOOLCHAIN/sysroot/usr/lib/${_arch}-linux-androideabi/libc++_shared.so
   fi
   local SYMBOLIZER_BIN=$ROOT/llvm_build_android_$_arch/bin/llvm-symbolizer
   local RT_DIR=$($ROOT/llvm_build64/bin/clang -print-resource-dir)/lib/linux
