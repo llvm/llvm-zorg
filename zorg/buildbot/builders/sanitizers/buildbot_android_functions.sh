@@ -72,9 +72,8 @@ function configure_android { # ARCH triple
   # Always clobber android build tree.
   # It has a hidden dependency on clang (through CXX) which is not known to
   # the build system.
-  rm -rf compiler_rt_build_android_$_arch
+  rm_dirs compiler_rt_build_android_$_arch llvm_build_android_$_arch
   mkdir -p compiler_rt_build_android_$_arch
-  rm -rf llvm_build_android_$_arch
   mkdir -p llvm_build_android_$_arch
 
   (cd llvm_build_android_$_arch && cmake \
