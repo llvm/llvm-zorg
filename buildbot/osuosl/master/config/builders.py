@@ -1891,14 +1891,14 @@ all = [
      'builddir': "clangd-ubuntu-tsan",
      'factory': UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
          clean=True,
-         depends_on_projects=['"clang;clang-tools-extra'],
-         checks=['check-clangd'],
+         depends_on_projects=["clang", "clang-tools-extra"],
+         checks=["check-clangd"],
          extra_configure_args=[
-             '-DLLVM_CCACHE_BUILD=ON',
-             '-DLLVM_USE_SANITIZER=Thread',
-             '-DCMAKE_BUILD_TYPE=Release',
-             '-DCLANGD_ENABLE_REMOTE=ON',
-             '-DLLVM_ENABLE_ASSERTIONS=ON',
+             "-DLLVM_CCACHE_BUILD=ON",
+             "-DLLVM_USE_SANITIZER=Thread",
+             "-DCMAKE_BUILD_TYPE=Release",
+             "-DCLANGD_ENABLE_REMOTE=ON",
+             "-DLLVM_ENABLE_ASSERTIONS=ON",
          ])},
 
 
