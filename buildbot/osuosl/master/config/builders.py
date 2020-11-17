@@ -1899,6 +1899,7 @@ all = [
              "-DCMAKE_BUILD_TYPE=Release",
              "-DCLANGD_ENABLE_REMOTE=ON",
              "-DLLVM_ENABLE_ASSERTIONS=ON",
+             "-DGRPC_INSTALL_PATH=/usr/local/lib/grpc"
          ])},
 
 
