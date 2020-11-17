@@ -23,6 +23,7 @@ echo "Christian Kuehnel <kuhnel@google.com>" > "${WORKER_NAME}/info/admin"
   uname -a ; \
   cat /proc/cpuinfo | grep "model name" | head -n1 | cut -d " " -f 3- ;\
   echo "number of cores: $(nproc)" ;\
+  cat /proc/meminfo | grep MemTo ;\
   lsb_release -d | cut -f 2- ; \
   clang --version | head -n1 ; \
   ld.lld-11 --version ; \
