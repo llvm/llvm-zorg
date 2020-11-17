@@ -289,7 +289,7 @@ resource "google_container_node_pool" "linux_16_core_pool" {
   node_config {
     # use preemptible, as this saves costs
     preemptible  = true
-    machine_type = "n1-highcpu-16"
+    machine_type = "n2d-highmem-16"
     disk_size_gb = 100
     disk_type = "pd-ssd"
 
@@ -353,11 +353,11 @@ resource "kubernetes_deployment" "clangd-ubuntu-clang" {
           resources {
             limits {
               cpu    = "15"
-              memory = "10Gi"
+              memory = "100Gi"
             }
             requests {
               cpu    = "15"
-              memory = "10Gi"
+              memory = "100Gi"
             }
           }
 
