@@ -1893,6 +1893,7 @@ all = [
          clean=True,
          depends_on_projects=["llvm", "clang", "clang-tools-extra"],
          checks=["check-clangd"],
+         targets=["clangd", "clangd-index-server", "clangd-indexer"],
          extra_configure_args=[
              "-DLLVM_CCACHE_BUILD=ON",
              "-DLLVM_USE_SANITIZER=Thread",
