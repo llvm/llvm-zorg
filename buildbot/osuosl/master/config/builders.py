@@ -1891,7 +1891,7 @@ all = [
      'builddir': "clangd-ubuntu-tsan",
      'factory': UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
          clean=True,
-         depends_on_projects=["clang", "clang-tools-extra"],
+         depends_on_projects=["llvm", "clang", "clang-tools-extra"],
          checks=["check-clangd"],
          extra_configure_args=[
              "-DLLVM_CCACHE_BUILD=ON",

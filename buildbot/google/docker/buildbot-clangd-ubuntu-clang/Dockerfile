@@ -5,23 +5,23 @@
 #
 #===----------------------------------------------------------------------===//
 # Docker image used for the mlir-nvidia builder
-# 
+#
 # Environment variables configurable at runtime:
 #    BUILDBOT_PORT - server port to connect to
 #===----------------------------------------------------------------------===//
 
-# Use the image from NVIDIA as base
+# Use an official Ubuntu image as the base.
 FROM ubuntu:18.04
 
-# install build tools
+# Install build tools.
 RUN apt-get update; \
     apt-get install -y software-properties-common apt-transport-https ca-certificates \
     ninja-build git wget gnupg \
-    # install ccache for local caching of builds
+    # Install ccache for local caching of builds.
     ccache \
-    # install python for buildbot and LIT
+    # Install python for buildbot and LIT.
     python3 python3-pip python3-psutil ; \
-    # clean apt cache to reduce image size
+    # Clean apt cache to reduce image size.
     apt-get clean
 
 # install latest LLVM release
@@ -42,45 +42,46 @@ RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/nul
     apt-add-repository 'deb https://apt.kitware.com/ubuntu/ bionic main' ;\
     apt-get update ;\
     apt-get install -y cmake ;\
-    # clean apt cache to reduce image size
+    # Clean apt cache to reduce image size.
     apt-get clean
 
-# install build bot (server was at 2.8.5-dev at time of writing)
+# Install build bot (server was at 2.8.5-dev at time of writing).
 RUN pip3 install buildbot-worker==2.8.4
 
-# build and install grpc for clangd remote index, based on instructions
+# Build and install gRPC for clangd remote index, based on instructions
 # https://github.com/llvm/llvm-project/tree/master/clang-tools-extra/clangd/index/remote#building-from-sources
 # The grpc version shipped with Ubuntu 18.04 crashes on TSan checks.
 ENV GRPC_INSTALL_PATH=/usr/local/lib/grpc
-RUN cd /tmp ; \ 
-    git clone -b v1.33.2 --depth 1  --recursive --shallow-submodules https://github.com/grpc/grpc ; \
+RUN cd /tmp ; \
+    # Use gRPC 1.30.2 which is the version shipped on Debian unstable at the time of writing.
+    git clone -b v1.30.2 --depth 1  --recursive --shallow-submodules https://github.com/grpc/grpc ; \
     cd grpc  ; \
     mkdir build; cd build ; \
     cmake -G Ninja -DgRPC_INSTALL=ON -DCMAKE_INSTALL_PREFIX=${GRPC_INSTALL_PATH} -DCMAKE_BUILD_TYPE=Release .. ; \
     cmake --build . --target install ; \
-    #clean up sources to reduce image size
+    # Clean up sources to reduce image size.
     cd / ; rm -rf /tmp/grpc
 
 # Workaround permissions issues when writing to named volumes
-# https://github.com/docker/compose/issues/3270#issuecomment-206214034 
+# https://github.com/docker/compose/issues/3270#issuecomment-206214034
 RUN mkdir -p /vol/test /vol/ccache /vol/worker ; \
     chmod -R 777 /vol
 
-# Volume to mount secrets into the container
+# Volume to mount secrets into the container.
 VOLUME /vol/secrets
-# Volume to store data for local, manual testing of the container
-VOLUME /vol//test
-# Volume to store ccache
+# Volume to store data for local, manual testing of the container.
+VOLUME /vol/test
+# Volume to store ccache.
 VOLUME /vol/ccache
 ENV CCACHE_DIR=/vol/ccache
-# Volume for worker working directory
+# Volume for worker working directory.
 VOLUME /vol/worker
 
-# create user account, some test fail if run as root
+# Create user account, some tests fail if run as root.
 RUN useradd buildbot --create-home
 WORKDIR /vol/worker
 
-# copy startup script
+# Copy startup script.
 COPY run.sh /home/buildbot/
 RUN chmod a+rx /home/buildbot/run.sh
 
@@ -88,16 +89,16 @@ USER buildbot
 ENV WORKER_NAME="clangd-ubuntu-clang"
 
 # Allow the server port of this agent to be configurable during deployment.
-# This way we can connect the same image to production and integration. 
+# This way we can connect the same image to production and integration.
 # Ports:
 #   9990 - production
 #   9994 - integration
 ENV BUILDBOT_PORT="9994"
 
-#configure LLVM tools
+# Configure LLVM tools.
 ENV CC=clang
 ENV CXX=clang++
 ENV LD=LLD
 
-# run startup script
+# Run startup script.
 CMD /home/buildbot/run.sh
