@@ -1577,7 +1577,10 @@ all = [
                     depends_on_projects=['llvm','mlir','clang','flang'],
                     extra_configure_args=[
                         "-DLLVM_TARGETS_TO_BUILD=X86",
+                        "-DCMAKE_C_COMPILER=gcc",
+                        "-DCMAKE_CXX_COMPILER=g++",
                         "-DLLVM_INSTALL_UTILS=ON",
+                        "-DFLANG_BUILD_NEW_DRIVER=ON",
                         "-DCMAKE_CXX_STANDARD=17",
                     ])},
 
