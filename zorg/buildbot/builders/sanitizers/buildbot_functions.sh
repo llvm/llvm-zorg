@@ -20,6 +20,9 @@ echo @@@BUILD_STEP Info@@@
 )
 echo @@@BUILD_STEP Prepare@@@
 
+BUILDBOT_CLOBBER="${BUILDBOT_CLOBBER:-}"
+BUILDBOT_REVISION="${BUILDBOT_REVISION:-origin/master}"
+
 function rm_dirs {
   while ! rm -rf $@ ; do sleep 1; done
 }
@@ -55,11 +58,8 @@ function buildbot_update {
       cd llvm-project
       git fetch --depth $DEPTH origin master
       git clean -fd
-      local REV=
-      if [[ "$BUILDBOT_REVISION" == "" ]] ; then
-        REV=origin/master
-      else
-        REV=${BUILDBOT_REVISION}
+      local REV=${BUILDBOT_REVISION}
+      if [[  "$REV" != "origin/master" ]] ; then
         # "git fetch --depth 1 origin $REV" does not work with 2.11 on bots
         while true ; do
           git checkout $REV && break
