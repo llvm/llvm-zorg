@@ -354,11 +354,11 @@ resource "kubernetes_deployment" "clangd-ubuntu-clang" {
           resources {
             limits {
               cpu    = "15"
-              memory = "25G"
+              memory = "28G"
             }
             requests {
               cpu    = "15"
-              memory = "25G"
+              memory = "28G"
             }
           }
 
