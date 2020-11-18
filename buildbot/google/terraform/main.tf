@@ -289,7 +289,8 @@ resource "google_container_node_pool" "linux_16_core_pool" {
   node_config {
     # use preemptible, as this saves costs
     preemptible  = true
-    machine_type = "n2d-highmem-16"
+    #custom machine type: 16 core, 32 GB as tsan needs more RAM
+    machine_type = "n2d-custom-16-32768"
     disk_size_gb = 100
     disk_type = "pd-ssd"
 
@@ -353,11 +354,11 @@ resource "kubernetes_deployment" "clangd-ubuntu-clang" {
           resources {
             limits {
               cpu    = "15"
-              memory = "100Gi"
+              memory = "25G"
             }
             requests {
               cpu    = "15"
-              memory = "100Gi"
+              memory = "25G"
             }
           }
 
