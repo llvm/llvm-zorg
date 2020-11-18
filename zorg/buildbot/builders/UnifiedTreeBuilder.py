@@ -169,20 +169,29 @@ def addNinjaSteps(
            stage_name = None,
            **kwargs):
 
-    # Build the unified tree.
-    if stage_name:
-        step_name = "%s-" % stage_name
-    else:
-        stage_name = ""
-        step_name = ""
-
     if obj_dir is None:
         obj_dir = f.obj_dir
 
-    f.addStep(NinjaCommand(name="build-%sunified-tree" % step_name,
+    if stage_name:
+        step_name = "{}-".format(stage_name)
+        step_description=["Build", stage_name]
+    else:
+        stage_name = ""
+        step_name = ""
+        step_description=["Build"]
+
+    if targets:
+        step_name = "build-{}{}".format(step_name, "-".join(targets))
+        step_description.extend(targets)
+    else:
+        step_name = "build-{}unified-tree".format(step_name)
+        step_description.extend(["unified", "tree"])
+
+    # Build the unified tree.
+    f.addStep(NinjaCommand(name=step_name,
                            haltOnFailure=True,
                            targets=targets,
-                           description=["Build", stage_name, "unified", "tree"],
+                           description=step_description,
                            env=env or {},
                            workdir=obj_dir,
                            **kwargs # Pass through all the extra arguments.
@@ -251,6 +260,7 @@ def getCmakeBuildFactory(
 
 def getCmakeWithNinjaBuildFactory(
            depends_on_projects = None,
+           targets = None,
            llvm_srcdir = None,
            obj_dir = None,
            checks = None,
@@ -295,6 +305,7 @@ def getCmakeWithNinjaBuildFactory(
     addNinjaSteps(
            f,
            obj_dir=f.obj_dir,
+           targets=targets,
            checks=checks,
            install_dir=f.install_dir,
            env=merged_env,
@@ -304,6 +315,7 @@ def getCmakeWithNinjaBuildFactory(
 
 def getCmakeWithNinjaWithMSVCBuildFactory(
            depends_on_projects = None,
+           targets = None,
            llvm_srcdir = None,
            obj_dir = None,
            checks = None,
@@ -354,6 +366,7 @@ def getCmakeWithNinjaWithMSVCBuildFactory(
 
     addNinjaSteps(
            f,
+           targets=targets,
            obj_dir=obj_dir,
            checks=checks,
            install_dir=f.install_dir,
