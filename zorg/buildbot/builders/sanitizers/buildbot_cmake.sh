@@ -136,7 +136,7 @@ echo @@@BUILD_STEP build fresh toolchain@@@
 if [ ! -d clang_build ]; then
   mkdir clang_build
 fi
-(cd clang_build && cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo ${CMAKE_COMMON_OPTIONS} ${USE_CCACHE} $LLVM) || echo @@@STEP_FAILURE@@@
+(cd clang_build && cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo ${CMAKE_COMMON_OPTIONS} ${USE_CCACHE} $LLVM ) || (rm -rf clang_build ; echo @@@STEP_FAILURE@@@)
 
 BOOTSTRAP_BUILD_TARGETS="clang"
 if [[ "$CHECK_LLD" != "0" ]]; then
