@@ -51,7 +51,7 @@ function build_stage2_android() {
     (cd llvm_build64 && cmake ${CMAKE_OPTIONS} -DLLVM_BUILD_EXTERNAL_COMPILER_RT=ON $LLVM && \
        echo ${CMAKE_OPTIONS} > CMAKE_OPTIONS) || echo @@@STEP_FAILURE@@@
   fi
-  ninja -C llvm_build64 || echo @@@STEP_FAILURE@@@
+  ninja -C llvm_build64 || echo @@@STEP_FAILURE@@@ && exit 2
 }
 
 function configure_android { # ARCH triple
@@ -113,12 +113,13 @@ function configure_android { # ARCH triple
     ${COMPILER_RT_OPTIONS} || echo @@@STEP_FAILURE@@@) &
 }
 
+BUILD_RT_ERR=""
 function build_android {
   local _arch=$1
   wait
   echo @@@BUILD_STEP build android/$_arch@@@
-  ninja -C llvm_build_android_$_arch llvm-symbolizer || echo @@@STEP_FAILURE@@@
-  ninja -C compiler_rt_build_android_$_arch || echo @@@STEP_FAILURE@@@
+  ninja -C llvm_build_android_$_arch llvm-symbolizer || echo @@@STEP_FAILURE@@@ && BUILD_RT_ERR="${BUILD_RT_ERR}|${_arch}|"
+  ninja -C compiler_rt_build_android_$_arch || echo @@@STEP_FAILURE@@@ && BUILD_RT_ERR="${BUILD_RT_ERR}|${_arch}|"
 }
 
 # If a multiarch device has x86 as the first arch, remove everything else from
@@ -151,6 +152,10 @@ function test_on_device {
   for _arg in "$@"; do
     local _arch=${_arg%:*}
     local _abi=${_arg#*:}
+    if [[ $BUILD_RT_ERR == *"|${_arch}|"* ]]; then
+      echo "@@@STEP_FAILURE@@ skipping tests on ${_arch}"
+      continue
+    fi
     if [[ $ABILIST == *"$_abi"* ]]; then
       echo "$_serial" >> tested_arch_$_arch
       BUILD_ID=$(${ADB} -s $_serial shell getprop ro.build.id | tr -d '\r')
