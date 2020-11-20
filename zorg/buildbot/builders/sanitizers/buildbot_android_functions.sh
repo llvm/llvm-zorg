@@ -118,8 +118,14 @@ function build_android {
   local _arch=$1
   wait
   echo @@@BUILD_STEP build android/$_arch@@@
-  ninja -C llvm_build_android_$_arch llvm-symbolizer || echo @@@STEP_FAILURE@@@ && BUILD_RT_ERR="${BUILD_RT_ERR}|${_arch}|"
-  ninja -C compiler_rt_build_android_$_arch || echo @@@STEP_FAILURE@@@ && BUILD_RT_ERR="${BUILD_RT_ERR}|${_arch}|"
+  if ! ninja -C llvm_build_android_$_arch llvm-symbolizer ; then
+    BUILD_RT_ERR="${BUILD_RT_ERR}|${_arch}|"
+    echo @@@STEP_FAILURE@@@
+  fi
+  if ! ninja -C compiler_rt_build_android_$_arch ; then
+    BUILD_RT_ERR="${BUILD_RT_ERR}|${_arch}|"
+    echo @@@STEP_FAILURE@@@
+  fi
 }
 
 # If a multiarch device has x86 as the first arch, remove everything else from
