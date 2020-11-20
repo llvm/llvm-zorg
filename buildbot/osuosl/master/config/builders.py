@@ -1540,6 +1540,36 @@ all = [
                         "-DCMAKE_CXX_STANDARD=17",
                     ])},
 
+    {'name' : "flang-aarch64-ubuntu-dylib",
+    'tags'  : ["flang"],
+    'workernames' : ["linaro-aarch64-flang-dylib"],
+    'builddir': "flang-aarch64-ubuntu-dylib",
+    'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
+                    clean=True,
+                    depends_on_projects=['llvm','mlir','clang','flang'],
+                    extra_configure_args=[
+                        "-DLLVM_TARGETS_TO_BUILD=AArch64",
+                        "-DFLANG_BUILD_NEW_DRIVER=ON",
+                        "-DLLVM_BUILD_LLVM_DYLIB=ON",
+                        "-DLLVM_LINK_LLVM_DYLIB=ON",
+                        "-DCMAKE_CXX_STANDARD=17",
+                    ])},
+
+    {'name' : "flang-aarch64-ubuntu-sharedlibs",
+    'tags'  : ["flang"],
+    'workernames' : ["linaro-aarch64-flang-sharedlibs"],
+    'builddir': "flang-aarch64-ubuntu-sharedlibs",
+    'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
+                    clean=True,
+                    depends_on_projects=['llvm','mlir','clang','flang'],
+                    extra_configure_args=[
+                        "-DLLVM_TARGETS_TO_BUILD=AArch64",
+                        "-DFLANG_BUILD_NEW_DRIVER=ON",
+                        "-DBUILD_SHARED_LIBS=ON",
+                        "-DLLVM_BUILD_EXAMPLES=ON",
+                        "-DCMAKE_CXX_STANDARD=17",
+                    ])},
+
     {'name' : "flang-aarch64-ubuntu-out-of-tree",
     'tags'  : ["flang"],
     'workernames' : ["linaro-aarch64-flang-oot"],
