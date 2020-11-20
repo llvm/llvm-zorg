@@ -234,6 +234,7 @@ resource "kubernetes_deployment" "windows10_vs2019" {
             mount_path = "c:\\volumes\\buildbot"
             name = "buildbot-vol"
           }
+
         }
         # select which node pool to deploy to
         node_selector = {
@@ -375,6 +376,13 @@ resource "kubernetes_deployment" "clangd-ubuntu-clang" {
             mount_path = "/vol/worker"
             name = "worker-vol"
           }
+
+          env {
+            # connect to production environment, running at port 9990 
+            # staging would be at 9994
+            name = "BUILDBOT_PORT"
+            value = "9990"          
+          }          
         }
         # select which node pool to deploy to
         node_selector = {
