@@ -51,7 +51,7 @@ function build_stage2_android() {
     (cd llvm_build64 && cmake ${CMAKE_OPTIONS} -DLLVM_BUILD_EXTERNAL_COMPILER_RT=ON $LLVM && \
        echo ${CMAKE_OPTIONS} > CMAKE_OPTIONS) || echo @@@STEP_FAILURE@@@
   fi
-  ninja -C llvm_build64 || echo @@@STEP_FAILURE@@@ && exit 2
+  ninja -C llvm_build64 || (echo @@@STEP_FAILURE@@@ && exit 2)
 }
 
 function configure_android { # ARCH triple
