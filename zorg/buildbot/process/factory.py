@@ -120,11 +120,14 @@ class LLVMBuildFactory(BuildFactory):
 
     def addGetSourcecodeSteps(self, **kwargs):
         # Checkout the monorepo.
+        # Documentation: http://docs.buildbot.net/current/manual/configuration/buildsteps.html#git
         self.addStep(steps.Git(
                 name='Checkout the source code',
                 repourl=self.repourl_prefix + "llvm-project.git",
                 progress=True,
                 workdir=util.WithProperties(self.monorepo_dir),
+                retryFetch=True,
+                clobberOnFailure=True,
                 **kwargs))
 
 
@@ -153,4 +156,6 @@ class LLVMBuildFactory(BuildFactory):
                 repourl=_repourl,
                 progress=True,
                 workdir=util.WithProperties(src_dir),
+                retryFetch=True,
+                clobberOnFailure=True,                
                 **kwargs))
