@@ -1793,6 +1793,11 @@ all = [
                     useTwoStage=True,
                     stage1_config='Release',
                     stage2_config='Release',
+                    # reduce scope of builds to get stable results
+                    checkout_clang_tools_extra=False,
+                    checkout_compiler_rt=False,
+                    checkout_flang=False,
+                    checkout_libcxx=False,
                     extra_cmake_args=['-DLLVM_ENABLE_ASSERTIONS=ON',
                                         '-DLLVM_TARGETS_TO_BUILD=X86',
                                         '-DCMAKE_C_COMPILER_LAUNCHER=sccache',
