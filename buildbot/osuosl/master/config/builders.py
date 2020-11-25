@@ -1803,7 +1803,7 @@ all = [
                                         '-DCMAKE_C_COMPILER_LAUNCHER=sccache',
                                         '-DCMAKE_CXX_COMPILER_LAUNCHER=sccache',
                                         '-DLLVM_ENABLE_ZLIB=OFF',
-                                        '-DLLVM_LIT_TOOLS_DIR="C:\\Program Files\\GnuWin32\\usr\\bin"',
+                                        '-DLLVM_LIT_TOOLS_DIR=C:\\Program Files\\GnuWin32\\usr\\bin',
                                         ])},
 
 # Flang builders.
