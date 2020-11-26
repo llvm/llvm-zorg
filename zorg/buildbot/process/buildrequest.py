@@ -7,23 +7,43 @@ def collapseRequests(master, builder, req1, req2):
 
     This implements Zorg's default collapse strategy.
     """
-     # If these are for the same buildset, collapse away
+    # If these are for the same buildset, collapse away.
     if req1['buildsetid'] == req2['buildsetid']:
         return True
 
-    # Get the buidlsets for each buildrequest
+    # Check properties and do not collapse if properties do not match.
+    if req1.get('properties', None) != req2.get('properties', None):
+        return False
+
+    # Get the buidlsets for each buildrequest.
     selfBuildsets = yield master.data.get(
         ('buildsets', str(req1['buildsetid'])))
     otherBuildsets = yield master.data.get(
         ('buildsets', str(req2['buildsetid'])))
 
-    # extract sourcestamps, as dictionaries by codebase
+    # Fetch the buildset properties.
+    selfBuildsetPoperties = yield \
+        master.db.buildsets.getBuildsetProperties(
+            str(req1['buildsetid'])
+        )
+    otherBuildsetPoperties = yield \
+        master.db.buildsets.getBuildsetProperties(
+            str(req2['buildsetid'])
+        )
+
+    # Check buildsets properties and do not collapse
+    # if properties do not match. This includes the check
+    # for different schedulers.
+    if selfBuildsetPoperties != otherBuildsetPoperties:
+        return False
+
+    # Extract sourcestamps, as dictionaries by codebase.
     selfSources = dict((ss['codebase'], ss)
                         for ss in selfBuildsets['sourcestamps'])
     otherSources = dict((ss['codebase'], ss)
                         for ss in otherBuildsets['sourcestamps'])
 
-    # if the sets of codebases do not match, we can't collapse
+    # If the sets of codebases do not match, we can't collapse.
     if set(selfSources) != set(otherSources):
         return False
 
@@ -41,14 +61,15 @@ def collapseRequests(master, builder, req1, req2):
         # a part of the monorepo, so all of them are compatible
         # and could be collapsed.
 
-        # anything with a patch won't be collapsed
+        # Anything with a patch won't be collapsed.
         if selfSS['patch'] or otherSS['patch']:
             return False
 
-        # get changes & compare
+        # Get changes & compare.
         selfChanges = yield master.data.get(('sourcestamps', selfSS['ssid'], 'changes'))
         otherChanges = yield master.data.get(('sourcestamps', otherSS['ssid'], 'changes'))
-        # if both have changes, proceed, else fail - if no changes check revision instead
+        # If both have changes - proceed, else fail.
+        # If no changes - check revision instead.
         if selfChanges and otherChanges:
             continue
 
@@ -58,7 +79,7 @@ def collapseRequests(master, builder, req1, req2):
         if not selfChanges and otherChanges:
             return False
 
-        # else check revisions
+        # Else check revisions.
         if selfSS['revision'] != otherSS['revision']:
             return False
 
