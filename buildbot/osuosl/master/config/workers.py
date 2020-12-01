@@ -126,14 +126,6 @@ def get_all():
         # IBM z13 (s390x), Ubuntu 16.04.2
         create_worker("systemz-1", properties={'jobs': 4, 'vcs_protocol': 'https'}, max_builds=4),
 
-        # Debian 9, Docker based build. See libcxx/utils/docker.
-        create_worker('libcxx-cloud1', properties={'jobs': 64}, max_builds=1),
-        create_worker('libcxx-cloud2', properties={'jobs': 64}, max_builds=1),
-        create_worker('libcxx-cloud3', properties={'jobs': 64}, max_builds=1),
-        create_worker('libcxx-cloud4', properties={'jobs': 64}, max_builds=1),
-        create_worker('libcxx-cloud5', properties={'jobs': 64}, max_builds=1),
-
-
         # Windows Server 2012 x86_64 16-core GCE instance
         create_worker("sanitizer-windows", properties={'jobs': 16}, max_builds=1),
         # Windows Server 2012 x86_64 32-core GCE instance

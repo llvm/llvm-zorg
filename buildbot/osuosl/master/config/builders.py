@@ -21,14 +21,6 @@ from zorg.buildbot.builders import XToolchainBuilder
 
 from buildbot.plugins import util
 
-# For Libc++ builders.
-docker_workers = [
-    'libcxx-cloud1', 'libcxx-cloud2', 'libcxx-cloud3', 'libcxx-cloud4',
-    'libcxx-cloud5'
-]
-
-benchmark_opts = ';'.join(
-    ['--benchmark_min_time=0.01', '--benchmark_color=false'])
 
 all = [
 
