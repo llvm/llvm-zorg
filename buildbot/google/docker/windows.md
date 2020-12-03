@@ -25,7 +25,7 @@ remote desktop client for Linux, to connect the the Windows VM.
 1. Install your development tools, a good starting point is:
     ```
     choco install -y git vscode googlechrome arcanist vim
-    ``
+    ```
 1. Setup your github account and push access. Start "Git bash" and run 
    `ssh-keygen`, upload your public key to Github.
 1. Setup your Phabricator account for `arc diff`.
