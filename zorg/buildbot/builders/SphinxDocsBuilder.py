@@ -228,10 +228,10 @@ def getLLVMDocsBuildFactory(
     for target, local_path, remote_path in docs:
         f.addStep(
             ShellCommand(
-                name="Publish %s" % target,
+                name="Publish {}".format(target),
                 description=[
-                    "Publish", "just", "built", "documentation", "fior",
-                    "%s" % target,
+                    "Publish", "just", "built", "documentation", "for",
+                    "{}".format(target),
                     ],
                 command=[
                     'rsync',
@@ -240,8 +240,8 @@ def getLLVMDocsBuildFactory(
                     '--ignore-times',
                     '--checksum',
                     '-p', '--chmod=Du=rwx,Dg=rwx,Do=rx,Fu=rw,Fg=rw,Fo=r',
-                    "%s" % local_path,
-                    "lists.llvm.org:web/%s" % remote_path,
+                    "{}".format(local_path),
+                    "lists.llvm.org:web/{}".format(remote_path),
                     ],
                 env=merged_env,
             )
