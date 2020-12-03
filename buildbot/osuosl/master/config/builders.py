@@ -1089,6 +1089,8 @@ all = [
                         '-DMLIR_CUDA_RUNNER_ENABLED=1',
                         '-DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc',
                         '-DMLIR_VULKAN_RUNNER_ENABLED=1',
+                        '-DBUILD_SHARED_LIBS=ON',
+                        '-DLLVM_CCACHE_BUILD=ON',
                     ],
                     env={
                         'CC':'clang',
