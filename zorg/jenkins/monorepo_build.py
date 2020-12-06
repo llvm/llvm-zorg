@@ -525,18 +525,15 @@ def lldb_cmake_builder(target, variant=None):
         dep.parse_dependencies([here + "/clang_build_dependencies.dep"])
 
     test_dir = os.path.join(conf.workspace, 'test')
-    log_dir = os.path.join(test_dir, 'logs')
     results_file = os.path.join(test_dir, 'results.xml')
-    create_dirs([conf.lldbbuilddir(), test_dir, log_dir])
+    create_dirs([conf.lldbbuilddir(), test_dir])
 
     cmake_build_type = conf.cmake_build_type if conf.cmake_build_type else 'RelWithDebInfo'
 
     # Construct dotest.py arguments.
     dotest_args=['--arch', 'x86_64', '--build-dir',
                  conf.lldbbuilddir()+'/lldb-test-build.noindex',
-                 '-s='+log_dir,
-                 '-t',
-                 '--env', 'TERM=vt100']
+                 '-t', '--env', 'TERM=vt100']
     dotest_args.extend(conf.dotest_flags)
 
     # Construct lit arguments.
@@ -644,16 +641,15 @@ def lldb_cmake_standalone_builder(target):
             'Unknown standalone build type: {}'.format(standalone_type))
 
     test_dir = os.path.join(conf.workspace, 'test')
-    log_dir = os.path.join(test_dir, 'logs')
     results_file = os.path.join(test_dir, 'results.xml')
     test_build_dir = os.path.join(conf.lldbstandalonebuilddir(
         standalone_type), 'lldb-test-build.noindex')
     create_dirs([conf.lldbstandalonebuilddir(standalone_type),
-                 test_dir, log_dir, test_build_dir])
+                 test_dir, test_build_dir])
     cmake_build_type = conf.cmake_build_type if conf.cmake_build_type else 'RelWithDebInfo'
     dotest_args = [
         '--arch', 'x86_64', '--build-dir', test_build_dir,
-        '-s={}'.format(log_dir), '-t', '--env', 'TERM=vt100'
+        '-t', '--env', 'TERM=vt100'
     ]
     dotest_args.extend(conf.dotest_flags)
 
