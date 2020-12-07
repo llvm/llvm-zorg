@@ -154,3 +154,73 @@ def getForceSchedulers(builders):
                 ]
             )
         ]
+
+# TODO: Abstract this kind of scheduler better.
+def getLntSchedulers():
+    project = "lnt"
+    lnt_builders = [
+        "publish-lnt-sphinx-docs",
+    ]
+    return [
+        schedulers.SingleBranchScheduler(
+            name="lnt-scheduler",
+            treeStableTimer=kwargs.get('treeStableTimer', None),
+            reason="Merge to LNT github {} branch".format(filter_branch),
+            builderNames=lnt_builders,
+            change_filter=util.ChangeFilter(
+                project_fn=project,
+                branch=filter_branch)),
+
+        schedulers.ForceScheduler(
+            name            = "force-build-scheduler",
+            label           = "Force Build",
+            buttonName      = "Force Build",
+            reason = util.ChoiceStringParameter(
+                         name        = "reason",
+                         label       = "reason:",
+                         required    = True,
+                         choices     = [
+                            "Build a particular revision",
+                            "Force clean build",
+                            "Narrow down blamelist",
+                         ],
+                         default     = "Build a particular revision"
+            ),
+            builderNames    = lnt_builders,
+            codebases       = [
+                util.CodebaseParameter(
+                    codebase    = "",
+                    branch          = util.FixedParameter(
+                        name        = "branch",
+                        default     = _branch
+                    ),
+                    revision    = util.StringParameter(
+                        name        = "revision",
+                        label       = "revision:",
+                        size        = 45,
+                        default     = ''
+                    ),
+                    repository  = util.FixedParameter(
+                        name        = "repository",
+                        default     = _repourl
+                    ),
+                    project     = util.FixedParameter(
+                        name        = "project",
+                        default     = project
+                    )
+                )
+            ],
+            properties  = [
+                util.BooleanParameter(
+                    name        = "clean",
+                    label       = "Clean source code and build directory",
+                    default     = False
+                ),
+                util.BooleanParameter(
+                    name        = "clean_obj",
+                    label       = "Clean build directory",
+                    default     = False
+                )
+            ]
+        ),
+    ]
