@@ -27,7 +27,7 @@ spec:
     spec:
       containers:
       # the image and version we want to run   
-      - image: gcr.io/sanitizer-bots/buildbot-mlir-nvidia:14
+      - image: gcr.io/sanitizer-bots/buildbot-mlir-nvidia:15
         name: mlir-nvidia-production
         env:
           # connect to production environment, running at port 9990 
@@ -48,9 +48,17 @@ spec:
             nvidia.com/gpu: "1"
         volumeMounts:
         # mount the secrets into a folder  
-        - mountPath: /secrets
+        - mountPath: /vol/secrets
           mountPropagation: None
           name: buildbot-token
+        # storage for ccache
+        - mountPath: /vol/ccache
+          mountPropagation: None
+          name: ccache-vol
+        # work directory of buildbot
+        - mountPath: /vol/buildbot
+          mountPropagation: None
+          name: buildbot-vol
       # specify the nood pool on which to deploy
       nodeSelector:
         pool: nvidia-16core-pool
@@ -61,3 +69,8 @@ spec:
         secret:
           optional: false
           secretName: password-mlir-nvidia
+      - name: ccache-vol
+        emptyDir: {}
+      - name: buildbot-vol
+        emptyDir: {}
+

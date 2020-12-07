@@ -12,7 +12,11 @@
 set -eu
 
 # Read the worker password from a mounted file.
-WORKER_PASSWORD=$(cat /secrets/token)
+WORKER_PASSWORD=$(cat /vol/secrets/token)
+
+# Set up buildbot host and maintainer info.
+mkdir -p "${WORKER_NAME}/info/" 
+echo "Christian Kuehnel <kuhnel@google.com>" > "${WORKER_NAME}/info/admin"
 
 # generate the host information of this worker
 ( 
@@ -51,14 +55,10 @@ fi
 
 # create the folder structure
 echo "creating worker ${WORKER_NAME} at port ${BUILDBOT_PORT}..."
-buildslave create-slave --keepalive=200 "${WORKER_NAME}" \
+buildbot-worker create-worker --keepalive=200 "${WORKER_NAME}" \
   lab.llvm.org:${BUILDBOT_PORT} "${WORKER_NAME}" "${WORKER_PASSWORD}"
 
-# start the daemon, this command return immetiately
+# start the worker, based on
+# https://hub.docker.com/r/buildbot/buildbot-worker/dockerfile
 echo "starting worker..."
-buildslave start "${WORKER_NAME}"
-
-# To keep the container running and produce log outputs: dump the worker
-# log to stdout
-echo "Following worker log..."
-tail -f ${WORKER_NAME}/twistd.log
+/usr/bin/dumb-init twistd --pidfile= --nodaemon -l - --python="${WORKER_NAME}/buildbot.tac"

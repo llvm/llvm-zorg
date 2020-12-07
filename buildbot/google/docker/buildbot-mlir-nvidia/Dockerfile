@@ -17,8 +17,11 @@ FROM nvidia/cuda:10.2-base-ubuntu18.04
 # install build tools
 RUN apt-get update; \
     apt-get install -y software-properties-common apt-transport-https ca-certificates \
-      clang-8 lld-8 ninja-build git wget gnupg ccache \
-      python python-pip python-psutil pybind11-dev ;\
+    clang-8 lld-8 ninja-build git wget gnupg ccache \
+    python3 python3-pip python3-psutil pybind11-dev \
+    # dumb-init recommended in
+    # https://hub.docker.com/r/buildbot/buildbot-worker/dockerfile
+    dumb-init;\
     update-alternatives --install /usr/bin/clang clang /usr/bin/clang-8 100 ;\
     update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-8 100 ;\
     update-alternatives --install /usr/bin/lld lld /usr/bin/lld-8 100
@@ -45,16 +48,27 @@ RUN wget -qO - http://packages.lunarg.com/lunarg-signing-key-pub.asc 2>/dev/null
     apt-get update ;\
     apt-get install -y vulkan-sdk
 
-# install (old) build bot version
-# this version of build bot requires python2!
-RUN pip install buildbot-slave==0.8.11
+# Install build bot (server was at 2.8.5-dev at time of writing).
+RUN pip3 install buildbot-worker==2.8.4
 
-# Volume to mount secrets into the container
-VOLUME /secrets
+# Workaround permissions issues when writing to named volumes
+# https://github.com/docker/compose/issues/3270#issuecomment-206214034
+RUN mkdir -p /vol/test /vol/ccache /vol/worker ; \
+    chmod -R 777 /vol
 
-# create user account, some test fail if run as root
+# Volume to mount secrets into the container.
+VOLUME /vol/secrets
+# Volume to store data for local, manual testing of the container.
+VOLUME /vol/test
+# Volume to store ccache.
+VOLUME /vol/ccache
+ENV CCACHE_DIR=/vol/ccache
+# Volume for worker working directory.
+VOLUME /vol/worker
+
+# Create user account, some tests fail if run as root.
 RUN useradd buildbot --create-home
-WORKDIR /home/buildbot
+WORKDIR /vol/worker
 
 # copy startup script
 COPY run.sh /home/buildbot/
@@ -68,10 +82,6 @@ ENV WORKER_NAME="mlir-nvidia"
 # Ports:
 #   9990 - production
 #   9994 - integration
-ENV BUILDBOT_PORT="9990"
+ENV BUILDBOT_PORT="9994"
 
-# Set up buildbot host and maintainer info.
-RUN mkdir -p "${WORKER_NAME}/info/" ;\
-    echo "Christian Kühnel <kuhnel@google.com>" > "${WORKER_NAME}/info/admin"
-
-CMD ./run.sh
+CMD /home/buildbot/run.sh

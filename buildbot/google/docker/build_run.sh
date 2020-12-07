@@ -39,7 +39,7 @@ fi
 
 # Define arguments for mounting the volumes
 # These differ on Windows and Linux
-VOLUMES="-v ${SECRET_STORAGE}:/vol/secrets -v workertest:/vol/test"
+VOLUMES="-v ${SECRET_STORAGE}:/vol/secrets -v workertest:/vol/test -v workercache:/vol/ccache"
 if [ -n "${OS+x}" ] && [[  "${OS}" == "Windows_NT" ]] ; then
     VOLUMES="-v ${SECRET_STORAGE}:c:\\volumes\\secrets -v workertest:c:\volumes\\test -v workercache:c:\sccache"
 fi
