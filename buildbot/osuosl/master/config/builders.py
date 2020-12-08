@@ -1227,41 +1227,6 @@ all = [
 
 # Libc++ builders.
 
-    {'name': 'libcxx-libcxxabi-x86_64-linux-debian',
-    'tags'  : ["libcxx"],
-    'workernames': ['gribozavr4'],
-    'builddir': 'libcxx-libcxxabi-x86_64-linux-debian',
-    'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
-                    env={'CC': 'clang', 'CXX': 'clang++'},
-                    lit_extra_args=['--shuffle'],
-                    check_libcxx_abilist=True)},
-
-    {'name' : 'libcxx-libcxxabi-x86_64-linux-debian-noexceptions',
-    'tags'  : ["libcxx"],
-    'workernames' : ['gribozavr4'],
-    'builddir': 'libcxx-libcxxabi-x86_64-linux-debian-noexceptions',
-    'factory' : LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
-                    env={'CC': 'clang', 'CXX': 'clang++'},
-                    use_cache='Generic-noexceptions.cmake',
-                    lit_extra_args=['--shuffle'])},
-
-    {'name' : 'libcxx-libcxxabi-libunwind-x86_64-linux-debian',
-    'tags'  : ["libcxx"],
-    'workernames' : ['gribozavr4'],
-    'builddir': 'libcxx-libcxxabi-libunwind-x86_64-linux-debian',
-    'factory' : LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
-             env={'CC': 'clang', 'CXX': 'clang++'},
-             cmake_extra_opts={'LIBCXXABI_USE_LLVM_UNWINDER': 'ON'},
-             lit_extra_args=['--shuffle'])},
-
-    {'name' : 'libcxx-libcxxabi-singlethreaded-x86_64-linux-debian',
-    'tags'  : ["libcxx"],
-    'workernames' : ['gribozavr4'],
-    'builddir': 'libcxx-libcxxabi-singlethreaded-x86_64-linux-debian',
-    'factory' : LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
-                    env={'CC': 'clang', 'CXX': 'clang++'},
-                    use_cache='Generic-singlethreaded.cmake')},
-
     # ARMv7 LibC++ and LibC++abi tests (require Clang+RT)
     {'name' : 'libcxx-libcxxabi-libunwind-armv7-linux',
     'tags'  : ["libcxx"],
