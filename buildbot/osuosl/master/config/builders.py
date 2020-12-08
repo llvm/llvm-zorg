@@ -1515,12 +1515,6 @@ all = [
     'builddir': "lldb-sphinx-docs",
     'factory' : SphinxDocsBuilder.getSphinxDocsBuildFactory(lldb_html=True)},
 
-    {'name':"libcxx-sphinx-docs",
-    'tags'  : ["libcxx", "doc"],
-    'workernames':["gribozavr3"],
-    'builddir':"libcxx-sphinx-docs",
-    'factory': SphinxDocsBuilder.getSphinxDocsBuildFactory(libcxx_html=True)},
-
     {'name':"libunwind-sphinx-docs",
     'tags'  : ["libunwind", "doc"],
     'workernames':["gribozavr3"],
