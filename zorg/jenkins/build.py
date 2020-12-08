@@ -586,7 +586,6 @@ def lldb_cmake_builder():
     header("Configure")
     dotest_args=['--arch', 'x86_64', '--build-dir',
                  conf.lldbbuilddir()+'/lldb-test-build.noindex',
-                 '-s='+log_dir,
                  '-t',
                  '--env', 'TERM=vt100']
     dotest_args.extend(conf.dotest_flags)
