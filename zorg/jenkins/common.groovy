@@ -102,6 +102,7 @@ def task_pipeline(label, body) {
 
 def benchmark_pipeline(label, body) {
     properties([
+        disableResume(),
         parameters([
             string(name: 'ARTIFACT'),
             string(name: 'GIT_DISTANCE'),
