@@ -11,14 +11,14 @@ from buildbot.plugins import changes
 
 class LLVMPoller(changes.GitPoller):
     """
-    Poll LLVM repository for changes and submit them to the change master.
+    Poll LLVM repository for changes and submit them for builds scheduling.
     Following Multiple LLVM Projects.
 
     This source will poll a remote LLVM git _monorepo_ for changes and submit
-    them to the change master."""
+    them for builds scheduling."""
 
     _repourl = "https://github.com/llvm/llvm-project"
-    _branch = "master"
+    _branch = "main"
 
     compare_attrs = ["repourl", "branch", "workdir",
                      "pollInterval", "gitbin", "usetimestamps",

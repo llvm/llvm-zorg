@@ -45,7 +45,7 @@ def getSingleBranchSchedulers(
         if getattr(builder.factory, 'depends_on_projects', None)
     ]
 
-    filter_branch = 'master'
+    filter_branch = 'main'
     treeStableTimer = kwargs.get('treeStableTimer', None)
 
     automatic_schedulers = []
@@ -92,7 +92,7 @@ def getSingleBranchSchedulers(
 
 # TODO: Move these settings to the configuration file.
 _repourl = "https://github.com/llvm/llvm-project"
-_branch = "master"
+_branch = "main"
 
 def getForceSchedulers(builders):
     # Walk over all builders and collect their names.
