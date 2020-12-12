@@ -1722,7 +1722,7 @@ all = [
                         "-DCMAKE_BUILD_TYPE=Release",
                         "-DLLVM_CCACHE_BUILD=ON",
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
-                        "-DTENSORFLOW_API_PATH=/tmp/tensorflow",
+                        "-DTENSORFLOW_C_LIB_PATH=/tmp/tensorflow",
                         "-DCMAKE_INSTALL_RPATH_USE_LINK_PATH=ON"
                     ])},
 
@@ -1739,7 +1739,7 @@ all = [
                         "-DCMAKE_BUILD_TYPE=Release",
                         "-DLLVM_CCACHE_BUILD=ON",
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
-                        "-DTENSORFLOW_API_PATH=/tmp/tensorflow",
+                        "-DTENSORFLOW_C_LIB_PATH=/tmp/tensorflow",
                         "-DTENSORFLOW_AOT_PATH=/var/lib/buildbot/.local/lib/python3.7/site-packages/tensorflow",
                         "-DCMAKE_INSTALL_RPATH_USE_LINK_PATH=ON"
                     ])},
