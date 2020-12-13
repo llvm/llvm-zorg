@@ -328,7 +328,7 @@ def getClangWithLTOBuildFactory(
     s = f.staged_compiler_idx + 1
     staged_install = f.stage_installdirs[f.staged_compiler_idx]
     for i in range(s, len(f.stage_objdirs[s:]) + s):
-      configure_args = extra_configure_args[:] + extra_configure_args_lto_stage[:]
+        configure_args = extra_configure_args[:] + extra_configure_args_lto_stage[:]
 
         configure_args.append(
             WithProperties(
