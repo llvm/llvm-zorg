@@ -1,4 +1,7 @@
 # TODO: Rename workers with "slave" as a part of the name.
+from importlib import reload
+
+from buildbot.plugins import util
 
 from buildbot.process.properties import WithProperties
 
@@ -19,7 +22,11 @@ from zorg.buildbot.builders import LLDPerformanceTestsuite
 from zorg.buildbot.builders import FuchsiaBuilder
 from zorg.buildbot.builders import XToolchainBuilder
 
-from buildbot.plugins import util
+from zorg.buildbot.builders import HtmlDocsBuilder
+from zorg.buildbot.builders import DoxygenDocsBuilder
+
+reload(HtmlDocsBuilder)
+reload(DoxygenDocsBuilder)
 
 
 all = [
@@ -1527,6 +1534,18 @@ all = [
     'workernames' : ["as-worker-4"],
     'builddir': "publish-sphinx-docs",
     'factory' : SphinxDocsBuilder.getLLVMDocsBuildFactory(clean=True)},
+
+    {'name' : "publish-lnt-sphinx-docs",
+    'tags'  : ["doc"],
+    'workernames' : ["as-worker-4"],
+    'builddir': "publish-lnt-sphinx-docs",
+    'factory' : HtmlDocsBuilder.getHtmlDocsBuildFactory()},
+
+    {'name' : "publish-doxygen-docs",
+    'tags'  : ["doc"],
+    'workernames' : ["as-worker-4"],
+    'builddir': "publish-doxygen-docs",
+    'factory' : DoxygenDocsBuilder.getLLVMDocsBuildFactory()},
 
 # CUDA builders.
 
