@@ -3,7 +3,7 @@ pipeline {
     agent { label 'green-dragon-10' }
     parameters {
         string(name: 'GIT_REVISION', defaultValue: '*/master', description: 'Git revision to build')
-        string(name: 'ARTIFACT', defaultValue: 'clang-stage1-RA/latest', description: 'Compiler artifact to use for building the project')
+        string(name: 'ARTIFACT', defaultValue: 'clang-stage2-Rthinlto/latest', description: 'Compiler artifact to use for building the project')
         string(name: 'BUILD_TYPE', defaultValue: 'Release', description: 'Default CMake build type; one of: Release, Debug, ...')
         string(name: 'CLEAN', defaultValue: "false", description: 'Whether or not to clean the build directory before building')
     }
