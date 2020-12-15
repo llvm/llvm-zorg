@@ -13,6 +13,7 @@ import sys
 from os.path import join as pjoin
 
 VSWHERE_PATH = "C:/Program Files (x86)/Microsoft Visual Studio/Installer/vswhere.exe"
+BUILDTOOLS_VSDEVCMD = "C:/BuildTools/Common7/Tools/VsDevCmd.bat"
 
 def get_argument_parser(*args, **kwargs):
     ap = argparse.ArgumentParser(*args, **kwargs)
@@ -323,9 +324,17 @@ class AnnotatedBuilder:
 
 
 def get_vcvars(vs_tools, arch):
-    """Get the VC tools environment using vswhere.exe from VS 2017
+    """Get the VC tools environment using vswhere.exe or buildtools docker
 
-    This code is following the guidelines from strategy 1 in this blog post:
+    This is intended to work either when VS is in its standard installation
+    location, or when the docker instructions have been followed, and we can
+    find Visual C++ in C:/BuildTools.
+
+    Visual Studio provides a docker image with instructions here:
+    https://docs.microsoft.com/en-us/visualstudio/install/build-tools-container?view=vs-2019
+
+    This vswhere code is following the guidelines from strategy 1 in this blog
+    post:
         https://blogs.msdn.microsoft.com/vcblog/2017/03/06/finding-the-visual-c-compiler-tools-in-visual-studio-2017/
 
     It doesn't work when VS is not installed at the default location.
@@ -349,6 +358,8 @@ def get_vcvars(vs_tools, arch):
             raise ValueError("VS install path does not exist: " + vs_path)
         vcvars_path = pjoin(vs_path, 'VC', 'Auxiliary', 'Build',
                             'vcvarsall.bat')
+    elif os.path.exists(BUILDTOOLS_VSDEVCMD):
+        vcvars_path = BUILDTOOLS_VSDEVCMD
     elif vs_tools is None:
         vs_tools = os.path.expandvars('%VS140COMNTOOLS%')
         vcvars_path = pjoin(vs_tools, '..', '..', 'VC', 'vcvarsall.bat')
