@@ -1,0 +1,7 @@
+# add root folder to Pylint PYTHONPATH, so builders can be checked with zorg.*
+# packages
+[MASTER]
+init-hook='import sys; sys.path.append(".")'
+
+[FORMAT]
+max-line-length=120
