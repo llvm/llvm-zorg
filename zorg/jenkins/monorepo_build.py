@@ -778,11 +778,11 @@ def http_download(url, dest):
         with open(dest, "wb") as local_file:
             local_file.write(f.read())
 
-    except urllib.HTTPError as e:
+    except urllib.error.HTTPError as e:
         print("HTTP Error:", e.code, url)
         sys.exit(1)
 
-    except urllib.URLError as e:
+    except urllib.error.URLError as e:
         print("URL Error:", e.reason, url)
         sys.exit(1)
     print("done.")
