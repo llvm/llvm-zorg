@@ -1098,6 +1098,7 @@ all = [
                         '-DMLIR_VULKAN_RUNNER_ENABLED=1',
                         '-DBUILD_SHARED_LIBS=ON',
                         '-DLLVM_CCACHE_BUILD=ON',
+                        '-DMLIR_BINDINGS_PYTHON_ENABLED=ON',
                     ],
                     env={
                         'CC':'clang',
