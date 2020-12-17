@@ -369,7 +369,8 @@ def get_vcvars(vs_tools, arch):
     # Windows /dev/null.
     cmd = util.shquote_cmd([vcvars_path, arch]) + ' > NUL && set'
     util.report("Running vcvars: " + cmd)
-    output = subprocess.check_output(cmd, shell=True)
+    output = \
+        subprocess.check_output(cmd, shell=True).decode(sys.stdout.encoding)
     new_env = {}
     for line in output.splitlines():
         var, val = line.split('=', 1)
