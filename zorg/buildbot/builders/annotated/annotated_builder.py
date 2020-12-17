@@ -351,7 +351,7 @@ def get_vcvars(vs_tools, arch):
     # Use vswhere.exe if it exists.
     if os.path.exists(VSWHERE_PATH):
         cmd = [VSWHERE_PATH, "-latest", "-property", "installationPath"]
-        vs_path = subprocess.check_output(cmd).strip()
+        vs_path = subprocess.check_output(cmd).decode(sys.stdout.encoding)
         util.report("Running vswhere to find VS: " + repr(cmd))
         util.report("vswhere output: " + vs_path)
         if not os.path.isdir(vs_path):
