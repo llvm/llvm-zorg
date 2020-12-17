@@ -212,10 +212,13 @@ class AnnotatedBuilder:
         cxx_compiler,
         linker,
         previous_stage_bin):
+        archiver = 'llvm-ar'
+        if os.name == 'nt':
+            archiver = 'llvm-lib'
         return (
             cmake_args + [
                 '-DCMAKE_AR=%s' % (
-                    util.cmake_pjoin(previous_stage_bin, 'llvm-ar'),),
+                    util.cmake_pjoin(previous_stage_bin, archiver),),
                 '-DCMAKE_RANLIB=%s' % (
                     util.cmake_pjoin(previous_stage_bin, 'llvm-ranlib'),),
             ] + self.cmake_compiler_flags(
