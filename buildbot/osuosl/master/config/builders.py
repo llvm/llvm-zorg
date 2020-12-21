@@ -1070,7 +1070,7 @@ all = [
                         '-DLLVM_CCACHE_BUILD=ON',
                         '-DCMAKE_CXX_FLAGS=-O3 -Xclang -fwhole-program-vtables -fno-split-lto-unit',
                         '-DCMAKE_C_FLAGS=-O3 -Xclang -fwhole-program-vtables -fno-split-lto-unit',
-                        '-DCMAKE_EXE_LINKER_FLAGS=-Wl,--lto-whole-program-visibility'])},
+                        '-DCMAKE_EXE_LINKER_FLAGS=-Wl,--lto-whole-program-visibility -fuse-ld=lld'])},
 
     {'name' : "clang-with-lto-ubuntu",
     'tags'  : ["clang","lld","LTO"],
