@@ -18,13 +18,16 @@ FROM nvidia/cuda:10.2-base-ubuntu18.04
 RUN apt-get update; \
     apt-get install -y software-properties-common apt-transport-https ca-certificates \
     clang-8 lld-8 ninja-build git wget gnupg ccache \
-    python3 python3-pip python3-psutil pybind11-dev \
+    python3 python3-pip python3-psutil \
     # dumb-init recommended in
     # https://hub.docker.com/r/buildbot/buildbot-worker/dockerfile
     dumb-init;\
     update-alternatives --install /usr/bin/clang clang /usr/bin/clang-8 100 ;\
     update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-8 100 ;\
     update-alternatives --install /usr/bin/lld lld /usr/bin/lld-8 100
+
+# PyBind11 and Numpy are required for MLIR bindings
+RUN python3 -m pip install numpy==1.19.3 pybind11==2.6.0
 
 # install cuda
 # avoid popups for keyboard configurations
