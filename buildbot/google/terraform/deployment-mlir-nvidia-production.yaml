@@ -27,7 +27,7 @@ spec:
     spec:
       containers:
       # the image and version we want to run   
-      - image: gcr.io/sanitizer-bots/buildbot-mlir-nvidia:15
+      - image: gcr.io/sanitizer-bots/buildbot-mlir-nvidia:16
         name: mlir-nvidia-production
         env:
           # connect to production environment, running at port 9990 
