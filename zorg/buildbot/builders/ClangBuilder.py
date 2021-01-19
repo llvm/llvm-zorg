@@ -1,6 +1,7 @@
 import copy
 from datetime import datetime
 
+from buildbot.plugins import util
 from buildbot.process.properties import WithProperties, Property
 from buildbot.steps.shell import ShellCommand, SetProperty
 from buildbot.steps.shell import WarningCountingShellCommand
@@ -382,9 +383,11 @@ def _getClangCMakeBuildFactory(
     if not vs:
         cc = 'clang'
         cxx = 'clang++'
+        fc = 'flang'
     else:
         cc = 'clang-cl.exe'
         cxx = 'clang-cl.exe'
+        fc = 'flang.exe'
 
 
     ############# STAGE 2
@@ -496,6 +499,14 @@ def _getClangCMakeBuildFactory(
                               '--cc', cc,
                               '--cxx', cxx,
                               '--use-lit', lit]
+            # Enable fortran if flang is checked out
+            if checkout_flang:
+                fortran_flags = [
+                        '--cmake-define=TEST_SUITE_FORTRAN:STRING=ON',
+                        util.Interpolate(
+                            '--cmake-define=CMAKE_Fortran_COMPILER=' +
+                            '%(prop:builddir)s/'+compiler_path+'/bin/'+fc)]
+                test_suite_cmd.extend(fortran_flags)
             # Append any option provided by the user
             test_suite_cmd.extend(testsuite_flags)
 
