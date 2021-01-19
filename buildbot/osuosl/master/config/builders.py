@@ -1584,6 +1584,10 @@ all = [
                     extra_configure_args=[
                         "-DLLVM_TARGETS_TO_BUILD=X86",
                         "-DLLVM_EXPERIMENTAL_TARGETS_TO_BUILD=VE",
+                        "-DLLVM_BUILD_LLVM_DYLIB=On",
+                        "-DBUILD_SHARED_LIBS=Off",
+                        "-DLLVM_LINK_LLVM_DYLIB=On",
+                        "-DCLANG_LINK_CLANG_DYLIB=On",
                     ])},
 
 # Latest stable fedora running on Red Hat internal OpenShift cluster (PSI).
