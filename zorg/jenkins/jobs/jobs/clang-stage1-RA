@@ -1,0 +1,113 @@
+pipeline {
+    agent { label 'green-dragon-20' }
+
+    parameters {
+        string(name: 'GIT_REVISION', defaultValue: '*/main', description: 'Git revision to build')
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                dir('llvm-project') {
+                    checkout([$class: 'GitSCM', branches: [[name: params.GIT_REVISION]], userRemoteConfigs: [[url: 'https://github.com/llvm/llvm-project.git']]])
+                }
+                dir('llvm-zorg') {
+                    checkout([$class: 'GitSCM', branches: [[name: '*/main']], userRemoteConfigs: [[url: 'https://github.com/llvm/llvm-zorg.git']]])
+                }
+            }
+        }
+        stage('Build') {
+            steps {
+                timeout(90) {
+                    sh '''
+                    set -u
+                    rm -rf build.properties
+
+                    cd llvm-project
+                    git tag -a -m "First Commit" first_commit 97724f18c79c7cc81ced24239eb5e883bf1398ef || true
+
+                    git_desc=$(git describe --match "first_commit")
+                    export GIT_DISTANCE=$(echo ${git_desc} | cut -f 2 -d "-")
+
+                    sha=$(echo ${git_desc} | cut -f 3 -d "-")
+                    export GIT_SHA=${sha:1}
+
+                    # Also save the LLVM_REV until LNT server is taught about GIT
+                    export LLVM_REV=$(git show -q | grep "llvm-svn:" | cut -f2 -d":" | tr -d " ")
+
+                    cd -
+
+                    echo "GIT_DISTANCE=$GIT_DISTANCE" > build.properties
+                    echo "GIT_SHA=$GIT_SHA" >> build.properties
+                    echo "ARTIFACT=$JOB_NAME/clang-d$GIT_DISTANCE-g$GIT_SHA-t$BUILD_ID-b$BUILD_NUMBER.tar.gz" >> build.properties
+
+                    export PATH=$PATH:/usr/bin:/usr/local/bin
+
+                    # Set a MacOS minimum deployment target
+                    export MACOSX_DEPLOYMENT_TARGET=10.9
+
+                    rm -rf clang-build clang-install *.tar.gz
+                    python llvm-zorg/zorg/jenkins/monorepo_build.py cmake build \
+                      --assertions --cmake-type=RelWithDebInfo \
+                      --sccache --projects="clang;clang-tools-extra;compiler-rt;libcxx" \
+                      --cmake-flag='-DLIBCXX_ENABLE_SHARED=OFF'\
+                      --cmake-flag='-DLIBCXX_ENABLE_STATIC=OFF' \
+                      --cmake-flag='-DLIBCXX_INCLUDE_TESTS=OFF' \
+                      --cmake-flag='-DLIBCXX_ENABLE_EXPERIMENTAL_LIBRARY=OFF'
+                    '''
+                }
+            }
+        }
+        stage('Test') {
+            steps {
+                timeout(90) {
+                    sh '''
+                    set -u
+                    export PATH=$PATH:/usr/bin:/usr/local/bin
+                    python llvm-zorg/zorg/jenkins/monorepo_build.py cmake testlong
+                    '''
+                }
+                junit 'clang-build/testresults.xunit.xml'
+            }
+        }
+    }
+    post {
+        always {
+            scanForIssues tool: clang()
+        }
+        regression {
+            emailext subject: '$DEFAULT_SUBJECT',
+                    presendScript: '$DEFAULT_PRESEND_SCRIPT',
+                    postsendScript: '$DEFAULT_POSTSEND_SCRIPT',
+                    recipientProviders: [
+                            [$class: 'CulpritsRecipientProvider'],
+                            [$class: 'DevelopersRecipientProvider'],
+                            [$class: 'RequesterRecipientProvider'],
+                    ],
+                    replyTo: '$DEFAULT_REPLYTO',
+                    to: '$DEFAULT_RECIPIENTS',
+                    body:'$DEFAULT_CONTENT'
+        }
+        success {
+            script {
+                def props = readProperties(file: 'build.properties');
+                build job: 'upload_artifact', wait: false, parameters: [string(name: 'ARTIFACT', value: props.ARTIFACT)]
+            }
+            build job: 'clang-stage2-Rthinlto_relay', wait: false
+            build job: 'clang-stage2-cmake-RgSan_relay', wait: false
+            //build job: 'phase2_modules_relay', wait: false
+            build job: 'relay-lnt-test-suite', wait: false
+            build job: 'relay-lnt-ctmark', wait: false
+            build job: 'relay-test-suite-verify-machineinstrs', wait: false
+        }
+        unstable {
+            build job: 'clang-stage2-Rthinlto_relay', wait: false
+            build job: 'clang-stage2-cmake-RgSan_relay', wait: false
+            //build job: 'phase2_modules_relay', wait: false
+            build job: 'relay-lnt-test-suite', wait: false
+            build job: 'relay-lnt-ctmark', wait: false
+            build job: 'relay-test-suite-verify-machineinstrs', wait: false
+        }
+    }
+}
+
