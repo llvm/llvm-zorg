@@ -236,7 +236,10 @@ all = [
                         "-DLLVM_DEFAULT_TARGET_TRIPLE=aarch64-windows-msvc",
                         "-DLLVM_HOST_TRIPLE=aarch64-windows-msvc",
                         "-DLLVM_TARGET_ARCH=AArch64",
+                        # FIXME: compiler-rt\lib\sanitizer_common\sanitizer_unwind_win.cpp assumes WIN64 is x86_64,
+                        #        so, before that's fixed, disable everything that triggers its build.
                         "-DCOMPILER_RT_BUILD_SANITIZERS=OFF",
+                        "-DCOMPILER_RT_BUILD_MEMPROF=OFF",
                         "-DCOMPILER_RT_BUILD_XRAY=OFF"])},
 
     # Cortex-A15 LNT test-suite in Benchmark mode
@@ -495,7 +498,10 @@ all = [
                         "-DLLVM_DEFAULT_TARGET_TRIPLE=aarch64-windows-msvc",
                         "-DLLVM_HOST_TRIPLE=aarch64-windows-msvc",
                         "-DLLVM_TARGET_ARCH=AArch64",
+                        # FIXME: compiler-rt\lib\sanitizer_common\sanitizer_unwind_win.cpp assumes WIN64 is x86_64,
+                        #        so, before that's fixed, disable everything that triggers its build.
                         "-DCOMPILER_RT_BUILD_SANITIZERS=OFF",
+                        "-DCOMPILER_RT_BUILD_MEMPROF=OFF",
                         "-DCOMPILER_RT_BUILD_XRAY=OFF"])},
 
     {'name' : 'clang-x64-windows-msvc',
