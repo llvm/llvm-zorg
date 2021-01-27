@@ -22,7 +22,13 @@ def main(argv):
     with step('cmake', halt_on_fail=True):
         projects = ['llvm', 'libc', 'clang', 'clang-tools-extra']
 
-        cmake_args = ['-GNinja']
+        # On most systems the default generator is make and the default
+        # compilers are gcc and g++. We make it explicit here that we want
+        # clang and ninja which reduces one step of setting environment
+        # variables when setting up workers.
+        cmake_args = ['-GNinja',
+                      '-DCMAKE_C_COMPILER=clang',
+                      '-DCMAKE_CXX_COMPILER=clang++']
         if args.debug:
             cmake_args.append('-DCMAKE_BUILD_TYPE=Debug')
         else:
