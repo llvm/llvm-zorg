@@ -56,12 +56,6 @@ def get_all():
         create_worker("linaro-armv8-windows-msvc-01", properties={'jobs' : 8}, max_builds=1),
         create_worker("linaro-armv8-windows-msvc-02", properties={'jobs' : 8}, max_builds=1),
 
-        # ARMv7 build cache workers
-        create_worker("packet-linux-armv7-slave-1", properties={'jobs' : 64}, max_builds=1),
-
-        # AArch64 build cache worker
-        create_worker("packet-linux-aarch64-slave-1", properties={'jobs' : 64}, max_builds=1),
-
         # Windows Server 2016 Intel Xeon(R) Quad 2.30 GHz, 56GB of RAM
         create_worker("win-py3-buildbot", properties={'jobs' : 64}, max_builds=1),
 

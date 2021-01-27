@@ -44,15 +44,6 @@ all = [
         dumpMailsToLog = True,
         ),
 
-    # In addition to that the following notifiers are defined for special
-    # cases.
-    reporters.MailNotifier(
-        fromaddr = "llvm.buildmaster@lab.llvm.org",
-        sendToInterestedUsers = False,
-        extraRecipients = ["leandro.nunes@arm.com"],
-        subject = "Build %(builder)s Failure",
-        mode = "failing",
-        builders = ["clang-aarch64-linux-build-cache", "clang-armv7-linux-build-cache"]),
     reporters.MailNotifier(
         fromaddr = "llvm.buildmaster@lab.llvm.org",
         sendToInterestedUsers = False,
