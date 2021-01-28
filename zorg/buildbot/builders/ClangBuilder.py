@@ -532,7 +532,7 @@ def _getClangCMakeBuildFactory(
                                workdir='test',
                                env=env))
         f.addStep(ShellCommand(name='recreate sandbox',
-                               command=['virtualenv', 'sandbox'],
+                               command=['virtualenv', '--python=python3', 'sandbox'],
                                haltOnFailure=True,
                                description='recreating sandbox',
                                workdir='test',
