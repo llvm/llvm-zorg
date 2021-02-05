@@ -970,17 +970,6 @@ all = [
                     extra_configure_args = [
                         '-DLLVM_ENABLE_WERROR=OFF'])},
 
-    {'name' : "lld-x86_64-freebsd",
-    'tags'  : ["lld"],
-    'workernames' : ["as-worker-4"],
-    'builddir': "lld-x86_64-freebsd",
-    'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
-                    depends_on_projects=['llvm', 'lld'],
-                    extra_configure_args=[
-                        '-DCMAKE_EXE_LINKER_FLAGS=-lcxxrt',
-                        '-DLLVM_ENABLE_WERROR=OFF'],
-                    env={'CXXFLAGS' : "-std=c++11 -stdlib=libc++"})},
-
     {'name' : "ppc64le-lld-multistage-test",
     'tags'  : ["lld", "ppc", "ppc64le"],
     'workernames' : ["ppc64le-lld-multistage-test"],
