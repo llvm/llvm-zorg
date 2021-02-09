@@ -609,15 +609,11 @@ def lldb_cmake_builder(target, variant=None):
         run_cmd(conf.lldbbuilddir(), [NINJA, '-v', 'install'])
         footer()
 
-    if target == 'all' or target == 'testlong':
-        header("Run Debug Info Tests")
-        run_cmd(conf.lldbbuilddir(), [NINJA, '-v', 'check-debuginfo'])
-        footer()
-
     if target == 'all' or target == 'test' or target == 'testlong':
         header("Run Tests")
         run_cmd(conf.lldbbuilddir(),
-                ['/usr/bin/env', 'TERM=vt100', NINJA, '-v', 'check-lldb'])
+                ['/usr/bin/env', 'TERM=vt100', NINJA, '-v', 'check-debuginfo',
+                'check-lldb', '-k2'])
         footer()
 
     for test_target in conf.cmake_test_targets:
