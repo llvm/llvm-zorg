@@ -603,7 +603,9 @@ all = [
                     checkout_lld=False,
                     useTwoStage=False,
                     stage1_config='Release',
-                    extra_cmake_args=["-DLLVM_ENABLE_ASSERTIONS=ON"])},
+                    extra_cmake_args=[
+                        "-DLLVM_ENABLE_ASSERTIONS=ON",
+                        "-DPYTHON_EXECUTABLE:FILEPATH=/usr/local/bin/python3"])},
 
     {'name' : "clang-ppc64le-rhel",
     'tags'  : ["clang", "ppc", "ppc64le"],
