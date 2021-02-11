@@ -90,11 +90,11 @@ def getSingleBranchSchedulers(
                 "}")
     return automatic_schedulers
 
-# TODO: Move these settings to the configuration file.
-_repourl = "https://github.com/llvm/llvm-project"
-_branch = "main"
-
 def getForceSchedulers(builders):
+    # TODO: Move these settings to the configuration file.
+    _repourl = "https://github.com/llvm/llvm-project"
+    _branch = "main"
+
     # Walk over all builders and collect their names.
     scheduler_builders = [
         builder.name for builder in builders
@@ -120,8 +120,10 @@ def getForceSchedulers(builders):
                 codebases       = [
                     util.CodebaseParameter(
                         codebase    = "",
-                        branch          = util.FixedParameter(
+                        branch      = util.StringParameter(
                             name        = "branch",
+                            label       = "branch:",
+                            size        = 64,
                             default     = _branch
                         ),
                         revision    = util.StringParameter(
