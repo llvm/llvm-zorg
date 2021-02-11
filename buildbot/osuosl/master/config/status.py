@@ -132,8 +132,9 @@ all = [
     reporters.MailNotifier(
         fromaddr = "llvm.buildmaster@lab.llvm.org",
         sendToInterestedUsers = False,
-        extraRecipients = ["stilis@microsoft.com", "jonas@devlieghere.com",
-                           "diprou@microsoft.com", "makudrya@microsoft.com"],
+        extraRecipients = ["stilis@microsoft.com",
+                           "diprou@microsoft.com",
+                           "makudrya@microsoft.com"],
         subject = "Build %(builder)s Failure",
         mode = "failing",
         builders = ["lldb-x64-windows-ninja"]),
