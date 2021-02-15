@@ -611,9 +611,13 @@ def lldb_cmake_builder(target, variant=None):
 
     if target == 'all' or target == 'test' or target == 'testlong':
         header("Run Tests")
-        run_cmd(conf.lldbbuilddir(),
-                ['/usr/bin/env', 'TERM=vt100', NINJA, '-v', 'check-debuginfo',
-                'check-lldb', '-k2'])
+	if variant == 'matrix' or variant == 'sanitized':
+            test_command = ['/usr/bin/env', 'TERM=vt100', NINJA,
+                            '-v', 'check-lldb']
+	else:
+            test_command = ['/usr/bin/env', 'TERM=vt100', NINJA,
+                            '-v', 'check-debuginfo', 'check-lldb', '-k2']
+        run_cmd(conf.lldbbuilddir(), test_command)
         footer()
 
     for test_target in conf.cmake_test_targets:
