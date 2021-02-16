@@ -123,6 +123,7 @@ def get_all():
 
         # POWER 8 PowerPC AIX 7.2
         create_worker("aix-1", properties={'jobs': 4}, max_builds=1),
+        create_worker("aix-ppc-libcxx", properties={'jobs': 4}, max_builds=1),
 
         # IBM z13 (s390x), Ubuntu 16.04.2
         create_worker("systemz-1", properties={'jobs': 4, 'vcs_protocol': 'https'}, max_builds=4),

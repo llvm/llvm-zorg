@@ -1338,6 +1338,18 @@ all = [
                         'CMAKE_C_FLAGS': '-mcpu=cortex-a57',
                         'CMAKE_CXX_FLAGS': '-mcpu=cortex-a57'})},
 
+    {'name' : 'libcxx-libcxxabi-libunwind-ppc-aix',
+    'tags'  : ["libcxx"],
+    'workernames' : ['aix-ppc-libcxx'],
+    'builddir': 'libcxx-libcxxabi-libunwind-ppc-aix',
+    'factory' : LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
+                    env={'OBJECT_MODE': '32'},
+                    cmake_extra_opts={
+                        'CMAKE_BUILD_TYPE': 'Release',
+                        'CMAKE_C_COMPILER': 'gcc',
+                        'CMAKE_CXX_COMPILER': 'g++',
+                        'CMAKE_AR': '/usr/bin/ar'})},
+
     {'name': "fuchsia-x86_64-linux",
     'tags'  : ["toolchain"],
     'workernames' :["fuchsia-debian-64-us-central1-a-1", "fuchsia-debian-64-us-central1-b-1"],
