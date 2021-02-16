@@ -202,7 +202,7 @@ class Configuration(object):
 
     def branch(self):
         """Figure out the source branch name.
-	   Not using GIT_BRANCH env var from Jenkins as that includes the
+           Not using GIT_BRANCH env var from Jenkins as that includes the
            remote name too.
         """
         if not os.environ.get('TESTING', False):
@@ -538,7 +538,7 @@ def lldb_cmake_builder(target, variant=None):
 
     # Construct lit arguments.
     lit_args = ['-v', '--time-tests', '--shuffle',
-		'--xunit-xml-output={}'.format(results_file), '-v']
+                '--xunit-xml-output={}'.format(results_file), '-v']
     if conf.max_parallel_tests:
         lit_args.extend(['-j', conf.max_parallel_tests])
     if variant == 'sanitized':
@@ -611,10 +611,10 @@ def lldb_cmake_builder(target, variant=None):
 
     if target == 'all' or target == 'test' or target == 'testlong':
         header("Run Tests")
-	if variant == 'matrix' or variant == 'sanitized':
+        if variant == 'matrix' or variant == 'sanitized':
             test_command = ['/usr/bin/env', 'TERM=vt100', NINJA,
                             '-v', 'check-lldb']
-	else:
+        else:
             test_command = ['/usr/bin/env', 'TERM=vt100', NINJA,
                             '-v', 'check-debuginfo', 'check-lldb', '-k2']
         run_cmd(conf.lldbbuilddir(), test_command)
