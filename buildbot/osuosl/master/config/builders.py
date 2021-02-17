@@ -1445,6 +1445,24 @@ all = [
                         "-DCMAKE_BUILD_TYPE=Release",
                     ])},
 
+    {'name' : "flang-aarch64-ubuntu-out-of-tree-new-driver",
+    'tags'  : ["flang"],
+    'workernames' : ["linaro-aarch64-flang-oot-new-driver"],
+    'builddir': "flang-aarch64-out-of-tree-new-driver",
+    'factory' : FlangBuilder.getFlangOutOfTreeBuildFactory(
+                    llvm_extra_configure_args=[
+                        "-DLLVM_TARGETS_TO_BUILD=AArch64",
+                        "-DCMAKE_CXX_STANDARD=17",
+                        "-DFLANG_BUILD_NEW_DRIVER=ON",
+                        "-DLLVM_ENABLE_WERROR=OFF",
+                        "-DLLVM_ENABLE_ASSERTIONS=ON",
+                        "-DCMAKE_BUILD_TYPE=Release",
+                    ],
+                    flang_extra_configure_args=[
+                        "-DFLANG_ENABLE_WERROR=ON",
+                        "-DCMAKE_BUILD_TYPE=Release",
+                    ])},
+
     {'name' : "flang-x86_64-linux",
     'tags'  : ["flang"],
     'workernames' : ["nersc-flang"],
