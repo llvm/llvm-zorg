@@ -137,17 +137,17 @@ all = [
                         "-DLLVM_LIT_ARGS=-vv -j32"])},
 
     {'name' : "llvm-clang-x86_64-expensive-checks-win",
-    'tags'  : ["llvm", "clang", "expensive-checks"],
+    'tags'  : ["llvm", "expensive-checks"],
     'workernames' : ["as-worker-93"],
     'builddir': "llvm-clang-x86_64-expensive-checks-win",
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaWithMSVCBuildFactory(
                     vs="autodetect",
+                    depends_on_projects=["llvm"],
                     clean=True,
                     extra_configure_args=[
                         "-DLLVM_ENABLE_EXPENSIVE_CHECKS=ON",
                         "-DLLVM_ENABLE_WERROR=OFF",
-                        "-DCMAKE_BUILD_TYPE=Debug",
-                        "-DLLVM_LIT_ARGS=-vv"])},
+                        "-DCMAKE_BUILD_TYPE=Debug"])},
 
     {'name' : "llvm-clang-x86_64-expensive-checks-debian",
     'tags'  : ["llvm", "expensive-checks"],
