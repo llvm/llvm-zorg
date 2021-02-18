@@ -71,8 +71,8 @@ def getSingleBranchSchedulers(
             automatic_schedulers.append(
                 schedulers.SingleBranchScheduler(
                     name=automatic_scheduler_name,
-                    treeStableTimer=kwargs.get('treeStableTimer', None),
-                    reason="Merge to github %s branch" % filter_branch,
+                    treeStableTimer=treeStableTimer,
+                    reason="Merge to github {} branch".format(filter_branch),
                     builderNames=sch_builders,
                     change_filter=util.ChangeFilter(
                         project_fn= \
@@ -83,10 +83,10 @@ def getSingleBranchSchedulers(
             )
 
             log.msg(
-                "Generated SingleBranchScheduler: { name='%s'" % automatic_scheduler_name,
+                "Generated SingleBranchScheduler: { name='{}'".format(automatic_scheduler_name),
                 ", builderNames=", sch_builders,
-                ", change_filter=", projects, " (branch: %s)" % filter_branch,
-                ", treeStableTimer=%s" % treeStableTimer,
+                ", change_filter=", projects, " (branch: {})".format(filter_branch),
+                ", treeStableTimer={}".format(treeStableTimer),
                 "}")
     return automatic_schedulers
 
