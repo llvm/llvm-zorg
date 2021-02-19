@@ -166,7 +166,12 @@ function test_on_device {
       echo "$_serial" >> tested_arch_$_arch
       BUILD_ID=$(${ADB} -s $_serial shell getprop ro.build.id | tr -d '\r')
       BUILD_FLAVOR=$(${ADB} -s $_serial shell getprop ro.build.flavor | tr -d '\r')
-      test_arch_on_device "$_arch" "$_serial" "$BUILD_ID" "$BUILD_FLAVOR"
+      (
+        # Test only one arch at a time to avoid simultaneously writes into the
+        # same compiler-rt build dir.
+        flock -x $lock_fd
+        test_arch_on_device "$_arch" "$_serial" "$BUILD_ID" "$BUILD_FLAVOR"
+      ) {lock_fd}>$ROOT/${_arch}.lock
     fi
   done
 }
