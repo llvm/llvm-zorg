@@ -213,16 +213,16 @@ class Configuration(object):
                 cmd = ['git', '-C', conf.srcdir(), 'rev-parse', 'HEAD']
                 out = run_collect_output(cmd, stderr=subprocess.STDOUT).strip()
             return out
-        return 'master'
+        return 'main'
 
     def link_memory_usage(self):
         """Guesstimate the maximum link memory usage for this build.
-           We are only building master here so we will just use that value
+           We are only building main here so we will just use that value
         """
         #  Determinited experimentally.
-        usages = {'master': 3.5}
-        if self.branch() == 'master':
-            return usages['master']
+        usages = {'main': 3.5}
+        if self.branch() == 'main':
+            return usages['main']
         else:
             raise NotImplementedError(
                 "Unknown link memory usage." + self.branch())

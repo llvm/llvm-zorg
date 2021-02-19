@@ -3,7 +3,7 @@
 # RUN: export TESTING=1
 # RUN: export JOB_NAME="FOO"
 # RUN: export BUILD_NUMBER=321
-# RUN: export BRANCH=master
+# RUN: export BRANCH=main
 # Tell monorepo_build.py to just print commands instead of running.
 # RUN: mkdir -p %t.SANDBOX/host-compiler/lib %t.SANDBOX/host-compiler/bin %t.SANDBOX/llvm-project/llvm %t.SANDBOX/llvm-project/clang %t.SANDBOX/llvm-project/libcxx %t.SANDBOX/llvm-project/compiler-rt %t.SANDBOX/llvm-project/debuginfo-tests %t.SANDBOX/llvm-project/clang-tools-extra %t.SANDBOX/llvm-project/lldb
 # RUN: touch %t.SANDBOX/host-compiler/bin/clang
