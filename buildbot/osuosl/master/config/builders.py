@@ -1494,6 +1494,22 @@ all = [
                         "-DCMAKE_CXX_STANDARD=17",
                     ])},
 
+    {'name' : "flang-aarch64-ubuntu-rel-assert",
+    'tags'  : ["flang"],
+    'workernames' : ["linaro-aarch64-flang-rel-assert"],
+    'builddir': "flang-aarch64-rel",
+    'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
+                    clean=True,
+                    checks=['check-flang'],
+                    depends_on_projects=['llvm','mlir','clang','flang'],
+                    extra_configure_args=[
+                        "-DLLVM_TARGETS_TO_BUILD=AArch64",
+                        "-DFLANG_BUILD_NEW_DRIVER=ON",
+                        "-DLLVM_ENABLE_ASSERTIONS=ON",
+                        "-DCMAKE_BUILD_TYPE=Release",
+                        "-DCMAKE_CXX_STANDARD=17",
+                    ])},
+
     {'name' : "flang-x86_64-linux",
     'tags'  : ["flang"],
     'workernames' : ["nersc-flang"],
