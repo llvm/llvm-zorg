@@ -242,6 +242,13 @@ all = [
         subject = "ThinLTO WPD Failure: %(builder)s",
         mode = "failing",
         builders = ["thinlto-x86-64-bot1"]),
+    reporters.MailNotifier(
+        fromaddr = "llvm.buildmaster@lab.llvm.org",
+        sendToInterestedUsers = False,
+        extraRecipients = ["douglas.yung@sony.com"],
+        subject = "Build %(builder)s Failure",
+        mode = "failing",
+        builders = ["sie-linux-builder"]),
 
 ]
 
