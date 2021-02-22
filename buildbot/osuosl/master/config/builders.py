@@ -1,4 +1,3 @@
-# TODO: Rename workers with "slave" as a part of the name.
 from importlib import reload
 
 from buildbot.plugins import util
@@ -1206,6 +1205,8 @@ all = [
     'factory' : AnnotatedBuilder.getAnnotatedBuildFactory(
                     script="sanitizer-windows.py",
                     depends_on_projects=["llvm", "clang", "lld", "compiler-rt"])},
+
+# OpenMP builders.
 
     {'name' : "openmp-gcc-x86_64-linux-debian",
     'tags'  : ["openmp"],
