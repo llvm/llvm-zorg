@@ -632,7 +632,7 @@ all = [
 
     {'name' : "clang-ppc64-aix-ppc64le",
     'tags'  : ["clang", "aix", "ppc", "ppc64le"],
-    'workernames' : ["aix-1"],
+    'workernames' : ["aix-ppc64-ppc64le"],
     'builddir': "clang-ppc64-aix-ppc64le",
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
                     jobs=4,
