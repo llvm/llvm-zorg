@@ -159,19 +159,21 @@ def getForceSchedulers(builders):
 
 # TODO: Abstract this kind of scheduler better.
 def getLntSchedulers():
-    project = "lnt"
-    lnt_builders = [
+    _project = "lnt"
+    _branch = 'master'
+    _repourl = "https://github.com/llvm/llvm-lnt"
+    _lnt_builders = [
         "publish-lnt-sphinx-docs",
     ]
     return [
         schedulers.SingleBranchScheduler(
             name="lnt-scheduler",
             treeStableTimer=kwargs.get('treeStableTimer', None),
-            reason="Merge to LNT github {} branch".format(filter_branch),
-            builderNames=lnt_builders,
+            reason="Merge to LNT github {} branch".format(_branch),
+            builderNames=_lnt_builders,
             change_filter=util.ChangeFilter(
-                project_fn=project,
-                branch=filter_branch)),
+                project_fn=_project,
+                branch=_branch)),
 
         schedulers.ForceScheduler(
             name            = "force-build-scheduler",
@@ -188,7 +190,7 @@ def getLntSchedulers():
                          ],
                          default     = "Build a particular revision"
             ),
-            builderNames    = lnt_builders,
+            builderNames    = _lnt_builders,
             codebases       = [
                 util.CodebaseParameter(
                     codebase    = "",
@@ -208,7 +210,7 @@ def getLntSchedulers():
                     ),
                     project     = util.FixedParameter(
                         name        = "project",
-                        default     = project
+                        default     = _project
                     )
                 )
             ],
