@@ -246,7 +246,9 @@ all = [
 # to choose from, including email senders, and IRC bots.
 def getReporters():
     if config.options.getboolean('Master Options', 'is_production'):
+        log.msg(">>> getReporters: Production mode. All reporters are registered.")
         return all
     else:
         # Staging buildbot does not report issues.
+        log.msg(">>> getReporters: Staging buildbot does not report issues.")
         return []

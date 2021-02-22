@@ -19,7 +19,7 @@ def isProjectOfInterest(cp, projects_of_interest):
 
 # Since we have many parametric builders, we dynamically build the minimum set
 # of schedulers, which covers all actually used combinations of dependencies.
-def getSingleBranchSchedulers(
+def getMainBranchSchedulers(
     builders,
     explicitly_set_schedulers = None,
     **kwargs):
@@ -60,7 +60,7 @@ def getSingleBranchSchedulers(
         ])
 
         for projects in set_of_dependencies:
-            sch_builders = [
+            main_builders = [
                 b.name
                 for b in builders_with_automatic_schedulers
                 if frozenset(getattr(b.factory, 'depends_on_projects')) == projects
@@ -73,7 +73,7 @@ def getSingleBranchSchedulers(
                     name=automatic_scheduler_name,
                     treeStableTimer=treeStableTimer,
                     reason="Merge to github {} branch".format(filter_branch),
-                    builderNames=sch_builders,
+                    builderNames=main_builders,
                     change_filter=util.ChangeFilter(
                         project_fn= \
                             lambda c, projects_of_interest=frozenset(projects):
@@ -83,8 +83,8 @@ def getSingleBranchSchedulers(
             )
 
             log.msg(
-                "Generated SingleBranchScheduler: { name='{}'".format(automatic_scheduler_name),
-                ", builderNames=", sch_builders,
+                "Generated SingleBranchScheduler: {{ name='{}'".format(automatic_scheduler_name),
+                ", builderNames=", main_builders,
                 ", change_filter=", projects, " (branch: {})".format(filter_branch),
                 ", treeStableTimer={}".format(treeStableTimer),
                 "}")
