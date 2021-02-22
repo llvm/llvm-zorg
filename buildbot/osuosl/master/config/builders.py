@@ -1464,6 +1464,21 @@ all = [
                         "-DCMAKE_BUILD_TYPE=Release",
                     ])},
 
+    {'name' : "flang-aarch64-ubuntu-debug",
+    'tags'  : ["flang"],
+    'workernames' : ["linaro-aarch64-flang-debug"],
+    'builddir': "flang-aarch64-debug",
+    'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
+                    clean=True,
+                    checks=['check-flang'],
+                    depends_on_projects=['llvm','mlir','clang','flang'],
+                    extra_configure_args=[
+                        "-DLLVM_TARGETS_TO_BUILD=AArch64",
+                        "-DFLANG_BUILD_NEW_DRIVER=ON",
+                        "-DCMAKE_BUILD_TYPE=Debug",
+                        "-DCMAKE_CXX_STANDARD=17",
+                    ])},
+
     {'name' : "flang-x86_64-linux",
     'tags'  : ["flang"],
     'workernames' : ["nersc-flang"],
