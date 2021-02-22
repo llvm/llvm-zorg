@@ -9,19 +9,6 @@ status_email = str(config.options.get('Master Options', 'status_email')).split('
 
 all = [
 
-    # Note: reporters.GitHubStatusPush requires txrequests package to allow
-    # interaction with GitHub REST API.
-    reporters.GitHubStatusPush(
-        str(config.options.get('GitHub Status', 'token')),
-        context = Interpolate("%(prop:buildername)s"),
-        verbose = True, # TODO: Turn off the verbosity once this is working reliably.
-        builders = [
-            "llvm-clang-x86_64-expensive-checks-ubuntu",
-            "llvm-clang-x86_64-win-fast",
-            "clang-x86_64-debian-fast",
-            "llvm-clang-x86_64-expensive-checks-debian",
-        ]),
-
     # Report github status for all the release builders,
     # i.e. those with the "release" tag.
     reporters.GitHubStatusPush(
@@ -29,9 +16,15 @@ all = [
         context = Interpolate("%(prop:buildername)s"),
         verbose = True, # TODO: Turn off the verbosity once this is working reliably.
         builders = [
-            b.get('name') for b in config.release_builders.all
-            if 'release' in b.get('tags', [])
-        ]),
+                "llvm-clang-x86_64-expensive-checks-ubuntu",
+                "llvm-clang-x86_64-win-fast",
+                "clang-x86_64-debian-fast",
+                "llvm-clang-x86_64-expensive-checks-debian",
+            ] + [
+                b.get('name') for b in config.release_builders.all
+                if 'release' in b.get('tags', [])
+            ]
+        ),
 
     reporters.IRC(
         useColors = False,
