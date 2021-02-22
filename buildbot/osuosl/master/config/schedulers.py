@@ -43,6 +43,7 @@ def getMainBranchSchedulers(
         builder for builder in builders
         if builder.name not in builders_with_explicit_schedulers
         if getattr(builder.factory, 'depends_on_projects', None)
+        if 'release' not in getattr(builder, 'tags', [])
     ]
 
     filter_branch = 'main'
@@ -86,6 +87,78 @@ def getMainBranchSchedulers(
                 "Generated SingleBranchScheduler: {{ name='{}'".format(automatic_scheduler_name),
                 ", builderNames=", main_builders,
                 ", change_filter=", projects, " (branch: {})".format(filter_branch),
+                ", treeStableTimer={}".format(treeStableTimer),
+                "}")
+    return automatic_schedulers
+
+def getReleaseBranchSchedulers(
+    builders,
+    explicitly_set_schedulers = None,
+    **kwargs):
+    """
+    I'm taking over all of not yet assigned builders with the
+    declared source code dependencies and the 'release' tag,
+    and automatically generate a minimum set of SingleBranchSchedulers
+    to handle all the declared source code dependency combinations.
+    """
+
+    builders_with_explicit_schedulers = set()
+    if explicitly_set_schedulers:
+        # TODO: Make a list of builder names with already set schedulers.
+        # builders_with_explicit_schedulers.add(builder)
+        pass
+
+    # For the builders created with LLVMBuildFactory or similar,
+    # we always use automatic schedulers,
+    # unless schedulers already explicitly set.
+    builders_with_automatic_schedulers = [
+        builder for builder in builders
+        if builder.name not in builders_with_explicit_schedulers
+        if getattr(builder.factory, 'depends_on_projects', None)
+        if 'release' in getattr(builder, 'tags', [])
+    ]
+
+    treeStableTimer = kwargs.get('treeStableTimer', None)
+
+    automatic_schedulers = []
+
+    # Do we have any to take care of?
+    if builders_with_automatic_schedulers:
+        # Let's reconsile first to get a unique set of dependencies.
+        # We need a set of unique sets of dependent projects.
+        set_of_dependencies = set([
+            frozenset(getattr(b.factory, 'depends_on_projects'))
+            for b in builders_with_automatic_schedulers
+        ])
+
+        for projects in set_of_dependencies:
+            release_builders = [
+                b.name
+                for b in builders_with_automatic_schedulers
+                if frozenset(getattr(b.factory, 'depends_on_projects')) == projects
+            ]
+
+            automatic_scheduler_name =  "release:" + ",".join(sorted(projects))
+
+            automatic_schedulers.append(
+                schedulers.SingleBranchScheduler(
+                    name=automatic_scheduler_name,
+                    treeStableTimer=treeStableTimer,
+                    reason="Merge to github release branch",
+                    builderNames=release_builders,
+                    change_filter=util.ChangeFilter(
+                        project_fn= \
+                            lambda c, projects_of_interest=frozenset(projects):
+                                isProjectOfInterest(c, projects_of_interest),
+                        branch_fn= \
+                            lambda branch: branch.startswith('release/'))
+                )
+            )
+
+            log.msg(
+                "Generated release SingleBranchScheduler: {{ name='{}'".format(automatic_scheduler_name),
+                ", builderNames=", release_builders,
+                ", change_filter=", projects, " (branch: {release/*})",
                 ", treeStableTimer={}".format(treeStableTimer),
                 "}")
     return automatic_schedulers

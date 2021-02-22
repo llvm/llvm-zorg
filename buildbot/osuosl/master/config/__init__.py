@@ -12,6 +12,7 @@ options.read(os.path.join(os.path.dirname(__file__), 'local.cfg'))
 
 import config.auth
 import config.builders
+import config.release_builders
 import config.schedulers
 import config.workers
 import config.status
@@ -22,4 +23,5 @@ reload(config.auth)
 reload(config.workers)
 reload(config.schedulers)
 reload(config.builders)
+reload(release_builders)
 reload(config.status)

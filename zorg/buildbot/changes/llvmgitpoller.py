@@ -18,24 +18,34 @@ class LLVMPoller(changes.GitPoller):
     them for builds scheduling."""
 
     _repourl = "https://github.com/llvm/llvm-project"
-    _branch = "main"
 
-    compare_attrs = ["repourl", "branch", "workdir",
+    compare_attrs = ["repourl", "branches", "workdir",
                      "pollInterval", "gitbin", "usetimestamps",
                      "category", "project",
                      "projects"]
 
+    def _check_branches(branch):
+        log.msg("LLVMPoller: _check_branches: branch={}", branch)
+
+        if branch == "refs/heads/main":
+            # Always listen for changes in the main branch.
+            return True
+        else:
+            # We are also interested in the release branches.
+            # Some builders will be building changes from there as well.
+            return re.search(r"refs\/heads\/release\/\d\d+.*", branch)
+
     def __init__(self,
-                 repourl=_repourl, branch=_branch,
+                 repourl=_repourl, branches=_check_branches,
                  **kwargs):
 
         self.cleanRe = re.compile(r"Require(?:s?)\s*.*\s*clean build", re.IGNORECASE + re.MULTILINE)
         self.cleanCfg = re.compile(r"(CMakeLists\.txt$|\.cmake$|\.cmake\.in$)")
 
-        # TODO: Add support for an optional list of projects.
-        # For now we always watch all the projects.
+        # Note: We always watch all the projects, then schedulers decide
+        # to build or not to build.
 
-        super().__init__(repourl=repourl, branch=branch, **kwargs)
+        super().__init__(repourl=repourl, branches=branches, **kwargs)
 
     def _transform_path(self, fileList):
         """
@@ -111,7 +121,7 @@ class LLVMPoller(changes.GitPoller):
                         newRev, branch))
                 else:
                     # This branch is known, but it now points to a different
-                    # commit than last time we saw it, rebuild.
+                    # commit than the last time we saw it, rebuild.
                     log.msg('LLVMPoller: rebuilding {} for updated branch "{}"'.format(
                         newRev, branch))
 
@@ -163,8 +173,9 @@ class LLVMPoller(changes.GitPoller):
                     properties['clean_obj'] = (True, "change")
 
             log.msg("LLVMPoller: creating a change rev=%s" % rev)
-            log.msg("  >>> revision=%s, timestamp=%s, author=%s, committer=%s, project=%s, files=%s, comments=\"%s\", properties=%s" % \
-                (bytes2unicode(rev, encoding=self.encoding), datetime.fromtimestamp(timestamp), author, committer,
+            log.msg("  >>> branch=%s, revision=%s, timestamp=%s, author=%s, committer=%s, project=%s, files=%s, comments=\"%s\", properties=%s" % \
+                (bytes2unicode(self._removeHeads(branch)),
+                bytes2unicode(rev, encoding=self.encoding), datetime.fromtimestamp(timestamp), author, committer,
                 projects, files, comments, properties))
 
             yield self.master.data.updates.addChange(

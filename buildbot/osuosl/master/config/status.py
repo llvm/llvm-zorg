@@ -22,6 +22,17 @@ all = [
             "llvm-clang-x86_64-expensive-checks-debian",
         ]),
 
+    # Report github status for all the release builders,
+    # i.e. those with the "release" tag.
+    reporters.GitHubStatusPush(
+        str(config.options.get('GitHub Status', 'token')),
+        context = Interpolate("%(prop:buildername)s"),
+        verbose = True, # TODO: Turn off the verbosity once this is working reliably.
+        builders = [
+            b.get('name') for b in config.release_builders.all
+            if 'release' in b.get('tags', [])
+        ]),
+
     reporters.IRC(
         useColors = False,
         host = str(config.options.get('IRC', 'host')),
