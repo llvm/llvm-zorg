@@ -236,4 +236,7 @@ def get_all():
 
         # Ubuntu 20.04 on AWS, x86_64 PS4 target
         create_worker("sie-linux-builder", properties={'jobs': 40}, max_builds=1),
+
+        # XCore target, Ubuntu 20.04 x64 host
+        create_worker("xcore-ubuntu20-x64", properties={'jobs': 2}, max_builds=1),
         ]

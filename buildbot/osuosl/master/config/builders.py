@@ -838,6 +838,22 @@ all = [
                         '-DLLVM_ENABLE_ASSERTIONS=ON',
                         '-DLLVM_TARGETS_TO_BUILD=X86'])},
 
+    {'name' : "clang-xcore-ubuntu-20-x64",
+    'tags'  : ["clang"],
+    'workernames' : ["xcore-ubuntu20-x64"],
+    'builddir': "clang-xcore-ubuntu-20-x64",
+    'factory' : ClangBuilder.getClangCMakeBuildFactory(
+                    jobs=2,
+                    test=True,
+                    testStage1=True,
+                    useTwoStage=False,
+                    stage1_config='Release',
+                    extra_cmake_args=[
+                        "-DLLVM_TARGETS_TO_BUILD:STRING=XCore",
+                        "-DLLVM_DEFAULT_TARGET_TRIPLE:STRING=xcore-unknown-unknown-elf",
+                        "-DLLVM_ENABLE_THREADS:BOOL=OFF",
+                        "-DLLVM_LIT_ARGS:STRING=--xunit-xml-output xunit.xml -sv"])},
+
 # Polly builders.
 
     {'name' : "polly-arm-linux",
