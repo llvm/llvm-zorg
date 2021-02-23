@@ -38,7 +38,7 @@ echo "creating worker ${WORKER_NAME} at port ${BUILDBOT_PORT}..."
 buildbot-worker create-worker --keepalive=200 "${WORKER_NAME}" \
   lab.llvm.org:${BUILDBOT_PORT} "${WORKER_NAME}" "${WORKER_PASSWORD}"
 
-# start the daemon, this command return immetiately
+# start the daemon, this command returns immediately
 echo "starting worker..."
 buildbot-worker start "${WORKER_NAME}"
 
