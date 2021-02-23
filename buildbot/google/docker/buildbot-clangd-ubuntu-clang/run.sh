@@ -40,7 +40,12 @@ buildbot-worker create-worker --keepalive=200 "${WORKER_NAME}" \
 
 # start the daemon, this command returns immediately
 echo "starting worker..."
-buildbot-worker start "${WORKER_NAME}"
+set +e
+if ! buildbot-worker start "${WORKER_NAME}"; then
+  echo ERROR: starting worker failed. contents of twistd.log:
+  cat "${WORKER_NAME}/twistd.log"
+  exit 1
+fi
 
 # To keep the container running and produce log outputs: dump the worker
 # log to stdout
