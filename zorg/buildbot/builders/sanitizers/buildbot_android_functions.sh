@@ -17,7 +17,7 @@ function download_android_tools {
     [[ -d ${NDK_DIR} ]] && rm -rf ${NDK_DIR}
     [[ -d ${VERSION} ]] && rm -rf ${VERSION}
     [[ -f ${FILE_NAME} ]] && rm -f ${FILE_NAME}
-    wget ${NDK_URL}
+    wget -e dotbytes=10m ${NDK_URL}
     unzip ${FILE_NAME} > /dev/null
     mv ${VERSION} ${NDK_DIR}
     echo ${NDK_URL} > ${NDK_DIR}/android_ndk_url
@@ -27,7 +27,7 @@ function download_android_tools {
     echo @@@BUILD_STEP downloading Android Platform Tools@@@
     local FILE_NAME=platform-tools-latest-linux.zip
     [[ -f ${FILE_NAME} ]] && rm -f ${FILE_NAME}
-    wget https://dl.google.com/android/repository/${FILE_NAME}
+    wget -e dotbytes=10m https://dl.google.com/android/repository/${FILE_NAME}
     unzip ${FILE_NAME} > /dev/null
   fi
   export PATH=$ROOT/platform-tools/:$PATH
