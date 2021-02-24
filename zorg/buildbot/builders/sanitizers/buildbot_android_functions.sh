@@ -128,14 +128,18 @@ function build_android {
   fi
 }
 
-# If a multiarch device has x86 as the first arch, remove everything else from
-# the list. This captures cases like [x86,armeabi-v7a], where the arm part is
-# software emulation and incompatible with ASan.
+# If a multiarch device's first arch starts with x86, remove archs that don't
+# start with x86. Handle cases like:
+#  - x86,armeabi-v7a
+#  - x86_64,x86,arm64-v8a,armeabi-v7a,armeabi
+#  - x86_64,arm64-v8a,x86,armeabi-v7a,armeabi
+# The arm part is software emulation and incompatible with ASan.
 function patch_abilist { # IN OUT
   local _abilist=$1
   local _out=$2
-  if [[ "$_abilist" == "x86,"* ]]; then
-    _abilist="x86"
+  if [[ "$_abilist" == "x86"* ]]; then
+    _abilist=$(echo $_abilist | tr , '\n' | grep '^x86')
+    _abilist=$(echo $_abilist | tr ' ' ,)
   fi
   eval $_out="'$_abilist'"
 }
@@ -154,7 +158,7 @@ function test_on_device {
   shift
 
   ABILIST=$(${ADB} -s $_serial shell getprop ro.product.cpu.abilist)
-  patch_abilist $ABILIST ABILIST
+  patch_abilist "$ABILIST" ABILIST
   for _arg in "$@"; do
     local _arch=${_arg%:*}
     local _abi=${_arg#*:}
