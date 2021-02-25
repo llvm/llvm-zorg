@@ -1,9 +1,11 @@
 #!/usr/bin/env groovy
 def common = evaluate readTrusted('zorg/jenkins/common.groovy')
 common.testsuite_pipeline(label: 'green-dragon-12') {
-    sh """
+    timeout(30) {
+        sh """
 LNT_FLAGS+=" -C config/tasks/cmake/caches/target-arm64-iphoneos.cmake"
 LNT_FLAGS+=" -C config/tasks/cmake/caches/opt-Os.cmake"
 config/tasks/task jenkinsrun config/tasks/lnt-ctmark.sh -a compiler="${params.ARTIFACT}" -D LNT_FLAGS="\${LNT_FLAGS}"
-    """
+        """
+    }
 }
