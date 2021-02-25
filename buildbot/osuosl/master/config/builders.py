@@ -1087,6 +1087,7 @@ all = [
                         '-DLLVM_TARGETS_TO_BUILD=host;NVPTX',
                         '-DLLVM_ENABLE_PROJECTS=mlir',
                         '-DMLIR_CUDA_RUNNER_ENABLED=1',
+                        '-DMLIR_INCLUDE_INTEGRATION_TESTS=ON',
                         '-DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc',
                         '-DMLIR_VULKAN_RUNNER_ENABLED=1',
                         '-DBUILD_SHARED_LIBS=ON',
