@@ -248,7 +248,7 @@ all = [
         extraRecipients = ["douglas.yung@sony.com"],
         subject = "Build %(builder)s Failure",
         mode = "failing",
-        builders = ["sie-linux-builder"]),
+        builders = ["llvm-clang-x86_64-sie-ubuntu-fast"]),
 
 ]
 
