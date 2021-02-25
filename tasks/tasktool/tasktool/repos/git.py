@@ -25,7 +25,7 @@ def resolve_latest(config):
     rev = config.get('rev')
     default_rev = config.pop('default_rev', None)
     if default_rev is None:
-        default_rev = "refs/heads/master"
+        default_rev = "refs/heads/main"
     if rev is not None:
         return
     url = config['url']

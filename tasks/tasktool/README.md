@@ -92,7 +92,7 @@ to query the latest revision of a git repository:
 {
     "url": "https://github.com/my-project.git",
     "type": "git",
-    "default_rev": "refs/heads/master"
+    "default_rev": "refs/heads/main"
 }
 ```
 
@@ -166,7 +166,7 @@ Other default values can be supplied with the usual shell tricks:
 : ${VARIABLE:='DefaultValue'}
 ```
 
-- Abstract artifacts like `refs/heads/master` in a git repository or
+- Abstract artifacts like `refs/heads/main` in a git repository or
   `clang-stage2-cmake` on an A2 server are resolved to a concrete git revision
   or a specific URL when the task is started.
 - A task with a set of artifact and parameter inputs is called a build.

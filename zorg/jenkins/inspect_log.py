@@ -26,7 +26,7 @@ class _Matcher(object):
     '''Matching engine. Keeps data structures to match a single line against
     a fixed list of patterns.'''
     def __init__(self, patterns):
-        # Create a combined master regex combining all patterns.
+        # Create a combined main regex combining all patterns.
         combined = ''
         merge = ''
         for pattern in patterns:
