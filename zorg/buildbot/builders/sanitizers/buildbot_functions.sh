@@ -21,7 +21,7 @@ echo @@@BUILD_STEP Info@@@
 echo @@@BUILD_STEP Prepare@@@
 
 BUILDBOT_CLOBBER="${BUILDBOT_CLOBBER:-}"
-BUILDBOT_REVISION="${BUILDBOT_REVISION:-origin/master}"
+BUILDBOT_REVISION="${BUILDBOT_REVISION:-origin/main}"
 
 function rm_dirs {
   while ! rm -rf $@ ; do sleep 1; done
