@@ -209,6 +209,9 @@ function test_android {
   done
   tail_pids "$LOGS"
 
+  # Return to avoid exception if we already have error.
+  [[ $BUILD_RT_ERR == "" ]] || return
+
   for _arg in "$@"; do
     local _arch=${_arg%:*}
     if [[ ! -f tested_arch_$_arch ]]; then
