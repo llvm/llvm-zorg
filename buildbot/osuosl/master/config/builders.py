@@ -1348,7 +1348,8 @@ all = [
                         'CMAKE_BUILD_TYPE': 'Release',
                         'CMAKE_C_COMPILER': 'gcc',
                         'CMAKE_CXX_COMPILER': 'g++',
-                        'CMAKE_AR': '/usr/bin/ar'})},
+                        'CMAKE_AR': '/usr/bin/ar'},
+                    build_standalone=True)},
 
     {'name': "fuchsia-x86_64-linux",
     'tags'  : ["toolchain"],

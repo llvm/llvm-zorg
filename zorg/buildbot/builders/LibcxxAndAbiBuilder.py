@@ -12,6 +12,7 @@ def getLibcxxAndAbiBuilder(f=None, env=None,
                            check_libcxx_benchmarks=None,
                            depends_on_projects=None,
                            use_cache=None,
+                           build_standalone=False.
                            **kwargs):
 
     if env is None:
@@ -26,7 +27,11 @@ def getLibcxxAndAbiBuilder(f=None, env=None,
     if depends_on_projects is None:
         depends_on_projects = ['libcxx','libcxxabi','libunwind']
 
-    src_root = 'llvm'
+    if build_standalone:
+        src_root = 'runtimes'
+    else:
+        src_root = 'llvm'
+
     build_path = 'build'
 
     if f is None:
@@ -71,7 +76,12 @@ def getLibcxxAndAbiBuilder(f=None, env=None,
         workdir=".",
         haltOnFailure=False))
 
-    CmakeCommand.applyRequiredOptions(cmake_opts, [
+    if build_standalone:
+       CmakeCommand.applyRequiredOptions(cmake_opts, [
+        ('-DLLVM_ENABLE_RUNTIMES=', ";".join(f.depends_on_projects)),
+        ])
+    else:
+       CmakeCommand.applyRequiredOptions(cmake_opts, [
         ('-DLLVM_ENABLE_PROJECTS=', ";".join(f.depends_on_projects)),
         ])
 
