@@ -374,7 +374,6 @@ all = [
                     checkout_lld=False,
                     test=True,
                     useTwoStage=False,
-                    runTestSuite=True,
                     testsuite_flags=[
                         '--cppflags', '-mcpu=cortex-a57',
                         '--threads=32', '--build-threads=32'],
