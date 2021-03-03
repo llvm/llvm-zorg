@@ -12,7 +12,7 @@ def getLibcxxAndAbiBuilder(f=None, env=None,
                            check_libcxx_benchmarks=None,
                            depends_on_projects=None,
                            use_cache=None,
-                           build_standalone=False.
+                           build_standalone=False,
                            **kwargs):
 
     if env is None:
