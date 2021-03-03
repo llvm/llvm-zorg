@@ -1673,7 +1673,7 @@ all = [
 
     {'name' : "clang-ve-ninja",
     'tags'  : ["clang"],
-    'workernames':["nec-arrproto41"],
+    'workernames':["hpce-aurora2"],
     'builddir':"clang-ve-ninja",
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                     clean=True,
