@@ -1434,6 +1434,7 @@ all = [
     'builddir': "flang-aarch64-ubuntu-dylib",
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                     clean=True,
+                    checks=['check-flang'],
                     depends_on_projects=['llvm','mlir','clang','flang'],
                     extra_configure_args=[
                         "-DLLVM_TARGETS_TO_BUILD=AArch64",
@@ -1449,6 +1450,7 @@ all = [
     'builddir': "flang-aarch64-ubuntu-sharedlibs",
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                     clean=True,
+                    checks=['check-flang'],
                     depends_on_projects=['llvm','mlir','clang','flang'],
                     extra_configure_args=[
                         "-DLLVM_TARGETS_TO_BUILD=AArch64",
@@ -1463,6 +1465,7 @@ all = [
     'workernames' : ["linaro-aarch64-flang-oot"],
     'builddir': "flang-aarch64-out-of-tree",
     'factory' : FlangBuilder.getFlangOutOfTreeBuildFactory(
+                    checks=['check-flang'],
                     llvm_extra_configure_args=[
                         "-DLLVM_TARGETS_TO_BUILD=AArch64",
                         "-DCMAKE_CXX_STANDARD=17",
@@ -1480,6 +1483,7 @@ all = [
     'workernames' : ["linaro-aarch64-flang-oot-new-driver"],
     'builddir': "flang-aarch64-out-of-tree-new-driver",
     'factory' : FlangBuilder.getFlangOutOfTreeBuildFactory(
+                    checks=['check-flang'],
                     llvm_extra_configure_args=[
                         "-DLLVM_TARGETS_TO_BUILD=AArch64",
                         "-DCMAKE_CXX_STANDARD=17",
