@@ -243,5 +243,5 @@ def get_all():
         create_worker("sie-linux-builder", properties={'jobs': 40}, max_builds=1),
 
         # XCore target, Ubuntu 20.04 x64 host
-        create_worker("xcore-ubuntu20-x64", properties={'jobs': 2}, max_builds=1),
+        create_worker("xcore-ubuntu20-x64", properties={'jobs': 4}, max_builds=1),
         ]
