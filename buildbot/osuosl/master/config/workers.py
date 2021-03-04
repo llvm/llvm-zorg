@@ -51,6 +51,7 @@ def get_all():
         create_worker("linaro-aarch64-flang-rel-assert", properties={'jobs' : 32}, max_builds=1),
         create_worker("linaro-aarch64-flang-dylib", properties={'jobs' : 32}, max_builds=1),
         create_worker("linaro-aarch64-flang-sharedlibs", properties={'jobs' : 32}, max_builds=1),
+        create_worker("linaro-aarch64-flang-latest-gcc", properties={'jobs' : 32}, max_builds=1),
         # Libcxx testsuite has tests with timing assumptions.  Run single-threaded to make
         # sure we have plenty CPU cycle to satisfy timing assumptions.
         create_worker("linaro-aarch64-libcxx", properties={'jobs' : 1}, max_builds=1),
