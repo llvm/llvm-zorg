@@ -531,6 +531,19 @@ all = [
                     script="clang-windows.py",
                     depends_on_projects=['llvm', 'clang', 'lld', 'debuginfo-tests'])},
 
+    {'name' : "clang-m68k-linux",
+    'tags'  : ["clang"],
+    'workernames' : ["debian-akiko-m68k"],
+    'builddir': "clang-m68k-linux",
+    'factory' : ClangBuilder.getClangCMakeBuildFactory(
+                    clean=False,
+                    checkout_lld=False,
+                    useTwoStage=False,
+                    stage1_config='Release',
+                    extra_cmake_args=[
+                        "-DLLVM_ENABLE_ASSERTIONS=ON",
+                        "-DLLVM_EXPERIMENTAL_TARGETS_TO_BUILD=M68k"])},
+
     {'name' : "clang-ppc64be-linux-lnt",
     'tags'  : ["clang", "ppc"],
     'workernames' : ["ppc64be-clang-lnt-test"],

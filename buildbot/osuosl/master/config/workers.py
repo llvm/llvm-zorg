@@ -68,6 +68,9 @@ def get_all():
         # Windows Server 2016 Intel(R) Xeon(R) CPU @ 2.60GHz, 16 Core(s), 128 GB of RAM
         create_worker("win-mlir-buildbot", properties={'jobs' : 64}, max_builds=1),
 
+        # Motorola 68k 32-bit big endian (m68k)
+        create_worker("debian-akiko-m68k", properties={'jobs': 1}, max_builds=1),
+
         # POWER7 PowerPC big endian (powerpc64)
         create_worker("ppc64be-clang-test", properties={'jobs': 16}, max_builds=1),
         create_worker("ppc64be-clang-lnt-test", properties={'jobs': 16, 'vcs_protocol': 'https'}, max_builds=1),
