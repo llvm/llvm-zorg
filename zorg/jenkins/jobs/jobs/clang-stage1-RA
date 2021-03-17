@@ -50,7 +50,6 @@ pipeline {
                     python llvm-zorg/zorg/jenkins/monorepo_build.py cmake build \
                       --assertions --cmake-type=RelWithDebInfo \
                       --sccache --projects="clang;clang-tools-extra;compiler-rt;libcxx" \
-                      --cmake-flag='-DCOMPILER_RT_INCLUDE_TESTS=OFF' \
                       --cmake-flag='-DLIBCXX_ENABLE_SHARED=OFF'\
                       --cmake-flag='-DLIBCXX_ENABLE_STATIC=OFF' \
                       --cmake-flag='-DLIBCXX_INCLUDE_TESTS=OFF' \
