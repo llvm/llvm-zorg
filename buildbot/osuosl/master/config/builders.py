@@ -1429,7 +1429,6 @@ all = [
                     llvm_extra_configure_args=[
                         "-DLLVM_TARGETS_TO_BUILD=AArch64",
                         "-DCMAKE_CXX_STANDARD=17",
-                        "-DFLANG_BUILD_NEW_DRIVER=ON",
                         "-DLLVM_ENABLE_WERROR=OFF",
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
                         "-DCMAKE_BUILD_TYPE=Release",
@@ -1437,6 +1436,7 @@ all = [
                     flang_extra_configure_args=[
                         "-DFLANG_ENABLE_WERROR=ON",
                         "-DCMAKE_BUILD_TYPE=Release",
+                        "-DFLANG_BUILD_NEW_DRIVER=ON",
                     ])},
 
     {'name' : "flang-aarch64-ubuntu-debug",
