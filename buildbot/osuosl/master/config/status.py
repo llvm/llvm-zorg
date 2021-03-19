@@ -249,7 +249,16 @@ all = [
         subject = "Build %(builder)s Failure",
         mode = "failing",
         builders = ["llvm-clang-x86_64-sie-ubuntu-fast"]),
-
+    reporters.MailNotifier(
+        fromaddr="llvm.buildmaster@lab.llvm.org",
+        sendToInterestedUsers = False,
+        extraRecipients=[
+            "mlir-bugs-external+buildbot@googlegroups.com"],
+        subject = "MLIR Build Failure: %(builder)s",
+        mode = "failing",
+        builders = ["mlir-nvidia",
+                    "mlir-windows",
+                    "ppc64le-mlir-rhel-clang"]),
 ]
 
 
