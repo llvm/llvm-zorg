@@ -50,6 +50,7 @@ def getLLVMBuildFactoryAndPrepareForSourcecodeSteps(
 def getLLVMBuildFactoryAndSourcecodeSteps(
            depends_on_projects = None,
            llvm_srcdir = None,
+           src_to_build_dir = None,
            obj_dir = None,
            install_dir = None,
            cleanBuildRequested = None,
@@ -58,6 +59,7 @@ def getLLVMBuildFactoryAndSourcecodeSteps(
     f = getLLVMBuildFactoryAndPrepareForSourcecodeSteps(
             depends_on_projects=depends_on_projects,
             llvm_srcdir=llvm_srcdir,
+            src_to_build_dir=src_to_build_dir,
             obj_dir=obj_dir,
             install_dir=install_dir,
             cleanBuildRequested=cleanBuildRequested,
@@ -378,6 +380,7 @@ def getCmakeWithNinjaWithMSVCBuildFactory(
 def getCmakeWithNinjaMultistageBuildFactory(
            depends_on_projects = None,
            llvm_srcdir = None,
+           src_to_build_dir = None,
            obj_dir = None,
            checks = None,
            install_dir = None,
@@ -427,6 +430,7 @@ def getCmakeWithNinjaMultistageBuildFactory(
     f = getLLVMBuildFactoryAndPrepareForSourcecodeSteps(
             depends_on_projects=depends_on_projects,
             llvm_srcdir=llvm_srcdir,
+            src_to_build_dir=src_to_build_dir,
             obj_dir=obj_dir,
             install_dir=install_dir,
             env=merged_env,
