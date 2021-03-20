@@ -20,7 +20,8 @@ class LLVMBuildFactory(BuildFactory):
             self.depends_on_projects = frozenset(depends_on_projects)
 
         # Directories.
-        self.llvm_srcdir = kwargs.pop('llvm_srcdir', None)
+        self.monorepo_dir = kwargs.pop('llvm_srcdir', None)
+        self.src_to_build_dir = kwargs.pop('src_to_build_dir', None)
         self.obj_dir = kwargs.pop('obj_dir', None)
         self.install_dir = kwargs.pop('install_dir', None)
 
@@ -29,9 +30,10 @@ class LLVMBuildFactory(BuildFactory):
         for k,v in kwargs.items():
             setattr(self, k, v)
 
-        self.monorepo_dir = self.llvm_srcdir or "llvm-project"
+        self.monorepo_dir = self.monorepo_dir or "llvm-project"
+        self.src_to_build_dir = self.src_to_build_dir or 'llvm'
         self.llvm_srcdir = \
-                "%(monorepo_dir)s/llvm" % {'monorepo_dir' : self.monorepo_dir}
+                "{}/{}".format(self.monorepo_dir, self.src_to_build_dir)
         self.obj_dir = \
                 self.obj_dir or "build"
 
