@@ -126,7 +126,7 @@ def addCmakeSteps(
     CmakeCommand.applyDefaultOptions(cmake_args, [
         ('-DCMAKE_BUILD_TYPE=',        'Release'),
         ('-DLLVM_ENABLE_ASSERTIONS=',  'ON'),
-        ('-DLLVM_LIT_ARGS=',           '-v -vv'),
+        ('-DLLVM_LIT_ARGS=',           '-v -vv --workers=%(jobs)s'),
         ])
 
     # Create configuration files with cmake, unless this has been already done
