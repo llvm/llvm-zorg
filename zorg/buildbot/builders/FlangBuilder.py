@@ -14,9 +14,10 @@ def getFlangOutOfTreeBuildFactory(
         env = dict()
 
     f = getCmakeWithNinjaBuildFactory(
-            depends_on_projects=['llvm','mlir'],
+            depends_on_projects=['llvm','clang','mlir'],
             obj_dir="build_llvm",
             checks=[],
+            install_dir="install",
             clean=clean,
             extra_configure_args=llvm_extra_configure_args,
             env=env,
@@ -42,6 +43,7 @@ def getFlangOutOfTreeBuildFactory(
     # Add LLVM_DIR and MLIR_DIR to the CMake invocation.
     llvm_dir = "{}/lib/cmake/llvm".format(f.obj_dir)
     mlir_dir = "{}/lib/cmake/mlir".format(f.obj_dir)
+    clang_dir = "{}/lib/cmake/clang".format(f.install_dir)
     CmakeCommand.applyRequiredOptions(flang_cmake_args, [
         # We actually need the paths to be relative to the source directory,
         # otherwise find_package can't locate the config files.
@@ -49,6 +51,8 @@ def getFlangOutOfTreeBuildFactory(
             LLVMBuildFactory.pathRelativeTo(llvm_dir, flang_src_dir)),
         ('-DMLIR_DIR:PATH=',
             LLVMBuildFactory.pathRelativeTo(mlir_dir, flang_src_dir)),
+        ('-DCLANG_DIR:PATH=',
+            LLVMBuildFactory.pathRelativeTo(clang_dir, flang_src_dir)),
         ])
 
     # We can't use addCmakeSteps as that would use the path in f.llvm_srcdir.
