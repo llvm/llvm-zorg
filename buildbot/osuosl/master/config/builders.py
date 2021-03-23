@@ -1352,6 +1352,24 @@ all = [
                     depends_on_projects=['llvm', 'libc', 'clang', 'clang-tools-extra'],
                     extra_args=['--debug', '--asan'])},
 
+    {'name' : "libc-x86_64-debian-fullbuild-dbg",
+    'tags'  : ["libc"],
+    'workernames' : ["libc-x86_64-debian-fullbuild"],
+    'builddir': "libc-x86_64-debian-fullbuild-dbg",
+    'factory' : AnnotatedBuilder.getAnnotatedBuildFactory(
+                    script="libc-linux.py",
+                    depends_on_projects=['llvm', 'libc', 'clang', 'clang-tools-extra'],
+                    extra_args=['--debug'])},
+
+    {'name' : "libc-x86_64-debian-fullbuild-dbg-asan",
+    'tags'  : ["libc"],
+    'workernames' : ["libc-x86_64-debian-fullbuild"],
+    'builddir': "libc-x86_64-debian-fullbuild-dbg-asan",
+    'factory' : AnnotatedBuilder.getAnnotatedBuildFactory(
+                    script="libc-linux.py",
+                    depends_on_projects=['llvm', 'libc', 'clang', 'clang-tools-extra'],
+                    extra_args=['--debug', '--asan'])},
+
 # Flang builders.
 
     {'name' : "flang-aarch64-ubuntu",

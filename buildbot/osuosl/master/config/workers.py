@@ -175,6 +175,9 @@ def get_all():
         # Debian x86_64 Intel Broadwell 32 CPUs, 120 GB RAM
         create_worker("libc-x86_64-debian", properties={'jobs': 32}, max_builds=2),
 
+        # Debian x86_64 Intel Skylake 32 CPUs, 128 GB RAM
+        create_worker("libc-x86_64-debian-fullbuild", properties={'jobs': 32}, max_builds=2),
+
         # Windows Server on Xeon Gold 6130 (2x2.1GHz), 128Gb of RAM
         create_worker("as-builder-1", properties={
                         'remote_test_host': 'jetson6.lab.llvm.org',
