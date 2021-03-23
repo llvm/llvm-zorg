@@ -1452,6 +1452,7 @@ all = [
                         "-DFLANG_BUILD_NEW_DRIVER=ON",
                         "-DCMAKE_BUILD_TYPE=Debug",
                         "-DCMAKE_CXX_STANDARD=17",
+                        "-DLLVM_USE_LINKER=lld",
                     ])},
 
     {'name' : "flang-aarch64-ubuntu-latest-clang",
