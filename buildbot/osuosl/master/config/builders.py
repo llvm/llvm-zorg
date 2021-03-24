@@ -1456,7 +1456,7 @@ all = [
                     ])},
 
     {'name' : "flang-aarch64-ubuntu-latest-clang",
-    'tags'  : ['flang', 'aarch64', 'release'],
+    'tags'  : ['flang'],
     'workernames' : ["linaro-aarch64-flang-latest-clang"],
     'builddir': "flang-aarch64-ubuntu-latest-clang",
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
@@ -1510,7 +1510,7 @@ all = [
                     ])},
 
     {'name' : "flang-aarch64-latest-gcc",
-    'tags'  : ['flang', 'aarch64', 'release'],
+    'tags'  : ['flang'],
     'workernames' : ["linaro-aarch64-flang-latest-gcc"],
     'builddir': "flang-aarch64-latest-gcc",
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
