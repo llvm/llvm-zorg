@@ -9,6 +9,10 @@ import util
 from contextlib import contextmanager
 
 
+def is_fullbuild_builder(builder_name):
+    return ('fullbuild' in builder_name.split('-'))
+
+
 def main(argv):
     ap = argparse.ArgumentParser()
     ap.add_argument('--asan', action='store_true', default=False,
@@ -18,6 +22,7 @@ def main(argv):
     args, _ = ap.parse_known_args()
 
     source_dir = os.path.join('..', 'llvm-project')
+    fullbuild = is_fullbuild_builder(os.environ.get('BUILDBOT_BUILDERNAME'))
 
     with step('cmake', halt_on_fail=True):
         projects = ['llvm', 'libc', 'clang', 'clang-tools-extra']
@@ -39,6 +44,9 @@ def main(argv):
 
         cmake_args.append('-DLLVM_ENABLE_PROJECTS={}'.format(';'.join(projects)))
 
+        if fullbuild:
+            cmake_args.append('-DLLVM_LIBC_FULL_BUILD=ON')
+
         run_command(['cmake', os.path.join(source_dir, 'llvm')] + cmake_args)
 
     with step('build llvmlibc', halt_on_fail=True):
@@ -47,14 +55,16 @@ def main(argv):
     with step('check-libc'):
         run_command(['ninja', 'check-libc'])
 
-    if not args.asan:
+    if fullbuild and not args.asan:
+        with step('libc-loader-tests'):
+            run_command(['ninja', 'libc_loader_tests'])
+        with step('libc-integration-test'):
+            run_command(['ninja', 'libc-integration-test'])
         with step('AOR Tests'):
             aor_dir = os.path.join(source_dir, 'libc', 'AOR_v20.02')
             # Remove the AOR build dir.
             util.clean_dir(os.path.join(aor_dir, 'build'))
             run_command(['make', 'check'], directory=aor_dir)
-
-    if not args.debug:
         with step('Benchmark Utils Tests'):
             run_command(['ninja', 'libc-benchmark-util-tests'])
 
