@@ -5,7 +5,7 @@
 #
 #===----------------------------------------------------------------------===//
 # Docker image used for the mlir-nvidia builder
-# 
+#
 # Environment variables configurable at runtime:
 #    BUILDBOT_PORT - server port to connect to
 #===----------------------------------------------------------------------===//
@@ -26,8 +26,15 @@ RUN apt-get update; \
     update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-8 100 ;\
     update-alternatives --install /usr/bin/lld lld /usr/bin/lld-8 100
 
-# PyBind11 and Numpy are required for MLIR bindings
-RUN python3 -m pip install numpy==1.19.3 pybind11==2.6.0
+# LTS releases often bundle obsolete pip versions that cannot access newest
+# Linux binary wheels. This pinned version is not special: it was just current
+# at the time this was added. Refer to compatibility table:
+# https://github.com/pypa/manylinux
+RUN python3 -m pip install --upgrade pip==21.0.1
+
+# Refer to mlir/lib/Bindings/Python/requirements.txt. Listed explicitly here
+# and version pinned for consistency as this is a bot.
+RUN python3 -m pip install numpy==1.19.3 pybind11==2.6.0 PyYAML==5.4.1
 
 # install cuda
 # avoid popups for keyboard configurations
@@ -81,7 +88,7 @@ USER buildbot
 ENV WORKER_NAME="mlir-nvidia"
 
 # Allow the server port of this agent to be configurable during deployment.
-# This way we can connect the same image to production and integration. 
+# This way we can connect the same image to production and integration.
 # Ports:
 #   9990 - production
 #   9994 - integration
