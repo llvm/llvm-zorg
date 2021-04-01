@@ -68,7 +68,6 @@ pipeline {
                     sh '''
                     set -u
                     export PATH=$PATH:/usr/bin:/usr/local/bin
-                    export LLDB_CAPTURE_REPRODUCER=1
 
                     rm -rf test/results.xml
 
