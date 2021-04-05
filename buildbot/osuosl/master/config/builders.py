@@ -1687,6 +1687,17 @@ all = [
                         "-DCLANG_LINK_CLANG_DYLIB=On",
                     ])},
 
+# HIP builders.
+
+    {'name' : "clang-hip-vega20",
+    'tags'  : ["clang"],
+    'workernames' : ["hip-vega20-0"],
+    'builddir': "clang-hip-vega20",
+    'factory' : AnnotatedBuilder.getAnnotatedBuildFactory(
+                    script="hip-build.sh",
+                    checkout_llvm_sources=False,
+                    script_interpreter=None)},
+
 # Latest stable fedora running on Red Hat internal OpenShift cluster (PSI).
 
     {'name' : 'x86_64-fedora-clang',

@@ -251,6 +251,13 @@ all = [
         builders = ["mlir-nvidia",
                     "mlir-windows",
                     "ppc64le-mlir-rhel-clang"]),
+    reporters.MailNotifier(
+        fromaddr="llvm.buildmaster@lab.llvm.org",
+        sendToInterestedUsers = False,
+        extraRecipients=["dl.gcr.lightning.buildbot@amd.com"],
+        subject = "Build Failure: %(builder)s",
+        mode = "failing",
+        builders = ["clang-hip-vega20"]),
 ]
 
 
