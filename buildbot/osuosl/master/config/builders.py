@@ -1227,7 +1227,10 @@ all = [
     'tags'  : ["sanitizer", "ppc", "ppc64le"],
     'workernames' : ["ppc64le-sanitizer"],
     'builddir': "sanitizer-ppc64le",
-    'factory' : SanitizerBuilder.getSanitizerBuildFactory(timeout=1800)},
+    'factory' : SanitizerBuilder.getSanitizerBuildFactory(
+                    timeout=1800,
+                    extra_configure_args=[
+                       "-CMAKE_ARGS='-DLLVM_LIT_ARGS=-v -j256'"])},
 
     {'name' : "sanitizer-windows",
     'tags'  : ["sanitizer"],
