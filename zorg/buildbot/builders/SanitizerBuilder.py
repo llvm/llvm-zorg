@@ -6,6 +6,7 @@ from zorg.buildbot.process.factory import LLVMBuildFactory
 def getSanitizerBuildFactory(
     clean=False,
     depends_on_projects=None,
+    extra_configure_args=None,
     env=None,
     timeout=1200):
 
@@ -30,6 +31,11 @@ def getSanitizerBuildFactory(
             "libunwind",
             "lld"]
 
+    if extra_configure_args:
+        extra_configure_args = ['--'] + list(extra_configure_args)
+    else:
+        extra_configure_args = []
+
     # Explicitly use '/' as separator, because it works on *nix and Windows.
     sanitizer_script_dir = "sanitizer_buildbot/sanitizers"
     sanitizer_script = "../%s/zorg/buildbot/builders/sanitizers/%s" % (sanitizer_script_dir, "buildbot_selector.py")
@@ -47,10 +53,11 @@ def getSanitizerBuildFactory(
         alwaysUseLatest=True)
 
     # Run annotated command for sanitizer.
+    command = ['python', sanitizer_script] + extra_configure_args
     f.addStep(AnnotatedCommand(name="annotate",
                                description="annotate",
                                timeout=timeout,
                                haltOnFailure=True,
-                               command="python " + sanitizer_script,
+                               command=command,
                                env=merged_env))
     return f

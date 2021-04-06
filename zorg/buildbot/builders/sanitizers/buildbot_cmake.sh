@@ -13,6 +13,14 @@ ARCH=`uname -m`
 export PATH="/usr/local/bin:$PATH"
 export ANDROID_SDK_HOME=$ROOT/../../..
 
+for arg in "$@"
+do
+    case $arg in
+        --CMAKE_ARGS=*)
+        CMAKE_ARGS="${arg#*=}"
+    esac
+done
+
 # Always clobber bootstrap build trees.
 rm -rf compiler_rt_build llvm_build* symbolizer_build*
 
@@ -27,7 +35,7 @@ MAKE_JOBS=${MAX_MAKE_JOBS:-$(nproc)}
 LLVM=$ROOT/llvm
 ZLIB=$ROOT/zlib
 
-CMAKE_COMMON_OPTIONS="${CMAKE_COMMON_OPTIONS:-} -DLLVM_ENABLE_ASSERTIONS=ON -DLLVM_PARALLEL_LINK_JOBS=10"
+CMAKE_COMMON_OPTIONS="${CMAKE_COMMON_OPTIONS:-} -DLLVM_ENABLE_ASSERTIONS=ON -DLLVM_PARALLEL_LINK_JOBS=10 ${CMAKE_ARGS}"
 ENABLE_LIBCXX_FLAG=
 if [ "$PLATFORM" == "Darwin" ]; then
   CMAKE_COMMON_OPTIONS="${CMAKE_COMMON_OPTIONS} -DPYTHON_EXECUTABLE=/usr/bin/python"

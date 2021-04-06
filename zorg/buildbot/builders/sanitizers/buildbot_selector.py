@@ -5,6 +5,7 @@ import subprocess
 import sys
 
 THIS_DIR=os.path.dirname(sys.argv[0])
+extra_args = sys.argv[1:]
 
 
 def bash(path):
@@ -44,7 +45,7 @@ BOT_ADDITIONAL_ENV = {
 def Main():
   builder = os.environ.get('BUILDBOT_BUILDERNAME')
   print "builder name: %s" % (builder)
-  cmd = BOT_ASSIGNMENT.get(builder)
+  cmd = BOT_ASSIGNMENT.get(builder) + ' '.join(extra_args)
   if not cmd:
     sys.stderr.write('ERROR - unset/invalid builder name\n')
     sys.exit(1)
