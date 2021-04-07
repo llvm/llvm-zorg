@@ -13,6 +13,7 @@ ARCH=`uname -m`
 export PATH="/usr/local/bin:$PATH"
 export ANDROID_SDK_HOME=$ROOT/../../..
 
+CMAKE_ARGS=""
 for arg in "$@"
 do
     case $arg in
