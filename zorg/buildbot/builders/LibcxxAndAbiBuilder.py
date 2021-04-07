@@ -27,17 +27,20 @@ def getLibcxxAndAbiBuilder(f=None, env=None,
     if depends_on_projects is None:
         depends_on_projects = ['libcxx','libcxxabi','libunwind']
 
-    if build_standalone:
-        src_root = 'runtimes'
-    else:
-        src_root = 'llvm'
+    src_root = 'llvm'
 
     build_path = 'build'
+
+    if build_standalone:
+        src_to_build_dir = 'runtimes'
+    else:
+       src_to_build_dir = None
 
     if f is None:
         f = UnifiedTreeBuilder.getLLVMBuildFactoryAndSourcecodeSteps(
                 depends_on_projects=depends_on_projects,
                 llvm_srcdir=src_root,
+                src_to_build_dir=src_to_build_dir,
                 obj_dir=build_path,
                 **kwargs) # Pass through all the extra arguments.
 
