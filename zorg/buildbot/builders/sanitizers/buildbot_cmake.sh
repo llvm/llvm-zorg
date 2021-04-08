@@ -12,7 +12,6 @@ PLATFORM=`uname`
 ARCH=`uname -m`
 export PATH="/usr/local/bin:$PATH"
 export ANDROID_SDK_HOME=$ROOT/../../..
-CMAKE_ARGS=''
 
 CMAKE_ARGS=""
 for arg in "$@"
@@ -27,7 +26,7 @@ done
 rm -rf compiler_rt_build llvm_build* symbolizer_build*
 
 USE_CCACHE=
-if command -v ccache && ccache -s ; then
+if ccache -s ; then
   USE_CCACHE="-DLLVM_CCACHE_BUILD=ON"
   rm -rf clang_build
 fi
