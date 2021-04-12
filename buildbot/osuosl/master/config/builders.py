@@ -629,6 +629,7 @@ all = [
                     checkout_libcxx=False,
                     useTwoStage=False,
                     runTestSuite=True,
+                    cmake_test_suite=True,
                     stage1_config='Release',
                     nt_flags=['--threads=16', '--build-threads=16'],
                     extra_cmake_args=[
