@@ -93,31 +93,37 @@ def getLibcxxAndAbiBuilder(f=None, env=None,
         haltOnFailure=True, workdir=build_path, env=env))
 
     # Build libcxxabi
-    jobs_flag = properties.WithProperties('-j%(jobs)s')
-    f.addStep(buildbot.steps.shell.ShellCommand(
-              name='build.libcxxabi', command=['make', jobs_flag, 'cxxabi'],
-              haltOnFailure=True, workdir=build_path))
+    if 'libcxxabi' in depends_on_projects:
+        jobs_flag = properties.WithProperties('-j%(jobs)s')
+        f.addStep(buildbot.steps.shell.ShellCommand(
+            name='build.libcxxabi', command=['make', jobs_flag, 'cxxabi'],
+            haltOnFailure=True, workdir=build_path, env=env))
 
     # Build libcxx
-    f.addStep(buildbot.steps.shell.ShellCommand(
-              name='build.libcxx', command=['make', jobs_flag, 'cxx'],
-              haltOnFailure=True, workdir=build_path))
+    if 'libcxx' in depends_on_projects:
+        f.addStep(buildbot.steps.shell.ShellCommand(
+            name='build.libcxx', command=['make', jobs_flag, 'cxx'],
+            haltOnFailure=True, workdir=build_path, env=env))
 
     # Test libc++abi
-    f.addStep(LitTestCommand(
-        name            = 'test.libcxxabi',
-        command         = ['make', jobs_flag, 'check-cxxabi'],
-        description     = ['testing', 'libcxxabi'],
-        descriptionDone = ['test', 'libcxxabi'],
-        workdir         = build_path))
+    if 'libcxxabi' in depends_on_projects:
+        f.addStep(LitTestCommand(
+            name            = 'test.libcxxabi',
+            command         = ['make', jobs_flag, 'check-cxxabi'],
+            description     = ['testing', 'libcxxabi'],
+            descriptionDone = ['test', 'libcxxabi'],
+            workdir         = build_path,
+            env             = env))
 
     # Test libc++
-    f.addStep(LitTestCommand(
-        name            = 'test.libcxx',
-        command         = ['make', jobs_flag, 'check-cxx'],
-        description     = ['testing', 'libcxx'],
-        descriptionDone = ['test', 'libcxx'],
-        workdir         = build_path))
+    if 'libcxx' in depends_on_projects:
+        f.addStep(LitTestCommand(
+            name            = 'test.libcxx',
+            command         = ['make', jobs_flag, 'check-cxx'],
+            description     = ['testing', 'libcxx'],
+            descriptionDone = ['test', 'libcxx'],
+            workdir         = build_path,
+            env             = env))
 
     if check_libcxx_abilist:
         f.addStep(buildbot.steps.shell.ShellCommand(
@@ -125,14 +131,15 @@ def getLibcxxAndAbiBuilder(f=None, env=None,
         command         = ['make', 'check-cxx-abilist'],
         description     = ['testing', 'libcxx', 'abi'],
         descriptionDone = ['test', 'libcxx', 'abi'],
-        workdir         = build_path))
+        workdir         = build_path,
+        env             = env))
 
     if check_libcxx_benchmarks:
       # Build the libc++ benchmarks
       f.addStep(buildbot.steps.shell.ShellCommand(
           name='build.libcxx.benchmarks',
           command=['make', jobs_flag, 'cxx-benchmarks'],
-          haltOnFailure=True, workdir=build_path))
+          haltOnFailure=True, workdir=build_path, env=env))
 
       # Run the benchmarks
       f.addStep(LitTestCommand(
@@ -140,6 +147,7 @@ def getLibcxxAndAbiBuilder(f=None, env=None,
           command         = ['make', jobs_flag, 'check-cxx-benchmarks'],
           description     = ['testing', 'libcxx', 'benchmarks'],
           descriptionDone = ['test', 'libcxx', 'benchmarks'],
-          workdir         = build_path))
+          workdir         = build_path,
+          env             = env))
 
     return f
