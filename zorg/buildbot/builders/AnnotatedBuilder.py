@@ -11,7 +11,8 @@ def getAnnotatedBuildFactory(
     env=None,
     extra_args=None,
     timeout=1200,
-    checkout_llvm_sources=True):
+    checkout_llvm_sources=True,
+    script_interpreter="python"):
     """
     Returns a new build factory that uses AnnotatedCommand, which
     allows the build to be run by version-controlled scripts that do
@@ -26,6 +27,7 @@ def getAnnotatedBuildFactory(
     env: environment overrides (map; default is no overrides)
     extra_args: extra arguments to pass to the script (default: [])
     timeout: specifies the builder's timeout in seconds (default: 1200)
+    script_interpreter: specifies the interpreter to run scripts (default: "python")
     """
 
     if depends_on_projects is None:
@@ -38,7 +40,10 @@ def getAnnotatedBuildFactory(
             "libunwind",
             "lld"]
     if extra_args is None:
-        extra_args = []
+        # We used to add --jobs to all script invocations. Perserve this
+        # for cases when the user did not specify extra_args, but allow
+        # overriding it if the user did specify extra_args.
+        extra_args = [WithProperties("--jobs=%(jobs:-)s")]
 
     f = LLVMBuildFactory(
         clean=clean,
@@ -84,7 +89,12 @@ def getAnnotatedBuildFactory(
       command = [script]
     else:
       script_path = "../llvm-zorg/zorg/buildbot/builders/annotated/%s" % (script)
-      command = ["python", script_path, WithProperties("--jobs=%(jobs:-)s")]
+      # Handle scripts with script_interpreter, otherwise execute the script directly.
+      if script_interpreter:
+        command = [script_interpreter, script_path]
+      else:
+        command = [script_path]
+
     command += extra_args_with_props
 
     f.addStep(AnnotatedCommand(name="annotate",
