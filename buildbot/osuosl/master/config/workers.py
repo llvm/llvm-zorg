@@ -225,9 +225,6 @@ def get_all():
         # Ubuntu 18.04.LTS x86_64, Intel(R) Xeon(R) CPU X3460 @ 2.80GHz, 32 GiB RAM
         create_worker("polly-x86_64-fdcserver", properties={'jobs': 8, 'loadaverage': 8}, max_builds=1),
 
-        create_worker("flang-aarch64-ubuntu-build"),
-        create_worker("flang-aarch64-ubuntu-clang-build", properties={'jobs': 14}),
-        create_worker("flang-aarch64-ubuntu-gcc10-build", properties={'jobs': 14}),
         create_worker("nersc-flang"),
         create_worker("alcf-theta-flang", properties={'jobs': 12}, max_builds=1),
 

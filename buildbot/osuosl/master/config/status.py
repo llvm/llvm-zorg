@@ -227,16 +227,6 @@ all = [
         builders = [
             "ml-opt-dev-x86-64", "ml-opt-rel-x86-64", "ml-opt-devrel-x86-64"]),
     reporters.MailNotifier(
-        fromaddr = "llvm.buildmaster@lab.llvm.org",
-        sendToInterestedUsers = False,
-        extraRecipients = [
-            "caroline.concatto@arm.com", "flang_llvm_buildbots@arm.com"],
-        subject = "Build %(builder)s Failure",
-        mode = "failing",
-        builders = [
-            "flang-aarch64-ubuntu", "flang-aarch64-ubuntu-clang",
-            "flang-aarch64-ubuntu-gcc10"]),
-    reporters.MailNotifier(
         fromaddr="llvm.buildmaster@lab.llvm.org",
         sendToInterestedUsers = False,
         extraRecipients=[
