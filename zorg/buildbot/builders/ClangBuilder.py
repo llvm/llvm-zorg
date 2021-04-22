@@ -119,9 +119,9 @@ def getClangCMakeGCSBuildFactory(
                vs_target_arch=vs_target_arch, useTwoStage=useTwoStage,
                testStage1=testStage1, stage1_config=stage1_config,
                stage2_config=stage2_config, runTestSuite=runTestSuite,
-               cmake_test_suite=cmake_test_suite, nt_flags=nt_flags,
-               testsuite_flags=testsuite_flags, submitURL=submitURL,
-               testerName=testerName, env=env, extra_cmake_args=extra_cmake_args,
+               nt_flags=nt_flags, testsuite_flags=testsuite_flags,
+               submitURL=submitURL, testerName=testerName,
+               env=env, extra_cmake_args=extra_cmake_args,
                checkout_clang_tools_extra=checkout_clang_tools_extra,
                checkout_compiler_rt=checkout_compiler_rt,
                checkout_lld=checkout_lld,
@@ -150,7 +150,6 @@ def getClangCMakeBuildFactory(
 
             # Test-suite
             runTestSuite=False,
-            cmake_test_suite=False,
             nt_flags=None,
             testsuite_flags=None,
             submitURL=None,
@@ -172,9 +171,9 @@ def getClangCMakeBuildFactory(
                vs_target_arch=vs_target_arch, useTwoStage=useTwoStage,
                testStage1=testStage1, stage1_config=stage1_config,
                stage2_config=stage2_config, runTestSuite=runTestSuite,
-               cmake_test_suite=cmake_test_suite, nt_flags=nt_flags,
-               testsuite_flags=testsuite_flags, submitURL=submitURL,
-               testerName=testerName, env=env, extra_cmake_args=extra_cmake_args,
+               nt_flags=nt_flags, testsuite_flags=testsuite_flags,
+               submitURL=submitURL, testerName=testerName,
+               env=env, extra_cmake_args=extra_cmake_args,
                checkout_clang_tools_extra=checkout_clang_tools_extra,
                checkout_lld=checkout_lld,
                checkout_compiler_rt=checkout_compiler_rt,
@@ -201,7 +200,6 @@ def _getClangCMakeBuildFactory(
 
             # Test-suite
             runTestSuite=False,
-            cmake_test_suite=False,
             nt_flags=None,
             testsuite_flags=None,
             submitURL=None,
@@ -272,11 +270,10 @@ def _getClangCMakeBuildFactory(
     # and the test-suite separately. Le's do this first,
     # so we wouldn't poison got_revision property.
     if runTestSuite or checkout_test_suite:
-        if not cmake_test_suite:
-            f.addGetSourcecodeForProject(
-                project='lnt',
-                src_dir='test/lnt',
-                alwaysUseLatest=True)
+        f.addGetSourcecodeForProject(
+            project='lnt',
+            src_dir='test/lnt',
+            alwaysUseLatest=True)
         f.addGetSourcecodeForProject(
             project='test-suite',
             src_dir='test/test-suite',
@@ -470,9 +467,8 @@ def _getClangCMakeBuildFactory(
 
         # Get generated python, lnt
         python = WithProperties('%(builddir)s/test/sandbox/bin/python')
-        if not cmake_test_suite:
-            lnt = WithProperties('%(builddir)s/test/sandbox/bin/lnt')
-            lnt_setup = WithProperties('%(builddir)s/test/lnt/setup.py')
+        lnt = WithProperties('%(builddir)s/test/sandbox/bin/lnt')
+        lnt_setup = WithProperties('%(builddir)s/test/lnt/setup.py')
 
         # Paths
         sandbox = WithProperties('%(builddir)s/test/sandbox')
@@ -485,16 +481,7 @@ def _getClangCMakeBuildFactory(
         # LNT Command line (don't pass -jN. Users need to pass both --threads
         # and --build-threads in nt_flags/test_suite_flags to get the same effect)
         use_runtest_testsuite = len(nt_flags) == 0
-        # with LNT, the workdir needs to be test/sandbox,
-        # but the CMakeList.txt and Makefiles are in %(builddir)s/test/test-suite.
-        test_suite_work_dir = 'test/sandbox'
-        if cmake_test_suite:
-            cmake_test_suite_cmd = ['cmake', '-G', 'Unix', 'Makefiles',
-                                    '--cc', cc,
-                                    '--cxx', cxx]
-            test_suite_cmd = ['make', '-k']
-            test_suite_work_dir = test_suite_dir
-        elif not use_runtest_testsuite:
+        if not use_runtest_testsuite:
             test_suite_cmd = [python, lnt, 'runtest', 'nt',
                               '--no-timestamp',
                               '--sandbox', sandbox,
@@ -556,20 +543,12 @@ def _getClangCMakeBuildFactory(
                                description='setting up LNT in sandbox',
                                workdir='test/sandbox',
                                env=env))
-        if cmake_test_suite:
-            f.addStep(ShellCommand(
-                               name='cmake test-suite',
-                               command=cmake_test_suite_cmd,
-                               haltOnFailure=True,
-                               description=['running cmake for test suite'],
-                               workdir=test_suite_work_dir,
-                               env=test_suite_env))
         f.addStep(LitTestCommand(
                                name='test-suite',
                                command=test_suite_cmd,
                                haltOnFailure=True,
                                description=['running the test suite'],
-                               workdir=test_suite_work_dir,
+                               workdir='test/sandbox',
                                logfiles={'configure.log'   : 'build/configure.log',
                                          'build-tools.log' : 'build/build-tools.log',
                                          'test.log'        : 'build/test.log',
