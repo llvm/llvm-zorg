@@ -489,13 +489,11 @@ def _getClangCMakeBuildFactory(
         # but the CMakeList.txt and Makefiles are in %(builddir)s/test/test-suite.
         test_suite_work_dir = 'test/sandbox'
         if cmake_test_suite:
-            cmake_test_suite_cmd = ['cmake', '-G', 'Ninja',
-                                    '-DCMAKE_C_COMPILER=' + cc,
-                                    '-DCMAKE_CXX_COMPILER=' + cxx,
-                                    '-DTEST_SUITE_LIT:FILEPATH=' + lit,
-                                    test_suite_dir]
-            test_suite_build_cmd = ['ninja', '-k', '0']
-            test_suite_cmd = ['ninja', 'check']
+            cmake_test_suite_cmd = ['cmake', '-G', 'Unix', 'Makefiles',
+                                    '--cc', cc,
+                                    '--cxx', cxx]
+            test_suite_cmd = ['make', '-k']
+            test_suite_work_dir = test_suite_dir
         elif not use_runtest_testsuite:
             test_suite_cmd = [python, lnt, 'runtest', 'nt',
                               '--no-timestamp',
@@ -564,13 +562,6 @@ def _getClangCMakeBuildFactory(
                                command=cmake_test_suite_cmd,
                                haltOnFailure=True,
                                description=['running cmake for test suite'],
-                               workdir=test_suite_work_dir,
-                               env=test_suite_env))
-            f.addStep(ShellCommand(
-                               name='Ninja test-suite',
-                               command=test_suite_build_cmd,
-                               haltOnFailure=True,
-                               description=['Using ninja to build test suite'],
                                workdir=test_suite_work_dir,
                                env=test_suite_env))
         f.addStep(LitTestCommand(
