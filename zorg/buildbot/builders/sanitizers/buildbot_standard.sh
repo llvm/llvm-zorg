@@ -59,3 +59,7 @@ BIN=$(mktemp -t tsan_exe.XXXXXXXX)
 echo "int main() {return 0;}" | $TSAN_RELEASE_BUILD_DIR/bin/clang -x c++ - -fsanitize=thread -O2 -o ${BIN}
 COMPILER_RT=$LLVM/../compiler-rt
 $COMPILER_RT/lib/tsan/check_analyze.sh ${BIN} || echo @@@STEP_FAILURE@@@
+
+# FIXME: Remove when dedicated bot is ready.
+${HERE}/buildbot_qemu.sh
+
