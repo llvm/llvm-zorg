@@ -38,7 +38,10 @@ function build_qemu {
     ../qemu/configure --disable-system --enable-linux-user --static
     ninja
     $ROOT/qemu_build/qemu-x86_64 --version
-  ) || echo "@@@STEP_WARNINGS@@@"
+  ) || (
+    echo "@@@STEP_EXCEPTION@@@"
+    false
+  )
 }
 
 build_qemu ffa090bc56e73e287a63261e70ac02c0970be61a
@@ -59,7 +62,7 @@ function build_compiler_rt {
 
     echo "@@@BUILD_STEP test scudo $name@@@"
     ninja check-scudo_standalone
-  ) || echo "@@@STEP_WARNINGS@@@"
+  ) || echo "@@@STEP_FAILURE@@@"
 }
 
 CMAKE_COMMON_OPTIONS+=" \
