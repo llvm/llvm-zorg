@@ -83,7 +83,7 @@ for DBG in OFF ON ; do
     NAME_PREFIX="debug_"
   fi
 
-  build_compiler_rt ${NAME_PREFIX}x86_64$ \
+  build_compiler_rt ${NAME_PREFIX}x86_64 \
     -DCOMPILER_RT_TEST_COMPILER_CFLAGS=--target=x86_64-linux-gnu \
     -DCMAKE_C_COMPILER_TARGET=x86_64-linux-gnu \
     -DCMAKE_CXX_COMPILER_TARGET=x86_64-linux-gnu
