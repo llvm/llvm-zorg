@@ -57,12 +57,13 @@ function build_compiler_rt {
     echo "@@@BUILD_STEP cmake for $name@@@"
     cmake ${CMAKE_COMMON_OPTIONS} "$@" $LLVM/../compiler-rt
 
-    echo "@@@BUILD_STEP test $name@@@"
+    echo "@@@BUILD_STEP test scudo $name@@@"
     ninja check-scudo_standalone
   ) || echo "@@@STEP_WARNINGS@@@"
 }
 
 CMAKE_COMMON_OPTIONS+=" \
+  -DLLVM_CONFIG_PATH=${COMPILER_BIN_DIR}//llvm-config \
   -DCMAKE_C_COMPILER=${COMPILER_BIN_DIR}/clang \
   -DCMAKE_CXX_COMPILER=${COMPILER_BIN_DIR}/clang++"
 
@@ -77,19 +78,23 @@ CMAKE_COMMON_OPTIONS+=" \
 
 for DBG in OFF ON ; do
   CMAKE_COMMON_OPTIONS+=" -DCOMPILER_RT_DEBUG=$DBG"
+  NAME_PREFIX=""
+  if [[ "$DBG" == "ON" ]] ; then
+    NAME_PREFIX="debug_"
+  fi
 
-  build_compiler_rt x86_64 \
+  build_compiler_rt ${NAME_PREFIX}x86_64$ \
     -DCOMPILER_RT_TEST_COMPILER_CFLAGS=--target=x86_64-linux-gnu \
     -DCMAKE_C_COMPILER_TARGET=x86_64-linux-gnu \
     -DCMAKE_CXX_COMPILER_TARGET=x86_64-linux-gnu
 
-  build_compiler_rt x86_64_qemu \
+  build_compiler_rt ${NAME_PREFIX}x86_64_qemu \
     -DCOMPILER_RT_TEST_COMPILER_CFLAGS=--target=x86_64-linux-gnu \
     -DCOMPILER_RT_EMULATOR=$ROOT/qemu_build/qemu-x86_64 \
     -DCMAKE_C_COMPILER_TARGET=x86_64-linux-gnu \
     -DCMAKE_CXX_COMPILER_TARGET=x86_64-linux-gnu
 
-  build_compiler_rt aarch64_qemu \
+  build_compiler_rt ${NAME_PREFIX}aarch64_qemu \
     -DCOMPILER_RT_TEST_COMPILER_CFLAGS=--target=aarch64-linux-gnu \
     -DCMAKE_C_COMPILER_TARGET=aarch64-linux-gnu \
     -DCMAKE_CXX_COMPILER_TARGET=aarch64-linux-gnu \
@@ -97,7 +102,7 @@ for DBG in OFF ON ; do
     -DCMAKE_EXE_LINKER_FLAGS=-fuse-ld=lld
 
   # DHWCAP2_MTE=1 is workaround for https://bugs.launchpad.net/qemu/+bug/1926044
-  build_compiler_rt aarch64_mte_qemu \
+  build_compiler_rt ${NAME_PREFIX}aarch64_mte_qemu \
     -DCOMPILER_RT_TEST_COMPILER_CFLAGS="--target=aarch64-linux-gnu" \
     -DCMAKE_C_FLAGS=-DHWCAP2_MTE=1 \
     -DCMAKE_CXX_FLAGS=-DHWCAP2_MTE=1 \
