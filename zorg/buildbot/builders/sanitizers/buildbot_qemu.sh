@@ -51,12 +51,13 @@ function build_compiler_rt {
   shift
   local cmake_opions=$@
   
-  OUT_DIR=llvm_build2_${name}
-  rm -rf ${OUT_DIR}
-  mkdir -p ${OUT_DIR}
-  cd ${OUT_DIR}
+  local out_dir=llvm_build2_${name}
+  rm -rf ${out_dir}
+  mkdir -p ${out_dir}
 
   (
+    cd ${out_dir}
+
     echo "@@@BUILD_STEP cmake for $name@@@"
     cmake ${CMAKE_COMMON_OPTIONS} "$@" $LLVM/../compiler-rt
 
