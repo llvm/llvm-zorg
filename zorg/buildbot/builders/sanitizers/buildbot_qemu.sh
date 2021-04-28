@@ -67,7 +67,7 @@ function build_compiler_rt {
 }
 
 CMAKE_COMMON_OPTIONS+=" \
-  -DLLVM_CONFIG_PATH=${COMPILER_BIN_DIR}//llvm-config \
+  -DLLVM_CONFIG_PATH=${COMPILER_BIN_DIR}/llvm-config \
   -DCMAKE_C_COMPILER=${COMPILER_BIN_DIR}/clang \
   -DCMAKE_CXX_COMPILER=${COMPILER_BIN_DIR}/clang++"
 
@@ -78,6 +78,7 @@ CMAKE_COMMON_OPTIONS+=" \
 -DCOMPILER_RT_INCLUDE_TESTS=ON \
 -DCOMPILER_RT_BUILD_LIBFUZZER=OFF \
 -DCMAKE_BUILD_WITH_INSTALL_RPATH=ON \
+-DCMAKE_EXE_LINKER_FLAGS=-fuse-ld=lld \
 "
 
 for DBG in OFF ON ; do
@@ -98,12 +99,17 @@ for DBG in OFF ON ; do
     -DCMAKE_C_COMPILER_TARGET=x86_64-linux-gnu \
     -DCMAKE_CXX_COMPILER_TARGET=x86_64-linux-gnu
 
+  build_compiler_rt ${NAME_PREFIX}arm_qemu \
+    -DCOMPILER_RT_TEST_COMPILER_CFLAGS="--target=arm-linux-gnueabihf" \
+    -DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabihf \
+    -DCMAKE_CXX_COMPILER_TARGET=arm-linux-gnueabihf \
+    -DCOMPILER_RT_EMULATOR="$ROOT/qemu_build/qemu-arm -L /usr/arm-linux-gnueabihf"
+
   build_compiler_rt ${NAME_PREFIX}aarch64_qemu \
     -DCOMPILER_RT_TEST_COMPILER_CFLAGS=--target=aarch64-linux-gnu \
     -DCMAKE_C_COMPILER_TARGET=aarch64-linux-gnu \
     -DCMAKE_CXX_COMPILER_TARGET=aarch64-linux-gnu \
-    -DCOMPILER_RT_EMULATOR="$ROOT/qemu_build/qemu-aarch64 -L /usr/aarch64-linux-gnu" \
-    -DCMAKE_EXE_LINKER_FLAGS=-fuse-ld=lld
+    -DCOMPILER_RT_EMULATOR="$ROOT/qemu_build/qemu-aarch64 -L /usr/aarch64-linux-gnu"
 
   # DHWCAP2_MTE=1 is workaround for https://bugs.launchpad.net/qemu/+bug/1926044
   build_compiler_rt ${NAME_PREFIX}aarch64_mte_qemu \
@@ -112,6 +118,5 @@ for DBG in OFF ON ; do
     -DCMAKE_CXX_FLAGS=-DHWCAP2_MTE=1 \
     -DCMAKE_C_COMPILER_TARGET=aarch64-linux-gnu \
     -DCMAKE_CXX_COMPILER_TARGET=aarch64-linux-gnu \
-    -DCOMPILER_RT_EMULATOR="$ROOT/qemu_build/qemu-aarch64 -L /usr/aarch64-linux-gnu -cpu max" \
-    -DCMAKE_EXE_LINKER_FLAGS=-fuse-ld=lld
+    -DCOMPILER_RT_EMULATOR="$ROOT/qemu_build/qemu-aarch64 -L /usr/aarch64-linux-gnu -cpu max"
 done
