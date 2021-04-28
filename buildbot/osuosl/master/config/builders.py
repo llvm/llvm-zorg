@@ -647,7 +647,6 @@ all = [
     'workernames' : ["aix-ppc64-ppc64le"],
     'builddir': "clang-ppc64-aix-ppc64le",
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
-                    jobs=4,
                     clean=False,
                     checkout_clang_tools_extra=False,
                     checkout_compiler_rt=False,
