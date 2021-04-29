@@ -1867,5 +1867,22 @@ all = [
              "-DGRPC_INSTALL_PATH=/usr/local/lib/grpc"
          ])},
 
+    # Target ARC from Synopsys
+    {'name': "arc-builder",
+     'tags': ["clang", "lld"],
+     'collapseRequests': False,
+     'workernames' : ["arc-worker"],
+     'builddir': "arc-folder",
+     'factory': UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
+        depends_on_projects=["llvm", "clang", "lld"],
+        extra_configure_args=[
+             "-DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=ON",
+             "-DLLVM_ENABLE_ASSERTIONS:BOOL=ON",
+             "-DLLVM_TOOL_CLANG_TOOLS_EXTRA_BUILD=0",
+             "-DLLVM_ENABLE_LIBPFM=OFF",
+             "-DLLVM_TARGETS_TO_BUILD=X86",
+             "-DLLVM_EXPERIMENTAL_TARGETS_TO_BUILD=ARC",
+         ])},
+
 
 ]

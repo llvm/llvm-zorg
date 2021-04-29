@@ -258,6 +258,13 @@ all = [
         subject = "Build Failure: %(builder)s",
         mode = "failing",
         builders = ["clang-hip-vega20"]),
+    reporters.MailNotifier(
+        fromaddr="llvm.buildmaster@lab.llvm.org",
+        sendToInterestedUsers = False,
+        extraRecipients=["llvm_arc_buildbot@synopsys.com", "heli@synopsys.com"],
+        subject = "Build Failure: %(builder)s",
+        mode = "failing",
+        builders = ["arc-builder"]),
 ]
 
 

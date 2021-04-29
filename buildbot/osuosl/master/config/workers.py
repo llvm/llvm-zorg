@@ -247,4 +247,7 @@ def get_all():
 
         # XCore target, Ubuntu 20.04 x64 host
         create_worker("xcore-ubuntu20-x64", properties={'jobs': 4}, max_builds=1),
+
+        # ARC Worker, CentOS 7.9 x86_64 Intel Xeon Platinum 8000 @ 3.6GHz, 32GB RAM
+        create_worker("arc-worker", properties={'jobs': 16}, max_builds=1),
         ]
