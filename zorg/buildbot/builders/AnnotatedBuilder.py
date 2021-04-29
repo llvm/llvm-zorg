@@ -43,7 +43,7 @@ def getAnnotatedBuildFactory(
         # We used to add --jobs to all script invocations. Perserve this
         # for cases when the user did not specify extra_args, but allow
         # overriding it if the user did specify extra_args.
-        extra_args = [WithProperties("--jobs=%(jobs:-)s")]
+        extra_args = ["--jobs=%(jobs:-)s"]
 
     f = LLVMBuildFactory(
         clean=clean,
