@@ -92,9 +92,9 @@ def getLibcxxAndAbiBuilder(f=None, env=None,
         name='cmake', command=['cmake', rel_src_dir] + cmake_opts,
         haltOnFailure=True, workdir=build_path, env=env))
 
+    jobs_flag = properties.WithProperties('-j%(jobs)s')
     # Build libcxxabi
     if 'libcxxabi' in depends_on_projects:
-        jobs_flag = properties.WithProperties('-j%(jobs)s')
         f.addStep(buildbot.steps.shell.ShellCommand(
             name='build.libcxxabi', command=['make', jobs_flag, 'cxxabi'],
             haltOnFailure=True, workdir=build_path, env=env))
