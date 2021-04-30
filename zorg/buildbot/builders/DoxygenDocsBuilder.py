@@ -71,6 +71,7 @@ def getLLVMDocsBuildFactory(
     f = UnifiedTreeBuilder.getCmakeBuildFactory(
             clean=clean,
             depends_on_projects=_depends_on_projects,
+            enable_runtimes=[], # Docs don't support runtimes build yet.
             extra_configure_args=cmake_args,
             env=merged_env,
             **kwargs) # Pass through all the extra arguments.
