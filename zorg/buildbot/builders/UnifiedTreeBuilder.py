@@ -13,6 +13,7 @@ import zorg.buildbot.builders.Util as builders_util
 
 def getLLVMBuildFactoryAndPrepareForSourcecodeSteps(
            depends_on_projects = None,
+           enable_runtimes = None,
            llvm_srcdir = None,
            obj_dir = None,
            install_dir = None,
@@ -29,6 +30,7 @@ def getLLVMBuildFactoryAndPrepareForSourcecodeSteps(
 
     f = LLVMBuildFactory(
             depends_on_projects=depends_on_projects,
+            enable_runtimes=enable_runtimes,
             llvm_srcdir=llvm_srcdir,
             obj_dir=obj_dir,
             install_dir=install_dir,
@@ -49,6 +51,7 @@ def getLLVMBuildFactoryAndPrepareForSourcecodeSteps(
 
 def getLLVMBuildFactoryAndSourcecodeSteps(
            depends_on_projects = None,
+           enable_runtimes = None,
            llvm_srcdir = None,
            src_to_build_dir = None,
            obj_dir = None,
@@ -58,6 +61,7 @@ def getLLVMBuildFactoryAndSourcecodeSteps(
 
     f = getLLVMBuildFactoryAndPrepareForSourcecodeSteps(
             depends_on_projects=depends_on_projects,
+            enable_runtimes=enable_runtimes,
             llvm_srcdir=llvm_srcdir,
             src_to_build_dir=src_to_build_dir,
             obj_dir=obj_dir,
@@ -101,9 +105,15 @@ def addCmakeSteps(
               doStepIf=cleanBuildRequested,
               ))
 
-    CmakeCommand.applyDefaultOptions(cmake_args, [
-        ('-DLLVM_ENABLE_PROJECTS=', ";".join(f.depends_on_projects)),
-        ])
+    if f.enable_projects:
+        CmakeCommand.applyDefaultOptions(cmake_args, [
+            ('-DLLVM_ENABLE_PROJECTS=', ";".join(f.enable_projects)),
+            ])
+
+    if f.enable_runtimes:
+        CmakeCommand.applyDefaultOptions(cmake_args, [
+            ('-DLLVM_ENABLE_RUNTIMES=', ";".join(f.enable_runtimes)),
+            ])
 
     if install_dir:
         install_dir_rel = LLVMBuildFactory.pathRelativeTo(
@@ -232,6 +242,7 @@ def addNinjaSteps(
 
 def getCmakeBuildFactory(
            depends_on_projects = None,
+           enable_runtimes = None,
            llvm_srcdir = None,
            obj_dir = None,
            install_dir = None,
@@ -242,6 +253,7 @@ def getCmakeBuildFactory(
 
     f = getLLVMBuildFactoryAndSourcecodeSteps(
             depends_on_projects=depends_on_projects,
+            enable_runtimes=enable_runtimes,
             llvm_srcdir=llvm_srcdir,
             obj_dir=obj_dir,
             install_dir=install_dir,
@@ -262,6 +274,7 @@ def getCmakeBuildFactory(
 
 def getCmakeWithNinjaBuildFactory(
            depends_on_projects = None,
+           enable_runtimes = None,
            targets = None,
            llvm_srcdir = None,
            obj_dir = None,
@@ -296,6 +309,7 @@ def getCmakeWithNinjaBuildFactory(
 
     f = getCmakeBuildFactory(
             depends_on_projects=depends_on_projects,
+            enable_runtimes=enable_runtimes,
             llvm_srcdir=llvm_srcdir,
             obj_dir=obj_dir,
             install_dir=install_dir,
@@ -317,6 +331,7 @@ def getCmakeWithNinjaBuildFactory(
 
 def getCmakeWithNinjaWithMSVCBuildFactory(
            depends_on_projects = None,
+           enable_runtimes = None,
            targets = None,
            llvm_srcdir = None,
            obj_dir = None,
@@ -344,6 +359,7 @@ def getCmakeWithNinjaWithMSVCBuildFactory(
 
     f = getLLVMBuildFactoryAndSourcecodeSteps(
             depends_on_projects=depends_on_projects,
+            enable_runtimes=enable_runtimes,
             llvm_srcdir=llvm_srcdir,
             obj_dir=obj_dir,
             install_dir=install_dir,
@@ -379,6 +395,7 @@ def getCmakeWithNinjaWithMSVCBuildFactory(
 
 def getCmakeWithNinjaMultistageBuildFactory(
            depends_on_projects = None,
+           enable_runtimes = None,
            llvm_srcdir = None,
            src_to_build_dir = None,
            obj_dir = None,
@@ -429,6 +446,7 @@ def getCmakeWithNinjaMultistageBuildFactory(
 
     f = getLLVMBuildFactoryAndPrepareForSourcecodeSteps(
             depends_on_projects=depends_on_projects,
+            enable_runtimes=enable_runtimes,
             llvm_srcdir=llvm_srcdir,
             src_to_build_dir=src_to_build_dir,
             obj_dir=obj_dir,
