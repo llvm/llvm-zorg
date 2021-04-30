@@ -65,9 +65,14 @@ def _addSteps4SystemCompiler(
         ('-DCMAKE_INSTALL_PREFIX=', install_dir),
         ])
 
-    CmakeCommand.applyRequiredOptions(cmake_args, [
-        ('-DLLVM_ENABLE_PROJECTS=', ";".join(f.depends_on_projects)),
-        ])
+    if f.enable_projects:
+        CmakeCommand.applyRequiredOptions(cmake_args, [
+            ('-DLLVM_ENABLE_PROJECTS=', ";".join(f.enable_projects)),
+            ])
+    if f.enable_runtimes:
+        CmakeCommand.applyRequiredOptions(cmake_args, [
+            ('-DLLVM_ENABLE_RUNTIMES=', ";".join(f.enable_runtimes)),
+            ])
 
     # Note: On this stage we do not care of warnings, as we build with
     # a system toolchain and cannot control the environment.
@@ -181,9 +186,14 @@ def _addSteps4StagedCompiler(
             "-DCMAKE_C_COMPILER=%(builddir)s/" + staged_install + "/bin/clang"
         ))
 
-    CmakeCommand.applyRequiredOptions(cmake_args, [
-        ('-DLLVM_ENABLE_PROJECTS=', ";".join(f.depends_on_projects)),
-        ])
+    if f.enable_projects:
+        CmakeCommand.applyRequiredOptions(cmake_args, [
+            ('-DLLVM_ENABLE_PROJECTS=', ";".join(f.enable_projects)),
+            ])
+    if f.enable_runtimes:
+        CmakeCommand.applyRequiredOptions(cmake_args, [
+            ('-DLLVM_ENABLE_RUNTIMES=', ";".join(f.enable_runtimes)),
+            ])
 
     # Create configuration files with cmake
     f.addStep(CmakeCommand(name="cmake-configure-stage%s" % stage_num,
