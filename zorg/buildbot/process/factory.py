@@ -5,19 +5,60 @@ from collections import OrderedDict
 from buildbot.process.factory import BuildFactory
 from buildbot.plugins import util, steps
 
+_all_runtimes = frozenset([
+    "compiler-rt",
+    "libc",
+    "libcxx",
+    "libcxxabi",
+    "libunwind",
+    "openmp",
+])
+
 class LLVMBuildFactory(BuildFactory):
     """
     TODO: Document
+
+    depends_on_projects is a list of LLVM projects a produced builder
+    depends on. If None, it gets discovered depending on other params.
+
+    enable_runtimes is a list of enabled runtimes. If None,
+    it gets discovered based on the depends_on_projects list.
     """
 
     def __init__(self, steps=None, depends_on_projects=None, **kwargs):
         # Cannot use "super" here as BuildFactory is an old style class.
         BuildFactory.__init__(self, steps)
 
+        # Handle the dependencies.
         if depends_on_projects is None:
-            self.depends_on_projects = frozenset(['llvm'])
+            # llvm project is always included.
+            self.depends_on_projects = set(['llvm'])
         else:
             self.depends_on_projects = frozenset(depends_on_projects)
+
+        enable_runtimes = kwargs.pop('enable_runtimes', None)
+        if enable_runtimes is None:
+            # Let's build the list of runtimes based on the given
+            # depends_on_projects list.
+            self.enable_runtimes = \
+                self.depends_on_projects.intersection(_all_runtimes)
+        else:
+            # We either got a givem list of enabled runtimes,
+            # or "all". Let's just use it, no need to discover.
+            # but we have to replace the "all" placeholder by
+            # the actual list.
+            if enable_runtimes == "all":
+                self.enable_runtimes = frozenset(_all_runtimes)
+            else:
+                self.enable_runtimes = frozenset(enable_runtimes)
+
+            # Update the list of dependencies unless given.
+            if depends_on_projects is None:
+                self.depends_on_projects.update(self.enable_runtimes)
+
+        # Build the list of projects to enable.
+        self.enable_projects = \
+            self.depends_on_projects.difference(self.enable_runtimes)
 
         # Directories.
         self.monorepo_dir = kwargs.pop('llvm_srcdir', None)
