@@ -80,9 +80,14 @@ def getLibcxxAndAbiBuilder(f=None, env=None,
         haltOnFailure=False))
 
     if build_standalone:
-       CmakeCommand.applyRequiredOptions(cmake_opts, [
-        ('-DLLVM_ENABLE_RUNTIMES=', ";".join(f.depends_on_projects)),
-        ])
+       if f.enable_projects:
+           CmakeCommand.applyRequiredOptions(cmake_opts, [
+            ('-DLLVM_ENABLE_PROJECTS=', ";".join(f.enable_projects)),
+            ])
+       if f.enable_runtimes:
+           CmakeCommand.applyRequiredOptions(cmake_opts, [
+            ('-DLLVM_ENABLE_RUNTIMES=', ";".join(f.enable_runtimes)),
+            ])
     else:
        CmakeCommand.applyRequiredOptions(cmake_opts, [
         ('-DLLVM_ENABLE_PROJECTS=', ";".join(f.depends_on_projects)),
