@@ -4,7 +4,7 @@ from os.path import basename
 from buildbot.process.results import SUCCESS
 from buildbot.process.results import FAILURE
 
-from buildbot.steps.shell import TestNewStyle
+from buildbot.steps.shell import Test
 
 from buildbot.process.logobserver import LogLineObserver
 
@@ -140,7 +140,7 @@ class LitLogObserver(LogLineObserver):
         self.resultCounts[code] = self.resultCounts.get(code, 0) + 1
         return
 
-class LitTestCommand(TestNewStyle):
+class LitTestCommand(Test):
   resultNames = {'FAIL':'unexpected failures',
                  'PASS':'expected passes',
                  'XFAIL':'expected failures',
@@ -159,6 +159,8 @@ class LitTestCommand(TestNewStyle):
     super().__init__(*args, **kwargs)
     self.maxLogs = int(max_logs)
     self.logObserver = LitLogObserver(self.maxLogs, parseSummaryOnly)
+    self.addFactoryArguments(max_logs=max_logs)
+    self.addFactoryArguments(parseSummaryOnly=parseSummaryOnly)
     self.addLogObserver('stdio', self.logObserver)
 
   def evaluateCommand(self, cmd):
@@ -173,7 +175,7 @@ class LitTestCommand(TestNewStyle):
     return SUCCESS
 
   def describe(self, done=False):
-    description = TestNewStyle.describe(self, done) or list()
+    description = Test.describe(self, done) or list()
     for name, count in self.logObserver.resultCounts.items():
         if name in self.resultNames:
             description.append('{0} {1}'.format(count, self.resultNames[name]))
