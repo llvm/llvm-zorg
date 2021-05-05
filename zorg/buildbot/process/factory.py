@@ -37,22 +37,28 @@ class LLVMBuildFactory(BuildFactory):
             self.depends_on_projects = frozenset(depends_on_projects)
 
         enable_runtimes = kwargs.pop('enable_runtimes', None)
+        # If specified, we either got a givem list of
+        # enabled runtimes, or "auto", or "all".
+
         if enable_runtimes is None:
+            # For the backward compatibility, we do not use
+            # enable_runtimes unless it is requested explicitly.
+            self.enable_runtimes = frozenset([])
+        elif enable_runtimes == "auto":
             # Let's build the list of runtimes based on the given
             # depends_on_projects list.
             self.enable_runtimes = \
                 self.depends_on_projects.intersection(_all_runtimes)
         else:
-            # We either got a givem list of enabled runtimes,
-            # or "all". Let's just use it, no need to discover.
-            # but we have to replace the "all" placeholder by
-            # the actual list.
-            if enable_runtimes == "all":
+            if  enable_runtimes == "all":
+                # Let's replace the "all" placeholder by
+                # the actual list of all runtimes.
                 self.enable_runtimes = frozenset(_all_runtimes)
             else:
+                # Let's just use the given list, no need to discover.
                 self.enable_runtimes = frozenset(enable_runtimes)
 
-            # Update the list of dependencies unless given.
+            # Update the list of dependencies.
             if depends_on_projects is None:
                 self.depends_on_projects.update(self.enable_runtimes)
 
