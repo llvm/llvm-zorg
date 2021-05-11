@@ -1261,6 +1261,58 @@ all = [
                         'CC': 'ccache clang', 'CXX': 'ccache clang++', 'CCACHE_CPP2': 'yes',
                     })},
 
+    {'name' : "openmp-offload-cuda-project",
+    'tags'  : ["openmp"],
+    'workernames' : ["minipc-1050ti-linux"],
+    'builddir': "openmp-offload-cuda-project",
+    'factory' : OpenMPBuilder.getOpenMPCMakeBuildFactory(
+                        clean=False,
+                        enable_runtimes=[],
+                        extraCmakeArgs=[
+                                "-DCUDA_TOOLKIT_ROOT_DIR=/opt/cuda",
+                                "-DLIBOMPTARGET_BUILD_NVPTX_BCLIB=ON",
+                                "-DCLANG_ENABLE_STATIC_ANALYZER=OFF",
+                                "-DCLANG_ENABLE_ARCMT=OFF",
+                                "-DCLANG_ENABLE_OBJC_REWRITER=OFF",
+                                "-DLLVM_TARGETS_TO_BUILD=X86;NVPTX",
+                                "-DLLVM_ENABLE_LLD=ON",
+                                '-DLLVM_PARALLEL_LINK_JOBS=2',
+                            ],
+                        install=True,
+                        testsuite=True,
+                        testsuite_sollvevv=True,
+                        extraTestsuiteCmakeArgs=[
+                            "-DTEST_SUITE_SOLLVEVV_OFFLOADING_CFLAGS=-fopenmp-targets=nvptx64-nvidia-cuda;--cuda-path=/opt/cuda",
+                            "-DTEST_SUITE_SOLLVEVV_OFFLOADING_LDFLAGS=-fopenmp-targets=nvptx64-nvidia-cuda;--cuda-path=/opt/cuda",
+                        ],
+                    )},
+
+    {'name' : "openmp-offload-cuda-runtime",
+    'tags'  : ["openmp"],
+    'workernames' : ["minipc-1050ti-linux"],
+    'builddir': "openmp-offload-cuda-runtime",
+    'factory' : OpenMPBuilder.getOpenMPCMakeBuildFactory(
+                        clean=False,
+                        enable_runtimes=['openmp'],
+                        extraCmakeArgs=[
+                                "-DCUDA_TOOLKIT_ROOT_DIR=/opt/cuda",
+                                "-DLIBOMPTARGET_BUILD_NVPTX_BCLIB=ON",
+                                "-DCLANG_ENABLE_STATIC_ANALYZER=OFF",
+                                "-DCLANG_ENABLE_ARCMT=OFF",
+                                "-DCLANG_ENABLE_OBJC_REWRITER=OFF",
+                                "-DLLVM_TARGETS_TO_BUILD=X86;NVPTX",
+                                "-DLLVM_ENABLE_LLD=ON",
+                                '-DLLVM_PARALLEL_LINK_JOBS=2',
+                            ],
+                        install=True,
+                        testsuite=True,
+                        testsuite_sollvevv=True,
+                        extraTestsuiteCmakeArgs=[
+                            "-DTEST_SUITE_SOLLVEVV_OFFLOADING_CFLAGS=-fopenmp-targets=nvptx64-nvidia-cuda;--cuda-path=/opt/cuda",
+                            "-DTEST_SUITE_SOLLVEVV_OFFLOADING_LDFLAGS=-fopenmp-targets=nvptx64-nvidia-cuda;--cuda-path=/opt/cuda",
+                        ],
+                    )},
+
 # Libc++ builders.
 
     {'name': 'libcxx-libcxxabi-x86_64-linux-debian',
