@@ -1435,7 +1435,6 @@ all = [
                     depends_on_projects=['llvm','mlir','clang','flang'],
                     extra_configure_args=[
                         "-DLLVM_TARGETS_TO_BUILD=AArch64",
-                        "-DFLANG_BUILD_NEW_DRIVER=ON",
                         "-DLLVM_BUILD_LLVM_DYLIB=ON",
                         "-DLLVM_LINK_LLVM_DYLIB=ON",
                         "-DCMAKE_CXX_STANDARD=17",
@@ -1451,7 +1450,6 @@ all = [
                     depends_on_projects=['llvm','mlir','clang','flang'],
                     extra_configure_args=[
                         "-DLLVM_TARGETS_TO_BUILD=AArch64",
-                        "-DFLANG_BUILD_NEW_DRIVER=ON",
                         "-DBUILD_SHARED_LIBS=ON",
                         "-DLLVM_BUILD_EXAMPLES=ON",
                         "-DCMAKE_CXX_STANDARD=17",
@@ -1504,7 +1502,6 @@ all = [
                     depends_on_projects=['llvm','mlir','clang','flang'],
                     extra_configure_args=[
                         "-DLLVM_TARGETS_TO_BUILD=AArch64",
-                        "-DFLANG_BUILD_NEW_DRIVER=ON",
                         "-DCMAKE_BUILD_TYPE=Debug",
                         "-DCMAKE_CXX_STANDARD=17",
                         "-DLLVM_USE_LINKER=lld",
@@ -1527,7 +1524,6 @@ all = [
                         "-DBUILD_SHARED_LIBS=ON",
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
                         "-DLLVM_ENABLE_LIBCXX=On",
-                        "-DFLANG_BUILD_NEW_DRIVER=ON",
                         "-DCMAKE_BUILD_TYPE=Release",
                         ])},
 
@@ -1541,7 +1537,6 @@ all = [
                     depends_on_projects=['llvm','mlir','clang','flang'],
                     extra_configure_args=[
                         "-DLLVM_TARGETS_TO_BUILD=AArch64",
-                        "-DFLANG_BUILD_NEW_DRIVER=ON",
                         "-DCMAKE_BUILD_TYPE=Release",
                         "-DCMAKE_CXX_STANDARD=17",
                     ])},
@@ -1556,7 +1551,6 @@ all = [
                     depends_on_projects=['llvm','mlir','clang','flang'],
                     extra_configure_args=[
                         "-DLLVM_TARGETS_TO_BUILD=AArch64",
-                        "-DFLANG_BUILD_NEW_DRIVER=ON",
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
                         "-DCMAKE_BUILD_TYPE=Release",
                         "-DCMAKE_CXX_STANDARD=17",
@@ -1578,7 +1572,6 @@ all = [
                         "-DFLANG_ENABLE_WERROR=ON",
                         "-DBUILD_SHARED_LIBS=ON",
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
-                        "-DFLANG_BUILD_NEW_DRIVER=ON",
                         "-DCMAKE_BUILD_TYPE=Release",
                     ])},
 
@@ -1605,7 +1598,6 @@ all = [
                         "-DCMAKE_C_COMPILER=gcc",
                         "-DCMAKE_CXX_COMPILER=g++",
                         "-DLLVM_INSTALL_UTILS=ON",
-                        "-DFLANG_BUILD_NEW_DRIVER=ON",
                         "-DCMAKE_CXX_STANDARD=17",
                     ])},
 
