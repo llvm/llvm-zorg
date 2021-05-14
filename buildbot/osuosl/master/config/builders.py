@@ -622,25 +622,19 @@ all = [
     'tags'  : ["clang", "ppc", "ppc64le"],
     'workernames' : ["ppc64le-clang-rhel-test"],
     'builddir': "clang-ppc64le-rhel",
-    'factory' : ClangBuilder.getClangCMakeBuildFactory(clean=False,
-                    checkout_clang_tools_extra=True,
-                    checkout_compiler_rt=False,
-                    checkout_lld=True,
-                    checkout_libcxx=False,
-                    useTwoStage=False,
-                    runTestSuite=True,
-                    stage1_config='Release',
-                    nt_flags=['--threads=16', '--build-threads=16'],
-                    extra_cmake_args=[
-                        '-DLLVM_ENABLE_PROJECTS=clang;llvm;clang-tools-extra;lld',
-                        '-DLLVM_ENABLE_RUNTIMES=compiler-rt',
+    'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
+                    depends_on_projects=["llvm", "clang", "clang-tools-extra", "lld", "compiler-rt"],
+                    checks=["check"],
+                    enable_runtimes="auto",
+                    extra_configure_args=[
                         "-DLLVM_ENABLE_ASSERTIONS=On", "-DCMAKE_C_COMPILER=clang",
                         "-DCMAKE_CXX_COMPILER=clang++",
                         "-DCLANG_DEFAULT_LINKER=lld",
                         "-DCMAKE_C_COMPILER_EXTERNAL_TOOLCHAIN:PATH=/opt/rh/devtoolset-7/root/usr",
                         "-DCMAKE_CXX_COMPILER_EXTERNAL_TOOLCHAIN:PATH=/opt/rh/devtoolset-7/root/usr",
                         "-DLLVM_BINUTILS_INCDIR=/usr/include", "-DBUILD_SHARED_LIBS=ON", "-DLLVM_ENABLE_WERROR=ON",
-                        '-DLLVM_LIT_ARGS=-vj 20'])},
+                        "-DCMAKE_BUILD_TYPE=Release"
+                        "-DLLVM_LIT_ARGS=-vj 20"])},
 
     {'name' : "clang-ppc64-aix-ppc64le",
     'tags'  : ["clang", "aix", "ppc", "ppc64le"],
