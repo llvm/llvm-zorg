@@ -1198,6 +1198,12 @@ all = [
     'builddir': "sanitizer-x86_64-linux-autoconf",
     'factory' : SanitizerBuilder.getSanitizerBuildFactory()},
 
+    {'name' : "sanitizer-x86_64-linux-qemu",
+    'tags'  : ["sanitizer"],
+    'workernames' : ["sanitizer-buildbot3", "sanitizer-buildbot7", "sanitizer-buildbot8"],
+    'builddir': "sanitizer-x86_64-linux-qemu",
+    'factory' : SanitizerBuilder.getSanitizerBuildFactory()},
+
     {'name' : "sanitizer-x86_64-linux-fuzzer",
     'tags'  : ["sanitizer"],
     'workernames' : ["sanitizer-buildbot7", "sanitizer-buildbot8"],
