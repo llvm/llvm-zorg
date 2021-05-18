@@ -58,7 +58,9 @@ function build_compiler_rt {
   local qemu_cmd=""
   if [[ "${QEMU:-}" != "0" ]] ; then
     name+="_qemu"
-    qemu_cmd="$ROOT/qemu_build/qemu-${arch} -L /usr/${target}"
+    local qemu_arch=${arch}
+    [[ "${arch}" == "powerpc64le" ]] && qemu_arch="ppc64le"
+    qemu_cmd="$ROOT/qemu_build/qemu-${qemu_arch} -L /usr/${target}"
   fi
 
   local out_dir=llvm_build2_${name}
@@ -104,4 +106,9 @@ for DBG in OFF ON ; do
     CMAKE_COMPILER_RT_OPTIONS+=" -DCMAKE_C_FLAGS=-DHWCAP2_MTE=1 -DCMAKE_CXX_FLAGS=-DHWCAP2_MTE=1"
     build_compiler_rt aarch64
   )
+  build_compiler_rt mips
+  build_compiler_rt mipsel
+  build_compiler_rt mips64 abi64
+  build_compiler_rt mips64el abi64
+  build_compiler_rt powerpc64le
 done
