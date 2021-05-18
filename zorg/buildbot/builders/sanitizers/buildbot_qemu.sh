@@ -25,21 +25,24 @@ COMPILER_BIN_DIR=$(readlink -f ${STAGE1_DIR})/bin
 
 function build_qemu {
   echo "@@@BUILD_STEP build qemu@@@"
-  $ROOT/qemu_build/qemu-x86_64 --version || (
+  (
     cd $ROOT
-    git clone https://gitlab.com/qemu-project/qemu.git
+    [[ -d qemu ]] || git clone https://gitlab.com/qemu-project/qemu.git || exit 1
     cd $ROOT/qemu
-    git reset --hard $1
-    git submodule update --init --recursive
-    rm -rf $ROOT/qemu_build
-    mkdir $ROOT/qemu_build
-    cd $ROOT/qemu_build
-    ../qemu/configure --disable-system --enable-linux-user --static
-    ninja
+    [[ "$(git rev-parse HEAD)" == "$1" ]] && $ROOT/qemu_build/qemu-x86_64 --version && exit 0
+
+    rm -rf $ROOT/qemu_build &&
+    mkdir -p $ROOT/qemu_build &&
+    git reset --hard $1 &&
+    git submodule update --init --recursive &&
+    cd $ROOT/qemu_build &&
+    ../qemu/configure --disable-system --enable-linux-user --static &&
+    ninja &&
     $ROOT/qemu_build/qemu-x86_64 --version
+    
   ) || (
     echo "@@@STEP_EXCEPTION@@@"
-    false
+    exit 2
   )
 }
 
