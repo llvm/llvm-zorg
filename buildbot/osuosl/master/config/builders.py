@@ -633,7 +633,7 @@ all = [
                         "-DCMAKE_C_COMPILER_EXTERNAL_TOOLCHAIN:PATH=/opt/rh/devtoolset-7/root/usr",
                         "-DCMAKE_CXX_COMPILER_EXTERNAL_TOOLCHAIN:PATH=/opt/rh/devtoolset-7/root/usr",
                         "-DLLVM_BINUTILS_INCDIR=/usr/include", "-DBUILD_SHARED_LIBS=ON", "-DLLVM_ENABLE_WERROR=ON",
-                        "-DCMAKE_BUILD_TYPE=Release"
+                        "-DCMAKE_BUILD_TYPE=Release",
                         "-DLLVM_LIT_ARGS=-vj 20"])},
 
     {'name' : "clang-ppc64-aix-ppc64le",
