@@ -20,7 +20,6 @@ clobber
 buildbot_update
 
 build_stage1_clang
-#build_stage1_clang_at_revison
 
 COMPILER_BIN_DIR=$(readlink -f ${STAGE1_DIR})/bin
 
