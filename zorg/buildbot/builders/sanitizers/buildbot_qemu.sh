@@ -94,10 +94,10 @@ function build_compiler_rt {
       -DCMAKE_C_COMPILER_TARGET=${target} \
       -DCMAKE_CXX_COMPILER_TARGET=${target} \
       -DCOMPILER_RT_EMULATOR="${qemu_cmd:-}" \
-      $LLVM/../compiler-rt
+      $LLVM/../compiler-rt || exit 1
 
     echo "@@@BUILD_STEP test scudo $name@@@"
-    ninja check-scudo_standalone
+    ninja check-scudo_standalone || exit 2
   ) || echo "@@@STEP_FAILURE@@@"
 }
 
