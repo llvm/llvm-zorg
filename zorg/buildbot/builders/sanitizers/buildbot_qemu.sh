@@ -58,7 +58,7 @@ function build_compiler_rt {
     cd ${out_dir}
 
     echo "@@@BUILD_STEP cmake for $name@@@"
-    cmake ${CMAKE_COMMON_OPTIONS} "$@" $LLVM/../compiler-rt
+    cmake ${CMAKE_COMPILER_RT_OPTIONS} "$@" $LLVM/../compiler-rt
 
     echo "@@@BUILD_STEP test scudo $name@@@"
     ninja check-scudo_standalone
@@ -81,7 +81,7 @@ CMAKE_COMMON_OPTIONS+=" \
 "
 
 for DBG in OFF ON ; do
-  CMAKE_COMMON_OPTIONS+=" -DCOMPILER_RT_DEBUG=$DBG"
+  CMAKE_COMPILER_RT_OPTIONS="$CMAKE_COMMON_OPTIONS -DCOMPILER_RT_DEBUG=$DBG"
   NAME_PREFIX=""
   if [[ "$DBG" == "ON" ]] ; then
     NAME_PREFIX="debug_"
