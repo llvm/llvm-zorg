@@ -1174,10 +1174,10 @@ all = [
     'builddir': "sanitizer-x86_64-linux-fast",
     'factory' : SanitizerBuilder.getSanitizerBuildFactory()},
 
-    {'name' : "sanitizer-x86_64-linux-bootstrap",
+    {'name' : "sanitizer-x86_64-linux-bootstrap-asan",
     'tags'  : ["sanitizer"],
     'workernames' : ["sanitizer-buildbot3", "sanitizer-buildbot4"],
-    'builddir': "sanitizer-x86_64-linux-bootstrap",
+    'builddir': "sanitizer-x86_64-linux-bootstrap-asan",
     'factory' : SanitizerBuilder.getSanitizerBuildFactory()},
 
     {'name' : "sanitizer-x86_64-linux-bootstrap-ubsan",
