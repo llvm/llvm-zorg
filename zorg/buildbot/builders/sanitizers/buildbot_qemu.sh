@@ -39,14 +39,13 @@ function build_qemu {
     ../qemu/configure --disable-system --enable-linux-user --static &&
     ninja &&
     $ROOT/qemu_build/qemu-x86_64 --version
-    
   ) || (
     echo "@@@STEP_EXCEPTION@@@"
     exit 2
   )
 }
 
-build_qemu ffa090bc56e73e287a63261e70ac02c0970be61a
+build_qemu 367196caa07ac31443bc360145cc10fbef4fdf92
 
 function build_compiler_rt {
   local arch=$1
@@ -64,6 +63,10 @@ function build_compiler_rt {
     local qemu_arch=${arch}
     [[ "${arch}" == "powerpc64le" ]] && qemu_arch="ppc64le"
     qemu_cmd="$ROOT/qemu_build/qemu-${qemu_arch} -L /usr/${target}"
+    if [[ ! -z "${QEMU_CPU:-}" ]] ; then
+      qemu_cmd+=" -cpu ${QEMU_CPU}"
+      name+="_${QEMU_CPU}"
+    fi
   fi
 
   local out_dir=llvm_build2_${name}
@@ -104,11 +107,7 @@ for DBG in OFF ON ; do
   build_compiler_rt x86_64
   build_compiler_rt arm eabihf
   build_compiler_rt aarch64
-  (
-    # Workaround for https://bugs.launchpad.net/qemu/+bug/1926044
-    CMAKE_COMPILER_RT_OPTIONS+=" -DCMAKE_C_FLAGS=-DHWCAP2_MTE=1 -DCMAKE_CXX_FLAGS=-DHWCAP2_MTE=1"
-    build_compiler_rt aarch64
-  )
+  QEMU_CPU="cortex-a72" build_compiler_rt aarch64
   build_compiler_rt mips
   build_compiler_rt mipsel
   build_compiler_rt mips64 abi64
