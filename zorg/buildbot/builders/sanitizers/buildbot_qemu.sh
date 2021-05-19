@@ -76,7 +76,7 @@ function build_compiler_rt {
   (
     cd ${out_dir}
 
-    echo "@@@BUILD_STEP cmake for $name@@@"
+    echo "@@@BUILD_STEP scudo $name@@@"
     cmake \
       ${CMAKE_COMMON_OPTIONS} \
       -DCOMPILER_RT_DEBUG=$DBG \
@@ -96,7 +96,6 @@ function build_compiler_rt {
       -DCOMPILER_RT_EMULATOR="${qemu_cmd:-}" \
       $LLVM/../compiler-rt || exit 1
 
-    echo "@@@BUILD_STEP test scudo $name@@@"
     ninja check-scudo_standalone || exit 2
   ) || echo "@@@STEP_FAILURE@@@"
 }
