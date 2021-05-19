@@ -43,7 +43,6 @@ def getOpenMPCMakeBuildFactory(
     if depends_on_projects is None:
         # Monorepo configuration requires llvm and clang to get cmake work.
         depends_on_projects = ['llvm', 'clang', 'openmp']
-    depends_on_projects += [p for p in runtime_projects if p not in depends_on_projects]
 
     f = UnifiedTreeBuilder.getLLVMBuildFactoryAndSourcecodeSteps(
             depends_on_projects=depends_on_projects,
