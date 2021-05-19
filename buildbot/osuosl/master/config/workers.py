@@ -139,8 +139,8 @@ def get_all():
         create_worker("windows-gcebot2", properties={'jobs': 32}, max_builds=1),
 
         # Ubuntu 14.04 x86_64-scei-ps4, 2 x Intel(R) Xeon(R) CPU E5-2699 v3 @ 2.30GHz
-        create_worker("as-worker-91"),
-        create_worker("as-worker-92"),
+        create_worker("as-worker-91", max_builds=1),
+        create_worker("as-worker-92", max_builds=1),
 
         # Windows 10 Pro x86_64-scei-ps4, 2 x Intel(R) Xeon(R) CPU E5-2699 v3 @ 2.30GHz
         create_worker("as-worker-93", properties={'jobs': 36}, max_builds=1),
