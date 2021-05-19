@@ -198,6 +198,8 @@ all = [
                             ])
                     ],
                     extra_configure_args=[
+                        "-DLLVM_TARGETS_TO_BUILD=ARM",
+                        "-DTARGET_TRIPLE=armv7-linux-gnueabihf",
                         "-DDEFAULT_SYSROOT=C:/buildbot/.arm-ubuntu",
                         "-DLLVM_LIT_ARGS=-v -vv --threads=32",
                         WithProperties("%(remote_test_host:+-DREMOTE_TEST_HOST=)s%(remote_test_host:-)s"),
@@ -235,7 +237,7 @@ all = [
                     ],
                     extra_configure_args=[
                         "-DLLVM_TARGETS_TO_BUILD=AArch64",
-                        "-DCMAKE_C_COMPILER_TARGET=aarch64-linux-gnu",
+                        "-DTARGET_TRIPLE=aarch64-linux-gnu",
                         "-DDEFAULT_SYSROOT=C:/buildbot/.aarch64-ubuntu",
                         "-DLLVM_LIT_ARGS=-v -vv --threads=32",
                         WithProperties("%(remote_test_host:+-DREMOTE_TEST_HOST=)s%(remote_test_host:-)s"),
