@@ -82,6 +82,7 @@ function build_compiler_rt {
       -DCOMPILER_RT_DEBUG=$DBG \
       -DLLVM_CONFIG_PATH=${COMPILER_BIN_DIR}/llvm-config \
       -DCMAKE_C_COMPILER=${COMPILER_BIN_DIR}/clang \
+      -DCMAKE_INSTALL_PREFIX=$(${COMPILER_BIN_DIR}/clang -print-resource-dir) \
       -DCMAKE_CXX_COMPILER=${COMPILER_BIN_DIR}/clang++ \
       -DLLVM_LIT_ARGS="-v --time-tests" \
       -DCOMPILER_RT_BUILD_BUILTINS=OFF \
@@ -97,7 +98,10 @@ function build_compiler_rt {
       -DCOMPILER_RT_EMULATOR="${qemu_cmd:-}" \
       $LLVM/../compiler-rt || exit 1
 
-    ninja check-scudo_standalone || exit 2
+    # Copy into clang resource dir to make -fsanitize= work in lit tests.
+    ninja install-scudo_standalone
+
+    ninja check-scudo_standalone || exit 3
   ) || echo "@@@STEP_FAILURE@@@"
 }
 
