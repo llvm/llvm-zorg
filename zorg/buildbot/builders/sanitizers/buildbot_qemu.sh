@@ -83,6 +83,7 @@ function build_compiler_rt {
       -DLLVM_CONFIG_PATH=${COMPILER_BIN_DIR}/llvm-config \
       -DCMAKE_C_COMPILER=${COMPILER_BIN_DIR}/clang \
       -DCMAKE_CXX_COMPILER=${COMPILER_BIN_DIR}/clang++ \
+      -DLLVM_LIT_ARGS="-v --time-tests" \
       -DCOMPILER_RT_BUILD_BUILTINS=OFF \
       -DCOMPILER_RT_DEFAULT_TARGET_ONLY=ON \
       -DCMAKE_CROSSCOMPILING=True \
