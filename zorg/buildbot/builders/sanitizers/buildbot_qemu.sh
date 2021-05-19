@@ -76,14 +76,18 @@ function build_compiler_rt {
   (
     cd ${out_dir}
 
+    LINKER_FLAGS=${LINKER_FLAGS:-}
+
     echo "@@@BUILD_STEP scudo $name@@@"
     cmake \
       ${CMAKE_COMMON_OPTIONS} \
       -DCOMPILER_RT_DEBUG=$DBG \
       -DLLVM_CONFIG_PATH=${COMPILER_BIN_DIR}/llvm-config \
       -DCMAKE_C_COMPILER=${COMPILER_BIN_DIR}/clang \
-      -DCMAKE_INSTALL_PREFIX=$(${COMPILER_BIN_DIR}/clang -print-resource-dir) \
       -DCMAKE_CXX_COMPILER=${COMPILER_BIN_DIR}/clang++ \
+      -DCOMPILER_RT_HAS_LLD=ON \
+      -DCOMPILER_RT_TEST_USE_LLD=ON \
+      -DCMAKE_INSTALL_PREFIX=$(${COMPILER_BIN_DIR}/clang -print-resource-dir) \
       -DLLVM_LIT_ARGS="-v --time-tests" \
       -DCOMPILER_RT_BUILD_BUILTINS=OFF \
       -DCOMPILER_RT_DEFAULT_TARGET_ONLY=ON \
@@ -91,8 +95,11 @@ function build_compiler_rt {
       -DCOMPILER_RT_INCLUDE_TESTS=ON \
       -DCOMPILER_RT_BUILD_LIBFUZZER=OFF \
       -DCMAKE_BUILD_WITH_INSTALL_RPATH=ON \
+      -DCMAKE_CXX_FLAGS=-fPIC \
+      -DCMAKE_C_FLAGS=-fPIC \
+      -DCMAKE_SHARED_LINKER_FLAGS="-fuse-ld=lld ${LINKER_FLAGS}" \
       -DCMAKE_EXE_LINKER_FLAGS=-fuse-ld=lld \
-      -DCOMPILER_RT_TEST_COMPILER_CFLAGS="--target=${target}" \
+      -DCOMPILER_RT_TEST_COMPILER_CFLAGS="--target=${target} ${LINKER_FLAGS}" \
       -DCMAKE_C_COMPILER_TARGET=${target} \
       -DCMAKE_CXX_COMPILER_TARGET=${target} \
       -DCOMPILER_RT_EMULATOR="${qemu_cmd:-}" \
@@ -112,9 +119,13 @@ for DBG in OFF ON ; do
   build_compiler_rt arm eabihf
   build_compiler_rt aarch64
   QEMU_CPU="cortex-a72" build_compiler_rt aarch64
-  build_compiler_rt mips
-  build_compiler_rt mipsel
-  build_compiler_rt mips64 abi64
-  build_compiler_rt mips64el abi64
+  (
+    LINKER_FLAGS="-latomic -Wl,-z,notext -Wno-unused-command-line-argument"
+    build_compiler_rt mips
+    build_compiler_rt mipsel
+    build_compiler_rt mips64 abi64
+    build_compiler_rt mips64el abi64
+  )
+  
   build_compiler_rt powerpc64le
 done
