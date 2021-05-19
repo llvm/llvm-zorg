@@ -1622,7 +1622,6 @@ all = [
                         '-DLLVM_TARGETS_TO_BUILD=PowerPC',
                         '-DLLVM_INSTALL_UTILS=ON',
                         '-DCMAKE_CXX_STANDARD=17',
-                        '-DLLVM_ENABLE_PROJECTS=flang',
                         '-DLLVM_LIT_ARGS=-vj 256'
                     ],
                     env={
