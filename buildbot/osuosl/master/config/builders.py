@@ -1094,7 +1094,11 @@ all = [
     'tags'  : ["clang","lld","LTO"],
     'workernames' : ["as-worker-91"],
     'builddir': "clang-with-lto-ubuntu",
-    'factory' : ClangLTOBuilder.getClangWithLTOBuildFactory(jobs=72)},
+    'factory' : ClangLTOBuilder.getClangWithLTOBuildFactory(
+                    jobs=72,
+                    extra_configure_args_lto_stage=[
+                        '-DLLVM_PARALLEL_LINK_JOBS=14',
+                    ])},
 
 # Builders for MLIR.
 
