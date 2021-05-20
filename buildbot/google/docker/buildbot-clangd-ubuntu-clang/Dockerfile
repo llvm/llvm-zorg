@@ -53,7 +53,7 @@ RUN pip3 install buildbot-worker==2.8.4
 # The grpc version shipped with Ubuntu 18.04 crashes on TSan checks.
 ENV GRPC_INSTALL_PATH=/usr/local/lib/grpc
 RUN cd /tmp ; \
-    git clone -b v1.33.2 --depth 1  --recursive --shallow-submodules https://github.com/grpc/grpc ; \
+    git clone -b v1.36.3 --depth 1  --recursive --shallow-submodules https://github.com/grpc/grpc ; \
     cd grpc  ; \
     mkdir build; cd build ; \
     cmake -G Ninja -DgRPC_INSTALL=ON -DCMAKE_INSTALL_PREFIX=${GRPC_INSTALL_PATH} -DCMAKE_BUILD_TYPE=Release .. ; \
