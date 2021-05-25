@@ -45,7 +45,6 @@ def get_all():
         create_worker("linaro-aarch64-global-isel", properties={'jobs' : 32}, max_builds=1),
         create_worker("linaro-aarch64-lld", properties={'jobs' : 32}, max_builds=1),
         create_worker("linaro-aarch64-flang-oot", properties={'jobs' : 32}, max_builds=1),
-        create_worker("linaro-aarch64-flang-oot-new-driver", properties={'jobs' : 32}, max_builds=1),
         create_worker("linaro-aarch64-flang-debug", properties={'jobs' : 32}, max_builds=1),
         create_worker("linaro-aarch64-flang-latest-clang", properties={'jobs' : 32}, max_builds=1),
         create_worker("linaro-aarch64-flang-release", properties={'jobs' : 32}, max_builds=1),
