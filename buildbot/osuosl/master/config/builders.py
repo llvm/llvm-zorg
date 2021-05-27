@@ -1122,6 +1122,7 @@ all = [
                         '-DBUILD_SHARED_LIBS=ON',
                         '-DLLVM_CCACHE_BUILD=ON',
                         '-DMLIR_ENABLE_BINDINGS_PYTHON=ON',
+                        '-DMLIR_RUN_CUDA_TENSOR_CORE_TESTS=ON',
                     ],
                     env={
                         'CC':'clang',
