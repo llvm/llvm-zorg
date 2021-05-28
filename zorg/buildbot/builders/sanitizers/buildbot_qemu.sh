@@ -27,9 +27,10 @@ function build_qemu {
   echo "@@@BUILD_STEP build qemu@@@"
   (
     cd $ROOT
-    [[ -d qemu ]] || git clone https://gitlab.com/qemu-project/qemu.git || exit 1
+    [[ -d qemu ]] || git clone https://github.com/vitalybuka/qemu.git || exit 1
     cd $ROOT/qemu
-    [[ "$(git rev-parse HEAD)" == "$1" ]] && $ROOT/qemu_build/qemu-x86_64 --version && exit 0
+    git fetch origin
+    [[ "$(git rev-parse HEAD)" == "$(git rev-parse $1)" ]] && $ROOT/qemu_build/qemu-x86_64 --version && exit 0
 
     rm -rf $ROOT/qemu_build &&
     mkdir -p $ROOT/qemu_build &&
@@ -45,7 +46,7 @@ function build_qemu {
   )
 }
 
-build_qemu 367196caa07ac31443bc360145cc10fbef4fdf92
+build_qemu origin/sanitizer_bot
 
 BUILDS=
 
