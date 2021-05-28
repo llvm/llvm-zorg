@@ -26,9 +26,11 @@ COMPILER_BIN_DIR=$(readlink -f ${STAGE1_DIR})/bin
 function build_qemu {
   echo "@@@BUILD_STEP build qemu@@@"
   (
+    local qemu_url=https://github.com/vitalybuka/qemu.git
     cd $ROOT
-    [[ -d qemu ]] || git clone https://github.com/vitalybuka/qemu.git || exit 1
+    [[ -d qemu ]] || git clone $qemu_url || exit 1
     cd $ROOT/qemu
+    git remote set-url origin $qemu_url
     git fetch origin
     [[ "$(git rev-parse HEAD)" == "$(git rev-parse $1)" ]] && $ROOT/qemu_build/qemu-x86_64 --version && exit 0
 
