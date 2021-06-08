@@ -1701,7 +1701,6 @@ all = [
                     clean=True,
                     depends_on_projects=['llvm','clang','openmp'],
                     extra_configure_args=[
-                        "-C=~/llvm_ve_caches/llvm_ve_runtimes.cmake",
                         "-DLLVM_TARGETS_TO_BUILD=X86",
                         "-DLLVM_EXPERIMENTAL_TARGETS_TO_BUILD=VE",
                         "-DLLVM_ENABLE_RUNTIMES=compiler-rt",
