@@ -61,6 +61,8 @@ def main(argv):
             run_command(['ninja', 'libc_loader_tests'])
         with step('libc-integration-test'):
             run_command(['ninja', 'libc-integration-test'])
+        with step('libc-fuzzer'):
+            run_command(['ninja', 'libc-fuzzer'])
         with step('AOR Tests'):
             aor_dir = os.path.join(source_dir, 'libc', 'AOR_v20.02')
             # Remove the AOR build dir.
