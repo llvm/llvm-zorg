@@ -46,7 +46,7 @@ class Build(object):
     def frombasename(str, url=None):
 
         str = os.path.basename(str)
-        revision = timestamp = build = None
+        revision = revision_prefix = sha = timestamp = build = None
 
         # Check if this is a BNI style build.
         m = BUILD_NAME_REGEX.match(str)
@@ -58,7 +58,7 @@ class Build(object):
                 revision.append(int(minor_str))
                 if micro_str:
                     revision.append(int(micro_str))
-            return Build(name, tuple(revision), None, build, suffix)
+            return Build(name, None, tuple(revision), None, None, build, suffix)
 
         if '.' in str:
             str, suffix = str.split('.', 1)
@@ -74,12 +74,20 @@ class Build(object):
         if m:
             str, timestamp = m.groups()
 
+        m = re.match(r'(.*)-d([0-9]+)-(.*)', str)
+        if m:
+            str, revision, sha = m.groups()
+            revision = int(revision)
+            revision_prefix = 'd'
+
         m = re.match(r'(.*)-r([0-9]+)', str)
         if m:
             str, revision = m.groups()
             revision = int(revision)
+            revision_prefix = 'r'
 
-        return Build(str, revision, timestamp, build, suffix, url)
+        return Build(str, revision_prefix, revision, sha, timestamp,
+                     build, suffix, url)
 
     @staticmethod
     def fromdata(data):
@@ -89,13 +97,17 @@ class Build(object):
     def todata(self):
         return {'name': self.name,
                 'revision': self.revision,
+                'sha': self.sha,
                 'timestamp': self.timestamp,
                 'build': self.build,
                 'suffix': self.suffix}
 
-    def __init__(self, name, revision, timestamp, build, suffix, url):
+    def __init__(self, name, revision_prefix, revision, sha, timestamp,
+                 build, suffix, url):
         self.name = name
+        self.revision_prefix = revision_prefix
         self.revision = revision
+        self.sha = sha
         self.timestamp = timestamp
         self.build = build
         self.suffix = suffix
@@ -108,7 +120,9 @@ class Build(object):
                 basename += '-' + '.'.join(str(r) for r in self.revision)
             else:
                 assert isinstance(self.revision, int)
-                basename += '-r%d' % self.revision
+                basename += '-%s%d' % (self.revision_prefix, self.revision)
+        if self.sha is not None:
+            basename += '-%s' % self.sha
         if self.timestamp is not None:
             basename += '-t%s' % self.timestamp
         if self.build is not None:
@@ -122,8 +136,8 @@ class Build(object):
 
     def __repr__(self):
         return "%s%r" % (self.__class__.__name__,
-                         (self.name, self.revision, self.timestamp, self.build,
-                          self.suffix))
+                         (self.name, self.revision, self.sha, self.timestamp,
+                          self.build, self.suffix))
 
     def __cmp__(self, other):
         return cmp((self.revision, self.timestamp,
