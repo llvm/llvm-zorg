@@ -302,8 +302,7 @@ all = [
                     runTestSuite=True,
                     testsuite_flags=[
                         '--cppflags', '-mcpu=cortex-a15 -marm',
-                        '--threads=32', '--build-threads=32'],
-                    extra_cmake_args=["-DLLVM_TARGETS_TO_BUILD='ARM'"])},
+                        '--threads=32', '--build-threads=32'])},
 
     ## ARMv7 check-all self-host NEON with CMake builder
     {'name' : "clang-cmake-armv7-selfhost-neon",
@@ -318,8 +317,7 @@ all = [
                     testStage1=False,
                     extra_cmake_args=[
                         "-DCMAKE_C_FLAGS='-mcpu=cortex-a15 -marm'",
-                        "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a15 -marm'",
-                        "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'"])},
+                        "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a15 -marm'"])},
 
     ## ARMv7 Clang+LLVM check-all
     {'name' : "clang-cmake-armv7-quick",
@@ -331,7 +329,7 @@ all = [
                     checkout_compiler_rt=False,
                     checkout_lld=False,
                     test=True,
-                    extra_cmake_args=["-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'"])},
+                    extra_cmake_args=["-DLLVM_TARGETS_TO_BUILD='ARM'"])},
 
     ## ARMv7 Clang + LLVM run test-suite with GlobalISel enabled
     {'name' : "clang-cmake-armv7-global-isel",
@@ -347,8 +345,7 @@ all = [
                     runTestSuite=True,
                     testsuite_flags=[
                         '--cppflags', '-mcpu=cortex-a15 -marm -O0 -mllvm -global-isel -mllvm -global-isel-abort=0',
-                        '--threads=32', '--build-threads=32'],
-                    extra_cmake_args=["-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'"])},
+                        '--threads=32', '--build-threads=32'])},
 
     ## ARMv7 check-all self-host with CMake builder
     {'name' : "clang-cmake-armv7-selfhost",
@@ -363,8 +360,7 @@ all = [
                     testStage1=False,
                     extra_cmake_args=[
                         "-DCMAKE_C_FLAGS='-mcpu=cortex-a15 -mfpu=vfpv3 -marm'",
-                        "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a15 -mfpu=vfpv3 -marm'",
-                        "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'"])},
+                        "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a15 -mfpu=vfpv3 -marm'"])},
 
     ## AArch64 Clang+LLVM check-all
     {'name' : "clang-cmake-aarch64-quick",
@@ -376,7 +372,7 @@ all = [
                     checkout_compiler_rt=False,
                     checkout_lld=False,
                     test=True,
-                    extra_cmake_args=["-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'"])},
+                    extra_cmake_args=["-DLLVM_TARGETS_TO_BUILD='AArch64'"])},
 
     ## AArch64 Self-hosting Clang+LLVM check-all + LLD + test-suite
     {'name' : "clang-cmake-aarch64-lld",
@@ -396,7 +392,6 @@ all = [
                 extra_cmake_args=[
                     "-DCMAKE_C_FLAGS='-mcpu=cortex-a57'",
                     "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a57'",
-                    "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'",
                     "-DLLVM_ENABLE_LLD=True"])},
 
     ## AArch64 Clang+LLVM run test-suite at -O0 (GlobalISel is now default).
@@ -413,8 +408,7 @@ all = [
                     runTestSuite=True,
                     testsuite_flags=[
                         '--cppflags', '-O0',
-                        '--threads=32', '--build-threads=32'],
-                    extra_cmake_args=["-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'"])},
+                        '--threads=32', '--build-threads=32'])},
 
     ## ARMv7 without neon; check-all 2-stage full compiler-rt + testsuite
     {'name' : "clang-cmake-armv7-full",
@@ -433,7 +427,6 @@ all = [
                         '--threads=4', '--build-threads=4'],
                     extra_cmake_args=[
                         "-DCOMPILER_RT_TEST_COMPILER_CFLAGS='-mcpu=cortex-a15 -mfpu=vfpv3 -marm'",
-                        "-DLLVM_TARGETS_TO_BUILD='ARM'",
                         "-DLLVM_PARALLEL_LINK_JOBS=2"])},
 
     ## ARMv7 Thumb2 with neon; check-all 2-stage full compiler-rt + testsuite
@@ -455,7 +448,6 @@ all = [
                         "-DCMAKE_C_FLAGS='-mcpu=cortex-a15 -mthumb'",
                         "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a15 -mthumb'",
                         "-DCOMPILER_RT_TEST_COMPILER_CFLAGS='-mcpu=cortex-a15 -mthumb'",
-                        "-DLLVM_TARGETS_TO_BUILD='ARM'",
                         "-DLLVM_PARALLEL_LINK_JOBS=2"])},
 
     ## AArch32 Self-hosting Clang+LLVM check-all + LLD + test-suite
@@ -477,7 +469,6 @@ all = [
                     extra_cmake_args=[
                         "-DCMAKE_C_FLAGS='-mcpu=cortex-a57'",
                         "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a57'",
-                        "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'",
                         "-DCOMPILER_RT_BUILD_SANITIZERS=OFF",
                         "-DLLVM_ENABLE_LLD=True"])},
 
@@ -500,8 +491,7 @@ all = [
                         '--threads=32', '--build-threads=32'],
                     extra_cmake_args=[
                         "-DCMAKE_C_FLAGS='-mcpu=cortex-a57'",
-                        "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a57'",
-                        "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'"])},
+                        "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a57'"])},
 
     {'name' : "clang-arm64-windows-msvc-2stage",
     'tags'  : ["clang"],
@@ -1444,7 +1434,6 @@ all = [
                     checks=['check-flang'],
                     depends_on_projects=['llvm','mlir','clang','flang'],
                     extra_configure_args=[
-                        "-DLLVM_TARGETS_TO_BUILD=AArch64",
                         "-DLLVM_BUILD_LLVM_DYLIB=ON",
                         "-DLLVM_LINK_LLVM_DYLIB=ON",
                         "-DCMAKE_CXX_STANDARD=17",
@@ -1459,7 +1448,6 @@ all = [
                     checks=['check-flang'],
                     depends_on_projects=['llvm','mlir','clang','flang'],
                     extra_configure_args=[
-                        "-DLLVM_TARGETS_TO_BUILD=AArch64",
                         "-DBUILD_SHARED_LIBS=ON",
                         "-DLLVM_BUILD_EXAMPLES=ON",
                         "-DCMAKE_CXX_STANDARD=17",
@@ -1472,7 +1460,6 @@ all = [
     'factory' : FlangBuilder.getFlangOutOfTreeBuildFactory(
                     checks=['check-flang'],
                     llvm_extra_configure_args=[
-                        "-DLLVM_TARGETS_TO_BUILD=AArch64",
                         "-DCMAKE_CXX_STANDARD=17",
                         "-DLLVM_ENABLE_WERROR=OFF",
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
@@ -1492,7 +1479,6 @@ all = [
                     checks=['check-flang'],
                     depends_on_projects=['llvm','mlir','clang','flang'],
                     extra_configure_args=[
-                        "-DLLVM_TARGETS_TO_BUILD=AArch64",
                         "-DCMAKE_BUILD_TYPE=Debug",
                         "-DCMAKE_CXX_STANDARD=17",
                         "-DLLVM_USE_LINKER=lld",
@@ -1507,7 +1493,6 @@ all = [
                     checks=['check-flang'],
                     depends_on_projects=['llvm','mlir','clang','flang'],
                     extra_configure_args=[
-                        "-DLLVM_TARGETS_TO_BUILD=AArch64",
                         "-DLLVM_INSTALL_UTILS=ON",
                         "-DCMAKE_CXX_STANDARD=17",
                         "-DLLVM_ENABLE_WERROR=OFF",
@@ -1527,7 +1512,6 @@ all = [
                     checks=['check-flang'],
                     depends_on_projects=['llvm','mlir','clang','flang'],
                     extra_configure_args=[
-                        "-DLLVM_TARGETS_TO_BUILD=AArch64",
                         "-DCMAKE_BUILD_TYPE=Release",
                         "-DCMAKE_CXX_STANDARD=17",
                     ])},
@@ -1541,7 +1525,6 @@ all = [
                     checks=['check-flang'],
                     depends_on_projects=['llvm','mlir','clang','flang'],
                     extra_configure_args=[
-                        "-DLLVM_TARGETS_TO_BUILD=AArch64",
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
                         "-DCMAKE_BUILD_TYPE=Release",
                         "-DCMAKE_CXX_STANDARD=17",
@@ -1556,7 +1539,6 @@ all = [
                     checks=['check-flang'],
                     depends_on_projects=['llvm','mlir','clang','flang'],
                     extra_configure_args=[
-                        "-DLLVM_TARGETS_TO_BUILD=AArch64",
                         "-DLLVM_INSTALL_UTILS=ON",
                         "-DCMAKE_CXX_STANDARD=17",
                         "-DLLVM_ENABLE_WERROR=OFF",
