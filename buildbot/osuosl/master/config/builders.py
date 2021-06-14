@@ -493,6 +493,50 @@ all = [
                         "-DCMAKE_C_FLAGS='-mcpu=cortex-a57'",
                         "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a57'"])},
 
+    # AArch64 Clang+LLVM+RT+LLD check-all + flang + test-suite w/SVE
+    {'name' : "clang-cmake-aarch64-sve-vls",
+    'tags'  : ["clang"],
+    'workernames' : ["linaro-aarch64-sve-vls"],
+    'builddir': "clang-cmake-aarch64-sve-vls",
+    'factory' : ClangBuilder.getClangCMakeBuildFactory(
+                    clean=False,
+                    checkout_compiler_rt=True,
+                    checkout_flang=True,
+                    checkout_lld=True,
+                    test=True,
+                    useTwoStage=False,
+                    testStage1=True,
+                    runTestSuite=True,
+                    testsuite_flags=[
+                        '--cppflags', '-mcpu=a64fx -mllvm -aarch64-sve-vector-bits-min=512',
+                        '--threads=48', '--build-threads=48'],
+                    extra_cmake_args=[
+                        "-DCMAKE_C_FLAGS='-mcpu=a64fx'",
+                        "-DCMAKE_CXX_FLAGS='-mcpu=a64fx'",
+                        "-DLLVM_ENABLE_LLD=True"])},
+
+    # AArch64 Clang+LLVM+RT+LLD check-all + flang + test-suite 2-stage w/SVE
+    {'name' : "clang-cmake-aarch64-sve-vls-2stage",
+    'tags'  : ["clang"],
+    'workernames' : ["linaro-aarch64-sve-vls-2stage"],
+    'builddir': "clang-cmake-aarch64-sve-vls-2stage",
+    'factory' : ClangBuilder.getClangCMakeBuildFactory(
+                    clean=False,
+                    checkout_compiler_rt=True,
+                    checkout_flang=True,
+                    checkout_lld=True,
+                    test=True,
+                    useTwoStage=True,
+                    testStage1=False,
+                    runTestSuite=True,
+                    testsuite_flags=[
+                        '--cppflags', '-mcpu=a64fx -mllvm -aarch64-sve-vector-bits-min=512',
+                        '--threads=48', '--build-threads=48'],
+                    extra_cmake_args=[
+                        "-DCMAKE_C_FLAGS='-mcpu=a64fx -mllvm -aarch64-sve-vector-bits-min=512'",
+                        "-DCMAKE_CXX_FLAGS='-mcpu=a64fx -mllvm -aarch64-sve-vector-bits-min=512'",
+                        "-DLLVM_ENABLE_LLD=True"])},
+
     {'name' : "clang-arm64-windows-msvc-2stage",
     'tags'  : ["clang"],
     'workernames' : ["linaro-armv8-windows-msvc-01", "linaro-armv8-windows-msvc-02"],
