@@ -321,7 +321,7 @@ all = [
                         "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a15 -marm'",
                         "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'"])},
 
-    ## ARMv7 check-all with CMake builder
+    ## ARMv7 Clang+LLVM check-all
     {'name' : "clang-cmake-armv7-quick",
     'tags'  : ["clang"],
     'workernames':["linaro-armv7-quick"],
@@ -330,6 +330,7 @@ all = [
                     clean=False,
                     checkout_compiler_rt=False,
                     checkout_lld=False,
+                    test=True,
                     extra_cmake_args=["-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'"])},
 
     ## ARMv7 Clang + LLVM run test-suite with GlobalISel enabled
@@ -365,7 +366,7 @@ all = [
                         "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a15 -mfpu=vfpv3 -marm'",
                         "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'"])},
 
-    ## AArch64 Clang+LLVM check-all + test-suite
+    ## AArch64 Clang+LLVM check-all
     {'name' : "clang-cmake-aarch64-quick",
     'tags'  : ["clang"],
     'workernames' : ["linaro-aarch64-quick"],
@@ -375,10 +376,6 @@ all = [
                     checkout_compiler_rt=False,
                     checkout_lld=False,
                     test=True,
-                    useTwoStage=False,
-                    testsuite_flags=[
-                        '--cppflags', '-mcpu=cortex-a57',
-                        '--threads=32', '--build-threads=32'],
                     extra_cmake_args=["-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'"])},
 
     ## AArch64 Self-hosting Clang+LLVM check-all + LLD + test-suite
