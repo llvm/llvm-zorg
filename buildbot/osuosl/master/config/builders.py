@@ -274,7 +274,6 @@ all = [
                     checkout_compiler_rt=False,
                     checkout_lld=False,
                     test=False,
-                    useTwoStage=False,
                     runTestSuite=True,
                     testsuite_flags=[
                         '--cppflags', '-O3 -mcpu=cortex-a15 -mthumb',
@@ -298,7 +297,6 @@ all = [
                     checkout_compiler_rt=False,
                     checkout_lld=False,
                     test=False,
-                    useTwoStage=False,
                     runTestSuite=True,
                     testsuite_flags=[
                         '--cppflags', '-mcpu=cortex-a15 -marm',
@@ -328,7 +326,6 @@ all = [
                     clean=False,
                     checkout_compiler_rt=False,
                     checkout_lld=False,
-                    test=True,
                     extra_cmake_args=["-DLLVM_TARGETS_TO_BUILD='ARM'"])},
 
     ## ARMv7 Clang + LLVM run test-suite with GlobalISel enabled
@@ -340,8 +337,6 @@ all = [
                     clean=False,
                     checkout_compiler_rt=False,
                     checkout_lld=False,
-                    test=True,
-                    useTwoStage=False,
                     runTestSuite=True,
                     testsuite_flags=[
                         '--cppflags', '-mcpu=cortex-a15 -marm -O0 -mllvm -global-isel -mllvm -global-isel-abort=0',
@@ -371,7 +366,6 @@ all = [
                     clean=False,
                     checkout_compiler_rt=False,
                     checkout_lld=False,
-                    test=True,
                     extra_cmake_args=["-DLLVM_TARGETS_TO_BUILD='AArch64'"])},
 
     ## AArch64 Self-hosting Clang+LLVM check-all + LLD + test-suite
@@ -381,9 +375,6 @@ all = [
     'builddir':"clang-aarch64-lld",
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
                 clean=False,
-                checkout_compiler_rt=True,
-                checkout_lld=True,
-                test=True,
                 useTwoStage=True,
                 runTestSuite=True,
                 testsuite_flags=[
@@ -403,8 +394,6 @@ all = [
                     clean=False,
                     checkout_compiler_rt=False,
                     checkout_lld=False,
-                    test=True,
-                    useTwoStage=False,
                     runTestSuite=True,
                     testsuite_flags=[
                         '--cppflags', '-O0',
@@ -418,7 +407,6 @@ all = [
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
                     clean=False,
                     checkout_lld=False,
-                    checkout_compiler_rt=True,
                     testStage1=False,
                     useTwoStage=True,
                     runTestSuite=True,
@@ -437,7 +425,6 @@ all = [
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
                     clean=False,
                     checkout_lld=False,
-                    checkout_compiler_rt=True,
                     testStage1=False,
                     useTwoStage=True,
                     runTestSuite=True,
@@ -458,9 +445,6 @@ all = [
     'builddir': "clang-armv8-lld",
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
                     clean=False,
-                    checkout_compiler_rt=True,
-                    checkout_lld=True,
-                    test=True,
                     useTwoStage=True,
                     runTestSuite=True,
                     testsuite_flags=[
@@ -479,10 +463,8 @@ all = [
     'builddir': "clang-aarch64-full",
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
                     clean=False,
-                    checkout_compiler_rt=True,
                     checkout_flang=True,
                     checkout_lld=False,
-                    test=True,
                     useTwoStage=True,
                     testStage1=False,
                     runTestSuite=True,
@@ -500,12 +482,7 @@ all = [
     'builddir': "clang-aarch64-sve-vls",
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
                     clean=False,
-                    checkout_compiler_rt=True,
                     checkout_flang=True,
-                    checkout_lld=True,
-                    test=True,
-                    useTwoStage=False,
-                    testStage1=True,
                     runTestSuite=True,
                     testsuite_flags=[
                         '--cppflags', '-mcpu=a64fx -mllvm -aarch64-sve-vector-bits-min=512',
@@ -522,10 +499,7 @@ all = [
     'builddir': "clang-aarch64-sve-vls-2stage",
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
                     clean=False,
-                    checkout_compiler_rt=True,
                     checkout_flang=True,
-                    checkout_lld=True,
-                    test=True,
                     useTwoStage=True,
                     testStage1=False,
                     runTestSuite=True,
