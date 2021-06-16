@@ -302,11 +302,11 @@ all = [
                         '--cppflags', '-mcpu=cortex-a15 -marm',
                         '--threads=32', '--build-threads=32'])},
 
-    ## ARMv7 check-all self-host
-    {'name' : "clang-armv7-selfhost",
+    ## ARMv7 check-all 2-stage
+    {'name' : "clang-armv7-2stage",
     'tags'  : ["clang"],
-    'workernames': ["linaro-clang-armv7-selfhost"],
-    'builddir':"clang-armv7-selfhost",
+    'workernames': ["linaro-clang-armv7-2stage"],
+    'builddir':"clang-armv7-2stage",
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
                     clean=False,
                     checkout_compiler_rt=False,
@@ -317,7 +317,7 @@ all = [
                         "-DCMAKE_C_FLAGS='-mcpu=cortex-a15 -marm'",
                         "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a15 -marm'"])},
 
-    ## ARMv7 Clang+LLVM check-all
+    ## ARMv7 check-all
     {'name' : "clang-armv7-quick",
     'tags'  : ["clang"],
     'workernames':["linaro-clang-armv7-quick"],
@@ -328,7 +328,7 @@ all = [
                     checkout_lld=False,
                     extra_cmake_args=["-DLLVM_TARGETS_TO_BUILD='ARM'"])},
 
-    ## ARMv7 Clang + LLVM run test-suite with GlobalISel enabled
+    ## ARMv7 run test-suite with GlobalISel enabled
     {'name' : "clang-armv7-global-isel",
     'tags'  : ["clang"],
     'workernames':["linaro-clang-armv7-global-isel"],
@@ -342,11 +342,11 @@ all = [
                         '--cppflags', '-mcpu=cortex-a15 -marm -O0 -mllvm -global-isel -mllvm -global-isel-abort=0',
                         '--threads=32', '--build-threads=32'])},
 
-    ## ARMv7 check-all self-host VFPv3
-    {'name' : "clang-armv7-selfhost-vfpv3",
+    ## ARMv7 VFPv3 check-all 2-stage
+    {'name' : "clang-armv7-vfpv3-2stage",
     'tags'  : ["clang"],
-    'workernames' : ["linaro-clang-armv7-selfhost-vfpv3"],
-    'builddir': "clang-armv7-selfhost-vfpv3",
+    'workernames' : ["linaro-clang-armv7-vfpv3-2stage"],
+    'builddir': "clang-armv7-vfpv3-2stage",
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
                     clean=False,
                     checkout_compiler_rt=False,
@@ -357,7 +357,7 @@ all = [
                         "-DCMAKE_C_FLAGS='-mcpu=cortex-a15 -mfpu=vfpv3 -marm'",
                         "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a15 -mfpu=vfpv3 -marm'"])},
 
-    ## AArch64 Clang+LLVM check-all
+    ## AArch64 check-all
     {'name' : "clang-aarch64-quick",
     'tags'  : ["clang"],
     'workernames' : ["linaro-clang-aarch64-quick"],
@@ -368,11 +368,11 @@ all = [
                     checkout_lld=False,
                     extra_cmake_args=["-DLLVM_TARGETS_TO_BUILD='AArch64'"])},
 
-    ## AArch64 Self-hosting Clang+LLVM check-all + LLD + test-suite
-    {'name' : "clang-aarch64-lld",
+    ## AArch64 check-all + LLD + test-suite 2-stage
+    {'name' : "clang-aarch64-lld-2stage",
     'tags'  : ["lld"],
-    'workernames' : ["linaro-clang-aarch64-lld"],
-    'builddir':"clang-aarch64-lld",
+    'workernames' : ["linaro-clang-aarch64-lld-2stage"],
+    'builddir':"clang-aarch64-lld-2stage",
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
                 clean=False,
                 useTwoStage=True,
@@ -385,7 +385,7 @@ all = [
                     "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a57'",
                     "-DLLVM_ENABLE_LLD=True"])},
 
-    ## AArch64 Clang+LLVM run test-suite at -O0 (GlobalISel is now default).
+    ## AArch64 run test-suite at -O0 (GlobalISel is now default).
     {'name' : "clang-aarch64-global-isel",
     'tags'  : ["clang"],
     'workernames' : ["linaro-clang-aarch64-global-isel"],
@@ -399,16 +399,16 @@ all = [
                         '--cppflags', '-O0',
                         '--threads=32', '--build-threads=32'])},
 
-    ## ARMv7 without neon; check-all 2-stage full compiler-rt + testsuite
-    {'name' : "clang-armv7-full",
+    ## ARMv7 VFPv3 check-all + compiler-rt + testsuite 2-stage
+    {'name' : "clang-armv7-vfpv3-full-2stage",
     'tags'  : ["clang"],
     'workernames' : ["linaro-tk1-06", "linaro-tk1-07", "linaro-tk1-08", "linaro-tk1-09"],
-    'builddir': "clang-armv7-full",
+    'builddir': "clang-armv7-vfpv3-full-2stage",
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
                     clean=False,
                     checkout_lld=False,
-                    testStage1=False,
                     useTwoStage=True,
+                    testStage1=False,
                     runTestSuite=True,
                     testsuite_flags=[
                         '--cppflags', '-mcpu=cortex-a15 -mfpu=vfpv3 -marm',
@@ -417,11 +417,11 @@ all = [
                         "-DCOMPILER_RT_TEST_COMPILER_CFLAGS='-mcpu=cortex-a15 -mfpu=vfpv3 -marm'",
                         "-DLLVM_PARALLEL_LINK_JOBS=2"])},
 
-    ## ARMv7 Thumb2 with neon; check-all 2-stage full compiler-rt + testsuite
-    {'name' : "clang-thumbv7-full-sh",
+    ## ARMv7 Thumb2 check-all + compiler-rt + testsuite 2-stage
+    {'name' : "clang-thumbv7-full-2stage",
     'tags'  : ["clang"],
     'workernames' : ["linaro-tk1-01", "linaro-tk1-03", "linaro-tk1-04", "linaro-tk1-05"],
-    'builddir': "clang-thumbv7-full-sh",
+    'builddir': "clang-thumbv7-full-2stage",
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
                     clean=False,
                     checkout_lld=False,
@@ -439,10 +439,10 @@ all = [
 
     ## AArch32 Self-hosting Clang+LLVM check-all + LLD + test-suite
     # Sanitizers build disabled due to PR38690
-    {'name' : "clang-armv8-lld",
+    {'name' : "clang-armv8-lld-2stage",
     'tags'  : ["lld"],
-    'workernames' : ["linaro-clang-armv8-lld"],
-    'builddir': "clang-armv8-lld",
+    'workernames' : ["linaro-clang-armv8-lld-2stage"],
+    'builddir': "clang-armv8-lld-2stage",
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
                     clean=False,
                     useTwoStage=True,
@@ -456,11 +456,11 @@ all = [
                         "-DCOMPILER_RT_BUILD_SANITIZERS=OFF",
                         "-DLLVM_ENABLE_LLD=True"])},
 
-    # AArch64 Clang+LLVM+RT check-all + flang + test-suite + self-hosting
-    {'name' : "clang-aarch64-full",
+    # AArch64 check-all + flang + compiler-rt + test-suite 2-stage
+    {'name' : "clang-aarch64-full-2stage",
     'tags'  : ["clang"],
-    'workernames' : ["linaro-clang-aarch64-full"],
-    'builddir': "clang-aarch64-full",
+    'workernames' : ["linaro-clang-aarch64-full-2stage"],
+    'builddir': "clang-aarch64-full-2stage",
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
                     clean=False,
                     checkout_flang=True,
