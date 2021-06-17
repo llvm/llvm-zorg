@@ -1613,6 +1613,26 @@ all = [
                         'LD': 'lld'
                     })},
 
+    {'name' : "flang-x86_64-windows",
+    'tags'  : ["flang"],
+    'workernames' : ["minipc-ryzen-win"],
+    'builddir': "flang-x86_64-windows",
+    'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
+                    depends_on_projects=['llvm','mlir','clang','flang'],
+                    checks=['check-flang'],
+                    install_dir="flang.install",
+                    extra_configure_args=[
+                        "-DCLANG_ENABLE_STATIC_ANALYZER=OFF",
+                        "-DCLANG_ENABLE_ARCMT=OFF",
+                        "-DCLANG_ENABLE_OBJC_REWRITER=OFF",
+                        "-DLLVM_TARGETS_TO_BUILD=X86",
+                        "-DLLVM_INSTALL_UTILS=ON",
+                        "-DCMAKE_C_COMPILER=cl",
+                        "-DCMAKE_CXX_COMPILER=cl",
+                        "-DCMAKE_CXX_STANDARD=17",
+                        '-DLLVM_PARALLEL_COMPILE_JOBS=4',
+                    ])},
+
 # Builders responsible building Sphinix documentation.
 
     {'name' : "llvm-sphinx-docs",

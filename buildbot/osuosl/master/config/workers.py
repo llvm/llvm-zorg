@@ -224,6 +224,9 @@ def get_all():
         # Ubuntu 18.04.LTS x86_64, Intel(R) Xeon(R) CPU X3460 @ 2.80GHz, 32 GiB RAM
         create_worker("polly-x86_64-fdcserver", properties={'jobs': 8, 'loadaverage': 8}, max_builds=1),
 
+        # Windows 10, AMD Ryzen 5 PRO 4650G, 16 GiB RAM
+        create_worker("minipc-ryzen-win", properties={'jobs': 12}, max_builds=1),
+
         # Ubuntu 20.04.LTS x86_64, Intel(R) Core(TM) i5-9400F CPU @ 2.90Ghz, 16 GiB RAM, NVIDIA GeForce GTX 1050 Ti (Pascal, sm_61, 4GiB)
         create_worker("minipc-1050ti-linux", properties={'jobs': 6}, max_builds=1),
 
