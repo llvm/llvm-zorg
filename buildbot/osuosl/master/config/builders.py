@@ -731,7 +731,7 @@ all = [
                     checkout_clang_tools_extra=False,
                     checkout_compiler_rt=False,
                     checkout_lld=False,
-                    env={'LD_LIBRARY_PATH': '/local/clang+llvm-8.0.0-x86_64-linux-gnu-ubuntu-14.04/lib', 'PATH': ['/local/cmake-3.17.0/bin', '${PATH}']},
+                    env={'LD_LIBRARY_PATH': '/local/clang+llvm-12.0.0-x86_64-linux-gnu-ubuntu-16.04/lib'},
                     extra_cmake_args=[
                         "-DCMAKE_BUILD_TYPE:STRING=Release",
                         "-DLLVM_TARGETS_TO_BUILD:STRING=Hexagon",
@@ -748,8 +748,8 @@ all = [
                         "-DWITH_POLLY:BOOL=OFF",
                         "-DLINK_POLLY_INTO_TOOLS:BOOL=OFF",
                         "-DPOLLY_BUILD_SHARED_LIB:BOOL=OFF",
-                        "-DCMAKE_C_COMPILER:FILEPATH=/local/clang+llvm-8.0.0-x86_64-linux-gnu-ubuntu-14.04/bin/clang",
-                        "-DCMAKE_CXX_COMPILER:FILEPATH=/local/clang+llvm-8.0.0-x86_64-linux-gnu-ubuntu-14.04/bin/clang++"])},
+                        "-DCMAKE_C_COMPILER:FILEPATH=/local/clang+llvm-12.0.0-x86_64-linux-gnu-ubuntu-16.04/bin/clang",
+                        "-DCMAKE_CXX_COMPILER:FILEPATH=/local/clang+llvm-12.0.0-x86_64-linux-gnu-ubuntu-16.04/bin/clang++"])},
 
     ## X86_64 AVX2 Clang+LLVM check-all + test-suite
     {'name' : "clang-cmake-x86_64-avx2-linux",
@@ -879,7 +879,7 @@ all = [
                     install=True,
                     make='ninja',
                     jobs=16,
-                    env={'LD_LIBRARY_PATH': '/local/clang+llvm-8.0.0-x86_64-linux-gnu-ubuntu-14.04/lib', 'PATH': ['/local/cmake-3.17.0/bin', '${PATH}']},
+                    env={'LD_LIBRARY_PATH': '/local/clang+llvm-12.0.0-x86_64-linux-gnu-ubuntu-16.04/lib'},
                     extraCmakeArgs=[
                         "-G", "Ninja",
                         "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'",
@@ -887,8 +887,8 @@ all = [
                         "-DLLVM_TARGET_ARCH=arm-linux-gnueabi",
                         "-DLLVM_ENABLE_ASSERTIONS=True",
                         "-DLLVM_ENABLE_LIBCXX:BOOL=ON",
-                        "-DCMAKE_C_COMPILER:FILEPATH=/local/clang+llvm-8.0.0-x86_64-linux-gnu-ubuntu-14.04/bin/clang",
-                        "-DCMAKE_CXX_COMPILER:FILEPATH=/local/clang+llvm-8.0.0-x86_64-linux-gnu-ubuntu-14.04/bin/clang++"])},
+                        "-DCMAKE_C_COMPILER:FILEPATH=/local/clang+llvm-12.0.0-x86_64-linux-gnu-ubuntu-16.04/bin/clang",
+                        "-DCMAKE_CXX_COMPILER:FILEPATH=/local/clang+llvm-12.0.0-x86_64-linux-gnu-ubuntu-16.04/bin/clang++"])},
 
     {'name' : "polly-x86_64-linux",
     'tags'  : ["polly"],
@@ -940,14 +940,14 @@ all = [
                         "-DLLVM_TARGET_ARCH=arm-linux-androideabi",
                         "-DLLVM_ENABLE_ASSERTIONS=True",
                         "-DLLVM_ENABLE_LIBCXX:BOOL=ON",
-                        "-DCMAKE_C_COMPILER:FILEPATH=/local/clang+llvm-8.0.0-x86_64-linux-gnu-ubuntu-14.04/bin/clang",
-                        "-DCMAKE_CXX_COMPILER:FILEPATH=/local/clang+llvm-8.0.0-x86_64-linux-gnu-ubuntu-14.04/bin/clang++"],
+                        "-DCMAKE_C_COMPILER:FILEPATH=/local/clang+llvm-12.0.0-x86_64-linux-gnu-ubuntu-16.04/bin/clang",
+                        "-DCMAKE_CXX_COMPILER:FILEPATH=/local/clang+llvm-12.0.0-x86_64-linux-gnu-ubuntu-16.04/bin/clang++"],
                     timeout=240,
                     target_clang=None,
                     target_flags="-Wno-error -O3 -mllvm -polly -mllvm -polly-position=before-vectorizer -mllvm -polly-process-unprofitable -fcommon",
                     jobs=8,
                     extra_make_args=None,
-                    env={'LD_LIBRARY_PATH': '/local/clang+llvm-8.0.0-x86_64-linux-gnu-ubuntu-14.04/lib', 'PATH': ['/local/cmake-3.17.0/bin', '${PATH}']},
+                    env={'LD_LIBRARY_PATH': '/local/clang+llvm-12.0.0-x86_64-linux-gnu-ubuntu-16.04/lib'},
                     clean=False,
                     sync=False,
                     patch=None)},
@@ -963,14 +963,14 @@ all = [
                     make='ninja',
                     jobs=16,
                     checkAll=True,
-                    env={'LD_LIBRARY_PATH': '/local/clang+llvm-8.0.0-x86_64-linux-gnu-ubuntu-14.04/lib', 'PATH': ['/local/cmake-3.17.0/bin', '${PATH}']},
+                    env={'LD_LIBRARY_PATH': '/local/clang+llvm-12.0.0-x86_64-linux-gnu-ubuntu-16.04/lib'},
                     extraCmakeArgs=[
                         "-G", "Ninja",
                         "-DLLVM_REVERSE_ITERATION:BOOL=ON",
                         "-DLLVM_ENABLE_ASSERTIONS=True",
                         "-DLLVM_ENABLE_LIBCXX:BOOL=ON",
-                        "-DCMAKE_C_COMPILER:FILEPATH=/local/clang+llvm-8.0.0-x86_64-linux-gnu-ubuntu-14.04/bin/clang",
-                        "-DCMAKE_CXX_COMPILER:FILEPATH=/local/clang+llvm-8.0.0-x86_64-linux-gnu-ubuntu-14.04/bin/clang++"])},
+                        "-DCMAKE_C_COMPILER:FILEPATH=/local/clang+llvm-12.0.0-x86_64-linux-gnu-ubuntu-16.04/bin/clang",
+                        "-DCMAKE_CXX_COMPILER:FILEPATH=/local/clang+llvm-12.0.0-x86_64-linux-gnu-ubuntu-16.04/bin/clang++"])},
 
 # LLDB builders.
 
