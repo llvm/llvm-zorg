@@ -66,6 +66,7 @@ def get_all():
 
         # Motorola 68k 32-bit big endian (m68k)
         create_worker("debian-akiko-m68k", properties={'jobs': 1}, max_builds=1),
+        create_worker("suse-gary-m68k-cross", properties={'jobs': 4}, max_builds=1),
 
         # POWER7 PowerPC big endian (powerpc64)
         create_worker("ppc64be-clang-test", properties={'jobs': 16}, max_builds=1),
