@@ -152,6 +152,7 @@ class LitTestCommand(Test):
                  'REGRESSED':'runtime performance regression',
                  'IMPROVED':'runtime performance improvement',
                  'UNSUPPORTED':'unsupported tests',
+                 'SKIPPED':'skipped tests',
                  'TIMEOUT':'timeout waiting for results'}
 
   def __init__(self, ignore=[], flaky=[], max_logs=20, parseSummaryOnly=False,
