@@ -1193,6 +1193,8 @@ all = [
     'workernames' : [
         "sanitizer-buildbot1",
         "sanitizer-buildbot2",
+        "sanitizer-buildbot4",
+        "sanitizer-buildbot8",
     ],
     'builddir': "sanitizer-x86_64-linux",
     'factory' : SanitizerBuilder.getSanitizerBuildFactory()},
@@ -1202,6 +1204,8 @@ all = [
     'workernames' : [
         "sanitizer-buildbot1",
         "sanitizer-buildbot2",
+        "sanitizer-buildbot4",
+        "sanitizer-buildbot8",
     ],
     'builddir': "sanitizer-x86_64-linux-fast",
     'factory' : SanitizerBuilder.getSanitizerBuildFactory()},
@@ -1210,7 +1214,9 @@ all = [
     'tags'  : ["sanitizer"],
     'workernames' : [
         "sanitizer-buildbot3",
+        "sanitizer-buildbot2",
         "sanitizer-buildbot4",
+        "sanitizer-buildbot8",
     ],
     'builddir': "sanitizer-x86_64-linux-bootstrap-asan",
     'factory' : SanitizerBuilder.getSanitizerBuildFactory()},
@@ -1219,7 +1225,9 @@ all = [
     'tags'  : ["sanitizer"],
     'workernames' : [
         "sanitizer-buildbot3",
+        "sanitizer-buildbot2",
         "sanitizer-buildbot4",
+        "sanitizer-buildbot8",
     ],
     'builddir': "sanitizer-x86_64-linux-bootstrap-ubsan",
     'factory' : SanitizerBuilder.getSanitizerBuildFactory()},
@@ -1228,6 +1236,8 @@ all = [
     'tags'  : ["sanitizer"],
     'workernames' : [
         "sanitizer-buildbot7",
+        "sanitizer-buildbot2",
+        "sanitizer-buildbot4",
         "sanitizer-buildbot8",
     ],
     'builddir': "sanitizer-x86_64-linux-bootstrap-msan",
@@ -1237,6 +1247,8 @@ all = [
     'tags'  : ["sanitizer"],
     'workernames' : [
         "sanitizer-buildbot7",
+        "sanitizer-buildbot2",
+        "sanitizer-buildbot4",
         "sanitizer-buildbot8",
     ],
     'builddir': "sanitizer-x86_64-linux-autoconf",
@@ -1246,6 +1258,8 @@ all = [
     'tags'  : ["sanitizer"],
     'workernames' : [
         "sanitizer-buildbot7",
+        "sanitizer-buildbot2",
+        "sanitizer-buildbot4",
         "sanitizer-buildbot8",
     ],
     'builddir': "sanitizer-x86_64-linux-qemu",
@@ -1255,6 +1269,8 @@ all = [
     'tags'  : ["sanitizer"],
     'workernames' : [
         "sanitizer-buildbot7",
+        "sanitizer-buildbot2",
+        "sanitizer-buildbot4",
         "sanitizer-buildbot8",
     ],
     'builddir': "sanitizer-x86_64-linux-fuzzer",
