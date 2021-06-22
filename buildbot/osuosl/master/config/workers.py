@@ -111,7 +111,7 @@ def get_all():
         # Debian 7.7 x86_64 GCE instance
         create_worker("sanitizer-buildbot1", properties={'jobs': 64}, max_builds=3),
         # Debian 7.7 x86_64 GCE instance
-        create_worker("sanitizer-buildbot2", properties={'jobs': 64}, max_builds=3),
+        create_worker("sanitizer-buildbot2", properties={'jobs': 64}, max_builds=2),
         # Debian 7.7 x86_64 GCE instance
         create_worker("sanitizer-buildbot3", properties={'jobs': 64}, max_builds=2),
         # Debian 7.7 x86_64 GCE instance
@@ -121,7 +121,7 @@ def get_all():
         # Debian 7.7 x86_64 GCE instance
         create_worker("sanitizer-buildbot7", properties={'jobs': 64}, max_builds=3),
         # Debian 7.7 x86_64 GCE instance
-        create_worker("sanitizer-buildbot8", properties={'jobs': 64}, max_builds=3),
+        create_worker("sanitizer-buildbot8", properties={'jobs': 64}, max_builds=2),
 
         # POWER 8 PowerPC AIX 7.2
         create_worker("aix-ppc64-ppc64le", properties={'jobs': 10}, max_builds=1),
