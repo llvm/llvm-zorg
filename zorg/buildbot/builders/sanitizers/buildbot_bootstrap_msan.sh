@@ -33,3 +33,5 @@ check_stage2_msan
 build_stage3_msan
 
 check_stage3_msan
+
+cleanup $STAGE1_DIR

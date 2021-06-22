@@ -1,9 +1,5 @@
 #!/usr/bin/env bash
 
-CLOBBER="android_ndk android-ndk-* platform-tools *.zip shards_* test_android_* tested_arch_*"
-STAGE2_CLOBBER="compiler_rt_build_android_* llvm_build_android_*"
-STAGE1_CLOBBER="llvm_build64 ${STAGE2_CLOBBER}"
-
 ANDROID_NDK_VERSION=21
 ANDROID_API=24
 NDK_DIR=android_ndk
@@ -40,12 +36,9 @@ function build_stage2_android() {
 
   if ccache -s ; then
     CMAKE_OPTIONS="${CMAKE_OPTIONS} -DLLVM_CCACHE_BUILD=ON"
-    rm_dirs llvm_build64
   fi
 
   echo @@@BUILD_STEP bootstrap clang@@@
-  rm_dirs ${STAGE2_CLOBBER}
-
   mkdir -p llvm_build64
   if  [[ "$(cat llvm_build64/CMAKE_OPTIONS)" != "${CMAKE_OPTIONS}" ]] ; then
     (cd llvm_build64 && cmake ${CMAKE_OPTIONS} -DLLVM_BUILD_EXTERNAL_COMPILER_RT=ON $LLVM && \

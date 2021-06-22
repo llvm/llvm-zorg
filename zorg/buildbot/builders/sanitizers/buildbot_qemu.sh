@@ -13,7 +13,6 @@ export PATH="/usr/local/bin:$PATH"
 
 LLVM=$ROOT/llvm
 CMAKE_COMMON_OPTIONS="-GNinja -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_ASSERTIONS=OFF"
-CLOBBER="qemu qemu_build"
 
 clobber
 

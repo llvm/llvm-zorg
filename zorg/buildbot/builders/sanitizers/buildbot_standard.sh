@@ -11,8 +11,8 @@ TSAN_DEBUG_BUILD_DIR=tsan_debug_build
 TSAN_FULL_DEBUG_BUILD_DIR=tsan_full_debug_build
 TSAN_RELEASE_BUILD_DIR=tsan_release_build
 
-rm -rf $TSAN_DEBUG_BUILD_DIR $TSAN_FULL_DEBUG_BUILD_DIR $TSAN_RELEASE_BUILD_DIR
-clobber
+CLEANUP="$TSAN_DEBUG_BUILD_DIR $TSAN_FULL_DEBUG_BUILD_DIR $TSAN_RELEASE_BUILD_DIR"
+clobber $CLEANUP
 
 ROOT=`pwd`
 PLATFORM=`uname`
@@ -59,3 +59,5 @@ BIN=$(mktemp -t tsan_exe.XXXXXXXX)
 echo "int main() {return 0;}" | $TSAN_RELEASE_BUILD_DIR/bin/clang -x c++ - -fsanitize=thread -O2 -o ${BIN}
 COMPILER_RT=$LLVM/../compiler-rt
 $COMPILER_RT/lib/tsan/check_analyze.sh ${BIN} || echo @@@STEP_FAILURE@@@
+
+cleanup $CLEANUP

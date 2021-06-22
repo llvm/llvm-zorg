@@ -35,3 +35,4 @@ build_stage3_asan
 
 check_stage3_asan
 
+cleanup $STAGE1_DIR

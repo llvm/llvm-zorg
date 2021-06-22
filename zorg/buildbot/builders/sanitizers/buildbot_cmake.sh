@@ -22,14 +22,13 @@ do
     esac
 done
 
-# Always clobber bootstrap build trees.
-rm -rf compiler_rt_build llvm_build* symbolizer_build*
-
 USE_CCACHE=
 if ccache -s ; then
   USE_CCACHE="-DLLVM_CCACHE_BUILD=ON"
-  rm -rf clang_build
 fi
+
+# Always clobber bootstrap build trees.
+clobber
 
 SUPPORTS_32_BITS=${SUPPORTS_32_BITS:-1}
 MAKE_JOBS=${MAX_MAKE_JOBS:-$(nproc)}
@@ -127,8 +126,6 @@ if [[ "$CHECK_CFI" == "1" ]]; then
   CMAKE_COMMON_OPTIONS="$CMAKE_COMMON_OPTIONS -DLLVM_BUILD_LLVM_DYLIB=ON"
 fi
 
-CLOBBER="zlib clang_build"
-clobber
 
 buildbot_update
 
@@ -142,9 +139,7 @@ ${CHECK_LINT} || echo @@@STEP_WARNINGS@@@
 # Use both gcc and just-built Clang/LLD as a host compiler/linker for sanitizer
 # tests. Assume that self-hosted build tree should compile with -Werror.
 echo @@@BUILD_STEP build fresh toolchain@@@
-if [ ! -d clang_build ]; then
-  mkdir clang_build
-fi
+mkdir -p clang_build
 (cd clang_build && cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo ${CMAKE_COMMON_OPTIONS} ${USE_CCACHE} $LLVM ) || (rm -rf clang_build ; echo @@@STEP_FAILURE@@@)
 
 BOOTSTRAP_BUILD_TARGETS="clang"
@@ -191,9 +186,7 @@ CMAKE_CLANG_OPTIONS="${CMAKE_COMMON_OPTIONS} -DLLVM_ENABLE_WERROR=ON -DCMAKE_C_C
 BUILD_TYPE=Release
 
 echo @@@BUILD_STEP bootstrap clang@@@
-if [ ! -d llvm_build64 ]; then
-  mkdir llvm_build64
-fi
+mkdir -p llvm_build64
 (cd llvm_build64 && cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
     ${CMAKE_CLANG_OPTIONS} -DLLVM_BUILD_EXTERNAL_COMPILER_RT=ON \
     ${ENABLE_LIBCXX_FLAG} $LLVM) || echo @@@STEP_FAILURE@@@
@@ -345,3 +338,5 @@ if [ "$PLATFORM" == "Linux" -a $HAVE_NINJA == 1 ]; then
     check_ninja_with_symbolizer $CHECK_UBSAN ubsan
   fi
 fi
+
+cleanup

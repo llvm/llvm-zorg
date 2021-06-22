@@ -43,3 +43,5 @@ check_stage2_asan
 build_stage2_ubsan
 
 check_stage2_ubsan
+
+cleanup

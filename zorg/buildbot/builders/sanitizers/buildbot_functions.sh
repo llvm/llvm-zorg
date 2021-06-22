@@ -27,8 +27,14 @@ function rm_dirs {
   while ! rm -rf $@ ; do sleep 1; done
 }
 
-function stage1_clobber {
-  rm_dirs llvm_build2_* llvm_build_* libcxx_build_* ${STAGE1_CLOBBER:-}
+function cleanup() {
+  [[ -v BUILDBOT_BUILDERNAME ]] || return 0
+  echo @@@BUILD_STEP cleanup@@@
+  rm_dirs llvm_build2_* llvm_build_* libcxx_build_* compiler_rt_build_* symbolizer_build* $@
+  if ccache -s >/dev/null ; then
+    rm_dirs llvm_build64 clang_build
+  fi
+  ls
 }
 
 function clobber {
@@ -39,6 +45,8 @@ function clobber {
       exit 1
     fi
     rm_dirs *
+  else
+    BUILDBOT_BUILDERNAME=1 cleanup $@
   fi
 }
 
@@ -90,7 +98,6 @@ function common_stage1_variables {
 }
 
 function build_stage1_clang_impl {
-  rm -rf ${STAGE1_DIR}
   mkdir -p ${STAGE1_DIR}
   local cmake_stage1_options="${CMAKE_COMMON_OPTIONS}"
   cmake_stage1_options="${cmake_stage1_options} -DLLVM_ENABLE_PROJECTS='clang;compiler-rt;lld'"
@@ -102,12 +109,8 @@ function build_stage1_clang_impl {
 
 function build_stage1_clang {
   echo @@@BUILD_STEP stage1 build all@@@
-  export STAGE1_DIR=llvm_build0
   common_stage1_variables
   build_stage1_clang_impl
-
-  echo @@@BUILD_STEP Clobber stage1 users
-  stage1_clobber
 }
 
 function build_stage1_clang_at_revison {

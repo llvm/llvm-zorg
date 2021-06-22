@@ -18,9 +18,7 @@ LIBFUZZER=$LLVM/lib/Fuzzer
 # Also, the Fuzzer does not provide reproducers on assertion failures yet.
 CMAKE_COMMON_OPTIONS="-GNinja -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_ASSERTIONS=OFF -DLLVM_LIT_ARGS=-v\;--time-tests"
 
-CLOBBER=fuzzer-test-suite
-STAGE1_CLOBBER="RUNDIR-* $LIBFUZZER"
-clobber
+clobber RUNDIR-*
 
 # Make sure asan intercepts SIGABRT so that the fuzzer can print the test cases
 # for assertion failures.
@@ -64,3 +62,5 @@ RunFuzzerTest openssl-1.0.1f       || echo @@@STEP_FAILURE@@@
 RunFuzzerTest openssl-1.0.2d       || echo @@@STEP_FAILURE@@@
 RunFuzzerTest proj4-2017-08-14     || echo @@@STEP_FAILURE@@@
 #RunFuzzerTest woff2-2016-05-06     || echo @@@STEP_WARNINGS@@@  # Often can't find the bug in the given time.
+
+cleanup $STAGE1_DIR RUNDIR-*
