@@ -32,11 +32,13 @@ function stage1_clobber {
 }
 
 function clobber {
-  if [ "$BUILDBOT_CLOBBER" != "" ]; then
+  if [[ "$BUILDBOT_CLOBBER" != "" ]]; then
     echo @@@BUILD_STEP clobber@@@
-    rm_dirs svn_checkout llvm llvm-project llvm_build0 ${CLOBBER:-}
-    stage1_clobber
-    ! test "$(ls -A .)" || echo @@@STEP_EXCEPTION@@@
+    if [[ ! -v BUILDBOT_BUILDERNAME ]]; then
+      echo "Clobbering is supported only on buildbot only!"
+      exit 1
+    fi
+    rm_dirs *
   fi
 }
 
