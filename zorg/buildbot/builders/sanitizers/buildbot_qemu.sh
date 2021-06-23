@@ -300,3 +300,5 @@ for B in $SCUDO_BUILDS ; do
 done
 build_llvm_symbolizer
 run_hwasan_lam_tests
+
+cleanup $STAGE1_DIR
