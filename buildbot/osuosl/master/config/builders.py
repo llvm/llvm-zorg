@@ -901,6 +901,7 @@ all = [
                         "-DLLVM_TARGET_ARCH=arm-linux-gnueabi",
                         "-DLLVM_ENABLE_ASSERTIONS=True",
                         "-DLLVM_ENABLE_LIBCXX:BOOL=ON",
+                        "-DPOLLY_ENABLE_GPGPU_CODEGEN=OFF",  # Auto-enabled in getPollyBuildFactory
                         "-DCMAKE_C_COMPILER:FILEPATH=/local/clang+llvm-12.0.0-x86_64-linux-gnu-ubuntu-16.04/bin/clang",
                         "-DCMAKE_CXX_COMPILER:FILEPATH=/local/clang+llvm-12.0.0-x86_64-linux-gnu-ubuntu-16.04/bin/clang++"])},
 
@@ -954,6 +955,7 @@ all = [
                         "-DLLVM_TARGET_ARCH=arm-linux-androideabi",
                         "-DLLVM_ENABLE_ASSERTIONS=True",
                         "-DLLVM_ENABLE_LIBCXX:BOOL=ON",
+                        "-DPOLLY_ENABLE_GPGPU_CODEGEN=OFF",  # Auto-enabled in getPollyBuildFactory (used indirectly)
                         "-DCMAKE_C_COMPILER:FILEPATH=/local/clang+llvm-12.0.0-x86_64-linux-gnu-ubuntu-16.04/bin/clang",
                         "-DCMAKE_CXX_COMPILER:FILEPATH=/local/clang+llvm-12.0.0-x86_64-linux-gnu-ubuntu-16.04/bin/clang++"],
                     timeout=240,
