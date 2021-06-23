@@ -30,7 +30,7 @@ function rm_dirs {
 function cleanup() {
   [[ -v BUILDBOT_BUILDERNAME ]] || return 0
   echo @@@BUILD_STEP cleanup@@@
-  rm_dirs llvm_build2_* llvm_build_* libcxx_build_* compiler_rt_build_* symbolizer_build* $@
+  rm_dirs llvm_build2_* llvm_build_* libcxx_build_* compiler_rt_build* symbolizer_build* $@
   if ccache -s >/dev/null ; then
     rm_dirs llvm_build64 clang_build
   fi
