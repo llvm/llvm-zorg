@@ -140,10 +140,6 @@ function build_stage2 {
     export MSAN_SYMBOLIZER_PATH="${llvm_symbolizer_path}"
     local llvm_use_sanitizer="Memory"
     local fsanitize_flag="-fsanitize=memory"
-    BUILDBOT_MSAN_ORIGINS=${BUILDBOT_MSAN_ORIGINS:-}
-    if [ "$BUILDBOT_MSAN_ORIGINS" != "" ]; then
-      llvm_use_sanitizer="MemoryWithOrigins"
-    fi
     local build_type="Release"
   elif [ "$sanitizer_name" == "asan" ]; then
     export ASAN_SYMBOLIZER_PATH="${llvm_symbolizer_path}"

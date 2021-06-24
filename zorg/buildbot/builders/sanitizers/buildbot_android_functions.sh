@@ -183,7 +183,7 @@ function tail_pids {
 }
 
 function test_android {
-  if [[ "${BUILDBOT_SLAVENAME:-}" != "" ]]; then
+  if [[ -v BUILDBOT_BUILDERNAME ]]; then
     restart_adb_server
   fi
 

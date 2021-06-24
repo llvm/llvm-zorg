@@ -321,8 +321,6 @@ class AnnotatedCommand(buildstep.ShellMixin, buildstep.BuildStep):
             'BUILDBOT_GOT_REVISION':    util.Interpolate('%(prop:got_revision:-None)s'),
             'BUILDBOT_REVISION':        util.Interpolate('%(prop:revision:-None)s'),
             'BUILDBOT_SCHEDULER':       util.Interpolate('%(prop:scheduler:-None)s'),
-            'BUILDBOT_SLAVENAME':       util.Interpolate('%(prop:slavename:-None)s'),
-            'BUILDBOT_MSAN_ORIGINS':    util.Interpolate('%(prop:msan_origins:-)s'),
         }
         # Apply the passed in environment on top.
         old_env = kwargs.get('env') or {}
