@@ -679,6 +679,7 @@ all = [
                         "-DPython3_EXECUTABLE:FILEPATH=/opt/freeware/bin/python3_64",
                         "-DLLVM_ENABLE_ZLIB=OFF", "-DLLVM_APPEND_VC_REV=OFF",
                         "-DLLVM_DEFAULT_TARGET_TRIPLE=powerpc64le-unknown-linux-gnu",
+                        "-DLLVM_PARALLEL_LINK_JOBS=6",
                         "-DLLVM_ENABLE_WERROR=ON"])},
 
     {'name' : "clang-s390x-linux",
