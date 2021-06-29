@@ -614,7 +614,7 @@ def lldb_cmake_builder(target, variant=None):
                             '-v', 'check-lldb']
         else:
             test_command = ['/usr/bin/env', 'TERM=vt100', NINJA,
-                            '-v', 'check-debuginfo', 'check-lldb', '-k2']
+                            '-v', 'check-cross_project-debuginfo-tests', 'check-lldb', '-k2']
         run_cmd(conf.lldbbuilddir(), test_command)
         footer()
 
