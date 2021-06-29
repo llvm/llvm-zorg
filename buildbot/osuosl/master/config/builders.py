@@ -1187,6 +1187,7 @@ all = [
                             'CC': 'clang',
                             'CXX': 'clang++',
                             'LD': 'lld',
+                            'LD_LIBRARY_PATH': '/usr/lib64',
                     })},
 
 # Sanitizer builders.
