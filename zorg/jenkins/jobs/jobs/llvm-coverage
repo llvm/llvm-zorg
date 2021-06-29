@@ -1,7 +1,7 @@
 #!/usr/bin/env groovy
 pipeline {
     agent { label 'green-dragon-23' }
-    
+
     parameters {
         string(name: 'GIT_REVISION', defaultValue: '*/main', description: 'Git revision to build')
         string(name: 'ARTIFACT', defaultValue: 'clang-stage1-RA/latest', description: 'Compiler artifact to use for building the project')
@@ -35,21 +35,21 @@ pipeline {
                     sh '''
                     set -u
                     rm -rf build.properties
-        
+
                     cd llvm-project
                     git tag -a -m "First Commit" first_commit 97724f18c79c7cc81ced24239eb5e883bf1398ef || true
-        
+
                     git_desc=$(git describe --match "first_commit")
-        
+
                     export GIT_DISTANCE=$(echo ${git_desc} | cut -f 2 -d "-")
-        
+
                     sha=$(echo ${git_desc} | cut -f 3 -d "-")
                     export GIT_SHA=${sha:1}
-        
+
                     cd -
 
                     export PATH=$PATH:/usr/bin:/usr/local/bin
-                    
+
                     python llvm-zorg/zorg/jenkins/monorepo_build.py cmake build \
                       --cmake-build-target FileCheck \
                       --cmake-build-target count \
@@ -59,10 +59,10 @@ pipeline {
                       --projects "" \
                       --noinstall \
                       --noupload
-                    
+
                     python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake build \
                       --assertions \
-                      --projects="clang;libcxx;libcxxabi;lldb;debuginfo-tests"  \
+                      --projects="clang;libcxx;libcxxabi;lldb;cross-project-tests"  \
                       --cmake-flag="-DPYTHON_LIBRARY=/usr/local/Cellar/python/3.7.0/Frameworks/Python.framework/Versions/3.7/lib/libpython3.7.dylib" \
                       --cmake-flag="-DPYTHON_INCLUDE_DIR=/usr/local/Cellar/python/3.7.0/Frameworks/Python.framework/Versions/3.7/include/python3.7m" \
                       --cmake-flag="-DPYTHON_LIBRARY_DEBUG=/usr/local/Cellar/python/3.7.0/Frameworks/Python.framework/Versions/3.7/lib/libpython3.7.dylib" \
@@ -85,7 +85,7 @@ pipeline {
                     export PATH=$PATH:/usr/bin:/usr/local/bin
 
                     rm -rf test/results.xml
-                    
+
                     BUILD_DIR=$(pwd)/lldb-build
                     FAST_BUILD_DIR=$(pwd)/clang-build
                     REPORT_DIR=$(pwd)/coverage-reports
@@ -93,31 +93,31 @@ pipeline {
                     LLVM_PROFDATA=$HOST/llvm-profdata
                     LLVM_COV=$HOST/llvm-cov
                     ARTIFACT_PREP_SCRIPT=$WORKSPACE/llvm-project/llvm/utils/prepare-code-coverage-artifact.py
-                    
+
                     FAST_TOOLS=(FileCheck count not)
                     for TOOL in ${FAST_TOOLS[@]}; do
                       cp $FAST_BUILD_DIR/bin/$TOOL $BUILD_DIR/bin/$TOOL
                     done
-                    
+
                     # Clear out any stale profiles.
                     rm -rf $BUILD_DIR/profiles
 
                     # Run the tests.
                     IGNORE_ERRORS_OVERRIDE=1 python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake testlong || echo "Some tests may have failed."
-                    
+
                     cd $BUILD_DIR
                     ninja -k 0 check-llvm check-clang || echo "Some tests may have failed."
                     cd -
-                    
+
                     COV_BINARIES=$(find $BUILD_DIR/bin $BUILD_DIR/lib -depth 1 -type f -exec file {} \\; | grep Mach-O | cut -d':' -f1 | grep -vE '/(FileCheck|count|not)$' | xargs)
-                    
+
                     rm -rf $REPORT_DIR
                     mkdir -p $REPORT_DIR
                     python $ARTIFACT_PREP_SCRIPT $LLVM_PROFDATA $LLVM_COV $BUILD_DIR/profiles $REPORT_DIR $COV_BINARIES --unified-report --restrict $WORKSPACE/llvm-project
-                    
+
                     scp -r $REPORT_DIR buildslave@labmaster2.local:/Library/WebServer/Documents/coverage
                     ssh buildslave@labmaster2.local "chmod -R 777 /Library/WebServer/Documents/coverage"
-                    
+
                     rm -rf lldb-build/profiles
                     '''
                 }
