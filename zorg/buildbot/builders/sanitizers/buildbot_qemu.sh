@@ -18,6 +18,54 @@ clobber
 
 buildbot_update
 
+set +x # Avoid echoing STEP_FAILURE because of the command trace.
+MISSING_QEMU_IMAGE_MESSAGE=$(cat << 'EOF'
+=====================================================================
+Looks like you're missing the QEMU system images for x86_64 LAM
+HWASan testing. These system images aren't automatically generated
+as part of the buildbot script because they require root (sorry!).
+
+If you have the system images already built, you can run
+buildbot_qemu.sh with QEMU_IMAGE_DIR=path/to/qemu/images. Otherwise,
+you can build the images (only necessary once-per-clobber) by:
+ 1. WARNING: Read the script at https://github.com/google/sanitizers/blob/master/hwaddress-sanitizer/create_qemu_image.sh
+    You're running this as ROOT, so make sure you're comfortable with
+    that.
+ 2. In your terminal, run:
+      $ sudo su -c "bash <(wget -qO- https://raw.githubusercontent.com/google/sanitizers/master/hwaddress-sanitizer/create_qemu_image.sh)" root
+
+You can also choose to skip the x86_64 HWASan LAM testing by supplying
+SKIP_HWASAN_LAM=true in your invocation of this script.
+=====================================================================
+@@@STEP_FAILURE@@@
+EOF
+)
+set -x
+
+SKIP_HWASAN_LAM=${SKIP_HWASAN_LAM:-}
+
+function setup_lam_qemu_image {
+  # Full system emulation is required for x86_64 testing with LAM, as some
+  # sanitizers aren't friendly with usermode emulation under x86_64 LAM.
+  echo @@@BUILD_STEP Check x86_64 LAM Prerequisites@@@
+
+  # Allow specifying the QEMU image dir, otherwise assume in the local dir.
+  QEMU_IMAGE_DIR=${QEMU_IMAGE_DIR:=${ROOT}}
+
+  # Ensure the buildbot start script created a QEMU image for us.
+  (
+    ls ${QEMU_IMAGE_DIR}/debian.img
+    ls ${QEMU_IMAGE_DIR}/debian.id_rsa
+  ) ||
+  (
+    # Make the "missing file" error clearer by not effectively echoing twice.
+    set +x
+    echo "$MISSING_QEMU_IMAGE_MESSAGE"
+    exit 1
+  )
+}
+
+[[ -z "$SKIP_HWASAN_LAM" ]] && setup_lam_qemu_image
 build_stage1_clang
 
 COMPILER_BIN_DIR=$(readlink -f ${STAGE1_DIR})/bin
@@ -99,8 +147,10 @@ function build_lam_linux {
 }
 
 build_qemu qemu https://github.com/vitalybuka/qemu.git origin/sanitizer_bot
-build_qemu lam_qemu https://github.com/morehouse/qemu.git origin/lam
-build_lam_linux
+[[ -z "$SKIP_HWASAN_LAM" ]] && (
+  build_qemu lam_qemu https://github.com/morehouse/qemu.git origin/lam
+  build_lam_linux
+)
 
 SCUDO_BUILDS=
 
@@ -113,7 +163,7 @@ function configure_scudo_compiler_rt {
     name=debug_
   fi
   name+="${arch}"
-  
+
   local qemu_cmd=""
   if [[ "${QEMU:-}" != "0" ]] ; then
     name+="_qemu"
@@ -194,13 +244,6 @@ function configure_hwasan_lam {
   local script="${ROOT}/sanitizers/hwaddress-sanitizer/run_in_qemu_with_lam.sh"
   ls ${script}
 
-  # Ensure the buildbot start script created a QEMU image for us.
-  ls /b/qemu_image/debian.img
-  ls /b/qemu_image/debian.id_rsa
-
-  # Link to the QEMU image from ROOT, as the QEMU script expects it there.
-  ln -sf /b/qemu_image ${ROOT}/qemu_image
-
   local out_dir=llvm_build2_x86_64_lam_qemu
   rm -rf ${out_dir}
   mkdir -p ${out_dir}
@@ -217,7 +260,7 @@ function configure_hwasan_lam {
         -DLLVM_ENABLE_LLD=ON \
         -DCMAKE_BUILD_WITH_INSTALL_RPATH=ON \
         -DLLVM_LIT_ARGS="-v --time-tests" \
-        -DCOMPILER_RT_EMULATOR="env ROOT=${ROOT} ${script}" \
+        -DCOMPILER_RT_EMULATOR="env ROOT=${ROOT} QEMU_IMAGE_DIR=${QEMU_IMAGE_DIR} ${script}" \
         $LLVM
      ) >& configure.log
   ) &
@@ -291,14 +334,18 @@ for DBG in OFF ON ; do
   configure_scudo_compiler_rt powerpc64le
 done
 configure_llvm_symbolizer
-configure_hwasan_lam
+[[ -z "$SKIP_HWASAN_LAM" ]] && configure_hwasan_lam
 
 wait
 
 for B in $SCUDO_BUILDS ; do
   run_scudo_tests $B
 done
-build_llvm_symbolizer
-run_hwasan_lam_tests
+
+[[ -z "$SKIP_HWASAN_LAM" ]] && (
+  # Symbolizer only required for HWASan LAM tests.
+  build_llvm_symbolizer
+  run_hwasan_lam_tests
+)
 
 cleanup $STAGE1_DIR

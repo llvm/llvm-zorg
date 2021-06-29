@@ -6,7 +6,7 @@ import sys
 
 THIS_DIR=os.path.dirname(sys.argv[0])
 extra_args = sys.argv[1:]
-
+BOT_DIR = '/b'
 
 def bash(path):
     return 'bash ' + os.path.join(THIS_DIR, path)
@@ -41,7 +41,7 @@ BOT_ADDITIONAL_ENV = {
     'sanitizer-x86_64-linux-bootstrap-asan': {},
     'sanitizer-x86_64-linux-bootstrap-msan': {},
     'sanitizer-x86_64-linux-bootstrap-ubsan': {},
-    'sanitizer-x86_64-linux-qemu': {},
+    'sanitizer-x86_64-linux-qemu': { 'QEMU_IMAGE_DIR': BOT_DIR + '/qemu_image' },
 }
 
 def Main():
@@ -56,6 +56,7 @@ def Main():
   sys.stdout.flush()
 
   bot_env = os.environ
+  bot_env['BOT_DIR'] = BOT_DIR
   add_env = BOT_ADDITIONAL_ENV.get(builder)
   for var in add_env:
     bot_env[var] = add_env[var]
