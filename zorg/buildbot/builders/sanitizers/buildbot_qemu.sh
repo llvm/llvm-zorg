@@ -177,6 +177,9 @@ function configure_scudo_compiler_rt {
     fi
   fi
 
+  local linker_flags=
+  [[ "${arch}" =~ "mips*" ]] && linker_flags="-latomic -Wl,-z,notext -Wno-unused-command-line-argument"
+
   local out_dir=llvm_build2_${name}
   rm -rf ${out_dir}
   mkdir -p ${out_dir}
@@ -185,8 +188,6 @@ function configure_scudo_compiler_rt {
 
   (
     cd ${out_dir}
-
-    LINKER_FLAGS=${LINKER_FLAGS:-}
 
     (
       cmake \
@@ -207,9 +208,9 @@ function configure_scudo_compiler_rt {
         -DCMAKE_BUILD_WITH_INSTALL_RPATH=ON \
         -DCMAKE_CXX_FLAGS=-fPIC \
         -DCMAKE_C_FLAGS=-fPIC \
-        -DCMAKE_SHARED_LINKER_FLAGS="-fuse-ld=lld ${LINKER_FLAGS}" \
+        -DCMAKE_SHARED_LINKER_FLAGS="-fuse-ld=lld ${linker_flags}" \
         -DCMAKE_EXE_LINKER_FLAGS=-fuse-ld=lld \
-        -DCOMPILER_RT_TEST_COMPILER_CFLAGS="--target=${target} ${LINKER_FLAGS}" \
+        -DCOMPILER_RT_TEST_COMPILER_CFLAGS="--target=${target} ${linker_flags}" \
         -DCMAKE_C_COMPILER_TARGET=${target} \
         -DCMAKE_CXX_COMPILER_TARGET=${target} \
         -DCOMPILER_RT_EMULATOR="${qemu_cmd:-}" \
@@ -324,14 +325,10 @@ for DBG in OFF ON ; do
   configure_scudo_compiler_rt arm eabihf
   configure_scudo_compiler_rt aarch64
   QEMU_CPU="cortex-a72" configure_scudo_compiler_rt aarch64
-  (
-    LINKER_FLAGS="-latomic -Wl,-z,notext -Wno-unused-command-line-argument"
-    configure_scudo_compiler_rt mips
-    configure_scudo_compiler_rt mipsel
-    configure_scudo_compiler_rt mips64 abi64
-    configure_scudo_compiler_rt mips64el abi64
-  )
-
+  configure_scudo_compiler_rt mips
+  configure_scudo_compiler_rt mipsel
+  configure_scudo_compiler_rt mips64 abi64
+  configure_scudo_compiler_rt mips64el abi64
   configure_scudo_compiler_rt powerpc64le
 done
 configure_llvm_symbolizer
