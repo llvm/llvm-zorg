@@ -32,7 +32,8 @@ you can build the images (only necessary once-per-clobber) by:
     You're running this as ROOT, so make sure you're comfortable with
     that.
  2. In your terminal, run:
-      $ sudo su -c "bash <(wget -qO- https://raw.githubusercontent.com/google/sanitizers/master/hwaddress-sanitizer/create_qemu_image.sh)" root
+      $ sudo su -c "bash <(wget -qO- https://raw.githubusercontent.com/google/sanitizers/master/hwaddress-sanitizer/create_qemu_image.sh)" root && \
+        sudo chown $(whoami) debian.*
 
 You can also choose to skip the x86_64 HWASan LAM testing by supplying
 SKIP_HWASAN_LAM=true in your invocation of this script.
