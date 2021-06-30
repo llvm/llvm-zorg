@@ -38,7 +38,7 @@ you can build the images (only necessary once-per-clobber) by:
 You can also choose to skip the x86_64 HWASan LAM testing by supplying
 SKIP_HWASAN_LAM=true in your invocation of this script.
 =====================================================================
-@@@STEP_FAILURE@@@
+@@@STEP_EXCEPTION@@@
 EOF
 )
 set -x
@@ -66,7 +66,7 @@ function setup_lam_qemu_image {
   )
 }
 
-[[ -z "$SKIP_HWASAN_LAM" ]] && setup_lam_qemu_image
+([[ -z "$SKIP_HWASAN_LAM" ]] && setup_lam_qemu_image) || SKIP_HWASAN_LAM=1
 build_stage1_clang
 
 COMPILER_BIN_DIR=$(readlink -f ${STAGE1_DIR})/bin
