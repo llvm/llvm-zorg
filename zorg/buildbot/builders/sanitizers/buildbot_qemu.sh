@@ -325,8 +325,8 @@ for DBG in OFF ON ; do
   configure_scudo_compiler_rt arm eabihf
   configure_scudo_compiler_rt aarch64
   QEMU_CPU="cortex-a72" configure_scudo_compiler_rt aarch64
-  configure_scudo_compiler_rt mips
-  configure_scudo_compiler_rt mipsel
+  #configure_scudo_compiler_rt mips
+  #configure_scudo_compiler_rt mipsel
   configure_scudo_compiler_rt mips64 abi64
   configure_scudo_compiler_rt mips64el abi64
   configure_scudo_compiler_rt powerpc64le
