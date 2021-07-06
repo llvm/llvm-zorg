@@ -135,7 +135,7 @@ all = [
     'workernames' : ["as-builder-4"],
     'builddir': "llvm-clang-x86_64-expensive-checks-ubuntu",
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
-                    depends_on_projects=["llvm"],
+                    depends_on_projects=["llvm", "lld"],
                     clean=True,
                     extra_configure_args=[
                         "-DLLVM_ENABLE_EXPENSIVE_CHECKS=ON",
@@ -150,7 +150,7 @@ all = [
     'builddir': "llvm-clang-x86_64-expensive-checks-win",
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaWithMSVCBuildFactory(
                     vs="autodetect",
-                    depends_on_projects=["llvm"],
+                    depends_on_projects=["llvm", "lld"],
                     clean=True,
                     extra_configure_args=[
                         "-DLLVM_ENABLE_EXPENSIVE_CHECKS=ON",
@@ -163,7 +163,7 @@ all = [
     'workernames' : ["gribozavr4"],
     'builddir': "llvm-clang-x86_64-expensive-checks-debian",
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
-                    depends_on_projects=["llvm"],
+                    depends_on_projects=["llvm", "lld"],
                     clean=True,
                     extra_configure_args=[
                         "-DLLVM_ENABLE_EXPENSIVE_CHECKS=ON",
