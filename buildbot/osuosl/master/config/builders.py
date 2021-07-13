@@ -27,15 +27,6 @@ from zorg.buildbot.builders import DoxygenDocsBuilder
 reload(HtmlDocsBuilder)
 reload(DoxygenDocsBuilder)
 
-# These are same VM so schedule builds on any of them.
-sanitizer_workers = [
-    "sanitizer-buildbot1",
-    "sanitizer-buildbot2",
-    "sanitizer-buildbot3",
-    "sanitizer-buildbot4",
-    "sanitizer-buildbot7",
-    "sanitizer-buildbot8",
-]
 
 all = [
 
@@ -1203,49 +1194,75 @@ all = [
 
     {'name' : "sanitizer-x86_64-linux",
     'tags'  : ["sanitizer"],
-    'workernames' : sanitizer_workers,
+    'workernames' : [
+        "sanitizer-buildbot1",
+        "sanitizer-buildbot2",
+    ],
     'builddir': "sanitizer-x86_64-linux",
     'factory' : SanitizerBuilder.getSanitizerBuildFactory()},
 
     {'name' : "sanitizer-x86_64-linux-fast",
     'tags'  : ["sanitizer"],
-    'workernames' : sanitizer_workers,
+    'workernames' : [
+        "sanitizer-buildbot1",
+        "sanitizer-buildbot2",
+        "sanitizer-buildbot7",
+        "sanitizer-buildbot8",
+    ],
     'builddir': "sanitizer-x86_64-linux-fast",
     'factory' : SanitizerBuilder.getSanitizerBuildFactory()},
 
     {'name' : "sanitizer-x86_64-linux-bootstrap-asan",
     'tags'  : ["sanitizer"],
-    'workernames' : sanitizer_workers,
+    'workernames' : [
+        "sanitizer-buildbot3",
+        "sanitizer-buildbot4",
+    ],
     'builddir': "sanitizer-x86_64-linux-bootstrap-asan",
     'factory' : SanitizerBuilder.getSanitizerBuildFactory()},
 
     {'name' : "sanitizer-x86_64-linux-bootstrap-ubsan",
     'tags'  : ["sanitizer"],
-    'workernames' : sanitizer_workers,
+    'workernames' : [
+        "sanitizer-buildbot3",
+        "sanitizer-buildbot4",
+    ],
     'builddir': "sanitizer-x86_64-linux-bootstrap-ubsan",
     'factory' : SanitizerBuilder.getSanitizerBuildFactory()},
 
     {'name' : "sanitizer-x86_64-linux-bootstrap-msan",
     'tags'  : ["sanitizer"],
-    'workernames' : sanitizer_workers,
+    'workernames' : [
+        "sanitizer-buildbot3",
+        "sanitizer-buildbot4",
+    ],
     'builddir': "sanitizer-x86_64-linux-bootstrap-msan",
     'factory' : SanitizerBuilder.getSanitizerBuildFactory()},
 
     {'name' : "sanitizer-x86_64-linux-autoconf",
     'tags'  : ["sanitizer"],
-    'workernames' : sanitizer_workers,
+    'workernames' : [
+        "sanitizer-buildbot7",
+        "sanitizer-buildbot8",
+    ],
     'builddir': "sanitizer-x86_64-linux-autoconf",
     'factory' : SanitizerBuilder.getSanitizerBuildFactory()},
 
     {'name' : "sanitizer-x86_64-linux-qemu",
     'tags'  : ["sanitizer"],
-    'workernames' : sanitizer_workers,
+    'workernames' : [
+        "sanitizer-buildbot7",
+        "sanitizer-buildbot8",
+    ],
     'builddir': "sanitizer-x86_64-linux-qemu",
     'factory' : SanitizerBuilder.getSanitizerBuildFactory()},
 
     {'name' : "sanitizer-x86_64-linux-fuzzer",
     'tags'  : ["sanitizer"],
-    'workernames' : sanitizer_workers,
+    'workernames' : [
+        "sanitizer-buildbot7",
+        "sanitizer-buildbot8",
+    ],
     'builddir': "sanitizer-x86_64-linux-fuzzer",
     'factory' : SanitizerBuilder.getSanitizerBuildFactory()},
 
