@@ -506,11 +506,11 @@ all = [
                     testStage1=False,
                     runTestSuite=True,
                     testsuite_flags=[
-                        '--cppflags', '-mcpu=a64fx -mllvm -aarch64-sve-vector-bits-min=512',
+                        '--cppflags', '-mcpu=a64fx',
                         '--threads=48', '--build-threads=48'],
                     extra_cmake_args=[
-                        "-DCMAKE_C_FLAGS='-mcpu=a64fx -mllvm -aarch64-sve-vector-bits-min=512'",
-                        "-DCMAKE_CXX_FLAGS='-mcpu=a64fx -mllvm -aarch64-sve-vector-bits-min=512'",
+                        "-DCMAKE_C_FLAGS='-mcpu=a64fx",
+                        "-DCMAKE_CXX_FLAGS='-mcpu=a64fx",
                         "-DLLVM_ENABLE_LLD=True"])},
 
     {'name' : "clang-arm64-windows-msvc-2stage",
