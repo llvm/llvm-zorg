@@ -90,11 +90,5 @@ pipeline {
                     to: '$DEFAULT_RECIPIENTS',
                     body:'$DEFAULT_CONTENT'
         }
-        success {
-            script {
-                def props = readProperties(file: 'build.properties');
-                build job: 'upload_artifact', wait: false, parameters: [string(name: 'ARTIFACT', value: props.ARTIFACT)]
-            }
-        }
     }
 }

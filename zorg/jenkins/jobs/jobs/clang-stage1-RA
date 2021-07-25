@@ -89,10 +89,6 @@ pipeline {
                     body:'$DEFAULT_CONTENT'
         }
         success {
-            script {
-                def props = readProperties(file: 'build.properties');
-                build job: 'upload_artifact', wait: false, parameters: [string(name: 'ARTIFACT', value: props.ARTIFACT)]
-            }
             build job: 'clang-stage2-Rthinlto_relay', wait: false
             build job: 'clang-stage2-cmake-RgSan_relay', wait: false
             //build job: 'phase2_modules_relay', wait: false
