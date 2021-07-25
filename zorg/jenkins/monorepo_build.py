@@ -350,7 +350,7 @@ def cmake_builder(target):
             # unless the user asked for something else.
             targets = ['check', 'check-clang']
 
-        run_cmd(conf.builddir(), ninja_cmd + targets)
+        run_cmd(conf.builddir(), ninja_cmd + targets, err_okay=True)
         footer()
 
     if conf.sccache:
@@ -497,7 +497,7 @@ def clang_builder(target):
             cmd[-1] += ' --param use_gmalloc=1 ' \
                        '--param gmalloc_path=$(xcodebuild -find-library' \
                        ' libgmalloc.dylib)'
-        run_cmd(obj_dir, cmd, env={'MALLOC_LOG_FILE': '/dev/null'})
+        run_cmd(obj_dir, cmd, env={'MALLOC_LOG_FILE': '/dev/null'}, err_okay=True)
 
     if conf.sccache:
         run_ws([conf.sccache_path, "--stop-server"])
