@@ -63,7 +63,7 @@ pipeline {
                     python llvm-zorg/zorg/jenkins/monorepo_build.py cmake testlong
                     '''
                 }
-                junit 'clang-build/testresults.xunit.xml'
+                junit 'clang-build/**/testresults.xunit.xml'
             }
         }
     }
