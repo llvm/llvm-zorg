@@ -509,8 +509,8 @@ all = [
                         '--cppflags', '-mcpu=a64fx',
                         '--threads=48', '--build-threads=48'],
                     extra_cmake_args=[
-                        "-DCMAKE_C_FLAGS='-mcpu=a64fx",
-                        "-DCMAKE_CXX_FLAGS='-mcpu=a64fx",
+                        "-DCMAKE_C_FLAGS='-mcpu=a64fx'",
+                        "-DCMAKE_CXX_FLAGS='-mcpu=a64fx'",
                         "-DLLVM_ENABLE_LLD=True"])},
 
     {'name' : "clang-arm64-windows-msvc-2stage",
