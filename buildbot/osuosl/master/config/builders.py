@@ -1350,7 +1350,7 @@ all = [
     'workernames' : ["minipc-1050ti-linux"],
     'builddir': "openmp-offload-cuda-runtime",
     'factory' : OpenMPBuilder.getOpenMPCMakeBuildFactory(
-                        clean=False,
+                        clean=True,
                         enable_runtimes=['openmp'],
                         extraCmakeArgs=[
                                 "-DCUDA_TOOLKIT_ROOT_DIR=/opt/cuda",
@@ -1361,6 +1361,8 @@ all = [
                                 "-DLLVM_TARGETS_TO_BUILD=X86;NVPTX",
                                 "-DLLVM_ENABLE_LLD=ON",
                                 '-DLLVM_PARALLEL_LINK_JOBS=2',
+                                "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
+                                "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
                             ],
                         install=True,
                         testsuite=True,
