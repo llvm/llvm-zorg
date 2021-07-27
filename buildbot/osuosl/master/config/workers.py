@@ -109,7 +109,7 @@ def get_all():
                          "gkistanova@gmail.com"]),
 
         # Debian 7.7 x86_64 GCE instance
-        create_worker("sanitizer-buildbot1", properties={'jobs': 64}, max_builds=3),
+        create_worker("sanitizer-buildbot1", properties={'jobs': 64}, max_builds=2),
         # Debian 7.7 x86_64 GCE instance
         create_worker("sanitizer-buildbot2", properties={'jobs': 64}, max_builds=2),
         # Debian 7.7 x86_64 GCE instance
@@ -119,7 +119,7 @@ def get_all():
         # Ubuntu 14.04 x86_64 6-core z440 workstation
         create_worker("sanitizer-buildbot6", properties={'jobs': 6}, max_builds=1),
         # Debian 7.7 x86_64 GCE instance
-        create_worker("sanitizer-buildbot7", properties={'jobs': 64}, max_builds=3),
+        create_worker("sanitizer-buildbot7", properties={'jobs': 64}, max_builds=2),
         # Debian 7.7 x86_64 GCE instance
         create_worker("sanitizer-buildbot8", properties={'jobs': 64}, max_builds=2),
 
