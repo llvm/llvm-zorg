@@ -964,7 +964,7 @@ all = [
                     timeout=240,
                     target_clang=None,
                     target_flags="-Wno-error -O3 -mllvm -polly -mllvm -polly-position=before-vectorizer -mllvm -polly-process-unprofitable -fcommon",
-                    jobs=8,
+                    jobs=32,
                     extra_make_args=None,
                     env={'LD_LIBRARY_PATH': '/local/clang+llvm-12.0.0-x86_64-linux-gnu-ubuntu-16.04/lib'},
                     clean=False,

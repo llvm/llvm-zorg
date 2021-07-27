@@ -25,8 +25,9 @@ def getAOSPBuildCommand(
     target_flags=None,     # Extra C/CXX flags for AOSP target build
     jobs=None,             # Number of concurrent jobs
     extra_make_args=None): # Extra args for the make command
-    command = "source build/envsetup.sh"
+    command = "/bin/bash -c \"source build/envsetup.sh"
     command += " && lunch aosp_%s-userdebug" % device
+    command += " && export LC_ALL=C"
     command += " && make -k"
     if timeout:
         command += " TIMEOUT=%s" % timeout
@@ -38,6 +39,7 @@ def getAOSPBuildCommand(
         command += " " + extra_make_args
     if jobs:
         command += " -j" + str(jobs)
+    command += "\""
     return command
 
 
