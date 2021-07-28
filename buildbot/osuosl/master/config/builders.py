@@ -1401,6 +1401,15 @@ all = [
 
 # libc Builders.
 
+    {'name' : 'libc-x86_64-windows-dbg',
+    'tags'  : ["libc"],
+    'workernames' : ['libc-x86_64-windows'],
+    'builddir': 'libc-x86_64-windows',
+    'factory' : AnnotatedBuilder.getAnnotatedBuildFactory(
+                    script="libc-windows.py",
+                    depends_on_projects=['llvm', 'libc', 'clang', 'clang-tools-extra'],
+                    extra_args=['--debug'])},
+
     {'name' : 'libc-aarch64-ubuntu-dbg',
     'tags'  : ["libc"],
     'workernames' : ['libc-aarch64-ubuntu'],

@@ -208,6 +208,7 @@ all = [
         mode = "failing",
         builders = ["libc-x86_64-debian", "libc-x86_64_debian-dbg",
                     "libc-x86_64-debian-dbg-asan", "libc-aarch64-ubuntu-dbg",
+                    "libc-x86_64-windows-dbg",
                     "libc-x86_64-debian-fullbuild-dbg",
                     "libc-x86_64-debian-fullbuild-dbg-asan"]),
     reporters.MailNotifier(

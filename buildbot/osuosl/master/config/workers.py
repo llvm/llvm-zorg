@@ -169,6 +169,9 @@ def get_all():
         # Debian x86_64 Buster Xeon(R) Gold 6154 CPU @ 3.00GHz, 192GB RAM
         create_worker("lldb-x86_64-debian", properties={'jobs': 72}, max_builds=1),
 
+        # Windows x86_64 32 CPUs, 125 GB RAM
+        create_worker("libc-x86_64-windows", properties={'jobs': 32}, max_builds=2),
+        
         # Ubuntu aarch64 128 CPUs, 125 GB RAM
         create_worker("libc-aarch64-ubuntu", properties={'jobs': 32}, max_builds=2),
 
