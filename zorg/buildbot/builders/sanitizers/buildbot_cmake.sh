@@ -132,10 +132,6 @@ buildbot_update
 COMPILER_RT=$LLVM/../compiler-rt
 LIBCXX=$LLVM/../libcxx
 
-echo @@@BUILD_STEP lint@@@
-CHECK_LINT=${COMPILER_RT}/lib/sanitizer_common/scripts/check_lint.sh
-${CHECK_LINT} || echo @@@STEP_WARNINGS@@@
-
 # Use both gcc and just-built Clang/LLD as a host compiler/linker for sanitizer
 # tests. Assume that self-hosted build tree should compile with -Werror.
 echo @@@BUILD_STEP build fresh toolchain@@@
@@ -338,5 +334,9 @@ if [ "$PLATFORM" == "Linux" -a $HAVE_NINJA == 1 ]; then
     check_ninja_with_symbolizer $CHECK_UBSAN ubsan
   fi
 fi
+
+echo @@@BUILD_STEP lint@@@
+CHECK_LINT=${COMPILER_RT}/lib/sanitizer_common/scripts/check_lint.sh
+${CHECK_LINT} || echo @@@STEP_WARNINGS@@@
 
 cleanup
