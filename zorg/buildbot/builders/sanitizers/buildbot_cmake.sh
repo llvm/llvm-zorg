@@ -335,8 +335,4 @@ if [ "$PLATFORM" == "Linux" -a $HAVE_NINJA == 1 ]; then
   fi
 fi
 
-echo @@@BUILD_STEP lint@@@
-CHECK_LINT=${COMPILER_RT}/lib/sanitizer_common/scripts/check_lint.sh
-${CHECK_LINT} || echo @@@STEP_WARNINGS@@@
-
 cleanup
