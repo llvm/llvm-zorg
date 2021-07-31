@@ -1015,7 +1015,7 @@ all = [
                     test=True,
                     extra_cmake_args=[
                         '-DLLVM_ENABLE_ASSERTIONS=True',
-                        '-DLLVM_LIT_ARGS=-svj 8',
+                        '-DLLVM_LIT_ARGS=-svj 4',
                         '-DLLVM_USE_LINKER=gold'])},
 
     {'name' : "lldb-arm-ubuntu",
@@ -1026,7 +1026,7 @@ all = [
                     test=True,
                     extra_cmake_args=[
                         '-DLLVM_ENABLE_ASSERTIONS=True',
-                        '-DLLVM_LIT_ARGS=-svj 8',
+                        '-DLLVM_LIT_ARGS=-svj 4',
                         '-DLLVM_USE_LINKER=gold'])},
 
     {'name' : "lldb-x64-windows-ninja",
