@@ -256,4 +256,7 @@ def get_all():
 
         # ARC Worker, CentOS 7.9 x86_64 Intel Xeon Platinum 8000 @ 3.6GHz, 32GB RAM
         create_worker("arc-worker", properties={'jobs': 16}, max_builds=1),
+
+        # OpenMP on AMDGPU, Ubuntu 18.04.5, Intel(R) Xeon(R) Gold 5218 @ 2.30GHz with 64GB Memory, 1 Vega20 GPU with 16GB Memory
+        create_worker("omp-vega20-0", max_builds=1),
         ]
