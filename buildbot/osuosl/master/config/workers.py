@@ -148,7 +148,7 @@ def get_all():
         create_worker("cuda-t4-0", max_builds=1),
 
         # HIP on Ubuntu 18.04.5,  Intel(R) Xeon(R) Gold 5218 @ 2.30GHz, Vega20 GPU
-        create_worker("hip-vega20-0", properties={'jobs': 32}, max_builds=1),
+        create_worker("hip-vega20-0", max_builds=1),
 
         # X86_64 AVX2, Ubuntu 16.04.2, Intel(R) Xeon(R) CPU E5-2699 v4 @ 2.20GHz
         create_worker("avx2-intel64", properties={'jobs': 80}, max_builds=1),
@@ -258,5 +258,5 @@ def get_all():
         create_worker("arc-worker", properties={'jobs': 16}, max_builds=1),
 
         # OpenMP on AMDGPU, Ubuntu 18.04.5, Intel(R) Xeon(R) Gold 5218 @ 2.30GHz with 64GB Memory, 1 Vega20 GPU with 16GB Memory
-        create_worker("omp-vega20-0", max_builds=1),
+        create_worker("omp-vega20-0", properties={'jobs': 32}, max_builds=1),
         ]
