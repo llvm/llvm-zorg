@@ -1381,17 +1381,15 @@ all = [
     'factory' : OpenMPBuilder.getOpenMPCMakeBuildFactory(
                         clean=False,
                         enable_runtimes=[],
-                        depends_on_projects=['llvm','clang','openmp','lld'],
+                        depends_on_projects=['llvm','clang','openmp'],
                         extraCmakeArgs=[
                             "-DCMAKE_BUILD_TYPE=Release",
                             "-DLLVM_TARGETS_TO_BUILD=X86;AMDGPU",
                             "-DLLVM_ENABLE_ASSERTIONS=ON",
-                            "-DLLVM_ENABLE_LLD=ON",
-                            "-DCLANG_DEFAULT_LINKER=lld",
                             ],
                         install=True,
                         testsuite=True,
-                        testsuite_sollvevv=True,
+                        testsuite_sollvevv=False,
                         extraTestsuiteCmakeArgs=[
                             "-DTEST_SUITE_SOLLVEVV_OFFLOADING_CFLAGS=-fopenmp-targets=amdgcn-amd-amdhsa;-Xopenmp-target=amdgcn-amd-amdhsa",
                             "-DTEST_SUITE_SOLLVEVV_OFFLOADING_LDLAGS=-fopenmp-targets=amdgcn-amd-amdhsa;-Xopenmp-target=amdgcn-amd-amdhsa",
@@ -1403,19 +1401,17 @@ all = [
     'workernames' : ["omp-vega20-0"],
     'builddir': "openmp-offload-amdgpu-runtime",
     'factory' : OpenMPBuilder.getOpenMPCMakeBuildFactory(
-                        clean=False,
+                        clean=True,
                         enable_runtimes=['openmp'],
-                        depends_on_projects=['llvm','clang','openmp','lld'],
+                        depends_on_projects=['llvm','clang','openmp'],
                         extraCmakeArgs=[
                             "-DCMAKE_BUILD_TYPE=Release",
                             "-DLLVM_TARGETS_TO_BUILD=X86;AMDGPU",
                             "-DLLVM_ENABLE_ASSERTIONS=ON",
-                            "-DLLVM_ENABLE_LLD=ON",
-                            "-DCLANG_DEFAULT_LINKER=lld",
                             ],
                         install=True,
                         testsuite=True,
-                        testsuite_sollvevv=True,
+                        testsuite_sollvevv=False,
                         extraTestsuiteCmakeArgs=[
                             "-DTEST_SUITE_SOLLVEVV_OFFLOADING_CFLAGS=-fopenmp-targets=amdgcn-amd-amdhsa;-Xopenmp-target=amdgcn-amd-amdhsa",
                             "-DTEST_SUITE_SOLLVEVV_OFFLOADING_LDLAGS=-fopenmp-targets=amdgcn-amd-amdhsa;-Xopenmp-target=amdgcn-amd-amdhsa",
