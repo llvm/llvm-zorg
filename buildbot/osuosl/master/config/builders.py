@@ -1381,11 +1381,13 @@ all = [
     'factory' : OpenMPBuilder.getOpenMPCMakeBuildFactory(
                         clean=False,
                         enable_runtimes=[],
-                        depends_on_projects=['llvm','clang','openmp'],
+                        depends_on_projects=['llvm','clang','lld'],
                         extraCmakeArgs=[
                             "-DCMAKE_BUILD_TYPE=Release",
+                            "-DCLANG_DEFAULT_LINKER=lld",
                             "-DLLVM_TARGETS_TO_BUILD=X86;AMDGPU",
                             "-DLLVM_ENABLE_ASSERTIONS=ON",
+                            "-DLLVM_ENABLE_RUNTIMES=openmp",
                             ],
                         install=True,
                         testsuite=True,
@@ -1403,11 +1405,13 @@ all = [
     'factory' : OpenMPBuilder.getOpenMPCMakeBuildFactory(
                         clean=True,
                         enable_runtimes=['openmp'],
-                        depends_on_projects=['llvm','clang','openmp'],
+                        depends_on_projects=['llvm','clang','lld'],
                         extraCmakeArgs=[
                             "-DCMAKE_BUILD_TYPE=Release",
+                            "-DCLANG_DEFAULT_LINKER=lld",
                             "-DLLVM_TARGETS_TO_BUILD=X86;AMDGPU",
                             "-DLLVM_ENABLE_ASSERTIONS=ON",
+                            "-DLLVM_ENABLE_RUNTIMES=openmp",
                             ],
                         install=True,
                         testsuite=True,
