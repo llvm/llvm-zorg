@@ -8,7 +8,6 @@ from zorg.buildbot.builders import PollyBuilder
 from zorg.buildbot.builders import LLDBBuilder
 from zorg.buildbot.builders import SanitizerBuilder
 from zorg.buildbot.builders import OpenMPBuilder
-from zorg.buildbot.builders import LibcxxAndAbiBuilder
 from zorg.buildbot.builders import SphinxDocsBuilder
 from zorg.buildbot.builders import ABITestsuitBuilder
 from zorg.buildbot.builders import ClangLTOBuilder
@@ -208,18 +207,6 @@ all = [
                     extra_configure_args_lto_stage=[
                         '-DLLVM_PARALLEL_LINK_JOBS=14',
                     ])},
-
-
-# Libc++ builders.
-
-    {'name': 'libcxx-libcxxabi-x86_64-linux-debian-release',
-    'tags'  : ["libcxx", "release"],
-    'workernames': ['gribozavr4'],
-    'builddir': 'libcxx-libcxxabi-x86_64-linux-debian-rel',
-    'factory': LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
-                    env={'CC': 'clang', 'CXX': 'clang++'},
-                    lit_extra_args=['--shuffle'],
-                    check_libcxx_abilist=True)},
 
 # OpenMP builders.
 
