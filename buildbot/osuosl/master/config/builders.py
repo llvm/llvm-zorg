@@ -1412,9 +1412,11 @@ all = [
                             "-DLLVM_TARGETS_TO_BUILD=X86;AMDGPU",
                             "-DLLVM_ENABLE_ASSERTIONS=ON",
                             "-DLLVM_ENABLE_RUNTIMES=openmp",
+                            "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
+                            "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
                             ],
                         install=True,
-                        testsuite=True,
+                        testsuite=False,
                         testsuite_sollvevv=False,
                         extraTestsuiteCmakeArgs=[
                             "-DTEST_SUITE_SOLLVEVV_OFFLOADING_CFLAGS=-fopenmp-targets=amdgcn-amd-amdhsa;-Xopenmp-target=amdgcn-amd-amdhsa",
