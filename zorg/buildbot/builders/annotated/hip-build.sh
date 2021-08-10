@@ -62,7 +62,8 @@ cmake -G Ninja \
   -DCMAKE_BUILD_TYPE="Release" \
   -DCMAKE_VERBOSE_MAKEFILE=1 \
   -DLLVM_TARGETS_TO_BUILD="AMDGPU;X86" \
-  -DLLVM_ENABLE_PROJECTS="clang;lld;clang-tools-extra;compiler-rt;libcxx;libcxxabi" \
+  -DLLVM_ENABLE_PROJECTS="clang;lld;clang-tools-extra;compiler-rt" \
+  -DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi" \
   -DLIBCXX_ENABLE_SHARED=OFF \
   -DLIBCXX_ENABLE_STATIC=ON \
   -DLIBCXX_INSTALL_LIBRARY=OFF \
@@ -78,10 +79,12 @@ cmake -G Ninja \
   ${LLVM_ROOT}/llvm
 
 build_step "Building LLVM"
+ninja runtimes
 ninja
 
 build_step "Install LLVM"
 rm -rf "${DESTDIR}"
+ninja install-runtimes
 ninja install
 
 # Start building llvm-test-suite's hip tests
