@@ -56,30 +56,6 @@ all = [
                         'CC': 'ccache clang', 'CXX': 'ccache clang++', 'CCACHE_CPP2': 'yes',
                     })},
 
-    {'name' : "clang-x86_64-debian-new-pass-manager-fast",
-    'tags'  : ["clang", "fast"],
-    'workernames': ["gribozavr4"],
-    'builddir': "clang-x86_64-debian-new-pass-manager-fast",
-    'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
-                    llvm_srcdir="llvm.src",
-                    obj_dir="llvm.obj",
-                    clean=True,
-                    depends_on_projects=['llvm','clang','clang-tools-extra','compiler-rt'],
-                    extra_configure_args=[
-                        "-DCOMPILER_RT_BUILD_BUILTINS:BOOL=OFF",
-                        "-DCOMPILER_RT_BUILD_ORC:BOOL=OFF",
-                        "-DCOMPILER_RT_BUILD_SANITIZERS:BOOL=OFF",
-                        "-DCOMPILER_RT_BUILD_XRAY:BOOL=OFF",
-                        "-DCOMPILER_RT_INCLUDE_TESTS:BOOL=OFF",
-                        "-DENABLE_EXPERIMENTAL_NEW_PASS_MANAGER=ON",
-                        "-DCMAKE_C_FLAGS=-Wdocumentation -Wno-documentation-deprecated-sync",
-                        "-DCMAKE_CXX_FLAGS=-std=c++11 -Wdocumentation -Wno-documentation-deprecated-sync",
-                    ],
-                    env={
-                        'PATH':'/home/llvmbb/bin/clang-latest/bin:/home/llvmbb/bin:/usr/local/bin:/usr/local/bin:/usr/bin:/bin',
-                        'CC': 'ccache clang', 'CXX': 'ccache clang++', 'CCACHE_CPP2': 'yes',
-                    })},
-
     {'name' : "llvm-clang-x86_64-win-fast",
     'tags'  : ["clang", "fast"],
     'collapseRequests': False,
@@ -1851,6 +1827,33 @@ all = [
                         '-DBUILD_SHARED_LIBS=Off',
                         '-DLLVM_ENABLE_LLD=ON',
                     ])},
+
+    # Build the LLVM dylib .so with all backends and link tools to it
+    {'name' : 'llvm-x86_64-debian-dylib',
+    'tags'  : ['llvm'],
+    'collapseRequests': False,
+    'workernames': ['gribozavr4'],
+    'builddir': 'llvm-x86_64-debian-dylib',
+    'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
+                    clean=True,
+                    depends_on_projects=['llvm'],
+                    checks=['check-all'],
+                    extra_configure_args=[
+                        '-DCMAKE_BUILD_TYPE=Release',
+                        '-DLLVM_ENABLE_ASSERTIONS=On',
+                        '-DLLVM_BUILD_EXAMPLES=Off',
+                        "-DLLVM_LIT_ARGS=-v --xunit-xml-output test-results.xml",
+                        '-DLLVM_TARGETS_TO_BUILD=All',
+                        '-DCMAKE_EXPORT_COMPILE_COMMANDS=1',
+                        '-DLLVM_BUILD_LLVM_DYLIB=On',
+                        '-DLLVM_LINK_LLVM_DYLIB=On',
+                        '-DBUILD_SHARED_LIBS=Off',
+                        '-DLLVM_ENABLE_LLD=Off',
+                    ],
+                    env={
+                        'PATH':'/home/llvmbb/bin/clang-latest/bin:/home/llvmbb/bin:/usr/local/bin:/usr/local/bin:/usr/bin:/bin',
+                        'CC': 'ccache clang', 'CXX': 'ccache clang++', 'CCACHE_CPP2': 'yes'
+                    })},
 
     {'name' : "clang-solaris11-amd64",
     'tags' : ["clang"],
