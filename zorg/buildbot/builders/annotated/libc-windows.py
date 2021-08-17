@@ -19,7 +19,7 @@ def main(argv):
 
     source_dir = os.path.join('..', 'llvm-project')
     vc_vars = annotated_builder.get_vcvars(vs_tools=None, arch='amd64')
-    for (var, val) in vc_vars:
+    for (var, val) in vc_vars.items():
         os.environ[var] = val
 
     with step('cmake', halt_on_fail=True):
