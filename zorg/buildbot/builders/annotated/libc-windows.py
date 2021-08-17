@@ -1,9 +1,12 @@
+
+import annotated_builder
+import util
+
 import argparse
 import os
 import subprocess
 import sys
 import traceback
-import util
 from contextlib import contextmanager
 
 def main(argv):
@@ -15,6 +18,9 @@ def main(argv):
     args, _ = ap.parse_known_args()
 
     source_dir = os.path.join('..', 'llvm-project')
+    vc_vars = annotated_builder.get_vcvars(vs_tools=None, arch='amd64')
+    for (var, val) in vc_vars:
+        os.environ[var] = val
 
     with step('cmake', halt_on_fail=True):
         # On most systems the default generator is make and the default
@@ -38,6 +44,7 @@ def main(argv):
         cmake_args.append('-DLLVM_FORCE_BUILD_RUNTIME=libc')
         cmake_args.append('-DLLVM_NATIVE_ARCH=x86_64')
         cmake_args.append('-DLLVM_HOST_TRIPLE=x86_64-window-x86-gnu')
+        cmake_args.append('-DLLVM_LIBC_MPFR_INSTALL_PATH=C:/src/install')
 
         run_command(['cmake', os.path.join(source_dir, 'llvm')] + cmake_args)
 
@@ -46,6 +53,7 @@ def main(argv):
 
     with step('check-libc'):
         run_command(['ninja', 'check-libc'])
+
 
 @contextmanager
 def step(step_name, halt_on_fail=False):
