@@ -98,12 +98,6 @@ function build_lam_linux {
   )
 }
 
-build_qemu qemu https://github.com/vitalybuka/qemu.git origin/sanitizer_bot
-[[ -z "$SKIP_HWASAN_LAM" ]] && (
-  build_qemu lam_qemu https://github.com/morehouse/qemu.git origin/lam
-  build_lam_linux
-)
-
 SCUDO_BUILDS=
 
 function configure_scudo_compiler_rt {
@@ -341,7 +335,10 @@ function setup_lam_qemu_image {
 
 ([[ -z "$SKIP_HWASAN_LAM" ]] && setup_lam_qemu_image) || SKIP_HWASAN_LAM=1
 
+build_qemu qemu https://github.com/vitalybuka/qemu.git origin/sanitizer_bot
 [[ -z "$SKIP_HWASAN_LAM" ]] && (
+  build_qemu lam_qemu https://github.com/morehouse/qemu.git origin/lam
+  build_lam_linux
   # Symbolizer only required for HWASan LAM tests.
   build_llvm_symbolizer
   run_hwasan_lam_tests
