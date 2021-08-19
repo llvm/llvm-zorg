@@ -297,20 +297,17 @@ function configure_hwasan_lam {
 
   (
     cd ${out_dir}
-
-    (
-      cmake \
-        ${CMAKE_COMMON_OPTIONS} \
-        -DLLVM_ENABLE_PROJECTS="clang;compiler-rt;lld;libcxx;libcxxabi" \
-        -DCMAKE_C_COMPILER=${COMPILER_BIN_DIR}/clang \
-        -DCMAKE_CXX_COMPILER=${COMPILER_BIN_DIR}/clang++ \
-        -DLLVM_ENABLE_LLD=ON \
-        -DCMAKE_BUILD_WITH_INSTALL_RPATH=ON \
-        -DLLVM_LIT_ARGS="-v --time-tests" \
-        -DCOMPILER_RT_EMULATOR="env ROOT=${ROOT} QEMU_IMAGE_DIR=${QEMU_IMAGE_DIR} ${script}" \
-        $LLVM
-     ) >& configure.log
-  ) &
+    cmake \
+      ${CMAKE_COMMON_OPTIONS} \
+      -DLLVM_ENABLE_PROJECTS="clang;compiler-rt;lld;libcxx;libcxxabi" \
+      -DCMAKE_C_COMPILER=${COMPILER_BIN_DIR}/clang \
+      -DCMAKE_CXX_COMPILER=${COMPILER_BIN_DIR}/clang++ \
+      -DLLVM_ENABLE_LLD=ON \
+      -DCMAKE_BUILD_WITH_INSTALL_RPATH=ON \
+      -DLLVM_LIT_ARGS="-v --time-tests" \
+      -DCOMPILER_RT_EMULATOR="env ROOT=${ROOT} QEMU_IMAGE_DIR=${QEMU_IMAGE_DIR} ${script}" \
+      $LLVM
+  ) || echo "@@@STEP_FAILURE@@@"
 }
 
 function run_hwasan_lam_tests {
@@ -321,8 +318,6 @@ function run_hwasan_lam_tests {
 
   (
     cd ${out_dir}
-
-    cat configure.log
 
     # LLD must be built first since HWASan tests use -fuse-ld=lld and the
     # buildbots don't have LLD preinstalled.
