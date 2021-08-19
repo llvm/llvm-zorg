@@ -286,6 +286,8 @@ function build_lam_linux {
 }
 
 function configure_hwasan_lam {
+  echo "@@@BUILD_STEP configure hwasan@@@"
+
   git_clone_at_revision sanitizers https://github.com/google/sanitizers.git \
     origin/master ""
   local script="${ROOT}/sanitizers/hwaddress-sanitizer/run_in_qemu_with_lam.sh"
