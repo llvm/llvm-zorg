@@ -232,7 +232,8 @@ function run_tests_sharded {
   LOGS=
   for ((SHARD=0; SHARD < $NUM_SHARDS; SHARD++)); do
     LOG=${_log_prefix}_$SHARD
-    local ENV="$_env GTEST_TOTAL_SHARDS=$NUM_SHARDS GTEST_SHARD_INDEX=$SHARD LD_LIBRARY_PATH=$DEVICE_ROOT"
+    # 'adb shell <command>' on Fugu is missing TMPDIR.
+    local ENV="$_env GTEST_TOTAL_SHARDS=$NUM_SHARDS GTEST_SHARD_INDEX=$SHARD LD_LIBRARY_PATH=$DEVICE_ROOT TMPDIR=$DEVICE_TMPDIR"
     ( (run_command_on_device "$ENV $DEVICE_ROOT/$_test" || echo @@@STEP_FAILURE@@@) 2>&1 >${_log_prefix}_$SHARD ) &
     LOGS="$LOGS $LOG,$!"
   done
@@ -255,6 +256,7 @@ function test_arch_on_device {
   local RT_DIR=$($ROOT/llvm_build64/bin/clang -print-resource-dir)/lib/linux
   local COMPILER_RT_BUILD_DIR=$ROOT/compiler_rt_build_android_$_arch
   export ADB=adb
+  export DEVICE_TMPDIR=/data/local/tmp
   export DEVICE_ROOT=/data/local/tmp/Output
   export ANDROID_SERIAL=$_serial
   echo "Serial $_serial"
