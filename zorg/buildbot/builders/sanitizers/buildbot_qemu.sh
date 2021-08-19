@@ -76,28 +76,6 @@ function build_qemu {
   )
 }
 
-function build_lam_linux {
-  local build_dir="${ROOT}/lam_linux_build"
-
-  echo "@@@BUILD_STEP build lam linux@@@"
-  (
-    git_clone_at_revision lam_linux https://github.com/morehouse/linux.git \
-      origin/lam ${build_dir} || exit 1
-
-    ls ${build_dir}/arch/x86_64/boot/bzImage && exit 0
-
-    rm -rf ${build_dir} &&
-    mkdir -p ${build_dir} &&
-    cd ${ROOT}/lam_linux &&
-    make O=${build_dir} LD=ld.bfd defconfig &&
-    make O=${build_dir} LD=ld.bfd -j $(nproc) &&
-    ls ${build_dir}/arch/x86_64/boot/bzImage
-  ) || (
-    echo "@@@STEP_EXCEPTION@@@"
-    exit 2
-  )
-}
-
 SCUDO_BUILDS=
 
 function configure_scudo_compiler_rt {
@@ -185,34 +163,6 @@ function configure_llvm_symbolizer {
   ) &
 }
 
-function configure_hwasan_lam {
-  git_clone_at_revision sanitizers https://github.com/google/sanitizers.git \
-    origin/master ""
-  local script="${ROOT}/sanitizers/hwaddress-sanitizer/run_in_qemu_with_lam.sh"
-  ls ${script}
-
-  local out_dir=llvm_build2_x86_64_lam_qemu
-  rm -rf ${out_dir}
-  mkdir -p ${out_dir}
-
-  (
-    cd ${out_dir}
-
-    (
-      cmake \
-        ${CMAKE_COMMON_OPTIONS} \
-        -DLLVM_ENABLE_PROJECTS="clang;compiler-rt;lld;libcxx;libcxxabi" \
-        -DCMAKE_C_COMPILER=${COMPILER_BIN_DIR}/clang \
-        -DCMAKE_CXX_COMPILER=${COMPILER_BIN_DIR}/clang++ \
-        -DLLVM_ENABLE_LLD=ON \
-        -DCMAKE_BUILD_WITH_INSTALL_RPATH=ON \
-        -DLLVM_LIT_ARGS="-v --time-tests" \
-        -DCOMPILER_RT_EMULATOR="env ROOT=${ROOT} QEMU_IMAGE_DIR=${QEMU_IMAGE_DIR} ${script}" \
-        $LLVM
-     ) >& configure.log
-  ) &
-}
-
 function run_scudo_tests {
   local name="${1}"
   local out_dir=llvm_build2_${name}
@@ -243,25 +193,6 @@ function build_llvm_symbolizer {
   ) || echo "@@@STEP_FAILURE@@@"
 }
 
-function run_hwasan_lam_tests {
-  local name="x86_64_lam_qemu"
-  local out_dir=llvm_build2_${name}
-
-  echo "@@@BUILD_STEP hwasan ${name}@@@"
-
-  (
-    cd ${out_dir}
-
-    cat configure.log
-
-    # LLD must be built first since HWASan tests use -fuse-ld=lld and the
-    # buildbots don't have LLD preinstalled.
-    ninja lld || exit 3
-
-    ninja check-hwasan-lam || exit 3
-  ) || echo "@@@STEP_FAILURE@@@"
-}
-
 echo "@@@BUILD_STEP configure@@@"
 
 for DBG in OFF ON ; do
@@ -277,7 +208,6 @@ for DBG in OFF ON ; do
   configure_scudo_compiler_rt powerpc64le
 done
 configure_llvm_symbolizer
-[[ -z "$SKIP_HWASAN_LAM" ]] && configure_hwasan_lam
 
 wait
 
@@ -333,13 +263,82 @@ function setup_lam_qemu_image {
   )
 }
 
+function build_lam_linux {
+  local build_dir="${ROOT}/lam_linux_build"
+
+  echo "@@@BUILD_STEP build lam linux@@@"
+  (
+    git_clone_at_revision lam_linux https://github.com/morehouse/linux.git \
+      origin/lam ${build_dir} || exit 1
+
+    ls ${build_dir}/arch/x86_64/boot/bzImage && exit 0
+
+    rm -rf ${build_dir} &&
+    mkdir -p ${build_dir} &&
+    cd ${ROOT}/lam_linux &&
+    make O=${build_dir} LD=ld.bfd defconfig &&
+    make O=${build_dir} LD=ld.bfd -j $(nproc) &&
+    ls ${build_dir}/arch/x86_64/boot/bzImage
+  ) || (
+    echo "@@@STEP_EXCEPTION@@@"
+    exit 2
+  )
+}
+
+function configure_hwasan_lam {
+  git_clone_at_revision sanitizers https://github.com/google/sanitizers.git \
+    origin/master ""
+  local script="${ROOT}/sanitizers/hwaddress-sanitizer/run_in_qemu_with_lam.sh"
+  ls ${script}
+
+  local out_dir=llvm_build2_x86_64_lam_qemu
+  rm -rf ${out_dir}
+  mkdir -p ${out_dir}
+
+  (
+    cd ${out_dir}
+
+    (
+      cmake \
+        ${CMAKE_COMMON_OPTIONS} \
+        -DLLVM_ENABLE_PROJECTS="clang;compiler-rt;lld;libcxx;libcxxabi" \
+        -DCMAKE_C_COMPILER=${COMPILER_BIN_DIR}/clang \
+        -DCMAKE_CXX_COMPILER=${COMPILER_BIN_DIR}/clang++ \
+        -DLLVM_ENABLE_LLD=ON \
+        -DCMAKE_BUILD_WITH_INSTALL_RPATH=ON \
+        -DLLVM_LIT_ARGS="-v --time-tests" \
+        -DCOMPILER_RT_EMULATOR="env ROOT=${ROOT} QEMU_IMAGE_DIR=${QEMU_IMAGE_DIR} ${script}" \
+        $LLVM
+     ) >& configure.log
+  ) &
+}
+
+function run_hwasan_lam_tests {
+  local name="x86_64_lam_qemu"
+  local out_dir=llvm_build2_${name}
+
+  echo "@@@BUILD_STEP hwasan ${name}@@@"
+
+  (
+    cd ${out_dir}
+
+    cat configure.log
+
+    # LLD must be built first since HWASan tests use -fuse-ld=lld and the
+    # buildbots don't have LLD preinstalled.
+    ninja lld || exit 3
+
+    ninja check-hwasan-lam || exit 3
+  ) || echo "@@@STEP_FAILURE@@@"
+}
+
 ([[ -z "$SKIP_HWASAN_LAM" ]] && setup_lam_qemu_image) || SKIP_HWASAN_LAM=1
 
 build_qemu qemu https://github.com/vitalybuka/qemu.git origin/sanitizer_bot
 [[ -z "$SKIP_HWASAN_LAM" ]] && (
   build_qemu lam_qemu https://github.com/morehouse/qemu.git origin/lam
   build_lam_linux
-  # Symbolizer only required for HWASan LAM tests.
+  configure_hwasan_lam
   build_llvm_symbolizer
   run_hwasan_lam_tests
 )
