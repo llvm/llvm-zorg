@@ -18,55 +18,6 @@ clobber
 
 buildbot_update
 
-set +x # Avoid echoing STEP_FAILURE because of the command trace.
-MISSING_QEMU_IMAGE_MESSAGE=$(cat << 'EOF'
-=====================================================================
-Looks like you're missing the QEMU system images for x86_64 LAM
-HWASan testing. These system images aren't automatically generated
-as part of the buildbot script because they require root (sorry!).
-
-If you have the system images already built, you can run
-buildbot_qemu.sh with QEMU_IMAGE_DIR=path/to/qemu/images. Otherwise,
-you can build the images (only necessary once-per-clobber) by:
- 1. WARNING: Read the script at https://github.com/google/sanitizers/blob/master/hwaddress-sanitizer/create_qemu_image.sh
-    You're running this as ROOT, so make sure you're comfortable with
-    that.
- 2. In your terminal, run:
-      $ sudo su -c "bash <(wget -qO- https://raw.githubusercontent.com/google/sanitizers/master/hwaddress-sanitizer/create_qemu_image.sh)" root && \
-        sudo chown $(whoami) debian.*
-
-You can also choose to skip the x86_64 HWASan LAM testing by supplying
-SKIP_HWASAN_LAM=true in your invocation of this script.
-=====================================================================
-@@@STEP_EXCEPTION@@@
-EOF
-)
-set -x
-
-SKIP_HWASAN_LAM=${SKIP_HWASAN_LAM:-}
-
-function setup_lam_qemu_image {
-  # Full system emulation is required for x86_64 testing with LAM, as some
-  # sanitizers aren't friendly with usermode emulation under x86_64 LAM.
-  echo @@@BUILD_STEP Check x86_64 LAM Prerequisites@@@
-
-  # Allow specifying the QEMU image dir, otherwise assume in the local dir.
-  QEMU_IMAGE_DIR=${QEMU_IMAGE_DIR:=${ROOT}}
-
-  # Ensure the buildbot start script created a QEMU image for us.
-  (
-    ls ${QEMU_IMAGE_DIR}/debian.img
-    ls ${QEMU_IMAGE_DIR}/debian.id_rsa
-  ) ||
-  (
-    # Make the "missing file" error clearer by not effectively echoing twice.
-    set +x
-    echo "$MISSING_QEMU_IMAGE_MESSAGE"
-    exit 1
-  )
-}
-
-([[ -z "$SKIP_HWASAN_LAM" ]] && setup_lam_qemu_image) || SKIP_HWASAN_LAM=1
 build_stage1_clang
 
 COMPILER_BIN_DIR=$(readlink -f ${STAGE1_DIR})/bin
@@ -339,6 +290,56 @@ wait
 for B in $SCUDO_BUILDS ; do
   run_scudo_tests $B
 done
+
+set +x # Avoid echoing STEP_FAILURE because of the command trace.
+MISSING_QEMU_IMAGE_MESSAGE=$(cat << 'EOF'
+=====================================================================
+Looks like you're missing the QEMU system images for x86_64 LAM
+HWASan testing. These system images aren't automatically generated
+as part of the buildbot script because they require root (sorry!).
+
+If you have the system images already built, you can run
+buildbot_qemu.sh with QEMU_IMAGE_DIR=path/to/qemu/images. Otherwise,
+you can build the images (only necessary once-per-clobber) by:
+ 1. WARNING: Read the script at https://github.com/google/sanitizers/blob/master/hwaddress-sanitizer/create_qemu_image.sh
+    You're running this as ROOT, so make sure you're comfortable with
+    that.
+ 2. In your terminal, run:
+      $ sudo su -c "bash <(wget -qO- https://raw.githubusercontent.com/google/sanitizers/master/hwaddress-sanitizer/create_qemu_image.sh)" root && \
+        sudo chown $(whoami) debian.*
+
+You can also choose to skip the x86_64 HWASan LAM testing by supplying
+SKIP_HWASAN_LAM=true in your invocation of this script.
+=====================================================================
+@@@STEP_EXCEPTION@@@
+EOF
+)
+set -x
+
+SKIP_HWASAN_LAM=${SKIP_HWASAN_LAM:-}
+
+function setup_lam_qemu_image {
+  # Full system emulation is required for x86_64 testing with LAM, as some
+  # sanitizers aren't friendly with usermode emulation under x86_64 LAM.
+  echo @@@BUILD_STEP Check x86_64 LAM Prerequisites@@@
+
+  # Allow specifying the QEMU image dir, otherwise assume in the local dir.
+  QEMU_IMAGE_DIR=${QEMU_IMAGE_DIR:=${ROOT}}
+
+  # Ensure the buildbot start script created a QEMU image for us.
+  (
+    ls ${QEMU_IMAGE_DIR}/debian.img
+    ls ${QEMU_IMAGE_DIR}/debian.id_rsa
+  ) ||
+  (
+    # Make the "missing file" error clearer by not effectively echoing twice.
+    set +x
+    echo "$MISSING_QEMU_IMAGE_MESSAGE"
+    exit 1
+  )
+}
+
+([[ -z "$SKIP_HWASAN_LAM" ]] && setup_lam_qemu_image) || SKIP_HWASAN_LAM=1
 
 [[ -z "$SKIP_HWASAN_LAM" ]] && (
   # Symbolizer only required for HWASan LAM tests.
