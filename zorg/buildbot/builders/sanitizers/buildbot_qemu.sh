@@ -18,6 +18,8 @@ clobber
 
 buildbot_update
 
+build_stage1_clang
+
 set +x # Avoid echoing STEP_FAILURE because of the command trace.
 MISSING_QEMU_IMAGE_MESSAGE=$(cat << 'EOF'
 =====================================================================
@@ -67,7 +69,6 @@ function setup_lam_qemu_image {
 }
 
 ([[ -z "$SKIP_HWASAN_LAM" ]] && setup_lam_qemu_image) || SKIP_HWASAN_LAM=1
-build_stage1_clang
 
 COMPILER_BIN_DIR=$(readlink -f ${STAGE1_DIR})/bin
 
