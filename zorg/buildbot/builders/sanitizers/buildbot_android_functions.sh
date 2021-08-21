@@ -56,7 +56,7 @@ function configure_android { # ARCH triple
 
   local ANDROID_LIBRARY_OUTPUT_DIR=$(ls -d $ROOT/llvm_build64/lib/clang/* | tail -1)
   local ANDROID_EXEC_OUTPUT_DIR=$ROOT/llvm_build64/bin
-  local ANDROID_FLAGS="--target=${_triple}${ANDROID_API} --sysroot=$ANDROID_TOOLCHAIN/sysroot -gcc-toolchain $ANDROID_TOOLCHAIN  -B$ANDROID_TOOLCHAIN"
+  local ANDROID_FLAGS="--target=${_triple}${ANDROID_API} --sysroot=$ANDROID_TOOLCHAIN/sysroot -gcc-toolchain=$ANDROID_TOOLCHAIN  -B$ANDROID_TOOLCHAIN"
   local ANDROID_CXX_FLAGS="$ANDROID_FLAGS -stdlib=libc++ -I/$ANDROID_TOOLCHAIN/sysroot/usr/include/c++/v1"
 
   local CLANG_PATH=$ROOT/llvm_build64/bin/clang
