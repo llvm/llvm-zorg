@@ -1366,7 +1366,7 @@ all = [
                             "-DLLVM_ENABLE_RUNTIMES=openmp",
                             ],
                         install=True,
-                        testsuite=True,
+                        testsuite=False,
                         testsuite_sollvevv=False,
                         extraTestsuiteCmakeArgs=[
                             "-DTEST_SUITE_SOLLVEVV_OFFLOADING_CFLAGS=-fopenmp-targets=amdgcn-amd-amdhsa;-Xopenmp-target=amdgcn-amd-amdhsa",
