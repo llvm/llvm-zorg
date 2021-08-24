@@ -45,8 +45,10 @@ def main(argv):
         cmake_args.append('-DLLVM_ENABLE_PROJECTS={}'.format(';'.join(projects)))
 
         if fullbuild:
+            projects.append('compiler-rt')
             cmake_args.extend(['-DLLVM_LIBC_FULL_BUILD=ON',
-                               '-DLLVM_LIBC_ENABLE_LINTING=ON'])
+                               '-DLLVM_LIBC_ENABLE_LINTING=ON',
+                               '-DLLVM_LIBC_INCLUDE_SCUDO=ON'])
 
         run_command(['cmake', os.path.join(source_dir, 'llvm')] + cmake_args)
 
@@ -63,6 +65,8 @@ def main(argv):
             run_command(['ninja', 'libc-integration-test'])
         with step('libc-fuzzer'):
             run_command(['ninja', 'libc-fuzzer'])
+        with step('libc-scudo-integration-test'):
+            run_command(['ninja', 'libc-scudo-integration-test'])
         with step('AOR Tests'):
             aor_dir = os.path.join(source_dir, 'libc', 'AOR_v20.02')
             # Remove the AOR build dir.
