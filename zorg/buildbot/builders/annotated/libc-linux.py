@@ -42,15 +42,17 @@ def main(argv):
         if args.asan:
             cmake_args.append('-DLLVM_USE_SANITIZER=Address')
 
-        if fullbuild:
+        if fullbuild and not args.asan:
             projects.append('compiler-rt')
 
         cmake_args.append('-DLLVM_ENABLE_PROJECTS={}'.format(';'.join(projects)))
 
+        if fullbuild and not args.asan:
+            cmake_args.append('-DLLVM_LIBC_INCLUDE_SCUDO=ON')
+
         if fullbuild:
             cmake_args.extend(['-DLLVM_LIBC_FULL_BUILD=ON',
-                               '-DLLVM_LIBC_ENABLE_LINTING=ON',
-                               '-DLLVM_LIBC_INCLUDE_SCUDO=ON'])
+                               '-DLLVM_LIBC_ENABLE_LINTING=ON'])
 
         run_command(['cmake', os.path.join(source_dir, 'llvm')] + cmake_args)
 
