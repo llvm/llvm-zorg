@@ -1357,7 +1357,7 @@ all = [
     'factory' : OpenMPBuilder.getOpenMPCMakeBuildFactory(
                         clean=False,
                         enable_runtimes=[],
-                        depends_on_projects=['llvm','clang','lld'],
+                        depends_on_projects=['llvm','clang','lld','openmp'],
                         extraCmakeArgs=[
                             "-DCMAKE_BUILD_TYPE=Release",
                             "-DCLANG_DEFAULT_LINKER=lld",
