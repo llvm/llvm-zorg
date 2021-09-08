@@ -453,7 +453,48 @@ all = [
                         "-DCMAKE_C_FLAGS='-mcpu=cortex-a57'",
                         "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a57'"])},
 
-    # AArch64 Clang+LLVM+RT+LLD check-all + flang + test-suite w/SVE
+
+    # AArch64 Clang+LLVM+RT+LLD check-all + flang + test-suite w/SVE-Vector-Length-Agnostic
+    # Note that in this and other clang-aarch64-sve-* builders we set
+    # -mllvm -treat-scalable-fixed-error-as-warning=false to make compiler
+    # fail on non-critical SVE codegen issues.  This helps us notice and fix
+    # SVE problems sooner rather than later.
+    {'name' : "clang-aarch64-sve-vla",
+    'tags'  : ["clang"],
+    'workernames' : ["linaro-clang-aarch64-sve-vla"],
+    'builddir': "clang-aarch64-sve-vla",
+    'factory' : ClangBuilder.getClangCMakeBuildFactory(
+                    clean=False,
+                    checkout_flang=True,
+                    runTestSuite=True,
+                    testsuite_flags=[
+                        '--cppflags', '-mcpu=a64fx -mllvm -scalable-vectorization=preferred -mllvm -treat-scalable-fixed-error-as-warning=false',
+                        '--threads=48', '--build-threads=48'],
+                    extra_cmake_args=[
+                        "-DCMAKE_C_FLAGS='-mcpu=a64fx'",
+                        "-DCMAKE_CXX_FLAGS='-mcpu=a64fx'",
+                        "-DLLVM_ENABLE_LLD=True"])},
+
+    # AArch64 Clang+LLVM+RT+LLD check-all + flang + test-suite 2-stage w/SVE-Vector-Length-Agnostic
+    {'name' : "clang-aarch64-sve-vla-2stage",
+    'tags'  : ["clang"],
+    'workernames' : ["linaro-clang-aarch64-sve-vla-2stage"],
+    'builddir': "clang-aarch64-sve-vla-2stage",
+    'factory' : ClangBuilder.getClangCMakeBuildFactory(
+                    clean=False,
+                    checkout_flang=True,
+                    useTwoStage=True,
+                    testStage1=False,
+                    runTestSuite=True,
+                    testsuite_flags=[
+                        '--cppflags', '-mcpu=a64fx -mllvm -scalable-vectorization=preferred -mllvm -treat-scalable-fixed-error-as-warning=false',
+                        '--threads=48', '--build-threads=48'],
+                    extra_cmake_args=[
+                        "-DCMAKE_C_FLAGS='-mcpu=a64fx -mllvm -scalable-vectorization=preferred -mllvm -treat-scalable-fixed-error-as-warning=false'",
+                        "-DCMAKE_CXX_FLAGS='-mcpu=a64fx -mllvm -scalable-vectorization=preferred -mllvm -treat-scalable-fixed-error-as-warning=false'",
+                        "-DLLVM_ENABLE_LLD=True"])},
+
+    # AArch64 Clang+LLVM+RT+LLD check-all + flang + test-suite w/SVE-Vector-Length-Specific
     {'name' : "clang-aarch64-sve-vls",
     'tags'  : ["clang"],
     'workernames' : ["linaro-clang-aarch64-sve-vls"],
@@ -463,14 +504,14 @@ all = [
                     checkout_flang=True,
                     runTestSuite=True,
                     testsuite_flags=[
-                        '--cppflags', '-mcpu=a64fx -mllvm -aarch64-sve-vector-bits-min=512',
+                        '--cppflags', '-mcpu=a64fx -msve-vector-bits=512 -mllvm -treat-scalable-fixed-error-as-warning=false',
                         '--threads=48', '--build-threads=48'],
                     extra_cmake_args=[
                         "-DCMAKE_C_FLAGS='-mcpu=a64fx'",
                         "-DCMAKE_CXX_FLAGS='-mcpu=a64fx'",
                         "-DLLVM_ENABLE_LLD=True"])},
 
-    # AArch64 Clang+LLVM+RT+LLD check-all + flang + test-suite 2-stage w/SVE
+    # AArch64 Clang+LLVM+RT+LLD check-all + flang + test-suite 2-stage w/SVE-Vector-Length-Specific
     {'name' : "clang-aarch64-sve-vls-2stage",
     'tags'  : ["clang"],
     'workernames' : ["linaro-clang-aarch64-sve-vls-2stage"],
@@ -482,11 +523,11 @@ all = [
                     testStage1=False,
                     runTestSuite=True,
                     testsuite_flags=[
-                        '--cppflags', '-mcpu=a64fx -mllvm -aarch64-sve-vector-bits-min=512',
+                        '--cppflags', '-mcpu=a64fx -msve-vector-bits=512 -mllvm -treat-scalable-fixed-error-as-warning=false',
                         '--threads=48', '--build-threads=48'],
                     extra_cmake_args=[
-                        "-DCMAKE_C_FLAGS='-mcpu=a64fx -mllvm -aarch64-sve-vector-bits-min=512'",
-                        "-DCMAKE_CXX_FLAGS='-mcpu=a64fx -mllvm -aarch64-sve-vector-bits-min=512'",
+                        "-DCMAKE_C_FLAGS='-mcpu=a64fx -msve-vector-bits=512 -mllvm -treat-scalable-fixed-error-as-warning=false'",
+                        "-DCMAKE_CXX_FLAGS='-mcpu=a64fx -msve-vector-bits=512 -mllvm -treat-scalable-fixed-error-as-warning=false'",
                         "-DLLVM_ENABLE_LLD=True"])},
 
     {'name' : "clang-arm64-windows-msvc-2stage",
