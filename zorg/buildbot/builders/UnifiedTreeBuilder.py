@@ -1,3 +1,4 @@
+from zorg.buildbot.commands.AnnotatedCommand import HALT_ON_FAILURE
 from buildbot.plugins import steps, util
 from buildbot.steps.shell import SetPropertyFromCommand
 from buildbot.process.properties import WithProperties
@@ -240,6 +241,51 @@ def addNinjaSteps(
                                **kwargs # Pass through all the extra arguments.
                                ))
 
+def addTestSuiteStep(
+            f,
+            compiler_dir = None,
+            jobs = None,
+            env = None,
+            lit_args = [],
+            **kwargs):
+
+    cc = util.Interpolate('-DCMAKE_C_COMPILER=' + '%(prop:builddir)s/'+compiler_dir+'/bin/clang')
+    cxx = util.Interpolate('-DCMAKE_CXX_COMPILER=' + '%(prop:builddir)s/'+compiler_dir+'/bin/clang++')
+    lit = util.Interpolate('%(prop:builddir)s/' + compiler_dir + '/bin/llvm-lit')
+    test_suite_src_dir = util.Interpolate('%(prop:builddir)s/' + 'test/test-suite')
+    cmake_lit_arg = util.Interpolate('-DTEST_SUITE_LIT:FILEPATH=' + '%(prop:builddir)s/' + compiler_dir + '/bin/llvm-lit')
+    test_suite_workdir='test/sandbox/test-suite'
+    options = [cc, cxx, cmake_lit_arg]
+
+    f.addGetSourcecodeForProject(
+        project='test-suite',
+        src_dir=test_suite_src_dir,
+        alwaysUseLatest=True)
+
+    f.addStep(CmakeCommand(name='cmake Test Suite',
+                           haltOnFailure=True,
+                           description='Running cmake on Test Suite dir',
+                           workdir=test_suite_workdir,
+                           options=options,
+                           path=test_suite_src_dir,
+                           generator='Ninja'))
+
+    f.addStep(NinjaCommand(name='ninja Test Suite',
+                           description='Running Ninja on Test Suite dir',
+                           haltOnFailure=True,
+                           jobs=jobs,
+                           workdir=test_suite_workdir))
+
+    f.addStep(LitTestCommand(name='Run Test Suite with lit',
+                             haltOnFailure=True,
+                             description='Running test suite tests',
+                             workdir=test_suite_workdir,
+                             command=[lit] + lit_args + ['.'],
+                             env=env,
+                             **kwargs))
+
+    return f
+
 def getCmakeBuildFactory(
            depends_on_projects = None,
            enable_runtimes = None,
@@ -283,6 +329,8 @@ def getCmakeWithNinjaBuildFactory(
            clean = False,
            extra_configure_args = None,
            env = None,
+           runTestSuite = False,
+           jobs = None,
            **kwargs):
 
     # Make a local copy of the configure args, as we are going to modify that.
@@ -290,6 +338,13 @@ def getCmakeWithNinjaBuildFactory(
         cmake_args = extra_configure_args[:]
     else:
         cmake_args = list()
+
+    if runTestSuite:
+        lit_args = list()
+        if any("DLLVM_LIT_ARGS" in arg for arg in cmake_args):
+            arg = [arg for arg in cmake_args if "DLLVM_LIT_ARGS" in arg][0]
+            lit_args = arg.split("=")[1]
+            lit_args = lit_args.split(" ")
 
     if checks is None:
         checks = ['check-all']
@@ -326,6 +381,14 @@ def getCmakeWithNinjaBuildFactory(
            install_dir=f.install_dir,
            env=merged_env,
            **kwargs)
+    if runTestSuite:
+        addTestSuiteStep(
+               f,
+               compiler_dir=f.obj_dir,
+               env=merged_env,
+               jobs=jobs,
+               lit_args=lit_args,
+               **kwargs)
 
     return f
 
