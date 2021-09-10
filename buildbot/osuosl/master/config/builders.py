@@ -666,8 +666,6 @@ all = [
                     depends_on_projects=["llvm", "clang", "clang-tools-extra", "lld", "compiler-rt"],
                     checks=["check"],
                     enable_runtimes="auto",
-                    runTestSuite=True,
-                    jobs=96,
                     extra_configure_args=[
                         "-DLLVM_ENABLE_ASSERTIONS=On", "-DCMAKE_C_COMPILER=clang",
                         "-DCMAKE_CXX_COMPILER=clang++",

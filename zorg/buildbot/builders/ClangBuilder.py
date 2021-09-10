@@ -150,7 +150,6 @@ def getClangCMakeBuildFactory(
 
             # Test-suite
             runTestSuite=False,
-            cmakeTestSuite=False,
             nt_flags=None,
             testsuite_flags=None,
             submitURL=None,
@@ -180,8 +179,7 @@ def getClangCMakeBuildFactory(
                checkout_compiler_rt=checkout_compiler_rt,
                checkout_libcxx=checkout_libcxx,
                checkout_flang=checkout_flang,
-               checkout_test_suite=checkout_test_suite,
-               cmakeTestSuite=cmakeTestSuite)
+               checkout_test_suite=checkout_test_suite)
 
 def _getClangCMakeBuildFactory(
             clean=True,
@@ -206,7 +204,6 @@ def _getClangCMakeBuildFactory(
             testsuite_flags=None,
             submitURL=None,
             testerName=None,
-            cmakeTestSuite=False,
 
             # Environmental variables for all steps.
             env=None,
@@ -468,13 +465,10 @@ def _getClangCMakeBuildFactory(
                                    workdir=stage2_build,
                                    env=env))
 
-        if not cmakeTestSuite:
-            # Get generated python, lnt
-            python = WithProperties('%(builddir)s/test/sandbox/bin/python')
-            lnt = WithProperties('%(builddir)s/test/sandbox/bin/lnt')
-            lnt_setup = WithProperties('%(builddir)s/test/lnt/setup.py')
-        else:
-            lit = WithProperties('%(builddir)s/'+stage1_build+'/bin/llvm-lit')
+        # Get generated python, lnt
+        python = WithProperties('%(builddir)s/test/sandbox/bin/python')
+        lnt = WithProperties('%(builddir)s/test/sandbox/bin/lnt')
+        lnt_setup = WithProperties('%(builddir)s/test/lnt/setup.py')
 
         # Paths
         sandbox = WithProperties('%(builddir)s/test/sandbox')
@@ -487,7 +481,7 @@ def _getClangCMakeBuildFactory(
         # LNT Command line (don't pass -jN. Users need to pass both --threads
         # and --build-threads in nt_flags/test_suite_flags to get the same effect)
         use_runtest_testsuite = len(nt_flags) == 0
-        if not use_runtest_testsuite and not cmakeTestSuite:
+        if not use_runtest_testsuite:
             test_suite_cmd = [python, lnt, 'runtest', 'nt',
                               '--no-timestamp',
                               '--sandbox', sandbox,
@@ -496,7 +490,7 @@ def _getClangCMakeBuildFactory(
                               '--cxx', cxx]
             # Append any option provided by the user
             test_suite_cmd.extend(nt_flags)
-        elif not cmakeTestSuite:
+        else:
             lit = WithProperties('%(builddir)s/'+stage1_build+'/bin/llvm-lit')
             test_suite_cmd = [python, lnt, 'runtest', 'test-suite',
                               '--no-timestamp',
@@ -543,44 +537,22 @@ def _getClangCMakeBuildFactory(
                                description='recreating sandbox',
                                workdir='test',
                                env=env))
-
-        if not cmakeTestSuite:
-            f.addStep(ShellCommand(name='setup lit',
-                                    command=[python, lnt_setup, 'develop'],
-                                    haltOnFailure=True,
-                                    description='setting up LNT in sandbox',
-                                    workdir='test/sandbox',
-                                    env=env))
-            f.addStep(LitTestCommand(
-                                    name='test-suite',
-                                    command=test_suite_cmd,
-                                    haltOnFailure=True,
-                                    description=['running the test suite'],
-                                    workdir='test/sandbox',
-                                    logfiles={'configure.log'   : 'build/configure.log',
-                                                'build-tools.log' : 'build/build-tools.log',
-                                                'test.log'        : 'build/test.log',
-                                                'report.json'     : 'build/report.json'},
-                                    env=test_suite_env))
-        else:
-            f.addStep(ShellCommand(name='cmake Test Suite',
-                                    haltOnFailure=True,
-                                    description='Running cmake on Test Suite dir',
-                                    workdir='test/sandbox/test-suite',
-                                    command=[cmake, '-G', 'Unix Makefiles',
-                                    util.Interpolate('-DCMAKE_C_COMPILER=' + '%(prop:builddir)s/'+compiler_path+'/bin/clang'),
-                                    util.Interpolate('-DCMAKE_CXX_COMPILER=' + '%(prop:builddir)s/'+compiler_path+'/bin/clang++'),
-                                    '-DTEST_SUITE_LIT:FILEPATH=llvm-lit',
-                                    test_suite_dir]))
-            f.addStep(ShellCommand(name='make Test Suite',
-                                    command=['make', '-k', '-j20'],
-                                    haltOnFailure=True,
-                                    description='Running Ninja on Test Suite dir',
-                                    workdir='test/sandbox/test-suite'))
-            f.addStep(ShellCommand(name='Run Test Suite with lit',
-                                    haltOnFailure=True,
-                                    description='Running test suite tests',
-                                    workdir='test/sandbox/test-suite',
-                                    command=[lit, '-v', '-j20', '.']))
+        f.addStep(ShellCommand(name='setup lit',
+                               command=[python, lnt_setup, 'develop'],
+                               haltOnFailure=True,
+                               description='setting up LNT in sandbox',
+                               workdir='test/sandbox',
+                               env=env))
+        f.addStep(LitTestCommand(
+                               name='test-suite',
+                               command=test_suite_cmd,
+                               haltOnFailure=True,
+                               description=['running the test suite'],
+                               workdir='test/sandbox',
+                               logfiles={'configure.log'   : 'build/configure.log',
+                                         'build-tools.log' : 'build/build-tools.log',
+                                         'test.log'        : 'build/test.log',
+                                         'report.json'     : 'build/report.json'},
+                               env=test_suite_env))
 
     return f
