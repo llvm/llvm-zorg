@@ -468,7 +468,7 @@ all = [
                     checkout_flang=True,
                     runTestSuite=True,
                     testsuite_flags=[
-                        '--cppflags', '-mcpu=a64fx -mllvm -scalable-vectorization=preferred -mllvm -treat-scalable-fixed-error-as-warning=false',
+                        '--cppflags', '-mcpu=a64fx -mllvm -scalable-vectorization=preferred -mllvm -treat-scalable-fixed-error-as-warning=false -O3',
                         '--threads=48', '--build-threads=48'],
                     extra_cmake_args=[
                         "-DCMAKE_C_FLAGS='-mcpu=a64fx'",
@@ -487,7 +487,7 @@ all = [
                     testStage1=False,
                     runTestSuite=True,
                     testsuite_flags=[
-                        '--cppflags', '-mcpu=a64fx -mllvm -scalable-vectorization=preferred -mllvm -treat-scalable-fixed-error-as-warning=false',
+                        '--cppflags', '-mcpu=a64fx -mllvm -scalable-vectorization=preferred -mllvm -treat-scalable-fixed-error-as-warning=false -O3',
                         '--threads=48', '--build-threads=48'],
                     extra_cmake_args=[
                         "-DCMAKE_C_FLAGS='-mcpu=a64fx -mllvm -scalable-vectorization=preferred -mllvm -treat-scalable-fixed-error-as-warning=false'",
@@ -504,7 +504,7 @@ all = [
                     checkout_flang=True,
                     runTestSuite=True,
                     testsuite_flags=[
-                        '--cppflags', '-mcpu=a64fx -msve-vector-bits=512 -mllvm -treat-scalable-fixed-error-as-warning=false',
+                        '--cppflags', '-mcpu=a64fx -msve-vector-bits=512 -mllvm -treat-scalable-fixed-error-as-warning=false -O3',
                         '--threads=48', '--build-threads=48'],
                     extra_cmake_args=[
                         "-DCMAKE_C_FLAGS='-mcpu=a64fx'",
@@ -523,7 +523,7 @@ all = [
                     testStage1=False,
                     runTestSuite=True,
                     testsuite_flags=[
-                        '--cppflags', '-mcpu=a64fx -msve-vector-bits=512 -mllvm -treat-scalable-fixed-error-as-warning=false',
+                        '--cppflags', '-mcpu=a64fx -msve-vector-bits=512 -mllvm -treat-scalable-fixed-error-as-warning=false -O3',
                         '--threads=48', '--build-threads=48'],
                     extra_cmake_args=[
                         "-DCMAKE_C_FLAGS='-mcpu=a64fx -msve-vector-bits=512 -mllvm -treat-scalable-fixed-error-as-warning=false'",
