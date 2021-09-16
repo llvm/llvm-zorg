@@ -57,6 +57,13 @@ all = [
         builders = ["clang-x86_64-debian-fast"]),
     reporters.MailNotifier(
         fromaddr = "llvm.buildmaster@lab.llvm.org",
+        sendToInterestedUsers = False,
+        extraRecipients = ["tbaeder@redhat.com", "tstellar@redhat.com"],
+        subject = "Build %(builder)s Failure",
+        mode = "failing",
+        builders = ["llvm-x86_64-debian-dylib"]),
+    reporters.MailNotifier(
+        fromaddr = "llvm.buildmaster@lab.llvm.org",
         sendToInterestedUsers =  False,
         extraRecipients = ["mstester.llvm@gmail.com"],
         subject = "Build %(builder)s Failure",
