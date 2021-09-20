@@ -242,7 +242,7 @@ function build_stage3 {
   (cd ${build_dir} && \
    cmake \
      ${CMAKE_COMMON_OPTIONS} \
-     -DLLVM_ENABLE_PROJECTS='clang;lld,clang-tools-extra' \
+     -DLLVM_ENABLE_PROJECTS='clang;lld;clang-tools-extra' \
      -DCMAKE_C_COMPILER=${clang_path}/clang \
      -DCMAKE_CXX_COMPILER=${clang_path}/clang++ \
      -DLLVM_USE_LINKER=lld \
