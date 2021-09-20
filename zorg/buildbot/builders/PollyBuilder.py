@@ -44,9 +44,6 @@ def getPollyBuildFactory(
         merged_env.update(env)  # Overwrite pre-set items with the given ones, so user can set anything.
 
     depends_on_projects = ['llvm','clang','polly']
-    if testsuite:
-        # XRay tests in test-suite require compiler-rt
-        depends_on_projects += ['compiler-rt']
 
     cleanBuildRequestedByProperty = lambda step: step.build.getProperty("clean", False)
     cleanBuildRequested = lambda step: clean or step.build.getProperty("clean", default=step.build.getProperty("clean_obj"))
@@ -77,7 +74,6 @@ def getPollyBuildFactory(
     cmakeCommand = ["cmake", "../%s/llvm" % llvm_srcdir,
                     "-DCMAKE_COLOR_MAKEFILE=OFF",
                     "-DPOLLY_TEST_DISABLE_BAR=ON",
-                    "-DPOLLY_ENABLE_GPGPU_CODEGEN=ON",
                     "-DCMAKE_BUILD_TYPE=Release",
                     "-DLLVM_POLLY_LINK_INTO_TOOLS=ON",
                     "-DLLVM_ENABLE_PROJECTS=%s" % ";".join(f.depends_on_projects),
@@ -87,7 +83,10 @@ def getPollyBuildFactory(
                            haltOnFailure=False,
                            description=["cmake configure"],
                            workdir=llvm_objdir,
-                           env=merged_env))
+                           env=merged_env,
+                           logfiles={
+                                'CMakeCache.txt' : llvm_objdir + '/CMakeCache.txt',
+                           }))
 
     # Build
     f.addStep(WarningCountingShellCommand(name="build",
@@ -154,14 +153,13 @@ def getPollyBuildFactory(
                            haltOnFailure=False,
                            warnOnFailure=True))
 
-        # -Wno-unused-command-line-argument is needed because linking will not uses the "-mllvm -polly" argument.
+        # -Wno-unused-command-line-argument is needed because linking will not use the "-mllvm -polly" argument.
         f.addStep(ShellCommand(name='test-suite_cmake-configure',
                            description=["Test-Suite: cmake"],
                            command=["cmake", '-B', testsuite_builddir, '-S', testsuite_srcdir,
                                     "-DCMAKE_BUILD_TYPE=Release",
-                                    "-DTEST_SUITE_COLLECT_STATS=ON",
                                     "-DTEST_SUITE_EXTRA_C_FLAGS=-Wno-unused-command-line-argument -mllvm -polly",
-                                    "-DTEST_SUITE_EXTRA_CXX_FLAGS=-mllvm -polly",
+                                    "-DTEST_SUITE_EXTRA_CXX_FLAGS=-Wno-unused-command-line-argument -mllvm -polly",
                                     "-DTEST_SUITE_LIT_FLAGS=-vv;-o;report.json",
                                     WithProperties("-DCMAKE_C_COMPILER=" + clangexe),
                                     WithProperties("-DCMAKE_CXX_COMPILER=" + clangxxexe),
@@ -170,7 +168,10 @@ def getPollyBuildFactory(
                                 ] + extraTestsuiteCmakeArgs,
                            haltOnFailure=True,
                            workdir='.',
-                           env=merged_env))
+                           env=merged_env,
+                           logfiles={
+                                'CMakeCache.txt' : testsuite_builddir + '/CMakeCache.txt',
+                            }))
 
         f.addStep(WarningCountingShellCommand(name='test-suite_build',
                            description=["Test-Suite: build"],
@@ -183,7 +184,7 @@ def getPollyBuildFactory(
 
         f.addStep(LitTestCommand(name='test-suite_run',
                             description=['Test-Suite: run'],
-                            command=[WithProperties(litexe), '-vv', '-o', 'report.json', '.'],
+                            command=[WithProperties(litexe), '-vv', '-s', '-o', 'report.json', '.'],
                             haltOnFailure=True,
                             workdir=testsuite_builddir,
                             logfiles={

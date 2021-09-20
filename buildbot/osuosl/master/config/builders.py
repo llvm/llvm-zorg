@@ -907,13 +907,13 @@ all = [
                         "-DLLVM_TARGET_ARCH=arm-linux-gnueabi",
                         "-DLLVM_ENABLE_ASSERTIONS=True",
                         "-DLLVM_ENABLE_LIBCXX:BOOL=ON",
-                        "-DPOLLY_ENABLE_GPGPU_CODEGEN=OFF",  # Auto-enabled in getPollyBuildFactory
+                        "-DPOLLY_ENABLE_GPGPU_CODEGEN=OFF",
                         "-DCMAKE_C_COMPILER:FILEPATH=/local/clang+llvm-12.0.0-x86_64-linux-gnu-ubuntu-16.04/bin/clang",
                         "-DCMAKE_CXX_COMPILER:FILEPATH=/local/clang+llvm-12.0.0-x86_64-linux-gnu-ubuntu-16.04/bin/clang++"])},
 
     {'name' : "polly-x86_64-linux",
     'tags'  : ["polly"],
-    'workernames' : ["polly-x86_64-fdcserver", "polly-x86_64-gce1"],
+    'workernames' : ["polly-x86_64-gce1"],
     'builddir': "polly-x86_64-linux",
     'factory' : PollyBuilder.getPollyBuildFactory(
                     clean=False,
@@ -921,15 +921,156 @@ all = [
                     make='ninja',
                     extraCmakeArgs=[
                         "-G", "Ninja",
+                        "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
+                        "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
+                        "-DBUILD_SHARED_LIBS=ON",
                         "-DLLVM_ENABLE_ASSERTIONS=True",
                         "-DLLVM_TARGETS_TO_BUILD='X86;NVPTX'",
                         "-DCLANG_ENABLE_ARCMT=OFF",
                         "-DCLANG_ENABLE_STATIC_ANALYZER=OFF",
+                        "-DCLANG_ENABLE_OBJC_REWRITER=OFF",
+                        "-DLLVM_ENABLE_LLD=ON",
+                        "-DPOLLY_ENABLE_GPGPU_CODEGEN=ON"
+                        ])},
+
+    {'name' : "polly-x86_64-linux-plugin",
+    'tags'  : ["polly"],
+    'workernames' : ["polly-x86_64-gce1"],
+    'builddir': "polly-x86_64-linux",
+    'factory' : PollyBuilder.getPollyBuildFactory(
+                    clean=False,
+                    install=False,
+                    make='ninja',
+                    extraCmakeArgs=[
+                        "-G", "Ninja",
+                        "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
+                        "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
+                        "-DLLVM_ENABLE_ASSERTIONS=True",
+                        "-DLLVM_TARGETS_TO_BUILD='X86;NVPTX'",
+                        "-DCLANG_ENABLE_ARCMT=OFF",
+                        "-DCLANG_ENABLE_STATIC_ANALYZER=OFF",
+                        "-DCLANG_ENABLE_OBJC_REWRITER=OFF",
+                        "-DLLVM_ENABLE_LLD=ON",
+                        "-DLLVM_POLLY_LINK_INTO_TOOLS=OFF",
+                        "-DPOLLY_ENABLE_GPGPU_CODEGEN=OFF"  # Not all required symbols available in opt executable
+                        ])},
+
+    {'name' : "polly-x86_64-linux-noassert",
+    'tags'  : ["polly"],
+    'workernames' : ["polly-x86_64-gce1"],
+    'builddir': "polly-x86_64-linux-noassert",
+    'factory' : PollyBuilder.getPollyBuildFactory(
+                    clean=False,
+                    install=False,
+                    make='ninja',
+                    extraCmakeArgs=[
+                        "-G", "Ninja",
+                        "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
+                        "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
+                        "-DLLVM_ENABLE_ASSERTIONS=False",
+                        "-DLLVM_TARGETS_TO_BUILD='X86;NVPTX'",
+                        "-DCLANG_ENABLE_ARCMT=OFF",
+                        "-DCLANG_ENABLE_STATIC_ANALYZER=OFF",
+                        "-DCLANG_ENABLE_OBJC_REWRITER=OFF",
+                        "-DLLVM_ENABLE_LLD=ON",
+                        "-DPOLLY_ENABLE_GPGPU_CODEGEN=ON"
+                        ])},
+
+    {'name' : "polly-x86_64-linux-shared",
+    'tags'  : ["polly"],
+    'workernames' : ["polly-x86_64-gce2"],
+    'builddir': "polly-x86_64-linux",
+    'factory' : PollyBuilder.getPollyBuildFactory(
+                    clean=False,
+                    install=False,
+                    make='ninja',
+                    extraCmakeArgs=[
+                        "-G", "Ninja",
+                        "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
+                        "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
+                        "-DLLVM_ENABLE_ASSERTIONS=True",
+                        "-DLLVM_TARGETS_TO_BUILD='X86;NVPTX'",
+                        "-DCLANG_ENABLE_ARCMT=OFF",
+                        "-DCLANG_ENABLE_STATIC_ANALYZER=OFF",
+                        "-DCLANG_ENABLE_OBJC_REWRITER=OFF",
+                        "-DLLVM_ENABLE_LLD=ON",
+                        "-DBUILD_SHARED_LIBS=ON",
+                        "-DPOLLY_ENABLE_GPGPU_CODEGEN=ON"
+                        ])},
+
+    {'name' : "polly-x86_64-linux-shared-plugin",
+    'tags'  : ["polly"],
+    'workernames' : ["polly-x86_64-gce2"],
+    'builddir': "polly-x86_64-linux",
+    'factory' : PollyBuilder.getPollyBuildFactory(
+                    clean=False,
+                    install=False,
+                    make='ninja',
+                    extraCmakeArgs=[
+                        "-G", "Ninja",
+                        "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
+                        "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
+                        "-DLLVM_ENABLE_ASSERTIONS=True",
+                        "-DLLVM_TARGETS_TO_BUILD='X86;NVPTX'",
+                        "-DCLANG_ENABLE_ARCMT=OFF",
+                        "-DCLANG_ENABLE_STATIC_ANALYZER=OFF",
+                        "-DCLANG_ENABLE_OBJC_REWRITER=OFF",
+                        "-DLLVM_ENABLE_LLD=ON",
+                        "-DBUILD_SHARED_LIBS=ON",
+                        "-DLLVM_POLLY_LINK_INTO_TOOLS=OFF",
+                        "-DPOLLY_ENABLE_GPGPU_CODEGEN=ON"
+                        ])},
+
+    {'name' : "polly-x86_64-linux-shlib",
+    'tags'  : ["polly"],
+    'workernames' : ["polly-x86_64-gce2"],
+    'builddir': "polly-x86_64-linux",
+    'factory' : PollyBuilder.getPollyBuildFactory(
+                    clean=False,
+                    install=False,
+                    make='ninja',
+                    extraCmakeArgs=[
+                        "-G", "Ninja",
+                        "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
+                        "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
+                        "-DLLVM_ENABLE_ASSERTIONS=True",
+                        "-DLLVM_TARGETS_TO_BUILD='X86;NVPTX'",
+                        "-DCLANG_ENABLE_ARCMT=OFF",
+                        "-DCLANG_ENABLE_STATIC_ANALYZER=OFF",
+                        "-DCLANG_ENABLE_OBJC_REWRITER=OFF",
+                        "-DLLVM_ENABLE_LLD=ON",
+                        "-DLLVM_BUILD_LLVM_DYLIB=ON",
+                        "-DLLVM_LINK_LLVM_DYLIB=ON",
+                        "-DPOLLY_ENABLE_GPGPU_CODEGEN=ON"
+                        ])},
+
+    {'name' : "polly-x86_64-linux-shlib-plugin",
+    'tags'  : ["polly"],
+    'workernames' : ["polly-x86_64-gce2"],
+    'builddir': "polly-x86_64-linux",
+    'factory' : PollyBuilder.getPollyBuildFactory(
+                    clean=False,
+                    install=False,
+                    make='ninja',
+                    extraCmakeArgs=[
+                        "-G", "Ninja",
+                        "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
+                        "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
+                        "-DLLVM_ENABLE_ASSERTIONS=True",
+                        "-DLLVM_TARGETS_TO_BUILD='X86;NVPTX'",
+                        "-DCLANG_ENABLE_ARCMT=OFF",
+                        "-DCLANG_ENABLE_STATIC_ANALYZER=OFF",
+                        "-DCLANG_ENABLE_OBJC_REWRITER=OFF",
+                        "-DLLVM_ENABLE_LLD=ON",
+                        "-DLLVM_BUILD_LLVM_DYLIB=ON",
+                        "-DLLVM_LINK_LLVM_DYLIB=ON",
+                        "-DLLVM_POLLY_LINK_INTO_TOOLS=OFF",
+                        "-DPOLLY_ENABLE_GPGPU_CODEGEN=ON"
                         ])},
 
     {'name' : "polly-x86_64-linux-test-suite",
     'tags'  : ["polly"],
-    'workernames' : ["polly-x86_64-fdcserver", "polly-x86_64-gce2"],
+    'workernames' : ["polly-x86_64-fdcserver", "minipc-1050ti-linux"],
     'builddir': "polly-x86_64-linux-test-suite",
     'factory' : PollyBuilder.getPollyBuildFactory(
                     clean=False,
@@ -937,13 +1078,22 @@ all = [
                     make='ninja',
                     extraCmakeArgs=[
                         "-G", "Ninja",
+                        "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
+                        "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
                         "-DLLVM_ENABLE_ASSERTIONS=True",
                         "-DLLVM_TARGETS_TO_BUILD='X86;NVPTX'",
                         "-DCLANG_ENABLE_ARCMT=OFF",
                         "-DCLANG_ENABLE_STATIC_ANALYZER=OFF",
+                        "-DCLANG_ENABLE_OBJC_REWRITER=OFF"
                         ],
                     testsuite=True,
-                    extraTestsuiteCmakeArgs=["-G", "Ninja"]
+                    extraTestsuiteCmakeArgs=[
+                        "-G", "Ninja",
+                        "-DTEST_SUITE_COLLECT_COMPILE_TIME=OFF",
+                        "-DTEST_SUITE_COLLECT_STATS=OFF",
+                        "-DTEST_SUITE_COLLECT_CODE_SIZE=OFF",
+                        WithProperties("-DTEST_SUITE_EXTERNALS_DIR=%(builddir)s/../../test-suite-externals"),
+                      ]
                     )},
 
 # AOSP builders.
@@ -961,7 +1111,7 @@ all = [
                         "-DLLVM_TARGET_ARCH=arm-linux-androideabi",
                         "-DLLVM_ENABLE_ASSERTIONS=True",
                         "-DLLVM_ENABLE_LIBCXX:BOOL=ON",
-                        "-DPOLLY_ENABLE_GPGPU_CODEGEN=OFF",  # Auto-enabled in getPollyBuildFactory (used indirectly)
+                        "-DPOLLY_ENABLE_GPGPU_CODEGEN=OFF",
                         "-DCMAKE_C_COMPILER:FILEPATH=/local/clang+llvm-12.0.0-x86_64-linux-gnu-ubuntu-16.04/bin/clang",
                         "-DCMAKE_CXX_COMPILER:FILEPATH=/local/clang+llvm-12.0.0-x86_64-linux-gnu-ubuntu-16.04/bin/clang++"],
                     timeout=240,
@@ -991,6 +1141,7 @@ all = [
                         "-DLLVM_REVERSE_ITERATION:BOOL=ON",
                         "-DLLVM_ENABLE_ASSERTIONS=True",
                         "-DLLVM_ENABLE_LIBCXX:BOOL=ON",
+                        "-DPOLLY_ENABLE_GPGPU_CODEGEN=ON",
                         "-DCMAKE_C_COMPILER:FILEPATH=/local/clang+llvm-12.0.0-x86_64-linux-gnu-ubuntu-16.04/bin/clang",
                         "-DCMAKE_CXX_COMPILER:FILEPATH=/local/clang+llvm-12.0.0-x86_64-linux-gnu-ubuntu-16.04/bin/clang++"])},
 
