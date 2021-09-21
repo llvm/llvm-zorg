@@ -1151,6 +1151,10 @@ all = [
                     llvm_srcdir="llvm.src",
                     obj_dir="llvm.obj",
                     clean=True,
+                    # Specifying `mlir-opt` will avoid building the entire tree.
+                    # More targets will be built during the `check` stage.
+                    targets = ['mlir-opt'],
+                    checks = ['check-mlir'],
                     depends_on_projects=['llvm','mlir'],
                     extra_configure_args=[
                         '-DLLVM_BUILD_EXAMPLES=ON',
@@ -1177,6 +1181,10 @@ all = [
     'builddir': "mlir-x64-windows-ninja",
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaWithMSVCBuildFactory(
                     clean=True,
+                    # Specifying `mlir-opt` will avoid building the entire tree.
+                    # More targets will be built during the `check` stage.
+                    targets = ['mlir-opt'],
+                    checks = ['check-mlir'],
                     depends_on_projects=['llvm','mlir'],
                     vs="autodetect",
                     checks=['check-mlir'],
@@ -1194,7 +1202,10 @@ all = [
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                     clean=True,
                     depends_on_projects=['llvm', 'mlir'],
-                    checks=['check-mlir'],
+                    # Specifying `mlir-opt` will avoid building the entire tree.
+                    # More targets will be built during the `check` stage.
+                    targets = ['mlir-opt'],
+                    checks = ['check-mlir'],
                     extra_configure_args=[
                         '-DLLVM_TARGETS_TO_BUILD=PowerPC',
                         '-DLLVM_INSTALL_UTILS=ON',
