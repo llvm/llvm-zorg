@@ -662,7 +662,7 @@ all = [
     'tags'  : ["clang", "ppc", "ppc64le"],
     'workernames' : ["ppc64le-clang-rhel-test"],
     'builddir': "clang-ppc64le-rhel",
-    'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
+    'factory' : TestSuiteBuilder.getTestSuiteBuildFactory(
                     depends_on_projects=["llvm", "clang", "clang-tools-extra", "lld", "compiler-rt"],
                     checks=["check"],
                     enable_runtimes="auto",
