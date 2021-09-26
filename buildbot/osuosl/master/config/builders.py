@@ -20,6 +20,7 @@ from zorg.buildbot.builders import AnnotatedBuilder
 from zorg.buildbot.builders import LLDPerformanceTestsuite
 from zorg.buildbot.builders import FuchsiaBuilder
 from zorg.buildbot.builders import XToolchainBuilder
+from zorg.buildbot.builders import TestSuiteBuilder
 
 from zorg.buildbot.builders import HtmlDocsBuilder
 from zorg.buildbot.builders import DoxygenDocsBuilder
@@ -1187,7 +1188,6 @@ all = [
                     checks = ['check-mlir'],
                     depends_on_projects=['llvm','mlir'],
                     vs="autodetect",
-                    checks=['check-mlir'],
                     extra_configure_args=[
                         "-DLLVM_BUILD_EXAMPLES=ON",
                         "-DLLVM_ENABLE_PROJECTS=mlir",
