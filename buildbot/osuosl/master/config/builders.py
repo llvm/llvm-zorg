@@ -1144,6 +1144,33 @@ all = [
 
 # Builders for MLIR.
 
+    {'name' : "mlir-asan-ubsan-clang-12.0",
+    'tags'  : ["mlir"],
+    'workernames' : ["mlir-ubuntu-1", "mlir-ubuntu-2", "mlir-ubuntu-3", "mlir-ubuntu-4"],
+    'builddir': "mlir-asan-ubsan-clang-12.0",
+    'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
+                    llvm_srcdir="llvm.src",
+                    obj_dir="llvm.obj",
+                    clean=True,
+                    # Specifying `mlir-opt` will avoid building the entire tree.
+                    # More targets will be built during the `check` stage.
+                    targets = ['mlir-opt'],
+                    checks = ['check-mlir'],
+                    depends_on_projects=['llvm','mlir'],
+                    extra_configure_args=[
+                        '-DLLVM_BUILD_EXAMPLES=ON',
+                        "-DLLVM_TARGETS_TO_BUILD='host;NVPTX;AMDGPU'",
+                        '-DLLVM_ENABLE_PROJECTS=mlir',
+                        '-DMLIR_INCLUDE_INTEGRATION_TESTS=ON',
+                        '-DBUILD_SHARED_LIBS=ON',
+                        '-DLLVM_CCACHE_BUILD=ON',
+                        '-DMLIR_ENABLE_BINDINGS_PYTHON=ON',
+                        '-DLLVM_ENABLE_LLD=ON',
+                        '-DLLVM_USE_SANITIZER="Address;Undefined"',
+                        '-DCMAKE_C_COMPILER=/compilers/clang-12.0/bin/clang',
+                        '-DCMAKE_CXX_COMPILER=/compilers/clang-12.0/bin/clang++',
+                    ])},
+
     {'name' : "mlir-nvidia",
     'tags'  : ["mlir"],
     'workernames' : ["mlir-nvidia"],
