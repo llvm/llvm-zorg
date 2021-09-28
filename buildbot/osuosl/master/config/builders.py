@@ -1146,7 +1146,7 @@ all = [
 
     {'name' : "mlir-asan-ubsan-clang-12.0",
     'tags'  : ["mlir"],
-    'workernames' : ["mlir-ubuntu-1", "mlir-ubuntu-2", "mlir-ubuntu-3", "mlir-ubuntu-4"],
+    'workernames' : ["mlir-ubuntu-worker1", "mlir-ubuntu-worker2", "mlir-ubuntu-worker3", "mlir-ubuntu-worker4"],
     'builddir': "mlir-asan-ubsan-clang-12.0",
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                     llvm_srcdir="llvm.src",
