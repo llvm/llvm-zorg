@@ -83,7 +83,7 @@ all = [
         subject = "Build %(builder)s Failure",
         mode = "failing",
         builders = ["clang-s390x-linux", "clang-s390x-linux-multistage",
-                    "clang-s390x-linux-lnt"]),
+                    "clang-s390x-linux-lnt", "mlir-s390x-linux"]),
     reporters.MailNotifier(
         fromaddr = "llvm.buildmaster@lab.llvm.org",
         sendToInterestedUsers = False,

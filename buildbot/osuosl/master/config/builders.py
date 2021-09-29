@@ -1247,6 +1247,21 @@ all = [
                             'LD_LIBRARY_PATH': '/usr/lib64',
                     })},
 
+    {'name' : 'mlir-s390x-linux',
+    'tags'  : ["mlir", "s390x"],
+    'collapseRequests' : False,
+    'workernames' : ["systemz-1"],
+    'builddir': 'mlir-s390x-linux',
+    'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
+                    clean=True,
+                    depends_on_projects=['llvm', 'mlir'],
+                    checks=['check-mlir'],
+                    extra_configure_args=[
+                        '-DLLVM_TARGETS_TO_BUILD=SystemZ',
+                        '-DLLVM_ENABLE_PROJECTS=mlir',
+                        '-DLLVM_LIT_ARGS=-vj 4',
+                    ])},
+
 # Sanitizer builders.
 
     {'name' : "sanitizer-x86_64-linux",
