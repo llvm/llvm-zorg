@@ -609,12 +609,12 @@ def lldb_cmake_builder(target, variant=None):
 
     if target == 'all' or target == 'test' or target == 'testlong':
         header("Run Tests")
-        if variant == 'matrix' or variant == 'sanitized':
+        if variant == 'debuginfo':
             test_command = ['/usr/bin/env', 'TERM=vt100', NINJA,
-                            '-v', 'check-lldb']
+                            '-v', 'check-debuginfo']
         else:
             test_command = ['/usr/bin/env', 'TERM=vt100', NINJA,
-                            '-v', 'check-debuginfo', 'check-lldb', '-k2']
+                            '-v', 'check-lldb']
         run_cmd(conf.lldbbuilddir(), test_command)
         footer()
 
@@ -901,9 +901,17 @@ def run_cmd(working_dir, cmd, env=None, sudo=False, err_okay=False):
 
 KNOWN_TARGETS = ['all', 'configure', 'build', 'test', 'testlong', 'install']
 KNOWN_BUILDS = [
-    'clang', 'cmake', 'lldb-cmake', 'lldb-cmake-standalone',
-    'lldb-cmake-xcode', 'lldb-cmake-sanitized', 'lldb-cmake-matrix', 'fetch',
-    'artifact', 'static-analyzer-benchmarks'
+    'clang',
+    'cmake',
+    'lldb-cmake',
+    'lldb-cmake-standalone',
+    'lldb-cmake-debuginfo',
+    'lldb-cmake-xcode',
+    'lldb-cmake-sanitized',
+    'lldb-cmake-matrix',
+    'fetch',
+    'artifact',
+    'static-analyzer-benchmarks',
 ]
 
 
@@ -1053,6 +1061,8 @@ def main():
             clang_builder(args.build_target)
         elif args.build_type == 'lldb-cmake':
             lldb_cmake_builder(args.build_target)
+        elif args.build_type == 'lldb-cmake-debuginfo':
+            lldb_cmake_builder(args.build_target, 'debuginfo')
         elif args.build_type == 'lldb-cmake-sanitized':
             lldb_cmake_builder(args.build_target, 'sanitized')
         elif args.build_type == 'lldb-cmake-matrix':

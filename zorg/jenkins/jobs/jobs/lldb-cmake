@@ -62,17 +62,43 @@ pipeline {
                 }
             }
         }
-        stage('Test') {
+        stage('Clean Test Results') {
+            steps {
+                timeout(10) {
+                    sh '''
+                    set -u
+                    export PATH=$PATH:/usr/bin:/usr/local/bin
+
+                    rm -rf test/results.xml
+                    '''
+                }
+            }
+        }
+        stage('Test (Debug Info)') {
+            steps {
+                timeout(30) {
+                    sh '''
+                    set -u
+                    export PATH=$PATH:/usr/bin:/usr/local/bin
+
+                    export MAX_PARALLEL_TESTS=$(sysctl hw.physicalcpu |awk '{print $2}')
+
+                    set +e
+                    python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-debuginfo test
+                    set -e
+                    '''
+                }
+            }
+        }
+        stage('Test (LLDB)') {
             steps {
                 timeout(90) {
                     sh '''
                     set -u
                     export PATH=$PATH:/usr/bin:/usr/local/bin
 
-                    rm -rf test/results.xml
-
                     export MAX_PARALLEL_TESTS=$(sysctl hw.physicalcpu |awk '{print $2}')
-                    python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake testlong
+                    python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake test
                     '''
                 }
             }
