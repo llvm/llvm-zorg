@@ -271,19 +271,5 @@ pipeline {
                 junit 'test/results.xml'
             }
         }
-        stage('Test Reproducers') {
-            steps {
-                timeout(120) {
-                    sh '''
-                    export PATH=$PATH:/usr/bin:/usr/local/bin
-
-                    set +e
-                    python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake \
-                        --cmake-test-target check-lldb-reproducers
-                    set -e
-                    '''
-                }
-            }
-        }
     }
 }
