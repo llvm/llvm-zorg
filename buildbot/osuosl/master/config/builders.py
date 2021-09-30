@@ -1166,7 +1166,7 @@ all = [
                         '-DLLVM_CCACHE_BUILD=ON',
                         '-DMLIR_ENABLE_BINDINGS_PYTHON=ON',
                         '-DLLVM_ENABLE_LLD=ON',
-                        '-DLLVM_USE_SANITIZER="Address;Undefined"',
+                        '-DLLVM_USE_SANITIZER=Address;Undefined',
                         '-DCMAKE_C_COMPILER=/compilers/clang-12.0/bin/clang',
                         '-DCMAKE_CXX_COMPILER=/compilers/clang-12.0/bin/clang++',
                     ])},
