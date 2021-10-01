@@ -1912,24 +1912,6 @@ all += [
     'factory' : AnnotatedBuilder.getAnnotatedBuildFactory(
                     script="/buildbot/cuda-build",
                     checkout_llvm_sources=False)},
-
-    {'name' : "clang-ve-ninja",
-    'tags'  : ["clang"],
-    'workernames':["hpce-aurora2"],
-    'builddir':"clang-ve-ninja",
-    'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
-                    clean=True,
-                    depends_on_projects=['llvm','clang','openmp'],
-                    extra_configure_args=[
-                        "-DLLVM_TARGETS_TO_BUILD=X86",
-                        "-DLLVM_EXPERIMENTAL_TARGETS_TO_BUILD=VE",
-                        "-DLLVM_ENABLE_RUNTIMES=compiler-rt",
-                        "-DLLVM_BUILD_LLVM_DYLIB=On",
-                        "-DBUILD_SHARED_LIBS=Off",
-                        "-DLLVM_LINK_LLVM_DYLIB=On",
-                        "-DCLANG_LINK_CLANG_DYLIB=On",
-                    ])},
-
 # HIP builders.
 
     {'name' : "clang-hip-vega20",
@@ -1940,6 +1922,16 @@ all += [
                     script="hip-build.sh",
                     checkout_llvm_sources=False,
                     script_interpreter=None)},
+
+# VE builders.
+
+    {'name' : "clang-ve-ninja",
+    'tags'  : ["clang"],
+    'workernames':["hpce-aurora2"],
+    'builddir':"clang-ve-ninja",
+    'factory' : AnnotatedBuilder.getAnnotatedBuildFactory(
+                    script="ve-linux.py",
+                    depends_on_projects=['llvm', 'clang', 'compiler-rt', 'libcxx'])},
 
 # Latest stable fedora running on Red Hat internal OpenShift cluster (PSI).
 
