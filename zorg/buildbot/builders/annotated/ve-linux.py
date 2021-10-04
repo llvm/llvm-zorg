@@ -43,13 +43,13 @@ def main(argv):
         run_command(['cmake', os.path.join(source_dir, 'llvm')] + cmake_args, directory=llvm_build_dir)
 
     with step('build llvm', halt_on_fail=True):
-        run_command(['ninja', 'all'],directory=llvm_build_dir)
+        run_command(['ninja', 'all'], directory=llvm_build_dir)
 
     with step('check llvm'):
-        run_command(['ninja', 'check-llvm'])
+        run_command(['ninja', 'check-llvm'], directory=llvm_build_dir)
 
     with step('check clang'):
-        run_command(['ninja', 'check-clang'])
+        run_command(['ninja', 'check-clang'], directory=llvm_build_dir)
 
     # TODO: crt, libunwind, libcxx, libcxxabi
 
