@@ -1984,6 +1984,7 @@ all += [
                         '-DLLVM_LINK_LLVM_DYLIB=On',
                         '-DBUILD_SHARED_LIBS=Off',
                         '-DLLVM_ENABLE_LLD=Off',
+                        '-DLLVM_ENABLE_BINDINGS=Off',
                     ],
                     env={
                         'PATH':'/home/llvmbb/bin/clang-latest/bin:/home/llvmbb/bin:/usr/local/bin:/usr/local/bin:/usr/bin:/bin',
