@@ -15,8 +15,10 @@ def main(argv):
                     help='Build with address sanitizer enabled.')
     args, _ = ap.parse_known_args()
 
-    source_dir = os.path.join('..', 'llvm-project')
+    # cwd is ${BOTDIR}/build as this point.
+    source_dir = os.path.join('..', '..', 'llvm-project')
 
+    # ${BOTDIR}/build/${sth_build_dir}
     llvm_build_dir='build_llvm'
 
     with step('prepare', halt_on_fail=True):
