@@ -35,9 +35,9 @@ def main(argv):
                        '-DLLVM_BUILD_LLVM_DYLIB=On',
                        '-DLLVM_LINK_LLVM_DYLIB=On',
                        '-DCLANG_LINK_CLANG_DYLIB=On',
-                       '-DLLVM_TARGETS_TO_BUILD="X86"',
-                       '-DLLVM_EXPERIMENTAL_TARGETS_TO_BUILD="VE"',
-                       '-DLLVM_ENABLE_PROJECTS="clang"']
+                       '-DLLVM_TARGETS_TO_BUILD=X86',
+                       '-DLLVM_EXPERIMENTAL_TARGETS_TO_BUILD=VE',
+                       '-DLLVM_ENABLE_PROJECTS=clang']
 
         if args.asan:
             cmake_args.append('-DLLVM_USE_SANITIZER=Address')
