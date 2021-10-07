@@ -219,7 +219,8 @@ def get_all():
         # Ubuntu 18.04 amd64 on Google Cloud, 16 core, Nvidia Tesla T4
         create_worker("mlir-nvidia", properties={'jobs': 16}, max_builds=1),
 
-        # Ubuntu 20.04 pool of VMs on GCP
+        # Ubuntu 18.04 pool of VMs on GCP
+        create_worker("mlir-ubuntu-worker0", max_builds=1),
         create_worker("mlir-ubuntu-worker1", max_builds=1),
         create_worker("mlir-ubuntu-worker2", max_builds=1),
         create_worker("mlir-ubuntu-worker3", max_builds=1),
