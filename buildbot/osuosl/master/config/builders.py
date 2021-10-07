@@ -1493,30 +1493,6 @@ all += [
                     )},
 
 # OpenMP AMDGPU Builders
-    {'name' : "openmp-offload-amdgpu-project",
-    'tags'  : ["openmp"],
-    'workernames' : ["omp-vega20-0"],
-    'builddir': "openmp-offload-amdgpu-project",
-    'factory' : OpenMPBuilder.getOpenMPCMakeBuildFactory(
-                        clean=False,
-                        enable_runtimes=[],
-                        depends_on_projects=['llvm','clang','lld'],
-                        extraCmakeArgs=[
-                            "-DCMAKE_BUILD_TYPE=Release",
-                            "-DCLANG_DEFAULT_LINKER=lld",
-                            "-DLLVM_TARGETS_TO_BUILD=X86;AMDGPU",
-                            "-DLLVM_ENABLE_ASSERTIONS=ON",
-                            "-DLLVM_ENABLE_RUNTIMES=openmp",
-                            ],
-                        install=True,
-                        testsuite=False,
-                        testsuite_sollvevv=False,
-                        extraTestsuiteCmakeArgs=[
-                            "-DTEST_SUITE_SOLLVEVV_OFFLOADING_CFLAGS=-fopenmp-targets=amdgcn-amd-amdhsa;-Xopenmp-target=amdgcn-amd-amdhsa",
-                            "-DTEST_SUITE_SOLLVEVV_OFFLOADING_LDLAGS=-fopenmp-targets=amdgcn-amd-amdhsa;-Xopenmp-target=amdgcn-amd-amdhsa",
-                        ],
-                    )},
-
     {'name' : "openmp-offload-amdgpu-runtime",
     'tags'  : ["openmp"],
     'workernames' : ["omp-vega20-0"],
