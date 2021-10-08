@@ -10,50 +10,32 @@ from contextlib import contextmanager
 
 
 def main(argv):
-    ap = argparse.ArgumentParser()
-    ap.add_argument('--asan', action='store_true', default=False,
-                    help='Build with address sanitizer enabled.')
-    args, _ = ap.parse_known_args()
+    # Avoid a buildmaster update by hard-coding this for now.
+    makefile = 've-linux-steps.make'
 
-    # cwd is ${BOTDIR}/build as this point.
-    source_dir = os.path.join('..', '..', 'llvm-project')
+    # TODO: Make Makefile configurable and update buildmaster.
+    # ap = argparse.ArgumentParser()
+    # ap.add_argument('makefile', help='The Makefile to use. (relative to annoted/ folder of llvm-zorg).')
+    # args, _ = ap.parse_known_args()
+    # makefile = args.makefile
 
-    # ${BOTDIR}/build/${sth_build_dir}
-    llvm_build_dir='build_llvm'
+    worker_dir = os.path.abspath(os.path.join('..'))
+    annotated_dir = os.path.join(worker_dir, 'llvm-zorg', 'zorg', 'buildbot', 'builders', 'annotated')
+    makefile_path = os.path.join(annotated_dir, makefile)
 
+    # Query step list from makefile.
+    build_targets=[]
     with step('prepare', halt_on_fail=True):
-        util.mkdirp(llvm_build_dir)
+        build_targets = get_steps(makefile_path)
 
-    with step('cmake', halt_on_fail=True):
-        # Tool config.
-        cmake_args = ['-GNinja',
-                      '-DCMAKE_C_COMPILER=gcc',
-                      '-DCMAKE_CXX_COMPILER=g++']
+    make_vars = {
+      'BUILDROOT' : os.path.join(worker_dir, 'build')
+    }
 
-        # Build config.
-        cmake_args += ['-DCMAKE_BUILD_TYPE=RelWithDebInfo',
-                       '-DLLVM_BUILD_LLVM_DYLIB=On',
-                       '-DLLVM_LINK_LLVM_DYLIB=On',
-                       '-DCLANG_LINK_CLANG_DYLIB=On',
-                       '-DLLVM_TARGETS_TO_BUILD=X86',
-                       '-DLLVM_EXPERIMENTAL_TARGETS_TO_BUILD=VE',
-                       '-DLLVM_ENABLE_PROJECTS=clang']
-
-        if args.asan:
-            cmake_args.append('-DLLVM_USE_SANITIZER=Address')
-
-        run_command(['cmake', os.path.join(source_dir, 'llvm')] + cmake_args, directory=llvm_build_dir)
-
-    with step('build llvm', halt_on_fail=True):
-        run_command(['ninja', 'all'], directory=llvm_build_dir)
-
-    with step('check llvm'):
-        run_command(['ninja', 'check-llvm'], directory=llvm_build_dir)
-
-    with step('check clang'):
-        run_command(['ninja', 'check-clang'], directory=llvm_build_dir)
-
-    # TODO: crt, libunwind, libcxx, libcxxabi
+    for target in build_targets:
+        with step(target, halt_on_fail=True):
+            make_cmd = build_make_cmd(makefile_path, target, make_vars)
+            run_command(make_cmd, cwd='.')
 
 @contextmanager
 def step(step_name, halt_on_fail=False):
@@ -75,8 +57,27 @@ def step(step_name, halt_on_fail=False):
         sys.stdout.flush()
 
 
-def run_command(cmd, directory='.'):
-    util.report_run_cmd(cmd, cwd=directory)
+def get_steps(makefile):
+    try:
+        make_cmd = build_make_cmd(makefile, 'get-steps')
+        raw_steps = capture_cmd_stdout(make_cmd)
+        return raw_steps.decode('utf-8').split('\n')
+    except:
+        return []
+
+def build_make_cmd(makefile, target, make_vars={}):
+    make_cmd = ['make', '-f', makefile]
+    if not target is None:
+        make_cmd.append(target)
+    for k,v in make_vars.items():
+        make_cmd += ["{}={}".format(k, v)]
+    return make_cmd
+
+def capture_cmd_stdout(cmd, **kwargs):
+    return subprocess.run(cmd, shell=False, check=True, stdout=subprocess.PIPE, **kwargs).stdout
+
+def run_command(cmd, directory='.', **kwargs):
+    util.report_run_cmd(cmd, cwd=directory, **kwargs)
 
 if __name__ == '__main__':
     sys.path.append(os.path.dirname(__file__))
