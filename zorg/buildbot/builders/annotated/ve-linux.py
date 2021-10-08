@@ -76,8 +76,8 @@ def build_make_cmd(makefile, target, make_vars={}):
 def capture_cmd_stdout(cmd, **kwargs):
     return subprocess.run(cmd, shell=False, check=True, stdout=subprocess.PIPE, **kwargs).stdout
 
-def run_command(cmd, directory='.', **kwargs):
-    util.report_run_cmd(cmd, cwd=directory, **kwargs)
+def run_command(cmd, **kwargs):
+    util.report_run_cmd(cmd, **kwargs)
 
 if __name__ == '__main__':
     sys.path.append(os.path.dirname(__file__))
