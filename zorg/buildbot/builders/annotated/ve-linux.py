@@ -61,7 +61,7 @@ def get_steps(makefile):
     try:
         make_cmd = build_make_cmd(makefile, 'get-steps')
         raw_steps = capture_cmd_stdout(make_cmd)
-        return raw_steps.decode('utf-8').split('\n')
+        return raw_steps.decode('utf-8').split('\n')[:-1]
     except:
         return []
 
