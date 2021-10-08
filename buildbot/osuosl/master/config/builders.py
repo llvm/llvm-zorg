@@ -1143,7 +1143,8 @@ all = [
                     ])},
 ]
 
-# Builders for MLIR.
+# Common builders options for MLIR.
+mlir_ubuntu_workers = [f"mlir-ubuntu-worker{i}" for i in range(5)]
 mlir_default_cmake_options = [
   '-DLLVM_CCACHE_BUILD=ON',
   '-DLLVM_ENABLE_PROJECTS=mlir',
@@ -1157,7 +1158,7 @@ all += [
 
     {'name' : "mlir-ubuntu-asan-ubsan-clang-12.0",
     'tags'  : ["mlir"],
-    'workernames' : ["mlir-ubuntu-worker1", "mlir-ubuntu-worker2", "mlir-ubuntu-worker3", "mlir-ubuntu-worker4"],
+    'workernames' : mlir_ubuntu_workers,
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                     llvm_srcdir="llvm.src",
                     obj_dir="llvm.obj",
@@ -1175,7 +1176,7 @@ all += [
 
     {'name' : "mlir-ubuntu-gcc5.5-shared-libs",
     'tags'  : ["mlir"],
-    'workernames' : ["mlir-ubuntu-worker1", "mlir-ubuntu-worker2", "mlir-ubuntu-worker3", "mlir-ubuntu-worker4"],
+    'workernames' : mlir_ubuntu_workers,
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                     llvm_srcdir="llvm.src",
                     obj_dir="llvm.obj",
@@ -1191,7 +1192,7 @@ all += [
 
     {'name' : "mlir-ubuntu-clang-5-link-llvm-dylib",
     'tags'  : ["mlir"],
-    'workernames' : ["mlir-ubuntu-worker1", "mlir-ubuntu-worker2", "mlir-ubuntu-worker3", "mlir-ubuntu-worker4"],
+    'workernames' : mlir_ubuntu_workers,
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                     llvm_srcdir="llvm.src",
                     obj_dir="llvm.obj",
@@ -1208,7 +1209,7 @@ all += [
 
     {'name' : "mlir-ubuntu-gcc11-release-intel-sde",
     'tags'  : ["mlir"],
-    'workernames' : ["mlir-ubuntu-worker1", "mlir-ubuntu-worker2", "mlir-ubuntu-worker3", "mlir-ubuntu-worker4"],
+    'workernames' : mlir_ubuntu_workers,
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                     llvm_srcdir="llvm.src",
                     obj_dir="llvm.obj",
