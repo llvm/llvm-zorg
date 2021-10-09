@@ -1508,8 +1508,6 @@ all += [
                             "-DLLVM_TARGETS_TO_BUILD=X86;AMDGPU",
                             "-DLLVM_ENABLE_ASSERTIONS=ON",
                             "-DLLVM_ENABLE_RUNTIMES=openmp",
-                            "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
-                            "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
                             ],
                         install=True,
                         testsuite=False,
