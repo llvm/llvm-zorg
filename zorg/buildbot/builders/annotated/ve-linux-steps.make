@@ -8,9 +8,9 @@ get-steps:
 	@echo "build-llvm"
 	@echo "check-llvm"
 	@echo "install-llvm"
+	@echo "build-crt-ve"
+	@echo "install-crt-ve"
 # TODO: Activate runtimes.
-# @echo "build-crt-ve"
-# @echo "install-crt-ve"
 # @echo "build-libunwind-ve"
 # @echo "install-libunwind-ve"
 # @echo "build-libcxx-ve"
