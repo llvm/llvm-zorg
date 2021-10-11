@@ -7,9 +7,9 @@ get-steps:
 	@echo "prepare"
 	@echo "build-llvm"
 	@echo "check-llvm"
-	@echo "install-llvm"
 	@echo "build-crt-ve"
 	@echo "install-crt-ve"
+	@echo "check-crt-ve"
 # TODO: Activate runtimes.
 # @echo "build-libunwind-ve"
 # @echo "install-libunwind-ve"
@@ -23,7 +23,6 @@ get-steps:
 ##### Derived Configuration #####
 
 # Path
-PREFIX="${BUILDROOT}/install"
 
 MONOREPO=${BUILDROOT}/../llvm-project
 
@@ -34,15 +33,19 @@ LIBUNWIND_BUILD_VE="${BUILDROOT}/build_libunwind_ve"
 LIBCXXABI_BUILD_VE="${BUILDROOT}/build_libcxxabi_ve"
 LIBCXX_BUILD_VE="${BUILDROOT}/build_libcxx_ve"
 
+# 'Install' into the LLVM build tree.
+INTREE_PREFIX="${LLVM_BUILD}"
+LLVM_PREFIX="${BUILDROOT}/install"
+
 # Install prefix structure
-BUILT_CLANG="${PREFIX}/bin/clang"
-BUILT_CLANGXX="${PREFIX}/bin/clang++"
+BUILT_CLANG="${INTREE_PREFIX}/bin/clang"
+BUILT_CLANGXX="${INTREE_PREFIX}/bin/clang++"
 VE_TARGET="ve-linux"
 LINUX_VE_LIBSUFFIX=/linux/ve
 
 # Resource dir (Requires clang to be installed before this variable gets expanded)
-RES_VERSION=$(shell ${PREFIX}/bin/llvm-config  --version | sed -n 's/git//p')
-CLANG_RESDIR="${PREFIX}/lib/clang/${RES_VERSION}"
+RES_VERSION=$(shell ${INTREE_PREFIX}/bin/llvm-config  --version | sed -n 's/git//p')
+CLANG_RESDIR="${INTREE_PREFIX}/lib/clang/${RES_VERSION}"
 
 ### LLVM
 LLVM_BUILD_TYPE=RelWithDebInfo
@@ -80,13 +83,13 @@ build-llvm:
 	      -DLLVM_TARGETS_TO_BUILD="X86" \
 	      -DLLVM_EXPERIMENTAL_TARGETS_TO_BUILD="VE" \
 	      -DLLVM_ENABLE_PROJECTS="clang" \
-	      -DCMAKE_INSTALL_PREFIX="${PREFIX}" \
+	      -DCMAKE_INSTALL_PREFIX="${LLVM_PREFIX}" \
 	      -DLLVM_INSTALL_UTILS=On
 	cd ${LLVM_BUILD} && ninja
 
-install-llvm:
-	# build-llvm
-	cd ${LLVM_BUILD} && ninja install
+# install-llvm:
+# 	# build-llvm
+# 	cd ${LLVM_BUILD} && ninja install
 
 check-llvm:
 	# build-llvm
@@ -98,34 +101,34 @@ check-llvm:
 build-crt-ve:
 	mkdir -p ${CRT_BUILD_VE}
 	cd ${CRT_BUILD_VE} && cmake ${MONOREPO}/compiler-rt -G Ninja \
-              -DCOMPILER_RT_BUILD_BUILTINS=ON \
-              -DCOMPILER_RT_BUILD_SANITIZERS=OFF \
-              -DCOMPILER_RT_BUILD_XRAY=OFF \
-              -DCOMPILER_RT_BUILD_LIBFUZZER=OFF \
-              -DCOMPILER_RT_BUILD_PROFILE=ON \
-              -DBUILD_SHARED_LIBS=ON \
-              -DCMAKE_C_COMPILER=${BUILT_CLANG} \
-              -DCMAKE_C_COMPILER_TARGET="${VE_TARGET}" \
-              -DCMAKE_CXX_COMPILER=${BUILT_CLANGXX} \
-              -DCMAKE_CXX_COMPILER_TARGET="${VE_TARGET}" \
-              -DCMAKE_ASM_COMPILER_TARGET="${VE_TARGET}" \
-	      -DCMAKE_AR=${PREFIX}/bin/llvm-ar \
-              -DCMAKE_RANLIB=${PREFIX}/bin/llvm-ranlib \
-              -DCOMPILER_RT_DEFAULT_TARGET_ONLY=ON \
-              -DLLVM_CONFIG_PATH=${PREFIX}/bin/llvm-config \
-              -DCMAKE_BUILD_TYPE="${CRT_BUILD_TYPE}" \
-              -DCMAKE_INSTALL_PREFIX="${CLANG_RESDIR}" \
-              -DCMAKE_CXX_FLAGS="-nostdlib" \
-	      -DCMAKE_CXX_FLAGS_RELEASE="${CRT_OPTFLAGS}" \
-              -DCMAKE_C_FLAGS="-nostdlib" \
-              -DCMAKE_C_FLAGS_RELEASE="${CRT_OPTFLAGS}" \
-              -DCOMPILER_RT_INCLUDE_TESTS=ON \
-              -DCOMPILER_RT_TEST_COMPILER=${BUILT_CLANG} \
-              -DCOMPILER_RT_TEST_COMPILER_CFLAGS="-target ${VE_TARGET} ${CRT_TEST_OPTFLAGS}"
+	    -DCOMPILER_RT_BUILD_BUILTINS=ON \
+	    -DCOMPILER_RT_BUILD_SANITIZERS=OFF \
+	    -DCOMPILER_RT_BUILD_XRAY=OFF \
+	    -DCOMPILER_RT_BUILD_LIBFUZZER=OFF \
+	    -DCOMPILER_RT_BUILD_PROFILE=ON \
+	    -DBUILD_SHARED_LIBS=ON \
+	    -DCMAKE_C_COMPILER=${BUILT_CLANG} \
+	    -DCMAKE_C_COMPILER_TARGET="${VE_TARGET}" \
+	    -DCMAKE_CXX_COMPILER=${BUILT_CLANGXX} \
+	    -DCMAKE_CXX_COMPILER_TARGET="${VE_TARGET}" \
+	    -DCMAKE_ASM_COMPILER_TARGET="${VE_TARGET}" \
+	    -DCMAKE_AR=${INTREE_PREFIX}/bin/llvm-ar \
+	    -DCMAKE_RANLIB=${INTREE_PREFIX}/bin/llvm-ranlib \
+	    -DCOMPILER_RT_DEFAULT_TARGET_ONLY=ON \
+	    -DLLVM_CONFIG_PATH=${INTREE_PREFIX}/bin/llvm-config \
+	    -DCMAKE_BUILD_TYPE="${CRT_BUILD_TYPE}" \
+	    -DCMAKE_INSTALL_PREFIX="${CLANG_RESDIR}" \
+	    -DCMAKE_CXX_FLAGS="-nostdlib" \
+	    -DCMAKE_CXX_FLAGS_RELEASE="${CRT_OPTFLAGS}" \
+	    -DCMAKE_C_FLAGS="-nostdlib" \
+	    -DCMAKE_C_FLAGS_RELEASE="${CRT_OPTFLAGS}" \
+	    -DCOMPILER_RT_INCLUDE_TESTS=ON \
+	    -DCOMPILER_RT_TEST_COMPILER=${BUILT_CLANG} \
+	    -DCOMPILER_RT_TEST_COMPILER_CFLAGS="-target ${VE_TARGET} ${CRT_TEST_OPTFLAGS}"
 	cd ${CRT_BUILD_VE} && ninja
 
 check-crt-ve: build-crt-ve
-	cd ${CRT_BUILD_VE} && env PATH=${PREFIX}/bin:${PATH} ninja check-all
+	cd ${CRT_BUILD_VE} && env PATH=${INTREE_PREFIX}/bin:${PATH} ninja check-compiler-rt
 
 install-crt-ve: build-crt-ve
 	cd ${CRT_BUILD_VE} && ninja install
@@ -135,22 +138,22 @@ install-crt-ve: build-crt-ve
 build-libunwind-ve:
 	mkdir -p ${LIBUNWIND_BUILD_VE}
 	cd ${LIBUNWIND_BUILD_VE} && cmake ${MONOREPO}/libunwind -G Ninja \
-	     -DLIBUNWIND_TARGET_TRIPLE="${VE_TARGET}" \
-  	     -DCMAKE_C_COMPILER=${BUILT_CLANG} \
-  	     -DCMAKE_CXX_COMPILER=${BUILT_CLANGXX} \
-  	     -DCMAKE_AR=${PREFIX}/bin/llvm-ar \
-  	     -DCMAKE_RANLIB=${PREFIX}/bin/llvm-ranlib \
-  	     -DCMAKE_C_COMPILER_TARGET="${VE_TARGET}" \
-  	     -DCMAKE_CXX_COMPILER_TARGET="${VE_TARGET}" \
-  	     -DCMAKE_BUILD_TYPE="${LIBUNWIND_BUILD_TYPE}" \
-  	     -DCMAKE_INSTALL_PREFIX="${CLANG_RESDIR}" \
-  	     -DLIBUNWIND_LIBDIR_SUFFIX="${LINUX_VE_LIBSUFFIX}" \
-  	     -DCMAKE_CXX_FLAGS="-nostdlib" \
-  	     -DCMAKE_CXX_FLAGS_RELEASE="${LIBUNWIND_OPTFLAGS}" \
-  	     -DCMAKE_C_FLAGS="-nostdlib" \
-  	     -DCMAKE_C_FLAGS_RELEASE="${LIBUNWIND_OPTFLAGS}" \
-	     -DLIBUNWIND_LIBCXX_PATH=${MONOREPO}/libcxx \
-	     -DLLVM_PATH=${MONOREPO}/llvm
+	    -DLIBUNWIND_TARGET_TRIPLE="${VE_TARGET}" \
+	    -DCMAKE_C_COMPILER=${BUILT_CLANG} \
+	    -DCMAKE_CXX_COMPILER=${BUILT_CLANGXX} \
+	    -DCMAKE_AR=${INTREE_PREFIX}/bin/llvm-ar \
+	    -DCMAKE_RANLIB=${INTREE_PREFIX}/bin/llvm-ranlib \
+	    -DCMAKE_C_COMPILER_TARGET="${VE_TARGET}" \
+	    -DCMAKE_CXX_COMPILER_TARGET="${VE_TARGET}" \
+	    -DCMAKE_BUILD_TYPE="${LIBUNWIND_BUILD_TYPE}" \
+	    -DCMAKE_INSTALL_PREFIX="${CLANG_RESDIR}" \
+	    -DLIBUNWIND_LIBDIR_SUFFIX="${LINUX_VE_LIBSUFFIX}" \
+	    -DCMAKE_CXX_FLAGS="-nostdlib" \
+	    -DCMAKE_CXX_FLAGS_RELEASE="${LIBUNWIND_OPTFLAGS}" \
+	    -DCMAKE_C_FLAGS="-nostdlib" \
+	    -DCMAKE_C_FLAGS_RELEASE="${LIBUNWIND_OPTFLAGS}" \
+	    -DLIBUNWIND_LIBCXX_PATH=${MONOREPO}/libcxx \
+	    -DLLVM_PATH=${MONOREPO}/llvm
 	cd ${LIBUNWIND_BUILD_VE} && ninja
 
 install-libunwind-ve:
@@ -166,8 +169,8 @@ build-libcxx-ve:
   	        -DLIBCXX_TARGET_TRIPLE="${VE_TARGET}" \
   	        -DCMAKE_C_COMPILER=${BUILT_CLANG} \
   	        -DCMAKE_CXX_COMPILER=${BUILT_CLANGXX} \
-  	        -DCMAKE_AR=${PREFIX}/bin/llvm-ar \
-  	        -DCMAKE_RANLIB=${PREFIX}/bin/llvm-ranlib \
+  	        -DCMAKE_AR=${INTREE_PREFIX}/bin/llvm-ar \
+  	        -DCMAKE_RANLIB=${INTREE_PREFIX}/bin/llvm-ranlib \
   	        -DCMAKE_C_COMPILER_TARGET="${VE_TARGET}" \
   	        -DCMAKE_CXX_COMPILER_TARGET="${VE_TARGET}" \
   	        -DCMAKE_BUILD_TYPE="${LIBCXX_BUILD_TYPE}" \
@@ -198,11 +201,11 @@ build-libcxxabi-ve:
 	cd ${LIBCXXABI_BUILD_VE} && cmake ${MONOREPO}/libcxxabi -G Ninja \
 	      -DCMAKE_C_COMPILER=${BUILT_CLANG} \
 	      -DCMAKE_CXX_COMPILER=${BUILT_CLANGXX} \
-	      -DCMAKE_AR=${PREFIX}/bin/llvm-ar \
-	      -DCMAKE_RANLIB=${PREFIX}/bin/llvm-ranlib \
+	      -DCMAKE_AR=${INTREE_PREFIX}/bin/llvm-ar \
+	      -DCMAKE_RANLIB=${INTREE_PREFIX}/bin/llvm-ranlib \
 	      -DCMAKE_C_COMPILER_TARGET="${VE_TARGET}" \
 	      -DCMAKE_CXX_COMPILER_TARGET="${VE_TARGET}" \
-	      -DLLVM_CONFIG_PATH=$${PREFIX}/bin/llvm-config \
+	      -DLLVM_CONFIG_PATH=${INTREE_PREFIX}/bin/llvm-config \
 	      -DCMAKE_BUILD_TYPE="${LIBCXXABI_BUILD_TYPE}" \
 	      -DCMAKE_INSTALL_PREFIX="${CLANG_RESDIR}" \
 	      -DLIBCXXABI_LIBDIR_SUFFIX="${LINUX_VE_LIBSUFFIX}" \
@@ -225,4 +228,6 @@ install-libcxxabi-ve:
         
 # Clearout the temporary install prefix.
 prepare:
-	rm -rf ${PREFIX}/*
+	rm -f ${INTREE_PREFIX}/lib/\*
+	rm -rf ${INTREE_PREFIX}/bin/*
+	rm -rf ${INTREE_PREFIX}/include/*
