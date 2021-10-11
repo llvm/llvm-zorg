@@ -1299,7 +1299,6 @@ all += [
 
     {'name' : 'mlir-s390x-linux',
     'tags'  : ["mlir", "s390x"],
-    'collapseRequests' : False,
     'workernames' : ["systemz-1"],
     'builddir': 'mlir-s390x-linux',
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
