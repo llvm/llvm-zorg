@@ -692,10 +692,8 @@ all = [
                     stage1_config='Release',
                     extra_cmake_args=[
                         "-DLLVM_ENABLE_ASSERTIONS=On",
-                        "-DCMAKE_C_COMPILER=/opt/IBM/xlC/16.1.0/bin/xlclang",
-                        "-DCMAKE_CXX_COMPILER=/opt/IBM/xlC/16.1.0/bin/xlclang++",
-                        "-DCMAKE_C_FLAGS='-qmaxmem=-1 -qarch=pwr8 -qaltivec -qalias=noansi'",
-                        "-DCMAKE_CXX_FLAGS='-qmaxmem=-1 -qarch=pwr8 -qaltivec -qalias=noansi'",
+                        "-DCMAKE_C_COMPILER=/opt/IBM/openxlC/17.1.0/bin/ibm-clang",
+                        "-DCMAKE_CXX_COMPILER=/opt/IBM/openxlC/17.1.0/bin/ibm-clang++_r",
                         "-DPython3_EXECUTABLE:FILEPATH=/opt/freeware/bin/python3_64",
                         "-DLLVM_ENABLE_ZLIB=OFF", "-DLLVM_APPEND_VC_REV=OFF",
                         "-DLLVM_DEFAULT_TARGET_TRIPLE=powerpc64le-unknown-linux-gnu",
