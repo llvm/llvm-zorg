@@ -1115,7 +1115,12 @@ all = [
     'tags'  : ["clang","lld","LTO"],
     'workernames' : ["as-worker-92"],
     'builddir': "clang-with-thin-lto-ubuntu",
-    'factory' : ClangLTOBuilder.getClangWithLTOBuildFactory(jobs=72, lto='thin')},
+    'factory' : ClangLTOBuilder.getClangWithLTOBuildFactory(
+                    jobs=72,
+                    lto='thin',
+                    extra_configure_args_lto_stage=[
+                        '-DLLVM_ENABLE_ASSERTIONS=OFF',
+                    ])},
 
     {'name' : "clang-with-thin-lto-wpd-ubuntu",
     'tags'  : ["clang","lld","LTO"],
