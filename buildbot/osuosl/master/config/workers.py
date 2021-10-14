@@ -77,7 +77,6 @@ def get_all():
         create_worker("ppc64be-sanitizer", properties={'jobs': 16}, max_builds=1),
 
         # POWER 8 PowerPC little endian (powerpc64le)
-        create_worker("ppc64le-clang-test", properties={'jobs': 4}, max_builds=1),
         create_worker("ppc64le-clang-lnt-test", properties={'jobs': 8}, max_builds=1),
         create_worker("ppc64le-clang-multistage-test", properties={'jobs': 8}, max_builds=1),
         create_worker("ppc64le-sanitizer", properties={'jobs': 4}, max_builds=1),

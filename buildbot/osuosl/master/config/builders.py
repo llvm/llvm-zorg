@@ -646,19 +646,6 @@ all = [
                     stage1_config='Release',
                     extra_cmake_args=["-DLLVM_ENABLE_ASSERTIONS=ON"])},
 
-    {'name' : "clang-ppc64le-linux",
-    'tags'  : ["clang", "ppc", "ppc64le"],
-    'workernames' : ["ppc64le-clang-test"],
-    'builddir': "clang-ppc64le",
-    'factory' : ClangBuilder.getClangCMakeBuildFactory(
-                    clean=False,
-                    checkout_lld=False,
-                    useTwoStage=False,
-                    stage1_config='Release',
-                    extra_cmake_args=[
-                        "-DLLVM_ENABLE_ASSERTIONS=ON",
-                        "-DPYTHON_EXECUTABLE:FILEPATH=/usr/local/bin/python3"])},
-
     {'name' : "clang-ppc64le-rhel",
     'tags'  : ["clang", "ppc", "ppc64le"],
     'workernames' : ["ppc64le-clang-rhel-test"],
