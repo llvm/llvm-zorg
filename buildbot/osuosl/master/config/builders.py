@@ -936,7 +936,7 @@ all = [
     {'name' : "polly-x86_64-linux-plugin",
     'tags'  : ["polly"],
     'workernames' : ["polly-x86_64-gce1"],
-    'builddir': "polly-x86_64-linux",
+    'builddir': "polly-x86_64-linux-plugin",
     'factory' : PollyBuilder.getPollyBuildFactory(
                     clean=False,
                     install=False,
@@ -979,7 +979,7 @@ all = [
     {'name' : "polly-x86_64-linux-shared",
     'tags'  : ["polly"],
     'workernames' : ["polly-x86_64-gce2"],
-    'builddir': "polly-x86_64-linux",
+    'builddir': "polly-x86_64-linux-shared",
     'factory' : PollyBuilder.getPollyBuildFactory(
                     clean=False,
                     install=False,
@@ -1001,7 +1001,7 @@ all = [
     {'name' : "polly-x86_64-linux-shared-plugin",
     'tags'  : ["polly"],
     'workernames' : ["polly-x86_64-gce2"],
-    'builddir': "polly-x86_64-linux",
+    'builddir': "polly-x86_64-linux-shared-plugin",
     'factory' : PollyBuilder.getPollyBuildFactory(
                     clean=False,
                     install=False,
@@ -1024,7 +1024,7 @@ all = [
     {'name' : "polly-x86_64-linux-shlib",
     'tags'  : ["polly"],
     'workernames' : ["polly-x86_64-gce2"],
-    'builddir': "polly-x86_64-linux",
+    'builddir': "polly-x86_64-linux-shlib",
     'factory' : PollyBuilder.getPollyBuildFactory(
                     clean=False,
                     install=False,
@@ -1047,7 +1047,7 @@ all = [
     {'name' : "polly-x86_64-linux-shlib-plugin",
     'tags'  : ["polly"],
     'workernames' : ["polly-x86_64-gce2"],
-    'builddir': "polly-x86_64-linux",
+    'builddir': "polly-x86_64-linux-shlib-plugin",
     'factory' : PollyBuilder.getPollyBuildFactory(
                     clean=False,
                     install=False,
