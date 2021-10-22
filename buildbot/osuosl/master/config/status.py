@@ -280,6 +280,36 @@ all = [
         subject = "Build Failure: %(builder)s",
         mode = "failing",
         builders = ["openmp-offload-amdgpu-project","openmp-offload-amdgpu-runtime"]),
+    reporters.MailNotifier(
+        fromaddr="llvm.buildmaster@lab.llvm.org",
+        sendToInterestedUsers = False,
+        extraRecipients=["flangbuilder@meinersbur.de"],
+        subject = "Build Failure (flang): %(builder)s",
+        mode = "failing",
+        builders = ["flang-x86_64-windows"]),
+    reporters.MailNotifier(
+        fromaddr="llvm.buildmaster@lab.llvm.org",
+        sendToInterestedUsers = False,
+        extraRecipients=["offloadbuilder@meinersbur.de"],
+        subject = "Build Failure (offload): %(builder)s",
+        mode = "failing",
+        builders = ["openmp-offload-cuda-project","openmp-offload-cuda-runtime"]),
+    reporters.MailNotifier(
+        fromaddr="llvm.buildmaster@lab.llvm.org",
+        sendToInterestedUsers = False,
+        extraRecipients=["pollybuilder@meinersbur.de"],
+        subject = "Build Failure (polly): %(builder)s",
+        mode = "failing",
+        builders = [
+                "polly-x86_64-linux",
+                "polly-x86_64-linux-noassert",
+                "polly-x86_64-linux-plugin",
+                "polly-x86_64-linux-shared",
+                "polly-x86_64-linux-shared-plugin",
+                "polly-x86_64-linux-shlib",
+                "polly-x86_64-linux-shlib-plugin",
+                "polly-sphinx-docs",
+            ]),
 ]
 
 
