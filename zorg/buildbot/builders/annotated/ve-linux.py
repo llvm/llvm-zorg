@@ -33,7 +33,8 @@ def main(argv):
     }
 
     for target in build_targets:
-        with step(target, halt_on_fail=True):
+        halt_on_fail = not ("check-" in target)
+        with step(target, halt_on_fail=halt_on_fail):
             make_cmd = build_make_cmd(makefile_path, target, make_vars)
             run_command(make_cmd, cwd='.')
 
