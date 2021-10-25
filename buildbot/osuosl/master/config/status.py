@@ -166,13 +166,6 @@ all = [
     reporters.MailNotifier(
         fromaddr = "llvm.buildmaster@lab.llvm.org",
         sendToInterestedUsers = False,
-        extraRecipients = ["jan.kratochvil@redhat.com"],
-        subject = "Build %(builder)s Failure",
-        mode = "failing",
-        builders = ["lldb-x86_64-fedora"]),
-    reporters.MailNotifier(
-        fromaddr = "llvm.buildmaster@lab.llvm.org",
-        sendToInterestedUsers = False,
         extraRecipients = ["kkleine@redhat.com"],
         subject = "Build %(builder)s Failure",
         mode = "failing",

@@ -2159,19 +2159,6 @@ all += [
                                         '-DLLVM_LIT_TOOLS_DIR=C:\\Program Files\\GnuWin32\\usr\\bin',
                                         ])},
 
-# LLDB builders.
-
-    {'name' : "lldb-x86_64-fedora",
-    'tags'  : ["lldb"],
-    'workernames' : ["lldb-x86_64-fedora"],
-    'builddir': "lldb-x86_64-fedora",
-    'factory' : LLDBBuilder.getLLDBCMakeBuildFactory(
-                    clean=True,
-                    test=True,
-                    extra_cmake_args=['-DLLVM_ENABLE_ASSERTIONS=True',
-                                        '-DLLVM_USE_LINKER=gold',
-                                        '-DLLVM_LIT_ARGS=-v'])},
-
 # Builders for ML-driven compiler optimizations.
 
     # Development mode build bot: tensorflow C APIs are present, and
