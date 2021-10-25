@@ -2004,6 +2004,12 @@ all += [
     'builddir': "publish-doxygen-docs",
     'factory' : DoxygenDocsBuilder.getLLVMDocsBuildFactory()},
 
+    {'name' : "polly-sphinx-docs",
+    'tags'  : ["llvm", "doc"],
+    'workernames' : ["polly-x86_64-gce1"],
+    'builddir': "polly-sphinx-docs",
+    'factory': SphinxDocsBuilder.getSphinxDocsBuildFactory(polly_html=True)},
+
 # CUDA builders.
 
     {'name' : "clang-cuda-k80",

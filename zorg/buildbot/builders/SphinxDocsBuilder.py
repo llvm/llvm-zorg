@@ -30,6 +30,7 @@ def getSphinxDocsBuildFactory(
         libcxx_html       = False, # Build Libc++ HTML documentation
         libunwind_html    = False, # Build libunwind HTML documentation
         lldb_html         = False, # Build LLDB HTML documentation
+        polly_html        = False, # Build Polly HTML documentation
         extra_configure_args = None,
         **kwargs):
 
@@ -66,6 +67,8 @@ def getSphinxDocsBuildFactory(
         depends_on_projects.append('libcxxabi')
     if libunwind_html:
         depends_on_projects.append('libunwind')
+    if polly_html:
+        depends_on_projects.append('polly')
 
     f = UnifiedTreeBuilder.getCmakeBuildFactory(
             depends_on_projects=depends_on_projects,
@@ -137,6 +140,14 @@ def getSphinxDocsBuildFactory(
                                description=["Build libunwind Sphinx HTML documentation"],
                                workdir=llvm_objdir,
                                targets=['docs-libunwind-html']
+                              ))
+
+    if polly_html:
+        f.addStep(NinjaCommand(name="docs-polly-html",
+                               haltOnFailure=True,
+                               description=["Build Polly Sphinx HTML documentation"],
+                               workdir=llvm_objdir,
+                               targets=['docs-polly-html']
                               ))
 
     return f
