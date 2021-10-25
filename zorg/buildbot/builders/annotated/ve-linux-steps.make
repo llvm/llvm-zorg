@@ -10,9 +10,8 @@ get-steps:
 	@echo "build-crt-ve"
 	@echo "install-crt-ve"
 	@echo "check-crt-ve"
-# TODO: Activate runtimes.
-# @echo "build-libunwind-ve"
-# @echo "install-libunwind-ve"
+	@echo "build-libunwind-ve"
+	@echo "install-libunwind-ve"
 # @echo "build-libcxx-ve"
 # @echo "install-libcxx-ve"
 # @echo "build-libcxxabi-ve"
