@@ -117,7 +117,7 @@ function build_stage1_clang_at_revison {
   common_stage1_variables
 
   curl -s https://raw.githubusercontent.com/chromium/chromium/master/tools/clang/scripts/update.py \
-    | python - --output-dir=${STAGE1_DIR}
+    | python3 - --output-dir=${STAGE1_DIR}
 
   echo @@@BUILD_STEP using pre-built stage1 clang at $(cat ${STAGE1_DIR}/cr_build_revision)@@@
 }
