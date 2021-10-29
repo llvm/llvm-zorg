@@ -227,6 +227,10 @@ install-libcxxabi-ve:
         
 # Clearout the temporary install prefix.
 prepare:
-	rm -f ${INTREE_PREFIX}/lib/\*
-	rm -rf ${INTREE_PREFIX}/bin/*
-	rm -rf ${INTREE_PREFIX}/include/*
+	# Build everything from scratch - TODO: incrementalize later.
+	rm -rf ${LLVM_PREFIX}
+	rm -rf ${LLVM_BUILD}
+	rm -rf ${CRT_BUILD_VE}
+	rm -rf ${LIBUNWIND_BUILD_VE}
+	rm -rf ${LIBCXXABI_BUILD_VE}
+	rm -rf ${LIBCXX_BUILD_VE}
