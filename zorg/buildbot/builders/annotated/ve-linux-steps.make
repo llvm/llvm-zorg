@@ -76,9 +76,9 @@ build-llvm:
 	mkdir -p ${LLVM_BUILD}
 	cd ${LLVM_BUILD} && cmake ${MONOREPO}/llvm -G Ninja \
 	      -DCMAKE_BUILD_TYPE=RelWithDebInfo \
-	      -DLLVM_BUILD_LLVM_DYLIB=On \
-	      -DLLVM_LINK_LLVM_DYLIB=On \
-	      -DCLANG_LINK_CLANG_DYLIB=On \
+	      -DLLVM_BUILD_LLVM_DYLIB=Off \
+	      -DLLVM_LINK_LLVM_DYLIB=Off \
+	      -DCLANG_LINK_CLANG_DYLIB=Off \
 	      -DLLVM_TARGETS_TO_BUILD="X86" \
 	      -DLLVM_EXPERIMENTAL_TARGETS_TO_BUILD="VE" \
 	      -DLLVM_ENABLE_PROJECTS="clang" \
