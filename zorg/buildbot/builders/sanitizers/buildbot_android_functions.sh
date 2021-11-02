@@ -194,13 +194,9 @@ function test_android {
   rm -rf test_android_log_*
   rm -rf tested_arch_*
   rm -rf shards_*
-  LOGS=
   for SERIAL in $ANDROID_DEVICES; do
-    LOG="$(mktemp test_android_log_XXXX)"
-    (test_on_device "$SERIAL" $@ 2>&1 >"$LOG") &
-    LOGS="$LOGS $LOG,$!"
+    test_on_device "$SERIAL" $@
   done
-  tail_pids "$LOGS"
 
   # Return to avoid exception if we already have error.
   [[ $BUILD_RT_ERR == "" ]] || return
