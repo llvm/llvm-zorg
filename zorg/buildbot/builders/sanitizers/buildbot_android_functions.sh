@@ -236,12 +236,6 @@ function run_tests_sharded {
   tail_pids "$LOGS" || true
 }
 
-function step_failed {
-  sleep 5
-  echo @@@STEP_FAILURE@@@
-  sleep 5
-}
-
 function test_arch_on_device {
   local _arch=$1
   local _serial=$2
@@ -281,12 +275,12 @@ function test_arch_on_device {
          $COMPILER_RT_BUILD_DIR/lib/asan/tests/AsanNoinstTest"
 
   for F in $FILES ; do
-    ( $ADB push $F $DEVICE_ROOT/ >/dev/null || step_failed )&
+    ( $ADB push $F $DEVICE_ROOT/ >/dev/null || echo @@@STEP_FAILURE@@@ )&
   done
   wait
 
   echo @@@BUILD_STEP run lit tests [$DEVICE_DESCRIPTION]@@@
-  (cd $COMPILER_RT_BUILD_DIR && ninja check-all) || step_failed
+  (cd $COMPILER_RT_BUILD_DIR && ninja check-all) || echo @@@STEP_FAILURE@@@
 
   run_tests_sharded sanitizer_common SanitizerTest ""
   run_tests_sharded asan AsanNoinstTest ""

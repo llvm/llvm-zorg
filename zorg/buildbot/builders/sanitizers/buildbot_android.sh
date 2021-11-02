@@ -21,6 +21,8 @@ if [ -e /usr/include/plugin-api.h ]; then
   CMAKE_COMMON_OPTIONS="${CMAKE_COMMON_OPTIONS}"
 fi
 
+clobber
+
 download_android_tools
 
 # Stage 1
