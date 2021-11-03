@@ -245,6 +245,7 @@ def cmake_builder(target):
                        '-DCMAKE_MAKE_PROGRAM=' + NINJA,
                        "-DCMAKE_INSTALL_PREFIX=" + conf.installdir(),
                        "-DLLVM_ENABLE_PROJECTS=" + conf.llvm_enable_projects,
+                       "-DLLVM_ENABLE_RUNTIMES=" + conf.llvm_enable_runtimes,
                        conf.llvmsrcdir()]
 
     compiler_flags = conf.compiler_flags
@@ -412,6 +413,7 @@ def clang_builder(target):
                                        "TRUE" if conf.assertions else "FALSE"),
                                    '-DCMAKE_BUILD_TYPE=RelWithDebInfo',
                                    '-DLLVM_ENABLE_PROJECTS={}'.format(conf.llvm_enable_projects),
+                                   '-DLLVM_ENABLE_RUNTIMES={}'.format(conf.llvm_enable_runtimes),
                                    '-DCMAKE_MAKE_PROGRAM=' + NINJA,
                                    '-DLLVM_VERSION_PATCH=99',
                                    '-DLLVM_VERSION_SUFFIX=""',
@@ -556,6 +558,7 @@ def lldb_cmake_builder(target, variant=None):
                  '-DLLVM_ENABLE_ASSERTIONS:BOOL={}'.format("TRUE" if conf.assertions else "FALSE"),
                  '-DLLVM_ENABLE_MODULES=On',
                  '-DLLVM_ENABLE_PROJECTS={}'.format(conf.llvm_enable_projects),
+                 '-DLLVM_ENABLE_RUNTIMES={}'.format(conf.llvm_enable_runtimes),
                  '-DLLVM_LIT_ARGS={}'.format(' '.join(lit_args)),
                  '-DLLVM_VERSION_PATCH=99']
 
@@ -1040,7 +1043,10 @@ def parse_args():
                                                   " GlobalISel CMake flag.")
     parser.add_argument('--projects', dest='llvm_enable_projects',
                         default="clang;clang-tools-extra;compiler-rt;libcxx",
-                        help="Semicolon seperated list of projects to build.")
+                        help="Semicolon seperated list of projects to enable.")
+    parser.add_argument('--runtimes', dest='llvm_enable_runtimes',
+                        default="",
+                        help="Semicolon seperated list of runtimes to enable.")
     parser.add_argument('--timeout', dest='timeout', type=int, default='600',
                         help='Individual test timeout in seconds.')
     args = parser.parse_args()
