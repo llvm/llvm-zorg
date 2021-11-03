@@ -1660,6 +1660,32 @@ all += [
                         ],
                     )},
 
+    {'name' : "openmp-offload-amdgpu-runtime-experimental",
+    'tags'  : ["openmp"],
+    'workernames' : ["omp-vega20-1"],
+    'builddir': "openmp-offload-amdgpu-runtime-experimental",
+    'factory' : OpenMPBuilder.getOpenMPCMakeBuildFactory(
+                        clean=True,
+                        enable_runtimes=['openmp'],
+                        depends_on_projects=['llvm','clang','lld','openmp'],
+                        extraCmakeArgs=[
+                            "-DCMAKE_BUILD_TYPE=Release",
+                            "-DCLANG_DEFAULT_LINKER=lld",
+                            "-DLLVM_TARGETS_TO_BUILD=X86;AMDGPU",
+                            "-DLLVM_ENABLE_ASSERTIONS=ON",
+                            "-DLLVM_ENABLE_RUNTIMES=openmp",
+                            "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
+                            "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
+                            ],
+                        install=True,
+                        testsuite=False,
+                        testsuite_sollvevv=True,
+                        extraTestsuiteCmakeArgs=[
+                            "-DTEST_SUITE_SOLLVEVV_OFFLOADING_CFLAGS=-fopenmp-targets=amdgcn-amd-amdhsa;-Xopenmp-target=amdgcn-amd-amdhsa",
+                            "-DTEST_SUITE_SOLLVEVV_OFFLOADING_LDLAGS=-fopenmp-targets=amdgcn-amd-amdhsa;-Xopenmp-target=amdgcn-amd-amdhsa",
+                        ],
+                    )},
+
 
 # Libc++ builders.
 

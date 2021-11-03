@@ -272,7 +272,7 @@ all = [
         extraRecipients=["dl.gcr.lightning.buildbot@amd.com"],
         subject = "Build Failure: %(builder)s",
         mode = "failing",
-        builders = ["openmp-offload-amdgpu-project","openmp-offload-amdgpu-runtime"]),
+        builders = ["openmp-offload-amdgpu-runtime"]),
     reporters.MailNotifier(
         fromaddr="llvm.buildmaster@lab.llvm.org",
         sendToInterestedUsers = False,
