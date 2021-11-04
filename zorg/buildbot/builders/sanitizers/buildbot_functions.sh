@@ -141,6 +141,11 @@ function build_stage2 {
     local llvm_use_sanitizer="Memory"
     local fsanitize_flag="-fsanitize=memory"
     local build_type="Release"
+  elif [ "$sanitizer_name" == "msan-track-origins" ]; then
+    export MSAN_SYMBOLIZER_PATH="${llvm_symbolizer_path}"
+    local llvm_use_sanitizer="MemoryWithOrigins"
+    local fsanitize_flag="-fsanitize=memory -fsanitize-memory-track-origins"
+    local build_type="Release"
   elif [ "$sanitizer_name" == "asan" ]; then
     export ASAN_SYMBOLIZER_PATH="${llvm_symbolizer_path}"
     export ASAN_OPTIONS="check_initialization_order=true:detect_stack_use_after_return=1:detect_leaks=1"
@@ -194,11 +199,18 @@ function build_stage2 {
      -DCMAKE_CXX_FLAGS="${sanitizer_cflags}" \
      -DCMAKE_EXE_LINKER_FLAGS="${sanitizer_ldflags}" \
      $LLVM && \
-   ninja) || echo $step_result
+   ninja) || ( echo $step_result ; exit 1 )
+
 }
 
 function build_stage2_msan {
   build_stage2 msan @@@STEP_FAILURE@@@
+}
+
+function build_stage2_msan_track_origins {
+  build_stage2 msan-track-origins @@@STEP_FAILURE@@@ || {
+    export MSAN_FAILED=${build_dir}
+  }
 }
 
 function build_stage2_asan {
@@ -215,11 +227,17 @@ function check_stage2 {
   local build_dir=${STAGE2_DIR}
   
   echo @@@BUILD_STEP stage2/$sanitizer_name check@@@
-  ninja -C ${build_dir} check-all || echo $step_result
+  ninja -C ${build_dir} check-all || ( echo $step_result ; exit 1 )
 }
 
 function check_stage2_msan {
-  check_stage2 msan @@@STEP_FAILURE@@@
+  check_stage2 msan @@@STEP_FAILURE@@@ || {
+    export MSAN_FAILED=${build_dir}
+  }
+}
+
+function check_stage2_msan_track_origins {
+  check_stage2 msan-track-origins @@@STEP_FAILURE@@@
 }
 
 function check_stage2_asan {
@@ -247,11 +265,17 @@ function build_stage3 {
      -DCMAKE_CXX_COMPILER=${clang_path}/clang++ \
      -DLLVM_USE_LINKER=lld \
      $LLVM && \
-  ninja clang) || echo $step_result
+  ninja clang) || ( echo $step_result ; exit 1 )
 }
 
 function build_stage3_msan {
-  build_stage3 msan @@@STEP_FAILURE@@@
+  build_stage3 msan @@@STEP_FAILURE@@@ || {
+    export MSAN_FAILED=${build_dir}
+  }
+}
+
+function build_stage3_msan_track_origins {
+  build_stage3 msan-track-origins @@@STEP_FAILURE@@@
 }
 
 function build_stage3_asan {
@@ -268,11 +292,17 @@ function check_stage3 {
   local build_dir=llvm_build2_${sanitizer_name}
 
   echo @@@BUILD_STEP stage3/$sanitizer_name check@@@
-  (cd ${build_dir} && ninja check-all) || echo $step_result
+  (cd ${build_dir} && ninja check-all) || ( echo $step_result ; exit 1 )
 }
 
 function check_stage3_msan {
-  check_stage3 msan @@@STEP_FAILURE@@@
+  check_stage3 msan @@@STEP_FAILURE@@@ || {
+    export MSAN_FAILED=${build_dir}
+  }
+}
+
+function check_stage3_msan_track_origins {
+  check_stage3 msan-track-origins @@@STEP_FAILURE@@@
 }
 
 function check_stage3_asan {
