@@ -1157,6 +1157,7 @@ all = [
                         '-DLLVM_ENABLE_ASSERTIONS=True',
                         '-DLLVM_USE_LINKER=gold',
                         '-DLLDB_ENABLE_PYTHON=True',
+                        '-DLLDB_TEST_USER_ARGS=-t',
                         '-DPYTHON_EXECUTABLE=/usr/bin/python3',
                         '-DCMAKE_C_COMPILER=clang',
                         '-DCMAKE_CXX_COMPILER=clang++'])},
