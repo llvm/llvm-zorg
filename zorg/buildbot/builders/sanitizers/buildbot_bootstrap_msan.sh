@@ -34,7 +34,7 @@ build_stage3_msan
 
 check_stage3_msan
 
-if [[ -v MSAN_FAILED ]]; then
+if [[ -v msan_FAILED ]]; then
   # Stage 2 / MemoryWithOriginsSanitizer
   build_stage2_msan_track_origins
 
