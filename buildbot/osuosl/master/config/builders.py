@@ -1678,7 +1678,7 @@ all += [
                             "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
                             ],
                         install=True,
-                        testsuite=False,
+                        testsuite=True,
                         testsuite_sollvevv=True,
                         extraTestsuiteCmakeArgs=[
                             "-DTEST_SUITE_SOLLVEVV_OFFLOADING_CFLAGS=-fopenmp-targets=amdgcn-amd-amdhsa;-Xopenmp-target=amdgcn-amd-amdhsa",
