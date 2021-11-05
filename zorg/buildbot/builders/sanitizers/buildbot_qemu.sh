@@ -40,7 +40,6 @@ you can build the images (only necessary once-per-clobber) by:
 You can also choose to skip the x86_64 HWASan LAM testing by supplying
 SKIP_HWASAN_LAM=true in your invocation of this script.
 =====================================================================
-@@@STEP_EXCEPTION@@@
 EOF
 )
 set -x
@@ -64,6 +63,7 @@ function setup_lam_qemu_image {
     # Make the "missing file" error clearer by not effectively echoing twice.
     set +x
     echo "$MISSING_QEMU_IMAGE_MESSAGE"
+    build_exception
     exit 1
   )
 }
@@ -121,7 +121,7 @@ function build_qemu {
     ${build_dir}/qemu-system-x86_64 --version &&
     ${build_dir}/qemu-img --version
   ) || (
-    echo "@@@STEP_EXCEPTION@@@"
+    build_exception
     exit 2
   )
 }
@@ -143,7 +143,7 @@ function build_lam_linux {
     make O=${build_dir} LD=ld.bfd -j $(nproc) &&
     ls ${build_dir}/arch/x86_64/boot/bzImage
   ) || (
-    echo "@@@STEP_EXCEPTION@@@"
+    build_exception
     exit 2
   )
 }
@@ -284,7 +284,7 @@ function run_scudo_tests {
     ninja install-scudo_standalone
 
     ninja check-scudo_standalone || exit 3
-  ) || echo "@@@STEP_FAILURE@@@"
+  ) || build_failure
 }
 
 function build_llvm_symbolizer {
@@ -296,7 +296,7 @@ function build_llvm_symbolizer {
     cat configure.log
 
     ninja llvm-symbolizer || exit 3
-  ) || echo "@@@STEP_FAILURE@@@"
+  ) || build_failure
 }
 
 function run_hwasan_lam_tests {
@@ -315,7 +315,7 @@ function run_hwasan_lam_tests {
     ninja lld || exit 3
 
     ninja check-hwasan-lam || exit 3
-  ) || echo "@@@STEP_FAILURE@@@"
+  ) || build_failure
 }
 
 echo "@@@BUILD_STEP configure@@@"

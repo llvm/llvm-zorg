@@ -312,3 +312,13 @@ function check_stage3_asan {
 function check_stage3_ubsan {
   check_stage3 ubsan @@@STEP_FAILURE@@@
 }
+
+function build_failure() {
+  sleep 5
+  echo "@@@STEP_FAILURE@@@"
+}
+
+function build_exception() {
+  sleep 5
+  echo "@@@STEP_EXCEPTION@@@"
+}
