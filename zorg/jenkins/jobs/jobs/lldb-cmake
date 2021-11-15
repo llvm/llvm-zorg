@@ -144,7 +144,7 @@ pipeline {
                     body:'$DEFAULT_CONTENT'
         }
         success {
-             build job: 'lldb-relay', wait: false
+             build job: 'relay-lldb', wait: false
         }
     }
 }
