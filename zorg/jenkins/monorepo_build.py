@@ -937,6 +937,7 @@ KNOWN_BUILDS = [
     'lldb-cmake-matrix',
     'fetch',
     'artifact',
+    'properties',
     'static-analyzer-benchmarks',
 ]
 
