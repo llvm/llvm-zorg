@@ -551,6 +551,7 @@ def lldb_cmake_builder(target, variant=None):
                  conf.llvmsrcdir(),
                  '-DCMAKE_BUILD_TYPE={}'.format(cmake_build_type),
                  '-DCMAKE_EXPORT_COMPILE_COMMANDS=ON',
+                 '-DLLVM_TARGETS_TO_BUILD=X86;ARM;AArch64',
                  '-DCMAKE_INSTALL_PREFIX={}'.format(conf.lldbinstalldir()),
                  '-DCMAKE_MAKE_PROGRAM={}'.format(NINJA),
                  '-DLLDB_TEST_USER_ARGS='+';'.join(dotest_args),
