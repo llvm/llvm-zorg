@@ -64,4 +64,15 @@ def pipeline(job_pattern,
         }
     }
 }
+
+def lldb_pipeline(job_pattern,
+        artifact_url='http://labmaster2.local/artifacts/',
+        last_good_properties_url='http://labmaster2.local/artifacts/lldb-cmake/last_good_build.properties') {
+    node('master') {
+        stage('main') {
+            relay_steps job_pattern, artifact_url, last_good_properties_url
+        }
+    }
+}
+
 return this

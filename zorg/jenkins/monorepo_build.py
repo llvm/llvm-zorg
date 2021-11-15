@@ -865,6 +865,29 @@ def build_upload_artifact():
                conf.job_name + "/g" + conf.git_sha]
     run_cmd(conf.workspace, lng_cmd)
 
+def build_upload_properties():
+    """Create artifact for this build, and upload to server."""
+    if conf.noupload:
+        print('Not uploading artificats')
+        return
+    header("Uploading Artifact")
+    prop_file = "last_good_build.properties"
+
+    with open(prop_file, 'w') as prop_fd:
+        prop_fd.write("LLVM_REV={}\n".format(conf.svn_rev))
+        prop_fd.write("GIT_DISTANCE={}\n".format(conf.git_distance))
+        prop_fd.write("GIT_SHA={}\n".format(conf.git_sha))
+
+    mkdir_cmd = ["ssh", "buildslave@" + SERVER, "mkdir", "-p", "/Library/WebServer/Documents/artifacts/" + conf.job_name]
+
+    run_cmd(conf.workspace, mkdir_cmd)
+
+    upload_cmd = ["scp", prop_file,
+                  "buildslave@" + SERVER + ":/Library/WebServer/Documents/artifacts/" +
+                  conf.job_name + "/"]
+
+    run_cmd(conf.workspace, upload_cmd)
+
 
 def run_cmd(working_dir, cmd, env=None, sudo=False, err_okay=False):
     """Run a command in a working directory, and make sure it returns zero."""
@@ -1083,6 +1106,8 @@ def main():
             fetch_compiler()
         elif args.build_type == 'artifact':
             build_upload_artifact()
+        elif args.build_type == 'properties':
+            build_upload_properties()
         elif args.build_type == 'static-analyzer-benchmarks':
             static_analyzer_benchmarks_builder()
     except subprocess.CalledProcessError as exct:

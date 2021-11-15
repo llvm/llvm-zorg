@@ -105,6 +105,25 @@ pipeline {
                 }
             }
         }
+        stage('Upload artifacts (LLDB)') {
+           steps {
+               timeout(90) {
+                    sh '''
+                    set -u
+                    cd llvm-project
+                    git_desc=$(git describe --match "first_commit")
+
+                    export GIT_DISTANCE=$(echo ${git_desc} | cut -f 2 -d "-")
+
+                    sha=$(echo ${git_desc} | cut -f 3 -d "-")
+                    export GIT_SHA=${sha:1}
+
+                    cd -
+                    python llvm-zorg/zorg/jenkins/monorepo_build.py properties
+                    '''
+             }
+          }
+       }
     }
     post {
         always {
@@ -123,6 +142,9 @@ pipeline {
                     replyTo: '$DEFAULT_REPLYTO',
                     to: '$DEFAULT_RECIPIENTS',
                     body:'$DEFAULT_CONTENT'
+        }
+        success {
+             build job: 'lldb-relay', wait: false
         }
     }
 }
