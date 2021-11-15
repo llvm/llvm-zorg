@@ -25,7 +25,10 @@ pipeline {
             steps {
                 timeout(10) {
                     sh '''
-                        python llvm-zorg/zorg/jenkins/monorepo_build.py fetch
+                    # The relay job sets ARTIFACT to the last good LLDB build.
+                    # Here we use it to download the last good Clang.
+                    export ARTIFACT=clang-stage2-Rthinlto/latest
+                    python llvm-zorg/zorg/jenkins/monorepo_build.py fetch
                     '''
                     }
             }
