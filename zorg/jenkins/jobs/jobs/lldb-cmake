@@ -58,8 +58,6 @@ pipeline {
                       --projects="clang;libcxx;libcxxabi;compiler-rt;lld;lldb;cross-project-tests"  \
                       --compiler-flag="-Wdocumentation" \
                       --cmake-type=Release)
-
-                    if test $(hostname) == "green-dragon-04"; then sh /opt/codesign-workaround.sh lldb-build/bin/debugserver; fi
                       '''
                 }
             }
