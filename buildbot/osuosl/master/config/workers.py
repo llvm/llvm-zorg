@@ -211,6 +211,8 @@ def get_all():
 
         # CentOS 7.8.1127 on Intel(R) Xeon(R) Gold 6126 CPU @ 2.60GHz, 96GB RAM
         create_worker("hpce-aurora2", properties={'jobs': 8}, max_builds=1),
+        create_worker("hpce-ve-main", properties={'jobs': 8}, max_builds=1),
+        create_worker("hpce-ve-staging", properties={'jobs': 8}, max_builds=1),
 
         # Ubuntu 18.04 amd64 on Google Cloud, 16 core, Nvidia Tesla T4
         create_worker("mlir-nvidia", properties={'jobs': 16}, max_builds=1),

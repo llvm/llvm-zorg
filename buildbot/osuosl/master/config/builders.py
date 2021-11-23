@@ -2074,10 +2074,9 @@ all += [
                     script_interpreter=None)},
 
 # VE builders.
-
     {'name' : "clang-ve-ninja",
     'tags'  : ["clang"],
-    'workernames':["hpce-aurora2"],
+    'workernames':["hpce-aurora2","hpce-ve-staging","hpce-ve-main"],
     'builddir':"clang-ve-ninja",
     'factory' : AnnotatedBuilder.getAnnotatedBuildFactory(
                     script="ve-linux.py",
