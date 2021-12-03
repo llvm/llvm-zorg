@@ -2076,8 +2076,15 @@ all += [
 # VE builders.
     {'name' : "clang-ve-ninja",
     'tags'  : ["clang"],
-    'workernames':["hpce-aurora2","hpce-ve-staging","hpce-ve-main"],
+    'workernames':["hpce-ve-main"],
     'builddir':"clang-ve-ninja",
+    'factory' : AnnotatedBuilder.getAnnotatedBuildFactory(
+                    script="ve-linux.py",
+                    depends_on_projects=['llvm', 'clang', 'compiler-rt', 'libcxx'])},
+    {'name' : "clang-ve-staging",
+    'tags'  : ["clang"],
+    'workernames':["hpce-ve-staging"],
+    'builddir':"clang-ve-staging",
     'factory' : AnnotatedBuilder.getAnnotatedBuildFactory(
                     script="ve-linux.py",
                     depends_on_projects=['llvm', 'clang', 'compiler-rt', 'libcxx'])},
