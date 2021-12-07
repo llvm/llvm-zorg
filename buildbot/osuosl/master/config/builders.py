@@ -2205,7 +2205,7 @@ all += [
     {'name' : "ml-opt-dev-x86-64",
     'tags'  : ['ml_opt'],
     'collapseRequests': False,
-    'workernames' : ["ml-opt-dev-x86-64-b1"],
+    'workernames' : ["ml-opt-dev-x86-64-b1", "ml-opt-dev-x86-64-b2"],
     'builddir': "ml-opt-dev-x86-64-b1",
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                     clean=True,
@@ -2222,7 +2222,7 @@ all += [
     {'name' : "ml-opt-devrel-x86-64",
     'tags'  : ["ml_opt"],
     'collapseRequests': False,
-    'workernames' : ["ml-opt-devrel-x86-64-b1"],
+    'workernames' : ["ml-opt-devrel-x86-64-b1", "ml-opt-devrel-x86-64-b2"],
     'builddir': "ml-opt-devrel-x86-64-b1",
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                     clean=True,
@@ -2243,7 +2243,7 @@ all += [
     {'name' : "ml-opt-rel-x86-64",
     'tags'  : ["ml_opt"],
     'collapseRequests': False,
-    'workernames' : ["ml-opt-rel-x86-64-b1"],
+    'workernames' : ["ml-opt-rel-x86-64-b1", "ml-opt-rel-x86-64-b2"],
     'builddir': "ml-opt-rel-x86-64-b1",
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                     clean=True,

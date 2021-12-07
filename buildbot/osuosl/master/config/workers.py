@@ -251,6 +251,12 @@ def get_all():
                      properties={'jobs': 64}, max_builds=1),
         create_worker("ml-opt-devrel-x86-64-b1",
                      properties={'jobs': 64}, max_builds=1),
+        create_worker("ml-opt-dev-x86-64-b2",
+                     properties={'jobs': 64}, max_builds=1),
+        create_worker("ml-opt-rel-x86-64-b2",
+                     properties={'jobs': 64}, max_builds=1),
+        create_worker("ml-opt-devrel-x86-64-b2",
+                     properties={'jobs': 64}, max_builds=1),
 
         # Ubuntu x86_64
         create_worker("thinlto-x86-64-bot1", properties={'jobs': 64}, max_builds=1),
