@@ -157,7 +157,7 @@ pipeline {
                     set -u
                     export PATH=$PATH:/usr/bin:/usr/local/bin
 
-                    python $WORKSPACE/llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-xcode test \
+                    echo "TEMPORARILY DISABLED (runs with too many jobs in parallel)" python $WORKSPACE/llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-xcode test \
                       --assertions \
                       --cmake-type=Release
                     '''
