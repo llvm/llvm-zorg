@@ -664,11 +664,12 @@ all = [
                         "-DCMAKE_BUILD_TYPE=Release",
                         "-DLLVM_LIT_ARGS=-vj 20"])},
 
-    {'name' : "clang-ppc64-aix-ppc64le",
-    'tags'  : ["clang", "aix", "ppc", "ppc64le"],
-    'workernames' : ["aix-ppc64-ppc64le"],
-    'builddir': "clang-ppc64-aix-ppc64le",
+    {'name' : "clang-ppc64-aix",
+    'tags'  : ["clang", "aix", "ppc"],
+    'workernames' : ["aix-ppc64"],
+    'builddir': "clang-ppc64-aix",
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
+                    env={'OBJECT_MODE': '64'},
                     clean=False,
                     checkout_clang_tools_extra=False,
                     checkout_compiler_rt=False,
@@ -683,7 +684,6 @@ all = [
                         "-DCMAKE_CXX_COMPILER=/opt/IBM/openxlC/17.1.0/bin/ibm-clang++_r",
                         "-DPython3_EXECUTABLE:FILEPATH=/opt/freeware/bin/python3_64",
                         "-DLLVM_ENABLE_ZLIB=OFF", "-DLLVM_APPEND_VC_REV=OFF",
-                        "-DLLVM_DEFAULT_TARGET_TRIPLE=powerpc64le-unknown-linux-gnu",
                         "-DLLVM_PARALLEL_LINK_JOBS=6",
                         "-DLLVM_ENABLE_WERROR=ON"])},
 
