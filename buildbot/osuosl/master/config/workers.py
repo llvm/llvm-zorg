@@ -16,9 +16,6 @@ def get_all():
         # Linux Ubuntu
         create_worker("as-worker-5", properties={'jobs' : 16}),
 
-        # Mac Pro 2.7 GHz 12-Core Intel Xeon E5, Maverick 10.9.2
-        create_worker("as-worker-3", properties={'jobs' : 8}, max_builds=4),
-
         # ARMv7/ARMv8 Linaro workers
         create_worker("linaro-tk1-01", properties={'jobs' : 4}, max_builds=1),
         create_worker("linaro-tk1-02", properties={'jobs' : 4}, max_builds=1),

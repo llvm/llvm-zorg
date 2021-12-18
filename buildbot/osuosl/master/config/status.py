@@ -106,7 +106,7 @@ all = [
         subject = "Build %(builder)s Failure",
         mode = "failing",
         builders = ["lld-x86_64-win",
-                    "lld-x86_64-freebsd", "lld-x86_64-darwin",
+                    "lld-x86_64-freebsd",
                     "clang-x86_64-linux-abi-test",
                     "clang-with-lto-ubuntu", "clang-with-thin-lto-ubuntu",
                     "llvm-clang-x86_64-expensive-checks-win",

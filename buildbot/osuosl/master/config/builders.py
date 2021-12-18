@@ -1201,16 +1201,6 @@ all = [
 
 # LLD builders.
 
-    {'name' : "lld-x86_64-darwin",
-    'tags'  : ["lld"],
-    'workernames' : ["as-worker-3"],
-    'builddir': "lld-x86_64-darwin",
-    'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
-                    clean=True,
-                    depends_on_projects=['llvm', 'lld'],
-                    extra_configure_args=[
-                        '-DLLVM_ENABLE_WERROR=OFF'])},
-
     {'name' : "lld-x86_64-win",
     'tags'  : ["lld"],
     'workernames' : ["as-worker-93"],
