@@ -122,7 +122,7 @@ def get_all():
         create_worker("sanitizer-buildbot8", properties={'jobs': 64}, max_builds=2),
 
         # POWER 8 PowerPC AIX 7.2
-        create_worker("aix-ppc64-ppc64le", properties={'jobs': 10}, max_builds=1),
+        create_worker("aix-ppc64", properties={'jobs': 10}, max_builds=1),
         create_worker("aix-ppc-libcxx", properties={'jobs': 4}, max_builds=1),
 
         # IBM z13 (s390x), Ubuntu 16.04.2
