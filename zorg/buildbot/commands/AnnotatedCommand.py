@@ -97,7 +97,7 @@ class AnnotatedBuildStep(buildstep.BuildStep):
 
     @defer.inlineCallbacks
     def addStep(self):
-        debuglog("AnnotatedBuildStep: adding step '%s': buildid=%s" % (
+        debuglog("AnnotatedBuildStep: adding step '{}': buildid={}".format(
                     self.name, self.build.buildid))
         yield buildstep.BuildStep.addStep(self)
         # Put ourselves into a list of processed steps of the build object.
@@ -107,14 +107,14 @@ class AnnotatedBuildStep(buildstep.BuildStep):
         self.description = [self.name]
         self.stdio_log = yield self.addLog('stdio')
 
-        debuglog("AnnotatedBuildStep: added step '%s': stepid=%s, buildid=%s" % (
+        debuglog("AnnotatedBuildStep: added step '{}': stepid={}, buildid={}".format(
                     self.name, self.stepid, self.build.buildid))
 
 
     @defer.inlineCallbacks
     def finishStep(self):
         hidden = False
-        debuglog("AnnotatedBuildStep: finish step '%s': stepid=%s, buildid=%s, results=%s" % (
+        debuglog("AnnotatedBuildStep: finish step '{}': stepid={}, buildid={}, results={}".format(
                     self.name, self.stepid, self.build.buildid, self.results))
         yield self.master.data.updates.finishStep(self.stepid, self.results,
                                                   hidden)
@@ -123,8 +123,8 @@ class AnnotatedBuildStep(buildstep.BuildStep):
 
     @defer.inlineCallbacks
     def startStep(self, remote, done=False):
-        debuglog("AnnotatedBuildStep::startStep() starting '%s': "
-                 "buildid=%s, done=%s" % (
+        debuglog("AnnotatedBuildStep::startStep() starting '{}': "
+                 "buildid={}, done={}".format(
                  self.name, self.build.buildid, done))
 
         try:
@@ -165,13 +165,13 @@ class AnnotatedBuildStep(buildstep.BuildStep):
             # Update step status in the database.
             yield self.finishStep()
 
-        debuglog("AnnotatedBuildStep::startStep() completed '%s': "
-                 "stepid=%s, buildid=%s, results=%s" % (
+        debuglog("AnnotatedBuildStep::startStep() completed '{}': "
+                 "stepid={}, buildid={}, results={}".format(
                  self.name, self.stepid, self.build.buildid, self.results))
 
     def requestFinish(self, status=None):
-        debuglog("AnnotatedBuildStep::requestFinish(%r): '%s': "
-                 "stepid=%s, buildid=%s, results=%r" % (
+        debuglog("AnnotatedBuildStep::requestFinish({}): '{}': "
+                 "stepid={}, buildid={}, results={}".format(
                  status, self.name, self.stepid, self.build.buildid, self.results))
         # Update the current step status with the worst result.
         if status is not None:
@@ -212,8 +212,8 @@ class AnnotatedBuildStep(buildstep.BuildStep):
 
     @defer.inlineCallbacks
     def run(self):
-        debuglog("AnnotatedBuildStep::run() starting '%s' step: "
-                 "stepid=%s, buildid=%s" % (
+        debuglog("AnnotatedBuildStep::run() starting '{}' step: "
+                 "stepid={}, buildid={}".format(
                  self.name, self.stepid, self.build.buildid))
 
         # Save previously collected log lines.
@@ -229,8 +229,8 @@ class AnnotatedBuildStep(buildstep.BuildStep):
         if self._loglines:
             yield self._flushLogs()
 
-        debuglog("AnnotatedBuildStep::run() exiting '%s' step: "
-                 "stepid=%s, buildid=%s, results=%s" % (
+        debuglog("AnnotatedBuildStep::run() exiting '{}' step: "
+                 "stepid={}, buildid={}, results={}".format(
                  self.name, self.stepid, self.build.buildid, self.results))
 
         return self.results
@@ -348,7 +348,7 @@ class AnnotatedCommand(buildstep.ShellMixin, buildstep.BuildStep):
         return self.annotated_steps[-1] if self.annotated_steps else None
 
     def _updateLastAnnotatedStepStatus(self, status):
-        debuglog(">>> AnnotatedCommand::_updateLastAnnotatedStepStatus(%r)" % status)
+        debuglog(">>> AnnotatedCommand::_updateLastAnnotatedStepStatus({})".format(status))
 
         # Alway update the common annotate command status.
         self.annotate_status = results.worst_status(self.annotate_status, status)
@@ -363,7 +363,8 @@ class AnnotatedCommand(buildstep.ShellMixin, buildstep.BuildStep):
 
     def _updateLastAnnotatedStepText(self, text = None):
         """Updating a step text. None to clean up."""
-        debuglog(">>> AnnotatedCommand::_updateLastAnnotatedStepText('%s')" % (text if text else ''))
+        debuglog(">>> AnnotatedCommand::_updateLastAnnotatedStepText('{}')".format(
+                 text if text else ''))
 
         s = self._getLastAnnotatedStep()
         if s is not None:
@@ -371,7 +372,8 @@ class AnnotatedCommand(buildstep.ShellMixin, buildstep.BuildStep):
 
     def _updateLastAnnotatedStepSummaryInfo(self, text = None):
         """Updating a step summary info. None to clean up."""
-        debuglog(">>> AnnotatedCommand::_updateLastAnnotatedStepSummaryInfo('%s')" % (text if text else ''))
+        debuglog(">>> AnnotatedCommand::_updateLastAnnotatedStepSummaryInfo('{}')".format(
+                 text if text else ''))
 
         s = self._getLastAnnotatedStep()
         if s is not None:
@@ -386,7 +388,7 @@ class AnnotatedCommand(buildstep.ShellMixin, buildstep.BuildStep):
             s.requestFinish()
 
     def _scheduleNewAnnotatedStep(self, name, logline):
-        debuglog(">>> AnnotatedCommand::_scheduleNewAnnotatedStep('%s')" % name)
+        debuglog(">>> AnnotatedCommand::_scheduleNewAnnotatedStep('{}')".format(name))
 
         self._fixupActiveAnnotatedStep()
 
@@ -515,7 +517,7 @@ class AnnotatedCommand(buildstep.ShellMixin, buildstep.BuildStep):
         ancmd, args = parse_annotate_cmd(line)
 
         if ancmd:
-            debuglog(">>> AnnotatedCommand::processAnnotatedCommand(): %s, %r" % (ancmd, args))
+            debuglog(">>> AnnotatedCommand::processAnnotatedCommand(): {}, {}".format(ancmd, args))
 
         try:
             if ancmd == STEP_LINK:
