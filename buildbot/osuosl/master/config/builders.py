@@ -110,8 +110,10 @@ all = [
                     extra_configure_args=[
                         "-DLLVM_ENABLE_EXPENSIVE_CHECKS=ON",
                         "-DLLVM_ENABLE_WERROR=OFF",
+                        "-DLLVM_USE_SPLIT_DWARF=ON",
+                        "-DLLVM_USE_LINKER=gold",
                         "-DCMAKE_BUILD_TYPE=Debug",
-                        "-DCMAKE_CXX_FLAGS=-U_GLIBCXX_DEBUG",
+                        "-DCMAKE_CXX_FLAGS=-U_GLIBCXX_DEBUG -Wno-misleading-indentation",
                         "-DLLVM_LIT_ARGS=-vv -j32"])},
 
     {'name' : "llvm-clang-x86_64-expensive-checks-win",
