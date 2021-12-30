@@ -39,6 +39,7 @@ def getOpenMPCMakeBuildFactory(
     sollvevv_srcdir = "sollvevv.src"
 
     cleanBuildRequested = lambda step: clean or step.build.getProperty("clean", default=step.build.getProperty("clean_obj"))
+    cleanBuildRequestedByProperty = lambda step: step.build.getProperty("clean")
 
     if depends_on_projects is None:
         # Monorepo configuration requires llvm and clang to get cmake work.
@@ -155,7 +156,7 @@ def getOpenMPCMakeBuildFactory(
                            dir=testsuite_srcdir,
                            haltOnFailure=False,
                            warnOnFailure=True,
-                           doStepIf=cleanBuildRequested))
+                           doStepIf=cleanBuildRequestedByProperty))
 
         f.addGetSourcecodeForProject(name="Test-Suite: Checkout",
             description="fetching",
@@ -170,7 +171,7 @@ def getOpenMPCMakeBuildFactory(
                            dir=sollvevv_srcdir,
                            haltOnFailure=False,
                            warnOnFailure=True,
-                           doStepIf=cleanBuildRequested))
+                           doStepIf=cleanBuildRequestedByProperty))
 
             f.addStep(steps.Git(name="SOLLVE V&V: Checkout",
                     description="fetching",
