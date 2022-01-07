@@ -133,6 +133,7 @@ function build_stage2 {
   local libcxx_build_dir=libcxx_build_${sanitizer_name}
   local build_dir=llvm_build_${sanitizer_name}
   export STAGE2_DIR=${build_dir}
+  local build_type="Release"
 
   common_stage2_variables
 
@@ -140,23 +141,19 @@ function build_stage2 {
     export MSAN_SYMBOLIZER_PATH="${llvm_symbolizer_path}"
     local llvm_use_sanitizer="Memory"
     local fsanitize_flag="-fsanitize=memory"
-    local build_type="Release"
   elif [ "$sanitizer_name" == "msan_track_origins" ]; then
     export MSAN_SYMBOLIZER_PATH="${llvm_symbolizer_path}"
     local llvm_use_sanitizer="MemoryWithOrigins"
     local fsanitize_flag="-fsanitize=memory -fsanitize-memory-track-origins"
-    local build_type="Release"
   elif [ "$sanitizer_name" == "asan" ]; then
     export ASAN_SYMBOLIZER_PATH="${llvm_symbolizer_path}"
     export ASAN_OPTIONS="check_initialization_order=true:detect_stack_use_after_return=1:detect_leaks=1"
     local llvm_use_sanitizer="Address"
     local fsanitize_flag="-fsanitize=address"
-    local build_type="Release"
   elif [ "$sanitizer_name" == "ubsan" ]; then
     export UBSAN_OPTIONS="external_symbolizer_path=${llvm_symbolizer_path}:print_stacktrace=1"
     local llvm_use_sanitizer="Undefined"
     local fsanitize_flag="-fsanitize=undefined"
-    local build_type="Release"
   else
     echo "Unknown sanitizer!"
     exit 1
@@ -172,18 +169,19 @@ function build_stage2 {
       -DLLVM_ENABLE_PROJECTS='libcxx;libcxxabi' \
       -DCMAKE_BUILD_TYPE=${build_type} \
       -DLLVM_USE_SANITIZER=${llvm_use_sanitizer} \
+      -DCMAKE_C_FLAGS="${fsanitize_flag}" \
+      -DCMAKE_CXX_FLAGS="${fsanitize_flag}" \
       $LLVM && \
     ninja cxx cxxabi) || echo $step_result
 
-  libcxx_runtime_path=$(dirname $(find ${ROOT}/${libcxx_build_dir} -name libc++.so))
+  local libcxx_runtime_path=$(dirname $(find ${ROOT}/${libcxx_build_dir} -name libc++.so))
   local sanitizer_ldflags="-lc++abi -Wl,--rpath=${libcxx_runtime_path} -L${libcxx_runtime_path}"
-  local sanitizer_cflags="-nostdinc++ -isystem ${ROOT}/${libcxx_build_dir}/include -isystem ${ROOT}/${libcxx_build_dir}/include/c++/v1"
+  local sanitizer_cflags="-nostdinc++ -isystem ${ROOT}/${libcxx_build_dir}/include -isystem ${ROOT}/${libcxx_build_dir}/include/c++/v1 $fsanitize_flag"
 
   echo @@@BUILD_STEP stage2/$sanitizer_name build@@@
 
   # See http://llvm.org/bugs/show_bug.cgi?id=19071, http://www.cmake.org/Bug/view.php?id=15264
-  local cmake_bug_workaround_cflags="$sanitizer_ldflags $fsanitize_flag -w"
-  sanitizer_cflags="$sanitizer_cflags $cmake_bug_workaround_cflags"
+  sanitizer_cflags+=" $sanitizer_ldflags -w"
 
   rm -rf ${build_dir}
   mkdir -p ${build_dir}
