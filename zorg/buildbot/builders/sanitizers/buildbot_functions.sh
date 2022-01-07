@@ -140,11 +140,13 @@ function build_stage2 {
   if [ "$sanitizer_name" == "msan" ]; then
     export MSAN_SYMBOLIZER_PATH="${llvm_symbolizer_path}"
     local llvm_use_sanitizer="Memory"
-    local fsanitize_flag="-fsanitize=memory"
+    # TODO: Replace '-Xclang -enable-noundef-analysis -mllvm -msan-eager-checks=1' with '-fsanitize-memory-param-retval'.
+    local fsanitize_flag="-fsanitize=memory -Xclang -enable-noundef-analysis -mllvm -msan-eager-checks=1"
   elif [ "$sanitizer_name" == "msan_track_origins" ]; then
     export MSAN_SYMBOLIZER_PATH="${llvm_symbolizer_path}"
     local llvm_use_sanitizer="MemoryWithOrigins"
-    local fsanitize_flag="-fsanitize=memory -fsanitize-memory-track-origins"
+    # TODO: Replace '-Xclang -enable-noundef-analysis -mllvm -msan-eager-checks=1' with '-fsanitize-memory-param-retval'.
+    local fsanitize_flag="-fsanitize=memory -fsanitize-memory-track-origins -Xclang -enable-noundef-analysis -mllvm -msan-eager-checks=1"
   elif [ "$sanitizer_name" == "asan" ]; then
     export ASAN_SYMBOLIZER_PATH="${llvm_symbolizer_path}"
     export ASAN_OPTIONS="check_initialization_order=true:detect_stack_use_after_return=1:detect_leaks=1"
