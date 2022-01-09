@@ -46,6 +46,10 @@ all = [
         messageFormatter = LLVMInformativeMailNotifier,
         # TODO: For debug purposes only. Remove later.
         dumpMailsToLog = True,
+        builders = [
+                b.get('name') for b in config.builders.all
+                if 'silent' not in b.get('tags', [])
+            ]
         ),
 
     reporters.MailNotifier(
