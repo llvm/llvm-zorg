@@ -203,9 +203,6 @@ def get_all():
         # Windows 7 Intel(R) Core(TM) CPU i7-4790K (4.00GHz), 16GB of RAM
         create_worker("windows7-buildbot", properties={'jobs': 2}, max_builds=1),
 
-        # Windows 10, Visual Studio 2019, Google Cloud 16 cores
-        create_worker("windows10-vs2019", properties={'jobs': 32}, max_builds=1),
-
         # CentOS 7.8.1127 on Intel(R) Xeon(R) Gold 6126 CPU @ 2.60GHz, 96GB RAM
         create_worker("hpce-aurora2", properties={'jobs': 8}, max_builds=1),
         create_worker("hpce-ve-main", properties={'jobs': 8}, max_builds=1),

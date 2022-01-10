@@ -2165,31 +2165,6 @@ all += [
                                     '-DLLVM_HOST_TRIPLE=sparcv9-sun-solaris2.11',
                                     '-DLLVM_PARALLEL_LINK_JOBS=4'])},
 
-    {'name' : "clang-x86-ninja-win10",
-    'tags'  : ["clang"],
-    'workernames' : ["windows10-vs2019"],
-    'builddir': "clang-x86-ninja-win10",
-    'factory' : ClangBuilder.getClangCMakeBuildFactory(
-                    clean=True,
-                    vs="autodetect",
-                    vs_target_arch='x86',
-                    testStage1=True,
-                    useTwoStage=True,
-                    stage1_config='Release',
-                    stage2_config='Release',
-                    # reduce scope of builds to get stable results
-                    checkout_clang_tools_extra=False,
-                    checkout_compiler_rt=False,
-                    checkout_flang=False,
-                    checkout_libcxx=False,
-                    extra_cmake_args=['-DLLVM_ENABLE_ASSERTIONS=ON',
-                                        '-DLLVM_TARGETS_TO_BUILD=X86',
-                                        '-DCMAKE_C_COMPILER_LAUNCHER=sccache',
-                                        '-DCMAKE_CXX_COMPILER_LAUNCHER=sccache',
-                                        '-DLLVM_ENABLE_ZLIB=OFF',
-                                        '-DLLVM_LIT_TOOLS_DIR=C:\\Program Files\\GnuWin32\\usr\\bin',
-                                        ])},
-
 # Builders for ML-driven compiler optimizations.
 
     # Development mode build bot: tensorflow C APIs are present, and
