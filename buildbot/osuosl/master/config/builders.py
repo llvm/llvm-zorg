@@ -21,6 +21,7 @@ from zorg.buildbot.builders import LLDPerformanceTestsuite
 from zorg.buildbot.builders import FuchsiaBuilder
 from zorg.buildbot.builders import XToolchainBuilder
 from zorg.buildbot.builders import TestSuiteBuilder
+from zorg.buildbot.builders import BOLTBuilder
 
 from zorg.buildbot.builders import HtmlDocsBuilder
 from zorg.buildbot.builders import DoxygenDocsBuilder
@@ -2258,5 +2259,20 @@ all += [
              "-DLLVM_EXPERIMENTAL_TARGETS_TO_BUILD=ARC",
          ])},
 
+
+    # BOLT builder managed by Meta
+    {'name': "bolt-x86_64-ubuntu",
+    'tags': ["bolt"],
+    'collapseRequests': False,
+    'workernames':["bolt-worker"],
+    'builddir': "bolt-x86_64-ubuntu-bolttests",
+    'factory' : BOLTBuilder.getBOLTCmakeBuildFactory(
+                    bolttests=True,
+                    extra_configure_args=[
+                        "-DLLVM_CCACHE_BUILD=ON",
+                        "-DLLVM_ENABLE_PROJECTS=clang;lld;bolt",
+                        "-DLLVM_TARGETS_TO_BUILD=X86;AArch64",
+                        ],
+                    )},
 
 ]
