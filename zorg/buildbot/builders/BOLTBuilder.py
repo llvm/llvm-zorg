@@ -22,7 +22,7 @@ def getBOLTCmakeBuildFactory(
     extra_steps = []
 
     f = getLLVMBuildFactoryAndSourcecodeSteps(
-            depends_on_projects=['bolt'],
+            depends_on_projects=['bolt', 'llvm'],
             **kwargs) # Pass through all the extra arguments.
 
     if bolttests:
