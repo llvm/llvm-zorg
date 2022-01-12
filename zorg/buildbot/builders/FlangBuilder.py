@@ -17,7 +17,6 @@ def getFlangOutOfTreeBuildFactory(
             depends_on_projects=['llvm','clang','mlir'],
             obj_dir="build_llvm",
             checks=[],
-            install_dir="install",
             clean=clean,
             extra_configure_args=llvm_extra_configure_args,
             env=env,
@@ -43,7 +42,7 @@ def getFlangOutOfTreeBuildFactory(
     # Add LLVM_DIR and MLIR_DIR to the CMake invocation.
     llvm_dir = "{}/lib/cmake/llvm".format(f.obj_dir)
     mlir_dir = "{}/lib/cmake/mlir".format(f.obj_dir)
-    clang_dir = "{}/lib/cmake/clang".format(f.install_dir)
+    clang_dir = "{}/lib/cmake/clang".format(f.obj_dir)
     CmakeCommand.applyRequiredOptions(flang_cmake_args, [
         # We actually need the paths to be relative to the source directory,
         # otherwise find_package can't locate the config files.
