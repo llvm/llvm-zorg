@@ -48,11 +48,13 @@ def getLLDBCMakeBuildFactory(
     build_cmd=['ninja']
     install_cmd = ['ninja','install']
     test_cmd = ['ninja','check-lldb']
+    lit_args = '-v'
 
     if jobs:
         build_cmd.append(WithProperties("-j%s" % jobs))
         install_cmd.append(WithProperties("-j%s" % jobs))
         test_cmd.append(WithProperties("-j%s" % jobs))
+        lit_args += " -j%s" % jobs
 
     ############# CLEANING
     cleanBuildRequested = lambda step: clean or step.build.getProperty("clean", default=step.build.getProperty("clean_obj"))
@@ -67,6 +69,7 @@ def getLLDBCMakeBuildFactory(
     cmake_options = [
         "-G", "Ninja",
         "-DCMAKE_BUILD_TYPE=" + config,
+        "-DLLVM_LIT_ARGS='%s'" % lit_args,
         "-DCMAKE_INSTALL_PREFIX=../install",
         "-DLLVM_ENABLE_PROJECTS=%s" % ";".join(f.depends_on_projects),
         ]
