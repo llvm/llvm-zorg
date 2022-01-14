@@ -2089,36 +2089,6 @@ all += [
                     script="ve-linux.py",
                     depends_on_projects=['llvm', 'clang', 'compiler-rt', 'libcxx'])},
 
-# Latest stable fedora running on Red Hat internal OpenShift cluster (PSI).
-
-    {'name' : 'x86_64-fedora-clang',
-    'tags'  : ['mlir'],
-    'collapseRequests': False,
-    'workernames': ['fedora-llvm-x86_64'],
-    'builddir': 'x86_64-fedora-clang',
-    'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
-                    clean=True,
-                    depends_on_projects=['llvm', 'clang', 'clang-tools-extra', 'compiler-rt', 'lld', 'mlir'],
-                    checks=['check-all'],
-                    extra_configure_args=[
-                        '-DCMAKE_BUILD_TYPE=Release',
-                        '-DCMAKE_C_COMPILER=/usr/bin/gcc',
-                        '-DCMAKE_CXX_COMPILER=/usr/bin/g++',
-                        '-DLLVM_ENABLE_ASSERTIONS=On',
-                        '-DLLVM_BUILD_EXAMPLES=On',
-                        "-DLLVM_LIT_ARGS=-v --xunit-xml-output test-results.xml",
-                        '-DLLVM_CCACHE_BUILD=On',
-                        '-DLLVM_CCACHE_DIR=/ccache',
-                        '-DLLVM_CCACHE_MAXSIZE=20G',
-                        '-DLLVM_TARGETS_TO_BUILD=X86',
-                        '-DCMAKE_EXPORT_COMPILE_COMMANDS=1',
-                        '-DLLVM_BUILD_LLVM_DYLIB=On',
-                        '-DLLVM_LINK_LLVM_DYLIB=On',
-                        '-DCLANG_LINK_CLANG_DYLIB=On',
-                        '-DBUILD_SHARED_LIBS=Off',
-                        '-DLLVM_ENABLE_LLD=ON',
-                    ])},
-
     # Build the LLVM dylib .so with all backends and link tools to it
     {'name' : 'llvm-x86_64-debian-dylib',
     'tags'  : ['llvm'],
