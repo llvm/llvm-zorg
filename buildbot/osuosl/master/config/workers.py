@@ -158,9 +158,6 @@ def get_all():
         create_worker("fuchsia-debian-64-us-central1-a-1", properties={'jobs': 64}, max_builds=1),
         create_worker("fuchsia-debian-64-us-central1-b-1", properties={'jobs': 64}, max_builds=1),
 
-        # Fedora latest stable, arch=x86_64, running on RedHat internal OpenShift PSI cluster
-        create_worker("fedora-llvm-x86_64", properties={'jobs': 64}, max_builds=1),
-
         # Debian x86_64 Buster Xeon(R) Gold 6154 CPU @ 3.00GHz, 192GB RAM
         create_worker("lldb-x86_64-debian", properties={'jobs': 72}, max_builds=1),
 
