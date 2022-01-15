@@ -54,7 +54,6 @@ def getLLDBCMakeBuildFactory(
         build_cmd.append(WithProperties("-j%s" % jobs))
         install_cmd.append(WithProperties("-j%s" % jobs))
         test_cmd.append(WithProperties("-j%s" % jobs))
-        lit_args += " -j%s" % jobs
 
     ############# CLEANING
     cleanBuildRequested = lambda step: clean or step.build.getProperty("clean", default=step.build.getProperty("clean_obj"))
