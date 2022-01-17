@@ -38,8 +38,12 @@ def getOpenMPCMakeBuildFactory(
     testsuite_builddir = "test-suite.build"
     sollvevv_srcdir = "sollvevv.src"
 
-    cleanBuildRequested = lambda step: clean or step.build.getProperty("clean", default=step.build.getProperty("clean_obj"))
-    cleanBuildRequestedByProperty = lambda step: step.build.getProperty("clean")
+    # If true, clean everything, including source dirs
+    def cleanBuildRequested(step):
+        return step.build.getProperty("clean")
+    # If true, clean build products; implied if cleanBuildRequested is true
+    def cleanObjRequested(step):
+        return cleanBuildRequested(step) or clean or step.build.getProperty("clean_obj")
 
     if depends_on_projects is None:
         # Monorepo configuration requires llvm and clang to get cmake work.
@@ -54,15 +58,10 @@ def getOpenMPCMakeBuildFactory(
             env=merged_env,
             **kwargs) # Pass through all the extra arguments.
 
-    f.addStep(
-        ShellCommand(
-            name            = 'clean',
-            command         = ['rm', '-rf', f.obj_dir],
-            warnOnFailure   = True,
-            description     = ['clean'],
-            doStepIf        = cleanBuildRequested,
-            workdir         = '.',
-            env             = merged_env))
+    f.addStep(steps.RemoveDirectory(name='clean',
+                           dir=f.obj_dir,
+                           warnOnFailure=True,
+                           doStepIf=cleanObjRequested))
 
     # Configure LLVM and OpenMP (and Clang, if requested).
     cmake_args = ['-DCMAKE_BUILD_TYPE=Release', '-DLLVM_ENABLE_ASSERTIONS=ON']
@@ -156,7 +155,7 @@ def getOpenMPCMakeBuildFactory(
                            dir=testsuite_srcdir,
                            haltOnFailure=False,
                            warnOnFailure=True,
-                           doStepIf=cleanBuildRequestedByProperty))
+                           doStepIf=cleanBuildRequested))
 
         f.addGetSourcecodeForProject(name="Test-Suite: Checkout",
             description="fetching",
@@ -171,7 +170,7 @@ def getOpenMPCMakeBuildFactory(
                            dir=sollvevv_srcdir,
                            haltOnFailure=False,
                            warnOnFailure=True,
-                           doStepIf=cleanBuildRequestedByProperty))
+                           doStepIf=cleanBuildRequested))
 
             f.addStep(steps.Git(name="SOLLVE V&V: Checkout",
                     description="fetching",

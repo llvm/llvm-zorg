@@ -45,8 +45,12 @@ def getPollyBuildFactory(
 
     depends_on_projects = ['llvm','clang','polly']
 
-    cleanBuildRequestedByProperty = lambda step: step.build.getProperty("clean", False)
-    cleanBuildRequested = lambda step: clean or step.build.getProperty("clean", default=step.build.getProperty("clean_obj"))
+    # If true, clean everything, including source dirs
+    def cleanBuildRequested(step):
+        return step.build.getProperty("clean")
+    # If true, clean build products; implied if cleanBuildRequested is true
+    def cleanObjRequested(step):
+        return cleanBuildRequested(step) or clean or step.build.getProperty("clean_obj")
 
     f = LLVMBuildFactory(
             depends_on_projects=depends_on_projects,
@@ -59,7 +63,7 @@ def getPollyBuildFactory(
     f.addStep(steps.RemoveDirectory(name='clean-src-dir',
                            dir=f.monorepo_dir,
                            warnOnFailure=True,
-                           doStepIf=cleanBuildRequestedByProperty))
+                           doStepIf=cleanBuildRequested))
 
     # Get the source code.
     f.addGetSourcecodeSteps(**kwargs)
@@ -68,7 +72,7 @@ def getPollyBuildFactory(
     f.addStep(steps.RemoveDirectory(name='clean-build-dir',
                            dir=llvm_objdir,
                            warnOnFailure=True,
-                           doStepIf=cleanBuildRequested))
+                           doStepIf=cleanObjRequested))
 
     # Create configuration files with cmake
     cmakeCommand = ["cmake", "../%s/llvm" % llvm_srcdir,
@@ -106,7 +110,7 @@ def getPollyBuildFactory(
         f.addStep(steps.RemoveDirectory(name='clean-install-dir',
                                dir=llvm_instdir,
                                haltOnFailure=False,
-                               doStepIf=cleanBuildRequested))
+                               doStepIf=cleanObjRequested))
 
         f.addStep(ShellCommand(name="install",
                                command=install_cmd,
@@ -141,7 +145,7 @@ def getPollyBuildFactory(
                            dir=testsuite_srcdir,
                            haltOnFailure=False,
                            warnOnFailure=True,
-                           doStepIf=cleanBuildRequestedByProperty))
+                           doStepIf=cleanBuildRequested))
 
         f.addGetSourcecodeForProject(
             project='test-suite',
