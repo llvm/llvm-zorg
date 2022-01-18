@@ -678,17 +678,12 @@ all = [
     'tags'  : ["clang", "aix", "ppc"],
     'workernames' : ["aix-ppc64"],
     'builddir': "clang-ppc64-aix",
-    'factory' : ClangBuilder.getClangCMakeBuildFactory(
+    'factory' : TestSuiteBuilder.getTestSuiteBuildFactory(
                     env={'OBJECT_MODE': '64'},
+                    depends_on_projects=["llvm", "clang", "compiler-rt"],
+                    enable_runtimes="auto",
                     clean=False,
-                    checkout_clang_tools_extra=False,
-                    checkout_compiler_rt=False,
-                    checkout_lld=False,
-                    checkout_libcxx=False,
-                    useTwoStage=False,
-                    runTestSuite=False,
-                    stage1_config='Release',
-                    extra_cmake_args=[
+                    extra_configure_args=[
                         "-DLLVM_ENABLE_ASSERTIONS=On",
                         "-DCMAKE_C_COMPILER=/opt/IBM/openxlC/17.1.0/bin/ibm-clang",
                         "-DCMAKE_CXX_COMPILER=/opt/IBM/openxlC/17.1.0/bin/ibm-clang++_r",
