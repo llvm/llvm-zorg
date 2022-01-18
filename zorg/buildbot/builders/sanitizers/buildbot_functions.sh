@@ -140,11 +140,13 @@ function build_stage2 {
   if [ "$sanitizer_name" == "msan" ]; then
     export MSAN_SYMBOLIZER_PATH="${llvm_symbolizer_path}"
     local llvm_use_sanitizer="Memory"
-    local fsanitize_flag="-fsanitize=memory -fsanitize-memory-param-retval"
+    # TODO: Re-enable -fsanitize-memory-param-retval when Chromium build is ready.
+    local fsanitize_flag="-fsanitize=memory"
   elif [ "$sanitizer_name" == "msan_track_origins" ]; then
     export MSAN_SYMBOLIZER_PATH="${llvm_symbolizer_path}"
     local llvm_use_sanitizer="MemoryWithOrigins"
-    local fsanitize_flag="-fsanitize=memory -fsanitize-memory-track-origins -fsanitize-memory-param-retval"
+    # TODO: Re-enable -fsanitize-memory-param-retval when Chromium build is ready.
+    local fsanitize_flag="-fsanitize=memory -fsanitize-memory-track-origins"
   elif [ "$sanitizer_name" == "asan" ]; then
     export ASAN_SYMBOLIZER_PATH="${llvm_symbolizer_path}"
     export ASAN_OPTIONS="check_initialization_order=true:detect_stack_use_after_return=1:detect_leaks=1"
