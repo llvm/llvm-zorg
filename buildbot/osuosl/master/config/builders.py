@@ -893,6 +893,28 @@ all = [
                         "-DLLVM_DEFAULT_TARGET_TRIPLE:STRING=xcore-unknown-unknown-elf",
                         "-DLLVM_ENABLE_THREADS:BOOL=OFF"])},
 
+    {'name' : "llvm-clang-x86_64-sie-win",
+    'tags'  : ["llvm", "clang", "clang-tools-extra", "lld", "cross-project-tests"],
+    'workernames' : ["sie-win-worker"],
+    'builddir': "llvm-clang-x86_64-sie-win",
+    'factory' : UnifiedTreeBuilder.getCmakeWithNinjaWithMSVCBuildFactory(
+                    vs="autodetect",
+                    vs_target_arch='x64',
+                    depends_on_projects=['llvm','clang','clang-tools-extra','lld','cross-project-tests'],
+                    clean=False,
+                    extra_configure_args=[
+                        "-DCMAKE_BUILD_TYPE=Release",
+                        "-DCLANG_ENABLE_ARCMT=OFF",
+                        "-DCLANG_ENABLE_CLANGD=OFF",
+                        "-DLLVM_DEFAULT_TARGET_TRIPLE=x86_64-scei-ps4",
+                        "-DLLVM_INCLUDE_EXAMPLES=OFF",
+                        "-DLLVM_TARGETS_TO_BUILD=X86",
+                        "-DLLVM_VERSION_SUFFIX=",
+                        "-DLLVM_BUILD_RUNTIME=OFF",
+                        "-DLLVM_ENABLE_ASSERTIONS=ON",
+                        "-DLLVM_LIT_ARGS=--verbose -j64",
+                        "-DPYTHON_EXECUTABLE=C:\Python310\python.exe"])},
+
 # Polly builders.
 
     {'name' : "polly-arm-linux",
