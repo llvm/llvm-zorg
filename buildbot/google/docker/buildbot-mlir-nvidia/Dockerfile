@@ -34,7 +34,7 @@ RUN python3 -m pip install --upgrade pip==21.0.1
 
 # Refer to mlir/lib/Bindings/Python/requirements.txt. Listed explicitly here
 # and version pinned for consistency as this is a bot.
-RUN python3 -m pip install numpy==1.19.3 pybind11==2.6.0 PyYAML==5.4.1
+RUN python3 -m pip install numpy==1.19.3 pybind11==2.8.0 PyYAML==5.4.1
 
 # install cuda
 # avoid popups for keyboard configurations
