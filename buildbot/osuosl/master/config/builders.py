@@ -1201,6 +1201,7 @@ all = [
                     test=True,
                     extra_cmake_args=[
                         '-DLLVM_ENABLE_ASSERTIONS=OFF',
+                        '-DLLVM_LIT_ARGS=-svj 8',
                         '-DLLVM_ENABLE_ZLIB=FALSE',
                         '-DLLDB_ENABLE_PYTHON=TRUE'])},
 
