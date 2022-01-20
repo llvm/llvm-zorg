@@ -1281,7 +1281,7 @@ all = [
 
     {'name' : "clang-with-thin-lto-wpd-ubuntu",
     'tags'  : ["clang","lld","LTO"],
-    'workernames' : ["thinlto-x86-64-bot1"],
+    'workernames' : ["thinlto-x86-64-bot1", "thinlto-x86-64-bot2"],
     'builddir': "clang-with-thin-lto-wpd-ubuntu",
     'factory' : ClangLTOBuilder.getClangWithLTOBuildFactory(
                     jobs=72,

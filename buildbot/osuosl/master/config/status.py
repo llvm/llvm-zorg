@@ -232,7 +232,7 @@ all = [
             "tejohnson@google.com"],
         subject = "ThinLTO WPD Failure: %(builder)s",
         mode = "failing",
-        builders = ["thinlto-x86-64-bot1"]),
+        builders = ["clang-with-thin-lto-wpd-ubuntu"]),
     reporters.MailNotifier(
         fromaddr = "llvm.buildmaster@lab.llvm.org",
         sendToInterestedUsers = False,
