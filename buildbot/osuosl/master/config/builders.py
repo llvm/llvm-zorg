@@ -899,7 +899,7 @@ all = [
     'builddir': "llvm-clang-x86_64-sie-win",
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaWithMSVCBuildFactory(
                     vs="autodetect",
-                    vs_target_arch='x64',
+                    target_arch='x64',
                     depends_on_projects=['llvm','clang','clang-tools-extra','lld','cross-project-tests'],
                     clean=False,
                     extra_configure_args=[
