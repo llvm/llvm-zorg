@@ -51,8 +51,7 @@ def main(argv):
             cmake_args.append('-DLLVM_LIBC_INCLUDE_SCUDO=ON')
 
         if fullbuild:
-            cmake_args.extend(['-DLLVM_LIBC_FULL_BUILD=ON',
-                               '-DLLVM_LIBC_ENABLE_LINTING=ON'])
+            cmake_args.extend(['-DLLVM_LIBC_FULL_BUILD=ON']),
 
         run_command(['cmake', os.path.join(source_dir, 'llvm')] + cmake_args)
 
