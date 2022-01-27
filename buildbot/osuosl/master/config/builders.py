@@ -79,17 +79,18 @@ all = [
                         "-DLLVM_LIT_ARGS=-v --threads=32"])},
 
     {'name': "llvm-clang-x86_64-sie-ubuntu-fast",
-    'tags'  : ["clang", "llvm", "clang-tools-extra", "lld", "cross-project-tests"],
-    'workernames': ["sie-linux-builder"],
+    'tags'  : ["clang", "llvm", "clang-tools-extra", "lld", "cross-project-tests", "lldb"],
+    'workernames': ["sie-linux-worker"],
     'builddir': "llvm-clang-x86_64-sie-ubuntu-fast",
     'factory': UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
-                    depends_on_projects=['llvm','clang','clang-tools-extra','lld','cross-project-tests'],
+                    depends_on_projects=['llvm','clang','clang-tools-extra','lld','cross-project-tests','lldb'],
                     extra_configure_args=[
                         "-DCMAKE_C_COMPILER=gcc",
                         "-DCMAKE_CXX_COMPILER=g++",
                         "-DCMAKE_BUILD_TYPE=Release",
                         "-DCLANG_ENABLE_ARCMT=OFF",
                         "-DCLANG_ENABLE_CLANGD=OFF",
+                        "-DLLDB_ENABLE_PYTHON=TRUE",
                         "-DLLVM_BUILD_RUNTIME=OFF",
                         "-DLLVM_CCACHE_BUILD=ON",
                         "-DLLVM_INCLUDE_EXAMPLES=OFF",

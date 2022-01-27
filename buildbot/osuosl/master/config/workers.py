@@ -254,7 +254,7 @@ def get_all():
         create_worker("thinlto-x86-64-bot2", properties={'jobs': 64}, max_builds=1),
 
         # Ubuntu 20.04 on AWS, x86_64 PS4 target
-        create_worker("sie-linux-builder", properties={'jobs': 40}, max_builds=1),
+        create_worker("sie-linux-worker", properties={'jobs': 40}, max_builds=1),
 
         # Windows Server 2019 on AWS, x86_64 PS4 target
         create_worker("sie-win-worker", properties={'jobs': 64}, max_builds=1),
