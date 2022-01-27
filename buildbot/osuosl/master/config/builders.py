@@ -1218,15 +1218,15 @@ all = [
     'builddir': "lldb-x64-windows-ninja",
     'factory' : LLDBBuilder.getLLDBCMakeBuildFactory(
                     clean=True,
-                    python_source_dir=r'"C:\Program Files (x86)\Microsoft Visual Studio\Shared\Python36_64"',
                     target_arch='x64',
                     vs="autodetect",
                     test=True,
                     extra_cmake_args=[
+                        '-DLLDB_ENABLE_PYTHON=TRUE',
+                        '-DLLDB_TEST_USER_ARGS="--skip-category watchpoint"'
                         '-DLLVM_ENABLE_ASSERTIONS=OFF',
-                        '-DLLVM_LIT_ARGS=-svj 8',
                         '-DLLVM_ENABLE_ZLIB=FALSE',
-                        '-DLLDB_ENABLE_PYTHON=TRUE'])},
+                        '-DLLVM_LIT_ARGS=-vj 8'])},
 
 # LLD builders.
 
