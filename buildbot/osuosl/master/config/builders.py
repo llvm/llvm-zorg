@@ -690,7 +690,7 @@ all = [
                         "-DCMAKE_CXX_COMPILER=/opt/IBM/openxlC/17.1.0/bin/ibm-clang++_r",
                         "-DPython3_EXECUTABLE:FILEPATH=/opt/freeware/bin/python3_64",
                         "-DLLVM_ENABLE_ZLIB=OFF", "-DLLVM_APPEND_VC_REV=OFF",
-                        "-DLLVM_PARALLEL_LINK_JOBS=6",
+                        "-DLLVM_PARALLEL_LINK_JOBS=2",
                         "-DLLVM_ENABLE_WERROR=ON"])},
 
     {'name' : "clang-s390x-linux",
