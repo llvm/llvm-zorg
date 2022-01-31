@@ -84,6 +84,8 @@ pipeline {
                     set +e
                     # We keep getting random test timeout failures. Reduce amount of parallelism.
                     export MAX_PARALLEL_TESTS=$(sysctl hw.physicalcpu |awk '{print int(($2+1)/2)}')
+                    # Give the system some time to recover.
+                    sleep 120
                     python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix test
                     set -e
                     '''
@@ -110,6 +112,8 @@ pipeline {
                     set +e
                     # We keep getting random test timeout failures. Reduce amount of parallelism.
                     export MAX_PARALLEL_TESTS=$(sysctl hw.physicalcpu |awk '{print int(($2+1)/2)}')
+                    # Give the system some time to recover.
+                    sleep 120
                     python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix test
                     set -e
                     '''
@@ -136,6 +140,8 @@ pipeline {
                     set +e
                     # We keep getting random test timeout failures. Reduce amount of parallelism.
                     export MAX_PARALLEL_TESTS=$(sysctl hw.physicalcpu |awk '{print int(($2+1)/2)}')
+                    # Give the system some time to recover.
+                    sleep 120
                     python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix test
                     set -e
                     '''
@@ -183,6 +189,8 @@ pipeline {
                     set +e
                     # We keep getting random test timeout failures. Reduce amount of parallelism.
                     export MAX_PARALLEL_TESTS=$(sysctl hw.physicalcpu |awk '{print int(($2+1)/2)}')
+                    # Give the system some time to recover.
+                    sleep 120
                     python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix test
                     set -e
                     '''
@@ -231,6 +239,8 @@ pipeline {
                     set +e
                     # We keep getting random test timeout failures. Reduce amount of parallelism.
                     export MAX_PARALLEL_TESTS=$(sysctl hw.physicalcpu |awk '{print int(($2+1)/2)}')
+                    # Give the system some time to recover.
+                    sleep 120
                     python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix test
                     set -e
                     '''
@@ -279,6 +289,8 @@ pipeline {
                     set +e
                     # We keep getting random test timeout failures. Reduce amount of parallelism.
                     export MAX_PARALLEL_TESTS=$(sysctl hw.physicalcpu |awk '{print int(($2+1)/2)}')
+                    # Give the system some time to recover.
+                    sleep 120
                     python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix test
                     set -e
                     '''
@@ -327,6 +339,8 @@ pipeline {
                     set +e
                     # We keep getting random test timeout failures. Reduce amount of parallelism.
                     export MAX_PARALLEL_TESTS=$(sysctl hw.physicalcpu |awk '{print int(($2+1)/2)}')
+                    # Give the system some time to recover.
+                    sleep 120
                     python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix test
                     set -e
                     '''
@@ -375,6 +389,8 @@ pipeline {
                     set +e
                     # We keep getting random test timeout failures. Reduce amount of parallelism.
                     export MAX_PARALLEL_TESTS=$(sysctl hw.physicalcpu |awk '{print int(($2+1)/2)}')
+                    # Give the system some time to recover.
+                    sleep 120
                     python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix test
                     set -e
                     '''
