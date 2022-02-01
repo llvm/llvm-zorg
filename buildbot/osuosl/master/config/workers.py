@@ -68,7 +68,6 @@ def get_all():
         create_worker("suse-gary-m68k-cross", properties={'jobs': 4}, max_builds=1),
 
         # POWER7 PowerPC big endian (powerpc64)
-        create_worker("ppc64be-clang-test", properties={'jobs': 16}, max_builds=1),
         create_worker("ppc64be-clang-lnt-test", properties={'jobs': 16, 'vcs_protocol': 'https'}, max_builds=1),
         create_worker("ppc64be-clang-multistage-test", properties={'jobs': 16}, max_builds=1),
         create_worker("ppc64be-sanitizer", properties={'jobs': 16}, max_builds=1),
