@@ -669,7 +669,6 @@ all = [
     'workernames' : ["aix-ppc64"],
     'builddir': "clang-ppc64-aix",
     'factory' : TestSuiteBuilder.getTestSuiteBuildFactory(
-                    env={'OBJECT_MODE': '64'},
                     depends_on_projects=["llvm", "clang", "compiler-rt"],
                     enable_runtimes="auto",
                     clean=False,
@@ -680,7 +679,8 @@ all = [
                         "-DPython3_EXECUTABLE:FILEPATH=/opt/freeware/bin/python3_64",
                         "-DLLVM_ENABLE_ZLIB=OFF", "-DLLVM_APPEND_VC_REV=OFF",
                         "-DLLVM_PARALLEL_LINK_JOBS=2",
-                        "-DLLVM_ENABLE_WERROR=ON"])},
+                        "-DLLVM_ENABLE_WERROR=ON"]),
+    'env' : {'OBJECT_MODE': '64'}},
 
     {'name' : "clang-s390x-linux",
     'tags'  : ["clang"],
