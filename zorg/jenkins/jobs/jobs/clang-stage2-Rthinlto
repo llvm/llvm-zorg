@@ -50,8 +50,7 @@ pipeline {
                       --cmake-flag="-DLIBCXX_ENABLE_STATIC=OFF" \
                       --cmake-flag="-DLIBCXX_INCLUDE_TESTS=OFF" \
                       --cmake-flag="-DLIBCXX_ENABLE_EXPERIMENTAL_LIBRARY=OFF" \
-                      --cmake-flag="-DCMAKE_DSYMUTIL=$WORKSPACE/host-compiler/bin/dsymutil" \
-                      --sccache
+                      --cmake-flag="-DCMAKE_DSYMUTIL=$WORKSPACE/host-compiler/bin/dsymutil"
                     '''
                 }
             }
