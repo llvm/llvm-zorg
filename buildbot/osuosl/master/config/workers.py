@@ -231,7 +231,6 @@ def get_all():
         # Ubuntu 20.04.LTS x86_64, Intel(R) Core(TM) i5-9400F CPU @ 2.90Ghz, 16 GiB RAM, NVIDIA GeForce GTX 1050 Ti (Pascal, sm_61, 4GiB)
         create_worker("minipc-1050ti-linux", properties={'jobs': 6}, max_builds=1),
 
-        create_worker("nersc-flang"),
         create_worker("alcf-theta-flang", properties={'jobs': 12}, max_builds=1),
 
         # ML-Driven Compiler Optimizations build workers (Ubuntu x86_64)
