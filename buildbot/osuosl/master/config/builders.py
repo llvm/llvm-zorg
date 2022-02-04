@@ -373,7 +373,8 @@ all = [
                 extra_cmake_args=[
                     "-DCMAKE_C_FLAGS='-mcpu=cortex-a57'",
                     "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a57'",
-                    "-DLLVM_ENABLE_LLD=True"])},
+                    "-DLLVM_ENABLE_LLD=True",
+                    "-DLLVM_LIT_ARGS='-v -j4'"])},
 
     ## AArch64 run test-suite at -O0 (GlobalISel is now default).
     {'name' : "clang-aarch64-global-isel",
@@ -463,7 +464,8 @@ all = [
                         '--threads=32', '--build-threads=32'],
                     extra_cmake_args=[
                         "-DCMAKE_C_FLAGS='-mcpu=cortex-a57'",
-                        "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a57'"])},
+                        "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a57'",
+                        "-DLLVM_LIT_ARGS='-v -j4'"])},
 
 
     # AArch64 Clang+LLVM+RT+LLD check-all + flang + test-suite w/SVE-Vector-Length-Agnostic
