@@ -10,12 +10,12 @@ PyHamcrest==2.0.2
 Tempita==0.5.2
 decorator==4.4.2
 pbr==5.5.1
-sqlparse==0.4.1
+sqlparse==0.4.2
 SQLAlchemy==1.3.23
 sqlalchemy-migrate==0.13.0
 certifi==2020.12.5
 chardet==4.0.0
-urllib3==1.26.4
+urllib3==1.26.8
 requests==2.25.1
 zope.interface==5.2.0
 pycparser==2.20
@@ -26,4 +26,4 @@ service-identity==18.1.0
 cryptography==3.4.5
 cffi==1.14.5
 Twisted==20.3.0
-treq==21.1.0
+treq==22.1.0
