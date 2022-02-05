@@ -78,12 +78,12 @@ pipeline {
                       --dotest-flag="gmodules" \
                       --dotest-flag="--skip-category" \
                       --dotest-flag="watchpoint" \
+		      --dotest-flag="--skip-category" \
+		      --dotest-flag="llgs" \
                       --dotest-flag="--arch=x86_64" \
                       --dotest-flag="--dwarf-version=2"
 
                     set +e
-                    # We keep getting random test timeout failures. Reduce amount of parallelism.
-                    export MAX_PARALLEL_TESTS=$(sysctl hw.physicalcpu |awk '{print int(($2+1)/2)}')
                     # Give the system some time to recover.
                     sleep 120
                     python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix test
@@ -106,12 +106,12 @@ pipeline {
                       --dotest-flag="gmodules" \
                       --dotest-flag="--skip-category" \
                       --dotest-flag="watchpoint" \
+		      --dotest-flag="--skip-category" \
+		      --dotest-flag="llgs" \
                       --dotest-flag="--arch=x86_64" \
                       --dotest-flag="--dwarf-version=4"
 
                     set +e
-                    # We keep getting random test timeout failures. Reduce amount of parallelism.
-                    export MAX_PARALLEL_TESTS=$(sysctl hw.physicalcpu |awk '{print int(($2+1)/2)}')
                     # Give the system some time to recover.
                     sleep 120
                     python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix test
@@ -134,12 +134,12 @@ pipeline {
                       --dotest-flag="gmodules" \
                       --dotest-flag="--skip-category" \
                       --dotest-flag="watchpoint" \
+		      --dotest-flag="--skip-category" \
+		      --dotest-flag="llgs" \
                       --dotest-flag="--arch=x86_64" \
                       --dotest-flag="--dwarf-version=5"
 
                     set +e
-                    # We keep getting random test timeout failures. Reduce amount of parallelism.
-                    export MAX_PARALLEL_TESTS=$(sysctl hw.physicalcpu |awk '{print int(($2+1)/2)}')
                     # Give the system some time to recover.
                     sleep 120
                     python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix test
@@ -184,11 +184,11 @@ pipeline {
                       --dotest-flag="gmodules" \
                       --dotest-flag="--skip-category" \
                       --dotest-flag="watchpoint" \
+      		      --dotest-flag="--skip-category" \
+		      --dotest-flag="llgs" \
                       --dotest-flag="--arch=x86_64"
 
                     set +e
-                    # We keep getting random test timeout failures. Reduce amount of parallelism.
-                    export MAX_PARALLEL_TESTS=$(sysctl hw.physicalcpu |awk '{print int(($2+1)/2)}')
                     # Give the system some time to recover.
                     sleep 120
                     python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix test
@@ -234,11 +234,11 @@ pipeline {
                       --dotest-flag="gmodules" \
                       --dotest-flag="--skip-category" \
                       --dotest-flag="watchpoint" \
-                      --dotest-flag="--arch=x86_64"
+                      --dotest-flag="--skip-category" \
+		      --dotest-flag="llgs" \
+		      --dotest-flag="--arch=x86_64"
 
                     set +e
-                    # We keep getting random test timeout failures. Reduce amount of parallelism.
-                    export MAX_PARALLEL_TESTS=$(sysctl hw.physicalcpu |awk '{print int(($2+1)/2)}')
                     # Give the system some time to recover.
                     sleep 120
                     python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix test
@@ -284,11 +284,11 @@ pipeline {
                       --dotest-flag="gmodules" \
                       --dotest-flag="--skip-category" \
                       --dotest-flag="watchpoint" \
+      		      --dotest-flag="--skip-category" \
+		      --dotest-flag="llgs" \
                       --dotest-flag="--arch=x86_64"
 
                     set +e
-                    # We keep getting random test timeout failures. Reduce amount of parallelism.
-                    export MAX_PARALLEL_TESTS=$(sysctl hw.physicalcpu |awk '{print int(($2+1)/2)}')
                     # Give the system some time to recover.
                     sleep 120
                     python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix test
@@ -334,11 +334,11 @@ pipeline {
                       --dotest-flag="gmodules" \
                       --dotest-flag="--skip-category" \
                       --dotest-flag="watchpoint" \
+		      --dotest-flag="--skip-category" \
+		      --dotest-flag="llgs" \
                       --dotest-flag="--arch=x86_64"
 
                     set +e
-                    # We keep getting random test timeout failures. Reduce amount of parallelism.
-                    export MAX_PARALLEL_TESTS=$(sysctl hw.physicalcpu |awk '{print int(($2+1)/2)}')
                     # Give the system some time to recover.
                     sleep 120
                     python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix test
@@ -384,11 +384,11 @@ pipeline {
                       --dotest-flag="gmodules" \
                       --dotest-flag="--skip-category" \
                       --dotest-flag="watchpoint" \
+  		      --dotest-flag="--skip-category" \
+		      --dotest-flag="llgs" \
                       --dotest-flag="--arch=x86_64"
 
                     set +e
-                    # We keep getting random test timeout failures. Reduce amount of parallelism.
-                    export MAX_PARALLEL_TESTS=$(sysctl hw.physicalcpu |awk '{print int(($2+1)/2)}')
                     # Give the system some time to recover.
                     sleep 120
                     python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix test
