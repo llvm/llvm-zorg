@@ -25,8 +25,6 @@ class LLVMPoller(changes.GitPoller):
                      "projects"]
 
     def _check_branches(branch):
-        log.msg("LLVMPoller: _check_branches: branch={}", branch)
-
         if branch == "refs/heads/main":
             # Always listen for changes in the main branch.
             return True
