@@ -104,7 +104,8 @@ check-llvm:
 
 build-crt-ve:
 	mkdir -p ${CRT_BUILD_VE}
-	cd ${CRT_BUILD_VE} && ${CMAKE} ${MONOREPO}/compiler-rt -G Ninja \
+	cd ${CRT_BUILD_VE} && ${CMAKE} ${MONOREPO}/runtimes -G Ninja \
+            -DLLVM_ENABLE_RUNTIMES="compiler-rt" \
 	    -DCOMPILER_RT_BUILD_BUILTINS=ON \
 	    -DCOMPILER_RT_BUILD_SANITIZERS=OFF \
 	    -DCOMPILER_RT_BUILD_XRAY=OFF \
@@ -141,7 +142,8 @@ install-crt-ve: build-crt-ve
 ### libunwind standalone ###
 build-libunwind-ve:
 	mkdir -p ${LIBUNWIND_BUILD_VE}
-	cd ${LIBUNWIND_BUILD_VE} && ${CMAKE} ${MONOREPO}/libunwind -G Ninja \
+	cd ${LIBUNWIND_BUILD_VE} && ${CMAKE} ${MONOREPO}/runtimes -G Ninja \
+            -DLLVM_ENABLE_RUNTIMES="libunwind" \
 	    -DLIBUNWIND_TARGET_TRIPLE="${VE_TARGET}" \
 	    -DCMAKE_C_COMPILER=${BUILT_CLANG} \
 	    -DCMAKE_CXX_COMPILER=${BUILT_CLANGXX} \
@@ -168,7 +170,8 @@ install-libunwind-ve:
 
 build-libcxx-ve:
 	mkdir -p ${LIBCXX_BUILD_VE}
-	cd ${LIBCXX_BUILD_VE} && ${CMAKE} ${MONOREPO}/libcxx -G Ninja \
+	cd ${LIBCXX_BUILD_VE} && ${CMAKE} ${MONOREPO}/runtimes -G Ninja \
+                -DLLVM_ENABLE_RUNTIMES="libcxx" \
 	        -DLIBCXX_USE_COMPILER_RT=True \
   	        -DLIBCXX_TARGET_TRIPLE="${VE_TARGET}" \
   	        -DCMAKE_C_COMPILER=${BUILT_CLANG} \
@@ -202,7 +205,8 @@ install-libcxx-ve:
 
 build-libcxxabi-ve:
 	mkdir -p ${LIBCXXABI_BUILD_VE}
-	cd ${LIBCXXABI_BUILD_VE} && ${CMAKE} ${MONOREPO}/libcxxabi -G Ninja \
+	cd ${LIBCXXABI_BUILD_VE} && ${CMAKE} ${MONOREPO}/runtimes -G Ninja \
+              -DLLVM_ENABLE_RUNTIMES="libcxxabi" \
 	      -DCMAKE_C_COMPILER=${BUILT_CLANG} \
 	      -DCMAKE_CXX_COMPILER=${BUILT_CLANGXX} \
 	      -DCMAKE_AR=${INTREE_PREFIX}/bin/llvm-ar \
