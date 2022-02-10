@@ -1206,6 +1206,7 @@ all = [
     'builddir': "lldb-aarch64-ubuntu",
     'factory' : LLDBBuilder.getLLDBCMakeBuildFactory(
                     test=True,
+                    clean=True,
                     extra_cmake_args=[
                         '-DLLVM_ENABLE_ASSERTIONS=True',
                         '-DLLVM_LIT_ARGS=-svj 4',
@@ -1217,6 +1218,7 @@ all = [
     'builddir': "lldb-arm-ubuntu",
     'factory' : LLDBBuilder.getLLDBCMakeBuildFactory(
                     test=True,
+                    clean=True,
                     extra_cmake_args=[
                         '-DLLVM_ENABLE_ASSERTIONS=True',
                         '-DLLVM_LIT_ARGS=-svj 4',
