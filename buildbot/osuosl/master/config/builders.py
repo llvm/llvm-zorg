@@ -644,7 +644,9 @@ all = [
                     runTestSuite=True,
                     stage1_config='Release',
                     nt_flags=['--threads=16', '--build-threads=16'],
-                    extra_cmake_args=["-DLLVM_ENABLE_ASSERTIONS=ON"])},
+                    extra_cmake_args=[
+                        "-DLLVM_ENABLE_ASSERTIONS=ON",
+                        "-DLLVM_CCACHE_BUILD=ON"])},
 
     {'name' : "clang-ppc64le-linux-multistage",
     'tags'  : ["clang", "ppc", "ppc64le"],
@@ -656,7 +658,10 @@ all = [
                     useTwoStage=True,
                     stage1_config='Release',
                     stage2_config='Release',
-                    extra_cmake_args=['-DLLVM_ENABLE_ASSERTIONS=ON', '-DBUILD_SHARED_LIBS=ON'])},
+                    extra_cmake_args=[
+                        '-DLLVM_ENABLE_ASSERTIONS=ON',
+                        '-DBUILD_SHARED_LIBS=ON',
+                        '-DLLVM_CCACHE_BUILD=ON'])},
 
     {'name' : "clang-ppc64le-rhel",
     'tags'  : ["clang", "ppc", "ppc64le"],
@@ -1284,7 +1289,8 @@ all = [
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaMultistageBuildFactory(
                     extra_configure_args=[
                         '-DLLVM_ENABLE_ASSERTIONS=ON',
-                        '-DLLVM_LIT_ARGS=-svj 256'],
+                        '-DLLVM_LIT_ARGS=-svj 256',
+                        '-DLLVM_CCACHE_BUILD=ON'],
                     depends_on_projects=['llvm', 'clang', 'lld'])},
 
     {'name' : "lld-x86_64-ubuntu-fast",
@@ -1489,6 +1495,7 @@ all += [
                         '-DCMAKE_CXX_STANDARD=17',
                         '-DLLVM_ENABLE_PROJECTS=mlir',
                         '-DLLVM_LIT_ARGS=-vj 256',
+                        '-DLLVM_CCACHE_BUILD=ON',
                     ],
                     env={
                             'CC': 'clang',
@@ -1606,7 +1613,8 @@ all += [
     'factory' : SanitizerBuilder.getSanitizerBuildFactory(
                     timeout=1800,
                     extra_configure_args=[
-                       "-CMAKE_ARGS='-DLLVM_LIT_ARGS=-v -j256'"])},
+                       "-CMAKE_ARGS='-DLLVM_LIT_ARGS=-v -j256'",
+                       "-DLLVM_CCACHE_BUILD=ON"])},
 
     {'name' : "sanitizer-windows",
     'tags'  : ["sanitizer"],
@@ -2004,7 +2012,8 @@ all += [
                         '-DLLVM_TARGETS_TO_BUILD=PowerPC',
                         '-DLLVM_INSTALL_UTILS=ON',
                         '-DCMAKE_CXX_STANDARD=17',
-                        '-DLLVM_LIT_ARGS=-vj 256'
+                        '-DLLVM_LIT_ARGS=-vj 256',
+                        '-DLLVM_CCACHE_BUILD=ON'
                     ],
                     env={
                         'CC': 'clang',
