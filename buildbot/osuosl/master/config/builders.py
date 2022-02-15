@@ -2256,7 +2256,7 @@ all += [
          ])},
 
 
-    # BOLT builder managed by Meta
+    # BOLT builders managed by Meta
     {'name': "bolt-x86_64-ubuntu",
     'tags': ["bolt"],
     'collapseRequests': False,
@@ -2268,6 +2268,22 @@ all += [
                         "-DLLVM_CCACHE_BUILD=ON",
                         "-DLLVM_ENABLE_PROJECTS=clang;lld;bolt",
                         "-DLLVM_TARGETS_TO_BUILD=X86;AArch64",
+                        ],
+                    )},
+
+    {'name': "bolt-x86_64-ubuntu-shared",
+    'tags': ["bolt"],
+    'collapseRequests': False,
+    'workernames':["bolt-worker"],
+    'builddir': "bolt-x86_64-ubuntu-shared",
+    'factory' : BOLTBuilder.getBOLTCmakeBuildFactory(
+                    bolttests=False,
+                    extra_configure_args=[
+                        "-DLLVM_CCACHE_BUILD=ON",
+                        "-DLLVM_ENABLE_PROJECTS=bolt",
+                        "-DLLVM_TARGETS_TO_BUILD=X86;AArch64",
+                        "-DBUILD_SHARED_LIBS=ON",
+                        "-DLLVM_ENABLE_LLD=ON",
                         ],
                     )},
 
