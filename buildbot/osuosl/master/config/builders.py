@@ -1299,8 +1299,10 @@ all = [
     'factory' : ClangLTOBuilder.getClangWithLTOBuildFactory(
                     jobs=72,
                     lto='thin',
-                    extra_configure_args_lto_stage=[
+                    extra_configure_args=[
                         '-DLLVM_CCACHE_BUILD=ON',
+                    ],
+                    extra_configure_args_lto_stage=[
                         '-DCMAKE_CXX_FLAGS=-O3 -Xclang -fwhole-program-vtables -fno-split-lto-unit',
                         '-DCMAKE_C_FLAGS=-O3 -Xclang -fwhole-program-vtables -fno-split-lto-unit',
                         '-DCMAKE_EXE_LINKER_FLAGS=-Wl,--lto-whole-program-visibility -fuse-ld=lld'])},
