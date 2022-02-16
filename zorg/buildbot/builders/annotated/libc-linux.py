@@ -10,7 +10,8 @@ from contextlib import contextmanager
 
 
 def is_fullbuild_builder(builder_name):
-    return ('fullbuild' in builder_name.split('-'))
+    components = builder_name.split('-')
+    return (('fullbuild' in components) or ('aarch64' in components))
 
 
 def main(argv):
