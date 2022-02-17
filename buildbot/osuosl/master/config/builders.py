@@ -181,7 +181,7 @@ all = [
                     ],
                     extra_configure_args=[
                         "-DLLVM_TARGETS_TO_BUILD=ARM",
-                        "-DTARGET_TRIPLE=armv7-unknown-linux-gnueabihf",
+                        "-DLLVM_DEFAULT_TARGET_TRIPLE=armv7-unknown-linux-gnueabihf",
                         "-DDEFAULT_SYSROOT=C:/buildbot/.arm-ubuntu",
                         "-DZLIB_ROOT=C:/buildbot/.zlib-win32",
                         "-DLLVM_LIT_ARGS=-v -vv --threads=32",
@@ -220,7 +220,7 @@ all = [
                     ],
                     extra_configure_args=[
                         "-DLLVM_TARGETS_TO_BUILD=AArch64",
-                        "-DTARGET_TRIPLE=aarch64-unknown-linux-gnu",
+                        "-DLLVM_DEFAULT_TARGET_TRIPLE=aarch64-unknown-linux-gnu",
                         "-DDEFAULT_SYSROOT=C:/buildbot/.aarch64-ubuntu",
                         "-DZLIB_ROOT=C:/buildbot/.zlib-win32",
                         "-DLLVM_LIT_ARGS=-v -vv --threads=32",
@@ -760,7 +760,6 @@ all = [
                     extra_cmake_args=[
                         "-DCMAKE_BUILD_TYPE:STRING=Release",
                         "-DLLVM_TARGETS_TO_BUILD:STRING=Hexagon",
-                        "-DTARGET_TRIPLE:STRING=hexagon-unknown-elf",
                         "-DLLVM_DEFAULT_TARGET_TRIPLE:STRING=hexagon-unknown-elf",
                         "-DLLVM_TARGET_ARCH:STRING=hexagon-unknown-elf",
                         "-DLLVM_BUILD_RUNTIME:BOOL=OFF",
