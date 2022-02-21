@@ -72,7 +72,7 @@ def addGCSUploadSteps(f, package_name, install_prefix, gcs_directory, env,
 
 def getClangCMakeGCSBuildFactory(
             clean=True,
-            test=True,
+            checks=None,
             cmake='cmake',
             jobs=None,
 
@@ -115,7 +115,7 @@ def getClangCMakeGCSBuildFactory(
             # Triggers
             trigger_after_stage1=None):
     return _getClangCMakeBuildFactory(
-               clean=clean, test=test, cmake=cmake, jobs=jobs, vs=vs,
+               clean=clean, checks=checks, cmake=cmake, jobs=jobs, vs=vs,
                vs_target_arch=vs_target_arch, useTwoStage=useTwoStage,
                testStage1=testStage1, stage1_config=stage1_config,
                stage2_config=stage2_config, runTestSuite=runTestSuite,
@@ -133,7 +133,7 @@ def getClangCMakeGCSBuildFactory(
 
 def getClangCMakeBuildFactory(
             clean=True,
-            test=True,
+            checks=None,
             cmake='cmake',
             jobs=None,
 
@@ -167,7 +167,7 @@ def getClangCMakeBuildFactory(
             checkout_flang=False,
             checkout_test_suite=False):
     return _getClangCMakeBuildFactory(
-               clean=clean, test=test, cmake=cmake, jobs=jobs, vs=vs,
+               clean=clean, checks=checks, cmake=cmake, jobs=jobs, vs=vs,
                vs_target_arch=vs_target_arch, useTwoStage=useTwoStage,
                testStage1=testStage1, stage1_config=stage1_config,
                stage2_config=stage2_config, runTestSuite=runTestSuite,
@@ -183,7 +183,7 @@ def getClangCMakeBuildFactory(
 
 def _getClangCMakeBuildFactory(
             clean=True,
-            test=True,
+            checks=None,
             cmake='cmake',
             jobs=None,
 
@@ -229,6 +229,8 @@ def _getClangCMakeBuildFactory(
             trigger_after_stage1=None):
 
     ############# PREPARING
+    if checks is None:
+        checks = ['check-all']
     if nt_flags is None:
         nt_flags = []
     if testsuite_flags is None:
@@ -292,7 +294,7 @@ def _getClangCMakeBuildFactory(
         lit_args += "'"
     ninja_cmd = ['ninja'] + jobs_cmd
     ninja_install_cmd = ['ninja', 'install'] + jobs_cmd
-    ninja_check_cmd = ['ninja', 'check-all'] + jobs_cmd
+    ninja_check_cmd = ['ninja'] + checks + jobs_cmd
 
     # Global configurations
     stage1_build = 'stage1'
@@ -347,7 +349,7 @@ def _getClangCMakeBuildFactory(
                                           workdir=stage1_build,
                                           env=env))
 
-    if test and testStage1:
+    if checks and testStage1:
         haltOnStage1Check = not useTwoStage and not runTestSuite
         f.addStep(LitTestCommand(name='ninja check 1',
                                  command=ninja_check_cmd,
@@ -438,7 +440,7 @@ def _getClangCMakeBuildFactory(
                                               workdir=stage2_build,
                                               env=env))
 
-        if test:
+        if checks:
             f.addStep(LitTestCommand(name='ninja check 2',
                                      command=ninja_check_cmd,
                                      haltOnFailure=not runTestSuite,
