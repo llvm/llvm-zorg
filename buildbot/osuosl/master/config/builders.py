@@ -238,8 +238,9 @@ all = [
                     checkout_flang=True,
                     test=False, # Disable testing until MCJIT failures are fixed
                     extra_cmake_args=[
-                        "-DLLVM_DEFAULT_TARGET_TRIPLE=aarch64-windows-msvc",
-                        "-DLLVM_HOST_TRIPLE=aarch64-windows-msvc",
+                        "-DCMAKE_TRY_COMPILE_CONFIGURATION=Release",
+                        "-DLLVM_DEFAULT_TARGET_TRIPLE=aarch64-pc-windows-msvc",
+                        "-DLLVM_HOST_TRIPLE=aarch64-pc-windows-msvc",
                         "-DLLVM_TARGET_ARCH=AArch64",
                         # The BUILTINS environment variable is expected to already exist
                         # on the worker when it is launched.
@@ -557,8 +558,9 @@ all = [
                     useTwoStage=True,
                     testStage1=False,
                     extra_cmake_args=[
-                        "-DLLVM_DEFAULT_TARGET_TRIPLE=aarch64-windows-msvc",
-                        "-DLLVM_HOST_TRIPLE=aarch64-windows-msvc",
+                        "-DCMAKE_TRY_COMPILE_CONFIGURATION=Release",
+                        "-DLLVM_DEFAULT_TARGET_TRIPLE=aarch64-pc-windows-msvc",
+                        "-DLLVM_HOST_TRIPLE=aarch64-pc-windows-msvc",
                         "-DLLVM_TARGET_ARCH=AArch64",
                         # FIXME: compiler-rt\lib\sanitizer_common\sanitizer_unwind_win.cpp assumes WIN64 is x86_64,
                         #        so, before that's fixed, disable everything that triggers its build.
