@@ -97,7 +97,7 @@ all = [
 # Cross builders.
 
     {'name' : "llvm-clang-win-x-armv7l-release",
-    'tags'  : ["clang", "llvm", "compiler-rt", "cross"," armv7l", "release"],
+    'tags'  : ["clang", "llvm", "compiler-rt", "cross", "armv7", "release"],
     'workernames' : ["as-builder-1"],
     'builddir': "x-armv7l-rel",
     'factory' : XToolchainBuilder.getCmakeWithMSVCBuildFactory(
@@ -107,26 +107,26 @@ all = [
                     "check-llvm",
                     "check-clang",
                     "check-lld",
-                    "check-compiler-rt"
+                    "check-compiler-rt-armv7-unknown-linux-gnueabihf"
                     ],
                     checks_on_target = [
                         ("libunwind",
                             ["python", "bin/llvm-lit.py",
                             "-v", "-vv", "--threads=32",
-                            "runtimes/runtimes-bins/libunwind/test"]),
+                            "runtimes/runtimes-armv7-unknown-linux-gnueabihf-bins/libunwind/test"]),
                         ("libc++abi",
                             ["python", "bin/llvm-lit.py",
                             "-v", "-vv", "--threads=32",
-                            "runtimes/runtimes-bins/libcxxabi/test"]),
+                            "runtimes/runtimes-armv7-unknown-linux-gnueabihf-bins/libcxxabi/test"]),
                         ("libc++",
                             ['python', 'bin/llvm-lit.py',
                             '-v', '-vv', '--threads=32',
-                            'runtimes/runtimes-bins/libcxx/test',
+                            'runtimes/runtimes-armv7-unknown-linux-gnueabihf-bins/libcxx/test',
                             ])
                     ],
                     extra_configure_args=[
                         "-DLLVM_TARGETS_TO_BUILD=ARM",
-                        "-DTARGET_TRIPLE=armv7-linux-gnueabihf",
+                        "-DTARGET_TRIPLE=armv7-unknown-linux-gnueabihf",
                         "-DDEFAULT_SYSROOT=C:/buildbot/.arm-ubuntu",
                         "-DLLVM_LIT_ARGS=-v -vv --threads=32",
                         WithProperties("%(remote_test_host:+-DREMOTE_TEST_HOST=)s%(remote_test_host:-)s"),
@@ -145,26 +145,26 @@ all = [
                     "check-llvm",
                     "check-clang",
                     "check-lld",
-                    "check-compiler-rt"
+                    "check-compiler-rt-aarch64-unknown-linux-gnu"
                     ],
                     checks_on_target = [
                         ("libunwind",
                             ["python", "bin/llvm-lit.py",
                             "-v", "-vv", "--threads=32",
-                            "runtimes/runtimes-bins/libunwind/test"]),
+                            "runtimes/runtimes-aarch64-unknown-linux-gnu-bins/libunwind/test"]),
                         ("libc++abi",
                             ["python", "bin/llvm-lit.py",
                             "-v", "-vv", "--threads=32",
-                            "runtimes/runtimes-bins/libcxxabi/test"]),
+                            "runtimes/runtimes-aarch64-unknown-linux-gnu-bins/libcxxabi/test"]),
                         ("libc++",
                             ['python', 'bin/llvm-lit.py',
                             '-v', '-vv', '--threads=32',
-                            'runtimes/runtimes-bins/libcxx/test',
+                            'runtimes/runtimes-aarch64-unknown-linux-gnu-bins/libcxx/test',
                             ])
                     ],
                     extra_configure_args=[
                         "-DLLVM_TARGETS_TO_BUILD=AArch64",
-                        "-DTARGET_TRIPLE=aarch64-linux-gnu",
+                        "-DTARGET_TRIPLE=aarch64-unknown-linux-gnu",
                         "-DDEFAULT_SYSROOT=C:/buildbot/.aarch64-ubuntu",
                         "-DLLVM_LIT_ARGS=-v -vv --threads=32",
                         WithProperties("%(remote_test_host:+-DREMOTE_TEST_HOST=)s%(remote_test_host:-)s"),
