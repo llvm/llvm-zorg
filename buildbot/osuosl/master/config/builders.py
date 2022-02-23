@@ -486,7 +486,8 @@ all = [
                     extra_cmake_args=[
                         "-DCMAKE_C_FLAGS='-mcpu=a64fx'",
                         "-DCMAKE_CXX_FLAGS='-mcpu=a64fx'",
-                        "-DLLVM_ENABLE_LLD=True"])},
+                        "-DLLVM_ENABLE_LLD=True",
+                        "-DLLVM_LIT_ARGS='-v -j12'"])},
 
     # AArch64 Clang+LLVM+RT+LLD check-all + flang + test-suite 2-stage w/SVE-Vector-Length-Agnostic
     {'name' : "clang-aarch64-sve-vla-2stage",
@@ -505,7 +506,8 @@ all = [
                     extra_cmake_args=[
                         "-DCMAKE_C_FLAGS='-mcpu=a64fx -mllvm -scalable-vectorization=preferred -mllvm -treat-scalable-fixed-error-as-warning=false'",
                         "-DCMAKE_CXX_FLAGS='-mcpu=a64fx -mllvm -scalable-vectorization=preferred -mllvm -treat-scalable-fixed-error-as-warning=false'",
-                        "-DLLVM_ENABLE_LLD=True"])},
+                        "-DLLVM_ENABLE_LLD=True",
+                        "-DLLVM_LIT_ARGS='-v -j12'"])},
 
     # AArch64 Clang+LLVM+RT+LLD check-all + flang + test-suite w/SVE-Vector-Length-Specific
     {'name' : "clang-aarch64-sve-vls",
@@ -522,7 +524,8 @@ all = [
                     extra_cmake_args=[
                         "-DCMAKE_C_FLAGS='-mcpu=a64fx'",
                         "-DCMAKE_CXX_FLAGS='-mcpu=a64fx'",
-                        "-DLLVM_ENABLE_LLD=True"])},
+                        "-DLLVM_ENABLE_LLD=True",
+                        "-DLLVM_LIT_ARGS='-v -j12'"])},
 
     # AArch64 Clang+LLVM+RT+LLD check-all + flang + test-suite 2-stage w/SVE-Vector-Length-Specific
     {'name' : "clang-aarch64-sve-vls-2stage",
@@ -541,7 +544,8 @@ all = [
                     extra_cmake_args=[
                         "-DCMAKE_C_FLAGS='-mcpu=a64fx -msve-vector-bits=512 -mllvm -treat-scalable-fixed-error-as-warning=false'",
                         "-DCMAKE_CXX_FLAGS='-mcpu=a64fx -msve-vector-bits=512 -mllvm -treat-scalable-fixed-error-as-warning=false'",
-                        "-DLLVM_ENABLE_LLD=True"])},
+                        "-DLLVM_ENABLE_LLD=True",
+                        "-DLLVM_LIT_ARGS='-v -j12'"])},
 
     {'name' : "clang-arm64-windows-msvc-2stage",
     'tags'  : ["clang"],
