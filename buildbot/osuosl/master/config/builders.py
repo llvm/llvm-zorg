@@ -1244,6 +1244,24 @@ all = [
                         '-DLLVM_ENABLE_ZLIB=FALSE',
                         '-DLLVM_LIT_ARGS=-vj 8'])},
 
+    {'name' : "lldb-aarch64-windows",
+    'tags'  : ["lldb"],
+    'workernames' : ["linaro-lldb-aarch64-windows"],
+    'builddir': "lldb-aarch64-windows",
+    'factory' : LLDBBuilder.getLLDBCMakeBuildFactory(
+                    clean=True,
+                    test=True,
+                    extra_cmake_args=[
+                        '-DCLANG_DEFAULT_LINKER=lld',
+                        '-DLLDB_ENABLE_PYTHON=FALSE',
+                        '-DLLVM_NATIVE_ARCH=AArch64',
+                        '-DLLVM_HOST_TRIPLE=aarch64-windows-msvc',
+                        '-DLLVM_DEFAULT_TARGET_TRIPLE=aarch64-windows-msvc',
+                        '-DLLVM_FORCE_USE_OLD_TOOLCHAIN=True',
+                        '-DLLVM_ENABLE_ASSERTIONS=OFF',
+                        '-DLLVM_ENABLE_ZLIB=FALSE',
+                        '-DLLVM_LIT_ARGS=-vj 4'])},
+
 # LLD builders.
 
     {'name' : "lld-x86_64-win",
