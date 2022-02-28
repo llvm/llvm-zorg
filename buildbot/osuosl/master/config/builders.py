@@ -236,7 +236,8 @@ all = [
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
                     vs="manual",
                     checkout_flang=True,
-                    checks=[], # Disable testing until MCJIT failures are fixed
+                    # Only enabling checks we expect to work.
+                    checks=['check-flang'],
                     extra_cmake_args=[
                         "-DCMAKE_TRY_COMPILE_CONFIGURATION=Release",
                         "-DLLVM_DEFAULT_TARGET_TRIPLE=aarch64-pc-windows-msvc",
