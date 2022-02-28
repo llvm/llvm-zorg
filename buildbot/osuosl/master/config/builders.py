@@ -662,7 +662,7 @@ all = [
                     extra_configure_args=[
                         "-DLLVM_ENABLE_ASSERTIONS=On", "-DCMAKE_C_COMPILER=clang",
                         "-DCMAKE_CXX_COMPILER=clang++",
-                        "-DCLANG_DEFAULT_LINKER=lld", "-DCLANG_DEFAULT_PIE_ON_LINUX=OFF",
+                        "-DCLANG_DEFAULT_LINKER=lld",
                         "-DCMAKE_C_COMPILER_EXTERNAL_TOOLCHAIN:PATH=/opt/rh/devtoolset-7/root/usr",
                         "-DCMAKE_CXX_COMPILER_EXTERNAL_TOOLCHAIN:PATH=/opt/rh/devtoolset-7/root/usr",
                         "-DLLVM_BINUTILS_INCDIR=/usr/include", "-DBUILD_SHARED_LIBS=ON", "-DLLVM_ENABLE_WERROR=ON",
