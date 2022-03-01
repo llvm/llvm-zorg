@@ -302,6 +302,14 @@ all = [
                 "polly-x86_64-linux-shlib-plugin",
                 "polly-sphinx-docs",
             ]),
+    reporters.MailNotifier(
+        fromaddr = "llvm.buildmaster@lab.llvm.org",
+        sendToInterestedUsers = False,
+        extraRecipients = ["orlando.hyams@sony.com"],
+        subject = "Build %(builder)s Failure",
+        mode = "failing",
+        builders = ["cross-project-tests-sie-ubuntu",
+                    "llvm-clang-x86_64-sie-win"]),
 ]
 
 
