@@ -144,11 +144,11 @@ build-libunwind-ve:
 	mkdir -p ${LIBUNWIND_BUILD_VE}
 	cd ${LIBUNWIND_BUILD_VE} && ${CMAKE} ${MONOREPO}/runtimes -G Ninja \
             -DLLVM_ENABLE_RUNTIMES="libunwind" \
-	    -DLIBUNWIND_TARGET_TRIPLE="${VE_TARGET}" \
 	    -DCMAKE_C_COMPILER=${BUILT_CLANG} \
 	    -DCMAKE_CXX_COMPILER=${BUILT_CLANGXX} \
 	    -DCMAKE_AR=${INTREE_PREFIX}/bin/llvm-ar \
 	    -DCMAKE_RANLIB=${INTREE_PREFIX}/bin/llvm-ranlib \
+	    -DCMAKE_ASM_COMPILER_TARGET="${VE_TARGET}" \
 	    -DCMAKE_C_COMPILER_TARGET="${VE_TARGET}" \
 	    -DCMAKE_CXX_COMPILER_TARGET="${VE_TARGET}" \
 	    -DCMAKE_BUILD_TYPE="${LIBUNWIND_BUILD_TYPE}" \
@@ -173,7 +173,6 @@ build-libcxx-ve:
 	cd ${LIBCXX_BUILD_VE} && ${CMAKE} ${MONOREPO}/runtimes -G Ninja \
                 -DLLVM_ENABLE_RUNTIMES="libcxx" \
 	        -DLIBCXX_USE_COMPILER_RT=True \
-  	        -DLIBCXX_TARGET_TRIPLE="${VE_TARGET}" \
   	        -DCMAKE_C_COMPILER=${BUILT_CLANG} \
   	        -DCMAKE_CXX_COMPILER=${BUILT_CLANGXX} \
   	        -DCMAKE_AR=${INTREE_PREFIX}/bin/llvm-ar \
