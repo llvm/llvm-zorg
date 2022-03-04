@@ -120,11 +120,6 @@ def getCmakeWithMSVCBuildFactory(
             extract_fn=builders_util.extractVSEnvironment))
         merged_env = Property('vs_env')
 
-    # Since this is a build of a cross toolchain, we build only the host-side
-    # tools first by the host system compiler. Libraries will be cross-compiled.
-    cmake_args.append(InterpolateToPosixPath(
-        '-DLLVM_AR=%(builddir)s/' + f.obj_dir + '/bin/llvm-ar.exe')),
-
     CmakeCommand.applyDefaultOptions(cmake_args, [
         ('-G', 'Ninja'),
         ('-DLLVM_ENABLE_PROJECTS=', 'llvm;clang;clang-tools-extra;lld'),
