@@ -181,7 +181,7 @@ all = [
                     ],
                     extra_configure_args=[
                         "-DLLVM_TARGETS_TO_BUILD=ARM",
-                        "-DTARGET_TRIPLE=armv7-unknown-linux-gnueabihf",
+                        "-DTOOLCHAIN_TARGET_TRIPLE=armv7-unknown-linux-gnueabihf",
                         "-DDEFAULT_SYSROOT=C:/buildbot/.arm-ubuntu",
                         "-DZLIB_ROOT=C:/buildbot/.zlib-win32",
                         "-DLLVM_LIT_ARGS=-v -vv --threads=32",
@@ -220,7 +220,7 @@ all = [
                     ],
                     extra_configure_args=[
                         "-DLLVM_TARGETS_TO_BUILD=AArch64",
-                        "-DTARGET_TRIPLE=aarch64-unknown-linux-gnu",
+                        "-DTOOLCHAIN_TARGET_TRIPLE=aarch64-unknown-linux-gnu",
                         "-DDEFAULT_SYSROOT=C:/buildbot/.aarch64-ubuntu",
                         "-DZLIB_ROOT=C:/buildbot/.zlib-win32",
                         "-DLLVM_LIT_ARGS=-v -vv --threads=32",
