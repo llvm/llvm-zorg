@@ -43,7 +43,7 @@ LLVM_PREFIX="${BUILDROOT}/install"
 # Install prefix structure
 BUILT_CLANG="${INTREE_PREFIX}/bin/clang"
 BUILT_CLANGXX="${INTREE_PREFIX}/bin/clang++"
-VE_TARGET="ve-linux"
+VE_TARGET="ve-unknown-linux-gnu"
 LINUX_VE_LIBSUFFIX=/linux/ve
 
 # Resource dir (Requires clang to be installed before this variable gets expanded)
