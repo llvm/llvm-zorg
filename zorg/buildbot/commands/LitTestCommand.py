@@ -19,7 +19,7 @@ class LitLogObserver(LogLineObserver):
 
   # These are the codes for which we will include the log output in the buildbot
   # step results.
-  failingCodes = set(['FAIL', 'XPASS', 'KPASS', 'UNRESOLVED', 'TIMEOUT', 'ERROR'])
+  failingCodes = set(['FAIL', 'XPASS', 'KPASS', 'UNRESOLVED', 'TIMEOUT', 'ERROR', 'NOEXE'])
   # Regular expressions for start of summary marker.
   kStartSummaryRE = re.compile(r'^Failing Tests \(\d*\)$')
 
@@ -153,7 +153,8 @@ class LitTestCommand(Test):
                  'IMPROVED':'runtime performance improvement',
                  'UNSUPPORTED':'unsupported tests',
                  'SKIPPED':'skipped tests',
-                 'TIMEOUT':'timeout waiting for results'}
+                 'TIMEOUT':'timeout waiting for results',
+                 'NOEXE':'test executable is missing'}
 
   def __init__(self, ignore=[], flaky=[], max_logs=20, parseSummaryOnly=False,
                *args, **kwargs):
