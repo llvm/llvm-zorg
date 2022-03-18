@@ -967,7 +967,6 @@ all = [
                         "-G", "Ninja",
                         "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
                         "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
-                        "-DBUILD_SHARED_LIBS=ON",
                         "-DLLVM_ENABLE_ASSERTIONS=True",
                         "-DLLVM_TARGETS_TO_BUILD='X86;NVPTX'",
                         "-DCLANG_ENABLE_ARCMT=OFF",
