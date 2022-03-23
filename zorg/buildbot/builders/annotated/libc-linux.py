@@ -63,8 +63,8 @@ def main(argv):
         run_command(['ninja', 'check-libc'])
 
     if fullbuild and not args.asan:
-        with step('libc-integration-tests'):
-            run_command(['ninja', 'libc-integration-tests'])
+        # with step('libc-integration-tests'):
+        #     run_command(['ninja', 'libc-integration-tests'])
         with step('libc-api-test'):
             run_command(['ninja', 'libc-api-test'])
         with step('libc-fuzzer'):
