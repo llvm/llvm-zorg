@@ -193,6 +193,18 @@ def get_all():
         # Ubuntu 18.04.2 LTS x86_64 Intel(R) Xeon(R) Gold CPU @ 2.1GHz, 128GB RAM
         create_worker("as-builder-4", properties={'jobs': 64}, max_builds=1),
 
+        # Windows Server on Xeon Gold 6230 (2x2.1GHz), 256Gb of RAM
+        create_worker("as-builder-5", properties={  # arm
+                        'remote_test_host': 'jetson4.lab.llvm.org',
+                        'remote_test_user': 'ubuntu'
+                     },
+                     max_builds=1),
+        create_worker("as-builder-6", properties={  # aarch64
+                        'remote_test_host': 'jetson8.lab.llvm.org',
+                        'remote_test_user': 'ubuntu'
+                     },
+                     max_builds=1),
+
         # Solaris 11
         create_worker("solaris11-amd64", properties={'jobs' : 8}, max_builds=1),
         create_worker("solaris11-sparcv9", properties={'jobs' : 8}, max_builds=1),

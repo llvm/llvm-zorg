@@ -98,7 +98,7 @@ all = [
 
     {'name' : "llvm-clang-win-x-armv7l-release",
     'tags'  : ["clang", "llvm", "compiler-rt", "cross", "armv7", "release"],
-    'workernames' : ["as-builder-1"],
+    'workernames' : ["as-builder-5"],
     'builddir': "x-armv7l-rel",
     'factory' : XToolchainBuilder.getCmakeWithMSVCBuildFactory(
                     vs="autodetect",
@@ -137,7 +137,7 @@ all = [
 
     {'name' : "llvm-clang-win-x-aarch64-release",
     'tags'  : ["clang", "llvm", "compiler-rt", "cross", "aarch64", "release"],
-    'workernames' : ["as-builder-2"],
+    'workernames' : ["as-builder-6"],
     'builddir': "x-aarch64-rel",
     'factory' : XToolchainBuilder.getCmakeWithMSVCBuildFactory(
                     vs="autodetect",
