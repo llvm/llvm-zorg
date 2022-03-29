@@ -49,6 +49,7 @@ def main(argv):
 
         if fullbuild and not args.asan:
             cmake_args.append('-DLLVM_LIBC_INCLUDE_SCUDO=ON')
+            cmake_args.append('-DLIBC_INCLUDE_BENCHMARKS=ON')
 
         if fullbuild:
             cmake_args.extend(['-DLLVM_LIBC_FULL_BUILD=ON']),
