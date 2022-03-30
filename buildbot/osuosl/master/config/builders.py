@@ -2314,4 +2314,29 @@ all += [
                         ],
                     )},
 
+    # AMD ROCm support.
+    {'name' : 'mlir-rocm-mi200',
+     'tags'  : ["mlir"],
+     'collapseRequests' : False,
+     'workernames' : ['mi200-buildbot'],
+     'builddir': 'mlir-rocm-mi200',
+     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
+         clean=True,
+         depends_on_projects=['llvm', 'mlir'],
+         targets = ['check-mlir-build-only'],
+         checks = ['check-mlir'],
+         extra_configure_args= mlir_default_cmake_options + [
+             '-DLLVM_CCACHE_BUILD=ON',
+             '-DLLVM_ENABLE_ASSERTIONS=ON',
+             '-DLLVM_ENABLE_LLD=ON',
+             '-DMLIR_ENABLE_ROCM_RUNNER=ON',
+             '-DMLIR_ENABLE_ROCM_CONVERSIONS=ON',
+             '-DMLIR_INCLUDE_INTEGRATION_TESTS=ON',
+         ],
+         env={
+             'CC': 'clang',
+             'CXX': 'clang++',
+             'LD': 'lld',
+         })}
+
 ]

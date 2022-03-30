@@ -275,6 +275,13 @@ all = [
     reporters.MailNotifier(
         fromaddr="llvm.buildmaster@lab.llvm.org",
         sendToInterestedUsers = False,
+        extraRecipients=["dl.mlse.buildbot@amd.com"],
+        subject = "Build Failure: %(builder)s",
+        mode = "failing",
+        builders = ["mlir-rocm-mi200"])
+    reporters.MailNotifier(
+        fromaddr="llvm.buildmaster@lab.llvm.org",
+        sendToInterestedUsers = False,
         extraRecipients=["flangbuilder@meinersbur.de"],
         subject = "Build Failure (flang): %(builder)s",
         mode = "failing",

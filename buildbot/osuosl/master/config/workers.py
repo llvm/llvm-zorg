@@ -286,6 +286,9 @@ def get_all():
         create_worker("omp-vega20-0", properties={'jobs': 32}, max_builds=1),
         create_worker("omp-vega20-1", properties={'jobs': 32}, max_builds=1),
 
+        # AMD ROCm support, Ubuntu 18.04.6, AMD Ryzen @ 1.5 GHz, MI200 GPU
+        create_worker("mi200-buildbot", max_builds=1)
+
         # BOLT worker
         create_worker("bolt-worker", properties={'jobs' : 16}, max_builds=1),
         ]
