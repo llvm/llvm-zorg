@@ -201,7 +201,7 @@ function build_stage2 {
      -DCMAKE_EXE_LINKER_FLAGS="${sanitizer_ldflags}" \
      $LLVM && \
    ninja) || {
-     ${sanitizer_name}_FAILED=1
+     eval ${sanitizer_name}_FAILED=1
      build_failure
    }
 }
@@ -228,7 +228,7 @@ function check_stage2 {
 
   echo @@@BUILD_STEP stage2/$sanitizer_name check@@@
   ninja -C ${build_dir} check-all || {
-    ${sanitizer_name}_FAILED=1
+    eval ${sanitizer_name}_FAILED=1
     build_failure
   }
 }
@@ -266,7 +266,7 @@ function build_stage3 {
      -DLLVM_USE_LINKER=lld \
      $LLVM && \
   ninja clang) || {
-    ${sanitizer_name}_FAILED=1
+    eval ${sanitizer_name}_FAILED=1
     echo build_failure
   }
 }
@@ -293,7 +293,7 @@ function check_stage3 {
 
   echo @@@BUILD_STEP stage3/$sanitizer_name check@@@
   (cd ${build_dir} && ninja check-all) || {
-    ${sanitizer_name}_FAILED=1
+    eval ${sanitizer_name}_FAILED=1
     build_failure
   }
 }
