@@ -200,7 +200,7 @@ function build_stage2 {
      -DCMAKE_CXX_FLAGS="${sanitizer_cflags}" \
      -DCMAKE_EXE_LINKER_FLAGS="${sanitizer_ldflags}" \
      $LLVM && \
-   ninja) || { 
+   ninja) || {
      ${sanitizer_name}_FAILED=1
      build_failure
    }
@@ -225,9 +225,9 @@ function build_stage2_ubsan {
 function check_stage2 {
   local sanitizer_name=$1
   local build_dir=${STAGE2_DIR}
-  
+
   echo @@@BUILD_STEP stage2/$sanitizer_name check@@@
-  ninja -C ${build_dir} check-all || { 
+  ninja -C ${build_dir} check-all || {
     ${sanitizer_name}_FAILED=1
     build_failure
   }
@@ -265,7 +265,7 @@ function build_stage3 {
      -DCMAKE_CXX_COMPILER=${clang_path}/clang++ \
      -DLLVM_USE_LINKER=lld \
      $LLVM && \
-  ninja clang) || { 
+  ninja clang) || {
     ${sanitizer_name}_FAILED=1
     echo build_failure
   }
@@ -292,7 +292,7 @@ function check_stage3 {
   local build_dir=llvm_build2_${sanitizer_name}
 
   echo @@@BUILD_STEP stage3/$sanitizer_name check@@@
-  (cd ${build_dir} && ninja check-all)  || { 
+  (cd ${build_dir} && ninja check-all) || {
     ${sanitizer_name}_FAILED=1
     build_failure
   }
