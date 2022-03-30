@@ -129,7 +129,6 @@ function common_stage2_variables {
 
 function build_stage2 {
   local sanitizer_name=$1
-  local step_result=$2
   local libcxx_build_dir=libcxx_build_${sanitizer_name}
   local build_dir=llvm_build_${sanitizer_name}
   export STAGE2_DIR=${build_dir}
@@ -176,7 +175,7 @@ function build_stage2 {
       -DCMAKE_C_FLAGS="${fsanitize_flag}" \
       -DCMAKE_CXX_FLAGS="${fsanitize_flag}" \
       $LLVM && \
-    ninja cxx cxxabi) || echo $step_result
+    ninja cxx cxxabi) || build_failure
 
   local libcxx_runtime_path=$(dirname $(find ${ROOT}/${libcxx_build_dir} -name libc++.so))
   local sanitizer_ldflags="-lc++abi -Wl,--rpath=${libcxx_runtime_path} -L${libcxx_runtime_path}"
@@ -202,58 +201,56 @@ function build_stage2 {
      -DCMAKE_EXE_LINKER_FLAGS="${sanitizer_ldflags}" \
      $LLVM && \
    ninja) || { 
-     export ${sanitizer_name}_FAILED=1
-     echo $step_result
+     ${sanitizer_name}_FAILED=1
+     build_failure
    }
 }
 
 function build_stage2_msan {
-  build_stage2 msan @@@STEP_FAILURE@@@
+  build_stage2 msan
 }
 
 function build_stage2_msan_track_origins {
-  build_stage2 msan_track_origins @@@STEP_FAILURE@@@
+  build_stage2 msan_track_origins
 }
 
 function build_stage2_asan {
-  build_stage2 asan @@@STEP_FAILURE@@@
+  build_stage2 asan
 }
 
 function build_stage2_ubsan {
-  build_stage2 ubsan @@@STEP_FAILURE@@@
+  build_stage2 ubsan
 }
 
 function check_stage2 {
   local sanitizer_name=$1
-  local step_result=$2
   local build_dir=${STAGE2_DIR}
   
   echo @@@BUILD_STEP stage2/$sanitizer_name check@@@
   ninja -C ${build_dir} check-all || { 
-    export ${sanitizer_name}_FAILED=1
-    echo $step_result
+    ${sanitizer_name}_FAILED=1
+    build_failure
   }
 }
 
 function check_stage2_msan {
-  check_stage2 msan @@@STEP_FAILURE@@@
+  check_stage2 msan
 }
 
 function check_stage2_msan_track_origins {
-  check_stage2 msan_track_origins @@@STEP_FAILURE@@@
+  check_stage2 msan_track_origins
 }
 
 function check_stage2_asan {
-  check_stage2 asan @@@STEP_FAILURE@@@
+  check_stage2 asan
 }
 
 function check_stage2_ubsan {
-  check_stage2 ubsan @@@STEP_FAILURE@@@
+  check_stage2 ubsan
 }
 
 function build_stage3 {
   local sanitizer_name=$1
-  local step_result=$2
   local build_dir=llvm_build2_${sanitizer_name}
 
   local clang_path=$ROOT/${STAGE2_DIR}/bin
@@ -269,53 +266,52 @@ function build_stage3 {
      -DLLVM_USE_LINKER=lld \
      $LLVM && \
   ninja clang) || { 
-    export ${sanitizer_name}_FAILED=1
-    echo $step_result
+    ${sanitizer_name}_FAILED=1
+    echo build_failure
   }
 }
 
 function build_stage3_msan {
-  build_stage3 msan @@@STEP_FAILURE@@@
+  build_stage3 msan
 }
 
 function build_stage3_msan_track_origins {
-  build_stage3 msan_track_origins @@@STEP_FAILURE@@@
+  build_stage3 msan_track_origins
 }
 
 function build_stage3_asan {
-  build_stage3 asan @@@STEP_FAILURE@@@
+  build_stage3 asan
 }
 
 function build_stage3_ubsan {
-  build_stage3 ubsan @@@STEP_FAILURE@@@
+  build_stage3 ubsan
 }
 
 function check_stage3 {
   local sanitizer_name=$1
-  local step_result=$2
   local build_dir=llvm_build2_${sanitizer_name}
 
   echo @@@BUILD_STEP stage3/$sanitizer_name check@@@
   (cd ${build_dir} && ninja check-all)  || { 
-    export ${sanitizer_name}_FAILED=1
-    echo $step_result
+    ${sanitizer_name}_FAILED=1
+    build_failure
   }
 }
 
 function check_stage3_msan {
-  check_stage3 msan @@@STEP_FAILURE@@@
+  check_stage3 msan
 }
 
 function check_stage3_msan_track_origins {
-  check_stage3 msan_track_origins @@@STEP_FAILURE@@@
+  check_stage3 msan_track_origins
 }
 
 function check_stage3_asan {
-  check_stage3 asan @@@STEP_FAILURE@@@
+  check_stage3 asan
 }
 
 function check_stage3_ubsan {
-  check_stage3 ubsan @@@STEP_FAILURE@@@
+  check_stage3 ubsan
 }
 
 function build_failure() {
