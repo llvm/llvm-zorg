@@ -139,24 +139,24 @@ function build_stage2 {
   if [ "$sanitizer_name" == "msan" ]; then
     export MSAN_SYMBOLIZER_PATH="${llvm_symbolizer_path}"
     export MSAN_OPTIONS="poison_in_dtor=1"
-    local llvm_use_sanitizer="Memory"
+    llvm_use_sanitizer="Memory"
     # TODO: Re-enable -fsanitize-memory-param-retval when Chromium build is ready.
-    local fsanitize_flag="-fsanitize=memory -fsanitize-memory-use-after-dtor"
+    fsanitize_flag="-fsanitize=memory -fsanitize-memory-use-after-dtor"
   elif [ "$sanitizer_name" == "msan_track_origins" ]; then
     export MSAN_SYMBOLIZER_PATH="${llvm_symbolizer_path}"
     export MSAN_OPTIONS="poison_in_dtor=1"
-    local llvm_use_sanitizer="MemoryWithOrigins"
+    llvm_use_sanitizer="MemoryWithOrigins"
     # TODO: Re-enable -fsanitize-memory-param-retval when Chromium build is ready.
-    local fsanitize_flag="-fsanitize=memory -fsanitize-memory-track-origins -fsanitize-memory-use-after-dtor"
+    fsanitize_flag="-fsanitize=memory -fsanitize-memory-track-origins -fsanitize-memory-use-after-dtor"
   elif [ "$sanitizer_name" == "asan" ]; then
     export ASAN_SYMBOLIZER_PATH="${llvm_symbolizer_path}"
     export ASAN_OPTIONS="check_initialization_order=true:detect_stack_use_after_return=1:detect_leaks=1"
-    local llvm_use_sanitizer="Address"
-    local fsanitize_flag="-fsanitize=address"
+    llvm_use_sanitizer="Address"
+    fsanitize_flag="-fsanitize=address"
   elif [ "$sanitizer_name" == "ubsan" ]; then
     export UBSAN_OPTIONS="external_symbolizer_path=${llvm_symbolizer_path}:print_stacktrace=1"
-    local llvm_use_sanitizer="Undefined"
-    local fsanitize_flag="-fsanitize=undefined"
+    llvm_use_sanitizer="Undefined"
+    fsanitize_flag="-fsanitize=undefined"
   else
     echo "Unknown sanitizer!"
     exit 1
