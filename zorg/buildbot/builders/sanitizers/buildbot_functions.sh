@@ -138,13 +138,13 @@ function build_stage2 {
 
   if [ "$sanitizer_name" == "msan" ]; then
     export MSAN_SYMBOLIZER_PATH="${llvm_symbolizer_path}"
-    export MSAN_OPTIONS="MSAN_OPTIONS=poison_in_dtor=1"
+    export MSAN_OPTIONS="poison_in_dtor=1"
     local llvm_use_sanitizer="Memory"
     # TODO: Re-enable -fsanitize-memory-param-retval when Chromium build is ready.
     local fsanitize_flag="-fsanitize=memory -fsanitize-memory-use-after-dtor"
   elif [ "$sanitizer_name" == "msan_track_origins" ]; then
     export MSAN_SYMBOLIZER_PATH="${llvm_symbolizer_path}"
-    export MSAN_OPTIONS="MSAN_OPTIONS=poison_in_dtor=1"
+    export MSAN_OPTIONS="poison_in_dtor=1"
     local llvm_use_sanitizer="MemoryWithOrigins"
     # TODO: Re-enable -fsanitize-memory-param-retval when Chromium build is ready.
     local fsanitize_flag="-fsanitize=memory -fsanitize-memory-track-origins -fsanitize-memory-use-after-dtor"
