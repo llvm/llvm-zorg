@@ -291,7 +291,7 @@ function check_stage3 {
   local build_dir=llvm_build2_${sanitizer_name}
 
   echo @@@BUILD_STEP stage3/$sanitizer_name check@@@
-  (cd ${build_dir} && evn && ninja check-all) || {
+  (cd ${build_dir} && env && ninja check-all) || {
     eval ${sanitizer_name}_FAILED=1
     build_failure
   }
