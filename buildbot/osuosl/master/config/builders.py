@@ -45,6 +45,7 @@ all = [
                     clean=True,
                     depends_on_projects=['llvm','clang','clang-tools-extra','compiler-rt'],
                     extra_configure_args=[
+                        "-DLLVM_CCACHE_BUILD=ON",
                         "-DCOMPILER_RT_BUILD_BUILTINS:BOOL=OFF",
                         "-DCOMPILER_RT_BUILD_ORC:BOOL=OFF",
                         "-DCOMPILER_RT_BUILD_SANITIZERS:BOOL=OFF",
@@ -55,7 +56,7 @@ all = [
                     ],
                     env={
                         'PATH':'/home/llvmbb/bin/clang-latest/bin:/home/llvmbb/bin:/usr/local/bin:/usr/local/bin:/usr/bin:/bin',
-                        'CC': 'ccache clang', 'CXX': 'ccache clang++', 'CCACHE_CPP2': 'yes',
+                        'CC': 'clang', 'CXX': 'clang++',
                     })},
 
     {'name' : "llvm-clang-x86_64-win-fast",
@@ -139,6 +140,7 @@ all = [
                     depends_on_projects=["llvm", "lld"],
                     clean=True,
                     extra_configure_args=[
+                        "-DLLVM_CCACHE_BUILD=ON",
                         "-DLLVM_ENABLE_EXPENSIVE_CHECKS=ON",
                         "-DLLVM_ENABLE_WERROR=OFF",
                         "-DCMAKE_BUILD_TYPE=Release",
@@ -146,7 +148,7 @@ all = [
                         "-DLLVM_LIT_ARGS=-v -vv -j96"],
                     env={
                         'PATH':'/home/llvmbb/bin/clang-latest/bin:/home/llvmbb/bin:/usr/local/bin:/usr/local/bin:/usr/bin:/bin',
-                        'CC': 'ccache clang', 'CXX': 'ccache clang++', 'CCACHE_CPP2': 'yes',
+                        'CC': 'clang', 'CXX': 'clang++',
                     })},
 
 # Cross builders.
@@ -1621,9 +1623,12 @@ all += [
     'workernames' : ["gribozavr4"],
     'builddir': "openmp-gcc-x86_64-linux-debian",
     'factory' : OpenMPBuilder.getOpenMPCMakeBuildFactory(
+                    extraCmakeArgs=[
+                        '-DLLVM_CCACHE_BUILD=ON',
+                    ],
                     env={
                         'PATH':'/home/llvmbb/bin/clang-latest/bin:/home/llvmbb/bin:/usr/local/bin:/usr/local/bin:/usr/bin:/bin',
-                        'CC': 'ccache clang', 'CXX': 'ccache clang++', 'CCACHE_CPP2': 'yes',
+                        'CC': 'clang', 'CXX': 'clang++',
                     })},
 
     {'name' : "openmp-clang-x86_64-linux-debian",
@@ -1631,9 +1636,12 @@ all += [
     'workernames' : ["gribozavr4"],
     'builddir': "openmp-clang-x86_64-linux-debian",
     'factory' : OpenMPBuilder.getOpenMPCMakeBuildFactory(
+                    extraCmakeArgs=[
+                        '-DLLVM_CCACHE_BUILD=ON',
+                    ],
                     env={
                         'PATH':'/home/llvmbb/bin/clang-latest/bin:/home/llvmbb/bin:/usr/local/bin:/usr/local/bin:/usr/bin:/bin',
-                        'CC': 'ccache clang', 'CXX': 'ccache clang++', 'CCACHE_CPP2': 'yes',
+                        'CC': 'clang', 'CXX': 'clang++',
                     })},
 
     {'name' : "openmp-offload-cuda-project",
@@ -2155,10 +2163,11 @@ all += [
                         '-DBUILD_SHARED_LIBS=Off',
                         '-DLLVM_ENABLE_LLD=Off',
                         '-DLLVM_ENABLE_BINDINGS=Off',
+                        '-DLLVM_CCACHE_BUILD=ON',
                     ],
                     env={
                         'PATH':'/home/llvmbb/bin/clang-latest/bin:/home/llvmbb/bin:/usr/local/bin:/usr/local/bin:/usr/bin:/bin',
-                        'CC': 'ccache clang', 'CXX': 'ccache clang++', 'CCACHE_CPP2': 'yes'
+                        'CC': 'clang', 'CXX': 'clang++',
                     })},
 
     {'name' : "clang-solaris11-amd64",

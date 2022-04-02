@@ -84,6 +84,7 @@ all = [
                     depends_on_projects=["llvm", "lld"],
                     clean=True,
                     extra_configure_args=[
+                        "-DLLVM_CCACHE_BUILD=ON",
                         "-DLLVM_ENABLE_EXPENSIVE_CHECKS=ON",
                         "-DLLVM_ENABLE_WERROR=OFF",
                         "-DCMAKE_BUILD_TYPE=Release",
@@ -91,7 +92,7 @@ all = [
                         "-DLLVM_LIT_ARGS=-v -vv -j96"],
                     env={
                         'PATH':'/home/llvmbb/bin/clang-latest/bin:/home/llvmbb/bin:/usr/local/bin:/usr/local/bin:/usr/bin:/bin',
-                        'CC': 'ccache clang', 'CXX': 'ccache clang++', 'CCACHE_CPP2': 'yes',
+                        'CC': 'clang', 'CXX': 'clang++',
                     })},
 
 # Cross builders.
@@ -221,9 +222,12 @@ all = [
     'workernames' : ["gribozavr4"],
     'builddir': "openmp-clang-x86_64-linux-debian-rel",
     'factory' : OpenMPBuilder.getOpenMPCMakeBuildFactory(
+                    extraCmakeArgs=[
+                        '-DLLVM_CCACHE_BUILD=ON',
+                    ],
                     env={
                         'PATH':'/home/llvmbb/bin/clang-latest/bin:/home/llvmbb/bin:/usr/local/bin:/usr/local/bin:/usr/bin:/bin',
-                        'CC': 'ccache clang', 'CXX': 'ccache clang++', 'CCACHE_CPP2': 'yes',
+                        'CC': 'clang', 'CXX': 'clang++',
                     })},
 
 ]
