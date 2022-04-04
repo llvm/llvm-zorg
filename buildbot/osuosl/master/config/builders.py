@@ -1485,7 +1485,7 @@ all += [
     {'name' : 'ppc64le-mlir-rhel-clang',
     'tags'  : ["mlir", "ppc", "ppc64le"],
     'collapseRequests' : False,
-    'workernames' : ['ppc64le-flang-mlir-rhel-test'],
+    'workernames' : ['ppc64le-mlir-rhel-test'],
     'builddir': 'ppc64le-mlir-rhel-clang-build',
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                     clean=True,
@@ -2025,7 +2025,7 @@ all += [
     {'name' : 'ppc64le-flang-rhel-clang',
     'tags'  : ["flang", "ppc", "ppc64le"],
     'collapseRequests' : False,
-    'workernames' : ['ppc64le-flang-mlir-rhel-test'],
+    'workernames' : ['ppc64le-flang-rhel-test'],
     'builddir': 'ppc64le-flang-rhel-clang-build',
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                     clean=True,

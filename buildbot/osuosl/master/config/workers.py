@@ -82,7 +82,8 @@ def get_all():
         create_worker("ppc64le-sanitizer", properties={'jobs': 4}, max_builds=1),
         create_worker("ppc64le-lld-multistage-test", max_builds=1),
         create_worker("ppc64le-clang-rhel-test", properties={'jobs': 192}, max_builds=1),
-        create_worker("ppc64le-flang-mlir-rhel-test", max_builds=1),
+        create_worker("ppc64le-flang-rhel-test", max_builds=1),
+        create_worker("ppc64le-mlir-rhel-test", max_builds=1),
 
         # SPARC 64-bit big endian (sparc64)
         create_worker("debian-stadler-sparc64", properties={'jobs': 4}, max_builds=1),
