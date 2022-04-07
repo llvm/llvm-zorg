@@ -28,14 +28,16 @@ def getFuchsiaToolchainBuildFactory(
 
     f = UnifiedTreeBuilder.getLLVMBuildFactoryAndSourcecodeSteps(
             depends_on_projects=[
-                "llvm",
+                "bolt",
                 "clang",
                 "clang-tools-extra",
                 "compiler-rt",
                 "libcxx",
                 "libcxxabi",
                 "libunwind",
-                "lld"
+                "lld",
+                "llvm",
+                "polly",
             ],
             llvm_srcdir=src_dir,
             obj_dir=obj_dir,
@@ -92,8 +94,6 @@ def getFuchsiaToolchainBuildFactory(
     # Some options are required for this stage no matter what.
     CmakeCommand.applyRequiredOptions(cmake_options, [
         ("-G",                      "Ninja"),
-        ("-DLLVM_ENABLE_PROJECTS=", "clang;clang-tools-extra;lld"),
-        ("-DLLVM_ENABLE_RUNTIMES=", "compiler-rt;libcxx;libcxxabi;libunwind"),
         ])
 
     # Set proper defaults.
