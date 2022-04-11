@@ -1806,6 +1806,15 @@ all += [
                     depends_on_projects=['llvm', 'libc', 'clang', 'clang-tools-extra'],
                     extra_args=['--debug'])},
 
+    {'name' : "libc-aarch64-ubuntu-fullbuild-dbg",
+    'tags'  : ["libc"],
+    'workernames' : ["libc-aarch64-ubuntu"],
+    'builddir': "libc-aarch64-ubuntu-fullbuild-dbg",
+    'factory' : AnnotatedBuilder.getAnnotatedBuildFactory(
+                    script="libc-linux.py",
+                    depends_on_projects=['llvm', 'libc', 'clang', 'clang-tools-extra'],
+                    extra_args=['--debug'])},
+
     {'name' : 'libc-x86_64-debian',
     'tags'  : ["libc"],
     'workernames' : ['libc-x86_64-debian'],
