@@ -150,7 +150,7 @@ if [ ! -z ${ENABLE_LIBCXX_FLAG} ]; then
   HEADER_DIR=${PWD}/include) || echo @@@STEP_FAILURE@@@
 fi
 
-# Do a sanity check on Linux: build and test sanitizers using gcc as a host
+# Check on Linux: build and test sanitizers using gcc as a host
 # compiler.
 if [ "$PLATFORM" == "Linux" ]; then
   check_in_gcc() {
@@ -250,29 +250,6 @@ fi
 echo @@@BUILD_STEP test standalone compiler-rt@@@
 (cd compiler_rt_build && make -j$MAKE_JOBS check-all) || echo @@@STEP_FAILURE@@@
 
-build_symbolizer() {
-  echo @@@BUILD_STEP build $1-bit symbolizer for $2@@@
-  if [ ! -d symbolizer_build$1 ]; then
-    mkdir symbolizer_build$1
-  fi
-  (cd symbolizer_build$1 && ZLIB_SRC=$ZLIB FLAGS=-m$1 \
-    CLANG=${FRESH_CLANG_PATH}/clang \
-    bash -eux $COMPILER_RT/lib/sanitizer_common/symbolizer/scripts/build_symbolizer.sh \
-      $(dirname $(find ../$2/ -name libclang_rt.*.a | head -n1)) || echo @@@STEP_FAILURE@@@)
-}
-
-if [ "$CHECK_SYMBOLIZER" == "1" ]; then
-  echo @@@BUILD_STEP update zlib@@@
-  (cd $ZLIB && git pull --rebase) || \
-      git clone https://github.com/madler/zlib.git $ZLIB || echo @@@STEP_FAILURE@@@
-
-  build_symbolizer 32 compiler_rt_build
-  build_symbolizer 64 compiler_rt_build
-
-  echo @@@BUILD_STEP test standalone compiler-rt with symbolizer@@@
-  (cd compiler_rt_build && make -j$MAKE_JOBS check-all) || echo @@@STEP_FAILURE@@@
-fi
-
 HAVE_NINJA=${HAVE_NINJA:-1}
 if [ "$PLATFORM" == "Linux" -a $HAVE_NINJA == 1 ]; then
   echo @@@BUILD_STEP build with ninja@@@
@@ -308,30 +285,45 @@ if [ "$PLATFORM" == "Linux" -a $HAVE_NINJA == 1 ]; then
   check_ninja $CHECK_UBSAN ubsan-minimal
 
   if [ "$CHECK_SYMBOLIZER" == "1" ]; then
+    build_symbolizer() {
+      echo @@@BUILD_STEP build $1-bit symbolizer for $2@@@
+      if [ ! -d symbolizer_build$1 ]; then
+        mkdir symbolizer_build$1
+      fi
+      (cd symbolizer_build$1 && ZLIB_SRC=$ZLIB FLAGS=-m$1 \
+        CLANG=${FRESH_CLANG_PATH}/clang \
+        bash -eux $COMPILER_RT/lib/sanitizer_common/symbolizer/scripts/build_symbolizer.sh \
+          $(dirname $(find ../$2/ -name libclang_rt.*.a | head -n1)) || echo @@@STEP_FAILURE@@@)
+    }
+
+    echo @@@BUILD_STEP update zlib@@@
+    (cd $ZLIB && git pull --rebase) || \
+        git clone https://github.com/madler/zlib.git $ZLIB || echo @@@STEP_FAILURE@@@
+
     build_symbolizer 32 llvm_build_ninja
     build_symbolizer 64 llvm_build_ninja
 
     check_ninja_with_symbolizer() {
       CONDITION=$1
       SANITIZER=$2
-      # Disabled, tests are not working yet.
-      if [ "$CONDITION" == "-1" ]; then
-        echo @@@BUILD_STEP ninja check-$SANITIZER with symbolizer@@@
+      if [ "$CONDITION" == "1" ]; then
+        echo @@@BUILD_STEP ninja check-$SANITIZER with internal symbolizer@@@
         (cd llvm_build_ninja && ninja check-$SANITIZER) || echo @@@STEP_FAILURE@@@
       fi
     }
 
-    check_ninja_with_symbolizer 1 sanitizer
+    # TODO: Replace LIT_FILTER_OUT with lit features.
+    LIT_FILTER_OUT=":: (max_allocation_size.cpp|Linux/soft_rss_limit_mb_test.cpp)$" check_ninja_with_symbolizer 1 sanitizer
     check_ninja_with_symbolizer $CHECK_ASAN asan
-    check_ninja_with_symbolizer $CHECK_HWASAN hwasan
-    check_ninja_with_symbolizer $CHECK_CFI cfi-and-supported
+    # check_ninja_with_symbolizer $CHECK_HWASAN hwasan
+    # check_ninja_with_symbolizer $CHECK_CFI cfi-and-supported
     check_ninja_with_symbolizer $CHECK_DFSAN dfsan
-    check_ninja_with_symbolizer $CHECK_LSAN lsan
+    LIT_FILTER_OUT=":: TestCases/realloc_too_big.c$" check_ninja_with_symbolizer $CHECK_LSAN lsan
     check_ninja_with_symbolizer $CHECK_MSAN msan
     check_ninja_with_symbolizer $CHECK_SCUDO scudo
     check_ninja_with_symbolizer $CHECK_SCUDO_STANDALONE scudo_standalone
-    check_ninja_with_symbolizer $CHECK_TSAN tsan
-    check_ninja_with_symbolizer $CHECK_UBSAN ubsan
+    LIT_FILTER_OUT=":: Linux/check_memcpy.c$" check_ninja_with_symbolizer $CHECK_TSAN tsan
+    LIT_FILTER_OUT=":: TestCases/TypeCheck/(vptr-virtual-base.cpp|vptr.cpp)$" check_ninja_with_symbolizer $CHECK_UBSAN ubsan
   fi
 fi
 
