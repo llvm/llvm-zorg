@@ -205,6 +205,7 @@ all = [
         subject = "Build %(builder)s Failure",
         mode = "failing",
         builders = ["libc-x86_64-debian", "libc-x86_64_debian-dbg",
+                    "libc-x86_64-debian-dbg-runtimes-build",
                     "libc-x86_64-debian-dbg-asan", "libc-aarch64-ubuntu-dbg",
                     "libc-x86_64-windows-dbg",
                     "libc-aarch64-ubuntu-fullbuild-dbg",
