@@ -2308,6 +2308,7 @@ all += [
     'factory' : BOLTBuilder.getBOLTCmakeBuildFactory(
                     bolttests=True,
                     extra_configure_args=[
+                        "-DLLVM_APPEND_VC_REV=OFF",
                         "-DLLVM_CCACHE_BUILD=ON",
                         "-DLLVM_ENABLE_PROJECTS=clang;lld;bolt",
                         "-DLLVM_TARGETS_TO_BUILD=X86;AArch64",
@@ -2322,6 +2323,7 @@ all += [
     'factory' : BOLTBuilder.getBOLTCmakeBuildFactory(
                     bolttests=False,
                     extra_configure_args=[
+                        "-DLLVM_APPEND_VC_REV=OFF",
                         "-DLLVM_CCACHE_BUILD=ON",
                         "-DLLVM_ENABLE_PROJECTS=bolt",
                         "-DLLVM_TARGETS_TO_BUILD=X86;AArch64",
