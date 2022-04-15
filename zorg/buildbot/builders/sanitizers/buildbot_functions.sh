@@ -182,7 +182,7 @@ function build_stage2 {
   # FIXME: Enable for libc++.
   if [ "$sanitizer_name" == "asan" ]; then
     export ASAN_OPTIONS+=":check_initialization_order=1"
-  elif
+  fi
 
   local libcxx_runtime_path=$(dirname $(find ${ROOT}/${libcxx_build_dir} -name libc++.so))
   local sanitizer_ldflags="-lc++abi -Wl,--rpath=${libcxx_runtime_path} -L${libcxx_runtime_path}"
