@@ -148,7 +148,7 @@ function build_stage2 {
     fsanitize_flag="-fsanitize=memory -fsanitize-memory-track-origins -fsanitize-memory-use-after-dtor -fsanitize-memory-param-retval"
   elif [ "$sanitizer_name" == "asan" ]; then
     export ASAN_SYMBOLIZER_PATH="${llvm_symbolizer_path}"
-    export ASAN_OPTIONS="check_initialization_order=true:detect_stack_use_after_return=1:detect_leaks=1"
+    export ASAN_OPTIONS="detect_stack_use_after_return=1:detect_leaks=1"
     llvm_use_sanitizer="Address"
     fsanitize_flag="-fsanitize=address"
   elif [ "$sanitizer_name" == "ubsan" ]; then
@@ -178,6 +178,11 @@ function build_stage2 {
   echo @@@BUILD_STEP stage2/$sanitizer_name check libcxx@@@
   (cd ${libcxx_build_dir} && \
     ninja check-cxx check-cxxabi) || build_failure
+
+  # FIXME: Enable for libc++.
+  if [ "$sanitizer_name" == "asan" ]; then
+    export ASAN_OPTIONS+=":check_initialization_order=1"
+  elif
 
   local libcxx_runtime_path=$(dirname $(find ${ROOT}/${libcxx_build_dir} -name libc++.so))
   local sanitizer_ldflags="-lc++abi -Wl,--rpath=${libcxx_runtime_path} -L${libcxx_runtime_path}"
