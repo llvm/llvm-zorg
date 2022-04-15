@@ -133,7 +133,7 @@ function build_stage2 {
   local build_dir=llvm_build_${sanitizer_name}
   export STAGE2_DIR=${build_dir}
   local build_type="Release"
-  local cmake_libcxx_options=
+  local cmake_libcxx_cflags=
 
   common_stage2_variables
 
@@ -152,8 +152,9 @@ function build_stage2 {
     export ASAN_OPTIONS="check_initialization_order=true:detect_stack_use_after_return=1:detect_leaks=1"
     llvm_use_sanitizer="Address"
     fsanitize_flag="-fsanitize=address"
-    # FIXME: Fix ODR violations in libcxx tests.
-    cmake_libcxx_options="-DLIBCXX_ENABLE_RTTI=OFF -DLIBCXX_ENABLE_EXCEPTIONS=OFF"
+    # FIXME: False ODR violations in libcxx tests.
+    # https://github.com/google/sanitizers/issues/1017
+    cmake_libcxx_cflags="-mllvm -asan-use-private-alias=1"
   elif [ "$sanitizer_name" == "ubsan" ]; then
     export UBSAN_OPTIONS="external_symbolizer_path=${llvm_symbolizer_path}:print_stacktrace=1"
     llvm_use_sanitizer="Undefined"
@@ -173,9 +174,8 @@ function build_stage2 {
       -DLLVM_ENABLE_PROJECTS='libcxx;libcxxabi' \
       -DCMAKE_BUILD_TYPE=${build_type} \
       -DLLVM_USE_SANITIZER=${llvm_use_sanitizer} \
-      -DCMAKE_C_FLAGS="${fsanitize_flag}" \
-      -DCMAKE_CXX_FLAGS="${fsanitize_flag}" \
-      ${cmake_libcxx_options} \
+      -DCMAKE_C_FLAGS="${fsanitize_flag} ${cmake_libcxx_cflags}" \
+      -DCMAKE_CXX_FLAGS="${fsanitize_flag} ${cmake_libcxx_cflags}" \
       $LLVM && \
     ninja cxx cxxabi) || build_failure
 
