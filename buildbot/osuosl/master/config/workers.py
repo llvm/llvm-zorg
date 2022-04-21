@@ -291,4 +291,7 @@ def get_all():
 
         # BOLT worker
         create_worker("bolt-worker", properties={'jobs' : 16}, max_builds=1),
+
+        # Fedora worker
+        create_worker("standalone-build-x86_64", properties={'jobs': 32}, max_builds=1),
         ]

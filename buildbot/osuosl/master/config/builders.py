@@ -2357,6 +2357,28 @@ all += [
              'CC': 'clang',
              'CXX': 'clang++',
              'LD': 'lld',
-         })}
+         })},
+
+    # Standalone builder
+    {'name' : "standalone-build-x86_64",
+    'tags'  : ["clang"],
+    'collapseRequests': False,
+    'workernames':["standalone-build-x86_64"],
+    'builddir':"standalone-build-x86_64",
+    'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
+                    llvm_srcdir="llvm.src",
+                    obj_dir="llvm.obj",
+                    clean=True,
+                    depends_on_projects=['llvm','clang'],
+                    extra_configure_args=[
+                        "-DCOMPILER_RT_BUILD_BUILTINS:BOOL=OFF",
+                        "-DCOMPILER_RT_BUILD_ORC:BOOL=OFF",
+                        "-DCOMPILER_RT_BUILD_SANITIZERS:BOOL=OFF",
+                        "-DCOMPILER_RT_BUILD_XRAY:BOOL=OFF",
+                        "-DCOMPILER_RT_INCLUDE_TESTS:BOOL=OFF",
+                        "-DCMAKE_C_FLAGS=-Wdocumentation -Wno-documentation-deprecated-sync",
+                        "-DCMAKE_CXX_FLAGS=-std=c++11 -Wdocumentation -Wno-documentation-deprecated-sync",
+                    ],
+                    )},
 
 ]

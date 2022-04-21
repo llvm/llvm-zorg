@@ -317,6 +317,14 @@ all = [
         mode = "failing",
         builders = ["cross-project-tests-sie-ubuntu",
                     "llvm-clang-x86_64-sie-win"]),
+    reporters.MailNotifier(
+        fromaddr = "llvm.buildmaster@lab.llvm.org",
+        sendToInterestedUsers = False,
+        extraRecipients = ["kkleine@redhat.com"],
+        subject = "Build %(builder)s Failure",
+        mode = "failing",
+        builders = ["standalone-build-x86_64"]),
+
 ]
 
 
