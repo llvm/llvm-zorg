@@ -139,12 +139,10 @@ function build_stage2 {
 
   if [ "$sanitizer_name" == "msan" ]; then
     export MSAN_SYMBOLIZER_PATH="${llvm_symbolizer_path}"
-    export MSAN_OPTIONS="poison_in_dtor=0"
     llvm_use_sanitizer="Memory"
     fsanitize_flag="-fsanitize=memory -fsanitize-memory-use-after-dtor -fsanitize-memory-param-retval"
   elif [ "$sanitizer_name" == "msan_track_origins" ]; then
     export MSAN_SYMBOLIZER_PATH="${llvm_symbolizer_path}"
-    export MSAN_OPTIONS="poison_in_dtor=0"
     llvm_use_sanitizer="MemoryWithOrigins"
     fsanitize_flag="-fsanitize=memory -fsanitize-memory-track-origins -fsanitize-memory-use-after-dtor -fsanitize-memory-param-retval"
   elif [ "$sanitizer_name" == "asan" ]; then
