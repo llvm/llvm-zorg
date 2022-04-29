@@ -2343,6 +2343,27 @@ all += [
                         ],
                     )},
 
+    {'name': "bolt-aarch64-ubuntu-clang-shared",
+    'tags': ["bolt"],
+    'collapseRequests': True,
+    'workernames':["bolt-worker-aarch64"],
+    'builddir': "bolt-aarch64-ubuntu-clang-shared",
+    'factory' : BOLTBuilder.getBOLTCmakeBuildFactory(
+                    bolttests=True,
+                    extra_configure_args=[
+                        "-DCMAKE_C_COMPILER=clang",
+                        "-DCMAKE_CXX_COMPILER=clang++",
+                        "-DLLVM_APPEND_VC_REV=OFF",
+                        "-DLLVM_CCACHE_BUILD=ON",
+                        "-DLLVM_ENABLE_PROJECTS=bolt",
+                        "-DLLVM_TARGETS_TO_BUILD=AArch64",
+                        "-DBUILD_SHARED_LIBS=ON",
+                        "-DLLVM_ENABLE_LLD=ON",
+                        "-DBOLT_CLANG_EXE=/usr/bin/clang",
+                        "-DBOLT_LLD_EXE=/usr/bin/ld.lld",
+                        ],
+                    )},
+
     # AMD ROCm support.
     {'name' : 'mlir-rocm-mi200',
      'tags'  : ["mlir"],

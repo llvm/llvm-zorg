@@ -289,8 +289,9 @@ def get_all():
         # AMD ROCm support, Ubuntu 18.04.6, AMD Ryzen @ 1.5 GHz, MI200 GPU
         create_worker("mi200-buildbot", max_builds=1),
 
-        # BOLT worker
+        # BOLT workers
         create_worker("bolt-worker", properties={'jobs' : 16}, max_builds=1),
+        create_worker("bolt-worker-aarch64", properties={'jobs' : 2}, max_builds=1),
 
         # Fedora worker
         create_worker("standalone-build-x86_64", properties={'jobs': 32}, max_builds=1),
