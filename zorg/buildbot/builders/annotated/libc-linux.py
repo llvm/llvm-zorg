@@ -12,6 +12,9 @@ from contextlib import contextmanager
 def is_fullbuild_builder(builder_name):
     return ('fullbuild' in builder_name.split('-'))
 
+def is_runtimes_builder(builder_name):
+    return ('runtimes' in builder_name.split('-'))
+
 
 def main(argv):
     ap = argparse.ArgumentParser()
@@ -22,11 +25,11 @@ def main(argv):
     args, _ = ap.parse_known_args()
 
     source_dir = os.path.join('..', 'llvm-project')
-    fullbuild = is_fullbuild_builder(os.environ.get('BUILDBOT_BUILDERNAME'))
+    builder_name = os.environ.get('BUILDBOT_BUILDERNAME')
+    fullbuild = is_fullbuild_builder(builder_name)
+    runtimes_build = is_runtimes_builder(builder_name)
 
     with step('cmake', halt_on_fail=True):
-        projects = ['llvm', 'libc', 'clang', 'clang-tools-extra']
-
         # On most systems the default generator is make and the default
         # compilers are gcc and g++. We make it explicit here that we want
         # clang and ninja which reduces one step of setting environment
@@ -34,6 +37,13 @@ def main(argv):
         cmake_args = ['-GNinja',
                       '-DCMAKE_C_COMPILER=clang',
                       '-DCMAKE_CXX_COMPILER=clang++']
+
+        if runtimes_build:
+          projects = ['llvm', 'clang']
+          cmake_args.append('-DLLVM_ENABLE_RUNTIMES=libc')
+        else:
+          projects = ['llvm', 'libc']
+
         if args.debug:
             cmake_args.append('-DCMAKE_BUILD_TYPE=Debug')
         else:
@@ -60,7 +70,10 @@ def main(argv):
         run_command(['ninja', 'llvmlibc'])
 
     with step('check-libc'):
-        run_command(['ninja', 'check-libc'])
+        if runtimes_build:
+          run_command(['ninja', 'check-llvmlibc'])
+        else:
+          run_command(['ninja', 'check-libc'])
 
     if fullbuild and not args.asan:
         with step('libc-integration-tests'):
