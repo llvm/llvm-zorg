@@ -2373,6 +2373,29 @@ all += [
                         ],
                     )},
 
+    {'name' : "bolt-x86_64-wine-msvc",
+    'tags'  : ["bolt"],
+    'collapseRequests': True,
+    'workernames' : ["bolt-worker"],
+    'builddir': "bolt-x86_64-wine-msvc",
+    'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
+                    targets = ['bolt'],
+                    checks = [],
+                    depends_on_projects=['llvm','bolt'],
+                    extra_configure_args=[
+                        "-DBUILD_PROGRAMS=ON",
+                        "-DCMAKE_SYSTEM_NAME=Windows",
+                        "-DCMAKE_CROSSCOMPILING=ON",
+                        "-DLLVM_APPEND_VC_REV=OFF",
+                        "-DLLVM_ENABLE_PROJECTS=bolt",
+                        "-DLLVM_TARGETS_TO_BUILD=X86",
+                        "-DLLVM_TABLEGEN=/usr/bin/llvm-tblgen",
+                    ],
+                    env={
+                        'PATH':'/home/worker/msvc-wine/cmake/bin:/home/worker/msvc-wine/msvc/bin/x64:/usr/bin:/bin',
+                        'CC': 'cl', 'CXX': 'cl',
+                    })},
+
     # AMD ROCm support.
     {'name' : 'mlir-rocm-mi200',
      'tags'  : ["mlir"],
