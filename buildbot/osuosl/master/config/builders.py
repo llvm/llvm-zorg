@@ -2365,7 +2365,7 @@ all += [
                         "-DLLVM_APPEND_VC_REV=OFF",
                         "-DLLVM_CCACHE_BUILD=ON",
                         "-DLLVM_ENABLE_PROJECTS=bolt",
-                        "-DLLVM_TARGETS_TO_BUILD=AArch64",
+                        "-DLLVM_TARGETS_TO_BUILD=X86;AArch64",
                         "-DBUILD_SHARED_LIBS=ON",
                         "-DLLVM_ENABLE_LLD=ON",
                         "-DBOLT_CLANG_EXE=/usr/bin/clang",
@@ -2388,7 +2388,7 @@ all += [
                         "-DCMAKE_CROSSCOMPILING=ON",
                         "-DLLVM_APPEND_VC_REV=OFF",
                         "-DLLVM_ENABLE_PROJECTS=bolt",
-                        "-DLLVM_TARGETS_TO_BUILD=X86",
+                        "-DLLVM_TARGETS_TO_BUILD=X86;AArch64",
                         "-DLLVM_TABLEGEN=/usr/bin/llvm-tblgen",
                     ],
                     env={
