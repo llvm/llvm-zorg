@@ -192,7 +192,7 @@ function build_stage2 {
 
   rm -rf ${build_dir}
   mkdir -p ${build_dir}
-  local cmake_stage2_clang_options="-DLLVM_ENABLE_PROJECTS='clang;lld;clang-tools-extra'"
+  local cmake_stage2_clang_options="-DLLVM_ENABLE_PROJECTS='clang;lld;clang-tools-extra;mlir'"
   (cd ${build_dir} && \
    cmake \
      ${cmake_stage2_common_options} \
