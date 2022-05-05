@@ -2388,6 +2388,7 @@ all += [
                         "-DCMAKE_SYSTEM_NAME=Windows",
                         "-DCMAKE_CROSSCOMPILING=ON",
                         "-DLLVM_APPEND_VC_REV=OFF",
+                        "-DLLVM_CCACHE_BUILD=ON",
                         "-DLLVM_ENABLE_PROJECTS=bolt",
                         "-DLLVM_TARGETS_TO_BUILD=X86;AArch64",
                         "-DLLVM_TABLEGEN=/usr/bin/llvm-tblgen",
