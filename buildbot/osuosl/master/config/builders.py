@@ -1476,6 +1476,7 @@ all += [
                     extra_configure_args=[
                         "-DLLVM_BUILD_EXAMPLES=ON",
                         "-DLLVM_ENABLE_PROJECTS=mlir",
+                        "-DMLIR_ENABLE_BINDINGS_PYTHON=ON",
                         "-DLLVM_ENABLE_WERROR=ON",
                         "-DLLVM_TARGETS_TO_BUILD='host;NVPTX;AMDGPU'",
                     ])},
