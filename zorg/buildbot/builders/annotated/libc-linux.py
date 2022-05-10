@@ -53,7 +53,7 @@ def main(argv):
             cmake_args.append('-DLLVM_USE_SANITIZER=Address')
 
         if fullbuild and not args.asan:
-            projects.append('compiler-rt')
+            projects.extend(['clang', 'compiler-rt'])
 
         cmake_args.append('-DLLVM_ENABLE_PROJECTS={}'.format(';'.join(projects)))
 
