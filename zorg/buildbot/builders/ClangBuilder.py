@@ -385,7 +385,7 @@ def _getClangCMakeBuildFactory(
     if not vs:
         cc = 'clang'
         cxx = 'clang++'
-        fc = 'flang'
+        fc = 'flang-to-external-fc'
     else:
         cc = 'clang-cl.exe'
         cxx = 'clang-cl.exe'
