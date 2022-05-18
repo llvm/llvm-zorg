@@ -619,7 +619,9 @@ all = [
                     runTestSuite=True,
                     stage1_config='Release',
                     nt_flags=['--threads=16', '--build-threads=16'],
-                    extra_cmake_args=["-DLLVM_ENABLE_ASSERTIONS=ON"])},
+                    extra_cmake_args=[
+                        "-DLLVM_ENABLE_ASSERTIONS=ON",
+                        "-DLLVM_CCACHE_BUILD=ON"])},
 
     {'name' : "clang-ppc64be-linux-multistage",
     'tags'  : ["clang", "ppc"],
@@ -631,7 +633,9 @@ all = [
                     useTwoStage=True,
                     stage1_config='Release',
                     stage2_config='Release',
-                    extra_cmake_args=['-DLLVM_ENABLE_ASSERTIONS=ON'])},
+                    extra_cmake_args=[
+                        "-DLLVM_ENABLE_ASSERTIONS=ON",
+                        "-DLLVM_CCACHE_BUILD=ON"])},
 
     {'name' : "clang-ppc64le-linux-lnt",
     'tags'  : ["clang", "ppc", "ppc64le"],
@@ -1606,7 +1610,9 @@ all += [
     'tags'  : ["sanitizer", "ppc"],
     'workernames' : ["ppc64be-sanitizer"],
     'builddir': "sanitizer-ppc64be",
-    'factory' : SanitizerBuilder.getSanitizerBuildFactory(timeout=1800)},
+    'factory' : SanitizerBuilder.getSanitizerBuildFactory(
+                    timeout=1800,
+                    extra_configure_args=["-DLLVM_CCACHE_BUILD=ON"])},
 
     {'name' : "sanitizer-ppc64le-linux",
     'tags'  : ["sanitizer", "ppc", "ppc64le"],
