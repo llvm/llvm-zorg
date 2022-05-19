@@ -64,6 +64,9 @@ def get_all():
         # Windows Server 2016 Intel(R) Xeon(R) CPU @ 2.60GHz, 16 Core(s), 128 GB of RAM
         create_worker("win-mlir-buildbot", properties={'jobs' : 64}, max_builds=1),
 
+        # MIPS Loongson-3A R4 (Loongson-3A4000) 64-bit little endian (mips64el)
+        create_worker("debian-tritium-mips64el", properties={'jobs': 1}, max_builds=1),
+
         # Motorola 68k 32-bit big endian (m68k)
         create_worker("debian-akiko-m68k", properties={'jobs': 1}, max_builds=1),
         create_worker("suse-gary-m68k-cross", properties={'jobs': 4}, max_builds=1),

@@ -608,6 +608,19 @@ all = [
                         "-DLLVM_TARGETS_TO_BUILD=X86",
                         "-DLLVM_EXPERIMENTAL_TARGETS_TO_BUILD=M68k"])},
 
+    {'name' : "clang-mips64el-linux",
+    'tags'  : ["clang"],
+    'workernames' : ["debian-tritium-mips64el"],
+    'builddir': "clang-mips64el-linux",
+    'factory' : ClangBuilder.getClangCMakeBuildFactory(
+                    clean=False,
+                    checkout_lld=False,
+                    useTwoStage=False,
+                    stage1_config='Release',
+                    extra_cmake_args=['-DLLVM_ENABLE_ASSERTIONS=ON',
+                                      '-DLLVM_PARALLEL_LINK_JOBS=4',
+                                      '-DLLVM_TARGETS_TO_BUILD=Mips'])},
+
     {'name' : "clang-ppc64be-linux-lnt",
     'tags'  : ["clang", "ppc"],
     'workernames' : ["ppc64be-clang-lnt-test"],
