@@ -73,7 +73,7 @@ function buildbot_update {
       if [[  "$REV" != "origin/main" ]] ; then
         # "git fetch --depth 1 origin $REV" does not work with 2.11 on bots
         while true ; do
-          git checkout $REV && break
+          git checkout -f $REV && break
           git rev-list --pretty --max-count=1 origin/main
           git rev-list --pretty --max-parents=0 origin/main
           echo "DEPTH=$DEPTH is too small"
@@ -82,7 +82,7 @@ function buildbot_update {
           git fetch --depth $DEPTH origin
         done
       fi
-      git checkout $REV
+      git checkout -f $REV
       git status
       git rev-list --pretty --max-count=1 HEAD
     ) || { echo @@@STEP_EXCEPTION@@@ ; exit 1 ; }
