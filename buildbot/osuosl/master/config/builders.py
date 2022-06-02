@@ -1278,7 +1278,8 @@ all = [
                     test=True,
                     extra_cmake_args=[
                         '-DCLANG_DEFAULT_LINKER=lld',
-                        '-DLLDB_ENABLE_PYTHON=FALSE',
+                        '-DLLDB_ENABLE_PYTHON=TRUE',
+                        '-DLLDB_TEST_USER_ARGS=--skip-category=watchpoint',
                         '-DLLVM_NATIVE_ARCH=AArch64',
                         '-DLLVM_HOST_TRIPLE=aarch64-windows-msvc',
                         '-DLLVM_DEFAULT_TARGET_TRIPLE=aarch64-windows-msvc',
