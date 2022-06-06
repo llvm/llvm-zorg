@@ -71,6 +71,7 @@ pipeline {
                       --cmake-flag="-DLLVM_BUILD_INSTRUMENTED_COVERAGE=ON" \
                       --cmake-flag="-DLLVM_PROFILE_MERGE_POOL_SIZE=1" \
                       --cmake-flag="-DLLVM_ENABLE_MODULES=Off" \
+                      --cmake-flag="-DLLVM_TARGETS_TO_BUILD=X86;ARM;AArch64;AMDGPU" \
                       --cmake-type=Release \
                       --noupload
                     '''
