@@ -24,10 +24,6 @@ def main(argv):
                     help='Build in debug mode.')
     args, _ = ap.parse_known_args()
 
-    # TODO: Remove this once the release builder is up-to-date.
-    if not args.debug:
-      return
-
     source_dir = os.path.join('..', 'llvm-project')
     builder_name = os.environ.get('BUILDBOT_BUILDERNAME')
     fullbuild = is_fullbuild_builder(builder_name)
