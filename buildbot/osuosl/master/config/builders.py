@@ -2455,4 +2455,51 @@ all += [
                     checkout_llvm_sources=False,
                     script_interpreter=None)},
 
+    ## CSKY check-all + test-suite in soft-float
+    {'name' : "clang-csky-soft",
+    'tags'  : ["clang"],
+    'collapseRequests': False,
+    'workernames' : ["thead-clang-csky"],
+    'builddir':"clang-csky-softfp",
+    'factory' : ClangBuilder.getClangCMakeBuildFactory(
+                clean=False,
+                runTestSuite=True,
+                testsuite_flags=[
+                    '--cflags', '-mcpu=c860 -latomic -DSMALL_PROBLEM_SIZE',
+                    '--cppflags', '-mcpu=c860 -latomic -DSMALL_PROBLEM_SIZE',
+                    '--run-under=/mnt/qemu/bin/qemu-cskyv2 -cpu c860 -csky-extend denormal=on -L /mnt/gcc-csky/csky-linux-gnuabiv2/libc/ck860 -E LD_LIBRARY_PATH=/mnt/gcc-csky/csky-linux-gnuabiv2/lib/ck860',
+                    '--cmake-define=SMALL_PROBLEM_SIZE=On',
+                    '--cmake-define=TEST_SUITE_USER_MODE_EMULATION=True',
+                    '--threads=32', '--build-threads=32'],
+                extra_cmake_args=[
+                    "-DLLVM_EXPERIMENTAL_TARGETS_TO_BUILD='CSKY'",
+                    "-DLLVM_DEFAULT_TARGET_TRIPLE='csky-unknown-linux'"
+                    "-DGCC_INSTALL_PREFIX=/mnt/gcc-csky/"],
+                env={
+                    'PATH':'/mnt/mysandbox/bin/:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin',
+                    })},
+
+    ## CSKY check-all + test-suite in hard-float
+    {'name' : "clang-csky-hardfp",
+    'tags'  : ["clang"],
+    'collapseRequests': False,
+    'workernames' : ["thead-clang-csky"],
+    'builddir':"clang-csky-hardfp",
+    'factory' : ClangBuilder.getClangCMakeBuildFactory(
+                clean=False,
+                runTestSuite=True,
+                testsuite_flags=[
+                    '--cflags', '-mcpu=c860 -latomic -mhard-float -DSMALL_PROBLEM_SIZE',
+                    '--cppflags', '-mcpu=c860 -latomic -mhard-float -DSMALL_PROBLEM_SIZE',
+                    '--run-under=/mnt/qemu/bin/qemu-cskyv2 -cpu c860 -csky-extend denormal=on -L /mnt/gcc-csky/csky-linux-gnuabiv2/libc/ck860/hard-fp -E LD_LIBRARY_PATH=/mnt/gcc-csky/csky-linux-gnuabiv2/lib/ck860/hard-fp',
+                    '--cmake-define=SMALL_PROBLEM_SIZE=On',
+                    '--cmake-define=TEST_SUITE_USER_MODE_EMULATION=True',
+                    '--threads=32', '--build-threads=32'],
+                extra_cmake_args=[
+                    "-DLLVM_EXPERIMENTAL_TARGETS_TO_BUILD='CSKY'",
+                    "-DLLVM_DEFAULT_TARGET_TRIPLE='csky-unknown-linux'"
+                    "-DGCC_INSTALL_PREFIX=/mnt/gcc-csky/"],
+                env={
+                    'PATH':'/mnt/mysandbox/bin/:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin',
+                    })},
 ]
