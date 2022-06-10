@@ -4,9 +4,8 @@ Automat==20.2.0
 constantly==15.1.0
 idna==2.10
 hyperlink==21.0.0
-incremental==17.5.0
+incremental==21.3.0
 Jinja2==2.11.3
-PyHamcrest==2.0.2
 Tempita==0.5.2
 decorator==4.4.2
 pbr==5.5.1
