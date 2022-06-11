@@ -2369,8 +2369,8 @@ all += [
                         "-DLLVM_TARGETS_TO_BUILD=X86;AArch64",
                         "-DBUILD_SHARED_LIBS=ON",
                         "-DLLVM_ENABLE_LLD=ON",
-                        "-DBOLT_CLANG_EXE=/usr/bin/clang-12",
-                        "-DBOLT_LLD_EXE=/usr/bin/ld.lld-12",
+                        "-DBOLT_CLANG_EXE=/usr/bin/clang",
+                        "-DBOLT_LLD_EXE=/usr/bin/ld.lld",
                         ],
                     )},
 
