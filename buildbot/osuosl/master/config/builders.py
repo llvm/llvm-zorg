@@ -880,23 +880,6 @@ all = [
                         '-DLLVM_EXPERIMENTAL_TARGETS_TO_BUILD=AVR',
                         '-DBUILD_SHARED_LIBS=ON'])},
 
-    {'name' : "clang-x64-ninja-win7",
-    'tags'  : ["clang"],
-    'workernames' : ["windows7-buildbot"],
-    'builddir': "clang-x64-ninja-win7",
-    'factory' : ClangBuilder.getClangCMakeBuildFactory(
-                    clean=False,
-                    checkout_lld=False,
-                    vs="autodetect",
-                    vs_target_arch='x64',
-                    testStage1=True,
-                    useTwoStage=True,
-                    stage1_config='Release',
-                    stage2_config='Release',
-                    extra_cmake_args=[
-                        '-DLLVM_ENABLE_ASSERTIONS=ON',
-                        '-DLLVM_TARGETS_TO_BUILD=X86'])},
-
     {'name' : "clang-xcore-ubuntu-20-x64",
     'tags'  : ["clang"],
     'workernames' : ["xcore-ubuntu20-x64"],
