@@ -2456,7 +2456,7 @@ all += [
                     '--threads=32', '--build-threads=32'],
                 extra_cmake_args=[
                     "-DLLVM_EXPERIMENTAL_TARGETS_TO_BUILD='CSKY'",
-                    "-DLLVM_DEFAULT_TARGET_TRIPLE='csky-unknown-linux'"
+                    "-DLLVM_DEFAULT_TARGET_TRIPLE='csky-unknown-linux'",
                     "-DGCC_INSTALL_PREFIX=/mnt/gcc-csky/"],
                 env={
                     'PATH':'/mnt/mysandbox/bin/:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin',
@@ -2480,7 +2480,7 @@ all += [
                     '--threads=32', '--build-threads=32'],
                 extra_cmake_args=[
                     "-DLLVM_EXPERIMENTAL_TARGETS_TO_BUILD='CSKY'",
-                    "-DLLVM_DEFAULT_TARGET_TRIPLE='csky-unknown-linux'"
+                    "-DLLVM_DEFAULT_TARGET_TRIPLE='csky-unknown-linux'",
                     "-DGCC_INSTALL_PREFIX=/mnt/gcc-csky/"],
                 env={
                     'PATH':'/mnt/mysandbox/bin/:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin',
