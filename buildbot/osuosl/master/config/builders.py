@@ -2441,7 +2441,6 @@ all += [
     ## CSKY check-all + test-suite in soft-float
     {'name' : "clang-csky-soft",
     'tags'  : ["clang"],
-    'collapseRequests': False,
     'workernames' : ["thead-clang-csky"],
     'builddir':"clang-csky-softfp",
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
@@ -2457,15 +2456,11 @@ all += [
                 extra_cmake_args=[
                     "-DLLVM_EXPERIMENTAL_TARGETS_TO_BUILD='CSKY'",
                     "-DLLVM_DEFAULT_TARGET_TRIPLE='csky-unknown-linux'",
-                    "-DGCC_INSTALL_PREFIX=/mnt/gcc-csky/"],
-                env={
-                    'PATH':'/mnt/mysandbox/bin/:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin',
-                    })},
+                    "-DGCC_INSTALL_PREFIX=/mnt/gcc-csky/"])},
 
     ## CSKY check-all + test-suite in hard-float
     {'name' : "clang-csky-hardfp",
     'tags'  : ["clang"],
-    'collapseRequests': False,
     'workernames' : ["thead-clang-csky"],
     'builddir':"clang-csky-hardfp",
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
@@ -2481,8 +2476,5 @@ all += [
                 extra_cmake_args=[
                     "-DLLVM_EXPERIMENTAL_TARGETS_TO_BUILD='CSKY'",
                     "-DLLVM_DEFAULT_TARGET_TRIPLE='csky-unknown-linux'",
-                    "-DGCC_INSTALL_PREFIX=/mnt/gcc-csky/"],
-                env={
-                    'PATH':'/mnt/mysandbox/bin/:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin',
-                    })},
+                    "-DGCC_INSTALL_PREFIX=/mnt/gcc-csky/"])},
 ]
