@@ -721,7 +721,7 @@ all = [
                         "-DCMAKE_CXX_FLAGS='-march=broadwell'",
                         "-DLLVM_TARGETS_TO_BUILD='X86'"],
                     submitURL='http://lnt.llvm.org/submitRun',
-                    testerName='LNT-Broadwell-AVX2-O3')},
+                    testerName='LNT-Broadwell-AVX2-O5')},
 
     ## X86_64 Clang+LLVM Run test-suite targeting AVX512 on SDE (Emulator)
     {'name' : "clang-cmake-x86_64-sde-avx512-linux",
