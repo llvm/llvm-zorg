@@ -2445,6 +2445,12 @@ all += [
     'builddir':"clang-csky-softfp",
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
                 clean=False,
+                checkout_clang_tools_extra=False,
+                checkout_compiler_rt=False,
+                checkout_lld=False,
+                testStage1=True,
+                useTwoStage=False,
+                stage1_config='Release',
                 runTestSuite=True,
                 testsuite_flags=[
                     '--cflags', '-mcpu=c860 -latomic -DSMALL_PROBLEM_SIZE',
@@ -2465,6 +2471,12 @@ all += [
     'builddir':"clang-csky-hardfp",
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
                 clean=False,
+                checkout_clang_tools_extra=False,
+                checkout_compiler_rt=False,
+                checkout_lld=False,
+                testStage1=True,
+                useTwoStage=False,
+                stage1_config='Release',
                 runTestSuite=True,
                 testsuite_flags=[
                     '--cflags', '-mcpu=c860 -latomic -mhard-float -DSMALL_PROBLEM_SIZE',
