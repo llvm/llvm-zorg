@@ -621,19 +621,17 @@ all = [
                                       '-DLLVM_PARALLEL_LINK_JOBS=4',
                                       '-DLLVM_TARGETS_TO_BUILD=Mips'])},
 
-    {'name' : "clang-ppc64be-linux-lnt",
+    {'name' : "clang-ppc64be-linux-test-suite",
     'tags'  : ["clang", "ppc"],
-    'workernames' : ["ppc64be-clang-lnt-test"],
-    'builddir': "clang-ppc64be-lnt",
-    'factory' : ClangBuilder.getClangCMakeBuildFactory(
-                    clean=False,
-                    checkout_lld=False,
-                    useTwoStage=False,
-                    runTestSuite=True,
-                    stage1_config='Release',
-                    nt_flags=['--threads=16', '--build-threads=16'],
-                    extra_cmake_args=[
+    'workernames' : ["ppc64be-clang-test-suite"],
+    'builddir': "clang-ppc64be-test-suite",
+    'factory' : TestSuiteBuilder.getTestSuiteBuildFactory(
+                    depends_on_projects=["llvm", "clang", "clang-tools-extra",
+                                         "compiler-rt"],
+                    extra_configure_args=[
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
+                        "-DCMAKE_BUILD_TYPE=Release",
+                        "-DLLVM_LIT_ARGS=-v",
                         "-DLLVM_CCACHE_BUILD=ON"])},
 
     {'name' : "clang-ppc64be-linux-multistage",
@@ -650,19 +648,17 @@ all = [
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
                         "-DLLVM_CCACHE_BUILD=ON"])},
 
-    {'name' : "clang-ppc64le-linux-lnt",
+    {'name' : "clang-ppc64le-linux-test-suite",
     'tags'  : ["clang", "ppc", "ppc64le"],
-    'workernames' : ["ppc64le-clang-lnt-test"],
-    'builddir': "clang-ppc64le-lnt",
-    'factory' : ClangBuilder.getClangCMakeBuildFactory(
-                    clean=False,
-                    checkout_lld=False,
-                    useTwoStage=False,
-                    runTestSuite=True,
-                    stage1_config='Release',
-                    nt_flags=['--threads=16', '--build-threads=16'],
-                    extra_cmake_args=[
+    'workernames' : ["ppc64le-clang-test-suite"],
+    'builddir': "clang-ppc64le-test-suite",
+    'factory' : TestSuiteBuilder.getTestSuiteBuildFactory(
+                    depends_on_projects=["llvm", "clang", "clang-tools-extra",
+                                         "compiler-rt"],
+                    extra_configure_args=[
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
+                        "-DCMAKE_BUILD_TYPE=Release",
+                        "-DLLVM_LIT_ARGS=-v",
                         "-DLLVM_CCACHE_BUILD=ON"])},
 
     {'name' : "clang-ppc64le-linux-multistage",
@@ -686,7 +682,6 @@ all = [
     'builddir': "clang-ppc64le-rhel",
     'factory' : TestSuiteBuilder.getTestSuiteBuildFactory(
                     depends_on_projects=["llvm", "clang", "clang-tools-extra", "lld", "compiler-rt"],
-                    checks=["check"],
                     enable_runtimes="auto",
                     extra_configure_args=[
                         "-DLLVM_ENABLE_ASSERTIONS=On", "-DCMAKE_C_COMPILER=clang",
