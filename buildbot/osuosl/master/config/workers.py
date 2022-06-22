@@ -168,6 +168,9 @@ def get_all():
         # Windows x86_64 32 CPUs, 125 GB RAM
         create_worker("libc-x86_64-windows", properties={'jobs': 32}, max_builds=2),
 
+        # Debian arm32 single core, 512 MB RAM backed by 32 GB swap memory
+        create_worker("libc-arm32-debian", properties={'jobs': 1}, max_builds=1),
+
         # Ubuntu aarch64 128 CPUs, 125 GB RAM
         create_worker("libc-aarch64-ubuntu", properties={'jobs': 32}, max_builds=2),
 
