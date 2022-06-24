@@ -2388,18 +2388,17 @@ all += [
                     checks = [],
                     depends_on_projects=['llvm','bolt'],
                     extra_configure_args=[
-                        "-DBUILD_PROGRAMS=ON",
+                        "-DCMAKE_C_COMPILER=cl",
+                        "-DCMAKE_CXX_COMPILER=cl",
                         "-DCMAKE_SYSTEM_NAME=Windows",
-                        "-DCMAKE_CROSSCOMPILING=ON",
                         "-DLLVM_APPEND_VC_REV=OFF",
                         "-DLLVM_CCACHE_BUILD=ON",
                         "-DLLVM_ENABLE_PROJECTS=bolt",
                         "-DLLVM_TARGETS_TO_BUILD=X86;AArch64",
-                        "-DLLVM_TABLEGEN=/usr/bin/llvm-tblgen",
+                        "-DLLVM_OPTIMIZED_TABLEGEN=ON",
                     ],
                     env={
                         'PATH':'/home/worker/msvc-wine/cmake/bin:/home/worker/msvc-wine/msvc/bin/x64:/usr/bin:/bin',
-                        'CC': 'cl', 'CXX': 'cl',
                     })},
 
     # AMD ROCm support.
