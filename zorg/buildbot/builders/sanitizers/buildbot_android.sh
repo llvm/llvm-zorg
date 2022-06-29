@@ -14,12 +14,7 @@ LOCAL_IPS=`hostname -I`
 export PATH="/usr/local/bin:$PATH"
 
 LLVM=$ROOT/llvm
-CMAKE_COMMON_OPTIONS="${CMAKE_COMMON_OPTIONS:-}"
-CMAKE_COMMON_OPTIONS="${CMAKE_COMMON_OPTIONS:-} -GNinja -DCMAKE_BUILD_TYPE=Release"
-
-if [ -e /usr/include/plugin-api.h ]; then
-  CMAKE_COMMON_OPTIONS="${CMAKE_COMMON_OPTIONS}"
-fi
+CMAKE_COMMON_OPTIONS="-GNinja -DCMAKE_BUILD_TYPE=Release"
 
 clobber
 
