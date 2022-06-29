@@ -727,6 +727,7 @@ all = [
                     useTwoStage=False,
                     stage1_config='Release',
                     extra_cmake_args=[
+                        "-DLLVM_CCACHE_BUILD=ON",
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
                         "-DLLVM_LIT_ARGS=-v -j4 --param run_long_tests=true"])},
 
@@ -741,7 +742,9 @@ all = [
                     useTwoStage=True,
                     stage1_config='Release',
                     stage2_config='Release',
-                    extra_cmake_args=['-DLLVM_ENABLE_ASSERTIONS=ON'])},
+                    extra_cmake_args=[
+                        "-DLLVM_CCACHE_BUILD=ON",
+                        "-DLLVM_ENABLE_ASSERTIONS=ON"])},
 
     {'name' : "clang-s390x-linux-lnt",
     'tags'  : ["clang"],
@@ -755,7 +758,9 @@ all = [
                     runTestSuite=True,
                     stage1_config='Release',
                     testsuite_flags=['--threads=4', '--build-threads=4'],
-                    extra_cmake_args=["-DLLVM_ENABLE_ASSERTIONS=ON"])},
+                    extra_cmake_args=[
+                        "-DLLVM_CCACHE_BUILD=ON",
+                        "-DLLVM_ENABLE_ASSERTIONS=ON"])},
 
     {'name' : "clang-sparc64-linux-multistage",
     'tags'  : ["clang"],
@@ -1516,6 +1521,7 @@ all += [
                     depends_on_projects=['llvm', 'mlir'],
                     checks=['check-mlir'],
                     extra_configure_args=[
+                        "-DLLVM_CCACHE_BUILD=ON",
                         '-DLLVM_TARGETS_TO_BUILD=SystemZ',
                         '-DLLVM_ENABLE_PROJECTS=mlir',
                         '-DLLVM_LIT_ARGS=-vj 4',
