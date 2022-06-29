@@ -131,7 +131,7 @@ function build_lam_linux {
 
   echo "@@@BUILD_STEP build lam linux@@@"
   (
-    git_clone_at_revision lam_linux https://github.com/morehouse/linux.git \
+    git_clone_at_revision lam_linux https://github.com/ramosian-glider/linux.git \
       origin/lam ${build_dir} || exit 1
 
     ls ${build_dir}/arch/x86_64/boot/bzImage && exit 0
