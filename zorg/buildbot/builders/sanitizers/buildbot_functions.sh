@@ -99,10 +99,9 @@ function common_stage1_variables {
 
 function build_stage1_clang_impl {
   mkdir -p ${STAGE1_DIR}
-  local cmake_stage1_options="${CMAKE_COMMON_OPTIONS}"
-  cmake_stage1_options="${cmake_stage1_options} -DLLVM_ENABLE_PROJECTS='clang;compiler-rt;lld'"
+  local cmake_stage1_options="${CMAKE_COMMON_OPTIONS} -DLLVM_ENABLE_PROJECTS='clang;compiler-rt;lld'"
   if ccache -s ; then
-    cmake_stage1_options="${cmake_stage1_options} -DLLVM_CCACHE_BUILD=ON"
+    cmake_stage1_options+=" -DLLVM_CCACHE_BUILD=ON"
   fi
   (cd ${STAGE1_DIR} && cmake ${cmake_stage1_options} $LLVM && ninja)
 }
