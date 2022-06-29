@@ -112,13 +112,35 @@ function build_stage1_clang {
   build_stage1_clang_impl
 }
 
-function build_stage1_clang_at_revison {
+function download_clang_from_chromium {
   common_stage1_variables
 
   curl -s https://raw.githubusercontent.com/chromium/chromium/main/tools/clang/scripts/update.py \
     | python3 - --output-dir=${STAGE1_DIR}
 
   echo @@@BUILD_STEP using pre-built stage1 clang at $(cat ${STAGE1_DIR}/cr_build_revision)@@@
+}
+
+function build_clang_at_release_tag {
+  local HOST_CLANG_REVISION=llvmorg-$(curl https://api.github.com/repos/llvm/llvm-project/releases/latest -s | jq .name -r | cut -f2 -d' ')
+  common_stage1_variables
+
+  if  [ -r ${STAGE1_DIR}/host_clang_revision ] && \
+      [ "$(cat ${STAGE1_DIR}/host_clang_revision)" == $HOST_CLANG_REVISION ]
+  then
+    echo @@@BUILD_STEP using pre-built stage1 clang at r$HOST_CLANG_REVISION@@@
+  else
+    BUILDBOT_MONO_REPO_PATH= BUILDBOT_REVISION=$HOST_CLANG_REVISION buildbot_update
+
+    rm -rf ${STAGE1_DIR}
+    echo @@@BUILD_STEP build stage1 clang at r$HOST_CLANG_REVISION@@@
+    build_stage1_clang_impl && \
+      ( echo $HOST_CLANG_REVISION > ${STAGE1_DIR}/host_clang_revision )
+  fi
+}
+
+function build_stage1_clang_at_revison {
+  build_clang_at_release_tag
 }
 
 function common_stage2_variables {
