@@ -133,7 +133,7 @@ function build_clang_at_release_tag {
     BUILDBOT_MONO_REPO_PATH= BUILDBOT_REVISION=$HOST_CLANG_REVISION buildbot_update
 
     rm -rf ${STAGE1_DIR}
-    echo @@@BUILD_STEP build stage1 clang at r$HOST_CLANG_REVISION@@@
+    echo @@@BUILD_STEP build stage1 clang at $HOST_CLANG_REVISION@@@
     build_stage1_clang_impl && \
       ( echo $HOST_CLANG_REVISION > ${STAGE1_DIR}/host_clang_revision )
   fi
