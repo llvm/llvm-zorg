@@ -13,9 +13,6 @@ echo @@@BUILD_STEP Info@@@
   df -h
   echo
   ccache -s
-  echo
-  echo "How to reproduce locally: https://github.com/google/sanitizers/wiki/SanitizerBotReproduceBuild"
-  echo
   exit 0
 )
 echo @@@BUILD_STEP Prepare@@@
@@ -200,7 +197,10 @@ function build_stage2 {
 
   echo @@@BUILD_STEP stage2/$sanitizer_name check libcxx@@@
   (cd ${libcxx_build_dir} && \
-    ninja check-cxx check-cxxabi) || build_failure
+    ninja check-cxx check-cxxabi) || {
+     eval ${sanitizer_name}_stage2_FAILED=1
+     build_failure
+   }
 
   local libcxx_runtime_path=$(dirname $(find ${ROOT}/${libcxx_build_dir} -name libc++.so))
   local sanitizer_ldflags="-lc++abi -Wl,--rpath=${libcxx_runtime_path} -L${libcxx_runtime_path}"
@@ -226,7 +226,7 @@ function build_stage2 {
      -DCMAKE_EXE_LINKER_FLAGS="${sanitizer_ldflags}" \
      $LLVM && \
    ninja) || {
-     eval ${sanitizer_name}_FAILED=1
+     eval ${sanitizer_name}_stage2_FAILED=1
      build_failure
    }
 }
@@ -254,7 +254,7 @@ function check_stage2 {
   echo @@@BUILD_STEP stage2/$sanitizer_name check@@@
   env
   ninja -C ${build_dir} check-all || {
-    eval ${sanitizer_name}_FAILED=1
+    eval ${sanitizer_name}_stage2_FAILED=1
     build_failure
   }
 }
@@ -292,7 +292,7 @@ function build_stage3 {
      -DLLVM_USE_LINKER=lld \
      $LLVM && \
   ninja clang) || {
-    eval ${sanitizer_name}_FAILED=1
+    eval ${sanitizer_name}_stage3_FAILED=1
     echo build_failure
   }
 }
@@ -319,7 +319,7 @@ function check_stage3 {
 
   echo @@@BUILD_STEP stage3/$sanitizer_name check@@@
   (cd ${build_dir} && env && ninja check-all) || {
-    eval ${sanitizer_name}_FAILED=1
+    eval ${sanitizer_name}_stage3_FAILED=1
     build_failure
   }
 }
@@ -344,7 +344,7 @@ function build_failure() {
   echo
   echo "How to reproduce locally: https://github.com/google/sanitizers/wiki/SanitizerBotReproduceBuild"
   echo
-  
+
   sleep 5
   echo "@@@STEP_FAILURE@@@"
 }
@@ -353,7 +353,7 @@ function build_exception() {
   echo
   echo "How to reproduce locally: https://github.com/google/sanitizers/wiki/SanitizerBotReproduceBuild"
   echo
-  
+
   sleep 5
   echo "@@@STEP_EXCEPTION@@@"
 }

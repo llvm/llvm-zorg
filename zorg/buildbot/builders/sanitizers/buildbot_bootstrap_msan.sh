@@ -28,18 +28,20 @@ build_stage2_msan
 
 check_stage2_msan
 
+if [[ -v msan_stage2_FAILED ]]; then
+  # Stage 2 / MemoryWithOriginsSanitizer
+  build_stage2_msan_track_origins
+
+  check_stage2_msan_track_origins
+fi
+
 # Stage 3 / MemorySanitizer
 
 build_stage3_msan
 
 check_stage3_msan
 
-if [[ -v msan_FAILED ]]; then
-  # Stage 2 / MemoryWithOriginsSanitizer
-  build_stage2_msan_track_origins
-
-  check_stage2_msan_track_origins
-
+if [[ -v msan_stage3_FAILED ]]; then
   # Stage 3 / MemoryWithOriginsSanitizer
   build_stage3_msan_track_origins
 
