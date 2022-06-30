@@ -85,7 +85,7 @@ function buildbot_update {
       git checkout -f $REV
       git status
       git rev-list --pretty --max-count=1 HEAD
-    ) || { echo @@@STEP_EXCEPTION@@@ ; exit 1 ; }
+    ) || { build_exception ; exit 1 ; }
     LLVM=$ROOT/llvm-project/llvm
   fi
 }

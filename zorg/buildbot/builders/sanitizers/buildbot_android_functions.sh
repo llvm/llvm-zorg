@@ -42,9 +42,9 @@ function build_stage2_android() {
   mkdir -p llvm_build64
   if  [[ "$(cat llvm_build64/CMAKE_OPTIONS)" != "${CMAKE_OPTIONS}" ]] ; then
     (cd llvm_build64 && cmake ${CMAKE_OPTIONS} -DLLVM_BUILD_EXTERNAL_COMPILER_RT=ON $LLVM && \
-       echo ${CMAKE_OPTIONS} > CMAKE_OPTIONS) || echo @@@STEP_FAILURE@@@
+       echo ${CMAKE_OPTIONS} > CMAKE_OPTIONS) || build_failure
   fi
-  ninja -C llvm_build64 || (echo @@@STEP_FAILURE@@@ && exit 2)
+  ninja -C llvm_build64 || (build_failure && exit 2)
 }
 
 function configure_android { # ARCH triple
@@ -82,7 +82,7 @@ function configure_android { # ARCH triple
     -DLLVM_BUILD_RUNTIME=OFF \
     -DLLVM_TABLEGEN=$ROOT/llvm_build64/bin/llvm-tblgen \
     ${CMAKE_COMMON_OPTIONS} \
-    $LLVM || echo @@@STEP_FAILURE@@@) &
+    $LLVM || build_failure) &
 
   local COMPILER_RT_OPTIONS="$(readlink -f $LLVM/../compiler-rt)"
   
@@ -103,7 +103,7 @@ function configure_android { # ARCH triple
     -DCOMPILER_RT_EXEC_OUTPUT_DIR="$ANDROID_EXEC_OUTPUT_DIR" \
     -DLLVM_LIT_ARGS="-vv --show-unsupported --show-xfail" \
     ${CMAKE_COMMON_OPTIONS} \
-    ${COMPILER_RT_OPTIONS} || echo @@@STEP_FAILURE@@@) &
+    ${COMPILER_RT_OPTIONS} || build_failure) &
 }
 
 BUILD_RT_ERR=""
@@ -113,11 +113,11 @@ function build_android {
   echo @@@BUILD_STEP build android/$_arch@@@
   if ! ninja -C llvm_build_android_$_arch llvm-symbolizer ; then
     BUILD_RT_ERR="${BUILD_RT_ERR}|${_arch}|"
-    echo @@@STEP_FAILURE@@@
+    build_failure
   fi
   if ! ninja -C compiler_rt_build_android_$_arch ; then
     BUILD_RT_ERR="${BUILD_RT_ERR}|${_arch}|"
-    echo @@@STEP_FAILURE@@@
+    build_failure
   fi
 }
 
@@ -156,7 +156,8 @@ function test_on_device {
     local _arch=${_arg%:*}
     local _abi=${_arg#*:}
     if [[ $BUILD_RT_ERR == *"|${_arch}|"* ]]; then
-      echo "@@@STEP_FAILURE@@ skipping tests on ${_arch}"
+      echo "skipping tests on ${_arch}"
+      build_failure
       continue
     fi
     if [[ $ABILIST == *"$_abi"* ]]; then
@@ -230,7 +231,7 @@ function run_tests_sharded {
     LOG=${_log_prefix}_$SHARD
     # 'adb shell <command>' on Fugu is missing TMPDIR.
     local ENV="$_env GTEST_TOTAL_SHARDS=$NUM_SHARDS GTEST_SHARD_INDEX=$SHARD LD_LIBRARY_PATH=$DEVICE_ROOT TMPDIR=$DEVICE_TMPDIR"
-    ( (run_command_on_device "$ENV $DEVICE_ROOT/$_test" || echo @@@STEP_FAILURE@@@) 2>&1 >${_log_prefix}_$SHARD ) &
+    ( (run_command_on_device "$ENV $DEVICE_ROOT/$_test" || build_failure) 2>&1 >${_log_prefix}_$SHARD ) &
     LOGS="$LOGS $LOG,$!"
   done
   tail_pids "$LOGS" || true
@@ -275,12 +276,12 @@ function test_arch_on_device {
          $COMPILER_RT_BUILD_DIR/lib/asan/tests/AsanNoinstTest"
 
   for F in $FILES ; do
-    ( $ADB push $F $DEVICE_ROOT/ >/dev/null || echo @@@STEP_FAILURE@@@ )&
+    ( $ADB push $F $DEVICE_ROOT/ >/dev/null || build_failure )&
   done
   wait
 
   echo @@@BUILD_STEP run lit tests [$DEVICE_DESCRIPTION]@@@
-  (cd $COMPILER_RT_BUILD_DIR && ninja check-all) || echo @@@STEP_FAILURE@@@
+  (cd $COMPILER_RT_BUILD_DIR && ninja check-all) || build_failure
 
   run_tests_sharded sanitizer_common SanitizerTest ""
   run_tests_sharded asan AsanNoinstTest ""

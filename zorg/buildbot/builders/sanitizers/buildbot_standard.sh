@@ -31,9 +31,9 @@ function build_tsan {
   (cd $build_dir && CC="$3" CXX="$4" cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo \
     ${CMAKE_COMMON_OPTIONS} ${extra_cmake_args} \
     ${LLVM})
-  (cd $build_dir && ninja ${targets}) || echo @@@STEP_FAILURE@@@
-  (cd $build_dir && ninja compiler-rt-clear) || echo @@@STEP_FAILURE@@@
-  (cd $build_dir && ninja tsan) || echo @@@STEP_FAILURE@@@
+  (cd $build_dir && ninja ${targets}) || build_failure
+  (cd $build_dir && ninja compiler-rt-clear) || build_failure
+  (cd $build_dir && ninja tsan) || build_failure
 }
 
 buildbot_update
@@ -46,7 +46,7 @@ fi
 echo @@@BUILD_STEP build fresh clang + debug compiler-rt@@@
 build_tsan "${TSAN_DEBUG_BUILD_DIR}" "-DCOMPILER_RT_DEBUG=ON $USE_CCACHE" gcc g++
 echo @@@BUILD_STEP test tsan in debug compiler-rt build@@@
-(cd $TSAN_DEBUG_BUILD_DIR && ninja check-tsan) || echo @@@STEP_FAILURE@@@
+(cd $TSAN_DEBUG_BUILD_DIR && ninja check-tsan) || build_failure
 
 echo @@@BUILD_STEP build tsan with stats and debug output@@@
 build_tsan "${TSAN_FULL_DEBUG_BUILD_DIR}" "-DCOMPILER_RT_DEBUG=ON -DCOMPILER_RT_TSAN_DEBUG_OUTPUT=ON -DLLVM_INCLUDE_TESTS=OFF $USE_CCACHE" gcc g++
@@ -58,6 +58,6 @@ echo @@@BUILD_STEP tsan analyze@@@
 BIN=$(mktemp -t tsan_exe.XXXXXXXX)
 echo "int main() {return 0;}" | $TSAN_RELEASE_BUILD_DIR/bin/clang -x c++ - -fsanitize=thread -O2 -o ${BIN}
 COMPILER_RT=$LLVM/../compiler-rt
-$COMPILER_RT/lib/tsan/check_analyze.sh ${BIN} || echo @@@STEP_FAILURE@@@
+$COMPILER_RT/lib/tsan/check_analyze.sh ${BIN} || build_failure
 
 cleanup $CLEANUP

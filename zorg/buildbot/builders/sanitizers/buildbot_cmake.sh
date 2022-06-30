@@ -136,18 +136,18 @@ LIBCXX=$LLVM/../libcxx
 # tests. Assume that self-hosted build tree should compile with -Werror.
 echo @@@BUILD_STEP build fresh toolchain@@@
 mkdir -p clang_build
-(cd clang_build && cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo ${CMAKE_COMMON_OPTIONS} ${USE_CCACHE} $LLVM ) || (rm -rf clang_build ; echo @@@STEP_FAILURE@@@)
+(cd clang_build && cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo ${CMAKE_COMMON_OPTIONS} ${USE_CCACHE} $LLVM ) || (rm -rf clang_build ; build_failure)
 
 BOOTSTRAP_BUILD_TARGETS="clang"
 if [[ "$CHECK_LLD" != "0" ]]; then
   BOOTSTRAP_BUILD_TARGETS="$BOOTSTRAP_BUILD_TARGETS lld"
 fi
-(cd clang_build && make $BOOTSTRAP_BUILD_TARGETS -j$MAKE_JOBS) || (echo @@@STEP_FAILURE@@@ ; exit 1) || echo @@@STEP_FAILURE@@@
+(cd clang_build && make $BOOTSTRAP_BUILD_TARGETS -j$MAKE_JOBS) || build_failure
 
 # If we're building with libcxx, install the headers to clang_build/include.
 if [ ! -z ${ENABLE_LIBCXX_FLAG} ]; then
 (cd clang_build && make -C ${LIBCXX} installheaders \
-  HEADER_DIR=${PWD}/include) || echo @@@STEP_FAILURE@@@
+  HEADER_DIR=${PWD}/include) || build_failure
 fi
 
 # Check on Linux: build and test sanitizers using gcc as a host
@@ -158,7 +158,7 @@ if [ "$PLATFORM" == "Linux" ]; then
     SANITIZER=$2
     if [ "$CONDITION" == "1" ]; then
       echo @@@BUILD_STEP check-$SANITIZER in gcc build@@@
-      (cd clang_build && make -j$MAKE_JOBS check-$SANITIZER) || echo @@@STEP_FAILURE@@@
+      (cd clang_build && make -j$MAKE_JOBS check-$SANITIZER) || build_failure
     fi
   }
   check_in_gcc 1 sanitizer
@@ -185,27 +185,27 @@ echo @@@BUILD_STEP bootstrap clang@@@
 mkdir -p llvm_build64
 (cd llvm_build64 && cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
     ${CMAKE_CLANG_OPTIONS} -DLLVM_BUILD_EXTERNAL_COMPILER_RT=ON \
-    ${ENABLE_LIBCXX_FLAG} $LLVM) || echo @@@STEP_FAILURE@@@
+    ${ENABLE_LIBCXX_FLAG} $LLVM) || build_failure
 
 # First, build only Clang.
-(cd llvm_build64 && make -j$MAKE_JOBS clang) || echo @@@STEP_FAILURE@@@
+(cd llvm_build64 && make -j$MAKE_JOBS clang) || build_failure
 
 # If needed, install the headers to clang_build/include.
 if [ ! -z ${ENABLE_LIBCXX_FLAG} ]; then
   (cd llvm_build64 && make -C ${LIBCXX} installheaders \
-    HEADER_DIR=${PWD}/include) || echo @@@STEP_FAILURE@@@
+    HEADER_DIR=${PWD}/include) || build_failure
 fi
 
 # Now build everything else.
-(cd llvm_build64 && make -j$MAKE_JOBS) || echo @@@STEP_FAILURE@@@
+(cd llvm_build64 && make -j$MAKE_JOBS) || build_failure
 # Symbolizer dependencies.
-(cd llvm_build64 && make -j$MAKE_JOBS llvm-ar llvm-link llvm-tblgen opt) || echo @@@STEP_FAILURE@@@
+(cd llvm_build64 && make -j$MAKE_JOBS llvm-ar llvm-link llvm-tblgen opt) || build_failure
 
 
 if [ "$CHECK_CFI" == "1" ]; then
   # FIXME: Make these true dependencies of check-cfi-and-supported when
   # compiler-rt is configured as an external project.
-  (cd llvm_build64 && make -j$MAKE_JOBS LLVMgold opt sanstats) || echo @@@STEP_FAILURE@@@
+  (cd llvm_build64 && make -j$MAKE_JOBS LLVMgold opt sanstats) || build_failure
 fi
 
 check_64bit() {
@@ -213,7 +213,7 @@ check_64bit() {
   SANITIZER=$2
   if [ "$CONDITION" == "1" ]; then
     echo @@@BUILD_STEP 64-bit check-$SANITIZER@@@
-    (cd llvm_build64 && make -j$MAKE_JOBS check-$SANITIZER) || echo @@@STEP_FAILURE@@@
+    (cd llvm_build64 && make -j$MAKE_JOBS check-$SANITIZER) || build_failure
   fi
 }
 
@@ -244,11 +244,11 @@ fi
   -DCOMPILER_RT_INCLUDE_TESTS=ON \
   -DCOMPILER_RT_ENABLE_WERROR=ON \
   -DLLVM_CONFIG_PATH=${FRESH_CLANG_PATH}/llvm-config \
-  $COMPILER_RT) || echo @@@STEP_FAILURE@@@
-(cd compiler_rt_build && make -j$MAKE_JOBS) || echo @@@STEP_FAILURE@@@
+  $COMPILER_RT) || build_failure
+(cd compiler_rt_build && make -j$MAKE_JOBS) || build_failure
 
 echo @@@BUILD_STEP test standalone compiler-rt@@@
-(cd compiler_rt_build && make -j$MAKE_JOBS check-all) || echo @@@STEP_FAILURE@@@
+(cd compiler_rt_build && make -j$MAKE_JOBS check-all) || build_failure
 
 HAVE_NINJA=${HAVE_NINJA:-1}
 if [ "$PLATFORM" == "Linux" -a $HAVE_NINJA == 1 ]; then
@@ -258,16 +258,16 @@ if [ "$PLATFORM" == "Linux" -a $HAVE_NINJA == 1 ]; then
   fi
   CMAKE_NINJA_OPTIONS="${CMAKE_CLANG_OPTIONS} -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -G Ninja"
   (cd llvm_build_ninja && cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
-      ${CMAKE_NINJA_OPTIONS} $LLVM) || echo @@@STEP_FAILURE@@@
+      ${CMAKE_NINJA_OPTIONS} $LLVM) || build_failure
   ln -sf llvm_build_ninja/compile_commands.json $LLVM
-  (cd llvm_build_ninja && ninja) || echo @@@STEP_FAILURE@@@
+  (cd llvm_build_ninja && ninja) || build_failure
 
   check_ninja() {
     CONDITION=$1
     SANITIZER=$2
     if [ "$CONDITION" == "1" ]; then
       echo @@@BUILD_STEP ninja check-$SANITIZER@@@
-      (cd llvm_build_ninja && ninja check-$SANITIZER) || echo @@@STEP_FAILURE@@@
+      (cd llvm_build_ninja && ninja check-$SANITIZER) || build_failure
     fi
   }
 
@@ -293,12 +293,12 @@ if [ "$PLATFORM" == "Linux" -a $HAVE_NINJA == 1 ]; then
       (cd symbolizer_build$1 && ZLIB_SRC=$ZLIB FLAGS=-m$1 \
         CLANG=${FRESH_CLANG_PATH}/clang \
         bash -eux $COMPILER_RT/lib/sanitizer_common/symbolizer/scripts/build_symbolizer.sh \
-          $(dirname $(find ../$2/ -name libclang_rt.*.a | head -n1)) || echo @@@STEP_FAILURE@@@)
+          $(dirname $(find ../$2/ -name libclang_rt.*.a | head -n1)) || build_failure)
     }
 
     echo @@@BUILD_STEP update zlib@@@
     (cd $ZLIB && git pull --rebase) || \
-        git clone https://github.com/madler/zlib.git $ZLIB || echo @@@STEP_FAILURE@@@
+        git clone https://github.com/madler/zlib.git $ZLIB || build_failure
 
     build_symbolizer 32 llvm_build_ninja
     build_symbolizer 64 llvm_build_ninja
@@ -308,7 +308,7 @@ if [ "$PLATFORM" == "Linux" -a $HAVE_NINJA == 1 ]; then
       SANITIZER=$2
       if [ "$CONDITION" == "1" ]; then
         echo @@@BUILD_STEP ninja check-$SANITIZER with internal symbolizer@@@
-        (cd llvm_build_ninja && ninja check-$SANITIZER) || echo @@@STEP_FAILURE@@@
+        (cd llvm_build_ninja && ninja check-$SANITIZER) || build_failure
       fi
     }
 
