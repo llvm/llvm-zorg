@@ -52,7 +52,7 @@ def Main():
     sys.stderr.write('ERROR - unset/invalid builder name\n')
     sys.exit(1)
 
-  print "%s runs: %s\n" % (builder, cmd)
+  print("%s runs: %s\n" % (builder, cmd))
   sys.stdout.flush()
 
   bot_env = os.environ
