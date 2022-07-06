@@ -249,8 +249,9 @@ function build_stage2_ubsan {
 }
 
 function check_stage2 {
-  echo @@@BUILD_STEP stage2/$sanitizer_name check@@@
   local sanitizer_name=$1
+  echo @@@BUILD_STEP stage2/$sanitizer_name check@@@
+
   local build_dir=${STAGE2_DIR}
 
   ninja -C ${build_dir} check-all || {
