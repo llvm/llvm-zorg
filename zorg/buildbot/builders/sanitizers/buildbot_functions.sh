@@ -147,6 +147,8 @@ function common_stage2_variables {
 
 function build_stage2 {
   local sanitizer_name=$1
+  echo @@@BUILD_STEP stage2/$sanitizer_name build libcxx@@@
+
   local libcxx_build_dir=libcxx_build_${sanitizer_name}
   local build_dir=llvm_build_${sanitizer_name}
   export STAGE2_DIR=${build_dir}
@@ -181,7 +183,6 @@ function build_stage2 {
   fi
 
   # Don't use libc++/libc++abi in UBSan builds (due to known bugs).
-  echo @@@BUILD_STEP stage2/$sanitizer_name build libcxx@@@
   rm -rf ${libcxx_build_dir}
   mkdir -p ${libcxx_build_dir}
   (cd ${libcxx_build_dir} && \
@@ -248,11 +249,10 @@ function build_stage2_ubsan {
 }
 
 function check_stage2 {
+  echo @@@BUILD_STEP stage2/$sanitizer_name check@@@
   local sanitizer_name=$1
   local build_dir=${STAGE2_DIR}
 
-  echo @@@BUILD_STEP stage2/$sanitizer_name check@@@
-  env
   ninja -C ${build_dir} check-all || {
     eval ${sanitizer_name}_stage2_FAILED=1
     build_failure
@@ -277,10 +277,11 @@ function check_stage2_ubsan {
 
 function build_stage3 {
   local sanitizer_name=$1
+  echo @@@BUILD_STEP build stage3/$sanitizer_name build@@@
+
   local build_dir=llvm_build2_${sanitizer_name}
 
   local clang_path=$ROOT/${STAGE2_DIR}/bin
-  echo @@@BUILD_STEP build stage3/$sanitizer_name build@@@
   rm -rf ${build_dir}
   mkdir -p ${build_dir}
   (cd ${build_dir} && \
@@ -315,9 +316,10 @@ function build_stage3_ubsan {
 
 function check_stage3 {
   local sanitizer_name=$1
+  echo @@@BUILD_STEP stage3/$sanitizer_name check@@@
+
   local build_dir=llvm_build2_${sanitizer_name}
 
-  echo @@@BUILD_STEP stage3/$sanitizer_name check@@@
   (cd ${build_dir} && env && ninja check-all) || {
     eval ${sanitizer_name}_stage3_FAILED=1
     build_failure
