@@ -220,27 +220,6 @@ function configure_scudo_compiler_rt {
   ) &
 }
 
-readonly LLVM_SYMBOLIZER_DIR="${ROOT}/llvm_build2_x86_64_symbolizer"
-
-function configure_llvm_symbolizer {
-  rm -rf ${LLVM_SYMBOLIZER_DIR}
-  mkdir -p ${LLVM_SYMBOLIZER_DIR}
-
-  (
-    cd ${LLVM_SYMBOLIZER_DIR}
-
-    (
-      cmake \
-        ${CMAKE_COMMON_OPTIONS} \
-        -DCMAKE_C_COMPILER=${COMPILER_BIN_DIR}/clang \
-        -DCMAKE_CXX_COMPILER=${COMPILER_BIN_DIR}/clang++ \
-        -DLLVM_BUILD_RUNTIME=OFF \
-        -DLLVM_STATIC_LINK_CXX_STDLIB=ON \
-        $LLVM
-     ) >& configure.log
-  ) &
-}
-
 function configure_hwasan_lam {
   git_clone_at_revision sanitizers https://github.com/google/sanitizers.git \
     origin/master ""
@@ -257,7 +236,7 @@ function configure_hwasan_lam {
     (
       cmake \
         ${CMAKE_COMMON_OPTIONS} \
-        -DLLVM_ENABLE_PROJECTS="clang;compiler-rt;lld;libcxx;libcxxabi" \
+        -DLLVM_ENABLE_PROJECTS="clang;compiler-rt;lld" \
         -DCMAKE_C_COMPILER=${COMPILER_BIN_DIR}/clang \
         -DCMAKE_CXX_COMPILER=${COMPILER_BIN_DIR}/clang++ \
         -DLLVM_ENABLE_LLD=ON \
@@ -287,18 +266,6 @@ function run_scudo_tests {
   ) || build_failure
 }
 
-function build_llvm_symbolizer {
-  echo "@@@BUILD_STEP llvm-symbolizer x86_64@@@"
-
-  (
-    cd ${LLVM_SYMBOLIZER_DIR}
-
-    cat configure.log
-
-    ninja llvm-symbolizer || exit 3
-  ) || build_failure
-}
-
 function run_hwasan_lam_tests {
   local name="x86_64_lam_qemu"
   local out_dir=llvm_build2_${name}
@@ -309,10 +276,6 @@ function run_hwasan_lam_tests {
     cd ${out_dir}
 
     cat configure.log
-
-    # LLD must be built first since HWASan tests use -fuse-ld=lld and the
-    # buildbots don't have LLD preinstalled.
-    ninja lld || exit 3
 
     ninja check-hwasan-lam || exit 3
   ) || build_failure
@@ -342,8 +305,6 @@ for B in $SCUDO_BUILDS ; do
 done
 
 [[ -z "$SKIP_HWASAN_LAM" ]] && (
-  # Symbolizer only required for HWASan LAM tests.
-  build_llvm_symbolizer
   run_hwasan_lam_tests
 )
 
