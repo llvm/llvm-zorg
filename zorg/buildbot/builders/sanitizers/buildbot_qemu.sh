@@ -69,7 +69,7 @@ function setup_lam_qemu_image {
   }
 }
 
-([[ -z "$SKIP_HWASAN_LAM" ]] && setup_lam_qemu_image) || SKIP_HWASAN_LAM=1
+[[ -z "$SKIP_HWASAN_LAM" ]] && setup_lam_qemu_image || SKIP_HWASAN_LAM=1
 
 COMPILER_BIN_DIR="$(readlink -f ${STAGE1_DIR})/bin"
 
