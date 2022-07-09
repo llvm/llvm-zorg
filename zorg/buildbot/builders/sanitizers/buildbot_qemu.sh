@@ -55,17 +55,18 @@ function setup_lam_qemu_image {
   QEMU_IMAGE_DIR=${QEMU_IMAGE_DIR:=${ROOT}}
 
   # Ensure the buildbot start script created a QEMU image for us.
-  (
-    ls ${QEMU_IMAGE_DIR}/debian.img
-    ls ${QEMU_IMAGE_DIR}/debian.id_rsa
-  ) ||
-  (
+  {
+    QEMU_IMAGE="${QEMU_IMAGE_DIR}/debian.img"
+    QEMU_SSH_KEY="${QEMU_IMAGE_DIR}/debian.id_rsa"
+    ls ${QEMU_IMAGE}
+    ls ${QEMU_SSH_KEY}
+  } || {
     # Make the "missing file" error clearer by not effectively echoing twice.
     set +x
     echo "$MISSING_QEMU_IMAGE_MESSAGE"
     build_exception
     exit 1
-  )
+  }
 }
 
 ([[ -z "$SKIP_HWASAN_LAM" ]] && setup_lam_qemu_image) || SKIP_HWASAN_LAM=1
@@ -127,14 +128,14 @@ function build_qemu {
 }
 
 function build_lam_linux {
-  local build_dir="${ROOT}/lam_linux_build"
-
   echo "@@@BUILD_STEP build lam linux@@@"
+  local build_dir="${ROOT}/lam_linux_build"
+  LAM_KERNEL=${BUILD_STEP}/arch/x86_64/boot/bzImage
   (
     git_clone_at_revision lam_linux https://github.com/morehouse/linux.git \
       origin/lam ${build_dir} || exit 1
 
-    ls ${build_dir}/arch/x86_64/boot/bzImage && exit 0
+    ls $(LAM_KERNEL} && exit 0
 
     rm -rf ${build_dir} &&
     mkdir -p ${build_dir} &&
@@ -221,11 +222,6 @@ function configure_scudo_compiler_rt {
 }
 
 function configure_hwasan_lam {
-  git_clone_at_revision sanitizers https://github.com/google/sanitizers.git \
-    origin/master ""
-  local script="${ROOT}/sanitizers/hwaddress-sanitizer/run_in_qemu_with_lam.sh"
-  ls ${script}
-
   local out_dir=llvm_build2_x86_64_lam_qemu
   rm -rf ${out_dir}
   mkdir -p ${out_dir}
@@ -242,7 +238,7 @@ function configure_hwasan_lam {
         -DLLVM_ENABLE_LLD=ON \
         -DCMAKE_BUILD_WITH_INSTALL_RPATH=ON \
         -DLLVM_LIT_ARGS="-v --time-tests" \
-        -DCOMPILER_RT_EMULATOR="env ROOT=${ROOT} QEMU_IMAGE_DIR=${QEMU_IMAGE_DIR} ${script}" \
+        -DCOMPILER_RT_EMULATOR="env SSH_CONTROL_SOCKET=${SSH_CONTROL_SOCKET} ${HERE}/ssh_run.sh" \
         $LLVM
      ) >& configure.log
   ) &
@@ -266,17 +262,94 @@ function run_scudo_tests {
   ) || build_failure
 }
 
+QEMU_PID=""
+readonly QEMU_TMPDIR="$ROOT/qemu_tmp"
+readonly SSH_CONTROL_SOCKET="${QEMU_TMPDIR}/ssh-control-socket"
+
+function force_kill_qemu_after_timeout {
+  sleep "${QEMU_FORCE_KILL_TIMEOUT}"
+  kill -9 "${QEMU_PID}" &>/dev/null || true
+}
+
+function kill_qemu {
+  force_kill_qemu_after_timeout &
+  if kill "${QEMU_PID}"; then
+    echo "Waiting for QEMU to shutdown..." >&2
+    wait "${QEMU_PID}" &>/dev/null || true
+  fi
+}
+
+function boot_qemu {
+  trap kill_qemu EXIT
+
+  # Path to a qemu-system-x86_64 binary built with LAM support.
+  local QEMU="${ROOT}/lam_qemu_build/qemu-system-x86_64"
+  # Path to a qemu-img binary.
+  local QEMU_IMG="${ROOT}/lam_qemu_build/qemu-img"
+  
+  echo "Booting QEMU..." >&2
+
+  # Try up to 10 random port numbers until one succeeds.
+  for i in {0..10}; do
+    rm -rf ${QEMU_TMPDIR}
+    mkdir -p ${QEMU_TMPDIR}
+    # Create a delta image to boot from.
+    local DELTA_IMAGE="${QEMU_TMPDIR}/delta.qcow2"
+    "${QEMU_IMG}" create -F raw -b "${QEMU_IMAGE}" -f qcow2 "${DELTA_IMAGE}"
+
+    local SSH_PORT="$(shuf -i 1000-65535 -n 1)"
+
+    "${QEMU}" -hda "${DELTA_IMAGE}" -nographic \
+      -net "user,host=10.0.2.10,hostfwd=tcp:127.0.0.1:${SSH_PORT}-:22" \
+      -net "nic,model=e1000" -machine "type=q35,accel=tcg" \
+      -smp $(nproc) -cpu "qemu64,+la57,+lam" -kernel "${LAM_KERNEL}" \
+      -append "root=/dev/sda net.ifnames=0" -m "16G" &>/dev/null &
+    QEMU_PID=$!
+
+    # If QEMU is running, the port number worked.
+    sleep 1
+    ps -p "${QEMU_PID}" &>/dev/null || continue
+
+    echo "Waiting for QEMU ssh daemon..." >&2
+    for i in {0..3}; do
+      echo "SSH into VM, try ${i}" >&2
+      sleep 5
+
+      # Set up persistent SSH connection for faster command execution inside QEMU.
+      ssh -p "${SSH_PORT}" -o "StrictHostKeyChecking=no" \
+          -o "UserKnownHostsFile=/dev/null" -o "ControlPersist=30m" \
+          -M -S "${SSH_CONTROL_SOCKET}" -i "${QEMU_SSH_KEY}" root@localhost "uname -a" 1>&2 &&
+        return
+    done
+
+    kill_qemu
+  done
+
+  # Fail fast if QEMU is not running.
+  ps -p "${QEMU_PID}" &>/dev/null
+}
+
 function run_hwasan_lam_tests {
   local name="x86_64_lam_qemu"
   local out_dir=llvm_build2_${name}
 
-  echo "@@@BUILD_STEP hwasan ${name}@@@"
+  echo "@@@BUILD_STEP configure hwasan ${name}@@@"
 
   (
     cd ${out_dir}
-
     cat configure.log
 
+    # Build most stuff before starting VM.
+    echo "@@@BUILD_STEP build tools ${name}@@@"
+    ninja clang lld llvm-symbolizer || exit 3
+
+    echo "@@@BUILD_STEP start LAM QEMU@@@"
+    boot_qemu || build_exception
+    scp -o "ControlPath=${SSH_CONTROL_SOCKET}" \
+      "${ROOT}/llvm_build2_x86_64_lam_qemu/bin/llvm-symbolizer" \
+      "root@localhost:/usr/bin" || build_exception
+
+    echo "@@@BUILD_STEP test hwasan ${name}@@@"
     ninja check-hwasan-lam || exit 3
   ) || build_failure
 }
