@@ -150,10 +150,10 @@ function build_lam_linux {
 }
 
 build_qemu qemu https://github.com/vitalybuka/qemu.git origin/sanitizer_bot
-[[ -z "$SKIP_HWASAN_LAM" ]] && (
+[[ -z "$SKIP_HWASAN_LAM" ]] && {
   build_qemu lam_qemu https://github.com/morehouse/qemu.git origin/lam
   build_lam_linux
-)
+}
 
 SCUDO_BUILDS=
 
