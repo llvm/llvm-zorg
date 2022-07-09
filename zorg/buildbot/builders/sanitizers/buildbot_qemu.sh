@@ -267,7 +267,7 @@ readonly QEMU_TMPDIR="$ROOT/qemu_tmp"
 readonly SSH_CONTROL_SOCKET="${QEMU_TMPDIR}/ssh-control-socket"
 
 function force_kill_qemu_after_timeout {
-  sleep "${QEMU_FORCE_KILL_TIMEOUT}"
+  sleep 3
   kill -9 "${QEMU_PID}" &>/dev/null || true
 }
 
