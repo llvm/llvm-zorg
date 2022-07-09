@@ -332,7 +332,7 @@ function boot_qemu {
     "${QEMU}" -hda "${DELTA_IMAGE}" -nographic \
       -net "user,host=10.0.2.10,hostfwd=tcp:127.0.0.1:${SSH_PORT}-:22" \
       -net "nic,model=e1000" -machine "type=q35,accel=tcg" \
-      -smp $(nproc) -cpu "qemu64,+la57,+lam" -kernel "${LAM_KERNEL}" \
+      -smp $(($(nproc) / 2)) -cpu "qemu64,+la57,+lam" -kernel "${LAM_KERNEL}" \
       -append "root=/dev/sda net.ifnames=0" -m "16G" &>/dev/null &
     QEMU_PID=$!
 
@@ -406,8 +406,8 @@ for B in $SCUDO_BUILDS ; do
   run_scudo_tests $B
 done
 
-# [[ -z "$SKIP_HWASAN_LAM" ]] && (
-#   run_hwasan_lam_tests
-# )
+[[ -z "$SKIP_HWASAN_LAM" ]] && (
+  run_hwasan_lam_tests
+)
 
 cleanup $STAGE2_DIR
