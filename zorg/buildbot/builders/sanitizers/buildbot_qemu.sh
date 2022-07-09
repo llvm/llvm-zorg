@@ -135,14 +135,14 @@ function build_lam_linux {
     git_clone_at_revision lam_linux https://github.com/morehouse/linux.git \
       origin/lam ${build_dir} || exit 1
 
-    ls "$(LAM_KERNEL}" && exit 0
+    ls "${LAM_KERNEL}" && exit 0
 
     rm -rf ${build_dir} &&
     mkdir -p ${build_dir} &&
     cd ${ROOT}/lam_linux &&
     make O=${build_dir} LD=ld.bfd defconfig &&
     make O=${build_dir} LD=ld.bfd -j $(nproc) &&
-    ls "$(LAM_KERNEL}"
+    ls "${LAM_KERNEL}"
   ) || (
     build_exception
     exit 2
