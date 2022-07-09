@@ -295,7 +295,6 @@ for DBG in OFF ON ; do
   configure_scudo_compiler_rt mips64el abi64
   configure_scudo_compiler_rt powerpc64le
 done
-configure_llvm_symbolizer
 [[ -z "$SKIP_HWASAN_LAM" ]] && configure_hwasan_lam
 
 wait
