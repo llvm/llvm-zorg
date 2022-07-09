@@ -130,7 +130,7 @@ function build_qemu {
 function build_lam_linux {
   echo "@@@BUILD_STEP build lam linux@@@"
   local build_dir="${ROOT}/lam_linux_build"
-  LAM_KERNEL="${BUILD_STEP}/arch/x86_64/boot/bzImage"
+  LAM_KERNEL="${build_dir}/arch/x86_64/boot/bzImage"
   (
     git_clone_at_revision lam_linux https://github.com/morehouse/linux.git \
       origin/lam ${build_dir} || exit 1
