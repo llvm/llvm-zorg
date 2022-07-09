@@ -376,8 +376,8 @@ for B in $SCUDO_BUILDS ; do
   run_scudo_tests $B
 done
 
-[[ -z "$SKIP_HWASAN_LAM" ]] && (
-  run_hwasan_lam_tests
-)
+# [[ -z "$SKIP_HWASAN_LAM" ]] && (
+#   run_hwasan_lam_tests
+# )
 
 cleanup $STAGE1_DIR
