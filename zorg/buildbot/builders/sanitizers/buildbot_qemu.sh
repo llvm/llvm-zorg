@@ -65,12 +65,13 @@ function setup_lam_qemu_image {
     set +x
     echo "$MISSING_QEMU_IMAGE_MESSAGE"
     build_exception
+    exit 2
   }
 }
 
 ([[ -z "$SKIP_HWASAN_LAM" ]] && setup_lam_qemu_image) || SKIP_HWASAN_LAM=1
 
-COMPILER_BIN_DIR=$(readlink -f ${STAGE1_DIR})/bin
+COMPILER_BIN_DIR="$(readlink -f ${STAGE1_DIR})/bin"
 
 function git_clone_at_revision {
   local src_dir_name="${1}"
@@ -134,14 +135,14 @@ function build_lam_linux {
     git_clone_at_revision lam_linux https://github.com/morehouse/linux.git \
       origin/lam ${build_dir} || exit 1
 
-    ls $(LAM_KERNEL} && exit 0
+    ls "$(LAM_KERNEL}" && exit 0
 
     rm -rf ${build_dir} &&
     mkdir -p ${build_dir} &&
     cd ${ROOT}/lam_linux &&
     make O=${build_dir} LD=ld.bfd defconfig &&
     make O=${build_dir} LD=ld.bfd -j $(nproc) &&
-    ls ${build_dir}/arch/x86_64/boot/bzImage
+    ls "$(LAM_KERNEL}"
   ) || (
     build_exception
     exit 2
