@@ -210,12 +210,12 @@ function configure_scudo_compiler_rt {
   SCUDO_BUILDS+=" ${name}"
 
   (
+    # We need a fresh base compiler to test standalone build, as this config
+    # does not build own clang.
+    local COMPILER_BIN_DIR="$(readlink -f ${STAGE2_DIR})/bin"
     cd ${out_dir}
 
     (
-      # We need a fresh base compiler to test standalone build, as this config
-      # does not build own clang.
-      local COMPILER_BIN_DIR="$(readlink -f ${STAGE2_DIR})/bin"
       cmake \
         ${CMAKE_COMMON_OPTIONS} \
         -DCOMPILER_RT_DEBUG=$DBG \
