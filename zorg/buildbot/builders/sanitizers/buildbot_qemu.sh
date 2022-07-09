@@ -12,13 +12,36 @@ PLATFORM=`uname`
 export PATH="/usr/local/bin:$PATH"
 
 LLVM=$ROOT/llvm
-CMAKE_COMMON_OPTIONS="-GNinja -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_ASSERTIONS=OFF"
+CMAKE_COMMON_OPTIONS="-GNinja -DCMAKE_BUILD_TYPE=Release"
 
 clobber
 
+build_stage1_clang_at_revison
+CMAKE_COMMON_OPTIONS+=" -DLLVM_ENABLE_ASSERTIONS=ON"
+
 buildbot_update
 
-build_stage1_clang
+readonly STAGE2_DIR=llvm_build2_host
+(
+  echo @@@BUILD_STEP build host clang@@@
+  COMPILER_BIN_DIR="$(readlink -f ${STAGE1_DIR})/bin"
+  if ccache -s >/dev/null ; then
+    CMAKE_COMMON_OPTIONS+=" -DLLVM_CCACHE_BUILD=ON"
+  fi
+
+  rm -rf ${STAGE2_DIR}
+  mkdir -p ${STAGE2_DIR}
+  cd ${STAGE2_DIR}
+
+  cmake \
+    ${CMAKE_COMMON_OPTIONS} \
+    -DLLVM_ENABLE_PROJECTS="clang;compiler-rt;lld" \
+    -DCMAKE_C_COMPILER=${COMPILER_BIN_DIR}/clang \
+    -DCMAKE_CXX_COMPILER=${COMPILER_BIN_DIR}/clang++ \
+    -DLLVM_ENABLE_LLD=ON \
+    -DCMAKE_BUILD_WITH_INSTALL_RPATH=ON \
+    $LLVM && ninja
+) || build_failure
 
 set +x # Avoid echoing STEP_FAILURE because of the command trace.
 MISSING_QEMU_IMAGE_MESSAGE=$(cat << 'EOF'
@@ -70,8 +93,6 @@ function setup_lam_qemu_image {
 }
 
 [[ -z "$SKIP_HWASAN_LAM" ]] && setup_lam_qemu_image || SKIP_HWASAN_LAM=1
-
-COMPILER_BIN_DIR="$(readlink -f ${STAGE1_DIR})/bin"
 
 function git_clone_at_revision {
   local src_dir_name="${1}"
@@ -192,6 +213,9 @@ function configure_scudo_compiler_rt {
     cd ${out_dir}
 
     (
+      # We need a fresh base compiler to test standalone build, as this config
+      # does not build own clang.
+      local COMPILER_BIN_DIR="$(readlink -f ${STAGE2_DIR})/bin"
       cmake \
         ${CMAKE_COMMON_OPTIONS} \
         -DCOMPILER_RT_DEBUG=$DBG \
@@ -227,9 +251,15 @@ function configure_hwasan_lam {
   mkdir -p ${out_dir}
 
   (
+    # We don't need fresh base compiler, as this config will build own clang.
+    local COMPILER_BIN_DIR="$(readlink -f ${STAGE1_DIR})/bin"
     cd ${out_dir}
 
     (
+      # STAGE1_DIR is build once, so we can use CCACHE.
+      if ccache -s >/dev/null ; then
+        CMAKE_COMMON_OPTIONS+=" -DLLVM_CCACHE_BUILD=ON"
+      fi
       cmake \
         ${CMAKE_COMMON_OPTIONS} \
         -DLLVM_ENABLE_PROJECTS="clang;compiler-rt;lld" \
@@ -380,4 +410,4 @@ done
 #   run_hwasan_lam_tests
 # )
 
-cleanup $STAGE1_DIR
+cleanup $STAGE2_DIR
