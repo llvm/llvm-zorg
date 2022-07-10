@@ -170,11 +170,8 @@ function build_lam_linux {
   )
 }
 
-build_qemu qemu https://github.com/vitalybuka/qemu.git origin/sanitizer_bot
-[[ -z "$SKIP_HWASAN_LAM" ]] && {
-  build_qemu lam_qemu https://github.com/vitalybuka/qemu.git origin/lam
-  build_lam_linux
-}
+build_qemu qemu https://github.com/vitalybuka/qemu.git origin/sanitizer_bot2
+[[ -z "$SKIP_HWASAN_LAM" ]] && build_lam_linux
 
 SCUDO_BUILDS=
 
@@ -313,9 +310,9 @@ function boot_qemu {
   trap kill_qemu EXIT
 
   # Path to a qemu-system-x86_64 binary built with LAM support.
-  local QEMU="${ROOT}/lam_qemu_build/qemu-system-x86_64"
+  local QEMU="${ROOT}/qemu_build/qemu-system-x86_64"
   # Path to a qemu-img binary.
-  local QEMU_IMG="${ROOT}/lam_qemu_build/qemu-img"
+  local QEMU_IMG="${ROOT}/qemu_build/qemu-img"
   
   echo "Booting QEMU..." >&2
 
