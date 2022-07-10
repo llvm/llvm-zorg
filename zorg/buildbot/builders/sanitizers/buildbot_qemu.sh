@@ -153,7 +153,7 @@ function build_lam_linux {
   local build_dir="${ROOT}/lam_linux_build"
   LAM_KERNEL="${build_dir}/arch/x86_64/boot/bzImage"
   (
-    git_clone_at_revision lam_linux https://github.com/morehouse/linux.git \
+    git_clone_at_revision lam_linux https://github.com/vitalybuka/linux.git \
       origin/lam ${build_dir} || exit 1
 
     ls "${LAM_KERNEL}" && exit 0
@@ -172,7 +172,7 @@ function build_lam_linux {
 
 build_qemu qemu https://github.com/vitalybuka/qemu.git origin/sanitizer_bot
 [[ -z "$SKIP_HWASAN_LAM" ]] && {
-  build_qemu lam_qemu https://github.com/morehouse/qemu.git origin/lam
+  build_qemu lam_qemu https://github.com/vitalybuka/qemu.git origin/lam
   build_lam_linux
 }
 
