@@ -373,6 +373,7 @@ function run_hwasan_lam_tests {
     ssh -S "${SSH_CONTROL_SOCKET}" root@localhost \
         "mkdir -p /b && mount -t nfs 10.0.2.10:/b /b"
 
+    echo
     echo "@@@BUILD_STEP test hwasan ${name}@@@"
     ninja check-hwasan-lam || exit 3
   ) || build_failure
