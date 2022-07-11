@@ -1523,6 +1523,9 @@ all += [
                     ])},
 
 # Sanitizer builders.
+# 
+# bootstrap-asan, bootstrap-msan, and sanitizer-x86_64-linux-fast have steps
+# with large memory usage, so assign them to different workers.
 
     {'name' : "sanitizer-x86_64-linux",
     'tags'  : ["sanitizer"],
