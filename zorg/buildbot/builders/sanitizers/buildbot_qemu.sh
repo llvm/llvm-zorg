@@ -293,16 +293,13 @@ QEMU_PID=""
 readonly QEMU_TMPDIR="$ROOT/qemu_tmp"
 readonly SSH_CONTROL_SOCKET="${QEMU_TMPDIR}/ssh-control-socket"
 
-function force_kill_qemu_after_timeout {
-  sleep 3
-  kill -9 "${QEMU_PID}" &>/dev/null || true
-}
-
 function kill_qemu {
-  force_kill_qemu_after_timeout &
   if kill "${QEMU_PID}"; then
     echo "Waiting for QEMU to shutdown..." >&2
-    wait "${QEMU_PID}" &>/dev/null || true
+    {
+      timeout -k 5s 5s wait "${QEMU_PID}" && return
+      kill -9 "${QEMU_PID}" && wait "${QEMU_PID}" || true
+    } &>/dev/null
   fi
 }
 
