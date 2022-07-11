@@ -330,7 +330,7 @@ function boot_qemu {
       -net "user,host=10.0.2.10,hostfwd=tcp:127.0.0.1:${SSH_PORT}-:22" \
       -net "nic,model=e1000" -machine "type=q35,accel=tcg" \
       -smp $(($(nproc) / 2)) -cpu "qemu64,+la57,+lam" -kernel "${LAM_KERNEL}" \
-      -append "root=/dev/sda net.ifnames=0" -m "16G" &>/dev/null &
+      -append "root=/dev/sda net.ifnames=0 console=ttyS0" -m "16G" &
     QEMU_PID=$!
 
     # If QEMU is running, the port number worked.
@@ -372,9 +372,9 @@ function run_hwasan_lam_tests {
 
     echo "@@@BUILD_STEP start LAM QEMU@@@"
     boot_qemu || build_exception
-    scp -o "ControlPath=${SSH_CONTROL_SOCKET}" \
-      "${ROOT}/llvm_build2_x86_64_lam_qemu/bin/llvm-symbolizer" \
-      "root@localhost:/usr/bin" || build_exception
+
+    ssh -S "${SSH_CONTROL_SOCKET}" root@localhost \
+        "mkdir -p /b && mount -t nfs 10.0.2.10:/b /b"
 
     echo "@@@BUILD_STEP test hwasan ${name}@@@"
     ninja check-hwasan-lam || exit 3
