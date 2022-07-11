@@ -335,9 +335,9 @@ function boot_qemu {
     ps -p "${QEMU_PID}" &>/dev/null || continue
 
     echo "Waiting for QEMU ssh daemon..." >&2
-    for i in {0..3}; do
+    for i in {0..10}; do
       echo "SSH into VM, try ${i}" >&2
-      sleep 5
+      sleep 15
 
       # Set up persistent SSH connection for faster command execution inside QEMU.
       ssh -p "${SSH_PORT}" -o "StrictHostKeyChecking=no" \
