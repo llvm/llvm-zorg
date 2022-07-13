@@ -430,9 +430,6 @@ def clang_builder(target):
                                    '-DLLVM_INCLUDE_TESTS=On',
                                    '-DCLANG_INCLUDE_TESTS=On',
                                    '-DLLVM_INCLUDE_UTILS=On',
-                                   '-DLIBCXX_INSTALL_HEADERS=On',
-                                   '-DLIBCXX_OVERRIDE_DARWIN_INSTALL=On',
-                                   '-DLIBCXX_INSTALL_LIBRARY=Off',
                                    '-DCMAKE_MACOSX_RPATH=On',
                                    ]
 

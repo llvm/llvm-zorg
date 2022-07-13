@@ -45,11 +45,7 @@ pipeline {
 
                     python llvm-zorg/zorg/jenkins/monorepo_build.py fetch
                     python llvm-zorg/zorg/jenkins/monorepo_build.py clang build \
-                      --thinlto --projects="clang;compiler-rt;libcxx" \
-                      --cmake-flag="-DLIBCXX_ENABLE_SHARED=OFF" \
-                      --cmake-flag="-DLIBCXX_ENABLE_STATIC=OFF" \
-                      --cmake-flag="-DLIBCXX_INCLUDE_TESTS=OFF" \
-                      --cmake-flag="-DLIBCXX_ENABLE_EXPERIMENTAL_LIBRARY=OFF" \
+                      --thinlto --projects="clang;compiler-rt" \
                       --cmake-flag="-DCMAKE_DSYMUTIL=$WORKSPACE/host-compiler/bin/dsymutil"
                     '''
                 }

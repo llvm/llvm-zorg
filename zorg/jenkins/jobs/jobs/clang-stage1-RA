@@ -49,11 +49,7 @@ pipeline {
                     rm -rf clang-build clang-install *.tar.gz
                     python llvm-zorg/zorg/jenkins/monorepo_build.py cmake build \
                       --assertions --cmake-type=RelWithDebInfo \
-                      --projects="clang;clang-tools-extra;compiler-rt;libcxx" \
-                      --cmake-flag='-DLIBCXX_ENABLE_SHARED=OFF'\
-                      --cmake-flag='-DLIBCXX_ENABLE_STATIC=OFF' \
-                      --cmake-flag='-DLIBCXX_INCLUDE_TESTS=OFF' \
-                      --cmake-flag='-DLIBCXX_ENABLE_EXPERIMENTAL_LIBRARY=OFF'
+                      --projects="clang;clang-tools-extra;compiler-rt"
                     '''
                 }
             }
