@@ -199,10 +199,7 @@ function build_stage2 {
 
   echo @@@BUILD_STEP stage2/$sanitizer_name check libcxx@@@
   (cd ${libcxx_build_dir} && \
-    ninja check-cxx check-cxxabi) || {
-     eval ${sanitizer_name}_stage2_FAILED=1
-     build_failure
-   }
+    ninja check-cxx check-cxxabi) || build_failure
 
   local libcxx_runtime_path=$(dirname $(find ${ROOT}/${libcxx_build_dir} -name libc++.so))
   local sanitizer_ldflags="-lc++abi -Wl,--rpath=${libcxx_runtime_path} -L${libcxx_runtime_path}"
@@ -227,10 +224,7 @@ function build_stage2 {
      -DCMAKE_CXX_FLAGS="${sanitizer_cflags}" \
      -DCMAKE_EXE_LINKER_FLAGS="${sanitizer_ldflags}" \
      $LLVM && \
-   ninja) || {
-     eval ${sanitizer_name}_stage2_FAILED=1
-     build_failure
-   }
+   ninja) || build_failure
 }
 
 function build_stage2_msan {
@@ -255,10 +249,7 @@ function check_stage2 {
 
   local build_dir=${STAGE2_DIR}
 
-  ninja -C ${build_dir} check-all || {
-    eval ${sanitizer_name}_stage2_FAILED=1
-    build_failure
-  }
+  ninja -C ${build_dir} check-all || build_failure
 }
 
 function check_stage2_msan {
@@ -294,10 +285,7 @@ function build_stage3 {
      -DCMAKE_CXX_COMPILER=${clang_path}/clang++ \
      -DLLVM_USE_LINKER=lld \
      $LLVM && \
-  ninja clang) || {
-    eval ${sanitizer_name}_stage3_FAILED=1
-    echo build_failure
-  }
+  ninja clang) || build_failure
 }
 
 function build_stage3_msan {
@@ -322,10 +310,7 @@ function check_stage3 {
 
   local build_dir=llvm_build2_${sanitizer_name}
 
-  (cd ${build_dir} && env && ninja check-all) || {
-    eval ${sanitizer_name}_stage3_FAILED=1
-    build_failure
-  }
+  (cd ${build_dir} && env && ninja check-all) || build_failure
 }
 
 function check_stage3_msan {

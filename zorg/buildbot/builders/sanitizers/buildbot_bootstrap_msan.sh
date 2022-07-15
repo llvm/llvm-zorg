@@ -24,11 +24,13 @@ build_stage1_clang
 
 # Stage 2 / Memory Sanitizer
 
-build_stage2_msan
+{
+  build_stage2_msan
 
-check_stage2_msan
+  check_stage2_msan
+} |& tee stage2_msan.log
 
-if [[ -v msan_stage2_FAILED ]]; then
+if grep "WARNING: MemorySanitizer" stage2_msan.log ; then
   # Stage 2 / MemoryWithOriginsSanitizer
   (
     build_stage2_msan_track_origins
@@ -38,12 +40,13 @@ if [[ -v msan_stage2_FAILED ]]; then
 fi
 
 # Stage 3 / MemorySanitizer
+{
+  build_stage3_msan
 
-build_stage3_msan
+  check_stage3_msan
+} |& tee stage3_msan.log
 
-check_stage3_msan
-
-if [[ -v msan_stage3_FAILED ]]; then
+if grep "WARNING: MemorySanitizer" stage3_msan.log ; then
   # Stage 3 / MemoryWithOriginsSanitizer
   (
     build_stage3_msan_track_origins
