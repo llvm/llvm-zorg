@@ -197,10 +197,6 @@ function build_stage2 {
       $LLVM && \
     ninja cxx cxxabi) || build_failure
 
-  echo @@@BUILD_STEP stage2/$sanitizer_name check libcxx@@@
-  (cd ${libcxx_build_dir} && \
-    ninja check-cxx check-cxxabi) || build_failure
-
   local libcxx_runtime_path=$(dirname $(find ${ROOT}/${libcxx_build_dir} -name libc++.so))
   local sanitizer_ldflags="-lc++abi -Wl,--rpath=${libcxx_runtime_path} -L${libcxx_runtime_path}"
   local sanitizer_cflags="-nostdinc++ -isystem ${ROOT}/${libcxx_build_dir}/include -isystem ${ROOT}/${libcxx_build_dir}/include/c++/v1 $fsanitize_flag"
@@ -245,11 +241,12 @@ function build_stage2_ubsan {
 
 function check_stage2 {
   local sanitizer_name=$1
+
+  echo @@@BUILD_STEP stage2/$sanitizer_name check libcxx@@@
+  ninja -C libcxx_build_${sanitizer_name} check-cxx check-cxxabi || build_failure
+
   echo @@@BUILD_STEP stage2/$sanitizer_name check@@@
-
-  local build_dir=${STAGE2_DIR}
-
-  ninja -C ${build_dir} check-all || build_failure
+  ninja -C ${STAGE2_DIR} check-all || build_failure
 }
 
 function check_stage2_msan {
