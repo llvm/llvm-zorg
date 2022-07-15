@@ -24,11 +24,9 @@ build_stage1_clang
 
 # Stage 2 / Memory Sanitizer
 
-{
-  build_stage2_msan
+build_stage2_msan
 
-  check_stage2_msan
-} |& tee stage2_msan.log
+check_stage2_msan |& tee stage2_msan.log
 
 if grep "WARNING: MemorySanitizer" stage2_msan.log ; then
   # Stage 2 / MemoryWithOriginsSanitizer
