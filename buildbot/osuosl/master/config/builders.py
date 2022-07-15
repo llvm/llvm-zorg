@@ -2499,4 +2499,76 @@ all += [
                     "-DLLVM_EXPERIMENTAL_TARGETS_TO_BUILD='CSKY'",
                     "-DLLVM_DEFAULT_TARGET_TRIPLE='csky-unknown-linux'",
                     "-DGCC_INSTALL_PREFIX=/mnt/gcc-csky/"])},
+
+    # NVPTX builders
+    {'name' : "llvm-nvptx-nvidia-ubuntu",
+    'tags'  : ["llvm", "nvptx"],
+    'collapseRequests': False,
+    'workernames' : ["as-builder-7"],
+    'builddir': "llvm-nvptx-nvidia-ubuntu",
+    'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
+                    depends_on_projects=["llvm"],
+                    clean=True,
+                    checks=["check-llvm"],
+                    extra_configure_args=[
+                        "-DLLVM_TARGETS_TO_BUILD=X86;NVPTX",
+                        "-DLLVM_DEFAULT_TARGET_TRIPLE=nvptx-nvidia-cuda",
+                        "-DLLVM_ENABLE_ASSERTIONS=ON",
+                        "-DLLVM_LIT_ARGS=-vv --threads=32",
+                        "-DLLVM_USE_LINKER=gold",
+                        "-DBUILD_SHARED_LIBS=ON",
+                        "-DLLVM_OPTIMIZED_TABLEGEN=ON"])},
+
+    {'name' : "llvm-nvptx64-nvidia-ubuntu",
+    'tags'  : ["llvm", "nvptx"],
+    'collapseRequests': False,
+    'workernames' : ["as-builder-7"],
+    'builddir': "llvm-nvptx64-nvidia-ubuntu",
+    'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
+                    depends_on_projects=["llvm"],
+                    clean=True,
+                    checks=["check-llvm"],
+                    extra_configure_args=[
+                        "-DLLVM_TARGETS_TO_BUILD=X86;NVPTX",
+                        "-DLLVM_DEFAULT_TARGET_TRIPLE=nvptx64-nvidia-cuda",
+                        "-DLLVM_ENABLE_ASSERTIONS=ON",
+                        "-DLLVM_LIT_ARGS=-vv --threads=32",
+                        "-DLLVM_USE_LINKER=gold",
+                        "-DBUILD_SHARED_LIBS=ON",
+                        "-DLLVM_OPTIMIZED_TABLEGEN=ON"])},
+
+    {'name' : "llvm-nvptx-nvidia-win",
+    'tags'  : ["llvm", "nvptx"],
+    'collapseRequests': False,
+    'workernames' : ["as-builder-8"],
+    'builddir': "llvm-nvptx-nvidia-win",
+    'factory' : UnifiedTreeBuilder.getCmakeWithNinjaWithMSVCBuildFactory(
+                    vs="autodetect",
+                    depends_on_projects=["llvm"],
+                    clean=True,
+                    checks=["check-llvm"],
+                    extra_configure_args=[
+                        "-DLLVM_TARGETS_TO_BUILD=X86;NVPTX",
+                        "-DLLVM_DEFAULT_TARGET_TRIPLE=nvptx-nvidia-cuda",
+                        "-DLLVM_ENABLE_ASSERTIONS=ON",
+                        "-DLLVM_LIT_ARGS=-vv --threads=32",
+                        "-DLLVM_OPTIMIZED_TABLEGEN=ON"])},
+
+    {'name' : "llvm-nvptx64-nvidia-win",
+    'tags'  : ["llvm", "nvptx"],
+    'collapseRequests': False,
+    'workernames' : ["as-builder-8"],
+    'builddir': "llvm-nvptx64-nvidia-win",
+    'factory' : UnifiedTreeBuilder.getCmakeWithNinjaWithMSVCBuildFactory(
+                    vs="autodetect",
+                    depends_on_projects=["llvm"],
+                    clean=True,
+                    checks=["check-llvm"],
+                    extra_configure_args=[
+                        "-DLLVM_TARGETS_TO_BUILD=X86;NVPTX",
+                        "-DLLVM_DEFAULT_TARGET_TRIPLE=nvptx64-nvidia-cuda",
+                        "-DLLVM_ENABLE_ASSERTIONS=ON",
+                        "-DLLVM_LIT_ARGS=-vv --threads=32",
+                        "-DLLVM_OPTIMIZED_TABLEGEN=ON"])},
+
 ]

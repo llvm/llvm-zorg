@@ -182,7 +182,9 @@ all = [
         mode = "failing",
         builders = ["llvm-clang-x86_64-win-fast","lld-x86_64-ubuntu-fast",
                     "llvm-clang-x86_64-expensive-checks-ubuntu",
-                    "llvm-clang-win-x-armv7l", "llvm-clang-win-x-aarch64"]),
+                    "llvm-clang-win-x-armv7l", "llvm-clang-win-x-aarch64",
+                    "llvm-nvptx-nvidia-ubuntu", "llvm-nvptx64-nvidia-ubuntu",
+                    "llvm-nvptx-nvidia-win", "llvm-nvptx64-nvidia-win"]),
     reporters.MailNotifier(
         fromaddr = "llvm.buildmaster@lab.llvm.org",
         sendToInterestedUsers = False,
