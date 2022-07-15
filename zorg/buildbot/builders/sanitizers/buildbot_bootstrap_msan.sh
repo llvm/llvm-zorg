@@ -47,6 +47,8 @@ fi
 if grep "WARNING: MemorySanitizer" stage3_msan.log ; then
   # Stage 3 / MemoryWithOriginsSanitizer
   (
+    build_stage2_msan_track_origins
+    
     build_stage3_msan_track_origins
 
     check_stage3_msan_track_origins
