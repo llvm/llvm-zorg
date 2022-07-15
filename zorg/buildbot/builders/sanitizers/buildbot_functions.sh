@@ -183,7 +183,6 @@ function build_stage2 {
   fi
 
   # Don't use libc++/libc++abi in UBSan builds (due to known bugs).
-  rm -rf ${libcxx_build_dir}
   mkdir -p ${libcxx_build_dir}
   (cd ${libcxx_build_dir} && \
     cmake \
@@ -206,7 +205,6 @@ function build_stage2 {
   # See http://llvm.org/bugs/show_bug.cgi?id=19071, http://www.cmake.org/Bug/view.php?id=15264
   sanitizer_cflags+=" $sanitizer_ldflags -w"
 
-  rm -rf ${build_dir}
   mkdir -p ${build_dir}
   local cmake_stage2_clang_options="-DLLVM_ENABLE_PROJECTS='clang;lld;clang-tools-extra;mlir'"
   (cd ${build_dir} && \
@@ -272,7 +270,6 @@ function build_stage3 {
   local build_dir=llvm_build2_${sanitizer_name}
 
   local clang_path=$ROOT/${STAGE2_DIR}/bin
-  rm -rf ${build_dir}
   mkdir -p ${build_dir}
   (cd ${build_dir} && \
    cmake \
