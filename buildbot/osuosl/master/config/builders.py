@@ -2220,6 +2220,7 @@ all += [
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
                     jobs=8,
                     clean=False,
+                    timeout=1800,
                     checkout_lld=False,
                     extra_cmake_args=['-DLLVM_ENABLE_ASSERTIONS=ON',
                                     '-DLLVM_TARGETS_TO_BUILD=X86',
@@ -2233,6 +2234,7 @@ all += [
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
                     jobs=8,
                     clean=False,
+                    timeout=1800,
                     checkout_lld=False,
                     extra_cmake_args=['-DLLVM_ENABLE_ASSERTIONS=ON',
                                     '-DLLVM_TARGETS_TO_BUILD=Sparc',
