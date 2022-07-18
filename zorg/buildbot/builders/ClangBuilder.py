@@ -136,6 +136,7 @@ def getClangCMakeBuildFactory(
             checks=None,
             cmake='cmake',
             jobs=None,
+            timeout=None, # TODO: Implement support for timeout
 
             # VS tools environment variable if using MSVC. For example,
             # %VS120COMNTOOLS% selects the 2013 toolchain.
