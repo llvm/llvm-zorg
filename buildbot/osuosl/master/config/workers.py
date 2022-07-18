@@ -304,7 +304,7 @@ def get_all():
         create_worker("bolt-worker-aarch64", properties={'jobs' : 2}, max_builds=1),
 
         # Fedora worker
-        create_worker("standalone-build-x86_64", properties={'jobs': 32}, max_builds=1),
+        create_worker("standalone-build-x86_64", max_builds=1),
 
         # CSKY T-HEAD workers
         create_worker("thead-clang-csky", properties={'jobs' : 32}, max_builds=1),
