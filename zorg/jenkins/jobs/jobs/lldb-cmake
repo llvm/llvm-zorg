@@ -12,10 +12,20 @@ pipeline {
             steps {
                 timeout(30) {
                     dir('llvm-project') {
-                        checkout([$class: 'GitSCM', branches: [[name: params.GIT_SHA]], userRemoteConfigs: [[url: 'http://labmaster3.local/git/llvm-project.git']], extensions: [[$class: 'CloneOption', noTags: true, timeout: 30]]])
+                        checkout([$class: 'GitSCM', branches: [
+                            [name: params.GIT_SHA]
+                        ], userRemoteConfigs: [
+                            [url: 'http://labmaster3.local/git/llvm-project.git']
+                        ], extensions: [
+                            [$class: 'CloneOption', noTags: true, timeout: 30]
+                        ]])
                     }
                     dir('llvm-zorg') {
-                        checkout([$class: 'GitSCM', branches: [[name: '*/main']], userRemoteConfigs: [[url: 'http://labmaster3.local/git/llvm-zorg.git']], extensions: [[$class: 'CloneOption', noTags: true, timeout: 30]]])
+                        checkout([$class: 'GitSCM', branches: [
+                            [name: '*/main']
+                        ], userRemoteConfigs: [
+                            [url: 'http://labmaster3.local/git/llvm-zorg.git']
+                        ]])
                     }
                 }
             }
