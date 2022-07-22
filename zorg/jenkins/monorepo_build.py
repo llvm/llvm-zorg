@@ -1064,7 +1064,7 @@ def parse_args():
                         action='store_true', help="Turn on the experimental"
                                                   " GlobalISel CMake flag.")
     parser.add_argument('--projects', dest='llvm_enable_projects',
-                        default="clang;clang-tools-extra;compiler-rt;libcxx",
+                        default="clang;clang-tools-extra;compiler-rt",
                         help="Semicolon seperated list of projects to enable.")
     parser.add_argument('--runtimes', dest='llvm_enable_runtimes',
                         default="",

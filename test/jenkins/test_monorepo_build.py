@@ -5,7 +5,7 @@
 # RUN: export BUILD_NUMBER=321
 # RUN: export BRANCH=main
 # Tell monorepo_build.py to just print commands instead of running.
-# RUN: mkdir -p %t.SANDBOX/host-compiler/lib %t.SANDBOX/host-compiler/bin %t.SANDBOX/llvm-project/llvm %t.SANDBOX/llvm-project/clang %t.SANDBOX/llvm-project/libcxx %t.SANDBOX/llvm-project/compiler-rt %t.SANDBOX/llvm-project/debuginfo-tests %t.SANDBOX/llvm-project/clang-tools-extra %t.SANDBOX/llvm-project/lldb
+# RUN: mkdir -p %t.SANDBOX/host-compiler/lib %t.SANDBOX/host-compiler/bin %t.SANDBOX/llvm-project/llvm %t.SANDBOX/llvm-project/clang %t.SANDBOX/llvm-project/compiler-rt %t.SANDBOX/llvm-project/debuginfo-tests %t.SANDBOX/llvm-project/clang-tools-extra %t.SANDBOX/llvm-project/lldb
 # RUN: touch %t.SANDBOX/host-compiler/bin/clang
 # RUN: python %{src_root}/zorg/jenkins/monorepo_build.py clang all > %t.log
 # RUN: FileCheck --check-prefix CHECK-SIMPLE < %t.log %s
@@ -20,7 +20,7 @@
 # CHECK-SIMPLE: '/usr/local/bin/cmake' '-G' 'Ninja' '-C'
 # CHECK-SIMPLE: '-DLLVM_ENABLE_ASSERTIONS:BOOL=FALSE'
 # CHECK-SIMPLE: '-DCMAKE_BUILD_TYPE=RelWithDebInfo'
-# CHECK-SIMPLE: '-DLLVM_ENABLE_PROJECTS=clang;clang-tools-extra;compiler-rt;libcxx'
+# CHECK-SIMPLE: '-DLLVM_ENABLE_PROJECTS=clang;clang-tools-extra;compiler-rt'
 # CHECK-SIMPLE: '-DCMAKE_MAKE_PROGRAM=/usr/local/bin/ninja'
 # CHECK-SIMPLE: '-DLLVM_VERSION_PATCH=99'
 # CHECK-SIMPLE: '-DLLVM_VERSION_SUFFIX=""'
