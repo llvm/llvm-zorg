@@ -82,7 +82,7 @@ build_llvm() {
 
     # This is meant to extinguish any dependency on files being taken
     # from the llvm build dir when building clang.
-    build_step "Removing llvm build directory"
+    build_step "Removing llvm build dir"
     rm -rf "${LLVM_BUILD_DIR}"
 }
 
@@ -112,6 +112,50 @@ build_clang() {
     build_step "Installing clang"
     rm -rf ${CLANG_INSTALL_DIR}
     cmake --install ${CLANG_BUILD_DIR}
+
+    build_step "Removing clang build dir"
+    rm -rf ${CLANG_BUILD_DIR}
+}
+
+build_lld() {
+    local LLVM_INSTALL_DIR=$(install_dir llvm)
+    local LLD_BUILD_DIR=$(build_dir lld)
+    local LLD_INSTALL_DIR=$(install_dir lld)
+
+    build_step "Sparse checkout out lld"
+    git -C "${LLVM_ROOT}" sparse-checkout set lld cmake libunwind
+    
+    # We don't want to checkout the llvm source tree but sadly there are paths
+    # like ${LLVM_MAIN_SRC_DIR}/../libunwind/include in lld source code. They
+    # resolve to /<SOMEPATH>/../llvm/../libunwind/include which makes absolutely
+    # no sense when the llvm dir doesn't exist. Let's fix this by just providing
+    # the empty llvm dir so that paths are resolved without errors.
+    # TODO: I don't know how to fix this easily
+    rm -rf "${LLVM_ROOT}"/llvm && mkdir "${LLVM_ROOT}"/llvm
+    rm -rf ${LLD_INSTALL_DIR}
+    rm -rf ${LLD_BUILD_DIR}
+
+    build_step "Configuring lld"
+    cmake \
+        -S ${LLVM_ROOT}/lld \
+        -B ${LLD_BUILD_DIR} \
+        -G Ninja \
+        -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
+        -DLLVM_LINK_LLVM_DYLIB=ON \
+        -DCLANG_INCLUDE_TESTS=ON \
+        -DLLVM_EXTERNAL_LIT=${LLVM_INSTALL_DIR}/bin/lit \
+        -DCMAKE_INSTALL_PREFIX=${LLD_INSTALL_DIR} \
+        -DLLVM_ROOT=${LLVM_INSTALL_DIR}
+
+    build_step "Building lld"
+    LD_LIBRARY_PATH="${LLVM_INSTALL_DIR}/lib64" cmake --build ${LLD_BUILD_DIR}
+
+    build_step "Installing lld"
+    rm -rf ${LLD_INSTALL_DIR}
+    cmake --install ${LLD_BUILD_DIR}
+
+    build_step "Removing lld build dir"
+    rm -rf ${LLD_BUILD_DIR}
 }
 
 setup_llvm_project
@@ -119,5 +163,6 @@ pre_build_cleanup
 
 build_llvm
 build_clang
+build_lld
 
 exit 0
