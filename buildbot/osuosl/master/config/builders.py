@@ -466,6 +466,9 @@ all = [
                     useTwoStage=True,
                     testStage1=False,
                     runTestSuite=True,
+                    env={
+                        'NO_STOP_MESSAGE':'1', # For Fortran test-suite
+                    },
                     testsuite_flags=[
                         '--cppflags', '-mcpu=cortex-a57',
                         '--threads=32', '--build-threads=32'],

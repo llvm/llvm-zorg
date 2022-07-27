@@ -386,11 +386,11 @@ def _getClangCMakeBuildFactory(
     if not vs:
         cc = 'clang'
         cxx = 'clang++'
-        fc = 'flang-to-external-fc'
+        fc = 'flang-new'
     else:
         cc = 'clang-cl.exe'
         cxx = 'clang-cl.exe'
-        fc = 'flang.exe'
+        fc = 'flang-new.exe'
 
 
     ############# STAGE 2
@@ -506,6 +506,8 @@ def _getClangCMakeBuildFactory(
             if checkout_flang:
                 fortran_flags = [
                         '--cmake-define=TEST_SUITE_FORTRAN:STRING=ON',
+                        '--cmake-define=CMAKE_Fortran_FLAGS:STRING=' +
+                            '-flang-experimental-exec -lpgmath',
                         util.Interpolate(
                             '--cmake-define=CMAKE_Fortran_COMPILER=' +
                             '%(prop:builddir)s/'+compiler_path+'/bin/'+fc)]
