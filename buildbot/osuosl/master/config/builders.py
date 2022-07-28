@@ -450,7 +450,9 @@ all = [
                         "-DCMAKE_C_FLAGS='-mcpu=cortex-a57'",
                         "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a57'",
                         "-DCOMPILER_RT_BUILD_SANITIZERS=OFF",
-                        "-DLLVM_ENABLE_LLD=True"])},
+                        "-DLLVM_ENABLE_LLD=True",
+                        # lld tests cause us to hit thread limits
+                        "-DDLLVM_ENABLE_THREADS=OFF"])},
 
     # AArch64 check-all + flang + compiler-rt + test-suite 2-stage
     {'name' : "clang-aarch64-full-2stage",
