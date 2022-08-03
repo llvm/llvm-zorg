@@ -29,6 +29,7 @@ def getLLVMDocsBuildFactory(
         clean = True,
         depends_on_projects = None,
         extra_configure_args = None,
+        timeout=10800,
         env = None,
         **kwargs):
 
@@ -87,7 +88,7 @@ def getLLVMDocsBuildFactory(
                 # Doxygen builds the final result for really
                 # long time without any output.
                 # We have to have a long timeout at this step.
-                timeout=21600,
+                timeout=timeout,
                 targets=[target],
                 checks=[],
                 env=merged_env,
