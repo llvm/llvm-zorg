@@ -168,7 +168,13 @@ pipeline {
             steps {
                 timeout(30) {
                     dir('clang_502') {
-                        checkout([$class: 'GitSCM', branches: [[name: "llvmorg-5.0.2"]], userRemoteConfigs: [[url: 'http://labmaster3.local/git/llvm-project.git']]])
+                        checkout([$class: 'GitSCM', branches: [
+                            [name: "llvmorg-5.0.2"]
+                        ], userRemoteConfigs: [
+                            [url: 'http://labmaster3.local/git/llvm-project.git']
+                        ], extensions: [
+                            [$class: 'CloneOption', timeout: 30]
+                        ]])
                     }
                 }
                 timeout(90) {
@@ -220,7 +226,13 @@ pipeline {
             steps {
                 timeout(30) {
                     dir('clang_701') {
-                        checkout([$class: 'GitSCM', branches: [[name: "llvmorg-7.0.1"]], userRemoteConfigs: [[url: 'http://labmaster3.local/git/llvm-project.git']]])
+                        checkout([$class: 'GitSCM', branches: [
+                            [name: "llvmorg-7.0.1"]
+                        ], userRemoteConfigs: [
+                            [url: 'http://labmaster3.local/git/llvm-project.git']
+                        ], extensions: [
+                            [$class: 'CloneOption', timeout: 30]
+                        ]])
                     }
                 }
                 timeout(90) {
@@ -272,7 +284,13 @@ pipeline {
             steps {
                 timeout(30) {
                     dir('clang_900') {
-                        checkout([$class: 'GitSCM', branches: [[name: "llvmorg-9.0.0"]], userRemoteConfigs: [[url: 'http://labmaster3.local/git/llvm-project.git']]])
+                        checkout([$class: 'GitSCM', branches: [
+                            [name: "llvmorg-9.0.0"]
+                        ], userRemoteConfigs: [
+                            [url: 'http://labmaster3.local/git/llvm-project.git']
+                        ], extensions: [
+                            [$class: 'CloneOption', timeout: 30]
+                        ]])
                     }
                 }
                 timeout(90) {
@@ -324,7 +342,13 @@ pipeline {
             steps {
                 timeout(30) {
                     dir('clang_1101') {
-                        checkout([$class: 'GitSCM', branches: [[name: "llvmorg-11.0.1"]], userRemoteConfigs: [[url: 'http://labmaster3.local/git/llvm-project.git']]])
+                        checkout([$class: 'GitSCM', branches: [
+                            [name: "llvmorg-11.0.1"]
+                        ], userRemoteConfigs: [
+                            [url: 'http://labmaster3.local/git/llvm-project.git']
+                        ], extensions: [
+                            [$class: 'CloneOption', timeout: 30]
+                        ]])
                     }
                 }
                 timeout(90) {
@@ -376,7 +400,13 @@ pipeline {
             steps {
                 timeout(30) {
                     dir('clang_1300') {
-                        checkout([$class: 'GitSCM', branches: [[name: "llvmorg-13.0.0"]], userRemoteConfigs: [[url: 'http://labmaster3.local/git/llvm-project.git']]])
+                        checkout([$class: 'GitSCM', branches: [
+                            [name: "llvmorg-13.0.0"]
+                        ], userRemoteConfigs: [
+                            [url: 'http://labmaster3.local/git/llvm-project.git']
+                        ], extensions: [
+                            [$class: 'CloneOption', timeout: 30]
+                        ]])
                     }
                 }
                 timeout(90) {
