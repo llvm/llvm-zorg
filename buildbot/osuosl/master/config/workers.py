@@ -120,7 +120,7 @@ def get_all():
         create_worker("sanitizer-buildbot5", properties={'jobs': 64}, max_builds=3),
         create_worker("sanitizer-buildbot6", properties={'jobs': 6}, max_builds=1),
         create_worker("sanitizer-buildbot7", properties={'jobs': 64}, max_builds=3),
-        create_worker("sanitizer-buildbot8", properties={'jobs': 64}, max_builds=3),
+        create_worker("sanitizer-buildbot8", properties={'jobs': 64}, max_builds=1),
 
         # POWER 8 PowerPC AIX 7.2
         create_worker("aix-ppc64", properties={'jobs': 10}, max_builds=1),

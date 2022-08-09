@@ -1562,8 +1562,8 @@ all += [
     {'name' : "sanitizer-x86_64-linux-bootstrap-msan",
     'tags'  : ["sanitizer"],
     'workernames' : [
+        "sanitizer-buildbot5",
         "sanitizer-buildbot7",
-        "sanitizer-buildbot8",
     ],
     'builddir': "sanitizer-x86_64-linux-bootstrap-msan",
     'factory' : SanitizerBuilder.getSanitizerBuildFactory()},
@@ -1580,8 +1580,8 @@ all += [
     {'name' : "sanitizer-x86_64-linux-autoconf",
     'tags'  : ["sanitizer"],
     'workernames' : [
+        "sanitizer-buildbot5",
         "sanitizer-buildbot7",
-        "sanitizer-buildbot8",
     ],
     'builddir': "sanitizer-x86_64-linux-autoconf",
     'factory' : SanitizerBuilder.getSanitizerBuildFactory()},
