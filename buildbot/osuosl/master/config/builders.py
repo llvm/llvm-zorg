@@ -1606,7 +1606,10 @@ all += [
 
     {'name' : "sanitizer-x86_64-linux-android",
     'tags'  : ["sanitizer"],
-    'workernames' : ["sanitizer-buildbot6"],
+    'workernames' : [
+        "sanitizer-buildbot-android",
+        "sanitizer-buildbot6,
+    ],
     'builddir': "sanitizer-x86_64-linux-android",
     'factory' : SanitizerBuilder.getSanitizerBuildFactory()},
 
