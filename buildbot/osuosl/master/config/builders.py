@@ -1559,15 +1559,6 @@ all += [
     'builddir': "sanitizer-x86_64-linux-bootstrap-asan",
     'factory' : SanitizerBuilder.getSanitizerBuildFactory()},
 
-    {'name' : "sanitizer-x86_64-linux-bootstrap-ubsan",
-    'tags'  : ["sanitizer"],
-    'workernames' : [
-        "sanitizer-buildbot3",
-        "sanitizer-buildbot4",
-    ],
-    'builddir': "sanitizer-x86_64-linux-bootstrap-ubsan",
-    'factory' : SanitizerBuilder.getSanitizerBuildFactory()},
-
     {'name' : "sanitizer-x86_64-linux-bootstrap-msan",
     'tags'  : ["sanitizer"],
     'workernames' : [
@@ -1575,6 +1566,15 @@ all += [
         "sanitizer-buildbot8",
     ],
     'builddir': "sanitizer-x86_64-linux-bootstrap-msan",
+    'factory' : SanitizerBuilder.getSanitizerBuildFactory()},
+
+    {'name' : "sanitizer-x86_64-linux-bootstrap-ubsan",
+    'tags'  : ["sanitizer"],
+    'workernames' : [
+        "sanitizer-buildbot3",
+        "sanitizer-buildbot4",
+    ],
+    'builddir': "sanitizer-x86_64-linux-bootstrap-ubsan",
     'factory' : SanitizerBuilder.getSanitizerBuildFactory()},
 
     {'name' : "sanitizer-x86_64-linux-autoconf",
