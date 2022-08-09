@@ -110,19 +110,19 @@ def get_all():
                          "gribozavr@gmail.com",
                          "gkistanova@gmail.com"]),
 
-        # Debian x86_64 GCE instance
+        # x86_64 GCE instance
         create_worker("sanitizer-buildbot1", properties={'jobs': 64}, max_builds=3),
-        # Debian x86_64 GCE instance
+        # x86_64 GCE instance
         create_worker("sanitizer-buildbot2", properties={'jobs': 64}, max_builds=3),
-        # Debian x86_64 GCE instance
+        # x86_64 GCE instance
         create_worker("sanitizer-buildbot3", properties={'jobs': 64}, max_builds=3),
-        # Debian x86_64 GCE instance
+        # x86_64 GCE instance
         create_worker("sanitizer-buildbot4", properties={'jobs': 64}, max_builds=3),
         # Ubuntu x86_64 6-core z440 workstation
         create_worker("sanitizer-buildbot6", properties={'jobs': 6}, max_builds=1),
-        # Debian x86_64 GCE instance
+        # x86_64 GCE instance
         create_worker("sanitizer-buildbot7", properties={'jobs': 64}, max_builds=3),
-        # Debian x86_64 GCE instance
+        # x86_64 GCE instance
         create_worker("sanitizer-buildbot8", properties={'jobs': 64}, max_builds=3),
 
         # POWER 8 PowerPC AIX 7.2
