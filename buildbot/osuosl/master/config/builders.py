@@ -1613,6 +1613,46 @@ all += [
     'builddir': "sanitizer-x86_64-linux-android",
     'factory' : SanitizerBuilder.getSanitizerBuildFactory()},
 
+    {'name' : "sanitizer-aarch64-linux-bootstrap-asan",
+    'tags'  : ["sanitizer"],
+    'workernames' : [
+        "sanitizer-buildbot8",
+    ],
+    'builddir': "sanitizer-aarch64-linux-bootstrap-asan",
+    'factory' : SanitizerBuilder.getSanitizerBuildFactory()},
+
+    {'name' : "sanitizer-aarch64-linux-bootstrap-hwasan",
+    'tags'  : ["sanitizer"],
+    'workernames' : [
+        "sanitizer-buildbot8",
+    ],
+    'builddir': "sanitizer-aarch64-linux-bootstrap-hwasan",
+    'factory' : SanitizerBuilder.getSanitizerBuildFactory()},
+
+    {'name' : "sanitizer-aarch64-linux-bootstrap-msan",
+    'tags'  : ["sanitizer"],
+    'workernames' : [
+        "sanitizer-buildbot8",
+    ],
+    'builddir': "sanitizer-aarch64-linux-bootstrap-msan",
+    'factory' : SanitizerBuilder.getSanitizerBuildFactory()},
+
+    {'name' : "sanitizer-aarch64-linux-bootstrap-ubsan",
+    'tags'  : ["sanitizer"],
+    'workernames' : [
+        "sanitizer-buildbot8",
+    ],
+    'builddir': "sanitizer-aarch64-linux-bootstrap-ubsan",
+    'factory' : SanitizerBuilder.getSanitizerBuildFactory()},
+
+    {'name' : "sanitizer-aarch64-linux-fuzzer",
+    'tags'  : ["sanitizer"],
+    'workernames' : [
+        "sanitizer-buildbot8",
+    ],
+    'builddir': "sanitizer-aarch64-linux-fuzzer",
+    'factory' : SanitizerBuilder.getSanitizerBuildFactory()},
+
     {'name' : "sanitizer-ppc64be-linux",
     'tags'  : ["sanitizer", "ppc"],
     'workernames' : ["ppc64be-sanitizer"],

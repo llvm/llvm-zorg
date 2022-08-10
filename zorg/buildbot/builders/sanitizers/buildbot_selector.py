@@ -26,6 +26,11 @@ BOT_ASSIGNMENT = {
     'sanitizer-x86_64-linux-bootstrap-msan': bash('buildbot_bootstrap_msan.sh'),
     'sanitizer-x86_64-linux-bootstrap-ubsan': bash('buildbot_bootstrap_ubsan.sh'),
     'sanitizer-x86_64-linux-qemu': bash('buildbot_qemu.sh'),
+    'sanitizer-aarch64-linux-fuzzer': bash('buildbot_fuzzer.sh'),
+    'sanitizer-aarch64-linux-bootstrap-asan': bash('buildbot_bootstrap_asan.sh'),
+    'sanitizer-aarch64-linux-bootstrap-hwasan': bash('buildbot_bootstrap_hwasan.sh'),
+    'sanitizer-aarch64-linux-bootstrap-msan': bash('buildbot_bootstrap_msan.sh'),
+    'sanitizer-aarch64-linux-bootstrap-ubsan': bash('buildbot_bootstrap_ubsan.sh'),
 }
 
 BOT_ADDITIONAL_ENV = {
@@ -40,6 +45,11 @@ BOT_ADDITIONAL_ENV = {
     'sanitizer-x86_64-linux-bootstrap-msan': {},
     'sanitizer-x86_64-linux-bootstrap-ubsan': {},
     'sanitizer-x86_64-linux-qemu': { 'QEMU_IMAGE_DIR': BOT_DIR + '/qemu_image' },
+    'sanitizer-aarch64-linux-fuzzer': {},
+    'sanitizer-aarch64-linux-bootstrap-asan': {},
+    'sanitizer-aarch64-linux-bootstrap-hwasan': {},
+    'sanitizer-aarch64-linux-bootstrap-msan': {},
+    'sanitizer-aarch64-linux-bootstrap-ubsan': {},
 }
 
 def Main():
