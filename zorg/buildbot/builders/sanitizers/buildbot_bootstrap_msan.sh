@@ -22,6 +22,8 @@ buildbot_update
 
 build_stage1_clang
 
+check_stage1_msan
+
 # Stage 2 / Memory Sanitizer
 
 build_stage2_msan

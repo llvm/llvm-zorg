@@ -22,6 +22,8 @@ buildbot_update
 
 build_stage1_clang
 
+check_stage1_ubsan
+
 # Stage 2 / UndefinedBehaviorSanitizer
 
 build_stage2_ubsan

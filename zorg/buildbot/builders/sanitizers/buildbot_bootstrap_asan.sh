@@ -22,6 +22,8 @@ buildbot_update
 
 build_stage1_clang
 
+check_stage1_asan
+
 # Stage 2 / AddressSanitizer
 
 build_stage2_asan
