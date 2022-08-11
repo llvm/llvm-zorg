@@ -71,10 +71,16 @@ build_llvm() {
         -DLLVM_LINK_LLVM_DYLIB=ON \
         -DLLVM_INCLUDE_BENCHMARKS=OFF \
         -DLLVM_INSTALL_UTILS=ON \
-        -DCMAKE_INSTALL_PREFIX=${LLVM_INSTALL_DIR}
+        -DCMAKE_INSTALL_PREFIX=${LLVM_INSTALL_DIR}/bin \
+        -DLLVM_INCLUDE_UTILS:BOOL=ON \
+        -DLLVM_INSTALL_UTILS:BOOL=ON \
+        -DLLVM_UTILS_INSTALL_DIR:PATH=${LLVM_INSTALL_DIR}/bin
 
     build_step "Building llvm"
     cmake --build ${LLVM_BUILD_DIR}
+    
+    build_step "Testing llvm"
+    LD_LIBRARY_PATH="${LLVM_INSTALL_DIR}/lib64" cmake --build ${LLVM_BUILD_DIR} --target check-all
 
     build_step "Installing llvm"
     rm -rf ${LLVM_INSTALL_DIR}
