@@ -245,8 +245,11 @@ function build_stage2_ubsan {
 function check_stage1 {
   local sanitizer_name=$1
 
-  echo @@@BUILD_STEP stage1/$sanitizer_name check@@@
-  ninja -C ${STAGE1_DIR} check-sanitizer check-${sanitizer_name} || build_failure
+  echo @@@BUILD_STEP stage1/$sanitizer_name check-sanitizer@@@
+  ninja -C ${STAGE1_DIR} check-sanitizer || build_failure
+
+  echo @@@BUILD_STEP stage1/$sanitizer_name check-${sanitizer_name}@@@
+  ninja -C ${STAGE1_DIR} check-${sanitizer_name} || build_failure
 }
 
 function check_stage1_msan {
@@ -264,8 +267,11 @@ function check_stage1_ubsan {
 function check_stage2 {
   local sanitizer_name=$1
 
-  echo @@@BUILD_STEP stage2/$sanitizer_name check libcxx@@@
-  ninja -C libcxx_build_${sanitizer_name} check-cxx check-cxxabi || build_failure
+  echo @@@BUILD_STEP stage2/$sanitizer_name check-cxx@@@
+  ninja -C libcxx_build_${sanitizer_name} check-cxx || build_failure
+
+  echo @@@BUILD_STEP stage2/$sanitizer_name check-cxxabi@@@
+  ninja -C libcxx_build_${sanitizer_name} check-cxxabi || build_failure
 
   echo @@@BUILD_STEP stage2/$sanitizer_name check@@@
   ninja -C ${STAGE2_DIR} check-all || build_failure
