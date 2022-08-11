@@ -222,7 +222,6 @@ function configure_scudo_compiler_rt {
         -DCOMPILER_RT_HAS_LLD=ON \
         -DCOMPILER_RT_TEST_USE_LLD=ON \
         -DCMAKE_INSTALL_PREFIX=$(${COMPILER_BIN_DIR}/clang -print-resource-dir) \
-        -DLLVM_LIT_ARGS="-v --time-tests" \
         -DCOMPILER_RT_BUILD_BUILTINS=OFF \
         -DCOMPILER_RT_DEFAULT_TARGET_ONLY=ON \
         -DCMAKE_CROSSCOMPILING=True \
@@ -264,7 +263,6 @@ function configure_hwasan_lam {
         -DCMAKE_CXX_COMPILER=${COMPILER_BIN_DIR}/clang++ \
         -DLLVM_ENABLE_LLD=ON \
         -DCMAKE_BUILD_WITH_INSTALL_RPATH=ON \
-        -DLLVM_LIT_ARGS="-v --time-tests" \
         -DCOMPILER_RT_EMULATOR="env SSH_CONTROL_SOCKET=${SSH_CONTROL_SOCKET} ${HERE}/ssh_run.sh" \
         $LLVM
      ) >& configure.log
