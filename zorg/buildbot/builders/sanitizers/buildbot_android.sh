@@ -14,7 +14,7 @@ LOCAL_IPS=`hostname -I`
 export PATH="/usr/local/bin:$PATH"
 
 LLVM=$ROOT/llvm
-CMAKE_COMMON_OPTIONS="-GNinja -DCMAKE_BUILD_TYPE=Release"
+CMAKE_COMMON_OPTIONS+=" -GNinja -DCMAKE_BUILD_TYPE=Release"
 
 clobber
 
@@ -27,7 +27,7 @@ build_stage1_clang_at_revison
 
 buildbot_update
 
-CMAKE_COMMON_OPTIONS="$CMAKE_COMMON_OPTIONS -DLLVM_ENABLE_ASSERTIONS=ON"
+CMAKE_COMMON_OPTIONS+=" -DLLVM_ENABLE_ASSERTIONS=ON"
 
 build_stage2_android
 

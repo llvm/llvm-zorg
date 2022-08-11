@@ -20,6 +20,8 @@ echo @@@BUILD_STEP Prepare@@@
 BUILDBOT_CLOBBER="${BUILDBOT_CLOBBER:-}"
 BUILDBOT_REVISION="${BUILDBOT_REVISION:-origin/main}"
 
+CMAKE_COMMON_OPTIONS="-DLLVM_LIT_ARGS=-v\;--time-tests"
+
 function rm_dirs {
   while ! rm -rf $@ ; do sleep 1; done
 }
@@ -195,7 +197,6 @@ function build_stage2 {
       -DLLVM_USE_SANITIZER=${llvm_use_sanitizer} \
       -DCMAKE_C_FLAGS="${fsanitize_flag} ${cmake_libcxx_cflags}" \
       -DCMAKE_CXX_FLAGS="${fsanitize_flag} ${cmake_libcxx_cflags}" \
-      -DLLVM_LIT_ARGS="--time-tests" \
       $LLVM && \
     ninja cxx cxxabi) || build_failure
 
