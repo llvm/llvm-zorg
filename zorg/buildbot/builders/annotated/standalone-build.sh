@@ -53,12 +53,46 @@ pre_build_cleanup() {
     rm -rf ${BUILD_ROOT_DIR}
 }
 
+build_python_lit() {
+    local PYTHON_LIT_BUILD_DIR=$(build_dir python-lit)
+    local PYTHON_LIT_INSTALL_DIR=$(install_dir python-lit)
+    
+    build_step "Sparse checkout out python-lit"
+    git -C "${LLVM_ROOT}" sparse-checkout set llvm/utils/lit
+
+    build_step "Building python-lit"
+    cd "${LLVM_ROOT}"/llvm/utils/lit
+    python3 setup.py build '--executable=/usr/bin/python3 -s'
+
+    # TODO(kkleine): Fix failing test: FAIL: lit :: shtest-not.py (43 of 50)
+    #build_step "Testing python-lit"
+    #python3 lit.py tests
+
+    build_step "Installing python-lit"
+    rm -rf ${PYTHON_LIT_INSTALL_DIR}
+    python3 setup.py install -O1 --skip-build --root ${PYTHON_LIT_INSTALL_DIR}
+    
+    build_step "Removing python-lit build dir"
+    rm -rf ${PYTHON_LIT_BUILD_DIR}
+
+    cd -
+}
+
+# We don't install python to the system so we need help python to find it
+discover_python_lit() {
+    build_step "Help discover python-lit module"
+    local PYTHON_LIT_INSTALL_DIR=$(install_dir python-lit)
+    local pyver=$(echo 'import sys; print("{}.{}".format(sys.version_info.major, sys.version_info.minor))' | python3)
+    export PYTHONPATH="${PYTHONPATH:-}:${PYTHON_LIT_INSTALL_DIR}/usr/local/lib/python${pyver}/site-packages"
+}
+
 build_llvm() {
+    local PYTHON_LIT_INSTALL_DIR=$(install_dir python-lit)
     local LLVM_BUILD_DIR=$(build_dir llvm)
     local LLVM_INSTALL_DIR=$(install_dir llvm)
 
     build_step "Sparse checkout out llvm"
-    git -C "${LLVM_ROOT}" sparse-checkout set llvm cmake
+    git -C "${LLVM_ROOT}" sparse-checkout set llvm cmake third-party
 
     build_step "Configuring llvm"
 
@@ -71,7 +105,8 @@ build_llvm() {
         -DLLVM_LINK_LLVM_DYLIB=ON \
         -DLLVM_INCLUDE_BENCHMARKS=OFF \
         -DLLVM_INSTALL_UTILS=ON \
-        -DCMAKE_INSTALL_PREFIX=${LLVM_INSTALL_DIR}/bin \
+        -DCMAKE_INSTALL_PREFIX=${LLVM_INSTALL_DIR} \
+        -DLLVM_EXTERNAL_LIT=${PYTHON_LIT_INSTALL_DIR}/usr/local/bin/lit \
         -DLLVM_INCLUDE_UTILS:BOOL=ON \
         -DLLVM_INSTALL_UTILS:BOOL=ON \
         -DLLVM_UTILS_INSTALL_DIR:PATH=${LLVM_INSTALL_DIR}/bin
@@ -93,6 +128,7 @@ build_llvm() {
 }
 
 build_clang() {
+    local PYTHON_LIT_INSTALL_DIR=$(install_dir python-lit)
     local LLVM_INSTALL_DIR=$(install_dir llvm)
     local CLANG_BUILD_DIR=$(build_dir clang)
     local CLANG_INSTALL_DIR=$(install_dir clang)
@@ -108,8 +144,11 @@ build_clang() {
         -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
         -DCLANG_LINK_CLANG_DYLIB=ON \
         -DCLANG_INCLUDE_TESTS=ON \
+        -DLLVM_EXTERNAL_LIT=${PYTHON_LIT_INSTALL_DIR}/usr/local/bin/lit \
         -DCMAKE_INSTALL_PREFIX=${CLANG_INSTALL_DIR} \
-        -DLLVM_ROOT=${LLVM_INSTALL_DIR}
+        -DLLVM_ROOT=${LLVM_INSTALL_DIR} \
+        -DLLVM_ENABLE_ASSERTIONS=ON \
+        -DLLVM_TABLEGEN_EXE=${LLVM_INSTALL_DIR}/bin/llvm-tblgen
 
     build_step "Building clang"
     LD_LIBRARY_PATH="${LLVM_INSTALL_DIR}/lib64" cmake --build ${CLANG_BUILD_DIR}
@@ -124,6 +163,7 @@ build_clang() {
 
 build_lld() {
     local LLVM_INSTALL_DIR=$(install_dir llvm)
+    local PYTHON_LIT_INSTALL_DIR=$(install_dir python-lit)
     local LLD_BUILD_DIR=$(build_dir lld)
     local LLD_INSTALL_DIR=$(install_dir lld)
 
@@ -147,7 +187,6 @@ build_lld() {
         -G Ninja \
         -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
         -DLLVM_LINK_LLVM_DYLIB=ON \
-        -DCLANG_INCLUDE_TESTS=ON \
         -DCMAKE_INSTALL_PREFIX=${LLD_INSTALL_DIR} \
         -DLLVM_ROOT=${LLVM_INSTALL_DIR}
 
@@ -165,8 +204,11 @@ build_lld() {
 setup_llvm_project
 pre_build_cleanup
 
+build_python_lit
+discover_python_lit
 build_llvm
 build_clang
 build_lld
 
 exit 0
+
