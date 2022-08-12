@@ -247,6 +247,10 @@ all = [
                         "-DLLVM_DEFAULT_TARGET_TRIPLE=aarch64-pc-windows-msvc",
                         "-DLLVM_HOST_TRIPLE=aarch64-pc-windows-msvc",
                         "-DLLVM_TARGET_ARCH=AArch64",
+                        # The MSVC_VER environment variable is expected to already exist
+                        # on the worker when it is launched.
+                        "-DCMAKE_C_FLAGS='-fms-compatibility-version=%MSVC_VER%'",
+                        "-DCMAKE_CXX_FLAGS='-fms-compatibility-version=%MSVC_VER%'",
                         # The BUILTINS environment variable is expected to already exist
                         # on the worker when it is launched.
                         "-DCMAKE_EXE_LINKER_FLAGS=%BUILTINS%",
@@ -572,6 +576,10 @@ all = [
                         "-DLLVM_DEFAULT_TARGET_TRIPLE=aarch64-pc-windows-msvc",
                         "-DLLVM_HOST_TRIPLE=aarch64-pc-windows-msvc",
                         "-DLLVM_TARGET_ARCH=AArch64",
+                        # The MSVC_VER environment variable is expected to already exist
+                        # on the worker when it is launched.
+                        "-DCMAKE_C_FLAGS='-fms-compatibility-version=%MSVC_VER%'",
+                        "-DCMAKE_CXX_FLAGS='-fms-compatibility-version=%MSVC_VER%'",
                         # FIXME: compiler-rt\lib\sanitizer_common\sanitizer_unwind_win.cpp assumes WIN64 is x86_64,
                         #        so, before that's fixed, disable everything that triggers its build.
                         "-DCOMPILER_RT_BUILD_SANITIZERS=OFF",
