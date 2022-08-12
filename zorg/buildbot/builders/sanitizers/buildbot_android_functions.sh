@@ -70,6 +70,7 @@ function configure_android { # ARCH triple
   mkdir -p llvm_build_android_$_arch
 
   (cd llvm_build_android_$_arch && cmake \
+    ${CMAKE_COMMON_OPTIONS} \
     -DLLVM_ENABLE_WERROR=OFF \
     -DCMAKE_C_COMPILER=$CLANG_PATH \
     -DCMAKE_CXX_COMPILER=$CLANGXX_PATH \
@@ -81,12 +82,12 @@ function configure_android { # ARCH triple
     -DCMAKE_SKIP_RPATH=ON \
     -DLLVM_BUILD_RUNTIME=OFF \
     -DLLVM_TABLEGEN=$ROOT/llvm_build64/bin/llvm-tblgen \
-    ${CMAKE_COMMON_OPTIONS} \
     $LLVM || build_failure) &
 
   local COMPILER_RT_OPTIONS="$(readlink -f $LLVM/../compiler-rt)"
   
   (cd compiler_rt_build_android_$_arch && cmake \
+    ${CMAKE_COMMON_OPTIONS} \
     -DCMAKE_C_COMPILER=$CLANG_PATH \
     -DCMAKE_CXX_COMPILER=$CLANGXX_PATH \
     -DLLVM_CONFIG_PATH=$ROOT/llvm_build64/bin/llvm-config \
@@ -102,7 +103,6 @@ function configure_android { # ARCH triple
     -DCOMPILER_RT_OUTPUT_DIR="$ANDROID_LIBRARY_OUTPUT_DIR" \
     -DCOMPILER_RT_EXEC_OUTPUT_DIR="$ANDROID_EXEC_OUTPUT_DIR" \
     -DLLVM_LIT_ARGS="-vv --show-unsupported --show-xfail" \
-    ${CMAKE_COMMON_OPTIONS} \
     ${COMPILER_RT_OPTIONS} || build_failure) &
 }
 
