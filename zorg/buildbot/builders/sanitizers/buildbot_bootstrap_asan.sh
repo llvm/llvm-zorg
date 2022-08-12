@@ -24,6 +24,9 @@ build_stage1_clang
 
 check_stage1_asan
 
+# FIXME: Asan is very slow on aarch64. check_stage2_asan takes up to 10H.
+[[ "$(arch)" != "aarch64" ]] || exit 0
+
 # Stage 2 / AddressSanitizer
 
 build_stage2_asan
