@@ -178,6 +178,10 @@ function build_stage2 {
     # FIXME: False ODR violations in libcxx tests.
     # https://github.com/google/sanitizers/issues/1017
     cmake_libcxx_cflags="-mllvm -asan-use-private-alias=1"
+  elif [ "$sanitizer_name" == "hwasan" ]; then
+    export HWASAN_SYMBOLIZER_PATH="${llvm_symbolizer_path}"
+    llvm_use_sanitizer="HWAddress"
+    fsanitize_flag="-fsanitize=hwaddress"
   elif [ "$sanitizer_name" == "ubsan" ]; then
     export UBSAN_OPTIONS="external_symbolizer_path=${llvm_symbolizer_path}:print_stacktrace=1"
     llvm_use_sanitizer="Undefined"
@@ -237,6 +241,10 @@ function build_stage2_asan {
   build_stage2 asan
 }
 
+function build_stage2_hwasan {
+  build_stage2 hwasan
+}
+
 function build_stage2_ubsan {
   build_stage2 ubsan
 }
@@ -257,6 +265,10 @@ function check_stage1_msan {
 
 function check_stage1_asan {
   check_stage1 asan
+}
+
+function check_stage1_hwasan {
+  check_stage1 hwasan
 }
 
 function check_stage1_ubsan {
@@ -286,6 +298,10 @@ function check_stage2_msan_track_origins {
 
 function check_stage2_asan {
   check_stage2 asan
+}
+
+function check_stage2_hwasan {
+  check_stage2 hwasan
 }
 
 function check_stage2_ubsan {
@@ -323,6 +339,10 @@ function build_stage3_asan {
   build_stage3 asan
 }
 
+function build_stage3_hwasan {
+  build_stage3 hwasan
+}
+
 function build_stage3_ubsan {
   build_stage3 ubsan
 }
@@ -346,6 +366,10 @@ function check_stage3_msan_track_origins {
 
 function check_stage3_asan {
   check_stage3 asan
+}
+
+function check_stage3_hwasan {
+  check_stage3 hwasan
 }
 
 function check_stage3_ubsan {

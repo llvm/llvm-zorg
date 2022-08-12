@@ -22,22 +22,18 @@ buildbot_update
 
 build_stage1_clang
 
-check_stage1_asan
+check_stage1_hwasan
 
-# FIXME: Asan is very slow on aarch64. check_stage2_asan takes up to 10H.
-[[ "$(arch)" != "aarch64" ]] || exit 0
+# Stage 2 / HWAddressSanitizer
 
-# Stage 2 / AddressSanitizer
+build_stage2_hwasan
 
-build_stage2_asan
+check_stage2_hwasan
 
-check_stage2_asan
+# Stage 3 / HWAddressSanitizer
 
-# Stage 3 / AddressSanitizer
+build_stage3_hwasan
 
-export ASAN_OPTIONS="check_initialization_order=true:detect_stack_use_after_return=1:detect_leaks=1"
-build_stage3_asan
-
-check_stage3_asan
+check_stage3_hwasan
 
 cleanup $STAGE1_DIR
