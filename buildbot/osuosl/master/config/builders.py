@@ -708,8 +708,8 @@ all = [
                     clean=False,
                     extra_configure_args=[
                         "-DLLVM_ENABLE_ASSERTIONS=On",
-                        "-DCMAKE_C_COMPILER=/opt/IBM/openxlC/17.1.0/bin/ibm-clang",
-                        "-DCMAKE_CXX_COMPILER=/opt/IBM/openxlC/17.1.0/bin/ibm-clang++_r",
+                        "-DCMAKE_C_COMPILER=/usr/local/clang-15.0.0/bin/clang",
+                        "-DCMAKE_CXX_COMPILER=/usr/local/clang-15.0.0/bin/clang++",
                         "-DPython3_EXECUTABLE:FILEPATH=/opt/freeware/bin/python3_64",
                         "-DLLVM_ENABLE_ZLIB=OFF", "-DLLVM_APPEND_VC_REV=OFF",
                         "-DLLVM_PARALLEL_LINK_JOBS=2",
