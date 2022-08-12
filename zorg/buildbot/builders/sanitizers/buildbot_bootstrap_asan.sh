@@ -7,6 +7,9 @@ set -u
 HERE="$(cd $(dirname $0) && pwd)"
 . ${HERE}/buildbot_functions.sh
 
+# FIXME: Asan is very slow on aarch64. check_stage2_asan takes up to 10H.
+[[ "$(arch)" != "aarch64" ]] || exit 0
+
 ROOT=`pwd`
 PLATFORM=`uname`
 export PATH="/usr/local/bin:$PATH"
@@ -24,8 +27,6 @@ build_stage1_clang
 
 check_stage1_asan
 
-# FIXME: Asan is very slow on aarch64. check_stage2_asan takes up to 10H.
-[[ "$(arch)" != "aarch64" ]] || exit 0
 
 # Stage 2 / AddressSanitizer
 
