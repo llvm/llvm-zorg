@@ -20,7 +20,8 @@ echo @@@BUILD_STEP Prepare@@@
 BUILDBOT_CLOBBER="${BUILDBOT_CLOBBER:-}"
 BUILDBOT_REVISION="${BUILDBOT_REVISION:-origin/main}"
 
-CMAKE_COMMON_OPTIONS="-DLLVM_LIT_ARGS=--time-tests"
+export LIT_OPTS=-time-tests
+CMAKE_COMMON_OPTIONS="-DLLVM_LIT_ARGS=-v"
 
 function rm_dirs {
   while ! rm -rf $@ ; do sleep 1; done
