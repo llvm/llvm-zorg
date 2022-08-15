@@ -192,7 +192,6 @@ function build_stage2 {
     exit 1
   fi
 
-  # Don't use libc++/libc++abi in UBSan builds (due to known bugs).
   mkdir -p ${libcxx_build_dir}
   (cd ${libcxx_build_dir} && \
     cmake \
