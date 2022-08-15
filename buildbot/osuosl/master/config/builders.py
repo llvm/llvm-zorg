@@ -452,7 +452,7 @@ all = [
                         "-DCOMPILER_RT_BUILD_SANITIZERS=OFF",
                         "-DLLVM_ENABLE_LLD=True",
                         # lld tests cause us to hit thread limits
-                        "-DDLLVM_ENABLE_THREADS=OFF"])},
+                        "-DLLVM_ENABLE_THREADS=OFF"])},
 
     # AArch64 check-all + flang + compiler-rt + test-suite 2-stage
     {'name' : "clang-aarch64-full-2stage",
