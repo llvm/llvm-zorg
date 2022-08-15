@@ -42,7 +42,7 @@ def main(argv):
     ]
     check_targets = ['check-asan', 'check-asan-dynamic', 'check-sanitizer',
                      'check-ubsan', 'check-fuzzer', 'check-cfi',
-                     'check-profile', 'check-builtins']
+                     'check-profile', 'check-builtins', 'check-orc-rt']
 
     # These arguments are a bit misleading, they really mean use cl.exe for
     # stage1 instead of GCC.
