@@ -201,9 +201,9 @@ pipeline {
                 timeout(60) {
                     sh '''
                     export PATH=$PATH:/usr/bin:/usr/local/bin
-                    export LLDB_TEST_COMPILER="$WORKSPACE/clang_502_build/bin/clang"
                     python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix configure \
                       --assertions \
+                      --lldb-test-compiler="$WORKSPACE/clang_502_build/bin/clang" \
                       --projects="clang;lldb"  \
                       --runtimes="libcxx;libcxxabi"  \
                       --cmake-type=Release \
@@ -260,9 +260,9 @@ pipeline {
                 timeout(60) {
                     sh '''
                     export PATH=$PATH:/usr/bin:/usr/local/bin
-                    export LLDB_TEST_COMPILER="$WORKSPACE/clang_701_build/bin/clang"
                     python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix configure \
                       --assertions \
+                      --lldb-test-compiler="$WORKSPACE/clang_701_build/bin/clang" \
                       --projects="clang;lldb"  \
                       --runtimes="libcxx;libcxxabi"  \
                       --cmake-type=Release \
@@ -319,9 +319,9 @@ pipeline {
                 timeout(60) {
                     sh '''
                     export PATH=$PATH:/usr/bin:/usr/local/bin
-                    export LLDB_TEST_COMPILER="$WORKSPACE/clang_900_build/bin/clang"
                     python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix configure \
                       --assertions \
+                      --lldb-test-compiler="$WORKSPACE/clang_900_build/bin/clang" \
                       --projects="clang;lldb"  \
                       --runtimes="libcxx;libcxxabi"  \
                       --cmake-type=Release \
@@ -378,9 +378,9 @@ pipeline {
                 timeout(60) {
                     sh '''
                     export PATH=$PATH:/usr/bin:/usr/local/bin
-                    export LLDB_TEST_COMPILER="$WORKSPACE/clang_1101_build/bin/clang"
                     python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix configure \
                       --assertions \
+                      --lldb-test-compiler="$WORKSPACE/clang_1101_build/bin/clang" \
                       --projects="clang;lldb"  \
                       --runtimes="libcxx;libcxxabi"  \
                       --cmake-type=Release \
@@ -437,9 +437,9 @@ pipeline {
                 timeout(60) {
                     sh '''
                     export PATH=$PATH:/usr/bin:/usr/local/bin
-                    export LLDB_TEST_COMPILER="$WORKSPACE/clang_1300_build/bin/clang"
                     python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix configure \
                       --assertions \
+                      --lldb-test-compiler="$WORKSPACE/clang_1300_build/bin/clang" \
                       --projects="clang;lldb"  \
                       --runtimes="libcxx;libcxxabi"  \
                       --cmake-type=Release \

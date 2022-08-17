@@ -112,7 +112,6 @@ class Configuration(object):
         self._lldb_standalone_type = os.environ.get('LLDB_STANDALONE_TYPE', 'build-tree')
         self._lldb_xcode_build_dir = os.environ.get('LLDB_XCODE_BUILD_DIR', 'lldb-xcode-build')
         self._lldb_install_dir = os.environ.get('LLDB_INSTALL_DIR', 'lldb-install')
-        self._lldb_test_compiler = os.environ.get('LLDB_TEST_COMPILER', '')
         self._install_dir = os.environ.get('INSTALL_DIR', 'clang-install')
         self.j_level = os.environ.get('J_LEVEL', None)
         self.max_parallel_tests = os.environ.get('MAX_PARALLEL_TESTS', None)
@@ -165,10 +164,6 @@ class Configuration(object):
     def lldbinstalldir(self):
         """The install directory for the lldb build."""
         return os.path.join(self.workspace, self._lldb_install_dir)
-
-    def lldbtestcompiler(self):
-        """The compiler used to build LLDB tests."""
-        return self._lldb_test_compiler
 
     def installdir(self):
         """The install directory for the compile."""
@@ -576,9 +571,9 @@ def lldb_cmake_builder(target, variant=None):
             "-DCMAKE_CXX_FLAGS={}".format(' '.join(conf.compiler_flags))
         ])
 
-    if conf.lldbtestcompiler():
+    if conf.lldb_test_compiler is not None:
         cmake_cmd.extend([
-            '-DLLDB_TEST_COMPILER=' + conf.lldbtestcompiler(),
+            '-DLLDB_TEST_COMPILER=' + conf.lldb_test_compiler,
         ])
 
     cmake_cmd.extend(conf.cmake_flags)
@@ -1071,6 +1066,8 @@ def parse_args():
                         help="Semicolon seperated list of runtimes to enable.")
     parser.add_argument('--timeout', dest='timeout', type=int, default='600',
                         help='Individual test timeout in seconds.')
+    parser.add_argument('--lldb-test-compiler',
+                        help='The compiler used to build LLDB tests.')
     args = parser.parse_args()
     if args.thinlto:
         args.lto = True

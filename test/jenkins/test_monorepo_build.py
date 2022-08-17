@@ -147,3 +147,9 @@
 # RUN: python %{src_root}/zorg/jenkins/monorepo_build.py cmake all > %t-timeout-default.log
 # RUN: FileCheck --check-prefix CHECK-TIMEOUT-DEFAULT < %t-timeout-default.log %s
 # CHECK-TIMEOUT-DEFAULT: --timeout=600
+
+# RUN: python %{src_root}/zorg/jenkins/monorepo_build.py lldb-cmake-matrix configure \
+# RUN:   --lldb-test-compiler="MY_LLDB_TEST_COMPILER" > %t-lldb-configure.log
+# RUN: FileCheck --check-prefix CHECK-LLDB-CONFIG < %t-lldb-configure.log %s
+
+# CHECK-LLDB-CONFIG: -DLLDB_TEST_COMPILER=MY_LLDB_TEST_COMPILER
