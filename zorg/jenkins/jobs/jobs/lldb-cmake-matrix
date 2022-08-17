@@ -8,6 +8,9 @@ pipeline {
         string(name: 'BUILD_TYPE', defaultValue: 'Release', description: 'Default CMake build type; one of: Release, Debug, ...')
         string(name: 'CLEAN', defaultValue: "false", description: 'Whether or not to clean the build directory before building')
     }
+    environment {
+        MATRIX_COMMON_BUILD_PARAMETERS = '--cmake-flag="-DLLVM_TARGETS_TO_BUILD=X86"'
+    }
     stages {
         stage('Checkout') {
             steps {
@@ -65,13 +68,13 @@ pipeline {
                     export PATH=$PATH:/usr/bin:/usr/local/bin
 
                     python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake build \
+                      $MATRIX_COMMON_BUILD_PARAMETERS \
                       --assertions \
                       --projects="clang;lldb"  \
                       --runtimes="libcxx;libcxxabi"  \
                       --cmake-type=Release \
                       --dotest-flag="--skip-category gmodules" \
-                      --dotest-flag="--arch=x86_64" \
-                      --cmake-flag="-DLLVM_TARGETS_TO_BUILD=X86"
+                      --dotest-flag="--arch=x86_64"
                     '''
                 }
             }
@@ -82,6 +85,7 @@ pipeline {
                     sh '''
                     export PATH=$PATH:/usr/bin:/usr/local/bin
                     python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix configure \
+                      $MATRIX_COMMON_BUILD_PARAMETERS \
                       --assertions \
                       --projects="clang;lldb"  \
                       --runtimes="libcxx;libcxxabi"  \
@@ -113,6 +117,7 @@ pipeline {
                     sh '''
                     export PATH=$PATH:/usr/bin:/usr/local/bin
                     python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix configure \
+                      $MATRIX_COMMON_BUILD_PARAMETERS \
                       --assertions \
                       --projects="clang;lldb"  \
                       --runtimes="libcxx;libcxxabi"  \
@@ -144,6 +149,7 @@ pipeline {
                     sh '''
                     export PATH=$PATH:/usr/bin:/usr/local/bin
                     python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix configure \
+                      $MATRIX_COMMON_BUILD_PARAMETERS \
                       --assertions \
                       --projects="clang;lldb"  \
                       --runtimes="libcxx;libcxxabi"  \
@@ -188,6 +194,7 @@ pipeline {
                     export BUILD_DIR='clang_502_build'
 
                     python llvm-zorg/zorg/jenkins/monorepo_build.py cmake build \
+                      $MATRIX_COMMON_BUILD_PARAMETERS \
                       --assertions \
                       --noupload \
                       --noinstall \
@@ -202,6 +209,7 @@ pipeline {
                     sh '''
                     export PATH=$PATH:/usr/bin:/usr/local/bin
                     python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix configure \
+                      $MATRIX_COMMON_BUILD_PARAMETERS \
                       --assertions \
                       --lldb-test-compiler="$WORKSPACE/clang_502_build/bin/clang" \
                       --projects="clang;lldb"  \
@@ -247,6 +255,7 @@ pipeline {
                     export BUILD_DIR='clang_701_build'
 
                     python llvm-zorg/zorg/jenkins/monorepo_build.py cmake build \
+                      $MATRIX_COMMON_BUILD_PARAMETERS \
                       --assertions \
                       --noupload \
                       --noinstall \
@@ -261,6 +270,7 @@ pipeline {
                     sh '''
                     export PATH=$PATH:/usr/bin:/usr/local/bin
                     python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix configure \
+                      $MATRIX_COMMON_BUILD_PARAMETERS \
                       --assertions \
                       --lldb-test-compiler="$WORKSPACE/clang_701_build/bin/clang" \
                       --projects="clang;lldb"  \
@@ -306,6 +316,7 @@ pipeline {
                     export BUILD_DIR='clang_900_build'
 
                     python llvm-zorg/zorg/jenkins/monorepo_build.py cmake build \
+                      $MATRIX_COMMON_BUILD_PARAMETERS \
                       --assertions \
                       --noupload \
                       --noinstall \
@@ -320,6 +331,7 @@ pipeline {
                     sh '''
                     export PATH=$PATH:/usr/bin:/usr/local/bin
                     python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix configure \
+                      $MATRIX_COMMON_BUILD_PARAMETERS \
                       --assertions \
                       --lldb-test-compiler="$WORKSPACE/clang_900_build/bin/clang" \
                       --projects="clang;lldb"  \
@@ -365,6 +377,7 @@ pipeline {
                     export BUILD_DIR='clang_1101_build'
 
                     python llvm-zorg/zorg/jenkins/monorepo_build.py cmake build \
+                      $MATRIX_COMMON_BUILD_PARAMETERS \
                       --assertions \
                       --noupload \
                       --noinstall \
@@ -379,6 +392,7 @@ pipeline {
                     sh '''
                     export PATH=$PATH:/usr/bin:/usr/local/bin
                     python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix configure \
+                      $MATRIX_COMMON_BUILD_PARAMETERS \
                       --assertions \
                       --lldb-test-compiler="$WORKSPACE/clang_1101_build/bin/clang" \
                       --projects="clang;lldb"  \
@@ -424,6 +438,7 @@ pipeline {
                     export BUILD_DIR='clang_1300_build'
 
                     python llvm-zorg/zorg/jenkins/monorepo_build.py cmake build \
+                      $MATRIX_COMMON_BUILD_PARAMETERS \
                       --assertions \
                       --noupload \
                       --noinstall \
@@ -438,6 +453,7 @@ pipeline {
                     sh '''
                     export PATH=$PATH:/usr/bin:/usr/local/bin
                     python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix configure \
+                      $MATRIX_COMMON_BUILD_PARAMETERS \
                       --assertions \
                       --lldb-test-compiler="$WORKSPACE/clang_1300_build/bin/clang" \
                       --projects="clang;lldb"  \

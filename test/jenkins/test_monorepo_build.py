@@ -149,7 +149,11 @@
 # CHECK-TIMEOUT-DEFAULT: --timeout=600
 
 # RUN: python %{src_root}/zorg/jenkins/monorepo_build.py lldb-cmake-matrix configure \
-# RUN:   --lldb-test-compiler="MY_LLDB_TEST_COMPILER" > %t-lldb-configure.log
+# RUN:   --lldb-test-compiler="MY_LLDB_TEST_COMPILER" \
+# RUN:   --cmake-flag="-DLLVM_TARGETS_TO_BUILD=X86" > %t-lldb-configure.log
 # RUN: FileCheck --check-prefix CHECK-LLDB-CONFIG < %t-lldb-configure.log %s
 
 # CHECK-LLDB-CONFIG: -DLLDB_TEST_COMPILER=MY_LLDB_TEST_COMPILER
+# CHECK-LLDB-CONFIG: -DLLVM_TARGETS_TO_BUILD=X86
+# there may be other "target to build", but the one above should be the last:
+# CHECK-LLDB-CONFIG-NOT: -DLLVM_TARGETS_TO_BUILD
