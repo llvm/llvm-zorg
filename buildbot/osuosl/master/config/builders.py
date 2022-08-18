@@ -2318,7 +2318,7 @@ all += [
                         "-DLLVM_CCACHE_BUILD=ON",
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
                         "-DTENSORFLOW_C_LIB_PATH=/tmp/tensorflow",
-                        "-C /tmp/tflitebuild/tflite.cmake",
+                        "-C", "/tmp/tflitebuild/tflite.cmake",
                         "-DCMAKE_INSTALL_RPATH_USE_LINK_PATH=ON"
                     ])},
 
@@ -2336,7 +2336,7 @@ all += [
                         "-DLLVM_CCACHE_BUILD=ON",
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
                         "-DTENSORFLOW_C_LIB_PATH=/tmp/tensorflow",
-                        "-C /tmp/tflitebuild/tflite.cmake",
+                        "-C", "/tmp/tflitebuild/tflite.cmake",
                         "-DTENSORFLOW_AOT_PATH=/var/lib/buildbot/.local/lib/python3.7/site-packages/tensorflow",
                         "-DCMAKE_INSTALL_RPATH_USE_LINK_PATH=ON"
                     ])},
