@@ -9,7 +9,7 @@ pipeline {
         string(name: 'CLEAN', defaultValue: "false", description: 'Whether or not to clean the build directory before building')
     }
     environment {
-        MATRIX_COMMON_BUILD_PARAMETERS = '--cmake-flag="-DLLVM_TARGETS_TO_BUILD=X86"'
+        MATRIX_COMMON_BUILD_PARAMETERS = '--cmake-flag=-DLLVM_TARGETS_TO_BUILD=X86'
     }
     stages {
         stage('Checkout') {

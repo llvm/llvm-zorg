@@ -150,7 +150,7 @@
 
 # RUN: python %{src_root}/zorg/jenkins/monorepo_build.py lldb-cmake-matrix configure \
 # RUN:   --lldb-test-compiler="MY_LLDB_TEST_COMPILER" \
-# RUN:   --cmake-flag="-DLLVM_TARGETS_TO_BUILD=X86" > %t-lldb-configure.log
+# RUN:   --cmake-flag=-DLLVM_TARGETS_TO_BUILD=X86 > %t-lldb-configure.log
 # RUN: FileCheck --check-prefix CHECK-LLDB-CONFIG < %t-lldb-configure.log %s
 
 # CHECK-LLDB-CONFIG: -DLLDB_TEST_COMPILER=MY_LLDB_TEST_COMPILER
