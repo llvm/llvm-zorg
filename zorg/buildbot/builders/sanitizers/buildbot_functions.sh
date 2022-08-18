@@ -185,7 +185,7 @@ function build_stage2 {
     llvm_use_sanitizer="HWAddress"
     fsanitize_flag="-fsanitize=hwaddress"
     # FIXME: Support globals with DSO https://github.com/llvm/llvm-project/issues/57206
-    cmake_stage2_common_options+= " -DLLVM_ENABLE_PLUGINS=OFF"
+    cmake_stage2_common_options+=" -DLLVM_ENABLE_PLUGINS=OFF"
   elif [ "$sanitizer_name" == "ubsan" ]; then
     export UBSAN_OPTIONS="external_symbolizer_path=${llvm_symbolizer_path}:print_stacktrace=1"
     llvm_use_sanitizer="Undefined"
