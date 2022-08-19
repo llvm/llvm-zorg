@@ -68,7 +68,7 @@ def main(argv):
 
     with step('build libc'):
         if fullbuild:
-            run_command(['ninja', 'c'])
+            run_command(['ninja', 'libc'])
         else:
             run_command(['ninja', 'llvmlibc'])
 
