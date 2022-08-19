@@ -7,9 +7,6 @@ set -u
 HERE="$(cd $(dirname $0) && pwd)"
 . ${HERE}/buildbot_functions.sh
 
-# Temporarily disable to release more build time to HWASAN.
-[[ "$(arch)" != "aarch64" ]] || exit 0
-
 ROOT=`pwd`
 PLATFORM=`uname`
 export PATH="/usr/local/bin:$PATH"
