@@ -7,11 +7,6 @@ set -u
 HERE="$(cd $(dirname $0) && pwd)"
 . ${HERE}/buildbot_functions.sh
 
-# FIXME: One test timeouts, the rest is good. Enable after moving to buildbot.
-# Slow: 811.35s: llvm-libc++-shared.cfg.in :: libcxx/modules_include.sh.cpp
-# Timeouts: llvm-libc++-shared.cfg.in :: std/input.output/stream.buffers/streambuf/streambuf.protected/streambuf.put.area/pbump2gig.pass.cpp
-[[ "$(arch)" != "aarch64" ]] || exit 0
-
 ROOT=`pwd`
 PLATFORM=`uname`
 export PATH="/usr/local/bin:$PATH"
