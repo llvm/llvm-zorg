@@ -1,5 +1,20 @@
 #!/usr/bin/env bash
 
+function include_config() {
+  local P=.
+  while true ; do
+    local F=${P}/sanitizer_buildbot_config
+    if [[ -f ${F} ]] ; then
+      . ${F}
+      break
+    fi
+    [[ "${P}" -ef '/' ]] && break
+    P="${P}/.."
+  done
+}
+
+include_config
+
 echo @@@BUILD_STEP Info@@@
 (
   set +e
