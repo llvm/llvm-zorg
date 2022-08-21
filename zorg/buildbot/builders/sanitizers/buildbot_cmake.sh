@@ -115,11 +115,11 @@ case "$ARCH" in
   ;;
 esac
 
-PROJECTS="clang;compiler-rt;libcxx;libcxxabi"
+PROJECTS="clang;compiler-rt"
 if [[ "$CHECK_LLD" != "0" ]]; then
-  PROJECTS="${PROJECTS};lld"
+  PROJECTS+=";lld"
 fi
-CMAKE_COMMON_OPTIONS+=" -DLLVM_ENABLE_PROJECTS='${PROJECTS}'"
+CMAKE_COMMON_OPTIONS+=" -DLLVM_ENABLE_PROJECTS='${PROJECTS}' -DLLVM_ENABLE_RUNTIMES=libcxx;libcxxabi"
 
 if [[ "$CHECK_CFI" == "1" ]]; then
   # We need this after https://reviews.llvm.org/D62050
