@@ -82,22 +82,10 @@ function buildbot_update {
         git config --local advice.detachedHead false
       )
       cd llvm-project
-      git fetch --depth $DEPTH origin main
+      git fetch origin
       git clean -fd
       local REV=${BUILDBOT_REVISION}
-      if [[  "$REV" != "origin/main" ]] ; then
-        # "git fetch --depth 1 origin $REV" does not work with 2.11 on bots
-        while true ; do
-          git checkout -f $REV && break
-          git rev-list --pretty --max-count=1 origin/main
-          git rev-list --pretty --max-parents=0 origin/main
-          echo "DEPTH=$DEPTH is too small"
-          [[ "$DEPTH" -le "1000000" ]] || exit 1
-          DEPTH=$(( $DEPTH * 10 ))
-          git fetch --depth $DEPTH origin
-        done
-      fi
-      git checkout -f $REV
+      git checkout -f ${BUILDBOT_REVISION}
       git status
       git rev-list --pretty --max-count=1 HEAD
     ) || { build_exception ; exit 1 ; }
