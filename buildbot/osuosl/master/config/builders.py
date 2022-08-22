@@ -495,6 +495,9 @@ all = [
                     clean=False,
                     checkout_flang=True,
                     runTestSuite=True,
+                    env={
+                        'NO_STOP_MESSAGE':'1', # For Fortran test-suite
+                    },
                     testsuite_flags=[
                         '--cppflags', '-mcpu=a64fx -mllvm -scalable-vectorization=preferred -mllvm -treat-scalable-fixed-error-as-warning=false -O3',
                         '--threads=48', '--build-threads=48'],
@@ -515,6 +518,9 @@ all = [
                     useTwoStage=True,
                     testStage1=False,
                     runTestSuite=True,
+                    env={
+                        'NO_STOP_MESSAGE':'1', # For Fortran test-suite
+                    },
                     testsuite_flags=[
                         '--cppflags', '-mcpu=a64fx -mllvm -scalable-vectorization=preferred -mllvm -treat-scalable-fixed-error-as-warning=false -O3',
                         '--threads=48', '--build-threads=48'],
@@ -533,6 +539,9 @@ all = [
                     clean=False,
                     checkout_flang=True,
                     runTestSuite=True,
+                    env={
+                        'NO_STOP_MESSAGE':'1', # For Fortran test-suite
+                    },
                     testsuite_flags=[
                         '--cppflags', '-mcpu=a64fx -msve-vector-bits=512 -mllvm -treat-scalable-fixed-error-as-warning=false -O3',
                         '--threads=48', '--build-threads=48'],
@@ -553,6 +562,9 @@ all = [
                     useTwoStage=True,
                     testStage1=False,
                     runTestSuite=True,
+                    env={
+                        'NO_STOP_MESSAGE':'1', # For Fortran test-suite
+                    },
                     testsuite_flags=[
                         '--cppflags', '-mcpu=a64fx -msve-vector-bits=512 -mllvm -treat-scalable-fixed-error-as-warning=false -O3',
                         '--threads=48', '--build-threads=48'],
