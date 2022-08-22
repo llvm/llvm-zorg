@@ -207,7 +207,7 @@ function build_stage2 {
       -DLLVM_USE_SANITIZER=${llvm_use_sanitizer} \
       -DCMAKE_C_FLAGS="${fsanitize_flag} ${cmake_libcxx_cflags}" \
       -DCMAKE_CXX_FLAGS="${fsanitize_flag} ${cmake_libcxx_cflags}" \
-      $LLVM && \
+      $LLVM/../runtimes && \
     ninja cxx cxxabi) || build_failure
 
   local libcxx_runtime_path=$(dirname $(find ${ROOT}/${libcxx_build_dir} -name libc++.so))
