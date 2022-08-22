@@ -166,6 +166,8 @@ function build_stage2 {
 
   common_stage2_variables
 
+  local fno_sanitize_flag=
+
   if [ "$sanitizer_name" == "msan" ]; then
     export MSAN_SYMBOLIZER_PATH="${llvm_symbolizer_path}"
     llvm_use_sanitizer="Memory"
@@ -193,6 +195,9 @@ function build_stage2 {
     export UBSAN_OPTIONS="external_symbolizer_path=${llvm_symbolizer_path}:print_stacktrace=1"
     llvm_use_sanitizer="Undefined"
     fsanitize_flag="-fsanitize=undefined"
+    # FIXME: After switching to LLVM_ENABLE_RUNTIMES, vptr has infitine
+    # recursion.
+    fno_sanitize_flag+=" -fno-sanitize=vptr"
   else
     echo "Unknown sanitizer!"
     exit 1
@@ -205,13 +210,13 @@ function build_stage2 {
       -DLLVM_ENABLE_RUNTIMES='libcxx;libcxxabi' \
       -DCMAKE_BUILD_TYPE=${build_type} \
       -DLLVM_USE_SANITIZER=${llvm_use_sanitizer} \
-      -DCMAKE_C_FLAGS="${fsanitize_flag} ${cmake_libcxx_cflags}" \
-      -DCMAKE_CXX_FLAGS="${fsanitize_flag} ${cmake_libcxx_cflags}" \
+      -DCMAKE_C_FLAGS="${fsanitize_flag} ${cmake_libcxx_cflags} ${fno_sanitize_flag}" \
+      -DCMAKE_CXX_FLAGS="${fsanitize_flag} ${cmake_libcxx_cflags} ${fno_sanitize_flag}" \
       $LLVM/../runtimes && \
     ninja cxx cxxabi) || build_failure
 
   local libcxx_runtime_path=$(dirname $(find ${ROOT}/${libcxx_build_dir} -name libc++.so))
-  local sanitizer_ldflags="-lc++abi -Wl,--rpath=${libcxx_runtime_path} -L${libcxx_runtime_path}"
+  local sanitizer_ldflags="-Wl,--rpath=${libcxx_runtime_path} -L${libcxx_runtime_path}"
   local sanitizer_cflags="-nostdinc++ -isystem ${ROOT}/${libcxx_build_dir}/include -isystem ${ROOT}/${libcxx_build_dir}/include/c++/v1 $fsanitize_flag"
 
   echo @@@BUILD_STEP stage2/$sanitizer_name build@@@
