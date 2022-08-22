@@ -68,7 +68,8 @@ pipeline {
 
                     python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-sanitized build \
                       --assertions \
-                      --projects="clang;libcxx;libcxxabi;lld;lldb"  \
+                      --projects="clang;lld;lldb"  \
+                      --runtimes="libcxx;libcxxabi" \
                       --cmake-type=Release
                     '''
                 }

@@ -66,7 +66,8 @@ pipeline {
                     python llvm-zorg/zorg/jenkins/monorepo_build.py cmake build \
                       --assertions \
                       --noupload \
-                      --projects="clang;libcxx;libcxxabi" \
+                      --projects="clang" \
+                      --runtimes="libcxx;libcxxabi" \
                       --cmake-flag="-DLLVM_INSTALL_UTILS=On" \
                       --cmake-flag="-DLLVM_INSTALL_TOOLCHAIN_ONLY=Off" \
                       --cmake-flag="-DLLVM_TARGETS_TO_BUILD=X86"
