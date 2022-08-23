@@ -92,16 +92,19 @@ pipeline {
         stage('Test (Debug Info)') {
             steps {
                 timeout(30) {
-                    sh '''
-                    set -u
-                    export PATH=$PATH:/usr/bin:/usr/local/bin
+                    // We want to continue with the rest of the pipeline even
+                    // if the "Debug Info" tests fail, so catch the error and
+                    // label this stage as FAILURE
+                    catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                        sh '''
+                        set -u
+                        export PATH=$PATH:/usr/bin:/usr/local/bin
 
-                    export MAX_PARALLEL_TESTS=$(sysctl hw.physicalcpu |awk '{print $2}')
+                        export MAX_PARALLEL_TESTS=$(sysctl hw.physicalcpu |awk '{print $2}')
 
-                    set +e
-                    python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-debuginfo test
-                    set -e
-                    '''
+                        python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-debuginfo test
+                        '''
+                    }
                 }
             }
         }
