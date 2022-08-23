@@ -93,9 +93,9 @@ pipeline {
             steps {
                 timeout(30) {
                     // We want to continue with the rest of the pipeline even
-                    // if the "Debug Info" tests fail, so catch the error and
-                    // label this stage as FAILURE
-                    catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                    // if the "Debug Info" tests fail, so catch the error but
+                    // label this stage and the whole pipeline as FAILURE.
+                    catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
                         sh '''
                         set -u
                         export PATH=$PATH:/usr/bin:/usr/local/bin
