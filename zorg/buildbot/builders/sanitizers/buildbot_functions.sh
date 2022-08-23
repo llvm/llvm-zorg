@@ -179,7 +179,7 @@ function build_stage2 {
   elif [ "$sanitizer_name" == "asan" ]; then
     export ASAN_SYMBOLIZER_PATH="${llvm_symbolizer_path}"
     export ASAN_OPTIONS="check_initialization_order=true:detect_stack_use_after_return=1"
-    if [[ "$(arch)" == "aarch64"]] ; then
+    if [[ "$(arch)" == "aarch64" ]] ; then
       # FIXME: https://github.com/google/sanitizers/issues/703
       ASAN_OPTIONS+=":detect_leaks=0"
     else
