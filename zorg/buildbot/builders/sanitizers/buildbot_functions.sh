@@ -178,7 +178,13 @@ function build_stage2 {
     fsanitize_flag="-fsanitize=memory -fsanitize-memory-track-origins -fsanitize-memory-use-after-dtor -fsanitize-memory-param-retval"
   elif [ "$sanitizer_name" == "asan" ]; then
     export ASAN_SYMBOLIZER_PATH="${llvm_symbolizer_path}"
-    export ASAN_OPTIONS="check_initialization_order=true:detect_stack_use_after_return=1:detect_leaks=1"
+    export ASAN_OPTIONS="check_initialization_order=true:detect_stack_use_after_return=1"
+    if [[ "$(arch)" == "aarch64"]] ; then
+      # FIXME: https://github.com/google/sanitizers/issues/703
+      ASAN_OPTIONS+=":detect_leaks=0"
+    else
+      ASAN_OPTIONS+=":detect_leaks=1"
+    fi
     llvm_use_sanitizer="Address"
     fsanitize_flag="-fsanitize=address"
     # FIXME: False ODR violations in libcxx tests.
