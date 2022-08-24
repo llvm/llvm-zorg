@@ -175,6 +175,7 @@ pipeline {
                     set -e
                     '''
                 }
+                junit 'test/results.xml'
             }
         }
         stage('Build Clang 5.0.2') {
