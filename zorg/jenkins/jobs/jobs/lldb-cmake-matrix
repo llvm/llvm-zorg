@@ -19,16 +19,21 @@ pipeline {
                         checkout([$class: 'GitSCM', branches: [
                             [name: params.GIT_SHA]
                         ], userRemoteConfigs: [
-                            [url: 'http://labmaster3.local/git/llvm-project.git']
+                            [url: 'https://github.com/llvm/llvm-project.git']
                         ], extensions: [
-                            [$class: 'CloneOption', noTags: true, timeout: 30]
+                            [$class: 'CloneOption',
+                            reference: '/Users/Shared/llvm-project.git',
+                            noTags: true, timeout: 30]
                         ]])
                     }
                     dir('llvm-zorg') {
                         checkout([$class: 'GitSCM', branches: [
                             [name: '*/main']
                         ], userRemoteConfigs: [
-                            [url: 'http://labmaster3.local/git/llvm-zorg.git']
+                            [url: 'https://github.com/llvm/llvm-zorg.git']
+                        ], extensions: [
+                            [$class: 'CloneOption',
+                            reference: '/Users/Shared/llvm-zorg.git']
                         ]])
                     }
                 }
@@ -185,9 +190,10 @@ pipeline {
                         checkout([$class: 'GitSCM', branches: [
                             [name: "llvmorg-5.0.2"]
                         ], userRemoteConfigs: [
-                            [url: 'http://labmaster3.local/git/llvm-project.git']
+                            [url: 'https://github.com/llvm/llvm-project.git']
                         ], extensions: [
-                            [$class: 'CloneOption', timeout: 30]
+                            [$class: 'CloneOption', timeout: 30,
+                            reference: '/Users/Shared/llvm-project.git']
                         ]])
                     }
                 }
@@ -246,9 +252,10 @@ pipeline {
                         checkout([$class: 'GitSCM', branches: [
                             [name: "llvmorg-7.0.1"]
                         ], userRemoteConfigs: [
-                            [url: 'http://labmaster3.local/git/llvm-project.git']
+                            [url: 'https://github.com/llvm/llvm-project.git']
                         ], extensions: [
-                            [$class: 'CloneOption', timeout: 30]
+                            [$class: 'CloneOption', timeout: 30,
+                            reference: '/Users/Shared/llvm-project.git']
                         ]])
                     }
                 }
@@ -307,9 +314,10 @@ pipeline {
                         checkout([$class: 'GitSCM', branches: [
                             [name: "llvmorg-9.0.0"]
                         ], userRemoteConfigs: [
-                            [url: 'http://labmaster3.local/git/llvm-project.git']
+                            [url: 'https://github.com/llvm/llvm-project.git']
                         ], extensions: [
-                            [$class: 'CloneOption', timeout: 30]
+                            [$class: 'CloneOption', timeout: 30,
+                            reference: '/Users/Shared/llvm-project.git']
                         ]])
                     }
                 }
@@ -368,9 +376,10 @@ pipeline {
                         checkout([$class: 'GitSCM', branches: [
                             [name: "llvmorg-11.0.1"]
                         ], userRemoteConfigs: [
-                            [url: 'http://labmaster3.local/git/llvm-project.git']
+                            [url: 'https://github.com/llvm/llvm-project.git']
                         ], extensions: [
-                            [$class: 'CloneOption', timeout: 30]
+                            [$class: 'CloneOption', timeout: 30,
+                            reference: '/Users/Shared/llvm-project.git']
                         ]])
                     }
                 }
@@ -429,9 +438,10 @@ pipeline {
                         checkout([$class: 'GitSCM', branches: [
                             [name: "llvmorg-13.0.0"]
                         ], userRemoteConfigs: [
-                            [url: 'http://labmaster3.local/git/llvm-project.git']
+                            [url: 'https://github.com/llvm/llvm-project.git']
                         ], extensions: [
-                            [$class: 'CloneOption', timeout: 30]
+                            [$class: 'CloneOption', timeout: 30,
+                            reference: '/Users/Shared/llvm-project.git']
                         ]])
                     }
                 }

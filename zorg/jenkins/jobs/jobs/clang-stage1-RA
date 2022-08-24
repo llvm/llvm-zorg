@@ -9,10 +9,24 @@ pipeline {
         stage('Checkout') {
             steps {
                 dir('llvm-project') {
-                    checkout([$class: 'GitSCM', branches: [[name: params.GIT_REVISION]], userRemoteConfigs: [[url: 'https://github.com/llvm/llvm-project.git']]])
+                    checkout([$class: 'GitSCM', branches: [
+                        [name: params.GIT_REVISION]
+                    ], extensions: [
+                        [$class: 'CloneOption',
+                        reference: '/Users/Shared/llvm-project.git']
+                    ], userRemoteConfigs: [
+                        [url: 'https://github.com/llvm/llvm-project.git']
+                    ]])
                 }
                 dir('llvm-zorg') {
-                    checkout([$class: 'GitSCM', branches: [[name: '*/main']], userRemoteConfigs: [[url: 'https://github.com/llvm/llvm-zorg.git']]])
+                    checkout([$class: 'GitSCM', branches: [
+                        [name: '*/main']
+                    ], extensions: [
+                        [$class: 'CloneOption',
+                        reference: '/Users/Shared/llvm-zorg.git']
+                    ], userRemoteConfigs: [
+                        [url: 'https://github.com/llvm/llvm-zorg.git']
+                    ]])
                 }
             }
         }
