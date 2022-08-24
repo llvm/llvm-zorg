@@ -87,6 +87,7 @@ pipeline {
                     python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix configure \
                       $MATRIX_COMMON_BUILD_PARAMETERS \
                       --assertions \
+                      --lldb-test-compiler="$WORKSPACE/lldb-build/bin/clang" \
                       --projects="clang;lldb"  \
                       --runtimes="libcxx;libcxxabi"  \
                       --cmake-type=Release \
@@ -118,6 +119,7 @@ pipeline {
                     export PATH=$PATH:/usr/bin:/usr/local/bin
                     python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix configure \
                       $MATRIX_COMMON_BUILD_PARAMETERS \
+                      --lldb-test-compiler="$WORKSPACE/lldb-build/bin/clang" \
                       --assertions \
                       --projects="clang;lldb"  \
                       --runtimes="libcxx;libcxxabi"  \
@@ -150,6 +152,7 @@ pipeline {
                     export PATH=$PATH:/usr/bin:/usr/local/bin
                     python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix configure \
                       $MATRIX_COMMON_BUILD_PARAMETERS \
+                      --lldb-test-compiler="$WORKSPACE/lldb-build/bin/clang" \
                       --assertions \
                       --projects="clang;lldb"  \
                       --runtimes="libcxx;libcxxabi"  \
