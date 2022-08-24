@@ -240,8 +240,10 @@ def cmake_builder(target):
                        '-DCMAKE_MAKE_PROGRAM=' + NINJA,
                        "-DCMAKE_INSTALL_PREFIX=" + conf.installdir(),
                        "-DLLVM_ENABLE_PROJECTS=" + conf.llvm_enable_projects,
-                       "-DLLVM_ENABLE_RUNTIMES=" + conf.llvm_enable_runtimes,
                        conf.llvmsrcdir()]
+
+    if conf.llvm_enable_runtimes:
+        cmake_cmd += ["-DLLVM_ENABLE_RUNTIMES=" + conf.llvm_enable_runtimes]
 
     compiler_flags = conf.compiler_flags
     max_parallel_links = conf.max_parallel_links
@@ -408,7 +410,6 @@ def clang_builder(target):
                                        "TRUE" if conf.assertions else "FALSE"),
                                    '-DCMAKE_BUILD_TYPE=RelWithDebInfo',
                                    '-DLLVM_ENABLE_PROJECTS={}'.format(conf.llvm_enable_projects),
-                                   '-DLLVM_ENABLE_RUNTIMES={}'.format(conf.llvm_enable_runtimes),
                                    '-DCMAKE_MAKE_PROGRAM=' + NINJA,
                                    '-DLLVM_VERSION_PATCH=99',
                                    '-DLLVM_VERSION_SUFFIX=""',
@@ -427,6 +428,9 @@ def clang_builder(target):
                                    '-DLLVM_INCLUDE_UTILS=On',
                                    '-DCMAKE_MACOSX_RPATH=On',
                                    ]
+
+            if conf.llvm_enable_runtimes:
+                cmake_command.append('-DLLVM_ENABLE_RUNTIMES={}'.format(conf.llvm_enable_runtimes))
 
             if conf.sccache:
                 cmake_command.append('-DCMAKE_C_COMPILER_LAUNCHER=' + conf.sccache_path)
@@ -551,9 +555,11 @@ def lldb_cmake_builder(target, variant=None):
                  '-DLLVM_ENABLE_ASSERTIONS:BOOL={}'.format("TRUE" if conf.assertions else "FALSE"),
                  '-DLLVM_ENABLE_MODULES=On',
                  '-DLLVM_ENABLE_PROJECTS={}'.format(conf.llvm_enable_projects),
-                 '-DLLVM_ENABLE_RUNTIMES={}'.format(conf.llvm_enable_runtimes),
                  '-DLLVM_LIT_ARGS={}'.format(' '.join(lit_args)),
                  '-DLLVM_VERSION_PATCH=99']
+
+    if conf.llvm_enable_runtimes:
+        cmake_cmd.append('-DLLVM_ENABLE_RUNTIMES={}'.format(conf.llvm_enable_runtimes))
 
     if variant == 'sanitized':
         cmake_cmd.append('-DLLVM_TARGETS_TO_BUILD=X86')
