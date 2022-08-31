@@ -5,7 +5,7 @@ from zorg.buildbot.process.factory import LLVMBuildFactory
 
 def getSanitizerBuildFactory(
     clean=False,
-    depends_on_projects=None,
+    extra_depends_on_projects=[],
     extra_configure_args=None,
     env=None,
     timeout=1200):
@@ -21,15 +21,15 @@ def getSanitizerBuildFactory(
     if env is not None:
         merged_env.update(env)
 
-    if depends_on_projects is None:
-        depends_on_projects = [
-            "llvm",
-            "clang",
-            "compiler-rt",
-            "libcxx",
-            "libcxxabi",
-            "libunwind",
-            "lld"]
+    depends_on_projects = [
+        "llvm",
+        "clang",
+        "compiler-rt",
+        "libcxx",
+        "libcxxabi",
+        "libunwind",
+        "lld",
+    ] + extra_depends_on_projects
 
     if extra_configure_args:
         extra_configure_args = ['--'] + list(extra_configure_args)
