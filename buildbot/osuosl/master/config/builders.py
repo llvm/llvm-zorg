@@ -1555,7 +1555,7 @@ all += [
         "sanitizer-buildbot2",
     ],
     'builddir': "sanitizer-x86_64-linux",
-    'factory' : SanitizerBuilder.getSanitizerBuildFactory()},
+    'factory' : SanitizerBuilder.getSanitizerBuildFactory(z)},
 
     {'name' : "sanitizer-x86_64-linux-fast",
     'tags'  : ["sanitizer"],
@@ -1564,7 +1564,9 @@ all += [
         "sanitizer-buildbot4",
     ],
     'builddir': "sanitizer-x86_64-linux-fast",
-    'factory' : SanitizerBuilder.getSanitizerBuildFactory()},
+    'factory' : SanitizerBuilder.getSanitizerBuildFactory(
+        extra_depends_on_projects=["mlir"]
+    )},
 
     {'name' : "sanitizer-x86_64-linux-bootstrap-asan",
     'tags'  : ["sanitizer"],
@@ -1573,7 +1575,9 @@ all += [
         "sanitizer-buildbot2",
     ],
     'builddir': "sanitizer-x86_64-linux-bootstrap-asan",
-    'factory' : SanitizerBuilder.getSanitizerBuildFactory()},
+    'factory' : SanitizerBuilder.getSanitizerBuildFactory(
+        extra_depends_on_projects=["mlir"]
+    )},
 
     {'name' : "sanitizer-x86_64-linux-bootstrap-msan",
     'tags'  : ["sanitizer"],
@@ -1582,7 +1586,9 @@ all += [
         "sanitizer-buildbot6",
     ],
     'builddir': "sanitizer-x86_64-linux-bootstrap-msan",
-    'factory' : SanitizerBuilder.getSanitizerBuildFactory()},
+    'factory' : SanitizerBuilder.getSanitizerBuildFactory(
+        extra_depends_on_projects=["mlir"]
+    )},
 
     {'name' : "sanitizer-x86_64-linux-bootstrap-ubsan",
     'tags'  : ["sanitizer"],
@@ -1591,7 +1597,9 @@ all += [
         "sanitizer-buildbot4",
     ],
     'builddir': "sanitizer-x86_64-linux-bootstrap-ubsan",
-    'factory' : SanitizerBuilder.getSanitizerBuildFactory()},
+    'factory' : SanitizerBuilder.getSanitizerBuildFactory(
+        extra_depends_on_projects=["mlir"]
+    )},
 
     {'name' : "sanitizer-x86_64-linux-autoconf",
     'tags'  : ["sanitizer"],
@@ -1634,7 +1642,9 @@ all += [
         "sanitizer-buildbot7",
     ],
     'builddir': "sanitizer-aarch64-linux-bootstrap-asan",
-    'factory' : SanitizerBuilder.getSanitizerBuildFactory()},
+    'factory' : SanitizerBuilder.getSanitizerBuildFactory(
+        extra_depends_on_projects=["mlir"]
+    )},
 
     {'name' : "sanitizer-aarch64-linux-bootstrap-hwasan",
     'tags'  : ["sanitizer"],
@@ -1643,7 +1653,9 @@ all += [
         "sanitizer-buildbot8",
     ],
     'builddir': "sanitizer-aarch64-linux-bootstrap-hwasan",
-    'factory' : SanitizerBuilder.getSanitizerBuildFactory()},
+    'factory' : SanitizerBuilder.getSanitizerBuildFactory(
+        extra_depends_on_projects=["mlir"]
+    )},
 
     {'name' : "sanitizer-aarch64-linux-bootstrap-msan",
     'tags'  : ["sanitizer"],
@@ -1651,7 +1663,9 @@ all += [
         "sanitizer-buildbot8",
     ],
     'builddir': "sanitizer-aarch64-linux-bootstrap-msan",
-    'factory' : SanitizerBuilder.getSanitizerBuildFactory()},
+    'factory' : SanitizerBuilder.getSanitizerBuildFactory(
+        extra_depends_on_projects=["mlir"]
+    )},
 
     {'name' : "sanitizer-aarch64-linux-bootstrap-ubsan",
     'tags'  : ["sanitizer"],
@@ -1659,7 +1673,9 @@ all += [
         "sanitizer-buildbot8",
     ],
     'builddir': "sanitizer-aarch64-linux-bootstrap-ubsan",
-    'factory' : SanitizerBuilder.getSanitizerBuildFactory()},
+    'factory' : SanitizerBuilder.getSanitizerBuildFactory(
+        extra_depends_on_projects=["mlir"]
+    )},
 
     {'name' : "sanitizer-aarch64-linux-fuzzer",
     'tags'  : ["sanitizer"],
