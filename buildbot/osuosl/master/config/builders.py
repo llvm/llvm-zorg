@@ -1555,7 +1555,7 @@ all += [
         "sanitizer-buildbot2",
     ],
     'builddir': "sanitizer-x86_64-linux",
-    'factory' : SanitizerBuilder.getSanitizerBuildFactory(z)},
+    'factory' : SanitizerBuilder.getSanitizerBuildFactory()},
 
     {'name' : "sanitizer-x86_64-linux-fast",
     'tags'  : ["sanitizer"],
