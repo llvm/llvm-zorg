@@ -36,7 +36,7 @@ pipeline {
         }
         stage('Fetch') {
             steps {
-                timeout(10) {
+                timeout(60) {
                     sh '''
                     python llvm-zorg/zorg/jenkins/monorepo_build.py fetch
                     '''
