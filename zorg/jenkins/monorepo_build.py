@@ -44,6 +44,7 @@ def next_section(name):
 
 def header(name):
     print("@@@", name, "@@@")
+    print("Starting at: " + time.strftime("%FT%T"))
 
 
 def footer():
