@@ -11,9 +11,9 @@ import argparse
 import shutil
 import math
 import re
+import requests
 import xml.etree.ElementTree as ET
 from contextlib import contextmanager
-from six.moves import urllib
 
 SERVER = "labmaster2.lab.llvm.org"
 
@@ -771,20 +771,21 @@ def http_download(url, dest):
 
     Print error and exit if download fails.
     """
+    chunk_size = 100 * 1024 * 1024
     try:
         print("GETting", url, "to", dest, "...")
-        f = urllib.request.urlopen(url)
+        session = requests.Session()
+        r = session.get(url)
+        r.raise_for_status()
         # Open our local file for writing
         with open(dest, "wb") as local_file:
-            local_file.write(f.read())
+            for chunk in r.iter_content(chunk_size=chunk_size):
+                local_file.write(chunk)
 
-    except urllib.error.HTTPError as e:
-        print("HTTP Error:", e.code, url)
+    except requests.exceptions.HTTPError as e:
+        print("HTTP Error:", e.response.status_code, url)
         sys.exit(1)
 
-    except urllib.error.URLError as e:
-        print("URL Error:", e.reason, url)
-        sys.exit(1)
     print("done.")
 
 
