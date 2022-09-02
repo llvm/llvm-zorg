@@ -413,7 +413,8 @@ all = [
                         '--threads=4', '--build-threads=4'],
                     extra_cmake_args=[
                         "-DCOMPILER_RT_TEST_COMPILER_CFLAGS='-mcpu=cortex-a15 -mfpu=vfpv3 -marm'",
-                        "-DLLVM_PARALLEL_LINK_JOBS=2"])},
+                        "-DLLVM_PARALLEL_LINK_JOBS=2",
+                        "-DCOMPILER_RT_BUILD_GWP_ASAN=OFF"])},
 
     ## ARMv7 Thumb2 check-all + compiler-rt + testsuite 2-stage
     {'name' : "clang-thumbv7-full-2stage",
@@ -433,7 +434,8 @@ all = [
                         "-DCMAKE_C_FLAGS='-mcpu=cortex-a15 -mthumb'",
                         "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a15 -mthumb'",
                         "-DCOMPILER_RT_TEST_COMPILER_CFLAGS='-mcpu=cortex-a15 -mthumb'",
-                        "-DLLVM_PARALLEL_LINK_JOBS=2"])},
+                        "-DLLVM_PARALLEL_LINK_JOBS=2",
+                        "-DCOMPILER_RT_BUILD_GWP_ASAN=OFF"])},
 
     ## AArch32 Self-hosting Clang+LLVM check-all + LLD + test-suite
     # Sanitizers build disabled due to PR38690
