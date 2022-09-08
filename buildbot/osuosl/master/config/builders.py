@@ -1567,7 +1567,7 @@ all += [
     ],
     'builddir': "sanitizer-x86_64-linux-fast",
     'factory' : SanitizerBuilder.getSanitizerBuildFactory(
-        extra_depends_on_projects=["mlir"]
+        extra_depends_on_projects=["mlir", "clang-tools-extra"]
     )},
 
     {'name' : "sanitizer-x86_64-linux-bootstrap-asan",
@@ -1578,7 +1578,7 @@ all += [
     ],
     'builddir': "sanitizer-x86_64-linux-bootstrap-asan",
     'factory' : SanitizerBuilder.getSanitizerBuildFactory(
-        extra_depends_on_projects=["mlir"]
+        extra_depends_on_projects=["mlir", "clang-tools-extra"]
     )},
 
     {'name' : "sanitizer-x86_64-linux-bootstrap-msan",
@@ -1589,7 +1589,7 @@ all += [
     ],
     'builddir': "sanitizer-x86_64-linux-bootstrap-msan",
     'factory' : SanitizerBuilder.getSanitizerBuildFactory(
-        extra_depends_on_projects=["mlir"]
+        extra_depends_on_projects=["mlir", "clang-tools-extra"]
     )},
 
     {'name' : "sanitizer-x86_64-linux-bootstrap-ubsan",
@@ -1600,7 +1600,7 @@ all += [
     ],
     'builddir': "sanitizer-x86_64-linux-bootstrap-ubsan",
     'factory' : SanitizerBuilder.getSanitizerBuildFactory(
-        extra_depends_on_projects=["mlir"]
+        extra_depends_on_projects=["mlir", "clang-tools-extra"]
     )},
 
     {'name' : "sanitizer-x86_64-linux-autoconf",
@@ -1645,7 +1645,7 @@ all += [
     ],
     'builddir': "sanitizer-aarch64-linux-bootstrap-asan",
     'factory' : SanitizerBuilder.getSanitizerBuildFactory(
-        extra_depends_on_projects=["mlir"]
+        extra_depends_on_projects=["mlir", "clang-tools-extra"]
     )},
 
     {'name' : "sanitizer-aarch64-linux-bootstrap-hwasan",
@@ -1656,7 +1656,7 @@ all += [
     ],
     'builddir': "sanitizer-aarch64-linux-bootstrap-hwasan",
     'factory' : SanitizerBuilder.getSanitizerBuildFactory(
-        extra_depends_on_projects=["mlir"]
+        extra_depends_on_projects=["mlir", "clang-tools-extra"]
     )},
 
     {'name' : "sanitizer-aarch64-linux-bootstrap-msan",
@@ -1666,7 +1666,7 @@ all += [
     ],
     'builddir': "sanitizer-aarch64-linux-bootstrap-msan",
     'factory' : SanitizerBuilder.getSanitizerBuildFactory(
-        extra_depends_on_projects=["mlir"]
+        extra_depends_on_projects=["mlir", "clang-tools-extra"]
     )},
 
     {'name' : "sanitizer-aarch64-linux-bootstrap-ubsan",
@@ -1676,7 +1676,7 @@ all += [
     ],
     'builddir': "sanitizer-aarch64-linux-bootstrap-ubsan",
     'factory' : SanitizerBuilder.getSanitizerBuildFactory(
-        extra_depends_on_projects=["mlir"]
+        extra_depends_on_projects=["mlir", "clang-tools-extra"]
     )},
 
     {'name' : "sanitizer-aarch64-linux-fuzzer",
