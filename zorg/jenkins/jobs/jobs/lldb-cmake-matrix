@@ -217,14 +217,17 @@ pipeline {
             steps {
                 timeout(60) {
                     sh '''
+                    build_dir=$WORKSPACE/clang_502_build
                     export PATH=$PATH:/usr/bin:/usr/local/bin
                     python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix configure \
                       $MATRIX_COMMON_BUILD_PARAMETERS \
                       --assertions \
-                      --lldb-test-compiler="$WORKSPACE/clang_502_build/bin/clang" \
+                      --lldb-test-compiler="$build_dir/bin/clang" \
                       --projects="clang;lldb"  \
                       --runtimes="libcxx;libcxxabi"  \
                       --cmake-type=Release \
+                      --dotest-flag="--libcxx-include-dir=$build_dir/include/c++/v1/" \
+                      --dotest-flag="--libcxx-library-dir=$build_dir/lib/" \
                       --dotest-flag="--skip-category" \
                       --dotest-flag="gmodules" \
                       --dotest-flag="--skip-category" \
@@ -279,14 +282,17 @@ pipeline {
             steps {
                 timeout(60) {
                     sh '''
+                    build_dir=$WORKSPACE/clang_701_build
                     export PATH=$PATH:/usr/bin:/usr/local/bin
                     python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix configure \
                       $MATRIX_COMMON_BUILD_PARAMETERS \
                       --assertions \
-                      --lldb-test-compiler="$WORKSPACE/clang_701_build/bin/clang" \
+                      --lldb-test-compiler="$build_dir/bin/clang" \
                       --projects="clang;lldb"  \
                       --runtimes="libcxx;libcxxabi"  \
                       --cmake-type=Release \
+                      --dotest-flag="--libcxx-include-dir=$build_dir/include/c++/v1/" \
+                      --dotest-flag="--libcxx-library-dir=$build_dir/lib/" \
                       --dotest-flag="--skip-category" \
                       --dotest-flag="gmodules" \
                       --dotest-flag="--skip-category" \
@@ -341,14 +347,17 @@ pipeline {
             steps {
                 timeout(60) {
                     sh '''
+                    build_dir=$WORKSPACE/clang_900_build
                     export PATH=$PATH:/usr/bin:/usr/local/bin
                     python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix configure \
                       $MATRIX_COMMON_BUILD_PARAMETERS \
                       --assertions \
-                      --lldb-test-compiler="$WORKSPACE/clang_900_build/bin/clang" \
+                      --lldb-test-compiler="$build_dir/bin/clang" \
                       --projects="clang;lldb"  \
                       --runtimes="libcxx;libcxxabi"  \
                       --cmake-type=Release \
+                      --dotest-flag="--libcxx-include-dir=$build_dir/include/c++/v1/" \
+                      --dotest-flag="--libcxx-library-dir=$build_dir/lib/" \
                       --dotest-flag="--skip-category" \
                       --dotest-flag="gmodules" \
                       --dotest-flag="--skip-category" \
@@ -403,14 +412,17 @@ pipeline {
             steps {
                 timeout(60) {
                     sh '''
+                    build_dir=$WORKSPACE/clang_1101_build
                     export PATH=$PATH:/usr/bin:/usr/local/bin
                     python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix configure \
                       $MATRIX_COMMON_BUILD_PARAMETERS \
                       --assertions \
-                      --lldb-test-compiler="$WORKSPACE/clang_1101_build/bin/clang" \
+                      --lldb-test-compiler="$build_dir/bin/clang" \
                       --projects="clang;lldb"  \
                       --runtimes="libcxx;libcxxabi"  \
                       --cmake-type=Release \
+                      --dotest-flag="--libcxx-include-dir=$build_dir/include/c++/v1/" \
+                      --dotest-flag="--libcxx-library-dir=$build_dir/lib/" \
                       --dotest-flag="--skip-category" \
                       --dotest-flag="gmodules" \
                       --dotest-flag="--skip-category" \
@@ -465,14 +477,17 @@ pipeline {
             steps {
                 timeout(60) {
                     sh '''
+                    build_dir=$WORKSPACE/clang_1300_build
                     export PATH=$PATH:/usr/bin:/usr/local/bin
                     python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix configure \
                       $MATRIX_COMMON_BUILD_PARAMETERS \
                       --assertions \
-                      --lldb-test-compiler="$WORKSPACE/clang_1300_build/bin/clang" \
+                      --lldb-test-compiler="$build_dir/bin/clang" \
                       --projects="clang;lldb"  \
                       --runtimes="libcxx;libcxxabi"  \
                       --cmake-type=Release \
+                      --dotest-flag="--libcxx-include-dir=$build_dir/include/c++/v1/" \
+                      --dotest-flag="--libcxx-library-dir=$build_dir/lib/" \
                       --dotest-flag="--skip-category" \
                       --dotest-flag="gmodules" \
                       --dotest-flag="--skip-category" \
