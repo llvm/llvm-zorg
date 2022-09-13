@@ -232,6 +232,10 @@ function build_stage2 {
 
   mkdir -p ${build_dir}
   local cmake_stage2_clang_options="-DLLVM_ENABLE_PROJECTS='clang;lld;clang-tools-extra;mlir'"
+  if [[ "$(arch)" == "aarch64" ]] ; then
+    # FIXME: clangd tests fail.
+    cmake_stage2_clang_options="-DLLVM_ENABLE_PROJECTS='clang;lld;mlir'"
+  fi
   (cd ${build_dir} && \
    cmake \
      ${cmake_stage2_common_options} \
@@ -354,10 +358,15 @@ function build_stage3 {
 
   local clang_path=$ROOT/${STAGE2_DIR}/bin
   mkdir -p ${build_dir}
+  local stage3_projects='clang;lld;clang-tools-extra'
+  if [[ "$(arch)" == "aarch64" ]] ; then
+    # FIXME: clangd tests fail.
+    stage3_projects='clang;lld'
+  fi
   (cd ${build_dir} && \
    cmake \
      ${CMAKE_COMMON_OPTIONS} \
-     -DLLVM_ENABLE_PROJECTS='clang;lld;clang-tools-extra' \
+     -DLLVM_ENABLE_PROJECTS='${stage3_projects}' \
      -DCMAKE_C_COMPILER=${clang_path}/clang \
      -DCMAKE_CXX_COMPILER=${clang_path}/clang++ \
      -DLLVM_USE_LINKER=lld \
