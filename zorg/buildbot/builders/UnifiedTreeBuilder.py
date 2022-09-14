@@ -218,7 +218,7 @@ def addNinjaSteps(
         check_env = env or {}
 
     for check in checks:
-        f.addStep(LitTestCommand(name="test-%s%s" % (step_name, check),
+        f.addStep(LitTestCommand(name="test-%s-%s" % (step_name, check),
                                  command=['ninja', check],
                                  description=[
                                    "Test", "just", "built", "components", "for",

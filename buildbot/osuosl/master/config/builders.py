@@ -650,6 +650,8 @@ all = [
     'factory' : TestSuiteBuilder.getTestSuiteBuildFactory(
                     depends_on_projects=["llvm", "clang", "clang-tools-extra",
                                          "compiler-rt"],
+                    enable_runtimes="auto",
+                    checks=['check-all', 'check-runtimes'],
                     extra_configure_args=[
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
                         "-DCMAKE_BUILD_TYPE=Release",
@@ -662,12 +664,15 @@ all = [
     'builddir': "clang-ppc64be-multistage",
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
                     clean=False,
+                    checks=['check-all', 'check-runtimes'],
+                    checkout_compiler_rt=False,
                     checkout_lld=False,
                     useTwoStage=True,
                     stage1_config='Release',
                     stage2_config='Release',
                     extra_cmake_args=[
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
+                        "-DLLVM_ENABLE_RUNTIMES=compiler-rt",
                         "-DLLVM_CCACHE_BUILD=ON"])},
 
     {'name' : "clang-ppc64le-linux-test-suite",
@@ -677,6 +682,8 @@ all = [
     'factory' : TestSuiteBuilder.getTestSuiteBuildFactory(
                     depends_on_projects=["llvm", "clang", "clang-tools-extra",
                                          "compiler-rt"],
+                    enable_runtimes="auto",
+                    checks=['check-all', 'check-runtimes'],
                     extra_configure_args=[
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
                         "-DCMAKE_BUILD_TYPE=Release",
@@ -689,12 +696,15 @@ all = [
     'builddir': "clang-ppc64le-multistage",
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
                     clean=False,
+                    checks=['check-all', 'check-runtimes'],
+                    checkout_compiler_rt=False,
                     checkout_lld=False,
                     useTwoStage=True,
                     stage1_config='Release',
                     stage2_config='Release',
                     extra_cmake_args=[
                         '-DLLVM_ENABLE_ASSERTIONS=ON',
+                        '-DLLVM_ENABLE_RUNTIMES=compiler-rt',
                         '-DBUILD_SHARED_LIBS=ON',
                         '-DLLVM_CCACHE_BUILD=ON'])},
 
@@ -705,6 +715,7 @@ all = [
     'factory' : TestSuiteBuilder.getTestSuiteBuildFactory(
                     depends_on_projects=["llvm", "clang", "clang-tools-extra", "lld", "compiler-rt"],
                     enable_runtimes="auto",
+                    checks=['check-all', 'check-runtimes'],
                     extra_configure_args=[
                         "-DLLVM_ENABLE_ASSERTIONS=On", "-DCMAKE_C_COMPILER=clang",
                         "-DCMAKE_CXX_COMPILER=clang++",
