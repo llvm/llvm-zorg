@@ -26,6 +26,9 @@ if ccache -s ; then
   CMAKE_COMMON_OPTIONS+=" -DLLVM_CCACHE_BUILD=ON"
 fi
 
+# This bot uses older compiler.
+STAGE2_USE_LATE_EP=1
+
 buildbot_update
 
 # Stage 2 / Memory Sanitizer
