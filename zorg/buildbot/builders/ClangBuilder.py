@@ -166,7 +166,9 @@ def getClangCMakeBuildFactory(
             checkout_lld=True,
             checkout_libcxx=False,
             checkout_flang=False,
-            checkout_test_suite=False):
+            checkout_test_suite=False,
+
+            enable_runtimes=None):
     return _getClangCMakeBuildFactory(
                clean=clean, checks=checks, cmake=cmake, jobs=jobs, vs=vs,
                vs_target_arch=vs_target_arch, useTwoStage=useTwoStage,
@@ -180,7 +182,8 @@ def getClangCMakeBuildFactory(
                checkout_compiler_rt=checkout_compiler_rt,
                checkout_libcxx=checkout_libcxx,
                checkout_flang=checkout_flang,
-               checkout_test_suite=checkout_test_suite)
+               checkout_test_suite=checkout_test_suite,
+               enable_runtimes=enable_runtimes)
 
 def _getClangCMakeBuildFactory(
             clean=True,
@@ -217,6 +220,8 @@ def _getClangCMakeBuildFactory(
             checkout_libcxx=False,
             checkout_test_suite=False,
             checkout_flang=False,
+
+            enable_runtimes=None,
 
             # Upload artifacts to Google Cloud Storage (for the llvmbisect tool)
             stage1_upload_directory=None,
@@ -267,7 +272,8 @@ def _getClangCMakeBuildFactory(
 
     f = LLVMBuildFactory(
             depends_on_projects=depends_on_projects,
-            llvm_srcdir='llvm')
+            llvm_srcdir='llvm',
+            enable_runtimes=enable_runtimes)
 
     # Checkout the latest code for LNT
     # and the test-suite separately. Le's do this first,

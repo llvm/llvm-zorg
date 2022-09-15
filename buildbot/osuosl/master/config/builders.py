@@ -455,6 +455,7 @@ all = [
                     clean=False,
                     checkout_flang=True,
                     checkout_lld=False,
+                    enable_runtimes="auto",
                     useTwoStage=True,
                     testStage1=False,
                     runTestSuite=True,
