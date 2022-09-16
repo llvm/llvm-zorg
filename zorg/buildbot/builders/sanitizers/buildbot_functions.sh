@@ -343,8 +343,8 @@ function check_stage2 {
   ninja -C ${STAGE2_DIR} check-all || build_failure
 
   if [[ "${STAGE2_SKIP_TEST_CXX:-}" != "1" ]] ; then
-    wait
     echo @@@BUILD_STEP stage2/$sanitizer_name check-cxx@@@
+    wait
     sleep 5
     cat check_cxx.log
   fi
