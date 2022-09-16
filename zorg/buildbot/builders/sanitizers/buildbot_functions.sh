@@ -310,7 +310,12 @@ function check_stage2 {
       (
         # Very slow.
         export LIT_FILTER_OUT="modules_include.sh.cpp|rand.dist.samp.discrete/eval.pass.cpp|rand.dist.bern.negbin/eval.pass.cpp"
+        LIT_FILTER_OUT+="|std/algorithms/alg.modifying.operations/alg.transform/ranges.transform.pass.cpp"
+        LIT_FILTER_OUT+="|std/utilities/format/format.functions/format_to_n.locale.pass.cpp"
+        LIT_FILTER_OUT+="|std/utilities/format/format.functions/format_to_n.pass.cpp"
+        LIT_FILTER_OUT+="|std/utilities/format/format.functions/format_to.locale.pass.cpp"
         LIT_FILTER_OUT+="|std/utilities/format/format.functions/vformat"
+        LIT_FILTER_OUT+="|std/utilities/variant/variant.visit/visit_return_type.pass.cpp"
         ninja -C libcxx_build_${sanitizer_name} check-cxx
       ) || build_failure
     ) &>check_cxx.log & 
