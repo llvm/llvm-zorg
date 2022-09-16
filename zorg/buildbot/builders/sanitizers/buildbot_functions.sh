@@ -312,6 +312,7 @@ function check_stage2 {
         export LIT_FILTER_OUT="modules_include.sh.cpp"
 
         LIT_FILTER_OUT+="|std/algorithms/alg.modifying.operations/alg.transform/ranges.transform.pass.cpp"
+        LIT_FILTER_OUT+="|std/containers/sequences/deque/deque.modifiers/insert_iter_iter.pass.cpp"
         LIT_FILTER_OUT+="|std/numerics/rand/rand.dist/rand.dist.bern/rand.dist.bern.negbin/eval.pass.cpp"
         LIT_FILTER_OUT+="|std/numerics/rand/rand.dist/rand.dist.samp/rand.dist.samp.discrete/eval.pass.cpp"
         LIT_FILTER_OUT+="|std/utilities/charconv/charconv.msvc/test.pass.cpp"
@@ -319,8 +320,13 @@ function check_stage2 {
         LIT_FILTER_OUT+="|std/utilities/format/format.functions/format_to_n.pass.cpp"
         LIT_FILTER_OUT+="|std/utilities/format/format.functions/format_to.locale.pass.cpp"
         LIT_FILTER_OUT+="|std/utilities/format/format.functions/format_to.pass.cpp"
+        LIT_FILTER_OUT+="|std/utilities/format/format.functions/format.locale.pass.cpp"
+        LIT_FILTER_OUT+="|std/utilities/format/format.functions/format.pass.cpp"
+        LIT_FILTER_OUT+="|std/utilities/format/format.functions/formatted_size.locale.pass.cpp"
+        LIT_FILTER_OUT+="|std/utilities/format/format.functions/formatted_size.pass.cpp"
         LIT_FILTER_OUT+="|std/utilities/format/format.functions/vformat"
         LIT_FILTER_OUT+="|std/utilities/variant/variant.visit/visit_return_type.pass.cpp"
+        LIT_FILTER_OUT+="|std/utilities/variant/variant.visit/visit.pass.cpp"
 
         ninja -C libcxx_build_${sanitizer_name} check-cxx
       ) || build_failure
