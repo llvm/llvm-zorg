@@ -28,6 +28,7 @@ fi
 
 # This bot uses older compiler.
 STAGE2_USE_LATE_EP=1
+STAGE2_SKIP_TEST_CXX=1
 
 buildbot_update
 

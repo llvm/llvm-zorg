@@ -35,7 +35,7 @@ echo @@@BUILD_STEP Prepare@@@
 BUILDBOT_CLOBBER="${BUILDBOT_CLOBBER:-}"
 BUILDBOT_REVISION="${BUILDBOT_REVISION:-origin/main}"
 
-export LIT_OPTS="--time-tests --timeout=1100"
+export LIT_OPTS="--time-tests"
 CMAKE_COMMON_OPTIONS="-DLLVM_LIT_ARGS=-v"
 
 function rm_dirs {
@@ -303,37 +303,46 @@ function check_stage1_ubsan {
 function check_stage2 {
   local sanitizer_name=$1
 
-  echo @@@BUILD_STEP stage2/$sanitizer_name check-cxx@@@
-  (
-    # TODO: Investigate why other sanitizers fail with
-    # libc++abi: terminating due to uncaught exception of type std::__1::format_error: Argument index out of bounds
-    if [[ "$(arch)" == "aarch64" && "$sanitizer_name" != "ubsan" ]] ; then
-      export LIT_FILTER_OUT=std/utilities/format/format.functions/vformat
-    fi
-    ninja -C libcxx_build_${sanitizer_name} check-cxx
-  ) || build_failure
+  if [[ "${STAGE2_SKIP_TEST_CXX:-}" != "1" ]] ; then
+    (
+      # Very slow, run in background.
+      LIT_OPTS+=" --timeout=1500"
+      (
+        # Very slow.
+        export LIT_FILTER_OUT="modules_include.sh.cpp|rand.dist.samp.discrete/eval.pass.cpp|rand.dist.bern.negbin/eval.pass.cpp"
+        LIT_FILTER_OUT+="|std/utilities/format/format.functions/vformat"
+        ninja -C libcxx_build_${sanitizer_name} check-cxx
+      ) || build_failure
+    ) &>check_cxx.log & 
 
-  echo @@@BUILD_STEP stage2/$sanitizer_name check-cxxabi@@@
-  (
-    # Very slow.
-    export LIT_FILTER_OUT="modules_include.sh.cpp"
-    if [[ "$(arch)" == "aarch64" && "$sanitizer_name" == "asan" ]] ; then
-      # TODO: Investigate one leak and two slowest tests.
-      LIT_FILTER_OUT+="|test_vector2.pass.cpp|catch_multi_level_pointer.pass.cpp|guard_threaded_test.pass.cpp"
-    fi
-    if [[ "$(arch)" == "aarch64" && "$sanitizer_name" == "msan" ]] ; then
-      # TODO: Investigate one slow tests.
-      LIT_FILTER_OUT+="|catch_multi_level_pointer.pass.cpp|guard_threaded_test.pass.cpp|test_demangle.pass.cpp"
-    fi
-    if [[ "$(arch)" == "aarch64" && "$sanitizer_name" == "hwasan" ]] ; then
-      # TODO: Investigate one slow tests.
-      LIT_FILTER_OUT+="|catch_multi_level_pointer.pass.cpp|guard_threaded_test.pass.cpp|test_demangle.pass.cpp"
-    fi
-    ninja -C libcxx_build_${sanitizer_name} check-cxxabi
-  ) || build_failure
+    echo @@@BUILD_STEP stage2/$sanitizer_name check-cxxabi@@@
+    (
+      LIT_OPTS+=" --timeout=1100"
+      if [[ "$(arch)" == "aarch64" && "$sanitizer_name" == "asan" ]] ; then
+        # TODO: Investigate one leak and two slowest tests.
+        export LIT_FILTER_OUT="test_vector2.pass.cpp|catch_multi_level_pointer.pass.cpp|guard_threaded_test.pass.cpp"
+      fi
+      if [[ "$(arch)" == "aarch64" && "$sanitizer_name" == "msan" ]] ; then
+        # TODO: Investigate one slow tests.
+        export LIT_FILTER_OUT="catch_multi_level_pointer.pass.cpp|guard_threaded_test.pass.cpp|test_demangle.pass.cpp"
+      fi
+      if [[ "$(arch)" == "aarch64" && "$sanitizer_name" == "hwasan" ]] ; then
+        # TODO: Investigate one slow tests.
+        export LIT_FILTER_OUT="catch_multi_level_pointer.pass.cpp|guard_threaded_test.pass.cpp|test_demangle.pass.cpp"
+      fi
+      ninja -C libcxx_build_${sanitizer_name} check-cxxabi
+    ) || build_failure
+  fi
 
   echo @@@BUILD_STEP stage2/$sanitizer_name check@@@
   ninja -C ${STAGE2_DIR} check-all || build_failure
+
+  if [[ "${STAGE2_SKIP_TEST_CXX:-}" != "1" ]] ; then
+    wait
+    echo @@@BUILD_STEP stage2/$sanitizer_name check-cxx@@@
+    sleep 5
+    cat check_cxx.log
+  fi
 }
 
 function check_stage2_msan {
