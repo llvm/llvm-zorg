@@ -97,6 +97,7 @@ function common_stage1_variables {
   STAGE1_DIR=llvm_build0
   stage1_clang_path=$ROOT/${STAGE1_DIR}/bin
   llvm_symbolizer_path=${stage1_clang_path}/llvm-symbolizer
+  export LLVM_SYMBOLIZER_PATH="${llvm_symbolizer_path}"
   STAGE1_AS_COMPILER="-DCMAKE_C_COMPILER=${stage1_clang_path}/clang -DCMAKE_CXX_COMPILER=${stage1_clang_path}/clang++"
 }
 
