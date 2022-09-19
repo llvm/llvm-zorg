@@ -35,7 +35,7 @@ echo @@@BUILD_STEP Prepare@@@
 BUILDBOT_CLOBBER="${BUILDBOT_CLOBBER:-}"
 BUILDBOT_REVISION="${BUILDBOT_REVISION:-origin/main}"
 
-export LIT_OPTS="--time-tests --timeout=1000"
+export LIT_OPTS="--time-tests"
 CMAKE_COMMON_OPTIONS="-DLLVM_LIT_ARGS=-v"
 
 function rm_dirs {
