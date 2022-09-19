@@ -15,7 +15,7 @@ import requests
 import xml.etree.ElementTree as ET
 from contextlib import contextmanager
 
-SERVER = "labmaster2.lab.llvm.org"
+SERVER = "green-dragon-21.local"
 
 NINJA = "/usr/local/bin/ninja"
 
@@ -118,7 +118,7 @@ class Configuration(object):
         self.max_parallel_tests = os.environ.get('MAX_PARALLEL_TESTS', None)
         self.max_parallel_links = os.environ.get('MAX_PARALLEL_LINKS', None)
         self.host_compiler_url = os.environ.get('HOST_URL',
-                                                'http://labmaster2.local/artifacts/')
+                                                'http://green-dragon-21.local/artifacts/')
         self.artifact_url = os.environ.get('ARTIFACT', 'NONE')
         self.job_name = os.environ.get('JOB_NAME', 'NONE')
         self.build_id = os.environ.get('BUILD_ID', 'NONE')

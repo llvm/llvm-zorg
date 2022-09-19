@@ -28,7 +28,7 @@ rm -f ${propfile}
 curl -fksSO "${last_good_properties_url}"
 """
     def props = readProperties file: propfile
-    def artifact = "http://labmaster2.local/artifacts/${props.ARTIFACT}"
+    def artifact = "http://green-dragon-21.local/artifacts/${props.ARTIFACT}"
     currentBuild.setDisplayName("${props.GIT_DISTANCE}-${props.GIT_SHA}")
 
     // Trigger all jobs with names matching the `job_pattern` regex.
@@ -56,8 +56,8 @@ curl -fksSO "${last_good_properties_url}"
 }
 
 def pipeline(job_pattern,
-        artifact_url='http://labmaster2.local/artifacts/',
-        last_good_properties_url='http://labmaster2.local/artifacts/clang-stage1-RA/last_good_build.properties') {
+        artifact_url='http://green-dragon-21.local/artifacts/',
+        last_good_properties_url='http://green-dragon-21.local/artifacts/clang-stage1-RA/last_good_build.properties') {
     node('master') {
         stage('main') {
             relay_steps job_pattern, artifact_url, last_good_properties_url
@@ -66,8 +66,8 @@ def pipeline(job_pattern,
 }
 
 def lldb_pipeline(job_pattern,
-        artifact_url='http://labmaster2.local/artifacts/',
-        last_good_properties_url='http://labmaster2.local/artifacts/lldb-cmake/last_good_build.properties') {
+        artifact_url='http://green-dragon-21.local/artifacts/',
+        last_good_properties_url='http://green-dragon-21.local/artifacts/lldb-cmake/last_good_build.properties') {
     node('master') {
         stage('main') {
             relay_steps job_pattern, artifact_url, last_good_properties_url
