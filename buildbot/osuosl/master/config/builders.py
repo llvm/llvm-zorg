@@ -10,7 +10,6 @@ from zorg.buildbot.builders import PollyBuilder
 from zorg.buildbot.builders import LLDBBuilder
 from zorg.buildbot.builders import SanitizerBuilder
 from zorg.buildbot.builders import OpenMPBuilder
-from zorg.buildbot.builders import LibcxxAndAbiBuilder
 from zorg.buildbot.builders import SphinxDocsBuilder
 from zorg.buildbot.builders import ABITestsuitBuilder
 from zorg.buildbot.builders import ClangLTOBuilder
@@ -1849,25 +1848,7 @@ all += [
                     )},
 
 
-# Libc++ builders.
-
-    {'name' : 'libcxx-libcxxabi-libunwind-ppc-aix',
-    'tags'  : ["libcxx"],
-    'workernames' : ['aix-ppc-libcxx'],
-    'builddir': 'libcxx-libcxxabi-libunwind-ppc-aix',
-    'factory' : LibcxxAndAbiBuilder.getLibcxxAndAbiBuilder(
-                    env={'OBJECT_MODE': '32'},
-                    cmake_extra_opts={
-                        'CMAKE_BUILD_TYPE': 'Release',
-                        'CMAKE_C_COMPILER': 'gcc',
-                        'CMAKE_CXX_COMPILER': 'g++',
-                        'CMAKE_AR': '/usr/bin/ar',
-                        'LIBCXX_CXX_ABI': 'libstdc++',
-                        'LIBCXX_CXX_ABI_INCLUDE_PATHS': '/opt/freeware/lib/gcc/powerpc-ibm-aix7.2.0.0/8/include/c++;/opt/freeware/lib/gcc/powerpc-ibm-aix7.2.0.0/8/include/c++/powerpc-ibm-aix7.2.0.0',
-                        'CMAKE_THREAD_LIBS_INIT': '-lpthread',
-                        'LIBCXX_ENABLE_STATIC:BOOL': 'OFF',
-                        'LIBCXX_ENABLE_ABI_LINKER_SCRIPT': 'OFF'},
-                    depends_on_projects=['libcxx'])},
+# Whole-toolchain builders.
 
     {'name': "fuchsia-x86_64-linux",
     'tags'  : ["toolchain"],
