@@ -183,71 +183,6 @@ pipeline {
                 junit 'test/results.xml'
             }
         }
-        stage('Build Clang 5.0.2') {
-            steps {
-                timeout(30) {
-                    dir('clang_502') {
-                        checkout([$class: 'GitSCM', branches: [
-                            [name: "llvmorg-5.0.2"]
-                        ], userRemoteConfigs: [
-                            [url: 'https://github.com/llvm/llvm-project.git']
-                        ], extensions: [
-                            [$class: 'CloneOption', timeout: 30,
-                            reference: '/Users/Shared/llvm-project.git']
-                        ]])
-                    }
-                }
-                timeout(90) {
-                    sh '''
-                    export PATH=$PATH:/usr/bin:/usr/local/bin
-                    export SRC_DIR='clang_502'
-                    export BUILD_DIR='clang_502_build'
-
-                    python llvm-zorg/zorg/jenkins/monorepo_build.py cmake build \
-                      $MATRIX_COMMON_BUILD_PARAMETERS \
-                      --assertions \
-                      --noupload \
-                      --noinstall \
-                      --projects="clang;libcxx;libcxxabi"
-                    '''
-                }
-            }
-        }
-        stage('Test Clang 5.0.2') {
-            steps {
-                timeout(60) {
-                    sh '''
-                    build_dir=$WORKSPACE/clang_502_build
-                    export PATH=$PATH:/usr/bin:/usr/local/bin
-                    python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix configure \
-                      $MATRIX_COMMON_BUILD_PARAMETERS \
-                      --assertions \
-                      --lldb-test-compiler="$build_dir/bin/clang" \
-                      --projects="clang;lldb"  \
-                      --runtimes="libcxx;libcxxabi"  \
-                      --cmake-type=Release \
-                      --dotest-flag="--libcxx-include-dir=$build_dir/include/c++/v1/" \
-                      --dotest-flag="--libcxx-library-dir=$build_dir/lib/" \
-                      --dotest-flag="--skip-category" \
-                      --dotest-flag="gmodules" \
-                      --dotest-flag="--skip-category" \
-                      --dotest-flag="watchpoint" \
-      		      --dotest-flag="--skip-category" \
-		      --dotest-flag="llgs" \
-		      --dotest-flag="--skip-category" \
-		      --dotest-flag="debugserver" \
-                      --dotest-flag="--arch=x86_64"
-
-                    set +e
-                    # Give the system some time to recover.
-                    sleep 120
-                    python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix test
-                    set -e
-                    '''
-                }
-                junit 'test/results.xml'
-            }
-        }
         stage('Build Clang 7.0.1') {
             steps {
                 timeout(30) {
@@ -496,6 +431,71 @@ pipeline {
 		      --dotest-flag="llgs" \
 		      --dotest-flag="--skip-category" \
 		      --dotest-flag="debugserver" \
+                      --dotest-flag="--arch=x86_64"
+
+                    set +e
+                    # Give the system some time to recover.
+                    sleep 120
+                    python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix test
+                    set -e
+                    '''
+                }
+                junit 'test/results.xml'
+            }
+        }
+        stage('Build Clang 15.0.1') {
+            steps {
+                timeout(30) {
+                    dir('clang_1501') {
+                        checkout([$class: 'GitSCM', branches: [
+                            [name: "llvmorg-15.0.1"]
+                        ], userRemoteConfigs: [
+                            [url: 'https://github.com/llvm/llvm-project.git']
+                        ], extensions: [
+                            [$class: 'CloneOption', timeout: 30,
+                            reference: '/Users/Shared/llvm-project.git']
+                        ]])
+                    }
+                }
+                timeout(90) {
+                    sh '''
+                    export PATH=$PATH:/usr/bin:/usr/local/bin
+                    export SRC_DIR='clang_1501'
+                    export BUILD_DIR='clang_1501_build'
+
+                    python llvm-zorg/zorg/jenkins/monorepo_build.py cmake build \
+                      $MATRIX_COMMON_BUILD_PARAMETERS \
+                      --assertions \
+                      --noupload \
+                      --noinstall \
+                      --projects="clang;libcxx;libcxxabi"
+                    '''
+                }
+            }
+        }
+        stage('Test Clang 15.0.1') {
+            steps {
+                timeout(60) {
+                    sh '''
+                    build_dir=$WORKSPACE/clang_1501_build
+                    export PATH=$PATH:/usr/bin:/usr/local/bin
+                    python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix configure \
+                      $MATRIX_COMMON_BUILD_PARAMETERS \
+                      --assertions \
+                      --lldb-test-compiler="$build_dir/bin/clang" \
+                      --projects="clang;lldb"  \
+                      --runtimes="libcxx;libcxxabi"  \
+                      --cmake-type=Release \
+                      --dotest-flag="--libcxx-include-dir=$build_dir/include/c++/v1/" \
+                      --dotest-flag="--libcxx-library-dir=$build_dir/lib/" \
+                      --dotest-flag="--skip-category" \
+                      --dotest-flag="gmodules" \
+                      --dotest-flag="--skip-category" \
+                      --dotest-flag="watchpoint" \
+                      --dotest-flag="--skip-category" \
+                      --dotest-flag="llgs" \
+                      --dotest-flag="--skip-category" \
+                      --dotest-flag="debugserver" \
                       --dotest-flag="--arch=x86_64"
 
                     set +e
