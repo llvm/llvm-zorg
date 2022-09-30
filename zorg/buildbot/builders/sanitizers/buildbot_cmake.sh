@@ -25,7 +25,7 @@ done
 USE_CCACHE=
 if ccache -s ; then
   USE_CCACHE="-DLLVM_CCACHE_BUILD=ON"
-  if [[ ccache -p | grep "default.*max_size" ]] ; then
+  if ccache -p | grep "default.*max_size" ; then
     ccache -M 20G
     ccache -o compression=true
   fi
