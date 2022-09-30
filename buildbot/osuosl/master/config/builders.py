@@ -2530,7 +2530,7 @@ all += [
     # Standalone builder
     {'name' : "standalone-build-x86_64",
     'tags'  : ["clang"],
-    'collapseRequests': False,
+    'collapseRequests': True,
     'workernames':["standalone-build-x86_64"],
     'builddir':"standalone-build-x86_64",
     'factory' : AnnotatedBuilder.getAnnotatedBuildFactory(
