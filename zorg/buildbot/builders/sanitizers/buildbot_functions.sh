@@ -27,7 +27,7 @@ echo @@@BUILD_STEP Info@@@
   echo
   df -h
   echo
-  ccache -s
+  ccache -ps
   exit 0
 )
 echo @@@BUILD_STEP Prepare@@@
