@@ -25,6 +25,8 @@ done
 USE_CCACHE=
 if ccache -s ; then
   USE_CCACHE="-DLLVM_CCACHE_BUILD=ON"
+  ccache -M 20G
+  ccache -o compression=true
 fi
 
 # Always clobber bootstrap build trees.
