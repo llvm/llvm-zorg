@@ -109,7 +109,8 @@ build_llvm() {
         -DLLVM_EXTERNAL_LIT=${PYTHON_LIT_INSTALL_DIR}/usr/local/bin/lit \
         -DLLVM_INCLUDE_UTILS:BOOL=ON \
         -DLLVM_INSTALL_UTILS:BOOL=ON \
-        -DLLVM_UTILS_INSTALL_DIR:PATH=${LLVM_INSTALL_DIR}/bin
+        -DLLVM_UTILS_INSTALL_DIR:PATH=${LLVM_INSTALL_DIR}/bin \
+        -DLLVM_CCACHE_BUILD=ON
 
     build_step "Building llvm"
     cmake --build ${LLVM_BUILD_DIR}
@@ -148,7 +149,8 @@ build_clang() {
         -DCMAKE_INSTALL_PREFIX=${CLANG_INSTALL_DIR} \
         -DLLVM_ROOT=${LLVM_INSTALL_DIR} \
         -DLLVM_ENABLE_ASSERTIONS=ON \
-        -DLLVM_TABLEGEN_EXE=${LLVM_INSTALL_DIR}/bin/llvm-tblgen
+        -DLLVM_TABLEGEN_EXE=${LLVM_INSTALL_DIR}/bin/llvm-tblgen \
+        -DLLVM_CCACHE_BUILD=ON
 
     build_step "Building clang"
     LD_LIBRARY_PATH="${LLVM_INSTALL_DIR}/lib64" cmake --build ${CLANG_BUILD_DIR}
@@ -188,10 +190,16 @@ build_lld() {
         -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
         -DLLVM_LINK_LLVM_DYLIB=ON \
         -DCMAKE_INSTALL_PREFIX=${LLD_INSTALL_DIR} \
-        -DLLVM_ROOT=${LLVM_INSTALL_DIR}
+        -DLLVM_ROOT=${LLVM_INSTALL_DIR} \
+        -DLLVM_CCACHE_BUILD=ON \
+        -DLLVM_INCLUDE_TESTS=ON \
+        -DLLVM_EXTERNAL_LIT=${PYTHON_LIT_INSTALL_DIR}/usr/local/bin/lit
 
     build_step "Building lld"
     LD_LIBRARY_PATH="${LLVM_INSTALL_DIR}/lib64" cmake --build ${LLD_BUILD_DIR}
+
+    build_step "Testing lld"
+    LD_LIBRARY_PATH="${LLVM_INSTALL_DIR}/lib64" cmake --build ${LLD_BUILD_DIR} --target check-lld
 
     build_step "Installing lld"
     rm -rf ${LLD_INSTALL_DIR}
