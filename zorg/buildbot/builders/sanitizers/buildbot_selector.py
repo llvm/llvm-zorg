@@ -34,8 +34,8 @@ BOT_ASSIGNMENT = {
 }
 
 BOT_ADDITIONAL_ENV = {
-    'sanitizer-ppc64le-linux': { 'CHECK_LIBCXX': '0' },
-    'sanitizer-ppc64be-linux': { 'CHECK_LIBCXX': '0' },
+    'sanitizer-ppc64le-linux': {},
+    'sanitizer-ppc64be-linux': {},
     'sanitizer-x86_64-linux': {},
     'sanitizer-x86_64-linux-fast': {},
     'sanitizer-x86_64-linux-autoconf': {},
