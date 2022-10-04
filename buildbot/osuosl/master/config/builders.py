@@ -2179,7 +2179,7 @@ all += [
     'tags'  : ["libunwind", "doc"],
     'workernames':["gribozavr3"],
     'builddir':"libunwind-sphinx-docs",
-    'factory': SphinxDocsBuilder.getSphinxDocsBuildFactory(libunwind_html=True)},
+    'factory': SphinxDocsBuilder.getSphinxRuntimesDocsBuildFactory(libunwind_html=True)},
 
     # Sphinx doc Publisher
     {'name' : "publish-sphinx-docs",
@@ -2187,6 +2187,12 @@ all += [
     'workernames' : ["as-worker-4"],
     'builddir': "publish-sphinx-docs",
     'factory' : SphinxDocsBuilder.getLLVMDocsBuildFactory(clean=True)},
+
+    {'name' : "publish-runtimes-sphinx-docs",
+    'tags'  : ["doc"],
+    'workernames' : ["as-worker-4"],
+    'builddir': "publish-runtimes-sphinx-docs",
+    'factory' : SphinxDocsBuilder.getLLVMRuntimesDocsBuildFactory(clean=True)},
 
     {'name' : "publish-lnt-sphinx-docs",
     'tags'  : ["doc"],
