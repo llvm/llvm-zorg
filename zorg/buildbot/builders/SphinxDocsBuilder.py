@@ -12,8 +12,8 @@ llvm_docs = OrderedDict([
   ("clang",             ("docs-clang-html",       "tools/clang/docs/html/",             "cfe")),
   ("clang-tools-extra", ("docs-clang-tools-html", "tools/clang/tools/extra/docs/html/", "clang-tools-extra")),
   ("libc",              ("docs-libc-html",        "projects/libc/docs/html/",           "libc")),
-  ("libcxx",            ("docs-libcxx-html",      "projects/libcxx/docs/html/",         "libcxx")),
-  ("libunwind",         ("docs-libunwind-html",   "projects/libunwind/docs/html/",      "libunwind")),
+  ("libcxx",            ("docs-libcxx-html",      "libcxx/docs/html/",                  "libcxx")),
+  ("libunwind",         ("docs-libunwind-html",   "libunwind/docs/html/",               "libunwind")),
   ("lld",               ("docs-lld-html",         "tools/lld/docs/html/",               "lld")),
   ("lldb",              ("docs-lldb-html",        "tools/lldb/docs/html/",              "lldb")),
   ('flang',             ("docs-flang-html",       "tools/flang/docs/html/",             "flang")),
@@ -28,8 +28,6 @@ def getSphinxDocsBuildFactory(
         clang_html        = False, # Build Clang HTML documentation
         clang_tools_html  = False, # Build Clang Extra Tools HTML documentation
         lld_html          = False, # Build LLD HTML documentation
-        libcxx_html       = False, # Build Libc++ HTML documentation
-        libunwind_html    = False, # Build libunwind HTML documentation
         lldb_html         = False, # Build LLDB HTML documentation
         polly_html        = False, # Build Polly HTML documentation
         extra_configure_args = None,
@@ -63,17 +61,11 @@ def getSphinxDocsBuildFactory(
         depends_on_projects.append('lld')
     if lldb_html:
         depends_on_projects.append('lldb')
-    if libcxx_html:
-        depends_on_projects.append('libcxx')
-        depends_on_projects.append('libcxxabi')
-    if libunwind_html:
-        depends_on_projects.append('libunwind')
     if polly_html:
         depends_on_projects.append('polly')
 
     f = UnifiedTreeBuilder.getCmakeBuildFactory(
             depends_on_projects=depends_on_projects,
-            enable_runtimes=[], # Docs don't support runtimes build yet.
             llvm_srcdir=llvm_srcdir,
             obj_dir=llvm_objdir,
             extra_configure_args=cmake_args,
@@ -127,11 +119,64 @@ def getSphinxDocsBuildFactory(
                                targets=['docs-lldb-html']
                               ))
 
+    if polly_html:
+        f.addStep(NinjaCommand(name="docs-polly-html",
+                               haltOnFailure=True,
+                               description=["Build Polly Sphinx HTML documentation"],
+                               workdir=llvm_objdir,
+                               targets=['docs-polly-html']
+                              ))
+
+    return f
+
+def getSphinxRuntimesDocsBuildFactory(
+        libcxx_html       = False, # Build Libc++ HTML documentation
+        libunwind_html    = False, # Build libunwind HTML documentation
+        extra_configure_args = None,
+        **kwargs):
+
+    if extra_configure_args:
+        cmake_args = extra_configure_args[:]
+    else:
+        cmake_args = list()
+
+    # Set proper defaults for the config flags.
+    CmakeCommand.applyDefaultOptions(cmake_args, [
+      ('-G',                    'Ninja'),
+      ('-DLLVM_ENABLE_SPHINX=', 'ON'),
+      ('-DSPHINX_OUTPUT_HTML=', 'ON'),
+      ('-DSPHINX_OUTPUT_MAN=',  'ON'),
+      ('-DLLDB_INCLUDE_TESTS=', 'OFF'),
+      ('-DLLVM_TEMPORARILY_ALLOW_OLD_TOOLCHAIN=', 'ON'),
+      ('-DLLVM_ENABLE_ASSERTIONS=',  'OFF'),
+      ])
+
+    depends_on_runtimes = []
+    if libcxx_html:
+        depends_on_runtimes.append('libcxx')
+        depends_on_runtimes.append('libcxxabi')
+    if libunwind_html:
+        depends_on_runtimes.append('libunwind')
+
+    f = UnifiedTreeBuilder.getLLVMBuildFactoryAndSourcecodeSteps(
+            depends_on_projects=depends_on_runtimes,
+            enable_runtimes=depends_on_runtimes,
+            src_to_build_dir='runtimes',
+            **kwargs) # Pass through all the extra arguments.
+
+    UnifiedTreeBuilder.addCmakeSteps(
+        f,
+        cleanBuildRequested=f.cleanBuildRequested,
+        obj_dir=f.obj_dir,
+        install_dir=f.install_dir,
+        extra_configure_args=extra_configure_args,
+        **kwargs)
+
     if libcxx_html:
         f.addStep(NinjaCommand(name="docs-libcxx-html",
                                haltOnFailure=True,
                                description=["Build Libc++ Sphinx HTML documentation"],
-                               workdir=llvm_objdir,
+                               workdir=f.obj_dir,
                                targets=['docs-libcxx-html']
                               ))
 
@@ -139,16 +184,8 @@ def getSphinxDocsBuildFactory(
         f.addStep(NinjaCommand(name="docs-libunwind-html",
                                haltOnFailure=True,
                                description=["Build libunwind Sphinx HTML documentation"],
-                               workdir=llvm_objdir,
+                               workdir=f.obj_dir,
                                targets=['docs-libunwind-html']
-                              ))
-
-    if polly_html:
-        f.addStep(NinjaCommand(name="docs-polly-html",
-                               haltOnFailure=True,
-                               description=["Build Polly Sphinx HTML documentation"],
-                               workdir=llvm_objdir,
-                               targets=['docs-polly-html']
                               ))
 
     return f
@@ -168,9 +205,6 @@ def getLLVMDocsBuildFactory(
             "clang",
             "clang-tools-extra",
             "libc",
-            "libcxx",
-            "libcxxabi",
-            "libunwind",
             "lld",
             "lldb",
             "flang",
@@ -187,12 +221,6 @@ def getLLVMDocsBuildFactory(
             "lldb" in _depends_on_projects
            ) and "clang" not in _depends_on_projects:
             _depends_on_projects.append("clang")
-        if "libcxx" in _depends_on_projects and \
-           "libcxxabi" not in _depends_on_projects:
-            _depends_on_projects.append("libcxxabi")
-        if "libcxxabi" in _depends_on_projects and \
-           "libcxx" not in _depends_on_projects:
-            _depends_on_projects.append("libcxx")
 
     # Make a local copy of the configure args, as we are going to modify that.
     if extra_configure_args:
@@ -227,10 +255,116 @@ def getLLVMDocsBuildFactory(
     f = UnifiedTreeBuilder.getCmakeBuildFactory(
             clean=clean,
             depends_on_projects=_depends_on_projects,
-            enable_runtimes=[], # Docs don't support runtimes build yet.
             extra_configure_args=cmake_args,
             env=merged_env,
             **kwargs) # Pass through all the extra arguments.
+
+    UnifiedTreeBuilder.addNinjaSteps(
+        f,
+        targets=[d[0] for d in docs],
+        checks=[],
+        env=merged_env,
+        **kwargs)
+
+    # Publish just built documentation
+    for target, local_path, remote_path in docs:
+        f.addStep(
+            ShellCommand(
+                name="Publish {}".format(target),
+                description=[
+                    "Publish", "just", "built", "documentation", "for",
+                    "{}".format(target),
+                    ],
+                command=[
+                    'rsync',
+                    '-vrl',
+                    '--delete', '--force', '--delay-updates', '--delete-delay',
+                    '--ignore-times',
+                    '--checksum',
+                    '-p', '--chmod=Du=rwx,Dg=rwx,Do=rx,Fu=rw,Fg=rw,Fo=r',
+                    "{}".format(local_path),
+                    "lists.llvm.org:web/{}".format(remote_path),
+                    ],
+                env=merged_env,
+            )
+        )
+
+    return f
+
+def getLLVMRuntimesDocsBuildFactory(
+        clean = False,
+        depends_on_runtimes = None,
+        extra_configure_args = None,
+        env = None,
+        **kwargs):
+
+    if depends_on_runtimes is None:
+        # All the projects by default.
+        _depends_on_runtimes=[
+            "libcxx",
+            "libcxxabi",
+            "libunwind",
+        ]
+    else:
+        # Make a local copy of depends_on_runtimes, as we are going to modify
+        # that.
+        _depends_on_runtimes=depends_on_runtimes[:]
+        # Some runtimes are interdependent for the purpose of documentation.
+        # Enforce the dependencies.
+        if "libcxx" in _depends_on_runtimes and \
+           "libcxxabi" not in _depends_on_runtimes:
+            _depends_on_runtimes.append("libcxxabi")
+        if "libcxxabi" in _depends_on_runtimes and \
+           "libcxx" not in _depends_on_runtimes:
+            _depends_on_runtimes.append("libcxx")
+
+    # Make a local copy of the configure args, as we are going to modify that.
+    if extra_configure_args:
+        cmake_args = extra_configure_args[:]
+    else:
+        cmake_args = list()
+
+    # Prepare environmental variables. Set here all env we want everywhere.
+    merged_env = {
+        'TERM' : 'dumb' # Be cautious and disable color output from all tools.
+    }
+    if env is not None:
+        # Overwrite pre-set items with the given ones, so user can set anything.
+        merged_env.update(env)
+
+    CmakeCommand.applyDefaultOptions(cmake_args, [
+        ("-G",                           "Ninja"),
+        ("-DLLVM_ENABLE_SPHINX=",        "ON"),
+        ("-DSPHINX_OUTPUT_HTML=",        "ON"),
+        ("-DSPHINX_OUTPUT_MAN=",         "OFF"),
+        ("-DSPHINX_WARNINGS_AS_ERRORS=", "OFF"),
+        ("-DLLVM_ENABLE_ASSERTIONS=",    "OFF"),
+        ("-DCMAKE_BUILD_TYPE=",          "Release"),
+        ])
+
+    # Build docs for each of the runtimes this builder depends on
+    docs = [
+        llvm_docs[project] for project in llvm_docs.keys()
+        if project in _depends_on_runtimes
+    ]
+
+    cleanBuildRequested = lambda step: step.build.getProperty("clean", default=step.build.getProperty("clean_obj")) or clean
+
+    f = UnifiedTreeBuilder.getLLVMBuildFactoryAndSourcecodeSteps(
+            depends_on_projects=_depends_on_runtimes,
+            enable_runtimes=_depends_on_runtimes,
+            src_to_build_dir='runtimes',
+            cleanBuildRequested=cleanBuildRequested,
+            **kwargs) # Pass through all the extra arguments.
+
+    UnifiedTreeBuilder.addCmakeSteps(
+        f,
+        cleanBuildRequested=cleanBuildRequested,
+        obj_dir=f.obj_dir,
+        install_dir=f.install_dir,
+        extra_configure_args=cmake_args,
+        env=merged_env,
+        **kwargs)
 
     UnifiedTreeBuilder.addNinjaSteps(
         f,
