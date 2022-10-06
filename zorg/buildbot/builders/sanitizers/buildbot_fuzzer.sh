@@ -26,7 +26,7 @@ clobber RUNDIR-*
 
 if [[ "$(arch)" == "aarch64" ]] ; then
   # FIXME: https://github.com/google/sanitizers/issues/703
-  export ASAN_OPTIONS="detect_leaks=0"
+  export LIBFUZZER_FLAGS="-detect_leaks=0"
 fi
 
 buildbot_update
