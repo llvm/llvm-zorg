@@ -63,7 +63,7 @@ RunFuzzerTest re2-2014-12-09       || build_failure
 RunFuzzerTest c-ares-CVE-2016-5180 || build_failure
 RunFuzzerTest openssl-1.0.1f       || build_failure
 [[ "$(arch)" == "aarch64" ]] || RunFuzzerTest openssl-1.0.2d       || build_failure
-RunFuzzerTest proj4-2017-08-14     || build_failure
+[[ "$(arch)" == "aarch64" ]] || RunFuzzerTest proj4-2017-08-14     || build_failure
 #RunFuzzerTest woff2-2016-05-06     || build_failure  # Often can't find the bug in the given time.
 
 cleanup $STAGE1_DIR RUNDIR-*
