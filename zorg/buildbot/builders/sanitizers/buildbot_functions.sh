@@ -171,11 +171,11 @@ function build_stage2 {
   if [ "$sanitizer_name" == "msan" ]; then
     export MSAN_SYMBOLIZER_PATH="${llvm_symbolizer_path}"
     llvm_use_sanitizer="Memory"
-    fsanitize_flag="-fsanitize=memory -fsanitize-memory-use-after-dtor -fsanitize-memory-param-retval"
+    fsanitize_flag="-fsanitize=memory -fsanitize-memory-use-after-dtor -fsanitize-memory-param-retval -Oz"
   elif [ "$sanitizer_name" == "msan_track_origins" ]; then
     export MSAN_SYMBOLIZER_PATH="${llvm_symbolizer_path}"
     llvm_use_sanitizer="MemoryWithOrigins"
-    fsanitize_flag="-fsanitize=memory -fsanitize-memory-track-origins -fsanitize-memory-use-after-dtor -fsanitize-memory-param-retval"
+    fsanitize_flag="-fsanitize=memory -fsanitize-memory-track-origins -fsanitize-memory-use-after-dtor -fsanitize-memory-param-retval -Oz"
   elif [ "$sanitizer_name" == "asan" ]; then
     export ASAN_SYMBOLIZER_PATH="${llvm_symbolizer_path}"
     export ASAN_OPTIONS="check_initialization_order=true:detect_stack_use_after_return=1"
