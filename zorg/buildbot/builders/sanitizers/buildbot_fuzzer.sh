@@ -24,11 +24,6 @@ clobber RUNDIR-*
 # for assertion failures.
 # export ASAN_OPTIONS=handle_abort=1:strip_path_prefix=build/llvm/
 
-if [[ "$(arch)" == "aarch64" ]] ; then
-  # FIXME: https://github.com/google/sanitizers/issues/703
-  export LIBFUZZER_FLAGS="-detect_leaks=0"
-fi
-
 buildbot_update
 
 # Stage 1
@@ -56,15 +51,18 @@ RunFuzzerTest() {
 
 ulimit -t 3600
 
+# FIXME: Some aarch64 tests are extremly slow, maybe related to
+# https://github.com/google/sanitizers/issues/703.
+
 export JOBS=${MAKE_JOBS}
 
 RunFuzzerTest libxml2-v2.9.2       || build_failure
-RunFuzzerTest libpng-1.2.56        || build_failure
+[[ "$(arch)" == "aarch64" ]] || RunFuzzerTest libpng-1.2.56        || build_failure
 RunFuzzerTest libssh-2017-1272     || build_failure
 RunFuzzerTest re2-2014-12-09       || build_failure
 RunFuzzerTest c-ares-CVE-2016-5180 || build_failure
 RunFuzzerTest openssl-1.0.1f       || build_failure
-RunFuzzerTest openssl-1.0.2d       || build_failure
+[[ "$(arch)" == "aarch64" ]] || RunFuzzerTest openssl-1.0.2d       || build_failure
 RunFuzzerTest proj4-2017-08-14     || build_failure
 #RunFuzzerTest woff2-2016-05-06     || build_failure  # Often can't find the bug in the given time.
 
