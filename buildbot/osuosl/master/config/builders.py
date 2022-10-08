@@ -2202,13 +2202,13 @@ all += [
 
     {'name' : "publish-doxygen-docs",
     'tags'  : ["doc"],
-    'workernames' : ["as-worker-4"],
+    'workernames' : ["as-worker-4"], #FIXME: Temporarily disabled failing doxygen build - as-builder-8.
     'builddir': "publish-doxygen-docs",
     'factory' : DoxygenDocsBuilder.getLLVMDocsBuildFactory(
                     # Doxygen builds the final result for really
                     # long time without any output.
                     # We have to have a long timeout here.
-                    timeout=32400)},
+                    timeout=172800)},
 
     {'name' : "polly-sphinx-docs",
     'tags'  : ["llvm", "doc"],
