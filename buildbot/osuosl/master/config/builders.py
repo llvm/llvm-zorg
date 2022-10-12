@@ -50,6 +50,7 @@ all = [
                         "-DCOMPILER_RT_BUILD_SANITIZERS:BOOL=OFF",
                         "-DCOMPILER_RT_BUILD_XRAY:BOOL=OFF",
                         "-DCOMPILER_RT_INCLUDE_TESTS:BOOL=OFF",
+                        "-DCOMPILER_RT_BUILD_LIBFUZZER:BOOL=OFF",
                         "-DCMAKE_C_FLAGS=-Wdocumentation -Wno-documentation-deprecated-sync",
                         "-DCMAKE_CXX_FLAGS=-std=c++11 -Wdocumentation -Wno-documentation-deprecated-sync",
                     ],
