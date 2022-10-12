@@ -97,6 +97,14 @@ case "$ARCH" in
     CHECK_UBSAN=1
     CHECK_MSAN=1
     CHECK_TSAN=1
+    CMAKE_COMMON_OPTIONS+=" -DLLVM_TARGETS_TO_BUILD=PowerPC"
+    if [[ "$ARCH" == "ppc64le" ]]; then
+      MAKE_JOBS=256
+      CMAKE_COMMON_OPTIONS+=" -DLLVM_LIT_ARGS=-vj256"
+    else
+      MAKE_JOBS=80
+      CMAKE_COMMON_OPTIONS+=" -DLLVM_LIT_ARGS=-vj80"
+    fi
   ;;
   i*86)
     CHECK_UBSAN=1

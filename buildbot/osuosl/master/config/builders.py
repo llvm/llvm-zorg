@@ -1746,19 +1746,13 @@ all += [
     'tags'  : ["sanitizer", "ppc"],
     'workernames' : ["ppc64be-sanitizer"],
     'builddir': "sanitizer-ppc64be",
-    'factory' : SanitizerBuilder.getSanitizerBuildFactory(
-                    timeout=1800,
-                    extra_configure_args=["-DLLVM_CCACHE_BUILD=ON"])},
+    'factory' : SanitizerBuilder.getSanitizerBuildFactory(timeout=1800)},
 
     {'name' : "sanitizer-ppc64le-linux",
     'tags'  : ["sanitizer", "ppc", "ppc64le"],
     'workernames' : ["ppc64le-sanitizer"],
     'builddir': "sanitizer-ppc64le",
-    'factory' : SanitizerBuilder.getSanitizerBuildFactory(
-                    timeout=1800,
-                    extra_configure_args=[
-                       "-CMAKE_ARGS='-DLLVM_LIT_ARGS=-v -j256'",
-                       "-DLLVM_CCACHE_BUILD=ON"])},
+    'factory' : SanitizerBuilder.getSanitizerBuildFactory(timeout=1800)},
 
     {'name' : "sanitizer-windows",
     'tags'  : ["sanitizer"],
