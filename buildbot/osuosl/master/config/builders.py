@@ -479,7 +479,7 @@ all = [
                     extra_cmake_args=[
                         "-DCMAKE_C_FLAGS='-mcpu=cortex-a57'",
                         "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a57'",
-                        "-DLLVM_LIT_ARGS='-v -j4'"])},
+                        "-DLLVM_LIT_ARGS='-v'"])},
 
 
     # AArch64 Clang+LLVM+RT+LLD check-all + flang + test-suite w/SVE-Vector-Length-Agnostic
