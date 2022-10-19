@@ -2458,6 +2458,16 @@ all += [
                         ],
                     )},
 
+    {'name' : 'bolt-x86_64-ubuntu-nfc',
+    'tags'  : ["bolt"],
+    'collapseRequests': False,
+    'workernames' : ['bolt-worker'],
+    'builddir': "bolt-x86_64-ubuntu-nfc",
+    'factory' : AnnotatedBuilder.getAnnotatedBuildFactory(
+                    script="bolt-nfc.py",
+                    depends_on_projects=['llvm', 'bolt'],
+                    )},
+
     {'name': "bolt-x86_64-ubuntu-dylib",
     'tags': ["bolt"],
     'collapseRequests': False,
