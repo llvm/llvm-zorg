@@ -11,14 +11,9 @@ def main():
     source_dir = os.path.join('..', 'llvm-project')
 
     with step('cmake'):
-        # On most systems the default generator is make and the default
-        # compilers are gcc and g++. We make it explicit here that we want
-        # clang and ninja which reduces one step of setting environment
-        # variables when setting up workers.
         cmake_args = ['-GNinja',
+                      '-DBUILD_SHARED_LIBS=ON',
                       '-DCMAKE_BUILD_TYPE=Release',
-                      '-DCMAKE_C_COMPILER=clang',
-                      '-DCMAKE_CXX_COMPILER=clang++',
                       '-DLLVM_APPEND_VC_REV=OFF',
                       '-DLLVM_CCACHE_BUILD=ON',
                       '-DLLVM_ENABLE_ASSERTIONS=ON',
