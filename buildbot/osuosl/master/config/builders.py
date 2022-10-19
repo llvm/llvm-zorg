@@ -973,6 +973,26 @@ all = [
                         "-DLLVM_TARGETS_TO_BUILD=X86",
                         "-DLLVM_USE_LINKER=gold"])},
 
+    {'name': "cross-project-tests-sie-ubuntu-dwarf5",
+    'tags'  : ["clang", "llvm", "lldb", "cross-project-tests"],
+    'workernames': ["sie-slow-linux-worker"],
+    'builddir': "cross-project-tests-sie-ubuntu-dwarf5",
+    'factory': UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
+                    depends_on_projects=['llvm','clang','lldb','cross-project-tests'],
+                    checks = ['check-cross-project'],
+                    extra_configure_args=[
+                        "-DCMAKE_C_COMPILER=gcc",
+                        "-DCMAKE_CXX_COMPILER=g++",
+                        "-DCMAKE_BUILD_TYPE=Release",
+                        "-DCLANG_ENABLE_ARCMT=OFF",
+                        "-DLLDB_ENABLE_PYTHON=TRUE",
+                        "-DLLVM_CCACHE_BUILD=ON",
+                        "-DLLVM_INCLUDE_EXAMPLES=OFF",
+                        "-DLLVM_ENABLE_ASSERTIONS=ON",
+                        "-DLLVM_LIT_ARGS=--verbose -j24",
+                        "-DLLVM_TARGETS_TO_BUILD=X86",
+                        "-DLLVM_USE_LINKER=gold"])},
+
 # Polly builders.
 
     {'name' : "polly-arm-linux",
