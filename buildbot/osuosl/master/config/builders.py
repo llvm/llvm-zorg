@@ -2666,7 +2666,6 @@ all += [
 
     {'name' : "llvm-nvptx-nvidia-win",
     'tags'  : ["llvm", "nvptx"],
-    'collapseRequests': False,
     'workernames' : ["as-builder-8"],
     'builddir': "llvm-nvptx-nvidia-win",
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaWithMSVCBuildFactory(
@@ -2683,7 +2682,6 @@ all += [
 
     {'name' : "llvm-nvptx64-nvidia-win",
     'tags'  : ["llvm", "nvptx"],
-    'collapseRequests': False,
     'workernames' : ["as-builder-8"],
     'builddir': "llvm-nvptx64-nvidia-win",
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaWithMSVCBuildFactory(
