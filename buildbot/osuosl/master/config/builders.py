@@ -381,7 +381,7 @@ all = [
                     "-DCMAKE_C_FLAGS='-mcpu=cortex-a57'",
                     "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a57'",
                     "-DLLVM_ENABLE_LLD=True",
-                    "-DLLVM_LIT_ARGS='-v -j4'"])},
+                    "-DLLVM_LIT_ARGS='-v'"])},
 
     ## AArch64 run test-suite at -O0 (GlobalISel is now default).
     {'name' : "clang-aarch64-global-isel",
