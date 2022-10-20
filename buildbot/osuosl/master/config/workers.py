@@ -28,10 +28,10 @@ def get_all():
         create_worker("linaro-tk1-09", properties={'jobs' : 4}, max_builds=1),
         create_worker("linaro-clang-armv7-lnt", properties={'jobs' : 32}, max_builds=1),
         create_worker("linaro-clang-armv7-2stage", properties={'jobs' : 32}, max_builds=1),
-        create_worker("linaro-clang-armv7-quick", properties={'jobs' : 32}, max_builds=1),
         create_worker("linaro-clang-armv7-global-isel", properties={'jobs' : 32}, max_builds=1),
         create_worker("linaro-clang-armv7-vfpv3-2stage", properties={'jobs' : 32}, max_builds=1),
         create_worker("linaro-clang-armv8-lld-2stage", properties={'jobs' : 32}, max_builds=1),
+        create_worker("linaro-clang-armv8-quick", properties={'jobs' : 32}, max_builds=1),
         create_worker("linaro-lldb-arm-ubuntu", properties={'jobs' : 16}, max_builds=1),
 
         # AArch64 Linaro workers

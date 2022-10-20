@@ -261,6 +261,17 @@ all = [
                         "-DCOMPILER_RT_BUILD_MEMPROF=OFF",
                         "-DCOMPILER_RT_BUILD_XRAY=OFF"])},
 
+    ## ARMv8 check-all
+    {'name' : "clang-armv8-quick",
+    'tags'  : ["clang"],
+    'workernames':["linaro-clang-armv8-quick"],
+    'builddir':"clang-armv8-quick",
+    'factory' : ClangBuilder.getClangCMakeBuildFactory(
+                    clean=False,
+                    checkout_compiler_rt=False,
+                    checkout_lld=False,
+                    extra_cmake_args=["-DLLVM_TARGETS_TO_BUILD='ARM'"])},
+
     # Cortex-A15 LNT test-suite in Benchmark mode
     {'name' : "clang-native-arm-lnt-perf",
     'tags'  : ["clang"],
@@ -313,17 +324,6 @@ all = [
                     extra_cmake_args=[
                         "-DCMAKE_C_FLAGS='-mcpu=cortex-a15 -marm'",
                         "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a15 -marm'"])},
-
-    ## ARMv7 check-all
-    {'name' : "clang-armv7-quick",
-    'tags'  : ["clang"],
-    'workernames':["linaro-clang-armv7-quick"],
-    'builddir':"clang-armv7-quick",
-    'factory' : ClangBuilder.getClangCMakeBuildFactory(
-                    clean=False,
-                    checkout_compiler_rt=False,
-                    checkout_lld=False,
-                    extra_cmake_args=["-DLLVM_TARGETS_TO_BUILD='ARM'"])},
 
     ## ARMv7 run test-suite with GlobalISel enabled
     {'name' : "clang-armv7-global-isel",
