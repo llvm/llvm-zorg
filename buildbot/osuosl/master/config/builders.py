@@ -482,11 +482,12 @@ all = [
                         "-DLLVM_LIT_ARGS='-v'"])},
 
 
-    # AArch64 Clang+LLVM+RT+LLD check-all + flang + test-suite w/SVE-Vector-Length-Agnostic
-    # Note that in this and other clang-aarch64-sve-* builders we set
-    # -mllvm -treat-scalable-fixed-error-as-warning=false to make compiler
-    # fail on non-critical SVE codegen issues.  This helps us notice and fix
-    # SVE problems sooner rather than later.
+    # AArch64 Clang+LLVM+RT+LLD check-all + flang + test-suite +
+    # mlir-integration-tests w/SVE-Vector-Length-Agnostic Note that in this and
+    # other clang-aarch64-sve-* builders we set -mllvm
+    # -treat-scalable-fixed-error-as-warning=false to make compiler fail on
+    # non-critical SVE codegen issues.  This helps us notice and fix SVE
+    # problems sooner rather than later.
     {'name' : "clang-aarch64-sve-vla",
     'tags'  : ["clang"],
     'workernames' : ["linaro-clang-aarch64-sve-vla"],
@@ -505,6 +506,8 @@ all = [
                         "-DCMAKE_C_FLAGS='-mcpu=a64fx'",
                         "-DCMAKE_CXX_FLAGS='-mcpu=a64fx'",
                         "-DLLVM_ENABLE_LLD=True",
+                        "-DMLIR_INCLUDE_INTEGRATION_TEST=True",
+                        "-DMLIR_RUN_ARM_SVE_TESTS=True",
                         "-DLLVM_LIT_ARGS='-v -j12'"])},
 
     # AArch64 Clang+LLVM+RT+LLD check-all + flang + test-suite 2-stage w/SVE-Vector-Length-Agnostic
@@ -549,6 +552,8 @@ all = [
                         "-DCMAKE_C_FLAGS='-mcpu=a64fx'",
                         "-DCMAKE_CXX_FLAGS='-mcpu=a64fx'",
                         "-DLLVM_ENABLE_LLD=True",
+                        "-DMLIR_INCLUDE_INTEGRATION_TEST=True",
+                        "-DMLIR_RUN_ARM_SVE_TESTS=True",
                         "-DLLVM_LIT_ARGS='-v -j12'"])},
 
     # AArch64 Clang+LLVM+RT+LLD check-all + flang + test-suite 2-stage w/SVE-Vector-Length-Specific
