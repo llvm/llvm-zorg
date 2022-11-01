@@ -12,7 +12,6 @@ def main():
 
     with step('cmake'):
         cmake_args = ['-GNinja',
-                      '-DBUILD_SHARED_LIBS=ON',
                       '-DCMAKE_BUILD_TYPE=Release',
                       '-DLLVM_APPEND_VC_REV=OFF',
                       '-DLLVM_CCACHE_BUILD=ON',

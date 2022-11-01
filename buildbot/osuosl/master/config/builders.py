@@ -2492,6 +2492,25 @@ all += [
                         ],
                     )},
 
+    {'name': "bolt-x86_64-ubuntu-shared",
+    'tags': ["bolt"],
+    'collapseRequests': False,
+    'workernames':["bolt-worker"],
+    'builddir': "bolt-x86_64-ubuntu-shared",
+    'factory' : BOLTBuilder.getBOLTCmakeBuildFactory(
+                    bolttests=False,
+                    extra_configure_args=[
+                        "-DLLVM_APPEND_VC_REV=OFF",
+                        "-DLLVM_CCACHE_BUILD=ON",
+                        "-DLLVM_ENABLE_PROJECTS=bolt",
+                        "-DLLVM_TARGETS_TO_BUILD=X86;AArch64",
+                        "-DBUILD_SHARED_LIBS=ON",
+                        "-DLLVM_ENABLE_LLD=ON",
+                        "-DBOLT_CLANG_EXE=/usr/bin/clang",
+                        "-DBOLT_LLD_EXE=/usr/bin/ld.lld",
+                        ],
+                    )},
+
     {'name': "bolt-aarch64-ubuntu-clang-shared",
     'tags': ["bolt"],
     'collapseRequests': True,
