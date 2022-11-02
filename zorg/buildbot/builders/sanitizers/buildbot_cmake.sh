@@ -247,7 +247,7 @@ fi
   -DCMAKE_CXX_COMPILER=${FRESH_CLANG_PATH}/clang++ \
   -DCOMPILER_RT_INCLUDE_TESTS=ON \
   -DCOMPILER_RT_ENABLE_WERROR=ON \
-  -DLLVM_CONFIG_PATH=${FRESH_CLANG_PATH}/llvm-config \
+  -DLLVM_CMAKE_DIR=${ROOT}/llvm_build64 \
   $COMPILER_RT) || build_failure
 (cd compiler_rt_build && make -j$MAKE_JOBS) || build_failure
 
