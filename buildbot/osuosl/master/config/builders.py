@@ -2473,6 +2473,27 @@ all += [
                     depends_on_projects=['llvm', 'bolt'],
                     )},
 
+    {'name': "bolt-x86_64-ubuntu-clang-bolt-lto-pgo",
+    'tags': ["bolt"],
+    'collapseRequests': False,
+    'workernames':["bolt-worker"],
+    'builddir': "bolt-x86_64-ubuntu-clang-bolt-lto-pgo",
+    'factory' : BOLTBuilder.getBOLTCmakeBuildFactory(
+                    bolttests=False,
+                    depends_on_projects=['bolt', 'clang', 'lld', 'llvm'],
+                    cache='clang/cmake/caches/BOLT-PGO.cmake',
+                    targets=['stage2-clang++-bolt'],
+                    extra_configure_args=[
+                        "-DLLVM_APPEND_VC_REV=OFF",
+                        "-DLLVM_ENABLE_LLD=ON",
+                        "-DBOOTSTRAP_LLVM_ENABLE_LLD=ON",
+                        "-DBOOTSTRAP_BOOTSTRAP_LLVM_ENABLE_LLD=ON",
+                        "-DLLVM_CCACHE_BUILD=ON",
+                        "-DBOOTSTRAP_LLVM_CCACHE_BUILD=ON",
+                        "-DPGO_INSTRUMENT_LTO=Thin",
+                        ],
+                    )},
+
     {'name': "bolt-x86_64-ubuntu-dylib",
     'tags': ["bolt"],
     'collapseRequests': False,

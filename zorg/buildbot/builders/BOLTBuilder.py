@@ -6,8 +6,12 @@ from zorg.buildbot.process.factory import LLVMBuildFactory
 def getBOLTCmakeBuildFactory(
            clean = False,
            bolttests = False,
+           targets = None,
+           checks = None,
+           cache = None,
            extra_configure_args = None,
            env = None,
+           depends_on_projects = ['bolt', 'llvm'],
            **kwargs):
 
     if env is None:
@@ -18,11 +22,13 @@ def getBOLTCmakeBuildFactory(
     cleanBuildRequested = lambda step: clean or step.build.getProperty("clean", default=step.build.getProperty("clean_obj"))
     cleanBuildRequestedByProperty = lambda step: step.build.getProperty("clean")
 
-    checks = ['check-bolt']
-    extra_steps = []
+    if not targets:
+        targets = ['bolt']
+    if not checks:
+        checks = ['check-bolt']
 
     f = getLLVMBuildFactoryAndSourcecodeSteps(
-            depends_on_projects=['bolt', 'llvm'],
+            depends_on_projects=depends_on_projects,
             **kwargs) # Pass through all the extra arguments.
 
     if bolttests:
@@ -53,6 +59,11 @@ def getBOLTCmakeBuildFactory(
         ('-G',                      'Ninja'),
         ])
 
+    if cache:
+        CmakeCommand.applyRequiredOptions(extra_configure_args, [
+            ("-C", f"../{f.monorepo_dir}/{cache}"),
+            ])
+
     addCmakeSteps(
         f,
         cleanBuildRequested=cleanBuildRequested,
@@ -63,7 +74,7 @@ def getBOLTCmakeBuildFactory(
 
     addNinjaSteps(
         f,
-        targets = ['bolt'],
+        targets=targets,
         checks=checks,
         env=env,
         **kwargs)
