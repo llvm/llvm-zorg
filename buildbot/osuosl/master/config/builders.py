@@ -506,7 +506,7 @@ all = [
                         "-DCMAKE_C_FLAGS='-mcpu=a64fx'",
                         "-DCMAKE_CXX_FLAGS='-mcpu=a64fx'",
                         "-DLLVM_ENABLE_LLD=True",
-                        "-DMLIR_INCLUDE_INTEGRATION_TEST=True",
+                        "-DMLIR_INCLUDE_INTEGRATION_TESTS=True",
                         "-DMLIR_RUN_ARM_SVE_TESTS=True",
                         "-DLLVM_LIT_ARGS='-v -j12'"])},
 
@@ -552,7 +552,7 @@ all = [
                         "-DCMAKE_C_FLAGS='-mcpu=a64fx'",
                         "-DCMAKE_CXX_FLAGS='-mcpu=a64fx'",
                         "-DLLVM_ENABLE_LLD=True",
-                        "-DMLIR_INCLUDE_INTEGRATION_TEST=True",
+                        "-DMLIR_INCLUDE_INTEGRATION_TESTS=True",
                         "-DMLIR_RUN_ARM_SVE_TESTS=True",
                         "-DLLVM_LIT_ARGS='-v -j12'"])},
 
