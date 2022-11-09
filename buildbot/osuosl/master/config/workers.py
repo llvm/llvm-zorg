@@ -281,6 +281,8 @@ def get_all():
         create_worker("sie-linux-worker", properties={'jobs': 40}, max_builds=1),
         # Ubuntu 22.04 on 2012 Mac Mini
         create_worker("sie-slow-linux-worker", properties={'jobs': 8}, max_builds=1),
+        # Ubuntu 18.04 on x86_64
+        create_worker("doug-linux-worker1", properties={'jobs': 16}, max_builds=1),
 
         # Windows Server 2019 on AWS, x86_64 PS4 target
         create_worker("sie-win-worker", properties={'jobs': 64}, max_builds=1),
