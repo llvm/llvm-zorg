@@ -216,7 +216,7 @@ function configure_scudo_compiler_rt {
       cmake \
         ${CMAKE_COMMON_OPTIONS} \
         -DCOMPILER_RT_DEBUG=$DBG \
-        -DLLVM_CMAKE_DIR="$(readlink -f ${STAGE2_DIR})" \
+        -DLLVM_CMAKE_DIR="${COMPILER_BIN_DIR}/.." \
         -DCMAKE_C_COMPILER=${COMPILER_BIN_DIR}/clang \
         -DCMAKE_CXX_COMPILER=${COMPILER_BIN_DIR}/clang++ \
         -DCOMPILER_RT_HAS_LLD=ON \
