@@ -1003,7 +1003,7 @@ all = [
     'workernames': ["doug-linux-worker1"],
     'builddir': "llvm-clang-x86_64-gcc-ubuntu",
     'factory': UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
-                    depends_on_projects=['llvm','clang','clang-tools-extra','compiler-rt'.'lld','cross-project-tests'],
+                    depends_on_projects=['llvm','clang','clang-tools-extra','compiler-rt','lld','cross-project-tests'],
                     extra_configure_args=[
                         "-DCMAKE_C_COMPILER=gcc",
                         "-DCMAKE_CXX_COMPILER=g++",
