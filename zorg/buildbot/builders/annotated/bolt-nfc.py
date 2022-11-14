@@ -51,20 +51,22 @@ def main():
         run_command([os.path.join(source_dir, 'bolt', 'utils',
             'nfc-check-setup.py')])
 
-    with step('nfc-check-bolt', warn_on_fail=True):
+    with step('nfc-check-bolt', warn_on_fail=True, halt_on_fail=False):
         run_command([os.path.join('bin', 'llvm-lit'), '-sv', '-j2',
             # bolt-info will always mismatch in NFC mode
             '--xfail=bolt-info.test',
             'tools/bolt/test'])
 
-    with step('nfc-check-large-bolt', warn_on_fail=True):
+    with step('nfc-check-large-bolt', warn_on_fail=True, halt_on_fail=False):
         run_command([os.path.join('bin', 'llvm-lit'), '-sv', '-j2',
             'tools/bolttests'])
 
 
 @contextmanager
-def step(step_name, warn_on_fail=False):
+def step(step_name, warn_on_fail=False, halt_on_fail=True):
     util.report('@@@BUILD_STEP {}@@@'.format(step_name))
+    if halt_on_fail:
+        util.report('@@@HALT_ON_FAILURE@@@')
     try:
         yield
     except Exception as e:
