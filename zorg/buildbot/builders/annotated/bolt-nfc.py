@@ -9,6 +9,17 @@ from contextlib import contextmanager
 
 def main():
     source_dir = os.path.join('..', 'llvm-project')
+    tests_dir = os.path.join('..', 'bolt-tests')
+
+    with step('fetch large-bolt-tests'):
+        if os.path.exists(tests_dir):
+            run_command(['git', '-C', tests_dir, 'fetch', 'origin'])
+            run_command(['git', '-C', tests_dir, 'reset', '--hard',
+                         'origin/main'])
+        else:
+            run_command(['git', 'clone',
+                         'https://github.com/rafaelauler/bolt-tests',
+                         tests_dir])
 
     with step('cmake'):
         cmake_args = ['-GNinja',
@@ -21,6 +32,8 @@ def main():
                       '-DLLVM_TARGETS_TO_BUILD=X86;AArch64',
                       '-DBOLT_CLANG_EXE=/usr/bin/clang',
                       '-DBOLT_LLD_EXE=/usr/bin/ld.lld',
+                      '-DLLVM_EXTERNAL_PROJECTS=bolttests',
+                      '-DLLVM_EXTERNAL_BOLTTESTS_SOURCE_DIR='+tests_dir,
                       ]
 
         run_command(['cmake', os.path.join(source_dir, 'llvm')] + cmake_args)
@@ -31,6 +44,9 @@ def main():
     with step('check-bolt'):
         run_command(['ninja', 'check-bolt'])
 
+    with step('check-large-bolt'):
+        run_command(['ninja', 'check-large-bolt'])
+
     with step('nfc-check-setup'):
         run_command([os.path.join(source_dir, 'bolt', 'utils',
             'nfc-check-setup.py')])
@@ -40,6 +56,10 @@ def main():
             # bolt-info will always mismatch in NFC mode
             '--xfail=bolt-info.test',
             'tools/bolt/test'])
+
+    with step('nfc-check-large-bolt', warn_on_fail=True):
+        run_command([os.path.join('bin', 'llvm-lit'), '-sv', '-j2',
+            'tools/bolttests'])
 
 
 @contextmanager
