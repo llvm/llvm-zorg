@@ -34,6 +34,7 @@ def main():
                       '-DLLVM_EXTERNAL_BOLTTESTS_SOURCE_DIR='+tests_dir,
                       ]
 
+        util.clean_dir('.')
         run_command(['cmake', os.path.join(source_dir, 'llvm')] + cmake_args)
 
     with step('build bolt'):
