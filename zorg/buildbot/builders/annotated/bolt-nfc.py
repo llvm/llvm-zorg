@@ -28,10 +28,8 @@ def main():
                       '-DLLVM_CCACHE_BUILD=ON',
                       '-DLLVM_ENABLE_ASSERTIONS=ON',
                       '-DLLVM_ENABLE_LLD=ON',
-                      '-DLLVM_ENABLE_PROJECTS=bolt',
+                      '-DLLVM_ENABLE_PROJECTS=clang;lld;bolt',
                       '-DLLVM_TARGETS_TO_BUILD=X86;AArch64',
-                      '-DBOLT_CLANG_EXE=/usr/bin/clang',
-                      '-DBOLT_LLD_EXE=/usr/bin/ld.lld',
                       '-DLLVM_EXTERNAL_PROJECTS=bolttests',
                       '-DLLVM_EXTERNAL_BOLTTESTS_SOURCE_DIR='+tests_dir,
                       ]

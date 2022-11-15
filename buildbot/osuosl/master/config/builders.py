@@ -2466,21 +2466,6 @@ all += [
 
 
     # BOLT builders managed by Meta
-    {'name': "bolt-x86_64-ubuntu",
-    'tags': ["bolt"],
-    'collapseRequests': False,
-    'workernames':["bolt-worker"],
-    'builddir': "bolt-x86_64-ubuntu-bolttests",
-    'factory' : BOLTBuilder.getBOLTCmakeBuildFactory(
-                    bolttests=True,
-                    extra_configure_args=[
-                        "-DLLVM_APPEND_VC_REV=OFF",
-                        "-DLLVM_CCACHE_BUILD=ON",
-                        "-DLLVM_ENABLE_PROJECTS=clang;lld;bolt",
-                        "-DLLVM_TARGETS_TO_BUILD=X86;AArch64",
-                        ],
-                    )},
-
     {'name' : 'bolt-x86_64-ubuntu-nfc',
     'tags'  : ["bolt"],
     'collapseRequests': False,
