@@ -54,6 +54,8 @@ def main():
         run_command([os.path.join('bin', 'llvm-lit'), '-sv', '-j2',
             # bolt-info will always mismatch in NFC mode
             '--xfail=bolt-info.test',
+            # FIXME[aaupov]: https://github.com/llvm/llvm-project/issues/59008
+            '--filter-out=X86/bb-with-two-tail-calls.s',
             'tools/bolt/test'])
 
     with step('nfc-check-large-bolt', warn_on_fail=True, halt_on_fail=False):
