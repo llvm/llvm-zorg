@@ -12,7 +12,8 @@ def getAnnotatedBuildFactory(
     extra_args=None,
     timeout=1200,
     checkout_llvm_sources=True,
-    script_interpreter="python"):
+    script_interpreter="python",
+    warnOnWarnings=False):
     """
     Returns a new build factory that uses AnnotatedCommand, which
     allows the build to be run by version-controlled scripts that do
@@ -101,6 +102,7 @@ def getAnnotatedBuildFactory(
                                description="annotate",
                                timeout=timeout,
                                haltOnFailure=True,
+                               warnOnWarnings=warnOnWarnings,
                                command=command,
                                env=merged_env))
     return f

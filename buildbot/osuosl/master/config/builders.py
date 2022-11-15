@@ -2474,6 +2474,7 @@ all += [
     'factory' : AnnotatedBuilder.getAnnotatedBuildFactory(
                     script="bolt-nfc.py",
                     depends_on_projects=['llvm', 'bolt'],
+                    warnOnWarnings=True,
                     )},
 
     {'name': "bolt-x86_64-ubuntu-clang-bolt-lto-pgo",
