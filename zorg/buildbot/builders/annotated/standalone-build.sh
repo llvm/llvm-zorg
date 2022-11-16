@@ -138,14 +138,14 @@ build_llvm() {
         -DLLVM_CCACHE_BUILD=ON
 
     build_step "Building llvm"
-    cmake ${CMAKE_VERBOSE_BUILD_LLVM} --build ${LLVM_BUILD_DIR}
+    cmake --build ${LLVM_BUILD_DIR} ${CMAKE_VERBOSE_BUILD_LLVM}
     
     build_step "Testing llvm"
-    LD_LIBRARY_PATH="${LLVM_INSTALL_DIR}/lib64" cmake ${CMAKE_VERBOSE_CHECK_LLVM} --build ${LLVM_BUILD_DIR} --target check-all
+    LD_LIBRARY_PATH="${LLVM_INSTALL_DIR}/lib64" cmake --build ${LLVM_BUILD_DIR} --target check-all ${CMAKE_VERBOSE_CHECK_LLVM} 
 
     build_step "Installing llvm"
     rm -rf ${LLVM_INSTALL_DIR}
-    cmake ${CMAKE_VERBOSE_INSTALL_LLVM} --install ${LLVM_BUILD_DIR}
+    cmake --install ${LLVM_BUILD_DIR} ${CMAKE_VERBOSE_INSTALL_LLVM}
 
     # This is meant to extinguish any dependency on files being taken
     # from the llvm build dir when building clang.
@@ -178,13 +178,13 @@ build_clang() {
         -DLLVM_CCACHE_BUILD=ON
 
     build_step "Building clang"
-    LD_LIBRARY_PATH="${LLVM_INSTALL_DIR}/lib64" cmake ${CMAKE_VERBOSE_BUILD_CLANG} --build ${CLANG_BUILD_DIR}
+    LD_LIBRARY_PATH="${LLVM_INSTALL_DIR}/lib64" cmake --build ${CLANG_BUILD_DIR} ${CMAKE_VERBOSE_BUILD_CLANG}
 
     # TODO(kwk): Add Clang check
 
     build_step "Installing clang"
     rm -rf ${CLANG_INSTALL_DIR}
-    cmake ${CMAKE_VERBOSE_INSTALL_CLANG} --install ${CLANG_BUILD_DIR}
+    cmake --install ${CLANG_BUILD_DIR} ${CMAKE_VERBOSE_INSTALL_CLANG}
 
     build_step "Removing clang build dir"
     rm -rf ${CLANG_BUILD_DIR}
@@ -223,14 +223,14 @@ build_lld() {
         -DLLVM_EXTERNAL_LIT=${PYTHON_LIT_INSTALL_DIR}/usr/local/bin/lit
 
     build_step "Building lld"
-    LD_LIBRARY_PATH="${LLVM_INSTALL_DIR}/lib64" cmake ${CMAKE_VERBOSE_BUILD_LLD} --build ${LLD_BUILD_DIR}
+    LD_LIBRARY_PATH="${LLVM_INSTALL_DIR}/lib64" cmake --build ${LLD_BUILD_DIR} ${CMAKE_VERBOSE_BUILD_LLD}
 
     build_step "Testing lld"
-    LD_LIBRARY_PATH="${LLVM_INSTALL_DIR}/lib64" cmake ${CMAKE_VERBOSE_CHECK_LLD} --build ${LLD_BUILD_DIR} --target check-lld
+    LD_LIBRARY_PATH="${LLVM_INSTALL_DIR}/lib64" cmake --build ${LLD_BUILD_DIR} --target check-lld ${CMAKE_VERBOSE_CHECK_LLD}
 
     build_step "Installing lld"
     rm -rf ${LLD_INSTALL_DIR}
-    cmake ${CMAKE_VERBOSE_INSTALL_LLD} --install ${LLD_BUILD_DIR}
+    cmake --install ${LLD_BUILD_DIR} ${CMAKE_VERBOSE_INSTALL_LLD}
 
     build_step "Removing lld build dir"
     rm -rf ${LLD_BUILD_DIR}
