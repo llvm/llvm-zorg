@@ -25,6 +25,9 @@ BUILD_TYPE=Release
 INSTALL_ROOT_DIR=${BUILDBOT_ROOT}/install
 BUILD_ROOT_DIR=${BUILDBOT_ROOT}/build
 
+# Set CMAKE_TRACE=--trace to toggle on tracing of cmake calls to stderr
+CMAKE_TRACE=${CMAKE_TRACE:-}
+
 install_dir() {
     echo ${INSTALL_ROOT_DIR}/$1
 }
@@ -96,7 +99,7 @@ build_llvm() {
 
     build_step "Configuring llvm"
 
-    cmake \
+    cmake ${CMAKE_TRACE} \
         -S ${LLVM_ROOT}/llvm \
         -B ${LLVM_BUILD_DIR} \
         -G Ninja \
@@ -113,14 +116,14 @@ build_llvm() {
         -DLLVM_CCACHE_BUILD=ON
 
     build_step "Building llvm"
-    cmake --build ${LLVM_BUILD_DIR}
+    cmake ${CMAKE_TRACE} --build ${LLVM_BUILD_DIR}
     
     build_step "Testing llvm"
-    LD_LIBRARY_PATH="${LLVM_INSTALL_DIR}/lib64" cmake --build ${LLVM_BUILD_DIR} --target check-all
+    LD_LIBRARY_PATH="${LLVM_INSTALL_DIR}/lib64" cmake ${CMAKE_TRACE} --build ${LLVM_BUILD_DIR} --target check-all
 
     build_step "Installing llvm"
     rm -rf ${LLVM_INSTALL_DIR}
-    cmake --install ${LLVM_BUILD_DIR}
+    cmake ${CMAKE_TRACE} --install ${LLVM_BUILD_DIR}
 
     # This is meant to extinguish any dependency on files being taken
     # from the llvm build dir when building clang.
@@ -138,7 +141,7 @@ build_clang() {
     git -C "${LLVM_ROOT}" sparse-checkout set clang cmake
 
     build_step "Configuring clang"
-    cmake \
+    cmake ${CMAKE_TRACE} \
         -S ${LLVM_ROOT}/clang \
         -B ${CLANG_BUILD_DIR} \
         -G Ninja \
@@ -153,11 +156,11 @@ build_clang() {
         -DLLVM_CCACHE_BUILD=ON
 
     build_step "Building clang"
-    LD_LIBRARY_PATH="${LLVM_INSTALL_DIR}/lib64" cmake --build ${CLANG_BUILD_DIR}
+    LD_LIBRARY_PATH="${LLVM_INSTALL_DIR}/lib64" cmake ${CMAKE_TRACE} --build ${CLANG_BUILD_DIR}
 
     build_step "Installing clang"
     rm -rf ${CLANG_INSTALL_DIR}
-    cmake --install ${CLANG_BUILD_DIR}
+    cmake ${CMAKE_TRACE} --install ${CLANG_BUILD_DIR}
 
     build_step "Removing clang build dir"
     rm -rf ${CLANG_BUILD_DIR}
@@ -183,7 +186,7 @@ build_lld() {
     rm -rf ${LLD_BUILD_DIR}
 
     build_step "Configuring lld"
-    cmake \
+    cmake ${CMAKE_TRACE} \
         -S ${LLVM_ROOT}/lld \
         -B ${LLD_BUILD_DIR} \
         -G Ninja \
@@ -196,14 +199,14 @@ build_lld() {
         -DLLVM_EXTERNAL_LIT=${PYTHON_LIT_INSTALL_DIR}/usr/local/bin/lit
 
     build_step "Building lld"
-    LD_LIBRARY_PATH="${LLVM_INSTALL_DIR}/lib64" cmake --build ${LLD_BUILD_DIR}
+    LD_LIBRARY_PATH="${LLVM_INSTALL_DIR}/lib64" cmake ${CMAKE_TRACE} --build ${LLD_BUILD_DIR}
 
     build_step "Testing lld"
-    LD_LIBRARY_PATH="${LLVM_INSTALL_DIR}/lib64" cmake --build ${LLD_BUILD_DIR} --target check-lld
+    LD_LIBRARY_PATH="${LLVM_INSTALL_DIR}/lib64" cmake ${CMAKE_TRACE} --build ${LLD_BUILD_DIR} --target check-lld
 
     build_step "Installing lld"
     rm -rf ${LLD_INSTALL_DIR}
-    cmake --install ${LLD_BUILD_DIR}
+    cmake ${CMAKE_TRACE} --install ${LLD_BUILD_DIR}
 
     build_step "Removing lld build dir"
     rm -rf ${LLD_BUILD_DIR}
