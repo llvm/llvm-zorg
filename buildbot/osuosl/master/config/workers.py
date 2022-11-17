@@ -301,8 +301,8 @@ def get_all():
         create_worker("mi200-buildbot", max_builds=1),
 
         # BOLT workers
-        create_worker("bolt-worker", properties={'jobs' : 16}, max_builds=1),
-        create_worker("bolt-worker-aarch64", properties={'jobs' : 2}, max_builds=1),
+        create_worker("bolt-worker", max_builds=1),
+        create_worker("bolt-worker-aarch64", max_builds=1),
 
         # Fedora worker
         create_worker("standalone-build-x86_64", max_builds=1),
