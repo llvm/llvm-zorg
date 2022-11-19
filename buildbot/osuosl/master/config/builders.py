@@ -1008,12 +1008,13 @@ all = [
                         "-DCMAKE_C_COMPILER=gcc",
                         "-DCMAKE_CXX_COMPILER=g++",
                         "-DCMAKE_BUILD_TYPE=Release",
+                        "-DCLANG_ENABLE_CLANGD=OFF",
                         "-DLLVM_BUILD_RUNTIME=ON",
                         "-DLLVM_BUILD_TESTS=ON",
                         "-DLLVM_CCACHE_BUILD=ON",
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
                         "-DLLVM_INCLUDE_EXAMPLES=OFF",
-                        "-DLLVM_LIT_ARGS=--verbose -j100",
+                        "-DLLVM_LIT_ARGS=--verbose -j48",
                         "-DLLVM_USE_LINKER=gold"])},
 
 # Polly builders.
