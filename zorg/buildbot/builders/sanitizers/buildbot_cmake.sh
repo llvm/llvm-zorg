@@ -62,7 +62,6 @@ CHECK_MSAN=0
 CHECK_TSAN=0
 CHECK_LSAN=0
 CHECK_DFSAN=0
-CHECK_SCUDO=0
 CHECK_SCUDO_STANDALONE=0
 CHECK_CFI=0
 case "$ARCH" in
@@ -74,7 +73,6 @@ case "$ARCH" in
     CHECK_TSAN=1
     CHECK_LSAN=1
     CHECK_DFSAN=1
-    CHECK_SCUDO=1
     CHECK_SCUDO_STANDALONE=1
     CHECK_CFI=1
   ;;
@@ -85,7 +83,6 @@ case "$ARCH" in
     CHECK_TSAN=1
     CHECK_LSAN=1
     CHECK_DFSAN=1
-    CHECK_SCUDO=1
   ;;
   mips64*)
     CHECK_ASAN=1
@@ -100,7 +97,6 @@ case "$ARCH" in
     CHECK_UBSAN=1
     CHECK_MSAN=1
     CHECK_TSAN=1
-    CHECK_SCUDO=1
   ;;
   i*86)
     CHECK_UBSAN=1
@@ -172,7 +168,6 @@ if [ "$PLATFORM" == "Linux" ]; then
   check_in_gcc $CHECK_DFSAN dfsan
   check_in_gcc $CHECK_LSAN lsan
   check_in_gcc $CHECK_MSAN msan
-  check_in_gcc $CHECK_SCUDO scudo
   check_in_gcc $CHECK_SCUDO_STANDALONE scudo_standalone
   LDFLAGS=-no-pie check_in_gcc $CHECK_TSAN tsan
   check_in_gcc $CHECK_UBSAN ubsan
@@ -230,7 +225,6 @@ if [ "$PLATFORM" == "Linux" ]; then
   check_64bit $CHECK_DFSAN dfsan
   check_64bit $CHECK_LSAN lsan
   check_64bit $CHECK_MSAN msan
-  # check_64bit $CHECK_SCUDO scudo, No check-scudo target for this config
   check_64bit $CHECK_TSAN tsan
   check_64bit $CHECK_UBSAN ubsan
   check_64bit $CHECK_UBSAN ubsan-minimal
@@ -282,7 +276,6 @@ if [ "$PLATFORM" == "Linux" -a $HAVE_NINJA == 1 ]; then
   check_ninja $CHECK_DFSAN dfsan
   check_ninja $CHECK_LSAN lsan
   check_ninja $CHECK_MSAN msan
-  check_ninja $CHECK_SCUDO scudo
   check_ninja $CHECK_SCUDO_STANDALONE scudo_standalone
   check_ninja $CHECK_TSAN tsan
   check_ninja $CHECK_UBSAN ubsan
@@ -324,7 +317,6 @@ if [ "$PLATFORM" == "Linux" -a $HAVE_NINJA == 1 ]; then
     check_ninja_with_symbolizer $CHECK_DFSAN dfsan
     LIT_FILTER_OUT=":: TestCases/(realloc_too_big.c|recoverable_leak_check.cpp|suppressions_file.cpp)$" check_ninja_with_symbolizer $CHECK_LSAN lsan
     check_ninja_with_symbolizer $CHECK_MSAN msan
-    check_ninja_with_symbolizer $CHECK_SCUDO scudo
     check_ninja_with_symbolizer $CHECK_SCUDO_STANDALONE scudo_standalone
     LIT_FILTER_OUT=":: Linux/check_memcpy.c$" check_ninja_with_symbolizer $CHECK_TSAN tsan
     LIT_FILTER_OUT=":: TestCases/TypeCheck/(vptr-virtual-base.cpp|vptr.cpp)$" check_ninja_with_symbolizer $CHECK_UBSAN ubsan
