@@ -2546,7 +2546,7 @@ all += [
                         "-DLLVM_ENABLE_PROJECTS=bolt",
                         "-DLLVM_TARGETS_TO_BUILD=X86;AArch64",
                         "-DBUILD_SHARED_LIBS=ON",
-                        "-DLLVM_ENABLE_LLD=ON",
+                        "-DLLVM_USE_LINKER=mold",
                         "-DBOLT_CLANG_EXE=/usr/bin/clang",
                         "-DBOLT_LLD_EXE=/usr/bin/ld.lld",
                         ],
