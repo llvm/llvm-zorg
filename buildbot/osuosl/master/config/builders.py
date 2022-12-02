@@ -2478,7 +2478,7 @@ all += [
 
     {'name': "bolt-x86_64-ubuntu-clang-bolt-lto-pgo",
     'tags': ["bolt"],
-    'collapseRequests': False,
+    'collapseRequests': True,
     'workernames':["bolt-worker"],
     'builddir': "bolt-x86_64-ubuntu-clang-bolt-lto-pgo",
     'factory' : BOLTBuilder.getBOLTCmakeBuildFactory(
