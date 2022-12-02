@@ -382,7 +382,7 @@ echo "@@@BUILD_STEP configure@@@"
 for DBG in OFF ON ; do
   QEMU=0 configure_scudo_compiler_rt x86_64
   configure_scudo_compiler_rt x86_64
-  configure_scudo_compiler_rt arm eabihf
+  # FIXME: investigate and reenable configure_scudo_compiler_rt arm eabihf 
   configure_scudo_compiler_rt aarch64
   QEMU_CPU="cortex-a72" configure_scudo_compiler_rt aarch64
   #configure_scudo_compiler_rt mips
