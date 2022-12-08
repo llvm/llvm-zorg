@@ -169,7 +169,7 @@ def getSphinxRuntimesDocsBuildFactory(
         cleanBuildRequested=f.cleanBuildRequested,
         obj_dir=f.obj_dir,
         install_dir=f.install_dir,
-        extra_configure_args=extra_configure_args,
+        extra_configure_args=cmake_args,
         **kwargs)
 
     if libcxx_html:
