@@ -2498,7 +2498,6 @@ all += [
 
     {'name': "bolt-x86_64-ubuntu-dylib",
     'tags': ["bolt"],
-    'collapseRequests': False,
     'workernames':["bolt-worker"],
     'builddir': "bolt-x86_64-ubuntu-dylib",
     'factory' : BOLTBuilder.getBOLTCmakeBuildFactory(
@@ -2517,7 +2516,6 @@ all += [
 
     {'name': "bolt-x86_64-ubuntu-shared",
     'tags': ["bolt"],
-    'collapseRequests': False,
     'workernames':["bolt-worker"],
     'builddir': "bolt-x86_64-ubuntu-shared",
     'factory' : BOLTBuilder.getBOLTCmakeBuildFactory(
