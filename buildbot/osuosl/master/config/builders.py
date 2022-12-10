@@ -964,7 +964,7 @@ all = [
 
     {'name': "cross-project-tests-sie-ubuntu",
     'tags'  : ["clang", "llvm", "lldb", "cross-project-tests"],
-    'workernames': ["sie-linux-worker"],
+    'workernames': ["doug-worker-1a"],
     'builddir': "cross-project-tests-sie-ubuntu",
     'factory': UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                     depends_on_projects=['llvm','clang','lldb','cross-project-tests'],
@@ -978,13 +978,13 @@ all = [
                         "-DLLVM_CCACHE_BUILD=ON",
                         "-DLLVM_INCLUDE_EXAMPLES=OFF",
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
-                        "-DLLVM_LIT_ARGS=--verbose -j100",
+                        "-DLLVM_LIT_ARGS=--verbose",
                         "-DLLVM_TARGETS_TO_BUILD=X86",
                         "-DLLVM_USE_LINKER=gold"])},
 
     {'name': "cross-project-tests-sie-ubuntu-dwarf5",
     'tags'  : ["clang", "llvm", "lldb", "cross-project-tests"],
-    'workernames': ["sie-slow-linux-worker"],
+    'workernames': ["doug-worker-1b"],
     'builddir': "cross-project-tests-sie-ubuntu-dwarf5",
     'factory': UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                     depends_on_projects=['llvm','clang','lldb','cross-project-tests'],
@@ -998,13 +998,13 @@ all = [
                         "-DLLVM_CCACHE_BUILD=ON",
                         "-DLLVM_INCLUDE_EXAMPLES=OFF",
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
-                        "-DLLVM_LIT_ARGS=--verbose -j24",
+                        "-DLLVM_LIT_ARGS=--verbose",
                         "-DLLVM_TARGETS_TO_BUILD=X86",
                         "-DLLVM_USE_LINKER=gold"])},
 
     {'name': "llvm-clang-x86_64-gcc-ubuntu",
     'tags'  : ["llvm", "clang", "clang-tools-extra", "compiler-rt", "lld", "cross-project-tests"],
-    'workernames': ["doug-linux-worker1"],
+    'workernames': ["doug-worker-2a"],
     'builddir': "llvm-clang-x86_64-gcc-ubuntu",
     'factory': UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                     depends_on_projects=['llvm','clang','clang-tools-extra','compiler-rt','lld','cross-project-tests'],
