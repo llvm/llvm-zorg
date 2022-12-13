@@ -321,7 +321,13 @@ all = [
         subject = "Build %(builder)s Failure",
         mode = "failing",
         builders = ["standalone-build-x86_64"]),
-
+    reporters.MailNotifier(
+        fromaddr = "llvm.buildmaster@lab.llvm.org",
+        sendToInterestedUsers = False,
+        extraRecipients = ["llvm-bolt@meta.com"],
+        subject = "BOLT NFC checks mismatch",
+        mode = "warnings",
+        builders = ["bolt-x86_64-ubuntu-nfc"]),
 ]
 
 
