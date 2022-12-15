@@ -2499,6 +2499,7 @@ all += [
     'builddir': "bolt-x86_64-ubuntu-dylib",
     'factory' : BOLTBuilder.getBOLTCmakeBuildFactory(
                     bolttests=False,
+                    depends_on_projects=['bolt', 'llvm'],
                     extra_configure_args=[
                         "-DLLVM_APPEND_VC_REV=OFF",
                         "-DLLVM_CCACHE_BUILD=ON",
@@ -2517,6 +2518,7 @@ all += [
     'builddir': "bolt-x86_64-ubuntu-shared",
     'factory' : BOLTBuilder.getBOLTCmakeBuildFactory(
                     bolttests=False,
+                    depends_on_projects=['bolt', 'llvm'],
                     extra_configure_args=[
                         "-DLLVM_APPEND_VC_REV=OFF",
                         "-DLLVM_CCACHE_BUILD=ON",
@@ -2535,6 +2537,7 @@ all += [
     'builddir': "bolt-aarch64-ubuntu-clang-shared",
     'factory' : BOLTBuilder.getBOLTCmakeBuildFactory(
                     bolttests=True,
+                    depends_on_projects=['bolt', 'llvm'],
                     extra_configure_args=[
                         "-DCMAKE_C_COMPILER=clang",
                         "-DCMAKE_CXX_COMPILER=clang++",

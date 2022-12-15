@@ -11,7 +11,7 @@ def getBOLTCmakeBuildFactory(
            cache = None,
            extra_configure_args = None,
            env = None,
-           depends_on_projects = ['bolt', 'llvm'],
+           depends_on_projects = None,
            **kwargs):
 
     if env is None:
