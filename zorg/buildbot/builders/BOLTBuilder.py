@@ -1,4 +1,6 @@
 from buildbot.plugins import steps
+from buildbot.steps.shell import ShellCommand
+from zorg.buildbot.commands.LitTestCommand import LitTestCommand
 from zorg.buildbot.commands.CmakeCommand import CmakeCommand
 from zorg.buildbot.builders.UnifiedTreeBuilder import getLLVMBuildFactoryAndSourcecodeSteps, addCmakeSteps, addNinjaSteps
 from zorg.buildbot.process.factory import LLVMBuildFactory
@@ -6,6 +8,7 @@ from zorg.buildbot.process.factory import LLVMBuildFactory
 def getBOLTCmakeBuildFactory(
            clean = False,
            bolttests = False,
+           is_nfc = False,
            targets = None,
            checks = None,
            cache = None,
@@ -78,5 +81,41 @@ def getBOLTCmakeBuildFactory(
         checks=checks,
         env=env,
         **kwargs)
+
+    if is_nfc:
+        f.addSteps([
+            ShellCommand(
+                name='nfc-check-setup',
+                command=[f"../{f.monorepo_dir}/bolt/utils/nfc-check-setup.py"],
+                description=('Setup NFC testing'),
+                warnOnFailure=True,
+                haltOnFailure=False,
+                flunkOnFailure=False,
+                env=env),
+            LitTestCommand(
+                name='nfc-check-bolt',
+                command=['bin/llvm-lit', '-sv', '-j4',
+                         # bolt-info will always mismatch in NFC mode
+                         '--xfail=bolt-info.test',
+                         # FIXME[aaupov]: https://github.com/llvm/llvm-project/issues/59008
+                         '--filter-out=X86/bb-with-two-tail-calls.s',
+                         'tools/bolt/test'],
+                description=["running", "NFC", "check-bolt"],
+                descriptionDone=["NFC", "check-bolt", "completed"],
+                warnOnFailure=True,
+                haltOnFailure=False,
+                flunkOnFailure=False,
+                env=env),
+            LitTestCommand(
+                name='nfc-check-large-bolt',
+                command=['bin/llvm-lit', '-sv', '-j2',
+                         'tools/bolttests'],
+                description=["running", "NFC", "check-large-bolt"],
+                descriptionDone=["NFC", "check-large-bolt", "completed"],
+                warnOnFailure=True,
+                haltOnFailure=False,
+                flunkOnFailure=False,
+                env=env),
+            ])
 
     return f

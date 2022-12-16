@@ -2467,10 +2467,15 @@ all += [
     'collapseRequests': False,
     'workernames' : ['bolt-worker'],
     'builddir': "bolt-x86_64-ubuntu-nfc",
-    'factory' : AnnotatedBuilder.getAnnotatedBuildFactory(
-                    script="bolt-nfc.py",
-                    depends_on_projects=['llvm', 'bolt'],
-                    warnOnWarnings=True,
+    'factory' : BOLTBuilder.getBOLTCmakeBuildFactory(
+                    bolttests=True,
+                    extra_configure_args=[
+                        "-DLLVM_APPEND_VC_REV=OFF",
+                        "-DLLVM_CCACHE_BUILD=ON",
+                        "-DLLVM_ENABLE_PROJECTS=clang;lld;bolt",
+                        "-DLLVM_TARGETS_TO_BUILD=X86;AArch64",
+                        ],
+                    is_nfc=True,
                     )},
 
     {'name': "bolt-x86_64-ubuntu-clang-bolt-lto-pgo",
