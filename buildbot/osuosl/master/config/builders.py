@@ -814,6 +814,22 @@ all = [
                                       '-DLLVM_PARALLEL_LINK_JOBS=4',
                                       '-DLLVM_TARGETS_TO_BUILD=Sparc'])},
 
+    ## LoongArch64 Clang+LLVM build check-all + test-suite
+    {'name' : 'clang-loongarch64-linux',
+    'tags'  : ['clang'],
+    'workernames' : ['loongson-loongarch64-clfs-clang-01'],
+    'builddir': 'clang-loongarch64-linux',
+    'factory' : ClangBuilder.getClangCMakeBuildFactory(
+                    clean=False,
+                    runTestSuite=True,
+                    checkout_clang_tools_extra=False,
+                    checkout_compiler_rt=False,
+                    checkout_lld=False,
+                    testsuite_flags=['--threads=32', '--build-threads=32'],
+                    extra_cmake_args=['-DLLVM_TARGETS_TO_BUILD=',
+                                      '-DLLVM_EXPERIMENTAL_TARGETS_TO_BUILD=LoongArch',
+                                      '-DLLVM_ENABLE_PROJECTS=clang'])},
+
     {'name' : "clang-hexagon-elf",
     'tags'  : ["clang"],
     'workernames' : ["hexagon-build-02", "hexagon-build-03"],

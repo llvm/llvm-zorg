@@ -331,6 +331,13 @@ all = [
         subject = "BOLT NFC checks mismatch",
         mode = "warnings",
         builders = ["bolt-x86_64-ubuntu-nfc"]),
+    reporters.MailNotifier(
+        fromaddr = "llvm.buildmaster@lab.llvm.org",
+        sendToInterestedUsers = False,
+        extraRecipients = ["luweining@loongson.cn", "chenli@loongson.cn"],
+        subject = "Build %(builder)s Failure",
+        mode = "failing",
+        builders = ["clang-loongarch64-linux"]),
 ]
 
 
