@@ -64,7 +64,7 @@ ENV BUILDBOT_PORT="9994"
 # Configure LLVM tools.
 ENV CC=clang-15
 ENV CXX=clang++-15
-ENV LD=lld-15
+ENV LD=ld.lld-15
 
 # Run startup script.
 CMD /home/buildbot/run.sh

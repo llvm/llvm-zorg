@@ -9,7 +9,7 @@
 #
 #===----------------------------------------------------------------------===//
 
-set -eu
+set -eux
 
 # Read the worker password from a mounted file.
 WORKER_PASSWORD=$(cat /vol/secrets/token)
