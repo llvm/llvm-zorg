@@ -242,6 +242,10 @@ def get_all():
         # buildbot/google/terraform/main.tf
         create_worker("clangd-ubuntu-clang", max_builds=1),
 
+        # Debian bullseye, build in C++20 configuration, for worker
+        # configuration check buildbot/google/terraform/main.tf
+        create_worker("clang-debian-cpp20", max_builds=1),
+
         # Ubuntu 18.04.LTS x86_64, GCE instance
         create_worker("polly-x86_64-gce1", properties={'jobs': 2}, max_builds=1),
         create_worker("polly-x86_64-gce2", properties={'jobs': 2}, max_builds=1),

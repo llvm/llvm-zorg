@@ -2459,6 +2459,21 @@ all += [
              "-DGRPC_INSTALL_PATH=/usr/local/lib/grpc"
          ])},
 
+    # Build in C++20 configuration.
+    {'name': "clang-debian-cpp20",
+     'tags': ["clang", "c++20"],
+     'workernames': ["clang-debian-cpp20"],
+     'builddir': "clang-debian-cpp20",
+     'factory': UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
+         clean=True,
+         depends_on_projects=["llvm", "clang", "clang-tools-extra"],
+         extra_configure_args=[
+             "-DCMAKE_CXX_STANDARD=20"
+             "-DLLVM_CCACHE_BUILD=ON",
+             "-DCMAKE_BUILD_TYPE=Release",
+             "-DLLVM_ENABLE_ASSERTIONS=ON",
+         ])},
+
     # Target ARC from Synopsys
     {'name': "arc-builder",
      'tags': ["clang", "lld"],

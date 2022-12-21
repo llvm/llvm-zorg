@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: clang-debian-cpp20
+  name: clang-debian-cpp20
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: clang-debian-cpp20
+  strategy:
+    rollingUpdate:
+      maxSurge: 0
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: clang-debian-cpp20
+    spec:
+      automountServiceAccountToken: false
+      containers:
+      - env:
+        - name: BUILDBOT_PORT
+          value: "9994" # 9994 is staging, 9990 is production.
+        image: gcr.io/sanitizer-bots/buildbot-cpp20:1
+        name: buildbot-clang-debian-cpp20
+        resources:
+          limits:
+            cpu: "15"
+            memory: 45G
+          requests:
+            cpu: "15"
+            memory: 45G
+        volumeMounts:
+        - mountPath: /vol/secrets
+          mountPropagation: None
+          name: buildbot-token
+        - mountPath: /vol/cccache
+          mountPropagation: None
+          name: ccache-vol
+        - mountPath: /vol/worker
+          mountPropagation: None
+          name: worker-vol
+      nodeSelector:
+        pool: linux-16-core-pool
+      restartPolicy: Always
+      volumes:
+      - name: buildbot-token
+        secret:
+          optional: false
+          secretName: password-clangd-ubuntu-clang
+      - emptyDir: {}
+        name: ccache-vol
+      - emptyDir: {}
+        name: worker-vol
