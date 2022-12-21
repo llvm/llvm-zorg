@@ -214,7 +214,7 @@ resource "kubernetes_deployment" "clangd-ubuntu-clang" {
             name = "buildbot-token"
           }
           volume_mount {
-            mount_path = "/vol/cccache"
+            mount_path = "/vol/ccache"
             name = "ccache-vol"
           }
           volume_mount {
