@@ -1894,7 +1894,7 @@ all += [
     'builddir': "openmp-offload-amdgpu-runtime-experimental",
     'factory' : OpenMPBuilder.getOpenMPCMakeBuildFactory(
                         clean=True,
-                        checks=['check-all'],
+                        checkAll=True,
                         enable_runtimes=['openmp'],
                         depends_on_projects=['llvm','clang','lld','openmp'],
                         extraCmakeArgs=[
