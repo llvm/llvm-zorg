@@ -2477,7 +2477,6 @@ all += [
     # Target ARC from Synopsys
     {'name': "arc-builder",
      'tags': ["clang", "lld"],
-     'collapseRequests': False,
      'workernames' : ["arc-worker"],
      'builddir': "arc-folder",
      'factory': UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
