@@ -383,11 +383,16 @@ function build_stage3 {
   local build_dir=llvm_build2_${sanitizer_name}
 
   local clang_path=$ROOT/${STAGE2_DIR}/bin
+  local sanitizer_cflags=
   mkdir -p ${build_dir}
   local stage3_projects='clang;lld;clang-tools-extra'
   if [[ "$(arch)" == "aarch64" ]] ; then
     # FIXME: clangd tests fail.
     stage3_projects='clang;lld'
+  fi
+  if [[ "$(sanitizer_name)" == "hwasan" ]] ; then
+    # FIXME: LSR misbehave with HWASAN.
+    sanitizer_cflags="-mllvm -disable-lsr"
   fi
   (cd ${build_dir} && \
    cmake \
@@ -395,6 +400,7 @@ function build_stage3 {
      -DLLVM_ENABLE_PROJECTS="${stage3_projects}" \
      -DCMAKE_C_COMPILER=${clang_path}/clang \
      -DCMAKE_CXX_COMPILER=${clang_path}/clang++ \
+     -DCMAKE_CXX_FLAGS="${sanitizer_cflags}" \
      -DLLVM_USE_LINKER=lld \
      $LLVM && \
   ninja clang) || build_failure
