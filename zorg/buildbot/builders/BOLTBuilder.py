@@ -1,8 +1,9 @@
 from buildbot.plugins import steps
 from buildbot.steps.shell import ShellCommand
+from zorg.buildbot.builders.UnifiedTreeBuilder import getLLVMBuildFactoryAndSourcecodeSteps, addCmakeSteps, addNinjaSteps
 from zorg.buildbot.commands.LitTestCommand import LitTestCommand
 from zorg.buildbot.commands.CmakeCommand import CmakeCommand
-from zorg.buildbot.builders.UnifiedTreeBuilder import getLLVMBuildFactoryAndSourcecodeSteps, addCmakeSteps, addNinjaSteps
+from zorg.buildbot.conditions.FileConditions import FileExists
 from zorg.buildbot.process.factory import LLVMBuildFactory
 
 def getBOLTCmakeBuildFactory(
@@ -92,6 +93,13 @@ def getBOLTCmakeBuildFactory(
                 haltOnFailure=False,
                 flunkOnFailure=False,
                 env=env),
+            ShellCommand(
+                name='check-bolt-different',
+                command='rm -f .llvm-bolt.diff; cmp -s bin/llvm-bolt.old bin/llvm-bolt.new || touch .llvm-bolt.diff',
+                description=('Check if llvm-bolt binaries are different and '
+                             'skip the following nfc-check steps'),
+                haltOnFailure=False,
+                env=env),
             LitTestCommand(
                 name='nfc-check-bolt',
                 command=['bin/llvm-lit', '-sv', '-j4',
@@ -105,6 +113,7 @@ def getBOLTCmakeBuildFactory(
                 warnOnFailure=True,
                 haltOnFailure=False,
                 flunkOnFailure=False,
+                doStepIf=FileExists('build/.llvm-bolt.diff'),
                 env=env),
             LitTestCommand(
                 name='nfc-check-large-bolt',
@@ -115,6 +124,7 @@ def getBOLTCmakeBuildFactory(
                 warnOnFailure=True,
                 haltOnFailure=False,
                 flunkOnFailure=False,
+                doStepIf=FileExists('build/.llvm-bolt.diff'),
                 env=env),
             ])
 
