@@ -325,6 +325,10 @@ def getClangWithLTOBuildFactory(
 
     CmakeCommand.applyRequiredOptions(extra_configure_args, [
         ('-DLLVM_ENABLE_LTO=', lto),
+        # NOTE: Diagnostic messages could contain __FILE__, thus final executable would depend on build path.
+        # We do not want that since we expect executables built from the same source code in different
+        # build directories be exactly the same.
+        ('-DLLVM_ENABLE_ASSERTIONS=',  'OFF'),
         ])
 
     # If we build LLD, we would link with LLD.
