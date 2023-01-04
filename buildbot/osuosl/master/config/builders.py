@@ -2497,6 +2497,7 @@ all += [
     'builddir': "bolt-x86_64-ubuntu-nfc",
     'factory' : BOLTBuilder.getBOLTCmakeBuildFactory(
                     bolttests=True,
+                    depends_on_projects=['bolt', 'llvm'],
                     extra_configure_args=[
                         "-DLLVM_APPEND_VC_REV=OFF",
                         "-DLLVM_CCACHE_BUILD=ON",
