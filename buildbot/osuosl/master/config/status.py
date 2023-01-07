@@ -205,6 +205,7 @@ all = [
                     "libc-x86_64-windows-dbg", "libc-arm32-debian-dbg",
                     "libc-aarch64-ubuntu-fullbuild-dbg",
                     "libc-x86_64-debian-fullbuild-dbg",
+                    "libc-x86_64-debian-gcc-fullbuild-dbg",
                     "libc-x86_64-debian-fullbuild-dbg-asan"]),
     reporters.MailNotifier(
         fromaddr = "llvm.buildmaster@lab.llvm.org",
