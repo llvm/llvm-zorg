@@ -15,6 +15,9 @@ def is_fullbuild_builder(builder_name):
 def is_runtimes_builder(builder_name):
     return ('runtimes' in builder_name.split('-'))
 
+def is_gcc_builder(builder_name):
+    return ('gcc' in builder_name.split('-'))
+
 
 def main(argv):
     ap = argparse.ArgumentParser()
@@ -28,15 +31,23 @@ def main(argv):
     builder_name = os.environ.get('BUILDBOT_BUILDERNAME')
     fullbuild = is_fullbuild_builder(builder_name)
     runtimes_build = is_runtimes_builder(builder_name)
+    gcc_build = is_gcc_builder(builder_name)
+
+    if gcc_build:
+      cc = 'gcc'
+      cxx = 'g++'
+    else:
+      cc = 'clang'
+      cxx = 'clang++'
 
     with step('cmake', halt_on_fail=True):
-        # On most systems the default generator is make and the default
-        # compilers are gcc and g++. We make it explicit here that we want
-        # clang and ninja which reduces one step of setting environment
+        # On most systems the default generator is make, and the default
+        # compilers are gcc and g++. We make the compiler and the generator
+        # explicit here, which reduces one step of setting environment
         # variables when setting up workers.
         cmake_args = ['-GNinja',
-                      '-DCMAKE_C_COMPILER=clang',
-                      '-DCMAKE_CXX_COMPILER=clang++']
+                      '-DCMAKE_C_COMPILER=%s' % cc,
+                      '-DCMAKE_CXX_COMPILER=%s' % cxx]
 
         if runtimes_build:
           projects = ['llvm', 'clang']
@@ -71,6 +82,15 @@ def main(argv):
             run_command(['ninja', 'libc'])
         else:
             run_command(['ninja', 'llvmlibc'])
+
+    if fullbuild:
+       with step('build libc-startup'):
+          run_command(['ninja', 'libc-startup'])
+
+    if gcc_build:
+        # We have some outstanding bugs to resolve with gcc before we can
+        # run tests.
+        return
 
     with step('check-libc'):
         if runtimes_build:
