@@ -995,6 +995,7 @@ all = [
                         "-DLLVM_INCLUDE_EXAMPLES=OFF",
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
                         "-DLLVM_LIT_ARGS=--verbose",
+                        "-DLLVM_PARALLEL_LINK_JOBS=8",
                         "-DLLVM_TARGETS_TO_BUILD=X86",
                         "-DLLVM_USE_LINKER=gold"])},
 
@@ -1014,6 +1015,7 @@ all = [
                         "-DLLVM_INCLUDE_EXAMPLES=OFF",
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
                         "-DLLVM_LIT_ARGS=--verbose",
+                        "-DLLVM_PARALLEL_LINK_JOBS=8",
                         "-DLLVM_TARGETS_TO_BUILD=X86",
                         "-DLLVM_USE_LINKER=gold"])},
 
@@ -1033,6 +1035,7 @@ all = [
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
                         "-DLLVM_INCLUDE_EXAMPLES=OFF",
                         "-DLLVM_LIT_ARGS=--verbose -j48",
+                        "-DLLVM_PARALLEL_LINK_JOBS=16",
                         "-DLLVM_USE_LINKER=gold"])},
 
 # Polly builders.

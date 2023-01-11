@@ -289,11 +289,11 @@ def get_all():
         create_worker("sie-linux-worker", properties={'jobs': 40}, max_builds=1),
         # 2012 Mac Mini host, 16GB memory:
         #   - Ubuntu 18.04 in docker container
-        create_worker("doug-worker-1a", properties={'jobs': 8}, max_builds=1),
+        create_worker("doug-worker-1a", properties={'jobs': 10}, max_builds=1),
         #   - Ubuntu 22.04 in docker container
-        create_worker("doug-worker-1b", properties={'jobs': 8}, max_builds=1),
+        create_worker("doug-worker-1b", properties={'jobs': 10}, max_builds=1),
         # Ubuntu 18.04 in docker container on Ryzen 4800U
-        create_worker("doug-worker-2a", properties={'jobs': 16}, max_builds=1),
+        create_worker("doug-worker-2a", properties={'jobs': 22}, max_builds=1),
 
         # Windows Server 2019 on AWS, x86_64 PS4 target
         create_worker("sie-win-worker", properties={'jobs': 64}, max_builds=1),
