@@ -8,7 +8,7 @@
 #    BUILDBOT_PORT - server port to connect to
 #===----------------------------------------------------------------------===//
 
-FROM debian:bullseye
+FROM debian:sid
 
 # Install build tools.
 RUN apt-get update && \
@@ -19,7 +19,7 @@ RUN apt-get update && \
         ccache \
         python3 python3-pip python3-psutil && \
     # Install clang-15 to make the minimal C++20 support in the toolchain.
-    echo "deb http://apt.llvm.org/bullseye/ llvm-toolchain-bullseye-15 main" >> /etc/apt/sources.list.d/llvm-15.list && \
+    echo "deb http://apt.llvm.org/unstable/ llvm-toolchain-15 main" >> /etc/apt/sources.list.d/llvm-15.list && \
     wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key >> /etc/apt/trusted.gpg.d/llvm.asc && \
     apt-get update && \
     apt-get install -y clang-15 lld-15 && \
