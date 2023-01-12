@@ -2467,7 +2467,8 @@ all += [
              "-DCMAKE_BUILD_TYPE=Release",
              "-DCLANGD_ENABLE_REMOTE=ON",
              "-DLLVM_ENABLE_ASSERTIONS=ON",
-             "-DGRPC_INSTALL_PATH=/usr/local/lib/grpc"
+             "-DGRPC_INSTALL_PATH=/usr/local/lib/grpc",
+             "-DLLVM_OPTIMIZED_TABLEGEN=ON"
          ])},
 
     # Build in C++20 configuration.
