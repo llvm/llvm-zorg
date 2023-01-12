@@ -125,7 +125,7 @@ pipeline {
                     ninja -k 0 check-llvm check-clang || echo "Some tests may have failed."
                     cd -
 
-                    COV_BINARIES=$(find $BUILD_DIR/bin $BUILD_DIR/lib -depth 1 -type f -exec file {} \\; | grep Mach-O | cut -d':' -f1 | grep -vE '/(FileCheck|count|not)$' | xargs)
+                    COV_BINARIES=$(find $BUILD_DIR/bin $BUILD_DIR/lib -depth 1 -type f -exec file {} \\; | grep Mach-O | cut -d':' -f1 | grep -vE '/(FileCheck|count|not|debugserver)$' | xargs)
 
                     rm -rf $REPORT_DIR
                     mkdir -p $REPORT_DIR
