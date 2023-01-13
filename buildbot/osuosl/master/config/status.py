@@ -339,6 +339,20 @@ all = [
         subject = "Build %(builder)s Failure",
         mode = "failing",
         builders = ["clang-loongarch64-linux"]),
+    reporters.MailNotifier(
+        fromaddr = "llvm.buildmaster@lab.llvm.org",
+        sendToInterestedUsers = False,
+        extraRecipients = ["kadircet@google.com", "sammccall@google.com"],
+        subject = "Build %(builder)s Failure",
+        mode = "failing",
+        builders = ["clangd-ubuntu-tsan"]),
+    reporters.MailNotifier(
+        fromaddr = "llvm.buildmaster@lab.llvm.org",
+        sendToInterestedUsers = False,
+        extraRecipients = ["kadircet@google.com", "ibiryukov@google.com"],
+        subject = "Build %(builder)s Failure",
+        mode = "failing",
+        builders = ["clang-debian-cpp20"]),
 ]
 
 
