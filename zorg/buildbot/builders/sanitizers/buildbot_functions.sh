@@ -203,10 +203,6 @@ function build_stage2 {
     exit 1
   fi
 
-  if [[ "${STAGE2_USE_LATE_EP:-}" != "1" ]] ; then
-    fsanitize_flag+=" -mllvm -sanitizer-early-opt-ep"
-  fi
-
   mkdir -p ${libcxx_build_dir}
   (cd ${libcxx_build_dir} && \
     cmake \

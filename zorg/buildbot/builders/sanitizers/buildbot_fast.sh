@@ -26,8 +26,7 @@ if ccache -s ; then
   CMAKE_COMMON_OPTIONS+=" -DLLVM_CCACHE_BUILD=ON"
 fi
 
-# This bot uses older compiler.
-STAGE2_USE_LATE_EP=1
+# Some of them are slow.
 STAGE2_SKIP_TEST_CXX=1
 
 buildbot_update
