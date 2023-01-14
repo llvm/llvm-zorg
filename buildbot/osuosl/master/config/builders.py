@@ -2527,6 +2527,7 @@ all += [
     'builddir': "bolt-x86_64-ubuntu-clang-bolt-lto-pgo",
     'factory' : BOLTBuilder.getBOLTCmakeBuildFactory(
                     bolttests=False,
+                    clean=True,
                     depends_on_projects=['bolt', 'clang', 'lld', 'llvm'],
                     cache='clang/cmake/caches/BOLT-PGO.cmake',
                     targets=['stage2-clang++-bolt'],
