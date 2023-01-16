@@ -56,7 +56,9 @@ def get_all():
         # AArch64 Windows Microsoft Surface X Pro
         create_worker("linaro-armv8-windows-msvc-01", properties={'jobs' : 8}, max_builds=1),
         create_worker("linaro-armv8-windows-msvc-02", properties={'jobs' : 8}, max_builds=1),
-        create_worker("linaro-lldb-aarch64-windows", properties={'jobs' : 8}, max_builds=1),
+        create_worker("linaro-armv8-windows-msvc-03", properties={'jobs' : 8}, max_builds=1),
+        create_worker("linaro-armv8-windows-msvc-04", properties={'jobs' : 8}, max_builds=1),
+        create_worker("linaro-armv8-windows-msvc-05", properties={'jobs' : 8}, max_builds=1),
 
         # Windows Server 2016 Intel Xeon(R) Quad 2.30 GHz, 56GB of RAM
         create_worker("win-py3-buildbot", properties={'jobs' : 64}, max_builds=1),

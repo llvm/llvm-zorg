@@ -234,32 +234,20 @@ all = [
 # Clang builders.
 
     {'name': "clang-arm64-windows-msvc",
-    'tags' : ["clang"],
-    'workernames' : ["linaro-armv8-windows-msvc-01", "linaro-armv8-windows-msvc-02"],
+    'tags' : ["llvm", "clang", "lld", "flang"],
+    'workernames' : ["linaro-armv8-windows-msvc-04"],
     'builddir': "clang-arm64-windows-msvc",
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
                     vs="manual",
+                    clean=False,
                     checkout_flang=True,
-                    # Only enabling checks we expect to work.
-                    checks=['check-flang'],
+                    checkout_lld=True,
+                    checkout_compiler_rt=False,
                     extra_cmake_args=[
                         "-DCMAKE_TRY_COMPILE_CONFIGURATION=Release",
-                        "-DLLVM_DEFAULT_TARGET_TRIPLE=aarch64-pc-windows-msvc",
-                        "-DLLVM_HOST_TRIPLE=aarch64-pc-windows-msvc",
-                        "-DLLVM_TARGET_ARCH=AArch64",
-                        "-DCMAKE_C_FLAGS=-fms-compatibility-version=19.27",
-                        "-DCMAKE_CXX_FLAGS=-fms-compatibility-version=19.27",
-                        # The BUILTINS environment variable is expected to already exist
-                        # on the worker when it is launched.
-                        "-DCMAKE_EXE_LINKER_FLAGS=%BUILTINS%",
-                        "-DCMAKE_SHARED_LINKER_FLAGS=%BUILTINS%",
-                        "-DCMAKE_STATIC_LINKER_FLAGS=%BUILTINS%",
-                        "-DCMAKE_MODULE_LINKER_FLAGS=%BUILTINS%",
-                        # FIXME: compiler-rt\lib\sanitizer_common\sanitizer_unwind_win.cpp assumes WIN64 is x86_64,
-                        #        so, before that's fixed, disable everything that triggers its build.
-                        "-DCOMPILER_RT_BUILD_SANITIZERS=OFF",
-                        "-DCOMPILER_RT_BUILD_MEMPROF=OFF",
-                        "-DCOMPILER_RT_BUILD_XRAY=OFF"])},
+                        "-DLLVM_TARGETS_TO_BUILD='AArch64'",
+                        "-DCMAKE_C_COMPILER_LAUNCHER=sccache",
+                        "-DCMAKE_CXX_COMPILER_LAUNCHER=sccache"])},
 
     ## ARMv8 check-all
     {'name' : "clang-armv8-quick",
@@ -581,25 +569,20 @@ all = [
 
     {'name' : "clang-arm64-windows-msvc-2stage",
     'tags'  : ["clang"],
-    'workernames' : ["linaro-armv8-windows-msvc-01", "linaro-armv8-windows-msvc-02"],
+    'workernames' : ["linaro-armv8-windows-msvc-01", "linaro-armv8-windows-msvc-02", "linaro-armv8-windows-msvc-03"],
     'builddir': "clang-arm64-windows-msvc-2stage",
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
                     vs="manual",
-                    checks=[], # Disable testing until MCJIT failures are fixed
                     useTwoStage=True,
-                    testStage1=False,
+                    checkout_flang=True,
                     extra_cmake_args=[
                         "-DCMAKE_TRY_COMPILE_CONFIGURATION=Release",
-                        "-DLLVM_DEFAULT_TARGET_TRIPLE=aarch64-pc-windows-msvc",
-                        "-DLLVM_HOST_TRIPLE=aarch64-pc-windows-msvc",
-                        "-DLLVM_TARGET_ARCH=AArch64",
-                        "-DCMAKE_C_FLAGS=-fms-compatibility-version=19.27",
-                        "-DCMAKE_CXX_FLAGS=-fms-compatibility-version=19.27",
+                        "-DCMAKE_C_COMPILER_LAUNCHER=sccache",
+                        "-DCMAKE_CXX_COMPILER_LAUNCHER=sccache",                         
                         # FIXME: compiler-rt\lib\sanitizer_common\sanitizer_unwind_win.cpp assumes WIN64 is x86_64,
                         #        so, before that's fixed, disable everything that triggers its build.
                         "-DCOMPILER_RT_BUILD_SANITIZERS=OFF",
-                        "-DCOMPILER_RT_BUILD_MEMPROF=OFF",
-                        "-DCOMPILER_RT_BUILD_XRAY=OFF"])},
+                        "-DCOMPILER_RT_BUILD_PROFILE=OFF"])},
 
     {'name' : 'clang-x64-windows-msvc',
     'tags'  : ["clang"],
@@ -1353,22 +1336,15 @@ all = [
 
     {'name' : "lldb-aarch64-windows",
     'tags'  : ["lldb"],
-    'workernames' : ["linaro-lldb-aarch64-windows"],
+    'workernames' : ["linaro-armv8-windows-msvc-05"],
     'builddir': "lldb-aarch64-windows",
     'factory' : LLDBBuilder.getLLDBCMakeBuildFactory(
                     clean=True,
                     test=True,
                     extra_cmake_args=[
-                        '-DCLANG_DEFAULT_LINKER=lld',
-                        '-DLLDB_ENABLE_PYTHON=TRUE',
-                        '-DLLDB_TEST_USER_ARGS=--skip-category=watchpoint',
-                        '-DLLVM_NATIVE_ARCH=AArch64',
-                        '-DLLVM_HOST_TRIPLE=aarch64-windows-msvc',
-                        '-DLLVM_DEFAULT_TARGET_TRIPLE=aarch64-windows-msvc',
-                        '-DLLVM_FORCE_USE_OLD_TOOLCHAIN=True',
-                        '-DLLVM_ENABLE_ASSERTIONS=OFF',
-                        '-DLLVM_ENABLE_ZLIB=FALSE',
-                        '-DLLVM_LIT_ARGS=-vj 4'])},
+                        "-DCMAKE_C_COMPILER_LAUNCHER=sccache",
+                        "-DCMAKE_CXX_COMPILER_LAUNCHER=sccache",
+                        '-DLLDB_TEST_USER_ARGS=--skip-category=watchpoint'])},
 
 # LLD builders.
 
