@@ -2460,6 +2460,9 @@ all += [
              "-DLLVM_CCACHE_BUILD=ON",
              "-DCMAKE_BUILD_TYPE=Release",
              "-DLLVM_ENABLE_ASSERTIONS=ON",
+             # FIXME: Re-enabler after claning up LLVM.
+             #        https://github.com/llvm/llvm-project/issues/60101
+             "-DCMAKE_CXX_FLAGS=-Wnodeprecated-enum-enum-conversion -Wnodeprecated-declarations",
          ])},
 
     # Target ARC from Synopsys
