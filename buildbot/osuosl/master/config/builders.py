@@ -578,7 +578,7 @@ all = [
                     extra_cmake_args=[
                         "-DCMAKE_TRY_COMPILE_CONFIGURATION=Release",
                         "-DCMAKE_C_COMPILER_LAUNCHER=sccache",
-                        "-DCMAKE_CXX_COMPILER_LAUNCHER=sccache",                         
+                        "-DCMAKE_CXX_COMPILER_LAUNCHER=sccache",
                         # FIXME: compiler-rt\lib\sanitizer_common\sanitizer_unwind_win.cpp assumes WIN64 is x86_64,
                         #        so, before that's fixed, disable everything that triggers its build.
                         "-DCOMPILER_RT_BUILD_SANITIZERS=OFF",
@@ -1596,7 +1596,7 @@ all += [
                     ])},
 
 # Sanitizer builders.
-# 
+#
 # bootstrap-asan, bootstrap-msan, and sanitizer-x86_64-linux-fast have steps
 # with large memory usage, so assign them to different workers.
 
