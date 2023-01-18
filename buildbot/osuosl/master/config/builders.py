@@ -2500,6 +2500,26 @@ all += [
                     is_nfc=True,
                     )},
 
+    {'name': "bolt-x86_64-ubuntu-clang-bolt-gcc",
+    'tags': ["bolt"],
+    'workernames':["bolt-worker"],
+    'builddir': "bolt-x86_64-ubuntu-clang-bolt-gcc",
+    'factory' : BOLTBuilder.getBOLTCmakeBuildFactory(
+                    bolttests=False,
+                    clean=True,
+                    depends_on_projects=['bolt', 'clang', 'llvm'],
+                    cache='clang/cmake/caches/BOLT.cmake',
+                    targets=['clang++-bolt'],
+                    checks=['check-clang'],
+                    extra_configure_args=[
+                        "-DCMAKE_C_COMPILER=gcc",
+                        "-DCMAKE_CXX_COMPILER=g++",
+                        "-DLLVM_APPEND_VC_REV=OFF",
+                        "-DLLVM_CCACHE_BUILD=ON",
+                        ],
+                    )},
+
+
     {'name': "bolt-x86_64-ubuntu-clang-bolt-lto-pgo",
     'tags': ["bolt"],
     'workernames':["bolt-worker"],
