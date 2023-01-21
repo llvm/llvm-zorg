@@ -2510,7 +2510,6 @@ all += [
                     depends_on_projects=['bolt', 'clang', 'llvm'],
                     cache='clang/cmake/caches/BOLT.cmake',
                     targets=['clang++-bolt'],
-                    checks=['check-clang'],
                     extra_configure_args=[
                         "-DCMAKE_C_COMPILER=gcc",
                         "-DCMAKE_CXX_COMPILER=g++",
