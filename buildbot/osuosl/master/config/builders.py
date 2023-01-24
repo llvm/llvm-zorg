@@ -2515,6 +2515,7 @@ all += [
                         "-DCMAKE_CXX_COMPILER=g++",
                         "-DLLVM_APPEND_VC_REV=OFF",
                         "-DLLVM_CCACHE_BUILD=ON",
+                        "-DBOLT_LLD_EXE=/usr/bin/ld.lld",
                         ],
                     )},
 
