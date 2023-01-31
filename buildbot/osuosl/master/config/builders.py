@@ -1882,6 +1882,7 @@ all += [
                             "-DLLVM_ENABLE_RUNTIMES=openmp",
                             "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
                             "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
+                            "-DCMAKE_LIBOMPTARGET_FOUND_AMDGPU_GPU=ON",
                             ],
                         install=True,
                         testsuite=False,
