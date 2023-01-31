@@ -128,6 +128,10 @@ def get_all():
         # aarch64 GCE instances
         create_worker("sanitizer-buildbot7", properties={'jobs': 48}, max_builds=3),
         create_worker("sanitizer-buildbot8", properties={'jobs': 48}, max_builds=3),
+        create_worker("sanitizer-buildbot9", properties={'jobs': 48}, max_builds=3),
+        create_worker("sanitizer-buildbot10", properties={'jobs': 48}, max_builds=3),
+        create_worker("sanitizer-buildbot11", properties={'jobs': 48}, max_builds=3),
+        create_worker("sanitizer-buildbot12", properties={'jobs': 48}, max_builds=3),
 
         # POWER 8 PowerPC AIX 7.2
         create_worker("aix-ppc64", properties={'jobs': 10}, max_builds=1),
