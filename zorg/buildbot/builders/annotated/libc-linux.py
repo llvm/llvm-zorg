@@ -78,10 +78,7 @@ def main(argv):
         run_command(['cmake', os.path.join(source_dir, 'llvm')] + cmake_args)
 
     with step('build libc'):
-        if fullbuild:
-            run_command(['ninja', 'libc'])
-        else:
-            run_command(['ninja', 'llvmlibc'])
+       run_command(['ninja', 'libc'])
 
     if fullbuild:
        with step('build libc-startup'):
@@ -93,10 +90,7 @@ def main(argv):
         return
 
     with step('check-libc'):
-        if runtimes_build:
-          run_command(['ninja', 'check-llvmlibc'])
-        else:
-          run_command(['ninja', 'check-libc'])
+        run_command(['ninja', 'check-libc'])
 
     if fullbuild and not args.asan:
         with step('libc-integration-tests'):
