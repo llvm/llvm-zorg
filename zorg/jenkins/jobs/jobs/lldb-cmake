@@ -1,6 +1,6 @@
 #!/usr/bin/env groovy
 pipeline {
-    agent { label 'green-dragon-04' }
+    agent { label 'green-dragon-03' }
     parameters {
         string(name: 'GIT_SHA', defaultValue: '*/main', description: 'Git revision to build')
         string(name: 'ARTIFACT', defaultValue: 'clang-stage2-Rthinlto/latest', description: 'Compiler artifact to use for building the project')
