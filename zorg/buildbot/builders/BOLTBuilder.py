@@ -12,7 +12,7 @@ def getBOLTCmakeBuildFactory(
            is_nfc = False,
            targets = None,
            checks = None,
-           cache = None,
+           caches = None,
            extra_configure_args = None,
            env = None,
            depends_on_projects = None,
@@ -63,10 +63,9 @@ def getBOLTCmakeBuildFactory(
         ('-G',                      'Ninja'),
         ])
 
-    if cache:
-        CmakeCommand.applyRequiredOptions(extra_configure_args, [
-            ("-C", f"../{f.monorepo_dir}/{cache}"),
-            ])
+    if caches:
+        for cache in caches:
+            extra_configure_args += [f"-C../{f.monorepo_dir}/{cache}"]
 
     addCmakeSteps(
         f,
