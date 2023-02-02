@@ -1704,7 +1704,6 @@ all += [
     'tags'  : ["sanitizer"],
     'workernames' : [
         "sanitizer-buildbot7",
-        "sanitizer-buildbot8",
         "sanitizer-buildbot9",
         "sanitizer-buildbot11",
     ],
@@ -1740,9 +1739,9 @@ all += [
     {'name' : "sanitizer-aarch64-linux-fuzzer",
     'tags'  : ["sanitizer"],
     'workernames' : [
-        "sanitizer-buildbot7",
-        "sanitizer-buildbot9",
-        "sanitizer-buildbot11",
+        "sanitizer-buildbot8",
+        "sanitizer-buildbot10",
+        "sanitizer-buildbot12",
     ],
     'builddir': "sanitizer-aarch64-linux-fuzzer",
     'factory' : SanitizerBuilder.getSanitizerBuildFactory()},
