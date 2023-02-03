@@ -1,6 +1,6 @@
 #!/usr/bin/env groovy
 pipeline {
-    agent { label 'green-dragon-04' }
+    agent { label 'green-dragon-03' }
     parameters {
         string(name: 'GIT_SHA', defaultValue: '*/main', description: 'Git revision to build')
         string(name: 'ARTIFACT', defaultValue: 'clang-stage2-Rthinlto/latest', description: 'Compiler artifact to use for building the project')
@@ -63,7 +63,7 @@ pipeline {
 
                     cd -
 
-                    if test $(hostname) == "green-dragon-04"; then sh /opt/codesign-workaround.sh init lldb-build/bin/debugserver; fi
+                    if test -f /opt/codesign-workaround.sh; then sh /opt/codesign-workaround.sh init lldb-build/bin/debugserver; fi
                     export MAX_PARALLEL_TESTS=$(sysctl hw.physicalcpu |awk '{print $2}')
                     python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake build \
                       --assertions \
@@ -77,7 +77,7 @@ pipeline {
                       --compiler-flag="-Wdocumentation" \
                       --cmake-type=Release)
 
-                    if test $(hostname) == "green-dragon-04"; then sh /opt/codesign-workaround.sh sign lldb-build/bin/debugserver; fi
+                    if test -f /opt/codesign-workaround.sh; then sh /opt/codesign-workaround.sh sign lldb-build/bin/debugserver; fi
                       '''
                 }
             }
