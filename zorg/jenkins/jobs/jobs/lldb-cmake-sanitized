@@ -1,6 +1,6 @@
 #!/usr/bin/env groovy
 pipeline {
-    agent { label 'green-dragon-23' }
+    agent { label 'green-dragon-04' }
     parameters {
         string(name: 'GIT_SHA', defaultValue: '*/main', description: 'Git revision to build')
         string(name: 'ARTIFACT', defaultValue: 'clang-stage2-Rthinlto/latest', description: 'Compiler artifact to use for building the project')
@@ -68,6 +68,7 @@ pipeline {
 
                     export PATH=$PATH:/usr/bin:/usr/local/bin
 
+                    if test -f /opt/codesign-workaround.sh; then sh /opt/codesign-workaround.sh init lldb-build/bin/debugserver; fi
                     # Running too many asanified threads is too stressful for the kernel and we get >90% system time.
                     export MAX_PARALLEL_TESTS=$(sysctl hw.physicalcpu |awk '{print int(($2+1)/2)}')
 
@@ -76,6 +77,8 @@ pipeline {
                       --projects="clang;lld;lldb"  \
                       --runtimes="libcxx;libcxxabi" \
                       --cmake-type=Release
+
+                    if test -f /opt/codesign-workaround.sh; then sh /opt/codesign-workaround.sh sign lldb-build/bin/debugserver; fi
                     '''
                 }
             }
