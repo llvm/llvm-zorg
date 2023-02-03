@@ -42,7 +42,7 @@ pipeline {
                     # The relay job sets ARTIFACT to the last good LLDB build.
                     # Here we use it to download the last good Clang.
                     export ARTIFACT=clang-stage2-Rthinlto/latest
-                    python llvm-zorg/zorg/jenkins/monorepo_build.py fetch
+                    python3 llvm-zorg/zorg/jenkins/monorepo_build.py fetch
                     '''
                 }
             }
@@ -71,7 +71,7 @@ pipeline {
                     # Running too many asanified threads is too stressful for the kernel and we get >90% system time.
                     export MAX_PARALLEL_TESTS=$(sysctl hw.physicalcpu |awk '{print int(($2+1)/2)}')
 
-                    python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-sanitized build \
+                    python3 llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-sanitized build \
                       --assertions \
                       --projects="clang;lld;lldb"  \
                       --runtimes="libcxx;libcxxabi" \
@@ -89,7 +89,7 @@ pipeline {
 
                     rm -rf test/results.xml
 
-                    python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-sanitized test
+                    python3 llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-sanitized test
                     '''
                 }
             }

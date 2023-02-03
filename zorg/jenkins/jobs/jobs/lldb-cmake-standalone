@@ -42,7 +42,7 @@ pipeline {
                   # The relay job sets ARTIFACT to the last good LLDB build.
                   # Here we use it to download the last good Clang.
                   export ARTIFACT=clang-stage2-Rthinlto/latest
-                  python llvm-zorg/zorg/jenkins/monorepo_build.py fetch
+                  python3 llvm-zorg/zorg/jenkins/monorepo_build.py fetch
                   '''
                 }
             }
@@ -68,7 +68,7 @@ pipeline {
 
                     export PATH=$PATH:/usr/bin:/usr/local/bin
 
-                    python llvm-zorg/zorg/jenkins/monorepo_build.py cmake build \
+                    python3 llvm-zorg/zorg/jenkins/monorepo_build.py cmake build \
                       --assertions \
                       --noupload \
                       --projects="clang" \
@@ -102,7 +102,7 @@ pipeline {
                     export PATH=$PATH:/usr/bin:/usr/local/bin
                     export LLDB_STANDALONE_TYPE="build-tree"
 
-                    python $WORKSPACE/llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-standalone build \
+                    python3 $WORKSPACE/llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-standalone build \
                       --assertions \
                       --cmake-type=Release
                     '''
@@ -131,7 +131,7 @@ pipeline {
                     export PATH=$PATH:/usr/bin:/usr/local/bin
                     export LLDB_STANDALONE_TYPE="install-tree"
 
-                    python $WORKSPACE/llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-standalone build \
+                    python3 $WORKSPACE/llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-standalone build \
                       --assertions \
                       --cmake-type=Release
                     '''
@@ -159,7 +159,7 @@ pipeline {
 
                     export PATH=$PATH:/usr/bin:/usr/local/bin
 
-                    python $WORKSPACE/llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-xcode build \
+                    python3 $WORKSPACE/llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-xcode build \
                       --assertions \
                       --cmake-type=Release
                     '''
@@ -173,7 +173,7 @@ pipeline {
                     set -u
                     export PATH=$PATH:/usr/bin:/usr/local/bin
 
-                    echo "TEMPORARILY DISABLED (runs with too many jobs in parallel)" python $WORKSPACE/llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-xcode test \
+                    echo "TEMPORARILY DISABLED (runs with too many jobs in parallel)" python3 $WORKSPACE/llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-xcode test \
                       --assertions \
                       --cmake-type=Release
                     '''

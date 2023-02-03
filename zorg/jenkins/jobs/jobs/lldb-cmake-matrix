@@ -46,7 +46,7 @@ pipeline {
                     # The relay job sets ARTIFACT to the last good LLDB build.
                     # Here we use it to download the last good Clang.
                     export ARTIFACT=clang-stage2-Rthinlto/latest
-                    python llvm-zorg/zorg/jenkins/monorepo_build.py fetch
+                    python3 llvm-zorg/zorg/jenkins/monorepo_build.py fetch
                     '''
                     }
             }
@@ -72,7 +72,7 @@ pipeline {
 
                     export PATH=$PATH:/usr/bin:/usr/local/bin
 
-                    python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake build \
+                    python3 llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake build \
                       $MATRIX_COMMON_BUILD_PARAMETERS \
                       --assertions \
                       --projects="clang;lldb"  \
@@ -89,7 +89,7 @@ pipeline {
                 timeout(60) {
                     sh '''
                     export PATH=$PATH:/usr/bin:/usr/local/bin
-                    python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix configure \
+                    python3 llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix configure \
                       $MATRIX_COMMON_BUILD_PARAMETERS \
                       --assertions \
                       --lldb-test-compiler="$WORKSPACE/lldb-build/bin/clang" \
@@ -110,7 +110,7 @@ pipeline {
                     set +e
                     # Give the system some time to recover.
                     sleep 120
-                    python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix test
+                    python3 llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix test
                     set -e
                     '''
                 }
@@ -122,7 +122,7 @@ pipeline {
                 timeout(60) {
                     sh '''
                     export PATH=$PATH:/usr/bin:/usr/local/bin
-                    python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix configure \
+                    python3 llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix configure \
                       $MATRIX_COMMON_BUILD_PARAMETERS \
                       --lldb-test-compiler="$WORKSPACE/lldb-build/bin/clang" \
                       --assertions \
@@ -143,7 +143,7 @@ pipeline {
                     set +e
                     # Give the system some time to recover.
                     sleep 120
-                    python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix test
+                    python3 llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix test
                     set -e
                     '''
                 }
@@ -155,7 +155,7 @@ pipeline {
                 timeout(60) {
                     sh '''
                     export PATH=$PATH:/usr/bin:/usr/local/bin
-                    python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix configure \
+                    python3 llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix configure \
                       $MATRIX_COMMON_BUILD_PARAMETERS \
                       --lldb-test-compiler="$WORKSPACE/lldb-build/bin/clang" \
                       --assertions \
@@ -176,7 +176,7 @@ pipeline {
                     set +e
                     # Give the system some time to recover.
                     sleep 120
-                    python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix test
+                    python3 llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix test
                     set -e
                     '''
                 }
@@ -203,7 +203,7 @@ pipeline {
                     export SRC_DIR='clang_701'
                     export BUILD_DIR='clang_701_build'
 
-                    python llvm-zorg/zorg/jenkins/monorepo_build.py cmake build \
+                    python3 llvm-zorg/zorg/jenkins/monorepo_build.py cmake build \
                       $MATRIX_COMMON_BUILD_PARAMETERS \
                       --assertions \
                       --noupload \
@@ -219,7 +219,7 @@ pipeline {
                     sh '''
                     build_dir=$WORKSPACE/clang_701_build
                     export PATH=$PATH:/usr/bin:/usr/local/bin
-                    python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix configure \
+                    python3 llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix configure \
                       $MATRIX_COMMON_BUILD_PARAMETERS \
                       --assertions \
                       --lldb-test-compiler="$build_dir/bin/clang" \
@@ -241,7 +241,7 @@ pipeline {
                     set +e
                     # Give the system some time to recover.
                     sleep 120
-                    python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix test
+                    python3 llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix test
                     set -e
                     '''
                 }
@@ -268,7 +268,7 @@ pipeline {
                     export SRC_DIR='clang_900'
                     export BUILD_DIR='clang_900_build'
 
-                    python llvm-zorg/zorg/jenkins/monorepo_build.py cmake build \
+                    python3 llvm-zorg/zorg/jenkins/monorepo_build.py cmake build \
                       $MATRIX_COMMON_BUILD_PARAMETERS \
                       --assertions \
                       --noupload \
@@ -284,7 +284,7 @@ pipeline {
                     sh '''
                     build_dir=$WORKSPACE/clang_900_build
                     export PATH=$PATH:/usr/bin:/usr/local/bin
-                    python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix configure \
+                    python3 llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix configure \
                       $MATRIX_COMMON_BUILD_PARAMETERS \
                       --assertions \
                       --lldb-test-compiler="$build_dir/bin/clang" \
@@ -306,7 +306,7 @@ pipeline {
                     set +e
                     # Give the system some time to recover.
                     sleep 120
-                    python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix test
+                    python3 llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix test
                     set -e
                     '''
                 }
@@ -333,7 +333,7 @@ pipeline {
                     export SRC_DIR='clang_1101'
                     export BUILD_DIR='clang_1101_build'
 
-                    python llvm-zorg/zorg/jenkins/monorepo_build.py cmake build \
+                    python3 llvm-zorg/zorg/jenkins/monorepo_build.py cmake build \
                       $MATRIX_COMMON_BUILD_PARAMETERS \
                       --assertions \
                       --noupload \
@@ -349,7 +349,7 @@ pipeline {
                     sh '''
                     build_dir=$WORKSPACE/clang_1101_build
                     export PATH=$PATH:/usr/bin:/usr/local/bin
-                    python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix configure \
+                    python3 llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix configure \
                       $MATRIX_COMMON_BUILD_PARAMETERS \
                       --assertions \
                       --lldb-test-compiler="$build_dir/bin/clang" \
@@ -371,7 +371,7 @@ pipeline {
                     set +e
                     # Give the system some time to recover.
                     sleep 120
-                    python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix test
+                    python3 llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix test
                     set -e
                     '''
                 }
@@ -398,7 +398,7 @@ pipeline {
                     export SRC_DIR='clang_1300'
                     export BUILD_DIR='clang_1300_build'
 
-                    python llvm-zorg/zorg/jenkins/monorepo_build.py cmake build \
+                    python3 llvm-zorg/zorg/jenkins/monorepo_build.py cmake build \
                       $MATRIX_COMMON_BUILD_PARAMETERS \
                       --assertions \
                       --noupload \
@@ -414,7 +414,7 @@ pipeline {
                     sh '''
                     build_dir=$WORKSPACE/clang_1300_build
                     export PATH=$PATH:/usr/bin:/usr/local/bin
-                    python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix configure \
+                    python3 llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix configure \
                       $MATRIX_COMMON_BUILD_PARAMETERS \
                       --assertions \
                       --lldb-test-compiler="$build_dir/bin/clang" \
@@ -436,7 +436,7 @@ pipeline {
                     set +e
                     # Give the system some time to recover.
                     sleep 120
-                    python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix test
+                    python3 llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix test
                     set -e
                     '''
                 }
@@ -463,7 +463,7 @@ pipeline {
                     export SRC_DIR='clang_1501'
                     export BUILD_DIR='clang_1501_build'
 
-                    python llvm-zorg/zorg/jenkins/monorepo_build.py cmake build \
+                    python3 llvm-zorg/zorg/jenkins/monorepo_build.py cmake build \
                       $MATRIX_COMMON_BUILD_PARAMETERS \
                       --assertions \
                       --noupload \
@@ -479,7 +479,7 @@ pipeline {
                     sh '''
                     build_dir=$WORKSPACE/clang_1501_build
                     export PATH=$PATH:/usr/bin:/usr/local/bin
-                    python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix configure \
+                    python3 llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix configure \
                       $MATRIX_COMMON_BUILD_PARAMETERS \
                       --assertions \
                       --lldb-test-compiler="$build_dir/bin/clang" \
@@ -501,7 +501,7 @@ pipeline {
                     set +e
                     # Give the system some time to recover.
                     sleep 120
-                    python llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix test
+                    python3 llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix test
                     set -e
                     '''
                 }
