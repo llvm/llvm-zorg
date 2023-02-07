@@ -875,15 +875,15 @@ all = [
                     checks=[],
                     useTwoStage=False,
                     runTestSuite=True,
-                    nt_flags=['--cflag', '-march=broadwell', '--threads=1', '--build-threads=80', '--use-perf',
-                            '--benchmarking-only', '--multisample=4', '--exclude-stat-from-submission=compile'],
+                    testsuite_flags=['--cflag', '-march=cascadelake', '--threads=1', '--build-threads=32', '--use-perf=all',
+                            '--benchmarking-only', '--exec-multisample=4', '--exclude-stat-from-submission=compile'],
                     env={'PATH':'/usr/bin/ccache:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'},
                     extra_cmake_args=[
-                        "-DCMAKE_C_FLAGS='-march=broadwell'",
-                        "-DCMAKE_CXX_FLAGS='-march=broadwell'",
+                        "-DCMAKE_C_FLAGS='-march=cascadelake'",
+                        "-DCMAKE_CXX_FLAGS='-march=cascadelake'",
                         "-DLLVM_TARGETS_TO_BUILD='X86'"],
                     submitURL='http://lnt.llvm.org/submitRun',
-                    testerName='LNT-Broadwell-AVX2-O5')},
+                    testerName='LNT-Cascadelake-AVX2-O1')},
 
     ## X86_64 Clang+LLVM Run test-suite targeting AVX512 on SDE (Emulator)
     {'name' : "clang-cmake-x86_64-sde-avx512-linux",
