@@ -49,7 +49,7 @@ pipeline {
         }
         stage('Build') {
             steps {
-                timeout(120) {
+                timeout(240) {
                     sh '''
                     set -u
                     rm -rf build.properties
@@ -85,7 +85,7 @@ pipeline {
         }
         stage('Test') {
             steps {
-                timeout(120) {
+                timeout(240) {
                     sh '''
                     set -u
                     export PATH=$PATH:/usr/bin:/usr/local/bin
