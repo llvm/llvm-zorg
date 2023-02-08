@@ -22,7 +22,7 @@ pyOpenSSL==20.0.1
 pyasn1==0.4.8
 pyasn1-modules==0.2.8
 service-identity==18.1.0
-cryptography==3.4.5
+cryptography==39.0.1
 cffi==1.14.5
 Twisted==22.4.0
 treq==22.1.0
