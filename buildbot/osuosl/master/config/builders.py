@@ -959,7 +959,7 @@ all = [
                         "-DLLVM_VERSION_SUFFIX=",
                         "-DLLVM_BUILD_RUNTIME=OFF",
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
-                        "-DLLVM_LIT_ARGS=--verbose -j61",
+                        "-DLLVM_LIT_ARGS=--verbose",
                         "-DPYTHON_EXECUTABLE=C:\Python310\python.exe"])},
 
     {'name': "cross-project-tests-sie-ubuntu",
