@@ -46,8 +46,8 @@ BUILT_CLANGXX="${INTREE_PREFIX}/bin/clang++"
 VE_TARGET="ve-unknown-linux-gnu"
 LINUX_VE_LIBSUFFIX=/linux/ve
 
-# Resource dir (Requires clang to be installed before this variable gets expanded)
-RES_VERSION=$(shell ${INTREE_PREFIX}/bin/llvm-config  --version | sed -n 's/git//p')
+# Resource dir
+RES_VERSION=$(shell grep 'set.*LLVM_VERSION_MAJOR  *' ${MONOREPO}/llvm/CMakeLists.txt | sed -e 's/.*LLVM_VERSION_MAJOR //' -e 's/[^0-9][^0-9]*//')
 CLANG_RESDIR="${INTREE_PREFIX}/lib/clang/${RES_VERSION}"
 
 ### LLVM
