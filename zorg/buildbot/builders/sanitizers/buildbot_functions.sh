@@ -386,10 +386,6 @@ function build_stage3 {
     # FIXME: clangd tests fail.
     stage3_projects='clang;lld'
   fi
-  if [[ "${sanitizer_name}" == "hwasan" ]] ; then
-    # FIXME: LSR misbehave with HWASAN.
-    sanitizer_cflags="-mllvm -disable-lsr"
-  fi
   (cd ${build_dir} && \
    cmake \
      ${CMAKE_COMMON_OPTIONS} \
