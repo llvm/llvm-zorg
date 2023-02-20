@@ -326,4 +326,7 @@ def get_all():
 
         # CSKY T-HEAD workers
         create_worker("thead-clang-csky", properties={'jobs' : 32}, max_builds=1),
+
+        # RISC-V workers
+        create_worker("rv64gc-qemu-user", properties={'jobs' : 32}, max_builds=1),
         ]

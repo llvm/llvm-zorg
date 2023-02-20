@@ -2737,4 +2737,19 @@ all += [
                         "-DLLVM_LIT_ARGS=-vv --threads=32",
                         "-DLLVM_OPTIMIZED_TABLEGEN=ON"])},
 
+    ## RISC-V RV64GC check-all running under qemu-user.
+    {'name' : "clang-rv64gc-qemu-user-single-stage",
+    'tags'  : ["llvm", "clang"],
+    'workernames' : ["rv64gc-qemu-user"],
+    'builddir': "clang-rv64gc",
+    'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
+                    depends_on_projects=["llvm", "clang", "clang-tools-extra", "lld"],
+                    checks=['check-all'],
+                    extra_configure_args=[
+                        "-DCMAKE_BUILD_TYPE=Release",
+                        "-DLLVM_ENABLE_ASSERTIONS=ON",
+                        "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
+                        "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
+                        "-DLLVM_TARGETS_TO_BUILD=all"])},
+
 ]
