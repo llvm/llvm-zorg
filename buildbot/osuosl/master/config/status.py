@@ -330,7 +330,7 @@ all = [
         sendToInterestedUsers = False,
         extraRecipients = ["llvm-bolt@meta.com"],
         subject = "BOLT NFC checks mismatch",
-        mode = ("warnings"),
+        mode = ("warnings",),
         builders = ["bolt-x86_64-ubuntu-nfc"]),
     reporters.MailNotifier(
         fromaddr = "llvm.buildmaster@lab.llvm.org",
