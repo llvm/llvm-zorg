@@ -89,8 +89,12 @@ def main(argv):
         # run tests.
         return
 
-    with step('libc-unit-tests'):
-        run_command(['ninja', 'libc-unit-tests'])
+    if runtimes_build:
+        with step('check-libc'):
+            run_command(['ninja', 'check-libc'])
+    else:
+        with step('libc-unit-tests'):
+            run_command(['ninja', 'libc-unit-tests'])
 
     if fullbuild and not args.asan:
         with step('libc-integration-tests'):
