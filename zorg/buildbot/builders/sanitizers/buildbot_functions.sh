@@ -241,7 +241,7 @@ function build_stage2 {
      -DCMAKE_CXX_FLAGS="${sanitizer_cflags}" \
      -DCMAKE_EXE_LINKER_FLAGS="${sanitizer_ldflags}" \
      $LLVM && \
-   ninja) || build_failure
+   time ninja) || build_failure
 }
 
 function build_stage2_msan {
@@ -395,7 +395,7 @@ function build_stage3 {
      -DCMAKE_CXX_FLAGS="${sanitizer_cflags}" \
      -DLLVM_USE_LINKER=lld \
      $LLVM && \
-  ninja clang) || build_failure
+  time ninja clang) || build_failure
 }
 
 function build_stage3_msan {
