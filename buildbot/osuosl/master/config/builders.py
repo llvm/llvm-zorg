@@ -882,9 +882,7 @@ all = [
                     extra_cmake_args=[
                         "-DCMAKE_C_FLAGS='-march=cascadelake'",
                         "-DCMAKE_CXX_FLAGS='-march=cascadelake'",
-                        "-DLLVM_TARGETS_TO_BUILD='X86'"],
-                    submitURL='http://lnt.llvm.org/submitRun',
-                    testerName='LNT-Cascadelake-AVX2-O1')},
+                        "-DLLVM_TARGETS_TO_BUILD='X86'"])},
 
     {'name' : "llvm-avr-linux",
     'tags'  : ["clang"],
