@@ -655,14 +655,13 @@ all = [
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
                     clean=False,
                     checks=['check-all', 'check-runtimes'],
-                    checkout_compiler_rt=False,
                     checkout_lld=False,
                     useTwoStage=True,
+                    enable_runtimes="auto",
                     stage1_config='Release',
                     stage2_config='Release',
                     extra_cmake_args=[
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
-                        "-DLLVM_ENABLE_RUNTIMES=compiler-rt",
                         "-DLLVM_CCACHE_BUILD=ON"])},
 
     {'name' : "clang-ppc64le-linux-test-suite",
@@ -687,14 +686,13 @@ all = [
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
                     clean=False,
                     checks=['check-all', 'check-runtimes'],
-                    checkout_compiler_rt=False,
                     checkout_lld=False,
                     useTwoStage=True,
+                    enable_runtimes="auto",
                     stage1_config='Release',
                     stage2_config='Release',
                     extra_cmake_args=[
                         '-DLLVM_ENABLE_ASSERTIONS=ON',
-                        '-DLLVM_ENABLE_RUNTIMES=compiler-rt',
                         '-DBUILD_SHARED_LIBS=ON',
                         '-DLLVM_CCACHE_BUILD=ON'])},
 

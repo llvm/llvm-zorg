@@ -331,9 +331,15 @@ def _getClangCMakeBuildFactory(
 
 
     ############# STAGE 1
-    CmakeCommand.applyRequiredOptions(extra_cmake_args, [
-        ('-DLLVM_ENABLE_PROJECTS=', ";".join(f.depends_on_projects)),
-        ])
+    if f.enable_projects:
+        CmakeCommand.applyRequiredOptions(extra_cmake_args, [
+            ('-DLLVM_ENABLE_PROJECTS=', ";".join(f.enable_projects)),
+            ])
+    if f.enable_runtimes:
+        CmakeCommand.applyRequiredOptions(extra_cmake_args, [
+            ('-DLLVM_ENABLE_RUNTIMES=', ";".join(f.enable_runtimes)),
+            ])
+
     rel_src_dir = LLVMBuildFactory.pathRelativeTo(f.llvm_srcdir, stage1_build)
 
     f.addStep(ShellCommand(name='cmake stage 1',
