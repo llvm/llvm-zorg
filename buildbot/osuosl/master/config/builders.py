@@ -1988,6 +1988,15 @@ all += [
                     depends_on_projects=['llvm', 'libc', 'clang', 'clang-tools-extra'],
                     extra_args=['--debug', '--asan'])},
 
+    {'name' : "libc-x86_64-debian-dbg-lint",
+    'tags'  : ["libc"],
+    'workernames' : ["libc-lint-worker"],
+    'builddir': "libc-x86_64-debian-dbg-lint",
+    'factory' : AnnotatedBuilder.getAnnotatedBuildFactory(
+                    script="libc-linux.py",
+                    depends_on_projects=['llvm', 'libc'],
+                    extra_args=['--debug'])},
+
 # Flang builders.
 
     {'name' : "flang-aarch64-dylib",
