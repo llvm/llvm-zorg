@@ -188,7 +188,7 @@ def get_all():
         create_worker("libc-x86_64-debian-fullbuild", properties={'jobs': 32}, max_builds=2),
 
         # Debian x86_64 Intel Cascade Lake 8 CPU, 32 GB RAM
-        create_worker("libc-lint-worker", properties={'jobs': 16}, max_builds=2)
+        create_worker("libc-lint-worker", properties={'jobs': 16}, max_builds=2),
 
         # Windows Server on Xeon Gold 6130 (2x2.1GHz), 128Gb of RAM
         create_worker("as-builder-1", properties={
