@@ -18,6 +18,9 @@ def is_runtimes_builder(builder_name):
 def is_gcc_builder(builder_name):
     return ('gcc' in builder_name.split('-'))
 
+def is_lint_builder(builder_name):
+    return ('lint' in builder_name.split('-'))
+
 
 def main(argv):
     ap = argparse.ArgumentParser()
@@ -32,13 +35,20 @@ def main(argv):
     fullbuild = is_fullbuild_builder(builder_name)
     runtimes_build = is_runtimes_builder(builder_name)
     gcc_build = is_gcc_builder(builder_name)
+    lint_build = is_lint_builder(builder_name)
 
     if gcc_build:
-      cc = 'gcc'
-      cxx = 'g++'
+        cc = 'gcc'
+        cxx = 'g++'
     else:
-      cc = 'clang'
-      cxx = 'clang++'
+        if lint_build:
+            full_build = True
+            cc = '/home/libc-lint-tools/bin/clang'
+            cxx = '/home/libc-lint-tools/bin/clang++'
+            clang_tidy = '/home/libc-lint-tools/bin/clang-tidy'
+        else:
+            cc = 'clang'
+            cxx = 'clang++'
 
     with step('cmake', halt_on_fail=True):
         # On most systems the default generator is make, and the default
@@ -48,6 +58,8 @@ def main(argv):
         cmake_args = ['-GNinja',
                       '-DCMAKE_C_COMPILER=%s' % cc,
                       '-DCMAKE_CXX_COMPILER=%s' % cxx]
+        if lint_build:
+            cmake_args.append('-DLLVM_LIBC_CLANG_TIDY=%s' % clang_tidy)
 
         if runtimes_build:
           projects = ['llvm', 'clang']
@@ -63,12 +75,12 @@ def main(argv):
         if args.asan:
             cmake_args.append('-DLLVM_USE_SANITIZER=Address')
 
-        if fullbuild and not args.asan:
+        if fullbuild and not args.asan and not lint_build:
             projects.extend(['clang', 'compiler-rt'])
 
         cmake_args.append('-DLLVM_ENABLE_PROJECTS={}'.format(';'.join(projects)))
 
-        if fullbuild and not args.asan:
+        if fullbuild and not args.asan and not lint_build:
             cmake_args.append('-DLLVM_LIBC_INCLUDE_SCUDO=ON')
             cmake_args.append('-DLIBC_INCLUDE_BENCHMARKS=ON')
 
@@ -76,6 +88,11 @@ def main(argv):
             cmake_args.extend(['-DLLVM_LIBC_FULL_BUILD=ON']),
 
         run_command(['cmake', os.path.join(source_dir, 'llvm')] + cmake_args)
+
+    if lint_build:
+        with_step('lint libc'):
+            run_command(['ninja', 'libc-lint'])
+        return
 
     with step('build libc'):
        run_command(['ninja', 'libc'])
