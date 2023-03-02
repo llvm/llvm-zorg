@@ -270,6 +270,10 @@ function check_stage1 {
   echo @@@BUILD_STEP stage1/$sanitizer_name check-sanitizer@@@
   ninja -C ${STAGE1_DIR} check-sanitizer || build_failure
 
+  # Uses by asan and hwasan.
+  echo @@@BUILD_STEP stage1/$sanitizer_name check-lsan@@@
+  ninja -C ${STAGE1_DIR} check-lsan || build_failure
+
   echo @@@BUILD_STEP stage1/$sanitizer_name check-${sanitizer_name}@@@
   ninja -C ${STAGE1_DIR} check-${sanitizer_name} || build_failure
 }
