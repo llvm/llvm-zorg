@@ -90,7 +90,7 @@ def main(argv):
         run_command(['cmake', os.path.join(source_dir, 'llvm')] + cmake_args)
 
     if lint_build:
-        with_step('lint libc'):
+        with step('lint libc'):
             run_command(['ninja', 'libc-lint'])
         return
 
