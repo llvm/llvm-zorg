@@ -91,8 +91,7 @@ def main(argv):
 
     if lint_build:
         with step('lint libc'):
-            # We will let the lint run all the way with "-k 0".
-            run_command(['ninja', 'libc-lint', '-k', '0'])
+            run_command(['ninja', 'libc-lint'])
         return
 
     with step('build libc'):
