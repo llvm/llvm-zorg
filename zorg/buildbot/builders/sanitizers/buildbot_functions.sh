@@ -186,7 +186,7 @@ function build_stage2 {
     cmake_libcxx_cflags="-mllvm -asan-use-private-alias=1"
   elif [ "$sanitizer_name" == "hwasan" ]; then
     export HWASAN_SYMBOLIZER_PATH="${llvm_symbolizer_path}"
-    export HWASAN_OPTIONS="abort_on_error=1:detect_leaks=1"
+    export HWASAN_OPTIONS="abort_on_error=1"
     llvm_use_sanitizer="HWAddress"
     fsanitize_flag="-fsanitize=hwaddress -mllvm -hwasan-use-after-scope=1"
     # FIXME: Support globals with DSO https://github.com/llvm/llvm-project/issues/57206
