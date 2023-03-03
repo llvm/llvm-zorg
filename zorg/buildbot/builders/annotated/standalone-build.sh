@@ -19,7 +19,7 @@ set -eu
 halt_on_failure
 
 BUILDBOT_ROOT=${BUILDBOT_ROOT:-${HERE}}
-REVISION=${BUILDBOT_REVISION:-origin/main}
+REVISION="${BUILDBOT_REVISION:-origin/main}"
 LLVM_ROOT="${BUILDBOT_ROOT}/llvm-project"
 BUILD_TYPE=Release
 INSTALL_ROOT_DIR=${BUILDBOT_ROOT}/install
@@ -68,7 +68,7 @@ setup_llvm_project() {
 
     build_step "Updating llvm-project repo"
     git -C "${LLVM_ROOT}" fetch origin
-    git -C "${LLVM_ROOT}" reset --hard ${REVISION}
+    git -C "${LLVM_ROOT}" reset --hard "${REVISION}"
     git -C "${LLVM_ROOT}" sparse-checkout init --cone
 }
 

@@ -16,7 +16,7 @@ halt_on_failure
 
 BUILDBOT_ROOT=/buildbot
 LLVM_ROOT="${BUILDBOT_ROOT}/llvm-project"
-REVISION=${BUILDBOT_REVISION:-origin/main}
+REVISION="${BUILDBOT_REVISION:-origin/main}"
 AMDGPU_ARCHS=${AMDGPU_ARCHS:="gfx900;gfx906;gfx908;gfx1030"}
 
 # Set-up llvm-project
@@ -27,7 +27,7 @@ fi
 
 build_step "Updating llvm-project repo"
 git -C "${LLVM_ROOT}" fetch origin
-git -C "${LLVM_ROOT}" reset --hard ${REVISION}
+git -C "${LLVM_ROOT}" reset --hard "${REVISION}"
 
 # Set-up llvm-test-suite
 TESTSUITE_ROOT="${BUILDBOT_ROOT}/llvm-test-suite"

@@ -67,7 +67,7 @@ function clobber {
 BUILDBOT_MONO_REPO_PATH=${BUILDBOT_MONO_REPO_PATH:-}
 
 function buildbot_update {
-  echo @@@BUILD_STEP update $BUILDBOT_REVISION@@@
+  echo "@@@BUILD_STEP update $BUILDBOT_REVISION@@@"
   if [[ -d "$BUILDBOT_MONO_REPO_PATH" ]]; then
     LLVM=$BUILDBOT_MONO_REPO_PATH/llvm
   else
@@ -83,8 +83,7 @@ function buildbot_update {
       cd llvm-project
       git fetch origin
       git clean -fd
-      local REV=${BUILDBOT_REVISION}
-      git checkout -f ${BUILDBOT_REVISION}
+      git checkout -f "${BUILDBOT_REVISION}"
       git status
       git rev-list --pretty --max-count=1 HEAD
     ) || { build_exception ; exit 1 ; }
@@ -134,9 +133,9 @@ function build_clang_at_release_tag {
   if  [ -r ${STAGE1_DIR}/host_clang_revision ] && \
       [ "$(cat ${STAGE1_DIR}/host_clang_revision)" == $HOST_CLANG_REVISION ]
   then
-    echo @@@BUILD_STEP using pre-built stage1 clang at r$HOST_CLANG_REVISION@@@
+    echo "@@@BUILD_STEP using pre-built stage1 clang at r${HOST_CLANG_REVISION}@@@"
   else
-    BUILDBOT_MONO_REPO_PATH= BUILDBOT_REVISION=$HOST_CLANG_REVISION buildbot_update
+    BUILDBOT_MONO_REPO_PATH= BUILDBOT_REVISION="${HOST_CLANG_REVISION}" buildbot_update
 
     rm -rf ${STAGE1_DIR}
     echo @@@BUILD_STEP build stage1 clang at $HOST_CLANG_REVISION@@@
