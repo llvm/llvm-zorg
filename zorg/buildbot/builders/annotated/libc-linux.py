@@ -101,17 +101,17 @@ def main(argv):
        with step('build libc-startup'):
           run_command(['ninja', 'libc-startup'])
 
-    if gcc_build:
-        # We have some outstanding bugs to resolve with gcc before we can
-        # run tests.
-        return
-
     if runtimes_build:
         with step('check-libc'):
             run_command(['ninja', 'check-libc'])
     else:
         with step('libc-unit-tests'):
             run_command(['ninja', 'libc-unit-tests'])
+
+    if gcc_build:
+        # We have some outstanding bugs to resolve with gcc before we can
+        # run integration tests.
+        return
 
     if fullbuild and not args.asan:
         with step('libc-integration-tests'):
