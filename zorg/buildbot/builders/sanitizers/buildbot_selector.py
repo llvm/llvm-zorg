@@ -8,29 +8,26 @@ THIS_DIR=os.path.dirname(sys.argv[0])
 extra_args = sys.argv[1:]
 BOT_DIR = '/b'
 
-def bash(path):
-    return 'bash ' + os.path.join(THIS_DIR, path)
-
-def cmd_call(path):
-    return 'call ' + os.path.join(THIS_DIR, path)
+def in_script_dir(path):
+    return os.path.join(THIS_DIR, path)
 
 BOT_ASSIGNMENT = {
-    'sanitizer-ppc64le-linux': bash('buildbot_cmake.sh'),
-    'sanitizer-ppc64be-linux': bash('buildbot_cmake.sh'),
-    'sanitizer-x86_64-linux': bash('buildbot_cmake.sh'),
-    'sanitizer-x86_64-linux-fast': bash('buildbot_fast.sh'),
-    'sanitizer-x86_64-linux-autoconf': bash('buildbot_standard.sh'),
-    'sanitizer-x86_64-linux-fuzzer': bash('buildbot_fuzzer.sh'),
-    'sanitizer-x86_64-linux-android': bash('buildbot_android.sh'),
-    'sanitizer-x86_64-linux-bootstrap-asan': bash('buildbot_bootstrap_asan.sh'),
-    'sanitizer-x86_64-linux-bootstrap-msan': bash('buildbot_bootstrap_msan.sh'),
-    'sanitizer-x86_64-linux-bootstrap-ubsan': bash('buildbot_bootstrap_ubsan.sh'),
-    'sanitizer-x86_64-linux-qemu': bash('buildbot_qemu.sh'),
-    'sanitizer-aarch64-linux-fuzzer': bash('buildbot_fuzzer.sh'),
-    'sanitizer-aarch64-linux-bootstrap-asan': bash('buildbot_bootstrap_asan.sh'),
-    'sanitizer-aarch64-linux-bootstrap-hwasan': bash('buildbot_bootstrap_hwasan.sh'),
-    'sanitizer-aarch64-linux-bootstrap-msan': bash('buildbot_bootstrap_msan.sh'),
-    'sanitizer-aarch64-linux-bootstrap-ubsan': bash('buildbot_bootstrap_ubsan.sh'),
+    'sanitizer-ppc64le-linux': 'buildbot_cmake.sh',
+    'sanitizer-ppc64be-linux': 'buildbot_cmake.sh',
+    'sanitizer-x86_64-linux': 'buildbot_cmake.sh',
+    'sanitizer-x86_64-linux-fast': 'buildbot_fast.sh',
+    'sanitizer-x86_64-linux-autoconf': 'buildbot_standard.sh',
+    'sanitizer-x86_64-linux-fuzzer': 'buildbot_fuzzer.sh',
+    'sanitizer-x86_64-linux-android': 'buildbot_android.sh',
+    'sanitizer-x86_64-linux-bootstrap-asan': 'buildbot_bootstrap_asan.sh',
+    'sanitizer-x86_64-linux-bootstrap-msan': 'buildbot_bootstrap_msan.sh',
+    'sanitizer-x86_64-linux-bootstrap-ubsan': 'buildbot_bootstrap_ubsan.sh',
+    'sanitizer-x86_64-linux-qemu': 'buildbot_qemu.sh',
+    'sanitizer-aarch64-linux-fuzzer': 'buildbot_fuzzer.sh',
+    'sanitizer-aarch64-linux-bootstrap-asan': 'buildbot_bootstrap_asan.sh',
+    'sanitizer-aarch64-linux-bootstrap-hwasan': 'buildbot_bootstrap_hwasan.sh',
+    'sanitizer-aarch64-linux-bootstrap-msan': 'buildbot_bootstrap_msan.sh',
+    'sanitizer-aarch64-linux-bootstrap-ubsan': 'buildbot_bootstrap_ubsan.sh',
 }
 
 BOT_ADDITIONAL_ENV = {
@@ -55,12 +52,12 @@ BOT_ADDITIONAL_ENV = {
 def Main():
   builder = os.environ.get('BUILDBOT_BUILDERNAME')
   print("builder name: %s" % (builder))
-  cmd = BOT_ASSIGNMENT.get(builder) + ' ' + ' '.join(extra_args)
+  cmd = [in_script_dir(BOT_ASSIGNMENT.get(builder))] + extra_arg
   if not cmd:
     sys.stderr.write('ERROR - unset/invalid builder name\n')
     sys.exit(1)
 
-  print("%s runs: %s\n" % (builder, cmd))
+  print("%s runs: %s\n" % (builder, ' '.join(cmd)))
   sys.stdout.flush()
 
   bot_env = os.environ
