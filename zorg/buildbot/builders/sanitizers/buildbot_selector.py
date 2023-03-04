@@ -70,9 +70,8 @@ def Main():
     del bot_env['TMPDIR']
 
   if ':' in revision:
-    sys.exit(subprocess.call([in_script_dir('buildbot_bisect_run.sh')] + cmd, env=bot_env, shell=True))
-  else:
-    sys.exit(subprocess.call(cmd, env=bot_env, shell=True))
+    cmd = [in_script_dir('buildbot_bisect_run.sh')] + cmd
+  sys.exit(subprocess.call(cmd, env=bot_env))
 
 if __name__ == '__main__':
   Main()

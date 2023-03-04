@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # This script uses BUILDBOT_REVISION to read bad and good patch for bisect.
-# The format is: BUILDBOT_REVISION=BISECT:bad:good
+# The format is: BUILDBOT_REVISION=good:bad
 
 set -x
 set -e
