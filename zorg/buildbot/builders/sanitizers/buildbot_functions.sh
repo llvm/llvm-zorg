@@ -34,6 +34,7 @@ echo @@@BUILD_STEP Prepare@@@
 
 BUILDBOT_CLOBBER="${BUILDBOT_CLOBBER:-}"
 BUILDBOT_REVISION="${BUILDBOT_REVISION:-origin/main}"
+BUILDBOT_BISECT_MODE="${BUILDBOT_BISECT_MODE:-}"
 
 export LIT_OPTS="--time-tests"
 
@@ -81,9 +82,13 @@ function buildbot_update {
         git config --local advice.detachedHead false
       )
       cd llvm-project
-      git fetch origin
-      git clean -fd
-      git checkout -f "${BUILDBOT_REVISION}"
+      if [[ "$BUILDBOT_BISECT_MODE" == "1" ]]; then
+        echo "Bisecting. No need to update the repo."
+      else
+        git fetch origin
+        git clean -fd
+        git checkout -f "${BUILDBOT_REVISION}"
+      fi
       git status
       git rev-list --pretty --max-count=1 HEAD
     ) || { build_exception ; exit 1 ; }
@@ -323,7 +328,7 @@ function check_stage2 {
 
         ninja -C libcxx_build_${sanitizer_name} check-cxx
       ) || build_failure
-    ) &>check_cxx.log & 
+    ) &>check_cxx.log &
 
     echo @@@BUILD_STEP stage2/$sanitizer_name check-cxxabi@@@
     (
@@ -451,6 +456,8 @@ function check_stage3_ubsan {
 }
 
 function build_failure() {
+  # In bisect mode exit early.
+  [[ "$BUILDBOT_BISECT_MODE" == "1" ]] && exit 1
   echo
   echo "How to reproduce locally: https://github.com/google/sanitizers/wiki/SanitizerBotReproduceBuild"
   echo

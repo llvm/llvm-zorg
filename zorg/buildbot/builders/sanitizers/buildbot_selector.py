@@ -51,6 +51,7 @@ BOT_ADDITIONAL_ENV = {
 
 def Main():
   builder = os.environ.get('BUILDBOT_BUILDERNAME')
+  revision = os.environ.get('BUILDBOT_REVISION')
   print("builder name: %s" % (builder))
   cmd = [in_script_dir(BOT_ASSIGNMENT.get(builder))] + extra_args
   if not cmd:
@@ -68,9 +69,10 @@ def Main():
   if 'TMPDIR' in bot_env:
     del bot_env['TMPDIR']
 
-  retcode = subprocess.call(cmd, env=bot_env, shell=True)
-  sys.exit(retcode)
-
+  if ':' in revision:
+    sys.exit(subprocess.call([in_script_dir('buildbot_bisect_run.sh')] + cmd, env=bot_env, shell=True))
+  else:
+    sys.exit(subprocess.call(cmd, env=bot_env, shell=True))
 
 if __name__ == '__main__':
   Main()
