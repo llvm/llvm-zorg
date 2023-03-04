@@ -15,7 +15,7 @@ export PATH="/usr/local/bin:$PATH"
 
 LLVM=$ROOT/llvm
 
-BUILDBOT_REVISION= buildbot_update
+BUILDBOT_REVISION=origin/main buildbot_update
 
 echo @@@BUILD_STEP bisecting ${BUILDBOT_REVISION}@@@
 echo "@@@STEP_EXCEPTION@@@"  # Bisect is neither FAIL nor PASS.
