@@ -6,6 +6,10 @@ set -x
 set -e
 set -u
 
+
+echo @@@BUILD_STEP bisecting ${BUILDBOT_REVISION}@@@
+echo "@@@STEP_EXCEPTION@@@"  # Bisect is neither FAIL nor PASS.
+
 # Try to get them out from the bisect string in BUILDBOT_REVISION first.
 BAD="${BUILDBOT_REVISION/:*/}"
 GOOD="${BUILDBOT_REVISION/*:/}"
