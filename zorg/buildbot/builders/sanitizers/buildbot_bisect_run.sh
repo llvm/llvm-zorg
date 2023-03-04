@@ -32,7 +32,7 @@ if [[ "$GOOD" == "" ]]; then
   GOOD="origin/main~100"
 fi
 
-cd "${LLVM}"
+cd "${LLVM}/.."
 
 (
   if git bisect start $BAD $GOOD; then
