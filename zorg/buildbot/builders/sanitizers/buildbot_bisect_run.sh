@@ -6,13 +6,23 @@ set -x
 set -e
 set -u
 
+HERE="$(cd $(dirname $0) && pwd)"
+. ${HERE}/buildbot_functions.sh
+
+ROOT=`pwd`
+PLATFORM=`uname`
+export PATH="/usr/local/bin:$PATH"
+
+LLVM=$ROOT/llvm
+
+BUILDBOT_REVISION= buildbot_update
 
 echo @@@BUILD_STEP bisecting ${BUILDBOT_REVISION}@@@
 echo "@@@STEP_EXCEPTION@@@"  # Bisect is neither FAIL nor PASS.
 
 # Try to get them out from the bisect string in BUILDBOT_REVISION first.
-BAD="${BUILDBOT_REVISION/:*/}"
-GOOD="${BUILDBOT_REVISION/*:/}"
+GOOD="${BUILDBOT_REVISION/:*/}"
+BAD="${BUILDBOT_REVISION/*:/}"
 
 # If not provided through BUILDBOT_REVISION, use some defaults.
 if [[ "$BAD" == "" ]]; then
@@ -22,14 +32,11 @@ if [[ "$GOOD" == "" ]]; then
   GOOD="origin/main~100"
 fi
 
-cd llvm-project
-
-git clean -fd
-git reset --hard
+cd "${LLVM}"
 
 (
   if git bisect start $BAD $GOOD; then
-    git bisect run bash -c "cd .. && $*"
+    git bisect run bash -c "cd $ROOT && $*"
   fi
 
   echo @@@BUILD_STEP bisect result@@@

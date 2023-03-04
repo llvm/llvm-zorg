@@ -87,6 +87,7 @@ function buildbot_update {
       else
         git fetch origin
         git clean -fd
+        git reset --hard
         git checkout -f "${BUILDBOT_REVISION}"
       fi
       git status
