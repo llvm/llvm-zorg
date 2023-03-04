@@ -18,7 +18,7 @@ LLVM=$ROOT/llvm
 BUILDBOT_REVISION=origin/main buildbot_update
 
 echo @@@BUILD_STEP bisecting ${BUILDBOT_REVISION}@@@
-echo "@@@STEP_EXCEPTION@@@"  # Bisect is neither FAIL nor PASS.
+build_exception  # Bisect is neither FAIL nor PASS.
 
 # Try to get them out from the bisect string in BUILDBOT_REVISION first.
 GOOD="${BUILDBOT_REVISION/:*/}"
