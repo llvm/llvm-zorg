@@ -190,6 +190,9 @@ def get_all():
         # Debian x86_64 Intel Cascade Lake 8 CPU, 32 GB RAM
         create_worker("libc-lint-worker", properties={'jobs': 16}, max_builds=2),
 
+        # Debian riscv64 4 CPU, 4 GB RAM
+        create_worker("libc-riscv64-debian", properties={'jobs': 4}, max_builds=1),
+
         # Windows Server on Xeon Gold 6130 (2x2.1GHz), 128Gb of RAM
         create_worker("as-builder-1", properties={
                         'remote_test_host': 'jetson6.lab.llvm.org',

@@ -1997,6 +1997,24 @@ all += [
                     depends_on_projects=['llvm', 'libc'],
                     extra_args=['--debug'])},
 
+    {'name' : 'libc-riscv64-debian-dbg',
+    'tags'  : ["libc"],
+    'workernames' : ['libc-riscv64-debian'],
+    'builddir': 'libc-riscv64-debian-dbg',
+    'factory' : AnnotatedBuilder.getAnnotatedBuildFactory(
+                    script="libc-linux.py",
+                    depends_on_projects=['llvm', 'libc'],
+                    extra_args=['--debug'])},
+
+    {'name' : "libc-riscv64-debian-fullbuild-dbg",
+    'tags'  : ["libc"],
+    'workernames' : ["libc-riscv64-debian"],
+    'builddir': "libc-riscv64-debian-fullbuild-dbg",
+    'factory' : AnnotatedBuilder.getAnnotatedBuildFactory(
+                    script="libc-linux.py",
+                    depends_on_projects=['llvm', 'libc'],
+                    extra_args=['--debug'])},
+
 # Flang builders.
 
     {'name' : "flang-aarch64-dylib",
