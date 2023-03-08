@@ -71,6 +71,7 @@ pipeline {
                     cd -
 
                     export PATH=$PATH:/usr/bin:/usr/local/bin
+                    if test -f /opt/codesign-workaround.sh; then sh /opt/codesign-workaround.sh init lldb-build/bin/debugserver; fi
 
                     python3 llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake build \
                       $MATRIX_COMMON_BUILD_PARAMETERS \
