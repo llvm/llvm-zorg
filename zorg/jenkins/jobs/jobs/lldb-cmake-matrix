@@ -81,6 +81,8 @@ pipeline {
                       --cmake-type=Release \
                       --dotest-flag="--skip-category gmodules" \
                       --dotest-flag="--arch=x86_64"
+
+                    if test -f /opt/codesign-workaround.sh; then sh /opt/codesign-workaround.sh sign lldb-build/bin/debugserver; fi
                     '''
                 }
             }
