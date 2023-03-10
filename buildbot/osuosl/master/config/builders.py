@@ -1293,22 +1293,6 @@ all = [
                         '-DLLVM_LIT_ARGS=-svj 4',
                         '-DLLVM_USE_LINKER=gold'])},
 
-    {'name' : "lldb-x64-windows-ninja",
-    'tags'  : ["lldb"],
-    'workernames' : ["win-py3-buildbot"],
-    'builddir': "lldb-x64-windows-ninja",
-    'factory' : LLDBBuilder.getLLDBCMakeBuildFactory(
-                    clean=True,
-                    target_arch='x64',
-                    vs="autodetect",
-                    test=True,
-                    extra_cmake_args=[
-                        '-DLLDB_ENABLE_PYTHON=TRUE',
-                        '-DLLDB_TEST_USER_ARGS=--skip-category=watchpoint',
-                        '-DLLVM_ENABLE_ASSERTIONS=OFF',
-                        '-DLLVM_ENABLE_ZLIB=FALSE',
-                        '-DLLVM_LIT_ARGS=-vj 8'])},
-
     {'name' : "lldb-aarch64-windows",
     'tags'  : ["lldb"],
     'workernames' : ["linaro-armv8-windows-msvc-05"],
