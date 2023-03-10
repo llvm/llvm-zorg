@@ -156,6 +156,13 @@ all = [
     reporters.MailNotifier(
         fromaddr = "llvm.buildmaster@lab.llvm.org",
         sendToInterestedUsers = False,
+        extraRecipients = ["gongsu@us.ibm.com", "alexe@us.ibm.com"],
+        subject = "Build %(builder)s Failure",
+        mode = "failing",
+        builders = ["mlir-s390x-linux-werror"]),
+    reporters.MailNotifier(
+        fromaddr = "llvm.buildmaster@lab.llvm.org",
+        sendToInterestedUsers = False,
         extraRecipients = ["phosek@google.com"],
         subject = "Build %(builder)s Failure",
         mode = "failing",

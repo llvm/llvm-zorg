@@ -1570,6 +1570,24 @@ all += [
                         '-DLLVM_LIT_ARGS=-vj 4',
                     ])},
 
+    {'name' : "mlir-s390x-linux-werror",
+    'tags'  : ["mlir", "s390x"],
+    'workernames' : ["onnx-mlir-nowarn-linux-s390x"],
+    'builddir': "onnx-mlir-nowarn-linux-s390x",
+    'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
+                    clean=True,
+                    checks = ['check-mlir'],
+                    targets = ['check-mlir-build-only'],
+                    depends_on_projects=['llvm','mlir'],
+                    extra_configure_args=[
+                        "-DCMAKE_BUILD_TYPE=Release",
+                        "-DLLVM_ENABLE_PROJECTS=mlir",
+                        "-DLLVM_ENABLE_ASSERTIONS=ON",
+                        "-DLLVM_ENABLE_RTTI=ON",
+                        "-DLLVM_ENABLE_WERROR=ON",
+                        "-DLLVM_TARGETS_TO_BUILD=host",
+                    ])},
+
 # Sanitizer builders.
 #
 # bootstrap-asan, bootstrap-msan, and sanitizer-x86_64-linux-fast have steps

@@ -66,6 +66,9 @@ def get_all():
         # Windows Server 2016 Intel(R) Xeon(R) CPU @ 2.60GHz, 16 Core(s), 128 GB of RAM
         create_worker("win-mlir-buildbot", properties={'jobs' : 64}, max_builds=1),
 
+        # Linux s390x Ubuntu Focal, IBM z13 (5GHz), 64GB of RAM
+        create_worker("onnx-mlir-nowarn-linux-s390x", properties={'jobs' : 4}, max_builds=1),
+
         # LoongArch64 Loongson-3C5000L-LL 2GHz, 128GB of RAM
         # CLFS repo: https://github.com/sunhaiyong1978/CLFS-for-LoongArch
         create_worker("loongson-loongarch64-clfs-clang-01", properties={'jobs': 32}, max_builds=1),
