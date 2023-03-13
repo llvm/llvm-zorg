@@ -108,16 +108,14 @@ def main(argv):
         with step('libc-unit-tests'):
             run_command(['ninja', 'libc-unit-tests'])
 
-    if gcc_build:
-        # We have some outstanding bugs to resolve with gcc before we can
-        # run integration tests.
-        return
-
     if fullbuild and not args.asan:
         with step('libc-integration-tests'):
             run_command(['ninja', 'libc-integration-tests'])
         with step('libc-api-test'):
             run_command(['ninja', 'libc-api-test'])
+        if gcc_build:
+            # The rest of the targets are not yet gcc-clean.
+            return
         with step('libc-fuzzer'):
             run_command(['ninja', 'libc-fuzzer'])
         with step('libc-scudo-integration-test'):
