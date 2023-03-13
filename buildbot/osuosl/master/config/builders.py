@@ -433,6 +433,7 @@ all = [
     'builddir': "clang-armv8-lld-2stage",
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
                     clean=False,
+                    enable_runtimes="auto",
                     useTwoStage=True,
                     runTestSuite=True,
                     testsuite_flags=[
@@ -575,6 +576,7 @@ all = [
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
                     vs="manual",
                     useTwoStage=True,
+                    enable_runtimes="auto",
                     checkout_flang=True,
                     extra_cmake_args=[
                         "-DCMAKE_TRY_COMPILE_CONFIGURATION=Release",
