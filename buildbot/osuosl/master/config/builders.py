@@ -362,6 +362,7 @@ all = [
                 clean=False,
                 useTwoStage=True,
                 runTestSuite=True,
+                enable_runtimes="auto",
                 testsuite_flags=[
                     '--cppflags', '-mcpu=cortex-a57 -fuse-ld=lld',
                     '--threads=32', '--build-threads=32'],
@@ -396,6 +397,7 @@ all = [
                     useTwoStage=True,
                     testStage1=False,
                     runTestSuite=True,
+                    enable_runtimes="auto",
                     testsuite_flags=[
                         '--cppflags', '-mcpu=cortex-a15 -mfpu=vfpv3 -marm',
                         '--threads=4', '--build-threads=4'],
@@ -415,6 +417,7 @@ all = [
                     testStage1=False,
                     useTwoStage=True,
                     runTestSuite=True,
+                    enable_runtimes="auto",
                     testsuite_flags=[
                         '--cppflags', '-mcpu=cortex-a15 -mthumb',
                         '--threads=4', '--build-threads=4'],
@@ -486,6 +489,7 @@ all = [
                     clean=False,
                     checkout_flang=True,
                     runTestSuite=True,
+                    enable_runtimes="auto",
                     env={
                         'NO_STOP_MESSAGE':'1', # For Fortran test-suite
                     },
@@ -511,6 +515,7 @@ all = [
                     useTwoStage=True,
                     testStage1=False,
                     runTestSuite=True,
+                    enable_runtimes="auto",
                     env={
                         'NO_STOP_MESSAGE':'1', # For Fortran test-suite
                     },
@@ -532,6 +537,7 @@ all = [
                     clean=False,
                     checkout_flang=True,
                     runTestSuite=True,
+                    enable_runtimes="auto",
                     env={
                         'NO_STOP_MESSAGE':'1', # For Fortran test-suite
                     },
@@ -557,6 +563,7 @@ all = [
                     useTwoStage=True,
                     testStage1=False,
                     runTestSuite=True,
+                    enable_runtimes="auto",
                     env={
                         'NO_STOP_MESSAGE':'1', # For Fortran test-suite
                     },
