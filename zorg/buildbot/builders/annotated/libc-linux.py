@@ -113,8 +113,6 @@ def main(argv):
             run_command(['ninja', 'libc-integration-tests'])
         with step('libc-api-test'):
             run_command(['ninja', 'libc-api-test'])
-        with step('Benchmark Utils Tests'):
-            run_command(['ninja', 'libc-benchmark-util-tests'])
         if gcc_build or ('riscv' in builder_name):
             # The rest of the targets are either not yet gcc-clean or
             # not yet availabe on riscv.
@@ -128,6 +126,8 @@ def main(argv):
             # Remove the AOR build dir.
             util.clean_dir(os.path.join(aor_dir, 'build'))
             run_command(['make', 'check'], directory=aor_dir)
+        with step('Benchmark Utils Tests'):
+            run_command(['ninja', 'libc-benchmark-util-tests'])
 
 
 @contextmanager
