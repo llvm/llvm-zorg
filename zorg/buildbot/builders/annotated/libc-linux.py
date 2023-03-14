@@ -21,7 +21,7 @@ def is_gcc_builder(builder_name):
 def is_lint_builder(builder_name):
     return ('lint' in builder_name.split('-'))
 
-def is_riscv_builder(builder_name);
+def is_riscv_builder(builder_name):
     return 'riscv' in builder_name
 
 
