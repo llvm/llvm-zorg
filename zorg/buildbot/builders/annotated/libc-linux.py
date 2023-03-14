@@ -21,6 +21,9 @@ def is_gcc_builder(builder_name):
 def is_lint_builder(builder_name):
     return ('lint' in builder_name.split('-'))
 
+def is_riscv_builder(builder_name);
+    return 'riscv' in builder_name
+
 
 def main(argv):
     ap = argparse.ArgumentParser()
@@ -36,6 +39,7 @@ def main(argv):
     runtimes_build = is_runtimes_builder(builder_name)
     gcc_build = is_gcc_builder(builder_name)
     lint_build = is_lint_builder(builder_name)
+    riscv_build = is_riscv_builder(builder_name)
 
     if gcc_build:
         cc = 'gcc'
@@ -75,12 +79,12 @@ def main(argv):
         if args.asan:
             cmake_args.append('-DLLVM_USE_SANITIZER=Address')
 
-        if fullbuild and not args.asan and not lint_build:
+        if fullbuild and not args.asan and not lint_build and not riscv_build:
             projects.extend(['clang', 'compiler-rt'])
 
         cmake_args.append('-DLLVM_ENABLE_PROJECTS={}'.format(';'.join(projects)))
 
-        if fullbuild and not args.asan and not lint_build:
+        if fullbuild and not args.asan and not lint_build and not riscv_build:
             cmake_args.append('-DLLVM_LIBC_INCLUDE_SCUDO=ON')
             cmake_args.append('-DLIBC_INCLUDE_BENCHMARKS=ON')
 
