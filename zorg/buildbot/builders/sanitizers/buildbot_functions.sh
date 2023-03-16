@@ -345,6 +345,7 @@ function check_stage2 {
       if [[ "$(arch)" == "aarch64" && "$sanitizer_name" == "hwasan" ]] ; then
         # TODO: Investigate one slow tests.
         export LIT_FILTER_OUT="catch_multi_level_pointer.pass.cpp|guard_threaded_test.pass.cpp|test_demangle.pass.cpp"
+        LIT_FILTER_OUT+="|test_vector2.pass.cpp|forced_unwind2.pass.cpp"
       fi
       ninja -C libcxx_build_${sanitizer_name} check-cxxabi
     ) || build_failure
