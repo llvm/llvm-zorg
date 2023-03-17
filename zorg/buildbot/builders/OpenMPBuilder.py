@@ -21,6 +21,7 @@ def getOpenMPCMakeBuildFactory(
         testsuite           = False,
         testsuite_sollvevv  = False,
         extraTestsuiteCmakeArgs = [],
+        add_lit_checks      = None,
         **kwargs):
 
     # Prepare environmental variables. Set here all env we want everywhere.
@@ -125,6 +126,17 @@ def getOpenMPCMakeBuildFactory(
                 workdir     = f.obj_dir,
                 env         = merged_env,
                 haltOnFailure=False,
+                flunkOnFailure=True))
+    # When requested run additional lit tests
+    if add_lit_checks != None:
+        for add_check in add_lit_checks:
+            f.addStep(LitTestComamnd(
+                name = 'Add check ' + add_check,
+                command = ['ninja', add_check],
+                description = ["Additional check in OpenMP for", add_check,],
+                env = merged_env,
+                workdir = f.obj_dir,
+                haltOnFailure = False,
                 flunkOnFailure=True))
 
     clangexe = "%(builddir)s/" + llvm_builddir + "/bin/clang"
