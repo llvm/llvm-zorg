@@ -551,6 +551,7 @@ def lldb_cmake_builder(target, variant=None):
                  '-DCMAKE_INSTALL_PREFIX={}'.format(conf.lldbinstalldir()),
                  '-DCMAKE_MAKE_PROGRAM={}'.format(NINJA),
                  '-DLLDB_TEST_USER_ARGS='+';'.join(dotest_args),
+                 '-DLLDB_ENFORCE_STRICT_TEST_REQUIREMENTS=On',
                  '-DLLDB_ENABLE_PYTHON=On',
                  '-DLLVM_ENABLE_ASSERTIONS:BOOL={}'.format("TRUE" if conf.assertions else "FALSE"),
                  '-DLLVM_ENABLE_MODULES=On',
@@ -660,6 +661,7 @@ def lldb_cmake_standalone_builder(target):
                  '-DCMAKE_EXPORT_COMPILE_COMMANDS=ON',
                  '-DCMAKE_MAKE_PROGRAM={}'.format(NINJA),
                  '-DLLDB_TEST_USER_ARGS='+';'.join(dotest_args),
+                 '-DLLDB_ENFORCE_STRICT_TEST_REQUIREMENTS=On',
                  '-DLLVM_ENABLE_ASSERTIONS:BOOL={}'.format(
                      "TRUE" if conf.assertions else "FALSE"),
                  '-DLLVM_ENABLE_MODULES=Off',
@@ -705,6 +707,7 @@ def lldb_cmake_xcode_builder(target):
                  '-L', conf.lldbsrcdir(),
                  '-DLLVM_ENABLE_ASSERTIONS:BOOL={}'.format("TRUE" if conf.assertions else "FALSE"),
                  '-DLLVM_ENABLE_MODULES=Off',
+                 '-DLLDB_ENFORCE_STRICT_TEST_REQUIREMENTS=On',
                  '-DLLVM_DIR={}'.format(llvm_dir),
                  '-DClang_DIR={}'.format(clang_dir),
                  '-DLLVM_VERSION_PATCH=99']
