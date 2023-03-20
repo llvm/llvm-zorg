@@ -651,7 +651,6 @@ all = [
     'factory' : TestSuiteBuilder.getTestSuiteBuildFactory(
                     depends_on_projects=["llvm", "clang", "clang-tools-extra",
                                          "compiler-rt"],
-                    enable_runtimes="auto",
                     checks=['check-all', 'check-runtimes'],
                     extra_configure_args=[
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
@@ -682,7 +681,6 @@ all = [
     'factory' : TestSuiteBuilder.getTestSuiteBuildFactory(
                     depends_on_projects=["llvm", "clang", "clang-tools-extra",
                                          "compiler-rt"],
-                    enable_runtimes="auto",
                     checks=['check-all', 'check-runtimes'],
                     extra_configure_args=[
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
@@ -714,7 +712,6 @@ all = [
     'factory' : TestSuiteBuilder.getTestSuiteBuildFactory(
                     depends_on_projects=["llvm", "clang", "clang-tools-extra",
                                          "lld", "compiler-rt"],
-                    enable_runtimes="auto",
                     checks=['check-all', 'check-runtimes'],
                     extra_configure_args=[
                         "-DLLVM_ENABLE_ASSERTIONS=On",
@@ -735,7 +732,6 @@ all = [
     'builddir': "clang-ppc64-aix",
     'factory' : TestSuiteBuilder.getTestSuiteBuildFactory(
                     depends_on_projects=["llvm", "clang", "compiler-rt"],
-                    enable_runtimes="auto",
                     clean=False,
                     extra_configure_args=[
                         "-DLLVM_ENABLE_ASSERTIONS=On",

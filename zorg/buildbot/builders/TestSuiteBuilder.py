@@ -55,7 +55,7 @@ def addTestSuiteStep(
 
 def getTestSuiteBuildFactory(
            depends_on_projects = None,
-           enable_runtimes = None,
+           enable_runtimes = "auto",
            targets = None,
            llvm_srcdir = None,
            obj_dir = None,
