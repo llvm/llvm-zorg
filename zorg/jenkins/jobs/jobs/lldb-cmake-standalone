@@ -43,6 +43,9 @@ pipeline {
                   # Here we use it to download the last good Clang.
                   export ARTIFACT=clang-stage2-Rthinlto/latest
                   python3 llvm-zorg/zorg/jenkins/monorepo_build.py fetch
+
+                  echo "Skipping geting the just-built compiler to work around an issue with libcxx."
+                  rm -rf host-compiler
                   '''
                 }
             }
