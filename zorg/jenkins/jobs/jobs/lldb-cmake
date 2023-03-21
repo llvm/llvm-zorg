@@ -41,6 +41,7 @@ pipeline {
                     sh '''
                     echo "Skipping geting the just-built compiler to work around an issue with libcxx."
                     echo python3 llvm-zorg/zorg/jenkins/monorepo_build.py fetch
+                    rm -rf host-compiler
                     '''
                 }
             }
