@@ -176,11 +176,12 @@ class Configuration(object):
 
     def CC(self):
         """Location of the host compiler, if one is present in this build."""
-        system_clang_path = query_sys_tool("macosx", "clang")
-        if system_clang_path:
-            assert os.path.exists(system_clang_path), "host-compiler present," \
-                                                      " but has no clang executable."
-            return system_clang_path
+        cc_basedir = os.path.join(self.workspace, 'host-compiler/')
+        if os.path.exists(cc_basedir):
+            clang_exec_path = os.path.join(cc_basedir, 'bin/clang')
+            assert os.path.exists(clang_exec_path), "host-compiler present," \
+                                                    " but has no clang executable."
+            return clang_exec_path
         else:
             return False
 
