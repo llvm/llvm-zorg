@@ -39,7 +39,8 @@ pipeline {
         steps {
             timeout(10) {
                     sh '''
-                    python3 llvm-zorg/zorg/jenkins/monorepo_build.py fetch
+                    echo "Skipping geting the just-built compiler to work around an issue with libcxx."
+                    echo python3 llvm-zorg/zorg/jenkins/monorepo_build.py fetch
                     '''
                 }
             }
