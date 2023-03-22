@@ -902,6 +902,7 @@ all = [
                     jobs=8,
                     clean=False,
                     checkout_lld=False,
+                    enable_runtimes=None,
                     extra_cmake_args=[
                         '-DLLVM_ENABLE_ASSERTIONS=ON',
                         # We need to compile the X86 backend due to a few generic CodeGen tests.
