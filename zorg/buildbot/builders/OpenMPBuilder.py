@@ -12,7 +12,6 @@ def getOpenMPCMakeBuildFactory(
         jobs                = '%(jobs)s',   # Number of concurrent jobs.
         clean               = True,         # "clean" step is requested if true
         env                 = None,         # Environmental variables for all steps.
-        ompt                = False,        # Whether to enable the OpenMP Tools Interface.
         test                = True,         # Test the built libraries.
         depends_on_projects = None,
         enable_runtimes     = None,
@@ -66,8 +65,6 @@ def getOpenMPCMakeBuildFactory(
 
     # Configure LLVM and OpenMP (and Clang, if requested).
     cmake_args = ['-DCMAKE_BUILD_TYPE=Release', '-DLLVM_ENABLE_ASSERTIONS=ON']
-    if ompt:
-        cmake_args += ['-DLIBOMP_OMPT_SUPPORT=ON']
     if test:
         lit_args = '-vv --show-unsupported --show-xfail -j %s' % jobs
         cmake_args += [WithProperties('-DLLVM_LIT_ARGS=%s' % lit_args)]
