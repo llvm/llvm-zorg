@@ -1875,16 +1875,21 @@ all += [
     'factory' : OpenMPBuilder.getOpenMPCMakeBuildFactory(
                         clean=True,
                         enable_runtimes=['openmp'],
-                        depends_on_projects=['llvm','clang','lld','openmp'],
+                        depends_on_projects=['llvm','clang','lld','openmp', 'libc'],
                         extraCmakeArgs=[
                             "-DCMAKE_BUILD_TYPE=Release",
                             "-DCLANG_DEFAULT_LINKER=lld",
                             "-DLLVM_TARGETS_TO_BUILD=X86;AMDGPU",
                             "-DLLVM_ENABLE_ASSERTIONS=ON",
-                            "-DLLVM_ENABLE_RUNTIMES=openmp",
+                            "-DLLVM_ENABLE_PROJECTS=clang;llvm;lld;compiler-rt",
+                            "-DLLVM_ENABLE_RUNTIMES=libc;openmp",
                             "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
                             "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
                             "-DLIBOMPTARGET_FOUND_AMDGPU_GPU=ON",
+                            "-DLLVM_LIBC_FULL_BUILD=ON",
+                            "-DLIBC_GPU_BUILD=ON",
+                            "-DLIBC_GPU_ARCHITECTURE=gfx906",
+                            "-DLIBC_GPU_TEST_ARCHITECTURE=gfx906",
                             ],
                         install=True,
                         testsuite=False,
@@ -1893,7 +1898,7 @@ all += [
                             "-DTEST_SUITE_SOLLVEVV_OFFLOADING_CFLAGS=-fopenmp;-fopenmp-targets=amdgcn-amd-amdhsa;-Xopenmp-target=amdgcn-amd-amdhsa;-march=gfx906",
                             "-DTEST_SUITE_SOLLVEVV_OFFLOADING_LDLAGS=-fopenmp;-fopenmp-targets=amdgcn-amd-amdhsa;-Xopenmp-target=amdgcn-amd-amdhsa;-march=gfx906",
                         ],
-                        add_lit_checks=["check-clang", "check-llvm", "check-lld"]
+                        add_lit_checks=["check-clang", "check-llvm", "check-lld", "check-libc"]
                     )},
 
 
