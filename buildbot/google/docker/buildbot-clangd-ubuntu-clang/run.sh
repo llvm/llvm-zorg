@@ -6,7 +6,6 @@
 #
 #===----------------------------------------------------------------------===//
 # This script will start the buildbot worker
-# 
 #===----------------------------------------------------------------------===//
 
 set -eu
@@ -15,20 +14,20 @@ set -eu
 WORKER_PASSWORD=$(cat /vol/secrets/token)
 
 # Set up buildbot host and maintainer info.
-mkdir -p "${WORKER_NAME}/info/" 
+mkdir -p "${WORKER_NAME}/info/"
 echo "Christian Kuehnel <kuhnel@google.com>" > "${WORKER_NAME}/info/admin"
 
 # generate the host information of this worker
-( 
+(
   uname -a ; \
   cat /proc/cpuinfo | grep "model name" | head -n1 | cut -d " " -f 3- ;\
   echo "number of cores: $(nproc)" ;\
   cat /proc/meminfo | grep MemTo ;\
   lsb_release -d | cut -f 2- ; \
   clang --version | head -n1 ; \
-  ld.lld-11 --version ; \
+  ld.lld --version ; \
   cmake --version | head -n1 ; \
-) > ${WORKER_NAME}/info/host 
+) > ${WORKER_NAME}/info/host
 
 echo "Host information:"
 cat ${WORKER_NAME}/info/host

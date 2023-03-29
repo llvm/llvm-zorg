@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: clangd-ubuntu-clang
+  name: clangd-ubuntu-clang
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: clangd-ubuntu-clang
+  strategy:
+    rollingUpdate:
+      maxSurge: 0
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: clangd-ubuntu-clang
+    spec:
+      automountServiceAccountToken: false
+      containers:
+      - env:
+        - name: BUILDBOT_PORT
+          value: "9990" # 9990 is production, 9994 is staging.
+        image: gcr.io/sanitizer-bots/buildbot-clangd-ubuntu-clang:7
+        name: buildbot-clangd-ubuntu-clang
+        resources:
+          limits:
+            cpu: "15"
+            memory: 45G
+          requests:
+            cpu: "15"
+            memory: 45G
+        volumeMounts:
+        - mountPath: /vol/secrets
+          mountPropagation: None
+          name: buildbot-token
+        - mountPath: /vol/ccache
+          mountPropagation: None
+          name: ccache-vol
+        - mountPath: /vol/worker
+          mountPropagation: None
+          name: worker-vol
+      nodeSelector:
+        pool: linux-16-core-pool
+      restartPolicy: Always
+      volumes:
+      - name: buildbot-token
+        secret:
+          optional: false
+          secretName: password-clangd-ubuntu-clang
+      - emptyDir: {}
+        name: ccache-vol
+      - emptyDir: {}
+        name: worker-vol
+
