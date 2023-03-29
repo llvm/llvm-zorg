@@ -2794,6 +2794,9 @@ all += [
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
                         "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
                         "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
-                        "-DLLVM_TARGETS_TO_BUILD=all"])},
-
+                        "-DLLVM_TARGETS_TO_BUILD=all"],
+                    env={
+                        'CC':'clang',
+                        'CXX': 'clang++',
+                    })},
 ]
