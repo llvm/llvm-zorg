@@ -1883,6 +1883,7 @@ all += [
                             "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
                             "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
                             "-DLIBOMPTARGET_FOUND_AMDGPU_GPU=ON",
+                            "-DLIBOMP_ARCHER_SUPPORT=OFF",
                             "-DLIBC_GPU_BUILD=ON",
                             "-DLIBC_GPU_ARCHITECTURES=gfx906",
                             "-DLIBC_GPU_TEST_ARCHITECTURE=gfx906",
