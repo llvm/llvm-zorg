@@ -14,14 +14,19 @@ def getOpenMPCMakeBuildFactory(
         env                 = None,         # Environmental variables for all steps.
         test                = True,         # Test the built libraries.
         depends_on_projects = None,
-        enable_runtimes     = None,
-        extraCmakeArgs      = [],
+        enable_runtimes     = "auto",
+        extraCmakeArgs      = None,
         install             = False,
         testsuite           = False,
         testsuite_sollvevv  = False,
-        extraTestsuiteCmakeArgs = [],
+        extraTestsuiteCmakeArgs = None,
         add_lit_checks      = None,
         **kwargs):
+
+    if extraCmakeArgs is None:
+        extraCmakeArgs = []
+    if extraTestsuiteCmakeArgs is None:
+        extraTestsuiteCmakeArgs = []
 
     # Prepare environmental variables. Set here all env we want everywhere.
     merged_env = {
