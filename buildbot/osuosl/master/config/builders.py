@@ -642,6 +642,8 @@ all = [
                     stage1_config='Release',
                     extra_cmake_args=['-DLLVM_ENABLE_ASSERTIONS=ON',
                                       '-DLLVM_PARALLEL_LINK_JOBS=4',
+                                      '-DCOMPILER_RT_DEFAULT_TARGET_ONLY=ON',
+                                      '-DCMAKE_C_COMPILER_TARGET="mips64el-unknown-linux-gnu"',
                                       '-DLLVM_TARGETS_TO_BUILD=Mips'])},
 
     {'name' : "clang-ppc64be-linux-test-suite",
