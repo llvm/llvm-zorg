@@ -162,9 +162,6 @@ def get_all():
         # X86_64 AVX2, Ubuntu 16.04.2, Intel(R) Xeon(R) CPU E5-2699 v4 @ 2.20GHz
         create_worker("avx2-intel64", properties={'jobs': 80}, max_builds=1),
 
-        # X86_64 with SDE, Ubuntu 16.04.2, Intel(R) Xeon(R) CPU E5-2699 v4 @ 2.20GHz
-        create_worker("sde-avx512-intel64", properties={'jobs': 80}, max_builds=1),
-
         # Debian 9.0 x86_64 64-core GCE instances
         create_worker("fuchsia-debian-64-us-central1-a-1", properties={'jobs': 64}, max_builds=1),
         create_worker("fuchsia-debian-64-us-central1-b-1", properties={'jobs': 64}, max_builds=1),
