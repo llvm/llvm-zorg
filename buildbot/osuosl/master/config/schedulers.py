@@ -239,17 +239,14 @@ def getLntSchedulers():
         "publish-lnt-sphinx-docs",
     ]
     return [
-        schedulers.SingleBranchScheduler(
+        schedulers.Nightly(
             name="lnt-scheduler",
-            treeStableTimer=kwargs.get('treeStableTimer', None),
-            reason="Merge to LNT github {} branch".format(_branch),
             builderNames=_lnt_builders,
-            change_filter=util.ChangeFilter(
-                project_fn=_project,
-                branch=_branch)),
+            reason='Periodic LNT build',
+            hour=1),
 
         schedulers.ForceScheduler(
-            name            = "force-build-scheduler",
+            name            = "lnt-force-build-scheduler",
             label           = "Force Build",
             buttonName      = "Force Build",
             reason = util.ChoiceStringParameter(
