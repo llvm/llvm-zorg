@@ -92,13 +92,6 @@ all = [
     reporters.MailNotifier(
         fromaddr = "llvm.buildmaster@lab.llvm.org",
         sendToInterestedUsers = False,
-        extraRecipients = ["me@dylanmckay.io"],
-        subject = "Build %(builder)s Failure",
-        mode = "failing",
-        builders = ["llvm-avr-linux"]),
-    reporters.MailNotifier(
-        fromaddr = "llvm.buildmaster@lab.llvm.org",
-        sendToInterestedUsers = False,
         extraRecipients = ["gkistanova@gmail.com"],
         subject = "Build %(builder)s Failure",
         mode = "failing",

@@ -102,9 +102,6 @@ def get_all():
         create_worker("hexagon-build-03", properties={'jobs': 16, 'loadaverage':32},
             max_builds=1),
 
-        # Ubuntu x86-64
-        create_worker("avr-build-01", properties={'jobs': 10}, max_builds=1),
-
         # Debian Jessie x86-64 GCE instance.
         create_worker("gribozavr3", properties={'jobs': 1}, max_builds=2),
 

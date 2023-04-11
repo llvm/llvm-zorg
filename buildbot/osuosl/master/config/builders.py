@@ -874,22 +874,6 @@ all = [
                         "-DCMAKE_CXX_FLAGS='-march=cascadelake'",
                         "-DLLVM_TARGETS_TO_BUILD='X86'"])},
 
-    {'name' : "llvm-avr-linux",
-    'tags'  : ["clang"],
-    'workernames' : ["avr-build-01"],
-    'builddir': "llvm-avr-linux",
-    'factory' : ClangBuilder.getClangCMakeBuildFactory(
-                    jobs=8,
-                    clean=False,
-                    checkout_lld=False,
-                    enable_runtimes=None,
-                    extra_cmake_args=[
-                        '-DLLVM_ENABLE_ASSERTIONS=ON',
-                        # We need to compile the X86 backend due to a few generic CodeGen tests.
-                        '-DLLVM_TARGETS_TO_BUILD=X86',
-                        '-DLLVM_EXPERIMENTAL_TARGETS_TO_BUILD=AVR',
-                        '-DBUILD_SHARED_LIBS=ON'])},
-
     {'name' : "clang-xcore-ubuntu-20-x64",
     'tags'  : ["clang"],
     'workernames' : ["xcore-ubuntu20-x64"],
