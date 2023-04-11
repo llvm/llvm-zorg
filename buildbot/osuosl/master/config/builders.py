@@ -520,11 +520,11 @@ all = [
                         'NO_STOP_MESSAGE':'1', # For Fortran test-suite
                     },
                     testsuite_flags=[
-                        '--cppflags', '-mcpu=a64fx -mllvm -scalable-vectorization=preferred -mllvm -treat-scalable-fixed-error-as-warning=false -O3',
+                        '--cppflags', '-mcpu=neoverse-512tvb -mllvm -scalable-vectorization=preferred -mllvm -treat-scalable-fixed-error-as-warning=false -O3',
                         '--threads=48', '--build-threads=48'],
                     extra_cmake_args=[
-                        "-DCMAKE_C_FLAGS='-mcpu=a64fx -mllvm -scalable-vectorization=preferred -mllvm -treat-scalable-fixed-error-as-warning=false'",
-                        "-DCMAKE_CXX_FLAGS='-mcpu=a64fx -mllvm -scalable-vectorization=preferred -mllvm -treat-scalable-fixed-error-as-warning=false'",
+                        "-DCMAKE_C_FLAGS='-mcpu=neoverse-512tvb -mllvm -scalable-vectorization=preferred -mllvm -treat-scalable-fixed-error-as-warning=false'",
+                        "-DCMAKE_CXX_FLAGS='-mcpu=neoverse-512tvb -mllvm -scalable-vectorization=preferred -mllvm -treat-scalable-fixed-error-as-warning=false'",
                         "-DLLVM_ENABLE_LLD=True",
                         "-DLLVM_LIT_ARGS='-v -j12'"])},
 
@@ -542,11 +542,11 @@ all = [
                         'NO_STOP_MESSAGE':'1', # For Fortran test-suite
                     },
                     testsuite_flags=[
-                        '--cppflags', '-mcpu=a64fx -msve-vector-bits=256 -mllvm -treat-scalable-fixed-error-as-warning=false -O3',
+                        '--cppflags', '-mcpu=neoverse-512tvb -msve-vector-bits=256 -mllvm -treat-scalable-fixed-error-as-warning=false -O3',
                         '--threads=48', '--build-threads=48'],
                     extra_cmake_args=[
-                        "-DCMAKE_C_FLAGS='-mcpu=a64fx'",
-                        "-DCMAKE_CXX_FLAGS='-mcpu=a64fx'",
+                        "-DCMAKE_C_FLAGS='-mcpu=neoverse-512tvb'",
+                        "-DCMAKE_CXX_FLAGS='-mcpu=neoverse-512tvb'",
                         "-DLLVM_ENABLE_LLD=True",
                         "-DMLIR_INCLUDE_INTEGRATION_TESTS=True",
                         "-DMLIR_RUN_ARM_SVE_TESTS=True",
@@ -568,11 +568,11 @@ all = [
                         'NO_STOP_MESSAGE':'1', # For Fortran test-suite
                     },
                     testsuite_flags=[
-                        '--cppflags', '-mcpu=a64fx -msve-vector-bits=256 -mllvm -treat-scalable-fixed-error-as-warning=false -O3',
+                        '--cppflags', '-mcpu=neoverse-512tvb -msve-vector-bits=256 -mllvm -treat-scalable-fixed-error-as-warning=false -O3',
                         '--threads=48', '--build-threads=48'],
                     extra_cmake_args=[
-                        "-DCMAKE_C_FLAGS='-mcpu=a64fx -msve-vector-bits=256 -mllvm -treat-scalable-fixed-error-as-warning=false'",
-                        "-DCMAKE_CXX_FLAGS='-mcpu=a64fx -msve-vector-bits=256 -mllvm -treat-scalable-fixed-error-as-warning=false'",
+                        "-DCMAKE_C_FLAGS='-mcpu=neoverse-512tvb -msve-vector-bits=256 -mllvm -treat-scalable-fixed-error-as-warning=false'",
+                        "-DCMAKE_CXX_FLAGS='-mcpu=neoverse-512tvb -msve-vector-bits=256 -mllvm -treat-scalable-fixed-error-as-warning=false'",
                         "-DLLVM_ENABLE_LLD=True",
                         "-DLLVM_LIT_ARGS='-v -j12'"])},
 
