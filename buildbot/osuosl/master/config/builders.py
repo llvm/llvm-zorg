@@ -853,6 +853,26 @@ all = [
                         "-DCMAKE_C_COMPILER:FILEPATH=/local/clang+llvm-12.0.0-x86_64-linux-gnu-ubuntu-16.04/bin/clang",
                         "-DCMAKE_CXX_COMPILER:FILEPATH=/local/clang+llvm-12.0.0-x86_64-linux-gnu-ubuntu-16.04/bin/clang++"])},
 
+    ## X86_64 AVX512 Clang+LLVM check-all + test-suite
+    {'name' : "clang-cmake-x86_64-avx512-linux",
+    'tags'  : ["clang"],
+    'workernames' : ["avx512-intel64"],
+    'builddir': "clang-cmake-x86_64-avx512-linux",
+    'factory' : ClangBuilder.getClangCMakeBuildFactory(
+                    clean=False,
+                    checkout_clang_tools_extra=False,
+                    checkout_compiler_rt=False,
+                    checkout_lld=False,
+                    useTwoStage=False,
+                    runTestSuite=True,
+                    testsuite_flags=['--cflag', '-march=cascadelake', '--threads=32', '--build-threads=32'],
+                    env={'PATH':'/usr/bin/ccache:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'},
+                    extra_cmake_args=[
+                        "-DLLVM_ENABLE_ASSERTIONS=ON",
+                        "-DCMAKE_C_FLAGS='-march=cascadelake'",
+                        "-DCMAKE_CXX_FLAGS='-march=cascadelake'",
+                        "-DLLVM_TARGETS_TO_BUILD='X86'"])},
+
     ## X86_64 AVX2 LNT test-suite in Benchmark mode
     {'name' : "clang-cmake-x86_64-avx2-linux-perf",
     'tags'  : ["clang"],
