@@ -52,6 +52,10 @@ def get_all():
         create_worker("linaro-flang-aarch64-release", properties={'jobs' : 32}, max_builds=1),
         create_worker("linaro-flang-aarch64-rel-assert", properties={'jobs' : 32}, max_builds=1),
         create_worker("linaro-flang-aarch64-latest-gcc", properties={'jobs' : 32}, max_builds=1),
+        create_worker("linaro-g3-01", properties={'jobs' : 32}, max_builds=1),
+        create_worker("linaro-g3-02", properties={'jobs' : 32}, max_builds=1),
+        create_worker("linaro-g3-03", properties={'jobs' : 32}, max_builds=1),
+        create_worker("linaro-g3-04", properties={'jobs' : 32}, max_builds=1),
 
         # AArch64 Windows Microsoft Surface X Pro
         create_worker("linaro-armv8-windows-msvc-01", properties={'jobs' : 8}, max_builds=1),
