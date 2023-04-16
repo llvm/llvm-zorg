@@ -2047,7 +2047,6 @@ all += [
                         "-DLLVM_TARGETS_TO_BUILD=AArch64",
                         "-DBUILD_SHARED_LIBS=ON",
                         "-DLLVM_BUILD_EXAMPLES=ON",
-                        "-DFLANG_BUILD_EXAMPLES=ON",
                         "-DCMAKE_CXX_STANDARD=17",
                     ])},
 
@@ -2129,7 +2128,7 @@ all += [
                     extra_configure_args=[
                         "-DLLVM_TARGETS_TO_BUILD=AArch64",
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
-                        "-DFLANG_BUILD_EXAMPLES=ON",
+                        "-DLLVM_BUILD_EXAMPLES=ON",
                         "-DCMAKE_BUILD_TYPE=Release",
                         "-DCMAKE_CXX_STANDARD=17",
                     ])},
