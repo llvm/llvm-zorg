@@ -643,6 +643,7 @@ all = [
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
                     clean=False,
                     checkout_lld=False,
+                    enable_runtimes=None,
                     useTwoStage=False,
                     stage1_config='Release',
                     extra_cmake_args=['-DLLVM_ENABLE_ASSERTIONS=ON',
@@ -806,6 +807,7 @@ all = [
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
                     clean=False,
                     checkout_lld=False,
+                    enable_runtimes=None,
                     useTwoStage=True,
                     stage1_config='Release',
                     stage2_config='Release',
