@@ -381,7 +381,6 @@ all = [
                 clean=False,
                 useTwoStage=True,
                 runTestSuite=True,
-                enable_runtimes="auto",
                 testsuite_flags=[
                     '--cppflags', '-mcpu=cortex-a57 -fuse-ld=lld',
                     '--threads=32', '--build-threads=32'],
@@ -416,7 +415,6 @@ all = [
                     useTwoStage=True,
                     testStage1=False,
                     runTestSuite=True,
-                    enable_runtimes="auto",
                     testsuite_flags=[
                         '--cppflags', '-mcpu=cortex-a15 -mfpu=vfpv3 -marm',
                         '--threads=4', '--build-threads=4'],
@@ -436,7 +434,6 @@ all = [
                     testStage1=False,
                     useTwoStage=True,
                     runTestSuite=True,
-                    enable_runtimes="auto",
                     testsuite_flags=[
                         '--cppflags', '-mcpu=cortex-a15 -mthumb',
                         '--threads=4', '--build-threads=4'],
@@ -455,7 +452,6 @@ all = [
     'builddir': "clang-armv8-lld-2stage",
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
                     clean=False,
-                    enable_runtimes="auto",
                     useTwoStage=True,
                     runTestSuite=True,
                     testsuite_flags=[
@@ -479,7 +475,6 @@ all = [
                     clean=False,
                     checkout_flang=True,
                     checkout_lld=False,
-                    enable_runtimes="auto",
                     useTwoStage=True,
                     testStage1=False,
                     runTestSuite=True,
@@ -513,7 +508,6 @@ all = [
                     clean=False,
                     checkout_flang=True,
                     runTestSuite=True,
-                    enable_runtimes="auto",
                     env={
                         'NO_STOP_MESSAGE':'1', # For Fortran test-suite
                     },
@@ -539,7 +533,6 @@ all = [
                     useTwoStage=True,
                     testStage1=False,
                     runTestSuite=True,
-                    enable_runtimes="auto",
                     env={
                         'NO_STOP_MESSAGE':'1', # For Fortran test-suite
                     },
@@ -561,7 +554,6 @@ all = [
                     clean=False,
                     checkout_flang=True,
                     runTestSuite=True,
-                    enable_runtimes="auto",
                     env={
                         'NO_STOP_MESSAGE':'1', # For Fortran test-suite
                     },
@@ -587,7 +579,6 @@ all = [
                     useTwoStage=True,
                     testStage1=False,
                     runTestSuite=True,
-                    enable_runtimes="auto",
                     env={
                         'NO_STOP_MESSAGE':'1', # For Fortran test-suite
                     },
@@ -607,7 +598,6 @@ all = [
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
                     vs="manual",
                     useTwoStage=True,
-                    enable_runtimes="auto",
                     checkout_flang=True,
                     extra_cmake_args=[
                         "-DCMAKE_TRY_COMPILE_CONFIGURATION=Release",
@@ -694,7 +684,6 @@ all = [
                     checks=['check-all', 'check-runtimes'],
                     checkout_lld=False,
                     useTwoStage=True,
-                    enable_runtimes="auto",
                     stage1_config='Release',
                     stage2_config='Release',
                     extra_cmake_args=[
@@ -724,7 +713,6 @@ all = [
                     checks=['check-all', 'check-runtimes'],
                     checkout_lld=False,
                     useTwoStage=True,
-                    enable_runtimes="auto",
                     stage1_config='Release',
                     stage2_config='Release',
                     extra_cmake_args=[
@@ -778,7 +766,6 @@ all = [
                     jobs=4,
                     clean=False,
                     checkout_lld=False,
-                    enable_runtimes="auto",
                     useTwoStage=False,
                     stage1_config='Release',
                     extra_cmake_args=[
@@ -794,7 +781,6 @@ all = [
                     jobs=4,
                     clean=False,
                     checkout_lld=False,
-                    enable_runtimes="auto",
                     useTwoStage=True,
                     stage1_config='Release',
                     stage2_config='Release',
@@ -810,7 +796,6 @@ all = [
                     jobs=4,
                     clean=False,
                     checkout_lld=False,
-                    enable_runtimes="auto",
                     useTwoStage=False,
                     runTestSuite=True,
                     stage1_config='Release',

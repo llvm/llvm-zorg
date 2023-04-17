@@ -168,7 +168,7 @@ def getClangCMakeBuildFactory(
             checkout_flang=False,
             checkout_test_suite=False,
 
-            enable_runtimes=None):
+            enable_runtimes="auto"):
     return _getClangCMakeBuildFactory(
                clean=clean, checks=checks, cmake=cmake, jobs=jobs, vs=vs,
                vs_target_arch=vs_target_arch, useTwoStage=useTwoStage,
@@ -221,7 +221,7 @@ def _getClangCMakeBuildFactory(
             checkout_test_suite=False,
             checkout_flang=False,
 
-            enable_runtimes=None,
+            enable_runtimes="auto",
 
             # Upload artifacts to Google Cloud Storage (for the llvmbisect tool)
             stage1_upload_directory=None,
