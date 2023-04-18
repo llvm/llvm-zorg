@@ -871,6 +871,8 @@ all = [
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
                         "-DCMAKE_C_FLAGS='-march=cascadelake'",
                         "-DCMAKE_CXX_FLAGS='-march=cascadelake'",
+                        "-DLLVM_ENABLE_RUNTIMES=compiler-rt",
+                        "-DCOMPILER_RT_BUILD_SANITIZERS=OFF",
                         "-DLLVM_TARGETS_TO_BUILD='X86'"])},
 
     ## X86_64 AVX2 LNT test-suite in Benchmark mode
