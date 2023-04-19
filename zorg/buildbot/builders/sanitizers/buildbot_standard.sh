@@ -32,7 +32,6 @@ function build_tsan {
     ${CMAKE_COMMON_OPTIONS} ${extra_cmake_args} \
     ${LLVM})
   (cd $build_dir && ninja ${targets}) || build_failure
-  (cd $build_dir && ninja compiler-rt-clear) || build_failure
   (cd $build_dir && ninja tsan) || build_failure
 }
 
