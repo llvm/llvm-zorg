@@ -135,7 +135,8 @@ build_llvm() {
         -DLLVM_INCLUDE_UTILS:BOOL=ON \
         -DLLVM_INSTALL_UTILS:BOOL=ON \
         -DLLVM_UTILS_INSTALL_DIR:PATH=${LLVM_INSTALL_DIR}/bin \
-        -DLLVM_CCACHE_BUILD=ON
+        -DLLVM_CCACHE_BUILD=ON \
+        -DLLVM_INSTALL_GTEST=ON
 
     build_step "Building llvm"
     cmake --build ${LLVM_BUILD_DIR} ${CMAKE_VERBOSE_BUILD_LLVM}
