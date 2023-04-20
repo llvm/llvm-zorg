@@ -875,27 +875,6 @@ all = [
                         "-DCOMPILER_RT_BUILD_SANITIZERS=OFF",
                         "-DLLVM_TARGETS_TO_BUILD='X86'"])},
 
-    ## X86_64 AVX2 LNT test-suite in Benchmark mode
-    {'name' : "clang-cmake-x86_64-avx2-linux-perf",
-    'tags'  : ["clang"],
-    'workernames' : ["avx2-intel64"],
-    'builddir': "clang-cmake-x86_64-avx2-linux-perf",
-    'factory' : ClangBuilder.getClangCMakeBuildFactory(
-                    clean=False,
-                    checkout_clang_tools_extra=False,
-                    checkout_compiler_rt=False,
-                    checkout_lld=False,
-                    checks=[],
-                    useTwoStage=False,
-                    runTestSuite=True,
-                    testsuite_flags=['--cflag', '-march=cascadelake', '--threads=1', '--build-threads=32', '--use-perf=all',
-                            '--benchmarking-only', '--exec-multisample=4', '--exclude-stat-from-submission=compile'],
-                    env={'PATH':'/usr/bin/ccache:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'},
-                    extra_cmake_args=[
-                        "-DCMAKE_C_FLAGS='-march=cascadelake'",
-                        "-DCMAKE_CXX_FLAGS='-march=cascadelake'",
-                        "-DLLVM_TARGETS_TO_BUILD='X86'"])},
-
     {'name' : "clang-xcore-ubuntu-20-x64",
     'tags'  : ["clang"],
     'workernames' : ["xcore-ubuntu20-x64"],

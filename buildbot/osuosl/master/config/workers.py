@@ -160,9 +160,6 @@ def get_all():
         # HIP on Ubuntu 18.04.5,  Intel(R) Xeon(R) Gold 5218 @ 2.30GHz, Vega20 GPU
         create_worker("hip-vega20-0", max_builds=1),
 
-        # X86_64 AVX2, Ubuntu 16.04.2, Intel(R) Xeon(R) CPU E5-2699 v4 @ 2.20GHz
-        create_worker("avx2-intel64", properties={'jobs': 80}, max_builds=1),
-
         # X86_64 AVX512, Ubuntu 22.04.1 LTS, Intel(R) Xeon(R) Silver 4216 CPU @ 2.10GHz
         create_worker("avx512-intel64", properties={'jobs': 80}, max_builds=1),
 
