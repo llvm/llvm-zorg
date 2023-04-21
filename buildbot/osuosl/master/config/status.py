@@ -347,6 +347,13 @@ all = [
         subject = "Build %(builder)s Failure",
         mode = "failing",
         builders = ["clang-debian-cpp20"]),
+    reporters.MailNotifier(
+        fromaddr = "llvm.buildmaster@lab.llvm.org",
+        sendToInterestedUsers = False,
+        extraRecipients = ["llvm.buildbot.notification@intel.com"],
+        subject = "Build %(builder)s Failure",
+        mode = "failing",
+        builders = ["clang-cmake-x86_64-avx512-linux"]),
 ]
 
 
