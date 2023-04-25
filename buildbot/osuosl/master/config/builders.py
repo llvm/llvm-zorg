@@ -450,7 +450,8 @@ all = [
                         # lld tests cause us to hit thread limits
                         "-DLLVM_ENABLE_THREADS=OFF"])},
 
-    # AArch64 check-all + flang + compiler-rt + test-suite 2-stage
+    # AArch64 check-all + flang + compiler-rt + test-suite + SVE/SME
+    # mlir-integration-tests 2-stage
     {'name' : "clang-aarch64-full-2stage",
     'tags'  : ["clang"],
     'workernames' : ["linaro-clang-aarch64-full-2stage"],
@@ -472,7 +473,11 @@ all = [
                     extra_cmake_args=[
                         "-DCMAKE_C_FLAGS='-mcpu=cortex-a57'",
                         "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a57'",
-                        "-DLLVM_LIT_ARGS='-v'"])},
+                        "-DLLVM_LIT_ARGS='-v'",
+                        "-DMLIR_INCLUDE_INTEGRATION_TESTS=True",
+                        "-DMLIR_RUN_ARM_SVE_TESTS=True",
+                        "-DMLIR_RUN_ARM_SME_TESTS=True",
+                        "-DARM_EMULATOR_EXECUTABLE=qemu-aarch64"])},
 
 
     # AArch64 Clang+LLVM+RT+LLD check-all + flang + test-suite +
