@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+BUILDBOT_CLOBBER="${BUILDBOT_CLOBBER:-}"
+BUILDBOT_REVISION="${BUILDBOT_REVISION:-origin/main}"
+BUILDBOT_BISECT_MODE="${BUILDBOT_BISECT_MODE:-}"
+
 function include_config() {
   local P=.
   while true ; do
@@ -18,7 +22,7 @@ include_config
 echo @@@BUILD_STEP Info@@@
 (
   set +e
-  env
+  env | sort
   echo
   uptime
   echo
@@ -30,11 +34,8 @@ echo @@@BUILD_STEP Info@@@
   ccache -ps
   exit 0
 )
-echo @@@BUILD_STEP Prepare@@@
 
-BUILDBOT_CLOBBER="${BUILDBOT_CLOBBER:-}"
-BUILDBOT_REVISION="${BUILDBOT_REVISION:-origin/main}"
-BUILDBOT_BISECT_MODE="${BUILDBOT_BISECT_MODE:-}"
+echo @@@BUILD_STEP Prepare@@@
 
 export LIT_OPTS="--time-tests"
 

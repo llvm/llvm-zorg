@@ -28,7 +28,10 @@ check_stage1_msan
 
 build_stage2_msan
 
-check_stage2_msan |& tee stage2_msan.log
+(
+  check_stage2_msan |& tee stage2_msan.log
+  exit ${PIPESTATUS[0]}
+)
 
 if grep "WARNING: MemorySanitizer" stage2_msan.log ; then
   # Stage 2 / MemoryWithOriginsSanitizer
@@ -40,11 +43,14 @@ if grep "WARNING: MemorySanitizer" stage2_msan.log ; then
 fi
 
 # Stage 3 / MemorySanitizer
-{
-  build_stage3_msan
+(
+  {
+    build_stage3_msan
 
-  check_stage3_msan
-} |& tee stage3_msan.log
+    check_stage3_msan
+  } |& tee stage3_msan.log
+  exit ${PIPESTATUS[0]}
+)
 
 if grep "WARNING: MemorySanitizer" stage3_msan.log ; then
   # Stage 3 / MemoryWithOriginsSanitizer

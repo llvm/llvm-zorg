@@ -6,6 +6,8 @@ set -x
 set -e
 set -u
 
+export BUILDBOT_BISECT_MODE=1
+
 HERE="$(cd $(dirname $0) && pwd)"
 . ${HERE}/buildbot_functions.sh
 
