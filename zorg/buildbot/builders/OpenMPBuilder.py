@@ -132,9 +132,10 @@ def getOpenMPCMakeBuildFactory(
     # When requested run additional lit tests
     if add_lit_checks != None:
         for add_check in add_lit_checks:
+            ninja_test_args = ['ninja', WithProperties('-j %s' % jobs)]
             f.addStep(LitTestCommand(
                 name = 'Add check ' + add_check,
-                command = ['ninja', add_check],
+                command = [ninja_test_args, add_check],
                 description = ["Additional check in OpenMP for", add_check,],
                 env = merged_env,
                 workdir = f.obj_dir,
