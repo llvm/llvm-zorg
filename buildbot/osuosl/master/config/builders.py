@@ -1838,10 +1838,10 @@ all += [
                         ],
                     )},
 
-    {'name' : "openmp-offload-amdgpu-runtime-experimental",
+    {'name' : "openmp-offload-libc-amdgpu-runtime",
     'tags'  : ["openmp"],
     'workernames' : ["omp-vega20-1"],
-    'builddir': "openmp-offload-amdgpu-runtime-experimental",
+    'builddir': "openmp-offload-libc-amdgpu-runtime",
     'factory' : OpenMPBuilder.getOpenMPCMakeBuildFactory(
                         clean=True,
                         depends_on_projects=['llvm', 'clang', 'compiler-rt', 'libc', 'lld', 'openmp'],
