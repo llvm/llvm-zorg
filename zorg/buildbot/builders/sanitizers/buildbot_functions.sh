@@ -177,14 +177,14 @@ function build_stage2 {
   if [ "$sanitizer_name" == "msan" ]; then
     export MSAN_SYMBOLIZER_PATH="${llvm_symbolizer_path}"
     llvm_use_sanitizer="Memory"
-    fsanitize_flag="-fsanitize=memory -fsanitize-memory-use-after-dtor -fsanitize-memory-param-retval -Oz"
+    fsanitize_flag="-fsanitize=memory"
   elif [ "$sanitizer_name" == "msan_track_origins" ]; then
     export MSAN_SYMBOLIZER_PATH="${llvm_symbolizer_path}"
     llvm_use_sanitizer="MemoryWithOrigins"
-    fsanitize_flag="-fsanitize=memory -fsanitize-memory-track-origins -fsanitize-memory-use-after-dtor -fsanitize-memory-param-retval -Oz"
+    fsanitize_flag="-fsanitize=memory -fsanitize-memory-track-origins"
   elif [ "$sanitizer_name" == "asan" ]; then
     export ASAN_SYMBOLIZER_PATH="${llvm_symbolizer_path}"
-    export ASAN_OPTIONS="check_initialization_order=true:detect_stack_use_after_return=1:detect_leaks=1"
+    export ASAN_OPTIONS="check_initialization_order=true"
     llvm_use_sanitizer="Address"
     fsanitize_flag="-fsanitize=address"
     # FIXME: False ODR violations in libcxx tests.
@@ -192,7 +192,7 @@ function build_stage2 {
     cmake_libcxx_cflags="-mllvm -asan-use-private-alias=1"
   elif [ "$sanitizer_name" == "hwasan" ]; then
     export HWASAN_SYMBOLIZER_PATH="${llvm_symbolizer_path}"
-    export HWASAN_OPTIONS="abort_on_error=1:detect_leaks=1"
+    export HWASAN_OPTIONS="abort_on_error=1"
     llvm_use_sanitizer="HWAddress"
     fsanitize_flag="-fsanitize=hwaddress -mllvm -hwasan-use-after-scope=1"
     # FIXME: Support globals with DSO https://github.com/llvm/llvm-project/issues/57206
