@@ -563,6 +563,9 @@ def lldb_cmake_builder(target, variant=None):
     if conf.llvm_enable_runtimes:
         cmake_cmd.append('-DLLVM_ENABLE_RUNTIMES={}'.format(conf.llvm_enable_runtimes))
 
+    if conf.lua:
+        cmake_cmd.append('-DLLDB_ENABLE_LUA=On')
+
     if variant == 'sanitized':
         cmake_cmd.append('-DLLVM_TARGETS_TO_BUILD=X86')
         cmake_cmd.append('-DLLVM_USE_SANITIZER=Address;Undefined')
@@ -1042,6 +1045,7 @@ def parse_args():
     parser.add_argument('--lto', dest='lto', action='store_true')
     parser.add_argument('--thinlto', dest='thinlto', action='store_true')
     parser.add_argument('--debug', dest='debug', action='store_true')
+    parser.add_argument('--lua', dest='lua', action='store_true')
     parser.add_argument('--cmake-type', dest='cmake_build_type',
                         help="Override cmake type Release, Debug, "
                              "RelWithDebInfo and MinSizeRel")
