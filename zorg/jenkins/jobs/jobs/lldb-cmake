@@ -74,7 +74,6 @@ pipeline {
                       --compiler-flag="-Wdocumentation" \
                       --cmake-type=Release || (echo "Retrying. debuginfo-tests may have failed due to high load."; sleep 30; python3 llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake build \
                       --assertions \
-                      --lua \
                       --projects="clang;lld;lldb;cross-project-tests"  \
                       --runtimes="libcxx;libcxxabi;compiler-rt"  \
                       --compiler-flag="-Wdocumentation" \
