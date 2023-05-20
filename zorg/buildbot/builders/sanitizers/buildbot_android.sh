@@ -14,7 +14,7 @@ LOCAL_IPS=`hostname -I`
 export PATH="/usr/local/bin:$PATH"
 
 LLVM=$ROOT/llvm
-CMAKE_COMMON_OPTIONS+=" -GNinja -DCMAKE_BUILD_TYPE=Release"
+CMAKE_COMMON_OPTIONS+=" -GNinja -DCMAKE_BUILD_TYPE=Release -DLLVM_APPEND_VC_REV=OFF"
 
 if ccache -s ; then
   CMAKE_COMMON_OPTIONS+=" -DLLVM_CCACHE_BUILD=ON"
