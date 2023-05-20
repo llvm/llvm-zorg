@@ -16,6 +16,10 @@ export PATH="/usr/local/bin:$PATH"
 LLVM=$ROOT/llvm
 CMAKE_COMMON_OPTIONS+=" -GNinja -DCMAKE_BUILD_TYPE=Release"
 
+if ccache -s ; then
+  CMAKE_COMMON_OPTIONS+=" -DLLVM_CCACHE_BUILD=ON"
+fi
+
 clobber
 
 download_android_tools
