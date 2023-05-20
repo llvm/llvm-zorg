@@ -405,7 +405,7 @@ function build_stage3 {
      -DCMAKE_CXX_FLAGS="${sanitizer_cflags}" \
      -DLLVM_USE_LINKER=lld \
      $LLVM && \
-  time ninja clang) || build_failure
+  time ninja) || build_failure
 }
 
 function build_stage3_msan {
