@@ -121,8 +121,6 @@ def main(argv):
             # The rest of the targets are either not yet gcc-clean or
             # not yet availabe on riscv.
             return
-        with step('libc-fuzzer'):
-            run_command(['ninja', 'libc-fuzzer'])
         with step('libc-scudo-integration-test'):
             run_command(['ninja', 'libc-scudo-integration-test'])
         with step('AOR Tests'):
@@ -132,6 +130,10 @@ def main(argv):
             run_command(['make', 'check'], directory=aor_dir)
         with step('Benchmark Utils Tests'):
             run_command(['ninja', 'libc-benchmark-util-tests'])
+    
+    if not fullbuild:
+        with step('libc-fuzzer'):
+            run_command(['ninja', 'libc-fuzzer'])
 
 
 @contextmanager
