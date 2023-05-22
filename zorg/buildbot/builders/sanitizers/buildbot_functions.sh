@@ -122,6 +122,7 @@ function build_stage1_clang_impl {
     cmake_stage1_options+=" -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++"
   fi
   (cd ${STAGE1_DIR} && cmake ${cmake_stage1_options} $LLVM && ninja)
+  md5sum ${STAGE1_DIR}/bin/clang* || true
 }
 
 function build_stage1_clang {
@@ -254,6 +255,7 @@ function build_stage2 {
      -DCMAKE_EXE_LINKER_FLAGS="${sanitizer_ldflags}" \
      $LLVM && \
    time ninja) || build_failure
+   md5sum ${build_dir}/bin/clang* || true
 }
 
 function build_stage2_msan {
