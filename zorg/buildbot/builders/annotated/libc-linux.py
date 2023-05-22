@@ -131,7 +131,7 @@ def main(argv):
         with step('Benchmark Utils Tests'):
             run_command(['ninja', 'libc-benchmark-util-tests'])
     
-    if not fullbuild:
+    if not (fullbuild or runtimes_build or riscv_build):
         with step('libc-fuzzer'):
             run_command(['ninja', 'libc-fuzzer'])
 
