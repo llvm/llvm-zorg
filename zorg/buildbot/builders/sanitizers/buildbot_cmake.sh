@@ -22,15 +22,6 @@ do
     esac
 done
 
-USE_CCACHE=
-if ccache -s ; then
-  USE_CCACHE="-DLLVM_CCACHE_BUILD=ON"
-  if ccache -p | grep "default.*max_size" ; then
-    ccache -M 20G
-    ccache -o compression=true
-  fi
-fi
-
 # Always clobber bootstrap build trees.
 clobber
 
@@ -144,7 +135,7 @@ LIBCXX=$LLVM/../libcxx
 # tests. Assume that self-hosted build tree should compile with -Werror.
 echo @@@BUILD_STEP build fresh toolchain@@@
 mkdir -p clang_build
-(cd clang_build && cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo ${CMAKE_COMMON_OPTIONS} ${USE_CCACHE} $LLVM ) || (rm -rf clang_build ; build_failure)
+(cd clang_build && cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo ${CMAKE_COMMON_OPTIONS} $LLVM ) || (rm -rf clang_build ; build_failure)
 
 BOOTSTRAP_BUILD_TARGETS="clang"
 if [[ "$CHECK_LLD" != "0" ]]; then

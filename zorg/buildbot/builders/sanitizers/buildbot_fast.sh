@@ -22,10 +22,6 @@ build_stage1_clang_at_revison
 
 CMAKE_COMMON_OPTIONS+=" -DLLVM_ENABLE_ASSERTIONS=ON -DLLVM_ENABLE_PER_TARGET_RUNTIME_DIR=OFF"
 
-if ccache -s ; then
-  CMAKE_COMMON_OPTIONS+=" -DLLVM_CCACHE_BUILD=ON"
-fi
-
 # Some of them are slow.
 STAGE2_SKIP_TEST_CXX=1
 

@@ -4,6 +4,15 @@ BUILDBOT_CLOBBER="${BUILDBOT_CLOBBER:-}"
 BUILDBOT_REVISION="${BUILDBOT_REVISION:-origin/main}"
 BUILDBOT_BISECT_MODE="${BUILDBOT_BISECT_MODE:-}"
 
+CMAKE_COMMON_OPTIONS+=" -DLLVM_APPEND_VC_REV=OFF"
+
+if ccache -s ; then
+  export CCACHE_COMPILERCHECK=content
+  export CCACHE_COMPRESS=1
+  export CCACHE_BASEDIR="$(pwd)"
+  CMAKE_COMMON_OPTIONS+=" -DLLVM_CCACHE_BUILD=ON"
+fi
+
 function include_config() {
   local P=.
   while true ; do
@@ -111,9 +120,6 @@ function build_stage1_clang_impl {
   local cmake_stage1_options="${CMAKE_COMMON_OPTIONS} -DLLVM_ENABLE_PROJECTS='clang;compiler-rt;lld'"
   if clang -v ; then
     cmake_stage1_options+=" -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++"
-  fi
-  if ccache -s ; then
-    cmake_stage1_options+=" -DLLVM_CCACHE_BUILD=ON"
   fi
   (cd ${STAGE1_DIR} && cmake ${cmake_stage1_options} $LLVM && ninja)
 }

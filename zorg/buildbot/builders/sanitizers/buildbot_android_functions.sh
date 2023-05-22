@@ -34,10 +34,6 @@ function build_stage2_android() {
   local CMAKE_OPTIONS="${CMAKE_COMMON_OPTIONS} -DLLVM_ENABLE_WERROR=ON ${STAGE1_AS_COMPILER} -DCMAKE_C_FLAGS=-gmlt -DCMAKE_CXX_FLAGS=-gmlt"
   CMAKE_OPTIONS="${CMAKE_OPTIONS} -DLLVM_ENABLE_PROJECTS='clang;lld' -DLLVM_USE_LINKER=lld -DCLANG_DEFAULT_RTLIB=libgcc"
 
-  if ccache -s ; then
-    CMAKE_OPTIONS="${CMAKE_OPTIONS} -DLLVM_CCACHE_BUILD=ON"
-  fi
-
   echo @@@BUILD_STEP bootstrap clang@@@
   mkdir -p llvm_build64
   if  [[ "$(cat llvm_build64/CMAKE_OPTIONS)" != "${CMAKE_OPTIONS}" ]] ; then

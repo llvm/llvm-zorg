@@ -25,9 +25,6 @@ readonly STAGE2_DIR=llvm_build2_host
 (
   echo @@@BUILD_STEP build host clang@@@
   COMPILER_BIN_DIR="$(readlink -f ${STAGE1_DIR})/bin"
-  if ccache -s >/dev/null ; then
-    CMAKE_COMMON_OPTIONS+=" -DLLVM_CCACHE_BUILD=ON"
-  fi
 
   rm -rf ${STAGE2_DIR}
   mkdir -p ${STAGE2_DIR}
@@ -253,9 +250,6 @@ function configure_hwasan_lam {
 
     (
       # STAGE1_DIR is build once, so we can use CCACHE.
-      if ccache -s >/dev/null ; then
-        CMAKE_COMMON_OPTIONS+=" -DLLVM_CCACHE_BUILD=ON"
-      fi
       cmake \
         ${CMAKE_COMMON_OPTIONS} \
         -DLLVM_ENABLE_PROJECTS="clang;compiler-rt;lld" \
