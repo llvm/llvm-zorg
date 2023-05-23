@@ -24,6 +24,9 @@ def is_lint_builder(builder_name):
 def is_riscv_builder(builder_name):
     return 'riscv' in builder_name
 
+def is_x86_64_builder(builder_name):
+    return 'x86_64' in builder_name
+
 
 def main(argv):
     ap = argparse.ArgumentParser()
@@ -40,6 +43,7 @@ def main(argv):
     gcc_build = is_gcc_builder(builder_name)
     lint_build = is_lint_builder(builder_name)
     riscv_build = is_riscv_builder(builder_name)
+    x86_64_build = is_x86_64_builder(builder_name)
 
     if gcc_build:
         cc = 'gcc'
@@ -131,7 +135,7 @@ def main(argv):
         with step('Benchmark Utils Tests'):
             run_command(['ninja', 'libc-benchmark-util-tests'])
     
-    if not (fullbuild or runtimes_build or riscv_build):
+    if not (fullbuild or runtimes_build) and x86_64_build:
         with step('libc-fuzzer'):
             run_command(['ninja', 'libc-fuzzer'])
 
