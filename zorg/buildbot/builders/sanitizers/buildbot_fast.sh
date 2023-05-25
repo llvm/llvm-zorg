@@ -29,9 +29,17 @@ buildbot_update
 
 # Stage 2 / Memory Sanitizer
 
-build_stage2_msan
+(
+  CMAKE_COMMON_OPTIONS+=" -DCMAKE_C_FLAGS=-fno-inline"
+  CMAKE_COMMON_OPTIONS+=" -DCMAKE_CXX_FLAGS=-fno-inline"
+  CMAKE_COMMON_OPTIONS+=" -DCMAKE_C_FLAGS_RELEASE=-Oz"
+  CMAKE_COMMON_OPTIONS+=" -DCMAKE_CXX_FLAGS_RELEASE=-Oz"
+  build_stage2_msan
 
-check_stage2_msan
+  check_stage2_msan
+  
+  build_stage3_msan
+)
 
 # Stage 2 / AddressSanitizer
 
