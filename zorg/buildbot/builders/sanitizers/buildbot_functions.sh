@@ -78,6 +78,16 @@ function clobber {
 BUILDBOT_MONO_REPO_PATH=${BUILDBOT_MONO_REPO_PATH:-}
 
 function buildbot_update {
+  if [[ "$BUILDBOT_BISECT_MODE" == "1" ]]; then
+    echo "@@@BUILD_STEP bisect status@@@"
+    (
+      cd llvm-project
+      git bisect visualize --oneline
+      git bisect log
+      git status
+    )
+    LLVM=$ROOT/llvm-project/llvm
+  fi
   echo "@@@BUILD_STEP update $BUILDBOT_REVISION@@@"
   if [[ -d "$BUILDBOT_MONO_REPO_PATH" ]]; then
     LLVM=$BUILDBOT_MONO_REPO_PATH/llvm
@@ -92,14 +102,10 @@ function buildbot_update {
         git config --local advice.detachedHead false
       )
       cd llvm-project
-      if [[ "$BUILDBOT_BISECT_MODE" == "1" ]]; then
-        echo "Bisecting. No need to update the repo."
-      else
-        git fetch origin
-        git clean -fd
-        git reset --hard
-        git checkout -f "${BUILDBOT_REVISION}"
-      fi
+      git fetch origin
+      git clean -fd
+      git reset --hard
+      git checkout -f "${BUILDBOT_REVISION}"
       git status
       git rev-list --pretty --max-count=1 HEAD
     ) || { build_exception ; exit 1 ; }
@@ -467,13 +473,13 @@ function check_stage3_ubsan {
 
 function build_failure() {
   # In bisect mode exit early.
-  [[ "$BUILDBOT_BISECT_MODE" == "1" ]] && exit 1
   echo
   echo "How to reproduce locally: https://github.com/google/sanitizers/wiki/SanitizerBotReproduceBuild"
   echo
 
   sleep 5
   echo "@@@STEP_FAILURE@@@"
+  if [[ "$BUILDBOT_BISECT_MODE" == "1" ]] && exit 1
 }
 
 function build_exception() {
