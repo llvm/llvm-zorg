@@ -1,0 +1,173 @@
+#!/usr/bin/env groovy
+pipeline {
+    agent { label 'green-dragon-13' }
+    parameters {
+        string(name: 'GIT_SHA', defaultValue: '*/main', description: 'Git revision to build')
+        string(name: 'ARTIFACT', defaultValue: 'clang-stage2-Rthinlto/latest', description: 'Compiler artifact to use for building the project')
+        string(name: 'BUILD_TYPE', defaultValue: 'Release', description: 'Default CMake build type; one of: Release, Debug, ...')
+        string(name: 'CLEAN', defaultValue: "false", description: 'Whether or not to clean the build directory before building')
+    }
+    stages {
+        stage('Checkout') {
+            steps {
+                timeout(30) {
+                    dir('llvm-project') {
+                        checkout([$class: 'GitSCM', branches: [
+                            [name: params.GIT_SHA]
+                        ], userRemoteConfigs: [
+                            [url: 'https://github.com/llvm/llvm-project.git']
+                        ], extensions: [
+                            [$class: 'CloneOption',
+                            reference: '/Users/Shared/llvm-project.git',
+                            noTags: true, timeout: 30]
+                        ]])
+                    }
+                    dir('llvm-zorg') {
+                        checkout([$class: 'GitSCM', branches: [
+                            [name: '*/main']
+                        ], userRemoteConfigs: [
+                            [url: 'https://github.com/llvm/llvm-zorg.git']
+                        ], extensions: [
+                            [$class: 'CloneOption',
+                            reference: '/Users/Shared/llvm-zorg.git']
+                        ]])
+                    }
+                }
+            }
+        }
+        stage('Fetch Host Compiler') {
+        steps {
+            timeout(10) {
+                    sh '''
+                    echo "Skipping geting the just-built compiler to work around an issue with libcxx."
+                    echo python3 llvm-zorg/zorg/jenkins/monorepo_build.py fetch
+                    rm -rf host-compiler
+                    '''
+                }
+            }
+        }
+        stage('Build') {
+            steps {
+                timeout(120) {
+                    sh '''
+                    set -u
+                    rm -rf build.properties
+
+                    cd llvm-project
+                    git tag -a -m "First Commit" first_commit 97724f18c79c7cc81ced24239eb5e883bf1398ef || true
+
+                    git_desc=$(git describe --match "first_commit")
+
+                    export GIT_DISTANCE=$(echo ${git_desc} | cut -f 2 -d "-")
+
+                    sha=$(echo ${git_desc} | cut -f 3 -d "-")
+                    export GIT_SHA=${sha:1}
+
+                    cd -
+
+                    if test -f /opt/codesign-workaround.sh; then sh /opt/codesign-workaround.sh init lldb-build/bin/debugserver; fi
+                    export MAX_PARALLEL_TESTS=$(sysctl hw.physicalcpu |awk '{print $2}')
+                    python3 llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake build \
+                      --assertions \
+                      --projects="clang;lld;lldb;cross-project-tests"  \
+                      --runtimes="libcxx;libcxxabi;compiler-rt"  \
+                      --compiler-flag="-Wdocumentation" \
+                      --cmake-type=Release || (echo "Retrying. debuginfo-tests may have failed due to high load."; sleep 30; python3 llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake build \
+                      --assertions \
+                      --projects="clang;lld;lldb;cross-project-tests"  \
+                      --runtimes="libcxx;libcxxabi;compiler-rt"  \
+                      --compiler-flag="-Wdocumentation" \
+                      --cmake-type=Release)
+
+                    if test -f /opt/codesign-workaround.sh; then sh /opt/codesign-workaround.sh sign lldb-build/bin/debugserver; fi
+                      '''
+                }
+            }
+        }
+        stage('Clean Test Results') {
+            steps {
+                timeout(10) {
+                    sh '''
+                    set -u
+                    export PATH=$PATH:/usr/bin:/usr/local/bin
+
+                    rm -rf test/results.xml
+                    '''
+                }
+            }
+        }
+        stage('Test (Debug Info)') {
+            steps {
+                timeout(30) {
+                    // We want to continue with the rest of the pipeline even
+                    // if the "Debug Info" tests fail, so catch the error but
+                    // label this stage and the whole pipeline as FAILURE.
+                    catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
+                        sh '''
+                        set -u
+                        export PATH=$PATH:/usr/bin:/usr/local/bin
+
+                        export MAX_PARALLEL_TESTS=$(sysctl hw.physicalcpu |awk '{print $2}')
+
+                        python3 llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-debuginfo test
+                        '''
+                    }
+                }
+            }
+        }
+        stage('Test (LLDB)') {
+            steps {
+                timeout(90) {
+                    sh '''
+                    set -u
+                    export PATH=$PATH:/usr/bin:/usr/local/bin
+
+                    export MAX_PARALLEL_TESTS=$(sysctl hw.physicalcpu |awk '{print $2}')
+                    python3 llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake test
+                    '''
+                }
+            }
+        }
+        stage('Upload artifacts (LLDB)') {
+           steps {
+               timeout(90) {
+                    sh '''
+                    set -u
+                    cd llvm-project
+                    git_desc=$(git describe --match "first_commit")
+
+                    export GIT_DISTANCE=$(echo ${git_desc} | cut -f 2 -d "-")
+
+                    sha=$(echo ${git_desc} | cut -f 3 -d "-")
+                    export GIT_SHA=${sha:1}
+
+                    cd -
+                    python3 llvm-zorg/zorg/jenkins/monorepo_build.py properties
+                    '''
+             }
+          }
+       }
+    }
+    post {
+        always {
+            scanForIssues tool: clang()
+            junit 'test/results.xml'
+        }
+        changed {
+            emailext subject: '$DEFAULT_SUBJECT',
+                    presendScript: '$DEFAULT_PRESEND_SCRIPT',
+                    postsendScript: '$DEFAULT_POSTSEND_SCRIPT',
+                    recipientProviders: [
+                            [$class: 'CulpritsRecipientProvider'],
+                            [$class: 'DevelopersRecipientProvider'],
+                            [$class: 'RequesterRecipientProvider'],
+                    ],
+                    replyTo: '$DEFAULT_REPLYTO',
+                    to: '$DEFAULT_RECIPIENTS',
+                    body:'$DEFAULT_CONTENT'
+        }
+        success {
+             build job: 'relay-lldb', wait: false
+        }
+    }
+}
