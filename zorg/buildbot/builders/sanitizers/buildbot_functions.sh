@@ -479,7 +479,7 @@ function build_failure() {
 
   sleep 5
   echo "@@@STEP_FAILURE@@@"
-  if [[ "$BUILDBOT_BISECT_MODE" == "1" ]] && exit 1
+  [[ "$BUILDBOT_BISECT_MODE" == "1" ]] && exit 1
 }
 
 function build_exception() {
