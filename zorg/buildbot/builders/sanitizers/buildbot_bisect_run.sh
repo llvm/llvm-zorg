@@ -6,8 +6,6 @@ set -x
 set -e
 set -u
 
-export BUILDBOT_BISECT_MODE=1
-
 HERE="$(cd $(dirname $0) && pwd)"
 . ${HERE}/buildbot_functions.sh
 
@@ -36,6 +34,8 @@ fi
 cd "${LLVM}/.."
 
 (
+  export BUILDBOT_BISECT_MODE=1
+
   if git bisect start $BAD $GOOD; then
     git bisect run bash -c "cd $ROOT && $*"
   fi

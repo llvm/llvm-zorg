@@ -2,7 +2,6 @@
 
 BUILDBOT_CLOBBER="${BUILDBOT_CLOBBER:-}"
 BUILDBOT_REVISION="${BUILDBOT_REVISION:-origin/main}"
-BUILDBOT_BISECT_MODE="${BUILDBOT_BISECT_MODE:-}"
 
 CMAKE_COMMON_OPTIONS+=" -DLLVM_APPEND_VC_REV=OFF"
 
@@ -75,7 +74,7 @@ function clobber {
 BUILDBOT_MONO_REPO_PATH=${BUILDBOT_MONO_REPO_PATH:-}
 
 function buildbot_update {
-  if [[ "$BUILDBOT_BISECT_MODE" == "1" ]]; then
+  if [[ "${BUILDBOT_BISECT_MODE:-}" == "1" ]]; then
     echo "@@@BUILD_STEP bisect status@@@"
     (
       cd llvm-project
@@ -84,6 +83,7 @@ function buildbot_update {
       git status
     )
     LLVM=$ROOT/llvm-project/llvm
+    return 0
   fi
   echo "@@@BUILD_STEP update $BUILDBOT_REVISION@@@"
   if [[ -d "$BUILDBOT_MONO_REPO_PATH" ]]; then
@@ -476,7 +476,7 @@ function build_failure() {
 
   sleep 5
   echo "@@@STEP_FAILURE@@@"
-  [[ "$BUILDBOT_BISECT_MODE" == "1" ]] && exit 1
+  [[ "${BUILDBOT_BISECT_MODE:-}" == "1" ]] && exit 1
 }
 
 function build_exception() {
