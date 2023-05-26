@@ -214,6 +214,14 @@ function build_stage2 {
     # FIXME: After switching to LLVM_ENABLE_RUNTIMES, vptr has infitine
     # recursion.
     fno_sanitize_flag+=" -fno-sanitize=vptr"
+  elif [ "$sanitizer_name" == "asan_ubsan" ]; then
+    export ASAN_SYMBOLIZER_PATH="${llvm_symbolizer_path}"
+    export ASAN_OPTIONS="check_initialization_order=true"
+    llvm_use_sanitizer="Address;Undefined"
+    fsanitize_flag="-fsanitize=address,undefined"
+    # FIXME: After switching to LLVM_ENABLE_RUNTIMES, vptr has infitine
+    # recursion.
+    fno_sanitize_flag+=" -fno-sanitize=vptr"
   else
     echo "Unknown sanitizer!"
     exit 1
@@ -281,6 +289,10 @@ function build_stage2_ubsan {
   build_stage2 ubsan
 }
 
+function build_stage2_asan_ubsan {
+  build_stage2 asan_ubsan
+}
+
 function check_stage1 {
   local sanitizer_name=$1
 
@@ -309,6 +321,10 @@ function check_stage1_hwasan {
 
 function check_stage1_ubsan {
   check_stage1 ubsan
+}
+
+function check_stage1_asan_ubsan {
+  check_stage1 asan_ubsan
 }
 
 function check_stage2 {
@@ -391,6 +407,10 @@ function check_stage2_hwasan {
 
 function check_stage2_ubsan {
   check_stage2 ubsan
+}
+
+function check_stage2_asan_ubsan {
+  check_stage2 asan_ubsan
 }
 
 function build_stage3 {

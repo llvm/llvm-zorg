@@ -27,28 +27,20 @@ STAGE2_SKIP_TEST_CXX=1
 
 buildbot_update
 
+# Stage 2 / Address and Undefined Sanitizer
+
+build_stage2_asan_ubsan
+
+check_stage2_asan_ubsan
+
 # Stage 2 / Memory Sanitizer
 
-(
-  CMAKE_COMMON_OPTIONS+=" -DCMAKE_C_FLAGS=-fno-inline"
-  CMAKE_COMMON_OPTIONS+=" -DCMAKE_CXX_FLAGS=-fno-inline"
-  CMAKE_COMMON_OPTIONS+=" -DCMAKE_C_FLAGS_RELEASE=-Oz"
-  CMAKE_COMMON_OPTIONS+=" -DCMAKE_CXX_FLAGS_RELEASE=-Oz"
-  build_stage2_msan
+CMAKE_COMMON_OPTIONS+=" -DCMAKE_C_FLAGS=-fno-inline"
+CMAKE_COMMON_OPTIONS+=" -DCMAKE_CXX_FLAGS=-fno-inline"
+CMAKE_COMMON_OPTIONS+=" -DCMAKE_C_FLAGS_RELEASE=-Oz"
+CMAKE_COMMON_OPTIONS+=" -DCMAKE_CXX_FLAGS_RELEASE=-Oz"
+build_stage2_msan
 
-  check_stage2_msan
-)
-
-# Stage 2 / AddressSanitizer
-
-build_stage2_asan
-
-check_stage2_asan
-
-# Stage 2 / UndefinedBehaviorSanitizer
-
-build_stage2_ubsan
-
-check_stage2_ubsan
+check_stage2_msan
 
 cleanup
