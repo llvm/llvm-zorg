@@ -129,7 +129,6 @@ class Configuration(object):
         self.nobootstrap = True
         self.device = None
         self.node_name = os.environ.get('NODE_NAME', None)
-        self.lldb_test_archs = os.environ.get('LLDB_TEST_ARCHS', 'x86_64').split()
 
         # Import all of the command line arguments into the config object
         self.__dict__.update(vars(args))
@@ -530,8 +529,7 @@ def lldb_cmake_builder(target, variant=None):
     cmake_build_type = conf.cmake_build_type if conf.cmake_build_type else 'RelWithDebInfo'
 
     # Construct dotest.py arguments.
-    dotest_args=['--arch', 'x86_64', '--build-dir',
-                 conf.lldbbuilddir()+'/lldb-test-build.noindex',
+    dotest_args=['--build-dir', conf.lldbbuilddir()+'/lldb-test-build.noindex',
                  '-t', '--env', 'TERM=vt100']
     dotest_args.extend(conf.dotest_flags)
 
