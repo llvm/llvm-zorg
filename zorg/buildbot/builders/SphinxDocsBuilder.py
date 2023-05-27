@@ -26,6 +26,7 @@ def getSphinxDocsBuildFactory(
         llvm_html         = False, # Build LLVM HTML documentation
         llvm_man          = False, # Build LLVM man pages
         clang_html        = False, # Build Clang HTML documentation
+        clang_man         = False, # Build Clang man pages
         clang_tools_html  = False, # Build Clang Extra Tools HTML documentation
         lld_html          = False, # Build LLD HTML documentation
         lldb_html         = False, # Build LLDB HTML documentation
@@ -93,6 +94,14 @@ def getSphinxDocsBuildFactory(
                                description=["Build Clang Sphinx HTML documentation"],
                                workdir=llvm_objdir,
                                targets=['docs-clang-html']
+                              ))
+
+    if clang_man:
+        f.addStep(NinjaCommand(name="docs-clang-man",
+                               haltOnFailure=True,
+                               description=["Build Clang Sphinx man pages"],
+                               workdir=llvm_objdir,
+                               targets=['docs-clang-man']
                               ))
 
     if clang_tools_html:

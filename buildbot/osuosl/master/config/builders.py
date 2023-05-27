@@ -2206,7 +2206,7 @@ all += [
     'tags'  : ["clang", "doc"],
     'workernames' : ["gribozavr3"],
     'builddir': "clang-sphinx-docs",
-    'factory' : SphinxDocsBuilder.getSphinxDocsBuildFactory(clang_html=True)},
+    'factory' : SphinxDocsBuilder.getSphinxDocsBuildFactory(clang_html=True, clang_man=True)},
 
     {'name' : "clang-tools-sphinx-docs",
     'tags'  : ["clang-tools", "doc"],
