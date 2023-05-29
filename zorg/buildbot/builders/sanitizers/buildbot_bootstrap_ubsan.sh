@@ -31,4 +31,4 @@ build_stage3_ubsan
 
 check_stage3_ubsan
 
-cleanup $STAGE1_DIR
+cleanup

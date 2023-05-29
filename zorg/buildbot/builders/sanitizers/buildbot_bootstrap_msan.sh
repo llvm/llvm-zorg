@@ -71,4 +71,4 @@ for I in 1 2 ; do
   CMAKE_COMMON_OPTIONS+=" -DCMAKE_CXX_FLAGS_RELEASE=-Oz"
 done
 
-cleanup $STAGE1_DIR
+cleanup

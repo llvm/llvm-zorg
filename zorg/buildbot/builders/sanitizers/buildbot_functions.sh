@@ -129,13 +129,17 @@ function common_stage1_variables {
 }
 
 function build_stage1_clang_impl {
+  [[ -f "${STAGE1_DIR}/delete_next_time" ]] && rm -rf "${STAGE1_DIR}"
   mkdir -p ${STAGE1_DIR}
   local cmake_stage1_options="${CMAKE_COMMON_OPTIONS} -DLLVM_ENABLE_PROJECTS='clang;compiler-rt;lld'"
   if clang -v ; then
     cmake_stage1_options+=" -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++"
   fi
-  (cd ${STAGE1_DIR} && cmake ${cmake_stage1_options} $LLVM && ninja)
-  md5sum ${STAGE1_DIR}/bin/clang* || true
+  (cd ${STAGE1_DIR} && cmake ${cmake_stage1_options} $LLVM && ninja) || {
+    touch "${STAGE1_DIR}/delete_next_time"
+    return 1
+  }
+  md5sum ${STAGE1_DIR}/bin/clang || true
 }
 
 function build_stage1_clang {
@@ -271,7 +275,7 @@ function build_stage2 {
      -DCMAKE_EXE_LINKER_FLAGS="${sanitizer_ldflags}" \
      $LLVM && \
    time ninja) || build_failure
-   md5sum ${build_dir}/bin/clang* || true
+   md5sum ${build_dir}/bin/clang || true
 }
 
 function build_stage2_msan {
@@ -442,6 +446,7 @@ function build_stage3 {
      -DLLVM_CCACHE_BUILD=OFF \
      $LLVM && \
   time ninja) || build_failure
+  md5sum ${build_dir}/bin/clang* || true
 }
 
 function build_stage3_msan {

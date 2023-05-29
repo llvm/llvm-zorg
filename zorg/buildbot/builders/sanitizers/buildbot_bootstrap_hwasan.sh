@@ -31,4 +31,4 @@ build_stage3_hwasan
 
 check_stage3_hwasan
 
-cleanup $STAGE1_DIR
+cleanup
