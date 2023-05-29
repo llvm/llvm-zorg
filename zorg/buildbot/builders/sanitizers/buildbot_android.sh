@@ -8,10 +8,7 @@ HERE="$(cd $(dirname $0) && pwd)"
 . ${HERE}/buildbot_functions.sh
 . ${HERE}/buildbot_android_functions.sh
 
-ROOT=`pwd`
 LOCAL_IPS=`hostname -I`
-
-LLVM=$ROOT/llvm
 
 clobber
 

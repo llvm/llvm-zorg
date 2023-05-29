@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+ROOT=`pwd`
+LLVM=$ROOT/llvm
+
 BUILDBOT_CLOBBER="${BUILDBOT_CLOBBER:-}"
 BUILDBOT_REVISION="${BUILDBOT_REVISION:-origin/main}"
 

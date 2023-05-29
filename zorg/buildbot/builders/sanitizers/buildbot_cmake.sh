@@ -7,7 +7,6 @@ set -u
 HERE="$(dirname $0)"
 . ${HERE}/buildbot_functions.sh
 
-ROOT=`pwd`
 PLATFORM=`uname`
 ARCH=`uname -m`
 export ANDROID_SDK_HOME=$ROOT/../../..
@@ -25,7 +24,6 @@ done
 clobber
 
 SUPPORTS_32_BITS=${SUPPORTS_32_BITS:-1}
-LLVM=$ROOT/llvm
 ZLIB=$ROOT/zlib
 
 CMAKE_COMMON_OPTIONS+=" -DLLVM_ENABLE_ASSERTIONS=ON -DLLVM_PARALLEL_LINK_JOBS=10 -DLLVM_ENABLE_PER_TARGET_RUNTIME_DIR=OFF ${CMAKE_ARGS}"

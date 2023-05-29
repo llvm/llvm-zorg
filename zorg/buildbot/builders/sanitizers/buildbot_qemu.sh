@@ -7,10 +7,6 @@ set -u
 HERE="$(cd $(dirname $0) && pwd)"
 . ${HERE}/buildbot_functions.sh
 
-ROOT=`pwd`
-
-LLVM=$ROOT/llvm
-
 clobber
 
 build_stage1_clang_at_revison

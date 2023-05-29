@@ -7,10 +7,7 @@ set -u
 HERE="$(cd $(dirname $0) && pwd)"
 . ${HERE}/buildbot_functions.sh
 
-ROOT=`pwd`
-
 MAKE_JOBS=${MAX_MAKE_JOBS:-$(nproc)}
-LLVM=$ROOT/llvm
 LIBFUZZER=$LLVM/lib/Fuzzer
 # No assertions. Need to clean up the existing assertion failures first.
 # Also, the Fuzzer does not provide reproducers on assertion failures yet.

@@ -9,10 +9,6 @@ set -u
 HERE="$(cd $(dirname $0) && pwd)"
 . ${HERE}/buildbot_functions.sh
 
-ROOT=`pwd`
-
-LLVM=$ROOT/llvm
-
 BUILDBOT_REVISION=origin/main buildbot_update
 
 echo @@@BUILD_STEP bisecting ${BUILDBOT_REVISION}@@@
