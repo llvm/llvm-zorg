@@ -9,7 +9,6 @@ HERE="$(cd $(dirname $0) && pwd)"
 . ${HERE}/buildbot_android_functions.sh
 
 ROOT=`pwd`
-PLATFORM=`uname`
 LOCAL_IPS=`hostname -I`
 export PATH="/usr/local/bin:$PATH"
 

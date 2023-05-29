@@ -9,7 +9,6 @@ HERE="$(cd $(dirname $0) && pwd)"
 
 ROOT=`pwd`
 export PATH="/usr/local/bin:$PATH"
-PLATFORM=`uname`
 
 LLVM=$ROOT/llvm
 
