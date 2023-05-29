@@ -3,7 +3,10 @@
 BUILDBOT_CLOBBER="${BUILDBOT_CLOBBER:-}"
 BUILDBOT_REVISION="${BUILDBOT_REVISION:-origin/main}"
 
-CMAKE_COMMON_OPTIONS+=" -DLLVM_APPEND_VC_REV=OFF"
+HOST_CLANG_REVISION=llvmorg-$(curl https://api.github.com/repos/llvm/llvm-project/releases/latest -s | jq .name -r | cut -f2 -d' ')
+CMAKE_COMMON_OPTIONS+=" -DLLVM_APPEND_VC_REV=OFF -GNinja -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_LLD=ON"
+
+export LC_ALL=C
 
 if ccache -s ; then
   CMAKE_COMMON_OPTIONS+=" -DLLVM_CCACHE_BUILD=ON"
@@ -144,7 +147,6 @@ function download_clang_from_chromium {
 }
 
 function build_clang_at_release_tag {
-  local HOST_CLANG_REVISION=llvmorg-$(curl https://api.github.com/repos/llvm/llvm-project/releases/latest -s | jq .name -r | cut -f2 -d' ')
   common_stage1_variables
 
   if  [ -r ${STAGE1_DIR}/host_clang_revision ] && \
@@ -177,7 +179,6 @@ function build_stage2 {
   local libcxx_build_dir=libcxx_build_${sanitizer_name}
   local build_dir=llvm_build_${sanitizer_name}
   export STAGE2_DIR=${build_dir}
-  local build_type="Release"
   local cmake_libcxx_cflags=
 
   common_stage2_variables
@@ -232,7 +233,6 @@ function build_stage2 {
     cmake \
       ${cmake_stage2_common_options} \
       -DLLVM_ENABLE_RUNTIMES='libcxx;libcxxabi' \
-      -DCMAKE_BUILD_TYPE=${build_type} \
       -DLLVM_USE_SANITIZER=${llvm_use_sanitizer} \
       -DCMAKE_C_FLAGS="${fsanitize_flag} ${cmake_libcxx_cflags} ${fno_sanitize_flag}" \
       -DCMAKE_CXX_FLAGS="${fsanitize_flag} ${cmake_libcxx_cflags} ${fno_sanitize_flag}" \
@@ -258,7 +258,6 @@ function build_stage2 {
    cmake \
      ${cmake_stage2_common_options} \
      ${cmake_stage2_clang_options} \
-     -DCMAKE_BUILD_TYPE=${build_type} \
      -DLLVM_USE_SANITIZER=${llvm_use_sanitizer} \
      -DLLVM_ENABLE_LIBCXX=ON \
      -DCMAKE_C_FLAGS="${sanitizer_cflags}" \
@@ -434,7 +433,7 @@ function build_stage3 {
      -DCMAKE_C_COMPILER=${clang_path}/clang \
      -DCMAKE_CXX_COMPILER=${clang_path}/clang++ \
      -DCMAKE_CXX_FLAGS="${sanitizer_cflags}" \
-     -DLLVM_USE_LINKER=lld \
+     -DLLVM_CCACHE_BUILD=OFF \
      $LLVM && \
   time ninja) || build_failure
 }

@@ -16,7 +16,7 @@ LLVM=$ROOT/llvm
 LIBFUZZER=$LLVM/lib/Fuzzer
 # No assertions. Need to clean up the existing assertion failures first.
 # Also, the Fuzzer does not provide reproducers on assertion failures yet.
-CMAKE_COMMON_OPTIONS+=" -GNinja -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_ASSERTIONS=OFF -DLLVM_ENABLE_LLD=ON"
+CMAKE_COMMON_OPTIONS+=" -DLLVM_ENABLE_ASSERTIONS=OFF"
 
 clobber RUNDIR-*
 

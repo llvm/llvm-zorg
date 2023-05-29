@@ -135,7 +135,7 @@ LIBCXX=$LLVM/../libcxx
 # tests. Assume that self-hosted build tree should compile with -Werror.
 echo @@@BUILD_STEP build fresh toolchain@@@
 mkdir -p clang_build
-(cd clang_build && cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo ${CMAKE_COMMON_OPTIONS} $LLVM ) || (rm -rf clang_build ; build_failure)
+(cd clang_build && cmake ${CMAKE_COMMON_OPTIONS} $LLVM ) || (rm -rf clang_build ; build_failure)
 
 BOOTSTRAP_BUILD_TARGETS="clang"
 if [[ "$CHECK_LLD" != "0" ]]; then
@@ -177,13 +177,13 @@ fi
 CLANG_PATH=${ROOT}/clang_build/bin
 # Build self-hosted tree with fresh Clang and -Werror.
 CMAKE_CLANG_OPTIONS="${CMAKE_COMMON_OPTIONS} -DLLVM_ENABLE_WERROR=ON -DCMAKE_C_COMPILER=${CLANG_PATH}/clang -DCMAKE_CXX_COMPILER=${CLANG_PATH}/clang++ -DCMAKE_C_FLAGS=-gmlt -DCMAKE_CXX_FLAGS=-gmlt"
-BUILD_TYPE=Release
 
 echo @@@BUILD_STEP bootstrap clang@@@
 mkdir -p llvm_build64
-(cd llvm_build64 && cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
-    ${CMAKE_CLANG_OPTIONS} -DLLVM_BUILD_EXTERNAL_COMPILER_RT=ON \
-    ${ENABLE_LIBCXX_FLAG} $LLVM) || build_failure
+(cd llvm_build64 && cmake ${CMAKE_CLANG_OPTIONS} \
+                          -DLLVM_BUILD_EXTERNAL_COMPILER_RT=ON \
+                          ${ENABLE_LIBCXX_FLAG} \
+                          $LLVM) || build_failure
 
 # First, build only Clang.
 (cd llvm_build64 && make -j$MAKE_JOBS clang) || build_failure
@@ -235,7 +235,7 @@ echo @@@BUILD_STEP build standalone compiler-rt@@@
 if [ ! -d compiler_rt_build ]; then
   mkdir compiler_rt_build
 fi
-(cd compiler_rt_build && cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
+(cd compiler_rt_build && cmake \
   -DCMAKE_C_COMPILER=${FRESH_CLANG_PATH}/clang \
   -DCMAKE_CXX_COMPILER=${FRESH_CLANG_PATH}/clang++ \
   -DCOMPILER_RT_INCLUDE_TESTS=ON \
@@ -253,8 +253,8 @@ if [ "$PLATFORM" == "Linux" -a $HAVE_NINJA == 1 ]; then
   if [ ! -d llvm_build_ninja ]; then
     mkdir llvm_build_ninja
   fi
-  CMAKE_NINJA_OPTIONS="${CMAKE_CLANG_OPTIONS} -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -G Ninja"
-  (cd llvm_build_ninja && cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
+  CMAKE_NINJA_OPTIONS="${CMAKE_CLANG_OPTIONS} -GNinja"
+  (cd llvm_build_ninja && cmake \
       ${CMAKE_NINJA_OPTIONS} $LLVM) || build_failure
   ln -sf llvm_build_ninja/compile_commands.json $LLVM
   (cd llvm_build_ninja && ninja) || build_failure

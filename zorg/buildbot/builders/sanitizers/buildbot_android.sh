@@ -14,7 +14,6 @@ LOCAL_IPS=`hostname -I`
 export PATH="/usr/local/bin:$PATH"
 
 LLVM=$ROOT/llvm
-CMAKE_COMMON_OPTIONS+=" -GNinja -DCMAKE_BUILD_TYPE=Release"
 
 clobber
 

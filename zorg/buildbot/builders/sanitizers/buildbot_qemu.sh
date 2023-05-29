@@ -8,11 +8,10 @@ HERE="$(cd $(dirname $0) && pwd)"
 . ${HERE}/buildbot_functions.sh
 
 ROOT=`pwd`
-PLATFORM=`uname`
 export PATH="/usr/local/bin:$PATH"
+PLATFORM=`uname`
 
 LLVM=$ROOT/llvm
-CMAKE_COMMON_OPTIONS+=" -GNinja -DCMAKE_BUILD_TYPE=Release"
 
 clobber
 

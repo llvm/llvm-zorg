@@ -19,7 +19,7 @@ PLATFORM=`uname`
 MAKE_JOBS=${MAX_MAKE_JOBS:-$(nproc)}
 
 LLVM=${ROOT}/llvm
-CMAKE_COMMON_OPTIONS+=" -GNinja -DLLVM_ENABLE_ASSERTIONS=ON -DLLVM_BUILD_EXTERNAL_COMPILER_RT=ON -DLLVM_USE_LINKER=lld"
+CMAKE_COMMON_OPTIONS+=" -DLLVM_BUILD_EXTERNAL_COMPILER_RT=ON"
 
 function build_tsan {
   local build_dir=$1
@@ -28,7 +28,7 @@ function build_tsan {
   if [ ! -d $build_dir ]; then
     mkdir $build_dir
   fi
-  (cd $build_dir && CC="$3" CXX="$4" cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+  (cd $build_dir && CC="$3" CXX="$4" cmake \
     ${CMAKE_COMMON_OPTIONS} ${extra_cmake_args} \
     ${LLVM})
   (cd $build_dir && ninja ${targets}) || build_failure
