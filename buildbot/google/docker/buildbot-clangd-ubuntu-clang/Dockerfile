@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 #
 #===----------------------------------------------------------------------===//
-# Docker image used for the mlir-nvidia builder
+# Docker image used for the clangd builder
 #
 # Environment variables configurable at runtime:
 #    BUILDBOT_PORT - server port to connect to

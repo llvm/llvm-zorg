@@ -52,7 +52,7 @@ To keep secrets a secret, they MUST not be stored in version control. The right
 place on kubernetes is a "secret". To create a kubernetes secret for the agent
 token: 
 ```bash
-kubectl create secret generic buildbot-token-mlir-nvidia --from-file=token=<file name>
+kubectl create secret generic buildbot-token-<BUILDER> --from-file=token=<file name>
 ```
 The file in `<file name>` then must contain the password of the buildbot worker
 in plain text. In the `Deployment` of a container, the secret is defined as a 
@@ -60,11 +60,11 @@ special type of volume and mounted in the specified path. During runtime the
 secret can then be read from that file.
 
 An example:
-The secret `buildbot-token-mlir-nvidia` is defined (as above) in Kubernetes. 
-In the [deployment](buildbot/google/terraform/main.tf) `mlir-nvidia` it is 
+The secret `buildbot-token-<BUILDER>` is defined (as above) in Kubernetes. 
+In the [deployment](buildbot/google/terraform/main.tf) `<BUILDER>` it is 
 used as a volume of type `secret` and then mounted at `/secrets`. During the 
 runtime of the docker container, the script 
-[run.sh](../docker/buildbot-mlir-nvidia/run.sh) reads the secret from the file
+[run.sh](../docker/buildbot-<BUILDER>/run.sh) reads the secret from the file
 `/secrets/token` and uses it to create the worker configuration.
 
 
@@ -74,7 +74,7 @@ Terraform does not support deployments on GCP using a GPU at the moment.
 So we need to deploy such cases using plain Kubernetes configuration files.
 See this [issue](https://github.com/terraform-providers/terraform-provider-kubernetes/issues/149) 
 for more details.
-The buildbot mlir-nvidia is configured in `deployment-mlir-nvidia.yaml` in this
+The buildbot <BUILDER> is configured in `deployment-<BUILER>.yaml` in this
 folder. 
 
 For all non-GPU cases add a `"kubernetes_deployment"` to `main.tf`. 

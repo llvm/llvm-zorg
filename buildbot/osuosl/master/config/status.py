@@ -240,6 +240,14 @@ all = [
         fromaddr="llvm.buildmaster@lab.llvm.org",
         sendToInterestedUsers = False,
         extraRecipients=[
+            "joker.eph@gmail.com"],
+        subject = "MLIR Build Failure: %(builder)s",
+        mode = "failing",
+        builders = ["mlir-nvidia"]),
+    reporters.MailNotifier(
+        fromaddr="llvm.buildmaster@lab.llvm.org",
+        sendToInterestedUsers = False,
+        extraRecipients=[
             "mlir-bugs-external+buildbot@googlegroups.com"],
         subject = "MLIR Build Failure: %(builder)s",
         mode = "failing",
