@@ -13,7 +13,7 @@ if ccache -s ; then
 fi
 
 if lld --version ; then
-  CMAKE_COMMON_OPTIONS+=" -DLLVM_ENABLE_LLD=ON"
+  CMAKE_COMMON_OPTIONS+=" -DLLVM_USE_LINKER=lld"
 fi
 
 function include_config() {
@@ -172,8 +172,7 @@ function build_stage1_clang_at_revison {
 }
 
 function common_stage2_variables {
-  cmake_stage2_common_options="\
-    ${CMAKE_COMMON_OPTIONS} ${STAGE1_AS_COMPILER} -DLLVM_USE_LINKER=lld"
+  cmake_stage2_common_options="${CMAKE_COMMON_OPTIONS} ${STAGE1_AS_COMPILER}"
 }
 
 function build_stage2 {

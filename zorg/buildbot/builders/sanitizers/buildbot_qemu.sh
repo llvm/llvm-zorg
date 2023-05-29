@@ -34,7 +34,6 @@ readonly STAGE2_DIR=llvm_build2_host
     -DLLVM_ENABLE_PROJECTS="clang;compiler-rt;lld" \
     -DCMAKE_C_COMPILER=${COMPILER_BIN_DIR}/clang \
     -DCMAKE_CXX_COMPILER=${COMPILER_BIN_DIR}/clang++ \
-    -DLLVM_ENABLE_LLD=ON \
     -DCMAKE_BUILD_WITH_INSTALL_RPATH=ON \
     $LLVM && ninja
 ) || build_failure
@@ -254,7 +253,6 @@ function configure_hwasan_lam {
         -DLLVM_ENABLE_PROJECTS="clang;compiler-rt;lld" \
         -DCMAKE_C_COMPILER=${COMPILER_BIN_DIR}/clang \
         -DCMAKE_CXX_COMPILER=${COMPILER_BIN_DIR}/clang++ \
-        -DLLVM_ENABLE_LLD=ON \
         -DCMAKE_BUILD_WITH_INSTALL_RPATH=ON \
         -DCOMPILER_RT_EMULATOR="env SSH_CONTROL_SOCKET=${SSH_CONTROL_SOCKET} ${HERE}/ssh_run.sh" \
         $LLVM
