@@ -2,6 +2,8 @@ from zorg.buildbot.builders.UnifiedTreeBuilder import getCmakeWithNinjaBuildFact
 
 from buildbot.plugins import util
 
+from buildbot.steps.shell import ShellCommand
+
 from zorg.buildbot.commands.CmakeCommand import CmakeCommand
 from zorg.buildbot.commands.NinjaCommand import NinjaCommand
 from zorg.buildbot.commands.LitTestCommand import LitTestCommand
@@ -19,11 +21,20 @@ def addTestSuiteStep(
     cc = util.Interpolate('-DCMAKE_C_COMPILER=' + '%(prop:builddir)s/'+compiler_dir+'/bin/clang')
     cxx = util.Interpolate('-DCMAKE_CXX_COMPILER=' + '%(prop:builddir)s/'+compiler_dir+'/bin/clang++')
     lit = util.Interpolate('%(prop:builddir)s/' + compiler_dir + '/bin/llvm-lit')
+    test_suite_base_dir = util.Interpolate('%(prop:builddir)s/' + 'test')
     test_suite_src_dir = util.Interpolate('%(prop:builddir)s/' + 'test/test-suite')
-    test_suite_workdir='test/sandbox/test-suite'
+    test_suite_workdir = util.Interpolate('%(prop:builddir)s/' + 'test/build-test-suite')
     cmake_lit_arg = util.Interpolate('-DTEST_SUITE_LIT:FILEPATH=' + '%(prop:builddir)s/' + compiler_dir + '/bin/llvm-lit')
     # used for cmake building test-suite step
     options = [cc, cxx, cmake_lit_arg]
+
+    # always clobber the build directory to test each new compiler
+    f.addStep(ShellCommand(name='Clean Test Suite Build dir',
+                           command=['rm', '-rf', test_suite_workdir],
+                           haltOnFailure=True,
+                           description='Removing the Test Suite build directory',
+                           workdir=test_suite_base_dir,
+                           env=env))
 
     f.addGetSourcecodeForProject(
         project='test-suite',
