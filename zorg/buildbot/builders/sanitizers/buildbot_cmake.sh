@@ -26,7 +26,6 @@ done
 clobber
 
 SUPPORTS_32_BITS=${SUPPORTS_32_BITS:-1}
-MAKE_JOBS=${MAX_MAKE_JOBS:-$(nproc)}
 LLVM=$ROOT/llvm
 ZLIB=$ROOT/zlib
 
@@ -90,10 +89,8 @@ case "$ARCH" in
     CHECK_TSAN=1
     CMAKE_COMMON_OPTIONS+=" -DLLVM_TARGETS_TO_BUILD=PowerPC"
     if [[ "$ARCH" == "ppc64le" ]]; then
-      MAKE_JOBS=256
       CMAKE_COMMON_OPTIONS+=" -DLLVM_LIT_ARGS=-vj256"
     else
-      MAKE_JOBS=80
       CMAKE_COMMON_OPTIONS+=" -DLLVM_LIT_ARGS=-vj80"
     fi
   ;;
@@ -141,11 +138,11 @@ BOOTSTRAP_BUILD_TARGETS="clang"
 if [[ "$CHECK_LLD" != "0" ]]; then
   BOOTSTRAP_BUILD_TARGETS="$BOOTSTRAP_BUILD_TARGETS lld"
 fi
-(cd clang_build && make $BOOTSTRAP_BUILD_TARGETS -j$MAKE_JOBS) || build_failure
+(cd clang_build && ninja $BOOTSTRAP_BUILD_TARGETS) || build_failure
 
 # If we're building with libcxx, install the headers to clang_build/include.
 if [ ! -z ${ENABLE_LIBCXX_FLAG} ]; then
-(cd clang_build && make -C ${LIBCXX} installheaders \
+(cd clang_build && ninja -C ${LIBCXX} installheaders \
   HEADER_DIR=${PWD}/include) || build_failure
 fi
 
@@ -157,7 +154,7 @@ if [ "$PLATFORM" == "Linux" ]; then
     SANITIZER=$2
     if [ "$CONDITION" == "1" ]; then
       echo @@@BUILD_STEP check-$SANITIZER in gcc build@@@
-      (cd clang_build && make -j$MAKE_JOBS check-$SANITIZER) || build_failure
+      (cd clang_build && ninja check-$SANITIZER) || build_failure
     fi
   }
   check_in_gcc 1 sanitizer
@@ -186,24 +183,24 @@ mkdir -p llvm_build64
                           $LLVM) || build_failure
 
 # First, build only Clang.
-(cd llvm_build64 && make -j$MAKE_JOBS clang) || build_failure
+(cd llvm_build64 && ninja clang) || build_failure
 
 # If needed, install the headers to clang_build/include.
 if [ ! -z ${ENABLE_LIBCXX_FLAG} ]; then
-  (cd llvm_build64 && make -C ${LIBCXX} installheaders \
+  (cd llvm_build64 && ninja -C ${LIBCXX} installheaders \
     HEADER_DIR=${PWD}/include) || build_failure
 fi
 
 # Now build everything else.
-(cd llvm_build64 && make -j$MAKE_JOBS) || build_failure
+(cd llvm_build64 && ninja) || build_failure
 # Symbolizer dependencies.
-(cd llvm_build64 && make -j$MAKE_JOBS llvm-ar llvm-link llvm-tblgen opt) || build_failure
+(cd llvm_build64 && ninja llvm-ar llvm-link llvm-tblgen opt) || build_failure
 
 
 if [ "$CHECK_CFI" == "1" ]; then
   # FIXME: Make these true dependencies of check-cfi-and-supported when
   # compiler-rt is configured as an external project.
-  (cd llvm_build64 && make -j$MAKE_JOBS LLVMgold opt sanstats) || build_failure
+  (cd llvm_build64 && ninja LLVMgold opt sanstats) || build_failure
 fi
 
 check_64bit() {
@@ -211,7 +208,7 @@ check_64bit() {
   SANITIZER=$2
   if [ "$CONDITION" == "1" ]; then
     echo @@@BUILD_STEP 64-bit check-$SANITIZER@@@
-    (cd llvm_build64 && make -j$MAKE_JOBS check-$SANITIZER) || build_failure
+    (cd llvm_build64 && ninja check-$SANITIZER) || build_failure
   fi
 }
 
@@ -242,10 +239,10 @@ fi
   -DCOMPILER_RT_ENABLE_WERROR=ON \
   -DLLVM_CMAKE_DIR=${ROOT}/llvm_build64 \
   $COMPILER_RT) || build_failure
-(cd compiler_rt_build && make -j$MAKE_JOBS) || build_failure
+(cd compiler_rt_build && ninja) || build_failure
 
 echo @@@BUILD_STEP test standalone compiler-rt@@@
-(cd compiler_rt_build && make -j$MAKE_JOBS check-all) || build_failure
+(cd compiler_rt_build && ninja check-all) || build_failure
 
 HAVE_NINJA=${HAVE_NINJA:-1}
 if [ "$PLATFORM" == "Linux" -a $HAVE_NINJA == 1 ]; then
