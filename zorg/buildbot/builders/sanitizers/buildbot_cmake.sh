@@ -229,7 +229,7 @@ echo @@@BUILD_STEP build standalone compiler-rt@@@
 if [ ! -d compiler_rt_build ]; then
   mkdir compiler_rt_build
 fi
-(cd compiler_rt_build && cmake \
+(cd compiler_rt_build && cmake -GNinja \
   -DCMAKE_C_COMPILER=${FRESH_CLANG_PATH}/clang \
   -DCMAKE_CXX_COMPILER=${FRESH_CLANG_PATH}/clang++ \
   -DCOMPILER_RT_INCLUDE_TESTS=ON \
