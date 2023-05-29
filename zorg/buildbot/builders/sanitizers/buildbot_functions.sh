@@ -4,12 +4,16 @@ BUILDBOT_CLOBBER="${BUILDBOT_CLOBBER:-}"
 BUILDBOT_REVISION="${BUILDBOT_REVISION:-origin/main}"
 
 HOST_CLANG_REVISION=llvmorg-$(curl https://api.github.com/repos/llvm/llvm-project/releases/latest -s | jq .name -r | cut -f2 -d' ')
-CMAKE_COMMON_OPTIONS+=" -DLLVM_APPEND_VC_REV=OFF -GNinja -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_LLD=ON"
+CMAKE_COMMON_OPTIONS+=" -DLLVM_APPEND_VC_REV=OFF -GNinja -DCMAKE_BUILD_TYPE=Release"
 
 export LC_ALL=C
 
 if ccache -s ; then
   CMAKE_COMMON_OPTIONS+=" -DLLVM_CCACHE_BUILD=ON"
+fi
+
+if lld --version ; then
+  CMAKE_COMMON_OPTIONS+=" -DLLVM_ENABLE_LLD=ON"
 fi
 
 function include_config() {
