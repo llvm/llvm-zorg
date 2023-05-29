@@ -10,7 +10,6 @@ HERE="$(dirname $0)"
 ROOT=`pwd`
 PLATFORM=`uname`
 ARCH=`uname -m`
-export PATH="/usr/local/bin:$PATH"
 export ANDROID_SDK_HOME=$ROOT/../../..
 
 CMAKE_ARGS=""

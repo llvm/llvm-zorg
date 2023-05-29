@@ -10,7 +10,6 @@ HERE="$(cd $(dirname $0) && pwd)"
 
 ROOT=`pwd`
 LOCAL_IPS=`hostname -I`
-export PATH="/usr/local/bin:$PATH"
 
 LLVM=$ROOT/llvm
 
