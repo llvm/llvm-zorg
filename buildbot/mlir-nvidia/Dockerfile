@@ -87,6 +87,11 @@ WORKDIR /vol/worker
 RUN mkdir -p /vol/worker \
   && chown buildbot /vol/worker
 
+# Configure ccache (default is 5GB caching)
+RUN mkdir /home/buildbot/.ccache/ \
+  && echo "max_size = 30.0G" > /home/buildbot/.ccache/ccache.conf \
+  && chown -R buildbot /home/buildbot/.ccache
+
 # copy startup script
 COPY run.sh /home/buildbot/
 RUN chmod a+rx /home/buildbot/run.sh
