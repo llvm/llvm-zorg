@@ -13,12 +13,11 @@
 # Use the image from NVIDIA
 FROM nvidia/cuda:12.1.1-devel-ubuntu20.04
 
-
 # install extra build tools
 ENV TZ=Etc/UTC
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update \
-  && apt-get install -y \
+  && apt-get install -y --no-install-recommends \
     apt-transport-https \
     ca-certificates \
     ccache \
@@ -28,6 +27,7 @@ RUN apt-get update \
     dumb-init \
     git \
     gnupg \
+    libpython3-dev \
     lld-10 \
     ninja-build \
     python3 \
@@ -58,7 +58,7 @@ RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/nul
   tee /etc/apt/trusted.gpg.d/kitware.gpg >/dev/null \
   && apt-add-repository 'deb https://apt.kitware.com/ubuntu/ bionic main' \
   && apt-get update \
-  && apt-get install -y cmake \
+  && apt-get install -y --no-install-recommends cmake \
   && rm -rf /var/lib/apt/lists/*
 
 # Get the Vulkan SDK from LunarG.
@@ -67,7 +67,7 @@ RUN wget -qO - http://packages.lunarg.com/lunarg-signing-key-pub.asc 2>/dev/null
   && wget -qO /etc/apt/sources.list.d/lunarg-vulkan-1.2.141-bionic.list \
        https://packages.lunarg.com/vulkan/1.3.243/lunarg-vulkan-1.3.243-focal.list \
   && apt-get update \
-  && apt-get install -y vulkan-sdk \
+  && apt-get install -y --no-install-recommends vulkan-sdk \
   && rm -rf /var/lib/apt/lists/*
 
 
@@ -75,9 +75,8 @@ RUN wget -qO - http://packages.lunarg.com/lunarg-signing-key-pub.asc 2>/dev/null
 # components in the installed driver, install them in the container. This creates
 # a coupling with the actual driver running on the VM unfortunately.
 RUN apt-get update \
-  && apt-get install -y libnvidia-gl-470-server \
+  && apt-get install -y --no-install-recommends libnvidia-gl-470-server \
   && rm -rf /var/lib/apt/lists/*
-
 
 # Install build bot (server was at 2.8.5-dev at time of writing).
 RUN pip3 install buildbot-worker==2.8.4
