@@ -25,6 +25,24 @@ from zorg.buildbot.builders import BOLTBuilder
 from zorg.buildbot.builders import HtmlDocsBuilder
 from zorg.buildbot.builders import DoxygenDocsBuilder
 
+reload(ClangBuilder)
+reload(FlangBuilder)
+reload(PollyBuilder)
+reload(LLDBBuilder)
+reload(SanitizerBuilder)
+reload(OpenMPBuilder)
+reload(SphinxDocsBuilder)
+reload(ABITestsuitBuilder)
+reload(ClangLTOBuilder)
+reload(UnifiedTreeBuilder)
+reload(AOSPBuilder)
+reload(AnnotatedBuilder)
+reload(LLDPerformanceTestsuite)
+reload(FuchsiaBuilder)
+reload(XToolchainBuilder)
+reload(TestSuiteBuilder)
+reload(BOLTBuilder)
+
 reload(HtmlDocsBuilder)
 reload(DoxygenDocsBuilder)
 
