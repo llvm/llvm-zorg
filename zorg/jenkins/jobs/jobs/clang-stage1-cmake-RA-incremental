@@ -1,5 +1,5 @@
 pipeline {
-    agent { label 'green-dragon-07' }
+    agent { label 'green-dragon-04' }
 
     parameters {
         string(name: 'GIT_REVISION', defaultValue: '*/main', description: 'Git revision to build')
