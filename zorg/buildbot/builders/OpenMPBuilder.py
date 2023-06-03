@@ -139,7 +139,7 @@ def getOpenMPCMakeBuildFactory(
             if add_check == 'check-libc':
                 ninja_test_args = [
                     'ninja',
-                    '-C ' + llvm_builddir + '/runtimes/runtimes-bins',
+                    '-C ' + f.obj_dir + '/runtimes/runtimes-bins',
                     '-j 1'
                     ]
 
