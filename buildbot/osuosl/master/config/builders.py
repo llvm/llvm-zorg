@@ -2324,8 +2324,8 @@ all += [
     'builddir': 'llvm-x86_64-debian-dylib',
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                     clean=True,
-                    depends_on_projects=['llvm'],
-                    checks=['check-all'],
+                    depends_on_projects=['llvm', 'clang', 'lldb', 'lld', 'clang-tools-extra'],
+                    checks=['check-clang', 'check-llvm', 'check-lld', 'check-clang-extra'],
                     extra_configure_args=[
                         '-DCMAKE_BUILD_TYPE=Release',
                         '-DLLVM_ENABLE_ASSERTIONS=On',
@@ -2335,6 +2335,8 @@ all += [
                         '-DCMAKE_EXPORT_COMPILE_COMMANDS=1',
                         '-DLLVM_BUILD_LLVM_DYLIB=On',
                         '-DLLVM_LINK_LLVM_DYLIB=On',
+                        '-DCLANG_BUILD_CLANG_DYLIB=On',
+                        '-DCLANG_LINK_CLANG_DYLIB=On',
                         '-DBUILD_SHARED_LIBS=Off',
                         '-DLLVM_ENABLE_LLD=Off',
                         '-DLLVM_ENABLE_BINDINGS=Off',
