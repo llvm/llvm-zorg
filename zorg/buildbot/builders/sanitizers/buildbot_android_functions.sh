@@ -257,6 +257,7 @@ function test_arch_on_device {
   echo @@@BUILD_STEP device setup [$DEVICE_DESCRIPTION]@@@
   $ADB wait-for-device
   $ADB devices
+  $ADB shell getprop ro.build.version.release
 
   # Kill leftover symbolizers. TODO: figure out what's going on.
   $ADB shell pkill llvm-symbolizer || true
