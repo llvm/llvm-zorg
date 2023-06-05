@@ -54,7 +54,7 @@ def getSphinxDocsBuildFactory(
     llvm_objdir = 'llvm/build'
 
     depends_on_projects = ['llvm']
-    if clang_html or clang_tools_html or lldb_html:
+    if clang_html or clang_man or clang_tools_html or lldb_html:
         depends_on_projects.append('clang')
     if clang_tools_html:
         depends_on_projects.append('clang-tools-extra')
