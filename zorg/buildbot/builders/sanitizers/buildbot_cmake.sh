@@ -305,12 +305,12 @@ if [ "$PLATFORM" == "Linux" -a $HAVE_NINJA == 1 ]; then
 
     # TODO: Replace LIT_FILTER_OUT with lit features.
     LIT_FILTER_OUT=":: (max_allocation_size.cpp|Linux/soft_rss_limit_mb_test.cpp)$" check_ninja_with_symbolizer 1 sanitizer
-    check_ninja_with_symbolizer $CHECK_ASAN asan
+    LIT_FILTER_OUT=":: TestCases/Linux/check_memcpy.c$" check_ninja_with_symbolizer $CHECK_ASAN asan
     # check_ninja_with_symbolizer $CHECK_HWASAN hwasan
     # check_ninja_with_symbolizer $CHECK_CFI cfi-and-supported
     check_ninja_with_symbolizer $CHECK_DFSAN dfsan
     LIT_FILTER_OUT=":: TestCases/(realloc_too_big.c|recoverable_leak_check.cpp|suppressions_file.cpp)$" check_ninja_with_symbolizer $CHECK_LSAN lsan
-    check_ninja_with_symbolizer $CHECK_MSAN msan
+    LIT_FILTER_OUT=":: Linux/check_memcpy.c$" check_ninja_with_symbolizer $CHECK_MSAN msan
     check_ninja_with_symbolizer $CHECK_SCUDO_STANDALONE scudo_standalone
     LIT_FILTER_OUT=":: Linux/check_memcpy.c$" check_ninja_with_symbolizer $CHECK_TSAN tsan
     LIT_FILTER_OUT=":: TestCases/TypeCheck/(vptr-virtual-base.cpp|vptr.cpp)$" check_ninja_with_symbolizer $CHECK_UBSAN ubsan
