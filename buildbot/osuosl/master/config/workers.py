@@ -159,6 +159,9 @@ def get_all():
         # X86_64 AVX512, Ubuntu 22.04.1 LTS, Intel(R) Xeon(R) Silver 4216 CPU @ 2.10GHz
         create_worker("avx512-intel64", properties={'jobs': 80}, max_builds=1),
 
+        # X86_64 AVX512, Windows Server 2022 Standard, Intel(R) Xeon(R) Silver 4216 CPU @ 2.10GHz
+        create_worker("avx512-intel64-win", properties={'jobs': 80}, max_builds=1),
+
         # Debian 9.0 x86_64 64-core GCE instances
         create_worker("fuchsia-debian-64-us-central1-a-1", properties={'jobs': 64}, max_builds=1),
         create_worker("fuchsia-debian-64-us-central1-b-1", properties={'jobs': 64}, max_builds=1),
