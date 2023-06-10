@@ -230,4 +230,47 @@ all = [
                         'CC': 'clang', 'CXX': 'clang++',
                     })},
 
+# Sony builders.
+
+    {'name' : "llvm-clang-x86_64-sie-win-release",
+    'tags'  : ["llvm", "clang", "clang-tools-extra", "lld", "cross-project-tests"],
+    'workernames' : ["sie-win-worker"],
+    'builddir': "x86_64-sie-win-rel",
+    'factory' : UnifiedTreeBuilder.getCmakeWithNinjaWithMSVCBuildFactory(
+                    vs="autodetect",
+                    target_arch='x64',
+                    depends_on_projects=['llvm','clang','clang-tools-extra','lld','cross-project-tests'],
+                    clean=True,
+                    extra_configure_args=[
+                        "-DCMAKE_BUILD_TYPE=Release",
+                        "-DCLANG_ENABLE_ARCMT=OFF",
+                        "-DCLANG_ENABLE_CLANGD=OFF",
+                        "-DLLVM_CCACHE_BUILD=ON",
+                        "-DLLVM_DEFAULT_TARGET_TRIPLE=x86_64-sie-ps5",
+                        "-DLLVM_INCLUDE_EXAMPLES=OFF",
+                        "-DLLVM_TARGETS_TO_BUILD=X86",
+                        "-DLLVM_VERSION_SUFFIX=",
+                        "-DLLVM_BUILD_RUNTIME=OFF",
+                        "-DLLVM_ENABLE_ASSERTIONS=ON",
+                        "-DLLVM_LIT_ARGS=--verbose"])},
+
+    {'name': "llvm-clang-x86_64-gcc-ubuntu-release",
+    'tags'  : ["llvm", "clang", "clang-tools-extra", "compiler-rt", "lld", "cross-project-tests"],
+    'workernames': ["doug-worker-2a"],
+    'builddir': "x86_64-gcc-rel",
+    'factory': UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
+                    depends_on_projects=['llvm','clang','clang-tools-extra','compiler-rt','lld','cross-project-tests'],
+                    extra_configure_args=[
+                        "-DCMAKE_C_COMPILER=gcc",
+                        "-DCMAKE_CXX_COMPILER=g++",
+                        "-DCMAKE_BUILD_TYPE=Release",
+                        "-DCLANG_ENABLE_CLANGD=OFF",
+                        "-DLLVM_BUILD_RUNTIME=ON",
+                        "-DLLVM_BUILD_TESTS=ON",
+                        "-DLLVM_ENABLE_ASSERTIONS=ON",
+                        "-DLLVM_INCLUDE_EXAMPLES=OFF",
+                        "-DLLVM_LIT_ARGS=--verbose -j48",
+                        "-DLLVM_PARALLEL_LINK_JOBS=16",
+                        "-DLLVM_USE_LINKER=gold"])},
+
 ]
