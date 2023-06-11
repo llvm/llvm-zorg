@@ -2602,7 +2602,6 @@ all += [
     # AMD ROCm support.
     {'name' : 'mlir-rocm-mi200',
      'tags'  : ["mlir"],
-     'collapseRequests' : False,
      'workernames' : ['mi200-buildbot'],
      'builddir': 'mlir-rocm-mi200',
      'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
