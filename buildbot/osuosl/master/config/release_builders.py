@@ -26,7 +26,7 @@ all = [
 # Clang builders.
 
     {'name' : "llvm-clang-x86_64-win-release",
-    'tags'  : ["clang", "release"],
+    'tags'  : ["clang"],
     'workernames' : ["as-builder-3"],
     'builddir': "llvm-clang-x86_64-win-rel",
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaWithMSVCBuildFactory(
@@ -48,7 +48,7 @@ all = [
 
 
     {'name' : "llvm-clang-x86_64-expensive-checks-ubuntu-release",
-    'tags'  : ["llvm", "expensive-checks", "release"],
+    'tags'  : ["llvm", "expensive-checks"],
     'workernames' : ["as-builder-4"],
     'builddir': "llvm-clang-x86_64-expensive-checks-ubuntu-rel",
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
@@ -64,7 +64,7 @@ all = [
                         "-DLLVM_LIT_ARGS=-vv -j32"])},
 
     {'name' : "llvm-clang-x86_64-expensive-checks-win-release",
-    'tags'  : ["llvm", "expensive-checks", "release"],
+    'tags'  : ["llvm", "expensive-checks"],
     'workernames' : ["as-worker-93"],
     'builddir': "llvm-clang-x86_64-expensive-checks-win-rel",
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaWithMSVCBuildFactory(
@@ -77,7 +77,7 @@ all = [
                         "-DCMAKE_BUILD_TYPE=Debug"])},
 
     {'name' : "llvm-clang-x86_64-expensive-checks-debian-release",
-    'tags'  : ["llvm", "expensive-checks", "release"],
+    'tags'  : ["llvm", "expensive-checks"],
     'workernames' : ["gribozavr4"],
     'builddir': "llvm-clang-x86_64-expensive-checks-debian-rel",
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
@@ -98,7 +98,7 @@ all = [
 # Cross builders.
 
     {'name' : "llvm-clang-win-x-armv7l-release",
-    'tags'  : ["clang", "llvm", "compiler-rt", "cross", "armv7", "release"],
+    'tags'  : ["clang", "llvm", "compiler-rt", "cross", "armv7"],
     'workernames' : ["as-builder-5"],
     'builddir': "x-armv7l-rel",
     'factory' : XToolchainBuilder.getCmakeWithMSVCBuildFactory(
@@ -137,7 +137,7 @@ all = [
                     cmake_cache="../llvm-project/clang/cmake/caches/CrossWinToARMLinux.cmake")},
 
     {'name' : "llvm-clang-win-x-aarch64-release",
-    'tags'  : ["clang", "llvm", "compiler-rt", "cross", "aarch64", "release"],
+    'tags'  : ["clang", "llvm", "compiler-rt", "cross", "aarch64"],
     'workernames' : ["as-builder-6"],
     'builddir': "x-aarch64-rel",
     'factory' : XToolchainBuilder.getCmakeWithMSVCBuildFactory(
@@ -178,7 +178,7 @@ all = [
 # LLD builders.
 
     {'name' : "lld-x86_64-win-release",
-    'tags'  : ["lld", "release"],
+    'tags'  : ["lld"],
     'workernames' : ["as-worker-93"],
     'builddir': "lld-x86_64-win-rel",
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaWithMSVCBuildFactory(
@@ -188,7 +188,7 @@ all = [
                         '-DLLVM_ENABLE_WERROR=OFF'])},
 
     {'name' : "lld-x86_64-ubuntu-release",
-    'tags'  : ["lld", "release"],
+    'tags'  : ["lld"],
     'workernames' : ["as-builder-4"],
     'builddir' : "lld-x86_64-ubuntu-rel",
     'factory': UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
@@ -200,13 +200,13 @@ all = [
 # LTO and ThinLTO builders.
 
     {'name' : "clang-with-thin-lto-ubuntu-release",
-    'tags'  : ["clang", "lld", "LTO", "release"],
+    'tags'  : ["clang", "lld", "LTO"],
     'workernames' : ["as-worker-92"],
     'builddir': "clang-with-thin-lto-ubuntu-rel",
     'factory' : ClangLTOBuilder.getClangWithLTOBuildFactory(jobs=72, lto='thin')},
 
     {'name' : "clang-with-lto-ubuntu-release",
-    'tags'  : ["clang", "lld", "LTO", "release"],
+    'tags'  : ["clang", "lld", "LTO"],
     'workernames' : ["as-worker-91"],
     'builddir': "clang-with-lto-ubuntu-rel",
     'factory' : ClangLTOBuilder.getClangWithLTOBuildFactory(
@@ -218,7 +218,7 @@ all = [
 # OpenMP builders.
 
     {'name' : "openmp-clang-x86_64-linux-debian-release",
-    'tags'  : ["openmp", "release"],
+    'tags'  : ["openmp"],
     'workernames' : ["gribozavr4"],
     'builddir': "openmp-clang-x86_64-linux-debian-rel",
     'factory' : OpenMPBuilder.getOpenMPCMakeBuildFactory(
