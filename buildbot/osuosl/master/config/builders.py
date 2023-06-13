@@ -2103,6 +2103,7 @@ all += [
                     extra_configure_args=[
                         "-DLLVM_TARGETS_TO_BUILD=AArch64",
                         "-DCMAKE_BUILD_TYPE=Release",
+                        "-DLLVM_ENABLE_ASSERTIONS=OFF",
                         "-DCMAKE_CXX_STANDARD=17",
                     ])},
 
