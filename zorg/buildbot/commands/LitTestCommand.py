@@ -178,9 +178,16 @@ class LitTestCommand(Test):
 
   def describe(self, done=False):
     description = Test.describe(self, done) or list()
-    for name, count in self.logObserver.resultCounts.items():
-        if name in self.resultNames:
-            description.append('{0} {1}'.format(count, self.resultNames[name]))
-        else:
-            description.append('Unexpected test result output ' + name)
+
+    # We use resultNames here so that the printed order is always the same.
+    # resultCounts is a dictionary that goes by insertion order instead.
+    for name, description in self.resultNames.items():
+      count = self.logObserver.resultCounts.get(name, 0)
+      if count:
+        description.append('{0} {1}'.format(count, description))
+
+    unknown = set(self.logObserver.resultCounts.keys()) - set(self.resultNames.keys())
+    for name in unknown:
+      description.append('Unexpected test result output ' + name)
+
     return description
