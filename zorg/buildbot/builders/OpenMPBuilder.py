@@ -133,15 +133,6 @@ def getOpenMPCMakeBuildFactory(
     if add_lit_checks != None:
         for add_check in add_lit_checks:
             ninja_test_args = ['ninja', WithProperties('-j %s' % jobs)]
-            # Limit the number of threads to use for GPU libc to prevent errors with GPU runtime.
-            # Libc seems to ignore -j argument when given top-level, so `cd` into directory using
-            # the ninja flag for potentially better error messages and being more explicit about it
-            if add_check == 'check-libc':
-                ninja_test_args = [
-                    'ninja',
-                    '-C', 'runtimes/runtimes-bins',
-                    '-j', '1'
-                    ]
 
             f.addStep(LitTestCommand(
                 name = 'Add check ' + add_check,

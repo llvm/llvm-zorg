@@ -1860,6 +1860,7 @@ all += [
                             "-DLIBC_GPU_BUILD=ON",
                             "-DLIBC_GPU_ARCHITECTURES=gfx906",
                             "-DLIBC_GPU_TEST_ARCHITECTURE=gfx906",
+                            "-DLIBC_GPU_TEST_JOBS=1",
                             ],
                         install=True,
                         testsuite=False,
