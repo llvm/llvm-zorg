@@ -404,46 +404,6 @@ all = [
                         '--cppflags', '-O0',
                         '--threads=32', '--build-threads=32'])},
 
-    ## ARMv7 VFPv3 check-all + compiler-rt + testsuite 2-stage
-    {'name' : "clang-armv7-vfpv3-full-2stage",
-    'tags'  : ["clang"],
-    'workernames' : ["linaro-tk1-06", "linaro-tk1-07", "linaro-tk1-08", "linaro-tk1-09"],
-    'builddir': "clang-armv7-vfpv3-full-2stage",
-    'factory' : ClangBuilder.getClangCMakeBuildFactory(
-                    clean=False,
-                    checkout_lld=False,
-                    useTwoStage=True,
-                    testStage1=False,
-                    runTestSuite=True,
-                    testsuite_flags=[
-                        '--cppflags', '-mcpu=cortex-a15 -mfpu=vfpv3 -marm',
-                        '--threads=4', '--build-threads=4'],
-                    extra_cmake_args=[
-                        "-DCOMPILER_RT_TEST_COMPILER_CFLAGS='-mcpu=cortex-a15 -mfpu=vfpv3 -marm'",
-                        "-DLLVM_PARALLEL_LINK_JOBS=2",
-                        "-DCOMPILER_RT_BUILD_GWP_ASAN=OFF"])},
-
-    ## ARMv7 Thumb2 check-all + compiler-rt + testsuite 2-stage
-    {'name' : "clang-thumbv7-full-2stage",
-    'tags'  : ["clang"],
-    'workernames' : ["linaro-tk1-01", "linaro-tk1-03", "linaro-tk1-04", "linaro-tk1-05"],
-    'builddir': "clang-thumbv7-full-2stage",
-    'factory' : ClangBuilder.getClangCMakeBuildFactory(
-                    clean=False,
-                    checkout_lld=False,
-                    testStage1=False,
-                    useTwoStage=True,
-                    runTestSuite=True,
-                    testsuite_flags=[
-                        '--cppflags', '-mcpu=cortex-a15 -mthumb',
-                        '--threads=4', '--build-threads=4'],
-                    extra_cmake_args=[
-                        "-DCMAKE_C_FLAGS='-mcpu=cortex-a15 -mthumb'",
-                        "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a15 -mthumb'",
-                        "-DCOMPILER_RT_TEST_COMPILER_CFLAGS='-mcpu=cortex-a15 -mthumb'",
-                        "-DLLVM_PARALLEL_LINK_JOBS=2",
-                        "-DCOMPILER_RT_BUILD_GWP_ASAN=OFF"])},
-
     ## AArch32 Self-hosting Clang+LLVM check-all + LLD + test-suite
     # Sanitizers build disabled due to PR38690
     {'name' : "clang-armv8-lld-2stage",
