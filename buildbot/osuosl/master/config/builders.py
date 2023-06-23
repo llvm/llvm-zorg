@@ -2743,6 +2743,7 @@ all += [
     'builddir': "buildguard5",
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                     depends_on_projects=["llvm", "clang", "clang-tools-extra", "lld", "lldb", "compiler-rt", "libunwind", "libcxxabi", "libcxx"],
+                    enable_runtimes="auto",     # get runtimes from depends_on_projects.
                     checks=['check-all'],
                     clean=True,
                     extra_configure_args=[
