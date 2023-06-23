@@ -13,7 +13,7 @@ import zorg.buildbot.builders.Util as builders_util
 
 def getLLVMBuildFactoryAndPrepareForSourcecodeSteps(
            depends_on_projects = None,
-           enable_runtimes = None,
+           enable_runtimes = "auto",
            llvm_srcdir = None,
            obj_dir = None,
            install_dir = None,
@@ -51,7 +51,7 @@ def getLLVMBuildFactoryAndPrepareForSourcecodeSteps(
 
 def getLLVMBuildFactoryAndSourcecodeSteps(
            depends_on_projects = None,
-           enable_runtimes = None,
+           enable_runtimes = "auto",
            llvm_srcdir = None,
            src_to_build_dir = None,
            obj_dir = None,
@@ -242,7 +242,7 @@ def addNinjaSteps(
 
 def getCmakeBuildFactory(
            depends_on_projects = None,
-           enable_runtimes = None,
+           enable_runtimes = "auto",
            llvm_srcdir = None,
            obj_dir = None,
            install_dir = None,
@@ -274,7 +274,7 @@ def getCmakeBuildFactory(
 
 def getCmakeWithNinjaBuildFactory(
            depends_on_projects = None,
-           enable_runtimes = None,
+           enable_runtimes = "auto",
            targets = None,
            llvm_srcdir = None,
            obj_dir = None,
@@ -331,7 +331,7 @@ def getCmakeWithNinjaBuildFactory(
 
 def getCmakeWithNinjaWithMSVCBuildFactory(
            depends_on_projects = None,
-           enable_runtimes = None,
+           enable_runtimes = "auto",
            targets = None,
            llvm_srcdir = None,
            obj_dir = None,
@@ -345,8 +345,6 @@ def getCmakeWithNinjaWithMSVCBuildFactory(
            target_arch=None,
            env = None,
            **kwargs):
-
-    assert not env, "Can't have custom builder env vars with MSVC build"
 
     # Make a local copy of the configure args, as we are going to modify that.
     if extra_configure_args:
@@ -367,7 +365,8 @@ def getCmakeWithNinjaWithMSVCBuildFactory(
 
     f.addStep(SetPropertyFromCommand(
         command=builders_util.getVisualStudioEnvironment(vs, target_arch),
-        extract_fn=builders_util.extractVSEnvironment))
+        extract_fn=builders_util.extractVSEnvironment,
+        env=env))
     env = util.Property('vs_env')
 
     cleanBuildRequested = lambda step: step.build.getProperty("clean", default=step.build.getProperty("clean_obj")) or clean
@@ -395,7 +394,7 @@ def getCmakeWithNinjaWithMSVCBuildFactory(
 
 def getCmakeWithNinjaMultistageBuildFactory(
            depends_on_projects = None,
-           enable_runtimes = None,
+           enable_runtimes = "auto",
            llvm_srcdir = None,
            src_to_build_dir = None,
            obj_dir = None,
