@@ -6,6 +6,7 @@ from zorg.buildbot.commands.CmakeCommand   import CmakeCommand
 from zorg.buildbot.commands.NinjaCommand   import NinjaCommand
 from zorg.buildbot.commands.LitTestCommand import LitTestCommand
 from zorg.buildbot.process.factory         import LLVMBuildFactory
+from zorg.buildbot.commands.UpdatePropertiesCommand import UpdatePropertiesCommand
 
 import zorg.buildbot.builders.Util as builders_util
 
@@ -40,7 +41,6 @@ def getCmakeWithMSVCBuildFactory(
         'TERM' : 'dumb' # Make sure Clang doesn't use color escape sequences.
         }
     if env is not None:
-        assert not vs, "Cannot have custom builder env vars with VS setup."
         # Overwrite pre-set items with the given ones, so user can set anything.
         merged_env.update(env)
 
@@ -117,7 +117,8 @@ def getCmakeWithMSVCBuildFactory(
         # Configure MSVC environment if requested.
         f.addStep(SetPropertyFromCommand(
             command=builders_util.getVisualStudioEnvironment(vs, None),
-            extract_fn=builders_util.extractVSEnvironment))
+            extract_fn=builders_util.extractVSEnvironment,
+            env=merged_env))
         merged_env = Property('vs_env')
 
     CmakeCommand.applyDefaultOptions(cmake_args, [
