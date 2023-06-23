@@ -2742,6 +2742,7 @@ all += [
     'workernames' : ["gc-builder-5"],
     'builddir': "buildguard5",
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
+                    depends_on_projects=["llvm", "clang", "clang-tools-extra", "lld", "lldb", "compiler-rt", "libunwind", "libcxxabi", "libcxx"],
                     checks=['check-all'],
                     clean=True,
                     extra_configure_args=[
