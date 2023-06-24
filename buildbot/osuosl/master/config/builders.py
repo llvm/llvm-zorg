@@ -2758,7 +2758,7 @@ all += [
                         "-DLLVM_OPTIMIZED_TABLEGEN=ON",
                         "-DCMAKE_CXX_FLAGS=-D__OPTIMIZE__ -Wno-misleading-indentation",
                         "-DBUILD_SHARED_LIBS=ON",
-                        "-DLLVM_LIT_ARGS=-vv -j 112"],
+                        "-DLLVM_LIT_ARGS=-v -vv"],
                     env={
                         'CCACHE_DIR' : WithProperties("%(builddir)s/ccache-db"),
                     })},
@@ -2781,7 +2781,7 @@ all += [
                         "-DCLANG_DEFAULT_LINKER=lld",
                         "-DLLVM_OPTIMIZED_TABLEGEN=ON",
                         "-DCMAKE_CXX_FLAGS=-D__OPTIMIZE__",
-                        "-DLLVM_LIT_ARGS=-vv -j 112"],
+                        "-DLLVM_LIT_ARGS=-v -vv"],
                     env={
                         'CCACHE_DIR' : WithProperties("%(builddir)s/ccache-db"),
                     })},
