@@ -6,7 +6,6 @@ from zorg.buildbot.commands.CmakeCommand   import CmakeCommand
 from zorg.buildbot.commands.NinjaCommand   import NinjaCommand
 from zorg.buildbot.commands.LitTestCommand import LitTestCommand
 from zorg.buildbot.process.factory         import LLVMBuildFactory
-from zorg.buildbot.commands.UpdatePropertiesCommand import UpdatePropertiesCommand
 
 import zorg.buildbot.builders.Util as builders_util
 
