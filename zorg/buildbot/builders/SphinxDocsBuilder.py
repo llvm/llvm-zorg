@@ -11,7 +11,7 @@ llvm_docs = OrderedDict([
   ("llvm",              ("docs-llvm-html",        "docs/html/",                         "llvm")),
   ("clang",             ("docs-clang-html",       "tools/clang/docs/html/",             "cfe")),
   ("clang-tools-extra", ("docs-clang-tools-html", "tools/clang/tools/extra/docs/html/", "clang-tools-extra")),
-  ("libc",              ("docs-libc-html",        "projects/libc/docs/html/",           "libc")),
+  ("libc",              ("docs-libc-html",        "libc/docs/html/",                    "libc")),
   ("libcxx",            ("docs-libcxx-html",      "libcxx/docs/html/",                  "libcxx")),
   ("libunwind",         ("docs-libunwind-html",   "libunwind/docs/html/",               "libunwind")),
   ("lld",               ("docs-lld-html",         "tools/lld/docs/html/",               "lld")),
@@ -141,6 +141,7 @@ def getSphinxDocsBuildFactory(
 def getSphinxRuntimesDocsBuildFactory(
         libcxx_html       = False, # Build Libc++ HTML documentation
         libunwind_html    = False, # Build libunwind HTML documentation
+        libc_html         = False, # Build Libc HTML documentation
         extra_configure_args = None,
         **kwargs):
 
@@ -166,6 +167,8 @@ def getSphinxRuntimesDocsBuildFactory(
         depends_on_runtimes.append('libcxxabi')
     if libunwind_html:
         depends_on_runtimes.append('libunwind')
+    if libc_html:
+        depends_on_runtimes.append('libc')
 
     f = UnifiedTreeBuilder.getLLVMBuildFactoryAndSourcecodeSteps(
             depends_on_projects=depends_on_runtimes,
@@ -197,6 +200,14 @@ def getSphinxRuntimesDocsBuildFactory(
                                targets=['docs-libunwind-html']
                               ))
 
+    if libc_html:
+        f.addStep(NinjaCommand(name="docs-libc-html",
+                               haltOnFailure=True,
+                               description=["Build libc Sphinx HTML documentation"],
+                               workdir=f.obj_dir,
+                               targets=['docs-libc-html']
+                              ))
+
     return f
 
 
@@ -213,7 +224,6 @@ def getLLVMDocsBuildFactory(
             "llvm",
             "clang",
             "clang-tools-extra",
-            "libc",
             "lld",
             "lldb",
             "flang",
@@ -313,6 +323,7 @@ def getLLVMRuntimesDocsBuildFactory(
             "libcxx",
             "libcxxabi",
             "libunwind",
+            "libc",
         ]
     else:
         # Make a local copy of depends_on_runtimes, as we are going to modify
