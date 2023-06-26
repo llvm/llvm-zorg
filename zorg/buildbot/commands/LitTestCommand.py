@@ -181,10 +181,11 @@ class LitTestCommand(Test):
 
     # We use resultNames here so that the printed order is always the same.
     # resultCounts is a dictionary that goes by insertion order instead.
-    for name, description in self.resultNames.items():
-      count = self.logObserver.resultCounts.get(name, 0)
+    for resultName, resultDescription in self.resultNames.items():
+      count = self.logObserver.resultCounts.get(resultName, 0)
       if count:
-        description.append('{0} {1}'.format(count, description))
+        print(">>>> LitLogObserver.describe: description={}".format(description))
+        description.append('{0} {1}'.format(count, resultDescription))
 
     unknown = set(self.logObserver.resultCounts.keys()) - set(self.resultNames.keys())
     for name in unknown:
