@@ -142,9 +142,9 @@ class LitLogObserver(LogLineObserver):
 
 class LitTestCommand(Test):
   resultNames = {'FAIL':'unexpected failures',
+                 'XPASS':'unexpected passes',
                  'PASS':'expected passes',
                  'XFAIL':'expected failures',
-                 'XPASS':'unexpected passes',
                  'KFAIL':'known failures',
                  'KPASS':'unknown passes',
                  'UNRESOLVED':'unresolved testcases',
