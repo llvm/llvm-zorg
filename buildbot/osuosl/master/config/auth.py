@@ -46,7 +46,6 @@ def getAuthz():
         ],
         roleMatchers=[
             util.RolesFromGroups(groupPrefix="llvm/"),
-            util.RolesFromGroups(groupPrefix="llvm/"),
             # role owner is granted when property owner matches the email of the user
             util.RolesFromOwner(role="owner"),
         ],
