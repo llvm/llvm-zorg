@@ -20,6 +20,7 @@ all = [
                 "llvm-clang-x86_64-win-fast",
                 "clang-x86_64-debian-fast",
                 "llvm-clang-x86_64-expensive-checks-debian",
+                "llvm-clang-x86_64-sie-ubuntu-fast",
             ] + [
                 b.get('name') for b in config.release_builders.all
                 if 'release' in b.get('tags', [])
