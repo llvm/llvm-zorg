@@ -1,6 +1,10 @@
 from buildbot.plugins import util
 #from twisted.python import log
 
+from zorg.buildbot.util.workerowner import WorkerOwnerAuthz
+from zorg.buildbot.util.workerowner import WorkerEndpointMatcher
+from zorg.buildbot.util.workerowner import RolesFromWorkerOwner
+
 import config
 
 
@@ -18,12 +22,14 @@ def getAuth():
 
 def getAuthz():
 
-    authz = util.Authz(
+    authz = WorkerOwnerAuthz(
         allowRules=[
             # Admins can do anything.
             # defaultDeny=False: if user does not have the admin role,
             # we continue parsing rules.
             util.AnyEndpointMatcher(role="LLVM Lab team", defaultDeny=False),
+
+            WorkerEndpointMatcher(role="worker-owner", defaultDeny=False),
 
             # Allow authors to stop, force or rebuild their own builds,
             util.StopBuildEndpointMatcher(role="owner", defaultDeny=False),
@@ -48,6 +54,7 @@ def getAuthz():
             util.RolesFromGroups(groupPrefix="llvm/"),
             # role owner is granted when property owner matches the email of the user
             util.RolesFromOwner(role="owner"),
+            RolesFromWorkerOwner(role="worker-owner"),
         ],
     )
 
