@@ -2765,7 +2765,7 @@ all += [
     {'name' : "llvm-clang-buildguard6-win",
     'tags'  : ["llvm", "clang", "lld", "lldb", "clang-tools-extra"],
     'collapseRequests' : False,
-    'workernames' : ["gc-builder-6-win"],
+    'workernames' : ["gc-builder-6-win", "gc-builder-7-win"],
     'builddir': "buildguard6",
     'factory' : XToolchainBuilder.getCmakeWithMSVCBuildFactory(
                     vs="autodetect",

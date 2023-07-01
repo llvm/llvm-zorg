@@ -325,4 +325,5 @@ def get_all():
         # Google Cloud workers.
         create_worker("gc-builder-5", properties={'jobs' : 112},  max_builds=1),
         create_worker("gc-builder-6-win", properties={'jobs' : 112},  max_builds=1),
+        create_worker("gc-builder-7-win", properties={'jobs' : 112},  max_builds=1),
         ]
