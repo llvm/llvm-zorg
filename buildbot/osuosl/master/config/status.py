@@ -162,13 +162,6 @@ all = [
     reporters.MailNotifier(
         fromaddr = "llvm.buildmaster@lab.llvm.org",
         sendToInterestedUsers = False,
-        extraRecipients = ["omair.javaid@linaro.org"],
-        subject = "Build %(builder)s Failure",
-        mode = "failing",
-        builders = ["lldb-arm-ubuntu","lldb-aarch64-ubuntu"]),
-    reporters.MailNotifier(
-        fromaddr = "llvm.buildmaster@lab.llvm.org",
-        sendToInterestedUsers = False,
         extraRecipients = ["vvereschaka@accesssoftek.com"],
         subject = "Build %(builder)s Failure",
         mode = "failing",
