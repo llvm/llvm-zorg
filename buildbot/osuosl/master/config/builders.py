@@ -1226,8 +1226,8 @@ all = [
                     clean=True,
                     extra_cmake_args=[
                         '-DLLVM_ENABLE_ASSERTIONS=True',
-                        '-DLLVM_LIT_ARGS=-vj 4',
-                        '-DLLVM_USE_LINKER=gold'])},
+                        '-DLLVM_LIT_ARGS=-v',
+                        '-DLLVM_USE_LINKER=lld'])},
 
     {'name' : "lldb-arm-ubuntu",
     'tags'  : ["lldb"],
