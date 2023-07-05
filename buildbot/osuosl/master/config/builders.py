@@ -279,29 +279,6 @@ all = [
                     checkout_lld=False,
                     extra_cmake_args=["-DLLVM_TARGETS_TO_BUILD='ARM'"])},
 
-    # Cortex-A15 LNT test-suite in Benchmark mode
-    {'name' : "clang-native-arm-lnt-perf",
-    'tags'  : ["clang"],
-    'workernames':["linaro-tk1-02"],
-    'builddir':"clang-native-arm-lnt-perf",
-    'factory' : ClangBuilder.getClangCMakeBuildFactory(
-                    clean=False,
-                    checkout_compiler_rt=False,
-                    checkout_lld=False,
-                    checks=[],
-                    runTestSuite=True,
-                    testsuite_flags=[
-                        '--cppflags', '-O3 -mcpu=cortex-a15 -mthumb',
-                        '--threads=1', '--build-threads=4',
-                        '--use-perf=all',
-                        '--benchmarking-only', '--exec-multisample=3',
-                        '--exclude-stat-from-submission=compile'],
-                    extra_cmake_args=[
-                        "-DLLVM_TARGETS_TO_BUILD='ARM'",
-                        "-DLLVM_PARALLEL_LINK_JOBS=2"],
-                    submitURL='http://lnt.llvm.org/submitRun',
-                    testerName='LNT-Thumb2v7-A15-O3')},
-
     # ARMv7 LNT test-suite in test-only mode
     {'name' : "clang-armv7-lnt",
     'tags'  : ["clang"],
