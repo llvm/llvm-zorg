@@ -13,9 +13,6 @@ def get_all():
         # FreeBSD
         create_worker("as-worker-4", properties={'jobs' : 24}, max_builds=2),
 
-        # Linux Ubuntu
-        create_worker("as-worker-5", properties={'jobs' : 16}),
-
         # ARMv7/ARMv8 Linaro workers
         create_worker("linaro-tk1-02", properties={'jobs' : 4}, max_builds=1),
         create_worker("linaro-clang-armv7-lnt", properties={'jobs' : 32}, max_builds=1),

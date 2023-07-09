@@ -1288,12 +1288,6 @@ all = [
                                 '-DLLVM_ENABLE_WERROR=OFF'],
                             depends_on_projects=['llvm', 'lld'])},
 
-    {'name' : "lld-perf-testsuite",
-    'tags'  : ["lld","performance"],
-    'workernames' : ["as-worker-5"],
-    'builddir' : "lld-perf-testsuite",
-    'factory' : LLDPerformanceTestsuite.getFactory(targets=["bin/lld"])},
-
 # LTO and ThinLTO builders.
 
     {'name' : "clang-with-thin-lto-ubuntu",
