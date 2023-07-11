@@ -17,7 +17,6 @@ from zorg.buildbot.builders import UnifiedTreeBuilder
 from zorg.buildbot.builders import AOSPBuilder
 from zorg.buildbot.builders import AnnotatedBuilder
 from zorg.buildbot.builders import LLDPerformanceTestsuite
-from zorg.buildbot.builders import FuchsiaBuilder
 from zorg.buildbot.builders import XToolchainBuilder
 from zorg.buildbot.builders import TestSuiteBuilder
 from zorg.buildbot.builders import BOLTBuilder
@@ -40,7 +39,6 @@ reload(UnifiedTreeBuilder)
 reload(AOSPBuilder)
 reload(AnnotatedBuilder)
 reload(LLDPerformanceTestsuite)
-reload(FuchsiaBuilder)
 reload(XToolchainBuilder)
 reload(TestSuiteBuilder)
 reload(BOLTBuilder)
@@ -1807,7 +1805,22 @@ all += [
     'tags'  : ["toolchain"],
     'workernames' :["fuchsia-debian-64-us-central1-a-1", "fuchsia-debian-64-us-central1-b-1"],
     'builddir': "fuchsia-x86_64-linux",
-    'factory': FuchsiaBuilder.getFuchsiaToolchainBuildFactory()},
+    'factory' : AnnotatedBuilder.getAnnotatedBuildFactory(
+                    script="fuchsia-linux.py",
+                    depends_on_projects=[
+                        'bolt',
+                        'clang',
+                        'clang-tools-extra',
+                        'compiler-rt',
+                        'libc',
+                        'libcxx',
+                        'libcxxabi',
+                        'libunwind',
+                        'lld',
+                        'lldb',
+                        'llvm',
+                        'polly'
+                    ])},
 
 # libc Builders.
 
