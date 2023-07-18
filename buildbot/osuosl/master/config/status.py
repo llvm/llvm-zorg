@@ -261,7 +261,7 @@ def getReporters():
                 "joker.eph@gmail.com"],
             subject = "MLIR Build Failure: %(builder)s",
             mode = "failing",
-            builders = ["mlir-nvidia"]),
+            builders = ["mlir-nvidia", "mlir-nvidia-gcc7"]),
         reporters.MailNotifier(
             fromaddr="llvm.buildmaster@lab.llvm.org",
             sendToInterestedUsers = False,

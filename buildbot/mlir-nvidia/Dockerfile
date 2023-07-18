@@ -25,6 +25,8 @@ RUN apt-get update \
     # dumb-init recommended in
     # https://hub.docker.com/r/buildbot/buildbot-worker/dockerfile
     dumb-init \
+    gcc-7 \
+    g++-7 \
     git \
     gnupg \
     libpython3-dev \
