@@ -182,10 +182,7 @@ pipeline {
                     set +e
                     # Give the system some time to recover.
                     sleep 120
-                    echo "****************************************************************"
-                    echo "**  DWARF 5 tests are temporarily being skipped because the many test failures result in extremely large log output."
-                    echo "****************************************************************"
-                    echo python3 llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix test
+                    python3 llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix test
                     set -e
                     '''
                 }
