@@ -14,12 +14,37 @@ HERE="$(dirname $0)"
 set -eu
 halt_on_failure
 
-BUILDBOT_ROOT=/buildbot
-LLVM_ROOT="${BUILDBOT_ROOT}/llvm-project"
-REVISION="${BUILDBOT_REVISION:-origin/main}"
-AMDGPU_ARCHS=${AMDGPU_ARCHS:="gfx900;gfx906;gfx908;gfx1030"}
+# Set-up variables
+setup_env() {
+build_step "Setting up the buildbot"
+BUILDBOT_ROOT=${BUILDBOT_ROOT:-/buildbot}
+BUILDBOT_SLAVENAME=$(whoami)
+AMDGPU_ARCHS=${AMDGPU_ARCHS:="gfx906;gfx90a;gfx1030;gfx1100"}
+EXTERNAL_DIR="${EXTERNAL_DIR:-/buildbot/Externals}"
+BUILD_DIR="${BUILDBOT_ROOT}/${BUILDBOT_SLAVENAME}/${BUILDBOT_BUILDERNAME}"
+DESTDIR=${BUILD_DIR}/install
+
+LLVM_ROOT="${LLVM_ROOT:-${BUILDBOT_ROOT}/llvm-project}"
+LLVM_REVISION="${BUILDBOT_REVISION:-origin/main}"
+LLVM_BUILD_DIR="${LLVM_BUILD_DIR:-${BUILD_DIR}/llvm}"
+
+TESTSUITE_ROOT="${TESTSUITE_ROOT:-${BUILDBOT_ROOT}/llvm-test-suite}"
+TEST_BUILD_DIR="${TEST_BUILD_DIR:-${BUILD_DIR}/test-suite-build}"
+
+echo "BUILDBOT_ROOT=${BUILDBOT_ROOT}"
+echo "BUILDBOT_SLAVENAME=${BUILDBOT_SLAVENAME}"
+echo "AMDGPU_ARCHS=${AMDGPU_ARCHS}"
+echo "LLVM_ROOT=${LLVM_ROOT}"
+echo "TESTSUITE_ROOT=${TESTSUITE_ROOT}"
+echo "EXTERNAL_DIR=${EXTERNAL_DIR}"
+echo "BUILD_DIR=${BUILD_DIR}"
+echo "DESTDIR=${DESTDIR}"
+echo "LLVM_BUILD_DIR=${LLVM_BUILD_DIR}"
+echo "TEST_BUILD_DIR=${TEST_BUILD_DIR}"
+}
 
 # Set-up llvm-project
+update_llvm() {
 if [ ! -d "${LLVM_ROOT}" ]; then
   build_step "Cloning llvm-project repo"
   git clone --progress https://github.com/llvm/llvm-project.git ${LLVM_ROOT}
@@ -27,10 +52,11 @@ fi
 
 build_step "Updating llvm-project repo"
 git -C "${LLVM_ROOT}" fetch origin
-git -C "${LLVM_ROOT}" reset --hard "${REVISION}"
+git -C "${LLVM_ROOT}" reset --hard "${LLVM_REVISION}"
+}
 
 # Set-up llvm-test-suite
-TESTSUITE_ROOT="${BUILDBOT_ROOT}/llvm-test-suite"
+update_test_suite() {
 if [ ! -d "${TESTSUITE_ROOT}" ]; then
   build_step "Cloning llvm-test-suite repo"
   git clone --progress https://github.com/llvm/llvm-test-suite.git ${TESTSUITE_ROOT}
@@ -39,23 +65,11 @@ fi
 build_step "Updating llvm-test-suite repo"
 git -C "${TESTSUITE_ROOT}" fetch origin
 git -C "${TESTSUITE_ROOT}" reset --hard origin/main
-
-# Set-up variables
-BUILDBOT_SLAVENAME=$(whoami)
-BUILD_DIR="${BUILDBOT_ROOT}/${BUILDBOT_SLAVENAME}/${BUILDBOT_BUILDERNAME}"
-DESTDIR=${BUILD_DIR}/install
-EXTERNAL_DIR=/buildbot/Externals
-
-build_step "Setting up the buildbot"
-echo "BUILDBOT_ROOT=${BUILDBOT_ROOT}"
-echo "LLVM_ROOT=${LLVM_ROOT}"
-echo "BUILD_DIR=${BUILD_DIR}"
-echo "DESTDIR=${DESTDIR}"
-echo "EXTERNAL_DIR=${EXTERNAL_DIR}"
+}
 
 # Start building LLVM, Clang, Lld, clang-tools-extra, compiler-rt
+build_llvm() {
 build_step "Configure LLVM Build"
-LLVM_BUILD_DIR="${BUILD_DIR}/llvm"
 mkdir -p "${LLVM_BUILD_DIR}"
 cd "${LLVM_BUILD_DIR}"
 cmake -G Ninja \
@@ -79,17 +93,18 @@ cmake -G Ninja \
   ${LLVM_ROOT}/llvm
 
 build_step "Building LLVM"
-ninja runtimes
-ninja
+ninja $NINJAOPT runtimes
+ninja $NINJAOPT
 
 build_step "Install LLVM"
 rm -rf "${DESTDIR}"
 ninja install-runtimes
 ninja install
+}
 
 # Start building llvm-test-suite's hip tests
+build_test_suite() {
 build_step "Configuring HIP test-suite"
-TEST_BUILD_DIR=${BUILD_DIR}/test-suite-build
 rm -rf ${TEST_BUILD_DIR}
 mkdir -p ${TEST_BUILD_DIR}
 cd ${TEST_BUILD_DIR}
@@ -105,10 +120,17 @@ PATH="${LLVM_BUILD_DIR}/bin:$PATH" cmake -G Ninja \
   ${TESTSUITE_ROOT}
 
 build_step "Building HIP test-suite"
-ninja hip-tests-simple
+ninja $NINJAOPT hip-tests-simple
 
 build_step "Testing HIP test-suite"
-ninja check-hip-simple
+ninja $NINJAOPT check-hip-simple
+}
+
+setup_env
+update_llvm
+build_llvm
+update_test_suite
+build_test_suite
 
 exit 0
 
