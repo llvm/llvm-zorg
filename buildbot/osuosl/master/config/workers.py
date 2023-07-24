@@ -1,4 +1,3 @@
-# TODO: Rename workers with "slave" as a part of the name.
 # TODO: Refactor to define a list of tuples, each of which describes a worker, then enumerate and create as data driven.
 
 from buildbot.plugins import worker
