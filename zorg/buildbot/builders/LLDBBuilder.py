@@ -36,7 +36,6 @@ def getLLDBCMakeBuildFactory(
             obj_dir=build_dir)
 
     env = {}
-    # Determine Slave Environment and Set MSVC environment.
     if vs and vs != 'manual':
         f.addStep(SetProperty(
             command=getVisualStudioEnvironment(vs, target_arch),
