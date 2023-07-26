@@ -19,6 +19,7 @@ all = [
                 "llvm-clang-x86_64-expensive-checks-ubuntu",
                 "llvm-clang-x86_64-win-fast",
                 "clang-x86_64-debian-fast",
+                "clang-x86_64-debian-dylib-fast",
                 "llvm-clang-x86_64-expensive-checks-debian",
                 "llvm-clang-x86_64-sie-ubuntu-fast",
             ] + [
