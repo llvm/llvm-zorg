@@ -4,6 +4,9 @@ from twisted.python import log
 
 from buildbot.plugins import schedulers, util
 
+import datetime
+import json
+import urllib3
 
 # Each scheduler listens only for those projects it is interested in.
 # Every change comes with a comms-separated list of projects it
@@ -163,19 +166,72 @@ def getReleaseBranchSchedulers(
                 "}")
     return automatic_schedulers
 
+
+class BranchParameter(util.StringParameter):
+
+    def __init__(self, default=None, **kwargs):
+        super().__init__(**kwargs)
+        self._default = default
+        self._last_branch = None
+        self._timestamp = None
+
+    @property
+    def default(self):
+        if self._default:
+            return self._default
+        now = datetime.datetime.now()
+        if (self._last_branch is None or self._timestamp is None or
+            (now - self._timestamp).total_seconds() > 15*60): # 15 minutes
+            self._timestamp = now
+            http = urllib3.PoolManager(1)
+            per_page = 100 # 100 is max
+            page = 1
+            self._last_branch = "release" # default in case of the empty list
+            while True:
+                try:
+                    # https://docs.github.com/en/rest/branches/branches?apiVersion=2022-11-28#list-branches
+                    # Note GitHub has the rate limit (60 per hour) for unauthenticated API requests.
+                    resp = http.request("GET",
+                               f"https://api.github.com/repos/llvm/llvm-project/branches?per_page={per_page}&page={page}",
+                               headers={"User-Agent": "Buildbot"})
+                    if resp.status != 200:
+                        self._last_branch = "Error requesting llvm-project branches. " \
+                                            f"Got HTTP status {resp.status}, {resp.reason}"
+                    else:
+                        branches = json.loads(resp.data)
+                        if len(branches) > 0:
+                            self._last_branch = branches[-1]["name"]
+                            if len(branches) == per_page:
+                                page += 1
+                                continue
+                except Exception as e:
+                    self._last_branch = "Error requesting llvm-project branches. " + str(e)
+                break
+        return self._last_branch
+
+
 def getForceSchedulers(builders):
     # TODO: Move these settings to the configuration file.
     _repourl = "https://github.com/llvm/llvm-project"
     _branch = "main"
 
     # Walk over all builders and collect their names.
+    release_builders = [
+        builder.name for builder in builders
+        if 'release' in getattr(builder, 'tags', [])
+    ]
+
     scheduler_builders = [
         builder.name for builder in builders
+        if builder.name not in release_builders
     ]
 
     # Create the force schedulers.
+    name = ["force-build-scheduler", "force-release-build-scheduler"]
+    builderNames = [scheduler_builders, release_builders]
+    defaultBranch = [_branch, None]
     return [ schedulers.ForceScheduler(
-                name            = "force-build-scheduler",
+                name            = name[i],
                 label           = "Force Build",
                 buttonName      = "Force Build",
                 reason = util.ChoiceStringParameter(
@@ -189,15 +245,15 @@ def getForceSchedulers(builders):
                             ],
                             default     = "Build a particular revision"
                 ),
-                builderNames    = scheduler_builders,
+                builderNames    = builderNames[i],
                 codebases       = [
                     util.CodebaseParameter(
                         codebase    = "",
-                        branch      = util.StringParameter(
+                        branch      = BranchParameter(
                             name        = "branch",
                             label       = "branch:",
                             size        = 64,
-                            default     = _branch
+                            default     = defaultBranch[i]
                         ),
                         revision    = util.StringParameter(
                             name        = "revision",
@@ -227,7 +283,7 @@ def getForceSchedulers(builders):
                         default     = False
                     )
                 ]
-            )
+            ) for i in range(2)
         ]
 
 # TODO: Abstract this kind of scheduler better.
