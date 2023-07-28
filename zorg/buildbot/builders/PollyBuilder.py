@@ -5,6 +5,7 @@ from zorg.buildbot.commands.LitTestCommand import LitTestCommand
 from zorg.buildbot.process.factory import LLVMBuildFactory
 
 def getPollyBuildFactory(
+    depends_on_projects=None,
     clean=False,
     install=False,
     make='make',
@@ -43,7 +44,8 @@ def getPollyBuildFactory(
     if env:
         merged_env.update(env)  # Overwrite pre-set items with the given ones, so user can set anything.
 
-    depends_on_projects = ['llvm','clang','polly']
+    if not depends_on_projects:
+        depends_on_projects = ["llvm", "clang", "polly"]
 
     # If true, clean everything, including source dirs
     def cleanBuildRequested(step):

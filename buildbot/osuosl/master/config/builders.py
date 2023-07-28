@@ -1186,6 +1186,7 @@ all = [
     'workernames' : ["hexagon-build-02", "hexagon-build-03"],
     'builddir': "reverse-iteration",
     'factory' : PollyBuilder.getPollyBuildFactory(
+                    depends_on_projects=["llvm", "clang", "polly", "lld"],
                     clean=True,
                     make='ninja',
                     jobs=16,
