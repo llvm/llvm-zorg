@@ -2653,13 +2653,20 @@ all += [
                     clean=True,
                     checks=["check-llvm"],
                     extra_configure_args=[
+                        "-DLLVM_CCACHE_BUILD=ON",
                         "-DLLVM_TARGETS_TO_BUILD=X86;NVPTX",
                         "-DLLVM_DEFAULT_TARGET_TRIPLE=nvptx-nvidia-cuda",
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
-                        "-DLLVM_LIT_ARGS=-vv --threads=32",
+                        "-DLLVM_LIT_ARGS=-vv",
                         "-DLLVM_USE_LINKER=gold",
                         "-DBUILD_SHARED_LIBS=ON",
-                        "-DLLVM_OPTIMIZED_TABLEGEN=ON"])},
+                        "-DLLVM_OPTIMIZED_TABLEGEN=ON"],
+                    env={
+                        'CCACHE_DIR' : WithProperties("%(builddir)s/ccache-db"),
+                        # TMP/TEMP within the build dir (to utilize a ramdisk).
+                        'TMP'        : WithProperties("%(builddir)s/build"),
+                        'TEMP'       : WithProperties("%(builddir)s/build"),
+                    })},
 
     {'name' : "llvm-nvptx64-nvidia-ubuntu",
     'tags'  : ["llvm", "nvptx"],
@@ -2671,13 +2678,20 @@ all += [
                     clean=True,
                     checks=["check-llvm"],
                     extra_configure_args=[
+                        "-DLLVM_CCACHE_BUILD=ON",
                         "-DLLVM_TARGETS_TO_BUILD=X86;NVPTX",
                         "-DLLVM_DEFAULT_TARGET_TRIPLE=nvptx64-nvidia-cuda",
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
-                        "-DLLVM_LIT_ARGS=-vv --threads=32",
+                        "-DLLVM_LIT_ARGS=-vv",
                         "-DLLVM_USE_LINKER=gold",
                         "-DBUILD_SHARED_LIBS=ON",
-                        "-DLLVM_OPTIMIZED_TABLEGEN=ON"])},
+                        "-DLLVM_OPTIMIZED_TABLEGEN=ON"],
+                    env={
+                        'CCACHE_DIR' : WithProperties("%(builddir)s/ccache-db"),
+                        # TMP/TEMP within the build dir (to utilize a ramdisk).
+                        'TMP'        : WithProperties("%(builddir)s/build"),
+                        'TEMP'       : WithProperties("%(builddir)s/build"),
+                    })},
 
     {'name' : "llvm-nvptx-nvidia-win",
     'tags'  : ["llvm", "nvptx"],
