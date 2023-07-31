@@ -211,7 +211,7 @@ def get_all():
         # Ubuntu 22.04 LTS x86_64 Intel Xeon 6330 CPU 2Sx64Cx128LP @ 2.0GHz, 256GB RAM
         create_worker("as-builder-7", properties={'jobs': 128}, max_builds=2),
         # Windows Server on Intel Xeon 6330 CPU 2Sx64Cx128LP @ 2.0GHz, 256GB RAM
-        create_worker("as-builder-8", properties={'jobs': 128}, max_builds=2),
+        create_worker("as-builder-8", properties={'jobs': 128}, max_builds=1),
 
         # Solaris 11
         create_worker("solaris11-amd64", properties={'jobs' : 8}, max_builds=1),
