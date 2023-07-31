@@ -62,7 +62,7 @@ pipeline {
 
                     rm -rf clang-build clang-install *.tar.gz
                     python llvm-zorg/zorg/jenkins/monorepo_build.py cmake build \
-                      --assertions --cmake-type=Release \
+                      --assertions --cmake-type=RelWithDebInfo \
                       --projects="clang;clang-tools-extra;compiler-rt"
                     '''
                 }
