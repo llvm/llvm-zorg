@@ -197,8 +197,6 @@ class LitTestCommand(Test):
     super().__init__(*args, **kwargs)
     self.maxLogs = int(max_logs)
     self.logObserver = LitLogObserver(self.maxLogs, parseSummaryOnly)
-    self.addFactoryArguments(max_logs=max_logs)
-    self.addFactoryArguments(parseSummaryOnly=parseSummaryOnly)
     self.addLogObserver('stdio', self.logObserver)
 
   def evaluateCommand(self, cmd):
