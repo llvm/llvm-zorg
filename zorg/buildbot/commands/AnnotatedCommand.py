@@ -116,10 +116,15 @@ class AnnotatedBuildStep(buildstep.BuildStep):
         hidden = False
         debuglog("AnnotatedBuildStep: finish step '{}': stepid={}, buildid={}, results={}".format(
                     self.name, self.stepid, self.build.buildid, self.results))
+
+        # finish unfinished logs
+        # Note _cleanup_logs() is BuildStep member (BB3.5).
+        success = yield self._cleanup_logs()
+        if not success:
+            self.results = EXCEPTION
+
         yield self.master.data.updates.finishStep(self.stepid, self.results,
                                                   hidden)
-        # finish unfinished logs
-        yield self.finishUnfinishedLogs()
 
     @defer.inlineCallbacks
     def startStep(self, remote, done=False):
@@ -131,7 +136,7 @@ class AnnotatedBuildStep(buildstep.BuildStep):
             yield self.addStep()
 
             try:
-                self.realUpdateSummary()
+                self.updateSummary()
                 # The "main" step has finished already.
                 # Do only necessary work.
                 #NOTE: we can get 'request finish' flag before the step started.
@@ -159,8 +164,8 @@ class AnnotatedBuildStep(buildstep.BuildStep):
         finally:
             # update the summary one last time, make sure that completes,
             # and then don't update it any more.
-            self.realUpdateSummary()
-            yield self.realUpdateSummary.stop()
+            self.updateSummary()
+            yield self.updateSummary.stop()
 
             # Update step status in the database.
             yield self.finishStep()
@@ -464,6 +469,7 @@ class AnnotatedCommand(buildstep.ShellMixin, buildstep.BuildStep):
             def cbErrback(r):
                 debuglog("+++ AnnotatedCommand::runAnnotatedCommands(): error callback with exception. "
                          "Terminate remote command.")
+                debuglog(f"+++ AnnotatedCommand::runAnnotatedCommands(): {r}")
                 self.annotate_status = results.EXCEPTION
                 if self.cmd:
                     self.cmd.interrupt("Annotated step exception")
