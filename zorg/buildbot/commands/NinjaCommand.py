@@ -1,110 +1,79 @@
-# TODO: Use Interpolate instead of WithProperties.
 import re
 
-from buildbot.process.properties import WithProperties
-from buildbot.steps.shell import WarningCountingShellCommand
+from twisted.internet import defer
+from twisted.python import log as logging
 
-class NinjaCommand(WarningCountingShellCommand):
-    DEFAULT_NINJA = 'ninja'
+from buildbot.plugins import steps, util
 
-    @staticmethod
-    def sanitize_kwargs(kwargs):
-        # kwargs we could get and must not pass through
-        # to the buildstep.RemoteShellCommand constructor.
-        # Note: This is a workaround of the buildbot design issue,
-        # thus should be removed once the original issue gets fixed.
-        consume_kwargs = [
-                             "jobs",
-                             "loadaverage",
-                         ]
 
-        sanitized_kwargs = kwargs.copy()
-        for k in consume_kwargs:
-            if k in sanitized_kwargs.keys():
-                del sanitized_kwargs[k]
-
-        return sanitized_kwargs
+class NinjaCommand(steps.WarningCountingShellCommand):
+    DEFAULT_NINJA = "ninja"
 
     name = "build"
     haltOnFailure = True
     description = ["building"]
     descriptionDone = ["build"]
-    renderables = (
+    renderables = [
         'options',
         'targets',
         'ninja',
-    )
+        'jobs',
+        'loadaverage'
+    ]
 
-    def __init__(self, options=None, targets=None, ninja=DEFAULT_NINJA, logObserver=None, **kwargs):
+    def __init__(self, options=None, targets=None, ninja=DEFAULT_NINJA, logObserver=None,
+                 jobs=None, loadaverage=None, **kwargs):
         self.ninja = ninja
         self.targets = targets
-
-        if options is None:
-            self.options = list()
-        else:
-            self.options = list(options)
+        
+        # The options must be iterable or None.
+        self.options = options
 
         if logObserver:
             self.logObserver = logObserver
             self.addLogObserver('stdio', self.logObserver)
 
-        j_opt = re.compile(r'^-j$|^-j\d+$')
-        l_opt = re.compile(r'^-l$|^-l\d+(\.(\d+)?)?$')
+        self.jobs = jobs
+        self.loadaverage = loadaverage
 
-        command = list()
-        command += [self.ninja]
+        # Update the environment variables with the ninja status format settings.
+        env = kwargs.get("env") or {}
 
-        # We can get jobs in the options. If so, we would use that.
-        if not any(j_opt.search(opt) for opt in self.options if isinstance(opt, str)):
-            # Otherwise let's see if we got it in the kwargs.
-            if kwargs.get('jobs', None):
-                self.options += ["-j", kwargs['jobs']]
-            else:
-                # Use the property if option was not explicitly
-                # specified.
-                command += [
-                    WithProperties("%(jobs:+-j)s"),
-                    WithProperties("%(jobs:-)s"),
-                    ]
-
-        # The same logic is for handling the loadaverage option.
-        if not any(l_opt.search(opt) for opt in self.options if isinstance(opt, str)):
-            if kwargs.get('loadaverage', None):
-                self.options += ["-l", kwargs['loadaverage']]
-            else:
-                command += [
-                    WithProperties("%(loadaverage:+-l)s"),
-                    WithProperties("%(loadaverage:-)s"),
-                    ]
-
-        if self.options:
-            command += self.options
-
-        if self.targets:
-            command += self.targets
-
-        # Remove here all the kwargs any of our LLVM buildbot command could consume.
-        # Note: We will remove all the empty items from the command at start, as we
-        # still didn't get yet WithProperties rendered.
-        sanitized_kwargs = self.sanitize_kwargs(kwargs)
-
-        sanitized_kwargs["command"] = command
+        # Note: At this point env could be a dictionary or a Property object.
+        if isinstance(env, dict):
+            if "NINJA_STATUS" not in env:
+                env = env.copy()
+                env["NINJA_STATUS"] = "%e [%u/%r/%f] "
+        #else:
+            # FIXME: Properly handle Property('vs_env')
+            #logging.msg(f'NinjaCommand: Be sure {env} contains NINJA_STATUS="%e [%u/%r/%f] "')
+        kwargs["env"] = env
 
         # And upcall to let the base class do its work
-        super().__init__(**sanitized_kwargs)
+        super().__init__(**kwargs)
 
-    def setupEnvironment(self, cmd):
-        # First upcall to get everything prepared.
-        super().setupEnvironment(cmd)
+    @defer.inlineCallbacks
+    def run(self):
+        # Prepare the full build command to run.
+        ninja_command = [self.ninja]
 
-        # Set default status format string.
-        if cmd.args['env'] is None:
-            cmd.args['env'] = {}
-        cmd.args['env']['NINJA_STATUS'] = cmd.args['env'].get('NINJA_STATUS', "%e [%u/%r/%f] ")
+        if self.jobs is None and self.build.hasProperty("jobs"):
+            self.jobs = self.build.getProperty("jobs")
+        if self.loadaverage is None and self.build.hasProperty("loadaverage"):
+            self.loadaverage = self.build.getProperty("loadaverage")
 
-    def buildCommandKwargs(self, warnings):
-        kwargs = super().buildCommandKwargs(warnings)
-        # Remove all the empty items from the command list,
-        # which we could get if Interpolate rendered to empty strings.
-        kwargs['command'] = [cmd for cmd in kwargs['command'] if cmd]
-        return kwargs
+        if self.jobs:
+            ninja_command.extend(["-j", f"{self.jobs}"])
+        if self.loadaverage:
+            ninja_command.extend(["-l", f"{self.loadaverage}"])
+
+        if self.options:
+            ninja_command.extend(self.options)
+        if self.targets:
+            ninja_command.extend(self.targets)
+
+        self.command = ninja_command
+
+        result = yield super().run()
+
+        return result
