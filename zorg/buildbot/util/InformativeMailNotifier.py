@@ -97,7 +97,7 @@ LLVM Buildbot
 
 class LLVMMessageFormatter(reporters.MessageFormatter):
     def buildAdditionalContext(self, master, ctx):
-        ctx.update(self.ctx)
+        ctx.update(self.context)
         ctx.update(get_log_details(ctx["build"]))
 
 LLVMInformativeMailNotifier = LLVMMessageFormatter(
@@ -107,3 +107,12 @@ LLVMInformativeMailNotifier = LLVMMessageFormatter(
     wantProperties=True,
     wantSteps=True,
 )
+
+class LLVMInformativeMailGenerator(reporters.BuildStatusGenerator):
+    def __init__(self, mode=("problem",),
+                 message_formatter = LLVMInformativeMailNotifier, **kwargs):
+        super().__init__(mode=mode, message_formatter=message_formatter, **kwargs)
+
+class LLVMDefaultBuildStatusGenerator(reporters.BuildStatusGenerator):
+    def __init__(self, mode = "failing", subject = "Build Failure: %(builder)s", **kwargs):
+        super().__init__(mode=mode, subject=subject, **kwargs)
