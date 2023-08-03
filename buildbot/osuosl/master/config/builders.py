@@ -2092,7 +2092,6 @@ all += [
                         "-DLLVM_INSTALL_UTILS=ON",
                         "-DCMAKE_CXX_STANDARD=17",
                         "-DLLVM_ENABLE_WERROR=OFF",
-                        "-DFLANG_ENABLE_WERROR=ON",
                         "-DBUILD_SHARED_LIBS=ON",
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
                         "-DCMAKE_BUILD_TYPE=Release",
