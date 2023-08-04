@@ -2738,38 +2738,6 @@ all += [
                         'TEMP'       : WithProperties("%(builddir)s/build"),
                     })},
 
-    # flang FortranRuntime CUDA Offload builders.
-    {'name' : "flang-runtime-cuda-gcc",
-    'tags'  : ["flang", "runtime"],
-    'collapseRequests': False,
-    'workernames' : ["as-builder-7"],
-    'builddir': "flang-runtime-cuda-gcc",
-    'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
-                    depends_on_projects=["flang"],
-                    clean=True,
-                    checks=[],
-                    src_to_build_dir="flang/runtime",
-                    targets=["FortranRuntime"],
-                    extra_configure_args=[
-                        "-DLLVM_CCACHE_BUILD=ON",
-                        "-DCMAKE_BUILD_TYPE=Release"
-                        "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
-                        "-DLLVM_ENABLE_ASSERTIONS=ON",
-                        "-DBUILD_SHARED_LIBS=OFF",
-                        "-DFLANG_EXPERIMENTAL_CUDA_RUNTIME=ON",
-                        "-DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc",
-                        "-DCMAKE_CXX_COMPILER=/usr/bin/g++",
-                        "-DCMAKE_C_COMPILER=/usr/bin/gcc",
-                        "-DCMAKE_CUDA_HOST_COMPILER=/usr/bin/g++",
-                        "-DCMAKE_CUDA_ARCHITECTURES='50;60;70;80'",
-                    ],
-                    env={
-                        'CCACHE_DIR' : WithProperties("%(builddir)s/ccache-db"),
-                        # TMP/TEMP within the build dir (to utilize a ramdisk).
-                        'TMP'        : WithProperties("%(builddir)s/build"),
-                        'TEMP'       : WithProperties("%(builddir)s/build"),
-                    })},
-
     ## RISC-V RV64GC check-all running under qemu-user.
     {'name' : "clang-rv64gc-qemu-user-single-stage",
     'tags'  : ["llvm", "clang"],
