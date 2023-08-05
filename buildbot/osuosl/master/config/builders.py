@@ -1327,7 +1327,6 @@ all = [
 ]
 
 # Common builders options for MLIR.
-mlir_ubuntu_workers = [f"mlir-ubuntu-worker{i}" for i in range(5)]
 mlir_default_cmake_options = [
   '-DLLVM_CCACHE_BUILD=ON',
   '-DLLVM_ENABLE_PROJECTS=mlir',
@@ -1338,77 +1337,6 @@ mlir_default_cmake_options = [
 ]
 
 all += [
-
-    {'name' : "mlir-ubuntu-asan-ubsan-clang-12.0",
-    'tags'  : ["mlir"],
-    'workernames' : mlir_ubuntu_workers,
-    'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
-                    llvm_srcdir="llvm.src",
-                    obj_dir="llvm.obj",
-                    clean=True,
-                    targets = ['check-mlir-build-only'],
-                    checks = ['check-mlir'],
-                    depends_on_projects=['llvm','mlir'],
-                    extra_configure_args= mlir_default_cmake_options + [
-                        '-DLLVM_ENABLE_LLD=ON',
-                        '-DBUILD_SHARED_LIBS=ON',
-                        '-DLLVM_USE_SANITIZER=Address;Undefined',
-                        '-DCMAKE_C_COMPILER=/compilers/clang-12.0/bin/clang',
-                        '-DCMAKE_CXX_COMPILER=/compilers/clang-12.0/bin/clang++',
-                    ])},
-
-    {'name' : "mlir-ubuntu-gcc5.5-shared-libs",
-    'tags'  : ["mlir"],
-    'workernames' : mlir_ubuntu_workers,
-    'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
-                    llvm_srcdir="llvm.src",
-                    obj_dir="llvm.obj",
-                    clean=True,
-                    targets = ['check-mlir-build-only'],
-                    checks = ['check-mlir'],
-                    depends_on_projects=['llvm','mlir'],
-                    extra_configure_args= mlir_default_cmake_options + [
-                        '-DBUILD_SHARED_LIBS=ON',
-                        '-DCMAKE_C_COMPILER=/usr/bin/gcc-5',
-                        '-DCMAKE_CXX_COMPILER=/usr/bin/g++-5',
-                    ])},
-
-    {'name' : "mlir-ubuntu-clang-5-link-llvm-dylib",
-    'tags'  : ["mlir"],
-    'workernames' : mlir_ubuntu_workers,
-    'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
-                    llvm_srcdir="llvm.src",
-                    obj_dir="llvm.obj",
-                    clean=True,
-                    targets = ['check-mlir-build-only'],
-                    checks = ['check-mlir'],
-                    depends_on_projects=['llvm','mlir'],
-                    extra_configure_args= mlir_default_cmake_options + [
-                        '-DLLVM_ENABLE_LLD=OFF', # lld-5 is subject to http://llvm.org/pr49915
-                        '-DLLVM_LINK_LLVM_DYLIB=ON',
-                        '-DCMAKE_C_COMPILER=/compilers/clang-5.0/bin/clang',
-                        '-DCMAKE_CXX_COMPILER=/compilers/clang-5.0/bin/clang++',
-                    ])},
-
-    {'name' : "mlir-ubuntu-gcc11-release-intel-sde",
-    'tags'  : ["mlir"],
-    'workernames' : mlir_ubuntu_workers,
-    'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
-                    llvm_srcdir="llvm.src",
-                    obj_dir="llvm.obj",
-                    clean=True,
-                    targets = ['check-mlir-build-only'],
-                    checks = ['check-mlir'],
-                    depends_on_projects=['llvm','mlir'],
-                    extra_configure_args= mlir_default_cmake_options + [
-                        '-DLLVM_ENABLE_LLD=ON',
-                        '-DLLVM_ENABLE_ASSERTIONS=OFF',
-                        '-DCMAKE_C_COMPILER=/usr/bin/gcc-11',
-                        '-DCMAKE_CXX_COMPILER=/usr/bin/g++-11',
-                        '-DMLIR_RUN_X86VECTOR_TESTS=ON',
-                        '-DMLIR_RUN_AMX_TESTS=ON',
-                        '-DINTEL_SDE_EXECUTABLE=/intel_sde/sde64'
-                    ])},
 
     {'name' : "mlir-nvidia",
     'tags'  : ["mlir"],
@@ -1421,17 +1349,12 @@ all += [
                     targets = ['check-mlir-build-only'],
                     checks = ['check-mlir'],
                     depends_on_projects=['llvm','mlir'],
-                    extra_configure_args=[
-                        '-DLLVM_BUILD_EXAMPLES=ON',
+                    extra_configure_args=mlir_default_cmake_options + [
                         '-DLLVM_TARGETS_TO_BUILD=host;NVPTX',
-                        '-DLLVM_ENABLE_PROJECTS=mlir',
                         '-DMLIR_ENABLE_CUDA_RUNNER=1',
-                        '-DMLIR_INCLUDE_INTEGRATION_TESTS=ON',
                         '-DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc',
                         '-DMLIR_ENABLE_VULKAN_RUNNER=1',
                         '-DBUILD_SHARED_LIBS=ON',
-                        '-DLLVM_CCACHE_BUILD=ON',
-                        '-DMLIR_ENABLE_BINDINGS_PYTHON=ON',
                         '-DMLIR_RUN_CUDA_TENSOR_CORE_TESTS=ON',
                         '-DLLVM_ENABLE_LLD=ON',
                     ],
@@ -1451,16 +1374,11 @@ all += [
                     targets = ['check-mlir-build-only'],
                     checks = ['check-mlir'],
                     depends_on_projects=['llvm','mlir'],
-                    extra_configure_args=[
-                        '-DLLVM_BUILD_EXAMPLES=ON',
+                    extra_configure_args=mlir_default_cmake_options + [
                         '-DLLVM_TARGETS_TO_BUILD=host;NVPTX',
-                        '-DLLVM_ENABLE_PROJECTS=mlir',
                         '-DMLIR_ENABLE_CUDA_RUNNER=1',
-                        '-DMLIR_INCLUDE_INTEGRATION_TESTS=ON',
                         '-DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc',
                         '-DMLIR_ENABLE_VULKAN_RUNNER=1',
-                        '-DLLVM_CCACHE_BUILD=ON',
-                        '-DMLIR_ENABLE_BINDINGS_PYTHON=ON',
                         '-DMLIR_RUN_CUDA_TENSOR_CORE_TESTS=ON',
                         '-DLLVM_ENABLE_LLD=ON',
                     ],
