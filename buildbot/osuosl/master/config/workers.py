@@ -31,6 +31,7 @@ def get_all():
         create_worker("linaro-flang-aarch64-sharedlibs", properties={'jobs' : 32}, max_builds=1),
         create_worker("linaro-flang-aarch64-out-of-tree", properties={'jobs' : 32}, max_builds=1),
         create_worker("linaro-flang-aarch64-debug", properties={'jobs' : 32}, max_builds=1),
+        create_worker("linaro-flang-aarch64-debug-reverse-iteration", properties={'jobs' : 32}, max_builds=1),
         create_worker("linaro-flang-aarch64-latest-clang", properties={'jobs' : 32}, max_builds=1),
         create_worker("linaro-flang-aarch64-release", properties={'jobs' : 32}, max_builds=1),
         create_worker("linaro-flang-aarch64-rel-assert", properties={'jobs' : 32}, max_builds=1),
