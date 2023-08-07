@@ -32,7 +32,7 @@ pipeline {
         }
         stage('Build') {
             steps {
-                timeout(120) {
+                timeout(150) {
                     sh '''
                     set -u
                     rm -rf build.properties
