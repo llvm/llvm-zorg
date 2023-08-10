@@ -15,7 +15,7 @@ if ccache -s ; then
   CMAKE_COMMON_OPTIONS+=" -DLLVM_CCACHE_BUILD=ON"
 fi
 
-if lld --version ; then
+if ld.lld --version ; then
   CMAKE_COMMON_OPTIONS+=" -DLLVM_USE_LINKER=lld"
 fi
 
