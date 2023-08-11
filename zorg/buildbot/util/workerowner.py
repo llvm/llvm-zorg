@@ -20,9 +20,13 @@ class WorkerOwnerMatch(Match):
             if 'workerinfo' in worker:
                 workerinfo = worker['workerinfo']
                 if 'admin' in workerinfo:
-                    email = re.search('.*<(.*)>.*', workerinfo['admin'])
-                    if email:
-                        self.workerOwners.append(email.group(1))
+                    admin = workerinfo['admin']
+                    if admin:
+                        match = re.findall(
+                        	r"([-!#-'*+/-9=?A-Z^-~]+(\.[-!#-'*+/-9=?A-Z^-~]+)*|\"([]!#-[^-~ \t]|(\\[\t -~]))+\")@([-!#-'*+/-9=?A-Z^-~]+(\.[-!#-'*+/-9=?A-Z^-~]+)*|\[[\t -Z^-~]*])",
+                        	admin)
+                        for parts in match:
+                            self.workerOwners.append(parts[0]+'@'+parts[4])
 
     def getWorkerOwners(self):
         return self.workerOwners
