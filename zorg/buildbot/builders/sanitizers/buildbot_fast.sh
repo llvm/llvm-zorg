@@ -7,6 +7,10 @@ set -u
 HERE="$(cd $(dirname $0) && pwd)"
 . ${HERE}/buildbot_functions.sh
 
+function cleanup() {
+  ls
+}
+
 clobber
 
 # Stage 1
