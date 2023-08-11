@@ -169,6 +169,8 @@ function build_clang_at_release_tag {
 
     rm -rf ${STAGE1_DIR}
     echo @@@BUILD_STEP build stage1 clang at $HOST_CLANG_REVISION@@@
+    # PGO, can improve build time by 10%. However bots spend most of the time
+    # running tests and compilation mostly incremental or CCCACH-ed.
     build_stage1_clang_impl && \
       ( echo $HOST_CLANG_REVISION > ${STAGE1_DIR}/host_clang_revision )
   fi
