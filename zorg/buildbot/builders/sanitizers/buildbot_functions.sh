@@ -131,7 +131,9 @@ function common_stage1_variables {
 function build_stage1_clang_impl {
   [[ -f "${STAGE1_DIR}/delete_next_time" ]] && rm -rf "${STAGE1_DIR}"
   mkdir -p ${STAGE1_DIR}
-  local cmake_stage1_options="${CMAKE_COMMON_OPTIONS} -DLLVM_ENABLE_PROJECTS='clang;compiler-rt;lld'"
+  local cmake_stage1_options="${CMAKE_COMMON_OPTIONS}"
+  cmake_stage1_options+=" -DLLVM_ENABLE_PROJECTS='clang;lld'"
+  cmake_stage1_options+=" -DLLVM_ENABLE_RUNTIMES='compiler-rt;libunwind'"
   if clang -v ; then
     cmake_stage1_options+=" -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++"
   fi
