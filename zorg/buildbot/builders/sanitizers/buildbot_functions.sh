@@ -310,14 +310,14 @@ function check_stage1 {
   local sanitizer_name=$1
 
   echo @@@BUILD_STEP stage1/$sanitizer_name check-sanitizer@@@
-  ninja -C ${STAGE1_DIR} check-sanitizer || build_failure
+  ninja -C ${STAGE1_DIR}/runtimes/runtimes-bins check-sanitizer || build_failure
 
   # Uses by asan and hwasan.
   echo @@@BUILD_STEP stage1/$sanitizer_name check-lsan@@@
-  ninja -C ${STAGE1_DIR} check-lsan || build_failure
+  ninja -C ${STAGE1_DIR}/runtimes/runtimes-bins check-lsan || build_failure
 
   echo @@@BUILD_STEP stage1/$sanitizer_name check-${sanitizer_name}@@@
-  ninja -C ${STAGE1_DIR} check-${sanitizer_name} || build_failure
+  ninja -C ${STAGE1_DIR}/runtimes/runtimes-bins check-${sanitizer_name} || build_failure
 }
 
 function check_stage1_msan {
