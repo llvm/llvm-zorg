@@ -133,7 +133,7 @@ function build_stage1_clang_impl {
   mkdir -p ${STAGE1_DIR}
   local cmake_stage1_options="${CMAKE_COMMON_OPTIONS}"
   cmake_stage1_options+=" -DLLVM_ENABLE_PROJECTS='clang;lld'"
-  cmake_stage1_options+=" -DLLVM_ENABLE_RUNTIMES='compiler-rt;libunwind'"
+  cmake_stage1_options+=" -DLLVM_ENABLE_RUNTIMES='compiler-rt;libunwind;libcxx;libcxxabi'"
   if clang -v ; then
     cmake_stage1_options+=" -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++"
   fi

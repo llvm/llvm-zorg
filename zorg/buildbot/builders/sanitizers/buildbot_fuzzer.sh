@@ -30,7 +30,7 @@ export PATH="$(readlink -f ${STAGE1_DIR}/bin):$PATH"
 
 echo @@@BUILD_STEP check-fuzzer@@@
 
-(cd ${STAGE1_DIR} && ninja check-fuzzer) || build_failure
+(ninja -C ${STAGE1_DIR}/runtimes/runtimes-bins check-fuzzer) || build_failure
 
 echo @@@BUILD_STEP get fuzzer-test-suite @@@
 [ ! -e fuzzer-test-suite ] && git clone https://github.com/google/fuzzer-test-suite.git
