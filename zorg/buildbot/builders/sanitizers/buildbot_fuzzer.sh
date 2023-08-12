@@ -60,4 +60,4 @@ RunFuzzerTest openssl-1.0.1f       || build_failure
 [[ "$(arch)" == "aarch64" ]] || RunFuzzerTest proj4-2017-08-14     || build_failure
 #RunFuzzerTest woff2-2016-05-06     || build_failure  # Often can't find the bug in the given time.
 
-cleanup $STAGE1_DIR RUNDIR-*
+cleanup RUNDIR-*
