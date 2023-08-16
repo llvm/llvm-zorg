@@ -223,6 +223,9 @@ if [ "$PLATFORM" == "Linux" ]; then
   check_64bit $CHECK_TSAN tsan
   check_64bit $CHECK_UBSAN ubsan
   check_64bit $CHECK_UBSAN ubsan-minimal
+
+  echo @@@BUILD_STEP 64-bit check-compiler-rt@@@
+  (cd llvm_build64 && ninja check-compiler-rt) || true
 fi
 
 FRESH_CLANG_PATH=${ROOT}/llvm_build64/bin
@@ -275,6 +278,9 @@ if [ "$PLATFORM" == "Linux" -a $HAVE_NINJA == 1 ]; then
   check_ninja $CHECK_TSAN tsan
   check_ninja $CHECK_UBSAN ubsan
   check_ninja $CHECK_UBSAN ubsan-minimal
+
+  echo @@@BUILD_STEP ninja check-compiler-rt@@@
+  (cd llvm_build_ninja && ninja check-compiler-rt) || true
 
   if [ "$CHECK_SYMBOLIZER" == "1" ]; then
     build_symbolizer() {
