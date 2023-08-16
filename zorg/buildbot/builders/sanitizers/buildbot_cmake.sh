@@ -121,6 +121,7 @@ if [[ "$CHECK_CFI" == "1" ]]; then
   CMAKE_COMMON_OPTIONS+=" -DLLVM_BUILD_LLVM_DYLIB=ON"
 fi
 
+CMAKE_COMMON_OPTIONS+=" -DLLVM_LIT_ARGS=-v"
 
 buildbot_update
 
