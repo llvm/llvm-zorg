@@ -7,7 +7,6 @@ set -u
 HERE="$(dirname $0)"
 . ${HERE}/buildbot_functions.sh
 
-PLATFORM=`uname`
 ARCH=`uname -m`
 ninja --version || export PATH="/usr/local/bin:$PATH"
 
@@ -28,10 +27,6 @@ ZLIB=$ROOT/zlib
 
 CMAKE_COMMON_OPTIONS+=" -DLLVM_ENABLE_ASSERTIONS=ON -DLLVM_PARALLEL_LINK_JOBS=10 -DLLVM_ENABLE_PER_TARGET_RUNTIME_DIR=OFF ${CMAKE_ARGS}"
 ENABLE_LIBCXX_FLAG=
-if [ "$PLATFORM" == "Darwin" ]; then
-  CMAKE_COMMON_OPTIONS+=" -DPYTHON_EXECUTABLE=/usr/bin/python"
-  ENABLE_LIBCXX_FLAG="-DLLVM_ENABLE_LIBCXX=ON"
-fi
 
 if [ -e /usr/include/plugin-api.h ]; then
   CMAKE_COMMON_OPTIONS+=" -DLLVM_BINUTILS_INCDIR=/usr/include"
@@ -148,27 +143,25 @@ fi
 
 # Check on Linux: build and test sanitizers using gcc as a host
 # compiler.
-if [ "$PLATFORM" == "Linux" ]; then
-  check_in_gcc() {
-    CONDITION=$1
-    SANITIZER=$2
-    if [ "$CONDITION" == "1" ]; then
-      echo @@@BUILD_STEP check-$SANITIZER in gcc build@@@
-      (cd clang_build && ninja check-$SANITIZER) || build_failure
-    fi
-  }
-  check_in_gcc 1 sanitizer
-  check_in_gcc $CHECK_ASAN asan
-  check_in_gcc $CHECK_HWASAN hwasan
-  check_in_gcc $CHECK_CFI cfi-and-supported
-  check_in_gcc $CHECK_DFSAN dfsan
-  check_in_gcc $CHECK_LSAN lsan
-  check_in_gcc $CHECK_MSAN msan
-  check_in_gcc $CHECK_SCUDO_STANDALONE scudo_standalone
-  LDFLAGS=-no-pie check_in_gcc $CHECK_TSAN tsan
-  check_in_gcc $CHECK_UBSAN ubsan
-  check_in_gcc $CHECK_UBSAN ubsan-minimal
-fi
+check_in_gcc() {
+  CONDITION=$1
+  SANITIZER=$2
+  if [ "$CONDITION" == "1" ]; then
+    echo @@@BUILD_STEP check-$SANITIZER in gcc build@@@
+    (cd clang_build && ninja check-$SANITIZER) || build_failure
+  fi
+}
+check_in_gcc 1 sanitizer
+check_in_gcc $CHECK_ASAN asan
+check_in_gcc $CHECK_HWASAN hwasan
+check_in_gcc $CHECK_CFI cfi-and-supported
+check_in_gcc $CHECK_DFSAN dfsan
+check_in_gcc $CHECK_LSAN lsan
+check_in_gcc $CHECK_MSAN msan
+check_in_gcc $CHECK_SCUDO_STANDALONE scudo_standalone
+LDFLAGS=-no-pie check_in_gcc $CHECK_TSAN tsan
+check_in_gcc $CHECK_UBSAN ubsan
+check_in_gcc $CHECK_UBSAN ubsan-minimal
 
 ### From now on we use just-built Clang as a host compiler ###
 CLANG_PATH=${ROOT}/clang_build/bin
@@ -214,20 +207,18 @@ check_64bit() {
 
 check_64bit 1 sanitizer
 check_64bit $CHECK_ASAN asan
-if [ "$PLATFORM" == "Linux" ]; then
-  check_64bit $CHECK_ASAN asan-dynamic
-  check_64bit $CHECK_HWASAN hwasan
-  check_64bit $CHECK_CFI cfi-and-supported
-  check_64bit $CHECK_DFSAN dfsan
-  check_64bit $CHECK_LSAN lsan
-  check_64bit $CHECK_MSAN msan
-  check_64bit $CHECK_TSAN tsan
-  check_64bit $CHECK_UBSAN ubsan
-  check_64bit $CHECK_UBSAN ubsan-minimal
+check_64bit $CHECK_ASAN asan-dynamic
+check_64bit $CHECK_HWASAN hwasan
+check_64bit $CHECK_CFI cfi-and-supported
+check_64bit $CHECK_DFSAN dfsan
+check_64bit $CHECK_LSAN lsan
+check_64bit $CHECK_MSAN msan
+check_64bit $CHECK_TSAN tsan
+check_64bit $CHECK_UBSAN ubsan
+check_64bit $CHECK_UBSAN ubsan-minimal
 
-  echo @@@BUILD_STEP 64-bit check-compiler-rt@@@
-  (cd llvm_build64 && ninja check-compiler-rt) || true
-fi
+echo @@@BUILD_STEP 64-bit check-compiler-rt@@@
+(cd llvm_build64 && ninja check-compiler-rt) || build_failure
 
 FRESH_CLANG_PATH=${ROOT}/llvm_build64/bin
 
@@ -247,82 +238,79 @@ fi
 echo @@@BUILD_STEP test standalone compiler-rt@@@
 (cd compiler_rt_build && ninja check-all) || build_failure
 
-HAVE_NINJA=${HAVE_NINJA:-1}
-if [ "$PLATFORM" == "Linux" -a $HAVE_NINJA == 1 ]; then
-  echo @@@BUILD_STEP build with ninja@@@
-  if [ ! -d llvm_build_ninja ]; then
-    mkdir llvm_build_ninja
-  fi
-  CMAKE_NINJA_OPTIONS="${CMAKE_CLANG_OPTIONS} -GNinja"
-  (cd llvm_build_ninja && cmake \
-      ${CMAKE_NINJA_OPTIONS} $LLVM) || build_failure
-  ln -sf llvm_build_ninja/compile_commands.json $LLVM
-  (cd llvm_build_ninja && ninja) || build_failure
+echo @@@BUILD_STEP build with ninja@@@
+if [ ! -d llvm_build_ninja ]; then
+  mkdir llvm_build_ninja
+fi
+CMAKE_NINJA_OPTIONS="${CMAKE_CLANG_OPTIONS} -GNinja"
+(cd llvm_build_ninja && cmake \
+    ${CMAKE_NINJA_OPTIONS} $LLVM) || build_failure
+ln -sf llvm_build_ninja/compile_commands.json $LLVM
+(cd llvm_build_ninja && ninja) || build_failure
 
-  check_ninja() {
+check_ninja() {
+  CONDITION=$1
+  SANITIZER=$2
+  if [ "$CONDITION" == "1" ]; then
+    echo @@@BUILD_STEP ninja check-$SANITIZER@@@
+    (cd llvm_build_ninja && ninja check-$SANITIZER) || build_failure
+  fi
+}
+
+check_ninja 1 sanitizer
+check_ninja $CHECK_ASAN asan
+check_ninja $CHECK_HWASAN hwasan
+check_ninja $CHECK_CFI cfi-and-supported
+check_ninja $CHECK_DFSAN dfsan
+check_ninja $CHECK_LSAN lsan
+check_ninja $CHECK_MSAN msan
+check_ninja $CHECK_SCUDO_STANDALONE scudo_standalone
+check_ninja $CHECK_TSAN tsan
+check_ninja $CHECK_UBSAN ubsan
+check_ninja $CHECK_UBSAN ubsan-minimal
+
+echo @@@BUILD_STEP ninja check-compiler-rt@@@
+(cd llvm_build_ninja && ninja check-compiler-rt) || true
+
+if [ "$CHECK_SYMBOLIZER" == "1" ]; then
+  build_symbolizer() {
+    echo @@@BUILD_STEP build $1-bit symbolizer for $2@@@
+    if [ ! -d symbolizer_build$1 ]; then
+      mkdir symbolizer_build$1
+    fi
+    (cd symbolizer_build$1 && ZLIB_SRC=$ZLIB FLAGS=-m$1 \
+      CLANG=${FRESH_CLANG_PATH}/clang \
+      bash -eux $COMPILER_RT/lib/sanitizer_common/symbolizer/scripts/build_symbolizer.sh \
+        $(dirname $(find ../$2/ -name libclang_rt.*.a | head -n1)) || build_failure)
+  }
+
+  echo @@@BUILD_STEP update zlib@@@
+  (cd $ZLIB && git pull --rebase) || \
+      git clone https://github.com/madler/zlib.git $ZLIB || build_failure
+
+  build_symbolizer 32 llvm_build_ninja
+  build_symbolizer 64 llvm_build_ninja
+
+  check_ninja_with_symbolizer() {
     CONDITION=$1
     SANITIZER=$2
     if [ "$CONDITION" == "1" ]; then
-      echo @@@BUILD_STEP ninja check-$SANITIZER@@@
+      echo @@@BUILD_STEP ninja check-$SANITIZER with internal symbolizer@@@
       (cd llvm_build_ninja && ninja check-$SANITIZER) || build_failure
     fi
   }
 
-  check_ninja 1 sanitizer
-  check_ninja $CHECK_ASAN asan
-  check_ninja $CHECK_HWASAN hwasan
-  check_ninja $CHECK_CFI cfi-and-supported
-  check_ninja $CHECK_DFSAN dfsan
-  check_ninja $CHECK_LSAN lsan
-  check_ninja $CHECK_MSAN msan
-  check_ninja $CHECK_SCUDO_STANDALONE scudo_standalone
-  check_ninja $CHECK_TSAN tsan
-  check_ninja $CHECK_UBSAN ubsan
-  check_ninja $CHECK_UBSAN ubsan-minimal
-
-  echo @@@BUILD_STEP ninja check-compiler-rt@@@
-  (cd llvm_build_ninja && ninja check-compiler-rt) || true
-
-  if [ "$CHECK_SYMBOLIZER" == "1" ]; then
-    build_symbolizer() {
-      echo @@@BUILD_STEP build $1-bit symbolizer for $2@@@
-      if [ ! -d symbolizer_build$1 ]; then
-        mkdir symbolizer_build$1
-      fi
-      (cd symbolizer_build$1 && ZLIB_SRC=$ZLIB FLAGS=-m$1 \
-        CLANG=${FRESH_CLANG_PATH}/clang \
-        bash -eux $COMPILER_RT/lib/sanitizer_common/symbolizer/scripts/build_symbolizer.sh \
-          $(dirname $(find ../$2/ -name libclang_rt.*.a | head -n1)) || build_failure)
-    }
-
-    echo @@@BUILD_STEP update zlib@@@
-    (cd $ZLIB && git pull --rebase) || \
-        git clone https://github.com/madler/zlib.git $ZLIB || build_failure
-
-    build_symbolizer 32 llvm_build_ninja
-    build_symbolizer 64 llvm_build_ninja
-
-    check_ninja_with_symbolizer() {
-      CONDITION=$1
-      SANITIZER=$2
-      if [ "$CONDITION" == "1" ]; then
-        echo @@@BUILD_STEP ninja check-$SANITIZER with internal symbolizer@@@
-        (cd llvm_build_ninja && ninja check-$SANITIZER) || build_failure
-      fi
-    }
-
-    # TODO: Replace LIT_FILTER_OUT with lit features.
-    LIT_FILTER_OUT=":: (max_allocation_size.cpp|Linux/soft_rss_limit_mb_test.cpp)$" check_ninja_with_symbolizer 1 sanitizer
-    LIT_FILTER_OUT=":: TestCases/Linux/check_memcpy.c$" check_ninja_with_symbolizer $CHECK_ASAN asan
-    # check_ninja_with_symbolizer $CHECK_HWASAN hwasan
-    # check_ninja_with_symbolizer $CHECK_CFI cfi-and-supported
-    check_ninja_with_symbolizer $CHECK_DFSAN dfsan
-    LIT_FILTER_OUT=":: TestCases/(realloc_too_big.c|recoverable_leak_check.cpp|suppressions_file.cpp)$" check_ninja_with_symbolizer $CHECK_LSAN lsan
-    LIT_FILTER_OUT=":: Linux/check_memcpy.c$" check_ninja_with_symbolizer $CHECK_MSAN msan
-    check_ninja_with_symbolizer $CHECK_SCUDO_STANDALONE scudo_standalone
-    LIT_FILTER_OUT=":: Linux/check_memcpy.c$" check_ninja_with_symbolizer $CHECK_TSAN tsan
-    LIT_FILTER_OUT=":: TestCases/TypeCheck/(vptr-virtual-base.cpp|vptr.cpp)$" check_ninja_with_symbolizer $CHECK_UBSAN ubsan
-  fi
+  # TODO: Replace LIT_FILTER_OUT with lit features.
+  LIT_FILTER_OUT=":: (max_allocation_size.cpp|Linux/soft_rss_limit_mb_test.cpp)$" check_ninja_with_symbolizer 1 sanitizer
+  LIT_FILTER_OUT=":: TestCases/Linux/check_memcpy.c$" check_ninja_with_symbolizer $CHECK_ASAN asan
+  # check_ninja_with_symbolizer $CHECK_HWASAN hwasan
+  # check_ninja_with_symbolizer $CHECK_CFI cfi-and-supported
+  check_ninja_with_symbolizer $CHECK_DFSAN dfsan
+  LIT_FILTER_OUT=":: TestCases/(realloc_too_big.c|recoverable_leak_check.cpp|suppressions_file.cpp)$" check_ninja_with_symbolizer $CHECK_LSAN lsan
+  LIT_FILTER_OUT=":: Linux/check_memcpy.c$" check_ninja_with_symbolizer $CHECK_MSAN msan
+  check_ninja_with_symbolizer $CHECK_SCUDO_STANDALONE scudo_standalone
+  LIT_FILTER_OUT=":: Linux/check_memcpy.c$" check_ninja_with_symbolizer $CHECK_TSAN tsan
+  LIT_FILTER_OUT=":: TestCases/TypeCheck/(vptr-virtual-base.cpp|vptr.cpp)$" check_ninja_with_symbolizer $CHECK_UBSAN ubsan
 fi
 
 cleanup
