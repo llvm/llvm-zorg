@@ -480,6 +480,8 @@ all = [
                         "-DCMAKE_C_FLAGS='-mcpu=neoverse-512tvb -mllvm -scalable-vectorization=preferred -mllvm -treat-scalable-fixed-error-as-warning=false'",
                         "-DCMAKE_CXX_FLAGS='-mcpu=neoverse-512tvb -mllvm -scalable-vectorization=preferred -mllvm -treat-scalable-fixed-error-as-warning=false'",
                         "-DLLVM_ENABLE_LLD=True",
+                        "-DMLIR_INCLUDE_INTEGRATION_TESTS=True",
+                        "-DMLIR_RUN_ARM_SVE_TESTS=True",
                         "-DLLVM_LIT_ARGS='-v'"])},
 
     # AArch64 Clang+LLVM+RT+LLD check-all + flang + test-suite w/SVE-Vector-Length-Specific
@@ -526,6 +528,8 @@ all = [
                         "-DCMAKE_C_FLAGS='-mcpu=neoverse-512tvb -msve-vector-bits=256 -mllvm -treat-scalable-fixed-error-as-warning=false'",
                         "-DCMAKE_CXX_FLAGS='-mcpu=neoverse-512tvb -msve-vector-bits=256 -mllvm -treat-scalable-fixed-error-as-warning=false'",
                         "-DLLVM_ENABLE_LLD=True",
+                        "-DMLIR_INCLUDE_INTEGRATION_TESTS=True",
+                        "-DMLIR_RUN_ARM_SVE_TESTS=True",
                         "-DLLVM_LIT_ARGS='-v'"])},
 
     {'name' : "clang-arm64-windows-msvc-2stage",
