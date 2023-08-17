@@ -9,6 +9,7 @@ get-steps:
 	@echo "check-llvm"
 	@echo "check-crt-ve"
 # @echo "check-runtimes-ve"
+# @echo "check-all"
 
 ##### Tools #####
 CMAKE?=cmake
@@ -37,19 +38,19 @@ LLVM_TEST_OPTFLAGS=-O2
 
 ##### Build Steps #####
 
-# Standalone build has been prohibited.  However, runtime build is not
-# possible for VE because crt-ve is needed to be compiled by just compiled
-# llvm.  Such bootstrap build CMakefile is not merged yet.  Check
-# https://reviews.llvm.org/D89492 for details.
+# Compile crt and other llvm components at once.  This was previously
+# impossible since crt is not compilable with other libraries.  By
+# https://reviews.llvm.org/D153989, the problem is solved.  So, we can
+# compile whole components at once even for VE.
 #
-# As a result, we compile llvm for ve using following three steps.
-#  1. Build llvm for X86 and VE with only X86 runtimes.
-#  1.1 check-llvm
-#  2. Build llvm for X86 and VE with x86 and VE compiler-rt runtimes.
-#  2.1 check-compiler-rt for VE
-#  3. Build x86 and VE all possible runtimes using 2.
+# Our compiling mechanism is something like below because whole test is
+# not implemented correctly, yet.
+#  1. Build llvm for X86 and VE with all runtimes.
+#  2. Perform check clang and check-llvm.
+#  3. Perform check compiler-rt for VE.
+# We will improve test cases.  And will use traditional build script
+# once check-all work for VE well.
 
-### Vanilla LLVM stage ###
 build-llvm:
 	touch "${TOOL_CONFIG_CACHE}"
 	mkdir -p "${LLVM_BUILD}"
@@ -100,13 +101,14 @@ build-llvm:
 	cd "${LLVM_BUILD}" && ${NINJA}
 
 check-llvm:
-	# cd "${LLVM_BUILD}" && ${NINJA} check-all
 	cd "${LLVM_BUILD}" && ${NINJA} check-clang
 	cd "${LLVM_BUILD}" && ${NINJA} check-llvm
 check-crt-ve:
 	cd "${LLVM_BUILD}" && ${NINJA} check-compiler-rt-ve-unknown-linux-gnu
 check-runtimes-ve:
 	cd "${LLVM_BUILD}" && ${NINJA} check-runtimes-ve-unknown-linux-gnu
+check-all:
+	cd "${LLVM_BUILD}" && ${NINJA} check-all
 
 # Clearout the temporary install prefix.
 prepare:
