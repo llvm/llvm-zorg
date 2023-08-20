@@ -386,7 +386,7 @@ def getCmakeWithNinjaWithMSVCBuildFactory(
     f.addStep(SetPropertyFromCommand(
         command=builders_util.getVisualStudioEnvironment(vs, target_arch),
         extract_fn=builders_util.extractVSEnvironment,
-        env=env))
+        env=env or {}))
     env = util.Property('vs_env')
 
     cleanBuildRequested = lambda step: step.build.getProperty("clean") or step.build.getProperty("clean_obj") or clean
