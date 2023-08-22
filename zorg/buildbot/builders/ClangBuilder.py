@@ -536,10 +536,19 @@ def _getClangCMakeBuildFactory(
             # lnt runtest test-suite doesn't understand --no-machdep-info:
             if testerName and not use_runtest_testsuite:
                 test_suite_cmd.extend(['--no-machdep-info', testerName])
+
         # CC and CXX are needed as env for build-tools
-        test_suite_env = copy.deepcopy(env)
-        test_suite_env['CC'] = cc
-        test_suite_env['CXX'] = cxx
+        if vs and vs != "manual":
+            # VS environment requires some extra care.
+            f.addStep(SetProperty(
+                command=builders_util.getVisualStudioEnvironment(vs, vs_target_arch),
+                extract_fn=builders_util.extractVSEnvironment,
+                env={'CC'  : cc, 'CXX' : cxx}))
+            test_suite_env = Property('vs_env')
+        else:
+            test_suite_env = copy.deepcopy(env)
+            test_suite_env['CC'] = cc
+            test_suite_env['CXX'] = cxx
 
         # Steps to prepare, build and run LNT
         f.addStep(ShellCommand(name='clean sandbox',
