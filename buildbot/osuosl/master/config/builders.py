@@ -827,6 +827,30 @@ all = [
                         "-DCOMPILER_RT_BUILD_SANITIZERS=OFF",
                         "-DLLVM_TARGETS_TO_BUILD='X86'"])},
 
+    ## Windows X86_64 AVX512 Clang+LLVM check-all + test-suite
+    {'name' : "clang-cmake-x86_64-avx512-win",
+    'tags'  : ["clang"],
+    'workernames' : ["avx512-intel64-win"],
+    'builddir': "clang-cmake-x86_64-avx512-win",
+    'factory' : ClangBuilder.getClangCMakeBuildFactory(
+                    vs="autodetect",
+                    vs_target_arch='x64',
+                    stage1_config='Debug',
+                    clean=False,
+                    checkout_clang_tools_extra=True,
+                    checkout_compiler_rt=False,
+                    checkout_lld=False,
+                    useTwoStage=False,
+                    runTestSuite=True,
+                    testsuite_flags=['--cflag', '-march=cascadelake', '--threads=32', '--build-threads=32'],
+                    extra_cmake_args=[
+                        "-DCMAKE_C_FLAGS='-march=cascadelake'",
+                        "-DCMAKE_CXX_FLAGS='-march=cascadelake'",
+                        "-DLLVM_ENABLE_RUNTIMES=compiler-rt",
+                        "-DCOMPILER_RT_BUILD_SANITIZERS=OFF",
+                        "-DCOMPILER_RT_BUILD_ORC=OFF",
+                        "-DLLVM_TARGETS_TO_BUILD=X86"])},
+
     {'name' : "clang-xcore-ubuntu-20-x64",
     'tags'  : ["clang"],
     'workernames' : ["xcore-ubuntu20-x64"],
