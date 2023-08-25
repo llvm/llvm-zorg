@@ -1,7 +1,6 @@
 from buildbot.steps.shell import ShellCommand
 from buildbot.process.results import FAILURE
-from buildbot.process.properties import WithProperties
-from buildbot.plugins import steps
+from buildbot.plugins import steps, util
 
 from zorg.buildbot.commands.CmakeCommand import CmakeCommand
 from zorg.buildbot.commands.NinjaCommand import NinjaCommand
@@ -27,13 +26,13 @@ def _addSteps4SystemCompiler(
 
     # This stage could use incremental build.
     # Clean stage1, only if requested.
-    f.addStep(steps.RemoveDirectory(name='clean-%s-dir' % obj_dir,
+    f.addStep(steps.RemoveDirectory(name=f'clean-{obj_dir}-dir',
               dir=obj_dir,
               haltOnFailure=False,
               flunkOnFailure=False,
               doStepIf=clean
               ))
-    f.addStep(steps.RemoveDirectory(name='clean-%s-dir' % f.stage_installdirs[stage_idx],
+    f.addStep(steps.RemoveDirectory(name=f'clean-{f.stage_installdirs[stage_idx]}-dir',
               dir=f.stage_installdirs[stage_idx],
               haltOnFailure=False,
               flunkOnFailure=False,
@@ -79,8 +78,8 @@ def _addSteps4SystemCompiler(
     # Warnings are likely, and we ignore them.
 
     # Create configuration files with cmake
-    f.addStep(CmakeCommand(name="cmake-configure-stage%s" % stage_num,
-                           description=["stage%s cmake configure" % stage_num],
+    f.addStep(CmakeCommand(name=f"cmake-configure-stage{stage_num}",
+                           description=[f"stage{stage_num} cmake configure"],
                            haltOnFailure=True,
                            flunkOnWarnings=False,
                            options=cmake_args,
@@ -90,32 +89,32 @@ def _addSteps4SystemCompiler(
                            ))
 
     # Build clang by the system compiler
-    f.addStep(NinjaCommand(name="build-stage%s-compiler" % stage_num,
+    f.addStep(NinjaCommand(name=f"build-stage{stage_num}-compiler",
                            jobs=jobs,
                            haltOnFailure=True,
                            flunkOnWarnings=False,
-                           description=["build stage%s compiler" % stage_num],
+                           description=[f"build stage{stage_num} compiler"],
                            env=env,
                            workdir=obj_dir,
                            ))
 
     # Test stage1 compiler
-    f.addStep(NinjaCommand(name="test-stage%s-compiler"% stage_num,
+    f.addStep(NinjaCommand(name=f"test-stage{stage_num}-compiler",
                            targets=["check-all"], # or "check-llvm", "check-clang"
                            jobs=jobs,
                            haltOnFailure=True,
                            flunkOnWarnings=False,
-                           description=["test stage%s compiler" % stage_num],
+                           description=[f"test stage{stage_num} compiler"],
                            env=env,
                            workdir=obj_dir,
                            ))
 
     # Install stage1 compiler
-    f.addStep(NinjaCommand(name="install-stage%s-compiler"% stage_num,
+    f.addStep(NinjaCommand(name=f"install-stage{stage_num}-compiler",
                            targets=["install"],
                            jobs=jobs,
                            haltOnFailure=True,
-                           description=["install stage%s compiler" % stage_num],
+                           description=[f"install stage{stage_num} compiler"],
                            env=env,
                            workdir=obj_dir,
                            ))
@@ -142,13 +141,13 @@ def _addSteps4StagedCompiler(
     staged_install = f.stage_installdirs[use_stage_idx]
 
     # Always do a clean build for the staged compiler.
-    f.addStep(steps.RemoveDirectory(name='clean-%s-dir' % obj_dir,
+    f.addStep(steps.RemoveDirectory(name=f'clean-{obj_dir}-dir',
               dir=obj_dir,
               haltOnFailure=False,
               flunkOnFailure=False,
               ))
 
-    f.addStep(steps.RemoveDirectory(name='clean-%s-dir' % f.stage_installdirs[stage_idx],
+    f.addStep(steps.RemoveDirectory(name=f'clean-{f.stage_installdirs[stage_idx]}-dir',
               dir=f.stage_installdirs[stage_idx],
               haltOnFailure=False,
               flunkOnFailure=False,
@@ -178,12 +177,12 @@ def _addSteps4StagedCompiler(
         ])
 
     cmake_args.append(
-        WithProperties(
-            "-DCMAKE_CXX_COMPILER=%(builddir)s/" + staged_install + "/bin/clang++"
+        util.Interpolate(
+            f"-DCMAKE_CXX_COMPILER=%(prop:builddir)s/{staged_install}/bin/clang++"
         ))
     cmake_args.append(
-        WithProperties(
-            "-DCMAKE_C_COMPILER=%(builddir)s/" + staged_install + "/bin/clang"
+        util.Interpolate(
+            f"-DCMAKE_C_COMPILER=%(prop:builddir)s/{staged_install}/bin/clang"
         ))
 
     if f.enable_projects:
@@ -196,8 +195,8 @@ def _addSteps4StagedCompiler(
             ])
 
     # Create configuration files with cmake
-    f.addStep(CmakeCommand(name="cmake-configure-stage%s" % stage_num,
-                           description=["stage%s cmake configure" % stage_num],
+    f.addStep(CmakeCommand(name=f"cmake-configure-stage{stage_num}",
+                           description=[f"stage{stage_num} cmake configure"],
                            haltOnFailure=True,
                            options=cmake_args,
                            path=src_dir,
@@ -206,32 +205,32 @@ def _addSteps4StagedCompiler(
                            ))
 
     # Build clang by the staged compiler
-    f.addStep(NinjaCommand(name="build-stage%s-compiler" % stage_num,
+    f.addStep(NinjaCommand(name=f"build-stage{stage_num}-compiler",
                            jobs=jobs,
                            haltOnFailure=True,
-                           description=["build stage%s compiler" % stage_num],
+                           description=[f"build stage{stage_num} compiler"],
                            timeout=10800, # LTO could take time.
                            env=env,
                            workdir=obj_dir,
                            ))
 
     # Test just built compiler
-    f.addStep(NinjaCommand(name="test-stage%s-compiler"% stage_num,
+    f.addStep(NinjaCommand(name=f"test-stage{stage_num}-compiler",
                            targets=["check-all"],
                            jobs=jobs,
                            haltOnFailure=True,
-                           description=["test stage%s compiler" % stage_num],
+                           description=[f"test stage{stage_num} compiler"],
                            timeout=10800, # LTO could take time.
                            env=env,
                            workdir=obj_dir,
                            ))
 
     # Install just built compiler
-    f.addStep(NinjaCommand(name="install-stage%s-compiler"% stage_num,
+    f.addStep(NinjaCommand(name=f"install-stage{stage_num}-compiler",
                            targets=["install"],
                            jobs=jobs,
                            haltOnFailure=True,
-                           description=["install stage%s compiler" % stage_num],
+                           description=[f"install stage{stage_num} compiler"],
                            timeout=10800, # LTO could take time.
                            env=env,
                            workdir=obj_dir,
@@ -345,12 +344,12 @@ def getClangWithLTOBuildFactory(
         configure_args = extra_configure_args[:] + extra_configure_args_lto_stage[:]
 
         configure_args.append(
-            WithProperties(
-                "-DCMAKE_AR=%(builddir)s/" + staged_install + "/bin/llvm-ar"
+            util.Interpolate(
+                f"-DCMAKE_AR=%(prop:builddir)s/{staged_install}/bin/llvm-ar"
             ))
         configure_args.append(
-            WithProperties(
-                "-DCMAKE_RANLIB=%(builddir)s/" + staged_install + "/bin/llvm-ranlib"
+            util.Interpolate(
+                f"-DCMAKE_RANLIB=%(prop:builddir)s/{staged_install}/bin/llvm-ranlib"
             ))
 
         _addSteps4StagedCompiler(f,
@@ -373,13 +372,13 @@ def getClangWithLTOBuildFactory(
                 name="compare-compilers",
                 description=[
                     "compare",
-                    "stage%d" % (len(f.stage_installdirs)-1),
+                    f"stage{(len(f.stage_installdirs)-1)}",
                     "and",
-                    "stage%d" % len(f.stage_installdirs),
+                    f"stage{len(f.stage_installdirs)}",
                     "compilers",
                     ],
                 haltOnFailure=False,
-                command=WithProperties(" ".join(diff_command)),
+                command=util.Interpolate(" ".join(diff_command)),
                 workdir=".",
                 env=merged_env
             )
@@ -394,20 +393,20 @@ def getClangWithLTOBuildFactory(
         dir1 = f.stage_objdirs[-2]
         dir2 = f.stage_objdirs[-1]
         inc_pattern = "-type f -not -name *.inc -printf '%f\n'"
-        find_cmd = "find %s %s" % (dir1, dir2)
-        diff_cmd = "diff -ru %s %s -x '*.tmp*' -X -" % (dir1, dir2)
+        find_cmd = f"find {dir1} {dir2}"
+        diff_cmd = f"diff -ru {dir1} {dir2} -x '*.tmp*' -X -"
 
         # Note: Use a string here as we want the command executed by a shell.
-        diff_tablegen_inc_files_command = "%s %s | %s" % (find_cmd, inc_pattern, diff_cmd)
+        diff_tablegen_inc_files_command = f"{find_cmd} {inc_pattern} | {diff_cmd}"
 
         f.addStep(
             ShellCommand(
                 name="compare-tablegen-inc-files",
                 description=[
                     "compare",
-                    "stage%d" % (len(f.stage_installdirs)-1),
+                    f"stage{(len(f.stage_installdirs)-1)}",
                     "and",
-                    "stage%d" % len(f.stage_installdirs),
+                    f"stage{len(f.stage_installdirs)}",
                     "Tablegen inc files",
                     ],
                 command=diff_tablegen_inc_files_command,

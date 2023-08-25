@@ -33,7 +33,7 @@ class CmakeCommand(CMake):
 
             o = None
             for i,a in enumerate(options):
-                # We cannot process some options because of WithProperties and such,
+                # We cannot process some options because of Interpolate and such,
                 # but let's at least work around them gracefully.
                 try:
                     # Strip surraunding quotation marks if any.
@@ -63,7 +63,7 @@ class CmakeCommand(CMake):
 
             o = None
             for i,a in enumerate(options):
-                # We cannot process some options because of WithProperties and such,
+                # We cannot process some options because of Interpolate and such,
                 # but let's at least work around them gracefully.
                 try:
                     if stripQuotationMarks(a).startswith(k):
@@ -90,7 +90,7 @@ class CmakeCommand(CMake):
 
             o = None
             for i,a in enumerate(options):
-                # We cannot process some options because of WithProperties and such,
+                # We cannot process some options because of Interpolate and such,
                 # but let's at least work around them gracefully.
                 try:
                     # Strip surraunding quotation marks if any.
@@ -125,7 +125,7 @@ class CmakeCommand(CMake):
 
         # Remove here all the kwargs any of our LLVM buildbot command could consume.
         # Note: We will remove all the empty items from the command at start, as we
-        # still didn't get yet WithProperties rendered.
+        # still didn't get yet Interpolate rendered.
         sanitized_kwargs = self.sanitize_kwargs(kwargs)
 
         # And upcall to let the base class do its work

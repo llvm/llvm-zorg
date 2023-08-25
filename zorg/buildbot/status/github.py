@@ -23,7 +23,7 @@ from zope.interface import implements
 
 from buildbot import config
 from buildbot.interfaces import IStatusReceiver
-from buildbot.process.properties import WithProperties
+from buildbot.plugins import util
 from buildbot.status.base import StatusReceiverMultiService
 from buildbot.status.builder import FAILURE
 from buildbot.status.builder import SUCCESS
@@ -94,7 +94,7 @@ class GitHubStatus(StatusReceiverMultiService):
         StatusReceiverMultiService.__init__(self)
 
         self._builders_to_report = builders_to_report
-        self._sha = sha or WithProperties("%(got_revision)s")
+        self._sha = sha or util.Property("got_revision")
         self._repoOwner = repoOwner
         self._repoName = repoName
         self._startDescription = startDescription or "Build started."

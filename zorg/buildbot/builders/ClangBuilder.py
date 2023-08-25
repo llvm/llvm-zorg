@@ -2,7 +2,6 @@ import copy
 from datetime import datetime
 
 from buildbot.plugins import util
-from buildbot.process.properties import WithProperties, Property
 from buildbot.steps.shell import ShellCommand, SetProperty
 from buildbot.steps.shell import WarningCountingShellCommand
 
@@ -31,13 +30,13 @@ def addGCSUploadSteps(f, package_name, install_prefix, gcs_directory, env,
     gcs_url_property - Property to assign the GCS url to.
     """
 
-    gcs_url_fmt = ('gs://%(gcs_bucket)s/%(gcs_directory)s/'
-                   'clang-r%(got_revision)s-t%(now)s-b%(buildnumber)s.tar.xz')
+    gcs_url_fmt = ('gs://%(kw:gcs_bucket)s/%(kw:gcs_directory)s/'
+                   'clang-r%(prop:got_revision)s-t%(kw:now)s-b%(prop:buildnumber)s.tar.xz')
     time_fmt = '%Y-%m-%d_%H-%M-%S'
     output_file_name = '../install.tar.xz'
 
     gcs_url = \
-        WithProperties(
+        util.Interpolate(
             gcs_url_fmt,
             gcs_bucket=lambda _: env.get('BUCKET', 'llvm-build-artifacts'),
             gcs_directory=lambda _: gcs_directory,
@@ -53,7 +52,7 @@ def addGCSUploadSteps(f, package_name, install_prefix, gcs_directory, env,
         # tweak the xz compression level to generate packages faster
         tar_command = ['tar', '-Ipixz', '-cvf', output_file_name, '.']
     else:
-        xz_command = 'xz -{0}'.format(xz_compression_factor)
+        xz_command = f'xz -{xz_compression_factor}'
         tar_command = ['tar', '-I', xz_command, '-cvf', output_file_name, '.']
 
     f.addStep(ShellCommand(name='package ' + package_name,
@@ -321,7 +320,7 @@ def _getClangCMakeBuildFactory(
             command=builders_util.getVisualStudioEnvironment(vs, vs_target_arch),
             extract_fn=builders_util.extractVSEnvironment))
         assert not env, "Can't have custom builder env vars with VS"
-        env = Property('vs_env')
+        env = util.Property('vs_env')
 
 
     ############# CLEANING
@@ -353,7 +352,7 @@ def _getClangCMakeBuildFactory(
                                     "-DCMAKE_BUILD_TYPE="+stage1_config,
                                     "-DLLVM_ENABLE_ASSERTIONS=True",
                                     "-DLLVM_LIT_ARGS="+lit_args,
-                                    "-DCMAKE_INSTALL_PREFIX=../"+stage1_install]
+                                    f"-DCMAKE_INSTALL_PREFIX=../{stage1_install}"]
                                     + extra_cmake_args,
                            haltOnFailure=True,
                            description='cmake stage 1',
@@ -428,13 +427,9 @@ def _getClangCMakeBuildFactory(
         # Note: Backslash path separators do not work well with cmake and ninja.
         # Forward slash path separator works on Windows as well.
         stage1_cc = InterpolateToPosixPath(
-                        "-DCMAKE_C_COMPILER=%(builddir)s/{}/bin/{}".format(
-                            stage1_install,
-                            cc))
+                        f"-DCMAKE_C_COMPILER=%(prop:builddir)s/{stage1_install}/bin/{cc}")
         stage1_cxx = InterpolateToPosixPath(
-                        "-DCMAKE_CXX_COMPILER=%(builddir)s/{}/bin/{}".format(
-                            stage1_install,
-                            cxx))
+                        f"-DCMAKE_CXX_COMPILER=%(prop:builddir)s/{stage1_install}/bin/{cxx}")
 
         # If we have a separate stage2 cmake arg list, then ensure we re-apply
         # enable_projects and enable_runtimes if necessary.
@@ -452,10 +447,10 @@ def _getClangCMakeBuildFactory(
         cmake_cmd2 = [cmake, "-G", "Ninja", rel_src_dir,
                       stage1_cc,
                       stage1_cxx,
-                      "-DCMAKE_BUILD_TYPE="+stage2_config,
+                      "-DCMAKE_BUILD_TYPE={stage2_config}",
                       "-DLLVM_ENABLE_ASSERTIONS=True",
-                      "-DLLVM_LIT_ARGS="+lit_args,
-                      "-DCMAKE_INSTALL_PREFIX=../"+stage2_install
+                      f"-DLLVM_LIT_ARGS={lit_args}",
+                      f"-DCMAKE_INSTALL_PREFIX=../{stage2_install}"
                      ] + (extra_stage2_cmake_args or extra_cmake_args)
 
         f.addStep(ShellCommand(name='cmake stage 2',
@@ -500,17 +495,17 @@ def _getClangCMakeBuildFactory(
                                    env=env))
 
         # Get generated python, lnt
-        python = WithProperties('%(builddir)s/test/sandbox/bin/python')
-        lnt = WithProperties('%(builddir)s/test/sandbox/bin/lnt')
-        lnt_setup = WithProperties('%(builddir)s/test/lnt/setup.py')
+        python = util.Interpolate('%(prop:builddir)s/test/sandbox/bin/python')
+        lnt = util.Interpolate('%(prop:builddir)s/test/sandbox/bin/lnt')
+        lnt_setup = util.Interpolate('%(prop:builddir)s/test/lnt/setup.py')
 
         # Paths
-        sandbox = WithProperties('%(builddir)s/test/sandbox')
-        test_suite_dir = WithProperties('%(builddir)s/test/test-suite')
+        sandbox = util.Interpolate('%(prop:builddir)s/test/sandbox')
+        test_suite_dir = util.Interpolate('%(prop:builddir)s/test/test-suite')
 
         # Get latest built Clang (stage1 or stage2)
-        cc = WithProperties('%(builddir)s/'+compiler_path+'/bin/'+cc)
-        cxx = WithProperties('%(builddir)s/'+compiler_path+'/bin/'+cxx)
+        cc = util.Interpolate(f'%(prop:builddir)s/{compiler_path}/bin/{cc}')
+        cxx = util.Interpolate(f'%(prop:builddir)s/{compiler_path}/bin/{cxx}')
 
         # LNT Command line (don't pass -jN. Users need to pass both --threads
         # and --build-threads in nt_flags/test_suite_flags to get the same effect)
@@ -525,7 +520,7 @@ def _getClangCMakeBuildFactory(
             # Append any option provided by the user
             test_suite_cmd.extend(nt_flags)
         else:
-            lit = WithProperties('%(builddir)s/'+stage1_build+'/bin/llvm-lit')
+            lit = util.Interpolate(f'%(prop:builddir)s/{stage1_build}/bin/llvm-lit')
             test_suite_cmd = [python, lnt, 'runtest', 'test-suite',
                               '--no-timestamp',
                               '--sandbox', sandbox,
@@ -539,7 +534,7 @@ def _getClangCMakeBuildFactory(
                         '--cmake-define=TEST_SUITE_FORTRAN:STRING=ON',
                         util.Interpolate(
                             '--cmake-define=CMAKE_Fortran_COMPILER=' +
-                            '%(prop:builddir)s/'+compiler_path+'/bin/'+fc)]
+                            f'%(prop:builddir)s/{compiler_path}/bin/{fc}')]
                 test_suite_cmd.extend(fortran_flags)
             # Append any option provided by the user
             test_suite_cmd.extend(testsuite_flags)

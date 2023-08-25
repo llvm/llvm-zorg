@@ -1,6 +1,5 @@
 from buildbot.plugins import steps, util
 from buildbot.steps.shell import SetPropertyFromCommand
-from buildbot.process.properties import WithProperties
 
 from zorg.buildbot.commands.CmakeCommand import CmakeCommand
 from zorg.buildbot.commands.NinjaCommand import NinjaCommand
@@ -560,12 +559,12 @@ def getCmakeWithNinjaMultistageBuildFactory(
             ('-DCMAKE_INSTALL_PREFIX=', install_dir),
             ])
         cmake_args_stageN.append(
-            util.WithProperties(
-                "-DCMAKE_CXX_COMPILER=%(builddir)s/" + staged_install + "/bin/clang++"
+            util.Interpolate(
+                f"-DCMAKE_CXX_COMPILER=%(prop:builddir)s/{staged_install}/bin/clang++"
             ))
         cmake_args_stageN.append(
-            util.WithProperties(
-                "-DCMAKE_C_COMPILER=%(builddir)s/" + staged_install + "/bin/clang"
+            util.Interpolate(
+                f"-DCMAKE_C_COMPILER=%(prop:builddir)s/{staged_install}/bin/clang"
             ))
 
         addCmakeSteps(

@@ -1,6 +1,5 @@
-from buildbot.process.properties import WithProperties
 from buildbot.steps.shell import ShellCommand, WarningCountingShellCommand
-from buildbot.plugins import steps
+from buildbot.plugins import steps, util
 from zorg.buildbot.commands.LitTestCommand import LitTestCommand
 from zorg.buildbot.process.factory import LLVMBuildFactory
 
@@ -36,7 +35,7 @@ def getPollyBuildFactory(
     check_polly_cmd = [make, 'check-polly'] + jobs_cmd
     cmake_install = []
     if install:
-        cmake_install = ["-DCMAKE_INSTALL_PREFIX=../%s" % llvm_instdir]
+        cmake_install = [f"-DCMAKE_INSTALL_PREFIX=../{llvm_instdir}"]
     # Prepare environmental variables. Set here all env we want everywhere.
     merged_env = {
                    'TERM' : 'dumb'     # Make sure Clang doesn't use color escape sequences.
@@ -77,12 +76,12 @@ def getPollyBuildFactory(
                            doStepIf=cleanObjRequested))
 
     # Create configuration files with cmake
-    cmakeCommand = ["cmake", "../%s/llvm" % llvm_srcdir,
+    cmakeCommand = ["cmake", f"../{llvm_srcdir}/llvm",
                     "-DCMAKE_COLOR_MAKEFILE=OFF",
                     "-DPOLLY_TEST_DISABLE_BAR=ON",
                     "-DCMAKE_BUILD_TYPE=Release",
                     "-DLLVM_POLLY_LINK_INTO_TOOLS=ON",
-                    "-DLLVM_ENABLE_PROJECTS=%s" % ";".join(f.depends_on_projects),
+                    f"-DLLVM_ENABLE_PROJECTS={';'.join(f.depends_on_projects)}",
                    ] + cmake_install + extraCmakeArgs
     f.addStep(ShellCommand(name="cmake-configure",
                            command=cmakeCommand,
@@ -102,10 +101,10 @@ def getPollyBuildFactory(
                            workdir=llvm_objdir,
                            env=merged_env))
 
-    clangexe = "%(builddir)s/" + llvm_objdir + "/bin/clang"
-    clangxxexe = "%(builddir)s/" + llvm_objdir + "/bin/clang++"
-    litexe = "%(builddir)s/" + llvm_objdir + "/bin/llvm-lit"
-    sizeexe = "%(builddir)s/" + llvm_objdir + "/bin/llvm-size"
+    clangexe = f"%(prop:builddir)s/{llvm_objdir}/bin/clang"
+    clangxxexe = f"%(prop:builddir)s/{llvm_objdir}/bin/clang++"
+    litexe = f"%(prop:builddir)s/{llvm_objdir}/bin/llvm-lit"
+    sizeexe = f"%(prop:builddir)s/{llvm_objdir}/bin/llvm-size"
 
     # Clean install dir
     if install:
@@ -122,9 +121,9 @@ def getPollyBuildFactory(
                                env=merged_env))
 
         # If installing, use the installed version of clang.
-        clangexe = "%(builddir)s/" + llvm_instdir + "/bin/clang"
-        clangxxexe = "%(builddir)s/" + llvm_instdir + "/bin/clang++"
-        sizeexe = "%(builddir)s/" + llvm_instdir + "/bin/llvm-size"
+        clangexe = f"%(prop:builddir)s/{llvm_instdir}/bin/clang"
+        clangxxexe = f"%(prop:builddir)s/{llvm_instdir}/bin/clang++"
+        sizeexe = f"%(prop:builddir)s/{llvm_instdir}/bin/llvm-size"
 
     # Test
     if checkAll:
@@ -167,10 +166,10 @@ def getPollyBuildFactory(
                                     "-DTEST_SUITE_EXTRA_C_FLAGS=-Wno-unused-command-line-argument -mllvm -polly",
                                     "-DTEST_SUITE_EXTRA_CXX_FLAGS=-Wno-unused-command-line-argument -mllvm -polly",
                                     "-DTEST_SUITE_LIT_FLAGS=-vv;-o;report.json",
-                                    WithProperties("-DCMAKE_C_COMPILER=" + clangexe),
-                                    WithProperties("-DCMAKE_CXX_COMPILER=" + clangxxexe),
-                                    WithProperties("-DTEST_SUITE_LLVM_SIZE=" + sizeexe),
-                                    WithProperties("-DTEST_SUITE_LIT=" + litexe),
+                                    util.Interpolate(f"-DCMAKE_C_COMPILER={clangexe}"),
+                                    util.Interpolate(f"-DCMAKE_CXX_COMPILER={clangxxexe}"),
+                                    util.Interpolate(f"-DTEST_SUITE_LLVM_SIZE={sizeexe}"),
+                                    util.Interpolate(f"-DTEST_SUITE_LIT={litexe}"),
                                 ] + extraTestsuiteCmakeArgs,
                            haltOnFailure=True,
                            workdir='.',
@@ -190,7 +189,7 @@ def getPollyBuildFactory(
 
         f.addStep(LitTestCommand(name='test-suite_run',
                             description=['Test-Suite: run'],
-                            command=[WithProperties(litexe), '-vv', '-s', '-o', 'report.json', '.'],
+                            command=[util.Interpolate(litexe), '-vv', '-s', '-o', 'report.json', '.'],
                             haltOnFailure=True,
                             workdir=testsuite_builddir,
                             logfiles={

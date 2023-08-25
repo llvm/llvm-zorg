@@ -2,8 +2,6 @@ from importlib import reload
 
 from buildbot.plugins import util
 
-from buildbot.process.properties import WithProperties
-
 from zorg.buildbot.builders import ClangBuilder
 from zorg.buildbot.builders import FlangBuilder
 from zorg.buildbot.builders import PollyBuilder
@@ -220,8 +218,8 @@ all = [
                         WithProperties("-DTOOLCHAIN_TARGET_SYSROOTFS=%(sysroot_path_armv7)s"),
                         WithProperties("-DZLIB_ROOT=%(zlib_root_path)s"),
                         "-DLLVM_LIT_ARGS=-v -vv --threads=32",
-                        WithProperties("%(remote_test_host:+-DREMOTE_TEST_HOST=)s%(remote_test_host:-)s"),
-                        WithProperties("%(remote_test_user:+-DREMOTE_TEST_USER=)s%(remote_test_user:-)s"),
+                        util.Interpolate("%(prop:remote_test_host:+-DREMOTE_TEST_HOST=)s%(prop:remote_test_host:-)s"),
+                        util.Interpolate("%(prop:remote_test_user:+-DREMOTE_TEST_USER=)s%(prop:remote_test_user:-)s"),
                     ],
                     cmake_cache="../llvm-project/clang/cmake/caches/CrossWinToARMLinux.cmake")},
 
@@ -259,8 +257,8 @@ all = [
                         WithProperties("-DTOOLCHAIN_TARGET_SYSROOTFS=%(sysroot_path_aarch64)s"),
                         WithProperties("-DZLIB_ROOT=%(zlib_root_path)s"),
                         "-DLLVM_LIT_ARGS=-v -vv --threads=32",
-                        WithProperties("%(remote_test_host:+-DREMOTE_TEST_HOST=)s%(remote_test_host:-)s"),
-                        WithProperties("%(remote_test_user:+-DREMOTE_TEST_USER=)s%(remote_test_user:-)s"),
+                        util.Interpolate("%(prop:remote_test_host:+-DREMOTE_TEST_HOST=)s%(prop:remote_test_host:-)s"),
+                        util.Interpolate("%(prop:remote_test_user:+-DREMOTE_TEST_USER=)s%(prop:remote_test_user:-)s"),
                         "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
                         "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
                     ],
@@ -1232,7 +1230,7 @@ all = [
                         "-DTEST_SUITE_COLLECT_COMPILE_TIME=OFF",
                         "-DTEST_SUITE_COLLECT_STATS=OFF",
                         "-DTEST_SUITE_COLLECT_CODE_SIZE=OFF",
-                        WithProperties("-DTEST_SUITE_EXTERNALS_DIR=%(builddir)s/../../test-suite-externals"),
+                        util.Interpolate("-DTEST_SUITE_EXTERNALS_DIR=%(prop:builddir)s/../../test-suite-externals"),
                       ]
                     )},
 

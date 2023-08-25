@@ -1,4 +1,3 @@
-# TODO: Change WithProperties to Interpolate
 # TODO: Consider setting codebase to llvm-project.
 from collections import OrderedDict
 
@@ -79,8 +78,7 @@ class LLVMBuildFactory(BuildFactory):
 
         self.monorepo_dir = self.monorepo_dir or "llvm-project"
         self.src_to_build_dir = self.src_to_build_dir or 'llvm'
-        self.llvm_srcdir = \
-                "{}/{}".format(self.monorepo_dir, self.src_to_build_dir)
+        self.llvm_srcdir = f"{self.monorepo_dir}/{self.src_to_build_dir}"
         self.obj_dir = \
                 self.obj_dir or "build"
 
@@ -125,7 +123,7 @@ class LLVMBuildFactory(BuildFactory):
                 name='Checkout the source code',
                 repourl=self.repourl_prefix + "llvm-project.git",
                 progress=True,
-                workdir=util.WithProperties(self.monorepo_dir),
+                workdir=util.Interpolate(self.monorepo_dir),
                 retryFetch=True,
                 clobberOnFailure=True,
                 **kwargs))
@@ -146,7 +144,7 @@ class LLVMBuildFactory(BuildFactory):
         # Check out to the given directory if any.
         # Otherwise this is a part of the unified source tree.
         if src_dir is None:
-            src_dir = 'llvm-%s' % project
+            src_dir = f'llvm-{project}'
 
         # Ignore workdir if given. We check out to src_dir.
         kwargs.pop('workdir', None)
@@ -155,7 +153,7 @@ class LLVMBuildFactory(BuildFactory):
                 name=name,
                 repourl=_repourl,
                 progress=True,
-                workdir=util.WithProperties(src_dir),
+                workdir=util.Interpolate(src_dir),
                 retryFetch=True,
                 clobberOnFailure=True,                
                 **kwargs))

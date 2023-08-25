@@ -1,5 +1,4 @@
-from buildbot.process.properties import WithProperties
-
+from buildbot.plugins import util
 from zorg.buildbot.builders                import UnifiedTreeBuilder
 from zorg.buildbot.commands.CmakeCommand   import CmakeCommand
 from zorg.buildbot.commands.NinjaCommand   import NinjaCommand
@@ -74,8 +73,8 @@ def getABITestsuitBuildFactory(
 
     # Run the ABI test.
     abi_test_env = {
-        'PYTHONPATH' : WithProperties("%(builddir)s/" + f.llvm_srcdir + "/utils/lit:${PYTHONPATH}"),
-        'PATH'       : WithProperties("%(builddir)s/" + f.obj_dir + "/bin:${PATH}"),
+        'PYTHONPATH' : util.Interpolate("%(prop:builddir)s/%(kw:dir)s/utils/lit:${PYTHONPATH}", dir=f.llvm_srcdir),
+        'PATH'       : util.Interpolate("%(prop:builddir)s/%(kw:dir)s/bin:${PATH}", dir=f.obj_dir),
         }
     merged_env.update(abi_test_env)
 

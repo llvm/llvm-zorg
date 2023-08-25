@@ -5,11 +5,11 @@
 from zope.interface import implementer
 
 from buildbot.interfaces import IRenderable
-from buildbot.process.properties import WithProperties
+from buildbot.process.properties import Interpolate
 
 
 @implementer(IRenderable)
-class InterpolateToNativePath(WithProperties):
+class InterpolateToNativePath(Interpolate):
     """
     This is a marker class, used to indicate that we
     want to interpolate build properties as a paths with
@@ -29,7 +29,7 @@ class InterpolateToNativePath(WithProperties):
 
 
 @implementer(IRenderable)
-class InterpolateToPosixPath(WithProperties):
+class InterpolateToPosixPath(Interpolate):
     """
     This is a marker class, used to indicate that we
     want to interpolate build properties as a paths with

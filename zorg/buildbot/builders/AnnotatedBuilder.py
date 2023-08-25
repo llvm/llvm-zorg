@@ -1,4 +1,4 @@
-from buildbot.process.properties import WithProperties
+from buildbot.plugins import util
 from buildbot.steps.shell import SetProperty
 from zorg.buildbot.commands.AnnotatedCommand import AnnotatedCommand
 from zorg.buildbot.process.factory import LLVMBuildFactory
@@ -44,7 +44,7 @@ def getAnnotatedBuildFactory(
         # We used to add --jobs to all script invocations. Perserve this
         # for cases when the user did not specify extra_args, but allow
         # overriding it if the user did specify extra_args.
-        extra_args = ["--jobs=%(jobs:-)s"]
+        extra_args = ["--jobs=%(prop:jobs:-)s"]
 
     f = LLVMBuildFactory(
         clean=clean,
@@ -84,12 +84,12 @@ def getAnnotatedBuildFactory(
     if checkout_llvm_sources:
       f.addGetSourcecodeSteps()
 
-    extra_args_with_props = [WithProperties(arg) for arg in extra_args]
+    extra_args_with_props = [util.Interpolate(arg) for arg in extra_args]
     # Explicitly use '/' as separator, because it works on *nix and Windows.
     if script.startswith('/'):
       command = [script]
     else:
-      script_path = "../llvm-zorg/zorg/buildbot/builders/annotated/%s" % (script)
+      script_path = f"../llvm-zorg/zorg/buildbot/builders/annotated/{script}"
       # Handle scripts with script_interpreter, otherwise execute the script directly.
       if script_interpreter:
         command = [script_interpreter, script_path]

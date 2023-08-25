@@ -1,7 +1,6 @@
 from buildbot.steps.shell import SetProperty
 from buildbot.steps.shell import ShellCommand, WarningCountingShellCommand
-from buildbot.process.properties import WithProperties, Property
-from buildbot.plugins import steps
+from buildbot.plugins import steps, util
 
 from zorg.buildbot.commands.CmakeCommand import CmakeCommand
 from zorg.buildbot.commands.NinjaCommand import NinjaCommand
@@ -59,7 +58,7 @@ def getLLDBCMakeBuildFactory(
         "-DCMAKE_BUILD_TYPE=" + config,
         "-DLLVM_LIT_ARGS=-v",
         "-DCMAKE_INSTALL_PREFIX=../install",
-        "-DLLVM_ENABLE_PROJECTS=%s" % ";".join(f.depends_on_projects),
+        f"-DLLVM_ENABLE_PROJECTS={';'.join(f.depends_on_projects)}",
         ]
     if python_source_dir:
         cmake_options.append("-DPYTHON_HOME=" + python_source_dir)

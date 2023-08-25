@@ -1,4 +1,4 @@
-from buildbot.process.properties import WithProperties
+from buildbot.plugins import util
 from buildbot.steps.shell import ShellCommand
 
 from zorg.buildbot.builders import UnifiedTreeBuilder
@@ -108,9 +108,9 @@ def getFactory(
     # Run the performance test suite.
     perf_command = [
         "python",
-        "%(builddir)s/lld-benchmark.py",
-        "--machine=%(workername)s",
-        "--revision=%(got_revision)s",
+        "%(prop:builddir)s/lld-benchmark.py",
+        "--machine=%(prop:workername)s",
+        "--revision=%(prop:got_revision)s",
         "--linker=./ld.lld",
         ".",
         ]
@@ -121,7 +121,7 @@ def getFactory(
             description=[
                 "LLD", "performance","test","suite",
                 ],
-            command=WithProperties(" ".join(perf_command)),
+            command=util.Interpolate(" ".join(perf_command)),
             workdir="./lld-speed-test",
             env=merged_env
         )

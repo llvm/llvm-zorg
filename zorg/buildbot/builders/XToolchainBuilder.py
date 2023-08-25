@@ -1,7 +1,6 @@
 from buildbot.steps.shell import ShellCommand, SetPropertyFromCommand
-from buildbot.process.properties import WithProperties, Property
+from buildbot.plugins import util
 
-from zorg.buildbot.process.properties import InterpolateToPosixPath
 from zorg.buildbot.commands.CmakeCommand   import CmakeCommand
 from zorg.buildbot.commands.NinjaCommand   import NinjaCommand
 from zorg.buildbot.commands.LitTestCommand import LitTestCommand
@@ -117,7 +116,7 @@ def getCmakeWithMSVCBuildFactory(
             command=builders_util.getVisualStudioEnvironment(vs, None),
             extract_fn=builders_util.extractVSEnvironment,
             env=merged_env))
-        merged_env = Property('vs_env')
+        merged_env = util.Property('vs_env')
 
     CmakeCommand.applyDefaultOptions(cmake_args, [
         ('-G', 'Ninja'),
@@ -176,8 +175,8 @@ def getCmakeWithMSVCBuildFactory(
         f.addStep(
             LitTestCommand(
                 haltOnFailure=False, # We want to test as much as we could.
-                name='test-%s' % check,
-                command=["ninja", WithProperties(check)],
+                name=f'test-{check}',
+                command=["ninja", util.Interpolate(check)],
                 description=[
                     "Testing", "just", "built", "components", "for", check],
                 descriptionDone=[
@@ -193,7 +192,7 @@ def getCmakeWithMSVCBuildFactory(
             f.addStep(
                 LitTestCommand(
                     haltOnFailure=False, # We want to test as much as we could.
-                    name='test-%s' % check,
+                    name=f'test-{check}',
                     command=cmd,
                     description=[
                         "Testing", "just", "built", "components", "for", check],

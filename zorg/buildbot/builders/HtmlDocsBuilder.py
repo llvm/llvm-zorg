@@ -60,16 +60,13 @@ def getHtmlDocsBuildFactory(
                 mode='full',
                 method='fresh',
                 progress=True,
-                workdir=util.WithProperties(project),
+                workdir=util.Interpolate(project),
                 env=merged_env,
                 **kwargs))
 
         target, build_path, local_path, remote_path = llvm_docs[project]
 
-        build_dir = util.WithProperties(
-                            "{}".format("/".join([
-                                project,
-                                build_path])))
+        build_dir = util.Interpolate(f"{project}/{build_path}")
         f.addStep(
             steps.WarningCountingShellCommand(
                 name="Build {} documentation".format(project),

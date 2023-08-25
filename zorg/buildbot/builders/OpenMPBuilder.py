@@ -1,6 +1,5 @@
 from buildbot.steps.shell import ShellCommand
-from buildbot.process.properties import WithProperties
-from buildbot.plugins import steps
+from buildbot.plugins import steps, util
 
 from zorg.buildbot.commands.LitTestCommand import LitTestCommand
 from zorg.buildbot.commands.CmakeCommand import CmakeCommand
@@ -9,7 +8,7 @@ from zorg.buildbot.builders import UnifiedTreeBuilder
 from zorg.buildbot.process.factory import LLVMBuildFactory
 
 def getOpenMPCMakeBuildFactory(
-        jobs                = '%(jobs)s',   # Number of concurrent jobs.
+        jobs                = '%(prop:jobs)s',   # Number of concurrent jobs.
         clean               = True,         # "clean" step is requested if true
         env                 = None,         # Environmental variables for all steps.
         test                = True,         # Test the built libraries.
@@ -72,13 +71,14 @@ def getOpenMPCMakeBuildFactory(
     # Configure LLVM and OpenMP (and Clang, if requested).
     cmake_args = ['-DCMAKE_BUILD_TYPE=Release', '-DLLVM_ENABLE_ASSERTIONS=ON']
     if test:
-        lit_args = '-vv --show-unsupported --show-xfail -j %s' % jobs
+        lit_args = f'-vv --show-unsupported --show-xfail -j {jobs}'
+
         if add_openmp_lit_args:
             for add_arg in add_openmp_lit_args:
                 lit_args += ' ' + add_arg
-        cmake_args += [WithProperties('-DLLVM_LIT_ARGS=%s' % lit_args)]
+        cmake_args += [util.Interpolate(f'-DLLVM_LIT_ARGS={lit_args}')]
     if install:
-        cmake_args += [WithProperties('-DCMAKE_INSTALL_PREFIX=%(builddir)s/' + llvm_instdir)]
+        cmake_args += [util.Interpolate(f'-DCMAKE_INSTALL_PREFIX=%(prop:builddir)s/{llvm_instdir}')]
     cmake_args += extraCmakeArgs
 
     if f.enable_projects:
@@ -93,7 +93,8 @@ def getOpenMPCMakeBuildFactory(
 
     # Add llvm-lit and clang (if built) to PATH
     merged_env.update({
-        'PATH': WithProperties('%(builddir)s/' + llvm_builddir + '/bin:${PATH}')})
+        'PATH': util.Interpolate(f'%(prop:builddir)s/{llvm_builddir}'
+                                  '/bin:${PATH}')})
 
     src_dir = LLVMBuildFactory.pathRelativeTo(f.llvm_srcdir, f.obj_dir)
 
@@ -121,9 +122,10 @@ def getOpenMPCMakeBuildFactory(
     if test:
         # Add llvm-lit and clang (if built) to PATH
         merged_env.update({
-            'PATH': WithProperties('%(builddir)s/' + llvm_builddir + '/bin:${PATH}')})
+            'PATH': util.Interpolate(f'%(prop:builddir)s/{llvm_builddir}'
+                                      '/bin:${PATH}')})
 
-        ninja_test_args = ['ninja', WithProperties('-j %s' % jobs)]
+        ninja_test_args = ['ninja', util.Interpolate(f'-j {jobs}')]
         f.addStep(
             LitTestCommand(
                 name        = 'test-openmp',
@@ -136,7 +138,7 @@ def getOpenMPCMakeBuildFactory(
     # When requested run additional lit tests
     if add_lit_checks != None:
         for add_check in add_lit_checks:
-            ninja_test_args = ['ninja', WithProperties('-j %s' % jobs)]
+            ninja_test_args = ['ninja', util.Interpolate(f'-j {jobs}')]
 
             f.addStep(LitTestCommand(
                 name = 'Add check ' + add_check,
@@ -147,10 +149,10 @@ def getOpenMPCMakeBuildFactory(
                 haltOnFailure = False,
                 flunkOnFailure=True))
 
-    clangexe = "%(builddir)s/" + llvm_builddir + "/bin/clang"
-    clangxxexe = "%(builddir)s/" + llvm_builddir + "/bin/clang++"
-    litexe = "%(builddir)s/" + llvm_builddir + "/bin/llvm-lit"
-    libdir = "%(builddir)s/" + llvm_builddir + "/lib"
+    clangexe = f"%(prop:builddir)s/{llvm_builddir}/bin/clang"
+    clangxxexe = f"%(prop:builddir)s/{llvm_builddir}/bin/clang++"
+    litexe = f"%(prop:builddir)s/{llvm_builddir}/bin/llvm-lit"
+    libdir = f"%(prop:builddir)s/{llvm_builddir}/lib"
     if install:
         f.addStep(steps.RemoveDirectory(name="LLVM: Clean Install Dir",
                                dir=llvm_instdir,
@@ -165,9 +167,9 @@ def getOpenMPCMakeBuildFactory(
                                env=merged_env,
                                haltOnFailure=True))
         # If installing, use the installed version of clang.
-        clangexe = "%(builddir)s/" + llvm_instdir + "/bin/clang"
-        clangxxexe = "%(builddir)s/" + llvm_instdir + "/bin/clang++"
-        libdir = "%(builddir)s/" + llvm_instdir + "/lib"
+        clangexe = f"%(prop:builddir)s/{llvm_instdir}/bin/clang"
+        clangxxexe = f"%(prop:builddir)s/{llvm_instdir}/bin/clang++"
+        libdir = f"%(prop:builddir)s/{llvm_instdir}/lib"
 
 
     if testsuite:
@@ -210,14 +212,14 @@ def getOpenMPCMakeBuildFactory(
             "-DTEST_SUITE_LIT_FLAGS=-vv;-s;-j6;-o;report.json",
             "-DTEST_SUITE_EXTRA_C_FLAGS=-gline-tables-only",
             "-DTEST_SUITE_EXTRA_CXX_FLAGS=-gline-tables-only",
-            WithProperties("-DCMAKE_C_COMPILER=" + clangexe),
-            WithProperties("-DCMAKE_CXX_COMPILER=" + clangxxexe),
-            WithProperties("-DTEST_SUITE_LIT=" + litexe),
+            util.Interpolate(f"-DCMAKE_C_COMPILER={clangexe}"),
+            util.Interpolate(f"-DCMAKE_CXX_COMPILER={clangxxexe}"),
+            util.Interpolate(f"-DTEST_SUITE_LIT={litexe}"),
         ]
         if testsuite_sollvevv:
             testsuite_options += [
                 "-DTEST_SUITE_SUBDIRS=External/sollve_vv",
-                "-DTEST_SUITE_SOLLVEVV_ROOT=../" + sollvevv_srcdir,
+                f"-DTEST_SUITE_SOLLVEVV_ROOT=../{sollvevv_srcdir}",
             ]
         testsuite_options += extraTestsuiteCmakeArgs
         f.addStep(CmakeCommand(name="Test-Suite: Configure",
@@ -225,7 +227,7 @@ def getOpenMPCMakeBuildFactory(
                             descriptionDone="configure",
                             descriptionSuffix="Test-Suite",
                             generator='Ninja',
-                            path='../' + testsuite_srcdir,
+                            path=f'../{testsuite_srcdir}',
                             workdir=testsuite_builddir,
                             options=testsuite_options,
                             haltOnFailure=True,
@@ -244,13 +246,13 @@ def getOpenMPCMakeBuildFactory(
                             workdir=testsuite_builddir))
 
         merged_env.update({
-            'LD_LIBRARY_PATH': WithProperties(libdir + ':${LD_LIBRARY_PATH}')
+            'LD_LIBRARY_PATH': util.Interpolate(libdir + ':${LD_LIBRARY_PATH}')
             })
         f.addStep(LitTestCommand(name="Test-Suite: Run",
                             description="running",
                             descriptionDone="run",
                             descriptionSuffix="Test-Suite",
-                            command=[WithProperties(litexe), '-vv', '-s',  '-j6', '-o','report.json', '.'],
+                            command=[util.Interpolate(litexe), '-vv', '-s',  '-j6', '-o','report.json', '.'],
                             haltOnFailure=False,
                             flunkOnFailure=False, # SOLLVE V&V contains tests that clang have not been implemented yet.
                             warnOnFailure=True,
