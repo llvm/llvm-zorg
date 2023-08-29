@@ -1965,21 +1965,6 @@ all += [
                         "-DCMAKE_BUILD_TYPE=Release",
                     ])},
 
-    {'name' : "flang-aarch64-debug",
-    'tags'  : ["flang"],
-    'workernames' : ["linaro-flang-aarch64-debug"],
-    'builddir': "flang-aarch64-debug",
-    'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
-                    clean=True,
-                    checks=['check-flang'],
-                    depends_on_projects=['llvm','mlir','clang','flang'],
-                    extra_configure_args=[
-                        "-DLLVM_TARGETS_TO_BUILD=AArch64",
-                        "-DCMAKE_BUILD_TYPE=Debug",
-                        "-DCMAKE_CXX_STANDARD=17",
-                        "-DLLVM_USE_LINKER=lld",
-                    ])},
-
     {'name' : "flang-aarch64-debug-reverse-iteration",
     'tags'  : ["flang", "rev_iter"],
     'workernames' : ["linaro-flang-aarch64-debug-reverse-iteration"],
