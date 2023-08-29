@@ -1981,10 +1981,10 @@ all += [
                         "-DLLVM_REVERSE_ITERATION:BOOL=ON",
                     ])},
 
-    {'name' : "flang-aarch64-latest-clang",
+    {'name' : "flang-aarch64-libcxx",
     'tags'  : ['flang'],
-    'workernames' : ["linaro-flang-aarch64-latest-clang"],
-    'builddir': "flang-aarch64-latest-clang",
+    'workernames' : ["linaro-flang-aarch64-libcxx"],
+    'builddir': "flang-aarch64-libcxx",
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                     clean=True,
                     checks=['check-flang'],
