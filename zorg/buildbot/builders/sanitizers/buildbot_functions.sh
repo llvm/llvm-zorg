@@ -392,7 +392,13 @@ function check_stage2 {
   fi
 
   echo @@@BUILD_STEP stage2/$sanitizer_name check@@@
-  ninja -C ${STAGE2_DIR} check-all || build_failure
+  (
+    if [[ "$sanitizer_name" == "asan" || "$sanitizer_name" == "asan_ubsan" ]] ; then
+      # For unknown reasons gcc 12.3.0 leaks in _Unwind_Find_FDE.
+      LIT_FILTER_OUT="Interpreter/simple-exception.cpp"
+    fi
+    ninja -C ${STAGE2_DIR} check-all 
+  )|| build_failure
 
   if [[ "${STAGE2_SKIP_TEST_CXX:-}" != "1" ]] ; then
     echo @@@BUILD_STEP stage2/$sanitizer_name check-cxx@@@
