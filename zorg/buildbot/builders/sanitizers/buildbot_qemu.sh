@@ -142,8 +142,8 @@ function build_lam_linux {
   local build_dir="${ROOT}/lam_linux_build"
   LAM_KERNEL="${build_dir}/arch/x86_64/boot/bzImage"
   (
-    git_clone_at_revision lam_linux https://github.com/vitalybuka/linux.git \
-      origin/lam ${build_dir} || exit 1
+    git_clone_at_revision lam_linux https://github.com/torvalds/linux.git \
+      origin/v6.5 ${build_dir} || exit 1
 
     ls "${LAM_KERNEL}" && exit 0
 
@@ -151,6 +151,9 @@ function build_lam_linux {
     mkdir -p ${build_dir} &&
     cd ${ROOT}/lam_linux &&
     make O=${build_dir} LD=ld.bfd defconfig &&
+    ./scripts/config --file ${build_dir}/.config --set-val CONFIG_ADDRESS_MASKING y &&
+    ./scripts/config --file ${build_dir}/.config --set-val CONFIG_X86_INTEL_MEMORY_PROTECTION_KEYS n &&
+    make O=${build_dir} LD=ld.bfd oldconfig &&
     make O=${build_dir} LD=ld.bfd -j $(nproc) &&
     ls "${LAM_KERNEL}"
   ) || (
