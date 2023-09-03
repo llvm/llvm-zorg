@@ -126,7 +126,7 @@ function build_qemu {
     rm -rf ${build_dir} &&
     mkdir -p ${build_dir} &&
     cd ${build_dir} &&
-    ${ROOT}/${qemu_name}/configure --enable-linux-user &&
+    ${ROOT}/${qemu_name}/configure --enable-linux-user --enable-slirp &&
     ninja &&
     ${build_dir}/qemu-x86_64 --version &&
     ${build_dir}/qemu-system-x86_64 --version &&
