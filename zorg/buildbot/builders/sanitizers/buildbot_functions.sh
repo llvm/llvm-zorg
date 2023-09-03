@@ -395,7 +395,7 @@ function check_stage2 {
   (
     if [[ "$sanitizer_name" == "asan" || "$sanitizer_name" == "asan_ubsan" ]] ; then
       # For unknown reasons gcc 12.3.0 leaks in _Unwind_Find_FDE.
-      LIT_FILTER_OUT="Interpreter/simple-exception.cpp"
+      export LIT_FILTER_OUT="Interpreter/simple-exception.cpp"
     fi
     ninja -C ${STAGE2_DIR} check-all 
   )|| build_failure
