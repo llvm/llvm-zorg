@@ -25,6 +25,8 @@ from zorg.buildbot.builders import BOLTBuilder
 from zorg.buildbot.builders import HtmlDocsBuilder
 from zorg.buildbot.builders import DoxygenDocsBuilder
 
+from zorg.buildbot.builders import StagedBuilder
+
 reload(ClangBuilder)
 reload(FlangBuilder)
 reload(PollyBuilder)
@@ -46,6 +48,7 @@ reload(BOLTBuilder)
 reload(HtmlDocsBuilder)
 reload(DoxygenDocsBuilder)
 
+reload(StagedBuilder)
 
 all = [
 
@@ -2721,6 +2724,50 @@ all += [
                         # TMP/TEMP within the build dir (to utilize a ramdisk).
                         'TMP'        : WithProperties("%(builddir)s/build"),
                         'TEMP'       : WithProperties("%(builddir)s/build"),
+                    })},
+
+    {'name' : "flang-runtime-cuda-clang",
+    'tags'  : ["flang", "runtime"],
+    'collapseRequests': False,
+    'workernames' : ["as-builder-7"],
+    'builddir': "flang-runtime-cuda-clang",
+    'factory' : StagedBuilder.getCmakeBuildFactory(
+                    clean = True,
+                    stages = [
+                        dict(
+                            name = "clang",
+                            depends_on_projects = ["llvm", "clang", "clang-tools-extra", "lld", "openmp"],
+                            enable_runtimes = ["compiler-rt"],
+                            cmake_definitions = {
+                                "LLVM_CCACHE_BUILD"         : "ON",
+                                "LLVM_ENABLE_ASSERTIONS"    : "ON",
+                                "CMAKE_BUILD_TYPE"          : "Release",
+                                "LLVM_TARGETS_TO_BUILD"     : "Native",
+                                "CLANG_DEFAULT_LINKER"      : "lld",
+                            },
+                            install_dir = "install-clang",
+                            env = {
+                                'CCACHE_DIR' : util.Interpolate("%(prop:builddir)s/ccache-db"),
+                            },
+                        ),
+                        dict(
+                            name = "flang-runtime",
+                            depends_on_projects = ["flang"],
+                            cmake_definitions = {
+                                "CMAKE_BUILD_TYPE"          : "Release",
+                                "CMAKE_C_COMPILER"          : util.Interpolate("%(prop:builddir)s/install-clang/bin/clang"),
+                                "CMAKE_CXX_COMPILER"        : util.Interpolate("%(prop:builddir)s/install-clang/bin/clang++"),
+                                "FLANG_EXPERIMENTAL_OMP_OFFLOAD_BUILD"  : "host_device",
+                                "FLANG_OMP_DEVICE_ARCHITECTURES"        : "sm_50;sm_60;sm_70;sm_80",
+                            },
+                            targets = ["FortranRuntime"],
+                            src_to_build_dir = "flang/runtime",
+                        ),
+                    ],
+                    env = {
+                        # TMP/TEMP within the build dir (to utilize a ramdisk).
+                        'TMP'        : util.Interpolate("%(prop:builddir)s/%(prop:objrootdir)s"),
+                        'TEMP'       : util.Interpolate("%(prop:builddir)s/%(prop:objrootdir)s"),
                     })},
 
     ## RISC-V RV64GC check-all running under qemu-user.
