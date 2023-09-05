@@ -87,6 +87,26 @@ class LLVMBuildFactory(BuildFactory):
         # Repourl_prefix could be specified per builder. Otherwise we use github.
         self.repourl_prefix = kwargs.pop('repourl_prefix', 'https://github.com/llvm/')
 
+    def __repr__(self):
+        result = [
+            "LLVMBuildFactory:",
+            f"\tdepends_on_projects:  {self.depends_on_projects}",
+            f"\tenable_runtimes:      {self.enable_runtimes}",
+            f"\tenable_projects:      {self.enable_projects}",
+            f"\tmonorepo_dir:         {self.monorepo_dir}",
+            f"\tsrc_to_build_dir:     {self.src_to_build_dir}",
+            f"\tobj_dir:              {self.obj_dir}",
+            f"\tinstall_dir:          {self.install_dir}",
+            f"\tllvm_srcdir:          {self.llvm_srcdir}",
+            f"\trepourl_prefix:       {self.repourl_prefix}",
+        ]
+
+        if self.steps:
+            result.append("  steps:")
+            for s in self.steps:
+                result.append(f"\targs: {s.args} | kwargs: {s.kwargs}")
+
+        return "\n".join(result)
 
     @staticmethod
     def pathRelativeTo(path, basePath):
