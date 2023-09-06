@@ -152,7 +152,6 @@ function build_lam_linux {
     cd ${ROOT}/lam_linux &&
     make O=${build_dir} LD=ld.bfd defconfig &&
     ./scripts/config --file ${build_dir}/.config --set-val CONFIG_ADDRESS_MASKING y &&
-    ./scripts/config --file ${build_dir}/.config --set-val CONFIG_X86_INTEL_MEMORY_PROTECTION_KEYS n &&
     make O=${build_dir} LD=ld.bfd oldconfig &&
     make O=${build_dir} LD=ld.bfd -j $(nproc) &&
     ls "${LAM_KERNEL}"
