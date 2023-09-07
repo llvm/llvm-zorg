@@ -2792,4 +2792,45 @@ all += [
                     env={
                         'CCACHE_DIR' : WithProperties("%(builddir)s/ccache-db"),
                     })},
+
+    # Builders similar to used in Buildkite premerge pipeline.
+    # Please keep in sync with llvm-project/.ci configurations.
+
+    # See https://github.com/llvm/llvm-project/blob/main/.ci/monolithic-windows.sh.
+    {'name' : "premerge-monolithic-windows",
+    'tags'  : ["premerge"],
+    'collapseRequests': True,
+    'workernames' : ["premerge-windows-1"],
+    'builddir': "premerge-monolithic-windows",
+    'factory' : UnifiedTreeBuilder.getCmakeWithNinjaWithMSVCBuildFactory(
+                    vs="autodetect",
+                    depends_on_projects=["clang-tools-extra", "clang", "flang", "libclc", "lld", "llvm", "mlir", "polly", "pstl"],
+                    checks=["check-all"],
+                    extra_configure_args=[
+                        "-DCMAKE_BUILD_TYPE=Release",
+                        "-DLLVM_ENABLE_ASSERTIONS=ON",
+                        "-DLLVM_BUILD_EXAMPLES=ON",
+                        "-DCOMPILER_RT_BUILD_LIBFUZZER=OFF",
+                        "-DLLVM_LIT_ARGS=-v",
+                        "-DCOMPILER_RT_BUILD_ORC=OFF",
+                        "-DCMAKE_C_COMPILER_LAUNCHER=sccache",
+                        "-DCMAKE_CXX_COMPILER_LAUNCHER=sccache"])},
+    # See https://github.com/llvm/llvm-project/blob/main/.ci/monolithic-linux.sh.
+    {'name': "premerge-monolithic-linux",
+    'tags'  : ["premerge"],
+    'collapseRequests': False,
+    'workernames': ["premerge-linux-1"],
+    'builddir': "premerge-monolithic-linux",
+    'factory': UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
+                    depends_on_projects=["bolt", "clang", "clang-tools-extra", "compiler-rt", "flang", "libc", "libclc", "lld", "llvm", "mlir", "polly", "pstl"],
+                    extra_configure_args=[
+                      "-DCMAKE_BUILD_TYPE=Release",
+                      "-DLLVM_ENABLE_ASSERTIONS=ON",
+                      "-DLLVM_BUILD_EXAMPLES=ON",
+                      "-DCOMPILER_RT_BUILD_LIBFUZZER=OFF",
+                      "-DLLVM_LIT_ARGS=-v",
+                      "-DLLVM_ENABLE_LLD=ON",
+                      "-DCMAKE_CXX_FLAGS=-gmlt",
+                      "-DBOLT_CLANG_EXE=/usr/bin/clang",
+                      "-DLLVM_CCACHE_BUILD=ON"])},
 ]
