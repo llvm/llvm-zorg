@@ -318,4 +318,11 @@ def get_all():
         create_worker("gc-builder-5", properties={'jobs' : 112},  max_builds=1),
         create_worker("gc-builder-6-win", properties={'jobs' : 112},  max_builds=1),
         create_worker("gc-builder-7-win", properties={'jobs' : 112},  max_builds=1),
+
+        # Linux builder matching Buildkite pre-merge checks configuration.
+        create_worker("premerge-linux-1", max_builds=1, missing_timeout=300,
+                      notify_on_missing="llvm-premerge-buildbots@google.com"),
+        # Windows builder matching Buildkite pre-merge checks configuration.
+        create_worker("premerge-windows-1", max_builds=1, missing_timeout=300,
+                      notify_on_missing="llvm-premerge-buildbots@google.com"),
         ]
