@@ -380,4 +380,11 @@ def getReporters():
             subject = "Build %(builder)s Failure",
             mode = "failing",
             builders = ["clang-cmake-x86_64-avx512-linux"]),
+        reporters.MailNotifier(
+            fromaddr = "llvm.buildmaster@lab.llvm.org",
+            sendToInterestedUsers = False,
+            messageFormatter = LLVMInformativeMailNotifier, # TODO: remove after moving to prod.
+            extraRecipients = ["llvm-premerge-buildbots@google.com"],
+            mode = "failing",
+            builders = ["premerge-monolithic-windows", "premerge-monolithic-linux"]),
     ]
