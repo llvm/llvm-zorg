@@ -1,8 +1,16 @@
 pipeline {
-    agent { label 'green-dragon-02' }
-
     parameters {
-        string(name: 'GIT_REVISION', defaultValue: '*/main', description: 'Git revision to build')
+        string(name: 'LABEL', defaultValue: params.LABEL ?: 'green-dragon-02', description: 'Node label to run on')
+
+        string(name: 'GIT_REVISION', defaultValue: params.GIT_REVISION ?: '*/main', description: 'Git revision to build')
+
+        booleanParam(name: 'SKIP_TRIGGER', defaultValue: params.SKIP_TRIGGER ?: false, description: 'Skip trigger of consuming CI jobs')
+    }
+
+    agent {
+        node {
+            label params.LABEL
+        }
     }
 
     stages {
@@ -99,20 +107,28 @@ pipeline {
                     body:'$DEFAULT_CONTENT'
         }
         success {
-            build job: 'clang-stage2-Rthinlto_relay', wait: false
-            build job: 'clang-stage2-cmake-RgSan_relay', wait: false
-            //build job: 'phase2_modules_relay', wait: false
-            build job: 'relay-lnt-test-suite', wait: false
-            build job: 'relay-lnt-ctmark', wait: false
-            build job: 'relay-test-suite-verify-machineinstrs', wait: false
+            script {
+                if (!params.SKIP_TRIGGER) {
+                    build job: 'clang-stage2-Rthinlto_relay', wait: false
+                    build job: 'clang-stage2-cmake-RgSan_relay', wait: false
+                    //build job: 'phase2_modules_relay', wait: false
+                    build job: 'relay-lnt-test-suite', wait: false
+                    build job: 'relay-lnt-ctmark', wait: false
+                    build job: 'relay-test-suite-verify-machineinstrs', wait: false
+                }
+            }
         }
         unstable {
-            build job: 'clang-stage2-Rthinlto_relay', wait: false
-            build job: 'clang-stage2-cmake-RgSan_relay', wait: false
-            //build job: 'phase2_modules_relay', wait: false
-            build job: 'relay-lnt-test-suite', wait: false
-            build job: 'relay-lnt-ctmark', wait: false
-            build job: 'relay-test-suite-verify-machineinstrs', wait: false
+            script {
+                if (!params.SKIP_TRIGGER) {
+                    build job: 'clang-stage2-Rthinlto_relay', wait: false
+                    build job: 'clang-stage2-cmake-RgSan_relay', wait: false
+                    //build job: 'phase2_modules_relay', wait: false
+                    build job: 'relay-lnt-test-suite', wait: false
+                    build job: 'relay-lnt-ctmark', wait: false
+                    build job: 'relay-test-suite-verify-machineinstrs', wait: false
+                }
+            }
         }
     }
 }
