@@ -34,9 +34,10 @@ fi
 CMAKE_COMMON_OPTIONS+=" -DLLVM_ENABLE_PROJECTS='clang;compiler-rt'"
 
 # FIXME: Something broken with LLD switch 19cb7a33e82.
-CHECK_SYMBOLIZER=0
+CHECK_SYMBOLIZER=1
 case "$ARCH" in
   ppc64*)
+    CHECK_SYMBOLIZER=0
     CMAKE_COMMON_OPTIONS+=" -DLLVM_TARGETS_TO_BUILD=PowerPC"
     if [[ "$ARCH" == "ppc64le" ]]; then
       CMAKE_COMMON_OPTIONS+=" -DLLVM_LIT_ARGS=-vj256"
@@ -118,26 +119,18 @@ echo @@@BUILD_STEP ninja check-compiler-rt@@@
 (cd llvm_build_ninja && ninja check-compiler-rt) || build_failure
 
 if [ "$CHECK_SYMBOLIZER" == "1" ]; then
-  build_symbolizer() {
-    echo @@@BUILD_STEP build $1-bit symbolizer for $2@@@
-    if [ ! -d symbolizer_build$1 ]; then
-      mkdir symbolizer_build$1
-    fi
-    (cd symbolizer_build$1 && ZLIB_SRC=$ZLIB FLAGS=-m$1 \
-      CLANG=${FRESH_CLANG_PATH}/clang \
-      bash -eux $COMPILER_RT/lib/sanitizer_common/symbolizer/scripts/build_symbolizer.sh \
-        $(dirname $(find ../$2/ -name libclang_rt.*.a | head -n1)) || build_failure)
-  }
+  if [ ! -d llvm_build_symbolizer ]; then
+     mkdir llvm_build_symbolizer
+  fi
 
-  echo @@@BUILD_STEP update zlib@@@
-  (cd $ZLIB && git pull --rebase) || \
-      git clone https://github.com/madler/zlib.git $ZLIB || build_failure
-
-  build_symbolizer 32 llvm_build_ninja
-  build_symbolizer 64 llvm_build_ninja
+  echo @@@BUILD_STEP build with internal symbolizer@@@
+  CMAKE_NINJA_OPTIONS+=" -DCOMPILER_RT_ENABLE_INTERNAL_SYMBOLIZER=ON"
+  (cd llvm_build_symbolizer && cmake \
+      ${CMAKE_NINJA_OPTIONS} $LLVM) || build_failure
+  ninja -C llvm_build_symbolizer compiler-rt || build_failure
 
   echo @@@BUILD_STEP ninja check-compiler-rt with internal symbolizer@@@
-  (cd llvm_build_ninja && ninja check-compiler-rt) || build_failure
+  ninja -C llvm_build_symbolizer check-compiler-rt || build_failure
 fi
 
 cleanup
