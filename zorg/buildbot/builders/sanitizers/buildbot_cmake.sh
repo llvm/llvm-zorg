@@ -34,7 +34,7 @@ fi
 CMAKE_COMMON_OPTIONS+=" -DLLVM_ENABLE_PROJECTS='clang;compiler-rt'"
 
 # FIXME: Something broken with LLD switch 19cb7a33e82.
-CHECK_SYMBOLIZER=0
+CHECK_SYMBOLIZER=1
 case "$ARCH" in
   ppc64*)
     CHECK_SYMBOLIZER=0
