@@ -65,19 +65,28 @@ ninja -C clang_build check-compiler-rt || build_failure
 ### From now on we use just-built Clang as a host compiler ###
 CLANG_PATH=${ROOT}/clang_build/bin
 # Build self-hosted tree with fresh Clang and -Werror.
-CMAKE_CLANG_OPTIONS="${CMAKE_COMMON_OPTIONS} -DLLVM_ENABLE_WERROR=ON -DCMAKE_C_COMPILER=${CLANG_PATH}/clang -DCMAKE_CXX_COMPILER=${CLANG_PATH}/clang++ -DCMAKE_C_FLAGS=-gmlt -DCMAKE_CXX_FLAGS=-gmlt"
+CMAKE_COMMON_OPTIONS+=" -DLLVM_ENABLE_WERROR=ON -DCMAKE_C_COMPILER=${CLANG_PATH}/clang -DCMAKE_CXX_COMPILER=${CLANG_PATH}/clang++"
 
-echo @@@BUILD_STEP bootstrap clang@@@
-mkdir -p llvm_build64
-cmake -B llvm_build64 ${CMAKE_CLANG_OPTIONS} \
-  -DLLVM_BUILD_EXTERNAL_COMPILER_RT=ON \
-  $LLVM || build_failure
+function build_and_test {
+  local build_dir=llvm_build64
+  echo "@@@BUILD_STEP build compiler-rt ${1}@@@"
+  rm -rf ${build_dir}
+  mkdir -p ${build_dir}
 
-# Now build everything else.
-ninja -C llvm_build64 || build_failure
+  cmake -B ${build_dir} ${CMAKE_COMMON_OPTIONS} ${1} $LLVM || build_failure
+  ninja -C ${build_dir} || build_failure
 
-echo @@@BUILD_STEP 64-bit check-compiler-rt@@@
-ninja -C llvm_build64 check-compiler-rt || build_failure
+  echo "@@@BUILD_STEP test compiler-rt ${1}@@@"
+  ninja -C ${build_dir} check-compiler-rt || build_failure
+}
+
+build_and_test ""
+
+if [ "$CHECK_SYMBOLIZER" == "1" ]; then
+  build_and_test "-DCOMPILER_RT_ENABLE_INTERNAL_SYMBOLIZER=ON"
+fi
+
+build_and_test "-DLLVM_BUILD_EXTERNAL_COMPILER_RT=ON"
 
 FRESH_CLANG_PATH=${ROOT}/llvm_build64/bin
 
@@ -94,26 +103,5 @@ ninja -C compiler_rt_build || build_failure
 
 echo @@@BUILD_STEP test standalone compiler-rt@@@
 ninja -C compiler_rt_build check-all || build_failure
-
-
-function ninja_build_and_test {
-  local build_dir=llvm_build_ninja
-  echo "@@@BUILD_STEP build compiler-rt ${1}@@@"
-  rm -rf ${build_dir}
-  mkdir -p ${build_dir}
-
-  cmake -B ${build_dir} ${CMAKE_CLANG_OPTIONS} -GNinja $LLVM || build_failure
-  ninja -C ${build_dir} || build_failure
-
-  echo "@@@BUILD_STEP test compiler-rt ${1}@@@"
-  ninja -C ${build_dir} check-compiler-rt || build_failure
-}
-
-ninja_build_and_test ""
-
-if [ "$CHECK_SYMBOLIZER" == "1" ]; then
-  CMAKE_CLANG_OPTIONS+=" -DCOMPILER_RT_ENABLE_INTERNAL_SYMBOLIZER=ON"
-  ninja_build_and_test "with internal symbolizer"
-fi
 
 cleanup
