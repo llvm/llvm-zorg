@@ -54,7 +54,10 @@ buildbot_update
 # tests. Assume that self-hosted build tree should compile with -Werror.
 echo @@@BUILD_STEP build fresh toolchain@@@
 mkdir -p clang_build
-cmake -B clang_build ${CMAKE_COMMON_OPTIONS} $LLVM  || (rm -rf clang_build ; build_failure)
+cmake -B clang_build ${CMAKE_COMMON_OPTIONS} $LLVM  || {
+  rm -rf clang_build
+  build_failure
+}
 ninja -C clang_build clang lld || build_failure
 
 # Check on Linux: build and test sanitizers using gcc as a host

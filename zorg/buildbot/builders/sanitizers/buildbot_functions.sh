@@ -516,7 +516,7 @@ function build_failure() {
 
   sleep 5
   echo "@@@STEP_FAILURE@@@"
-  if [[ "${BUILDBOT_BISECT_MODE:-}" == "1" ]] ; then
+  if [[ "${BUILDBOT_BISECT_MODE:-}" == "1" || ! -v BUILDBOT_BUILDERNAME ]] ; then
     exit 1
   fi
 }
@@ -528,4 +528,7 @@ function build_exception() {
 
   sleep 5
   echo "@@@STEP_EXCEPTION@@@"
+  if [[ "${BUILDBOT_BISECT_MODE:-}" == "1" || ! -v BUILDBOT_BUILDERNAME ]] ; then
+    exit 2
+  fi
 }
