@@ -22,9 +22,6 @@ done
 # Always clobber bootstrap build trees.
 clobber
 
-SUPPORTS_32_BITS=${SUPPORTS_32_BITS:-1}
-ZLIB=$ROOT/zlib
-
 CMAKE_COMMON_OPTIONS+=" -DLLVM_ENABLE_ASSERTIONS=ON -DLLVM_PARALLEL_LINK_JOBS=10 -DLLVM_ENABLE_PER_TARGET_RUNTIME_DIR=OFF ${CMAKE_ARGS}"
 
 if [ -e /usr/include/plugin-api.h ]; then
@@ -52,9 +49,6 @@ CMAKE_COMMON_OPTIONS+=" -DLLVM_ENABLE_PROJECTS='${PROJECTS}' -DLLVM_ENABLE_RUNTI
 CMAKE_COMMON_OPTIONS+=" -DLLVM_BUILD_LLVM_DYLIB=ON"
 
 buildbot_update
-
-COMPILER_RT=$LLVM/../compiler-rt
-LIBCXX=$LLVM/../libcxx
 
 # Use both gcc and just-built Clang/LLD as a host compiler/linker for sanitizer
 # tests. Assume that self-hosted build tree should compile with -Werror.
@@ -99,31 +93,30 @@ fi
   -DCOMPILER_RT_INCLUDE_TESTS=ON \
   -DCOMPILER_RT_ENABLE_WERROR=ON \
   -DLLVM_CMAKE_DIR=${ROOT}/llvm_build64 \
-  $COMPILER_RT) || build_failure
+  $LLVM/../compiler-rt) || build_failure
 (cd compiler_rt_build && ninja) || build_failure
 
 echo @@@BUILD_STEP test standalone compiler-rt@@@
 (cd compiler_rt_build && ninja check-all) || build_failure
 
-BUILD_DIR=llvm_build_ninja
 
 function ninja_build_and_test {
+  local build_dir=llvm_build_ninja
   echo "@@@BUILD_STEP build check-compiler-rt ${1}@@@"
-  rm -rf ${BUILD_DIR}
-  mkdir -p ${BUILD_DIR}
+  rm -rf ${build_dir}
+  mkdir -p ${build_dir}
 
-  CMAKE_NINJA_OPTIONS="${CMAKE_CLANG_OPTIONS} -GNinja"
-  cmake -B ${BUILD_DIR} ${CMAKE_NINJA_OPTIONS} $LLVM || build_failure
-  ninja -C ${BUILD_DIR} || build_failure
+  cmake -B ${build_dir} ${CMAKE_CLANG_OPTIONS} -GNinja $LLVM || build_failure
+  ninja -C ${build_dir} || build_failure
 
   echo "@@@BUILD_STEP test check-compiler-rt ${1}@@@"
-  ninja -C ${BUILD_DIR} check-compiler-rt || build_failure
+  ninja -C ${build_dir} check-compiler-rt || build_failure
 }
 
 ninja_build_and_test ""
 
 if [ "$CHECK_SYMBOLIZER" == "1" ]; then
-  CMAKE_NINJA_OPTIONS+=" -DCOMPILER_RT_ENABLE_INTERNAL_SYMBOLIZER=ON"
+  CMAKE_CLANG_OPTIONS+=" -DCOMPILER_RT_ENABLE_INTERNAL_SYMBOLIZER=ON"
   ninja_build_and_test "with internal symbolizer"
 fi
 
