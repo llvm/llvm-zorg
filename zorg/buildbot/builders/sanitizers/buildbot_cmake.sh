@@ -105,32 +105,26 @@ fi
 echo @@@BUILD_STEP test standalone compiler-rt@@@
 (cd compiler_rt_build && ninja check-all) || build_failure
 
-echo @@@BUILD_STEP build with ninja@@@
-if [ ! -d llvm_build_ninja ]; then
-  mkdir llvm_build_ninja
-fi
-CMAKE_NINJA_OPTIONS="${CMAKE_CLANG_OPTIONS} -GNinja"
-(cd llvm_build_ninja && cmake \
-    ${CMAKE_NINJA_OPTIONS} $LLVM) || build_failure
-ln -sf llvm_build_ninja/compile_commands.json $LLVM
-(cd llvm_build_ninja && ninja) || build_failure
+BUILD_DIR=llvm_build_ninja
 
-echo @@@BUILD_STEP ninja check-compiler-rt@@@
-(cd llvm_build_ninja && ninja check-compiler-rt) || build_failure
+function ninja_build_and_test {
+  echo "@@@BUILD_STEP build check-compiler-rt ${1}@@@"
+  rm -rf ${BUILD_DIR}
+  mkdir -p ${BUILD_DIR}
+
+  CMAKE_NINJA_OPTIONS="${CMAKE_CLANG_OPTIONS} -GNinja"
+  cmake -B ${BUILD_DIR} ${CMAKE_NINJA_OPTIONS} $LLVM || build_failure
+  ninja -C ${BUILD_DIR} || build_failure
+
+  echo "@@@BUILD_STEP test check-compiler-rt ${1}@@@"
+  ninja -C ${BUILD_DIR} check-compiler-rt || build_failure
+}
+
+ninja_build_and_test ""
 
 if [ "$CHECK_SYMBOLIZER" == "1" ]; then
-  if [ ! -d llvm_build_symbolizer ]; then
-     mkdir llvm_build_symbolizer
-  fi
-
-  echo @@@BUILD_STEP build with internal symbolizer@@@
   CMAKE_NINJA_OPTIONS+=" -DCOMPILER_RT_ENABLE_INTERNAL_SYMBOLIZER=ON"
-  (cd llvm_build_symbolizer && cmake \
-      ${CMAKE_NINJA_OPTIONS} $LLVM) || build_failure
-  ninja -C llvm_build_symbolizer compiler-rt || build_failure
-
-  echo @@@BUILD_STEP ninja check-compiler-rt with internal symbolizer@@@
-  ninja -C llvm_build_symbolizer check-compiler-rt || build_failure
+  ninja_build_and_test "with internal symbolizer"
 fi
 
 cleanup
