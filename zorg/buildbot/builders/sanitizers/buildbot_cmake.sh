@@ -98,14 +98,14 @@ ninja -C compiler_rt_build check-all || build_failure
 
 function ninja_build_and_test {
   local build_dir=llvm_build_ninja
-  echo "@@@BUILD_STEP build check-compiler-rt ${1}@@@"
+  echo "@@@BUILD_STEP build compiler-rt ${1}@@@"
   rm -rf ${build_dir}
   mkdir -p ${build_dir}
 
   cmake -B ${build_dir} ${CMAKE_CLANG_OPTIONS} -GNinja $LLVM || build_failure
   ninja -C ${build_dir} || build_failure
 
-  echo "@@@BUILD_STEP test check-compiler-rt ${1}@@@"
+  echo "@@@BUILD_STEP test compiler-rt ${1}@@@"
   ninja -C ${build_dir} check-compiler-rt || build_failure
 }
 
