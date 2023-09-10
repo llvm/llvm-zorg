@@ -29,7 +29,7 @@ if [ -e /usr/include/plugin-api.h ]; then
 fi
 
 # FIXME: Something broken with LLD switch 19cb7a33e82.
-CHECK_SYMBOLIZER=0
+CHECK_SYMBOLIZER=1
 case "$ARCH" in
   ppc64*)
     CHECK_SYMBOLIZER=0
