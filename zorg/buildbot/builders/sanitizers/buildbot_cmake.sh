@@ -28,8 +28,6 @@ if [ -e /usr/include/plugin-api.h ]; then
   CMAKE_COMMON_OPTIONS+=" -DLLVM_BINUTILS_INCDIR=/usr/include"
 fi
 
-CMAKE_COMMON_OPTIONS+=" -DLLVM_ENABLE_PROJECTS='clang;compiler-rt'"
-
 # FIXME: Something broken with LLD switch 19cb7a33e82.
 CHECK_SYMBOLIZER=1
 case "$ARCH" in
@@ -44,8 +42,8 @@ case "$ARCH" in
   ;;
 esac
 
-PROJECTS="clang;compiler-rt;lld"
-CMAKE_COMMON_OPTIONS+=" -DLLVM_ENABLE_PROJECTS='${PROJECTS}' -DLLVM_ENABLE_RUNTIMES=libcxx;libcxxabi"
+CMAKE_COMMON_OPTIONS+=" -DLLVM_ENABLE_PROJECTS=clang;lld"
+CMAKE_COMMON_OPTIONS+=" -DLLVM_ENABLE_RUNTIMES=libcxx;libcxxabi;compiler-rt"
 CMAKE_COMMON_OPTIONS+=" -DLLVM_BUILD_LLVM_DYLIB=ON"
 
 buildbot_update
@@ -58,7 +56,7 @@ cmake -B clang_build ${CMAKE_COMMON_OPTIONS} $LLVM  || {
   rm -rf clang_build
   build_failure
 }
-ninja -C clang_build clang lld || build_failure
+ninja -C clang_build || build_failure
 
 # Check on Linux: build and test sanitizers using gcc as a host
 # compiler.
@@ -83,13 +81,11 @@ function build_and_test {
   ninja -C ${build_dir} check-compiler-rt || build_failure
 }
 
-build_and_test ""
-
 if [ "$CHECK_SYMBOLIZER" == "1" ]; then
   build_and_test "-DCOMPILER_RT_ENABLE_INTERNAL_SYMBOLIZER=ON"
 fi
 
-build_and_test "-DLLVM_BUILD_EXTERNAL_COMPILER_RT=ON"
+build_and_test ""
 
 FRESH_CLANG_PATH=${ROOT}/llvm_build64/bin
 
