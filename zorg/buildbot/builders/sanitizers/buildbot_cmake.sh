@@ -54,14 +54,13 @@ buildbot_update
 # tests. Assume that self-hosted build tree should compile with -Werror.
 echo @@@BUILD_STEP build fresh toolchain@@@
 mkdir -p clang_build
-(cd clang_build && cmake ${CMAKE_COMMON_OPTIONS} $LLVM ) || (rm -rf clang_build ; build_failure)
-
-(cd clang_build && ninja clang lld) || build_failure
+cmake -B clang_build ${CMAKE_COMMON_OPTIONS} $LLVM  || (rm -rf clang_build ; build_failure)
+ninja -C clang_build clang lld || build_failure
 
 # Check on Linux: build and test sanitizers using gcc as a host
 # compiler.
 echo @@@BUILD_STEP check-compiler-rt in gcc build@@@
-(cd clang_build && ninja check-compiler-rt) || build_failure
+ninja -C clang_build check-compiler-rt || build_failure
 
 ### From now on we use just-built Clang as a host compiler ###
 CLANG_PATH=${ROOT}/clang_build/bin
@@ -70,34 +69,31 @@ CMAKE_CLANG_OPTIONS="${CMAKE_COMMON_OPTIONS} -DLLVM_ENABLE_WERROR=ON -DCMAKE_C_C
 
 echo @@@BUILD_STEP bootstrap clang@@@
 mkdir -p llvm_build64
-(cd llvm_build64 && cmake ${CMAKE_CLANG_OPTIONS} \
-                          -DLLVM_BUILD_EXTERNAL_COMPILER_RT=ON \
-                          $LLVM) || build_failure
+cmake -B llvm_build64 ${CMAKE_CLANG_OPTIONS} \
+  -DLLVM_BUILD_EXTERNAL_COMPILER_RT=ON \
+  $LLVM || build_failure
 
 # Now build everything else.
-(cd llvm_build64 && ninja) || build_failure
-
+ninja -C llvm_build64 || build_failure
 
 echo @@@BUILD_STEP 64-bit check-compiler-rt@@@
-(cd llvm_build64 && ninja check-compiler-rt) || build_failure
+ninja -C llvm_build64 check-compiler-rt || build_failure
 
 FRESH_CLANG_PATH=${ROOT}/llvm_build64/bin
 
 echo @@@BUILD_STEP build standalone compiler-rt@@@
-if [ ! -d compiler_rt_build ]; then
-  mkdir compiler_rt_build
-fi
-(cd compiler_rt_build && cmake -GNinja \
+mkdir -p compiler_rt_build
+cmake -B compiler_rt_build -GNinja \
   -DCMAKE_C_COMPILER=${FRESH_CLANG_PATH}/clang \
   -DCMAKE_CXX_COMPILER=${FRESH_CLANG_PATH}/clang++ \
   -DCOMPILER_RT_INCLUDE_TESTS=ON \
   -DCOMPILER_RT_ENABLE_WERROR=ON \
   -DLLVM_CMAKE_DIR=${ROOT}/llvm_build64 \
-  $LLVM/../compiler-rt) || build_failure
-(cd compiler_rt_build && ninja) || build_failure
+  $LLVM/../compiler-rt || build_failure
+ninja -C compiler_rt_build || build_failure
 
 echo @@@BUILD_STEP test standalone compiler-rt@@@
-(cd compiler_rt_build && ninja check-all) || build_failure
+ninja -C compiler_rt_build check-all || build_failure
 
 
 function ninja_build_and_test {
