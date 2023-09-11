@@ -22,6 +22,7 @@ done
 # Always clobber bootstrap build trees.
 clobber
 
+build_stage1_clang_at_revison
 CMAKE_COMMON_OPTIONS+=" -DLLVM_ENABLE_ASSERTIONS=ON ${CMAKE_ARGS}"
 
 if [ -e /usr/include/plugin-api.h ]; then
@@ -63,10 +64,8 @@ ninja -C clang_build || build_failure
 echo @@@BUILD_STEP check-compiler-rt in gcc build@@@
 ninja -C clang_build check-compiler-rt || build_failure
 
-### From now on we use just-built Clang as a host compiler ###
-CLANG_PATH=${ROOT}/clang_build/bin
-# Build self-hosted tree with fresh Clang and -Werror.
-CMAKE_COMMON_OPTIONS+=" -DLLVM_ENABLE_WERROR=ON -DCMAKE_C_COMPILER=${CLANG_PATH}/clang -DCMAKE_CXX_COMPILER=${CLANG_PATH}/clang++"
+CMAKE_COMMON_OPTIONS+=" ${STAGE1_AS_COMPILER}"
+CMAKE_COMMON_OPTIONS+=" -DLLVM_ENABLE_WERROR=ON"
 
 function build_and_test {
   local build_dir=llvm_build64
