@@ -46,6 +46,11 @@ echo @@@BUILD_STEP Info@@@
   df -h
   echo
   ccache -ps
+  echo
+  hostname -f
+  uname -a
+  echo
+  lscpu
   exit 0
 )
 
