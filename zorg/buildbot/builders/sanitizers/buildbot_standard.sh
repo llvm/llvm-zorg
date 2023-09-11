@@ -24,7 +24,7 @@ function build_tsan {
   (cd $build_dir && CC="$3" CXX="$4" cmake \
     ${CMAKE_COMMON_OPTIONS} ${extra_cmake_args} \
     ${LLVM})
-  ninja -C ${build_dir} compiler-rt || build_failure
+  ninja -C ${build_dir} ${targets} compiler-rt || build_failure
 }
 
 buildbot_update
