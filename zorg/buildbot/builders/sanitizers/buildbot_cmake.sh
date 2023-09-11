@@ -51,42 +51,29 @@ CMAKE_COMMON_OPTIONS+=" ${CMAKE_ARGS}"
 
 buildbot_update
 
-# Use both gcc and just-built Clang/LLD as a host compiler/linker for sanitizer
-# tests. Assume that self-hosted build tree should compile with -Werror.
-echo @@@BUILD_STEP build fresh toolchain@@@
-mkdir -p clang_build
-cmake -B clang_build ${CMAKE_COMMON_OPTIONS} $LLVM  || {
-  rm -rf clang_build
-  build_failure
-}
-ninja -C clang_build || build_failure
-
-# Check on Linux: build and test sanitizers using gcc as a host
-# compiler.
-echo @@@BUILD_STEP check-compiler-rt in gcc build@@@
-ninja -C clang_build check-compiler-rt || build_failure
-
-CMAKE_COMMON_OPTIONS+=" ${STAGE1_AS_COMPILER}"
-CMAKE_COMMON_OPTIONS+=" -DLLVM_ENABLE_WERROR=ON"
-
 function build_and_test {
   local build_dir=llvm_build64
   echo "@@@BUILD_STEP build compiler-rt ${1}@@@"
   rm -rf ${build_dir}
   mkdir -p ${build_dir}
 
-  cmake -B ${build_dir} ${CMAKE_COMMON_OPTIONS} ${1} $LLVM || build_failure
+  cmake -B ${build_dir} ${CMAKE_COMMON_OPTIONS} ${2} $LLVM || build_failure
   ninja -C ${build_dir} || build_failure
 
   echo "@@@BUILD_STEP test compiler-rt ${1}@@@"
   ninja -C ${build_dir} check-compiler-rt || build_failure
 }
 
+build_and_test "with gcc" ""
+
+CMAKE_COMMON_OPTIONS+=" ${STAGE1_AS_COMPILER}"
+CMAKE_COMMON_OPTIONS+=" -DLLVM_ENABLE_WERROR=ON"
+
 if [ "$CHECK_SYMBOLIZER" == "1" ]; then
-  build_and_test "-DCOMPILER_RT_ENABLE_INTERNAL_SYMBOLIZER=ON"
+  build_and_test "with internal symbolizer" "-DCOMPILER_RT_ENABLE_INTERNAL_SYMBOLIZER=ON"
 fi
 
-build_and_test ""
+build_and_test "" ""
 
 FRESH_CLANG_PATH=${ROOT}/llvm_build64/bin
 
