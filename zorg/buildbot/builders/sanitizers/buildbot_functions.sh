@@ -6,7 +6,6 @@ LLVM=$ROOT/llvm
 BUILDBOT_CLOBBER="${BUILDBOT_CLOBBER:-}"
 BUILDBOT_REVISION="${BUILDBOT_REVISION:-origin/main}"
 
-HOST_CLANG_REVISION=llvmorg-$(curl https://api.github.com/repos/llvm/llvm-project/releases/latest -s | jq .name -r | cut -f2 -d' ')
 CMAKE_COMMON_OPTIONS+=" -DLLVM_APPEND_VC_REV=OFF -GNinja -DCMAKE_BUILD_TYPE=Release"
 
 export LC_ALL=C
@@ -162,19 +161,27 @@ function download_clang_from_chromium {
 function build_clang_at_release_tag {
   common_stage1_variables
 
+  local host_clang_revision=llvmorg-$(
+    git ls-remote --tags https://github.com/llvm/llvm-project.git | \
+      grep -oE "refs/tags/llvmorg-[0-9.]+$" | \
+      grep -Eo "[0-9.]+" | \
+      sort -n | \
+      tail -n1
+    )
+
   if  [ -r ${STAGE1_DIR}/host_clang_revision ] && \
-      [ "$(cat ${STAGE1_DIR}/host_clang_revision)" == $HOST_CLANG_REVISION ]
+      [ "$(cat ${STAGE1_DIR}/host_clang_revision)" == $host_clang_revision ]
   then
-    echo "@@@BUILD_STEP using pre-built stage1 clang at r${HOST_CLANG_REVISION}@@@"
+    echo "@@@BUILD_STEP using pre-built stage1 clang at r${host_clang_revision}@@@"
   else
-    BUILDBOT_MONO_REPO_PATH= BUILDBOT_REVISION="${HOST_CLANG_REVISION}" buildbot_update
+    BUILDBOT_MONO_REPO_PATH= BUILDBOT_REVISION="${host_clang_revision}" buildbot_update
 
     rm -rf ${STAGE1_DIR}
-    echo @@@BUILD_STEP build stage1 clang at $HOST_CLANG_REVISION@@@
+    echo @@@BUILD_STEP build stage1 clang at $host_clang_revision@@@
     # PGO, can improve build time by 10%. However bots spend most of the time
     # running tests and compilation mostly incremental or CCCACH-ed.
     build_stage1_clang_impl && \
-      ( echo $HOST_CLANG_REVISION > ${STAGE1_DIR}/host_clang_revision )
+      ( echo $host_clang_revision > ${STAGE1_DIR}/host_clang_revision )
   fi
 }
 
