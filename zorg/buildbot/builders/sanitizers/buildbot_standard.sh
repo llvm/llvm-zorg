@@ -14,11 +14,9 @@ TSAN_RELEASE_BUILD_DIR=tsan_release_build
 CLEANUP="$TSAN_DEBUG_BUILD_DIR $TSAN_FULL_DEBUG_BUILD_DIR $TSAN_RELEASE_BUILD_DIR"
 clobber $CLEANUP
 
-CMAKE_COMMON_OPTIONS+=" -DLLVM_BUILD_EXTERNAL_COMPILER_RT=ON"
-
 function build_tsan {
   local build_dir=$1
-  local extra_cmake_args="$2 -DLLVM_ENABLE_PROJECTS='clang;compiler-rt'"
+  local extra_cmake_args="$2 -DLLVM_ENABLE_PROJECTS='clang' -DLLVM_ENABLE_RUNTIMES='compiler-rt'"
   local targets="clang llvm-symbolizer llvm-config FileCheck not"
   if [ ! -d $build_dir ]; then
     mkdir $build_dir
@@ -26,8 +24,7 @@ function build_tsan {
   (cd $build_dir && CC="$3" CXX="$4" cmake \
     ${CMAKE_COMMON_OPTIONS} ${extra_cmake_args} \
     ${LLVM})
-  (cd $build_dir && ninja ${targets}) || build_failure
-  (cd $build_dir && ninja tsan) || build_failure
+  ninja -C ${build_dir} compiler-rt || build_failure
 }
 
 buildbot_update
@@ -35,7 +32,7 @@ buildbot_update
 echo @@@BUILD_STEP build fresh clang + debug compiler-rt@@@
 build_tsan "${TSAN_DEBUG_BUILD_DIR}" "-DCOMPILER_RT_DEBUG=ON" gcc g++
 echo @@@BUILD_STEP test tsan in debug compiler-rt build@@@
-(cd $TSAN_DEBUG_BUILD_DIR && ninja check-tsan) || build_failure
+ninja -C ${TSAN_DEBUG_BUILD_DIR}/runtimes/runtimes-bins check-tsan || build_failure
 
 echo @@@BUILD_STEP build tsan with stats and debug output@@@
 build_tsan "${TSAN_FULL_DEBUG_BUILD_DIR}" "-DCOMPILER_RT_DEBUG=ON -DCOMPILER_RT_TSAN_DEBUG_OUTPUT=ON -DLLVM_INCLUDE_TESTS=OFF" gcc g++
