@@ -28,11 +28,15 @@ if [ -e /usr/include/plugin-api.h ]; then
   CMAKE_COMMON_OPTIONS+=" -DLLVM_BINUTILS_INCDIR=/usr/include"
 fi
 
-# FIXME: Something broken with LLD switch 19cb7a33e82.
 CHECK_SYMBOLIZER=1
+CHECK_TSAN=1
+
+
 case "$ARCH" in
   ppc64*)
     CHECK_SYMBOLIZER=0
+    # The test is x86_64 specific.
+    CHECK_TSAN=0
     CMAKE_COMMON_OPTIONS+=" -DLLVM_TARGETS_TO_BUILD=PowerPC"
     if [[ "$ARCH" == "ppc64le" ]]; then
       CMAKE_COMMON_OPTIONS+=" -DLLVM_LIT_ARGS=-vj256"
@@ -103,10 +107,12 @@ ninja -C compiler_rt_build || build_failure
 echo @@@BUILD_STEP test standalone compiler-rt@@@
 ninja -C compiler_rt_build check-all || build_failure
 
-# FIXME: Convert to a LIT test.
-echo @@@BUILD_STEP tsan analyze@@@
-BIN=tsan_bin
-echo "int main() {return 0;}" | ${FRESH_CLANG_PATH}/clang -x c++ - -fsanitize=thread -O2 -o ${BIN}
-$LLVM/../compiler-rt/lib/tsan/check_analyze.sh ${BIN} || build_failure
+if [ "$CHECK_TSAN" == "1" ]; then
+  # FIXME: Convert to a LIT test.
+  echo @@@BUILD_STEP tsan analyze@@@
+  BIN=tsan_bin
+  echo "int main() {return 0;}" | ${FRESH_CLANG_PATH}/clang -x c++ - -fsanitize=thread -O2 -o ${BIN}
+  $LLVM/../compiler-rt/lib/tsan/check_analyze.sh ${BIN} || build_failure
+fi
 
 cleanup
