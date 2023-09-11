@@ -69,7 +69,7 @@ function build_and_test {
   build "${1}" "${2}"
 
   local build_dir=llvm_build64
-  echo "@@@BUILD_STEP test compiler-rt ${1}@@@"
+  echo "@@@BUILD_STEP test compiler-rt ${1}${2}@@@"
   ninja -C ${build_dir} check-compiler-rt || build_failure
 }
 
