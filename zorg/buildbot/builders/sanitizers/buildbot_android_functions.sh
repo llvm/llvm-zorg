@@ -31,13 +31,13 @@ function download_android_tools {
 
 function build_stage2_android() {
   # Build self-hosted tree with fresh Clang and -Werror.
-  local CMAKE_OPTIONS="${CMAKE_COMMON_OPTIONS} -DLLVM_ENABLE_WERROR=ON ${STAGE1_AS_COMPILER} -DCMAKE_C_FLAGS=-gmlt -DCMAKE_CXX_FLAGS=-gmlt"
+  local CMAKE_OPTIONS="${CMAKE_COMMON_OPTIONS} -DLLVM_ENABLE_WERROR=ON ${STAGE1_AS_COMPILER}"
   CMAKE_OPTIONS="${CMAKE_OPTIONS} -DLLVM_ENABLE_PROJECTS='clang;lld' -DCLANG_DEFAULT_RTLIB=libgcc"
 
   echo @@@BUILD_STEP bootstrap clang@@@
   mkdir -p llvm_build64
   if  [[ "$(cat llvm_build64/CMAKE_OPTIONS)" != "${CMAKE_OPTIONS}" ]] ; then
-    (cd llvm_build64 && cmake ${CMAKE_OPTIONS} -DLLVM_BUILD_EXTERNAL_COMPILER_RT=ON $LLVM && \
+    (cd llvm_build64 && cmake ${CMAKE_OPTIONS} $LLVM && \
        echo ${CMAKE_OPTIONS} > CMAKE_OPTIONS) || build_failure
   fi
   ninja -C llvm_build64 || (build_failure && exit 2)
