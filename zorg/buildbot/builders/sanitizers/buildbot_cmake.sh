@@ -23,7 +23,6 @@ done
 clobber
 
 build_stage1_clang_at_revison
-CMAKE_COMMON_OPTIONS+=" -DLLVM_ENABLE_ASSERTIONS=ON ${CMAKE_ARGS}"
 
 if [ -e /usr/include/plugin-api.h ]; then
   CMAKE_COMMON_OPTIONS+=" -DLLVM_BINUTILS_INCDIR=/usr/include"
@@ -46,6 +45,9 @@ esac
 CMAKE_COMMON_OPTIONS+=" -DLLVM_ENABLE_PROJECTS=clang;lld"
 CMAKE_COMMON_OPTIONS+=" -DLLVM_ENABLE_RUNTIMES=libcxx;libcxxabi;compiler-rt"
 CMAKE_COMMON_OPTIONS+=" -DLLVM_BUILD_LLVM_DYLIB=ON"
+CMAKE_COMMON_OPTIONS+=" -DLLVM_ENABLE_ASSERTIONS=ON"
+CMAKE_COMMON_OPTIONS+=" -DLLVM_ENABLE_PER_TARGET_RUNTIME_DIR=OFF" # for "standalone compiler-rt"
+CMAKE_COMMON_OPTIONS+=" ${CMAKE_ARGS}"
 
 buildbot_update
 
