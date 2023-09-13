@@ -2812,7 +2812,6 @@ all += [
     # See https://github.com/llvm/llvm-project/blob/main/.ci/monolithic-windows.sh.
     {'name' : "premerge-monolithic-windows",
     'tags'  : ["premerge"],
-    'collapseRequests': True,
     'workernames' : ["premerge-windows-1"],
     'builddir': "premerge-monolithic-windows",
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaWithMSVCBuildFactory(
