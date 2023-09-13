@@ -383,7 +383,7 @@ def getReporters():
         reporters.MailNotifier(
             fromaddr = "llvm.buildmaster@lab.llvm.org",
             sendToInterestedUsers = False,
-            messageFormatter = LLVMInformativeMailNotifier, # TODO: remove after moving to prod.
+            messageFormatter = LLVMInformativeMailNotifier,
             extraRecipients = ["llvm-premerge-buildbots@google.com"],
             mode = "failing",
             builders = ["premerge-monolithic-windows", "premerge-monolithic-linux"]),
