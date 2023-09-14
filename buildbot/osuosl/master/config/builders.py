@@ -2158,7 +2158,11 @@ all += [
     'tags'  : ["doc"],
     'workernames' : ["as-worker-4"],
     'builddir': "publish-runtimes-sphinx-docs",
-    'factory' : SphinxDocsBuilder.getLLVMRuntimesDocsBuildFactory(clean=True)},
+    'factory' : SphinxDocsBuilder.getLLVMRuntimesDocsBuildFactory(
+                    clean=True,
+                    extra_configure_args=[
+                        "-DLIBCXX_INCLUDE_BENCHMARKS=OFF",
+                    ])},
 
     {'name' : "publish-lnt-sphinx-docs",
     'tags'  : ["doc"],
