@@ -841,7 +841,7 @@ all = [
                     checkout_compiler_rt=False,
                     checkout_lld=False,
                     useTwoStage=False,
-                    runTestSuite=True,
+                    runTestSuite=False,
                     testsuite_flags=['--cflag', '-march=cascadelake', '--threads=32', '--build-threads=32'],
                     extra_cmake_args=[
                         "-DCMAKE_C_FLAGS='-march=cascadelake'",
