@@ -27,6 +27,8 @@ def is_riscv_builder(builder_name):
 def is_x86_64_builder(builder_name):
     return 'x86_64' in builder_name
 
+def is_riscv32_builder(builder_name):
+    return 'riscv32' in builder_name
 
 def main(argv):
     ap = argparse.ArgumentParser()
@@ -44,6 +46,7 @@ def main(argv):
     lint_build = is_lint_builder(builder_name)
     riscv_build = is_riscv_builder(builder_name)
     x86_64_build = is_x86_64_builder(builder_name)
+    riscv32_build = is_riscv32_builder(builder_name)
 
     if gcc_build:
         cc = 'gcc'
@@ -94,6 +97,16 @@ def main(argv):
 
         if fullbuild:
             cmake_args.extend(['-DLLVM_LIBC_FULL_BUILD=ON']),
+
+        if riscv32_build:
+            cmake_args.append(['-DCMAKE_C_FLAGS="-mabi=ilp32d -march=rv32imafdc \
+                               --target=riscv32-unknown-linux-gnu --sysroot=/opt/riscv/sysroot \
+                               --gcc-toolchain=/opt/riscv -fuse-ld=lld"'])
+            cmake_args.append(['-DCMAKE_CXX_FLAGS="-mabi=ilp32d -march=rv32imafdc \
+                               --target=riscv32-unknown-linux-gnu --sysroot=/opt/riscv/sysroot \
+                               --gcc-toolchain=/opt/riscv -fuse-ld=lld"'])
+            cmake_args.append(['-DCMAKE_CROSSCOMPILING_EMULATOR="{}/cross.sh"'.format(os.getenv('HOME'))])
+            cmake_args.append(['-DLIBC_TARGET_TRIPLE=riscv32-unknown-linux-gnu -DCMAKE_SYSTEM_NAME=Linux'])
 
         run_command(['cmake', os.path.join(source_dir, 'llvm')] + cmake_args)
 

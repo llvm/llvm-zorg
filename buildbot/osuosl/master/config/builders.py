@@ -1915,6 +1915,15 @@ all += [
                     depends_on_projects=['llvm', 'libc'],
                     extra_args=['--debug'])},
 
+    {'name' : "libc-riscv32-qemu-debian-dbg",
+    'tags'  : ["libc"],
+    'workernames' : ["rv32gc-qemu-system"], # TODO: workername?
+    'builddir': "libc-riscv32-qemu-debian-dbg",
+    'factory' : AnnotatedBuilder.getAnnotatedBuildFactory(
+                    script="libc-linux.py",
+                    depends_on_projects=['llvm', 'libc'],
+                    extra_args=['--debug'])},
+
 # Flang builders.
 
     {'name' : "flang-aarch64-dylib",

@@ -312,6 +312,7 @@ def get_all():
 
         # RISC-V workers
         create_worker("rv64gc-qemu-user", properties={'jobs' : 32}, max_builds=1),
+        create_worker("rv32gc-qemu-system", properties={'jobs' : 32}, max_builds=1),
 
         # Google Cloud workers.
         create_worker("gc-builder-5", properties={'jobs' : 112},  max_builds=1),
