@@ -8,8 +8,11 @@ get-steps:
 	@echo "build-llvm"
 	@echo "check-llvm"
 	@echo "check-crt-ve"
-# @echo "check-runtimes-ve"
-# @echo "check-all"
+#	@echo "check-unwind"
+#	@echo "check-cxxabi"
+#	@echo "check-cxx"
+#	@echo "check-openmp"
+#	@echo "check-all"
 
 ##### Tools #####
 CMAKE?=cmake
@@ -20,6 +23,9 @@ TOOL_CONFIG_CACHE?=${HOME}/tools-config.cmake
 
 # Path
 MONOREPO=${BUILDROOT}/../llvm-project
+
+# VE cache
+VE_CONFIG_CACHE?=${MONOREPO}/clang/cmake/caches/VectorEngine.cmake
 
 # Build foders
 LLVM_BUILD=${BUILDROOT}/build_llvm
@@ -35,6 +41,7 @@ VE_TARGET=ve-unknown-linux-gnu
 LLVM_BUILD_TYPE=RelWithDebInfo
 LLVM_OPTFLAGS=-O2
 LLVM_TEST_OPTFLAGS=-O2
+LLVM_OPENMP_TEST_OPTFLAGS=
 
 ##### Build Steps #####
 
@@ -56,6 +63,7 @@ build-llvm:
 	mkdir -p "${LLVM_BUILD}"
 	cd "${LLVM_BUILD}" && ${CMAKE} "${MONOREPO}/llvm" -G Ninja \
 	      -C "${TOOL_CONFIG_CACHE}" \
+	      -C "${VE_CONFIG_CACHE}" \
 	      -DCMAKE_BUILD_TYPE="${LLVM_BUILD_TYPE}" \
 	      -DCMAKE_INSTALL_PREFIX="${LLVM_PREFIX}" \
 	      -DCMAKE_CXX_FLAGS="${LLVM_OPTFLAGS}" \
@@ -63,51 +71,13 @@ build-llvm:
 	      -DCLANG_LINK_CLANG_DYLIB=Off \
 	      -DLLVM_BUILD_LLVM_DYLIB=Off \
 	      -DLLVM_LINK_LLVM_DYLIB=Off \
-	      -DLLVM_ENABLE_TERMINFO=Off \
-	      -DLLVM_ENABLE_ZLIB=Off \
-	      -DLLVM_ENABLE_ZSTD=Off \
-	      -DLLVM_TARGETS_TO_BUILD="X86;VE" \
 	      -DLLVM_ENABLE_PROJECTS="clang" \
-	      -DLLVM_ENABLE_RUNTIMES="compiler-rt;libcxx;libcxxabi;libunwind;openmp" \
-	      -DLLVM_ENABLE_PER_TARGET_RUNTIME_DIR=On \
-	      -DLLVM_RUNTIME_TARGETS="${X86_TARGET};${VE_TARGET}" \
-	      -DLLVM_BUILTIN_TARGETS="${X86_TARGET};${VE_TARGET}" \
-	      -DRUNTIMES_${X86_TARGET}_COMPILER_RT_BUILD_BUILTINS=On \
-	      -DRUNTIMES_${X86_TARGET}_COMPILER_RT_BUILD_CRT=Off \
-	      -DRUNTIMES_${X86_TARGET}_COMPILER_RT_BUILD_SANITIZERS=Off \
-	      -DRUNTIMES_${X86_TARGET}_COMPILER_RT_BUILD_XRAY=Off \
-	      -DRUNTIMES_${X86_TARGET}_COMPILER_RT_BUILD_LIBFUZZER=Off \
-	      -DRUNTIMES_${X86_TARGET}_COMPILER_RT_BUILD_PROFILE=Off \
-	      -DRUNTIMES_${X86_TARGET}_COMPILER_RT_BUILD_MEMPROF=Off \
-	      -DRUNTIMES_${X86_TARGET}_COMPILER_RT_BUILD_ORC=Off \
-	      -DRUNTIMES_${X86_TARGET}_COMPILER_RT_BUILD_GWP_ASAN=Off \
-	      -DRUNTIMES_${X86_TARGET}_OPENMP_STANDALONE_BUILD=On \
-	      -DRUNTIMES_${X86_TARGET}_OPENMP_LIBDIR_SUFFIX="/x86_64-unknown-linux-gnu" \
-	      -DRUNTIMES_${X86_TARGET}_OPENMP_LLVM_TOOLS_DIR="${LLVM_BUILD}/bin/" \
 	      -DRUNTIMES_${X86_TARGET}_LIBOMP_OMPT_SUPPORT=Off \
-	      -DRUNTIMES_${VE_TARGET}_COMPILER_RT_BUILD_BUILTINS=On \
-	      -DRUNTIMES_${VE_TARGET}_COMPILER_RT_BUILD_CRT=On \
-	      -DRUNTIMES_${VE_TARGET}_COMPILER_RT_BUILD_SANITIZERS=Off \
-	      -DRUNTIMES_${VE_TARGET}_COMPILER_RT_BUILD_XRAY=Off \
-	      -DRUNTIMES_${VE_TARGET}_COMPILER_RT_BUILD_LIBFUZZER=Off \
-	      -DRUNTIMES_${VE_TARGET}_COMPILER_RT_BUILD_PROFILE=On \
-	      -DRUNTIMES_${VE_TARGET}_COMPILER_RT_BUILD_MEMPROF=Off \
-	      -DRUNTIMES_${VE_TARGET}_COMPILER_RT_BUILD_ORC=Off \
-	      -DRUNTIMES_${VE_TARGET}_COMPILER_RT_BUILD_GWP_ASAN=Off \
-	      -DRUNTIMES_${VE_TARGET}_COMPILER_RT_USE_BUILTINS_LIBRARY=On \
-	      -DRUNTIMES_${VE_TARGET}_LIBCXXABI_USE_LLVM_UNWINDER=On \
-	      -DRUNTIMES_${VE_TARGET}_LIBCXXABI_USE_COMPILER_RT=On \
-	      -DRUNTIMES_${VE_TARGET}_LIBCXX_USE_COMPILER_RT=On \
-	      -DRUNTIMES_${VE_TARGET}_OPENMP_STANDALONE_BUILD=On \
-	      -DRUNTIMES_${VE_TARGET}_OPENMP_LIBDIR_SUFFIX="/ve-unknown-linux-gnu" \
-	      -DRUNTIMES_${VE_TARGET}_OPENMP_LLVM_TOOLS_DIR="${LLVM_BUILD}/bin/" \
-	      -DRUNTIMES_${VE_TARGET}_OPENMP_ENABLE_LIBOMPTARGET=Off \
-	      -DRUNTIMES_${VE_TARGET}_LIBOMP_HAVE_SHM_OPEN_WITH_LRT=On \
 	      -DRUNTIMES_${VE_TARGET}_COMPILER_RT_TEST_COMPILER_CFLAGS="-target ${VE_TARGET} ${LLVM_TEST_OPTFLAGS}" \
-	      -DRUNTIMES_${VE_TARGET}_LIBCXXABI_TEST_COMPILER_CFLAGS="-target ${VE_TARGET} ${LLVM_TEST_OPTFLAGS}" \
-	      -DRUNTIMES_${VE_TARGET}_LIBCXX_TEST_COMPILER_CFLAGS="-target ${VE_TARGET} ${LLVM_TEST_OPTFLAGS}" \
+	      -DRUNTIMES_${VE_TARGET}_LIBCXXABI_TEST_COMPILER_CFLAGS="-target ${VE_TARGET} ${LLVM_TEST_OPTFLAGS} -ldl" \
+	      -DRUNTIMES_${VE_TARGET}_LIBCXX_TEST_COMPILER_CFLAGS="-target ${VE_TARGET} ${LLVM_TEST_OPTFLAGS} -ldl" \
 	      -DRUNTIMES_${VE_TARGET}_LIBUNWIND_TEST_COMPILER_CFLAGS="-target ${VE_TARGET} ${LLVM_TEST_OPTFLAGS}" \
-	      -DRUNTIMES_${VE_TARGET}_OPENMP_TEST_OPENMP_FLAGS="-target ${VE_TARGET} ${LLVM_TEST_OPTFLAGS} -fopenmp -pthread -lrt -ldl -Wl,-rpath,${LLVM_BUILD}/lib/${VE_TARGET}"
+	      -DRUNTIMES_${VE_TARGET}_OPENMP_TEST_OPENMP_FLAGS="-target ${VE_TARGET} ${LLVM_OPENMP_TEST_OPTFLAGS} -fopenmp -pthread -lrt -ldl -Wl,-rpath,${LLVM_BUILD}/lib/${VE_TARGET}"
 	cd "${LLVM_BUILD}" && ${NINJA}
 
 check-llvm:
@@ -115,16 +85,16 @@ check-llvm:
 	cd "${LLVM_BUILD}" && ${NINJA} check-llvm
 check-crt-ve:
 	cd "${LLVM_BUILD}" && ${NINJA} check-compiler-rt-ve-unknown-linux-gnu
-check-runtimes-ve:
-	cd "${LLVM_BUILD}" && ${NINJA} check-runtimes-ve-unknown-linux-gnu
-check-runtimes:
-	cd "${LLVM_BUILD}" && ${NINJA} check-runtimes-ve-unknown-linux-gnu
 check-unwind:
 	cd "${LLVM_BUILD}" && ${NINJA} check-unwind-ve-unknown-linux-gnu
 check-cxxabi:
 	cd "${LLVM_BUILD}" && ${NINJA} check-cxxabi-ve-unknown-linux-gnu
+check-cxxabi-x86:
+	cd "${LLVM_BUILD}" && ${NINJA} check-cxxabi-x86_64-unknown-linux-gnu
 check-cxx:
 	cd "${LLVM_BUILD}" && ${NINJA} check-cxx-ve-unknown-linux-gnu
+check-cxx-x86:
+	cd "${LLVM_BUILD}" && ${NINJA} check-cxx-x86_64-unknown-linux-gnu
 check-openmp:
 	cd "${LLVM_BUILD}" && ${NINJA} check-openmp-ve-unknown-linux-gnu
 check-openmp-x86:
