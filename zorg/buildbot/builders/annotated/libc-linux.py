@@ -130,14 +130,14 @@ def main(argv):
             run_command(['ninja', 'libc-unit-tests'])
 
     if fullbuild and not args.asan:
-        with step('libc-integration-tests'):
-            run_command(['ninja', 'libc-integration-tests'])
         with step('libc-api-test'):
             run_command(['ninja', 'libc-api-test'])
         if gcc_build or ('riscv' in builder_name):
             # The rest of the targets are either not yet gcc-clean or
             # not yet availabe on riscv.
             return
+        with step('libc-integration-tests'):
+            run_command(['ninja', 'libc-integration-tests'])
         with step('libc-scudo-integration-test'):
             run_command(['ninja', 'libc-scudo-integration-test'])
         with step('AOR Tests'):
