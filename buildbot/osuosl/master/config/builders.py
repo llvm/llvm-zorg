@@ -1526,15 +1526,6 @@ all += [
         extra_depends_on_projects=["mlir", "clang-tools-extra"]
     )},
 
-    {'name' : "sanitizer-x86_64-linux-autoconf",
-    'tags'  : ["sanitizer"],
-    'workernames' : [
-        "sanitizer-buildbot5",
-        "sanitizer-buildbot6",
-    ],
-    'builddir': "sanitizer-x86_64-linux-autoconf",
-    'factory' : SanitizerBuilder.getSanitizerBuildFactory()},
-
     {'name' : "sanitizer-x86_64-linux-qemu",
     'tags'  : ["sanitizer"],
     'workernames' : [
@@ -1547,8 +1538,8 @@ all += [
     {'name' : "sanitizer-x86_64-linux-fuzzer",
     'tags'  : ["sanitizer"],
     'workernames' : [
-        "sanitizer-buildbot1",
-        "sanitizer-buildbot2",
+        "sanitizer-buildbot5",
+        "sanitizer-buildbot6",
     ],
     'builddir': "sanitizer-x86_64-linux-fuzzer",
     'factory' : SanitizerBuilder.getSanitizerBuildFactory()},
