@@ -1474,7 +1474,7 @@ all += [
 # with large memory usage, so assign them to different workers.
 
     {'name' : "sanitizer-x86_64-linux",
-    'tags'  : ["sanitizer"],
+    'tags'  : ["sanitizer", "compiler-rt"],
     'workernames' : [
         "sanitizer-buildbot1",
         "sanitizer-buildbot2",
@@ -1562,7 +1562,7 @@ all += [
     'factory' : SanitizerBuilder.getSanitizerBuildFactory()},
 
     {'name' : "sanitizer-aarch64-linux",
-    'tags'  : ["sanitizer"],
+    'tags'  : ["sanitizer", "aarch64", "compiler-rt"],
     'workernames' : [
         "sanitizer-buildbot7",
         "sanitizer-buildbot8",
@@ -1571,7 +1571,7 @@ all += [
     'factory' : SanitizerBuilder.getSanitizerBuildFactory()},
 
     {'name' : "sanitizer-aarch64-linux-bootstrap-asan",
-    'tags'  : ["sanitizer"],
+    'tags'  : ["sanitizer", "aarch64"],
     'workernames' : [
         "sanitizer-buildbot7",
         "sanitizer-buildbot8",
@@ -1582,7 +1582,7 @@ all += [
     )},
 
     {'name' : "sanitizer-aarch64-linux-bootstrap-hwasan",
-    'tags'  : ["sanitizer"],
+    'tags'  : ["sanitizer", "aarch64"],
     'workernames' : [
         "sanitizer-buildbot11",
         "sanitizer-buildbot12",
@@ -1593,7 +1593,7 @@ all += [
     )},
 
     {'name' : "sanitizer-aarch64-linux-bootstrap-msan",
-    'tags'  : ["sanitizer"],
+    'tags'  : ["sanitizer", "aarch64"],
     'workernames' : [
         "sanitizer-buildbot9",
         "sanitizer-buildbot10",
@@ -1604,7 +1604,7 @@ all += [
     )},
 
     {'name' : "sanitizer-aarch64-linux-bootstrap-ubsan",
-    'tags'  : ["sanitizer"],
+    'tags'  : ["sanitizer", "aarch64"],
     'workernames' : [
         "sanitizer-buildbot9",
         "sanitizer-buildbot10",
@@ -1615,7 +1615,7 @@ all += [
     )},
 
     {'name' : "sanitizer-aarch64-linux-fuzzer",
-    'tags'  : ["sanitizer"],
+    'tags'  : ["sanitizer", "aarch64"],
     'workernames' : [
         "sanitizer-buildbot11",
         "sanitizer-buildbot12",
