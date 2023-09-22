@@ -314,6 +314,10 @@ def get_all():
         create_worker("rv64gc-qemu-user", properties={'jobs' : 32}, max_builds=1),
         create_worker("rv32gc-qemu-system", properties={'jobs' : 32}, max_builds=1),
 
+        # FIXME: A placeholder for annoying worker which nobody could stop.
+        # adding it avoid logs spammed by failed authentication for that worker.
+        create_worker("mlir-ubuntu-worker0"),
+
         # Google Cloud workers.
         create_worker("gc-builder-5", properties={'jobs' : 112},  max_builds=1),
         create_worker("gc-builder-6-win", properties={'jobs' : 112},  max_builds=1),
