@@ -29,14 +29,15 @@ if [ -e /usr/include/plugin-api.h ]; then
 fi
 
 CHECK_SYMBOLIZER=1
-CHECK_TSAN=1
-
+CHECK_TSAN=0
 
 case "$ARCH" in
+  x86_64*)
+    # The test is x86_64 specific.
+    CHECK_TSAN=1
+  ;;
   ppc64*)
     CHECK_SYMBOLIZER=0
-    # The test is x86_64 specific.
-    CHECK_TSAN=0
     CMAKE_COMMON_OPTIONS+=" -DLLVM_TARGETS_TO_BUILD=PowerPC"
     if [[ "$ARCH" == "ppc64le" ]]; then
       CMAKE_COMMON_OPTIONS+=" -DLLVM_LIT_ARGS=-vj256"
