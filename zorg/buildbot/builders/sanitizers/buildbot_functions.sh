@@ -69,7 +69,7 @@ function cleanup() {
   if ccache -s >/dev/null ; then
     rm_dirs llvm_build64 clang_build
   fi
-  ls
+  du -hs * | sort -h
 }
 
 function clobber {
