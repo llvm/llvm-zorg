@@ -67,7 +67,7 @@ function cleanup() {
   echo @@@BUILD_STEP cleanup@@@
   rm_dirs llvm_build2_* llvm_build_* libcxx_build_* compiler_rt_build* symbolizer_build* $@
   if ccache -s >/dev/null ; then
-    rm_dirs llvm_build64 clang_build
+    rm_dirs llvm_build64
   fi
   du -hs * | sort -h
 }
@@ -133,7 +133,7 @@ function common_stage1_variables {
 }
 
 function build_stage1_clang_impl {
-  [[ -f "${STAGE1_DIR}/delete_next_time" ]] && rm -rf "${STAGE1_DIR}"
+  [[ ! -f "${STAGE1_DIR}/delete_next_time" ]] || rm -rf "${STAGE1_DIR}"
   mkdir -p ${STAGE1_DIR}
   local cmake_stage1_options="${CMAKE_COMMON_OPTIONS}"
   cmake_stage1_options+=" -DLLVM_ENABLE_PROJECTS='clang;lld'"
