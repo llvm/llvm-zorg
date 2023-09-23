@@ -23,7 +23,7 @@ BOT_ASSIGNMENT = {
     'sanitizer-x86_64-linux-bootstrap-msan': 'buildbot_bootstrap_msan.sh',
     'sanitizer-x86_64-linux-bootstrap-ubsan': 'buildbot_bootstrap_ubsan.sh',
     'sanitizer-x86_64-linux-qemu': 'buildbot_qemu.sh',
-    'sanitizer-aarch64-linux': 'buildbot_standard.sh',
+    'sanitizer-aarch64-linux': 'buildbot_cmake.sh',
     'sanitizer-aarch64-linux-fuzzer': 'buildbot_fuzzer.sh',
     'sanitizer-aarch64-linux-bootstrap-asan': 'buildbot_bootstrap_asan.sh',
     'sanitizer-aarch64-linux-bootstrap-hwasan': 'buildbot_bootstrap_hwasan.sh',
