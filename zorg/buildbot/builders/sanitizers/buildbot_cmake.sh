@@ -57,42 +57,48 @@ CMAKE_COMMON_OPTIONS+=" ${CMAKE_ARGS}"
 buildbot_update
 
 function build {
-  local build_dir=llvm_build64
-  echo "@@@BUILD_STEP build compiler-rt ${1}${2}@@@"
-  rm -rf ${build_dir}
+  local build_dir="build_${1}"
+  echo "@@@BUILD_STEP build compiler-rt ${1}@@@"
+  [[ ! -f "${build_dir}/delete_next_time" ]] || rm -rf "${build_dir}"
   mkdir -p ${build_dir}
 
-  cmake -B ${build_dir} ${CMAKE_COMMON_OPTIONS} ${2} $LLVM || build_failure
-  ninja -C ${build_dir} || build_failure
+  cmake -B ${build_dir} ${CMAKE_COMMON_OPTIONS} ${2} $LLVM || {
+    touch "${build_dir}/delete_next_time"
+    build_failure
+  }
+  ninja -C ${build_dir} || {
+    touch "${build_dir}/delete_next_time"
+    build_failure
+  }
 }
 
 function build_and_test {
   build "${1}" "${2}"
 
-  local build_dir=llvm_build64
-  echo "@@@BUILD_STEP test compiler-rt ${1}${2}@@@"
+  local build_dir="build_${1}"
+  echo "@@@BUILD_STEP test compiler-rt ${1}@@@"
   ninja -C ${build_dir} check-compiler-rt || build_failure
 }
 
-build_and_test "with gcc" ""
+build_and_test "gcc" ""
 
 CMAKE_COMMON_OPTIONS+=" ${STAGE1_AS_COMPILER}"
 CMAKE_COMMON_OPTIONS+=" -DLLVM_ENABLE_WERROR=ON"
 
 if [ "$CHECK_SYMBOLIZER" == "1" ]; then
-  build_and_test "" "-DCOMPILER_RT_ENABLE_INTERNAL_SYMBOLIZER=ON"
+  build_and_test "symbolizer" "-DCOMPILER_RT_ENABLE_INTERNAL_SYMBOLIZER=ON"
 fi
 
 # FIXME: all tests should pass with DCOMPILER_RT_DEBUG=ON
 LIT_FILTER_OUT='(AddressSanitizer|asan|ubsan)' \
-  build_and_test "" "-DCOMPILER_RT_DEBUG=ON"
+  build_and_test "debug" "-DCOMPILER_RT_DEBUG=ON"
 
 # Copied from buildbot_standard.sh, where it was not tested as well.
-build "" "-DCOMPILER_RT_DEBUG=ON -DCOMPILER_RT_TSAN_DEBUG_OUTPUT=ON -DLLVM_INCLUDE_TESTS=OFF"
+build "debug_tsan_debug" "-DCOMPILER_RT_DEBUG=ON -DCOMPILER_RT_TSAN_DEBUG_OUTPUT=ON -DLLVM_INCLUDE_TESTS=OFF"
 
-build_and_test "" ""
+build_and_test "default" ""
 
-FRESH_CLANG_PATH=${ROOT}/llvm_build64/bin
+FRESH_CLANG_PATH=${ROOT}/build_default/bin
 
 echo @@@BUILD_STEP build standalone compiler-rt@@@
 mkdir -p compiler_rt_build
