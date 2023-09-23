@@ -94,7 +94,7 @@ LIT_FILTER_OUT='(AddressSanitizer|asan|ubsan)' \
   build_and_test "debug" "-DCOMPILER_RT_DEBUG=ON"
 
 # Copied from buildbot_standard.sh, where it was not tested as well.
-build "debug_tsan_debug" "-DCOMPILER_RT_DEBUG=ON -DCOMPILER_RT_TSAN_DEBUG_OUTPUT=ON -DLLVM_INCLUDE_TESTS=OFF"
+build "tsan_debug" "-DCOMPILER_RT_DEBUG=ON -DCOMPILER_RT_TSAN_DEBUG_OUTPUT=ON -DLLVM_INCLUDE_TESTS=OFF"
 
 build_and_test "default" ""
 
@@ -107,7 +107,7 @@ cmake -B compiler_rt_build -GNinja \
   -DCMAKE_CXX_COMPILER=${FRESH_CLANG_PATH}/clang++ \
   -DCOMPILER_RT_INCLUDE_TESTS=ON \
   -DCOMPILER_RT_ENABLE_WERROR=ON \
-  -DLLVM_CMAKE_DIR=${ROOT}/llvm_build64 \
+  -DLLVM_CMAKE_DIR=${FRESH_CLANG_PATH}/.. \
   $LLVM/../compiler-rt || build_failure
 ninja -C compiler_rt_build || build_failure
 
