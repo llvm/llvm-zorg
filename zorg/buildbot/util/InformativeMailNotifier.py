@@ -103,9 +103,10 @@ class LLVMMessageFormatter(reporters.MessageFormatter):
 LLVMInformativeMailNotifier = LLVMMessageFormatter(
     template=MAIL_TEMPLATE,
     template_type="plain",
-    wantLogs=True,
-    wantProperties=True,
-    wantSteps=True,
+    want_logs=True,
+    want_logs_content=True,
+    want_properties=True,
+    want_steps=True,
 )
 
 class LLVMInformativeMailGenerator(reporters.BuildStatusGenerator):
@@ -114,5 +115,8 @@ class LLVMInformativeMailGenerator(reporters.BuildStatusGenerator):
         super().__init__(mode=mode, message_formatter=message_formatter, **kwargs)
 
 class LLVMDefaultBuildStatusGenerator(reporters.BuildStatusGenerator):
-    def __init__(self, mode = "failing", subject = "Build Failure: %(builder)s", **kwargs):
-        super().__init__(mode=mode, subject=subject, **kwargs)
+    def __init__(self, mode=("failing",),
+                 subject="Build Failure: {{ buildername }}", **kwargs):
+        super().__init__(mode=mode,
+                         message_formatter=reporters.MessageFormatter(subject=subject),
+                         **kwargs)
