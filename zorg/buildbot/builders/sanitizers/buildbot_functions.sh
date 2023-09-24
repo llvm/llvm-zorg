@@ -321,11 +321,7 @@ function build_stage2_asan_ubsan {
 function check_stage1 {
   local sanitizer_name=$1
 
-  # x86_64 is covered by sanitizer-x86_64-linux bot.
-  if [[ "$(arch)" == "aarch64" ]] ; then
-    echo @@@BUILD_STEP stage1/$sanitizer_name check-compiler-rt@@@
-    ninja -C ${STAGE1_DIR} check-compiler-rt || build_failure
-  fi
+  # covered by sanitizer-*-linux bot.
 }
 
 function check_stage1_msan {
