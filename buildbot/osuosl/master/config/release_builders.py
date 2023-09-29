@@ -63,7 +63,7 @@ all = [
                         "-DCMAKE_CXX_FLAGS=-U_GLIBCXX_DEBUG -Wno-misleading-indentation",
                         "-DLLVM_LIT_ARGS=-vv --time-tests"],
                     env={
-                        'CCACHE_DIR' : WithProperties("%(builddir)s/ccache-db"),
+                        'CCACHE_DIR' : util.Interpolate("%(prop:builddir)s/ccache-db"),
                     })},
 
     {'name' : "llvm-clang-x86_64-expensive-checks-win-release",
@@ -131,8 +131,8 @@ all = [
                     extra_configure_args=[
                         "-DLLVM_TARGETS_TO_BUILD=ARM",
                         "-DTOOLCHAIN_TARGET_TRIPLE=armv7-unknown-linux-gnueabihf",
-                        WithProperties("-DTOOLCHAIN_TARGET_SYSROOTFS=%(sysroot_path_armv7)s"),
-                        WithProperties("-DZLIB_ROOT=%(zlib_root_path)s"),
+                        util.Interpolate("-DTOOLCHAIN_TARGET_SYSROOTFS=%(prop:sysroot_path_armv7)s"),
+                        util.Interpolate("-DZLIB_ROOT=%(prop:zlib_root_path)s"),
                         "-DLLVM_LIT_ARGS=-v -vv --threads=32",
                         util.Interpolate("%(prop:remote_test_host:+-DREMOTE_TEST_HOST=)s%(prop:remote_test_host:-)s"),
                         util.Interpolate("%(prop:remote_test_user:+-DREMOTE_TEST_USER=)s%(prop:remote_test_user:-)s"),
@@ -170,8 +170,8 @@ all = [
                     extra_configure_args=[
                         "-DLLVM_TARGETS_TO_BUILD=AArch64",
                         "-DTOOLCHAIN_TARGET_TRIPLE=aarch64-unknown-linux-gnu",
-                        WithProperties("-DTOOLCHAIN_TARGET_SYSROOTFS=%(sysroot_path_aarch64)s"),
-                        WithProperties("-DZLIB_ROOT=%(zlib_root_path)s"),
+                        util.Interpolate("-DTOOLCHAIN_TARGET_SYSROOTFS=%(prop:sysroot_path_aarch64)s"),
+                        util.Interpolate("-DZLIB_ROOT=%(prop:zlib_root_path)s"),
                         "-DLLVM_LIT_ARGS=-v -vv --threads=32",
                         util.Interpolate("%(prop:remote_test_host:+-DREMOTE_TEST_HOST=)s%(prop:remote_test_host:-)s"),
                         util.Interpolate("%(prop:remote_test_user:+-DREMOTE_TEST_USER=)s%(prop:remote_test_user:-)s"),
@@ -201,7 +201,7 @@ all = [
                         "-DLLVM_CCACHE_BUILD=ON",
                         '-DLLVM_ENABLE_WERROR=OFF'],
                     env={
-                        'CCACHE_DIR' : WithProperties("%(builddir)s/ccache-db"),
+                        'CCACHE_DIR' : util.Interpolate("%(prop:builddir)s/ccache-db"),
                     })},
 
 # LTO and ThinLTO builders.
