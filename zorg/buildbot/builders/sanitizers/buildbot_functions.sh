@@ -2,6 +2,9 @@
 
 ROOT=`pwd`
 LLVM=$ROOT/llvm
+DRY_RUN_NINJA="${DRY_RUN_NINJA:-}"
+RUN_NINJA_SCRIPT=$ROOT/run_ninja.script
+echo "# Automatically generated script to run ninja steps" > $RUN_NINJA
 
 BUILDBOT_CLOBBER="${BUILDBOT_CLOBBER:-}"
 BUILDBOT_REVISION="${BUILDBOT_REVISION:-origin/main}"
@@ -57,6 +60,11 @@ echo @@@BUILD_STEP Info@@@
 echo @@@BUILD_STEP Prepare@@@
 
 export LIT_OPTS="--time-tests"
+
+function run_ninja {
+  echo ninja -C $(realpath --relative-to=$ROOT $PWD) $*  >> $RUN_NINJA_SCRIPT
+  [[ "$DRY_RUN_NINJA" != "1" ]] && ninja $*
+}
 
 function rm_dirs {
   while ! rm -rf $@ ; do sleep 1; done
@@ -141,7 +149,7 @@ function build_stage1_clang_impl {
   if clang -v ; then
     cmake_stage1_options+=" -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++"
   fi
-  (cd ${STAGE1_DIR} && cmake ${cmake_stage1_options} $LLVM && ninja) || {
+  (cd ${STAGE1_DIR} && cmake ${cmake_stage1_options} $LLVM && run_ninja) || {
     touch "${STAGE1_DIR}/delete_next_time"
     return 1
   }
@@ -263,7 +271,7 @@ function build_stage2 {
       -DCMAKE_C_FLAGS="${fsanitize_flag} ${cmake_libcxx_cflags} ${fno_sanitize_flag}" \
       -DCMAKE_CXX_FLAGS="${fsanitize_flag} ${cmake_libcxx_cflags} ${fno_sanitize_flag}" \
       $LLVM/../runtimes && \
-    ninja cxx cxxabi) || build_failure
+    run_ninja cxx cxxabi) || build_failure
 
   local libcxx_runtime_path=$(dirname $(find ${ROOT}/${libcxx_build_dir} -name libc++.so))
   local sanitizer_ldflags="-Wl,--rpath=${libcxx_runtime_path} -L${libcxx_runtime_path}"
@@ -290,7 +298,7 @@ function build_stage2 {
      -DCMAKE_CXX_FLAGS="${sanitizer_cflags}" \
      -DCMAKE_EXE_LINKER_FLAGS="${sanitizer_ldflags}" \
      $LLVM && \
-   time ninja) || build_failure
+   time run_ninja) || build_failure
    md5sum ${build_dir}/bin/clang || true
 }
 
@@ -390,7 +398,7 @@ function check_stage2 {
           LIT_FILTER_OUT+="|test_vector2.pass.cpp"
           LIT_FILTER_OUT+="|forced_unwind2.pass.cpp"
         fi
-        ninja -C libcxx_build_${sanitizer_name} check-cxx check-cxxabi
+        run_ninja -C libcxx_build_${sanitizer_name} check-cxx check-cxxabi
       ) || build_failure
     ) &>check_cxx.log &
   fi
@@ -401,7 +409,7 @@ function check_stage2 {
       # For unknown reasons gcc 12.3.0 leaks in _Unwind_Find_FDE.
       export LIT_FILTER_OUT="Interpreter/simple-exception.cpp"
     fi
-    ninja -C ${STAGE2_DIR} check-all 
+    run_ninja -C ${STAGE2_DIR} check-all
   )|| build_failure
 
   if [[ "${STAGE2_SKIP_TEST_CXX:-}" != "1" ]] ; then
@@ -459,7 +467,7 @@ function build_stage3 {
      -DCMAKE_CXX_FLAGS="${sanitizer_cflags}" \
      -DLLVM_CCACHE_BUILD=OFF \
      $LLVM && \
-  time ninja) || build_failure
+  time run_ninja) || build_failure
   md5sum ${build_dir}/bin/clang* || true
 }
 
@@ -489,7 +497,7 @@ function check_stage3 {
 
   local build_dir=llvm_build2_${sanitizer_name}
 
-  (cd ${build_dir} && env && ninja check-all) || build_failure
+  (cd ${build_dir} && env && run_ninja check-all) || build_failure
 }
 
 function check_stage3_msan {
