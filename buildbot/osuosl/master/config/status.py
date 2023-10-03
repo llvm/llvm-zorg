@@ -144,13 +144,6 @@ def getReporters():
         reporters.MailNotifier(
             fromaddr = "llvm.buildmaster@lab.llvm.org",
             sendToInterestedUsers = False,
-            extraRecipients = ["aifxbuildbotdri@microsoft.com", "namcvica@microsoft.com"],
-            subject = "Build %(builder)s Failure",
-            mode = "failing",
-            builders = ["mlir-windows"]),
-        reporters.MailNotifier(
-            fromaddr = "llvm.buildmaster@lab.llvm.org",
-            sendToInterestedUsers = False,
             extraRecipients = ["gongsu@us.ibm.com", "alexe@us.ibm.com"],
             subject = "Build %(builder)s Failure",
             mode = "failing",
@@ -267,7 +260,6 @@ def getReporters():
             subject = "MLIR Build Failure: %(builder)s",
             mode = "failing",
             builders = ["mlir-nvidia",
-                        "mlir-windows",
                         "ppc64le-mlir-rhel-clang"]),
         reporters.MailNotifier(
             fromaddr="llvm.buildmaster@lab.llvm.org",
