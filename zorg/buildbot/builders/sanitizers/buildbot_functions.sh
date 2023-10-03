@@ -4,7 +4,7 @@ ROOT=`pwd`
 LLVM=$ROOT/llvm
 DRY_RUN_NINJA="${DRY_RUN_NINJA:-}"
 RUN_NINJA_SCRIPT=$ROOT/run_ninja.script
-echo "# Automatically generated script to run ninja steps" > $RUN_NINJA
+echo "# Automatically generated script to run ninja steps" > $RUN_NINJA_SCRIPT
 
 BUILDBOT_CLOBBER="${BUILDBOT_CLOBBER:-}"
 BUILDBOT_REVISION="${BUILDBOT_REVISION:-origin/main}"
@@ -63,7 +63,7 @@ export LIT_OPTS="--time-tests"
 
 function run_ninja {
   echo ninja -C $(realpath --relative-to=$ROOT $PWD) $*  >> $RUN_NINJA_SCRIPT
-  [[ "$DRY_RUN_NINJA" != "1" ]] && ninja $*
+  [[ "$DRY_RUN_NINJA" != "1" ]] && ninja $* || true
 }
 
 function rm_dirs {
@@ -398,7 +398,7 @@ function check_stage2 {
           LIT_FILTER_OUT+="|test_vector2.pass.cpp"
           LIT_FILTER_OUT+="|forced_unwind2.pass.cpp"
         fi
-        run_ninja -C libcxx_build_${sanitizer_name} check-cxx check-cxxabi
+        (cd libcxx_build_${sanitizer_name} && run_ninja check-cxx check-cxxabi)
       ) || build_failure
     ) &>check_cxx.log &
   fi
@@ -409,7 +409,7 @@ function check_stage2 {
       # For unknown reasons gcc 12.3.0 leaks in _Unwind_Find_FDE.
       export LIT_FILTER_OUT="Interpreter/simple-exception.cpp"
     fi
-    run_ninja -C ${STAGE2_DIR} check-all
+    (cd ${STAGE2_DIR} && run_ninja check-all)
   )|| build_failure
 
   if [[ "${STAGE2_SKIP_TEST_CXX:-}" != "1" ]] ; then
