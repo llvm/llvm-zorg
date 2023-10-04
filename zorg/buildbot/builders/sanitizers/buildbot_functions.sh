@@ -63,6 +63,7 @@ function rm_dirs {
 }
 
 function cleanup() {
+  [[ -v BUILDBOT_PRESERVE_BUILDS ]] && return 0
   [[ -v BUILDBOT_BUILDERNAME ]] || return 0
   echo @@@BUILD_STEP cleanup@@@
   rm_dirs llvm_build2_* llvm_build_* libcxx_build_* compiler_rt_build* symbolizer_build* $@
@@ -141,7 +142,9 @@ function build_stage1_clang_impl {
   if clang -v ; then
     cmake_stage1_options+=" -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++"
   fi
-  (cd ${STAGE1_DIR} && cmake ${cmake_stage1_options} $LLVM && ninja) || {
+  echo cmake ${cmake_stage1_options} $LLVM > ${STAGE1_DIR}/build.script
+  echo ninja >> ${STAGE1_DIR}/build.script
+  (cd ${STAGE1_DIR} && source build.script) || {
     touch "${STAGE1_DIR}/delete_next_time"
     return 1
   }
@@ -255,15 +258,15 @@ function build_stage2 {
   fi
 
   mkdir -p ${libcxx_build_dir}
-  (cd ${libcxx_build_dir} && \
-    cmake \
-      ${cmake_stage2_common_options} \
-      -DLLVM_ENABLE_RUNTIMES='libcxx;libcxxabi' \
-      -DLLVM_USE_SANITIZER=${llvm_use_sanitizer} \
-      -DCMAKE_C_FLAGS="${fsanitize_flag} ${cmake_libcxx_cflags} ${fno_sanitize_flag}" \
-      -DCMAKE_CXX_FLAGS="${fsanitize_flag} ${cmake_libcxx_cflags} ${fno_sanitize_flag}" \
-      $LLVM/../runtimes && \
-    ninja cxx cxxabi) || build_failure
+  echo cmake \
+    ${cmake_stage2_common_options} \
+    -DLLVM_ENABLE_RUNTIMES="'libcxx;libcxxabi'" \
+    -DLLVM_USE_SANITIZER=${llvm_use_sanitizer} \
+    -DCMAKE_C_FLAGS="'${fsanitize_flag} ${cmake_libcxx_cflags} ${fno_sanitize_flag}'" \
+    -DCMAKE_CXX_FLAGS="'${fsanitize_flag} ${cmake_libcxx_cflags} ${fno_sanitize_flag}'" \
+    $LLVM/../runtimes > ${libcxx_build_dir}/build.script
+  echo ninja cxx cxxabi >> ${libcxx_build_dir}/build.script
+  (cd ${libcxx_build_dir} && source build.script) || build_failure
 
   local libcxx_runtime_path=$(dirname $(find ${ROOT}/${libcxx_build_dir} -name libc++.so))
   local sanitizer_ldflags="-Wl,--rpath=${libcxx_runtime_path} -L${libcxx_runtime_path}"
@@ -280,17 +283,17 @@ function build_stage2 {
     # FIXME: clangd tests fail.
     cmake_stage2_clang_options="-DLLVM_ENABLE_PROJECTS='clang;lld;mlir'"
   fi
-  (cd ${build_dir} && \
-   cmake \
-     ${cmake_stage2_common_options} \
-     ${cmake_stage2_clang_options} \
-     -DLLVM_USE_SANITIZER=${llvm_use_sanitizer} \
-     -DLLVM_ENABLE_LIBCXX=ON \
-     -DCMAKE_C_FLAGS="${sanitizer_cflags}" \
-     -DCMAKE_CXX_FLAGS="${sanitizer_cflags}" \
-     -DCMAKE_EXE_LINKER_FLAGS="${sanitizer_ldflags}" \
-     $LLVM && \
-   time ninja) || build_failure
+  echo cmake \
+    ${cmake_stage2_common_options} \
+    ${cmake_stage2_clang_options} \
+    -DLLVM_USE_SANITIZER=${llvm_use_sanitizer} \
+    -DLLVM_ENABLE_LIBCXX=ON \
+    -DCMAKE_C_FLAGS="'${sanitizer_cflags}'" \
+    -DCMAKE_CXX_FLAGS="'${sanitizer_cflags}'" \
+    -DCMAKE_EXE_LINKER_FLAGS="'${sanitizer_ldflags}'" \
+    $LLVM > ${build_dir}/build.script
+  echo time ninja >> ${build_dir}/build.script
+  (cd ${build_dir} && source build.script) || build_failure
    md5sum ${build_dir}/bin/clang || true
 }
 
@@ -390,7 +393,8 @@ function check_stage2 {
           LIT_FILTER_OUT+="|test_vector2.pass.cpp"
           LIT_FILTER_OUT+="|forced_unwind2.pass.cpp"
         fi
-        ninja -C libcxx_build_${sanitizer_name} check-cxx check-cxxabi
+        echo ninja check-cxx check-cxxabi > libcxx_build_${sanitizer_name}/check-cxx.script
+        (cd libcxx_build_${sanitizer_name} && source check-cxx.script)
       ) || build_failure
     ) &>check_cxx.log &
   fi
@@ -401,7 +405,8 @@ function check_stage2 {
       # For unknown reasons gcc 12.3.0 leaks in _Unwind_Find_FDE.
       export LIT_FILTER_OUT="Interpreter/simple-exception.cpp"
     fi
-    ninja -C ${STAGE2_DIR} check-all 
+    echo ninja check-all > ${STAGE2_DIR}/check-all.script
+    (cd ${STAGE2_DIR} && source check-all.script)
   )|| build_failure
 
   if [[ "${STAGE2_SKIP_TEST_CXX:-}" != "1" ]] ; then
@@ -450,16 +455,16 @@ function build_stage3 {
     # FIXME: clangd tests fail.
     stage3_projects='clang;lld'
   fi
-  (cd ${build_dir} && \
-   cmake \
-     ${CMAKE_COMMON_OPTIONS} \
-     -DLLVM_ENABLE_PROJECTS="${stage3_projects}" \
-     -DCMAKE_C_COMPILER=${clang_path}/clang \
-     -DCMAKE_CXX_COMPILER=${clang_path}/clang++ \
-     -DCMAKE_CXX_FLAGS="${sanitizer_cflags}" \
-     -DLLVM_CCACHE_BUILD=OFF \
-     $LLVM && \
-  time ninja) || build_failure
+  echo cmake \
+    ${CMAKE_COMMON_OPTIONS} \
+    -DLLVM_ENABLE_PROJECTS="'${stage3_projects}'" \
+    -DCMAKE_C_COMPILER=${clang_path}/clang \
+    -DCMAKE_CXX_COMPILER=${clang_path}/clang++ \
+    -DCMAKE_CXX_FLAGS="'${sanitizer_cflags}'" \
+    -DLLVM_CCACHE_BUILD=OFF \
+    $LLVM > ${build_dir}/build.script
+  echo time ninja >> ${build_dir}/build.script
+  (cd ${build_dir} && source build.script) || build_failure
   md5sum ${build_dir}/bin/clang* || true
 }
 
@@ -489,7 +494,10 @@ function check_stage3 {
 
   local build_dir=llvm_build2_${sanitizer_name}
 
-  (cd ${build_dir} && env && ninja check-all) || build_failure
+  echo env > ${build_dir}/check-all.script
+  echo ninja check-all >> ${build_dir}/check-all.script
+
+  (cd ${build_dir} && source check-all.script) || build_failure
 }
 
 function check_stage3_msan {
