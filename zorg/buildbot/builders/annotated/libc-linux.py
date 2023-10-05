@@ -105,7 +105,7 @@ def main(argv):
             cmake_args.append('-DCMAKE_CXX_FLAGS=-mabi=ilp32d -march=rv32imafdc \
                                --target=riscv32-unknown-linux-gnu --sysroot=/opt/riscv/sysroot \
                                --gcc-toolchain=/opt/riscv -fuse-ld=lld')
-            cmake_args.append('-DCMAKE_CROSSCOMPILING_EMULATOR="{}/cross.sh"'.format(os.getenv('HOME')))
+            cmake_args.append('-DCMAKE_CROSSCOMPILING_EMULATOR={}/cross.sh'.format(os.getenv('HOME')))
             cmake_args.append('-DLIBC_TARGET_TRIPLE=riscv32-unknown-linux-gnu')
             cmake_args.append('-DCMAKE_SYSTEM_NAME=Linux')
 
