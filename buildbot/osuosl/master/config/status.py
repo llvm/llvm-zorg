@@ -386,4 +386,12 @@ def getReporters():
             extraRecipients = ["llvm-premerge-buildbots@google.com"],
             mode = "failing",
             builders = ["premerge-monolithic-windows", "premerge-monolithic-linux"]),
+        reporters.MailNotifier(
+            fromaddr = "llvm.buildmaster@lab.llvm.org",
+            sendToInterestedUsers = False,
+            messageFormatter = LLVMInformativeMailNotifier,
+            extraRecipients = ["szakharin@nvidia.com"],
+            subject = "Build Failure (flang-runtime): %(builder)s",
+            mode = "failing",
+            builders = ["flang-runtime-cuda-gcc", "flang-runtime-cuda-clang"]),
     ]
