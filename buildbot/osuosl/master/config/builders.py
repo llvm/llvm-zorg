@@ -1435,24 +1435,6 @@ all += [
                         'CXX': 'g++-7',
                     })},
 
-    {'name' : "mlir-windows",
-    'tags'  : ["mlir"],
-    'workernames' : ["win-mlir-buildbot"],
-    'builddir': "mlir-x64-windows-ninja",
-    'factory' : UnifiedTreeBuilder.getCmakeWithNinjaWithMSVCBuildFactory(
-                    clean=True,
-                    targets = ['check-mlir-build-only'],
-                    checks = ['check-mlir'],
-                    depends_on_projects=['llvm','mlir'],
-                    vs="autodetect",
-                    extra_configure_args=[
-                        "-DLLVM_BUILD_EXAMPLES=ON",
-                        "-DLLVM_ENABLE_PROJECTS=mlir",
-                        "-DMLIR_ENABLE_BINDINGS_PYTHON=ON",
-                        "-DLLVM_ENABLE_WERROR=ON",
-                        "-DLLVM_TARGETS_TO_BUILD='host;NVPTX;AMDGPU'",
-                    ])},
-
     {'name' : 'ppc64le-mlir-rhel-clang',
     'tags'  : ["mlir", "ppc", "ppc64le"],
     'collapseRequests' : False,
