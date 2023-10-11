@@ -19,7 +19,7 @@ setup_env() {
 build_step "Setting up the buildbot"
 BUILDBOT_ROOT=${BUILDBOT_ROOT:-/buildbot}
 BUILDBOT_SLAVENAME=$(whoami)
-AMDGPU_ARCHS=${AMDGPU_ARCHS:="gfx906;gfx90a;gfx1030;gfx1100"}
+AMDGPU_ARCHS=${AMDGPU_ARCHS:="gfx908;gfx90a;gfx1030;gfx1100"}
 EXTERNAL_DIR="${EXTERNAL_DIR:-/buildbot/Externals}"
 BUILD_DIR="${BUILDBOT_ROOT}/${BUILDBOT_SLAVENAME}/${BUILDBOT_BUILDERNAME}"
 DESTDIR=${BUILD_DIR}/install
