@@ -694,9 +694,9 @@ all = [
                     clean=False,
                     extra_configure_args=[
                         "-DLLVM_ENABLE_ASSERTIONS=On",
-                        "-DCMAKE_C_COMPILER=/usr/local/clang-15.0.0/bin/clang",
-                        "-DCMAKE_CXX_COMPILER=/usr/local/clang-15.0.0/bin/clang++",
-                        "-DPython3_EXECUTABLE:FILEPATH=/opt/freeware/bin/python3_64",
+                        "-DCMAKE_C_COMPILER=clang",
+                        "-DCMAKE_CXX_COMPILER=clang++",
+                        "-DPython3_EXECUTABLE:FILEPATH=python3",
                         "-DLLVM_ENABLE_ZLIB=OFF", "-DLLVM_APPEND_VC_REV=OFF",
                         "-DLLVM_PARALLEL_LINK_JOBS=2",
                         "-DLLVM_ENABLE_WERROR=ON"]),
