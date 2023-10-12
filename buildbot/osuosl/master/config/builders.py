@@ -2137,6 +2137,24 @@ all += [
 
 # Builders responsible building Sphinx documentation.
 
+    {'name' : "lld-sphinx-docs",
+    'tags'  : ["lld", "doc"],
+    'workernames' : ["gribozavr3"],
+    'builddir': "lld-sphinx-docs",
+    'factory' : SphinxDocsBuilder.getSphinxDocsBuildFactory(lld_html=True)},
+
+    {'name':"libunwind-sphinx-docs",
+    'tags'  : ["libunwind", "doc"],
+    'workernames':["gribozavr3"],
+    'builddir':"libunwind-sphinx-docs",
+    'factory': SphinxDocsBuilder.getSphinxRuntimesDocsBuildFactory(libunwind_html=True)},
+
+    {'name' : "polly-sphinx-docs",
+    'tags'  : ["llvm", "doc"],
+    'workernames' : ["polly-x86_64-gce1"],
+    'builddir': "polly-sphinx-docs",
+    'factory': SphinxDocsBuilder.getSphinxDocsBuildFactory(polly_html=True)},
+
     # Sphinx doc Publisher
     {'name' : "publish-sphinx-docs",
     'tags'  : ["doc"],
@@ -2169,12 +2187,6 @@ all += [
                     # long time without any output.
                     # We have to have a long timeout here.
                     timeout=172800)},
-
-    {'name' : "polly-sphinx-docs",
-    'tags'  : ["llvm", "doc"],
-    'workernames' : ["polly-x86_64-gce1"],
-    'builddir': "polly-sphinx-docs",
-    'factory': SphinxDocsBuilder.getSphinxDocsBuildFactory(polly_html=True)},
 
 # CUDA builders.
 
