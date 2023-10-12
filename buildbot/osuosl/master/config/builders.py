@@ -2137,36 +2137,6 @@ all += [
 
 # Builders responsible building Sphinx documentation.
 
-    {'name' : "llvm-sphinx-docs",
-    'tags'  : ["llvm", "doc"],
-    'workernames' : ["gribozavr3"],
-    'builddir': "llvm-sphinx-docs",
-    'factory': SphinxDocsBuilder.getSphinxDocsBuildFactory(llvm_html=True, llvm_man=True)},
-
-    {'name' : "clang-sphinx-docs",
-    'tags'  : ["clang", "doc"],
-    'workernames' : ["gribozavr3"],
-    'builddir': "clang-sphinx-docs",
-    'factory' : SphinxDocsBuilder.getSphinxDocsBuildFactory(clang_html=True, clang_man=True)},
-
-    {'name' : "clang-tools-sphinx-docs",
-    'tags'  : ["clang-tools", "doc"],
-    'workernames':["gribozavr3"],
-    'builddir':"clang-tools-sphinx-docs",
-    'factory': SphinxDocsBuilder.getSphinxDocsBuildFactory(clang_tools_html=True)},
-
-    {'name' : "lld-sphinx-docs",
-    'tags'  : ["lld", "doc"],
-    'workernames' : ["gribozavr3"],
-    'builddir': "lld-sphinx-docs",
-    'factory' : SphinxDocsBuilder.getSphinxDocsBuildFactory(lld_html=True)},
-
-    {'name':"libunwind-sphinx-docs",
-    'tags'  : ["libunwind", "doc"],
-    'workernames':["gribozavr3"],
-    'builddir':"libunwind-sphinx-docs",
-    'factory': SphinxDocsBuilder.getSphinxRuntimesDocsBuildFactory(libunwind_html=True)},
-
     # Sphinx doc Publisher
     {'name' : "publish-sphinx-docs",
     'tags'  : ["doc"],
