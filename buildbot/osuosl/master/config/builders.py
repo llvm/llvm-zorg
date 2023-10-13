@@ -2313,7 +2313,8 @@ all += [
                     depends_on_projects=['llvm'],
                     extra_configure_args=[
                         "-DCMAKE_BUILD_TYPE=Release",
-                        "-DLLVM_CCACHE_BUILD=ON",
+                        "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
+                        "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
                         "-DTENSORFLOW_C_LIB_PATH=/tmp/tensorflow",
                         "-C", "/tmp/tflitebuild/tflite.cmake",
@@ -2331,7 +2332,8 @@ all += [
                     depends_on_projects=['llvm'],
                     extra_configure_args= [
                         "-DCMAKE_BUILD_TYPE=Release",
-                        "-DLLVM_CCACHE_BUILD=ON",
+                        "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
+                        "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
                         "-DTENSORFLOW_C_LIB_PATH=/tmp/tensorflow",
                         "-C", "/tmp/tflitebuild/tflite.cmake",
@@ -2353,7 +2355,8 @@ all += [
                     depends_on_projects=['llvm'],
                     extra_configure_args= [
                         "-DCMAKE_BUILD_TYPE=Release",
-                        "-DLLVM_CCACHE_BUILD=ON",
+                        "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
+                        "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
                         "-DTENSORFLOW_AOT_PATH=/var/lib/buildbot/.local/lib/python3.7/site-packages/tensorflow"
                     ])},
