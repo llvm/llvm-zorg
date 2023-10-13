@@ -978,6 +978,7 @@ all = [
     'builddir': "debug-iterators",
     'factory': UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                     depends_on_projects=['llvm','clang','clang-tools-extra','compiler-rt','lld','cross-project-tests'],
+                    clean=True,
                     extra_configure_args=[
                         "-DCMAKE_C_COMPILER=gcc",
                         "-DCMAKE_CXX_COMPILER=g++",
