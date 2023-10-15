@@ -97,15 +97,14 @@ def getReporters():
     r.extend([
         reporters.MailNotifier(
             fromaddr = status_email_fromaddr,
-            extraRecipients = status_email,
+            extraRecipients = [status_email_fromaddr],
             extraHeaders = {
-                "Reply-To": status_email[0], # The first from the list.
+                "Reply-To": status_email_fromaddr,
                 # Tags for Mailgun analyses.
                 # TODO: Consider this being configured in local.cfg.
                 "X-Mailgun-Tag" : Interpolate("builder=%(prop:buildername)s"),
             },
             lookup = LLVMEmailLookup(),
-            messageFormatter = LLVMInformativeMailNotifier,
             # TODO: For debug purposes only. Remove later.
             dumpMailsToLog = True,
             generators = [
