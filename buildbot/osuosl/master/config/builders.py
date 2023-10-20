@@ -2471,17 +2471,16 @@ all += [
     'builddir': "bolt-x86_64-ubuntu-dylib",
     'factory' : BOLTBuilder.getBOLTCmakeBuildFactory(
                     bolttests=False,
-                    depends_on_projects=['bolt', 'llvm'],
+                    depends_on_projects=['bolt', 'lld', 'llvm'],
                     extra_configure_args=[
                         "-DLLVM_APPEND_VC_REV=OFF",
                         "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
                         "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
-                        "-DLLVM_ENABLE_PROJECTS=bolt",
+                        "-DLLVM_ENABLE_PROJECTS=bolt;lld",
                         "-DLLVM_TARGETS_TO_BUILD=X86;AArch64;RISCV",
                         "-DLLVM_LINK_LLVM_DYLIB=ON",
                         "-DLLVM_ENABLE_LLD=ON",
                         "-DBOLT_CLANG_EXE=/usr/bin/clang",
-                        "-DBOLT_LLD_EXE=/usr/bin/ld.lld",
                         ],
                     )},
 
@@ -2491,17 +2490,16 @@ all += [
     'builddir': "bolt-x86_64-ubuntu-shared",
     'factory' : BOLTBuilder.getBOLTCmakeBuildFactory(
                     bolttests=False,
-                    depends_on_projects=['bolt', 'llvm'],
+                    depends_on_projects=['bolt', 'lld', 'llvm'],
                     extra_configure_args=[
                         "-DLLVM_APPEND_VC_REV=OFF",
                         "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
                         "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
-                        "-DLLVM_ENABLE_PROJECTS=bolt",
+                        "-DLLVM_ENABLE_PROJECTS=bolt;lld",
                         "-DLLVM_TARGETS_TO_BUILD=X86;AArch64;RISCV",
                         "-DBUILD_SHARED_LIBS=ON",
                         "-DLLVM_ENABLE_LLD=ON",
                         "-DBOLT_CLANG_EXE=/usr/bin/clang",
-                        "-DBOLT_LLD_EXE=/usr/bin/ld.lld",
                         ],
                     )},
 
@@ -2532,19 +2530,18 @@ all += [
     'builddir': "bolt-aarch64-ubuntu-clang-shared",
     'factory' : BOLTBuilder.getBOLTCmakeBuildFactory(
                     bolttests=True,
-                    depends_on_projects=['bolt', 'llvm'],
+                    depends_on_projects=['bolt', 'lld', 'llvm'],
                     extra_configure_args=[
                         "-DCMAKE_C_COMPILER=clang",
                         "-DCMAKE_CXX_COMPILER=clang++",
                         "-DLLVM_APPEND_VC_REV=OFF",
                         "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
                         "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
-                        "-DLLVM_ENABLE_PROJECTS=bolt",
+                        "-DLLVM_ENABLE_PROJECTS=bolt;lld",
                         "-DLLVM_TARGETS_TO_BUILD=X86;AArch64;RISCV",
                         "-DBUILD_SHARED_LIBS=ON",
                         "-DLLVM_USE_LINKER=mold",
                         "-DBOLT_CLANG_EXE=/usr/bin/clang",
-                        "-DBOLT_LLD_EXE=/usr/bin/ld.lld",
                         ],
                     )},
 
