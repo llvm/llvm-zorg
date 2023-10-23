@@ -552,6 +552,7 @@ def lldb_cmake_builder(target, variant=None):
                  '-DLLDB_TEST_USER_ARGS='+';'.join(dotest_args),
                  '-DLLDB_ENFORCE_STRICT_TEST_REQUIREMENTS=On',
                  '-DLLDB_ENABLE_PYTHON=On',
+                 '-DLIBCXX_HARDENING_MODE=unchecked',
                  '-DLLVM_ENABLE_ASSERTIONS:BOOL={}'.format("TRUE" if conf.assertions else "FALSE"),
                  '-DLLVM_ENABLE_MODULES=On',
                  '-DLLVM_ENABLE_PROJECTS={}'.format(conf.llvm_enable_projects),
