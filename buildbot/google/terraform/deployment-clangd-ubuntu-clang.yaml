@@ -30,10 +30,10 @@ spec:
         resources:
           limits:
             cpu: "15"
-            memory: 45G
+            memory: 43G
           requests:
             cpu: "15"
-            memory: 45G
+            memory: 43G
         volumeMounts:
         - mountPath: /vol/secrets
           mountPropagation: None
