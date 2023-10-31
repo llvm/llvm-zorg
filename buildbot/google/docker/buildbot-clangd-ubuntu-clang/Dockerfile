@@ -21,6 +21,8 @@ RUN apt-get update && \
     ccache \
     # Install python for buildbot and LIT.
     python3 python3-pip python3-psutil && \
+    # Update system packages
+    apt-get upgrade -y && \
     # Clean apt cache to reduce image size.
     apt-get clean
 
