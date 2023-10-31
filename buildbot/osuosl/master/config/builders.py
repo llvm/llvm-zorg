@@ -2520,7 +2520,7 @@ all += [
                         "-DLLVM_APPEND_VC_REV=OFF",
                         "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
                         "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
-                        "-DLLVM_USE_LINKER=mold",
+                        "-DLLVM_USE_LINKER=lld",
                         ],
                     )},
 
