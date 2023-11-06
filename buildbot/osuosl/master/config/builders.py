@@ -268,8 +268,8 @@ all = [
                     extra_cmake_args=[
                         "-DCMAKE_TRY_COMPILE_CONFIGURATION=Release",
                         "-DLLVM_TARGETS_TO_BUILD='AArch64'",
-                        "-DCMAKE_C_COMPILER_LAUNCHER=sccache",
-                        "-DCMAKE_CXX_COMPILER_LAUNCHER=sccache"])},
+                        "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
+                        "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache"])},
 
     ## ARMv8 check-all
     {'name' : "clang-armv8-quick",
@@ -545,8 +545,8 @@ all = [
                     checkout_flang=True,
                     extra_cmake_args=[
                         "-DCMAKE_TRY_COMPILE_CONFIGURATION=Release",
-                        "-DCMAKE_C_COMPILER_LAUNCHER=sccache",
-                        "-DCMAKE_CXX_COMPILER_LAUNCHER=sccache",
+                        "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
+                        "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
                         # FIXME: compiler-rt\lib\sanitizer_common\sanitizer_unwind_win.cpp assumes WIN64 is x86_64,
                         #        so, before that's fixed, disable everything that triggers its build.
                         "-DCOMPILER_RT_BUILD_SANITIZERS=OFF",
@@ -1299,8 +1299,8 @@ all = [
                     clean=True,
                     test=True,
                     extra_cmake_args=[
-                        "-DCMAKE_C_COMPILER_LAUNCHER=sccache",
-                        "-DCMAKE_CXX_COMPILER_LAUNCHER=sccache",
+                        "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
+                        "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
                         '-DLLVM_LIT_ARGS=-v',
                         '-DLLDB_TEST_USER_ARGS=--skip-category=watchpoint'])},
 
