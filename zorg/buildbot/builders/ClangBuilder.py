@@ -341,14 +341,17 @@ def _getClangCMakeBuildFactory(
             ])
 
     rel_src_dir = LLVMBuildFactory.pathRelativeTo(f.llvm_srcdir, stage1_build)
+    cmake_cmd1 = [cmake, "-G", "Ninja", rel_src_dir,
+                  "-DCMAKE_BUILD_TYPE="+stage1_config,
+                  "-DLLVM_ENABLE_ASSERTIONS=True",
+                  "-DLLVM_LIT_ARGS="+lit_args,
+                  "-DCMAKE_INSTALL_PREFIX=../"+stage1_install] + extra_cmake_args
+
+    if checkout_compiler_rt:
+        cmake_cmd1.append("-DLLVM_CMAKE_DIR="+rel_src_dir+"/cmake")
 
     f.addStep(ShellCommand(name='cmake stage 1',
-                           command=[cmake, "-G", "Ninja", rel_src_dir,
-                                    "-DCMAKE_BUILD_TYPE="+stage1_config,
-                                    "-DLLVM_ENABLE_ASSERTIONS=True",
-                                    "-DLLVM_LIT_ARGS="+lit_args,
-                                    "-DCMAKE_INSTALL_PREFIX=../"+stage1_install]
-                                    + extra_cmake_args,
+                           command=cmake_cmd1,
                            haltOnFailure=True,
                            description='cmake stage 1',
                            workdir=stage1_build,
@@ -438,6 +441,9 @@ def _getClangCMakeBuildFactory(
                       "-DLLVM_ENABLE_ASSERTIONS=True",
                       "-DLLVM_LIT_ARGS="+lit_args,
                       "-DCMAKE_INSTALL_PREFIX=../"+stage2_install] + extra_cmake_args
+
+        if checkout_compiler_rt:
+            cmake_cmd2.append("-DLLVM_CMAKE_DIR="+rel_src_dir+"/cmake")
 
         f.addStep(ShellCommand(name='cmake stage 2',
                                command=cmake_cmd2,
