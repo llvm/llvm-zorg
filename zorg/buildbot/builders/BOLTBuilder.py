@@ -94,7 +94,10 @@ def getBOLTCmakeBuildFactory(
                 env=env),
             ShellCommand(
                 name='check-bolt-different',
-                command='rm -f .llvm-bolt.diff; cmp -s bin/llvm-bolt.old bin/llvm-bolt.new || touch .llvm-bolt.diff',
+                command=('find -name timing.log -delete; '
+                         'rm -f .llvm-bolt.diff; '
+                         'cmp -s bin/llvm-bolt.old bin/llvm-bolt.new || '
+                         'touch .llvm-bolt.diff'),
                 description=('Check if llvm-bolt binaries are different and '
                              'skip the following nfc-check steps'),
                 haltOnFailure=False,
@@ -118,6 +121,16 @@ def getBOLTCmakeBuildFactory(
                          'tools/bolttests'],
                 description=["running", "NFC", "check-large-bolt"],
                 descriptionDone=["NFC", "check-large-bolt", "completed"],
+                warnOnFailure=True,
+                haltOnFailure=False,
+                flunkOnFailure=False,
+                doStepIf=FileExists('build/.llvm-bolt.diff'),
+                env=env),
+            LitTestCommand(
+                name='nfc-stat-check',
+                command=(f"../{f.monorepo_dir}/bolt/utils/nfc-stat-parser.py "
+                         "`find -name timing.log`"),
+                description="Check BOLT processing time and max RSS swings",
                 warnOnFailure=True,
                 haltOnFailure=False,
                 flunkOnFailure=False,
