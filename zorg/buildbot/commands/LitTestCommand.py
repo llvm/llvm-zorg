@@ -9,6 +9,9 @@ from buildbot.steps.shell import Test
 from buildbot.process.logobserver import LogLineObserver
 
 class LitLogObserver(LogLineObserver):
+  # Regular expressions for a kill header line sent from a worker.
+  kTestLineKill = re.compile(r'command timed out: (.*)')
+
   # Regular expressions for a regular test line.
   kTestLineRE = re.compile(r'(\w+): (.*) \(.*\)')
 
@@ -42,7 +45,12 @@ class LitLogObserver(LogLineObserver):
     self.parserStarted = not parseSummaryOnly
     self.simplifiedLog = False
 
+    self.killed = False
+    self.killReason = None
+
   def hadFailure(self):
+    if self.killed:
+      return True
     for code in self.failingCodes:
       if self.resultCounts.get(code):
         return True
@@ -156,6 +164,13 @@ class LitLogObserver(LogLineObserver):
         self.resultCounts[code] = self.resultCounts.get(code, 0) + 1
         return
 
+  def headerLineReceived(self, line):
+    m = self.kTestLineKill.match(line)
+    if m:
+      self.killed = True;
+      self.killReason = m.group(1)
+
+
 class LitTestCommand(Test):
   resultNames = {'FAIL':'unexpected failures',
                  'XPASS':'unexpected passes',
@@ -191,6 +206,11 @@ class LitTestCommand(Test):
       return FAILURE
 
     return SUCCESS
+
+  def getResultSummary(self):
+    if self.logObserver.killed:
+        return {'step': self.logObserver.killReason}
+    return super().getResultSummary()
 
   def describe(self, done=False):
     description = Test.describe(self, done) or list()
