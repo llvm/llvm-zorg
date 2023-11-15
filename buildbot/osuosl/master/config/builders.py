@@ -1688,6 +1688,17 @@ all += [
                         'CC': 'clang', 'CXX': 'clang++',
                     })},
 
+    {'name' : "openmp-s390x-linux",
+    'tags'  : ["openmp"],
+    'workernames' : ["systemz-1"],
+    'builddir': "openmp-s390x-linux",
+    'factory' : OpenMPBuilder.getOpenMPCMakeBuildFactory(
+                    jobs=4,
+                    extraCmakeArgs=[
+                        '-DLLVM_CCACHE_BUILD=ON',
+                        "-DLLVM_ENABLE_ASSERTIONS=ON",
+                    ])},
+
     {'name' : "openmp-offload-cuda-project",
     'tags'  : ["openmp"],
     'workernames' : ["minipc-1050ti-linux"],
