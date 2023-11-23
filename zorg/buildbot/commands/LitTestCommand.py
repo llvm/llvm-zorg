@@ -16,6 +16,8 @@ class LitLogObserver(LogLineObserver):
   # output always immediately follow a test.
   kTestVerboseLogStartRE = re.compile(r"""\*{4,80} TEST '(.*)' .*""")
   kTestVerboseLogStopRE = re.compile(r"""\*{10,80}""")
+  kTestVerboseGTestUnitRE = re.compile(r'^(.*)\/(\d+)\/(\d+)$')
+  kTestVerboseGTestPathRE = re.compile(r'^(.+)\s+--gtest_filter=(\w+).(\w+)(\s|$)')
 
   # These are the codes for which we will include the log output in the buildbot
   # step results.
@@ -34,6 +36,8 @@ class LitLogObserver(LogLineObserver):
 
     # If non-null, a list of lines in the current log.
     self.activeVerboseLog = None
+    self.activeVerboseGTest = None
+
     # Current line will be parsed as result steps only if parserStarted is True
     self.parserStarted = not parseSummaryOnly
     self.simplifiedLog = False
@@ -46,6 +50,10 @@ class LitLogObserver(LogLineObserver):
   def handleVerboseLogLine(self, line):
     # Append to the log.
     self.activeVerboseLog.append(line)
+
+    m = self.kTestVerboseGTestPathRE.match(line.strip())
+    if m:
+        self.activeVerboseGTest = [m.group(2), m.group(3)]
 
     # If this is a stop marker, process the test info.
     if self.kTestVerboseLogStopRE.match(line.strip()):
@@ -68,8 +76,15 @@ class LitLogObserver(LogLineObserver):
           # Make the test name short, the qualified test name is in the log anyway.
           # Otherwise, we run out of the allowed name length on some hosts.
           name_part = name.rpartition('::')
+          name_part2 = basename(name_part[2])
+
+          if self.activeVerboseGTest:
+              m = self.kTestVerboseGTestUnitRE.match(name_part[2].strip())
+              if m:
+                  name_part2 = '/'.join([basename(m.group(1)),] + self.activeVerboseGTest)
+
           self.step.addCompleteLog(
-                      code + ': ' + name_part[0].strip() + name_part[1] + basename(name_part[2]),
+                      code + ': ' + name_part[0].strip() + name_part[1] + name_part2,
                       '\n'.join(self.activeVerboseLog))
           self.numLogs += 1
     else:
@@ -80,6 +95,7 @@ class LitLogObserver(LogLineObserver):
     # Reset the current state.
     self.lastTestResult = None
     self.activeVerboseLog = None
+    self.activeVerboseGTest = None
 
   def handleSimplifiedLogLine(self, line):
     # Check for test status line
