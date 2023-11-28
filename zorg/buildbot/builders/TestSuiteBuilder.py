@@ -15,6 +15,7 @@ def addTestSuiteStep(
             f,
             compiler_dir = None,
             env = None,
+            cleanBuildRequested=True,
             lit_args = [],
             **kwargs):
 
@@ -28,13 +29,16 @@ def addTestSuiteStep(
     # used for cmake building test-suite step
     options = [cc, cxx, cmake_lit_arg]
 
-    # always clobber the build directory to test each new compiler
-    f.addStep(ShellCommand(name='Clean Test Suite Build dir',
-                           command=['rm', '-rf', test_suite_workdir],
-                           haltOnFailure=True,
-                           description='Removing the Test Suite build directory',
-                           workdir=test_suite_base_dir,
-                           env=env))
+    # The default value of cleanBuildRequested is TRUE as we should always
+    # clobber the build directory to test each freshly built compiler.
+    f.addStep(steps.RemoveDirectory(
+                name='Clean Test Suite Build dir' % test_suite_workdir,
+                dir=test_suite_workdir,
+                haltOnFailure=False,
+                flunkOnFailure=False,
+                doStepIf=cleanBuildRequested,
+                ))
+
 
     f.addGetSourcecodeForProject(
         project='test-suite',
