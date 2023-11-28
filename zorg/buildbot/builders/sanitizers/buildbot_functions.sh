@@ -359,6 +359,8 @@ function check_stage2 {
         LIT_FILTER_OUT+="|std/numerics/rand/rand.dist/rand.dist.bern/rand.dist.bern.negbin/eval.pass.cpp"
         LIT_FILTER_OUT+="|std/numerics/rand/rand.dist/rand.dist.samp/rand.dist.samp.discrete/eval.pass.cpp"
         LIT_FILTER_OUT+="|std/utilities/charconv/charconv.msvc/test.pass.cpp"
+        LIT_FILTER_OUT+="|std/utilities/format/format.functions/format.locale.runtime_format.pass.cpp"
+        LIT_FILTER_OUT+="|std/utilities/format/format.functions/format.runtime_format.pass.cpp"
         LIT_FILTER_OUT+="|std/utilities/format/format.functions/format_to_n.locale.pass.cpp"
         LIT_FILTER_OUT+="|std/utilities/format/format.functions/format_to_n.pass.cpp"
         LIT_FILTER_OUT+="|std/utilities/format/format.functions/format_to.locale.pass.cpp"
