@@ -15,7 +15,6 @@ from zorg.buildbot.builders import UnifiedTreeBuilder
 from zorg.buildbot.builders import AOSPBuilder
 from zorg.buildbot.builders import AnnotatedBuilder
 from zorg.buildbot.builders import LLDPerformanceTestsuite
-from zorg.buildbot.builders import FuchsiaBuilder
 from zorg.buildbot.builders import XToolchainBuilder
 
 
