@@ -26,7 +26,7 @@ def step(step_name, halt_on_fail=False):
         util.report('@@@STEP_EXCEPTION@@@')
 
 
-def run_command(cmd, directory='.'):
+def run_command(cmd, directory=os.getcwd()):
     util.report_run_cmd(cmd, cwd=directory)
 
 
