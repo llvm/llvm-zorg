@@ -54,6 +54,7 @@ def main(argv):
             '-B', build_dir,
             '-G', 'Ninja',
             '-D', 'BOOTSTRAP_LLVM_ENABLE_LTO=OFF',
+            '-D', 'LLVM_CCACHE_BUILD=ON',
             '-D', 'LLVM_ENABLE_LTO=OFF',
             '-D', f'FUCHSIA_SDK={args.sdk_dir}',
             '-C', f'{source_dir}/clang/cmake/caches/Fuchsia.cmake',
