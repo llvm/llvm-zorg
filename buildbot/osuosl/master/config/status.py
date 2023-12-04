@@ -185,7 +185,7 @@ def getReporters():
             fromaddr = "llvm.buildmaster@lab.llvm.org",
             sendToInterestedUsers = False,
             extraRecipients = ["lntue@google.com", "michaelrj@google.com",
-                            "sivachandra@google.com"],
+                            "ndesaulniers@google.com"],
             subject = "Build %(builder)s Failure",
             mode = "failing",
             builders = ["libc-x86_64-debian", "libc-x86_64_debian-dbg",
