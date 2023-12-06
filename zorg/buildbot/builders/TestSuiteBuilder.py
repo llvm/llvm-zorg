@@ -13,10 +13,16 @@ from zorg.buildbot.commands.LitTestCommand import LitTestCommand
 
 def addTestSuiteStep(
             f,
-            compiler_dir = None,
+            compiler_dir = '.',
             env = None,
-            lit_args = [],
+            lit_args = None,
             **kwargs):
+
+    # Set defaults
+    if env is None:
+        env = {}
+    if lit_args is None:
+        lit_args = []
 
     cc = util.Interpolate('-DCMAKE_C_COMPILER=' + '%(prop:builddir)s/'+compiler_dir+'/bin/clang')
     cxx = util.Interpolate('-DCMAKE_CXX_COMPILER=' + '%(prop:builddir)s/'+compiler_dir+'/bin/clang++')
