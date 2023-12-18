@@ -191,8 +191,9 @@ def get_all():
         # Windows dellfx2-sled3
         create_worker("as-builder-3", max_builds=1),
 
-        # Ubuntu 18.04.2 LTS x86_64 Intel(R) Xeon(R) Gold CPU @ 2.1GHz, 128GB RAM
+        # Ubuntu 20.04.2 LTS x86_64 Intel(R) Xeon(R) Gold CPU @ 2.1GHz, 256GB RAM
         create_worker("as-builder-4", properties={'jobs': 64}, max_builds=1),
+        create_worker("as-builder-4-rel", properties={'jobs': 64}, max_builds=1),
 
         # Windows Server on Xeon Gold 6230 (2x2.1GHz), 256Gb of RAM
         create_worker("as-builder-5", properties={  # arm

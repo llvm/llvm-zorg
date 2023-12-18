@@ -130,13 +130,20 @@ all = [
                     depends_on_projects=["llvm", "lld"],
                     clean=True,
                     extra_configure_args=[
+                        "-DLLVM_CCACHE_BUILD=ON",
                         "-DLLVM_ENABLE_EXPENSIVE_CHECKS=ON",
                         "-DLLVM_ENABLE_WERROR=OFF",
                         "-DLLVM_USE_SPLIT_DWARF=ON",
                         "-DLLVM_USE_LINKER=gold",
                         "-DCMAKE_BUILD_TYPE=Debug",
                         "-DCMAKE_CXX_FLAGS=-U_GLIBCXX_DEBUG -Wno-misleading-indentation",
-                        "-DLLVM_LIT_ARGS=-vv -j32"])},
+                        "-DLLVM_LIT_ARGS=-vv --time-tests"],
+                    env={
+                        'CCACHE_DIR' : WithProperties("%(builddir)s/ccache-db"),
+                        # TMP/TEMP within the build dir (to utilize a ramdisk).
+                        'TMP'        : WithProperties("%(builddir)s/build"),
+                        'TEMP'       : WithProperties("%(builddir)s/build"),
+                    })},
 
     {'name' : "llvm-clang-x86_64-expensive-checks-win",
     'tags'  : ["llvm", "expensive-checks"],
@@ -1332,10 +1339,17 @@ all = [
     'workernames' : ["as-builder-4"],
     'builddir' : "lld-x86_64-ubuntu-fast",
     'factory': UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
-                            clean=True,
-                            extra_configure_args=[
-                                '-DLLVM_ENABLE_WERROR=OFF'],
-                            depends_on_projects=['llvm', 'lld'])},
+                    depends_on_projects=['llvm', 'lld'],
+                    clean=True,
+                    extra_configure_args=[
+                        "-DLLVM_CCACHE_BUILD=ON",
+                        '-DLLVM_ENABLE_WERROR=OFF'],
+                    env={
+                        'CCACHE_DIR' : WithProperties("%(builddir)s/ccache-db"),
+                        # TMP/TEMP within the build dir (to utilize a ramdisk).
+                        'TMP'        : WithProperties("%(builddir)s/build"),
+                        'TEMP'       : WithProperties("%(builddir)s/build"),
+                    })},
 
 # LTO and ThinLTO builders.
 
