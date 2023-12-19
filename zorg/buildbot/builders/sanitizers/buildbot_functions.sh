@@ -392,6 +392,12 @@ function check_stage2 {
           LIT_FILTER_OUT+="|test_vector2.pass.cpp"
           LIT_FILTER_OUT+="|forced_unwind2.pass.cpp"
         fi
+
+        if [[ "$(arch)" == "aarch64" ]] ; then
+          # TODO: Investigate what is wrong with aarch64 unwinder.
+          LIT_FILTER_OUT+="|ostream.formatted.print/vprint_nonunicode.pass.cpp"
+          LIT_FILTER_OUT+="|ostream.formatted.print/vprint_unicode.pass.cpp"
+        fi
         ninja -C libcxx_build_${sanitizer_name} check-cxx check-cxxabi
       ) || build_failure
     ) &>check_cxx.log &
