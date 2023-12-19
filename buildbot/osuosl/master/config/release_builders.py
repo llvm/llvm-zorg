@@ -64,9 +64,6 @@ all = [
                         "-DLLVM_LIT_ARGS=-vv --time-tests"],
                     env={
                         'CCACHE_DIR' : WithProperties("%(builddir)s/ccache-db"),
-                        # TMP/TEMP within the build dir (to utilize a ramdisk).
-                        'TMP'        : WithProperties("%(builddir)s/build"),
-                        'TEMP'       : WithProperties("%(builddir)s/build"),
                     })},
 
     {'name' : "llvm-clang-x86_64-expensive-checks-win-release",
@@ -205,9 +202,6 @@ all = [
                         '-DLLVM_ENABLE_WERROR=OFF'],
                     env={
                         'CCACHE_DIR' : WithProperties("%(builddir)s/ccache-db"),
-                        # TMP/TEMP within the build dir (to utilize a ramdisk).
-                        'TMP'        : WithProperties("%(builddir)s/build"),
-                        'TEMP'       : WithProperties("%(builddir)s/build"),
                     })},
 
 # LTO and ThinLTO builders.

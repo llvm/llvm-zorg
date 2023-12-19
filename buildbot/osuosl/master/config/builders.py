@@ -125,7 +125,7 @@ all = [
     {'name' : "llvm-clang-x86_64-expensive-checks-ubuntu",
     'tags'  : ["llvm", "expensive-checks"],
     'workernames' : ["as-builder-4"],
-    'builddir': "llvm-clang-x86_64-expensive-checks-ubuntu",
+    'builddir': "expensive-checks",
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                     depends_on_projects=["llvm", "lld"],
                     clean=True,
@@ -1337,7 +1337,7 @@ all = [
     'tags'  : ["lld"],
     'collapseRequests': False,
     'workernames' : ["as-builder-4"],
-    'builddir' : "lld-x86_64-ubuntu-fast",
+    'builddir' : "lld-x86_64",
     'factory': UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                     depends_on_projects=['llvm', 'lld'],
                     clean=True,
