@@ -2787,7 +2787,6 @@ all += [
                     src_to_build_dir="flang/runtime",
                     targets=["FortranRuntime"],
                     extra_configure_args=[
-                        "-DLLVM_CCACHE_BUILD=ON",
                         "-DCMAKE_BUILD_TYPE=Release",
                         "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
@@ -2797,7 +2796,10 @@ all += [
                         "-DCMAKE_CXX_COMPILER=/usr/bin/g++",
                         "-DCMAKE_C_COMPILER=/usr/bin/gcc",
                         "-DCMAKE_CUDA_HOST_COMPILER=/usr/bin/g++",
-                        "-DCMAKE_CUDA_ARCHITECTURES='50;60;70;80'",
+                        "-DCMAKE_CUDA_ARCHITECTURES=80",
+                        "-DCMAKE_CUDA_COMPILER_LAUNCHER=ccache",
+                        "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
+                        "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
                     ],
                     env={
                         'CCACHE_DIR' : WithProperties("%(builddir)s/ccache-db"),
