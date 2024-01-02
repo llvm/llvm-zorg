@@ -25,7 +25,7 @@ spec:
       - env:
         - name: BUILDBOT_PORT
           value: "9990" # 9990 is production, 9994 is staging.
-        image: gcr.io/sanitizer-bots/buildbot-cpp20:4
+        image: gcr.io/sanitizer-bots/buildbot-cpp20:5
         name: buildbot-clang-debian-cpp20
         resources:
           limits:
