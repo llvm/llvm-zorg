@@ -20,7 +20,8 @@ class LitLogObserver(LogLineObserver):
   kTestVerboseLogStartRE = re.compile(r"""\*{4,80} TEST '(.*)' .*""")
   kTestVerboseLogStopRE = re.compile(r"""\*{10,80}""")
   kTestVerboseGTestUnitRE = re.compile(r'^(.*)\/(\d+)\/(\d+)$')
-  kTestVerboseGTestPathRE = re.compile(r'^(.+)\s+--gtest_filter=(\w+).(\w+)(\s|$)')
+  kTestVerboseGTestLlvmUnitRE = re.compile(r'^(.+)\s+--gtest_filter=(\w+).(\w+)(\s|$)')
+  kTestVerboseGTestClangUnitRE = re.compile(r'^GTEST_OUTPUT=(.+)\s+GTEST_SHARD_INDEX=(\d+)(\s|$)')
 
   # These are the codes for which we will include the log output in the buildbot
   # step results.
@@ -59,9 +60,13 @@ class LitLogObserver(LogLineObserver):
     # Append to the log.
     self.activeVerboseLog.append(line)
 
-    m = self.kTestVerboseGTestPathRE.match(line.strip())
+    m = self.kTestVerboseGTestLlvmUnitRE.match(line.strip())
     if m:
         self.activeVerboseGTest = [m.group(2), m.group(3)]
+    else:
+        m = self.kTestVerboseGTestClangUnitRE.match(line.strip())
+        if m:
+            self.activeVerboseGTest = [str(m.group(2))]
 
     # If this is a stop marker, process the test info.
     if self.kTestVerboseLogStopRE.match(line.strip()):
