@@ -4,6 +4,7 @@ import argparse
 import os
 import subprocess
 import sys
+import tempfile
 import traceback
 import util
 
@@ -41,12 +42,13 @@ def main(argv):
     buildbot_revision = os.environ.get('BUILDBOT_REVISION', 'origin/main')
 
     cwd = os.getcwd()
-    build_dir = cwd
-    source_dir = os.path.join(cwd, '..', 'llvm-project')
 
     if buildbot_clobber:
         with step('clean', halt_on_fail=True):
-            util.clean_dir(build_dir)
+            util.clean_dir(cwd)
+
+    build_dir = tempfile.mkdtemp(prefix='llvm-build-', dir=cwd)
+    source_dir = os.path.join(cwd, '..', 'llvm-project')
 
     with step('configure', halt_on_fail=True):
         cmake_args = [
