@@ -37,7 +37,7 @@ def main(argv):
     args, _ = parser.parse_known_args()
 
     buildbot_buildername = os.environ.get('BUILDBOT_BUILDERNAME')
-    buildbot_clobber = os.environ.get('BUILDBOT_CLOBBER') is not None
+    buildbot_clobber = bool(os.environ.get('BUILDBOT_CLOBBER'))
     buildbot_revision = os.environ.get('BUILDBOT_REVISION', 'origin/main')
 
     cwd = os.getcwd()
