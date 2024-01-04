@@ -69,7 +69,7 @@ function cleanup() {
   if ccache -s >/dev/null ; then
     rm_dirs llvm_build64
   fi
-  # Workaround the case when a new unittest was reverted, incremental build continues to execute the last binary.
+  # Workaround the case when a new unittest was reverted, but incremental build continues to execute the leftover binary.
   find -executable -type f -wholename *unittests* -delete
   du -hs * | sort -h
 }
