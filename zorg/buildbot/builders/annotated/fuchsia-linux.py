@@ -42,6 +42,7 @@ def main(argv):
 
     cwd = os.getcwd()
     build_dir = cwd
+    build_dir = os.path.join(cwd, '..', 'llvm-build')
     source_dir = os.path.join(cwd, '..', 'llvm-project')
 
     if buildbot_clobber:
