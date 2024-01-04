@@ -41,7 +41,6 @@ def main(argv):
     buildbot_revision = os.environ.get('BUILDBOT_REVISION', 'origin/main')
 
     cwd = os.getcwd()
-    build_dir = cwd
     build_dir = os.path.join(cwd, '..', 'llvm-build')
     source_dir = os.path.join(cwd, '..', 'llvm-project')
 
