@@ -7,8 +7,11 @@ set -u
 HERE="$(cd $(dirname $0) && pwd)"
 . ${HERE}/buildbot_functions.sh
 
+# TODO: find a better way to disable cleanup.
 function cleanup() {
-  ls
+  # Workaround the case when a new unittest was reverted, but incremental build continues to execute the leftover binary.
+  find -executable -type f -wholename *unittests* -delete
+  du -hs * | sort -h
 }
 
 clobber
