@@ -1831,7 +1831,7 @@ all += [
     'factory' : OpenMPBuilder.getOpenMPCMakeBuildFactory(
                         clean=True,
                         enable_runtimes=['openmp'],
-                        depends_on_projects=['llvm','clang','lld','openmp','flang'],
+                        depends_on_projects=['llvm','clang','lld','openmp','mlir','flang'],
                         extraCmakeArgs=[
                             "-DCMAKE_BUILD_TYPE=Release",
                             "-DCLANG_DEFAULT_LINKER=lld",
@@ -1848,7 +1848,7 @@ all += [
                             "-DTEST_SUITE_SOLLVEVV_OFFLOADING_CFLAGS=-fopenmp-targets=amdgcn-amd-amdhsa;-Xopenmp-target=amdgcn-amd-amdhsa",
                             "-DTEST_SUITE_SOLLVEVV_OFFLOADING_LDLAGS=-fopenmp-targets=amdgcn-amd-amdhsa;-Xopenmp-target=amdgcn-amd-amdhsa",
                         ],
-                        add_lit_checks=["check-flang"],
+                        add_lit_checks=["check-flang","check-mlir"],
                     )},
 
 
