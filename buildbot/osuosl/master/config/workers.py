@@ -300,6 +300,7 @@ def get_all():
 
         # Flang OpenMP on AMDGPU, Ubuntu 22.04.3, AMD(R) EPYC 9354 @ 2.5GHz with 512GB Memory, 1 MI210 GPU with 64GB Memory
         create_worker("rocm-worker-hw-01", properties={'jobs': 64}, max_builds=1),
+        create_worker("rocm-worker-hw-02", properties={'jobs': 64}, max_builds=1),
 
         # AMD ROCm support, Ubuntu 18.04.6, AMD Ryzen @ 1.5 GHz, MI200 GPU
         create_worker("mi200-buildbot", max_builds=1),
