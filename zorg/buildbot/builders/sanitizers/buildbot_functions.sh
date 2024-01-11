@@ -260,7 +260,7 @@ function build_stage2 {
   (cd ${libcxx_build_dir} && \
     cmake \
       ${cmake_stage2_common_options} \
-      -DLLVM_ENABLE_RUNTIMES='libcxx;libcxxabi' \
+      -DLLVM_ENABLE_RUNTIMES='libcxx;libcxxabi;libunwind' \
       -DLLVM_USE_SANITIZER=${llvm_use_sanitizer} \
       -DCMAKE_C_FLAGS="${fsanitize_flag} ${cmake_libcxx_cflags} ${fno_sanitize_flag}" \
       -DCMAKE_CXX_FLAGS="${fsanitize_flag} ${cmake_libcxx_cflags} ${fno_sanitize_flag}" \
