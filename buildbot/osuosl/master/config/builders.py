@@ -675,7 +675,7 @@ all = [
     'builddir': "clang-ppc64le-rhel",
     'factory' : TestSuiteBuilder.getTestSuiteBuildFactory(
                     depends_on_projects=["llvm", "clang", "clang-tools-extra",
-                                         "lld", "libcxx", "libcxxabi",
+                                         "lld", "libcxx", "libcxxabi", "libunwind",
                                          "compiler-rt"],
                     checks=['check-runtimes', 'check-all'],
                     extra_configure_args=[
