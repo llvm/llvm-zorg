@@ -70,7 +70,7 @@ function cleanup() {
     rm_dirs llvm_build64
   fi
   # Workaround the case when a new unittest was reverted, but incremental build continues to execute the leftover binary.
-  find -path ./llvm-project -prune -o -executable -type f -path '*unittests*' -print -exec ls {} \;
+  find -path ./llvm-project -prune -o -executable -type f -path '*unittests*' -print -exec rm -f {} \;
   du -hs * | sort -h
 }
 
