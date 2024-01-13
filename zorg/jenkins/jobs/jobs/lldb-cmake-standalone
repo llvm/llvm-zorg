@@ -75,7 +75,7 @@ pipeline {
                       --assertions \
                       --noupload \
                       --projects="clang" \
-                      --runtimes="libcxx;libcxxabi" \
+                      --runtimes="libcxx;libcxxabi;libunwind" \
                       --cmake-flag="-DLLVM_INSTALL_UTILS=On" \
                       --cmake-flag="-DLLVM_INSTALL_TOOLCHAIN_ONLY=Off" \
                       --cmake-flag="-DLLVM_TARGETS_TO_BUILD=X86"

@@ -78,7 +78,7 @@ pipeline {
                     python3 llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-sanitized build \
                       --assertions \
                       --projects="clang;lld;lldb"  \
-                      --runtimes="libcxx;libcxxabi" \
+                      --runtimes="libcxx;libcxxabi;libunwind" \
                       --cmake-type=Release
 
                     if test -f /opt/codesign-workaround.sh; then sh /opt/codesign-workaround.sh sign lldb-build/bin/debugserver; fi

@@ -80,7 +80,7 @@ pipeline {
                       $MATRIX_COMMON_BUILD_PARAMETERS \
                       --assertions \
                       --projects="clang;lldb"  \
-                      --runtimes="libcxx;libcxxabi"  \
+                      --runtimes="libcxx;libcxxabi;libunwind"  \
                       --cmake-type=Release \
                       --dotest-flag="--skip-category gmodules" \
                       --dotest-flag="--arch=x86_64"
@@ -100,7 +100,7 @@ pipeline {
                       --assertions \
                       --lldb-test-compiler="$WORKSPACE/lldb-build/bin/clang" \
                       --projects="clang;lldb"  \
-                      --runtimes="libcxx;libcxxabi"  \
+                      --runtimes="libcxx;libcxxabi;libunwind"  \
                       --cmake-type=Release \
                       --dotest-flag="--skip-category" \
                       --dotest-flag="gmodules" \
@@ -133,7 +133,7 @@ pipeline {
                       --lldb-test-compiler="$WORKSPACE/lldb-build/bin/clang" \
                       --assertions \
                       --projects="clang;lldb"  \
-                      --runtimes="libcxx;libcxxabi"  \
+                      --runtimes="libcxx;libcxxabi;libunwind"  \
                       --cmake-type=Release \
                       --dotest-flag="--skip-category" \
                       --dotest-flag="gmodules" \
@@ -166,7 +166,7 @@ pipeline {
                       --lldb-test-compiler="$WORKSPACE/lldb-build/bin/clang" \
                       --assertions \
                       --projects="clang;lldb"  \
-                      --runtimes="libcxx;libcxxabi"  \
+                      --runtimes="libcxx;libcxxabi;libunwind"  \
                       --cmake-type=Release \
                       --dotest-flag="--skip-category" \
                       --dotest-flag="gmodules" \
@@ -230,7 +230,7 @@ pipeline {
                       --assertions \
                       --lldb-test-compiler="$build_dir/bin/clang" \
                       --projects="clang;lldb"  \
-                      --runtimes="libcxx;libcxxabi"  \
+                      --runtimes="libcxx;libcxxabi;libunwind"  \
                       --cmake-type=Release \
                       --dotest-flag="--libcxx-include-dir=$build_dir/include/c++/v1/" \
                       --dotest-flag="--libcxx-library-dir=$build_dir/lib/" \
@@ -295,7 +295,7 @@ pipeline {
                       --assertions \
                       --lldb-test-compiler="$build_dir/bin/clang" \
                       --projects="clang;lldb"  \
-                      --runtimes="libcxx;libcxxabi"  \
+                      --runtimes="libcxx;libcxxabi;libunwind"  \
                       --cmake-type=Release \
                       --dotest-flag="--libcxx-include-dir=$build_dir/include/c++/v1/" \
                       --dotest-flag="--libcxx-library-dir=$build_dir/lib/" \
@@ -360,7 +360,7 @@ pipeline {
                       --assertions \
                       --lldb-test-compiler="$build_dir/bin/clang" \
                       --projects="clang;lldb"  \
-                      --runtimes="libcxx;libcxxabi"  \
+                      --runtimes="libcxx;libcxxabi;libunwind"  \
                       --cmake-type=Release \
                       --dotest-flag="--libcxx-include-dir=$build_dir/include/c++/v1/" \
                       --dotest-flag="--libcxx-library-dir=$build_dir/lib/" \
@@ -425,7 +425,7 @@ pipeline {
                       --assertions \
                       --lldb-test-compiler="$build_dir/bin/clang" \
                       --projects="clang;lldb"  \
-                      --runtimes="libcxx;libcxxabi"  \
+                      --runtimes="libcxx;libcxxabi;libunwind"  \
                       --cmake-type=Release \
                       --dotest-flag="--libcxx-include-dir=$build_dir/include/c++/v1/" \
                       --dotest-flag="--libcxx-library-dir=$build_dir/lib/" \
@@ -490,7 +490,7 @@ pipeline {
                       --assertions \
                       --lldb-test-compiler="$build_dir/bin/clang" \
                       --projects="clang;lldb"  \
-                      --runtimes="libcxx;libcxxabi"  \
+                      --runtimes="libcxx;libcxxabi;libunwind"  \
                       --cmake-type=Release \
                       --dotest-flag="--libcxx-include-dir=$build_dir/include/c++/v1/" \
                       --dotest-flag="--libcxx-library-dir=$build_dir/lib/" \
