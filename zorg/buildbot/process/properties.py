@@ -2,11 +2,12 @@
 # See https://llvm.org/LICENSE.txt for license information.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+from twisted.internet import defer
+
 from zope.interface import implementer
 
 from buildbot.interfaces import IRenderable
 from buildbot.process.properties import Interpolate
-
 
 @implementer(IRenderable)
 class InterpolateToNativePath(Interpolate):
@@ -16,15 +17,17 @@ class InterpolateToNativePath(Interpolate):
     the correct worker path separator.
     """
 
+    @defer.inlineCallbacks
     def getRenderingFor(self, build):
         # Upcall the base class first.
-        p = super().getRenderingFor(build)
+        p = yield super().getRenderingFor(build)
 
         # Then we need to normalize the path for
         # watever is native on that worker.
         # Note: Do not call normpath here, as it could
         # change the path meaning if links are used.
         worker = build.getBuild().workerforbuilder.worker
+
         return worker.path_module.normcase(p)
 
 
@@ -36,9 +39,10 @@ class InterpolateToPosixPath(Interpolate):
     POSIX path separator.
     """
 
+    @defer.inlineCallbacks
     def getRenderingFor(self, build):
         # Upcall the base class first.
-        p = super().getRenderingFor(build)
+        p = yield super().getRenderingFor(build)
 
         # Then we need to figure out the worker OS:
         worker = build.getBuild().workerforbuilder.worker
