@@ -3013,6 +3013,5 @@ all += [
                       "-DLLVM_LIT_ARGS=-v",
                       "-DLLVM_ENABLE_LLD=ON",
                       "-DCMAKE_CXX_FLAGS=-gmlt",
-                      "-DBOLT_CLANG_EXE=/usr/bin/clang",
                       "-DLLVM_CCACHE_BUILD=ON"])},
 ]
