@@ -19,7 +19,7 @@ def getBOLTCmakeBuildFactory(
            **kwargs):
 
     if env is None:
-        env = dict()
+        env = {'CCACHE_COMPILERCHECK': 'content'}
 
     bolttests_dir = "bolt-tests"
 
