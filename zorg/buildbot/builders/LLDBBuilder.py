@@ -12,7 +12,8 @@ from zorg.buildbot.process.factory import LLVMBuildFactory
 def getLLDBCMakeBuildFactory(
             clean=False,
             # None means use the "jobs" property of the worker, if it has one.
-            # If it is set, it should be set to the number of jobs to use.
+            # If this argument is not None, it should be set to the number of
+            # jobs to use.
             jobs=None,
 
             # Source directory containing a built python
