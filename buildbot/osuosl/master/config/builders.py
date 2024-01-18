@@ -1289,7 +1289,8 @@ all = [
                     extra_cmake_args=[
                         '-DLLVM_ENABLE_ASSERTIONS=True',
                         '-DLLVM_LIT_ARGS=-v',
-                        '-DLLVM_USE_LINKER=lld'])},
+                        '-DLLVM_USE_LINKER=lld'],
+                    jobs=None)},
 
     {'name' : "lldb-arm-ubuntu",
     'tags'  : ["lldb"],
@@ -1301,7 +1302,8 @@ all = [
                     extra_cmake_args=[
                         '-DLLVM_ENABLE_ASSERTIONS=True',
                         '-DLLVM_LIT_ARGS=-vj 4',
-                        '-DLLVM_USE_LINKER=gold'])},
+                        '-DLLVM_USE_LINKER=gold'],
+                    jobs=None)},
 
     {'name' : "lldb-aarch64-windows",
     'tags'  : ["lldb"],
@@ -1314,7 +1316,8 @@ all = [
                         "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
                         "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
                         '-DLLVM_LIT_ARGS=-v',
-                        '-DLLDB_TEST_USER_ARGS=--skip-category=watchpoint'])},
+                        '-DLLDB_TEST_USER_ARGS=--skip-category=watchpoint'],
+                    jobs=None)},
 
 # LLD builders.
 
