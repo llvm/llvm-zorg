@@ -11,7 +11,9 @@ from zorg.buildbot.process.factory import LLVMBuildFactory
 # CMake builds
 def getLLDBCMakeBuildFactory(
             clean=False,
-            jobs="%(jobs)s",
+            # None means use the "jobs" property of the worker, if it has one.
+            # If it is set, it should be set to the number of jobs to use.
+            jobs=None,
 
             # Source directory containing a built python
             python_source_dir=None,
@@ -50,9 +52,18 @@ def getLLDBCMakeBuildFactory(
     lit_args = '-v'
 
     if jobs:
-        build_cmd.append(WithProperties("-j%s" % jobs))
-        install_cmd.append(WithProperties("-j%s" % jobs))
-        test_cmd.append(WithProperties("-j%s" % jobs))
+        jobs_option = ["-j{}".format(jobs)]
+    else:
+        # Use the worker property if option was not explicitly specified.
+        jobs_option = [
+            # If jobs exists, add -j. If not, add nothing.
+            WithProperties("%(jobs:+-j)s"),
+            # If jobs exists, add its value. If not, add nothing.
+            WithProperties("%(jobs:-)s")]
+
+    build_cmd.extend(jobs_option)
+    install_cmd.extend(jobs_option)
+    test_cmd.extend(jobs_option)
 
     ############# CLEANING
     cleanBuildRequested = lambda step: clean or step.build.getProperty("clean", default=step.build.getProperty("clean_obj"))

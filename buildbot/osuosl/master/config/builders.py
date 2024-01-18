@@ -1323,8 +1323,7 @@ all = [
                     extra_cmake_args=[
                         '-DLLVM_ENABLE_ASSERTIONS=True',
                         '-DLLVM_LIT_ARGS=-v',
-                        '-DLLVM_USE_LINKER=lld'],
-                    jobs=None)},
+                        '-DLLVM_USE_LINKER=lld'])},
 
     {'name' : "lldb-arm-ubuntu",
     'tags'  : ["lldb"],
@@ -1336,8 +1335,7 @@ all = [
                     extra_cmake_args=[
                         '-DLLVM_ENABLE_ASSERTIONS=True',
                         '-DLLVM_LIT_ARGS=-vj 4',
-                        '-DLLVM_USE_LINKER=gold'],
-                    jobs=None)},
+                        '-DLLVM_USE_LINKER=gold'])},
 
     {'name' : "lldb-aarch64-windows",
     'tags'  : ["lldb"],
@@ -1352,8 +1350,7 @@ all = [
                         '-DLLVM_LIT_ARGS=-v',
                         # Hardware breakpoints and watchpoints are not yet supported,
                         # https://github.com/llvm/llvm-project/issues/80665.
-                        '-DLLDB_TEST_USER_ARGS=--skip-category=watchpoint'],
-                    jobs=None)},
+                        '-DLLDB_TEST_USER_ARGS=--skip-category=watchpoint'])},
 
 # LLD builders.
 
