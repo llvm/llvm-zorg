@@ -11,10 +11,6 @@ from zorg.buildbot.process.factory import LLVMBuildFactory
 # CMake builds
 def getLLDBCMakeBuildFactory(
             clean=False,
-            # None means use the "jobs" property of the worker, if it has one.
-            # If this argument is not None, it should be set to the number of
-            # jobs to use.
-            jobs=None,
 
             # Source directory containing a built python
             python_source_dir=None,
@@ -52,15 +48,12 @@ def getLLDBCMakeBuildFactory(
     test_cmd = ['ninja','check-lldb']
     lit_args = '-v'
 
-    if jobs:
-        jobs_option = ["-j{}".format(jobs)]
-    else:
-        # Use the worker property if option was not explicitly specified.
-        jobs_option = [
-            # If jobs exists, add -j. If not, add nothing.
-            WithProperties("%(jobs:+-j)s"),
-            # If jobs exists, add its value. If not, add nothing.
-            WithProperties("%(jobs:-)s")]
+    # If the worker has specified a number of jobs, use it.
+    jobs_option = [
+        # If jobs exists, add -j. If not, add nothing.
+        WithProperties("%(jobs:+-j)s"),
+        # If jobs exists, add its value. If not, add nothing.
+        WithProperties("%(jobs:-)s")]
 
     build_cmd.extend(jobs_option)
     install_cmd.extend(jobs_option)
