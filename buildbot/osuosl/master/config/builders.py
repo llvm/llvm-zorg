@@ -775,21 +775,6 @@ all = [
                                       '-DLLVM_PARALLEL_LINK_JOBS=4',
                                       '-DLLVM_TARGETS_TO_BUILD=Sparc'])},
 
-    {'name' : "clang-sparc64-linux-multistage",
-    'tags'  : ["clang"],
-    'workernames' : ["debian-stadler-sparc64"],
-    'builddir': "clang-sparc64-linux-multistage",
-    'factory' : ClangBuilder.getClangCMakeBuildFactory(
-                    clean=False,
-                    checkout_lld=False,
-                    enable_runtimes=None,
-                    useTwoStage=True,
-                    stage1_config='Release',
-                    stage2_config='Release',
-                    extra_cmake_args=['-DLLVM_ENABLE_ASSERTIONS=ON',
-                                      '-DLLVM_PARALLEL_LINK_JOBS=4',
-                                      '-DLLVM_TARGETS_TO_BUILD=Sparc'])},
-
     ## LoongArch64 Clang+LLVM build check-all + test-suite
     {'name' : 'clang-loongarch64-linux',
     'tags'  : ['clang'],
