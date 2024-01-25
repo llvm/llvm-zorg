@@ -149,6 +149,8 @@ def get_all():
         # Debian 9.0 x86_64 64-core GCE instances
         create_worker("fuchsia-debian-64-us-central1-a-1", properties={'jobs': 64}, max_builds=1),
         create_worker("fuchsia-debian-64-us-central1-b-1", properties={'jobs': 64}, max_builds=1),
+        create_worker("fuchsia-debian-64-staging-1", properties={'jobs': 64}, max_builds=1),
+        create_worker("fuchsia-debian-64-staging-2", properties={'jobs': 64}, max_builds=1),
 
         # Debian x86_64 Buster Xeon(R) Gold 6154 CPU @ 3.00GHz, 192GB RAM
         create_worker("lldb-x86_64-debian", properties={'jobs': 72}, max_builds=1),

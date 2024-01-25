@@ -1910,6 +1910,27 @@ all += [
                         'polly'
                     ])},
 
+    {'name': "fuchsia-x86_64-linux-staging",
+    'tags'  : ["toolchain"],
+    'workernames' :["fuchsia-debian-64-staging-1", "fuchsia-debian-64-staging-2"],
+    'builddir': "fuchsia-x86_64-linux-staging",
+    'factory' : AnnotatedBuilder.getAnnotatedBuildFactory(
+                    script="fuchsia-linux-staging.py",
+                    depends_on_projects=[
+                        'bolt',
+                        'clang',
+                        'clang-tools-extra',
+                        'compiler-rt',
+                        'libc',
+                        'libcxx',
+                        'libcxxabi',
+                        'libunwind',
+                        'lld',
+                        'lldb',
+                        'llvm',
+                        'polly'
+                    ])},
+
 # libc Builders.
 
     {'name' : 'libc-x86_64-windows-dbg',
