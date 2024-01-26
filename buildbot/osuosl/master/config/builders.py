@@ -681,8 +681,7 @@ all = [
     'builddir': "clang-ppc64le-rhel",
     'factory' : TestSuiteBuilder.getTestSuiteBuildFactory(
                     depends_on_projects=["llvm", "clang", "clang-tools-extra",
-                                         "lld", "libcxx", "libcxxabi", "libunwind",
-                                         "compiler-rt"],
+                                         "lld", "compiler-rt"],
                     checks=['check-runtimes', 'check-all'],
                     extra_configure_args=[
                         "-DLLVM_ENABLE_ASSERTIONS=On",
@@ -690,8 +689,8 @@ all = [
                         "-DCMAKE_CXX_COMPILER=clang++",
                         "-DCLANG_DEFAULT_LINKER=lld",
                         "-DLLVM_TOOL_GOLD_BUILD=0",
-                        "-DCMAKE_C_COMPILER_EXTERNAL_TOOLCHAIN:PATH=/opt/rh/gcc-toolset-12/root/usr",
-                        "-DCMAKE_CXX_COMPILER_EXTERNAL_TOOLCHAIN:PATH=/opt/rh/gcc-toolset-12/root/usr",
+                        "-DCMAKE_C_COMPILER_EXTERNAL_TOOLCHAIN:PATH=/usr",
+                        "-DCMAKE_CXX_COMPILER_EXTERNAL_TOOLCHAIN:PATH=/usr",
                         "-DLLVM_CCACHE_BUILD=ON",
                         "-DBUILD_SHARED_LIBS=ON", "-DLLVM_ENABLE_WERROR=ON",
                         "-DCMAKE_BUILD_TYPE=Release",
