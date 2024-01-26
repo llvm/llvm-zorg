@@ -70,7 +70,7 @@ class LLVMPoller(changes.GitPoller):
                 continue
 
             pieces = path.split('/')
-            project = pieces[0] if len(pieces) > 1 else None
+            project = pieces[0] if len(pieces) > 1 else 'root'
 
             #log.msg("LLVMPoller: _transform_path: processing path %s: project: %s" % (path, project))
             # Collect file path for each detected projects.
