@@ -787,8 +787,7 @@ all = [
                     checkout_compiler_rt=False,
                     checkout_lld=False,
                     testsuite_flags=['--threads=32', '--build-threads=32'],
-                    extra_cmake_args=['-DLLVM_TARGETS_TO_BUILD=',
-                                      '-DLLVM_EXPERIMENTAL_TARGETS_TO_BUILD=LoongArch',
+                    extra_cmake_args=['-DLLVM_TARGETS_TO_BUILD=LoongArch',
                                       '-DLLVM_ENABLE_PROJECTS=clang'])},
 
     {'name' : "clang-hexagon-elf",
