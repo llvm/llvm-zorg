@@ -75,6 +75,8 @@ mkdir -p "${LLVM_BUILD_DIR}"
 cd "${LLVM_BUILD_DIR}"
 cmake -G Ninja \
   -DCMAKE_BUILD_TYPE="Release" \
+  -DCMAKE_C_COMPILER_LAUNCHER=ccache \
+  -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
   -DCMAKE_VERBOSE_MAKEFILE=1 \
   -DLLVM_TARGETS_TO_BUILD="AMDGPU;X86" \
   -DLLVM_ENABLE_PROJECTS="clang;lld;clang-tools-extra;compiler-rt" \
