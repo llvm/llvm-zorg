@@ -1817,6 +1817,9 @@ all += [
                             "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
                             "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
                             ],
+                        env={
+                            'HSA_ENABLE_SDMA':'0',
+                            },
                         install=True,
                         testsuite=False,
                         testsuite_sollvevv=False,
