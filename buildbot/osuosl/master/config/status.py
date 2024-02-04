@@ -6,7 +6,6 @@ from buildbot import util
 from buildbot.process.properties import Interpolate
 from buildbot.plugins import reporters
 from buildbot.reporters.generators.build import BuildStartEndStatusGenerator
-from buildbot.reporters.message import MessageFormatterRenderable
 from twisted.python import log
 
 import config
@@ -53,20 +52,15 @@ def getReporters():
     r=[]
 
     if config.options.has_option('GitHub Status', 'token'):
-        start_formatter = MessageFormatterRenderable('Build started.')
-        end_formatter = MessageFormatterRenderable('Build done.')
-
         # Report github status for all the release builders,
         # i.e. those with the "release" tag.
         r.append(
             reporters.GitHubStatusPush(
-                str(config.options.get('GitHub Status', 'token')),
+                token = str(config.options.get('GitHub Status', 'token')),
                 context = Interpolate("%(prop:buildername)s"),
                 verbose = True, # TODO: Turn off the verbosity once this is working reliably.
                 generators = [
                     BuildStartEndStatusGenerator(
-                        start_formatter = start_formatter,
-                        end_formatter = end_formatter,
                         builders = [
                             b.get('name') for b in config.builders.all
                             if 'silent' not in b.get('tags', [])
