@@ -1350,6 +1350,8 @@ all = [
                         "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
                         "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
                         '-DLLVM_LIT_ARGS=-v',
+                        # Hardware breakpoints and watchpoints are not yet supported,
+                        # https://github.com/llvm/llvm-project/issues/80665.
                         '-DLLDB_TEST_USER_ARGS=--skip-category=watchpoint'],
                     jobs=None)},
 
