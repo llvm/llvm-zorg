@@ -52,7 +52,12 @@ def getReporters():
             mode = ('problem',),
             fromaddr = "llvm.buildmaster@lab.llvm.org", # TODO: Change this to buildmaster@lab.llvm.org.
             extraRecipients = status_email,
-            extraHeaders = {"Reply-To": status_email[0]}, # The first from the list.
+            extraHeaders = {
+                "Reply-To": status_email[0], # The first from the list.
+                # Tags for Mailgun analyses.
+                # TODO: Consider this being configured in local.cfg.
+                "X-Mailgun-Tag" : Interpolate("builder=%(prop:buildername)s"),
+            },
             lookup = "lab.llvm.org",
             messageFormatter = LLVMInformativeMailNotifier,
             # TODO: For debug purposes only. Remove later.
