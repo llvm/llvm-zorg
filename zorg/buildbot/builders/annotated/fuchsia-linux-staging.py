@@ -58,6 +58,7 @@ def main(argv):
             '-D', 'LLVM_CCACHE_BUILD=ON',
             '-D', 'LLVM_ENABLE_LTO=OFF',
             '-D', f'FUCHSIA_SDK={args.sdk_dir}',
+            '-D', 'LLVM_RUNTIME_MULTILIBS=',
             '-C', f'{source_dir}/clang/cmake/caches/Fuchsia-stage2.cmake',
         ]
 
