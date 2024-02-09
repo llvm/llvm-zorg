@@ -1826,6 +1826,9 @@ all += [
                             "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
                             "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
                             ],
+                        env={
+                            'HSA_ENABLE_SDMA':'0',
+                            },
                         install=True,
                         testsuite=False,
                         testsuite_sollvevv=False,
@@ -1885,6 +1888,9 @@ all += [
                             "-DLIBC_GPU_TEST_ARCHITECTURE=gfx906",
                             "-DLIBC_GPU_TEST_JOBS=8",
                             ],
+                        env={
+                            'HSA_ENABLE_SDMA':'0',
+                            },
                         install=True,
                         testsuite=False,
                         testsuite_sollvevv=False,
@@ -1912,6 +1918,9 @@ all += [
                             "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
                             "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
                             ],
+                        env={
+                            'HSA_ENABLE_SDMA':'0',
+                            },
                         install=True,
                         testsuite=False,
                         testsuite_sollvevv=False,
