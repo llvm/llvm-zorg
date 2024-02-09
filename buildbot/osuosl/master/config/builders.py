@@ -2994,57 +2994,6 @@ all += [
                         'CXX': 'clang++',
                     })},
 
-    # GoogleCloud Buildguards (investigation/stat)
-    {'name' : "llvm-clang-buildguard5-ubuntu",
-    'tags'  : ["llvm", "clang", "lld", "lldb", "clang-tools-extra"],
-    'collapseRequests' : False,
-    'workernames' : ["gc-builder-5"],
-    'builddir': "buildguard5",
-    'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
-                    depends_on_projects=["llvm", "clang", "clang-tools-extra", "lld", "lldb", "compiler-rt", "libunwind", "libcxxabi", "libcxx"],
-                    enable_runtimes="auto",     # get runtimes from depends_on_projects.
-                    checks=['check-all'],
-                    clean=True,
-                    extra_configure_args=[
-                        "-DLLVM_CCACHE_BUILD=ON",
-                        "-DLLVM_ENABLE_WERROR=OFF",
-                        "-DCMAKE_BUILD_TYPE=Release",
-                        "-DLLVM_USE_SPLIT_DWARF=ON",
-                        "-DLLVM_ENABLE_ASSERTIONS=ON",
-                        "-DLLVM_ENABLE_PER_TARGET_RUNTIME_DIR=ON",
-                        "-DCLANG_DEFAULT_LINKER=lld",
-                        "-DLLVM_USE_LINKER=gold",
-                        "-DLLVM_OPTIMIZED_TABLEGEN=ON",
-                        "-DCMAKE_CXX_FLAGS=-D__OPTIMIZE__ -Wno-misleading-indentation",
-                        "-DBUILD_SHARED_LIBS=ON",
-                        "-DLLVM_LIT_ARGS=-v -vv"],
-                    env={
-                        'CCACHE_DIR' : WithProperties("%(builddir)s/ccache-db"),
-                    })},
-    {'name' : "llvm-clang-buildguard6-win",
-    'tags'  : ["llvm", "clang", "lld", "lldb", "clang-tools-extra"],
-    'collapseRequests' : False,
-    'workernames' : ["gc-builder-6-win", "gc-builder-7-win"],
-    'builddir': "buildguard6",
-    'factory' : XToolchainBuilder.getCmakeWithMSVCBuildFactory(
-                    vs="autodetect",
-                    checks=['check-all'],
-                    clean=True,
-                    extra_configure_args=[
-                        "-DLLVM_CCACHE_BUILD=ON",
-                        "-DLLVM_ENABLE_WERROR=OFF",
-                        "-DCMAKE_BUILD_TYPE=Release",
-                        "-DLLVM_USE_SPLIT_DWARF=ON",
-                        "-DLLVM_ENABLE_ASSERTIONS=ON",
-                        "-DLLVM_ENABLE_PER_TARGET_RUNTIME_DIR=ON",
-                        "-DCLANG_DEFAULT_LINKER=lld",
-                        "-DLLVM_OPTIMIZED_TABLEGEN=ON",
-                        "-DCMAKE_CXX_FLAGS=-D__OPTIMIZE__",
-                        "-DLLVM_LIT_ARGS=-v -vv"],
-                    env={
-                        'CCACHE_DIR' : WithProperties("%(builddir)s/ccache-db"),
-                    })},
-
     # Builders similar to used in Buildkite premerge pipeline.
     # Please keep in sync with llvm-project/.ci configurations.
 
