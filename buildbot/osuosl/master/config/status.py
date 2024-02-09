@@ -1,3 +1,8 @@
+import re
+from zope.interface import implementer
+
+from buildbot import interfaces
+from buildbot import util
 from buildbot.process.properties import Interpolate
 from buildbot.plugins import reporters
 
@@ -8,6 +13,25 @@ from twisted.python import log
 
 # Should be a single e-mail address
 status_email = str(config.options.get('Master Options', 'status_email')).split(',')
+
+@implementer(interfaces.IEmailLookup)
+class LLVMEmailLookup(util.ComparableMixin):
+    compare_attrs = ("reNoreply")
+
+    def __init__(self):
+        # Casing does not matter in email addresses.
+        self.reNoreply = re.compile(r"\bnoreply\b",re.I)
+
+    def getAddress(self, name):
+        """
+        If name is already an email address, pass it through,
+        unless email address contains the word "noreply".
+        """
+        if '@' in name:
+            # Skip noreply address.
+            return None if self.reNoreply.search(name) else name
+        return None # Skip invalid or not complete email address.
+
 
 # Returns a list of Status Targets. The results of each build will be
 # pushed to these targets. buildbot.plugins reporters has a variety
@@ -58,7 +82,7 @@ def getReporters():
                 # TODO: Consider this being configured in local.cfg.
                 "X-Mailgun-Tag" : Interpolate("builder=%(prop:buildername)s"),
             },
-            lookup = "lab.llvm.org",
+            lookup = LLVMEmailLookup(),
             messageFormatter = LLVMInformativeMailNotifier,
             # TODO: For debug purposes only. Remove later.
             dumpMailsToLog = True,
