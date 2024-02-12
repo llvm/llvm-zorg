@@ -518,8 +518,6 @@ def _getClangCMakeBuildFactory(
             if checkout_flang:
                 fortran_flags = [
                         '--cmake-define=TEST_SUITE_FORTRAN:STRING=ON',
-                        '--cmake-define=CMAKE_Fortran_FLAGS:STRING=' +
-                            '-lpgmath',
                         util.Interpolate(
                             '--cmake-define=CMAKE_Fortran_COMPILER=' +
                             '%(prop:builddir)s/'+compiler_path+'/bin/'+fc)]
