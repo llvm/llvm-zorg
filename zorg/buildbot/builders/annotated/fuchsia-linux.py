@@ -55,21 +55,21 @@ def main(argv):
             '-S', f'{source_dir}/llvm',
             '-B', build_dir,
             '-G', 'Ninja',
-            '-D', 'BOOTSTRAP_LLVM_ENABLE_LTO=OFF',
             '-D', 'LLVM_CCACHE_BUILD=ON',
             '-D', 'LLVM_ENABLE_LTO=OFF',
             '-D', f'FUCHSIA_SDK={args.sdk_dir}',
-            '-C', f'{source_dir}/clang/cmake/caches/Fuchsia.cmake',
+            '-D', 'LLVM_RUNTIME_MULTILIBS=',
+            '-C', f'{source_dir}/clang/cmake/caches/Fuchsia-stage2.cmake',
         ]
 
         run_command(['cmake'] + cmake_args)
 
     with step('build'):
-        run_command(['ninja', '-C', build_dir, 'stage2-toolchain-distribution'])
+        run_command(['ninja', '-C', build_dir, 'toolchain-distribution'])
 
     with step('check'):
         run_command(['ninja', '-C', build_dir] +
-                    [f'stage2-check-{p}' for p in ('llvm', 'clang', 'lld')])
+                    [f'check-{p}' for p in ('llvm', 'clang', 'lld')])
 
     return 0
 
