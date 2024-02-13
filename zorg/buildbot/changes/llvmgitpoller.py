@@ -187,6 +187,6 @@ class LLVMPoller(changes.GitPoller):
                        category=self.category, ## TODO: Figure out if we could support tags here
                        project=",".join(projects) if projects else "llvm-project",
                        # Always promote an external github url of the LLVM project with the changes.
-                       repository=self._repourl,
+                       repository=self.repourl if self.repourl.startswith('https://github.com') else self._repourl,
                        src='git', # Must be one of the buildbot.process.users.srcs
                        properties=properties)
