@@ -57,7 +57,7 @@ def getLLDBCMakeBuildFactory(
     cmake_options = [
         "-G", "Ninja",
         "-DCMAKE_BUILD_TYPE=" + config,
-        "-DLLVM_LIT_ARGS='-v'",
+        "-DLLVM_LIT_ARGS=-v",
         "-DCMAKE_INSTALL_PREFIX=../install",
         "-DLLVM_ENABLE_PROJECTS=%s" % ";".join(f.depends_on_projects),
         ]
