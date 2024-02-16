@@ -540,7 +540,7 @@ pipeline {
                       --noupload \
                       --noinstall \
                       --projects="clang" \
-                      --runtimes="libcxx;libcxxabi"
+                      --runtimes="libcxx;libcxxabi;libunwind"
                     '''
                 }
             }
