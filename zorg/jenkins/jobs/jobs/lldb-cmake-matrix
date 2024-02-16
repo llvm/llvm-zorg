@@ -539,7 +539,8 @@ pipeline {
                       --assertions \
                       --noupload \
                       --noinstall \
-                      --projects="clang;libcxx;libcxxabi"
+                      --projects="clang" \
+                      --runtimes="libcxx;libcxxabi"
                     '''
                 }
             }
