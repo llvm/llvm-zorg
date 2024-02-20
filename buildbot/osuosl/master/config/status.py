@@ -266,7 +266,8 @@ def getReporters():
                         "cross-project-tests-sie-ubuntu",
                         "cross-project-tests-sie-ubuntu-dwarf5",
                         "clang-x86_64-linux-abi-test",
-                        "llvm-new-debug-iterators"]),
+                        "llvm-clang-x86_64-darwin",
+                        "llvm-clang-aarch64-darwin"]),
         reporters.MailNotifier(
             fromaddr = "llvm.buildmaster@lab.llvm.org",
             sendToInterestedUsers = False,
@@ -276,13 +277,6 @@ def getReporters():
             builders = ["llvm-clang-x86_64-sie-ubuntu-fast",
                         "llvm-clang-x86_64-sie-win",
                         "llvm-clang-x86_64-gcc-ubuntu"]),
-        reporters.MailNotifier(
-            fromaddr = "llvm.buildmaster@lab.llvm.org",
-            sendToInterestedUsers = False,
-            extraRecipients = ["jeremy.morse.llvm@gmail.com"],
-            subject = "Build %(builder)s Failure",
-            mode = "failing",
-            builders = ["llvm-new-debug-iterators"]),
         reporters.MailNotifier(
             fromaddr="llvm.buildmaster@lab.llvm.org",
             sendToInterestedUsers = False,
