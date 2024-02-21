@@ -628,7 +628,8 @@ all = [
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
                         "-DCMAKE_BUILD_TYPE=Release",
                         "-DLLVM_LIT_ARGS=-v",
-                        "-DLLVM_CCACHE_BUILD=ON"])},
+                        "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
+                        "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache"])},
 
     {'name' : "clang-ppc64be-linux-multistage",
     'tags'  : ["clang", "ppc"],
@@ -643,7 +644,8 @@ all = [
                     stage2_config='Release',
                     extra_cmake_args=[
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
-                        "-DLLVM_CCACHE_BUILD=ON"])},
+                        "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
+                        "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache"])},
 
     {'name' : "clang-ppc64le-linux-test-suite",
     'tags'  : ["clang", "ppc", "ppc64le"],
@@ -657,7 +659,8 @@ all = [
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
                         "-DCMAKE_BUILD_TYPE=Release",
                         "-DLLVM_LIT_ARGS=-v",
-                        "-DLLVM_CCACHE_BUILD=ON"])},
+                        "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
+                        "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache"])},
 
     {'name' : "clang-ppc64le-linux-multistage",
     'tags'  : ["clang", "ppc", "ppc64le"],
@@ -673,7 +676,8 @@ all = [
                     extra_cmake_args=[
                         '-DLLVM_ENABLE_ASSERTIONS=ON',
                         '-DBUILD_SHARED_LIBS=ON',
-                        '-DLLVM_CCACHE_BUILD=ON'])},
+                        '-DCMAKE_C_COMPILER_LAUNCHER=ccache',
+                        '-DCMAKE_CXX_COMPILER_LAUNCHER=ccache'])},
 
     {'name' : "clang-ppc64le-rhel",
     'tags'  : ["clang", "ppc", "ppc64le"],
@@ -691,7 +695,8 @@ all = [
                         "-DLLVM_TOOL_GOLD_BUILD=0",
                         "-DCMAKE_C_COMPILER_EXTERNAL_TOOLCHAIN:PATH=/gcc-toolchain/usr",
                         "-DCMAKE_CXX_COMPILER_EXTERNAL_TOOLCHAIN:PATH=/gcc-toolchain/usr",
-                        "-DLLVM_CCACHE_BUILD=ON",
+                        "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
+                        "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
                         "-DBUILD_SHARED_LIBS=ON", "-DLLVM_ENABLE_WERROR=ON",
                         "-DCMAKE_BUILD_TYPE=Release",
                         "-DLLVM_LIT_ARGS=-vj 20"])},
@@ -1351,7 +1356,8 @@ all = [
                     extra_configure_args=[
                         '-DLLVM_ENABLE_ASSERTIONS=ON',
                         '-DLLVM_LIT_ARGS=-svj 256',
-                        '-DLLVM_CCACHE_BUILD=ON'],
+                        '-DCMAKE_C_COMPILER_LAUNCHER=ccache',
+                        '-DCMAKE_CXX_COMPILER_LAUNCHER=ccache'],
                     depends_on_projects=['llvm', 'clang', 'lld'])},
 
     {'name' : "lld-x86_64-ubuntu-fast",
@@ -1486,7 +1492,8 @@ all += [
                         '-DCMAKE_CXX_STANDARD=17',
                         '-DLLVM_ENABLE_PROJECTS=mlir',
                         '-DLLVM_LIT_ARGS=-vj 256',
-                        '-DLLVM_CCACHE_BUILD=ON',
+                        '-DCMAKE_C_COMPILER_LAUNCHER=ccache',
+                        '-DCMAKE_CXX_COMPILER_LAUNCHER=ccache',
                     ],
                     env={
                             'CC': 'clang',
@@ -2254,7 +2261,8 @@ all += [
                         '-DLLVM_INSTALL_UTILS=ON',
                         '-DCMAKE_CXX_STANDARD=17',
                         '-DLLVM_LIT_ARGS=-vj 256',
-                        '-DLLVM_CCACHE_BUILD=ON'
+                        '-DCMAKE_C_COMPILER_LAUNCHER=ccache',
+                        '-DCMAKE_CXX_COMPILER_LAUNCHER=ccache'
                     ],
                     env={
                         'CC': 'clang',
