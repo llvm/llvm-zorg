@@ -945,7 +945,7 @@ all = [
 
     {'name': "llvm-clang-x86_64-gcc-ubuntu",
     'tags'  : ["llvm", "clang", "clang-tools-extra", "compiler-rt", "lld", "cross-project-tests"],
-    'workernames': ["doug-worker-2a"],
+    'workernames': ["sie-linux-worker3"],
     'builddir': "llvm-clang-x86_64-gcc-ubuntu",
     'factory': UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                     depends_on_projects=['llvm','clang','clang-tools-extra','compiler-rt','lld','cross-project-tests'],
@@ -981,27 +981,6 @@ all = [
                         "-DLLVM_PARALLEL_LINK_JOBS=16",
                         "-DLLVM_USE_LINKER=gold",
                         "-DLLVM_ENABLE_WERROR=OFF"])},
-
-    {'name': "llvm-new-debug-iterators",
-    'tags'  : ["llvm", "clang", "clang-tools-extra", "compiler-rt", "lld", "cross-project-tests"],
-    'workernames': ["sie-linux-worker3"],
-    'builddir': "debug-iterators",
-    'factory': UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
-                    depends_on_projects=['llvm','clang','clang-tools-extra','compiler-rt','lld','cross-project-tests'],
-                    clean=True,
-                    extra_configure_args=[
-                        "-DCMAKE_C_COMPILER=gcc",
-                        "-DCMAKE_CXX_COMPILER=g++",
-                        "-DCMAKE_BUILD_TYPE=Release",
-                        "-DCLANG_ENABLE_CLANGD=OFF",
-                        "-DLLVM_BUILD_RUNTIME=ON",
-                        "-DLLVM_BUILD_TESTS=ON",
-                        "-DLLVM_ENABLE_ASSERTIONS=ON",
-                        "-DLLVM_EXPERIMENTAL_DEBUGINFO_ITERATORS=ON",
-                        "-DLLVM_INCLUDE_EXAMPLES=OFF",
-                        "-DLLVM_LIT_ARGS=--verbose -j48",
-                        "-DLLVM_PARALLEL_LINK_JOBS=16",
-                        "-DLLVM_USE_LINKER=gold"])},
 
     {'name': "llvm-clang-x86_64-darwin",
     'tags'  : ["llvm", "clang", "clang-tools-extra", "lld", "cross-project-tests"],
