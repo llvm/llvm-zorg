@@ -9,7 +9,7 @@ from buildbot.reporters.generators.build import BuildStartEndStatusGenerator
 from twisted.python import log
 
 import config
-from zorg.buildbot.util.InformativeMailNotifier import (
+from zorg.buildbot.reporters.utils import (
     LLVMInformativeMailGenerator,
     LLVMDefaultBuildStatusGenerator
 )
