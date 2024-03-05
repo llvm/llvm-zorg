@@ -995,6 +995,7 @@ all = [
                         "-DCMAKE_BUILD_TYPE=Release",
                         "-DLLVM_BUILD_TESTS=ON",
                         "-DLLVM_CCACHE_BUILD=ON",
+                        "-DLLVM_DISABLE_ASSEMBLY_FILES=ON",
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
                         "-DLLVM_INCLUDE_EXAMPLES=OFF"
                         "-DLLVM_LIT_ARGS=--verbose",
