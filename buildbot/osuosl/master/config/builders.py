@@ -1816,6 +1816,7 @@ all += [
                             "-DTEST_SUITE_SOLLVEVV_OFFLOADING_CFLAGS=-fopenmp-targets=amdgcn-amd-amdhsa;-Xopenmp-target=amdgcn-amd-amdhsa",
                             "-DTEST_SUITE_SOLLVEVV_OFFLOADING_LDLAGS=-fopenmp-targets=amdgcn-amd-amdhsa;-Xopenmp-target=amdgcn-amd-amdhsa",
                         ],
+                        add_openmp_lit_args=["--time-tests", "--timeout 100"],
                     )},
 
     {'name' : "openmp-offload-amdgpu-runtime-2",
@@ -1845,6 +1846,7 @@ all += [
                             "-DTEST_SUITE_SOLLVEVV_OFFLOADING_CFLAGS=-fopenmp-targets=amdgcn-amd-amdhsa;-Xopenmp-target=amdgcn-amd-amdhsa",
                             "-DTEST_SUITE_SOLLVEVV_OFFLOADING_LDLAGS=-fopenmp-targets=amdgcn-amd-amdhsa;-Xopenmp-target=amdgcn-amd-amdhsa",
                         ],
+                        add_openmp_lit_args=["--time-tests", "--timeout 100"],
                     )},
 
     {'name' : "openmp-offload-libc-amdgpu-runtime",
@@ -1909,6 +1911,7 @@ all += [
                             "-DTEST_SUITE_SOLLVEVV_OFFLOADING_LDLAGS=-fopenmp-targets=amdgcn-amd-amdhsa;-Xopenmp-target=amdgcn-amd-amdhsa",
                         ],
                         add_lit_checks=["check-flang"],
+                        add_openmp_lit_args=["--time-tests", "--timeout 100"],
                     )},
 
 

@@ -21,6 +21,7 @@ def getOpenMPCMakeBuildFactory(
         testsuite_sollvevv  = False,
         extraTestsuiteCmakeArgs = None,
         add_lit_checks      = None,
+        add_openmp_lit_args        = None,
         **kwargs):
 
     if extraCmakeArgs is None:
@@ -72,6 +73,9 @@ def getOpenMPCMakeBuildFactory(
     cmake_args = ['-DCMAKE_BUILD_TYPE=Release', '-DLLVM_ENABLE_ASSERTIONS=ON']
     if test:
         lit_args = '-vv --show-unsupported --show-xfail -j %s' % jobs
+        if add_openmp_lit_args:
+            for add_arg in add_openmp_lit_args:
+                lit_args += ' ' + add_arg
         cmake_args += [WithProperties('-DLLVM_LIT_ARGS=%s' % lit_args)]
     if install:
         cmake_args += [WithProperties('-DCMAKE_INSTALL_PREFIX=%(builddir)s/' + llvm_instdir)]
