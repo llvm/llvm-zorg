@@ -958,8 +958,7 @@ all = [
                         "-DLLVM_BUILD_TESTS=ON",
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
                         "-DLLVM_INCLUDE_EXAMPLES=OFF",
-                        "-DLLVM_LIT_ARGS=--verbose -j48",
-                        "-DLLVM_PARALLEL_LINK_JOBS=16",
+                        "-DLLVM_LIT_ARGS=--verbose",
                         "-DLLVM_USE_LINKER=gold"])},
 
     {'name': "clang-x86_64-linux-abi-test",
@@ -977,8 +976,7 @@ all = [
                         "-DLLVM_BUILD_TESTS=ON",
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
                         "-DLLVM_INCLUDE_EXAMPLES=OFF",
-                        "-DLLVM_LIT_ARGS=--verbose -j48",
-                        "-DLLVM_PARALLEL_LINK_JOBS=16",
+                        "-DLLVM_LIT_ARGS=--verbose",
                         "-DLLVM_USE_LINKER=gold",
                         "-DLLVM_ENABLE_WERROR=OFF"])},
 

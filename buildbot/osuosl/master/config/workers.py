@@ -284,8 +284,8 @@ def get_all():
         # Ubuntu 18.04 in docker container on Ryzen 4800U
         create_worker("doug-worker-2a", properties={'jobs': 16}, max_builds=1),
         # Ubuntu 20.04 on AWS, AMD EPYC 7R13 shared
-        create_worker("sie-linux-worker2", properties={'jobs': 32}, max_builds=1),
-        create_worker("sie-linux-worker3", properties={'jobs': 32}, max_builds=1),
+        create_worker("sie-linux-worker2", max_builds=1),
+        create_worker("sie-linux-worker3", max_builds=1),
 
         # Windows Server 2019 on AWS, x86_64 PS4 target
         create_worker("sie-win-worker", properties={'jobs': 64}, max_builds=1),

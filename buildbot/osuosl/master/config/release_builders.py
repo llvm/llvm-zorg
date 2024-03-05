@@ -263,7 +263,7 @@ all = [
 
     {'name': "llvm-clang-x86_64-gcc-ubuntu-release",
     'tags'  : ["llvm", "clang", "clang-tools-extra", "compiler-rt", "lld", "cross-project-tests"],
-    'workernames': ["doug-worker-2a"],
+    'workernames': ["sie-linux-worker3"],
     'builddir': "x86_64-gcc-rel",
     'factory': UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                     depends_on_projects=['llvm','clang','clang-tools-extra','compiler-rt','lld','cross-project-tests'],
@@ -276,8 +276,7 @@ all = [
                         "-DLLVM_BUILD_TESTS=ON",
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
                         "-DLLVM_INCLUDE_EXAMPLES=OFF",
-                        "-DLLVM_LIT_ARGS=--verbose -j48",
-                        "-DLLVM_PARALLEL_LINK_JOBS=16",
+                        "-DLLVM_LIT_ARGS=--verbose",
                         "-DLLVM_USE_LINKER=gold"])},
 
     {'name': "llvm-clang-aarch64-darwin-release",
