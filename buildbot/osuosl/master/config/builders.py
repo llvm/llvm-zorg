@@ -1002,7 +1002,7 @@ all = [
 
     {'name': "llvm-clang-aarch64-darwin",
     'tags'  : ["llvm", "clang", "clang-tools-extra", "lld", "cross-project-tests"],
-    'workernames': ["doug-worker-4"],
+    'workernames': ["doug-worker-4", "doug-worker-5"],
     'builddir': "aarch64-darwin",
     'factory': UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                     clean=True,

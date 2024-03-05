@@ -267,7 +267,8 @@ def getReporters():
                         "cross-project-tests-sie-ubuntu-dwarf5",
                         "clang-x86_64-linux-abi-test",
                         "llvm-clang-x86_64-darwin",
-                        "llvm-clang-aarch64-darwin"]),
+                        "llvm-clang-aarch64-darwin",
+                        "llvm-clang-aarch64-darwin-release"]),
         reporters.MailNotifier(
             fromaddr = "llvm.buildmaster@lab.llvm.org",
             sendToInterestedUsers = False,

@@ -280,4 +280,22 @@ all = [
                         "-DLLVM_PARALLEL_LINK_JOBS=16",
                         "-DLLVM_USE_LINKER=gold"])},
 
+    {'name': "llvm-clang-aarch64-darwin-release",
+    'tags'  : ["llvm", "clang", "clang-tools-extra", "lld", "cross-project-tests"],
+    'workernames': ["doug-worker-4"],
+    'builddir': "aarch64-darwin-rel",
+    'factory': UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
+                    clean=True,
+                    depends_on_projects=['llvm','clang','clang-tools-extra','lld','cross-project-tests'],
+                    extra_configure_args=[
+                        "-DCMAKE_C_COMPILER=clang",
+                        "-DCMAKE_CXX_COMPILER=clang++",
+                        "-DCMAKE_BUILD_TYPE=Release",
+                        "-DLLVM_BUILD_TESTS=ON",
+                        "-DLLVM_CCACHE_BUILD=ON",
+                        "-DLLVM_ENABLE_ASSERTIONS=ON",
+                        "-DLLVM_INCLUDE_EXAMPLES=OFF",
+                        "-DLLVM_LIT_ARGS=--verbose",
+                        "-DLLVM_TARGETS_TO_BUILD=AArch64"])},
+
 ]
