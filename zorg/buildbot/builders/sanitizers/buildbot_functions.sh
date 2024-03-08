@@ -56,7 +56,7 @@ echo @@@BUILD_STEP Info@@@
 
 echo @@@BUILD_STEP Prepare@@@
 
-export LIT_OPTS="--time-tests"
+export LIT_OPTS="--time-tests --timeout=900"
 
 function rm_dirs {
   while ! rm -rf $@ ; do sleep 1; done
