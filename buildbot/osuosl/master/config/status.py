@@ -407,7 +407,7 @@ def getReporters():
             fromaddr = "llvm.buildmaster@lab.llvm.org",
             sendToInterestedUsers = False,
             messageFormatter = LLVMInformativeMailNotifier,
-            extraRecipients = ["llvm-premerge-buildbots@google.com"],
+            extraRecipients = ["llvm-premerge-buildbots@google.com", "joker.eph@gmail.com"],
             mode = "failing",
             builders = ["premerge-monolithic-windows", "premerge-monolithic-linux"]),
         reporters.MailNotifier(
