@@ -56,7 +56,11 @@ echo @@@BUILD_STEP Info@@@
 
 echo @@@BUILD_STEP Prepare@@@
 
-export LIT_OPTS="--time-tests --timeout=900"
+export LIT_OPTS="--time-tests"
+# --timeout requires psutil missing on some bots.
+if python3 -c "import psutil" ; then
+  LIT_OPTS+=" --timeout=900"
+fi
 
 function rm_dirs {
   while ! rm -rf $@ ; do sleep 1; done
