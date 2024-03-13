@@ -269,8 +269,10 @@ def getCmakeBuildFactory(
     if install_pip_requirements:
         # Install python requirements, right now for MLIR
         # but can evolve to more projects later.
-        f.addStep(steps.ShellCommand(command=["pip", "install", "-q", "-r", "mlir/python/requirements.txt"],
-                                     workdir=llvm_srcdir]))
+        f.addStep(steps.ShellCommand(
+            name='install-mlir-requirements',
+            command=["pip", "install", "-q", "-r", "../mlir/python/requirements.txt"],
+            workdir=f.llvm_srcdir))
 
     addCmakeSteps(
         f,
@@ -360,6 +362,7 @@ def getCmakeWithNinjaWithMSVCBuildFactory(
            # %VS140COMNTOOLS% selects the 2015 toolchain.
            vs=None,
            target_arch=None,
+           install_pip_requirements = False,
            env = None,
            **kwargs):
 
@@ -388,6 +391,14 @@ def getCmakeWithNinjaWithMSVCBuildFactory(
     env = util.Property('vs_env')
 
     cleanBuildRequested = lambda step: step.build.getProperty("clean", default=step.build.getProperty("clean_obj")) or clean
+
+    if install_pip_requirements:
+        # Install python requirements, right now for MLIR
+        # but can evolve to more projects later.
+        f.addStep(steps.ShellCommand(
+            name='install-mlir-requirements',
+            command=["pip", "install", "-q", "-r", "../mlir/python/requirements.txt"],
+            workdir=f.llvm_srcdir))
 
     addCmakeSteps(
         f,
