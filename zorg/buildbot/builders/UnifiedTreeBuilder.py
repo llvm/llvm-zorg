@@ -251,6 +251,7 @@ def getCmakeBuildFactory(
            install_dir = None,
            clean = False,
            extra_configure_args = None,
+           install_pip_requirements = False,
            env = None,
            **kwargs):
 
@@ -264,6 +265,13 @@ def getCmakeBuildFactory(
             **kwargs) # Pass through all the extra arguments.
 
     cleanBuildRequested = lambda step: step.build.getProperty("clean", default=step.build.getProperty("clean_obj")) or clean
+
+    if install_pip_requirements:
+        # Install python requirements, right now for MLIR
+        # but can evolve to more projects later.
+        f.addStep(steps.ShellCommand(command=["pip", "install", "-q", "-r", "mlir/python/requirements.txt"],
+                                     workdir=llvm_srcdir]))
+
     addCmakeSteps(
         f,
         cleanBuildRequested=cleanBuildRequested,
@@ -287,6 +295,7 @@ def getCmakeWithNinjaBuildFactory(
            install_dir = None,
            clean = False,
            extra_configure_args = None,
+           install_pip_requirements = False,
            env = None,
            **kwargs):
 
@@ -321,6 +330,7 @@ def getCmakeWithNinjaBuildFactory(
             install_dir=install_dir,
             clean=clean,
             extra_configure_args=cmake_args,
+            install_pip_requirements=install_pip_requirements,
             env=merged_env,
             **kwargs) # Pass through all the extra arguments.
 
