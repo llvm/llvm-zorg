@@ -58,7 +58,7 @@ echo @@@BUILD_STEP Prepare@@@
 
 export LIT_OPTS="--time-tests"
 # --timeout requires psutil missing on some bots.
-if python3 -c "import psutil" ; then
+if [[ ! "$(arch)" =~ "ppc64" ]] ; then
   LIT_OPTS+=" --timeout=900"
 fi
 
