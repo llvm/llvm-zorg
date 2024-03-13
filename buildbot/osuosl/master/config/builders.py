@@ -999,7 +999,7 @@ all = [
                         "-DLLVM_BUILD_TESTS=ON",
                         "-DLLVM_CCACHE_BUILD=ON",
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
-                        "-DLLVM_INCLUDE_EXAMPLES=OFF"
+                        "-DLLVM_INCLUDE_EXAMPLES=OFF",
                         "-DLLVM_LIT_ARGS=--verbose",
                         "-DLLVM_TARGETS_TO_BUILD=X86"])},
 
