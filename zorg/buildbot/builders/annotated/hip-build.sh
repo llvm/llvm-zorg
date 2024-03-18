@@ -96,7 +96,6 @@ cmake -G Ninja \
   ${LLVM_ROOT}/llvm
 
 build_step "Building LLVM"
-ninja $NINJAOPT runtimes
 ninja $NINJAOPT
 
 build_step "Install LLVM"
