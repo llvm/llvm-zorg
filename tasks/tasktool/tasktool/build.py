@@ -1,8 +1,12 @@
+import os
+import sys
+
+sys.path.append(os.path.dirname(__file__))
+
 from pipes import quote
 import json
 import os
 import shutil
-import subprocess
 import sys
 import utils
 import tasktool.repos as repos

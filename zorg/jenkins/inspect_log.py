@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # Search a given log file for patterns defined in patterns.py and produce a
 # HTML snippet for the matching lines.
@@ -10,7 +10,7 @@
 #   with the count (i.e. "warning: bla blup [20 times]")
 #   Could merge the first 2 or 3 instances to show in the details section.
 # - Write highlighted html log with all matches highlighted/linked?
-from cgi import escape
+from html import escape
 from collections import deque
 from patterns import default_search
 import os.path
