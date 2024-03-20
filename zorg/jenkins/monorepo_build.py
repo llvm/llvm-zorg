@@ -427,6 +427,7 @@ def clang_builder(target):
                                    '-DCLANG_INCLUDE_TESTS=On',
                                    '-DLLVM_INCLUDE_UTILS=On',
                                    '-DCMAKE_MACOSX_RPATH=On',
+                                   '-DLLVM_ENABLE_MODULES=Off',
                                    ]
 
             if conf.llvm_enable_runtimes:
