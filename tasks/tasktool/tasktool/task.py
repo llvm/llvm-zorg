@@ -221,11 +221,11 @@ def _make_buildconfig(argconfig):
         if name not in artifact_parameters:
             sys.stderr.write("Warning: task does not have input '%s'\n" % name)
             artifact_parameters[name] = name
-        if '://' not in val:
-            # TODO: Support local dirs...
-            sys.stderr.write("Expected URL for input '%s'\n" % name)
-            sys.exit(1)
-        repo_overrides[name] = {'type': 'url', 'url': val}
+        if '://' in val:
+            repo_overrides[name] = {'type': 'url', 'url': val}
+        else:
+            # If it's not an https URL, assume it's an S3 path within the bucket
+            repo_overrides[name] = {'type': 'artifact_server', 'url': val}
     for i in argconfig.refs:
         name, eq, val = i.partition('=')
         if eq != '=':
