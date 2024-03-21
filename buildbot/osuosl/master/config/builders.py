@@ -2349,10 +2349,10 @@ all += [
 
 # CUDA builders.
 
-    {'name' : "clang-cuda-k80",
+    {'name' : "clang-cuda-l4",
     'tags'  : ["clang"],
-    'workernames' : ["cuda-k80-0"],
-    'builddir': "clang-cuda-k80",
+    'workernames' : ["cuda-l4-0"],
+    'builddir': "clang-cuda-l4",
     'factory' : AnnotatedBuilder.getAnnotatedBuildFactory(
                     script="/buildbot/cuda-build",
                     checkout_llvm_sources=False)},

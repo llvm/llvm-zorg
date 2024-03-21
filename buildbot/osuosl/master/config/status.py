@@ -163,7 +163,7 @@ def getReporters():
             extraRecipients = ["tra+buildbot@google.com"],
             subject = "Build %(builder)s Failure",
             mode = "failing",
-            builders = ["clang-cuda-k80", "clang-cuda-p4", "clang-cuda-t4"]),
+            builders = ["clang-cuda-l4", "clang-cuda-p4", "clang-cuda-t4"]),
         reporters.MailNotifier(
             fromaddr = "llvm.buildmaster@lab.llvm.org",
             sendToInterestedUsers = False,
