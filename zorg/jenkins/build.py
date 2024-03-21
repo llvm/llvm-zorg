@@ -396,6 +396,7 @@ def clang_builder(target):
                                    '-DCLANG_INCLUDE_TESTS=On',
                                    '-DLLVM_INCLUDE_UTILS=On',
                                    '-DCMAKE_MACOSX_RPATH=On',
+                                   '-DLLVM_ENABLE_MODULES=Off', # Workaround Stage 2 Green Dragon being broken
                                    ]
 
             if dyld_path:
