@@ -425,7 +425,7 @@ all = [
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
                     clean=False,
                     checkout_flang=True,
-                    checkout_lld=False,
+                    checkout_lld=True,
                     useTwoStage=True,
                     testStage1=False,
                     runTestSuite=True,
