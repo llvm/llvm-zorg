@@ -233,10 +233,10 @@ all = [
                     vs="autodetect",
                     clean=True,
                     checks=[
-                    "check-llvm",
-                    "check-clang",
-                    "check-lld",
-                    "check-compiler-rt-aarch64-unknown-linux-gnu"
+                        "check-llvm",
+                        "check-clang",
+                        "check-lld",
+                        "check-compiler-rt-aarch64-unknown-linux-gnu"
                     ],
                     checks_on_target = [
                         ("libunwind",
@@ -256,13 +256,18 @@ all = [
                     extra_configure_args=[
                         "-DLLVM_TARGETS_TO_BUILD=AArch64",
                         "-DTOOLCHAIN_TARGET_TRIPLE=aarch64-unknown-linux-gnu",
-                        "-DDEFAULT_SYSROOT=C:/buildbot/.aarch64-ubuntu",
-                        "-DZLIB_ROOT=C:/buildbot/.zlib-win32",
+                        WithProperties("-DDEFAULT_SYSROOT=%(sysroot_path_aarch64)s"),
+                        WithProperties("-DZLIB_ROOT=%(zlib_root_path)s"),
                         "-DLLVM_LIT_ARGS=-v -vv --threads=32",
                         WithProperties("%(remote_test_host:+-DREMOTE_TEST_HOST=)s%(remote_test_host:-)s"),
                         WithProperties("%(remote_test_user:+-DREMOTE_TEST_USER=)s%(remote_test_user:-)s"),
+                        "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
+                        "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
                     ],
-                    cmake_cache="../llvm-project/clang/cmake/caches/CrossWinToARMLinux.cmake")},
+                    cmake_cache="../llvm-project/clang/cmake/caches/CrossWinToARMLinux.cmake",
+                    env={
+                        'CCACHE_DIR' : WithProperties("%(builddir)s/ccache-db"),
+                    })},
 
 # Clang builders.
 
