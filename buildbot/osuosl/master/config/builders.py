@@ -2897,7 +2897,7 @@ all += [
     # flang FortranRuntime CUDA Offload builders.
     {'name' : "flang-runtime-cuda-gcc",
     'tags'  : ["flang", "runtime"],
-    'collapseRequests': False,
+    'collapseRequests': True,
     'workernames' : ["as-builder-7"],
     'builddir': "flang-runtime-cuda-gcc",
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
@@ -2917,6 +2917,7 @@ all += [
                         "-DCMAKE_C_COMPILER=/usr/bin/gcc",
                         "-DCMAKE_CUDA_HOST_COMPILER=/usr/bin/g++",
                         "-DCMAKE_CUDA_ARCHITECTURES=80",
+                        "-DCMAKE_CUDA_FLAGS=-G -g",
                         "-DCMAKE_CUDA_COMPILER_LAUNCHER=ccache",
                         "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
                         "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
@@ -2930,7 +2931,7 @@ all += [
 
     {'name' : "flang-runtime-cuda-clang",
     'tags'  : ["flang", "runtime"],
-    'collapseRequests': False,
+    'collapseRequests': True,
     'workernames' : ["as-builder-7"],
     'builddir': "flang-runtime-cuda-clang",
     'factory' : StagedBuilder.getCmakeBuildFactory(
