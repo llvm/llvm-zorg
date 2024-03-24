@@ -1926,6 +1926,38 @@ all += [
                         add_openmp_lit_args=["--time-tests", "--timeout 100"],
                     )},
 
+    # This bot, for now does not run OpenMP/Offload runtime tests, as we have no GPU yet
+    {'name' : "openmp-offload-sles-build-only",
+    'tags'  : ["openmp"],
+    'workernames' : ["rocm-worker-hw-04-sles"],
+    'builddir': "openmp-offload-sles-build",
+    'factory' : OpenMPBuilder.getOpenMPCMakeBuildFactory(
+                        clean=True,
+                        test=False, # we have no GPU avail, skip runtime tests
+                        enable_runtimes=['openmp'],
+                        depends_on_projects=['llvm','clang', 'flang', 'lld','openmp'],
+                        extraCmakeArgs=[
+                            "-DCMAKE_BUILD_TYPE=Release",
+                            "-DCLANG_DEFAULT_LINKER=lld",
+                            "-DLLVM_TARGETS_TO_BUILD=X86;AMDGPU",
+                            "-DLLVM_ENABLE_ASSERTIONS=ON",
+                            "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
+                            "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
+                            ],
+                        env={
+                            'HSA_ENABLE_SDMA':'0',
+                            },
+                        install=True,
+                        testsuite=False,
+                        testsuite_sollvevv=False,
+                        extraTestsuiteCmakeArgs=[
+                            "-DTEST_SUITE_SOLLVEVV_OFFLOADING_CFLAGS=-fopenmp-targets=amdgcn-amd-amdhsa;-Xopenmp-target=amdgcn-amd-amdhsa",
+                            "-DTEST_SUITE_SOLLVEVV_OFFLOADING_LDLAGS=-fopenmp-targets=amdgcn-amd-amdhsa;-Xopenmp-target=amdgcn-amd-amdhsa",
+                        ],
+                        add_lit_checks=["check-clang", "check-flang", "check-llvm", "check-lld"],
+                        add_openmp_lit_args=["--time-tests", "--timeout 100"],
+                    )},
+
 
 # Whole-toolchain builders.
 
