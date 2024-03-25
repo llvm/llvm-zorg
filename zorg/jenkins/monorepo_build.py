@@ -11,11 +11,12 @@ import argparse
 import shutil
 import math
 import re
+from pathlib import Path
+
 import requests
-import xml.etree.ElementTree as ET
 from contextlib import contextmanager
 
-SERVER = "green-dragon-21.local"
+BUCKET = os.environ.get("S3_BUCKET")
 
 NINJA = "/usr/local/bin/ninja"
 
@@ -802,11 +803,27 @@ def create_builddirs():
     create_dirs([conf.builddir(), conf.installdir()]);
 
 
+def s3_upload_artifact(folder, artifact):
+    """Upload an artifact to the given folder in the S3 bucket"""
+    upload_cmd = ["aws", "s3", "cp", artifact, f"{BUCKET}/clangci/{folder}/"]
+
+    run_cmd(conf.workspace, upload_cmd)
+
 def fetch_compiler():
     local_name = "host-compiler.tar.gz"
-    url = conf.host_compiler_url + "/" + conf.artifact_url
     header("Fetching Compiler")
-    http_download(url, conf.workspace + "/" + local_name)
+
+    download_cmd = ["aws", "s3", "cp", f"{BUCKET}/clangci/{conf.artifact_url}", local_name]
+    run_cmd(conf.workspace, download_cmd)
+
+    # Determine if the compiler package is actually a pointer to another file stored.
+    # If so, download the file at the pointer
+    if Path(local_name).stat().st_size < 1000:
+        with open(local_name, "r") as pointer:
+            package = pointer.read().strip()
+            download_cmd = ["aws", "s3", "cp", f"{BUCKET}/clangci/{package}", local_name]
+            run_cmd(conf.workspace, download_cmd)
+
     print("Decompressing...")
     if os.path.exists(conf.workspace + "/host-compiler"):
         shutil.rmtree(conf.workspace + "/host-compiler")
@@ -843,36 +860,19 @@ def build_upload_artifact():
 
     run_cmd(conf.installdir(), tar)
 
-    mkdir_cmd = ["ssh", "buildslave@" + SERVER, "mkdir", "-p", "/Library/WebServer/Documents/artifacts/" + conf.job_name]
+    s3_upload_artifact(conf.job_name, artifact_name)
 
-    run_cmd(conf.workspace, mkdir_cmd)
+    s3_upload_artifact(conf.job_name, prop_file)
 
-    upload_cmd = ["scp", artifact_name,
-                  "buildslave@" + SERVER + ":/Library/WebServer/Documents/artifacts/" +
-                  conf.job_name + "/"]
+    with open('latest', 'w') as latest:
+        latest.write(f"{conf.job_name}/{artifact_name}")
 
-    run_cmd(conf.workspace, upload_cmd)
+    s3_upload_artifact(conf.job_name, 'latest')
 
-    upload_cmd = ["scp", prop_file,
-                  "buildslave@" + SERVER + ":/Library/WebServer/Documents/artifacts/" +
-                  conf.job_name + "/"]
+    with open(f"g{conf.git_sha}", 'w') as sha:
+        sha.write(f"{conf.job_name}/{artifact_name}")
 
-    run_cmd(conf.workspace, upload_cmd)
-
-    ln_cmd = ["ssh", "buildslave@" + SERVER,
-              "ln", "-fs", "/Library/WebServer/Documents/artifacts/" +
-              conf.job_name + "/" + artifact_name,
-              "/Library/WebServer/Documents/artifacts/" +
-              conf.job_name + "/latest"]
-
-    run_cmd(conf.workspace, ln_cmd)
-
-    lng_cmd = ["ssh", "buildslave@" + SERVER,
-               "ln", "-fs", "/Library/WebServer/Documents/artifacts/" +
-               conf.job_name + "/" + artifact_name,
-               "/Library/WebServer/Documents/artifacts/" +
-               conf.job_name + "/g" + conf.git_sha]
-    run_cmd(conf.workspace, lng_cmd)
+    s3_upload_artifact(conf.job_name, f"g{conf.git_sha}")
 
 def build_upload_properties():
     """Create artifact for this build, and upload to server."""
@@ -887,15 +887,7 @@ def build_upload_properties():
         prop_fd.write("GIT_DISTANCE={}\n".format(conf.git_distance))
         prop_fd.write("GIT_SHA={}\n".format(conf.git_sha))
 
-    mkdir_cmd = ["ssh", "buildslave@" + SERVER, "mkdir", "-p", "/Library/WebServer/Documents/artifacts/" + conf.job_name]
-
-    run_cmd(conf.workspace, mkdir_cmd)
-
-    upload_cmd = ["scp", prop_file,
-                  "buildslave@" + SERVER + ":/Library/WebServer/Documents/artifacts/" +
-                  conf.job_name + "/"]
-
-    run_cmd(conf.workspace, upload_cmd)
+    s3_upload_artifact(conf.job_name, prop_file)
 
 
 def run_cmd(working_dir, cmd, env=None, sudo=False, err_okay=False):
