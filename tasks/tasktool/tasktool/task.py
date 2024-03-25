@@ -1,6 +1,12 @@
 '''
 Task runner.
 '''
+
+import os
+import sys
+
+sys.path.append(os.path.dirname(__file__))
+
 import argparse
 import copy
 import json
@@ -150,8 +156,8 @@ def _rewrite_local_git_urls(buildconfig):
     Prefix all git repository urls in buildconfig that start with a slash
     (they reference local files) with a prefix of the local machine/user.
     '''
-    hostname = utils.check_output(['hostname', '-f']).strip()
-    user = utils.check_output(['whoami']).strip()
+    hostname = utils.check_output(['hostname', '-f'], encoding='utf8').strip()
+    user = utils.check_output(['whoami'], encoding='utf8').strip()
     for name, config in buildconfig.items():
         if not isinstance(config, dict):
             continue
@@ -294,7 +300,7 @@ def _make_buildscript(hook, buildconfig, keep_buildconfig=False):
         buildconfig_file.close()
         build = utils.check_output([hook, _userdir, buildconfig.taskfilename,
                                     buildconfig_filename,
-                                    buildconfig.taskname], cwd=_hooksdir)
+                                    buildconfig.taskname], cwd=_hooksdir, encoding='utf8')
         if not keep_buildconfig:
             os.unlink(buildconfig_filename)
 
@@ -307,7 +313,7 @@ def _make_buildscript(hook, buildconfig, keep_buildconfig=False):
 
 def _mk_submit_results(buildname):
     return utils.check_output(['./mk-submit-results', _userdir, buildname],
-                              cwd=_hooksdir)
+                              cwd=_hooksdir, encoding='utf8')
 
 
 def _command_try(args):
@@ -322,7 +328,7 @@ def _command_try(args):
         tempf.write(build)
         tempf.close()
         utils.check_call(['./exec-try-build', _userdir, tempf.name, buildname],
-                         cwd=_hooksdir)
+                         cwd=_hooksdir, encoding='utf8')
         os.unlink(tempf.name)
 
 
@@ -339,7 +345,7 @@ def _command_submit(args):
         tempf.write(build)
         tempf.close()
         utils.check_call(['./submit', _userdir, tempf.name, buildname],
-                         cwd=_hooksdir)
+                         cwd=_hooksdir, encoding='utf8')
         os.unlink(tempf.name)
 
 
@@ -368,7 +374,7 @@ def _command_jenkinsrun(args):
         repro_script = os.path.join(taskdir, 'repro_message.sh')
         if os.access(repro_script, os.X_OK):
             utils.check_call([repro_script, _userdir,
-                              buildconfig.taskfilename])
+                              buildconfig.taskfilename], encoding='utf8')
     sys.exit(retcode)
 
 
@@ -387,7 +393,7 @@ def _command_sshrun(args):
         run_file.close()
         try:
             utils.check_call(['./sshrun', argconfig.hostname, run_file.name],
-                             cwd=_hooksdir)
+                             cwd=_hooksdir, encoding='utf8')
         finally:
             os.unlink(run_file.name)
 
