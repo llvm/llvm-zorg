@@ -133,7 +133,7 @@ def get_all():
         create_worker("as-worker-93", properties={'jobs': 36}, max_builds=1),
 
         # WIP migration of the CUDA buildbot to GCE.
-        create_worker("cuda-k80-0", max_builds=1),
+        create_worker("cuda-l4-0", max_builds=1),
         create_worker("cuda-p4-0", max_builds=1),
         create_worker("cuda-t4-0", max_builds=1),
 
