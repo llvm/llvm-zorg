@@ -1,5 +1,5 @@
 echo "@@@ LNT VirtualEnv @@@"
-/usr/local/bin/virtualenv --python=python3 venv
+xcrun python3 -m venv venv
 set +u
 . venv/bin/activate
 set -u
