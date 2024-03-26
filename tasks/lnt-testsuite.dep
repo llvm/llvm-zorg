@@ -1,3 +1,2 @@
 os_version >= 10.11.6 # Oldest CI nodes are currently 10.11.6
 brew cmake >= 3.6.0 # Need 3.6 for CMAKE_TRY_COMPILE_TARGET_TYPE
-pip virtualenv >= 15.1.0 # Really any version.  It has not been updated since 2016 though, so most recent.

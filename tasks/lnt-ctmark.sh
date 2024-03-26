@@ -9,6 +9,10 @@ LNT_FLAGS="$(build arg --optional LNT_FLAGS)"
 : ${SUBMIT_NAME:="${NODE_NAME-}_${JOB_NAME-}"}
 : ${SUBMIT_ORDER:="${GIT_DISTANCE-}"}
 
+. "${TASKDIR}"/utils/venv.sh
+. "${TASKDIR}"/utils/pip_install.sh --upgrade pip
+. "${TASKDIR}"/utils/pip_install.sh awscli
+
 # A generic ctmark run designed to run as a recurring jenkins job with varying
 # cmake caches and submission to an lnt server.
 build get compiler
@@ -18,7 +22,6 @@ build get lnt
 DEPENDENCY_FILES="${TASKDIR}"/lnt-testsuite.dep
 . "${TASKDIR}"/utils/check_dependencies.sh
 . "${TASKDIR}"/utils/normalize_compiler.sh
-. "${TASKDIR}"/utils/venv.sh
 . "${TASKDIR}"/utils/venv_lit.sh
 . "${TASKDIR}"/utils/venv_lnt.sh
 
