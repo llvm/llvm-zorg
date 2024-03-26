@@ -2178,7 +2178,7 @@ all += [
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                     clean=True,
                     checks=['check-flang'],
-                    depends_on_projects=['llvm','mlir','clang','flang'],
+                    depends_on_projects=['llvm','mlir','clang','flang','openmp'],
                     extra_configure_args=[
                         "-DLLVM_TARGETS_TO_BUILD=AArch64",
                         "-DLLVM_BUILD_LLVM_DYLIB=ON",
@@ -2193,7 +2193,7 @@ all += [
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                     clean=True,
                     checks=['check-flang'],
-                    depends_on_projects=['llvm','mlir','clang','flang'],
+                    depends_on_projects=['llvm','mlir','clang','flang','openmp'],
                     extra_configure_args=[
                         "-DLLVM_TARGETS_TO_BUILD=AArch64",
                         "-DBUILD_SHARED_LIBS=ON",
@@ -2226,7 +2226,7 @@ all += [
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                     clean=True,
                     checks=['check-flang'],
-                    depends_on_projects=['llvm','mlir','clang','flang'],
+                    depends_on_projects=['llvm','mlir','clang','flang','openmp'],
                     extra_configure_args=[
                         "-DLLVM_TARGETS_TO_BUILD=AArch64",
                         "-DCMAKE_BUILD_TYPE=Debug",
@@ -2242,7 +2242,7 @@ all += [
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                     clean=True,
                     checks=['check-flang'],
-                    depends_on_projects=['llvm','mlir','clang','flang'],
+                    depends_on_projects=['llvm','mlir','clang','flang','openmp'],
                     extra_configure_args=[
                         "-DLLVM_TARGETS_TO_BUILD=AArch64",
                         "-DLLVM_INSTALL_UTILS=ON",
@@ -2262,7 +2262,7 @@ all += [
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                     clean=True,
                     checks=['check-flang'],
-                    depends_on_projects=['llvm','mlir','clang','flang'],
+                    depends_on_projects=['llvm','mlir','clang','flang','openmp'],
                     extra_configure_args=[
                         "-DLLVM_TARGETS_TO_BUILD=AArch64",
                         "-DCMAKE_BUILD_TYPE=Release",
@@ -2277,7 +2277,7 @@ all += [
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                     clean=True,
                     checks=['check-flang'],
-                    depends_on_projects=['llvm','mlir','clang','flang'],
+                    depends_on_projects=['llvm','mlir','clang','flang','openmp'],
                     extra_configure_args=[
                         "-DLLVM_TARGETS_TO_BUILD=AArch64",
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
@@ -2293,7 +2293,7 @@ all += [
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                     clean=True,
                     checks=['check-flang'],
-                    depends_on_projects=['llvm','mlir','clang','flang'],
+                    depends_on_projects=['llvm','mlir','clang','flang','openmp'],
                     extra_configure_args=[
                         "-DLLVM_TARGETS_TO_BUILD=AArch64",
                         "-DLLVM_INSTALL_UTILS=ON",
