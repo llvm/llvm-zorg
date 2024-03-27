@@ -11,7 +11,9 @@ from twisted.python import log
 import config
 from zorg.buildbot.reporters.utils import (
     LLVMInformativeMailGenerator,
-    LLVMDefaultBuildStatusGenerator
+    LLVMDefaultBuildStatusGenerator,
+    LLVMFailBuildGenerator,
+    LLVMFailGitHubReporter
 )
 
 # Should be a single e-mail address
@@ -52,11 +54,26 @@ def getReporters():
     r=[]
 
     if config.options.has_option('GitHub Status', 'token'):
+        token = str(config.options.get('GitHub Status', 'token'))
+        r.append(
+            LLVMFailGitHubReporter(
+                token = token,
+                generators = [
+                	LLVMFailBuildGenerator(
+                		builders = [
+                			b.get('name') for b in config.builders.all
+                			if 'silent' not in b.get('tags', [])
+                		]
+                	)
+                ]
+            )
+        )
+
         # Report github status for all the release builders,
         # i.e. those with the "release" tag.
         r.append(
             reporters.GitHubStatusPush(
-                token = str(config.options.get('GitHub Status', 'token')),
+                token = token,
                 context = Interpolate("%(prop:buildername)s"),
                 verbose = True, # TODO: Turn off the verbosity once this is working reliably.
                 generators = [
