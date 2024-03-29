@@ -1,4 +1,4 @@
-os_version == 10.15.5 # All nodes should be on 10.15.5
+os_version == 14.1 # All nodes should be on 14.1
 brew cmake >= 3.17.2 # All nodes have 3.17.2
 brew ninja >= 1.8.2 # Stage2 verbose output
 pip psutil >= 5.4.5 # Required for timeouts in the GTest Suite.
