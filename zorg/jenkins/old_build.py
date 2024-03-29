@@ -13,7 +13,8 @@ import math
 import re
 import xml.etree.ElementTree as ET
 from contextlib import contextmanager
-from urllib2 import urlopen, URLError, HTTPError
+from urllib.request import urlopen
+from urllib.error import URLError, HTTPError
 
 SERVER = "green-dragon-21.local"
 
