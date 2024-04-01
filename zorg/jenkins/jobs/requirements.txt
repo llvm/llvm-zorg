@@ -1,0 +1,9 @@
+six==1.15.0
+urllib3==1.26.8
+requests==2.25.1
+pexpect==4.9.0
+pyOpenSSL==24.0.0
+cryptography==42.0.5
+psutil==5.9.8
+lit==17.0.6
+awscli==1.32.41
