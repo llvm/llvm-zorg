@@ -1,0 +1,121 @@
+pipeline {
+    options {
+        disableConcurrentBuilds()
+    }
+
+    parameters {
+        string(name: 'LABEL', defaultValue: params.LABEL ?: 'macos-x86_64', description: 'Node label to run on')
+
+        string(name: 'GIT_REVISION', defaultValue: params.GIT_REVISION ?: '*/main', description: 'Git revision to build')
+
+        booleanParam(name: 'CLEAN', defaultValue: params.CLEAN ?: false, description: 'Wipe the build directory?')
+    }
+
+    agent {
+        node {
+            label params.LABEL
+        }
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                dir('llvm-project') {
+                    checkout([$class: 'GitSCM', branches: [
+                        [name: params.GIT_REVISION]
+                    ], extensions: [
+                        [$class: 'CloneOption',
+                        timeout: 30]
+                    ], userRemoteConfigs: [
+                        [url: 'https://github.com/llvm/llvm-project.git']
+                    ]])
+                }
+                // ToDo: Revert to use non-fork repo
+                dir('llvm-zorg') {
+                    checkout([$class: 'GitSCM', branches: [
+                        [name: '*/swift-ci-llvm']
+                    ], userRemoteConfigs: [
+                        [url: 'https://github.com/justice-adams-apple/llvm-zorg.git']
+                    ]])
+                }
+            }
+        }
+        stage('Setup Venv') {
+            environment {
+               PATH="$PATH:/usr/bin:/usr/local/bin"
+            }
+            steps {
+                sh '''
+                   # Non-incremental, so always delete just in case.
+                   rm -rf clang-build clang-install host-compiler *.tar.gz
+                   rm -rf venv
+                   xcrun python3 -m venv venv
+                   set +u
+                   source ./venv/bin/activate
+                   python -m pip install -r ./llvm-zorg/zorg/jenkins/jobs/requirements.txt
+                   set -u
+               '''
+            }
+        }
+        stage('Build') {
+            environment {
+                PATH="$PATH:/usr/bin:/usr/local/bin"
+                MACOSX_DEPLOYMENT_TARGET="13.6"
+            }
+            steps {
+                timeout(360) {
+                    withCredentials([string(credentialsId: 's3_resource_bucket', variable: 'S3_BUCKET')]) {
+                        sh '''
+                        set -u
+                        rm -rf build.properties
+
+                        source ./venv/bin/activate
+
+                        cd llvm-project
+                        git tag -a -m "First Commit" first_commit 97724f18c79c7cc81ced24239eb5e883bf1398ef || true
+
+                        git_desc=$(git describe --match "first_commit")
+                        export GIT_DISTANCE=$(echo ${git_desc} | cut -f 2 -d "-")
+
+                        sha=$(echo ${git_desc} | cut -f 3 -d "-")
+                        export GIT_SHA=${sha:1}
+
+                        # Also save the LLVM_REV until LNT server is taught about GIT
+                        export LLVM_REV=$(git show -q | grep "llvm-svn:" | cut -f2 -d":" | tr -d " ")
+
+                        cd -
+
+                        echo "GIT_DISTANCE=$GIT_DISTANCE" > build.properties
+                        echo "GIT_SHA=$GIT_SHA" >> build.properties
+                        echo "ARTIFACT=$JOB_NAME/clang-d$GIT_DISTANCE-g$GIT_SHA-t$BUILD_ID-b$BUILD_NUMBER.tar.gz" >> build.properties
+
+                        python llvm-zorg/zorg/jenkins/monorepo_build.py cmake all --assertions \
+                          --cmake-flag="-DLLVM_ENABLE_EXPENSIVE_CHECKS=ON" \
+                          --cmake-flag="-DLIBCXX_ENABLE_SHARED=OFF" \
+                          --cmake-flag="-DLIBCXX_ENABLE_STATIC=OFF" \
+                          --cmake-flag="-DLIBCXX_INCLUDE_TESTS=OFF" \
+                          --cmake-flag="-DLIBCXX_ENABLE_EXPERIMENTAL_LIBRARY=OFF" \
+                          --cmake-flag="-DPython3_EXECUTABLE=$(which python)"
+                        '''
+                    }
+                }
+            }
+        }
+    }
+    post {
+        always {
+            script {
+               // ToDo: Restore the issue scanner
+               // scanForIssues tool: clang()
+
+                junit allowEmptyResults: true, testResults: "clang-build/**/testresults.xunit.xml"
+                junit allowEmptyResults: true, testResults: "clang-build/asan-IOSSimX86_64Config.xunit.xml"
+                junit allowEmptyResults: true, testResults: "clang-build/asan-IOSSimI386Config.xunit.xml"
+                junit allowEmptyResults: true, testResults: "clang-build/tsan-IOSSimX86_64Config.xunit.xml"
+
+                sh "rm -rf clang-build clang-install host-compiler *.tar.gz"
+            }
+        }
+    }
+}
+
