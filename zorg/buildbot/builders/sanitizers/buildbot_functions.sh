@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-ulimit -n 1000000
 ulimit -s 12288
 
 ROOT=`pwd`
