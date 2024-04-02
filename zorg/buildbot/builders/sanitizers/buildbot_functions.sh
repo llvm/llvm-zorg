@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+ulimit -n 1000000
+ulimit -s 12288
+
 ROOT=`pwd`
 LLVM=$ROOT/llvm
 
@@ -40,8 +43,6 @@ echo @@@BUILD_STEP Info@@@
   echo
   uptime
   echo
-  ulimit -n 1000000
-  ulimit -s 12288
   ulimit -a
   echo
   df -h
