@@ -41,6 +41,7 @@ echo @@@BUILD_STEP Info@@@
   uptime
   echo
   ulimit -n 1000000
+  ulimit -s 12288
   ulimit -a
   echo
   df -h
