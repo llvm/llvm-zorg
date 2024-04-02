@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-ulimit -s 12288
+ulimit -Ss 12288
 
 ROOT=`pwd`
 LLVM=$ROOT/llvm
