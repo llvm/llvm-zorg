@@ -2242,7 +2242,7 @@ all += [
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                     clean=True,
                     checks=['check-flang'],
-                    depends_on_projects=['llvm','mlir','clang','flang','openmp'],
+                    depends_on_projects=['llvm','mlir','clang','flang'],
                     extra_configure_args=[
                         "-DLLVM_TARGETS_TO_BUILD=AArch64",
                         "-DLLVM_INSTALL_UTILS=ON",
