@@ -15,7 +15,7 @@ WORKER_PASSWORD=$(cat /vol/secrets/token)
 
 # Set up buildbot host and maintainer info.
 mkdir -p "${WORKER_NAME}/info/"
-echo "Christian Kuehnel <kuhnel@google.com>" > "${WORKER_NAME}/info/admin"
+echo "Kadir Cetinkaya <kadircet@google.com>, Ilya Biryukov <ibiryukov@google.com>" > "${WORKER_NAME}/info/admin"
 
 # generate the host information of this worker
 (
