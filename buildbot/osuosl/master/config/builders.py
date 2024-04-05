@@ -2988,6 +2988,7 @@ all += [
                         "-DCMAKE_CUDA_COMPILER_LAUNCHER=ccache",
                         "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
                         "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
+                        WithProperties("-DFLANG_LIBCUDACXX_PATH=%(nv_cccl_root_path)s/libcudacxx"),
                     ],
                     env={
                         'CCACHE_DIR' : WithProperties("%(builddir)s/ccache-db"),
