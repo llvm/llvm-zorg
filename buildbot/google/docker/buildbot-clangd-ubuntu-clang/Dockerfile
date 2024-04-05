@@ -20,7 +20,7 @@ RUN apt-get update && \
     # Install ccache for local caching of builds.
     ccache \
     # Install python for buildbot and LIT.
-    python3 python3-pip python3-psutil && \
+    python3.8 python3-pip python3-psutil && \
     # Update system packages
     apt-get upgrade -y && \
     # Clean apt cache to reduce image size.
@@ -34,14 +34,6 @@ RUN wget https://apt.llvm.org/llvm.sh && \
     # clean apt cache to reduce image size
     apt-get clean
 
-# configure default versions of LLVM tools
-RUN update-alternatives --install /usr/bin/clang clang /usr/bin/clang-11 100 ;\
-    update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-11 100 ;\
-    update-alternatives --install /usr/bin/ld.lld ld.lld /usr/bin/lld-11 100
-# Configure LLVM tools.
-ENV CC=clang
-ENV CXX=clang++
-ENV LD=LLD
 # Ubuntu ships with old cmake version, install the latest one
 # from https://apt.kitware.com/
 RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | \
@@ -53,8 +45,18 @@ RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/nul
     # Clean apt cache to reduce image size.
     apt-get clean
 
-# Install build bot (server was at 2.8.5-dev at time of writing).
-RUN pip3 install buildbot-worker==2.8.4
+# configure default versions of LLVM tools and python needed for
+# buildbot-worker. We deliberately do this after installing all the system
+# packages, as apt-get install breaks if we change the Python from default to
+# python3.8.
+RUN update-alternatives --install /usr/bin/clang clang /usr/bin/clang-11 100 ;\
+    update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-11 100 ;\
+    update-alternatives --install /usr/bin/ld.lld ld.lld /usr/bin/lld-11 100 ;\
+    update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.8 100
+# Configure LLVM tools.
+ENV CC=clang
+ENV CXX=clang++
+ENV LD=LLD
 
 # Build and install gRPC for clangd remote index, based on instructions
 # https://github.com/llvm/llvm-project/tree/master/clang-tools-extra/clangd/index/remote#building-from-sources
@@ -67,6 +69,9 @@ RUN cd /tmp ; \
     cmake --build . --target install && \
     # Clean up sources to reduce image size.
     cd / && rm -rf /tmp/grpc
+
+# Install build bot (server was at 2.8.5-dev at time of writing).
+RUN pip3 install buildbot-worker==2.8.4
 
 # Workaround permissions issues when writing to named volumes
 # https://github.com/docker/compose/issues/3270#issuecomment-206214034

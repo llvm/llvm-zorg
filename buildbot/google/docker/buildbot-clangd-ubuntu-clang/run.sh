@@ -27,6 +27,7 @@ echo "Christian Kuehnel <kuhnel@google.com>" > "${WORKER_NAME}/info/admin"
   clang --version | head -n1 ; \
   ld.lld --version ; \
   cmake --version | head -n1 ; \
+  python3 --version | head -n1 ; \
 ) > ${WORKER_NAME}/info/host
 
 echo "Host information:"
