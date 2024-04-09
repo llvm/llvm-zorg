@@ -41,9 +41,7 @@ private def clone_llvm_project(name, sha) {
 
 private def post_build() {
     // Analyze build log.
-    def base_url = 'http://labmaster2:8080/green'
-    def build_url = currentBuild.getRawBuild().getUrl()
-    def log_url = "${base_url}/${build_url}consoleText"
+    def log_url = "${env.BUILD_URL}/consoleText"
     def ret = sh \
         script: "curl '${log_url}' -s | config/zorg/jenkins/inspect_log.py > log_summary.html",
         returnStatus: true
@@ -57,27 +55,6 @@ private def post_build() {
     if (currentBuild.description == null)
         currentBuild.description = ""
     currentBuild.description += descr_body
-
-    // Send notification email.
-    def prev_build = currentBuild.getPreviousBuild()
-    if ((prev_build == null ||
-         prev_build.result != currentBuild.currentResult) &&
-        currentBuild.currentResult == 'FAILURE') {
-        def email_template = readTrusted 'zorg/jenkins/email.template'
-        def body = render_template(email_template, log_summary)
-        emailext subject: '$DEFAULT_SUBJECT',
-            presendScript: '$DEFAULT_PRESEND_SCRIPT',
-            postsendScript: '$DEFAULT_POSTSEND_SCRIPT',
-            recipientProviders: [
-                [$class: 'CulpritsRecipientProvider'],
-                [$class: 'DevelopersRecipientProvider'],
-                [$class: 'RequesterRecipientProvider'],
-            ],
-            replyTo: '$DEFAULT_REPLYTO',
-            to: '$DEFAULT_RECIPIENTS',
-            body: body
-    }
-    // TODO: Notify IRC.
 }
 
 def task_pipeline(label, body) {
@@ -87,7 +64,13 @@ def task_pipeline(label, body) {
                 dir('config') {
                     git url: 'https://github.com/llvm/llvm-zorg.git', branch: 'main', poll: false
                 }
-                body()
+                withEnv([
+                    "PATH=$PATH:$WORKSPACE/venv/bin:/usr/bin:/usr/local/bin"
+                ]) {
+                    withCredentials([string(credentialsId: 's3_resource_bucket', variable: 'S3_BUCKET')]) {
+                        body()
+                    }
+                }
             }
         } catch(hudson.AbortException e) {
             // No need to print the exception if something fails inside a 'sh'
