@@ -1,3 +1,10 @@
 #!/usr/bin/env groovy
 def relay = evaluate readTrusted('zorg/jenkins/relay.groovy')
-relay.pipeline "lnt-ctmark-(.+)"
+jobs = [
+    "lnt-ctmark-aarch64-O0-g",
+    "lnt-ctmark-aarch64-O3-flto",
+    "lnt-ctmark-aarch64-Os",
+    "lnt-ctmark-aarch64-Oz",
+]
+
+relay.pipeline jobs
