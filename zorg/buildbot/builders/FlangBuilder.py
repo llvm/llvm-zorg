@@ -44,14 +44,12 @@ def getFlangOutOfTreeBuildFactory(
     mlir_dir = "{}/lib/cmake/mlir".format(f.obj_dir)
     clang_dir = "{}/lib/cmake/clang".format(f.obj_dir)
     CmakeCommand.applyRequiredOptions(flang_cmake_args, [
-        # We actually need the paths to be relative to the source directory,
-        # otherwise find_package can't locate the config files.
         ('-DLLVM_DIR:PATH=',
-            LLVMBuildFactory.pathRelativeTo(llvm_dir, flang_src_dir)),
+            LLVMBuildFactory.pathRelativeTo(llvm_dir, flang_obj_dir)),
         ('-DMLIR_DIR:PATH=',
-            LLVMBuildFactory.pathRelativeTo(mlir_dir, flang_src_dir)),
+            LLVMBuildFactory.pathRelativeTo(mlir_dir, flang_obj_dir)),
         ('-DCLANG_DIR:PATH=',
-            LLVMBuildFactory.pathRelativeTo(clang_dir, flang_src_dir)),
+            LLVMBuildFactory.pathRelativeTo(clang_dir, flang_obj_dir)),
         ])
 
     # We can't use addCmakeSteps as that would use the path in f.llvm_srcdir.
