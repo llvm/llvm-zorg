@@ -106,7 +106,7 @@ pipeline {
             post {
                 always {
                     script {
-                        junit allowEmptyResults: true, testResults: "clang-build/**/testresults.xunit.xml"
+                        junit "clang-build/**/testresults.xunit.xml"
                     }
                 }
             }
