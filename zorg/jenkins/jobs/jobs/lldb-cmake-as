@@ -1,11 +1,25 @@
 #!/usr/bin/env groovy
 pipeline {
-    agent { label 'green-dragon-13' }
+    options {
+        disableConcurrentBuilds()
+    }
+
     parameters {
-        string(name: 'GIT_SHA', defaultValue: '*/main', description: 'Git revision to build')
-        string(name: 'ARTIFACT', defaultValue: 'clang-stage2-Rthinlto/latest', description: 'Compiler artifact to use for building the project')
-        string(name: 'BUILD_TYPE', defaultValue: 'Release', description: 'Default CMake build type; one of: Release, Debug, ...')
-        string(name: 'CLEAN', defaultValue: "false", description: 'Whether or not to clean the build directory before building')
+        string(name: 'LABEL', defaultValue: params.LABEL ?: 'macos-arm64', description: 'Node label to run on')
+
+        string(name: 'GIT_SHA', defaultValue: params.GIT_REVISION ?: '*/main', description: 'Git commit to build.')
+
+        string(name: 'ARTIFACT', defaultValue: params.ARTIFACT ?: 'llvm.org/clang-stage2-Rthinlto/latest', description: 'Clang artifact to use')
+
+        string(name: 'BUILD_TYPE', defaultValue: params.BUILD_TYPE ?: 'Release', description: 'Default CMake build type; one of: Release, Debug, ...')
+
+        booleanParam(name: 'CLEAN', defaultValue: params.CLEAN ?: false, description: 'Wipe the build directory?')
+    }
+
+    agent {
+        node {
+            label params.LABEL
+        }
     }
     stages {
         stage('Checkout') {
@@ -18,7 +32,6 @@ pipeline {
                             [url: 'https://github.com/llvm/llvm-project.git']
                         ], extensions: [
                             [$class: 'CloneOption',
-                            reference: '/Users/Shared/llvm-project.git',
                             noTags: true, timeout: 30]
                         ]])
                     }
@@ -35,12 +48,33 @@ pipeline {
                 }
             }
         }
+        stage('Setup Venv') {
+            environment {
+               PATH="$PATH:/usr/bin:/usr/local/bin:/opt/homebrew/bin/"
+            }
+            steps {
+                sh '''
+                   # Non-incremental, so always delete just in case.
+                   rm -rf clang-build clang-install host-compiler *.tar.gz
+                   rm -rf venv
+                   python3 -m venv venv
+                   set +u
+                   source ./venv/bin/activate
+                   pip install -r ./llvm-zorg/zorg/jenkins/jobs/requirements.txt
+                   set -u
+               '''
+            }
+        }
         stage('Build') {
+            environment {
+                PATH="$PATH:/usr/bin:/usr/local/bin:/opt/homebrew/bin/"
+            }
             steps {
                 timeout(120) {
                     sh '''
                     set -u
                     rm -rf build.properties
+                    source ./venv/bin/activate
 
                     cd llvm-project
                     git tag -a -m "First Commit" first_commit 97724f18c79c7cc81ced24239eb5e883bf1398ef || true
@@ -54,7 +88,7 @@ pipeline {
 
                     cd -
 
-                    if test -f /opt/codesign-workaround.sh; then sh /opt/codesign-workaround.sh init lldb-build/bin/debugserver; fi
+                    rm -rf lldb-build/bin/debugserver
                     export MAX_PARALLEL_TESTS=$(sysctl hw.physicalcpu |awk '{print $2}')
                     python3 llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake build \
                       --assertions \
@@ -67,18 +101,22 @@ pipeline {
                       --runtimes="libcxx;libcxxabi;compiler-rt;libunwind"  \
                       --compiler-flag="-Wdocumentation" \
                       --cmake-type=Release)
-
-                    if test -f /opt/codesign-workaround.sh; then sh /opt/codesign-workaround.sh sign lldb-build/bin/debugserver; fi
                       '''
+                    script {
+                        def LLDB = new org.swift.LLDB()
+                        LLDB.LLDB_prepare()
+                    }
                 }
             }
         }
         stage('Clean Test Results') {
+            environment {
+                PATH="$PATH:/usr/bin:/usr/local/bin:/opt/homebrew/bin/"
+            }
             steps {
                 timeout(10) {
                     sh '''
                     set -u
-                    export PATH=$PATH:/usr/bin:/usr/local/bin
 
                     rm -rf test/results.xml
                     '''
@@ -86,6 +124,9 @@ pipeline {
             }
         }
         stage('Test (Debug Info)') {
+            environment {
+                PATH="$PATH:/usr/bin:/usr/local/bin:/opt/homebrew/bin/"
+            }
             steps {
                 timeout(30) {
                     // We want to continue with the rest of the pipeline even
@@ -94,7 +135,7 @@ pipeline {
                     catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
                         sh '''
                         set -u
-                        export PATH=$PATH:/usr/bin:/usr/local/bin
+                        source ./venv/bin/activate
 
                         export MAX_PARALLEL_TESTS=$(sysctl hw.physicalcpu |awk '{print $2}')
 
@@ -105,11 +146,14 @@ pipeline {
             }
         }
         stage('Test (LLDB)') {
+            environment {
+                PATH="$PATH:/usr/bin:/usr/local/bin:/opt/homebrew/bin/"
+            }
             steps {
                 timeout(90) {
                     sh '''
                     set -u
-                    export PATH=$PATH:/usr/bin:/usr/local/bin
+                    source ./venv/bin/activate
 
                     export MAX_PARALLEL_TESTS=$(sysctl hw.physicalcpu |awk '{print $2}')
                     python3 llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake test
@@ -118,45 +162,36 @@ pipeline {
             }
         }
         stage('Upload artifacts (LLDB)') {
+            environment {
+               PATH="$PATH:/usr/bin:/usr/local/bin:/opt/homebrew/bin/"
+            }
            steps {
                timeout(90) {
-                    sh '''
-                    set -u
-                    cd llvm-project
-                    git_desc=$(git describe --match "first_commit")
+                   withCredentials([string(credentialsId: 's3_resource_bucket', variable: 'S3_BUCKET')]) {
+                       sh '''
+                       set -u
+                       source ./venv/bin/activate
+                       cd llvm-project
+                       git_desc=$(git describe --match "first_commit")
 
-                    export GIT_DISTANCE=$(echo ${git_desc} | cut -f 2 -d "-")
+                       export GIT_DISTANCE=$(echo ${git_desc} | cut -f 2 -d "-")
 
-                    sha=$(echo ${git_desc} | cut -f 3 -d "-")
-                    export GIT_SHA=${sha:1}
+                       sha=$(echo ${git_desc} | cut -f 3 -d "-")
+                       export GIT_SHA=${sha:1}
 
-                    cd -
-                    python3 llvm-zorg/zorg/jenkins/monorepo_build.py properties
-                    '''
-             }
+                       cd -
+                       python3 llvm-zorg/zorg/jenkins/monorepo_build.py properties
+                       '''
+                   }
+              }
           }
        }
     }
     post {
         always {
-            scanForIssues tool: clang()
+            // ToDo: Restore the issue scanner
+            // scanForIssues tool: clang()
             junit 'test/results.xml'
-        }
-        changed {
-            emailext subject: '$DEFAULT_SUBJECT',
-                    presendScript: '$DEFAULT_PRESEND_SCRIPT',
-                    postsendScript: '$DEFAULT_POSTSEND_SCRIPT',
-                    recipientProviders: [
-                            [$class: 'CulpritsRecipientProvider'],
-                            [$class: 'DevelopersRecipientProvider'],
-                            [$class: 'RequesterRecipientProvider'],
-                    ],
-                    replyTo: '$DEFAULT_REPLYTO',
-                    to: '$DEFAULT_RECIPIENTS',
-                    body:'$DEFAULT_CONTENT'
-        }
-        success {
-             build job: 'relay-lldb', wait: false
         }
     }
 }
