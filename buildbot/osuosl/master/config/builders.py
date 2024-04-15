@@ -1240,7 +1240,7 @@ all = [
     'workernames' : ["hexagon-build-03"],
     'builddir': "aosp",
     'factory' : AOSPBuilder.getAOSPBuildFactory(
-                    device="angler",
+                    device="arm64",
                     extra_cmake_args=[
                         "-G", "Ninja",
                         "-DLLVM_TARGETS_TO_BUILD='ARM;AArch64'",
