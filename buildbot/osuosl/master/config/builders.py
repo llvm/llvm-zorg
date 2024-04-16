@@ -1807,14 +1807,13 @@ all += [
     'builddir': "openmp-offload-amdgpu-runtime",
     'factory' : OpenMPBuilder.getOpenMPCMakeBuildFactory(
                         clean=True,
-                        enable_runtimes=['openmp', 'offload'],
+                        enable_runtimes=['compiler-rt', 'openmp', 'offload'],
                         depends_on_projects=['llvm','clang','lld', 'offload', 'openmp'],
                         extraCmakeArgs=[
                             "-DCMAKE_BUILD_TYPE=Release",
                             "-DCLANG_DEFAULT_LINKER=lld",
                             "-DLLVM_TARGETS_TO_BUILD=X86;AMDGPU",
                             "-DLLVM_ENABLE_ASSERTIONS=ON",
-                            "-DLLVM_ENABLE_RUNTIMES=openmp",
                             "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
                             "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
                             ],
@@ -1837,14 +1836,13 @@ all += [
     'builddir': "openmp-offload-amdgpu-runtime-2",
     'factory' : OpenMPBuilder.getOpenMPCMakeBuildFactory(
                         clean=True,
-                        enable_runtimes=['openmp', 'offload'],
+                        enable_runtimes=['compiler-rt', 'openmp', 'offload'],
                         depends_on_projects=['llvm','clang','lld', 'offload', 'openmp'],
                         extraCmakeArgs=[
                             "-DCMAKE_BUILD_TYPE=Release",
                             "-DCLANG_DEFAULT_LINKER=lld",
                             "-DLLVM_TARGETS_TO_BUILD=X86;AMDGPU",
                             "-DLLVM_ENABLE_ASSERTIONS=ON",
-                            "-DLLVM_ENABLE_RUNTIMES=openmp",
                             "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
                             "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
                             ],
@@ -1932,14 +1930,13 @@ all += [
     'builddir': "openmp-offload-amdgpu-clang-flang",
     'factory' : OpenMPBuilder.getOpenMPCMakeBuildFactory(
                         clean=True,
-                        enable_runtimes=['openmp', 'offload'],
+                        enable_runtimes=['compiler-rt', 'openmp', 'offload'],
                         depends_on_projects=['llvm','clang','lld', 'offload', 'openmp','flang'],
                         extraCmakeArgs=[
                             "-DCMAKE_BUILD_TYPE=Release",
                             "-DCLANG_DEFAULT_LINKER=lld",
                             "-DLLVM_TARGETS_TO_BUILD=X86;AMDGPU",
                             "-DLLVM_ENABLE_ASSERTIONS=ON",
-                            "-DLLVM_ENABLE_RUNTIMES=openmp",
                             "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
                             "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
                             ],
