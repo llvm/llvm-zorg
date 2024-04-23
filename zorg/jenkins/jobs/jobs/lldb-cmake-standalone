@@ -208,12 +208,4 @@ pipeline {
             }
         }
     }
-    /*
-    post {
-        always {
-            // ToDo: Restore issue scanner
-            // scanForIssues tool: clang()
-        }
-    }
-    */
 }
