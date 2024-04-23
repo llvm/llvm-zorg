@@ -1808,7 +1808,7 @@ all += [
     'factory' : OpenMPBuilder.getOpenMPCMakeBuildFactory(
                         clean=True,
                         enable_runtimes=['openmp', 'offload'],
-                        depends_on_projects=['llvm','clang','lld','openmp'],
+                        depends_on_projects=['llvm','clang','lld', 'offload', 'openmp'],
                         extraCmakeArgs=[
                             "-DCMAKE_BUILD_TYPE=Release",
                             "-DCLANG_DEFAULT_LINKER=lld",
@@ -1838,7 +1838,7 @@ all += [
     'factory' : OpenMPBuilder.getOpenMPCMakeBuildFactory(
                         clean=True,
                         enable_runtimes=['openmp', 'offload'],
-                        depends_on_projects=['llvm','clang','lld','openmp'],
+                        depends_on_projects=['llvm','clang','lld', 'offload', 'openmp'],
                         extraCmakeArgs=[
                             "-DCMAKE_BUILD_TYPE=Release",
                             "-DCLANG_DEFAULT_LINKER=lld",
@@ -1869,7 +1869,7 @@ all += [
     'factory' : OpenMPBuilder.getOpenMPCMakeBuildFactory(
                         clean=True,
                         enable_runtimes=['openmp', 'offload'],
-                        depends_on_projects=['llvm', 'clang', 'flang', 'lld', 'openmp'],
+                        depends_on_projects=['llvm', 'clang', 'flang', 'lld', 'offload', 'openmp'],
                         extraCmakeArgs=[
                             "-DCMAKE_BUILD_TYPE=Release",
                             "-DCLANG_DEFAULT_LINKER=lld",
@@ -1898,7 +1898,7 @@ all += [
     'builddir': "openmp-offload-libc-amdgpu-runtime",
     'factory' : OpenMPBuilder.getOpenMPCMakeBuildFactory(
                         clean=True,
-                        depends_on_projects=['llvm', 'clang', 'compiler-rt', 'libc', 'lld', 'openmp'],
+                        depends_on_projects=['llvm', 'clang', 'compiler-rt', 'libc', 'lld', 'offload', 'openmp'],
                         # Special case this bot to account for new (verbose) libc build syntax
                         enable_runtimes=['openmp', 'compiler-rt', 'offload'],
                         extraCmakeArgs=[
@@ -1933,7 +1933,7 @@ all += [
     'factory' : OpenMPBuilder.getOpenMPCMakeBuildFactory(
                         clean=True,
                         enable_runtimes=['openmp', 'offload'],
-                        depends_on_projects=['llvm','clang','lld','openmp','flang'],
+                        depends_on_projects=['llvm','clang','lld', 'offload', 'openmp','flang'],
                         extraCmakeArgs=[
                             "-DCMAKE_BUILD_TYPE=Release",
                             "-DCLANG_DEFAULT_LINKER=lld",
@@ -1965,8 +1965,8 @@ all += [
     'factory' : OpenMPBuilder.getOpenMPCMakeBuildFactory(
                         clean=True,
                         test=False, # we have no GPU avail, skip runtime tests
-                        enable_runtimes=['openmp'],
-                        depends_on_projects=['llvm','clang', 'flang', 'lld','openmp'],
+                        enable_runtimes=['openmp', 'offload'],
+                        depends_on_projects=['llvm','clang', 'flang', 'lld','offload', 'openmp'],
                         extraCmakeArgs=[
                             "-DCMAKE_BUILD_TYPE=Release",
                             "-DCLANG_DEFAULT_LINKER=lld",
