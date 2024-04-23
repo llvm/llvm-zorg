@@ -9,8 +9,6 @@ pipeline {
 
         string(name: 'GIT_SHA', defaultValue: params.GIT_REVISION ?: '*/main', description: 'Git commit to build.')
 
-        string(name: 'ARTIFACT', defaultValue: params.ARTIFACT ?: 'llvm.org/clang-stage2-Rthinlto/latest', description: 'Clang artifact to use')
-
         string(name: 'BUILD_TYPE', defaultValue: params.BUILD_TYPE ?: 'Release', description: 'Default CMake build type; one of: Release, Debug, ...')
 
         booleanParam(name: 'CLEAN', defaultValue: params.CLEAN ?: false, description: 'Wipe the build directory?')
@@ -62,26 +60,6 @@ pipeline {
                    pip install -r ./llvm-zorg/zorg/jenkins/jobs/requirements.txt
                    set -u
                '''
-            }
-        }
-        stage('Fetch') {
-            environment {
-               PATH="$PATH:/usr/bin:/usr/local/bin"
-            }
-            steps {
-              timeout(90) {
-                  sh '''
-                  source ./venv/bin/activate
-
-                  # The relay job sets ARTIFACT to the last good LLDB build.
-                  # Here we use it to download the last good Clang.
-                  export ARTIFACT=clang-stage2-Rthinlto/latest
-                  # python3 llvm-zorg/zorg/jenkins/monorepo_build.py fetch
-
-                  echo "Skipping geting the just-built compiler to work around an issue with libcxx."
-                  rm -rf host-compiler
-                  '''
-                }
             }
         }
         stage('Build') {
