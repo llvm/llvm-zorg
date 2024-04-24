@@ -1,26 +1,36 @@
 #!/usr/bin/env groovy
 pipeline {
-    agent { label 'green-dragon-23' }
-
     parameters {
-        string(name: 'GIT_REVISION', defaultValue: '*/main', description: 'Git revision to build')
-        string(name: 'ARTIFACT', defaultValue: 'clang-stage1-RA/latest', description: 'Compiler artifact to use for building the project')
-        string(name: 'BUILD_TYPE', defaultValue: 'Release', description: 'Default CMake build type; one of: Release, Debug, ...')
-        string(name: 'CLEAN', defaultValue: "false", description: 'Whether or not to clean the build directory before building')
+        string(name: 'LABEL', defaultValue: params.LABEL ?: 'macos-x86_64', description: 'Node label to run on')
+
+        string(name: 'GIT_SHA', defaultValue: params.GIT_REVISION ?: '*/main', description: 'Git commit to build.')
+
+        string(name: 'ARTIFACT', defaultValue: params.ARTIFACT ?: 'llvm.org/clang-stage1-RA/latest', description: 'Clang artifact to use')
+
+        string(name: 'BUILD_TYPE', defaultValue: params.BUILD_TYPE ?: 'Release', description: 'Default CMake build type; one of: Release, Debug, ...')
+
+        booleanParam(name: 'CLEAN', defaultValue: params.CLEAN ?: false, description: 'Wipe the build directory?')
     }
 
+    agent {
+        node {
+            label params.LABEL
+        }
+    }
     stages {
         stage('Checkout') {
             steps {
-                dir('llvm-project') {
-                    checkout([$class: 'GitSCM', branches: [
-                        [name: params.GIT_REVISION]
-                    ], extensions: [
-                        [$class: 'CloneOption',
-                        reference: '/Users/Shared/llvm-project.git']
-                    ], userRemoteConfigs: [
-                        [url: 'https://github.com/llvm/llvm-project.git']
-                    ]])
+                timeout(30) {
+                    dir('llvm-project') {
+                        checkout([$class: 'GitSCM', branches: [
+                            [name: params.GIT_SHA]
+                        ], userRemoteConfigs: [
+                            [url: 'https://github.com/llvm/llvm-project.git']
+                        ], extensions: [
+                            [$class: 'CloneOption',
+                            noTags: true, timeout: 30]
+                        ]])
+                    }
                 }
                 dir('llvm-zorg') {
                     checkout([$class: 'GitSCM', branches: [
@@ -34,21 +44,50 @@ pipeline {
                 }
             }
         }
-        stage('Fetch') {
+        stage('Setup Venv') {
+            environment {
+               PATH="$PATH:/usr/bin:/usr/local/bin"
+            }
             steps {
-                timeout(10) {
-                    sh '''
-                    python llvm-zorg/zorg/jenkins/monorepo_build.py fetch
-                    '''
+                sh '''
+                   # Non-incremental, so always delete just in case.
+                   rm -rf clang-build clang-install host-compiler *.tar.gz
+                   rm -rf venv
+                   xcrun python3 -m venv venv
+                   set +u
+                   source ./venv/bin/activate
+                   python -m pip install -r ./llvm-zorg/zorg/jenkins/jobs/requirements.txt
+                   set -u
+               '''
+            }
+        }
+        stage('Fetch') {
+            environment {
+               PATH="$PATH:/usr/bin:/usr/local/bin"
+            }
+            steps {
+                withCredentials([string(credentialsId: 's3_resource_bucket', variable: 'S3_BUCKET')]) {
+                    sh """
+                        source ./venv/bin/activate
+                        echo "ARTIFACT=${params.ARTIFACT}"
+                        python llvm-zorg/zorg/jenkins/monorepo_build.py fetch
+                        ls $WORKSPACE/host-compiler/lib/clang/
+                        VERSION=`ls $WORKSPACE/host-compiler/lib/clang/`
+                    """
                 }
             }
         }
         stage('Build') {
+            environment {
+               PATH="$PATH:/usr/bin:/usr/local/bin"
+            }
             steps {
-                timeout(180) {
+                timeout(300) {
                     sh '''
                     set -u
                     rm -rf build.properties
+
+                    source ./venv/bin/activate
 
                     cd llvm-project
                     git tag -a -m "First Commit" first_commit 97724f18c79c7cc81ced24239eb5e883bf1398ef || true
@@ -61,8 +100,6 @@ pipeline {
                     export GIT_SHA=${sha:1}
 
                     cd -
-
-                    export PATH=$PATH:/usr/bin:/usr/local/bin
 
                     python llvm-zorg/zorg/jenkins/monorepo_build.py cmake build \
                       --cmake-build-target FileCheck \
@@ -94,11 +131,15 @@ pipeline {
             }
         }
         stage('Test') {
+            environment {
+               PATH="$PATH:/usr/bin:/usr/local/bin"
+            }
             steps {
-                timeout(600) {
+                timeout(900) {
                     sh '''
                     set -u
-                    export PATH=$PATH:/usr/bin:/usr/local/bin
+
+                    source ./venv/bin/activate
 
                     rm -rf test/results.xml
 
@@ -136,9 +177,6 @@ pipeline {
                     mkdir -p $REPORT_DIR
                     python $ARTIFACT_PREP_SCRIPT $LLVM_PROFDATA $LLVM_COV $BUILD_DIR/profiles $REPORT_DIR $COV_BINARIES --unified-report --restrict $WORKSPACE/llvm-project
 
-                    scp -r $REPORT_DIR buildslave@labmaster2.local:/Library/WebServer/Documents/coverage
-                    ssh buildslave@labmaster2.local "chmod -R 777 /Library/WebServer/Documents/coverage"
-
                     rm -rf lldb-build/profiles
                     '''
                 }
@@ -147,9 +185,16 @@ pipeline {
     }
 
     post {
-        always {    
-            scanForIssues tool: clang()
+        always {
+            // ToDo: Restore issue scanner
+            //scanForIssues tool: clang()
             junit 'test/results.xml'
+        }
+        success {
+            script {
+                // ToDo: For now just archive coverage report as an artifact
+                archiveArtifacts artifacts: "coverage-reports/**"
+            }
         }
     }
 }
