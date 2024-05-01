@@ -2331,6 +2331,8 @@ all += [
                         '-DLLVM_INSTALL_UTILS=ON',
                         '-DCMAKE_CXX_STANDARD=17',
                         '-DLLVM_LIT_ARGS=-vj 256',
+                        '-DFLANG_ENABLE_WERROR=ON',
+                        '-DLLVM_ENABLE_ASSERTIONS=ON',
                         '-DCMAKE_C_COMPILER_LAUNCHER=ccache',
                         '-DCMAKE_CXX_COMPILER_LAUNCHER=ccache'
                     ],
