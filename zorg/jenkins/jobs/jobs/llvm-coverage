@@ -72,7 +72,6 @@ pipeline {
                         echo "ARTIFACT=${params.ARTIFACT}"
                         python llvm-zorg/zorg/jenkins/monorepo_build.py fetch
                         ls $WORKSPACE/host-compiler/lib/clang/
-                        VERSION=`ls $WORKSPACE/host-compiler/lib/clang/`
                     """
                 }
             }
