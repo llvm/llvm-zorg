@@ -8,7 +8,7 @@ pipeline {
 
         string(name: 'GIT_REVISION', defaultValue: params.GIT_REVISION ?: '*/main', description: 'Git revision to build')
 
-        booleanParam(name: 'SKIP_TRIGGER', defaultValue: params.SKIP_TRIGGER ?: false, description: 'Skip trigger of consuming CI jobs')
+        booleanParam(name: 'CLEAN', defaultValue: params.CLEAN ?: false, description: 'Wipe the build directory?')
     }
 
     agent {
@@ -30,11 +30,12 @@ pipeline {
                         [url: 'https://github.com/llvm/llvm-project.git']
                     ]])
                 }
+                // ToDo: Revert to use non-fork repo
                 dir('llvm-zorg') {
                     checkout([$class: 'GitSCM', branches: [
-                        [name: '*/main']
+                        [name: '*/swift-ci-llvm']
                     ], userRemoteConfigs: [
-                        [url: 'https://github.com/llvm/llvm-zorg.git']
+                        [url: 'https://github.com/justice-adams-apple/llvm-zorg.git']
                     ]])
                 }
             }
@@ -62,7 +63,7 @@ pipeline {
                 MACOSX_DEPLOYMENT_TARGET="13.6"
             }
             steps {
-                timeout(90) {
+                timeout(360) {
                     withCredentials([string(credentialsId: 's3_resource_bucket', variable: 'S3_BUCKET')]) {
                         sh '''
                         set -u
@@ -88,33 +89,14 @@ pipeline {
                         echo "GIT_SHA=$GIT_SHA" >> build.properties
                         echo "ARTIFACT=$JOB_NAME/clang-d$GIT_DISTANCE-g$GIT_SHA-t$BUILD_ID-b$BUILD_NUMBER.tar.gz" >> build.properties
 
-                        rm -rf clang-build clang-install *.tar.gz
-                        python llvm-zorg/zorg/jenkins/monorepo_build.py cmake build \
-                          --assertions --cmake-type=RelWithDebInfo \
-                          --projects="clang;clang-tools-extra;compiler-rt" \
+                        python llvm-zorg/zorg/jenkins/monorepo_build.py cmake all --assertions \
+                          --cmake-flag="-DLLVM_ENABLE_EXPENSIVE_CHECKS=ON" \
+                          --cmake-flag="-DLIBCXX_ENABLE_SHARED=OFF" \
+                          --cmake-flag="-DLIBCXX_ENABLE_STATIC=OFF" \
+                          --cmake-flag="-DLIBCXX_INCLUDE_TESTS=OFF" \
+                          --cmake-flag="-DLIBCXX_ENABLE_EXPERIMENTAL_LIBRARY=OFF" \
                           --cmake-flag="-DPython3_EXECUTABLE=$(which python)"
                         '''
-                    }
-                }
-            }
-        }
-        stage('Test') {
-            environment {
-                PATH="$PATH:/usr/bin:/usr/local/bin"
-            }
-            steps {
-                timeout(90) {
-                    sh '''
-                    set -u
-                    source ./venv/bin/activate
-                    python llvm-zorg/zorg/jenkins/monorepo_build.py cmake testlong
-                    '''
-                }
-            }
-            post {
-                always {
-                    script {
-                        junit "clang-build/**/testresults.xunit.xml"
                     }
                 }
             }
@@ -123,31 +105,15 @@ pipeline {
     post {
         always {
             script {
-                // ToDo: Restore the issue scanner
-                // scanForIssues tool: clang()
-                sh "rm -rf clang-build clang-install host-compiler"
-            }
-        }
-        success {
-            script {
-                if (!params.SKIP_TRIGGER) {
-                    // Trigger Stage 2 Jobs
-                    build job: 'clang-stage2-cmake-RgSan_relay', wait: false
-                    build job: 'clang-stage2-Rthinlto_relay', wait: false
-                    build job: 'relay-lnt-ctmark', wait: false
-                    build job: 'relay-test-suite-verify-machineinstrs', wait: false
-                }
-            }
-        }
-        unstable {
-            script {
-                if (!params.SKIP_TRIGGER) {
-                    // Trigger Stage 2 Jobs
-                    build job: 'clang-stage2-cmake-RgSan_relay', wait: false
-                    build job: 'clang-stage2-Rthinlto_relay', wait: false
-                    build job: 'relay-lnt-ctmark', wait: false
-                    build job: 'relay-test-suite-verify-machineinstrs', wait: false
-                }
+               // ToDo: Restore the issue scanner
+               // scanForIssues tool: clang()
+
+                junit allowEmptyResults: true, testResults: "clang-build/**/testresults.xunit.xml"
+                junit allowEmptyResults: true, testResults: "clang-build/asan-IOSSimX86_64Config.xunit.xml"
+                junit allowEmptyResults: true, testResults: "clang-build/asan-IOSSimI386Config.xunit.xml"
+                junit allowEmptyResults: true, testResults: "clang-build/tsan-IOSSimX86_64Config.xunit.xml"
+
+                sh "rm -rf clang-build clang-install host-compiler *.tar.gz"
             }
         }
     }

@@ -1807,14 +1807,13 @@ all += [
     'builddir': "openmp-offload-amdgpu-runtime",
     'factory' : OpenMPBuilder.getOpenMPCMakeBuildFactory(
                         clean=True,
-                        enable_runtimes=['openmp', 'offload'],
-                        depends_on_projects=['llvm','clang','lld','openmp'],
+                        enable_runtimes=['compiler-rt', 'openmp', 'offload'],
+                        depends_on_projects=['llvm','clang','lld', 'offload', 'openmp'],
                         extraCmakeArgs=[
                             "-DCMAKE_BUILD_TYPE=Release",
                             "-DCLANG_DEFAULT_LINKER=lld",
                             "-DLLVM_TARGETS_TO_BUILD=X86;AMDGPU",
                             "-DLLVM_ENABLE_ASSERTIONS=ON",
-                            "-DLLVM_ENABLE_RUNTIMES=openmp",
                             "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
                             "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
                             ],
@@ -1828,6 +1827,7 @@ all += [
                             "-DTEST_SUITE_SOLLVEVV_OFFLOADING_CFLAGS=-fopenmp-targets=amdgcn-amd-amdhsa;-Xopenmp-target=amdgcn-amd-amdhsa",
                             "-DTEST_SUITE_SOLLVEVV_OFFLOADING_LDLAGS=-fopenmp-targets=amdgcn-amd-amdhsa;-Xopenmp-target=amdgcn-amd-amdhsa",
                         ],
+                        add_lit_checks=['check-offload'],
                         add_openmp_lit_args=["--time-tests", "--timeout 100"],
                     )},
 
@@ -1837,14 +1837,13 @@ all += [
     'builddir': "openmp-offload-amdgpu-runtime-2",
     'factory' : OpenMPBuilder.getOpenMPCMakeBuildFactory(
                         clean=True,
-                        enable_runtimes=['openmp', 'offload'],
-                        depends_on_projects=['llvm','clang','lld','openmp'],
+                        enable_runtimes=['compiler-rt', 'openmp', 'offload'],
+                        depends_on_projects=['llvm','clang','lld', 'offload', 'openmp'],
                         extraCmakeArgs=[
                             "-DCMAKE_BUILD_TYPE=Release",
                             "-DCLANG_DEFAULT_LINKER=lld",
                             "-DLLVM_TARGETS_TO_BUILD=X86;AMDGPU",
                             "-DLLVM_ENABLE_ASSERTIONS=ON",
-                            "-DLLVM_ENABLE_RUNTIMES=openmp",
                             "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
                             "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
                             ],
@@ -1869,7 +1868,7 @@ all += [
     'factory' : OpenMPBuilder.getOpenMPCMakeBuildFactory(
                         clean=True,
                         enable_runtimes=['openmp', 'offload'],
-                        depends_on_projects=['llvm', 'clang', 'flang', 'lld', 'openmp'],
+                        depends_on_projects=['llvm', 'clang', 'flang', 'lld', 'offload', 'openmp'],
                         extraCmakeArgs=[
                             "-DCMAKE_BUILD_TYPE=Release",
                             "-DCLANG_DEFAULT_LINKER=lld",
@@ -1898,7 +1897,7 @@ all += [
     'builddir': "openmp-offload-libc-amdgpu-runtime",
     'factory' : OpenMPBuilder.getOpenMPCMakeBuildFactory(
                         clean=True,
-                        depends_on_projects=['llvm', 'clang', 'compiler-rt', 'libc', 'lld', 'openmp'],
+                        depends_on_projects=['llvm', 'clang', 'compiler-rt', 'libc', 'lld', 'offload', 'openmp'],
                         # Special case this bot to account for new (verbose) libc build syntax
                         enable_runtimes=['openmp', 'compiler-rt', 'offload'],
                         extraCmakeArgs=[
@@ -1932,14 +1931,13 @@ all += [
     'builddir': "openmp-offload-amdgpu-clang-flang",
     'factory' : OpenMPBuilder.getOpenMPCMakeBuildFactory(
                         clean=True,
-                        enable_runtimes=['openmp', 'offload'],
-                        depends_on_projects=['llvm','clang','lld','openmp','flang'],
+                        enable_runtimes=['compiler-rt', 'openmp', 'offload'],
+                        depends_on_projects=['llvm','clang','lld', 'offload', 'openmp','flang'],
                         extraCmakeArgs=[
                             "-DCMAKE_BUILD_TYPE=Release",
                             "-DCLANG_DEFAULT_LINKER=lld",
                             "-DLLVM_TARGETS_TO_BUILD=X86;AMDGPU",
                             "-DLLVM_ENABLE_ASSERTIONS=ON",
-                            "-DLLVM_ENABLE_RUNTIMES=openmp",
                             "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
                             "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
                             ],
@@ -1965,8 +1963,8 @@ all += [
     'factory' : OpenMPBuilder.getOpenMPCMakeBuildFactory(
                         clean=True,
                         test=False, # we have no GPU avail, skip runtime tests
-                        enable_runtimes=['openmp'],
-                        depends_on_projects=['llvm','clang', 'flang', 'lld','openmp'],
+                        enable_runtimes=['openmp', 'compiler-rt', 'offload'],
+                        depends_on_projects=['llvm','clang', 'flang', 'lld', 'mlir', 'offload', 'openmp'],
                         extraCmakeArgs=[
                             "-DCMAKE_BUILD_TYPE=Release",
                             "-DCLANG_DEFAULT_LINKER=lld",
@@ -1985,7 +1983,7 @@ all += [
                             "-DTEST_SUITE_SOLLVEVV_OFFLOADING_CFLAGS=-fopenmp-targets=amdgcn-amd-amdhsa;-Xopenmp-target=amdgcn-amd-amdhsa",
                             "-DTEST_SUITE_SOLLVEVV_OFFLOADING_LDLAGS=-fopenmp-targets=amdgcn-amd-amdhsa;-Xopenmp-target=amdgcn-amd-amdhsa",
                         ],
-                        add_lit_checks=["check-clang", "check-flang", "check-llvm", "check-lld"],
+                        add_lit_checks=["check-clang", "check-flang", "check-llvm", "check-lld", "check-mlir"],
                         add_openmp_lit_args=["--time-tests", "--timeout 100"],
                     )},
 
@@ -2333,6 +2331,8 @@ all += [
                         '-DLLVM_INSTALL_UTILS=ON',
                         '-DCMAKE_CXX_STANDARD=17',
                         '-DLLVM_LIT_ARGS=-vj 256',
+                        '-DFLANG_ENABLE_WERROR=ON',
+                        '-DLLVM_ENABLE_ASSERTIONS=ON',
                         '-DCMAKE_C_COMPILER_LAUNCHER=ccache',
                         '-DCMAKE_CXX_COMPILER_LAUNCHER=ccache'
                     ],
@@ -2704,11 +2704,10 @@ all += [
                         "-DLLVM_APPEND_VC_REV=OFF",
                         "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
                         "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
-                        "-DLLVM_ENABLE_PROJECTS=bolt;lld",
+                        "-DLLVM_ENABLE_PROJECTS=bolt;clang;lld",
                         "-DLLVM_TARGETS_TO_BUILD=X86;AArch64;RISCV",
                         "-DLLVM_LINK_LLVM_DYLIB=ON",
                         "-DLLVM_ENABLE_LLD=ON",
-                        "-DBOLT_CLANG_EXE=/usr/bin/clang",
                         ],
                     )},
 
@@ -2723,11 +2722,10 @@ all += [
                         "-DLLVM_APPEND_VC_REV=OFF",
                         "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
                         "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
-                        "-DLLVM_ENABLE_PROJECTS=bolt;lld",
+                        "-DLLVM_ENABLE_PROJECTS=bolt;clang;lld",
                         "-DLLVM_TARGETS_TO_BUILD=X86;AArch64;RISCV",
                         "-DBUILD_SHARED_LIBS=ON",
                         "-DLLVM_ENABLE_LLD=ON",
-                        "-DBOLT_CLANG_EXE=/usr/bin/clang",
                         ],
                     )},
 
@@ -2771,11 +2769,10 @@ all += [
                         "-DLLVM_APPEND_VC_REV=OFF",
                         "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
                         "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
-                        "-DLLVM_ENABLE_PROJECTS=bolt;lld",
+                        "-DLLVM_ENABLE_PROJECTS=bolt;clang;lld",
                         "-DLLVM_TARGETS_TO_BUILD=X86;AArch64;RISCV",
                         "-DBUILD_SHARED_LIBS=ON",
                         "-DLLVM_USE_LINKER=mold",
-                        "-DBOLT_CLANG_EXE=/usr/bin/clang",
                         ],
                     )},
 

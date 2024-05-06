@@ -1,15 +1,28 @@
 #!/usr/bin/env groovy
 
 pipeline {
-    agent { label 'green-dragon-09' }
+    options {
+        disableConcurrentBuilds()
+    }
+
     parameters {
-        string(name: 'GIT_SHA', defaultValue: '*/main', description: 'Git revision to build')
-        string(name: 'ARTIFACT', defaultValue: 'clang-stage2-Rthinlto/latest', description: 'Compiler artifact to use for building the project')
-        string(name: 'BUILD_TYPE', defaultValue: 'Release', description: 'Default CMake build type; one of: Release, Debug, ...')
-        string(name: 'CLEAN', defaultValue: "false", description: 'Whether or not to clean the build directory before building')
+        string(name: 'LABEL', defaultValue: params.LABEL ?: 'macos-x86_64', description: 'Node label to run on')
+
+        string(name: 'GIT_SHA', defaultValue: params.GIT_REVISION ?: '*/main', description: 'Git commit to build.')
+
+        string(name: 'BUILD_TYPE', defaultValue: params.BUILD_TYPE ?: 'Release', description: 'Default CMake build type; one of: Release, Debug, ...')
+
+        booleanParam(name: 'CLEAN', defaultValue: params.CLEAN ?: false, description: 'Wipe the build directory?')
+    }
+
+    agent {
+        node {
+            label params.LABEL
+        }
     }
     environment {
         MATRIX_COMMON_BUILD_PARAMETERS = '--cmake-flag=-DLLVM_TARGETS_TO_BUILD=X86'
+        PATH="$PATH:/usr/bin:/usr/local/bin"
     }
     stages {
         stage('Checkout') {
@@ -22,7 +35,6 @@ pipeline {
                             [url: 'https://github.com/llvm/llvm-project.git']
                         ], extensions: [
                             [$class: 'CloneOption',
-                            reference: '/Users/Shared/llvm-project.git',
                             noTags: true, timeout: 30]
                         ]])
                     }
@@ -39,19 +51,17 @@ pipeline {
                 }
             }
         }
-        stage('Fetch') {
+        stage('Setup Venv') {
             steps {
-                timeout(10) {
-                    sh '''
-                    # The relay job sets ARTIFACT to the last good LLDB build.
-                    # Here we use it to download the last good Clang.
-                    export ARTIFACT=clang-stage2-Rthinlto/latest
-                    python3 llvm-zorg/zorg/jenkins/monorepo_build.py fetch
-
-                    echo "Skipping geting the just-built compiler to work around an issue with libcxx."
-                    rm -rf host-compiler
-                    '''
-                    }
+                sh '''
+                   # Non-incremental, so always delete.
+                   rm -rf venv
+                   python3 -m venv venv
+                   set +u
+                   source ./venv/bin/activate
+                   pip install -r ./llvm-zorg/zorg/jenkins/jobs/requirements.txt
+                   set -u
+               '''
             }
         }
         stage('Build LLDB') {
@@ -60,6 +70,8 @@ pipeline {
                     sh '''
                     set -u
                     rm -rf build.properties
+
+                    source ./venv/bin/activate
 
                     cd llvm-project
                     git tag -a -m "First Commit" first_commit 97724f18c79c7cc81ced24239eb5e883bf1398ef || true
@@ -73,8 +85,7 @@ pipeline {
 
                     cd -
 
-                    export PATH=$PATH:/usr/bin:/usr/local/bin
-                    if test -f /opt/codesign-workaround.sh; then sh /opt/codesign-workaround.sh init lldb-build/bin/debugserver; fi
+                    rm -rf lldb-build/bin/debugserver
 
                     python3 llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake build \
                       $MATRIX_COMMON_BUILD_PARAMETERS \
@@ -84,9 +95,11 @@ pipeline {
                       --cmake-type=Release \
                       --dotest-flag="--skip-category gmodules" \
                       --dotest-flag="--arch=x86_64"
-
-                    if test -f /opt/codesign-workaround.sh; then sh /opt/codesign-workaround.sh sign lldb-build/bin/debugserver; fi
                     '''
+                    script {
+                        def LLDB = new org.swift.LLDB()
+                        LLDB.LLDB_prepare()
+                    }
                 }
             }
         }
@@ -94,6 +107,8 @@ pipeline {
             steps {
                 timeout(60) {
                     sh '''
+                    source ./venv/bin/activate
+
                     export PATH=$PATH:/usr/bin:/usr/local/bin
                     python3 llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix configure \
                       $MATRIX_COMMON_BUILD_PARAMETERS \
@@ -127,7 +142,8 @@ pipeline {
             steps {
                 timeout(60) {
                     sh '''
-                    export PATH=$PATH:/usr/bin:/usr/local/bin
+                    source ./venv/bin/activate
+
                     python3 llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix configure \
                       $MATRIX_COMMON_BUILD_PARAMETERS \
                       --lldb-test-compiler="$WORKSPACE/lldb-build/bin/clang" \
@@ -160,7 +176,8 @@ pipeline {
             steps {
                 timeout(60) {
                     sh '''
-                    export PATH=$PATH:/usr/bin:/usr/local/bin
+                    source ./venv/bin/activate
+
                     python3 llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix configure \
                       $MATRIX_COMMON_BUILD_PARAMETERS \
                       --lldb-test-compiler="$WORKSPACE/lldb-build/bin/clang" \
@@ -199,13 +216,14 @@ pipeline {
                             [url: 'https://github.com/llvm/llvm-project.git']
                         ], extensions: [
                             [$class: 'CloneOption', timeout: 30,
-                            reference: '/Users/Shared/llvm-project.git']
+                            timeout: 30]
                         ]])
                     }
                 }
                 timeout(90) {
                     sh '''
-                    export PATH=$PATH:/usr/bin:/usr/local/bin
+                    source ./venv/bin/activate
+
                     export SRC_DIR='clang_701'
                     export BUILD_DIR='clang_701_build'
 
@@ -224,7 +242,6 @@ pipeline {
                 timeout(60) {
                     sh '''
                     build_dir=$WORKSPACE/clang_701_build
-                    export PATH=$PATH:/usr/bin:/usr/local/bin
                     python3 llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix configure \
                       $MATRIX_COMMON_BUILD_PARAMETERS \
                       --assertions \
@@ -264,13 +281,14 @@ pipeline {
                             [url: 'https://github.com/llvm/llvm-project.git']
                         ], extensions: [
                             [$class: 'CloneOption', timeout: 30,
-                            reference: '/Users/Shared/llvm-project.git']
+                            timeout: 30]
                         ]])
                     }
                 }
                 timeout(90) {
                     sh '''
-                    export PATH=$PATH:/usr/bin:/usr/local/bin
+                    source ./venv/bin/activate
+
                     export SRC_DIR='clang_900'
                     export BUILD_DIR='clang_900_build'
 
@@ -288,8 +306,10 @@ pipeline {
             steps {
                 timeout(60) {
                     sh '''
+                    source ./venv/bin/activate
+
                     build_dir=$WORKSPACE/clang_900_build
-                    export PATH=$PATH:/usr/bin:/usr/local/bin
+
                     python3 llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix configure \
                       $MATRIX_COMMON_BUILD_PARAMETERS \
                       --assertions \
@@ -329,13 +349,14 @@ pipeline {
                             [url: 'https://github.com/llvm/llvm-project.git']
                         ], extensions: [
                             [$class: 'CloneOption', timeout: 30,
-                            reference: '/Users/Shared/llvm-project.git']
+                            timeout: 30]
                         ]])
                     }
                 }
                 timeout(90) {
                     sh '''
-                    export PATH=$PATH:/usr/bin:/usr/local/bin
+                    source ./venv/bin/activate
+
                     export SRC_DIR='clang_1101'
                     export BUILD_DIR='clang_1101_build'
 
@@ -353,8 +374,9 @@ pipeline {
             steps {
                 timeout(60) {
                     sh '''
+                    source ./venv/bin/activate
+
                     build_dir=$WORKSPACE/clang_1101_build
-                    export PATH=$PATH:/usr/bin:/usr/local/bin
                     python3 llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix configure \
                       $MATRIX_COMMON_BUILD_PARAMETERS \
                       --assertions \
@@ -394,13 +416,14 @@ pipeline {
                             [url: 'https://github.com/llvm/llvm-project.git']
                         ], extensions: [
                             [$class: 'CloneOption', timeout: 30,
-                            reference: '/Users/Shared/llvm-project.git']
+                            timeout: 30]
                         ]])
                     }
                 }
                 timeout(90) {
                     sh '''
-                    export PATH=$PATH:/usr/bin:/usr/local/bin
+                    source ./venv/bin/activate
+
                     export SRC_DIR='clang_1300'
                     export BUILD_DIR='clang_1300_build'
 
@@ -418,8 +441,9 @@ pipeline {
             steps {
                 timeout(60) {
                     sh '''
+                    source ./venv/bin/activate
+
                     build_dir=$WORKSPACE/clang_1300_build
-                    export PATH=$PATH:/usr/bin:/usr/local/bin
                     python3 llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix configure \
                       $MATRIX_COMMON_BUILD_PARAMETERS \
                       --assertions \
@@ -459,13 +483,14 @@ pipeline {
                             [url: 'https://github.com/llvm/llvm-project.git']
                         ], extensions: [
                             [$class: 'CloneOption', timeout: 30,
-                            reference: '/Users/Shared/llvm-project.git']
+                            timeout: 30]
                         ]])
                     }
                 }
                 timeout(90) {
                     sh '''
-                    export PATH=$PATH:/usr/bin:/usr/local/bin
+                    source ./venv/bin/activate
+
                     export SRC_DIR='clang_1501'
                     export BUILD_DIR='clang_1501_build'
 
@@ -483,8 +508,9 @@ pipeline {
             steps {
                 timeout(60) {
                     sh '''
+                    source ./venv/bin/activate
+
                     build_dir=$WORKSPACE/clang_1501_build
-                    export PATH=$PATH:/usr/bin:/usr/local/bin
                     python3 llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix configure \
                       $MATRIX_COMMON_BUILD_PARAMETERS \
                       --assertions \
@@ -524,7 +550,7 @@ pipeline {
                             [url: 'https://github.com/llvm/llvm-project.git']
                         ], extensions: [
                             [$class: 'CloneOption', timeout: 30,
-                            reference: '/Users/Shared/llvm-project.git']
+                            timeout: 30]
                         ]])
                     }
                 }
