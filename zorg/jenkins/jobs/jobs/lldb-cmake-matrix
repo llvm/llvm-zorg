@@ -241,6 +241,8 @@ pipeline {
             steps {
                 timeout(60) {
                     sh '''
+                    source ./venv/bin/activate
+
                     build_dir=$WORKSPACE/clang_701_build
                     python3 llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix configure \
                       $MATRIX_COMMON_BUILD_PARAMETERS \
@@ -560,6 +562,8 @@ pipeline {
                     export SRC_DIR='clang_1706'
                     export BUILD_DIR='clang_1706_build'
 
+                    source ./venv/bin/activate
+
                     python3 llvm-zorg/zorg/jenkins/monorepo_build.py cmake build \
                       $MATRIX_COMMON_BUILD_PARAMETERS \
                       --assertions \
@@ -577,6 +581,9 @@ pipeline {
                     sh '''
                     build_dir=$WORKSPACE/clang_1706_build
                     export PATH=$PATH:/usr/bin:/usr/local/bin
+
+                    source ./venv/bin/activate
+
                     python3 llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix configure \
                       $MATRIX_COMMON_BUILD_PARAMETERS \
                       --assertions \
