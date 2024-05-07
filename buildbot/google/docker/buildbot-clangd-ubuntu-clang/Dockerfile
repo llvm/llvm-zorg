@@ -29,7 +29,7 @@ RUN apt-get update && \
 # install latest LLVM release
 RUN wget https://apt.llvm.org/llvm.sh && \
     chmod +x llvm.sh && \
-    ./llvm.sh 11 && \
+    ./llvm.sh 18 && \
     rm -rf llvm.sh && \
     # clean apt cache to reduce image size
     apt-get clean
@@ -49,9 +49,9 @@ RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/nul
 # buildbot-worker. We deliberately do this after installing all the system
 # packages, as apt-get install breaks if we change the Python from default to
 # python3.8.
-RUN update-alternatives --install /usr/bin/clang clang /usr/bin/clang-11 100 ;\
-    update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-11 100 ;\
-    update-alternatives --install /usr/bin/ld.lld ld.lld /usr/bin/lld-11 100 ;\
+RUN update-alternatives --install /usr/bin/clang clang /usr/bin/clang-18 100 ;\
+    update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-18 100 ;\
+    update-alternatives --install /usr/bin/ld.lld ld.lld /usr/bin/lld-18 100 ;\
     update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.8 100
 # Configure LLVM tools.
 ENV CC=clang
