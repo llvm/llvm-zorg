@@ -338,6 +338,10 @@ def get_all():
         # RISC-V workers
         create_worker("rv64gc-qemu-user", properties={'jobs' : 32}, max_builds=1),
         create_worker("rv32gc-qemu-system", properties={'jobs' : 32}, max_builds=1),
+        create_worker("rise-clang-riscv-rva20-2stage", properties={'jobs' : 32}, max_builds=1),
+        create_worker("rise-clang-riscv-rva23-2stage", properties={'jobs' : 32}, max_builds=1),
+        create_worker("rise-clang-riscv-rva23-mrvv-vec-bits-2stage", properties={'jobs' : 16}, max_builds=1),
+        create_worker("rise-clang-riscv-rva23-evl-vec-2stage", properties={'jobs' : 16}, max_builds=1),
 
         # FIXME: A placeholder for annoying worker which nobody could stop.
         # adding it avoid logs spammed by failed authentication for that worker.
