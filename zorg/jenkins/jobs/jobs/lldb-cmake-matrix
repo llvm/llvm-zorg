@@ -128,11 +128,9 @@ pipeline {
                       --dotest-flag="--arch=x86_64" \
                       --dotest-flag="--dwarf-version=2"
 
-                    set +e
                     # Give the system some time to recover.
                     sleep 120
-                    python3 llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix test
-                    set -e
+                    python3 llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix test || echo "** check-lldb failed with errors"
                     '''
                 }
                 junit 'test/results.xml'
@@ -162,11 +160,9 @@ pipeline {
                       --dotest-flag="--arch=x86_64" \
                       --dotest-flag="--dwarf-version=4"
 
-                    set +e
                     # Give the system some time to recover.
                     sleep 120
-                    python3 llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix test
-                    set -e
+                    python3 llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix test || echo "** check-lldb failed with errors"
                     '''
                 }
                 junit 'test/results.xml'
@@ -196,11 +192,9 @@ pipeline {
                       --dotest-flag="--arch=x86_64" \
                       --dotest-flag="--dwarf-version=5"
 
-                    set +e
                     # Give the system some time to recover.
                     sleep 120
-                    python3 llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix test
-                    set -e
+                    python3 llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix test || echo "** check-lldb failed with errors"
                     '''
                 }
                 junit 'test/results.xml'
@@ -263,11 +257,9 @@ pipeline {
                       --dotest-flag="debugserver" \
                       --dotest-flag="--arch=x86_64"
 
-                    set +e
                     # Give the system some time to recover.
                     sleep 120
-                    python3 llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix test
-                    set -e
+                    python3 llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix test || echo "** check-lldb failed with errors"
                     '''
                 }
                 junit 'test/results.xml'
@@ -330,11 +322,9 @@ pipeline {
                       --dotest-flag="debugserver" \
                       --dotest-flag="--arch=x86_64"
 
-                    set +e
                     # Give the system some time to recover.
                     sleep 120
-                    python3 llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix test
-                    set -e
+                    python3 llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix test || echo "** check-lldb failed with errors"
                     '''
                 }
                 junit 'test/results.xml'
@@ -397,11 +387,9 @@ pipeline {
 		      --dotest-flag="debugserver" \
                       --dotest-flag="--arch=x86_64"
 
-                    set +e
                     # Give the system some time to recover.
                     sleep 120
-                    python3 llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix test
-                    set -e
+                    python3 llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix test || echo "** check-lldb failed with errors"
                     '''
                 }
                 junit 'test/results.xml'
@@ -464,11 +452,9 @@ pipeline {
 		      --dotest-flag="debugserver" \
                       --dotest-flag="--arch=x86_64"
 
-                    set +e
                     # Give the system some time to recover.
                     sleep 120
-                    python3 llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix test
-                    set -e
+                    python3 llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix test || echo "** check-lldb failed with errors"
                     '''
                 }
                 junit 'test/results.xml'
@@ -532,11 +518,9 @@ pipeline {
 		      --dotest-flag="debugserver" \
                       --dotest-flag="--arch=x86_64"
 
-                    set +e
                     # Give the system some time to recover.
                     sleep 120
-                    python3 llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix test
-                    set -e
+                    python3 llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix test || echo "** check-lldb failed with errors"
                     '''
                 }
                 junit 'test/results.xml'
@@ -601,11 +585,9 @@ pipeline {
 		      --dotest-flag="debugserver" \
 		      --dotest-flag="--arch=x86_64"
 
-                    set +e
                     # Give the system some time to recover.
                     sleep 120
-                    python3 llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix test
-                    set -e
+                    python3 llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix test || echo "** check-lldb failed with errors"
                     '''
                 }
                 junit 'test/results.xml'
