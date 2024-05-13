@@ -49,7 +49,7 @@ def getPollyBuildFactory(
 
     # If true, clean everything, including source dirs
     def cleanBuildRequested(step):
-        return step.build.getProperty("clean")
+        return step.build.getProperty("clean") or clean
     # If true, clean build products; implied if cleanBuildRequested is true
     def cleanObjRequested(step):
         return cleanBuildRequested(step) or clean or step.build.getProperty("clean_obj")
