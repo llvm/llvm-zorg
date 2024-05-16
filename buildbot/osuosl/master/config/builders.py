@@ -2020,6 +2020,38 @@ all += [
                         add_openmp_lit_args=["--time-tests", "--timeout 100"],
                     )},
 
+    {'name' : "openmp-offload-rhel-8_8",
+    'tags'  : ["openmp"],
+    'workernames' : ["rocm-worker-hw-04-rhel-8_8"],
+    'builddir': "openmp-offload-rhel-8.8-build",
+    'factory' : OpenMPBuilder.getOpenMPCMakeBuildFactory(
+                        clean=True,
+                        test=True,
+                        enable_runtimes=['openmp', 'compiler-rt', 'offload'],
+                        depends_on_projects=['llvm','clang', 'flang', 'lld', 'mlir', 'offload', 'openmp', 'compiler-rt'],
+                        extraCmakeArgs=[
+                            "-DCMAKE_BUILD_TYPE=Release",
+                            "-DCLANG_DEFAULT_LINKER=lld",
+                            "-DLLVM_TARGETS_TO_BUILD=X86;AMDGPU",
+                            "-DLLVM_ENABLE_ASSERTIONS=ON",
+                            "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
+                            "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
+                            ],
+                        env={
+                            'HSA_ENABLE_SDMA':'0',
+                            'LD_LIBRARY_PATH':'/opt/rocm/lib',
+                            },
+                        install=True,
+                        testsuite=False,
+                        testsuite_sollvevv=False,
+                        extraTestsuiteCmakeArgs=[
+                            "-DTEST_SUITE_SOLLVEVV_OFFLOADING_CFLAGS=-fopenmp-targets=amdgcn-amd-amdhsa;-Xopenmp-target=amdgcn-amd-amdhsa",
+                            "-DTEST_SUITE_SOLLVEVV_OFFLOADING_LDLAGS=-fopenmp-targets=amdgcn-amd-amdhsa;-Xopenmp-target=amdgcn-amd-amdhsa",
+                        ],
+                        add_lit_checks=["check-clang", "check-flang", "check-llvm", "check-lld", "check-mlir", "check-offload"],
+                        add_openmp_lit_args=["--time-tests", "--timeout 100"],
+                    )},
+
 
 # Whole-toolchain builders.
 

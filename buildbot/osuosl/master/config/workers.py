@@ -320,6 +320,7 @@ def get_all():
         create_worker("rocm-worker-hw-03", properties={'jobs': 64}, max_builds=1),
         create_worker("rocm-worker-hw-04-sles", properties={'jobs': 32}, max_builds=1),
         create_worker("rocm-worker-hw-04-rhel-9_4", properties={'jobs': 32}, max_builds=1),
+        create_worker("rocm-worker-hw-04-rhel-8_8", properties={'jobs': 32}, max_builds=1),
 
         # AMD ROCm support, Ubuntu 18.04.6, AMD Ryzen @ 1.5 GHz, MI200 GPU
         create_worker("mi200-buildbot", max_builds=1),
