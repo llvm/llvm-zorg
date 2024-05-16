@@ -1808,7 +1808,7 @@ all += [
     'factory' : OpenMPBuilder.getOpenMPCMakeBuildFactory(
                         clean=True,
                         enable_runtimes=['compiler-rt', 'openmp', 'offload'],
-                        depends_on_projects=['llvm','clang','lld', 'offload', 'openmp'],
+                        depends_on_projects=['llvm','clang','lld', 'offload', 'openmp', 'compiler-rt'],
                         extraCmakeArgs=[
                             "-DCMAKE_BUILD_TYPE=Release",
                             "-DCLANG_DEFAULT_LINKER=lld",
@@ -1838,7 +1838,7 @@ all += [
     'factory' : OpenMPBuilder.getOpenMPCMakeBuildFactory(
                         clean=True,
                         enable_runtimes=['compiler-rt', 'openmp', 'offload'],
-                        depends_on_projects=['llvm','clang','lld', 'offload', 'openmp'],
+                        depends_on_projects=['llvm','clang','lld', 'offload', 'openmp', 'compiler-rt'],
                         extraCmakeArgs=[
                             "-DCMAKE_BUILD_TYPE=Release",
                             "-DCLANG_DEFAULT_LINKER=lld",
@@ -1932,7 +1932,7 @@ all += [
     'factory' : OpenMPBuilder.getOpenMPCMakeBuildFactory(
                         clean=True,
                         enable_runtimes=['compiler-rt', 'openmp', 'offload'],
-                        depends_on_projects=['llvm','clang','lld', 'offload', 'openmp','flang'],
+                        depends_on_projects=['llvm','clang','lld', 'offload', 'openmp','flang', 'compiler-rt'],
                         extraCmakeArgs=[
                             "-DCMAKE_BUILD_TYPE=Release",
                             "-DCLANG_DEFAULT_LINKER=lld",
@@ -1964,7 +1964,7 @@ all += [
                         clean=True,
                         test=False, # we have no GPU avail, skip runtime tests
                         enable_runtimes=['openmp', 'compiler-rt', 'offload'],
-                        depends_on_projects=['llvm','clang', 'flang', 'lld', 'mlir', 'offload', 'openmp'],
+                        depends_on_projects=['llvm','clang', 'flang', 'lld', 'mlir', 'offload', 'openmp', 'compiler-rt'],
                         extraCmakeArgs=[
                             "-DCMAKE_BUILD_TYPE=Release",
                             "-DCLANG_DEFAULT_LINKER=lld",
@@ -1975,6 +1975,7 @@ all += [
                             ],
                         env={
                             'HSA_ENABLE_SDMA':'0',
+                            'LD_LIBRARY_PATH':'/opt/rocm/lib',
                             },
                         install=True,
                         testsuite=False,
@@ -1987,15 +1988,15 @@ all += [
                         add_openmp_lit_args=["--time-tests", "--timeout 100"],
                     )},
 
-    {'name' : "openmp-offload-rhel-9.4",
+    {'name' : "openmp-offload-rhel-9_4",
     'tags'  : ["openmp"],
-    'workernames' : ["rocm-worker-hw-04-rhel-9.4"],
+    'workernames' : ["rocm-worker-hw-04-rhel-9_4"],
     'builddir': "openmp-offload-rhel-9.4-build",
     'factory' : OpenMPBuilder.getOpenMPCMakeBuildFactory(
                         clean=True,
                         test=True,
                         enable_runtimes=['openmp', 'compiler-rt', 'offload'],
-                        depends_on_projects=['llvm','clang', 'flang', 'lld', 'mlir', 'offload', 'openmp'],
+                        depends_on_projects=['llvm','clang', 'flang', 'lld', 'mlir', 'offload', 'openmp', 'compiler-rt'],
                         extraCmakeArgs=[
                             "-DCMAKE_BUILD_TYPE=Release",
                             "-DCLANG_DEFAULT_LINKER=lld",
