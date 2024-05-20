@@ -11,6 +11,9 @@ def main(argv):
     # TODO: Add back debuginfo-tests once it works.
     projects = ['llvm', 'clang', 'clang-tools-extra', 'lld']
     stages = 2
+    stage1_extra_cmake_args = [
+        '-DCMAKE_BUILD_TYPE=Release',
+    ]
     extra_cmake_args = [
         '-DCMAKE_BUILD_TYPE=Release',
         '-DLLVM_ENABLE_PDB=ON',
@@ -18,13 +21,13 @@ def main(argv):
         '-DLLVM_TARGETS_TO_BUILD=all',
     ]
     check_targets = [
-            'check-llvm',
-            'check-clang',
-            'check-clang-tools',
-            'check-clangd',
-            'check-lld',
-            #'check-debuginfo', # TODO: Add back soon.
-            ]
+        'check-llvm',
+        'check-clang',
+        'check-clang-tools',
+        'check-clangd',
+        'check-lld',
+        #'check-debuginfo', # TODO: Add back when it works.
+    ]
 
     # Check both stage 1 and stage 2.
     check_stages = [True] * stages
@@ -35,8 +38,9 @@ def main(argv):
     builder = annotated_builder.AnnotatedBuilder()
     builder.run_steps(projects=projects,
                       stages=stages,
-                      extra_cmake_args=extra_cmake_args,
                       check_targets=check_targets,
+                      extra_cmake_args=extra_cmake_args,
+                      stage1_extra_cmake_args=stage1_extra_cmake_args,
                       check_stages=check_stages,
                       compiler=compiler,
                       linker=linker,
