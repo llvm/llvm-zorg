@@ -220,6 +220,8 @@ pipeline {
                     export SRC_DIR='clang_1706'
                     export BUILD_DIR='clang_1706_build'
 
+                    source ./venv/bin/activate
+
                     python3 llvm-zorg/zorg/jenkins/monorepo_build.py cmake build \
                       $MATRIX_COMMON_BUILD_PARAMETERS \
                       --assertions \
