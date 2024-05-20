@@ -40,7 +40,7 @@ def main(argv):
                       stages=stages,
                       check_targets=check_targets,
                       extra_cmake_args=extra_cmake_args,
-                      stage1_extra_cmake_args=extra_cmake_args,
+                      stage1_extra_cmake_args=stage1_extra_cmake_args,
                       check_stages=check_stages,
                       compiler=compiler,
                       linker=linker,
