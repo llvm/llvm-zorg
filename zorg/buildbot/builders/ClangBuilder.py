@@ -160,6 +160,9 @@ def getClangCMakeBuildFactory(
             env=None,
             extra_cmake_args=None,
 
+            # CMake arguments to use for stage2 instead of extra_cmake_args.
+            extra_stage2_cmake_args=None,
+
             # Extra repositories
             checkout_clang_tools_extra=True,
             checkout_compiler_rt=True,
@@ -177,6 +180,7 @@ def getClangCMakeBuildFactory(
                nt_flags=nt_flags, testsuite_flags=testsuite_flags,
                submitURL=submitURL, testerName=testerName,
                env=env, extra_cmake_args=extra_cmake_args,
+               extra_stage2_cmake_args=extra_stage2_cmake_args,
                checkout_clang_tools_extra=checkout_clang_tools_extra,
                checkout_lld=checkout_lld,
                checkout_compiler_rt=checkout_compiler_rt,
@@ -212,6 +216,9 @@ def _getClangCMakeBuildFactory(
             # Environmental variables for all steps.
             env=None,
             extra_cmake_args=None,
+
+            # CMake arguments to use for stage2 instead of extra_cmake_args.
+            extra_stage2_cmake_args=None,
 
             # Extra repositories
             checkout_clang_tools_extra=True,
@@ -429,6 +436,18 @@ def _getClangCMakeBuildFactory(
                             stage1_install,
                             cxx))
 
+    # If we have a separate stage2 cmake arg list, then ensure we re-apply
+    # enable_projects and enable_runtimes if necessary.
+    if extra_stage2_cmake_args:
+        if f.enable_projects:
+            CmakeCommand.applyRequiredOptions(extra_stage2_cmake_args, [
+                ('-DLLVM_ENABLE_PROJECTS=', ";".join(f.enable_projects)),
+                ])
+        if f.enable_runtimes:
+            CmakeCommand.applyRequiredOptions(extra_stage2_cmake_args, [
+                ('-DLLVM_ENABLE_RUNTIMES=', ";".join(f.enable_runtimes)),
+                ])
+
         rel_src_dir = LLVMBuildFactory.pathRelativeTo(f.llvm_srcdir, stage2_build)
         cmake_cmd2 = [cmake, "-G", "Ninja", rel_src_dir,
                       stage1_cc,
@@ -436,7 +455,8 @@ def _getClangCMakeBuildFactory(
                       "-DCMAKE_BUILD_TYPE="+stage2_config,
                       "-DLLVM_ENABLE_ASSERTIONS=True",
                       "-DLLVM_LIT_ARGS="+lit_args,
-                      "-DCMAKE_INSTALL_PREFIX=../"+stage2_install] + extra_cmake_args
+                      "-DCMAKE_INSTALL_PREFIX=../"+stage2_install] +
+                        (extra_stage2_cmake_args or extra_cmake_args)
 
         f.addStep(ShellCommand(name='cmake stage 2',
                                command=cmake_cmd2,
