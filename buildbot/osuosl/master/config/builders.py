@@ -3126,6 +3126,95 @@ all += [
                         'CXX': 'clang++',
                     })},
 
+    ## RISC-V RVA20 profile check-all 2-stage
+    {'name' : "clang-riscv-rva20-2stage",
+    'tags'  : ["clang"],
+    'workernames' : ["rise-clang-riscv-rva20-2stage"],
+    'builddir':"clang-riscv-rva20-2stage",
+    'factory' : ClangBuilder.getClangCMakeBuildFactory(
+                clean=False,
+                useTwoStage=True,
+                runTestSuite=False,
+                testStage1=False,
+                extra_cmake_args=[
+                    "-DCMAKE_C_COMPILER=clang",
+                    "-DCMAKE_CXX_COMPILER=clang++",
+                    "-DLLVM_ENABLE_LLD=True",
+                    "-DLLVM_TARGETS_TO_BUILD=riscv"
+                    "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
+                    "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache"],
+                extra_stage2_cmake_args=[
+                    "-DLLVM_ENABLE_LLD=True",
+                    "-DCMAKE_C_FLAGS='-march=rva20u64'",
+                    "-DCMAKE_CXX_FLAGS='-march=rva20u64'"]
+                ])},
+
+    ## RISC-V RVA23 profile check-all 2-stage
+    {'name' : "clang-riscv-rva23-2stage",
+    'workernames' : ["rise-clang-riscv-rva23-2stage"],
+    'builddir':"clang-riscv-rva23-2stage",
+    'factory' : ClangBuilder.getClangCMakeBuildFactory(
+                clean=False,
+                useTwoStage=True,
+                runTestSuite=False,
+                testStage1=False,
+                extra_cmake_args=[
+                    "-DCMAKE_C_COMPILER=clang",
+                    "-DCMAKE_CXX_COMPILER=clang++",
+                    "-DLLVM_ENABLE_LLD=True",
+                    "-DLLVM_TARGETS_TO_BUILD=riscv"
+                    "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
+                    "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache"],
+                extra_stage2_cmake_args=[
+                    "-DLLVM_ENABLE_LLD=True",
+                    "-DCMAKE_C_FLAGS='-menable-experimental-extensions -march=rva23u64'",
+                    "-DCMAKE_CXX_FLAGS='-menable-experimental-extensions -march=rva23u64'"]
+                ])},
+
+    ## RISC-V RVA23 profile with -mrvv-vector-bits=zvl check-all 2-stage
+    {'name' : "clang-riscv-rva23-mrvv-vec-bits-2stage",
+    'workernames' : ["rise-clang-riscv-rva23-mrvv-vec-bits-2stage"],
+    'builddir':"clang-riscv-rva23-mrvv-vec-bits-2stage",
+    'factory' : ClangBuilder.getClangCMakeBuildFactory(
+                clean=False,
+                useTwoStage=True,
+                runTestSuite=False,
+                testStage1=False,
+                extra_cmake_args=[
+                    "-DCMAKE_C_COMPILER=clang",
+                    "-DCMAKE_CXX_COMPILER=clang++",
+                    "-DLLVM_ENABLE_LLD=True",
+                    "-DLLVM_TARGETS_TO_BUILD=riscv"
+                    "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
+                    "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache"],
+                extra_stage2_cmake_args=[
+                    "-DLLVM_ENABLE_LLD=True",
+                    "-DCMAKE_C_FLAGS='-menable-experimental-extensions -march=rva23u64 -mrvv-vector-bits=zvl'",
+                    "-DCMAKE_CXX_FLAGS='-menable-experimental-extensions -march=rva23u64 -mrvv-vector-bits=zvl'"]
+                ])},
+
+    ## RISC-V RVA23 profile with EVL vectorizer check-all 2-stage
+    {'name' : "clang-riscv-rva23-evl-vec-2stage",
+    'workernames' : ["rise-clang-riscv-rva23-evl-vec-2stage"],
+    'builddir':"clang-riscv-rva23-evl-vec-2stage",
+    'factory' : ClangBuilder.getClangCMakeBuildFactory(
+                clean=False,
+                useTwoStage=True,
+                runTestSuite=False,
+                testStage1=False,
+                extra_cmake_args=[
+                    "-DCMAKE_C_COMPILER=clang",
+                    "-DCMAKE_CXX_COMPILER=clang++",
+                    "-DLLVM_ENABLE_LLD=True",
+                    "-DLLVM_TARGETS_TO_BUILD=riscv"
+                    "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
+                    "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache"],
+                extra_stage2_cmake_args=[
+                    "-DLLVM_ENABLE_LLD=True",
+                    "-DCMAKE_C_FLAGS='-menable-experimental-extensions -march=rva23u64 -mllvm -force-tail-folding-style=data-with-evl -mllvm -prefer-predicate-over-epilogue=predicate-dont-vectorize",
+                    "-DCMAKE_CXX_FLAGS='-menable-experimental-extensions -march=rva23u64 -mllvm -force-tail-folding-style=data-with-evl -mllvm -prefer-predicate-over-epilogue=predicate-dont-vectorize"]
+                ])},
+
     # Builders similar to used in Buildkite premerge pipeline.
     # Please keep in sync with llvm-project/.ci configurations.
 
