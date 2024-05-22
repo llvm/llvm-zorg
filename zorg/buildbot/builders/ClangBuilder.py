@@ -455,8 +455,8 @@ def _getClangCMakeBuildFactory(
                       "-DCMAKE_BUILD_TYPE="+stage2_config,
                       "-DLLVM_ENABLE_ASSERTIONS=True",
                       "-DLLVM_LIT_ARGS="+lit_args,
-                      "-DCMAKE_INSTALL_PREFIX=../"+stage2_install] +
-                        (extra_stage2_cmake_args or extra_cmake_args)
+                      "-DCMAKE_INSTALL_PREFIX=../"+stage2_install
+                     ] + (extra_stage2_cmake_args or extra_cmake_args)
 
         f.addStep(ShellCommand(name='cmake stage 2',
                                command=cmake_cmd2,
