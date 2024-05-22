@@ -45,7 +45,7 @@ def getLLDBCMakeBuildFactory(
     f.addGetSourcecodeSteps()
 
     ############# CLEANING
-    cleanBuildRequested = lambda step: clean or step.build.getProperty("clean", default=step.build.getProperty("clean_obj"))
+    cleanBuildRequested = lambda step: clean or step.build.getProperty("clean") or step.build.getProperty("clean_obj")
     f.addStep(steps.RemoveDirectory(name='clean '+build_dir,
                 dir=build_dir,
                 haltOnFailure=False,

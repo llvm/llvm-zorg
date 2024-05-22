@@ -249,10 +249,9 @@ def _getClangCMakeBuildFactory(
         trigger_after_stage1 = []
 
     clean_build_requested = lambda step: \
-        step.build.getProperty( \
-            "clean", \
-            default=step.build.getProperty("clean_obj") \
-        ) or clean
+        step.build.getProperty("clean") \
+        or step.build.getProperty("clean_obj") \
+        or clean
 
     # We *must* checkout at least Clang+LLVM
     depends_on_projects = ['llvm', 'clang']

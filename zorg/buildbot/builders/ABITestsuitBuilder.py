@@ -36,7 +36,7 @@ def getABITestsuitBuildFactory(
         ('-G',                      'Ninja'),
         ])
 
-    cleanBuildRequested = lambda step: step.build.getProperty("clean", default=step.build.getProperty("clean_obj")) or clean
+    cleanBuildRequested = lambda step: step.build.getProperty("clean") or step.build.getProperty("clean_obj") or clean
 
     f = UnifiedTreeBuilder.getLLVMBuildFactoryAndPrepareForSourcecodeSteps(
             depends_on_projects=depends_on_projects,

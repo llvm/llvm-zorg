@@ -72,9 +72,8 @@ def getCmakeWithMSVCBuildFactory(
     source_remove_requested = lambda step: step.build.getProperty("clean")
     clean_build_requested = lambda step: \
         clean or \
-        step.build.getProperty("clean", \
-            default=step.build.getProperty("clean_obj") \
-        )
+        step.build.getProperty("clean") or \
+        step.build.getProperty("clean_obj")
 
     f = LLVMBuildFactory(
             depends_on_projects=depends_on_projects,

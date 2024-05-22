@@ -264,7 +264,7 @@ def getCmakeBuildFactory(
             install_dir=install_dir,
             **kwargs) # Pass through all the extra arguments.
 
-    cleanBuildRequested = lambda step: step.build.getProperty("clean", default=step.build.getProperty("clean_obj")) or clean
+    cleanBuildRequested = lambda step: step.build.getProperty("clean") or step.build.getProperty("clean_obj") or clean
 
     if install_pip_requirements:
         # Install python requirements, right now for MLIR
@@ -390,7 +390,7 @@ def getCmakeWithNinjaWithMSVCBuildFactory(
         env=env))
     env = util.Property('vs_env')
 
-    cleanBuildRequested = lambda step: step.build.getProperty("clean", default=step.build.getProperty("clean_obj")) or clean
+    cleanBuildRequested = lambda step: step.build.getProperty("clean") or step.build.getProperty("clean_obj") or clean
 
     if install_pip_requirements:
         # Install python requirements, right now for MLIR
@@ -511,7 +511,7 @@ def getCmakeWithNinjaMultistageBuildFactory(
         ('-DLLVM_ENABLE_WERROR=',      'OFF'),
         ])
 
-    cleanBuildRequested = lambda step: step.build.getProperty("clean", default=step.build.getProperty("clean_obj")) or clean
+    cleanBuildRequested = lambda step: step.build.getProperty("clean") or step.build.getProperty("clean_obj") or clean
 
     addCmakeSteps(
            f,

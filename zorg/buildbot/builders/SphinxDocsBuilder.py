@@ -369,7 +369,7 @@ def getLLVMRuntimesDocsBuildFactory(
         if project in _depends_on_runtimes
     ]
 
-    cleanBuildRequested = lambda step: step.build.getProperty("clean", default=step.build.getProperty("clean_obj")) or clean
+    cleanBuildRequested = lambda step: step.build.getProperty("clean") or step.build.getProperty("clean_obj") or clean
 
     f = UnifiedTreeBuilder.getLLVMBuildFactoryAndSourcecodeSteps(
             depends_on_projects=_depends_on_runtimes,

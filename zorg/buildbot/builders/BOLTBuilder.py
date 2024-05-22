@@ -23,7 +23,7 @@ def getBOLTCmakeBuildFactory(
 
     bolttests_dir = "bolt-tests"
 
-    cleanBuildRequested = lambda step: clean or step.build.getProperty("clean", default=step.build.getProperty("clean_obj"))
+    cleanBuildRequested = lambda step: clean or step.build.getProperty("clean") or step.build.getProperty("clean_obj")
     cleanBuildRequestedByProperty = lambda step: step.build.getProperty("clean")
 
     if not targets:

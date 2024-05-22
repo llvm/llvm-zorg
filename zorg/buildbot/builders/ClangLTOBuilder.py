@@ -301,7 +301,7 @@ def getClangWithLTOBuildFactory(
             staged_compiler_idx = 1,
             **kwargs)
 
-    cleanBuildRequested = lambda step: clean or step.build.getProperty("clean", default=step.build.getProperty("clean_obj"))
+    cleanBuildRequested = lambda step: clean or step.build.getProperty("clean") or step.build.getProperty("clean_obj")
 
     # Get the source code.
     f.addGetSourcecodeSteps()
