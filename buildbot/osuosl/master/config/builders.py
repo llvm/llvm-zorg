@@ -3147,7 +3147,7 @@ all += [
                     "-DLLVM_ENABLE_LLD=True",
                     "-DCMAKE_C_FLAGS='-march=rva20u64'",
                     "-DCMAKE_CXX_FLAGS='-march=rva20u64'"]
-                ])},
+                )},
 
     ## RISC-V RVA23 profile check-all 2-stage
     {'name' : "clang-riscv-rva23-2stage",
@@ -3169,7 +3169,7 @@ all += [
                     "-DLLVM_ENABLE_LLD=True",
                     "-DCMAKE_C_FLAGS='-menable-experimental-extensions -march=rva23u64'",
                     "-DCMAKE_CXX_FLAGS='-menable-experimental-extensions -march=rva23u64'"]
-                ])},
+                )},
 
     ## RISC-V RVA23 profile with -mrvv-vector-bits=zvl check-all 2-stage
     {'name' : "clang-riscv-rva23-mrvv-vec-bits-2stage",
@@ -3191,7 +3191,7 @@ all += [
                     "-DLLVM_ENABLE_LLD=True",
                     "-DCMAKE_C_FLAGS='-menable-experimental-extensions -march=rva23u64 -mrvv-vector-bits=zvl'",
                     "-DCMAKE_CXX_FLAGS='-menable-experimental-extensions -march=rva23u64 -mrvv-vector-bits=zvl'"]
-                ])},
+                )},
 
     ## RISC-V RVA23 profile with EVL vectorizer check-all 2-stage
     {'name' : "clang-riscv-rva23-evl-vec-2stage",
@@ -3213,7 +3213,7 @@ all += [
                     "-DLLVM_ENABLE_LLD=True",
                     "-DCMAKE_C_FLAGS='-menable-experimental-extensions -march=rva23u64 -mllvm -force-tail-folding-style=data-with-evl -mllvm -prefer-predicate-over-epilogue=predicate-dont-vectorize",
                     "-DCMAKE_CXX_FLAGS='-menable-experimental-extensions -march=rva23u64 -mllvm -force-tail-folding-style=data-with-evl -mllvm -prefer-predicate-over-epilogue=predicate-dont-vectorize"]
-                ])},
+                )},
 
     # Builders similar to used in Buildkite premerge pipeline.
     # Please keep in sync with llvm-project/.ci configurations.
