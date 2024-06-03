@@ -1771,8 +1771,10 @@ all += [
                         testsuite=True,
                         testsuite_sollvevv=True,
                         extraTestsuiteCmakeArgs=[
-                            "-DTEST_SUITE_OFFLOADING_CFLAGS=--offload-arch=native;--cuda-path=/opt/cuda",
-                            "-DTEST_SUITE_OFFLOADING_LDFLAGS=--offload-arch=native;--cuda-path=/opt/cuda",
+                            "-DTEST_SUITE_OFFLOADING_C_FLAGS=--offload-arch=native;--cuda-path=/opt/cuda",
+                            "-DTEST_SUITE_OFFLOADING_C_LDFLAGS=--offload-arch=native;--cuda-path=/opt/cuda",
+                            "-DTEST_SUITE_OFFLOADING_CXX_FLAGS=--offload-arch=native;--cuda-path=/opt/cuda",
+                            "-DTEST_SUITE_OFFLOADING_CXX_LDFLAGS=--offload-arch=native;--cuda-path=/opt/cuda",
                             "-DSYSTEM_GPU=nvidia", "-DTEST_SUITE_SYSTEM_GPU=nvidia",
                         ],
                     )},
