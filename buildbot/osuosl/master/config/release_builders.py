@@ -131,8 +131,8 @@ all = [
                     extra_configure_args=[
                         "-DLLVM_TARGETS_TO_BUILD=ARM",
                         "-DTOOLCHAIN_TARGET_TRIPLE=armv7-unknown-linux-gnueabihf",
-                        "-DDEFAULT_SYSROOT=C:/buildbot/.arm-ubuntu",
-                        "-DZLIB_ROOT=C:/buildbot/.zlib-win32",
+                        WithProperties("-DCLANG_CONFIG_FILE_USER_DIR=%(clang_configs_path)s"),
+                        WithProperties("-DZLIB_ROOT=%(zlib_root_path)s"),
                         "-DLLVM_LIT_ARGS=-v -vv --threads=32",
                         WithProperties("%(remote_test_host:+-DREMOTE_TEST_HOST=)s%(remote_test_host:-)s"),
                         WithProperties("%(remote_test_user:+-DREMOTE_TEST_USER=)s%(remote_test_user:-)s"),
@@ -170,7 +170,7 @@ all = [
                     extra_configure_args=[
                         "-DLLVM_TARGETS_TO_BUILD=AArch64",
                         "-DTOOLCHAIN_TARGET_TRIPLE=aarch64-unknown-linux-gnu",
-                        WithProperties("-DDEFAULT_SYSROOT=%(sysroot_path_aarch64)s"),
+                        WithProperties("-DCLANG_CONFIG_FILE_USER_DIR=%(clang_configs_path)s"),
                         WithProperties("-DZLIB_ROOT=%(zlib_root_path)s"),
                         "-DLLVM_LIT_ARGS=-v -vv --threads=32",
                         WithProperties("%(remote_test_host:+-DREMOTE_TEST_HOST=)s%(remote_test_host:-)s"),
