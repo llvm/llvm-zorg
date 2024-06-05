@@ -180,7 +180,8 @@ def get_all():
         create_worker("as-builder-1", properties={
                         'remote_test_host'      : 'jetson6.lab.llvm.org',
                         'remote_test_user'      : 'ubuntu',
-                        'clang_configs_path'    : 'c:/buildbot/clang-configs',
+                        'sysroot_path_aarch64'  : 'c:/buildbot/fs/jetson-agx-ubuntu',
+                        'sysroot_path_armv7'    : 'c:/buildbot/fs/jetson-tk1-arm-ubuntu',
                         'zlib_root_path'        : 'c:/buildbot/fs/zlib-win32',
                      },
                      max_builds=1),
@@ -189,7 +190,8 @@ def get_all():
         create_worker("as-builder-2", properties={
                         'remote_test_host'      : 'jetson-agx-2197.lab.llvm.org',
                         'remote_test_user'      : 'ubuntu',
-                        'clang_configs_path'    : 'c:/buildbot/clang-configs',
+                        'sysroot_path_aarch64'  : 'c:/buildbot/fs/jetson-agx-ubuntu',
+                        'sysroot_path_armv7'    : 'c:/buildbot/fs/jetson-tk1-arm-ubuntu',
                         'zlib_root_path'        : 'c:/buildbot/fs/zlib-win32',
                      },
                      max_builds=1),
@@ -203,14 +205,18 @@ def get_all():
 
         # Windows Server on Xeon Gold 6230 (2x2.1GHz), 256Gb of RAM
         create_worker("as-builder-5", properties={  # arm
-                        'remote_test_host': 'jetson4.lab.llvm.org',
-                        'remote_test_user': 'ubuntu'
+                        'remote_test_host'      : 'jetson4.lab.llvm.org',
+                        'remote_test_user'      : 'ubuntu',
+                        'sysroot_path_aarch64'  : 'c:/buildbot/fs/jetson-agx-ubuntu',
+                        'sysroot_path_armv7'    : 'c:/buildbot/fs/jetson-tk1-arm-ubuntu',
+                        'zlib_root_path'        : 'c:/buildbot/fs/zlib-win32',
                      },
                      max_builds=1),
         create_worker("as-builder-6", properties={  # aarch64
                         'remote_test_host'      : 'jetson-agx-2198.lab.llvm.org',
                         'remote_test_user'      : 'ubuntu',
                         'sysroot_path_aarch64'  : 'c:/buildbot/fs/jetson-agx-ubuntu',
+                        'sysroot_path_armv7'    : 'c:/buildbot/fs/jetson-tk1-arm-ubuntu',
                         'zlib_root_path'        : 'c:/buildbot/fs/zlib-win32',
                      },
                      max_builds=1),
