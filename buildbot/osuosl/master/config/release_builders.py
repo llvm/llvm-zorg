@@ -170,7 +170,7 @@ all = [
                     extra_configure_args=[
                         "-DLLVM_TARGETS_TO_BUILD=AArch64",
                         "-DTOOLCHAIN_TARGET_TRIPLE=aarch64-unknown-linux-gnu",
-                        WithProperties("-DDTOOLCHAIN_TARGET_SYSROOTFS=%(sysroot_path_aarch64)s"),
+                        WithProperties("-DTOOLCHAIN_TARGET_SYSROOTFS=%(sysroot_path_aarch64)s"),
                         WithProperties("-DZLIB_ROOT=%(zlib_root_path)s"),
                         "-DLLVM_LIT_ARGS=-v -vv --threads=32",
                         WithProperties("%(remote_test_host:+-DREMOTE_TEST_HOST=)s%(remote_test_host:-)s"),
