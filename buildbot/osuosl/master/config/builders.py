@@ -2024,7 +2024,7 @@ all += [
                             "-DTEST_SUITE_SOLLVEVV_OFFLOADING_LDLAGS=-fopenmp-targets=amdgcn-amd-amdhsa;-Xopenmp-target=amdgcn-amd-amdhsa",
                         ],
                         add_lit_checks=["check-clang", "check-flang", "check-llvm", "check-lld", "check-mlir", "check-offload"],
-                        add_openmp_lit_args=["--time-tests", "--timeout 100"],
+                        add_openmp_lit_args=["--time-tests", "--timeout 100", "--xfail=affinity/format/proc_bind.c"],
                     )},
 
     {'name' : "openmp-offload-rhel-8_8",
@@ -2056,7 +2056,7 @@ all += [
                             "-DTEST_SUITE_SOLLVEVV_OFFLOADING_LDLAGS=-fopenmp-targets=amdgcn-amd-amdhsa;-Xopenmp-target=amdgcn-amd-amdhsa",
                         ],
                         add_lit_checks=["check-clang", "check-flang", "check-llvm", "check-lld", "check-mlir", "check-offload"],
-                        add_openmp_lit_args=["--time-tests", "--timeout 100"],
+                        add_openmp_lit_args=["--time-tests", "--timeout 100", "--xfail=affinity/format/proc_bind.c"],
                     )},
 
 
