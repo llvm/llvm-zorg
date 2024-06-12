@@ -364,9 +364,6 @@ function check_stage2 {
         # Very slow.
         export LIT_FILTER_OUT="modules_include.sh.cpp"
         LIT_FILTER_OUT+="|std/algorithms/alg.modifying.operations/alg.transform/ranges.transform.pass.cpp"
-        LIT_FILTER_OUT+="|std/containers/sequences/deque/deque.modifiers/insert_iter_iter.pass.cpp"
-        LIT_FILTER_OUT+="|std/numerics/rand/rand.dist/rand.dist.bern/rand.dist.bern.negbin/eval.pass.cpp"
-        LIT_FILTER_OUT+="|std/numerics/rand/rand.dist/rand.dist.samp/rand.dist.samp.discrete/eval.pass.cpp"
         LIT_FILTER_OUT+="|std/utilities/charconv/charconv.msvc/test.pass.cpp"
         LIT_FILTER_OUT+="|std/utilities/format/format.functions/format.locale.runtime_format.pass.cpp"
         LIT_FILTER_OUT+="|std/utilities/format/format.functions/format.runtime_format.pass.cpp"
