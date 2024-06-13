@@ -4,20 +4,20 @@
 #
 #    pip-compile --output-file=requirements.txt requirements.in
 #
--e file:///Users/buildbot/buildbot/master
+-e file:///home/llvm-buildbot/buildbot/master
     # via
     #   -r requirements.in
     #   buildbot-www
 alembic==1.10.4
     # via buildbot
-attrs==23.1.0
+attrs==23.2.0
     # via
     #   -r requirements.in
     #   automat
     #   service-identity
     #   treq
     #   twisted
-autobahn==23.1.2
+autobahn==23.6.2
     # via
     #   -r requirements.in
     #   buildbot
@@ -26,15 +26,15 @@ automat==22.10.0
     # via
     #   -r requirements.in
     #   twisted
-buildbot-console-view==3.8.0
+buildbot-console-view==3.11.3
     # via -r requirements.in
-buildbot-grid-view==3.8.0
+buildbot-grid-view==3.11.3
     # via -r requirements.in
-buildbot-waterfall-view==3.8.0
+buildbot-waterfall-view==3.11.3
     # via -r requirements.in
-buildbot-worker==3.8.0
+buildbot-worker==3.11.3
     # via -r requirements.in
-buildbot-www==3.8.0
+buildbot-www==3.11.3
     # via -r requirements.in
 certifi==2022.12.7
     # via requests
@@ -44,15 +44,11 @@ chardet==4.0.0
     # via requests
 constantly==15.1.0
     # via twisted
-croniter==2.0.1
-    # via buildbot
 cryptography==40.0.2
     # via
     #   autobahn
     #   pyopenssl
     #   service-identity
-future==0.18.3
-    # via buildbot-worker
 greenlet==2.0.2
     # via sqlalchemy
 hyperlink==21.0.0
@@ -65,13 +61,11 @@ idna==2.10
     #   hyperlink
     #   requests
     #   twisted
-importlib-resources==6.1.1
-    # via buildbot
 incremental==21.3.0
     # via
     #   treq
     #   twisted
-jinja2==3.1.2
+jinja2==3.1.4
     # via
     #   -r requirements.in
     #   buildbot
@@ -85,8 +79,8 @@ msgpack==1.0.5
     # via
     #   buildbot
     #   buildbot-worker
-packaging==23.2
-    # via buildbot
+psycopg2==2.9.9
+    # via -r requirements.in
 pyasn1==0.4.8
     # via
     #   pyasn1-modules
@@ -95,20 +89,17 @@ pyasn1-modules==0.2.8
     # via service-identity
 pycparser==2.20
     # via cffi
-pyjwt==2.6.0
+pyjwt==2.8.0
     # via
     #   -r requirements.in
     #   buildbot
 pyopenssl==23.1.1
     # via twisted
-python-dateutil==2.8.2
+python-dateutil==2.9.0.post0
     # via
     #   -r requirements.in
     #   buildbot
-    #   croniter
-pytz==2023.3.post1
-    # via croniter
-pyyaml==6.0
+pyyaml==6.0.1
     # via
     #   -r requirements.in
     #   buildbot
@@ -119,13 +110,14 @@ service-identity==18.1.0
 six==1.15.0
     # via
     #   automat
+    #   buildbot-worker
     #   python-dateutil
-sqlalchemy==1.4.48
+sqlalchemy==1.4.52
     # via
     #   -r requirements.in
     #   alembic
     #   buildbot
-treq==22.2.0
+treq==23.11.0
     # via -r requirements.in
 twisted[tls]==22.10.0
     # via
@@ -142,11 +134,9 @@ typing-extensions==4.5.0
     # via
     #   alembic
     #   twisted
-unidiff==0.7.5
-    # via buildbot
 urllib3==1.26.8
     # via requests
-zope-interface==6.0
+zope-interface==6.4.post2
     # via
     #   -r requirements.in
     #   buildbot
