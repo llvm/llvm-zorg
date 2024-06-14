@@ -447,7 +447,7 @@ def _getClangCMakeBuildFactory(
         cmake_cmd2 = [cmake, "-G", "Ninja", rel_src_dir,
                       stage1_cc,
                       stage1_cxx,
-                      "-DCMAKE_BUILD_TYPE={stage2_config}",
+                      f"-DCMAKE_BUILD_TYPE={stage2_config}",
                       "-DLLVM_ENABLE_ASSERTIONS=True",
                       f"-DLLVM_LIT_ARGS={lit_args}",
                       f"-DCMAKE_INSTALL_PREFIX=../{stage2_install}"
