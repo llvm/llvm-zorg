@@ -62,7 +62,7 @@ def get_log_details(build):
                         if line.startswith("o") or line.startswith("e"):
                             lines[j] = line[1:]
                     for j, line in enumerate(lines):
-                        if line.find("FAIL:") != -1 or line.find("FAILED") != -1:
+                        if line.startswith("FAIL:") or line.find("FAILED") != -1:
                             if j > 10:
                                 del lines[:j-10] # Start 10 lines before FAIL
                                 lines = ["..."] + lines
