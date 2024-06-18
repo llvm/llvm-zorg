@@ -3215,8 +3215,8 @@ all += [
                     "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache"],
                 extra_stage2_cmake_args=[
                     "-DLLVM_ENABLE_LLD=True",
-                    "-DCMAKE_C_FLAGS='-menable-experimental-extensions -march=rva23u64 -mllvm -force-tail-folding-style=data-with-evl -mllvm -prefer-predicate-over-epilogue=predicate-dont-vectorize",
-                    "-DCMAKE_CXX_FLAGS='-menable-experimental-extensions -march=rva23u64 -mllvm -force-tail-folding-style=data-with-evl -mllvm -prefer-predicate-over-epilogue=predicate-dont-vectorize"]
+                    "-DCMAKE_C_FLAGS='-menable-experimental-extensions -march=rva23u64 -mllvm -force-tail-folding-style=data-with-evl -mllvm -prefer-predicate-over-epilogue=predicate-dont-vectorize'",
+                    "-DCMAKE_CXX_FLAGS='-menable-experimental-extensions -march=rva23u64 -mllvm -force-tail-folding-style=data-with-evl -mllvm -prefer-predicate-over-epilogue=predicate-dont-vectorize'"]
                 )},
 
     # Builders similar to used in Buildkite premerge pipeline.
