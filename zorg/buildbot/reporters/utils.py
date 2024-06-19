@@ -35,24 +35,28 @@ def get_log_details(build):
             logs = step['logs']
             if logs:
                 log_index = -1
-                log_type = 0
+                log_priority = 0
                 for i, _log in enumerate(logs):
                     # Use only first logchunk "FAIL: "
-                    if log_type < 3 and _log['name'].startswith("FAIL: "):
-                        log_type = 3
+                    if log_priority < 4 and _log['name'].startswith("FAIL: "):
+                        log_priority = 4
                         log_index = i
-                    elif log_type < 2 and _log['type'] == "s":  # stdio
-                        log_type = 2
+                    # Use lower priority for 'preamble'. Note the type is stdio too.
+                    elif log_priority < 2 and _log['name'] == "preamble":
+                        log_priority = 2
                         log_index = i
-                    elif log_type < 1 and _log['name'].startswith("warnings "):
-                        log_type = 1
+                    elif log_priority < 3 and _log['type'] == "s":  # stdio
+                        log_priority = 3
+                        log_index = i
+                    elif log_priority < 1 and _log['name'].startswith("warnings "):
+                        log_priority = 1
                         log_index = i
 
                 if log_index < 0:
                     continue
 
                 log_text = logs[log_index]['content']['content']
-                if log_type == 2:
+                if logs[log_index]['type'] == "s":
                     # Parse stdio
                     lines = log_text.splitlines()
                     for line in lines[:]:
