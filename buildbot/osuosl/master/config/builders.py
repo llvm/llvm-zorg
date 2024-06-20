@@ -1766,6 +1766,7 @@ all += [
                                 "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
                             ],
                         install=True,
+                        add_lit_checks=["check-offload"],
                         testsuite=True,
                         testsuite_sollvevv=True,
                         extraTestsuiteCmakeArgs=[
@@ -1796,6 +1797,7 @@ all += [
                                 "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
                             ],
                         install=True,
+                        add_lit_checks=["check-offload"],
                         testsuite=True,
                         testsuite_sollvevv=True,
                         extraTestsuiteCmakeArgs=[
