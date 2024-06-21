@@ -1766,6 +1766,7 @@ all += [
                                 "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
                             ],
                         install=True,
+                        add_lit_checks=["check-offload"],
                         testsuite=True,
                         testsuite_sollvevv=True,
                         extraTestsuiteCmakeArgs=[
@@ -1775,6 +1776,7 @@ all += [
                             "-DTEST_SUITE_OFFLOADING_CXX_LDFLAGS=--offload-arch=native;--cuda-path=/opt/cuda",
                             "-DSYSTEM_GPU=nvidia", "-DTEST_SUITE_SYSTEM_GPU=nvidia",
                         ],
+                        add_openmp_lit_args=["--time-tests"],
                     )},
 
     {'name' : "openmp-offload-cuda-runtime",
@@ -1796,6 +1798,7 @@ all += [
                                 "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
                             ],
                         install=True,
+                        add_lit_checks=["check-offload"],
                         testsuite=True,
                         testsuite_sollvevv=True,
                         extraTestsuiteCmakeArgs=[
@@ -1805,6 +1808,7 @@ all += [
                             "-DTEST_SUITE_OFFLOADING_CXX_LDFLAGS=--offload-arch=native;--cuda-path=/opt/cuda",
                             "-DSYSTEM_GPU=nvidia", "-DTEST_SUITE_SYSTEM_GPU=nvidia",
                         ],
+                        add_openmp_lit_args=["--time-tests"],
                     )},
 
 # OpenMP AMDGPU Builders
