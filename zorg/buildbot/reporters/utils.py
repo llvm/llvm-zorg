@@ -257,10 +257,11 @@ class LLVMFailGitHubReporter(GitHubCommentPush):
         log.msg(f"LLVMFailGitHubReporter._extract_issue: INFO: props={props}")
         title = props.getProperty("title")
         if title:
-            # Search for PR# in the first line of the commit description, which looks like 'Some text (#123)'.
-            m = re.search(r"^.* \(#(\d+)\)$", title)
+            # Search for PR# in the first line of the commit description,
+            # which looks like 'Some text (#123)' or 'Some text #123'.
+            m = re.search(r"^.* (\(#(\d+)\)|#(\d+))$", title)
             if m:
-                return m.group(1)
+                return m.group(2) or m.group(3)
         return None
 
     # This function is for logging purposes only.
