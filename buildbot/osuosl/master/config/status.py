@@ -1,4 +1,5 @@
 import re
+from importlib import reload
 from zope.interface import implementer
 
 from buildbot import interfaces
@@ -9,12 +10,9 @@ from buildbot.reporters.generators.build import BuildStartEndStatusGenerator
 from twisted.python import log
 
 import config
-from zorg.buildbot.reporters.utils import (
-    LLVMInformativeMailGenerator,
-    LLVMDefaultBuildStatusGenerator,
-    LLVMFailBuildGenerator,
-    LLVMFailGitHubReporter
-)
+
+from zorg.buildbot.reporters import utils
+reload(utils)
 
 # Should be a single e-mail address
 status_email_fromaddr = str(config.options.get('Master Options', 'status_email_fromaddr',
@@ -56,15 +54,15 @@ def getReporters():
     if config.options.has_option('GitHub Status', 'token'):
         token = str(config.options.get('GitHub Status', 'token'))
         r.append(
-            LLVMFailGitHubReporter(
+            utils.LLVMFailGitHubReporter(
                 token = token,
                 generators = [
-                	LLVMFailBuildGenerator(
-                		builders = [
-                			b.get('name') for b in config.builders.all
-                			if 'silent' not in b.get('tags', [])
-                		]
-                	)
+                    utils.LLVMFailBuildGenerator(
+                        builders = [
+                            b.get('name') for b in config.builders.all
+                            if 'silent' not in b.get('tags', [])
+                        ]
+                    )
                 ]
             )
         )
@@ -119,7 +117,7 @@ def getReporters():
             # TODO: For debug purposes only. Remove later.
             dumpMailsToLog = True,
             generators = [
-                LLVMInformativeMailGenerator(
+                utils.LLVMInformativeMailGenerator(
                     builders = [
                         b.get('name') for b in config.builders.all
                         if 'silent' not in b.get('tags', [])
@@ -131,7 +129,7 @@ def getReporters():
             sendToInterestedUsers = False,
             extraRecipients = ["gribozavr@gmail.com"],
             generators = [
-                LLVMDefaultBuildStatusGenerator(
+                utils.LLVMDefaultBuildStatusGenerator(
                     builders = ["clang-x86_64-debian-fast"])
             ]),
         reporters.MailNotifier(
@@ -139,7 +137,7 @@ def getReporters():
             sendToInterestedUsers = False,
             extraRecipients = ["tbaeder@redhat.com", "tstellar@redhat.com"],
             generators = [
-                LLVMDefaultBuildStatusGenerator(
+                utils.LLVMDefaultBuildStatusGenerator(
                     builders = ["llvm-x86_64-debian-dylib"])
             ]),
         reporters.MailNotifier(
@@ -147,7 +145,7 @@ def getReporters():
             sendToInterestedUsers = False,
             extraRecipients = ["llvm.buildmaster@quicinc.com"],
             generators = [
-                LLVMDefaultBuildStatusGenerator(
+                utils.LLVMDefaultBuildStatusGenerator(
                     builders = ["clang-hexagon-elf"])
             ]),
         reporters.MailNotifier(
@@ -155,7 +153,7 @@ def getReporters():
             sendToInterestedUsers = False,
             extraRecipients = ["Ulrich.Weigand@de.ibm.com"],
             generators = [
-               LLVMDefaultBuildStatusGenerator(
+               utils.LLVMDefaultBuildStatusGenerator(
                    builders = [
                        "clang-s390x-linux",
                        "clang-s390x-linux-multistage",
@@ -168,7 +166,7 @@ def getReporters():
             extraRecipients = ["sunil_srivastava@playstation.sony.com",
                                 "warren_ristow@playstation.sony.com"],
             generators = [
-                LLVMDefaultBuildStatusGenerator(
+                utils.LLVMDefaultBuildStatusGenerator(
                     builders = ["clang-x86_64-linux-abi-test"])
             ]),
         reporters.MailNotifier(
@@ -176,7 +174,7 @@ def getReporters():
             sendToInterestedUsers = False,
             extraRecipients = ["gkistanova@gmail.com"],
             generators = [
-                LLVMDefaultBuildStatusGenerator(
+                utils.LLVMDefaultBuildStatusGenerator(
                     builders = [
                         "lld-x86_64-win",
                         "lld-x86_64-freebsd",
@@ -190,7 +188,7 @@ def getReporters():
             sendToInterestedUsers = False,
             extraRecipients = ["efriedma@codeaurora.org", "huihuiz@codeaurora.org"],
             generators = [
-                LLVMDefaultBuildStatusGenerator(
+                utils.LLVMDefaultBuildStatusGenerator(
                     builders = [
                         "polly-arm-linux",
                         "aosp-O3-polly-before-vectorizer-unprofitable"])
@@ -200,7 +198,7 @@ def getReporters():
             sendToInterestedUsers = False,
             extraRecipients = ["mgrang@codeaurora.org"],
             generators = [
-                LLVMDefaultBuildStatusGenerator(
+                utils.LLVMDefaultBuildStatusGenerator(
                     mode = "problem",
                     builders = ["reverse-iteration"]),
             ]),
@@ -209,7 +207,7 @@ def getReporters():
             sendToInterestedUsers = False,
             extraRecipients = ["tra+buildbot@google.com"],
             generators = [
-                LLVMDefaultBuildStatusGenerator(
+                utils.LLVMDefaultBuildStatusGenerator(
                     builders = [
                         "clang-cuda-l4",
                         "clang-cuda-p4",
@@ -220,7 +218,7 @@ def getReporters():
             sendToInterestedUsers = False,
             extraRecipients = ["asb@lowrisc.org"],
             generators = [
-                LLVMDefaultBuildStatusGenerator(
+                utils.LLVMDefaultBuildStatusGenerator(
                     builders = ["llvm-riscv-linux"])
             ]),
         reporters.MailNotifier(
@@ -228,7 +226,7 @@ def getReporters():
             sendToInterestedUsers = False,
             extraRecipients = ["gongsu@us.ibm.com", "alexe@us.ibm.com"],
             generators = [
-                LLVMDefaultBuildStatusGenerator(
+                utils.LLVMDefaultBuildStatusGenerator(
                     builders = ["mlir-s390x-linux-werror"])
             ]),
         reporters.MailNotifier(
@@ -236,7 +234,7 @@ def getReporters():
             sendToInterestedUsers = False,
             extraRecipients = ["phosek@google.com"],
             generators = [
-                LLVMDefaultBuildStatusGenerator(
+                utils.LLVMDefaultBuildStatusGenerator(
                     builders = ["fuchsia-x86_64-linux"])
             ]),
         reporters.MailNotifier(
@@ -244,7 +242,7 @@ def getReporters():
             sendToInterestedUsers = False,
             extraRecipients = ["labath@google.com"],
             generators = [
-                LLVMDefaultBuildStatusGenerator(
+                utils.LLVMDefaultBuildStatusGenerator(
                     builders = ["lldb-x86_64-debian"])
             ]),
         reporters.MailNotifier(
@@ -252,7 +250,7 @@ def getReporters():
             sendToInterestedUsers = False,
             extraRecipients = ["vvereschaka@accesssoftek.com"],
             generators = [
-                LLVMDefaultBuildStatusGenerator(
+                utils.LLVMDefaultBuildStatusGenerator(
                     builders = [
                         "llvm-clang-x86_64-win-fast","lld-x86_64-ubuntu-fast",
                         "llvm-clang-x86_64-expensive-checks-ubuntu",
@@ -265,7 +263,7 @@ def getReporters():
             sendToInterestedUsers = False,
             extraRecipients = ["llvm.buildbot@emea.nec.com"],
             generators = [
-                LLVMDefaultBuildStatusGenerator(
+                utils.LLVMDefaultBuildStatusGenerator(
                     builders = ["clang-ve-ninja"])
             ]),
         reporters.MailNotifier(
@@ -274,7 +272,7 @@ def getReporters():
             extraRecipients = ["lntue@google.com", "michaelrj@google.com",
                             "ndesaulniers@google.com"],
             generators = [
-                LLVMDefaultBuildStatusGenerator(
+                utils.LLVMDefaultBuildStatusGenerator(
                     builders = [
                         "libc-x86_64-debian",
                         "libc-x86_64_debian-dbg",
@@ -292,35 +290,38 @@ def getReporters():
                         "libc-x86_64-debian-dbg-lint"])
             ]),
         reporters.MailNotifier(
+            dumpMailsToLog = True, # TODO: For debug purposes only. Remove this later.
             fromaddr = status_email_fromaddr,
             sendToInterestedUsers = False,
             extraRecipients = ["aaron@aaronballman.com"],
             generators = [
-                LLVMDefaultBuildStatusGenerator(
-                    subject = "Sphinx build %(builder)s Failure",
+                utils.LLVMDefaultBuildStatusGenerator(
+                    subject = "Sphinx build {{ buildername }} Failure",
                     builders = ["publish-sphinx-docs"])
             ]),
         reporters.MailNotifier(
+            dumpMailsToLog = True, # TODO: For debug purposes only. Remove this later.
             fromaddr=status_email_fromaddr,
             sendToInterestedUsers = False,
             extraRecipients=[
                 "mlcompileropt-buildbot@google.com"],
             generators = [
-                LLVMDefaultBuildStatusGenerator(
-                    subject = "ML Compiler Opt Failure: %(builder)s",
+                utils.LLVMDefaultBuildStatusGenerator(
+                    subject = "ML Compiler Opt Failure: {{ buildername }}",
                     builders = [
                         "ml-opt-dev-x86-64",
                         "ml-opt-rel-x86-64",
                         "ml-opt-devrel-x86-64"])
             ]),
         reporters.MailNotifier(
+            dumpMailsToLog = True, # TODO: For debug purposes only. Remove this later.
             fromaddr=status_email_fromaddr,
             sendToInterestedUsers = False,
             extraRecipients=[
                 "tejohnson@google.com"],
             generators = [
-                LLVMDefaultBuildStatusGenerator(
-                    subject = "ThinLTO WPD Failure: %(builder)s",
+                utils.LLVMDefaultBuildStatusGenerator(
+                    subject = "ThinLTO WPD Failure: {{ buildername }}",
                     builders = ["clang-with-thin-lto-wpd-ubuntu"])
             ]),
         reporters.MailNotifier(
@@ -328,7 +329,7 @@ def getReporters():
             sendToInterestedUsers = False,
             extraRecipients = ["douglas.yung@sony.com"],
             generators = [
-                LLVMDefaultBuildStatusGenerator(
+                utils.LLVMDefaultBuildStatusGenerator(
                     builders = [
                         "llvm-clang-x86_64-sie-ubuntu-fast",
                         "llvm-clang-x86_64-sie-win",
@@ -347,7 +348,7 @@ def getReporters():
             sendToInterestedUsers = False,
             extraRecipients = ["tom.weaver@sony.com"],
             generators = [
-                LLVMDefaultBuildStatusGenerator(
+                utils.LLVMDefaultBuildStatusGenerator(
                     builders = [
                         "llvm-clang-x86_64-sie-ubuntu-fast",
                         "llvm-clang-x86_64-sie-win",
@@ -359,31 +360,32 @@ def getReporters():
             extraRecipients = [
                 "jeremy.morse.llvm@gmail.com"],
             generators = [
-                LLVMDefaultBuildStatusGenerator(
-                    subject = "Build %(builder)s Failure",
+                utils.LLVMDefaultBuildStatusGenerator(
                     builders = [
                         "llvm-new-debug-iterators"])
             ]),
         reporters.MailNotifier(
+            dumpMailsToLog = True, # TODO: For debug purposes only. Remove this later.
             fromaddr=status_email_fromaddr,
             sendToInterestedUsers = False,
             extraRecipients=[
                 "joker.eph@gmail.com"],
             generators = [
-                LLVMDefaultBuildStatusGenerator(
-                    subject = "MLIR Build Failure: %(builder)s",
+                utils.LLVMDefaultBuildStatusGenerator(
+                    subject = "MLIR Build Failure: {{ buildername }}",
                     builders = [
                         "mlir-nvidia",
                         "mlir-nvidia-gcc7"])
             ]),
         reporters.MailNotifier(
+            dumpMailsToLog = True, # TODO: For debug purposes only. Remove this later.
             fromaddr=status_email_fromaddr,
             sendToInterestedUsers = False,
             extraRecipients=[
                 "mlir-bugs-external+buildbot@googlegroups.com"],
             generators = [
-                LLVMDefaultBuildStatusGenerator(
-                    subject = "MLIR Build Failure: %(builder)s",
+                utils.LLVMDefaultBuildStatusGenerator(
+                    subject = "MLIR Build Failure: {{ buildername }}",
                     builders = [
                         "mlir-nvidia",
                         "ppc64le-mlir-rhel-clang"])
@@ -393,8 +395,7 @@ def getReporters():
             sendToInterestedUsers = False,
             extraRecipients=["dl.gcr.lightning.buildbot@amd.com"],
             generators = [
-                LLVMDefaultBuildStatusGenerator(
-                    subject = "Build Failure: %(builder)s",
+                utils.LLVMDefaultBuildStatusGenerator(
                     builders = ["clang-hip-vega20"])
             ]),
         reporters.MailNotifier(
@@ -402,8 +403,7 @@ def getReporters():
             sendToInterestedUsers = False,
             extraRecipients=["llvm_arc_buildbot@synopsys.com", "heli@synopsys.com"],
             generators = [
-                LLVMDefaultBuildStatusGenerator(
-                    subject = "Build Failure: %(builder)s",
+                utils.LLVMDefaultBuildStatusGenerator(
                     builders = ["arc-builder"])
             ]),
         reporters.MailNotifier(
@@ -411,8 +411,7 @@ def getReporters():
             sendToInterestedUsers = False,
             extraRecipients=["dl.gcr.lightning.buildbot@amd.com"],
             generators = [
-                LLVMDefaultBuildStatusGenerator(
-                    subject = "Build Failure: %(builder)s",
+                utils.LLVMDefaultBuildStatusGenerator(
                     builders = ["openmp-offload-amdgpu-runtime"])
             ]),
         reporters.MailNotifier(
@@ -420,37 +419,39 @@ def getReporters():
             sendToInterestedUsers = False,
             extraRecipients=["dl.mlse.buildbot@amd.com"],
             generators = [
-                LLVMDefaultBuildStatusGenerator(
-                    subject = "Build Failure: %(builder)s",
+                utils.LLVMDefaultBuildStatusGenerator(
                     builders = ["mlir-rocm-mi200"])
             ]),
         reporters.MailNotifier(
+            dumpMailsToLog = True, # TODO: For debug purposes only. Remove this later.
             fromaddr=status_email_fromaddr,
             sendToInterestedUsers = False,
             extraRecipients=["flangbuilder@meinersbur.de"],
             generators = [
-                LLVMDefaultBuildStatusGenerator(
-                    subject = "Build Failure (flang): %(builder)s",
+                utils.LLVMDefaultBuildStatusGenerator(
+                    subject = "Build Failure (flang): {{ buildername }}",
                     builders = ["flang-x86_64-windows"])
             ]),
         reporters.MailNotifier(
+            dumpMailsToLog = True, # TODO: For debug purposes only. Remove this later.
             fromaddr=status_email_fromaddr,
             sendToInterestedUsers = False,
             extraRecipients=["offloadbuilder@meinersbur.de"],
             generators = [
-                LLVMDefaultBuildStatusGenerator(
-                    subject = "Build Failure (offload): %(builder)s",
+                utils.LLVMDefaultBuildStatusGenerator(
+                    subject = "Build Failure (offload): {{ buildername }}",
                     builders = [
                         "openmp-offload-cuda-project",
                         "openmp-offload-cuda-runtime"])
             ]),
         reporters.MailNotifier(
+            dumpMailsToLog = True, # TODO: For debug purposes only. Remove this later.
             fromaddr=status_email_fromaddr,
             sendToInterestedUsers = False,
             extraRecipients=["pollybuilder@meinersbur.de"],
             generators = [
-                LLVMDefaultBuildStatusGenerator(
-                    subject = "Build Failure (polly): %(builder)s",
+                utils.LLVMDefaultBuildStatusGenerator(
+                    subject = "Build Failure (polly): {{ buildername }}",
                     builders = [
                         "polly-x86_64-linux",
                         "polly-x86_64-linux-noassert",
@@ -467,7 +468,7 @@ def getReporters():
             sendToInterestedUsers = False,
             extraRecipients = ["orlando.hyams@sony.com"],
             generators = [
-                LLVMDefaultBuildStatusGenerator(
+                utils.LLVMDefaultBuildStatusGenerator(
                     builders = [
                         "cross-project-tests-sie-ubuntu",
                         "llvm-clang-x86_64-sie-win"])
@@ -477,15 +478,16 @@ def getReporters():
             sendToInterestedUsers = False,
             extraRecipients = ["kkleine@redhat.com"],
             generators = [
-                LLVMDefaultBuildStatusGenerator(
+                utils.LLVMDefaultBuildStatusGenerator(
                     builders = ["standalone-build-x86_64"])
             ]),
         reporters.MailNotifier(
+            dumpMailsToLog = True, # TODO: For debug purposes only. Remove this later.
             fromaddr = status_email_fromaddr,
             sendToInterestedUsers = False,
             extraRecipients = ["llvm-bolt@meta.com"],
             generators = [
-                LLVMDefaultBuildStatusGenerator(
+                utils.LLVMDefaultBuildStatusGenerator(
                     subject = "BOLT NFC checks mismatch",
                     mode = ("warnings",),
                     builders = ["bolt-x86_64-ubuntu-nfc"]),
@@ -495,7 +497,7 @@ def getReporters():
             sendToInterestedUsers = False,
             extraRecipients = ["luweining@loongson.cn", "chenli@loongson.cn"],
             generators = [
-                LLVMDefaultBuildStatusGenerator(
+                utils.LLVMDefaultBuildStatusGenerator(
                     builders = ["clang-loongarch64-linux"])
             ]),
         reporters.MailNotifier(
@@ -503,7 +505,7 @@ def getReporters():
             sendToInterestedUsers = False,
             extraRecipients = ["kadircet@google.com", "sammccall@google.com"],
             generators = [
-                LLVMDefaultBuildStatusGenerator(
+                utils.LLVMDefaultBuildStatusGenerator(
                     builders = ["clangd-ubuntu-tsan"])
             ]),
         reporters.MailNotifier(
@@ -511,7 +513,7 @@ def getReporters():
             sendToInterestedUsers = False,
             extraRecipients = ["kadircet@google.com", "ibiryukov@google.com"],
             generators = [
-                LLVMDefaultBuildStatusGenerator(
+                utils.LLVMDefaultBuildStatusGenerator(
                     builders = ["clang-debian-cpp20"])
             ]),
         reporters.MailNotifier(
@@ -519,7 +521,7 @@ def getReporters():
             sendToInterestedUsers = False,
             extraRecipients = ["llvm.buildbot.notification@intel.com"],
             generators = [
-                LLVMDefaultBuildStatusGenerator(
+                utils.LLVMDefaultBuildStatusGenerator(
                     builders = ["clang-cmake-x86_64-avx512-linux"])
             ]),
         reporters.MailNotifier(
@@ -527,7 +529,7 @@ def getReporters():
             sendToInterestedUsers = False,
             extraRecipients = ["llvm-premerge-buildbots@google.com", "joker.eph@gmail.com"],
             generators = [
-                LLVMDefaultBuildStatusGenerator(
+                utils.LLVMDefaultBuildStatusGenerator(
                     builders = [
                         "premerge-monolithic-windows",
                         "premerge-monolithic-linux"])
@@ -537,7 +539,7 @@ def getReporters():
             sendToInterestedUsers = False,
             extraRecipients = ["szakharin@nvidia.com"],
             generators = [
-                LLVMDefaultBuildStatusGenerator(
+                utils.LLVMDefaultBuildStatusGenerator(
                     builders = [
                         "flang-runtime-cuda-gcc",
                         "flang-runtime-cuda-clang"])
