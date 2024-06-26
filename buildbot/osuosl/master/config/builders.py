@@ -2494,7 +2494,7 @@ all += [
 # CUDA builders.
 
     {'name' : "clang-cuda-l4",
-    'tags'  : ["clang"],
+    'tags'  : ["clang", "silent"],
     'workernames' : ["cuda-l4-0"],
     'builddir': "clang-cuda-l4",
     'factory' : AnnotatedBuilder.getAnnotatedBuildFactory(
@@ -2502,7 +2502,7 @@ all += [
                     checkout_llvm_sources=False)},
 
     {'name' : "clang-cuda-p4",
-    'tags'  : ["clang"],
+    'tags'  : ["clang", "silent"],
     'workernames' : ["cuda-p4-0"],
     'builddir': "clang-cuda-p4",
     'factory' : AnnotatedBuilder.getAnnotatedBuildFactory(
@@ -2510,7 +2510,7 @@ all += [
                     checkout_llvm_sources=False)},
 
     {'name' : "clang-cuda-t4",
-    'tags'  : ["clang"],
+    'tags'  : ["clang", "silent"],
     'workernames' : ["cuda-t4-0"],
     'builddir': "clang-cuda-t4",
     'factory' : AnnotatedBuilder.getAnnotatedBuildFactory(
