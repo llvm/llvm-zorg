@@ -18,6 +18,8 @@ from buildbot.process.results import SUCCESS
 from buildbot.process.results import WARNINGS
 from buildbot.process.results import statusToString
 
+from zorg.buildbot.commands.LitTestCommand import LitLogObserver
+
 def get_log_details(build):
     failed_step = None
     text = ""
@@ -58,22 +60,37 @@ def get_log_details(build):
                 log_text = logs[log_index]['content']['content']
                 if logs[log_index]['type'] == "s":
                     # Parse stdio
-                    lines = log_text.splitlines()
-                    for line in lines[:]:
-                        if line.startswith("h"):
-                            lines.remove(line)
+                    raw_lines = log_text.splitlines()
+                    lines = []
+                    fail_index = -1
+                    for line in raw_lines:
+                        if line.startswith("h"): # header
+                            line = line[1:]
+                            if fail_index == -1:
+                                # Check for "command timed out:"
+                                if LitLogObserver.kTestLineKill.match(line):
+                                    fail_index = len(lines)
+                                else:
+                                    # Drop this header line
+                                    continue
+                        elif line.startswith("o") or line.startswith("e"):
+                            # Adjust stdout or stderr line
+                            line = line[1:]
+                        lines.append(line)
                     for j, line in enumerate(lines):
-                        if line.startswith("o") or line.startswith("e"):
-                            lines[j] = line[1:]
-                    for j, line in enumerate(lines):
-                        if line.startswith("FAIL:") or line.find("FAILED") != -1:
-                            if j > 10:
-                                del lines[:j-10] # Start 10 lines before FAIL
-                                lines = ["..."] + lines
-                            del lines[50:] # Keep up to 50 lines around FAIL
+                        if fail_index != -1 and fail_index < j:
                             break
-                    if len(lines) > 50:
-                        del lines[:len(lines)-50] # Otherwise keep last 50 lines
+                        if line.startswith("FAIL:") or line.find("FAILED") != -1:
+                            fail_index = j
+                            break
+                    if fail_index >= 0:
+                        if fail_index > 10:
+                            del lines[:fail_index-10] # Start 10 lines before FAIL
+                            lines = ["..."] + lines
+                        del lines[50:] # Keep up to 50 lines around FAIL
+                    elif len(lines) > 50:
+                        # Otherwise keep last 50 lines
+                        del lines[:len(lines)-50]
                         lines = ["..."] + lines
 
                     log_text = "\n".join(lines)
@@ -239,13 +256,30 @@ class LLVMFailBuildGenerator(BuildStatusGenerator):
         change = changes[0]
         # Get the first line of the commit description.
         title = change["comments"].split("\n")[0]
-        # And store it in properties as 'title'.
-        build["properties"]["title"] = (
-            title,
+
+        # Search for PR# in the first line of the commit description, which looks like 'Some text (#123)'.
+        m = re.search(r"^.* \(#(\d+)\)$", title)
+        if not m:
+            log.msg(
+                f"LLVMFailBuildGenerator.generate(buildid={buildid}): WARNING: Cannot extract PR# from the title '{title}'."
+            )
+            return None
+
+        issue = m.group(1)
+
+        # To play it safe for further processing we want a snapshot:
+        # a local shallow copy of build information,
+        # along with a copy of build properties.
+        build_info = build.copy()
+        build_info["properties"] = build["properties"].copy()
+
+        build_info["properties"]["issue"] = (
+            issue,
             None,
         )
 
-        report = yield self.build_message(self.formatter, master, reporter, build)
+        #log.msg(f"LLVMFailBuildGenerator.generate(buildid={buildid}): INFO: calling  yield self.build_message build_info={build_info}")
+        report = yield self.build_message(self.formatter, master, reporter, build_info)
         # log.msg(f"LLVMFailBuildGenerator.generate(buildid={buildid}): INFO: report={report}")
         return report
 
@@ -255,13 +289,9 @@ class LLVMFailGitHubReporter(GitHubCommentPush):
 
     def _extract_issue(self, props):  # override
         log.msg(f"LLVMFailGitHubReporter._extract_issue: INFO: props={props}")
-        title = props.getProperty("title")
-        if title:
-            # Search for PR# in the first line of the commit description, which looks like 'Some text (#123)'.
-            m = re.search(r"^.* \(#(\d+)\)$", title)
-            if m:
-                return m.group(1)
-        return None
+        issue = props.getProperty("issue")
+        log.msg(f"LLVMFailGitHubReporter._extract_issue: INFO: issue={issue}")
+        return issue
 
     # This function is for logging purposes only.
     # Could be removed completely if log verbosity would be reduced.
