@@ -458,6 +458,7 @@ all = [
     'tags'  : ["clang"],
     'workernames' : ["linaro-g3-01", "linaro-g3-02", "linaro-g3-03", "linaro-g3-04"],
     'builddir': "clang-aarch64-sve-vla",
+    'max_simultaneous_builds' : 1,
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
                     clean=False,
                     checkout_flang=True,
@@ -481,6 +482,7 @@ all = [
     'tags'  : ["clang"],
     'workernames' : ["linaro-g3-01", "linaro-g3-02", "linaro-g3-03", "linaro-g3-04"],
     'builddir': "clang-aarch64-sve-vla-2stage",
+    'max_simultaneous_builds' : 1,
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
                     clean=False,
                     checkout_flang=True,
@@ -506,6 +508,7 @@ all = [
     'tags'  : ["clang"],
     'workernames' : ["linaro-g3-01", "linaro-g3-02", "linaro-g3-03", "linaro-g3-04"],
     'builddir': "clang-aarch64-sve-vls",
+    'max_simultaneous_builds' : 1,
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
                     clean=False,
                     checkout_flang=True,
@@ -529,6 +532,7 @@ all = [
     'tags'  : ["clang"],
     'workernames' : ["linaro-g3-01", "linaro-g3-02", "linaro-g3-03", "linaro-g3-04"],
     'builddir': "clang-aarch64-sve-vls-2stage",
+    'max_simultaneous_builds' : 1,
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
                     clean=False,
                     checkout_flang=True,
