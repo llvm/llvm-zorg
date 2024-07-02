@@ -1951,6 +1951,7 @@ all += [
                             "-DLLVM_ENABLE_ASSERTIONS=ON",
                             "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
                             "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
+                            "-DFLANG_RUNTIME_F128_MATH_LIB=libquadmath",
                             ],
                         env={
                             'HSA_ENABLE_SDMA':'0',
