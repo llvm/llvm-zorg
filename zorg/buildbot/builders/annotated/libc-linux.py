@@ -101,10 +101,11 @@ def main(argv):
         if riscv32_build:
             cmake_args.append('-DCMAKE_C_FLAGS=-mabi=ilp32d -march=rv32imafdc \
                                --target=riscv32-unknown-linux-gnu --sysroot=/opt/riscv/sysroot \
-                               --gcc-toolchain=/opt/riscv -fuse-ld=lld-15')
+                               --gcc-toolchain=/opt/riscv')
             cmake_args.append('-DCMAKE_CXX_FLAGS=-mabi=ilp32d -march=rv32imafdc \
                                --target=riscv32-unknown-linux-gnu --sysroot=/opt/riscv/sysroot \
-                               --gcc-toolchain=/opt/riscv -fuse-ld=lld')
+                               --gcc-toolchain=/opt/riscv')
+            cmake_args.append('-DCMAKE_EXE_LINKER_FLAGS_INIT=-fuse-ld=lld')
             cmake_args.append('-DCMAKE_CROSSCOMPILING_EMULATOR={}/cross.sh'.format(os.getenv('HOME')))
             cmake_args.append('-DLIBC_TARGET_TRIPLE=riscv32-unknown-linux-gnu')
             cmake_args.append('-DCMAKE_SYSTEM_NAME=Linux')
