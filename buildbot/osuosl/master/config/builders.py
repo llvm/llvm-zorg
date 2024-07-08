@@ -1922,6 +1922,7 @@ all += [
                             "-DLIBOMP_ARCHER_SUPPORT=OFF",
                             "-DRUNTIMES_amdgcn-amd-amdhsa_LLVM_ENABLE_RUNTIMES=libc",
                             "-DLLVM_RUNTIME_TARGETS=default;amdgcn-amd-amdhsa",
+                            "-DRUNTIMES_amdgcn-amd-amdhsa_LIBC_GPU_TEST_ARCHITECTURE=gfx906",
                             ],
                         env={
                             'HSA_ENABLE_SDMA':'0',
