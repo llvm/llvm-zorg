@@ -2,6 +2,7 @@
 from collections import OrderedDict
 
 from buildbot.process.factory import BuildFactory
+from buildbot.interfaces import IRenderable 
 from buildbot.plugins import util, steps
 
 _all_runtimes = frozenset([
@@ -108,6 +109,11 @@ class LLVMBuildFactory(BuildFactory):
 
     @staticmethod
     def pathRelativeTo(path, basePath):
+        # We cannot process the IRenderables that time.
+        # Just let them pass without changes.
+        if IRenderable.providedBy(path) or IRenderable.providedBy(basePath):
+            return path
+            
         if path.startswith('/'):
             # The path is absolute. Don't touch it.
             return path
