@@ -608,6 +608,7 @@ def getCmakeExBuildFactory(
         vs = None,                      # VS tools environment variable if using MSVC.
         vs_arch = None,
         clean = False,                  # Do clean build flag.
+        repo_profiles = "default",      # The source code repository profiles.
         extra_git_args = None,          # Extra parameters for steps.Git step (such as 'config', 'workdir', etc.)
         llvm_srcdir = None,             # A custom LLVM src directory within %(prop:builddir)s of the builder.
         src_to_build_dir = None,
@@ -619,6 +620,7 @@ def getCmakeExBuildFactory(
         post_finalize_steps = None,
         jobs = None,                    # Restrict a degree of parallelism.
         env  = None,                    # Common environmental variables.
+        hint = None,
     ):
 
     """ Create and configure a builder factory to build a LLVM project from the unified source tree.
@@ -724,6 +726,13 @@ def getCmakeExBuildFactory(
         clean : boolean
             Alsways do a clean build (default is False).
 
+        repo_profiles : string, optional
+            A name of the source code profile to get from the remote repository. Currently is supported only "default"
+            profile and None. Default is "default".
+
+            If None is passed, no the repository checkout steps will be added to the factory workflow. This is useful
+            for the nested factories when the single repo is shared between them.
+
         extra_git_args : dict, optional
             Provide extra arguments for the Git step (default is None).
 
@@ -781,6 +790,15 @@ def getCmakeExBuildFactory(
         env : dict, optional
             Common environmental variables for all build steps (default is None).
 
+        hint : string, optional
+            Use this hint to apply suffixes to the step names when factory is used as a nested factory for another one.
+            The suffix will be added to the step name separated by dash symbol.
+
+            As example, passing of 'stageX' with 'hint' will force generating of the following step names:
+                cmake-cofigure => cmake-configure-stageX
+                build => build-stageX
+                install => install-stageX
+                & etc.
 
         Returns
         -------
@@ -858,6 +876,7 @@ def getCmakeExBuildFactory(
     f = LLVMBuildFactory(
             depends_on_projects = depends_on_projects,
             enable_runtimes     = enable_runtimes,
+            hint                = hint,
             llvm_srcdir         = llvm_srcdir,
             src_to_build_dir    = src_to_build_dir,
             obj_dir             = obj_dir,
@@ -867,32 +886,23 @@ def getCmakeExBuildFactory(
     f.addSteps([
         # Set up some properties, which could be used to configure the builders.
         steps.SetProperties(
-            name            = 'set-props',
+            name            = f.makeStepName('set-props'),
             properties      = {
                 "depends_on_projects"   : ";".join(sorted(f.depends_on_projects)),
                 "enable_projects"       : ";".join(sorted(f.enable_projects)),
                 "enable_runtimes"       : ";".join(sorted(f.enable_runtimes)),
-                "srcdir"                : util.Interpolate(f.monorepo_dir),
-                "srcdir_relative"       : util.Interpolate(LLVMBuildFactory.pathRelativeTo(f.monorepo_dir, f.obj_dir)),
-                "objdir"                : util.Interpolate(f.obj_dir),
+                "srcdir"                : f.monorepo_dir,
+                "srcdir_relative"       : LLVMBuildFactory.pathRelativeTo(f.monorepo_dir, f.obj_dir),
+                "objdir"                : f.obj_dir,
             }
-        ),
-        # Remove the source code for a clean checkout if requested by property.
-        steps.RemoveDirectory(
-            name            = 'clean-src-dir',
-            dir             = util.Interpolate(f.monorepo_dir),
-            description     = ["Remove", util.Interpolate(f.monorepo_dir), "directory"],
-            haltOnFailure   = False,
-            flunkOnFailure  = False,
-            doStepIf        = util.Property("clean", False) == True,
         ),
 
         # This is an incremental build, unless otherwise has been requested.
         # Remove obj dirs for a clean build.
         steps.RemoveDirectory(
-            name            = 'clean-obj-dir',
-            dir             = util.Interpolate(f.obj_dir),
-            description     = ["Remove", util.Interpolate(f.obj_dir), "directory"],
+            name            = f.makeStepName('clean-obj-dir'),
+            dir             = f.obj_dir,
+            description     = ["Remove", f.obj_dir, "directory"],
             haltOnFailure   = False,
             flunkOnFailure  = False,
             doStepIf        = lambda step, clean = clean: clean or step.getProperty("clean_obj") == True
@@ -902,9 +912,22 @@ def getCmakeExBuildFactory(
     # Let's start from getting the source code. We share it between all stages.
 
     # Add the Git step.
-    extra_git_args = extra_git_args or {}
+    if repo_profiles == "default":
+        f.addSteps([
+            # Remove the source code for a clean checkout if requested by property.
+            steps.RemoveDirectory(
+                name            = f.makeStepName('clean-src-dir'),
+                dir             = f.monorepo_dir,
+                description     = ["Remove", f.monorepo_dir, "directory"],
+                haltOnFailure   = False,
+                flunkOnFailure  = False,
+                doStepIf        = util.Property("clean", False) == True,
+            ),
+        ])
 
-    f.addGetSourcecodeSteps(**extra_git_args)
+        extra_git_args = extra_git_args or {}
+
+        f.addGetSourcecodeSteps(**extra_git_args)
 
     # Add custom pre-configuration steps if specified.
     if pre_configure_steps:
@@ -914,7 +937,7 @@ def getCmakeExBuildFactory(
     if vs:
         f.addStep(
             steps.SetPropertyFromCommand(
-                name            = "set-props.vs_env",
+                name            = f.makeStepName("set-props.vs_env"),
                 command         = builders_util.getVisualStudioEnvironment(vs, vs_arch),
                 extract_fn      = builders_util.extractVSEnvironment,
                 env             = env
@@ -940,9 +963,9 @@ def getCmakeExBuildFactory(
         # Remove install directory.
         f.addSteps([
             steps.RemoveDirectory(
-                name            = f"clean-install-dir",
-                dir             = util.Interpolate(f.install_dir),
-                description     = ["Remove", util.Interpolate(f.install_dir), "directory"],
+                name            = f.makeStepName("clean-install-dir"),
+                dir             = install_dir, #TODO:f.install_dir,
+                description     = ["Remove", f.install_dir, "directory"],
                 haltOnFailure   = False,
                 flunkOnFailure  = False,
                 doStepIf        = lambda step, clean = clean: clean or step.getProperty("clean_obj") == True
@@ -960,7 +983,7 @@ def getCmakeExBuildFactory(
 
     f.addStep(
         steps.CMake(
-            name            = f"cmake-configure",
+            name            = f.makeStepName("cmake-configure"),
             path            = LLVMBuildFactory.pathRelativeTo(f.llvm_srcdir, f.obj_dir),
             generator       = generator,
             definitions     = cmake_definitions,
@@ -971,6 +994,7 @@ def getCmakeExBuildFactory(
             workdir         = f.obj_dir
         ))
 
+    hint_suffix = f"-{hint}" if hint else None
     # Build Commands.
     #NOTE: please note that the default target (.) cannot be specified by the IRenderable object.
     for target in targets:
@@ -984,7 +1008,8 @@ def getCmakeExBuildFactory(
 
         f.addStep(
             steps.CMake(
-                name            = util.Interpolate("build-%(kw:title)s", title = target_title),
+                name            = util.Interpolate("build-%(kw:title)s%(kw:hint:-)s",
+                                                   title = target_title, hint = hint_suffix),
                 options         = cmake_build_options,
                 description     = ["Build target", target_title],
                 haltOnFailure   = True,
@@ -1000,7 +1025,8 @@ def getCmakeExBuildFactory(
     for target in checks:
         f.addStep(
             LitTestCommand(
-                name            = util.Interpolate("test-%(kw:title)s", title = target),
+                name            = util.Interpolate("test-%(kw:title)s%(kw:hint:-)s",
+                                                   title = target, hint = hint_suffix),
                 command         = [steps.CMake.DEFAULT_CMAKE, "--build", ".", "--target", target],
                 description     = ["Test just built components:", target],
                 descriptionDone = ["Test just built components:", target, "completed"],
@@ -1013,7 +1039,8 @@ def getCmakeExBuildFactory(
     for target, cmd in checks_on_target:
         f.addStep(
             LitTestCommand(
-                name            = util.Interpolate("test-%(kw:title)s", title = target),
+                name            = util.Interpolate("test-%(kw:title)s%(kw:hint:-)s",
+                                                   title = target, hint = hint_suffix),
                 command         = cmd,
                 description     = ["Test just built components:", target],
                 descriptionDone = ["Test just built components:", target, "completed"],
@@ -1032,7 +1059,7 @@ def getCmakeExBuildFactory(
             f.addStep(
                 steps.CMake(
                     name            = util.Transform(lambda s: s if s.startswith("install") else f"install-{s}",
-                                                     util.Interpolate("%(kw:title)s", title = target)),
+                                                     util.Interpolate("%(kw:title)s%(kw:hint:-)s", title = target, hint = hint_suffix)),
                     options         = ["--build", ".", "--target", target],
                     description     = ["Install just built components:", target],
                     haltOnFailure   = False,
