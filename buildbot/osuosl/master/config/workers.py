@@ -231,6 +231,16 @@ def get_all():
         # Windows Server on Intel Xeon 6330 CPU 2Sx64Cx128LP @ 2.0GHz, 256GB RAM
         create_worker("as-builder-8", properties={'jobs': 128}, max_builds=1),
 
+        # Ubuntu 24.04
+        create_worker("as-builder-9", properties={
+                        'jobs'                  : 128, 
+                        'remote_test_host'      : 'jetson-agx-2198.lab.llvm.org',
+                        'remote_test_user'      : 'ubuntu',
+                        'sysroot_path_aarch64'  : '/mnt/fs/jetson-agx-ubuntu',
+                        'tools_root_path'       : '/home/buildbot/worker/as-builder-9/tools', 
+                    },
+                    max_builds=1),
+
         # Solaris 11
         create_worker("solaris11-amd64", properties={'jobs' : 8}, max_builds=1),
         create_worker("solaris11-sparcv9", properties={'jobs' : 8}, max_builds=1),
