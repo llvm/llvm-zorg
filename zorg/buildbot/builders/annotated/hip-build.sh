@@ -79,8 +79,9 @@ cmake -G Ninja \
   -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
   -DCMAKE_VERBOSE_MAKEFILE=1 \
   -DLLVM_TARGETS_TO_BUILD="AMDGPU;X86" \
-  -DLLVM_ENABLE_PROJECTS="clang;lld;clang-tools-extra;compiler-rt" \
-  -DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi;libunwind" \
+  -DLLVM_ENABLE_PROJECTS="clang;lld;clang-tools-extra" \
+  -DLLVM_ENABLE_RUNTIMES="compiler-rt;libcxx;libcxxabi;libunwind" \
+  -DCLANG_DEFAULT_LINKER=lld \
   -DLIBCXX_ENABLE_SHARED=OFF \
   -DLIBCXX_ENABLE_STATIC=ON \
   -DLIBCXX_INSTALL_LIBRARY=OFF \
