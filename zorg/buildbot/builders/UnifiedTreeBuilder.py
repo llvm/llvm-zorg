@@ -891,9 +891,9 @@ def getCmakeExBuildFactory(
                 "depends_on_projects"   : ";".join(sorted(f.depends_on_projects)),
                 "enable_projects"       : ";".join(sorted(f.enable_projects)),
                 "enable_runtimes"       : ";".join(sorted(f.enable_runtimes)),
-                "srcdir"                : util.Interpolate(f.monorepo_dir),
-                "srcdir_relative"       : util.Interpolate(LLVMBuildFactory.pathRelativeTo(f.monorepo_dir, f.obj_dir)),
-                "objdir"                : util.Interpolate(f.obj_dir),
+                "srcdir"                : f.monorepo_dir,
+                "srcdir_relative"       : LLVMBuildFactory.pathRelativeTo(f.monorepo_dir, f.obj_dir),
+                "objdir"                : f.obj_dir,
             }
         ),
 
@@ -901,8 +901,8 @@ def getCmakeExBuildFactory(
         # Remove obj dirs for a clean build.
         steps.RemoveDirectory(
             name            = f.makeStepName('clean-obj-dir'),
-            dir             = util.Interpolate(f.obj_dir),
-            description     = ["Remove", util.Interpolate(f.obj_dir), "directory"],
+            dir             = f.obj_dir,
+            description     = ["Remove", f.obj_dir, "directory"],
             haltOnFailure   = False,
             flunkOnFailure  = False,
             doStepIf        = lambda step, clean = clean: clean or step.getProperty("clean_obj") == True
@@ -964,8 +964,8 @@ def getCmakeExBuildFactory(
         f.addSteps([
             steps.RemoveDirectory(
                 name            = f.makeStepName("clean-install-dir"),
-                dir             = util.Interpolate(f.install_dir),
-                description     = ["Remove", util.Interpolate(f.install_dir), "directory"],
+                dir             = f.install_dir,
+                description     = ["Remove", f.install_dir, "directory"],
                 haltOnFailure   = False,
                 flunkOnFailure  = False,
                 doStepIf        = lambda step, clean = clean: clean or step.getProperty("clean_obj") == True
