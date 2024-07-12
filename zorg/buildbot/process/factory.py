@@ -23,12 +23,24 @@ class LLVMBuildFactory(BuildFactory):
 
     enable_runtimes is a list of enabled runtimes. If None,
     it gets discovered based on the depends_on_projects list.
+    
+    hint : string, optional
+        Use this hint to apply suffixes to the step names when factory is used as a nested factory for another one.
+        The suffix will be added to the step name separated by dash symbol.
+        
+        As example, passing of 'stageX' with 'hint' will force generating of the following step names:
+            cmake-cofigure => cmake-configure-stageX
+            build => build-stageX
+            install => install-stageX
+            & etc.
     """
 
-    def __init__(self, steps=None, depends_on_projects=None, **kwargs):
+    def __init__(self, steps=None, depends_on_projects=None, hint=None, **kwargs):
         # Cannot use "super" here as BuildFactory is an old style class.
         BuildFactory.__init__(self, steps)
 
+        self.hint = hint
+        
         # Handle the dependencies.
         if depends_on_projects is None:
             # llvm project is always included.
@@ -141,12 +153,16 @@ class LLVMBuildFactory(BuildFactory):
 
             return rel_path
 
-
+    def makeStepName(self, name):
+        assert name, "The step name agrument cannot be empty."
+        return f"{name}-{self.hint}" if self.hint else name
+        
     def addGetSourcecodeSteps(self, **kwargs):
         # Checkout the monorepo.
         # Documentation: http://docs.buildbot.net/current/manual/configuration/buildsteps.html#git
         self.addStep(steps.Git(
-                name='Checkout the source code',
+                name=self.makeStepName('checkout'),
+                description='Checkout the source code',
                 repourl=self.repourl_prefix + "llvm-project.git",
                 progress=True,
                 workdir=util.Interpolate(self.monorepo_dir),
@@ -176,7 +192,7 @@ class LLVMBuildFactory(BuildFactory):
         kwargs.pop('workdir', None)
 
         self.addStep(steps.Git(
-                name=name,
+                name=self.makeStepName(name),
                 repourl=_repourl,
                 progress=True,
                 workdir=util.Interpolate(src_dir),
