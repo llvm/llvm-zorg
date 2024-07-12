@@ -608,6 +608,7 @@ def getCmakeExBuildFactory(
         vs = None,                      # VS tools environment variable if using MSVC.
         vs_arch = None,
         clean = False,                  # Do clean build flag.
+        repo_profiles = "default",      # The source code repository profiles.
         extra_git_args = None,          # Extra parameters for steps.Git step (such as 'config', 'workdir', etc.)
         llvm_srcdir = None,             # A custom LLVM src directory within %(prop:builddir)s of the builder.
         src_to_build_dir = None,
@@ -723,6 +724,13 @@ def getCmakeExBuildFactory(
 
         clean : boolean
             Alsways do a clean build (default is False).
+
+        repo_profiles : string, optional
+            A name of the source code profile to get from the remote repository. Currently is supported only "default"
+            profile and None. Default is "default".
+
+            If None is passed, no the repository checkout steps will be added to the factory workflow. This is useful
+            for the nested factories when the single repo is shared between them.
 
         extra_git_args : dict, optional
             Provide extra arguments for the Git step (default is None).
@@ -877,15 +885,6 @@ def getCmakeExBuildFactory(
                 "objdir"                : util.Interpolate(f.obj_dir),
             }
         ),
-        # Remove the source code for a clean checkout if requested by property.
-        steps.RemoveDirectory(
-            name            = 'clean-src-dir',
-            dir             = util.Interpolate(f.monorepo_dir),
-            description     = ["Remove", util.Interpolate(f.monorepo_dir), "directory"],
-            haltOnFailure   = False,
-            flunkOnFailure  = False,
-            doStepIf        = util.Property("clean", False) == True,
-        ),
 
         # This is an incremental build, unless otherwise has been requested.
         # Remove obj dirs for a clean build.
@@ -902,9 +901,22 @@ def getCmakeExBuildFactory(
     # Let's start from getting the source code. We share it between all stages.
 
     # Add the Git step.
-    extra_git_args = extra_git_args or {}
+    if repo_profiles == "default":
+        f.addSteps([
+            # Remove the source code for a clean checkout if requested by property.
+            steps.RemoveDirectory(
+                name            = f.makeStepName('clean-src-dir'),
+                dir             = f.monorepo_dir,
+                description     = ["Remove", f.monorepo_dir, "directory"],
+                haltOnFailure   = False,
+                flunkOnFailure  = False,
+                doStepIf        = util.Property("clean", False) == True,
+            ),
+        ])
 
-    f.addGetSourcecodeSteps(**extra_git_args)
+        extra_git_args = extra_git_args or {}
+
+        f.addGetSourcecodeSteps(**extra_git_args)
 
     # Add custom pre-configuration steps if specified.
     if pre_configure_steps:
