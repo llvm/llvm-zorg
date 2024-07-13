@@ -99,6 +99,7 @@ FRESH_CLANG_PATH=${ROOT}/build_default/bin
 
 echo @@@BUILD_STEP build standalone compiler-rt@@@
 mkdir -p compiler_rt_build
+# Standalone build as in https://compiler-rt.llvm.org/
 cmake -B compiler_rt_build -GNinja \
   -DCMAKE_C_COMPILER=${FRESH_CLANG_PATH}/clang \
   -DCMAKE_CXX_COMPILER=${FRESH_CLANG_PATH}/clang++ \
