@@ -90,7 +90,7 @@ LIT_FILTER_OUT='(AddressSanitizer|asan|ubsan)' \
   build_and_test "debug" "-DCOMPILER_RT_DEBUG=ON"
 
 # Copied from buildbot_standard.sh, where it was not tested as well.
-build "tsan_debug" "-DCOMPILER_RT_DEBUG=ON -DCOMPILER_RT_TSAN_DEBUG_OUTPUT=ON -DLLVM_INCLUDE_TESTS=OFF"
+build "tsan_debug" "-DCOMPILER_RT_DEBUG=ON -DCOMPILER_RT_TSAN_DEBUG_OUTPUT=ON -DLLVM_INCLUDE_TESTS=OFF -DCOMPILER_RT_BUILD_LIBFUZZER=OFF"
 
 build_and_test "default" ""
 
