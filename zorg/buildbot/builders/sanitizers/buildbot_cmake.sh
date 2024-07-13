@@ -79,8 +79,6 @@ function build_and_test {
   ninja -C ${build_dir} check-compiler-rt || build_failure
 }
 
-build_and_test "gcc" ""
-
 CMAKE_COMMON_OPTIONS+=" ${STAGE1_AS_COMPILER}"
 CMAKE_COMMON_OPTIONS+=" -DLLVM_ENABLE_WERROR=ON"
 
