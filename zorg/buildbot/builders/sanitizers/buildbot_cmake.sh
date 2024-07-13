@@ -56,17 +56,17 @@ CMAKE_COMMON_OPTIONS+=" ${CMAKE_ARGS}"
 buildbot_update
 
 function build {
-  local build_dir="build_${1}"
+  BUILD_DIR="build_${1}"
   echo "@@@BUILD_STEP build compiler-rt ${1}@@@"
-  [[ ! -f "${build_dir}/delete_next_time" ]] || rm -rf "${build_dir}"
-  mkdir -p ${build_dir}
+  [[ ! -f "${BUILD_DIR}/delete_next_time" ]] || rm -rf "${BUILD_DIR}"
+  mkdir -p ${BUILD_DIR}
 
-  cmake -B ${build_dir} ${CMAKE_COMMON_OPTIONS} ${2} $LLVM || {
-    touch "${build_dir}/delete_next_time"
+  cmake -B ${BUILD_DIR} ${CMAKE_COMMON_OPTIONS} ${2} $LLVM || {
+    touch "${BUILD_DIR}/delete_next_time"
     build_failure
   }
-  ninja -C ${build_dir} || {
-    touch "${build_dir}/delete_next_time"
+  ninja -C ${BUILD_DIR} || {
+    touch "${BUILD_DIR}/delete_next_time"
     build_failure
   }
 }
@@ -74,9 +74,8 @@ function build {
 function build_and_test {
   build "${1}" "${2}"
 
-  local build_dir="build_${1}"
   echo "@@@BUILD_STEP test compiler-rt ${1}@@@"
-  ninja -C ${build_dir} check-compiler-rt || build_failure
+  ninja -C ${BUILD_DIR} check-compiler-rt || build_failure
 }
 
 CMAKE_COMMON_OPTIONS+=" ${STAGE1_AS_COMPILER}"
@@ -95,7 +94,7 @@ build "tsan_debug" "-DCOMPILER_RT_DEBUG=ON -DCOMPILER_RT_TSAN_DEBUG_OUTPUT=ON -D
 
 build_and_test "default" ""
 
-FRESH_CLANG_PATH=${ROOT}/build_default/bin
+FRESH_CLANG_PATH=${ROOT}/${BUILD_DIR}/bin
 
 echo @@@BUILD_STEP build standalone compiler-rt@@@
 mkdir -p compiler_rt_build
