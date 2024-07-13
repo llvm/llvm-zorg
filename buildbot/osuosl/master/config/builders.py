@@ -1,6 +1,6 @@
 from importlib import reload
 
-from buildbot.plugins import util
+from buildbot.plugins import util, steps
 
 from zorg.buildbot.builders import ClangBuilder
 from zorg.buildbot.builders import FlangBuilder
@@ -3268,4 +3268,148 @@ all += [
                       "-DLLVM_ENABLE_LLD=ON",
                       "-DCMAKE_CXX_FLAGS=-gmlt",
                       "-DLLVM_CCACHE_BUILD=ON"])},
+
+    # LLDB remote-linux builders.
+    
+    # LLDB remote-linux on Ubuntu Linux host.
+    # The first stage uses pre-installed latest released Clang (see apt.llvm.org for details).
+    # The second stage uses pre-built cross Aarch64 Clang toolchain from the latest release branch
+    # (see llvm-clang-win-x-aarch64 builder configuration for the details).
+    # The remote host is ARM Cortex A76/A78 board with Ubuntu Linux.
+    {'name': "lldb-remote-linux-ubuntu",
+    'tags'  : ["llvm", "clang", "lldb", "cross", "aarch64"],
+    'collapseRequests': True,
+    'workernames': ["as-builder-9"],
+    'builddir': "lldb-remote-linux-ubuntu",
+    'factory': UnifiedTreeBuilder.getCmakeExBuildFactory(
+                    depends_on_projects = ["llvm", "clang", "lld", "lldb"],
+                    enable_runtimes = None,
+                    checks = [
+                        "check-lldb-unit",
+                        "check-lldb-api",
+                        "check-lldb-shell",
+                    ],
+                    clean = True,
+                    cmake_definitions = {
+                        "CMAKE_BUILD_TYPE"              : "Release",
+                        "CMAKE_C_COMPILER_LAUNCHER"     : "ccache",
+                        "CMAKE_CXX_COMPILER_LAUNCHER"   : "ccache",
+                        "CMAKE_C_COMPILER"              : "clang-18",
+                        "CMAKE_CXX_COMPILER"            : "clang++-18",
+                        "CMAKE_CXX_FLAGS"               : "-D__OPTIMIZE__",
+                        "LLVM_TARGETS_TO_BUILD"         : "AArch64",
+                        "LLVM_DEFAULT_TARGET_TRIPLE"    : "aarch64-unknown-linux-gnu",
+                        "LLVM_INCLUDE_BENCHMARKS"       : "OFF",
+                        "LLVM_PARALLEL_LINK_JOBS"       : 8,
+                        "CLANG_DEFAULT_LINKER"          : "lld",
+
+                        "LLDB_TEST_ARCH"                : "aarch64",
+                        "LLDB_TEST_COMPILER"            : util.Interpolate("%(prop:tools_root_path)s/aarch64-clang-18/bin/clang"),
+                        "LLDB_ENABLE_PYTHON"            : "ON",
+                        "LLDB_ENABLE_SWIG"              : "ON",
+                        "LLDB_ENABLE_LIBEDIT"           : "OFF",
+                        "LLDB_ENABLE_CURSES"            : "OFF",
+                        "LLDB_ENABLE_LZMA"              : "OFF",
+                        "LLDB_ENABLE_LIBXML2"           : "OFF",
+                        # No need to build lldb-server during the first stage.
+                        # We are going to build it for the target platform later.
+                        "LLDB_CAN_USE_LLDB_SERVER"      : "OFF",
+                        "LLDB_TEST_USER_ARGS"           : util.Interpolate(
+                                                            "--env;USE_LLVM_TOOLS=1;--env;ARCH_CFLAGS=-mcpu=cortex-a78;" \
+                                                            "--sysroot=%(prop:sysroot_path_aarch64)s;" \
+                                                            "--platform-name;remote-linux;" \
+                                                            "--platform-url;connect://%(prop:remote_test_host)s:1234;" \
+                                                            "--platform-working-dir;/home/ubuntu/lldb-tests"),
+                    },
+                    cmake_options = {
+                    },
+                    install_dir = "native",
+                    post_build_steps =
+                        # Stage 2.
+                        # Build the target's lldb-server (cross compilation with pre-installed/pre-built aarch64 clang).
+                        UnifiedTreeBuilder.getCmakeExBuildFactory(
+                            depends_on_projects = ["clang", "lldb"],
+                            enable_runtimes = None,
+                            checks = None,
+                            clean = True,
+                            repo_profiles = None,
+                            allow_cmake_defaults = False,
+                            hint = "aarch64-lldb",
+                            cmake_definitions = {
+                                "CMAKE_BUILD_TYPE"              : "Release",
+                                "CMAKE_C_COMPILER_LAUNCHER"     : "ccache",
+                                "CMAKE_CXX_COMPILER_LAUNCHER"   : "ccache",
+                                "CMAKE_CXX_FLAGS"               : "-mcpu=cortex-a78 -D__OPTIMIZE__ -fPIC --stdlib=libc++",
+                                "CMAKE_C_FLAGS"                 : "-mcpu=cortex-a78 -D__OPTIMIZE__ -fPIC",
+                                "CMAKE_EXE_LINKER_FLAGS"        : "-Wl,-l:libc++abi.a -Wl,-l:libc++.a -Wl,-l:libunwind.a",
+                                "CMAKE_SHARED_LINKER_FLAGS"     : "-Wl,-l:libc++abi.a -Wl,-l:libc++.a -Wl,-l:libunwind.a",
+                                "CMAKE_CXX_COMPILER"            : util.Interpolate("%(prop:tools_root_path)s/aarch64-clang-18/bin/clang++"),
+                                "CMAKE_C_COMPILER"              : util.Interpolate("%(prop:tools_root_path)s/aarch64-clang-18/bin/clang"),
+                                "CMAKE_ASM_COMPILER"            : util.Interpolate("%(prop:tools_root_path)s/aarch64-clang-18/bin/clang"),
+                                "CMAKE_SYSTEM_NAME"             : "Linux",
+                                "CMAKE_SYSTEM_PROCESSOR"        : "aarch64",
+                                "CMAKE_CROSSCOMPILING"          : "ON",
+
+                                # Required for the native table-gen
+                                "LLVM_NATIVE_TOOL_DIR"          : util.Interpolate("%(prop:builddir)s/build/bin"),
+
+                                "LLVM_DEFAULT_TARGET_TRIPLE"    : "aarch64-unknown-linux-gnu",
+                                "LLVM_HOST_TRIPLE"              : "aarch64-unknown-linux-gnu",
+                                "LLVM_TARGETS_TO_BUILD"         : "AArch64",
+                                "LLVM_ENABLE_ASSERTIONS"        : "ON",
+                                "LLVM_INCLUDE_BENCHMARKS"       : "OFF",
+                                "LLVM_PARALLEL_LINK_JOBS"       : 8,
+                                "CLANG_DEFAULT_LINKER"          : "lld",
+
+                                "LLDB_INCLUDE_TESTS"            : "OFF",
+                                "LLDB_ENABLE_PYTHON"            : "OFF",
+                                "LLDB_ENABLE_LIBEDIT"           : "OFF",
+                                "LLDB_ENABLE_CURSES"            : "OFF",
+                                "LLDB_ENABLE_LZMA"              : "OFF",
+
+                                "LLVM_ENABLE_ZLIB"              : "OFF",
+                            },
+                            obj_dir = "build-lldb-server",
+                            targets = ["lldb-server"],
+                            install_dir = util.Interpolate("%(prop:builddir)s/lldb-server-install"),
+                            install_targets = ["install-lldb-server"],
+                            post_finalize_steps = [
+                                steps.ShellSequence(name = "exec-lldb-server",
+                                    commands = [
+                                        util.ShellArg(command=[ "ssh", util.Interpolate("%(prop:remote_test_user)s@%(prop:remote_test_host)s"), "killall lldb-server ; exit 0;" ], logname="stdio"),
+                                        util.ShellArg(command=[ "scp", "lldb-server", util.Interpolate("%(prop:remote_test_user)s@%(prop:remote_test_host)s:~/lldb-server") ], logname="stdio"),
+                                        util.ShellArg(command=[ "ssh", util.Interpolate("%(prop:remote_test_user)s@%(prop:remote_test_host)s"), "chmod +x ~/lldb-server" ], logname="stdio"),
+                                        util.ShellArg(command=[ "ssh", util.Interpolate("%(prop:remote_test_user)s@%(prop:remote_test_host)s"),
+                                                                    "~/lldb-server p --log-channels 'lldb all' --listen '*:1234' " \
+                                                                    "--server --min-gdbserver-port 1236 --max-gdbserver-port 1246 " \
+                                                                    "--log-file ./lldb-server.log > /dev/null 2>&1 &" ], logname="stdio"),
+                                    ],
+                                    workdir = util.Interpolate("%(prop:builddir)s/lldb-server-install/bin"),
+                                    description = "execute lldb-server on remote target",
+                                    haltOnFailure = True,
+                                ),
+                            ],
+                        ),
+                    post_finalize_steps = [
+                        #Note: add the following line into the /etc/sudoers file on the remote target
+                        # to allow rebooting without entering the sudo's password:
+                        # [/etc/sudoers]
+                        # ...
+                        # ubuntu ALL=NOPASSWD:/sbin/reboot
+                        steps.ShellCommand(name = "restart-target-finalize",
+                            command = [ "ssh", util.Interpolate("%(prop:remote_test_user)s@%(prop:remote_test_host)s"),
+                                        "((sleep 5 && sudo reboot) > /dev/null 2>&1 &); exit 0;"
+                            ],
+                            alwaysRun = True,
+                        ),
+                    ],
+                    env = {
+                        'CCACHE_DIR' : util.Interpolate("%(prop:builddir)s/ccache-db"),
+                        # TMP/TEMP within the build dir (to utilize a ramdisk).
+                        'TMP'        : util.Interpolate("%(prop:builddir)s/build"),
+                        'TEMP'       : util.Interpolate("%(prop:builddir)s/build"),
+                        'LIT_OPTS'   : "-a -v --threads=8",
+                    },
+                )
+        },
 ]
