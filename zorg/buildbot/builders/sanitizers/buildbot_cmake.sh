@@ -56,7 +56,13 @@ CMAKE_COMMON_OPTIONS+=" ${CMAKE_ARGS}"
 buildbot_update
 
 function build {
-  BUILD_DIR="build_${1}"
+  if [[ ${CMAKE_COMMON_OPTIONS} =~ "LLVM_CCACHE_BUILD=ON" ]] ; then
+    BUILD_DIR=build_default
+    rm -rf ${BUILD_DIR}
+  else
+    BUILD_DIR="build_${1}"
+  fi
+  
   echo "@@@BUILD_STEP build compiler-rt ${1}@@@"
   [[ ! -f "${BUILD_DIR}/delete_next_time" ]] || rm -rf "${BUILD_DIR}"
   mkdir -p ${BUILD_DIR}
