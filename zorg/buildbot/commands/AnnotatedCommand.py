@@ -165,7 +165,7 @@ class AnnotatedBuildStep(buildstep.BuildStep):
             # update the summary one last time, make sure that completes,
             # and then don't update it any more.
             self.updateSummary()
-            yield self.updateSummary.stop()
+            yield self._update_summary_debouncer.stop()
 
             # Update step status in the database.
             yield self.finishStep()
@@ -173,6 +173,8 @@ class AnnotatedBuildStep(buildstep.BuildStep):
         debuglog("AnnotatedBuildStep::startStep() completed '{}': "
                  "stepid={}, buildid={}, results={}".format(
                  self.name, self.stepid, self.build.buildid, self.results))
+
+        return self.results
 
     def requestFinish(self, status=None):
         debuglog("AnnotatedBuildStep::requestFinish({}): '{}': "
