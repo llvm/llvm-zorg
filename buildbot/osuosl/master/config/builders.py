@@ -3041,7 +3041,6 @@ all += [
     # flang FortranRuntime CUDA Offload builders.
     {'name' : "flang-runtime-cuda-gcc",
     'tags'  : ["flang", "runtime"],
-    'collapseRequests': True,
     'workernames' : ["as-builder-7"],
     'builddir': "flang-runtime-cuda-gcc",
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
@@ -3076,7 +3075,6 @@ all += [
 
     {'name' : "flang-runtime-cuda-clang",
     'tags'  : ["flang", "runtime"],
-    'collapseRequests': True,
     'workernames' : ["as-builder-7"],
     'builddir': "flang-runtime-cuda-clang",
     'factory' : StagedBuilder.getCmakeBuildFactory(
@@ -3278,7 +3276,6 @@ all += [
     # The remote host is ARM Cortex A76/A78 board with Ubuntu Linux.
     {'name': "lldb-remote-linux-ubuntu",
     'tags'  : ["llvm", "clang", "lldb", "cross", "aarch64"],
-    'collapseRequests': True,
     'workernames': ["as-builder-9"],
     'builddir': "lldb-remote-linux-ubuntu",
     'factory': UnifiedTreeBuilder.getCmakeExBuildFactory(
