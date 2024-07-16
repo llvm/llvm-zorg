@@ -38,9 +38,8 @@ include_config
 echo @@@BUILD_STEP Info@@@
 (
   set +e
+  date
   env | sort
-  echo
-  uptime
   echo
   ulimit -a
   echo
@@ -48,11 +47,19 @@ echo @@@BUILD_STEP Info@@@
   echo
   ccache -ps
   echo
-  hostname -f
+  lscpu
+  echo
+  g++ --version
+  echo
+  cmake --version
+  echo
   uname -a
   echo
-  lscpu
-  exit 0
+  ld --version
+  echo
+  uptime
+  echo
+  hostname -f
 )
 
 echo @@@BUILD_STEP Prepare@@@
