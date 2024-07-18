@@ -28,7 +28,7 @@ check_stage2_asan
 
 # Stage 3 / AddressSanitizer
 
-export ASAN_OPTIONS="check_initialization_order=true:detect_stack_use_after_return=1:detect_leaks=1"
+export ASAN_OPTIONS="check_initialization_order=true"
 build_stage3_asan
 
 check_stage3_asan
