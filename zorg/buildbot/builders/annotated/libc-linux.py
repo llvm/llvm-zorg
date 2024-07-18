@@ -99,16 +99,15 @@ def main(argv):
             cmake_args.extend(['-DLLVM_LIBC_FULL_BUILD=ON']),
 
         if riscv32_build:
-            cmake_args.append('-DCMAKE_C_FLAGS=-mabi=ilp32d -march=rv32imafdc \
-                               --target=riscv32-unknown-linux-gnu --sysroot=/opt/riscv/sysroot \
-                               --gcc-toolchain=/opt/riscv')
-            cmake_args.append('-DCMAKE_CXX_FLAGS=-mabi=ilp32d -march=rv32imafdc \
-                               --target=riscv32-unknown-linux-gnu --sysroot=/opt/riscv/sysroot \
-                               --gcc-toolchain=/opt/riscv')
+            cmake_args.append('-DCMAKE_C_FLAGS=-mabi=ilp32d -march=rv32imafdc --target=riscv32-unknown-linux-gnu --sysroot=/opt/riscv/sysroot --gcc-toolchain=/opt/riscv')
+            cmake_args.append('-DCMAKE_CXX_FLAGS=-mabi=ilp32d -march=rv32imafdc --target=riscv32-unknown-linux-gnu --sysroot=/opt/riscv/sysroot --gcc-toolchain=/opt/riscv')
             cmake_args.append('-DCMAKE_EXE_LINKER_FLAGS_INIT=-fuse-ld=lld')
             cmake_args.append('-DCMAKE_CROSSCOMPILING_EMULATOR={}/cross.sh'.format(os.getenv('HOME')))
             cmake_args.append('-DLIBC_TARGET_TRIPLE=riscv32-unknown-linux-gnu')
             cmake_args.append('-DCMAKE_SYSTEM_NAME=Linux')
+            cmake_args.append('-DLLVM_HOST_TRIPLE=riscv32-unknown-linux-gnu')
+            cmake_args.append('-DLLVM_TARGETS_TO_BUILD=RISCV')
+            cmake_args.append('-DCMAKE_LINKER=/usr/bin/ld.lld')
 
         run_command(['cmake', os.path.join(source_dir, 'llvm')] + cmake_args)
 
