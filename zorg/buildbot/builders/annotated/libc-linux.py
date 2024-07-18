@@ -36,6 +36,8 @@ def main(argv):
                     help='Build with address sanitizer enabled.')
     ap.add_argument('--debug', action='store_true', default=False,
                     help='Build in debug mode.')
+    ap.add_argument('--jobs', action='store', default=None,
+                    help='Number of jobs to run in parallel')
     args, _ = ap.parse_known_args()
 
     source_dir = os.path.join('..', 'llvm-project')
@@ -47,6 +49,7 @@ def main(argv):
     riscv_build = is_riscv_builder(builder_name)
     x86_64_build = is_x86_64_builder(builder_name)
     riscv32_build = is_riscv32_builder(builder_name)
+    jobs = args.jobs
 
     if gcc_build:
         cc = 'gcc'
@@ -113,45 +116,45 @@ def main(argv):
 
     if lint_build:
         with step('lint libc'):
-            run_command(['ninja', 'libc-lint'])
+            run_ninja_command(jobs=0, args='libc-lint')
         return
 
     with step('build libc'):
-       run_command(['ninja', 'libc'])
+       run_ninja_command(jobs=0, args='libc')
 
     if fullbuild:
        with step('build libc-startup'):
-          run_command(['ninja', 'libc-startup'])
+          run_ninja_command(args.jobs, 'libc-startup')
 
     if runtimes_build:
         with step('check-libc'):
-            run_command(['ninja', 'check-libc'])
+            run_ninja_command(args.jobs, 'check-libc')
     else:
         with step('libc-unit-tests'):
-            run_command(['ninja', 'libc-unit-tests'])
+            run_ninja_command(args.jobs, 'libc-unit-tests')
 
     if fullbuild and not args.asan:
         with step('libc-api-test'):
-            run_command(['ninja', 'libc-api-test'])
+            run_ninja_command(args.jobs, 'libc-api-test')
         if gcc_build or ('riscv' in builder_name):
             # The rest of the targets are either not yet gcc-clean or
             # not yet availabe on riscv.
             return
         with step('libc-integration-tests'):
-            run_command(['ninja', 'libc-integration-tests'])
+            run_ninja_command(args.jobs, 'libc-integration-tests')
         with step('libc-scudo-integration-test'):
-            run_command(['ninja', 'libc-scudo-integration-test'])
+            run_ninja_command(args.jobs, 'libc-scudo-integration-test')
         with step('AOR Tests'):
             aor_dir = os.path.join(source_dir, 'libc', 'AOR_v20.02')
             # Remove the AOR build dir.
             util.clean_dir(os.path.join(aor_dir, 'build'))
             run_command(['make', 'check'], directory=aor_dir)
         with step('Benchmark Utils Tests'):
-            run_command(['ninja', 'libc-benchmark-util-tests'])
+            run_ninja_command(args.jobs, 'libc-benchmark-util-tests')
     
     if not (fullbuild or runtimes_build) and x86_64_build:
         with step('libc-fuzzer'):
-            run_command(['ninja', 'libc-fuzzer'])
+            run_ninja_command(args.jobs, 'libc-fuzzer')
 
 
 @contextmanager
@@ -177,6 +180,12 @@ def step(step_name, halt_on_fail=False):
 def run_command(cmd, directory='.'):
     util.report_run_cmd(cmd, cwd=directory)
 
+def run_ninja_command(jobs, args, directory='.'):
+    cmd = 'ninja'
+    if jobs:
+        cmd += f'-j{jobs}'
+    cmd += ' ' + args
+    run_command(cmd, directory=directory)
 
 if __name__ == '__main__':
     sys.path.append(os.path.dirname(__file__))

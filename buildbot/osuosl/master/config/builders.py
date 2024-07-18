@@ -2246,7 +2246,7 @@ all += [
     'factory' : AnnotatedBuilder.getAnnotatedBuildFactory(
                     script="libc-linux.py",
                     depends_on_projects=['llvm', 'libc'],
-                    extra_args=['--debug'])},
+                    extra_args=['--debug', '--jobs=8'])},
 
 # Flang builders.
 
