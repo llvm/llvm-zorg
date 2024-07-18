@@ -6,6 +6,6 @@ from zorg.buildbot.builders import SanitizerBuilder
 
 # Just check that we can instantiate the build factors, what else can we do?
 
-print ClangBuilder.getClangBuildFactory()
+print(ClangBuilder.getClangCMakeBuildFactory())
 
-print SanitizerBuilder.getSanitizerBuildFactory()
+print(SanitizerBuilder.getSanitizerBuildFactory())
