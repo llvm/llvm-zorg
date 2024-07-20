@@ -11,11 +11,16 @@ import zorg
 from zorg.buildbot.builders import UnifiedTreeBuilder
 from zorg.buildbot.process.factory import LLVMBuildFactory
 
+#Note:
+# - this function currently supports only %(kw:*)s formatting for the Interpolates.
+# - this function does not support the substitutions for arguments (such as '%(kw:arg:-)s' & etc).
+# - this function does not support the other types of the renderables except Interpolate
+#   (such as WithProperties and os on).
 def partly_rendered(r):
     if isinstance(r, buildbot.process.properties.Interpolate):
         interpolations = {}
         for k, v in r.kwargs.items():
-            interpolations[f"kw:{k}"] = v
+            interpolations[f"kw:{k}"] = v if v else ""
         return r.fmtstring % interpolations
     elif type(r) == str:
         return r
@@ -90,7 +95,7 @@ assert factory_has_num_steps(f, 7)
 assert factory_has_step(f, "set-props")
 assert factory_has_step(f, "clean-src-dir")
 assert factory_has_step(f, "clean-obj-dir")
-assert factory_has_step(f, "Checkout the source code")
+assert factory_has_step(f, "checkout")
 
 assert factory_has_step(f, "cmake-configure")
 assert factory_has_step(f, "cmake-configure", hasarg = "generator", contains = "Ninja")
@@ -193,7 +198,7 @@ assert factory_has_num_steps(f, 13)
 assert factory_has_step(f, "set-props")
 assert factory_has_step(f, "clean-src-dir")
 assert factory_has_step(f, "clean-obj-dir")
-assert factory_has_step(f, "Checkout the source code")
+assert factory_has_step(f, "checkout")
 
 assert factory_has_step(f, "clean-install-dir")
 assert factory_has_step(f, "cmake-configure")
@@ -231,13 +236,13 @@ f = UnifiedTreeBuilder.getCmakeExBuildFactory(vs = "autodetect")
 print(f"factory with VS environment autodetect: {f}\n")
 
 assert factory_has_num_steps(f, 8)
-assert factory_has_step(f, "set-pros.vs_env")
+assert factory_has_step(f, "set-props.vs_env")
 
 f = UnifiedTreeBuilder.getCmakeExBuildFactory(vs = "manual", vs_arch = "amd64")
 print(f"factory with VS environment manual: {f}\n")
 
 assert factory_has_num_steps(f, 8)
-assert factory_has_step(f, "set-pros.vs_env")
+assert factory_has_step(f, "set-props.vs_env")
 
 # Check custom CMake generator
 f = UnifiedTreeBuilder.getCmakeExBuildFactory(generator = "Unix Makefiles")
@@ -350,3 +355,13 @@ assert factory_has_step(f, "post_build_step1", hasarg = "property", contains = "
 assert factory_has_step(f, "post_build_step2", hasarg = "command", contains = ["ls"])
 assert factory_has_step(f, "pre_install_step", hasarg = "property", contains = "SomeProperty")
 assert factory_has_step(f, "post_finalize_step", hasarg = "property", contains = "SomeProperty")
+
+
+# Hint
+f = UnifiedTreeBuilder.getCmakeExBuildFactory(
+        hint = "stage-hint"
+    )
+print(f"Hint option: {f}\n")
+
+assert factory_has_step(f, "cmake-configure-stage-hint")
+assert factory_has_step(f, "build-default-stage-hint")

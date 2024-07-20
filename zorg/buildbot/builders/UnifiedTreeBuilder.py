@@ -800,6 +800,8 @@ def getCmakeExBuildFactory(
                 install => install-stageX
                 & etc.
 
+            Note: cannot be a renderable object.
+
         Returns
         -------
 
@@ -842,6 +844,7 @@ def getCmakeExBuildFactory(
                                                  "The 'pre_install_steps' argument must be a list() or BuildFactory()."
     assert not post_finalize_steps or isinstance(post_finalize_steps, (list, BuildFactory)), \
                                                  "The 'post_finalize_steps' argument must be a list() or BuildFactory()."
+    assert not hint or isinstance(hint, str),    "The 'hint' argument must be a str object."
 
     # This function extends the current workflow with provided custom steps.
     def extend_with_custom_steps(fc, s):
@@ -994,7 +997,7 @@ def getCmakeExBuildFactory(
             workdir         = f.obj_dir
         ))
 
-    hint_suffix = f"-{hint}" if hint else None
+    hint_suffix = f"-{hint}" if hint else ""
     # Build Commands.
     #NOTE: please note that the default target (.) cannot be specified by the IRenderable object.
     for target in targets:
@@ -1008,7 +1011,7 @@ def getCmakeExBuildFactory(
 
         f.addStep(
             steps.CMake(
-                name            = util.Interpolate("build-%(kw:title)s%(kw:hint:-)s",
+                name            = util.Interpolate("build-%(kw:title)s%(kw:hint)s",
                                                    title = target_title, hint = hint_suffix),
                 options         = cmake_build_options,
                 description     = ["Build target", target_title],
@@ -1025,7 +1028,7 @@ def getCmakeExBuildFactory(
     for target in checks:
         f.addStep(
             LitTestCommand(
-                name            = util.Interpolate("test-%(kw:title)s%(kw:hint:-)s",
+                name            = util.Interpolate("test-%(kw:title)s%(kw:hint)s",
                                                    title = target, hint = hint_suffix),
                 command         = [steps.CMake.DEFAULT_CMAKE, "--build", ".", "--target", target],
                 description     = ["Test just built components:", target],
@@ -1039,7 +1042,7 @@ def getCmakeExBuildFactory(
     for target, cmd in checks_on_target:
         f.addStep(
             LitTestCommand(
-                name            = util.Interpolate("test-%(kw:title)s%(kw:hint:-)s",
+                name            = util.Interpolate("test-%(kw:title)s%(kw:hint)s",
                                                    title = target, hint = hint_suffix),
                 command         = cmd,
                 description     = ["Test just built components:", target],
@@ -1059,7 +1062,7 @@ def getCmakeExBuildFactory(
             f.addStep(
                 steps.CMake(
                     name            = util.Transform(lambda s: s if s.startswith("install") else f"install-{s}",
-                                                     util.Interpolate("%(kw:title)s%(kw:hint:-)s", title = target, hint = hint_suffix)),
+                                                     util.Interpolate("%(kw:title)s%(kw:hint)s", title = target, hint = hint_suffix)),
                     options         = ["--build", ".", "--target", target],
                     description     = ["Install just built components:", target],
                     haltOnFailure   = False,
