@@ -108,6 +108,7 @@ def main(argv):
             cmake_args.append('-DLLVM_HOST_TRIPLE=riscv32-unknown-linux-gnu')
             cmake_args.append('-DLLVM_TARGETS_TO_BUILD=RISCV')
             cmake_args.append('-DCMAKE_LINKER=/usr/bin/ld.lld')
+            cmake_args.append('-DLLVM_LIBC_MPFR_INSTALL_PATH={}/gmp+mpfr/'.format(os.getenv('HOME')))
 
         run_command(['cmake', os.path.join(source_dir, 'llvm')] + cmake_args)
 
@@ -148,7 +149,7 @@ def main(argv):
             run_command(['make', 'check'], directory=aor_dir)
         with step('Benchmark Utils Tests'):
             run_command(['ninja', 'libc-benchmark-util-tests'])
-    
+
     if not (fullbuild or runtimes_build) and x86_64_build:
         with step('libc-fuzzer'):
             run_command(['ninja', 'libc-fuzzer'])
