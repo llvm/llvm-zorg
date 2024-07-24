@@ -2239,10 +2239,10 @@ all += [
                     depends_on_projects=['llvm', 'libc'],
                     extra_args=['--debug'])},
 
-    {'name' : "libc-riscv32-qemu-debian-dbg",
+    {'name' : "libc-riscv32-qemu-yocto-fullbuild-dbg",
     'tags'  : ["libc"],
     'workernames' : ["rv32gc-qemu-system"], # TODO: workername?
-    'builddir': "libc-riscv32-qemu-debian-dbg",
+    'builddir': "libc-riscv32-qemu-yocto-fullbuild-dbg",
     'factory' : AnnotatedBuilder.getAnnotatedBuildFactory(
                     script="libc-linux.py",
                     depends_on_projects=['llvm', 'libc'],
