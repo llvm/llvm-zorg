@@ -42,6 +42,7 @@ def get_all():
 
         # AArch64 Windows Microsoft Surface X Pro
         create_worker("linaro-armv8-windows-msvc-02", max_builds=1),
+        create_worker("linaro-armv8-windows-msvc-03", max_builds=1),
         create_worker("linaro-armv8-windows-msvc-04", max_builds=1),
         create_worker("linaro-armv8-windows-msvc-05", max_builds=1),
 

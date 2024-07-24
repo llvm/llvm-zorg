@@ -591,6 +591,26 @@ all = [
                         "-DMLIR_RUN_ARM_SVE_TESTS=True",
                         "-DLLVM_LIT_ARGS='-v'"])},
 
+    {'name' : "clang-arm64-windows-msvc-testsuite",
+    'tags'  : ["clang"],
+    'workernames' : ["linaro-armv8-windows-msvc-03"],
+    'builddir': "clang-arm64-windows-msvc-testsuite",
+    'factory' : ClangBuilder.getClangCMakeBuildFactory(
+                    vs="manual",
+                    checks=[],
+                    clean=False,
+                    checkout_flang=True,
+                    checkout_lld=True,
+                    runTestSuite=True,
+                    testWithLNT=False,
+                    testsuite_flags=["-DTEST_SUITE_SUBDIRS='Fortran'"],
+                    extra_cmake_args=[
+                        "-DCMAKE_TRY_COMPILE_CONFIGURATION=Release",
+                        "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
+                        "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
+                        "-DCLANG_DEFAULT_LINKER=lld",
+                        "-DCOMPILER_RT_BUILD_SANITIZERS=OFF"])},
+
     {'name' : "clang-arm64-windows-msvc-2stage",
     'tags'  : ["clang"],
     'workernames' : ["linaro-armv8-windows-msvc-02"],
