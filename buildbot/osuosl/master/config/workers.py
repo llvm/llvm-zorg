@@ -188,10 +188,17 @@ def get_all():
 
         # Windows Server on Xeon Gold 6130 (2x2.1GHz), 128Gb of RAM
         create_worker("as-builder-2", properties={
-                        'remote_test_host'      : 'jetson-agx-2197.lab.llvm.org',
-                        'remote_test_user'      : 'ubuntu',
-                        'sysroot_path_aarch64'  : 'c:/buildbot/fs/jetson-agx-ubuntu',
-                        'sysroot_path_armv7'    : 'c:/buildbot/fs/jetson-tk1-arm-ubuntu',
+                        # Post-commit builder target settings.
+                        'remote_host_agx'       : 'jetson-agx-2197.lab.llvm.org',
+                        'remote_user_agx'       : 'ubuntu',
+                        # Release builder target settings.
+                        'remote_host_tx2_rel'   : 'jetson8.lab.llvm.org',
+                        'remote_user_tx2_rel'   : 'ubuntu',
+                        # Available target's sysroots.
+                        'sysroot_path_tk1'      : 'c:/buildbot/fs/jetson-tk1-arm-ubuntu',
+                        'sysroot_path_tx2'      : 'c:/buildbot/fs/jetson-tx2-ubuntu',
+                        'sysroot_path_agx'      : 'c:/buildbot/fs/jetson-agx-ubuntu',
+
                         'zlib_root_path'        : 'c:/buildbot/fs/zlib-win32',
                      },
                      max_builds=1),

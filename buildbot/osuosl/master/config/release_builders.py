@@ -141,12 +141,22 @@ all = [
 
     {'name' : "llvm-clang-win-x-aarch64-release",
     'tags'  : ["clang", "llvm", "compiler-rt", "cross", "aarch64"],
-    'workernames' : ["as-builder-6"],
+    'workernames' : ["as-builder-2"],
     'builddir': "x-aarch64-rel",
-    'factory' : XToolchainBuilder.getCmakeWithMSVCBuildFactory(
-                    vs="autodetect",
-                    clean=True,
-                    checks=[
+    'factory' : UnifiedTreeBuilder.getCmakeExBuildFactory(
+                    depends_on_projects = [
+                        'llvm',
+                        'compiler-rt',
+                        'clang',
+                        'clang-tools-extra',
+                        'libunwind',
+                        'libcxx',
+                        'libcxxabi',
+                        'lld', 
+                    ],
+                    vs = "autodetect",
+                    clean = True,
+                    checks = [
                         "check-llvm",
                         "check-clang",
                         "check-lld",
@@ -156,27 +166,50 @@ all = [
                         ("libunwind",
                             ["python", "bin/llvm-lit.py",
                             "-v", "-vv", "--threads=32",
-                            "runtimes/runtimes-aarch64-unknown-linux-gnu-bins/libunwind/test"]),
+                            "runtimes/runtimes-aarch64-unknown-linux-gnu-bins/libunwind/test",
+                            ]),
                         ("libc++abi",
                             ["python", "bin/llvm-lit.py",
                             "-v", "-vv", "--threads=32",
-                            "runtimes/runtimes-aarch64-unknown-linux-gnu-bins/libcxxabi/test"]),
+                            "runtimes/runtimes-aarch64-unknown-linux-gnu-bins/libcxxabi/test",
+                            ]),
                         ("libc++",
                             ['python', 'bin/llvm-lit.py',
                             '-v', '-vv', '--threads=32',
                             'runtimes/runtimes-aarch64-unknown-linux-gnu-bins/libcxx/test',
                             ])
                     ],
-                    extra_configure_args=[
-                        "-DLLVM_TARGETS_TO_BUILD=AArch64",
-                        "-DTOOLCHAIN_TARGET_TRIPLE=aarch64-unknown-linux-gnu",
-                        util.Interpolate("-DTOOLCHAIN_TARGET_SYSROOTFS=%(prop:sysroot_path_aarch64)s"),
-                        util.Interpolate("-DZLIB_ROOT=%(prop:zlib_root_path)s"),
-                        "-DLLVM_LIT_ARGS=-v -vv --threads=32",
-                        util.Interpolate("%(prop:remote_test_host:+-DREMOTE_TEST_HOST=)s%(prop:remote_test_host:-)s"),
-                        util.Interpolate("%(prop:remote_test_user:+-DREMOTE_TEST_USER=)s%(prop:remote_test_user:-)s"),
+                    cmake_definitions = {
+                        "LLVM_TARGETS_TO_BUILD"         : "AArch64",
+                        "LLVM_INCLUDE_BENCHMARKS"       : "OFF",
+                        "LLVM_LIT_ARGS"                 : "-v -vv --threads=32 --time-tests",
+                        "TOOLCHAIN_TARGET_TRIPLE"       : "aarch64-unknown-linux-gnu",
+                        "TOOLCHAIN_TARGET_SYSROOTFS"    : util.Interpolate("%(prop:sysroot_path_tx2)s"),
+                        "REMOTE_TEST_HOST"              : util.Interpolate("%(prop:remote_host_tx2_rel)s"),
+                        "REMOTE_TEST_USER"              : util.Interpolate("%(prop:remote_user_tx2_rel)s"),
+                        "ZLIB_ROOT"                     : util.Interpolate("%(prop:zlib_root_path)s"),
+                        "CMAKE_CXX_FLAGS"               : "-D__OPTIMIZE__",
+                        "CMAKE_C_COMPILER_LAUNCHER"     : "ccache",
+                        "CMAKE_CXX_COMPILER_LAUNCHER"   : "ccache",
+                    },
+                    cmake_options = [
+                        "-C", util.Interpolate("%(prop:srcdir_relative)s/clang/cmake/caches/CrossWinToARMLinux.cmake"),
                     ],
-                    cmake_cache="../llvm-project/clang/cmake/caches/CrossWinToARMLinux.cmake")},
+                    install_dir = "install",
+                    post_finalize_steps = [
+                        #Note: requires for Jetson TX2/Linux Ubuntu 18.
+                        steps.ShellCommand(name = "restart-target-finalize",
+                            command = [ "ssh", util.Interpolate("%(prop:remote_user_tx2_rel)s@%(prop:remote_host_tx2_rel)s"),
+                                        "((sleep 5 && sudo reboot) > /dev/null 2>&1 &); exit 0;"
+                            ],
+                            alwaysRun = True,
+                        ),
+                    ],
+                    env = {
+                        'CCACHE_DIR' : util.Interpolate("%(prop:builddir)s/ccache-db"),
+                    },
+                )
+        },
 
 # LLD builders.
 
