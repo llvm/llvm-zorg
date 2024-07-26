@@ -619,37 +619,6 @@ all = [
                                       '-DCMAKE_C_COMPILER_TARGET="mips64el-unknown-linux-gnu"',
                                       '-DLLVM_TARGETS_TO_BUILD=Mips'])},
 
-    {'name' : "clang-ppc64be-linux-test-suite",
-    'tags'  : ["clang", "ppc"],
-    'workernames' : ["ppc64be-clang-test-suite"],
-    'builddir': "clang-ppc64be-test-suite",
-    'factory' : TestSuiteBuilder.getTestSuiteBuildFactory(
-                    depends_on_projects=["llvm", "clang", "clang-tools-extra",
-                                         "compiler-rt"],
-                    checks=['check-all', 'check-runtimes'],
-                    extra_configure_args=[
-                        "-DLLVM_ENABLE_ASSERTIONS=ON",
-                        "-DCMAKE_BUILD_TYPE=Release",
-                        "-DLLVM_LIT_ARGS=-v",
-                        "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
-                        "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache"])},
-
-    {'name' : "clang-ppc64be-linux-multistage",
-    'tags'  : ["clang", "ppc"],
-    'workernames' : ["ppc64be-clang-multistage-test"],
-    'builddir': "clang-ppc64be-multistage",
-    'factory' : ClangBuilder.getClangCMakeBuildFactory(
-                    clean=False,
-                    checks=['check-all', 'check-runtimes'],
-                    checkout_lld=False,
-                    useTwoStage=True,
-                    stage1_config='Release',
-                    stage2_config='Release',
-                    extra_cmake_args=[
-                        "-DLLVM_ENABLE_ASSERTIONS=ON",
-                        "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
-                        "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache"])},
-
     {'name' : "clang-ppc64le-linux-test-suite",
     'tags'  : ["clang", "ppc", "ppc64le"],
     'workernames' : ["ppc64le-clang-test-suite"],
@@ -1687,12 +1656,6 @@ all += [
     ],
     'builddir': "sanitizer-aarch64-linux-fuzzer",
     'factory' : SanitizerBuilder.getSanitizerBuildFactory()},
-
-    {'name' : "sanitizer-ppc64be-linux",
-    'tags'  : ["sanitizer", "ppc"],
-    'workernames' : ["ppc64be-sanitizer"],
-    'builddir': "sanitizer-ppc64be",
-    'factory' : SanitizerBuilder.getSanitizerBuildFactory(timeout=1800)},
 
     {'name' : "sanitizer-ppc64le-linux",
     'tags'  : ["sanitizer", "ppc", "ppc64le"],

@@ -13,7 +13,6 @@ def in_script_dir(path):
 
 BOT_ASSIGNMENT = {
     'sanitizer-ppc64le-linux': 'buildbot_cmake.sh',
-    'sanitizer-ppc64be-linux': 'buildbot_cmake.sh',
     'sanitizer-x86_64-linux': 'buildbot_cmake.sh',
     'sanitizer-x86_64-linux-fast': 'buildbot_fast.sh',
     'sanitizer-x86_64-linux-autoconf': 'buildbot_standard.sh',
@@ -33,7 +32,6 @@ BOT_ASSIGNMENT = {
 
 BOT_ADDITIONAL_ENV = {
     'sanitizer-ppc64le-linux': {},
-    'sanitizer-ppc64be-linux': {},
     'sanitizer-x86_64-linux': {},
     'sanitizer-x86_64-linux-fast': {},
     'sanitizer-x86_64-linux-autoconf': {},
