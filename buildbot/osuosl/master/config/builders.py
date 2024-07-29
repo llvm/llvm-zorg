@@ -3342,6 +3342,7 @@ all += [
                         "LLVM_INCLUDE_BENCHMARKS"       : "OFF",
                         "LLVM_PARALLEL_LINK_JOBS"       : 8,
                         "CLANG_DEFAULT_LINKER"          : "lld",
+                        "LLVM_LIT_ARGS"                 : "-v -vv --threads=8",
 
                         "LLDB_TEST_ARCH"                : "aarch64",
                         "LLDB_TEST_COMPILER"            : util.Interpolate("%(prop:tools_root_path)s/aarch64-clang-18/bin/clang"),
@@ -3420,9 +3421,7 @@ all += [
                                         util.ShellArg(command=[ "scp", "lldb-server", util.Interpolate("%(prop:remote_test_user)s@%(prop:remote_test_host)s:~/lldb-server") ], logname="stdio"),
                                         util.ShellArg(command=[ "ssh", util.Interpolate("%(prop:remote_test_user)s@%(prop:remote_test_host)s"), "chmod +x ~/lldb-server" ], logname="stdio"),
                                         util.ShellArg(command=[ "ssh", util.Interpolate("%(prop:remote_test_user)s@%(prop:remote_test_host)s"),
-                                                                    "~/lldb-server p --log-channels 'lldb all' --listen '*:1234' " \
-                                                                    "--server --min-gdbserver-port 1236 --max-gdbserver-port 1246 " \
-                                                                    "--log-file ./lldb-server.log > /dev/null 2>&1 &" ], logname="stdio"),
+                                                                    "~/lldb-server p --listen '*:1234' --server > /dev/null 2>&1 &" ], logname="stdio"),
                                     ],
                                     workdir = util.Interpolate("%(prop:builddir)s/lldb-server-install/bin"),
                                     description = "execute lldb-server on remote target",
@@ -3430,25 +3429,11 @@ all += [
                                 ),
                             ],
                         ),
-                    post_finalize_steps = [
-                        #Note: add the following line into the /etc/sudoers file on the remote target
-                        # to allow rebooting without entering the sudo's password:
-                        # [/etc/sudoers]
-                        # ...
-                        # ubuntu ALL=NOPASSWD:/sbin/reboot
-                        steps.ShellCommand(name = "restart-target-finalize",
-                            command = [ "ssh", util.Interpolate("%(prop:remote_test_user)s@%(prop:remote_test_host)s"),
-                                        "((sleep 5 && sudo reboot) > /dev/null 2>&1 &); exit 0;"
-                            ],
-                            alwaysRun = True,
-                        ),
-                    ],
                     env = {
                         'CCACHE_DIR' : util.Interpolate("%(prop:builddir)s/ccache-db"),
                         # TMP/TEMP within the build dir (to utilize a ramdisk).
                         'TMP'        : util.Interpolate("%(prop:builddir)s/build"),
                         'TEMP'       : util.Interpolate("%(prop:builddir)s/build"),
-                        'LIT_OPTS'   : "-a -v --threads=8",
                     },
                 )
         },
