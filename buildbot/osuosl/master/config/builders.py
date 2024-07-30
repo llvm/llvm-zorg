@@ -2545,6 +2545,9 @@ all += [
     'builddir': "clang-cuda-l4",
     'factory' : AnnotatedBuilder.getAnnotatedBuildFactory(
                     script="/buildbot/cuda-build",
+                    depends_on_projects=['llvm', 'clang', 'compiler-rt',
+                                         'libc', 'libcxx', 'libcxxabi',
+                                         'libunwind', 'lld', 'offload'],
                     checkout_llvm_sources=False)},
 
     {'name' : "clang-cuda-p4",
@@ -2553,6 +2556,9 @@ all += [
     'builddir': "clang-cuda-p4",
     'factory' : AnnotatedBuilder.getAnnotatedBuildFactory(
                     script="/buildbot/cuda-build",
+                    depends_on_projects=['llvm', 'clang', 'compiler-rt',
+                                         'libc', 'libcxx', 'libcxxabi',
+                                         'libunwind', 'lld', 'offload'],
                     checkout_llvm_sources=False)},
 
     {'name' : "clang-cuda-t4",
@@ -2561,9 +2567,12 @@ all += [
     'builddir': "clang-cuda-t4",
     'factory' : AnnotatedBuilder.getAnnotatedBuildFactory(
                     script="/buildbot/cuda-build",
+                    depends_on_projects=['llvm', 'clang', 'compiler-rt',
+                                         'libc', 'libcxx', 'libcxxabi',
+                                         'libunwind', 'lld', 'offload'],
                     checkout_llvm_sources=False)},
-# HIP builders.
 
+# HIP builders.
     {'name' : "clang-hip-vega20",
     'tags'  : ["clang"],
     'workernames' : ["hip-vega20-0"],
