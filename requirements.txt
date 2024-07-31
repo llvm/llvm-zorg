@@ -26,15 +26,15 @@ automat==22.10.0
     # via
     #   -r requirements.in
     #   twisted
-buildbot-console-view==3.11.3
+buildbot-console-view==3.11.6
     # via -r requirements.in
-buildbot-grid-view==3.11.3
+buildbot-grid-view==3.11.6
     # via -r requirements.in
-buildbot-waterfall-view==3.11.3
+buildbot-waterfall-view==3.11.6
     # via -r requirements.in
-buildbot-worker==3.11.3
+buildbot-worker==3.11.6
     # via -r requirements.in
-buildbot-www==3.11.3
+buildbot-www==3.11.6
     # via -r requirements.in
 certifi==2022.12.7
     # via requests
@@ -44,6 +44,8 @@ chardet==4.0.0
     # via requests
 constantly==15.1.0
     # via twisted
+croniter==2.0.1
+    # via buildbot
 cryptography==40.0.2
     # via
     #   autobahn
@@ -61,6 +63,8 @@ idna==2.10
     #   hyperlink
     #   requests
     #   twisted
+importlib-resources==6.4.0
+    # via buildbot
 incremental==21.3.0
     # via
     #   treq
@@ -79,6 +83,8 @@ msgpack==1.0.5
     # via
     #   buildbot
     #   buildbot-worker
+packaging==24.1
+    # via buildbot
 psycopg2==2.9.9
     # via -r requirements.in
 pyasn1==0.4.8
@@ -99,6 +105,9 @@ python-dateutil==2.9.0.post0
     # via
     #   -r requirements.in
     #   buildbot
+    #   croniter
+pytz==2024.1
+    # via croniter
 pyyaml==6.0.1
     # via
     #   -r requirements.in
@@ -134,6 +143,8 @@ typing-extensions==4.5.0
     # via
     #   alembic
     #   twisted
+unidiff==0.7.5
+    # via buildbot
 urllib3==1.26.8
     # via requests
 zope-interface==6.4.post2

@@ -22,8 +22,8 @@ attrs==23.2.0    # buildbot-workers needs this, but somehow misses in the depend
 
 ## Buildbot
 -e ${HOME}/buildbot/master
-buildbot-console-view==3.11.3
-buildbot-grid-view==3.11.3
-buildbot-waterfall-view==3.11.3
-buildbot-worker==3.11.3
-buildbot-www==3.11.3
+buildbot-console-view==3.11.6
+buildbot-grid-view==3.11.6
+buildbot-waterfall-view==3.11.6
+buildbot-worker==3.11.6
+buildbot-www==3.11.6
