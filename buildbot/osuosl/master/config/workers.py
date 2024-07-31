@@ -61,11 +61,6 @@ def get_all():
         create_worker("debian-akiko-m68k", properties={'jobs': 1}, max_builds=1),
         create_worker("suse-gary-m68k-cross", properties={'jobs': 4}, max_builds=1),
 
-        # POWER7 PowerPC big endian (powerpc64)
-        create_worker("ppc64be-clang-test-suite", max_builds=1),
-        create_worker("ppc64be-clang-multistage-test", properties={'jobs': 16}, max_builds=1),
-        create_worker("ppc64be-sanitizer", properties={'jobs': 16}, max_builds=1),
-
         # POWER 8 PowerPC little endian (powerpc64le)
         create_worker("ppc64le-clang-test-suite", max_builds=1),
         create_worker("ppc64le-clang-multistage-test", properties={'jobs': 8}, max_builds=1),
