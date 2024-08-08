@@ -1711,7 +1711,8 @@ all += [
     'builddir': "sanitizer-windows",
     'factory' : AnnotatedBuilder.getAnnotatedBuildFactory(
                     script="sanitizer-windows.py",
-                    depends_on_projects=["llvm", "clang", "lld", "compiler-rt"])},
+                    depends_on_projects=["llvm", "clang", "lld", "compiler-rt"],
+                    timeout=2400)},
 
 # OpenMP builders.
 
