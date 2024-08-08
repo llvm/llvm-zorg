@@ -3,7 +3,7 @@
 ulimit -Ss 12288
 
 ROOT=`pwd`
-LLVM=$ROOT/llvm
+LLVM=$ROOT/llvm-project/llvm
 
 BUILDBOT_CLOBBER="${BUILDBOT_CLOBBER:-}"
 BUILDBOT_REVISION="${BUILDBOT_REVISION:-origin/main}"
@@ -306,8 +306,10 @@ function build_stage2 {
      -DCMAKE_CXX_FLAGS="${sanitizer_cflags}" \
      -DCMAKE_EXE_LINKER_FLAGS="${sanitizer_ldflags}" \
      $LLVM && \
-   time ninja) || build_failure
-   md5sum ${build_dir}/bin/clang || true
+  /usr/bin/time -o ${ROOT}/time.txt -- ninja ) || build_failure
+  (md5sum ${build_dir}/bin/clang* > ${ROOT}/md5.txt) || true
+
+  upload_stats stage2
 }
 
 function build_stage2_msan {
@@ -480,8 +482,10 @@ function build_stage3 {
      -DCMAKE_CXX_FLAGS="${sanitizer_cflags}" \
      -DLLVM_CCACHE_BUILD=OFF \
      $LLVM && \
-  time ninja) || build_failure
-  md5sum ${build_dir}/bin/clang* || true
+  /usr/bin/time -o ${ROOT}/time.txt -- ninja ) || build_failure
+  (md5sum ${build_dir}/bin/clang* > ${ROOT}/md5.txt) || true
+
+  upload_stats stage3
 }
 
 function build_stage3_msan {
@@ -556,4 +560,14 @@ function build_exception() {
   if [[ "${BUILDBOT_BISECT_MODE:-}" == "1" || ! -v BUILDBOT_BUILDERNAME ]] ; then
     exit 2
   fi
+}
+
+function upload_stats() {
+  if [[ "${BUILDBOT_BISECT_MODE:-}" != "1" && -v BUILDBOT_BUILDERNAME ]] ; then
+    lscpu > "${ROOT}/cpu.txt"
+    curl http://metadata.google.internal/computeMetadata/v1/instance/machine-type \
+      -H Metadata-Flavor:Google > "${ROOT}/machine-type.txt"
+    gsutil cp "${ROOT}/"{time,md5,cpu,machine-type}".txt" "gs://sanitizer-buildbot-out/${BUILDBOT_BUILDERNAME}/${1}/${BUILDBOT_REVISION}/" || true
+  fi
+  cat "${ROOT}/"{time,md5}".txt"
 }
