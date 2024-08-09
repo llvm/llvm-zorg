@@ -154,7 +154,7 @@ def getClangCMakeBuildFactory(
             testsuite_flags=None,
             submitURL=None,
             testerName=None,
-
+            testWithLNT=True,
             # Environmental variables for all steps.
             env=None,
             extra_cmake_args=None,
@@ -176,7 +176,7 @@ def getClangCMakeBuildFactory(
                vs_target_arch=vs_target_arch, useTwoStage=useTwoStage,
                testStage1=testStage1, stage1_config=stage1_config,
                stage2_config=stage2_config, runTestSuite=runTestSuite,
-               nt_flags=nt_flags, testsuite_flags=testsuite_flags,
+               nt_flags=nt_flags, testsuite_flags=testsuite_flags, testWithLNT=testWithLNT,
                submitURL=submitURL, testerName=testerName,
                env=env, extra_cmake_args=extra_cmake_args,
                extra_stage2_cmake_args=extra_stage2_cmake_args,
@@ -209,6 +209,7 @@ def _getClangCMakeBuildFactory(
             runTestSuite=False,
             nt_flags=None,
             testsuite_flags=None,
+            testWithLNT=True,
             submitURL=None,
             testerName=None,
 
@@ -284,10 +285,12 @@ def _getClangCMakeBuildFactory(
     # and the test-suite separately. Le's do this first,
     # so we wouldn't poison got_revision property.
     if runTestSuite or checkout_test_suite:
-        f.addGetSourcecodeForProject(
-            project='lnt',
-            src_dir='test/lnt',
-            alwaysUseLatest=True)
+        if testWithLNT:
+            f.addGetSourcecodeForProject(
+                project='lnt',
+                src_dir='test/lnt',
+                alwaysUseLatest=True)
+
         f.addGetSourcecodeForProject(
             project='test-suite',
             src_dir='test/test-suite',
@@ -409,7 +412,6 @@ def _getClangCMakeBuildFactory(
         cxx = 'clang-cl.exe'
         fc = 'flang-new.exe'
 
-
     ############# STAGE 2
     if useTwoStage:
         # We always cleanly build the stage 2. If the compiler has been
@@ -479,6 +481,10 @@ def _getClangCMakeBuildFactory(
     ############# TEST SUITE
     ## Test-Suite (stage 2 if built, stage 1 otherwise)
     if runTestSuite:
+        # Paths
+        sandbox = util.Interpolate('%(prop:builddir)s/test/sandbox')
+        test_suite_dir = util.Interpolate('%(prop:builddir)s/test/test-suite')
+
         compiler_path = stage1_install
         if useTwoStage:
             compiler_path=stage2_install
@@ -494,103 +500,153 @@ def _getClangCMakeBuildFactory(
                                    workdir=stage2_build,
                                    env=env))
 
-        # Get generated python, lnt
-        python = util.Interpolate('%(prop:builddir)s/test/sandbox/bin/python')
-        lnt = util.Interpolate('%(prop:builddir)s/test/sandbox/bin/lnt')
-        lnt_setup = util.Interpolate('%(prop:builddir)s/test/lnt/setup.py')
+        if testWithLNT:
+            # Get generated python, lnt
+            python = util.Interpolate('%(prop:builddir)s/test/sandbox/bin/python')
+            lnt = util.Interpolate('%(prop:builddir)s/test/sandbox/bin/lnt')
+            lnt_setup = util.Interpolate('%(prop:builddir)s/test/lnt/setup.py')
 
-        # Paths
-        sandbox = util.Interpolate('%(prop:builddir)s/test/sandbox')
-        test_suite_dir = util.Interpolate('%(prop:builddir)s/test/test-suite')
+            # Get latest built Clang (stage1 or stage2)
+            cc = util.Interpolate(f'%(prop:builddir)s/{compiler_path}/bin/{cc}')
+            cxx = util.Interpolate(f'%(prop:builddir)s/{compiler_path}/bin/{cxx}')
 
-        # Get latest built Clang (stage1 or stage2)
-        cc = util.Interpolate(f'%(prop:builddir)s/{compiler_path}/bin/{cc}')
-        cxx = util.Interpolate(f'%(prop:builddir)s/{compiler_path}/bin/{cxx}')
+            # LNT Command line (don't pass -jN. Users need to pass both --threads
+            # and --build-threads in nt_flags/test_suite_flags to get the same effect)
+            use_runtest_testsuite = len(nt_flags) == 0
+            if not use_runtest_testsuite:
+                test_suite_cmd = [python, lnt, 'runtest', 'nt',
+                                  '--no-timestamp',
+                                  '--sandbox', sandbox,
+                                  '--test-suite', test_suite_dir,
+                                  '--cc', cc,
+                                  '--cxx', cxx]
+                # Append any option provided by the user
+                test_suite_cmd.extend(nt_flags)
+            else:
+                lit = util.Interpolate(f'%(prop:builddir)s/{stage1_build}/bin/llvm-lit')
+                test_suite_cmd = [python, lnt, 'runtest', 'test-suite',
+                                  '--no-timestamp',
+                                  '--sandbox', sandbox,
+                                  '--test-suite', test_suite_dir,
+                                  '--cc', cc,
+                                  '--cxx', cxx,
+                                  '--use-lit', lit]
+                # Enable fortran if flang is checked out
+                if checkout_flang:
+                    fortran_flags = [
+                            '--cmake-define=TEST_SUITE_FORTRAN:STRING=ON',
+                            util.Interpolate(
+                                '--cmake-define=CMAKE_Fortran_COMPILER=' +
+                                f'%(prop:builddir)s/{compiler_path}/bin/{fc}')]
+                    test_suite_cmd.extend(fortran_flags)
+                # Append any option provided by the user
+                test_suite_cmd.extend(testsuite_flags)
 
-        # LNT Command line (don't pass -jN. Users need to pass both --threads
-        # and --build-threads in nt_flags/test_suite_flags to get the same effect)
-        use_runtest_testsuite = len(nt_flags) == 0
-        if not use_runtest_testsuite:
-            test_suite_cmd = [python, lnt, 'runtest', 'nt',
-                              '--no-timestamp',
-                              '--sandbox', sandbox,
-                              '--test-suite', test_suite_dir,
-                              '--cc', cc,
-                              '--cxx', cxx]
-            # Append any option provided by the user
-            test_suite_cmd.extend(nt_flags)
+            # Only submit if a URL has been specified
+            if submitURL is not None:
+                if not isinstance(submitURL, list):
+                    submitURL = [submitURL]
+                for url in submitURL:
+                    test_suite_cmd.extend(['--submit', url])
+                # lnt runtest test-suite doesn't understand --no-machdep-info:
+                if testerName and not use_runtest_testsuite:
+                    test_suite_cmd.extend(['--no-machdep-info', testerName])
+
+            # CC and CXX are needed as env for build-tools
+            if vs and vs != "manual":
+                # VS environment requires some extra care.
+                f.addStep(SetProperty(
+                    command=builders_util.getVisualStudioEnvironment(vs, vs_target_arch),
+                    extract_fn=builders_util.extractVSEnvironment,
+                    env={'CC'  : cc, 'CXX' : cxx}))
+                test_suite_env = Property('vs_env')
+            else:
+                test_suite_env = copy.deepcopy(env)
+                test_suite_env['CC'] = cc
+                test_suite_env['CXX'] = cxx
+
+            # Steps to prepare, build and run LNT
+            f.addStep(ShellCommand(name='clean sandbox',
+                                command=['rm', '-rf', 'sandbox'],
+                                haltOnFailure=True,
+                                description='removing sandbox directory',
+                                workdir='test',
+                                env=env))
+            f.addStep(ShellCommand(name='recreate sandbox',
+                                command=['virtualenv', '--python=python3', 'sandbox'],
+                                haltOnFailure=True,
+                                description='recreating sandbox',
+                                workdir='test',
+                                env=env))
+            f.addStep(ShellCommand(name='setup lit',
+                                command=[python, lnt_setup, 'develop'],
+                                haltOnFailure=True,
+                                description='setting up LNT in sandbox',
+                                workdir='test/sandbox',
+                                env=env))
+            f.addStep(LitTestCommand(
+                                name='test-suite',
+                                command=test_suite_cmd,
+                                haltOnFailure=True,
+                                description=['running the test suite'],
+                                workdir='test/sandbox',
+                                logfiles={'configure.log'   : 'build/configure.log',
+                                            'build-tools.log' : 'build/build-tools.log',
+                                            'test.log'        : 'build/test.log',
+                                            'report.json'     : 'build/report.json'},
+                                env=test_suite_env))
         else:
-            lit = util.Interpolate(f'%(prop:builddir)s/{stage1_build}/bin/llvm-lit')
-            test_suite_cmd = [python, lnt, 'runtest', 'test-suite',
-                              '--no-timestamp',
-                              '--sandbox', sandbox,
-                              '--test-suite', test_suite_dir,
-                              '--cc', cc,
-                              '--cxx', cxx,
-                              '--use-lit', lit]
-            # Enable fortran if flang is checked out
+            tsbuild = 'testsuite.build'
+
+            f.addStep(ShellCommand(name='clean testsuite',
+                                   command=['rm','-rf',tsbuild],
+                                   warnOnFailure=True,
+                                   description='cleaning testsuite',
+                                   descriptionDone='clean',
+                                   workdir='.'))
+
+            # Absolute paths to just built compilers.
+            testsuite_cc = InterpolateToPosixPath(
+                            f"-DCMAKE_C_COMPILER=%(prop:builddir)s/{compiler_path}/bin/{cc}")
+
+            testsuite_cxx = InterpolateToPosixPath(
+                            f"-DCMAKE_CXX_COMPILER=%(prop:builddir)s/{compiler_path}/bin/{cxx}")
+
+            lit = 'llvm-lit' if not vs else 'llvm-lit.py'
+            testsuite_lit = InterpolateToPosixPath(
+                            f"-DTEST_SUITE_LIT=%(prop:builddir)s/{stage1_build}/bin/{lit}")
+
+            cmake_testsuite = [cmake, "-G", "Ninja", test_suite_dir,
+                               testsuite_cc, testsuite_cxx, testsuite_lit,
+                               "-DCMAKE_BUILD_TYPE=Release"
+                              ] + testsuite_flags
+
             if checkout_flang:
-                fortran_flags = [
-                        '--cmake-define=TEST_SUITE_FORTRAN:STRING=ON',
-                        util.Interpolate(
-                            '--cmake-define=CMAKE_Fortran_COMPILER=' +
-                            f'%(prop:builddir)s/{compiler_path}/bin/{fc}')]
-                test_suite_cmd.extend(fortran_flags)
-            # Append any option provided by the user
-            test_suite_cmd.extend(testsuite_flags)
+                testsuite_fc = InterpolateToPosixPath(
+                               f"-DCMAKE_Fortran_COMPILER=%(prop:builddir)s/{compiler_path}/bin/{fc}")
+                cmake_testsuite += [testsuite_fc,
+                                    "-DTEST_SUITE_FORTRAN:STRING=ON"]
 
-        # Only submit if a URL has been specified
-        if submitURL is not None:
-            if not isinstance(submitURL, list):
-                submitURL = [submitURL]
-            for url in submitURL:
-                test_suite_cmd.extend(['--submit', url])
-            # lnt runtest test-suite doesn't understand --no-machdep-info:
-            if testerName and not use_runtest_testsuite:
-                test_suite_cmd.extend(['--no-machdep-info', testerName])
+            f.addStep(ShellCommand(name='cmake testsuite',
+                                   command=cmake_testsuite,
+                                   haltOnFailure=True,
+                                   description='cmake testsuite',
+                                   workdir=tsbuild,
+                                   env=env))
 
-        # CC and CXX are needed as env for build-tools
-        if vs and vs != "manual":
-            # VS environment requires some extra care.
-            f.addStep(SetProperty(
-                command=builders_util.getVisualStudioEnvironment(vs, vs_target_arch),
-                extract_fn=builders_util.extractVSEnvironment,
-                env={'CC'  : cc, 'CXX' : cxx}))
-            test_suite_env = Property('vs_env')
-        else:
-            test_suite_env = copy.deepcopy(env)
-            test_suite_env['CC'] = cc
-            test_suite_env['CXX'] = cxx
+            f.addStep(WarningCountingShellCommand(name='build testsuite',
+                                                  command=ninja_cmd,
+                                                  haltOnFailure=True,
+                                                  description='ninja all',
+                                                  workdir=tsbuild,
+                                                  env=env))
 
-        # Steps to prepare, build and run LNT
-        f.addStep(ShellCommand(name='clean sandbox',
-                               command=['rm', '-rf', 'sandbox'],
-                               haltOnFailure=True,
-                               description='removing sandbox directory',
-                               workdir='test',
-                               env=env))
-        f.addStep(ShellCommand(name='recreate sandbox',
-                               command=['virtualenv', '--python=python3', 'sandbox'],
-                               haltOnFailure=True,
-                               description='recreating sandbox',
-                               workdir='test',
-                               env=env))
-        f.addStep(ShellCommand(name='setup lit',
-                               command=[python, lnt_setup, 'develop'],
-                               haltOnFailure=True,
-                               description='setting up LNT in sandbox',
-                               workdir='test/sandbox',
-                               env=env))
-        f.addStep(LitTestCommand(
-                               name='test-suite',
-                               command=test_suite_cmd,
-                               haltOnFailure=True,
-                               description=['running the test suite'],
-                               workdir='test/sandbox',
-                               logfiles={'configure.log'   : 'build/configure.log',
-                                         'build-tools.log' : 'build/build-tools.log',
-                                         'test.log'        : 'build/test.log',
-                                         'report.json'     : 'build/report.json'},
-                               env=test_suite_env))
+            f.addStep(LitTestCommand(name='ninja check testsuite',
+                                     command=['ninja','check'],
+                                     haltOnFailure=not runTestSuite,
+                                     description=["checking testsuite"],
+                                     descriptionDone=["testsuite checked"],
+                                     workdir=tsbuild,
+                                     env=env))
 
     return f
