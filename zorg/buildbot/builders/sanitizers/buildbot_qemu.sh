@@ -356,7 +356,7 @@ function run_hwasan_lam_tests {
     boot_qemu || build_exception
 
     ssh -S "${SSH_CONTROL_SOCKET}" root@localhost \
-        "mkdir -p /b && mount -t nfs 10.0.2.10:/b /b"
+        "mkdir -p ${ROOT} && mount -t nfs 10.0.2.10:${ROOT} ${ROOT}"
 
     echo
     echo "@@@BUILD_STEP test hwasan ${name}@@@"
@@ -388,8 +388,8 @@ for B in $SCUDO_BUILDS ; do
   run_scudo_tests $B
 done
 
-#[[ -z "$SKIP_HWASAN_LAM" ]] && (
-#  run_hwasan_lam_tests
-#)
+[[ -z "$SKIP_HWASAN_LAM" ]] && (
+ run_hwasan_lam_tests
+)
 
 cleanup $STAGE2_DIR
