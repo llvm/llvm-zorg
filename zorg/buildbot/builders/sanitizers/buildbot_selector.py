@@ -7,7 +7,7 @@ import sys
 THIS_DIR=os.path.dirname(sys.argv[0])
 extra_args = sys.argv[1:]
 BOT_DIR = os.path.abspath('../..')
-print("BOT_DIR: %s", THIS_DIR)
+print("BOT_DIR: %s", BOT_DIR)
 print("THIS_DIR: %s", THIS_DIR)
 
 def in_script_dir(path):
