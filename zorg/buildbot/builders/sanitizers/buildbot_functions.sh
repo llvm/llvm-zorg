@@ -306,7 +306,11 @@ function build_stage2 {
      -DCMAKE_CXX_FLAGS="${sanitizer_cflags}" \
      -DCMAKE_EXE_LINKER_FLAGS="${sanitizer_ldflags}" \
      $LLVM && \
-  /usr/bin/time -o ${ROOT}/time.txt -- ninja ) || build_failure
+  /usr/bin/time -o ${ROOT}/time.txt -- ninja ) || {
+    build_failure
+    # No stats on failure.
+    return 0
+  }
   (md5sum ${build_dir}/bin/clang* > ${ROOT}/md5.txt) || true
 
   upload_stats stage2
@@ -482,7 +486,11 @@ function build_stage3 {
      -DCMAKE_CXX_FLAGS="${sanitizer_cflags}" \
      -DLLVM_CCACHE_BUILD=OFF \
      $LLVM && \
-  /usr/bin/time -o ${ROOT}/time.txt -- ninja ) || build_failure
+  /usr/bin/time -o ${ROOT}/time.txt -- ninja ) || {
+    build_failure
+    # No stats on failure.
+    return 0
+  }
   (md5sum ${build_dir}/bin/clang* > ${ROOT}/md5.txt) || true
 
   upload_stats stage3
