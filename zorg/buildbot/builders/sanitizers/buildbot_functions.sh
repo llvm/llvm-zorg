@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -eu
+
 ulimit -Ss 12288
 
 ROOT=`pwd`

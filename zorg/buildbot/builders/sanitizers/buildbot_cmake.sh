@@ -1,9 +1,5 @@
 #!/usr/bin/env bash
 
-set -x
-set -e
-set -u
-
 HERE="$(dirname $0)"
 . ${HERE}/buildbot_functions.sh
 
