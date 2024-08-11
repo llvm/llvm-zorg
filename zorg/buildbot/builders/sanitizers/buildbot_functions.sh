@@ -72,6 +72,15 @@ if [[ ! "$(arch)" =~ "ppc64" ]] ; then
   LIT_OPTS+=" --timeout=900"
 fi
 
+CMAKE="$(which cmake)"
+
+function cmake() {
+  (
+    set -x
+    "${CMAKE}" "$@"
+  )
+}
+
 function rm_dirs {
   while ! rm -rf $@ ; do sleep 1; done
 }
