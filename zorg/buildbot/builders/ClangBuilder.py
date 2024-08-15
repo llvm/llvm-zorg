@@ -527,7 +527,9 @@ def _getClangCMakeBuildFactory(
                               '--test-suite', test_suite_dir,
                               '--cc', cc,
                               '--cxx', cxx,
-                              '--use-lit', lit]
+                              '--use-lit', lit,
+                              # Carry on building even if there is a failure.
+                              '--build-tool-options', '"-k"']
             # Enable fortran if flang is checked out
             if checkout_flang:
                 fortran_flags = [
