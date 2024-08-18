@@ -316,6 +316,55 @@ class LLVMFailGitHubReporter(GitHubCommentPush):
             )
             return None
 
+        # Users could reference wrong PRs in commit messages.
+        # So, to make sure we are commenting the correct one we need to check
+        # if the given commit is actually corresponding to the PR we parsed
+        # from the commit message.
+
+        wrong_issue = True
+        page = 1
+        while wrong_issue:
+            events_response = yield self._http.get(
+                "/".join(["/repos", repo_user, repo_name, "issues", issue, "events"]) +
+                f"?per_page=100&page={page}")
+            if events_response.code not in (200,):
+                log.msg(
+                    f"LLVMFailGitHubReporter.createStatus: WARNING: Cannot get events for PR#{issue}. Do not comment this PR."
+                )
+                return None
+
+            events = yield events_response.json()
+
+            # Empty events array signals that there is no more.
+            if not events:
+                log.msg(
+                    f"LLVMFailGitHubReporter.createStatus: WARNING: Got empty events list for PR#{issue}."
+                )
+                break
+
+            log.msg(
+                "LLVMFailGitHubReporter.createStatus: WARNING: Got events list for PR#{issue} (page {page}): {events}."
+            )
+
+            for event in events:
+                if event["event"] == "merged":
+                    if event["commit_id"] == sha:
+                        wrong_issue = False
+                        break
+                    else:
+                        log.msg(
+                            f"LLVMFailGitHubReporter.createStatus: WARNING: Event 'merged' in PR#{issue} contains commit_id {event['commit_id']}, but revision is {sha}."
+                        )
+            page += 1
+
+        if wrong_issue:
+            log.msg(
+                f"LLVMFailGitHubReporter.createStatus: WARNING: Given commit {sha} is not related to PR#{issue}. Do not comment this PR."
+            )
+            return None
+
+        # This is the right issue to comment.
+
         url = "/".join(["/repos", repo_user, repo_name, "issues", issue, "comments"])
         log.msg(f"LLVMFailGitHubReporter.createStatus: INFO: http.post({url})")
 
