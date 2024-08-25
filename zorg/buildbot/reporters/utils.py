@@ -136,10 +136,14 @@ LLVM Buildbot has detected a new failure on builder `{{ buildername }}` running 
 
 Full details are available at: {{ build_url }}
 
-Here is the relevant piece of the build log for the reference:
+<details>
+<summary>Here is the relevant piece of the build log for the reference</summary>
+
 ```
 {{ details }}
 ```
+
+</details>
 """
 
 
