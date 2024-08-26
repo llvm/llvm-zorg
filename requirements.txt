@@ -10,14 +10,14 @@
     #   buildbot-www
 alembic==1.10.4
     # via buildbot
-attrs==23.2.0
+attrs==24.2.0
     # via
     #   -r requirements.in
     #   automat
     #   service-identity
     #   treq
     #   twisted
-autobahn==23.6.2
+autobahn==24.4.2
     # via
     #   -r requirements.in
     #   buildbot
@@ -26,15 +26,15 @@ automat==22.10.0
     # via
     #   -r requirements.in
     #   twisted
-buildbot-console-view==3.11.6
+buildbot-console-view==3.11.7
     # via -r requirements.in
-buildbot-grid-view==3.11.6
+buildbot-grid-view==3.11.7
     # via -r requirements.in
-buildbot-waterfall-view==3.11.6
+buildbot-waterfall-view==3.11.7
     # via -r requirements.in
-buildbot-worker==3.11.6
+buildbot-worker==3.11.7
     # via -r requirements.in
-buildbot-www==3.11.6
+buildbot-www==3.11.7
     # via -r requirements.in
 certifi==2022.12.7
     # via requests
@@ -65,7 +65,7 @@ idna==2.10
     #   twisted
 importlib-resources==6.4.0
     # via buildbot
-incremental==21.3.0
+incremental==24.7.2
     # via
     #   treq
     #   twisted
@@ -95,7 +95,7 @@ pyasn1-modules==0.2.8
     # via service-identity
 pycparser==2.20
     # via cffi
-pyjwt==2.8.0
+pyjwt==2.9.0
     # via
     #   -r requirements.in
     #   buildbot
@@ -108,7 +108,7 @@ python-dateutil==2.9.0.post0
     #   croniter
 pytz==2024.1
     # via croniter
-pyyaml==6.0.1
+pyyaml==6.0.2
     # via
     #   -r requirements.in
     #   buildbot
@@ -121,14 +121,16 @@ six==1.15.0
     #   automat
     #   buildbot-worker
     #   python-dateutil
-sqlalchemy==1.4.52
+sqlalchemy==1.4.53
     # via
     #   -r requirements.in
     #   alembic
     #   buildbot
+tomli==2.0.1
+    # via incremental
 treq==23.11.0
     # via -r requirements.in
-twisted[tls]==22.10.0
+twisted[tls]==23.10.0
     # via
     #   -r requirements.in
     #   buildbot
@@ -145,9 +147,9 @@ typing-extensions==4.5.0
     #   twisted
 unidiff==0.7.5
     # via buildbot
-urllib3==1.26.8
+urllib3==1.26.19
     # via requests
-zope-interface==6.4.post2
+zope-interface==7.0.1
     # via
     #   -r requirements.in
     #   buildbot

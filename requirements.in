@@ -6,24 +6,24 @@
 
 ## Direct buildbot 3.x declared dependencies. See buildbot/master/setup.py.
 ## setuptools==65.5.0 <-- just to setup the buildbot onvce. No need to have it in the requrements.
-Twisted==22.10.0
+Twisted==23.10.0
 Jinja2==3.1.4
-zope.interface==6.4.post2
-SQLAlchemy==1.4.52
+zope.interface==7.0.1
+SQLAlchemy==1.4.53
 psycopg2==2.9.9
 python-dateutil==2.9.0.post0
 txaio==23.1.1
-autobahn==23.6.2
-PyJWT==2.8.0
-PyYAML==6.0.1
+autobahn==24.4.2
+PyJWT==2.9.0
+PyYAML==6.0.2
 treq==23.11.0
 Automat==22.10.0 # Explicitly require 22.10.0 for Python 3.11 support
-attrs==23.2.0    # buildbot-workers needs this, but somehow misses in the dependancies
+attrs==24.2.0    # buildbot-workers needs this, but somehow misses in the dependancies
 
 ## Buildbot
 -e ${HOME}/buildbot/master
-buildbot-console-view==3.11.6
-buildbot-grid-view==3.11.6
-buildbot-waterfall-view==3.11.6
-buildbot-worker==3.11.6
-buildbot-www==3.11.6
+buildbot-console-view==3.11.7
+buildbot-grid-view==3.11.7
+buildbot-waterfall-view==3.11.7
+buildbot-worker==3.11.7
+buildbot-www==3.11.7
