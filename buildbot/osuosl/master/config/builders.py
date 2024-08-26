@@ -3313,6 +3313,8 @@ all += [
                         "CMAKE_CXX_FLAGS"               : "-D__OPTIMIZE__",
                         "LLVM_TARGETS_TO_BUILD"         : "AArch64",
                         "LLVM_DEFAULT_TARGET_TRIPLE"    : "aarch64-unknown-linux-gnu",
+                        #Note: needs for some LLDB tests.
+                        "LLVM_TARGET_TRIPLE"            : "aarch64-unknown-linux-gnu",
                         "LLVM_INCLUDE_BENCHMARKS"       : "OFF",
                         "LLVM_PARALLEL_LINK_JOBS"       : 8,
                         "CLANG_DEFAULT_LINKER"          : "lld",
