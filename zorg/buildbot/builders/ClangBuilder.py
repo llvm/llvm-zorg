@@ -634,9 +634,11 @@ def _getClangCMakeBuildFactory(
                                    workdir=tsbuild,
                                    env=env))
 
+            # Add -k option to ninja command for keep building even if a test fails.
+            ninja_cmd += ["-k0"]
             f.addStep(WarningCountingShellCommand(name='build testsuite',
                                                   command=ninja_cmd,
-                                                  haltOnFailure=True,
+                                                  haltOnFailure=False,
                                                   description='ninja all',
                                                   workdir=tsbuild,
                                                   env=env))
