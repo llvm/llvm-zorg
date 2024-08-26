@@ -185,7 +185,7 @@ all = [
 # Cross builders.
 
     {'name' : "llvm-clang-win-x-armv7l",
-    'tags'  : ["clang", "llvm", "compiler-rt", "cross", "armv7"],
+    'tags'  : ["clang", "llvm", "lld", "clang-tools-extra", "compiler-rt", "libc++", "libc++abi", "libunwind", "cross", "armv7"],
     'workernames' : ["as-builder-1"],
     'builddir': "x-armv7l",
     'factory' : UnifiedTreeBuilder.getCmakeExBuildFactory(
@@ -247,7 +247,7 @@ all = [
         },
 
     {'name' : "llvm-clang-win-x-aarch64",
-    'tags'  : ["clang", "llvm", "compiler-rt", "cross", "aarch64"],
+    'tags'  : ["clang", "llvm", "lld", "clang-tools-extra", "compiler-rt", "libc++", "libc++abi", "libunwind", "cross", "aarch64"],
     'workernames' : ["as-builder-2"],
     'builddir': "x-aarch64",
     'factory' : UnifiedTreeBuilder.getCmakeExBuildFactory(
