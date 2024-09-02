@@ -471,7 +471,7 @@ all = [
     'workernames' : ["linaro-clang-aarch64-full-2stage"],
     'builddir': "clang-aarch64-full-2stage",
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
-                    clean=False,
+                    clean=True,
                     checkout_flang=True,
                     checkout_lld=True,
                     useTwoStage=True,
