@@ -168,7 +168,7 @@ class LLVMPoller(changes.GitPoller):
                 if self.cleanRe.search(comments) or \
                    any([m for f in where_project_files for m in [self.cleanCfg.search(f)] if m]):
                     log.msg("LLVMPoller: creating a change with the 'clean_obj' property for r%s" % rev)
-                    properties['clean_obj'] = (True, "change")
+                    properties['clean_obj'] = True
 
             log.msg("LLVMPoller: creating a change rev=%s" % rev)
             log.msg("  >>> branch=%s, revision=%s, timestamp=%s, author=%s, committer=%s, project=%s, files=%s, comments=\"%s\", properties=%s" % \
