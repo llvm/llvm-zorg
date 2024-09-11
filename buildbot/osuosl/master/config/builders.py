@@ -1310,7 +1310,7 @@ all = [
                     extra_cmake_args=[
                         '-DLLVM_ENABLE_ASSERTIONS=True',
                         '-DLLVM_LIT_ARGS=-vj 4',
-                        '-DLLVM_USE_LINKER=gold',
+                        '-DLLVM_USE_LINKER=lld',
                         '-DLLDB_ENFORCE_STRICT_TEST_REQUIREMENTS=ON'])},
 
     {'name' : "lldb-aarch64-windows",
