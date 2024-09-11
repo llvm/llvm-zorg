@@ -145,7 +145,7 @@ function buildbot_update {
       git status
       git rev-list --pretty --max-count=1 HEAD
       # FIXME: Workaround for https://github.com/llvm/llvm-zorg/issues/250
-      [[ "${SKIP_OLD:-1}" == "0" ]] || (git log -1 --after='3 hours ago' | grep .) || {
+      [[ "${SKIP_OLD:-1}" == "0" ]] || [[ "${BUILDBOT_SCHEDULER}" == "force-build-scheduler" ]] || (git log -1 --after='3 hours ago' | grep .) || {
         echo Revision is not recent enough
         exit 1
       }
