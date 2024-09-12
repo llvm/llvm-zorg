@@ -1311,6 +1311,7 @@ all = [
                         '-DLLVM_ENABLE_ASSERTIONS=True',
                         '-DLLVM_LIT_ARGS=-vj 4',
                         '-DLLVM_USE_LINKER=lld',
+                        '-DCLANG_DEFAULT_LINKER=lld',
                         '-DLLDB_ENFORCE_STRICT_TEST_REQUIREMENTS=ON'])},
 
     {'name' : "lldb-aarch64-windows",
