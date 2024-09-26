@@ -403,11 +403,11 @@ def _getClangCMakeBuildFactory(
     if not vs:
         cc = 'clang'
         cxx = 'clang++'
-        fc = 'flang-new'
+        fc = 'flang'
     else:
         cc = 'clang-cl.exe'
         cxx = 'clang-cl.exe'
-        fc = 'flang-new.exe'
+        fc = 'flang.exe'
 
 
     ############# STAGE 2
