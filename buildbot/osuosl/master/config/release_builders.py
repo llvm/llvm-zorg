@@ -68,7 +68,7 @@ all = [
 
     {'name' : "llvm-clang-x86_64-expensive-checks-win-release",
     'tags'  : ["llvm", "expensive-checks"],
-    'workernames' : ["as-worker-93"],
+    'workernames' : ["as-builder-9"],
     'builddir': "llvm-clang-x86_64-expensive-checks-win-rel",
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaWithMSVCBuildFactory(
                     vs="autodetect",
