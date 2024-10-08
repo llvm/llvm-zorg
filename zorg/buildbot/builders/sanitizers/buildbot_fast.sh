@@ -5,6 +5,7 @@ HERE="$(cd $(dirname $0) && pwd)"
 
 # TODO: find a better way to disable cleanup.
 function cleanup() {
+  echo @@@BUILD_STEP cleanup@@@
   # Workaround the case when a new unittest was reverted, but incremental build continues to execute the leftover binary.
   find -executable -type f -wholename *unittests* -delete
   du -hs * | sort -h
