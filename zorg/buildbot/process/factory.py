@@ -35,9 +35,7 @@ class LLVMBuildFactory(BuildFactory):
             & etc.
     """
 
-    def __init__(
-        self, steps=None, depends_on_projects=None, hint=None, **kwargs
-    ):
+    def __init__(self, steps=None, depends_on_projects=None, hint=None, **kwargs):
         # Cannot use "super" here as BuildFactory is an old style class.
         BuildFactory.__init__(self, steps)
 
