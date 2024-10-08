@@ -575,10 +575,6 @@ function build_failure() {
 }
 
 function build_exception() {
-  echo
-  echo "How to reproduce locally: https://github.com/google/sanitizers/wiki/SanitizerBotReproduceBuild"
-  echo
-
   sleep 5
   echo "@@@STEP_EXCEPTION@@@"
   if [[ "${BUILDBOT_BISECT_MODE:-}" == "1" || ! -v BUILDBOT_BUILDERNAME ]] ; then
