@@ -36,14 +36,14 @@ class LLVMBuildFactory(BuildFactory):
     """
 
     def __init__(
-        self, steps=None, depends_on_projects=None, hint=None, clean=False, **kwargs
+        self, steps=None, depends_on_projects=None, hint=None, **kwargs
     ):
         # Cannot use "super" here as BuildFactory is an old style class.
         BuildFactory.__init__(self, steps)
 
         self.hint = hint
 
-        self.clean = clean
+        self.clean = kwargs.pop('clean', False)
         
         # Handle the dependencies.
         if depends_on_projects is None:
