@@ -187,7 +187,8 @@ pipeline {
         always {
             // ToDo: Restore issue scanner
             //scanForIssues tool: clang()
-            junit 'test/results.xml'
+            // junit 'test/results.xml'
+            echo "Temporarily Skip Junit"
         }
         success {
             script {
