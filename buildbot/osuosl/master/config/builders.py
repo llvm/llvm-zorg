@@ -3328,6 +3328,9 @@ all += [
 
                         "LLDB_TEST_ARCH"                : "aarch64",
                         "LLDB_TEST_COMPILER"            : util.Interpolate("%(prop:tools_root_path)s/aarch64-clang-18/bin/clang"),
+                        "LLDB_TEST_PLATFORM_URL"        : util.Interpolate("connect://%(prop:remote_test_host)s:1234"),
+                        "LLDB_TEST_PLATFORM_WORKING_DIR": "/home/ubuntu/lldb-tests",
+                        "LLDB_TEST_SYSROOT"             : util.Interpolate("%(prop:sysroot_path_aarch64)s"),
                         "LLDB_ENABLE_PYTHON"            : "ON",
                         "LLDB_ENABLE_SWIG"              : "ON",
                         "LLDB_ENABLE_LIBEDIT"           : "OFF",
@@ -3338,11 +3341,8 @@ all += [
                         # We are going to build it for the target platform later.
                         "LLDB_CAN_USE_LLDB_SERVER"      : "OFF",
                         "LLDB_TEST_USER_ARGS"           : util.Interpolate(
-                                                            "--env;USE_LLVM_TOOLS=1;--env;ARCH_CFLAGS=-mcpu=cortex-a78;" \
-                                                            "--sysroot=%(prop:sysroot_path_aarch64)s;" \
-                                                            "--platform-name;remote-linux;" \
-                                                            "--platform-url;connect://%(prop:remote_test_host)s:1234;" \
-                                                            "--platform-working-dir;/home/ubuntu/lldb-tests"),
+                                                            "--env;ARCH_CFLAGS=-mcpu=cortex-a78;" \
+                                                            "--platform-name;remote-linux"),
                     },
                     cmake_options = {
                     },
