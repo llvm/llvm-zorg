@@ -1964,7 +1964,7 @@ all += [
                             "-DBUILD_SHARED_LIBS=ON",
                             "-DLLVM_ENABLE_LIBCXX=ON",
                             "-DCLANG_DEFAULT_RTLIB=compiler-rt",
-                            "-DCLANG_DEFAULT_UNWINDLIB=libgcc",
+                            "-DCLANG_DEFAULT_UNWINDLIB=libunwind",
                             "-DLIBOMPTARGET_PLUGINS_TO_BUILD=amdgpu;host",
                             ],
                         env={
