@@ -23,8 +23,8 @@ def collapseRequests(master, builder, req1, req2):
 
     # Fetch the buildset properties.
     selfBuildsetPoperties = yield \
-    master.db.buildsets.getBuildsetProperties(
-        str(req1['buildsetid'])
+        master.db.buildsets.getBuildsetProperties(
+            str(req1['buildsetid'])
         )
     otherBuildsetPoperties = yield \
         master.db.buildsets.getBuildsetProperties(
