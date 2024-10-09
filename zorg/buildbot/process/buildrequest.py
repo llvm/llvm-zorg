@@ -22,12 +22,14 @@ def collapseRequests(master, builder, req1, req2):
         ('buildsets', str(req2['buildsetid'])))
 
     # Fetch the buildset properties.
-    selfBuildsetPoperties = yield master.db.buildsets.getBuildsetProperties(
-        str(req1["buildsetid"])
-    )
-    otherBuildsetPoperties = yield master.db.buildsets.getBuildsetProperties(
-        str(req2["buildsetid"])
-    )
+    selfBuildsetPoperties = yield \
+    master.db.buildsets.getBuildsetProperties(
+        str(req1['buildsetid'])
+        )
+    otherBuildsetPoperties = yield \
+        master.db.buildsets.getBuildsetProperties(
+            str(req2['buildsetid'])
+        )
 
     # If the build is going to be a clean build anyway, we can collapse a clean
     # build and a non-clean build.
