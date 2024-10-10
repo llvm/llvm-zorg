@@ -3186,7 +3186,7 @@ all += [
     'workernames' : ["rise-clang-riscv-rva23-2stage"],
     'builddir':"clang-riscv-rva23-2stage",
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
-                clean=False,
+                clean=True,
                 useTwoStage=True,
                 runTestSuite=False,
                 testStage1=False,
@@ -3199,6 +3199,7 @@ all += [
                     "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache"],
                 extra_stage2_cmake_args=[
                     "-DLLVM_ENABLE_LLD=True",
+                    "-DCOMPILER_RT_BUILD_SANITIZERS=OFF",
                     "-DCMAKE_C_FLAGS='-menable-experimental-extensions -march=rva23u64'",
                     "-DCMAKE_CXX_FLAGS='-menable-experimental-extensions -march=rva23u64'"]
                 )},
