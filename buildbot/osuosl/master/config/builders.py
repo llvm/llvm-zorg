@@ -3315,11 +3315,8 @@ all += [
                         "CMAKE_BUILD_TYPE"              : "Release",
                         "CMAKE_C_COMPILER_LAUNCHER"     : "ccache",
                         "CMAKE_CXX_COMPILER_LAUNCHER"   : "ccache",
-                        "CMAKE_C_COMPILER"              : "clang-19",
-                        "CMAKE_CXX_COMPILER"            : "clang++-19",
                         "CMAKE_CXX_FLAGS"               : "-D__OPTIMIZE__",
                         "LLVM_TARGETS_TO_BUILD"         : "AArch64",
-                        "LLVM_DEFAULT_TARGET_TRIPLE"    : "aarch64-unknown-linux-gnu",
                         #Note: needs for some LLDB tests.
                         "LLVM_TARGET_TRIPLE"            : "aarch64-unknown-linux-gnu",
                         "LLVM_INCLUDE_BENCHMARKS"       : "OFF",
@@ -3327,8 +3324,14 @@ all += [
                         "CLANG_DEFAULT_LINKER"          : "lld",
                         "LLVM_LIT_ARGS"                 : "-v -vv --threads=8",
 
+                        "TOOLCHAIN_TARGET_TRIPLE"       : "aarch64-unknown-linux-gnu",
+                        "TOOLCHAIN_TARGET_COMPILER_FLAGS"   :  "-mcpu=cortex-a78",
+                        "TOOLCHAIN_TARGET_SYSROOTFS"    : "/mnt/fs/jetson-orin-ubuntu",
+                        "LIBCXX_ABI_VERSION"            : "1",
+                        "LLVM_INSTALL_TOOLCHAIN_ONLY"   : "OFF",
+
                         "LLDB_TEST_ARCH"                : "aarch64",
-                        "LLDB_TEST_COMPILER"            : util.Interpolate("%(prop:tools_root_path)s/aarch64-clang-19/bin/clang"),
+                        "LLDB_TEST_COMPILER"            : util.Interpolate("%(prop:builddir)s/build/bin/clang"),
                         "LLDB_TEST_PLATFORM_URL"        : util.Interpolate("connect://%(prop:remote_test_host)s:1234"),
                         "LLDB_TEST_PLATFORM_WORKING_DIR": "/home/ubuntu/lldb-tests",
                         "LLDB_TEST_SYSROOT"             : util.Interpolate("%(prop:sysroot_path_aarch64)s"),
@@ -3345,8 +3348,9 @@ all += [
                                                             "--env;ARCH_CFLAGS=-mcpu=cortex-a78;" \
                                                             "--platform-name;remote-linux"),
                     },
-                    cmake_options = {
-                    },
+                    cmake_options = [
+                        "-C", util.Interpolate("%(prop:srcdir_relative)s/clang/cmake/caches/CrossWinToARMLinux.cmake"),
+                    ],
                     install_dir = "native",
                     post_build_steps =
                         # Stage 2.
@@ -3367,9 +3371,9 @@ all += [
                                 "CMAKE_C_FLAGS"                 : "-mcpu=cortex-a78 -D__OPTIMIZE__ -fPIC",
                                 "CMAKE_EXE_LINKER_FLAGS"        : "-Wl,-l:libc++abi.a -Wl,-l:libc++.a -Wl,-l:libunwind.a",
                                 "CMAKE_SHARED_LINKER_FLAGS"     : "-Wl,-l:libc++abi.a -Wl,-l:libc++.a -Wl,-l:libunwind.a",
-                                "CMAKE_CXX_COMPILER"            : util.Interpolate("%(prop:tools_root_path)s/aarch64-clang-19/bin/clang++"),
-                                "CMAKE_C_COMPILER"              : util.Interpolate("%(prop:tools_root_path)s/aarch64-clang-19/bin/clang"),
-                                "CMAKE_ASM_COMPILER"            : util.Interpolate("%(prop:tools_root_path)s/aarch64-clang-19/bin/clang"),
+                                "CMAKE_CXX_COMPILER"            : util.Interpolate("%(prop:builddir)s/build/bin/clang++"),
+                                "CMAKE_C_COMPILER"              : util.Interpolate("%(prop:builddir)s/build/bin/clang"),
+                                "CMAKE_ASM_COMPILER"            : util.Interpolate("%(prop:builddir)s/build/bin/clang"),
                                 "CMAKE_SYSTEM_NAME"             : "Linux",
                                 "CMAKE_SYSTEM_PROCESSOR"        : "aarch64",
                                 "CMAKE_CROSSCOMPILING"          : "ON",
