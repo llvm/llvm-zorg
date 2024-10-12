@@ -295,10 +295,10 @@ all = [
                     clean=False,
                     checkout_flang=True,
                     checkout_lld=True,
-                    checkout_compiler_rt=False,
                     extra_cmake_args=[
+                        "-DCLANG_DEFAULT_LINKER=lld",
                         "-DCMAKE_TRY_COMPILE_CONFIGURATION=Release",
-                        "-DLLVM_TARGETS_TO_BUILD='AArch64'",
+                        "-DCOMPILER_RT_BUILD_SANITIZERS=OFF",
                         "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
                         "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache"])},
 
@@ -566,22 +566,42 @@ all = [
                         "-DMLIR_RUN_ARM_SVE_TESTS=True",
                         "-DLLVM_LIT_ARGS='-v'"])},
 
-    {'name' : "clang-arm64-windows-msvc-2stage",
+    {'name' : "clang-arm64-windows-msvc-testsuite",
     'tags'  : ["clang"],
-    'workernames' : ["linaro-armv8-windows-msvc-01", "linaro-armv8-windows-msvc-02", "linaro-armv8-windows-msvc-03"],
-    'builddir': "clang-arm64-windows-msvc-2stage",
+    'workernames' : ["linaro-armv8-windows-msvc-03"],
+    'builddir': "clang-arm64-windows-msvc-testsuite",
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
                     vs="manual",
-                    useTwoStage=True,
+                    checks=[],
+                    clean=False,
                     checkout_flang=True,
+                    checkout_lld=True,
+                    runTestSuite=True,
+                    testWithLNT=False,
+                    testsuite_flags=["-DTEST_SUITE_SUBDIRS='Fortran'"],
                     extra_cmake_args=[
                         "-DCMAKE_TRY_COMPILE_CONFIGURATION=Release",
                         "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
                         "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
-                        # FIXME: compiler-rt\lib\sanitizer_common\sanitizer_unwind_win.cpp assumes WIN64 is x86_64,
-                        #        so, before that's fixed, disable everything that triggers its build.
-                        "-DCOMPILER_RT_BUILD_SANITIZERS=OFF",
-                        "-DCOMPILER_RT_BUILD_PROFILE=OFF"])},
+                        "-DCLANG_DEFAULT_LINKER=lld",
+                        "-DCOMPILER_RT_BUILD_SANITIZERS=OFF"])},
+
+    {'name' : "clang-arm64-windows-msvc-2stage",
+    'tags'  : ["clang"],
+    'workernames' : ["linaro-armv8-windows-msvc-02"],
+    'builddir': "clang-arm64-windows-msvc-2stage",
+    'factory' : ClangBuilder.getClangCMakeBuildFactory(
+                    vs="manual",
+                    clean=False,
+                    useTwoStage=True,
+                    checkout_flang=True,
+                    testStage1=False,
+                    extra_cmake_args=[
+                        "-DCLANG_DEFAULT_LINKER=lld",
+                        "-DCMAKE_TRY_COMPILE_CONFIGURATION=Release",
+                        "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
+                        "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
+                        "-DCOMPILER_RT_BUILD_SANITIZERS=OFF"])},
 
     {'name' : 'clang-x64-windows-msvc',
     'tags'  : ["clang"],
