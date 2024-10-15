@@ -1,0 +1,166 @@
+#!/usr/bin/env groovy
+pipeline {
+    options {
+        disableConcurrentBuilds()
+
+        timeout(time: 12, unit: 'HOURS')
+    }
+
+    parameters {
+        string(name: 'LABEL', defaultValue: params.LABEL ?: 'macos-x86_64', description: 'Node label to run on')
+        string(name: 'GIT_SHA', defaultValue: params.GIT_REVISION ?: '*/release/19.x', description: 'Git commit to build.')
+        string(name: 'ARTIFACT', defaultValue: params.ARTIFACT ?: 'lldb-cmake-intel/latest', description: 'Clang/LLDB artifact to use')
+        booleanParam(name: 'CLEAN', defaultValue: params.CLEAN ?: false, description: 'Wipe the build directory?')
+    }
+
+    agent {
+        node {
+            label params.LABEL
+        }
+    }
+    stages {
+        stage('Checkout') {
+            steps {
+                script {
+                    if(params.CLEAN) {
+                        deleteDir()
+                    }
+                }
+
+                timeout(30) {
+                    dir('src/clang-19') {
+                        checkout([$class: 'GitSCM', branches: [
+                            [name: params.GIT_SHA]
+                        ], userRemoteConfigs: [
+                            [url: 'https://github.com/llvm/llvm-project.git']
+                        ], extensions: [
+                            [$class: 'CloneOption',
+                            noTags: true, timeout: 30]
+                        ]])
+                    }
+                    dir('llvm-zorg') {
+                        checkout([$class: 'GitSCM', branches: [
+                            [name: '*/main']
+                        ], userRemoteConfigs: [
+                            [url: 'https://github.com/llvm/llvm-zorg.git']
+                        ]])
+                    }
+                }
+            }
+        }
+        stage('Setup Venv') {
+            environment {
+               PATH="$PATH:/usr/bin:/usr/local/bin"
+            }
+            steps {
+                sh '''
+                   rm -rf venv
+                   python3 -m venv venv
+                   set +u
+                   source ./venv/bin/activate
+                   pip install -r ./llvm-zorg/zorg/jenkins/jobs/requirements.txt
+                   set -u
+               '''
+            }
+        }
+        stage('Fetch Artifact') {
+            environment {
+               PATH="$PATH:/usr/bin:/usr/local/bin"
+            }
+            steps {
+                withCredentials([string(credentialsId: 's3_resource_bucket', variable: 'S3_BUCKET')]) {
+                    sh """
+                        source ./venv/bin/activate
+                        echo "ARTIFACT=${params.ARTIFACT}"
+                        python llvm-zorg/zorg/jenkins/monorepo_build.py fetch
+                        ls $WORKSPACE/host-compiler/lib/clang/
+                        VERSION=`ls $WORKSPACE/host-compiler/lib/clang/`
+                    """
+                }
+            }
+        }
+        stage('Build') {
+            environment {
+               PATH="$PATH:/usr/bin:/usr/local/bin"
+               SRC="$WORKSPACE/src"
+               BUILD="$WORKSPACE/clang-19-build"
+               TEST="$WORKSPACE/test"
+               RESULTS="$WORKSPACE/results"
+               CC="$WORKSPACE/host-compiler/bin/clang"
+               CXX="$WORKSPACE/host-compiler/bin/clang++"
+               HISTORIC_COMPILER="clang-19"
+            }
+            steps {
+                withCredentials([string(credentialsId: 's3_resource_bucket', variable: 'S3_BUCKET')]) {
+                    sh '''
+                       source ./venv/bin/activate
+
+                       cd src/clang-19
+                       git tag -a -m "First Commit" first_commit 97724f18c79c7cc81ced24239eb5e883bf1398ef || true
+
+                       git_desc=$(git describe --match "first_commit")
+                       export GIT_DISTANCE=$(echo ${git_desc} | cut -f 2 -d "-")
+
+                       sha=$(echo ${git_desc} | cut -f 3 -d "-")
+                       export GIT_SHA=${sha:1}
+
+                       cd -
+
+                       set -eux
+
+                       $CXX --version
+                       LLVM_REV=${GIT_DISTANCE}
+
+                       mkdir -p $HISTORIC_COMPILER-src
+                       mkdir -p $HISTORIC_COMPILER-build
+                       rsync -a $SRC/$HISTORIC_COMPILER/ $HISTORIC_COMPILER-src/
+                       cd $HISTORIC_COMPILER-build
+                       cmake ../$HISTORIC_COMPILER-src/llvm \
+                         -DCMAKE_BUILD_TYPE=Debug \
+                         -DLLVM_ENABLE_PROJECTS="clang;lldb" \
+                         -DLLVM_ENABLE_ASSERTIONS=Off \
+                         -DLLVM_ENABLE_MODULES=Off \
+                         -DLLDB_INCLUDE_TESTS=Off \
+                         -DLLDB_ENABLE_PYTHON=Off \
+                         -DLLDB_ENABLE_LUA=Off \
+                         -DLLVM_TARGETS_TO_BUILD='X86;AArch64' \
+                         -DCMAKE_EXPORT_COMPILE_COMMANDS=On \
+                         -DCMAKE_C_COMPILER=$CC \
+                         -DCMAKE_CXX_COMPILER=$CXX \
+                         -G Ninja
+                       cmake --build .
+                       cd ../..
+                   '''
+                }
+            }
+        }
+        stage('Run metrics') {
+            environment {
+               HOST_BUILD_DIR="$WORKSPACE/host-compiler"
+               HISTORIC_BUILD_DIR="$WORKSPACE/clang-19-build"
+            }
+            steps {
+                sh '''
+                   ./llvm-zorg/zorg/jenkins/jobs/util/run_lldb_metrics.sh $HOST_BUILD_DIR $HISTORIC_BUILD_DIR
+                '''
+            }
+        }
+        //stage('Submit debuginfo statistics to LNT') {
+        //    steps {
+        //        sh '''
+        //            source ./venv/bin/activate
+
+        //            cd src/clang-13
+        //            git tag -a -m "First Commit" first_commit 97724f18c79c7cc81ced24239eb5e883bf1398ef || true
+
+        //            git_desc=$(git describe --match "first_commit")
+        //            export GIT_DISTANCE=$(echo ${git_desc} | cut -f 2 -d "-")
+
+        //            cd -
+
+        //            python llvm-zorg/zorg/jenkins/jobs/util/submit-debuginfo-statistics-to-lnt.py
+        //        '''
+        //    }
+        //}
+    }
+}
