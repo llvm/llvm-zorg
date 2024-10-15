@@ -3151,7 +3151,9 @@ all += [
                         'CXX': 'clang++',
                     })},
 
-    ## RISC-V RVA20 profile check-all 2-stage
+    ## RISC-V RVA20 profile check-all 2-stage. The second stage is
+    # cross-compiled on the x86 host and then lit runs under a qemu-system image
+    # using the just-build artifacts.
     {'name' : "clang-riscv-rva20-2stage",
     'tags'  : ["clang"],
     'workernames' : ["rise-clang-riscv-rva20-2stage"],
@@ -3161,6 +3163,7 @@ all += [
                 useTwoStage=True,
                 runTestSuite=False,
                 testStage1=False,
+                checkout_compiler_rt=False,
                 extra_cmake_args=[
                     "-DCMAKE_C_COMPILER=clang",
                     "-DCMAKE_CXX_COMPILER=clang++",
@@ -3169,9 +3172,23 @@ all += [
                     "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
                     "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache"],
                 extra_stage2_cmake_args=[
-                    "-DLLVM_ENABLE_LLD=True",
-                    "-DCMAKE_C_FLAGS='-march=rva20u64'",
-                    "-DCMAKE_CXX_FLAGS='-march=rva20u64'"]
+                    util.Interpolate(f"-DLLVM_NATIVE_TOOL_DIR=%(prop:builddir)s/stage1.install/bin"),
+                    "-DLLVM_BUILD_TESTS=True",
+                    "-DLLVM_EXTERNAL_LIT=/home/buildbot-worker/lit-on-qemu-system-rva20.py",
+                    ],
+                stage2_toolchain_options=[
+                    "set(CMAKE_SYSTEM_NAME Linux)",
+                    "set(CMAKE_SYSROOT /home/buildbot-worker/rvsysroot)",
+                    "set(CMAKE_C_COMPILER_TARGET riscv64-linux-gnu)",
+                    "set(CMAKE_CXX_COMPILER_TARGET riscv64-linux-gnu)",
+                    "set(CMAKE_C_FLAGS_INIT '-march=rva20u64')",
+                    "set(CMAKE_CXX_FLAGS_INIT '-march=rva20u64')",
+                    "set(CMAKE_LINKER_TYPE LLD)",
+                    "set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)",
+                    "set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)",
+                    "set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)",
+                    "set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)",
+                    ]
                 )},
 
     ## RISC-V RVA23 profile check-all 2-stage
