@@ -119,7 +119,41 @@ int main() {
 }
 EOL
 
+# Benchmarks
+# ==========
+#
+# Attaches the LLDB under test to a debug build of Clang/LLDB. We stop in a member
+# function of a "large" class (in this case clang::CodeGen::CodeGenFunction or
+# lldb_private::ClangASTSource). We then run various LLDB commands and collect a
+# `statistics dump` afterwards. Currently the scenarios are:
+# 
+# * frame_status: this just runs up to (and including) stopping in
+#                 a function, which then triggers formatting of the frame
+#                 status (which can be non-trivial since we trigger
+#                 data-formatters for function arguments and completion of
+#                 argument variables).
+#
+# * expr_deref: dereferences the "llvm::Function *Fn" function argument
+#               through the expression evaluator. This will trigger completion
+#               of the CodeGenFunction context and the llvm::Function class.
+#
+# * expr_method_call: call a method on Fn->isVarArg(). Similar to "expr_deref"
+#                     just with an additional function call.
+#
+# * expr_re_eval: dereference "llvm::Function *Fn" multiple times consecutively,
+#                 in the hopes that some of the work doesn't have to be re-done.
+#
+# * expr_two_stops: We run the "expr_deref", and then continue to another breakpoint
+#                   inside LLVM and run another set of expressions, testing the expression
+#                   evaluator's behaviour when stopping in different LLDB modules.
+#
+# * var_then_expr: Run "frame var" followed by expression evaluation.
+#
+# * var: Run "frame var", which triggers data-formatters and completion of local
+#        variables.
+
 # Clang benchmarks
+# ================
 
 profile_clang \
     "frame_status" \
@@ -150,6 +184,7 @@ profile_clang \
     "${LLVM_BUILD_DIR}/bin/lldb -o 'b CodeGenFunction::GenerateCode' -o run -o 'frame var'"
 
 # LLDB benchmarks
+# ===============
 
 profile_lldb \
     "frame_status" \
