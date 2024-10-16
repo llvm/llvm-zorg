@@ -3319,7 +3319,7 @@ all += [
 
                         "TOOLCHAIN_TARGET_TRIPLE"       : "aarch64-unknown-linux-gnu",
                         "TOOLCHAIN_TARGET_COMPILER_FLAGS"   :  "-mcpu=cortex-a78",
-                        "TOOLCHAIN_TARGET_SYSROOTFS"    : "/mnt/fs/jetson-orin-ubuntu",
+                        "TOOLCHAIN_TARGET_SYSROOTFS"    : util.Interpolate("%(prop:sysroot_path_aarch64)s"),
                         "LIBCXX_ABI_VERSION"            : "1",
                         "LLVM_INSTALL_TOOLCHAIN_ONLY"   : "OFF",
 
