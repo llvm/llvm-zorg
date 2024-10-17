@@ -3,65 +3,39 @@
 set -xeou pipefail
 
 LLVM_BUILD_DIR=$1
-if [ -z "${LLVM_BUILD_DIR}" ]; then
-    echo "Path to host Clang not specified."
+if [ -z "${LLVM_BUILD_DIR}" ] || [ ! -d "${LLVM_BUILD_DIR}" ]; then
+    echo "Invalid path to host Clang specified: ${LLVM_BUILD_DIR}"
     exit 1
 fi
 
 DEBUG_BUILD_DIR=$2
-if [ -z "${DEBUG_BUILD_DIR}" ]; then
-    echo "Path to debug Clang/LLDB not specified."
+if [ -z "${DEBUG_BUILD_DIR}" ] || [ ! -d "${DEBUG_BUILD_DIR}" ]; then
+    echo "Invalid path to host debug Clang/LLDB specified: ${DEBUG_BUILD_DIR}"
     exit 1
 fi
 
 ARTIFACTS=/tmp/lldb-metrics
-CSV_DIR=${ARTIFACTS}/csv
+RESULTS_DIR=${ARTIFACTS}/results
 HYPERFINE_RUNS=5
 HYPERFINE_WARMUP=3
 SYSROOT=`xcrun --show-sdk-path`
 TEST_COMPILE_FLAGS="-g -O0 -isysroot ${SYSROOT}"
 TEST_SRC_FILE=${ARTIFACTS}/main.cpp
 
-profile() {
-  local test_case_name=$1
-  if [ -z "${test_case_name}" ]; then
-      echo "ERROR: Test-case name is empty."
-      return
-  fi
-
-  local csv_path="${CSV_DIR}/${test_case_name}.csv"
-  if [ -f ${csv_path} ]; then
-      echo "Results already exist at '${csv_path}'."
-      return
-  fi
-
-  hyperfine \
-      --warmup ${HYPERFINE_WARMUP} \
-      --runs ${HYPERFINE_RUNS} \
-      --export-csv ${csv_path} \
-      --shell=bash \
-      -- \
-      "$2"
-
-  [[ -f $csv_path ]] && cat $csv_path
-}
-
 profile_clang() {
     local test_case_name="clang_$1"
 
     # Invocation to be profiled.
-    local profile_invocation=$2
+    local profile_invocation="$2"
 
     # Debuggee that LLDB will launch.
     local debuggee_invocation="${DEBUG_BUILD_DIR}/bin/clang++ -c ${TEST_COMPILE_FLAGS} ${TEST_SRC_FILE} -o $ARTIFACTS/a.o"
 
     # Where to write the 'statistics dump' output to.
-    local stats_filename="${CSV_DIR}/${test_case_name}.json"
+    local stats_filename="${RESULTS_DIR}/${test_case_name}.json"
 
-    # Launch hyperfine.
-    profile \
-        $test_case_name \
-        "${profile_invocation} -o 'script -- f=open(\"${stats_filename}\",\"w\"); lldb.debugger.SetOutputFileHandle(f,True); lldb.debugger.HandleCommand(\"statistics dump\")' --batch -- ${debuggee_invocation}"
+    # Run test-case and collect statistics.
+    eval "${profile_invocation} -o 'script -- f=open(\"${stats_filename}\",\"w\"); lldb.debugger.SetOutputFileHandle(f,True); lldb.debugger.HandleCommand(\"statistics dump\")' --batch -- ${debuggee_invocation}"
 
     [[ -f $stats_filename ]] && cat $stats_filename
 }
@@ -70,23 +44,19 @@ profile_lldb() {
     local test_case_name="lldb_$1"
 
     # Invocation to be profiled.
-    local profile_invocation=$2
+    local profile_invocation="$2"
 
     local debuggee="${ARTIFACTS}/a.out"
-    if [ ! -f "${debuggee}" ]; then
-        ${DEBUG_BUILD_DIR}/bin/clang++ -isysroot ${SYSROOT} ${TEST_COMPILE_FLAGS} ${TEST_SRC_FILE} -o ${debuggee}
-    fi
+    ${DEBUG_BUILD_DIR}/bin/clang++ -isysroot ${SYSROOT} ${TEST_COMPILE_FLAGS} ${TEST_SRC_FILE} -o ${debuggee}
 
     # Debuggee that LLDB will launch.
     local debuggee_invocation="${DEBUG_BUILD_DIR}/bin/lldb ${debuggee} -o 'br se -p return' -o run -o 'expr fib(1)'"
 
     # Where to write the 'statistics dump' output to.
-    local stats_filename="${CSV_DIR}/${test_case_name}.json"
+    local stats_filename="${RESULTS_DIR}/${test_case_name}.json"
 
-    # Launch hyperfine.
-    profile \
-        $test_case_name \
-        "${profile_invocation} -o 'script -- f=open(\"${stats_filename}\",\"w\"); lldb.debugger.SetOutputFileHandle(f,True); lldb.debugger.HandleCommand(\"statistics dump\")' --batch -- ${debuggee_invocation}"
+    # Run test-case and collect statistics.
+    eval "${profile_invocation} -o 'script -- f=open(\"${stats_filename}\",\"w\"); lldb.debugger.SetOutputFileHandle(f,True); lldb.debugger.HandleCommand(\"statistics dump\")' --batch -- ${debuggee_invocation}"
 
     [[ -f $stats_filename ]] && cat $stats_filename
 }
@@ -95,7 +65,7 @@ profile_lldb() {
 
 rm -rf $ARTIFACTS
 mkdir $ARTIFACTS
-mkdir $CSV_DIR
+mkdir $RESULTS_DIR
 
 cat >${TEST_SRC_FILE} <<EOL
 #include <map>
