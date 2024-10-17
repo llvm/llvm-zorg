@@ -453,11 +453,12 @@ all = [
                         'NO_STOP_MESSAGE':'1', # For Fortran test-suite
                     },
                     testsuite_flags=[
-                        '--cppflags', '-mcpu=cortex-a57',
+                        '--cppflags', '-mcpu=cortex-a57 -fuse-ld=lld',
                         '--threads=32', '--build-threads=32'],
                     extra_cmake_args=[
                         "-DCMAKE_C_FLAGS='-mcpu=cortex-a57'",
                         "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a57'",
+                        "-DLLVM_ENABLE_LLD=True",
                         "-DLLVM_LIT_ARGS='-v'",
                         "-DMLIR_INCLUDE_INTEGRATION_TESTS=True",
                         "-DMLIR_RUN_ARM_SVE_TESTS=True",
