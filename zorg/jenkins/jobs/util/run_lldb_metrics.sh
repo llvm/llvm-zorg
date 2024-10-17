@@ -1,13 +1,19 @@
 #!/bin/bash
 
+# Invoke as: ./run_lldb_metrics.sh /path/to/llvm/under/test /path/to/debug/llvm/build
+
 set -xeou pipefail
 
+# This directory contains the LLDB under test for which we collect metrics.
 LLVM_BUILD_DIR=$1
 if [ -z "${LLVM_BUILD_DIR}" ] || [ ! -d "${LLVM_BUILD_DIR}" ]; then
     echo "Invalid path to host Clang specified: ${LLVM_BUILD_DIR}"
     exit 1
 fi
 
+# This directory contains a debug build of clang and LLDB. We attach
+# the LLDB under test (in LLVM_BUILD_DIR) to these debug binaries
+# to collect metrics.
 DEBUG_BUILD_DIR=$2
 if [ -z "${DEBUG_BUILD_DIR}" ] || [ ! -d "${DEBUG_BUILD_DIR}" ]; then
     echo "Invalid path to host debug Clang/LLDB specified: ${DEBUG_BUILD_DIR}"
