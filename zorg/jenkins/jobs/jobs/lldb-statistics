@@ -1,4 +1,23 @@
 #!/usr/bin/env groovy
+
+// These are the LLVM build directories involved:
+//
+// (a) The "host" compiler/LLDB is taken from whatever the LLDB incremental built/used.
+//     The metrics we collect are from that "host" LLDB that we fetched. Throughout this
+//     file it is commonly referred to as 'host-compiler' or 'HOST_BUILD_DIR'.
+// 
+// (b) The debugger/compiler that we're debugging as part of metrics collection is pinned to
+//     the llvm-19.x release and is supposed to be unchanging across runs of this job.
+//     Throughout this file we refer to it as "historic" or 'clang-19'.
+// 
+// (c) We use the compiler from (a) to build the "historic" Clang/LLDB.
+// 
+// (d) The compiler compiling the debugger in (a) is the Clang produced by the clang-stage2
+//     buildbot and happens outside the purview job.
+//
+// In summary, the only stable version of Clang/LLVM is the one we use as the inferior during
+// metrics collection.
+
 pipeline {
     options {
         disableConcurrentBuilds()
@@ -145,6 +164,8 @@ pipeline {
                 '''
             }
         }
+
+        // TODO: for now we just dump the statistics to the console.
         //stage('Submit debuginfo statistics to LNT') {
         //    steps {
         //        sh '''
