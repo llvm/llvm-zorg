@@ -166,7 +166,7 @@ pipeline {
         stage('Run metrics') {
             environment {
                HOST_BUILD_DIR="$WORKSPACE/host-compiler"
-               HISTORIC_BUILD_DIR="$WORKSPACE/clang-19-build"
+               HISTORIC_BUILD_DIR="$WORKSPACE/clang-19-build/tools/clang/stage2-bins"
             }
             steps {
                 sh '''
