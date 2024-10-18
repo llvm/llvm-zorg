@@ -278,7 +278,8 @@ def _getClangCMakeBuildFactory(
     f = LLVMBuildFactory(
             depends_on_projects=depends_on_projects,
             llvm_srcdir='llvm',
-            enable_runtimes=enable_runtimes)
+            enable_runtimes=enable_runtimes,
+            clean=clean)
 
     # Checkout the latest code for LNT
     # and the test-suite separately. Le's do this first,
