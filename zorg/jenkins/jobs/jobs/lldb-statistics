@@ -154,6 +154,7 @@ pipeline {
                          -DCMAKE_C_COMPILER=$CC \
                          -DCMAKE_CXX_COMPILER=$CXX \
                          -DCLANG_ENABLE_BOOTSTRAP=On \
+                         -DCLANG_BOOTSTRAP_PASSTHROUGH="LLDB_INCLUDE_TESTS;LLDB_ENABLE_PYTHON;LLDB_ENABLE_LUA" \
                          -DBOOTSTRAP_CMAKE_BUILD_TYPE=Debug \
                          -G Ninja
                        cmake --build .
