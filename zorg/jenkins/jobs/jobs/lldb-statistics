@@ -1,5 +1,9 @@
 #!/usr/bin/env groovy
 
+// This pipeline collects LLDB metrics by attaching LLDB to stable a
+// version of clang-19/lldb-19, run various LLDB commands and then
+// dump LLDB statistics.
+
 // These are the LLVM build directories involved:
 //
 // (a) The "host" compiler/LLDB is taken from whatever the LLDB incremental built/used.
@@ -8,7 +12,10 @@
 // 
 // (b) The debugger/compiler that we're debugging as part of metrics collection is pinned to
 //     the llvm-19.x release and is supposed to be unchanging across runs of this job.
-//     Throughout this file we refer to it as "historic" or 'clang-19'.
+//     Throughout this file we refer to it as "historic" or 'clang-19'. We build this
+//     historic compiler with a 2-stage bootstrap build (the first stage in Release to
+//     speed up the build process, and the second stage in Debug since we need to attach
+//     LLDB to it).
 // 
 // (c) We use the compiler from (a) to build the "historic" Clang/LLDB.
 // 
@@ -135,7 +142,7 @@ pipeline {
                        rsync -a $SRC/$HISTORIC_COMPILER/ $HISTORIC_COMPILER-src/
                        cd $HISTORIC_COMPILER-build
                        cmake ../$HISTORIC_COMPILER-src/llvm \
-                         -DCMAKE_BUILD_TYPE=Debug \
+                         -DCMAKE_BUILD_TYPE=Release \
                          -DLLVM_ENABLE_PROJECTS="clang;lldb" \
                          -DLLVM_ENABLE_ASSERTIONS=Off \
                          -DLLVM_ENABLE_MODULES=Off \
@@ -146,6 +153,8 @@ pipeline {
                          -DCMAKE_EXPORT_COMPILE_COMMANDS=On \
                          -DCMAKE_C_COMPILER=$CC \
                          -DCMAKE_CXX_COMPILER=$CXX \
+                         -DCLANG_ENABLE_BOOTSTRAP=On \
+                         -DBOOTSTRAP_CMAKE_BUILD_TYPE=Debug \
                          -G Ninja
                        cmake --build .
                        cd ../..
