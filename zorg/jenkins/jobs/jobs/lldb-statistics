@@ -13,9 +13,8 @@
 // (b) The debugger/compiler that we're debugging as part of metrics collection is pinned to
 //     the llvm-19.x release and is supposed to be unchanging across runs of this job.
 //     Throughout this file we refer to it as "historic" or 'clang-19'. We build this
-//     historic compiler with a 2-stage bootstrap build (the first stage in Release to
-//     speed up the build process, and the second stage in Debug since we need to attach
-//     LLDB to it).
+//     historic compiler build because we want improvements in the compiler to reflect
+//     in the benchmarks.
 // 
 // (c) We use the compiler from (a) to build the "historic" Clang/LLDB.
 // 
@@ -153,9 +152,6 @@ pipeline {
                          -DCMAKE_EXPORT_COMPILE_COMMANDS=On \
                          -DCMAKE_C_COMPILER=$CC \
                          -DCMAKE_CXX_COMPILER=$CXX \
-                         -DCLANG_ENABLE_BOOTSTRAP=On \
-                         -DCLANG_BOOTSTRAP_PASSTHROUGH="LLDB_INCLUDE_TESTS;LLDB_ENABLE_PYTHON;LLDB_ENABLE_LUA" \
-                         -DBOOTSTRAP_CMAKE_BUILD_TYPE=Debug \
                          -G Ninja
                        cmake --build .
                        cd ../..
