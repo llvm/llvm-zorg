@@ -66,19 +66,6 @@ all = [
                         'CCACHE_DIR' : util.Interpolate("%(prop:builddir)s/ccache-db"),
                     })},
 
-    {'name' : "llvm-clang-x86_64-expensive-checks-win-release",
-    'tags'  : ["llvm", "expensive-checks"],
-    'workernames' : ["as-builder-9"],
-    'builddir': "llvm-clang-x86_64-expensive-checks-win-rel",
-    'factory' : UnifiedTreeBuilder.getCmakeWithNinjaWithMSVCBuildFactory(
-                    vs="autodetect",
-                    depends_on_projects=["llvm", "lld"],
-                    clean=True,
-                    extra_configure_args=[
-                        "-DLLVM_ENABLE_EXPENSIVE_CHECKS=ON",
-                        "-DLLVM_ENABLE_WERROR=OFF",
-                        "-DCMAKE_BUILD_TYPE=Debug"])},
-
     {'name' : "llvm-clang-x86_64-expensive-checks-debian-release",
     'tags'  : ["llvm", "expensive-checks"],
     'workernames' : ["gribozavr4"],
