@@ -178,8 +178,13 @@ pipeline {
                        sha=$(echo ${git_desc} | cut -f 3 -d "-")
                        export GIT_SHA=${sha:1}
 
+                       # Also save the LLVM_REV until LNT server is taught about GIT
+                       export LLVM_REV=$(git show -q | grep "llvm-svn:" | cut -f2 -d":" | tr -d " ")
+
+                       export INSTALL_DIR=lldb-install
+
                        cd -
-                       python3 llvm-zorg/zorg/jenkins/monorepo_build.py properties
+                       python3 llvm-zorg/zorg/jenkins/monorepo_build.py artifact
                        '''
                    }
               }
