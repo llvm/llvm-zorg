@@ -184,6 +184,8 @@ pipeline {
                        export INSTALL_DIR=lldb-install
 
                        cd -
+                       python3 llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake install
+
                        python3 llvm-zorg/zorg/jenkins/monorepo_build.py artifact
                        '''
                    }
