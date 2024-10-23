@@ -34,11 +34,7 @@ pipeline {
     parameters {
         string(name: 'LABEL', defaultValue: params.LABEL ?: 'macos-x86_64', description: 'Node label to run on')
         string(name: 'GIT_SHA', defaultValue: params.GIT_REVISION ?: '*/release/19.x', description: 'Git commit to build.')
-
-        // TODO: we should get LLDB as an artifact from the lldb-cmake-intel/latest job. Said job doesn't currently
-        // publish LLDB/Clang as an artifact however. So instead we build Clang/LLDB from top-of-tree main.
-        // string(name: 'ARTIFACT', defaultValue: params.ARTIFACT ?: 'lldb-cmake-intel/latest', description: 'Clang/LLDB artifact to use')
-
+        string(name: 'ARTIFACT', defaultValue: params.ARTIFACT ?: 'llvm.org/lldb-cmake/latest', description: 'Clang/LLDB artifact to use')
         booleanParam(name: 'CLEAN', defaultValue: params.CLEAN ?: false, description: 'Wipe the build directory?')
     }
 
@@ -60,16 +56,6 @@ pipeline {
                     dir('src/clang-19') {
                         checkout([$class: 'GitSCM', branches: [
                             [name: params.GIT_SHA]
-                        ], userRemoteConfigs: [
-                            [url: 'https://github.com/llvm/llvm-project.git']
-                        ], extensions: [
-                            [$class: 'CloneOption',
-                            noTags: true, timeout: 30]
-                        ]])
-                    }
-                    dir('src/host-main') {
-                        checkout([$class: 'GitSCM', branches: [
-                            [name: '*/main']
                         ], userRemoteConfigs: [
                             [url: 'https://github.com/llvm/llvm-project.git']
                         ], extensions: [
@@ -102,52 +88,19 @@ pipeline {
                '''
             }
         }
-        stage('Build (host)') {
+        stage('Fetch Artifact') {
             environment {
                PATH="$PATH:/usr/bin:/usr/local/bin"
-               SRC="$WORKSPACE/src"
-               HOST_SRC="$WORKSPACE/src/host-main"
-               HOST_BUILD="$WORKSPACE/host-main-build"
             }
             steps {
                 withCredentials([string(credentialsId: 's3_resource_bucket', variable: 'S3_BUCKET')]) {
-                    sh '''
-                       source ./venv/bin/activate
-
-                       cd $HOST_SRC
-                       git tag -a -m "First Commit" first_commit 97724f18c79c7cc81ced24239eb5e883bf1398ef || true
-
-                       git_desc=$(git describe --match "first_commit")
-                       export GIT_DISTANCE=$(echo ${git_desc} | cut -f 2 -d "-")
-
-                       sha=$(echo ${git_desc} | cut -f 3 -d "-")
-                       export GIT_SHA=${sha:1}
-
-                       cd -
-
-                       set -eux
-
-                       $CXX --version
-                       LLVM_REV=${GIT_DISTANCE}
-
-                       mkdir -p host-main-src
-                       mkdir -p host-main-build
-                       rsync -a $HOST_SRC/ host-main-src/
-                       cd host-main-build
-                       cmake ../host-main-src/llvm \
-                         -DCMAKE_BUILD_TYPE=Release \
-                         -DLLVM_ENABLE_PROJECTS="clang;lldb" \
-                         -DLLVM_ENABLE_ASSERTIONS=Off \
-                         -DLLVM_ENABLE_MODULES=Off \
-                         -DLLDB_INCLUDE_TESTS=Off \
-                         -DLLDB_ENABLE_PYTHON=On \
-                         -DLLDB_ENABLE_LUA=Off \
-                         -DLLVM_TARGETS_TO_BUILD='X86;AArch64' \
-                         -DCMAKE_EXPORT_COMPILE_COMMANDS=On \
-                         -G Ninja
-                       cmake --build .
-                       cd ../..
-                   '''
+                    sh """
+                        source ./venv/bin/activate
+                        echo "ARTIFACT=${params.ARTIFACT}"
+                        python llvm-zorg/zorg/jenkins/monorepo_build.py fetch
+                        ls $WORKSPACE/host-compiler/lib/clang/
+                        VERSION=`ls $WORKSPACE/host-compiler/lib/clang/`
+                    """
                 }
             }
         }
@@ -158,8 +111,8 @@ pipeline {
                BUILD="$WORKSPACE/clang-19-build"
                HOST_BUILD="$WORKSPACE/clang-19-build"
                HISTORIC_COMPILER="clang-19"
-               CC="$WORKSPACE/host-main-build/bin/clang"
-               CXX="$WORKSPACE/host-main-build/bin/clang++"
+               CC="$WORKSPACE/host-compiler/bin/clang"
+               CXX="$WORKSPACE/host-compiler/bin/clang++"
             }
             steps {
                 withCredentials([string(credentialsId: 's3_resource_bucket', variable: 'S3_BUCKET')]) {
@@ -207,8 +160,8 @@ pipeline {
         }
         stage('Run metrics') {
             environment {
-               HOST_BUILD_DIR="$WORKSPACE/host-build"
-               HISTORIC_BUILD_DIR="$WORKSPACE/clang-19-build/tools/clang/stage2-bins"
+               HOST_BUILD_DIR="$WORKSPACE/host-compiler"
+               HISTORIC_BUILD_DIR="$WORKSPACE/clang-19-build"
             }
             steps {
                 sh '''
