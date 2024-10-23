@@ -79,6 +79,7 @@ pipeline {
                     git_desc=$(git describe --match "first_commit")
 
                     export GIT_DISTANCE=$(echo ${git_desc} | cut -f 2 -d "-")
+                    export LLVM_REV=$(git show -q | grep "llvm-svn:" | cut -f2 -d":" | tr -d " ")
 
                     sha=$(echo ${git_desc} | cut -f 3 -d "-")
                     export GIT_SHA=${sha:1}
@@ -98,11 +99,16 @@ pipeline {
                       --runtimes="libcxx;libcxxabi;compiler-rt;libunwind"  \
                       --compiler-flag="-Wdocumentation" \
                       --cmake-type=Release)
-                      '''
-                      script {
-                          def LLDB = new org.swift.LLDB()
-                          LLDB.LLDB_prepare()
-                      }
+
+                    export INSTALL_DIR=lldb-install
+                    python3 llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake install
+                    '''
+
+                    script {
+                        def LLDB = new org.swift.LLDB()
+                        LLDB.LLDB_prepare("lldb-install/bin/debugserver")
+                        LLDB.LLDB_prepare("lldb-build/bin/debugserver")
+                    }
                 }
             }
         }
@@ -184,7 +190,6 @@ pipeline {
                        export INSTALL_DIR=lldb-install
 
                        cd -
-                       python3 llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake install
 
                        python3 llvm-zorg/zorg/jenkins/monorepo_build.py artifact
                        '''
