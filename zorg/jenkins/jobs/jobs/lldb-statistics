@@ -147,6 +147,7 @@ pipeline {
                          -DLLDB_INCLUDE_TESTS=Off \
                          -DLLDB_ENABLE_PYTHON=Off \
                          -DLLDB_ENABLE_LUA=Off \
+                         -DLLDB_ENABLE_LZMA=Off \
                          -DLLVM_TARGETS_TO_BUILD='X86;AArch64' \
                          -DCMAKE_EXPORT_COMPILE_COMMANDS=On \
                          -DCMAKE_C_COMPILER=$CC \
