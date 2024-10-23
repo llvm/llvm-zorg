@@ -34,7 +34,7 @@ pipeline {
     parameters {
         string(name: 'LABEL', defaultValue: params.LABEL ?: 'macos-x86_64', description: 'Node label to run on')
         string(name: 'GIT_SHA', defaultValue: params.GIT_REVISION ?: '*/release/19.x', description: 'Git commit to build.')
-        string(name: 'ARTIFACT', defaultValue: params.ARTIFACT ?: 'llvm.org/lldb-cmake/latest', description: 'Clang/LLDB artifact to use')
+        string(name: 'ARTIFACT', defaultValue: params.ARTIFACT ?: 'lldb-cmake/latest', description: 'Clang/LLDB artifact to use')
         booleanParam(name: 'CLEAN', defaultValue: params.CLEAN ?: false, description: 'Wipe the build directory?')
     }
 
