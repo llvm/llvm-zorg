@@ -161,6 +161,10 @@ pipeline {
                        cd ../..
                    '''
                 }
+                script {
+                    def LLDB = new org.swift.LLDB()
+                    LLDB.LLDB_prepare()
+                }
             }
         }
         stage('Run metrics') {
