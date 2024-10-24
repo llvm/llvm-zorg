@@ -140,12 +140,12 @@ pipeline {
                        rsync -a $SRC/$HISTORIC_COMPILER/ $HISTORIC_COMPILER-src/
                        cd $HISTORIC_COMPILER-build
                        cmake ../$HISTORIC_COMPILER-src/llvm \
-                         -DCMAKE_BUILD_TYPE=Release \
+                         -DCMAKE_BUILD_TYPE=Debug \
                          -DLLVM_ENABLE_PROJECTS="clang;lldb" \
                          -DLLVM_ENABLE_ASSERTIONS=Off \
                          -DLLVM_ENABLE_MODULES=Off \
                          -DLLDB_INCLUDE_TESTS=Off \
-                         -DLLDB_ENABLE_PYTHON=Off \
+                         -DLLDB_ENABLE_PYTHON=ON \
                          -DLLDB_ENABLE_LUA=Off \
                          -DLLDB_ENABLE_LZMA=Off \
                          -DLLVM_TARGETS_TO_BUILD='X86;AArch64' \
