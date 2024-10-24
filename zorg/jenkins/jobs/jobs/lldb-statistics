@@ -102,6 +102,10 @@ pipeline {
                         VERSION=`ls $WORKSPACE/host-compiler/lib/clang/`
                     """
                 }
+                script {
+                  def LLDB = new org.swift.LLDB()
+                  LLDB.LLDB_prepare("host-compiler/bin/debugserver")
+                }
             }
         }
         stage('Build (historic)') {
