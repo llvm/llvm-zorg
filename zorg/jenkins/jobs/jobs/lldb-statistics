@@ -163,7 +163,7 @@ pipeline {
                 }
                 script {
                     def LLDB = new org.swift.LLDB()
-                    LLDB.LLDB_prepare()
+                    LLDB.LLDB_prepare("$HISTORIC_COMPILER-build/bin/debugserver")
                 }
             }
         }
