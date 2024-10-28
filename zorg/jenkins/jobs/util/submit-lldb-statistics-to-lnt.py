@@ -7,8 +7,8 @@ import os
 import sys
 
 # Note there are fewer git commits in the monorepo than there were svn revisions.
-#LLVM_REV=os.environ["GIT_DISTANCE"]
-#JOB_NAME=f'{os.environ["NODE_NAME"]}_{os.environ["JOB_NAME"]}'
+LLVM_REV=os.environ["GIT_DISTANCE"]
+JOB_NAME=f'{os.environ["NODE_NAME"]}_{os.environ["JOB_NAME"]}'
 
 if len(sys.argv) != 2:
     print("Usage: submit-lldb-statistics-to-lnt.py <path/to/stats/directory>")
