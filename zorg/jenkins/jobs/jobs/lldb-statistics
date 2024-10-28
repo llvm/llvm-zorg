@@ -192,7 +192,7 @@ pipeline {
 
                     cd -
 
-                    python llvm-zorg/zorg/jenkins/jobs/util/submit-debuginfo-statistics-to-lnt.py /tmp/lldb-metrics/results
+                    python llvm-zorg/zorg/jenkins/jobs/util/submit-lldb-statistics-to-lnt.py /tmp/lldb-metrics/results
                 '''
             }
         }
