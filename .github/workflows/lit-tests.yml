@@ -1,4 +1,4 @@
-name: Run llvm-zorg's lit tests
+name: llvm-zorg testing
 
 on: [push, pull_request]
 
@@ -6,7 +6,8 @@ permissions:
   contents: read
 
 jobs:
-  test:
+  check_zorg:
+    name: llvm-zorg lit tests
     if: github.repository_owner == 'llvm'
     runs-on: ubuntu-24.04
     steps:
