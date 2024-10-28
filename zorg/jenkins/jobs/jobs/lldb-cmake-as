@@ -189,8 +189,7 @@ pipeline {
         always {
             // ToDo: Restore the issue scanner
             // scanForIssues tool: clang()
-            // junit 'test/results.xml'
-            echo "Temporarily Skip Junit"
+            junit 'test/results.xml'
         }
     }
 }

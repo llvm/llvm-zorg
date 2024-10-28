@@ -133,8 +133,7 @@ pipeline {
                     python3 llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix test || echo "** check-lldb failed with errors"
                     '''
                 }
-                // junit 'test/results.xml'
-                echo "Temporarily Skip Junit"
+                junit 'test/results.xml'
             }
         }
         stage('Test DWARF4') {
@@ -166,8 +165,7 @@ pipeline {
                     python3 llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix test || echo "** check-lldb failed with errors"
                     '''
                 }
-                // junit 'test/results.xml'
-                echo "Temporarily Skip Junit"
+                junit 'test/results.xml'
             }
         }
         stage('Test DWARF5') {
@@ -199,8 +197,7 @@ pipeline {
                     python3 llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix test || echo "** check-lldb failed with errors"
                     '''
                 }
-                // junit 'test/results.xml'
-                echo "Temporarily Skip Junit"
+                junit 'test/results.xml'
             }
         }
         stage('Build Clang 15.0.1') {
@@ -265,8 +262,7 @@ pipeline {
                     python3 llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix test || echo "** check-lldb failed with errors"
                     '''
                 }
-                // junit 'test/results.xml'
-                echo "Temporarily Skip Junit"
+                junit 'test/results.xml'
             }
         }
         stage('Build Clang 17.0.6') {
@@ -333,8 +329,7 @@ pipeline {
                     python3 llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix test || echo "** check-lldb failed with errors"
                     '''
                 }
-                // junit 'test/results.xml'
-                echo "Temporarily Skip Junit"
+                junit 'test/results.xml'
             }
         }
     }
