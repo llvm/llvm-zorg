@@ -1,0 +1,22 @@
+name: llvm-zorg testing
+
+on: [push, pull_request]
+
+permissions:
+  contents: read
+
+jobs:
+  check_zorg:
+    name: llvm-zorg lit tests
+    if: github.repository_owner == 'llvm'
+    runs-on: ubuntu-24.04
+    steps:
+    - uses: actions/checkout@v4
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y llvm-18-tools buildbot
+        sudo ln -s /usr/lib/llvm-18/build/utils/lit/lit.py /usr/bin/lit
+        sudo ln -s /usr/bin/FileCheck-18 /usr/bin/FileCheck
+    - name: Run lit tests
+      run: /usr/lib/llvm-18/build/utils/lit/lit.py -v --xfail jenkins/test_build.py test
