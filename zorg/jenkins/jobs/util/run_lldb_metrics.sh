@@ -41,7 +41,7 @@ profile_clang() {
     local stats_filename="${RESULTS_DIR}/${test_case_name}.json"
 
     # Run test-case and collect statistics.
-    eval "${profile_invocation} -o 'script -- f=open(\"${stats_filename}\",\"w\"); lldb.debugger.SetOutputFileHandle(f,True); lldb.debugger.HandleCommand(\"statistics dump\")' --batch -- ${debuggee_invocation}"
+    eval "${profile_invocation} -o 'script -- f=open(\"${stats_filename}\",\"w\"); lldb.debugger.SetOutputFileHandle(f,True); lldb.debugger.HandleCommand(\"statistics dump --summary\")' --batch -- ${debuggee_invocation}"
 
     [[ -f $stats_filename ]] && cat $stats_filename
 }
@@ -62,7 +62,7 @@ profile_lldb() {
     local stats_filename="${RESULTS_DIR}/${test_case_name}.json"
 
     # Run test-case and collect statistics.
-    eval "${profile_invocation} -o 'script -- f=open(\"${stats_filename}\",\"w\"); lldb.debugger.SetOutputFileHandle(f,True); lldb.debugger.HandleCommand(\"statistics dump\")' --batch -- ${debuggee_invocation}"
+    eval "${profile_invocation} -o 'script -- f=open(\"${stats_filename}\",\"w\"); lldb.debugger.SetOutputFileHandle(f,True); lldb.debugger.HandleCommand(\"statistics dump --summary\")' --batch -- ${debuggee_invocation}"
 
     [[ -f $stats_filename ]] && cat $stats_filename
 }
