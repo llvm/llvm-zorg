@@ -76,7 +76,7 @@ pipeline {
                 withCredentials([string(credentialsId: 's3_resource_bucket', variable: 'S3_BUCKET')]) {
                     sh """
                         source ./venv/bin/activate
-                        aws s3 cp "{S3_BUCKET}/clangci/${params.STAGE_1_JOB_NAME}/last_good_build.properties" "."
+                        aws s3 cp "\${S3_BUCKET}/clangci/${params.STAGE_1_JOB_NAME}/last_good_build.properties" "."
                     """
                 }
             }
