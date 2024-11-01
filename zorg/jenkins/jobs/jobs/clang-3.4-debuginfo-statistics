@@ -89,7 +89,7 @@ pipeline {
                 withCredentials([string(credentialsId: 's3_resource_bucket', variable: 'S3_BUCKET')]) {
                     sh """
                         source ./venv/bin/activate
-                        export $(grep ARTIFACT last_good_build.properties)
+                        export "$(grep ARTIFACT last_good_build.properties)"
                         python llvm-zorg/zorg/jenkins/monorepo_build.py fetch
                         ls $WORKSPACE/host-compiler/lib/clang/
                         VERSION=`ls $WORKSPACE/host-compiler/lib/clang/`
