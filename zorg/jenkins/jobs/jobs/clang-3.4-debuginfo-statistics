@@ -11,7 +11,7 @@ pipeline {
 
         string(name: 'GIT_SHA', defaultValue: params.GIT_REVISION ?: '*/release/13.x', description: 'Git commit to build.')
 
-        string(name: 'ARTIFACT', defaultValue: params.ARTIFACT ?: 'clang-stage1-RA/latest', description: 'Clang artifact to use')
+        string(name: 'STAGE_1_JOB_NAME', defaultValue: params.STAGE_1_JOB_NAME ?: 'clang-stage1-RA', description: 'Stage 1 job name to download the artifact from.')
 
         string(name: 'BUILD_TYPE', defaultValue: params.BUILD_TYPE ?: 'Release', description: 'Default CMake build type; one of: Release, Debug, ...')
 
@@ -68,6 +68,19 @@ pipeline {
                '''
             }
         }
+        stage('Download Properties File') {
+            environment {
+               PATH="$PATH:/usr/bin:/usr/local/bin"
+            }
+            steps {
+                withCredentials([string(credentialsId: 's3_resource_bucket', variable: 'S3_BUCKET')]) {
+                    sh """
+                        source ./venv/bin/activate
+                        aws s3 cp "{S3_BUCKET}/clangci/${params.STAGE_1_JOB_NAME}/last_good_build.properties" "."
+                    """
+                }
+            }
+        }
         stage('Fetch Artifact') {
             environment {
                PATH="$PATH:/usr/bin:/usr/local/bin"
@@ -76,7 +89,7 @@ pipeline {
                 withCredentials([string(credentialsId: 's3_resource_bucket', variable: 'S3_BUCKET')]) {
                     sh """
                         source ./venv/bin/activate
-                        echo "ARTIFACT=${params.ARTIFACT}"
+                        export $(grep ARTIFACT last_good_build.properties)
                         python llvm-zorg/zorg/jenkins/monorepo_build.py fetch
                         ls $WORKSPACE/host-compiler/lib/clang/
                         VERSION=`ls $WORKSPACE/host-compiler/lib/clang/`
@@ -102,21 +115,9 @@ pipeline {
                     sh '''
                        source ./venv/bin/activate
 
-                       cd src/clang-13
-                       git tag -a -m "First Commit" first_commit 97724f18c79c7cc81ced24239eb5e883bf1398ef || true
-
-                       git_desc=$(git describe --match "first_commit")
-                       export GIT_DISTANCE=$(echo ${git_desc} | cut -f 2 -d "-")
-
-                       sha=$(echo ${git_desc} | cut -f 3 -d "-")
-                       export GIT_SHA=${sha:1}
-
-                       cd -
-
                        set -eux
 
                        $CXX --version
-                       LLVM_REV=${GIT_DISTANCE}
 
                        mkdir -p $HISTORIC_COMPILER-src
                        mkdir -p $HISTORIC_COMPILER-build
@@ -166,13 +167,7 @@ pipeline {
                 sh '''
                     source ./venv/bin/activate
 
-                    cd src/clang-13
-                    git tag -a -m "First Commit" first_commit 97724f18c79c7cc81ced24239eb5e883bf1398ef || true
-
-                    git_desc=$(git describe --match "first_commit")
-                    export GIT_DISTANCE=$(echo ${git_desc} | cut -f 2 -d "-")
-
-                    cd -
+                    export GIT_DISTANCE=$(grep GIT_DISTANCE last_good_build.properties)
 
                     python llvm-zorg/zorg/jenkins/jobs/util/submit-debuginfo-statistics-to-lnt.py
                 '''
