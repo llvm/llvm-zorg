@@ -2,7 +2,7 @@ from zorg.buildbot.commands.AnnotatedCommand import AnnotatedCommand
 from zorg.buildbot.process.factory import LLVMBuildFactory
 
 def getSanitizerBuildFactory(
-    clean=True,
+    clean=False,
     extra_depends_on_projects=[],
     extra_configure_args=None,
     env=None,
