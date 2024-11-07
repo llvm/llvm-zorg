@@ -82,19 +82,19 @@ function cmake() {
 }
 
 function rm_dirs {
-  while ! rm -rf $@ ; do sleep 1; done
+  while ! rm -rf "$@" ; do sleep 1; done
 }
 
 function cleanup() {
   [[ -v BUILDBOT_BUILDERNAME ]] || return 0
   echo @@@BUILD_STEP cleanup@@@
-  rm_dirs llvm_build2_* llvm_build_* libcxx_build_* compiler_rt_build* symbolizer_build* $@
+  rm_dirs llvm_build2_* llvm_build_* libcxx_build_* libcxx_install_* compiler_rt_build* symbolizer_build* "$@"
   if ccache -s >/dev/null ; then
     rm_dirs llvm_build64
   fi
   # Workaround the case when a new unittest was reverted, but incremental build continues to execute the leftover binary.
   find -path ./llvm-project -prune -o -executable -type f -path '*unittests*' -print -exec rm -f {} \;
-  du -hs * | sort -h
+  du -hs ./* | sort -h
 }
 
 function clobber {
@@ -104,9 +104,9 @@ function clobber {
       echo "Clobbering is supported only on buildbot only!"
       exit 1
     fi
-    rm_dirs *
+    rm_dirs ./*
   else
-    BUILDBOT_BUILDERNAME=1 cleanup $@
+    BUILDBOT_BUILDERNAME=1 cleanup "$@"
   fi
 }
 
@@ -204,7 +204,7 @@ function build_clang_at_release_tag {
   then
     echo "@@@BUILD_STEP using pre-built stage1 clang at r${host_clang_revision}@@@"
   else
-    BUILDBOT_MONO_REPO_PATH= BUILDBOT_REVISION="${host_clang_revision}" buildbot_update
+    BUILDBOT_MONO_REPO_PATH="" BUILDBOT_REVISION="${host_clang_revision}" buildbot_update
 
     rm -rf ${STAGE1_DIR}
     echo @@@BUILD_STEP build stage1 clang at $host_clang_revision@@@
@@ -228,6 +228,7 @@ function build_stage2 {
   echo @@@BUILD_STEP stage2/$sanitizer_name build libcxx@@@
 
   local libcxx_build_dir=libcxx_build_${sanitizer_name}
+  local libcxx_install_dir=libcxx_install_${sanitizer_name}
   local build_dir=llvm_build_${sanitizer_name}
   export STAGE2_DIR=${build_dir}
   local cmake_libcxx_cflags=
@@ -283,6 +284,7 @@ function build_stage2 {
   (cd ${libcxx_build_dir} && \
     cmake \
       ${cmake_stage2_common_options} \
+      -DCMAKE_INSTALL_PREFIX="${ROOT}/${libcxx_install_dir}" \
       -DLLVM_ENABLE_RUNTIMES='libcxx;libcxxabi;libunwind' \
       -DLIBCXX_TEST_PARAMS='long_tests=False' \
       -DLIBCXXABI_USE_LLVM_UNWINDER=OFF \
@@ -290,11 +292,14 @@ function build_stage2 {
       -DCMAKE_C_FLAGS="${fsanitize_flag} ${cmake_libcxx_cflags} ${fno_sanitize_flag}" \
       -DCMAKE_CXX_FLAGS="${fsanitize_flag} ${cmake_libcxx_cflags} ${fno_sanitize_flag}" \
       $LLVM/../runtimes && \
-    ninja cxx cxxabi) || build_failure
+    ninja cxx cxxabi && ninja install-cxx install-cxxabi) || build_failure
 
-  local libcxx_runtime_path=$(dirname $(find ${ROOT}/${libcxx_build_dir} -name libc++.so))
+  local libcxx_so_path="$(find "${ROOT}/${libcxx_install_dir}" -name libc++.so)"
+  test -f "${libcxx_so_path}" || build_failure
+  local libcxx_runtime_path=$(dirname "${libcxx_so_path}")
+
   local sanitizer_ldflags="-Wl,--rpath=${libcxx_runtime_path} -L${libcxx_runtime_path}"
-  local sanitizer_cflags="-nostdinc++ -isystem ${ROOT}/${libcxx_build_dir}/include -isystem ${ROOT}/${libcxx_build_dir}/include/c++/v1 $fsanitize_flag"
+  local sanitizer_cflags="-nostdinc++ -isystem ${ROOT}/${libcxx_install_dir}/include -isystem ${ROOT}/${libcxx_install_dir}/include/c++/v1 $fsanitize_flag"
 
   echo @@@BUILD_STEP stage2/$sanitizer_name build@@@
 
