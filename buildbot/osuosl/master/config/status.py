@@ -257,7 +257,7 @@ def getReporters():
                         "llvm-clang-win-x-armv7l", "llvm-clang-win-x-aarch64",
                         "llvm-nvptx-nvidia-ubuntu", "llvm-nvptx64-nvidia-ubuntu",
                         "llvm-nvptx-nvidia-win", "llvm-nvptx64-nvidia-win",
-                        "lldb-remote-linux-ubuntu"])
+                        "lldb-remote-linux-ubuntu", "lldb-remote-linux-win"])
             ]),
         reporters.MailNotifier(
             fromaddr = status_email_fromaddr,
