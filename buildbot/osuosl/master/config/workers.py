@@ -4,7 +4,10 @@ from buildbot.plugins import worker
 import config
 
 def create_worker(name, *args, **kwargs):
-    password = config.options.get('Worker Passwords', name)
+    if config.options.getboolean('Internal', 'test_mode'):
+        password = "test"
+    else:
+        password = config.options.get('Worker Passwords', name)
     return worker.Worker(name, password=password, *args, **kwargs)
 
 def get_all():
