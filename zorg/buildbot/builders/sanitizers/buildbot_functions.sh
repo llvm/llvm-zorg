@@ -82,7 +82,7 @@ function cmake() {
 }
 
 function rm_dirs {
-  while ! rm -rf $@ ; do sleep 1; done
+  while ! rm -rf "$@" ; do sleep 1; done
 }
 
 function cleanup() {
@@ -94,7 +94,7 @@ function cleanup() {
   fi
   # Workaround the case when a new unittest was reverted, but incremental build continues to execute the leftover binary.
   find -path ./llvm-project -prune -o -executable -type f -path '*unittests*' -print -exec rm -f {} \;
-  du -hs * | sort -h
+  du -hs ./* | sort -h
 }
 
 function clobber {
@@ -104,9 +104,9 @@ function clobber {
       echo "Clobbering is supported only on buildbot only!"
       exit 1
     fi
-    rm_dirs *
+    rm_dirs ./*
   else
-    BUILDBOT_BUILDERNAME=1 cleanup $@
+    BUILDBOT_BUILDERNAME=1 cleanup "$@"
   fi
 }
 
@@ -204,7 +204,7 @@ function build_clang_at_release_tag {
   then
     echo "@@@BUILD_STEP using pre-built stage1 clang at r${host_clang_revision}@@@"
   else
-    BUILDBOT_MONO_REPO_PATH= BUILDBOT_REVISION="${host_clang_revision}" buildbot_update
+    BUILDBOT_MONO_REPO_PATH="" BUILDBOT_REVISION="${host_clang_revision}" buildbot_update
 
     rm -rf ${STAGE1_DIR}
     echo @@@BUILD_STEP build stage1 clang at $host_clang_revision@@@
