@@ -247,6 +247,15 @@ def get_all():
                         'tools_root_path'       : '/home/buildbot/worker/as-builder-9/tools', 
                     },
                     max_builds=1),
+        # Windows Server 2022
+        create_worker("as-builder-10", properties={
+                        'jobs'                  : 128, 
+                        'remote_test_host'      : 'jetson-agx-0086.lab.llvm.org',
+                        'remote_test_user'      : 'ubuntu',
+                        'sysroot_path_aarch64'  : 'c:/buildbot/fs/jetson-agx-ubuntu',
+                        'zlib_root_path'        : 'c:/buildbot/fs/zlib-win32',
+                    },
+                    max_builds=1),
 
         # Solaris 11
         create_worker("solaris11-amd64", properties={'jobs' : 8}, max_builds=1),
