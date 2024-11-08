@@ -3458,15 +3458,14 @@ all += [
 
                         "TOOLCHAIN_TARGET_TRIPLE"       : "aarch64-unknown-linux-gnu",
                         "TOOLCHAIN_TARGET_COMPILER_FLAGS"   :  "-mcpu=cortex-a78",
-                        "TOOLCHAIN_TARGET_SYSROOTFS"    : util.Interpolate("%(prop:sysroot_path_aarch64)s"),
+                        "TOOLCHAIN_TARGET_SYSROOTFS:PATH"   : util.Interpolate("%(prop:sysroot_path_aarch64)s"),
                         "LIBCXX_ABI_VERSION"            : "1",
                         "LLVM_INSTALL_TOOLCHAIN_ONLY"   : "OFF",
 
                         "LLDB_TEST_ARCH"                : "aarch64",
-                        "LLDB_TEST_COMPILER"            : util.Interpolate("%(prop:builddir)s/build/bin/clang.exe"),
                         "LLDB_TEST_PLATFORM_URL"        : util.Interpolate("connect://%(prop:remote_test_host)s:1234"),
                         "LLDB_TEST_PLATFORM_WORKING_DIR": "/home/ubuntu/lldb-tests",
-                        "LLDB_TEST_SYSROOT"             : util.Interpolate("%(prop:sysroot_path_aarch64)s"),
+                        "LLDB_TEST_SYSROOT:PATH"        : util.Interpolate("%(prop:sysroot_path_aarch64)s"),
                         "LLDB_ENABLE_PYTHON"            : "ON",
                         "LLDB_ENABLE_SWIG"              : "ON",
                         "LLDB_ENABLE_LIBEDIT"           : "OFF",
@@ -3503,15 +3502,15 @@ all += [
                                 "CMAKE_C_FLAGS"                 : "-mcpu=cortex-a78 -D__OPTIMIZE__ -fPIC",
                                 "CMAKE_EXE_LINKER_FLAGS"        : "-Wl,-l:libc++abi.a -Wl,-l:libc++.a -Wl,-l:libunwind.a",
                                 "CMAKE_SHARED_LINKER_FLAGS"     : "-Wl,-l:libc++abi.a -Wl,-l:libc++.a -Wl,-l:libunwind.a",
-                                "CMAKE_CXX_COMPILER"            : util.Interpolate("%(prop:builddir)s/build/bin/clang++.exe"),
-                                "CMAKE_C_COMPILER"              : util.Interpolate("%(prop:builddir)s/build/bin/clang.exe"),
-                                "CMAKE_ASM_COMPILER"            : util.Interpolate("%(prop:builddir)s/build/bin/clang.exe"),
+                                "CMAKE_CXX_COMPILER:PATH"       : util.Interpolate("%(prop:builddir)s/build/bin/clang++.exe"),
+                                "CMAKE_C_COMPILER:PATH"         : util.Interpolate("%(prop:builddir)s/build/bin/clang.exe"),
+                                "CMAKE_ASM_COMPILER:PATH"       : util.Interpolate("%(prop:builddir)s/build/bin/clang.exe"),
                                 "CMAKE_SYSTEM_NAME"             : "Linux",
                                 "CMAKE_SYSTEM_PROCESSOR"        : "aarch64",
                                 "CMAKE_CROSSCOMPILING"          : "ON",
 
                                 # Required for the native table-gen
-                                "LLVM_NATIVE_TOOL_DIR"          : util.Interpolate("%(prop:builddir)s/build/bin"),
+                                "LLVM_NATIVE_TOOL_DIR:PATH"     : util.Interpolate("%(prop:builddir)s/build/bin"),
 
                                 "LLVM_DEFAULT_TARGET_TRIPLE"    : "aarch64-unknown-linux-gnu",
                                 "LLVM_HOST_TRIPLE"              : "aarch64-unknown-linux-gnu",
