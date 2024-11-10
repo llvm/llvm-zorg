@@ -15,8 +15,12 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y llvm-18-tools buildbot
+        sudo apt-get install -y llvm-18-tools
         sudo ln -s /usr/lib/llvm-18/build/utils/lit/lit.py /usr/bin/lit
         sudo ln -s /usr/bin/FileCheck-18 /usr/bin/FileCheck
+        python3 -m venv venv
+        source venv/bin/activate
+        pip install buildbot==3.11.7
+        echo "PATH=$PATH" >> "$GITHUB_ENV"
     - name: Run lit tests
       run: /usr/lib/llvm-18/build/utils/lit/lit.py -v --xfail jenkins/test_build.py test
