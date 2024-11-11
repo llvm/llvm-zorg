@@ -211,7 +211,10 @@ pipeline {
                         ], extensions: [
                             [$class: 'CloneOption', timeout: 30,
                             timeout: 30]
-                        ]])
+                        ],
+                        changelog: false,
+                        poll: false
+                        ])
                     }
                 }
                 timeout(90) {
@@ -276,7 +279,10 @@ pipeline {
                         ], extensions: [
                             [$class: 'CloneOption', timeout: 30,
                             timeout: 30]
-                        ]])
+                        ],
+                        changelog: false,
+                        poll: false
+                        ])
                     }
                 }
                 timeout(90) {
