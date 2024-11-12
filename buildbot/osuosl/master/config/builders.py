@@ -334,7 +334,7 @@ all = [
     'workernames': ["linaro-clang-armv7-2stage"],
     'builddir':"clang-armv7-2stage",
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
-                    clean=False,
+                    clean=True,
                     checkout_compiler_rt=False,
                     checkout_lld=False,
                     useTwoStage=True,
@@ -363,7 +363,7 @@ all = [
     'workernames' : ["linaro-clang-armv7-vfpv3-2stage"],
     'builddir': "clang-armv7-vfpv3-2stage",
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
-                    clean=False,
+                    clean=True,
                     checkout_compiler_rt=False,
                     checkout_lld=False,
                     useTwoStage=True,
@@ -389,7 +389,7 @@ all = [
     'workernames' : ["linaro-clang-aarch64-lld-2stage"],
     'builddir':"clang-aarch64-lld-2stage",
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
-                clean=False,
+                clean=True,
                 useTwoStage=True,
                 runTestSuite=True,
                 testsuite_flags=[
@@ -422,7 +422,7 @@ all = [
     'workernames' : ["linaro-clang-armv8-lld-2stage"],
     'builddir': "clang-armv8-lld-2stage",
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
-                    clean=False,
+                    clean=True,
                     useTwoStage=True,
                     runTestSuite=True,
                     testsuite_flags=[
@@ -499,7 +499,7 @@ all = [
     'workernames' : ["linaro-g3-01", "linaro-g3-02", "linaro-g3-03", "linaro-g3-04"],
     'builddir': "clang-aarch64-sve-vla-2stage",
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
-                    clean=False,
+                    clean=True,
                     checkout_flang=True,
                     useTwoStage=True,
                     testStage1=False,
@@ -547,7 +547,7 @@ all = [
     'workernames' : ["linaro-g3-01", "linaro-g3-02", "linaro-g3-03", "linaro-g3-04"],
     'builddir': "clang-aarch64-sve-vls-2stage",
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
-                    clean=False,
+                    clean=True,
                     checkout_flang=True,
                     useTwoStage=True,
                     testStage1=False,
@@ -572,7 +572,7 @@ all = [
     'builddir': "clang-arm64-windows-msvc-2stage",
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
                     vs="manual",
-                    clean=False,
+                    clean=True,
                     useTwoStage=True,
                     checkout_flang=True,
                     testStage1=False,
