@@ -40,6 +40,8 @@ class LLVMBuildFactory(BuildFactory):
         BuildFactory.__init__(self, steps)
 
         self.hint = hint
+
+        self.clean = kwargs.pop('clean', False)
         
         # Handle the dependencies.
         if depends_on_projects is None:
