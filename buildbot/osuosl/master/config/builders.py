@@ -1694,7 +1694,9 @@ all += [
     'builddir': "sanitizer-windows",
     'factory' : AnnotatedBuilder.getAnnotatedBuildFactory(
                     script="sanitizer-windows.py",
-                    depends_on_projects=["llvm", "clang", "lld", "compiler-rt"])},
+                    depends_on_projects=["llvm", "clang", "lld", "compiler-rt"],
+                    # FIXME: Restore `timeout` to default when fixed https://github.com/llvm/llvm-project/issues/102513
+                    timeout=2400)},
 
 # OpenMP builders.
 
