@@ -4,6 +4,7 @@ from datetime import datetime
 from buildbot.plugins import util
 from buildbot.steps.shell import ShellCommand, SetProperty
 from buildbot.steps.shell import WarningCountingShellCommand
+from buildbot.steps.transfer import StringDownload
 
 import zorg.buildbot.builders.Util as builders_util
 
@@ -435,10 +436,8 @@ def _getClangCMakeBuildFactory(
         # Absolute paths to just built compilers.
         # Note: Backslash path separators do not work well with cmake and ninja.
         # Forward slash path separator works on Windows as well.
-        stage1_cc = InterpolateToPosixPath(
-                        f"%(prop:builddir)s/{stage1_install}/bin/{cc}")
-        stage1_cxx = InterpolateToPosixPath(
-                        f"%(prop:builddir)s/{stage1_install}/bin/{cxx}")
+        stage1_cc = f"%(prop:builddir)s/{stage1_install}/bin/{cc}"
+        stage1_cxx = f"%(prop:builddir)s/{stage1_install}/bin/{cxx}"
 
         # If stage2_toolchain_options is set when we'll use a toolchain file
         # to specify the compiler being used (the just-built stage1) and add
@@ -446,21 +445,19 @@ def _getClangCMakeBuildFactory(
         # -DCMAKE_{C,CXX}_COMPILER.
         if stage2_toolchain_options is None:
             compiler_args = [
-                    f"-DCMAKE_C_COMPILER={stage1_cc}",
-                    f"-DCMAKE_CXX_COMPILER={stage1_cxx}"
+                    InterpolateToPosixPath(f"-DCMAKE_C_COMPILER={stage1_cc}"),
+                    InterpolateToPosixPath(f"-DCMAKE_CXX_COMPILER={stage1_cxx}"),
             ]
         else:
-            toolchain_file = InterpolateToPosixPath(
-                        f"%(prop:builddir)s/{stage2_build}/stage1-toolchain.cmake")
-            with open(toolchain_file, 'w') as file:
-                file.write(f"set(CMAKE_C_COMPILER {stage1_cc})\n")
-                file.write(f"set(CMAKE_CXX_COMPILER {stage1_cxx})\n")
-                for option in stage2_toolchain_options:
-                    file.write(f"{option}\n")
+            toolchain_file = f"%(prop:builddir)s/{stage2_build}/stage1-toolchain.cmake"
+            toolchain_file_contents = "\n".join([
+                    f"set(CMAKE_C_COMPILER {stage1_cc})",
+                    f"set(CMAKE_CXX_COMPILER {stage1_cxx})",
+                    ] + stage2_toolchain_options)
+            f.addStep(StringDownload(util.Interpolate(toolchain_file_contents),
+                                     workerdest=InterpolateToPosixPath(toolchain_file)))
+            compiler_args = [InterpolateToPosixPath(f"-DCMAKE_TOOLCHAIN_FILE={toolchain_file}")]
 
-            compiler_args = [
-                    "-DCMAKE_TOOLCHAIN_FILE={toolchain_file}"
-                    ]
 
         # If we have a separate stage2 cmake arg list, then ensure we re-apply
         # enable_projects and enable_runtimes if necessary.

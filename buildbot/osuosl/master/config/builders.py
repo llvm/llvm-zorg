@@ -3153,7 +3153,7 @@ all += [
 
     ## RISC-V RVA20 profile check-all 2-stage. The second stage is
     # cross-compiled on the x86 host and then lit runs under a qemu-system image
-    # using the just-build artifacts.
+    # using the just-built artifacts.
     {'name' : "clang-riscv-rva20-2stage",
     'tags'  : ["clang"],
     'workernames' : ["rise-clang-riscv-rva20-2stage"],
