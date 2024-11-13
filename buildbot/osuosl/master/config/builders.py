@@ -1694,7 +1694,9 @@ all += [
     'builddir': "sanitizer-windows",
     'factory' : AnnotatedBuilder.getAnnotatedBuildFactory(
                     script="sanitizer-windows.py",
-                    depends_on_projects=["llvm", "clang", "lld", "compiler-rt"])},
+                    depends_on_projects=["llvm", "clang", "lld", "compiler-rt"],
+                    # FIXME: Restore `timeout` to default when fixed https://github.com/llvm/llvm-project/issues/102513
+                    timeout=2400)},
 
 # OpenMP builders.
 
@@ -1948,7 +1950,7 @@ all += [
     'factory' : OpenMPBuilder.getOpenMPCMakeBuildFactory(
                         clean=True,
                         enable_runtimes=['compiler-rt', 'openmp', 'offload'],
-                        depends_on_projects=['llvm','clang','lld', 'offload', 'openmp','flang', 'compiler-rt'],
+                        depends_on_projects=['llvm','clang','lld', 'offload', 'openmp', 'mlir', 'flang', 'compiler-rt'],
                         extraCmakeArgs=[
                             "-DCMAKE_BUILD_TYPE=Release",
                             "-DCLANG_DEFAULT_LINKER=lld",
