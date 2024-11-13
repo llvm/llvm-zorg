@@ -23,7 +23,7 @@ jobs:
         pip install buildbot{,-worker}==3.11.7 urllib3
         echo "PATH=$PATH" >> "$GITHUB_ENV"
     - name: Run lit tests
-      run: /usr/lib/llvm-18/build/utils/lit/lit.py -v --xfail jenkins/test_build.py test
+      run: lit -v --xfail jenkins/test_build.py test
     - name: Run buildbot checkconfig
       run: |
         cd buildbot/osuosl/master
