@@ -7,7 +7,7 @@ permissions:
 
 jobs:
   check_zorg:
-    name: llvm-zorg lit tests
+    name: llvm-zorg litmus tests
     if: github.repository_owner == 'llvm'
     runs-on: ubuntu-24.04
     steps:
@@ -20,7 +20,11 @@ jobs:
         sudo ln -s /usr/bin/FileCheck-18 /usr/bin/FileCheck
         python3 -m venv venv
         source venv/bin/activate
-        pip install buildbot==3.11.7
+        pip install buildbot{,-worker}==3.11.7 urllib3
         echo "PATH=$PATH" >> "$GITHUB_ENV"
     - name: Run lit tests
       run: /usr/lib/llvm-18/build/utils/lit/lit.py -v --xfail jenkins/test_build.py test
+    - name: Run buildbot checkconfig
+      run: |
+        cd buildbot/osuosl/master
+        BUILDBOT_TEST=1 buildbot checkconfig
