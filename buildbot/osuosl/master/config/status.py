@@ -158,7 +158,8 @@ def getReporters():
                        "clang-s390x-linux",
                        "clang-s390x-linux-multistage",
                        "clang-s390x-linux-lnt",
-                       "mlir-s390x-linux"])
+                       "mlir-s390x-linux",
+                       "openmp-s390x-linux"])
             ]),
         reporters.MailNotifier(
             fromaddr = status_email_fromaddr,
