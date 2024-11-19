@@ -473,7 +473,8 @@ all = [
     # problems sooner rather than later.
     {'name' : "clang-aarch64-sve-vla",
     'tags'  : ["clang"],
-    'workernames' : ["linaro-g3-01", "linaro-g3-02", "linaro-g3-03", "linaro-g3-04"],
+    'workernames' : ["linaro-g3-01", "linaro-g3-02", "linaro-g3-03", "linaro-g3-04",
+                     "linaro-g4-01", "linaro-g4-02"],
     'builddir': "clang-aarch64-sve-vla",
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
                     clean=False,
@@ -496,7 +497,8 @@ all = [
     # AArch64 Clang+LLVM+RT+LLD check-all + flang + test-suite 2-stage w/SVE-Vector-Length-Agnostic
     {'name' : "clang-aarch64-sve-vla-2stage",
     'tags'  : ["clang"],
-    'workernames' : ["linaro-g3-01", "linaro-g3-02", "linaro-g3-03", "linaro-g3-04"],
+    'workernames' : ["linaro-g3-01", "linaro-g3-02", "linaro-g3-03", "linaro-g3-04",
+                     "linaro-g4-01", "linaro-g4-02"],
     'builddir': "clang-aarch64-sve-vla-2stage",
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
                     clean=True,
