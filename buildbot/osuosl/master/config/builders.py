@@ -3324,7 +3324,7 @@ all += [
                         "LLVM_INCLUDE_BENCHMARKS"       : "OFF",
                         "LLVM_PARALLEL_LINK_JOBS"       : 8,
                         "CLANG_DEFAULT_LINKER"          : "lld",
-                        "LLVM_LIT_ARGS"                 : "-v -vv --threads=8",
+                        "LLVM_LIT_ARGS"                 : "-v -vv --threads=8 --time-tests",
 
                         "TOOLCHAIN_TARGET_TRIPLE"       : "aarch64-unknown-linux-gnu",
                         "TOOLCHAIN_TARGET_COMPILER_FLAGS"   :  "-mcpu=cortex-a78",
@@ -3456,7 +3456,7 @@ all += [
                         "LLVM_TARGET_TRIPLE"            : "aarch64-unknown-linux-gnu",
                         "LLVM_INCLUDE_BENCHMARKS"       : "OFF",
                         "LLVM_PARALLEL_LINK_JOBS"       : 8,
-                        "LLVM_LIT_ARGS"                 : "-v -vv --threads=8",
+                        "LLVM_LIT_ARGS"                 : "-v -vv --threads=8 --time-tests",
 
                         "TOOLCHAIN_TARGET_TRIPLE"       : "aarch64-unknown-linux-gnu",
                         "TOOLCHAIN_TARGET_COMPILER_FLAGS"   :  "-mcpu=cortex-a78",
