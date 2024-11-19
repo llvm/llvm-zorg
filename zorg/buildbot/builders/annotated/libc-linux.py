@@ -93,6 +93,9 @@ def main(argv):
 
         if fullbuild and not args.asan and not lint_build and not riscv_build:
             cmake_args.append('-DLLVM_LIBC_INCLUDE_SCUDO=ON')
+            cmake_args.append('-DCOMPILER_RT_BUILD_SCUDO_STANDALONE_WITH_LLVM_LIBC=ON')
+            cmake_args.append('-DCOMPILER_RT_BUILD_GWP_ASAN=OFF')
+            cmake_args.append('-DCOMPILER_RT_SCUDO_STANDALONE_BUILD_SHARED=OFF')
             cmake_args.append('-DLIBC_INCLUDE_BENCHMARKS=ON')
 
         if fullbuild:
