@@ -145,11 +145,6 @@ def main(argv):
             run_command(['ninja', 'libc-integration-tests'])
         with step('libc-scudo-integration-test'):
             run_command(['ninja', 'libc-scudo-integration-test'])
-        with step('AOR Tests'):
-            aor_dir = os.path.join(source_dir, 'libc', 'AOR_v20.02')
-            # Remove the AOR build dir.
-            util.clean_dir(os.path.join(aor_dir, 'build'))
-            run_command(['make', 'check'], directory=aor_dir)
         with step('Benchmark Utils Tests'):
             run_command(['ninja', 'libc-benchmark-util-tests'])
 
