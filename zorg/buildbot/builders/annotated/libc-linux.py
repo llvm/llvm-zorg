@@ -143,9 +143,8 @@ def main(argv):
             return
         with step('libc-integration-tests'):
             run_command(['ninja', 'libc-integration-tests'])
-        # TODO: https://github.com/llvm/llvm-project/issues/116895
-        # with step('libc-scudo-integration-test'):
-        #     run_command(['ninja', 'libc-scudo-integration-test'])
+        with step('libc-scudo-integration-test'):
+            run_command(['ninja', 'libc-scudo-integration-test'])
         with step('Benchmark Utils Tests'):
             run_command(['ninja', 'libc-benchmark-util-tests'])
 
