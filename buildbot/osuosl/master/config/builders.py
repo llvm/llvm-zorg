@@ -566,6 +566,53 @@ all = [
                         "-DMLIR_RUN_ARM_SVE_TESTS=True",
                         "-DLLVM_LIT_ARGS='-v'"])},
 
+    # Note that this is SVE2 as opposed to SVE.
+    {'name' : "clang-aarch64-sve2-vla",
+    'tags'  : ["clang"],
+    'workernames' : ["linaro-g4-01", "linaro-g4-02"],
+    'builddir': "clang-aarch64-sve2-vla",
+    'factory' : ClangBuilder.getClangCMakeBuildFactory(
+                    clean=False,
+                    checkout_flang=True,
+                    runTestSuite=True,
+                    env={
+                        'NO_STOP_MESSAGE':'1', # For Fortran test-suite
+                    },
+                    testsuite_flags=[
+                        '--cppflags', '-mcpu=neoverse-v2 -mllvm -scalable-vectorization=preferred -mllvm -treat-scalable-fixed-error-as-warning=false -O3',
+                        '--threads=48', '--build-threads=48'],
+                    extra_cmake_args=[
+                        "-DCMAKE_C_FLAGS='-mcpu=neoverse-v2'",
+                        "-DCMAKE_CXX_FLAGS='-mcpu=neoverse-v2'",
+                        "-DLLVM_ENABLE_LLD=True",
+                        "-DMLIR_INCLUDE_INTEGRATION_TESTS=True",
+                        "-DMLIR_RUN_ARM_SVE_TESTS=True"])},
+
+    # AArch64 Clang+LLVM+RT+LLD check-all + flang + test-suite 2-stage with SVE2
+    # (not just SVE) Vector Length Agnostic codegen.
+    {'name' : "clang-aarch64-sve2-vla-2stage",
+    'tags'  : ["clang"],
+    'workernames' : ["linaro-g4-01", "linaro-g4-02"],
+    'builddir': "clang-aarch64-sve2-vla-2stage",
+    'factory' : ClangBuilder.getClangCMakeBuildFactory(
+                    clean=True,
+                    checkout_flang=True,
+                    useTwoStage=True,
+                    testStage1=False,
+                    runTestSuite=True,
+                    env={
+                        'NO_STOP_MESSAGE':'1', # For Fortran test-suite
+                    },
+                    testsuite_flags=[
+                        '--cppflags', '-mcpu=neoverse-v2 -mllvm -scalable-vectorization=preferred -mllvm -treat-scalable-fixed-error-as-warning=false -O3',
+                        '--threads=48', '--build-threads=48'],
+                    extra_cmake_args=[
+                        "-DCMAKE_C_FLAGS='-mcpu=neoverse-v2 -mllvm -scalable-vectorization=preferred -mllvm -treat-scalable-fixed-error-as-warning=false'",
+                        "-DCMAKE_CXX_FLAGS='-mcpu=neoverse-v2 -mllvm -scalable-vectorization=preferred -mllvm -treat-scalable-fixed-error-as-warning=false'",
+                        "-DLLVM_ENABLE_LLD=True",
+                        "-DMLIR_INCLUDE_INTEGRATION_TESTS=True",
+                        "-DMLIR_RUN_ARM_SVE_TESTS=True"])},
+
     {'name' : "clang-arm64-windows-msvc-2stage",
     'tags'  : ["clang"],
     'workernames' : ["linaro-armv8-windows-msvc-02"],
