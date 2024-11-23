@@ -263,6 +263,15 @@ def getReporters():
         reporters.MailNotifier(
             fromaddr = status_email_fromaddr,
             sendToInterestedUsers = False,
+            extraRecipients = ["dvassiliev@accesssoftek.com", "vdzhidzhoev@accesssoftek.com"],
+            generators = [
+                utils.LLVMDefaultBuildStatusGenerator(
+                    builders = [
+                        "lldb-remote-linux-ubuntu", "lldb-remote-linux-win"])
+            ]),
+        reporters.MailNotifier(
+            fromaddr = status_email_fromaddr,
+            sendToInterestedUsers = False,
             extraRecipients = ["llvm.buildbot@emea.nec.com"],
             generators = [
                 utils.LLVMDefaultBuildStatusGenerator(
