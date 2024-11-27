@@ -3293,6 +3293,18 @@ all += [
                       "-DCMAKE_CXX_FLAGS=-gmlt",
                       "-DLLVM_CCACHE_BUILD=ON"])},
 
+]
+
+# LLDB remote-linux builder env variables.
+# Currently identical for Linux and Windows build hosts.
+lldb_remote_linux_env = {
+    'CCACHE_DIR' : util.Interpolate("%(prop:builddir)s/ccache-db"),
+    # TMP/TEMP within the build dir (to utilize a ramdisk).
+    'TMP'        : util.Interpolate("%(prop:builddir)s/build"),
+    'TEMP'       : util.Interpolate("%(prop:builddir)s/build"),
+}
+
+all += [
     # LLDB remote-linux builders.
     
     # LLDB remote-linux on Ubuntu Linux host.
@@ -3417,13 +3429,9 @@ all += [
                                     haltOnFailure = True,
                                 ),
                             ],
-                        ),
-                    env = {
-                        'CCACHE_DIR' : util.Interpolate("%(prop:builddir)s/ccache-db"),
-                        # TMP/TEMP within the build dir (to utilize a ramdisk).
-                        'TMP'        : util.Interpolate("%(prop:builddir)s/build"),
-                        'TEMP'       : util.Interpolate("%(prop:builddir)s/build"),
-                    },
+                            env = lldb_remote_linux_env.copy(),
+                        ), # ]] post_build_steps
+                    env = lldb_remote_linux_env.copy(),
                 )
         },
         
@@ -3548,13 +3556,9 @@ all += [
                                     haltOnFailure = True,
                                 ),
                             ],
-                        ),
-                    env = {
-                        'CCACHE_DIR' : util.Interpolate("%(prop:builddir)s/ccache-db"),
-                        # TMP/TEMP within the build dir (to utilize a ramdisk).
-                        'TMP'        : util.Interpolate("%(prop:builddir)s/build"),
-                        'TEMP'       : util.Interpolate("%(prop:builddir)s/build"),
-                    },
+                            env = lldb_remote_linux_env.copy(),
+                        ), # ]] post_build_steps
+                    env = lldb_remote_linux_env.copy(),
                 )
         },
 ]
