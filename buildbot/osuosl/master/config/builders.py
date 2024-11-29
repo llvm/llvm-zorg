@@ -464,6 +464,9 @@ all = [
                         "-DMLIR_RUN_ARM_SME_TESTS=True",
                         "-DARM_EMULATOR_EXECUTABLE=qemu-aarch64"])},
 
+    # All SVE (as opposed to SVE2) builders are using optimisation flags
+    # for Graviton 3 "balanced" from
+    # https://github.com/aws/aws-graviton-getting-started/blob/main/c-c++.md.
 
     # AArch64 Clang+LLVM+RT+LLD check-all + flang + test-suite +
     # mlir-integration-tests w/SVE-Vector-Length-Agnostic Note that in this and
@@ -565,6 +568,56 @@ all = [
                         "-DMLIR_INCLUDE_INTEGRATION_TESTS=True",
                         "-DMLIR_RUN_ARM_SVE_TESTS=True",
                         "-DLLVM_LIT_ARGS='-v'"])},
+
+    # All SVE2 builders are using optimisation flags for Graviton 4 "performance" from
+    # https://github.com/aws/aws-graviton-getting-started/blob/main/c-c++.md
+    # (using balanced would not enable the SVE2 extension).
+
+    {'name' : "clang-aarch64-sve2-vla",
+    'tags'  : ["clang"],
+    'workernames' : ["linaro-g4-01", "linaro-g4-02"],
+    'builddir': "clang-aarch64-sve2-vla",
+    'factory' : ClangBuilder.getClangCMakeBuildFactory(
+                    clean=False,
+                    checkout_flang=True,
+                    runTestSuite=True,
+                    env={
+                        'NO_STOP_MESSAGE':'1', # For Fortran test-suite
+                    },
+                    testsuite_flags=[
+                        '--cppflags', '-mcpu=neoverse-v2 -mllvm -scalable-vectorization=preferred -mllvm -treat-scalable-fixed-error-as-warning=false -O3',
+                        '--threads=48', '--build-threads=48'],
+                    extra_cmake_args=[
+                        "-DCMAKE_C_FLAGS='-mcpu=neoverse-v2'",
+                        "-DCMAKE_CXX_FLAGS='-mcpu=neoverse-v2'",
+                        "-DLLVM_ENABLE_LLD=True",
+                        "-DMLIR_INCLUDE_INTEGRATION_TESTS=True",
+                        "-DMLIR_RUN_ARM_SVE_TESTS=True"])},
+
+    # AArch64 Clang+LLVM+RT+LLD check-all + flang + test-suite 2-stage with SVE2
+    # (not just SVE) Vector Length Agnostic codegen.
+    {'name' : "clang-aarch64-sve2-vla-2stage",
+    'tags'  : ["clang"],
+    'workernames' : ["linaro-g4-01", "linaro-g4-02"],
+    'builddir': "clang-aarch64-sve2-vla-2stage",
+    'factory' : ClangBuilder.getClangCMakeBuildFactory(
+                    clean=True,
+                    checkout_flang=True,
+                    useTwoStage=True,
+                    testStage1=False,
+                    runTestSuite=True,
+                    env={
+                        'NO_STOP_MESSAGE':'1', # For Fortran test-suite
+                    },
+                    testsuite_flags=[
+                        '--cppflags', '-mcpu=neoverse-v2 -mllvm -scalable-vectorization=preferred -mllvm -treat-scalable-fixed-error-as-warning=false -O3',
+                        '--threads=48', '--build-threads=48'],
+                    extra_cmake_args=[
+                        "-DCMAKE_C_FLAGS='-mcpu=neoverse-v2 -mllvm -scalable-vectorization=preferred -mllvm -treat-scalable-fixed-error-as-warning=false'",
+                        "-DCMAKE_CXX_FLAGS='-mcpu=neoverse-v2 -mllvm -scalable-vectorization=preferred -mllvm -treat-scalable-fixed-error-as-warning=false'",
+                        "-DLLVM_ENABLE_LLD=True",
+                        "-DMLIR_INCLUDE_INTEGRATION_TESTS=True",
+                        "-DMLIR_RUN_ARM_SVE_TESTS=True"])},
 
     {'name' : "clang-arm64-windows-msvc-2stage",
     'tags'  : ["clang"],
