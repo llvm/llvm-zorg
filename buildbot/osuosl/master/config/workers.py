@@ -38,10 +38,14 @@ def get_all():
         create_worker("linaro-flang-aarch64-release", max_builds=1),
         create_worker("linaro-flang-aarch64-rel-assert", max_builds=1),
         create_worker("linaro-flang-aarch64-latest-gcc", max_builds=1),
+        # Graviton 3
         create_worker("linaro-g3-01", max_builds=1),
         create_worker("linaro-g3-02", max_builds=1),
         create_worker("linaro-g3-03", max_builds=1),
         create_worker("linaro-g3-04", max_builds=1),
+        # Graviton 4
+        create_worker("linaro-g4-01", max_builds=1),
+        create_worker("linaro-g4-02", max_builds=1),
 
         # AArch64 Windows Microsoft Surface X Pro
         create_worker("linaro-armv8-windows-msvc-02", max_builds=1),
