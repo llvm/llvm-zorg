@@ -464,6 +464,9 @@ all = [
                         "-DMLIR_RUN_ARM_SME_TESTS=True",
                         "-DARM_EMULATOR_EXECUTABLE=qemu-aarch64"])},
 
+    # All SVE (as opposed to SVE2) builders are using optimisation flags
+    # for Graviton 3 "balanced" from
+    # https://github.com/aws/aws-graviton-getting-started/blob/main/c-c++.md.
 
     # AArch64 Clang+LLVM+RT+LLD check-all + flang + test-suite +
     # mlir-integration-tests w/SVE-Vector-Length-Agnostic Note that in this and
@@ -566,7 +569,10 @@ all = [
                         "-DMLIR_RUN_ARM_SVE_TESTS=True",
                         "-DLLVM_LIT_ARGS='-v'"])},
 
-    # Note that this is SVE2 as opposed to SVE.
+    # All SVE2 builders are using optimisation flags for Graviton 4 "performance" from
+    # https://github.com/aws/aws-graviton-getting-started/blob/main/c-c++.md
+    # (using balanced would not enable the SVE2 extension).
+
     {'name' : "clang-aarch64-sve2-vla",
     'tags'  : ["clang"],
     'workernames' : ["linaro-g4-01", "linaro-g4-02"],
