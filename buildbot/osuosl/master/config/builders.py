@@ -398,8 +398,7 @@ all = [
                 extra_cmake_args=[
                     "-DCMAKE_C_FLAGS='-mcpu=cortex-a57'",
                     "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a57'",
-                    "-DLLVM_ENABLE_LLD=True",
-                    "-DLLVM_LIT_ARGS='-v'"])},
+                    "-DLLVM_ENABLE_LLD=True"])},
 
     ## AArch64 run test-suite at -O0 (GlobalISel is now default).
     {'name' : "clang-aarch64-global-isel",
@@ -493,8 +492,7 @@ all = [
                         "-DCMAKE_CXX_FLAGS='-mcpu=neoverse-512tvb'",
                         "-DLLVM_ENABLE_LLD=True",
                         "-DMLIR_INCLUDE_INTEGRATION_TESTS=True",
-                        "-DMLIR_RUN_ARM_SVE_TESTS=True",
-                        "-DLLVM_LIT_ARGS='-v'"])},
+                        "-DMLIR_RUN_ARM_SVE_TESTS=True"])},
 
     # AArch64 Clang+LLVM+RT+LLD check-all + flang + test-suite 2-stage w/SVE-Vector-Length-Agnostic
     {'name' : "clang-aarch64-sve-vla-2stage",
@@ -518,8 +516,7 @@ all = [
                         "-DCMAKE_CXX_FLAGS='-mcpu=neoverse-512tvb -mllvm -scalable-vectorization=preferred -mllvm -treat-scalable-fixed-error-as-warning=false'",
                         "-DLLVM_ENABLE_LLD=True",
                         "-DMLIR_INCLUDE_INTEGRATION_TESTS=True",
-                        "-DMLIR_RUN_ARM_SVE_TESTS=True",
-                        "-DLLVM_LIT_ARGS='-v'"])},
+                        "-DMLIR_RUN_ARM_SVE_TESTS=True"])},
 
     # AArch64 Clang+LLVM+RT+LLD check-all + flang + test-suite w/SVE-Vector-Length-Specific
     {'name' : "clang-aarch64-sve-vls",
@@ -541,8 +538,7 @@ all = [
                         "-DCMAKE_CXX_FLAGS='-mcpu=neoverse-512tvb'",
                         "-DLLVM_ENABLE_LLD=True",
                         "-DMLIR_INCLUDE_INTEGRATION_TESTS=True",
-                        "-DMLIR_RUN_ARM_SVE_TESTS=True",
-                        "-DLLVM_LIT_ARGS='-v'"])},
+                        "-DMLIR_RUN_ARM_SVE_TESTS=True"])},
 
     # AArch64 Clang+LLVM+RT+LLD check-all + flang + test-suite 2-stage w/SVE-Vector-Length-Specific
     {'name' : "clang-aarch64-sve-vls-2stage",
@@ -566,8 +562,7 @@ all = [
                         "-DCMAKE_CXX_FLAGS='-mcpu=neoverse-512tvb -msve-vector-bits=256 -mllvm -treat-scalable-fixed-error-as-warning=false'",
                         "-DLLVM_ENABLE_LLD=True",
                         "-DMLIR_INCLUDE_INTEGRATION_TESTS=True",
-                        "-DMLIR_RUN_ARM_SVE_TESTS=True",
-                        "-DLLVM_LIT_ARGS='-v'"])},
+                        "-DMLIR_RUN_ARM_SVE_TESTS=True"])},
 
     # All SVE2 builders are using optimisation flags for Graviton 4 "performance" from
     # https://github.com/aws/aws-graviton-getting-started/blob/main/c-c++.md
@@ -1349,7 +1344,6 @@ all = [
                     clean=True,
                     extra_cmake_args=[
                         '-DLLVM_ENABLE_ASSERTIONS=True',
-                        '-DLLVM_LIT_ARGS=-v',
                         '-DLLVM_USE_LINKER=lld',
                         '-DLLDB_ENFORCE_STRICT_TEST_REQUIREMENTS=ON'])},
 
@@ -1377,7 +1371,6 @@ all = [
                     extra_cmake_args=[
                         "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
                         "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
-                        '-DLLVM_LIT_ARGS=-v',
                         # Hardware breakpoints and watchpoints are not yet supported,
                         # https://github.com/llvm/llvm-project/issues/80665.
                         '-DLLDB_TEST_USER_ARGS=--skip-category=watchpoint',
