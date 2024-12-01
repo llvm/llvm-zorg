@@ -17,9 +17,7 @@ spec:
     spec:
       containers:
       - name: metrics
-        # TODO(boomanaiden154): Update this image when we have the metrics
-        # container build job in the monorepo.
-        image: ghcr.io/keenuts-test-org/llvm-premerge-infra-metrics:debug
+        image: ghcr.io/llvm/metrics:latest
         env:
         - name: GITHUB_TOKEN
           valueFrom:
