@@ -50,7 +50,7 @@ RUN python3 -m pip install --upgrade pip==23.1.2
 
 # Refer to mlir/lib/Bindings/Python/requirements.txt. Listed explicitly here
 # and version pinned for consistency as this is a bot.
-RUN python3 -m pip install numpy==1.24.3 pybind11==2.10.4 PyYAML==5.3.1
+RUN python3 -m pip install numpy==1.24.3 pybind11==2.10.4 PyYAML==5.3.1 nanobind==2.2.0
 
 # Ubuntu ships with old cmake version, install the latest one
 # from https://apt.kitware.com/
