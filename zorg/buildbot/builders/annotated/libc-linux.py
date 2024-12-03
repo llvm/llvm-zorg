@@ -63,15 +63,11 @@ def main(argv):
         # explicit here, which reduces one step of setting environment
         # variables when setting up workers.
         cmake_args = ['-GNinja',
+                      '-DLLVM_ENABLE_RUNTIMES=libc',
                       '-DCMAKE_C_COMPILER=%s' % cc,
                       '-DCMAKE_CXX_COMPILER=%s' % cxx]
         if lint_build:
             cmake_args.append('-DLLVM_LIBC_CLANG_TIDY=%s' % clang_tidy)
-
-        # TODO: remove once old hdrgen is deleted.
-        # https://github.com/llvm/llvm-project/pull/117220
-        projects = ['llvm', 'clang']
-        cmake_args.append('-DLLVM_ENABLE_RUNTIMES=libc')
 
         if args.debug:
             cmake_args.append('-DCMAKE_BUILD_TYPE=Debug')
