@@ -2936,6 +2936,7 @@ all += [
          depends_on_projects=['llvm', 'mlir'],
          targets = ['check-mlir-build-only'],
          checks = ['check-mlir'],
+         install_pip_requirements=True
          extra_configure_args= mlir_default_cmake_options + [
              '-DLLVM_CCACHE_BUILD=ON',
              '-DLLVM_ENABLE_ASSERTIONS=ON',
