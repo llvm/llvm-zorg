@@ -287,7 +287,7 @@ def getReporters():
                     builders = [
                         "libc-x86_64-debian",
                         "libc-x86_64_debian-dbg",
-                        "libc-x86_64-debian-dbg-runtimes-build",
+                        "libc-x86_64-debian-dbg-bootstrap-build",
                         "libc-x86_64-debian-dbg-asan",
                         "libc-aarch64-ubuntu-dbg",
                         "libc-x86_64-windows-dbg",
