@@ -15,6 +15,9 @@ def is_fullbuild_builder(builder_name):
 def is_runtimes_builder(builder_name):
     return ('runtimes' in builder_name.split('-'))
 
+def is_bootstrap_builder(builder_name):
+    return 'bootstrap' in builder_name
+
 def is_gcc_builder(builder_name):
     return ('gcc' in builder_name.split('-'))
 
@@ -42,6 +45,7 @@ def main(argv):
     builder_name = os.environ.get('BUILDBOT_BUILDERNAME')
     fullbuild = is_fullbuild_builder(builder_name)
     runtimes_build = is_runtimes_builder(builder_name)
+    bootstrap_build = is_bootstrap_builder(builder_name)
     gcc_build = is_gcc_builder(builder_name)
     lint_build = is_lint_builder(builder_name)
     riscv_build = is_riscv_builder(builder_name)
@@ -72,11 +76,11 @@ def main(argv):
         if lint_build:
             cmake_args.append('-DLLVM_LIBC_CLANG_TIDY=%s' % clang_tidy)
 
-        if runtimes_build:
-          projects = ['llvm', 'clang']
+        if runtimes_build or bootstrap_build:
+          projects = ['clang']
           cmake_args.append('-DLLVM_ENABLE_RUNTIMES=libc')
         else:
-          projects = ['llvm', 'libc']
+          projects = ['libc']
 
         if args.debug:
             cmake_args.append('-DCMAKE_BUILD_TYPE=Debug')
@@ -127,7 +131,7 @@ def main(argv):
        with step('build libc-startup'):
           run_command(['ninja', 'libc-startup'])
 
-    if runtimes_build:
+    if runtimes_build or bootstrap_build:
         with step('check-libc'):
             run_command(['ninja', 'check-libc'])
     else:
@@ -146,7 +150,7 @@ def main(argv):
         with step('Benchmark Utils Tests'):
             run_command(['ninja', 'libc-benchmark-util-tests'])
 
-    if not (fullbuild or runtimes_build) and x86_64_build:
+    if not (fullbuild or runtimes_build or bootstrap_build) and x86_64_build:
         with step('libc-fuzzer'):
             run_command(['ninja', 'libc-fuzzer'])
 
