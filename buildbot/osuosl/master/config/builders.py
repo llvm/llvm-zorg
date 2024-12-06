@@ -2505,6 +2505,34 @@ all += [
                         '-DLLVM_PARALLEL_COMPILE_JOBS=4',
                     ])},
 
+    {'name' : 'ppc64-flang-aix',
+    'tags'  : ["flang", "ppc", "ppc64", "aix"],
+    'collapseRequests' : False,
+    'workernames' : ['ppc64-flang-aix-test'],
+    'builddir': 'ppc64-flang-aix-build',
+    'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
+                    clean=False,
+                    depends_on_projects=['llvm', 'mlir', 'clang', 'flang', 'compiler-rt'],
+                    checks=['check-flang'],
+                    extra_configure_args=[
+                        '-DLLVM_DEFAULT_TARGET_TRIPLE=powerpc64-ibm-aix',
+                        '-DLLVM_INSTALL_UTILS=ON',
+                        '-DCMAKE_CXX_STANDARD=17',
+                        '-DLLVM_LIT_ARGS=--threads=20 -v --time-tests',
+                        '-DFLANG_ENABLE_WERROR=ON',
+                        '-DLLVM_ENABLE_ASSERTIONS=ON',
+                        "-DPython3_EXECUTABLE:FILEPATH=python3",
+                        "-DLLVM_ENABLE_ZLIB=OFF", "-DLLVM_APPEND_VC_REV=OFF",
+                        "-DLLVM_PARALLEL_LINK_JOBS=2",
+
+                    ],
+                    env={
+                        'CC': 'clang',
+                        'CXX': 'clang++',
+                        'LD': 'lld',
+                        'OBJECT_MODE': '64'
+                    })},
+
 # Builders responsible building Sphinx documentation.
 
     {'name' : "lld-sphinx-docs",
