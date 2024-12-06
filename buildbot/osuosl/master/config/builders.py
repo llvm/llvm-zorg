@@ -1932,8 +1932,8 @@ all += [
     'builddir': "offload-runtime-openmp-amdgpu",
     'factory' : OpenMPBuilder.getOpenMPCMakeBuildFactory(
                         clean=True,
-                        enable_runtimes=['openmp', 'offload'],
-                        depends_on_projects=['llvm', 'clang', 'flang', 'lld', 'offload', 'openmp'],
+                        enable_runtimes=['openmp', 'offload', 'flang-rt'],
+                        depends_on_projects=['llvm', 'clang', 'flang', 'flang-rt', 'lld', 'offload', 'openmp'],
                         extraCmakeArgs=[
                             "-DCMAKE_BUILD_TYPE=Release",
                             "-DCLANG_DEFAULT_LINKER=lld",
@@ -1952,7 +1952,7 @@ all += [
                             "-DTEST_SUITE_SOLLVEVV_OFFLOADING_CFLAGS=-fopenmp-targets=amdgcn-amd-amdhsa;-Xopenmp-target=amdgcn-amd-amdhsa",
                             "-DTEST_SUITE_SOLLVEVV_OFFLOADING_LDLAGS=-fopenmp-targets=amdgcn-amd-amdhsa;-Xopenmp-target=amdgcn-amd-amdhsa",
                         ],
-                        add_lit_checks=["check-clang", "check-flang", "check-offload"],
+                        add_lit_checks=["check-clang", "check-flang", "check-flang-rt", "check-offload"],
                         add_openmp_lit_args=["--time-tests", "--timeout 100"],
                     )},
 
@@ -1997,8 +1997,8 @@ all += [
     'builddir': "openmp-offload-amdgpu-clang-flang",
     'factory' : OpenMPBuilder.getOpenMPCMakeBuildFactory(
                         clean=True,
-                        enable_runtimes=['compiler-rt', 'openmp', 'offload'],
-                        depends_on_projects=['llvm','clang','lld', 'offload', 'openmp', 'mlir', 'flang', 'compiler-rt'],
+                        enable_runtimes=['compiler-rt', 'openmp', 'offload', 'flang-rt'],
+                        depends_on_projects=['llvm','clang','lld', 'offload', 'openmp', 'mlir', 'flang', 'flang-rt', 'compiler-rt'],
                         extraCmakeArgs=[
                             "-DCMAKE_BUILD_TYPE=Release",
                             "-DCLANG_DEFAULT_LINKER=lld",
@@ -2027,7 +2027,7 @@ all += [
                             "-DTEST_SUITE_SOLLVEVV_OFFLOADING_CFLAGS=-fopenmp-targets=amdgcn-amd-amdhsa;-Xopenmp-target=amdgcn-amd-amdhsa",
                             "-DTEST_SUITE_SOLLVEVV_OFFLOADING_LDLAGS=-fopenmp-targets=amdgcn-amd-amdhsa;-Xopenmp-target=amdgcn-amd-amdhsa",
                         ],
-                        add_lit_checks=["check-flang", "check-offload"],
+                        add_lit_checks=["check-flang", "check-flang-rt", "check-offload"],
                         add_openmp_lit_args=["--time-tests", "--timeout 100"],
                     )},
 
@@ -2039,8 +2039,8 @@ all += [
     'factory' : OpenMPBuilder.getOpenMPCMakeBuildFactory(
                         clean=True,
                         test=False, # we have no GPU avail, skip runtime tests
-                        enable_runtimes=['openmp', 'compiler-rt', 'offload'],
-                        depends_on_projects=['llvm','clang', 'flang', 'lld', 'mlir', 'offload', 'openmp', 'compiler-rt'],
+                        enable_runtimes=['openmp', 'compiler-rt', 'offload', 'flang-rt'],
+                        depends_on_projects=['llvm','clang', 'flang', 'flang-rt', 'lld', 'mlir', 'offload', 'openmp', 'compiler-rt'],
                         extraCmakeArgs=[
                             "-DCMAKE_BUILD_TYPE=Release",
                             "-DCLANG_DEFAULT_LINKER=lld",
@@ -2060,7 +2060,7 @@ all += [
                             "-DTEST_SUITE_SOLLVEVV_OFFLOADING_CFLAGS=-fopenmp-targets=amdgcn-amd-amdhsa;-Xopenmp-target=amdgcn-amd-amdhsa",
                             "-DTEST_SUITE_SOLLVEVV_OFFLOADING_LDLAGS=-fopenmp-targets=amdgcn-amd-amdhsa;-Xopenmp-target=amdgcn-amd-amdhsa",
                         ],
-                        add_lit_checks=["check-clang", "check-flang", "check-llvm", "check-lld", "check-mlir"],
+                        add_lit_checks=["check-clang", "check-flang", "check-flang-rt", "check-llvm", "check-lld", "check-mlir"],
                         add_openmp_lit_args=["--time-tests", "--timeout 100"],
                     )},
 
@@ -2071,8 +2071,8 @@ all += [
     'factory' : OpenMPBuilder.getOpenMPCMakeBuildFactory(
                         clean=True,
                         test=True,
-                        enable_runtimes=['openmp', 'compiler-rt', 'offload'],
-                        depends_on_projects=['llvm','clang', 'flang', 'lld', 'mlir', 'offload', 'openmp', 'compiler-rt'],
+                        enable_runtimes=['openmp', 'compiler-rt', 'offload', 'flang-rt'],
+                        depends_on_projects=['llvm','clang', 'flang', 'flang-rt', 'lld', 'mlir', 'offload', 'openmp', 'compiler-rt'],
                         extraCmakeArgs=[
                             "-DCMAKE_BUILD_TYPE=Release",
                             "-DCLANG_DEFAULT_LINKER=lld",
@@ -2093,7 +2093,7 @@ all += [
                             "-DTEST_SUITE_SOLLVEVV_OFFLOADING_CFLAGS=-fopenmp-targets=amdgcn-amd-amdhsa;-Xopenmp-target=amdgcn-amd-amdhsa",
                             "-DTEST_SUITE_SOLLVEVV_OFFLOADING_LDLAGS=-fopenmp-targets=amdgcn-amd-amdhsa;-Xopenmp-target=amdgcn-amd-amdhsa",
                         ],
-                        add_lit_checks=["check-clang", "check-flang", "check-llvm", "check-lld", "check-mlir", "check-offload"],
+                        add_lit_checks=["check-clang", "check-flang", "check-flang-rt", "check-llvm", "check-lld", "check-mlir", "check-offload"],
                         add_openmp_lit_args=["--time-tests", "--timeout 100", "--xfail=affinity/format/proc_bind.c"],
                     )},
 
@@ -2104,8 +2104,8 @@ all += [
     'factory' : OpenMPBuilder.getOpenMPCMakeBuildFactory(
                         clean=True,
                         test=True,
-                        enable_runtimes=['openmp', 'compiler-rt', 'offload'],
-                        depends_on_projects=['llvm','clang', 'flang', 'lld', 'mlir', 'offload', 'openmp', 'compiler-rt'],
+                        enable_runtimes=['openmp', 'compiler-rt', 'offload', 'flang-rt'],
+                        depends_on_projects=['llvm','clang', 'flang', 'flang-rt', 'lld', 'mlir', 'offload', 'openmp', 'compiler-rt'],
                         extraCmakeArgs=[
                             "-DCMAKE_BUILD_TYPE=Release",
                             "-DCLANG_DEFAULT_LINKER=lld",
@@ -2126,7 +2126,7 @@ all += [
                             "-DTEST_SUITE_SOLLVEVV_OFFLOADING_CFLAGS=-fopenmp-targets=amdgcn-amd-amdhsa;-Xopenmp-target=amdgcn-amd-amdhsa",
                             "-DTEST_SUITE_SOLLVEVV_OFFLOADING_LDLAGS=-fopenmp-targets=amdgcn-amd-amdhsa;-Xopenmp-target=amdgcn-amd-amdhsa",
                         ],
-                        add_lit_checks=["check-clang", "check-flang", "check-llvm", "check-lld", "check-mlir", "check-offload"],
+                        add_lit_checks=["check-clang", "check-flang", "check-flang-rt", "check-llvm", "check-lld", "check-mlir", "check-offload"],
                         add_openmp_lit_args=["--time-tests", "--timeout 100", "--xfail=affinity/format/proc_bind.c"],
                     )},
 
@@ -2319,8 +2319,8 @@ all += [
     'builddir': "flang-aarch64-dylib",
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                     clean=True,
-                    checks=['check-flang'],
-                    depends_on_projects=['llvm','mlir','clang','flang','openmp'],
+                    checks=['check-flang', 'check-flang-rt'],
+                    depends_on_projects=['llvm','mlir','clang','flang','flang-rt','openmp'],
                     extra_configure_args=[
                         "-DLLVM_TARGETS_TO_BUILD=AArch64",
                         "-DLLVM_BUILD_LLVM_DYLIB=ON",
@@ -2334,8 +2334,8 @@ all += [
     'builddir': "flang-aarch64-sharedlibs",
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                     clean=True,
-                    checks=['check-flang'],
-                    depends_on_projects=['llvm','mlir','clang','flang','openmp'],
+                    checks=['check-flang', 'check-flang-rt'],
+                    depends_on_projects=['llvm','mlir','clang','flang','flang-rt','openmp'],
                     extra_configure_args=[
                         "-DLLVM_TARGETS_TO_BUILD=AArch64",
                         "-DBUILD_SHARED_LIBS=ON",
@@ -2367,8 +2367,8 @@ all += [
     'builddir': "flang-aarch64-debug-reverse-iteration",
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                     clean=True,
-                    checks=['check-flang'],
-                    depends_on_projects=['llvm','mlir','clang','flang','openmp'],
+                    checks=['check-flang','check-flang-rt'],
+                    depends_on_projects=['llvm','mlir','clang','flang','flang-rt','openmp'],
                     extra_configure_args=[
                         "-DLLVM_TARGETS_TO_BUILD=AArch64",
                         "-DCMAKE_BUILD_TYPE=Debug",
@@ -2383,8 +2383,8 @@ all += [
     'builddir': "flang-aarch64-libcxx",
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                     clean=True,
-                    checks=['check-flang'],
-                    depends_on_projects=['llvm','mlir','clang','flang'],
+                    checks=['check-flang','check-flang-rt'],
+                    depends_on_projects=['llvm','mlir','clang','flang','flang-rt'],
                     extra_configure_args=[
                         "-DLLVM_TARGETS_TO_BUILD=AArch64",
                         "-DLLVM_INSTALL_UTILS=ON",
@@ -2403,8 +2403,8 @@ all += [
     'builddir': "flang-aarch64-release",
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                     clean=True,
-                    checks=['check-flang'],
-                    depends_on_projects=['llvm','mlir','clang','flang','openmp'],
+                    checks=['check-flang','check-flang-rt'],
+                    depends_on_projects=['llvm','mlir','clang','flang','flang-rt','openmp'],
                     extra_configure_args=[
                         "-DLLVM_TARGETS_TO_BUILD=AArch64",
                         "-DCMAKE_BUILD_TYPE=Release",
@@ -2418,8 +2418,8 @@ all += [
     'builddir': "flang-aarch64-rel-assert",
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                     clean=True,
-                    checks=['check-flang'],
-                    depends_on_projects=['llvm','mlir','clang','flang','openmp'],
+                    checks=['check-flang','check-flang-rt'],
+                    depends_on_projects=['llvm','mlir','clang','flang','flang-rt','openmp'],
                     extra_configure_args=[
                         "-DLLVM_TARGETS_TO_BUILD=AArch64",
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
@@ -2434,8 +2434,8 @@ all += [
     'builddir': "flang-aarch64-latest-gcc",
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                     clean=True,
-                    checks=['check-flang'],
-                    depends_on_projects=['llvm','mlir','clang','flang','openmp'],
+                    checks=['check-flang','check-flang-rt'],
+                    depends_on_projects=['llvm','mlir','clang','flang','flang-rt','openmp'],
                     extra_configure_args=[
                         "-DLLVM_TARGETS_TO_BUILD=AArch64",
                         "-DLLVM_INSTALL_UTILS=ON",
@@ -2451,7 +2451,7 @@ all += [
     'workernames' : ["alcf-theta-flang"],
     'builddir': "flang-x86_64-knl-linux",
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
-                    depends_on_projects=['llvm','mlir','clang','flang'],
+                    depends_on_projects=['llvm','mlir','clang','flang','flang-rt'],
                     extra_configure_args=[
                         "-DLLVM_TARGETS_TO_BUILD=X86",
                         "-DCMAKE_C_COMPILER=gcc",
@@ -2467,8 +2467,8 @@ all += [
     'builddir': 'ppc64le-flang-rhel-clang-build',
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                     clean=True,
-                    depends_on_projects=['llvm', 'mlir', 'clang', 'flang','openmp'],
-                    checks=['check-flang'],
+                    depends_on_projects=['llvm', 'mlir', 'clang', 'flang', 'flang-rt', 'openmp'],
+                    checks=['check-flang','check-flang-rt'],
                     extra_configure_args=[
                         '-DLLVM_TARGETS_TO_BUILD=PowerPC',
                         '-DLLVM_INSTALL_UTILS=ON',
@@ -2490,8 +2490,8 @@ all += [
     'workernames' : ["minipc-ryzen-win"],
     'builddir': "flang-x86_64-windows",
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
-                    depends_on_projects=['llvm','mlir','clang','flang'],
-                    checks=['check-flang'],
+                    depends_on_projects=['llvm','mlir','clang','flang','flang-rt'],
+                    checks=['check-flang','check-flang-rt'],
                     install_dir="flang.install",
                     extra_configure_args=[
                         "-DCLANG_ENABLE_STATIC_ANALYZER=OFF",
@@ -3118,17 +3118,15 @@ all += [
     'workernames' : ["as-builder-7"],
     'builddir': "flang-runtime-cuda-gcc",
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
-                    depends_on_projects=["flang"],
+                    depends_on_projects=["flang","flang-rt"],
                     clean=True,
                     checks=[],
-                    src_to_build_dir="flang/runtime",
-                    targets=["FortranRuntime"],
                     extra_configure_args=[
                         "-DCMAKE_BUILD_TYPE=Release",
                         "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
                         "-DBUILD_SHARED_LIBS=OFF",
-                        "-DFLANG_EXPERIMENTAL_CUDA_RUNTIME=ON",
+                        "-DFLANG_RT_EXPERIMENTAL_OFFLOAD_SUPPORT=CUDA",
                         "-DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc",
                         "-DCMAKE_CXX_COMPILER=/usr/bin/g++",
                         "-DCMAKE_C_COMPILER=/usr/bin/gcc",
@@ -3138,7 +3136,7 @@ all += [
                         "-DCMAKE_CUDA_COMPILER_LAUNCHER=ccache",
                         "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
                         "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
-                        util.Interpolate("-DFLANG_LIBCUDACXX_PATH=%(prop:nv_cccl_root_path)s/libcudacxx"),
+                        util.Interpolate("-DFLANG_RT_LIBCUDACXX_PATH=%(prop:nv_cccl_root_path)s/libcudacxx"),
                     ],
                     env={
                         'CCACHE_DIR' : util.Interpolate("%(prop:builddir)s/ccache-db"),
@@ -3156,7 +3154,7 @@ all += [
                     stages = [
                         dict(
                             name = "clang",
-                            depends_on_projects = ["llvm", "clang", "clang-tools-extra", "lld", "openmp"],
+                            depends_on_projects = ["llvm", "clang", "clang-tools-extra", "lld", "openmp", "flang"],
                             enable_runtimes = ["compiler-rt"],
                             cmake_definitions = {
                                 "LLVM_CCACHE_BUILD"         : "ON",
@@ -3172,16 +3170,17 @@ all += [
                         ),
                         dict(
                             name = "flang-runtime",
-                            depends_on_projects = ["flang"],
+                            depends_on_projects = ["flang-rt"],
                             cmake_definitions = {
                                 "CMAKE_BUILD_TYPE"          : "Release",
                                 "CMAKE_C_COMPILER"          : util.Interpolate("%(prop:builddir)s/install-clang/bin/clang"),
                                 "CMAKE_CXX_COMPILER"        : util.Interpolate("%(prop:builddir)s/install-clang/bin/clang++"),
-                                "FLANG_EXPERIMENTAL_OMP_OFFLOAD_BUILD"  : "host_device",
-                                "FLANG_OMP_DEVICE_ARCHITECTURES"        : "sm_50;sm_60;sm_70;sm_80",
+                                "CMAKE_Fortran_COMPILER"    : util.Interpolate("%(prop:builddir)s/install-clang/bin/flang"),
+                                "FLANG_RT_EXPERIMENTAL_OFFLOAD_SUPPORT" : "OpenMP",
+                                "FLANG_RT_DEVICE_ARCHITECTURES"         : "sm_50;sm_60;sm_70;sm_80",
                             },
-                            targets = ["FortranRuntime"],
-                            src_to_build_dir = "flang/runtime",
+                            targets = ["flang_rt"],
+                            src_to_build_dir = "flang-rt",
                         ),
                     ],
                     env = {
@@ -3309,7 +3308,7 @@ all += [
     'builddir': "premerge-monolithic-windows",
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaWithMSVCBuildFactory(
                     vs="autodetect",
-                    depends_on_projects=["clang-tools-extra", "clang", "flang", "libclc", "lld", "llvm", "mlir", "polly", "pstl"],
+                    depends_on_projects=["clang-tools-extra", "clang", "flang", "flang-rt", "libclc", "lld", "llvm", "mlir", "polly", "pstl"],
                     checks=["check-all"],
                     install_pip_requirements = True,
                     extra_configure_args=[
@@ -3329,7 +3328,7 @@ all += [
     'workernames': ["premerge-linux-1"],
     'builddir': "premerge-monolithic-linux",
     'factory': UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
-                    depends_on_projects=["bolt", "clang", "clang-tools-extra", "compiler-rt", "flang", "libc", "libclc", "lld", "llvm", "mlir", "polly", "pstl"],
+                    depends_on_projects=["bolt", "clang", "clang-tools-extra", "compiler-rt", "flang", "flang-rt", "libc", "libclc", "lld", "llvm", "mlir", "polly", "pstl"],
                     install_pip_requirements = True,
                     extra_configure_args=[
                       "-DCMAKE_BUILD_TYPE=Release",
