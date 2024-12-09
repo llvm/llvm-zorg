@@ -1959,6 +1959,7 @@ all += [
     {'name' : "openmp-offload-libc-amdgpu-runtime",
     'tags'  : ["openmp"],
     'workernames' : ["omp-vega20-1"],
+    'collapseRequests' : False,
     'builddir': "openmp-offload-libc-amdgpu-runtime",
     'factory' : OpenMPBuilder.getOpenMPCMakeBuildFactory(
                         clean=True,
