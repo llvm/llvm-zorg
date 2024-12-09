@@ -174,6 +174,7 @@ def getClangCMakeBuildFactory(
             checkout_libcxx=False,
             checkout_flang=False,
             checkout_test_suite=False,
+            checkout_zorg=False,
 
             enable_runtimes="auto"):
     return _getClangCMakeBuildFactory(
@@ -192,6 +193,7 @@ def getClangCMakeBuildFactory(
                checkout_libcxx=checkout_libcxx,
                checkout_flang=checkout_flang,
                checkout_test_suite=checkout_test_suite,
+               checkout_zorg=checkout_zorg,
                enable_runtimes=enable_runtimes)
 
 def _getClangCMakeBuildFactory(
@@ -236,6 +238,7 @@ def _getClangCMakeBuildFactory(
             checkout_libcxx=False,
             checkout_test_suite=False,
             checkout_flang=False,
+            checkout_zorg=False,
 
             enable_runtimes="auto",
 
@@ -301,6 +304,12 @@ def _getClangCMakeBuildFactory(
         f.addGetSourcecodeForProject(
             project='test-suite',
             src_dir='test/test-suite',
+            alwaysUseLatest=True)
+
+    if checkout_zorg:
+        f.addGetSourcecodeForProject(
+            project='zorg',
+            src_dir='llvm-zorg',
             alwaysUseLatest=True)
 
     # Then get the LLVM source code revision this particular build is for.

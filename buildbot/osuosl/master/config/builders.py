@@ -3159,11 +3159,12 @@ all += [
     'workernames' : ["rise-clang-riscv-rva20-2stage"],
     'builddir':"clang-riscv-rva20-2stage",
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
-                clean=False,
+                clean=True,
                 useTwoStage=True,
                 runTestSuite=False,
                 testStage1=False,
                 checkout_compiler_rt=False,
+                checkout_zorg=True,
                 extra_cmake_args=[
                     "-DCMAKE_C_COMPILER=clang",
                     "-DCMAKE_CXX_COMPILER=clang++",
@@ -3172,13 +3173,12 @@ all += [
                     "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
                     "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache"],
                 extra_stage2_cmake_args=[
-                    util.Interpolate(f"-DLLVM_NATIVE_TOOL_DIR=%(prop:builddir)s/stage1.install/bin"),
+                    util.Interpolate("-DLLVM_NATIVE_TOOL_DIR=%(prop:builddir)s/stage1.install/bin"),
                     "-DLLVM_BUILD_TESTS=True",
-                    "-DLLVM_EXTERNAL_LIT=/home/buildbot-worker/lit-on-qemu-system-rva20.py",
-                    ],
+                    util.Interpolate("-DLLVM_EXTERNAL_LIT=%(prop:builddir)s/llvm-zorg/buildbot/riscv-rise/lit-on-qemu")],
                 stage2_toolchain_options=[
                     "set(CMAKE_SYSTEM_NAME Linux)",
-                    "set(CMAKE_SYSROOT /home/buildbot-worker/rvsysroot)",
+                    util.Interpolate("set(CMAKE_SYSROOT %(prop:builddir)s/../rvsysroot)"),
                     "set(CMAKE_C_COMPILER_TARGET riscv64-linux-gnu)",
                     "set(CMAKE_CXX_COMPILER_TARGET riscv64-linux-gnu)",
                     "set(CMAKE_C_FLAGS_INIT '-march=rva20u64')",
@@ -3187,8 +3187,12 @@ all += [
                     "set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)",
                     "set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)",
                     "set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)",
-                    "set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)",
-                    ]
+                    "set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)"],
+                env={
+                    "BB_IMG_DIR": util.Interpolate("%(prop:builddir)s/.."),
+                    "BB_QEMU_CPU": "rv64,zfa=false,zba=false,zbb=false,zbc=false,zbs=false",
+                    "BB_QEMU_SMP": 32,
+                    "BB_QEMU_MEM": "64G"}
                 )},
 
     ## RISC-V RVA23 profile check-all 2-stage

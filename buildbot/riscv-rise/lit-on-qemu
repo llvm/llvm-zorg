@@ -1,0 +1,128 @@
+#!/usr/bin/env python3
+import os
+import pathlib
+import shutil
+import subprocess
+import sys
+
+# Note:
+# * Builders always use the latest version of this script, checking out the
+# llvm-zorg repository. This means you can't rely on the script being updated
+# in lockstep with the buildmaster being re-deployed.
+# * This script expects to be run from within an LLVM build directory. e.g.
+# llvm-project/build/foo.
+# * The approach in this script could easily be applied to other
+# architectures. It may or may not make sense to generalise this script in
+# order to do so. This is intentionally left for evaluation when/if someone
+# applies seeks to apply the same approach on another target.
+
+
+def error(message):
+    print(f"!!!!!!!!!! Error: {message} !!!!!!!!!!")
+    sys.exit(1)
+
+
+# Validate environment variables
+for var in ["BB_IMG_DIR", "BB_QEMU_CPU", "BB_QEMU_SMP", "BB_QEMU_MEM"]:
+    if not os.getenv(var):
+        error(f"{var} not set")
+
+# Create appropriate exec-on-boot script
+current_path = pathlib.Path.cwd()
+build_dir_name = current_path.name
+hgcomm_path = current_path / "hgcomm"
+
+if hgcomm_path.exists():
+    shutil.rmtree(hgcomm_path)
+hgcomm_path.mkdir()
+
+target_uid = 1000
+target_gid = 1000
+base_mount_path = current_path.parent
+
+args_string = " ".join(sys.argv[1:])
+exec_on_boot_content = f"""#!/bin/sh
+error() {{
+  printf "!!!!!!!!!! Error: %s !!!!!!!!!!\\n" "$*" >&2
+  exit 1
+}}
+[ -e "{base_mount_path}" ] && error "Can't mount path, already exists"
+mkdir -p "{base_mount_path}" || error "Can't make mount path"
+chown {target_uid}:{target_gid} "{base_mount_path}" || error "Chown failed"
+mount -t ext4 /dev/vdb "{base_mount_path}" || error "Mount failed"
+cd "{current_path}"
+su user -c "./bin/llvm-lit {args_string}"
+"""
+exec_on_boot_path = hgcomm_path / "exec-on-boot"
+exec_on_boot_path.write_text(exec_on_boot_content)
+exec_on_boot_path.chmod(0o755)
+
+# Create ext4 filesystem containing the LLVM build directory and LLVM source
+# tree. Two layouts are supported:
+# 1) A typical layout used in local development, with build directories within
+# build/ in the monorepo checkout.
+# 2) The layout used by ClangBuilder.py in CI, with build directories as
+# siblings to the monorepo checkout (named 'llvm').
+print("@@@@@@@@@@ Creating ext4 filesystem with LLVM build directory @@@@@@@@")
+subprocess.run(["fallocate", "-l", "15GiB", "llvm-project.img"], check=True)
+
+if (current_path.parent.parent / ".git").is_directory():
+    print("Note: 'Local dev' layout detected (build/build_dir nested in LLVM checkout)")
+    extra_tar_args = [
+        f"--exclude=build/{p.name} "
+        for p in current_path.parent.iterdir()
+        if p.is_dir() and p.name != build_dir_name
+    ]
+    extra_tar_args.append("--exclude=.git")
+    extra_tar_args.append(f"--exclude=build/{build_dir_name}/llvm-project.img")
+    paths_to_tar = "."
+elif (current_path.parent / "llvm" / ".git").is_directory():
+    # Case 2) above - CI layout.
+    print("Note: 'CI style' layout detected (llvm checkout and build_dir as siblings)")
+    extra_tar_args.append("--exclude=llvm/.git")
+    extra_tar_args.append(f"--exclude={build_dir_name}/llvm-project.img")
+    paths_to_tar = f"llvm {build_dir_name}"
+else:
+    error("Unrecognized repo/build layout")
+
+parent_dir = current_path.parent
+tar_command = (
+    f"tar --create --file=- --owner={target_uid} --group={target_gid} "
+    f"{' '.join(extra_tar_args)} "
+    f"-C ../../ {paths_to_tar} | mkfs.ext4 -d - llvm-project.img"
+)
+subprocess.run(tar_command, shell=True, check=True)
+
+# Launch qemu-system appliance
+print("@@@@@@@@@@ Pivoting execution to qemu-system @@@@@@@@")
+# fmt: off
+qemu_command = [
+    "qemu-system-riscv64",
+    "-machine", "virt",
+    "-cpu", os.getenv("BB_QEMU_CPU"),
+    "-smp", os.getenv("BB_QEMU_SMP"),
+    "-m", os.getenv("BB_QEMU_MEM"),
+    "-device", "virtio-blk-device,drive=hd",
+    "-drive", f"file={os.getenv('BB_IMG_DIR')}/rootfs.img,if=none,id=hd,format=raw",
+    "-virtfs", "local,path=hgcomm,mount_tag=hgcomm,security_model=none,id=hgcomm",
+    "-device", "virtio-blk-device,drive=hdb",
+    "-drive", "file=llvm-project.img,format=raw,if=none,id=hdb",
+    "-device", "virtio-net-device,netdev=net",
+    "-netdev", "user,id=net,hostfwd=tcp:127.0.0.1:10222-:22",
+    "-bios", "/usr/share/qemu/opensbi-riscv64-generic-fw_dynamic.bin",
+    "-kernel", f"{os.getenv('BB_IMG_DIR')}/kernel",
+    "-initrd", f"{os.getenv('BB_IMG_DIR')}/initrd",
+    "-object", "rng-random,filename=/dev/urandom,id=rng",
+    "-device", "virtio-rng-device,rng=rng",
+    "-nographic",
+    "-append", "rw quiet root=/dev/vda console=ttyS0",
+]
+# fmt: on
+subprocess.run(qemu_command, check=True)
+print("@@@@@@@@@@ qemu-system execution finished @@@@@@@@")
+
+exit_code_file = hgcomm_path / "exec-on-boot.exitcode"
+if exit_code_file.is_file():
+    sys.exit(int(exit_code_file.read_text().strip()))
+else:
+    sys.exit(111)
