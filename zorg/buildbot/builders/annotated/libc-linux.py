@@ -12,9 +12,6 @@ from contextlib import contextmanager
 def is_fullbuild_builder(builder_name):
     return ('fullbuild' in builder_name.split('-'))
 
-def is_runtimes_builder(builder_name):
-    return ('runtimes' in builder_name.split('-'))
-
 def is_gcc_builder(builder_name):
     return ('gcc' in builder_name.split('-'))
 
@@ -41,7 +38,6 @@ def main(argv):
     source_dir = os.path.join('..', 'llvm-project')
     builder_name = os.environ.get('BUILDBOT_BUILDERNAME')
     fullbuild = is_fullbuild_builder(builder_name)
-    runtimes_build = is_runtimes_builder(builder_name)
     gcc_build = is_gcc_builder(builder_name)
     lint_build = is_lint_builder(builder_name)
     riscv_build = is_riscv_builder(builder_name)
@@ -67,16 +63,11 @@ def main(argv):
         # explicit here, which reduces one step of setting environment
         # variables when setting up workers.
         cmake_args = ['-GNinja',
+                      '-DLLVM_ENABLE_RUNTIMES=libc',
                       '-DCMAKE_C_COMPILER=%s' % cc,
                       '-DCMAKE_CXX_COMPILER=%s' % cxx]
         if lint_build:
             cmake_args.append('-DLLVM_LIBC_CLANG_TIDY=%s' % clang_tidy)
-
-        if runtimes_build:
-          projects = ['llvm', 'clang']
-          cmake_args.append('-DLLVM_ENABLE_RUNTIMES=libc')
-        else:
-          projects = ['llvm', 'libc']
 
         if args.debug:
             cmake_args.append('-DCMAKE_BUILD_TYPE=Debug')
@@ -127,12 +118,8 @@ def main(argv):
        with step('build libc-startup'):
           run_command(['ninja', 'libc-startup'])
 
-    if runtimes_build:
-        with step('check-libc'):
-            run_command(['ninja', 'check-libc'])
-    else:
-        with step('libc-unit-tests'):
-            run_command(['ninja', 'libc-unit-tests'])
+    with step('check-libc'):
+        run_command(['ninja', 'check-libc'])
 
     if fullbuild and not args.asan:
         if gcc_build or ('riscv' in builder_name):
@@ -146,7 +133,7 @@ def main(argv):
         with step('Benchmark Utils Tests'):
             run_command(['ninja', 'libc-benchmark-util-tests'])
 
-    if not (fullbuild or runtimes_build) and x86_64_build:
+    if not fullbuild and x86_64_build:
         with step('libc-fuzzer'):
             run_command(['ninja', 'libc-fuzzer'])
 
