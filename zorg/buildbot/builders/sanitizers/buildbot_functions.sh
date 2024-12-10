@@ -306,7 +306,7 @@ function build_stage2 {
       -DCMAKE_C_FLAGS="${fsanitize_flag} ${cmake_libcxx_cflags} ${fno_sanitize_flag}" \
       -DCMAKE_CXX_FLAGS="${fsanitize_flag} ${cmake_libcxx_cflags} ${fno_sanitize_flag}" \
       $LLVM/../runtimes && \
-    ninja cxx cxxabi && ninja install-cxx install-cxxabi) || build_failure
+    ninja && ninja install) || build_failure
 
   local libcxx_so_path="$(find "${ROOT}/${libcxx_install_dir}" -name libc++.so)"
   test -f "${libcxx_so_path}" || build_failure
@@ -405,6 +405,7 @@ function check_stage2 {
       # Very slow, run in background.
       LIT_OPTS+=" --timeout=1500"
       (
+        echo @@@BUILD_STEP stage2/$sanitizer_name check-cxx@@@
         # Very slow.
         export LIT_FILTER_OUT="modules_include.sh.cpp"
         LIT_FILTER_OUT+="|std/algorithms/alg.modifying.operations/alg.transform/ranges.transform.pass.cpp"
@@ -449,9 +450,12 @@ function check_stage2 {
           LIT_FILTER_OUT+="|ostream.formatted.print/vprint_unicode.pass.cpp"
           LIT_FILTER_OUT+="|ra_sign_state.pass.cpp"
         fi
-        ninja -C libcxx_build_${sanitizer_name} check-cxx check-cxxabi
+        ninja -C libcxx_build_${sanitizer_name} check-cxx || exit 1
+        
+        echo @@@BUILD_STEP stage2/$sanitizer_name check-cxxabi@@@
+        ninja -C libcxx_build_${sanitizer_name} check-cxxabi || exit 1
       ) || build_failure
-    ) &>check_cxx.log &
+    )
   fi
 
   echo @@@BUILD_STEP stage2/$sanitizer_name check@@@
@@ -462,13 +466,6 @@ function check_stage2 {
     fi
     ninja -C ${STAGE2_DIR} check-all 
   )|| build_failure
-
-  if [[ "${STAGE2_SKIP_TEST_CXX:-}" != "1" ]] ; then
-    echo @@@BUILD_STEP stage2/$sanitizer_name check-cxx@@@
-    wait
-    sleep 5
-    cat check_cxx.log
-  fi
 }
 
 function check_stage2_msan {
