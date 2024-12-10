@@ -101,10 +101,12 @@ function clobber {
   if [[ "$BUILDBOT_CLOBBER" != "" ]]; then
     echo @@@BUILD_STEP clobber@@@
     if [[ ! -v BUILDBOT_BUILDERNAME ]]; then
-      echo "Clobbering is supported only on buildbot only!"
+      echo "Clobbering is supported on buildbot only!"
       exit 1
     fi
-    rm_dirs ./*
+    find -maxdepth 1 -mindepth 1 -path ./llvm-project -prune -o -print -exec rm -rf {} \;
+    du -hs ./* | sort -h
+    return 0
   else
     BUILDBOT_BUILDERNAME=1 cleanup "$@"
   fi
