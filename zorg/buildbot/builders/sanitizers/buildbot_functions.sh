@@ -240,6 +240,8 @@ function build_stage2 {
 
   common_stage2_variables
 
+  ccache -z || true
+
   local fno_sanitize_flag=
 
   if [ "$sanitizer_name" == "msan" ]; then
@@ -336,6 +338,7 @@ function build_stage2 {
   (md5sum ${build_dir}/bin/clang* > ${ROOT}/md5.txt) || true
 
   upload_stats stage2
+  ccache -s || true
 }
 
 function build_stage2_msan {
@@ -489,6 +492,8 @@ function build_stage3 {
   local sanitizer_name=$1
   echo @@@BUILD_STEP build stage3/$sanitizer_name build@@@
 
+  ccache -z || true
+
   local build_dir=llvm_build2_${sanitizer_name}
 
   local clang_path=$ROOT/${STAGE2_DIR}/bin
@@ -516,6 +521,8 @@ function build_stage3 {
   (md5sum ${build_dir}/bin/clang* > ${ROOT}/md5.txt) || true
 
   upload_stats stage3
+
+  ccache -s || true
 }
 
 function build_stage3_msan {
