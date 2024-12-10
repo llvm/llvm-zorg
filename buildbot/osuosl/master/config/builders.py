@@ -1067,6 +1067,24 @@ all = [
                         "-DLLVM_LIT_ARGS=--verbose",
                         "-DLLVM_TARGETS_TO_BUILD=AArch64"])},
 
+    {'name': "llvm-clang-x86_64-gcc-ubuntu-no-asserts",
+    'tags'  : ["llvm", "clang", "clang-tools-extra", "compiler-rt", "lld", "cross-project-tests"],
+    'workernames': ["doug-worker-6"],
+    'builddir': "gcc-no-asserts",
+    'factory': UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
+                    depends_on_projects=['llvm','clang','clang-tools-extra','compiler-rt','lld','cross-project-tests'],
+                    extra_configure_args=[
+                        "-DCMAKE_C_COMPILER=gcc",
+                        "-DCMAKE_CXX_COMPILER=g++",
+                        "-DCMAKE_BUILD_TYPE=Release",
+                        "-DCLANG_ENABLE_CLANGD=OFF",
+                        "-DLLVM_BUILD_RUNTIME=ON",
+                        "-DLLVM_BUILD_TESTS=ON",
+                        "-DLLVM_ENABLE_ASSERTIONS=OFF",
+                        "-DLLVM_INCLUDE_EXAMPLES=OFF",
+                        "-DLLVM_LIT_ARGS=--verbose",
+                        "-DLLVM_USE_LINKER=lld"])},
+
 # Polly builders.
 
     {'name' : "polly-arm-linux",
