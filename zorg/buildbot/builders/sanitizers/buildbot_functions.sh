@@ -57,7 +57,7 @@ echo @@@BUILD_STEP Info@@@
   echo
   uname -a
   echo
-  ld.bfd --version
+  ldd --version
   echo
   uptime
   echo
