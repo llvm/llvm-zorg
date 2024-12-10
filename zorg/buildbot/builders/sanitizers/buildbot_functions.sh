@@ -173,11 +173,13 @@ function build_stage1_clang_impl {
   if clang -v ; then
     cmake_stage1_options+=" -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++"
   fi
+  ccache -z || true
   (cd ${STAGE1_DIR} && cmake ${cmake_stage1_options} $LLVM && ninja) || {
     touch "${STAGE1_DIR}/delete_next_time"
     return 1
   }
   md5sum ${STAGE1_DIR}/bin/clang || true
+  ccache -s || true
 }
 
 function build_stage1_clang {
