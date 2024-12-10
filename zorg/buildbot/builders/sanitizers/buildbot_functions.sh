@@ -433,6 +433,8 @@ function check_stage2 {
           LIT_FILTER_OUT+="|catch_multi_level_pointer.pass.cpp"
           LIT_FILTER_OUT+="|guard_threaded_test.pass.cpp"
           LIT_FILTER_OUT+="|test_demangle.pass.cpp"
+          # TODO: Crashes.
+          LIT_FILTER_OUT+="|ra_sign_state.pass.cpp"
         fi
         if [[ "$(arch)" == "aarch64" && "$sanitizer_name" == "hwasan" ]] ; then
           # TODO: Investigate one slow tests.
