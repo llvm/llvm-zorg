@@ -249,6 +249,7 @@ function build_stage2 {
   ccache -z || true
 
   local fno_sanitize_flag=
+  local cmake_options="-DLIBCXXABI_USE_LLVM_UNWINDER=OFF"
 
   if [ "$sanitizer_name" == "msan" ]; then
     export MSAN_SYMBOLIZER_PATH="${llvm_symbolizer_path}"
@@ -297,10 +298,10 @@ function build_stage2 {
   (cd ${libcxx_build_dir} && \
     cmake \
       ${cmake_stage2_common_options} \
+      ${cmake_options} \
       -DCMAKE_INSTALL_PREFIX="${ROOT}/${libcxx_install_dir}" \
       -DLLVM_ENABLE_RUNTIMES='libcxx;libcxxabi;libunwind' \
       -DLIBCXX_TEST_PARAMS='long_tests=False' \
-      -DLIBCXXABI_USE_LLVM_UNWINDER=OFF \
       -DLIBCXX_INCLUDE_BENCHMARKS=OFF \
       -DLLVM_USE_SANITIZER=${llvm_use_sanitizer} \
       -DCMAKE_C_FLAGS="${fsanitize_flag} ${cmake_libcxx_cflags} ${fno_sanitize_flag}" \
