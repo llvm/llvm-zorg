@@ -264,9 +264,6 @@ function build_stage2 {
     export ASAN_OPTIONS="check_initialization_order=true"
     llvm_use_sanitizer="Address"
     fsanitize_flag="-fsanitize=address"
-    # FIXME: False ODR violations in libcxx tests.
-    # https://github.com/google/sanitizers/issues/1017
-    cmake_libcxx_cflags="-mllvm -asan-use-private-alias=1"
   elif [ "$sanitizer_name" == "hwasan" ]; then
     export HWASAN_SYMBOLIZER_PATH="${llvm_symbolizer_path}"
     export HWASAN_OPTIONS="abort_on_error=1"
