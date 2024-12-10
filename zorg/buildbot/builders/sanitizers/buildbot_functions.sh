@@ -433,8 +433,6 @@ function check_stage2 {
           LIT_FILTER_OUT+="|catch_multi_level_pointer.pass.cpp"
           LIT_FILTER_OUT+="|guard_threaded_test.pass.cpp"
           LIT_FILTER_OUT+="|test_demangle.pass.cpp"
-          # TODO: Crashes.
-          LIT_FILTER_OUT+="|ra_sign_state.pass.cpp"
         fi
         if [[ "$(arch)" == "aarch64" && "$sanitizer_name" == "hwasan" ]] ; then
           # TODO: Investigate one slow tests.
@@ -449,6 +447,7 @@ function check_stage2 {
           # TODO: Investigate what is wrong with aarch64 unwinder.
           LIT_FILTER_OUT+="|ostream.formatted.print/vprint_nonunicode.pass.cpp"
           LIT_FILTER_OUT+="|ostream.formatted.print/vprint_unicode.pass.cpp"
+          LIT_FILTER_OUT+="|ra_sign_state.pass.cpp"
         fi
         ninja -C libcxx_build_${sanitizer_name} check-cxx check-cxxabi
       ) || build_failure
