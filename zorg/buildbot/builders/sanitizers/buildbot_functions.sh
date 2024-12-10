@@ -148,10 +148,12 @@ function buildbot_update {
       git rev-list --pretty --max-count=1 HEAD
       # FIXME: Workaround for https://github.com/llvm/llvm-zorg/issues/250
       [[ "${SKIP_OLD:-1}" == "0" ]] || [[ ! -v BUILDBOT_SCHEDULER ]] || [[ "${BUILDBOT_SCHEDULER}" == "force-build-scheduler" ]] || (git log -1 --after='3 hours ago' | grep .) || {
-        echo Revision is not recent enough
+        echo
+        echo WARNING: Skipping outdated build request...
+        echo
         exit 1
       }
-    ) || { build_exception ; exit 1 ; }
+    ) || { build_warning ; exit 0 ; }
     LLVM=$ROOT/llvm-project/llvm
   fi
 }
@@ -593,6 +595,14 @@ function build_failure() {
 function build_exception() {
   sleep 5
   echo "@@@STEP_EXCEPTION@@@"
+  if [[ "${BUILDBOT_BISECT_MODE:-}" == "1" || ! -v BUILDBOT_BUILDERNAME ]] ; then
+    exit 2
+  fi
+}
+
+function build_warning() {
+  sleep 5
+  echo "@@@STEP_WARNINGS@@@"
   if [[ "${BUILDBOT_BISECT_MODE:-}" == "1" || ! -v BUILDBOT_BUILDERNAME ]] ; then
     exit 2
   fi
