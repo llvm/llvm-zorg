@@ -511,7 +511,6 @@ function build_stage3 {
      -DCMAKE_C_COMPILER=${clang_path}/clang \
      -DCMAKE_CXX_COMPILER=${clang_path}/clang++ \
      -DCMAKE_CXX_FLAGS="${sanitizer_cflags}" \
-     -DLLVM_CCACHE_BUILD=OFF \
      $LLVM && \
   /usr/bin/time -o ${ROOT}/time.txt -- ninja ) || {
     build_failure
