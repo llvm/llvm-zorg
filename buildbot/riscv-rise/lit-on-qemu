@@ -64,9 +64,9 @@ exec_on_boot_path.chmod(0o755)
 # 2) The layout used by ClangBuilder.py in CI, with build directories as
 # siblings to the monorepo checkout (named 'llvm').
 print("@@@@@@@@@@ Creating ext4 filesystem with LLVM build directory @@@@@@@@")
-subprocess.run(["fallocate", "-l", "15GiB", "llvm-project.img"], check=True)
+subprocess.run(["fallocate", "-l", "25GiB", "llvm-project.img"], check=True)
 
-if (current_path.parent.parent / ".git").is_directory():
+if (current_path.parent.parent / ".git").is_dir():
     print("Note: 'Local dev' layout detected (build/build_dir nested in LLVM checkout)")
     extra_tar_args = [
         f"--exclude=build/{p.name} "
@@ -76,12 +76,15 @@ if (current_path.parent.parent / ".git").is_directory():
     extra_tar_args.append("--exclude=.git")
     extra_tar_args.append(f"--exclude=build/{build_dir_name}/llvm-project.img")
     paths_to_tar = "."
-elif (current_path.parent / "llvm" / ".git").is_directory():
-    # Case 2) above - CI layout.
+    change_to_dir = "../.."
+elif (current_path.parent / "llvm" / ".git").is_dir():
     print("Note: 'CI style' layout detected (llvm checkout and build_dir as siblings)")
-    extra_tar_args.append("--exclude=llvm/.git")
-    extra_tar_args.append(f"--exclude={build_dir_name}/llvm-project.img")
+    extra_tar_args = [
+        "--exclude=llvm/.git",
+        f"--exclude={build_dir_name}/llvm-project.img"
+    ]
     paths_to_tar = f"llvm {build_dir_name}"
+    change_to_dir = ".."
 else:
     error("Unrecognized repo/build layout")
 
@@ -89,7 +92,7 @@ parent_dir = current_path.parent
 tar_command = (
     f"tar --create --file=- --owner={target_uid} --group={target_gid} "
     f"{' '.join(extra_tar_args)} "
-    f"-C ../../ {paths_to_tar} | mkfs.ext4 -d - llvm-project.img"
+    f"-C {change_to_dir} {paths_to_tar} | mkfs.ext4 -d - llvm-project.img"
 )
 subprocess.run(tar_command, shell=True, check=True)
 

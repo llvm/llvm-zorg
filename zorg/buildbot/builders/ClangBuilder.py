@@ -311,7 +311,8 @@ def _getClangCMakeBuildFactory(
         f.addGetSourcecodeForProject(
             project='zorg',
             src_dir='llvm-zorg',
-            alwaysUseLatest=True)
+            alwaysUseLatest=True,
+            repourl="https://github.com/asb/llvm-zorg.git")
 
     # Then get the LLVM source code revision this particular build is for.
     f.addGetSourcecodeSteps()
@@ -449,7 +450,7 @@ def _getClangCMakeBuildFactory(
         stage1_cc = f"%(prop:builddir)s/{stage1_install}/bin/{cc}"
         stage1_cxx = f"%(prop:builddir)s/{stage1_install}/bin/{cxx}"
 
-        # If stage2_toolchain_options is set when we'll use a toolchain file
+        # If stage2_toolchain_options is set then we'll use a toolchain file
         # to specify the compiler being used (the just-built stage1) and add
         # any stage2_toolchain_options to it. Otherwise, just set
         # -DCMAKE_{C,CXX}_COMPILER.

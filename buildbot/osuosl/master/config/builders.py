@@ -3271,7 +3271,7 @@ all += [
                     util.Interpolate("-DLLVM_EXTERNAL_LIT=%(prop:builddir)s/llvm-zorg/buildbot/riscv-rise/lit-on-qemu")],
                 stage2_toolchain_options=[
                     "set(CMAKE_SYSTEM_NAME Linux)",
-                    util.Interpolate("set(CMAKE_SYSROOT %(prop:builddir)s/../rvsysroot)"),
+                    "set(CMAKE_SYSROOT %(prop:builddir)s/../rvsysroot)",
                     "set(CMAKE_C_COMPILER_TARGET riscv64-linux-gnu)",
                     "set(CMAKE_CXX_COMPILER_TARGET riscv64-linux-gnu)",
                     "set(CMAKE_C_FLAGS_INIT '-march=rva20u64')",
@@ -3284,7 +3284,7 @@ all += [
                 env={
                     "BB_IMG_DIR": util.Interpolate("%(prop:builddir)s/.."),
                     "BB_QEMU_CPU": "rv64,zfa=false,zba=false,zbb=false,zbc=false,zbs=false",
-                    "BB_QEMU_SMP": 32,
+                    "BB_QEMU_SMP": "32",
                     "BB_QEMU_MEM": "64G"}
                 )},
 
