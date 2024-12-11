@@ -334,7 +334,7 @@ resource "helm_release" "grafana-k8s-monitoring" {
     value = format("%s/api/prom", var.externalservices_prometheus_host)
   }
 
-  depends_on = [ kubernetes_namespace.grafana ]
+  depends_on = [kubernetes_namespace.grafana]
 }
 
 data "google_secret_manager_secret_version" "metrics_github_pat" {
