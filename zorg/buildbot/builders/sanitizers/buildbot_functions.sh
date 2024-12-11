@@ -283,7 +283,7 @@ function build_stage2 {
     export ASAN_OPTIONS="check_initialization_order=true"
     export UBSAN_OPTIONS="print_stacktrace=1"
     llvm_use_sanitizer="Address;Undefined"
-    fsanitize_flag="-fsanitize=address,undefined"
+    fsanitize_flag="-fsanitize=address,undefined -fno-sanitize-recover=all"
     # FIXME: After switching to LLVM_ENABLE_RUNTIMES, vptr has infitine
     # recursion.
     fno_sanitize_flag+=" -fno-sanitize=vptr"
