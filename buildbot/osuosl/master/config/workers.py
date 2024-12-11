@@ -4,7 +4,10 @@ from buildbot.plugins import worker
 import config
 
 def create_worker(name, *args, **kwargs):
-    password = config.options.get('Worker Passwords', name)
+    if config.options.getboolean('Internal', 'test_mode'):
+        password = "test"
+    else:
+        password = config.options.get('Worker Passwords', name)
     return worker.Worker(name, password=password, *args, **kwargs)
 
 def get_all():
@@ -35,15 +38,17 @@ def get_all():
         create_worker("linaro-flang-aarch64-release", max_builds=1),
         create_worker("linaro-flang-aarch64-rel-assert", max_builds=1),
         create_worker("linaro-flang-aarch64-latest-gcc", max_builds=1),
+        # Graviton 3
         create_worker("linaro-g3-01", max_builds=1),
         create_worker("linaro-g3-02", max_builds=1),
         create_worker("linaro-g3-03", max_builds=1),
         create_worker("linaro-g3-04", max_builds=1),
+        # Graviton 4
+        create_worker("linaro-g4-01", max_builds=1),
+        create_worker("linaro-g4-02", max_builds=1),
 
         # AArch64 Windows Microsoft Surface X Pro
-        create_worker("linaro-armv8-windows-msvc-01", max_builds=1),
         create_worker("linaro-armv8-windows-msvc-02", max_builds=1),
-        create_worker("linaro-armv8-windows-msvc-03", max_builds=1),
         create_worker("linaro-armv8-windows-msvc-04", max_builds=1),
         create_worker("linaro-armv8-windows-msvc-05", max_builds=1),
 
@@ -111,6 +116,7 @@ def get_all():
 
         # POWER 8 PowerPC AIX 7.2
         create_worker("aix-ppc64", properties={'jobs': 10}, max_builds=1),
+        create_worker("ppc64-flang-aix-test", properties={'jobs': 10}, max_builds=1),
 
         # IBM z13 (s390x), Ubuntu 16.04.2
         create_worker("systemz-1", properties={'jobs': 4, 'vcs_protocol': 'https'}, max_builds=4),
@@ -247,6 +253,15 @@ def get_all():
                         'remote_test_user'      : 'ubuntu',
                         'sysroot_path_aarch64'  : '/mnt/fs/jetson-agx-ubuntu',
                         'tools_root_path'       : '/home/buildbot/worker/as-builder-9/tools', 
+                    },
+                    max_builds=1),
+        # Windows Server 2022
+        create_worker("as-builder-10", properties={
+                        'jobs'                  : 128, 
+                        'remote_test_host'      : 'jetson-agx-0086.lab.llvm.org',
+                        'remote_test_user'      : 'ubuntu',
+                        'sysroot_path_aarch64'  : 'c:/buildbot/fs/jetson-agx-ubuntu',
+                        'zlib_root_path'        : 'c:/buildbot/fs/zlib-win32',
                     },
                     max_builds=1),
 

@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: metrics
+  namespace: metrics
+  labels:
+    app: metrics
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: metrics
+  template:
+    metadata:
+      labels:
+        app: metrics
+    spec:
+      containers:
+      - name: metrics
+        image: ghcr.io/llvm/metrics:latest
+        env:
+        - name: GITHUB_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: metrics-secrets
+              key: github-token
+        - name: GRAFANA_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: metrics-secrets
+              key: grafana-api-key
+        - name: GRAFANA_METRICS_USERID
+          valueFrom:
+            secretKeyRef:
+              name: metrics-secrets
+              key: grafana-metrics-userid

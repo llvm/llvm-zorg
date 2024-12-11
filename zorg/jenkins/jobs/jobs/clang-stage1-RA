@@ -114,8 +114,7 @@ pipeline {
             post {
                 always {
                     script {
-                        // junit "clang-build/**/testresults.xunit.xml"
-                        echo "Temporarily Skip Junit"
+                        junit "clang-build/**/testresults.xunit.xml"
                     }
                 }
             }

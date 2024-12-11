@@ -295,10 +295,10 @@ all = [
                     clean=False,
                     checkout_flang=True,
                     checkout_lld=True,
-                    checkout_compiler_rt=False,
                     extra_cmake_args=[
+                        "-DCLANG_DEFAULT_LINKER=lld",
                         "-DCMAKE_TRY_COMPILE_CONFIGURATION=Release",
-                        "-DLLVM_TARGETS_TO_BUILD='AArch64'",
+                        "-DCOMPILER_RT_BUILD_SANITIZERS=OFF",
                         "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
                         "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache"])},
 
@@ -334,7 +334,7 @@ all = [
     'workernames': ["linaro-clang-armv7-2stage"],
     'builddir':"clang-armv7-2stage",
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
-                    clean=False,
+                    clean=True,
                     checkout_compiler_rt=False,
                     checkout_lld=False,
                     useTwoStage=True,
@@ -363,7 +363,7 @@ all = [
     'workernames' : ["linaro-clang-armv7-vfpv3-2stage"],
     'builddir': "clang-armv7-vfpv3-2stage",
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
-                    clean=False,
+                    clean=True,
                     checkout_compiler_rt=False,
                     checkout_lld=False,
                     useTwoStage=True,
@@ -389,7 +389,7 @@ all = [
     'workernames' : ["linaro-clang-aarch64-lld-2stage"],
     'builddir':"clang-aarch64-lld-2stage",
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
-                clean=False,
+                clean=True,
                 useTwoStage=True,
                 runTestSuite=True,
                 testsuite_flags=[
@@ -398,8 +398,7 @@ all = [
                 extra_cmake_args=[
                     "-DCMAKE_C_FLAGS='-mcpu=cortex-a57'",
                     "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a57'",
-                    "-DLLVM_ENABLE_LLD=True",
-                    "-DLLVM_LIT_ARGS='-v'"])},
+                    "-DLLVM_ENABLE_LLD=True"])},
 
     ## AArch64 run test-suite at -O0 (GlobalISel is now default).
     {'name' : "clang-aarch64-global-isel",
@@ -422,7 +421,7 @@ all = [
     'workernames' : ["linaro-clang-armv8-lld-2stage"],
     'builddir': "clang-armv8-lld-2stage",
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
-                    clean=False,
+                    clean=True,
                     useTwoStage=True,
                     runTestSuite=True,
                     testsuite_flags=[
@@ -464,6 +463,9 @@ all = [
                         "-DMLIR_RUN_ARM_SME_TESTS=True",
                         "-DARM_EMULATOR_EXECUTABLE=qemu-aarch64"])},
 
+    # All SVE (as opposed to SVE2) builders are using optimisation flags
+    # for Graviton 3 "balanced" from
+    # https://github.com/aws/aws-graviton-getting-started/blob/main/c-c++.md.
 
     # AArch64 Clang+LLVM+RT+LLD check-all + flang + test-suite +
     # mlir-integration-tests w/SVE-Vector-Length-Agnostic Note that in this and
@@ -484,14 +486,14 @@ all = [
                     },
                     testsuite_flags=[
                         '--cppflags', '-mcpu=neoverse-512tvb -mllvm -scalable-vectorization=preferred -mllvm -treat-scalable-fixed-error-as-warning=false -O3',
+                        '--cmake-define=CMAKE_Fortran_FLAGS="-mcpu=neoverse-512tvb -mllvm -scalable-vectorization=preferred -mllvm -treat-scalable-fixed-error-as-warning=false -O3"',
                         '--threads=32', '--build-threads=32'],
                     extra_cmake_args=[
                         "-DCMAKE_C_FLAGS='-mcpu=neoverse-512tvb'",
                         "-DCMAKE_CXX_FLAGS='-mcpu=neoverse-512tvb'",
                         "-DLLVM_ENABLE_LLD=True",
                         "-DMLIR_INCLUDE_INTEGRATION_TESTS=True",
-                        "-DMLIR_RUN_ARM_SVE_TESTS=True",
-                        "-DLLVM_LIT_ARGS='-v'"])},
+                        "-DMLIR_RUN_ARM_SVE_TESTS=True"])},
 
     # AArch64 Clang+LLVM+RT+LLD check-all + flang + test-suite 2-stage w/SVE-Vector-Length-Agnostic
     {'name' : "clang-aarch64-sve-vla-2stage",
@@ -499,7 +501,7 @@ all = [
     'workernames' : ["linaro-g3-01", "linaro-g3-02", "linaro-g3-03", "linaro-g3-04"],
     'builddir': "clang-aarch64-sve-vla-2stage",
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
-                    clean=False,
+                    clean=True,
                     checkout_flang=True,
                     useTwoStage=True,
                     testStage1=False,
@@ -509,14 +511,14 @@ all = [
                     },
                     testsuite_flags=[
                         '--cppflags', '-mcpu=neoverse-512tvb -mllvm -scalable-vectorization=preferred -mllvm -treat-scalable-fixed-error-as-warning=false -O3',
+                        '--cmake-define=CMAKE_Fortran_FLAGS="-mcpu=neoverse-512tvb -mllvm -scalable-vectorization=preferred -mllvm -treat-scalable-fixed-error-as-warning=false -O3"',
                         '--threads=32', '--build-threads=32'],
                     extra_cmake_args=[
                         "-DCMAKE_C_FLAGS='-mcpu=neoverse-512tvb -mllvm -scalable-vectorization=preferred -mllvm -treat-scalable-fixed-error-as-warning=false'",
                         "-DCMAKE_CXX_FLAGS='-mcpu=neoverse-512tvb -mllvm -scalable-vectorization=preferred -mllvm -treat-scalable-fixed-error-as-warning=false'",
                         "-DLLVM_ENABLE_LLD=True",
                         "-DMLIR_INCLUDE_INTEGRATION_TESTS=True",
-                        "-DMLIR_RUN_ARM_SVE_TESTS=True",
-                        "-DLLVM_LIT_ARGS='-v'"])},
+                        "-DMLIR_RUN_ARM_SVE_TESTS=True"])},
 
     # AArch64 Clang+LLVM+RT+LLD check-all + flang + test-suite w/SVE-Vector-Length-Specific
     {'name' : "clang-aarch64-sve-vls",
@@ -532,14 +534,14 @@ all = [
                     },
                     testsuite_flags=[
                         '--cppflags', '-mcpu=neoverse-512tvb -msve-vector-bits=256 -mllvm -treat-scalable-fixed-error-as-warning=false -O3',
+                        '--cmake-define=CMAKE_Fortran_FLAGS="-mcpu=neoverse-512tvb -msve-vector-bits=256 -mllvm -treat-scalable-fixed-error-as-warning=false -O3"',
                         '--threads=32', '--build-threads=32'],
                     extra_cmake_args=[
                         "-DCMAKE_C_FLAGS='-mcpu=neoverse-512tvb'",
                         "-DCMAKE_CXX_FLAGS='-mcpu=neoverse-512tvb'",
                         "-DLLVM_ENABLE_LLD=True",
                         "-DMLIR_INCLUDE_INTEGRATION_TESTS=True",
-                        "-DMLIR_RUN_ARM_SVE_TESTS=True",
-                        "-DLLVM_LIT_ARGS='-v'"])},
+                        "-DMLIR_RUN_ARM_SVE_TESTS=True"])},
 
     # AArch64 Clang+LLVM+RT+LLD check-all + flang + test-suite 2-stage w/SVE-Vector-Length-Specific
     {'name' : "clang-aarch64-sve-vls-2stage",
@@ -547,7 +549,7 @@ all = [
     'workernames' : ["linaro-g3-01", "linaro-g3-02", "linaro-g3-03", "linaro-g3-04"],
     'builddir': "clang-aarch64-sve-vls-2stage",
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
-                    clean=False,
+                    clean=True,
                     checkout_flang=True,
                     useTwoStage=True,
                     testStage1=False,
@@ -557,31 +559,83 @@ all = [
                     },
                     testsuite_flags=[
                         '--cppflags', '-mcpu=neoverse-512tvb -msve-vector-bits=256 -mllvm -treat-scalable-fixed-error-as-warning=false -O3',
+                        '--cmake-define=CMAKE_Fortran_FLAGS="-mcpu=neoverse-512tvb -msve-vector-bits=256 -mllvm -treat-scalable-fixed-error-as-warning=false -O3"',
                         '--threads=32', '--build-threads=32'],
                     extra_cmake_args=[
                         "-DCMAKE_C_FLAGS='-mcpu=neoverse-512tvb -msve-vector-bits=256 -mllvm -treat-scalable-fixed-error-as-warning=false'",
                         "-DCMAKE_CXX_FLAGS='-mcpu=neoverse-512tvb -msve-vector-bits=256 -mllvm -treat-scalable-fixed-error-as-warning=false'",
                         "-DLLVM_ENABLE_LLD=True",
                         "-DMLIR_INCLUDE_INTEGRATION_TESTS=True",
-                        "-DMLIR_RUN_ARM_SVE_TESTS=True",
-                        "-DLLVM_LIT_ARGS='-v'"])},
+                        "-DMLIR_RUN_ARM_SVE_TESTS=True"])},
+
+    # All SVE2 builders are using optimisation flags for Graviton 4 "performance" from
+    # https://github.com/aws/aws-graviton-getting-started/blob/main/c-c++.md
+    # (using balanced would not enable the SVE2 extension).
+
+    {'name' : "clang-aarch64-sve2-vla",
+    'tags'  : ["clang"],
+    'workernames' : ["linaro-g4-01", "linaro-g4-02"],
+    'builddir': "clang-aarch64-sve2-vla",
+    'factory' : ClangBuilder.getClangCMakeBuildFactory(
+                    clean=False,
+                    checkout_flang=True,
+                    runTestSuite=True,
+                    env={
+                        'NO_STOP_MESSAGE':'1', # For Fortran test-suite
+                    },
+                    testsuite_flags=[
+                        '--cppflags', '-mcpu=neoverse-v2 -mllvm -scalable-vectorization=preferred -mllvm -treat-scalable-fixed-error-as-warning=false -O3',
+                        '--cmake-define=CMAKE_Fortran_FLAGS="-mcpu=neoverse-v2 -mllvm -scalable-vectorization=preferred -mllvm -treat-scalable-fixed-error-as-warning=false -O3"',
+                        '--threads=48', '--build-threads=48'],
+                    extra_cmake_args=[
+                        "-DCMAKE_C_FLAGS='-mcpu=neoverse-v2'",
+                        "-DCMAKE_CXX_FLAGS='-mcpu=neoverse-v2'",
+                        "-DLLVM_ENABLE_LLD=True",
+                        "-DMLIR_INCLUDE_INTEGRATION_TESTS=True",
+                        "-DMLIR_RUN_ARM_SVE_TESTS=True"])},
+
+    # AArch64 Clang+LLVM+RT+LLD check-all + flang + test-suite 2-stage with SVE2
+    # (not just SVE) Vector Length Agnostic codegen.
+    {'name' : "clang-aarch64-sve2-vla-2stage",
+    'tags'  : ["clang"],
+    'workernames' : ["linaro-g4-01", "linaro-g4-02"],
+    'builddir': "clang-aarch64-sve2-vla-2stage",
+    'factory' : ClangBuilder.getClangCMakeBuildFactory(
+                    clean=True,
+                    checkout_flang=True,
+                    useTwoStage=True,
+                    testStage1=False,
+                    runTestSuite=True,
+                    env={
+                        'NO_STOP_MESSAGE':'1', # For Fortran test-suite
+                    },
+                    testsuite_flags=[
+                        '--cppflags', '-mcpu=neoverse-v2 -mllvm -scalable-vectorization=preferred -mllvm -treat-scalable-fixed-error-as-warning=false -O3',
+                        '--cmake-define=CMAKE_Fortran_FLAGS="-mcpu=neoverse-v2 -mllvm -scalable-vectorization=preferred -mllvm -treat-scalable-fixed-error-as-warning=false -O3"',
+                        '--threads=48', '--build-threads=48'],
+                    extra_cmake_args=[
+                        "-DCMAKE_C_FLAGS='-mcpu=neoverse-v2 -mllvm -scalable-vectorization=preferred -mllvm -treat-scalable-fixed-error-as-warning=false'",
+                        "-DCMAKE_CXX_FLAGS='-mcpu=neoverse-v2 -mllvm -scalable-vectorization=preferred -mllvm -treat-scalable-fixed-error-as-warning=false'",
+                        "-DLLVM_ENABLE_LLD=True",
+                        "-DMLIR_INCLUDE_INTEGRATION_TESTS=True",
+                        "-DMLIR_RUN_ARM_SVE_TESTS=True"])},
 
     {'name' : "clang-arm64-windows-msvc-2stage",
     'tags'  : ["clang"],
-    'workernames' : ["linaro-armv8-windows-msvc-01", "linaro-armv8-windows-msvc-02", "linaro-armv8-windows-msvc-03"],
+    'workernames' : ["linaro-armv8-windows-msvc-02"],
     'builddir': "clang-arm64-windows-msvc-2stage",
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
                     vs="manual",
+                    clean=True,
                     useTwoStage=True,
                     checkout_flang=True,
+                    testStage1=False,
                     extra_cmake_args=[
+                        "-DCLANG_DEFAULT_LINKER=lld",
                         "-DCMAKE_TRY_COMPILE_CONFIGURATION=Release",
                         "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
                         "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
-                        # FIXME: compiler-rt\lib\sanitizer_common\sanitizer_unwind_win.cpp assumes WIN64 is x86_64,
-                        #        so, before that's fixed, disable everything that triggers its build.
-                        "-DCOMPILER_RT_BUILD_SANITIZERS=OFF",
-                        "-DCOMPILER_RT_BUILD_PROFILE=OFF"])},
+                        "-DCOMPILER_RT_BUILD_SANITIZERS=OFF"])},
 
     {'name' : 'clang-x64-windows-msvc',
     'tags'  : ["clang"],
@@ -1296,7 +1350,6 @@ all = [
                     clean=True,
                     extra_cmake_args=[
                         '-DLLVM_ENABLE_ASSERTIONS=True',
-                        '-DLLVM_LIT_ARGS=-v',
                         '-DLLVM_USE_LINKER=lld',
                         '-DLLDB_ENFORCE_STRICT_TEST_REQUIREMENTS=ON'])},
 
@@ -1324,7 +1377,6 @@ all = [
                     extra_cmake_args=[
                         "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
                         "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
-                        '-DLLVM_LIT_ARGS=-v',
                         # Hardware breakpoints and watchpoints are not yet supported,
                         # https://github.com/llvm/llvm-project/issues/80665.
                         '-DLLDB_TEST_USER_ARGS=--skip-category=watchpoint',
@@ -1429,6 +1481,7 @@ all += [
                     llvm_srcdir="llvm.src",
                     obj_dir="llvm.obj",
                     clean=True,
+                    install_pip_requirements=True,
                     targets = ['check-mlir-build-only'],
                     checks = ['check-mlir'],
                     depends_on_projects=['llvm','mlir'],
@@ -1454,6 +1507,7 @@ all += [
                     llvm_srcdir="llvm.src",
                     obj_dir="llvm.obj",
                     clean=True,
+                    install_pip_requirements=True,
                     targets = ['check-mlir-build-only'],
                     checks = ['check-mlir'],
                     depends_on_projects=['llvm','mlir'],
@@ -1562,6 +1616,7 @@ all += [
     ],
     'builddir': "sanitizer-x86_64-linux-bootstrap-asan",
     'factory' : SanitizerBuilder.getSanitizerBuildFactory(
+        clean=True,
         extra_depends_on_projects=["mlir", "clang-tools-extra"]
     )},
 
@@ -1573,6 +1628,7 @@ all += [
     ],
     'builddir': "sanitizer-x86_64-linux-bootstrap-msan",
     'factory' : SanitizerBuilder.getSanitizerBuildFactory(
+        clean=True,
         extra_depends_on_projects=["mlir", "clang-tools-extra"]
     )},
 
@@ -1584,6 +1640,7 @@ all += [
     ],
     'builddir': "sanitizer-x86_64-linux-bootstrap-ubsan",
     'factory' : SanitizerBuilder.getSanitizerBuildFactory(
+        clean=True,
         extra_depends_on_projects=["mlir", "clang-tools-extra"]
     )},
 
@@ -1630,6 +1687,7 @@ all += [
     ],
     'builddir': "sanitizer-aarch64-linux-bootstrap-asan",
     'factory' : SanitizerBuilder.getSanitizerBuildFactory(
+        clean=True,
         extra_depends_on_projects=["mlir", "clang-tools-extra"]
     )},
 
@@ -1641,6 +1699,7 @@ all += [
     ],
     'builddir': "sanitizer-aarch64-linux-bootstrap-hwasan",
     'factory' : SanitizerBuilder.getSanitizerBuildFactory(
+        clean=True,
         extra_depends_on_projects=["mlir", "clang-tools-extra"]
     )},
 
@@ -1652,6 +1711,7 @@ all += [
     ],
     'builddir': "sanitizer-aarch64-linux-bootstrap-msan",
     'factory' : SanitizerBuilder.getSanitizerBuildFactory(
+        clean=True,
         extra_depends_on_projects=["mlir", "clang-tools-extra"]
     )},
 
@@ -1663,6 +1723,7 @@ all += [
     ],
     'builddir': "sanitizer-aarch64-linux-bootstrap-ubsan",
     'factory' : SanitizerBuilder.getSanitizerBuildFactory(
+        clean=True,
         extra_depends_on_projects=["mlir", "clang-tools-extra"]
     )},
 
@@ -1687,7 +1748,9 @@ all += [
     'builddir': "sanitizer-windows",
     'factory' : AnnotatedBuilder.getAnnotatedBuildFactory(
                     script="sanitizer-windows.py",
-                    depends_on_projects=["llvm", "clang", "lld", "compiler-rt"])},
+                    depends_on_projects=["llvm", "clang", "lld", "compiler-rt"],
+                    # FIXME: Restore `timeout` to default when fixed https://github.com/llvm/llvm-project/issues/102513
+                    timeout=2400)},
 
 # OpenMP builders.
 
@@ -1902,6 +1965,7 @@ all += [
     {'name' : "openmp-offload-libc-amdgpu-runtime",
     'tags'  : ["openmp"],
     'workernames' : ["omp-vega20-1"],
+    'collapseRequests' : False,
     'builddir': "openmp-offload-libc-amdgpu-runtime",
     'factory' : OpenMPBuilder.getOpenMPCMakeBuildFactory(
                         clean=True,
@@ -1931,7 +1995,7 @@ all += [
                             "-DTEST_SUITE_SOLLVEVV_OFFLOADING_CFLAGS=-fopenmp;-fopenmp-targets=amdgcn-amd-amdhsa;-Xopenmp-target=amdgcn-amd-amdhsa;-march=gfx906",
                             "-DTEST_SUITE_SOLLVEVV_OFFLOADING_LDLAGS=-fopenmp;-fopenmp-targets=amdgcn-amd-amdhsa;-Xopenmp-target=amdgcn-amd-amdhsa;-march=gfx906",
                         ],
-                        add_lit_checks=["check-clang", "check-llvm", "check-lld", "check-offload", "check-libc-amdgcn-amd-amdhsa"]
+                        add_lit_checks=["check-offload", "check-libc-amdgcn-amd-amdhsa"]
                     )},
 
     {'name' : "openmp-offload-amdgpu-clang-flang",
@@ -1941,7 +2005,7 @@ all += [
     'factory' : OpenMPBuilder.getOpenMPCMakeBuildFactory(
                         clean=True,
                         enable_runtimes=['compiler-rt', 'openmp', 'offload'],
-                        depends_on_projects=['llvm','clang','lld', 'offload', 'openmp','flang', 'compiler-rt'],
+                        depends_on_projects=['llvm','clang','lld', 'offload', 'openmp', 'mlir', 'flang', 'compiler-rt'],
                         extraCmakeArgs=[
                             "-DCMAKE_BUILD_TYPE=Release",
                             "-DCLANG_DEFAULT_LINKER=lld",
@@ -2182,10 +2246,10 @@ all += [
                     depends_on_projects=['llvm', 'libc', 'clang', 'clang-tools-extra'],
                     extra_args=['--debug', '--asan'])},
 
-    {'name' : "libc-x86_64-debian-dbg-runtimes-build",
+    {'name' : "libc-x86_64-debian-dbg-bootstrap-build",
     'tags'  : ["libc"],
     'workernames' : ["libc-x86_64-debian"],
-    'builddir': "libc-x86_64-debian-dbg-runtimes-build",
+    'builddir': "libc-x86_64-debian-dbg-bootstrap-build",
     'factory' : AnnotatedBuilder.getAnnotatedBuildFactory(
                     script="libc-linux.py",
                     depends_on_projects=['llvm', 'libc', 'clang', 'clang-tools-extra'],
@@ -2410,7 +2474,7 @@ all += [
     'builddir': 'ppc64le-flang-rhel-clang-build',
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                     clean=True,
-                    depends_on_projects=['llvm', 'mlir', 'clang', 'flang'],
+                    depends_on_projects=['llvm', 'mlir', 'clang', 'flang','openmp'],
                     checks=['check-flang'],
                     extra_configure_args=[
                         '-DLLVM_TARGETS_TO_BUILD=PowerPC',
@@ -2447,6 +2511,34 @@ all += [
                         "-DCMAKE_CXX_STANDARD=17",
                         '-DLLVM_PARALLEL_COMPILE_JOBS=4',
                     ])},
+
+    {'name' : 'ppc64-flang-aix',
+    'tags'  : ["flang", "ppc", "ppc64", "aix"],
+    'collapseRequests' : False,
+    'workernames' : ['ppc64-flang-aix-test'],
+    'builddir': 'ppc64-flang-aix-build',
+    'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
+                    clean=False,
+                    depends_on_projects=['llvm', 'mlir', 'clang', 'flang', 'compiler-rt'],
+                    checks=['check-flang'],
+                    extra_configure_args=[
+                        '-DLLVM_DEFAULT_TARGET_TRIPLE=powerpc64-ibm-aix',
+                        '-DLLVM_INSTALL_UTILS=ON',
+                        '-DCMAKE_CXX_STANDARD=17',
+                        '-DLLVM_LIT_ARGS=--threads=20 -v --time-tests',
+                        '-DFLANG_ENABLE_WERROR=ON',
+                        '-DLLVM_ENABLE_ASSERTIONS=ON',
+                        "-DPython3_EXECUTABLE:FILEPATH=python3",
+                        "-DLLVM_ENABLE_ZLIB=OFF", "-DLLVM_APPEND_VC_REV=OFF",
+                        "-DLLVM_PARALLEL_LINK_JOBS=2",
+
+                    ],
+                    env={
+                        'CC': 'clang',
+                        'CXX': 'clang++',
+                        'LD': 'lld',
+                        'OBJECT_MODE': '64'
+                    })},
 
 # Builders responsible building Sphinx documentation.
 
@@ -2881,6 +2973,7 @@ all += [
          depends_on_projects=['llvm', 'mlir'],
          targets = ['check-mlir-build-only'],
          checks = ['check-mlir'],
+         install_pip_requirements=True,
          extra_configure_args= mlir_default_cmake_options + [
              '-DLLVM_CCACHE_BUILD=ON',
              '-DLLVM_ENABLE_ASSERTIONS=ON',
@@ -3305,6 +3398,18 @@ all += [
                       "-DCMAKE_CXX_FLAGS=-gmlt",
                       "-DLLVM_CCACHE_BUILD=ON"])},
 
+]
+
+# LLDB remote-linux builder env variables.
+# Currently identical for Linux and Windows build hosts.
+lldb_remote_linux_env = {
+    'CCACHE_DIR' : util.Interpolate("%(prop:builddir)s/ccache-db"),
+    # TMP/TEMP within the build dir (to utilize a ramdisk).
+    'TMP'        : util.Interpolate("%(prop:builddir)s/build"),
+    'TEMP'       : util.Interpolate("%(prop:builddir)s/build"),
+}
+
+all += [
     # LLDB remote-linux builders.
     
     # LLDB remote-linux on Ubuntu Linux host.
@@ -3336,11 +3441,11 @@ all += [
                         "LLVM_INCLUDE_BENCHMARKS"       : "OFF",
                         "LLVM_PARALLEL_LINK_JOBS"       : 8,
                         "CLANG_DEFAULT_LINKER"          : "lld",
-                        "LLVM_LIT_ARGS"                 : "-v -vv --threads=8",
+                        "LLVM_LIT_ARGS"                 : "-v -vv --threads=8 --time-tests",
 
                         "TOOLCHAIN_TARGET_TRIPLE"       : "aarch64-unknown-linux-gnu",
                         "TOOLCHAIN_TARGET_COMPILER_FLAGS"   :  "-mcpu=cortex-a78",
-                        "TOOLCHAIN_TARGET_SYSROOTFS"    : "/mnt/fs/jetson-orin-ubuntu",
+                        "TOOLCHAIN_TARGET_SYSROOTFS"    : util.Interpolate("%(prop:sysroot_path_aarch64)s"),
                         "LIBCXX_ABI_VERSION"            : "1",
                         "LLVM_INSTALL_TOOLCHAIN_ONLY"   : "OFF",
 
@@ -3429,13 +3534,136 @@ all += [
                                     haltOnFailure = True,
                                 ),
                             ],
-                        ),
-                    env = {
-                        'CCACHE_DIR' : util.Interpolate("%(prop:builddir)s/ccache-db"),
-                        # TMP/TEMP within the build dir (to utilize a ramdisk).
-                        'TMP'        : util.Interpolate("%(prop:builddir)s/build"),
-                        'TEMP'       : util.Interpolate("%(prop:builddir)s/build"),
+                            env = lldb_remote_linux_env.copy(),
+                        ), # ]] post_build_steps
+                    env = lldb_remote_linux_env.copy(),
+                )
+        },
+        
+    # LLDB remote-linux on Windows host.
+    # The first stage builds the latest cross Aarch64 toolchain.
+    # The second stage uses just-built cross Aarch64 Clang toolchain
+    # (see llvm-clang-win-x-aarch64 builder configuration for the details).
+    # The remote host is ARM Cortex A76/A78 board with Ubuntu Linux.
+    {'name': "lldb-remote-linux-win",
+    'tags'  : ["llvm", "clang", "lldb", "cross", "aarch64"],
+    'workernames': ["as-builder-10"],
+    'builddir': "lldb-x-aarch64",
+    'factory': UnifiedTreeBuilder.getCmakeExBuildFactory(
+                    depends_on_projects = ["llvm", "clang", "lld", "lldb"],
+                    enable_runtimes = None,
+                    checks = [
+                        "check-lldb-unit",
+                        "check-lldb-api",
+                        "check-lldb-shell",
+                    ],
+                    vs = "autodetect",
+                    clean = True,
+                    cmake_definitions = {
+                        "CMAKE_BUILD_TYPE"              : "Release",
+                        "CMAKE_C_COMPILER_LAUNCHER"     : "ccache",
+                        "CMAKE_CXX_COMPILER_LAUNCHER"   : "ccache",
+                        "CMAKE_CXX_FLAGS"               : "-D__OPTIMIZE__",
+                        "LLVM_TARGETS_TO_BUILD"         : "AArch64",
+                        #Note: needs for some LLDB tests.
+                        "LLVM_TARGET_TRIPLE"            : "aarch64-unknown-linux-gnu",
+                        "LLVM_INCLUDE_BENCHMARKS"       : "OFF",
+                        "LLVM_PARALLEL_LINK_JOBS"       : 8,
+                        "LLVM_LIT_ARGS"                 : "-v -vv --threads=8 --time-tests",
+
+                        "TOOLCHAIN_TARGET_TRIPLE"       : "aarch64-unknown-linux-gnu",
+                        "TOOLCHAIN_TARGET_COMPILER_FLAGS"   :  "-mcpu=cortex-a78",
+                        "TOOLCHAIN_TARGET_SYSROOTFS:PATH"   : util.Interpolate("%(prop:sysroot_path_aarch64)s"),
+                        "LIBCXX_ABI_VERSION"            : "1",
+                        "LLVM_INSTALL_TOOLCHAIN_ONLY"   : "OFF",
+
+                        "LLDB_TEST_ARCH"                : "aarch64",
+                        "LLDB_TEST_PLATFORM_URL"        : util.Interpolate("connect://%(prop:remote_test_host)s:1234"),
+                        "LLDB_TEST_PLATFORM_WORKING_DIR": "/home/ubuntu/lldb-tests",
+                        "LLDB_TEST_SYSROOT:PATH"        : util.Interpolate("%(prop:sysroot_path_aarch64)s"),
+                        "LLDB_ENABLE_PYTHON"            : "ON",
+                        "LLDB_ENABLE_SWIG"              : "ON",
+                        "LLDB_ENABLE_LIBEDIT"           : "OFF",
+                        "LLDB_ENABLE_CURSES"            : "OFF",
+                        "LLDB_ENABLE_LZMA"              : "OFF",
+                        "LLDB_ENABLE_LIBXML2"           : "OFF",
+                        # No need to build lldb-server during the first stage.
+                        # We are going to build it for the target platform later.
+                        "LLDB_CAN_USE_LLDB_SERVER"      : "OFF",
+                        "LLDB_TEST_USER_ARGS"           : util.Interpolate(
+                                                            "--env;ARCH_CFLAGS=-mcpu=cortex-a78;" \
+                                                            "--platform-name;remote-linux"),
                     },
+                    cmake_options = [
+                        "-C", util.Interpolate("%(prop:srcdir_relative)s/clang/cmake/caches/CrossWinToARMLinux.cmake"),
+                    ],
+                    install_dir = "native",
+                    post_build_steps =
+                        # Stage 2.
+                        # Build the target's lldb-server (cross compilation with pre-installed/pre-built aarch64 clang).
+                        UnifiedTreeBuilder.getCmakeExBuildFactory(
+                            depends_on_projects = ["clang", "lldb"],
+                            enable_runtimes = None,
+                            checks = None,
+                            clean = True,
+                            repo_profiles = None,
+                            allow_cmake_defaults = False,
+                            hint = "aarch64-lldb",
+                            cmake_definitions = {
+                                "CMAKE_BUILD_TYPE"              : "Release",
+                                "CMAKE_C_COMPILER_LAUNCHER"     : "ccache",
+                                "CMAKE_CXX_COMPILER_LAUNCHER"   : "ccache",
+                                "CMAKE_CXX_FLAGS"               : "-mcpu=cortex-a78 -D__OPTIMIZE__ -fPIC --stdlib=libc++",
+                                "CMAKE_C_FLAGS"                 : "-mcpu=cortex-a78 -D__OPTIMIZE__ -fPIC",
+                                "CMAKE_EXE_LINKER_FLAGS"        : "-Wl,-l:libc++abi.a -Wl,-l:libc++.a -Wl,-l:libunwind.a",
+                                "CMAKE_SHARED_LINKER_FLAGS"     : "-Wl,-l:libc++abi.a -Wl,-l:libc++.a -Wl,-l:libunwind.a",
+                                "CMAKE_CXX_COMPILER:PATH"       : util.Interpolate("%(prop:builddir)s/build/bin/clang++.exe"),
+                                "CMAKE_C_COMPILER:PATH"         : util.Interpolate("%(prop:builddir)s/build/bin/clang.exe"),
+                                "CMAKE_ASM_COMPILER:PATH"       : util.Interpolate("%(prop:builddir)s/build/bin/clang.exe"),
+                                "CMAKE_SYSTEM_NAME"             : "Linux",
+                                "CMAKE_SYSTEM_PROCESSOR"        : "aarch64",
+                                "CMAKE_CROSSCOMPILING"          : "ON",
+
+                                # Required for the native table-gen
+                                "LLVM_NATIVE_TOOL_DIR:PATH"     : util.Interpolate("%(prop:builddir)s/build/bin"),
+
+                                "LLVM_DEFAULT_TARGET_TRIPLE"    : "aarch64-unknown-linux-gnu",
+                                "LLVM_HOST_TRIPLE"              : "aarch64-unknown-linux-gnu",
+                                "LLVM_TARGETS_TO_BUILD"         : "AArch64",
+                                "LLVM_ENABLE_ASSERTIONS"        : "ON",
+                                "LLVM_INCLUDE_BENCHMARKS"       : "OFF",
+                                "LLVM_PARALLEL_LINK_JOBS"       : 8,
+                                "CLANG_DEFAULT_LINKER"          : "lld",
+
+                                "LLDB_INCLUDE_TESTS"            : "OFF",
+                                "LLDB_ENABLE_PYTHON"            : "OFF",
+                                "LLDB_ENABLE_LIBEDIT"           : "OFF",
+                                "LLDB_ENABLE_CURSES"            : "OFF",
+                                "LLDB_ENABLE_LZMA"              : "OFF",
+
+                                "LLVM_ENABLE_ZLIB"              : "OFF",
+                            },
+                            obj_dir = "build-lldb-server",
+                            targets = ["lldb-server"],
+                            install_dir = util.Interpolate("%(prop:builddir)s/lldb-server-install"),
+                            install_targets = ["install-lldb-server"],
+                            post_finalize_steps = [
+                                steps.ShellSequence(name = "exec-lldb-server",
+                                    commands = [
+                                        util.ShellArg(command=[ "ssh", util.Interpolate("%(prop:remote_test_user)s@%(prop:remote_test_host)s"), "killall lldb-server ; exit 0;" ], logname="stdio"),
+                                        util.ShellArg(command=[ "scp", "lldb-server", util.Interpolate("%(prop:remote_test_user)s@%(prop:remote_test_host)s:~/lldb-server") ], logname="stdio"),
+                                        util.ShellArg(command=[ "ssh", util.Interpolate("%(prop:remote_test_user)s@%(prop:remote_test_host)s"), "chmod +x ~/lldb-server" ], logname="stdio"),
+                                        util.ShellArg(command=[ "ssh", util.Interpolate("%(prop:remote_test_user)s@%(prop:remote_test_host)s"),
+                                                                    "$(nohup ~/lldb-server p --listen '*:1234' --server > /dev/null 2>&1 &)" ], logname="stdio"),
+                                    ],
+                                    workdir = util.Interpolate("%(prop:builddir)s/lldb-server-install/bin"),
+                                    description = "execute lldb-server on remote target",
+                                    haltOnFailure = True,
+                                ),
+                            ],
+                            env = lldb_remote_linux_env.copy(),
+                        ), # ]] post_build_steps
+                    env = lldb_remote_linux_env.copy(),
                 )
         },
 ]

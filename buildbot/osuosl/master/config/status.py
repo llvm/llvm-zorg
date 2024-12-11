@@ -158,7 +158,8 @@ def getReporters():
                        "clang-s390x-linux",
                        "clang-s390x-linux-multistage",
                        "clang-s390x-linux-lnt",
-                       "mlir-s390x-linux"])
+                       "mlir-s390x-linux",
+                       "openmp-s390x-linux"])
             ]),
         reporters.MailNotifier(
             fromaddr = status_email_fromaddr,
@@ -256,7 +257,17 @@ def getReporters():
                         "llvm-clang-x86_64-expensive-checks-ubuntu",
                         "llvm-clang-win-x-armv7l", "llvm-clang-win-x-aarch64",
                         "llvm-nvptx-nvidia-ubuntu", "llvm-nvptx64-nvidia-ubuntu",
-                        "llvm-nvptx-nvidia-win", "llvm-nvptx64-nvidia-win"])
+                        "llvm-nvptx-nvidia-win", "llvm-nvptx64-nvidia-win",
+                        "lldb-remote-linux-ubuntu", "lldb-remote-linux-win"])
+            ]),
+        reporters.MailNotifier(
+            fromaddr = status_email_fromaddr,
+            sendToInterestedUsers = False,
+            extraRecipients = ["dvassiliev@accesssoftek.com", "vdzhidzhoev@accesssoftek.com"],
+            generators = [
+                utils.LLVMDefaultBuildStatusGenerator(
+                    builders = [
+                        "lldb-remote-linux-ubuntu", "lldb-remote-linux-win"])
             ]),
         reporters.MailNotifier(
             fromaddr = status_email_fromaddr,
@@ -274,20 +285,21 @@ def getReporters():
             generators = [
                 utils.LLVMDefaultBuildStatusGenerator(
                     builders = [
-                        "libc-x86_64-debian",
-                        "libc-x86_64_debian-dbg",
-                        "libc-x86_64-debian-dbg-runtimes-build",
-                        "libc-x86_64-debian-dbg-asan",
                         "libc-aarch64-ubuntu-dbg",
-                        "libc-x86_64-windows-dbg",
-                        "libc-arm32-debian-dbg",
                         "libc-aarch64-ubuntu-fullbuild-dbg",
-                        "libc-x86_64-debian-fullbuild-dbg",
-                        "libc-x86_64-debian-gcc-fullbuild-dbg",
-                        "libc-x86_64-debian-fullbuild-dbg-asan",
+                        "libc-arm32-debian-dbg",
                         "libc-riscv64-debian-dbg",
                         "libc-riscv64-debian-fullbuild-dbg",
-                        "libc-x86_64-debian-dbg-lint"])
+                        "libc-x86_64-debian",
+                        "libc-x86_64-debian-dbg-asan",
+                        "libc-x86_64-debian-dbg-bootstrap-build",
+                        "libc-x86_64-debian-dbg-lint",
+                        "libc-x86_64-debian-fullbuild-dbg",
+                        "libc-x86_64-debian-fullbuild-dbg-asan",
+                        "libc-x86_64-debian-gcc-fullbuild-dbg",
+                        "libc-x86_64-windows-dbg",
+                        "libc-x86_64_debian-dbg",
+                    ])
             ]),
         reporters.MailNotifier(
             dumpMailsToLog = True, # TODO: For debug purposes only. Remove this later.

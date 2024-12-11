@@ -204,8 +204,15 @@ def addNinjaSteps(
         step_name = "build-{}unified-tree".format(step_name)
         step_description.extend(["unified", "tree"])
 
+    # Helper to for use truncating step names to 50 chars, needed due to
+    # <https://github.com/buildbot/buildbot/issues/3414>.
+    def trunc50(name):
+        if len(name) > 50:
+            return name[:47] + "..."
+        return name
+
     # Build the unified tree.
-    f.addStep(NinjaCommand(name=step_name,
+    f.addStep(NinjaCommand(name=trunc50(step_name),
                            haltOnFailure=True,
                            targets=targets,
                            description=step_description,
@@ -223,7 +230,7 @@ def addNinjaSteps(
         check_env = env or {}
 
     for check in checks:
-        f.addStep(LitTestCommand(name="test-%s-%s" % (step_name, check),
+        f.addStep(LitTestCommand(name=trunc50("test-%s-%s" % (step_name, check)),
                                  command=['ninja', check],
                                  description=[
                                    "Test", "just", "built", "components", "for",
@@ -237,7 +244,7 @@ def addNinjaSteps(
     # Install just built components
     if install_dir:
         # TODO: Run this step only if none of the prevous failed.
-        f.addStep(NinjaCommand(name="install-%sall" % step_name,
+        f.addStep(NinjaCommand(name=trunc50("install-%sall" % step_name),
                                targets=["install"],
                                description=["Install", "just", "built", "components"],
                                env=env or {},
