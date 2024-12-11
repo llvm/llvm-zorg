@@ -104,7 +104,8 @@ function clobber {
       echo "Clobbering is supported on buildbot only!"
       exit 1
     fi
-    find -maxdepth 1 -mindepth 1 -path ./llvm-project -prune -o -print -exec rm -rf {} \;
+    # Keep sources in ./llvm-project and ./llvm_build0 for faster builds.
+    find -maxdepth 1 -mindepth 1 -path ./llvm-project -prune -o -path ./llvm_build0 -prune -o -print -exec rm -rf {} \;
     du -hs ./* | sort -h
     return 0
   else
