@@ -458,13 +458,7 @@ function check_stage2 {
   fi
 
   echo @@@BUILD_STEP stage2/$sanitizer_name check@@@
-  (
-    if [[ "$sanitizer_name" == "asan" || "$sanitizer_name" == "asan_ubsan" ]] ; then
-      # For unknown reasons gcc 12.3.0 leaks in _Unwind_Find_FDE.
-      export LIT_FILTER_OUT="Interpreter/simple-exception.cpp"
-    fi
-    ninja -C ${STAGE2_DIR} check-all 
-  )|| build_failure
+  ninja -C ${STAGE2_DIR} check-all || build_failure
 }
 
 function check_stage2_msan {
