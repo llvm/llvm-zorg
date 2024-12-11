@@ -176,13 +176,11 @@ function build_stage1_clang_impl {
   if clang -v ; then
     cmake_stage1_options+=" -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++"
   fi
-  ccache -z || true
   (cd ${STAGE1_DIR} && cmake ${cmake_stage1_options} $LLVM && ninja) || {
     touch "${STAGE1_DIR}/delete_next_time"
     return 1
   }
   md5sum ${STAGE1_DIR}/bin/clang || true
-  ccache -s || true
 }
 
 function build_stage1_clang {
@@ -470,8 +468,6 @@ function build_stage3 {
   local sanitizer_name=$1
   echo @@@BUILD_STEP build stage3/$sanitizer_name build@@@
 
-  ccache -z || true
-
   local build_dir=llvm_build2_${sanitizer_name}
 
   local clang_path=$ROOT/${STAGE2_DIR}/bin
@@ -482,6 +478,7 @@ function build_stage3 {
     # FIXME: clangd tests fail.
     stage3_projects='clang;lld'
   fi
+  # -DLLVM_CCACHE_BUILD=OFF to track real build time.
   (cd ${build_dir} && \
    cmake \
      ${CMAKE_COMMON_OPTIONS} \
@@ -489,6 +486,7 @@ function build_stage3 {
      -DCMAKE_C_COMPILER=${clang_path}/clang \
      -DCMAKE_CXX_COMPILER=${clang_path}/clang++ \
      -DCMAKE_CXX_FLAGS="${sanitizer_cflags}" \
+     -DLLVM_CCACHE_BUILD=OFF \
      $LLVM && \
   /usr/bin/time -o ${ROOT}/time.txt -- ninja ) || {
     build_failure
@@ -498,8 +496,6 @@ function build_stage3 {
   (md5sum ${build_dir}/bin/clang* > ${ROOT}/md5.txt) || true
 
   upload_stats stage3
-
-  ccache -s || true
 }
 
 function build_stage3_msan {
