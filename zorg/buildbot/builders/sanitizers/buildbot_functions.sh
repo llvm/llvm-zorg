@@ -297,7 +297,7 @@ function build_stage2 {
       ${cmake_stage2_common_options} \
       ${cmake_options} \
       -DCMAKE_INSTALL_PREFIX="${ROOT}/${libcxx_install_dir}" \
-      -DLLVM_ENABLE_RUNTIMES='libcxx;libcxxabi;libunwind' \
+      -DLLVM_ENABLE_RUNTIMES='libcxx;libcxxabi' \
       -DLIBCXX_TEST_PARAMS='long_tests=False' \
       -DLIBCXX_INCLUDE_BENCHMARKS=OFF \
       -DLLVM_USE_SANITIZER=${llvm_use_sanitizer} \
