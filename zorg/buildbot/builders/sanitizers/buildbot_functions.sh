@@ -273,7 +273,7 @@ function build_stage2 {
   elif [ "$sanitizer_name" == "ubsan" ]; then
     export UBSAN_OPTIONS="external_symbolizer_path=${llvm_symbolizer_path}:print_stacktrace=1"
     llvm_use_sanitizer="Undefined"
-    fsanitize_flag="-fsanitize=undefined"
+    fsanitize_flag="-fsanitize=undefined -fno-sanitize-recover=undefined"
     # FIXME: After switching to LLVM_ENABLE_RUNTIMES, vptr has infitine
     # recursion.
     fno_sanitize_flag+=" -fno-sanitize=vptr"
@@ -282,7 +282,7 @@ function build_stage2 {
     export ASAN_OPTIONS="check_initialization_order=true"
     export UBSAN_OPTIONS="print_stacktrace=1"
     llvm_use_sanitizer="Address;Undefined"
-    fsanitize_flag="-fsanitize=address,undefined"
+    fsanitize_flag="-fsanitize=address,undefined -fno-sanitize-recover=undefined"
     # FIXME: After switching to LLVM_ENABLE_RUNTIMES, vptr has infitine
     # recursion.
     fno_sanitize_flag+=" -fno-sanitize=vptr"
