@@ -910,6 +910,8 @@ all = [
                     extra_cmake_args=[
                         "-DCMAKE_C_FLAGS='-march=cascadelake'",
                         "-DCMAKE_CXX_FLAGS='-march=cascadelake'",
+                        "-DCMAKE_C_COMPILER='icx.EXE'",
+                        "-DMAKE_CXX_COMPILER='icx.EXE'",
                         "-DLLVM_ENABLE_RUNTIMES=compiler-rt",
                         "-DCOMPILER_RT_BUILD_SANITIZERS=OFF",
                         "-DCOMPILER_RT_BUILD_ORC=OFF",
