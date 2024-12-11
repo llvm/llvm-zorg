@@ -425,6 +425,11 @@ function check_stage2 {
           # TODO: Investigate one slow tests.
           LIT_FILTER_OUT+="|test_demangle.pass.cpp"
         fi
+        if [[ "$(arch)" == "aarch64" && "$sanitizer_name" == "ubsan" ]] ; then
+          # https://github.com/llvm/llvm-project/pull/119520
+          LIT_FILTER_OUT+="|catch_null_pointer_to_object_pr64953.pass.cpp"
+          LIT_FILTER_OUT+="|catch_ptr_02.pass.cpp"
+        fi
 
         if [[ "$(arch)" == "aarch64" ]] ; then
           # TODO: Investigate what is wrong with aarch64 unwinder.
