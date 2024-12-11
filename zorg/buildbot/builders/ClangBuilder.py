@@ -311,8 +311,7 @@ def _getClangCMakeBuildFactory(
         f.addGetSourcecodeForProject(
             project='zorg',
             src_dir='llvm-zorg',
-            alwaysUseLatest=True,
-            repourl="https://github.com/asb/llvm-zorg.git")
+            alwaysUseLatest=True)
 
     # Then get the LLVM source code revision this particular build is for.
     f.addGetSourcecodeSteps()
