@@ -406,10 +406,7 @@ function check_stage2 {
       (
         echo @@@BUILD_STEP stage2/$sanitizer_name check-cxx@@@
         # Very slow.
-        export LIT_FILTER_OUT="modules_include.sh.cpp"
-        LIT_FILTER_OUT+="|std/algorithms/alg.modifying.operations/alg.transform/ranges.transform.pass.cpp"
-        LIT_FILTER_OUT+="|std/utilities/charconv/charconv.msvc/test.pass.cpp"
-        LIT_FILTER_OUT+="|std/utilities/format/format.functions/format.locale.runtime_format.pass.cpp"
+        export LIT_FILTER_OUT="std/utilities/format/format.functions/format.locale.runtime_format.pass.cpp"
         LIT_FILTER_OUT+="|std/utilities/format/format.functions/format.runtime_format.pass.cpp"
         LIT_FILTER_OUT+="|std/utilities/format/format.functions/format_to_n.locale.pass.cpp"
         LIT_FILTER_OUT+="|std/utilities/format/format.functions/format_to_n.pass.cpp"
@@ -420,39 +417,22 @@ function check_stage2 {
         LIT_FILTER_OUT+="|std/utilities/format/format.functions/formatted_size.locale.pass.cpp"
         LIT_FILTER_OUT+="|std/utilities/format/format.functions/formatted_size.pass.cpp"
         LIT_FILTER_OUT+="|std/utilities/format/format.functions/vformat"
-        LIT_FILTER_OUT+="|std/utilities/variant/variant.visit/visit_return_type.pass.cpp"
-        LIT_FILTER_OUT+="|std/utilities/variant/variant.visit/visit.pass.cpp"
 
-        if [[ "$(arch)" == "aarch64" && "$sanitizer_name" == "asan" ]] ; then
-          # TODO: Investigate one leak and two slowest tests.
-          LIT_FILTER_OUT+="|test_vector2.pass.cpp|catch_multi_level_pointer.pass.cpp"
-          LIT_FILTER_OUT+="|guard_threaded_test.pass.cpp"
-        fi
         if [[ "$(arch)" == "aarch64" && "$sanitizer_name" == "msan" ]] ; then
           # TODO: Investigate one slow tests.
-          LIT_FILTER_OUT+="|catch_multi_level_pointer.pass.cpp"
-          LIT_FILTER_OUT+="|guard_threaded_test.pass.cpp"
           LIT_FILTER_OUT+="|test_demangle.pass.cpp"
         fi
         if [[ "$(arch)" == "aarch64" && "$sanitizer_name" == "hwasan" ]] ; then
           # TODO: Investigate one slow tests.
-          LIT_FILTER_OUT+="|catch_multi_level_pointer.pass.cpp"
-          LIT_FILTER_OUT+="|guard_threaded_test.pass.cpp"
           LIT_FILTER_OUT+="|test_demangle.pass.cpp"
-          LIT_FILTER_OUT+="|test_vector2.pass.cpp"
-          LIT_FILTER_OUT+="|forced_unwind2.pass.cpp"
         fi
 
         if [[ "$(arch)" == "aarch64" ]] ; then
           # TODO: Investigate what is wrong with aarch64 unwinder.
           LIT_FILTER_OUT+="|ostream.formatted.print/vprint_nonunicode.pass.cpp"
           LIT_FILTER_OUT+="|ostream.formatted.print/vprint_unicode.pass.cpp"
-          LIT_FILTER_OUT+="|ra_sign_state.pass.cpp"
         fi
-        ninja -C libcxx_build_${sanitizer_name} check-cxx || exit 1
-        
-        echo @@@BUILD_STEP stage2/$sanitizer_name check-cxxabi@@@
-        ninja -C libcxx_build_${sanitizer_name} check-cxxabi || exit 1
+        ninja -C libcxx_build_${sanitizer_name} check-runtimes || exit 1
       ) || build_failure
     )
   fi
