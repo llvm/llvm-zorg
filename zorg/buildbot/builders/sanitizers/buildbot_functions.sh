@@ -280,6 +280,7 @@ function build_stage2 {
   elif [ "$sanitizer_name" == "asan_ubsan" ]; then
     export ASAN_SYMBOLIZER_PATH="${llvm_symbolizer_path}"
     export ASAN_OPTIONS="check_initialization_order=true"
+    export UBSAN_OPTIONS="print_stacktrace=1"
     llvm_use_sanitizer="Address;Undefined"
     fsanitize_flag="-fsanitize=address,undefined"
     # FIXME: After switching to LLVM_ENABLE_RUNTIMES, vptr has infitine
