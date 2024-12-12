@@ -113,7 +113,11 @@ def main(argv):
             cmake_args.append('-DCMAKE_LINKER=/usr/bin/ld.lld')
             cmake_args.append('-DLLVM_LIBC_MPFR_INSTALL_PATH={}/gmp+mpfr/'.format(os.getenv('HOME')))
 
-        run_command(['cmake', os.path.join(source_dir, 'llvm')] + cmake_args)
+        if bootstrap_build:
+            cmake_root = 'llvm'
+        else:
+            cmake_root = 'runtimes'
+        run_command(['cmake', os.path.join(source_dir, cmake_root)] + cmake_args)
 
     if lint_build:
         with step('lint libc'):
