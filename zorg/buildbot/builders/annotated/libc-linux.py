@@ -93,7 +93,8 @@ def main(argv):
             cmake_args.append('-DCOMPILER_RT_BUILD_SCUDO_STANDALONE_WITH_LLVM_LIBC=ON')
             cmake_args.append('-DCOMPILER_RT_BUILD_GWP_ASAN=OFF')
             cmake_args.append('-DCOMPILER_RT_SCUDO_STANDALONE_BUILD_SHARED=OFF')
-            cmake_args.append('-DLIBC_INCLUDE_BENCHMARKS=ON')
+            # TODO(https://github.com/llvm/llvm-project/issues/119789): re-enable
+            # cmake_args.append('-DLIBC_INCLUDE_BENCHMARKS=ON')
 
         if fullbuild:
             cmake_args.extend(['-DLLVM_LIBC_FULL_BUILD=ON']),
@@ -144,8 +145,10 @@ def main(argv):
             run_command(['ninja', 'libc-integration-tests'])
         with step('libc-scudo-integration-test'):
             run_command(['ninja', 'libc-scudo-integration-test'])
-        with step('Benchmark Utils Tests'):
-            run_command(['ninja', 'libc-benchmark-util-tests'])
+        # TODO(https://github.com/llvm/llvm-project/issues/119789): re-enable
+        # cmake_args.append('-DLIBC_INCLUDE_BENCHMARKS=ON')
+        # with step('Benchmark Utils Tests'):
+        #     run_command(['ninja', 'libc-benchmark-util-tests'])
 
     if not (fullbuild or bootstrap_build) and x86_64_build:
         with step('libc-fuzzer'):
