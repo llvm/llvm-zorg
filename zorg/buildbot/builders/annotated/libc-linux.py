@@ -86,7 +86,7 @@ def main(argv):
         runtimes = ['libc']
         if fullbuild and not args.asan and not lint_build and not riscv_build:
             runtimes.append('compiler-rt')
-        cmake_args.append('-DLLVM_ENABLE_PROJECTS={}'.format(';'.join(runtimes)))
+        cmake_args.append('-DLLVM_ENABLE_RUNTIMES={}'.format(';'.join(runtimes)))
 
         if fullbuild and not args.asan and not lint_build and not riscv_build:
             cmake_args.append('-DLLVM_LIBC_INCLUDE_SCUDO=ON')
