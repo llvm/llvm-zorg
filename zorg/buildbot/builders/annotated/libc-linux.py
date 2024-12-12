@@ -67,15 +67,13 @@ def main(argv):
         # explicit here, which reduces one step of setting environment
         # variables when setting up workers.
         cmake_args = ['-GNinja',
-                      '-DLLVM_ENABLE_RUNTIMES=libc',
                       '-DCMAKE_C_COMPILER=%s' % cc,
                       '-DCMAKE_CXX_COMPILER=%s' % cxx]
         if lint_build:
             cmake_args.append('-DLLVM_LIBC_CLANG_TIDY=%s' % clang_tidy)
 
-        projects = []
         if bootstrap_build:
-            projects.append('clang')
+            cmake_args.append('-DLLVM_ENABLE_PROJECTS=clang')
 
         if args.debug:
             cmake_args.append('-DCMAKE_BUILD_TYPE=Debug')
@@ -85,11 +83,10 @@ def main(argv):
         if args.asan:
             cmake_args.append('-DLLVM_USE_SANITIZER=Address')
 
+        runtimes = ['libc']
         if fullbuild and not args.asan and not lint_build and not riscv_build:
-            projects.extend(['clang', 'compiler-rt'])
-
-        if projects:
-            cmake_args.append('-DLLVM_ENABLE_PROJECTS={}'.format(';'.join(projects)))
+            runtimes.append('compiler-rt')
+        cmakes_args.append(f"-DLLVM_ENABLE_PROJECTS={';'.join(runtimes)}")
 
         if fullbuild and not args.asan and not lint_build and not riscv_build:
             cmake_args.append('-DLLVM_LIBC_INCLUDE_SCUDO=ON')
