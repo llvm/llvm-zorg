@@ -73,8 +73,9 @@ def main(argv):
         if lint_build:
             cmake_args.append('-DLLVM_LIBC_CLANG_TIDY=%s' % clang_tidy)
 
+        projects = []
         if bootstrap_build:
-          projects = ['clang']
+            projects.append('clang')
 
         if args.debug:
             cmake_args.append('-DCMAKE_BUILD_TYPE=Debug')
@@ -87,7 +88,8 @@ def main(argv):
         if fullbuild and not args.asan and not lint_build and not riscv_build:
             projects.extend(['clang', 'compiler-rt'])
 
-        cmake_args.append('-DLLVM_ENABLE_PROJECTS={}'.format(';'.join(projects)))
+        if projects:
+            cmake_args.append('-DLLVM_ENABLE_PROJECTS={}'.format(';'.join(projects)))
 
         if fullbuild and not args.asan and not lint_build and not riscv_build:
             cmake_args.append('-DLLVM_LIBC_INCLUDE_SCUDO=ON')
