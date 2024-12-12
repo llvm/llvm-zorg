@@ -1965,7 +1965,8 @@ all += [
     {'name' : "openmp-offload-libc-amdgpu-runtime",
     'tags'  : ["openmp"],
     'workernames' : ["omp-vega20-1"],
-    'collapseRequests' : False,
+     # We would like to never collapse, but it seems the load is too high on that system to keep up.
+    'collapseRequests' : True,
     'builddir': "openmp-offload-libc-amdgpu-runtime",
     'factory' : OpenMPBuilder.getOpenMPCMakeBuildFactory(
                         clean=True,
