@@ -47,10 +47,10 @@ template:
         # itself doesn't need much, just using something enough not to get
         # OOM killed.
         requests:
-          cpu: 25
+          cpu: 55
           memory: "2Gi"
         limits:
-          cpu: 32
+          cpu: 64
           memory: "2Gi"
       env:
         - name: ACTIONS_RUNNER_CONTAINER_HOOKS

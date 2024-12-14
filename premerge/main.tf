@@ -82,7 +82,7 @@ resource "google_container_node_pool" "llvm_premerge_linux" {
   }
 
   node_config {
-    machine_type = "n2-highcpu-32"
+    machine_type = "n2-standard-64"
     taint = [{
       key    = "premerge-platform"
       value  = "linux"
@@ -108,7 +108,7 @@ resource "google_container_node_pool" "llvm_premerge_windows" {
   # We do not set a taint for the windows nodes as kubernetes by default sets
   # a node.kubernetes.io/os taint for windows nodes.
   node_config {
-    machine_type = "n2-highcpu-32"
+    machine_type = "n2-standard-64"
     labels = {
       "premerge-platform" : "windows"
     }

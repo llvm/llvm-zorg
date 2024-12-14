@@ -21,7 +21,7 @@ template:
       - name: runner
         resources:
           requests:
-            cpu: 25
+            cpu: 55
         # TODO(boomanaiden154): Update this image when we have a proper windows
         # image ready.
         image: ghcr.io/keenuts-test-org/windows-ci-image:latest
