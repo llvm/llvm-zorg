@@ -22,9 +22,7 @@ template:
         resources:
           requests:
             cpu: 55
-        # TODO(boomanaiden154): Update this image when we have a proper windows
-        # image ready.
-        image: ghcr.io/keenuts-test-org/windows-ci-image:latest
+        image: ghcr.io/llvm/ci-windows-2019:latest
         command: ["run.cmd"]
         args: ["--jitconfig", "$(ACTIONS_RUNNER_INPUT_JITCONFIG)"]
         env:
