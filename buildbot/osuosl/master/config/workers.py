@@ -346,6 +346,9 @@ def get_all():
         create_worker("doug-worker-4", properties={'jobs': 8}, max_builds=1),
         create_worker("doug-worker-5", properties={'jobs': 8}, max_builds=1),
 
+        # Ubuntu 20.04, AMD Ryzen 5 PRO 3400GE, 32GB
+        create_worker("doug-worker-6", properties={'jobs': 8}, max_builds=1),
+
         # XCore target, Ubuntu 20.04 x64 host
         create_worker("xcore-ubuntu20-x64", properties={'jobs': 4}, max_builds=1),
 
