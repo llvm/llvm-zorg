@@ -177,7 +177,7 @@ def getSphinxRuntimesDocsBuildFactory(
             **kwargs) # Pass through all the extra arguments.
 
     f.addStep(ShellCommand(
-                name="Install pip depenencies",
+                name="Install pip dependencies",
                 command=['pip install -r llvm-project/llvm/docs/requirements.txt'],
                 workdir=f.obj_dir,
     ))
