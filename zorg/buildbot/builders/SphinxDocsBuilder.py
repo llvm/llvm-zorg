@@ -178,7 +178,7 @@ def getSphinxRuntimesDocsBuildFactory(
 
     f.addStep(ShellCommand(
                 name="Install pip dependencies",
-                command=['pip install -r llvm/docs/requirements.txt'],
+                command=['pip install -r llvm/docs/requirements-hashed.txt'],
                 workdir=f.llvm_srcdir,
     ))
 
