@@ -178,8 +178,8 @@ def getSphinxRuntimesDocsBuildFactory(
 
     f.addStep(ShellCommand(
                 name="Install pip dependencies",
-                command=['pip install -r llvm-project/llvm/docs/requirements.txt'],
-                workdir=f.obj_dir,
+                command=['pip install -r llvm/docs/requirements.txt'],
+                workdir=llvm_srcdir,
     ))
 
     UnifiedTreeBuilder.addCmakeSteps(
