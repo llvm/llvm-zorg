@@ -48,10 +48,10 @@ template:
         # OOM killed.
         requests:
           cpu: 55
-          memory: "2Gi"
+          memory: "8Gi"
         limits:
           cpu: 64
-          memory: "2Gi"
+          memory: "8Gi"
       env:
         - name: ACTIONS_RUNNER_CONTAINER_HOOKS
           value: /home/runner/k8s/index.js

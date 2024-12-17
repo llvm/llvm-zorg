@@ -20,7 +20,7 @@ spec:
       # It's not used for scheduling, but can be used by k8 for OOM kill.
       requests:
         cpu: "100m"
-        memory: "25Gi"
+        memory: "230Gi"
       limits:
         cpu: 64
         memory: "256Gi"
