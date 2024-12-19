@@ -176,6 +176,12 @@ def getSphinxRuntimesDocsBuildFactory(
             src_to_build_dir='runtimes',
             **kwargs) # Pass through all the extra arguments.
 
+    f.addStep(ShellCommand(
+                name="Install pip dependencies",
+                command=['pip install -r llvm/docs/requirements-hashed.txt'],
+                workdir=f.llvm_srcdir,
+    ))
+
     UnifiedTreeBuilder.addCmakeSteps(
         f,
         cleanBuildRequested=f.cleanBuildRequested,
