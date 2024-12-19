@@ -405,14 +405,6 @@ def getReporters():
         reporters.MailNotifier(
             fromaddr=status_email_fromaddr,
             sendToInterestedUsers = False,
-            extraRecipients=["dl.gcr.lightning.buildbot@amd.com"],
-            generators = [
-                utils.LLVMDefaultBuildStatusGenerator(
-                    builders = ["clang-hip-vega20"])
-            ]),
-        reporters.MailNotifier(
-            fromaddr=status_email_fromaddr,
-            sendToInterestedUsers = False,
             extraRecipients=["llvm_arc_buildbot@synopsys.com", "heli@synopsys.com"],
             generators = [
                 utils.LLVMDefaultBuildStatusGenerator(
@@ -424,7 +416,12 @@ def getReporters():
             extraRecipients=["dl.gcr.lightning.buildbot@amd.com"],
             generators = [
                 utils.LLVMDefaultBuildStatusGenerator(
-                    builders = ["openmp-offload-amdgpu-runtime"])
+                    builders = [
+                        "clang-hip-vega20",
+                        "openmp-offload-amdgpu-runtime",
+                        "openmp-offload-libc-amdgpu-runtime",
+                        "openmp-offload-sles-build-only"
+                    ])
             ]),
         reporters.MailNotifier(
             fromaddr=status_email_fromaddr,
