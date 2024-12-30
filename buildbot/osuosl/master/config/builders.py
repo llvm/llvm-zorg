@@ -1085,7 +1085,7 @@ all = [
                         "-DLLVM_ENABLE_ASSERTIONS=OFF",
                         "-DLLVM_INCLUDE_EXAMPLES=OFF",
                         "-DLLVM_LIT_ARGS=--verbose",
-                        "-DLLVM_USE_LINKER=lld"])},
+                        "-DLLVM_USE_LINKER=gold"])},
 
 # Polly builders.
 
