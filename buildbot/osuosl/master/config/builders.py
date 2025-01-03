@@ -1957,6 +1957,7 @@ all += [
     'workernames' : ["rocm-docker-ubu-22"],
     'builddir': "bbot-build",
     'factory' : AnnotatedBuilder.getAnnotatedBuildFactory(
+                    depends_on_projects=["llvm", "clang", "lld", "compiler-rt", "libcxx", "libcxxabi", "openmp", "offload", "libunwind"],
                     script="amdgpu-offload-cmake.py",
                     checkout_llvm_sources=True,
                     script_interpreter=None
