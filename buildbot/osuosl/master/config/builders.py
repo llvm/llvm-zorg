@@ -1955,7 +1955,7 @@ all += [
     {'name' : "amdgpu-offload-ubuntu-22-cmake-build-only",
     'tags'  : ["openmp"],
     'workernames' : ["rocm-docker-ubu-22"],
-    'builddir': "bbot-build",
+    'builddir': "amdgpu-offload-ubuntu-22-cmake-build-only",
     'factory' : AnnotatedBuilder.getAnnotatedBuildFactory(
                     depends_on_projects=["llvm", "clang", "lld", "compiler-rt", "libcxx", "libcxxabi", "openmp", "offload", "libunwind"],
                     script="amdgpu-offload-cmake.py",
