@@ -486,6 +486,7 @@ all = [
                     },
                     testsuite_flags=[
                         '--cppflags', '-mcpu=neoverse-512tvb -mllvm -scalable-vectorization=preferred -mllvm -treat-scalable-fixed-error-as-warning=false -O3',
+                        '--cmake-define', 'CMAKE_Fortran_FLAGS=-mcpu=neoverse-512tvb -mllvm -scalable-vectorization=preferred -mllvm -treat-scalable-fixed-error-as-warning=false -O3',
                         '--threads=32', '--build-threads=32'],
                     extra_cmake_args=[
                         "-DCMAKE_C_FLAGS='-mcpu=neoverse-512tvb'",
@@ -510,6 +511,7 @@ all = [
                     },
                     testsuite_flags=[
                         '--cppflags', '-mcpu=neoverse-512tvb -mllvm -scalable-vectorization=preferred -mllvm -treat-scalable-fixed-error-as-warning=false -O3',
+                        '--cmake-define', 'CMAKE_Fortran_FLAGS=-mcpu=neoverse-512tvb -mllvm -scalable-vectorization=preferred -mllvm -treat-scalable-fixed-error-as-warning=false -O3',
                         '--threads=32', '--build-threads=32'],
                     extra_cmake_args=[
                         "-DCMAKE_C_FLAGS='-mcpu=neoverse-512tvb -mllvm -scalable-vectorization=preferred -mllvm -treat-scalable-fixed-error-as-warning=false'",
@@ -532,6 +534,7 @@ all = [
                     },
                     testsuite_flags=[
                         '--cppflags', '-mcpu=neoverse-512tvb -msve-vector-bits=256 -mllvm -treat-scalable-fixed-error-as-warning=false -O3',
+                        '--cmake-define', 'CMAKE_Fortran_FLAGS=-mcpu=neoverse-512tvb -msve-vector-bits=256 -mllvm -treat-scalable-fixed-error-as-warning=false -O3',
                         '--threads=32', '--build-threads=32'],
                     extra_cmake_args=[
                         "-DCMAKE_C_FLAGS='-mcpu=neoverse-512tvb'",
@@ -556,6 +559,7 @@ all = [
                     },
                     testsuite_flags=[
                         '--cppflags', '-mcpu=neoverse-512tvb -msve-vector-bits=256 -mllvm -treat-scalable-fixed-error-as-warning=false -O3',
+                        '--cmake-define', 'CMAKE_Fortran_FLAGS=-mcpu=neoverse-512tvb -msve-vector-bits=256 -mllvm -treat-scalable-fixed-error-as-warning=false -O3',
                         '--threads=32', '--build-threads=32'],
                     extra_cmake_args=[
                         "-DCMAKE_C_FLAGS='-mcpu=neoverse-512tvb -msve-vector-bits=256 -mllvm -treat-scalable-fixed-error-as-warning=false'",
@@ -581,6 +585,7 @@ all = [
                     },
                     testsuite_flags=[
                         '--cppflags', '-mcpu=neoverse-v2 -mllvm -scalable-vectorization=preferred -mllvm -treat-scalable-fixed-error-as-warning=false -O3',
+                        '--cmake-define', 'CMAKE_Fortran_FLAGS=-mcpu=neoverse-v2 -mllvm -scalable-vectorization=preferred -mllvm -treat-scalable-fixed-error-as-warning=false -O3',
                         '--threads=48', '--build-threads=48'],
                     extra_cmake_args=[
                         "-DCMAKE_C_FLAGS='-mcpu=neoverse-v2'",
@@ -606,6 +611,7 @@ all = [
                     },
                     testsuite_flags=[
                         '--cppflags', '-mcpu=neoverse-v2 -mllvm -scalable-vectorization=preferred -mllvm -treat-scalable-fixed-error-as-warning=false -O3',
+                        '--cmake-define', 'CMAKE_Fortran_FLAGS=-mcpu=neoverse-v2 -mllvm -scalable-vectorization=preferred -mllvm -treat-scalable-fixed-error-as-warning=false -O3',
                         '--threads=48', '--build-threads=48'],
                     extra_cmake_args=[
                         "-DCMAKE_C_FLAGS='-mcpu=neoverse-v2 -mllvm -scalable-vectorization=preferred -mllvm -treat-scalable-fixed-error-as-warning=false'",
@@ -904,6 +910,8 @@ all = [
                     extra_cmake_args=[
                         "-DCMAKE_C_FLAGS='-march=cascadelake'",
                         "-DCMAKE_CXX_FLAGS='-march=cascadelake'",
+                        "-DCMAKE_C_COMPILER=icx.EXE",
+                        "-DMAKE_CXX_COMPILER=icx.EXE",
                         "-DLLVM_ENABLE_RUNTIMES=compiler-rt",
                         "-DCOMPILER_RT_BUILD_SANITIZERS=OFF",
                         "-DCOMPILER_RT_BUILD_ORC=OFF",
@@ -1060,6 +1068,24 @@ all = [
                         "-DLLVM_INCLUDE_EXAMPLES=OFF",
                         "-DLLVM_LIT_ARGS=--verbose",
                         "-DLLVM_TARGETS_TO_BUILD=AArch64"])},
+
+    {'name': "llvm-clang-x86_64-gcc-ubuntu-no-asserts",
+    'tags'  : ["llvm", "clang", "clang-tools-extra", "compiler-rt", "lld", "cross-project-tests"],
+    'workernames': ["doug-worker-6"],
+    'builddir': "gcc-no-asserts",
+    'factory': UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
+                    depends_on_projects=['llvm','clang','clang-tools-extra','compiler-rt','lld','cross-project-tests'],
+                    extra_configure_args=[
+                        "-DCMAKE_C_COMPILER=gcc",
+                        "-DCMAKE_CXX_COMPILER=g++",
+                        "-DCMAKE_BUILD_TYPE=Release",
+                        "-DCLANG_ENABLE_CLANGD=OFF",
+                        "-DLLVM_BUILD_RUNTIME=ON",
+                        "-DLLVM_BUILD_TESTS=ON",
+                        "-DLLVM_ENABLE_ASSERTIONS=OFF",
+                        "-DLLVM_INCLUDE_EXAMPLES=OFF",
+                        "-DLLVM_LIT_ARGS=--verbose",
+                        "-DLLVM_USE_LINKER=gold"])},
 
 # Polly builders.
 
@@ -1926,39 +1952,22 @@ all += [
                         add_openmp_lit_args=["--time-tests", "--timeout 100"],
                         )},
 
-    {'name' : "offload-runtime-openmp-amdgpu",
+    {'name' : "amdgpu-offload-ubuntu-22-cmake-build-only",
     'tags'  : ["openmp"],
-    'workernames' : ["rocm-worker-hw-03"],
-    'builddir': "offload-runtime-openmp-amdgpu",
-    'factory' : OpenMPBuilder.getOpenMPCMakeBuildFactory(
-                        clean=True,
-                        enable_runtimes=['openmp', 'offload', 'flang-rt'],
-                        depends_on_projects=['llvm', 'clang', 'flang', 'flang-rt', 'lld', 'offload', 'openmp'],
-                        extraCmakeArgs=[
-                            "-DCMAKE_BUILD_TYPE=Release",
-                            "-DCLANG_DEFAULT_LINKER=lld",
-                            "-DLLVM_TARGETS_TO_BUILD=X86;AMDGPU",
-                            "-DLLVM_ENABLE_ASSERTIONS=ON",
-                            "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
-                            "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
-                            ],
-                        env={
-                            'HSA_ENABLE_SDMA':'0',
-                            },
-                        install=True,
-                        testsuite=False,
-                        testsuite_sollvevv=False,
-                        extraTestsuiteCmakeArgs=[
-                            "-DTEST_SUITE_SOLLVEVV_OFFLOADING_CFLAGS=-fopenmp-targets=amdgcn-amd-amdhsa;-Xopenmp-target=amdgcn-amd-amdhsa",
-                            "-DTEST_SUITE_SOLLVEVV_OFFLOADING_LDLAGS=-fopenmp-targets=amdgcn-amd-amdhsa;-Xopenmp-target=amdgcn-amd-amdhsa",
-                        ],
-                        add_lit_checks=["check-clang", "check-flang", "check-flang-rt", "check-offload"],
-                        add_openmp_lit_args=["--time-tests", "--timeout 100"],
-                    )},
+    'workernames' : ["rocm-docker-ubu-22"],
+    'builddir': "amdgpu-offload-ubuntu-22-cmake-build-only",
+    'factory' : AnnotatedBuilder.getAnnotatedBuildFactory(
+                    depends_on_projects=["llvm", "clang", "lld", "compiler-rt", "libcxx", "libcxxabi", "openmp", "offload", "libunwind"],
+                    script="amdgpu-offload-cmake.py",
+                    checkout_llvm_sources=True,
+                    script_interpreter=None
+                )},
 
     {'name' : "openmp-offload-libc-amdgpu-runtime",
     'tags'  : ["openmp"],
     'workernames' : ["omp-vega20-1"],
+     # We would like to never collapse, but it seems the load is too high on that system to keep up.
+    'collapseRequests' : True,
     'builddir': "openmp-offload-libc-amdgpu-runtime",
     'factory' : OpenMPBuilder.getOpenMPCMakeBuildFactory(
                         clean=True,
@@ -2239,10 +2248,10 @@ all += [
                     depends_on_projects=['llvm', 'libc', 'clang', 'clang-tools-extra'],
                     extra_args=['--debug', '--asan'])},
 
-    {'name' : "libc-x86_64-debian-dbg-runtimes-build",
+    {'name' : "libc-x86_64-debian-dbg-bootstrap-build",
     'tags'  : ["libc"],
     'workernames' : ["libc-x86_64-debian"],
-    'builddir': "libc-x86_64-debian-dbg-runtimes-build",
+    'builddir': "libc-x86_64-debian-dbg-bootstrap-build",
     'factory' : AnnotatedBuilder.getAnnotatedBuildFactory(
                     script="libc-linux.py",
                     depends_on_projects=['llvm', 'libc', 'clang', 'clang-tools-extra'],
@@ -2504,6 +2513,34 @@ all += [
                         "-DCMAKE_CXX_STANDARD=17",
                         '-DLLVM_PARALLEL_COMPILE_JOBS=4',
                     ])},
+
+    {'name' : 'ppc64-flang-aix',
+    'tags'  : ["flang", "ppc", "ppc64", "aix"],
+    'collapseRequests' : False,
+    'workernames' : ['ppc64-flang-aix-test'],
+    'builddir': 'ppc64-flang-aix-build',
+    'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
+                    clean=False,
+                    depends_on_projects=['llvm', 'mlir', 'clang', 'flang', 'compiler-rt'],
+                    checks=['check-flang'],
+                    extra_configure_args=[
+                        '-DLLVM_DEFAULT_TARGET_TRIPLE=powerpc64-ibm-aix',
+                        '-DLLVM_INSTALL_UTILS=ON',
+                        '-DCMAKE_CXX_STANDARD=17',
+                        '-DLLVM_LIT_ARGS=--threads=20 -v --time-tests',
+                        '-DFLANG_ENABLE_WERROR=ON',
+                        '-DLLVM_ENABLE_ASSERTIONS=ON',
+                        "-DPython3_EXECUTABLE:FILEPATH=python3",
+                        "-DLLVM_ENABLE_ZLIB=OFF", "-DLLVM_APPEND_VC_REV=OFF",
+                        "-DLLVM_PARALLEL_LINK_JOBS=2",
+
+                    ],
+                    env={
+                        'CC': 'clang',
+                        'CXX': 'clang++',
+                        'LD': 'lld',
+                        'OBJECT_MODE': '64'
+                    })},
 
 # Builders responsible building Sphinx documentation.
 

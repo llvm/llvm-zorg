@@ -45,7 +45,7 @@ data "google_client_config" "current" {}
 
 resource "google_container_cluster" "llvm_premerge" {
   name     = var.cluster_name
-  location = "europe-west3-a"
+  location = "us-central1-a"
 
   # We can't create a cluster with no node pool defined, but we want to only use
   # separately managed node pools. So we create the smallest possible default
@@ -61,7 +61,7 @@ resource "google_container_cluster" "llvm_premerge" {
 
 resource "google_container_node_pool" "llvm_premerge_linux_service" {
   name       = "llvm-premerge-linux-service"
-  location   = "europe-west3-a"
+  location   = "us-central1-a"
   cluster    = google_container_cluster.llvm_premerge.name
   node_count = 2
 
@@ -72,7 +72,7 @@ resource "google_container_node_pool" "llvm_premerge_linux_service" {
 
 resource "google_container_node_pool" "llvm_premerge_linux" {
   name               = "llvm-premerge-linux"
-  location           = "europe-west3-a"
+  location           = "us-central1-a"
   cluster            = google_container_cluster.llvm_premerge.name
   initial_node_count = 0
 
@@ -82,7 +82,7 @@ resource "google_container_node_pool" "llvm_premerge_linux" {
   }
 
   node_config {
-    machine_type = "c2d-highcpu-56"
+    machine_type = "n2-standard-64"
     taint = [{
       key    = "premerge-platform"
       value  = "linux"
@@ -96,7 +96,7 @@ resource "google_container_node_pool" "llvm_premerge_linux" {
 
 resource "google_container_node_pool" "llvm_premerge_windows" {
   name               = "llvm-premerge-windows"
-  location           = "europe-west3-a"
+  location           = "us-central1-a"
   cluster            = google_container_cluster.llvm_premerge.name
   initial_node_count = 0
 
@@ -108,7 +108,7 @@ resource "google_container_node_pool" "llvm_premerge_windows" {
   # We do not set a taint for the windows nodes as kubernetes by default sets
   # a node.kubernetes.io/os taint for windows nodes.
   node_config {
-    machine_type = "c2d-highcpu-56"
+    machine_type = "n2-standard-64"
     labels = {
       "premerge-platform" : "windows"
     }
@@ -334,7 +334,7 @@ resource "helm_release" "grafana-k8s-monitoring" {
     value = format("%s/api/prom", var.externalservices_prometheus_host)
   }
 
-  depends_on = [ kubernetes_namespace.grafana ]
+  depends_on = [kubernetes_namespace.grafana]
 }
 
 data "google_secret_manager_secret_version" "metrics_github_pat" {

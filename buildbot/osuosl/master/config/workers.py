@@ -116,6 +116,7 @@ def get_all():
 
         # POWER 8 PowerPC AIX 7.2
         create_worker("aix-ppc64", properties={'jobs': 10}, max_builds=1),
+        create_worker("ppc64-flang-aix-test", properties={'jobs': 10}, max_builds=1),
 
         # IBM z13 (s390x), Ubuntu 16.04.2
         create_worker("systemz-1", properties={'jobs': 4, 'vcs_protocol': 'https'}, max_builds=4),
@@ -345,6 +346,9 @@ def get_all():
         create_worker("doug-worker-4", properties={'jobs': 8}, max_builds=1),
         create_worker("doug-worker-5", properties={'jobs': 8}, max_builds=1),
 
+        # Ubuntu 20.04, AMD Ryzen 5 PRO 3400GE, 32GB
+        create_worker("doug-worker-6", properties={'jobs': 8}, max_builds=1),
+
         # XCore target, Ubuntu 20.04 x64 host
         create_worker("xcore-ubuntu20-x64", properties={'jobs': 4}, max_builds=1),
 
@@ -353,15 +357,16 @@ def get_all():
 
         # OpenMP on AMDGPU, Ubuntu 18.04.5, Intel(R) Xeon(R) Gold 5218 @ 2.30GHz with 64GB Memory, 1 Vega20 GPU with 16GB Memory
         create_worker("omp-vega20-0", properties={'jobs': 32}, max_builds=1),
+        # OpenMP / Offload / libc on AMDGPU
         create_worker("omp-vega20-1", properties={'jobs': 32}, max_builds=1),
-
         # Flang OpenMP on AMDGPU, Ubuntu 22.04.3, AMD(R) EPYC 9354 @ 2.5GHz with 512GB Memory, 1 MI210 GPU with 64GB Memory
         create_worker("rocm-worker-hw-01", properties={'jobs': 64}, max_builds=1),
         create_worker("rocm-worker-hw-02", properties={'jobs': 64}, max_builds=1),
-        create_worker("rocm-worker-hw-03", properties={'jobs': 64}, max_builds=1),
         create_worker("rocm-worker-hw-04-sles", properties={'jobs': 32}, max_builds=1),
         create_worker("rocm-worker-hw-04-rhel-9_4", properties={'jobs': 32}, max_builds=1),
         create_worker("rocm-worker-hw-04-rhel-8_8", properties={'jobs': 32}, max_builds=1),
+        # Containerized build-only, using llvm-project/offload/cmake/caches/AMDGPUbot.cmake
+        create_worker("rocm-docker-ubu-22", properties={'jobs': 32}, max_builds=1),
 
         # AMD ROCm support, Ubuntu 18.04.6, AMD Ryzen @ 1.5 GHz, MI200 GPU
         create_worker("mi200-buildbot", max_builds=1),

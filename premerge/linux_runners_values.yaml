@@ -47,11 +47,11 @@ template:
         # itself doesn't need much, just using something enough not to get
         # OOM killed.
         requests:
-          cpu: 50
-          memory: "2Gi"
+          cpu: 55
+          memory: "8Gi"
         limits:
-          cpu: 56
-          memory: "2Gi"
+          cpu: 64
+          memory: "8Gi"
       env:
         - name: ACTIONS_RUNNER_CONTAINER_HOOKS
           value: /home/runner/k8s/index.js

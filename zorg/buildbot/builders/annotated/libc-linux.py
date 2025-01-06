@@ -12,8 +12,8 @@ from contextlib import contextmanager
 def is_fullbuild_builder(builder_name):
     return ('fullbuild' in builder_name.split('-'))
 
-def is_runtimes_builder(builder_name):
-    return ('runtimes' in builder_name.split('-'))
+def is_bootstrap_builder(builder_name):
+    return 'bootstrap' in builder_name
 
 def is_gcc_builder(builder_name):
     return ('gcc' in builder_name.split('-'))
@@ -41,7 +41,7 @@ def main(argv):
     source_dir = os.path.join('..', 'llvm-project')
     builder_name = os.environ.get('BUILDBOT_BUILDERNAME')
     fullbuild = is_fullbuild_builder(builder_name)
-    runtimes_build = is_runtimes_builder(builder_name)
+    bootstrap_build = is_bootstrap_builder(builder_name)
     gcc_build = is_gcc_builder(builder_name)
     lint_build = is_lint_builder(builder_name)
     riscv_build = is_riscv_builder(builder_name)
@@ -72,11 +72,8 @@ def main(argv):
         if lint_build:
             cmake_args.append('-DLLVM_LIBC_CLANG_TIDY=%s' % clang_tidy)
 
-        if runtimes_build:
-          projects = ['llvm', 'clang']
-          cmake_args.append('-DLLVM_ENABLE_RUNTIMES=libc')
-        else:
-          projects = ['llvm', 'libc']
+        if bootstrap_build:
+            cmake_args.append('-DLLVM_ENABLE_PROJECTS=clang')
 
         if args.debug:
             cmake_args.append('-DCMAKE_BUILD_TYPE=Debug')
@@ -86,17 +83,18 @@ def main(argv):
         if args.asan:
             cmake_args.append('-DLLVM_USE_SANITIZER=Address')
 
+        runtimes = ['libc']
         if fullbuild and not args.asan and not lint_build and not riscv_build:
-            projects.extend(['clang', 'compiler-rt'])
-
-        cmake_args.append('-DLLVM_ENABLE_PROJECTS={}'.format(';'.join(projects)))
+            runtimes.append('compiler-rt')
+        cmake_args.append('-DLLVM_ENABLE_RUNTIMES={}'.format(';'.join(runtimes)))
 
         if fullbuild and not args.asan and not lint_build and not riscv_build:
             cmake_args.append('-DLLVM_LIBC_INCLUDE_SCUDO=ON')
             cmake_args.append('-DCOMPILER_RT_BUILD_SCUDO_STANDALONE_WITH_LLVM_LIBC=ON')
             cmake_args.append('-DCOMPILER_RT_BUILD_GWP_ASAN=OFF')
             cmake_args.append('-DCOMPILER_RT_SCUDO_STANDALONE_BUILD_SHARED=OFF')
-            cmake_args.append('-DLIBC_INCLUDE_BENCHMARKS=ON')
+            # TODO(https://github.com/llvm/llvm-project/issues/119789): re-enable
+            # cmake_args.append('-DLIBC_INCLUDE_BENCHMARKS=ON')
 
         if fullbuild:
             cmake_args.extend(['-DLLVM_LIBC_FULL_BUILD=ON']),
@@ -113,7 +111,11 @@ def main(argv):
             cmake_args.append('-DCMAKE_LINKER=/usr/bin/ld.lld')
             cmake_args.append('-DLLVM_LIBC_MPFR_INSTALL_PATH={}/gmp+mpfr/'.format(os.getenv('HOME')))
 
-        run_command(['cmake', os.path.join(source_dir, 'llvm')] + cmake_args)
+        if bootstrap_build:
+            cmake_root = 'llvm'
+        else:
+            cmake_root = 'runtimes'
+        run_command(['cmake', os.path.join(source_dir, cmake_root)] + cmake_args)
 
     if lint_build:
         with step('lint libc'):
@@ -127,7 +129,7 @@ def main(argv):
        with step('build libc-startup'):
           run_command(['ninja', 'libc-startup'])
 
-    if runtimes_build:
+    if bootstrap_build:
         with step('check-libc'):
             run_command(['ninja', 'check-libc'])
     else:
@@ -143,10 +145,12 @@ def main(argv):
             run_command(['ninja', 'libc-integration-tests'])
         with step('libc-scudo-integration-test'):
             run_command(['ninja', 'libc-scudo-integration-test'])
-        with step('Benchmark Utils Tests'):
-            run_command(['ninja', 'libc-benchmark-util-tests'])
+        # TODO(https://github.com/llvm/llvm-project/issues/119789): re-enable
+        # cmake_args.append('-DLIBC_INCLUDE_BENCHMARKS=ON')
+        # with step('Benchmark Utils Tests'):
+        #     run_command(['ninja', 'libc-benchmark-util-tests'])
 
-    if not (fullbuild or runtimes_build) and x86_64_build:
+    if not (fullbuild or bootstrap_build) and x86_64_build:
         with step('libc-fuzzer'):
             run_command(['ninja', 'libc-fuzzer'])
 
