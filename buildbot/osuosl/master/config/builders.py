@@ -3179,8 +3179,8 @@ all += [
                                 "FLANG_RT_EXPERIMENTAL_OFFLOAD_SUPPORT" : "OpenMP",
                                 "FLANG_RT_DEVICE_ARCHITECTURES"         : "sm_50;sm_60;sm_70;sm_80",
                             },
-                            targets = ["flang_rt"],
-                            src_to_build_dir = "flang-rt",
+                            targets = ["flang-rt"],
+                            src_to_build_dir = "runtimes",
                         ),
                     ],
                     env = {
