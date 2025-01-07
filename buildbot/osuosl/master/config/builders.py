@@ -3446,7 +3446,8 @@ all += [
                         "LLDB_CAN_USE_LLDB_SERVER"      : "OFF",
                         "LLDB_TEST_USER_ARGS"           : util.Interpolate(
                                                             "--env;ARCH_CFLAGS=-mcpu=cortex-a78;" \
-                                                            "--platform-name;remote-linux"),
+                                                            "--platform-name;remote-linux;" \
+                                                            "--skip-category=lldb-server"),
                     },
                     cmake_options = [
                         "-C", util.Interpolate("%(prop:srcdir_relative)s/clang/cmake/caches/CrossWinToARMLinux.cmake"),
@@ -3573,7 +3574,8 @@ all += [
                         "LLDB_CAN_USE_LLDB_SERVER"      : "OFF",
                         "LLDB_TEST_USER_ARGS"           : util.Interpolate(
                                                             "--env;ARCH_CFLAGS=-mcpu=cortex-a78;" \
-                                                            "--platform-name;remote-linux"),
+                                                            "--platform-name;remote-linux;" \
+                                                            "--skip-category=lldb-server"),
                     },
                     cmake_options = [
                         "-C", util.Interpolate("%(prop:srcdir_relative)s/clang/cmake/caches/CrossWinToARMLinux.cmake"),
