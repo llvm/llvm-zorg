@@ -393,11 +393,11 @@ all = [
                 useTwoStage=True,
                 runTestSuite=True,
                 testsuite_flags=[
-                    '--cppflags', '-mcpu=cortex-a57 -fuse-ld=lld',
+                    '--cppflags', '-mcpu=neoverse-n1 -fuse-ld=lld',
                     '--threads=32', '--build-threads=32'],
                 extra_cmake_args=[
-                    "-DCMAKE_C_FLAGS='-mcpu=cortex-a57'",
-                    "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a57'",
+                    "-DCMAKE_C_FLAGS='-mcpu=neoverse-n1'",
+                    "-DCMAKE_CXX_FLAGS='-mcpu=neoverse-n1'",
                     "-DLLVM_ENABLE_LLD=True"])},
 
     ## AArch64 run test-suite at -O0 (GlobalISel is now default).
@@ -452,11 +452,11 @@ all = [
                         'NO_STOP_MESSAGE':'1', # For Fortran test-suite
                     },
                     testsuite_flags=[
-                        '--cppflags', '-mcpu=cortex-a57',
+                        '--cppflags', '-mcpu=neoverse-n1',
                         '--threads=32', '--build-threads=32'],
                     extra_cmake_args=[
-                        "-DCMAKE_C_FLAGS='-mcpu=cortex-a57'",
-                        "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a57'",
+                        "-DCMAKE_C_FLAGS='-mcpu=neoverse-n1'",
+                        "-DCMAKE_CXX_FLAGS='-mcpu=neoverse-n1'",
                         "-DLLVM_LIT_ARGS='-v'",
                         "-DMLIR_INCLUDE_INTEGRATION_TESTS=True",
                         "-DMLIR_RUN_ARM_SVE_TESTS=True",
