@@ -11,7 +11,7 @@ containerMode:
     storageClassName: "standard-rwo"
     resources:
       requests:
-        storage: "100Gi"
+        storage: "200Gi"
   kubernetesModeServiceAccount:
     annotations:
 
