@@ -339,6 +339,9 @@ resource "helm_release" "grafana-k8s-monitoring" {
 
 data "google_secret_manager_secret_version" "metrics_github_pat" {
   secret = "llvm-premerge-metrics-github-pat"
+  # TODO(boomanaiden154): Remove this once the latest version is not destroyed
+  # and we do not need this anymore.
+  version = "4"
 }
 
 data "google_secret_manager_secret_version" "metrics_grafana_api_key" {
