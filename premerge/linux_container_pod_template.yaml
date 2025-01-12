@@ -1,3 +1,6 @@
+metadata:
+  annotations:
+    cluster-autoscaler.kubernetes.io/safe-to-evict: "false"
 spec:
   tolerations:
     - key: "premerge-platform"
