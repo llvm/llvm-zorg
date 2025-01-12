@@ -5,6 +5,9 @@ minRunners: 0
 maxRunners: 2
 
 template:
+  metadata:
+    annotations:
+      cluster-autoscaler.kubernetes.io/safe-to-evict: "false"
   spec:
     tolerations:
     - key: "node.kubernetes.io/os"
