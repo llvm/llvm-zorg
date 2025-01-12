@@ -273,6 +273,7 @@ def _getClangCMakeBuildFactory(
         depends_on_projects.append('libunwind')
     if checkout_flang:
         depends_on_projects.append('flang')
+        depends_on_projects.append('flang-rt')
         depends_on_projects.append('mlir')
 
     f = LLVMBuildFactory(
