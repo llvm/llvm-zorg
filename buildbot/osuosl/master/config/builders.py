@@ -425,11 +425,11 @@ all = [
                     useTwoStage=True,
                     runTestSuite=True,
                     testsuite_flags=[
-                        '--cppflags', '-mcpu=cortex-a57 -fuse-ld=lld',
+                        '--cppflags', '-mcpu=neoverse-n1 -fuse-ld=lld',
                         '--threads=32', '--build-threads=32'],
                     extra_cmake_args=[
-                        "-DCMAKE_C_FLAGS='-mcpu=cortex-a57'",
-                        "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a57'",
+                        "-DCMAKE_C_FLAGS='-mcpu=neoverse-n1'",
+                        "-DCMAKE_CXX_FLAGS='-mcpu=neoverse-n1'",
                         "-DCOMPILER_RT_BUILD_SANITIZERS=OFF",
                         "-DLLVM_ENABLE_LLD=True",
                         # lld tests cause us to hit thread limits
