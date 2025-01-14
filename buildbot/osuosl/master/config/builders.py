@@ -197,7 +197,7 @@ all = [
                         'libunwind',
                         'libcxx',
                         'libcxxabi',
-                        'lld', 
+                        'lld',
                     ],
                     vs="autodetect",
                     clean=True,
@@ -248,7 +248,7 @@ all = [
                         'libunwind',
                         'libcxx',
                         'libcxxabi',
-                        'lld', 
+                        'lld',
                     ],
                     vs = "autodetect",
                     clean = True,
@@ -3392,7 +3392,7 @@ lldb_remote_linux_env = {
 
 all += [
     # LLDB remote-linux builders.
-    
+
     # LLDB remote-linux on Ubuntu Linux host.
     # The first stage uses pre-installed latest released Clang (see apt.llvm.org for details).
     # The second stage uses pre-built cross Aarch64 Clang toolchain from the latest release branch
@@ -3521,7 +3521,7 @@ all += [
                     env = lldb_remote_linux_env.copy(),
                 )
         },
-        
+
     # LLDB remote-linux on Windows host.
     # The first stage builds the latest cross Aarch64 toolchain.
     # The second stage uses just-built cross Aarch64 Clang toolchain
