@@ -134,7 +134,8 @@ def getBOLTCmakeBuildFactory(
                 warnOnFailure=True,
                 haltOnFailure=False,
                 flunkOnFailure=False,
-                doStepIf=FileExists('build/.llvm-bolt.diff'),
+                #doStepIf=FileExists('build/.llvm-bolt.diff'),
+                doStepIf=False,
                 env=env),
             ])
 
