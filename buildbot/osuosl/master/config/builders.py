@@ -1963,6 +1963,17 @@ all += [
                     script_interpreter=None
                 )},
 
+    {'name' : "amdgpu-offload-rhel-9-cmake-build-only",
+    'tags'  : ["openmp"],
+    'workernames' : ["rocm-docker-rhel-9"],
+    'builddir': "amdgpu-offload-rhel-9-cmake-build-only",
+    'factory' : AnnotatedBuilder.getAnnotatedBuildFactory(
+                    depends_on_projects=["llvm", "clang", "lld", "compiler-rt", "libcxx", "libcxxabi", "openmp", "offload", "libunwind"],
+                    script="amdgpu-offload-cmake.py",
+                    checkout_llvm_sources=True,
+                    script_interpreter=None
+                )},
+
     {'name' : "openmp-offload-libc-amdgpu-runtime",
     'tags'  : ["openmp"],
     'workernames' : ["omp-vega20-1"],
