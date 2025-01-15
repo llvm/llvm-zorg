@@ -14,7 +14,7 @@ class Phase(util.simple_repr_mixin):
     def fromdata(data):
         version = data['version']
         if version != 0:
-            raise ValueError, "Unknown version"
+            raise ValueError("Unknown version")
 
         return Phase(data['name'], data['number'],
                      data['phase_builder'], data['builder_names'],
@@ -45,7 +45,7 @@ class Builder(util.simple_repr_mixin):
     def fromdata(data):
         version = data['version']
         if version != 0:
-            raise ValueError, "Unknown version"
+            raise ValueError("Unknown version")
 
         return Builder(data['name'])
 
@@ -67,7 +67,7 @@ class PublishedBuild(util.simple_repr_mixin):
     def fromdata(data):
         version = data['version']
         if version != 0:
-            raise ValueError, "Unknown version"
+            raise ValueError("Unknown version")
 
         return PublishedBuild(data['product'], data['os'],
                               data['arch'], data['archive_name'])
@@ -99,7 +99,7 @@ class Config(util.simple_repr_mixin):
     def fromdata(data):
         version = data['version']
         if version != 0:
-            raise ValueError, "Unknown version"
+            raise ValueError("Unknown version")
 
         return Config([Phases.fromdata(item)
                        for item in data['phases']],

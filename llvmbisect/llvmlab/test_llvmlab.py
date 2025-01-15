@@ -10,7 +10,7 @@ class TestLLVMLabCI(unittest.TestCase):
 
     def setUp(self):
         self.workdir = tempfile.mkdtemp()
-        print self.workdir
+        print(self.workdir)
         os.chdir(self.workdir)
 
     def tearDown(self):
