@@ -4,6 +4,7 @@ from datetime import datetime
 from buildbot.plugins import util
 from buildbot.steps.shell import ShellCommand, SetProperty
 from buildbot.steps.shell import WarningCountingShellCommand
+from buildbot.steps.transfer import StringDownload
 
 import zorg.buildbot.builders.Util as builders_util
 
@@ -162,6 +163,10 @@ def getClangCMakeBuildFactory(
             # CMake arguments to use for stage2 instead of extra_cmake_args.
             extra_stage2_cmake_args=None,
 
+            # If set, use a toolchains file for the stage 2 build and add
+            # these options to it.
+            stage2_toolchain_options=None,
+
             # Extra repositories
             checkout_clang_tools_extra=True,
             checkout_compiler_rt=True,
@@ -169,6 +174,7 @@ def getClangCMakeBuildFactory(
             checkout_libcxx=False,
             checkout_flang=False,
             checkout_test_suite=False,
+            checkout_zorg=False,
 
             enable_runtimes="auto"):
     return _getClangCMakeBuildFactory(
@@ -180,12 +186,14 @@ def getClangCMakeBuildFactory(
                submitURL=submitURL, testerName=testerName,
                env=env, extra_cmake_args=extra_cmake_args,
                extra_stage2_cmake_args=extra_stage2_cmake_args,
+               stage2_toolchain_options=stage2_toolchain_options,
                checkout_clang_tools_extra=checkout_clang_tools_extra,
                checkout_lld=checkout_lld,
                checkout_compiler_rt=checkout_compiler_rt,
                checkout_libcxx=checkout_libcxx,
                checkout_flang=checkout_flang,
                checkout_test_suite=checkout_test_suite,
+               checkout_zorg=checkout_zorg,
                enable_runtimes=enable_runtimes)
 
 def _getClangCMakeBuildFactory(
@@ -219,6 +227,10 @@ def _getClangCMakeBuildFactory(
             # CMake arguments to use for stage2 instead of extra_cmake_args.
             extra_stage2_cmake_args=None,
 
+            # If set, use a toolchains file for the stage 2 build and add
+            # these options to it.
+            stage2_toolchain_options=None,
+
             # Extra repositories
             checkout_clang_tools_extra=True,
             checkout_compiler_rt=True,
@@ -226,6 +238,7 @@ def _getClangCMakeBuildFactory(
             checkout_libcxx=False,
             checkout_test_suite=False,
             checkout_flang=False,
+            checkout_zorg=False,
 
             enable_runtimes="auto",
 
@@ -292,6 +305,12 @@ def _getClangCMakeBuildFactory(
         f.addGetSourcecodeForProject(
             project='test-suite',
             src_dir='test/test-suite',
+            alwaysUseLatest=True)
+
+    if checkout_zorg:
+        f.addGetSourcecodeForProject(
+            project='zorg',
+            src_dir='llvm-zorg',
             alwaysUseLatest=True)
 
     # Then get the LLVM source code revision this particular build is for.
@@ -427,10 +446,28 @@ def _getClangCMakeBuildFactory(
         # Absolute paths to just built compilers.
         # Note: Backslash path separators do not work well with cmake and ninja.
         # Forward slash path separator works on Windows as well.
-        stage1_cc = InterpolateToPosixPath(
-                        f"-DCMAKE_C_COMPILER=%(prop:builddir)s/{stage1_install}/bin/{cc}")
-        stage1_cxx = InterpolateToPosixPath(
-                        f"-DCMAKE_CXX_COMPILER=%(prop:builddir)s/{stage1_install}/bin/{cxx}")
+        stage1_cc = f"%(prop:builddir)s/{stage1_install}/bin/{cc}"
+        stage1_cxx = f"%(prop:builddir)s/{stage1_install}/bin/{cxx}"
+
+        # If stage2_toolchain_options is set then we'll use a toolchain file
+        # to specify the compiler being used (the just-built stage1) and add
+        # any stage2_toolchain_options to it. Otherwise, just set
+        # -DCMAKE_{C,CXX}_COMPILER.
+        if stage2_toolchain_options is None:
+            compiler_args = [
+                    InterpolateToPosixPath(f"-DCMAKE_C_COMPILER={stage1_cc}"),
+                    InterpolateToPosixPath(f"-DCMAKE_CXX_COMPILER={stage1_cxx}"),
+            ]
+        else:
+            toolchain_file = f"%(prop:builddir)s/{stage2_build}/stage1-toolchain.cmake"
+            toolchain_file_contents = "\n".join([
+                    f"set(CMAKE_C_COMPILER {stage1_cc})",
+                    f"set(CMAKE_CXX_COMPILER {stage1_cxx})",
+                    ] + stage2_toolchain_options)
+            f.addStep(StringDownload(util.Interpolate(toolchain_file_contents),
+                                     workerdest=InterpolateToPosixPath(toolchain_file)))
+            compiler_args = [InterpolateToPosixPath(f"-DCMAKE_TOOLCHAIN_FILE={toolchain_file}")]
+
 
         # If we have a separate stage2 cmake arg list, then ensure we re-apply
         # enable_projects and enable_runtimes if necessary.
@@ -446,13 +483,12 @@ def _getClangCMakeBuildFactory(
 
         rel_src_dir = LLVMBuildFactory.pathRelativeTo(f.llvm_srcdir, stage2_build)
         cmake_cmd2 = [cmake, "-G", "Ninja", rel_src_dir,
-                      stage1_cc,
-                      stage1_cxx,
                       f"-DCMAKE_BUILD_TYPE={stage2_config}",
                       "-DLLVM_ENABLE_ASSERTIONS=True",
                       f"-DLLVM_LIT_ARGS={lit_args}",
                       f"-DCMAKE_INSTALL_PREFIX=../{stage2_install}"
-                     ] + (extra_stage2_cmake_args or extra_cmake_args)
+                     ] + (extra_stage2_cmake_args or extra_cmake_args) \
+                       + compiler_args
 
         f.addStep(ShellCommand(name='cmake stage 2',
                                command=cmake_cmd2,
