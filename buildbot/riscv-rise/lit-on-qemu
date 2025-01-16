@@ -50,7 +50,7 @@ mkdir -p "{base_mount_path}" || error "Can't make mount path"
 chown {target_uid}:{target_gid} "{base_mount_path}" || error "Chown failed"
 mount -t ext4 /dev/vdb "{base_mount_path}" || error "Mount failed"
 cd "{current_path}"
-su user -c "./bin/llvm-lit {args_string}"
+su user -c "/usr/bin/python3 ./bin/llvm-lit {args_string}"
 """
 exec_on_boot_path = hgcomm_path / "exec-on-boot"
 exec_on_boot_path.write_text(exec_on_boot_content)
