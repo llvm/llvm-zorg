@@ -46,7 +46,6 @@ error() {{
   printf "!!!!!!!!!! Error: %s !!!!!!!!!!\\n" "$*" >&2
   exit 1
 }}
-[ -e "{base_mount_path}" ] && error "Can't mount path, already exists"
 mkdir -p "{base_mount_path}" || error "Can't make mount path"
 chown {target_uid}:{target_gid} "{base_mount_path}" || error "Chown failed"
 mount -t ext4 /dev/vdb "{base_mount_path}" || error "Mount failed"
@@ -110,8 +109,6 @@ qemu_command = [
     "-virtfs", "local,path=hgcomm,mount_tag=hgcomm,security_model=none,id=hgcomm",
     "-device", "virtio-blk-device,drive=hdb",
     "-drive", "file=llvm-project.img,format=raw,if=none,id=hdb",
-    "-device", "virtio-net-device,netdev=net",
-    "-netdev", "user,id=net,hostfwd=tcp:127.0.0.1:10222-:22",
     "-bios", "/usr/share/qemu/opensbi-riscv64-generic-fw_dynamic.bin",
     "-kernel", f"{os.getenv('BB_IMG_DIR')}/kernel",
     "-initrd", f"{os.getenv('BB_IMG_DIR')}/initrd",
