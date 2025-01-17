@@ -368,6 +368,7 @@ def get_all():
         # Containerized build-only, using llvm-project/offload/cmake/caches/AMDGPUbot.cmake
         create_worker("rocm-docker-ubu-22", properties={'jobs': 32}, max_builds=1),
         create_worker("rocm-docker-rhel-9", properties={'jobs': 32}, max_builds=1),
+        create_worker("rocm-docker-rhel-8", properties={'jobs': 32}, max_builds=1),
 
         # AMD ROCm support, Ubuntu 18.04.6, AMD Ryzen @ 1.5 GHz, MI200 GPU
         create_worker("mi200-buildbot", max_builds=1),
