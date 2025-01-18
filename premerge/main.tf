@@ -199,17 +199,6 @@ resource "kubernetes_secret" "windows_github_pat" {
 }
 
 
-resource "kubernetes_config_map" "linux_container_pod_template" {
-  metadata {
-    name      = "linux-container-pod-template"
-    namespace = "llvm-premerge-linux-runners"
-  }
-
-  data = {
-    "linux-container-pod-template.yaml" : "${file("linux_container_pod_template.yaml")}"
-  }
-}
-
 resource "helm_release" "github_actions_runner_controller" {
   name       = "llvm-premerge-controller"
   namespace  = "llvm-premerge-controller"
@@ -235,9 +224,8 @@ resource "helm_release" "github_actions_runner_set_linux" {
 
   depends_on = [
     kubernetes_namespace.llvm_premerge_linux_runners,
-    kubernetes_config_map.linux_container_pod_template,
-    kubernetes_secret.linux_github_pat,
     helm_release.github_actions_runner_controller
+    kubernetes_secret.linux_github_pat
   ]
 }
 
