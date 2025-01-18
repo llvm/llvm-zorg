@@ -75,7 +75,11 @@ resource "google_container_node_pool" "llvm_premerge_linux" {
   location           = "us-central1-a"
   cluster            = google_container_cluster.llvm_premerge.name
   initial_node_count = 0
-  node_count         = 4
+
+  autoscaling {
+    total_min_node_count = 0
+    total_max_node_count = 4
+  }
 
   node_config {
     machine_type = "n2-standard-64"
