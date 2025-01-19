@@ -22,6 +22,8 @@ if ld.lld --version ; then
   CMAKE_COMMON_OPTIONS+=" -DLLVM_USE_LINKER=lld"
 fi
 
+SANITIZER_LOG_DIR=$ROOT/sanitizer_logs
+
 function include_config() {
   local P=.
   while true ; do
@@ -159,14 +161,28 @@ function buildbot_update {
   fi
 }
 
+function print_sanitizer_logs() {
+  if compgen -G "${SANITIZER_LOG_DIR}"/* ; then
+    echo @@@BUILD_STEP sanitizer logs@@@
+    head -n -1 "${SANITIZER_LOG_DIR}"/*
+    rm -rf "${SANITIZER_LOG_DIR}"/*
+    build_warning
+  fi
+}
+
+
 function run_ninja() {
   env
   /usr/bin/time -o ${ROOT}/time.txt -- ninja "$@"
   local ec=$?
+  if [[ "${BUILDBOT_BISECT_MODE:-}" == "1" || ! -v BUILDBOT_BUILDERNAME ]] ; then
+    print_sanitizer_logs
+  fi
   if [[ $ec -ne 0 ]] ; then
     build_failure
     rm -f ${ROOT}/time.txt
   fi
+  print_sanitizer_logs
 }
 
 function common_stage1_variables {
@@ -259,28 +275,38 @@ function build_stage2 {
   local fno_sanitize_flag=
   local cmake_options="-DLIBCXXABI_USE_LLVM_UNWINDER=OFF"
 
+  rm -rf "${SANITIZER_LOG_DIR}"
+  mkdir -p "${SANITIZER_LOG_DIR}"
+
+  local log_path="${SANITIZER_LOG_DIR}/report"
+
   if [ "$sanitizer_name" == "msan" ]; then
     export MSAN_SYMBOLIZER_PATH="${llvm_symbolizer_path}"
+    export MSAN_OPTIONS="log_path=${log_path}:log_exe_name=1"
     llvm_use_sanitizer="Memory"
     fsanitize_flag="-fsanitize=memory"
   elif [ "$sanitizer_name" == "msan_track_origins" ]; then
     export MSAN_SYMBOLIZER_PATH="${llvm_symbolizer_path}"
+    export MSAN_OPTIONS="log_path=${log_path}:log_exe_name=1"
     llvm_use_sanitizer="MemoryWithOrigins"
     fsanitize_flag="-fsanitize=memory -fsanitize-memory-track-origins"
   elif [ "$sanitizer_name" == "asan" ]; then
     export ASAN_SYMBOLIZER_PATH="${llvm_symbolizer_path}"
     export ASAN_OPTIONS="check_initialization_order=true"
+    export ASAN_OPTIONS+=":log_path=${log_path}:log_exe_name=1"
     llvm_use_sanitizer="Address"
     fsanitize_flag="-fsanitize=address"
   elif [ "$sanitizer_name" == "hwasan" ]; then
     export HWASAN_SYMBOLIZER_PATH="${llvm_symbolizer_path}"
     export HWASAN_OPTIONS="abort_on_error=1"
+    export HWASAN_OPTIONS+=":log_path=${log_path}:log_exe_name=1"
     llvm_use_sanitizer="HWAddress"
     fsanitize_flag="-fsanitize=hwaddress"
     # FIXME: Support globals with DSO https://github.com/llvm/llvm-project/issues/57206
     cmake_stage2_common_options+=" -DLLVM_ENABLE_PLUGINS=OFF"
   elif [ "$sanitizer_name" == "ubsan" ]; then
     export UBSAN_OPTIONS="external_symbolizer_path=${llvm_symbolizer_path}:print_stacktrace=1"
+    export UBSAN_OPTIONS+=":log_path=${log_path}:log_exe_name=1"
     llvm_use_sanitizer="Undefined"
     fsanitize_flag="-fsanitize=undefined -fno-sanitize-recover=all"
     # FIXME: After switching to LLVM_ENABLE_RUNTIMES, vptr has infitine
@@ -289,6 +315,7 @@ function build_stage2 {
   elif [ "$sanitizer_name" == "asan_ubsan" ]; then
     export ASAN_SYMBOLIZER_PATH="${llvm_symbolizer_path}"
     export ASAN_OPTIONS="check_initialization_order=true"
+    export ASAN_OPTIONS+=":log_path=${log_path}:log_exe_name=1"
     export UBSAN_OPTIONS="print_stacktrace=1"
     llvm_use_sanitizer="Address;Undefined"
     fsanitize_flag="-fsanitize=address,undefined -fno-sanitize-recover=all"
@@ -582,7 +609,7 @@ function upload_stats() {
   if [[ "${BUILDBOT_BISECT_MODE:-}" != "1" && -v BUILDBOT_BUILDERNAME ]] ; then
     lscpu > "${ROOT}/cpu.txt"
     curl http://metadata.google.internal/computeMetadata/v1/instance/machine-type \
-      -H Metadata-Flavor:Google > "${ROOT}/machine-type.txt"
+      -H Metadata-Flavor:Google > "${ROOT}/machine-type.txt" || true
     gsutil cp "${ROOT}/"{time,cpu,machine-type}".txt" "gs://sanitizer-buildbot-out/${BUILDBOT_BUILDERNAME}/${1}/${BUILDBOT_REVISION}/" || true
   fi
   cat "${ROOT}/time.txt"
