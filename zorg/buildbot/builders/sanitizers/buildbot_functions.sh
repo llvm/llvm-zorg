@@ -180,7 +180,6 @@ function build_stage1_clang_impl {
     touch "${STAGE1_DIR}/delete_next_time"
     return 1
   }
-  md5sum ${STAGE1_DIR}/bin/clang || true
 }
 
 function build_stage1_clang {
@@ -339,7 +338,6 @@ function build_stage2 {
     # No stats on failure.
     return 0
   }
-  (md5sum ${build_dir}/bin/clang* > ${ROOT}/md5.txt) || true
 
   upload_stats stage2
   ccache -s || true
@@ -493,7 +491,6 @@ function build_stage3 {
     # No stats on failure.
     return 0
   }
-  (md5sum ${build_dir}/bin/clang* > ${ROOT}/md5.txt) || true
 
   upload_stats stage3
 }
@@ -581,7 +578,7 @@ function upload_stats() {
     lscpu > "${ROOT}/cpu.txt"
     curl http://metadata.google.internal/computeMetadata/v1/instance/machine-type \
       -H Metadata-Flavor:Google > "${ROOT}/machine-type.txt"
-    gsutil cp "${ROOT}/"{time,md5,cpu,machine-type}".txt" "gs://sanitizer-buildbot-out/${BUILDBOT_BUILDERNAME}/${1}/${BUILDBOT_REVISION}/" || true
+    gsutil cp "${ROOT}/"{time,cpu,machine-type}".txt" "gs://sanitizer-buildbot-out/${BUILDBOT_BUILDERNAME}/${1}/${BUILDBOT_REVISION}/" || true
   fi
-  cat "${ROOT}/"{time,md5}".txt"
+  cat "${ROOT}/time.txt"
 }
