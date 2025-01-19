@@ -236,7 +236,8 @@ resource "helm_release" "github_actions_runner_set_linux" {
   depends_on = [
     kubernetes_namespace.llvm_premerge_linux_runners,
     kubernetes_config_map.linux_container_pod_template,
-    kubernetes_secret.linux_github_pat
+    kubernetes_secret.linux_github_pat,
+    helm_release.github_actions_runner_controller
   ]
 }
 
@@ -253,7 +254,8 @@ resource "helm_release" "github_actions_runner_set_windows" {
 
   depends_on = [
     kubernetes_namespace.llvm_premerge_windows_runners,
-    kubernetes_secret.windows_github_pat
+    kubernetes_secret.windows_github_pat,
+    helm_release.github_actions_runner_controller,
   ]
 }
 
