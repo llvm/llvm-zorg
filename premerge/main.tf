@@ -224,8 +224,8 @@ resource "helm_release" "github_actions_runner_set_linux" {
 
   depends_on = [
     kubernetes_namespace.llvm_premerge_linux_runners,
-    helm_release.github_actions_runner_controller
-    kubernetes_secret.linux_github_pat
+    helm_release.github_actions_runner_controller,
+    kubernetes_secret.linux_github_pat,
   ]
 }
 
