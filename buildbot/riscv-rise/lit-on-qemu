@@ -34,7 +34,7 @@ for var in ["BB_IMG_DIR", "BB_QEMU_CPU", "BB_QEMU_SMP", "BB_QEMU_MEM"]:
 # 2) The layout used by ClangBuilder.py in CI, with build directories as
 # siblings to the monorepo checkout (named 'llvm').
 print("@@@@@@@@@@ Creating ext4 filesystem with LLVM build directory @@@@@@@@")
-subprocess.run(["fallocate", "-l", "25GiB", "llvm-project.img"], check=True)
+subprocess.run(["fallocate", "-l", "50GiB", "llvm-project.img"], check=True)
 
 current_path = pathlib.Path.cwd()
 build_dir_name = current_path.name
