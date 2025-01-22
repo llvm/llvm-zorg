@@ -173,8 +173,8 @@ function print_sanitizer_logs() {
 
 function run_ninja() {
   env
-  /usr/bin/time -o ${ROOT}/time.txt -- ninja "$@"
-  local ec=$?
+  local ec=0
+  /usr/bin/time -o ${ROOT}/time.txt -- ninja "$@" || ec=$?
   if [[ "${BUILDBOT_BISECT_MODE:-}" == "1" || ! -v BUILDBOT_BUILDERNAME ]] ; then
     print_sanitizer_logs
   fi
