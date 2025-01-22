@@ -91,6 +91,7 @@ resource "google_container_node_pool" "llvm_premerge_linux" {
     labels = {
       "premerge-platform" : "linux"
     }
+    disk_size_gb = 200
   }
 }
 
