@@ -34,48 +34,63 @@ for var in ["BB_IMG_DIR", "BB_QEMU_CPU", "BB_QEMU_SMP", "BB_QEMU_MEM"]:
 # 2) The layout used by ClangBuilder.py in CI, with build directories as
 # siblings to the monorepo checkout (named 'llvm').
 print("@@@@@@@@@@ Creating ext4 filesystem with LLVM build directory @@@@@@@@")
-subprocess.run(["fallocate", "-l", "50GiB", "llvm-project.img"], check=True)
+
+# Find the build directory, which for 'check-all' will be cwd, but might be
+# the parent for e.g. 'check-llvm-foo' which will change to build_dir/test
+# before invoking lit.
+build_dir = pathlib.Path.cwd()
+while build_dir != build_dir.parent:  # Stop at root
+    if (build_dir / '.ninja_deps').exists():
+        break
+    build_dir = build_dir.parent
+if not (build_dir / '.ninja_deps').exists():
+    error("Failed to find build directory")
 
 current_path = pathlib.Path.cwd()
-build_dir_name = current_path.name
+print(f"Initial working directory: {current_path}. Found build_dir: {build_dir}")
+
+llvm_img = build_dir / "llvm-project.img"
+subprocess.run(["fallocate", "-l", "50GiB", llvm_img], check=True)
+
+os.chdir(build_dir)
+build_dir_name = build_dir.name
 target_uid = 1000
 target_gid = 1000
 
-if (current_path.parent.parent / ".git").is_dir():
+if (build_dir.parent.parent / ".git").is_dir():
     print("Note: 'Local dev' layout detected (build/build_dir nested in LLVM checkout)")
     extra_tar_args = [
         f"--exclude=build/{p.name} "
-        for p in current_path.parent.iterdir()
+        for p in build_dir.parent.iterdir()
         if p.is_dir() and p.name != build_dir_name
     ]
     extra_tar_args.append("--exclude=.git")
     extra_tar_args.append(f"--exclude=build/{build_dir_name}/llvm-project.img")
     paths_to_tar = "."
     change_to_dir = "../.."
-    base_mount_path = current_path.parent.parent
-elif (current_path.parent / "llvm" / ".git").is_dir():
+    base_mount_path = build_dir.parent.parent
+elif (build_dir.parent / "llvm" / ".git").is_dir():
     print("Note: 'CI style' layout detected (llvm checkout and build_dir as siblings)")
     extra_tar_args = [
         "--exclude=llvm/.git",
-        f"--exclude={build_dir_name}/llvm-project.img"
+        f"--exclude={llvm_img}"
     ]
     paths_to_tar = f"llvm {build_dir_name}"
     change_to_dir = ".."
-    base_mount_path = current_path.parent
+    base_mount_path = build_dir.parent
 else:
     error("Unrecognized repo/build layout")
 
-parent_dir = current_path.parent
 tar_command = (
     f"tar --create --file=- --owner={target_uid} --group={target_gid} "
     f"{' '.join(extra_tar_args)} "
-    f"-C {change_to_dir} {paths_to_tar} | mkfs.ext4 -d - llvm-project.img"
+    f"-C {change_to_dir} {paths_to_tar} | mkfs.ext4 -d - {llvm_img}"
 )
 print(f"About to execute tar command: {tar_command}")
 subprocess.run(tar_command, shell=True, check=True)
 
 # Create appropriate exec-on-boot script
-hgcomm_path = current_path / "hgcomm"
+hgcomm_path = build_dir / "hgcomm"
 
 if hgcomm_path.exists():
     shutil.rmtree(hgcomm_path)
@@ -91,7 +106,7 @@ mkdir -p "{base_mount_path}" || error "Can't make mount path"
 chown {target_uid}:{target_gid} "{base_mount_path}" || error "Chown failed"
 mount -t ext4 /dev/vdb "{base_mount_path}" || error "Mount failed"
 cd "{current_path}"
-su user -c "/usr/bin/python3 ./bin/llvm-lit {args_string}"
+su user -c "/usr/bin/python3 {build_dir}/bin/llvm-lit {args_string}"
 """
 exec_on_boot_path = hgcomm_path / "exec-on-boot"
 exec_on_boot_path.write_text(exec_on_boot_content)
