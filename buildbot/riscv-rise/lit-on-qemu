@@ -93,6 +93,7 @@ tar_command = (
     f"{' '.join(extra_tar_args)} "
     f"-C {change_to_dir} {paths_to_tar} | mkfs.ext4 -d - llvm-project.img"
 )
+print(f"About to execute tar command: {tar_command}")
 subprocess.run(tar_command, shell=True, check=True)
 
 # Launch qemu-system appliance
@@ -118,6 +119,7 @@ qemu_command = [
     "-append", "rw quiet root=/dev/vda console=ttyS0",
 ]
 # fmt: on
+print(f"About to execute qemu command: {' '.join(qemu_command)}")
 subprocess.run(qemu_command, check=True)
 print("@@@@@@@@@@ qemu-system execution finished @@@@@@@@")
 
