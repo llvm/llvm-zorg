@@ -2538,7 +2538,6 @@ all += [
 
     {'name' : 'ppc64-flang-aix',
     'tags'  : ["flang", "ppc", "ppc64", "aix"],
-    'collapseRequests' : False,
     'workernames' : ['ppc64-flang-aix-test'],
     'builddir': 'ppc64-flang-aix-build',
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
