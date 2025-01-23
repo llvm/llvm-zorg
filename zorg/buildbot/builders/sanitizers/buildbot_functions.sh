@@ -165,7 +165,7 @@ function print_sanitizer_logs() {
   if compgen -G "${SANITIZER_LOG_DIR}"/* ; then
     echo @@@BUILD_STEP sanitizer logs@@@
     head -n -1 "${SANITIZER_LOG_DIR}"/*
-    rm -rf "${SANITIZER_LOG_DIR}"/*
+    buildbot_build && rm -rf "${SANITIZER_LOG_DIR}"/*
     build_warning
   fi
 }
@@ -175,9 +175,7 @@ function run_ninja() {
   env
   local ec=0
   /usr/bin/time -o ${ROOT}/time.txt -- ninja "$@" || ec=$?
-  if [[ "${BUILDBOT_BISECT_MODE:-}" == "1" || ! -v BUILDBOT_BUILDERNAME ]] ; then
-    print_sanitizer_logs
-  fi
+  buildbot_build || print_sanitizer_logs
   if [[ $ec -ne 0 ]] ; then
     build_failure
     rm -f ${ROOT}/time.txt
@@ -584,29 +582,27 @@ function build_failure() {
 
   sleep 5
   echo "@@@STEP_FAILURE@@@"
-  if [[ "${BUILDBOT_BISECT_MODE:-}" == "1" || ! -v BUILDBOT_BUILDERNAME ]] ; then
-    exit 1
-  fi
+  buildbot_build || exit 1
+}
+
+function buildbot_build() {
+  [[ "${BUILDBOT_BISECT_MODE:-}" == "1" || ! -v BUILDBOT_BUILDERNAME ]]
 }
 
 function build_exception() {
   sleep 5
   echo "@@@STEP_EXCEPTION@@@"
-  if [[ "${BUILDBOT_BISECT_MODE:-}" == "1" || ! -v BUILDBOT_BUILDERNAME ]] ; then
-    exit 2
-  fi
+  buildbot_build || exit 2
 }
 
 function build_warning() {
   sleep 5
   echo "@@@STEP_WARNINGS@@@"
-  if [[ "${BUILDBOT_BISECT_MODE:-}" == "1" || ! -v BUILDBOT_BUILDERNAME ]] ; then
-    exit 2
-  fi
+  buildbot_build || exit 2
 }
 
 function upload_stats() {
-  if [[ "${BUILDBOT_BISECT_MODE:-}" != "1" && -v BUILDBOT_BUILDERNAME ]] ; then
+  if buildbot_build ; then
     lscpu > "${ROOT}/cpu.txt"
     curl http://metadata.google.internal/computeMetadata/v1/instance/machine-type \
       -H Metadata-Flavor:Google > "${ROOT}/machine-type.txt" || true
