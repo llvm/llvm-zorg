@@ -2,7 +2,7 @@ terraform {
   required_providers {
     google = {
       source  = "hashicorp/google"
-      version = "4.51.0"
+      version = "6.17.0"
     }
   }
 }
@@ -83,11 +83,11 @@ resource "google_container_node_pool" "llvm_premerge_linux" {
 
   node_config {
     machine_type = "n2-standard-64"
-    taint = [{
+    taint {
       key    = "premerge-platform"
       value  = "linux"
       effect = "NO_SCHEDULE"
-    }]
+    }
     labels = {
       "premerge-platform" : "linux"
     }
