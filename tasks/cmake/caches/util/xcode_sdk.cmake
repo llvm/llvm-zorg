@@ -27,7 +27,8 @@ if (CMAKE_C_COMPILER)
 
   macro(create_shim VARIABLE TOOLNAME)
     xcrun_find(SDK_TOOL_BIN ${TOOLNAME})
-    file(WRITE ${CMAKE_BINARY_DIR}/${TOOLNAME} "
+    file(WRITE ${CMAKE_BINARY_DIR}/${TOOLNAME} "#!/usr/bin/env bash
+
 # Shim to have the tool use the correct libLTO.dylib
 DYLD_LIBRARY_PATH=\"${COMPILER_DIR}/../lib:$DYLD_LIBRARY_PATH\" ${SDK_TOOL_BIN} \"$@\"
     ")
