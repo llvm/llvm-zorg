@@ -114,6 +114,12 @@ resource "google_container_node_pool" "llvm_premerge_windows" {
       "premerge-platform" : "windows"
     }
     image_type = "WINDOWS_LTSC_CONTAINERD"
+    # Add a script that runs on the initial boot to disable Windows Defender.
+    # Windows Defender causes an increase in test times by approximately an
+    # order of magnitude.
+    metadata = {
+      "sysprep-specialize-script-ps1" : "Set-MpPreference -DisableRealtimeMonitoring $true"
+    }
   }
 }
 
