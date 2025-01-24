@@ -586,7 +586,7 @@ function build_failure() {
 }
 
 function buildbot_build() {
-  [[ "${BUILDBOT_BISECT_MODE:-}" == "1" || ! -v BUILDBOT_BUILDERNAME ]]
+  [[ "${BUILDBOT_BISECT_MODE:-}" != "1" && -v BUILDBOT_BUILDERNAME ]]
 }
 
 function build_exception() {
