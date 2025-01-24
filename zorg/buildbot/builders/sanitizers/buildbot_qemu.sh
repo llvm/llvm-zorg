@@ -190,7 +190,13 @@ function configure_scudo_compiler_rt {
   fi
 
   local linker_flags=
-  [[ "${arch}" =~ "mips*" ]] && linker_flags="-latomic -Wl,-z,execstack -Wl,-z,notext -Wno-unused-command-line-argument"
+  [[ "${arch}" =~ "mips*" ]] && linker_flags="-latomic -Wl,-z,notext -Wno-unused-command-line-argument"
+
+  local c_flags=
+  [[ "${arch}" =~ "mips*" ]] && c_flags="-Wl,-z,execstack"
+  c_flags="-fPIC ${c_flags}"
+
+  local cxx_flags="${c_flags}"
 
   local out_dir=llvm_build2_${name}
   rm -rf ${out_dir}
@@ -220,8 +226,8 @@ function configure_scudo_compiler_rt {
         -DCOMPILER_RT_INCLUDE_TESTS=ON \
         -DCOMPILER_RT_BUILD_LIBFUZZER=OFF \
         -DCMAKE_BUILD_WITH_INSTALL_RPATH=ON \
-        -DCMAKE_CXX_FLAGS=-fPIC \
-        -DCMAKE_C_FLAGS=-fPIC \
+        -DCMAKE_CXX_FLAGS="${c_flags}" \
+        -DCMAKE_C_FLAGS="${cxx_flags}" \
         -DCMAKE_SHARED_LINKER_FLAGS="-fuse-ld=lld ${linker_flags}" \
         -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=lld ${linker_flags}" \
         -DCOMPILER_RT_TEST_COMPILER_CFLAGS="--target=${target} ${linker_flags}" \
