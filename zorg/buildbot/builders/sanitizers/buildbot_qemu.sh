@@ -190,7 +190,7 @@ function configure_scudo_compiler_rt {
   fi
 
   local linker_flags=
-  [[ "${arch}" =~ "mips*" ]] && linker_flags="-latomic -Wl,-z,notext -Wno-unused-command-line-argument"
+  [[ "${arch}" =~ "mips*" ]] && linker_flags="-latomic -Wl,-z,execstack -Wl,-z,notext -Wno-unused-command-line-argument"
 
   local out_dir=llvm_build2_${name}
   rm -rf ${out_dir}
