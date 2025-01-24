@@ -102,7 +102,7 @@ resource "google_container_node_pool" "llvm_premerge_windows" {
   initial_node_count = 0
 
   autoscaling {
-    total_min_node_count = 0
+    total_min_node_count = 1
     total_max_node_count = 2
   }
 

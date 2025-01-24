@@ -1,7 +1,7 @@
 githubConfigUrl: "https://github.com/llvm"
 githubConfigSecret: "github-token"
 
-minRunners: 0
+minRunners: 1
 maxRunners: 2
 
 template:
