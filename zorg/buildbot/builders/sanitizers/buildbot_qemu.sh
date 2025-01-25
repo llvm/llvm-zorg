@@ -195,6 +195,7 @@ function configure_scudo_compiler_rt {
   then
     # linker_flags="-latomic -Wl,-z,notext -Wno-unused-command-line-argument -Wl,-z,execstack"
     c_flags+=" -Wl,-z,execstack"
+    linker_flags+=" -Wl,-z,execstack"
   else
     c_flags+="   "
   fi
