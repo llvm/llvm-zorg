@@ -2,7 +2,7 @@ terraform {
   required_providers {
     google = {
       source  = "hashicorp/google"
-      version = "4.51.0"
+      version = "6.17.0"
     }
   }
 }
@@ -83,14 +83,15 @@ resource "google_container_node_pool" "llvm_premerge_linux" {
 
   node_config {
     machine_type = "n2-standard-64"
-    taint = [{
+    taint {
       key    = "premerge-platform"
       value  = "linux"
       effect = "NO_SCHEDULE"
-    }]
+    }
     labels = {
       "premerge-platform" : "linux"
     }
+    disk_size_gb = 200
   }
 }
 
@@ -101,7 +102,7 @@ resource "google_container_node_pool" "llvm_premerge_windows" {
   initial_node_count = 0
 
   autoscaling {
-    total_min_node_count = 0
+    total_min_node_count = 1
     total_max_node_count = 2
   }
 
@@ -113,6 +114,13 @@ resource "google_container_node_pool" "llvm_premerge_windows" {
       "premerge-platform" : "windows"
     }
     image_type = "WINDOWS_LTSC_CONTAINERD"
+    # Add a script that runs on the initial boot to disable Windows Defender.
+    # Windows Defender causes an increase in test times by approximately an
+    # order of magnitude.
+    metadata = {
+      "sysprep-specialize-script-ps1" : "Set-MpPreference -DisableRealtimeMonitoring $true"
+    }
+    disk_size_gb = 200
   }
 }
 
@@ -199,17 +207,6 @@ resource "kubernetes_secret" "windows_github_pat" {
 }
 
 
-resource "kubernetes_config_map" "linux_container_pod_template" {
-  metadata {
-    name      = "linux-container-pod-template"
-    namespace = "llvm-premerge-linux-runners"
-  }
-
-  data = {
-    "linux-container-pod-template.yaml" : "${file("linux_container_pod_template.yaml")}"
-  }
-}
-
 resource "helm_release" "github_actions_runner_controller" {
   name       = "llvm-premerge-controller"
   namespace  = "llvm-premerge-controller"
@@ -235,8 +232,8 @@ resource "helm_release" "github_actions_runner_set_linux" {
 
   depends_on = [
     kubernetes_namespace.llvm_premerge_linux_runners,
-    kubernetes_config_map.linux_container_pod_template,
-    kubernetes_secret.linux_github_pat
+    helm_release.github_actions_runner_controller,
+    kubernetes_secret.linux_github_pat,
   ]
 }
 
@@ -253,7 +250,8 @@ resource "helm_release" "github_actions_runner_set_windows" {
 
   depends_on = [
     kubernetes_namespace.llvm_premerge_windows_runners,
-    kubernetes_secret.windows_github_pat
+    kubernetes_secret.windows_github_pat,
+    helm_release.github_actions_runner_controller,
   ]
 }
 

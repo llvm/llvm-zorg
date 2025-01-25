@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -eu
+set -eux
 
 ulimit -Ss 12288
 
@@ -21,6 +21,8 @@ fi
 if ld.lld --version ; then
   CMAKE_COMMON_OPTIONS+=" -DLLVM_USE_LINKER=lld"
 fi
+
+SANITIZER_LOG_DIR=$ROOT/sanitizer_logs
 
 function include_config() {
   local P=.
@@ -159,6 +161,28 @@ function buildbot_update {
   fi
 }
 
+function print_sanitizer_logs() {
+  if compgen -G "${SANITIZER_LOG_DIR}"/* ; then
+    echo @@@BUILD_STEP sanitizer logs@@@
+    head -n -1 "${SANITIZER_LOG_DIR}"/*
+    buildbot_build && rm -rf "${SANITIZER_LOG_DIR}"/*
+    build_warning
+  fi
+}
+
+
+function run_ninja() {
+  env
+  local ec=0
+  /usr/bin/time -o ${ROOT}/time.txt -- ninja "$@" || ec=$?
+  buildbot_build || print_sanitizer_logs
+  if [[ $ec -ne 0 ]] ; then
+    build_failure
+    rm -f ${ROOT}/time.txt
+  fi
+  print_sanitizer_logs
+}
+
 function common_stage1_variables {
   STAGE1_DIR=llvm_build0
   stage1_clang_path=$ROOT/${STAGE1_DIR}/bin
@@ -180,7 +204,6 @@ function build_stage1_clang_impl {
     touch "${STAGE1_DIR}/delete_next_time"
     return 1
   }
-  md5sum ${STAGE1_DIR}/bin/clang || true
 }
 
 function build_stage1_clang {
@@ -250,28 +273,38 @@ function build_stage2 {
   local fno_sanitize_flag=
   local cmake_options="-DLIBCXXABI_USE_LLVM_UNWINDER=OFF"
 
+  rm -rf "${SANITIZER_LOG_DIR}"
+  mkdir -p "${SANITIZER_LOG_DIR}"
+
+  local log_path="${SANITIZER_LOG_DIR}/report"
+
   if [ "$sanitizer_name" == "msan" ]; then
     export MSAN_SYMBOLIZER_PATH="${llvm_symbolizer_path}"
+    export MSAN_OPTIONS="log_path=${log_path}:log_exe_name=1"
     llvm_use_sanitizer="Memory"
     fsanitize_flag="-fsanitize=memory"
   elif [ "$sanitizer_name" == "msan_track_origins" ]; then
     export MSAN_SYMBOLIZER_PATH="${llvm_symbolizer_path}"
+    export MSAN_OPTIONS="log_path=${log_path}:log_exe_name=1"
     llvm_use_sanitizer="MemoryWithOrigins"
     fsanitize_flag="-fsanitize=memory -fsanitize-memory-track-origins"
   elif [ "$sanitizer_name" == "asan" ]; then
     export ASAN_SYMBOLIZER_PATH="${llvm_symbolizer_path}"
     export ASAN_OPTIONS="check_initialization_order=true"
+    export ASAN_OPTIONS+=":log_path=${log_path}:log_exe_name=1"
     llvm_use_sanitizer="Address"
     fsanitize_flag="-fsanitize=address"
   elif [ "$sanitizer_name" == "hwasan" ]; then
     export HWASAN_SYMBOLIZER_PATH="${llvm_symbolizer_path}"
     export HWASAN_OPTIONS="abort_on_error=1"
+    export HWASAN_OPTIONS+=":log_path=${log_path}:log_exe_name=1"
     llvm_use_sanitizer="HWAddress"
     fsanitize_flag="-fsanitize=hwaddress"
     # FIXME: Support globals with DSO https://github.com/llvm/llvm-project/issues/57206
     cmake_stage2_common_options+=" -DLLVM_ENABLE_PLUGINS=OFF"
   elif [ "$sanitizer_name" == "ubsan" ]; then
     export UBSAN_OPTIONS="external_symbolizer_path=${llvm_symbolizer_path}:print_stacktrace=1"
+    export UBSAN_OPTIONS+=":log_path=${log_path}:log_exe_name=1"
     llvm_use_sanitizer="Undefined"
     fsanitize_flag="-fsanitize=undefined -fno-sanitize-recover=all"
     # FIXME: After switching to LLVM_ENABLE_RUNTIMES, vptr has infitine
@@ -280,6 +313,7 @@ function build_stage2 {
   elif [ "$sanitizer_name" == "asan_ubsan" ]; then
     export ASAN_SYMBOLIZER_PATH="${llvm_symbolizer_path}"
     export ASAN_OPTIONS="check_initialization_order=true"
+    export ASAN_OPTIONS+=":log_path=${log_path}:log_exe_name=1"
     export UBSAN_OPTIONS="print_stacktrace=1"
     llvm_use_sanitizer="Address;Undefined"
     fsanitize_flag="-fsanitize=address,undefined -fno-sanitize-recover=all"
@@ -292,19 +326,20 @@ function build_stage2 {
   fi
 
   mkdir -p ${libcxx_build_dir}
-  (cd ${libcxx_build_dir} && \
-    cmake \
-      ${cmake_stage2_common_options} \
-      ${cmake_options} \
-      -DCMAKE_INSTALL_PREFIX="${ROOT}/${libcxx_install_dir}" \
-      -DLLVM_ENABLE_RUNTIMES='libcxx;libcxxabi' \
-      -DLIBCXX_TEST_PARAMS='long_tests=False' \
-      -DLIBCXX_INCLUDE_BENCHMARKS=OFF \
-      -DLLVM_USE_SANITIZER=${llvm_use_sanitizer} \
-      -DCMAKE_C_FLAGS="${fsanitize_flag} ${cmake_libcxx_cflags} ${fno_sanitize_flag}" \
-      -DCMAKE_CXX_FLAGS="${fsanitize_flag} ${cmake_libcxx_cflags} ${fno_sanitize_flag}" \
-      $LLVM/../runtimes && \
-    ninja && ninja install) || build_failure
+  cmake -B ${libcxx_build_dir} \
+    ${cmake_stage2_common_options} \
+    ${cmake_options} \
+    -DCMAKE_INSTALL_PREFIX="${ROOT}/${libcxx_install_dir}" \
+    -DLLVM_ENABLE_RUNTIMES='libcxx;libcxxabi' \
+    -DLIBCXX_TEST_PARAMS='long_tests=False' \
+    -DLIBCXX_INCLUDE_BENCHMARKS=OFF \
+    -DLLVM_USE_SANITIZER=${llvm_use_sanitizer} \
+    -DCMAKE_C_FLAGS="${fsanitize_flag} ${cmake_libcxx_cflags} ${fno_sanitize_flag}" \
+    -DCMAKE_CXX_FLAGS="${fsanitize_flag} ${cmake_libcxx_cflags} ${fno_sanitize_flag}" \
+      $LLVM/../runtimes || build_failure
+  
+  run_ninja -C ${libcxx_build_dir}
+  run_ninja -C ${libcxx_build_dir} install
 
   local libcxx_so_path="$(find "${ROOT}/${libcxx_install_dir}" -name libc++.so)"
   test -f "${libcxx_so_path}" || build_failure
@@ -324,8 +359,7 @@ function build_stage2 {
     # FIXME: clangd tests fail.
     cmake_stage2_clang_options="-DLLVM_ENABLE_PROJECTS='clang;lld;mlir'"
   fi
-  (cd ${build_dir} && \
-   cmake \
+  cmake -B ${build_dir} \
      ${cmake_stage2_common_options} \
      ${cmake_stage2_clang_options} \
      -DLLVM_USE_SANITIZER=${llvm_use_sanitizer} \
@@ -333,13 +367,12 @@ function build_stage2 {
      -DCMAKE_C_FLAGS="${sanitizer_cflags}" \
      -DCMAKE_CXX_FLAGS="${sanitizer_cflags}" \
      -DCMAKE_EXE_LINKER_FLAGS="${sanitizer_ldflags}" \
-     $LLVM && \
-  /usr/bin/time -o ${ROOT}/time.txt -- ninja ) || {
-    build_failure
-    # No stats on failure.
-    return 0
-  }
-  (md5sum ${build_dir}/bin/clang* > ${ROOT}/md5.txt) || true
+     $LLVM || {
+      build_failure
+      # No stats on failure.
+      return 0
+    }
+  run_ninja -C ${build_dir}
 
   upload_stats stage2
   ccache -s || true
@@ -400,44 +433,41 @@ function check_stage2 {
 
   if [[ "${STAGE2_SKIP_TEST_CXX:-}" != "1" ]] ; then
     (
-      # Very slow, run in background.
       LIT_OPTS+=" --timeout=1500"
-      (
-        echo @@@BUILD_STEP stage2/$sanitizer_name check-cxx@@@
-        # Very slow.
-        export LIT_FILTER_OUT="std/utilities/format/format.functions/format.locale.runtime_format.pass.cpp"
-        LIT_FILTER_OUT+="|std/utilities/format/format.functions/format.runtime_format.pass.cpp"
-        LIT_FILTER_OUT+="|std/utilities/format/format.functions/format_to_n.locale.pass.cpp"
-        LIT_FILTER_OUT+="|std/utilities/format/format.functions/format_to_n.pass.cpp"
-        LIT_FILTER_OUT+="|std/utilities/format/format.functions/format_to.locale.pass.cpp"
-        LIT_FILTER_OUT+="|std/utilities/format/format.functions/format_to.pass.cpp"
-        LIT_FILTER_OUT+="|std/utilities/format/format.functions/format.locale.pass.cpp"
-        LIT_FILTER_OUT+="|std/utilities/format/format.functions/format.pass.cpp"
-        LIT_FILTER_OUT+="|std/utilities/format/format.functions/formatted_size.locale.pass.cpp"
-        LIT_FILTER_OUT+="|std/utilities/format/format.functions/formatted_size.pass.cpp"
-        LIT_FILTER_OUT+="|std/utilities/format/format.functions/vformat"
+      echo @@@BUILD_STEP stage2/$sanitizer_name check-cxx@@@
+      # Very slow.
+      export LIT_FILTER_OUT="std/utilities/format/format.functions/format.locale.runtime_format.pass.cpp"
+      LIT_FILTER_OUT+="|std/utilities/format/format.functions/format.runtime_format.pass.cpp"
+      LIT_FILTER_OUT+="|std/utilities/format/format.functions/format_to_n.locale.pass.cpp"
+      LIT_FILTER_OUT+="|std/utilities/format/format.functions/format_to_n.pass.cpp"
+      LIT_FILTER_OUT+="|std/utilities/format/format.functions/format_to.locale.pass.cpp"
+      LIT_FILTER_OUT+="|std/utilities/format/format.functions/format_to.pass.cpp"
+      LIT_FILTER_OUT+="|std/utilities/format/format.functions/format.locale.pass.cpp"
+      LIT_FILTER_OUT+="|std/utilities/format/format.functions/format.pass.cpp"
+      LIT_FILTER_OUT+="|std/utilities/format/format.functions/formatted_size.locale.pass.cpp"
+      LIT_FILTER_OUT+="|std/utilities/format/format.functions/formatted_size.pass.cpp"
+      LIT_FILTER_OUT+="|std/utilities/format/format.functions/vformat"
 
-        if [[ "$(arch)" == "aarch64" && "$sanitizer_name" == "msan" ]] ; then
-          # TODO: Investigate one slow tests.
-          LIT_FILTER_OUT+="|test_demangle.pass.cpp"
-        fi
-        if [[ "$(arch)" == "aarch64" && "$sanitizer_name" == "hwasan" ]] ; then
-          # TODO: Investigate one slow tests.
-          LIT_FILTER_OUT+="|test_demangle.pass.cpp"
-        fi
-        
-        if [[ "$(arch)" == "aarch64" ]] ; then
-          # TODO: Investigate what is wrong with aarch64 unwinder.
-          LIT_FILTER_OUT+="|ostream.formatted.print/vprint_nonunicode.pass.cpp"
-          LIT_FILTER_OUT+="|ostream.formatted.print/vprint_unicode.pass.cpp"
-        fi
-        ninja -C libcxx_build_${sanitizer_name} check-runtimes || exit 1
-      ) || build_failure
+      if [[ "$(arch)" == "aarch64" && "$sanitizer_name" == "msan" ]] ; then
+        # TODO: Investigate one slow tests.
+        LIT_FILTER_OUT+="|test_demangle.pass.cpp"
+      fi
+      if [[ "$(arch)" == "aarch64" && "$sanitizer_name" == "hwasan" ]] ; then
+        # TODO: Investigate one slow tests.
+        LIT_FILTER_OUT+="|test_demangle.pass.cpp"
+      fi
+      
+      if [[ "$(arch)" == "aarch64" ]] ; then
+        # TODO: Investigate what is wrong with aarch64 unwinder.
+        LIT_FILTER_OUT+="|ostream.formatted.print/vprint_nonunicode.pass.cpp"
+        LIT_FILTER_OUT+="|ostream.formatted.print/vprint_unicode.pass.cpp"
+      fi
+      run_ninja -C libcxx_build_${sanitizer_name} check-runtimes
     )
   fi
 
   echo @@@BUILD_STEP stage2/$sanitizer_name check@@@
-  ninja -C ${STAGE2_DIR} check-all || build_failure
+  run_ninja -C ${STAGE2_DIR} check-all
 }
 
 function check_stage2_msan {
@@ -479,22 +509,19 @@ function build_stage3 {
     stage3_projects='clang;lld'
   fi
   # -DLLVM_CCACHE_BUILD=OFF to track real build time.
-  (cd ${build_dir} && \
-   cmake \
-     ${CMAKE_COMMON_OPTIONS} \
-     -DLLVM_ENABLE_PROJECTS="${stage3_projects}" \
-     -DCMAKE_C_COMPILER=${clang_path}/clang \
-     -DCMAKE_CXX_COMPILER=${clang_path}/clang++ \
-     -DCMAKE_CXX_FLAGS="${sanitizer_cflags}" \
-     -DLLVM_CCACHE_BUILD=OFF \
-     $LLVM && \
-  /usr/bin/time -o ${ROOT}/time.txt -- ninja ) || {
+  cmake -B ${build_dir} \
+    ${CMAKE_COMMON_OPTIONS} \
+    -DLLVM_ENABLE_PROJECTS="${stage3_projects}" \
+    -DCMAKE_C_COMPILER=${clang_path}/clang \
+    -DCMAKE_CXX_COMPILER=${clang_path}/clang++ \
+    -DCMAKE_CXX_FLAGS="${sanitizer_cflags}" \
+    -DLLVM_CCACHE_BUILD=OFF \
+    $LLVM  || {
     build_failure
     # No stats on failure.
     return 0
   }
-  (md5sum ${build_dir}/bin/clang* > ${ROOT}/md5.txt) || true
-
+  run_ninja -C ${build_dir}
   upload_stats stage3
 }
 
@@ -524,7 +551,7 @@ function check_stage3 {
 
   local build_dir=llvm_build2_${sanitizer_name}
 
-  (cd ${build_dir} && env && ninja check-all) || build_failure
+  run_ninja -C ${build_dir} check-all
 }
 
 function check_stage3_msan {
@@ -555,33 +582,31 @@ function build_failure() {
 
   sleep 5
   echo "@@@STEP_FAILURE@@@"
-  if [[ "${BUILDBOT_BISECT_MODE:-}" == "1" || ! -v BUILDBOT_BUILDERNAME ]] ; then
-    exit 1
-  fi
+  buildbot_build || exit 1
+}
+
+function buildbot_build() {
+  [[ "${BUILDBOT_BISECT_MODE:-}" != "1" && -v BUILDBOT_BUILDERNAME ]]
 }
 
 function build_exception() {
   sleep 5
   echo "@@@STEP_EXCEPTION@@@"
-  if [[ "${BUILDBOT_BISECT_MODE:-}" == "1" || ! -v BUILDBOT_BUILDERNAME ]] ; then
-    exit 2
-  fi
+  buildbot_build || exit 2
 }
 
 function build_warning() {
   sleep 5
   echo "@@@STEP_WARNINGS@@@"
-  if [[ "${BUILDBOT_BISECT_MODE:-}" == "1" || ! -v BUILDBOT_BUILDERNAME ]] ; then
-    exit 2
-  fi
+  buildbot_build || exit 2
 }
 
 function upload_stats() {
-  if [[ "${BUILDBOT_BISECT_MODE:-}" != "1" && -v BUILDBOT_BUILDERNAME ]] ; then
+  if buildbot_build ; then
     lscpu > "${ROOT}/cpu.txt"
     curl http://metadata.google.internal/computeMetadata/v1/instance/machine-type \
-      -H Metadata-Flavor:Google > "${ROOT}/machine-type.txt"
-    gsutil cp "${ROOT}/"{time,md5,cpu,machine-type}".txt" "gs://sanitizer-buildbot-out/${BUILDBOT_BUILDERNAME}/${1}/${BUILDBOT_REVISION}/" || true
+      -H Metadata-Flavor:Google > "${ROOT}/machine-type.txt" || true
+    gsutil cp "${ROOT}/"{time,cpu,machine-type}".txt" "gs://sanitizer-buildbot-out/${BUILDBOT_BUILDERNAME}/${1}/${BUILDBOT_REVISION}/" || true
   fi
-  cat "${ROOT}/"{time,md5}".txt"
+  cat "${ROOT}/time.txt"
 }

@@ -393,11 +393,11 @@ all = [
                 useTwoStage=True,
                 runTestSuite=True,
                 testsuite_flags=[
-                    '--cppflags', '-mcpu=cortex-a57 -fuse-ld=lld',
+                    '--cppflags', '-mcpu=neoverse-n1 -fuse-ld=lld',
                     '--threads=32', '--build-threads=32'],
                 extra_cmake_args=[
-                    "-DCMAKE_C_FLAGS='-mcpu=cortex-a57'",
-                    "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a57'",
+                    "-DCMAKE_C_FLAGS='-mcpu=neoverse-n1'",
+                    "-DCMAKE_CXX_FLAGS='-mcpu=neoverse-n1'",
                     "-DLLVM_ENABLE_LLD=True"])},
 
     ## AArch64 run test-suite at -O0 (GlobalISel is now default).
@@ -425,11 +425,11 @@ all = [
                     useTwoStage=True,
                     runTestSuite=True,
                     testsuite_flags=[
-                        '--cppflags', '-mcpu=cortex-a57 -fuse-ld=lld',
+                        '--cppflags', '-mcpu=neoverse-n1 -fuse-ld=lld',
                         '--threads=32', '--build-threads=32'],
                     extra_cmake_args=[
-                        "-DCMAKE_C_FLAGS='-mcpu=cortex-a57'",
-                        "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a57'",
+                        "-DCMAKE_C_FLAGS='-mcpu=neoverse-n1'",
+                        "-DCMAKE_CXX_FLAGS='-mcpu=neoverse-n1'",
                         "-DCOMPILER_RT_BUILD_SANITIZERS=OFF",
                         "-DLLVM_ENABLE_LLD=True",
                         # lld tests cause us to hit thread limits
@@ -452,11 +452,11 @@ all = [
                         'NO_STOP_MESSAGE':'1', # For Fortran test-suite
                     },
                     testsuite_flags=[
-                        '--cppflags', '-mcpu=cortex-a57',
+                        '--cppflags', '-mcpu=neoverse-n1',
                         '--threads=32', '--build-threads=32'],
                     extra_cmake_args=[
-                        "-DCMAKE_C_FLAGS='-mcpu=cortex-a57'",
-                        "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a57'",
+                        "-DCMAKE_C_FLAGS='-mcpu=neoverse-n1'",
+                        "-DCMAKE_CXX_FLAGS='-mcpu=neoverse-n1'",
                         "-DLLVM_LIT_ARGS='-v'",
                         "-DMLIR_INCLUDE_INTEGRATION_TESTS=True",
                         "-DMLIR_RUN_ARM_SVE_TESTS=True",
@@ -1963,6 +1963,28 @@ all += [
                     script_interpreter=None
                 )},
 
+    {'name' : "amdgpu-offload-rhel-9-cmake-build-only",
+    'tags'  : ["openmp"],
+    'workernames' : ["rocm-docker-rhel-9"],
+    'builddir': "amdgpu-offload-rhel-9-cmake-build-only",
+    'factory' : AnnotatedBuilder.getAnnotatedBuildFactory(
+                    depends_on_projects=["llvm", "clang", "lld", "compiler-rt", "libcxx", "libcxxabi", "openmp", "offload", "libunwind"],
+                    script="amdgpu-offload-cmake.py",
+                    checkout_llvm_sources=True,
+                    script_interpreter=None
+                )},
+
+    {'name' : "amdgpu-offload-rhel-8-cmake-build-only",
+    'tags'  : ["amdgpu", "offload", "openmp"],
+    'workernames' : ["rocm-docker-rhel-8"],
+    'builddir': "amdgpu-offload-rhel-8-cmake-build-only",
+    'factory' : AnnotatedBuilder.getAnnotatedBuildFactory(
+                    depends_on_projects=["llvm", "clang", "lld", "compiler-rt", "libcxx", "libcxxabi", "offload", "openmp", "libunwind"],
+                    script="amdgpu-offload-cmake.py",
+                    checkout_llvm_sources=True,
+                    script_interpreter=None
+                )},
+
     {'name' : "openmp-offload-libc-amdgpu-runtime",
     'tags'  : ["openmp"],
     'workernames' : ["omp-vega20-1"],
@@ -3271,6 +3293,7 @@ all += [
                     util.Interpolate("-DLLVM_NATIVE_TOOL_DIR=%(prop:builddir)s/stage1.install/bin"),
                     "-DLLVM_BUILD_TESTS=True",
                     "-DPython3_EXECUTABLE=/usr/bin/python3",
+                    "-DLLVM_HOST_TRIPLE=riscv64-linux-gnu",
                     util.Interpolate("-DLLVM_EXTERNAL_LIT=%(prop:builddir)s/llvm-zorg/buildbot/riscv-rise/lit-on-qemu")],
                 stage2_toolchain_options=[
                     "set(CMAKE_SYSTEM_NAME Linux)",
