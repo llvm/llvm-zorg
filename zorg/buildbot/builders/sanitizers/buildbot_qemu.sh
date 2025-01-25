@@ -193,8 +193,10 @@ function configure_scudo_compiler_rt {
   local c_flags="-fPIC"
   if [[ "${arch}" =~ "mips*" ]]
   then
-    linker_flags="-latomic -Wl,-z,notext -Wno-unused-command-line-argument"
+    linker_flags="-latomic -Wl,-z,notext -Wno-unused-command-line-argument -Wl,-z,execstack"
     c_flags+=" -Wl,-z,execstack"
+  else
+    c_flags+="   "
   fi
   local cxx_flags="${c_flags}"
 
