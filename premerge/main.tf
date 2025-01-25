@@ -120,6 +120,7 @@ resource "google_container_node_pool" "llvm_premerge_windows" {
     metadata = {
       "sysprep-specialize-script-ps1" : "Set-MpPreference -DisableRealtimeMonitoring $true"
     }
+    disk_size_gb = 200
   }
 }
 
