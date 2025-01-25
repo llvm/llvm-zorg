@@ -3293,6 +3293,7 @@ all += [
                     util.Interpolate("-DLLVM_NATIVE_TOOL_DIR=%(prop:builddir)s/stage1.install/bin"),
                     "-DLLVM_BUILD_TESTS=True",
                     "-DPython3_EXECUTABLE=/usr/bin/python3",
+                    "-DLLVM_HOST_TRIPLE=riscv64-linux-gnu",
                     util.Interpolate("-DLLVM_EXTERNAL_LIT=%(prop:builddir)s/llvm-zorg/buildbot/riscv-rise/lit-on-qemu")],
                 stage2_toolchain_options=[
                     "set(CMAKE_SYSTEM_NAME Linux)",
