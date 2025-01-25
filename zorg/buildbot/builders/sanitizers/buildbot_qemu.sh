@@ -233,7 +233,7 @@ function configure_scudo_compiler_rt {
         -DCMAKE_C_FLAGS="${cxx_flags}" \
         -DCMAKE_SHARED_LINKER_FLAGS="-fuse-ld=lld ${linker_flags}" \
         -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=lld ${linker_flags}" \
-        -DCOMPILER_RT_TEST_COMPILER_CFLAGS="--target=${target} ${linker_flags}" \
+        -DCOMPILER_RT_TEST_COMPILER_CFLAGS="--target=${target} ${linker_flags} ${c_flags}" \
         -DCMAKE_C_COMPILER_TARGET=${target} \
         -DCMAKE_CXX_COMPILER_TARGET=${target} \
         -DCOMPILER_RT_EMULATOR="${qemu_cmd:-}" \
