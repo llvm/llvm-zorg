@@ -31,3 +31,16 @@ template:
         env:
           - name: DISABLE_RUNNER_UPDATE
             value: "true"
+        # Add a volume/mount it to C:/_work so that we can use more than 20GB
+        # of space. Windows containers default to only having 20GB of scratch
+        # space and there is no way to configure this through kubernetes
+        # although the underlying containerd runtime should support it. So
+        # instead we just use a emptyDir volume mounted at C:/_work, which is
+        # where the GHA runner does everything.
+        volumeMounts:
+          - name: builddir
+            mountPath: "C:/_work"
+    volumes:
+      - name: builddir
+        emptyDir: {}
+
