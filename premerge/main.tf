@@ -63,10 +63,10 @@ resource "google_container_node_pool" "llvm_premerge_linux_service" {
   name       = "llvm-premerge-linux-service"
   location   = "us-central1-a"
   cluster    = google_container_cluster.llvm_premerge.name
-  node_count = 2
+  node_count = 3
 
   node_config {
-    machine_type = "e2-small"
+    machine_type = "e2-highcpu-4"
   }
 }
 
