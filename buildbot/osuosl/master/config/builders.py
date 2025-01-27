@@ -3398,7 +3398,9 @@ all += [
                     "set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)"],
                 env={
                     "BB_IMG_DIR": util.Interpolate("%(prop:builddir)s/.."),
-                    "BB_QEMU_CPU": "zba=true,zbb=true,zbc=false,zbs=true,zfhmin=true,v=true,vext_spec=v1.0,zkt=true,zvfhmin=true,zvbb=true,zvkt=true,zihintntl=true,zicond=true,zcb=true,zfa=true,zawrs=true,rvv_ta_all_1s=true,rvv_ma_all_1s=true,rvv_vl_half_avl=true",
+                    # TODO: Switch to specifying rva23u64 once support is
+                    # available in a released QEMU.
+                    "BB_QEMU_CPU": "zba=true,zbb=true,zbc=false,zbs=true,zfhmin=true,v=true,vext_spec=v1.0,zkt=true,zvfhmin=true,zvbb=true,zvkt=true,zihintntl=true,zicond=true,zimop=true,zcmop=true,zcb=true,zfa=true,zawrs=true,rvv_ta_all_1s=true,rvv_ma_all_1s=true,rvv_vl_half_avl=true",
                     "BB_QEMU_SMP": "32",
                     "BB_QEMU_MEM": "64G"}
                 )},
