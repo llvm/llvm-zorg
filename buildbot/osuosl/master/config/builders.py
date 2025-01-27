@@ -3360,6 +3360,7 @@ all += [
                 )},
 
     ## RISC-V RVA23 profile with EVL vectorizer check-all 2-stage
+    ## (cross-compile and then test under qemu-system).
     {'name' : "clang-riscv-rva23-evl-vec-2stage",
     'workernames' : ["rise-clang-riscv-rva23-evl-vec-2stage"],
     'builddir':"clang-riscv-rva23-evl-vec-2stage",
@@ -3368,6 +3369,8 @@ all += [
                 useTwoStage=True,
                 runTestSuite=False,
                 testStage1=False,
+                checkout_compiler_rt=False,
+                checkout_zorg=True,
                 extra_cmake_args=[
                     "-DCMAKE_C_COMPILER=clang",
                     "-DCMAKE_CXX_COMPILER=clang++",
@@ -3376,9 +3379,30 @@ all += [
                     "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
                     "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache"],
                 extra_stage2_cmake_args=[
-                    "-DLLVM_ENABLE_LLD=True",
-                    "-DCMAKE_C_FLAGS='-menable-experimental-extensions -march=rva23u64 -mllvm -force-tail-folding-style=data-with-evl -mllvm -prefer-predicate-over-epilogue=predicate-dont-vectorize'",
-                    "-DCMAKE_CXX_FLAGS='-menable-experimental-extensions -march=rva23u64 -mllvm -force-tail-folding-style=data-with-evl -mllvm -prefer-predicate-over-epilogue=predicate-dont-vectorize'"]
+                    util.Interpolate("-DLLVM_NATIVE_TOOL_DIR=%(prop:builddir)s/stage1.install/bin"),
+                    "-DLLVM_BUILD_TESTS=True",
+                    "-DPython3_EXECUTABLE=/usr/bin/python3",
+                    "-DLLVM_HOST_TRIPLE=riscv64-linux-gnu",
+                    util.Interpolate("-DLLVM_EXTERNAL_LIT=%(prop:builddir)s/llvm-zorg/buildbot/riscv-rise/lit-on-qemu")],
+                stage2_toolchain_options=[
+                    "set(CMAKE_SYSTEM_NAME Linux)",
+                    "set(CMAKE_SYSROOT %(prop:builddir)s/../rvsysroot)",
+                    "set(CMAKE_C_COMPILER_TARGET riscv64-linux-gnu)",
+                    "set(CMAKE_CXX_COMPILER_TARGET riscv64-linux-gnu)",
+                    "set(CMAKE_C_FLAGS_INIT \"-march=rva23u64 -mllvm -force-tail-folding-style=data-with-evl -mllvm -prefer-predicate-over-epilogue=predicate-else-scalar-epilogue\")",
+                    "set(CMAKE_CXX_FLAGS_INIT \"-march=rva23u64 -mllvm -force-tail-folding-style=data-with-evl -mllvm -prefer-predicate-over-epilogue=predicate-else-scalar-epilogue\")",
+                    "set(CMAKE_LINKER_TYPE LLD)",
+                    "set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)",
+                    "set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)",
+                    "set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)",
+                    "set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)"],
+                env={
+                    "BB_IMG_DIR": util.Interpolate("%(prop:builddir)s/.."),
+                    # TODO: Switch to specifying rva23u64 once support is
+                    # available in a released QEMU.
+                    "BB_QEMU_CPU": "rv64,zba=true,zbb=true,zbc=false,zbs=true,zfhmin=true,v=true,vext_spec=v1.0,zkt=true,zvfhmin=true,zvbb=true,zvkt=true,zihintntl=true,zicond=true,zimop=true,zcmop=true,zcb=true,zfa=true,zawrs=true,rvv_ta_all_1s=true,rvv_ma_all_1s=true,rvv_vl_half_avl=true",
+                    "BB_QEMU_SMP": "32",
+                    "BB_QEMU_MEM": "64G"}
                 )},
 
     # Builders similar to used in Buildkite premerge pipeline.
