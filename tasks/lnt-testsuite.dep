@@ -1,2 +1,1 @@
 os_version >= 10.11.6 # Oldest CI nodes are currently 10.11.6
-brew cmake >= 3.6.0 # Need 3.6 for CMAKE_TRY_COMPILE_TARGET_TYPE
