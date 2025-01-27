@@ -102,8 +102,8 @@ resource "google_container_node_pool" "llvm_premerge_windows" {
   initial_node_count = 0
 
   autoscaling {
-    total_min_node_count = 1
-    total_max_node_count = 2
+    total_min_node_count = 0
+    total_max_node_count = 4
   }
 
   # We do not set a taint for the windows nodes as kubernetes by default sets
@@ -118,7 +118,12 @@ resource "google_container_node_pool" "llvm_premerge_windows" {
     # Windows Defender causes an increase in test times by approximately an
     # order of magnitude.
     metadata = {
-      "sysprep-specialize-script-ps1" : "Set-MpPreference -DisableRealtimeMonitoring $true"
+      "sysprep-specialize-script-ps1" = "Set-MpPreference -DisableRealtimeMonitoring $true"
+      # Terraform wants to recreate the node pool everytime whe running
+      # terraform apply unless we explicitly set this.
+      # TODO(boomanaiden154): Look into why terraform is doing this so we do
+      # not need this hack.
+      "disable-legacy-endpoints" = "true"
     }
     disk_size_gb = 200
   }
