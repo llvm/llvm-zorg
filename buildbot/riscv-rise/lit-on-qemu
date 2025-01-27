@@ -50,6 +50,7 @@ current_path = pathlib.Path.cwd()
 print(f"Initial working directory: {current_path}. Found build_dir: {build_dir}")
 
 llvm_img = build_dir / "llvm-project.img"
+print(f"Allocating file for filesystem image at: {llvm_img}")
 subprocess.run(["fallocate", "-l", "50GiB", llvm_img], check=True)
 
 os.chdir(build_dir)
@@ -73,7 +74,7 @@ elif (build_dir.parent / "llvm" / ".git").is_dir():
     print("Note: 'CI style' layout detected (llvm checkout and build_dir as siblings)")
     extra_tar_args = [
         "--exclude=llvm/.git",
-        f"--exclude={llvm_img}"
+        f"--exclude={llvm_img.relative_to(build_dir.parent)}"
     ]
     paths_to_tar = f"llvm {build_dir_name}"
     change_to_dir = ".."
@@ -108,7 +109,7 @@ mount -t ext4 /dev/vdb "{base_mount_path}" || error "Mount failed"
 if [ -f "{build_dir}/tools/clang/test/lit.site.cfg.py" ]; then
   # Workaround llvm_external_lit being re-invoked by update_cc_test_checks
   # tests.
-  sed -i 's/^config\.llvm_external_lit.*$/config.llvm_external_lit = path(r"")/' "{build_dir}/tools/clang/test/lit.site.cfg.py"
+  sed -i 's/^config\\.llvm_external_lit.*$/config.llvm_external_lit = path(r"")/' "{build_dir}/tools/clang/test/lit.site.cfg.py"
 fi
 cd "{current_path}"
 su user -c "/usr/bin/python3 {build_dir}/bin/llvm-lit {args_string}"
