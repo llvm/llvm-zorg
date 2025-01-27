@@ -105,6 +105,11 @@ error() {{
 mkdir -p "{base_mount_path}" || error "Can't make mount path"
 chown {target_uid}:{target_gid} "{base_mount_path}" || error "Chown failed"
 mount -t ext4 /dev/vdb "{base_mount_path}" || error "Mount failed"
+if [ -f "{build_dir}/tools/clang/test/lit.site.cfg.py" ]; then
+  # Workaround llvm_external_lit being re-invoked by update_cc_test_checks
+  # tests.
+  sed -i 's/^config\.llvm_external_lit.*$/config.llvm_external_lit = path(r"")/' "{build_dir}/tools/clang/test/lit.site.cfg.py"
+fi
 cd "{current_path}"
 su user -c "/usr/bin/python3 {build_dir}/bin/llvm-lit {args_string}"
 """
