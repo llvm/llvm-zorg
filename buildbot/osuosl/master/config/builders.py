@@ -3365,7 +3365,7 @@ all += [
     'workernames' : ["rise-clang-riscv-rva23-evl-vec-2stage"],
     'builddir':"clang-riscv-rva23-evl-vec-2stage",
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
-                clean=False,
+                clean=True,
                 useTwoStage=True,
                 runTestSuite=False,
                 testStage1=False,
