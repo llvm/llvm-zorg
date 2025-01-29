@@ -3,10 +3,6 @@
 This document describes how the GCP based presubmit infra is working, and
 explains common maintenance actions.
 
----
-NOTE: As of today, only Googlers can administrate the cluster.
----
-
 ## Overview
 
 Presubmit tests are using GitHub workflows. Executing GitHub workflows can be

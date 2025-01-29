@@ -52,7 +52,7 @@ will see 3 node pools:
 - llvm-premerge-linux-service
 - llvm-premerge-windows
 
-Definition for each pool is in [Architecture overview](architecture.md).
+Definitions for each pool is in [Architecture overview](architecture.md).
 
 If you click on a pool, example `llvm-premerge-linux`, you will see one
 instance group, and maybe several nodes.

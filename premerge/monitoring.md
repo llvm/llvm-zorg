@@ -7,7 +7,6 @@ Grafana pulls its data from 2 sources: the GCP Kubernetes cluster & GitHub.
 Grafana instance access is restricted, but there is a publicly visible dashboard:
 - [Public dashboard](https://llvm.grafana.net/public-dashboards/6a1c1969b6794e0a8ee5d494c72ce2cd)
 
-
 ## GCP monitoring
 
 Cluster metrics are gathered through Grafana alloy.

@@ -3,7 +3,6 @@
 This document lists past issues that could be of interest if you encounter
 issues with the cluser/presubmit.
 
-
 ## Workflows are failing: DNS resolution of github.com fails.
 
 ### Date: 2025-01-27
