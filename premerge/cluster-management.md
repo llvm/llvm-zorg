@@ -37,6 +37,7 @@ Currently, we have 3 clusters:
  - `llvm-premerge-prototype`: the cluster for those GCP hoster runners.
 
 Yes, it's called `prototype`, but that's the production cluster.
+We should rename it at some point.
 
 To add a VM to the cluster, the VM has to come from a `pool`. A `pool` is
 a group of nodes withing a cluster that all have the same configuration.

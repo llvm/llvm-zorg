@@ -64,6 +64,7 @@ This pool runs all the services managing the presubmit infra.
   - 1 listener for the Linux runners.
   - 1 listener for the windows runners.
   - Grafana Alloy to gather metrics.
+  - metrics container.
 
 The Action Runner Controller listens on the LLVM repository job queue.
 Individual jobs are then handled by the listeners.
@@ -82,15 +83,14 @@ How a job is run:
 ### Worker pools : llvm-premerge-linux, llvm-premerge-windows
 
 To make sure each runner pod is scheduled on the correct pool (linux or
-windows, avoiding the service pool), we use labels & taints.
-Those taints are configured in the
-[ARC runner templates](linux_runners_values.yaml).
+windows, avoiding the service pool), we use labels and taints.
 
 The other constraints we define are the resource requirements. Without
 information, Kubernetes is allowed to schedule multiple pods on the instance.
 So if we do not enforce limits, the controller could schedule 2 runners on
 the same instance, forcing containers to share resources.
-Resource limits are defined in 2 locations:
- - [runner configuration](linux_runners_values.yaml)
- - [container template](linux_container_pod_template.yaml)
+
+Those bits are configures in the
+[linux runner configuration](linux_runners_values.yaml) and
+[windows runner configuration](windows_runners_values.yaml).
 
