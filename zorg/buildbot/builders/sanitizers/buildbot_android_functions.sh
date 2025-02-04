@@ -9,7 +9,7 @@ function download_android_tools {
   local FILE_NAME=${VERSION}-linux-x86_64.zip
   local NDK_URL=https://dl.google.com/android/repository/${FILE_NAME}
   if  [[ "$(cat ${NDK_DIR}/android_ndk_url)" != ${NDK_URL} ]] ; then
-    echo @@@BUILD_STEP downloading Android NDK@@@
+    build_step "downloading Android NDK"
     [[ -d ${NDK_DIR} ]] && rm -rf ${NDK_DIR}
     [[ -d ${VERSION} ]] && rm -rf ${VERSION}
     [[ -f ${FILE_NAME} ]] && rm -f ${FILE_NAME}
@@ -20,7 +20,7 @@ function download_android_tools {
   fi
 
   if  [[ ! -d platform-tools ]] ; then
-    echo @@@BUILD_STEP downloading Android Platform Tools@@@
+    build_step "downloading Android Platform Tools"
     local FILE_NAME=platform-tools-latest-linux.zip
     [[ -f ${FILE_NAME} ]] && rm -f ${FILE_NAME}
     wget -e dotbytes=10m https://dl.google.com/android/repository/${FILE_NAME}
@@ -34,7 +34,7 @@ function build_stage2_android() {
   local CMAKE_OPTIONS="${CMAKE_COMMON_OPTIONS} -DLLVM_ENABLE_WERROR=ON ${STAGE1_AS_COMPILER}"
   CMAKE_OPTIONS="${CMAKE_OPTIONS} -DLLVM_ENABLE_PROJECTS='clang;lld' -DCLANG_DEFAULT_RTLIB=libgcc"
 
-  echo @@@BUILD_STEP bootstrap clang@@@
+  build_step "bootstrap clang"
   mkdir -p llvm_build64
   if  [[ "$(cat llvm_build64/CMAKE_OPTIONS)" != "${CMAKE_OPTIONS}" ]] ; then
     (cd llvm_build64 && cmake ${CMAKE_OPTIONS} $LLVM && \
@@ -105,7 +105,7 @@ BUILD_RT_ERR=""
 function build_android {
   local _arch=$1
   wait
-  echo @@@BUILD_STEP build android/$_arch@@@
+  build_step "build android/$_arch"
   if ! ninja -C llvm_build_android_$_arch llvm-symbolizer ; then
     BUILD_RT_ERR="${BUILD_RT_ERR}|${_arch}|"
     build_failure
@@ -134,7 +134,7 @@ function patch_abilist { # IN OUT
 
 function restart_adb_server {
   ADB=adb
-  echo @@@BUILD_STEP restart adb server@@@
+  build_step "restart adb server"
   $ADB kill-server
   sleep 2
   $ADB start-server
@@ -184,7 +184,7 @@ function test_android {
   fi
 
   ADB=adb
-  echo @@@BUILD_STEP run all tests@@@
+  build_step "run all tests"
   ANDROID_DEVICES=$(${ADB} devices | grep 'device$' | sort -r | awk '{print $1}')
 
   rm -rf test_android_log_*
@@ -200,7 +200,7 @@ function test_android {
   for _arg in "$@"; do
     local _arch=${_arg%:*}
     if [[ ! -f tested_arch_$_arch ]]; then
-      echo @@@BUILD_STEP unavailable device android/$_arch@@@
+      build_step "unavailable device android/$_arch"
       echo @@@STEP_EXCEPTION@@@
     fi
   done
@@ -220,7 +220,7 @@ function run_tests_sharded {
 
   local NUM_SHARDS=4
   local _log_prefix=$(mktemp shards_XXXX_)
-  echo @@@BUILD_STEP run $_test_name tests [$DEVICE_DESCRIPTION]@@@
+  build_step "run $_test_name tests [$DEVICE_DESCRIPTION]"
   LOGS=
   for ((SHARD=0; SHARD < $NUM_SHARDS; SHARD++)); do
     LOG=${_log_prefix}_$SHARD
@@ -253,7 +253,7 @@ function test_arch_on_device {
   export ANDROID_SERIAL=$_serial
   echo "Serial $_serial"
 
-  echo @@@BUILD_STEP device setup [$DEVICE_DESCRIPTION]@@@
+  build_step "device setup [$DEVICE_DESCRIPTION]"
   $ADB wait-for-device
   $ADB devices
   $ADB shell getprop ro.build.version.release
@@ -276,7 +276,7 @@ function test_arch_on_device {
   done
   wait
 
-  echo @@@BUILD_STEP run lit tests [$DEVICE_DESCRIPTION]@@@
+  build_step "run lit tests [$DEVICE_DESCRIPTION]"
   (cd $COMPILER_RT_BUILD_DIR && ninja check-all) || build_failure
 
   run_tests_sharded sanitizer_common SanitizerTest ""

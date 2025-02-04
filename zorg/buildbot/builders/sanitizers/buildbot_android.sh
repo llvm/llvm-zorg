@@ -21,7 +21,7 @@ CMAKE_COMMON_OPTIONS+=" -DLLVM_ENABLE_ASSERTIONS=ON"
 
 build_stage2_android
 
-echo @@@BUILD_STEP run cmake@@@
+build_step "run cmake"
 configure_android aarch64 aarch64-linux-android
 # Testing armv7 instead of plain arm to work around
 # https://code.google.com/p/android/issues/detail?id=68779

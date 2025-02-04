@@ -11,7 +11,7 @@ HERE="$(cd $(dirname $0) && pwd)"
 
 BUILDBOT_REVISION=origin/main buildbot_update
 
-echo @@@BUILD_STEP bisecting ${BUILDBOT_REVISION}@@@
+build_step "bisecting ${BUILDBOT_REVISION}"
 
 # Try to get them out from the bisect string in BUILDBOT_REVISION first.
 GOOD="${BUILDBOT_REVISION/:*/}"
@@ -34,7 +34,7 @@ cd "${LLVM}/.."
     git bisect run bash -c "cd $ROOT && $*"
   fi
 
-  echo @@@BUILD_STEP bisect result@@@
+  build_step "bisect result"
   git bisect log
 ) || true
 

@@ -24,6 +24,10 @@ fi
 
 SANITIZER_LOG_DIR=$ROOT/sanitizer_logs
 
+function build_step() {
+  echo "@@@BUILD_STEP ""$@""@@"
+}
+
 function include_config() {
   local P=.
   while true ; do
@@ -39,7 +43,7 @@ function include_config() {
 
 include_config
 
-echo @@@BUILD_STEP Info@@@
+build_step "Info"
 (
   set +e
   date
@@ -66,7 +70,7 @@ echo @@@BUILD_STEP Info@@@
   hostname -f
 )
 
-echo @@@BUILD_STEP Prepare@@@
+build_step "Prepare"
 
 export LIT_OPTS="--time-tests"
 # --timeout requires psutil missing on some bots.
@@ -89,7 +93,7 @@ function rm_dirs {
 
 function cleanup() {
   [[ -v BUILDBOT_BUILDERNAME ]] || return 0
-  echo @@@BUILD_STEP cleanup@@@
+  build_step "cleanup"
   rm_dirs llvm_build2_* llvm_build_* libcxx_build_* libcxx_install_* compiler_rt_build* symbolizer_build* "$@"
   if ccache -s >/dev/null ; then
     rm_dirs llvm_build64
@@ -101,7 +105,7 @@ function cleanup() {
 
 function clobber {
   if [[ "$BUILDBOT_CLOBBER" != "" ]]; then
-    echo @@@BUILD_STEP clobber@@@
+    build_step "clobber"
     if [[ ! -v BUILDBOT_BUILDERNAME ]]; then
       echo "Clobbering is supported on buildbot only!"
       exit 1
@@ -119,7 +123,7 @@ BUILDBOT_MONO_REPO_PATH=${BUILDBOT_MONO_REPO_PATH:-}
 
 function buildbot_update {
   if [[ "${BUILDBOT_BISECT_MODE:-}" == "1" ]]; then
-    echo "@@@BUILD_STEP bisect status@@@"
+    build_step "bisect status"
     (
       cd llvm-project
       git bisect visualize --oneline
@@ -129,7 +133,7 @@ function buildbot_update {
     LLVM=$ROOT/llvm-project/llvm
     return 0
   fi
-  echo "@@@BUILD_STEP update $BUILDBOT_REVISION@@@"
+  build_step "update $BUILDBOT_REVISION"
   if [[ -d "$BUILDBOT_MONO_REPO_PATH" ]]; then
     LLVM=$BUILDBOT_MONO_REPO_PATH/llvm
   else
@@ -163,7 +167,7 @@ function buildbot_update {
 
 function print_sanitizer_logs() {
   if compgen -G "${SANITIZER_LOG_DIR}"/* ; then
-    echo @@@BUILD_STEP sanitizer logs@@@
+    build_step "sanitizer logs"
     head -n -1 "${SANITIZER_LOG_DIR}"/*
     buildbot_build && rm -rf "${SANITIZER_LOG_DIR}"/*
     build_warning
@@ -207,7 +211,7 @@ function build_stage1_clang_impl {
 }
 
 function build_stage1_clang {
-  echo @@@BUILD_STEP stage1 build all@@@
+  build_step "stage1 build all"
   common_stage1_variables
   build_stage1_clang_impl
 }
@@ -218,7 +222,7 @@ function download_clang_from_chromium {
   curl -s https://raw.githubusercontent.com/chromium/chromium/main/tools/clang/scripts/update.py \
     | python3 - --output-dir=${STAGE1_DIR}
 
-  echo @@@BUILD_STEP using pre-built stage1 clang at $(cat ${STAGE1_DIR}/cr_build_revision)@@@
+  build_step "using pre-built stage1 clang at $(cat ${STAGE1_DIR}/cr_build_revision)"
 }
 
 function build_clang_at_release_tag {
@@ -235,12 +239,12 @@ function build_clang_at_release_tag {
   if  [ -r ${STAGE1_DIR}/host_clang_revision ] && \
       [ "$(cat ${STAGE1_DIR}/host_clang_revision)" == $host_clang_revision ]
   then
-    echo "@@@BUILD_STEP using pre-built stage1 clang at r${host_clang_revision}@@@"
+    build_step "using pre-built stage1 clang at r${host_clang_revision}"
   else
     SKIP_OLD=0 BUILDBOT_MONO_REPO_PATH="" BUILDBOT_REVISION="${host_clang_revision}" buildbot_update
 
     rm -rf ${STAGE1_DIR}
-    echo @@@BUILD_STEP build stage1 clang at $host_clang_revision@@@
+    build_step "build stage1 clang at $host_clang_revision"
     # PGO, can improve build time by 10%. However bots spend most of the time
     # running tests and compilation mostly incremental or CCCACH-ed.
     build_stage1_clang_impl && \
@@ -258,7 +262,7 @@ function common_stage2_variables {
 
 function build_stage2 {
   local sanitizer_name=$1
-  echo @@@BUILD_STEP stage2/$sanitizer_name build libcxx@@@
+  build_step "stage2/$sanitizer_name build libcxx"
 
   local libcxx_build_dir=libcxx_build_${sanitizer_name}
   local libcxx_install_dir=libcxx_install_${sanitizer_name}
@@ -348,7 +352,7 @@ function build_stage2 {
   local sanitizer_ldflags="-Wl,--rpath=${libcxx_runtime_path} -L${libcxx_runtime_path}"
   local sanitizer_cflags="-nostdinc++ -isystem ${ROOT}/${libcxx_install_dir}/include -isystem ${ROOT}/${libcxx_install_dir}/include/c++/v1 $fsanitize_flag"
 
-  echo @@@BUILD_STEP stage2/$sanitizer_name build@@@
+  build_step "stage2/$sanitizer_name build"
 
   # See http://llvm.org/bugs/show_bug.cgi?id=19071, http://www.cmake.org/Bug/view.php?id=15264
   sanitizer_cflags+=" $sanitizer_ldflags -w"
@@ -434,7 +438,7 @@ function check_stage2 {
   if [[ "${STAGE2_SKIP_TEST_CXX:-}" != "1" ]] ; then
     (
       LIT_OPTS+=" --timeout=1500"
-      echo @@@BUILD_STEP stage2/$sanitizer_name check-cxx@@@
+      build_step "stage2/$sanitizer_name check-cxx"
       # Very slow.
       export LIT_FILTER_OUT="std/utilities/format/format.functions/format.locale.runtime_format.pass.cpp"
       LIT_FILTER_OUT+="|std/utilities/format/format.functions/format.runtime_format.pass.cpp"
@@ -466,7 +470,7 @@ function check_stage2 {
     )
   fi
 
-  echo @@@BUILD_STEP stage2/$sanitizer_name check@@@
+  build_step "stage2/$sanitizer_name check"
   run_ninja -C ${STAGE2_DIR} check-all
 }
 
@@ -496,7 +500,7 @@ function check_stage2_asan_ubsan {
 
 function build_stage3 {
   local sanitizer_name=$1
-  echo @@@BUILD_STEP build stage3/$sanitizer_name build@@@
+  build_step "build stage3/$sanitizer_name build"
 
   local build_dir=llvm_build2_${sanitizer_name}
 
@@ -547,7 +551,7 @@ function build_stage3_ubsan {
 
 function check_stage3 {
   local sanitizer_name=$1
-  echo @@@BUILD_STEP stage3/$sanitizer_name check@@@
+  build_step "stage3/$sanitizer_name check"
 
   local build_dir=llvm_build2_${sanitizer_name}
 

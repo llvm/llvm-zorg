@@ -24,12 +24,12 @@ build_stage1_clang
 # export ASAN_SYMBOLIZER_PATH="${llvm_symbolizer_path}"
 export PATH="$(readlink -f ${STAGE1_DIR}/bin):$PATH"
 
-echo @@@BUILD_STEP get fuzzer-test-suite @@@
+build_step "get fuzzer-test-suite "
 [ ! -e fuzzer-test-suite ] && git clone https://github.com/google/fuzzer-test-suite.git
 (cd fuzzer-test-suite && git pull)
 
 RunFuzzerTest() {
-  echo @@@BUILD_STEP test "$1" fuzzer@@@
+  build_step "test "$1" fuzzer"
   ln -sf $LIBFUZZER .
   export FUZZING_ENGINE=fsanitize_fuzzer
   `pwd`/fuzzer-test-suite/build-and-test.sh "$1"

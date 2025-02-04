@@ -16,7 +16,7 @@ buildbot_update
 
 readonly STAGE2_DIR=llvm_build2_host
 (
-  echo @@@BUILD_STEP build host clang@@@
+  build_step "build host clang"
   COMPILER_BIN_DIR="$(readlink -f ${STAGE1_DIR})/bin"
 
   rm -rf ${STAGE2_DIR}
@@ -62,7 +62,7 @@ SKIP_HWASAN_LAM=${SKIP_HWASAN_LAM:-1}
 function setup_lam_qemu_image {
   # Full system emulation is required for x86_64 testing with LAM, as some
   # sanitizers aren't friendly with usermode emulation under x86_64 LAM.
-  echo @@@BUILD_STEP Check x86_64 LAM Prerequisites@@@
+  build_step "Check x86_64 LAM Prerequisites"
 
   # Allow specifying the QEMU image dir, otherwise assume in the local dir.
   QEMU_IMAGE_DIR=${QEMU_IMAGE_DIR:=${ROOT}}
@@ -114,7 +114,7 @@ function build_qemu {
 
   local build_dir="${ROOT}/${qemu_name}_build"
 
-  echo "@@@BUILD_STEP build ${qemu_name}@@@"
+  build_step "build ${qemu_name}"
   (
     git_clone_at_revision ${qemu_name} ${qemu_url} ${qemu_revision} \
       ${build_dir} || exit 1
@@ -139,7 +139,7 @@ function build_qemu {
 }
 
 function build_lam_linux {
-  echo "@@@BUILD_STEP build lam linux@@@"
+  build_step "build lam linux"
   local build_dir="${ROOT}/lam_linux_build"
   LAM_KERNEL="${build_dir}/arch/x86_64/boot/bzImage"
   (
@@ -270,7 +270,7 @@ function run_scudo_tests {
   local name="${1}"
   local out_dir=llvm_build2_${name}
 
-  echo "@@@BUILD_STEP scudo $name@@@"
+  build_step "scudo $name"
 
   (
     cd ${out_dir}
@@ -352,31 +352,31 @@ function run_hwasan_lam_tests {
   local name="x86_64_lam_qemu"
   local out_dir=llvm_build2_${name}
 
-  echo "@@@BUILD_STEP configure hwasan ${name}@@@"
+  build_step "configure hwasan ${name}"
 
   (
     cd ${out_dir}
     cat configure.log
 
     # Build most stuff before starting VM.
-    echo "@@@BUILD_STEP build tools ${name}@@@"
+    build_step "build tools ${name}"
     ninja clang lld llvm-symbolizer || exit 3
 
-    echo "@@@BUILD_STEP start LAM QEMU@@@"
+    build_step "start LAM QEMU"
     boot_qemu || build_exception
 
     ssh -S "${SSH_CONTROL_SOCKET}" root@localhost \
         "mkdir -p ${ROOT} && mount -t nfs 10.0.2.10:${ROOT} ${ROOT}"
 
     echo
-    echo "@@@BUILD_STEP test hwasan ${name}@@@"
+    build_step "test hwasan ${name}"
     # Fixme: figure out why is the test failing with detect_leaks tunred on.
     export LIT_FILTER_OUT="print-memory-usage.c"
     ninja check-hwasan-lam || exit 3
   ) || build_failure
 }
 
-echo "@@@BUILD_STEP configure@@@"
+build_step "configure"
 
 for DBG in OFF ON ; do
   QEMU=0 configure_scudo_compiler_rt x86_64

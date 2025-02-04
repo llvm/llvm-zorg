@@ -59,7 +59,7 @@ function build {
     BUILD_DIR="build_${1}"
   fi
   
-  echo "@@@BUILD_STEP build compiler-rt ${1}@@@"
+  build_step "build compiler-rt ${1}"
   [[ ! -f "${BUILD_DIR}/delete_next_time" ]] || rm -rf "${BUILD_DIR}"
   mkdir -p ${BUILD_DIR}
 
@@ -76,7 +76,7 @@ function build {
 function build_and_test {
   build "${1}" "${2}"
 
-  echo "@@@BUILD_STEP test compiler-rt ${1}@@@"
+  build_step "test compiler-rt ${1}"
   ninja -C ${BUILD_DIR} check-compiler-rt || build_failure
 }
 
@@ -98,7 +98,7 @@ build_and_test "default" ""
 
 FRESH_CLANG_PATH=${ROOT}/${BUILD_DIR}/bin
 
-echo @@@BUILD_STEP build standalone compiler-rt@@@
+build_step "build standalone compiler-rt"
 mkdir -p compiler_rt_build
 # Standalone build as in https://compiler-rt.llvm.org/
 cmake -B compiler_rt_build -GNinja \
@@ -110,12 +110,12 @@ cmake -B compiler_rt_build -GNinja \
   $LLVM/../compiler-rt || build_failure
 ninja -C compiler_rt_build || build_failure
 
-echo @@@BUILD_STEP test standalone compiler-rt@@@
+build_step "test standalone compiler-rt"
 ninja -C compiler_rt_build check-all || build_failure
 
 if [ "$CHECK_TSAN" == "1" ]; then
   # FIXME: Convert to a LIT test.
-  echo @@@BUILD_STEP tsan analyze@@@
+  build_step "tsan analyze"
   BIN=tsan_bin
   echo "int main() {return 0;}" | ${FRESH_CLANG_PATH}/clang -x c++ - -fsanitize=thread -O2 -o ${BIN}
   $LLVM/../compiler-rt/lib/tsan/check_analyze.sh ${BIN} || build_failure
