@@ -19,7 +19,7 @@ def main(argv):
         # If we do not do this, the resident config will take precedence and changes
         # to the cache file are ignored.
         cwd = os.getcwd()
-        utils.clean_dir(cwd)
+        util.clean_dir(cwd)
 
     with step("cmake", halt_on_fail=True):
         # TODO make the name of the cache file an argument to the script.
