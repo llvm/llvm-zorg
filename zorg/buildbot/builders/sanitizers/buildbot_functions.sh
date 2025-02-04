@@ -26,6 +26,7 @@ SANITIZER_LOG_DIR=$ROOT/sanitizer_logs
 
 function build_step() {
   echo "@@@BUILD_STEP ""$@""@@"
+  CURRENT_STEP="$@"
 }
 
 function include_config() {
@@ -167,7 +168,7 @@ function buildbot_update {
 
 function print_sanitizer_logs() {
   if compgen -G "${SANITIZER_LOG_DIR}"/* ; then
-    build_step "sanitizer logs"
+    build_step "sanitizer logs: ${CURRENT_STEP}"
     head -n -1 "${SANITIZER_LOG_DIR}"/*
     buildbot_build && rm -rf "${SANITIZER_LOG_DIR}"/*
     build_warning
