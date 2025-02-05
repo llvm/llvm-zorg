@@ -25,7 +25,7 @@ fi
 SANITIZER_LOG_DIR=$ROOT/sanitizer_logs
 
 function build_step() {
-  echo "@@@BUILD_STEP ""$@""@@"
+  echo "@@@BUILD_STEP ""$@""@@@"
   CURRENT_STEP="$@"
 }
 
