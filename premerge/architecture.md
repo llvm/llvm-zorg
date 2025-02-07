@@ -92,5 +92,5 @@ the same instance, forcing containers to share resources.
 
 Those bits are configures in the
 [linux runner configuration](linux_runners_values.yaml) and
-[windows runner configuration](windows_runners_values.yaml).
+[windows runner configuration](windows_runner_values.yaml).
 
