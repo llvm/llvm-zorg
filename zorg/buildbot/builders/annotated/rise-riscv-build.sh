@@ -21,6 +21,13 @@ rm -rf build
 LLVM_REVISION="${BUILDBOT_REVISION:-origin/main}"
 
 case "$BUILDBOT_BUILDERNAME" in
+  "clang-riscv-rva20-2stage")
+    TARGET_CFLAGS="-march=rva20u64"
+    export BB_IMG_DIR=$(pwd)/..
+    export BB_QEMU_CPU="rv64,zfa=false,zba=false,zbb=false,zbc=false,zbs=false"
+    export BB_QEMU_SMP=32
+    export BB_QEMU_MEM="64G"
+    ;;
   "clang-riscv-rva23-evl-vec-2stage")
     TARGET_CFLAGS="-march=rva23u64 -mllvm -force-tail-folding-style=data-with-evl -mllvm -prefer-predicate-over-epilogue=predicate-else-scalar-epilogue"
     export BB_IMG_DIR=$(pwd)/..
