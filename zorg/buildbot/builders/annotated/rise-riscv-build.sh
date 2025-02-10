@@ -129,6 +129,7 @@ export QEMU_LD_PREFIX="$(pwd)/../rvsysroot"
 export QEMU_CPU="$BB_QEMU_CPU"
 cmake -G Ninja \
   --toolchain=$(pwd)/stage1-toolchain.cmake \
+  -DCMAKE_BUILD_TYPE=Release \
   -DTEST_SUITE_LIT=$(pwd)/stage1/bin/llvm-lit \
   -DTEST_SUITE_LIT_FLAGS=-v \
   -DTEST_SUITE_COLLECT_CODE_SIZE=OFF \
