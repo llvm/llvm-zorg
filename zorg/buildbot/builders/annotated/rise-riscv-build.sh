@@ -57,7 +57,7 @@ git -C llvm reset --hard "${LLVM_REVISION}"
 # We unconditionally clean (i.e. don't check BUILDBOT_CLOBBER=1) as the script
 # hasn't been tested without cleaning after each build.
 build_step "Cleaning last build"
-rm -rf stage1 stage2
+rm -rf stage1 stage2 llvm-test-suite-build
 
 build_step "llvm-project cmake stage 1"
 cmake -G Ninja \
@@ -112,3 +112,34 @@ cmake --build stage2
 
 build_step "llvm-project check-all"
 cmake --build stage2 --target check-all
+
+# TODO: Evaluate running the test suite immediately after stage1 as it
+# executes very quickly and could provide rapid "fail fast" feedback.
+if [ ! -d llvm-test-suite ]; then
+  build_step "Cloning llvm-test-suite repo"
+  git clone --progress https://github.com/llvm/llvm-test-suite.git
+fi
+
+build_step "Updating llvm-test-suite repo"
+git -C llvm-test-suite fetch origin
+git -C llvm-test-suite reset --hard origin/main
+
+build_step "llvm-test-suite cmake"
+export QEMU_LD_PREFIX="$(pwd)/../rvsysroot"
+export QEMU_CPU="$BB_QEMU_CPU"
+cmake -G Ninja \
+  --toolchain=$(pwd)/stage1-toolchain.cmake \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DTEST_SUITE_LIT=$(pwd)/stage1/bin/llvm-lit \
+  -DTEST_SUITE_LIT_FLAGS=-v \
+  -DTEST_SUITE_COLLECT_CODE_SIZE=OFF \
+  -DTEST_SUITE_COLLECT_COMPILE_TIME=OFF \
+  -DTEST_SUITE_USER_MODE_EMULATION=ON \
+  -S llvm-test-suite \
+  -B llvm-test-suite-build
+
+build_step "llvm-test-suite build"
+cmake --build llvm-test-suite-build
+
+build_step "llvm-test-suite check"
+cmake --build llvm-test-suite-build --target check
