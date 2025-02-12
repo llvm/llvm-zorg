@@ -2541,7 +2541,7 @@ all += [
     'builddir': 'ppc64-flang-aix-build',
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                     clean=False,
-                    depends_on_projects=['llvm', 'mlir', 'clang', 'flang', 'compiler-rt'],
+                    depends_on_projects=['llvm', 'mlir', 'clang', 'flang', 'compiler-rt', 'openmp'],
                     checks=['check-flang'],
                     extra_configure_args=[
                         '-DLLVM_DEFAULT_TARGET_TRIPLE=powerpc64-ibm-aix',
