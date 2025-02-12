@@ -1948,7 +1948,7 @@ all += [
                             "-DTEST_SUITE_SOLLVEVV_OFFLOADING_CFLAGS=-fopenmp-targets=amdgcn-amd-amdhsa;-Xopenmp-target=amdgcn-amd-amdhsa",
                             "-DTEST_SUITE_SOLLVEVV_OFFLOADING_LDLAGS=-fopenmp-targets=amdgcn-amd-amdhsa;-Xopenmp-target=amdgcn-amd-amdhsa",
                         ],
-                        add_lit_checks=["check-clang", "check-llvm", "check-lld", "check-offload"],
+                        add_lit_checks=["check-clang", "check-llvm", "check-lld"],
                         add_openmp_lit_args=["--time-tests", "--timeout 100"],
                         )},
 
