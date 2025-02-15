@@ -4,6 +4,10 @@ terraform {
       source  = "hashicorp/google"
       version = "6.17.0"
     }
+    grafana = {
+      source  = "grafana/grafana"
+      version = "3.19.0"
+    }
   }
 }
 
@@ -378,4 +382,17 @@ resource "kubernetes_secret" "metrics_secrets" {
 
 resource "kubernetes_manifest" "metrics_deployment" {
   manifest = yamldecode(file("metrics_deployment.yaml"))
+}
+
+data "google_secret_manager_secret_version" "grafana_auth" {
+  secret = "grafana-auth"
+}
+
+provider "grafana" {
+  url  = "https://llvm.grafana.net/"
+  auth = data.google_secret_manager_secret_version.grafana_auth.secret_data
+}
+
+resource "grafana_dashboard" "premerge_dashboard" {
+  config_json = file("premerge_dashboard.json")
 }
