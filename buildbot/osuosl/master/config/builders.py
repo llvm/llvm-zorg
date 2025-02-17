@@ -1913,7 +1913,7 @@ all += [
     'factory' : OpenMPBuilder.getOpenMPCMakeBuildFactory(
                         clean=True,
                         enable_runtimes=['compiler-rt', 'libunwind', 'libcxx', 'libcxxabi', 'openmp', 'offload'],
-                        depends_on_projects=['llvm','clang','lld', 'offload', 'openmp', 'compiler-rt', 'libunwind', 'libcxx', 'libcxxabi' ],
+                        depends_on_projects=['llvm','clang','lld', 'offload', 'openmp', 'compiler-rt', 'libunwind', 'libcxx', 'libcxxabi', 'libc'],
                         extraCmakeArgs=[
                             "-DCMAKE_BUILD_TYPE=Release",
                             "-DCLANG_DEFAULT_LINKER=lld",
