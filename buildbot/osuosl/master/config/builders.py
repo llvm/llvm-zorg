@@ -1958,6 +1958,7 @@ all += [
     'tags'  : ["openmp"],
     'workernames' : ["rocm-docker-ubu-22"],
     'builddir': "amdgpu-offload-ubuntu-22-cmake-build-only",
+    'collapseRequests' : False,
     'factory' : AnnotatedBuilder.getAnnotatedBuildFactory(
                     depends_on_projects=["llvm", "clang", "flang", "mlir", "lld", "compiler-rt", "libcxx", "libcxxabi", "openmp", "offload", "libunwind"],
                     script="amdgpu-offload-cmake.py",
@@ -1969,6 +1970,7 @@ all += [
     'tags'  : ["openmp"],
     'workernames' : ["rocm-docker-rhel-9"],
     'builddir': "amdgpu-offload-rhel-9-cmake-build-only",
+    'collapseRequests' : False,
     'factory' : AnnotatedBuilder.getAnnotatedBuildFactory(
                     depends_on_projects=["llvm", "clang", "flang", "mlir", "lld", "compiler-rt", "libcxx", "libcxxabi", "openmp", "offload", "libunwind"],
                     script="amdgpu-offload-cmake.py",
@@ -1980,6 +1982,7 @@ all += [
     'tags'  : ["amdgpu", "offload", "openmp"],
     'workernames' : ["rocm-docker-rhel-8"],
     'builddir': "amdgpu-offload-rhel-8-cmake-build-only",
+    'collapseRequests' : False,
     'factory' : AnnotatedBuilder.getAnnotatedBuildFactory(
                     depends_on_projects=["llvm", "clang", "flang", "mlir", "lld", "compiler-rt", "libcxx", "libcxxabi", "offload", "openmp", "libunwind"],
                     script="amdgpu-offload-cmake.py",
