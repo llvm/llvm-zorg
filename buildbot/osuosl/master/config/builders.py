@@ -1937,6 +1937,8 @@ all += [
                             "-DCLANG_DEFAULT_RTLIB=compiler-rt",
                             "-DCLANG_DEFAULT_UNWINDLIB=libgcc",
                             "-DLIBOMPTARGET_PLUGINS_TO_BUILD=amdgpu;host",
+                            "-DRUNTIMES_amdgcn-amd-amdhsa_LLVM_ENABLE_RUNTIMES=libc",
+                            "-DLLVM_RUNTIME_TARGETS=default;amdgcn-amd-amdhsa",
                             ],
                         env={
                             'HSA_ENABLE_SDMA':'0',
@@ -1948,7 +1950,7 @@ all += [
                             "-DTEST_SUITE_SOLLVEVV_OFFLOADING_CFLAGS=-fopenmp-targets=amdgcn-amd-amdhsa;-Xopenmp-target=amdgcn-amd-amdhsa",
                             "-DTEST_SUITE_SOLLVEVV_OFFLOADING_LDLAGS=-fopenmp-targets=amdgcn-amd-amdhsa;-Xopenmp-target=amdgcn-amd-amdhsa",
                         ],
-                        add_lit_checks=["check-clang", "check-llvm", "check-lld"],
+                        add_lit_checks=["check-clang", "check-llvm", "check-lld", "check-libc-amdgcn-amd-amdhsa"],
                         add_openmp_lit_args=["--time-tests", "--timeout 100"],
                         )},
 
