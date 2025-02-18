@@ -1939,6 +1939,7 @@ all += [
                             "-DLIBOMPTARGET_PLUGINS_TO_BUILD=amdgpu;host",
                             "-DRUNTIMES_amdgcn-amd-amdhsa_LLVM_ENABLE_RUNTIMES=libc",
                             "-DLLVM_RUNTIME_TARGETS=default;amdgcn-amd-amdhsa",
+                            "-DRUNTIMES_amdgcn-amd-amdhsa_LIBC_GPU_TEST_JOBS=4",
                             ],
                         env={
                             'HSA_ENABLE_SDMA':'0',
