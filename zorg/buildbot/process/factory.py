@@ -7,6 +7,7 @@ from buildbot.plugins import util, steps
 
 _all_runtimes = frozenset([
     "compiler-rt",
+    "flang-rt",
     "libc",
     "libcxx",
     "libcxxabi",
