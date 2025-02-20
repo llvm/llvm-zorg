@@ -2525,7 +2525,7 @@ all += [
     'builddir': "flang-x86_64-windows",
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                     depends_on_projects=['llvm','mlir','clang','flang','flang-rt'],
-                    checks=['check-flang'],
+                    checks=['check-flang','check-flang-rt'],
                     install_dir="flang.install",
                     extra_configure_args=[
                         "-DCLANG_ENABLE_STATIC_ANALYZER=OFF",
