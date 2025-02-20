@@ -601,8 +601,11 @@ function build_exception() {
 }
 
 function build_warning() {
+  echo
   sleep 5
   echo "@@@STEP_WARNINGS@@@"
+  echo
+  sleep 5
   buildbot_build || exit 2
 }
 
