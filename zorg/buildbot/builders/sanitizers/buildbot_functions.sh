@@ -579,33 +579,45 @@ function check_stage3_ubsan {
   check_stage3 ubsan
 }
 
+function buildbot_build() {
+  [[ "${BUILDBOT_BISECT_MODE:-}" != "1" && -v BUILDBOT_BUILDERNAME ]]
+}
+
 function build_failure() {
   # In bisect mode exit early.
   echo
   echo "How to reproduce locally: https://github.com/google/sanitizers/wiki/SanitizerBotReproduceBuild"
   echo
 
-  sleep 5
-  echo "@@@STEP_FAILURE@@@"
+  # Repeat, server sometimes ignores failures or warnings.
+  for i in 0 1 2 ; do
+    echo
+    echo "@@@STEP_FAILURE@@@"
+    sleep 5
+  done
+
   buildbot_build || exit 1
 }
 
-function buildbot_build() {
-  [[ "${BUILDBOT_BISECT_MODE:-}" != "1" && -v BUILDBOT_BUILDERNAME ]]
-}
-
 function build_exception() {
-  sleep 5
-  echo "@@@STEP_EXCEPTION@@@"
+  # Repeat, server sometimes ignores failures or warnings.
+  for i in 0 1 2 ; do
+    echo
+    echo "@@@STEP_EXCEPTION@@@"
+    sleep 5
+  done
+
   buildbot_build || exit 2
 }
 
 function build_warning() {
-  echo
-  sleep 5
-  echo "@@@STEP_WARNINGS@@@"
-  echo
-  sleep 5
+  # Repeat, server sometimes ignores failures or warnings.
+  for i in 0 1 2 ; do
+    echo
+    echo "@@@STEP_WARNINGS@@@"
+    sleep 5
+  done
+  
   buildbot_build || exit 2
 }
 
