@@ -285,12 +285,14 @@ function build_stage2 {
 
   if [ "$sanitizer_name" == "msan" ]; then
     export MSAN_SYMBOLIZER_PATH="${llvm_symbolizer_path}"
-    export MSAN_OPTIONS="log_path=${log_path}:log_exe_name=1"
+    export MSAN_OPTIONS="abort_on_error=1"
+    export MSAN_OPTIONS+=":log_path=${log_path}:log_exe_name=1"
     llvm_use_sanitizer="Memory"
     fsanitize_flag="-fsanitize=memory"
   elif [ "$sanitizer_name" == "msan_track_origins" ]; then
     export MSAN_SYMBOLIZER_PATH="${llvm_symbolizer_path}"
-    export MSAN_OPTIONS="log_path=${log_path}:log_exe_name=1"
+    export MSAN_OPTIONS="abort_on_error=1"
+    export MSAN_OPTIONS+=":log_path=${log_path}:log_exe_name=1"
     llvm_use_sanitizer="MemoryWithOrigins"
     fsanitize_flag="-fsanitize=memory -fsanitize-memory-track-origins"
   elif [ "$sanitizer_name" == "asan" ]; then
