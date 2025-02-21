@@ -4,7 +4,7 @@ set -eu
 
 ulimit -Ss 12288
 
-ROOT=`pwd`
+ROOT=$(pwd)
 LLVM=$ROOT/llvm-project/llvm
 
 BUILDBOT_CLOBBER="${BUILDBOT_CLOBBER:-}"
@@ -25,8 +25,8 @@ fi
 SANITIZER_LOG_DIR=$ROOT/sanitizer_logs
 
 function build_step() {
-  echo "@@@BUILD_STEP ""$@""@@@"
-  CURRENT_STEP="$@"
+  echo "@@@BUILD_STEP ${1}@@@"
+  CURRENT_STEP="${1}"
 }
 
 function include_config() {
@@ -34,6 +34,7 @@ function include_config() {
   while true ; do
     local F=${P}/sanitizer_buildbot_config
     if [[ -f ${F} ]] ; then
+      # shellcheck source=/dev/null
       . ${F}
       break
     fi
@@ -100,7 +101,7 @@ function cleanup() {
     rm_dirs llvm_build64
   fi
   # Workaround the case when a new unittest was reverted, but incremental build continues to execute the leftover binary.
-  find -path ./llvm-project -prune -o -executable -type f -path '*unittests*' -print -exec rm -f {} \;
+  find . -path ./llvm-project -prune -o -executable -type f -path '*unittests*' -print -exec rm -f {} \;
   du -hs ./* | sort -h
 }
 
@@ -112,7 +113,7 @@ function clobber {
       exit 1
     fi
     # Keep sources in ./llvm-project and ./llvm_build0 for faster builds.
-    find -maxdepth 1 -mindepth 1 -path ./llvm-project -prune -o -path ./llvm_build0 -prune -o -print -exec rm -rf {} \;
+    find . -maxdepth 1 -mindepth 1 -path ./llvm-project -prune -o -path ./llvm_build0 -prune -o -print -exec rm -rf {} \;
     du -hs ./* | sort -h
     return 0
   else
@@ -139,7 +140,6 @@ function buildbot_update {
     LLVM=$BUILDBOT_MONO_REPO_PATH/llvm
   else
     (
-      local DEPTH=100
       [[ -d llvm-project ]] || (
         mkdir -p llvm-project
         cd llvm-project
@@ -170,7 +170,8 @@ function print_sanitizer_logs() {
   if compgen -G "${SANITIZER_LOG_DIR}"/* ; then
     build_step "sanitizer logs: ${CURRENT_STEP}"
     head -n -1 "${SANITIZER_LOG_DIR}"/*
-    buildbot_build && rm -rf "${SANITIZER_LOG_DIR}"/*
+    buildbot_build && rm -rf "${SANITIZER_LOG_DIR}"
+    mkdir -p "${SANITIZER_LOG_DIR}"
     build_warning
   fi
 }
@@ -179,11 +180,11 @@ function print_sanitizer_logs() {
 function run_ninja() {
   env
   local ec=0
-  /usr/bin/time -o ${ROOT}/time.txt -- ninja "$@" || ec=$?
+  /usr/bin/time -o "${ROOT}/time.txt" -- ninja "$@" || ec=$?
   buildbot_build || print_sanitizer_logs
   if [[ $ec -ne 0 ]] ; then
     build_failure
-    rm -f ${ROOT}/time.txt
+    rm -f "${ROOT}/time.txt"
   fi
   print_sanitizer_logs
 }
@@ -198,7 +199,7 @@ function common_stage1_variables {
 
 function build_stage1_clang_impl {
   [[ ! -f "${STAGE1_DIR}/delete_next_time" ]] || rm -rf "${STAGE1_DIR}"
-  mkdir -p ${STAGE1_DIR}
+  mkdir -p "${STAGE1_DIR}"
   local cmake_stage1_options="${CMAKE_COMMON_OPTIONS}"
   cmake_stage1_options+=" -DLLVM_ENABLE_PROJECTS='clang;lld'"
   cmake_stage1_options+=" -DLLVM_ENABLE_RUNTIMES='compiler-rt;libunwind;libcxx;libcxxabi'"
@@ -229,7 +230,8 @@ function download_clang_from_chromium {
 function build_clang_at_release_tag {
   common_stage1_variables
 
-  local host_clang_revision=llvmorg-$(
+  local host_clang_revision
+  host_clang_revision=llvmorg-$(
     git ls-remote --tags https://github.com/llvm/llvm-project.git | \
       grep -oE "refs/tags/llvmorg-[0-9.]+$" | \
       grep -Eo "[0-9.]+" | \
@@ -237,8 +239,8 @@ function build_clang_at_release_tag {
       tail -n1
     )
 
-  if  [ -r ${STAGE1_DIR}/host_clang_revision ] && \
-      [ "$(cat ${STAGE1_DIR}/host_clang_revision)" == $host_clang_revision ]
+  if  [ -r "${STAGE1_DIR}/host_clang_revision" ] && \
+      [ "$(cat "${STAGE1_DIR}/host_clang_revision")" == "$host_clang_revision" ]
   then
     build_step "using pre-built stage1 clang at r${host_clang_revision}"
   else
@@ -249,7 +251,7 @@ function build_clang_at_release_tag {
     # PGO, can improve build time by 10%. However bots spend most of the time
     # running tests and compilation mostly incremental or CCCACH-ed.
     build_stage1_clang_impl && \
-      ( echo $host_clang_revision > ${STAGE1_DIR}/host_clang_revision )
+      ( echo "$host_clang_revision" > "${STAGE1_DIR}/host_clang_revision" )
   fi
 }
 
@@ -334,8 +336,8 @@ function build_stage2 {
     exit 1
   fi
 
-  mkdir -p ${libcxx_build_dir}
-  cmake -B ${libcxx_build_dir} \
+  mkdir -p "${libcxx_build_dir}"
+  cmake -B "${libcxx_build_dir}" \
     ${cmake_stage2_common_options} \
     ${cmake_options} \
     -DCMAKE_INSTALL_PREFIX="${ROOT}/${libcxx_install_dir}" \
@@ -345,14 +347,16 @@ function build_stage2 {
     -DLLVM_USE_SANITIZER=${llvm_use_sanitizer} \
     -DCMAKE_C_FLAGS="${fsanitize_flag} ${cmake_libcxx_cflags} ${fno_sanitize_flag}" \
     -DCMAKE_CXX_FLAGS="${fsanitize_flag} ${cmake_libcxx_cflags} ${fno_sanitize_flag}" \
-      $LLVM/../runtimes || build_failure
+      "$LLVM/../runtimes" || build_failure
   
-  run_ninja -C ${libcxx_build_dir}
-  run_ninja -C ${libcxx_build_dir} install
+  run_ninja -C "${libcxx_build_dir}"
+  run_ninja -C "${libcxx_build_dir}" install
 
-  local libcxx_so_path="$(find "${ROOT}/${libcxx_install_dir}" -name libc++.so)"
+  local libcxx_so_path
+  libcxx_so_path="$(find "${ROOT}/${libcxx_install_dir}" -name libc++.so)"
   test -f "${libcxx_so_path}" || build_failure
-  local libcxx_runtime_path=$(dirname "${libcxx_so_path}")
+  local libcxx_runtime_path
+  libcxx_runtime_path=$(dirname "${libcxx_so_path}")
 
   local sanitizer_ldflags="-Wl,--rpath=${libcxx_runtime_path} -L${libcxx_runtime_path}"
   local sanitizer_cflags="-nostdinc++ -isystem ${ROOT}/${libcxx_install_dir}/include -isystem ${ROOT}/${libcxx_install_dir}/include/c++/v1 $fsanitize_flag"
@@ -362,13 +366,13 @@ function build_stage2 {
   # See http://llvm.org/bugs/show_bug.cgi?id=19071, http://www.cmake.org/Bug/view.php?id=15264
   sanitizer_cflags+=" $sanitizer_ldflags -w"
 
-  mkdir -p ${build_dir}
+  mkdir -p "${build_dir}"
   local cmake_stage2_clang_options="-DLLVM_ENABLE_PROJECTS='clang;lld;clang-tools-extra;mlir'"
   if [[ "$(arch)" == "aarch64" ]] ; then
     # FIXME: clangd tests fail.
     cmake_stage2_clang_options="-DLLVM_ENABLE_PROJECTS='clang;lld;mlir'"
   fi
-  cmake -B ${build_dir} \
+  cmake -B "${build_dir}" \
      ${cmake_stage2_common_options} \
      ${cmake_stage2_clang_options} \
      -DLLVM_USE_SANITIZER=${llvm_use_sanitizer} \
@@ -376,12 +380,12 @@ function build_stage2 {
      -DCMAKE_C_FLAGS="${sanitizer_cflags}" \
      -DCMAKE_CXX_FLAGS="${sanitizer_cflags}" \
      -DCMAKE_EXE_LINKER_FLAGS="${sanitizer_ldflags}" \
-     $LLVM || {
+     "$LLVM" || {
       build_failure
       # No stats on failure.
       return 0
     }
-  run_ninja -C ${build_dir}
+  run_ninja -C "${build_dir}"
 
   upload_stats stage2
   ccache -s || true
@@ -471,12 +475,12 @@ function check_stage2 {
         LIT_FILTER_OUT+="|ostream.formatted.print/vprint_nonunicode.pass.cpp"
         LIT_FILTER_OUT+="|ostream.formatted.print/vprint_unicode.pass.cpp"
       fi
-      run_ninja -C libcxx_build_${sanitizer_name} check-runtimes
+      run_ninja -C "libcxx_build_${sanitizer_name}" check-runtimes
     )
   fi
 
   build_step "stage2/$sanitizer_name check"
-  run_ninja -C ${STAGE2_DIR} check-all
+  run_ninja -C "${STAGE2_DIR}" check-all
 }
 
 function check_stage2_msan {
@@ -504,33 +508,36 @@ function check_stage2_asan_ubsan {
 }
 
 function build_stage3 {
-  local sanitizer_name=$1
+  local sanitizer_name
+  sanitizer_name="${1}"
   build_step "build stage3/$sanitizer_name build"
 
-  local build_dir=llvm_build2_${sanitizer_name}
+  local build_dir
+  build_dir="llvm_build2_${sanitizer_name}"
 
-  local clang_path=$ROOT/${STAGE2_DIR}/bin
+  local clang_path
+  clang_path="${ROOT}/${STAGE2_DIR}/bin"
   local sanitizer_cflags=
-  mkdir -p ${build_dir}
+  mkdir -p "${build_dir}"
   local stage3_projects='clang;lld;clang-tools-extra'
   if [[ "$(arch)" == "aarch64" ]] ; then
     # FIXME: clangd tests fail.
     stage3_projects='clang;lld'
   fi
   # -DLLVM_CCACHE_BUILD=OFF to track real build time.
-  cmake -B ${build_dir} \
+  cmake -B "${build_dir}" \
     ${CMAKE_COMMON_OPTIONS} \
     -DLLVM_ENABLE_PROJECTS="${stage3_projects}" \
-    -DCMAKE_C_COMPILER=${clang_path}/clang \
-    -DCMAKE_CXX_COMPILER=${clang_path}/clang++ \
+    -DCMAKE_C_COMPILER="${clang_path}/clang" \
+    -DCMAKE_CXX_COMPILER="${clang_path}/clang++" \
     -DCMAKE_CXX_FLAGS="${sanitizer_cflags}" \
     -DLLVM_CCACHE_BUILD=OFF \
-    $LLVM  || {
+    "${LLVM}" || {
     build_failure
     # No stats on failure.
     return 0
   }
-  run_ninja -C ${build_dir}
+  run_ninja -C "${build_dir}"
   upload_stats stage3
 }
 
@@ -560,7 +567,7 @@ function check_stage3 {
 
   local build_dir=llvm_build2_${sanitizer_name}
 
-  run_ninja -C ${build_dir} check-all
+  run_ninja -C "${build_dir}" check-all
 }
 
 function check_stage3_msan {
@@ -594,7 +601,7 @@ function build_failure() {
   echo
 
   # Repeat, server sometimes ignores failures or warnings.
-  for i in 0 1 2 ; do
+  for _ in 0 1 2 ; do
     echo
     echo "@@@STEP_FAILURE@@@"
     sleep 5
@@ -605,7 +612,7 @@ function build_failure() {
 
 function build_exception() {
   # Repeat, server sometimes ignores failures or warnings.
-  for i in 0 1 2 ; do
+  for _ in 0 1 2 ; do
     echo
     echo "@@@STEP_EXCEPTION@@@"
     sleep 5
@@ -616,7 +623,7 @@ function build_exception() {
 
 function build_warning() {
   # Repeat, server sometimes ignores failures or warnings.
-  for i in 0 1 2 ; do
+  for _ in 0 1 2 ; do
     echo
     echo "@@@STEP_WARNINGS@@@"
     sleep 5
