@@ -73,13 +73,25 @@ class LLVMBuildFactory(BuildFactory):
                 # Let's just use the given list, no need to discover.
                 self.enable_runtimes = frozenset(enable_runtimes)
 
-            # Update the list of dependencies.
-            if depends_on_projects is None:
-                self.depends_on_projects.update(self.enable_runtimes)
-
         # Build the list of projects to enable.
-        self.enable_projects = \
-            self.depends_on_projects.difference(self.enable_runtimes)
+        enable_projects = kwargs.pop('enable_projects', None)
+        if enable_projects is None or enable_projects == "auto":
+            # Assume that all non-runtimes depends_on_projects dirs are projects.
+            self.enable_projects = \
+                self.depends_on_projects.difference(self.enable_runtimes)
+        elif enable_projects == "all":
+            raise Exception("enable_projects='all' not yet supported")
+        else:
+            self.enable_projects = frozenset(enable_projects)
+
+        # Update the list of dependencies.
+        if depends_on_projects is None:
+            self.depends_on_projects.update(self.enable_projects)
+            self.depends_on_projects.update(self.enable_runtimes)
+
+        assert self.enable_projects.issubset(self.depends_on_projects), \
+            "all enable_projects must be listed in depends_on_projects, or it will be skipped by the scheduler"
+        #FIXME: The same must hold for self.enable_runtimes but some builders violate it.
 
         # Directories.
         self.monorepo_dir = kwargs.pop('llvm_srcdir', None)
