@@ -257,11 +257,11 @@ function configure_hwasan_lam {
       cmake \
         ${CMAKE_COMMON_OPTIONS} \
         -DLLVM_ENABLE_PROJECTS="clang;compiler-rt;lld" \
-        -DCMAKE_C_COMPILER=${COMPILER_BIN_DIR}/clang \
-        -DCMAKE_CXX_COMPILER=${COMPILER_BIN_DIR}/clang++ \
+        -DCMAKE_C_COMPILER="${COMPILER_BIN_DIR}/clang" \
+        -DCMAKE_CXX_COMPILER="${COMPILER_BIN_DIR}/clang++" \
         -DCMAKE_BUILD_WITH_INSTALL_RPATH=ON \
         -DCOMPILER_RT_EMULATOR="env SSH_CONTROL_SOCKET=${SSH_CONTROL_SOCKET} ${HERE}/ssh_run.sh" \
-        $LLVM
+        "$LLVM"
      ) >& configure.log
   ) &
 }
@@ -273,7 +273,7 @@ function run_scudo_tests {
   build_step "scudo $name"
 
   (
-    cd ${out_dir}
+    cd "${out_dir}"
 
     cat configure.log
 
@@ -293,7 +293,7 @@ function kill_qemu {
     echo "Waiting for QEMU to shutdown..." >&2
     {
       timeout -k 5s 5s wait "${QEMU_PID}" && return
-      kill -9 "${QEMU_PID}" && wait "${QEMU_PID}" || true
+      (kill -9 "${QEMU_PID}" && wait "${QEMU_PID}") || true
     } &>/dev/null
   fi
 }
@@ -309,14 +309,15 @@ function boot_qemu {
   echo "Booting QEMU..." >&2
 
   # Try up to 10 random port numbers until one succeeds.
-  for i in {0..10}; do
-    rm -rf ${QEMU_TMPDIR}
-    mkdir -p ${QEMU_TMPDIR}
+  for _ in {0..10}; do
+    rm -rf "${QEMU_TMPDIR}"
+    mkdir -p "${QEMU_TMPDIR}"
     # Create a delta image to boot from.
     local DELTA_IMAGE="${QEMU_TMPDIR}/delta.qcow2"
     "${QEMU_IMG}" create -F raw -b "${QEMU_IMAGE}" -f qcow2 "${DELTA_IMAGE}"
 
-    local SSH_PORT="$(shuf -i 1000-65535 -n 1)"
+    local SSH_PORT
+    SSH_PORT="$(shuf -i 1000-65535 -n 1)"
 
     "${QEMU}" -hda "${DELTA_IMAGE}" -nographic \
       -net "user,host=10.0.2.10,hostfwd=tcp:127.0.0.1:${SSH_PORT}-:22" \
@@ -395,7 +396,7 @@ done
 wait
 
 for B in $SCUDO_BUILDS ; do
-  run_scudo_tests $B
+  run_scudo_tests "${B}"
 done
 
 [[ -z "$SKIP_HWASAN_LAM" ]] && (
