@@ -295,6 +295,7 @@ function build_stage2 {
     fsanitize_flag="-fsanitize=memory -fsanitize-memory-track-origins"
   elif [ "$sanitizer_name" == "asan" ]; then
     export ASAN_SYMBOLIZER_PATH="${llvm_symbolizer_path}"
+    # TODO strict_init_order=true
     export ASAN_OPTIONS="check_initialization_order=true"
     export ASAN_OPTIONS+=":log_path=${log_path}:log_exe_name=1"
     llvm_use_sanitizer="Address"
@@ -316,6 +317,7 @@ function build_stage2 {
     # recursion.
     fno_sanitize_flag+=" -fno-sanitize=vptr"
   elif [ "$sanitizer_name" == "asan_ubsan" ]; then
+    # TODO strict_init_order=true
     export ASAN_SYMBOLIZER_PATH="${llvm_symbolizer_path}"
     export ASAN_OPTIONS="check_initialization_order=true"
     export ASAN_OPTIONS+=":log_path=${log_path}:log_exe_name=1"
