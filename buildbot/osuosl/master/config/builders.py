@@ -2353,8 +2353,8 @@ all += [
     'builddir': "flang-aarch64-dylib",
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                     clean=True,
-                    checks=['check-flang'],
-                    depends_on_projects=['llvm','mlir','clang','flang','openmp'],
+                    checks=['check-flang','check-flang-rt'],
+                    depends_on_projects=['llvm','mlir','clang','flang','flang-rt','openmp'],
                     extra_configure_args=[
                         "-DLLVM_TARGETS_TO_BUILD=AArch64",
                         "-DLLVM_BUILD_LLVM_DYLIB=ON",
@@ -2368,8 +2368,8 @@ all += [
     'builddir': "flang-aarch64-sharedlibs",
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                     clean=True,
-                    checks=['check-flang'],
-                    depends_on_projects=['llvm','mlir','clang','flang','openmp'],
+                    checks=['check-flang','check-flang-rt'],
+                    depends_on_projects=['llvm','mlir','clang','flang','flang-rt','openmp'],
                     extra_configure_args=[
                         "-DLLVM_TARGETS_TO_BUILD=AArch64",
                         "-DBUILD_SHARED_LIBS=ON",
@@ -2401,8 +2401,8 @@ all += [
     'builddir': "flang-aarch64-debug-reverse-iteration",
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                     clean=True,
-                    checks=['check-flang'],
-                    depends_on_projects=['llvm','mlir','clang','flang','openmp'],
+                    checks=['check-flang','check-flang-rt'],
+                    depends_on_projects=['llvm','mlir','clang','flang','flang-rt','openmp'],
                     extra_configure_args=[
                         "-DLLVM_TARGETS_TO_BUILD=AArch64",
                         "-DCMAKE_BUILD_TYPE=Debug",
@@ -2417,8 +2417,8 @@ all += [
     'builddir': "flang-aarch64-libcxx",
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                     clean=True,
-                    checks=['check-flang'],
-                    depends_on_projects=['llvm','mlir','clang','flang'],
+                    checks=['check-flang','check-flang-rt'],
+                    depends_on_projects=['llvm','mlir','clang','flang','flang-rt'],
                     extra_configure_args=[
                         "-DLLVM_TARGETS_TO_BUILD=AArch64",
                         "-DLLVM_INSTALL_UTILS=ON",
@@ -2437,8 +2437,8 @@ all += [
     'builddir': "flang-aarch64-release",
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                     clean=True,
-                    checks=['check-flang'],
-                    depends_on_projects=['llvm','mlir','clang','flang','openmp'],
+                    checks=['check-flang','check-flang-rt'],
+                    depends_on_projects=['llvm','mlir','clang','flang','flang-rt','openmp'],
                     extra_configure_args=[
                         "-DLLVM_TARGETS_TO_BUILD=AArch64",
                         "-DCMAKE_BUILD_TYPE=Release",
@@ -2452,8 +2452,8 @@ all += [
     'builddir': "flang-aarch64-rel-assert",
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                     clean=True,
-                    checks=['check-flang'],
-                    depends_on_projects=['llvm','mlir','clang','flang','openmp'],
+                    checks=['check-flang','check-flang-rt'],
+                    depends_on_projects=['llvm','mlir','clang','flang','flang-rt','openmp'],
                     extra_configure_args=[
                         "-DLLVM_TARGETS_TO_BUILD=AArch64",
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
@@ -2468,8 +2468,8 @@ all += [
     'builddir': "flang-aarch64-latest-gcc",
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                     clean=True,
-                    checks=['check-flang'],
-                    depends_on_projects=['llvm','mlir','clang','flang','openmp'],
+                    checks=['check-flang','check-flang-rt'],
+                    depends_on_projects=['llvm','mlir','clang','flang','flang-rt','openmp'],
                     extra_configure_args=[
                         "-DLLVM_TARGETS_TO_BUILD=AArch64",
                         "-DLLVM_INSTALL_UTILS=ON",
