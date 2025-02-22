@@ -103,13 +103,13 @@ resource "google_container_node_pool" "llvm_premerge_windows" {
 
   autoscaling {
     total_min_node_count = 0
-    total_max_node_count = 8
+    total_max_node_count = 16
   }
 
   # We do not set a taint for the windows nodes as kubernetes by default sets
   # a node.kubernetes.io/os taint for windows nodes.
   node_config {
-    machine_type = "n2-standard-64"
+    machine_type = "n2-standard-32"
     labels = {
       "premerge-platform" : "windows"
     }

@@ -2,7 +2,7 @@ githubConfigUrl: "https://github.com/llvm"
 githubConfigSecret: "github-token"
 
 minRunners: 0
-maxRunners: 8
+maxRunners: 16
 
 template:
   metadata:
@@ -24,7 +24,7 @@ template:
       - name: runner
         resources:
           requests:
-            cpu: 55
+            cpu: 28
         image: ghcr.io/llvm/ci-windows-2019:latest
         command: ["run.cmd"]
         args: ["--jitconfig", "$(ACTIONS_RUNNER_INPUT_JITCONFIG)"]
