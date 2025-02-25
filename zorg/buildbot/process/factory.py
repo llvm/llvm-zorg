@@ -13,6 +13,7 @@ _all_runtimes = frozenset([
     "libcxxabi",
     "libunwind",
     "openmp",
+    "flang-rt",
 ])
 
 class LLVMBuildFactory(BuildFactory):
