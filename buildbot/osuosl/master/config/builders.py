@@ -2527,7 +2527,7 @@ all += [
     'workernames' : ["minipc-ryzen-win"],
     'builddir': "flang-x86_64-windows",
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
-                    depends_on_projects=['llvm','mlir','clang','flang','flang-rt'],
+                    depends_on_projects=['llvm','mlir','clang','compiler-rt','flang','flang-rt'],
                     checks=['check-flang','check-flang-rt'],
                     install_dir="flang.install",
                     extra_configure_args=[
