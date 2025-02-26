@@ -2034,8 +2034,8 @@ all += [
     'builddir': "openmp-offload-amdgpu-clang-flang",
     'factory' : OpenMPBuilder.getOpenMPCMakeBuildFactory(
                         clean=True,
-                        enable_runtimes=['compiler-rt', 'openmp', 'offload'],
-                        depends_on_projects=['llvm','clang','lld', 'offload', 'openmp', 'mlir', 'flang', 'compiler-rt'],
+                        enable_runtimes=['compiler-rt', 'openmp', 'offload', 'flang-rt'],
+                        depends_on_projects=['llvm','clang','lld', 'offload', 'openmp', 'mlir', 'flang', 'flang-rt', 'compiler-rt'],
                         extraCmakeArgs=[
                             "-DCMAKE_BUILD_TYPE=Release",
                             "-DCLANG_DEFAULT_LINKER=lld",
@@ -2064,7 +2064,7 @@ all += [
                             "-DTEST_SUITE_SOLLVEVV_OFFLOADING_CFLAGS=-fopenmp-targets=amdgcn-amd-amdhsa;-Xopenmp-target=amdgcn-amd-amdhsa",
                             "-DTEST_SUITE_SOLLVEVV_OFFLOADING_LDLAGS=-fopenmp-targets=amdgcn-amd-amdhsa;-Xopenmp-target=amdgcn-amd-amdhsa",
                         ],
-                        add_lit_checks=["check-flang", "check-offload"],
+                        add_lit_checks=["check-flang", "check-flang-rt", "check-offload"],
                         add_openmp_lit_args=["--time-tests", "--timeout 100"],
                     )},
 
@@ -2076,8 +2076,8 @@ all += [
     'factory' : OpenMPBuilder.getOpenMPCMakeBuildFactory(
                         clean=True,
                         test=False, # we have no GPU avail, skip runtime tests
-                        enable_runtimes=['openmp', 'compiler-rt', 'offload'],
-                        depends_on_projects=['llvm','clang', 'flang', 'lld', 'mlir', 'offload', 'openmp', 'compiler-rt'],
+                        enable_runtimes=['openmp', 'compiler-rt', 'offload', 'flang-rt'],
+                        depends_on_projects=['llvm','clang', 'flang', 'flang-rt', 'lld', 'mlir', 'offload', 'openmp', 'compiler-rt'],
                         extraCmakeArgs=[
                             "-DCMAKE_BUILD_TYPE=Release",
                             "-DCLANG_DEFAULT_LINKER=lld",
@@ -2097,7 +2097,7 @@ all += [
                             "-DTEST_SUITE_SOLLVEVV_OFFLOADING_CFLAGS=-fopenmp-targets=amdgcn-amd-amdhsa;-Xopenmp-target=amdgcn-amd-amdhsa",
                             "-DTEST_SUITE_SOLLVEVV_OFFLOADING_LDLAGS=-fopenmp-targets=amdgcn-amd-amdhsa;-Xopenmp-target=amdgcn-amd-amdhsa",
                         ],
-                        add_lit_checks=["check-clang", "check-flang", "check-llvm", "check-lld", "check-mlir"],
+                        add_lit_checks=["check-clang", "check-flang", "check-flang-rt", "check-llvm", "check-lld", "check-mlir"],
                         add_openmp_lit_args=["--time-tests", "--timeout 100"],
                     )},
 
@@ -2108,8 +2108,8 @@ all += [
     'factory' : OpenMPBuilder.getOpenMPCMakeBuildFactory(
                         clean=True,
                         test=True,
-                        enable_runtimes=['openmp', 'compiler-rt', 'offload'],
-                        depends_on_projects=['llvm','clang', 'flang', 'lld', 'mlir', 'offload', 'openmp', 'compiler-rt'],
+                        enable_runtimes=['openmp', 'compiler-rt', 'offload', 'flang-rt'],
+                        depends_on_projects=['llvm','clang', 'flang', 'flang-rt', 'lld', 'mlir', 'offload', 'openmp', 'compiler-rt'],
                         extraCmakeArgs=[
                             "-DCMAKE_BUILD_TYPE=Release",
                             "-DCLANG_DEFAULT_LINKER=lld",
@@ -2130,7 +2130,7 @@ all += [
                             "-DTEST_SUITE_SOLLVEVV_OFFLOADING_CFLAGS=-fopenmp-targets=amdgcn-amd-amdhsa;-Xopenmp-target=amdgcn-amd-amdhsa",
                             "-DTEST_SUITE_SOLLVEVV_OFFLOADING_LDLAGS=-fopenmp-targets=amdgcn-amd-amdhsa;-Xopenmp-target=amdgcn-amd-amdhsa",
                         ],
-                        add_lit_checks=["check-clang", "check-flang", "check-llvm", "check-lld", "check-mlir", "check-offload"],
+                        add_lit_checks=["check-clang", "check-flang", "check-flang-rt", "check-llvm", "check-lld", "check-mlir", "check-offload"],
                         add_openmp_lit_args=["--time-tests", "--timeout 100", "--xfail=affinity/format/proc_bind.c"],
                     )},
 
@@ -2141,8 +2141,8 @@ all += [
     'factory' : OpenMPBuilder.getOpenMPCMakeBuildFactory(
                         clean=True,
                         test=True,
-                        enable_runtimes=['openmp', 'compiler-rt', 'offload'],
-                        depends_on_projects=['llvm','clang', 'flang', 'lld', 'mlir', 'offload', 'openmp', 'compiler-rt'],
+                        enable_runtimes=['openmp', 'compiler-rt', 'offload', 'flang-rt'],
+                        depends_on_projects=['llvm','clang', 'flang', 'flang-rt', 'lld', 'mlir', 'offload', 'openmp', 'compiler-rt'],
                         extraCmakeArgs=[
                             "-DCMAKE_BUILD_TYPE=Release",
                             "-DCLANG_DEFAULT_LINKER=lld",
@@ -2163,7 +2163,7 @@ all += [
                             "-DTEST_SUITE_SOLLVEVV_OFFLOADING_CFLAGS=-fopenmp-targets=amdgcn-amd-amdhsa;-Xopenmp-target=amdgcn-amd-amdhsa",
                             "-DTEST_SUITE_SOLLVEVV_OFFLOADING_LDLAGS=-fopenmp-targets=amdgcn-amd-amdhsa;-Xopenmp-target=amdgcn-amd-amdhsa",
                         ],
-                        add_lit_checks=["check-clang", "check-flang", "check-llvm", "check-lld", "check-mlir", "check-offload"],
+                        add_lit_checks=["check-clang", "check-flang", "check-flang-rt", "check-llvm", "check-lld", "check-mlir", "check-offload"],
                         add_openmp_lit_args=["--time-tests", "--timeout 100", "--xfail=affinity/format/proc_bind.c"],
                     )},
 
