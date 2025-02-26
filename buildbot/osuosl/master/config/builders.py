@@ -3103,6 +3103,8 @@ all += [
                         # TMP/TEMP within the build dir (to utilize a ramdisk).
                         'TMP'        : util.Interpolate("%(prop:builddir)s/build"),
                         'TEMP'       : util.Interpolate("%(prop:builddir)s/build"),
+                        # Allow Lit to use 'ptxas' tool to validate generated PTX.
+                        'LLVM_PTXAS_EXECUTABLE' : "/usr/local/cuda/bin/ptxas",
                     })},
 
     {'name' : "llvm-nvptx64-nvidia-ubuntu",
@@ -3128,6 +3130,8 @@ all += [
                         # TMP/TEMP within the build dir (to utilize a ramdisk).
                         'TMP'        : util.Interpolate("%(prop:builddir)s/build"),
                         'TEMP'       : util.Interpolate("%(prop:builddir)s/build"),
+                        # Allow Lit to use 'ptxas' tool to validate generated PTX.
+                        'LLVM_PTXAS_EXECUTABLE' : "/usr/local/cuda/bin/ptxas",
                     })},
 
     {'name' : "llvm-nvptx-nvidia-win",
@@ -3151,6 +3155,8 @@ all += [
                         # TMP/TEMP within the build dir (to utilize a ramdisk).
                         'TMP'        : util.Interpolate("%(prop:builddir)s/build"),
                         'TEMP'       : util.Interpolate("%(prop:builddir)s/build"),
+                        # Allow Lit to use 'ptxas' tool to validate generated PTX.
+                        'LLVM_PTXAS_EXECUTABLE' : "c:/buildbot/latest-cuda/bin/ptxas.exe",
                     })},
 
     {'name' : "llvm-nvptx64-nvidia-win",
@@ -3174,6 +3180,8 @@ all += [
                         # TMP/TEMP within the build dir (to utilize a ramdisk).
                         'TMP'        : util.Interpolate("%(prop:builddir)s/build"),
                         'TEMP'       : util.Interpolate("%(prop:builddir)s/build"),
+                        # Allow Lit to use 'ptxas' tool to validate generated PTX.
+                        'LLVM_PTXAS_EXECUTABLE' : "c:/buildbot/latest-cuda/bin/ptxas.exe",
                     })},
 
     # flang FortranRuntime CUDA Offload builders.
