@@ -2043,7 +2043,6 @@ all += [
                             "-DLLVM_ENABLE_ASSERTIONS=ON",
                             "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
                             "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
-                            "-DFLANG_RUNTIME_F128_MATH_LIB=libquadmath",
                             "-DLLVM_ENABLE_PER_TARGET_RUNTIME_DIR=ON",
                             "-DCMAKE_CXX_STANDARD=17",
                             "-DBUILD_SHARED_LIBS=ON",
