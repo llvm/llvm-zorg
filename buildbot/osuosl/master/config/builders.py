@@ -2395,6 +2395,9 @@ all += [
                     flang_extra_configure_args=[
                         "-DFLANG_ENABLE_WERROR=ON",
                         "-DCMAKE_BUILD_TYPE=Release",
+                    ],
+                    flang_rt_extra_configure_args=[
+                        "-DCMAKE_BUILD_TYPE=Release",
                     ])},
 
     {'name' : "flang-aarch64-debug-reverse-iteration",
