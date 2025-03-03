@@ -296,7 +296,6 @@ all = [
                     checks=['check-all', 'check-runtimes'],
                     extra_configure_args=[
                         "-DLLVM_TARGETS_TO_BUILD=X86;ARM;AArch64",
-                        "-DLLVM_ENABLE_RUNTIMES=compiler-rt;openmp",
                         "-DCLANG_DEFAULT_LINKER=lld",
                         "-DCMAKE_TRY_COMPILE_CONFIGURATION=Release",
                         "-DCOMPILER_RT_BUILD_SANITIZERS=OFF",
