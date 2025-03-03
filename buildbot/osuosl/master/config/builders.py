@@ -2541,6 +2541,21 @@ all += [
                         '-DLLVM_PARALLEL_COMPILE_JOBS=4',
                     ])},
 
+    {'name': "flang-arm64-windows-msvc",
+    'tags' : ["mlir", "flang"],
+    'workernames' : ["linaro-armv8-windows-msvc-01"],
+    'builddir': "flang-arm64-windows-msvc",
+    'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
+                    depends_on_projects=['llvm', 'clang', 'lld', 'mlir', 'compiler-rt', 'openmp', 'flang','flang-rt'],
+                    checks=['check-mlir', 'check-flang', 'check-flang-rt'],
+                    extra_configure_args=[
+                        "-DLLVM_TARGETS_TO_BUILD=X86;AArch64",
+                        "-DCLANG_DEFAULT_LINKER=lld",
+                        "-DCMAKE_TRY_COMPILE_CONFIGURATION=Release",
+                        "-DCOMPILER_RT_BUILD_SANITIZERS=OFF",
+                        "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
+                        "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache"])},
+
     {'name' : 'ppc64-flang-aix',
     'tags'  : ["flang", "ppc", "ppc64", "aix"],
     'workernames' : ['ppc64-flang-aix-test'],
