@@ -3352,7 +3352,7 @@ all += [
     'builddir': "premerge-monolithic-windows",
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaWithMSVCBuildFactory(
                     vs="autodetect",
-                    depends_on_projects=["clang-tools-extra", "clang", "flang", "flang-rt", "libclc", "lld", "llvm", "mlir", "polly", "pstl"],
+                    depends_on_projects=["clang-tools-extra", "clang", "libclc", "lld", "llvm", "mlir", "polly", "pstl"],
                     checks=["check-all"],
                     install_pip_requirements = True,
                     extra_configure_args=[
