@@ -15,7 +15,7 @@ def _write_message(kind, message):
     file,line,_,_,_ = inspect.getframeinfo(f)
     location = '%s:%d' % (os.path.basename(file), line)
 
-    print >>sys.stderr, '%s: %s: %s' % (location, kind, message)
+    print('%s: %s: %s' % (location, kind, message), file=sys.stderr)
 
 note = lambda message: _write_message('note', message)
 warning = lambda message: _write_message('warning', message)
@@ -205,7 +205,7 @@ def execute_task_on_threads(fn, iterable, num_threads = None):
             # Otherwise, execute the task and push to the output queue.
             try:
                 output = (None, fn(item))
-            except Exception, e:
+            except Exception as e:
                 output = ('error', sys.exc_info())
 
             output_queue.put(output)
