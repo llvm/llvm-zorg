@@ -1961,7 +1961,7 @@ all += [
     'builddir': "amdgpu-offload-ubuntu-22-cmake-build-only",
     'collapseRequests' : False,
     'factory' : AnnotatedBuilder.getAnnotatedBuildFactory(
-                    depends_on_projects=["llvm", "clang", "flang", "mlir", "lld", "compiler-rt", "libcxx", "libcxxabi", "openmp", "offload", "libunwind"],
+                    depends_on_projects=["llvm", "clang", "flang", "flang-rt", "mlir", "lld", "compiler-rt", "libcxx", "libcxxabi", "openmp", "offload", "libunwind"],
                     script="amdgpu-offload-cmake.py",
                     checkout_llvm_sources=True,
                     script_interpreter=None
@@ -1973,7 +1973,7 @@ all += [
     'builddir': "amdgpu-offload-rhel-9-cmake-build-only",
     'collapseRequests' : False,
     'factory' : AnnotatedBuilder.getAnnotatedBuildFactory(
-                    depends_on_projects=["llvm", "clang", "flang", "mlir", "lld", "compiler-rt", "libcxx", "libcxxabi", "openmp", "offload", "libunwind"],
+                    depends_on_projects=["llvm", "clang", "flang", "flang-rt", "mlir", "lld", "compiler-rt", "libcxx", "libcxxabi", "openmp", "offload", "libunwind"],
                     script="amdgpu-offload-cmake.py",
                     checkout_llvm_sources=True,
                     script_interpreter=None
@@ -1985,7 +1985,7 @@ all += [
     'builddir': "amdgpu-offload-rhel-8-cmake-build-only",
     'collapseRequests' : False,
     'factory' : AnnotatedBuilder.getAnnotatedBuildFactory(
-                    depends_on_projects=["llvm", "clang", "flang", "mlir", "lld", "compiler-rt", "libcxx", "libcxxabi", "offload", "openmp", "libunwind"],
+                    depends_on_projects=["llvm", "clang", "flang", "flang-rt", "mlir", "lld", "compiler-rt", "libcxx", "libcxxabi", "offload", "openmp", "libunwind"],
                     script="amdgpu-offload-cmake.py",
                     checkout_llvm_sources=True,
                     script_interpreter=None
