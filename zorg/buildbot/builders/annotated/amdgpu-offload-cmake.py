@@ -19,7 +19,11 @@ def main(argv):
         # If we do not do this, the resident config will take precedence and changes
         # to the cache file are ignored.
         cwd = os.getcwd()
+        tdir = tempfile.mkdtemp()
+        os.chdir(tdir)
         util.clean_dir(cwd)
+        os.chdir(cwd)
+        util.rmtree(tdir)
 
     with step("cmake", halt_on_fail=True):
         # TODO make the name of the cache file an argument to the script.
