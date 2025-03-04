@@ -124,6 +124,28 @@ all = [
                         "-DLLVM_TARGETS_TO_BUILD=X86",
                         "-DLLVM_USE_LINKER=gold"])},
 
+    {'name': "llvm-clang-x86_64-sie-ps5-fast",
+    'tags'  : ["clang", "llvm", "clang-tools-extra", "lld", "cross-project-tests"],
+    'collapseRequests': False,
+    'workernames': ["sie-linux-worker4"],
+    'builddir': "llvm-ps5-fast",
+    'factory': UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
+                    depends_on_projects=['llvm','clang','clang-tools-extra','lld','cross-project-tests'],
+                    extra_configure_args=[
+                        "-DCMAKE_C_COMPILER=gcc",
+                        "-DCMAKE_CXX_COMPILER=g++",
+                        "-DCMAKE_BUILD_TYPE=Release",
+                        "-DCLANG_ENABLE_ARCMT=OFF",
+                        "-DCLANG_ENABLE_CLANGD=OFF",
+                        "-DLLVM_BUILD_RUNTIME=OFF",
+                        "-DLLVM_CCACHE_BUILD=ON",
+                        "-DLLVM_INCLUDE_EXAMPLES=OFF",
+                        "-DLLVM_DEFAULT_TARGET_TRIPLE=x86_64-sie-ps5",
+                        "-DLLVM_ENABLE_ASSERTIONS=ON",
+                        "-DLLVM_LIT_ARGS=--verbose -j100",
+                        "-DLLVM_TARGETS_TO_BUILD=X86",
+                        "-DLLVM_USE_LINKER=gold"])},
+
 # Expensive checks builders.
 
     {'name' : "llvm-clang-x86_64-expensive-checks-ubuntu",
