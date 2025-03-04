@@ -2503,8 +2503,8 @@ all += [
     'builddir': 'ppc64le-flang-rhel-clang-build',
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                     clean=True,
-                    depends_on_projects=['llvm', 'mlir', 'clang', 'flang','openmp'],
-                    checks=['check-flang'],
+                    depends_on_projects=['llvm', 'mlir', 'clang', 'flang','flang-rt','openmp'],
+                    checks=['check-flang','check-flang-rt'],
                     extra_configure_args=[
                         '-DLLVM_TARGETS_TO_BUILD=PowerPC',
                         '-DLLVM_INSTALL_UTILS=ON',
