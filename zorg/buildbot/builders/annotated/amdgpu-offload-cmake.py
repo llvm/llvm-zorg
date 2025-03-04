@@ -6,6 +6,7 @@ import subprocess
 import sys
 import traceback
 import util
+import tempfile
 from contextlib import contextmanager
 
 
