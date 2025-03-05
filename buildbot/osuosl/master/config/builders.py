@@ -3359,7 +3359,7 @@ all += [
     'builddir': "premerge-monolithic-windows",
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaWithMSVCBuildFactory(
                     vs="autodetect",
-                    depends_on_projects=["clang-tools-extra", "clang", "flang", "libclc", "lld", "llvm", "mlir", "polly", "pstl"],
+                    depends_on_projects=["clang-tools-extra", "clang", "libclc", "lld", "llvm", "mlir", "polly", "pstl"],
                     checks=["check-all"],
                     install_pip_requirements = True,
                     extra_configure_args=[
@@ -3379,7 +3379,7 @@ all += [
     'workernames': ["premerge-linux-1"],
     'builddir': "premerge-monolithic-linux",
     'factory': UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
-                    depends_on_projects=["bolt", "clang", "clang-tools-extra", "compiler-rt", "flang", "libc", "libclc", "lld", "llvm", "mlir", "polly", "pstl"],
+                    depends_on_projects=["bolt", "clang", "clang-tools-extra", "compiler-rt", "flang", "flang-rt", "libc", "libclc", "lld", "llvm", "mlir", "polly", "pstl"],
                     install_pip_requirements = True,
                     extra_configure_args=[
                       "-DCMAKE_BUILD_TYPE=Release",
