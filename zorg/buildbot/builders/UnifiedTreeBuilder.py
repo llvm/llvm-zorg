@@ -16,6 +16,7 @@ import zorg.buildbot.builders.Util as builders_util
 
 def getLLVMBuildFactoryAndPrepareForSourcecodeSteps(
            depends_on_projects = None,
+           enable_projects = "auto",
            enable_runtimes = "auto",
            llvm_srcdir = None,
            src_to_build_dir = None,
@@ -34,6 +35,7 @@ def getLLVMBuildFactoryAndPrepareForSourcecodeSteps(
 
     f = LLVMBuildFactory(
             depends_on_projects=depends_on_projects,
+            enable_projects=enable_projects,
             enable_runtimes=enable_runtimes,
             llvm_srcdir=llvm_srcdir,
             src_to_build_dir=src_to_build_dir,
@@ -56,6 +58,7 @@ def getLLVMBuildFactoryAndPrepareForSourcecodeSteps(
 
 def getLLVMBuildFactoryAndSourcecodeSteps(
            depends_on_projects = None,
+           enable_projects = "auto",
            enable_runtimes = "auto",
            llvm_srcdir = None,
            src_to_build_dir = None,
@@ -66,6 +69,7 @@ def getLLVMBuildFactoryAndSourcecodeSteps(
 
     f = getLLVMBuildFactoryAndPrepareForSourcecodeSteps(
             depends_on_projects=depends_on_projects,
+            enable_projects=enable_projects,
             enable_runtimes=enable_runtimes,
             llvm_srcdir=llvm_srcdir,
             src_to_build_dir=src_to_build_dir,
@@ -254,6 +258,7 @@ def addNinjaSteps(
 
 def getCmakeBuildFactory(
            depends_on_projects = None,
+           enable_projects = "auto",
            enable_runtimes = "auto",
            llvm_srcdir = None,
            src_to_build_dir = None,
@@ -267,6 +272,7 @@ def getCmakeBuildFactory(
 
     f = getLLVMBuildFactoryAndSourcecodeSteps(
             depends_on_projects=depends_on_projects,
+            enable_projects=enable_projects,
             enable_runtimes=enable_runtimes,
             llvm_srcdir=llvm_srcdir,
             src_to_build_dir=src_to_build_dir,
@@ -298,6 +304,7 @@ def getCmakeBuildFactory(
 
 def getCmakeWithNinjaBuildFactory(
            depends_on_projects = None,
+           enable_projects = "auto",
            enable_runtimes = "auto",
            targets = None,
            llvm_srcdir = None,
@@ -335,6 +342,7 @@ def getCmakeWithNinjaBuildFactory(
 
     f = getCmakeBuildFactory(
             depends_on_projects=depends_on_projects,
+            enable_projects=enable_projects,
             enable_runtimes=enable_runtimes,
             llvm_srcdir=llvm_srcdir,
             src_to_build_dir=src_to_build_dir,
