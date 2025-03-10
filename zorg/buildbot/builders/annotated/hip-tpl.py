@@ -13,6 +13,7 @@ from contextlib import contextmanager
 def main(argv):
     source_dir = os.path.join("..", "llvm-project")
     test_suite_source_dir = os.path.join("/opt/botworker/llvm", "llvm-test-suite")
+    test_suite_build_dir = "TS-build"
 
     offload_base_dir = os.path.join(source_dir, "offload")
     of_cmake_cache_base_dir = os.path.join(offload_base_dir, "cmake/caches")
@@ -60,7 +61,7 @@ def main(argv):
         clang_binary = os.path.join(compiler_bin_path, "clang")
         clangpp_binary = os.path.join(compiler_bin_path, "clang++")
 
-        test_suite_cmake_args = ["-GNinja", "-B", "TS-build", "-S", "."]
+        test_suite_cmake_args = ["-GNinja", "-B", test_suite_build_dir, "-S", "."]
         test_suite_cmake_args.append("-DTEST_SUITE_EXTERNALS_DIR=/opt/botworker/llvm/External")
         # XXX: Use some utility to determine arch?
         test_suite_cmake_args.append("-DAMDGPU_ARCHS=gfx90a")
@@ -74,7 +75,8 @@ def main(argv):
 
         old_cwd = os.getcwd()
         os.chdir(test_suite_source_dir)
-        util.rmtree("TS-build")
+        if os.path.isdir(test_suite_build_dir):
+            util.rmtree(test_suite_build_dir)
 
         cmake_command = ["cmake"]
         cmake_command.extend(test_suite_cmake_args)
@@ -87,13 +89,13 @@ def main(argv):
         old_cwd = os.getcwd()
         os.chdir(test_suite_source_dir)
 
-        run_command(["cmake", "--build", "TS-build", "--parallel", "--target", "build-kokkos"])
+        run_command(["cmake", "--build", test_suite_build_dir, "--parallel", "--target", "build-kokkos"])
 
         os.chdir(old_cwd)
 
     with step("run kokkos test suite", halt_on_fail=True):
         os.chdir(test_suite_source_dir)
-        run_command(["cmake", "--build", "TS-build", "--target", "test-kokkos"])
+        run_command(["cmake", "--build", test_suite_build_dir, "--target", "test-kokkos"])
 
 
 @contextmanager
