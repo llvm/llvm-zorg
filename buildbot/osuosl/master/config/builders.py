@@ -309,15 +309,15 @@ all = [
 # Clang builders.
 
     {'name': "clang-arm64-windows-msvc",
-    'tags' : ["llvm", "clang", "lld", "flang"],
+    'tags' : ["llvm", "clang", "lld"],
     'workernames' : ["linaro-armv8-windows-msvc-04"],
     'builddir': "clang-arm64-windows-msvc",
-    'factory' : ClangBuilder.getClangCMakeBuildFactory(
-                    vs="manual",
-                    clean=False,
-                    checkout_flang=True,
-                    checkout_lld=True,
-                    extra_cmake_args=[
+    'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
+                    depends_on_projects=['llvm', 'clang', 'clang-tools-extra',
+                                         'lld', 'compiler-rt', 'openmp'],
+                    checks=['check-all', 'check-runtimes'],
+                    extra_configure_args=[
+                        "-DLLVM_TARGETS_TO_BUILD=X86;ARM;AArch64",
                         "-DCLANG_DEFAULT_LINKER=lld",
                         "-DCMAKE_TRY_COMPILE_CONFIGURATION=Release",
                         "-DCOMPILER_RT_BUILD_SANITIZERS=OFF",
