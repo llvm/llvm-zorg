@@ -344,10 +344,12 @@ def getReporters():
                 utils.LLVMDefaultBuildStatusGenerator(
                     builders = [
                         "llvm-clang-x86_64-sie-ubuntu-fast",
+                        "llvm-clang-x86_64-sie-ps5-fast",
                         "llvm-clang-x86_64-sie-win",
                         "llvm-clang-x86_64-sie-win-release",
                         "llvm-clang-x86_64-gcc-ubuntu",
                         "llvm-clang-x86_64-gcc-ubuntu-release",
+                        "llvm-clang-x86_64-gcc-ubuntu-no-asserts",
                         "cross-project-tests-sie-ubuntu",
                         "cross-project-tests-sie-ubuntu-dwarf5",
                         "clang-x86_64-linux-abi-test",
