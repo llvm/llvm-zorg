@@ -20,6 +20,14 @@ pipeline {
         }
     }
     stages {
+        stage('Print Machine Info') {
+            steps {
+                sh '''
+                sw_vers
+                xcodebuild -version
+                '''
+            }
+        }
         stage('Checkout') {
             steps {
                 timeout(30) {
