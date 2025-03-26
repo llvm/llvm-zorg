@@ -21,7 +21,7 @@ pipeline {
         }
     }
     environment {
-        MATRIX_COMMON_BUILD_PARAMETERS = '--cmake-flag=-DLLVM_TARGETS_TO_BUILD=AArch64'
+        MATRIX_COMMON_BUILD_PARAMETERS = '--cmake-flag=-DLLVM_TARGETS_TO_BUILD=X86;AArch64'
         PATH="$PATH:/usr/bin:/usr/local/bin"
     }
     stages {
