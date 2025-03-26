@@ -6,7 +6,7 @@ pipeline {
     }
 
     parameters {
-        string(name: 'LABEL', defaultValue: params.LABEL ?: 'macos-x86_64', description: 'Node label to run on')
+        string(name: 'LABEL', defaultValue: params.LABEL ?: 'macos-arm64', description: 'Node label to run on')
 
         string(name: 'GIT_SHA', defaultValue: params.GIT_REVISION ?: '*/main', description: 'Git commit to build.')
 
@@ -21,7 +21,7 @@ pipeline {
         }
     }
     environment {
-        MATRIX_COMMON_BUILD_PARAMETERS = '--cmake-flag=-DLLVM_TARGETS_TO_BUILD=X86'
+        MATRIX_COMMON_BUILD_PARAMETERS = '--cmake-flag=-DLLVM_TARGETS_TO_BUILD=X86;AArch64'
         PATH="$PATH:/usr/bin:/usr/local/bin"
     }
     stages {
@@ -102,7 +102,7 @@ pipeline {
                       --runtimes="libcxx;libcxxabi;libunwind"  \
                       --cmake-type=Release \
                       --dotest-flag="--skip-category gmodules" \
-                      --dotest-flag="--arch=x86_64"
+                      --dotest-flag="--arch=arm64"
                     '''
                     script {
                         def LLDB = new org.swift.LLDB()
@@ -129,11 +129,11 @@ pipeline {
                       --dotest-flag="gmodules" \
                       --dotest-flag="--skip-category" \
                       --dotest-flag="watchpoint" \
-		      --dotest-flag="--skip-category" \
-		      --dotest-flag="llgs" \
-		      --dotest-flag="--skip-category" \
-		      --dotest-flag="debugserver" \
-                      --dotest-flag="--arch=x86_64" \
+                      --dotest-flag="--skip-category" \
+                      --dotest-flag="llgs" \
+                      --dotest-flag="--skip-category" \
+                      --dotest-flag="debugserver" \
+                      --dotest-flag="--arch=arm64" \
                       --dotest-flag="--dwarf-version=2"
 
                     # Give the system some time to recover.
@@ -165,7 +165,7 @@ pipeline {
 		      --dotest-flag="llgs" \
 		      --dotest-flag="--skip-category" \
 		      --dotest-flag="debugserver" \
-                      --dotest-flag="--arch=x86_64" \
+                      --dotest-flag="--arch=arm64" \
                       --dotest-flag="--dwarf-version=4"
 
                     # Give the system some time to recover.
@@ -197,7 +197,7 @@ pipeline {
 		      --dotest-flag="llgs" \
 		      --dotest-flag="--skip-category" \
 		      --dotest-flag="debugserver" \
-                      --dotest-flag="--arch=x86_64" \
+                      --dotest-flag="--arch=arm64" \
                       --dotest-flag="--dwarf-version=5"
 
                     # Give the system some time to recover.
@@ -266,7 +266,7 @@ pipeline {
                       --dotest-flag="llgs" \
                       --dotest-flag="--skip-category" \
                       --dotest-flag="debugserver" \
-                      --dotest-flag="--arch=x86_64"
+                      --dotest-flag="--arch=arm64"
 
                     # Give the system some time to recover.
                     sleep 120
@@ -336,7 +336,7 @@ pipeline {
                       --dotest-flag="llgs" \
                       --dotest-flag="--skip-category" \
                       --dotest-flag="debugserver" \
-                      --dotest-flag="--arch=x86_64"
+                      --dotest-flag="--arch=arm64"
 
                     # Give the system some time to recover.
                     sleep 120
