@@ -615,6 +615,12 @@ def _getClangCMakeBuildFactory(
                                description='recreating sandbox',
                                workdir='test',
                                env=env))
+        f.addStep(ShellCommand(name='install lnt dependencies',
+                               command=[python, '-m', 'pip', 'install', 'setuptools'],
+                               haltOnFailure=True,
+                               description='install lnt dependencies',
+                               workdir='test/sandbox',
+                               env=env))
         f.addStep(ShellCommand(name='setup lit',
                                command=[python, lnt_setup, 'develop'],
                                haltOnFailure=True,
