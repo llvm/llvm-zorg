@@ -654,7 +654,7 @@ def lldb_cmake_standalone_builder(target):
                  test_dir, test_build_dir])
     cmake_build_type = conf.cmake_build_type if conf.cmake_build_type else 'RelWithDebInfo'
     dotest_args = [
-        '--arch', 'x86_64', '--build-dir', test_build_dir,
+        '--build-dir', test_build_dir,
         '-t', '--env', 'TERM=vt100'
     ]
     dotest_args.extend(conf.dotest_flags)
