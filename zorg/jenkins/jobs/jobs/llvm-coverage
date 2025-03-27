@@ -132,6 +132,7 @@ pipeline {
                       --cmake-flag="-DLLVM_ENABLE_MODULES=Off" \
                       --cmake-flag="-DLLVM_TARGETS_TO_BUILD=X86;ARM;AArch64;AMDGPU;WebAssembly" \
                       --cmake-flag="-DCMAKE_EXE_LINKER_FLAGS=-Wl,-no_fixup_chains" \
+                      --cmake-flag="-DCMAKE_SHARED_LINKER_FLAGS=-Wl,-no_fixup_chains" \
                       --cmake-type=Release \
                       --noupload
                     '''
