@@ -78,7 +78,7 @@ def new_log():
         get('/srv/lnt/install/lnt.log', 'lnt.log', )
     new_lines = {line for line in open("lnt.log", 'r').readlines()}
     for l in new_lines - lines:
-        print ' '.join(l.split()[2:]),
+        print(' '.join(l.split()[2:]), end=' ')
 
 
 @task
@@ -92,7 +92,7 @@ def rotate_log():
     sudo('rm -rf /srv/lnt/install/gunicorn.error.log')
     out = sudo('ps auxxxf | grep "gunicorn: master"')
     pid = re.search(r'lnt\s+(?P<pid>\d+)\s+', out).groupdict()['pid']
-    print pid
+    print(pid)
     sudo('kill -USR1 ' + pid)
 
 
@@ -113,7 +113,7 @@ def kill_zombies():
             pid = m.groupdict()['pid']
             pids.append(pid)
         else:
-            print ">", line
+            print(">", line)
     for pid in pids:
         sudo("kill -9 {}".format(pid))
 
