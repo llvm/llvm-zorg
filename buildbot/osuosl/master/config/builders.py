@@ -2632,7 +2632,7 @@ all += [
                         "-DPython3_EXECUTABLE:FILEPATH=python3",
                         "-DLLVM_ENABLE_ZLIB=OFF", "-DLLVM_APPEND_VC_REV=OFF",
                         "-DLLVM_PARALLEL_LINK_JOBS=2",
-
+                        "-DSANITIZER_DISABLE_SYMBOLIZER_PATH_SEARCH:BOOL=ON",
                     ],
                     env={
                         'CC': 'clang',
