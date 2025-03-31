@@ -216,7 +216,7 @@ resource "helm_release" "github_actions_runner_controller" {
   name       = "llvm-premerge-controller"
   namespace  = "llvm-premerge-controller"
   repository = "oci://ghcr.io/actions/actions-runner-controller-charts"
-  version    = "0.9.3"
+  version    = "0.11.0"
   chart      = "gha-runner-scale-set-controller"
 
   depends_on = [
@@ -228,7 +228,7 @@ resource "helm_release" "github_actions_runner_set_linux" {
   name       = "llvm-premerge-linux-runners"
   namespace  = "llvm-premerge-linux-runners"
   repository = "oci://ghcr.io/actions/actions-runner-controller-charts"
-  version    = "0.9.3"
+  version    = "0.11.0"
   chart      = "gha-runner-scale-set"
 
   values = [
@@ -246,7 +246,7 @@ resource "helm_release" "github_actions_runner_set_windows" {
   name       = "llvm-premerge-windows-runners"
   namespace  = "llvm-premerge-windows-runners"
   repository = "oci://ghcr.io/actions/actions-runner-controller-charts"
-  version    = "0.9.3"
+  version    = "0.11.0"
   chart      = "gha-runner-scale-set"
 
   values = [
