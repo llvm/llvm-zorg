@@ -1953,7 +1953,7 @@ all += [
     'builddir': "openmp-offload-amdgpu-runtime-2",
     'factory' : OpenMPBuilder.getOpenMPCMakeBuildFactory(
                         clean=True,
-                        enable_runtimes=['compiler-rt', 'libunwind', 'libcxx', 'libcxxabi', 'openmp', 'offload'],
+                        enable_runtimes=['compiler-rt', 'libunwind', 'libc', 'libcxx', 'libcxxabi', 'openmp', 'offload'],
                         depends_on_projects=['llvm','clang','lld', 'offload', 'openmp', 'compiler-rt', 'libunwind', 'libcxx', 'libcxxabi', 'libc'],
                         extraCmakeArgs=[
                             "-DCMAKE_BUILD_TYPE=Release",
