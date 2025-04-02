@@ -243,7 +243,7 @@ def get_all():
                         'jobs': 128,
                         'nv_cccl_root_path'     : '/home/buildbot/worker/third-party/nv/cccl',
                      },
-                     max_builds=2),
+                     max_builds=1),
         # Windows Server on Intel Xeon 6330 CPU 2Sx64Cx128LP @ 2.0GHz, 256GB RAM
         create_worker("as-builder-8", properties={'jobs': 128}, max_builds=1),
 
