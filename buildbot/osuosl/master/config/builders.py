@@ -780,7 +780,8 @@ all = [
                         "-DPython3_EXECUTABLE:FILEPATH=python3",
                         "-DLLVM_ENABLE_ZLIB=OFF", "-DLLVM_APPEND_VC_REV=OFF",
                         "-DLLVM_PARALLEL_LINK_JOBS=2",
-                        "-DLLVM_ENABLE_WERROR=ON"]),
+                        "-DLLVM_ENABLE_WERROR=ON",
+                        "-DSANITIZER_DISABLE_SYMBOLIZER_PATH_SEARCH:BOOL=ON"]),
     'env' : {'OBJECT_MODE': '64'}},
 
     {'name' : "clang-s390x-linux",
@@ -1953,7 +1954,7 @@ all += [
     'builddir': "openmp-offload-amdgpu-runtime-2",
     'factory' : OpenMPBuilder.getOpenMPCMakeBuildFactory(
                         clean=True,
-                        enable_runtimes=['compiler-rt', 'libunwind', 'libcxx', 'libcxxabi', 'openmp', 'offload'],
+                        enable_runtimes=['compiler-rt', 'libunwind', 'libc', 'libcxx', 'libcxxabi', 'openmp', 'offload'],
                         depends_on_projects=['llvm','clang','lld', 'offload', 'openmp', 'compiler-rt', 'libunwind', 'libcxx', 'libcxxabi', 'libc'],
                         extraCmakeArgs=[
                             "-DCMAKE_BUILD_TYPE=Release",
@@ -2631,7 +2632,7 @@ all += [
                         "-DPython3_EXECUTABLE:FILEPATH=python3",
                         "-DLLVM_ENABLE_ZLIB=OFF", "-DLLVM_APPEND_VC_REV=OFF",
                         "-DLLVM_PARALLEL_LINK_JOBS=2",
-
+                        "-DSANITIZER_DISABLE_SYMBOLIZER_PATH_SEARCH:BOOL=ON",
                     ],
                     env={
                         'CC': 'clang',

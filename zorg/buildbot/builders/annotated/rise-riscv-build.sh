@@ -103,7 +103,7 @@ cmake -G Ninja \
   -DLLVM_EXTERNAL_LIT="$(pwd)/llvm-zorg/buildbot/riscv-rise/lit-on-qemu" \
   -DLLVM_ENABLE_PROJECTS="lld;clang;clang-tools-extra;llvm" \
   -DCMAKE_TOOLCHAIN_FILE=$(pwd)/stage1-toolchain.cmake \
-  -DLLVM_HOST_TRIPLE=riscv64-linux-gnu \
+  -DLLVM_HOST_TRIPLE=riscv64-unknown-linux-gnu \
   -S llvm/llvm \
   -B stage2
 
