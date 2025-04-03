@@ -114,6 +114,13 @@ this (at least empirically) can interrupt the state and custom resources that
 ARC manages, then requiring a costly full uninstallation and reinstallation of
 at least a runner scale set.
 
+When upgrading/resetting the cluster, jobs will not be lost, but instead remain
+queued on the Github side. Running build jobs will complete after the helm charts
+are uninstalled unless they are forcibly killed. Note that best practice dictates
+the helm charts should just be uninstalled rather than also setting `maxRunners`
+to zero beforehand as that can cause ARC to accept some jobs but not actually
+execute them which could prevent failover in HA cluster configurations.
+
 ### Uninstalling the Helm Charts
 
 To begin, start by uninstalling the helm charts by using resource targetting
@@ -195,7 +202,7 @@ the terraform configuration have an up to date state when they pull the reposito
 ### Bringing the Cluster Back Up
 
 To get the cluster back up and accepting production jobs again, simply run
-`terraform apply`. It will recreate all the resource previously destroy and
+`terraform apply`. It will recreate all the resource previously destroyed and
 ensure they are in a state consistent with the terraform IaC definitions.
 
 ### External Resources

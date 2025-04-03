@@ -7,7 +7,6 @@ from buildbot import util
 from buildbot.process.properties import Interpolate
 from buildbot.plugins import reporters
 from buildbot.reporters.generators.build import BuildStartEndStatusGenerator
-from buildbot.reporters.message import MessageFormatterMissingWorker
 from twisted.python import log
 
 import config
@@ -381,11 +380,7 @@ def getReporters():
                     subject = "MLIR Build Failure: {{ buildername }}",
                     builders = [
                         "mlir-nvidia",
-                        "mlir-nvidia-gcc7"]),
-                reporters.WorkerMissingGenerator(
-                    workers=["mlir-nvidia"],
-                    message_formatter=MessageFormatterMissingWorker()
-                )
+                        "mlir-nvidia-gcc7"])
             ]),
         reporters.MailNotifier(
             dumpMailsToLog = True, # TODO: For debug purposes only. Remove this later.
