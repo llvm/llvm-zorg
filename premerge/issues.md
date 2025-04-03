@@ -123,3 +123,33 @@ all thresholds to `100%`.
 
 In addition, we added a heartbeat metric to the container, and Grafana
 alerting to make sure we detect this kind of failure early.
+
+## Linux Runner Set Not Scaling
+
+### Date: 2025-03-31
+
+### Symptoms
+
+The LLVM dashboard showed that there was a large queue of linux jobs but
+only two runners actively processing jobs rather than the runner count limit
+of 8.
+
+### Investigation
+
+Initial investigation involved checking the cluster, which also showed only
+two runner pods working. The logs of the linux runner scale set controller
+were inspected which showed it was only scaling up to two pods. The runner
+scale set controller pod was then deleted to try and rectify the situation
+along with a version upgrade of the ARC Helm charts. This resulted in the
+linux controller not coming back up.
+
+### Solution
+
+The Linux runner scale set was uninstalled using the
+[instructions](cluster-management.md#upgradingresetting-github-arc). This
+resulted in all Linux runners quickly coming back online. The windows runner
+set had also stopped accepting jobs at this point, presumed to be due to
+prodding while investigating the Linux issues. The issue on the Windows
+side was fixed in the same way, by uninstalling the helm charts, deleting
+dangling resources, deleting the namespaces, and then reinstalling the
+helm charts.
