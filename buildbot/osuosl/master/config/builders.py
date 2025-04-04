@@ -3424,6 +3424,19 @@ all += [
                     script_interpreter=None,
                     clean=True)},
 
+    ## Simple single-stage build of clang, then cross-building and running the
+    ## llvm-test-suite under qemu-user for a number of configurations. If
+    ## there is a failure, do a check-all of the native (x86_64) LLVM, to provide
+    ## an indicator as to whether the problem is likely RISC-V specific or not.
+    {'name' : "clang-riscv-gauntlet",
+    'workernames' : ["rise-worker-1"],
+    'builddir':"clang-riscv-gauntlet",
+    'factory' : AnnotatedBuilder.getAnnotatedBuildFactory(
+                    script="rise-riscv-gauntlet-build.sh",
+                    checkout_llvm_sources=False,
+                    script_interpreter=None,
+                    clean=True)},
+
     # Builders similar to used in Buildkite premerge pipeline.
     # Please keep in sync with llvm-project/.ci configurations.
 
