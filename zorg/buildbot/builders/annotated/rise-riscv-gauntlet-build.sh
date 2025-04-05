@@ -20,7 +20,12 @@ step_text() {
 HAD_FAILURE=0
 step_failure() {
   HAD_FAILURE=1
-  printf "@@@STEP_FAILURE@@@\n" >&2
+  # Use same workaround as the sanitizers - the server fails to pick up step
+  # failures unless repeated multiple times with a delay.
+  for _ in 0 1 2 ; do
+    echo "@@@STEP_FAILURE@@@" >&2
+    sleep 5
+  done
 }
 
 set -u # Exit on referencing an unset variable.
@@ -151,12 +156,12 @@ EOF
 done
 export -n LIT_FILTER_OUT
 
-build_step "llvm-project check-all"
 if [ $HAD_FAILURE -ne 0 ]; then
+  build_step "llvm-project check-all"
   cmake --build llvm-project/build/stage1 --target check-all
   if [ $? -ne 0 ]; then
     die "check-all on X86_64 host failed. This indicates there is most likely an issue that is not RISC-V specific."
   fi
 else
-  step_text "(Skipped)"
+  build_step "SKIPPED llvm-project check-all"
 fi
