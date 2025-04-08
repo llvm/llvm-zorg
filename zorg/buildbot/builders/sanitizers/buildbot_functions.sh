@@ -154,13 +154,6 @@ function buildbot_update {
       git checkout -f "${BUILDBOT_REVISION}"
       git status
       git rev-list --pretty --max-count=1 HEAD
-      # FIXME: Workaround for https://github.com/llvm/llvm-zorg/issues/250
-      [[ "${SKIP_OLD:-1}" == "0" ]] || [[ ! -v BUILDBOT_SCHEDULER ]] || [[ "${BUILDBOT_SCHEDULER}" == "force-build-scheduler" ]] || (git log -1 --after='3 hours ago' | grep .) || {
-        echo
-        echo WARNING: Skipping outdated build request...
-        echo
-        exit 1
-      }
     ) || { build_warning ; exit 0 ; }
     LLVM=$ROOT/llvm-project/llvm
   fi
@@ -244,7 +237,7 @@ function build_clang_at_release_tag {
   then
     build_step "using pre-built stage1 clang at r${host_clang_revision}"
   else
-    SKIP_OLD=0 BUILDBOT_MONO_REPO_PATH="" BUILDBOT_REVISION="${host_clang_revision}" buildbot_update
+    BUILDBOT_MONO_REPO_PATH="" BUILDBOT_REVISION="${host_clang_revision}" buildbot_update
 
     rm -rf ${STAGE1_DIR}
     build_step "build stage1 clang at $host_clang_revision"
