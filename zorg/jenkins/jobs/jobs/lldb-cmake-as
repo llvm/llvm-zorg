@@ -21,10 +21,14 @@ pipeline {
     }
     stages {
         stage('Print Machine Info') {
+            environment {
+               PATH="$PATH:/usr/bin:/usr/local/bin"
+            }
             steps {
                 sh '''
                 sw_vers
                 xcodebuild -version
+                cmake --version
                 '''
             }
         }
