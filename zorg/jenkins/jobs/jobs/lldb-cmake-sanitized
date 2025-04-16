@@ -60,11 +60,12 @@ pipeline {
         }
         stage('Setup Venv') {
             environment {
-               PATH="$PATH:/usr/bin:/usr/local/bin"
+               PATH="$PATH:/usr/bin:/usr/local/bin:/opt/homebrew/bin/"
             }
             steps {
                 sh '''
-                   # Non-incremental, so always delete.
+                   # Non-incremental, so always delete just in case.
+                   rm -rf clang-build clang-install host-compiler *.tar.gz
                    rm -rf venv
                    python3 -m venv venv
                    set +u
@@ -76,7 +77,7 @@ pipeline {
         }
         stage('Build') {
             environment {
-               PATH="$PATH:/usr/bin:/usr/local/bin"
+               PATH="$PATH:/usr/bin:/usr/local/bin:/opt/homebrew/bin/"
             }
             steps {
                 timeout(240) {
@@ -111,6 +112,20 @@ pipeline {
                         def LLDB = new org.swift.LLDB()
                         LLDB.LLDB_prepare()
                     }
+                }
+            }
+        }
+        stage('Clean Test Results') {
+            environment {
+                PATH="$PATH:/usr/bin:/usr/local/bin:/opt/homebrew/bin/"
+            }
+            steps {
+                timeout(10) {
+                    sh '''
+                    set -u
+
+                    rm -rf test/results.xml
+                    '''
                 }
             }
         }
