@@ -71,7 +71,7 @@ ARG CIPD_PLATFORM=linux-amd64
 RUN curl -fsSL -o /usr/local/bin/cipd "https://chrome-infra-packages.appspot.com/client?platform=${CIPD_PLATFORM}&version=latest" && \
     chmod +x /usr/local/bin/cipd
 
-ARG FUCHSIA_VERSION=14
+ARG FUCHSIA_VERSION=26
 
 # Install Fuchsia SDK.
 RUN cipd install -root /usr/local/fuchsia/sdk fuchsia/sdk/core/${CIPD_PLATFORM} f${FUCHSIA_VERSION}
