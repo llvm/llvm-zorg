@@ -13,6 +13,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     dumb-init \
     git \
     gpg \
+    libxml2-dev \
     lsb-release \
     ninja-build \
     python-is-python3 \
