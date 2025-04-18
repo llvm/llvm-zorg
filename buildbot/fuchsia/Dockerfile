@@ -80,7 +80,7 @@ RUN cipd install -root /usr/local/fuchsia/sdk fuchsia/sdk/core/${CIPD_PLATFORM} 
 # Use the base image to build the image for buildbot.
 FROM base as buildbot
 
-ARG BUILDBOT_VERSION=3.9.2
+ARG BUILDBOT_VERSION=3.11.6
 
 # Install buildbot.
 RUN pip3 --no-cache-dir install twisted[tls] && \
