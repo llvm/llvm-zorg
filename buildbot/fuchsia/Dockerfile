@@ -38,7 +38,7 @@ ENTRYPOINT ["/usr/bin/dumb-init", "--"]
 #    apt-get update && apt-get install -y --no-install-recommends cmake && \
 #    rm -rf /var/lib/apt/lists/*
 
-ARG LLVM_VERSION=19
+ARG LLVM_VERSION=20
 
 # Install latest LLVM release.
 RUN curl -fsSL https://apt.llvm.org/llvm-snapshot.gpg.key | \
