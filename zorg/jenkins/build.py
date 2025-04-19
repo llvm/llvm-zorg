@@ -570,8 +570,6 @@ def lldb_cmake_builder(target, variant=None):
     if variant == 'sanitized':
         cmake_cmd.append('-DLLVM_TARGETS_TO_BUILD=X86')
         cmake_cmd.append('-DLLVM_USE_SANITIZER=Address;Undefined')
-        cmake_cmd.append('-DLIBUNWIND_ENABLE_SHARED=OFF')
-        cmake_cmd.append('-DLIBUNWIND_ENABLE_STATIC=ON')
         # There is no need to compile the lldb tests with an asanified compiler
         # if we have a host compiler available.
         if conf.CC():
