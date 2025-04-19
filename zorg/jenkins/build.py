@@ -568,7 +568,6 @@ def lldb_cmake_builder(target, variant=None):
         cmake_cmd.append('-DLLDB_ENABLE_LUA=On')
 
     if variant == 'sanitized':
-        cmake_cmd.append('-DLLVM_TARGETS_TO_BUILD=X86')
         cmake_cmd.append('-DLLVM_USE_SANITIZER=Address;Undefined')
         # There is no need to compile the lldb tests with an asanified compiler
         # if we have a host compiler available.
