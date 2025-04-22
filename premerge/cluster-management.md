@@ -40,7 +40,7 @@ Yes, it's called `prototype`, but that's the production cluster.
 We should rename it at some point.
 
 To add a VM to the cluster, the VM has to come from a `pool`. A `pool` is
-a group of nodes withing a cluster that all have the same configuration.
+a group of nodes within a cluster that all have the same configuration.
 
 For example:
 A pool can say it contains at most 10 nodes, each using the `c2d-highcpu-32`
@@ -53,7 +53,7 @@ will see 3 node pools:
 - llvm-premerge-linux-service
 - llvm-premerge-windows
 
-Definitions for each pool is in [Architecture overview](architecture.md).
+Definitions for each pool are in [Architecture overview](architecture.md).
 
 If you click on a pool, example `llvm-premerge-linux`, you will see one
 instance group, and maybe several nodes.
@@ -64,8 +64,8 @@ a basic cluster, we have a single instance group per pool.
 
 Then, we have the nodes. If you are looking at the panel during off hours,
 you might see no nodes at all: when no presubmit is running, no VM is on.
-If you are looking at the panel at peak time, you should see 4 instances.
-(Today, autoscale is capped at 4 instances).
+If you are looking at the panel at peak time, you should see 8 instances.
+(Today, autoscale is capped at 8 instances).
 
 If you click on a node, you'll see the CPU usage, memory usage, and can access
 the logs for each instance.
