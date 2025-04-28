@@ -3450,6 +3450,7 @@ all += [
                     depends_on_projects=["clang-tools-extra", "clang", "libclc", "lld", "llvm", "mlir", "polly", "pstl"],
                     checks=["check-all"],
                     install_pip_requirements = True,
+                    clean = True,
                     extra_configure_args=[
                         "-DCMAKE_BUILD_TYPE=Release",
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
