@@ -3262,7 +3262,8 @@ all += [
     'workernames' : ["as-builder-7"],
     'builddir': "flang-runtime-cuda-gcc",
     'factory' : UnifiedTreeBuilder.getCmakeExBuildFactory(
-                    depends_on_projects = ["llvm", "clang", "mlir", "flang", "flang-rt"],
+                    depends_on_projects = ["llvm", "clang", "mlir", "flang"],
+                    enable_runtimes = ["flang-rt", "openmp"],
                     clean = True,
                     checks = [],
                     targets = ["flang-rt"],
@@ -3272,6 +3273,7 @@ all += [
                         "LLVM_ENABLE_ASSERTIONS"        : "ON",
                         "BUILD_SHARED_LIBS"             : "OFF",
                         "FLANG_RT_EXPERIMENTAL_OFFLOAD_SUPPORT" : "CUDA",
+                        "FLANG_PARALLEL_COMPILE_JOBS"   : 12,
                         "CMAKE_CUDA_COMPILER"           : "/usr/local/cuda/bin/nvcc",
                         "CMAKE_CXX_COMPILER"            : "/usr/bin/g++",
                         "CMAKE_C_COMPILER"              : "/usr/bin/gcc",
@@ -3295,45 +3297,30 @@ all += [
     'tags'  : ["flang", "runtime"],
     'workernames' : ["as-builder-7"],
     'builddir': "flang-runtime-cuda-clang",
-    'factory' : StagedBuilder.getCmakeBuildFactory(
+    'factory' : UnifiedTreeBuilder.getCmakeExBuildFactory(
+                    depends_on_projects = ["llvm", "clang", "lld", "flang"],
+                    enable_runtimes = ["flang-rt", "openmp"],
                     clean = True,
-                    stages = [
-                        dict(
-                            name = "flang",
-                            depends_on_projects = ["llvm", "clang", "flang", "clang-tools-extra", "lld", "openmp"],
-                            enable_runtimes = ["compiler-rt"],
-                            cmake_definitions = {
-                                "LLVM_CCACHE_BUILD"         : "ON",
-                                "LLVM_ENABLE_ASSERTIONS"    : "ON",
-                                "CMAKE_BUILD_TYPE"          : "Release",
-                                "LLVM_TARGETS_TO_BUILD"     : "Native",
-                                "CLANG_DEFAULT_LINKER"      : "lld",
-                            },
-                            install_dir = "install-flang",
-                            env = {
-                                'CCACHE_DIR' : util.Interpolate("%(prop:builddir)s/ccache-db"),
-                            },
-                        ),
-                        dict(
-                            name = "flang-rt",
-                            depends_on_projects = ["flang-rt"],
-                            cmake_definitions = {
-                                "CMAKE_BUILD_TYPE"          : "Release",
-                                "CMAKE_C_COMPILER"          : util.Interpolate("%(prop:builddir)s/install-flang/bin/clang"),
-                                "CMAKE_CXX_COMPILER"        : util.Interpolate("%(prop:builddir)s/install-flang/bin/clang++"),
-                                "CMAKE_Fortran_COMPILER"    : util.Interpolate("%(prop:builddir)s/install-flang/bin/flang"),
-                                "CMAKE_Fortran_COMPILER_WORKS"           : "ON",
-                                "FLANG_RT_EXPERIMENTAL_OFFLOAD_SUPPORT"  : "OpenMP",
-                                "FLANG_RT_OMP_DEVICE_ARCHITECTURES"      : "sm_50;sm_60;sm_70;sm_80",
-                            },
-                            src_to_build_dir = "runtimes",
-                        ),
-                    ],
-                    jobs = 64,
+                    checks = [],
+                    cmake_definitions = {
+                        "CMAKE_BUILD_TYPE"              : "Release",
+                        "CMAKE_EXPORT_COMPILE_COMMANDS" : "ON",
+                        "LLVM_CCACHE_BUILD"             : "ON",
+                        "LLVM_ENABLE_ASSERTIONS"        : "ON",
+                        "LLVM_TARGETS_TO_BUILD"         : "Native",
+                        "CLANG_DEFAULT_LINKER"          : "lld",
+
+                        "FLANG_RT_EXPERIMENTAL_OFFLOAD_SUPPORT" : "OpenMP",
+                        "FLANG_RT_DEVICE_ARCHITECTURES" : "sm_50;sm_60;sm_70;sm_80",
+                        "FLANG_PARALLEL_COMPILE_JOBS"   : 12,
+                        "FLANG_RT_INCLUDE_CUF"          : "OFF",
+                        "FLANG_RT_INCLUDE_TESTS"        : "OFF",
+                    },
                     env = {
+                        'CCACHE_DIR' : util.Interpolate("%(prop:builddir)s/ccache-db"),
                         # TMP/TEMP within the build dir (to utilize a ramdisk).
-                        'TMP'        : util.Interpolate("%(prop:builddir)s/%(prop:objrootdir)s"),
-                        'TEMP'       : util.Interpolate("%(prop:builddir)s/%(prop:objrootdir)s"),
+                        'TMP'        : util.Interpolate("%(prop:builddir)s/build"),
+                        'TEMP'       : util.Interpolate("%(prop:builddir)s/build"),
                     })},
 
     ## RISC-V RV64GC check-all running under qemu-user.
