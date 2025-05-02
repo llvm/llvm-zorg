@@ -277,7 +277,7 @@ all = [
                         "-DLLVM_VERSION_SUFFIX=",
                         "-DLLVM_BUILD_RUNTIME=OFF",
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
-                        "-DLLVM_LIT_ARGS=--verbose"])},
+                        "-DLLVM_LIT_ARGS=--verbose --timeout=900"])},
 
     {'name': "llvm-clang-x86_64-gcc-ubuntu-release",
     'tags'  : ["llvm", "clang", "clang-tools-extra", "compiler-rt", "lld", "cross-project-tests"],
@@ -294,7 +294,7 @@ all = [
                         "-DLLVM_BUILD_TESTS=ON",
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
                         "-DLLVM_INCLUDE_EXAMPLES=OFF",
-                        "-DLLVM_LIT_ARGS=--verbose",
+                        "-DLLVM_LIT_ARGS=--verbose --timeout=900",
                         "-DLLVM_USE_LINKER=gold"])},
 
     {'name': "llvm-clang-aarch64-darwin-release",
@@ -312,7 +312,7 @@ all = [
                         "-DLLVM_CCACHE_BUILD=ON",
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
                         "-DLLVM_INCLUDE_EXAMPLES=OFF",
-                        "-DLLVM_LIT_ARGS=--verbose",
+                        "-DLLVM_LIT_ARGS=--verbose --timeout=900",
                         "-DLLVM_TARGETS_TO_BUILD=AArch64"])},
 
 ]

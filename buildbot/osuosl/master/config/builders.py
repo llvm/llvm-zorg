@@ -120,7 +120,7 @@ all = [
                         "-DLLVM_INCLUDE_EXAMPLES=OFF",
                         "-DLLVM_DEFAULT_TARGET_TRIPLE=x86_64-scei-ps4",
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
-                        "-DLLVM_LIT_ARGS=--verbose -j100",
+                        "-DLLVM_LIT_ARGS=--verbose -j100 --timeout=900",
                         "-DLLVM_TARGETS_TO_BUILD=X86",
                         "-DLLVM_USE_LINKER=gold"])},
 
@@ -142,7 +142,7 @@ all = [
                         "-DLLVM_INCLUDE_EXAMPLES=OFF",
                         "-DLLVM_DEFAULT_TARGET_TRIPLE=x86_64-sie-ps5",
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
-                        "-DLLVM_LIT_ARGS=--verbose -j100",
+                        "-DLLVM_LIT_ARGS=--verbose -j100 --timeout=900",
                         "-DLLVM_TARGETS_TO_BUILD=X86",
                         "-DLLVM_USE_LINKER=gold"])},
 
@@ -977,7 +977,7 @@ all = [
                         "-DLLVM_VERSION_SUFFIX=",
                         "-DLLVM_BUILD_RUNTIME=OFF",
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
-                        "-DLLVM_LIT_ARGS=--verbose"])},
+                        "-DLLVM_LIT_ARGS=--verbose --timeout=900"])},
 
     {'name': "cross-project-tests-sie-ubuntu",
     'tags'  : ["clang", "llvm", "lldb", "cross-project-tests"],
@@ -994,7 +994,7 @@ all = [
                         "-DLLDB_ENABLE_PYTHON=TRUE",
                         "-DLLVM_INCLUDE_EXAMPLES=OFF",
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
-                        "-DLLVM_LIT_ARGS=--verbose",
+                        "-DLLVM_LIT_ARGS=--verbose --timeout=900",
                         "-DLLVM_PARALLEL_LINK_JOBS=8",
                         "-DLLVM_TARGETS_TO_BUILD=X86",
                         "-DLLVM_USE_LINKER=gold"])},
@@ -1014,7 +1014,7 @@ all = [
                         "-DLLDB_ENABLE_PYTHON=TRUE",
                         "-DLLVM_INCLUDE_EXAMPLES=OFF",
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
-                        "-DLLVM_LIT_ARGS=--verbose",
+                        "-DLLVM_LIT_ARGS=--verbose --timeout=900",
                         "-DLLVM_PARALLEL_LINK_JOBS=8",
                         "-DLLVM_TARGETS_TO_BUILD=X86",
                         "-DLLVM_USE_LINKER=gold"])},
@@ -1034,7 +1034,7 @@ all = [
                         "-DLLVM_BUILD_TESTS=ON",
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
                         "-DLLVM_INCLUDE_EXAMPLES=OFF",
-                        "-DLLVM_LIT_ARGS=--verbose",
+                        "-DLLVM_LIT_ARGS=--verbose --timeout=900",
                         "-DLLVM_USE_LINKER=gold"])},
 
     {'name': "clang-x86_64-linux-abi-test",
@@ -1052,7 +1052,7 @@ all = [
                         "-DLLVM_BUILD_TESTS=ON",
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
                         "-DLLVM_INCLUDE_EXAMPLES=OFF",
-                        "-DLLVM_LIT_ARGS=--verbose",
+                        "-DLLVM_LIT_ARGS=--verbose --timeout=900",
                         "-DLLVM_USE_LINKER=gold",
                         "-DLLVM_ENABLE_WERROR=OFF"])},
 
@@ -1072,7 +1072,7 @@ all = [
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
                         "-DLLVM_EXPERIMENTAL_KEY_INSTRUCTIONS=ON",
                         "-DLLVM_INCLUDE_EXAMPLES=OFF",
-                        "-DLLVM_LIT_ARGS=--verbose",
+                        "-DLLVM_LIT_ARGS=--verbose --timeout=900",
                         "-DLLVM_USE_LINKER=gold"])},
 
     {'name': "llvm-clang-x86_64-darwin",
@@ -1090,7 +1090,7 @@ all = [
                         "-DLLVM_CCACHE_BUILD=ON",
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
                         "-DLLVM_INCLUDE_EXAMPLES=OFF",
-                        "-DLLVM_LIT_ARGS=--verbose",
+                        "-DLLVM_LIT_ARGS=--verbose --timeout=900",
                         "-DLLVM_TARGETS_TO_BUILD=X86"])},
 
     {'name': "llvm-clang-aarch64-darwin",
@@ -1108,7 +1108,7 @@ all = [
                         "-DLLVM_CCACHE_BUILD=ON",
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
                         "-DLLVM_INCLUDE_EXAMPLES=OFF",
-                        "-DLLVM_LIT_ARGS=--verbose",
+                        "-DLLVM_LIT_ARGS=--verbose --timeout=900",
                         "-DLLVM_TARGETS_TO_BUILD=AArch64"])},
 
     {'name': "llvm-clang-x86_64-gcc-ubuntu-no-asserts",
@@ -1126,7 +1126,7 @@ all = [
                         "-DLLVM_BUILD_TESTS=ON",
                         "-DLLVM_ENABLE_ASSERTIONS=OFF",
                         "-DLLVM_INCLUDE_EXAMPLES=OFF",
-                        "-DLLVM_LIT_ARGS=--verbose",
+                        "-DLLVM_LIT_ARGS=--verbose --timeout=900",
                         "-DLLVM_USE_LINKER=gold"])},
 
 # Polly builders.
