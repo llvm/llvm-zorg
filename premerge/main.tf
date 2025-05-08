@@ -49,28 +49,6 @@ module "premerge_cluster" {
   region       = "us-central1-a"
 }
 
-# TODO(boomanaiden154): Remove these moved blocks once we have finished
-# updating everything to use the new module.
-moved {
-  from = google_container_cluster.llvm_premerge
-  to   = module.premerge_cluster.google_container_cluster.llvm_premerge
-}
-
-moved {
-  from = google_container_node_pool.llvm_premerge_linux
-  to   = module.premerge_cluster.google_container_node_pool.llvm_premerge_linux
-}
-
-moved {
-  from = google_container_node_pool.llvm_premerge_linux_service
-  to   = module.premerge_cluster.google_container_node_pool.llvm_premerge_linux_service
-}
-
-moved {
-  from = google_container_node_pool.llvm_premerge_windows
-  to   = module.premerge_cluster.google_container_node_pool.llvm_premerge_windows
-}
-
 provider "helm" {
   kubernetes {
     host                   = module.premerge_cluster.endpoint
@@ -118,58 +96,6 @@ module "premerge_cluster_resources" {
     kubernetes = kubernetes.llvm-premerge-prototype
     helm       = helm.llvm-premerge-prototype
   }
-}
-
-# TODO(boomanaiden154): Remove these moved blocks once we have finished
-# updating everything to use the new module.
-moved {
-  from = kubernetes_namespace.llvm_premerge_controller
-  to   = module.premerge_cluster_resources.kubernetes_namespace.llvm_premerge_controller
-}
-
-moved {
-  from = kubernetes_namespace.llvm_premerge_linux_runners
-  to   = module.premerge_cluster_resources.kubernetes_namespace.llvm_premerge_linux_runners
-}
-
-moved {
-  from = kubernetes_secret.linux_github_pat
-  to   = module.premerge_cluster_resources.kubernetes_secret.linux_github_pat
-}
-
-moved {
-  from = kubernetes_namespace.llvm_premerge_windows_runners
-  to   = module.premerge_cluster_resources.kubernetes_namespace.llvm_premerge_windows_runners
-}
-
-moved {
-  from = kubernetes_secret.windows_github_pat
-  to   = module.premerge_cluster_resources.kubernetes_secret.windows_github_pat
-}
-
-moved {
-  from = helm_release.github_actions_runner_controller
-  to   = module.premerge_cluster_resources.helm_release.github_actions_runner_controller
-}
-
-moved {
-  from = helm_release.github_actions_runner_set_linux
-  to   = module.premerge_cluster_resources.helm_release.github_actions_runner_set_linux
-}
-
-moved {
-  from = helm_release.github_actions_runner_set_windows
-  to   = module.premerge_cluster_resources.helm_release.github_actions_runner_set_windows
-}
-
-moved {
-  from = kubernetes_namespace.grafana
-  to   = module.premerge_cluster_resources.kubernetes_namespace.grafana
-}
-
-moved {
-  from = helm_release.grafana-k8s-monitoring
-  to   = module.premerge_cluster_resources.helm_release.grafana-k8s-monitoring
 }
 
 data "google_secret_manager_secret_version" "metrics_github_pat" {
