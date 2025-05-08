@@ -1,6 +1,24 @@
+variable "github_app_id" {
+  description = "The Github app ID to use for authentication"
+  type        = string
+}
+
+variable "github_app_installation_id" {
+  description = "The Github app installation ID for authentication"
+  type        = string
+}
+
+variable "github_app_private_key" {
+  description = "The Github app private key for authentication"
+  type        = string
+}
+
 variable "cluster_name" {
-  type    = string
-  default = "llvm-premerge-prototype"
+  type = string
+}
+
+variable "grafana_token" {
+  type = string
 }
 
 variable "externalservices_prometheus_host" {

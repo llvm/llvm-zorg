@@ -43,107 +43,43 @@ resource "local_file" "terraform_state" {
 
 data "google_client_config" "current" {}
 
-resource "google_container_cluster" "llvm_premerge" {
-  name     = var.cluster_name
-  location = "us-central1-a"
-
-  # We can't create a cluster with no node pool defined, but we want to only use
-  # separately managed node pools. So we create the smallest possible default
-  # node pool and immediately delete it.
-  remove_default_node_pool = true
-  initial_node_count       = 1
-
-  # Set the networking mode to VPC Native to enable IP aliasing, which is required
-  # for adding windows nodes to the cluster.
-  networking_mode = "VPC_NATIVE"
-  ip_allocation_policy {}
+module "premerge_cluster" {
+  source       = "./gke_cluster"
+  cluster_name = "llvm-premerge-prototype"
+  region       = "us-central1-a"
 }
 
-resource "google_container_node_pool" "llvm_premerge_linux_service" {
-  name       = "llvm-premerge-linux-service"
-  location   = "us-central1-a"
-  cluster    = google_container_cluster.llvm_premerge.name
-  node_count = 3
-
-  node_config {
-    machine_type = "e2-highcpu-4"
-  }
+# TODO(boomanaiden154): Remove these moved blocks once we have finished
+# updating everything to use the new module.
+moved {
+  from = google_container_cluster.llvm_premerge
+  to   = module.premerge_cluster.google_container_cluster.llvm_premerge
 }
 
-resource "google_container_node_pool" "llvm_premerge_linux" {
-  name               = "llvm-premerge-linux"
-  location           = "us-central1-a"
-  cluster            = google_container_cluster.llvm_premerge.name
-  initial_node_count = 0
-
-  autoscaling {
-    total_min_node_count = 0
-    total_max_node_count = 8
-  }
-
-  node_config {
-    machine_type = "n2-standard-64"
-    taint {
-      key    = "premerge-platform"
-      value  = "linux"
-      effect = "NO_SCHEDULE"
-    }
-    labels = {
-      "premerge-platform" : "linux"
-    }
-    disk_size_gb = 200
-    # Terraform wants to recreate the node pool everytime whe running
-    # terraform apply unless we explicitly set this.
-    # TODO(boomanaiden154): Look into why terraform is doing this so we do
-    # not need this hack.
-    resource_labels = {
-      "goog-gke-node-pool-provisioning-model" = "on-demand"
-    }
-  }
+moved {
+  from = google_container_node_pool.llvm_premerge_linux
+  to   = module.premerge_cluster.google_container_node_pool.llvm_premerge_linux
 }
 
-resource "google_container_node_pool" "llvm_premerge_windows" {
-  name               = "llvm-premerge-windows"
-  location           = "us-central1-a"
-  cluster            = google_container_cluster.llvm_premerge.name
-  initial_node_count = 0
+moved {
+  from = google_container_node_pool.llvm_premerge_linux_service
+  to   = module.premerge_cluster.google_container_node_pool.llvm_premerge_linux_service
+}
 
-  autoscaling {
-    total_min_node_count = 0
-    total_max_node_count = 16
-  }
-
-  # We do not set a taint for the windows nodes as kubernetes by default sets
-  # a node.kubernetes.io/os taint for windows nodes.
-  node_config {
-    machine_type = "n2-standard-32"
-    labels = {
-      "premerge-platform" : "windows"
-    }
-    image_type = "WINDOWS_LTSC_CONTAINERD"
-    # Add a script that runs on the initial boot to disable Windows Defender.
-    # Windows Defender causes an increase in test times by approximately an
-    # order of magnitude.
-    metadata = {
-      "sysprep-specialize-script-ps1" = "Set-MpPreference -DisableRealtimeMonitoring $true"
-      # Terraform wants to recreate the node pool everytime whe running
-      # terraform apply unless we explicitly set this.
-      # TODO(boomanaiden154): Look into why terraform is doing this so we do
-      # not need this hack.
-      "disable-legacy-endpoints" = "true"
-    }
-    disk_size_gb = 200
-  }
+moved {
+  from = google_container_node_pool.llvm_premerge_windows
+  to   = module.premerge_cluster.google_container_node_pool.llvm_premerge_windows
 }
 
 provider "helm" {
   kubernetes {
-    host                   = google_container_cluster.llvm_premerge.endpoint
+    host                   = module.premerge_cluster.endpoint
     token                  = data.google_client_config.current.access_token
-    client_certificate     = base64decode(google_container_cluster.llvm_premerge.master_auth.0.client_certificate)
-    client_key             = base64decode(google_container_cluster.llvm_premerge.master_auth.0.client_key)
-    cluster_ca_certificate = base64decode(google_container_cluster.llvm_premerge.master_auth.0.cluster_ca_certificate)
+    client_certificate     = base64decode(module.premerge_cluster.client_certificate)
+    client_key             = base64decode(module.premerge_cluster.client_key)
+    cluster_ca_certificate = base64decode(module.premerge_cluster.cluster_ca_certificate)
   }
+  alias = "llvm-premerge-prototype"
 }
 
 data "google_secret_manager_secret_version" "github_app_id" {
@@ -163,188 +99,77 @@ data "google_secret_manager_secret_version" "grafana_token" {
 }
 
 provider "kubernetes" {
-  host  = "https://${google_container_cluster.llvm_premerge.endpoint}"
+  host  = "https://${module.premerge_cluster.endpoint}"
   token = data.google_client_config.current.access_token
   cluster_ca_certificate = base64decode(
-    google_container_cluster.llvm_premerge.master_auth[0].cluster_ca_certificate,
+    module.premerge_cluster.cluster_ca_certificate
   )
+  alias = "llvm-premerge-prototype"
 }
 
-resource "kubernetes_namespace" "llvm_premerge_controller" {
-  metadata {
-    name = "llvm-premerge-controller"
-  }
-}
-
-resource "kubernetes_namespace" "llvm_premerge_linux_runners" {
-  metadata {
-    name = "llvm-premerge-linux-runners"
-  }
-}
-
-resource "kubernetes_secret" "linux_github_pat" {
-  metadata {
-    name      = "github-token"
-    namespace = "llvm-premerge-linux-runners"
-  }
-
-  data = {
-    "github_app_id"              = data.google_secret_manager_secret_version.github_app_id.secret_data
-    "github_app_installation_id" = data.google_secret_manager_secret_version.github_app_installation_id.secret_data
-    "github_app_private_key"     = data.google_secret_manager_secret_version.github_app_private_key.secret_data
-  }
-
-  type = "Opaque"
-}
-
-resource "kubernetes_namespace" "llvm_premerge_windows_runners" {
-  metadata {
-    name = "llvm-premerge-windows-runners"
+module "premerge_cluster_resources" {
+  source                     = "./premerge_resources"
+  github_app_id              = data.google_secret_manager_secret_version.github_app_id.secret_data
+  github_app_installation_id = data.google_secret_manager_secret_version.github_app_installation_id.secret_data
+  github_app_private_key     = data.google_secret_manager_secret_version.github_app_private_key.secret_data
+  cluster_name               = "llvm-premerge-prototype"
+  grafana_token              = data.google_secret_manager_secret_version.grafana_token.secret_data
+  providers = {
+    kubernetes = kubernetes.llvm-premerge-prototype
+    helm       = helm.llvm-premerge-prototype
   }
 }
 
-resource "kubernetes_secret" "windows_github_pat" {
-  metadata {
-    name      = "github-token"
-    namespace = "llvm-premerge-windows-runners"
-  }
-
-  data = {
-    "github_app_id"              = data.google_secret_manager_secret_version.github_app_id.secret_data
-    "github_app_installation_id" = data.google_secret_manager_secret_version.github_app_installation_id.secret_data
-    "github_app_private_key"     = data.google_secret_manager_secret_version.github_app_private_key.secret_data
-  }
-
-  type = "Opaque"
+# TODO(boomanaiden154): Remove these moved blocks once we have finished
+# updating everything to use the new module.
+moved {
+  from = kubernetes_namespace.llvm_premerge_controller
+  to   = module.premerge_cluster_resources.kubernetes_namespace.llvm_premerge_controller
 }
 
-
-resource "helm_release" "github_actions_runner_controller" {
-  name       = "llvm-premerge-controller"
-  namespace  = "llvm-premerge-controller"
-  repository = "oci://ghcr.io/actions/actions-runner-controller-charts"
-  version    = "0.11.0"
-  chart      = "gha-runner-scale-set-controller"
-
-  depends_on = [
-    kubernetes_namespace.llvm_premerge_controller
-  ]
+moved {
+  from = kubernetes_namespace.llvm_premerge_linux_runners
+  to   = module.premerge_cluster_resources.kubernetes_namespace.llvm_premerge_linux_runners
 }
 
-resource "helm_release" "github_actions_runner_set_linux" {
-  name       = "llvm-premerge-linux-runners"
-  namespace  = "llvm-premerge-linux-runners"
-  repository = "oci://ghcr.io/actions/actions-runner-controller-charts"
-  version    = "0.11.0"
-  chart      = "gha-runner-scale-set"
-
-  values = [
-    "${file("linux_runners_values.yaml")}"
-  ]
-
-  depends_on = [
-    kubernetes_namespace.llvm_premerge_linux_runners,
-    helm_release.github_actions_runner_controller,
-    kubernetes_secret.linux_github_pat,
-  ]
+moved {
+  from = kubernetes_secret.linux_github_pat
+  to   = module.premerge_cluster_resources.kubernetes_secret.linux_github_pat
 }
 
-resource "helm_release" "github_actions_runner_set_windows" {
-  name       = "llvm-premerge-windows-runners"
-  namespace  = "llvm-premerge-windows-runners"
-  repository = "oci://ghcr.io/actions/actions-runner-controller-charts"
-  version    = "0.11.0"
-  chart      = "gha-runner-scale-set"
-
-  values = [
-    "${file("windows_runner_values.yaml")}"
-  ]
-
-  depends_on = [
-    kubernetes_namespace.llvm_premerge_windows_runners,
-    kubernetes_secret.windows_github_pat,
-    helm_release.github_actions_runner_controller,
-  ]
+moved {
+  from = kubernetes_namespace.llvm_premerge_windows_runners
+  to   = module.premerge_cluster_resources.kubernetes_namespace.llvm_premerge_windows_runners
 }
 
-resource "kubernetes_namespace" "grafana" {
-  metadata {
-    name = "grafana"
-  }
+moved {
+  from = kubernetes_secret.windows_github_pat
+  to   = module.premerge_cluster_resources.kubernetes_secret.windows_github_pat
 }
 
-resource "helm_release" "grafana-k8s-monitoring" {
-  name             = "grafana-k8s-monitoring"
-  repository       = "https://grafana.github.io/helm-charts"
-  chart            = "k8s-monitoring"
-  namespace        = "grafana"
-  create_namespace = true
-  atomic           = true
-  timeout          = 300
+moved {
+  from = helm_release.github_actions_runner_controller
+  to   = module.premerge_cluster_resources.helm_release.github_actions_runner_controller
+}
 
-  values = [file("${path.module}/grafana_values.yaml")]
+moved {
+  from = helm_release.github_actions_runner_set_linux
+  to   = module.premerge_cluster_resources.helm_release.github_actions_runner_set_linux
+}
 
-  set {
-    name  = "cluster.name"
-    value = var.cluster_name
-  }
+moved {
+  from = helm_release.github_actions_runner_set_windows
+  to   = module.premerge_cluster_resources.helm_release.github_actions_runner_set_windows
+}
 
-  set {
-    name  = "externalServices.prometheus.host"
-    value = var.externalservices_prometheus_host
-  }
+moved {
+  from = kubernetes_namespace.grafana
+  to   = module.premerge_cluster_resources.kubernetes_namespace.grafana
+}
 
-  set_sensitive {
-    name  = "externalServices.prometheus.basicAuth.username"
-    value = var.externalservices_prometheus_basicauth_username
-  }
-
-  set_sensitive {
-    name  = "externalServices.prometheus.basicAuth.password"
-    value = data.google_secret_manager_secret_version.grafana_token.secret_data
-  }
-
-  set {
-    name  = "externalServices.loki.host"
-    value = var.externalservices_loki_host
-  }
-
-  set_sensitive {
-    name  = "externalServices.loki.basicAuth.username"
-    value = var.externalservices_loki_basicauth_username
-  }
-
-  set_sensitive {
-    name  = "externalServices.loki.basicAuth.password"
-    value = data.google_secret_manager_secret_version.grafana_token.secret_data
-  }
-
-  set {
-    name  = "externalServices.tempo.host"
-    value = var.externalservices_tempo_host
-  }
-
-  set_sensitive {
-    name  = "externalServices.tempo.basicAuth.username"
-    value = var.externalservices_tempo_basicauth_username
-  }
-
-  set_sensitive {
-    name  = "externalServices.tempo.basicAuth.password"
-    value = data.google_secret_manager_secret_version.grafana_token.secret_data
-  }
-
-  set {
-    name  = "opencost.opencost.exporter.defaultClusterId"
-    value = var.cluster_name
-  }
-
-  set {
-    name  = "opencost.opencost.prometheus.external.url"
-    value = format("%s/api/prom", var.externalservices_prometheus_host)
-  }
-
-  depends_on = [kubernetes_namespace.grafana]
+moved {
+  from = helm_release.grafana-k8s-monitoring
+  to   = module.premerge_cluster_resources.helm_release.grafana-k8s-monitoring
 }
 
 data "google_secret_manager_secret_version" "metrics_github_pat" {
@@ -363,11 +188,11 @@ data "google_secret_manager_secret_version" "metrics_buildkite_token" {
   secret = "llvm-premerge-metrics-buildkite-graphql-token"
 }
 
-
 resource "kubernetes_namespace" "metrics" {
   metadata {
     name = "metrics"
   }
+  provider = kubernetes.llvm-premerge-prototype
 }
 
 resource "kubernetes_secret" "metrics_secrets" {
@@ -383,9 +208,11 @@ resource "kubernetes_secret" "metrics_secrets" {
     "buildkite-token"        = data.google_secret_manager_secret_version.metrics_buildkite_token.secret_data
   }
 
-  type = "Opaque"
+  type     = "Opaque"
+  provider = kubernetes.llvm-premerge-prototype
 }
 
 resource "kubernetes_manifest" "metrics_deployment" {
   manifest = yamldecode(file("metrics_deployment.yaml"))
+  provider = kubernetes.llvm-premerge-prototype
 }
