@@ -92,6 +92,13 @@ resource "google_container_node_pool" "llvm_premerge_linux" {
       "premerge-platform" : "linux"
     }
     disk_size_gb = 200
+    # Terraform wants to recreate the node pool everytime whe running
+    # terraform apply unless we explicitly set this.
+    # TODO(boomanaiden154): Look into why terraform is doing this so we do
+    # not need this hack.
+    resource_labels = {
+      "goog-gke-node-pool-provisioning-model" = "on-demand"
+    }
   }
 }
 
