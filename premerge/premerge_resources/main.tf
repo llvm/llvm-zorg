@@ -125,6 +125,8 @@ resource "helm_release" "grafana-k8s-monitoring" {
   create_namespace = true
   atomic           = true
   timeout          = 300
+  # TODO(boomanaiden154); This needs to be upgraded to v2.x.x at some point.
+  version          = "1.6.14"
 
   values = [file("${path.module}/grafana_values.yaml")]
 
