@@ -4,6 +4,8 @@ githubConfigSecret: "github-token"
 minRunners: 0
 maxRunners: 16
 
+runnerGroup: ${ runner_group_name }
+
 template:
   metadata:
     annotations:

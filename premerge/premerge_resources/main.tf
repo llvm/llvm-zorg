@@ -83,7 +83,7 @@ resource "helm_release" "github_actions_runner_set_linux" {
   chart      = "gha-runner-scale-set"
 
   values = [
-    "${file("linux_runners_values.yaml")}"
+    "${templatefile("linux_runners_values.yaml", { runner_group_name : var.runner_group_name })}"
   ]
 
   depends_on = [
@@ -101,7 +101,7 @@ resource "helm_release" "github_actions_runner_set_windows" {
   chart      = "gha-runner-scale-set"
 
   values = [
-    "${file("windows_runner_values.yaml")}"
+    "${templatefile("windows_runner_values.yaml", { runner_group_name : var.runner_group_name })}"
   ]
 
   depends_on = [

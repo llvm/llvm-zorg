@@ -50,3 +50,7 @@ variable "externalservices_tempo_basicauth_username" {
   type    = number
   default = 952165
 }
+
+variable "runner_group_name" {
+  type = string
+}

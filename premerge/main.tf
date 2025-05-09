@@ -135,6 +135,7 @@ module "premerge_cluster_resources" {
   github_app_private_key     = data.google_secret_manager_secret_version.github_app_private_key.secret_data
   cluster_name               = "llvm-premerge-prototype"
   grafana_token              = data.google_secret_manager_secret_version.grafana_token.secret_data
+  runner_group_name          = "llvm-premerge-cluster-us-central"
   providers = {
     kubernetes = kubernetes.llvm-premerge-us-central
     helm       = helm.llvm-premerge-us-central
@@ -148,6 +149,7 @@ module "premerge_cluster_resources2" {
   github_app_private_key     = data.google_secret_manager_secret_version.github_app_private_key.secret_data
   cluster_name               = "llvm-premerge-cluster-us-west"
   grafana_token              = data.google_secret_manager_secret_version.grafana_token.secret_data
+  runner_group_name          = "llvm-premerge-cluster-us-west"
   providers = {
     kubernetes = kubernetes.llvm-premerge-us-west
     helm       = helm.llvm-premerge-us-west
