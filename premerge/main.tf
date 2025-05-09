@@ -46,9 +46,9 @@ data "google_client_config" "current" {}
 # TODO(boomanaiden154): Rename this to llvm-premerge-cluster-us-central when
 # commit traffic is low.
 module "premerge_cluster_us_central" {
-  source       = "./gke_cluster"
-  cluster_name = "llvm-premerge-prototype"
-  region       = "us-central1-a"
+  source               = "./gke_cluster"
+  cluster_name         = "llvm-premerge-prototype"
+  region               = "us-central1-a"
   linux_machine_type   = "n2-standard-64"
   windows_machine_type = "n2-standard-32"
 }
@@ -61,6 +61,14 @@ moved {
   to   = module.premerge_cluster_us_central
 }
 
+module "premerge_cluster_us_west" {
+  source               = "./gke_cluster"
+  cluster_name         = "llvm-premerge-cluster-us-west"
+  region               = "us-west8"
+  linux_machine_type   = "n2d-standard-64"
+  windows_machine_type = "n2d-standard-32"
+}
+
 provider "helm" {
   kubernetes {
     host                   = module.premerge_cluster_us_central.endpoint
@@ -70,6 +78,17 @@ provider "helm" {
     cluster_ca_certificate = base64decode(module.premerge_cluster_us_central.cluster_ca_certificate)
   }
   alias = "llvm-premerge-us-central"
+}
+
+provider "helm" {
+  kubernetes {
+    host                   = module.premerge_cluster_us_west.endpoint
+    token                  = data.google_client_config.current.access_token
+    client_certificate     = base64decode(module.premerge_cluster_us_west.client_certificate)
+    client_key             = base64decode(module.premerge_cluster_us_west.client_key)
+    cluster_ca_certificate = base64decode(module.premerge_cluster_us_west.cluster_ca_certificate)
+  }
+  alias = "llvm-premerge-us-west"
 }
 
 data "google_secret_manager_secret_version" "github_app_id" {
@@ -97,6 +116,13 @@ provider "kubernetes" {
   alias = "llvm-premerge-us-central"
 }
 
+provider "kubernetes" {
+  host                   = "https://${module.premerge_cluster_us_west.endpoint}"
+  token                  = data.google_client_config.current.access_token
+  cluster_ca_certificate = base64decode(module.premerge_cluster_us_west.cluster_ca_certificate)
+  alias                  = "llvm-premerge-us-west"
+}
+
 module "premerge_cluster_resources" {
   source                     = "./premerge_resources"
   github_app_id              = data.google_secret_manager_secret_version.github_app_id.secret_data
@@ -107,6 +133,19 @@ module "premerge_cluster_resources" {
   providers = {
     kubernetes = kubernetes.llvm-premerge-us-central
     helm       = helm.llvm-premerge-us-central
+  }
+}
+
+module "premerge_cluster_resources2" {
+  source                     = "./premerge_resources"
+  github_app_id              = data.google_secret_manager_secret_version.github_app_id.secret_data
+  github_app_installation_id = data.google_secret_manager_secret_version.github_app_installation_id.secret_data
+  github_app_private_key     = data.google_secret_manager_secret_version.github_app_private_key.secret_data
+  cluster_name               = "llvm-premerge-cluster-us-west"
+  grafana_token              = data.google_secret_manager_secret_version.grafana_token.secret_data
+  providers = {
+    kubernetes = kubernetes.llvm-premerge-us-west
+    helm       = helm.llvm-premerge-us-west
   }
 }
 
