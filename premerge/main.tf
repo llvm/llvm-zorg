@@ -43,9 +43,9 @@ resource "local_file" "terraform_state" {
 
 data "google_client_config" "current" {}
 
-# TODO(boomanaiden154): Rename this to llvm-premerge-1 when commit traffic is
-# low.
-module "premerge_cluster1" {
+# TODO(boomanaiden154): Rename this to llvm-premerge-cluster-us-central when
+# commit traffic is low.
+module "premerge_cluster_us_central" {
   source       = "./gke_cluster"
   cluster_name = "llvm-premerge-prototype"
   region       = "us-central1-a"
@@ -56,18 +56,18 @@ module "premerge_cluster1" {
 
 moved {
   from = module.premerge_cluster
-  to   = module.premerge_cluster1
+  to   = module.premerge_cluster_us_central
 }
 
 provider "helm" {
   kubernetes {
-    host                   = module.premerge_cluster1.endpoint
+    host                   = module.premerge_cluster_us_central.endpoint
     token                  = data.google_client_config.current.access_token
-    client_certificate     = base64decode(module.premerge_cluster1.client_certificate)
-    client_key             = base64decode(module.premerge_cluster1.client_key)
-    cluster_ca_certificate = base64decode(module.premerge_cluster1.cluster_ca_certificate)
+    client_certificate     = base64decode(module.premerge_cluster_us_central.client_certificate)
+    client_key             = base64decode(module.premerge_cluster_us_central.client_key)
+    cluster_ca_certificate = base64decode(module.premerge_cluster_us_central.cluster_ca_certificate)
   }
-  alias = "llvm-premerge-1"
+  alias = "llvm-premerge-us-central"
 }
 
 data "google_secret_manager_secret_version" "github_app_id" {
@@ -87,12 +87,12 @@ data "google_secret_manager_secret_version" "grafana_token" {
 }
 
 provider "kubernetes" {
-  host  = "https://${module.premerge_cluster1.endpoint}"
+  host  = "https://${module.premerge_cluster_us_central.endpoint}"
   token = data.google_client_config.current.access_token
   cluster_ca_certificate = base64decode(
-    module.premerge_cluster1.cluster_ca_certificate
+    module.premerge_cluster_us_central.cluster_ca_certificate
   )
-  alias = "llvm-premerge-1"
+  alias = "llvm-premerge-us-central"
 }
 
 module "premerge_cluster_resources" {
@@ -103,8 +103,8 @@ module "premerge_cluster_resources" {
   cluster_name               = "llvm-premerge-prototype"
   grafana_token              = data.google_secret_manager_secret_version.grafana_token.secret_data
   providers = {
-    kubernetes = kubernetes.llvm-premerge-1
-    helm       = helm.llvm-premerge-1
+    kubernetes = kubernetes.llvm-premerge-us-central
+    helm       = helm.llvm-premerge-us-central
   }
 }
 
@@ -128,7 +128,7 @@ resource "kubernetes_namespace" "metrics" {
   metadata {
     name = "metrics"
   }
-  provider = kubernetes.llvm-premerge-1
+  provider = kubernetes.llvm-premerge-us-central
 }
 
 resource "kubernetes_secret" "metrics_secrets" {
@@ -145,10 +145,10 @@ resource "kubernetes_secret" "metrics_secrets" {
   }
 
   type     = "Opaque"
-  provider = kubernetes.llvm-premerge-1
+  provider = kubernetes.llvm-premerge-us-central
 }
 
 resource "kubernetes_manifest" "metrics_deployment" {
   manifest = yamldecode(file("metrics_deployment.yaml"))
-  provider = kubernetes.llvm-premerge-1
+  provider = kubernetes.llvm-premerge-us-central
 }
