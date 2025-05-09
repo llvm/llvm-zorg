@@ -61,12 +61,17 @@ moved {
   to   = module.premerge_cluster_us_central
 }
 
+# We explicitly specify a single zone for the service node pool locations as
+# terraform by default will create node_count nodes per zone. We only want
+# node_count nodes rather than (node_count * zone count) nodes, so we
+# explicitly enumerate a specific region.
 module "premerge_cluster_us_west" {
-  source               = "./gke_cluster"
-  cluster_name         = "llvm-premerge-cluster-us-west"
-  region               = "us-west8"
-  linux_machine_type   = "n2d-standard-64"
-  windows_machine_type = "n2d-standard-32"
+  source                      = "./gke_cluster"
+  cluster_name                = "llvm-premerge-cluster-us-west"
+  region                      = "us-west1"
+  linux_machine_type          = "n2d-standard-64"
+  windows_machine_type        = "n2d-standard-32"
+  service_node_pool_locations = ["us-west1-a"]
 }
 
 provider "helm" {

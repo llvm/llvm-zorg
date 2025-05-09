@@ -36,6 +36,8 @@ resource "kubernetes_secret" "linux_github_pat" {
   }
 
   type = "Opaque"
+
+  depends_on = [kubernetes_namespace.llvm_premerge_linux_runners]
 }
 
 resource "kubernetes_namespace" "llvm_premerge_windows_runners" {
@@ -57,6 +59,8 @@ resource "kubernetes_secret" "windows_github_pat" {
   }
 
   type = "Opaque"
+
+  depends_on = [kubernetes_namespace.llvm_premerge_windows_runners]
 }
 
 resource "helm_release" "github_actions_runner_controller" {

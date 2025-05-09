@@ -17,3 +17,9 @@ variable "windows_machine_type" {
   description = "The type of machine to use for Windows instances"
   type        = string
 }
+
+variable "service_node_pool_locations" {
+  description = "The location to run the service node pool in"
+  type        = list(any)
+  default     = null
+}
