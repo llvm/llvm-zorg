@@ -49,6 +49,8 @@ module "premerge_cluster_us_central" {
   source       = "./gke_cluster"
   cluster_name = "llvm-premerge-prototype"
   region       = "us-central1-a"
+  linux_machine_type   = "n2-standard-64"
+  windows_machine_type = "n2-standard-32"
 }
 
 # TODO(boomanaiden154): Remove these statements after the changes have been
