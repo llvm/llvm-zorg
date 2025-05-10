@@ -128,7 +128,7 @@ provider "kubernetes" {
   alias                  = "llvm-premerge-us-west"
 }
 
-module "premerge_cluster_resources" {
+module "premerge_cluster_us_central_resources" {
   source                     = "./premerge_resources"
   github_app_id              = data.google_secret_manager_secret_version.github_app_id.secret_data
   github_app_installation_id = data.google_secret_manager_secret_version.github_app_installation_id.secret_data
@@ -142,7 +142,12 @@ module "premerge_cluster_resources" {
   }
 }
 
-module "premerge_cluster_resources2" {
+moved {
+  from = module.premerge_cluster_resources
+  to   = module.premerge_cluster_us_central_resources
+}
+
+module "premerge_cluster_us_west_resources" {
   source                     = "./premerge_resources"
   github_app_id              = data.google_secret_manager_secret_version.github_app_id.secret_data
   github_app_installation_id = data.google_secret_manager_secret_version.github_app_installation_id.secret_data
@@ -154,6 +159,11 @@ module "premerge_cluster_resources2" {
     kubernetes = kubernetes.llvm-premerge-us-west
     helm       = helm.llvm-premerge-us-west
   }
+}
+
+moved {
+  from = module.premerge_cluster_resources2
+  to   = module.premerge_cluster_us_west_resources
 }
 
 data "google_secret_manager_secret_version" "metrics_github_pat" {
