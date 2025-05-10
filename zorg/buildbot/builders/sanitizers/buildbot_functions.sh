@@ -293,7 +293,7 @@ function build_stage2 {
     export ASAN_SYMBOLIZER_PATH="${llvm_symbolizer_path}"
     # TODO strict_init_order=true
     export ASAN_OPTIONS="check_initialization_order=true"
-    export ASAN_OPTIONS+=":${san_options}"
+    export ASAN_OPTIONS+=":${san_options}:abort_on_error=0"
     llvm_use_sanitizer="Address"
     fsanitize_flag="-fsanitize=address"
   elif [ "$sanitizer_name" == "hwasan" ]; then
