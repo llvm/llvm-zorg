@@ -293,7 +293,7 @@ function build_stage2 {
     export ASAN_SYMBOLIZER_PATH="${llvm_symbolizer_path}"
     # TODO strict_init_order=true
     export ASAN_OPTIONS="check_initialization_order=true"
-    export ASAN_OPTIONS+=":${san_options}:abort_on_error=0"
+    export ASAN_OPTIONS+=":${san_options}"
     llvm_use_sanitizer="Address"
     fsanitize_flag="-fsanitize=address"
   elif [ "$sanitizer_name" == "hwasan" ]; then
@@ -305,7 +305,7 @@ function build_stage2 {
     cmake_stage2_common_options+=" -DLLVM_ENABLE_PLUGINS=OFF"
   elif [ "$sanitizer_name" == "ubsan" ]; then
     export UBSAN_OPTIONS="external_symbolizer_path=${llvm_symbolizer_path}:print_stacktrace=1"
-    export UBSAN_OPTIONS+=":${san_options}:abort_on_error=0"
+    export UBSAN_OPTIONS+=":${san_options}"
     llvm_use_sanitizer="Undefined"
     fsanitize_flag="-fsanitize=undefined -fno-sanitize-recover=all"
     # FIXME: After switching to LLVM_ENABLE_RUNTIMES, vptr has infitine
