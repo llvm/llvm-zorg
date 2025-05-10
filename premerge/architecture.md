@@ -41,8 +41,12 @@ Our self hosted runners come in two flavors:
 
 ## GCP runners - Architecture overview
 
-Our runners are hosted on a GCP Kubernetes cluster, and use the [Action Runner Controller (ARC)](https://docs.github.com/en/actions/hosting-your-own-runners/managing-self-hosted-runners-with-actions-runner-controller/about-actions-runner-controller).
-The cluster has 3 pools:
+We have two clusters to compose a high availability setup. The description
+below describes an individual cluster, but they are largely identical.
+Any relevant differences are explicitly enumerated.
+
+Our runners are hosted on GCP Kubernetes clustesr, and use the [Action Runner Controller (ARC)](https://docs.github.com/en/actions/hosting-your-own-runners/managing-self-hosted-runners-with-actions-runner-controller/about-actions-runner-controller).
+The clusters have 3 pools:
   - llvm-premerge-linux
   - llvm-premerge-linux-service
   - llvm-premerge-windows
@@ -52,10 +56,12 @@ services required to manage the premerge infra (controller, listeners,
 monitoring). Today, this pool has three `e2-highcpu-4` machine.
 
 **llvm-premerge-linux** is a auto-scaling pool with large `n2-standard-64`
-VMs. This pool runs the Linux workflows.
+VMs. This pool runs the Linux workflows. In the US West cluster, the machines
+are `n2d-standard-64` due to quota limitations.
 
-**llvm-premerge-windows** is a auto-scaling pool with large `n2-standard-64`
-VMs. Similar to the Linux pool, but this time it runs Windows workflows.
+**llvm-premerge-windows** is a auto-scaling pool with large `n2-standard-32`
+VMs. Similar to the Linux pool, but this time it runs Windows workflows. In the
+US West cluster, the machines are `n2d-standard-32` due to quota limitations.
 
 ### Service pool: llvm-premerge-linux-service
 

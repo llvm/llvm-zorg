@@ -3,7 +3,7 @@
 Presubmit monitoring is provided by Grafana.
 The dashboard link is [https://llvm.grafana.net/dashboards](https://llvm.grafana.net/dashboards).
 
-Grafana pulls its data from 2 sources: the GCP Kubernetes cluster & GitHub.
+Grafana pulls its data from 2 sources: the GCP Kubernetes clusters & GitHub.
 Grafana instance access is restricted, but there is a publicly visible dashboard:
 - [Public dashboard](https://llvm.grafana.net/public-dashboards/21c6e0a7cdd14651a90e118df46be4cc)
 
