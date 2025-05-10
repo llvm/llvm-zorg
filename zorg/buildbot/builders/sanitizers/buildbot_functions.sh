@@ -315,7 +315,7 @@ function build_stage2 {
     # TODO strict_init_order=true
     export ASAN_SYMBOLIZER_PATH="${llvm_symbolizer_path}"
     export ASAN_OPTIONS="check_initialization_order=true"
-    export ASAN_OPTIONS+=":${san_options}:abort_on_error=0"
+    export ASAN_OPTIONS+=":${san_options}"
     export UBSAN_OPTIONS="print_stacktrace=1"
     llvm_use_sanitizer="Address;Undefined"
     fsanitize_flag="-fsanitize=address,undefined -fno-sanitize-recover=all"
