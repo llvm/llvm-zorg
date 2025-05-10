@@ -53,14 +53,6 @@ module "premerge_cluster_us_central" {
   windows_machine_type = "n2-standard-32"
 }
 
-# TODO(boomanaiden154): Remove these statements after the changes have been
-# applied.
-
-moved {
-  from = module.premerge_cluster
-  to   = module.premerge_cluster_us_central
-}
-
 # We explicitly specify a single zone for the service node pool locations as
 # terraform by default will create node_count nodes per zone. We only want
 # node_count nodes rather than (node_count * zone count) nodes, so we
@@ -142,11 +134,6 @@ module "premerge_cluster_us_central_resources" {
   }
 }
 
-moved {
-  from = module.premerge_cluster_resources
-  to   = module.premerge_cluster_us_central_resources
-}
-
 module "premerge_cluster_us_west_resources" {
   source                     = "./premerge_resources"
   github_app_id              = data.google_secret_manager_secret_version.github_app_id.secret_data
@@ -159,11 +146,6 @@ module "premerge_cluster_us_west_resources" {
     kubernetes = kubernetes.llvm-premerge-us-west
     helm       = helm.llvm-premerge-us-west
   }
-}
-
-moved {
-  from = module.premerge_cluster_resources2
-  to   = module.premerge_cluster_us_west_resources
 }
 
 data "google_secret_manager_secret_version" "metrics_github_pat" {
