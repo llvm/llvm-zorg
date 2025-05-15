@@ -45,7 +45,8 @@ We have two clusters to compose a high availability setup. The description
 below describes an individual cluster, but they are largely identical.
 Any relevant differences are explicitly enumerated.
 
-Our runners are hosted on GCP Kubernetes clustesr, and use the [Action Runner Controller (ARC)](https://docs.github.com/en/actions/hosting-your-own-runners/managing-self-hosted-runners-with-actions-runner-controller/about-actions-runner-controller).
+Our runners are hosted on GCP Kubernetes clusters, and use the
+[Action Runner Controller (ARC)](https://docs.github.com/en/actions/hosting-your-own-runners/managing-self-hosted-runners-with-actions-runner-controller/about-actions-runner-controller).
 The clusters have 3 pools:
   - llvm-premerge-linux
   - llvm-premerge-linux-service
