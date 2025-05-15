@@ -31,15 +31,19 @@ worst case cause an inconsistent state.
 
 The main part you want too look into is `Menu > Kubernetes Engine > Clusters`.
 
-Currently, we have 3 clusters:
+Currently, we have 4 clusters:
  - `llvm-premerge-checks`: the cluster hosting BuildKite Linux runners.
  - `windows-cluster`: the cluster hosting BuildKite Windows runners.
- - `llvm-premerge-prototype`: the cluster for those GCP hoster runners.
+ - `llvm-premerge-prototype`: The first cluster for GCP hosted runners.
+ - `llvm-premerge-cluster-us-west`: The second cluster for GCP hosted runners.
 
-Yes, it's called `prototype`, but that's the production cluster.
-We should rename it at some point.
+Yes, one is called `prototype`, but that's the production cluster.
+We should rename it at some point. We have two clusters for GCP hosted runners
+to form a high availability setup. They both load balance, and if one fails
+then the other will pick up the work. This also enables seamless migrations
+and upgrades.
 
-To add a VM to the cluster, the VM has to come from a `pool`. A `pool` is
+To add a VM to a cluster, the VM has to come from a `pool`. A `pool` is
 a group of nodes within a cluster that all have the same configuration.
 
 For example:
@@ -88,16 +92,21 @@ To apply any changes to the cluster:
 ## Setting the cluster up for the first time
 
 ```
-terraform apply -target google_container_node_pool.llvm_premerge_linux_service
-terraform apply -target google_container_node_pool.llvm_premerge_linux
-terraform apply -target google_container_node_pool.llvm_premerge_windows
+terraform apply -target module.premerge_cluster_us_central.google_container_node_pool.llvm_premerge_linux_service
+terraform apply -target module.premerge_cluster_us_central.google_container_node_pool.llvm_premerge_linux
+terraform apply -target module.premerge_cluster_us_central.google_container_node_pool.llvm_premerge_windows
+terraform apply -target module.premerge_cluster_us_west.google_container_node_pool.llvm_premerge_linux_service
+terraform apply -target module.premerge_cluster_us_west.google_container_node_pool.llvm_premerge_linux
+terraform apply -target module.premerge_cluster_us_west.google_container_node_pool.llvm_premerge_windows
 terraform apply
 ```
 
 Setting the cluster up for the first time is more involved as there are certain
 resources where terraform is unable to handle explicit dependencies. This means
 that we have to set up the GKE cluster before we setup any of the Kubernetes
-resources as otherwise the Terraform Kubernetes provider will error out.
+resources as otherwise the Terraform Kubernetes provider will error out. This
+needs to be done for both clusters before running the standard
+`terraform apply`.
 
 ## Upgrading/Resetting Github ARC
 
@@ -119,16 +128,21 @@ queued on the Github side. Running build jobs will complete after the helm chart
 are uninstalled unless they are forcibly killed. Note that best practice dictates
 the helm charts should just be uninstalled rather than also setting `maxRunners`
 to zero beforehand as that can cause ARC to accept some jobs but not actually
-execute them which could prevent failover in HA cluster configurations.
+execute them which could prevent failover in a HA cluster configuration like
+ours.
 
 ### Uninstalling the Helm Charts
+
+For the example commands below we will be modifying the cluster in
+`us-central1-a`. You can replace `module.premerge_cluster_us_central` with
+`module.premerge_cluster_us_west` to switch which cluster you are working on.
 
 To begin, start by uninstalling the helm charts by using resource targetting
 on a kubernetes destroy command:
 
 ```bash
-terraform destroy -target helm_release.github_actions_runner_set_linux
-terraform destroy -target helm_release.github_actions_runner_set_windows
+terraform destroy -target module.premerge_cluster_us_central.helm_release.github_actions_runner_set_linux
+terraform destroy -target module.premerge_cluster_us_central.helm_release.github_actions_runner_set_windows
 ```
 
 These should complete, but if they do not, we are still able to get things
@@ -139,8 +153,8 @@ manually delete them with `kubectl delete`. Follow up the previous terraform
 commands by deleting the kubernetes namespaces all the resources live in:
 
 ```bash
-terraform destroy -target kubernetes_namespace.llvm_premerge_linux_runners
-terraform destroy -target kubernetes_namespace.llvm_premerge_windows_runners
+terraform destroy -target module.premerge_cluster_us_central.kubernetes_namespace.llvm_premerge_linux_runners
+terraform destroy -target module.premerge_cluster_us_central.kubernetes_namespace.llvm_premerge_windows_runners
 ```
 
 If things go smoothly, these should complete quickly. If they do not complete,
@@ -184,17 +198,17 @@ version upgrades however.
 
 Start by destroying the helm chart:
 ```bash
-terraform destroy -target helm_release.github_actions_runner_controller
+terraform destroy -target module.premerge_cluster_us_central.helm_release.github_actions_runner_controller
 ```
 
 Then delete the namespace to ensure there are no dangling resources
 ```bash
-terraform destroy -target kubernetes_namespace.llvm_premerge_controller
+terraform destroy -target module.premerge_cluster_us_central.kubernetes_namespace.llvm_premerge_controller
 ```
 
 ### Bumping the Version Number
 
-This is not necessary only for bumping the version of ARC. This involves simply
+This is necessary only for bumping the version of ARC. This involves simply
 updating the version field for the `helm_release` objects in `main.tf`. Make sure
 to commit the changes and push them to `llvm-zorg` to ensure others working on
 the terraform configuration have an up to date state when they pull the repository.
