@@ -153,3 +153,20 @@ prodding while investigating the Linux issues. The issue on the Windows
 side was fixed in the same way, by uninstalling the helm charts, deleting
 dangling resources, deleting the namespaces, and then reinstalling the
 helm charts.
+
+### Postmortem
+
+We ended up running into this issue several more times, hitting an instance
+once every couple of weeks.
+
+After some further investigation, it turns out this is mostly intended behavior
+of Github ARC. When a `ephemeralrunner` object fails to start more than five
+times, it goes into a failure state permanently with the idea that manual
+intervention and notification is beneficial. Simply deleting the failed
+`epehemralrunner` objects allows Github ARC to recreate them where they schedule
+normally. This is how later incidents were resolved.
+
+These runners are most likely failing due to image pull failures which was one
+of our original hypotheses on the issue. Recent changes to Github ARC
+in https://github.com/actions/actions-runner-controller/pull/4059 should help
+with this issues, although further testing is needed.
