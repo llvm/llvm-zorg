@@ -184,11 +184,14 @@ resource "kubernetes_secret" "metrics_secrets" {
     "buildkite-token"        = data.google_secret_manager_secret_version.metrics_buildkite_token.secret_data
   }
 
-  type     = "Opaque"
-  provider = kubernetes.llvm-premerge-us-central
+  type       = "Opaque"
+  provider   = kubernetes.llvm-premerge-us-central
+  depends_on = [kubernetes_namespace.metrics]
 }
 
 resource "kubernetes_manifest" "metrics_deployment" {
   manifest = yamldecode(file("metrics_deployment.yaml"))
   provider = kubernetes.llvm-premerge-us-central
+
+  depends_on = [kubernetes_namespace.metrics, kubernetes_secret.metrics_secrets]
 }
