@@ -43,11 +43,9 @@ resource "local_file" "terraform_state" {
 
 data "google_client_config" "current" {}
 
-# TODO(boomanaiden154): Rename this to llvm-premerge-cluster-us-central when
-# commit traffic is low.
 module "premerge_cluster_us_central" {
   source               = "./gke_cluster"
-  cluster_name         = "llvm-premerge-prototype"
+  cluster_name         = "llvm-premerge-cluster-us-central"
   region               = "us-central1-a"
   linux_machine_type   = "n2-standard-64"
   windows_machine_type = "n2-standard-32"
@@ -125,7 +123,7 @@ module "premerge_cluster_us_central_resources" {
   github_app_id              = data.google_secret_manager_secret_version.github_app_id.secret_data
   github_app_installation_id = data.google_secret_manager_secret_version.github_app_installation_id.secret_data
   github_app_private_key     = data.google_secret_manager_secret_version.github_app_private_key.secret_data
-  cluster_name               = "llvm-premerge-prototype"
+  cluster_name               = "llvm-premerge-cluster-us-central"
   grafana_token              = data.google_secret_manager_secret_version.grafana_token.secret_data
   runner_group_name          = "llvm-premerge-cluster-us-central"
   providers = {
