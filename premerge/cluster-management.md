@@ -134,15 +134,16 @@ ours.
 ### Uninstalling the Helm Charts
 
 For the example commands below we will be modifying the cluster in
-`us-central1-a`. You can replace `module.premerge_cluster_us_central` with
-`module.premerge_cluster_us_west` to switch which cluster you are working on.
+`us-central1-a`. You can replace `module.premerge_cluster_us_central_resources`
+with `module.premerge_cluster_us_west_resources` to switch which cluster you
+are working on.
 
 To begin, start by uninstalling the helm charts by using resource targetting
 on a kubernetes destroy command:
 
 ```bash
-terraform destroy -target module.premerge_cluster_us_central.helm_release.github_actions_runner_set_linux
-terraform destroy -target module.premerge_cluster_us_central.helm_release.github_actions_runner_set_windows
+terraform destroy -target module.premerge_cluster_us_central_resources.helm_release.github_actions_runner_set_linux
+terraform destroy -target module.premerge_cluster_us_central_resources.helm_release.github_actions_runner_set_windows
 ```
 
 These should complete, but if they do not, we are still able to get things
@@ -153,8 +154,8 @@ manually delete them with `kubectl delete`. Follow up the previous terraform
 commands by deleting the kubernetes namespaces all the resources live in:
 
 ```bash
-terraform destroy -target module.premerge_cluster_us_central.kubernetes_namespace.llvm_premerge_linux_runners
-terraform destroy -target module.premerge_cluster_us_central.kubernetes_namespace.llvm_premerge_windows_runners
+terraform destroy -target module.premerge_cluster_us_central_resources.kubernetes_namespace.llvm_premerge_linux_runners
+terraform destroy -target module.premerge_cluster_us_central_resources.kubernetes_namespace.llvm_premerge_windows_runners
 ```
 
 If things go smoothly, these should complete quickly. If they do not complete,
@@ -198,12 +199,12 @@ version upgrades however.
 
 Start by destroying the helm chart:
 ```bash
-terraform destroy -target module.premerge_cluster_us_central.helm_release.github_actions_runner_controller
+terraform destroy -target module.premerge_cluster_us_central_resources.helm_release.github_actions_runner_controller
 ```
 
 Then delete the namespace to ensure there are no dangling resources
 ```bash
-terraform destroy -target module.premerge_cluster_us_central.kubernetes_namespace.llvm_premerge_controller
+terraform destroy -target module.premerge_cluster_us_central_resources.kubernetes_namespace.llvm_premerge_controller
 ```
 
 ### Bumping the Version Number
