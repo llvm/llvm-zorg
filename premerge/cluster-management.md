@@ -34,14 +34,15 @@ The main part you want too look into is `Menu > Kubernetes Engine > Clusters`.
 Currently, we have 4 clusters:
  - `llvm-premerge-checks`: the cluster hosting BuildKite Linux runners.
  - `windows-cluster`: the cluster hosting BuildKite Windows runners.
- - `llvm-premerge-prototype`: The first cluster for GCP hosted runners.
+ - `llvm-premerge-cluster-us-central`: The first cluster for GCP hosted runners.
  - `llvm-premerge-cluster-us-west`: The second cluster for GCP hosted runners.
 
-Yes, one is called `prototype`, but that's the production cluster.
-We should rename it at some point. We have two clusters for GCP hosted runners
-to form a high availability setup. They both load balance, and if one fails
-then the other will pick up the work. This also enables seamless migrations
-and upgrades.
+`llvm-premerge-checks` and `windows-cluster` are part of the old Buildkite
+infrastructure. For the new infrastructure, we have two clusters,
+`llvm-premerge-cluster-us-central` and `llvm-premerge-cluster-us-west` for GCP
+hosted runners to form a high availability setup. They both load balance, and
+if one fails then the other will pick up the work. This also enables seamless
+migrations and upgrades.
 
 To add a VM to a cluster, the VM has to come from a `pool`. A `pool` is
 a group of nodes within a cluster that all have the same configuration.
@@ -51,7 +52,7 @@ A pool can say it contains at most 10 nodes, each using the `c2d-highcpu-32`
 configuration (32 cores, 64GB ram).
 In addition, a pool can `autoscale` [docs](https://cloud.google.com/kubernetes-engine/docs/concepts/cluster-autoscaler).
 
-If you click on `llvm-premerge-prototype`, and go to the `Nodes` tab, you
+If you click on `llvm-premerge-cluster-us-central`, and go to the `Nodes` tab, you
 will see 3 node pools:
 - llvm-premerge-linux
 - llvm-premerge-linux-service
