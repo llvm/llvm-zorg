@@ -805,9 +805,10 @@ all = [
     'builddir': "clang-s390x-linux-multistage",
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
                     jobs=4,
-                    clean=False,
+                    clean=True,
                     checkout_lld=False,
                     useTwoStage=True,
+                    testStage1=False,
                     stage1_config='Release',
                     stage2_config='Release',
                     extra_cmake_args=[
