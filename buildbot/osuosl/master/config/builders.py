@@ -1445,6 +1445,46 @@ all = [
                         '-DLLDB_TEST_USER_ARGS=--skip-category=watchpoint',
                         '-DLLDB_ENFORCE_STRICT_TEST_REQUIREMENTS=ON'])},
 
+    {'name': "lldb-x86_64-win",
+    'tags'  : ["lldb"],
+    'workernames': ["as-builder-10"],
+    'builddir': "lldb-x86-64",
+    'factory': UnifiedTreeBuilder.getCmakeExBuildFactory(
+                    depends_on_projects = ["llvm", "clang", "lld", "lldb"],
+                    enable_runtimes = None,
+                    checks = [
+                        "check-lldb-unit",
+                        "check-lldb-api",
+                        "check-lldb-shell",
+                    ],
+                    vs = "autodetect",
+                    clean = True,
+                    cmake_definitions = {
+                        "CMAKE_BUILD_TYPE"              : "Release",
+                        "CMAKE_C_COMPILER_LAUNCHER"     : "ccache",
+                        "CMAKE_CXX_COMPILER_LAUNCHER"   : "ccache",
+                        "CMAKE_CXX_FLAGS"               : "-D__OPTIMIZE__",
+
+                        "LLVM_ENABLE_ASSERTIONS"        : "ON",    
+                        "LLVM_INCLUDE_BENCHMARKS"       : "OFF",
+                        "LLVM_PARALLEL_LINK_JOBS"       : 8,
+                        "LLVM_LIT_ARGS"                 : "-v -vv --threads=32 --time-tests",
+                        
+                        "LLDB_TEST_USER_ARGS"           : "--skip-category=watchpoint",
+                        "LLDB_ENFORCE_STRICT_TEST_REQUIREMENTS" : "ON",
+                    },
+                    env = {
+                        'CC'            : "clang-cl.exe",
+                        'CXX'           : "clang-cl.exe",
+                        'LLDB_USE_LLDB_SERVER' : "1",
+                        'CCACHE_DIR'    : util.Interpolate("%(prop:builddir)s/ccache-db"),
+                        # TMP/TEMP within the build dir (to utilize a ramdisk).
+                        'TMP'           : util.Interpolate("%(prop:builddir)s/build"),
+                        'TEMP'          : util.Interpolate("%(prop:builddir)s/build"),
+                    },
+                )
+        },
+
 # LLD builders.
 
     {'name' : "lld-x86_64-win",
