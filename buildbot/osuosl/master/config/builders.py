@@ -152,24 +152,34 @@ all = [
     'tags'  : ["llvm", "expensive-checks"],
     'workernames' : ["as-builder-4"],
     'builddir': "expensive-checks",
-    'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
-                    depends_on_projects=["llvm", "lld"],
-                    clean=True,
-                    extra_configure_args=[
-                        "-DLLVM_CCACHE_BUILD=ON",
-                        "-DLLVM_ENABLE_EXPENSIVE_CHECKS=ON",
-                        "-DLLVM_ENABLE_WERROR=OFF",
-                        "-DLLVM_USE_SPLIT_DWARF=ON",
-                        "-DLLVM_USE_LINKER=gold",
-                        "-DCMAKE_BUILD_TYPE=Debug",
-                        "-DCMAKE_CXX_FLAGS=-U_GLIBCXX_DEBUG -Wno-misleading-indentation",
-                        "-DLLVM_LIT_ARGS=-vv --time-tests"],
-                    env={
-                        'CCACHE_DIR' : util.Interpolate("%(prop:builddir)s/ccache-db"),
+    'factory' : UnifiedTreeBuilder.getCmakeExBuildFactory(
+                    depends_on_projects = [
+                        'llvm',
+                        'lld',
+                    ],
+                    clean = True,
+                    checks = [
+                        "check-all"
+                    ],
+                    cmake_definitions = {
+                        "LLVM_CCACHE_BUILD"             : "ON",
+                        "LLVM_ENABLE_EXPENSIVE_CHECKS"  : "ON",
+                        "LLVM_ENABLE_WERROR"            : "OFF",
+                        "LLVM_USE_LINKER"               : "lld-21",
+                        "LLVM_LIT_ARGS"                 : "-vv --time-tests",
+                        "CMAKE_BUILD_TYPE"              : "Release",
+                        "CMAKE_CXX_FLAGS"               : "-U_GLIBCXX_DEBUG -Wno-misleading-indentation",
+                    },
+                    env = {
+                        'CC'            : "clang-21",
+                        'CXX'           : "clang++-21",
+                        'CCACHE_DIR'    : util.Interpolate("%(prop:builddir)s/ccache-db"),
                         # TMP/TEMP within the build dir (to utilize a ramdisk).
-                        'TMP'        : util.Interpolate("%(prop:builddir)s/build"),
-                        'TEMP'       : util.Interpolate("%(prop:builddir)s/build"),
-                    })},
+                        'TMP'           : util.Interpolate("%(prop:builddir)s/build"),
+                        'TEMP'          : util.Interpolate("%(prop:builddir)s/build"),
+                    },
+                )
+        },
 
     {'name' : "llvm-clang-x86_64-expensive-checks-win",
     'tags'  : ["llvm", "expensive-checks"],
