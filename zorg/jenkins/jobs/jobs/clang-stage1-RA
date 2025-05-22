@@ -62,7 +62,7 @@ pipeline {
                 MACOSX_DEPLOYMENT_TARGET="13.6"
             }
             steps {
-                timeout(90) {
+                timeout(120) {
                     withCredentials([string(credentialsId: 's3_resource_bucket', variable: 'S3_BUCKET')]) {
                         sh '''
                         set -u
