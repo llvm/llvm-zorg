@@ -103,7 +103,7 @@ pipeline {
                 PATH="$PATH:/usr/bin:/usr/local/bin"
             }
             steps {
-                timeout(90) {
+                timeout(120) {
                     sh '''
                     set -u
                     source ./venv/bin/activate
