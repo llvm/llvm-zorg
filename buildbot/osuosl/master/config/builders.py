@@ -1457,16 +1457,6 @@ all = [
 
 # LLD builders.
 
-    {'name' : "lld-x86_64-win",
-    'tags'  : ["lld"],
-    'workernames' : ["as-worker-93"],
-    'builddir': "lld-x86_64-win",
-    'factory' : UnifiedTreeBuilder.getCmakeWithNinjaWithMSVCBuildFactory(
-                    depends_on_projects=['llvm', 'lld'],
-                    vs="autodetect",
-                    extra_configure_args = [
-                        '-DLLVM_ENABLE_WERROR=OFF'])},
-
     {'name' : "ppc64le-lld-multistage-test",
     'tags'  : ["lld", "ppc", "ppc64le"],
     'workernames' : ["ppc64le-lld-multistage-test"],
