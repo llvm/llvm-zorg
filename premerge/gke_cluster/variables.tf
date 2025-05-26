@@ -23,3 +23,9 @@ variable "service_node_pool_locations" {
   type        = list(any)
   default     = null
 }
+
+variable "windows_disk_type" {
+  description = "The GCP disk type to use for the windows node boot disks"
+  type = string
+  default = "pd-balanced"
+}
