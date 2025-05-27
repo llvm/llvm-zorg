@@ -1464,7 +1464,9 @@ all = [
                         "CMAKE_C_COMPILER_LAUNCHER"     : "ccache",
                         "CMAKE_CXX_COMPILER_LAUNCHER"   : "ccache",
                         "CMAKE_CXX_FLAGS"               : "-D__OPTIMIZE__",
+                        "CMAKE_MSVC_RUNTIME_LIBRARY"    : "MultiThreadedDLL",
 
+                        "LLVM_HOST_TRIPLE"              : "x86_64-pc-windows-msvc",
                         "LLVM_ENABLE_ASSERTIONS"        : "ON",    
                         "LLVM_INCLUDE_BENCHMARKS"       : "OFF",
                         "LLVM_PARALLEL_LINK_JOBS"       : 8,
@@ -1472,10 +1474,14 @@ all = [
                         
                         "LLDB_TEST_USER_ARGS"           : "--skip-category=watchpoint",
                         "LLDB_ENFORCE_STRICT_TEST_REQUIREMENTS" : "ON",
+                        "LLDB_ENABLE_SWIG"              : "ON ",
+                        "LLDB_ENABLE_LIBEDIT"           : "OFF",
+                        "LLDB_ENABLE_CURSES"            : "OFF",
+                        "LLDB_ENABLE_LZMA"              : "OFF",
+                        "LLDB_ENABLE_LIBXML2"           : "OFF",
+                        "LLDB_CAN_USE_LLDB_SERVER"      : "ON",
                     },
                     env = {
-                        'CC'            : "clang-cl.exe",
-                        'CXX'           : "clang-cl.exe",
                         'LLDB_USE_LLDB_SERVER' : "1",
                         'CCACHE_DIR'    : util.Interpolate("%(prop:builddir)s/ccache-db"),
                         # TMP/TEMP within the build dir (to utilize a ramdisk).
