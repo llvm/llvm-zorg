@@ -3018,9 +3018,9 @@ all += [
                         ],
                     )},
 
-    {'name': "bolt-aarch64-ubuntu-clang",
+    {'name': "bolt-aarch64-ubuntu-clang-meta",
     'tags': ["bolt"],
-    'workernames':["bolt-worker-aarch64"],
+    'workernames':["bolt-worker-aarch64-meta"],
     'builddir': "bolt-aarch64-ubuntu-clang",
     'factory' : BOLTBuilder.getBOLTCmakeBuildFactory(
                     bolttests=False,
@@ -3045,9 +3045,9 @@ all += [
                         ],
                     )},
 
-    {'name': "bolt-aarch64-ubuntu-clang-shared",
+    {'name': "bolt-aarch64-ubuntu-clang-shared-meta",
     'tags': ["bolt"],
-    'workernames':["bolt-worker-aarch64"],
+    'workernames':["bolt-worker-aarch64-meta"],
     'builddir': "bolt-aarch64-ubuntu-clang-shared",
     'factory' : BOLTBuilder.getBOLTCmakeBuildFactory(
                     bolttests=True,
