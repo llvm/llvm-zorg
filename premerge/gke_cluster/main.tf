@@ -96,7 +96,7 @@ resource "google_container_node_pool" "llvm_premerge_windows" {
       "disable-legacy-endpoints" = "true"
     }
     disk_size_gb = 200
-    disk_type = var.windows_disk_type
+    disk_type = "pd-ssd"
     # Terraform wants to recreate the node pool everytime whe running
     # terraform apply unless we explicitly set this.
     # TODO(boomanaiden154): Look into why terraform is doing this so we do
