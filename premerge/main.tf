@@ -62,10 +62,6 @@ module "premerge_cluster_us_west" {
   linux_machine_type          = "n2d-standard-64"
   windows_machine_type        = "n2d-standard-32"
   service_node_pool_locations = ["us-west1-a"]
-  # TODO(boomanaiden154): Remove this once the experiment is over, either
-  # reverting to how everything was before or making this the default within
-  # the gke_cluster module.
-  windows_disk_type = "pd-ssd"
 }
 
 provider "helm" {
