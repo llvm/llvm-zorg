@@ -170,3 +170,54 @@ These runners are most likely failing due to image pull failures which was one
 of our original hypotheses on the issue. Recent changes to Github ARC
 in https://github.com/actions/actions-runner-controller/pull/4059 should help
 with this issues, although further testing is needed.
+
+Before that patch makes it into a release, an important maintenance step is
+to periodically (every couple of days should be fine) go through and delete
+failed `ephemeralrunner` instances. This can be done by looking at all
+`epehemralrunner` instances and then deleting any that are failed. To get the 
+list of runners, run the following command:
+
+```bash
+kubectl get ephemeralrunner --all-namespaces
+```
+
+this will produce an output like the following:
+
+```
+NAMESPACE                       NAME                                               GITHUB CONFIG URL         RUNNERID   STATUS    JOBREPOSITORY       JOBWORKFLOWREF                                                             WORKFLOWRUNID   JOBDISPLAYNAME   MESSAGE                                       AGE
+llvm-premerge-linux-runners     llvm-premerge-linux-runners-dhdwg-runner-kbh9v     https://github.com/llvm   434949     Running   llvm/llvm-project   llvm/llvm-project/.github/workflows/premerge.yaml@refs/pull/141711/merge                                                                                  3m4s
+llvm-premerge-windows-runners   llvm-premerge-windows-runners-4pgkh-runner-4wv5w   https://github.com/llvm   434901     Running   llvm/llvm-project   llvm/llvm-project/.github/workflows/premerge.yaml@refs/pull/141601/merge                                                                                  64m
+llvm-premerge-windows-runners   llvm-premerge-windows-runners-4pgkh-runner-92hgr   https://github.com/llvm   434557     Failed                                                                                                                                    Pod has failed to start more than 5 times:    7h18m
+llvm-premerge-windows-runners   llvm-premerge-windows-runners-4pgkh-runner-9jrtj   https://github.com/llvm   434898     Running   llvm/llvm-project   llvm/llvm-project/.github/workflows/premerge.yaml@refs/pull/140937/merge                                                                                  69m
+llvm-premerge-windows-runners   llvm-premerge-windows-runners-4pgkh-runner-d2bbd   https://github.com/llvm   434941     Running   llvm/llvm-project   llvm/llvm-project/.github/workflows/premerge.yaml@refs/pull/141965/merge                                                                                  19m
+llvm-premerge-windows-runners   llvm-premerge-windows-runners-4pgkh-runner-f7gzn   https://github.com/llvm   434924     Running   llvm/llvm-project   llvm/llvm-project/.github/workflows/premerge.yaml@refs/pull/141966/merge                                                                                  39m
+llvm-premerge-windows-runners   llvm-premerge-windows-runners-4pgkh-runner-l6v2k   https://github.com/llvm   434948                                                                                                                                                                                             3m4s
+llvm-premerge-windows-runners   llvm-premerge-windows-runners-4pgkh-runner-lvt4f   https://github.com/llvm   434923     Running   llvm/llvm-project   llvm/llvm-project/.github/workflows/premerge.yaml@refs/pull/141151/merge                                                                                  39m
+llvm-premerge-windows-runners   llvm-premerge-windows-runners-4pgkh-runner-rbtpz   https://github.com/llvm   434944     Running   llvm/llvm-project   llvm/llvm-project/.github/workflows/premerge.yaml@refs/pull/137727/merge                                                                                  11m
+llvm-premerge-windows-runners   llvm-premerge-windows-runners-4pgkh-runner-vc5k4   https://github.com/llvm   434916     Running   llvm/llvm-project   llvm/llvm-project/.github/workflows/premerge.yaml@refs/pull/141963/merge                                                                                  56m
+```
+
+Notice that one of the runners has failed. It can be claned up by running
+the following command (note that we also specify the namespace the runner is
+in):
+
+```bash
+kubectl delete ephemeralrunner llvm-premerge-windows-runners-4pgkh-runner-92hgr -n llvm-premerge-windows-runners
+```
+
+That command should execute quickly and will clean it up.
+
+**IMPORTANT:** These steps need to be peformed separately on both
+`llvm-premerge-cluster-us-central` and `llvm-premerge-us-west`. You can switch
+between them using the standard `gcloud` authentication commands. For
+`llvm-premerge-cluster-us-central` you would run:
+
+```bash
+gcloud container clusters get-credentials llvm-premerge-cluster-us-central --location us-central1-a
+```
+
+and the following for `llvm-premerge-cluster-us-west`:
+
+```bash
+gcloud container clusters get-credentials llvm-premerge-cluster-us-west --location us-west1
+```
