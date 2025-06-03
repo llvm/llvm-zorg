@@ -1472,7 +1472,6 @@ all = [
                         "LLVM_PARALLEL_LINK_JOBS"       : 8,
                         "LLVM_LIT_ARGS"                 : "-v -vv --threads=32 --time-tests",
                         
-                        "LLDB_TEST_USER_ARGS"           : "--skip-category=watchpoint",
                         "LLDB_ENFORCE_STRICT_TEST_REQUIREMENTS" : "ON",
                         "LLDB_ENABLE_SWIG"              : "ON ",
                         "LLDB_ENABLE_LIBEDIT"           : "OFF",
