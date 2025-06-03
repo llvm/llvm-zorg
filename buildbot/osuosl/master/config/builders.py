@@ -1466,7 +1466,6 @@ all = [
                         "CMAKE_CXX_FLAGS"               : "-D__OPTIMIZE__",
                         "CMAKE_MSVC_RUNTIME_LIBRARY"    : "MultiThreadedDLL",
 
-                        "LLVM_HOST_TRIPLE"              : "x86_64-pc-windows-msvc",
                         "LLVM_ENABLE_ASSERTIONS"        : "ON",    
                         "LLVM_INCLUDE_BENCHMARKS"       : "OFF",
                         "LLVM_PARALLEL_LINK_JOBS"       : 8,
