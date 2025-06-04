@@ -259,7 +259,8 @@ def getReporters():
                         "llvm-clang-win-x-armv7l", "llvm-clang-win-x-aarch64",
                         "llvm-nvptx-nvidia-ubuntu", "llvm-nvptx64-nvidia-ubuntu",
                         "llvm-nvptx-nvidia-win", "llvm-nvptx64-nvidia-win",
-                        "lldb-remote-linux-ubuntu", "lldb-remote-linux-win"])
+                        "lldb-remote-linux-ubuntu", "lldb-remote-linux-win",
+                        "lldb-x86_64-win"])
             ]),
         reporters.MailNotifier(
             fromaddr = status_email_fromaddr,
@@ -268,7 +269,8 @@ def getReporters():
             generators = [
                 utils.LLVMDefaultBuildStatusGenerator(
                     builders = [
-                        "lldb-remote-linux-ubuntu", "lldb-remote-linux-win"])
+                        "lldb-remote-linux-ubuntu", "lldb-remote-linux-win",
+                        "lldb-x86_64-win"])
             ]),
         reporters.MailNotifier(
             fromaddr = status_email_fromaddr,
