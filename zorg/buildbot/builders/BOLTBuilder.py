@@ -44,16 +44,16 @@ def getBOLTCmakeBuildFactory(
             ]
         # Clean checkout of bolt-tests if cleanBuildRequested
         f.addSteps([
-            steps.RemoveDirectory(name="BOLT tests: clean",
+            steps.RemoveDirectory(name="BOLT large tests: clean",
                 dir=bolttests_dir,
                 haltOnFailure=True,
                 warnOnFailure=True,
                 doStepIf=cleanBuildRequestedByProperty),
 
-            steps.Git(name="BOLT tests: checkout",
+            steps.Git(name="BOLT large tests: checkout",
                 description="fetching",
                 descriptionDone="fetch",
-                descriptionSuffix="BOLT Tests",
+                descriptionSuffix="BOLT Large Tests",
                 repourl='https://github.com/rafaelauler/bolt-tests.git',
                 workdir=bolttests_dir,
                 alwaysUseLatest=True),
@@ -145,17 +145,6 @@ def getBOLTCmakeBuildFactory(
                 haltOnFailure=False,
                 flunkOnFailure=False,
                 doStepIf=FileExists('build/.llvm-bolt.diff'),
-                env=env),
-            LitTestCommand(
-                name='nfc-stat-check',
-                command=(f"../{f.monorepo_dir}/bolt/utils/nfc-stat-parser.py "
-                         "`find -name timing.log`"),
-                description="Check BOLT processing time and max RSS swings",
-                warnOnFailure=True,
-                haltOnFailure=False,
-                flunkOnFailure=False,
-                #doStepIf=FileExists('build/.llvm-bolt.diff'),
-                doStepIf=False,
                 env=env),
             ])
 
