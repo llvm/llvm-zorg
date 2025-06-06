@@ -1,4 +1,5 @@
 from buildbot.plugins import steps
+from buildbot.process.results import SUCCESS, FAILURE, WARNINGS
 from buildbot.steps.shell import ShellCommand
 from zorg.buildbot.builders.UnifiedTreeBuilder import getLLVMBuildFactoryAndSourcecodeSteps, addCmakeSteps, addNinjaSteps
 from zorg.buildbot.commands.LitTestCommand import LitTestCommand
@@ -91,6 +92,26 @@ def getBOLTCmakeBuildFactory(
                 warnOnFailure=True,
                 haltOnFailure=False,
                 flunkOnFailure=False,
+                env=env),
+            ShellCommand(
+                name='nfc-check-validation',
+                command=(
+                    "info=$(bin/llvm-bolt.new --version | grep 'BOLT revision' "
+                    "| grep -q '<unknown>' || echo 'bolt-revision '); "
+                    "info=$info$(readelf --notes bin/llvm-bolt.new "
+                    "| grep -q 'Build ID:' && echo 'GNU-build-id'); "
+                    "[ ! -z \"$info\" ] && "
+                    "echo -e 'NFC-Mode: unique IDs found in binaries: '$info''"
+                    "'\nThis undoes nfc-mode by unconditionally "
+                    "executing tests'; "
+                "return 2"),
+                description=('Check that nfc-mode works as intended when '
+                             'comparing with the previous commit.'),
+                haltOnFailure=False,
+                warnOnFailure=True,
+                warnOnWarnings=True,
+                decodeRC={0: SUCCESS, 1: FAILURE, 2: WARNINGS},
+                descriptionDone=["NFC-Mode unique IDs in binaries"],
                 env=env),
             ShellCommand(
                 name='check-bolt-different',
