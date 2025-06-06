@@ -347,7 +347,7 @@ class LLVMFailGitHubReporter(GitHubCommentPush):
                 break
 
             log.msg(
-                "LLVMFailGitHubReporter.createStatus: WARNING: Got events list for PR#{issue} (page {page}): {events}."
+                f"LLVMFailGitHubReporter.createStatus: WARNING: Got events list for PR#{issue} (page {page}): {events}."
             )
 
             for event in events:
