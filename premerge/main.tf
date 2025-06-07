@@ -158,10 +158,6 @@ data "google_secret_manager_secret_version" "metrics_grafana_metrics_userid" {
   secret = "llvm-premerge-metrics-grafana-metrics-userid"
 }
 
-data "google_secret_manager_secret_version" "metrics_buildkite_token" {
-  secret = "llvm-premerge-metrics-buildkite-graphql-token"
-}
-
 resource "kubernetes_namespace" "metrics" {
   metadata {
     name = "metrics"
@@ -179,7 +175,6 @@ resource "kubernetes_secret" "metrics_secrets" {
     "github-token"           = data.google_secret_manager_secret_version.metrics_github_pat.secret_data
     "grafana-api-key"        = data.google_secret_manager_secret_version.metrics_grafana_api_key.secret_data
     "grafana-metrics-userid" = data.google_secret_manager_secret_version.metrics_grafana_metrics_userid.secret_data
-    "buildkite-token"        = data.google_secret_manager_secret_version.metrics_buildkite_token.secret_data
   }
 
   type       = "Opaque"
