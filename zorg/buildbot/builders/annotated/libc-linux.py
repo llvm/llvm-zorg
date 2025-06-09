@@ -30,6 +30,12 @@ def is_x86_64_builder(builder_name):
 def is_riscv32_builder(builder_name):
     return 'riscv32' in builder_name
 
+def is_arm32_builder(builder_name):
+    return 'arm32' in builder_name
+
+def is_qemu_builder(builder_name):
+  return 'qemu' in builder_name
+
 def main(argv):
     ap = argparse.ArgumentParser()
     ap.add_argument('--asan', action='store_true', default=False,
@@ -47,6 +53,8 @@ def main(argv):
     riscv_build = is_riscv_builder(builder_name)
     x86_64_build = is_x86_64_builder(builder_name)
     riscv32_build = is_riscv32_builder(builder_name)
+    arm32_build = is_arm32_builder(builder_name)
+    qemu_build = is_qemu_builder(builder_name)
 
     if gcc_build:
         cc = 'gcc'
@@ -110,6 +118,10 @@ def main(argv):
             cmake_args.append('-DLLVM_TARGETS_TO_BUILD=RISCV')
             cmake_args.append('-DCMAKE_LINKER=/usr/bin/ld.lld')
             cmake_args.append('-DLLVM_LIBC_MPFR_INSTALL_PATH={}/gmp+mpfr/'.format(os.getenv('HOME')))
+
+        if arm32_build and qemu_build:
+            cmake_args.append('-DCMAKE_TARGET_TRIPLE=arm-linux-gnueabihf')
+            cmake_args.append('-DLIBC_TEST_COMPILE_OPTIONS_DEFAULT="-static"')
 
         if bootstrap_build:
             cmake_root = 'llvm'

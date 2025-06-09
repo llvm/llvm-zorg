@@ -2287,6 +2287,15 @@ all += [
                     depends_on_projects=['llvm', 'libc', 'clang', 'clang-tools-extra'],
                     extra_args=['--debug'])},
 
+    {'name' : 'libc-arm32-qemu-debian-dbg',
+    'tags'  : ["libc"],
+    'workernames' : ['libc-arm32-qemu-debian'],
+    'builddir': 'libc-arm32-qemu-debian-dbg',
+    'factory' : AnnotatedBuilder.getAnnotatedBuildFactory(
+                    script="libc-linux.py",
+                    depends_on_projects=['llvm', 'libc', 'clang', 'clang-tools-extra'],
+                    extra_args=['--debug'])},
+
     {'name' : 'libc-aarch64-ubuntu-dbg',
     'tags'  : ["libc"],
     'workernames' : ['libc-aarch64-ubuntu'],
