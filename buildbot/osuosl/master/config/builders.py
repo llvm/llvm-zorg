@@ -331,8 +331,7 @@ all = [
                         "-DCLANG_DEFAULT_LINKER=lld",
                         "-DCMAKE_TRY_COMPILE_CONFIGURATION=Release",
                         "-DCOMPILER_RT_BUILD_SANITIZERS=OFF",
-                        "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
-                        "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache"])},
+                        "-DLLVM_CCACHE_BUILD=ON"])},
 
     ## ARMv8 check-all
     {'name' : "clang-armv8-quick",
@@ -665,8 +664,7 @@ all = [
                     extra_cmake_args=[
                         "-DCLANG_DEFAULT_LINKER=lld",
                         "-DCMAKE_TRY_COMPILE_CONFIGURATION=Release",
-                        "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
-                        "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
+                        "-DLLVM_CCACHE_BUILD=ON",
                         "-DCOMPILER_RT_BUILD_SANITIZERS=OFF"])},
 
     {'name' : 'clang-x64-windows-msvc',
@@ -1448,8 +1446,7 @@ all = [
                     clean=True,
                     test=True,
                     extra_cmake_args=[
-                        "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
-                        "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
+                        "-DLLVM_CCACHE_BUILD=ON",
                         # Hardware breakpoints and watchpoints are not yet supported,
                         # https://github.com/llvm/llvm-project/issues/80665.
                         '-DLLDB_TEST_USER_ARGS=--skip-category=watchpoint',
@@ -2656,8 +2653,7 @@ all += [
                         "-DCLANG_DEFAULT_LINKER=lld",
                         "-DCMAKE_TRY_COMPILE_CONFIGURATION=Release",
                         "-DCOMPILER_RT_BUILD_SANITIZERS=OFF",
-                        "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
-                        "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache"])},
+                        "-DLLVM_CCACHE_BUILD=ON"])},
 
     {'name' : 'ppc64-flang-aix',
     'tags'  : ["flang", "ppc", "ppc64", "aix"],
