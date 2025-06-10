@@ -291,6 +291,7 @@ def getReporters():
                         "libc-aarch64-ubuntu-dbg",
                         "libc-aarch64-ubuntu-fullbuild-dbg",
                         "libc-arm32-debian-dbg",
+                        "libc-arm32-qemu-debian-dbg",
                         "libc-riscv64-debian-dbg",
                         "libc-riscv64-debian-fullbuild-dbg",
                         "libc-x86_64-debian",
