@@ -120,8 +120,8 @@ def main(argv):
             cmake_args.append('-DLLVM_LIBC_MPFR_INSTALL_PATH={}/gmp+mpfr/'.format(os.getenv('HOME')))
 
         if arm32_build and qemu_build:
-            cmake_args.append('-DCMAKE_TARGET_TRIPLE=arm-linux-gnueabihf')
-            cmake_args.append('-DLIBC_TEST_COMPILE_OPTIONS_DEFAULT="-static"')
+            cmake_args.append('-DLIBC_TARGET_TRIPLE=arm-linux-gnueabihf')
+            cmake_args.append('-DLIBC_TEST_COMPILE_OPTIONS_DEFAULT=-static')
 
         if bootstrap_build:
             cmake_root = 'llvm'
