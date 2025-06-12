@@ -97,12 +97,13 @@ def getBOLTCmakeBuildFactory(
                 name='nfc-check-validation',
                 command=(
                     "info=$(bin/llvm-bolt.new --version | grep 'BOLT revision' "
-                    "| grep -q '<unknown>' || echo 'bolt-revision '); "
+                    "| grep -q '<unknown>' || echo 'bolt-revision'); "
                     "info=$info$(readelf --notes bin/llvm-bolt.new "
-                    "| grep -q 'Build ID:' && echo 'GNU-build-id'); "
+                    "| grep -q 'Build ID:' && echo ' GNU-build-id'); "
+                    "info=$(echo \"$info\" | sed 's/^ //'); "
                     "[ ! -z \"$info\" ] || return 0 && "
-                    "(echo -e 'NFC-Mode: unique IDs found in binaries: '$info''"
-                    "'\nThis means tests are executed at all times'; return 2)"
+                    "(printf \"NFC-Mode WARNING: unique IDs found in binaries ($info)"
+                    ". This means tests will run at all times.\"; return 2)"
                     ),
                 description=('Check that nfc-mode works as intended when '
                              'comparing with the previous commit.'),
