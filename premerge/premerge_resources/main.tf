@@ -23,6 +23,30 @@ resource "kubernetes_namespace" "llvm_premerge_linux_runners" {
   }
 }
 
+resource "kubernetes_namespace" "llvm_premerge_libcxx_runners" {
+  metadata {
+    name = "llvm-premerge-libcxx-runners"
+  }
+}
+
+resource "kubernetes_namespace" "llvm_premerge_libcxx_release_runners" {
+  metadata {
+    name = "llvm-premerge-libcxx-release-runners"
+  }
+}
+
+resource "kubernetes_namespace" "llvm_premerge_libcxx_next_runners" {
+  metadata {
+    name = "llvm-premerge-libcxx-next-runners"
+  }
+}
+
+resource "kubernetes_namespace" "llvm_premerge_windows_runners" {
+  metadata {
+    name = "llvm-premerge-windows-runners"
+  }
+}
+
 resource "kubernetes_secret" "linux_github_pat" {
   metadata {
     name      = "github-token"
@@ -40,10 +64,55 @@ resource "kubernetes_secret" "linux_github_pat" {
   depends_on = [kubernetes_namespace.llvm_premerge_linux_runners]
 }
 
-resource "kubernetes_namespace" "llvm_premerge_windows_runners" {
+resource "kubernetes_secret" "libcxx_github_pat" {
   metadata {
-    name = "llvm-premerge-windows-runners"
+    name      = "github-token"
+    namespace = "llvm-premerge-libcxx-runners"
   }
+
+  data = {
+    "github_app_id"              = var.github_app_id
+    "github_app_installation_id" = var.github_app_installation_id
+    "github_app_private_key"     = var.github_app_private_key
+  }
+
+  type = "Opaque"
+
+  depends_on = [kubernetes_namespace.llvm_premerge_libcxx_runners]
+}
+
+resource "kubernetes_secret" "libcxx_release_github_pat" {
+  metadata {
+    name      = "github-token"
+    namespace = "llvm-premerge-libcxx-release-runners"
+  }
+
+  data = {
+    "github_app_id"              = var.github_app_id
+    "github_app_installation_id" = var.github_app_installation_id
+    "github_app_private_key"     = var.github_app_private_key
+  }
+
+  type = "Opaque"
+
+  depends_on = [kubernetes_namespace.llvm_premerge_libcxx_release_runners]
+}
+
+resource "kubernetes_secret" "libcxx_next_github_pat" {
+  metadata {
+    name      = "github-token"
+    namespace = "llvm-premerge-libcxx-next-runners"
+  }
+
+  data = {
+    "github_app_id"              = var.github_app_id
+    "github_app_installation_id" = var.github_app_installation_id
+    "github_app_private_key"     = var.github_app_private_key
+  }
+
+  type = "Opaque"
+
+  depends_on = [kubernetes_namespace.llvm_premerge_libcxx_next_runners]
 }
 
 resource "kubernetes_secret" "windows_github_pat" {
@@ -108,6 +177,60 @@ resource "helm_release" "github_actions_runner_set_windows" {
     kubernetes_namespace.llvm_premerge_windows_runners,
     kubernetes_secret.windows_github_pat,
     helm_release.github_actions_runner_controller,
+  ]
+}
+
+resource "helm_release" "github_actions_runner_set_libcxx" {
+  name       = "llvm-premerge-libcxx-runners"
+  namespace  = "llvm-premerge-libcxx-runners"
+  repository = "oci://ghcr.io/actions/actions-runner-controller-charts"
+  version    = "0.11.0"
+  chart      = "gha-runner-scale-set"
+
+  values = [
+    "${templatefile("libcxx_runners_values.yaml", { runner_group_name : var.runner_group_name })}"
+  ]
+
+  depends_on = [
+    kubernetes_namespace.llvm_premerge_libcxx_runners,
+    helm_release.github_actions_runner_controller,
+    kubernetes_secret.libcxx_github_pat,
+  ]
+}
+
+resource "helm_release" "github_actions_runner_set_libcxx_release" {
+  name       = "llvm-premerge-libcxx-release-runners"
+  namespace  = "llvm-premerge-libcxx-release-runners"
+  repository = "oci://ghcr.io/actions/actions-runner-controller-charts"
+  version    = "0.11.0"
+  chart      = "gha-runner-scale-set"
+
+  values = [
+    "${templatefile("libcxx_release_runners_values.yaml", { runner_group_name : var.runner_group_name })}"
+  ]
+
+  depends_on = [
+    kubernetes_namespace.llvm_premerge_libcxx_release_runners,
+    helm_release.github_actions_runner_controller,
+    kubernetes_secret.libcxx_release_github_pat,
+  ]
+}
+
+resource "helm_release" "github_actions_runner_set_libcxx_next" {
+  name       = "llvm-premerge-libcxx-next-runners"
+  namespace  = "llvm-premerge-libcxx-next-runners"
+  repository = "oci://ghcr.io/actions/actions-runner-controller-charts"
+  version    = "0.11.0"
+  chart      = "gha-runner-scale-set"
+
+  values = [
+    "${templatefile("libcxx_next_runners_values.yaml", { runner_group_name : var.runner_group_name })}"
+  ]
+
+  depends_on = [
+    kubernetes_namespace.llvm_premerge_libcxx_next_runners,
+    helm_release.github_actions_runner_controller,
+    kubernetes_secret.libcxx_next_github_pat,
   ]
 }
 

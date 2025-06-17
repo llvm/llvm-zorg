@@ -1,0 +1,48 @@
+githubConfigUrl: "https://github.com/llvm"
+githubConfigSecret: "github-token"
+
+minRunners: 0
+maxRunners: 8
+
+runnerGroup: ${ runner_group_name }
+
+template:
+  metadata:
+    annotations:
+      cluster-autoscaler.kubernetes.io/safe-to-evict: "false"
+  spec:
+    tolerations:
+    - key: "premerge-platform"
+      operator: "Equal"
+      value: "linux"
+      effect: "NoSchedule"
+    nodeSelector:
+      premerge-platform: linux
+    containers:
+    - name: runner
+      #image: ghcr.io/llvm/ci-ubuntu-24.04-agent:latest
+      image: "${file('libcxx_image_values.yaml'):libcxx-runner-set-next}"
+      command: ["/home/gha/actions-runner/run.sh"]
+      resources:
+        # If we don't set the CPU request high-enough here, 2 runners might
+        # be scheduled on the same pod, meaning 2 jobs, and they will starve
+        # each other.
+        #
+        # This number should be:
+        #  - greater than number_of_cores / 2:
+        #    A value lower than that could allow the scheduler to put 2
+        #    runners on the same node. Meaning 2 jobs sharing the resources of
+        #    a single node.
+        #  - lower than number_of_cores:
+        #    Each pod has some basic services running (metrics for ex). Those
+        #    already require some amount of CPU (~0.5). This means we don't
+        #    exactly have N cores to allocate, but N - epsilon.
+        #
+        # We also need to request sufficient memory to not get OOM killed.
+        requests:
+          cpu: 55
+          memory: "200Gi"
+        limits:
+          cpu: 64
+          memory: "256Gi"
+

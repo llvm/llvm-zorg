@@ -65,6 +65,38 @@ resource "google_container_node_pool" "llvm_premerge_linux" {
   }
 }
 
+resource "google_container_node_pool" "llvm_premerge_libcxx" {
+  name               = "llvm-premerge-libcxx"
+  location           = var.region
+  cluster            = google_container_cluster.llvm_premerge.name
+  initial_node_count = 0
+
+  autoscaling {
+    total_min_node_count = 0
+    total_max_node_count = 8
+  }
+
+  node_config {
+    machine_type = var.linux_machine_type
+    taint {
+      key    = "premerge-platform"
+      value  = "linux"
+      effect = "NO_SCHEDULE"
+    }
+    labels = {
+      "premerge-platform" : "linux"
+    }
+    disk_size_gb = 200
+    # Terraform wants to recreate the node pool everytime whe running
+    # terraform apply unless we explicitly set this.
+    # TODO(boomanaiden154): Look into why terraform is doing this so we do
+    # not need this hack.
+    resource_labels = {
+      "goog-gke-node-pool-provisioning-model" = "on-demand"
+    }
+  }
+}
+
 resource "google_container_node_pool" "llvm_premerge_windows" {
   name               = "llvm-premerge-windows"
   location           = var.region
