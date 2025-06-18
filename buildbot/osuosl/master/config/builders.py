@@ -2540,9 +2540,6 @@ all += [
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
                         "-DLLVM_ENABLE_LIBCXX=On",
                         "-DCMAKE_BUILD_TYPE=Release",
-                        "-DLLVM_RUNTIME_TARGETS=aarch64-unknown-linux-gnu",
-                        "-DRUNTIMES_aarch64-unknown-linux-gnu_CMAKE_CXX_COMPILER='c++'",
-                        "-DRUNTIMES_aarch64-unknown-linux-gnu_CMAKE_C_COMPILER='cc'"
                         ])},
 
     {'name' : "flang-aarch64-release",

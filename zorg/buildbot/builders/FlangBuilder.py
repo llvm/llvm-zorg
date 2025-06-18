@@ -138,22 +138,10 @@ def getFlangOutOfTreeBuildFactory(
         )
     )
 
-    # 'check-flang-rt' becomes 'check-flang-rt-<target>' when a runtime target
-    # is specified.
-    check_flang_rt = 'check-flang-rt'
-    for arg in llvm_extra_configure_args:
-        if arg.find("DLLVM_RUNTIME_TARGETS") != -1:
-            targets = arg.split('=', 1)[1]
-            # Currently only one target is supported.
-            if not targets or targets.find(";") != -1:
-                break
-            check_flang_rt += '-' + targets
-            break
-
     addNinjaSteps(
        f,
        obj_dir=flang_rt_obj_dir,
-       checks=[check_flang_rt],
+       checks=['check-flang-rt'],
        env=env,
        stage_name="flang-rt",
        **kwargs)
