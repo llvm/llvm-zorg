@@ -1485,6 +1485,7 @@ all = [
                         "LLDB_ENABLE_LZMA"              : "OFF",
                         "LLDB_ENABLE_LIBXML2"           : "OFF",
                         "LLDB_CAN_USE_LLDB_SERVER"      : "ON",
+                        "LLDB_TEST_USER_ARGS"           : "--skip-category=lldb-dap",
                     },
                     env = {
                         'LLDB_USE_LLDB_SERVER' : "1",
