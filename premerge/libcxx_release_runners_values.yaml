@@ -6,6 +6,12 @@ maxRunners: 8
 
 runnerGroup: ${ runner_group_name }
 
+- include_vars:
+    file: libcxx_image_values.yaml
+    name: images_dict
+- set_fact:
+    images: "{{ images:dict|dict2items(key_name='runner_set', value_name='image) }}"
+
 template:
   metadata:
     annotations:
@@ -21,7 +27,7 @@ template:
     containers:
     - name: runner
       #image: ghcr.io/llvm/ci-ubuntu-24.04-agent:latest
-      image: "${file('libcxx_image_values.yaml'):libcxx-runner-set-release}"
+      image: images["libcxx-runner-set-release"]
       command: ["/home/gha/actions-runner/run.sh"]
       resources:
         # If we don't set the CPU request high-enough here, 2 runners might
