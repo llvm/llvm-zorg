@@ -1,6 +1,8 @@
 from buildbot.plugins import steps
-from buildbot.process.results import SUCCESS, FAILURE, WARNINGS
+from buildbot.process.build import Build
+from buildbot.process.results import SUCCESS, FAILURE, WARNINGS, SKIPPED, EXCEPTION, RETRY, CANCELLED
 from buildbot.steps.shell import ShellCommand
+from twisted.internet import defer
 from zorg.buildbot.builders.UnifiedTreeBuilder import getLLVMBuildFactoryAndSourcecodeSteps, addCmakeSteps, addNinjaSteps
 from zorg.buildbot.commands.LitTestCommand import LitTestCommand
 from zorg.buildbot.commands.CmakeCommand import CmakeCommand
@@ -36,6 +38,7 @@ def getBOLTCmakeBuildFactory(
             depends_on_projects=depends_on_projects,
             **kwargs) # Pass through all the extra arguments.
 
+    f.buildClass = SkipAwareBuild
     if bolttests:
         checks += ['check-large-bolt']
         extra_configure_args += [
@@ -168,3 +171,21 @@ def getBOLTCmakeBuildFactory(
             ])
 
     return f
+class SkipAwareBuild(Build):
+    """
+    Custom Build class that marks the overall build status as skipped when no
+    BOLT tests have run and no other important statuses are logged.
+
+    This is done by overriding stepDone, which merges the results of each step
+    to the overall build.
+    """
+    @defer.inlineCallbacks
+    def stepDone(self, results, step):
+        # Run the default logic.
+        terminate = yield Build.stepDone(self, results, step)
+
+        # Specialize by setting the overall build result to skipped when no
+        # tests have ran and no other errors occurred.
+        if step.name == "nfc-check-bolt" and results == SKIPPED and self.results not in (FAILURE, WARNINGS, EXCEPTION, RETRY, CANCELLED):
+            self.results = SKIPPED
+        return terminate
