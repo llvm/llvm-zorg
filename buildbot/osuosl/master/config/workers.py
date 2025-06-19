@@ -402,6 +402,9 @@ def get_all():
         create_worker("rise-clang-riscv-rva23-mrvv-vec-bits-2stage", properties={'jobs' : 16}, max_builds=1),
         create_worker("rise-clang-riscv-rva23-evl-vec-2stage", properties={'jobs' : 16}, max_builds=1),
         create_worker("rise-worker-1", properties={'jobs' : 32}, max_builds=1),
+        create_worker("rise-worker-2", properties={'jobs' : 32}, max_builds=1),
+        create_worker("rise-worker-3", properties={'jobs' : 32}, max_builds=1),
+        create_worker("rise-worker-4", properties={'jobs' : 32}, max_builds=1),
 
         # FIXME: A placeholder for annoying worker which nobody could stop.
         # adding it avoid logs spammed by failed authentication for that worker.
