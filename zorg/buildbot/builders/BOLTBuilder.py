@@ -99,32 +99,49 @@ def getBOLTCmakeBuildFactory(
         # Individual markers to skip either in-tree or out-of-tree tests.
         skipInTree = ".llvm-bolt.skip.in-tree"
         skipOutOfTree = ".llvm-bolt.skip.out-of-tree"
+        boltNew = "bin/llvm-bolt.new"
+        boltOld = "bin/llvm-bolt.old"
 
         f.addSteps([
             ShellCommand(
+                name='clean-nfc-check',
+                command=(
+                        f"rm -f {boltNew} {boltOld} {hasSrcChanges} {skipInTree} {skipOutOfTree}; "
+                        ),
+                description=('Cleanup for NFC-Mode testing'),
+                descriptionDone=["NFC-Mode cleanup"],
+                haltOnFailure=False,
+                flunkOnFailure=False,
+                env=env),
+            ShellCommand(
                 name='nfc-check-setup',
                 command=[
-                         f"../{f.monorepo_dir}/bolt/utils/nfc-check-setup.py",
+                        f"../{f.monorepo_dir}/bolt/utils/nfc-check-setup.py",
                         "--switch-back",
                         "--check-bolt-sources"
                         ],
                 description=('Setup NFC testing'),
                 descriptionDone=["NFC-Mode setup"],
                 warnOnFailure=True,
+                warnOnWarnings=True,
+                decodeRC={0: SUCCESS, 1: WARNINGS},
                 haltOnFailure=False,
                 flunkOnFailure=False,
                 env=env),
             ShellCommand(
                 name='nfc-check-validation',
                 command=(
-                    "info=$(bin/llvm-bolt.new --version | grep 'BOLT revision' "
+                    f"( ! [ -f {boltNew} ] || ! [ -f {boltOld} ] ) && "
+                    "{ printf 'NFC-Mode WARNING: old/new files not present. Tests will run.'; return 2; }; "
+                    f"uids=$({boltNew} --version | grep 'BOLT revision' "
                     "| grep -q '<unknown>' || echo 'bolt-revision'); "
-                    "info=$info$(readelf --notes bin/llvm-bolt.new "
+                    f"uids=$uids$(readelf --notes {boltNew} "
                     "| grep -q 'Build ID:' && echo ' GNU-build-id'); "
-                    "info=$(echo \"$info\" | sed 's/^ //'); "
-                    "[ ! -z \"$info\" ] || return 0 && "
-                    "(printf \"NFC-Mode WARNING: unique IDs found in binaries ($info)"
-                    ". This means tests will run at all times.\"; return 2)"
+                    "uids=$(echo \"$uids\" | sed 's/^ //'); "
+                   f"[ $(readelf --note {boltNew} {boltOld} | grep 'Build ID' | uniq -c | wc -l) -eq 1 ] "
+                    "&& extra='Identical build-ids.' || extra='Tests will run.'; "
+                    "[ ! -z \"$uids\" ] || return 0 && "
+                    "{ printf \"NFC-Mode WARNING: unique IDs found in binaries ($uids). $extra\"; return 2; }"
                     ),
                 description=('Check that nfc-mode works as intended when '
                              'comparing with the previous commit.'),
@@ -137,14 +154,14 @@ def getBOLTCmakeBuildFactory(
             ShellCommand(
                 name='nfc-check-bolt-different',
                 command=(
-                          f'rm -f {skipInTree} {skipOutOfTree}; '
-                          f'cmp -s bin/llvm-bolt.old bin/llvm-bolt.new && ('
+                          f'cmp -s {boltNew} {boltOld} && ('
                           f'touch {skipInTree}; touch {skipOutOfTree}); '
-                          f'[ -f {hasSrcChanges} ] && rm -f {skipInTree};'
-                          f'rm -f {hasSrcChanges}; '
+                          f'[ -f {hasSrcChanges} ] && rm -f {skipInTree}; '
+                          f'return 0'
                          ),
                 description=('Check if llvm-bolt binaries are different and '
                              'skip the following nfc-check steps'),
+                decodeRC={0: SUCCESS, 1: WARNINGS},
                 haltOnFailure=False,
                 env=env),
             LitTestCommand(
@@ -171,6 +188,7 @@ def getBOLTCmakeBuildFactory(
             ])
 
     return f
+
 class SkipAwareBuild(Build):
     """
     Custom Build class that marks the overall build status as skipped when no
