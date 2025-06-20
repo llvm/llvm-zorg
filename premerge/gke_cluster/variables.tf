@@ -18,6 +18,11 @@ variable "windows_machine_type" {
   type        = string
 }
 
+variable "libcxx_machine_type" {
+  description = "The type of machine to use for libcxx instances (linux)"
+  type        = string
+}
+
 variable "service_node_pool_locations" {
   description = "The location to run the service node pool in"
   type        = list(any)
