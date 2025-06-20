@@ -77,7 +77,7 @@ resource "google_container_node_pool" "llvm_premerge_libcxx" {
   }
 
   node_config {
-    machine_type = var.linux_machine_type
+    machine_type = var.libcxx_machine_type
     taint {
       key    = "premerge-platform"
       value  = "linux"
