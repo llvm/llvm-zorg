@@ -3474,6 +3474,39 @@ all += [
                     script_interpreter=None,
                     clean=True)},
 
+    ## RISC-V RVA23 profile with zvl512b check-all 2-stage
+    ## (cross-compile and then test under qemu-system).
+    {'name' : "clang-riscv-rva23-zvl512b-2stage",
+    'workernames' : ["rise-worker-2"],
+    'builddir':"clang-riscv-rva23-zvl512b-2stage",
+    'factory' : AnnotatedBuilder.getAnnotatedBuildFactory(
+                    script="rise-riscv-build.sh",
+                    checkout_llvm_sources=False,
+                    script_interpreter=None,
+                    clean=True)},
+
+    ## RISC-V RVA23 profile with zvl1024b check-all 2-stage
+    ## (cross-compile and then test under qemu-system).
+    {'name' : "clang-riscv-rva23-zvl1024b-2stage",
+    'workernames' : ["rise-worker-3"],
+    'builddir':"clang-riscv-rva23-zvl1024b-2stage",
+    'factory' : AnnotatedBuilder.getAnnotatedBuildFactory(
+                    script="rise-riscv-build.sh",
+                    checkout_llvm_sources=False,
+                    script_interpreter=None,
+                    clean=True)},
+
+    ## RISC-V -mcpu=spacemit-x60 with -mrvv-vector-bits=zvl check-all 2-stage
+    ## (cross-compile and then test under qemu-system).
+    {'name' : "clang-riscv-x60-mrvv-vec-bits-2stage",
+    'workernames' : ["rise-worker-4"],
+    'builddir':"clang-riscv-x60-mrvv-vec-bits-2stage",
+    'factory' : AnnotatedBuilder.getAnnotatedBuildFactory(
+                    script="rise-riscv-build.sh",
+                    checkout_llvm_sources=False,
+                    script_interpreter=None,
+                    clean=True)},
+
     # Builders similar to used in Buildkite premerge pipeline.
     # Please keep in sync with llvm-project/.ci configurations.
 
