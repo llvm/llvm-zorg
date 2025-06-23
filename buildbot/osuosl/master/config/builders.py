@@ -3068,33 +3068,6 @@ all += [
                         ],
                     )},
 
-    {'name': "bolt-aarch64-ubuntu-clang",
-    'tags': ["bolt"],
-    'workernames':["bolt-worker-aarch64"],
-    'builddir': "bolt-aarch64-ubuntu-clang",
-    'factory' : BOLTBuilder.getBOLTCmakeBuildFactory(
-                    bolttests=False,
-                    clean=True,
-                    depends_on_projects=['bolt', 'clang', 'lld', 'llvm'],
-                    caches=[
-                        'clang/cmake/caches/BOLT.cmake',
-                        'clang/cmake/caches/BOLT-PGO.cmake',
-                    ],
-                    targets=['clang-bolt'],
-                    checks=['stage2-clang-bolt'],
-                    extra_configure_args=[
-                        "-DCMAKE_C_COMPILER=gcc",
-                        "-DCMAKE_CXX_COMPILER=g++",
-                        "-DLLVM_APPEND_VC_REV=OFF",
-                        "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
-                        "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
-                        "-DLLVM_ENABLE_LLD=ON",
-                        "-DBOOTSTRAP_LLVM_ENABLE_LLD=ON",
-                        "-DBOOTSTRAP_BOOTSTRAP_LLVM_ENABLE_LLD=ON",
-                        "-DPGO_INSTRUMENT_LTO=Thin",
-                        ],
-                    )},
-
     {'name': "bolt-aarch64-ubuntu-clang-shared",
     'tags': ["bolt"],
     'workernames':["bolt-worker-aarch64"],
