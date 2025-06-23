@@ -233,17 +233,18 @@ def addNinjaSteps(
     else:
         check_env = env or {}
 
-    for check in checks:
-        f.addStep(LitTestCommand(name=trunc50("test-%s-%s" % (step_name, check)),
-                                 command=['ninja', check],
-                                 description=[
-                                   "Test", "just", "built", "components", "for",
-                                   check,
-                                 ],
-                                 env=check_env,
-                                 workdir=obj_dir,
-                                 **kwargs # Pass through all the extra arguments.
-                                 ))
+    if checks:
+        for check in checks:
+            f.addStep(LitTestCommand(name=trunc50("test-%s-%s" % (step_name, check)),
+                                    command=['ninja', check],
+                                    description=[
+                                    "Test", "just", "built", "components", "for",
+                                    check,
+                                    ],
+                                    env=check_env,
+                                    workdir=obj_dir,
+                                    **kwargs # Pass through all the extra arguments.
+                                    ))
 
     # Install just built components
     if install_dir:
