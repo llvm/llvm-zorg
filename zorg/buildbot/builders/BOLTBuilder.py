@@ -103,6 +103,7 @@ def getBOLTCmakeBuildFactory(
         boltOld = "bin/llvm-bolt.old"
 
         f.addSteps([
+            # Cleanup binaries and markers from previous NFC-mode runs.
             ShellCommand(
                 name='clean-nfc-check',
                 command=(
@@ -113,6 +114,7 @@ def getBOLTCmakeBuildFactory(
                 haltOnFailure=False,
                 flunkOnFailure=False,
                 env=env),
+            # Build the current and previous revision of llvm-bolt.
             ShellCommand(
                 name='nfc-check-setup',
                 command=[
@@ -128,6 +130,10 @@ def getBOLTCmakeBuildFactory(
                 haltOnFailure=False,
                 flunkOnFailure=False,
                 env=env),
+            # Validate that NFC-mode comparison is meaningful by checking:
+            # - the old and new binaries exist
+            # - no unique IDs are embedded in the binaries
+            # Warns but does not fail when validation fails.
             ShellCommand(
                 name='nfc-check-validation',
                 command=(
@@ -149,8 +155,11 @@ def getBOLTCmakeBuildFactory(
                 warnOnFailure=True,
                 warnOnWarnings=True,
                 decodeRC={0: SUCCESS, 1: FAILURE, 2: WARNINGS},
-                descriptionDone=["NFC-Mode unique IDs in binaries"],
+                descriptionDone=["NFC-Mode Validation"],
                 env=env),
+            # Compare the current and previous llvm-bolt binaries. If they are
+            # identical, skip the following tests. If relevant source code
+            # changes are detected, still run the in-tree tests.
             ShellCommand(
                 name='nfc-check-bolt-different',
                 command=(
@@ -164,6 +173,8 @@ def getBOLTCmakeBuildFactory(
                 decodeRC={0: SUCCESS, 1: WARNINGS},
                 haltOnFailure=False,
                 env=env),
+            # Run in-tree tests if the llvm-bolt binary has changed, or if
+            # relevant source code changes are detected.
             LitTestCommand(
                 name='nfc-check-bolt',
                 command=["ninja", "check-bolt"],
@@ -174,6 +185,7 @@ def getBOLTCmakeBuildFactory(
                 flunkOnFailure=True,
                 doStepIf=FileDoesNotExist(f"build/{skipInTree}"),
                 env=env),
+            # Run out-of-tree large tests if the llvm-bolt binary has changed.
             LitTestCommand(
                 name='nfc-check-large-bolt',
                 command=['bin/llvm-lit', '-sv', '-j2',
