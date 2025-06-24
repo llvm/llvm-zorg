@@ -2,7 +2,7 @@ githubConfigUrl: "https://github.com/llvm"
 githubConfigSecret: "github-token"
 
 minRunners: 0
-maxRunners: 8
+maxRunners: 32
 
 runnerGroup: ${ runner_group_name }
 
@@ -39,9 +39,9 @@ template:
         #
         # We also need to request sufficient memory to not get OOM killed.
         requests:
-          cpu: 55
-          memory: "200Gi"
+          cpu: 28
+          memory: "100Gi"
         limits:
-          cpu: 64
-          memory: "256Gi"
+          cpu: 32
+          memory: "128Gi"
 

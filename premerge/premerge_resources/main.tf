@@ -64,6 +64,57 @@ resource "kubernetes_secret" "linux_github_pat" {
   depends_on = [kubernetes_namespace.llvm_premerge_linux_runners]
 }
 
+resource "kubernetes_secret" "libcxx_github_pat" {
+  metadata {
+    name      = "github-token"
+    namespace = "llvm-premerge-libcxx-runners"
+  }
+
+  data = {
+    "github_app_id"              = var.github_app_id
+    "github_app_installation_id" = var.github_app_installation_id
+    "github_app_private_key"     = var.github_app_private_key
+  }
+
+  type = "Opaque"
+
+  depends_on = [kubernetes_namespace.llvm_premerge_libcxx_runners]
+}
+
+resource "kubernetes_secret" "libcxx_release_github_pat" {
+  metadata {
+    name      = "github-token"
+    namespace = "llvm-premerge-libcxx-release-runners"
+  }
+
+  data = {
+    "github_app_id"              = var.github_app_id
+    "github_app_installation_id" = var.github_app_installation_id
+    "github_app_private_key"     = var.github_app_private_key
+  }
+
+  type = "Opaque"
+
+  depends_on = [kubernetes_namespace.llvm_premerge_libcxx_release_runners]
+}
+
+resource "kubernetes_secret" "libcxx_next_github_pat" {
+  metadata {
+    name      = "github-token"
+    namespace = "llvm-premerge-libcxx-next-runners"
+  }
+
+  data = {
+    "github_app_id"              = var.github_app_id
+    "github_app_installation_id" = var.github_app_installation_id
+    "github_app_private_key"     = var.github_app_private_key
+  }
+
+  type = "Opaque"
+
+  depends_on = [kubernetes_namespace.llvm_premerge_libcxx_next_runners]
+}
+
 resource "kubernetes_secret" "windows_github_pat" {
   metadata {
     name      = "github-token"
@@ -143,7 +194,7 @@ resource "helm_release" "github_actions_runner_set_libcxx" {
   depends_on = [
     kubernetes_namespace.llvm_premerge_libcxx_runners,
     helm_release.github_actions_runner_controller,
-    kubernetes_secret.linux_github_pat,
+    kubernetes_secret.libcxx_github_pat,
   ]
 }
 
@@ -161,7 +212,7 @@ resource "helm_release" "github_actions_runner_set_libcxx_release" {
   depends_on = [
     kubernetes_namespace.llvm_premerge_libcxx_release_runners,
     helm_release.github_actions_runner_controller,
-    kubernetes_secret.linux_github_pat,
+    kubernetes_secret.libcxx_release_github_pat,
   ]
 }
 
@@ -179,7 +230,7 @@ resource "helm_release" "github_actions_runner_set_libcxx_next" {
   depends_on = [
     kubernetes_namespace.llvm_premerge_libcxx_next_runners,
     helm_release.github_actions_runner_controller,
-    kubernetes_secret.linux_github_pat,
+    kubernetes_secret.libcxx_next_github_pat,
   ]
 }
 
