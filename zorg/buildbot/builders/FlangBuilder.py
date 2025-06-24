@@ -19,7 +19,7 @@ def getFlangOutOfTreeBuildFactory(
     f = getCmakeWithNinjaBuildFactory(
             depends_on_projects=['llvm','clang','mlir','openmp','flang','flang-rt'],
             enable_projects=['llvm','clang','mlir'],
-            enable_runtimes=['openmp'],
+            enable_runtimes=['openmp', 'compiler-rt'],
             obj_dir="build_llvm",
             checks=[],
             clean=clean,
