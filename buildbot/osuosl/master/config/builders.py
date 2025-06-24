@@ -2527,21 +2527,27 @@ all += [
     'tags'  : ['flang'],
     'workernames' : ["linaro-flang-aarch64-libcxx"],
     'builddir': "flang-aarch64-libcxx",
-    'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
-                    clean=True,
-                    checks=['check-flang','check-flang-rt'],
-                    depends_on_projects=['llvm','mlir','clang','flang','flang-rt'],
-                    extra_configure_args=[
+    'factory' : FlangBuilder.getFlangOutOfTreeBuildFactory(
+                    checks=['check-flang'],
+                    llvm_extra_configure_args=[
                         "-DLLVM_TARGETS_TO_BUILD=AArch64",
-                        "-DLLVM_INSTALL_UTILS=ON",
                         "-DCMAKE_CXX_STANDARD=17",
                         "-DLLVM_ENABLE_WERROR=OFF",
-                        "-DFLANG_ENABLE_WERROR=ON",
-                        "-DBUILD_SHARED_LIBS=ON",
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
                         "-DLLVM_ENABLE_LIBCXX=On",
                         "-DCMAKE_BUILD_TYPE=Release",
-                        ])},
+                    ],
+                    flang_extra_configure_args=[
+                        "-DFLANG_ENABLE_WERROR=ON",
+                        "-DLLVM_ENABLE_ASSERTIONS=ON",
+                        "-DLLVM_ENABLE_LIBCXX=On",
+                        "-DCMAKE_BUILD_TYPE=Release",
+                    ],
+                    flang_rt_extra_configure_args=[
+                        "-DLLVM_ENABLE_ASSERTIONS=ON",
+                        "-DLLVM_ENABLE_LIBCXX=On",
+                        "-DCMAKE_BUILD_TYPE=Release",
+                    ])},
 
     {'name' : "flang-aarch64-release",
     'tags'  : ["flang"],
