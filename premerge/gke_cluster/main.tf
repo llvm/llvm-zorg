@@ -79,12 +79,12 @@ resource "google_container_node_pool" "llvm_premerge_libcxx" {
   node_config {
     machine_type = var.libcxx_machine_type
     taint {
-      key    = "premerge-platform"
-      value  = "linux"
+      key    = "premerge-platform-libcxx"
+      value  = "linux-libcxx"
       effect = "NO_SCHEDULE"
     }
     labels = {
-      "premerge-platform" : "linux"
+      "premerge-platform-libcxx" : "linux-libcxx"
     }
     disk_size_gb = 200
     # Terraform wants to recreate the node pool everytime whe running

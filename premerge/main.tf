@@ -47,7 +47,7 @@ module "premerge_cluster_us_central" {
   source               = "./gke_cluster"
   cluster_name         = "llvm-premerge-cluster-us-central"
   region               = "us-central1-a"
-  libcxx_machine_type  = "n2-standard-64"
+  libcxx_machine_type  = "n2d-standard-32"
   linux_machine_type   = "n2-standard-64"
   windows_machine_type = "n2-standard-32"
 }
@@ -60,7 +60,7 @@ module "premerge_cluster_us_west" {
   source                      = "./gke_cluster"
   cluster_name                = "llvm-premerge-cluster-us-west"
   region                      = "us-west1"
-  libcxx_machine_type         = "n2d-standard-64"
+  libcxx_machine_type         = "n2d-standard-32"
   linux_machine_type          = "n2d-standard-64"
   windows_machine_type        = "n2d-standard-32"
   service_node_pool_locations = ["us-west1-a"]

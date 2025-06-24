@@ -54,3 +54,18 @@ variable "externalservices_tempo_basicauth_username" {
 variable "runner_group_name" {
   type = string
 }
+
+variable "libcxx_runner_image" {
+  type = string
+  default = "ghcr.io/llvm/libcxx-linux-builder:b060022103f51d8ca1dad84122ef73927c86512"
+}
+
+variable "libcxx_release_runner_image" {
+  type = string
+  default = "ghcr.io/llvm/libcxx-linux-builder:d8a0709b1090350a7fe3604d8ab78c7d62f10698"
+}
+
+variable "libcxx_next_runner_image" {
+  type = string
+  default = ""
+}
