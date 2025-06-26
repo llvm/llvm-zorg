@@ -79,15 +79,24 @@ def getBOLTCmakeBuildFactory(
     addNinjaSteps(
         f,
         targets=targets,
-        checks=checks,
+        checks = None if is_nfc else checks,
         env=env,
         **kwargs)
 
+    """
+    In NFC mode we conditionally run tests only when the llvm-bolt binary has
+    changed between the previous and current revision. We skipped passing checks
+    to addNinjaSteps, so we add those checks below, along with the conditional
+    logic.
+    """
     if is_nfc:
         f.addSteps([
             ShellCommand(
                 name='nfc-check-setup',
-                command=[f"../{f.monorepo_dir}/bolt/utils/nfc-check-setup.py"],
+                command=[
+                        f"../{f.monorepo_dir}/bolt/utils/nfc-check-setup.py",
+                        "--switch-back"
+                        ],
                 description=('Setup NFC testing'),
                 warnOnFailure=True,
                 haltOnFailure=False,
@@ -114,9 +123,8 @@ def getBOLTCmakeBuildFactory(
                 descriptionDone=["NFC-Mode unique IDs in binaries"],
                 env=env),
             ShellCommand(
-                name='check-bolt-different',
-                command=('find -name timing.log -delete; '
-                         'rm -f .llvm-bolt.diff; '
+                name='nfc-check-bolt-different',
+                command=('rm -f .llvm-bolt.diff; '
                          'cmp -s bin/llvm-bolt.old bin/llvm-bolt.new || '
                          'touch .llvm-bolt.diff'),
                 description=('Check if llvm-bolt binaries are different and '
@@ -125,15 +133,12 @@ def getBOLTCmakeBuildFactory(
                 env=env),
             LitTestCommand(
                 name='nfc-check-bolt',
-                command=['bin/llvm-lit', '-sv', '-j4',
-                         # bolt-info will always mismatch in NFC mode
-                         '--xfail=bolt-info.test',
-                         'tools/bolt/test'],
+                command=["ninja", "check-bolt"],
                 description=["running", "NFC", "check-bolt"],
                 descriptionDone=["NFC", "check-bolt", "completed"],
                 warnOnFailure=True,
                 haltOnFailure=False,
-                flunkOnFailure=False,
+                flunkOnFailure=True,
                 doStepIf=FileExists('build/.llvm-bolt.diff'),
                 env=env),
             LitTestCommand(
@@ -144,7 +149,7 @@ def getBOLTCmakeBuildFactory(
                 descriptionDone=["NFC", "check-large-bolt", "completed"],
                 warnOnFailure=True,
                 haltOnFailure=False,
-                flunkOnFailure=False,
+                flunkOnFailure=True,
                 doStepIf=FileExists('build/.llvm-bolt.diff'),
                 env=env),
             ])
