@@ -503,9 +503,20 @@ def getReporters():
             extraRecipients = ["llvm-bolt@meta.com"],
             generators = [
                 utils.LLVMDefaultBuildStatusGenerator(
-                    subject = "BOLT NFC checks mismatch",
+                    subject = "BOLT NFC checks mismatch (X86)",
                     mode = ("warnings",),
                     builders = ["bolt-x86_64-ubuntu-nfc"]),
+            ]),
+        reporters.MailNotifier(
+            dumpMailsToLog = True, # TODO: For debug purposes only. Remove this later.
+            fromaddr = status_email_fromaddr,
+            sendToInterestedUsers = False,
+            extraRecipients = ["llvm-bolt@arm.com", "llvm-bolt@meta.com"],
+            generators = [
+                utils.LLVMDefaultBuildStatusGenerator(
+                    subject = "BOLT NFC checks mismatch (AArch64)",
+                    mode = ("warnings",),
+                    builders = ["bolt-aarch64-ubuntu-nfc"]),
             ]),
         reporters.MailNotifier(
             fromaddr = status_email_fromaddr,
