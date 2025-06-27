@@ -40,21 +40,21 @@ case "$BUILDBOT_BUILDERNAME" in
   "clang-riscv-rva23-zvl512b-2stage")
     TARGET_CFLAGS="-march=rva23u64_zvl512b"
     export BB_IMG_DIR=$(pwd)/..
-    export BB_QEMU_CPU="rva23u64,vlen=512,rvv_ta_all_1s=true,rvv_ma_all_1s=true,rvv_vl_half_avl=true"
+    export BB_QEMU_CPU="rva23s64,vlen=512,rvv_ta_all_1s=true,rvv_ma_all_1s=true,rvv_vl_half_avl=true"
     export BB_QEMU_SMP=32
     export BB_QEMU_MEM="64G"
     ;;
   "clang-riscv-rva23-zvl1024b-2stage")
     TARGET_CFLAGS="-march=rva23u64_zvl1024b"
     export BB_IMG_DIR=$(pwd)/..
-    export BB_QEMU_CPU="rva23u64,vlen=1024,rvv_ta_all_1s=true,rvv_ma_all_1s=true,rvv_vl_half_avl=true"
+    export BB_QEMU_CPU="rva23s64,vlen=1024,rvv_ta_all_1s=true,rvv_ma_all_1s=true,rvv_vl_half_avl=true"
     export BB_QEMU_SMP=32
     export BB_QEMU_MEM="64G"
     ;;
   "clang-riscv-x60-mrvv-vec-bits-2stage")
     TARGET_CFLAGS="-mcpu=spacemit-x60 -mrvv-vector-bits=zvl"
     export BB_IMG_DIR=$(pwd)/..
-    export BB_QEMU_CPU="rva22u64,v=true,zbc=true,zbkc=true,zfh=true,zicond=true,zvkt=true,vlen=256,rvv_ta_all_1s=true,rvv_ma_all_1s=true,rvv_vl_half_avl=true"
+    export BB_QEMU_CPU="rva22s64,v=true,zbc=true,zbkc=true,zfh=true,zicond=true,zvkt=true,vlen=256,rvv_ta_all_1s=true,rvv_ma_all_1s=true,rvv_vl_half_avl=true"
     export BB_QEMU_SMP=32
     export BB_QEMU_MEM="64G"
     ;;

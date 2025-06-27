@@ -2527,21 +2527,27 @@ all += [
     'tags'  : ['flang'],
     'workernames' : ["linaro-flang-aarch64-libcxx"],
     'builddir': "flang-aarch64-libcxx",
-    'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
-                    clean=True,
-                    checks=['check-flang','check-flang-rt'],
-                    depends_on_projects=['llvm','mlir','clang','flang','flang-rt'],
-                    extra_configure_args=[
+    'factory' : FlangBuilder.getFlangOutOfTreeBuildFactory(
+                    checks=['check-flang'],
+                    llvm_extra_configure_args=[
                         "-DLLVM_TARGETS_TO_BUILD=AArch64",
-                        "-DLLVM_INSTALL_UTILS=ON",
                         "-DCMAKE_CXX_STANDARD=17",
                         "-DLLVM_ENABLE_WERROR=OFF",
-                        "-DFLANG_ENABLE_WERROR=ON",
-                        "-DBUILD_SHARED_LIBS=ON",
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
                         "-DLLVM_ENABLE_LIBCXX=On",
                         "-DCMAKE_BUILD_TYPE=Release",
-                        ])},
+                    ],
+                    flang_extra_configure_args=[
+                        "-DFLANG_ENABLE_WERROR=ON",
+                        "-DLLVM_ENABLE_ASSERTIONS=ON",
+                        "-DLLVM_ENABLE_LIBCXX=On",
+                        "-DCMAKE_BUILD_TYPE=Release",
+                    ],
+                    flang_rt_extra_configure_args=[
+                        "-DLLVM_ENABLE_ASSERTIONS=ON",
+                        "-DLLVM_ENABLE_LIBCXX=On",
+                        "-DCMAKE_BUILD_TYPE=Release",
+                    ])},
 
     {'name' : "flang-aarch64-release",
     'tags'  : ["flang"],
@@ -2997,6 +3003,7 @@ all += [
                     depends_on_projects=['bolt', 'llvm'],
                     extra_configure_args=[
                         "-DLLVM_APPEND_VC_REV=OFF",
+                        "-DCMAKE_EXE_LINKER_FLAGS='-Wl,--build-id=none'"
                         "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
                         "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
                         "-DLLVM_ENABLE_PROJECTS=clang;lld;bolt",
@@ -3068,10 +3075,10 @@ all += [
                         ],
                     )},
 
-    {'name': "bolt-aarch64-ubuntu-clang-shared",
+    {'name': "bolt-aarch64-ubuntu-clang-shared-meta",
     'tags': ["bolt"],
-    'workernames':["bolt-worker-aarch64"],
-    'builddir': "bolt-aarch64-ubuntu-clang-shared",
+    'workernames':["bolt-worker-aarch64-meta"],
+    'builddir': "bolt-aarch64-ubuntu-clang-shared-meta",
     'factory' : BOLTBuilder.getBOLTCmakeBuildFactory(
                     bolttests=True,
                     depends_on_projects=['bolt', 'lld', 'llvm'],
@@ -3085,6 +3092,89 @@ all += [
                         "-DLLVM_TARGETS_TO_BUILD=X86;AArch64;RISCV",
                         "-DBUILD_SHARED_LIBS=ON",
                         "-DLLVM_USE_LINKER=mold",
+                        ],
+                    )},
+
+    # BOLT builders managed by Arm.
+    {'name' : 'bolt-aarch64-ubuntu-nfc',
+    'tags'  : ["bolt", "aarch64"],
+    'collapseRequests': False,
+    'workernames' : ['bolt-worker-aarch64'],
+    'builddir': "bolt-aarch64-ubuntu-nfc",
+    'factory' : BOLTBuilder.getBOLTCmakeBuildFactory(
+                    bolttests=True,
+                    depends_on_projects=['bolt', 'llvm'],
+                    extra_configure_args=[
+                        "-DLLVM_APPEND_VC_REV=OFF",
+                        "-DCMAKE_EXE_LINKER_FLAGS='-Wl,--build-id=none'"
+                        "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
+                        "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
+                        "-DLLVM_ENABLE_PROJECTS=clang;lld;bolt",
+                        "-DLLVM_TARGETS_TO_BUILD=X86;AArch64;RISCV",
+                        ],
+                    is_nfc=True,
+                    )},
+
+    {'name': "bolt-aarch64-ubuntu-clang",
+    'tags' : ["bolt", "aarch64"],
+    'workernames':["bolt-worker-aarch64"],
+    'builddir': "bolt-aarch64-ubuntu-clang",
+    'factory' : BOLTBuilder.getBOLTCmakeBuildFactory(
+                    bolttests=False,
+                    clean=True,
+                    depends_on_projects=['bolt', 'clang', 'lld', 'llvm'],
+                    caches=[
+                        'clang/cmake/caches/BOLT.cmake',
+                        'clang/cmake/caches/BOLT-PGO.cmake',
+                    ],
+                    targets=['clang-bolt'],
+                    checks=['stage2-clang-bolt'],
+                    extra_configure_args=[
+                        "-DCMAKE_C_COMPILER=gcc",
+                        "-DCMAKE_CXX_COMPILER=g++",
+                        "-DLLVM_APPEND_VC_REV=OFF",
+                        "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
+                        "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
+                        "-DLLVM_ENABLE_LLD=ON",
+                        "-DBOOTSTRAP_LLVM_ENABLE_LLD=ON",
+                        "-DBOOTSTRAP_BOOTSTRAP_LLVM_ENABLE_LLD=ON",
+                        "-DPGO_INSTRUMENT_LTO=Thin",
+                        ],
+                    )},
+
+    {'name': "bolt-aarch64-ubuntu-dylib",
+    'tags' : ["bolt", "aarch64"],
+    'workernames':["bolt-worker-aarch64"],
+    'builddir': "bolt-aarch64-ubuntu-dylib",
+    'factory' : BOLTBuilder.getBOLTCmakeBuildFactory(
+                    bolttests=False,
+                    depends_on_projects=['bolt', 'lld', 'llvm'],
+                    extra_configure_args=[
+                        "-DLLVM_APPEND_VC_REV=OFF",
+                        "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
+                        "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
+                        "-DLLVM_ENABLE_PROJECTS=bolt;clang;lld",
+                        "-DLLVM_TARGETS_TO_BUILD=X86;AArch64;RISCV",
+                        "-DLLVM_LINK_LLVM_DYLIB=ON",
+                        "-DLLVM_ENABLE_LLD=ON",
+                        ],
+                    )},
+
+    {'name': "bolt-aarch64-ubuntu-shared",
+    'tags'  : ["bolt", "aarch64"],
+    'workernames':["bolt-worker-aarch64"],
+    'builddir': "bolt-aarch64-ubuntu-shared",
+    'factory' : BOLTBuilder.getBOLTCmakeBuildFactory(
+                    bolttests=False,
+                    depends_on_projects=['bolt', 'lld', 'llvm'],
+                    extra_configure_args=[
+                        "-DLLVM_APPEND_VC_REV=OFF",
+                        "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
+                        "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
+                        "-DLLVM_ENABLE_PROJECTS=bolt;clang;lld",
+                        "-DLLVM_TARGETS_TO_BUILD=X86;AArch64;RISCV",
+                        "-DBUILD_SHARED_LIBS=ON",
+                        "-DLLVM_ENABLE_LLD=ON",
                         ],
                     )},
 
@@ -3491,7 +3581,7 @@ all += [
     'builddir': "premerge-monolithic-windows",
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaWithMSVCBuildFactory(
                     vs="autodetect",
-                    depends_on_projects=["clang-tools-extra", "clang", "libclc", "lld", "llvm", "mlir", "polly", "pstl"],
+                    depends_on_projects=["clang-tools-extra", "clang", "libclc", "lld", "llvm", "mlir", "polly"],
                     checks=["check-all"],
                     install_pip_requirements = True,
                     clean = True,
@@ -3512,7 +3602,7 @@ all += [
     'workernames': ["premerge-linux-1"],
     'builddir': "premerge-monolithic-linux",
     'factory': UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
-                    depends_on_projects=["bolt", "clang", "clang-tools-extra", "compiler-rt", "flang", "flang-rt", "libc", "libclc", "lld", "llvm", "mlir", "polly", "pstl"],
+                    depends_on_projects=["bolt", "clang", "clang-tools-extra", "compiler-rt", "flang", "flang-rt", "libc", "libclc", "lld", "llvm", "mlir", "polly"],
                     install_pip_requirements = True,
                     extra_configure_args=[
                       "-DCMAKE_BUILD_TYPE=Release",
