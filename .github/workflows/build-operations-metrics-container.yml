@@ -15,7 +15,7 @@ on:
       - main
     paths:
       - .github/workflows/build-operations-metrics-container.yml
-      - '.llvm-ops-metrics/ops-container/**'
+      - 'llvm-ops-metrics/ops-container/**'
 
 jobs:
   build-operations-metrics-container:
