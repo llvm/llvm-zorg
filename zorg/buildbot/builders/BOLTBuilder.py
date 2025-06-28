@@ -188,7 +188,7 @@ def getBOLTCmakeBuildFactory(
             # relevant source code changes are detected.
             LitTestCommand(
                 name='nfc-check-bolt',
-                command=("LIT_OPTS='-j2' ninja check-bolt"),
+                command=("LIT_OPTS='-j2' nice -n 5 ninja check-bolt"),
                 description=["running", "NFC", "check-bolt"],
                 descriptionDone=["NFC", "check-bolt", "completed"],
                 warnOnFailure=True,
@@ -199,8 +199,7 @@ def getBOLTCmakeBuildFactory(
             # Run out-of-tree large tests if the llvm-bolt binary has changed.
             LitTestCommand(
                 name='nfc-check-large-bolt',
-                command=['bin/llvm-lit', '-sv', '-j2',
-                         'tools/bolttests'],
+                command=('nice -n 5 bin/llvm-lit -sv -j2 tools/bolttests'),
                 description=["running", "NFC", "check-large-bolt"],
                 descriptionDone=["NFC", "check-large-bolt", "completed"],
                 warnOnFailure=True,
