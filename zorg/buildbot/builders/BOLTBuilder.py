@@ -130,6 +130,16 @@ def getBOLTCmakeBuildFactory(
                 haltOnFailure=False,
                 flunkOnFailure=False,
                 env=env),
+            ShellCommand(
+                name='llvm-bolt-version-check',
+                command=(f"{boltNew} --version"),
+                description=('Check that llvm-bolt binary passes a simple test'
+                             'before proceeding with testing.'),
+                descriptionDone=["llvm-bolt --version"],
+                haltOnFailure=True,
+                flunkOnFailure=True,
+                maxTime=30,
+                env=env),
             # Validate that NFC-mode comparison is meaningful by checking:
             # - the old and new binaries exist
             # - no unique IDs are embedded in the binaries
@@ -154,6 +164,7 @@ def getBOLTCmakeBuildFactory(
                 haltOnFailure=False,
                 warnOnFailure=True,
                 warnOnWarnings=True,
+                maxTime=20,
                 decodeRC={0: SUCCESS, 1: FAILURE, 2: WARNINGS},
                 descriptionDone=["NFC-Mode Validation"],
                 env=env),
@@ -177,7 +188,7 @@ def getBOLTCmakeBuildFactory(
             # relevant source code changes are detected.
             LitTestCommand(
                 name='nfc-check-bolt',
-                command=["ninja", "check-bolt"],
+                command=("LIT_OPTS='-j2' ninja check-bolt"),
                 description=["running", "NFC", "check-bolt"],
                 descriptionDone=["NFC", "check-bolt", "completed"],
                 warnOnFailure=True,
