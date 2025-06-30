@@ -130,6 +130,8 @@ def getBOLTCmakeBuildFactory(
                 haltOnFailure=False,
                 flunkOnFailure=False,
                 env=env),
+            # Verify that the llvm-bolt binary can report its version within a
+            # reasonable amount of time.
             ShellCommand(
                 name='llvm-bolt-version-check',
                 command=(f"{boltNew} --version"),
@@ -164,7 +166,7 @@ def getBOLTCmakeBuildFactory(
                 haltOnFailure=False,
                 warnOnFailure=True,
                 warnOnWarnings=True,
-                maxTime=20,
+                maxTime=30,
                 decodeRC={0: SUCCESS, 1: FAILURE, 2: WARNINGS},
                 descriptionDone=["NFC-Mode Validation"],
                 env=env),
@@ -185,10 +187,12 @@ def getBOLTCmakeBuildFactory(
                 haltOnFailure=False,
                 env=env),
             # Run in-tree tests if the llvm-bolt binary has changed, or if
-            # relevant source code changes are detected.
+            # relevant source code changes are detected. Lower scheduling
+            # priority with nice to reduce CPU contention in virtualized
+            # environments.
             LitTestCommand(
                 name='nfc-check-bolt',
-                command=("LIT_OPTS='-j2' nice -n 5 ninja check-bolt"),
+                command=("nice -n 5 ninja check-bolt"),
                 description=["running", "NFC", "check-bolt"],
                 descriptionDone=["NFC", "check-bolt", "completed"],
                 warnOnFailure=True,
@@ -197,6 +201,7 @@ def getBOLTCmakeBuildFactory(
                 doStepIf=FileDoesNotExist(f"build/{skipInTree}"),
                 env=env),
             # Run out-of-tree large tests if the llvm-bolt binary has changed.
+            # Lower scheduling priority, as above.
             LitTestCommand(
                 name='nfc-check-large-bolt',
                 command=('nice -n 5 bin/llvm-lit -sv -j2 tools/bolttests'),
