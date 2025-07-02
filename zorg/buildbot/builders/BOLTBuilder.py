@@ -206,7 +206,7 @@ def getBOLTCmakeBuildFactory(
             # Lower scheduling priority, as above.
             LitTestCommand(
                 name='nfc-check-large-bolt',
-                command=('nice -n 5 bin/llvm-lit -sv -j2 tools/bolttests'),
+                command=('nice -n 5 bin/llvm-lit -v -j2 tools/bolttests'),
                 description=["running", "NFC", "check-large-bolt"],
                 descriptionDone=["NFC", "check-large-bolt", "completed"],
                 warnOnFailure=True,
