@@ -103,7 +103,7 @@ def getBOLTCmakeBuildFactory(
         boltOld = "bin/llvm-bolt.old"
 
         f.addSteps([
-            # Cleanup binaries and markers from previous NFC-mode runs.
+            # Cleanup old/new binaries and markers from previous NFC-mode runs.
             ShellCommand(
                 name='clean-nfc-check',
                 command=(
@@ -114,7 +114,9 @@ def getBOLTCmakeBuildFactory(
                 haltOnFailure=False,
                 flunkOnFailure=False,
                 env=env),
-            # Build the current and previous revision of llvm-bolt.
+            # Build the current and previous revision of llvm-bolt as
+            # llvm-bolt.new and llvm-bolt.old. Also, creates a marker to force
+            # in-tree tests in case additional source code changes are detected.
             ShellCommand(
                 name='nfc-check-setup',
                 command=[
@@ -189,7 +191,7 @@ def getBOLTCmakeBuildFactory(
             # Run in-tree tests if the llvm-bolt binary has changed, or if
             # relevant source code changes are detected. Lower scheduling
             # priority with nice to reduce CPU contention in virtualized
-            # environments.
+            # environments. This step relinks the llvm-bolt binary if needed.
             LitTestCommand(
                 name='nfc-check-bolt',
                 command=("nice -n 5 ninja check-bolt"),
