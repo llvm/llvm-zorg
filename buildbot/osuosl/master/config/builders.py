@@ -653,7 +653,7 @@ all = [
 
     {'name' : "clang-arm64-windows-msvc-2stage",
     'tags'  : ["clang"],
-    'workernames' : ["linaro-armv8-windows-msvc-02"],
+    'workernames' : ["linaro-armv8-windows-msvc-02", "linaro-armv8-windows-msvc-03"],
     'builddir': "clang-arm64-windows-msvc-2stage",
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
                     vs="manual",
@@ -665,6 +665,7 @@ all = [
                         "-DCLANG_DEFAULT_LINKER=lld",
                         "-DCMAKE_TRY_COMPILE_CONFIGURATION=Release",
                         "-DLLVM_CCACHE_BUILD=ON",
+                        "-DLLVM_ENABLE_RUNTIMES=openmp",
                         "-DCOMPILER_RT_BUILD_SANITIZERS=OFF"])},
 
     {'name' : 'clang-x64-windows-msvc',

@@ -47,9 +47,10 @@ def get_all():
         create_worker("linaro-g4-01", max_builds=1),
         create_worker("linaro-g4-02", max_builds=1),
 
-        # AArch64 Windows Microsoft Surface X Pro
+        # Windows Dev Kit 2023, Snapdragon® 8cx Gen 3 
         create_worker("linaro-armv8-windows-msvc-01", max_builds=1),
         create_worker("linaro-armv8-windows-msvc-02", max_builds=1),
+        create_worker("linaro-armv8-windows-msvc-03", max_builds=1),
         create_worker("linaro-armv8-windows-msvc-04", max_builds=1),
         create_worker("linaro-armv8-windows-msvc-05", max_builds=1),
 
