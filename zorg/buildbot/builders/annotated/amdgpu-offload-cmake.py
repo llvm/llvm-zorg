@@ -9,8 +9,21 @@ import util
 import tempfile
 from contextlib import contextmanager
 
+def add_argument_parser():
+    ap = argparse.ArgumentParser()
+
+    # Arugment for CMake file.
+    default_cmake_file = "AMDGPUBot.cmake"
+    ap.add_argument('--cmake-file', type=str, default=default_cmake_file,
+                   help=f'CMake file to use (default: {default_cmake_file})')
+
+    return ap
 
 def main(argv):
+    ap = add_argument_parser()
+    args, _ = ap.parse_known_args()
+
+    cmake_file = args.cmake_file
     source_dir = os.path.join("..", "llvm-project")
     offload_base_dir = os.path.join(source_dir, "offload")
     of_cmake_cache_base_dir = os.path.join(offload_base_dir, "cmake/caches")
@@ -27,8 +40,7 @@ def main(argv):
         util.rmtree(tdir)
 
     with step("cmake", halt_on_fail=True):
-        # TODO make the name of the cache file an argument to the script.
-        cmake_cache_file = os.path.join(of_cmake_cache_base_dir, "AMDGPUBot.cmake")
+        cmake_cache_file = os.path.join(of_cmake_cache_base_dir, cmake_file)
 
         # Use Ninja as the generator.
         # The other important settings alrady come from the CMake CMake
