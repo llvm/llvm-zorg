@@ -14,8 +14,13 @@ spec:
       labels:
         name: sysctl-config
     spec:
+      tolerations:
+      - key: "premerge-platform-libcxx"
+        operator: "Equal"
+        value: "linux-libcxx"
+        effect: "NoSchedule"
       nodeSelector:
-        cloud.google.com/gke-nodepool: llvm-premerge-libcxx
+        premerge-platform-libcxx: linux-libcxx
       containers:
       - name: sysctl-configure-init
         image: alpine
