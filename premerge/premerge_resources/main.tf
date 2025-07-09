@@ -315,3 +315,7 @@ resource "helm_release" "grafana-k8s-monitoring" {
 
   depends_on = [kubernetes_namespace.grafana]
 }
+
+resource "kubernetes_manifest" "sysctl-daemonset" {
+  manifest = yamldecode(file("sysctl_daemonset.yaml"))
+}

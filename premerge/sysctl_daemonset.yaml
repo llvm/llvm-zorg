@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: sysctl-config-ds
+  namespace: kube-system
+  labels:
+    k8s-app: sysctl-config
+spec:
+  selector:
+    matchLabels:
+      name: sysctl-config
+  template:
+    metadata:
+      labels:
+        name: sysctl-config
+    spec:
+      nodeSelector:
+        cloud.google.com/gke-nodepool: llvm-premerge-libcxx
+      containers:
+      - name: sysctl-configure-init
+        image: alpine
+        command:
+        - /bin/sh
+        - -c
+        - |
+          sysctl vm.mmap_rnd_bits=28 \
+          && sleep 31536000000
+          # the sleep is basically forever, to prevent DaemonSet termination
+        securityContext:
+          runAsUser: 0
+          privileged: true
+          readOnlyRootFilesystem: false
+          allowPrivilegeEscalation: true
