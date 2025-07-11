@@ -221,3 +221,106 @@ resource "kubernetes_manifest" "metrics_deployment" {
 
   depends_on = [kubernetes_namespace.metrics, kubernetes_secret.metrics_secrets]
 }
+
+# Resources for collecting LLVM operational metrics data
+
+# Service accounts and bindings to grant access to the
+# BigQuery API for our cronjob
+resource "google_service_account" "operational_metrics_gsa" {
+  account_id   = "operational-metrics-gsa"
+  display_name = "Operational Metrics GSA"
+}
+
+resource "google_project_iam_binding" "bigquery_jobuser_binding" {
+  project = google_service_account.operational_metrics_gsa.project
+  role    = "roles/bigquery.jobUser"
+  
+  members = [
+   "serviceAccount:${google_service_account.operational_metrics_gsa.email}",
+  ]
+
+  depends_on = [google_service_account.operational_metrics_gsa]
+}
+    
+resource "kubernetes_namespace" "operational_metrics" {
+  metadata {
+    name = "operational-metrics"
+  }
+  provider = kubernetes.llvm-premerge-us-central
+}
+
+resource "kubernetes_service_account" "operational_metrics_ksa" {
+  metadata {
+    name        = "operational-metrics-ksa"
+    namespace   = "operational-metrics"
+    annotations = {
+      "iam.gke.io/gcp-service-account" = google_service_account.operational_metrics_gsa.email
+    }
+  }
+
+  depends_on = [kubernetes_namespace.operational_metrics]
+}
+
+resource "google_service_account_iam_binding" "workload_identity_binding" {
+  service_account_id = google_service_account.operational_metrics_gsa.name
+  role               = "roles/iam.workloadIdentityUser"
+  
+  members = [
+    "serviceAccount:${google_service_account.operational_metrics_gsa.project}.svc.id.goog[operational-metrics/operational-metrics-ksa]",
+  ]
+
+  depends_on = [
+    google_service_account.operational_metrics_gsa,
+    kubernetes_service_account.operational_metrics_ksa,
+  ]
+}
+
+# The container for scraping LLVM commits needs persistent storage
+# for a local check-out of llvm/llvm-project
+resource "kubernetes_persistent_volume_claim" "operational_metrics_pvc" {
+  metadata {
+    name      = "operational-metrics-pvc"
+    namespace = "operational-metrics"
+  }
+
+  spec {
+    access_modes = ["ReadWriteOnce"]    
+    resources {
+      requests = {
+        storage = "20Gi"
+      }
+    }
+    storage_class_name = "standard-rwo"  
+  }
+  
+  depends_on = [kubernetes_namespace.operational_metrics]
+}
+
+resource "kubernetes_secret" "operational_metrics_secrets" {
+  metadata {
+    name      = "operational-metrics-secrets"
+    namespace = "operational-metrics"
+  }
+
+  data = {
+    "github-token"           = data.google_secret_manager_secret_version.metrics_github_pat.secret_data
+    "grafana-api-key"        = data.google_secret_manager_secret_version.metrics_grafana_api_key.secret_data
+    "grafana-metrics-userid" = data.google_secret_manager_secret_version.metrics_grafana_metrics_userid.secret_data
+  }
+
+  type       = "Opaque"
+  provider   = kubernetes.llvm-premerge-us-central
+  depends_on = [kubernetes_namespace.operational_metrics]
+}
+
+resource "kubernetes_manifest" "operational_metrics_cronjob" {
+  manifest = yamldecode(file("operational_metrics_cronjob.yaml"))
+  provider = kubernetes.llvm-premerge-us-central
+
+  depends_on = [
+    kubernetes_namespace.operational_metrics,
+    kubernetes_persistent_volume_claim.operational_metrics_pvc,
+    kubernetes_secret.operational_metrics_secrets,
+    kubernetes_service_account.operational_metrics_ksa,
+  ]
+}
