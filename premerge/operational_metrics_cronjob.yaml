@@ -1,0 +1,52 @@
+# operational_metrics_cronjob.yaml
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: operational-metrics-cronjob
+  namespace: operational-metrics
+spec:
+  # Midnight PDT
+  schedule: "0 7 * * *"
+  timeZone: "Etc/UTC"
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: operational-metrics-ksa
+          nodeSelector:
+            iam.gke.io/gke-metadata-server-enabled: "true"
+          volumes:
+          - name: metrics-volume
+            persistentVolumeClaim:
+              claimName: operational-metrics-pvc
+          containers:
+          - name: process-llvm-commits
+            image: ghcr.io/llvm/operations-metrics:latest
+            env:
+            - name: GITHUB_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: operational-metrics-secrets
+                  key: github-token
+            - name: GRAFANA_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: operational-metrics-secrets
+                  key: grafana-api-key
+            - name: GRAFANA_METRICS_USERID
+              valueFrom:
+                secretKeyRef:
+                  name: operational-metrics-secrets
+                  key: grafana-metrics-userid
+            volumeMounts:
+            - name: metrics-volume
+              mountPath: "/data"
+            resources:
+              requests:
+                cpu: "250m"
+                memory: "256Mi"
+              limits:
+                cpu: "1"
+                memory: "512Mi"
+          restartPolicy: OnFailure
