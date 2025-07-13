@@ -72,7 +72,7 @@ if [ ! -d llvm ]; then
 fi
 
 build_step "Updating llvm-project repo"
-git -C llvm fetch origin
+git -C llvm fetch --prune origin
 git -C llvm reset --hard "${LLVM_REVISION}"
 
 # We unconditionally clean (i.e. don't check BUILDBOT_CLOBBER=1) as the script
@@ -142,7 +142,7 @@ if [ ! -d llvm-test-suite ]; then
 fi
 
 build_step "Updating llvm-test-suite repo"
-git -C llvm-test-suite fetch origin
+git -C llvm-test-suite fetch --prune origin
 git -C llvm-test-suite reset --hard origin/main
 
 build_step "llvm-test-suite cmake"
