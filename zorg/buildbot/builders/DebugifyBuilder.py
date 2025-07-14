@@ -9,10 +9,10 @@ def addCheckDebugifyStep(
             compiler_dir = '.',
             env = None):
     script = util.Interpolate(f'%(prop:builddir)s/{compiler_dir}/llvm/utils/llvm-original-di-preservation.py')
-    f.add_step(ShellCommand(name='check debugify output',
-                            command=["python3", script, debugify_output_path, "--error-test"],
-                            description='check debugify output',
-                            env=env))
+    f.addStep(ShellCommand(name='check debugify output',
+                           command=["python3", script, debugify_output_path, "--error-test"],
+                           description='check debugify output',
+                           env=env))
 
 def getDebugifyBuildFactory(
            depends_on_projects = None,
