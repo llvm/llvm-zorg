@@ -2,11 +2,11 @@ terraform {
   required_providers {
     kubernetes = {
       source  = "hashicorp/kubernetes"
-      version = ">= 2.35.1"
+      version = "2.35.1"
     }
     helm = {
       source  = "hashicorp/helm"
-      version = ">= 2.17.0"
+      version = "2.17.0"
     }
   }
 }
@@ -249,7 +249,7 @@ resource "helm_release" "grafana-k8s-monitoring" {
   atomic           = true
   timeout          = 300
   # TODO(boomanaiden154); This needs to be upgraded to v2.x.x at some point.
-  version          = "1.6.14"
+  version = "1.6.14"
 
   values = [file("${path.module}/grafana_values.yaml")]
 
