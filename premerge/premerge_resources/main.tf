@@ -2,11 +2,11 @@ terraform {
   required_providers {
     kubernetes = {
       source  = "hashicorp/kubernetes"
-      version = ">= 2.35.1"
+      version = "2.35.1"
     }
     helm = {
       source  = "hashicorp/helm"
-      version = ">= 2.17.0"
+      version = "2.17.0"
     }
   }
 }
@@ -44,6 +44,12 @@ resource "kubernetes_namespace" "llvm_premerge_libcxx_next_runners" {
 resource "kubernetes_namespace" "llvm_premerge_windows_runners" {
   metadata {
     name = "llvm-premerge-windows-runners"
+  }
+}
+
+resource "kubernetes_namespace" "llvm_premerge_windows_2022_runners" {
+  metadata {
+    name = "llvm-premerge-windows-2022-runners"
   }
 }
 
@@ -132,6 +138,23 @@ resource "kubernetes_secret" "windows_github_pat" {
   depends_on = [kubernetes_namespace.llvm_premerge_windows_runners]
 }
 
+resource "kubernetes_secret" "windows_2022_github_pat" {
+  metadata {
+    name      = "github-token"
+    namespace = "llvm-premerge-windows-2022-runners"
+  }
+
+  data = {
+    "github_app_id"              = var.github_app_id
+    "github_app_installation_id" = var.github_app_installation_id
+    "github_app_private_key"     = var.github_app_private_key
+  }
+
+  type = "Opaque"
+
+  depends_on = [kubernetes_namespace.llvm_premerge_windows_2022_runners]
+}
+
 resource "helm_release" "github_actions_runner_controller" {
   name       = "llvm-premerge-controller"
   namespace  = "llvm-premerge-controller"
@@ -176,6 +199,24 @@ resource "helm_release" "github_actions_runner_set_windows" {
   depends_on = [
     kubernetes_namespace.llvm_premerge_windows_runners,
     kubernetes_secret.windows_github_pat,
+    helm_release.github_actions_runner_controller,
+  ]
+}
+
+resource "helm_release" "github_actions_runner_set_windows_2022" {
+  name       = "llvm-premerge-windows-2022-runners"
+  namespace  = "llvm-premerge-windows-2022-runners"
+  repository = "oci://ghcr.io/actions/actions-runner-controller-charts"
+  version    = "0.11.0"
+  chart      = "gha-runner-scale-set"
+
+  values = [
+    "${templatefile("windows_2022_runner_values.yaml", { runner_group_name : var.runner_group_name })}"
+  ]
+
+  depends_on = [
+    kubernetes_namespace.llvm_premerge_windows_2022_runners,
+    kubernetes_secret.windows_2022_github_pat,
     helm_release.github_actions_runner_controller,
   ]
 }
@@ -249,7 +290,7 @@ resource "helm_release" "grafana-k8s-monitoring" {
   atomic           = true
   timeout          = 300
   # TODO(boomanaiden154); This needs to be upgraded to v2.x.x at some point.
-  version          = "1.6.14"
+  version = "1.6.14"
 
   values = [file("${path.module}/grafana_values.yaml")]
 

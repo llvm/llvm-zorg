@@ -97,6 +97,8 @@ resource "google_container_node_pool" "llvm_premerge_libcxx" {
   }
 }
 
+# TODO(boomanaiden154): Make sure to delete this node pool after we have
+# switched over to server 2022.
 resource "google_container_node_pool" "llvm_premerge_windows" {
   name               = "llvm-premerge-windows"
   location           = var.region
@@ -128,7 +130,54 @@ resource "google_container_node_pool" "llvm_premerge_windows" {
       "disable-legacy-endpoints" = "true"
     }
     disk_size_gb = 200
-    disk_type = "pd-ssd"
+    disk_type    = "pd-ssd"
+    # Terraform wants to recreate the node pool everytime whe running
+    # terraform apply unless we explicitly set this.
+    # TODO(boomanaiden154): Look into why terraform is doing this so we do
+    # not need this hack.
+    resource_labels = {
+      "goog-gke-node-pool-provisioning-model" = "on-demand"
+    }
+  }
+}
+
+resource "google_container_node_pool" "llvm_premerge_windows_2022" {
+  name               = "llvm-premerge-windows-2022"
+  location           = var.region
+  cluster            = google_container_cluster.llvm_premerge.name
+  initial_node_count = 0
+
+  # TODO(boomanaiden154): Bump this to full capacity (16 nodes) once we are
+  # ready to switch over to server 2022.
+  autoscaling {
+    total_min_node_count = 0
+    total_max_node_count = 2
+  }
+
+  # We do not set a taint for the windows nodes as kubernetes by default sets
+  # a node.kubernetes.io/os taint for windows nodes.
+  node_config {
+    machine_type = var.windows_machine_type
+    labels = {
+      "premerge-platform" : "windows-2022"
+    }
+    image_type = "WINDOWS_LTSC_CONTAINERD"
+    windows_node_config {
+      osversion = "OS_VERSION_LTSC2022"
+    }
+    # Add a script that runs on the initial boot to disable Windows Defender.
+    # Windows Defender causes an increase in test times by approximately an
+    # order of magnitude.
+    metadata = {
+      "sysprep-specialize-script-ps1" = "Set-MpPreference -DisableRealtimeMonitoring $true"
+      # Terraform wants to recreate the node pool everytime whe running
+      # terraform apply unless we explicitly set this.
+      # TODO(boomanaiden154): Look into why terraform is doing this so we do
+      # not need this hack.
+      "disable-legacy-endpoints" = "true"
+    }
+    disk_size_gb = 200
+    disk_type    = "pd-ssd"
     # Terraform wants to recreate the node pool everytime whe running
     # terraform apply unless we explicitly set this.
     # TODO(boomanaiden154): Look into why terraform is doing this so we do
