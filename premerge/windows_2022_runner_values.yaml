@@ -21,7 +21,7 @@ template:
       value: "windows-2022"
       effect: "NoSchedule"
     nodeSelector:
-      premerge-platform: windows
+      premerge-platform: windows-2022
     containers:
       - name: runner
         resources:
