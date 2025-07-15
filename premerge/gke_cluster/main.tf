@@ -147,11 +147,9 @@ resource "google_container_node_pool" "llvm_premerge_windows_2022" {
   cluster            = google_container_cluster.llvm_premerge.name
   initial_node_count = 0
 
-  # TODO(boomanaiden154): Bump this to full capacity (16 nodes) once we are
-  # ready to switch over to server 2022.
   autoscaling {
     total_min_node_count = 0
-    total_max_node_count = 2
+    total_max_node_count = 16
   }
 
   # We do not set a taint for the windows nodes as kubernetes by default sets
