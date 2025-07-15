@@ -16,11 +16,14 @@ def getFlangOutOfTreeBuildFactory(
     if env is None:
         env = dict()
 
+    install_dir = "install"
+
     f = getCmakeWithNinjaBuildFactory(
             depends_on_projects=['llvm','clang','mlir','openmp','flang','flang-rt','compiler-rt'],
             enable_projects=['llvm','clang','mlir'],
             enable_runtimes=['openmp','compiler-rt'],
             obj_dir="build_llvm",
+            install_dir=install_dir,
             checks=[],
             clean=clean,
             extra_configure_args=llvm_extra_configure_args,
@@ -61,6 +64,8 @@ def getFlangOutOfTreeBuildFactory(
             LLVMBuildFactory.pathRelativeTo(mlir_dir, flang_obj_dir)),
         ('-DCLANG_DIR:PATH=',
             LLVMBuildFactory.pathRelativeTo(clang_dir, flang_obj_dir)),
+        ('-DCMAKE_INSTALL_PREFIX=',
+            LLVMBuildFactory.pathRelativeTo(install_dir, flang_obj_dir)),
         ])
 
     f.addStep(
@@ -87,6 +92,7 @@ def getFlangOutOfTreeBuildFactory(
     addNinjaSteps(
        f,
        obj_dir=flang_obj_dir,
+       install_dir=install_dir,
        checks=checks,
        env=env,
        stage_name="flang",
@@ -108,7 +114,7 @@ def getFlangOutOfTreeBuildFactory(
     # Use the Fortran compiler from the previous step.
     flang_rt_cmake_args += [
         util.Interpolate(
-            f"-DCMAKE_Fortran_COMPILER=%(prop:builddir)s/{flang_obj_dir}/bin/flang"
+            f"-DCMAKE_Fortran_COMPILER=%(prop:builddir)s/{install_dir}/bin/flang"
         ),
         "-DCMAKE_Fortran_COMPILER_WORKS=ON",
     ]
