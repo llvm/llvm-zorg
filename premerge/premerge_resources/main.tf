@@ -41,12 +41,6 @@ resource "kubernetes_namespace" "llvm_premerge_libcxx_next_runners" {
   }
 }
 
-resource "kubernetes_namespace" "llvm_premerge_windows_runners" {
-  metadata {
-    name = "llvm-premerge-windows-runners"
-  }
-}
-
 resource "kubernetes_namespace" "llvm_premerge_windows_2022_runners" {
   metadata {
     name = "llvm-premerge-windows-2022-runners"
@@ -121,23 +115,6 @@ resource "kubernetes_secret" "libcxx_next_github_pat" {
   depends_on = [kubernetes_namespace.llvm_premerge_libcxx_next_runners]
 }
 
-resource "kubernetes_secret" "windows_github_pat" {
-  metadata {
-    name      = "github-token"
-    namespace = "llvm-premerge-windows-runners"
-  }
-
-  data = {
-    "github_app_id"              = var.github_app_id
-    "github_app_installation_id" = var.github_app_installation_id
-    "github_app_private_key"     = var.github_app_private_key
-  }
-
-  type = "Opaque"
-
-  depends_on = [kubernetes_namespace.llvm_premerge_windows_runners]
-}
-
 resource "kubernetes_secret" "windows_2022_github_pat" {
   metadata {
     name      = "github-token"
@@ -182,24 +159,6 @@ resource "helm_release" "github_actions_runner_set_linux" {
     kubernetes_namespace.llvm_premerge_linux_runners,
     helm_release.github_actions_runner_controller,
     kubernetes_secret.linux_github_pat,
-  ]
-}
-
-resource "helm_release" "github_actions_runner_set_windows" {
-  name       = "llvm-premerge-windows-runners"
-  namespace  = "llvm-premerge-windows-runners"
-  repository = "oci://ghcr.io/actions/actions-runner-controller-charts"
-  version    = "0.11.0"
-  chart      = "gha-runner-scale-set"
-
-  values = [
-    "${templatefile("windows_runner_values.yaml", { runner_group_name : var.runner_group_name })}"
-  ]
-
-  depends_on = [
-    kubernetes_namespace.llvm_premerge_windows_runners,
-    kubernetes_secret.windows_github_pat,
-    helm_release.github_actions_runner_controller,
   ]
 }
 
