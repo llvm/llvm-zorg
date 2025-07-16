@@ -16,6 +16,11 @@ def getFlangOutOfTreeBuildFactory(
     if env is None:
         env = dict()
 
+    # Currently, when Flang is built out-of-tree, it fails to find compiler-rt
+    # when linking programs.
+    # See https://github.com/llvm/llvm-project/issues/147738.
+    # As a workaround, install LLVM, clang, compiler-rt and flang into the same
+    # directory and use it to build and test flang-rt.
     install_dir = "install"
 
     f = getCmakeWithNinjaBuildFactory(
@@ -111,7 +116,7 @@ def getFlangOutOfTreeBuildFactory(
         "-DLLVM_ENABLE_RUNTIMES=flang-rt",
     ]
 
-    # Use the Fortran compiler from the previous step.
+    # Use the Fortran compiler installed in the previous step.
     flang_rt_cmake_args += [
         util.Interpolate(
             f"-DCMAKE_Fortran_COMPILER=%(prop:builddir)s/{install_dir}/bin/flang"
