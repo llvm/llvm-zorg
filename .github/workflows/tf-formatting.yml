@@ -1,0 +1,29 @@
+name: Terraform Formatting Check
+
+permissions:
+  contents: read
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  check_formatting:
+    name: Check Formatting
+    if: github.repository_owner == 'llvm'
+    runs-on: ubuntu-24.04
+    steps:
+    - uses: actions/checkout@v4
+    - name: Install Dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y curl
+        curl https://releases.hashicorp.com/terraform/1.12.2/terraform_1.12.2_linux_amd64.zip > /tmp/tf.zip
+        cd /tmp
+        unzip /tmp/tf.zip
+        cp terraform /usr/local/bin/terraform
+    - name: Check Formatting
+      run: |
+        terraform fmt -recursive -check .
