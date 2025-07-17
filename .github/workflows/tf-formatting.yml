@@ -26,4 +26,4 @@ jobs:
         cp terraform /usr/local/bin/terraform
     - name: Check Formatting
       run: |
-        terraform fmt -recursive --check .
+        terraform fmt -recursive -check .
