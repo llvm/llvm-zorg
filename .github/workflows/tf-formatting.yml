@@ -1,8 +1,13 @@
 name: Terraform Formatting Check
 
+permissions:
+  contents: read
+
 on:
-  - push
-  - pull_request
+  push:
+    branches:
+      - main
+  pull_request:
 
 jobs:
   check_formatting:
