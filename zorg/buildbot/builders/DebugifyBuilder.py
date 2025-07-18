@@ -3,16 +3,20 @@ from buildbot.steps.shell import ShellCommand
 from zorg.buildbot.builders import TestSuiteBuilder
 from zorg.buildbot.commands.CmakeCommand import CmakeCommand
 
-def addCheckDebugifyStep(
-            f,
-            debugify_output_path,
-            compiler_dir = '.',
-            env = None):
-    script = util.Interpolate(f'%(prop:builddir)s/{compiler_dir}/llvm/utils/llvm-original-di-preservation.py')
-    f.addStep(ShellCommand(name='check debugify output',
-                           command=["python3", script, debugify_output_path, "--error-test"],
-                           description='check debugify output',
-                           env=env))
+
+def addCheckDebugifyStep(f, debugify_output_path, compiler_dir=".", env=None):
+    script = util.Interpolate(
+        f"%(prop:builddir)s/{compiler_dir}/llvm/utils/llvm-original-di-preservation.py"
+    )
+    f.addStep(
+        ShellCommand(
+            name="check debugify output",
+            command=["python3", script, debugify_output_path, "--acceptance-test"],
+            description="check debugify output",
+            env=env,
+        )
+    )
+
 
 def getDebugifyBuildFactory(
            depends_on_projects = None,
