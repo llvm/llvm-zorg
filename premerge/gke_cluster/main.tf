@@ -12,6 +12,13 @@ resource "google_container_cluster" "llvm_premerge" {
   # for adding windows nodes to the cluster.
   networking_mode = "VPC_NATIVE"
   ip_allocation_policy {}
+
+  # Set the workload identity config so that we can authenticate with Google
+  # Cloud APIs using workload identity federation as described in
+  # https://cloud.google.com/kubernetes-engine/docs/how-to/workload-identity.
+  workload_identity_config {
+    workload_pool = "llvm-premerge-checks.svc.id.goog"
+  }
 }
 
 resource "google_container_node_pool" "llvm_premerge_linux_service" {
@@ -61,6 +68,12 @@ resource "google_container_node_pool" "llvm_premerge_linux" {
     # not need this hack.
     resource_labels = {
       "goog-gke-node-pool-provisioning-model" = "on-demand"
+    }
+
+    # Enable workload identity federation for this pool so that we can access
+    # GCS buckets.
+    workload_metadata_config {
+      mode = "GKE_METADATA"
     }
   }
 }
@@ -139,5 +152,27 @@ resource "google_container_node_pool" "llvm_premerge_windows_2022" {
     resource_labels = {
       "goog-gke-node-pool-provisioning-model" = "on-demand"
     }
+
+    # Enable workload identity federation for this pool so that we can access
+    # GCS buckets.
+    workload_metadata_config {
+      mode = "GKE_METADATA"
+    }
   }
+}
+
+resource "google_storage_bucket" "object_cache_linux" {
+  name = format("%s-object-cache-linux", var.cluster_name)
+  location = var.region
+
+  uniform_bucket_level_access = true
+  public_access_prevention = "enforced"
+}
+
+resource "google_storage_bucket" "object_cache_windows" {
+  name = format("%s-object-cache-windows", var.cluster_name)
+  location = var.region
+
+  uniform_bucket_level_access = true
+  public_access_prevention = "enforced"
 }
