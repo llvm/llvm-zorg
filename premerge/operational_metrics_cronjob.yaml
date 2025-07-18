@@ -16,10 +16,6 @@ spec:
           serviceAccountName: operational-metrics-ksa
           nodeSelector:
             iam.gke.io/gke-metadata-server-enabled: "true"
-          volumes:
-          - name: metrics-volume
-            persistentVolumeClaim:
-              claimName: operational-metrics-pvc
           containers:
           - name: process-llvm-commits
             image: ghcr.io/llvm/operations-metrics:latest
@@ -39,9 +35,6 @@ spec:
                 secretKeyRef:
                   name: operational-metrics-secrets
                   key: grafana-metrics-userid
-            volumeMounts:
-            - name: metrics-volume
-              mountPath: "/data"
             resources:
               requests:
                 cpu: "250m"

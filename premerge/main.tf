@@ -275,27 +275,6 @@ resource "google_service_account_iam_binding" "workload_identity_binding" {
   ]
 }
 
-# The container for scraping LLVM commits needs persistent storage
-# for a local check-out of llvm/llvm-project
-resource "kubernetes_persistent_volume_claim" "operational_metrics_pvc" {
-  metadata {
-    name      = "operational-metrics-pvc"
-    namespace = "operational-metrics"
-  }
-
-  spec {
-    access_modes = ["ReadWriteOnce"]    
-    resources {
-      requests = {
-        storage = "20Gi"
-      }
-    }
-    storage_class_name = "standard-rwo"  
-  }
-  
-  depends_on = [kubernetes_namespace.operational_metrics]
-}
-
 resource "kubernetes_secret" "operational_metrics_secrets" {
   metadata {
     name      = "operational-metrics-secrets"
@@ -319,7 +298,6 @@ resource "kubernetes_manifest" "operational_metrics_cronjob" {
 
   depends_on = [
     kubernetes_namespace.operational_metrics,
-    kubernetes_persistent_volume_claim.operational_metrics_pvc,
     kubernetes_secret.operational_metrics_secrets,
     kubernetes_service_account.operational_metrics_ksa,
   ]
