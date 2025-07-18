@@ -4,14 +4,19 @@ from zorg.buildbot.builders import TestSuiteBuilder
 from zorg.buildbot.commands.CmakeCommand import CmakeCommand
 
 
-def addCheckDebugifyStep(f, debugify_output_path, compiler_dir=".", env=None):
+def addCheckDebugifyStep(f, debugify_output_path, compiler_dir=".", env={}):
     script = util.Interpolate(
         f"%(prop:builddir)s/{compiler_dir}/llvm/utils/llvm-original-di-preservation.py"
     )
     f.addStep(
         ShellCommand(
             name="check debugify output",
-            command=["python3", script, debugify_output_path, "--acceptance-test"],
+            command=[
+                "python3",
+                script,
+                util.Interpolate(debugify_output_path),
+                "--acceptance-test",
+            ],
             description="check debugify output",
             env=env,
         )
@@ -19,20 +24,21 @@ def addCheckDebugifyStep(f, debugify_output_path, compiler_dir=".", env=None):
 
 
 def getDebugifyBuildFactory(
-           depends_on_projects = None,
-           enable_runtimes = "auto",
-           targets = None,
-           llvm_srcdir = None,
-           obj_dir = None,
-           checks = None,
-           install_dir = None,
-           clean = False,
-           test_suite_build_flags = '-O2 -g -DNDEBUG',
-           extra_configure_args = None,
-           enable_origin_tracking = True,
-           extra_test_suite_configure_args = None,
-           env = None,
-           **kwargs):
+    depends_on_projects=None,
+    enable_runtimes="auto",
+    targets=None,
+    llvm_srcdir=None,
+    obj_dir=None,
+    checks=None,
+    install_dir=None,
+    clean=False,
+    test_suite_build_flags="-O2 -g -DNDEBUG",
+    extra_configure_args=None,
+    enable_origin_tracking=True,
+    extra_test_suite_configure_args=None,
+    env={},
+    **kwargs,
+):
 
     # Make a local copy of the LLVM configure args, as we are going to modify that.
     if extra_configure_args is not None:
@@ -45,7 +51,8 @@ def getDebugifyBuildFactory(
         ('-DLLVM_ENABLE_DEBUGLOC_COVERAGE_TRACKING=', tracking_mode)
     ])
 
-    debugify_output_path = util.Interpolate(f'%(prop:builddir)s/debugify-report.json')
+    # This path will be passed through to util.Interpolate, so we leave it in this format.
+    debugify_output_path = f"%(prop:builddir)s/debugify-report.json"
 
     # Make a local copy of the test suite configure args, as we are going to modify that.
     if extra_test_suite_configure_args is not None:
@@ -63,9 +70,11 @@ def getDebugifyBuildFactory(
     build_flags = f'{test_suite_build_flags} -Xclang -fverify-debuginfo-preserve -Xclang -fverify-debuginfo-preserve-export={debugify_output_path} -mllvm --debugify-quiet -mllvm -debugify-level=locations'
     CmakeCommand.applyRequiredOptions(test_suite_cmake_args, [
         ('-DCMAKE_BUILD_TYPE=', 'RelWithDebInfo'),
-        ('-DCMAKE_C_FLAGS_RELWITHDEBINFO=', build_flags),
-        ('-DCMAKE_CXX_FLAGS_RELWITHDEBINFO=', build_flags),
     ])
+    test_suite_cmake_args += [
+        util.Interpolate(f"-DCMAKE_C_FLAGS_RELWITHDEBINFO={build_flags}"),
+        util.Interpolate(f"-DCMAKE_CXX_FLAGS_RELWITHDEBINFO={build_flags}"),
+    ]
 
     f = TestSuiteBuilder.getTestSuiteBuildFactory(
         depends_on_projects=depends_on_projects,
