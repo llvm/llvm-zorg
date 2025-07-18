@@ -234,6 +234,30 @@ resource "helm_release" "github_actions_runner_set_libcxx_next" {
   ]
 }
 
+resource "kubernetes_service_account" "linux_object_cache_ksa" {
+  metadata {
+    name      = var.linux_runners_kubernetes_service_account_name
+    namespace = var.linux_runners_namespace_name
+    annotations = {
+      "iam.gke.io/gcp-service-account" = var.linux_object_cache_gcp_service_account_email
+    }
+  }
+
+  depends_on = [kubernetes_namespace.llvm_premerge_linux_runners]
+}
+
+resource "kubernetes_service_account" "windows_2022_object_cache_ksa" {
+  metadata {
+    name      = var.windows_2022_runners_kubernetes_service_account_name
+    namespace = var.windows_2022_runners_namespace_name
+    annotations = {
+      "iam.gke.io/gcp-service-account" = var.windows_2022_object_cache_gcp_service_account_email
+    }
+  }
+
+  depends_on = [kubernetes_namespace.llvm_premerge_windows_2022_runners]
+}
+
 resource "kubernetes_namespace" "grafana" {
   metadata {
     name = "grafana"
