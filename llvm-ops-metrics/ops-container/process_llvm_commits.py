@@ -77,15 +77,12 @@ def scrape_new_commits_by_date(
   # iter_commits() yields commits in reverse chronological order
   new_commits = []
   for commit in repo.iter_commits():
-    # Skip commits that are too new
+    # Skip commits that don't match the target date
     committed_datetime = commit.committed_datetime.astimezone(
         datetime.timezone.utc
     )
-    if committed_datetime.date() > target_datetime.date():
+    if committed_datetime.date() != target_datetime.date():
       continue
-    # Stop scraping if the commit is older than the target date
-    if committed_datetime.date() < target_datetime.date():
-      break
 
     new_commits.append(commit)
 
@@ -211,7 +208,7 @@ def main() -> None:
       datetime.timezone.utc
   ) - datetime.timedelta(days=LOOKBACK_DAYS)
   logging.info(
-      "Scraping llvm/llvm-project for new commits on %s",
+      "Cloning and scraping llvm/llvm-project for new commits on %s",
       date_to_scrape.strftime("%Y-%m-%d"),
   )
   new_commits = scrape_new_commits_by_date(date_to_scrape)
