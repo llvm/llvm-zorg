@@ -19,7 +19,7 @@ resource "kubernetes_namespace" "llvm_premerge_controller" {
 
 resource "kubernetes_namespace" "llvm_premerge_linux_runners" {
   metadata {
-    name = "llvm-premerge-linux-runners"
+    name = var.linux_runners_namespace_name
   }
 }
 
@@ -43,14 +43,14 @@ resource "kubernetes_namespace" "llvm_premerge_libcxx_next_runners" {
 
 resource "kubernetes_namespace" "llvm_premerge_windows_2022_runners" {
   metadata {
-    name = "llvm-premerge-windows-2022-runners"
+    name = var.windows_2022_runners_namespace_name
   }
 }
 
 resource "kubernetes_secret" "linux_github_pat" {
   metadata {
     name      = "github-token"
-    namespace = "llvm-premerge-linux-runners"
+    namespace = var.linux_runners_namespace_name
   }
 
   data = {
@@ -146,7 +146,7 @@ resource "helm_release" "github_actions_runner_controller" {
 
 resource "helm_release" "github_actions_runner_set_linux" {
   name       = "llvm-premerge-linux-runners"
-  namespace  = "llvm-premerge-linux-runners"
+  namespace  = var.linux_runners_namespace_name
   repository = "oci://ghcr.io/actions/actions-runner-controller-charts"
   version    = "0.11.0"
   chart      = "gha-runner-scale-set"
@@ -164,7 +164,7 @@ resource "helm_release" "github_actions_runner_set_linux" {
 
 resource "helm_release" "github_actions_runner_set_windows_2022" {
   name       = "llvm-premerge-windows-2022-runners"
-  namespace  = "llvm-premerge-windows-2022-runners"
+  namespace  = var.windows_2022_runners_namespace_name
   repository = "oci://ghcr.io/actions/actions-runner-controller-charts"
   version    = "0.11.0"
   chart      = "gha-runner-scale-set"
