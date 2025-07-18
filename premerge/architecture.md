@@ -20,9 +20,9 @@ To balance cost/performance, we keep both types.
  - building & testing LLVM shall be done on self-hosted runners.
 
 LLVM has several flavor of self-hosted runners:
- - libcxx runners.
  - MacOS runners for HLSL managed by Microsoft.
  - GCP windows/linux runners managed by Google.
+ - GCP linux runners setup for libcxx managed by Google.
 
 This document only focuses on Google's GCP hosted runners.
 
@@ -47,10 +47,11 @@ Any relevant differences are explicitly enumerated.
 
 Our runners are hosted on GCP Kubernetes clusters, and use the
 [Action Runner Controller (ARC)](https://docs.github.com/en/actions/hosting-your-own-runners/managing-self-hosted-runners-with-actions-runner-controller/about-actions-runner-controller).
-The clusters have 3 pools:
+The clusters have 4 main pools:
   - llvm-premerge-linux
   - llvm-premerge-linux-service
   - llvm-premerge-windows
+  - llvm-premerge-libcxx
 
 **llvm-premerge-linux-service** is a fixed pool, only used to host the
 services required to manage the premerge infra (controller, listeners,
@@ -63,6 +64,11 @@ are `n2d-standard-64` due to quota limitations.
 **llvm-premerge-windows** is a auto-scaling pool with large `n2-standard-32`
 VMs. Similar to the Linux pool, but this time it runs Windows workflows. In the
 US West cluster, the machines are `n2d-standard-32` due to quota limitations.
+
+**llvm-premerge-libcxx** is a auto-scaling pool with large `n2-standard-32`
+VMs. This is similar to the Linux pool but with smaller machines tailored
+to the libcxx testing workflows. In the US West Cluster, the machines are
+`n2d-standard-32` due to quota limitations.
 
 ### Service pool: llvm-premerge-linux-service
 
@@ -87,7 +93,7 @@ How a job is run:
  - If the instance is not reused in the next 10 minutes, the autoscaler
    will turn down the instance, freeing resources.
 
-### Worker pools : llvm-premerge-linux, llvm-premerge-windows
+### Worker pools : llvm-premerge-linux, llvm-premerge-windows, llvm-premerge-libcxx
 
 To make sure each runner pod is scheduled on the correct pool (linux or
 windows, avoiding the service pool), we use labels and taints.
@@ -98,6 +104,7 @@ So if we do not enforce limits, the controller could schedule 2 runners on
 the same instance, forcing containers to share resources.
 
 Those bits are configures in the
-[linux runner configuration](linux_runners_values.yaml) and
-[windows runner configuration](windows_runner_values.yaml).
+[linux runner configuration](linux_runners_values.yaml),
+[windows runner configuration](windows_runner_values.yaml), and
+[libcxx runner configuration](libcxx_runners_values.yaml).
 
