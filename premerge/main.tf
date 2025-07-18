@@ -43,13 +43,24 @@ resource "local_file" "terraform_state" {
 
 data "google_client_config" "current" {}
 
+locals {
+  linux_runners_namespace_name                         = "llvm-premerge-linux-runners"
+  linux_runners_kubernetes_service_account_name        = "linux-runners-ksa"
+  windows_2022_runners_namespace_name                  = "llvm-premerge-windows-2022-runners"
+  windows_2022_runners_kubernetes_service_account_name = "windows-runners-ksa"
+}
+
 module "premerge_cluster_us_central" {
-  source               = "./gke_cluster"
-  cluster_name         = "llvm-premerge-cluster-us-central"
-  region               = "us-central1-a"
-  libcxx_machine_type  = "n2d-standard-32"
-  linux_machine_type   = "n2-standard-64"
-  windows_machine_type = "n2-standard-32"
+  source                                               = "./gke_cluster"
+  cluster_name                                         = "llvm-premerge-cluster-us-central"
+  region                                               = "us-central1-a"
+  libcxx_machine_type                                  = "n2d-standard-32"
+  linux_machine_type                                   = "n2-standard-64"
+  windows_machine_type                                 = "n2-standard-32"
+  linux_runners_namespace_name                         = local.linux_runners_namespace_name
+  linux_runners_kubernetes_service_account_name        = local.linux_runners_kubernetes_service_account_name
+  windows_2022_runners_namespace_name                  = local.windows_2022_runners_namespace_name
+  windows_2022_runners_kubernetes_service_account_name = local.windows_2022_runners_kubernetes_service_account_name
 }
 
 # We explicitly specify a single zone for the service node pool locations as
@@ -57,13 +68,17 @@ module "premerge_cluster_us_central" {
 # node_count nodes rather than (node_count * zone count) nodes, so we
 # explicitly enumerate a specific region.
 module "premerge_cluster_us_west" {
-  source                      = "./gke_cluster"
-  cluster_name                = "llvm-premerge-cluster-us-west"
-  region                      = "us-west1"
-  libcxx_machine_type         = "n2d-standard-32"
-  linux_machine_type          = "n2d-standard-64"
-  windows_machine_type        = "n2d-standard-32"
-  service_node_pool_locations = ["us-west1-a"]
+  source                                               = "./gke_cluster"
+  cluster_name                                         = "llvm-premerge-cluster-us-west"
+  region                                               = "us-west1"
+  libcxx_machine_type                                  = "n2d-standard-32"
+  linux_machine_type                                   = "n2d-standard-64"
+  windows_machine_type                                 = "n2d-standard-32"
+  service_node_pool_locations                          = ["us-west1-a"]
+  linux_runners_namespace_name                         = local.linux_runners_namespace_name
+  linux_runners_kubernetes_service_account_name        = local.linux_runners_kubernetes_service_account_name
+  windows_2022_runners_namespace_name                  = local.windows_2022_runners_namespace_name
+  windows_2022_runners_kubernetes_service_account_name = local.windows_2022_runners_kubernetes_service_account_name
 }
 
 provider "helm" {
@@ -121,13 +136,15 @@ provider "kubernetes" {
 }
 
 module "premerge_cluster_us_central_resources" {
-  source                     = "./premerge_resources"
-  github_app_id              = data.google_secret_manager_secret_version.github_app_id.secret_data
-  github_app_installation_id = data.google_secret_manager_secret_version.github_app_installation_id.secret_data
-  github_app_private_key     = data.google_secret_manager_secret_version.github_app_private_key.secret_data
-  cluster_name               = "llvm-premerge-cluster-us-central"
-  grafana_token              = data.google_secret_manager_secret_version.grafana_token.secret_data
-  runner_group_name          = "llvm-premerge-cluster-us-central"
+  source                              = "./premerge_resources"
+  github_app_id                       = data.google_secret_manager_secret_version.github_app_id.secret_data
+  github_app_installation_id          = data.google_secret_manager_secret_version.github_app_installation_id.secret_data
+  github_app_private_key              = data.google_secret_manager_secret_version.github_app_private_key.secret_data
+  cluster_name                        = "llvm-premerge-cluster-us-central"
+  grafana_token                       = data.google_secret_manager_secret_version.grafana_token.secret_data
+  runner_group_name                   = "llvm-premerge-cluster-us-central"
+  linux_runners_namespace_name        = local.linux_runners_namespace_name
+  windows_2022_runners_namespace_name = local.windows_2022_runners_namespace_name
   providers = {
     kubernetes = kubernetes.llvm-premerge-us-central
     helm       = helm.llvm-premerge-us-central
@@ -135,13 +152,15 @@ module "premerge_cluster_us_central_resources" {
 }
 
 module "premerge_cluster_us_west_resources" {
-  source                     = "./premerge_resources"
-  github_app_id              = data.google_secret_manager_secret_version.github_app_id.secret_data
-  github_app_installation_id = data.google_secret_manager_secret_version.github_app_installation_id.secret_data
-  github_app_private_key     = data.google_secret_manager_secret_version.github_app_private_key.secret_data
-  cluster_name               = "llvm-premerge-cluster-us-west"
-  grafana_token              = data.google_secret_manager_secret_version.grafana_token.secret_data
-  runner_group_name          = "llvm-premerge-cluster-us-west"
+  source                              = "./premerge_resources"
+  github_app_id                       = data.google_secret_manager_secret_version.github_app_id.secret_data
+  github_app_installation_id          = data.google_secret_manager_secret_version.github_app_installation_id.secret_data
+  github_app_private_key              = data.google_secret_manager_secret_version.github_app_private_key.secret_data
+  cluster_name                        = "llvm-premerge-cluster-us-west"
+  grafana_token                       = data.google_secret_manager_secret_version.grafana_token.secret_data
+  runner_group_name                   = "llvm-premerge-cluster-us-west"
+  linux_runners_namespace_name        = local.linux_runners_namespace_name
+  windows_2022_runners_namespace_name = local.windows_2022_runners_namespace_name
   providers = {
     kubernetes = kubernetes.llvm-premerge-us-west
     helm       = helm.llvm-premerge-us-west

@@ -70,3 +70,13 @@ variable "libcxx_next_runner_image" {
   type    = string
   default = "ghcr.io/llvm/libcxx-linux-builder:16f046281bf1a11d344eac1bc44d11f3e50e3b5d"
 }
+
+variable "linux_runners_namespace_name" {
+  description = "The name of the namespace containing the Linux runners"
+  type        = string
+}
+
+variable "windows_2022_runners_namespace_name" {
+  description = "The name of the namespace containing the Windows runners"
+  type        = string
+}
