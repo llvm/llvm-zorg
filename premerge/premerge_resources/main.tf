@@ -19,7 +19,7 @@ resource "kubernetes_namespace" "llvm_premerge_controller" {
 
 resource "kubernetes_namespace" "llvm_premerge_linux_runners" {
   metadata {
-    name = "llvm-premerge-linux-runners"
+    name = var.linux_runners_namespace_name
   }
 }
 
@@ -43,14 +43,14 @@ resource "kubernetes_namespace" "llvm_premerge_libcxx_next_runners" {
 
 resource "kubernetes_namespace" "llvm_premerge_windows_2022_runners" {
   metadata {
-    name = "llvm-premerge-windows-2022-runners"
+    name = var.windows_2022_runners_namespace_name
   }
 }
 
 resource "kubernetes_secret" "linux_github_pat" {
   metadata {
     name      = "github-token"
-    namespace = "llvm-premerge-linux-runners"
+    namespace = var.linux_runners_namespace_name
   }
 
   data = {
@@ -146,7 +146,7 @@ resource "helm_release" "github_actions_runner_controller" {
 
 resource "helm_release" "github_actions_runner_set_linux" {
   name       = "llvm-premerge-linux-runners"
-  namespace  = "llvm-premerge-linux-runners"
+  namespace  = var.linux_runners_namespace_name
   repository = "oci://ghcr.io/actions/actions-runner-controller-charts"
   version    = "0.11.0"
   chart      = "gha-runner-scale-set"
@@ -164,7 +164,7 @@ resource "helm_release" "github_actions_runner_set_linux" {
 
 resource "helm_release" "github_actions_runner_set_windows_2022" {
   name       = "llvm-premerge-windows-2022-runners"
-  namespace  = "llvm-premerge-windows-2022-runners"
+  namespace  = var.windows_2022_runners_namespace_name
   repository = "oci://ghcr.io/actions/actions-runner-controller-charts"
   version    = "0.11.0"
   chart      = "gha-runner-scale-set"
@@ -232,6 +232,30 @@ resource "helm_release" "github_actions_runner_set_libcxx_next" {
     helm_release.github_actions_runner_controller,
     kubernetes_secret.libcxx_next_github_pat,
   ]
+}
+
+resource "kubernetes_service_account" "linux_object_cache_ksa" {
+  metadata {
+    name      = var.linux_runners_kubernetes_service_account_name
+    namespace = var.linux_runners_namespace_name
+    annotations = {
+      "iam.gke.io/gcp-service-account" = var.linux_object_cache_gcp_service_account_email
+    }
+  }
+
+  depends_on = [kubernetes_namespace.llvm_premerge_linux_runners]
+}
+
+resource "kubernetes_service_account" "windows_2022_object_cache_ksa" {
+  metadata {
+    name      = var.windows_2022_runners_kubernetes_service_account_name
+    namespace = var.windows_2022_runners_namespace_name
+    annotations = {
+      "iam.gke.io/gcp-service-account" = var.windows_2022_object_cache_gcp_service_account_email
+    }
+  }
+
+  depends_on = [kubernetes_namespace.llvm_premerge_windows_2022_runners]
 }
 
 resource "kubernetes_namespace" "grafana" {
