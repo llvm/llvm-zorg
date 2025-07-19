@@ -33,11 +33,10 @@ The main part you want too look into is `Menu > Kubernetes Engine > Clusters`.
 
 Currently, we have 4 clusters:
  - `llvm-premerge-checks`: the cluster hosting BuildKite Linux runners.
- - `windows-cluster`: the cluster hosting BuildKite Windows runners.
  - `llvm-premerge-cluster-us-central`: The first cluster for GCP hosted runners.
  - `llvm-premerge-cluster-us-west`: The second cluster for GCP hosted runners.
 
-`llvm-premerge-checks` and `windows-cluster` are part of the old Buildkite
+`llvm-premerge-checks` is part of the old Buildkite
 infrastructure. For the new infrastructure, we have two clusters,
 `llvm-premerge-cluster-us-central` and `llvm-premerge-cluster-us-west` for GCP
 hosted runners to form a high availability setup. They both load balance, and
@@ -56,7 +55,7 @@ If you click on `llvm-premerge-cluster-us-central`, and go to the `Nodes` tab, y
 will see 3 node pools:
 - llvm-premerge-linux
 - llvm-premerge-linux-service
-- llvm-premerge-windows
+- llvm-premerge-windows-2022
 - llvm-premerge-libcxx
 
 Definitions for each pool are in [Architecture overview](architecture.md).
@@ -96,11 +95,11 @@ To apply any changes to the cluster:
 ```
 terraform apply -target module.premerge_cluster_us_central.google_container_node_pool.llvm_premerge_linux_service
 terraform apply -target module.premerge_cluster_us_central.google_container_node_pool.llvm_premerge_linux
-terraform apply -target module.premerge_cluster_us_central.google_container_node_pool.llvm_premerge_windows
+terraform apply -target module.premerge_cluster_us_central.google_container_node_pool.llvm_premerge_windows_2022
 terraform apply -target module.premerge_cluster_us_central.google_container_node_pool.llvm_premerge_libcxx
 terraform apply -target module.premerge_cluster_us_west.google_container_node_pool.llvm_premerge_linux_service
 terraform apply -target module.premerge_cluster_us_west.google_container_node_pool.llvm_premerge_linux
-terraform apply -target module.premerge_cluster_us_west.google_container_node_pool.llvm_premerge_windows
+terraform apply -target module.premerge_cluster_us_west.google_container_node_pool.llvm_premerge_windows_2022
 terraform apply -target module.premerge_cluster_us_west.google_container_node_pool.llvm_premerge_libcxx
 terraform apply
 ```
@@ -147,7 +146,7 @@ on a kubernetes destroy command:
 
 ```bash
 terraform destroy -target module.premerge_cluster_us_central_resources.helm_release.github_actions_runner_set_linux
-terraform destroy -target module.premerge_cluster_us_central_resources.helm_release.github_actions_runner_set_windows
+terraform destroy -target module.premerge_cluster_us_central_resources.helm_release.github_actions_runner_set_windows_2022
 terraform destroy -target module.premerge_cluster_us_central_resources.helm_release.github_actions_runner_set_libcxx
 terraform destroy -target module.premerge_cluster_us_central_resources.helm_release.github_actions_runner_set_libcxx_release
 terraform destroy -target module.premerge_cluster_us_central_resources.helm_release.github_actions_runner_set_libcxx_next
@@ -162,7 +161,7 @@ commands by deleting the kubernetes namespaces all the resources live in:
 
 ```bash
 terraform destroy -target module.premerge_cluster_us_central_resources.kubernetes_namespace.llvm_premerge_linux_runners
-terraform destroy -target module.premerge_cluster_us_central_resources.kubernetes_namespace.llvm_premerge_windows_runners
+terraform destroy -target module.premerge_cluster_us_central_resources.kubernetes_namespace.llvm_premerge_windows_2022_runners
 terraform destroy -target module.premerge_cluster_us_central_resources.kubernetes_namespace.llvm_premerge_libcxx_runners
 terraform destroy -target module.premerge_cluster_us_central_resources.kubernetes_namespace.llvm_premerge_libcxx_release_runners
 terraform destroy -target module.premerge_cluster_us_central_resources.kubernetes_namespace.llvm_premerge_libcxx_next_runners

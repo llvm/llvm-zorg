@@ -50,7 +50,7 @@ Our runners are hosted on GCP Kubernetes clusters, and use the
 The clusters have 4 main pools:
   - llvm-premerge-linux
   - llvm-premerge-linux-service
-  - llvm-premerge-windows
+  - llvm-premerge-windows-2022
   - llvm-premerge-libcxx
 
 **llvm-premerge-linux-service** is a fixed pool, only used to host the
@@ -61,7 +61,7 @@ monitoring). Today, this pool has three `e2-highcpu-4` machine.
 VMs. This pool runs the Linux workflows. In the US West cluster, the machines
 are `n2d-standard-64` due to quota limitations.
 
-**llvm-premerge-windows** is a auto-scaling pool with large `n2-standard-32`
+**llvm-premerge-windows-2022** is a auto-scaling pool with large `n2-standard-32`
 VMs. Similar to the Linux pool, but this time it runs Windows workflows. In the
 US West cluster, the machines are `n2d-standard-32` due to quota limitations.
 
@@ -93,7 +93,7 @@ How a job is run:
  - If the instance is not reused in the next 10 minutes, the autoscaler
    will turn down the instance, freeing resources.
 
-### Worker pools : llvm-premerge-linux, llvm-premerge-windows, llvm-premerge-libcxx
+### Worker pools : llvm-premerge-linux, llvm-premerge-windows-2022, llvm-premerge-libcxx
 
 To make sure each runner pod is scheduled on the correct pool (linux or
 windows, avoiding the service pool), we use labels and taints.
