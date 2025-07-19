@@ -12,6 +12,10 @@ resource "google_container_cluster" "llvm_premerge" {
   # for adding windows nodes to the cluster.
   networking_mode = "VPC_NATIVE"
   ip_allocation_policy {}
+
+  workload_identity_config {
+    workload_pool = "llvm-premerge-checks.svc.id.goog"
+  }
 }
 
 resource "google_container_node_pool" "llvm_premerge_linux_service" {
@@ -23,6 +27,10 @@ resource "google_container_node_pool" "llvm_premerge_linux_service" {
 
   node_config {
     machine_type = "e2-highcpu-4"
+
+    workload_metadata_config {
+        mode = "GKE_METADATA"
+    }
     # Terraform wants to recreate the node pool everytime whe running
     # terraform apply unless we explicitly set this.
     # TODO(boomanaiden154): Look into why terraform is doing this so we do
