@@ -147,7 +147,7 @@ on a kubernetes destroy command:
 
 ```bash
 terraform destroy -target module.premerge_cluster_us_central_resources.helm_release.github_actions_runner_set_linux
-terraform destroy -target module.premerge_cluster_us_central_resources.helm_release.github_actions_runner_set_
+terraform destroy -target module.premerge_cluster_us_central_resources.helm_release.github_actions_runner_set_windows
 terraform destroy -target module.premerge_cluster_us_central_resources.helm_release.github_actions_runner_set_libcxx
 terraform destroy -target module.premerge_cluster_us_central_resources.helm_release.github_actions_runner_set_libcxx_release
 terraform destroy -target module.premerge_cluster_us_central_resources.helm_release.github_actions_runner_set_libcxx_next
