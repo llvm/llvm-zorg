@@ -50,6 +50,7 @@ module "premerge_cluster_us_central" {
   libcxx_machine_type  = "n2d-standard-32"
   linux_machine_type   = "n2-standard-64"
   windows_machine_type = "n2-standard-32"
+  gcs_bucket_location  = "us-central1"
 }
 
 # We explicitly specify a single zone for the service node pool locations as
@@ -64,6 +65,7 @@ module "premerge_cluster_us_west" {
   linux_machine_type          = "n2d-standard-64"
   windows_machine_type        = "n2d-standard-32"
   service_node_pool_locations = ["us-west1-a"]
+  gcs_bucket_location         = "us-west1"
 }
 
 provider "helm" {
