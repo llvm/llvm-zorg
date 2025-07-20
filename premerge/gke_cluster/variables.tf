@@ -8,6 +8,11 @@ variable "region" {
   type        = string
 }
 
+variable "gcs_bucket_location" {
+  description = "The location to use for the GCS buckets"
+  type        = string
+}
+
 variable "linux_machine_type" {
   description = "The type of machine to use for Linux instances"
   type        = string
