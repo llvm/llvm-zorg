@@ -132,7 +132,7 @@ module "premerge_cluster_us_central_resources" {
   runner_group_name                   = "llvm-premerge-cluster-us-central"
   linux_runners_namespace_name        = "llvm-premerge-linux-runners"
   windows_2022_runners_namespace_name = "llvm-premerge-windows-2022-runners"
-  github_arc_version                  = "0.11.0"
+  github_arc_version                  = "0.12.1"
   providers = {
     kubernetes = kubernetes.llvm-premerge-us-central
     helm       = helm.llvm-premerge-us-central
@@ -149,7 +149,7 @@ module "premerge_cluster_us_west_resources" {
   runner_group_name                   = "llvm-premerge-cluster-us-west"
   linux_runners_namespace_name        = "llvm-premerge-linux-runners"
   windows_2022_runners_namespace_name = "llvm-premerge-windows-2022-runners"
-  github_arc_version                  = "0.11.0"
+  github_arc_version                  = "0.12.1"
   providers = {
     kubernetes = kubernetes.llvm-premerge-us-west
     helm       = helm.llvm-premerge-us-west
