@@ -163,7 +163,7 @@ resource "google_container_node_pool" "llvm_premerge_windows_2022" {
 
 resource "google_storage_bucket" "object_cache_linux" {
   name     = format("%s-object-cache-linux", var.cluster_name)
-  location = var.region
+  location = var.gcs_bucket_location
 
   uniform_bucket_level_access = true
   public_access_prevention    = "enforced"
@@ -171,7 +171,7 @@ resource "google_storage_bucket" "object_cache_linux" {
 
 resource "google_storage_bucket" "object_cache_windows" {
   name     = format("%s-object-cache-windows", var.cluster_name)
-  location = var.region
+  location = var.gcs_bucket_location
 
   uniform_bucket_level_access = true
   public_access_prevention    = "enforced"
