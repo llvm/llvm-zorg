@@ -21,6 +21,10 @@ variable "grafana_token" {
   type = string
 }
 
+variable "github_arc_version" {
+  type = string
+}
+
 variable "externalservices_prometheus_host" {
   type    = string
   default = "https://prometheus-prod-13-prod-us-east-0.grafana.net"
