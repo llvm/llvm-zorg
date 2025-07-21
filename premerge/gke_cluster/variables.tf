@@ -33,3 +33,23 @@ variable "service_node_pool_locations" {
   type        = list(any)
   default     = null
 }
+
+variable "linux_runners_namespace_name" {
+  description = "The name of the namespace containing the Linux runners"
+  type        = string
+}
+
+variable "linux_runners_kubernetes_service_account_name" {
+  description = "The name of the kubernetes service account used to access the Linux object cache GCS bucket"
+  type        = string
+}
+
+variable "windows_2022_runners_namespace_name" {
+  description = "The name of the namespace containing the Windows runners"
+  type        = string
+}
+
+variable "windows_2022_runners_kubernetes_service_account_name" {
+  description = "The name of the kubernetes service account used to access the Windows object cache GCS bucket"
+  type        = string
+}

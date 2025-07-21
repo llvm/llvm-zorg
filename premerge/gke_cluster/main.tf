@@ -176,3 +176,65 @@ resource "google_storage_bucket" "object_cache_windows" {
   uniform_bucket_level_access = true
   public_access_prevention    = "enforced"
 }
+
+resource "google_service_account" "object_cache_linux_gsa" {
+  account_id   = format("%s-linux-gsa", var.region)
+  display_name = format("%s Linux Object Cache Service Account", var.region)
+}
+
+resource "google_service_account" "object_cache_windows_gsa" {
+  account_id   = format("%s-windows-gsa", var.region)
+  display_name = format("%s Windows Object Cache Service Account", var.region)
+}
+
+resource "google_storage_bucket_iam_binding" "linux_bucket_binding" {
+  bucket = google_storage_bucket.object_cache_linux.name
+  role   = "roles/storage.objectUser"
+  members = [
+    format("serviceAccount:%s", google_service_account.object_cache_linux_gsa.email),
+  ]
+
+  depends_on = [
+    google_storage_bucket.object_cache_linux,
+    google_service_account.object_cache_linux_gsa,
+  ]
+}
+
+resource "google_storage_bucket_iam_binding" "windows_bucket_binding" {
+  bucket = google_storage_bucket.object_cache_windows.name
+  role   = "roles/storage.objectUser"
+  members = [
+    format("serviceAccount:%s", google_service_account.object_cache_windows_gsa.email),
+  ]
+
+  depends_on = [
+    google_storage_bucket.object_cache_windows,
+    google_service_account.object_cache_windows_gsa
+  ]
+}
+
+resource "google_service_account_iam_binding" "linux_bucket_gsa_workload_binding" {
+  service_account_id = google_service_account.object_cache_linux_gsa.name
+  role               = "roles/iam.workloadIdentityUser"
+
+  members = [
+    "serviceAccount:${google_service_account.object_cache_linux_gsa.project}.svc.id.goog[${var.linux_runners_namespace_name}/${var.linux_runners_kubernetes_service_account_name}]",
+  ]
+
+  depends_on = [
+    google_service_account.object_cache_linux_gsa,
+  ]
+}
+
+resource "google_service_account_iam_binding" "windows_bucket_gsa_workload_binding" {
+  service_account_id = google_service_account.object_cache_windows_gsa.name
+  role               = "roles/iam.workloadIdentityUser"
+
+  members = [
+    "serviceAccount:${google_service_account.object_cache_windows_gsa.project}.svc.id.goog[${var.windows_2022_runners_namespace_name}/${var.windows_2022_runners_kubernetes_service_account_name}]",
+  ]
+
+  depends_on = [
+    google_service_account.object_cache_windows_gsa,
+  ]
+}
