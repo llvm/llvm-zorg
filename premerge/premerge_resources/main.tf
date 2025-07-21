@@ -136,7 +136,7 @@ resource "helm_release" "github_actions_runner_controller" {
   name       = "llvm-premerge-controller"
   namespace  = "llvm-premerge-controller"
   repository = "oci://ghcr.io/actions/actions-runner-controller-charts"
-  version    = "0.11.0"
+  version    = var.github_arc_version
   chart      = "gha-runner-scale-set-controller"
 
   depends_on = [
@@ -148,7 +148,7 @@ resource "helm_release" "github_actions_runner_set_linux" {
   name       = "llvm-premerge-linux-runners"
   namespace  = var.linux_runners_namespace_name
   repository = "oci://ghcr.io/actions/actions-runner-controller-charts"
-  version    = "0.11.0"
+  version    = var.github_arc_version
   chart      = "gha-runner-scale-set"
 
   values = [
@@ -166,7 +166,7 @@ resource "helm_release" "github_actions_runner_set_windows_2022" {
   name       = "llvm-premerge-windows-2022-runners"
   namespace  = var.windows_2022_runners_namespace_name
   repository = "oci://ghcr.io/actions/actions-runner-controller-charts"
-  version    = "0.11.0"
+  version    = var.github_arc_version
   chart      = "gha-runner-scale-set"
 
   values = [
@@ -184,7 +184,7 @@ resource "helm_release" "github_actions_runner_set_libcxx" {
   name       = "llvm-premerge-libcxx-runners"
   namespace  = "llvm-premerge-libcxx-runners"
   repository = "oci://ghcr.io/actions/actions-runner-controller-charts"
-  version    = "0.11.0"
+  version    = var.github_arc_version
   chart      = "gha-runner-scale-set"
 
   values = [
@@ -202,7 +202,7 @@ resource "helm_release" "github_actions_runner_set_libcxx_release" {
   name       = "llvm-premerge-libcxx-release-runners"
   namespace  = "llvm-premerge-libcxx-release-runners"
   repository = "oci://ghcr.io/actions/actions-runner-controller-charts"
-  version    = "0.11.0"
+  version    = var.github_arc_version
   chart      = "gha-runner-scale-set"
 
   values = [
@@ -220,7 +220,7 @@ resource "helm_release" "github_actions_runner_set_libcxx_next" {
   name       = "llvm-premerge-libcxx-next-runners"
   namespace  = "llvm-premerge-libcxx-next-runners"
   repository = "oci://ghcr.io/actions/actions-runner-controller-charts"
-  version    = "0.11.0"
+  version    = var.github_arc_version
   chart      = "gha-runner-scale-set"
 
   values = [
