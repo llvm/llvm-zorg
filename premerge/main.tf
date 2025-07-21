@@ -138,16 +138,20 @@ provider "kubernetes" {
 }
 
 module "premerge_cluster_us_central_resources" {
-  source                              = "./premerge_resources"
-  github_app_id                       = data.google_secret_manager_secret_version.github_app_id.secret_data
-  github_app_installation_id          = data.google_secret_manager_secret_version.github_app_installation_id.secret_data
-  github_app_private_key              = data.google_secret_manager_secret_version.github_app_private_key.secret_data
-  cluster_name                        = "llvm-premerge-cluster-us-central"
-  grafana_token                       = data.google_secret_manager_secret_version.grafana_token.secret_data
-  runner_group_name                   = "llvm-premerge-cluster-us-central"
-  linux_runners_namespace_name        = local.linux_runners_namespace_name
-  windows_2022_runners_namespace_name = local.windows_2022_runners_namespace_name
-  github_arc_version                  = "0.12.1"
+  source                                               = "./premerge_resources"
+  github_app_id                                        = data.google_secret_manager_secret_version.github_app_id.secret_data
+  github_app_installation_id                           = data.google_secret_manager_secret_version.github_app_installation_id.secret_data
+  github_app_private_key                               = data.google_secret_manager_secret_version.github_app_private_key.secret_data
+  cluster_name                                         = "llvm-premerge-cluster-us-central"
+  grafana_token                                        = data.google_secret_manager_secret_version.grafana_token.secret_data
+  runner_group_name                                    = "llvm-premerge-cluster-us-central"
+  linux_runners_namespace_name                         = local.linux_runners_namespace_name
+  linux_runners_kubernetes_service_account_name        = local.linux_runners_kubernetes_service_account_name
+  windows_2022_runners_namespace_name                  = local.windows_2022_runners_namespace_name
+  windows_2022_runners_kubernetes_service_account_name = local.windows_2022_runners_kubernetes_service_account_name
+  linux_object_cache_gcp_service_account_email         = module.premerge_cluster_us_central.linux_object_cache_gcp_service_account_email
+  windows_2022_object_cache_gcp_service_account_email  = module.premerge_cluster_us_central.windows_2022_object_cache_gcp_service_account_email
+  github_arc_version                                   = "0.12.1"
   providers = {
     kubernetes = kubernetes.llvm-premerge-us-central
     helm       = helm.llvm-premerge-us-central
@@ -155,16 +159,20 @@ module "premerge_cluster_us_central_resources" {
 }
 
 module "premerge_cluster_us_west_resources" {
-  source                              = "./premerge_resources"
-  github_app_id                       = data.google_secret_manager_secret_version.github_app_id.secret_data
-  github_app_installation_id          = data.google_secret_manager_secret_version.github_app_installation_id.secret_data
-  github_app_private_key              = data.google_secret_manager_secret_version.github_app_private_key.secret_data
-  cluster_name                        = "llvm-premerge-cluster-us-west"
-  grafana_token                       = data.google_secret_manager_secret_version.grafana_token.secret_data
-  runner_group_name                   = "llvm-premerge-cluster-us-west"
-  linux_runners_namespace_name        = local.linux_runners_namespace_name
-  windows_2022_runners_namespace_name = local.windows_2022_runners_namespace_name
-  github_arc_version                  = "0.12.1"
+  source                                               = "./premerge_resources"
+  github_app_id                                        = data.google_secret_manager_secret_version.github_app_id.secret_data
+  github_app_installation_id                           = data.google_secret_manager_secret_version.github_app_installation_id.secret_data
+  github_app_private_key                               = data.google_secret_manager_secret_version.github_app_private_key.secret_data
+  cluster_name                                         = "llvm-premerge-cluster-us-west"
+  grafana_token                                        = data.google_secret_manager_secret_version.grafana_token.secret_data
+  runner_group_name                                    = "llvm-premerge-cluster-us-west"
+  linux_runners_namespace_name                         = local.linux_runners_namespace_name
+  linux_runners_kubernetes_service_account_name        = local.linux_runners_kubernetes_service_account_name
+  windows_2022_runners_namespace_name                  = local.windows_2022_runners_namespace_name
+  windows_2022_runners_kubernetes_service_account_name = local.windows_2022_runners_kubernetes_service_account_name
+  linux_object_cache_gcp_service_account_email         = module.premerge_cluster_us_central.linux_object_cache_gcp_service_account_email
+  windows_2022_object_cache_gcp_service_account_email  = module.premerge_cluster_us_central.windows_2022_object_cache_gcp_service_account_email
+  github_arc_version                                   = "0.12.1"
   providers = {
     kubernetes = kubernetes.llvm-premerge-us-west
     helm       = helm.llvm-premerge-us-west

@@ -80,7 +80,27 @@ variable "linux_runners_namespace_name" {
   type        = string
 }
 
+variable "linux_runners_kubernetes_service_account_name" {
+  description = "The name of the kubernetes service account used to access the Linux object cache GCS bucket"
+  type        = string
+}
+
 variable "windows_2022_runners_namespace_name" {
   description = "The name of the namespace containing the Windows runners"
+  type        = string
+}
+
+variable "windows_2022_runners_kubernetes_service_account_name" {
+  description = "The name of the kubernetes service account used to access the Windows object cache GCS bucket"
+  type        = string
+}
+
+variable "linux_object_cache_gcp_service_account_email" {
+  description = "The email associated with the service account for accessing the object cache on Linux."
+  type        = string
+}
+
+variable "windows_2022_object_cache_gcp_service_account_email" {
+  description = "The email associated with the service account for accessing the object cache on Windows."
   type        = string
 }
