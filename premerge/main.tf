@@ -170,8 +170,8 @@ module "premerge_cluster_us_west_resources" {
   linux_runners_kubernetes_service_account_name        = local.linux_runners_kubernetes_service_account_name
   windows_2022_runners_namespace_name                  = local.windows_2022_runners_namespace_name
   windows_2022_runners_kubernetes_service_account_name = local.windows_2022_runners_kubernetes_service_account_name
-  linux_object_cache_gcp_service_account_email         = module.premerge_cluster_us_central.linux_object_cache_gcp_service_account_email
-  windows_2022_object_cache_gcp_service_account_email  = module.premerge_cluster_us_central.windows_2022_object_cache_gcp_service_account_email
+  linux_object_cache_gcp_service_account_email         = module.premerge_cluster_us_west.linux_object_cache_gcp_service_account_email
+  windows_2022_object_cache_gcp_service_account_email  = module.premerge_cluster_us_west.windows_2022_object_cache_gcp_service_account_email
   github_arc_version                                   = "0.12.1"
   providers = {
     kubernetes = kubernetes.llvm-premerge-us-west
