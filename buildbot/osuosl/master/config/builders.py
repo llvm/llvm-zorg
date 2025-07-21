@@ -846,6 +846,7 @@ all = [
     'builddir': 'clang-sparc64-linux',
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
                     clean=False,
+                    timeout=1800,
                     runTestSuite=True,
                     checkout_clang_tools_extra=False,
                     checkout_compiler_rt=False,
