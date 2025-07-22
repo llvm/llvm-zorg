@@ -44,4 +44,10 @@ template:
         limits:
           cpu: 64
           memory: "256Gi"
-
+      env:
+      # We pass the GCS bucket name in as an environment variable as it is
+      # different per cluster. We do not directly pass this to sccache
+      # through the SCCACHE_GCS_BUCKET variable so that we can control how
+      # sccache is caching directly in the workflow.
+      - name: CACHE_GCS_BUCKET
+        value: ${ cache_gcs_bucket }

@@ -152,7 +152,7 @@ resource "helm_release" "github_actions_runner_set_linux" {
   chart      = "gha-runner-scale-set"
 
   values = [
-    "${templatefile("linux_runners_values.yaml", { runner_group_name : var.runner_group_name })}"
+    "${templatefile("linux_runners_values.yaml", { runner_group_name : var.runner_group_name, cache_gcs_bucket : format("%s-object-cache-linux", var.cluster_name) })}"
   ]
 
   depends_on = [
@@ -170,7 +170,7 @@ resource "helm_release" "github_actions_runner_set_windows_2022" {
   chart      = "gha-runner-scale-set"
 
   values = [
-    "${templatefile("windows_2022_runner_values.yaml", { runner_group_name : var.runner_group_name })}"
+    "${templatefile("windows_2022_runner_values.yaml", { runner_group_name : var.runner_group_name, cache_gcs_bucket : format("%s-object-cache-windows", var.cluster_name) })}"
   ]
 
   depends_on = [

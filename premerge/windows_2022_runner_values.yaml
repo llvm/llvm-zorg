@@ -33,6 +33,12 @@ template:
         env:
           - name: DISABLE_RUNNER_UPDATE
             value: "true"
+          # We pass the GCS bucket name in as an environment variable as it is
+          # different per cluster. We do not directly pass this to sccache
+          # through the SCCACHE_GCS_BUCKET variable so that we can control how
+          # sccache is caching directly in the workflow.
+          - name: CACHE_GCS_BUCKET
+            value: ${ cache_gcs_bucket }
         # Add a volume/mount it to C:/_work so that we can use more than 20GB
         # of space. Windows containers default to only having 20GB of scratch
         # space and there is no way to configure this through kubernetes
