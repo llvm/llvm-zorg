@@ -9,12 +9,7 @@ import requests
 GRAFANA_URL = (
     "https://influx-prod-13-prod-us-east-0.grafana.net/api/v1/push/influx/write"
 )
-
-# Path to checked out llvm/llvm-project repository
-REPOSITORY_PATH = "/data/llvm-project"
-
-# Path to record of most recently processed commits
-DATA_PATH = "/data/recent_commits.csv"
+REPOSITORY_URL = "https://github.com/llvm/llvm-project.git"
 
 # Number of days to look back for new commits
 # We allow some buffer time between when a commit is made and when it is queried
@@ -61,99 +56,33 @@ class LLVMCommitInfo:
   is_approved: bool = False
 
 
-def read_past_commits() -> list[list[str]]:
-  """Read recently scraped commits from the data path.
-
-  Returns:
-    List of commits that have been scraped.
-  """
-  # If the data path doesn't exist, we haven't scraped any commits yet.
-  if not os.path.exists(DATA_PATH):
-    logging.warning(
-        " Data path %s does not exist. No past commits found.", DATA_PATH
-    )
-    return []
-
-  # Read the past commits from the data path
-  with open(DATA_PATH, "r") as f:
-    f.readline()  # Skip header
-    rows = f.readlines()
-  commit_history = [row.strip().split(",") for row in rows if row.strip()]
-  return commit_history
-
-
-def record_new_commits(new_commits: list[LLVMCommitInfo]) -> None:
-  """Record newly scraped commits to the data path.
-
-  Args:
-    new_commits: List of commits to record.
-
-  Returns:
-    None
-  """
-  with open(DATA_PATH, "w") as f:
-
-    # Write CSV header
-    f.write(
-        ",".join([
-            "commit_sha",
-            "commit_datetime",
-            "has_pull_request",
-            "pull_request_number",
-            "is_reviewed",
-            "is_approved",
-        ])
-        + "\n"
-    )
-
-    # We want the newest commit as the last entry, so iterate backwards
-    for i in range(len(new_commits) - 1, -1, -1):
-      commit_info = new_commits[i]
-      record = ",".join([
-          commit_info.commit_sha,
-          commit_info.commit_datetime.astimezone(
-              datetime.timezone.utc
-          ).isoformat(),
-          str(commit_info.has_pull_request),
-          str(commit_info.pr_number),
-          str(commit_info.is_reviewed),
-          str(commit_info.is_approved),
-      ])
-      f.write(f"{record}\n")
-
-
 def scrape_new_commits_by_date(
-    last_known_commit: str, target_datetime: datetime.datetime
+    target_datetime: datetime.datetime,
 ) -> list[git.Commit]:
   """Scrape new commits from a given dates.
 
   Args:
-    last_known_commit: The last known scraped commit.
     target_datetime: The date to scrape for new commits.
 
   Returns:
     List of new commits made on the given date.
   """
-  # Pull any new commits into local repository
-  repo = git.Repo(REPOSITORY_PATH)
-  repo.remotes.origin.pull()
+  # Clone repository to current working directory
+  repo = git.Repo.clone_from(
+      url=REPOSITORY_URL,
+      to_path="./llvm-project",
+  )
 
   # Scrape for new commits
   # iter_commits() yields commits in reverse chronological order
   new_commits = []
   for commit in repo.iter_commits():
-    # Skip commits that are too new
+    # Skip commits that don't match the target date
     committed_datetime = commit.committed_datetime.astimezone(
         datetime.timezone.utc
     )
-    if committed_datetime.date() > target_datetime.date():
+    if committed_datetime.date() != target_datetime.date():
       continue
-    # Stop scraping if the commit is older than the target date
-    if committed_datetime.date() < target_datetime.date():
-      break
-    # Stop scraping if we've already recorded this commit
-    if commit.hexsha == last_known_commit:
-      break
 
     new_commits.append(commit)
 
@@ -274,20 +203,15 @@ def main() -> None:
   grafana_api_key = os.environ["GRAFANA_API_KEY"]
   grafana_metrics_userid = os.environ["GRAFANA_METRICS_USERID"]
 
-  logging.info("Reading recently processed commits.")
-  recorded_commits = read_past_commits()
-
-  last_known_commit = recorded_commits[-1][0] if recorded_commits else ""
-
-  # Scrape new commits, if any
+  # Scrape new commits
   date_to_scrape = datetime.datetime.now(
       datetime.timezone.utc
   ) - datetime.timedelta(days=LOOKBACK_DAYS)
   logging.info(
-      "Scraping checked out llvm/llvm-project for new commits on %s",
+      "Cloning and scraping llvm/llvm-project for new commits on %s",
       date_to_scrape.strftime("%Y-%m-%d"),
   )
-  new_commits = scrape_new_commits_by_date(last_known_commit, date_to_scrape)
+  new_commits = scrape_new_commits_by_date(date_to_scrape)
   if not new_commits:
     logging.info("No new commits found. Exiting.")
     return
@@ -298,11 +222,7 @@ def main() -> None:
   logging.info("Uploading metrics to Grafana.")
   upload_daily_metrics(grafana_api_key, grafana_metrics_userid, new_commit_info)
 
-  logging.info("Recording new commits.")
-  record_new_commits(new_commit_info)
-
 
 if __name__ == "__main__":
   logging.basicConfig(level=logging.INFO)
   main()
-
