@@ -32,7 +32,7 @@ resource "google_container_node_pool" "llvm_premerge_linux_service" {
     machine_type = "e2-highcpu-4"
 
     workload_metadata_config {
-        mode = "GKE_METADATA"
+      mode = "GKE_METADATA"
     }
     # Terraform wants to recreate the node pool everytime whe running
     # terraform apply unless we explicitly set this.

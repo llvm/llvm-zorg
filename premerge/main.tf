@@ -234,14 +234,14 @@ resource "google_service_account" "operational_metrics_gsa" {
 resource "google_project_iam_binding" "bigquery_jobuser_binding" {
   project = google_service_account.operational_metrics_gsa.project
   role    = "roles/bigquery.jobUser"
-  
+
   members = [
-   "serviceAccount:${google_service_account.operational_metrics_gsa.email}",
+    "serviceAccount:${google_service_account.operational_metrics_gsa.email}",
   ]
 
   depends_on = [google_service_account.operational_metrics_gsa]
 }
-    
+
 resource "kubernetes_namespace" "operational_metrics" {
   metadata {
     name = "operational-metrics"
@@ -251,8 +251,8 @@ resource "kubernetes_namespace" "operational_metrics" {
 
 resource "kubernetes_service_account" "operational_metrics_ksa" {
   metadata {
-    name        = "operational-metrics-ksa"
-    namespace   = "operational-metrics"
+    name      = "operational-metrics-ksa"
+    namespace = "operational-metrics"
     annotations = {
       "iam.gke.io/gcp-service-account" = google_service_account.operational_metrics_gsa.email
     }
@@ -264,7 +264,7 @@ resource "kubernetes_service_account" "operational_metrics_ksa" {
 resource "google_service_account_iam_binding" "workload_identity_binding" {
   service_account_id = google_service_account.operational_metrics_gsa.name
   role               = "roles/iam.workloadIdentityUser"
-  
+
   members = [
     "serviceAccount:${google_service_account.operational_metrics_gsa.project}.svc.id.goog[operational-metrics/operational-metrics-ksa]",
   ]
