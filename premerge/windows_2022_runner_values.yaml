@@ -11,7 +11,7 @@ template:
     annotations:
       cluster-autoscaler.kubernetes.io/safe-to-evict: "false"
   spec:
-    serviceAccount: windows-runners-ksa
+    serviceAccountName: windows-runners-ksa
     tolerations:
     - key: "node.kubernetes.io/os"
       operator: "Equal"
