@@ -259,6 +259,8 @@ resource "kubernetes_service_account" "operational_metrics_ksa" {
   }
 
   depends_on = [kubernetes_namespace.operational_metrics]
+
+  provider = kubernetes.llvm-premerge-us-central
 }
 
 resource "google_service_account_iam_binding" "workload_identity_binding" {
