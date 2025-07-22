@@ -11,6 +11,7 @@ template:
     annotations:
       cluster-autoscaler.kubernetes.io/safe-to-evict: "false"
   spec:
+    serviceAccount: linux-runners-ksa
     tolerations:
     - key: "premerge-platform"
       operator: "Equal"
