@@ -171,6 +171,10 @@ resource "google_storage_bucket" "object_cache_linux" {
 
   uniform_bucket_level_access = true
   public_access_prevention    = "enforced"
+
+  soft_delete_policy {
+    retention_duration_seconds = 0
+  }
 }
 
 resource "google_storage_bucket" "object_cache_windows" {
@@ -179,6 +183,10 @@ resource "google_storage_bucket" "object_cache_windows" {
 
   uniform_bucket_level_access = true
   public_access_prevention    = "enforced"
+
+  soft_delete_policy {
+    retention_duration_seconds = 0
+  }
 }
 
 resource "google_service_account" "object_cache_linux_gsa" {
