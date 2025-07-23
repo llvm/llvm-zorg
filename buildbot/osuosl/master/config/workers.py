@@ -28,7 +28,6 @@ def get_all():
         create_worker("linaro-clang-aarch64-quick", max_builds=1),
         create_worker("linaro-clang-aarch64-lld-2stage", max_builds=1),
         create_worker("linaro-clang-aarch64-global-isel", max_builds=1),
-        create_worker("linaro-clang-aarch64-full-2stage", max_builds=1),
         create_worker("linaro-lldb-aarch64-ubuntu", max_builds=1),
         create_worker("linaro-flang-aarch64-dylib", max_builds=1),
         create_worker("linaro-flang-aarch64-sharedlibs", max_builds=1),
