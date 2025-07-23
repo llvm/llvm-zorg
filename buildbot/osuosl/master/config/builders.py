@@ -414,7 +414,7 @@ all = [
                     checkout_lld=False,
                     extra_cmake_args=["-DLLVM_TARGETS_TO_BUILD='AArch64'"])},
 
-    # AArch64 2 staage build with lld, flang, compiler-rt, test-suite and SVE/SME
+    # AArch64 2 stage build with lld, flang, compiler-rt, test-suite and SVE/SME
     # mlir integration tests.
     {'name' : "clang-aarch64-lld-2stage",
     'tags'  : ["lld"],
@@ -425,7 +425,6 @@ all = [
                 checkout_flang=True,
                 checkout_lld=True,
                 useTwoStage=True,
-                testStage1=False,
                 runTestSuite=True,
                 env={
                         'NO_STOP_MESSAGE':'1', # For Fortran test-suite
