@@ -344,21 +344,6 @@ all = [
                     checkout_lld=False,
                     extra_cmake_args=["-DLLVM_TARGETS_TO_BUILD='ARM'"])},
 
-    # ARMv7 LNT test-suite in test-only mode
-    {'name' : "clang-armv7-lnt",
-    'tags'  : ["clang"],
-    'workernames' : ["linaro-clang-armv7-lnt"],
-    'builddir': "clang-armv7-lnt",
-    'factory' : ClangBuilder.getClangCMakeBuildFactory(
-                    clean=False,
-                    checkout_compiler_rt=False,
-                    checkout_lld=False,
-                    checks=[],
-                    runTestSuite=True,
-                    testsuite_flags=[
-                        '--cppflags', '-mcpu=cortex-a15 -marm',
-                        '--threads=32', '--build-threads=32'])},
-
     ## ARMv7 check-all 2-stage
     {'name' : "clang-armv7-2stage",
     'tags'  : ["clang"],
@@ -369,7 +354,11 @@ all = [
                     checkout_compiler_rt=False,
                     checkout_lld=False,
                     useTwoStage=True,
-                    testStage1=False,
+                    testStage1=True,
+                    runTestSuite=True,
+                    testsuite_flags=[
+                        '--cppflags', '-mcpu=cortex-a15 -marm',
+                        '--threads=32', '--build-threads=32']
                     extra_cmake_args=[
                         "-DCMAKE_C_FLAGS='-mcpu=cortex-a15 -marm'",
                         "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a15 -marm'"])},
