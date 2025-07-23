@@ -358,7 +358,7 @@ all = [
                     runTestSuite=True,
                     testsuite_flags=[
                         '--cppflags', '-mcpu=cortex-a15 -marm',
-                        '--threads=32', '--build-threads=32']
+                        '--threads=32', '--build-threads=32'],
                     extra_cmake_args=[
                         "-DCMAKE_C_FLAGS='-mcpu=cortex-a15 -marm'",
                         "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a15 -marm'"])},
