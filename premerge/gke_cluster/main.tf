@@ -181,7 +181,7 @@ resource "google_storage_bucket" "object_cache_linux" {
       type = "Delete"
     }
     condition {
-      days_since_noncurrent_time = 1
+      age = 1
     }
   }
 }
@@ -202,7 +202,7 @@ resource "google_storage_bucket" "object_cache_windows" {
       type = "Delete"
     }
     condition {
-      days_since_noncurrent_time = 1
+      age = 1
     }
   }
 }
