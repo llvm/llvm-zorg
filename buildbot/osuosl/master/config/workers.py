@@ -16,7 +16,6 @@ def get_all():
         create_worker("as-worker-4", properties={'jobs' : 24}, max_builds=2),
 
         # ARMv7/ARMv8 Linaro workers
-        create_worker("linaro-clang-armv7-lnt", max_builds=1),
         create_worker("linaro-clang-armv7-2stage", max_builds=1),
         create_worker("linaro-clang-armv7-global-isel", max_builds=1),
         create_worker("linaro-clang-armv7-vfpv3-2stage", max_builds=1),
