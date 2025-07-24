@@ -403,22 +403,33 @@ all = [
                     checkout_lld=False,
                     extra_cmake_args=["-DLLVM_TARGETS_TO_BUILD='AArch64'"])},
 
-    ## AArch64 check-all + LLD + test-suite 2-stage
+    # AArch64 2 stage build with lld, flang, compiler-rt, test-suite and SVE/SME
+    # mlir integration tests.
     {'name' : "clang-aarch64-lld-2stage",
     'tags'  : ["lld"],
     'workernames' : ["linaro-clang-aarch64-lld-2stage"],
     'builddir':"clang-aarch64-lld-2stage",
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
                 clean=True,
+                checkout_flang=True,
+                checkout_lld=True,
                 useTwoStage=True,
                 runTestSuite=True,
+                env={
+                        'NO_STOP_MESSAGE':'1', # For Fortran test-suite
+                    },
                 testsuite_flags=[
                     '--cppflags', '-mcpu=neoverse-n1 -fuse-ld=lld',
                     '--threads=32', '--build-threads=32'],
                 extra_cmake_args=[
                     "-DCMAKE_C_FLAGS='-mcpu=neoverse-n1'",
                     "-DCMAKE_CXX_FLAGS='-mcpu=neoverse-n1'",
-                    "-DLLVM_ENABLE_LLD=True"])},
+                    "-DLLVM_ENABLE_LLD=True",
+                    "-DLLVM_LIT_ARGS='-v'",
+                    "-DMLIR_INCLUDE_INTEGRATION_TESTS=True",
+                    "-DMLIR_RUN_ARM_SVE_TESTS=True",
+                    "-DMLIR_RUN_ARM_SME_TESTS=True",
+                    "-DARM_EMULATOR_EXECUTABLE=qemu-aarch64"])},
 
     ## AArch64 run test-suite at -O0 (GlobalISel is now default).
     {'name' : "clang-aarch64-global-isel",
@@ -454,34 +465,6 @@ all = [
                         "-DLLVM_ENABLE_LLD=True",
                         # lld tests cause us to hit thread limits
                         "-DLLVM_ENABLE_THREADS=OFF"])},
-
-    # AArch64 check-all + flang + compiler-rt + test-suite + SVE/SME
-    # mlir-integration-tests 2-stage
-    {'name' : "clang-aarch64-full-2stage",
-    'tags'  : ["clang"],
-    'workernames' : ["linaro-clang-aarch64-full-2stage"],
-    'builddir': "clang-aarch64-full-2stage",
-    'factory' : ClangBuilder.getClangCMakeBuildFactory(
-                    clean=True,
-                    checkout_flang=True,
-                    checkout_lld=True,
-                    useTwoStage=True,
-                    testStage1=False,
-                    runTestSuite=True,
-                    env={
-                        'NO_STOP_MESSAGE':'1', # For Fortran test-suite
-                    },
-                    testsuite_flags=[
-                        '--cppflags', '-mcpu=neoverse-n1',
-                        '--threads=32', '--build-threads=32'],
-                    extra_cmake_args=[
-                        "-DCMAKE_C_FLAGS='-mcpu=neoverse-n1'",
-                        "-DCMAKE_CXX_FLAGS='-mcpu=neoverse-n1'",
-                        "-DLLVM_LIT_ARGS='-v'",
-                        "-DMLIR_INCLUDE_INTEGRATION_TESTS=True",
-                        "-DMLIR_RUN_ARM_SVE_TESTS=True",
-                        "-DMLIR_RUN_ARM_SME_TESTS=True",
-                        "-DARM_EMULATOR_EXECUTABLE=qemu-aarch64"])},
 
     # All SVE (as opposed to SVE2) builders are using optimisation flags
     # for Graviton 3 "balanced" from
