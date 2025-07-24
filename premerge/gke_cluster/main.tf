@@ -25,7 +25,7 @@ resource "google_container_cluster" "llvm_premerge" {
   maintenance_policy {
     recurring_window {
       start_time = "2025-07-24T02:00:00Z"
-      end_time   = "2025-07-24T05:00:00Z"
+      end_time   = "2025-07-24T08:00:00Z"
       recurrence = "FREQ=WEEKLY;BYDAY=SA,SU"
     }
   }
