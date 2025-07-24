@@ -1,0 +1,10 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: runner-set-pdb
+  namespace: ${ runner_set_name }
+spec:
+  minAvailable: ${ min_pod_count }
+  selector:
+    matchLabels:
+      actions.github.com/scale-set-name: ${ runner_set_name }
