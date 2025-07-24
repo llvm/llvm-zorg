@@ -259,7 +259,7 @@ resource "kubernetes_service_account" "windows_2022_object_cache_ksa" {
 }
 
 # We set up pod disruption budgets here. We need one per namespace and we need
-# to set the max pod count to the maximum number of runner pods that can
+# to set the min pod count to the maximum number of runner pods that can
 # possibly exist so we never have a number of disruptible pods greater than
 # zero.
 
