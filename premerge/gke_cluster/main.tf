@@ -19,6 +19,16 @@ resource "google_container_cluster" "llvm_premerge" {
   workload_identity_config {
     workload_pool = "llvm-premerge-checks.svc.id.goog"
   }
+
+  # We prefer that maintenance is done on weekends betwee 02:00 and 05:00
+  # UTC when commit traffic is low to avoid interruptions.
+  maintenance_policy {
+    recurring_window {
+      start_time = "2025-07-24T02:00:00Z"
+      end_time   = "2025-07-24T05:00:00Z"
+      recurrence = "FREQ=WEEKLY;BYDAY=SA,SU"
+    }
+  }
 }
 
 resource "google_container_node_pool" "llvm_premerge_linux_service" {
