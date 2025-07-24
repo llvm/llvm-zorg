@@ -258,28 +258,33 @@ resource "kubernetes_service_account" "windows_2022_object_cache_ksa" {
   depends_on = [kubernetes_namespace.llvm_premerge_windows_2022_runners]
 }
 
-resource "kubernetes_manifest" "linux_runners_pdb" {
-  manifest   = yamldecode(templatefile("pdb.yaml", { runner_set_name : "llvm-premerge-linux-runners", max_pod_count : 16 }))
+# We set up pod disruption budgets here. We need one per namespace and we need
+# to set the max pod count to the maximum number of runner pods that can
+# possibly exist so we never have a number of disruptible pods greater than
+# zero.
+
+resource "kubernetes_manifest" "linux_runners_disruption_budget" {
+  manifest   = yamldecode(templatefile("pod_disruption_budget.yaml", { runner_set_name : "llvm-premerge-linux-runners", max_pod_count : 16 }))
   depends_on = [kubernetes_namespace.llvm_premerge_linux_runners]
 }
 
-resource "kubernetes_manifest" "windows_2022_runners_pdb" {
-  manifest   = yamldecode(templatefile("pdb.yaml", { runner_set_name : "llvm-premerge-windows-2022-runners", max_pod_count : 16 }))
+resource "kubernetes_manifest" "windows_2022_runners_disruption_budget" {
+  manifest   = yamldecode(templatefile("pod_disruption_budget.yaml", { runner_set_name : "llvm-premerge-windows-2022-runners", max_pod_count : 16 }))
   depends_on = [kubernetes_namespace.llvm_premerge_linux_runners]
 }
 
-resource "kubernetes_manifest" "libcxx_runners_pdb" {
-  manifest   = yamldecode(templatefile("pdb.yaml", { runner_set_name : "llvm-premerge-libcxx-runners", max_pod_count : 32 }))
+resource "kubernetes_manifest" "libcxx_runners_disruption_budget" {
+  manifest   = yamldecode(templatefile("pod_disruption_budget.yaml", { runner_set_name : "llvm-premerge-libcxx-runners", max_pod_count : 32 }))
   depends_on = [kubernetes_namespace.llvm_premerge_linux_runners]
 }
 
-resource "kubernetes_manifest" "libcxx_release_runners_pdb" {
-  manifest   = yamldecode(templatefile("pdb.yaml", { runner_set_name : "llvm-premerge-libcxx-release-runners", max_pod_count : 32 }))
+resource "kubernetes_manifest" "libcxx_release_runners_disruption_budget" {
+  manifest   = yamldecode(templatefile("pod_disruption_budget.yaml", { runner_set_name : "llvm-premerge-libcxx-release-runners", max_pod_count : 32 }))
   depends_on = [kubernetes_namespace.llvm_premerge_linux_runners]
 }
 
-resource "kubernetes_manifest" "libcxx_next_runners_pdb" {
-  manifest   = yamldecode(templatefile("pdb.yaml", { runner_set_name : "llvm-premerge-libcxx-next-runners", max_pod_count : 32 }))
+resource "kubernetes_manifest" "libcxx_next_runners_disruption_budget" {
+  manifest   = yamldecode(templatefile("pod_disruption_budget.yaml", { runner_set_name : "llvm-premerge-libcxx-next-runners", max_pod_count : 32 }))
   depends_on = [kubernetes_namespace.llvm_premerge_linux_runners]
 }
 
