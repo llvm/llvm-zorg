@@ -38,7 +38,10 @@ spec:
             resources:
               requests:
                 cpu: "250m"
-                memory: "1.75Gi"
+                # We explicitly use Mi here instead of a decimal number of
+                # Gi because k8s will automatically convert to Mi which
+                # terraform then thinks differs from what it intended to apply.
+                memory: "1792Mi"
               limits:
                 cpu: "2"
                 memory: "2Gi"
