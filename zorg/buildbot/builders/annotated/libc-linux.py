@@ -121,7 +121,12 @@ def main(argv):
 
         if arm32_build and qemu_build:
             cmake_args.append('-DLIBC_TARGET_TRIPLE=arm-linux-gnueabihf')
-            cmake_args.append('-DLIBC_TEST_COMPILE_OPTIONS_DEFAULT=-static')
+            cmake_args.append('-DCMAKE_SYSROOT=/opt/sysroot-deb-armhf-stable')
+            cmake_args.append('-DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabihf')
+            cmake_args.append('-DCMAKE_CXX_COMPILER_TARGET=arm-linux-gnueabihf')
+            cmake_args.append('-DCMAKE_AR=/usr/bin/llvm-ar-20')
+            cmake_args.append('-DCMAKE_RANLIB=/usr/bin/llvm-ranlib-20')
+            cmake_args.append('-DLIBC_UNITTEST_ENV=QEMU_LD_PREFIX=/opt/sysroot-deb-armhf-stable')
 
         if bootstrap_build:
             cmake_root = 'llvm'
