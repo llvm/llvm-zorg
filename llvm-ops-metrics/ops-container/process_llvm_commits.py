@@ -186,9 +186,6 @@ def validate_push_commits(
   Args:
     new_commits: List of commits to validate.
     github_token: The access token to use with the GitHub GraphQL API.
-
-  Returns:
-    None
   """
 
   # Get all push commits from new commits and form their subqueries
@@ -207,11 +204,11 @@ def validate_push_commits(
   # We query in batches as large queries often fail
   api_commit_data = {}
   query_template = """
-query {
-  repository(owner:"llvm", name:"llvm-project"){
-      %s
-  }
-}
+    query {
+      repository(owner:"llvm", name:"llvm-project"){
+          %s
+      }
+    }
   """
   num_batches = len(commit_subqueries) // GITHUB_API_BATCH_SIZE + 1
   logging.info("Querying GitHub GraphQL API in %d batches", num_batches)
@@ -268,9 +265,6 @@ def upload_daily_metrics(
     grafana_api_key: The key to make API requests with.
     grafana_metrics_userid: The user to make API requests with.
     new_commits: List of commits to process & upload to Grafana.
-
-  Returns:
-    None
   """
   # Count each type of commit made
   approval_count = 0
