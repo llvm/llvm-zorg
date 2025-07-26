@@ -9,7 +9,12 @@ import requests
 GRAFANA_URL = (
     "https://influx-prod-13-prod-us-east-0.grafana.net/api/v1/push/influx/write"
 )
+GITHUB_GRAPHQL_API_URL = "https://api.github.com/graphql"
 REPOSITORY_URL = "https://github.com/llvm/llvm-project.git"
+
+# How many commits to query the GitHub GraphQL API for at a time.
+# Querying too many commits at once often leads to the call failing.
+GITHUB_API_BATCH_SIZE = 75
 
 # Number of days to look back for new commits
 # We allow some buffer time between when a commit is made and when it is queried
@@ -42,6 +47,23 @@ WHERE
   pr_event.repo.id = 75821432
   AND pr_event.`type` = 'PullRequestEvent'
   AND JSON_VALUE(pr_event.payload, '$.pull_request.merge_commit_sha') IS NOT NULL
+"""
+
+# Template GraphQL subquery to check if a commit has an associated pull request
+# and whether that pull request has been reviewed and approved.
+COMMIT_GRAPHQL_SUBQUERY_TEMPLATE = """
+commit_{commit_sha}:
+  object(oid:"{commit_sha}") {{
+    ... on Commit {{
+      associatedPullRequests(first: 1) {{
+        totalCount
+        pullRequest: nodes {{
+          number
+          reviewDecision
+        }}
+      }}
+    }}
+  }}
 """
 
 
@@ -153,6 +175,85 @@ def query_for_reviews(
   return list(new_commits.values())
 
 
+def validate_push_commits(
+    new_commits: list[LLVMCommitInfo], github_token: str
+) -> None:
+  """Validate that push commits don't have a pull request.
+
+  To address lossiness of data from GitHub Archive BigQuery, we check each
+  commit to see if it actually has an associated pull request.
+
+  Args:
+    new_commits: List of commits to validate.
+    github_token: The access token to use with the GitHub GraphQL API.
+  """
+
+  # Get all push commits from new commits and form their subqueries
+  commit_subqueries = []
+  potential_push_commits = {}
+  for commit in new_commits:
+    if commit.has_pull_request:
+      continue
+    potential_push_commits[commit.commit_sha] = commit
+    commit_subqueries.append(
+        COMMIT_GRAPHQL_SUBQUERY_TEMPLATE.format(commit_sha=commit.commit_sha)
+    )
+  logging.info("Found %d potential push commits", len(potential_push_commits))
+
+  # Query GitHub GraphQL API for pull requests associated with push commits
+  # We query in batches as large queries often fail
+  api_commit_data = {}
+  query_template = """
+    query {
+      repository(owner:"llvm", name:"llvm-project"){
+          %s
+      }
+    }
+  """
+  num_batches = len(commit_subqueries) // GITHUB_API_BATCH_SIZE + 1
+  logging.info("Querying GitHub GraphQL API in %d batches", num_batches)
+  for i in range(num_batches):
+    subquery_batch = commit_subqueries[
+        i * GITHUB_API_BATCH_SIZE : (i + 1) * GITHUB_API_BATCH_SIZE
+    ]
+    query = query_template % "".join(subquery_batch)
+
+    logging.info(
+        "Querying batch %d of %d (%d commits)",
+        i + 1,
+        num_batches,
+        len(subquery_batch),
+    )
+    response = requests.post(
+        url=GITHUB_GRAPHQL_API_URL,
+        headers={
+            "Authorization": f"bearer {github_token}",
+        },
+        json={"query": query},
+    )
+    if response.status_code < 200 or response.status_code >= 300:
+      logging.error("Failed to query GitHub GraphQL API: %s", response.text)
+    api_commit_data.update(response.json()["data"]["repository"])
+
+  amend_count = 0
+  for commit_sha, data in api_commit_data.items():
+    # Verify that push commit has no pull requests
+    commit_sha = commit_sha.removeprefix("commit_")
+    if data["associatedPullRequests"]["totalCount"] == 0:
+      continue
+
+    # Amend fields with new data from API
+    pull_request = data["associatedPullRequests"]["pullRequest"][0]
+    commit_info = potential_push_commits[commit_sha]
+    commit_info.has_pull_request = True
+    commit_info.pr_number = pull_request["number"]
+    commit_info.is_reviewed = pull_request["reviewDecision"] is not None
+    commit_info.is_approved = pull_request["reviewDecision"] == "APPROVED"
+    amend_count += 1
+
+  logging.info("Amended %d commits", amend_count)
+
+
 def upload_daily_metrics(
     grafana_api_key: str,
     grafana_metrics_userid: str,
@@ -164,9 +265,6 @@ def upload_daily_metrics(
     grafana_api_key: The key to make API requests with.
     grafana_metrics_userid: The user to make API requests with.
     new_commits: List of commits to process & upload to Grafana.
-
-  Returns:
-    None
   """
   # Count each type of commit made
   approval_count = 0
@@ -200,6 +298,7 @@ def upload_daily_metrics(
 
 
 def main() -> None:
+  github_token = os.environ["GITHUB_TOKEN"]
   grafana_api_key = os.environ["GRAFANA_API_KEY"]
   grafana_metrics_userid = os.environ["GRAFANA_METRICS_USERID"]
 
@@ -218,6 +317,9 @@ def main() -> None:
 
   logging.info("Querying for reviews of new commits.")
   new_commit_info = query_for_reviews(new_commits, date_to_scrape)
+
+  logging.info("Validating push commits.")
+  validate_push_commits(new_commit_info, github_token)
 
   logging.info("Uploading metrics to Grafana.")
   upload_daily_metrics(grafana_api_key, grafana_metrics_userid, new_commit_info)
