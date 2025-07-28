@@ -3,7 +3,6 @@ import datetime
 import logging
 import os
 import git
-from google.cloud import bigquery
 import requests
 
 GRAFANA_URL = (
@@ -14,7 +13,7 @@ REPOSITORY_URL = "https://github.com/llvm/llvm-project.git"
 
 # How many commits to query the GitHub GraphQL API for at a time.
 # Querying too many commits at once often leads to the call failing.
-GITHUB_API_BATCH_SIZE = 75
+GITHUB_API_BATCH_SIZE = 50
 
 # Number of days to look back for new commits
 # We allow some buffer time between when a commit is made and when it is queried
@@ -113,26 +112,17 @@ def scrape_new_commits_by_date(
 
 
 def query_for_reviews(
-    new_commits: list[git.Commit], commit_datetime: datetime.datetime
+    new_commits: list[git.Commit], github_token: str
 ) -> list[LLVMCommitInfo]:
-  """Query GitHub Archive BigQuery for reviews of new commits.
+  """Query GitHub GraphQL API for reviews of new commits.
 
   Args:
     new_commits: List of new commits to query for reviews.
-    commit_datetime: The date that the new commits were made on.
+    github_token: The access token to use with the GitHub GraphQL API.
 
   Returns:
     List of LLVMCommitInfo objects for each commit's review information.
   """
-
-  # Search for reviews in the last 4 weeks
-  earliest_review_date = (
-      commit_datetime - datetime.timedelta(weeks=4)
-  ).strftime("%Y%m%d")
-  latest_review_date = datetime.datetime.now(datetime.timezone.utc).strftime(
-      "%Y%m%d"
-  )
-
   # Create a map of commit sha to info
   new_commits = {
       commit.hexsha: LLVMCommitInfo(
@@ -141,67 +131,13 @@ def query_for_reviews(
       for commit in new_commits
   }
 
-  # Query each relevant daily GitHub Archive table
-  query = GITHUB_ARCHIVE_REVIEW_QUERY.format(
-      commit_date=commit_datetime.strftime("%Y%m%d"),
-      lower_review_bound=earliest_review_date.removeprefix("20"),
-      upper_review_bound=latest_review_date.removeprefix("20"),
-  )
-  bq_client = bigquery.Client()
-  query_job = bq_client.query(query)
-  results = query_job.result()
-
-  # Process each found merge commit
-  for row in results:
-    # If this commit is irrelevant, skip it
-    # Not every merge_commit_sha makes it into main, a "merge commit" can mean
-    # different things depending on the state of the pull request.
-    # docs.github.com/en/rest/pulls/pulls#get-a-pull-request for more details.
-    merge_commit_sha = row["merge_commit_sha"]
-    if merge_commit_sha not in new_commits:
-      continue
-
-    commit_info = new_commits[merge_commit_sha]
-    commit_info.has_pull_request = True
-    commit_info.pr_number = row["pull_request_number"]
-    commit_info.is_reviewed = row["review_state"] is not None
-    commit_info.is_approved = row["review_state"] == "approved"
-
-  logging.info(
-      "Total gigabytes processed: %d GB",
-      query_job.total_bytes_processed / (1024**3),
-  )
-
-  return list(new_commits.values())
-
-
-def validate_push_commits(
-    new_commits: list[LLVMCommitInfo], github_token: str
-) -> None:
-  """Validate that push commits don't have a pull request.
-
-  To address lossiness of data from GitHub Archive BigQuery, we check each
-  commit to see if it actually has an associated pull request.
-
-  Args:
-    new_commits: List of commits to validate.
-    github_token: The access token to use with the GitHub GraphQL API.
-  """
-
-  # Get all push commits from new commits and form their subqueries
+  # Create GraphQL subqueries for each commit
   commit_subqueries = []
-  potential_push_commits = {}
-  for commit in new_commits:
-    if commit.has_pull_request:
-      continue
-    potential_push_commits[commit.commit_sha] = commit
+  for commit_sha in new_commits:
     commit_subqueries.append(
-        COMMIT_GRAPHQL_SUBQUERY_TEMPLATE.format(commit_sha=commit.commit_sha)
+        COMMIT_GRAPHQL_SUBQUERY_TEMPLATE.format(commit_sha=commit_sha)
     )
-  logging.info("Found %d potential push commits", len(potential_push_commits))
 
-  # Query GitHub GraphQL API for pull requests associated with push commits
-  # We query in batches as large queries often fail
   api_commit_data = {}
   query_template = """
     query {
@@ -235,23 +171,22 @@ def validate_push_commits(
       logging.error("Failed to query GitHub GraphQL API: %s", response.text)
     api_commit_data.update(response.json()["data"]["repository"])
 
-  amend_count = 0
   for commit_sha, data in api_commit_data.items():
     # Verify that push commit has no pull requests
     commit_sha = commit_sha.removeprefix("commit_")
+
+    # If commit has no pull requests, skip it. No data to update.
     if data["associatedPullRequests"]["totalCount"] == 0:
       continue
 
-    # Amend fields with new data from API
     pull_request = data["associatedPullRequests"]["pullRequest"][0]
-    commit_info = potential_push_commits[commit_sha]
+    commit_info = new_commits[commit_sha]
     commit_info.has_pull_request = True
     commit_info.pr_number = pull_request["number"]
     commit_info.is_reviewed = pull_request["reviewDecision"] is not None
     commit_info.is_approved = pull_request["reviewDecision"] == "APPROVED"
-    amend_count += 1
 
-  logging.info("Amended %d commits", amend_count)
+  return list(new_commits.values())
 
 
 def upload_daily_metrics(
@@ -316,10 +251,7 @@ def main() -> None:
     return
 
   logging.info("Querying for reviews of new commits.")
-  new_commit_info = query_for_reviews(new_commits, date_to_scrape)
-
-  logging.info("Validating push commits.")
-  validate_push_commits(new_commit_info, github_token)
+  new_commit_info = query_for_reviews(new_commits, github_token)
 
   logging.info("Uploading metrics to Grafana.")
   upload_daily_metrics(grafana_api_key, grafana_metrics_userid, new_commit_info)
