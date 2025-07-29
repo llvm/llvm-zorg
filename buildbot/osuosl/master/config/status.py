@@ -553,16 +553,6 @@ def getReporters():
         reporters.MailNotifier(
             fromaddr = status_email_fromaddr,
             sendToInterestedUsers = False,
-            extraRecipients = ["llvm-premerge-buildbots@google.com", "joker.eph@gmail.com"],
-            generators = [
-                utils.LLVMDefaultBuildStatusGenerator(
-                    builders = [
-                        "premerge-monolithic-windows",
-                        "premerge-monolithic-linux"])
-            ]),
-        reporters.MailNotifier(
-            fromaddr = status_email_fromaddr,
-            sendToInterestedUsers = False,
             extraRecipients = ["szakharin@nvidia.com"],
             generators = [
                 utils.LLVMDefaultBuildStatusGenerator(
