@@ -1,0 +1,2 @@
+kubernetes==33.1.0
+buildbot-worker==3.11.7
