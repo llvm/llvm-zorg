@@ -8,11 +8,11 @@ on:
     branches:
       - main
     paths:
-      - .github/workflows/build-premerge-builtbot-container.yml
-      - 'premerge/builtbot/**'
+      - .github/workflows/build-premerge-buildbot-container.yml
+      - 'premerge/buildbot/**'
   pull_request:
     paths:
-      - .github/workflows/build-premerge-builtbot-container.yml
+      - .github/workflows/build-premerge-buildbot-container.yml
       - 'premerge/buildbot/**'
 
 jobs:
