@@ -91,7 +91,7 @@ pipeline {
                           --assertions --cmake-type=RelWithDebInfo \
                           --projects="clang;clang-tools-extra;compiler-rt" \
                           --cmake-flag="-DPython3_EXECUTABLE=$(which python)" \
-                          --cmake-flag="-DLLVM_TARGETS_TO_BUILD=AARCH64"
+                          --cmake-flag="-DLLVM_TARGETS_TO_BUILD=AArch64"
                         '''
                     }
                 }
@@ -127,6 +127,8 @@ pipeline {
                 sh "rm -rf clang-build clang-install host-compiler"
             }
         }
+        // This is commented out because we don't have downstream arm64 jobs setup yet, we will
+        // in the future
         //success {
         //    script {
         //        if (!params.SKIP_TRIGGER) {
