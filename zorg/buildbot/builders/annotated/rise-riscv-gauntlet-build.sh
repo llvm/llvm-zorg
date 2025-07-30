@@ -97,7 +97,7 @@ for CONF in rva20 rva22 rva23 rva23-evl rva23-mrvv-vec-bits; do
       QEMU_CPU=$RVA23_QEMU_CPU
       ;;
     rva23-evl)
-      CFLAGS="-march=rva23u64 -mllvm -force-tail-folding-style=data-with-evl -mllvm -prefer-predicate-over-epilogue=predicate-else-scalar-epilogue"
+      CFLAGS="-march=rva23u64 -mllvm -prefer-predicate-over-epilogue=predicate-else-scalar-epilogue"
       QEMU_CPU=$RVA23_QEMU_CPU
       ;;
     rva23-mrvv-vec-bits)
