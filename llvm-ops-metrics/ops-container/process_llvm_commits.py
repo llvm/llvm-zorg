@@ -21,33 +21,6 @@ GITHUB_API_BATCH_SIZE = 50
 # Archive BigQuery tables.
 LOOKBACK_DAYS = 2
 
-# Template query to find pull requests associated with commits on a given day.
-# Searches for pull requests within a lower and upper bound of Github Archive
-# event dates.
-GITHUB_ARCHIVE_REVIEW_QUERY = """
-WITH PullRequestReviews AS (
-  SELECT DISTINCT
-    JSON_VALUE(payload, '$.pull_request.id') AS pr_id,
-    JSON_VALUE(payload, '$.review.state') as review_state,
-  FROM `githubarchive.day.20*`
-  WHERE
-    repo.id = 75821432
-    AND `type` = 'PullRequestReviewEvent'
-    AND (_TABLE_SUFFIX BETWEEN '{lower_review_bound}' AND '{upper_review_bound}')
-)
-SELECT DISTINCT
-  JSON_VALUE(pr_event.payload, '$.pull_request.merge_commit_sha') AS merge_commit_sha,
-  JSON_VALUE(pr_event.payload, '$.pull_request.number') AS pull_request_number,
-  pr_review.review_state as review_state
-FROM `githubarchive.day.{commit_date}` AS pr_event
-LEFT JOIN PullRequestReviews as pr_review ON
-  JSON_VALUE(pr_event.payload, '$.pull_request.id') = pr_review.pr_id # PR ID should match the review events
-WHERE
-  pr_event.repo.id = 75821432
-  AND pr_event.`type` = 'PullRequestEvent'
-  AND JSON_VALUE(pr_event.payload, '$.pull_request.merge_commit_sha') IS NOT NULL
-"""
-
 # Template GraphQL subquery to check if a commit has an associated pull request
 # and whether that pull request has been reviewed and approved.
 COMMIT_GRAPHQL_SUBQUERY_TEMPLATE = """
