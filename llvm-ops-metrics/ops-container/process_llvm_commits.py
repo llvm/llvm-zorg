@@ -3,6 +3,7 @@ import datetime
 import logging
 import os
 import git
+from google.cloud import bigquery
 import requests
 
 GRAFANA_URL = (
@@ -10,6 +11,10 @@ GRAFANA_URL = (
 )
 GITHUB_GRAPHQL_API_URL = "https://api.github.com/graphql"
 REPOSITORY_URL = "https://github.com/llvm/llvm-project.git"
+
+# BigQuery dataset and tables to write metrics to.
+OPERATIONAL_METRICS_DATASET = "operational_metrics"
+COMMIT_RECORDS_TABLE = "commit_records_testing"
 
 # How many commits to query the GitHub GraphQL API for at a time.
 # Querying too many commits at once often leads to the call failing.
@@ -27,11 +32,23 @@ COMMIT_GRAPHQL_SUBQUERY_TEMPLATE = """
 commit_{commit_sha}:
   object(oid:"{commit_sha}") {{
     ... on Commit {{
+      author {{
+        user {{
+          login
+        }}
+      }}
       associatedPullRequests(first: 1) {{
         totalCount
         pullRequest: nodes {{
           number
           reviewDecision
+          reviews(first: 10) {{
+            nodes {{
+              reviewer: author {{
+                login
+              }}
+            }}
+          }}
         }}
       }}
     }}
@@ -42,12 +59,14 @@ commit_{commit_sha}:
 @dataclasses.dataclass
 class LLVMCommitInfo:
   commit_sha: str
-  commit_datetime: datetime.datetime
   commit_timestamp_seconds: int
+  files_modified: list[str]
+  commit_author: str = ""  # GitHub username of author is unknown until API call
   has_pull_request: bool = False
-  pr_number: int = 0
+  pull_request_number: int = 0
   is_reviewed: bool = False
   is_approved: bool = False
+  reviewers: set[str] = dataclasses.field(default_factory=set)
 
 
 def scrape_new_commits_by_date(
@@ -99,7 +118,9 @@ def query_for_reviews(
   # Create a map of commit sha to info
   new_commits = {
       commit.hexsha: LLVMCommitInfo(
-          commit.hexsha, commit.committed_datetime, commit.committed_date
+          commit_sha=commit.hexsha,
+          commit_timestamp_seconds=commit.committed_date,
+          files_modified=list(commit.stats.files.keys()),
       )
       for commit in new_commits
   }
@@ -142,27 +163,33 @@ def query_for_reviews(
     )
     if response.status_code < 200 or response.status_code >= 300:
       logging.error("Failed to query GitHub GraphQL API: %s", response.text)
+      exit(1)
     api_commit_data.update(response.json()["data"]["repository"])
 
+  # Amend commit information with GitHub data
   for commit_sha, data in api_commit_data.items():
-    # Verify that push commit has no pull requests
     commit_sha = commit_sha.removeprefix("commit_")
+    commit_info = new_commits[commit_sha]
+    commit_info.commit_author = data["author"]["user"]["login"]
 
     # If commit has no pull requests, skip it. No data to update.
     if data["associatedPullRequests"]["totalCount"] == 0:
       continue
 
     pull_request = data["associatedPullRequests"]["pullRequest"][0]
-    commit_info = new_commits[commit_sha]
     commit_info.has_pull_request = True
-    commit_info.pr_number = pull_request["number"]
+    commit_info.pull_request_number = pull_request["number"]
     commit_info.is_reviewed = pull_request["reviewDecision"] is not None
     commit_info.is_approved = pull_request["reviewDecision"] == "APPROVED"
+    commit_info.reviewers = set([
+        review["reviewer"]["login"]
+        for review in pull_request["reviews"]["nodes"]
+    ])
 
   return list(new_commits.values())
 
 
-def upload_daily_metrics(
+def upload_daily_metrics_to_grafana(
     grafana_api_key: str,
     grafana_metrics_userid: str,
     new_commits: list[LLVMCommitInfo],
@@ -205,6 +232,22 @@ def upload_daily_metrics(
     logging.error("Failed to submit data to Grafana: %s", response.text)
 
 
+def upload_daily_metrics_to_bigquery(new_commits: list[LLVMCommitInfo]) -> None:
+  """Upload processed commit metrics to a BigQuery dataset.
+
+  Args:
+    new_commits: List of commits to process & upload to BigQuery.
+  """
+  bq_client = bigquery.Client()
+  table_ref = bq_client.dataset(OPERATIONAL_METRICS_DATASET).table(
+      COMMIT_RECORDS_TABLE
+  )
+  table = bq_client.get_table(table_ref)
+  commit_records = [dataclasses.asdict(commit) for commit in new_commits]
+  bq_client.insert_rows(table, commit_records)
+  bq_client.close()
+
+
 def main() -> None:
   github_token = os.environ["GITHUB_TOKEN"]
   grafana_api_key = os.environ["GRAFANA_API_KEY"]
@@ -227,7 +270,12 @@ def main() -> None:
   new_commit_info = query_for_reviews(new_commits, github_token)
 
   logging.info("Uploading metrics to Grafana.")
-  upload_daily_metrics(grafana_api_key, grafana_metrics_userid, new_commit_info)
+  upload_daily_metrics_to_grafana(
+      grafana_api_key, grafana_metrics_userid, new_commit_info
+  )
+
+  logging.info("Uploading metrics to BigQuery.")
+  upload_daily_metrics_to_bigquery(new_commit_info)
 
 
 if __name__ == "__main__":
