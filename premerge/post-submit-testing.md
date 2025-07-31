@@ -5,8 +5,8 @@
 While this infrastructure is focused on premerge testing, it is also important
 to make sure that the specific configuration we are testing is tested post
 commit as well. This document outlines the motivation for the need to test this
-configuration post commit how we plan on implementing this to ensure we get fast
-feedback scalably, and why we are utilizing this design over others.
+configuration post commit, how we plan on implementing this to ensure we get
+fast feedback scalably, and why we are utilizing this design over others.
 
 ## Background/Motivation
 
@@ -43,7 +43,9 @@ someone directly pushing a commit to `main`, or if multiple PRs become
 problematic only when combined. This means we need to test the premerge
 configuration postcommit as well so that we can determine the state of `main`
 (in terms of whether the build passed/failed and what tests failed, if any) at
-any given point in time.
+any given point in time. We can use this data to implement a "premerge advisor"
+that would prevent sending notifications about build/test failures not caused by
+the changes in a user's PR.
 
 ## Design
 
@@ -111,21 +113,21 @@ By testing configuration, we mean both the environment that the tests run in,
 and the set of tests that run. The testing configuration will be as close to the
 premerge configuration as possible. We will be running all tests inside the same
 container with the same scripts (the `monolithic-linux.sh` and
-`monolithic-windows.sh` scripts). However, there will be one main difference
-between the premerge and postcommit testing configurations. In the postcommit
-configuration we propose testing all projects on every commit rather than only
-testing the projects that themselves changed or had dependencies that changed.
-We propose this for two main reasons. Firstly, Buildbot does not have support
-for heterogenous build configurations. This means that testing a different set
-of projects within a single builder depending upon the contents of the commit
-could easily cause problems. More notifications could be produced if certain
-projects (that were only triggered by some files) were failing and some were
-passing which would significantly increase false positive notifications. For
-example, supposed that we have three commits that land in `main` and run through
-postcommit testing: commit A that touches MLIR, commit B that touches
-clang-tidy, and commit C that modifies MLIR. Commit A lands, then commit B, then
-commit C. If commit A introduces MLIR test failures into an otherwise clean
-slate, we would see the following events:
+`monolithic-windows.sh` scripts) used by the premerge testing. However, there
+will be one main difference between the premerge and postcommit testing
+configurations. In the postcommit configuration we propose testing all projects
+on every commit rather than only testing the projects that themselves changed or
+had dependencies that changed. We propose this for two main reasons. Firstly,
+Buildbot does not have support for heterogenous build configurations. This means
+that testing a different set of projects within a single builder depending upon
+the contents of the commit could easily cause problems. More notifications could
+be produced if certain projects (that were only triggered by some files) were
+failing and some were passing which would significantly increase false positive
+notifications. For example, supposed that we have three commits that land in
+`main` and run through postcommit testing: commit A that touches MLIR, commit B
+that touches clang-tidy, and commit C that modifies MLIR. Commit A lands, then
+commit B, then commit C. If commit A introduces MLIR test failures into an
+otherwise clean slate, we would see the following events:
 
 1. Commit A lands. Because it touches MLIR, the buildbot worker runs the MLIR
    tests. Some of the tests fail. The buildbot "turns red" and a notification is
@@ -139,11 +141,14 @@ slate, we would see the following events:
    interspersed clang-tidy commit, a notification is still sent out to the
    author of commit C.
 
-When running premerge tests on a PR, we also explicitly do not test certain
-projects even though their dependencies change. While we do this because we
-suspect interactions resulting in test failures would be quite rare, it is
-possible, and having a postcommit configuration catch these rare failures would
-be useful.
+By running the tests for all projects in every postsubmit test run, we avoid
+the problematic situation described above.
+
+Another reason for running all the tests in every postsubmit run: When running
+premerge tests on a PR, we also explicitly do not test certain projects even
+though their dependencies change. While we do this because we suspect
+interactions resulting in test failures would be quite rare, it is possible, and
+having a postcommit configuration catch these rare failures would be useful.
 
 ### Data Storage
 
@@ -161,7 +166,7 @@ commit underneath the PR is very recent. If a premerge run fails, the premerge
 advisor will find the commit from `main` the PR is being tested on. It will then
 query the Buildbot master using the REST API for the status of that commit.
 It can then report the appropriate status to the user. Having the status will
-let the premerge advisor ignore pestering LLVM developers with failures
+let the premerge advisor avoid pestering LLVM developers with failures
 unrelated to their changes.
 
 ## Alternatives Considered
@@ -186,7 +191,7 @@ this way for a couple of reasons:
    cancelled. This is specifically a problem with Github sending out
    notifications for build failures even if the previous build has failed. This
    can easily create a lot of warning fatigue which is something we are putting
-   a lot of effort in to avoid. We want the premerge systemto be perceived as
+   a lot of effort in to avoid. We want the premerge system to be perceived as
    reliable, have people trust its results, and most importantly, have people
    pay attention to failures when they do occur. They are significantly more
    likely to pay attention when they are the author of the patch getting the
