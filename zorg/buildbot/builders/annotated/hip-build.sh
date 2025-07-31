@@ -52,7 +52,7 @@ if [ ! -d "${LLVM_ROOT}" ]; then
 fi
 
 build_step "Updating llvm-project repo"
-git -C "${LLVM_ROOT}" fetch origin
+git -C "${LLVM_ROOT}" fetch --prune origin
 git -C "${LLVM_ROOT}" reset --hard "${LLVM_REVISION}"
 }
 
@@ -64,7 +64,7 @@ if [ ! -d "${TESTSUITE_ROOT}" ]; then
 fi
 
 build_step "Updating llvm-test-suite repo"
-git -C "${TESTSUITE_ROOT}" fetch origin
+git -C "${TESTSUITE_ROOT}" fetch --prune origin
 git -C "${TESTSUITE_ROOT}" reset --hard origin/main
 }
 
