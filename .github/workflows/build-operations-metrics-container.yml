@@ -11,8 +11,6 @@ on:
       - .github/workflows/build-operations-metrics-container.yml
       - 'llvm-ops-metrics/ops-container/**'
   pull_request:
-    branches:
-      - main
     paths:
       - .github/workflows/build-operations-metrics-container.yml
       - 'llvm-ops-metrics/ops-container/**'
@@ -55,7 +53,7 @@ jobs:
           path: ${{ steps.vars.outputs.container-filename }}
           retention-days: 14
 
-  push-metrics-container:
+  push-operations-metrics-container:
     if: github.event_name == 'push'
     needs:
       - build-operations-metrics-container
@@ -76,4 +74,3 @@ jobs:
           podman login -u ${{ github.actor }} -p $GITHUB_TOKEN ghcr.io
           podman push ${{ needs.build-operations-metrics-container.outputs.container-name-tag }}
           podman push ${{ needs.build-operations-metrics-container.outputs.container-name }}:latest
-

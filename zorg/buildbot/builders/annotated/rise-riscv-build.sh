@@ -29,7 +29,7 @@ case "$BUILDBOT_BUILDERNAME" in
     export BB_QEMU_MEM="64G"
     ;;
   "clang-riscv-rva23-evl-vec-2stage")
-    TARGET_CFLAGS="-march=rva23u64 -mllvm -force-tail-folding-style=data-with-evl -mllvm -prefer-predicate-over-epilogue=predicate-else-scalar-epilogue"
+    TARGET_CFLAGS="-march=rva23u64 -mllvm -prefer-predicate-over-epilogue=predicate-else-scalar-epilogue"
     export BB_IMG_DIR=$(pwd)/..
      # TODO: Switch to specifying rva23u64 once qemu on the builder is
      # upgraded to a version that recognises it.
