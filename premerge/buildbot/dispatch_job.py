@@ -16,7 +16,7 @@ import json
 
 import kubernetes
 
-PLATFORM_TO_NAMESPACE = {"Linux": "llvm-premerge-linux-builbot"}
+PLATFORM_TO_NAMESPACE = {"Linux": "llvm-premerge-linux-buildbot"}
 LOG_SECONDS_TO_QUERY = 10
 SECONDS_QUERY_LOGS_EVERY = 5
 
