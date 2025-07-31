@@ -14,7 +14,7 @@ REPOSITORY_URL = "https://github.com/llvm/llvm-project.git"
 
 # BigQuery dataset and tables to write metrics to.
 OPERATIONAL_METRICS_DATASET = "operational_metrics"
-COMMIT_RECORDS_TABLE = "commit_records_testing"
+LLVM_COMMITS_TABLE = "llvm_commits"
 
 # How many commits to query the GitHub GraphQL API for at a time.
 # Querying too many commits at once often leads to the call failing.
@@ -240,7 +240,7 @@ def upload_daily_metrics_to_bigquery(new_commits: list[LLVMCommitInfo]) -> None:
   """
   bq_client = bigquery.Client()
   table_ref = bq_client.dataset(OPERATIONAL_METRICS_DATASET).table(
-      COMMIT_RECORDS_TABLE
+      LLVM_COMMITS_TABLE
   )
   table = bq_client.get_table(table_ref)
   commit_records = [dataclasses.asdict(commit) for commit in new_commits]
