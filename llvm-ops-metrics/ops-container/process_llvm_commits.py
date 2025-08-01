@@ -161,9 +161,15 @@ def query_for_reviews(
         },
         json={"query": query},
     )
+
+    # Exit if API call fails
+    # A failed API call means a large batch of data is missing and will not be
+    # reflected in the dashboard. The dashboard will silently misrepresent
+    # commit data if we continue execution, so it's better to fail loudly.
     if response.status_code < 200 or response.status_code >= 300:
       logging.error("Failed to query GitHub GraphQL API: %s", response.text)
       exit(1)
+
     api_commit_data.update(response.json()["data"]["repository"])
 
   # Amend commit information with GitHub data
