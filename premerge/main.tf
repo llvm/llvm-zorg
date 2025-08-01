@@ -293,3 +293,30 @@ resource "kubernetes_manifest" "operational_metrics_cronjob" {
     kubernetes_service_account.operational_metrics_ksa,
   ]
 }
+
+# BigQuery dataset and table resources
+resource "google_bigquery_dataset" "operational_metrics_dataset" {
+  dataset_id  = "operational_metrics"
+  description = "Dataset for retaining operational data regarding LLVM commit trends."
+}
+
+resource "google_bigquery_table" "llvm_commits_table" {
+  dataset_id  = google_bigquery_dataset.operational_metrics_dataset.dataset_id
+  table_id    = "llvm_commits"
+  description = "LLVM commit data, including pull request and review activity per commit."
+
+  schema = file("./bigquery_schema/llvm_commits_table_schema.json")
+
+  depends_on = [google_bigquery_dataset.operational_metrics_dataset]
+}
+
+resource "google_bigquery_dataset_iam_binding" "operational_metrics_dataset_editor_binding" {
+  dataset_id = google_bigquery_dataset.operational_metrics_dataset.dataset_id
+  role       = "roles/bigquery.dataEditor"
+
+  members = [
+    "serviceAccount:${google_service_account.operational_metrics_gsa.email}",
+  ]
+
+  depends_on = [google_bigquery_dataset.operational_metrics_dataset, google_service_account.operational_metrics_gsa]
+}
