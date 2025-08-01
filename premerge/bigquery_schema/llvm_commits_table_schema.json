@@ -1,0 +1,56 @@
+[
+  {
+    "name": "commit_sha",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Commit hexsha of a commit made to llvm/llvm-project:main"
+  },
+  {
+    "name": "commit_author",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "GitHub username of the commit author"
+  },
+  {
+    "name": "commit_timestamp_seconds",
+    "type": "INTEGER",
+    "mode": "NULLABLE",
+    "description": "Time this commit was made at, as a Unix timestamp"
+  },
+  {
+    "name": "has_pull_request",
+    "type": "BOOLEAN",
+    "mode": "NULLABLE",
+    "description": "Whether or not this commit has an associated pull request"
+  },
+  {
+    "name": "pull_request_number",
+    "type": "INTEGER",
+    "mode": "NULLABLE",
+    "description": "Number of the pull request associated with this commit"
+  },
+  {
+    "name": "is_reviewed",
+    "type": "BOOLEAN",
+    "mode": "NULLABLE",
+    "description": "Whether or not the pull request for this commit was reviewed"
+  },
+  {
+    "name": "is_approved",
+    "type": "BOOLEAN",
+    "mode": "NULLABLE",
+    "description": "Whether or not the pull request for this commit was approved"
+  },
+  {
+    "name": "reviewers",
+    "type": "STRING",
+    "mode": "REPEATED",
+    "description": "List of GitHub users who reviewed the pull request for this commit"
+  },
+  {
+    "name": "files_modified",
+    "type": "STRING",
+    "mode": "REPEATED",
+    "description": "List of filepaths modified by this commit"
+  }
+]
