@@ -60,7 +60,7 @@ commit_{commit_sha}:
 class LLVMCommitInfo:
   commit_sha: str
   commit_timestamp_seconds: int
-  files_modified: list[str]
+  files_modified: set[str]
   commit_author: str = ""  # GitHub username of author is unknown until API call
   has_pull_request: bool = False
   pull_request_number: int = 0
@@ -120,7 +120,7 @@ def query_for_reviews(
       commit.hexsha: LLVMCommitInfo(
           commit_sha=commit.hexsha,
           commit_timestamp_seconds=commit.committed_date,
-          files_modified=list(commit.stats.files.keys()),
+          files_modified=set(commit.stats.files.keys()),
       )
       for commit in new_commits
   }
