@@ -16,6 +16,7 @@ def addTestSuiteStep(
             compiler_dir = '.',
             env = None,
             lit_args = None,
+            extra_configure_args = None,
             **kwargs):
 
     # Set defaults
@@ -24,15 +25,19 @@ def addTestSuiteStep(
     if lit_args is None:
         lit_args = []
 
-    cc = util.Interpolate('-DCMAKE_C_COMPILER=' + '%(prop:builddir)s/'+compiler_dir+'/bin/clang')
-    cxx = util.Interpolate('-DCMAKE_CXX_COMPILER=' + '%(prop:builddir)s/'+compiler_dir+'/bin/clang++')
+    cc = util.Interpolate('-DCMAKE_C_COMPILER=%(prop:builddir)s/'+compiler_dir+'/bin/clang')
+    cxx = util.Interpolate('-DCMAKE_CXX_COMPILER=%(prop:builddir)s/'+compiler_dir+'/bin/clang++')
     lit = util.Interpolate('%(prop:builddir)s/' + compiler_dir + '/bin/llvm-lit')
     test_suite_base_dir = util.Interpolate('%(prop:builddir)s/' + 'test')
     test_suite_src_dir = util.Interpolate('%(prop:builddir)s/' + 'test/test-suite')
     test_suite_workdir = util.Interpolate('%(prop:builddir)s/' + 'test/build-test-suite')
-    cmake_lit_arg = util.Interpolate('-DTEST_SUITE_LIT:FILEPATH=' + '%(prop:builddir)s/' + compiler_dir + '/bin/llvm-lit')
+    cmake_lit_arg = util.Interpolate('-DTEST_SUITE_LIT:FILEPATH=%(prop:builddir)s/' + compiler_dir + '/bin/llvm-lit')
     # used for cmake building test-suite step
-    options = [cc, cxx, cmake_lit_arg]
+    if extra_configure_args is not None:
+        cmake_args = extra_configure_args[:]
+    else:
+        cmake_args = list()
+    cmake_args.extend([cc, cxx, cmake_lit_arg])
 
     # always clobber the build directory to test each new compiler
     f.addStep(ShellCommand(name='Clean Test Suite Build dir',
@@ -51,7 +56,7 @@ def addTestSuiteStep(
                            haltOnFailure=True,
                            description='Running cmake on Test Suite dir',
                            workdir=test_suite_workdir,
-                           options=options,
+                           options=cmake_args,
                            path=test_suite_src_dir,
                            generator='Ninja'))
 
@@ -80,6 +85,7 @@ def getTestSuiteBuildFactory(
            install_dir = None,
            clean = False,
            extra_configure_args = None,
+           extra_test_suite_configure_args = None,
            env = None,
            **kwargs):
 
@@ -109,6 +115,7 @@ def getTestSuiteBuildFactory(
            compiler_dir=f.obj_dir,
            env=env,
            lit_args=lit_args,
+           extra_configure_args=extra_test_suite_configure_args,
            **kwargs)
 
     return f
