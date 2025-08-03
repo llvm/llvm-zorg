@@ -25,7 +25,7 @@ def split_name_and_email(str):
     if (str.count('<') != 1 or
         str.count('>') != 1 or
         not str.endswith('>')):
-        raise ValueError,"Don't know how to parse: %r" % (str,)
+        raise ValueError("Don't know how to parse: %r" % (str,))
 
     lhs,rhs = str[:-1].split("<")
     return lhs.strip(), rhs.strip()
