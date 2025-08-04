@@ -267,9 +267,8 @@ def upload_daily_metrics_to_grafana(
   # Contributor data
   request_data = (
       "llvm_project_main"
-      " daily_unique_contributors={},all_time_unique_contributors={}".format(
-          len(contributors), len(contributors | past_contributors)
-      )
+      " daily_unique_contributor_count={},all_time_unique_contributor_count={}"
+      .format(len(contributors), len(contributors | past_contributors))
   )
   post_data(request_data)
 
