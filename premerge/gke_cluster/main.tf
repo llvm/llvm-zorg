@@ -44,13 +44,6 @@ resource "google_container_node_pool" "llvm_premerge_linux_service" {
     workload_metadata_config {
       mode = "GKE_METADATA"
     }
-    # Terraform wants to recreate the node pool everytime whe running
-    # terraform apply unless we explicitly set this.
-    # TODO(boomanaiden154): Look into why terraform is doing this so we do
-    # not need this hack.
-    resource_labels = {
-      "goog-gke-node-pool-provisioning-model" = "on-demand"
-    }
   }
 }
 
@@ -76,13 +69,6 @@ resource "google_container_node_pool" "llvm_premerge_linux" {
       "premerge-platform" : "linux"
     }
     disk_size_gb = 200
-    # Terraform wants to recreate the node pool everytime whe running
-    # terraform apply unless we explicitly set this.
-    # TODO(boomanaiden154): Look into why terraform is doing this so we do
-    # not need this hack.
-    resource_labels = {
-      "goog-gke-node-pool-provisioning-model" = "on-demand"
-    }
 
     # Enable workload identity federation for this pool so that we can access
     # GCS buckets.
@@ -114,13 +100,6 @@ resource "google_container_node_pool" "llvm_premerge_libcxx" {
       "premerge-platform-libcxx" : "linux-libcxx"
     }
     disk_size_gb = 200
-    # Terraform wants to recreate the node pool everytime whe running
-    # terraform apply unless we explicitly set this.
-    # TODO(boomanaiden154): Look into why terraform is doing this so we do
-    # not need this hack.
-    resource_labels = {
-      "goog-gke-node-pool-provisioning-model" = "on-demand"
-    }
   }
 }
 
@@ -159,13 +138,6 @@ resource "google_container_node_pool" "llvm_premerge_windows_2022" {
     }
     disk_size_gb = 200
     disk_type    = "pd-ssd"
-    # Terraform wants to recreate the node pool everytime whe running
-    # terraform apply unless we explicitly set this.
-    # TODO(boomanaiden154): Look into why terraform is doing this so we do
-    # not need this hack.
-    resource_labels = {
-      "goog-gke-node-pool-provisioning-model" = "on-demand"
-    }
 
     # Enable workload identity federation for this pool so that we can access
     # GCS buckets.
