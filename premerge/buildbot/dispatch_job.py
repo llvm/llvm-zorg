@@ -13,6 +13,7 @@ import time
 import dateutil
 import datetime
 import json
+import os
 
 import kubernetes
 
@@ -154,6 +155,7 @@ def main(commit_sha: str, platform: str):
     namespace = PLATFORM_TO_NAMESPACE[platform]
     latest_time = datetime.datetime.min
     v1_api = kubernetes.client.CoreV1Api()
+    print("@@@BUILD_STEP Build/Test@@@")
     while True:
         try:
             pod_finished, latest_time = print_logs(
@@ -173,7 +175,10 @@ def main(commit_sha: str, platform: str):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 3:
-        logging.fatal("Expected usage is dispatch_job.py {commit SHA} {platform}")
+    if len(sys.argv) != 2:
+        logging.fatal("Expected usage is dispatch_job.py {platform}")
         sys.exit(1)
-    main(sys.argv[1], sys.argv[2])
+    if "BUILDBOT_REVISION" not in os.environ:
+        logging.fatal("Expected to have BUILDBOT_REVISION environment variable set.")
+        sys.exit(1)
+    main(sys.argv[1], os.environ["BUILDBOT_REVISION"])
