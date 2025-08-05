@@ -39,17 +39,13 @@ def main(argv):
         if args.asan:
             cmake_args.append('-DLLVM_USE_SANITIZER=Address')
 
-        cmake_args.append('-DLLVM_ENABLE_PROJECTS=libc')
-        cmake_args.append('-DLLVM_TARGETS_TO_BUILD=X86')
-        cmake_args.append('-DLLVM_FORCE_BUILD_RUNTIME=libc')
-        cmake_args.append('-DLLVM_NATIVE_ARCH=x86_64')
-        cmake_args.append('-DLLVM_HOST_TRIPLE=x86_64-window-x86-gnu')
-        cmake_args.append('-DLLVM_LIBC_MPFR_INSTALL_PATH=C:/src/install')
+        cmake_args.append('-DLLVM_ENABLE_RUNTIMES=libc')
+        cmake_args.append('-DLLVM_LIBC_MPFR_INSTALL_PATH=C:/src/mpfr-install')
 
-        run_command(['cmake', os.path.join(source_dir, 'llvm')] + cmake_args)
+        run_command(['cmake', os.path.join(source_dir, 'runtimes')] + cmake_args)
 
     with step('build llvmlibc', halt_on_fail=True):
-        run_command(['ninja', 'llvmlibc'])
+        run_command(['ninja', 'libc'])
 
     with step('check-libc'):
         run_command(['ninja', 'check-libc'])
