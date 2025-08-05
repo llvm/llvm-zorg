@@ -231,6 +231,17 @@ resource "google_service_account" "operational_metrics_gsa" {
   display_name = "Operational Metrics GSA"
 }
 
+resource "google_project_iam_binding" "bigquery_jobuser_binding" {
+  project = google_service_account.operational_metrics_gsa.project
+  role    = "roles/bigquery.jobUser"
+
+  members = [
+    "serviceAccount:${google_service_account.operational_metrics_gsa.email}",
+  ]
+
+  depends_on = [google_service_account.operational_metrics_gsa]
+}
+
 resource "kubernetes_namespace" "operational_metrics" {
   metadata {
     name = "operational-metrics"
