@@ -13,24 +13,48 @@ import time
 import dateutil
 import datetime
 import json
+import os
 
 import kubernetes
 
-PLATFORM_TO_NAMESPACE = {"Linux": "llvm-premerge-linux-buildbot"}
+PLATFORM_TO_NAMESPACE = {
+    "Linux": "llvm-premerge-linux-buildbot",
+    "Windows": "llvm-premerge-windows-buildbot",
+}
 LOG_SECONDS_TO_QUERY = 10
 SECONDS_QUERY_LOGS_EVERY = 5
 
 
-def start_build_linux(commit_sha: str, k8s_client) -> str:
+def start_build(k8s_client, pod_name: str, namespace: str, commands: list[str]) -> None:
     """Spawns a pod to build/test LLVM at the specified SHA.
 
     Args:
       commit_sha: The commit SHA to build/run the tests at.
       k8s_client: The kubernetes client instance to use for spawning the pod.
-
-    Returns:
-      A string containing the name of the pod.
+      commands: The commands to run upon pod start.
     """
+    pod_definition = {
+        "apiVersion": "v1",
+        "kind": "Pod",
+        "metadata": {
+            "name": pod_name,
+            "namespace": namespace,
+        },
+        "spec": {
+            "containers": [
+                {
+                    "name": "build",
+                    "image": "ghcr.io/llvm/ci-ubuntu-24.04",
+                    "commands": commands,
+                }
+            ],
+            "restartPolicy": "Never",
+        },
+    }
+    kubernetes.utils.create_from_dict(k8s_client, pod_definition)
+
+
+def start_build_linux(commit_sha: str, k8s_client) -> str:
     pod_name = f"build-{commit_sha}"
     commands = [
         "git clone --depth 100 https://github.com/llvm/llvm-project",
@@ -38,28 +62,36 @@ def start_build_linux(commit_sha: str, k8s_client) -> str:
         f"git checkout ${commit_sha}",
         "export CC=clang",
         "export CXX=clang++",
+        "expot POSTCOMMIT_CI=1",
         './.ci/monolithic-linux.sh "bolt;clang;clang-tools-extra;flang;libclc;lld;lldb;llvm;mlir;polly" "check-bolt check-clang check-clang-cir check-clang-tools check-flang check-lld check-lldb check-llvm check-mlir check-polly" "compiler-rt;libc;libcxx;libcxxabi;libunwind" "check-compiler-rt check-libc" "check-cxx check-cxxabi check-unwind" "OFF"'
         "echo BUILD FINISHED",
     ]
-    pod_definition = {
-        "apiVersion": "v1",
-        "kind": "Pod",
-        "metadata": {
-            "name": pod_name,
-            "namespace": PLATFORM_TO_NAMESPACE["Linux"],
-        },
-        "spec": {
-            "containers": [
-                {
-                    "name": "build",
-                    "image": "ghcr.io/llvm/ci-ubuntu-24.04",
-                    "command": ["/bin/bash", "-c", ";".join(commands)],
-                }
-            ],
-            "restartPolicy": "Never",
-        },
-    }
-    kubernetes.utils.create_from_dict(k8s_client, pod_definition)
+    start_build(
+        k8s_client,
+        pod_name,
+        PLATFORM_TO_NAMESPACE["Linux"],
+        ["/bin/bash", "-c", ";".join(commands)],
+    )
+    return pod_name
+
+
+def start_build_windows(commit_sha: str, k8s_client):
+    pod_name = f"build-{commit_sha}"
+    bash_commands = [
+        "git clone --depth 100 https://github.com/llvm/llvm-project",
+        "cd llvm-project",
+        f"git checkout ${commit_sha}",
+        "export POSTCOMMIT_CI=1",
+        '.ci/monolithic-windows.sh "clang;clang-tools-extra;libclc;lld;llvm;mlir;polly" "check-clang check-clang-cir check-clang-tools check-lld check-llvm check-mlir check-polly"',
+        "echo BUILD FINISHED",
+    ]
+    commands = [
+        "call C:\\BuildTools\\Common7\\Tools\\VsDevCmd.bat -arch=amd64 -host_arch=amd64",
+        "bash",
+        "-c",
+        ";".join(bash_commands),
+    ]
+    start_build(k8s_client, pod_name, PLATFORM_TO_NAMESPACE["Windows"], commands)
     return pod_name
 
 
@@ -149,11 +181,14 @@ def main(commit_sha: str, platform: str):
     k8s_client = kubernetes.client.ApiClient()
     if platform == "Linux":
         pod_name = start_build_linux(commit_sha, k8s_client)
+    elif platform == "Windows":
+        pod_name = start_build_windows(commit_sha, k8s_client)
     else:
         raise ValueError("Unrecognized platform.")
     namespace = PLATFORM_TO_NAMESPACE[platform]
     latest_time = datetime.datetime.min
     v1_api = kubernetes.client.CoreV1Api()
+    print("@@@BUILD_STEP Build/Test@@@")
     while True:
         try:
             pod_finished, latest_time = print_logs(
@@ -173,7 +208,10 @@ def main(commit_sha: str, platform: str):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 3:
-        logging.fatal("Expected usage is dispatch_job.py {commit SHA} {platform}")
+    if len(sys.argv) != 2:
+        logging.fatal("Expected usage is dispatch_job.py {platform}")
         sys.exit(1)
-    main(sys.argv[1], sys.argv[2])
+    if "BUILDBOT_REVISION" not in os.environ:
+        logging.fatal("Expected to have BUILDBOT_REVISION environment variable set.")
+        sys.exit(1)
+    main(sys.argv[1], os.environ["BUILDBOT_REVISION"])
