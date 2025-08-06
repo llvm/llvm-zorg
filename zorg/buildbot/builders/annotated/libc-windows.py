@@ -40,7 +40,6 @@ def main(argv):
             cmake_args.append('-DLLVM_USE_SANITIZER=Address')
 
         cmake_args.append('-DLLVM_ENABLE_RUNTIMES=libc')
-        cmake_args.append('-DLLVM_LIBC_MPFR_INSTALL_PATH=C:/src/mpfr-install')
 
         run_command(['cmake', os.path.join(source_dir, 'runtimes')] + cmake_args)
 
