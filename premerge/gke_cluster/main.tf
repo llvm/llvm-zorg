@@ -78,6 +78,9 @@ resource "google_container_node_pool" "llvm_premerge_linux" {
   }
 }
 
+# Buildbot here refers specifically to the LLVM Buildbot postcommit
+# testing infrastructure. These machines are used specifically for testing
+# commits after they have landed in main.
 resource "google_container_node_pool" "llvm_buildbot_linux" {
   name               = "llvm-buildbot-linux"
   location           = var.region
@@ -178,6 +181,9 @@ resource "google_container_node_pool" "llvm_premerge_windows_2022" {
   }
 }
 
+# Buildbot here refers specifically to the LLVM Buildbot postcommit
+# testing infrastructure. These machines are used specifically for testing
+# commits after they have landed in main.
 resource "google_container_node_pool" "llvm_buildbot_window_2022" {
   name               = "llvm-buildbot-windows-2022"
   location           = var.region
