@@ -403,6 +403,16 @@ def get_all():
         create_worker("rise-worker-3", properties={'jobs' : 32}, max_builds=1),
         create_worker("rise-worker-4", properties={'jobs' : 32}, max_builds=1),
 
+        # Builders that run the premerge configuration
+        # These workers are specifically for running the premerge configuration
+        # postcommit (after changes have landed in main). The workers for the
+        # infrastructure that runs the checks premerge are setup through Github
+        # Actions under the premerge/ folder in llvm-zorg.
+        create_worker("premerge-us-central-linux", properties={'jobs': 64}, max_builds=3),
+        create_worker("premerge-us-central-windows", properties={'jobs': 64}, max_builds=3),
+        create_worker("premerge-us-west-linux", properties={'jobs': 64}, max_builds=3),
+        create_worker("premerge-us-west-windows", properties={'jobs': 64}, max_builds=3),
+
         # FIXME: A placeholder for annoying worker which nobody could stop.
         # adding it avoid logs spammed by failed authentication for that worker.
         create_worker("mlir-ubuntu-worker0"),

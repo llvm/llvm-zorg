@@ -3535,7 +3535,29 @@ all += [
                     checkout_llvm_sources=False,
                     script_interpreter=None,
                     clean=True)},
-
+    
+    # Builders that test the premerge configuration
+    # These builders are specifically for running the premerge configuration
+    # postcommit (after changes have landed in main). The configuration for
+    # running these checks premerge exists in the monorepo inside the
+    # .github/workflows/premerge.yaml file.
+    {'name': "premerge-monolithic-linux",
+     'workernames': ["premerge-us-central-linux", "premerge-us-west-linux"],
+     'builddir': "premerge-monolithic-linux",
+     'factory': AnnotatedBuilder.getAnnotatedBuildFactory(
+                    script="premerge/dispatch_job.py",
+                    checkout_llvm_sources=False,
+                    extra_args=["Linux"],
+                    depends_on_projects=["bolt", "clang", "clang-tools-extra", "compiler-rt", "flang", "flang-rt", "libc", "libclc", "lld", "lldb", "llvm", "mlir", "polly"])},
+    
+    {'name': "premerge-monolithic-windows",
+     'workernames': ["premerge-us-central-windows", "premerge-us-west-windows"],
+     'builddir': "premerge-monolithic-windows",
+     'factory': AnnotatedBuilder.getAnnotatedBuildFactory(
+                    script="premerge/dispatch_job.py",
+                    checkout_llvm_sources=False,
+                    extra_args=["Windows"],
+                    depends_on_projects=["clang-tools-extra", "clang", "libclc", "lld", "llvm", "mlir", "polly"])},
 ]
 
 # LLDB remote-linux builder env variables.
