@@ -47,6 +47,48 @@ resource "kubernetes_namespace" "llvm_premerge_windows_2022_runners" {
   }
 }
 
+resource "kubernetes_namespace" "llvm_premerge_linux_buildbot" {
+  metadata {
+    name = "llvm-premerge-linux-buildbot"
+  }
+}
+
+resource "kubernetes_namespace" "llvm_premerge_windows_2022_buildbot" {
+  metadata {
+    name = "llvm-premerge-windows-2022-buildbot"
+  }
+}
+
+resource "kubernetes_secret" "linux_buildbot_password" {
+  metadata {
+    name      = "linux-buildbot-password"
+    namespace = kubernetes_namespace.llvm_premerge_linux_buildbot.name
+  }
+
+  data = {
+    "password" = var.linux_buildbot_password
+  }
+
+  type = "Opaque"
+
+  depends_on = [kubernetes_namespace.llvm_premerge_linux_buildbot]
+}
+
+resource "kubernetes_secret" "windows_buildbot_password" {
+  metadata {
+    name      = "windows-buildbot-password"
+    namespace = kubernetes_namespace.llvm_premerge_windows_2022_buildbot.name
+  }
+
+  data = {
+    "password" = var.windows_buildbot_password
+  }
+
+  type = "Opaque"
+
+  depends_on = [kubernetes_namespace.llvm_premerge_windows_2022_buildbot]
+}
+
 resource "kubernetes_secret" "linux_github_pat" {
   metadata {
     name      = "github-token"

@@ -104,3 +104,23 @@ variable "windows_2022_object_cache_gcp_service_account_email" {
   description = "The email associated with the service account for accessing the object cache on Windows."
   type        = string
 }
+
+variable "linux_buildbot_name" {
+  description = "The name of the linux buildbot."
+  type        = string
+}
+
+variable "linux_buildbot_password" {
+  description = "The linux buildbot password."
+  type        = string
+}
+
+variable "windows_buildbot_name" {
+  description = "The name of the windows buildbot."
+  type        = string
+}
+
+variable "windows_buildbot_password" {
+  description = "The windows buildbot password."
+  type        = string
+}
