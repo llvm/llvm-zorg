@@ -26,11 +26,12 @@ SECONDS_QUERY_LOGS_EVERY = 5
 
 
 def start_build(k8s_client, pod_name: str, namespace: str, commands: list[str]) -> None:
-    """Spawns a pod to build/test LLVM at the specified SHA.
+    """Spawns a pod to run the specified commands.
 
     Args:
-      commit_sha: The commit SHA to build/run the tests at.
       k8s_client: The kubernetes client instance to use for spawning the pod.
+      pod_name: The name of the pod to start.
+      namespace: The namespace to launch the pod in.
       commands: The commands to run upon pod start.
     """
     pod_definition = {
@@ -55,6 +56,7 @@ def start_build(k8s_client, pod_name: str, namespace: str, commands: list[str]) 
 
 
 def start_build_linux(commit_sha: str, k8s_client) -> str:
+    """Starts a pod to build/test on Linux at the specified SHA."""
     pod_name = f"build-{commit_sha}"
     commands = [
         "git clone --depth 100 https://github.com/llvm/llvm-project",
@@ -75,6 +77,7 @@ def start_build_linux(commit_sha: str, k8s_client) -> str:
 
 
 def start_build_windows(commit_sha: str, k8s_client):
+    """Starts a pod to build/test on Windows at the specified SHA."""
     pod_name = f"build-{commit_sha}"
     bash_commands = [
         "git clone --depth 100 https://github.com/llvm/llvm-project",
