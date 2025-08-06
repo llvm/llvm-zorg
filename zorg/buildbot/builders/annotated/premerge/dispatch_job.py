@@ -64,6 +64,7 @@ def start_build_linux(commit_sha: str, k8s_client) -> str:
         f"git checkout ${commit_sha}",
         "export CC=clang",
         "export CXX=clang++",
+        "expot POSTCOMMIT_CI=1",
         './.ci/monolithic-linux.sh "bolt;clang;clang-tools-extra;flang;libclc;lld;lldb;llvm;mlir;polly" "check-bolt check-clang check-clang-cir check-clang-tools check-flang check-lld check-lldb check-llvm check-mlir check-polly" "compiler-rt;libc;libcxx;libcxxabi;libunwind" "check-compiler-rt check-libc" "check-cxx check-cxxabi check-unwind" "OFF"'
         "echo BUILD FINISHED",
     ]
@@ -83,6 +84,7 @@ def start_build_windows(commit_sha: str, k8s_client):
         "git clone --depth 100 https://github.com/llvm/llvm-project",
         "cd llvm-project",
         f"git checkout ${commit_sha}",
+        "export POSTCOMMIT_CI=1",
         '.ci/monolithic-windows.sh "clang;clang-tools-extra;libclc;lld;llvm;mlir;polly" "check-clang check-clang-cir check-clang-tools check-lld check-llvm check-mlir check-polly"',
         "echo BUILD FINISHED",
     ]
