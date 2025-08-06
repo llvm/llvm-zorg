@@ -47,6 +47,9 @@ resource "kubernetes_namespace" "llvm_premerge_windows_2022_runners" {
   }
 }
 
+# Buildbot here refers specifically to the LLVM Buildbot postcommit
+# testing infrastructure. These machines are used specifically for testing
+# commits after they have landed in main.
 resource "kubernetes_namespace" "llvm_premerge_linux_buildbot" {
   metadata {
     name = "llvm-premerge-linux-buildbot"

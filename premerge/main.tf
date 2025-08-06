@@ -121,12 +121,15 @@ data "google_secret_manager_secret_version" "grafana_token" {
   secret = "llvm-premerge-testing-grafana-token"
 }
 
+# Buildbot here refers specifically to the LLVM Buildbot postcommit
+# testing infrastructure. These machines are used specifically for testing
+# commits after they have landed in main.
 data "google_secret_manager_secret_version" "us_central_linux_buildbot_password" {
   secret = "llvm-buildbot-linux-us-central"
 }
 
 data "google_secret_manager_secret_version" "us_central_windows_buildbot_password" {
-  secret = "llvm-buidbot-windows-us-central"
+  secret = "llvm-buildbot-windows-us-central"
 }
 
 data "google_secret_manager_secret_version" "us_west_linux_buildbot_password" {
