@@ -3548,7 +3548,7 @@ all += [
                     script="premerge/dispatch_job.py",
                     checkout_llvm_sources=False,
                     extra_args=["Linux"],
-                    depends_on_projects=["bolt", "clang", "clang-tools-extra", "compiler-rt", "flang", "flang-rt", "libc", "libclc", "lld", "llvm", "mlir", "polly"])},
+                    depends_on_projects=["bolt", "clang", "clang-tools-extra", "compiler-rt", "flang", "flang-rt", "libc", "libclc", "lld", "lldb", "llvm", "mlir", "polly"])},
     
     {'name': "premerge-monolithic-windows",
      'workernames': ["premerge-us-central-windows", "premerge-us-west-windows"],
