@@ -3537,6 +3537,10 @@ all += [
                     clean=True)},
     
     # Builders that test the premerge configuration
+    # These builders are specifically for running the premerge configuration
+    # postcommit (after changes have landed in main). The configuration for
+    # running these checks premerge exists in the monorepo inside the
+    # .github/workflows/premerge.yaml file.
     {'name': "premerge-monolithic-linux",
      'workernames': ["premerge-us-central-linux", "premerge-us-west-linux"],
      'builddir': "premerge-monolithic-linux",
