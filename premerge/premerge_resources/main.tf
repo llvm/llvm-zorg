@@ -279,6 +279,19 @@ resource "helm_release" "github_actions_runner_set_libcxx_next" {
   ]
 }
 
+resource "kubernetes_manifest" "linux_buildbot_deployment" {
+  manifest = yamldecode(templatefile("buildbot_deployment.yaml", { buildbot_name : var.linux_buildbot_name, buildbot_namespace : "llvm-premerge-linux-buildbot", secret_name : "linux-buildbot-password" }))
+
+  depends_on = [kubernetes_namespace.llvm_premerge_linux_buildbot, kubernetes_secret.linux_buildbot_password]
+}
+
+# TODO(boomanaiden154): Enable windows buildbots once Linux is stable.
+#resource "kubernetes_manifest" "windows_buildbot_deployment" {
+#  manifest = yamldecode(templatefile("buildbot_deployment.yaml", { buildbot_name : var.windows_buildbot_name, buildbot_namespace : "llvm-premerge-windows-2022-buildbot", secret_name : "windows-buildbot-password" }))
+#
+#  depends_on = [kubernetes_namespace.llvm_premerge_windows_2022_buildbot, kubernetes_secret.windows_buildbot_password]
+#}
+
 resource "kubernetes_service_account" "linux_object_cache_ksa" {
   metadata {
     name      = var.linux_runners_kubernetes_service_account_name
