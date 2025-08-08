@@ -18,7 +18,7 @@ spec:
       - name: buildbot
         image: ghcr.io/llvm/premerge-buildbot:latest
         env:
-        - name: BUILDBOT_NAME
+        - name: BUILDBOT_USERNAME
           value: ${ buildbot_name }
         - name: BUILDBOT_PASSWORD
           valueFrom:
