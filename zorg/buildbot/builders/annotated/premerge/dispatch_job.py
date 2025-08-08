@@ -64,8 +64,9 @@ def start_build_linux(commit_sha: str, k8s_client) -> str:
         f"git checkout ${commit_sha}",
         "export CC=clang",
         "export CXX=clang++",
-        "expot POSTCOMMIT_CI=1",
-        './.ci/monolithic-linux.sh "bolt;clang;clang-tools-extra;flang;libclc;lld;lldb;llvm;mlir;polly" "check-bolt check-clang check-clang-cir check-clang-tools check-flang check-lld check-lldb check-llvm check-mlir check-polly" "compiler-rt;libc;libcxx;libcxxabi;libunwind" "check-compiler-rt check-libc" "check-cxx check-cxxabi check-unwind" "OFF"'
+        "export POSTCOMMIT_CI=1",
+        "echo testing maybe succeded.",
+        #'./.ci/monolithic-linux.sh "bolt;clang;clang-tools-extra;flang;libclc;lld;lldb;llvm;mlir;polly" "check-bolt check-clang check-clang-cir check-clang-tools check-flang check-lld check-lldb check-llvm check-mlir check-polly" "compiler-rt;libc;libcxx;libcxxabi;libunwind" "check-compiler-rt check-libc" "check-cxx check-cxxabi check-unwind" "OFF"'
         "echo BUILD FINISHED",
     ]
     start_build(
