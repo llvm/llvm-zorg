@@ -78,6 +78,40 @@ resource "google_container_node_pool" "llvm_premerge_linux" {
   }
 }
 
+# Buildbot here refers specifically to the LLVM Buildbot postcommit
+# testing infrastructure. These machines are used specifically for testing
+# commits after they have landed in main.
+resource "google_container_node_pool" "llvm_buildbot_linux" {
+  name               = "llvm-buildbot-linux"
+  location           = var.region
+  cluster            = google_container_cluster.llvm_premerge.name
+  initial_node_count = 0
+
+  autoscaling {
+    total_min_node_count = 0
+    total_max_node_count = 3
+  }
+
+  node_config {
+    machine_type = var.linux_machine_type
+    taint {
+      key    = "buildbot-platform"
+      value  = "linux"
+      effect = "NO_SCHEDULE"
+    }
+    labels = {
+      "buildbot-platform" : "linux"
+    }
+    disk_size_gb = 200
+
+    # Enable workload identity federation for this pool so that we can access
+    # GCS buckets.
+    workload_metadata_config {
+      mode = "GKE_METADATA"
+    }
+  }
+}
+
 resource "google_container_node_pool" "llvm_premerge_libcxx" {
   name               = "llvm-premerge-libcxx"
   location           = var.region
@@ -118,6 +152,56 @@ resource "google_container_node_pool" "llvm_premerge_windows_2022" {
   # a node.kubernetes.io/os taint for windows nodes.
   node_config {
     machine_type = var.windows_machine_type
+    labels = {
+      "buildbot-platform" : "windows-2022"
+    }
+    image_type = "WINDOWS_LTSC_CONTAINERD"
+    windows_node_config {
+      osversion = "OS_VERSION_LTSC2022"
+    }
+    # Add a script that runs on the initial boot to disable Windows Defender.
+    # Windows Defender causes an increase in test times by approximately an
+    # order of magnitude.
+    metadata = {
+      "sysprep-specialize-script-ps1" = "Set-MpPreference -DisableRealtimeMonitoring $true"
+      # Terraform wants to recreate the node pool everytime whe running
+      # terraform apply unless we explicitly set this.
+      # TODO(boomanaiden154): Look into why terraform is doing this so we do
+      # not need this hack.
+      "disable-legacy-endpoints" = "true"
+    }
+    disk_size_gb = 200
+    disk_type    = "pd-ssd"
+
+    # Enable workload identity federation for this pool so that we can access
+    # GCS buckets.
+    workload_metadata_config {
+      mode = "GKE_METADATA"
+    }
+  }
+}
+
+# Buildbot here refers specifically to the LLVM Buildbot postcommit
+# testing infrastructure. These machines are used specifically for testing
+# commits after they have landed in main.
+resource "google_container_node_pool" "llvm_buildbot_window_2022" {
+  name               = "llvm-buildbot-windows-2022"
+  location           = var.region
+  cluster            = google_container_cluster.llvm_premerge.name
+  initial_node_count = 0
+
+  autoscaling {
+    total_min_node_count = 0
+    total_max_node_count = 3
+  }
+
+  # We do not set a taint for the windows nodes as kubernetes by default sets
+  # a node.kubernetes.io/os taint for windows nodes.
+  node_config {
+    # Use the Linux machine type here as we want to keep the windows machines
+    # symmetric with the Linux machines for faster builds. Throughput is not
+    # as much of a concern postcommit.
+    machine_type = var.linux_machine_type
     labels = {
       "premerge-platform" : "windows-2022"
     }

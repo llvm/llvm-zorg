@@ -47,6 +47,51 @@ resource "kubernetes_namespace" "llvm_premerge_windows_2022_runners" {
   }
 }
 
+# Buildbot here refers specifically to the LLVM Buildbot postcommit
+# testing infrastructure. These machines are used specifically for testing
+# commits after they have landed in main.
+resource "kubernetes_namespace" "llvm_premerge_linux_buildbot" {
+  metadata {
+    name = "llvm-premerge-linux-buildbot"
+  }
+}
+
+resource "kubernetes_namespace" "llvm_premerge_windows_2022_buildbot" {
+  metadata {
+    name = "llvm-premerge-windows-2022-buildbot"
+  }
+}
+
+resource "kubernetes_secret" "linux_buildbot_password" {
+  metadata {
+    name      = "linux-buildbot-password"
+    namespace = "llvm-premerge-linux-buildbot"
+  }
+
+  data = {
+    "password" = var.linux_buildbot_password
+  }
+
+  type = "Opaque"
+
+  depends_on = [kubernetes_namespace.llvm_premerge_linux_buildbot]
+}
+
+resource "kubernetes_secret" "windows_2022_buildbot_password" {
+  metadata {
+    name      = "windows-buildbot-password"
+    namespace = "llvm-premerge-windows-buildbot"
+  }
+
+  data = {
+    "password" = var.windows_buildbot_password
+  }
+
+  type = "Opaque"
+
+  depends_on = [kubernetes_namespace.llvm_premerge_windows_2022_buildbot]
+}
+
 resource "kubernetes_secret" "linux_github_pat" {
   metadata {
     name      = "github-token"
