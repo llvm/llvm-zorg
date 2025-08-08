@@ -153,7 +153,7 @@ resource "google_container_node_pool" "llvm_premerge_windows_2022" {
   node_config {
     machine_type = var.windows_machine_type
     labels = {
-      "premerge-platform" : "windows-2022"
+      "buildbot-platform" : "windows-2022"
     }
     image_type = "WINDOWS_LTSC_CONTAINERD"
     windows_node_config {
