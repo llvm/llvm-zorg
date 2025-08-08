@@ -59,7 +59,7 @@ def start_build_linux(commit_sha: str, k8s_client) -> str:
     """Starts a pod to build/test on Linux at the specified SHA."""
     pod_name = f"build-{commit_sha}"
     commands = [
-        'echo "@@@BUILD_STEP Cloning Repository@@@"'
+        'echo "@@@BUILD_STEP Cloning Repository@@@"',
         "git clone --depth 100 https://github.com/llvm/llvm-project",
         "cd llvm-project",
         f"git checkout ${commit_sha}",
