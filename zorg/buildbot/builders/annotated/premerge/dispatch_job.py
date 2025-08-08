@@ -59,10 +59,9 @@ def start_build_linux(commit_sha: str, k8s_client) -> str:
     """Starts a pod to build/test on Linux at the specified SHA."""
     pod_name = f"build-{commit_sha}"
     commands = [
-        'echo "@@@BUILD_STEP Cloning Repository@@@"',
         "git clone --depth 100 https://github.com/llvm/llvm-project",
         "cd llvm-project",
-        f"git checkout ${commit_sha}",
+        f"git checkout {commit_sha}",
         "export CC=clang",
         "export CXX=clang++",
         "export POSTCOMMIT_CI=1",
@@ -193,6 +192,7 @@ def main(commit_sha: str, platform: str):
     namespace = PLATFORM_TO_NAMESPACE[platform]
     latest_time = datetime.datetime.min
     v1_api = kubernetes.client.CoreV1Api()
+    print("@@@BUILD_STEP Build/Test@@@")
     while True:
         try:
             pod_finished, latest_time = print_logs(
