@@ -205,7 +205,8 @@ def main(commit_sha: str, platform: str):
                     "Cannot yet read logs from the pod: waiting for the container to start."
                 )
             else:
-                logging.warning(f"Failed to get logs from the pod: {log_exception}")
+                logging.error(f"Failed to get logs from the pod: {log_exception}")
+                break
         time.sleep(SECONDS_QUERY_LOGS_EVERY)
     v1_api.delete_namespaced_pod(pod_name, namespace)
 
