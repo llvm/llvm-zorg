@@ -42,11 +42,24 @@ def start_build(k8s_client, pod_name: str, namespace: str, commands: list[str]) 
             "namespace": namespace,
         },
         "spec": {
+            "tolerations": [
+                {
+                    "key": "buildbot-platform",
+                    "operator": "Equal",
+                    "value": "linux",
+                    "effect": "NoSchedule",
+                }
+            ],
+            "nodeSelector": {"buildbot-platform": "linux"},
             "containers": [
                 {
                     "name": "build",
                     "image": "ghcr.io/llvm/ci-ubuntu-24.04",
                     "command": commands,
+                    "resources": {
+                        "requests": {"cpu": 55, "memory": "200Gi"},
+                        "limits": {"cpu": 64, "memory": "256Gi"},
+                    },
                 }
             ],
             "restartPolicy": "Never",
