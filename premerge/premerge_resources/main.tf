@@ -279,10 +279,100 @@ resource "helm_release" "github_actions_runner_set_libcxx_next" {
   ]
 }
 
+resource "kubernetes_role" "linux_buildbot_role" {
+  metadata {
+    name      = "buildbot-role"
+    namespace = "llvm-premerge-linux-buildbot"
+  }
+
+  rule {
+    api_groups = [""]
+    resources  = ["pods", "pods/log"]
+    verbs      = ["create", "delete", "get"]
+  }
+
+  depends_on = [kubernetes_namespace.llvm_premerge_linux_buildbot]
+}
+
+resource "kubernetes_service_account" "linux_buildbot_ksa" {
+  metadata {
+    name      = "buildbot-ksa"
+    namespace = "llvm-premerge-linux-buildbot"
+  }
+
+  depends_on = [kubernetes_namespace.llvm_premerge_linux_buildbot]
+}
+
+resource "kubernetes_role_binding" "linux_buildbot_role_binding" {
+  metadata {
+    name      = "buildbot-role-binding"
+    namespace = "llvm-premerge-linux-buildbot"
+  }
+
+  role_ref {
+    kind      = "Role"
+    name      = "buildbot-role"
+    api_group = "rbac.authorization.k8s.io"
+  }
+
+  subject {
+    kind      = "ServiceAccount"
+    name      = "buildbot-ksa"
+    namespace = "llvm-premerge-linux-buildbot"
+  }
+
+  depends_on = [kubernetes_role.linux_buildbot_role, kubernetes_service_account.linux_buildbot_ksa]
+}
+
 resource "kubernetes_manifest" "linux_buildbot_deployment" {
   manifest = yamldecode(templatefile("buildbot_deployment.yaml", { buildbot_name : var.linux_buildbot_name, buildbot_namespace : "llvm-premerge-linux-buildbot", secret_name : "linux-buildbot-password" }))
 
   depends_on = [kubernetes_namespace.llvm_premerge_linux_buildbot, kubernetes_secret.linux_buildbot_password]
+}
+
+resource "kubernetes_role" "windows_2022_buildbot_role" {
+  metadata {
+    name      = "buildbot-role"
+    namespace = "llvm-premerge-windows-2022-buildbot"
+  }
+
+  rule {
+    api_groups = [""]
+    resources  = ["pods", "pods/log"]
+    verbs      = ["create", "delete", "get"]
+  }
+
+  depends_on = [kubernetes_namespace.llvm_premerge_windows_2022_buildbot]
+}
+
+resource "kubernetes_service_account" "windows_2022_buildbot_ksa" {
+  metadata {
+    name      = "buildbot-ksa"
+    namespace = "llvm-premerge-windows-2022-buildbot"
+  }
+
+  depends_on = [kubernetes_namespace.llvm_premerge_windows_2022_buildbot]
+}
+
+resource "kubernetes_role_binding" "windows_2022_buildbot_role_binding" {
+  metadata {
+    name      = "buildbot-role-binding"
+    namespace = "llvm-premerge-windows-2022-buildbot"
+  }
+
+  role_ref {
+    kind      = "Role"
+    name      = "buildbot-role"
+    api_group = "rbac.authorization.k8s.io"
+  }
+
+  subject {
+    kind      = "ServiceAccount"
+    name      = "buildbot-service-account"
+    namespace = "llvm-premerge-windows-2022-buildbot"
+  }
+
+  depends_on = [kubernetes_role.windows_2022_buildbot_role, kubernetes_service_account.windows_2022_buildbot_ksa]
 }
 
 # TODO(boomanaiden154): Enable windows buildbots once Linux is stable.
