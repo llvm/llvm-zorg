@@ -46,7 +46,7 @@ def start_build(k8s_client, pod_name: str, namespace: str, commands: list[str]) 
                 {
                     "name": "build",
                     "image": "ghcr.io/llvm/ci-ubuntu-24.04",
-                    "commands": commands,
+                    "command": commands,
                 }
             ],
             "restartPolicy": "Never",
@@ -59,6 +59,7 @@ def start_build_linux(commit_sha: str, k8s_client) -> str:
     """Starts a pod to build/test on Linux at the specified SHA."""
     pod_name = f"build-{commit_sha}"
     commands = [
+        'echo "@@@BUILD_STEP Cloning Repository@@@"'
         "git clone --depth 100 https://github.com/llvm/llvm-project",
         "cd llvm-project",
         f"git checkout ${commit_sha}",
@@ -181,7 +182,7 @@ def print_logs(
 
 
 def main(commit_sha: str, platform: str):
-    kubernetes.config.load_kube_config()
+    kubernetes.config.load_incluster_config()
     k8s_client = kubernetes.client.ApiClient()
     if platform == "Linux":
         pod_name = start_build_linux(commit_sha, k8s_client)
@@ -192,7 +193,6 @@ def main(commit_sha: str, platform: str):
     namespace = PLATFORM_TO_NAMESPACE[platform]
     latest_time = datetime.datetime.min
     v1_api = kubernetes.client.CoreV1Api()
-    print("@@@BUILD_STEP Build/Test@@@")
     while True:
         try:
             pod_finished, latest_time = print_logs(
@@ -219,4 +219,4 @@ if __name__ == "__main__":
     if "BUILDBOT_REVISION" not in os.environ:
         logging.fatal("Expected to have BUILDBOT_REVISION environment variable set.")
         sys.exit(1)
-    main(sys.argv[1], os.environ["BUILDBOT_REVISION"])
+    main(os.environ["BUILDBOT_REVISION"], sys.argv[1])
