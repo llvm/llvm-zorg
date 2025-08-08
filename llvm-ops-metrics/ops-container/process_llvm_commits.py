@@ -192,6 +192,10 @@ def query_for_reviews(
         for review in pull_request["reviews"]["nodes"]
     ])
 
+    # There are cases where the commit author is counted as a reviewer. This is
+    # against what we want to measure, so remove them from the set of reviewers.
+    commit_info.reviewers.discard(commit_info.commit_author)
+
   return list(new_commits.values())
 
 
