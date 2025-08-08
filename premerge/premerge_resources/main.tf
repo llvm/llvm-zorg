@@ -77,7 +77,7 @@ resource "kubernetes_secret" "linux_buildbot_password" {
   depends_on = [kubernetes_namespace.llvm_premerge_linux_buildbot]
 }
 
-resource "kubernetes_secret" "windows_buildbot_password" {
+resource "kubernetes_secret" "windows_2022_buildbot_password" {
   metadata {
     name      = "windows-buildbot-password"
     namespace = "llvm-premerge-windows-buildbot"
