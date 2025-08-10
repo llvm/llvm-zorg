@@ -368,7 +368,7 @@ resource "kubernetes_role_binding" "windows_2022_buildbot_role_binding" {
 
   subject {
     kind      = "ServiceAccount"
-    name      = "buildbot-service-account"
+    name      = "buildbot-ksa"
     namespace = "llvm-premerge-windows-2022-buildbot"
   }
 
