@@ -247,7 +247,7 @@ resource "google_storage_bucket" "object_cache_linux" {
       type = "Delete"
     }
     condition {
-      age = 1
+      age = 7
     }
   }
 }
@@ -268,7 +268,7 @@ resource "google_storage_bucket" "object_cache_windows" {
       type = "Delete"
     }
     condition {
-      age = 1
+      age = 7
     }
   }
 }
