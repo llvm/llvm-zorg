@@ -375,12 +375,11 @@ resource "kubernetes_role_binding" "windows_2022_buildbot_role_binding" {
   depends_on = [kubernetes_role.windows_2022_buildbot_role, kubernetes_service_account.windows_2022_buildbot_ksa]
 }
 
-# TODO(boomanaiden154): Enable windows buildbots once Linux is stable.
-#resource "kubernetes_manifest" "windows_buildbot_deployment" {
-#  manifest = yamldecode(templatefile("buildbot_deployment.yaml", { buildbot_name : var.windows_buildbot_name, buildbot_namespace : "llvm-premerge-windows-2022-buildbot", secret_name : "windows-buildbot-password" }))
-#
-#  depends_on = [kubernetes_namespace.llvm_premerge_windows_2022_buildbot, kubernetes_secret.windows_buildbot_password]
-#}
+resource "kubernetes_manifest" "windows_buildbot_deployment" {
+  manifest = yamldecode(templatefile("buildbot_deployment.yaml", { buildbot_name : var.windows_buildbot_name, buildbot_namespace : "llvm-premerge-windows-2022-buildbot", secret_name : "windows-buildbot-password" }))
+
+  depends_on = [kubernetes_namespace.llvm_premerge_windows_2022_buildbot, kubernetes_secret.windows_2022_buildbot_password]
+}
 
 resource "kubernetes_service_account" "linux_object_cache_ksa" {
   metadata {
