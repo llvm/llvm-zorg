@@ -225,6 +225,11 @@ resource "helm_release" "github_actions_runner_set_windows_2022" {
   ]
 }
 
+# TODO(boomanaiden154): We have to customize the command for the libcxx runner
+# containers because the file path has changed between the sets. Remove this
+# workaround once all of the runner sets have the runner binary in the same
+# path.
+
 resource "helm_release" "github_actions_runner_set_libcxx" {
   name       = "llvm-premerge-libcxx-runners"
   namespace  = "llvm-premerge-libcxx-runners"
@@ -233,7 +238,7 @@ resource "helm_release" "github_actions_runner_set_libcxx" {
   chart      = "gha-runner-scale-set"
 
   values = [
-    "${templatefile("libcxx_runners_values.yaml", { runner_group_name : var.runner_group_name, runner_image : var.libcxx_runner_image })}"
+    "${templatefile("libcxx_runners_values.yaml", { runner_group_name : var.runner_group_name, runner_image : var.libcxx_runner_image, command : "/home/runner/run.sh" })}"
   ]
 
   depends_on = [
@@ -251,7 +256,7 @@ resource "helm_release" "github_actions_runner_set_libcxx_release" {
   chart      = "gha-runner-scale-set"
 
   values = [
-    "${templatefile("libcxx_runners_values.yaml", { runner_group_name : var.runner_group_name, runner_image : var.libcxx_release_runner_image })}"
+    "${templatefile("libcxx_runners_values.yaml", { runner_group_name : var.runner_group_name, runner_image : var.libcxx_release_runner_image, command : "/home/runner/run.sh" })}"
   ]
 
   depends_on = [
@@ -269,7 +274,7 @@ resource "helm_release" "github_actions_runner_set_libcxx_next" {
   chart      = "gha-runner-scale-set"
 
   values = [
-    "${templatefile("libcxx_runners_values.yaml", { runner_group_name : var.runner_group_name, runner_image : var.libcxx_next_runner_image })}"
+    "${templatefile("libcxx_runners_values.yaml", { runner_group_name : var.runner_group_name, runner_image : var.libcxx_next_runner_image, command : "/home/gha/actions-runner/run.sh" })}"
   ]
 
   depends_on = [
