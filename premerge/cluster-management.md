@@ -297,7 +297,7 @@ kubectl scale --replicas=0 --namespace grafana deployments \
 kubectl scale --replicas=0 --namespace metrics
 ```
 
-:warning: metrics namespace only exists in the us-central1-a cluster.
+:warning: metrics namespace only exists in the `us-central1-a` cluster.
 
 Wait until the command `kubectl get deployments --namespace grafana` shows
 all deployments have been scaled down to zero. Then run:
