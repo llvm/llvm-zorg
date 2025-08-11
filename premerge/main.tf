@@ -121,6 +121,25 @@ data "google_secret_manager_secret_version" "grafana_token" {
   secret = "llvm-premerge-testing-grafana-token"
 }
 
+# Buildbot here refers specifically to the LLVM Buildbot postcommit
+# testing infrastructure. These machines are used specifically for testing
+# commits after they have landed in main.
+data "google_secret_manager_secret_version" "us_central_linux_buildbot_password" {
+  secret = "llvm-buildbot-linux-us-central"
+}
+
+data "google_secret_manager_secret_version" "us_central_windows_buildbot_password" {
+  secret = "llvm-buildbot-windows-us-central"
+}
+
+data "google_secret_manager_secret_version" "us_west_linux_buildbot_password" {
+  secret = "llvm-buildbot-linux-us-west"
+}
+
+data "google_secret_manager_secret_version" "us_west_windows_buildbot_password" {
+  secret = "llvm-buildbot-windows-us-west"
+}
+
 provider "kubernetes" {
   host  = "https://${module.premerge_cluster_us_central.endpoint}"
   token = data.google_client_config.current.access_token
@@ -152,6 +171,10 @@ module "premerge_cluster_us_central_resources" {
   linux_object_cache_gcp_service_account_email         = module.premerge_cluster_us_central.linux_object_cache_gcp_service_account_email
   windows_2022_object_cache_gcp_service_account_email  = module.premerge_cluster_us_central.windows_2022_object_cache_gcp_service_account_email
   github_arc_version                                   = "0.12.1"
+  linux_buildbot_name                                  = "premerge-us-central-linux"
+  linux_buildbot_password                              = data.google_secret_manager_secret_version.us_central_linux_buildbot_password.secret_data
+  windows_buildbot_name                                = "premerge-us-central-windows"
+  windows_buildbot_password                            = data.google_secret_manager_secret_version.us_central_windows_buildbot_password.secret_data
   providers = {
     kubernetes = kubernetes.llvm-premerge-us-central
     helm       = helm.llvm-premerge-us-central
@@ -173,6 +196,10 @@ module "premerge_cluster_us_west_resources" {
   linux_object_cache_gcp_service_account_email         = module.premerge_cluster_us_west.linux_object_cache_gcp_service_account_email
   windows_2022_object_cache_gcp_service_account_email  = module.premerge_cluster_us_west.windows_2022_object_cache_gcp_service_account_email
   github_arc_version                                   = "0.12.1"
+  linux_buildbot_name                                  = "premerge-us-west-linux"
+  linux_buildbot_password                              = data.google_secret_manager_secret_version.us_west_linux_buildbot_password.secret_data
+  windows_buildbot_name                                = "premerge-us-west-windows"
+  windows_buildbot_password                            = data.google_secret_manager_secret_version.us_west_windows_buildbot_password.secret_data
   providers = {
     kubernetes = kubernetes.llvm-premerge-us-west
     helm       = helm.llvm-premerge-us-west

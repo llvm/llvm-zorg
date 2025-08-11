@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ${ buildbot_name }
+  namespace: ${ buildbot_namespace }
+  labels:
+    app: ${ buildbot_name }
+spec:
+  selector:
+    matchLabels:
+      app: ${ buildbot_name }
+  template:
+    metadata:
+      labels:
+        app: ${ buildbot_name }
+    spec:
+      serviceAccountName: buildbot-ksa
+      containers:
+      - name: buildbot
+        image: ghcr.io/llvm/premerge-buildbot:latest
+        env:
+        - name: BUILDBOT_USERNAME
+          value: ${ buildbot_name }
+        - name: BUILDBOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: ${ secret_name }
+              key: password
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "500m"
+          limits:
+            memory: "1Gi"
+            cpu: "750m"

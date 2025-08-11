@@ -18,3 +18,5 @@ echo "Google LLVM Premerge Infra Rotation <llvm-presubmit-infra@google.com>" \
 } > /worker/info/host
 
 buildbot-worker start /worker
+
+sleep 31536000000
