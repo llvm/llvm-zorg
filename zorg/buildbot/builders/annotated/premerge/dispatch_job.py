@@ -149,6 +149,13 @@ def read_logs(pod_name: str, namespace: str, v1_api) -> list[str]:
     return logs.split("\n")[:-1]
 
 
+def get_pod_status(pod_name: str, namespace: str, v1_api) -> str:
+    """Gets the status of a pod."""
+    return v1_api.read_namespaced_pod_status(
+        name=pod_name, namespace=namespace
+    ).status.phase
+
+
 def get_logs_to_print(
     logs: list[str], latest_time: datetime.datetime
 ) -> tuple[datetime.datetime, list[str]]:
@@ -220,6 +227,11 @@ def main(commit_sha: str, platform: str):
     latest_time = datetime.datetime.min
     v1_api = kubernetes.client.CoreV1Api()
     print("@@@BUILD_STEP Build/Test@@@")
+    pod_status = "Pending"
+    while pod_status == "Pending":
+        print("Waiting for the pod to schedule onto a machine.")
+        time.sleep(SECONDS_QUERY_LOGS_EVERY)
+        pod_status = get_pod_status(pod_name, namespace, v1_api)
     while True:
         try:
             pod_finished, latest_time = print_logs(

@@ -287,7 +287,7 @@ resource "kubernetes_role" "linux_buildbot_role" {
 
   rule {
     api_groups = [""]
-    resources  = ["pods", "pods/log"]
+    resources  = ["pods", "pods/log", "pods/status"]
     verbs      = ["create", "delete", "get"]
   }
 
@@ -338,7 +338,7 @@ resource "kubernetes_role" "windows_2022_buildbot_role" {
 
   rule {
     api_groups = [""]
-    resources  = ["pods", "pods/log"]
+    resources  = ["pods", "pods/log", "pods/status"]
     verbs      = ["create", "delete", "get"]
   }
 
