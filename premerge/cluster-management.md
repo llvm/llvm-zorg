@@ -245,6 +245,9 @@ The cluster has multiple services communicating with Grafana Cloud:
  - per-node monitoring  (Grafana Alloy, Prometheus node exporter)
  - per-cluster monitoring (Opencost, Alloy)
 
+The full description of the services can be found on the [k8s-monitoring Helm
+chart repository](https://github.com/grafana/k8s-monitoring-helm).
+
 Authentication to Grafana Cloud is handled through `Cloud access policies`.
 Currently, the cluster uses 2 kind of tokens:
 
@@ -252,7 +255,7 @@ Currently, the cluster uses 2 kind of tokens:
     Used by: metrics container
     Scopes: `metrics:write`
 
- - `llvm-premerge-testing-grafana-token`
+ - `llvm-premerge-grafana-token`
    Used by: Alloy, Prometheus node exporter & other services.
    Scopes: `metrics:read`, `metrics:write`, `logs:write`
 
@@ -274,23 +277,53 @@ Then, go in the `llvm-zorg` repository. Make sure you pulled the last changes
 in `main`, and then as usual, run `terraform apply`.
 
 At this stage, you made sure newly created services will use the token, but
-existing deployment still rely on the old tokens.
-To solve this:
+existing deployment still rely on the old tokens. You need to manually restart
+the deployments on both `us-west1` and `us-central1-a` clusters.
 
-  1. Log in `GCP > Kubernetes Engine > Workloads`
-  2. Filter by `Type:Deployment`
-  3. You should see multiple deployments starting with `grafana-`, and one
-     `metrics` deployment.
-     Depending on the token you updated, you need to update either the
-     `metrics`, or the `grafana-*` deployments.
-  4. For each service to update, click on the service name
-  5. Click on `Actions > Scale >  Edit Replicas`.
-  6. The number of replicas should be `1`. Set it to `0`.
-  7. Press `Scale`, and refresh until all pods are deleted.
-  8. Click again on `Actions > Scale > Edit Replicas`, and scale up to `1`.
+Run:
+
+``` bash
+gcloud container clusters get-credentials llvm-premerge-cluster-us-west --location us-west1
+kubectl scale --replicas=0 --namespace grafana deployments \
+  grafana-k8s-monitoring-opencost \
+  grafana-k8s-monitoring-kube-state-metrics \
+  grafana-k8s-monitoring-alloy-events
+
+gcloud container clusters get-credentials llvm-premerge-cluster-us-central --location us-central1-a
+kubectl scale --replicas=0 --namespace grafana deployments \
+  grafana-k8s-monitoring-opencost \
+  grafana-k8s-monitoring-kube-state-metrics \
+  grafana-k8s-monitoring-alloy-events
+kubectl scale --replicas=0 --namespace metrics
+```
+
+> :warning: metrics namespace only exists in the us-central1-a cluster.
+
+Wait until the command `kubectl get deployments --namespace grafana` shows
+all deployments have been scaled down to zero. Then run:
+
+```bash
+gcloud container clusters get-credentials llvm-premerge-cluster-us-west --location us-west1
+kubectl scale --replicas=0 --namespace grafana deployments \
+  grafana-k8s-monitoring-opencost \
+  grafana-k8s-monitoring-kube-state-metrics \
+  grafana-k8s-monitoring-alloy-events
+
+gcloud container clusters get-credentials llvm-premerge-cluster-us-central --location us-central1-a
+kubectl scale --replicas=1 --namespace grafana deployments \
+  grafana-k8s-monitoring-opencost \
+  grafana-k8s-monitoring-kube-state-metrics \
+  grafana-k8s-monitoring-alloy-events
+kubectl scale --replicas=1 --namespace metrics metrics
+```
 
 You can check the restarted service logs for errors. If the token is invalid
 or the scope bad, you should see some `401` error codes.
+
+```bash
+kubectl logs -n metrics deployment/metrics
+kubectl logs -n metrics deployment/grafana-k8s-monitoring-opencost
+```
 
 At this stage, all long-lived services should be using the new tokens.
 **DO NOT DELETE THE OLD TOKEN YET**.
