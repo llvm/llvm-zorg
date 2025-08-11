@@ -39,7 +39,7 @@ resource "google_container_node_pool" "llvm_premerge_linux_service" {
   node_locations = var.service_node_pool_locations
 
   node_config {
-    machine_type = "e2-highcpu-4"
+    machine_type = "e2-standard-4"
 
     workload_metadata_config {
       mode = "GKE_METADATA"
