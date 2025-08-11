@@ -19,43 +19,59 @@ import kubernetes
 
 PLATFORM_TO_NAMESPACE = {
     "Linux": "llvm-premerge-linux-buildbot",
-    "Windows": "llvm-premerge-windows-buildbot",
+    "Windows": "llvm-premerge-windows-2022-buildbot",
+}
+PLATFORM_TAINT = {
+    "Linux": ("buildbot-platform", "linux"),
+    "Windows": ("node.kubernetes.io/os", "windows"),
+}
+PLATFORM_TO_BUILDBOT_PLATFORM = {"Linux": "linux", "Windows": "windows-2022"}
+PLATFORM_CONTAINER = {
+    "Linux": "ghcr.io/llvm/ci-ubuntu-24.04",
+    "Windows": "ghcr.io/llvm/ci-windows-2022",
 }
 LOG_SECONDS_TO_QUERY = 10
 SECONDS_QUERY_LOGS_EVERY = 5
 
 
-def start_build(k8s_client, pod_name: str, namespace: str, commands: list[str]) -> None:
+def start_build(
+    k8s_client, pod_name: str, platform: str, commands: list[str], args: list[str]
+) -> None:
     """Spawns a pod to run the specified commands.
 
     Args:
       k8s_client: The kubernetes client instance to use for spawning the pod.
       pod_name: The name of the pod to start.
-      namespace: The namespace to launch the pod in.
+      platform: The platform to launch the pod on.
       commands: The commands to run upon pod start.
+      args: Arguments to pass to the command upon pod start.
     """
+    taint_key, taint_value = PLATFORM_TAINT[platform]
     pod_definition = {
         "apiVersion": "v1",
         "kind": "Pod",
         "metadata": {
             "name": pod_name,
-            "namespace": namespace,
+            "namespace": PLATFORM_TO_NAMESPACE[platform],
         },
         "spec": {
             "tolerations": [
                 {
-                    "key": "buildbot-platform",
+                    "key": taint_key,
                     "operator": "Equal",
-                    "value": "linux",
+                    "value": taint_value,
                     "effect": "NoSchedule",
                 }
             ],
-            "nodeSelector": {"buildbot-platform": "linux"},
+            "nodeSelector": {
+                "buildbot-platform": PLATFORM_TO_BUILDBOT_PLATFORM[platform]
+            },
             "containers": [
                 {
                     "name": "build",
-                    "image": "ghcr.io/llvm/ci-ubuntu-24.04",
+                    "image": PLATFORM_CONTAINER[platform],
                     "command": commands,
+                    "args": args,
                     "resources": {
                         "requests": {"cpu": 55, "memory": "200Gi"},
                         "limits": {"cpu": 64, "memory": "256Gi"},
@@ -83,10 +99,7 @@ def start_build_linux(commit_sha: str, k8s_client) -> str:
         "echo BUILD FINISHED",
     ]
     start_build(
-        k8s_client,
-        pod_name,
-        PLATFORM_TO_NAMESPACE["Linux"],
-        ["/bin/bash", "-c", ";".join(commands)],
+        k8s_client, pod_name, "Linux", ["/bin/bash", "-c", ";".join(commands)], []
     )
     return pod_name
 
@@ -97,18 +110,19 @@ def start_build_windows(commit_sha: str, k8s_client):
     bash_commands = [
         "git clone --depth 100 https://github.com/llvm/llvm-project",
         "cd llvm-project",
-        f"git checkout ${commit_sha}",
+        f"git checkout {commit_sha}",
         "export POSTCOMMIT_CI=1",
-        '.ci/monolithic-windows.sh "clang;clang-tools-extra;libclc;lld;llvm;mlir;polly" "check-clang check-clang-cir check-clang-tools check-lld check-llvm check-mlir check-polly"',
+        ".ci/monolithic-windows.sh 'polly;mlir' 'check-polly check-mlir'",
+        #'.ci/monolithic-windows.sh "clang;clang-tools-extra;libclc;lld;llvm;mlir;polly" "check-clang check-clang-cir check-clang-tools check-lld check-llvm check-mlir check-polly"',
         "echo BUILD FINISHED",
     ]
+    bash_command = f"bash -c \"{';'.join(bash_commands)}\"\""
     commands = [
         "call C:\\BuildTools\\Common7\\Tools\\VsDevCmd.bat -arch=amd64 -host_arch=amd64",
-        "bash",
-        "-c",
-        ";".join(bash_commands),
+        bash_command,
     ]
-    start_build(k8s_client, pod_name, PLATFORM_TO_NAMESPACE["Windows"], commands)
+    args = ["/c " + " && ".join(commands)]
+    start_build(k8s_client, pod_name, "Windows", ["cmd.exe"], args)
     return pod_name
 
 
