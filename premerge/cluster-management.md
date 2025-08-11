@@ -237,3 +237,103 @@ ensure they are in a state consistent with the terraform IaC definitions.
 
 [Strategies for Upgrading ARC](https://www.kenmuse.com/blog/strategies-for-upgrading-arc/)
 outlines how ARC should be upgraded and why.
+
+## Grafana tokens
+
+The cluster has multiple services communicating with Grafana Cloud:
+ - the metrics container
+ - per-node monitoring  (Grafana Alloy, Prometheus node exporter)
+ - per-cluster monitoring (Opencost, Alloy)
+
+The full description of the services can be found on the [k8s-monitoring Helm
+chart repository](https://github.com/grafana/k8s-monitoring-helm).
+
+Authentication to Grafana Cloud is handled through `Cloud access policies`.
+Currently, the cluster uses 2 kind of tokens:
+
+ - `llvm-premerge-metrics-grafana-api-key`
+    Used by: metrics container
+    Scopes: `metrics:write`
+
+ - `llvm-premerge-grafana-token`
+   Used by: Alloy, Prometheus node exporter & other services.
+   Scopes: `metrics:read`, `metrics:write`, `logs:write`
+
+We've setup 2 cloud policies with matching names so scopes are already set up.
+If you need to rotate tokens, you need to:
+
+ 1. Login to Grafana Cloud
+ 2. Navigate to `Home > Administration > Users and Access > Cloud Access Policies`
+ 3. Create a new token in the desired cloud access policy.
+ 4. Log in `GCP > Security > Secret Manager`
+ 5. Click on the secret to update.
+ 6. Click on `New version`
+ 7. Paste the token displayed in Grafana and tick `Disable all past versions`.
+
+At this stage, you should have a **single** enabled secret on GCP. If you
+display the value, you should see the Grafana token.
+
+Then, go in the `llvm-zorg` repository. Make sure you pulled the last changes
+in `main`, and then as usual, run `terraform apply`.
+
+At this stage, you made sure newly created services will use the token, but
+existing deployment still rely on the old tokens. You need to manually restart
+the deployments on both `us-west1` and `us-central1-a` clusters.
+
+Run:
+
+``` bash
+gcloud container clusters get-credentials llvm-premerge-cluster-us-west --location us-west1
+kubectl scale --replicas=0 --namespace grafana deployments \
+  grafana-k8s-monitoring-opencost \
+  grafana-k8s-monitoring-kube-state-metrics \
+  grafana-k8s-monitoring-alloy-events
+
+gcloud container clusters get-credentials llvm-premerge-cluster-us-central --location us-central1-a
+kubectl scale --replicas=0 --namespace grafana deployments \
+  grafana-k8s-monitoring-opencost \
+  grafana-k8s-monitoring-kube-state-metrics \
+  grafana-k8s-monitoring-alloy-events
+kubectl scale --replicas=0 --namespace metrics
+```
+
+:warning: metrics namespace only exists in the `us-central1-a` cluster.
+
+Wait until the command `kubectl get deployments --namespace grafana` shows
+all deployments have been scaled down to zero. Then run:
+
+```bash
+gcloud container clusters get-credentials llvm-premerge-cluster-us-west --location us-west1
+kubectl scale --replicas=0 --namespace grafana deployments \
+  grafana-k8s-monitoring-opencost \
+  grafana-k8s-monitoring-kube-state-metrics \
+  grafana-k8s-monitoring-alloy-events
+
+gcloud container clusters get-credentials llvm-premerge-cluster-us-central --location us-central1-a
+kubectl scale --replicas=1 --namespace grafana deployments \
+  grafana-k8s-monitoring-opencost \
+  grafana-k8s-monitoring-kube-state-metrics \
+  grafana-k8s-monitoring-alloy-events
+kubectl scale --replicas=1 --namespace metrics metrics
+```
+
+You can check the restarted service logs for errors. If the token is invalid
+or the scope bad, you should see some `401` error codes.
+
+```bash
+kubectl logs -n metrics deployment/metrics
+kubectl logs -n metrics deployment/grafana-k8s-monitoring-opencost
+```
+
+At this stage, all long-lived services should be using the new tokens.
+**DO NOT DELETE THE OLD TOKEN YET**.
+The existing CI jobs can be quite long-lived. We need to wait for them to
+finish. New CI jobs will pick up the new tokens.
+
+After 24 hours, log back in
+`Administration > User and Access > Cloud Access policies` and expand the
+token lists.
+You should see the new tokens `Last used at` being about a dozen minutes at
+most, while old tokens should remain unused for several hours.
+If this is the case, congratulations, you've successfully rotated security
+tokens! You can now safely delete the old unused tokens.
