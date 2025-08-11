@@ -249,6 +249,10 @@ def main(commit_sha: str, platform: str):
                 break
         time.sleep(SECONDS_QUERY_LOGS_EVERY)
     pod_status = get_pod_status(pod_name, namespace, v1_api)
+    while pod_status == "Running":
+        print("Waiting for pod to complete.")
+        time.sleep(SECONDS_QUERY_LOGS_EVERY)
+        pod_status = get_pod_status(pod_name, namespace, v1_api)
     v1_api.delete_namespaced_pod(pod_name, namespace)
     if pod_status == "Succeeded":
         print("Job Succeeded.")
