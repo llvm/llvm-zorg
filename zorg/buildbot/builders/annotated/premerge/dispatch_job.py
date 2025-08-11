@@ -248,7 +248,14 @@ def main(commit_sha: str, platform: str):
                 logging.error(f"Failed to get logs from the pod: {log_exception}")
                 break
         time.sleep(SECONDS_QUERY_LOGS_EVERY)
+    pod_status = get_pod_status(pod_name, namespace, v1_api)
     v1_api.delete_namespaced_pod(pod_name, namespace)
+    if pod_status == "Succeeded":
+        print("Job Succeeded.")
+        sys.exit(0)
+    else:
+        print("Job Failed.")
+        sys.exit(1)
 
 
 if __name__ == "__main__":
