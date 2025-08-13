@@ -61,7 +61,7 @@ variable "runner_group_name" {
 
 variable "libcxx_runner_image" {
   type    = string
-  default = "ghcr.io/llvm/libcxx-linux-builder:16f046281bf1a11d344eac1bc44d11f3e50e3b5d"
+  default = "ghcr.io/llvm/libcxx-linux-builder:4fd41c4afbc76ead0c46e80990f616d21dd983f6"
 }
 
 variable "libcxx_release_runner_image" {
@@ -71,7 +71,7 @@ variable "libcxx_release_runner_image" {
 
 variable "libcxx_next_runner_image" {
   type    = string
-  default = "ghcr.io/llvm/libcxx-linux-builder:77cb0980bcc2675b27d08141526939423fa0be76"
+  default = "ghcr.io/llvm/libcxx-linux-builder:4fd41c4afbc76ead0c46e80990f616d21dd983f6"
 }
 
 variable "linux_runners_namespace_name" {
