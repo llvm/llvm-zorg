@@ -71,6 +71,12 @@ git -C "${TESTSUITE_ROOT}" reset --hard origin/main
 # Start building LLVM, Clang, Lld, clang-tools-extra, compiler-rt
 build_llvm() {
 build_step "Configure LLVM Build"
+
+# Nuke the build dir to start from a cleaner state and rely on ccache for build time
+if [ -d "${LLVM_BUILD_DIR}" ]; then
+  rm -rf "${LLVM_BUILD_DIR}"
+fi
+
 mkdir -p "${LLVM_BUILD_DIR}"
 cd "${LLVM_BUILD_DIR}"
 cmake -G Ninja \
@@ -136,4 +142,3 @@ update_test_suite
 build_test_suite
 
 exit 0
-
