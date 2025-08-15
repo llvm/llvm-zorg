@@ -30,6 +30,10 @@ PLATFORM_CONTAINER = {
     "Linux": "ghcr.io/llvm/ci-ubuntu-24.04",
     "Windows": "ghcr.io/llvm/ci-windows-2022",
 }
+PLATFORM_TO_GCS_BUCKET_SUFFIX = {
+    "Linux": "-object-cache-linux",
+    "Windows": "-object-cache-windows",
+}
 LOG_SECONDS_TO_QUERY = 10
 SECONDS_QUERY_LOGS_EVERY = 5
 
@@ -55,6 +59,7 @@ def start_build(
             "namespace": PLATFORM_TO_NAMESPACE[platform],
         },
         "spec": {
+            "serviceAccountName": "buildbot-gcs-ksa",
             "tolerations": [
                 {
                     "key": taint_key,
@@ -84,7 +89,7 @@ def start_build(
     kubernetes.utils.create_from_dict(k8s_client, pod_definition)
 
 
-def start_build_linux(commit_sha: str, k8s_client) -> str:
+def start_build_linux(commit_sha: str, bucket_name: str, k8s_client) -> str:
     """Starts a pod to build/test on Linux at the specified SHA."""
     pod_name = f"build-{commit_sha}"
     commands = [
@@ -94,6 +99,10 @@ def start_build_linux(commit_sha: str, k8s_client) -> str:
         "export CC=clang",
         "export CXX=clang++",
         "export POSTCOMMIT_CI=1",
+        f"export SCCACHE_GCS_BUCKET={bucket_name}",
+        "export SCCACHE_GCS_RW_MODE=READ_WRITE",
+        "export SCCACHE_IDLE_TIMEOUT=0",
+        "sccache --start-server",
         './.ci/monolithic-linux.sh "polly" "check-polly" "" "" "" OFF',
         #'./.ci/monolithic-linux.sh "bolt;clang;clang-tools-extra;flang;libclc;lld;lldb;llvm;mlir;polly" "check-bolt check-clang check-clang-cir check-clang-tools check-flang check-lld check-lldb check-llvm check-mlir check-polly" "compiler-rt;libc;libcxx;libcxxabi;libunwind" "check-compiler-rt check-libc" "check-cxx check-cxxabi check-unwind" "OFF"'
         "echo BUILD FINISHED",
@@ -104,7 +113,7 @@ def start_build_linux(commit_sha: str, k8s_client) -> str:
     return pod_name
 
 
-def start_build_windows(commit_sha: str, k8s_client):
+def start_build_windows(commit_sha: str, bucket_name: str, k8s_client):
     """Starts a pod to build/test on Windows at the specified SHA."""
     pod_name = f"build-{commit_sha}"
     bash_commands = [
@@ -112,6 +121,10 @@ def start_build_windows(commit_sha: str, k8s_client):
         "cd llvm-project",
         f"git checkout {commit_sha}",
         "export POSTCOMMIT_CI=1",
+        f"export SCCACHE_GCS_BUCKET={bucket_name}",
+        "export SCCACHE_GCS_RW_MODE=READ_WRITE",
+        "export SCCACHE_IDLE_TIMEOUT=0",
+        "sccache --start-server",
         ".ci/monolithic-windows.sh 'polly;mlir' 'check-polly check-mlir'",
         #'.ci/monolithic-windows.sh "clang;clang-tools-extra;libclc;lld;llvm;mlir;polly" "check-clang check-clang-cir check-clang-tools check-lld check-llvm check-mlir check-polly"',
         "echo BUILD FINISHED",
@@ -217,10 +230,13 @@ def print_logs(
 def main(commit_sha: str, platform: str):
     kubernetes.config.load_incluster_config()
     k8s_client = kubernetes.client.ApiClient()
+    bucket_name = (
+        os.environ["BUILDBOT_REGION"] + PLATFORM_TO_GCS_BUCKET_SUFFIX[platform]
+    )
     if platform == "Linux":
-        pod_name = start_build_linux(commit_sha, k8s_client)
+        pod_name = start_build_linux(commit_sha, bucket_name, k8s_client)
     elif platform == "Windows":
-        pod_name = start_build_windows(commit_sha, k8s_client)
+        pod_name = start_build_windows(commit_sha, bucket_name, k8s_client)
     else:
         raise ValueError("Unrecognized platform.")
     namespace = PLATFORM_TO_NAMESPACE[platform]
