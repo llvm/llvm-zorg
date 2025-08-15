@@ -98,7 +98,7 @@ for CONF in rva20 rva22 rva23 rva23-zvl1024b rva23-mrvv-vec-bits; do
       ;;
     rva23-zvl1024b)
       CFLAGS="-march=rva23u64_zvl1024b"
-      QEMU_CPU=$RVA23_QEMU_CPU
+      QEMU_CPU="$RVA23_QEMU_CPU,vlen=1024"
       ;;
     rva23-mrvv-vec-bits)
       CFLAGS="-march=rva23u64 -mrvv-vector-bits=zvl"
