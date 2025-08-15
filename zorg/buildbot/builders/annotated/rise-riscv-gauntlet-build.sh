@@ -81,7 +81,7 @@ set +e
 
 # Skip a few tests that have excessive runtimes relative to the others.
 export LIT_FILTER_OUT='(SingleSource/Benchmarks/Polybench/linear-algebra/solvers/(ludcmp|lu)|MicroBenchmarks/LoopVectorization/LoopInterleavingBenchmarks)'
-for CONF in rva20 rva22 rva23 rva23-evl rva23-mrvv-vec-bits; do
+for CONF in rva20 rva22 rva23 rva23-zvl1024b rva23-mrvv-vec-bits; do
   RVA23_QEMU_CPU="rv64,zba=true,zbb=true,zbc=false,zbs=true,zfhmin=true,v=true,vext_spec=v1.0,zkt=true,zvfhmin=true,zvbb=true,zvkt=true,zihintntl=true,zicond=true,zimop=true,zcmop=true,zcb=true,zfa=true,zawrs=true,rvv_ta_all_1s=true,rvv_ma_all_1s=true,rvv_vl_half_avl=true"
   case "$CONF" in
     rva20)
@@ -96,8 +96,8 @@ for CONF in rva20 rva22 rva23 rva23-evl rva23-mrvv-vec-bits; do
       CFLAGS="-march=rva23u64"
       QEMU_CPU=$RVA23_QEMU_CPU
       ;;
-    rva23-evl)
-      CFLAGS="-march=rva23u64 -mllvm -prefer-predicate-over-epilogue=predicate-else-scalar-epilogue"
+    rva23-zvl1024b)
+      CFLAGS="-march=rva23u64_zvl1024b"
       QEMU_CPU=$RVA23_QEMU_CPU
       ;;
     rva23-mrvv-vec-bits)
