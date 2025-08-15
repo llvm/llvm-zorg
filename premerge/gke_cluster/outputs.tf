@@ -21,3 +21,11 @@ output "linux_object_cache_gcp_service_account_email" {
 output "windows_2022_object_cache_gcp_service_account_email" {
   value = google_service_account.object_cache_windows_gsa.email
 }
+
+output "linux_object_cache_buildbot_service_account_email" {
+  value = google_service_account.object_cache_linux_buildbot_gsa.email
+}
+
+output "windows_2022_object_cache_buildbot_service_account_email" {
+  value = google_service_account.object_cache_windows_buildbot_gsa.email
+}

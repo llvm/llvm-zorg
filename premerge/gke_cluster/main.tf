@@ -283,11 +283,22 @@ resource "google_service_account" "object_cache_windows_gsa" {
   display_name = format("%s Windows Object Cache Service Account", var.region)
 }
 
+resource "google_service_account" "object_cache_linux_buildbot_gsa" {
+  account_id   = format("%s-linux-buildbot", var.gcs_bucket_location)
+  display_name = format("%s Linux Object Cache Buildbot Service Account", var.region)
+}
+
+resource "google_service_account" "object_cache_windows_buildbot_gsa" {
+  account_id   = format("%s-windows-buildbot", var.gcs_bucket_location)
+  display_name = format("%s Windows Object Cache Buildbot Service Account", var.region)
+}
+
 resource "google_storage_bucket_iam_binding" "linux_bucket_binding" {
   bucket = google_storage_bucket.object_cache_linux.name
   role   = "roles/storage.objectUser"
   members = [
     format("serviceAccount:%s", google_service_account.object_cache_linux_gsa.email),
+    format("serviceAccount:%s", google_service_account.object_cache_linux_buildbot_gsa.email),
   ]
 
   depends_on = [
@@ -301,6 +312,7 @@ resource "google_storage_bucket_iam_binding" "windows_bucket_binding" {
   role   = "roles/storage.objectUser"
   members = [
     format("serviceAccount:%s", google_service_account.object_cache_windows_gsa.email),
+    format("serviceAccount:%s", google_service_account.object_cache_windows_buildbot_gsa.email),
   ]
 
   depends_on = [
@@ -332,5 +344,31 @@ resource "google_service_account_iam_binding" "windows_bucket_gsa_workload_bindi
 
   depends_on = [
     google_service_account.object_cache_windows_gsa,
+  ]
+}
+
+resource "google_service_account_iam_binding" "linux_bucket_buildbot_gsa_workload_binding" {
+  service_account_id = google_service_account.object_cache_linux_buildbot_gsa.name
+  role               = "roles/iam.workloadIdentityUser"
+
+  members = [
+    "serviceAccount:${google_service_account.object_cache_linux_buildbot_gsa.project}.svc.id.goog[llvm-premerge-linux-buildbot/buildbot-gcs-ksa]",
+  ]
+
+  depends_on = [
+    google_service_account.object_cache_linux_buildbot_gsa,
+  ]
+}
+
+resource "google_service_account_iam_binding" "windows_bucket_buildbot_gsa_workload_binding" {
+  service_account_id = google_service_account.object_cache_windows_buildbot_gsa.name
+  role               = "roles/iam.workloadIdentityUser"
+
+  members = [
+    "serviceAccount:${google_service_account.object_cache_windows_buildbot_gsa.project}.svc.id.goog[llvm-premerge-windows-2022-buildbot/buildbot-gcs-ksa]",
+  ]
+
+  depends_on = [
+    google_service_account.object_cache_windows_buildbot_gsa,
   ]
 }

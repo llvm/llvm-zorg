@@ -329,8 +329,20 @@ resource "kubernetes_role_binding" "linux_buildbot_role_binding" {
   depends_on = [kubernetes_role.linux_buildbot_role, kubernetes_service_account.linux_buildbot_ksa]
 }
 
+resource "kubernetes_service_account" "linux_buildbot_gcs_ksa" {
+  metadata {
+    name      = "buildbot-gcs-ksa"
+    namespace = "llvm-premerge-linux-buildbot"
+    annotations = {
+      "iam.gke.io/gcp-service-account" = var.linux_object_cache_buildbot_service_account_email
+    }
+  }
+
+  depends_on = [kubernetes_namespace.llvm_premerge_linux_buildbot]
+}
+
 resource "kubernetes_manifest" "linux_buildbot_deployment" {
-  manifest = yamldecode(templatefile("buildbot_deployment.yaml", { buildbot_name : var.linux_buildbot_name, buildbot_namespace : "llvm-premerge-linux-buildbot", secret_name : "linux-buildbot-password" }))
+  manifest = yamldecode(templatefile("buildbot_deployment.yaml", { buildbot_name : var.linux_buildbot_name, buildbot_namespace : "llvm-premerge-linux-buildbot", secret_name : "linux-buildbot-password", buildbot_region : var.cluster_name }))
 
   depends_on = [kubernetes_namespace.llvm_premerge_linux_buildbot, kubernetes_secret.linux_buildbot_password]
 }
@@ -380,8 +392,20 @@ resource "kubernetes_role_binding" "windows_2022_buildbot_role_binding" {
   depends_on = [kubernetes_role.windows_2022_buildbot_role, kubernetes_service_account.windows_2022_buildbot_ksa]
 }
 
+resource "kubernetes_service_account" "windows_2022_buildbot_gcs_ksa" {
+  metadata {
+    name      = "buildbot-gcs-ksa"
+    namespace = "llvm-premerge-windows-2022-buildbot"
+    annotations = {
+      "iam.gke.io/gcp-service-account" = var.windows_2022_object_cache_buildbot_service_account_email
+    }
+  }
+
+  depends_on = [kubernetes_namespace.llvm_premerge_windows_2022_buildbot]
+}
+
 resource "kubernetes_manifest" "windows_buildbot_deployment" {
-  manifest = yamldecode(templatefile("buildbot_deployment.yaml", { buildbot_name : var.windows_buildbot_name, buildbot_namespace : "llvm-premerge-windows-2022-buildbot", secret_name : "windows-buildbot-password" }))
+  manifest = yamldecode(templatefile("buildbot_deployment.yaml", { buildbot_name : var.windows_buildbot_name, buildbot_namespace : "llvm-premerge-windows-2022-buildbot", secret_name : "windows-buildbot-password", buildbot_region : var.cluster_name }))
 
   depends_on = [kubernetes_namespace.llvm_premerge_windows_2022_buildbot, kubernetes_secret.windows_2022_buildbot_password]
 }
