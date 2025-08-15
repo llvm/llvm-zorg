@@ -257,6 +257,9 @@ def main(commit_sha: str, platform: str):
             )
             if pod_finished:
                 break
+            pod_status = get_pod_status(pod_name, namespace, v1_api)
+            if pod_status == "Failed":
+                break
         except kubernetes.client.exceptions.ApiException as log_exception:
             if "ContainerCreating" in json.loads(log_exception.body)["message"]:
                 logging.warning(
