@@ -26,8 +26,6 @@ spec:
             secretKeyRef:
               name: ${ secret_name }
               key: password
-        - name: BUILDBOT_REGION
-          value: ${ buildbot_region }
         resources:
           requests:
             memory: "512Mi"
