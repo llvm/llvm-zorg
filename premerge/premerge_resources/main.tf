@@ -329,6 +329,15 @@ resource "kubernetes_role_binding" "linux_buildbot_role_binding" {
   depends_on = [kubernetes_role.linux_buildbot_role, kubernetes_service_account.linux_buildbot_ksa]
 }
 
+resource "kubernetes_service_account" "linux_buildbot_gcs_ksa" {
+  metadata {
+    name      = "buildbot-gcs-ksa"
+    namespace = "llvm-premerge-linux-buildbot"
+  }
+
+  depends_on = [kubernetes_namespace.llvm_premerge_linux_buildbot]
+}
+
 resource "kubernetes_manifest" "linux_buildbot_deployment" {
   manifest = yamldecode(templatefile("buildbot_deployment.yaml", { buildbot_name : var.linux_buildbot_name, buildbot_namespace : "llvm-premerge-linux-buildbot", secret_name : "linux-buildbot-password" }))
 
@@ -378,6 +387,15 @@ resource "kubernetes_role_binding" "windows_2022_buildbot_role_binding" {
   }
 
   depends_on = [kubernetes_role.windows_2022_buildbot_role, kubernetes_service_account.windows_2022_buildbot_ksa]
+}
+
+resource "kubernetes_service_account" "windows_2022_buildbot_gcs_ksa" {
+  metadata {
+    name      = "buildbot-gcs-ksa"
+    namespace = "llvm-premerge-windows-2022-buildbot"
+  }
+
+  depends_on = [kubernetes_namespace.llvm_premerge_windows_2022_buildbot]
 }
 
 resource "kubernetes_manifest" "windows_buildbot_deployment" {
