@@ -123,3 +123,13 @@ variable "windows_buildbot_password" {
   description = "The password for the windows buildbot that will run tests postcommit."
   type        = string
 }
+
+variable "linux_object_cache_buildbot_service_account_email" {
+  description = "The email associated with the service account for the buildbot worker accessing the object cache on Linux."
+  type        = string
+}
+
+variable "windows_2022_object_cache_buildbot_service_account_email" {
+  description = "The email associated with the service account for the buildbot worker accessing the object cache on Windows."
+  type        = string
+}
