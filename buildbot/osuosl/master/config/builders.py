@@ -1039,25 +1039,6 @@ all = [
                         "-DLLVM_USE_LINKER=gold",
                         "-DLLVM_ENABLE_WERROR=OFF"])},
 
-    {'name': "llvm-clang-key-instructions",
-    'tags'  : ["llvm", "clang", "compiler-rt", "lld", "cross-project-tests"],
-    'workernames': ["sie-linux-worker5"],
-    'builddir': "llvm-ki",
-    'factory': UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
-                    depends_on_projects=['llvm','clang','compiler-rt','lld','cross-project-tests'],
-                    extra_configure_args=[
-                        "-DCMAKE_C_COMPILER=gcc",
-                        "-DCMAKE_CXX_COMPILER=g++",
-                        "-DCMAKE_BUILD_TYPE=Release",
-                        "-DCLANG_ENABLE_CLANGD=OFF",
-                        "-DLLVM_BUILD_RUNTIME=ON",
-                        "-DLLVM_BUILD_TESTS=ON",
-                        "-DLLVM_ENABLE_ASSERTIONS=ON",
-                        "-DLLVM_EXPERIMENTAL_KEY_INSTRUCTIONS=ON",
-                        "-DLLVM_INCLUDE_EXAMPLES=OFF",
-                        "-DLLVM_LIT_ARGS=--verbose --timeout=900",
-                        "-DLLVM_USE_LINKER=gold"])},
-
     {'name': "llvm-clang-x86_64-darwin",
     'tags'  : ["llvm", "clang", "clang-tools-extra", "lld", "cross-project-tests"],
     'workernames': ["doug-worker-3"],

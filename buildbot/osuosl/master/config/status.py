@@ -359,8 +359,7 @@ def getReporters():
                         "clang-x86_64-linux-abi-test",
                         "llvm-clang-x86_64-darwin",
                         "llvm-clang-aarch64-darwin",
-                        "llvm-clang-aarch64-darwin-release",
-                        "llvm-clang-key-instructions"])
+                        "llvm-clang-aarch64-darwin-release"])
             ]),
         reporters.MailNotifier(
             fromaddr = status_email_fromaddr,
@@ -485,8 +484,7 @@ def getReporters():
                 utils.LLVMDefaultBuildStatusGenerator(
                     builders = [
                         "cross-project-tests-sie-ubuntu",
-                        "llvm-clang-x86_64-sie-win",
-                        "llvm-clang-key-instructions"])
+                        "llvm-clang-x86_64-sie-win"])
             ]),
         reporters.MailNotifier(
             fromaddr = status_email_fromaddr,
