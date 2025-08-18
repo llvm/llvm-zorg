@@ -1039,6 +1039,28 @@ all = [
                         "-DLLVM_USE_LINKER=gold",
                         "-DLLVM_ENABLE_WERROR=OFF"])},
 
+    {'name': "llvm-x86_64-debugify-coverage",
+     'tags': ["llvm", "clang", "lld"],
+     'workernames': ["sie-linux-worker5"],
+     'builddir': "llvm-dbg",
+     'factory': DebugifyBuilder.getDebugifyBuildFactory(
+                    clean=True,
+                    depends_on_projects=['llvm','clang','lld'],
+                    extra_configure_args=[
+                        "-DCMAKE_C_COMPILER=clang",
+                        "-DCMAKE_CXX_COMPILER=clang++",
+                        "-DCMAKE_BUILD_TYPE=RelWithDebInfo",
+                        "-DCMAKE_C_FLAGS_RELWITHDEBINFO=-O2 -gmlt -DNDEBUG",
+                        "-DCMAKE_CXX_FLAGS_RELWITHDEBINFO=-O2 -gmlt -DNDEBUG",
+                        "-DLLVM_CCACHE_BUILD=ON",
+                        "-DLLVM_BUILD_TESTS=ON",
+                        "-DLLVM_ENABLE_ASSERTIONS=ON",
+                        "-DLLVM_INCLUDE_EXAMPLES=OFF",
+                        "-DLLVM_TARGETS_TO_BUILD=X86",
+                        "-DLLVM_LIT_ARGS=-v",
+                        "-DLLVM_USE_LINKER=lld",
+                        "-DLLVM_ENABLE_WERROR=OFF"])},
+
     {'name': "llvm-clang-x86_64-darwin",
     'tags'  : ["llvm", "clang", "clang-tools-extra", "lld", "cross-project-tests"],
     'workernames': ["doug-worker-3"],
