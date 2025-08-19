@@ -18,6 +18,7 @@ from zorg.buildbot.builders import LLDPerformanceTestsuite
 from zorg.buildbot.builders import XToolchainBuilder
 from zorg.buildbot.builders import TestSuiteBuilder
 from zorg.buildbot.builders import BOLTBuilder
+from zorg.buildbot.builders import DebugifyBuilder
 
 from zorg.buildbot.builders import HtmlDocsBuilder
 from zorg.buildbot.builders import DoxygenDocsBuilder
