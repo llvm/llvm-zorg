@@ -1019,6 +1019,14 @@ def run_ws(cmd, env=None, sudo=False, err_okay=False):
     return run_cmd(conf.workspace, cmd, env, sudo=sudo, err_okay=err_okay)
 
 
+def print_machine_info():
+    header("Machine Info")
+    run_ws(["sw_vers"])
+    run_ws(["xcodebuild", "-version"])
+    run_ws(["cmake", "--version"])
+    footer()
+
+
 def parse_args():
     """Get the command line arguments, and make sure they are correct."""
 
@@ -1088,6 +1096,7 @@ def main():
     args = parse_args()
     conf = Configuration(args)
 
+    print_machine_info()
     create_builddirs()
     try:
         if args.build_type == 'clang':
