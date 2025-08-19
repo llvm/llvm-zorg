@@ -104,8 +104,7 @@ def start_build_linux(commit_sha: str, bucket_name: str, k8s_client) -> str:
         "export SCCACHE_GCS_RW_MODE=READ_WRITE",
         "export SCCACHE_IDLE_TIMEOUT=0",
         "sccache --start-server",
-        './.ci/monolithic-linux.sh "polly" "check-polly" "" "" "" OFF',
-        #'./.ci/monolithic-linux.sh "bolt;clang;clang-tools-extra;flang;libclc;lld;lldb;llvm;mlir;polly" "check-bolt check-clang check-clang-cir check-clang-tools check-flang check-lld check-lldb check-llvm check-mlir check-polly" "compiler-rt;libc;libcxx;libcxxabi;libunwind" "check-compiler-rt check-libc" "check-cxx check-cxxabi check-unwind" "OFF"'
+        './.ci/monolithic-linux.sh "bolt;clang;clang-tools-extra;flang;libclc;lld;lldb;llvm;mlir;polly" "check-bolt check-clang check-clang-tools check-flang check-lld check-lldb check-llvm check-mlir check-polly" "compiler-rt;libc;libcxx;libcxxabi;libunwind" "check-compiler-rt check-libc" "check-cxx check-cxxabi check-unwind" "OFF"'
         "echo BUILD FINISHED",
     ]
     start_build(
@@ -127,8 +126,7 @@ def start_build_windows(commit_sha: str, bucket_name: str, k8s_client):
         "export SCCACHE_GCS_RW_MODE=READ_WRITE",
         "export SCCACHE_IDLE_TIMEOUT=0",
         "sccache --start-server",
-        ".ci/monolithic-windows.sh 'polly;mlir' 'check-polly check-mlir'",
-        #'.ci/monolithic-windows.sh "clang;clang-tools-extra;libclc;lld;llvm;mlir;polly" "check-clang check-clang-cir check-clang-tools check-lld check-llvm check-mlir check-polly"',
+        '.ci/monolithic-windows.sh "clang;clang-tools-extra;libclc;lld;llvm;mlir;polly" "check-clang check-clang-tools check-lld check-llvm check-mlir check-polly"',
         "echo BUILD FINISHED",
     ]
     bash_command = f"bash -c \"{';'.join(bash_commands)}\"\""
