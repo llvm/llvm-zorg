@@ -86,6 +86,11 @@ def start_build(
             "restartPolicy": "Never",
         },
     }
+    if platform == "Windows":
+        pod_definition["spec"]["volumes"] = [{"name": "builddir", "emptyDir": {}}]
+        pod_definition["spec"]["containers"][0]["volumeMounts"] = [
+            {"name": "builddir", "mountPath": "C:/_work"}
+        ]
     kubernetes.utils.create_from_dict(k8s_client, pod_definition)
 
 
@@ -118,6 +123,7 @@ def start_build_windows(commit_sha: str, bucket_name: str, k8s_client):
     pod_name = f"build-{commit_sha}"
     bash_commands = [
         "set -ex",
+        "cd C:/_work",
         "git clone --depth 100 https://github.com/llvm/llvm-project",
         "cd llvm-project",
         f"git checkout {commit_sha}",
