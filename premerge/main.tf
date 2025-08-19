@@ -315,7 +315,7 @@ resource "kubernetes_secret" "operational_metrics_secrets" {
   }
 
   data = {
-    "github-token"           = data.google_secret_manager_secret_version.metrics_github_pat.secret_data
+    "github-token" = data.google_secret_manager_secret_version.metrics_github_pat.secret_data
   }
 
   type       = "Opaque"
