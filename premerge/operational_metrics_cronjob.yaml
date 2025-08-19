@@ -25,16 +25,6 @@ spec:
                 secretKeyRef:
                   name: operational-metrics-secrets
                   key: github-token
-            - name: GRAFANA_API_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: operational-metrics-secrets
-                  key: grafana-api-key
-            - name: GRAFANA_METRICS_USERID
-              valueFrom:
-                secretKeyRef:
-                  name: operational-metrics-secrets
-                  key: grafana-metrics-userid
             resources:
               requests:
                 cpu: "250m"
