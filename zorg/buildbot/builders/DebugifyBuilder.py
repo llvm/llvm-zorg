@@ -16,6 +16,7 @@ def addCheckDebugifyStep(f, debugify_output_path, compiler_dir=".", env={}):
                 script,
                 util.Interpolate(debugify_output_path),
                 "--acceptance-test",
+                "--reduce",
             ],
             description="check debugify output",
             env=env,
