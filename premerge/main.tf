@@ -316,8 +316,6 @@ resource "kubernetes_secret" "operational_metrics_secrets" {
 
   data = {
     "github-token"           = data.google_secret_manager_secret_version.metrics_github_pat.secret_data
-    "grafana-api-key"        = data.google_secret_manager_secret_version.metrics_grafana_api_key.secret_data
-    "grafana-metrics-userid" = data.google_secret_manager_secret_version.metrics_grafana_metrics_userid.secret_data
   }
 
   type       = "Opaque"
