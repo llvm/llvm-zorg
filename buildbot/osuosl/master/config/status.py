@@ -360,7 +360,7 @@ def getReporters():
                         "llvm-clang-x86_64-darwin",
                         "llvm-clang-aarch64-darwin",
                         "llvm-clang-aarch64-darwin-release",
-                        "llvm-clang-key-instructions"])
+                        "llvm-x86_64-debugify-coverage"])
             ]),
         reporters.MailNotifier(
             fromaddr = status_email_fromaddr,
@@ -485,8 +485,7 @@ def getReporters():
                 utils.LLVMDefaultBuildStatusGenerator(
                     builders = [
                         "cross-project-tests-sie-ubuntu",
-                        "llvm-clang-x86_64-sie-win",
-                        "llvm-clang-key-instructions"])
+                        "llvm-clang-x86_64-sie-win"])
             ]),
         reporters.MailNotifier(
             fromaddr = status_email_fromaddr,
@@ -560,6 +559,16 @@ def getReporters():
                         "flang-runtime-cuda-gcc",
                         "flang-runtime-cuda-clang"])
             ]),
+        reporters.MailNotifier(
+            fromaddr = status_email_fromaddr,
+            sendToInterestedUsers = False,
+            extraRecipients = ["stephen.tozer@sony.com"],
+            generators = [
+                utils.LLVMDefaultBuildStatusGenerator(
+                    builders = [
+                        "llvm-x86_64-debugify-coverage"])
+            ]),
+
     ])
 
     return r
