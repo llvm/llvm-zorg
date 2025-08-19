@@ -6,9 +6,6 @@ import git
 from google.cloud import bigquery
 import requests
 
-GRAFANA_URL = (
-    "https://influx-prod-13-prod-us-east-0.grafana.net/api/v1/push/influx/write"
-)
 GITHUB_GRAPHQL_API_URL = "https://api.github.com/graphql"
 REPOSITORY_URL = "https://github.com/llvm/llvm-project.git"
 
@@ -199,84 +196,6 @@ def query_for_reviews(
   return list(new_commits.values())
 
 
-def get_past_contributors(bq_client: bigquery.Client) -> set[str]:
-  """Get past contributors to LLVM from BigQuery dataset.
-
-  Args:
-    bq_client: The BigQuery client to use.
-
-  Returns:
-    Set of unique past contributors to LLVM.
-  """
-  results = bq_client.query("""
-      SELECT
-        DISTINCT commit_author
-      FROM %s.%s
-      WHERE commit_author IS NOT NULL
-      """ % (OPERATIONAL_METRICS_DATASET, LLVM_COMMITS_TABLE)).result()
-  return set(row.commit_author for row in results)
-
-
-def upload_daily_metrics_to_grafana(
-    grafana_api_key: str,
-    grafana_metrics_userid: str,
-    new_commits: list[LLVMCommitInfo],
-    past_contributors: set[str],
-) -> None:
-  """Upload daily commit metrics to Grafana.
-
-  Args:
-    grafana_api_key: The key to make API requests with.
-    grafana_metrics_userid: The user to make API requests with.
-    new_commits: List of commits to process & upload to Grafana.
-    past_contributors: Set of unique past contributors to LLVM.
-  """
-
-  def post_data(data: str) -> None:
-    """Helper function to post data to Grafana."""
-    response = requests.post(
-        GRAFANA_URL,
-        headers={"Content-Type": "text/plain"},
-        data=data,
-        auth=(grafana_metrics_userid, grafana_api_key),
-    )
-    if response.status_code < 200 or response.status_code >= 300:
-      logging.error("Failed to submit data to Grafana: %s", response.text)
-
-  # Count each type of commit made
-  approval_count = 0
-  review_count = 0
-  pull_request_count = 0
-  push_count = 0
-  contributors = set()
-  for commit in new_commits:
-    if commit.is_approved:
-      approval_count += 1
-    elif commit.is_reviewed:
-      review_count += 1
-    elif commit.has_pull_request:
-      pull_request_count += 1
-    else:
-      push_count += 1
-    contributors.add(commit.commit_author)
-
-  # Post data via InfluxDB API call
-  # Commit data
-  request_data = (
-      "llvm_project_main_daily_commits"
-      " approval_count={},review_count={},pull_request_count={},push_count={}"
-  ).format(approval_count, review_count, pull_request_count, push_count)
-  post_data(request_data)
-
-  # Contributor data
-  request_data = (
-      "llvm_project_main"
-      " daily_unique_contributor_count={},all_time_unique_contributor_count={}"
-      .format(len(contributors), len(contributors | past_contributors))
-  )
-  post_data(request_data)
-
-
 def upload_daily_metrics_to_bigquery(
     bq_client: bigquery.Client, new_commits: list[LLVMCommitInfo]
 ) -> None:
@@ -296,10 +215,6 @@ def upload_daily_metrics_to_bigquery(
 
 def main() -> None:
   github_token = os.environ["GITHUB_TOKEN"]
-  grafana_api_key = os.environ["GRAFANA_API_KEY"]
-  grafana_metrics_userid = os.environ["GRAFANA_METRICS_USERID"]
-
-  bq_client = bigquery.Client()
 
   # Scrape new commits
   date_to_scrape = datetime.datetime.now(
@@ -317,20 +232,9 @@ def main() -> None:
   logging.info("Querying for reviews of new commits.")
   new_commit_info = query_for_reviews(new_commits, github_token)
 
-  logging.info("Getting set of past LLVM contributors.")
-  past_contributors = get_past_contributors(bq_client)
-
-  logging.info("Uploading metrics to Grafana.")
-  upload_daily_metrics_to_grafana(
-      grafana_api_key,
-      grafana_metrics_userid,
-      new_commit_info,
-      past_contributors,
-  )
-
   logging.info("Uploading metrics to BigQuery.")
+  bq_client = bigquery.Client()
   upload_daily_metrics_to_bigquery(bq_client, new_commit_info)
-
   bq_client.close()
 
 
