@@ -419,7 +419,7 @@ def get_all():
         create_worker("premerge-us-west-linux-b3", properties={'jobs': 64}, max_builds=1),
         create_worker("premerge-us-west-windows-b1", properties={'jobs': 64}, max_builds=1),
         create_worker("premerge-us-west-windows-b2", properties={'jobs': 64}, max_builds=1),
-        create_worker("premerge-us-west-windows-b2", properties={'jobs': 64}, max_builds=1),
+        create_worker("premerge-us-west-windows-b3", properties={'jobs': 64}, max_builds=1),
 
         # Workers for the profcheck configuration
         # These workers run builds with LLVM_ENABLE_PROFCHECK=ON to ensure
