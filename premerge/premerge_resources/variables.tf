@@ -104,7 +104,7 @@ variable "windows_2022_object_cache_gcp_service_account_email" {
   type        = string
 }
 
-variable "linux_buildbot_name" {
+variable "linux_buildbot_name_template" {
   description = "The name of the linux buildbot that will run tests postcommit."
   type        = string
 }
@@ -114,7 +114,7 @@ variable "linux_buildbot_password" {
   type        = string
 }
 
-variable "windows_buildbot_name" {
+variable "windows_buildbot_name_template" {
   description = "The name of the windows buildbot that will run tests postcommit."
   type        = string
 }
