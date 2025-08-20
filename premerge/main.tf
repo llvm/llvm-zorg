@@ -262,13 +262,10 @@ resource "google_service_account" "operational_metrics_gsa" {
   display_name = "Operational Metrics GSA"
 }
 
-resource "google_project_iam_binding" "bigquery_jobuser_binding" {
+resource "google_project_iam_member" "operational_metrics_gsa_bq_jobuser_member" {
   project = google_service_account.operational_metrics_gsa.project
   role    = "roles/bigquery.jobUser"
-
-  members = [
-    "serviceAccount:${google_service_account.operational_metrics_gsa.email}",
-  ]
+  member  = "serviceAccount:${google_service_account.operational_metrics_gsa.email}"
 
   depends_on = [google_service_account.operational_metrics_gsa]
 }
