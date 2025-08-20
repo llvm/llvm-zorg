@@ -266,6 +266,8 @@ resource "google_project_iam_member" "operational_metrics_gsa_bq_jobuser_member"
   project = google_service_account.operational_metrics_gsa.project
   role    = "roles/bigquery.jobUser"
   member  = "serviceAccount:${google_service_account.operational_metrics_gsa.email}"
+
+  depends_on = [google_service_account.operational_metrics_gsa]
 }
 
 resource "kubernetes_namespace" "operational_metrics" {
