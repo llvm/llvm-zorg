@@ -3545,24 +3545,64 @@ all += [
     # postcommit (after changes have landed in main). The configuration for
     # running these checks premerge exists in the monorepo inside the
     # .github/workflows/premerge.yaml file.
-    {'name': "premerge-monolithic-linux",
-     'workernames': ["premerge-us-central-linux", "premerge-us-west-linux"],
-     'builddir': "premerge-monolithic-linux",
-     'factory': AnnotatedBuilder.getAnnotatedBuildFactory(
-                    script="premerge/dispatch_job.py",
-                    checkout_llvm_sources=False,
-                    extra_args=["Linux"],
-                    depends_on_projects=["bolt", "clang", "clang-tools-extra", "compiler-rt", "flang", "flang-rt", "libc", "libclc", "lld", "lldb", "llvm", "mlir", "polly"])},
-    
-    {'name': "premerge-monolithic-windows",
-     'workernames': ["premerge-us-central-windows", "premerge-us-west-windows"],
-     'builddir': "premerge-monolithic-windows",
-     'factory': AnnotatedBuilder.getAnnotatedBuildFactory(
-                    script="premerge/dispatch_job.py",
-                    checkout_llvm_sources=False,
-                    extra_args=["Windows"],
-                    depends_on_projects=["clang-tools-extra", "clang", "libclc", "lld", "llvm", "mlir", "polly"])},
-    
+    {
+        "name": "premerge-monolithic-linux",
+        "workernames": [
+            "premerge-us-central-linux-b1",
+            "premerge-us-central-linux-b2",
+            "premerge-us-central-linux-b3",
+            "premerge-us-west-linux-b1",
+            "premerge-us-west-linux-b2",
+            "premerge-us-west-linux-b3",
+        ],
+        "builddir": "premerge-monolithic-linux",
+        "factory": AnnotatedBuilder.getAnnotatedBuildFactory(
+            script="premerge/dispatch_job.py",
+            checkout_llvm_sources=False,
+            extra_args=["Linux"],
+            depends_on_projects=[
+                "bolt",
+                "clang",
+                "clang-tools-extra",
+                "compiler-rt",
+                "flang",
+                "flang-rt",
+                "libc",
+                "libclc",
+                "lld",
+                "lldb",
+                "llvm",
+                "mlir",
+                "polly",
+            ],
+        ),
+    },
+    {
+        "name": "premerge-monolithic-windows",
+        "workernames": [
+            "premerge-us-central-windows-b1",
+            "premerge-us-central-windows-b2",
+            "premerge-us-central-windows-b3",
+            "premerge-us-west-windows-b1",
+            "premerge-us-west-windows-b2",
+            "premerge-us-west-windows-b3",
+        ],
+        "builddir": "premerge-monolithic-windows",
+        "factory": AnnotatedBuilder.getAnnotatedBuildFactory(
+            script="premerge/dispatch_job.py",
+            checkout_llvm_sources=False,
+            extra_args=["Windows"],
+            depends_on_projects=[
+                "clang-tools-extra",
+                "clang",
+                "libclc",
+                "lld",
+                "llvm",
+                "mlir",
+                "polly",
+            ],
+        ),
+    },
     # Builders for the profcheck configuration
     # These workers run builds with LLVM_ENABLE_PROFCHECK=ON to ensure
     # that profile information is propagated correctly.
