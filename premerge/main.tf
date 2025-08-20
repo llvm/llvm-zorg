@@ -171,9 +171,9 @@ module "premerge_cluster_us_central_resources" {
   linux_object_cache_gcp_service_account_email             = module.premerge_cluster_us_central.linux_object_cache_gcp_service_account_email
   windows_2022_object_cache_gcp_service_account_email      = module.premerge_cluster_us_central.windows_2022_object_cache_gcp_service_account_email
   github_arc_version                                       = "0.12.1"
-  linux_buildbot_name                                      = "premerge-us-central-linux"
+  linux_buildbot_name                                      = "premerge-us-central-linux-b1"
   linux_buildbot_password                                  = data.google_secret_manager_secret_version.us_central_linux_buildbot_password.secret_data
-  windows_buildbot_name                                    = "premerge-us-central-windows"
+  windows_buildbot_name                                    = "premerge-us-central-windows-b1"
   windows_buildbot_password                                = data.google_secret_manager_secret_version.us_central_windows_buildbot_password.secret_data
   linux_object_cache_buildbot_service_account_email        = module.premerge_cluster_us_central.linux_object_cache_buildbot_service_account_email
   windows_2022_object_cache_buildbot_service_account_email = module.premerge_cluster_us_central.windows_2022_object_cache_buildbot_service_account_email
@@ -198,9 +198,9 @@ module "premerge_cluster_us_west_resources" {
   linux_object_cache_gcp_service_account_email             = module.premerge_cluster_us_west.linux_object_cache_gcp_service_account_email
   windows_2022_object_cache_gcp_service_account_email      = module.premerge_cluster_us_west.windows_2022_object_cache_gcp_service_account_email
   github_arc_version                                       = "0.12.1"
-  linux_buildbot_name                                      = "premerge-us-west-linux"
+  linux_buildbot_name                                      = "premerge-us-west-linux-b1"
   linux_buildbot_password                                  = data.google_secret_manager_secret_version.us_west_linux_buildbot_password.secret_data
-  windows_buildbot_name                                    = "premerge-us-west-windows"
+  windows_buildbot_name                                    = "premerge-us-west-windows-b1"
   windows_buildbot_password                                = data.google_secret_manager_secret_version.us_west_windows_buildbot_password.secret_data
   linux_object_cache_buildbot_service_account_email        = module.premerge_cluster_us_west.linux_object_cache_buildbot_service_account_email
   windows_2022_object_cache_buildbot_service_account_email = module.premerge_cluster_us_west.windows_2022_object_cache_buildbot_service_account_email

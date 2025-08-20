@@ -13,7 +13,7 @@ rm -rf /b
 BOT_DIR=/b
 SERVER_PORT=9994
 WORKER_NAME="$(hostname)"
-WORKER_PASSWORD="7DcR2b^M.%uweylV9m"
+WORKER_PASSWORD="$(gsutil cat gs://sanitizer-buildbot/$(hostname)-password)"
 
 userdel buildbot | true
 groupadd -f buildbot
@@ -29,7 +29,7 @@ sudo -u buildbot buildbot-worker create-worker -f --allow-shutdown=signal $BOT_D
 } > $BOT_DIR/info/admin
 
 {
-  echo "How to reproduce locally: https://github.com/google/ml-compiler-opt/wiki/BuildBotReproduceLocally"
+  echo "To reproduce locally, use a standard CMake invocation with -DLLVM_ENABLE_PROFCHECK=ON and -DLLVM_LIT_ARGS='--exclude-xfail'"
   echo
   uname -a | head -n1
   date
