@@ -30,6 +30,12 @@ sudo -u buildbot buildbot-worker create-worker -f --allow-shutdown=signal $BOT_D
 
 {
   echo "To reproduce locally, use a standard CMake invocation with -DLLVM_ENABLE_PROFCHECK=ON and -DLLVM_LIT_ARGS='--exclude-xfail'"
+  echo "Example:"
+  echo "cmake -GNinja"
+  echo "  -DCMAKE_BUILD_TYPE=Release"
+  echo "  -DLLVM_ENABLE_ASSERTIONS=ON"
+  echo "  -DLLVM_LIT_ARGS='--exclude-xfail'"
+  echo "  -DLLVM_ENABLE_PROFCHECK=ON"
   echo
   uname -a | head -n1
   date
