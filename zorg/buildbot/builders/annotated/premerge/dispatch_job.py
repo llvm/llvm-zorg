@@ -124,7 +124,7 @@ def start_build_windows(commit_sha: str, bucket_name: str, k8s_client):
     bash_commands = [
         "set -ex",
         "cd C:/_work",
-        "git clone --depth 100 https://github.com/llvm/llvm-project",
+        "git clone --config core.autocrlf=false --depth 100 https://github.com/llvm/llvm-project",
         "cd llvm-project",
         f"git checkout {commit_sha}",
         "export POSTCOMMIT_CI=1",
