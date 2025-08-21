@@ -3609,6 +3609,7 @@ all += [
     {
         "name": "profcheck",
         "workernames": ["profcheck-b1", "profcheck-b2"],
+        "collapseRequests": False,
         "builddir": "profcheck-build",
         "factory": AnnotatedBuilder.getAnnotatedBuildFactory(
             script="profcheck.sh",
