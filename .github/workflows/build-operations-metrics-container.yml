@@ -9,11 +9,11 @@ on:
       - main
     paths:
       - .github/workflows/build-operations-metrics-container.yml
-      - 'llvm-ops-metrics/ops-container/**'
+      - 'premerge/ops-container/**'
   pull_request:
     paths:
       - .github/workflows/build-operations-metrics-container.yml
-      - 'llvm-ops-metrics/ops-container/**'
+      - 'premerge/ops-container/**'
 
 jobs:
   build-operations-metrics-container:
@@ -27,7 +27,7 @@ jobs:
       - name: Checkout LLVM Zorg
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
-          sparse-checkout: llvm-ops-metrics/ops-container
+          sparse-checkout: premerge/ops-container
       - name: Write Variables
         id: vars
         run: |
@@ -37,9 +37,9 @@ jobs:
           echo "container-name-tag=$container_name:$tag" >> $GITHUB_OUTPUT
           echo "container-filename=$(echo $container_name:$tag  | sed -e 's/\//-/g' -e 's/:/-/g').tar" >> $GITHUB_OUTPUT
       - name: Build Container
-        working-directory: ./llvm-ops-metrics/ops-container
+        working-directory: premerge/ops-container
         run: |
-          podman build -t ${{ steps.vars.outputs.container-name-tag }} -f Dockerfile .
+          podman build -t ${{ steps.vars.outputs.container-name-tag }} .
       # Save the container so we have it in case the push fails.  This also
       # allows us to separate the push step into a different job so we can
       # maintain minimal permissions while building the container.
