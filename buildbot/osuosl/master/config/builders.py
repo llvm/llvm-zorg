@@ -3606,20 +3606,14 @@ all += [
     # Builders for the profcheck configuration
     # These workers run builds with LLVM_ENABLE_PROFCHECK=ON to ensure
     # that profile information is propagated correctly.
-    {'name' : "profcheck",
-     'workernames' : ["profcheck-b1", "profcheck-b2"],
-     'builddir': "profcheck-build",
-     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
-                     clean=True,
-                     depends_on_projects=['llvm'],
-                     extra_configure_args=[
-                         "-DCMAKE_BUILD_TYPE=Release",
-                         "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
-                         "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
-                         "-DLLVM_ENABLE_ASSERTIONS=ON",
-                         "-DLLVM_LIT_ARGS='--exclude-xfail'",
-                         "-DLLVM_ENABLE_PROFCHECK=ON",
-                     ])},
+    {
+        "name": "profcheck",
+        "workernames": ["profcheck-b1", "profcheck-b2"],
+        "builddir": "profcheck-build",
+        "factory": AnnotatedBuilder.getAnnotatedBuildFactory(
+            script="profcheck.sh", clean=True, depends_on_projects=["llvm"]
+        ),
+    },
 ]
 
 # LLDB remote-linux builder env variables.
