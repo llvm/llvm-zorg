@@ -8,7 +8,7 @@ cmake -GNinja \
   -DCMAKE_BUILD_TYPE=Release \
   -DLLVM_ENABLE_ASSERTIONS=ON \
   -DCMAKE_C_COMPILER_LAUNCHER=ccache \
-  -DCMAKE_CXX_COMPILER_LAUNCHER=sccache \
+  -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
   -DLLVM_LIT_ARGS='--exclude-xfail' \
   -DLLVM_ENABLE_PROFCHECK=ON \
   ../llvm-project/llvm
