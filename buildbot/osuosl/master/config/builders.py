@@ -3611,7 +3611,10 @@ all += [
         "workernames": ["profcheck-b1", "profcheck-b2"],
         "builddir": "profcheck-build",
         "factory": AnnotatedBuilder.getAnnotatedBuildFactory(
-            script="profcheck.sh", clean=True, depends_on_projects=["llvm"]
+            script="profcheck.sh",
+            clean=True,
+            depends_on_projects=["llvm"],
+            script_interpreter=None,
         ),
     },
 ]
