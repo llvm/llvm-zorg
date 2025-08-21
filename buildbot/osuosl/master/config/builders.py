@@ -3555,6 +3555,7 @@ all += [
             "premerge-us-west-linux-b2",
             "premerge-us-west-linux-b3",
         ],
+        "collapseRequests": False,
         "builddir": "premerge-monolithic-linux",
         "factory": AnnotatedBuilder.getAnnotatedBuildFactory(
             script="premerge/dispatch_job.py",
@@ -3579,6 +3580,7 @@ all += [
     },
     {
         "name": "premerge-monolithic-windows",
+        "collapseRequests": False,
         "workernames": [
             "premerge-us-central-windows-b1",
             "premerge-us-central-windows-b2",
