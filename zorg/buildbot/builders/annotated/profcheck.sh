@@ -15,6 +15,6 @@ cmake -GNinja \
 
 echo @@@Ninja@@@
 
-export LIT_XFAIL="$(cat ../llvm/utils/profcheck-xfail.txt | tr '\n' ';')"
+export LIT_XFAIL="$(cat ../llvm-project/llvm/utils/profcheck-xfail.txt | tr '\n' ';')"
 ninja check-llvm
 
