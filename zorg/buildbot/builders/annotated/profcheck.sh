@@ -2,7 +2,7 @@
 
 set -ex
 
-echo @@@CMake@@@
+echo @@@BUILD_STEP CMake@@@
 
 cmake -GNinja \
   -DCMAKE_BUILD_TYPE=Release \
@@ -13,8 +13,7 @@ cmake -GNinja \
   -DLLVM_ENABLE_PROFCHECK=ON \
   ../llvm-project/llvm
 
-echo @@@Ninja@@@
+echo @@@BUILD_STEP Ninja@@@
 
 export LIT_XFAIL="$(cat ../llvm-project/llvm/utils/profcheck-xfail.txt | tr '\n' ';')"
 ninja check-llvm
-
