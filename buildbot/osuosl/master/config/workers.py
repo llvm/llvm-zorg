@@ -424,9 +424,18 @@ def get_all():
         # Workers for the profcheck configuration
         # These workers run builds with LLVM_ENABLE_PROFCHECK=ON to ensure
         # that profile information is propagated correctly.
-        create_worker("profcheck-b1", properties={'jobs': 64}, max_builds=1),
-        create_worker("profcheck-b2", properties={'jobs': 64}, max_builds=1),
-
+        create_worker(
+            "profcheck-b1",
+            properties={"jobs": 64},
+            max_builds=1,
+            notify_on_missing=["profcheck-buildbot@google.com"],
+        ),
+        create_worker(
+            "profcheck-b2",
+            properties={"jobs": 64},
+            max_builds=1,
+            notify_on_missing=["profcheck-buildbot@google.com"],
+        ),
         # FIXME: A placeholder for annoying worker which nobody could stop.
         # adding it avoid logs spammed by failed authentication for that worker.
         create_worker("mlir-ubuntu-worker0"),
