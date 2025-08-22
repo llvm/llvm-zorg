@@ -9,7 +9,7 @@ class User(util.simple_repr_mixin):
     def fromdata(data):
         version = data['version']
         if version != 0:
-            raise ValueError, "Unknown version"
+            raise ValueError("Unknown version")
 
         return User(data['id'], data['passhash'],
                     data['name'], data['email'],
