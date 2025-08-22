@@ -568,7 +568,15 @@ def getReporters():
                     builders = [
                         "llvm-x86_64-debugify-coverage"])
             ]),
-
+        reporters.MailNotifier(
+            fromaddr = status_email_fromaddr,
+            sendToInterestedUsers = False,
+            extraRecipients = ["profcheck-buildbot@google.com"],
+            generators = [
+                utils.LLVMDefaultBuildStatusGenerator(
+                    builders = [
+                        "profcheck"])
+            ]),
     ])
 
     return r
