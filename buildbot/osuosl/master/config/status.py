@@ -577,6 +577,23 @@ def getReporters():
                     builders = [
                         "profcheck"])
             ]),
+        reporters.MailNotifier(
+            fromaddr=status_email_fromaddr,
+            sendToInterestedUsers=False,
+            extraRecipients=[
+                "llvm-presubmit-infra@google.com",
+                "aidengrossman@google.com",
+                "cmtice@google.com",
+            ],
+            generators=[
+                utils.LLVMDefaultBuildStatusGenerator(
+                    subject="Premerge Buildbot Failure: {{ buildername }}",
+                    builders=[
+                        "premerge-monolithic-linux",
+                        "premerge-monolithic-windows",
+                    ],
+                )
+            ]),
     ])
 
     return r

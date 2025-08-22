@@ -408,19 +408,126 @@ def get_all():
         # postcommit (after changes have landed in main). The workers for the
         # infrastructure that runs the checks premerge are setup through Github
         # Actions under the premerge/ folder in llvm-zorg.
-        create_worker("premerge-us-central-linux-b1", properties={'jobs': 64}, max_builds=1),
-        create_worker("premerge-us-central-linux-b2", properties={'jobs': 64}, max_builds=1),
-        create_worker("premerge-us-central-linux-b3", properties={'jobs': 64}, max_builds=1),
-        create_worker("premerge-us-central-windows-b1", properties={'jobs': 64}, max_builds=1),
-        create_worker("premerge-us-central-windows-b2", properties={'jobs': 64}, max_builds=1),
-        create_worker("premerge-us-central-windows-b3", properties={'jobs': 64}, max_builds=1),
-        create_worker("premerge-us-west-linux-b1", properties={'jobs': 64}, max_builds=1),
-        create_worker("premerge-us-west-linux-b2", properties={'jobs': 64}, max_builds=1),
-        create_worker("premerge-us-west-linux-b3", properties={'jobs': 64}, max_builds=1),
-        create_worker("premerge-us-west-windows-b1", properties={'jobs': 64}, max_builds=1),
-        create_worker("premerge-us-west-windows-b2", properties={'jobs': 64}, max_builds=1),
-        create_worker("premerge-us-west-windows-b3", properties={'jobs': 64}, max_builds=1),
-
+        create_worker(
+            "premerge-us-central-linux-b1",
+            properties={"jobs": 64},
+            max_builds=1,
+            notify_on_missing=[
+                "llvm-presubmit-infra@google.com",
+                "aidengrossman@google.com",
+                "cmtice@google.com",
+            ],
+        ),
+        create_worker(
+            "premerge-us-central-linux-b2",
+            properties={"jobs": 64},
+            max_builds=1,
+            notify_on_missing=[
+                "llvm-presubmit-infra@google.com",
+                "aidengrossman@google.com",
+                "cmtice@google.com",
+            ],
+        ),
+        create_worker(
+            "premerge-us-central-linux-b3",
+            properties={"jobs": 64},
+            max_builds=1,
+            notify_on_missing=[
+                "llvm-presubmit-infra@google.com",
+                "aidengrossman@google.com",
+                "cmtice@google.com",
+            ],
+        ),
+        create_worker(
+            "premerge-us-central-windows-b1",
+            properties={"jobs": 64},
+            max_builds=1,
+            notify_on_missing=[
+                "llvm-presubmit-infra@google.com",
+                "aidengrossman@google.com",
+                "cmtice@google.com",
+            ],
+        ),
+        create_worker(
+            "premerge-us-central-windows-b2",
+            properties={"jobs": 64},
+            max_builds=1,
+            notify_on_missing=[
+                "llvm-presubmit-infra@google.com",
+                "aidengrossman@google.com",
+                "cmtice@google.com",
+            ],
+        ),
+        create_worker(
+            "premerge-us-central-windows-b3",
+            properties={"jobs": 64},
+            max_builds=1,
+            notify_on_missing=[
+                "llvm-presubmit-infra@google.com",
+                "aidengrossman@google.com",
+                "cmtice@google.com",
+            ],
+        ),
+        create_worker(
+            "premerge-us-west-linux-b1",
+            properties={"jobs": 64},
+            max_builds=1,
+            notify_on_missing=[
+                "llvm-presubmit-infra@google.com",
+                "aidengrossman@google.com",
+                "cmtice@google.com",
+            ],
+        ),
+        create_worker(
+            "premerge-us-west-linux-b2",
+            properties={"jobs": 64},
+            max_builds=1,
+            notify_on_missing=[
+                "llvm-presubmit-infra@google.com",
+                "aidengrossman@google.com",
+                "cmtice@google.com",
+            ],
+        ),
+        create_worker(
+            "premerge-us-west-linux-b3",
+            properties={"jobs": 64},
+            max_builds=1,
+            notify_on_missing=[
+                "llvm-presubmit-infra@google.com",
+                "aidengrossman@google.com",
+                "cmtice@google.com",
+            ],
+        ),
+        create_worker(
+            "premerge-us-west-windows-b1",
+            properties={"jobs": 64},
+            max_builds=1,
+            notify_on_missing=[
+                "llvm-presubmit-infra@google.com",
+                "aidengrossman@google.com",
+                "cmtice@google.com",
+            ],
+        ),
+        create_worker(
+            "premerge-us-west-windows-b2",
+            properties={"jobs": 64},
+            max_builds=1,
+            notify_on_missing=[
+                "llvm-presubmit-infra@google.com",
+                "aidengrossman@google.com",
+                "cmtice@google.com",
+            ],
+        ),
+        create_worker(
+            "premerge-us-west-windows-b3",
+            properties={"jobs": 64},
+            max_builds=1,
+            notify_on_missing=[
+                "llvm-presubmit-infra@google.com",
+                "aidengrossman@google.com",
+                "cmtice@google.com",
+            ],
+        ),
         # Workers for the profcheck configuration
         # These workers run builds with LLVM_ENABLE_PROFCHECK=ON to ensure
         # that profile information is propagated correctly.
