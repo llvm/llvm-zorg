@@ -1829,9 +1829,20 @@ all += [
     'tags'  : ["sanitizer"],
     'workernames' : ["sanitizer-windows"],
     'builddir': "sanitizer-windows",
-    'factory' : AnnotatedBuilder.getAnnotatedBuildFactory(
-                    script="sanitizer-windows.py",
+    'factory': UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
+                    clean=True,
                     depends_on_projects=["llvm", "clang", "lld", "compiler-rt"],
+                    # TODO(boomanaiden154): We should probably be using sccache here.
+                    extra_configure_args=[
+                        "-DCMAKE_BUILD_TYPE=Release",
+                        "-DLLVM_ENABLE_ASSERTIONS=ON",
+                        "-DLLVM_ENABLE_PDB=ON",
+                        "-DLLVM_TARGETS_TO_BUILD=X86",
+                        "-DCOMPILER_RT_BUILD_BUILTINS=ON",
+                        "-DCOMPILER_RT_BUILD_ORC=OFF",
+
+                    ],
+                    checks=["check-compiler-rt"],
                     # FIXME: Restore `timeout` to default when fixed https://github.com/llvm/llvm-project/issues/102513
                     timeout=2400)},
 
