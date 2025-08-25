@@ -1840,7 +1840,9 @@ all += [
                         "-DLLVM_TARGETS_TO_BUILD=X86",
                         "-DCOMPILER_RT_BUILD_BUILTINS=ON",
                         "-DCOMPILER_RT_BUILD_ORC=OFF",
-
+                        "-DCMAKE_C_COMPILER=cl",
+                        "-DCMAKE_CXX_COMPILER=cl",
+                        "-DCMAKE_LINKER=lld-link",
                     ],
                     checks=["check-compiler-rt"],
                     # FIXME: Restore `timeout` to default when fixed https://github.com/llvm/llvm-project/issues/102513
