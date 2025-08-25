@@ -1829,7 +1829,8 @@ all += [
     'tags'  : ["sanitizer"],
     'workernames' : ["sanitizer-windows"],
     'builddir': "sanitizer-windows",
-    'factory': UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
+    'factory': UnifiedTreeBuilder.getCmakeWithNinjaWithMSVCBuildFactory(
+                    vs="autodetect",
                     clean=True,
                     depends_on_projects=["llvm", "clang", "lld", "compiler-rt"],
                     # TODO(boomanaiden154): We should probably be using sccache here.
@@ -1840,9 +1841,6 @@ all += [
                         "-DLLVM_TARGETS_TO_BUILD=X86",
                         "-DCOMPILER_RT_BUILD_BUILTINS=ON",
                         "-DCOMPILER_RT_BUILD_ORC=OFF",
-                        "-DCMAKE_C_COMPILER=cl",
-                        "-DCMAKE_CXX_COMPILER=cl",
-                        "-DCMAKE_LINKER=lld-link",
                     ],
                     checks=["check-compiler-rt"],
                     # FIXME: Restore `timeout` to default when fixed https://github.com/llvm/llvm-project/issues/102513
