@@ -118,16 +118,16 @@ will be one main difference between the premerge and postcommit testing
 configurations. In the postcommit configuration we propose testing all projects
 on every commit rather than only testing the projects that themselves changed or
 had dependencies that changed. We propose this for two main reasons. Firstly,
-Buildbot does not have support for heterogenous build configurations. This means
-that testing a different set of projects within a single builder depending upon
-the contents of the commit could easily cause problems. More notifications could
-be produced if certain projects (that were only triggered by some files) were
-failing and some were passing which would significantly increase false positive
-notifications. For example, supposed that we have three commits that land in
-`main` and run through postcommit testing: commit A that touches MLIR, commit B
-that touches clang-tidy, and commit C that modifies MLIR. Commit A lands, then
-commit B, then commit C. If commit A introduces MLIR test failures into an
-otherwise clean slate, we would see the following events:
+Buildbot does not have good support for heterogenous build configurations. This
+means that testing a different set of projects within a single builder depending
+upon the contents of the commit could easily cause problems. More notifications
+could be produced if certain projects (that were only triggered by some files)
+were failing and some were passing which would significantly increase false
+positive notifications. For example, supposed that we have three commits that
+land in `main` and run through postcommit testing: commit A that touches MLIR,
+commit B that touches clang-tidy, and commit C that modifies MLIR. Commit A
+lands, then commit B, then commit C. If commit A introduces MLIR test failures
+into an otherwise clean slate, we would see the following events:
 
 1. Commit A lands. Because it touches MLIR, the buildbot worker runs the MLIR
    tests. Some of the tests fail. The buildbot "turns red" and a notification is
@@ -164,10 +164,11 @@ they can safely ignore, we need to know what is currently failing on `main`.
 Each pull request is tested as if it was merged into main, which means the
 commit underneath the PR is very recent. If a premerge run fails, the premerge
 advisor will find the commit from `main` the PR is being tested on. It will then
-query the Buildbot master using the REST API for the status of that commit.
-It can then report the appropriate status to the user. Having the status will
-let the premerge advisor avoid pestering LLVM developers with failures
-unrelated to their changes.
+query the Buildbot master using the REST API for the status of that commit, or
+the preceeding commits if testing for the requested commit has not yet
+completed. It can then report the appropriate status to the user. Having the
+status will let the premerge advisor avoid pestering LLVM developers with
+failures unrelated to their changes.
 
 ## Alternatives Considered
 
