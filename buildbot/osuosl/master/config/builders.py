@@ -1833,6 +1833,7 @@ all += [
                     vs="autodetect",
                     clean=True,
                     depends_on_projects=["llvm", "clang", "lld", "compiler-rt"],
+                    target_arch='x64',
                     # TODO(boomanaiden154): We should probably be using sccache here.
                     extra_configure_args=[
                         "-DCMAKE_BUILD_TYPE=Release",
