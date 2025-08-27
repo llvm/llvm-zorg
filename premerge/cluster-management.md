@@ -219,9 +219,9 @@ terraform destroy -target module.premerge_cluster_us_central_resources.kubernete
 ### Bumping the Version Number
 
 This is necessary only for bumping the version of ARC. This involves simply
-updating the version field for the `premerge_resources` objects in `main.tf`.
-Each premerge cluster (`llvm-premerge-cluster-us-central` and
-`llvm-premerge-cluster-us-west`) has a separate version. This allows for
+updating the `github_arc_version` field for premerge cluster resources in
+`premerge/main.tf`. Each premerge cluster (`llvm-premerge-cluster-us-central`
+and `llvm-premerge-cluster-us-west`) has a separate version. This allows for
 updating them separately which allows for zero-downtime upgrades when the
 system is operating at low capacity. Make sure to commit the changes and push
 them to `llvm-zorg` to ensure others working on the terraform configuration
