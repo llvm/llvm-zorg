@@ -110,6 +110,7 @@ def start_build_linux(commit_sha: str, bucket_name: str, k8s_client) -> str:
         "export SCCACHE_IDLE_TIMEOUT=0",
         "sccache --start-server",
         './.ci/monolithic-linux.sh "bolt;clang;clang-tools-extra;flang;libclc;lld;lldb;llvm;mlir;polly" "check-bolt check-clang check-clang-tools check-flang check-lld check-lldb check-llvm check-mlir check-polly" "compiler-rt;libc;libcxx;libcxxabi;libunwind" "check-compiler-rt check-libc" "check-cxx check-cxxabi check-unwind" "OFF"',
+        "python .ci/cache_lit_timing_files.py upload",
         "echo BUILD FINISHED",
     ]
     start_build(
@@ -133,6 +134,7 @@ def start_build_windows(commit_sha: str, bucket_name: str, k8s_client):
         "export SCCACHE_IDLE_TIMEOUT=0",
         "sccache --start-server",
         '.ci/monolithic-windows.sh "clang;clang-tools-extra;libclc;lld;llvm;mlir;polly" "check-clang check-clang-tools check-lld check-llvm check-mlir check-polly"',
+        "python .ci/cache_lit_timing_files.py upload",
         "echo BUILD FINISHED",
     ]
     bash_command = f"bash -c \"{';'.join(bash_commands)}\"\""
