@@ -269,7 +269,7 @@ all = [
         },
 
     {'name' : "llvm-clang-win-x-aarch64",
-    'tags'  : ["clang", "llvm", "lld", "clang-tools-extra", "compiler-rt", "libc++", "libc++abi", "libunwind", "cross", "aarch64"],
+    'tags'  : ["clang", "llvm", "lld", "clang-tools-extra", "compiler-rt", "libc++", "libc++abi", "libunwind", "bolt", "cross", "aarch64"],
     'workernames' : ["as-builder-2"],
     'builddir': "x-aarch64",
     'factory' : UnifiedTreeBuilder.getCmakeExBuildFactory(
@@ -282,6 +282,7 @@ all = [
                         'libcxx',
                         'libcxxabi',
                         'lld',
+                        'bolt',
                     ],
                     vs = "autodetect",
                     clean = True,
@@ -289,6 +290,7 @@ all = [
                         "check-llvm",
                         "check-clang",
                         "check-lld",
+                        "check-bolt",
                         "check-compiler-rt-aarch64-unknown-linux-gnu",
                         "check-unwind-aarch64-unknown-linux-gnu",
                         "check-cxxabi-aarch64-unknown-linux-gnu",
@@ -297,7 +299,8 @@ all = [
                     cmake_definitions = {
                         "LLVM_TARGETS_TO_BUILD"         : "AArch64",
                         "LLVM_INCLUDE_BENCHMARKS"       : "OFF",
-                        "LLVM_LIT_ARGS"                 : "-v -vv --threads=32 --time-tests",
+                        # Allow long timeout for BOLT's dump-dot-func.test test.
+                        "LLVM_LIT_ARGS"                 : "-v -vv --threads=32 --time-tests --timeout=300",
                         "TOOLCHAIN_TARGET_TRIPLE"       : "aarch64-unknown-linux-gnu",
                         "TOOLCHAIN_TARGET_SYSROOTFS"    : util.Interpolate("%(prop:sysroot_path_agx)s"),
                         "REMOTE_TEST_HOST"              : util.Interpolate("%(prop:remote_host_agx)s"),
@@ -306,6 +309,7 @@ all = [
                         "CMAKE_CXX_FLAGS"               : "-D__OPTIMIZE__",
                         "CMAKE_C_COMPILER_LAUNCHER"     : "ccache",
                         "CMAKE_CXX_COMPILER_LAUNCHER"   : "ccache",
+                        "BOLT_TARGETS_TO_BUILD"         : "AArch64",
                     },
                     cmake_options = [
                         "-C", util.Interpolate("%(prop:srcdir_relative)s/clang/cmake/caches/CrossWinToARMLinux.cmake"),
