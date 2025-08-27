@@ -3663,7 +3663,16 @@ all += [
     'workernames': ["as-builder-9"],
     'builddir': "lldb-remote-linux-ubuntu",
     'factory': UnifiedTreeBuilder.getCmakeExBuildFactory(
-                    depends_on_projects = ["llvm", "clang", "lld", "lldb"],
+                    depends_on_projects = [
+                        'llvm',
+                        'compiler-rt',
+                        'clang',
+                        'libunwind',
+                        'libcxx',
+                        'libcxxabi',
+                        'lld',
+                        'lldb',
+                    ],
                     enable_runtimes = None,
                     checks = [
                         "check-lldb-unit",
@@ -3701,9 +3710,6 @@ all += [
                         "LLDB_ENABLE_CURSES"            : "OFF",
                         "LLDB_ENABLE_LZMA"              : "OFF",
                         "LLDB_ENABLE_LIBXML2"           : "OFF",
-                        # No need to build lldb-server during the first stage.
-                        # We are going to build it for the target platform later.
-                        "LLDB_CAN_USE_LLDB_SERVER"      : "OFF",
                         "LLDB_TEST_USER_ARGS"           : util.Interpolate(
                                                             "--env;ARCH_CFLAGS=-mcpu=cortex-a78;" \
                                                             "--platform-name;remote-linux;" \
@@ -3792,7 +3798,16 @@ all += [
     'workernames': ["as-builder-10"],
     'builddir': "lldb-x-aarch64",
     'factory': UnifiedTreeBuilder.getCmakeExBuildFactory(
-                    depends_on_projects = ["llvm", "clang", "lld", "lldb"],
+                    depends_on_projects = [
+                        'llvm',
+                        'compiler-rt',
+                        'clang',
+                        'libunwind',
+                        'libcxx',
+                        'libcxxabi',
+                        'lld',
+                        'lldb',
+                    ],
                     enable_runtimes = None,
                     checks = [
                         "check-lldb-unit",
@@ -3829,9 +3844,6 @@ all += [
                         "LLDB_ENABLE_CURSES"            : "OFF",
                         "LLDB_ENABLE_LZMA"              : "OFF",
                         "LLDB_ENABLE_LIBXML2"           : "OFF",
-                        # No need to build lldb-server during the first stage.
-                        # We are going to build it for the target platform later.
-                        "LLDB_CAN_USE_LLDB_SERVER"      : "OFF",
                         "LLDB_TEST_USER_ARGS"           : util.Interpolate(
                                                             "--env;ARCH_CFLAGS=-mcpu=cortex-a78;" \
                                                             "--platform-name;remote-linux;" \
