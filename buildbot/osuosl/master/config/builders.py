@@ -2087,37 +2087,12 @@ all += [
     'workernames' : ["omp-vega20-1"],
      # We would like to never collapse, but it seems the load is too high on that system to keep up.
     'builddir': "openmp-offload-libc-amdgpu-runtime",
-    'factory' : OpenMPBuilder.getOpenMPCMakeBuildFactory(
-                        clean=True,
-                        depends_on_projects=['llvm', 'clang', 'compiler-rt', 'libc', 'lld', 'offload', 'openmp'],
-                        # Special case this bot to account for new (verbose) libc build syntax
-                        enable_runtimes=['openmp', 'compiler-rt', 'offload'],
-                        extraCmakeArgs=[
-                            "-DCMAKE_BUILD_TYPE=Release",
-                            "-DCLANG_DEFAULT_LINKER=lld",
-                            "-DLLVM_TARGETS_TO_BUILD=X86;AMDGPU",
-                            "-DLLVM_ENABLE_ASSERTIONS=ON",
-                            "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
-                            "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
-                            "-DLIBOMPTARGET_FOUND_AMDGPU_GPU=ON",
-                            "-DLIBOMP_ARCHER_SUPPORT=OFF",
-                            "-DRUNTIMES_amdgcn-amd-amdhsa_LLVM_ENABLE_RUNTIMES=libc",
-                            "-DLLVM_RUNTIME_TARGETS=default;amdgcn-amd-amdhsa",
-                            "-DRUNTIMES_amdgcn-amd-amdhsa_LIBC_GPU_TEST_ARCHITECTURE=gfx906",
-                            ],
-                        env={
-                            'HSA_ENABLE_SDMA':'0',
-                            },
-                        install=True,
-                        testsuite=False,
-                        testsuite_sollvevv=False,
-                        extraTestsuiteCmakeArgs=[
-                            "-DTEST_SUITE_SOLLVEVV_OFFLOADING_CFLAGS=-fopenmp;-fopenmp-targets=amdgcn-amd-amdhsa;-Xopenmp-target=amdgcn-amd-amdhsa;-march=gfx906",
-                            "-DTEST_SUITE_SOLLVEVV_OFFLOADING_LDLAGS=-fopenmp;-fopenmp-targets=amdgcn-amd-amdhsa;-Xopenmp-target=amdgcn-amd-amdhsa;-march=gfx906",
-                        ],
-                        add_lit_checks=["check-offload", "check-libc-amdgcn-amd-amdhsa"],
-                        add_openmp_lit_args=["--filter-out=offloading/pgo1.c"],
-                    )},
+    'factory' : AnnotatedBuilder.getAnnotatedBuildFactory(
+                    depends_on_projects=['llvm', 'clang', 'compiler-rt', 'lld', 'libc', 'offload', 'openmp', 'libunwind'],
+                    script='amdgpu-offload-cmake.py --cmake-file=AMDGPULibcBot.cmake',
+                    checkout_llvm_sources=True,
+                    script_interpreter=None
+                )},
 
     {'name' : "openmp-offload-amdgpu-clang-flang",
     'tags'  : ["openmp,flang"],
