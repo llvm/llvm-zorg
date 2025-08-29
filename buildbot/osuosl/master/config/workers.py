@@ -51,6 +51,7 @@ def get_all():
         create_worker("linaro-armv8-windows-msvc-03", max_builds=1),
         create_worker("linaro-armv8-windows-msvc-04", max_builds=1),
         create_worker("linaro-armv8-windows-msvc-05", max_builds=1),
+        create_worker("linaro-armv8-windows-msvc-06", max_builds=1),
 
         # Linux s390x Ubuntu Focal, IBM z13 (5GHz), 64GB of RAM
         create_worker("onnx-mlir-nowarn-linux-s390x", properties={'jobs' : 4}, max_builds=1),
