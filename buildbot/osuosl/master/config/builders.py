@@ -2631,6 +2631,29 @@ all += [
                         "-DCOMPILER_RT_BUILD_SANITIZERS=OFF",
                         "-DLLVM_CCACHE_BUILD=ON"])},
 
+    {'name' : "flang-arm64-windows-msvc-testsuite",
+    'tags'  : ["flang"],
+    'workernames' : ["linaro-armv8-windows-msvc-06"],
+    'builddir': "flang-arm64-win-msvc-ts",
+    'factory' : ClangBuilder.getClangCMakeBuildFactory(
+                    vs="manual",
+                    clean=False,
+                    checkout_flang=True,
+                    checkout_lld=True,
+                    runTestSuite=True,
+                    testStage1=False,
+                    testsuite_flags=[
+                        '--cmake-define', "TEST_SUITE_SUBDIRS='Fortran'",
+                        '--use-make=ninja',
+                        '--threads=8',
+                        '--build-threads=8'],
+                    extra_cmake_args=[
+                        "-DLLVM_TARGETS_TO_BUILD=AArch64",
+                        "-DCLANG_DEFAULT_LINKER=lld",
+                        "-DCMAKE_TRY_COMPILE_CONFIGURATION=Release",
+                        "-DCOMPILER_RT_BUILD_SANITIZERS=OFF",
+                        "-DLLVM_CCACHE_BUILD=ON"])},
+
     {'name' : 'ppc64-flang-aix',
     'tags'  : ["flang", "ppc", "ppc64", "aix"],
     'workernames' : ['ppc64-flang-aix-test'],
