@@ -8,6 +8,9 @@ from zorg.buildbot.commands.CmakeCommand import CmakeCommand
 from zorg.buildbot.commands.NinjaCommand import NinjaCommand
 from zorg.buildbot.commands.LitTestCommand import LitTestCommand
 
+# The DebugifyBuilder needs to know the test-suite build directory, so we share the build directory via this variable.
+test_suite_build_path = 'test/build-test-suite'
+
 # This builder is uses UnifiedTreeBuilders and adds running
 # llvm-test-suite with cmake and ninja step.
 
@@ -30,7 +33,7 @@ def addTestSuiteStep(
     lit = util.Interpolate('%(prop:builddir)s/' + compiler_dir + '/bin/llvm-lit')
     test_suite_base_dir = util.Interpolate('%(prop:builddir)s/' + 'test')
     test_suite_src_dir = util.Interpolate('%(prop:builddir)s/' + 'test/test-suite')
-    test_suite_workdir = util.Interpolate('%(prop:builddir)s/' + 'test/build-test-suite')
+    test_suite_workdir = util.Interpolate('%(prop:builddir)s/' + test_suite_build_path)
     cmake_lit_arg = util.Interpolate('-DTEST_SUITE_LIT:FILEPATH=%(prop:builddir)s/' + compiler_dir + '/bin/llvm-lit')
     # used for cmake building test-suite step
     if extra_configure_args is not None:
