@@ -533,17 +533,18 @@ def _getClangCMakeBuildFactory(
                                    env=env))
 
         # Get generated python, lnt
-        python = util.Interpolate('%(prop:builddir)s/test/sandbox/bin/python')
-        lnt = util.Interpolate('%(prop:builddir)s/test/sandbox/bin/lnt')
-        lnt_setup = util.Interpolate('%(prop:builddir)s/test/lnt/setup.py')
+        python = InterpolateToPosixPath('%(prop:builddir)s/test/sandbox/Scripts/python')
+        lnt_ext = '.exe' if vs else ''
+        lnt = InterpolateToPosixPath(f'%(prop:builddir)s/test/sandbox/Scripts/lnt{lnt_ext}')
+        lnt_setup = InterpolateToPosixPath('%(prop:builddir)s/test/lnt/setup.py')
 
         # Paths
-        sandbox = util.Interpolate('%(prop:builddir)s/test/sandbox')
-        test_suite_dir = util.Interpolate('%(prop:builddir)s/test/test-suite')
+        sandbox = InterpolateToPosixPath('%(prop:builddir)s/test/sandbox')
+        test_suite_dir = InterpolateToPosixPath('%(prop:builddir)s/test/test-suite')
 
         # Get latest built Clang (stage1 or stage2)
-        cc = util.Interpolate(f'%(prop:builddir)s/{compiler_path}/bin/{cc}')
-        cxx = util.Interpolate(f'%(prop:builddir)s/{compiler_path}/bin/{cxx}')
+        cc = InterpolateToPosixPath(f'%(prop:builddir)s/{compiler_path}/bin/{cc}')
+        cxx = InterpolateToPosixPath(f'%(prop:builddir)s/{compiler_path}/bin/{cxx}')
 
         # LNT Command line (don't pass -jN. Users need to pass both --threads
         # and --build-threads in nt_flags/test_suite_flags to get the same effect)
@@ -558,7 +559,7 @@ def _getClangCMakeBuildFactory(
             # Append any option provided by the user
             test_suite_cmd.extend(nt_flags)
         else:
-            lit = util.Interpolate(f'%(prop:builddir)s/{stage1_build}/bin/llvm-lit')
+            lit = InterpolateToPosixPath(f'%(prop:builddir)s/{stage1_build}/bin/llvm-lit')
             test_suite_cmd = [python, lnt, 'runtest', 'test-suite',
                               '--no-timestamp',
                               '--sandbox', sandbox,
@@ -567,7 +568,7 @@ def _getClangCMakeBuildFactory(
                               '--cxx', cxx,
                               '--use-lit', lit,
                               # Carry on building even if there is a failure.
-                              '--build-tool-options', '"-k"']
+                              '--build-tool-options', '"-k 0"' if '--use-make=ninja' in testsuite_flags else '"-k"']
             # Enable fortran if flang is checked out
             if checkout_flang:
                 fortran_flags = [
