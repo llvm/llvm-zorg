@@ -1,6 +1,7 @@
 from buildbot.plugins import util
 from buildbot.steps.shell import ShellCommand
 from zorg.buildbot.builders import TestSuiteBuilder
+from zorg.buildbot.builders.TestSuiteBuilder import test_suite_build_path
 from zorg.buildbot.commands.CmakeCommand import CmakeCommand
 
 
@@ -53,7 +54,9 @@ def getDebugifyBuildFactory(
     ])
 
     # This path will be passed through to util.Interpolate, so we leave it in this format.
-    debugify_output_path = f"%(prop:builddir)s/debugify-report.json"
+    # NB: This must be stored in the test suite build directory, as that is the only way to ensure that it is
+    # unconditionally up before (and not after) each run.
+    debugify_output_path = f"%(prop:builddir)s/{test_suite_build_path}/debugify-report.json"
 
     # Make a local copy of the test suite configure args, as we are going to modify that.
     if extra_test_suite_configure_args is not None:
