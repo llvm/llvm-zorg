@@ -476,11 +476,7 @@ all = [
     # https://github.com/aws/aws-graviton-getting-started/blob/main/c-c++.md.
 
     # AArch64 Clang+LLVM+RT+LLD check-all + flang + test-suite +
-    # mlir-integration-tests w/SVE-Vector-Length-Agnostic Note that in this and
-    # other clang-aarch64-sve-* builders we set -mllvm
-    # -treat-scalable-fixed-error-as-warning=false to make compiler fail on
-    # non-critical SVE codegen issues.  This helps us notice and fix SVE
-    # problems sooner rather than later.
+    # mlir-integration-tests w/SVE-Vector-Length-Agnostic
     {'name' : "clang-aarch64-sve-vla",
     'tags'  : ["clang"],
     'workernames' : ["linaro-g3-01", "linaro-g3-02", "linaro-g3-03", "linaro-g3-04"],
@@ -493,8 +489,8 @@ all = [
                         'NO_STOP_MESSAGE':'1', # For Fortran test-suite
                     },
                     testsuite_flags=[
-                        '--cppflags', '-mcpu=neoverse-512tvb -mllvm -scalable-vectorization=preferred -mllvm -treat-scalable-fixed-error-as-warning=false -O3',
-                        '--cmake-define', 'CMAKE_Fortran_FLAGS=-mcpu=neoverse-512tvb -mllvm -scalable-vectorization=preferred -mllvm -treat-scalable-fixed-error-as-warning=false -O3',
+                        '--cppflags', '-mcpu=neoverse-512tvb -mllvm -scalable-vectorization=preferred -O3',
+                        '--cmake-define', 'CMAKE_Fortran_FLAGS=-mcpu=neoverse-512tvb -mllvm -scalable-vectorization=preferred -O3',
                         '--threads=32', '--build-threads=32'],
                     extra_cmake_args=[
                         "-DCMAKE_C_FLAGS='-mcpu=neoverse-512tvb'",
@@ -518,12 +514,12 @@ all = [
                         'NO_STOP_MESSAGE':'1', # For Fortran test-suite
                     },
                     testsuite_flags=[
-                        '--cppflags', '-mcpu=neoverse-512tvb -mllvm -scalable-vectorization=preferred -mllvm -treat-scalable-fixed-error-as-warning=false -O3',
-                        '--cmake-define', 'CMAKE_Fortran_FLAGS=-mcpu=neoverse-512tvb -mllvm -scalable-vectorization=preferred -mllvm -treat-scalable-fixed-error-as-warning=false -O3',
+                        '--cppflags', '-mcpu=neoverse-512tvb -mllvm -scalable-vectorization=preferred -O3',
+                        '--cmake-define', 'CMAKE_Fortran_FLAGS=-mcpu=neoverse-512tvb -mllvm -scalable-vectorization=preferred -O3',
                         '--threads=32', '--build-threads=32'],
                     extra_cmake_args=[
-                        "-DCMAKE_C_FLAGS='-mcpu=neoverse-512tvb -mllvm -scalable-vectorization=preferred -mllvm -treat-scalable-fixed-error-as-warning=false'",
-                        "-DCMAKE_CXX_FLAGS='-mcpu=neoverse-512tvb -mllvm -scalable-vectorization=preferred -mllvm -treat-scalable-fixed-error-as-warning=false'",
+                        "-DCMAKE_C_FLAGS='-mcpu=neoverse-512tvb -mllvm -scalable-vectorization=preferred'",
+                        "-DCMAKE_CXX_FLAGS='-mcpu=neoverse-512tvb -mllvm -scalable-vectorization=preferred'",
                         "-DLLVM_ENABLE_LLD=True",
                         "-DMLIR_INCLUDE_INTEGRATION_TESTS=True",
                         "-DMLIR_RUN_ARM_SVE_TESTS=True"])},
@@ -541,8 +537,8 @@ all = [
                         'NO_STOP_MESSAGE':'1', # For Fortran test-suite
                     },
                     testsuite_flags=[
-                        '--cppflags', '-mcpu=neoverse-512tvb -msve-vector-bits=256 -mllvm -treat-scalable-fixed-error-as-warning=false -O3',
-                        '--cmake-define', 'CMAKE_Fortran_FLAGS=-mcpu=neoverse-512tvb -msve-vector-bits=256 -mllvm -treat-scalable-fixed-error-as-warning=false -O3',
+                        '--cppflags', '-mcpu=neoverse-512tvb -msve-vector-bits=256 -O3',
+                        '--cmake-define', 'CMAKE_Fortran_FLAGS=-mcpu=neoverse-512tvb -msve-vector-bits=256 -O3',
                         '--threads=32', '--build-threads=32'],
                     extra_cmake_args=[
                         "-DCMAKE_C_FLAGS='-mcpu=neoverse-512tvb'",
@@ -566,12 +562,12 @@ all = [
                         'NO_STOP_MESSAGE':'1', # For Fortran test-suite
                     },
                     testsuite_flags=[
-                        '--cppflags', '-mcpu=neoverse-512tvb -msve-vector-bits=256 -mllvm -treat-scalable-fixed-error-as-warning=false -O3',
-                        '--cmake-define', 'CMAKE_Fortran_FLAGS=-mcpu=neoverse-512tvb -msve-vector-bits=256 -mllvm -treat-scalable-fixed-error-as-warning=false -O3',
+                        '--cppflags', '-mcpu=neoverse-512tvb -msve-vector-bits=256 -O3',
+                        '--cmake-define', 'CMAKE_Fortran_FLAGS=-mcpu=neoverse-512tvb -msve-vector-bits=256 -O3',
                         '--threads=32', '--build-threads=32'],
                     extra_cmake_args=[
-                        "-DCMAKE_C_FLAGS='-mcpu=neoverse-512tvb -msve-vector-bits=256 -mllvm -treat-scalable-fixed-error-as-warning=false'",
-                        "-DCMAKE_CXX_FLAGS='-mcpu=neoverse-512tvb -msve-vector-bits=256 -mllvm -treat-scalable-fixed-error-as-warning=false'",
+                        "-DCMAKE_C_FLAGS='-mcpu=neoverse-512tvb -msve-vector-bits=256'",
+                        "-DCMAKE_CXX_FLAGS='-mcpu=neoverse-512tvb -msve-vector-bits=256'",
                         "-DLLVM_ENABLE_LLD=True",
                         "-DMLIR_INCLUDE_INTEGRATION_TESTS=True",
                         "-DMLIR_RUN_ARM_SVE_TESTS=True"])},
@@ -592,8 +588,8 @@ all = [
                         'NO_STOP_MESSAGE':'1', # For Fortran test-suite
                     },
                     testsuite_flags=[
-                        '--cppflags', '-mcpu=neoverse-v2 -mllvm -scalable-vectorization=preferred -mllvm -treat-scalable-fixed-error-as-warning=false -O3',
-                        '--cmake-define', 'CMAKE_Fortran_FLAGS=-mcpu=neoverse-v2 -mllvm -scalable-vectorization=preferred -mllvm -treat-scalable-fixed-error-as-warning=false -O3',
+                        '--cppflags', '-mcpu=neoverse-v2 -mllvm -scalable-vectorization=preferred -O3',
+                        '--cmake-define', 'CMAKE_Fortran_FLAGS=-mcpu=neoverse-v2 -mllvm -scalable-vectorization=preferred -O3',
                         '--threads=48', '--build-threads=48'],
                     extra_cmake_args=[
                         "-DCMAKE_C_FLAGS='-mcpu=neoverse-v2'",
@@ -618,12 +614,12 @@ all = [
                         'NO_STOP_MESSAGE':'1', # For Fortran test-suite
                     },
                     testsuite_flags=[
-                        '--cppflags', '-mcpu=neoverse-v2 -mllvm -scalable-vectorization=preferred -mllvm -treat-scalable-fixed-error-as-warning=false -O3',
-                        '--cmake-define', 'CMAKE_Fortran_FLAGS=-mcpu=neoverse-v2 -mllvm -scalable-vectorization=preferred -mllvm -treat-scalable-fixed-error-as-warning=false -O3',
+                        '--cppflags', '-mcpu=neoverse-v2 -mllvm -scalable-vectorization=preferred -O3',
+                        '--cmake-define', 'CMAKE_Fortran_FLAGS=-mcpu=neoverse-v2 -mllvm -scalable-vectorization=preferred -O3',
                         '--threads=48', '--build-threads=48'],
                     extra_cmake_args=[
-                        "-DCMAKE_C_FLAGS='-mcpu=neoverse-v2 -mllvm -scalable-vectorization=preferred -mllvm -treat-scalable-fixed-error-as-warning=false'",
-                        "-DCMAKE_CXX_FLAGS='-mcpu=neoverse-v2 -mllvm -scalable-vectorization=preferred -mllvm -treat-scalable-fixed-error-as-warning=false'",
+                        "-DCMAKE_C_FLAGS='-mcpu=neoverse-v2 -mllvm -scalable-vectorization=preferred'",
+                        "-DCMAKE_CXX_FLAGS='-mcpu=neoverse-v2 -mllvm -scalable-vectorization=preferred'",
                         "-DLLVM_ENABLE_LLD=True",
                         "-DMLIR_INCLUDE_INTEGRATION_TESTS=True",
                         "-DMLIR_RUN_ARM_SVE_TESTS=True"])},
