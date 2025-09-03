@@ -19,7 +19,7 @@ GITHUB_API_BATCH_SIZE = 50
 
 # Number of days to look back for new commits
 # We allow some buffer time between when a commit is made and when it is queried
-# for reviews. This is allow time for any new GitHub events to propogate.
+# for reviews. This is to allow time for any new GitHub events to propogate.
 LOOKBACK_DAYS = 2
 
 # Template GraphQL subquery to check if a commit has an associated pull request
