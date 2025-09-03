@@ -2081,7 +2081,8 @@ all += [
     'builddir': "openmp-offload-libc-amdgpu-runtime",
     'factory' : AnnotatedBuilder.getAnnotatedBuildFactory(
                     depends_on_projects=['llvm', 'clang', 'compiler-rt', 'lld', 'libc', 'offload', 'openmp', 'libunwind'],
-                    script='amdgpu-offload-cmake.py --cmake-file=AMDGPULibcBot.cmake',
+                    script='amdgpu-offload-cmake.py',
+                    extra_args=['--cmake-file=AMDGPULibcBot.cmake'],
                     checkout_llvm_sources=True,
                     script_interpreter=None
                 )},
