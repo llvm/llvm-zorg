@@ -159,16 +159,16 @@ they will natively be reported after the infrastructure is set up. Buildbot
 supports a [REST API](https://docs.buildbot.net/latest/developer/rest.html) that
 would allow for easily querying the state of a commit in `main`.
 
-For the proposed premerge advisor that tells the user what tests/build failures
-they can safely ignore, we need to know what is currently failing on `main`.
-Each pull request is tested as if it was merged into main, which means the
-commit underneath the PR is very recent. If a premerge run fails, the premerge
-advisor will find the commit from `main` the PR is being tested on. It will then
-query the Buildbot master using the REST API for the status of that commit, or
-the preceeding commits if testing for the requested commit has not yet
-completed. It can then report the appropriate status to the user. Having the
-status will let the premerge advisor avoid pestering LLVM developers with
-failures unrelated to their changes.
+In the future, we may implement a "premerge advisor" that tells the user what
+tests/build failures they can safely ignore, we need to know what is currently
+failing on `main`. Each pull request is tested as if it was merged into main,
+which means the commit underneath the PR is very recent. If a premerge run
+fails, the premerge advisor will find the commit from `main` the PR is being
+tested on. It will then query the Buildbot master using the REST API for the
+status of that commit, or the preceeding commits if testing for the requested
+commit has not yet completed. It can then report the appropriate status to the
+user. Having the status will let the premerge advisor avoid pestering LLVM
+developers with failures unrelated to their changes.
 
 ## Alternatives Considered
 
