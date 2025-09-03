@@ -1,0 +1,70 @@
+#!/usr/bin/env groovy
+@Library('llvm-jenkins-lib') _
+
+// Bisection orchestrator that manages the binary search process
+// Uses build-bisect-run jobs to do the actual testing work
+def bisectionUtils = evaluate readTrusted('zorg/jenkins/lib/utils/BisectionUtils.groovy')
+
+pipeline {
+    options {
+        disableConcurrentBuilds()
+    }
+
+    parameters {
+        string(name: 'LABEL', defaultValue: params.LABEL ?: 'macos-x86_64', description: 'Node label to run on')
+        string(name: 'BISECT_GOOD', defaultValue: params.BISECT_GOOD ?: '', description: 'Known good commit')
+        string(name: 'BISECT_BAD', defaultValue: params.BISECT_BAD ?: '', description: 'Known bad commit')
+
+        // Job template configuration to pass through to build-bisect-run
+        string(name: 'JOB_TEMPLATE', defaultValue: params.JOB_TEMPLATE ?: 'clang-stage2-Rthinlto', description: 'Job template to bisect')
+        string(name: 'BUILD_CONFIG', defaultValue: params.BUILD_CONFIG ?: '{}', description: 'Build configuration JSON')
+        string(name: 'ARTIFACT', defaultValue: params.ARTIFACT ?: 'llvm.org/clang-stage1-RA/latest', description: 'Base artifact to use')
+    }
+
+    agent {
+        node {
+            label params.LABEL
+        }
+    }
+
+    stages {
+        stage('Setup') {
+            steps {
+                script {
+                    if (!params.BISECT_GOOD || !params.BISECT_BAD || !params.JOB_TEMPLATE) {
+                        error "BISECT_GOOD, BISECT_BAD, and JOB_TEMPLATE parameters are required"
+                    }
+
+                    echo "Starting bisection of ${params.JOB_TEMPLATE}: ${params.BISECT_GOOD}...${params.BISECT_BAD}"
+                    echo "Build Config: ${params.BUILD_CONFIG}"
+
+                    // Set build description
+                    currentBuild.description = "🔍 BISECTING [${params.JOB_TEMPLATE}]: ${params.BISECT_GOOD.take(8)}..${params.BISECT_BAD.take(8)}"
+
+                    // Clone the repository to get commit information
+                    def clangBuilder = evaluate readTrusted('zorg/jenkins/lib/builders/ClangBuilder.groovy')
+                    clangBuilder.checkoutStage()
+                }
+            }
+        }
+
+        stage('Perform Bisection') {
+            steps {
+                script {
+                    def failingCommit = bisectionUtils.performBisectionWithRunner(
+                        params.BISECT_GOOD,
+                        params.BISECT_BAD,
+                        params.JOB_TEMPLATE,
+                        params.BUILD_CONFIG,
+                        params.ARTIFACT
+                    )
+
+                    bisectionUtils.reportBisectionResult(failingCommit, params.JOB_TEMPLATE)
+
+                    // Update build description with result
+                    currentBuild.description = "✅ BISECTED [${params.JOB_TEMPLATE}]: failing commit ${failingCommit.take(8)}"
+                }
+            }
+        }
+    }
+}
