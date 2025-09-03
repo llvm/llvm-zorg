@@ -119,11 +119,11 @@ def query_for_reviews(
           diff=[
               {
                   "file": file,
-                  "additions": diff["insertions"],
-                  "deletions": diff["deletions"],
-                  "total": diff["lines"],
+                  "additions": line_stats["insertions"],
+                  "deletions": line_stats["deletions"],
+                  "total": line_stats["lines"],
               }
-              for file, diff in commit.stats.files.items()
+              for file, line_stats in commit.stats.files.items()
           ],
       )
       for commit in new_commits
