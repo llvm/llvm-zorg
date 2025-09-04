@@ -19,8 +19,7 @@ GITHUB_API_BATCH_SIZE = 50
 
 # Number of days to look back for new commits
 # We allow some buffer time between when a commit is made and when it is queried
-# for reviews. This is allow time for any events to propogate in the GitHub
-# Archive BigQuery tables.
+# for reviews. This is to allow time for any new GitHub events to propogate.
 LOOKBACK_DAYS = 2
 
 # Template GraphQL subquery to check if a commit has an associated pull request
@@ -57,7 +56,7 @@ commit_{commit_sha}:
 class LLVMCommitInfo:
   commit_sha: str
   commit_timestamp_seconds: int
-  files_modified: set[str]
+  diff: list[dict[str, int | str]]
   commit_author: str = ""  # GitHub username of author is unknown until API call
   has_pull_request: bool = False
   pull_request_number: int = 0
@@ -117,7 +116,15 @@ def query_for_reviews(
       commit.hexsha: LLVMCommitInfo(
           commit_sha=commit.hexsha,
           commit_timestamp_seconds=commit.committed_date,
-          files_modified=set(commit.stats.files.keys()),
+          diff=[
+              {
+                  "file": file,
+                  "additions": line_stats["insertions"],
+                  "deletions": line_stats["deletions"],
+                  "total": line_stats["lines"],
+              }
+              for file, line_stats in commit.stats.files.items()
+          ],
       )
       for commit in new_commits
   }
@@ -210,7 +217,10 @@ def upload_daily_metrics_to_bigquery(
   )
   table = bq_client.get_table(table_ref)
   commit_records = [dataclasses.asdict(commit) for commit in new_commits]
-  bq_client.insert_rows(table, commit_records)
+  errors = bq_client.insert_rows(table, commit_records)
+  if errors:
+    logging.error("Failed to upload commit info to BigQuery: %s", errors)
+    exit(1)
 
 
 def main() -> None:

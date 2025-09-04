@@ -48,9 +48,31 @@
     "description": "List of GitHub users who reviewed the pull request for this commit"
   },
   {
-    "name": "files_modified",
-    "type": "STRING",
+    "name": "diff",
+    "type": "RECORD",
     "mode": "REPEATED",
-    "description": "List of filepaths modified by this commit"
+    "description": "List of files and line addition/deletion counts for this commit",
+    "fields": [
+      {
+        "name": "file",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "additions",
+        "type": "INTEGER",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "deletions",
+        "type": "INTEGER",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "total",
+        "type": "INTEGER",
+        "mode": "NULLABLE"
+      }
+    ]
   }
 ]
