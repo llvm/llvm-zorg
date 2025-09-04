@@ -1,6 +1,7 @@
 import dataclasses
 import datetime
 import logging
+import math
 import os
 import git
 from google.cloud import bigquery
@@ -144,7 +145,7 @@ def query_for_reviews(
       }
     }
   """
-  num_batches = len(commit_subqueries) // GITHUB_API_BATCH_SIZE + 1
+  num_batches = math.ceil(len(commit_subqueries) / GITHUB_API_BATCH_SIZE)
   logging.info("Querying GitHub GraphQL API in %d batches", num_batches)
   for i in range(num_batches):
     subquery_batch = commit_subqueries[
