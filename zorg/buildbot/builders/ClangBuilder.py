@@ -536,7 +536,7 @@ def _getClangCMakeBuildFactory(
         virtualenv_dir = 'Scripts' if vs else 'bin'
         python = InterpolateToPosixPath(f'%(prop:builddir)s/test/sandbox/{virtualenv_dir}/python')
         lnt_ext = '.exe' if vs else ''
-        lnt = InterpolateToPosixPath(f'%(prop:builddir)s/test/sandbox/Scripts/lnt{lnt_ext}')
+        lnt = InterpolateToPosixPath(f'%(prop:builddir)s/test/sandbox/{virtualenv_dir}/lnt{lnt_ext}')
         lnt_setup = InterpolateToPosixPath('%(prop:builddir)s/test/lnt/setup.py')
 
         # Paths
