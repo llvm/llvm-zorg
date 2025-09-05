@@ -612,6 +612,7 @@ def getCmakeWithNinjaMultistageBuildFactory(
 
 def getCmakeExBuildFactory(
         depends_on_projects = None,
+        enable_projects = "auto",
         enable_runtimes = "auto",
         cmake_definitions = None,
         cmake_options = None,
@@ -665,6 +666,17 @@ def getCmakeExBuildFactory(
 
             If this parameter is not None and contains the non-runtime project names, they will go to
             LLVM_ENABLE_PROJECTS CMake configuration parameter.
+
+        enable_projects : list, optional
+            A list of the LLVM projects (except the runtime projects) for the build (default is 'auto').
+            This list goes into the factory's 'enable_projects' attribute and LLVM_ENABLE_PROJECTS CMake configuration
+            parameter.
+
+            If "auto" is specified, the runtime projects will be extracted from 'depends_on_projects' parameter.
+
+            If None is specified, LLVM_ENABLE_PROJECTS will not be set for the CMake configuration step.
+
+            (see LLVMBuildFactory for more details).
 
         enable_runtimes : list, optional
             A list of the runtime project names for the build (default is 'auto'). This list goes into
@@ -894,6 +906,7 @@ def getCmakeExBuildFactory(
     # Default root factory. We will collect all steps for all stages here.
     f = LLVMBuildFactory(
             depends_on_projects = depends_on_projects,
+            enable_projects     = enable_projects,
             enable_runtimes     = enable_runtimes,
             hint                = hint,
             llvm_srcdir         = llvm_srcdir,
