@@ -327,19 +327,19 @@ def get_all():
 
         # Ubuntu 22.04 on AWS, x86_64 PS4 target
         create_worker("sie-linux-worker", properties={'jobs': 40}, max_builds=1),
-        # 2012 Mac Mini host, 16GB memory:
-        #   - Ubuntu 18.04 in docker container
+        # Ubuntu 20.04 in docker container on AWS
         create_worker("doug-worker-1a", properties={'jobs': 8}, max_builds=1),
-        #   - Ubuntu 22.04 in docker container
+        # Ubuntu 22.04 in docker container on 2012 Mac Mini
         create_worker("doug-worker-1b", properties={'jobs': 8}, max_builds=1),
         # Ubuntu 18.04 in docker container on Ryzen 4800U
         create_worker("doug-worker-2a", properties={'jobs': 16}, max_builds=1),
-        # Ubuntu 20.04 on AWS, AMD EPYC 7R13 shared
+        # Ubuntu 22.04 on AWS
         create_worker("sie-linux-worker2", max_builds=1),
+        # Ubuntu 20.04 on AWS
         create_worker("sie-linux-worker3", max_builds=1),
         # Ubuntu 22.04 on AWS, x86_64 PS5 target
         create_worker("sie-linux-worker4", properties={'jobs': 40}, max_builds=1),
-        # Ubuntu 22.04 on AWS
+        # Ubuntu 24.04 on AWS
         create_worker("sie-linux-worker5", max_builds=1),
 
         # Windows Server 2019 on AWS, x86_64 PS4 target
@@ -347,9 +347,10 @@ def get_all():
 
         # Mac target, Intel Core i7-8700B, 64GB
         create_worker("doug-worker-3", properties={'jobs': 12}, max_builds=1),
+        # Mac target, Apple M2 Pro, 32GB
+        create_worker("doug-worker-4", max_builds=1),
         # Mac target, Apple M1, 16GB
-        create_worker("doug-worker-4", properties={'jobs': 8}, max_builds=1),
-        create_worker("doug-worker-5", properties={'jobs': 8}, max_builds=1),
+        create_worker("doug-worker-5", max_builds=1),
 
         # Ubuntu 20.04, AMD Ryzen 5 PRO 3400GE, 32GB
         create_worker("doug-worker-6", properties={'jobs': 8}, max_builds=1),
