@@ -2721,6 +2721,7 @@ all += [
     'tags'  : ["doc"],
     'workernames' : ["as-worker-4"], #FIXME: Temporarily disabled failing doxygen build - as-builder-8.
     'builddir': "publish-doxygen-docs",
+    'collapseRequests': True,
     'factory' : DoxygenDocsBuilder.getLLVMDocsBuildFactory(
                     # Doxygen builds the final result for really
                     # long time without any output.
