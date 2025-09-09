@@ -1962,6 +1962,8 @@ all += [
                             "-DLLVM_ENABLE_ASSERTIONS=ON",
                             "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
                             "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
+                            "-DRUNTIMES_amdgcn-amd-amdhsa_LLVM_ENABLE_RUNTIMES='compiler-rt;openmp'",
+                            "-DLLVM_RUNTIME_TARGETS=default;amdgcn-amd-amdhsa",
                             ],
                         env={
                             'HSA_ENABLE_SDMA':'0',
