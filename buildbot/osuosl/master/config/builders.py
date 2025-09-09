@@ -2082,7 +2082,7 @@ all += [
      # We would like to never collapse, but it seems the load is too high on that system to keep up.
     'builddir': "openmp-offload-libc-amdgpu-runtime",
     'factory' : AnnotatedBuilder.getAnnotatedBuildFactory(
-                    depends_on_projects=['llvm', 'clang', 'compiler-rt', 'lld', 'libc', 'offload', 'openmp', 'libunwind'],
+                    depends_on_projects=['llvm', 'clang', 'compiler-rt', 'lld', 'libc', 'libcxx', 'libcxxabi', 'offload', 'openmp', 'libunwind'],
                     script='amdgpu-offload-cmake.py',
                     extra_args=['--cmake-file=AMDGPULibcBot.cmake'],
                     checkout_llvm_sources=True,
