@@ -47,6 +47,11 @@ reload(DoxygenDocsBuilder)
 
 reload(StagedBuilder)
 
+# Doxygen build takes a really long time. We want to collapse build requests
+# more aggressively to better keep up with the changes.
+def collapseRequestsDoxygen(master, builder, req1, req2):
+    return req1.get('reason', None) == req2.get('reason', None)
+
 all = [
 
 # Clang fast builders.
@@ -2723,8 +2728,9 @@ all += [
 
     {'name' : "publish-doxygen-docs",
     'tags'  : ["doc"],
-    'workernames' : ["as-worker-4"], #FIXME: Temporarily disabled failing doxygen build - as-builder-8.
+    'workernames' : ["as-worker-4"],
     'builddir': "publish-doxygen-docs",
+    'collapseRequests': collapseRequestsDoxygen,
     'factory' : DoxygenDocsBuilder.getLLVMDocsBuildFactory(
                     # Doxygen builds the final result for really
                     # long time without any output.
