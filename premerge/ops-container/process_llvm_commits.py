@@ -130,7 +130,7 @@ def query_for_reviews(
     )
     commit_match = re.search(r"This reverts commit (\w+)", commit.message)
     pull_request_reverted = (
-        pull_request_match.group(1) if pull_request_match else None
+        int(pull_request_match.group(1)) if pull_request_match else None
     )
     commit_reverted = commit_match.group(1) if commit_match else None
 
