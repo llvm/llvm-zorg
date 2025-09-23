@@ -48,6 +48,24 @@
     "description": "List of GitHub users who reviewed the pull request for this commit"
   },
   {
+    "name": "is_revert",
+    "type": "BOOLEAN",
+    "mode": "NULLABLE",
+    "description": "Whether or not this commit is a revert"
+  },
+  {
+    "name": "pull_request_reverted",
+    "type": "INTEGER",
+    "mode": "NULLABLE",
+    "description": "Pull request reverted by this commit"
+  },
+  {
+    "name": "commit_reverted",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Commit reverted by this commit"
+  },
+  {
     "name": "diff",
     "type": "RECORD",
     "mode": "REPEATED",

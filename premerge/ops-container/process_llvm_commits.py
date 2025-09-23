@@ -3,6 +3,7 @@ import datetime
 import logging
 import math
 import os
+import re
 import git
 from google.cloud import bigquery
 import requests
@@ -64,6 +65,9 @@ class LLVMCommitInfo:
   is_reviewed: bool = False
   is_approved: bool = False
   reviewers: set[str] = dataclasses.field(default_factory=set)
+  is_revert: bool = False
+  pull_request_reverted: int | None = None
+  commit_reverted: str | None = None
 
 
 def scrape_new_commits_by_date(
@@ -113,26 +117,44 @@ def query_for_reviews(
     List of LLVMCommitInfo objects for each commit's review information.
   """
   # Create a map of commit sha to info
-  new_commits = {
-      commit.hexsha: LLVMCommitInfo(
-          commit_sha=commit.hexsha,
-          commit_timestamp_seconds=commit.committed_date,
-          diff=[
-              {
-                  "file": file,
-                  "additions": line_stats["insertions"],
-                  "deletions": line_stats["deletions"],
-                  "total": line_stats["lines"],
-              }
-              for file, line_stats in commit.stats.files.items()
-          ],
-      )
-      for commit in new_commits
-  }
+  new_commits_info = {}
+  for commit in new_commits:
+    # Check if this commit is a revert
+    is_revert = (
+        re.match(r"^Revert \".*\"( \(#\d+\))?", commit.message) is not None
+    )
+
+    # Check which pull request or commit is being reverted (if any)
+    pull_request_match = re.search(
+        r"Reverts? (?:llvm\/llvm-project)?#(\d+)", commit.message
+    )
+    commit_match = re.search(r"This reverts commit (\w+)", commit.message)
+    pull_request_reverted = (
+        pull_request_match.group(1) if pull_request_match else None
+    )
+    commit_reverted = commit_match.group(1) if commit_match else None
+
+    # Add entry
+    new_commits_info[commit.hexsha] = LLVMCommitInfo(
+        commit_sha=commit.hexsha,
+        commit_timestamp_seconds=commit.committed_date,
+        diff=[
+            {
+                "file": file,
+                "additions": line_stats["insertions"],
+                "deletions": line_stats["deletions"],
+                "total": line_stats["lines"],
+            }
+            for file, line_stats in commit.stats.files.items()
+        ],
+        is_revert=is_revert,
+        pull_request_reverted=pull_request_reverted,
+        commit_reverted=commit_reverted,
+    )
 
   # Create GraphQL subqueries for each commit
   commit_subqueries = []
-  for commit_sha in new_commits:
+  for commit_sha in new_commits_info:
     commit_subqueries.append(
         COMMIT_GRAPHQL_SUBQUERY_TEMPLATE.format(commit_sha=commit_sha)
     )
@@ -180,7 +202,7 @@ def query_for_reviews(
   # Amend commit information with GitHub data
   for commit_sha, data in api_commit_data.items():
     commit_sha = commit_sha.removeprefix("commit_")
-    commit_info = new_commits[commit_sha]
+    commit_info = new_commits_info[commit_sha]
     commit_info.commit_author = data["author"]["user"]["login"]
 
     # If commit has no pull requests, skip it. No data to update.
@@ -201,7 +223,7 @@ def query_for_reviews(
     # against what we want to measure, so remove them from the set of reviewers.
     commit_info.reviewers.discard(commit_info.commit_author)
 
-  return list(new_commits.values())
+  return list(new_commits_info.values())
 
 
 def upload_daily_metrics_to_bigquery(
