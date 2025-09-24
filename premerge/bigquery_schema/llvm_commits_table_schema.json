@@ -48,6 +48,24 @@
     "description": "List of GitHub users who reviewed the pull request for this commit"
   },
   {
+    "name": "is_revert",
+    "type": "BOOLEAN",
+    "mode": "NULLABLE",
+    "description": "Whether or not this commit is a revert"
+  },
+  {
+    "name": "pull_request_reverted",
+    "type": "INTEGER",
+    "mode": "NULLABLE",
+    "description": "Pull request matched in revert message. Not reliable for determining if a PR was reverted, `commit_reverted` may contain a commit belonging to a PR"
+  },
+  {
+    "name": "commit_reverted",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Commit sha matched in revert message. Not reliable for determining if a commit was reverted, `pull_request_reverted` may contain a PR contributing a commit"
+  },
+  {
     "name": "diff",
     "type": "RECORD",
     "mode": "REPEATED",
