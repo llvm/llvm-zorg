@@ -121,14 +121,19 @@ def query_for_reviews(
   for commit in new_commits:
     # Check if this commit is a revert
     is_revert = (
-        re.match(r"^Revert \".*\"( \(#\d+\))?", commit.message) is not None
+        re.match(
+            r"^Revert \".*\"( \(#\d+\))?", commit.message, flags=re.IGNORECASE
+        )
+        is not None
     )
 
     # Check which pull request or commit is being reverted (if any)
     pull_request_match = re.search(
-        r"Reverts? (?:llvm\/llvm-project)?#(\d+)", commit.message
+        r"Reverts? (?:llvm\/llvm-project)?#(\d+)", commit.message, flags=re.IGNORECASE
     )
-    commit_match = re.search(r"This reverts commit (\w+)", commit.message)
+    commit_match = re.search(
+        r"This reverts commit (\w+)", commit.message, flags=re.IGNORECASE
+    )
     pull_request_reverted = (
         int(pull_request_match.group(1)) if pull_request_match else None
     )
