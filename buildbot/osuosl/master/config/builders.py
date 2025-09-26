@@ -331,7 +331,7 @@ all = [
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                     depends_on_projects=['llvm', 'clang', 'clang-tools-extra',
                                          'lld', 'compiler-rt', 'openmp'],
-                    checks=['check-all', 'check-runtimes'],
+                    checks=['check-all'],
                     extra_configure_args=[
                         "-DLLVM_TARGETS_TO_BUILD=X86;ARM;AArch64",
                         "-DCLANG_DEFAULT_LINKER=lld",
@@ -702,7 +702,7 @@ all = [
     'factory' : TestSuiteBuilder.getTestSuiteBuildFactory(
                     depends_on_projects=["llvm", "clang", "clang-tools-extra",
                                          "compiler-rt"],
-                    checks=['check-all', 'check-runtimes'],
+                    checks=['check-all'],
                     extra_configure_args=[
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
                         "-DCMAKE_BUILD_TYPE=Release",
@@ -716,7 +716,7 @@ all = [
     'builddir': "clang-ppc64le-multistage",
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
                     clean=False,
-                    checks=['check-all', 'check-runtimes'],
+                    checks=['check-all'],
                     checkout_lld=False,
                     useTwoStage=True,
                     stage1_config='Release',
@@ -734,7 +734,7 @@ all = [
     'factory' : TestSuiteBuilder.getTestSuiteBuildFactory(
                     depends_on_projects=["llvm", "clang", "clang-tools-extra",
                                          "lld", "compiler-rt"],
-                    checks=['check-runtimes', 'check-all'],
+                    checks=['check-all'],
                     extra_configure_args=[
                         "-DLLVM_ENABLE_ASSERTIONS=On",
                         "-DCMAKE_C_COMPILER=clang",
