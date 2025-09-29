@@ -2,30 +2,33 @@
 
 ## Introduction
 
-While the premerge infrastructure is generally reliable, tests that are broken
-at HEAD, or tests that are flaky can significantly degrade the user experience.
-Failures unrelated to the PR being worked on can lead to warning fatigue which
-can compound this problem when people land failing tests into main that they
-believe are unrelated. The premerge advisor is designed to run after premerge
-testing and signal to the user whether the failures can be safely ignored because
-they are flaky or broken at head, or whether they should be investigated further.
+While the premerge testing infrastructure is generally reliable, tests that are
+broken at HEAD, or tests that are flaky can significantly degrade the user
+experience. Reporting failures unrelated to the PR being worked on can lead to
+warning fatigue. Warning fatigue can self reinforce when people land failing
+tests into main that they believe are unrelated. This causes more false positive
+failures on other premerge testing invocations, leading to more warning
+fatigure. To address these issues we propose to implement a "premerge advisor".
+The premerge advisor is designed to run after premerge testing and signal to the
+user whether the failures can be safely ignored because they are flaky or broken
+at head, or whether they should be investigated further.
 
 ## Background/Motivation
 
 The usefulness of the premerge system is significantly impacted by how much
 people trust it. People trust the system less when the issues reported to them
 are unrelated to the changes that they are currently working on. False positives
-occur regularly whether due to flaky tests, or due to main being broken. Efforts
-to fix these issues at the source and keep main always green and deflake tests
-are laudable, but not a scalable solution to the problem of false positive
-failures. It is also not reasonable to expect PR authors to spend time
-familiarizing themselves with all known flaky tests and dig through postcommit
-testing logs to see if the failures in their premerge run also occur in main.
-These alternatives are further explored in the section on
-[alternatives considered](#alternatives-considered). Having tooling to
-automatically run through the steps that one would otherwise need to perform
-manually would ensure the analysis on every failed premerge run is thorough and
-likely to be correct.
+occur regularly whether due to flaky tests, or due to tests already being broken
+at head (perhaps by a previous commit). Efforts to fix these issues at the
+source and keep main always green and deflake tests are ongoing, but not a
+scalable solution to the problem of false positive failures. It is also not
+reasonable to expect PR authors to spend time familiarizing themselves with all
+known flaky tests and dig through postcommit testing logs to see if the failures
+in their premerge run also occur in main. These alternatives are further
+explored in the section on [alternatives considered](#alternatives-considered).
+Having tooling to automatically run through the steps that one would otherwise
+need to perform manually would ensure the analysis on every failed premerge run
+is thorough and likely to be correct.
 
 ## Design
 
@@ -58,15 +61,19 @@ For the premerge jobs running through Github Actions, we plan on using the
 existing `generate_test_report` scripts that are currently used for generating
 summaries on job failures. When the job ends and there is a failure, there would
 be a script that runs, utilizing the `generate_test_report` library to extract
-failure information, and then uploading the information to the web server.
+failure information, and then uploads the information to the web server.
 Information on how the premerge jobs will query the server and display results
 about flaky/already broken tests is in
 [the section below](#informing-the-user). We plan on having both the premerge
-and postcommit jobs upload failure information to the web server. This enables
-the web server to know about failures that are not the result of mid-air
-collisions before postcommit testing has been completed. Postcommit testing can
-take upwards of 30 minutes, during which the premerge advisor would not be able
-to advise that these failures are due to a broken `main`.
+and [postcommit jobs](post-submit-testing.md) upload failure information to the
+web server. This enables the web server to know about failures that are not the
+result of mid-air collisions before postcommit testing has been completed.
+Postcommit testing can take upwards of 30 minutes, during which the premerge
+advisor would not be able to advise that these failures are due to a broken
+`main`. Data from both postcommit and premerge testing will be associated with a
+commit SHA for the base commit in main. Premerge testing data will additionally
+have a PR associated with it to enable disambiguating between failures occurring
+in `main` at a specific commit and failures only occurring in a PR.
 
 We plan on implementing the web server in python with the `flask` library. All
 contributors to the premerge infrastructure are already familiar with Python,
@@ -80,7 +87,7 @@ independently of each other, we also need to duplicate the web server for the
 premerge advisor. Queries and failure information uploads will go to the
 cluster-local premerge advisor web server. Periodically (eg once every thirty
 seconds), the web server will query the web server on the other cluster to see
-if there is any new data that has not been propgated back to the other side yet.
+if there is any new data that has not been propagated back to the other side yet.
 It is easy to figure out what one side is missing as Github workflow runs are
 numbered sequentially and git commits are also explicitly ordered. One side just
 needs to send the latest commit SHA and workflow run it has all previous data
@@ -92,6 +99,45 @@ recover. Synchronization does not need to be perfect as test failures that are
 flaky or broken at head will almost certainly show up in both clusters
 relatively quickly, and minor discrepancies for queries between the clusters are
 not a big deal.
+
+### Identifying if Failures are Novel
+
+When the web server is sent a request to explain a list of failures, it needs to
+be able to determine whether a failure has occurred previously. To do this, the
+web server will keep a list of currently active failures in `main` and a list of
+flaky tests. The list of flaky tests will be computed from historical data on
+startup from a rolling window of data. The exact heuristic is left to
+implementation as it will likely require some experimentation. The list of
+currently active failures will initially be taken from the last known postcommit
+run. If a new postcommit run shows additional failures that are not in the flake
+list, they will be added to the currently active failure list. Failures in the
+currently active list not present in the latest postcommit run will be removed
+from the currently active list. In addition to data from postcommit testing, if
+a PR lands with unexplained premerge failures, those failures are also added to
+the currently active failure list. If a PR based on a version of main with
+currently active failures no longer contains those failures, they will be
+removed from the list when that PR lands. We look at information from PRs to
+improve the latency of failures/passes making their way into the system with
+postcommit testing currently having a minimum latency of 30 minutes.
+
+Failures will be identified as being the same through a combination of the
+test name and likely a fuzzy match of the test error output. The exact details
+are left to implementation as they will likely require some experimentation
+to get right.
+
+These tradeoffs do leave open the possibility that we incorrectly identify tests
+as being broken at head in certain extenuating circumstances. Consider a
+situation where someone lands commit A breaking a test, immediately after lands
+commit B fixing that test, and then opens a PR, C, that also breaks the test in
+the same way around the same time. If commit B was directly pushed, or merged
+without waiting for premerge to finish, then the test failure will still be in
+the currently active failure list. The failure for PR C will then be marked as
+failing at HEAD despite it not actually failing at HEAD. Given the low
+probability of this occurring due to the same test needing to be broken, the
+error message needing to be extremely similar, and the exact timing
+requirements, we deem this an acceptable consequence of the current design. To
+alleviate this issue, we would end up marking many more failures broken at main
+as true failures due to the latency of postcommit testing.
 
 ### Informing the User
 
@@ -112,6 +158,13 @@ workflow failure and then update that comment everytime we get new data. This
 prevents creating much noise. This does mean that the comment might get buried
 in long running reviews, but those are not the common case and people should
 learn to expect to look for the comment earlier in the thread in such cases.
+
+If all of the failures in the workflow were successfully explained by the
+premerge advisor as flaky or already broken in `main`, then the premerge
+workflow will be marked as successful despite the failure. This will be
+achieved by having the build/test step always marked as successful. The
+premerge advisor will then exit with a non-zero exit code if it comes
+across non-explainable failures.
 
 ## Alternatives Considered
 
@@ -166,3 +219,7 @@ The complexity is also well confined to the components specific to this new
 infrastructure, and the new failure modes can be mitigated through proper error
 handling at the interface between the existing premerge system and the new
 premerge advisor infrastructure.
+
+### Using an Existing System
+
+TODO(boomanaiden154)
