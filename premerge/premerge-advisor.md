@@ -222,4 +222,31 @@ premerge advisor infrastructure.
 
 ### Using an Existing System
 
-TODO(boomanaiden154)
+There are several different platforms that offer post workflow test analysis
+around issues like flaky tests. These platforms include [trunk.io](trunk.io),
+[mergify](mergify.com), and
+[DataDog Test Optimization](docs.datadoghq.com/tests/). However, only one of
+these platforms, trunk.io, supports marking jobs as green if the only tests that
+failed were flaky through their
+[quarantining feature](docs.trunk.io/flaky-tests/quarantining). However, it
+supports little customization over commenting on PRs (either is always on, even
+successful runs, or always off), and our notification story is of high
+importance. We want the signal to noise ratio of premerge notifications to be
+high. The system should simply say nothing if everything has gone well.
+
+In addition to being able to mark jobs as green if only flaky tests failed,
+we also need to be able to keep track of failures in `main` and not block
+merging on them. None of the systems considered support this functionality,
+making the assumption that `main` should always be green (through mechanisms
+like a merge queue), or should be fixed quickly. Due to the scale and
+contribution norms in LLVM, keeping `main` always green is hard to enforce
+at scale, so we need to support this feature.
+
+The cost of using these systems is also nontrivial given how frequently
+the premerge pipeline gets run and the number of tests that get run. These
+systems are typically priced based on a number of "test spans" (a single
+test invocation), with both mergify trunk.io and DataDog pricing ingesting
+1M test spans at $3. We run ~300k tests per premerge run. Using a
+conservative estimate of 400 premerge runs per weekday, no runs on weekends,
+we end up with a cost of almost $100k per year, not including any potential
+open source discounts.
