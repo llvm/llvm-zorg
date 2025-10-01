@@ -238,7 +238,7 @@ resource "helm_release" "github_actions_runner_set_libcxx" {
   chart      = "gha-runner-scale-set"
 
   values = [
-    "${templatefile("libcxx_runners_values.yaml", { runner_group_name : var.runner_group_name, runner_image : var.libcxx_runner_image, command : "/home/runner/run.sh" })}"
+    "${templatefile("libcxx_runners_values.yaml", { runner_group_name : var.runner_group_name, runner_image : var.libcxx_runner_image, command : "/home/gha/actions-runner/run.sh" })}"
   ]
 
   depends_on = [
