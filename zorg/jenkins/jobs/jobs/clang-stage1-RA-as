@@ -113,7 +113,10 @@ pipeline {
             post {
                 always {
                     script {
-                        junit "clang-build/**/testresults.xunit.xml"
+                        def Junit = new org.swift.Junit()
+                        Junit.safeJunit([
+                            testResults: "clang-build/**/testresults.xunit.xml"
+                        ])
                     }
                 }
             }
