@@ -108,12 +108,12 @@ pipeline {
                // ToDo: Restore the issue scanner
                // scanForIssues tool: clang()
 
-                junit allowEmptyResults: true, testResults: "clang-build/**/testresults.xunit.xml"
-                junit allowEmptyResults: true, testResults: "clang-build/asan-IOSSimX86_64Config.xunit.xml"
-                junit allowEmptyResults: true, testResults: "clang-build/asan-IOSSimI386Config.xunit.xml"
-                junit allowEmptyResults: true, testResults: "clang-build/tsan-IOSSimX86_64Config.xunit.xml"
-
-                sh "rm -rf clang-build clang-install host-compiler *.tar.gz"
+               def Junit = new org.swift.Junit()
+               Junit.safeJunit([allowEmptyResults: true, testResults: "clang-build/**/testresults.xunit.xml"])
+               Junit.safeJunit([allowEmptyResults: true, testResults: "clang-build/asan-IOSSimX86_64Config.xunit.xml"])
+               Junit.safeJunit([allowEmptyResults: true, testResults: "clang-build/asan-IOSSimI386Config.xunit.xml"])
+               Junit.safeJunit([allowEmptyResults: true, testResults: "clang-build/tsan-IOSSimX86_64Config.xunit.xml"])
+               sh "rm -rf clang-build clang-install host-compiler *.tar.gz"
             }
         }
     }

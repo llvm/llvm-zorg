@@ -201,7 +201,12 @@ pipeline {
         always {
             // ToDo: Restore issue scanner
             //scanForIssues tool: clang()
-            junit 'test/results.xml'
+            script {
+                def Junit = new org.swift.Junit()
+                Junit.safeJunit([
+                    testResults: 'test/results.xml'
+                ])
+            }
         }
         success {
             script {
