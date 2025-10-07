@@ -470,22 +470,22 @@ resource "kubernetes_manifest" "linux_runners_disruption_budget" {
 
 resource "kubernetes_manifest" "windows_2022_runners_disruption_budget" {
   manifest   = yamldecode(templatefile("pod_disruption_budget.yaml", { runner_set_name : "llvm-premerge-windows-2022-runners", min_pod_count : 16 }))
-  depends_on = [kubernetes_namespace.llvm_premerge_linux_runners]
+  depends_on = [kubernetes_namespace.llvm_premerge_windows_2022_runners]
 }
 
 resource "kubernetes_manifest" "libcxx_runners_disruption_budget" {
   manifest   = yamldecode(templatefile("pod_disruption_budget.yaml", { runner_set_name : "llvm-premerge-libcxx-runners", min_pod_count : 32 }))
-  depends_on = [kubernetes_namespace.llvm_premerge_linux_runners]
+  depends_on = [kubernetes_namespace.llvm_premerge_libcxx_runners]
 }
 
 resource "kubernetes_manifest" "libcxx_release_runners_disruption_budget" {
   manifest   = yamldecode(templatefile("pod_disruption_budget.yaml", { runner_set_name : "llvm-premerge-libcxx-release-runners", min_pod_count : 32 }))
-  depends_on = [kubernetes_namespace.llvm_premerge_linux_runners]
+  depends_on = [kubernetes_namespace.llvm_premerge_libcxx_release_runners]
 }
 
 resource "kubernetes_manifest" "libcxx_next_runners_disruption_budget" {
   manifest   = yamldecode(templatefile("pod_disruption_budget.yaml", { runner_set_name : "llvm-premerge-libcxx-next-runners", min_pod_count : 32 }))
-  depends_on = [kubernetes_namespace.llvm_premerge_linux_runners]
+  depends_on = [kubernetes_namespace.llvm_premerge_libcxx_next_runners]
 }
 
 resource "kubernetes_namespace" "grafana" {
