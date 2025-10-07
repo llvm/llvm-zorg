@@ -1,0 +1,23 @@
+name: CI Python Unit Tests
+
+permissions:
+  contents: read
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  run_tests:
+    name: Check CI Python Unit Tests
+    if: github.repository_owner == 'llvm'
+    runs-on: ubuntu-24.04
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v6
+      with:
+        python-version: '3.13'
+    - name: Run Tests
+      run: pytest premerge/ zorg/buildbot/builders/annotated/premerge/dispatch_job_test.py
