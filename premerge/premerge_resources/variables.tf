@@ -66,7 +66,7 @@ variable "libcxx_runner_image" {
 
 variable "libcxx_release_runner_image" {
   type    = string
-  default = "ghcr.io/llvm/libcxx-linux-builder:16f046281bf1a11d344eac1bc44d11f3e50e3b5d"
+  default = "ghcr.io/llvm/libcxx-linux-builder:05b5090e961f6b45ba9144d4d846e0f174d0aedf"
 }
 
 variable "libcxx_next_runner_image" {
