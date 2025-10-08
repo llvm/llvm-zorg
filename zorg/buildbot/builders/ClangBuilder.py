@@ -537,7 +537,6 @@ def _getClangCMakeBuildFactory(
         python = InterpolateToPosixPath(f'%(prop:builddir)s/test/sandbox/{virtualenv_dir}/python')
         lnt_ext = '.exe' if vs else ''
         lnt = InterpolateToPosixPath(f'%(prop:builddir)s/test/sandbox/{virtualenv_dir}/lnt{lnt_ext}')
-        lnt_setup = InterpolateToPosixPath('%(prop:builddir)s/test/lnt/setup.py')
 
         # Paths
         sandbox = InterpolateToPosixPath('%(prop:builddir)s/test/sandbox')
@@ -617,17 +616,18 @@ def _getClangCMakeBuildFactory(
                                description='recreating sandbox',
                                workdir='test',
                                env=env))
-        f.addStep(ShellCommand(name='install lnt dependencies',
+        f.addStep(ShellCommand(name='install setuptools in sandbox',
                                command=[python, '-m', 'pip', 'install', 'setuptools'],
                                haltOnFailure=True,
                                description='install lnt dependencies',
                                workdir='test/sandbox',
                                env=env))
-        f.addStep(ShellCommand(name='setup lit',
-                               command=[python, lnt_setup, 'develop'],
+        f.addStep(ShellCommand(name='install lit in sandbox',
+                               command=[python, '-m', 'pip', 'install', '-r',
+                                        'requirements.client.txt'],
                                haltOnFailure=True,
                                description='setting up LNT in sandbox',
-                               workdir='test/sandbox',
+                               workdir='test/lnt',
                                env=env))
         f.addStep(LitTestCommand(
                                name='test-suite',
