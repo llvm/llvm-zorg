@@ -221,3 +221,61 @@ and the following for `llvm-premerge-cluster-us-west`:
 ```bash
 gcloud container clusters get-credentials llvm-premerge-cluster-us-west --location us-west1
 ```
+
+## US-West Cluster Not Running Jobs
+
+### Date: 2025-09-29 to 2025-10-06
+
+### Symptoms
+
+The `us-west` cluster stopped running any jobs around 19:00 PST on 2025-09-29.
+This manifested as Grafana reporting near zero node counts. Looking at the pods
+scheduled on the cluster showed that there the buildbot pods were working
+correctly, but no Github Actions jobs were running. Checking the
+`llvm-premerge-cluster-us-west` runner group showed that no jobs were getting
+assigned to that cluster.
+
+### Investigation
+
+The initial investigation started with the assumption that the Github Actions
+Runner Controller listener pods/controller pod were misbehaving. There were some
+errors in the pod logs that turned out to be red herrings (handled gracefully
+and common to both the functional and non-functional clusters). The runner
+sets/controller were uninstalled and reinstalled twice, resulting in no behavior
+change.
+
+There were also several attempts to see if our workflows definitions in the
+monorepo were at fault. We tried several several approaches listed in
+https://github.com/orgs/community/discussions/120813, especially around
+explicitly specifying groups. We were able to run jobs on the us-west cluster
+when explicitly specifying the group, but not restore the job distribution
+functionality.
+
+### Solution
+
+When looking at the runner group configurations
+(https://github.com/organizations/llvm/settings/actions/runner-groups, requires
+CI/CD admin acess to the LLVM organization), it was noticed that the
+`llvm-premerge-cluster-us-west` runner group was not enabled on any
+repositories. Flipping this back to what it was before (enabled on all
+repositories in the LLVM organization) ended up resolving the issue.
+
+### Postmortem
+
+What worked well:
+- The HA configuration ensured there was no user visible outage during this time.
+
+What needs improvement:
+- The investigation focused on the issue being within the runner set listeners/
+ARC controller which turned out to be incorrect.
+- A trivial misconfiguration took a significant amount of time to noitce.
+
+Lessons/Action Items:
+- Look into enforcing configurations through IaaC (Infrastructure as code, like
+terraform) rather than buried in the Github UI where they can be changed without
+knowing.
+- Focus the investigation on validating assumptions/trying to understand where the
+problem is rather than starting with an assumption.
+- Buildbots being mixed into the Github Actions node count on Grafana caused
+confusion around whether or not Github jobs were scheduling. An attempt should
+be made to separate them.
