@@ -9,15 +9,15 @@
 // (a) The "host" compiler/LLDB is taken from whatever the LLDB incremental built/used.
 //     The metrics we collect are from that "host" LLDB that we fetched. Throughout this
 //     file it is commonly referred to as 'host-compiler' or 'HOST_BUILD_DIR'.
-// 
+//
 // (b) The debugger/compiler that we're debugging as part of metrics collection is pinned to
 //     the llvm-19.x release and is supposed to be unchanging across runs of this job.
 //     Throughout this file we refer to it as "historic" or 'clang-19'. We build this
 //     historic compiler build because we want improvements in the compiler to reflect
 //     in the benchmarks.
-// 
+//
 // (c) We use the compiler from (a) to build the "historic" Clang/LLDB.
-// 
+//
 // (d) The compiler compiling the debugger in (a) is the Clang produced by the clang-stage2
 //     buildbot and happens outside the purview job.
 //
@@ -53,6 +53,7 @@ pipeline {
                 sw_vers
                 xcodebuild -version
                 cmake --version
+                python3 --version
                 '''
             }
         }
