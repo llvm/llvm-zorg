@@ -622,7 +622,7 @@ def _getClangCMakeBuildFactory(
                                description='install lnt dependencies',
                                workdir='test/sandbox',
                                env=env))
-        f.addStep(ShellCommand(name='install lit in sandbox',
+        f.addStep(ShellCommand(name='install LNT in sandbox',
                                command=[python, '-m', 'pip', 'install', '-r',
                                         'requirements.client.txt'],
                                haltOnFailure=True,
