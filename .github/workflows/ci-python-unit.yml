@@ -19,5 +19,11 @@ jobs:
     - uses: actions/setup-python@v6
       with:
         python-version: '3.13'
+        cache: 'pip'
+    - name: Install Python Dependencies
+      run: |
+        pip3 install -r premerge/buildbot/requirements.lock.txt
+        pip3 install -r premerge/advisor/requirments.lock.txt
+        pip3 install pytest==8.4.1
     - name: Run Tests
       run: pytest premerge/ zorg/buildbot/builders/annotated/premerge/dispatch_job_test.py
