@@ -8,7 +8,7 @@
 #    BUILDBOT_PORT - server port to connect to
 #===----------------------------------------------------------------------===//
 
-FROM debian:sid
+FROM docker.io/debian:sid
 
 # Install build tools.
 RUN apt-get update && \

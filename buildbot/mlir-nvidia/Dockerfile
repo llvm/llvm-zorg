@@ -11,7 +11,7 @@
 #===----------------------------------------------------------------------===//
 
 # Use the image from NVIDIA
-FROM nvidia/cuda:12.1.1-devel-ubuntu20.04
+FROM docker.io/nvidia/cuda:12.1.1-devel-ubuntu20.04
 
 # install extra build tools
 ENV TZ=Etc/UTC

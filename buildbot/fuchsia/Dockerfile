@@ -1,5 +1,5 @@
 # Use an official Ubuntu image as the base.
-FROM ubuntu:jammy as base
+FROM docker.io/ubuntu:jammy as base
 
 ARG DEBIAN_FRONTEND=noninteractive
 

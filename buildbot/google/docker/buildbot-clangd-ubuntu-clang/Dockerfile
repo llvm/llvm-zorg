@@ -11,7 +11,7 @@
 #===----------------------------------------------------------------------===//
 
 # Use an official Ubuntu image as the base.
-FROM ubuntu:18.04
+FROM docker.io/ubuntu:18.04
 
 # Install build tools.
 RUN apt-get update && \
