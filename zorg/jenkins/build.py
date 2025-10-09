@@ -1024,6 +1024,7 @@ def print_machine_info():
     run_ws(["sw_vers"])
     run_ws(["xcodebuild", "-version"])
     run_ws(["cmake", "--version"])
+    run_ws(["python3", "--version"])
     footer()
 
 
