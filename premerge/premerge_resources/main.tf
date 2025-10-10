@@ -488,6 +488,22 @@ resource "kubernetes_manifest" "libcxx_next_runners_disruption_budget" {
   depends_on = [kubernetes_namespace.llvm_premerge_libcxx_next_runners]
 }
 
+resource "kubernetes_namespace" "premerge_advisor" {
+  metadata {
+    name = "premerge-advisor"
+  }
+}
+
+resource "kubernetes_manifest" "premerge_advisor_deployment" {
+  manifest   = yamldecode("advisor_deployment.yaml")
+  depends_on = [kubernetes_namespace.premerge_advisor]
+}
+
+resource "kubernetes_manifest" "premerge_advisor_service" {
+  manifest   = yamldecode("advisor_service.yaml")
+  depends_on = [kubernetes_namespace.premerge_advisor]
+}
+
 resource "kubernetes_namespace" "grafana" {
   metadata {
     name = "grafana"
