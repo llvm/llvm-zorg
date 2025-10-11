@@ -16,5 +16,4 @@ cmake -GNinja \
 echo @@@BUILD_STEP Ninja@@@
 
 export LIT_XFAIL="$(cat ../llvm-project/llvm/utils/profcheck-xfail.txt | tr '\n' ';')"
-export LIT_USE_INTERNAL_SHELL=0
 ninja check-llvm
