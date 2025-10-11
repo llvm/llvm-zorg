@@ -495,12 +495,12 @@ resource "kubernetes_namespace" "premerge_advisor" {
 }
 
 resource "kubernetes_manifest" "premerge_advisor_deployment" {
-  manifest   = yamldecode("advisor_deployment.yaml")
+  manifest   = yamldecode(file("advisor_deployment.yaml"))
   depends_on = [kubernetes_namespace.premerge_advisor]
 }
 
 resource "kubernetes_manifest" "premerge_advisor_service" {
-  manifest   = yamldecode("advisor_service.yaml")
+  manifest   = yamldecode(file("advisor_service.yaml"))
   depends_on = [kubernetes_namespace.premerge_advisor]
 }
 
