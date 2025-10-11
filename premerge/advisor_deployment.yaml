@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: premerge-advisor
+  namespace: premerge-advisor
+  labels:
+    app: premerge-advisor
+spec:
+  selector:
+    matchLabels:
+      app: premerge-advisor
+  template:
+    metadata:
+      labels:
+        app: premerge-advisor
+    spec:
+      containers:
+        - name: advisor
+          image: ghcr.io/llvm/premerge-advisor:latest
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "500m"
+            limits:
+              memory: "1Gi"
+              cpu: "1"
