@@ -16,7 +16,7 @@ def explain():
     return advisor_lib.explain_failures(flask.request.json)
 
 
-def create_app(db_path: str):
+def create_app():
     app = Flask(__name__)
     app.register_blueprint(advisor_blueprint)
     return app
