@@ -14,6 +14,10 @@ spec:
       labels:
         app: premerge-advisor
     spec:
+      volumes:
+        - name: advisor-db-volume
+          persistentVolumeClaim:
+          claimName: advisor-db-pvc
       containers:
         - name: advisor
           image: ghcr.io/llvm/premerge-advisor:latest
@@ -24,3 +28,9 @@ spec:
             limits:
               memory: "1Gi"
               cpu: "1"
+          volumeMounts:
+            - mountPath: "/db"
+              name: advisor-db-volume
+          env:
+            - name: ADVISOR_DB_PATH
+              value: "/db/advisor_db.sqlite"
