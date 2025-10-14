@@ -9,6 +9,10 @@ spec:
   selector:
     matchLabels:
       app: premerge-advisor
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 0
   template:
     metadata:
       labels:
