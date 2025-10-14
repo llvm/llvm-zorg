@@ -494,9 +494,14 @@ resource "kubernetes_namespace" "premerge_advisor" {
   }
 }
 
+resource "kubernetes_manifest" "premerge_advisor_pvc" {
+  manifest   = yamldecode((file("advisor_pvc.yaml")))
+  depends_on = [kubernetes_namespace.premerge_advisor]
+}
+
 resource "kubernetes_manifest" "premerge_advisor_deployment" {
   manifest   = yamldecode(file("advisor_deployment.yaml"))
-  depends_on = [kubernetes_namespace.premerge_advisor]
+  depends_on = [kubernetes_namespace.premerge_advisor, premerge_advisor_pvc]
 }
 
 resource "kubernetes_manifest" "premerge_advisor_service" {
