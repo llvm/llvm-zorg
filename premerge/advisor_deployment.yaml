@@ -34,3 +34,5 @@ spec:
           env:
             - name: ADVISOR_DB_PATH
               value: "/db/advisor_db.sqlite"
+          ports:
+          -  containerPort: 5000
