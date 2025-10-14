@@ -2,7 +2,7 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: advisor-db-pvc
-  namespacee: premerge-advisor
+  namespace: premerge-advisor
 spec:
   accessModes:
     - ReadWriteOnce
