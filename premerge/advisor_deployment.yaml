@@ -17,7 +17,7 @@ spec:
       volumes:
         - name: advisor-db-volume
           persistentVolumeClaim:
-          claimName: advisor-db-pvc
+            claimName: advisor-db-pvc
       containers:
         - name: advisor
           image: ghcr.io/llvm/premerge-advisor:latest
