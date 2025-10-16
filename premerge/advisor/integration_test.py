@@ -21,6 +21,7 @@ class AdvisorIntegrationTest(unittest.TestCase):
             "failures": [
                 {"name": "a.ll", "message": "failed in way 1"},
             ],
+            "platform": "linux-x86_64",
         }
         result = self.client.post("/upload", json=failure_info)
         self.assertEqual(result.status_code, 204)
