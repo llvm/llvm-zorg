@@ -107,7 +107,7 @@ def benchmark_pipeline(label, body) {
 def testsuite_pipeline(label, body) {
     benchmark_pipeline(label) {
         dir('lnt') {
-            git url: 'https://github.com/llvm/llvm-lnt.git', branch: 'main', poll: false
+            git url: 'https://github.com/llvm/llvm-lnt.git', branch: 'python3.8-stable', poll: false
         }
         dir('test-suite') {
             git url: 'https://github.com/llvm/llvm-test-suite.git', branch: 'main', poll: false
