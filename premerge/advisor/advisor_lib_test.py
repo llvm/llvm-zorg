@@ -70,6 +70,7 @@ class AdvisorLibTest(unittest.TestCase):
                 {"name": "a.ll", "message": "failed in way 1"},
                 {"name": "b.ll", "message": "failed in way 2"},
             ],
+            "platform": "linux-x86_64",
         }
         advisor_lib.upload_failures(failure_info, self.db_connection)
         failures = self.db_connection.execute("SELECT * from failures").fetchall()
@@ -82,6 +83,7 @@ class AdvisorLibTest(unittest.TestCase):
                     "10000",
                     "a.ll",
                     "failed in way 1",
+                    "linux-x86_64",
                 ),
                 (
                     "buildbot",
@@ -89,6 +91,7 @@ class AdvisorLibTest(unittest.TestCase):
                     "10000",
                     "b.ll",
                     "failed in way 2",
+                    "linux-x86_64",
                 ),
             ],
         )

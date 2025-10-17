@@ -20,9 +20,10 @@ class FailureUpload(TypedDict):
     base_commit_sha: str
     source_id: str
     failures: list[TestFailure]
+    platform: str
 
 
-_CREATE_TABLE_CMD = "CREATE TABLE failures(source_type, base_commit_sha, source_id, test_file, failure_message)"
+_CREATE_TABLE_CMD = "CREATE TABLE failures(source_type, base_commit_sha, source_id, test_file, failure_message, platform)"
 
 
 def _create_failures_table(connection: sqlite3.Connection):
@@ -65,9 +66,10 @@ def upload_failures(failure_info: FailureUpload, db_connection: sqlite3.Connecti
                 failure_info["source_id"],
                 failure["name"],
                 failure["message"],
+                failure_info["platform"],
             )
         )
-    db_connection.executemany("INSERT INTO failures VALUES(?, ?, ?, ?, ?)", failures)
+    db_connection.executemany("INSERT INTO failures VALUES(?, ?, ?, ?, ?, ?)", failures)
     db_connection.commit()
 
 
