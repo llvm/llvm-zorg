@@ -28,7 +28,7 @@ def upload():
 
 @advisor_blueprint.route("/explain")
 def explain():
-    return advisor_lib.explain_failures(flask.request.json)
+    return advisor_lib.explain_failures(flask.request.json, _get_db())
 
 
 def create_app(db_path: str):
