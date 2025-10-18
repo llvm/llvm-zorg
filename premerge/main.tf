@@ -170,7 +170,7 @@ module "premerge_cluster_us_central_resources" {
   windows_2022_runners_kubernetes_service_account_name     = local.windows_2022_runners_kubernetes_service_account_name
   linux_object_cache_gcp_service_account_email             = module.premerge_cluster_us_central.linux_object_cache_gcp_service_account_email
   windows_2022_object_cache_gcp_service_account_email      = module.premerge_cluster_us_central.windows_2022_object_cache_gcp_service_account_email
-  github_arc_version                                       = "0.12.1"
+  github_arc_version                                       = "0.13.0"
   linux_buildbot_name_template                             = "premerge-us-central-linux"
   linux_buildbot_password                                  = data.google_secret_manager_secret_version.us_central_linux_buildbot_password.secret_data
   windows_buildbot_name_template                           = "premerge-us-central-windows"
