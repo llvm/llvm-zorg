@@ -13,3 +13,6 @@ llvmlab/docs/_build
 llvmlab/llvmlab.egg-info
 # Visual Studio Code IDE configuration
 .vscode
+# Terraform state
+.terraform*
+*.tfstate*
