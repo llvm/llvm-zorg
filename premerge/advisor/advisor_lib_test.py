@@ -63,7 +63,7 @@ class AdvisorLibTest(unittest.TestCase):
 
     def test_upload_failures(self):
         failure_info = {
-            "source_type": "buildbot",
+            "source_type": "postcommit",
             "base_commit_sha": "8d29a3bb6f3d92d65bf5811b53bf42bf63685359",
             "source_id": "10000",
             "failures": [
@@ -78,7 +78,7 @@ class AdvisorLibTest(unittest.TestCase):
             failures,
             [
                 (
-                    "buildbot",
+                    "postcommit",
                     "8d29a3bb6f3d92d65bf5811b53bf42bf63685359",
                     "10000",
                     "a.ll",
@@ -86,7 +86,7 @@ class AdvisorLibTest(unittest.TestCase):
                     "linux-x86_64",
                 ),
                 (
-                    "buildbot",
+                    "postcommit",
                     "8d29a3bb6f3d92d65bf5811b53bf42bf63685359",
                     "10000",
                     "b.ll",
