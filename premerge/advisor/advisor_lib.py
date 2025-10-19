@@ -23,6 +23,12 @@ class FailureUpload(TypedDict):
     platform: str
 
 
+class TestExplanationRequest[TypedDict]:
+    base_commit_sha: str
+    failures: list[TestFailure]
+    platform: str
+
+
 _CREATE_TABLE_CMD = "CREATE TABLE failures(source_type, base_commit_sha, source_id, test_file, failure_message, platform)"
 
 
@@ -73,9 +79,42 @@ def upload_failures(failure_info: FailureUpload, db_connection: sqlite3.Connecti
     db_connection.commit()
 
 
-def explain_failures(test_failures: list[TestFailure]) -> list[FailureExplanation]:
+def _try_explain_failing_at_head(
+    db_connection: sqlite3.Connection,
+    test_failure: TestFailure,
+    base_commit_sha: str,
+    platform: str,
+) -> FailureExplanation | None:
+    test_name_matches = db_connection.execute(
+        "SELECT failure_message FROM failures "
+        "WHERE source_type='postcommit' AND base_commit_sha=? AND platform=?",
+        (base_commit_sha, platform),
+    ).fetchall()
+    for test_name_match in test_name_matches:
+        failure_message = test_name_match[0]
+        if failure_message == test_failure["message"]:
+            return {
+                "name": test_failure["name"],
+                "explained": True,
+                "reason": "This test is already failing at the base commit.",
+            }
+    return None
+
+
+def explain_failures(
+    explanation_request: TestExplanationRequest, db_connection: sqlite3.Connection
+) -> list[FailureExplanation]:
     explanations = []
-    for test_failure in test_failures:
+    for test_failure in explanation_request["failures"]:
+        explained_at_head = _try_explain_failing_at_head(
+            db_connection,
+            test_failure,
+            explanation_request["base_commit_sha"],
+            explanation_request["platform"],
+        )
+        if explained_at_head:
+            explanations.append(explained_at_head)
+            continue
         explanations.append(
             {"name": test_failure["name"], "explained": False, "reason": None}
         )

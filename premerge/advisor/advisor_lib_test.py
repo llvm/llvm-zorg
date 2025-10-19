@@ -97,8 +97,124 @@ class AdvisorLibTest(unittest.TestCase):
         )
 
     def test_explain_failures(self):
-        failures = [{"name": "a.ll", "message": "failed"}]
+        explanation_request = {
+            "failures": [{"name": "a.ll", "message": "failed"}],
+            "base_commit_sha": "8d29a3bb6f3d92d65bf5811b53bf42bf63685359",
+            "platform": "linux-x86_64",
+        }
         self.assertListEqual(
-            advisor_lib.explain_failures(failures),
+            advisor_lib.explain_failures(
+                explanation_request,
+                self.db_connection,
+            ),
             [{"name": "a.ll", "explained": False, "reason": None}],
+        )
+
+    def _get_explained_failures(
+        self,
+        failure_name="a.ll",
+        failure_message="failed in way 1",
+        base_commit_sha="8d29a3bb6f3d92d65bf5811b53bf42bf63685359",
+        platform="linux-x86_64",
+        prev_failure_source_type="postcommit",
+        prev_failure_base_commit_sha="8d29a3bb6f3d92d65bf5811b53bf42bf63685359",
+        prev_failure_failure_name="a.ll",
+        prev_failure_failure_message="failed in way 1",
+        prev_failure_platform="linux-x86_64",
+    ) -> list[advisor_lib.FailureExplanation]:
+        """Constructs explanations.
+
+        By default, an explanation will be given as all the information will
+        match. Different parameters can be passed to construct negative tests.
+        """
+        failure_info = {
+            "source_type": prev_failure_source_type,
+            "base_commit_sha": prev_failure_base_commit_sha,
+            "source_id": "10000",
+            "failures": [
+                {
+                    "name": prev_failure_failure_name,
+                    "message": prev_failure_failure_message,
+                },
+            ],
+            "platform": prev_failure_platform,
+        }
+        advisor_lib.upload_failures(failure_info, self.db_connection)
+        explanation_request = {
+            "failures": [{"name": failure_name, "message": failure_message}],
+            "base_commit_sha": base_commit_sha,
+            "platform": platform,
+        }
+        return advisor_lib.explain_failures(explanation_request, self.db_connection)
+
+    # Test that we can explain away a failure at head, assuming all of the
+    # appropriate fields match.
+    def test_explain_failures_at_head(self):
+        self.assertListEqual(
+            self._get_explained_failures(),
+            [
+                {
+                    "name": "a.ll",
+                    "explained": True,
+                    "reason": "This test is already failing at the base commit.",
+                }
+            ],
+        )
+
+    # Test that we do not explain away a failure at head if the base commit
+    # SHA is different.
+    def test_no_explain_different_base_commit(self):
+        self.assertListEqual(
+            self._get_explained_failures(
+                prev_failure_base_commit_sha="6b7064686b706f7064656d6f6e68756e74657273"
+            ),
+            [
+                {
+                    "name": "a.ll",
+                    "explained": False,
+                    "reason": None,
+                }
+            ],
+        )
+
+    # Test that we do not explain away a failure at head if the only matching
+    # failure information comes from a PR.
+    def test_no_explain_different_source_type(self):
+        self.assertListEqual(
+            self._get_explained_failures(prev_failure_source_type="pull_request"),
+            [
+                {
+                    "name": "a.ll",
+                    "explained": False,
+                    "reason": None,
+                }
+            ],
+        )
+
+    # Test that we do not explain away a failure at head if the only matching
+    # failure information comes from a different platform.
+    def test_no_explain_different_platform(self):
+        self.assertListEqual(
+            self._get_explained_failures(prev_failure_platform="linux-arm64"),
+            [
+                {
+                    "name": "a.ll",
+                    "explained": False,
+                    "reason": None,
+                }
+            ],
+        )
+
+    # Test that we do not explain away a failure at head if the failure
+    # message for the only matching failure information differs.
+    def test_no_explain_different_message(self):
+        self.assertListEqual(
+            self._get_explained_failures(failure_message="failed in way 2"),
+            [
+                {
+                    "name": "a.ll",
+                    "explained": False,
+                    "reason": None,
+                }
+            ],
         )

@@ -27,8 +27,12 @@ class AdvisorIntegrationTest(unittest.TestCase):
         self.assertEqual(result.status_code, 204)
 
     def test_explain_failures(self):
-        failures = [{"name": "a.ll", "message": "failed"}]
-        result = self.client.get("/explain", json=failures)
+        explanation_request = {
+            "failures": [{"name": "a.ll", "message": "failed"}],
+            "base_commit_sha": "8d29a3bb6f3d92d65bf5811b53bf42bf63685359",
+            "platform": "x86_64-linux",
+        }
+        result = self.client.get("/explain", json=explanation_request)
         self.assertEqual(result.status_code, 200)
         self.assertListEqual(
             result.json, [{"name": "a.ll", "explained": False, "reason": None}]
