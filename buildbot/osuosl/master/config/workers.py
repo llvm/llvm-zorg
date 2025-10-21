@@ -265,6 +265,16 @@ def get_all():
                         'zlib_root_path'        : 'c:/buildbot/fs/zlib-win32',
                     },
                     max_builds=1),
+        # Ubuntu Server on x86_64
+        create_worker("as-builder-11", properties={
+                        'jobs'                  : 128, 
+                        'remote_test_host'      : 'vm-aarch64-01',
+                        'remote_test_host_pauth': 'vm-aarch64-02-pauth',
+                        'remote_test_user'      : 'ubuntu',
+                        'sysroot_path'          : '/mnt/fs/ubuntu-server-arm64',
+                        'sysroot_path_pauth'    : '/mnt/fs/ubuntu-server-arm64-pauth',
+                    },
+                    max_builds=1),
 
         # Solaris 11
         create_worker("solaris11-amd64", properties={'jobs' : 8}, max_builds=1),
