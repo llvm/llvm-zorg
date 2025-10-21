@@ -3935,7 +3935,7 @@ all += [
     {'name' : "llvm-clang-ubuntu-x-aarch64-pauth",
     'tags'  : ["clang", "llvm", "lld", "clang-tools-extra", "compiler-rt", "libc++", "libc++abi", "libunwind", "cross", "aarch64", "pauth", "ptrauth"],
     'workernames' : ["as-builder-11"],
-    'builddir': "x-aarch64",
+    'builddir': "x-aarch64-pauth",
     'factory' : UnifiedTreeBuilder.getCmakeExBuildFactory(
                     depends_on_projects = [
                         'llvm',
