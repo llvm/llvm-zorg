@@ -267,9 +267,9 @@ def get_all():
                     max_builds=1),
         # Ubuntu Server on x86_64
         create_worker("as-builder-11", properties={
-                        'jobs'                  : 128, 
-                        'remote_test_host'      : 'vm-aarch64-01',
-                        'remote_test_host_pauth': 'vm-aarch64-02-pauth',
+                        'jobs'                  : 112, 
+                        'remote_test_host'      : 'arm64-linux-01',
+                        'remote_test_host_pauth': 'arm64-linux-02',
                         'remote_test_user'      : 'ubuntu',
                         'sysroot_path'          : '/mnt/fs/ubuntu-server-arm64',
                         'sysroot_path_pauth'    : '/mnt/fs/ubuntu-server-arm64-pauth',
