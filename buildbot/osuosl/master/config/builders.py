@@ -3930,4 +3930,54 @@ all += [
                     env = lldb_remote_linux_env.copy(),
                 )
         },
+        
+    # PtrAuth (PAuth) builders.
+    {'name' : "llvm-clang-ubuntu-x-aarch64-pauth",
+    'tags'  : ["clang", "llvm", "lld", "clang-tools-extra", "compiler-rt", "libc++", "libc++abi", "libunwind", "cross", "aarch64", "pauth", "ptrauth"],
+    'workernames' : ["as-builder-11"],
+    'builddir': "x-aarch64-pauth",
+    'factory' : UnifiedTreeBuilder.getCmakeExBuildFactory(
+                    depends_on_projects = [
+                        'llvm',
+                        'compiler-rt',
+                        'clang',
+                        'clang-tools-extra',
+                        'libunwind',
+                        'libcxx',
+                        'libcxxabi',
+                        'lld',
+                    ],
+                    clean = True,
+                    checks = [
+                        "check-llvm",
+                        "check-clang",
+                        "check-lld",
+                        "check-compiler-rt-aarch64-unknown-linux-gnu",
+                        "check-unwind-aarch64-unknown-linux-gnu",
+                        "check-cxxabi-aarch64-unknown-linux-gnu",
+                        "check-cxx-aarch64-unknown-linux-gnu",
+                    ],
+                    cmake_definitions = {
+                        "LLVM_TARGETS_TO_BUILD"             : "AArch64",
+                        "LLVM_INCLUDE_BENCHMARKS"           : "OFF",
+                        "LLVM_LIT_ARGS"                     : "-v -vv --threads=32 --time-tests",
+                        "TOOLCHAIN_TARGET_TRIPLE"           : "aarch64-unknown-linux-gnu",
+                        "TOOLCHAIN_TARGET_SYSROOTFS"        : util.Interpolate("%(prop:sysroot_path_pauth)s"),
+                        "TOOLCHAIN_TARGET_COMPILER_FLAGS"   : "-march=armv8.3-a+pauth -mbranch-protection=pac-ret",
+                        "REMOTE_TEST_HOST"                  : util.Interpolate("%(prop:remote_test_host_pauth)s"),
+                        "REMOTE_TEST_USER"                  : util.Interpolate("%(prop:remote_test_user)s"),
+                        "CMAKE_CXX_FLAGS"                   : "-D__OPTIMIZE__",
+                        "CMAKE_C_COMPILER_LAUNCHER"         : "ccache",
+                        "CMAKE_CXX_COMPILER_LAUNCHER"       : "ccache",
+                        "LIBCXX_INCLUDE_BENCHMARKS"         : "OFF",
+                    },
+                    cmake_options = [
+                        "-C", util.Interpolate("%(prop:srcdir_relative)s/clang/cmake/caches/CrossWinToARMLinux.cmake"),
+                    ],
+                    install_dir = "install",
+                    env = {
+                        'CCACHE_DIR' : util.Interpolate("%(prop:builddir)s/ccache-db"),
+                    },
+                )
+        },        
 ]
