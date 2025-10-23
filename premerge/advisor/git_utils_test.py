@@ -31,8 +31,11 @@ class GitUtilsTest(unittest.TestCase):
             subprocess.run(
                 [
                     "git",
+                    "-c",
+                    "user.name='test'",
+                    "-c",
+                    "user.email='test@example.com",
                     "commit",
-                    "--author='test <test@example.com>'",
                     "-m",
                     "message",
                 ],
