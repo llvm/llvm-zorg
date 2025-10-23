@@ -46,9 +46,14 @@ def _get_and_add_commit_index(
         check=True,
     )
     log_lines = log_output.stdout.decode("utf-8").split("\n")[:-1]
-    for line_index, log_line in enumerate(log_lines):
+    if len(log_lines) == 0:
+        raise ValueError(
+            "Did not find any commits. The commit likely happened before the commit with index 1."
+        )
+    commit_index = latest_index + len(log_lines) + 1
+    for log_line in log_lines:
         line_commit_sha = log_line.split(" ")[0]
-        commit_index = latest_index + len(log_lines) - line_index
+        commit_index -= 1
         commits_to_add.append((line_commit_sha, commit_index))
     db_connection.executemany("INSERT INTO commits VALUES(?, ?)", commits_to_add)
     if not latest_commit_info:

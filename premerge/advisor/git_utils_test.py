@@ -125,3 +125,20 @@ class GitUtilsTest(unittest.TestCase):
             ),
             4,
         )
+
+    def test_get_index_error_invalid_sha(self):
+        commit_shas = self.setup_repository(3)
+        with self.assertRaises(ValueError):
+            git_utils.get_commit_index(
+                commit_shas[0],
+                self.repository_path.name,
+                self.db_connection,
+                commit_shas[1],
+            )
+
+    def test_get_index_error_before_first_commit(self):
+        commit_shas = self.setup_repository(3)
+        with self.assertRaises(subprocess.CalledProcessError):
+            git_utils.get_commit_index(
+                "bad_sha", self.repository_path.name, self.db_connection, commit_shas[0]
+            )
