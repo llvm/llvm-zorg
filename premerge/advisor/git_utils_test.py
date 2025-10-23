@@ -12,11 +12,11 @@ class GitUtilsTest(unittest.TestCase):
         self.db_file = tempfile.NamedTemporaryFile()
         self.db_connection = sqlite3.connect(self.db_file.name)
         self.db_connection.execute("CREATE TABLE commits(commit_sha, commit_index)")
-        self.repository_path = tempfile.TemporaryDirectory(delete=False)
+        self.repository_path = tempfile.TemporaryDirectory()
 
     def tearDown(self):
         self.db_file.close()
-        # self.repository_path.cleanup()
+        self.repository_path.cleanup()
 
     def setup_repository(self, commit_count: int) -> list[str]:
         subprocess.run(["git", "init"], cwd=self.repository_path.name, check=True)

@@ -28,13 +28,15 @@ class TestExplanationRequest[TypedDict]:
     failures: list[TestFailure]
     platform: str
 
-
-_CREATE_TABLE_CMD = "CREATE TABLE failures(source_type, base_commit_sha, source_id, test_file, failure_message, platform)"
+_TABLE_SCHEMAS = {
+    "failures": "CREATE TABLE failures(source_type, base_commit_sha, source_id, test_file, failure_message, platform)",
+    "commits": "CREATE TABLE commits(commit_sha, commit_index)"
+}
 
 
 def _create_failures_table(connection: sqlite3.Connection):
     logging.info("Did not find failures table, creating.")
-    connection.execute(_CREATE_TABLE_CMD)
+    connection.execute(_CREATE_FAILURES_TABLE_CMD)
     connection.commit()
 
 
@@ -48,7 +50,7 @@ def setup_db(db_path: str) -> sqlite3.Connection:
     table_schema = connection.execute(
         "SELECT sql FROM sqlite_master WHERE name=?", ("failures",)
     ).fetchone()
-    if table_schema == (_CREATE_TABLE_CMD,):
+    if table_schema == (_CREATE_FAILURES_TABLE_CMD,):
         return connection
 
     # The schema of the table does not match what we were expecting. Keep the
