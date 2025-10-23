@@ -2576,7 +2576,6 @@ all += [
 
     {'name' : 'ppc64le-flang-rhel-clang',
     'tags'  : ["flang", "ppc", "ppc64le"],
-    'collapseRequests' : False,
     'workernames' : ['ppc64le-flang-rhel-test'],
     'builddir': 'ppc64le-flang-rhel-clang-build',
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
