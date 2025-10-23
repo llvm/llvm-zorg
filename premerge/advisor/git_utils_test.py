@@ -4,14 +4,14 @@ import sqlite3
 import subprocess
 import os
 
+import advisor_lib
 import git_utils
 
 
 class GitUtilsTest(unittest.TestCase):
     def setUp(self):
         self.db_file = tempfile.NamedTemporaryFile()
-        self.db_connection = sqlite3.connect(self.db_file.name)
-        self.db_connection.execute("CREATE TABLE commits(commit_sha, commit_index)")
+        self.db_connection = advisor_lib.setup_db(self.db_file.name)
         self.repository_path = tempfile.TemporaryDirectory()
 
     def tearDown(self):

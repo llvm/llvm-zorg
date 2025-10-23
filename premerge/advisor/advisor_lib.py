@@ -29,36 +29,40 @@ class TestExplanationRequest[TypedDict]:
     platform: str
 
 
-_CREATE_TABLE_CMD = "CREATE TABLE failures(source_type, base_commit_sha, source_id, test_file, failure_message, platform)"
+_TABLE_SCHEMAS = {
+    "failures": "CREATE TABLE failures(source_type, base_commit_sha, source_id, test_file, failure_message, platform)",
+    "commits": "CREATE TABLE commits(commit_sha, commit_index)",
+}
 
 
-def _create_failures_table(connection: sqlite3.Connection):
+def _create_table(table_name: str, connection: sqlite3.Connection):
     logging.info("Did not find failures table, creating.")
-    connection.execute(_CREATE_TABLE_CMD)
+    connection.execute(_TABLE_SCHEMAS[table_name])
     connection.commit()
 
 
 def setup_db(db_path: str) -> sqlite3.Connection:
     connection = sqlite3.connect(db_path)
-    tables = connection.execute("SELECT name from sqlite_master").fetchall()
-    if ("failures",) not in tables:
-        _create_failures_table(connection)
-        return connection
+    for table_name in _TABLE_SCHEMAS:
+        tables = connection.execute("SELECT name from sqlite_master").fetchall()
+        if (table_name,) not in tables:
+            _create_table(table_name, connection)
+            continue
 
-    table_schema = connection.execute(
-        "SELECT sql FROM sqlite_master WHERE name=?", ("failures",)
-    ).fetchone()
-    if table_schema == (_CREATE_TABLE_CMD,):
-        return connection
+        table_schema = connection.execute(
+            "SELECT sql FROM sqlite_master WHERE name=?", (table_name,)
+        ).fetchone()
+        if table_schema == (_TABLE_SCHEMAS[table_name],):
+            continue
 
-    # The schema of the table does not match what we were expecting. Keep the
-    # current table around just in case by renaming it and recreate the
-    # failures table using the expected schema.
-    new_table_name = f"failures_old_{int(time.time())}"
-    connection.execute(f"ALTER TABLE failures RENAME TO {new_table_name}")
-    connection.commit()
+        # The schema of the table does not match what we were expecting. Keep the
+        # current table around just in case by renaming it and recreate the
+        # failures table using the expected schema.
+        new_table_name = f"{table_name}_old_{int(time.time())}"
+        connection.execute(f"ALTER TABLE failures RENAME TO {new_table_name}")
+        connection.commit()
 
-    _create_failures_table(connection)
+        _create_table(table_name, connection)
     return connection
 
 
