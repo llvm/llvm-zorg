@@ -12,16 +12,38 @@ class AdvisorLibDbSetupTest(unittest.TestCase):
     def tearDown(self):
         self.db_file.close()
 
-    def test_create_table(self):
+    def test_create_tables(self):
         db_connection = advisor_lib.setup_db(self.db_file.name)
         db_connection.close()
         connection = sqlite3.connect(self.db_file.name)
         tables = connection.execute("SELECT name from sqlite_master").fetchall()
-        self.assertListEqual(tables, [("failures",)])
-        table_schema = connection.execute(
-            "SELECT sql FROM sqlite_master WHERE name=?", ("failures",)
-        ).fetchone()
-        self.assertEqual(table_schema, (advisor_lib._CREATE_TABLE_CMD,))
+        self.assertListEqual(tables, [("failures",), ("commits",)])
+        table_schema = connection.execute("SELECT sql FROM sqlite_master").fetchall()
+        self.assertListEqual(
+            table_schema,
+            [
+                (advisor_lib._TABLE_SCHEMAS["failures"],),
+                (advisor_lib._TABLE_SCHEMAS["commits"],),
+            ],
+        )
+        connection.close()
+
+    def test_create_one_table(self):
+        connection_setup = sqlite3.connect(self.db_file.name)
+        connection_setup.execute(advisor_lib._TABLE_SCHEMAS["failures"])
+        connection_setup.close()
+
+        connection = advisor_lib.setup_db(self.db_file.name)
+        tables = connection.execute("SELECT name from sqlite_master").fetchall()
+        self.assertListEqual(tables, [("failures",), ("commits",)])
+        table_schema = connection.execute("SELECT sql FROM sqlite_master").fetchall()
+        self.assertListEqual(
+            table_schema,
+            [
+                (advisor_lib._TABLE_SCHEMAS["failures"],),
+                (advisor_lib._TABLE_SCHEMAS["commits"],),
+            ],
+        )
         connection.close()
 
     def test_update_schema(self):
@@ -48,7 +70,7 @@ class AdvisorLibDbSetupTest(unittest.TestCase):
         table_schema = connection.execute(
             "SELECT sql FROM sqlite_master WHERE name=?", ("failures",)
         ).fetchone()
-        self.assertEqual(table_schema, (advisor_lib._CREATE_TABLE_CMD,))
+        self.assertEqual(table_schema, (advisor_lib._TABLE_SCHEMAS["failures"],))
         connection.close()
 
 
