@@ -1,12 +1,308 @@
 from zorg.buildbot.builders.UnifiedTreeBuilder import getCmakeWithNinjaBuildFactory
 
-from buildbot.plugins import util
+from buildbot.plugins import steps, util
 
 from buildbot.steps.shell import ShellCommand
 
 from zorg.buildbot.commands.CmakeCommand import CmakeCommand
 from zorg.buildbot.commands.NinjaCommand import NinjaCommand
 from zorg.buildbot.commands.LitTestCommand import LitTestCommand
+
+from zorg.buildbot.process.factory import LLVMBuildFactory
+
+# The DebugifyBuilder needs to know the test-suite build directory, so we share the build directory via this variable.
+test_suite_build_path_suffix = 'test/build-test-suite'
+test_suite_project_path_suffix = 'test/test-suite'
+
+# Note: The 'compiler_dir' parameter or CMAKE_{C|CXX}_COMPILER and TEST_SUITE_LIT must be specified inside of 'cmake_definitions' parameters;
+# otherwise the function will get failed by assert. Also, some of CMAKE_{C|CXX}_COMPILER and TEST_SUITE_LIT can be specified in case the 'compiler_dir'
+# parameter is also specified. It is necessary to get a full set of those variables for the LLVM test suite configuration step.
+# Note: The 'compiler_dir' must be a fully specified path, no relative pathes, no ~/ pathes. The same is also true for CMAKE_{C|CXX}_COMPILER and TEST_SUITE_LIT.
+
+def getLlvmTestSuiteSteps(
+        cmake_definitions = None,
+        cmake_options = None,
+        allow_cmake_defaults = True,    # Add default CMake definitions to build LLVM project (if not specified).
+        targets = ".",
+        checks = "check",
+        generator = "Ninja",            # CMake generator.
+        repo_profiles = "default",      # The source code repository profiles.
+        extra_git_args = None,          # Extra parameters for steps.Git step (such as 'config', 'workdir', etc.)
+
+        jobs = None,                    # Restrict a degree of parallelism.
+        env  = None,                    # Common environmental variables.
+        hint = "test-suite",
+
+        compiler_dir = None,            # A path a root of built Clang toolchain tree. This path will be used
+                                        # to specify CMAKE_{C|CXX}_COMPILER and TEST_SUITE_LIT if they are missing inside of
+                                        # CMake definitions.
+        f = None
+    ):
+    """ Create and configure a builder factory with a set of the build steps to retrieve, build and run the LLVM Test Suite project
+        (see https://github.com/llvm/llvm-test-suite.git).
+
+        The factory can fill up existing factory object with these steps if this factory has been passed via the fucntion arguments.
+
+        This is one-stage CMake configurable build that uses Ninja generator by default. Using the other CMake generators
+        also possible.
+
+        Property Parameters
+        -------------------
+
+        clean : boolean
+            Clean up the source and the build folders.
+
+        clean_obj : boolean
+            Clean up the build folders.
+
+
+        Parameters
+        ----------
+
+        cmake_definitions : dict, optional
+            A dictionary of the CMake definitions (default is None).
+
+        cmake_options : list, optional
+            A list of the CMake options (default is None).
+
+        allow_cmake_defaults : boolean
+            Add default CMake definitions to the build configuration step (default True).
+
+            A default value will be used only if a definition is not explicitly specified in 'cmake_definitions'
+            argument and allow_cmake_defaults evaluates to True.
+
+        targets : list, optional
+            A list of targets to build (default is ["."]).
+            Each target gets built in a separate step, skipped if None.
+
+            Pass string '.' in a list to build the default target.
+
+        checks : list, optional
+            A list of the check targets (default is ["check-all"]).
+
+            Each check target gets executed in a separate step. The check step uses LitTestCommand
+            to parse and display the test result logs.
+
+            No check steps will be generated for the build if 'None' was provided with this argument.
+
+        generator : str, required
+            CMake generator (default is 'Ninja').
+
+            See CMake documentation for more details.
+
+        repo_profiles : string, optional
+            A name of the source code profile to get from the remote repository. Currently is supported only "default"
+            profile and None. Default is "default".
+
+            If None is passed, no the repository checkout steps will be added to the factory workflow. This is useful
+            for the nested factories when the single repo is shared between them.
+
+        extra_git_args : dict, optional
+            Provide extra arguments for the Git step (default is None).
+
+            Sometimes it is necessary to pass some additional parameters to the git step, such as
+            'config', 'workdir', etc.
+
+
+        jobs : int, optional
+            Restrict a degree of parallelism (default is None).
+
+        env : dict, optional
+            Common environmental variables for all build steps (default is None).
+
+        hint : string, optional
+            Use this hint to apply suffixes to the step names when factory is used as a nested factory for another one.
+            The suffix will be added to the step name separated by dash symbol.
+
+            As example, passing of 'stageX' with 'hint' will force generating of the following step names:
+                cmake-cofigure => cmake-configure-stageX
+                build => build-stageX
+                install => install-stageX
+                & etc.
+
+            Note: cannot be a renderable object.
+
+        compiler_dir : string, optional
+            A fully specified path to the Clang toolchain root.
+
+            This argument must be specified if any of CMAKE_{C|CXX}_COMPILER and TEST_SUITE_LIT weren't specified
+            in the CMake definitions dict.
+
+        f : LLVMBuildFactory, optional
+            A factory object to fill up with the build steps. An empty stub will be created if this argument wasn't specified.
+
+        Returns
+        -------
+
+        Returns the factory object with the prepared build steps.
+
+        Properties
+        ----------
+
+        None
+
+    """
+    assert generator, "CMake generator must be specified."
+    assert not hint or isinstance(hint, str),    "The 'hint' argument must be a str object."
+
+    def norm_target_list_arg(lst):
+        if type(lst) == str:
+            lst = list(filter(None, lst.split(";")))
+        # In case we got IRenderable, just wrap it into the list.
+        if not isinstance(lst, list):
+            lst = [ lst ]
+        return lst
+
+    # Normalize all arguments with a list of the targets.
+    # We need to convert them into the regular lists of str/IRenderable objects or empty list.
+    targets = norm_target_list_arg(targets or [])
+    checks = norm_target_list_arg(checks or [])
+
+    env = env or {}
+    # Do not everride TERM just in case.
+    if not "TERM" in env:
+        # Be cautious and disable color output from all tools.
+        env.update({ 'TERM' : 'dumb' })
+
+    if not "NINJA_STATUS" in env and generator.upper() == "NINJA":
+        env.update({ 'NINJA_STATUS' : "%e [%u/%r/%f] " })
+
+    # Initial directories
+    test_suite_src_dir = util.Interpolate("%(prop:builddir)s/%(kw:path_suffix)s",
+                                          path_suffix = test_suite_project_path_suffix)
+    test_suite_workdir = util.Interpolate("%(prop:builddir)s/%(kw:path_suffix)s",
+                                          path_suffix = test_suite_build_path_suffix)
+
+
+    # Create and return the default factory stub to store the build steps.
+    # This factory can be used with the composite builder factories.
+    if f is None:
+        f = LLVMBuildFactory(
+                hint                = hint,
+                obj_dir             = test_suite_build_path_suffix,
+            )
+
+    # Add the Git step.
+    if repo_profiles == "default":
+        f.addSteps([
+            # Remove the source code for a clean checkout if requested by property.
+            steps.RemoveDirectory(
+                name            = f.makeStepName('clean-src-dir'),
+                dir             = test_suite_src_dir,
+                description     = ["Remove", test_suite_src_dir, "directory"],
+                haltOnFailure   = False,
+                flunkOnFailure  = False,
+                doStepIf        = util.Property("clean", False) == True,
+            ),
+        ])
+
+        extra_git_args = extra_git_args or {}
+
+        f.addGetSourcecodeForProject(
+            project             = 'test-suite',
+            src_dir             = test_suite_src_dir,
+            alwaysUseLatest     = True,
+            **extra_git_args
+        )
+
+    # Build the CMake command definitions.
+    cmake_definitions = cmake_definitions or dict()
+    assert isinstance(cmake_definitions, dict), "The CMake definitions argument must be a dictionary."
+    cmake_options = cmake_options or list()
+    assert isinstance(cmake_options, list), "The CMake options argument must be a list."
+
+    # Set proper defaults.
+    if allow_cmake_defaults:
+        if not "CMAKE_BUILD_TYPE" in cmake_definitions:
+            cmake_definitions.update({ "CMAKE_BUILD_TYPE" : "Release" })
+        if not "TEST_SUITE_LIT_FLAGS" in cmake_definitions and checks:
+            cmake_definitions.update({ "TEST_SUITE_LIT_FLAGS" : "-v;--time-tests" })
+
+    # Normalize TEST_SUITE_LIT_FLAGS option. We need to convert it to CMake formatted list.
+    if "TEST_SUITE_LIT_FLAGS" in cmake_definitions:
+        cmake_definitions.update({ "TEST_SUITE_LIT_FLAGS" : cmake_definitions["TEST_SUITE_LIT_FLAGS"].replace(" ", ";") })
+
+    # Check if we need to sync the test data with the remote host.
+    remote_rsync = ("TEST_SUITE_REMOTE_HOST" in cmake_definitions)
+
+    if compiler_dir is None:
+        assert "CMAKE_C_COMPILER" in cmake_definitions, "CMAKE_C_COMPILER must be specified in the CMake definitions."
+        assert "CMAKE_CXX_COMPILER" in cmake_definitions, "CMAKE_CXX_COMPILER must be specified in the CMake definitions."
+        assert ("TEST_SUITE_LIT" in cmake_definitions or "TEST_SUITE_LIT:FILEPATH" in cmake_definitions), "TEST_SUITE_LIT must be specified in the CMake definitions."
+    else:
+        #TODO: support for the executable extensions on the build host.
+        if not "CMAKE_C_COMPILER" in cmake_definitions:
+            cmake_definitions.update({ "CMAKE_C_COMPILER" : util.Interpolate("%(kw:compiler_dir)s/bin/clang", compiler_dir = compiler_dir) })
+        if not "CMAKE_CXX_COMPILER" in cmake_definitions:
+            cmake_definitions.update({ "CMAKE_CXX_COMPILER" : util.Interpolate("%(kw:compiler_dir)s/bin/clang++", compiler_dir = compiler_dir) })
+        if not ("TEST_SUITE_LIT" in cmake_definitions or "TEST_SUITE_LIT:FILEPATH" in cmake_definitions):
+            cmake_definitions.update({ "TEST_SUITE_LIT:FILEPATH" : util.Interpolate("%(kw:compiler_dir)s/bin/llvm-lit", compiler_dir = compiler_dir) })
+
+    f.addStep(
+        steps.CMake(
+            name            = f.makeStepName("cmake-configure"),
+            path            = test_suite_src_dir,
+            generator       = generator,
+            definitions     = cmake_definitions,
+            options         = cmake_options,
+            description     = ["CMake configure"],
+            haltOnFailure   = True,
+            env             = env,
+            workdir         = test_suite_workdir
+        ))
+
+    hint_suffix = f"-{hint}" if hint else ""
+    # Build Commands.
+    #NOTE: please note that the default target (.) cannot be specified by the IRenderable object.
+    for target in targets:
+        cmake_build_options = ["--build", "."]
+        if target != ".":
+            cmake_build_options.extend(["--target", target])
+        if jobs:
+            cmake_build_options.extend(["--", "-j", jobs])
+
+        target_title = "default" if target == "." else target
+
+        f.addStep(
+            steps.CMake(
+                name            = util.Interpolate("build-%(kw:title)s%(kw:hint)s",
+                                                   title = target_title, hint = hint_suffix),
+                options         = cmake_build_options,
+                description     = ["Build target", target_title],
+                haltOnFailure   = True,
+                env             = env,
+                workdir         = test_suite_workdir
+            ))
+
+        # Add a rsync step for each build target if the remote host has been specified
+        # for the LLVM test suite.
+        if remote_rsync:
+            f.addStep(
+                steps.CMake(
+                    name            = util.Interpolate("rsync-%(kw:title)s%(kw:hint)s",
+                                                       title = target_title, hint = hint_suffix),
+                    options         = ["--build", ".", "--target", "rsync"],
+                    description     = ["Rsync to target", target_title],
+                    haltOnFailure   = True,
+                    env             = env,
+                    workdir         = test_suite_workdir
+                ))
+
+    # Check Commands.
+    for target in checks:
+        f.addStep(
+            LitTestCommand(
+                name            = util.Interpolate("test-%(kw:title)s%(kw:hint)s",
+                                                   title = target, hint = hint_suffix),
+                command         = [steps.CMake.DEFAULT_CMAKE, "--build", ".", "--target", target],
+                description     = ["Running test:", target],
+                descriptionDone = ["Running test:", target, "completed"],
+                haltOnFailure   = False, # We want to test as much as we could.
+                env             = env,
+                workdir         = test_suite_workdir
+            ))
+
+    return f
 
 # The DebugifyBuilder needs to know the test-suite build directory, so we share the build directory via this variable.
 test_suite_build_path = 'test/build-test-suite'
