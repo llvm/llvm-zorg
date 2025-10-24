@@ -46,17 +46,6 @@ data "google_compute_network" "default" {
   name = "default"
 }
 
-resource "google_compute_firewall" "premerge_advisor_firewall" {
-  name    = "premerge-advisor-firewall"
-  network = data.google_compute_network.default.name
-  allow {
-    protocol = "tcp"
-    ports    = ["5000"]
-  }
-
-  source_tags = ["premerge-service"]
-}
-
 data "google_client_config" "current" {}
 
 locals {
