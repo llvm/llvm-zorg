@@ -500,7 +500,7 @@ resource "kubernetes_manifest" "premerge_advisor_pvc" {
 }
 
 resource "kubernetes_manifest" "premerge_advisor_deployment" {
-  manifest   = yamldecode(file("advisor_deployment.yaml"))
+  manifest   = yamldecode(templatefile("advisor_deployment.yaml", { other_advisor_host : var.other_premerge_advisor_host }))
   depends_on = [kubernetes_namespace.premerge_advisor, kubernetes_manifest.premerge_advisor_pvc]
 }
 

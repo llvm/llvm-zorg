@@ -133,3 +133,8 @@ variable "windows_2022_object_cache_buildbot_service_account_email" {
   description = "The email associated with the service account for the buildbot worker accessing the object cache on Windows."
   type        = string
 }
+
+variable "other_premerge_advisor_host" {
+  description = "The hostname of the premerge advisor in the other cluster."
+  type        = string
+}

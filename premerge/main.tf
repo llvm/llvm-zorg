@@ -182,6 +182,7 @@ module "premerge_cluster_us_central_resources" {
   windows_buildbot_password                                = data.google_secret_manager_secret_version.us_central_windows_buildbot_password.secret_data
   linux_object_cache_buildbot_service_account_email        = module.premerge_cluster_us_central.linux_object_cache_buildbot_service_account_email
   windows_2022_object_cache_buildbot_service_account_email = module.premerge_cluster_us_central.windows_2022_object_cache_buildbot_service_account_email
+  other_premerge_advisor_host                              = "34.82.126.63"
   providers = {
     kubernetes = kubernetes.llvm-premerge-us-central
     helm       = helm.llvm-premerge-us-central
@@ -209,6 +210,7 @@ module "premerge_cluster_us_west_resources" {
   windows_buildbot_password                                = data.google_secret_manager_secret_version.us_west_windows_buildbot_password.secret_data
   linux_object_cache_buildbot_service_account_email        = module.premerge_cluster_us_west.linux_object_cache_buildbot_service_account_email
   windows_2022_object_cache_buildbot_service_account_email = module.premerge_cluster_us_west.windows_2022_object_cache_buildbot_service_account_email
+  other_premerge_advisor_host                              = "136.114.125.23"
   providers = {
     kubernetes = kubernetes.llvm-premerge-us-west
     helm       = helm.llvm-premerge-us-west
