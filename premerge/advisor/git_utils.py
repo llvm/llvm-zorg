@@ -25,7 +25,7 @@ def _get_and_add_commit_index(
     repository_path: str,
     db_connection: sqlite3.Connection,
     first_commit_sha,
-) -> int:
+) -> int | None:
     # Ensure the repository is up to date.
     subprocess.run(["git", "fetch"], cwd=repository_path, check=True)
     # Get the highest indexed commit so we can ensure we only add new
@@ -43,13 +43,17 @@ def _get_and_add_commit_index(
         ["git", "log", "--oneline", "--no-abbrev", f"{latest_sha}..{commit_sha}"],
         cwd=repository_path,
         stdout=subprocess.PIPE,
-        check=True,
     )
+    if log_output.returncode != 0:
+        # We did not get any log output, likely because the revision requested
+        # does not exist in the repository (i.e., in the case of a stacked PR).
+        # Return none in this case because we cannot associate an index.
+        return None
     log_lines = log_output.stdout.decode("utf-8").split("\n")[:-1]
     if len(log_lines) == 0:
-        raise ValueError(
-            "Did not find any commits. The commit likely happened before the commit with index 1."
-        )
+        # We did not find any commits. This means that the commit likely
+        # happened before the commit with index 1. Return None in this case.
+        return None
     commit_index = latest_index + len(log_lines) + 1
     for log_line in log_lines:
         line_commit_sha = log_line.split(" ")[0]
@@ -66,7 +70,7 @@ def get_commit_index(
     repository_path: str,
     db_connection: sqlite3.Connection,
     first_commit_sha=FIRST_COMMIT_SHA,
-) -> int:
+) -> int | None:
     _clone_repository_if_not_present(repository_path)
     # Check to see if we already have the commit in the DB.
     commit_matches = db_connection.execute(
