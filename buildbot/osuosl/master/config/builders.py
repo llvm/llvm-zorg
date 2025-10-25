@@ -827,7 +827,10 @@ all = [
                     checkout_lld=False,
                     testsuite_flags=['--threads=32', '--build-threads=32'],
                     extra_cmake_args=['-DLLVM_ENABLE_PROJECTS=clang',
+                                      '-DCMAKE_C_COMPILER=clang',
+                                      '-DCMAKE_CXX_COMPILER=clang++',
                                       '-DLLVM_USE_LINKER=mold',
+                                      '-DLLVM_LINK_LLVM_DYLIB=ON',
                                       '-DLLVM_TARGETS_TO_BUILD=Sparc'])},
 
     ## LoongArch64 Clang+LLVM build check-all + test-suite
