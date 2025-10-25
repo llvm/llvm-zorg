@@ -509,6 +509,11 @@ resource "kubernetes_manifest" "premerge_advisor_service" {
   depends_on = [kubernetes_namespace.premerge_advisor]
 }
 
+resource "kubernetes_manifest" "premerge_advisor_external_service" {
+  manifest   = yamldecode(file("advisor_external_service.yaml"))
+  depends_on = [kubernetes_namespace.premerge_advisor]
+}
+
 resource "kubernetes_namespace" "grafana" {
   metadata {
     name = "grafana"

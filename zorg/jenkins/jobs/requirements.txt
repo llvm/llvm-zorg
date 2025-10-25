@@ -8,3 +8,4 @@ psutil==5.9.8
 lit==17.0.6
 awscli==1.32.41
 packaging==23.0
+swig==4.3.1

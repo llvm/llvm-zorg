@@ -41,6 +41,11 @@ resource "local_file" "terraform_state" {
   EOT
 }
 
+# Set up firewall rules that allow for access to the premerge advisor.
+data "google_compute_network" "default" {
+  name = "default"
+}
+
 data "google_client_config" "current" {}
 
 locals {
