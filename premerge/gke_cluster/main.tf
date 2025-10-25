@@ -12,6 +12,7 @@ resource "google_container_cluster" "llvm_premerge" {
   # for adding windows nodes to the cluster.
   networking_mode = "VPC_NATIVE"
   ip_allocation_policy {}
+  disable_l4_lb_firewall_reconciliation = true
 
   # Set the workload identity config so that we can authenticate with Google
   # Cloud APIs using workload identity federation as described in
@@ -44,6 +45,8 @@ resource "google_container_node_pool" "llvm_premerge_linux_service" {
     workload_metadata_config {
       mode = "GKE_METADATA"
     }
+
+    tags = ["premerge-service"]
   }
 }
 
