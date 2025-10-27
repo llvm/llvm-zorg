@@ -31,7 +31,7 @@ def _get_and_add_commit_index(
     # Get the highest indexed commit so we can ensure we only add new
     # commits.
     latest_commit_info = db_connection.execute(
-        "SELECT * FROM commits ORDER BY commit_index DESC"
+        "SELECT commit_sha, commit_index FROM commits ORDER BY commit_index DESC"
     ).fetchone()
     commits_to_add = []
     if latest_commit_info:
@@ -74,12 +74,12 @@ def get_commit_index(
     _clone_repository_if_not_present(repository_path)
     # Check to see if we already have the commit in the DB.
     commit_matches = db_connection.execute(
-        "SELECT * FROM commits WHERE commit_sha=?", (commit_sha,)
+        "SELECT commit_index FROM commits WHERE commit_sha=?", (commit_sha,)
     ).fetchall()
     if len(commit_matches) > 1:
         raise ValueError("Expected only one entry per commit SHA")
     elif len(commit_matches) == 1:
-        return commit_matches[0][1]
+        return commit_matches[0][0]
     # We have not seen this commit before. Count the index and then add it to
     # the DB.
     return _get_and_add_commit_index(
