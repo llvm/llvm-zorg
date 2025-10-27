@@ -2,6 +2,7 @@ from typing import TypedDict
 import time
 import sqlite3
 import logging
+import git_utils
 
 
 class TestFailure(TypedDict):
@@ -30,7 +31,7 @@ class TestExplanationRequest[TypedDict]:
 
 
 _TABLE_SCHEMAS = {
-    "failures": "CREATE TABLE failures(source_type, base_commit_sha, source_id, test_file, failure_message, platform)",
+    "failures": "CREATE TABLE failures(source_type, base_commit_sha, commit_index, source_id, test_file, failure_message, platform)",
     "commits": "CREATE TABLE commits(commit_sha, commit_index)",
 }
 
@@ -66,20 +67,27 @@ def setup_db(db_path: str) -> sqlite3.Connection:
     return connection
 
 
-def upload_failures(failure_info: FailureUpload, db_connection: sqlite3.Connection):
+def upload_failures(
+    failure_info: FailureUpload, db_connection: sqlite3.Connection, repository_path: str
+):
     failures = []
     for failure in failure_info["failures"]:
         failures.append(
             (
                 failure_info["source_type"],
                 failure_info["base_commit_sha"],
+                git_utils.get_commit_index(
+                    failure_info["base_commit_sha"], repository_path, db_connection
+                ),
                 failure_info["source_id"],
                 failure["name"],
                 failure["message"],
                 failure_info["platform"],
             )
         )
-    db_connection.executemany("INSERT INTO failures VALUES(?, ?, ?, ?, ?, ?)", failures)
+    db_connection.executemany(
+        "INSERT INTO failures VALUES(?, ?, ?, ?, ?, ?, ?)", failures
+    )
     db_connection.commit()
 
 
