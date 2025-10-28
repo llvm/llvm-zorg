@@ -106,7 +106,7 @@ pipeline {
                     python3 llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-sanitized build \
                       --assertions \
                       --projects="clang;lld;lldb"  \
-                      --runtimes="libunwind" \
+                      --runtimes="libcxx;libcxxabi;libunwind" \
                       --cmake-type=Release
                     '''
                     script {
