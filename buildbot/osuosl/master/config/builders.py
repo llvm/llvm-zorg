@@ -351,7 +351,10 @@ all = [
                     checkout_compiler_rt=False,
                     checkout_lld=False,
                     checkout_clang_tools_extra=False,
-                    extra_cmake_args=["-DLLVM_TARGETS_TO_BUILD='ARM'"])},
+                    extra_cmake_args=[
+                        "-DLLVM_TARGETS_TO_BUILD='ARM'",
+                        # Skip scheduling sensitive tests.
+                        "-DLLVM_LIT_ARGS=-v --filter-out '(googletest-timeout|timeout-hang|max-time)\.py'"])},
 
     ## ARMv7 check-all 2-stage
     {'name' : "clang-armv7-2stage",
@@ -411,7 +414,10 @@ all = [
                     checkout_compiler_rt=False,
                     checkout_lld=False,
                     checkout_clang_tools_extra=False,
-                    extra_cmake_args=["-DLLVM_TARGETS_TO_BUILD='AArch64'"])},
+                    extra_cmake_args=[
+                        "-DLLVM_TARGETS_TO_BUILD='AArch64'",
+                        # Skip scheduling sensitive tests.
+                        "-DLLVM_LIT_ARGS=-v --filter-out '(googletest-timeout|timeout-hang|max-time)\.py'"])},
 
     # AArch64 2 stage build with lld, flang, compiler-rt, test-suite and SVE/SME
     # mlir integration tests.
