@@ -350,6 +350,7 @@ all = [
                     clean=False,
                     checkout_compiler_rt=False,
                     checkout_lld=False,
+                    checkout_clang_tools_extra=False,
                     extra_cmake_args=["-DLLVM_TARGETS_TO_BUILD='ARM'"])},
 
     ## ARMv7 check-all 2-stage
@@ -409,6 +410,7 @@ all = [
                     clean=False,
                     checkout_compiler_rt=False,
                     checkout_lld=False,
+                    checkout_clang_tools_extra=False,
                     extra_cmake_args=["-DLLVM_TARGETS_TO_BUILD='AArch64'"])},
 
     # AArch64 2 stage build with lld, flang, compiler-rt, test-suite and SVE/SME
