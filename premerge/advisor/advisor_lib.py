@@ -35,6 +35,8 @@ _TABLE_SCHEMAS = {
     "commits": "CREATE TABLE commits(commit_sha, commit_index)",
 }
 
+EXPLAINED_HEAD_MAX_COMMIT_INDEX_DIFFERENCE = 5
+
 
 def _create_table(table_name: str, connection: sqlite3.Connection):
     logging.info("Did not find failures table, creating.")
@@ -95,12 +97,28 @@ def _try_explain_failing_at_head(
     db_connection: sqlite3.Connection,
     test_failure: TestFailure,
     base_commit_sha: str,
+    base_commit_index: int | None,
     platform: str,
 ) -> FailureExplanation | None:
-    test_name_matches = db_connection.execute(
+    query = (
         "SELECT failure_message FROM failures "
-        "WHERE source_type='postcommit' AND base_commit_sha=? AND platform=?",
-        (base_commit_sha, platform),
+        "WHERE source_type='postcommit' AND platform=?"
+    )
+    query_params = (platform,)
+    if base_commit_index:
+        min_commit_index = (
+            base_commit_index - EXPLAINED_HEAD_MAX_COMMIT_INDEX_DIFFERENCE
+        )
+        query += (
+            f" AND commit_index > {min_commit_index} "
+            f"AND commit_index <= {base_commit_index}"
+        )
+    else:
+        query += "AND base_commit_sha=?"
+        query_params += (base_commit_sha,)
+    test_name_matches = db_connection.execute(
+        query,
+        query_params,
     ).fetchall()
     for test_name_match in test_name_matches:
         failure_message = test_name_match[0]
@@ -114,7 +132,9 @@ def _try_explain_failing_at_head(
 
 
 def explain_failures(
-    explanation_request: TestExplanationRequest, db_connection: sqlite3.Connection
+    explanation_request: TestExplanationRequest,
+    repository_path: str,
+    db_connection: sqlite3.Connection,
 ) -> list[FailureExplanation]:
     explanations = []
     for test_failure in explanation_request["failures"]:
@@ -122,6 +142,9 @@ def explain_failures(
             db_connection,
             test_failure,
             explanation_request["base_commit_sha"],
+            git_utils.get_commit_index(
+                explanation_request["base_commit_sha"], repository_path, db_connection
+            ),
             explanation_request["platform"],
         )
         if explained_at_head:
