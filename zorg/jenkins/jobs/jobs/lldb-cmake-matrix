@@ -224,78 +224,6 @@ pipeline {
             }
             }
         }
-        stage('Build Clang 15.0.1') {
-            steps {
-                timeout(30) {
-                    dir('clang_1501') {
-                        checkout([$class: 'GitSCM', branches: [
-                            [name: "llvmorg-15.0.1"]
-                        ], userRemoteConfigs: [
-                            [url: 'https://github.com/llvm/llvm-project.git']
-                        ], extensions: [
-                            [$class: 'CloneOption', timeout: 30,
-                            timeout: 30]
-                        ],
-                        changelog: false,
-                        poll: false
-                        ])
-                    }
-                }
-                timeout(90) {
-                    sh '''
-                    source ./venv/bin/activate
-
-                    export SRC_DIR='clang_1501'
-                    export BUILD_DIR='clang_1501_build'
-
-                    python3 llvm-zorg/zorg/jenkins/monorepo_build.py cmake build \
-                      $MATRIX_COMMON_BUILD_PARAMETERS \
-                      --assertions \
-                      --noupload \
-                      --noinstall \
-                      --projects="clang;libcxx;libcxxabi"
-                    '''
-                }
-            }
-        }
-        stage('Test Clang 15.0.1') {
-            steps {
-                timeout(60) {
-                    sh '''
-                    source ./venv/bin/activate
-
-                    build_dir=$WORKSPACE/clang_1501_build
-                    python3 llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix configure \
-                      $MATRIX_COMMON_BUILD_PARAMETERS \
-                      --assertions \
-                      --lldb-test-compiler="$build_dir/bin/clang" \
-                      --projects="clang;lldb"  \
-                      --runtimes="libcxx;libcxxabi;libunwind"  \
-                      --cmake-type=Release \
-                      --dotest-flag="--libcxx-include-dir=$build_dir/include/c++/v1/" \
-                      --dotest-flag="--libcxx-library-dir=$build_dir/lib/" \
-                      --dotest-flag="--skip-category" \
-                      --dotest-flag="gmodules" \
-                      --dotest-flag="--skip-category" \
-                      --dotest-flag="watchpoint" \
-                      --dotest-flag="--skip-category" \
-                      --dotest-flag="llgs" \
-                      --dotest-flag="--skip-category" \
-                      --dotest-flag="debugserver" \
-
-                    # Give the system some time to recover.
-                    sleep 120
-                    python3 llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix test || echo "** check-lldb failed with errors"
-                    '''
-                }
-                script {
-                def Junit = new org.swift.Junit()
-                Junit.safeJunit([
-                    testResults: 'test/results.xml'
-                ])
-            }
-            }
-        }
         stage('Build Clang 17.0.6') {
             steps {
                 timeout(30) {
@@ -339,6 +267,80 @@ pipeline {
                     source ./venv/bin/activate
 
                     build_dir=$WORKSPACE/clang_1706_build
+                    python3 llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix configure \
+                      $MATRIX_COMMON_BUILD_PARAMETERS \
+                      --assertions \
+                      --lldb-test-compiler="$build_dir/bin/clang" \
+                      --projects="clang;lldb"  \
+                      --runtimes="libcxx;libcxxabi;libunwind"  \
+                      --cmake-type=Release \
+                      --dotest-flag="--libcxx-include-dir=$build_dir/include/c++/v1/" \
+                      --dotest-flag="--libcxx-library-dir=$build_dir/lib/" \
+                      --dotest-flag="--skip-category" \
+                      --dotest-flag="gmodules" \
+                      --dotest-flag="--skip-category" \
+                      --dotest-flag="watchpoint" \
+                      --dotest-flag="--skip-category" \
+                      --dotest-flag="llgs" \
+                      --dotest-flag="--skip-category" \
+                      --dotest-flag="debugserver" \
+
+                    # Give the system some time to recover.
+                    sleep 120
+                    python3 llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix test || echo "** check-lldb failed with errors"
+                    '''
+                    script {
+                        def Junit = new org.swift.Junit()
+                        Junit.safeJunit([
+                            testResults: 'test/results.xml'
+                        ])
+                    }
+                }
+            }
+        }
+        stage('Build Clang 19.1.7') {
+            steps {
+                timeout(30) {
+                    dir('clang_1917') {
+                        checkout([$class: 'GitSCM', branches: [
+                            [name: "llvmorg-19.1.7"]
+                        ], userRemoteConfigs: [
+                            [url: 'https://github.com/llvm/llvm-project.git']
+                        ], extensions: [
+                            [$class: 'CloneOption', timeout: 30,
+                            timeout: 30]
+                        ],
+                        changelog: false,
+                        poll: false
+                        ])
+                    }
+                }
+                timeout(90) {
+                    sh '''
+                    export PATH=$PATH:/usr/bin:/usr/local/bin
+                    export SRC_DIR='clang_1917'
+                    export BUILD_DIR='clang_1917_build'
+
+                    source ./venv/bin/activate
+
+                    python3 llvm-zorg/zorg/jenkins/monorepo_build.py cmake build \
+                      $MATRIX_COMMON_BUILD_PARAMETERS \
+                      --assertions \
+                      --noupload \
+                      --noinstall \
+                      --projects="clang" \
+                      --runtimes="libcxx;libcxxabi;libunwind"
+                    '''
+                }
+            }
+        }
+        stage('Test Clang 19.1.7') {
+            steps {
+                timeout(60) {
+                    sh '''
+                    source ./venv/bin/activate
+
+                    build_dir=$WORKSPACE/clang_1917_build
                     python3 llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix configure \
                       $MATRIX_COMMON_BUILD_PARAMETERS \
                       --assertions \
