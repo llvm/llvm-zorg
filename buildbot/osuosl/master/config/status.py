@@ -5,6 +5,7 @@ from zope.interface import implementer
 from buildbot import interfaces
 from buildbot import util
 from buildbot.process.properties import Interpolate
+from buildbot.process.results import FAILURE
 from buildbot.plugins import reporters
 from buildbot.reporters.generators.build import BuildStartEndStatusGenerator
 from buildbot.reporters.message import MessageFormatterMissingWorker
@@ -38,6 +39,51 @@ class LLVMEmailLookup(util.ComparableMixin):
         return None # Skip invalid or not complete email address.
 
 
+# Return True only if we need to label this PR.
+def is_message_needed_nvptx_backend(build):
+    try:
+        for step in build["steps"]:
+            if step["results"] != FAILURE:
+                continue
+            if step["name"] not in [
+                "build-unified-tree",
+                "test-build-unified-tree-check-llvm",
+            ]:
+                continue
+            # Process all logs. The first failed log may be not NVPTX related.
+            for i, _log in enumerate(step["logs"]):
+                log_fail = None
+                log_stdio = None
+                if _log["name"].startswith("FAIL: "):
+                    log_fail = _log["content"]["content"]
+                if _log["type"] == "s":
+                    log_stdio = _log["content"]["content"]
+                log_fail = log_fail or log_stdio
+                if not log_fail:
+                    continue
+                for line in log_fail.splitlines():
+                    # if log_fail == log_stdio and line[:1] in ["h", "o", "e"]:
+                    #    line = line[1:] # Remove stdio line prefix.
+                    if "ptxas fatal" in line:
+                        return True
+                    if (
+                        "*** TEST " in line
+                        and "NVPTX" in line.upper()
+                        and " FAILED ***" in line
+                    ):
+                        return True
+                    # Assert: Stack dump: N. Running pass 'NVPTX ...
+                    if "Running pass 'NVPTX " in line:
+                        return True
+                    # Assert: LLVM ERROR: Support for ... introduced in PTX ISA version 6.0 and requires target sm_30.
+                    if "introduced in PTX ISA version" in line:
+                        return True
+
+    except Exception as err:
+        log.msg(f"EXCEPTION in is_message_needed_nvptx_backend(): {err}")
+    return False
+
+
 # Returns a list of Status Targets. The results of each build will be
 # pushed to these targets. buildbot.plugins reporters has a variety
 # to choose from, including email senders, and IRC bots.
@@ -62,6 +108,25 @@ def getReporters():
                         builders = [
                             b.get('name') for b in config.builders.all
                             if 'silent' not in b.get('tags', [])
+                        ]
+                    )
+                ]
+            )
+        )
+
+        r.append(
+            utils.LLVMFailGitHubLabeler(
+                debug = True,
+                token = token,
+                generators = [
+                    utils.LLVMFailBuildGenerator(
+                        message_formatter = utils.LLVMLabelFormatter(label='backend:NVPTX'),
+                        is_message_needed_filter = is_message_needed_nvptx_backend,
+                        builders = [
+                            'llvm-nvptx-nvidia-ubuntu',
+                            'llvm-nvptx-nvidia-win',
+                            'llvm-nvptx64-nvidia-ubuntu',
+                            'llvm-nvptx64-nvidia-win'
                         ]
                     )
                 ]
