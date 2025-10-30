@@ -206,9 +206,9 @@ class AdvisorLibTest(unittest.TestCase):
             ],
         )
 
-    # Test that we do not explain away a failure at head if the base commit
-    # SHA is different.
-    def test_no_explain_different_base_commit(self):
+    # Test that we do not explain away a failure at head if the only matching
+    # test failures come from commits after the base commit.
+    def test_no_explain_future_commit(self):
         self.assertListEqual(
             self._get_explained_failures(
                 prev_failure_base_commit_sha="6b7064686b706f7064656d6f6e68756e74657273"
@@ -218,6 +218,23 @@ class AdvisorLibTest(unittest.TestCase):
                     "name": "a.ll",
                     "explained": False,
                     "reason": None,
+                }
+            ],
+        )
+
+    # Test that we explain away failures at head that have happened in the
+    # previous couple of commits.
+    def test_explain_head_within_range(self):
+        self.assertListEqual(
+            self._get_explained_failures(
+                base_commit_sha="6b7064686b706f7064656d6f6e68756e74657273",
+                prev_failure_base_commit_sha="8d29a3bb6f3d92d65bf5811b53bf42bf63685359",
+            ),
+            [
+                {
+                    "name": "a.ll",
+                    "explained": True,
+                    "reason": "This test is already failing at the base commit.",
                 }
             ],
         )

@@ -115,7 +115,7 @@ def _try_explain_failing_at_head(
         )
     else:
         query += "AND base_commit_sha=?"
-        query_params += base_commit_sha
+        query_params += (base_commit_sha,)
     test_name_matches = db_connection.execute(
         query,
         query_params,
