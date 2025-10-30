@@ -145,6 +145,7 @@ class AdvisorLibTest(unittest.TestCase):
         self.assertListEqual(
             advisor_lib.explain_failures(
                 explanation_request,
+                self.repository_path,
                 self.db_connection,
             ),
             [{"name": "a.ll", "explained": False, "reason": None}],
@@ -187,7 +188,9 @@ class AdvisorLibTest(unittest.TestCase):
             "base_commit_sha": base_commit_sha,
             "platform": platform,
         }
-        return advisor_lib.explain_failures(explanation_request, self.db_connection)
+        return advisor_lib.explain_failures(
+            explanation_request, self.repository_path, self.db_connection
+        )
 
     # Test that we can explain away a failure at head, assuming all of the
     # appropriate fields match.
