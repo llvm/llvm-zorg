@@ -38,5 +38,7 @@ spec:
           env:
             - name: ADVISOR_DB_PATH
               value: "/db/advisor_db.sqlite"
+            - name: ADVISOR_REPO_PATH
+              value: "/db/llvm-project"
           ports:
           -  containerPort: 5000

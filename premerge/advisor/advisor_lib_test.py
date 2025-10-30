@@ -1,6 +1,7 @@
 import unittest
 import tempfile
 import sqlite3
+import os
 
 import advisor_lib
 
@@ -78,10 +79,23 @@ class AdvisorLibTest(unittest.TestCase):
     def setUp(self):
         self.db_file = tempfile.NamedTemporaryFile()
         self.db_connection = advisor_lib.setup_db(self.db_file.name)
+        # Create the commit indices for the commits that we will use so that
+        # we can avoid cloning a git repository to attempt to compute them.
+        self.db_connection.executemany(
+            "INSERT INTO commits VALUES(?, ?)",
+            [
+                ("8d29a3bb6f3d92d65bf5811b53bf42bf63685359", 1),
+                ("6b7064686b706f7064656d6f6e68756e74657273", 2),
+            ],
+        )
+        self.repository_path_dir = tempfile.TemporaryDirectory()
+        self.repository_path = self.repository_path_dir.name
+        os.mkdir(os.path.join(self.repository_path_dir.name, ".git"))
 
     def tearDown(self):
         self.db_connection.close()
         self.db_file.close()
+        self.repository_path_dir.cleanup()
 
     def test_upload_failures(self):
         failure_info = {
@@ -94,7 +108,9 @@ class AdvisorLibTest(unittest.TestCase):
             ],
             "platform": "linux-x86_64",
         }
-        advisor_lib.upload_failures(failure_info, self.db_connection)
+        advisor_lib.upload_failures(
+            failure_info, self.db_connection, self.repository_path
+        )
         failures = self.db_connection.execute("SELECT * from failures").fetchall()
         self.assertListEqual(
             failures,
@@ -102,6 +118,7 @@ class AdvisorLibTest(unittest.TestCase):
                 (
                     "postcommit",
                     "8d29a3bb6f3d92d65bf5811b53bf42bf63685359",
+                    1,
                     "10000",
                     "a.ll",
                     "failed in way 1",
@@ -110,6 +127,7 @@ class AdvisorLibTest(unittest.TestCase):
                 (
                     "postcommit",
                     "8d29a3bb6f3d92d65bf5811b53bf42bf63685359",
+                    1,
                     "10000",
                     "b.ll",
                     "failed in way 2",
@@ -161,7 +179,9 @@ class AdvisorLibTest(unittest.TestCase):
             ],
             "platform": prev_failure_platform,
         }
-        advisor_lib.upload_failures(failure_info, self.db_connection)
+        advisor_lib.upload_failures(
+            failure_info, self.db_connection, self.repository_path
+        )
         explanation_request = {
             "failures": [{"name": failure_name, "message": failure_message}],
             "base_commit_sha": base_commit_sha,
