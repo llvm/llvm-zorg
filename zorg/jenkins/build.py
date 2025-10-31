@@ -569,6 +569,12 @@ def lldb_cmake_builder(target, variant=None):
 
     if variant == 'sanitized':
         cmake_cmd.append('-DLLVM_USE_SANITIZER=Address;Undefined')
+        # By default macOS prevents an asanified dylib to be loaded into the system linker.
+        liblto = (
+            os.path.dirname(run_collect_output(["xcrun", "--find", "clang"]).strip())
+            + "../lib/libLTO.dylib"
+        )
+        cmake_cmd.append("-DLIBCXXABI_LINK_FLAGS=-Wl,-lto_library -Wl" + liblto)
         # There is no need to compile the lldb tests with an asanified compiler
         # if we have a host compiler available.
         if conf.CC():
