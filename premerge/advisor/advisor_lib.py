@@ -143,8 +143,10 @@ def _try_explain_flaky_failure(
     ).fetchall()
     commit_indices = []
     for failure_message, commit_index in test_name_matches:
-        if failure_message == test_failure.message:
+        if failure_message == test_failure["message"]:
             commit_indices.append(commit_index)
+    if len(commit_indices) == 0:
+        return None
     commit_range = max(commit_indices) - min(commit_indices)
     if commit_range > EXPLAINED_FLAKY_MIN_COMMIT_RANGE:
         return {
@@ -165,6 +167,17 @@ def explain_failures(
         commit_index = git_utils.get_commit_index(
             explanation_request["base_commit_sha"], repository_path, db_connection
         )
+        # We want to try and explain flaky failures first. Otherwise we might
+        # explain a flaky failure as a failure at head if there is a recent
+        # failure in the last couple of commits.
+        explained_as_flaky = _try_explain_flaky_failure(
+            db_connection,
+            test_failure,
+            explanation_request["platform"],
+        )
+        if explained_as_flaky:
+            explanations.append(explained_as_flaky)
+            continue
         explained_at_head = _try_explain_failing_at_head(
             db_connection,
             test_failure,
@@ -174,14 +187,6 @@ def explain_failures(
         )
         if explained_at_head:
             explanations.append(explained_at_head)
-            continue
-        explained_as_flaky = _try_explain_flaky_failure(
-            db_connection,
-            test_failure,
-            explanation_request["platform"],
-        )
-        if explained_as_flaky:
-            explanations.append(explained_as_flaky)
             continue
         explanations.append(
             {"name": test_failure["name"], "explained": False, "reason": None}
