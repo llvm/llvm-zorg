@@ -86,6 +86,9 @@ class AdvisorLibTest(unittest.TestCase):
             [
                 ("8d29a3bb6f3d92d65bf5811b53bf42bf63685359", 1),
                 ("6b7064686b706f7064656d6f6e68756e74657273", 2),
+                ("6a6f73687561747265656a6f7368756174726565", 201),
+                ("6269677375726269677375726269677375726269", 202),
+                ("6d746c616e676c65796d746c616e676c65796d74", 203),
             ],
         )
         self.repository_path_dir = tempfile.TemporaryDirectory()
@@ -272,6 +275,106 @@ class AdvisorLibTest(unittest.TestCase):
     def test_no_explain_different_message(self):
         self.assertListEqual(
             self._get_explained_failures(failure_message="failed in way 2"),
+            [
+                {
+                    "name": "a.ll",
+                    "explained": False,
+                    "reason": None,
+                }
+            ],
+        )
+
+    def _setup_flaky_test_info(
+        self,
+        source_type="postcommit",
+        message="failed in way 1",
+        second_failure_sha="6269677375726269677375726269677375726269",
+    ):
+        failures_info = [
+            {
+                "source_type": source_type,
+                "base_commit_sha": "8d29a3bb6f3d92d65bf5811b53bf42bf63685359",
+                "source_id": "10000",
+                "failures": [
+                    {"name": "a.ll", "message": message},
+                ],
+                "platform": "linux-x86_64",
+            },
+            {
+                "source_type": source_type,
+                "base_commit_sha": second_failure_sha,
+                "source_id": "100001",
+                "failures": [
+                    {"name": "a.ll", "message": message},
+                ],
+                "platform": "linux-x86_64",
+            },
+        ]
+        for failure_info in failures_info:
+            advisor_lib.upload_failures(
+                failure_info, self.db_connection, self.repository_path
+            )
+
+    def _get_flaky_test_explanations(self):
+        explanation_request = {
+            "failures": [{"name": "a.ll", "message": "failed in way 1"}],
+            "base_commit_sha": "6d746c616e676c65796d746c616e676c65796d74",
+            "platform": "linux-x86_64",
+        }
+        return advisor_lib.explain_failures(
+            explanation_request, self.repository_path, self.db_connection
+        )
+
+    def test_explain_flaky(self):
+        self._setup_flaky_test_info()
+        self.assertListEqual(
+            self._get_flaky_test_explanations(),
+            [
+                {
+                    "name": "a.ll",
+                    "explained": True,
+                    "reason": "This test is flaky in main.",
+                }
+            ],
+        )
+
+    def test_no_explain_flaky_different_message(self):
+        self._setup_flaky_test_info(message="failed in way 2")
+        self.assertListEqual(
+            self._get_flaky_test_explanations(),
+            [
+                {
+                    "name": "a.ll",
+                    "explained": False,
+                    "reason": None,
+                }
+            ],
+        )
+
+    # Test that we do not explain away flaky failures from pull request data.
+    # PRs might have the same failures multiple times across a large span of
+    # base commits, which might accidentally trigger the heuristic.
+    def test_no_explain_flaky_pullrequest_data(self):
+        self._setup_flaky_test_info(source_type="pull_request")
+        self.assertListEqual(
+            self._get_flaky_test_explanations(),
+            [
+                {
+                    "name": "a.ll",
+                    "explained": False,
+                    "reason": None,
+                }
+            ],
+        )
+
+    # Test that if all of the flaky failures are within a small range, we do
+    # not report this as a flaky failure.
+    def test_no_explain_flaky_small_range(self):
+        self._setup_flaky_test_info(
+            second_failure_sha="6b7064686b706f7064656d6f6e68756e74657273"
+        )
+        self.assertListEqual(
+            self._get_flaky_test_explanations(),
             [
                 {
                     "name": "a.ll",
