@@ -575,6 +575,7 @@ def lldb_cmake_builder(target, variant=None):
             + "../lib/libLTO.dylib"
         )
         cmake_cmd.append("-DLIBCXXABI_LINK_FLAGS=-Wl,-lto_library -Wl" + liblto)
+        cmake_cmd.append("-DLIBCXX_LINK_FLAGS=-Wl,-lto_library -Wl" + liblto)
         # There is no need to compile the lldb tests with an asanified compiler
         # if we have a host compiler available.
         if conf.CC():
