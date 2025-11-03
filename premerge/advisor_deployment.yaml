@@ -27,11 +27,11 @@ spec:
           image: ghcr.io/llvm/premerge-advisor:latest
           resources:
             requests:
-              memory: "512Mi"
+              memory: "1Gi"
               cpu: "500m"
             limits:
-              memory: "1Gi"
-              cpu: "1"
+              memory: "2Gi"
+              cpu: "2"
           volumeMounts:
             - mountPath: "/db"
               name: advisor-db-volume
