@@ -11,7 +11,7 @@ class AdvisorIntegrationTest(unittest.TestCase):
         self.db_file = tempfile.NamedTemporaryFile()
         self.repository_path_dir = tempfile.TemporaryDirectory()
         self.repository_path = os.path.join(self.repository_path_dir.name, "actions")
-        git_utils._clone_repository_if_not_present(
+        git_utils.clone_repository_if_not_present(
             self.repository_path, "https://github.com/llvm/actions"
         )
         self.app = advisor.create_app(self.db_file.name, self.repository_path)
