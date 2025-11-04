@@ -7,7 +7,7 @@ REPOSITORY_URL = "https://github.com/llvm/llvm-project"
 FIRST_COMMIT_SHA = "f8f7f1b67c8ee5d81847955dc36fab86a6d129ad"
 
 
-def _clone_repository_if_not_present(
+def clone_repository_if_not_present(
     repository_path: str, repository_url=REPOSITORY_URL
 ):
     if not os.path.exists(os.path.join(repository_path, ".git")):
@@ -71,7 +71,7 @@ def get_commit_index(
     db_connection: sqlite3.Connection,
     first_commit_sha=FIRST_COMMIT_SHA,
 ) -> int | None:
-    _clone_repository_if_not_present(repository_path)
+    clone_repository_if_not_present(repository_path)
     # Check to see if we already have the commit in the DB.
     commit_matches = db_connection.execute(
         "SELECT commit_index FROM commits WHERE commit_sha=?", (commit_sha,)

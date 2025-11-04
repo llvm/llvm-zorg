@@ -4,6 +4,7 @@ import flask
 from flask import Flask
 
 import advisor_lib
+import git_utils
 
 advisor_blueprint = flask.Blueprint("advisor", __name__)
 
@@ -39,6 +40,7 @@ def create_app(db_path: str, repository_path: str):
     app = Flask(__name__)
     app.register_blueprint(advisor_blueprint)
     app.teardown_appcontext(_close_db)
+    git_utils.clone_repository_if_not_present(repository_path)
     with app.app_context():
         app.config["DB_PATH"] = db_path
         app.config["REPO_PATH"] = repository_path
