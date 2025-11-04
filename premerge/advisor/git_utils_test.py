@@ -58,7 +58,7 @@ class GitUtilsTest(unittest.TestCase):
         self.setup_repository(5)
         utils_repo_folder = tempfile.TemporaryDirectory()
         utils_repo_path = os.path.join(utils_repo_folder.name, "repo")
-        git_utils._clone_repository_if_not_present(
+        git_utils.clone_repository_if_not_present(
             utils_repo_path, self.repository_path.name
         )
         log_process = subprocess.run(

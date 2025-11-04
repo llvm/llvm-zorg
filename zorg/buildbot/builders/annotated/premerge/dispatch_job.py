@@ -36,6 +36,10 @@ PLATFORM_TO_GCS_BUCKET_SUFFIX = {
 }
 LOG_SECONDS_TO_QUERY = 10
 SECONDS_QUERY_LOGS_EVERY = 5
+# We wait for SECONDS_QUERY_LOGS_EVERY before running another attempt.
+# 360 attempts in this case equals 30 minutes, which should be plenty
+# for a pod to schedule, assuming things are working correctly.
+MAX_WAIT_FOR_POD_SCHEDULE_ATTEMPTS = 360
 
 
 def start_build(
@@ -97,8 +101,6 @@ def start_build(
 def start_build_linux(commit_sha: str, bucket_name: str, k8s_client) -> str:
     """Starts a pod to build/test on Linux at the specified SHA."""
     pod_name = f"build-{commit_sha}"
-    # TODO(boomanaiden154): Reenable Windows when
-    # https://github.com/llvm/llvm-project/issues/165887 is fixed.
     commands = [
         "set -ex",
         "git clone --depth 100 https://github.com/llvm/llvm-project",
@@ -112,7 +114,7 @@ def start_build_linux(commit_sha: str, bucket_name: str, k8s_client) -> str:
         "export SCCACHE_GCS_RW_MODE=READ_WRITE",
         "export SCCACHE_IDLE_TIMEOUT=0",
         "sccache --start-server",
-        './.ci/monolithic-linux.sh "bolt;clang;clang-tools-extra;flang;libclc;lld;lldb;llvm;mlir;polly" "check-bolt check-clang check-clang-tools check-flang check-lld check-llvm check-mlir check-polly check-lit" "compiler-rt;flang-rt;libc;libcxx;libcxxabi;libunwind" "check-compiler-rt check-flang-rt check-libc" "check-cxx check-cxxabi check-unwind" "OFF"',
+        './.ci/monolithic-linux.sh "bolt;clang;clang-tools-extra;flang;libclc;lld;lldb;llvm;mlir;polly" "check-bolt check-clang check-clang-tools check-flang check-lld check-lldb check-llvm check-mlir check-polly check-lit" "compiler-rt;flang-rt;libc;libcxx;libcxxabi;libunwind" "check-compiler-rt check-flang-rt check-libc" "check-cxx check-cxxabi check-unwind" "OFF"',
         "python .ci/cache_lit_timing_files.py upload",
         "echo BUILD FINISHED",
     ]
@@ -256,10 +258,19 @@ def main(commit_sha: str, platform: str):
     v1_api = kubernetes.client.CoreV1Api()
     print("@@@BUILD_STEP Build/Test@@@")
     pod_status = "Pending"
-    while pod_status == "Pending":
+    check_running_attempts = 0
+    while (
+        pod_status == "Pending"
+        and check_running_attempts < MAX_WAIT_FOR_POD_SCHEDULE_ATTEMPTS
+    ):
         print("Waiting for the pod to schedule onto a machine.")
         time.sleep(SECONDS_QUERY_LOGS_EVERY)
         pod_status = get_pod_status(pod_name, namespace, v1_api)
+        check_running_attempts += 1
+    if check_running_attempts >= MAX_WAIT_FOR_POD_SCHEDULE_ATTEMPTS:
+        v1_api.delete_namespaced_pod(pod_name, namespace)
+        print("Job failed: The container did not start within the alotted time.")
+        sys.exit(1)
     while True:
         try:
             pod_finished, latest_time = print_logs(
