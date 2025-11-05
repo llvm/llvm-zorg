@@ -24,7 +24,7 @@ class FailureUpload(TypedDict):
     platform: str
 
 
-class TestExplanationRequest[TypedDict]:
+class TestExplanationRequest(TypedDict):
     base_commit_sha: str
     failures: list[TestFailure]
     platform: str
