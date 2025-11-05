@@ -24,7 +24,7 @@ class FailureUpload(TypedDict):
     platform: str
 
 
-class TestExplanationRequest[TypedDict]:
+class TestExplanationRequest(TypedDict):
     base_commit_sha: str
     failures: list[TestFailure]
     platform: str
@@ -36,7 +36,6 @@ _TABLE_SCHEMAS = {
 }
 
 EXPLAINED_HEAD_MAX_COMMIT_INDEX_DIFFERENCE = 5
-EXPLAINED_FLAKY_MIN_COMMIT_RANGE = 200
 
 
 def _create_table(table_name: str, connection: sqlite3.Connection):
@@ -132,29 +131,6 @@ def _try_explain_failing_at_head(
     return None
 
 
-def _try_explain_flaky_failure(
-    db_connection: sqlite3.Connection,
-    test_failure: TestFailure,
-    platform: str,
-) -> FailureExplanation | None:
-    test_name_matches = db_connection.execute(
-        "SELECT failure_message, commit_index FROM failures WHERE source_type='postcommit' AND platform=?",
-        (platform,),
-    ).fetchall()
-    commit_indices = []
-    for failure_message, commit_index in test_name_matches:
-        if failure_message == test_failure.message:
-            commit_indices.append(commit_index)
-    commit_range = max(commit_indices) - min(commit_indices)
-    if commit_range > EXPLAINED_FLAKY_MIN_COMMIT_RANGE:
-        return {
-            "name": test_failure["name"],
-            "explained": True,
-            "reason": "This test is flaky in main.",
-        }
-    return None
-
-
 def explain_failures(
     explanation_request: TestExplanationRequest,
     repository_path: str,
@@ -162,26 +138,17 @@ def explain_failures(
 ) -> list[FailureExplanation]:
     explanations = []
     for test_failure in explanation_request["failures"]:
-        commit_index = git_utils.get_commit_index(
-            explanation_request["base_commit_sha"], repository_path, db_connection
-        )
         explained_at_head = _try_explain_failing_at_head(
             db_connection,
             test_failure,
             explanation_request["base_commit_sha"],
-            commit_index,
+            git_utils.get_commit_index(
+                explanation_request["base_commit_sha"], repository_path, db_connection
+            ),
             explanation_request["platform"],
         )
         if explained_at_head:
             explanations.append(explained_at_head)
-            continue
-        explained_as_flaky = _try_explain_flaky_failure(
-            db_connection,
-            test_failure,
-            explanation_request["platform"],
-        )
-        if explained_as_flaky:
-            explanations.append(explained_as_flaky)
             continue
         explanations.append(
             {"name": test_failure["name"], "explained": False, "reason": None}
