@@ -3,6 +3,7 @@ from importlib import reload
 from buildbot.plugins import util, steps
 
 from zorg.buildbot.builders import ClangBuilder
+from zorg.buildbot.builders import ScriptedBuilder
 from zorg.buildbot.builders import FlangBuilder
 from zorg.buildbot.builders import PollyBuilder
 from zorg.buildbot.builders import LLDBBuilder
@@ -1310,28 +1311,8 @@ all = [
     'tags'  : ["polly"],
     'workernames' : ["polly-x86_64-fdcserver", "minipc-1050ti-linux"],
     'builddir': "polly-x86_64-linux-test-suite",
-    'factory' : PollyBuilder.getPollyBuildFactory(
-                    clean=False,
-                    install=False,
-                    make='ninja',
-                    extraCmakeArgs=[
-                        "-G", "Ninja",
-                        "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
-                        "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
-                        "-DLLVM_ENABLE_ASSERTIONS=True",
-                        "-DLLVM_TARGETS_TO_BUILD='X86;NVPTX'",
-                        "-DCLANG_ENABLE_ARCMT=OFF",
-                        "-DCLANG_ENABLE_STATIC_ANALYZER=OFF",
-                        "-DCLANG_ENABLE_OBJC_REWRITER=OFF"
-                        ],
-                    testsuite=True,
-                    extraTestsuiteCmakeArgs=[
-                        "-G", "Ninja",
-                        "-DTEST_SUITE_COLLECT_COMPILE_TIME=OFF",
-                        "-DTEST_SUITE_COLLECT_STATS=OFF",
-                        "-DTEST_SUITE_COLLECT_CODE_SIZE=OFF",
-                        util.Interpolate("-DTEST_SUITE_EXTERNALS_DIR=%(prop:builddir)s/../../test-suite-externals"),
-                      ]
+    'factory' : ScriptedBuilder.getScriptedBuildFactory(
+                      "polly/.buildbot/polly-x86_64-linux-test-suite.py"
                     )},
 
 # AOSP builders.
