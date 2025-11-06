@@ -27,7 +27,7 @@ jobs:
       - name: Build Container
         uses: llvm/llvm-project/.github/actions/build-container@9ee130fa0c8bb163b69923f203f3b2399fea747d
         with:
-            container_name: operations-metrics
+            container-name: operations-metrics
             context: premerge/ops-container
 
   push-operations-metrics-container:
