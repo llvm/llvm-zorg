@@ -3961,10 +3961,6 @@ all += [
                         "check-llvm",
                         "check-clang",
                         "check-lld",
-                        "check-compiler-rt-aarch64-unknown-linux-gnu",
-                        "check-unwind-aarch64-unknown-linux-gnu",
-                        "check-cxxabi-aarch64-unknown-linux-gnu",
-                        "check-cxx-aarch64-unknown-linux-gnu",
                     ],
                     cmake_definitions = {
                         "LLVM_TARGETS_TO_BUILD"             : "AArch64",
@@ -3987,6 +3983,23 @@ all += [
                     env = {
                         'CCACHE_DIR' : util.Interpolate("%(prop:builddir)s/ccache-db"),
                     },
+                    post_build_steps =
+                        TestSuiteBuilder.getLlvmTestSuiteSteps(
+                            cmake_definitions = {
+                                "CMAKE_BUILD_TYPE"          : "Release",
+                                "CMAKE_C_FLAGS"             : "-march=armv8.3-a+pauth -mbranch-protection=pac-ret -faarch64-jump-table-hardening -O2",
+                                "CMAKE_CXX_FLAGS"           : "-march=armv8.3-a+pauth -mbranch-protection=pac-ret -faarch64-jump-table-hardening -O2",
+                                "CMAKE_EXE_LINKER_FLAGS"    : "-O2 -Wl,--emit-relocs",
+                                "CMAKE_MODULE_LINKER_FLAGS" : "-O2 -Wl,--emit-relocs",
+                                "CMAKE_SHARED_LINKER_FLAGS" : "-O2 -Wl,--emit-relocs",
+                                # Run on the devkit, limited set of tests.
+                                "TEST_SUITE_REMOTE_HOST"    : "buildbot@arm64-linux-02.lab.llvm.org",
+                                "TEST_SUITE_LIT_FLAGS"      : "-v --threads=16 --time-tests",
+                                "TEST_SUITE_RUN_BENCHMARKS" : "ON",
+                                "TEST_SUITE_SUBDIRS"        : "SingleSource;MultiSource;MicroBenchmarks",
+                            },
+                            compiler_dir = util.Interpolate("%(prop:builddir)s/build"),
+                        )
                 )
-        },        
+        },
 ]
