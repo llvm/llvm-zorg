@@ -28,30 +28,11 @@ jobs:
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
           sparse-checkout: premerge/ops-container
-      - name: Write Variables
-        id: vars
-        run: |
-          tag=`date +%s`
-          container_name="ghcr.io/$GITHUB_REPOSITORY_OWNER/operations-metrics"
-          echo "container-name=$container_name" >> $GITHUB_OUTPUT
-          echo "container-name-tag=$container_name:$tag" >> $GITHUB_OUTPUT
-          echo "container-filename=$(echo $container_name:$tag  | sed -e 's/\//-/g' -e 's/:/-/g').tar" >> $GITHUB_OUTPUT
       - name: Build Container
-        working-directory: premerge/ops-container
-        run: |
-          podman build -t ${{ steps.vars.outputs.container-name-tag }} .
-      # Save the container so we have it in case the push fails.  This also
-      # allows us to separate the push step into a different job so we can
-      # maintain minimal permissions while building the container.
-      - name: Save Container Image
-        run: |
-          podman save  ${{ steps.vars.outputs.container-name-tag }} >  ${{ steps.vars.outputs.container-filename }}
-      - name: Upload Container Image
-        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
+        uses: llvm/llvm-project/.github/workflows/build-container@c940bfd7e6218c01c6a517e8d6afc8067e933ffd
         with:
-          name: container
-          path: ${{ steps.vars.outputs.container-filename }}
-          retention-days: 14
+            container_name: operations-metrics
+            context: premerge/ops-container
 
   push-operations-metrics-container:
     if: github.event_name == 'push'
@@ -63,14 +44,6 @@ jobs:
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
-      - name: Download Container Image
-        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6.0.0
+      - uses: llvm/llvm-project/.github/workflows/push-container@c940bfd7e6218c01c6a517e8d6afc8067e933ffd
         with:
-          name: container
-      - name: Push Container
-        run: |
-          podman load -i ${{ needs.build-operations-metrics-container.outputs.container-filename }}
-          podman tag ${{ needs.build-operations-metrics-container.outputs.container-name-tag }} ${{ needs.build-operations-metrics-container.outputs.container-name }}:latest
-          podman login -u ${{ github.actor }} -p $GITHUB_TOKEN ghcr.io
-          podman push ${{ needs.build-operations-metrics-container.outputs.container-name-tag }}
-          podman push ${{ needs.build-operations-metrics-container.outputs.container-name }}:latest
+          token: ${{ secrets.GITHUB_TOKEN }}
