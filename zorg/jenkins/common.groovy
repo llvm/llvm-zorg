@@ -30,10 +30,16 @@ private def clone_llvm_project(name, sha) {
         checkout poll: false, changelog: true, scm: [
             $class: 'GitSCM',
             branches: [[name: sha ]],
-            extensions: [[
-                $class: 'CloneOption',
-                reference: '/Users/Shared/llvm-project.git'
-            ]],
+            extensions: [
+                [
+                    $class: 'CloneOption',
+                    reference: '/Users/Shared/llvm-project.git'
+                ],
+                [
+                    $class: 'CloneOption',
+                    timeout: 30
+                ]
+            ],
             userRemoteConfigs: [[url: 'https://github.com/llvm/llvm-project.git']]
         ]
     }
