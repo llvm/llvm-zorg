@@ -27,15 +27,19 @@ private def render_template(template_text, log_summary) {
 // is very space-intensive.
 private def clone_llvm_project(name, sha) {
         dir("pseudo-checkout-${name}") {
-        checkout poll: false, changelog: true, scm: [
-            $class: 'GitSCM',
-            branches: [[name: sha ]],
-            extensions: [[
-                $class: 'CloneOption',
-                reference: '/Users/Shared/llvm-project.git'
-            ]],
-            userRemoteConfigs: [[url: 'https://github.com/llvm/llvm-project.git']]
-        ]
+        retry(3) {
+            checkout poll: false, changelog: true, scm: [
+                $class: 'GitSCM',
+                branches: [[name: sha ]],
+                extensions: [
+                    [
+                        $class: 'CloneOption',
+                        timeout: 30
+                    ]
+                ],
+                userRemoteConfigs: [[url: 'https://github.com/llvm/llvm-project.git']]
+            ]
+        }
     }
 }
 
