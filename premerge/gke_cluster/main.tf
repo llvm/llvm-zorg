@@ -255,6 +255,27 @@ resource "google_storage_bucket" "object_cache_linux" {
   }
 }
 
+resource "google_storage_bucket" "object_cache_linux_bazel" {
+  name     = format("%s-object-cache-linux-bazel", var.cluster_name)
+  location = var.gcs_bucket_location
+
+  uniform_bucket_level_access = true
+  public_access_prevention    = "enforced"
+
+  soft_delete_policy {
+    retention_duration_seconds = 0
+  }
+
+  lifecycle_rule {
+    action {
+      type = "Delete"
+    }
+    condition {
+      age = 7
+    }
+  }
+}
+
 resource "google_storage_bucket" "object_cache_windows" {
   name     = format("%s-object-cache-windows", var.cluster_name)
   location = var.gcs_bucket_location
@@ -306,6 +327,19 @@ resource "google_storage_bucket_iam_binding" "linux_bucket_binding" {
 
   depends_on = [
     google_storage_bucket.object_cache_linux,
+    google_service_account.object_cache_linux_gsa,
+  ]
+}
+
+resource "google_storage_bucket_iam_binding" "linux_bucket_bazel_binding" {
+  bucket = google_storage_bucket.object_cache_linux_bazel.name
+  role   = "roles/storage.objectUser"
+  members = [
+    format("serviceAccount:%s", google_service_account.object_cache_linux_gsa.email),
+  ]
+
+  depends_on = [
+    google_storage_bucket.object_cache_linux_bazel,
     google_service_account.object_cache_linux_gsa,
   ]
 }
