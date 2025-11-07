@@ -1312,7 +1312,8 @@ all = [
     'workernames' : ["polly-x86_64-fdcserver", "minipc-1050ti-linux"],
     'builddir': "polly-x86_64-linux-test-suite",
     'factory' : ScriptedBuilder.getScriptedBuildFactory(
-                      "polly/.buildbot/polly-x86_64-linux-test-suite.py"
+                      "polly/.buildbot/polly-x86_64-linux-test-suite.py",
+                      depends_on_projects=["llvm", "clang", "polly"]
                     )},
 
 # AOSP builders.
@@ -1443,11 +1444,11 @@ all = [
                         "CMAKE_CXX_FLAGS"               : "-D__OPTIMIZE__",
                         "CMAKE_MSVC_RUNTIME_LIBRARY"    : "MultiThreadedDLL",
 
-                        "LLVM_ENABLE_ASSERTIONS"        : "ON",    
+                        "LLVM_ENABLE_ASSERTIONS"        : "ON",
                         "LLVM_INCLUDE_BENCHMARKS"       : "OFF",
                         "LLVM_PARALLEL_LINK_JOBS"       : 8,
                         "LLVM_LIT_ARGS"                 : "-v -vv --threads=32 --time-tests",
-                        
+
                         "LLDB_ENFORCE_STRICT_TEST_REQUIREMENTS" : "ON",
                         "LLDB_ENABLE_SWIG"              : "ON ",
                         "LLDB_ENABLE_LIBEDIT"           : "OFF",
@@ -3546,7 +3547,7 @@ all += [
                     checkout_llvm_sources=False,
                     script_interpreter=None,
                     clean=True)},
-    
+
     # Builders that test the premerge configuration
     # These builders are specifically for running the premerge configuration
     # postcommit (after changes have landed in main). The configuration for
@@ -3920,7 +3921,7 @@ all += [
                     env = lldb_remote_linux_env.copy(),
                 )
         },
-        
+
     # PtrAuth (PAuth) builders.
     {'name' : "llvm-clang-ubuntu-x-aarch64-pauth",
     'tags'  : ["clang", "llvm", "lld", "clang-tools-extra", "compiler-rt", "libc++", "libc++abi", "libunwind", "cross", "aarch64", "pauth", "ptrauth"],
