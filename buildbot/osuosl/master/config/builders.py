@@ -1312,7 +1312,7 @@ all = [
     'workernames' : ["polly-x86_64-fdcserver", "minipc-1050ti-linux"],
     'builddir': "polly-x86_64-linux-test-suite",
     'factory' : ScriptedBuilder.getScriptedBuildFactory(
-                      "polly/.buildbot/polly-x86_64-linux-test-suite.py",
+                      "polly/ci/polly-x86_64-linux-test-suite.py",
                       depends_on_projects=["llvm", "clang", "polly"],
                     )},
 
