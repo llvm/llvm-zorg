@@ -1313,7 +1313,7 @@ all = [
     'builddir': "polly-x86_64-linux-test-suite",
     'factory' : ScriptedBuilder.getScriptedBuildFactory(
                       "polly/.buildbot/polly-x86_64-linux-test-suite.py",
-                      depends_on_projects=["llvm", "clang", "polly"]
+                      depends_on_projects=["llvm", "clang", "polly"],
                     )},
 
 # AOSP builders.

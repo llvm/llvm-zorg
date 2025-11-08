@@ -20,7 +20,7 @@ def getScriptedBuildFactory(scriptpath, *scriptargs, depends_on_projects, always
     assert depends_on_projects, "Must specify a set of projects; any change one of those projects will trigger a worker run"
 
     llvm_srcdir = "llvm.src"
-    venvpath = "bbenv"
+    #venvpath = "bbenv"
     workdir = "workdir"
 
 
@@ -31,6 +31,12 @@ def getScriptedBuildFactory(scriptpath, *scriptargs, depends_on_projects, always
     # If true, clean build products; implied if cleanBuildRequested is true
     def clobberRequested(step):
         return cleanBuildRequested(step) or always_clobber or step.build.getProperty("clean_obj")
+
+    f = LLVMBuildFactory(
+        depends_on_projects=depends_on_projects,
+        llvm_srcdir=llvm_srcdir)
+    
+
 
     f.addStep(steps.RemoveDirectory(name='clean-srcdir',
                            dir=f.monorepo_dir,
@@ -49,11 +55,6 @@ def getScriptedBuildFactory(scriptpath, *scriptargs, depends_on_projects, always
     #                       doStepIf=cleanBuildRequested))
 
 
-    f = LLVMBuildFactory(
-        depends_on_projects=depends_on_projects,
-        clean=always_clobber,
-        llvm_srcdir=llvm_srcdir,
-        cleanBuildRequested=cleanBuildRequested)
 
 
 
@@ -94,12 +95,11 @@ def getScriptedBuildFactory(scriptpath, *scriptargs, depends_on_projects, always
     #))
     #venv_interpreter = os.path.join(venvpath, 'bin', 'python')
 
-    extra_args_with_props = [util.Interpolate(arg) for arg in scriptargs]
 
-    command = [script_interpreter, os.path.join( f.monorepo_dir, scriptpath), f'--workdir={workdir}'] # relative to build path
+    command = [script_interpreter, os.path.join('..',  f.monorepo_dir, scriptpath), f'--workdir=.'] # relative to build path
     if always_clobber:
         command += ['--clobber']
-    command += extra_args_with_props
+    command += [util.Interpolate(arg) for arg in scriptargs]
 
     f.addStep(AnnotatedCommand(name="annotate",
                                description="Run build script",
