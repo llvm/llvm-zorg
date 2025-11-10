@@ -22,7 +22,7 @@ pipeline {
     stages {
         stage('Print Machine Info') {
             environment {
-               PATH="$PATH:/usr/bin:/usr/local/bin"
+               PATH="/opt/homebrew/bin/:$PATH:/usr/bin:/usr/local/bin"
             }
             steps {
                 sh '''
@@ -61,7 +61,7 @@ pipeline {
         }
         stage('Setup Venv') {
             environment {
-               PATH="$PATH:/usr/bin:/usr/local/bin:/opt/homebrew/bin/"
+               PATH="/opt/homebrew/bin/:$PATH:/usr/bin:/usr/local/bin"
             }
             steps {
                 sh '''
@@ -78,7 +78,7 @@ pipeline {
         }
         stage('Build') {
             environment {
-               PATH="$PATH:/usr/bin:/usr/local/bin:/opt/homebrew/bin/"
+               PATH="/opt/homebrew/bin/:$PATH:/usr/bin:/usr/local/bin"
             }
             steps {
                 timeout(240) {
@@ -99,6 +99,8 @@ pipeline {
 
                     cd -
 
+                    export PYTHON_HOME=$(python3 -c "import sys; print(sys.base_prefix)")
+
                     rm -rf lldb-build/bin/debugserver
                     # Running too many asanified threads is too stressful for the kernel and we get >90% system time.
                     export MAX_PARALLEL_TESTS=$(sysctl hw.physicalcpu |awk '{print int(($2+1)/2)}')
@@ -110,7 +112,8 @@ pipeline {
                       --projects="clang;lld;lldb"  \
                       --runtimes="" \
                       --cmake-type=Release \
-                      --lldb-test-compiler=$(xcrun -find clang)
+                      --lldb-test-compiler=$(xcrun -find clang) \
+                      --cmake-flag="-DPython3_EXECUTABLE=$(which python)"
                     '''
                     script {
                         def LLDB = new org.swift.LLDB()
@@ -121,7 +124,7 @@ pipeline {
         }
         stage('Clean Test Results') {
             environment {
-                PATH="$PATH:/usr/bin:/usr/local/bin:/opt/homebrew/bin/"
+                PATH="/opt/homebrew/bin/:$PATH:/usr/bin:/usr/local/bin"
             }
             steps {
                 timeout(10) {
@@ -135,7 +138,7 @@ pipeline {
         }
         stage('Test') {
             environment {
-               PATH="$PATH:/usr/bin:/usr/local/bin"
+               PATH="/opt/homebrew/bin/:$PATH:/usr/bin:/usr/local/bin"
             }
             steps {
                 timeout(240) {
@@ -144,9 +147,11 @@ pipeline {
 
                     source ./venv/bin/activate
 
+                    export PYTHON_HOME=$(python3 -c "import sys; print(sys.base_prefix)")
+
                     rm -rf test/results.xml
 
-                    python3 llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-sanitized test
+                    python3 llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-sanitized test --cmake-flag="-DPython3_EXECUTABLE=$(which python)"
                     '''
                 }
             }
