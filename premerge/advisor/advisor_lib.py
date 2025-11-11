@@ -137,6 +137,25 @@ def _try_explain_flaky_failure(
     test_failure: TestFailure,
     platform: str,
 ) -> FailureExplanation | None:
+    """See if a failure is flaky at head.
+
+    This function looks at a test failure and tries to see if the failure is
+    a known flake at head. It does this heuristically, by seeing if there have
+    been at least two failures across more than 200 commits. This has the
+    advantage of being a simple heuristic and performant. We do not
+    explicitly handle the case where a test has been failing continiously
+    for this amount of time as this is an OOM more range than any non-flaky
+    tests have stayed in tree.
+
+    Args:
+      db_connection: The database connection.
+      test_failure: The test failure to try and explain.
+      platform: The platform the test failed on.
+    
+    Returns:
+      Either None, if the test could not be explained as flaky, or a
+      FailureExplanation object explaining the test failure.
+    """
     test_name_matches = db_connection.execute(
         "SELECT failure_message, commit_index FROM failures WHERE source_type='postcommit' AND platform=?",
         (platform,),
