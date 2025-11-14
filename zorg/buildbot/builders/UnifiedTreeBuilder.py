@@ -638,6 +638,7 @@ def getCmakeExBuildFactory(
         jobs = None,                    # Restrict a degree of parallelism.
         env  = None,                    # Common environmental variables.
         hint = None,
+        user_props = None,              # User defined properties for the builder.
     ):
 
     """ Create and configure a builder factory to build a LLVM project from the unified source tree.
@@ -829,6 +830,11 @@ def getCmakeExBuildFactory(
                 & etc.
 
             Note: cannot be a renderable object.
+            
+        user_props: dict, optional
+            The user defined properties for the builder.
+            These properties should not have the names of existing properties for the builder
+            (see the Properties section below and the default buildbot properties docs).
 
         Returns
         -------
@@ -873,6 +879,7 @@ def getCmakeExBuildFactory(
     assert not post_finalize_steps or isinstance(post_finalize_steps, (list, BuildFactory)), \
                                                  "The 'post_finalize_steps' argument must be a list() or BuildFactory()."
     assert not hint or isinstance(hint, str),    "The 'hint' argument must be a str object."
+    assert not user_props or isinstance(user_props, dict), "The 'user_props' argument must be a dictionary."
 
     # This function extends the current workflow with provided custom steps.
     def extend_with_custom_steps(fc, s):
@@ -940,6 +947,15 @@ def getCmakeExBuildFactory(
             doStepIf        = lambda step, clean = clean: clean or step.getProperty("clean_obj") == True
         ),
     ])
+    
+    if user_props:
+        f.addSteps([
+            # Set up user defined properties, if specified.
+            steps.SetProperties(
+                name            = f.makeStepName('set-user-props'),
+                properties      = user_props
+            ),
+        ])
 
     # Let's start from getting the source code. We share it between all stages.
 
