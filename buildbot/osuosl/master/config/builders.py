@@ -3961,10 +3961,6 @@ all += [
                         "check-llvm",
                         "check-clang",
                         "check-lld",
-                        "check-compiler-rt-aarch64-unknown-linux-gnu",
-                        "check-unwind-aarch64-unknown-linux-gnu",
-                        "check-cxxabi-aarch64-unknown-linux-gnu",
-                        "check-cxx-aarch64-unknown-linux-gnu",
                     ],
                     cmake_definitions = {
                         "LLVM_TARGETS_TO_BUILD"             : "AArch64",
@@ -3987,6 +3983,24 @@ all += [
                     env = {
                         'CCACHE_DIR' : util.Interpolate("%(prop:builddir)s/ccache-db"),
                     },
+                    post_build_steps =
+                        TestSuiteBuilder.getLlvmTestSuiteSteps(
+                            cmake_definitions = {
+                                "CMAKE_BUILD_TYPE"              : "Release",
+                                "CMAKE_C_FLAGS"                 : "-march=armv8.3-a+pauth -mbranch-protection=pac-ret -O2",
+                                "CMAKE_CXX_FLAGS"               : "-march=armv8.3-a+pauth -mbranch-protection=pac-ret -O2",
+                                "CMAKE_EXE_LINKER_FLAGS"        : "-O2 -Wl,--emit-relocs",
+                                "CMAKE_MODULE_LINKER_FLAGS"     : "-O2 -Wl,--emit-relocs",
+                                "CMAKE_SHARED_LINKER_FLAGS"     : "-O2 -Wl,--emit-relocs",
+                                # Run on the devkit, limited set of tests.
+                                "TEST_SUITE_REMOTE_HOST"        : "buildbot@arm64-linux-02.lab.llvm.org",
+                                "TEST_SUITE_LIT_FLAGS"          : "-v -vv --threads=16 --time-tests --filter-out=aarch64-acle-fmv-features",
+                                "TEST_SUITE_RUN_BENCHMARKS"     : "ON",
+                                "TEST_SUITE_COLLECT_CODE_SIZE"  : "OFF",
+                                "TEST_SUITE_SUBDIRS"            : "SingleSource;MultiSource;MicroBenchmarks;External",
+                            },
+                            compiler_dir = util.Interpolate("%(prop:builddir)s/build"),
+                        )
                 )
-        },        
+        },
 ]
