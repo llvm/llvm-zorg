@@ -1,10 +1,12 @@
 # RUN: python %s
 
 # Lit Regression Tests for UnifiedTreeBuilder.getCmakeExBuildFactory factory.
+#
+# Local check cmd: lit -v test/buildbot
 
 import sys
 
-from buildbot.plugins import steps
+from buildbot.plugins import steps, util
 
 import zorg
 from zorg.buildbot.builders import UnifiedTreeBuilder
@@ -302,3 +304,14 @@ print(f"Hint option: {f}\n")
 
 assert factory_has_step(f, "cmake-configure-stage-hint")
 assert factory_has_step(f, "build-default-stage-hint")
+
+# user proprs
+f = UnifiedTreeBuilder.getCmakeExBuildFactory(
+        user_props = {
+            "user-prop1" : "myprop",
+            "user-prop2" : util.Property("srcdir"),
+            "user-prop3" : util.Interpolate("%(prop:srcdir)s"),
+        }
+    )
+print(f"User-prop option: {f}\n")
+assert factory_has_step(f, "set-user-props")
