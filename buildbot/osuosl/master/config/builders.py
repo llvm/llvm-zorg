@@ -15,7 +15,6 @@ from zorg.buildbot.builders import UnifiedTreeBuilder
 from zorg.buildbot.builders import AOSPBuilder
 from zorg.buildbot.builders import AnnotatedBuilder
 from zorg.buildbot.builders import LLDPerformanceTestsuite
-from zorg.buildbot.builders import XToolchainBuilder
 from zorg.buildbot.builders import TestSuiteBuilder
 from zorg.buildbot.builders import BOLTBuilder
 from zorg.buildbot.builders import DebugifyBuilder
@@ -38,7 +37,6 @@ reload(UnifiedTreeBuilder)
 reload(AOSPBuilder)
 reload(AnnotatedBuilder)
 reload(LLDPerformanceTestsuite)
-reload(XToolchainBuilder)
 reload(TestSuiteBuilder)
 reload(BOLTBuilder)
 
