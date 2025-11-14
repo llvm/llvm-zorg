@@ -105,14 +105,11 @@ pipeline {
                     # Running too many asanified threads is too stressful for the kernel and we get >90% system time.
                     export MAX_PARALLEL_TESTS=$(sysctl hw.physicalcpu |awk '{print int(($2+1)/2)}')
 
-                    # Using the system compiler to compile the LLDB tests. By default macOS does
-                    # not allow loading the ASAN runtime into system binaries.
                     python3 llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-sanitized build \
                       --assertions \
                       --projects="clang;lld;lldb"  \
                       --runtimes="" \
                       --cmake-type=Release \
-                      --lldb-test-compiler=$(xcrun -find clang) \
                       --cmake-flag="-DPython3_EXECUTABLE=$(which python)"
                     '''
                     script {
