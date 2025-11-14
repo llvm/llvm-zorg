@@ -22,15 +22,14 @@ f = TestSuiteBuilder.getLlvmTestSuiteSteps(
         hint = None,
     )
 
+print(f"default factory: {f}\n")
+
 assert factory_has_num_steps(f, 5)
 assert factory_has_step(f, "clean-src-dir")
 assert factory_has_step(f, "cmake-configure")
 assert factory_has_step(f, "build-default")
 assert not factory_has_step(f, "rsync-default")
 assert factory_has_step(f, "test-check")
-
-
-print(f"default factory: {f}\n")
 
 f = TestSuiteBuilder.getLlvmTestSuiteSteps(
         cmake_definitions = {
