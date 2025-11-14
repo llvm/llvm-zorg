@@ -11,6 +11,7 @@ template:
     annotations:
       cluster-autoscaler.kubernetes.io/safe-to-evict: "false"
   spec:
+    terminationGracePeriodSeconds: 3600
     tolerations:
     - key: "premerge-platform-libcxx"
       operator: "Equal"
