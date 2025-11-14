@@ -9,5 +9,6 @@ RUN pip3 install --break-system-packages -r /requirements.lock.txt && rm /requir
 RUN mkdir /app
 WORKDIR /app
 COPY startup.sh .
-RUN chmod +x startup.sh
+COPY liveness.sh .
+RUN chmod +x startup.sh && chmod +x liveness.sh
 ENTRYPOINT /app/startup.sh
