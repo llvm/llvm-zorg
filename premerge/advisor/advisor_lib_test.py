@@ -242,6 +242,23 @@ class AdvisorLibTest(unittest.TestCase):
             ],
         )
 
+    # Test that we can explain test failures where the llvm-project root is
+    # located in a different path.
+    def test_explain_different_root_path(self):
+        self.assertListEqual(
+            self._get_explained_failures(
+                failure_message="/home/_w/llvm-project/test1/test1.ll failed",
+                prev_failure_failure_message="/home/gha/llvm-project/test1/test1.ll failed",
+            ),
+            [
+                {
+                    "name": "a.ll",
+                    "explained": True,
+                    "reason": "This test is already failing at the base commit.",
+                }
+            ],
+        )
+
     # Test that we do not explain away a failure at head if the only matching
     # failure information comes from a PR.
     def test_no_explain_different_source_type(self):

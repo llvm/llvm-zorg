@@ -2,6 +2,8 @@ from typing import TypedDict
 import time
 import sqlite3
 import logging
+import re
+
 import git_utils
 
 
@@ -70,9 +72,17 @@ def setup_db(db_path: str) -> sqlite3.Connection:
     return connection
 
 
+def _canonicalize_failures(failures: list[TestFailure]):
+    for failure in failures:
+        failure["message"] = re.sub(
+            r"\/home\/.*\/llvm-project", "llvm-project", failure["message"]
+        )
+
+
 def upload_failures(
     failure_info: FailureUpload, db_connection: sqlite3.Connection, repository_path: str
 ):
+    _canonicalize_failures(failure_info["failures"])
     failures = []
     for failure in failure_info["failures"]:
         failures.append(
@@ -181,6 +191,7 @@ def explain_failures(
     repository_path: str,
     db_connection: sqlite3.Connection,
 ) -> list[FailureExplanation]:
+    _canonicalize_failures(explanation_request["failures"])
     explanations = []
     for test_failure in explanation_request["failures"]:
         commit_index = git_utils.get_commit_index(
