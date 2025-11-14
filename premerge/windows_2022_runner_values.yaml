@@ -12,6 +12,7 @@ template:
       cluster-autoscaler.kubernetes.io/safe-to-evict: "false"
   spec:
     serviceAccountName: windows-runners-ksa
+    terminationGracePeriodSeconds: 3600
     tolerations:
     - key: "node.kubernetes.io/os"
       operator: "Equal"
