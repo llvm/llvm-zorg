@@ -36,6 +36,7 @@ _TABLE_SCHEMAS = {
 }
 
 EXPLAINED_HEAD_MAX_COMMIT_INDEX_DIFFERENCE = 5
+EXPLAINED_FLAKY_MIN_COMMIT_RANGE = 200
 
 
 def _create_table(table_name: str, connection: sqlite3.Connection):
@@ -131,6 +132,50 @@ def _try_explain_failing_at_head(
     return None
 
 
+def _try_explain_flaky_failure(
+    db_connection: sqlite3.Connection,
+    test_failure: TestFailure,
+    platform: str,
+) -> FailureExplanation | None:
+    """See if a failure is flaky at head.
+
+    This function looks at a test failure and tries to see if the failure is
+    a known flake at head. It does this heuristically, by seeing if there have
+    been at least two failures across more than 200 commits. This has the
+    advantage of being a simple heuristic and performant. We do not
+    explicitly handle the case where a test has been failing continiously
+    for this amount of time as this is an OOM more range than any non-flaky
+    tests have stayed in tree.
+
+    Args:
+      db_connection: The database connection.
+      test_failure: The test failure to try and explain.
+      platform: The platform the test failed on.
+    
+    Returns:
+      Either None, if the test could not be explained as flaky, or a
+      FailureExplanation object explaining the test failure.
+    """
+    test_name_matches = db_connection.execute(
+        "SELECT failure_message, commit_index FROM failures WHERE source_type='postcommit' AND platform=?",
+        (platform,),
+    ).fetchall()
+    commit_indices = []
+    for failure_message, commit_index in test_name_matches:
+        if failure_message == test_failure["message"]:
+            commit_indices.append(commit_index)
+    if len(commit_indices) == 0:
+        return None
+    commit_range = max(commit_indices) - min(commit_indices)
+    if commit_range > EXPLAINED_FLAKY_MIN_COMMIT_RANGE:
+        return {
+            "name": test_failure["name"],
+            "explained": True,
+            "reason": "This test is flaky in main.",
+        }
+    return None
+
+
 def explain_failures(
     explanation_request: TestExplanationRequest,
     repository_path: str,
@@ -138,13 +183,25 @@ def explain_failures(
 ) -> list[FailureExplanation]:
     explanations = []
     for test_failure in explanation_request["failures"]:
+        commit_index = git_utils.get_commit_index(
+            explanation_request["base_commit_sha"], repository_path, db_connection
+        )
+        # We want to try and explain flaky failures first. Otherwise we might
+        # explain a flaky failure as a failure at head if there is a recent
+        # failure in the last couple of commits.
+        explained_as_flaky = _try_explain_flaky_failure(
+            db_connection,
+            test_failure,
+            explanation_request["platform"],
+        )
+        if explained_as_flaky:
+            explanations.append(explained_as_flaky)
+            continue
         explained_at_head = _try_explain_failing_at_head(
             db_connection,
             test_failure,
             explanation_request["base_commit_sha"],
-            git_utils.get_commit_index(
-                explanation_request["base_commit_sha"], repository_path, db_connection
-            ),
+            commit_index,
             explanation_request["platform"],
         )
         if explained_at_head:
