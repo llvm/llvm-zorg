@@ -35,3 +35,9 @@ spec:
           limits:
             memory: "1Gi"
             cpu: "750m"
+        livenessProbe:
+          exec:
+            command:
+              - /liveness.sh
+            initialDelaySeconds: 10
+            periodSeconds: 60
