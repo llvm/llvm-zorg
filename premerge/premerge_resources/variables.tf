@@ -71,7 +71,7 @@ variable "libcxx_release_runner_image" {
 
 variable "libcxx_next_runner_image" {
   type    = string
-  default = "ghcr.io/llvm/libcxx-linux-builder:bf07226c6d6aaf3b8f230e4e36e8aac8e40d8c4d"
+  default = "ghcr.io/llvm/libcxx-linux-builder:55f634cc7f345a8708f2497c0274144ab1eb3d91"
 }
 
 variable "linux_runners_namespace_name" {
