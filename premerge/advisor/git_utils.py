@@ -77,7 +77,10 @@ def get_commit_index(
         "SELECT commit_index FROM commits WHERE commit_sha=?", (commit_sha,)
     ).fetchall()
     if len(commit_matches) > 1:
-        raise ValueError("Expected only one entry per commit SHA")
+        raise ValueError(
+            "Expected only one entry per commit SHA, but got "
+            f"{len(commit_matches)}: {commit_matches}"
+        )
     elif len(commit_matches) == 1:
         return commit_matches[0][0]
     # We have not seen this commit before. Count the index and then add it to
