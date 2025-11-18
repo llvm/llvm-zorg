@@ -31,7 +31,7 @@ def setBuildsetProperty(db, bsid, name, value, source="Collapse"):
     yield db.pool.do(thd)
 
     # Also update the lookup cache, if this buidset properties' has been cached.
-    if bsid in db.buildsets. getBuildsetProperties.cache.keys():
+    if bsid in db.buildsets.getBuildsetProperties.cache.keys():
         # Lookup of old values will be from the cache
         properties = yield db.buildsets.getBuildsetProperties(bsid)
 
