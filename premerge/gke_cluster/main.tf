@@ -32,6 +32,14 @@ resource "google_container_cluster" "llvm_premerge" {
   }
 }
 
+variable "microarchitecture_map" {
+  type = map(string)
+  default = {
+    "n2d": "AMD Milan"
+    "n2-": "Intel Ice Lake"
+  }
+}
+
 resource "google_container_node_pool" "llvm_premerge_linux_service" {
   name           = "llvm-premerge-linux-service"
   location       = var.region
@@ -63,6 +71,7 @@ resource "google_container_node_pool" "llvm_premerge_linux" {
 
   node_config {
     machine_type = var.linux_machine_type
+    min_cpu_platform = var.microarchitecture_map[substr(var.linux_machine_type, 0, 3)]
     taint {
       key    = "premerge-platform"
       value  = "linux"
@@ -97,6 +106,7 @@ resource "google_container_node_pool" "llvm_buildbot_linux" {
 
   node_config {
     machine_type = var.linux_machine_type
+    min_cpu_platform = var.microarchitecture_map[substr(var.linux_machine_type, 0, 3)]
     taint {
       key    = "buildbot-platform"
       value  = "linux"
@@ -128,6 +138,7 @@ resource "google_container_node_pool" "llvm_premerge_libcxx" {
 
   node_config {
     machine_type = var.libcxx_machine_type
+    min_cpu_platform = var.microarchitecture_map[substr(var.libcxx_machine_type, 0, 3)]
     taint {
       key    = "premerge-platform-libcxx"
       value  = "linux-libcxx"
@@ -155,6 +166,7 @@ resource "google_container_node_pool" "llvm_premerge_windows_2022" {
   # a node.kubernetes.io/os taint for windows nodes.
   node_config {
     machine_type = var.windows_machine_type
+    min_cpu_platform = var.microarchitecture_map[substr(var.windows_machine_type, 0, 3)]
     labels = {
       "premerge-platform" : "windows-2022"
     }
@@ -205,6 +217,7 @@ resource "google_container_node_pool" "llvm_buildbot_window_2022" {
     # symmetric with the Linux machines for faster builds. Throughput is not
     # as much of a concern postcommit.
     machine_type = var.linux_machine_type
+    min_cpu_platform = var.microarchitecture_map[substr(var.linux_machine_type, 0, 3)]
     labels = {
       "buildbot-platform" : "windows-2022"
     }
