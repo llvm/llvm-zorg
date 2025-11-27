@@ -10,9 +10,6 @@ from zorg.buildbot.commands.LitTestCommand import LitTestCommand
 
 from zorg.buildbot.process.factory import LLVMBuildFactory
 
-# The DebugifyBuilder needs to know the test-suite build directory, so we share the build directory via this variable.
-test_suite_build_path_suffix = 'test/build-test-suite'
-test_suite_project_path_suffix = 'test/test-suite'
 
 # Note: The 'compiler_dir' parameter or CMAKE_{C|CXX}_COMPILER and TEST_SUITE_LIT must be specified inside of 'cmake_definitions' parameters;
 # otherwise the function will get failed by assert. Also, some of CMAKE_{C|CXX}_COMPILER and TEST_SUITE_LIT can be specified in case the 'compiler_dir'
@@ -36,6 +33,12 @@ def getLlvmTestSuiteSteps(
         compiler_dir = None,            # A path a root of built Clang toolchain tree. This path will be used
                                         # to specify CMAKE_{C|CXX}_COMPILER and TEST_SUITE_LIT if they are missing inside of
                                         # CMake definitions.
+        compiler_flags = None,          # Common flags for C and C++ compilers.
+        linker_flags = None,            # Common linker flags for all exe/module/shared configurations.
+
+        src_dir = None,
+        obj_dir = None,
+
         f = None
     ):
     """ Create and configure a builder factory with a set of the build steps to retrieve, build and run the LLVM Test Suite project
@@ -45,6 +48,9 @@ def getLlvmTestSuiteSteps(
 
         This is one-stage CMake configurable build that uses Ninja generator by default. Using the other CMake generators
         also possible.
+
+        The factory supports the remote test runs on the dev boards. Specifying TEST_SUITE_REMOTE_HOST in the CMake definitions dict
+        will add the rsync target step.
 
         Property Parameters
         -------------------
@@ -128,6 +134,24 @@ def getLlvmTestSuiteSteps(
             This argument must be specified if any of CMAKE_{C|CXX}_COMPILER and TEST_SUITE_LIT weren't specified
             in the CMake definitions dict.
 
+        compiler_flags : string, optional
+            Common flags for C and C++ compilers.
+
+            This argument will add CMAKE_{C|CXX}_FLAGS CMake definitions if they were not specified; otherwise the existing
+            definitions will be extended with these compiler flags.
+
+        linker_flags : string, optional
+            Common linker flags for all exe/module/shared configurations.
+
+            This argument will add CMAKE_{EXE|MODULE|SHARED}_LINKER_FLAGS CMake definitions if they were not specified; 
+            otherwise the existing definitions will be extended with these linker flags.
+
+        src_dir : str, optional
+            A custom llvm-test-suite source directory within %(prop:builddir)s of the builder (default is "llvm-test-suite").
+
+        obj_dir : str, optional
+            The build folder (default is "build/llvm-test-suite").
+
         f : LLVMBuildFactory, optional
             A factory object to fill up with the build steps. An empty stub will be created if this argument wasn't specified.
 
@@ -139,7 +163,11 @@ def getLlvmTestSuiteSteps(
         Properties
         ----------
 
-        None
+        ts_srcdir : str
+            A full path to the LLVM test-suite source code directory.
+
+        ts_objdir : str
+            A full path to the build directory.
 
     """
     assert generator, "CMake generator must be specified."
@@ -169,18 +197,28 @@ def getLlvmTestSuiteSteps(
 
     # Initial directories
     test_suite_src_dir = util.Interpolate("%(prop:builddir)s/%(kw:path_suffix)s",
-                                          path_suffix = test_suite_project_path_suffix)
-    test_suite_workdir = util.Interpolate("%(prop:builddir)s/%(kw:path_suffix)s",
-                                          path_suffix = test_suite_build_path_suffix)
-
+                                          path_suffix = src_dir or "llvm-test-suite")
+    test_suite_obj_dir = util.Interpolate("%(prop:builddir)s/%(kw:path_suffix)s",
+                                          path_suffix = obj_dir or util.Interpolate("%(prop:objdir:-build)s/llvm-test-suite"))
 
     # Create and return the default factory stub to store the build steps.
     # This factory can be used with the composite builder factories.
     if f is None:
         f = LLVMBuildFactory(
                 hint                = hint,
-                obj_dir             = test_suite_build_path_suffix,
+                obj_dir             = "build/llvm-test-suite",  # stub, shouldn't be used
             )
+
+    f.addSteps([
+        # Set up some properties, which could be used to configure the builders.
+        steps.SetProperties(
+            name            = f.makeStepName('set-props'),
+            properties      = {
+                "ts_srcdir"             : test_suite_src_dir,
+                "ts_objdir"             : test_suite_obj_dir,
+            }
+        ),
+    ])
 
     # Add the Git step.
     if repo_profiles == "default":
@@ -222,14 +260,10 @@ def getLlvmTestSuiteSteps(
     if "TEST_SUITE_LIT_FLAGS" in cmake_definitions:
         cmake_definitions.update({ "TEST_SUITE_LIT_FLAGS" : cmake_definitions["TEST_SUITE_LIT_FLAGS"].replace(" ", ";") })
 
-    # Check if we need to sync the test data with the remote host.
+    # Check if we need to sync the test data on the remote host.
     remote_rsync = ("TEST_SUITE_REMOTE_HOST" in cmake_definitions)
 
-    if compiler_dir is None:
-        assert "CMAKE_C_COMPILER" in cmake_definitions, "CMAKE_C_COMPILER must be specified in the CMake definitions."
-        assert "CMAKE_CXX_COMPILER" in cmake_definitions, "CMAKE_CXX_COMPILER must be specified in the CMake definitions."
-        assert ("TEST_SUITE_LIT" in cmake_definitions or "TEST_SUITE_LIT:FILEPATH" in cmake_definitions), "TEST_SUITE_LIT must be specified in the CMake definitions."
-    else:
+    if compiler_dir:
         #TODO: support for the executable extensions on the build host.
         if not "CMAKE_C_COMPILER" in cmake_definitions:
             cmake_definitions.update({ "CMAKE_C_COMPILER" : util.Interpolate("%(kw:compiler_dir)s/bin/clang", compiler_dir = compiler_dir) })
@@ -237,6 +271,40 @@ def getLlvmTestSuiteSteps(
             cmake_definitions.update({ "CMAKE_CXX_COMPILER" : util.Interpolate("%(kw:compiler_dir)s/bin/clang++", compiler_dir = compiler_dir) })
         if not ("TEST_SUITE_LIT" in cmake_definitions or "TEST_SUITE_LIT:FILEPATH" in cmake_definitions):
             cmake_definitions.update({ "TEST_SUITE_LIT:FILEPATH" : util.Interpolate("%(kw:compiler_dir)s/bin/llvm-lit", compiler_dir = compiler_dir) })
+    else:
+        assert "CMAKE_C_COMPILER" in cmake_definitions, "CMAKE_C_COMPILER must be specified in the CMake definitions."
+        assert "CMAKE_CXX_COMPILER" in cmake_definitions, "CMAKE_CXX_COMPILER must be specified in the CMake definitions."
+        assert ("TEST_SUITE_LIT" in cmake_definitions or "TEST_SUITE_LIT:FILEPATH" in cmake_definitions), "TEST_SUITE_LIT must be specified in the CMake definitions."
+
+    #Note: we can get those flags as the renderables. Properly handle them by using %(kw:) interpolation.
+    if compiler_flags:
+        c_flags = compiler_flags
+        cxx_flags = compiler_flags
+        if "CMAKE_C_FLAGS" in cmake_definitions:
+            c_flags = util.Interpolate("%(kw:c_flags)s %(kw:flags)s",
+                            c_flags = cflags, flags = cmake_definitions["CMAKE_C_FLAGS"])
+        cmake_definitions.update({ "CMAKE_C_FLAGS" : c_flags })
+        if "CMAKE_CXX_FLAGS" in cmake_definitions:
+            cxx_flags = util.Interpolate("%(kw:cxx_flags)s %(kw:flags)s",
+                            cxx_flags = cxx_flags, flags = cmake_definitions["CMAKE_CXX_FLAGS"])
+        cmake_definitions.update({ "CMAKE_CXX_FLAGS" : cxx_flags })
+
+    if linker_flags:
+        exe_flags = linker_flags
+        module_flags = linker_flags
+        shared_flags = linker_flags
+        if "CMAKE_EXE_LINKER_FLAGS" in cmake_definitions:
+            exe_flags = util.Interpolate("%(kw:exe_flags)s %(kw:flags)s",
+                            exe_flags = exe_flags, flags = cmake_definitions["CMAKE_EXE_LINKER_FLAGS"])
+        cmake_definitions.update({ "CMAKE_EXE_LINKER_FLAGS" : exe_flags })
+        if "CMAKE_MODULE_LINKER_FLAGS" in cmake_definitions:
+            module_flags = util.Interpolate("%(kw:module_flags)s %(kw:flags)s",
+                            module_flags = module_flags, flags = cmake_definitions["CMAKE_MODULE_LINKER_FLAGS"])
+        cmake_definitions.update({ "CMAKE_MODULE_LINKER_FLAGS" : module_flags })
+        if "CMAKE_SHARED_LINKER_FLAGS" in cmake_definitions:
+            shared_flags = util.Interpolate("%(kw:shared_flags)s %(kw:flags)s",
+                            shared_flags = shared_flags, flags = cmake_definitions["CMAKE_SHARED_LINKER_FLAGS"])
+        cmake_definitions.update({ "CMAKE_SHARED_LINKER_FLAGS" : shared_flags })
 
     f.addStep(
         steps.CMake(
@@ -248,7 +316,7 @@ def getLlvmTestSuiteSteps(
             description     = ["CMake configure"],
             haltOnFailure   = True,
             env             = env,
-            workdir         = test_suite_workdir
+            workdir         = test_suite_obj_dir
         ))
 
     hint_suffix = f"-{hint}" if hint else ""
@@ -271,7 +339,7 @@ def getLlvmTestSuiteSteps(
                 description     = ["Build target", target_title],
                 haltOnFailure   = True,
                 env             = env,
-                workdir         = test_suite_workdir
+                workdir         = test_suite_obj_dir
             ))
 
         # Add a rsync step for each build target if the remote host has been specified
@@ -285,7 +353,7 @@ def getLlvmTestSuiteSteps(
                     description     = ["Rsync to target", target_title],
                     haltOnFailure   = True,
                     env             = env,
-                    workdir         = test_suite_workdir
+                    workdir         = test_suite_obj_dir
                 ))
 
     # Check Commands.
@@ -299,7 +367,7 @@ def getLlvmTestSuiteSteps(
                 descriptionDone = ["Running test:", target, "completed"],
                 haltOnFailure   = False, # We want to test as much as we could.
                 env             = env,
-                workdir         = test_suite_workdir
+                workdir         = test_suite_obj_dir
             ))
 
     return f
