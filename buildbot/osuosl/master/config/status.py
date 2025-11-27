@@ -260,7 +260,8 @@ def getReporters():
                         "llvm-nvptx-nvidia-ubuntu", "llvm-nvptx64-nvidia-ubuntu",
                         "llvm-nvptx-nvidia-win", "llvm-nvptx64-nvidia-win",
                         "lldb-remote-linux-ubuntu", "lldb-remote-linux-win",
-                        "lldb-x86_64-win"])
+                        "lldb-x86_64-win",
+                        "llvm-clang-ubuntu-x-aarch64-pauth"])
             ]),
         reporters.MailNotifier(
             fromaddr = status_email_fromaddr,
@@ -271,6 +272,15 @@ def getReporters():
                     builders = [
                         "lldb-remote-linux-ubuntu", "lldb-remote-linux-win",
                         "lldb-x86_64-win"])
+            ]),
+        reporters.MailNotifier(
+            fromaddr = status_email_fromaddr,
+            sendToInterestedUsers = False,
+            extraRecipients = ["atrosinenko@accesssoftek.com", "dkovalev@accesssoftek.com"],
+            generators = [
+                utils.LLVMDefaultBuildStatusGenerator(
+                    builders = [
+                        "llvm-clang-ubuntu-x-aarch64-pauth"])
             ]),
         reporters.MailNotifier(
             fromaddr = status_email_fromaddr,
