@@ -51,7 +51,7 @@ be updated to the new version.
 3. The libc++ CI container - The `docker-compose` manifest at
 `libcxx/utils/ci/docker-compose.yml` needs to be updated by updating the
 `GITHUB_RUNNER_VERSION` variable to pull in the latest
-runner images using the [libc++ instructions](https://libcxx.llvm.org/Contributing.html#updating-the-ci-testing-container-images)
+runner binary using the [libc++ instructions](https://libcxx.llvm.org/Contributing.html#updating-the-ci-testing-container-images)
 
 ### Other Container Image Software
 
