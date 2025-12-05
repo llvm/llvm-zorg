@@ -282,7 +282,7 @@ def getLlvmTestSuiteSteps(
         cxx_flags = compiler_flags
         if "CMAKE_C_FLAGS" in cmake_definitions:
             c_flags = util.Interpolate("%(kw:c_flags)s %(kw:flags)s",
-                            c_flags = cflags, flags = cmake_definitions["CMAKE_C_FLAGS"])
+                            c_flags = c_flags, flags = cmake_definitions["CMAKE_C_FLAGS"])
         cmake_definitions.update({ "CMAKE_C_FLAGS" : c_flags })
         if "CMAKE_CXX_FLAGS" in cmake_definitions:
             cxx_flags = util.Interpolate("%(kw:cxx_flags)s %(kw:flags)s",
