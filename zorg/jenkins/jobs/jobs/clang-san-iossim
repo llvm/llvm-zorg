@@ -103,6 +103,18 @@ pipeline {
                     cd $COMPILER_RT_TEST_DIR/ubsan && python3 ${WORKSPACE}/clang-build/./bin/llvm-lit \
                       --xunit-xml-output=testresults-ubsan-ThreadSanitizer-iossim-x86_64.xunit.xml -v -vv --timeout=600 \
                       $COMPILER_RT_TEST_DIR/ubsan/ThreadSanitizer-iossim-x86_64/
+
+                    cd $COMPILER_RT_TEST_DIR/sanitizer_common && python3 ${WORKSPACE}/clang-build/./bin/llvm-lit \
+                      --xunit-xml-output=testresults-sanitizer_common-asan-iossim-x86_64.xunit.xml -v -vv --timeout=600 \
+                      $COMPILER_RT_TEST_DIR/sanitizer_common/asan-x86_64-iossim/
+
+                    cd $COMPILER_RT_TEST_DIR/sanitizer_common && python3 ${WORKSPACE}/clang-build/./bin/llvm-lit \
+                      --xunit-xml-output=testresults-sanitizer_common-tsan-iossim-x86_64.xunit.xml -v -vv --timeout=600 \
+                      $COMPILER_RT_TEST_DIR/sanitizer_common/tsan-x86_64-iossim/
+
+                    cd $COMPILER_RT_TEST_DIR/sanitizer_common && python3 ${WORKSPACE}/clang-build/./bin/llvm-lit \
+                      --xunit-xml-output=testresults-sanitizer_common-ubsan-iossim-x86_64.xunit.xml -v -vv --timeout=600 \
+                      $COMPILER_RT_TEST_DIR/sanitizer_common/ubsan-x86_64-iossim/
                     '''
                 }
             }
