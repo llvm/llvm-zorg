@@ -230,6 +230,21 @@ resource "helm_release" "github_actions_runner_set_windows_2022" {
 # workaround once all of the runner sets have the runner binary in the same
 # path.
 
+data "http" "libcxx_runner_image_from_main" {
+  url = "https://raw.githubusercontent.com/llvm/llvm-project/refs/heads/main/libcxx/utils/ci/images/libcxx_runners.txt"
+}
+data "http" "libcxx_release_runner_image_from_main" {
+  url = "https://raw.githubusercontent.com/llvm/llvm-project/refs/heads/main/libcxx/utils/ci/images/libcxx_release_runners.txt"
+}
+data "http" "libcxx_next_runner_image_from_main" {
+  url = "https://raw.githubusercontent.com/llvm/llvm-project/refs/heads/main/libcxx/utils/ci/images/libcxx_next_runners.txt"
+}
+locals {
+  libcxx_runner_image = data.http.libcxx_runner_image_from_main.response_body
+  libcxx_release_runner_image = data.http.libcxx_runner_image_from_main.response_body
+  libcxx_next_runner_image = data.http.libcxx_runner_image_from_main.response_body
+}
+
 resource "helm_release" "github_actions_runner_set_libcxx" {
   name       = "llvm-premerge-libcxx-runners"
   namespace  = "llvm-premerge-libcxx-runners"
@@ -238,7 +253,7 @@ resource "helm_release" "github_actions_runner_set_libcxx" {
   chart      = "gha-runner-scale-set"
 
   values = [
-    "${templatefile("libcxx_runners_values.yaml", { runner_group_name : var.runner_group_name, runner_image : var.libcxx_runner_image, command : "/home/gha/actions-runner/run.sh" })}"
+    "${templatefile("libcxx_runners_values.yaml", { runner_group_name : var.runner_group_name, runner_image : local.libcxx_runner_image, command : "/home/gha/actions-runner/run.sh" })}"
   ]
 
   depends_on = [
@@ -256,7 +271,7 @@ resource "helm_release" "github_actions_runner_set_libcxx_release" {
   chart      = "gha-runner-scale-set"
 
   values = [
-    "${templatefile("libcxx_runners_values.yaml", { runner_group_name : var.runner_group_name, runner_image : var.libcxx_release_runner_image, command : "/home/runner/run.sh" })}"
+    "${templatefile("libcxx_runners_values.yaml", { runner_group_name : var.runner_group_name, runner_image : local.libcxx_release_runner_image, command : "/home/runner/run.sh" })}"
   ]
 
   depends_on = [
@@ -274,7 +289,7 @@ resource "helm_release" "github_actions_runner_set_libcxx_next" {
   chart      = "gha-runner-scale-set"
 
   values = [
-    "${templatefile("libcxx_runners_values.yaml", { runner_group_name : var.runner_group_name, runner_image : var.libcxx_next_runner_image, command : "/home/gha/actions-runner/run.sh" })}"
+    "${templatefile("libcxx_runners_values.yaml", { runner_group_name : var.runner_group_name, runner_image : local.libcxx_next_runner_image, command : "/home/gha/actions-runner/run.sh" })}"
   ]
 
   depends_on = [
