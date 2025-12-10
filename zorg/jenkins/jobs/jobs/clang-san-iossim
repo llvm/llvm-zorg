@@ -84,37 +84,41 @@ pipeline {
 
                     source ./venv/bin/activate
 
+                    EXIT_CODE=0
+
                     cd $COMPILER_RT_TEST_DIR/asan && python3 ${WORKSPACE}/clang-build/./bin/llvm-lit \
                       --xunit-xml-output=testresults-asan-IOSSimX86_64Config.xunit.xml -v -vv --timeout=600 \
-                      $COMPILER_RT_TEST_DIR/asan/IOSSimX86_64Config/
+                      $COMPILER_RT_TEST_DIR/asan/IOSSimX86_64Config/ || EXIT_CODE=1
 
                     cd $COMPILER_RT_TEST_DIR/tsan && python3 ${WORKSPACE}/clang-build/./bin/llvm-lit \
                       --xunit-xml-output=testresults-tsan-IOSSimX86_64Config.xunit.xml -v -vv --timeout=600 \
-                      $COMPILER_RT_TEST_DIR/tsan/IOSSimX86_64Config/
+                      $COMPILER_RT_TEST_DIR/tsan/IOSSimX86_64Config/ || EXIT_CODE=1
 
                     cd $COMPILER_RT_TEST_DIR/ubsan && python3 ${WORKSPACE}/clang-build/./bin/llvm-lit \
                       --xunit-xml-output=testresults-ubsan-AddressSanitizer-iossim-x86_64.xunit.xml -v -vv --timeout=600 \
-                      $COMPILER_RT_TEST_DIR/ubsan/AddressSanitizer-iossim-x86_64/
+                      $COMPILER_RT_TEST_DIR/ubsan/AddressSanitizer-iossim-x86_64/ || EXIT_CODE=1
 
                     cd $COMPILER_RT_TEST_DIR/ubsan && python3 ${WORKSPACE}/clang-build/./bin/llvm-lit \
                       --xunit-xml-output=testresults-ubsan-Standalone-iossim-x86_64.xunit.xml -v -vv --timeout=600 \
-                      $COMPILER_RT_TEST_DIR/ubsan/Standalone-iossim-x86_64/
+                      $COMPILER_RT_TEST_DIR/ubsan/Standalone-iossim-x86_64/ || EXIT_CODE=1
 
                     cd $COMPILER_RT_TEST_DIR/ubsan && python3 ${WORKSPACE}/clang-build/./bin/llvm-lit \
                       --xunit-xml-output=testresults-ubsan-ThreadSanitizer-iossim-x86_64.xunit.xml -v -vv --timeout=600 \
-                      $COMPILER_RT_TEST_DIR/ubsan/ThreadSanitizer-iossim-x86_64/
+                      $COMPILER_RT_TEST_DIR/ubsan/ThreadSanitizer-iossim-x86_64/ || EXIT_CODE=1
 
                     cd $COMPILER_RT_TEST_DIR/sanitizer_common && python3 ${WORKSPACE}/clang-build/./bin/llvm-lit \
                       --xunit-xml-output=testresults-sanitizer_common-asan-iossim-x86_64.xunit.xml -v -vv --timeout=600 \
-                      $COMPILER_RT_TEST_DIR/sanitizer_common/asan-x86_64-iossim/
+                      $COMPILER_RT_TEST_DIR/sanitizer_common/asan-x86_64-iossim/ || EXIT_CODE=1
 
                     cd $COMPILER_RT_TEST_DIR/sanitizer_common && python3 ${WORKSPACE}/clang-build/./bin/llvm-lit \
                       --xunit-xml-output=testresults-sanitizer_common-tsan-iossim-x86_64.xunit.xml -v -vv --timeout=600 \
-                      $COMPILER_RT_TEST_DIR/sanitizer_common/tsan-x86_64-iossim/
+                      $COMPILER_RT_TEST_DIR/sanitizer_common/tsan-x86_64-iossim/ || EXIT_CODE=1
 
                     cd $COMPILER_RT_TEST_DIR/sanitizer_common && python3 ${WORKSPACE}/clang-build/./bin/llvm-lit \
                       --xunit-xml-output=testresults-sanitizer_common-ubsan-iossim-x86_64.xunit.xml -v -vv --timeout=600 \
-                      $COMPILER_RT_TEST_DIR/sanitizer_common/ubsan-x86_64-iossim/
+                      $COMPILER_RT_TEST_DIR/sanitizer_common/ubsan-x86_64-iossim/ || EXIT_CODE=1
+
+                    exit $EXIT_CODE
                     '''
                 }
             }
