@@ -65,7 +65,8 @@ pipeline {
 
                         python llvm-zorg/zorg/jenkins/monorepo_build.py cmake build \
                           --assertions --cmake-type=RelWithDebInfo \
-                          --projects="clang;clang-tools-extra;compiler-rt"
+                          --projects="clang;clang-tools-extra" \
+                          --runtimes="compiler-rt"
                         '''
                     }
                 }
@@ -75,7 +76,7 @@ pipeline {
             environment {
                 PATH="$PATH:/usr/bin:/usr/local/bin"
                 SANITIZER_IOSSIM_TEST_DEVICE_IDENTIFIER='iPhone 15'
-                COMPILER_RT_TEST_DIR="${WORKSPACE}/clang-build/tools/clang/runtime/compiler-rt-bins/test"
+                COMPILER_RT_TEST_DIR="${WORKSPACE}/clang-build/runtimes/runtimes-bins/compiler-rt/test"
             }
             steps {
                 timeout(90) {
