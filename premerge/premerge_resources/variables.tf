@@ -59,21 +59,6 @@ variable "runner_group_name" {
   type = string
 }
 
-variable "libcxx_runner_image" {
-  type    = string
-  default = "ghcr.io/llvm/libcxx-linux-builder:36a95a5cb49bb723470c9c967a6bd54d08743834"
-}
-
-variable "libcxx_release_runner_image" {
-  type    = string
-  default = "ghcr.io/llvm/libcxx-linux-builder:05b5090e961f6b45ba9144d4d846e0f174d0aedf"
-}
-
-variable "libcxx_next_runner_image" {
-  type    = string
-  default = "ghcr.io/llvm/libcxx-linux-builder:55f634cc7f345a8708f2497c0274144ab1eb3d91"
-}
-
 variable "linux_runners_namespace_name" {
   description = "The name of the namespace containing the Linux runners"
   type        = string
