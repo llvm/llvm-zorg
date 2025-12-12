@@ -2,6 +2,7 @@
 
 import argparse
 import os
+import re
 import subprocess
 import sys
 import traceback
@@ -9,8 +10,20 @@ import util
 import tempfile
 from contextlib import contextmanager
 
+def amdgpu_target(target):
+    if re.match("^(gfx[0-9a-f]+|amdgcnspirv)$", target):
+        return target
+    raise ValueError
 
 def main(argv):
+    parser = argparse.ArgumentParser(prog=os.path.basename(__file__))
+    parser.add_argument("--offload-arch", default="gfx90a", type=amdgpu_target,
+                        help="Offload architecture to be forwarded to AMDGPU_ARCHS "
+                             "during the test suite configuration. "
+                             "e.g. gfx90a, gfx1010, amdgcnspirv")
+    parsed_args = parser.parse_args(argv[1:])
+    offload_arch = parsed_args.offload_arch
+
     source_dir = os.path.join("..", "llvm-project")
     test_suite_source_dir = os.path.join("/opt/botworker/llvm", "llvm-test-suite")
     test_suite_build_dir = "TS-build"
@@ -63,8 +76,7 @@ def main(argv):
 
         test_suite_cmake_args = ["-GNinja", "-B", test_suite_build_dir, "-S", "."]
         test_suite_cmake_args.append("-DTEST_SUITE_EXTERNALS_DIR=/opt/botworker/llvm/External")
-        # XXX: Use some utility to determine arch?
-        test_suite_cmake_args.append("-DAMDGPU_ARCHS=gfx90a")
+        test_suite_cmake_args.append(f"-DAMDGPU_ARCHS={offload_arch}")
         test_suite_cmake_args.append("-DTEST_SUITE_SUBDIRS=External")
         # Giving only this flag enables to pull the default Kokkos version.
         test_suite_cmake_args.append("-DEXTERNAL_HIP_TESTS_KOKKOS=ON")
