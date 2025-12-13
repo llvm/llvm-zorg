@@ -91,7 +91,8 @@ pipeline {
                         rm -rf clang-build clang-install *.tar.gz
                         python llvm-zorg/zorg/jenkins/monorepo_build.py cmake build \
                           --assertions --cmake-type=RelWithDebInfo \
-                          --projects="clang;clang-tools-extra;compiler-rt" \
+                          --projects="clang;clang-tools-extra" \
+                          --runtimes="compiler-rt" \
                           --cmake-flag="-DPython3_EXECUTABLE=$(which python)"
                         '''
                     }

@@ -1076,10 +1076,10 @@ def parse_args():
                         action='store_true', help="Turn on the experimental"
                                                   " GlobalISel CMake flag.")
     parser.add_argument('--projects', dest='llvm_enable_projects',
-                        default="clang;clang-tools-extra;compiler-rt",
+                        default="clang;clang-tools-extra",
                         help="Semicolon seperated list of projects to enable.")
     parser.add_argument('--runtimes', dest='llvm_enable_runtimes',
-                        default="",
+                        default="compiler-rt",
                         help="Semicolon seperated list of runtimes to enable.")
     parser.add_argument('--timeout', dest='timeout', type=int, default='600',
                         help='Individual test timeout in seconds.')
