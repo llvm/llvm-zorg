@@ -203,13 +203,11 @@ scalable.
 
 In order to ensure that main is not broken by new patches, we need to ensure
 that every commit is tested directly on top of `main` before landing. This is
-not feasible given LLVM's current processes where pushing directly to main is a
-critical component of several developer's workflows. We would also need to
-reduce the risk of "mid-air collisions", patches that pass premerge testing, but
-fail on `main` when landed due to the patch in its original state not being
-compatible with the new state of main. This would most likely involve merge
-queues which would introduce new CI load and are also not compatible with LLVM's
-existing practices.
+not feasible given the presence of "mid-air collisions", patches that pass
+premerge testing, but fail on `main` when landed due to the patch in its
+original state not being compatible with the new state of main. This would most
+likely involve merge queues which would introduce new CI load and are also not
+compatible with LLVM's existing practices.
 
 Doing an initial effort for deflaking tests is also not scalable from an
 engineering effort perspective. While we might be able to deflake existing
