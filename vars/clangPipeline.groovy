@@ -1,0 +1,141 @@
+import org.llvm.jenkins.ClangBuilder
+
+def call(Map config = [:]) {
+    def builder = new ClangBuilder(this)
+    def buildConfig = config.buildConfig ?: [:]
+    def testConfig = config.testConfig ?: [:]
+    def stagesToRun = config.stages ?: ['checkout', 'build', 'test']
+    def jobName = config.jobName
+
+    pipeline {
+        options {
+            disableConcurrentBuilds()
+        }
+
+        parameters {
+            string(name: 'LABEL', defaultValue: 'macos-x86_64', description: 'Node label to run on')
+            string(name: 'GIT_SHA', defaultValue: '*/main', description: 'Git commit to build.')
+            string(name: 'ARTIFACT', defaultValue: '', description: 'Clang artifact to use if this is a stage2 job')
+            string(name: 'BISECT_GOOD', defaultValue: '', description: 'Good commit for bisection')
+            string(name: 'BISECT_BAD', defaultValue: '', description: 'Bad commit for bisection')
+            booleanParam(name: 'IS_BISECT_JOB', defaultValue: false, description: 'Whether clang is being built as part of a bisection job')
+            booleanParam(name: 'SKIP_TESTS', defaultValue: false, description: 'Skip test stage. Can be useful when rebuilding a stage 1 compiler')
+        }
+
+        agent {
+            node {
+                label params.LABEL
+            }
+        }
+
+        stages {
+            stage('Validate Configuration') {
+                steps {
+                    script {
+                        echo "Job Name: ${jobName}"
+                        echo "Build Config: ${buildConfig}"
+                        echo "Test Config: ${testConfig}"
+                        echo "Stages to run: ${stagesToRun}"
+                    }
+                }
+            }
+
+            stage('Setup Build Description') {
+                steps {
+                    script {
+                        def buildType = params.IS_BISECT_JOB ? "🔍 BISECTION TEST" : "🔧 NORMAL BUILD"
+                        def commitInfo = params.GIT_SHA.take(8)
+
+                        if (params.IS_BISECT_JOB && params.BISECT_GOOD && params.BISECT_BAD) {
+                            def goodShort = params.BISECT_GOOD.take(8)
+                            def badShort = params.BISECT_BAD.take(8)
+                            currentBuild.description = "${buildType}: Testing ${commitInfo} (${goodShort}..${badShort})"
+                        } else {
+                            currentBuild.description = "${buildType}: ${commitInfo}"
+                        }
+
+                        echo "Build Type: ${buildType}"
+                    }
+                }
+            }
+
+            stage('Checkout') {
+                when {
+                    expression { 'checkout' in stagesToRun }
+                }
+                steps {
+                    script {
+                        retry(3) {
+                            builder.checkoutStage()
+                        }
+                    }
+                }
+            }
+
+            stage('Setup Venv') {
+                when {
+                    expression { 'checkout' in stagesToRun }
+                }
+                steps {
+                    script {
+                        builder.setupVenvStage()
+                    }
+                }
+            }
+
+            stage('Fetch Artifact') {
+                when {
+                    expression {
+                        'build' in stagesToRun && (buildConfig.stage ?: 1) >= 2
+                    }
+                }
+                steps {
+                    script {
+                        fetchArtifact([
+                            stage1Job: buildConfig.stage1Job
+                        ])
+                    }
+                }
+            }
+
+            stage('Build') {
+                when {
+                    expression { 'build' in stagesToRun }
+                }
+                steps {
+                    script {
+                        builder.buildStage(buildConfig)
+                    }
+                }
+            }
+
+            stage('Test') {
+                when {
+                    expression {
+                        'test' in stagesToRun  && !params.SKIP_TESTS
+                    }
+                }
+                steps {
+                    script {
+                        builder.testStage(testConfig)
+                    }
+                }
+            }
+        }
+
+        post {
+            always {
+                script {
+                    def Junit = new org.swift.Junit()
+                    // Todo: Make this configurable
+                    Junit.safeJunit([
+                        allowEmptyResults: true,
+                        testResults: "clang-build/**/testresults.xunit.xml"
+                    ])
+
+                    builder.cleanupStage()
+                }
+            }
+        }
+    }
+}
