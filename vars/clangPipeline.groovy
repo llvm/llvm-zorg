@@ -5,7 +5,7 @@ def call(Map config = [:]) {
     def buildConfig = config.buildConfig ?: [:]
     def testConfig = config.testConfig ?: [:]
     def triggeredJobs = config.triggeredJobs ?: []
-    def stagesToRun = config.stages ?: ['checkout', 'build', 'test']
+    def stagesToRun = config.stages ?: ['checkout', 'fetch', 'build', 'test']
     def jobName = config.jobName
 
     pipeline {
@@ -88,7 +88,7 @@ def call(Map config = [:]) {
             stage('Fetch Artifact') {
                 when {
                     expression {
-                        'build' in stagesToRun && (buildConfig.stage ?: 1) >= 2
+                        'fetch' in stagesToRun && (buildConfig.stage ?: 1) >= 2
                     }
                 }
                 steps {
