@@ -4,6 +4,7 @@ def call(Map config = [:]) {
     def builder = new ClangBuilder(this)
     def buildConfig = config.buildConfig ?: [:]
     def testConfig = config.testConfig ?: [:]
+    def triggeredJobs = config.triggeredJobs ?: []
     def stagesToRun = config.stages ?: ['checkout', 'build', 'test']
     def jobName = config.jobName
 
@@ -20,6 +21,7 @@ def call(Map config = [:]) {
             string(name: 'BISECT_BAD', defaultValue: '', description: 'Bad commit for bisection')
             booleanParam(name: 'IS_BISECT_JOB', defaultValue: false, description: 'Whether clang is being built as part of a bisection job')
             booleanParam(name: 'SKIP_TESTS', defaultValue: false, description: 'Skip test stage. Can be useful when rebuilding a stage 1 compiler')
+            booleanParam(name: 'SKIP_TRIGGER', defaultValue: false, description: 'Skip trigger of consuming CI jobs')
         }
 
         agent {
@@ -136,6 +138,24 @@ def call(Map config = [:]) {
                         ])
                     }
                     builder.cleanupStage()
+                }
+            }
+            success {
+                script {
+                    if (!params.SKIP_TRIGGER && triggeredJobs) {
+                        triggeredJobs.each { job ->
+                            build job: job, wait: false
+                        }
+                    }
+                }
+            }
+            unstable {
+                script {
+                    if (!params.SKIP_TRIGGER && triggeredJobs) {
+                        triggeredJobs.each { job ->
+                            build job: job, wait: false
+                        }
+                    }
                 }
             }
         }
