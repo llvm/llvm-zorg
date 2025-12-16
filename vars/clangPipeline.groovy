@@ -127,13 +127,15 @@ def call(Map config = [:]) {
             always {
                 script {
                     def Junit = new org.swift.Junit()
-                    // Todo: Make this configurable
-                    Junit.safeJunit([
-                        allowEmptyResults: true,
-                        testResults: "clang-build/**/testresults.xunit.xml"
-                    ])
+                    def junitPatterns = testConfig.junit_patterns ?: []
 
-                    builder.cleanupStage(buildConfig.incremental)
+                    junitPatterns.each { pattern ->
+                        Junit.safeJunit([
+                            allowEmptyResults: true,
+                            testResults: pattern
+                        ])
+                    }
+                    builder.cleanupStage()
                 }
             }
         }
