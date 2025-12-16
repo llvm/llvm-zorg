@@ -240,9 +240,9 @@ data "http" "libcxx_next_runner_image_from_main" {
   url = "https://raw.githubusercontent.com/llvm/llvm-project/refs/heads/main/libcxx/utils/ci/images/libcxx_next_runners.txt"
 }
 locals {
-  libcxx_runner_image = data.http.libcxx_runner_image_from_main.response_body
+  libcxx_runner_image         = data.http.libcxx_runner_image_from_main.response_body
   libcxx_release_runner_image = data.http.libcxx_runner_image_from_main.response_body
-  libcxx_next_runner_image = data.http.libcxx_runner_image_from_main.response_body
+  libcxx_next_runner_image    = data.http.libcxx_runner_image_from_main.response_body
 }
 
 resource "helm_release" "github_actions_runner_set_libcxx" {
