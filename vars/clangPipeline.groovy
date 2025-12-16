@@ -133,7 +133,7 @@ def call(Map config = [:]) {
                         testResults: "clang-build/**/testresults.xunit.xml"
                     ])
 
-                    builder.cleanupStage()
+                    builder.cleanupStage(buildConfig.incremental)
                 }
             }
         }

@@ -198,7 +198,10 @@ class ClangBuilder implements Serializable {
         }
     }
 
-    def cleanupStage() {
-        script.sh "rm -rf clang-build clang-install host-compiler *.tar.gz"
+    def cleanupStage(incremental) {
+        if (!incremental) {
+            script.sh "rm -rf clang-build clang-install"
+        }
+        script.sh "rm -rf host-compiler *.tar.gz"
     }
 }
