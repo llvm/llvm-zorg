@@ -14,8 +14,8 @@ def call(Map config = [:]) {
         }
 
         parameters {
-            string(name: 'LABEL', defaultValue: 'macos-x86_64', description: 'Node label to run on')
-            string(name: 'GIT_SHA', defaultValue: '*/main', description: 'Git commit to build.')
+            string(name: 'LABEL', defaultValue: config.defaultLabel ?: 'macos-x86_64', description: 'Node label to run on')
+            string(name: 'GIT_SHA', defaultValue: '', description: 'Git commit to build.')
             string(name: 'ARTIFACT', defaultValue: '', description: 'Clang artifact to use if this is a stage2 job')
             string(name: 'BISECT_GOOD', defaultValue: '', description: 'Good commit for bisection')
             string(name: 'BISECT_BAD', defaultValue: '', description: 'Bad commit for bisection')
@@ -42,25 +42,6 @@ def call(Map config = [:]) {
                 }
             }
 
-            stage('Setup Build Description') {
-                steps {
-                    script {
-                        def buildType = params.IS_BISECT_JOB ? "🔍 BISECTION TEST" : "🔧 NORMAL BUILD"
-                        def commitInfo = params.GIT_SHA.take(8)
-
-                        if (params.IS_BISECT_JOB && params.BISECT_GOOD && params.BISECT_BAD) {
-                            def goodShort = params.BISECT_GOOD.take(8)
-                            def badShort = params.BISECT_BAD.take(8)
-                            currentBuild.description = "${buildType}: Testing ${commitInfo} (${goodShort}..${badShort})"
-                        } else {
-                            currentBuild.description = "${buildType}: ${commitInfo}"
-                        }
-
-                        echo "Build Type: ${buildType}"
-                    }
-                }
-            }
-
             stage('Checkout') {
                 when {
                     expression { 'checkout' in stagesToRun }
@@ -81,6 +62,25 @@ def call(Map config = [:]) {
                 steps {
                     script {
                         builder.setupVenvStage()
+                    }
+                }
+            }
+
+            stage('Setup Build Description') {
+                steps {
+                    script {
+                        def buildType = params.IS_BISECT_JOB ? "🔍 BISECTION TEST" : "🔧 NORMAL BUILD"
+                        def commitInfo = env.GIT_COMMIT ? env.GIT_COMMIT.take(8) : 'unknown'
+
+                        if (params.IS_BISECT_JOB && params.BISECT_GOOD && params.BISECT_BAD) {
+                            def goodShort = params.BISECT_GOOD.take(8)
+                            def badShort = params.BISECT_BAD.take(8)
+                            currentBuild.description = "${buildType}: Testing ${commitInfo} (${goodShort}..${badShort})"
+                        } else {
+                            currentBuild.description = "${buildType}: ${commitInfo}"
+                        }
+
+                        echo "Build Type: ${buildType}"
                     }
                 }
             }
