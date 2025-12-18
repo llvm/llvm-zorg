@@ -7,6 +7,7 @@ import re
 import git
 from google.cloud import bigquery
 import requests
+import retry
 
 GITHUB_GRAPHQL_API_URL = "https://api.github.com/graphql"
 REPOSITORY_URL = "https://github.com/llvm/llvm-project.git"
@@ -17,7 +18,7 @@ LLVM_COMMITS_TABLE = "llvm_commits"
 
 # How many commits to query the GitHub GraphQL API for at a time.
 # Querying too many commits at once often leads to the call failing.
-GITHUB_API_BATCH_SIZE = 50
+GITHUB_API_BATCH_SIZE = 35
 
 # Number of days to look back for new commits
 # We allow some buffer time between when a commit is made and when it is queried
@@ -70,6 +71,10 @@ class LLVMCommitInfo:
   commit_reverted: str | None = None
 
 
+class GitHubAPIError(Exception):
+  """Raised when a GitHub GraphQL API call fails."""
+
+
 def scrape_new_commits_by_date(
     target_datetime: datetime.datetime,
 ) -> list[git.Commit]:
@@ -102,6 +107,46 @@ def scrape_new_commits_by_date(
 
   logging.info("Found %d new commits", len(new_commits))
   return new_commits
+
+
+@retry.retry(
+    exceptions=(GitHubAPIError, requests.exceptions.ChunkedEncodingError),
+    tries=5,
+    delay=1,
+    backoff=2,
+)
+def query_github_graphql_api(
+    query: str,
+    github_token: str,
+) -> requests.Response:
+  """Query GitHub GraphQL API, retrying on failure.
+  
+  Args:
+    query: The GraphQL query to send to the GitHub API.
+    github_token: The access token to use with the GitHub GraphQL API.
+
+  Returns:
+    The response from the GitHub GraphQL API.
+  """
+  response = requests.post(
+      url=GITHUB_GRAPHQL_API_URL,
+      headers={
+          "Authorization": f"bearer {github_token}",
+      },
+      json={"query": query},
+  )
+
+  # Exit if API call fails
+  # A failed API call means a large batch of data is missing and will not be
+  # reflected in the dashboard. The dashboard will silently misrepresent
+  # commit data if we continue execution, so it's better to fail loudly.
+  if response.status_code < 200 or response.status_code >= 300:
+    raise GitHubAPIError(
+        "[%d] Failed to query GitHub GraphQL API: %s"
+        % (response.status_code, response.text)
+    )
+
+  return response
 
 
 def query_for_reviews(
@@ -186,21 +231,7 @@ def query_for_reviews(
         num_batches,
         len(subquery_batch),
     )
-    response = requests.post(
-        url=GITHUB_GRAPHQL_API_URL,
-        headers={
-            "Authorization": f"bearer {github_token}",
-        },
-        json={"query": query},
-    )
-
-    # Exit if API call fails
-    # A failed API call means a large batch of data is missing and will not be
-    # reflected in the dashboard. The dashboard will silently misrepresent
-    # commit data if we continue execution, so it's better to fail loudly.
-    if response.status_code < 200 or response.status_code >= 300:
-      logging.error("Failed to query GitHub GraphQL API: %s", response.text)
-      exit(1)
+    response = query_github_graphql_api(query, github_token)
 
     api_commit_data.update(response.json()["data"]["repository"])
 
