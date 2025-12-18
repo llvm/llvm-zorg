@@ -178,6 +178,7 @@ class ClangBuilder implements Serializable {
         def testTargets = config.test_targets ?: []
         def timeout = config.timeout ?: 420
         def extraEnvVars = config.env_vars ?: [:]
+        def customScript = config.custom_script ?: ""
 
         def envVars = ["PATH": "${script.env.PATH}:/usr/bin:/usr/local/bin"]
         extraEnvVars.each { key, value ->
@@ -188,18 +189,28 @@ class ClangBuilder implements Serializable {
 
         script.withEnv(envList) {
             script.timeout(timeout) {
-                def cmd = "python llvm-zorg/zorg/jenkins/monorepo_build.py ${testCommand} ${testType}"
+                if (customScript) {
+                    // Run custom test script
+                    script.sh """
+                        set -u
+                        source ./venv/bin/activate
+                        ${customScript}
+                    """
+                } else {
+                    // Run standard monorepo_build.py tests
+                    def cmd = "python llvm-zorg/zorg/jenkins/monorepo_build.py ${testCommand} ${testType}"
 
-                testTargets.each { target ->
-                    cmd += " --cmake-test-target=${target}"
+                    testTargets.each { target ->
+                        cmd += " --cmake-test-target=${target}"
+                    }
+
+                    script.sh """
+                        set -u
+                        source ./venv/bin/activate
+                        rm -rf clang-build/testresults.xunit.xml
+                        ${cmd}
+                    """
                 }
-
-                script.sh """
-                    set -u
-                    source ./venv/bin/activate
-                    rm -rf clang-build/testresults.xunit.xml
-                    ${cmd}
-                """
             }
         }
     }
