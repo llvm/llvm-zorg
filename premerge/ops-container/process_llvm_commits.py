@@ -40,8 +40,9 @@ commit_{commit_sha}:
         pullRequest: nodes {{
           number
           reviewDecision
-          reviews(first: 10) {{
+          reviews(first: 25) {{
             nodes {{
+              state
               reviewer: author {{
                 login
               }}
@@ -129,7 +130,9 @@ def query_for_reviews(
 
     # Check which pull request or commit is being reverted (if any)
     pull_request_match = re.search(
-        r"Reverts? (?:llvm\/llvm-project)?#(\d+)", commit.message, flags=re.IGNORECASE
+        r"Reverts? (?:llvm\/llvm-project)?#(\d+)",
+        commit.message,
+        flags=re.IGNORECASE,
     )
     commit_match = re.search(
         r"This reverts commit (\w+)", commit.message, flags=re.IGNORECASE
@@ -217,8 +220,17 @@ def query_for_reviews(
     pull_request = data["associatedPullRequests"]["pullRequest"][0]
     commit_info.has_pull_request = True
     commit_info.pull_request_number = pull_request["number"]
-    commit_info.is_reviewed = pull_request["reviewDecision"] is not None
-    commit_info.is_approved = pull_request["reviewDecision"] == "APPROVED"
+
+    # Check the state of reviews to determine if this commit was reviewed and
+    # approved.
+    review_states = set([
+        review["state"].upper()
+        for review in pull_request["reviews"]["nodes"]
+        if review["reviewer"]["login"] != commit_info.commit_author
+    ])
+    commit_info.is_reviewed = bool(review_states)
+    commit_info.is_approved = "APPROVED" in review_states
+
     commit_info.reviewers = set([
         review["reviewer"]["login"]
         for review in pull_request["reviews"]["nodes"]
