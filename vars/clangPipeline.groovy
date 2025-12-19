@@ -144,7 +144,9 @@ def call(Map config = [:]) {
                 script {
                     if (!params.SKIP_TRIGGER && triggeredJobs) {
                         triggeredJobs.each { job ->
-                            build job: job, wait: false
+                            // trigger multibranch pipeline if we expect one
+                            def job_name = env.BRANCH_NAME ? "${job}/${env.BRANCH_NAME}" : job
+                            build job: "${job}/${branch}", wait: false
                         }
                     }
                 }
@@ -153,7 +155,9 @@ def call(Map config = [:]) {
                 script {
                     if (!params.SKIP_TRIGGER && triggeredJobs) {
                         triggeredJobs.each { job ->
-                            build job: job, wait: false
+                            // trigger multibranch pipeline if we expect one
+                            def job_name = env.BRANCH_NAME ? "${job}/${env.BRANCH_NAME}" : job
+                            build job: "${job}/${branch}", wait: false
                         }
                     }
                 }
