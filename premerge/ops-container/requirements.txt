@@ -1,6 +1,7 @@
 cachetools==5.5.2
 certifi==2025.6.15
 charset-normalizer==3.4.2
+decorator==5.2.1
 gitdb==4.0.12
 GitPython==3.1.44
 google-api-core==2.25.1
@@ -16,10 +17,12 @@ idna==3.10
 packaging==25.0
 proto-plus==1.26.1
 protobuf==6.31.1
+py==1.11.0
 pyasn1==0.6.1
 pyasn1_modules==0.4.2
 python-dateutil==2.9.0.post0
 requests==2.32.4
+retry==0.9.2
 rsa==4.9.1
 six==1.17.0
 smmap==5.0.2
