@@ -135,6 +135,7 @@ def query_github_graphql_api(
           "Authorization": f"bearer {github_token}",
       },
       json={"query": query},
+      timeout=30,
   )
 
   # Exit if API call fails

@@ -59,8 +59,8 @@ for testcase_name, stats in _data.items():
 
     pprint.pprint(to_send)
     try:
-        requests.post("http://104.154.54.203/db_default/v4/nts/submitRun", data=to_send).raise_for_status()
+        requests.post("http://104.154.54.203/db_default/v4/nts/submitRun", data=to_send, timeout=30).raise_for_status()
     except:
         time.sleep(10)
         print("Sleeping because of error.")
-        requests.post("http://104.154.54.203/db_default/v4/nts/submitRun", data=to_send).raise_for_status()
+        requests.post("http://104.154.54.203/db_default/v4/nts/submitRun", data=to_send, timeout=30).raise_for_status()
