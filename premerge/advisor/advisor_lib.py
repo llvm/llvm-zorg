@@ -32,6 +32,13 @@ class TestExplanationRequest(TypedDict):
     platform: str
 
 
+class FlakyTestInfo(TypedDict):
+    test_name: str
+    first_failed_index: str
+    last_failed_index: str
+    failure_range_commit_count: int
+
+
 _TABLE_SCHEMAS = {
     "failures": "CREATE TABLE failures(source_type, base_commit_sha, commit_index, source_id, test_file, failure_message, platform)",
     "commits": "CREATE TABLE commits(commit_sha, commit_index)",
@@ -161,7 +168,7 @@ def _try_explain_flaky_failure(
       db_connection: The database connection.
       test_failure: The test failure to try and explain.
       platform: The platform the test failed on.
-    
+
     Returns:
       Either None, if the test could not be explained as flaky, or a
       FailureExplanation object explaining the test failure.
@@ -222,3 +229,49 @@ def explain_failures(
             {"name": test_failure["name"], "explained": False, "reason": None}
         )
     return explanations
+
+
+def get_flaky_tests(
+    db_connection: sqlite3.Connection,
+) -> list[FlakyTestInfo]:
+    possibly_flaky_tests = db_connection.execute(
+        "SELECT test_file, commit_index FROM failures where test_file "
+        "IN (SELECT test_file FROM failures GROUP BY test_file "
+        "HAVING COUNT(test_file) > 10)"
+    ).fetchall()
+    flaky_test_info: dict[str, FlakyTestInfo] = {}
+    flaky_test_count: dict[str, int] = {}
+    for test_name, commit_index in possibly_flaky_tests:
+        if test_name not in flaky_test_info:
+            flaky_test_info[test_name] = {
+                "test_name": test_name,
+                "first_failed_index": commit_index,
+                "last_failed_index": commit_index,
+                "failure_range_commit_count": 0,
+            }
+            flaky_test_count[test_name] = 0
+            continue
+
+        flaky_test_info[test_name]["first_failed_index"] = min(
+            flaky_test_info[test_name]["first_failed_index"], commit_index
+        )
+        flaky_test_info[test_name]["last_failed_index"] = max(
+            flaky_test_info[test_name]["last_failed_index"], commit_index
+        )
+        flaky_test_info[test_name]["failure_range_commit_count"] = (
+            flaky_test_info[test_name]["last_failed_index"]
+            - flaky_test_info[test_name]["first_failed_index"]
+        )
+        flaky_test_count[test_name] += 1
+
+    output_list: list[FlakyTestInfo] = []
+    for test_name in flaky_test_info:
+        if (
+            flaky_test_info[test_name]["failure_range_commit_count"]
+            == flaky_test_count[test_name]
+        ):
+            continue
+
+        output_list.append(flaky_test_info[test_name])
+
+    return output_list
