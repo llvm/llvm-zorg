@@ -45,3 +45,8 @@ class AdvisorIntegrationTest(unittest.TestCase):
         self.assertListEqual(
             result.json, [{"name": "a.ll", "explained": False, "reason": None}]
         )
+
+    def test_flaky_tests(self):
+        result = self.client.get("/flaky_tests")
+        self.assertEqual(result.status_code, 200)
+        self.assertListEqual(result.json, [])
