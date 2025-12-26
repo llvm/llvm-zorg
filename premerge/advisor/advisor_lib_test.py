@@ -403,6 +403,8 @@ class AdvisorLibTest(unittest.TestCase):
 
     def _setup_flaky_test_identification_info(self):
         failures = []
+        # Setup a range of consistently failing tests that happen on sequential
+        # commits which should not be marked as flaky.
         for i in range(1, 15):
             failures.append(
                 (
@@ -415,6 +417,8 @@ class AdvisorLibTest(unittest.TestCase):
                     "linux-x86_64",
                 )
             )
+        # Setup a range of failing tests that are spread out over commits, which
+        # should be marked as flaky.
         for i in range(1, 15):
             failures.append(
                 (
@@ -442,6 +446,7 @@ class AdvisorLibTest(unittest.TestCase):
                     "first_failed_index": 10,
                     "last_failed_index": 140,
                     "failure_range_commit_count": 130,
+                    "fail_count": 14,
                 }
             ],
         )
