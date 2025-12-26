@@ -400,3 +400,48 @@ class AdvisorLibTest(unittest.TestCase):
                 }
             ],
         )
+
+    def _setup_flaky_test_identification_info(self):
+        failures = []
+        for i in range(1, 15):
+            failures.append(
+                (
+                    "postcommit",
+                    str(i),
+                    i,
+                    str(i),
+                    "consistently_failing.ll",
+                    "consistently failing test",
+                    "linux-x86_64",
+                )
+            )
+        for i in range(1, 15):
+            failures.append(
+                (
+                    "postcommit",
+                    str(i * 10),
+                    i * 10,
+                    str(i * 10),
+                    "flaky_failing.ll",
+                    "test that is flaky",
+                    "linux-x86_64",
+                )
+            )
+        self.db_connection.executemany(
+            "INSERT INTO failures VALUES(?, ?, ?, ?, ?, ?, ?)", failures
+        )
+        self.db_connection.commit()
+
+    def test_find_flaky_tests(self):
+        self._setup_flaky_test_identification_info()
+        self.assertListEqual(
+            advisor_lib.get_flaky_tests(self.db_connection),
+            [
+                {
+                    "test_name": "flaky_failing.ll",
+                    "first_failed_index": 10,
+                    "last_failed_index": 140,
+                    "failure_range_commit_count": 130,
+                }
+            ],
+        )
