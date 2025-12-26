@@ -37,6 +37,7 @@ class FlakyTestInfo(TypedDict):
     first_failed_index: str
     last_failed_index: str
     failure_range_commit_count: int
+    fail_count: int
 
 
 _TABLE_SCHEMAS = {
@@ -240,7 +241,6 @@ def get_flaky_tests(
         "HAVING COUNT(test_file) > 10)"
     ).fetchall()
     flaky_test_info: dict[str, FlakyTestInfo] = {}
-    flaky_test_count: dict[str, int] = {}
     for test_name, commit_index in possibly_flaky_tests:
         if test_name not in flaky_test_info:
             flaky_test_info[test_name] = {
@@ -248,8 +248,8 @@ def get_flaky_tests(
                 "first_failed_index": commit_index,
                 "last_failed_index": commit_index,
                 "failure_range_commit_count": 0,
+                "fail_count": 1,
             }
-            flaky_test_count[test_name] = 0
             continue
 
         flaky_test_info[test_name]["first_failed_index"] = min(
@@ -262,13 +262,13 @@ def get_flaky_tests(
             flaky_test_info[test_name]["last_failed_index"]
             - flaky_test_info[test_name]["first_failed_index"]
         )
-        flaky_test_count[test_name] += 1
+        flaky_test_info[test_name]["fail_count"] += 1
 
     output_list: list[FlakyTestInfo] = []
     for test_name in flaky_test_info:
         if (
             flaky_test_info[test_name]["failure_range_commit_count"]
-            == flaky_test_count[test_name]
+            == flaky_test_info[test_name]["fail_count"] - 1
         ):
             continue
 
