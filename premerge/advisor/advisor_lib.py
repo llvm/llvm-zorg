@@ -3,6 +3,8 @@ import time
 import sqlite3
 import logging
 import re
+import json
+import os
 
 import git_utils
 
@@ -121,9 +123,12 @@ def _try_explain_failing_at_head(
 ) -> FailureExplanation | None:
     query = (
         "SELECT failure_message FROM failures "
-        "WHERE source_type='postcommit' AND platform=?"
+        "WHERE source_type='postcommit' AND platform=? AND test_file=?"
     )
-    query_params = (platform,)
+    query_params = (
+        platform,
+        test_failure["name"],
+    )
     if base_commit_index:
         min_commit_index = (
             base_commit_index - EXPLAINED_HEAD_MAX_COMMIT_INDEX_DIFFERENCE
@@ -175,8 +180,11 @@ def _try_explain_flaky_failure(
       FailureExplanation object explaining the test failure.
     """
     test_name_matches = db_connection.execute(
-        "SELECT failure_message, commit_index FROM failures WHERE source_type='postcommit' AND platform=?",
-        (platform,),
+        "SELECT failure_message, commit_index FROM failures WHERE source_type='postcommit' AND platform=? AND test_file=?",
+        (
+            platform,
+            test_failure["name"],
+        ),
     ).fetchall()
     commit_indices = []
     for failure_message, commit_index in test_name_matches:
@@ -194,17 +202,50 @@ def _try_explain_flaky_failure(
     return None
 
 
+def _log_explanation_request(
+    explanation_request: TestExplanationRequest,
+    base_commit_index: int,
+    db_connection: sqlite3.Connection,
+    explanations: list[FailureExplanation],
+    debug_folder: str,
+):
+    explanation_log = {
+        "request": explanation_request,
+        "explanations": explanations,
+        "base_commit_index": base_commit_index,
+        "relevant_previous_failures": [],
+    }
+    for failure in explanation_request["failures"]:
+        test_name_matches = db_connection.execute(
+            "SELECT failure_message, commit_index, test_file "
+            "FROM failures WHERE source_type='postcommit' AND platform=? AND test_file=?",
+            (
+                explanation_request["platform"],
+                failure["name"],
+            ),
+        ).fetchall()
+        explanation_log["relevant_previous_failures"].extend(test_name_matches)
+    with open(
+        os.path.join(
+            debug_folder, str(base_commit_index) + "-" + str(int(time.time())) + ".txt"
+        ),
+        "w",
+    ) as output_file:
+        json.dump(explanation_log, output_file)
+
+
 def explain_failures(
     explanation_request: TestExplanationRequest,
     repository_path: str,
     db_connection: sqlite3.Connection,
+    debug_folder: str | None = None,
 ) -> list[FailureExplanation]:
     _canonicalize_failures(explanation_request["failures"])
     explanations = []
+    commit_index = git_utils.get_commit_index(
+        explanation_request["base_commit_sha"], repository_path, db_connection
+    )
     for test_failure in explanation_request["failures"]:
-        commit_index = git_utils.get_commit_index(
-            explanation_request["base_commit_sha"], repository_path, db_connection
-        )
         # We want to try and explain flaky failures first. Otherwise we might
         # explain a flaky failure as a failure at head if there is a recent
         # failure in the last couple of commits.
@@ -228,6 +269,10 @@ def explain_failures(
             continue
         explanations.append(
             {"name": test_failure["name"], "explained": False, "reason": None}
+        )
+    if debug_folder:
+        _log_explanation_request(
+            explanation_request, commit_index, db_connection, explanations, debug_folder
         )
     return explanations
 

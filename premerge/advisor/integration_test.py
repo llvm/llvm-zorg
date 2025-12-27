@@ -14,12 +14,16 @@ class AdvisorIntegrationTest(unittest.TestCase):
         git_utils.clone_repository_if_not_present(
             self.repository_path, "https://github.com/llvm/actions"
         )
-        self.app = advisor.create_app(self.db_file.name, self.repository_path)
+        self.debug_folder = tempfile.TemporaryDirectory()
+        self.app = advisor.create_app(
+            self.db_file.name, self.repository_path, self.debug_folder.name
+        )
         self.client = self.app.test_client()
 
     def tearDown(self):
         self.db_file.close()
         self.repository_path_dir.cleanup()
+        self.debug_folder.cleanup()
 
     def test_upload_failures(self):
         failure_info = {
@@ -45,6 +49,7 @@ class AdvisorIntegrationTest(unittest.TestCase):
         self.assertListEqual(
             result.json, [{"name": "a.ll", "explained": False, "reason": None}]
         )
+        self.assertEqual(len(os.listdir(self.debug_folder.name)), 1)
 
     def test_flaky_tests(self):
         result = self.client.get("/flaky_tests")

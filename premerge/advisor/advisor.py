@@ -32,16 +32,23 @@ def upload():
 @advisor_blueprint.route("/explain")
 def explain():
     return advisor_lib.explain_failures(
-        flask.request.json, flask.current_app.config["REPO_PATH"], _get_db()
+        flask.request.json,
+        flask.current_app.config["REPO_PATH"],
+        _get_db(),
+        flask.current_app.config["DEBUG_FOLDER"],
     )
 
 
+<<<<<<< HEAD
 @advisor_blueprint.route("/flaky_tests")
 def flaky_tests():
     return advisor_lib.get_flaky_tests(_get_db())
 
 
 def create_app(db_path: str, repository_path: str):
+=======
+def create_app(db_path: str, repository_path: str, debug_folder: str):
+>>>>>>> 932f0fe5 ([CI] Add debug logging for premerge advisor explanations)
     app = Flask(__name__)
     app.register_blueprint(advisor_blueprint)
     app.teardown_appcontext(_close_db)
@@ -49,4 +56,5 @@ def create_app(db_path: str, repository_path: str):
     with app.app_context():
         app.config["DB_PATH"] = db_path
         app.config["REPO_PATH"] = repository_path
+        app.config["DEBUG_FOLDER"] = debug_folder
     return app
