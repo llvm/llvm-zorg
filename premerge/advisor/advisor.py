@@ -36,6 +36,11 @@ def explain():
     )
 
 
+@advisor_blueprint.route("/flaky_tests")
+def flaky_tests():
+    return advisor_lib.get_flaky_tests(_get_db())
+
+
 def create_app(db_path: str, repository_path: str):
     app = Flask(__name__)
     app.register_blueprint(advisor_blueprint)
