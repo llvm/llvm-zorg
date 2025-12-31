@@ -1,6 +1,7 @@
 import unittest
 import tempfile
 import sqlite3
+import json
 import os
 
 import advisor_lib
@@ -165,6 +166,7 @@ class AdvisorLibTest(unittest.TestCase):
         prev_failure_failure_name="a.ll",
         prev_failure_failure_message="failed in way 1",
         prev_failure_platform="linux-x86_64",
+        debug_folder=None,
     ) -> list[advisor_lib.FailureExplanation]:
         """Constructs explanations.
 
@@ -192,7 +194,7 @@ class AdvisorLibTest(unittest.TestCase):
             "platform": platform,
         }
         return advisor_lib.explain_failures(
-            explanation_request, self.repository_path, self.db_connection
+            explanation_request, self.repository_path, self.db_connection, debug_folder
         )
 
     # Test that we can explain away a failure at head, assuming all of the
@@ -312,6 +314,35 @@ class AdvisorLibTest(unittest.TestCase):
                 }
             ],
         )
+
+    def test_explain_failures_debug_logging(self):
+        with tempfile.TemporaryDirectory() as debug_folder:
+            self._get_explained_failures(debug_folder=debug_folder)
+            debug_outputs = os.listdir(debug_folder)
+            self.assertEqual(len(debug_outputs), 1)
+            with open(os.path.join(debug_folder, debug_outputs[0])) as debug_file:
+                explanation_log = json.load(debug_file)
+                self.assertDictEqual(
+                    explanation_log,
+                    {
+                        "request": {
+                            "failures": [
+                                {"name": "a.ll", "message": "failed in way 1"}
+                            ],
+                            "base_commit_sha": "8d29a3bb6f3d92d65bf5811b53bf42bf63685359",
+                            "platform": "linux-x86_64",
+                        },
+                        "explanations": [
+                            {
+                                "name": "a.ll",
+                                "explained": True,
+                                "reason": "This test is already failing at the base commit.",
+                            }
+                        ],
+                        "base_commit_index": 1,
+                        "relevant_previous_failures": [["failed in way 1", 1, "a.ll"]],
+                    },
+                )
 
     def _setup_flaky_test_info(
         self,
