@@ -39,16 +39,12 @@ def explain():
     )
 
 
-<<<<<<< HEAD
 @advisor_blueprint.route("/flaky_tests")
 def flaky_tests():
     return advisor_lib.get_flaky_tests(_get_db())
 
 
-def create_app(db_path: str, repository_path: str):
-=======
 def create_app(db_path: str, repository_path: str, debug_folder: str):
->>>>>>> 932f0fe5 ([CI] Add debug logging for premerge advisor explanations)
     app = Flask(__name__)
     app.register_blueprint(advisor_blueprint)
     app.teardown_appcontext(_close_db)
