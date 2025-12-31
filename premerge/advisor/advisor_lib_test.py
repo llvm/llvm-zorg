@@ -301,11 +301,24 @@ class AdvisorLibTest(unittest.TestCase):
             ],
         )
 
+    def test_no_explain_different_test_file(self):
+        self.assertListEqual(
+            self._get_explained_failures(prev_failure_failure_name="b.ll"),
+            [
+                {
+                    "name": "a.ll",
+                    "explained": False,
+                    "reason": None,
+                }
+            ],
+        )
+
     def _setup_flaky_test_info(
         self,
         source_type="postcommit",
         message="failed in way 1",
         second_failure_sha="6269677375726269677375726269677375726269",
+        second_failure_test_file="a.ll",
     ):
         failures_info = [
             {
@@ -322,7 +335,7 @@ class AdvisorLibTest(unittest.TestCase):
                 "base_commit_sha": second_failure_sha,
                 "source_id": "100001",
                 "failures": [
-                    {"name": "a.ll", "message": message},
+                    {"name": second_failure_test_file, "message": message},
                 ],
                 "platform": "linux-x86_64",
             },
@@ -398,6 +411,15 @@ class AdvisorLibTest(unittest.TestCase):
                     "explained": False,
                     "reason": None,
                 }
+            ],
+        )
+
+    def test_no_explain_flaky_different_files(self):
+        self._setup_flaky_test_info(second_failure_test_file="b.ll")
+        self.assertEqual(
+            self._get_flaky_test_explanations(),
+            [
+                {"name": "a.ll", "explained": False, "reason": None},
             ],
         )
 

@@ -121,9 +121,12 @@ def _try_explain_failing_at_head(
 ) -> FailureExplanation | None:
     query = (
         "SELECT failure_message FROM failures "
-        "WHERE source_type='postcommit' AND platform=?"
+        "WHERE source_type='postcommit' AND platform=? AND test_file=?"
     )
-    query_params = (platform,)
+    query_params = (
+        platform,
+        test_failure["name"],
+    )
     if base_commit_index:
         min_commit_index = (
             base_commit_index - EXPLAINED_HEAD_MAX_COMMIT_INDEX_DIFFERENCE
@@ -175,8 +178,11 @@ def _try_explain_flaky_failure(
       FailureExplanation object explaining the test failure.
     """
     test_name_matches = db_connection.execute(
-        "SELECT failure_message, commit_index FROM failures WHERE source_type='postcommit' AND platform=?",
-        (platform,),
+        "SELECT failure_message, commit_index FROM failures WHERE source_type='postcommit' AND platform=? AND test_file=?",
+        (
+            platform,
+            test_failure["name"],
+        ),
     ).fetchall()
     commit_indices = []
     for failure_message, commit_index in test_name_matches:
