@@ -784,7 +784,7 @@ def http_download(url, dest):
     try:
         print("GETting", url, "to", dest, "...")
         session = requests.Session()
-        r = session.get(url)
+        r = session.get(url, timeout=60)
         r.raise_for_status()
         # Open our local file for writing
         with open(dest, "wb") as local_file:
