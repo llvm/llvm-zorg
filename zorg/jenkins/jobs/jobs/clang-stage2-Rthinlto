@@ -101,7 +101,7 @@ pipeline {
                         echo "ARTIFACT=$JOB_NAME/clang-d$GIT_DISTANCE-g$GIT_SHA-t$BUILD_ID-b$BUILD_NUMBER.tar.gz" > build.properties
 
                         python llvm-zorg/zorg/jenkins/monorepo_build.py clang build \
-                          --thinlto --projects="clang;compiler-rt" \
+                          --thinlto --projects="clang" --runtimes="compiler-rt" \
                           --cmake-flag="-DCMAKE_DSYMUTIL=$WORKSPACE/host-compiler/bin/dsymutil" \
                           --runtimes="libunwind" \
                           --cmake-flag="-DPython3_EXECUTABLE=$(which python)"
