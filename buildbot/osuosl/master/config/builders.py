@@ -2242,6 +2242,24 @@ all += [
                         add_lit_checks=["check-clang", "check-flang", "check-flang-rt", "check-llvm", "check-lld", "check-mlir", "check-offload"],
                         add_openmp_lit_args=["--time-tests", "--timeout 100", "--xfail=affinity/format/proc_bind.c"],
                     )},
+# SYCL GPU builders.
+
+    {'name' : "intel-sycl-gpu",
+    'tags'  : ["sycl"],
+    'collapseRequests': False,     
+    'workernames' : ["intel-sycl-gpu-01"],
+    'builddir': "intel-sycl-gpu",
+    'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
+                    clean=True,
+                    enable_runtimes=['openmp', 'offload', 'libsycl'],
+                    depends_on_projects=['llvm', 'clang', 'libsycl', 'offload', 'openmp', 'lld'],
+                    extra_configure_args=[
+                        "-DLLVM_CCACHE_BUILD=ON",                        
+                        "-DLLVM_TARGETS_TO_BUILD=host;SPIRV",
+                        "-DLLVM_ENABLE_ASSERTIONS=ON",
+                        "-DLLVM_INSTALL_UTILS=ON",
+                        "-DCLANG_DEFAULT_LINKER=lld",
+                    ])},
 
 
 # Whole-toolchain builders.
