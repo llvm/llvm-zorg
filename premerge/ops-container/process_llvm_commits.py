@@ -124,6 +124,8 @@ def parse_commit_revert_info(
       )
       is not None
   )
+  if not is_revert:
+    return False, None, None
 
   # Check which pull request or commit is being reverted (if any)
   pull_request_match = re.search(
