@@ -2242,6 +2242,7 @@ all += [
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
                         "-DLLVM_INSTALL_UTILS=ON",
                         "-DCLANG_DEFAULT_LINKER=lld",
+                        "-DLIBOMPTARGET_PLUGINS_TO_BUILD=level_zero",
                     ])},
 
 
