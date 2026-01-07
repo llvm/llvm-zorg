@@ -324,6 +324,8 @@ class AnnotatedCommand(buildstep.ShellMixin, buildstep.BuildStep):
             'BUILDBOT_BRANCH':          util.Interpolate('%(prop:branch:-None)s'),
             'BUILDBOT_BUILDERNAME':     util.Interpolate('%(prop:buildername:-None)s'),
             'BUILDBOT_BUILDNUMBER':     util.Interpolate('%(prop:buildnumber:-None)s'),
+            'BUILDBOT_CLEAN':           util.Interpolate('%(prop:clean:-)s'),
+            'BUILDBOT_CLEAN_OBJ':       util.Interpolate('%(prop:clean_obj:-)s'),
             'BUILDBOT_CLOBBER':         util.Interpolate('%(prop:clobber:+1)s'),
             'BUILDBOT_GOT_REVISION':    util.Interpolate('%(prop:got_revision:-None)s'),
             'BUILDBOT_REVISION':        util.Interpolate('%(prop:revision:-None)s'),

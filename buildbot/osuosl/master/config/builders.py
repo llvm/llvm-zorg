@@ -18,6 +18,7 @@ from zorg.buildbot.builders import LLDPerformanceTestsuite
 from zorg.buildbot.builders import TestSuiteBuilder
 from zorg.buildbot.builders import BOLTBuilder
 from zorg.buildbot.builders import DebugifyBuilder
+from zorg.buildbot.builders import ScriptedBuilder
 
 from zorg.buildbot.builders import HtmlDocsBuilder
 from zorg.buildbot.builders import DoxygenDocsBuilder
@@ -1309,28 +1310,9 @@ all = [
     'tags'  : ["polly"],
     'workernames' : ["polly-x86_64-fdcserver", "minipc-1050ti-linux"],
     'builddir': "polly-x86_64-linux-test-suite",
-    'factory' : PollyBuilder.getPollyBuildFactory(
-                    clean=False,
-                    install=False,
-                    make='ninja',
-                    extraCmakeArgs=[
-                        "-G", "Ninja",
-                        "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
-                        "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
-                        "-DLLVM_ENABLE_ASSERTIONS=True",
-                        "-DLLVM_TARGETS_TO_BUILD='X86;NVPTX'",
-                        "-DCLANG_ENABLE_ARCMT=OFF",
-                        "-DCLANG_ENABLE_STATIC_ANALYZER=OFF",
-                        "-DCLANG_ENABLE_OBJC_REWRITER=OFF"
-                        ],
-                    testsuite=True,
-                    extraTestsuiteCmakeArgs=[
-                        "-G", "Ninja",
-                        "-DTEST_SUITE_COLLECT_COMPILE_TIME=OFF",
-                        "-DTEST_SUITE_COLLECT_STATS=OFF",
-                        "-DTEST_SUITE_COLLECT_CODE_SIZE=OFF",
-                        util.Interpolate("-DTEST_SUITE_EXTERNALS_DIR=%(prop:builddir)s/../../test-suite-externals"),
-                      ]
+    'factory' : ScriptedBuilder.getScriptedBuildFactory(
+                      "polly/ci/polly-x86_64-linux-test-suite.py",
+                      depends_on_projects=["llvm", "clang", "polly"],
                     )},
 
 # AOSP builders.
