@@ -212,13 +212,17 @@ def query_github_graphql_api(
 
 
 def fetch_github_api_data(
-    github_token: str, commit_hashes: list[str]
+    github_token: str,
+    commit_hashes: list[str],
+    batch_size: int = GITHUB_API_BATCH_SIZE,
 ) -> dict[str, dict[str, Any]]:
   """Fetch commit data from the GitHub GraphQL API.
 
   Args:
     github_token: The access token to use with the GitHub GraphQL API.
     commit_hashes: List of commit hashes to fetch data for.
+    batch_size: The number of commits to query the GitHub GraphQL API for at a
+      time.
 
   Returns:
     A dictionary of commit hash to commit data from the GitHub GraphQL API.
@@ -236,12 +240,10 @@ def fetch_github_api_data(
       }
     }
   """
-  num_batches = math.ceil(len(commit_subqueries) / GITHUB_API_BATCH_SIZE)
+  num_batches = math.ceil(len(commit_subqueries) / batch_size)
   logging.info("Querying GitHub GraphQL API in %d batches", num_batches)
   for i in range(num_batches):
-    subquery_batch = commit_subqueries[
-        i * GITHUB_API_BATCH_SIZE : (i + 1) * GITHUB_API_BATCH_SIZE
-    ]
+    subquery_batch = commit_subqueries[i * batch_size : (i + 1) * batch_size]
     query = query_template % "".join(subquery_batch)
 
     logging.info(
@@ -266,7 +268,11 @@ def amend_commit_data(
     commit_data: The LLVMCommitData object to modify.
     api_data: The GitHub API data to amend the commit information with.
   """
-  commit_data.commit_author = api_data["author"]["user"]["login"]
+  if api_data["author"]["user"]:
+    commit_data.commit_author = api_data["author"]["user"]["login"]
+  else:
+    logging.warning("No author found for commit %s", commit_data.commit_sha)
+    commit_data.commit_author = None
 
   # If commit has no pull requests, skip it. No data to update.
   if api_data["associatedPullRequests"]["totalCount"] == 0:
@@ -337,7 +343,7 @@ def upload_daily_metrics_to_bigquery(
   )
   table = bq_client.get_table(table_ref)
   commit_records = [dataclasses.asdict(commit) for commit in commits_data]
-  errors = bq_client.insert_rows(table, commit_records)
+  errors = bq_client.insert_rows(table=table, rows=commit_records)
   if errors:
     logging.error("Failed to upload commit info to BigQuery: %s", errors)
     exit(1)
