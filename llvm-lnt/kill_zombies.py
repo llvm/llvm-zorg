@@ -16,10 +16,10 @@ for line in out.split('\n'):
         pid = m.groupdict()['pid']
         pids.append(pid)
     else:
-        print ">", line
+        print(">", line)
 
 if not pids:
-    print "No PIDs to kill."
+    print("No PIDs to kill.")
 
 for pid in pids:
-    print subprocess.check_output(["kill", "-9", "{}".format(pid)])
+    print(subprocess.check_output(["kill", "-9", "{}".format(pid)]))

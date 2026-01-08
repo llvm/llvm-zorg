@@ -247,7 +247,7 @@ def execute_sandboxed_test(sandbox, builder, build, args,
         # Execute the command.
         try:
             cmd_object.execute(verbose=verbose)
-        except OSError, e:
+        except OSError as e:
             # Python's exceptions are horribly to read, and this one is
             # incredibly common when people don't use the right syntax (or
             # misspell something) when writing a predicate. Detect this and
@@ -277,9 +277,9 @@ def execute_sandboxed_test(sandbox, builder, build, args,
                 data = f.read()
                 f.close()
                 if data:
-                    print ("-- command %s (note: suppressed by default, "
-                           "see sandbox dir for log files) --" % (type))
-                    print "--\n%s--\n" % data
+                    print("-- command %s (note: suppressed by default, "
+                          "see sandbox dir for log files) --" % (type))
+                    print("--\n%s--\n" % data)
 
         test_result = cmd_object.result
         if not test_result:
@@ -393,8 +393,8 @@ The available builds can be listed using:
                 fatal('current directory is not clean, %r exists' % p)
         llvmlab.fetch_build_to_path(builder, build, root_path, builddir_path)
 
-    print 'downloaded root: %s' % root_path
-    print 'extracted path : %s' % builddir_path
+    print('downloaded root: %s' % root_path)
+    print('extracted path : %s' % builddir_path)
 
     # Update the symbolic link, if requested.
     if not opts.dry_run and opts.update_link:
@@ -408,7 +408,7 @@ The available builds can be listed using:
 
         # Create the symbolic link.
         os.symlink(os.path.abspath(builddir_path), opts.update_link)
-        print 'updated link at: %s' % opts.update_link
+        print('updated link at: %s' % opts.update_link)
     return os.path.abspath(builddir_path)
 
 
@@ -428,19 +428,19 @@ name, list the available builds for that builder.\
         available_buildnames = llvmlab.fetch_builders()
         available_buildnames.sort()
         for item in available_buildnames:
-            print item
+            print(item)
         return available_buildnames
 
     for name in args:
         if len(args) > 1:
             if name is not args[0]:
-                print
-            print '%s:' % name
+                print()
+            print('%s:' % name)
         available_builds = list(llvmlab.fetch_builds(name))
         available_builds.sort()
         available_builds.reverse()
         for build in available_builds:
-            print build.tobasename(include_suffix=False)
+            print(build.tobasename(include_suffix=False))
         min_rev = min([x.revision for x in available_builds])
         max_rev = max([x.revision for x in available_builds])
         note("Summary: found {} builds: r{}-r{}".format(len(available_builds),
@@ -546,8 +546,8 @@ the entire test to fail.\
             show_command_output=opts.show_command_output or opts.very_verbose)
 
         # Print status.
-        print '%s: %s' % (('FAIL', 'PASS')[test_result],
-                          item.tobasename(include_suffix=False))
+        print('%s: %s' % (('FAIL', 'PASS')[test_result],
+                          item.tobasename(include_suffix=False)))
 
         return test_result
 
@@ -571,13 +571,13 @@ the entire test to fail.\
     if item is None:
         fatal('unable to find any passing build!')
 
-    print '%s: first working build' % item.tobasename(include_suffix=False)
+    print('%s: first working build' % item.tobasename(include_suffix=False))
     index = available_builds.index(item)
     if index == 0:
-        print 'no failing builds!?'
+        print('no failing builds!?')
     else:
-        print '%s: next failing build' % available_builds[index-1].tobasename(
-            include_suffix=False)
+        print('%s: next failing build' % available_builds[index-1].tobasename(
+            include_suffix=False))
 
 
 def action_exec(name, args):
@@ -643,8 +643,8 @@ See 'bisect' for more notermation on the exact test syntax.\
         opts.sandbox, opts.build_name, build, args, verbose=True,
         show_command_output=True)
 
-    print '%s: %s' % (('FAIL', 'PASS')[test_result],
-                      build.tobasename(include_suffix=False))
+    print('%s: %s' % (('FAIL', 'PASS')[test_result],
+                      build.tobasename(include_suffix=False)))
 
     raise SystemExit(test_result != True)
 

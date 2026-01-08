@@ -32,3 +32,10 @@ jobs:
       run: |
         cd buildbot/osuosl/master
         BUILDBOT_TEST=1 buildbot checkconfig
+  python_syntax_errors:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/ruff-action@v3
+        with:  # Ignore all ruff rules except Python Syntax Errors
+          args: "check --ignore=ALL"

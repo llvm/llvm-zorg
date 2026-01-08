@@ -15,7 +15,7 @@ class BuildStatus(util.simple_repr_mixin):
     def fromdata(data):
         version = data['version']
         if version not in (0, 1):
-            raise ValueError, "Unknown version"
+            raise ValueError("Unknown version")
 
         if version == 0:
             slave = None
@@ -144,7 +144,7 @@ class Status(util.simple_repr_mixin):
     def fromdata(data):
         version = data['version']
         if version != 0:
-            raise ValueError, "Unknown version"
+            raise ValueError("Unknown version")
 
         sc = data.get('statusclient')
         if sc:

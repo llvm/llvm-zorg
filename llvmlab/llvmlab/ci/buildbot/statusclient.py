@@ -1,3 +1,4 @@
+import sys
 import time
 import traceback
 import urllib2
@@ -26,7 +27,7 @@ class BuilderInfo(object):
     def fromdata(data):
         version = data['version']
         if version != 0:
-            raise ValueError, "Unknown version"
+            raise ValueError("Unknown version")
 
         return BuilderInfo(data['name'], data['last_build_number'],
                            set(data['active_builds']), data['last_poll'])
@@ -57,7 +58,7 @@ class StatusClient(object):
     def fromdata(data):
         version = data['version']
         if version != 0:
-            raise ValueError, "Unknown version"
+            raise ValueError("Unknown version")
 
         sc = StatusClient(data['master_url'], data['builders_poll_rate'],
                           data['builder_poll_rate'])
@@ -107,22 +108,22 @@ class StatusClient(object):
         url = self.master_url + path
         try:
             request = urllib2.urlopen(url)
-        except urllib2.HTTPError, err:
+        except urllib2.HTTPError as err:
             # Turn 404 into a result missing error.
             if err.code == 404:
                 raise ResultMissing
 
             # Log this failure.
             os = StringIO.StringIO()
-            print >>os, "*** ERROR: failure in 'get_json_result(%r, %r)' ***" %(
-                query_items, arguments)
-            print >>os, "URL: %r" % url
-            print >>os, "\n-- Traceback --"
+            print("*** ERROR: failure in 'get_json_result(%r, %r)' ***" %(
+                query_items, arguments), file=os)
+            print("URL: %r" % url, file=os)
+            print("\n-- Traceback --", file=os)
             traceback.print_exc(file = os)
             if self.logger:
                 self.logger.warning(os.getvalue())
             else:
-                print >>sys.stderr, os.getvalue()
+                print(os.getvalue(), file=sys.stderr)
             raise UnknownFailure
         data = request.read()
         request.close()
@@ -290,10 +291,10 @@ A simple tool for testing the BuildBot StatusClient.
     try:
         while 1:
             for event in sc.pull_events():
-                print time.time(), event
+                print(time.time(), event)
             time.sleep(.1)
     except KeyboardInterrupt:
-        print "(interrupted, stopping)"
+        print("(interrupted, stopping)")
 
     # Save the current instance.
     file = open(path, "w")

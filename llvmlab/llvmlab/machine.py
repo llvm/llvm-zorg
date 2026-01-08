@@ -9,7 +9,7 @@ class Machine(util.simple_repr_mixin):
     def fromdata(data):
         version = data['version']
         if version != 0:
-            raise ValueError, "Unknown version"
+            raise ValueError("Unknown version")
 
         return Machine(data['id'], data['hostname'], data['admin'])
 
