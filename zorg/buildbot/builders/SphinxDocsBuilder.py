@@ -233,7 +233,6 @@ def getLLVMDocsBuildFactory(
             "lld",
             "lldb",
             "flang",
-            "openmp",
             "polly",
         ]
     else:
@@ -331,6 +330,7 @@ def getLLVMRuntimesDocsBuildFactory(
             "libcxxabi",
             "libunwind",
             "libc",
+            "openmp"
         ]
     else:
         # Make a local copy of depends_on_runtimes, as we are going to modify
@@ -367,6 +367,7 @@ def getLLVMRuntimesDocsBuildFactory(
         ("-DSPHINX_WARNINGS_AS_ERRORS=", "OFF"),
         ("-DLLVM_ENABLE_ASSERTIONS=",    "OFF"),
         ("-DCMAKE_BUILD_TYPE=",          "Release"),
+        ("-DLLVM_INCLUDE_TESTS=",        "OFF"),
         ])
 
     # Build docs for each of the runtimes this builder depends on
