@@ -97,8 +97,8 @@ pipeline {
 
                    python llvm-zorg/zorg/jenkins/monorepo_build.py cmake build \
                        --cmake-type=RelWithDebInfo \
-                       --projects="clang;clang-tools-extra;compiler-rt" \
-                       --runtimes="libcxx;libcxxabi" \
+                       --projects="clang;clang-tools-extra" \
+                       --runtimes="libcxx;libcxxabi;compiler-rt" \
                        --cmake-flag='-DLLVM_USE_SANITIZER=Thread' \
                        --cmake-flag='-DLLVM_ENABLE_LTO=Thin' \
                        --cmake-flag='-DLLVM_BUILD_RUNTIME=OFF' \
