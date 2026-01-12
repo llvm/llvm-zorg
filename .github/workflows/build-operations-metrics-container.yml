@@ -25,7 +25,7 @@ jobs:
         with:
           sparse-checkout: premerge/ops-container
       - name: Build Container
-        uses: llvm/llvm-project/.github/actions/build-container@e6206d567b1d2d324d26465547348fd8a59e2f4e
+        uses: llvm/llvm-project/.github/actions/build-container@f091be6d53e447391ca23142cf9d49b2654116d7
         with:
           container-name: operations-metrics
           context: premerge/ops-container
@@ -40,6 +40,6 @@ jobs:
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
-      - uses: llvm/llvm-project/.github/actions/push-container@e6206d567b1d2d324d26465547348fd8a59e2f4e
+      - uses: llvm/llvm-project/.github/actions/push-container@f091be6d53e447391ca23142cf9d49b2654116d7
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
