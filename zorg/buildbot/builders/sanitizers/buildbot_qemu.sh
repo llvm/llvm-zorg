@@ -25,8 +25,7 @@ readonly STAGE2_DIR=llvm_build2_host
 
   cmake \
     ${CMAKE_COMMON_OPTIONS} \
-    -DLLVM_ENABLE_PROJECTS="clang;lld" \
-    -DLLVM_ENABLE_RUNTIMES="compiler-rt" \
+    -DLLVM_ENABLE_PROJECTS="clang;compiler-rt;lld" \
     -DCMAKE_C_COMPILER=${COMPILER_BIN_DIR}/clang \
     -DCMAKE_CXX_COMPILER=${COMPILER_BIN_DIR}/clang++ \
     -DCMAKE_BUILD_WITH_INSTALL_RPATH=ON \
@@ -257,8 +256,7 @@ function configure_hwasan_lam {
       # STAGE1_DIR is build once, so we can use CCACHE.
       cmake \
         ${CMAKE_COMMON_OPTIONS} \
-        -DLLVM_ENABLE_PROJECTS="clang;lld" \
-        -DLLVM_ENABLE_RUNTIMES="compiler-rt" \
+        -DLLVM_ENABLE_PROJECTS="clang;compiler-rt;lld" \
         -DCMAKE_C_COMPILER="${COMPILER_BIN_DIR}/clang" \
         -DCMAKE_CXX_COMPILER="${COMPILER_BIN_DIR}/clang++" \
         -DCMAKE_BUILD_WITH_INSTALL_RPATH=ON \
