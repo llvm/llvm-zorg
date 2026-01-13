@@ -2243,6 +2243,7 @@ all += [
                         "-DLLVM_INSTALL_UTILS=ON",
                         "-DCLANG_DEFAULT_LINKER=lld",
                         "-DLIBOMPTARGET_PLUGINS_TO_BUILD=level_zero",
+                        "-DLIBOMPTARGET_ENABLE_DEBUG=ON",
                     ])},
 
 
