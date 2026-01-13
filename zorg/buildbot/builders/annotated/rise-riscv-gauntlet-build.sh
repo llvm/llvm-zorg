@@ -81,6 +81,8 @@ set +e
 
 # Skip a few tests that have excessive runtimes relative to the others.
 export LIT_FILTER_OUT='(SingleSource/Benchmarks/Polybench/linear-algebra/solvers/(ludcmp|lu)|MicroBenchmarks/LoopVectorization/LoopInterleavingBenchmarks)'
+SYSROOT="$(pwd)/../rvsysroot"
+TARGET="riscv64-linux-gnu"
 for CONF in rva20 rva22 rva23 rva23-zvl1024b rva23-mrvv-vec-bits; do
   RVA23_QEMU_CPU="rv64,zba=true,zbb=true,zbc=false,zbs=true,zfhmin=true,v=true,vext_spec=v1.0,zkt=true,zvfhmin=true,zvbb=true,zvkt=true,zihintntl=true,zicond=true,zimop=true,zcmop=true,zcb=true,zfa=true,zawrs=true,rvv_ta_all_1s=true,rvv_ma_all_1s=true,rvv_vl_half_avl=true"
   case "$CONF" in
@@ -108,13 +110,13 @@ for CONF in rva20 rva22 rva23 rva23-zvl1024b rva23-mrvv-vec-bits; do
       echo "Unrecognised config name"
       exit 1
   esac
-  export QEMU_LD_PREFIX="$(pwd)/../rvsysroot"
+  export QEMU_LD_PREFIX="$SYSROOT"
   export QEMU_CPU=$QEMU_CPU
   cat - <<EOF > $CONF-toolchain.cmake
 set(CMAKE_SYSTEM_NAME Linux)
-set(CMAKE_SYSROOT $(pwd)/../rvsysroot)
-set(CMAKE_C_COMPILER_TARGET riscv64-linux-gnu)
-set(CMAKE_CXX_COMPILER_TARGET riscv64-linux-gnu)
+set(CMAKE_SYSROOT $SYSROOT)
+set(CMAKE_C_COMPILER_TARGET $TARGET)
+set(CMAKE_CXX_COMPILER_TARGET $TARGET)
 set(CMAKE_C_FLAGS_INIT "$CFLAGS -DSMALL_PROBLEM_SIZE")
 set(CMAKE_CXX_FLAGS_INIT "$CFLAGS -DSMALL_PROBLEM_SIZE")
 set(CMAKE_LINKER_TYPE LLD)
