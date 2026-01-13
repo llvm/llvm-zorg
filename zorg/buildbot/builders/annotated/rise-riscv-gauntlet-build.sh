@@ -81,10 +81,10 @@ set +e
 
 # Skip a few tests that have excessive runtimes relative to the others.
 export LIT_FILTER_OUT='(SingleSource/Benchmarks/Polybench/linear-algebra/solvers/(ludcmp|lu)|MicroBenchmarks/LoopVectorization/LoopInterleavingBenchmarks)'
-SYSROOT="$(pwd)/../rvsysroot"
-TARGET="riscv64-linux-gnu"
 for CONF in rva20 rv32gc rva22 rva23 rv32gcv rva23-zvl1024b rva23-mrvv-vec-bits; do
   RVA23_QEMU_CPU="rv64,zba=true,zbb=true,zbc=false,zbs=true,zfhmin=true,v=true,vext_spec=v1.0,zkt=true,zvfhmin=true,zvbb=true,zvkt=true,zihintntl=true,zicond=true,zimop=true,zcmop=true,zcb=true,zfa=true,zawrs=true,rvv_ta_all_1s=true,rvv_ma_all_1s=true,rvv_vl_half_avl=true"
+  SYSROOT="$(pwd)/../rvsysroot"
+  TARGET="riscv64-linux-gnu"
   case "$CONF" in
     rva20)
       CFLAGS="-march=rva20u64"
@@ -116,7 +116,7 @@ for CONF in rva20 rv32gc rva22 rva23 rv32gcv rva23-zvl1024b rva23-mrvv-vec-bits;
       SYSROOT="$(pwd)/../rvsysroot32"
       TARGET="riscv32-linux-gnu"
       CFLAGS="-march=rv32gcv"
-      QEMU_CPU="rv32,zfa=false,zba=false,zbb=false,zbc=false,zbs=false,v=true,vext_spec=v1.0,zkt=true,zvfhmin=true,zvbb=true,zvkt=true,zihintntl=true,zicond=true,zimop=true,zcmop=true,zcb=true,zfa=true,zawrs=true,rvv_ta_all_1s=true,rvv_ma_all_1s=true,rvv_vl_half_avl=true"
+      QEMU_CPU="rv32,zfa=false,zba=false,zbb=false,zbc=false,zbs=false,v=true,vext_spec=v1.0,,rvv_ta_all_1s=true,rvv_ma_all_1s=true,rvv_vl_half_avl=true"
       ;;
     *)
       echo "Unrecognised config name"
