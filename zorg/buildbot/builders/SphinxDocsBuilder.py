@@ -17,7 +17,7 @@ llvm_docs = OrderedDict([
   ("lld",               ("docs-lld-html",         "tools/lld/docs/html/",               "lld")),
   ("lldb",              ("docs-lldb-html",        "tools/lldb/docs/html/",              "lldb")),
   ('flang',             ("docs-flang-html",       "tools/flang/docs/html/",             "flang")),
-  ("openmp",            ("docs-openmp-html",      "projects/openmp/docs/html/",         "openmp")),
+  ("openmp",            ("docs-openmp-html",      "openmp/docs/html/",                  "openmp")),
   ("polly",             ("docs-polly-html",       "tools/polly/docs/html/",             "polly")),
 ])
 
