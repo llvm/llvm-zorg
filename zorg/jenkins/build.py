@@ -599,7 +599,24 @@ def lldb_cmake_builder(target, variant=None):
     delete_module_caches(conf.workspace)
     footer()
 
-    if target == 'all' or target == 'configure' or target == 'build':
+    if variant == "sanitized":
+        # On macOS, we need to use bootstrapped sanitizer runtimes for sanitized libLTO
+        # to be loadable in ld
+        def bootstrap_option(x):
+            if x.startswith("-D"):
+                return "-DBOOTSTRAP_" + x[2:]
+            return x
+
+        cmake_cmd = [bootstrap_option(x) for x in cmake_cmd]
+        cmake_cmd.extend(
+            [
+                "-DCLANG_ENABLE_BOOTSTRAP=ON",
+                "-DLLVM_ENABLE_PROJECTS=clang",
+                "-DLLVM_ENABLE_RUNTIMES=compiler-rt",
+            ]
+        )
+
+    if target == "all" or target == "configure" or target == "build":
         header("Cmake")
         run_cmd(conf.lldbbuilddir(), cmake_cmd)
         footer()
@@ -616,12 +633,13 @@ def lldb_cmake_builder(target, variant=None):
 
     if target == 'all' or target == 'test' or target == 'testlong':
         header("Run Tests")
-        if variant == 'debuginfo':
-            test_command = ['/usr/bin/env', 'TERM=vt100', NINJA,
-                            '-v', 'check-debuginfo']
-        else:
-            test_command = ['/usr/bin/env', 'TERM=vt100', NINJA,
-                            '-v', 'check-lldb']
+        check_target = "check-lldb"
+        if variant == "debuginfo":
+            check_target = "check-debuginfo"
+        elif variant == "sanitized":
+            check_target = "stage2-check-lldb"
+
+        test_command = ["/usr/bin/env", "TERM=vt100", NINJA, "-v", check_target]
         run_cmd(conf.lldbbuilddir(), test_command)
         footer()
 
