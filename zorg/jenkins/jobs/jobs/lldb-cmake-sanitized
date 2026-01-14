@@ -108,7 +108,7 @@ pipeline {
                     python3 llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-sanitized build \
                       --assertions \
                       --projects="clang;lld;lldb"  \
-                      --runtimes="compiler-rt;libcxx;libcxxabi" \
+                      --runtimes="compiler-rt;libcxx;libcxxabi;libunwind" \
                       --cmake-type=Release \
                       --cmake-flag="-DPython3_EXECUTABLE=$(which python)"
                     '''
