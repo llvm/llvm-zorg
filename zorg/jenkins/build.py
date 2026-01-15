@@ -604,9 +604,7 @@ def lldb_cmake_builder(target, variant=None):
                 "-DCLANG_ENABLE_BOOTSTRAP=ON",
                 "-DLLVM_ENABLE_PROJECTS=clang",
                 "-DLLVM_ENABLE_RUNTIMES=compiler-rt",
-                "-DCMAKE_BUILD_TYPE={}".format(cmake_build_type),
-                "-DLLVM_BUILD_EXTERNAL_COMPILER_RT=On",
-                "-DCMAKE_MACOSX_RPATH=On"
+                "-DCMAKE_BUILD_TYPE=Release",
             ]
         )
 
