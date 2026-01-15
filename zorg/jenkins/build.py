@@ -551,7 +551,7 @@ def lldb_cmake_builder(target, variant=None):
                  '-DCMAKE_INSTALL_PREFIX={}'.format(conf.lldbinstalldir()),
                  '-DCMAKE_MAKE_PROGRAM={}'.format(NINJA),
                  '-DLLDB_TEST_USER_ARGS='+';'.join(dotest_args),
-                 '-DLLDB_ENFORCE_STRICT_TEST_REQUIREMENTS=On',
+                 '-DLLDB_ENFORCE_STRICT_TEST_REQUIREMENTS=Off', # Using system clang.
                  '-DLLDB_ENABLE_PYTHON=On',
                  '-DLLDB_ENABLE_LZMA=Off',
                  '-DLIBCXX_HARDENING_MODE=none',
@@ -599,24 +599,7 @@ def lldb_cmake_builder(target, variant=None):
     delete_module_caches(conf.workspace)
     footer()
 
-    if variant == "sanitized":
-        # On macOS, we need to use bootstrapped sanitizer runtimes for sanitized libLTO
-        # to be loadable in ld
-        def bootstrap_option(x):
-            if x.startswith("-D"):
-                return "-DBOOTSTRAP_" + x[2:]
-            return x
-
-        cmake_cmd = [bootstrap_option(x) for x in cmake_cmd]
-        cmake_cmd.extend(
-            [
-                "-DCLANG_ENABLE_BOOTSTRAP=ON",
-                "-DLLVM_ENABLE_PROJECTS=clang",
-                "-DLLVM_ENABLE_RUNTIMES=compiler-rt",
-            ]
-        )
-
-    if target == "all" or target == "configure" or target == "build":
+    if target == 'all' or target == 'configure' or target == 'build':
         header("Cmake")
         run_cmd(conf.lldbbuilddir(), cmake_cmd)
         footer()
@@ -633,13 +616,12 @@ def lldb_cmake_builder(target, variant=None):
 
     if target == 'all' or target == 'test' or target == 'testlong':
         header("Run Tests")
-        check_target = "check-lldb"
-        if variant == "debuginfo":
-            check_target = "check-debuginfo"
-        elif variant == "sanitized":
-            check_target = "stage2-check-lldb"
-
-        test_command = ["/usr/bin/env", "TERM=vt100", NINJA, "-v", check_target]
+        if variant == 'debuginfo':
+            test_command = ['/usr/bin/env', 'TERM=vt100', NINJA,
+                            '-v', 'check-debuginfo']
+        else:
+            test_command = ['/usr/bin/env', 'TERM=vt100', NINJA,
+                            '-v', 'check-lldb']
         run_cmd(conf.lldbbuilddir(), test_command)
         footer()
 
