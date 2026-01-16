@@ -602,6 +602,7 @@ def lldb_cmake_builder(target, variant=None):
             [
                 "-DCMAKE_MAKE_PROGRAM={}".format(NINJA),
                 "-DCLANG_ENABLE_BOOTSTRAP=ON",
+                "-DCLANG_BOOTSTRAP_TARGETS=check-lldb",
                 "-DLLVM_ENABLE_PROJECTS=clang",
                 "-DLLVM_ENABLE_RUNTIMES=compiler-rt",
                 "-DCMAKE_BUILD_TYPE=Release",
