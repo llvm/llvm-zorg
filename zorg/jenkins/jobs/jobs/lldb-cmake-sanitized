@@ -114,7 +114,7 @@ pipeline {
                     '''
                     script {
                         def LLDB = new org.swift.LLDB()
-                        LLDB.LLDB_prepare()
+                        LLDB.LLDB_prepare("lldb-build/tools/clang/stage2-bins/bin/debugserver")
                     }
                 }
             }
