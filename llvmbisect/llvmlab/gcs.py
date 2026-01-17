@@ -73,7 +73,7 @@ CHUNK_SIZE = 5124288
 
 def get_compiler(url, filename):
     """Get the compiler at the url, and save to filename."""
-    r = HTTP_CLIENT.get(url)
+    r = HTTP_CLIENT.get(url, timeout=300)  # 5 minutes for large downloads
     r.raise_for_status()
     with open(filename, 'wb') as fd:
         for chunk in r.iter_content(CHUNK_SIZE):
