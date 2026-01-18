@@ -103,7 +103,7 @@ pipeline {
                            --projects="clang;clang-tools-extra" \
                            --cmake-flag='-DLLVM_USE_SANITIZER=Address;Undefined' \
                            --cmake-flag="-DLIBCXX_INCLUDE_TESTS=OFF" \
-                           --timeout=2400 \
+                           --timeout=1800 \
                            --cmake-flag="-DPython3_EXECUTABLE=$(which python)"
                    '''
                 }
