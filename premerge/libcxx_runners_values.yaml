@@ -22,6 +22,7 @@ template:
     containers:
     - name: runner
       image: ${ runner_image }
+      command: ["${ command }"]
       resources:
         # If we don't set the CPU request high-enough here, 2 runners might
         # be scheduled on the same pod, meaning 2 jobs, and they will starve
