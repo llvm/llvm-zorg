@@ -5,7 +5,7 @@ def call(Map config = [:]) {
 
     withEnv(["PATH+EXTRA=/usr/bin:/usr/local/bin"]) {
         withCredentials([string(credentialsId: 's3_resource_bucket', variable: 'S3_BUCKET')]) {
-            def stage1JobName = params.IS_BISECT_JOB ? "Green-Dragon-Testing/bisect/${config.stage1Job}" : "Green-Dragon-Testing/${config.stage1Job}"
+            def stage1JobName = params.IS_BISECT_JOB ? "llvm.org/bisect/${config.stage1Job}" : "llvm.org/${config.stage1Job}"
             def jobName = env.BRANCH_NAME ? "${stage1JobName}/${env.BRANCH_NAME}" : stage1JobName
 
             // Determine if we should use a specific artifact parameter
