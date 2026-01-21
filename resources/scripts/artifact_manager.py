@@ -73,20 +73,16 @@ class ArtifactManager:
         """Construct mainline and bisection artifact names. In the case of
         a bisection job the artifact can come from either the mainline stage 1 job or the
         bisection version of the stage 1 job, so we return two artifact names to check."""
-        base_name = f"clang-d{git_distance}-g{git_sha}.tar.gz"
+        tar_name = f"clang-d{git_distance}-g{git_sha}.tar.gz"
 
-        # Define the bisection jobs suffix. All bisection jobs end in -bisect
-        bisection_job_suffix = '-bisect'
-
-        # Remove bisection suffix from job name for primary artifact
-        if job_name.endswith(bisection_job_suffix):
-            mainline_job_name = job_name[:-len(bisection_job_suffix)]
-            bisection_artifact = f"{job_name}/{base_name}"
-            mainline_artifact = f"{mainline_job_name}/{base_name}"
+        if "/bisect/" in job_name:
+            mainline_job_name = job_name.replace("/bisect/", "/")
+            bisection_artifact = f"{job_name}/{tar_name}"
+            mainline_artifact = f"{mainline_job_name}/{tar_name}"
             return mainline_artifact, bisection_artifact
         else:
             # Not a bisection job, so just return the mainline artifact name
-            return f"{job_name}/{base_name}", None
+            return f"{job_name}/{tar_name}", None
 
     def fetch_artifact(self, artifact_name):
         """Attempt to fetch a specific artifact."""
