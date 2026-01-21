@@ -18,18 +18,12 @@ class BisectionManager:
         self.restart_log = self.workspace_dir / "restart_instructions.log"
 
     def _print(self, message: str) -> None:
-        """Print non-JSON output to stderr so it appears in CI logs. We use separate streams for
-        the JSON and non JSON output."""
+        """Print non-JSON output to stderr so it appears in CI logs"""
         print(message, file=sys.stderr)
 
-    def initialize_bisection(
-            self,
-            good_commit: str,
-            bad_commit: str,
-            test_job: Optional[str] = None,
-            session_id: Optional[str] = None,
-            verbose: bool = True
-    ) -> Dict[str, Any]:
+    def initialize_bisection(self, good_commit: str, bad_commit: str,
+                             test_job: Optional[str] = None, session_id: Optional[str] = None,
+                             verbose: bool = True) -> Dict[str, Any]:
         """Initialize a new bisection session"""
 
         # Get commit range
@@ -57,8 +51,7 @@ class BisectionManager:
             "next_action": None
         }
 
-        # Add continuation info if session_id was provided. This can happen
-        # if a bisection was restarted.
+        # Add continuation info if session_id was provided
         if session_id:
             state['continued_at'] = datetime.now().isoformat()
 
@@ -66,7 +59,6 @@ class BisectionManager:
         self._update_next_action(state)
         self._save_state(state)
 
-        # Dump some output to the console log for those viewing the CI job
         if verbose:
             session_type = "CONTINUED" if session_id else "STARTED"
             self._print(f"Initializing bisection...")
@@ -104,10 +96,9 @@ class BisectionManager:
             raise ValueError(f"Unknown next action type: {state['next_action']['type']}")
 
     def log_step_start(self, step_number: int) -> Dict[str, Any]:
-        """Log the start of a bisection step to the CI console and return step info"""
+        """Log the start of a bisection step and return step info"""
         step_info = self.get_next_step_info()
 
-        # Log info to CI console
         self._print(f"\n{'=' * 60}")
         self._print(f"🔍 BISECTION STEP {step_number}")
         self._print(f"{'=' * 60}")
@@ -126,7 +117,6 @@ Completed at: {datetime.now().isoformat()}
             self._append_to_log(self.bisection_log, log_entry)
             return step_info
 
-        # Not complete with the bisection, log some info to the CI console
         commit = step_info['commit']
         commit_info = step_info['commit_info']
         progress = step_info['progress']
@@ -138,7 +128,7 @@ Completed at: {datetime.now().isoformat()}
         self._print(f"Progress: {progress['completed_steps']}/{progress['total_steps']} ({progress['percentage']}%)")
         self._print(f"Remaining: {progress['remaining_commits']} commits, ~{progress['remaining_steps']} steps")
 
-        # Log this step to the actual log info
+        # Log this step
         log_entry = f"""
 STEP {step_number}: Testing commit {commit}
 Author: {commit_info['author']}
@@ -150,15 +140,9 @@ Range: {step_info['bisection_range']['current_good']}..{step_info['bisection_ran
 """
         self._append_to_log(self.bisection_log, log_entry)
 
-        # Step info is a dict which can be parsed into Json by CI jobs
         return step_info
 
-    def show_restart_instructions(
-            self,
-            step_number: int,
-            test_job: str,
-            platform: str = "jenkins"
-    ) -> None:
+    def show_restart_instructions(self, step_number: int, test_job: str, platform: str = "jenkins") -> None:
         """Display and log restart instructions"""
         step_info = self.get_next_step_info()
 
@@ -171,7 +155,6 @@ Range: {step_info['bisection_range']['current_good']}..{step_info['bisection_ran
         commit = step_info['commit']
         commit_info = step_info['commit_info']
 
-        # Log some instructions to the CI console in case things fall over
         self._print("\n🔄 RESTART INSTRUCTIONS:")
         self._print("┌─────────────────────────────────────────────────────────────────────────────┐")
         self._print("│ 🔄 TO RESTART FROM THIS STEP IF JOB FAILS:                                  │")
@@ -196,32 +179,18 @@ Range: {step_info['bisection_range']['current_good']}..{step_info['bisection_ran
         self._print("└─────────────────────────────────────────────────────────────────────────────┘")
 
         # Log restart instructions
-        self._log_restart_instructions(
-            step_number,
-            current_good,
-            current_bad,
-            session_id,
-            commit,
-            commit_info,
-            test_job,
-            platform
-        )
+        self._log_restart_instructions(step_number, current_good, current_bad,
+                                       session_id, commit, commit_info, test_job, platform)
 
-    def log_job_execution(
-            self, job_name: str,
-            result: str,
-            duration: float,
-            job_url: Optional[str] = None,
-            build_number: Optional[str] = None
-    ) -> None:
-        """Log job execution results. This simply prints a CI job result to the screen for useful debugging."""
+    def log_job_execution(self, job_name: str, result: str, duration: float,
+                          job_url: Optional[str] = None, build_number: Optional[str] = None) -> None:
+        """Log job execution results"""
 
         self._print(f"📊 Job result: {result}")
         self._print(f"⏱️  Duration: {duration:.1f}s")
         if job_url:
             self._print(f"🔗 Job URL: {job_url}")
 
-        # Now save the info to the actual log file
         log_entry = f"   Job: {job_name}"
         if build_number:
             log_entry += f" #{build_number}"
@@ -233,7 +202,7 @@ Range: {step_info['bisection_range']['current_good']}..{step_info['bisection_ran
         self._append_to_log(self.bisection_log, log_entry)
 
     def record_test_result(self, commit: str, result: str) -> Dict[str, Any]:
-        """Record the result of testing a commit to the state file and update bisection state"""
+        """Record the result of testing a commit and update bisection state"""
 
         state = self._load_state()
 
@@ -264,17 +233,17 @@ Range: {step_info['bisection_range']['current_good']}..{step_info['bisection_ran
             state["current_bad"] = commit
             self._print(f"❌ Commit {commit} is BAD - failure is in earlier commits")
 
-        # Determine what to test next, update the state file
+        # Update what to test next
         self._update_next_action(state)
         self._save_state(state)
 
         return state
 
     def generate_final_report(self) -> Dict[str, Any]:
-        """Generate comprehensive final report once a bisection has been completed"""
+        """Generate comprehensive final report"""
 
         self._print(f"\n{'=' * 60}")
-        self._print("📋 FINAL REPORT")
+        self._print("GENERATING FINAL REPORT")
         self._print(f"{'=' * 60}")
 
         step_info = self.get_next_step_info()
@@ -324,14 +293,13 @@ TEST RESULTS SUMMARY:
 
         report += "\n=== END REPORT ===\n"
 
-        # Save report to a file with just the final report for easy viewing
+        # Save report
         with open(self.workspace_dir / "bisection_final_report.txt", 'w') as f:
             f.write(report.strip())
 
-        # Also append to the verbose bisection log
+        # Also append to the log
         self._append_to_log(self.bisection_log, report)
 
-        # Display to CI console
         self._print(report.strip())
 
         return {
@@ -340,6 +308,29 @@ TEST RESULTS SUMMARY:
             'report': report.strip(),
             'state': state
         }
+
+    def display_summary(self) -> None:
+        """Display final bisection summary"""
+
+        self._print(f"\n{'=' * 60}")
+        self._print("BISECTION SUMMARY")
+        self._print(f"{'=' * 60}")
+
+        try:
+            step_info = self.get_next_step_info()
+            state = step_info['state']
+
+            self._print(f"Status: {state['status']}")
+            self._print(f"Steps completed: {state['completed_steps']}")
+
+            if step_info['type'] == 'complete':
+                self._print("✅ SUCCESS: First bad commit identified")
+                self._print(f"Failing commit: {step_info['failing_commit']}")
+            else:
+                self._print("❌ Bisection incomplete")
+
+        except Exception as e:
+            self._print(f"Could not load bisection state: {e}")
 
     def get_current_state(self) -> Dict[str, Any]:
         """Get the current bisection state"""
@@ -395,7 +386,7 @@ TEST RESULTS SUMMARY:
                 commits_to_test.append(commit)
 
         if len(commits_to_test) == 0:
-            # Bisection is complete. Update state and return early
+            # Bisection is complete
             state["status"] = "complete"
             state["next_action"] = {
                 "type": "complete",
@@ -433,7 +424,7 @@ TEST RESULTS SUMMARY:
         }
 
     def _initialize_logs(self, state: Dict[str, Any], test_job: Optional[str], session_type: str) -> None:
-        """Initialize log files with the initial state"""
+        """Initialize log files"""
         log_header = f"""
 === BISECTION {session_type} ===
 Session ID: {state['session_id']}
@@ -478,8 +469,7 @@ RESTART PARAMETERS:
         self._append_to_log(self.restart_log, log_entry)
 
     def _save_state(self, state: Dict[str, Any]) -> None:
-        """Save bisection state to file. Used because multiple python processes will load the state file throughout
-        a bisection run."""
+        """Save bisection state to file"""
         with open(self.state_file, 'w') as f:
             json.dump(state, f, indent=2)
 
@@ -544,6 +534,9 @@ def main():
     report_parser = subparsers.add_parser('final-report', help='Generate final report')
     add_common_args(report_parser)
 
+    summary_parser = subparsers.add_parser('summary', help='Display summary')
+    add_common_args(summary_parser)
+
     args = parser.parse_args()
 
     if not args.command:
@@ -557,17 +550,14 @@ def main():
             state = manager.initialize_bisection(
                 args.good_commit, args.bad_commit, args.test_job, args.session_id
             )
-            # Print json to stdout so groovy libraries can parse stdout into objects
             print(json.dumps(state, indent=2))
 
         elif args.command == 'record':
             state = manager.record_test_result(args.commit, args.result)
-            # Print json to stdout so groovy libraries can parse stdout into objects
             print(json.dumps(state, indent=2))
 
         elif args.command == 'log-step':
             step_info = manager.log_step_start(args.step_number)
-            # Print json to stdout so groovy libraries can parse stdout into objects
             print(json.dumps(step_info, indent=2))
 
         elif args.command == 'show-restart':
@@ -581,8 +571,10 @@ def main():
 
         elif args.command == 'final-report':
             result = manager.generate_final_report()
-            # Print json to stdout so groovy libraries can parse stdout into objects
             print(json.dumps(result, indent=2))
+
+        elif args.command == 'summary':
+            manager.display_summary()
 
     except Exception as e:
         print(f"Error: {e}", file=sys.stderr)
