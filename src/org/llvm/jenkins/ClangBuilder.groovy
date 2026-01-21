@@ -7,7 +7,7 @@ class ClangBuilder implements Serializable {
         this.script = script
     }
 
-    def checkoutStage() {
+    def checkoutStage(zorgBranch) {
         script.dir('llvm-project') {
             if (script.params.IS_BISECT_JOB) {
                 // Bisection pipeline - use specific git SHA
@@ -18,14 +18,23 @@ class ClangBuilder implements Serializable {
                     userRemoteConfigs: [[url: 'https://github.com/llvm/llvm-project.git']]
                 ])
             } else {
-                // Multibranch pipeline - use the SCM configuration from the job
-                script.checkout(script.scm)
+                if (script.params.GIT_SHA) {
+                    script.checkout([
+                        $class: 'GitSCM',
+                        branches: [[name: script.params.GIT_SHA]],
+                        extensions: [[$class: 'CloneOption', timeout: 30]],
+                        userRemoteConfigs: [[url: 'https://github.com/llvm/llvm-project.git']]
+                    ])
+                } else {
+                    // Multibranch pipeline - use the SCM configuration from the job which includes timeout
+                    script.checkout(script.scm)
+                }
             }
         }
         script.dir('llvm-zorg') {
             script.checkout([
                 $class: 'GitSCM',
-                branches: [[name: 'main']],
+                branches: [[name: zorgBranch]],
                 userRemoteConfigs: [[url: 'https://github.com/llvm/llvm-zorg.git']]
             ])
         }
@@ -46,16 +55,7 @@ class ClangBuilder implements Serializable {
     }
 
     def buildStage(config = [:]) {
-        def thinlto = config.thinlto ?: false
-        def cmakeType = config.cmake_type ?: "RelWithDebInfo"
-        def projects = config.projects ?: "clang;clang-tools-extra;compiler-rt"
-        def runtimes = config.runtimes ?: ""
-        def sanitizer = config.sanitizer ?: ""
-        def assertions = config.assertions ?: false
         def timeout = config.timeout ?: 120
-        def buildTarget = config.build_target ?: ""
-        def noinstall = config.noinstall ?: false
-        def extraCmakeFlags = config.cmake_flags ?: []
         def stage1Mode = config.stage == 1
         def incremental = config.incremental
         def extraEnvVars = config.env_vars ?: [:]
@@ -66,10 +66,27 @@ class ClangBuilder implements Serializable {
             "MACOSX_DEPLOYMENT_TARGET": stage1Mode ? "13.6" : null
         ]
 
+        def shellEnvVars = [:]
+        extraEnvVars.each { key, value ->
+            def strValue = value.toString()
+            if (strValue.contains('$')) {
+                // This needs to be expanded by the shell
+                shellEnvVars[key] = strValue.replace('\\$', '$')
+            } else {
+                envVars[key] = value
+            }
+        }
+
         // Add custom environment variables
         extraEnvVars.each { key, value ->
             envVars[key] = value
         }
+
+        def shellExports = []
+        shellEnvVars.each { k, v ->
+           shellExports.add("export ${k}=${v}")
+        }
+        def shellExportsStr = shellExports.join('\n')
 
         // Filter out null values
         envVars = envVars.findAll { k, v -> v != null }
@@ -82,6 +99,7 @@ class ClangBuilder implements Serializable {
 
                     script.sh """
                         set -u
+                        ${shellExportsStr}
                         ${stage1Mode ? 'rm -rf build.properties' : ''}
                         source ./venv/bin/activate
                         cd llvm-project
@@ -95,7 +113,7 @@ class ClangBuilder implements Serializable {
                         ${stage1Mode ? 'echo "GIT_DISTANCE=\$GIT_DISTANCE" > build.properties' : ''}
                         ${stage1Mode ? 'echo "GIT_SHA=\$GIT_SHA" >> build.properties' : ''}
                         echo "ARTIFACT=\$JOB_NAME/clang-d\$GIT_DISTANCE-g\$GIT_SHA.tar.gz" >> build.properties
-                        ${incremental ? 'rm -rf clang-build clang-install *.tar.gz' : ''}
+                        ${incremental ? '' : 'rm -rf clang-build clang-install *.tar.gz'}
                         ${buildCmd}
                     """
                 }
@@ -104,19 +122,20 @@ class ClangBuilder implements Serializable {
     }
 
     def buildMonorepoBuildCommand(config) {
-        def build_type = config.build_type ?: "cmake"
+        def buildType = config.build_type ?: "cmake"
         def projects = config.projects ?: ""
         def runtimes = config.runtimes ?: ""
         def cmakeType = config.cmake_type ?: "RelWithDebInfo"
         def assertions = config.assertions ?: false
         def testTimeout = config.test_timeout ?: ""
-        def build_target = config.build_target ?: "build"
+        def buildTarget = config.build_target ?:  "build"
+        def cmakeBuildTarget = config.cmake_build_target ?:  ""
         def noinstall = config.noinstall ?: false
         def thinlto = config.thinlto ?: false
         def sanitizer = config.sanitizer ?: ""
         def extraCmakeFlags = config.cmake_flags ?: []
 
-        def cmd = "python llvm-zorg/zorg/jenkins/monorepo_build.py ${build_type} ${build_target}"
+        def cmd = "python llvm-zorg/zorg/jenkins/monorepo_build.py ${buildType} ${buildTarget}"
 
         if (cmakeType != "default") {
             cmd += " --cmake-type=${cmakeType}"
@@ -138,8 +157,8 @@ class ClangBuilder implements Serializable {
             cmd += " --timeout=${testTimeout}"
         }
 
-        if (buildTarget) {
-            cmd += " --cmake-build-target=${buildTarget}"
+        if (cmakeBuildTarget) {
+            cmd += " --cmake-build-target=${cmakeBuildTarget}"
         }
 
         if (noinstall) {
@@ -150,7 +169,7 @@ class ClangBuilder implements Serializable {
         cmakeFlags.add("-DPython3_EXECUTABLE=\$(which python)")
 
         if (thinlto) {
-            if (build_type == "cmake") {
+            if (buildType == "cmake") {
                 cmakeFlags.add("-DLLVM_ENABLE_LTO=Thin")
             } else {
                 cmd += " --thinlto"
@@ -187,6 +206,23 @@ class ClangBuilder implements Serializable {
             envVars[key] = value
         }
 
+        def shellEnvVars = [:]
+        extraEnvVars.each { key, value ->
+            def strValue = value.toString()
+            if (strValue.contains('$')) {
+                // This needs to be expanded by shell
+                shellEnvVars[key] = strValue.replace('\\$', '$')
+            } else {
+                envVars[key] = value
+            }
+        }
+
+        def shellExports = []
+        shellEnvVars.each { k, v ->
+           shellExports.add("export ${k}=${v}")
+        }
+        def shellExportsStr = shellExports.join('\n')
+
         def envList = envVars.collect { k, v -> "${k}=${v}" }
 
         script.withEnv(envList) {
@@ -196,6 +232,7 @@ class ClangBuilder implements Serializable {
                     script.sh """
                         set -u
                         source ./venv/bin/activate
+                        ${shellExportsStr}
                         ${customScript}
                     """
                 } else {
@@ -210,6 +247,7 @@ class ClangBuilder implements Serializable {
                         set -u
                         source ./venv/bin/activate
                         rm -rf clang-build/testresults.xunit.xml
+                        ${shellExportsStr}
                         ${cmd}
                     """
                 }
@@ -217,7 +255,8 @@ class ClangBuilder implements Serializable {
         }
     }
 
-    def cleanupStage(incremental) {
+    def cleanupStage(config) {
+        def incremental = config.incremental
         if (!incremental) {
             script.sh "rm -rf clang-build clang-install"
         }
