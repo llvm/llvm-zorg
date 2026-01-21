@@ -13,14 +13,14 @@ reload(UnifiedTreeBuilder)
 reload(CmakeCommand)
 
 llvm_docs = OrderedDict([
-  # Project             Build target     Local path                                    Remote path
-  ("llvm",              ("doxygen",      "docs/doxygen/html/",                         "llvm")),
-  ("clang",             (None,           "tools/clang/docs/doxygen/html/",             "cfe")),
-  ("clang-tools-extra", (None,           "tools/clang/tools/extra/docs/doxygen/html/", "cfe-extra")),
-  ("flang",             (None,           "tools/flang/docs/doxygen/html/",             "flang")),
-  ("polly",             (None,           "tools/polly/docs/doxygen/html/",             "polly")),
-  ("openmp",            (None,           "projects/openmp/docs/doxygen/html/",         "openmp")),
-  ("lldb",              ("lldb-cpp-doc", "tools/lldb/docs/cpp_reference/",             "lldb/cpp_reference")),
+  # Project             Build target       Local path                                    Remote path
+  ("llvm",              ("doxygen",        "docs/doxygen/html/",                         "llvm")),
+  ("clang",             (None,             "tools/clang/docs/doxygen/html/",             "cfe")),
+  ("clang-tools-extra", (None,             "tools/clang/tools/extra/docs/doxygen/html/", "cfe-extra")),
+  ("flang",             (None,             "tools/flang/docs/doxygen/html/",             "flang")),
+  ("polly",             (None,             "tools/polly/docs/doxygen/html/",             "polly")),
+  ("openmp",            ("doxygen-openmp", "openmp/docs/doxygen/html/",                  "openmp")),
+  ("lldb",              ("lldb-cpp-doc",   "tools/lldb/docs/cpp_reference/",             "lldb/cpp_reference")),
   # NOTE: 5/9/2020 lldb-python-doc fails to build. Disabled till be fixed.
   #(None,   ("lldb-python-doc",         "tools/lldb/docs/python_reference/",  "lldb")),
 ])
@@ -79,6 +79,10 @@ def getLLVMDocsBuildFactory(
 
     # Build the documentation for all the projects.
     for project in llvm_docs:
+        # Skip non-enabled projects
+        if not project in _depends_on_projects:
+            continue
+
         target = llvm_docs[project][0]
 
         # Build only those with specifies targets.
@@ -96,6 +100,10 @@ def getLLVMDocsBuildFactory(
 
     # Publish just built documentation
     for project in llvm_docs:
+        # Skip non-enabled projects
+        if not project in _depends_on_projects:
+            continue
+
         target, local_path, remote_path = llvm_docs[project]
 
         f.addStep(
@@ -160,21 +168,32 @@ def getLLVMRuntimesDocsBuildFactory(
         ("-DCMAKE_BUILD_TYPE=",               "Release"),
         ])
 
+    # Build docs for each of the runtimes this builder depends on
+    docs = [
+        llvm_docs[project] for project in llvm_docs.keys()
+        if project in _depends_on_runtimes
+    ]
+
     cleanBuildRequested = lambda step: step.build.getProperty("clean") or step.build.getProperty("clean_obj") or clean
 
-    f = UnifiedTreeBuilder.getCmakeBuildFactory(
-            clean=clean,
+    f = UnifiedTreeBuilder.getLLVMBuildFactoryAndSourcecodeSteps(
             depends_on_projects=_depends_on_runtimes,
             enable_runtimes=_depends_on_runtimes,
-            extra_configure_args=cmake_args,
-            env=merged_env,
+            src_to_build_dir='runtimes',
             cleanBuildRequested=cleanBuildRequested,
             **kwargs) # Pass through all the extra arguments.
 
-    # Build the documentation for all the runtimes.
-    for project in llvm_docs:
-        target = llvm_docs[project][0]
+    UnifiedTreeBuilder.addCmakeSteps(
+        f,
+        cleanBuildRequested=cleanBuildRequested,
+        obj_dir=f.obj_dir,
+        install_dir=f.install_dir,
+        extra_configure_args=cmake_args,
+        env=merged_env,
+        **kwargs)
 
+    # Build the documentation for all the runtimes.
+    for target, local_path, remote_path in docs:
         # Build only those with specifies targets.
         if target:
             UnifiedTreeBuilder.addNinjaSteps(
@@ -189,15 +208,13 @@ def getLLVMRuntimesDocsBuildFactory(
                 **kwargs)
 
     # Publish just built documentation
-    for project in llvm_docs:
-        target, local_path, remote_path = llvm_docs[project]
-
+    for target, local_path, remote_path in docs:
         f.addStep(
             ShellCommand(
-                name="Publish {}".format(project or target),
+                name="Publish {}".format(target),
                 description=[
                     "Publish", "just", "built", "documentation", "for",
-                    "{}".format(project or target)
+                    "{}".format(target)
                     ],
                 command=[
                     'rsync',
