@@ -2691,6 +2691,16 @@ all += [
                     # We have to have a long timeout here.
                     timeout=172800)},
 
+    {'name' : "publish-runtimes-doxygen-docs",
+    'tags'  : ["doc"],
+    'workernames' : ["as-worker-4"],
+    'builddir': "publish-runtimes-doxygen-docs",
+    'factory' : DoxygenDocsBuilder.getLLVMRuntimesDocsBuildFactory(
+                    # Doxygen builds the final result for really
+                    # long time without any output.
+                    # We have to have a long timeout here.
+                    timeout=172800)},
+
 # CUDA builders.
 
     {'name' : "clang-cuda-l4",

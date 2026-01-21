@@ -120,3 +120,97 @@ def getLLVMDocsBuildFactory(
         )
 
     return f
+
+def getLLVMRuntimesDocsBuildFactory(
+        clean = True,
+        depends_on_runtimes = None,
+        extra_configure_args = None,
+        timeout=10800,
+        env = None,
+        **kwargs):
+
+    if depends_on_runtimes is None:
+        # All the projects by default.
+        _depends_on_runtimes=[
+            "openmp"
+        ]
+    else:
+        # Make a local copy of depends_on_runtimes, dependencies may require
+        # adding additional runtimes.
+        _depends_on_runtimes=depends_on_runtimes[:]
+
+    # Make a local copy of the configure args, as we are going to modify that.
+    if extra_configure_args:
+        cmake_args = extra_configure_args[:]
+    else:
+        cmake_args = list()
+
+    # Prepare environmental variables. Set here all env we want everywhere.
+    merged_env = {
+        'TERM' : 'dumb' # Be cautious and disable color output from all tools.
+    }
+    if env is not None:
+        # Overwrite pre-set items with the given ones, so user can set anything.
+        merged_env.update(env)
+
+    CmakeCommand.CmakeCommand.applyDefaultOptions(cmake_args, [
+        ("-G",                                "Ninja"),
+        ("-DLLVM_ENABLE_DOXYGEN=",            "ON"),
+        ("-DLLVM_BUILD_DOCS=",                "ON"),
+        ("-DCMAKE_BUILD_TYPE=",               "Release"),
+        ])
+
+    cleanBuildRequested = lambda step: step.build.getProperty("clean") or step.build.getProperty("clean_obj") or clean
+
+    f = UnifiedTreeBuilder.getCmakeBuildFactory(
+            clean=clean,
+            depends_on_projects=_depends_on_runtimes,
+            enable_runtimes=_depends_on_runtimes,
+            extra_configure_args=cmake_args,
+            env=merged_env,
+            cleanBuildRequested=cleanBuildRequested,
+            **kwargs) # Pass through all the extra arguments.
+
+    # Build the documentation for all the runtimes.
+    for project in llvm_docs:
+        target = llvm_docs[project][0]
+
+        # Build only those with specifies targets.
+        if target:
+            UnifiedTreeBuilder.addNinjaSteps(
+                f,
+                # Doxygen builds the final result for really
+                # long time without any output.
+                # We have to have a long timeout at this step.
+                timeout=timeout,
+                targets=[target],
+                checks=[],
+                env=merged_env,
+                **kwargs)
+
+    # Publish just built documentation
+    for project in llvm_docs:
+        target, local_path, remote_path = llvm_docs[project]
+
+        f.addStep(
+            ShellCommand(
+                name="Publish {}".format(project or target),
+                description=[
+                    "Publish", "just", "built", "documentation", "for",
+                    "{}".format(project or target)
+                    ],
+                command=[
+                    'rsync',
+                    '-vrl',
+                    '--delete', '--force', '--delay-updates', '--delete-delay',
+                    '--ignore-times',
+                    '--checksum',
+                    '-p', '--chmod=Du=rwx,Dg=rwx,Do=rx,Fu=rw,Fg=rw,Fo=r',
+                    "{}".format(local_path),
+                    "lists.llvm.org:web/doxygen/{}".format(remote_path),
+                    ],
+                env=merged_env,
+            )
+        )
+
+    return f
