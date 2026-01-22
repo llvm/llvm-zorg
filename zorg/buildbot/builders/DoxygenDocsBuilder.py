@@ -34,9 +34,15 @@ def getLLVMDocsBuildFactory(
         **kwargs):
 
     if depends_on_projects is None:
-        # All the projects from llvm_docs, and remove all duplicates.
-        _depends_on_projects=list(set(
-            [project for project in llvm_docs if project]))
+        # All the projects by default.
+        _depends_on_projects=[
+            "llvm",
+            "clang",
+            "clang-tools-extra",
+            "lldb",
+            "flang",
+            "polly",
+        ]
     else:
         # Make a local copy of depends_on_projects, as we are going to modify
         # that.
@@ -69,6 +75,12 @@ def getLLVMDocsBuildFactory(
         ("-DCMAKE_BUILD_TYPE=",               "Release"),
         ])
 
+    # Build only docs for each of the projects this builder depends on
+    docs = {
+        project: info for project,info in llvm_docs.items()
+        if project in _depends_on_projects
+    }
+
     f = UnifiedTreeBuilder.getCmakeBuildFactory(
             clean=clean,
             depends_on_projects=_depends_on_projects,
@@ -78,11 +90,7 @@ def getLLVMDocsBuildFactory(
             **kwargs) # Pass through all the extra arguments.
 
     # Build the documentation for all the projects.
-    for project in llvm_docs:
-        # Skip non-enabled projects
-        if not project in _depends_on_projects:
-            continue
-
+    for project in docs:
         target = llvm_docs[project][0]
 
         # Build only those with specifies targets.
@@ -99,11 +107,7 @@ def getLLVMDocsBuildFactory(
                 **kwargs)
 
     # Publish just built documentation
-    for project in llvm_docs:
-        # Skip non-enabled projects
-        if not project in _depends_on_projects:
-            continue
-
+    for project in docs:
         target, local_path, remote_path = llvm_docs[project]
 
         f.addStep(
@@ -169,10 +173,10 @@ def getLLVMRuntimesDocsBuildFactory(
         ])
 
     # Build docs for each of the runtimes this builder depends on
-    docs = [
-        llvm_docs[project] for project in llvm_docs.keys()
+    docs = {
+        project: info for project,info in llvm_docs.items()
         if project in _depends_on_runtimes
-    ]
+    }
 
     cleanBuildRequested = lambda step: step.build.getProperty("clean") or step.build.getProperty("clean_obj") or clean
 
@@ -193,7 +197,7 @@ def getLLVMRuntimesDocsBuildFactory(
         **kwargs)
 
     # Build the documentation for all the runtimes.
-    for target, local_path, remote_path in docs:
+    for target, local_path, remote_path in docs.values():
         # Build only those with specifies targets.
         if target:
             UnifiedTreeBuilder.addNinjaSteps(
@@ -208,13 +212,13 @@ def getLLVMRuntimesDocsBuildFactory(
                 **kwargs)
 
     # Publish just built documentation
-    for target, local_path, remote_path in docs:
+    for project, (target, local_path, remote_path) in docs.items():
         f.addStep(
             ShellCommand(
-                name="Publish {}".format(target),
+                name="Publish {}".format(project or target),
                 description=[
                     "Publish", "just", "built", "documentation", "for",
-                    "{}".format(target)
+                    "{}".format(project or target)
                     ],
                 command=[
                     'rsync',
