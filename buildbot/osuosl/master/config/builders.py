@@ -2169,6 +2169,18 @@ all += [
                         add_lit_checks=["check-clang", "check-flang", "check-flang-rt", "check-llvm", "check-lld", "check-mlir", "check-offload"],
                         add_openmp_lit_args=["--time-tests", "--timeout 100", "--xfail=affinity/format/proc_bind.c"],
                     )},
+
+    {'name' : "amdgpu-offload-build-only",
+    'tags'  : ["amdgpu", "offload", "openmp"],
+    'workernames' : ["m-07-w-01"],
+    'builddir': "amdgpu-offload-build-only",
+    'collapseRequests' : False,
+    'factory' : AnnotatedBuilder.getAnnotatedBuildFactory(
+                    depends_on_projects=["llvm", "clang", "flang", "flang-rt", "mlir", "lld", "compiler-rt", "libcxx", "libcxxabi", "offload", "openmp", "libunwind"],
+                    script="amdgpu-offload-cmake.py",
+                    checkout_llvm_sources=True,
+                    script_interpreter=None
+                )},
 # SYCL GPU builders.
 
     {'name' : "intel-sycl-gpu",
