@@ -768,7 +768,7 @@ all = [
                     extra_configure_args=[
                         "-DLLVM_ENABLE_ASSERTIONS=On",
                         "-DLLVM_LIT_ARGS=-v --time-tests",
-	`		"-DCMAKE_C_COMPILER=clang",
+                        "-DCMAKE_C_COMPILER=clang",
                         "-DCMAKE_CXX_COMPILER=clang++",
                         "-DPython3_EXECUTABLE:FILEPATH=python3",
                         "-DLLVM_ENABLE_ZLIB=OFF", "-DLLVM_APPEND_VC_REV=OFF",
