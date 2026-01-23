@@ -29,7 +29,7 @@ template:
         resources:
           requests:
             cpu: 28
-        image: ghcr.io/llvm/ci-windows-2022:latest
+        image: ghcr.io/llvm/ci-windows-2022:1765846393
         command: ["run.cmd"]
         args: ["--jitconfig", "$(ACTIONS_RUNNER_INPUT_JITCONFIG)"]
         env:
