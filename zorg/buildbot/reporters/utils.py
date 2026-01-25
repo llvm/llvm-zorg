@@ -6,7 +6,7 @@ from twisted.python import log
 
 from buildbot.reporters.generators.build import BuildStatusGenerator
 from buildbot.reporters.github import GitHubCommentPush
-from buildbot.reporters.message import MessageFormatter
+from buildbot.reporters.message import MessageFormatter, MessageFormatterBase
 from buildbot.reporters.utils import getDetailsForBuild
 
 from buildbot.process.results import CANCELLED
@@ -194,6 +194,7 @@ class LLVMFailBuildGenerator(BuildStatusGenerator):
         add_logs=True,
         add_patch=False,
         message_formatter=LLVMInformativeComment,
+        is_message_needed_filter=None,
     ):
         super().__init__(
             mode=("problem",),
@@ -206,6 +207,7 @@ class LLVMFailBuildGenerator(BuildStatusGenerator):
             add_patch=add_patch,
         )
         self.formatter = message_formatter
+        self.is_message_needed_filter = is_message_needed_filter
 
     def is_message_needed_by_results(
         self, build
@@ -239,6 +241,11 @@ class LLVMFailBuildGenerator(BuildStatusGenerator):
         if not self.is_message_needed_by_results(build):
             # log.msg(f"LLVMFailBuildGenerator.generate: INFO(buildid={buildid}): INFO: Not is_message_needed_by_results. Ignore.")
             return None
+        if self.is_message_needed_filter:
+            filtered = self.is_message_needed_filter(build)
+            log.msg(f"LLVMFailBuildGenerator.generate(buildid={buildid}): INFO: is_message_needed_filter() returned {filtered}")
+            if not filtered:
+                return None
 
         changes = yield master.data.get(("builds", buildid, "changes"))
         log.msg(
@@ -292,13 +299,66 @@ class LLVMFailGitHubReporter(GitHubCommentPush):
     name = "LLVMFailGitHubReporter"
 
     def _extract_issue(self, props):  # override
-        log.msg(f"LLVMFailGitHubReporter._extract_issue: INFO: props={props}")
+        log.msg(f"{self.name}._extract_issue: INFO: props={props}")
         issue = props.getProperty("issue")
-        log.msg(f"LLVMFailGitHubReporter._extract_issue: INFO: issue={issue}")
+        log.msg(f"{self.name}._extract_issue: INFO: issue={issue}")
         return issue
 
-    # This function is for logging purposes only.
-    # Could be removed completely if log verbosity would be reduced.
+    def is_wrong_issue(self, repo_user, repo_name, sha, issue):
+        # Users could reference wrong PRs in commit messages.
+        # So, to make sure we are commenting the correct one we need to check
+        # if the given commit is actually corresponding to the PR we parsed
+        # from the commit message.
+
+        wrong_issue = True
+
+        if issue is None:
+            log.msg(
+                f"{self.name}.is_wrong_issue: WARNING: Skipped adding the comment for repo {repo_name}, issue is not specified."
+            )
+            return wrong_issue
+
+        page = 1
+        while wrong_issue:
+            events_response = yield self._http.get(
+                "/".join(["/repos", repo_user, repo_name, "issues", issue, "events"]) +
+                f"?per_page=100&page={page}")
+            if events_response.code not in (200,):
+                log.msg(
+                    f"{self.name}.is_wrong_issue: WARNING: Cannot get events for PR#{issue}. Do not comment this PR."
+                )
+                return wrong_issue
+
+            events = yield events_response.json()
+
+            # Empty events array signals that there is no more.
+            if not events:
+                log.msg(
+                    f"{self.name}.is_wrong_issue: WARNING: Got empty events list for PR#{issue}."
+                )
+                break
+
+            log.msg(
+                f"{self.name}.is_wrong_issue: WARNING: Got events list for PR#{issue} (page {page}): {events}."
+            )
+
+            for event in events:
+                if event["event"] == "merged":
+                    if event["commit_id"] == sha:
+                        wrong_issue = False
+                        break
+                    else:
+                        log.msg(
+                            f"{self.name}.is_wrong_issue: WARNING: Event 'merged' in PR#{issue} contains commit_id {event['commit_id']}, but revision is {sha}."
+                        )
+            page += 1
+
+        if wrong_issue:
+            log.msg(
+                f"{self.name}.is_wrong_issue: WARNING: Given commit {sha} is not related to PR#{issue}. Do not comment this PR."
+            )
+        return wrong_issue
+
     @defer.inlineCallbacks
     def createStatus(
         self,
@@ -311,70 +371,84 @@ class LLVMFailGitHubReporter(GitHubCommentPush):
         issue=None,
         description=None,
     ):  # override
-        payload = {"body": description}
-        log.msg(f"LLVMFailGitHubReporter.createStatus: INFO:\n{description}")
-
-        if issue is None:
-            log.msg(
-                f"LLVMFailGitHubReporter.createStatus: WARNING: Skipped adding the comment for repo {repo_name} sha {sha} as issue is not specified."
-            )
-            return None
-
-        # Users could reference wrong PRs in commit messages.
-        # So, to make sure we are commenting the correct one we need to check
-        # if the given commit is actually corresponding to the PR we parsed
-        # from the commit message.
-
-        wrong_issue = True
-        page = 1
-        while wrong_issue:
-            events_response = yield self._http.get(
-                "/".join(["/repos", repo_user, repo_name, "issues", issue, "events"]) +
-                f"?per_page=100&page={page}")
-            if events_response.code not in (200,):
-                log.msg(
-                    f"LLVMFailGitHubReporter.createStatus: WARNING: Cannot get events for PR#{issue}. Do not comment this PR."
-                )
-                return None
-
-            events = yield events_response.json()
-
-            # Empty events array signals that there is no more.
-            if not events:
-                log.msg(
-                    f"LLVMFailGitHubReporter.createStatus: WARNING: Got empty events list for PR#{issue}."
-                )
-                break
-
-            log.msg(
-                f"LLVMFailGitHubReporter.createStatus: WARNING: Got events list for PR#{issue} (page {page}): {events}."
-            )
-
-            for event in events:
-                if event["event"] == "merged":
-                    if event["commit_id"] == sha:
-                        wrong_issue = False
-                        break
-                    else:
-                        log.msg(
-                            f"LLVMFailGitHubReporter.createStatus: WARNING: Event 'merged' in PR#{issue} contains commit_id {event['commit_id']}, but revision is {sha}."
-                        )
-            page += 1
-
-        if wrong_issue:
-            log.msg(
-                f"LLVMFailGitHubReporter.createStatus: WARNING: Given commit {sha} is not related to PR#{issue}. Do not comment this PR."
-            )
+        if self.is_wrong_issue(repo_user, repo_name, sha, issue):
             return None
 
         # This is the right issue to comment.
+        payload = {"body": description}
+        log.msg(f"{self.name}.createStatus: INFO:\n{description}")
 
         url = "/".join(["/repos", repo_user, repo_name, "issues", issue, "comments"])
-        log.msg(f"LLVMFailGitHubReporter.createStatus: INFO: http.post({url})")
+        log.msg(f"{self.name}.createStatus: INFO: http.post({url})")
 
-        # Comment out this line and uncomment following lines
-        # to disable submitting to github for debug purpose.
-        ret = yield self._http.post(url, json=payload)
-        # yield
-        # ret = None
+        # Use utils.LLVMFailGitHubReporter(debug=True, ...) to simulate the process.
+        if self.debug:
+            yield
+            ret = None
+        else:
+            ret = yield self._http.post(url, json=payload)
+        return ret
+
+
+class LLVMLabelFormatter(MessageFormatterBase):
+    def __init__(self, label=None):
+        self.label = label
+        super().__init__(want_properties=True, wantProperties=True,
+                 want_steps=True, wantSteps=True, wantLogs=True,
+                 want_logs=True, want_logs_content=True)
+
+    def format_message_for_build(self, master, build, **kwargs):
+        # TODO
+        return {
+            "body": self.label,
+            "type": "plain",
+            "subject": None,
+            "extra_info": None
+        }
+
+    def format_message_for_buildset(self, master, buildset, builds, **kwargs):
+        # TODO
+        return {
+            "body": self.label,
+            "type": "plain",
+            "subject": None
+        }
+
+
+class LLVMFailGitHubLabeler(LLVMFailGitHubReporter):
+    name = "LLVMFailGitHubLabeler"
+
+    @defer.inlineCallbacks
+    def createStatus(
+        self,
+        repo_user,
+        repo_name,
+        sha,
+        state,
+        target_url=None,
+        context=None,
+        issue=None,
+        description=None,
+    ):  # override
+        if self.is_wrong_issue(repo_user, repo_name, sha, issue):
+            return None
+
+        # This is the right issue to label.
+        if description is None:
+            log.msg(
+                f"{self.name}.createStatus: WARNING: label is None."
+            )
+            return None
+
+        payload = {"labels": [description] }
+
+        url = "/".join(["/repos", repo_user, repo_name, "issues", issue, "labels"])
+        log.msg(f"{self.name}.createStatus: INFO: http.post({url}), label={description}")
+
+        # Use utils.LLVMFailGitHubLabeler(debug=True, ... ) to simulate the process.
+        if self.debug:
+            yield
+            ret = None
+        else:
+            ret = yield self._http.post(url, json=payload)
         return ret
