@@ -393,12 +393,14 @@ class LLVMFailGitHubReporter(GitHubCommentPush):
 class LLVMLabelFormatter(MessageFormatterBase):
     def __init__(self, label=None):
         self.label = label
-        super().__init__(want_properties=True, wantProperties=True,
-                 want_steps=True, wantSteps=True, wantLogs=True,
-                 want_logs=True, want_logs_content=True)
+        super().__init__(
+            want_logs=True,
+            want_logs_content=True,
+            want_properties=True,
+            want_steps=True,
+        )
 
     def format_message_for_build(self, master, build, **kwargs):
-        # TODO
         return {
             "body": self.label,
             "type": "plain",
@@ -407,7 +409,6 @@ class LLVMLabelFormatter(MessageFormatterBase):
         }
 
     def format_message_for_buildset(self, master, buildset, builds, **kwargs):
-        # TODO
         return {
             "body": self.label,
             "type": "plain",
