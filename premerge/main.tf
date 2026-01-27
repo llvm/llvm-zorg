@@ -352,6 +352,26 @@ resource "google_bigquery_table" "llvm_commits_table" {
   depends_on = [google_bigquery_dataset.operational_metrics_dataset]
 }
 
+resource "google_bigquery_table" "llvm_pull_requests_table" {
+  dataset_id  = google_bigquery_dataset.operational_metrics_dataset.dataset_id
+  table_id    = "llvm_pull_requests"
+  description = "LLVM pull request data"
+
+  schema = file("./bigquery_schema/llvm_pull_requests_table_schema.json")
+
+  depends_on = [google_bigquery_dataset.operational_metrics_dataset]
+}
+
+resource "google_bigquery_table" "llvm_reviews_table" {
+  dataset_id  = google_bigquery_dataset.operational_metrics_dataset.dataset_id
+  table_id    = "llvm_reviews"
+  description = "LLVM review data"
+
+  schema = file("./bigquery_schema/llvm_reviews_table_schema.json")
+
+  depends_on = [google_bigquery_dataset.operational_metrics_dataset]
+}
+
 resource "google_bigquery_dataset_iam_binding" "operational_metrics_dataset_editor_binding" {
   dataset_id = google_bigquery_dataset.operational_metrics_dataset.dataset_id
   role       = "roles/bigquery.dataEditor"

@@ -1,0 +1,26 @@
+[
+  {
+    "name": "pull_request_author",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "GitHub username of the pull request author."
+  },
+  {
+    "name": "pull_request_timestamp_seconds",
+    "type": "INTEGER",
+    "mode": "NULLABLE",
+    "description": "Time the pull request was created at, as a Unix timestamp."
+  },
+  {
+    "name": "pull_request_number",
+    "type": "INTEGER",
+    "mode": "NULLABLE",
+    "description": "Number of the pull request."
+  },
+  {
+    "name": "associated_commit",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "SHA of the commit associated with the pull request."
+  }
+]
