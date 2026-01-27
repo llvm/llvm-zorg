@@ -120,6 +120,7 @@ pipeline {
                       --cmake-flag="-DLLVM_TARGETS_TO_BUILD=host" \
                       --cmake-type=Release \
                       --projects "" \
+                      --runtimes "" \
                       --noinstall \
                       --noupload
 
