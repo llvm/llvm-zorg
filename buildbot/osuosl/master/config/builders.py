@@ -2686,6 +2686,14 @@ all += [
     'builddir': "publish-doxygen-docs",
     'collapseRequests': collapseRequestsDoxygen,
     'factory' : DoxygenDocsBuilder.getLLVMDocsBuildFactory(
+                    depends_on_projects = [
+                        "llvm",
+                        "clang",
+                        "clang-tools-extra",
+                        "flang",
+                        "polly",
+                        "lldb",
+                    ],
                     # Doxygen builds the final result for really
                     # long time without any output.
                     # We have to have a long timeout here.
