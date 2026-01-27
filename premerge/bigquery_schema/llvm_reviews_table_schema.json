@@ -1,0 +1,26 @@
+[
+  {
+    "name": "review_author",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "GitHub username of the review author."
+  },
+  {
+    "name": "review_timestamp_seconds",
+    "type": "INTEGER",
+    "mode": "NULLABLE",
+    "description": "Time the review was created at, as a Unix timestamp."
+  },
+  {
+    "name": "review_state",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "State of the review, i.e APPROVED, CHANGES_REQUESTED, etc."
+  },
+  {
+    "name": "associated_pull_request",
+    "type": "INTEGER",
+    "mode": "NULLABLE",
+    "description": "Number of the pull request associated with the review."
+  }
+]
