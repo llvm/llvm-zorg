@@ -385,6 +385,7 @@ def get_all():
         create_worker("rocm-docker-ubu-22", properties={'jobs': 32}, max_builds=1),
         create_worker("rocm-docker-rhel-9", properties={'jobs': 32}, max_builds=1),
         create_worker("rocm-docker-rhel-8", properties={'jobs': 32}, max_builds=1),
+        create_worker("m-07-w-01", properties={'jobs': 32}, max_builds=1),
 
         # SYCL GPU
         create_worker("intel-sycl-gpu-01", properties={'jobs': 192}, max_builds=1),
