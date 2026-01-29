@@ -559,6 +559,26 @@ def get_all():
             max_builds=1,
             notify_on_missing=["profcheck-buildbot@google.com"],
         ),
+        # Workers for configurations related to Google's integration of LLVM
+        # sources.
+        create_worker(
+            "google-integrate-b1",
+            properties={"jobs": 32},
+            max_builds=1,
+            notify_on_missing=[
+                "llvm-presubmit-infra@google.com",
+                "aidengrossman@google.com"
+            ],
+        ),
+        create_worker(
+            "google-integrate-b2",
+            properties={"jobs": 32},
+            max_builds=1,
+            notify_on_missing=[
+                "llvm-presubmit-infra@google.com",
+                "aidengrossman@google.com"
+            ],
+        )
         # FIXME: A placeholder for annoying worker which nobody could stop.
         # adding it avoid logs spammed by failed authentication for that worker.
         create_worker("mlir-ubuntu-worker0"),

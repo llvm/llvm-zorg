@@ -3606,6 +3606,28 @@ all += [
             script_interpreter=None,
         ),
     },
+    # Builders for release+noassertions+warnings configuration
+    {
+        "name": "release-noassertions-warnings",
+        "workernames": ["google-integrate-b1", "google-integrate-b2"],
+        "collapseRequests": False,
+        "builddir": "release-noassertions-warnings-build",
+        "factory": UnifiedTreeBuilder.getCmakeExBuildFactory(
+            depends_on_projects = [
+                'llvm',
+                'lld',
+                'mlir',
+            ],
+            clean = True,
+            checks = None,
+            cmake_definitions = {
+                "LLVM_CCACHE_BUILD"             : "ON",
+                "LLVM_ENABLE_WERROR"            : "ON",
+                "CMAKE_BUILD_TYPE"              : "Release",
+                "LLVM_ENABLE_ASSERTIONS"        : "OFF",
+            },
+        )
+    }
 ]
 
 # LLDB remote-linux builder env variables.
