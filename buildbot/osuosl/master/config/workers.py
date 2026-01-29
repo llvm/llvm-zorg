@@ -578,7 +578,7 @@ def get_all():
                 "llvm-presubmit-infra@google.com",
                 "aidengrossman@google.com"
             ],
-        )
+        ),
         # FIXME: A placeholder for annoying worker which nobody could stop.
         # adding it avoid logs spammed by failed authentication for that worker.
         create_worker("mlir-ubuntu-worker0"),
