@@ -19,7 +19,7 @@ llvm_docs = OrderedDict([
   ("clang-tools-extra", (None,           "tools/clang/tools/extra/docs/doxygen/html/", "cfe-extra")),
   ("flang",             (None,           "tools/flang/docs/doxygen/html/",             "flang")),
   ("polly",             (None,           "tools/polly/docs/doxygen/html/",             "polly")),
-  ("openmp",            (None,           "projects/openmp/docs/doxygen/html/",         "openmp")),
+  #("openmp",            (None,           "projects/openmp/docs/doxygen/html/",         "openmp")),
   ("lldb",              ("lldb-cpp-doc", "tools/lldb/docs/cpp_reference/",             "lldb/cpp_reference")),
   # NOTE: 5/9/2020 lldb-python-doc fails to build. Disabled till be fixed.
   #(None,   ("lldb-python-doc",         "tools/lldb/docs/python_reference/",  "lldb")),
