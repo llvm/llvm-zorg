@@ -16,6 +16,8 @@ REPOSITORY_URL = "https://github.com/llvm/llvm-project.git"
 # BigQuery dataset and tables to write metrics to.
 OPERATIONAL_METRICS_DATASET = "operational_metrics"
 LLVM_COMMITS_TABLE = "llvm_commits"
+LLVM_PULL_REQUESTS_TABLE = "llvm_pull_requests"
+LLVM_REVIEWS_TABLE = "llvm_reviews"
 
 # How many commits to query the GitHub GraphQL API for at a time.
 # Querying too many commits at once often leads to the call failing.
@@ -40,11 +42,13 @@ commit_{commit_sha}:
       associatedPullRequests(first: 1) {{
         totalCount
         pullRequest: nodes {{
+          author {{ login }}
           number
-          reviewDecision
-          reviews(first: 25) {{
+          createdAt
+          reviews(last: 100) {{
             nodes {{
               state
+              createdAt
               reviewer: author {{
                 login
               }}
@@ -62,15 +66,27 @@ class LLVMCommitData:
   commit_sha: str
   commit_timestamp_seconds: int
   diff: list[dict[str, int | str]]
-  commit_author: str = ""  # GitHub username of author is unknown until API call
-  has_pull_request: bool = False
-  pull_request_number: int = 0
-  is_reviewed: bool = False
-  is_approved: bool = False
-  reviewers: set[str] = dataclasses.field(default_factory=set)
+  commit_author: str | None = ""  # Username of author is unknown until API call
+  associated_pull_request: int | None = None
   is_revert: bool = False
   pull_request_reverted: int | None = None
   commit_reverted: str | None = None
+
+
+@dataclasses.dataclass
+class LLVMPullRequestData:
+  pull_request_number: int
+  pull_request_author: str
+  pull_request_timestamp_seconds: int
+  associated_commit: str
+
+
+@dataclasses.dataclass
+class LLVMReviewData:
+  review_author: str
+  review_timestamp_seconds: int
+  review_state: str
+  associated_pull_request: int
 
 
 def scrape_commits_by_date(
@@ -172,6 +188,143 @@ def extract_initial_commit_data(
   )
 
 
+def extract_commit_data(
+    scraped_commits: list[git.Commit],
+    api_data: dict[str, Any],
+) -> list[LLVMCommitData]:
+  """Extract commit data from scraped Git commits and GitHub API data.
+
+  Args:
+    scraped_commits: List of commits scraped from cloned LLVM repository.
+    api_data: JSON response from GitHub API.
+
+  Returns:
+    List of LLVMCommitData objects for each commit found.
+  """
+  commit_map = {
+      commit.hexsha: extract_initial_commit_data(commit)
+      for commit in scraped_commits
+  }
+  for commit_sha, commit_data in api_data.items():
+    commit = commit_map[commit_sha.removeprefix("commit_")]
+
+    # Some commits have no author, possible when an account is deleted or
+    # email address is changed.
+    if commit_data["author"]["user"]:
+      commit.commit_author = commit_data["author"]["user"]["login"]
+    else:
+      logging.warning("No author found for commit %s", commit.commit_sha)
+      commit.commit_author = None
+
+    # If commit has no pull requests, skip it. No data to update.
+    if commit_data["associatedPullRequests"]["totalCount"] == 0:
+      commit.associated_pull_request = None
+      continue
+    else:
+      pull_request = commit_data["associatedPullRequests"]["pullRequest"][0]
+      commit.associated_pull_request = pull_request["number"]
+
+  return list(commit_map.values())
+
+
+def extract_pull_request_data(
+    api_data: dict[str, Any],
+) -> list[LLVMPullRequestData]:
+  """Extract pull request data from GitHub API data.
+
+  Args:
+    api_data: JSON response from GitHub API.
+
+  Returns:
+    List of LLVMPullRequestData objects for each pull request found.
+  """
+  pull_request_data = []
+  for commit_sha, commit_data in api_data.items():
+    if commit_data["associatedPullRequests"]["totalCount"] == 0:
+      continue
+    pull_request = commit_data["associatedPullRequests"]["pullRequest"][0]
+
+    # Some pull requests have no author, possible when an account is deleted or
+    # email address is changed.
+    if pull_request["author"] is not None:
+      author_login = pull_request["author"]["login"]
+    else:
+      author_login = None
+      logging.warning(
+          "No author found for pull request %d", pull_request["number"]
+      )
+
+    # Convert ISO timestamp to Unix timestamp, in seconds
+    unix_timestamp = int(
+        datetime.datetime.fromisoformat(pull_request["createdAt"]).timestamp()
+    )
+
+    pull_request_data.append(
+        LLVMPullRequestData(
+            pull_request_number=pull_request["number"],
+            pull_request_author=author_login,
+            pull_request_timestamp_seconds=unix_timestamp,
+            associated_commit=commit_sha.removeprefix("commit_"),
+        )
+    )
+
+  return pull_request_data
+
+
+def extract_review_data(
+    api_data: dict[str, Any],
+) -> list[LLVMReviewData]:
+  """Extract review data from GitHub API data.
+
+  Args:
+    api_data: JSON response from Github API.
+
+  Returns:
+    List of LLVMReviewData objects for each review found.
+  """
+  review_data = []
+  for _, commit_data in api_data.items():
+    if commit_data["associatedPullRequests"]["totalCount"] == 0:
+      continue
+    pull_request = commit_data["associatedPullRequests"]["pullRequest"][0]
+    associated_pull_request = pull_request["number"]
+    pull_request_author = (
+        pull_request["author"]["login"] if pull_request["author"] else None
+    )
+
+    for review in pull_request["reviews"]["nodes"]:
+      # Some reviews have no author, possible when an account is deleted or
+      # email address is changed.
+      if review["reviewer"] is not None:
+        reviewer_login = review["reviewer"]["login"]
+      else:
+        reviewer_login = None
+        logging.warning(
+            "No reviewer found for review associated with pull request %d",
+            associated_pull_request,
+        )
+
+      # Skip 'reviews' that we're made by the pull request author.
+      if reviewer_login is not None and reviewer_login == pull_request_author:
+        continue
+
+      # Convert ISO timestamp to Unix timestamp, in seconds
+      unix_timestamp = int(
+          datetime.datetime.fromisoformat(review["createdAt"]).timestamp()
+      )
+
+      review_data.append(
+          LLVMReviewData(
+              review_author=reviewer_login,
+              review_timestamp_seconds=unix_timestamp,
+              review_state=review["state"].upper(),
+              associated_pull_request=associated_pull_request,
+          )
+      )
+
+  return review_data
+
+
 @retry.retry(
     exceptions=(
         requests.exceptions.HTTPError,
@@ -259,93 +412,26 @@ def fetch_github_api_data(
   return api_commit_data
 
 
-def amend_commit_data(
-    commit_data: LLVMCommitData, api_data: dict[str, Any]
-) -> None:
-  """Amend commit information with data from GitHub API.
-
-  Args:
-    commit_data: The LLVMCommitData object to modify.
-    api_data: The GitHub API data to amend the commit information with.
-  """
-  if api_data["author"]["user"]:
-    commit_data.commit_author = api_data["author"]["user"]["login"]
-  else:
-    logging.warning("No author found for commit %s", commit_data.commit_sha)
-    commit_data.commit_author = None
-
-  # If commit has no pull requests, skip it. No data to update.
-  if api_data["associatedPullRequests"]["totalCount"] == 0:
-    return
-
-  pull_request = api_data["associatedPullRequests"]["pullRequest"][0]
-  commit_data.has_pull_request = True
-  commit_data.pull_request_number = pull_request["number"]
-
-  # Check the state of reviews to determine if this commit was reviewed and
-  # approved.
-  review_states = set([
-      review["state"].upper()
-      for review in pull_request["reviews"]["nodes"]
-      if review["reviewer"]["login"] != commit_data.commit_author
-  ])
-  commit_data.is_reviewed = bool(review_states)
-  commit_data.is_approved = "APPROVED" in review_states
-
-  commit_data.reviewers = set([
-      review["reviewer"]["login"] for review in pull_request["reviews"]["nodes"]
-  ])
-
-  # There are cases where the commit author is counted as a reviewer. This is
-  # against what we want to measure, so remove them from the set of reviewers.
-  commit_data.reviewers.discard(commit_data.commit_author)
-
-
-def build_commit_data(
-    commits: list[git.Commit], github_token: str
-) -> list[LLVMCommitData]:
-  """Query GitHub GraphQL API for reviews of commits.
-
-  Args:
-    commits: List of commits to query for reviews.
-    github_token: The access token to use with the GitHub GraphQL API.
-
-  Returns:
-    List of LLVMCommitData objects for each commit's review information.
-  """
-  # Create a map of commit sha to info
-  commits_data = {
-      commit.hexsha: extract_initial_commit_data(commit) for commit in commits
-  }
-
-  # Fetch data for each commit from the GitHub GraphQL API
-  api_commit_data = fetch_github_api_data(github_token, commits_data.keys())
-
-  # Amend commit information with GitHub data
-  for commit_sha, api_data in api_commit_data.items():
-    commit_sha = commit_sha.removeprefix("commit_")
-    amend_commit_data(commits_data[commit_sha], api_data)
-
-  return list(commits_data.values())
-
-
 def upload_daily_metrics_to_bigquery(
-    bq_client: bigquery.Client, commits_data: list[LLVMCommitData]
+    bq_client: bigquery.Client,
+    bq_dataset: str,
+    bq_table: str,
+    llvm_data: list[LLVMCommitData | LLVMPullRequestData | LLVMReviewData],
 ) -> None:
-  """Upload processed commit metrics to a BigQuery dataset.
+  """Upload processed LLVM metrics to a BigQuery dataset.
 
   Args:
     bq_client: The BigQuery client to use.
-    commits_data: List of commits to process & upload to BigQuery.
+    bq_dataset: The name of the BigQuery dataset to upload to.
+    bq_table: The name of the BigQuery table to upload to.
+    llvm_data: List of LLVM data to process & upload to BigQuery.
   """
-  table_ref = bq_client.dataset(OPERATIONAL_METRICS_DATASET).table(
-      LLVM_COMMITS_TABLE
-  )
+  table_ref = bq_client.dataset(bq_dataset).table(bq_table)
   table = bq_client.get_table(table_ref)
-  commit_records = [dataclasses.asdict(commit) for commit in commits_data]
-  errors = bq_client.insert_rows(table=table, rows=commit_records)
+  llvm_records = [dataclasses.asdict(commit) for commit in llvm_data]
+  errors = bq_client.insert_rows(table=table, rows=llvm_records)
   if errors:
-    logging.error("Failed to upload commit info to BigQuery: %s", errors)
+    logging.error("Failed to upload LLVM data to BigQuery: %s", errors)
     exit(1)
 
 
@@ -372,12 +458,26 @@ def main() -> None:
     logging.info("No new commits found. Exiting.")
     return
 
-  logging.info("Querying for reviews of new commits.")
-  commit_data = build_commit_data(commits, github_token)
+  logging.info("Fetching GitHub API data for discovered commits.")
+  api_data = fetch_github_api_data(github_token, commits)
+  commit_data = extract_commit_data(commits, api_data)
+  pull_request_data = extract_pull_request_data(api_data)
+  review_data = extract_review_data(api_data)
 
   logging.info("Uploading metrics to BigQuery.")
   bq_client = bigquery.Client()
-  upload_daily_metrics_to_bigquery(bq_client, commit_data)
+  upload_daily_metrics_to_bigquery(
+      bq_client, OPERATIONAL_METRICS_DATASET, LLVM_COMMITS_TABLE, commit_data
+  )
+  upload_daily_metrics_to_bigquery(
+      bq_client,
+      OPERATIONAL_METRICS_DATASET,
+      LLVM_PULL_REQUESTS_TABLE,
+      pull_request_data,
+  )
+  upload_daily_metrics_to_bigquery(
+      bq_client, OPERATIONAL_METRICS_DATASET, LLVM_REVIEWS_TABLE, review_data
+  )
   bq_client.close()
 
 

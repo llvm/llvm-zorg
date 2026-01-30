@@ -18,34 +18,10 @@
     "description": "Time this commit was made at, as a Unix timestamp"
   },
   {
-    "name": "has_pull_request",
-    "type": "BOOLEAN",
-    "mode": "NULLABLE",
-    "description": "Whether or not this commit has an associated pull request"
-  },
-  {
-    "name": "pull_request_number",
+    "name": "associated_pull_request",
     "type": "INTEGER",
     "mode": "NULLABLE",
     "description": "Number of the pull request associated with this commit"
-  },
-  {
-    "name": "is_reviewed",
-    "type": "BOOLEAN",
-    "mode": "NULLABLE",
-    "description": "Whether or not the pull request for this commit was reviewed"
-  },
-  {
-    "name": "is_approved",
-    "type": "BOOLEAN",
-    "mode": "NULLABLE",
-    "description": "Whether or not the pull request for this commit was approved"
-  },
-  {
-    "name": "reviewers",
-    "type": "STRING",
-    "mode": "REPEATED",
-    "description": "List of GitHub users who reviewed the pull request for this commit"
   },
   {
     "name": "is_revert",
