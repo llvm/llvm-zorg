@@ -723,18 +723,17 @@ all = [
     'tags'  : ["clang", "ppc", "ppc64le"],
     'workernames' : ["ppc64le-clang-multistage-test"],
     'builddir': "clang-ppc64le-multistage",
-    'factory' : ClangBuilder.getClangCMakeBuildFactory(
-                    clean=False,
-                    checks=['check-all'],
-                    checkout_lld=False,
-                    useTwoStage=True,
-                    stage1_config='Release',
-                    stage2_config='Release',
-                    extra_cmake_args=[
+    'factory' : UnifiedTreeBuilder.getCmakeWithNinjaMultistageBuildFactory(
+                    extra_configure_args=[
                         '-DLLVM_ENABLE_ASSERTIONS=ON',
+                        '-DLLVM_LIT_ARGS=-svj 256',
                         '-DBUILD_SHARED_LIBS=ON',
                         '-DCMAKE_C_COMPILER_LAUNCHER=ccache',
-                        '-DCMAKE_CXX_COMPILER_LAUNCHER=ccache'])},
+                        '-DCMAKE_CXX_COMPILER_LAUNCHER=ccache'],
+                    clean=False,
+                    checks=['check-all'],
+                    depends_on_projects=['llvm', 'clang', 'lld', 'compiler-rt',
+                                         'clang-tools-extra'])},
 
     {'name' : "clang-ppc64le-rhel",
     'tags'  : ["clang", "ppc", "ppc64le"],
@@ -1469,18 +1468,6 @@ all = [
 
 # LLD builders.
 
-    {'name' : "ppc64le-lld-multistage-test",
-    'tags'  : ["lld", "ppc", "ppc64le"],
-    'workernames' : ["ppc64le-lld-multistage-test"],
-    'builddir': "ppc64le-lld-multistage-test",
-    'factory' : UnifiedTreeBuilder.getCmakeWithNinjaMultistageBuildFactory(
-                    extra_configure_args=[
-                        '-DLLVM_ENABLE_ASSERTIONS=ON',
-                        '-DLLVM_LIT_ARGS=-svj 256',
-                        '-DCMAKE_C_COMPILER_LAUNCHER=ccache',
-                        '-DCMAKE_CXX_COMPILER_LAUNCHER=ccache'],
-                    depends_on_projects=['llvm', 'clang', 'lld'])},
-
     {'name' : "lld-x86_64-ubuntu-fast",
     'tags'  : ["lld"],
     'collapseRequests': False,
@@ -1597,32 +1584,6 @@ all += [
                     env={
                         'CC':'gcc-7',
                         'CXX': 'g++-7',
-                    })},
-
-    {'name' : 'ppc64le-mlir-rhel-clang',
-    'tags'  : ["mlir", "ppc", "ppc64le"],
-    'collapseRequests' : False,
-    'workernames' : ['ppc64le-mlir-rhel-test'],
-    'builddir': 'ppc64le-mlir-rhel-clang-build',
-    'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
-                    clean=True,
-                    depends_on_projects=['llvm', 'mlir'],
-                    targets = ['check-mlir-build-only'],
-                    checks = ['check-mlir'],
-                    extra_configure_args=[
-                        '-DLLVM_TARGETS_TO_BUILD=PowerPC',
-                        '-DLLVM_INSTALL_UTILS=ON',
-                        '-DCMAKE_CXX_STANDARD=17',
-                        '-DLLVM_ENABLE_PROJECTS=mlir',
-                        '-DLLVM_LIT_ARGS=-vj 256',
-                        '-DCMAKE_C_COMPILER_LAUNCHER=ccache',
-                        '-DCMAKE_CXX_COMPILER_LAUNCHER=ccache',
-                    ],
-                    env={
-                            'CC': 'clang',
-                            'CXX': 'clang++',
-                            'LD': 'lld',
-                            'LD_LIBRARY_PATH': '/usr/lib64',
                     })},
 
     {'name' : 'mlir-s390x-linux',
@@ -2541,14 +2502,15 @@ all += [
                         "-DCMAKE_CXX_STANDARD=17",
                     ])},
 
-    {'name' : 'ppc64le-flang-rhel-clang',
+    {'name' : 'ppc64le-flang-mlir-rhel-clang',
     'tags'  : ["flang", "ppc", "ppc64le"],
-    'workernames' : ['ppc64le-flang-rhel-test'],
-    'builddir': 'ppc64le-flang-rhel-clang-build',
+    'workernames' : ['ppc64le-flang-mlir-rhel-test'],
+    'builddir': 'ppc64le-flang-mlir-rhel-clang-build',
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                     clean=True,
                     depends_on_projects=['llvm', 'mlir', 'clang', 'flang','flang-rt','openmp'],
-                    checks=['check-flang','check-flang-rt'],
+                    targets = ['check-mlir-build-only'],
+                    checks=['check-flang','check-flang-rt','check-mlir'],
                     extra_configure_args=[
                         '-DLLVM_TARGETS_TO_BUILD=PowerPC',
                         '-DLLVM_INSTALL_UTILS=ON',
@@ -2556,13 +2518,15 @@ all += [
                         '-DLLVM_LIT_ARGS=-vj 256',
                         '-DFLANG_ENABLE_WERROR=ON',
                         '-DLLVM_ENABLE_ASSERTIONS=ON',
+                        '-DLLVM_ENABLE_PROJECTS=mlir',
                         '-DCMAKE_C_COMPILER_LAUNCHER=ccache',
                         '-DCMAKE_CXX_COMPILER_LAUNCHER=ccache'
                     ],
                     env={
                         'CC': 'clang',
                         'CXX': 'clang++',
-                        'LD': 'lld'
+                        'LD': 'lld',
+                        'LD_LIBRARY_PATH': '/usr/lib64',
                     })},
 
     {'name' : "flang-x86_64-windows",
