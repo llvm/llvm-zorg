@@ -1154,157 +1154,63 @@ all = [
     'tags'  : ["polly"],
     'workernames' : ["polly-x86_64-gce1"],
     'builddir': "polly-x86_64-linux",
-    'factory' : PollyBuilder.getPollyBuildFactory(
-                    clean=False,
-                    install=False,
-                    make='ninja',
-                    extraCmakeArgs=[
-                        "-G", "Ninja",
-                        "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
-                        "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
-                        "-DLLVM_ENABLE_ASSERTIONS=True",
-                        "-DLLVM_TARGETS_TO_BUILD='X86;NVPTX'",
-                        "-DCLANG_ENABLE_ARCMT=OFF",
-                        "-DCLANG_ENABLE_STATIC_ANALYZER=OFF",
-                        "-DCLANG_ENABLE_OBJC_REWRITER=OFF",
-                        "-DLLVM_ENABLE_LLD=ON",
-                        "-DPOLLY_ENABLE_GPGPU_CODEGEN=ON"
+    'factory' : ScriptedBuilder.getScriptedBuildFactory(
+                      "polly/ci/polly-x86_64-linux.py",
                         ])},
 
     {'name' : "polly-x86_64-linux-plugin",
     'tags'  : ["polly"],
     'workernames' : ["polly-x86_64-gce1"],
     'builddir': "polly-x86_64-linux-plugin",
-    'factory' : PollyBuilder.getPollyBuildFactory(
-                    clean=False,
-                    install=False,
-                    make='ninja',
-                    extraCmakeArgs=[
-                        "-G", "Ninja",
-                        "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
-                        "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
-                        "-DLLVM_ENABLE_ASSERTIONS=True",
-                        "-DLLVM_TARGETS_TO_BUILD='X86;NVPTX'",
-                        "-DCLANG_ENABLE_ARCMT=OFF",
-                        "-DCLANG_ENABLE_STATIC_ANALYZER=OFF",
-                        "-DCLANG_ENABLE_OBJC_REWRITER=OFF",
-                        "-DLLVM_ENABLE_LLD=ON",
-                        "-DLLVM_POLLY_LINK_INTO_TOOLS=OFF",
-                        "-DPOLLY_ENABLE_GPGPU_CODEGEN=OFF"  # Not all required symbols available in opt executable
+    'factory' : ScriptedBuilder.getScriptedBuildFactory(
+                      "polly/ci/polly-x86_64-linux-plugin.py",
+                      depends_on_projects=["llvm", "polly"],
                         ])},
 
     {'name' : "polly-x86_64-linux-noassert",
     'tags'  : ["polly"],
     'workernames' : ["polly-x86_64-gce1"],
     'builddir': "polly-x86_64-linux-noassert",
-    'factory' : PollyBuilder.getPollyBuildFactory(
-                    clean=False,
-                    install=False,
-                    make='ninja',
-                    extraCmakeArgs=[
-                        "-G", "Ninja",
-                        "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
-                        "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
-                        "-DLLVM_ENABLE_ASSERTIONS=False",
-                        "-DLLVM_TARGETS_TO_BUILD='X86;NVPTX'",
-                        "-DCLANG_ENABLE_ARCMT=OFF",
-                        "-DCLANG_ENABLE_STATIC_ANALYZER=OFF",
-                        "-DCLANG_ENABLE_OBJC_REWRITER=OFF",
-                        "-DLLVM_ENABLE_LLD=ON",
-                        "-DPOLLY_ENABLE_GPGPU_CODEGEN=ON"
+    'factory' : ScriptedBuilder.getScriptedBuildFactory(
+                      "polly/ci/polly-x86_64-linux-noassert.py",
+                      depends_on_projects=["llvm", "polly"],
                         ])},
 
     {'name' : "polly-x86_64-linux-shared",
     'tags'  : ["polly"],
     'workernames' : ["polly-x86_64-gce2"],
     'builddir': "polly-x86_64-linux-shared",
-    'factory' : PollyBuilder.getPollyBuildFactory(
-                    clean=False,
-                    install=False,
-                    make='ninja',
-                    extraCmakeArgs=[
-                        "-G", "Ninja",
-                        "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
-                        "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
-                        "-DLLVM_ENABLE_ASSERTIONS=True",
-                        "-DLLVM_TARGETS_TO_BUILD='X86;NVPTX'",
-                        "-DCLANG_ENABLE_ARCMT=OFF",
-                        "-DCLANG_ENABLE_STATIC_ANALYZER=OFF",
-                        "-DCLANG_ENABLE_OBJC_REWRITER=OFF",
-                        "-DLLVM_ENABLE_LLD=ON",
-                        "-DBUILD_SHARED_LIBS=ON",
-                        "-DPOLLY_ENABLE_GPGPU_CODEGEN=ON"
+    'factory' : ScriptedBuilder.getScriptedBuildFactory(
+                      "polly/ci/polly-x86_64-linux-shared.py",
+                      depends_on_projects=["llvm", "polly"],
                         ])},
 
     {'name' : "polly-x86_64-linux-shared-plugin",
     'tags'  : ["polly"],
     'workernames' : ["polly-x86_64-gce2"],
     'builddir': "polly-x86_64-linux-shared-plugin",
-    'factory' : PollyBuilder.getPollyBuildFactory(
-                    clean=False,
-                    install=False,
-                    make='ninja',
-                    extraCmakeArgs=[
-                        "-G", "Ninja",
-                        "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
-                        "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
-                        "-DLLVM_ENABLE_ASSERTIONS=True",
-                        "-DLLVM_TARGETS_TO_BUILD='X86;NVPTX'",
-                        "-DCLANG_ENABLE_ARCMT=OFF",
-                        "-DCLANG_ENABLE_STATIC_ANALYZER=OFF",
-                        "-DCLANG_ENABLE_OBJC_REWRITER=OFF",
-                        "-DLLVM_ENABLE_LLD=ON",
-                        "-DBUILD_SHARED_LIBS=ON",
-                        "-DLLVM_POLLY_LINK_INTO_TOOLS=OFF",
-                        "-DPOLLY_ENABLE_GPGPU_CODEGEN=ON"
+    'factory' : ScriptedBuilder.getScriptedBuildFactory(
+                      "polly/ci/polly-x86_64-linux-shared-plugin.py",
+                      depends_on_projects=["llvm", "polly"],
                         ])},
 
     {'name' : "polly-x86_64-linux-shlib",
     'tags'  : ["polly"],
     'workernames' : ["polly-x86_64-gce2"],
     'builddir': "polly-x86_64-linux-shlib",
-    'factory' : PollyBuilder.getPollyBuildFactory(
-                    clean=False,
-                    install=False,
-                    make='ninja',
-                    extraCmakeArgs=[
-                        "-G", "Ninja",
-                        "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
-                        "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
-                        "-DLLVM_ENABLE_ASSERTIONS=True",
-                        "-DLLVM_TARGETS_TO_BUILD='X86;NVPTX'",
-                        "-DCLANG_ENABLE_ARCMT=OFF",
-                        "-DCLANG_ENABLE_STATIC_ANALYZER=OFF",
-                        "-DCLANG_ENABLE_OBJC_REWRITER=OFF",
-                        "-DLLVM_ENABLE_LLD=ON",
-                        "-DLLVM_BUILD_LLVM_DYLIB=ON",
-                        "-DLLVM_LINK_LLVM_DYLIB=ON",
-                        "-DPOLLY_ENABLE_GPGPU_CODEGEN=ON"
+    'factory' : ScriptedBuilder.getScriptedBuildFactory(
+                      "polly/ci/polly-x86_64-linux-shlib.py",
+                      depends_on_projects=["llvm", "polly"],
                         ])},
 
     {'name' : "polly-x86_64-linux-shlib-plugin",
     'tags'  : ["polly"],
     'workernames' : ["polly-x86_64-gce2"],
     'builddir': "polly-x86_64-linux-shlib-plugin",
-    'factory' : PollyBuilder.getPollyBuildFactory(
-                    clean=False,
-                    install=False,
-                    make='ninja',
-                    extraCmakeArgs=[
-                        "-G", "Ninja",
-                        "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
-                        "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
-                        "-DLLVM_ENABLE_ASSERTIONS=True",
-                        "-DLLVM_TARGETS_TO_BUILD='X86;NVPTX'",
-                        "-DCLANG_ENABLE_ARCMT=OFF",
-                        "-DCLANG_ENABLE_STATIC_ANALYZER=OFF",
-                        "-DCLANG_ENABLE_OBJC_REWRITER=OFF",
-                        "-DLLVM_ENABLE_LLD=ON",
-                        "-DLLVM_BUILD_LLVM_DYLIB=ON",
-                        "-DLLVM_LINK_LLVM_DYLIB=ON",
-                        "-DLLVM_POLLY_LINK_INTO_TOOLS=OFF",
-                        "-DPOLLY_ENABLE_GPGPU_CODEGEN=ON"
-                        ])},
+    'factory' : ScriptedBuilder.getScriptedBuildFactory(
+                      "polly/ci/polly-x86_64-linux-shlib-plugin.py",
+                      depends_on_projects=["llvm", "polly"],
+                    )},
 
     {'name' : "polly-x86_64-linux-test-suite",
     'tags'  : ["polly"],
