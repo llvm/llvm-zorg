@@ -66,7 +66,7 @@ class LLVMCommitData:
   commit_sha: str
   commit_timestamp_seconds: int
   diff: list[dict[str, int | str]]
-  commit_author: str | None = ""  # Username of author is unknown until API call
+  commit_author: str | None = None  # Username of author is unknown until API call
   associated_pull_request: int | None = None
   is_revert: bool = False
   pull_request_reverted: int | None = None
@@ -304,7 +304,7 @@ def extract_review_data(
             associated_pull_request,
         )
 
-      # Skip 'reviews' that we're made by the pull request author.
+      # Skip 'reviews' that were made by the pull request author.
       if reviewer_login is not None and reviewer_login == pull_request_author:
         continue
 
