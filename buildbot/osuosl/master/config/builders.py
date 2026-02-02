@@ -1155,8 +1155,9 @@ all = [
     'workernames' : ["polly-x86_64-gce1"],
     'builddir': "polly-x86_64-linux",
     'factory' : ScriptedBuilder.getScriptedBuildFactory(
-                      "polly/ci/polly-x86_64-linux.py",
-                        ])},
+                    "polly/ci/polly-x86_64-linux.py",
+                    depends_on_projects=["llvm", "polly"],
+                )},
 
     {'name' : "polly-x86_64-linux-plugin",
     'tags'  : ["polly"],
@@ -1165,52 +1166,52 @@ all = [
     'factory' : ScriptedBuilder.getScriptedBuildFactory(
                       "polly/ci/polly-x86_64-linux-plugin.py",
                       depends_on_projects=["llvm", "polly"],
-                        ])},
+                )},
 
     {'name' : "polly-x86_64-linux-noassert",
     'tags'  : ["polly"],
     'workernames' : ["polly-x86_64-gce1"],
     'builddir': "polly-x86_64-linux-noassert",
     'factory' : ScriptedBuilder.getScriptedBuildFactory(
-                      "polly/ci/polly-x86_64-linux-noassert.py",
-                      depends_on_projects=["llvm", "polly"],
-                        ])},
+                    "polly/ci/polly-x86_64-linux-noassert.py",
+                    depends_on_projects=["llvm", "polly"],
+                )},
 
     {'name' : "polly-x86_64-linux-shared",
     'tags'  : ["polly"],
     'workernames' : ["polly-x86_64-gce2"],
     'builddir': "polly-x86_64-linux-shared",
     'factory' : ScriptedBuilder.getScriptedBuildFactory(
-                      "polly/ci/polly-x86_64-linux-shared.py",
-                      depends_on_projects=["llvm", "polly"],
-                        ])},
+                    "polly/ci/polly-x86_64-linux-shared.py",
+                    depends_on_projects=["llvm", "polly"],
+                )},
 
     {'name' : "polly-x86_64-linux-shared-plugin",
     'tags'  : ["polly"],
     'workernames' : ["polly-x86_64-gce2"],
     'builddir': "polly-x86_64-linux-shared-plugin",
     'factory' : ScriptedBuilder.getScriptedBuildFactory(
-                      "polly/ci/polly-x86_64-linux-shared-plugin.py",
-                      depends_on_projects=["llvm", "polly"],
-                        ])},
+                    "polly/ci/polly-x86_64-linux-shared-plugin.py",
+                    depends_on_projects=["llvm", "polly"],
+                )},
 
     {'name' : "polly-x86_64-linux-shlib",
     'tags'  : ["polly"],
     'workernames' : ["polly-x86_64-gce2"],
     'builddir': "polly-x86_64-linux-shlib",
     'factory' : ScriptedBuilder.getScriptedBuildFactory(
-                      "polly/ci/polly-x86_64-linux-shlib.py",
-                      depends_on_projects=["llvm", "polly"],
-                        ])},
+                    "polly/ci/polly-x86_64-linux-shlib.py",
+                    depends_on_projects=["llvm", "polly"],
+                )},
 
     {'name' : "polly-x86_64-linux-shlib-plugin",
     'tags'  : ["polly"],
     'workernames' : ["polly-x86_64-gce2"],
     'builddir': "polly-x86_64-linux-shlib-plugin",
     'factory' : ScriptedBuilder.getScriptedBuildFactory(
-                      "polly/ci/polly-x86_64-linux-shlib-plugin.py",
-                      depends_on_projects=["llvm", "polly"],
-                    )},
+                    "polly/ci/polly-x86_64-linux-shlib-plugin.py",
+                    depends_on_projects=["llvm", "polly"],
+                )},
 
     {'name' : "polly-x86_64-linux-test-suite",
     'tags'  : ["polly"],
