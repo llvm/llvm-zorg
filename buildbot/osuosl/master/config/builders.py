@@ -4008,7 +4008,7 @@ all += [
                         "LLVM_LIT_ARGS"                     : "-v -vv --threads=32 --time-tests",
                         "TOOLCHAIN_TARGET_TRIPLE"           : "aarch64-linux-musl;aarch64-linux-pauthtest",
                         "TOOLCHAIN_TARGET_SYSROOTFS"        : util.Interpolate("%(prop:sysroot_path_pauth)s"),
-                        "TOOLCHAIN_TARGET_COMPILER_FLAGS"   : "-march=armv8.3-a+pauth -fdebug-default-version=4 -gdwarf-4",
+                        "TOOLCHAIN_TARGET_COMPILER_FLAGS"   : "-march=armv8l+pauth -fdebug-default-version=4 -gdwarf-4",
                         "TOOLCHAIN_TARGET_COMPILER_FLAGS-aarch64-linux-pauthtest"   : "-Xclang -fptrauth-elf-got",
                         "TOOLCHAIN_TARGET_SYSROOTFS-aarch64-linux-musl"             : util.Interpolate("%(prop:sysroots)s/aarch64-linux-musl"),
                         "TOOLCHAIN_TARGET_SYSROOTFS-aarch64-linux-pauthtest"        : util.Interpolate("%(prop:sysroots)s/aarch64-linux-pauthtest"),
@@ -4031,10 +4031,10 @@ all += [
                         TestSuiteBuilder.getLlvmTestSuiteSteps(
                             # Common C/CXX flags.
                             #TODO: remove -fno-inline since the Clang debug info related crash gets fixed.
-                            compiler_flags = "--target=aarch64-linux-pauthtest -march=v8.3-a -O2-fno-inline",
+                            compiler_flags = "--target=aarch64-linux-pauthtest -march=armv8l+pauth -O2-fno-inline",
                             # Common linker flags.
                             linker_flags = util.Interpolate(
-                                "--target=aarch64-linux-pauthtest -march=v8.3-a -O2 "
+                                "--target=aarch64-linux-pauthtest -march=armv8l+pauth -O2 "
                                 "-Wl,--emit-relocs "
                                 "-Wl,--dynamic-linker=/home/%(prop:remote_test_user_pauth)s/musl-loader/aarch64-linux-pauthtest/lib/ld-musl-aarch64.so.1"
                             ),
