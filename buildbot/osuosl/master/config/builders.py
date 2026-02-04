@@ -4031,7 +4031,7 @@ all += [
                         TestSuiteBuilder.getLlvmTestSuiteSteps(
                             # Common C/CXX flags.
                             #TODO: remove -fno-inline since the Clang debug info related crash gets fixed.
-                            compiler_flags = "--target=aarch64-linux-pauthtest -march=v8.3-a -O2 -faarch64-jump-table-hardening -fno-inline",
+                            compiler_flags = "--target=aarch64-linux-pauthtest -march=v8.3-a -O2-fno-inline",
                             # Common linker flags.
                             linker_flags = util.Interpolate(
                                 "--target=aarch64-linux-pauthtest -march=v8.3-a -O2 "
@@ -4042,7 +4042,8 @@ all += [
                                 "CMAKE_BUILD_TYPE"              : "Release",
                                 # Run on the devkit, limited set of tests.
                                 "TEST_SUITE_REMOTE_HOST"        : util.Interpolate("%(prop:remote_test_user_pauth)s@%(prop:remote_test_host_pauth)s"),
-                                #Note: temporary filter out some failed tests.
+                                #Note: exclude some failed tests.
+                                # More info: https://github.com/llvm/llvm-zorg/pull/725#discussion_r2762535188
                                 "TEST_SUITE_LIT_FLAGS"          : "-v -vv --threads=32 --time-tests --filter-out='clamscan|Obsequi|consumer-typeset|city|ft/ft|20000603-1|920302-1|comp-goto-1|aarch64-acle-fmv-features'",
                                 "TEST_SUITE_RUN_BENCHMARKS"     : "ON",
                                 "TEST_SUITE_COLLECT_CODE_SIZE"  : "OFF",
