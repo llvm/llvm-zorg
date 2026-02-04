@@ -3980,4 +3980,76 @@ all += [
                         )
                 )
         },
+
+    {'name' : "llvm-clang-ubuntu-x-aarch64-pauthtest",
+    'tags'  : ["clang", "llvm", "lld", "clang-tools-extra", "compiler-rt", "libc++", "libc++abi", "libunwind", "cross", "aarch64", "pauth", "ptrauth"],
+    'workernames' : ["as-builder-11"],
+    'builddir': "x-aarch64-pauthtest",
+    'factory' : UnifiedTreeBuilder.getCmakeExBuildFactory(
+                    depends_on_projects = [
+                        'llvm',
+                        'compiler-rt',
+                        'clang',
+                        'clang-tools-extra',
+                        'libunwind',
+                        'libcxx',
+                        'libcxxabi',
+                        'lld',
+                    ],
+                    clean = True,
+                    checks = [
+                        "check-llvm",
+                        "check-clang",
+                        "check-lld",
+                    ],
+                    cmake_definitions = {
+                        "LLVM_TARGETS_TO_BUILD"             : "AArch64",
+                        "LLVM_INCLUDE_BENCHMARKS"           : "OFF",
+                        "LLVM_LIT_ARGS"                     : "-v -vv --threads=32 --time-tests",
+                        "TOOLCHAIN_TARGET_TRIPLE"           : "aarch64-linux-musl;aarch64-linux-pauthtest",
+                        "TOOLCHAIN_TARGET_SYSROOTFS"        : util.Interpolate("%(prop:sysroot_path_pauth)s"),
+                        "TOOLCHAIN_TARGET_COMPILER_FLAGS"   : "-march=armv8.3-a+pauth -fdebug-default-version=4 -gdwarf-4",
+                        "TOOLCHAIN_TARGET_COMPILER_FLAGS-aarch64-linux-pauthtest"   : "-Xclang -fptrauth-elf-got",
+                        "TOOLCHAIN_TARGET_SYSROOTFS-aarch64-linux-musl"             : util.Interpolate("%(prop:sysroots)s/aarch64-linux-musl"),
+                        "TOOLCHAIN_TARGET_SYSROOTFS-aarch64-linux-pauthtest"        : util.Interpolate("%(prop:sysroots)s/aarch64-linux-pauthtest"),
+                        "TOOLCHAIN_SHARED_LIBS"             : "ON",
+                        "TOOLCHAIN_STATIC_LIBS"             : "ON",
+                        "TOOLCHAIN_USE_STATIC_LIBS"         : "OFF",
+                        "CMAKE_CXX_FLAGS"                   : "-D__OPTIMIZE__",
+                        "CMAKE_C_COMPILER_LAUNCHER"         : "ccache",
+                        "CMAKE_CXX_COMPILER_LAUNCHER"       : "ccache",
+                        "LIBCXX_INCLUDE_BENCHMARKS"         : "OFF",
+                    },
+                    cmake_options = [
+                        "-C", util.Interpolate("%(prop:srcdir_relative)s/clang/cmake/caches/cross-linux-toolchain.cmake"),
+                    ],
+                    install_dir = "install",
+                    env = {
+                        'CCACHE_DIR' : util.Interpolate("%(prop:builddir)s/ccache-db"),
+                    },
+                    post_build_steps =
+                        TestSuiteBuilder.getLlvmTestSuiteSteps(
+                            # Common C/CXX flags.
+                            #TODO: remove -fno-inline since the Clang debug info related crash gets fixed.
+                            compiler_flags = "--target=aarch64-linux-pauthtest -march=v8.3-a -O2 -faarch64-jump-table-hardening -fno-inline",
+                            # Common linker flags.
+                            linker_flags = util.Interpolate(
+                                "--target=aarch64-linux-pauthtest -march=v8.3-a -O2 "
+                                "-Wl,--emit-relocs "
+                                "-Wl,--dynamic-linker=/home/%(prop:remote_test_user_pauth)s/musl-loader/aarch64-linux-pauthtest/lib/ld-musl-aarch64.so.1"
+                            ),
+                            cmake_definitions = {
+                                "CMAKE_BUILD_TYPE"              : "Release",
+                                # Run on the devkit, limited set of tests.
+                                "TEST_SUITE_REMOTE_HOST"        : util.Interpolate("%(prop:remote_test_user_pauth)s@%(prop:remote_test_host_pauth)s"),
+                                #Note: temporary filter out some failed tests.
+                                "TEST_SUITE_LIT_FLAGS"          : "-v -vv --threads=32 --time-tests --filter-out='clamscan|Obsequi|consumer-typeset|city|ft/ft|20000603-1|920302-1|comp-goto-1|aarch64-acle-fmv-features'",
+                                "TEST_SUITE_RUN_BENCHMARKS"     : "ON",
+                                "TEST_SUITE_COLLECT_CODE_SIZE"  : "OFF",
+                                "TEST_SUITE_SUBDIRS"            : "SingleSource;MultiSource;MicroBenchmarks;External",
+                            },
+                            compiler_dir = util.Interpolate("%(prop:builddir)s/build"),
+                        )
+                )
+        },
 ]
