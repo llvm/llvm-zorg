@@ -114,7 +114,7 @@ def start_build_linux(commit_sha: str, bucket_name: str, k8s_client) -> str:
         "export SCCACHE_GCS_RW_MODE=READ_WRITE",
         "export SCCACHE_IDLE_TIMEOUT=0",
         "sccache --start-server",
-        './.ci/monolithic-linux.sh "bolt;clang;clang-tools-extra;flang;libclc;lld;lldb;llvm;mlir;polly" "check-bolt check-clang check-clang-tools check-flang check-lld check-lldb check-llvm check-mlir check-polly check-lit" "compiler-rt;flang-rt;libc;libcxx;libcxxabi;libunwind" "check-compiler-rt check-flang-rt check-libc" "check-cxx check-cxxabi check-unwind" "OFF"',
+        './.ci/monolithic-linux.sh "bolt;clang;clang-tools-extra;flang;lld;lldb;llvm;mlir;polly" "check-bolt check-clang check-clang-tools check-flang check-lld check-lldb check-llvm check-mlir check-polly check-lit" "compiler-rt;flang-rt;libc;libclc;libcxx;libcxxabi;libunwind" "check-compiler-rt check-flang-rt check-libc" "check-cxx check-cxxabi check-unwind" "OFF"',
         "python .ci/cache_lit_timing_files.py upload",
         "echo BUILD FINISHED",
     ]
@@ -139,7 +139,7 @@ def start_build_windows(commit_sha: str, bucket_name: str, k8s_client):
         "export SCCACHE_GCS_RW_MODE=READ_WRITE",
         "export SCCACHE_IDLE_TIMEOUT=0",
         "sccache --start-server",
-        '.ci/monolithic-windows.sh "clang;clang-tools-extra;libclc;lld;llvm;mlir;polly" "check-clang check-clang-tools check-lld check-llvm check-mlir check-polly check-lit" "compiler-rt" "check-compiler-rt"',
+        '.ci/monolithic-windows.sh "clang;clang-tools-extra;lld;llvm;mlir;polly" "check-clang check-clang-tools check-lld check-llvm check-mlir check-polly check-lit" "compiler-rt;libclc" "check-compiler-rt"',
         "python .ci/cache_lit_timing_files.py upload",
         "echo BUILD FINISHED",
     ]
