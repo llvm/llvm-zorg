@@ -52,9 +52,7 @@ class TestProcessLLVMCommits(unittest.TestCase):
   def _create_commit_api_data(
       self,
       commit_author: str | None = None,
-      has_pull_request: bool = False,
-      pull_request_number: int = 0,
-      reviews: list[dict[str, Any]] | None = None,
+      pull_request_data: dict[str, Any] | None = None,
   ) -> dict[str, Any]:
     """Create a GitHub API response for a commit."""
     api_data = {
@@ -65,14 +63,41 @@ class TestProcessLLVMCommits(unittest.TestCase):
     if commit_author:
       api_data['author']['user'] = {'login': commit_author}
 
-    if has_pull_request:
+    if pull_request_data:
       api_data['associatedPullRequests']['totalCount'] = 1
-      api_data['associatedPullRequests']['pullRequest'] = [{
-          'number': pull_request_number,
-          'reviews': {'nodes': reviews or []},
-      }]
+      api_data['associatedPullRequests']['pullRequest'] = [pull_request_data]
 
     return api_data
+
+  def _create_pull_request_api_data(
+      self,
+      pull_request_number: int,
+      created_at: str | None = None,
+      pull_request_author: str | None = None,
+      reviews: list[dict[str, Any]] | None = None,
+  ) -> dict[str, Any]:
+    """Create a GitHub API response for a pull request."""
+    return {
+        'number': pull_request_number,
+        'author': (
+            {'login': pull_request_author} if pull_request_author else None
+        ),
+        'createdAt': created_at,
+        'reviews': {'nodes': reviews or []},
+    }
+
+  def _create_review_api_data(
+      self,
+      created_at: str | None = None,
+      reviewer: str | None = None,
+      state: str | None = None,
+  ) -> dict[str, Any]:
+    """Create a GitHub API response for a review."""
+    return {
+        'reviewer': {'login': reviewer} if reviewer else None,
+        'state': state,
+        'createdAt': created_at,
+    }
 
   @parameterized.parameterized.expand([
       ('Foo', False, None, None),
@@ -256,93 +281,150 @@ class TestProcessLLVMCommits(unittest.TestCase):
 
     self.assertEqual(mock_post.call_count, 3)
 
-  def test_amend_commit_data_captures_author(self):
-    """Test that author is captured when amending commit data."""
-    commit_data = self._create_llvm_commit_data(commit_sha='abcdef')
-    api_data = self._create_commit_api_data(commit_author='commit_author')
+  def test_extract_commit_data(self):
+    """Test extracting commit data from scraped commits and GitHub API data."""
+    scraped_commit = self._create_mock_commit(hexsha='abcdef')
+    pull_request_api_data = self._create_pull_request_api_data(
+        pull_request_number=12345
+    )
+    commit_api_data = {
+        'commit_abcdef': self._create_commit_api_data(
+            commit_author='commit_author',
+            pull_request_data=pull_request_api_data,
+        )
+    }
 
-    process_llvm_commits.amend_commit_data(commit_data, api_data)
+    commit_data = process_llvm_commits.extract_commit_data(
+        scraped_commits=[scraped_commit], api_data=commit_api_data
+    )
 
-    self.assertEqual(commit_data.commit_author, 'commit_author')
+    self.assertEqual(len(commit_data), 1)
+    self.assertEqual(commit_data[0].commit_sha, 'abcdef')
+    self.assertEqual(commit_data[0].associated_pull_request, 12345)
+    self.assertEqual(commit_data[0].commit_author, 'commit_author')
 
-  def test_amend_commit_data_with_missing_author(self):
-    """Test that missing author in API commit data is handled gracefully."""
-    commit_data = self._create_llvm_commit_data(commit_sha='abcdef')
-    api_data = self._create_commit_api_data(commit_author=None)
+  def test_extract_commit_data_with_missing_data(self):
+    """Test extracting commit data from scraped commits and GitHub API data."""
+    # Missing author and pull request data
+    scraped_commit = self._create_mock_commit(hexsha='abcdef')
+    api_data = {'commit_abcdef': self._create_commit_api_data()}
 
     with self.assertLogs(level='WARNING'):
-      process_llvm_commits.amend_commit_data(commit_data, api_data)
-    self.assertIsNone(commit_data.commit_author)
+      commit_data = process_llvm_commits.extract_commit_data(
+          scraped_commits=[scraped_commit], api_data=api_data
+      )
+    self.assertEqual(len(commit_data), 1)
+    self.assertIsNone(commit_data[0].associated_pull_request)
+    self.assertIsNone(commit_data[0].commit_author)
 
-  def test_amend_commit_data_captures_pull_request(self):
-    """Test that pull request data is captured when amending commit data."""
-    commit_data = self._create_llvm_commit_data(commit_sha='abcdef')
-    api_data = self._create_commit_api_data(
-        commit_author='commit_author',
-        has_pull_request=True,
+  def test_extract_pull_request_data(self):
+    """Test extracting pull request data from GitHub API data."""
+    created_at = datetime.datetime(2020, 1, 1, tzinfo=datetime.timezone.utc)
+    created_at_iso = created_at.isoformat()
+    pull_request_api_data = self._create_pull_request_api_data(
         pull_request_number=12345,
+        created_at=created_at_iso,
+        pull_request_author='pull_request_author',
     )
-
-    process_llvm_commits.amend_commit_data(commit_data, api_data)
-
-    self.assertTrue(commit_data.has_pull_request)
-    self.assertEqual(commit_data.pull_request_number, 12345)
-
-  def test_amend_commit_data_captures_reviews(self):
-    """Test that review data is captured when amending commit data."""
-    commit_data = self._create_llvm_commit_data(commit_sha='abcdef')
-    api_data = self._create_commit_api_data(
-        commit_author='commit_author',
-        has_pull_request=True,
-        pull_request_number=12345,
-        reviews=[
-            {'state': 'APPROVED', 'reviewer': {'login': 'reviewer_1'}},
-            {'state': 'COMMENTED', 'reviewer': {'login': 'commit_author'}},
-        ],
-    )
-
-    process_llvm_commits.amend_commit_data(commit_data, api_data)
-
-    self.assertTrue(commit_data.is_reviewed)
-    self.assertTrue(commit_data.is_approved)
-    self.assertNotIn('commit_author', commit_data.reviewers)
-
-  @unittest.mock.patch.object(requests, 'post', autospec=True)
-  def test_build_commit_data(self, mock_post):
-    """Test building complete commit data for a list of commits."""
-    commit_one = self._create_mock_commit(hexsha='abcdef')
-    commit_two = self._create_mock_commit(hexsha='ghijkl')
-    commit_one_api_data = self._create_commit_api_data(
-        commit_author='commit_author'
-    )
-    commit_two_api_data = self._create_commit_api_data(
-        commit_author='commit_author'
-    )
-    response_payload = {
-        'data': {
-            'repository': {
-                'commit_abcdef': commit_one_api_data,
-                'commit_ghijkl': commit_two_api_data,
-            }
-        }
+    commit_api_data = {
+        'commit_abcdef': self._create_commit_api_data(
+            pull_request_data=pull_request_api_data
+        )
     }
-    mock_post.return_value = self._create_mock_api_response(
-        payload=response_payload
+
+    pull_request_data = process_llvm_commits.extract_pull_request_data(
+        commit_api_data
     )
 
-    commit_data = process_llvm_commits.build_commit_data(
-        commits=[commit_one, commit_two], github_token='dummy_token'
+    self.assertEqual(len(pull_request_data), 1)
+    self.assertEqual(pull_request_data[0].pull_request_number, 12345)
+    self.assertEqual(
+        pull_request_data[0].pull_request_author, 'pull_request_author'
     )
+    self.assertEqual(
+        pull_request_data[0].pull_request_timestamp_seconds,
+        created_at.timestamp(),
+    )
+    self.assertEqual(pull_request_data[0].associated_commit, 'abcdef')
 
-    self.assertEqual(len(commit_data), 2)
-    self.assertIsInstance(commit_data[0], process_llvm_commits.LLVMCommitData)
-    self.assertIsInstance(commit_data[1], process_llvm_commits.LLVMCommitData)
-    self.assertIn(
-        commit_one.hexsha, [commit.commit_sha for commit in commit_data]
+  def test_extract_pull_request_data_with_missing_author(self):
+    """Test extracting pull request data from GitHub API data."""
+    created_at = datetime.datetime(2020, 1, 1, tzinfo=datetime.timezone.utc)
+    created_at_iso = created_at.isoformat()
+    pull_request_api_data = self._create_pull_request_api_data(
+        pull_request_number=12345,
+        created_at=created_at_iso,
     )
-    self.assertIn(
-        commit_two.hexsha, [commit.commit_sha for commit in commit_data]
+    commit_api_data = {
+        'commit_abcdef': self._create_commit_api_data(
+            pull_request_data=pull_request_api_data
+        )
+    }
+
+    with self.assertLogs(level='WARNING'):
+      pull_request_data = process_llvm_commits.extract_pull_request_data(
+          commit_api_data
+      )
+
+    self.assertEqual(len(pull_request_data), 1)
+    self.assertIsNone(pull_request_data[0].pull_request_author)
+
+  def test_extract_review_data(self):
+    """Test extracting review data from GitHub API data."""
+    created_at = datetime.datetime(2020, 1, 1, tzinfo=datetime.timezone.utc)
+    created_at_iso = created_at.isoformat()
+    reviews = [
+        self._create_review_api_data(created_at_iso, 'reviewer_1', 'APPROVED'),
+        self._create_review_api_data(created_at_iso, 'pr_author', 'COMMENTED'),
+    ]
+    pull_request_data = self._create_pull_request_api_data(
+        pull_request_number=12345,
+        pull_request_author='pr_author',
+        reviews=reviews,
     )
+    commit_data = {
+        'commit_abcdef': self._create_commit_api_data(
+            pull_request_data=pull_request_data,
+        )
+    }
+
+    review_data = process_llvm_commits.extract_review_data(commit_data)
+
+    self.assertEqual(len(review_data), 1)
+    self.assertNotIn(
+        'pull_request_author', [review.review_author for review in review_data]
+    )
+    self.assertEqual(
+        review_data[0].review_timestamp_seconds,
+        created_at.timestamp(),
+    )
+    self.assertEqual(review_data[0].review_state, 'APPROVED')
+    self.assertEqual(review_data[0].associated_pull_request, 12345)
+
+  def test_extract_review_data_with_missing_reviewer(self):
+    """Test extracting review data from GitHub API data."""
+    created_at = datetime.datetime(2020, 1, 1, tzinfo=datetime.timezone.utc)
+    created_at_iso = created_at.isoformat()
+    reviews = [
+        self._create_review_api_data(
+            created_at_iso, state='APPROVED', reviewer=None
+        ),
+    ]
+    pull_request_data = self._create_pull_request_api_data(
+        pull_request_number=12345,
+        pull_request_author='pr_author',
+        reviews=reviews,
+    )
+    commit_data = {
+        'commit_abcdef': self._create_commit_api_data(
+            pull_request_data=pull_request_data,
+        )
+    }
+
+    with self.assertLogs(level='WARNING'):
+      review_data = process_llvm_commits.extract_review_data(commit_data)
+    self.assertEqual(len(review_data), 1)
+    self.assertIsNone(review_data[0].review_author)
 
   def test_upload_daily_metrics_to_bigquery(self):
     """Test uploading commit data to BigQuery."""
@@ -357,7 +439,9 @@ class TestProcessLLVMCommits(unittest.TestCase):
 
     process_llvm_commits.upload_daily_metrics_to_bigquery(
         mock_bq_client,
-        [commit_data],
+        bq_dataset='mock_dataset',
+        bq_table='mock_table',
+        llvm_data=[commit_data],
     )
 
     mock_bq_client.insert_rows.assert_called_once_with(
@@ -372,8 +456,10 @@ class TestProcessLLVMCommits(unittest.TestCase):
     with self.assertLogs(level='ERROR'):
       with self.assertRaises(SystemExit):
         process_llvm_commits.upload_daily_metrics_to_bigquery(
-            mock_bq_client,
-            commits_data=[self._create_llvm_commit_data(commit_sha='abcdef')],
+            bq_client=mock_bq_client,
+            bq_dataset='mock_dataset',
+            bq_table='mock_table',
+            llvm_data=[self._create_llvm_commit_data(commit_sha='abcdef')],
         )
 
 
