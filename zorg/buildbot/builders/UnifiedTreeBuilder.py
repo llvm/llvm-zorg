@@ -796,22 +796,22 @@ def getCmakeExBuildFactory(
         pre_configure_steps : list or LLVMFactory, optional
             The buildflow customization steps to execute before the CMake configuration step.
 
-            Provide a list of build step objects or LLVMFactory object.
+            Provide a list of build step/LLVMFactory objects or a single LLVMFactory object.
 
         post_build_steps : list or LLVMFactory, optional
             The buildflow customization steps to execute after the build step, but before the check steps.
 
-            Provide a list of build step objects or LLVMFactory object.
+            Provide a list of build step/LLVMFactory objects or a single LLVMFactory object.
 
         pre_install_steps : list or LLVMFactory, optional
             The buildflow customization steps to execute after the check steps, but before the installation steps (if requested).
 
-            Provide a list of build step objects or LLVMFactory object.
+            Provide a list of build step/LLVMFactory objects or a single LLVMFactory object.
 
         post_finalize_steps : list or LLVMFactory, optional
             The buildflow customization steps to execute at the end of the build workflow.
 
-            Provide a list of build step objects or LLVMFactory object.
+            Provide a list of build step/LLVMFactory objects or a single LLVMFactory object.
 
         jobs : int, optional
             Restrict a degree of parallelism (default is None).
@@ -884,7 +884,15 @@ def getCmakeExBuildFactory(
     # This function extends the current workflow with provided custom steps.
     def extend_with_custom_steps(fc, s):
         # We already got either list() or LLVMBuildFactory() object here.
-        fc.addSteps(s.steps if isinstance(s, BuildFactory) else s)
+        if isinstance(s, BuildFactory):
+            fc.addSteps(s.steps)
+        else:
+            # The list can be mixed with the step and factory objects.
+            for o in s:
+                if isinstance(o, BuildFactory):
+                    fc.addSteps(o.steps)
+                else:
+                    fc.addStep(o)
 
     def norm_target_list_arg(lst):
         if type(lst) == str:

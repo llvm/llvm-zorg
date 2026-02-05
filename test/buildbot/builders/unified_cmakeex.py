@@ -246,8 +246,8 @@ assert factory_has_step(f, "cmake-configure", hasarg = "definitions", contains =
 
 # Check the step extensions.
 
-cbf = LLVMBuildFactory()
-cbf.addStep(
+cbf1 = LLVMBuildFactory()
+cbf1.addStep(
     steps.SetProperty(
         name = "pre_configure_step",
         property = "SomeProperty",
@@ -255,10 +255,19 @@ cbf.addStep(
     )
 )
 
+cbf2 = LLVMBuildFactory()
+cbf2.addStep(
+    steps.SetProperty(
+        name = "pre_install_step2",
+        property = "SomeProperty2",
+        value = "SomeValue2"
+    )
+)
+
 f = UnifiedTreeBuilder.getCmakeExBuildFactory(
         # Force adding a default installation target step.
         install_dir = "install-staged",
-        pre_configure_steps = cbf,    # Single step within the build factory
+        pre_configure_steps = cbf1,    # Single step within the build factory
         post_build_steps = [
             steps.SetProperty(
                 name = "post_build_step1",
@@ -276,6 +285,7 @@ f = UnifiedTreeBuilder.getCmakeExBuildFactory(
                 property = "SomeProperty",
                 value = "SomeValue"
             ),
+            cbf2,   # Single step within the build factory
         ],
         post_finalize_steps =[
             steps.SetProperty(
@@ -287,12 +297,13 @@ f = UnifiedTreeBuilder.getCmakeExBuildFactory(
     )
 print(f"Step Extendions: {f}")
 
-assert factory_has_num_steps(f, 9 + 5)
+assert factory_has_num_steps(f, 9 + 6)
 
 assert factory_has_step(f, "pre_configure_step", hasarg = "property", contains = "SomeProperty")
 assert factory_has_step(f, "post_build_step1", hasarg = "property", contains = "SomeProperty")
 assert factory_has_step(f, "post_build_step2", hasarg = "command", contains = ["ls"])
 assert factory_has_step(f, "pre_install_step", hasarg = "property", contains = "SomeProperty")
+assert factory_has_step(f, "pre_install_step2", hasarg = "property", contains = "SomeProperty2")
 assert factory_has_step(f, "post_finalize_step", hasarg = "property", contains = "SomeProperty")
 
 
