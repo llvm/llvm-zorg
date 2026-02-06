@@ -3946,15 +3946,15 @@ all += [
                         "LLVM_INCLUDE_BENCHMARKS"           : "OFF",
                         "LLVM_LIT_ARGS"                     : "-v -vv --threads=32 --time-tests",
                         "TOOLCHAIN_TARGET_TRIPLE"           : "aarch64-unknown-linux-gnu",
-                        "TOOLCHAIN_TARGET_SYSROOTFS"        : util.Interpolate("%(prop:sysroot_path_pauth)s"),
-                        "TOOLCHAIN_TARGET_COMPILER_FLAGS"   : "-march=armv8.3-a+pauth -mbranch-protection=pac-ret",
+                        "TOOLCHAIN_TARGET_SYSROOTFS"        : util.Interpolate("%(prop:sysroots)s/aarch64-linux-gnu"),
+                        "TOOLCHAIN_TARGET_COMPILER_FLAGS"   : "-march=armv8l+pauth -mbranch-protection=pac-ret",
                         "CMAKE_CXX_FLAGS"                   : "-D__OPTIMIZE__",
                         "CMAKE_C_COMPILER_LAUNCHER"         : "ccache",
                         "CMAKE_CXX_COMPILER_LAUNCHER"       : "ccache",
                         "LIBCXX_INCLUDE_BENCHMARKS"         : "OFF",
                     },
                     cmake_options = [
-                        "-C", util.Interpolate("%(prop:srcdir_relative)s/clang/cmake/caches/CrossWinToARMLinux.cmake"),
+                        "-C", util.Interpolate("%(prop:srcdir_relative)s/clang/cmake/caches/cross-linux-toolchain.cmake"),
                     ],
                     install_dir = "install",
                     env = {
@@ -3962,16 +3962,15 @@ all += [
                     },
                     post_build_steps =
                         TestSuiteBuilder.getLlvmTestSuiteSteps(
+                            # Common C/CXX flags.
+                            compiler_flags = "-march=armv8l+pauth -mbranch-protection=pac-ret -O2",
+                            # Common linker flags.
+                            linker_flags = "-march=armv8l+pauth -O2 -Wl,--emit-relocs",
                             cmake_definitions = {
                                 "CMAKE_BUILD_TYPE"              : "Release",
-                                "CMAKE_C_FLAGS"                 : "-march=armv8l+pauth -mbranch-protection=pac-ret -O2",
-                                "CMAKE_CXX_FLAGS"               : "-march=armv8l+pauth -mbranch-protection=pac-ret -O2",
-                                "CMAKE_EXE_LINKER_FLAGS"        : "-O2 -Wl,--emit-relocs",
-                                "CMAKE_MODULE_LINKER_FLAGS"     : "-O2 -Wl,--emit-relocs",
-                                "CMAKE_SHARED_LINKER_FLAGS"     : "-O2 -Wl,--emit-relocs",
                                 # Run on the devkit, limited set of tests.
-                                "TEST_SUITE_REMOTE_HOST"        : "buildbot@arm64-linux-02.lab.llvm.org",
-                                "TEST_SUITE_LIT_FLAGS"          : "-v -vv --threads=16 --time-tests",
+                                "TEST_SUITE_REMOTE_HOST"        : util.Interpolate("%(prop:remote_test_user_pauth)s@%(prop:remote_test_host_pauth)s"),
+                                "TEST_SUITE_LIT_FLAGS"          : "-v -vv --threads=32 --time-tests",
                                 "TEST_SUITE_RUN_BENCHMARKS"     : "ON",
                                 "TEST_SUITE_COLLECT_CODE_SIZE"  : "OFF",
                                 "TEST_SUITE_SUBDIRS"            : "SingleSource;MultiSource;MicroBenchmarks;External",

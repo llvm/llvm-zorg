@@ -272,8 +272,6 @@ def get_all():
                         'remote_test_host_pauth': 'arm64-linux-02.lab.llvm.org',
                         'remote_test_user'      : 'ubuntu',
                         'remote_test_user_pauth': 'buildbot',
-                        'sysroot_path'          : '/mnt/fs/ubuntu-server-arm64',
-                        'sysroot_path_pauth'    : '/mnt/fs/ubuntu-server-arm64-pauth',
                         'sysroots'              : '/mnt/fs/sysroots',
                     },
                     max_builds=1),
