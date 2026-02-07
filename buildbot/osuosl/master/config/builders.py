@@ -2200,6 +2200,8 @@ all += [
                         "-DCLANG_DEFAULT_LINKER=lld",
                         "-DLIBOMPTARGET_PLUGINS_TO_BUILD=level_zero",
                         "-DLIBOMPTARGET_ENABLE_DEBUG=ON",
+                        "-DLLVM_RUNTIME_TARGETS=default;spirv64-intel",
+                        "-DRUNTIMES_spirv64-intel_LLVM_ENABLE_RUNTIMES=openmp",
                     ])},
 
 
