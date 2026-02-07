@@ -4026,7 +4026,19 @@ all += [
                     env = {
                         'CCACHE_DIR' : util.Interpolate("%(prop:builddir)s/ccache-db"),
                     },
-                    post_build_steps =
+                    post_build_steps = [
+                        steps.ShellSequence(name = "scp-pauth-loaders",
+                            commands = [
+                                util.ShellArg(command=[ "ssh", util.Interpolate("%(prop:remote_test_user_pauth)s@%(prop:remote_test_host_pauth)s"), 
+                                                               "mkdir -p musl-loader/aarch64-linux-pauthtest/lib ; exit 0;" ],
+                                                               logname="stdio"),
+                                util.ShellArg(command=[ "scp", util.Interpolate("%(prop:sysroots)s/aarch64-linux-pauthtest/lib/ld-musl-aarch64.so.1"), 
+                                                               util.Interpolate("%(prop:remote_test_user_pauth)s@%(prop:remote_test_host_pauth)s:musl-loader/aarch64-linux-pauthtest/lib/ld-musl-aarch64.so.1") ],
+                                                               logname="stdio"),
+                            ],
+                            description = "deliver pauth loaders to the remote target",
+                            haltOnFailure = True,
+                        ),
                         TestSuiteBuilder.getLlvmTestSuiteSteps(
                             # Common C/CXX flags.
                             #TODO: remove -fno-inline since the Clang debug info related crash gets fixed.
@@ -4050,6 +4062,7 @@ all += [
                             },
                             compiler_dir = util.Interpolate("%(prop:builddir)s/build"),
                         )
+                    ]
                 )
         },
 ]
