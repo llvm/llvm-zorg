@@ -121,7 +121,7 @@ class Configuration(object):
         self.host_compiler_url = os.environ.get('HOST_URL',
                                                 'http://green-dragon-21.local/artifacts/')
         self.artifact_url = os.environ.get('ARTIFACT', 'NONE')
-        self.job_name = os.environ.get('JOB_NAME', 'NONE')
+        self.job_name = os.environ.get('JOB_NAME', 'NONE').replace("%2F", "/")
         self.build_id = os.environ.get('BUILD_ID', 'NONE')
         self.build_number = os.environ.get('BUILD_NUMBER', 'NONE')
         self.svn_rev = os.environ.get('LLVM_REV', 'NONE')
