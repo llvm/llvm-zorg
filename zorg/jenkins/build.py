@@ -861,10 +861,8 @@ def build_upload_artifact():
     header("Uploading Artifact")
     prop_file = "last_good_build.properties"
 
-    artifact_name = "clang-d{}-g{}-t{}-b{}.tar.gz".format(conf.git_distance,
-                                                          conf.git_sha,
-                                                          conf.build_id,
-                                                          conf.build_number)
+    artifact_name = "clang-d{}-g{}.tar.gz".format(conf.git_distance,
+                                                          conf.git_sha)
     new_url = conf.job_name + "/" + artifact_name
 
     with open(prop_file, 'w') as prop_fd:
