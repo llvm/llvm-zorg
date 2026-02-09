@@ -1,0 +1,36 @@
+#!/bin/bash
+
+# The `pre-checkout` hook will run just before your pipelines source code is
+# checked out from your SCM provider
+
+set -eu
+set -o pipefail
+
+gc_counter="$BUILDKITE_BUILD_PATH/git_gc_counter"
+echo "BUILDKITE_REPO: $BUILDKITE_REPO"
+if [ -d "$BUILDKITE_BUILD_CHECKOUT_PATH" ]; then
+    cd "$BUILDKITE_BUILD_CHECKOUT_PATH" || exit
+    remoteUrl=$(git remote get-url origin || echo "not a git repo")
+    echo "current remote URL: $remoteUrl"
+    if [ "$remoteUrl" != "$BUILDKITE_REPO" ]; then
+        echo "Remote URL does not match. Deleting and recreating the directory."
+        cd $BUILDKITE_BUILD_PATH
+        rm -rf "$BUILDKITE_BUILD_CHECKOUT_PATH"
+        rm -rf "$gc_counter"
+    else
+        # Run git gc from time to time to prevent repo from growing.
+        echo -n "x" >> "$gc_counter"
+        echo "GC counter $(wc -c < "$gc_counter")/20"
+        if [ "$(wc -c < "$gc_counter")" -gt 20 ]; then
+            echo "Running 'git gc'..."
+            git gc
+            git prune
+            if [ -f ".git/gc.log" ]; then
+              echo ".git/gc.log exist"
+              cat ./.git/gc.log
+              rm -f ./.git/gc.log
+            fi
+            rm -rf "$gc_counter"
+        fi
+    fi
+fi

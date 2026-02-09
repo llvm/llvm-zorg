@@ -1,0 +1,45 @@
+name: Build Bazel Bot Container
+
+permissions:
+  contents: read
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/build-bazel-bot-container.yml
+      - 'google-bazel-bot/docker/**'
+  pull_request:
+    paths:
+      - .github/workflows/build-bazel-bot-container.yml
+      - 'google-bazel-bot/docker/**'
+
+jobs:
+  build-container:
+    if: github.repository_owner == 'llvm'
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout LLVM Zorg
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        with:
+          sparse-checkout: google-bazel-bot/docker
+      - name: Build Container
+        uses: llvm/llvm-project/.github/actions/build-container@f091be6d53e447391ca23142cf9d49b2654116d7
+        with:
+          container-name: bazel-buildkite
+          context: google-bazel-bot/docker
+
+  push-container:
+    if: github.event_name == 'push'
+    needs:
+      - build-container
+    permissions:
+      packages: write
+    runs-on: ubuntu-24.04
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: llvm/llvm-project/.github/actions/push-container@f091be6d53e447391ca23142cf9d49b2654116d7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
