@@ -726,7 +726,7 @@ all = [
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaMultistageBuildFactory(
                     extra_configure_args=[
                         '-DLLVM_ENABLE_ASSERTIONS=ON',
-                        '-DLLVM_LIT_ARGS=-svj 256',
+                        '-DLLVM_LIT_ARGS=-sv',
                         '-DBUILD_SHARED_LIBS=ON',
                         '-DCMAKE_C_COMPILER_LAUNCHER=ccache',
                         '-DCMAKE_CXX_COMPILER_LAUNCHER=ccache'],
@@ -2509,7 +2509,6 @@ all += [
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                     clean=True,
                     depends_on_projects=['llvm', 'mlir', 'clang', 'flang','flang-rt','openmp'],
-                    targets = ['check-mlir-build-only'],
                     checks=['check-flang','check-flang-rt','check-mlir'],
                     extra_configure_args=[
                         '-DLLVM_TARGETS_TO_BUILD=PowerPC',
@@ -2518,7 +2517,6 @@ all += [
                         '-DLLVM_LIT_ARGS=-vj 256',
                         '-DFLANG_ENABLE_WERROR=ON',
                         '-DLLVM_ENABLE_ASSERTIONS=ON',
-                        '-DLLVM_ENABLE_PROJECTS=mlir',
                         '-DCMAKE_C_COMPILER_LAUNCHER=ccache',
                         '-DCMAKE_CXX_COMPILER_LAUNCHER=ccache'
                     ],
