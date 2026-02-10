@@ -1,6 +1,6 @@
 set -ex
 
-apt-get update
+apt-get -o DPkg::Lock::Timeout=-1 update
 apt-get install -y python3 python3-pip cmake ninja-build git ccache lsb-release wget software-properties-common gnupg
 pip3 install --break-system-packages buildbot-worker==3.11.7
 
