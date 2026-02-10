@@ -4,7 +4,9 @@ apt-get update
 apt-get install -y python3 python3-pip cmake ninja-build git ccache lsb-release wget software-properties-common gnupg
 pip3 install --break-system-packages buildbot-worker==3.11.7
 
-bash -c "$(wget -O - https://apt.llvm.org/llvm.sh)" 21
+wget https://apt.llvm.org/llvm.sh -O /tmp/llvm.sh
+chmod +x /tmp/llvm.sh
+/tmp/llvm.sh 21
 ln -sf /usr/bin/clang-21 /usr/bin/cc
 ln -sf /usr/bin/clang++-21 /usr/bin/c++
 ln -sf /usr/bin/ld.lld-21 /usr/bin/ld
