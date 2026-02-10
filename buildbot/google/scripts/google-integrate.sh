@@ -17,8 +17,8 @@ ln -sf /usr/bin/ld.lld-21 /usr/bin/ld
 rm -rf /b
 BOT_DIR=/b
 SERVER_PORT=9994
-WORKER_NAME="$(hostname)"
-WORKER_PASSWORD="$(gsutil cat gs://sanitizer-buildbot/$(hostname)-password)"
+WORKER_NAME="$(hostname -s)"
+WORKER_PASSWORD="$(gsutil cat gs://sanitizer-buildbot/$(hostname -s)-password)"
 
 userdel buildbot | true
 groupadd -f buildbot
