@@ -3619,6 +3619,7 @@ all += [
                 'llvm',
                 'lld',
                 'mlir',
+                'clang',
             ],
             clean = True,
             checks = None,
