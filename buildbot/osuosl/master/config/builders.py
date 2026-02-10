@@ -4037,7 +4037,7 @@ all += [
                                                                logname="stdio"),
                                 # Update libc++/libc++abi/libunwind SO modules for aarch64-linux-pauthtest build target on the remote target.
                                 # Note: do not use wildcards, the buildbot will wrap such path in quotes that reaks the scp command. Copy everything in the source dir.
-                                util.ShellArg(command=[ "scp", , "-Cp", "-oBatchMode=yes",
+                                util.ShellArg(command=[ "scp", "-Cp", "-oBatchMode=yes",
                                                                "libc++.so.1", "libc++abi.so.1", "libunwind.so.1",
                                                                util.Interpolate("%(prop:sysroots)s/aarch64-linux-pauthtest/lib/ld-musl-aarch64.so.1"), 
                                                                util.Interpolate("%(prop:remote_test_user_pauth)s@%(prop:remote_test_host_pauth)s:musl-loader/aarch64-linux-pauthtest/lib/") ],
