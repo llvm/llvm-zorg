@@ -705,7 +705,7 @@ all = [
                                       '-DLLVM_TARGETS_TO_BUILD=Mips'])},
 
     {'name' : "clang-ppc64le-linux-test-suite",
-    'tags'  : ["clang", "ppc", "ppc64le"],
+    'tags'  : ["clang", "llvm", "compiler-rt", "clang-tools-extra", "ppc", "ppc64le"],
     'workernames' : ["ppc64le-clang-test-suite"],
     'builddir': "clang-ppc64le-test-suite",
     'factory' : TestSuiteBuilder.getTestSuiteBuildFactory(
@@ -720,7 +720,7 @@ all = [
                         "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache"])},
 
     {'name' : "clang-ppc64le-linux-multistage",
-    'tags'  : ["clang", "ppc", "ppc64le"],
+    'tags'  : ["clang", "llvm", "lld", "compiler-rt", "clang-tools-extra", "ppc", "ppc64le"],
     'workernames' : ["ppc64le-clang-multistage-test"],
     'builddir': "clang-ppc64le-multistage",
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaMultistageBuildFactory(
@@ -736,7 +736,7 @@ all = [
                                          'clang-tools-extra'])},
 
     {'name' : "clang-ppc64le-rhel",
-    'tags'  : ["clang", "ppc", "ppc64le"],
+    'tags'  : ["clang", "llvm", "lld", "compiler-rt", "clang-tools-extra", "ppc", "ppc64le"],
     'workernames' : ["ppc64le-clang-rhel-test"],
     'builddir': "clang-ppc64le-rhel",
     'factory' : TestSuiteBuilder.getTestSuiteBuildFactory(
@@ -2503,7 +2503,7 @@ all += [
                     ])},
 
     {'name' : 'ppc64le-flang-mlir-rhel-clang',
-    'tags'  : ["flang", "ppc", "ppc64le"],
+    'tags'  : ["clang", "llvm", "flang", "flang-rt", "mlir", "openmp", "ppc", "ppc64le"],
     'workernames' : ['ppc64le-flang-mlir-rhel-test'],
     'builddir': 'ppc64le-flang-mlir-rhel-clang-build',
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
