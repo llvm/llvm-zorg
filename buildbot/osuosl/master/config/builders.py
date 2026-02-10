@@ -4026,8 +4026,8 @@ all += [
                     env = {
                         'CCACHE_DIR' : util.Interpolate("%(prop:builddir)s/ccache-db"),
                     },
-                    post_build_steps = [
-                        steps.ShellSequence(name = "scp-pauth-loaders",
+                    pre_install_steps = [
+                        steps.ShellSequence(name = "scp-so-modules",
                             commands = [
                                 util.ShellArg(command=[ "ssh", util.Interpolate("%(prop:remote_test_user_pauth)s@%(prop:remote_test_host_pauth)s"), 
                                                                "mkdir -p musl-loader/aarch64-linux-pauthtest/lib ; exit 0;" ],
@@ -4035,8 +4035,12 @@ all += [
                                 util.ShellArg(command=[ "scp", util.Interpolate("%(prop:sysroots)s/aarch64-linux-pauthtest/lib/ld-musl-aarch64.so.1"), 
                                                                util.Interpolate("%(prop:remote_test_user_pauth)s@%(prop:remote_test_host_pauth)s:musl-loader/aarch64-linux-pauthtest/lib/ld-musl-aarch64.so.1") ],
                                                                logname="stdio"),
+                                # Update libc++/libc++abi/libunwind SO modules for aarch64-linux-pauthtest build target on the remote target.
+                                util.ShellArg(command=[ "scp", util.Interpolate("%(prop:builddir)s/%(prop:objdir)s/lib/aarch64-unknown-linux-pauthtest/*.so*"), 
+                                                               util.Interpolate("%(prop:remote_test_user_pauth)s@%(prop:remote_test_host_pauth)s:musl-loader/aarch64-linux-pauthtest/lib/") ],
+                                                               logname="stdio"),
                             ],
-                            description = "deliver pauth loaders to the remote target",
+                            description = "deliver pauth loaders and .so modules to the remote target",
                             haltOnFailure = True,
                         ),
                         TestSuiteBuilder.getLlvmTestSuiteSteps(
@@ -4047,7 +4051,8 @@ all += [
                             linker_flags = util.Interpolate(
                                 "--target=aarch64-linux-pauthtest -march=armv8l+pauth -O2 "
                                 "-Wl,--emit-relocs "
-                                "-Wl,--dynamic-linker=/home/%(prop:remote_test_user_pauth)s/musl-loader/aarch64-linux-pauthtest/lib/ld-musl-aarch64.so.1"
+                                "-Wl,--dynamic-linker=/home/%(prop:remote_test_user_pauth)s/musl-loader/aarch64-linux-pauthtest/lib/ld-musl-aarch64.so.1 "
+                                "-Wl,-rpath=/home/buildbot/musl-loader/aarch64-linux-pauthtest/lib"
                             ),
                             cmake_definitions = {
                                 "CMAKE_BUILD_TYPE"              : "Release",
