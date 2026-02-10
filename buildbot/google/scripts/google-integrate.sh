@@ -1,7 +1,7 @@
 set -ex
 
-apt-get -o DPkg::Lock::Timeout=-1 update
-apt-get install -y python3 python3-pip cmake ninja-build git ccache lsb-release wget software-properties-common gnupg
+apt-get -o DPkg::Lock::Timeout=-1 update || true
+apt-get -o DPkg::Lock::Timeout=-1 install -y python3 python3-pip cmake ninja-build git ccache lsb-release wget software-properties-common gnupg
 pip3 install --break-system-packages buildbot-worker==3.11.7
 
 wget https://apt.llvm.org/llvm.sh -O /tmp/llvm.sh
