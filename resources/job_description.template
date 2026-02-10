@@ -1,0 +1,7 @@
+<h2>Issues</h2>
+<% if (log_summary == "") { %>
+    <p>No known issues detected</p>
+<% } else { %>
+${log_summary}
+<% } %>
+<p><a href="${env.BUILD_URL}consoleFull">Build Log</a></p>
