@@ -4008,7 +4008,8 @@ all += [
                         "LLVM_TARGETS_TO_BUILD"             : "AArch64",
                         "LLVM_INCLUDE_BENCHMARKS"           : "OFF",
                         "LLVM_LIT_ARGS"                     : "-v -vv --threads=32 --time-tests",
-                        "TOOLCHAIN_TARGET_TRIPLE"           : "aarch64-linux-musl;aarch64-linux-pauthtest",
+                        "LLVM_DEFAULT_TARGET_TRIPLE"        : "aarch64-unknown-linux-musl",
+                        "TOOLCHAIN_TARGET_TRIPLE"           : "aarch64-linux-pauthtest;aarch64-linux-musl",
                         "TOOLCHAIN_TARGET_SYSROOTFS"        : util.Interpolate("%(prop:sysroot_path_pauth)s"),
                         "TOOLCHAIN_TARGET_COMPILER_FLAGS"   : "-march=armv8l+pauth -fdebug-default-version=4 -gdwarf-4",
                         "TOOLCHAIN_TARGET_COMPILER_FLAGS-aarch64-linux-pauthtest"   : "-Xclang -fptrauth-elf-got",
@@ -4032,17 +4033,18 @@ all += [
                     pre_install_steps = [
                         steps.ShellSequence(name = "scp-so-modules",
                             commands = [
-                                util.ShellArg(command=[ "ssh", util.Interpolate("%(prop:remote_test_user_pauth)s@%(prop:remote_test_host_pauth)s"), 
+                                util.ShellArg(command=[ "ssh", "-oBatchMode=yes", util.Interpolate("%(prop:remote_test_user_pauth)s@%(prop:remote_test_host_pauth)s"), 
                                                                "mkdir -p musl-loader/aarch64-linux-pauthtest/lib ; exit 0;" ],
                                                                logname="stdio"),
-                                util.ShellArg(command=[ "scp", util.Interpolate("%(prop:sysroots)s/aarch64-linux-pauthtest/lib/ld-musl-aarch64.so.1"), 
-                                                               util.Interpolate("%(prop:remote_test_user_pauth)s@%(prop:remote_test_host_pauth)s:musl-loader/aarch64-linux-pauthtest/lib/ld-musl-aarch64.so.1") ],
-                                                               logname="stdio"),
                                 # Update libc++/libc++abi/libunwind SO modules for aarch64-linux-pauthtest build target on the remote target.
-                                util.ShellArg(command=[ "scp", util.Interpolate("%(prop:builddir)s/%(prop:objdir)s/lib/aarch64-unknown-linux-pauthtest/*.so*"), 
+                                # Note: do not use wildcards, the buildbot will wrap such path in quotes that reaks the scp command. Copy everything in the source dir.
+                                util.ShellArg(command=[ "scp", "-Cp", "-oBatchMode=yes",
+                                                               "libc++.so.1", "libc++abi.so.1", "libunwind.so.1",
+                                                               util.Interpolate("%(prop:sysroots)s/aarch64-linux-pauthtest/lib/ld-musl-aarch64.so.1"), 
                                                                util.Interpolate("%(prop:remote_test_user_pauth)s@%(prop:remote_test_host_pauth)s:musl-loader/aarch64-linux-pauthtest/lib/") ],
                                                                logname="stdio"),
                             ],
+                            workdir = util.Interpolate("%(prop:builddir)s/%(prop:objdir)s/lib/aarch64-unknown-linux-pauthtest"),
                             description = "deliver pauth loaders and .so modules to the remote target",
                             haltOnFailure = True,
                         ),
