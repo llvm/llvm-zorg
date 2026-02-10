@@ -4038,7 +4038,8 @@ all += [
                                                                util.Interpolate("%(prop:remote_test_user_pauth)s@%(prop:remote_test_host_pauth)s:musl-loader/aarch64-linux-pauthtest/lib/ld-musl-aarch64.so.1") ],
                                                                logname="stdio"),
                                 # Update libc++/libc++abi/libunwind SO modules for aarch64-linux-pauthtest build target on the remote target.
-                                util.ShellArg(command=[ "scp", util.Interpolate("%(prop:builddir)s/%(prop:objdir)s/lib/aarch64-unknown-linux-pauthtest/*.so*"), 
+                                # Note: do not use wildcards, the buildbot will wrap such path in quotes that reaks the scp command. Copy everything in the source dir.
+                                util.ShellArg(command=[ "scp", "-Cpr", util.Interpolate("%(prop:builddir)s/%(prop:objdir)s/lib/aarch64-unknown-linux-pauthtest"), 
                                                                util.Interpolate("%(prop:remote_test_user_pauth)s@%(prop:remote_test_host_pauth)s:musl-loader/aarch64-linux-pauthtest/lib/") ],
                                                                logname="stdio"),
                             ],
