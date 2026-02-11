@@ -12,6 +12,12 @@
     "description": "Time the pull request was created at, as a Unix timestamp."
   },
   {
+    "name": "merged_at_timestamp_seconds",
+    "type": "INTEGER",
+    "mode": "NULLABLE",
+    "description": "Time the pull request was merged at, as a Unix timestamp."
+  },
+  {
     "name": "pull_request_number",
     "type": "INTEGER",
     "mode": "NULLABLE",
@@ -22,5 +28,11 @@
     "type": "STRING",
     "mode": "NULLABLE",
     "description": "SHA of the commit associated with the pull request."
+  },
+  {
+    "name": "labels",
+    "type": "STRING",
+    "mode": "REPEATED",
+    "description": "Labels associated with the pull request."
   }
 ]
