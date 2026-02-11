@@ -73,8 +73,10 @@ class TestProcessLLVMCommits(unittest.TestCase):
       self,
       pull_request_number: int,
       created_at: str | None = None,
+      merged_at: str | None = None,
       pull_request_author: str | None = None,
       reviews: list[dict[str, Any]] | None = None,
+      labels: list[str] | None = None,
   ) -> dict[str, Any]:
     """Create a GitHub API response for a pull request."""
     return {
@@ -83,7 +85,9 @@ class TestProcessLLVMCommits(unittest.TestCase):
             {'login': pull_request_author} if pull_request_author else None
         ),
         'createdAt': created_at,
+        'mergedAt': merged_at,
         'reviews': {'nodes': reviews or []},
+        'labels': {'nodes': [{'name': label} for label in labels or []]},
     }
 
   def _create_review_api_data(
@@ -321,10 +325,14 @@ class TestProcessLLVMCommits(unittest.TestCase):
     """Test extracting pull request data from GitHub API data."""
     created_at = datetime.datetime(2020, 1, 1, tzinfo=datetime.timezone.utc)
     created_at_iso = created_at.isoformat()
+    merged_at = datetime.datetime(2020, 1, 2, tzinfo=datetime.timezone.utc)
+    merged_at_iso = merged_at.isoformat()
     pull_request_api_data = self._create_pull_request_api_data(
         pull_request_number=12345,
         created_at=created_at_iso,
+        merged_at=merged_at_iso,
         pull_request_author='pull_request_author',
+        labels=['llvm:test-label'],
     )
     commit_api_data = {
         'commit_abcdef': self._create_commit_api_data(
@@ -345,7 +353,12 @@ class TestProcessLLVMCommits(unittest.TestCase):
         pull_request_data[0].pull_request_timestamp_seconds,
         created_at.timestamp(),
     )
+    self.assertEqual(
+        pull_request_data[0].merged_at_timestamp_seconds,
+        merged_at.timestamp(),
+    )
     self.assertEqual(pull_request_data[0].associated_commit, 'abcdef')
+    self.assertIn('llvm:test-label', pull_request_data[0].labels)
 
   def test_extract_pull_request_data_with_missing_author(self):
     """Test extracting pull request data from GitHub API data."""

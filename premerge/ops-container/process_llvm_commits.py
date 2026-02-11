@@ -45,6 +45,12 @@ commit_{commit_sha}:
           author {{ login }}
           number
           createdAt
+          mergedAt
+          labels(first: 25) {{
+            nodes {{
+              name
+            }}
+          }}
           reviews(last: 100) {{
             nodes {{
               state
@@ -66,7 +72,9 @@ class LLVMCommitData:
   commit_sha: str
   commit_timestamp_seconds: int
   diff: list[dict[str, int | str]]
-  commit_author: str | None = None  # Username of author is unknown until API call
+  commit_author: str | None = (
+      None  # Username of author is unknown until API call
+  )
   associated_pull_request: int | None = None
   is_revert: bool = False
   pull_request_reverted: int | None = None
@@ -78,7 +86,9 @@ class LLVMPullRequestData:
   pull_request_number: int
   pull_request_author: str
   pull_request_timestamp_seconds: int
+  merged_at_timestamp_seconds: int
   associated_commit: str
+  labels: list[str]
 
 
 @dataclasses.dataclass
@@ -255,16 +265,26 @@ def extract_pull_request_data(
       )
 
     # Convert ISO timestamp to Unix timestamp, in seconds
-    unix_timestamp = int(
+    create_unix_timestamp = int(
         datetime.datetime.fromisoformat(pull_request["createdAt"]).timestamp()
     )
+    if pull_request["mergedAt"] is not None:
+      merge_unix_timestamp = int(
+          datetime.datetime.fromisoformat(pull_request["mergedAt"]).timestamp()
+      )
+    else:
+      merge_unix_timestamp = None
 
     pull_request_data.append(
         LLVMPullRequestData(
             pull_request_number=pull_request["number"],
             pull_request_author=author_login,
-            pull_request_timestamp_seconds=unix_timestamp,
+            pull_request_timestamp_seconds=create_unix_timestamp,
+            merged_at_timestamp_seconds=merge_unix_timestamp,
             associated_commit=commit_sha.removeprefix("commit_"),
+            labels=[
+                label["name"] for label in pull_request["labels"]["nodes"]
+            ],
         )
     )
 
@@ -354,7 +374,6 @@ def query_github_graphql_api(
       },
       json={"query": query},
   )
-
   # Exit if API call fails
   # A failed API call means a large batch of data is missing and will not be
   # reflected in the dashboard. The dashboard will silently misrepresent
