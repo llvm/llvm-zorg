@@ -4050,8 +4050,7 @@ all += [
                         ),
                         TestSuiteBuilder.getLlvmTestSuiteSteps(
                             # Common C/CXX flags.
-                            #TODO: remove -fno-inline since the Clang debug info related crash gets fixed.
-                            compiler_flags = "--target=aarch64-linux-pauthtest -march=armv8l+pauth -O2 -fno-inline",
+                            compiler_flags = "--target=aarch64-linux-pauthtest -march=armv8l+pauth -O2",
                             # Common linker flags.
                             linker_flags = util.Interpolate(
                                 "--target=aarch64-linux-pauthtest -march=armv8l+pauth -O2 "
