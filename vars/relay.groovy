@@ -54,7 +54,7 @@ private def relay_steps(joblist, artifact_url, last_good_properties_url) {
 def pipeline(joblist,
         artifact_url='',
         last_good_properties_url='') {
-    node(label: 'macos-x86_64') {
+    node(label: 'trigger') {
         stage('main') {
             // Download aws CLI used to gather artifacts
             sh """
