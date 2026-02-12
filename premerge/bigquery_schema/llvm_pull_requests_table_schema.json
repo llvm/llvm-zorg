@@ -31,8 +31,15 @@
   },
   {
     "name": "labels",
-    "type": "STRING",
+    "type": "RECORD",
     "mode": "REPEATED",
-    "description": "Labels associated with the pull request."
+    "description": "Labels associated with the pull request.",
+    "fields": [
+      {
+        "name": "name",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      }
+    ]
   }
 ]
