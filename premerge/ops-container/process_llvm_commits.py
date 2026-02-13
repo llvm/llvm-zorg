@@ -88,7 +88,7 @@ class LLVMPullRequestData:
   pull_request_timestamp_seconds: int
   merged_at_timestamp_seconds: int
   associated_commit: str
-  labels: list[str]
+  labels: list[dict[str, str]]
 
 
 @dataclasses.dataclass
@@ -275,6 +275,14 @@ def extract_pull_request_data(
     else:
       merge_unix_timestamp = None
 
+    # Extract label names associated with the pull request
+    labels = [
+        {
+            "name": label["name"],
+        }
+        for label in pull_request["labels"]["nodes"]
+    ]
+
     pull_request_data.append(
         LLVMPullRequestData(
             pull_request_number=pull_request["number"],
@@ -282,9 +290,7 @@ def extract_pull_request_data(
             pull_request_timestamp_seconds=create_unix_timestamp,
             merged_at_timestamp_seconds=merge_unix_timestamp,
             associated_commit=commit_sha.removeprefix("commit_"),
-            labels=[
-                label["name"] for label in pull_request["labels"]["nodes"]
-            ],
+            labels=labels,
         )
     )
 

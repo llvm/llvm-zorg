@@ -358,7 +358,10 @@ class TestProcessLLVMCommits(unittest.TestCase):
         merged_at.timestamp(),
     )
     self.assertEqual(pull_request_data[0].associated_commit, 'abcdef')
-    self.assertIn('llvm:test-label', pull_request_data[0].labels)
+    self.assertIn(
+        'llvm:test-label',
+        [label['name'] for label in pull_request_data[0].labels],
+    )
 
   def test_extract_pull_request_data_with_missing_author(self):
     """Test extracting pull request data from GitHub API data."""
