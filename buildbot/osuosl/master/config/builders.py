@@ -2749,6 +2749,17 @@ all += [
                     script="hip-build.sh",
                     checkout_llvm_sources=False,
                     script_interpreter=None)},
+    {'name' : "clang-hip-spirv",
+    'tags'  : ["clang"],
+    'workernames' : ["hip-vega20-0"],
+    'builddir': "clang-hip-spirv",
+    'factory' : AnnotatedBuilder.getAnnotatedBuildFactory(
+                    script="hip-build.sh",
+                    checkout_llvm_sources=False,
+                    script_interpreter=None,
+                    env={
+                        'AMDGPU_ARCHS': 'amdgcnspirv',
+                    })},
 
 # VE builders.
     {'name' : "clang-ve-ninja",
