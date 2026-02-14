@@ -1,4 +1,45 @@
 from twisted.internet import defer
+import json
+import sqlalchemy as sa
+
+
+@defer.inlineCallbacks
+def setBuildsetProperty(db, bsid, name, value, source="Collapse"):
+    """Set a buildset property
+
+    buildbot.db.buildset.BuildsetConnectorComponent only has
+    getBuildsetProperties, but no setter. This setter is modelled after
+    setBuildProperty.
+    """
+    def thd(conn):
+        bs_props_tbl = db.model.buildset_properties
+        db.buildsets.checkLength(bs_props_tbl.c.property_name, name)
+
+        whereclause=sa.and_(bs_props_tbl.c.buildsetid == bsid, bs_props_tbl.c.property_name == name)
+        q = sa.select([bs_props_tbl.c.property_name, bs_props_tbl.c.property_value], whereclause=whereclause)
+        prop = conn.execute(q).fetchone()
+        value_js = json.dumps([value,source])
+        if prop is None:
+            conn.execute(bs_props_tbl.insert(), {
+                "buildsetid": bsid,
+                "property_name": name,
+                "property_value": value_js
+            })
+        elif prop.property_value != value_js:
+            conn.execute(bs_props_tbl.update(whereclause=whereclause), {"property_value": value_js})
+
+    yield db.pool.do(thd)
+
+    # Also update the lookup cache, if this buidset properties' has been cached.
+    if bsid in db.buildsets.getBuildsetProperties.cache.keys():
+        # Lookup of old values will be from the cache
+        properties = yield db.buildsets.getBuildsetProperties(bsid)
+
+        # Update the property value and store back to cache
+        properties[name] = (value,source)
+        db.buildsets.getBuildsetProperties.cache.put(bsid, properties)
+
+
 
 @defer.inlineCallbacks
 def collapseRequests(master, builder, req1, req2):
@@ -31,13 +72,16 @@ def collapseRequests(master, builder, req1, req2):
             str(req2['buildsetid'])
         )
 
-    # If the build is going to be a clean build anyway, we can collapse a clean
-    # build and a non-clean build.
-    if getattr(builder.config.factory, "clean", False):
-        if 'clean_obj' in selfBuildsetPoperties:
-            del selfBuildsetPoperties["clean_obj"]
-        if 'clean_obj' in otherBuildsetPoperties:
-            del otherBuildsetPoperties["clean_obj"]
+
+    # Requests can be collapsed regardless of clean property, but remember
+    # whether a collapsed buildrequest should be clean.
+    anyClean = selfBuildsetPoperties.get("clean") or otherBuildsetPoperties.get("clean")
+    selfBuildsetPoperties.pop('clean', None)
+    otherBuildsetPoperties.pop('clean', None)
+
+    anyCleanObj = selfBuildsetPoperties.get("clean_obj") or otherBuildsetPoperties.get("clean_obj")
+    selfBuildsetPoperties.pop('clean_obj', None)
+    otherBuildsetPoperties.pop('clean_obj', None)
 
     # Check buildsets properties and do not collapse
     # if properties do not match. This includes the check
@@ -92,7 +136,19 @@ def collapseRequests(master, builder, req1, req2):
             return False
 
     # Build requests with different reasons should be built separately.
-    if req1.get('reason', None) == req2.get('reason', None):
-        return True
-    else:
+    if req1.get('reason', None) != req2.get('reason', None):
         return False
+
+    # We decided to collapse the requests. One request will be marked 'SKIPPED',
+    # the other used to subsume both. If at least one of them requires a clean
+    # build, mark the subsuming request as such. Since we don't know which one
+    # it is, mark both.
+    if anyClean:
+        yield setBuildsetProperty(master.db, req1['buildsetid'], 'clean', True)
+        yield setBuildsetProperty(master.db, req2['buildsetid'], 'clean', True)
+
+    if anyCleanObj:
+        yield setBuildsetProperty(master.db, req1['buildsetid'], 'clean_obj', True)
+        yield setBuildsetProperty(master.db, req2['buildsetid'], 'clean_obj', True)
+
+    return True
