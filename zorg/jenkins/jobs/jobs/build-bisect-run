@@ -1,0 +1,106 @@
+#!/usr/bin/env groovy
+
+// Generic build runner that can execute any job template configuration
+// This job handles the actual building/testing work for bisection
+def clangBuilder = evaluate readTrusted('zorg/jenkins/lib/builders/ClangBuilder.groovy')
+
+pipeline {
+    options {
+        disableConcurrentBuilds()
+    }
+
+    parameters {
+        string(name: 'LABEL', defaultValue: params.LABEL ?: 'macos-x86_64', description: 'Node label to run on')
+        string(name: 'GIT_SHA', defaultValue: params.GIT_SHA ?: '*/main', description: 'Git commit to build.')
+        string(name: 'ARTIFACT', defaultValue: params.ARTIFACT ?: 'llvm.org/clang-stage1-RA/latest', description: 'Clang artifact to use')
+
+        // Job template configuration
+        string(name: 'JOB_TEMPLATE', defaultValue: params.JOB_TEMPLATE ?: 'clang-stage2-Rthinlto', description: 'Job template to use')
+        string(name: 'BUILD_CONFIG', defaultValue: params.BUILD_CONFIG ?: '{}', description: 'Build configuration JSON')
+
+        // Bisection context (for build description)
+        string(name: 'BISECT_GOOD', defaultValue: params.BISECT_GOOD ?: '', description: 'Good commit for bisection context')
+        string(name: 'BISECT_BAD', defaultValue: params.BISECT_BAD ?: '', description: 'Bad commit for bisection context')
+    }
+
+    agent {
+        node {
+            label params.LABEL
+        }
+    }
+
+    stages {
+        stage('Setup Build Description') {
+            steps {
+                script {
+                    def commitInfo = params.GIT_SHA.take(8)
+                    def template = params.JOB_TEMPLATE
+
+                    if (params.BISECT_GOOD && params.BISECT_BAD) {
+                        def goodShort = params.BISECT_GOOD.take(8)
+                        def badShort = params.BISECT_BAD.take(8)
+                        currentBuild.description = "🔍 BISECT RUN [${template}]: ${commitInfo} (${goodShort}..${badShort})"
+                    } else {
+                        currentBuild.description = "🔧 BUILD RUN [${template}]: ${commitInfo}"
+                    }
+
+                    echo "Job Template: ${template}"
+                    echo "Testing commit: ${commitInfo}"
+                    echo "Build Config: ${params.BUILD_CONFIG}"
+                }
+            }
+        }
+
+        stage('Checkout') {
+            steps {
+                script {
+                    clangBuilder.checkoutStage()
+                }
+            }
+        }
+
+        stage('Setup Venv') {
+            steps {
+                script {
+                    clangBuilder.setupVenvStage()
+                }
+            }
+        }
+
+        stage('Fetch Artifact') {
+            steps {
+                script {
+                    clangBuilder.fetchArtifactStage()
+                }
+            }
+        }
+
+        stage('Build') {
+            steps {
+                script {
+                    // Load the job template dynamically
+                    def template = evaluate readTrusted("zorg/jenkins/lib/templates/${params.JOB_TEMPLATE}.groovy")
+
+                    // Parse user build configuration
+                    def userBuildConfig = [:]
+                    if (params.BUILD_CONFIG && params.BUILD_CONFIG != '{}') {
+                        userBuildConfig = readJSON text: params.BUILD_CONFIG
+                    }
+
+                    // Apply template defaults with user overrides
+                    def buildConfig = template.getDefaultBuildConfig(userBuildConfig)
+
+                    clangBuilder.buildStage(buildConfig)
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            script {
+                clangBuilder.cleanupStage()
+            }
+        }
+    }
+}
