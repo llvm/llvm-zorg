@@ -140,6 +140,8 @@ Full details are available at: {{ build_url }}
 <summary>Here is the relevant piece of the build log for the reference</summary>
 
 ```
+{{ summary }}
+
 {{ details }}
 ```
 
