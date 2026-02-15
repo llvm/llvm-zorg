@@ -659,6 +659,17 @@ all = [
                     script="clang-windows.py",
                     depends_on_projects=['llvm', 'clang', 'lld', 'debuginfo-tests'])},
 
+    {'name' : 'clang-x64-windows-msvc-forward-slashes',
+    'tags'  : ["clang"],
+    'workernames' : ['windows-gcebot2'],
+    'builddir': 'clang-x64-windows-msvc-forward-slashes',
+    'factory' : AnnotatedBuilder.getAnnotatedBuildFactory(
+                    script="clang-windows.py",
+                    extra_args=[
+                        '--extra_cmake_arg=-DLLVM_WINDOWS_PREFER_FORWARD_SLASH=ON',
+                    ],
+                    depends_on_projects=['llvm', 'clang', 'lld', 'debuginfo-tests'])},
+
     {'name' : "clang-m68k-linux",
     'tags'  : ["clang"],
     'workernames' : ["debian-akiko-m68k"],
