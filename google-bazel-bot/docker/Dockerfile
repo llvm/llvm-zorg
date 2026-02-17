@@ -57,7 +57,7 @@ RUN wget --no-verbose -O /usr/bin/bazelisk https://github.com/bazelbuild/bazelis
   chmod +x /usr/bin/bazelisk; \
   bazelisk --version
 
-# Build and install buildifier
+# Build and install buildifier and buildozer
 RUN git clone https://github.com/bazelbuild/buildtools.git /tmp/buildtools; \
   cd /tmp/buildtools; \
   bazelisk build --noshow_progress --ui_event_filters=-debug,-info //buildifier //buildozer; \
