@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bazel-buildkite
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bazel-buildkite
+  template:
+    metadata:
+      labels:
+        app: bazel-buildkite
+    spec:
+      containers:
+        - name: bazel-buildkite
+          image: ghcr.io/llvm/bazel-buildkite:latest
+          resources:
+            limits:
+              cpu: "63"
+              memory: 230Gi
+            requests:
+              cpu: "63"
+              memory: 230Gi
+          volumeMounts:
+            - name: scratch-volume
+              mountPath: /dev/shm
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                 fieldPath: metadata.name
+            - name: BUILDKITE_AGENT_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: buildkite-agent-token
+                  key: token
+            - name: BUILDKITE_AGENT_TAGS
+              value: "queue=llvm-bazel-test,pod-name=$(POD_NAME)"
+            - name: BUILDKITE_BUILD_PATH
+              value: "/var/lib/buildkite-agent/builds"
+      volumes:
+        - name: scratch-volume
+          emptyDir:
+            medium: Memory
+      terminationGracePeriodSeconds: 30
