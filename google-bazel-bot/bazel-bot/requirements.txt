@@ -1,0 +1,8 @@
+requests
+PyGithub
+GitPython
+python-dotenv
+schedule
+google-adk
+argparse
+mypy

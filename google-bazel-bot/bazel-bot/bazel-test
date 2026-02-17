@@ -1,0 +1,22 @@
+#!/bin/bash
+# Starts a bazel test matching buildkite config.
+# You can pass targets to test, otherwise tests everything.
+set -ueo pipefail
+
+# Assumes one is cd-ed into utils/bazel directory already.
+mkdir -p $HOME/bazel_execution_log
+if [ $# -eq 0 ]; then
+  # Quiet mode is important so it doesn't populate LLM logs with unnecessary info
+  bazelisk query //... + @llvm-project//... --lockfile_mode=off | \
+  xargs --max-args 1000000 --max-chars 1000000 --exit \
+  bazelisk --quiet test --lockfile_mode=off --config=generic_clang --jobs=128 \
+  --build_tag_filters=-nobuildkite  \
+  --test_tag_filters=-nobuildkite  \
+  --execution_log_binary_file="$HOME/bazel_execution_log/$(git rev-parse HEAD).log"
+else
+  # Quiet mode is important so it doesn't populate LLM logs with unnecessary info
+  bazelisk --quiet test $@ --lockfile_mode=off --config=generic_clang --jobs=128 \
+  --build_tag_filters=-nobuildkite  \
+  --test_tag_filters=-nobuildkite  \
+  --execution_log_binary_file="$HOME/bazel_execution_log/$(git rev-parse HEAD).log"
+fi
