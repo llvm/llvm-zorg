@@ -66,6 +66,9 @@ resource "google_container_node_pool" "bazel_ci" {
 
   node_config {
     machine_type = "n2-standard-64"
+    workload_metadata_config {
+      mode = "GKE_METADATA"
+    }
   }
 }
 
