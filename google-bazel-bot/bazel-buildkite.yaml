@@ -13,6 +13,7 @@ spec:
       labels:
         app: bazel-buildkite
     spec:
+      serviceAccountName: bazel-cache-ksa
       containers:
         - name: bazel-buildkite
           image: ghcr.io/llvm/bazel-buildkite:latest

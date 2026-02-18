@@ -52,6 +52,10 @@ resource "google_container_cluster" "llvm_bazel_cluster" {
 
   remove_default_node_pool = true
   initial_node_count       = 1
+
+  workload_identity_config {
+    workload_pool = "llvm-bazel.svc.id.goog"
+  }
 }
 
 resource "google_container_node_pool" "bazel_ci" {
@@ -63,6 +67,29 @@ resource "google_container_node_pool" "bazel_ci" {
   node_config {
     machine_type = "n2-standard-64"
   }
+}
+
+resource "google_service_account" "bazel_cache_gsa" {
+  account_id   = "bazel-cache"
+  display_name = "Service account for accessing bazel cache."
+}
+
+# TODO(boomanaiden154): Delete this bucket and recreate it in terraform when
+# there is an opportune time to do so.
+data "google_storage_bucket" "bazel_cache_bucket" {
+  name = "llvm-bazel-cache"
+}
+
+resource "google_storage_bucket_iam_binding" "cache_bucket_binding" {
+  bucket = data.google_storage_bucket.bazel_cache_bucket.name
+  role   = "roles/storage.objectUser"
+  members = [
+    format("serviceAccount:%s", google_service_account.bazel_cache_gsa.email)
+  ]
+
+  depends_on = [
+    google_service_account.bazel_cache_gsa
+  ]
 }
 
 data "google_client_config" "current" {}
@@ -99,10 +126,23 @@ resource "kubernetes_secret" "buildkite_agent_token" {
   depends_on = [kubernetes_namespace.bazel_ci]
 }
 
+resource "kubernetes_service_account" "bazel_cache_ksa" {
+  metadata {
+    name      = "bazel-cache-ksa"
+    namespace = kubernetes_namespace.bazel_ci.metadata[0].name
+    annotations = {
+      "iam.gke.io/gcp-service-account" = google_service_account.bazel_cache_gsa.email
+    }
+  }
+
+  depends_on = [kubernetes_namespace.bazel_ci]
+}
+
 resource "kubernetes_manifest" "bazel_buildkite" {
   manifest = yamldecode(file("bazel-buildkite.yaml"))
   depends_on = [
     kubernetes_namespace.bazel_ci,
-    kubernetes_secret.buildkite_agent_token
+    kubernetes_secret.buildkite_agent_token,
+    kubernetes_service_account.bazel_cache_ksa
   ]
 }
