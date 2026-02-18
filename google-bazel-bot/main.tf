@@ -138,6 +138,19 @@ resource "kubernetes_service_account" "bazel_cache_ksa" {
   depends_on = [kubernetes_namespace.bazel_ci]
 }
 
+resource "google_service_account_iam_binding" "bazel_cache_gsa_binding" {
+  service_account_id = google_service_account.bazel_cache_gsa.name
+  role               = "roles/iam.workloadIdentityUser"
+
+  members = [
+    "serviceAccount:${google_service_account.bazel_cache_gsa.project}.svc.id.goog[bazel-ci/bazel-cache-ksa]"
+  ]
+
+  depends_on = [
+    google_service_account.bazel_cache_gsa
+  ]
+}
+
 resource "kubernetes_manifest" "bazel_buildkite" {
   manifest = yamldecode(file("bazel-buildkite.yaml"))
   depends_on = [
