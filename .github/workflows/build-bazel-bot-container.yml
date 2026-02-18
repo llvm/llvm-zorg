@@ -29,6 +29,7 @@ jobs:
         with:
           container-name: bazel-buildkite
           context: google-bazel-bot/docker
+          target: bazel-buildkite
 
   push-container:
     if: github.event_name == 'push'
