@@ -83,3 +83,16 @@ VOLUME /var/lib/buildkite-agent
 
 ENTRYPOINT ["entrypoint.sh"]
 CMD ["gosu", "buildkite-agent", "buildkite-agent", "start", "--no-color", "--tags-from-gcp"]
+
+FROM bazel-buildkite as bazel-fixer-bot
+
+RUN mkdir /var/lib/buildkite-agent/bazel-fixer-bot
+WORKDIR /var/lib/buildkite-agent/bazel-fixer-bot
+RUN apt-get update && apt-get install -y python3-venv
+RUN python3 -m venv .venv
+COPY bazel-bot/requirements.lock.txt .
+RUN .venv/bin/python3 -m pip install -r ./requirements.lock.txt
+COPY bazel-bot/* .
+
+ENTRYPOINT [""]
+CMD [".venv/bin/python3", "./bazelbot_server.py", "--llvm_git_repo=/var/lib/buildkite-agent/llvm-project-bazelbot/"]
