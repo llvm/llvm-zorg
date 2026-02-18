@@ -93,6 +93,7 @@ def task_pipeline(label, body) {
 
 def benchmark_pipeline(label, body) {
     properties([
+        buildDiscarder(logRotator(numToKeepStr: '30')),
         disableResume(),
         parameters([
             string(name: 'ARTIFACT'),

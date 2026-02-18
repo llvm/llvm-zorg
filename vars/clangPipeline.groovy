@@ -9,11 +9,13 @@ def call(Map config = [:]) {
     def jobName = config.jobName
     def zorgBranch = config.zorgBranch
 
+    def pipelineProperties = [
+        buildDiscarder(logRotator(numToKeepStr: '30'))
+    ]
     if (!params.IS_BISECT_JOB) {
-        properties([
-            disableConcurrentBuilds()
-        ])
+        pipelineProperties.add(disableConcurrentBuilds())
     }
+    properties(pipelineProperties)
 
     pipeline {
         options {
