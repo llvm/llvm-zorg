@@ -38,7 +38,12 @@ def getBOLTCmakeBuildFactory(
             depends_on_projects=depends_on_projects,
             **kwargs) # Pass through all the extra arguments.
 
+    # Propagating skip status from NFC mode to the final result of the build.
     f.buildClass = SkipAwareBuild
+    stepNameNfcCheckBolt = "nfc-test check-bolt"
+    f.buildClass.SkipIndicatorStep = stepNameNfcCheckBolt
+
+    # Add external test suite.
     if bolttests:
         checks += ['check-large-bolt']
         extra_configure_args += [
@@ -47,13 +52,13 @@ def getBOLTCmakeBuildFactory(
             ]
         # Clean checkout of bolt-tests if cleanBuildRequested
         f.addSteps([
-            steps.RemoveDirectory(name="BOLT large tests: clean",
+            steps.RemoveDirectory(name="clean-external-bolt-tests",
                 dir=bolttests_dir,
                 haltOnFailure=True,
                 warnOnFailure=True,
                 doStepIf=cleanBuildRequestedByProperty),
 
-            steps.Git(name="BOLT large tests: checkout",
+            steps.Git(name="checkout-external-bolt-tests",
                 description="fetching",
                 descriptionDone="fetch",
                 descriptionSuffix="BOLT Large Tests",
@@ -105,7 +110,7 @@ def getBOLTCmakeBuildFactory(
         f.addSteps([
             # Cleanup old/new binaries and markers from previous NFC-mode runs.
             ShellCommand(
-                name='clean-nfc-check',
+                name='nfc-check clean',
                 command=(
                         f"rm -f {boltNew} {boltOld} {hasSrcChanges} {skipInTree} {skipOutOfTree}; "
                         ),
@@ -118,7 +123,7 @@ def getBOLTCmakeBuildFactory(
             # llvm-bolt.new and llvm-bolt.old. Also, creates a marker to force
             # in-tree tests in case additional source code changes are detected.
             ShellCommand(
-                name='nfc-check-setup',
+                name='nfc-check setup',
                 command=[
                         f"../{f.monorepo_dir}/bolt/utils/nfc-check-setup.py",
                         "--switch-back",
@@ -135,7 +140,7 @@ def getBOLTCmakeBuildFactory(
             # Verify that the llvm-bolt binary can report its version within a
             # reasonable amount of time.
             ShellCommand(
-                name='llvm-bolt-version-check',
+                name='smoke-test bolt-version',
                 command=(f"{boltNew} --version"),
                 description=('Check that llvm-bolt binary passes a simple test'
                              'before proceeding with testing.'),
@@ -149,7 +154,7 @@ def getBOLTCmakeBuildFactory(
             # - no unique IDs are embedded in the binaries
             # Warns but does not fail when validation fails.
             ShellCommand(
-                name='nfc-check-validation',
+                name='nfc-check validate',
                 command=(
                     f"( ! [ -f {boltNew} ] || ! [ -f {boltOld} ] ) && "
                     "{ printf 'NFC-Mode WARNING: old/new files not present. Tests will run.'; return 2; }; "
@@ -176,7 +181,7 @@ def getBOLTCmakeBuildFactory(
             # identical, skip the following tests. If relevant source code
             # changes are detected, still run the in-tree tests.
             ShellCommand(
-                name='nfc-check-bolt-different',
+                name='nfc-check bolt-is-different',
                 command=(
                           f'cmp -s {boltNew} {boltOld} && ('
                           f'touch {skipInTree}; touch {skipOutOfTree}); '
@@ -193,7 +198,7 @@ def getBOLTCmakeBuildFactory(
             # priority with nice to reduce CPU contention in virtualized
             # environments. This step relinks the llvm-bolt binary if needed.
             LitTestCommand(
-                name='nfc-check-bolt',
+                name=stepNameNfcCheckBolt,
                 command=("nice -n 5 ninja check-bolt"),
                 description=["running", "NFC", "check-bolt"],
                 descriptionDone=["NFC", "check-bolt", "completed"],
@@ -202,10 +207,10 @@ def getBOLTCmakeBuildFactory(
                 flunkOnFailure=True,
                 doStepIf=FileDoesNotExist(f"build/{skipInTree}"),
                 env=env),
-            # Run out-of-tree large tests if the llvm-bolt binary has changed.
-            # Lower scheduling priority, as above.
+            # Run out-of-tree bolt-tests if the llvm-bolt binary has changed,
+            # with lower scheduling priority.
             LitTestCommand(
-                name='nfc-check-large-bolt',
+                name='nfc-test check-large-bolt',
                 command=('nice -n 5 bin/llvm-lit -v -j2 tools/bolttests'),
                 description=["running", "NFC", "check-large-bolt"],
                 descriptionDone=["NFC", "check-large-bolt", "completed"],
@@ -226,6 +231,9 @@ class SkipAwareBuild(Build):
     This is done by overriding stepDone, which merges the results of each step
     to the overall build.
     """
+
+    SkipIndicatorStep = set()
+
     @defer.inlineCallbacks
     def stepDone(self, results, step):
         # Run the default logic.
@@ -233,6 +241,6 @@ class SkipAwareBuild(Build):
 
         # Specialize by setting the overall build result to skipped when no
         # tests have ran and no other errors occurred.
-        if step.name == "nfc-check-bolt" and results == SKIPPED and self.results not in (FAILURE, WARNINGS, EXCEPTION, RETRY, CANCELLED):
+        if step.name == self.SkipIndicatorStep and results == SKIPPED and self.results not in (FAILURE, WARNINGS, EXCEPTION, RETRY, CANCELLED):
             self.results = SKIPPED
         return terminate
