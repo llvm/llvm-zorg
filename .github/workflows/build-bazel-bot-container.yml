@@ -35,6 +35,7 @@ jobs:
           container-name: ${{ matrix.container-name }}
           context: google-bazel-bot
           target: ${{ matrix.container-name }}
+          dockerfile: google-bazel-bot/docker/Dockerfile
 
   push-container:
     if: github.event_name == 'push'
