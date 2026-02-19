@@ -87,7 +87,7 @@ CMD ["gosu", "buildkite-agent", "buildkite-agent", "start", "--no-color", "--tag
 FROM ubuntu:24.04 as bazel-fixer-bot
 
 RUN apt-get update && apt-get install -y python3 python3-pip
-RUN mkdir /var/lib/buildkite-agent/bazel-fixer-bot
+RUN mkdir -p /var/lib/buildkite-agent/bazel-fixer-bot
 WORKDIR /var/lib/buildkite-agent/bazel-fixer-bot
 RUN apt-get update && apt-get install -y python3-venv
 RUN python3 -m venv .venv
