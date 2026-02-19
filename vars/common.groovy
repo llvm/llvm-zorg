@@ -63,13 +63,16 @@ def task_pipeline(label, body) {
     node(label) {
         skipDefaultCheckout()
 
+        def crashDiagnosticsDir = "${WORKSPACE}/clang_crash_diagnostics"
         try {
             stage('main') {
                 dir('config') {
                     git url: 'https://github.com/llvm/llvm-zorg.git', branch: 'main', poll: false
                 }
+                sh "rm -rf '${crashDiagnosticsDir}' && mkdir -p '${crashDiagnosticsDir}'"
                 withEnv([
-                    "PATH=$PATH:$WORKSPACE/venv/bin:/usr/bin:/usr/local/bin"
+                    "PATH=$PATH:$WORKSPACE/venv/bin:/usr/bin:/usr/local/bin",
+                    "CLANG_CRASH_DIAGNOSTICS_DIR=${crashDiagnosticsDir}"
                 ]) {
                     withCredentials([string(credentialsId: 's3_resource_bucket', variable: 'S3_BUCKET')]) {
                         body()
@@ -85,6 +88,10 @@ def task_pipeline(label, body) {
             throw e
         } finally {
             stage('post') {
+                def crashFiles = findFiles(glob: "clang_crash_diagnostics/**")
+                if (crashFiles.length > 0) {
+                    zip archive: true, dir: 'clang_crash_diagnostics', zipFile: 'clang_crash_diagnostics.zip'
+                }
                 post_build()
             }
         }
