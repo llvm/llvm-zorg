@@ -77,6 +77,17 @@ resource "google_service_account" "bazel_cache_gsa" {
   display_name = "Service account for accessing bazel cache."
 }
 
+resource "google_project_iam_binding" "vertex_ai_user_binding" {
+  project = "llvm-bazel"
+  role    = "roles/aiplatform.user"
+
+  members = [
+    "serviceAccount:${google_service_account.bazel_cache_gsa.email}",
+  ]
+
+  depends_on = [google_service_account.bazel_cache_gsa]
+}
+
 # TODO(boomanaiden154): Delete this bucket and recreate it in terraform when
 # there is an opportune time to do so.
 data "google_storage_bucket" "bazel_cache_bucket" {
