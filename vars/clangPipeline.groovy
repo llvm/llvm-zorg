@@ -39,6 +39,10 @@ def call(Map config = [:]) {
             }
         }
 
+        environment {
+            CLANG_CRASH_DIAGNOSTICS_DIR = "${WORKSPACE}/clang_crash_diagnostics"
+        }
+
         stages {
             stage('Validate Configuration') {
                 steps {
@@ -148,6 +152,11 @@ def call(Map config = [:]) {
         post {
             always {
                 script {
+                    def crashFiles = findFiles(glob: "clang_crash_diagnostics/**")
+                    if (crashFiles.length > 0) {
+                        zip archive: true, dir: 'clang_crash_diagnostics', zipFile: 'clang_crash_diagnostics.zip'
+                    }
+
                     def Junit = new org.swift.Junit()
                     def junitPatterns = testConfig.junit_patterns ?: []
 

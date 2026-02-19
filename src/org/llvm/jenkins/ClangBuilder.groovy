@@ -8,6 +8,9 @@ class ClangBuilder implements Serializable {
     }
 
     def checkoutStage(zorgBranch) {
+        script.sh "rm -rf '${script.env.CLANG_CRASH_DIAGNOSTICS_DIR}'"
+        script.sh "mkdir -p '${script.env.CLANG_CRASH_DIAGNOSTICS_DIR}'"
+
         script.dir('llvm-project') {
             if (script.params.IS_BISECT_JOB) {
                 // Bisection pipeline - use specific git SHA
