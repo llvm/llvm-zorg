@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bazel-fixer-bot
+  namespace: bazel-ci
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bazel-fixer-bot
+  template:
+    metadata:
+      labels:
+        app: bazel-fixer-bot
+    spec:
+      serviceAccountName: bazel-cache-ksa
+      containers:
+        - name: runner
+          image: ghcr.io/llvm/bazel-fixer-bot:latest
+          resources:
+            limits:
+              cpu: 63
+              memory: 230Gi
+            requests:
+              cpu: 63
+              memory: 230Gi
+          volumeMounts:
+            - name: scratch-volume
+              mountPath: /dev/shm
+          env:
+            - name: BUILDKITE_API_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: buildkite-api-token
+                  key: token
+            - name: GITHUB_API_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: github-api-token
+                  key: token
+            - name: GITHUB_FORK_API_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: github-api-token
+                  key: token
+            - name: GITHUB_FORK_USER
+              value: pranavk
+            - name: GITHUB_PR_API_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: github-api-token
+                  key: token
+            - name: GITHUB_PR_USER
+              value: pranavk
+            - name: GOOGLE_GENAI_USE_VERTEXAI
+              value: "1"
+            - name: GOOGLE_CLOUD_PROJECT
+              value: "llvm-bazel"
+            - name: GOOGLE_CLOUD_LOCATION
+              value: "global"
+      volumes:
+        - name: scratch-volume
+          emptyDir:
+            medium: Memory
+      terminationGracePeriodSeconds: 30
