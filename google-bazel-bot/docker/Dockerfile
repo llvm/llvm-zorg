@@ -3,6 +3,8 @@ FROM docker.io/ubuntu:24.04 AS bazel-buildkite
 # Make sure apt-get doesn't prompt for stuff like our time zone, etc.
 ENV DEBIAN_FRONTEND=noninteractive
 
+COPY bazel-bot/requirements.lock.txt .
+
 RUN apt-get update; \
     apt-get install -y --no-install-recommends \
         gosu tini \
