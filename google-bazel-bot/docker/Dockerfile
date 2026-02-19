@@ -78,8 +78,7 @@ COPY --chown=buildkite-agent:buildkite-agent docker/pre-checkout /etc/buildkite-
 
 # Change sh client for buildkite-agent.
 RUN chsh -s /bin/bash buildkite-agent
-# buildkite working directory
-VOLUME /var/lib/buildkite-agent
+RUN mkdir -p /var/lib/buildkite-agent
 
 ENTRYPOINT ["entrypoint.sh"]
 CMD ["gosu", "buildkite-agent", "buildkite-agent", "start", "--no-color", "--tags-from-gcp"]
