@@ -139,7 +139,7 @@ resource "kubernetes_secret" "buildkite_agent_token" {
 
 resource "kubernetes_secret" "github_api_token" {
   metadata {
-    name = "github-api-token"
+    name      = "github-api-token"
     namespace = kubernetes_namespace.bazel_ci.metadata[0].name
   }
 
@@ -147,13 +147,13 @@ resource "kubernetes_secret" "github_api_token" {
     "token" = data.google_secret_manager_secret_version.github_api_token.secret_data
   }
 
-  type = "Opaque"
-  depends_on = [ kubernetes_namespace.bazel_ci ]
+  type       = "Opaque"
+  depends_on = [kubernetes_namespace.bazel_ci]
 }
 
 resource "kubernetes_secret" "buildkite_api_token" {
   metadata {
-    name = "buildkite-api-token"
+    name      = "buildkite-api-token"
     namespace = kubernetes_namespace.bazel_ci.metadata[0].name
   }
 
@@ -161,8 +161,8 @@ resource "kubernetes_secret" "buildkite_api_token" {
     "token" = data.google_secret_manager_secret_version.buildkite_api_token.secret_data
   }
 
-  type = "Opaque"
-  depends_on = [ kubernetes_namespace.bazel_ci ]
+  type       = "Opaque"
+  depends_on = [kubernetes_namespace.bazel_ci]
 }
 
 resource "kubernetes_service_account" "bazel_cache_ksa" {
@@ -201,10 +201,10 @@ resource "kubernetes_manifest" "bazel_buildkite" {
 
 resource "kubernetes_manifest" "bazel_fixer_bot" {
   manifest = yamldecode(file("bazel-fixer-bot.yaml"))
-  depends_on = [ 
+  depends_on = [
     kubernetes_namespace.bazel_ci,
     kubernetes_secret.github_api_token,
     kubernetes_secret.buildkite_api_token,
     kubernetes_service_account.bazel_cache_ksa
-   ]
+  ]
 }
