@@ -240,6 +240,11 @@ outlines how ARC should be upgraded and why.
 
 ## Grafana tokens
 
+> [!CAUTION]
+> We no longer use Grafana Alloy and are in the process of migrating awahy
+> from Grafana. Only the text below relevant to the metrics container is
+> currently relevant.
+
 The cluster has multiple services communicating with Grafana Cloud:
  - the metrics container
  - per-node monitoring  (Grafana Alloy, Prometheus node exporter)

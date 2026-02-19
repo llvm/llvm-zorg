@@ -167,7 +167,6 @@ module "premerge_cluster_us_central_resources" {
   github_app_installation_id                               = data.google_secret_manager_secret_version.github_app_installation_id.secret_data
   github_app_private_key                                   = data.google_secret_manager_secret_version.github_app_private_key.secret_data
   cluster_name                                             = "llvm-premerge-cluster-us-central"
-  grafana_token                                            = data.google_secret_manager_secret_version.grafana_token.secret_data
   runner_group_name                                        = "llvm-premerge-cluster-us-central"
   linux_runners_namespace_name                             = local.linux_runners_namespace_name
   linux_runners_kubernetes_service_account_name            = local.linux_runners_kubernetes_service_account_name
@@ -194,7 +193,6 @@ module "premerge_cluster_us_west_resources" {
   github_app_installation_id                               = data.google_secret_manager_secret_version.github_app_installation_id.secret_data
   github_app_private_key                                   = data.google_secret_manager_secret_version.github_app_private_key.secret_data
   cluster_name                                             = "llvm-premerge-cluster-us-west"
-  grafana_token                                            = data.google_secret_manager_secret_version.grafana_token.secret_data
   runner_group_name                                        = "llvm-premerge-cluster-us-west"
   linux_runners_namespace_name                             = local.linux_runners_namespace_name
   linux_runners_kubernetes_service_account_name            = local.linux_runners_kubernetes_service_account_name
