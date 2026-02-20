@@ -25,6 +25,7 @@ def getBOLTCmakeBuildFactory(
         env = {'CCACHE_COMPILERCHECK': 'content'}
 
     bolttests_dir = "bolt-tests"
+    bolttests_arm_dir = "large-bolt-tests"
 
     cleanBuildRequested = lambda step: clean or step.build.getProperty("clean") or step.build.getProperty("clean_obj")
     cleanBuildRequestedByProperty = lambda step: step.build.getProperty("clean")
@@ -43,17 +44,25 @@ def getBOLTCmakeBuildFactory(
     stepNameNfcCheckBolt = "nfc-test check-bolt"
     f.buildClass.SkipIndicatorStep = stepNameNfcCheckBolt
 
-    # Add external test suite.
+    # Add external test suites (Rafael's and Arm's).
     if bolttests:
         checks += ['check-large-bolt']
+        checks += ['check-large-bolt-arm']
         extra_configure_args += [
-            '-DLLVM_EXTERNAL_PROJECTS=bolttests',
+            '-DLLVM_EXTERNAL_PROJECTS=bolttests;bolttests-arm',
             '-DLLVM_EXTERNAL_BOLTTESTS_SOURCE_DIR=' + LLVMBuildFactory.pathRelativeTo(bolttests_dir, f.monorepo_dir),
+            '-DLLVM_EXTERNAL_BOLTTESTS_ARM_SOURCE_DIR=' + LLVMBuildFactory.pathRelativeTo(bolttests_arm_dir, f.monorepo_dir),
             ]
-        # Clean checkout of bolt-tests if cleanBuildRequested
+
+        # Clean checkout if cleanBuildRequested
         f.addSteps([
             steps.RemoveDirectory(name="clean-external-bolt-tests",
                 dir=bolttests_dir,
+                haltOnFailure=True,
+                warnOnFailure=True,
+                doStepIf=cleanBuildRequestedByProperty),
+            steps.RemoveDirectory(name="clean-external-bolt-tests-arm",
+                dir=bolttests_arm_dir,
                 haltOnFailure=True,
                 warnOnFailure=True,
                 doStepIf=cleanBuildRequestedByProperty),
@@ -64,6 +73,13 @@ def getBOLTCmakeBuildFactory(
                 descriptionSuffix="BOLT Large Tests",
                 repourl='https://github.com/rafaelauler/bolt-tests.git',
                 workdir=bolttests_dir,
+                alwaysUseLatest=True),
+            steps.Git(name="checkout-external-bolt-tests-arm",
+                description="fetching",
+                descriptionDone="fetch",
+                descriptionSuffix="BOLT Large Tests (Arm)",
+                repourl='https://github.com/arm/large-bolt-tests.git',
+                workdir=bolttests_arm_dir,
                 alwaysUseLatest=True),
             ])
 
@@ -214,6 +230,18 @@ def getBOLTCmakeBuildFactory(
                 command=('nice -n 5 bin/llvm-lit -v -j2 tools/bolttests'),
                 description=["running", "NFC", "check-large-bolt"],
                 descriptionDone=["NFC", "check-large-bolt", "completed"],
+                warnOnFailure=True,
+                haltOnFailure=False,
+                flunkOnFailure=True,
+                doStepIf=FileDoesNotExist(f"build/{skipOutOfTree}"),
+                env=env),
+            # Run out-of-tree large-bolt-tests (Arm) if the llvm-bolt binary has changed,
+            # with lower scheduling priority.
+            LitTestCommand(
+                name='nfc-test large-check-bolt-arm',
+                command=('nice -n 5 bin/llvm-lit -v -j2 tools/bolttests-arm'),
+                description=["running", "NFC", "check-large-bolt-arm"],
+                descriptionDone=["NFC", "check-large-bolt-arm", "completed"],
                 warnOnFailure=True,
                 haltOnFailure=False,
                 flunkOnFailure=True,
