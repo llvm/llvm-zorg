@@ -70,6 +70,7 @@ def task_pipeline(label, body) {
                     git url: 'https://github.com/llvm/llvm-zorg.git', branch: 'main', poll: false
                 }
                 sh "rm -rf '${crashDiagnosticsDir}' && mkdir -p '${crashDiagnosticsDir}'"
+                sh "rm -rf '${WORKSPACE}/clang_crash_diagnostics.zip'"
                 withEnv([
                     "PATH=$PATH:$WORKSPACE/venv/bin:/usr/bin:/usr/local/bin",
                     "CLANG_CRASH_DIAGNOSTICS_DIR=${crashDiagnosticsDir}"
