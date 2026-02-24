@@ -25,7 +25,7 @@ Write-Output "Windows version: $(cmd /c ver)" > $HOST_FILE
 Write-Output "VCTools version: $(ls C:\BuildTools\VC\Tools\MSVC | Select -ExpandProperty Name)" >> $HOST_FILE
 Write-Output "Cores          : $((Get-CimInstance Win32_ComputerSystem).NumberOfLogicalProcessors)" >> $HOST_FILE
 Write-Output "RAM            : $([int][Math]::Round((Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory / 1073741824)) GB" >> $HOST_FILE
-Write-Output "Reid Kleckner <rnk@google.com>" > "info\admin"
+Write-Output "Aiden Grossman <aidengrossman@google.com>" > "info\admin"
 
 # create the worker
 Write-Output "creating worker..."

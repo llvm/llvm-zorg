@@ -124,8 +124,6 @@ def get_all():
 
         # Windows Server 2012 x86_64 16-core GCE instance
         create_worker("sanitizer-windows", properties={'jobs': 16}, max_builds=1),
-        # Windows Server 2012 x86_64 32-core GCE instance
-        create_worker("windows-gcebot2", properties={'jobs': 32}, max_builds=1),
 
         # Ubuntu 14.04 x86_64-scei-ps4, 2 x Intel(R) Xeon(R) CPU E5-2699 v3 @ 2.30GHz
         create_worker("as-worker-91", max_builds=1),

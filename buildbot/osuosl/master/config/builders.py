@@ -651,14 +651,6 @@ all = [
                         "-DLLVM_ENABLE_RUNTIMES=openmp",
                         "-DCOMPILER_RT_BUILD_SANITIZERS=OFF"])},
 
-    {'name' : 'clang-x64-windows-msvc',
-    'tags'  : ["clang"],
-    'workernames' : ['windows-gcebot2'],
-    'builddir': 'clang-x64-windows-msvc',
-    'factory' : AnnotatedBuilder.getAnnotatedBuildFactory(
-                    script="clang-windows.py",
-                    depends_on_projects=['llvm', 'clang', 'lld', 'debuginfo-tests'])},
-
     {'name' : "clang-m68k-linux",
     'tags'  : ["clang"],
     'workernames' : ["debian-akiko-m68k"],
