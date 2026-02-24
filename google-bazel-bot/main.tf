@@ -88,14 +88,29 @@ resource "google_project_iam_binding" "vertex_ai_user_binding" {
   depends_on = [google_service_account.bazel_cache_gsa]
 }
 
-# TODO(boomanaiden154): Delete this bucket and recreate it in terraform when
-# there is an opportune time to do so.
-data "google_storage_bucket" "bazel_cache_bucket" {
-  name = "llvm-bazel-cache"
+resource "google_storage_bucket" "bazel_cache_bucket" {
+  name     = "llvm-bazel-cache"
+  location = "us-central1-c"
+
+  uniform_bucket_level_access = true
+  public_access_prevention    = "enforced"
+
+  soft_delete_policy {
+    retention_duration_seconds = 0
+  }
+
+  lifecycle_rule {
+    action {
+      type = "Delete"
+    }
+    condition {
+      age = 7
+    }
+  }
 }
 
 resource "google_storage_bucket_iam_binding" "cache_bucket_binding" {
-  bucket = data.google_storage_bucket.bazel_cache_bucket.name
+  bucket = google_storage_bucket.bazel_cache_bucket.name
   role   = "roles/storage.objectUser"
   members = [
     format("serviceAccount:%s", google_service_account.bazel_cache_gsa.email)
