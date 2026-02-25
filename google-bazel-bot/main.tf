@@ -95,6 +95,9 @@ resource "google_storage_bucket" "bazel_cache_bucket" {
   uniform_bucket_level_access = true
   public_access_prevention    = "enforced"
 
+  # Disable soft deletion. Soft deletion keeps the file around for the
+  # specified duration (or deletes immediately if set to zero) after it is
+  # requested to be deleted.
   soft_delete_policy {
     retention_duration_seconds = 0
   }
