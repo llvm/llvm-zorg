@@ -4043,10 +4043,10 @@ all += [
                         ),
                         TestSuiteBuilder.getLlvmTestSuiteSteps(
                             # Common C/CXX flags.
-                            compiler_flags = "--target=aarch64-linux-pauthtest -march=armv8l+pauth -O2",
+                            compiler_flags = "--target=aarch64-linux-pauthtest -march=armv8l+pauth -O2 -fno-inline",
                             # Common linker flags.
                             linker_flags = util.Interpolate(
-                                "--target=aarch64-linux-pauthtest -march=armv8l+pauth -O2 -fno-inline "
+                                "--target=aarch64-linux-pauthtest -march=armv8l+pauth -O2 "
                                 "-Wl,--emit-relocs "
                                 "-Wl,--dynamic-linker=/home/%(prop:remote_test_user_pauth)s/musl-loader/aarch64-linux-pauthtest/lib/ld-musl-aarch64.so.1 "
                                 "-Wl,-rpath=/home/%(prop:remote_test_user_pauth)s/musl-loader/aarch64-linux-pauthtest/lib"
