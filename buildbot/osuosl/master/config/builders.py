@@ -3354,36 +3354,6 @@ all += [
                         'TEMP'       : util.Interpolate("%(prop:builddir)s/build"),
                     })},
 
-    {'name' : "flang-runtime-cuda-clang",
-    'tags'  : ["flang", "runtime"],
-    'workernames' : ["as-builder-7"],
-    'builddir': "flang-runtime-cuda-clang",
-    'factory' : UnifiedTreeBuilder.getCmakeExBuildFactory(
-                    depends_on_projects = ["llvm", "clang", "lld", "flang"],
-                    enable_runtimes = ["flang-rt", "openmp"],
-                    clean = True,
-                    checks = [],
-                    cmake_definitions = {
-                        "CMAKE_BUILD_TYPE"              : "Release",
-                        "CMAKE_EXPORT_COMPILE_COMMANDS" : "ON",
-                        "LLVM_CCACHE_BUILD"             : "ON",
-                        "LLVM_ENABLE_ASSERTIONS"        : "ON",
-                        "LLVM_TARGETS_TO_BUILD"         : "Native",
-                        "CLANG_DEFAULT_LINKER"          : "lld",
-
-                        "FLANG_RT_EXPERIMENTAL_OFFLOAD_SUPPORT" : "OpenMP",
-                        "FLANG_RT_DEVICE_ARCHITECTURES" : "sm_50;sm_60;sm_70;sm_80",
-                        "FLANG_PARALLEL_COMPILE_JOBS"   : 12,
-                        "FLANG_RT_INCLUDE_CUF"          : "OFF",
-                        "FLANG_RT_INCLUDE_TESTS"        : "OFF",
-                    },
-                    env = {
-                        'CCACHE_DIR' : util.Interpolate("%(prop:builddir)s/ccache-db"),
-                        # TMP/TEMP within the build dir (to utilize a ramdisk).
-                        'TMP'        : util.Interpolate("%(prop:builddir)s/build"),
-                        'TEMP'       : util.Interpolate("%(prop:builddir)s/build"),
-                    })},
-
     ## RISC-V RV64GC check-all running under qemu-user.
     {'name' : "clang-rv64gc-qemu-user-single-stage",
     'tags'  : ["llvm", "clang"],

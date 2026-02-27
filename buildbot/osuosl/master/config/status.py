@@ -631,9 +631,7 @@ def getReporters():
             extraRecipients = ["szakharin@nvidia.com"],
             generators = [
                 utils.LLVMDefaultBuildStatusGenerator(
-                    builders = [
-                        "flang-runtime-cuda-gcc",
-                        "flang-runtime-cuda-clang"])
+                    builders = ["flang-runtime-cuda-gcc"])
             ]),
         reporters.MailNotifier(
             fromaddr = status_email_fromaddr,
