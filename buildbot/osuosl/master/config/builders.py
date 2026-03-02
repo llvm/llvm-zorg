@@ -2164,7 +2164,7 @@ all += [
 
     {'name' : "amdgpu-offload-build-only",
     'tags'  : ["amdgpu", "offload", "openmp"],
-    'workernames' : ["m-07-w-01", "AMD-bb-w-02"],
+    'workernames' : ["AMD-bb-w-01", "AMD-bb-w-02"],
     'builddir': "amdgpu-offload-build-only",
     'collapseRequests' : False,
     'factory' : AnnotatedBuilder.getAnnotatedBuildFactory(
