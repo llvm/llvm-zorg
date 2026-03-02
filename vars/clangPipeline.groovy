@@ -30,7 +30,7 @@ def call(Map config = [:]) {
             string(name: 'BISECT_BAD', defaultValue: '', description: 'Bad commit for bisection')
             booleanParam(name: 'IS_BISECT_JOB', defaultValue: false, description: 'Whether clang is being built as part of a bisection job')
             booleanParam(name: 'SKIP_TESTS', defaultValue: false, description: 'Skip test stage. Can be useful when rebuilding a stage 1 compiler')
-            booleanParam(name: 'SKIP_TRIGGER', defaultValue: false, description: 'Skip trigger of consuming CI jobs')
+            booleanParam(name: 'SKIP_TRIGGER', defaultValue: config.buildConfig?.skipTrigger ?: false, description: 'Skip trigger of consuming CI jobs')
         }
 
         agent {
