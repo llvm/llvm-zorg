@@ -41,3 +41,10 @@ jobs:
         pip3 install pytest==8.4.1
         pip3 install -r premerge/ops-container/requirements.lock.txt
         pytest premerge/ops-container/
+    - name: Test BazelBot
+      run: |
+        python3 -m venv venv-bazelbot
+        source venv-bazelbot/bin/activate
+        pip3 install pytest==8.4.1
+        pip3 install -r google-bazel-bot/bazel-bot/requirements.lock.txt
+        pytest google-bazel-bot/bazel-bot/
