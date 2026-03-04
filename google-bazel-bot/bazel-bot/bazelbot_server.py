@@ -1,25 +1,12 @@
-from collections.abc import MutableSequence, Sequence
-from enum import Enum
-import time
-import os
-import logging
-import sys
-import asyncio
-
-from attr import dataclass
-from dotenv import load_dotenv
 import argparse
-from bazel_agent import AgentErrors
-from utils import (
-    CredentialManager,
-    LocalGitRepo,
-    BuildState,
-    BuildInfo,
-    BuildProcessor,
-    LocalBuildProcessor,
-    CommandProcessor,
-    parse_targets,
-)
+import asyncio
+import dataclasses
+import enum
+import logging
+import os
+import sys
+import time
+from collections.abc import Sequence
 
 import bazel_agent
 import utils
@@ -42,8 +29,6 @@ parser.add_argument(
 
 logger = logging.getLogger(__name__)
 
-load_dotenv()
-
 # This is the max iteration on the bot side. We will run agent MAX_ITERATIONS times to see if it can give us a fix
 # Note that agent has its own max iterations. The difference being that agent iterations iterates on an already made fix
 # while we start fresh everytime.
@@ -53,13 +38,13 @@ MAX_AGENT_ITERATIONS = 3
 MAX_AGENT_RESOURCE_EXHAUSTED_TRIES = 3
 
 
-class FixTool(Enum):
+class FixTool(enum.Enum):
     BANT = "bant"
     AI = "ai"
     NOT_FIXED = "not fixed"
 
 
-@dataclass
+@dataclasses.dataclass
 class RepairSummaryRecord:
     # Commit that was repaired
     commit: str
@@ -72,10 +57,10 @@ class RepairSummaryRecord:
 class BazelRepairBot:
     def __init__(
         self,
-        command_processor: CommandProcessor,
-        git_repo: LocalGitRepo,
-        creds: CredentialManager,
-        build_processor: BuildProcessor,
+        command_processor: utils.CommandProcessor,
+        git_repo: utils.LocalGitRepo,
+        creds: utils.CredentialManager,
+        build_processor: utils.BuildProcessor,
         state_file,
         poll_interval,
     ):
@@ -87,7 +72,7 @@ class BazelRepairBot:
 
         # Simple variables
         self.last_processed_build = 0
-        self.last_processed_state: BuildState = BuildState.UNKNOWN
+        self.last_processed_state: utils.BuildState = utils.BuildState.UNKNOWN
         self.last_processed_sha: str = ""
         self.state_file = state_file
         self.poll_interval = poll_interval
@@ -109,7 +94,9 @@ class BazelRepairBot:
             self.git_repo.checkout_commit(self.last_processed_sha)
             build_result = self.command_processor.run_bazel_build()
             self.last_processed_state = (
-                BuildState.PASSED if build_result.success else BuildState.FAILED
+                utils.BuildState.PASSED
+                if build_result.success
+                else utils.BuildState.FAILED
             )
             logger.info(
                 f"Loaded state: last processed sha {self.last_processed_sha} with state {self.last_processed_state}."
@@ -130,7 +117,7 @@ class BazelRepairBot:
         """Sleeps for a given number of seconds"""
         time.sleep(seconds)
 
-    def process_failure_with_bant(self, build_data: BuildInfo) -> bool:
+    def process_failure_with_bant(self, build_data: utils.BuildInfo) -> bool:
         self.git_repo.create_branch_for_fix(build_data.commit)
         if not self.command_processor.run_bant(targets=build_data.failed_targets):
             logger.warning("Running bant failed.")
@@ -147,8 +134,8 @@ class BazelRepairBot:
 
         return True
 
-    def repair_build(self, build: BuildInfo) -> bool:
-        if build.state != BuildState.FAILED:
+    def repair_build(self, build: utils.BuildInfo) -> bool:
+        if build.state != utils.BuildState.FAILED:
             logger.info(f"Build for {build.commit} is not failed. Nothing to repair.")
             return False
 
@@ -236,7 +223,7 @@ class BazelRepairBot:
             logger.info(agent_result.summary)
             logger.info("------------------")
 
-            if agent_result.status == AgentErrors.AGENT_RESOURCE_EXHAUSTED:
+            if agent_result.status == bazel_agent.AgentErrors.AGENT_RESOURCE_EXHAUSTED:
                 self.wait(self.poll_interval * 5)
                 agent_exhausted_tries += 1
                 if agent_exhausted_tries > MAX_AGENT_RESOURCE_EXHAUSTED_TRIES:
@@ -247,12 +234,12 @@ class BazelRepairBot:
 
                 continue
             elif (
-                agent_result.status != AgentErrors.SUCCESS
+                agent_result.status != bazel_agent.AgentErrors.SUCCESS
                 and self.git_repo.is_repo_dirty(untracked_files=True)
             ):
                 # Get dirty status of the repo in storage
                 past_fixes.append(self.git_repo.diff())
-            elif agent_result.status == AgentErrors.SUCCESS:
+            elif agent_result.status == bazel_agent.AgentErrors.SUCCESS:
                 break
 
             attempt_num += 1
@@ -286,16 +273,16 @@ class BazelRepairBot:
         logger.error("Could not init state from latest build.")
         return False
 
-    def get_build_info_for_commit(self, commit_sha: str) -> BuildInfo | None:
+    def get_build_info_for_commit(self, commit_sha: str) -> utils.BuildInfo | None:
         logger.info(f"Finding build state for commit {commit_sha} locally ...")
-        current_build = BuildInfo(commit=commit_sha)
+        current_build = utils.BuildInfo(commit=commit_sha)
         self.git_repo.checkout_commit(commit_sha)
         build_result = self.command_processor.run_bazel_build()
         current_build.state = (
-            BuildState.PASSED if build_result.success else BuildState.FAILED
+            utils.BuildState.PASSED if build_result.success else utils.BuildState.FAILED
         )
         if not build_result.success:
-            current_build.failed_targets = parse_targets(build_result.stderr)
+            current_build.failed_targets = utils.parse_targets(build_result.stderr)
         return current_build
 
     def run(self) -> None:
@@ -306,7 +293,7 @@ class BazelRepairBot:
                     continue
 
             builds_to_process: Sequence[
-                BuildInfo
+                utils.BuildInfo
             ] = self.build_processor.get_builds_to_process(self.last_processed_sha)
             if not builds_to_process:
                 logger.debug("No new builds to process. Sleeping ...")
@@ -320,7 +307,7 @@ class BazelRepairBot:
 
                 current_build = (
                     self.get_build_info_for_commit(build.commit)
-                    if build.state == BuildState.UNKNOWN
+                    if build.state == utils.BuildState.UNKNOWN
                     else build
                 )
                 logger.info(
@@ -328,20 +315,20 @@ class BazelRepairBot:
                 )
 
                 if (
-                    current_build.state == BuildState.RUNNING
-                    or current_build.state == BuildState.SCHEDULED
+                    current_build.state == utils.BuildState.RUNNING
+                    or current_build.state == utils.BuildState.SCHEDULED
                 ):
                     logger.debug(
                         f"Build for {current_build.commit} is still running. Waiting for completion."
                     )
                     # Stop processing current list of builds for now.
                     break
-                elif current_build.state == BuildState.PASSED:
+                elif current_build.state == utils.BuildState.PASSED:
                     logger.info(
                         f"Build for {current_build.commit} passed. Nothing to do."
                     )
-                elif current_build.state == BuildState.FAILED:
-                    if self.last_processed_state == BuildState.PASSED:
+                elif current_build.state == utils.BuildState.FAILED:
+                    if self.last_processed_state == utils.BuildState.PASSED:
                         logger.info(
                             f"Detected 'passed' -> '{current_build.state}' transition for {current_build.commit}). Repairing ..."
                         )
@@ -390,10 +377,10 @@ if __name__ == "__main__":
         format="%(asctime)s - %(filename)s:%(lineno)d - %(levelname)s - %(message)s",
         handlers=[logging.FileHandler("bot.log"), logging.StreamHandler()],
     )
-    creds_manager = CredentialManager()
+    creds_manager = utils.CredentialManager()
     cmd_processor = utils.CommandProcessor(args.llvm_git_repo)
-    git_repo = LocalGitRepo(args.llvm_git_repo, creds_manager, args.create_prs)
-    build_processor = LocalBuildProcessor(cmd_processor, git_repo)
+    git_repo = utils.LocalGitRepo(args.llvm_git_repo, creds_manager, args.create_prs)
+    build_processor = utils.LocalBuildProcessor(cmd_processor, git_repo)
     bot = BazelRepairBot(
         cmd_processor,
         git_repo,
