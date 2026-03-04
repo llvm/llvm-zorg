@@ -76,7 +76,7 @@ class TestBazelBotServer(unittest.TestCase):
 
         # Test push_fix
         repo_instance.git.push.return_value = True
-        repo.push_fix("commit_hash")
+        repo.push_fix("commit_hash", True)
         repo_instance.git.push.assert_called()
         repo.gh_pr_repo.create_pull.assert_called()
 
@@ -129,6 +129,7 @@ class TestBazelBotServer(unittest.TestCase):
     def test_process_failure_with_ai(self, mock_asyncio_run):
         cmd_processor = MagicMock()
         git_repo = MagicMock()
+        git_repo.can_create_pr = True
         creds = MagicMock()
         build_processor = MagicMock()
 
@@ -152,7 +153,7 @@ class TestBazelBotServer(unittest.TestCase):
         self.assertTrue(result)
         git_repo.create_branch_for_fix.assert_called_with("sha1")
         git_repo.commit.assert_called()
-        git_repo.push_fix.assert_called_with("sha1")
+        git_repo.push_fix.assert_called_with("sha1", True)
 
     @patch("bazelbot_server.bazel_agent.query_agent")
     @patch("bazelbot_server.asyncio.run")
