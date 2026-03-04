@@ -25,6 +25,8 @@ jobs:
         pip3 install pytest==8.4.1
         python3 -m venv venv
         source venv/bin/activate
+        which pip3
+        which python3
         pip3 install -r premerge/buildbot/requirements.lock.txt
         pip3 install -r premerge/advisor/requirements.lock.txt
         pip3 install -r premerge/ops-container/requirements.lock.txt
