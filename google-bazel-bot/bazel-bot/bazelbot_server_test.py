@@ -29,33 +29,32 @@ class TestBazelBotServer(unittest.TestCase):
         os.environ,
         {
             "GITHUB_FORK_USER": "fork_user",
-            "GITHUB_FORK_API_TOKEN": "fork_token",
             "GITHUB_PR_USER": "pr_user",
-            "GITHUB_PR_API_TOKEN": "pr_token",
             "BUILDKITE_API_TOKEN": "bk_token",
+            "GITHUB_APP_ID": "app_id",
+            "GITHUB_APP_PRIVATE_KEY": "private_key",
         },
     )
     def test_credential_manager(self):
         creds = CredentialManager()
         self.assertEqual(creds.gh_fork_user, "fork_user")
-        self.assertEqual(creds.gh_fork_token, "fork_token")
         self.assertEqual(creds.gh_pr_user, "pr_user")
-        self.assertEqual(creds.gh_pr_token, "pr_token")
         self.assertEqual(creds.bk_token, "bk_token")
         self.assertEqual(creds.gh_fork_repo_name, "fork_user/llvm-project")
         self.assertEqual(creds.gh_pr_repo_name, "pr_user/llvm-project")
 
     @patch("utils.Repo")
-    @patch("utils.Github")
+    @patch("utils.GithubIntegration")
+    @patch("utils.Auth")
     @patch("os.path.exists")
-    def test_local_git_repo(self, mock_exists, mock_github, mock_repo):
+    def test_local_git_repo(self, mock_exists, github_mock, auth_mock, mock_repo):
         mock_exists.return_value = False
         creds = MagicMock()
         creds.gh_fork_repo_name = "fork/repo"
-        creds.gh_fork_token = "token"
-        creds.gh_pr_token = "pr_token"
+        creds.gh_pr_repo_name = "pr/repo"
+        creds.gh_app_id = "app_id"
+        creds.gh_app_private_key = "app_private_key"
 
-        # Test Init
         repo = LocalGitRepo("/path/to/repo", creds, can_create_pr=True)
         mock_repo.clone_from.assert_called_once()
 
