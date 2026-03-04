@@ -1,18 +1,19 @@
-import os
 import json
+import os
+import pathlib
+from typing import Any
+
 import requests
-from pathlib import Path
-from typing import Dict, Any
 
 GITHUB_REPO = "llvm/llvm-project"
 
 
-def path_to_dict(path: Path) -> Dict[str, Any]:
+def path_to_dict(path: pathlib.Path) -> dict[str, Any]:
     """
     Recursively converts a pathlib.Path object into a dictionary.
     """
     # Base dictionary structure
-    d: Dict[str, Any] = {"name": path.name}
+    d: dict[str, Any] = {"name": path.name}
     if path.is_symlink():
         d["type"] = "symlink"
         return d
@@ -40,7 +41,7 @@ def directory_structure(start_path: str) -> str:
     if not "utils/bazel/llvm-project-overlay" in start_path:
         return "Cannot return directory structure outside of utils/bazel/llvm-project-overlay"
 
-    path = Path(start_path)
+    path = pathlib.Path(start_path)
     if not path.exists():
         return json.dumps({"error": "Path does not exist"}, indent=4)
 
