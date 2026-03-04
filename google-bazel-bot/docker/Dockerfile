@@ -57,12 +57,12 @@ RUN wget --no-verbose -O /usr/bin/bazelisk https://github.com/bazelbuild/bazelis
   chmod +x /usr/bin/bazelisk; \
   bazelisk --version
 
-# Build and install buildifier and buildozer
-RUN git clone https://github.com/bazelbuild/buildtools.git /tmp/buildtools; \
-  cd /tmp/buildtools; \
-  bazelisk build --noshow_progress --ui_event_filters=-debug,-info //buildifier //buildozer; \
-  cp /tmp/buildtools/bazel-bin/buildifier/buildifier_/buildifier /usr/local/bin/; \
-  cp /tmp/buildtools/bazel-bin/buildozer/buildozer_/buildozer /usr/local/bin/; \
+# Install buildifier and buildozer
+ENV BUILDIFIER_VERSION=8.5.1
+RUN wget --no-verbose -O /usr/local/bin/buildifier https://github.com/bazelbuild/buildtools/releases/download/v${BUILDIFIER_VERSION}/buildifier-linux-amd64; \
+  wget --no-verbose -O /usr/local/bin/buildozer https://github.com/bazelbuild/buildtools/releases/download/v${BUILDIFIER_VERSION}/buildozer-linux-amd64; \
+  chmod +x /usr/local/bin/buildifier; \
+  chmod +x /usr/local/bin/buildozer; \
   /usr/local/bin/buildifier --version; \
   /usr/local/bin/buildozer --version
 
