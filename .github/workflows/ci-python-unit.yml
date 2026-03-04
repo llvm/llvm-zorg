@@ -20,11 +20,24 @@ jobs:
       with:
         python-version: '3.14'
         cache: 'pip'
-    - name: Install Python Dependencies
+    - name: Test Premerge Buildbot
       run: |
-        pip3 install -r premerge/buildbot/requirements.lock.txt
-        pip3 install -r premerge/advisor/requirements.lock.txt
-        pip3 install -r premerge/ops-container/requirements.lock.txt
+        python3 -m venv venv-premerge-buildbot
+        source venv-premerge-buildbot/bin/activate
         pip3 install pytest==8.4.1
-    - name: Run Tests
-      run: pytest premerge/ zorg/buildbot/builders/annotated/premerge/dispatch_job_test.py
+        pip3 install -r premerge/buildbot/requirements.lock.txt
+        pytest zorg/buildbot/builders/annotated/premerge/dispatch_job_test.py
+    - name: Test Premerge Advisor
+      run: |
+        python3 -m venv venv-premerge-advisor
+        source venv-premerge-advisor/bin/activate
+        pip3 install pytest==8.4.1
+        pip3 install -r premerge/advisor/requirements.lock.txt
+        pytest premerge/advisor/
+    - name: Test Premerge Ops Container
+      run: |
+        python3 -m venv venv-premerge-ops-container
+        source venv-premerge-ops-container/bin/activate
+        pip3 install pytest==8.4.1
+        pip3 install -r premerge/ops-container/requirements.lock.txt
+        pytest premerge/ops-container/
