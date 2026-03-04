@@ -29,4 +29,6 @@ jobs:
         pip3 install -r premerge/advisor/requirements.lock.txt
         pip3 install -r premerge/ops-container/requirements.lock.txt
     - name: Run Tests
-      run: pytest premerge/ zorg/buildbot/builders/annotated/premerge/dispatch_job_test.py
+      run: |
+        source venv/bin/activate
+        pytest premerge/ zorg/buildbot/builders/annotated/premerge/dispatch_job_test.py
