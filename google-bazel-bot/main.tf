@@ -178,7 +178,7 @@ resource "kubernetes_secret" "github_app" {
   }
 
   data = {
-    "id" = data.google_secret_manager_secret_version.github_app_id.secret_data
+    "id"          = data.google_secret_manager_secret_version.github_app_id.secret_data
     "private-key" = data.google_secret_manager_secret_version.github_app_private_key.secret_data
   }
 
