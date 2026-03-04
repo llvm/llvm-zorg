@@ -1,28 +1,28 @@
-from collections.abc import Mapping, Sequence
-from dataclasses import dataclass, field
-from typing import List
-import time
-import subprocess
+import abc
+import dataclasses
+import enum
 import logging
 import os
-from github import Github
-from git import Repo, Actor
-import requests
 import re
-from abc import ABC, abstractmethod
-from enum import Enum
-from typing import List, Optional, Any
+import subprocess
+import time
+from collections.abc import Mapping, Sequence
+from typing import Any
+
+import git
+import github
+import requests
 
 logger = logging.getLogger(__name__)
 
 
-def parse_targets(error_log: Optional[str]) -> Sequence[str]:
+def parse_targets(error_log: str | None) -> Sequence[str]:
     if not error_log:
         return []
     return re.findall(r"\(from target (.*?)\)", error_log)
 
 
-@dataclass
+@dataclasses.dataclass
 class BazelBuildResult:
     success: bool
     stdout: str = ""
@@ -31,14 +31,12 @@ class BazelBuildResult:
 
 
 class CredentialManager:
-    DefaultGHUser = "pranavk"
-
     def __init__(self):
-        self.gh_fork_user = os.getenv("GITHUB_FORK_USER", self.DefaultGHUser)
-        self.gh_fork_token = os.getenv("GITHUB_FORK_API_TOKEN")
-        self.gh_pr_user = os.getenv("GITHUB_PR_USER", self.DefaultGHUser)
-        self.gh_pr_token = os.getenv("GITHUB_PR_API_TOKEN")
+        self.gh_fork_user = os.getenv("GITHUB_FORK_USER")
+        self.gh_pr_user = os.getenv("GITHUB_PR_USER")
         self.bk_token = os.getenv("BUILDKITE_API_TOKEN")
+        self.gh_app_id = os.getenv("GITHUB_APP_ID")
+        self.gh_app_private_key = os.getenv("GITHUB_APP_PRIVATE_KEY")
 
     @property
     def gh_fork_repo_name(self):
@@ -185,23 +183,25 @@ class LocalGitRepo:
             logger.info(
                 f"Cloning {self.creds.gh_fork_repo_name} to {self.repo_path}..."
             )
-            Repo.clone_from(
-                f"https://{self.creds.gh_fork_token}@github.com/{self.creds.gh_fork_repo_name}.git",
+            git.Repo.clone_from(
+                f"https://github.com/{self.creds.gh_fork_repo_name}.git",
                 self.repo_path,
             )
-        self.repo = Repo(repo_path)
-        self.gh_fork_repo = Github(self.creds.gh_fork_token).get_repo(
-            self.creds.gh_fork_repo_name
+        self.repo = git.Repo(repo_path)
+        github_integration = github.GithubIntegration(
+            auth=github.Auth.AppAuth(creds.gh_app_id, creds.gh_app_private_key)
         )
-        self.gh_pr_repo = Github(self.creds.gh_pr_token).get_repo(
-            self.creds.gh_pr_repo_name
+        self.gh_fork_repo = github_integration.get_repo_installation(
+            self.creds.gh_fork_user, "llvm-project"
+        )
+        self.gh_pr_repo = github_integration.get_repo_installation(
+            self.creds.gh_pr_user, "llvm-project"
         )
         self.bazel_utils_path = os.path.join(self.repo_path, "utils", "bazel")
-
         self.main_branch = "main"
         self.remote_name = "origin"
-        self.author_name = os.getenv("GIT_AUTHOR_NAME", "Pranav Kant")
-        self.author_email = os.getenv("GIT_AUTHOR_EMAIL", "prka@google.com")
+        self.author_name = os.getenv("GIT_AUTHOR_NAME", "Google Bazel Bot")
+        self.author_email = os.getenv("GIT_AUTHOR_EMAIL", "google-bazel-bot@google.com")
         self.branch_prefix = "bazel-"
 
     def get_branch_name(self, commit_hash: str) -> str:
@@ -232,7 +232,7 @@ class LocalGitRepo:
 
     def commit(self, message: str) -> None:
         self.repo.git.add(".")
-        actor = Actor(self.author_name, self.author_email)
+        actor = git.Actor(self.author_name, self.author_email)
         self.repo.index.commit(message, author=actor, committer=actor)
 
     def is_repo_dirty(self, untracked_files=False) -> bool:
@@ -256,7 +256,8 @@ class LocalGitRepo:
                 )
                 return True
 
-            # This requires GITHUB_PR_API_TOKEN to have pull-request:write access.
+            # This requires the Github app installation used for authentication
+            # to have pull-request:write access.
             logger.info(
                 f"Creating Pull Request for branch {branch_name} from {self.creds.gh_fork_repo_name} to {self.creds.gh_pr_repo_name}..."
             )
@@ -276,7 +277,7 @@ class LocalGitRepo:
         return True
 
 
-class BuildState(Enum):
+class BuildState(enum.Enum):
     UNKNOWN = "unknown"
     PASSED = "passed"
     FAILED = "failed"
@@ -284,21 +285,21 @@ class BuildState(Enum):
     SCHEDULED = "scheduled"
 
 
-@dataclass
+@dataclasses.dataclass
 class BuildInfo:
     commit: str
     state: BuildState = BuildState.UNKNOWN
-    failed_targets: Sequence[str] = field(default_factory=list)
-    build_number: Optional[int] = None
+    failed_targets: Sequence[str] = dataclasses.field(default_factory=list)
+    build_number: int | None = None
 
 
-class BuildProcessor(ABC):
-    @abstractmethod
+class BuildProcessor(abc.ABC):
+    @abc.abstractmethod
     def get_latest_build_status(self) -> BuildInfo | None:
         """Get the latest build status."""
         pass
 
-    @abstractmethod
+    @abc.abstractmethod
     def get_builds_to_process(self, last_processed_sha: str) -> Sequence[BuildInfo]:
         """Get builds to process since last processed build."""
         pass
@@ -380,7 +381,7 @@ class BuildkiteBuildProcessor(BuildProcessor):
             logger.error(f"Error fetching Buildkite status: {e}")
             return None
 
-    def get_error_log(self, build: Mapping[str, Any]) -> Optional[str]:
+    def get_error_log(self, build: Mapping[str, Any]) -> str | None:
         """Fetches the error log for a failed build from Buildkite."""
         headers = {"Authorization": f"Bearer {self.buildkite_token}"}
         for job in build.get("jobs", []):

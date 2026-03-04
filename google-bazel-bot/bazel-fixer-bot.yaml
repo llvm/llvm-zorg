@@ -33,25 +33,27 @@ spec:
                 secretKeyRef:
                   name: buildkite-api-token
                   key: token
+            # TODO(boomanaiden154): We should eventually remove this token and
+            # replace any such usage with the Github App.
             - name: GITHUB_API_TOKEN
               valueFrom:
                 secretKeyRef:
                   name: github-api-token
                   key: token
-            - name: GITHUB_FORK_API_TOKEN
+            - name: GITHUB_APP_ID
               valueFrom:
                 secretKeyRef:
-                  name: github-api-token
-                  key: token
+                  name: github-app
+                  key: id
+            - name: GITHUB_APP_PRIVATE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: github-app
+                  key: private-key
             - name: GITHUB_FORK_USER
-              value: pranavk
-            - name: GITHUB_PR_API_TOKEN
-              valueFrom:
-                secretKeyRef:
-                  name: github-api-token
-                  key: token
+              value: google-bazel-bot
             - name: GITHUB_PR_USER
-              value: pranavk
+              value: google-bazel-bot
             - name: GOOGLE_GENAI_USE_VERTEXAI
               value: "1"
             - name: GOOGLE_CLOUD_PROJECT
