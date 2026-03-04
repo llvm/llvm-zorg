@@ -140,7 +140,7 @@ data "google_secret_manager_secret_version" "buildkite_agent_token" {
 }
 
 data "google_secret_manager_secret_version" "github_app_id" {
-  secret = "github-api-id"
+  secret = "github-app-id"
 }
 
 data "google_secret_manager_secret_version" "github_app_private_key" {
