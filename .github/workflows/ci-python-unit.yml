@@ -37,7 +37,7 @@ jobs:
     - name: Test Premerge Ops Container
       run: |
         python3 -m venv venv-premerge-ops-container
-        source venv-premerge-ops-container
+        source venv-premerge-ops-container/bin/activate
         pip3 install pytest==8.4.1
         pip3 install -r premerge/ops-container/requirements.lock.txt
         pytest premerge/ops-container/
