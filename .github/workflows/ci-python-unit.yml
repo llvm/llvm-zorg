@@ -22,9 +22,9 @@ jobs:
         cache: 'pip'
     - name: Install Python Dependencies
       run: |
-        pip3 install pytest==8.4.1
         python3 -m venv venv
         source venv/bin/activate
+        pip3 install pytest==8.4.1
         which pip3
         which python3
         pip3 install -r premerge/buildbot/requirements.lock.txt
