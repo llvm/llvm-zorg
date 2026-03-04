@@ -5,7 +5,7 @@ import time
 import subprocess
 import logging
 import os
-from github import Github
+from github import Github, Auth, GithubIntegration
 from git import Repo, Actor
 import requests
 import re
@@ -35,10 +35,10 @@ class CredentialManager:
 
     def __init__(self):
         self.gh_fork_user = os.getenv("GITHUB_FORK_USER", self.DefaultGHUser)
-        self.gh_fork_token = os.getenv("GITHUB_FORK_API_TOKEN")
         self.gh_pr_user = os.getenv("GITHUB_PR_USER", self.DefaultGHUser)
-        self.gh_pr_token = os.getenv("GITHUB_PR_API_TOKEN")
         self.bk_token = os.getenv("BUILDKITE_API_TOKEN")
+        self.gh_app_id = os.getenv("GITHUB_APP_ID")
+        self.gh_app_private_key = os.getenv("GITHUB_APP_PRIVATE_KEY")
 
     @property
     def gh_fork_repo_name(self):
@@ -186,18 +186,20 @@ class LocalGitRepo:
                 f"Cloning {self.creds.gh_fork_repo_name} to {self.repo_path}..."
             )
             Repo.clone_from(
-                f"https://{self.creds.gh_fork_token}@github.com/{self.creds.gh_fork_repo_name}.git",
+                f"https://github.com/{self.creds.gh_fork_repo_name}.git",
                 self.repo_path,
             )
         self.repo = Repo(repo_path)
-        self.gh_fork_repo = Github(self.creds.gh_fork_token).get_repo(
-            self.creds.gh_fork_repo_name
+        github_integration = GithubIntegration(
+            auth=Auth.AppAuth(creds.gh_app_id, creds.gh_app_private_key)
         )
-        self.gh_pr_repo = Github(self.creds.gh_pr_token).get_repo(
-            self.creds.gh_pr_repo_name
+        self.gh_fork_repo = github_integration.get_repo_installation(
+            self.creds.gh_fork_user, "llvm-project"
+        )
+        self.gh_pr_repo = github_integration.get_repo_installation(
+            self.creds.gh_pr_user, "llvm-project"
         )
         self.bazel_utils_path = os.path.join(self.repo_path, "utils", "bazel")
-
         self.main_branch = "main"
         self.remote_name = "origin"
         self.author_name = os.getenv("GIT_AUTHOR_NAME", "Pranav Kant")
@@ -256,7 +258,8 @@ class LocalGitRepo:
                 )
                 return True
 
-            # This requires GITHUB_PR_API_TOKEN to have pull-request:write access.
+            # This requires the Github app installation used for authentication
+            # to have pull-request:write access.
             logger.info(
                 f"Creating Pull Request for branch {branch_name} from {self.creds.gh_fork_repo_name} to {self.creds.gh_pr_repo_name}..."
             )

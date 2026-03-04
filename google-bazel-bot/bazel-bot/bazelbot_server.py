@@ -7,7 +7,6 @@ import sys
 import asyncio
 
 from attr import dataclass
-from dotenv import load_dotenv
 import argparse
 from bazel_agent import AgentErrors
 from utils import (
@@ -41,8 +40,6 @@ parser.add_argument(
 )
 
 logger = logging.getLogger(__name__)
-
-load_dotenv()
 
 # This is the max iteration on the bot side. We will run agent MAX_ITERATIONS times to see if it can give us a fix
 # Note that agent has its own max iterations. The difference being that agent iterations iterates on an already made fix
