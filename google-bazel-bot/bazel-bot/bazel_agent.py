@@ -4,7 +4,6 @@ import asyncio
 import logging
 import sys
 from typing import AsyncGenerator, List
-from dotenv import load_dotenv
 import argparse
 import json
 from enum import Enum
@@ -28,9 +27,6 @@ parser.add_argument(
 parser.add_argument(
     "--commit_sha", type=str, help="Git Commit SHA to process", required=True
 )
-
-# Configuration
-load_dotenv()
 
 MAX_AGENT_ITERATIONS = 5
 USER_ID = "default_user"
