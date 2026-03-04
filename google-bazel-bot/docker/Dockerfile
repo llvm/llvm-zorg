@@ -1,4 +1,4 @@
-FROM docker.io/ubuntu:24.04 AS bazel-buildkite
+FROM docker.io/ubuntu:24.04 AS bazel-base
 
 # Make sure apt-get doesn't prompt for stuff like our time zone, etc.
 ENV DEBIAN_FRONTEND=noninteractive
@@ -66,6 +66,10 @@ RUN wget --no-verbose -O /usr/local/bin/buildifier https://github.com/bazelbuild
   /usr/local/bin/buildifier --version; \
   /usr/local/bin/buildozer --version
 
+RUN mkdir -p /var/lib/buildkite-agent
+
+FROM bazel-base AS bazel-buildkite
+
 RUN echo 'install buildkite' ;\
     apt-get install -y apt-transport-https gnupg;\
     sh -c 'echo deb https://apt.buildkite.com/buildkite-agent stable main > /etc/apt/sources.list.d/buildkite-agent.list' ;\
@@ -78,12 +82,11 @@ COPY --chown=buildkite-agent:buildkite-agent docker/pre-checkout /etc/buildkite-
 
 # Change sh client for buildkite-agent.
 RUN chsh -s /bin/bash buildkite-agent
-RUN mkdir -p /var/lib/buildkite-agent
 
 ENTRYPOINT ["entrypoint.sh"]
 CMD ["gosu", "buildkite-agent", "buildkite-agent", "start", "--no-color", "--tags-from-gcp"]
 
-FROM bazel-buildkite as bazel-fixer-bot
+FROM bazel-base as bazel-fixer-bot
 
 RUN mkdir /var/lib/buildkite-agent/bazel-fixer-bot
 WORKDIR /var/lib/buildkite-agent/bazel-fixer-bot
