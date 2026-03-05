@@ -34,11 +34,6 @@ spec:
             - name: scratch-volume
               mountPath: /dev/shm
           env:
-            - name: BUILDKITE_API_TOKEN
-              valueFrom:
-                secretKeyRef:
-                  name: buildkite-api-token
-                  key: token
             # TODO(boomanaiden154): We should eventually remove this token and
             # replace any such usage with the Github App.
             - name: GITHUB_API_TOKEN
