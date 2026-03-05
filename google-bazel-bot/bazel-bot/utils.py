@@ -191,12 +191,20 @@ class LocalGitRepo:
         github_integration = github.GithubIntegration(
             auth=github.Auth.AppAuth(creds.gh_app_id, creds.gh_app_private_key)
         )
-        self.gh_fork_repo = github_integration.get_repo_installation(
-            self.creds.gh_fork_user, "llvm-project"
-        ).get_github_for_installation().get_repo(self.creds.gh_fork_repo_name)
-        self.gh_pr_repo = github_integration.get_repo_installation(
-            self.creds.gh_pr_user, "llvm-project"
-        ).get_github_for_installation().get_repo(self.creds.gh_pr_repo_name)
+        self.gh_fork_repo = (
+            github_integration.get_repo_installation(
+                self.creds.gh_fork_user, "llvm-project"
+            )
+            .get_github_for_installation()
+            .get_repo(self.creds.gh_fork_repo_name)
+        )
+        self.gh_pr_repo = (
+            github_integration.get_repo_installation(
+                self.creds.gh_pr_user, "llvm-project"
+            )
+            .get_github_for_installation()
+            .get_repo(self.creds.gh_pr_repo_name)
+        )
         self.bazel_utils_path = os.path.join(self.repo_path, "utils", "bazel")
         self.main_branch = "main"
         self.remote_name = "origin"

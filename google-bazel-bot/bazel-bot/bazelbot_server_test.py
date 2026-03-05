@@ -201,7 +201,9 @@ class TestBazelBotServer(unittest.TestCase):
         bot = bazelbot_server.BazelRepairBot(
             cmd_processor, git_repo, creds, build_processor, "state.txt", 10
         )
-        build_info = utils.BuildInfo("sha1", utils.BuildState.FAILED, ["//target:foo"], 1)
+        build_info = utils.BuildInfo(
+            "sha1", utils.BuildState.FAILED, ["//target:foo"], 1
+        )
 
         # Mock bant success
         cmd_processor.run_bant.return_value = True
