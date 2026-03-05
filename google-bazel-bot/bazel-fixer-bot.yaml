@@ -22,7 +22,7 @@ spec:
         - name: runner
           image: ghcr.io/llvm/bazel-fixer-bot:latest
           command: [".venv/bin/python3"]
-          args: ["./bazelbot_server.py", "--llvm_git_repo=/var/lib/buildkite-agent/llvm-project-bazelbot/"]
+          args: ["./bazelbot_server.py", "--llvm_git_repo=/var/lib/buildkite-agent/llvm-project-bazelbot/", "--create_prs"]
           resources:
             limits:
               cpu: "60"
