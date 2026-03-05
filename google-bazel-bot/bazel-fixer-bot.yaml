@@ -51,9 +51,9 @@ spec:
                   name: github-app
                   key: private-key
             - name: GITHUB_FORK_USER
-              value: pranavk
+              value: google-bazel-bot
             - name: GITHUB_PR_USER
-              value: pranavk
+              value: google-bazel-bot
             - name: GOOGLE_GENAI_USE_VERTEXAI
               value: "1"
             - name: GOOGLE_CLOUD_PROJECT

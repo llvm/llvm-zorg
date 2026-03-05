@@ -31,11 +31,9 @@ class BazelBuildResult:
 
 
 class CredentialManager:
-    DefaultGHUser = "pranavk"
-
     def __init__(self):
-        self.gh_fork_user = os.getenv("GITHUB_FORK_USER", self.DefaultGHUser)
-        self.gh_pr_user = os.getenv("GITHUB_PR_USER", self.DefaultGHUser)
+        self.gh_fork_user = os.getenv("GITHUB_FORK_USER")
+        self.gh_pr_user = os.getenv("GITHUB_PR_USER")
         self.bk_token = os.getenv("BUILDKITE_API_TOKEN")
         self.gh_app_id = os.getenv("GITHUB_APP_ID")
         self.gh_app_private_key = os.getenv("GITHUB_APP_PRIVATE_KEY")
@@ -202,8 +200,8 @@ class LocalGitRepo:
         self.bazel_utils_path = os.path.join(self.repo_path, "utils", "bazel")
         self.main_branch = "main"
         self.remote_name = "origin"
-        self.author_name = os.getenv("GIT_AUTHOR_NAME", "Pranav Kant")
-        self.author_email = os.getenv("GIT_AUTHOR_EMAIL", "prka@google.com")
+        self.author_name = os.getenv("GIT_AUTHOR_NAME", "Google Bazel Bot")
+        self.author_email = os.getenv("GIT_AUTHOR_EMAIL", "google-bazel-bot@google.com")
         self.branch_prefix = "bazel-"
 
     def get_branch_name(self, commit_hash: str) -> str:
