@@ -151,6 +151,14 @@ data "google_secret_manager_secret_version" "github_app_private_key" {
   secret = "github-app-private-key"
 }
 
+data "google_secret_manager_secret_version" "github_pr_app_id" {
+  secret = "github-pr-app-id"
+}
+
+data "google_secret_manager_secret_version" "github_pr_app_private_key" {
+  secret = "github-pr-app-private-key"
+}
+
 resource "kubernetes_namespace" "bazel_ci" {
   metadata {
     name = "bazel-ci"
@@ -200,6 +208,21 @@ resource "kubernetes_secret" "github_app" {
   depends_on = [kubernetes_namespace.bazel_ci]
 }
 
+resource "kubernetes_secret" "github_pr_app" {
+  metadata {
+    name      = "github-pr-app"
+    namespace = kubernetes_namespace.bazel_ci.metadata[0].name
+  }
+
+  data = {
+    "id"          = data.google_secret_manager_secret_version.github_pr_app_id.secret_data
+    "private-key" = data.google_secret_manager_secret_version.github_pr_app_private_key.secret_data
+  }
+
+  type       = "Opaque"
+  depends_on = [kubernetes_namespace.bazel_ci]
+}
+
 resource "kubernetes_service_account" "bazel_cache_ksa" {
   metadata {
     name      = "bazel-cache-ksa"
@@ -240,6 +263,7 @@ resource "kubernetes_manifest" "bazel_fixer_bot" {
     kubernetes_namespace.bazel_ci,
     kubernetes_secret.github_app,
     kubernetes_secret.github_api_token,
+    kubernetes_secret.github_pr_app,
     kubernetes_service_account.bazel_cache_ksa
   ]
 }

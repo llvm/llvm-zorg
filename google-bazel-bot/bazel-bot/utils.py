@@ -37,6 +37,8 @@ class CredentialManager:
         self.bk_token = os.getenv("BUILDKITE_API_TOKEN")
         self.gh_app_id = os.getenv("GITHUB_APP_ID")
         self.gh_app_private_key = os.getenv("GITHUB_APP_PRIVATE_KEY")
+        self.gh_pr_app_id = os.getenv("GITHUB_PR_APP_ID")
+        self.gh_pr_app_private_key = os.getenv("GITHUB_PR_APP_PRIVATE_KEY")
 
     @property
     def gh_fork_repo_name(self):
@@ -188,10 +190,10 @@ class LocalGitRepo:
                 self.repo_path,
             )
         self.repo = git.Repo(repo_path)
-        self.github_integration = github.GithubIntegration(
+        self.fork_github_integration = github.GithubIntegration(
             auth=github.Auth.AppAuth(creds.gh_app_id, creds.gh_app_private_key)
         )
-        self.gh_fork_installation = self.github_integration.get_repo_installation(
+        self.gh_fork_installation = self.fork_github_integration.get_repo_installation(
             self.creds.gh_fork_user, "llvm-project"
         )
         self.gh_fork_repo = (
@@ -199,7 +201,10 @@ class LocalGitRepo:
                 self.creds.gh_fork_repo_name
             )
         )
-        self.gh_pr_installation = self.github_integration.get_repo_installation(
+        self.pr_github_integration = github.GithubIntegration(
+            auth=github.Auth.AppAuth(creds.gh_pr_app_id, creds.gh_pr_app_private_key)
+        )
+        self.gh_pr_installation = self.pr_github_integration.get_repo_installation(
             self.creds.gh_pr_user, "llvm-project"
         )
         self.gh_pr_repo = (
@@ -254,7 +259,7 @@ class LocalGitRepo:
         try:
             logger.info(f"Pushing branch {branch_name} to remote...")
             self.repo.delete_remote(self.remote_name)
-            access_token = self.github_integration.get_access_token(
+            access_token = self.fork_github_integration.get_access_token(
                 self.gh_fork_installation.id
             ).token
             self.repo.create_remote(
