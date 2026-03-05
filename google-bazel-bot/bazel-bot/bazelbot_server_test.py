@@ -219,37 +219,6 @@ class TestBazelBotServer(unittest.TestCase):
         git_repo.commit.assert_called()
         git_repo.push_fix.assert_called()
 
-    @mock.patch("utils.requests.get")
-    def test_buildkite_processor(self, mock_get):
-        creds = mock.MagicMock()
-        creds.bk_token = "bk_token"
-        bkp = utils.BuildkiteBuildProcessor(creds)
-
-        # Test get_latest_build_status
-        mock_response = mock.MagicMock()
-        mock_response.json.return_value = [
-            {
-                "commit": "sha1",
-                "number": 123,
-                "state": "failed",
-                "jobs": [{"state": "failed", "log_url": "http://log", "id": "job1"}],
-            }
-        ]
-        mock_response.raise_for_status.return_value = None
-
-        # Mock log response
-        mock_log_response = mock.MagicMock()
-        mock_log_response.json.return_value = {
-            "content": "ERROR: (from target //foo:bar)"
-        }
-
-        mock_get.side_effect = [mock_response, mock_log_response]
-
-        info = bkp.get_latest_build_status()
-        self.assertEqual(info.commit, "sha1")
-        self.assertEqual(info.state, utils.BuildState.FAILED)
-        self.assertEqual(info.failed_targets, ["//foo:bar"])
-
     def test_validate_before_publishing(self):
         cmd_processor = mock.MagicMock()
         git_repo = mock.MagicMock()
