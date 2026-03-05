@@ -3,5 +3,4 @@ PyGithub
 GitPython
 schedule
 google-adk
-argparse
 mypy
