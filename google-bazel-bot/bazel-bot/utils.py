@@ -188,22 +188,24 @@ class LocalGitRepo:
                 self.repo_path,
             )
         self.repo = git.Repo(repo_path)
-        github_integration = github.GithubIntegration(
+        self.github_integration = github.GithubIntegration(
             auth=github.Auth.AppAuth(creds.gh_app_id, creds.gh_app_private_key)
         )
+        self.gh_fork_installation = self.github_integration.get_repo_installation(
+            self.creds.gh_fork_user, "llvm-project"
+        )
         self.gh_fork_repo = (
-            github_integration.get_repo_installation(
-                self.creds.gh_fork_user, "llvm-project"
+            self.gh_fork_installation.get_github_for_installation().get_repo(
+                self.creds.gh_fork_repo_name
             )
-            .get_github_for_installation()
-            .get_repo(self.creds.gh_fork_repo_name)
+        )
+        self.gh_pr_installation = self.github_integration.get_repo_installation(
+            self.creds.gh_pr_user, "llvm-project"
         )
         self.gh_pr_repo = (
-            github_integration.get_repo_installation(
-                self.creds.gh_pr_user, "llvm-project"
+            self.gh_pr_installation.get_github_for_installation().get_repo(
+                self.creds.gh_pr_repo_name
             )
-            .get_github_for_installation()
-            .get_repo(self.creds.gh_pr_repo_name)
         )
         self.bazel_utils_path = os.path.join(self.repo_path, "utils", "bazel")
         self.main_branch = "main"
@@ -251,6 +253,14 @@ class LocalGitRepo:
         branch_name = self.get_branch_name(commit_hash)
         try:
             logger.info(f"Pushing branch {branch_name} to remote...")
+            self.repo.delete_remote(self.remote_name)
+            access_token = self.github_integration.get_access_token(
+                self.gh_fork_installation.id
+            ).token
+            self.repo.create_remote(
+                self.remote_name,
+                f"https://x-access-token:{access_token}@github.com/{self.creds.gh_fork_repo_name}.git",
+            )
             if not self.repo.git.push(
                 "--set-upstream", self.remote_name, f"HEAD:{branch_name}", "-f"
             ):
