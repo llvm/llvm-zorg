@@ -69,6 +69,7 @@ resource "google_container_node_pool" "bazel_ci" {
     workload_metadata_config {
       mode = "GKE_METADATA"
     }
+    disk_size_gb = 200
   }
 }
 
