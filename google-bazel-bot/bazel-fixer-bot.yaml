@@ -21,6 +21,8 @@ spec:
       containers:
         - name: runner
           image: ghcr.io/llvm/bazel-fixer-bot:latest
+          command: [".venv/bin/python3"]
+          args: ["./bazelbot_server.py", "--llvm_git_repo=/var/lib/buildkite-agent/llvm-project-bazelbot/"]
           resources:
             limits:
               cpu: "60"
