@@ -1,24 +1,23 @@
-from collections.abc import Sequence
-import os
+import argparse
 import asyncio
+import dataclasses
+import enum
+import json
 import logging
 import sys
-from typing import AsyncGenerator, List
-import argparse
-import json
-from enum import Enum
-from dataclasses import dataclass
-from utils import CredentialManager, LocalGitRepo, CommandProcessor
-import tools
+from collections.abc import Sequence
+from typing import AsyncGenerator
 
-# ADK Imports
-from google.adk.agents import LlmAgent, BaseAgent
+from google.adk.agents import BaseAgent, LlmAgent
+from google.adk.agents.invocation_context import InvocationContext
+from google.adk.events import Event
 from google.adk.models.google_llm import _ResourceExhaustedError
 from google.adk.runners import Runner
 from google.adk.sessions import InMemorySessionService
-from google.adk.agents.invocation_context import InvocationContext
-from google.adk.events import Event
 from google.genai.types import Content, Part
+
+import tools
+import utils
 
 parser = argparse.ArgumentParser(description="Bazelbot")
 parser.add_argument(
@@ -96,7 +95,7 @@ class BazelFixerAgent(BaseAgent):  # pytype: disable=wrong-arg-types
     fixer_agent: LlmAgent
     max_iterations: int
     logger_agent: logging.Logger
-    cmd_processor: CommandProcessor
+    cmd_processor: utils.CommandProcessor
 
     async def _run_async_impl(
         self, ctx: InvocationContext
@@ -194,20 +193,20 @@ class BazelFixerAgent(BaseAgent):  # pytype: disable=wrong-arg-types
                     )
 
 
-class AgentErrors(Enum):
+class AgentErrors(enum.Enum):
     SUCCESS = 0
     AGENT_RESOURCE_EXHAUSTED = 1
     FAILURE = 2
 
 
-@dataclass
+@dataclasses.dataclass
 class AgentResult:
     status: AgentErrors
     summary: Sequence[str]
 
 
 async def query_agent(
-    commit_sha: str, cmd_processor: CommandProcessor, past_fixes: List[str]
+    commit_sha: str, cmd_processor: utils.CommandProcessor, past_fixes: list[str]
 ) -> AgentResult:
     """
     A self-contained method to invoke the BazelFixerAgent from external modules.
@@ -302,8 +301,8 @@ async def main():
     args = parser.parse_args(sys.argv[1:])
     print("Simulating external call to query_agent...")
 
-    cmd_processor = CommandProcessor(args.llvm_git_repo)
-    git_repo = LocalGitRepo(args.llvm_git_repo, CredentialManager(), False)
+    cmd_processor = utils.CommandProcessor(args.llvm_git_repo)
+    git_repo = utils.LocalGitRepo(args.llvm_git_repo, utils.CredentialManager(), False)
     git_repo.create_branch_for_fix(args.commit_sha)
     final_output = await query_agent(
         commit_sha=args.commit_sha,
