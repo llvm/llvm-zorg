@@ -4,10 +4,13 @@ metadata:
   name: bazel-buildkite
   namespace: bazel-ci
 spec:
-  replicas: 1
   selector:
     matchLabels:
       app: bazel-buildkite
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 0
   template:
     metadata:
       labels:
