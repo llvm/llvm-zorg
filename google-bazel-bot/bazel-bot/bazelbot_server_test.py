@@ -104,24 +104,6 @@ class TestBazelBotServer(unittest.TestCase):
         self.assertEqual(builds[0].commit, "sha_old")
         self.assertEqual(builds[1].commit, "sha_new")
 
-    @mock.patch("builtins.open", new_callable=mock.mock_open, read_data="last_sha")
-    @mock.patch("os.path.exists")
-    def test_bazel_repair_bot_load_state(self, mock_exists, mock_file):
-        mock_exists.return_value = True
-        cmd_processor = mock.MagicMock()
-        git_repo = mock.MagicMock()
-        creds = mock.MagicMock()
-        build_processor = mock.MagicMock()
-
-        cmd_processor.run_bazel_build.return_value = mock.MagicMock(success=True)
-
-        bot = bazelbot_server.BazelRepairBot(
-            cmd_processor, git_repo, creds, build_processor, "state.txt", 10
-        )
-        bot.load_state()
-        self.assertEqual(bot.last_processed_sha, "last_sha")
-        self.assertEqual(bot.last_processed_state, utils.BuildState.PASSED)
-
     @mock.patch("bazelbot_server.asyncio.run")
     def test_process_failure_with_ai(self, mock_asyncio_run):
         cmd_processor = mock.MagicMock()
@@ -131,7 +113,7 @@ class TestBazelBotServer(unittest.TestCase):
         build_processor = mock.MagicMock()
 
         bot = bazelbot_server.BazelRepairBot(
-            cmd_processor, git_repo, creds, build_processor, "state.txt", 10
+            cmd_processor, git_repo, creds, build_processor, 10
         )
         build_info = utils.BuildInfo("sha1", utils.BuildState.FAILED, [], 1)
 
@@ -163,7 +145,7 @@ class TestBazelBotServer(unittest.TestCase):
         build_processor = mock.MagicMock()
 
         bot = bazelbot_server.BazelRepairBot(
-            cmd_processor, git_repo, creds, build_processor, "state.txt", 10
+            cmd_processor, git_repo, creds, build_processor, 10
         )
         build_info = utils.BuildInfo("sha1", utils.BuildState.FAILED, [], 1)
 
@@ -203,7 +185,7 @@ class TestBazelBotServer(unittest.TestCase):
         build_processor = mock.MagicMock()
 
         bot = bazelbot_server.BazelRepairBot(
-            cmd_processor, git_repo, creds, build_processor, "state.txt", 10
+            cmd_processor, git_repo, creds, build_processor, 10
         )
         build_info = utils.BuildInfo(
             "sha1", utils.BuildState.FAILED, ["//target:foo"], 1
@@ -229,11 +211,9 @@ class TestBazelBotServer(unittest.TestCase):
         creds = mock.MagicMock()
         build_processor = mock.MagicMock()
 
-        # Avoid load_state logic
-        with mock.patch.object(bazelbot_server.BazelRepairBot, "load_state"):
-            bot = bazelbot_server.BazelRepairBot(
-                cmd_processor, git_repo, creds, build_processor, "state.txt", 10
-            )
+        bot = bazelbot_server.BazelRepairBot(
+            cmd_processor, git_repo, creds, build_processor, 10
+        )
 
         # Case 1: Repo not dirty -> False
         git_repo.is_repo_dirty.return_value = False
@@ -263,10 +243,9 @@ class TestBazelBotServer(unittest.TestCase):
         git_repo = mock.MagicMock()
         creds = mock.MagicMock()
         build_processor = mock.MagicMock()
-        with mock.patch.object(bazelbot_server.BazelRepairBot, "load_state"):
-            bot = bazelbot_server.BazelRepairBot(
-                cmd_processor, git_repo, creds, build_processor, "state.txt", 10
-            )
+        bot = bazelbot_server.BazelRepairBot(
+            cmd_processor, git_repo, creds, build_processor, 10
+        )
 
         build_info = utils.BuildInfo("sha1", utils.BuildState.FAILED, [], 1)
 
@@ -289,22 +268,6 @@ class TestBazelBotServer(unittest.TestCase):
         bot.process_failure_with_ai.return_value = False
         self.assertFalse(bot.repair_build(build_info))
 
-    @mock.patch("builtins.open", new_callable=mock.mock_open)
-    def test_save_state(self, mock_file):
-        cmd_processor = mock.MagicMock()
-        git_repo = mock.MagicMock()
-        creds = mock.MagicMock()
-        build_processor = mock.MagicMock()
-        with mock.patch.object(bazelbot_server.BazelRepairBot, "load_state"):
-            bot = bazelbot_server.BazelRepairBot(
-                cmd_processor, git_repo, creds, build_processor, "state.txt", 10
-            )
-            bot.last_processed_sha = "saved_sha"
-            bot.save_state()
-
-            mock_file.assert_called_with("state.txt", "w")
-            mock_file().write.assert_called_with("saved_sha")
-
     def test_run_logic(self):
         cmd_processor = mock.MagicMock()
         git_repo = mock.MagicMock()
@@ -312,12 +275,11 @@ class TestBazelBotServer(unittest.TestCase):
         build_processor = mock.MagicMock()
 
         # Initialize bot with known state
-        with mock.patch.object(bazelbot_server.BazelRepairBot, "load_state"):
-            bot = bazelbot_server.BazelRepairBot(
-                cmd_processor, git_repo, creds, build_processor, "state.txt", 10
-            )
-            bot.last_processed_sha = "init_sha"
-            bot.last_processed_state = utils.BuildState.PASSED
+        bot = bazelbot_server.BazelRepairBot(
+            cmd_processor, git_repo, creds, build_processor, 10
+        )
+        bot.last_processed_sha = "init_sha"
+        bot.last_processed_state = utils.BuildState.PASSED
 
         # Define the sequence of builds
         builds = [
