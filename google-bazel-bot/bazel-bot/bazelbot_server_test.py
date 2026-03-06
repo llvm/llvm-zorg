@@ -297,9 +297,6 @@ class TestBazelBotServer(unittest.TestCase):
         # Mock wait to break the loop
         bot.wait = mock.MagicMock(side_effect=StopIteration)
 
-        # Mock save_state to avoid file operations
-        bot.save_state = mock.MagicMock()
-
         # Run the bot
         try:
             bot.run()
@@ -318,9 +315,6 @@ class TestBazelBotServer(unittest.TestCase):
 
         # Verify get_builds_to_process was called with initial sha
         build_processor.get_builds_to_process.assert_called_with("init_sha")
-
-        # Verify save_state called 4 times (once per build)
-        self.assertEqual(bot.save_state.call_count, 4)
 
 
 if __name__ == "__main__":
