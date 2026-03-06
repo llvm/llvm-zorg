@@ -362,6 +362,7 @@ class TestProcessLLVMCommits(unittest.TestCase):
     self.assertEqual(
         pull_request_data[0].pull_request_author, 'pull_request_author'
     )
+    self.assertEqual(pull_request_data[0].pull_request_title, '[TEST] Title')
     self.assertEqual(
         pull_request_data[0].pull_request_timestamp_seconds,
         created_at.timestamp(),
