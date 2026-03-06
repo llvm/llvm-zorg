@@ -1,5 +1,11 @@
 [
   {
+    "name": "review_id",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Unique identifier provided by GitHub for the review."
+  },
+  {
     "name": "review_author",
     "type": "STRING",
     "mode": "NULLABLE",
