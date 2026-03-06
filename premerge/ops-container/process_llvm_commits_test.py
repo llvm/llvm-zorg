@@ -72,11 +72,13 @@ class TestProcessLLVMCommits(unittest.TestCase):
   def _create_pull_request_api_data(
       self,
       pull_request_number: int,
+      pull_request_title: str,
       created_at: str | None = None,
       merged_at: str | None = None,
       pull_request_author: str | None = None,
       reviews: list[dict[str, Any]] | None = None,
       labels: list[str] | None = None,
+      requested_reviewers: list[str] | None = None,
   ) -> dict[str, Any]:
     """Create a GitHub API response for a pull request."""
     return {
@@ -84,10 +86,17 @@ class TestProcessLLVMCommits(unittest.TestCase):
         'author': (
             {'login': pull_request_author} if pull_request_author else None
         ),
+        'title': pull_request_title,
         'createdAt': created_at,
         'mergedAt': merged_at,
         'reviews': {'nodes': reviews or []},
         'labels': {'nodes': [{'name': label} for label in labels or []]},
+        'reviewRequests': {
+            'nodes': [
+                {'requestedReviewer': {'login': reviewer}}
+                for reviewer in requested_reviewers or []
+            ]
+        },
     }
 
   def _create_review_api_data(
@@ -98,6 +107,7 @@ class TestProcessLLVMCommits(unittest.TestCase):
   ) -> dict[str, Any]:
     """Create a GitHub API response for a review."""
     return {
+        'reviewID': 'PRR_JAPQO97DJUI',
         'reviewer': {'login': reviewer} if reviewer else None,
         'state': state,
         'createdAt': created_at,
@@ -289,7 +299,8 @@ class TestProcessLLVMCommits(unittest.TestCase):
     """Test extracting commit data from scraped commits and GitHub API data."""
     scraped_commit = self._create_mock_commit(hexsha='abcdef')
     pull_request_api_data = self._create_pull_request_api_data(
-        pull_request_number=12345
+        pull_request_number=12345,
+        pull_request_title='[TEST] Title',
     )
     commit_api_data = {
         'commit_abcdef': self._create_commit_api_data(
@@ -329,10 +340,12 @@ class TestProcessLLVMCommits(unittest.TestCase):
     merged_at_iso = merged_at.isoformat()
     pull_request_api_data = self._create_pull_request_api_data(
         pull_request_number=12345,
+        pull_request_title='[TEST] Title',
         created_at=created_at_iso,
         merged_at=merged_at_iso,
         pull_request_author='pull_request_author',
         labels=['llvm:test-label'],
+        requested_reviewers=['reviewer_1'],
     )
     commit_api_data = {
         'commit_abcdef': self._create_commit_api_data(
@@ -362,6 +375,7 @@ class TestProcessLLVMCommits(unittest.TestCase):
         'llvm:test-label',
         [label['name'] for label in pull_request_data[0].labels],
     )
+    self.assertIn('reviewer_1', pull_request_data[0].requested_reviewers)
 
   def test_extract_pull_request_data_with_missing_author(self):
     """Test extracting pull request data from GitHub API data."""
@@ -369,6 +383,7 @@ class TestProcessLLVMCommits(unittest.TestCase):
     created_at_iso = created_at.isoformat()
     pull_request_api_data = self._create_pull_request_api_data(
         pull_request_number=12345,
+        pull_request_title='[TEST] Title',
         created_at=created_at_iso,
     )
     commit_api_data = {
@@ -395,6 +410,7 @@ class TestProcessLLVMCommits(unittest.TestCase):
     ]
     pull_request_data = self._create_pull_request_api_data(
         pull_request_number=12345,
+        pull_request_title='[TEST] Title',
         pull_request_author='pr_author',
         reviews=reviews,
     )
@@ -428,6 +444,7 @@ class TestProcessLLVMCommits(unittest.TestCase):
     ]
     pull_request_data = self._create_pull_request_api_data(
         pull_request_number=12345,
+        pull_request_title='[TEST] Title',
         pull_request_author='pr_author',
         reviews=reviews,
     )
