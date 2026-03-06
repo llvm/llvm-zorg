@@ -302,7 +302,6 @@ class BazelRepairBot:
                 # Update state for the next iteration.
                 self.last_processed_state = current_build.state
                 self.last_processed_sha = current_build.commit
-                self.save_state()
 
             self.wait(self.poll_interval)
 
