@@ -287,8 +287,9 @@ class LocalGitRepo:
             pr = self.gh_pr_repo.create_pull(
                 title=f"[Bazel] Fixes {commit_hash[:7]}",
                 body=pr_body,
-                head=f"{self.creds.gh_pr_user}:{branch_name}",
+                head=f"{self.creds.gh_fork_user}:{branch_name}",
                 base=self.main_branch,
+                maintainer_can_modify=False,
             )
             logger.info(f"Pull Request Created: {pr.html_url}")
         except Exception as e:
