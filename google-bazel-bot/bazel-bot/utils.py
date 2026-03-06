@@ -6,12 +6,10 @@ import os
 import re
 import subprocess
 import time
-from collections.abc import Mapping, Sequence
-from typing import Any
+from collections.abc import Sequence
 
 import git
 import github
-import requests
 
 logger = logging.getLogger(__name__)
 
