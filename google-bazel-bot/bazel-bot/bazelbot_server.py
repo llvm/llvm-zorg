@@ -15,9 +15,6 @@ parser = argparse.ArgumentParser(description="Bazelbot")
 parser.add_argument(
     "--llvm_git_repo", type=str, help="Absolute path to LLVM repo", required=True
 )
-parser.add_argument(
-    "--bot_state_file", type=str, help="Bot state file", default="bot_state.log"
-)
 parser.add_argument("--poll_interval", type=int, help="Polling interval", default=120)
 parser.add_argument("--create_prs", action="store_true", help="Whether to create PRs.")
 parser.add_argument(
@@ -61,7 +58,6 @@ class BazelRepairBot:
         git_repo: utils.LocalGitRepo,
         creds: utils.CredentialManager,
         build_processor: utils.BuildProcessor,
-        state_file,
         poll_interval,
     ):
         # Injectables
@@ -74,44 +70,7 @@ class BazelRepairBot:
         self.last_processed_build = 0
         self.last_processed_state: utils.BuildState = utils.BuildState.UNKNOWN
         self.last_processed_sha: str = ""
-        self.state_file = state_file
         self.poll_interval = poll_interval
-
-    def load_state(self):
-        """Loads the last commit sha from file and find the status of that build."""
-        if not os.path.exists(self.state_file):
-            logger.info("No state file found. Will initialize state on first run.")
-            return
-
-        try:
-            with open(self.state_file, "r") as f:
-                self.last_processed_sha = f.read().strip()
-
-            # Local build to find the last processed build state
-            logging.info(
-                f"Finding build state for {self.last_processed_sha} by running build locally..."
-            )
-            self.git_repo.checkout_commit(self.last_processed_sha)
-            build_result = self.command_processor.run_bazel_build()
-            self.last_processed_state = (
-                utils.BuildState.PASSED
-                if build_result.success
-                else utils.BuildState.FAILED
-            )
-            logger.info(
-                f"Loaded state: last processed sha {self.last_processed_sha} with state {self.last_processed_state}."
-            )
-        except Exception as e:
-            logger.error(f"Failed to load state file: {e}.")
-            self.last_processed_sha = ""
-
-    def save_state(self):
-        """Saves current commit sha into a file."""
-        try:
-            with open(self.state_file, "w") as f:
-                f.write(self.last_processed_sha)
-        except Exception as e:
-            logger.error(f"Failed to save state: {e}")
 
     def wait(self, seconds):
         """Sleeps for a given number of seconds"""
@@ -150,11 +109,6 @@ class BazelRepairBot:
             record.fixed_by = FixTool.AI
         else:
             record.fixed_by = FixTool.NOT_FIXED
-
-        with open("summary." + self.state_file, "a") as summary_file:
-            summary_file.write(
-                f"{record.timestamp},{record.commit},{record.fixed_by}\n"
-            )
 
         return record.fixed_by != FixTool.NOT_FIXED
 
@@ -267,7 +221,6 @@ class BazelRepairBot:
         if latest_build:
             self.last_processed_sha = latest_build.commit
             self.last_processed_state = latest_build.state
-            self.save_state()
             return True
 
         logger.error("Could not init state from latest build.")
@@ -386,7 +339,6 @@ if __name__ == "__main__":
         git_repo,
         creds_manager,
         build_processor,
-        args.bot_state_file,
         args.poll_interval,
     )
     if args.test_commits:
@@ -394,7 +346,6 @@ if __name__ == "__main__":
         exit(0)
 
     logger.info("Bazel Bot entering main loop...")
-    bot.load_state()
     bot.run()
     print("Exiting Bazel Bot Server...")
     exit(1)
