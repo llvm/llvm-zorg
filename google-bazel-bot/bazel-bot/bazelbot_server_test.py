@@ -25,6 +25,8 @@ class TestBazelBotServer(unittest.TestCase):
             "BUILDKITE_API_TOKEN": "bk_token",
             "GITHUB_APP_ID": "app_id",
             "GITHUB_APP_PRIVATE_KEY": "private_key",
+            "GITHUB_PR_APP_ID": "pr_app_id",
+            "GITHUB_PR_APP_PRIVATE_KEY": "pr_private_key",
         },
     )
     def test_credential_manager(self):
@@ -34,6 +36,8 @@ class TestBazelBotServer(unittest.TestCase):
         self.assertEqual(creds.bk_token, "bk_token")
         self.assertEqual(creds.gh_fork_repo_name, "fork_user/llvm-project")
         self.assertEqual(creds.gh_pr_repo_name, "pr_user/llvm-project")
+        self.assertEqual(creds.gh_pr_app_id, "pr_app_id")
+        self.assertEqual(creds.gh_pr_app_private_key, "pr_private_key")
 
     @mock.patch("utils.git.Repo")
     @mock.patch("utils.github.GithubIntegration")

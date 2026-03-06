@@ -51,6 +51,16 @@ spec:
                 secretKeyRef:
                   name: github-app
                   key: private-key
+            - name: GITHUB_PR_APP_ID
+              valueFrom:
+                secretKeyRef:
+                  name: github-pr-app
+                  key: id
+            - name: GITHUB_PR_APP_PRIVATE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: github-pr-app
+                  key: private-key
             - name: GITHUB_FORK_USER
               value: google-bazel-bot
             - name: GITHUB_PR_USER
