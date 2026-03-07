@@ -379,6 +379,7 @@ def query_github_graphql_api(
           "Authorization": f"bearer {github_token}",
       },
       json={"query": query},
+      timeout=30,
   )
   # Exit if API call fails
   # A failed API call means a large batch of data is missing and will not be
