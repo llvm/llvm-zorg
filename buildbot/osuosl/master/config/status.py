@@ -116,7 +116,6 @@ def getReporters():
 
         r.append(
             utils.LLVMFailGitHubLabeler(
-                debug = True,
                 token = token,
                 generators = [
                     utils.LLVMFailBuildGenerator(
