@@ -44,6 +44,7 @@ commit_{commit_sha}:
         pullRequest: nodes {{
           author {{ login }}
           number
+          title
           createdAt
           mergedAt
           labels(first: 25) {{
@@ -51,9 +52,19 @@ commit_{commit_sha}:
               name
             }}
           }}
+          reviewRequests(first: 10) {{
+            nodes {{
+              requestedReviewer {{
+                ... on User {{
+                  login
+                }}
+              }}
+            }}
+          }}
           reviews(last: 100) {{
             nodes {{
               state
+              reviewID: id
               createdAt
               reviewer: author {{
                 login
@@ -85,14 +96,17 @@ class LLVMCommitData:
 class LLVMPullRequestData:
   pull_request_number: int
   pull_request_author: str
+  pull_request_title: str
   pull_request_timestamp_seconds: int
   merged_at_timestamp_seconds: int
   associated_commit: str
   labels: list[dict[str, str]]
+  requested_reviewers: list[str]
 
 
 @dataclasses.dataclass
 class LLVMReviewData:
+  review_id: str
   review_author: str
   review_timestamp_seconds: int
   review_state: str
@@ -283,14 +297,21 @@ def extract_pull_request_data(
         for label in pull_request["labels"]["nodes"]
     ]
 
+    requested_reviewers = [
+        review_request["requestedReviewer"]["login"]
+        for review_request in pull_request["reviewRequests"]["nodes"]
+    ]
+
     pull_request_data.append(
         LLVMPullRequestData(
             pull_request_number=pull_request["number"],
             pull_request_author=author_login,
+            pull_request_title=pull_request["title"],
             pull_request_timestamp_seconds=create_unix_timestamp,
             merged_at_timestamp_seconds=merge_unix_timestamp,
             associated_commit=commit_sha.removeprefix("commit_"),
             labels=labels,
+            requested_reviewers=requested_reviewers,
         )
     )
 
@@ -341,6 +362,7 @@ def extract_review_data(
 
       review_data.append(
           LLVMReviewData(
+              review_id=review["reviewID"],
               review_author=reviewer_login,
               review_timestamp_seconds=unix_timestamp,
               review_state=review["state"].upper(),
@@ -463,12 +485,6 @@ def upload_daily_metrics_to_bigquery(
 def main() -> None:
   github_token = os.environ["GITHUB_TOKEN"]
 
-  # Clone repository to current working directory
-  repo = git.Repo.clone_from(
-      url=REPOSITORY_URL,
-      to_path="./llvm-project",
-  )
-
   # Scrape new commits
   date_to_scrape = datetime.datetime.now(
       datetime.timezone.utc
@@ -476,6 +492,12 @@ def main() -> None:
   logging.info(
       "Cloning and scraping llvm/llvm-project for new commits on %s",
       date_to_scrape.strftime("%Y-%m-%d"),
+  )
+
+  # Clone repository to current working directory
+  repo = git.Repo.clone_from(
+      url=REPOSITORY_URL,
+      to_path="./llvm-project",
   )
 
   commits = scrape_commits_by_date(repo, date_to_scrape)

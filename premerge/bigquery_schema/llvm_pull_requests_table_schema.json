@@ -6,6 +6,12 @@
     "description": "GitHub username of the pull request author."
   },
   {
+    "name": "pull_request_title",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Title of the pull request."
+  },
+  {
     "name": "pull_request_timestamp_seconds",
     "type": "INTEGER",
     "mode": "NULLABLE",
@@ -41,5 +47,11 @@
         "mode": "NULLABLE"
       }
     ]
+  },
+  {
+    "name": "requested_reviewers",
+    "type": "STRING",
+    "mode": "REPEATED",
+    "description": "GitHub usernames of Users requested to review the pull request."
   }
 ]
