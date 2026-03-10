@@ -697,19 +697,31 @@ all = [
                                       '-DLLVM_TARGETS_TO_BUILD=Mips'])},
 
     {'name' : "clang-ppc64le-linux-test-suite",
-    'tags'  : ["clang", "llvm", "compiler-rt", "clang-tools-extra", "ppc", "ppc64le"],
+    'tags'  : ["clang", "llvm", "compiler-rt", "clang-tools-extra", "flang",
+               "flang-rt", "mlir", "openmp", "ppc", "ppc64le"],
     'workernames' : ["ppc64le-clang-test-suite"],
     'builddir': "clang-ppc64le-test-suite",
     'factory' : TestSuiteBuilder.getTestSuiteBuildFactory(
-                    depends_on_projects=["llvm", "clang", "clang-tools-extra",
-                                         "compiler-rt"],
-                    checks=['check-all'],
+                    depends_on_projects=['llvm', "clang", "clang-tools-extra",
+                                         'compiler-rt', 'mlir', 'clang',
+                                         'flang','flang-rt','openmp'],
+                    checks=['check-all', 'check-flang',
+                            'check-flang-rt','check-mlir', 'check-openmp'],
                     extra_configure_args=[
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
                         "-DCMAKE_BUILD_TYPE=Release",
                         "-DLLVM_LIT_ARGS=-v",
+                        '-DLLVM_INSTALL_UTILS=ON',
+                        '-DFLANG_ENABLE_WERROR=ON',
                         "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
-                        "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache"])},
+                        "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache"
+                    ],
+                    env={
+                        'CC': 'clang',
+                        'CXX': 'clang++',
+                        'LD': 'lld',
+                        'LD_LIBRARY_PATH': '/usr/lib64',
+                    })},
 
     {'name' : "clang-ppc64le-linux-multistage",
     'tags'  : ["clang", "llvm", "lld", "compiler-rt", "clang-tools-extra", "ppc", "ppc64le"],
