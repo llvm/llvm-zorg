@@ -114,10 +114,6 @@ pipeline {
                       --cmake-flag="-DLLDB_USE_SYSTEM_DEBUGSERVER=ON" \
                       --cmake-flag="-DPython3_EXECUTABLE=$(which python)"
                     '''
-                    script {
-                        def LLDB = new org.swift.LLDB()
-                        LLDB.LLDB_prepare("lldb-build/tools/clang/stage2-bins/bin/debugserver")
-                    }
                 }
             }
         }
