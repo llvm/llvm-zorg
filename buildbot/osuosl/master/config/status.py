@@ -502,6 +502,7 @@ def getReporters():
                         "amdgpu-offload-ubuntu-22-cmake-build-only",
                         "amdgpu-offload-rhel-8-cmake-build-only",
                         "amdgpu-offload-rhel-9-cmake-build-only",
+                        "amdgpu-offload-build-only",
                     ])
             ]),
         reporters.MailNotifier(
