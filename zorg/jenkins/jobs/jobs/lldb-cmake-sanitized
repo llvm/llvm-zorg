@@ -104,7 +104,7 @@ pipeline {
 
                     rm -rf lldb-build/bin/debugserver
                     # Running too many asanified threads is too stressful for the kernel and we get >90% system time.
-                    export MAX_PARALLEL_TESTS=$(sysctl hw.physicalcpu |awk '{print int(($2+1)/2)}')
+                    export MAX_PARALLEL_TESTS=1
 
                     python3 llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-sanitized build \
                       --assertions \
