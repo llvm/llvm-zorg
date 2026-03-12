@@ -123,7 +123,7 @@ for CONF in rva20 rv32gc rva22 rva23 rv32gcv rv32gc_zve32f_zvl128b rva23-zvl1024
       TARGET="riscv32-linux-gnu"
       # Disable scalable vectorisation temporarily until asserts are fixed.
       CFLAGS="-march=rv32gc_zve32f_zvl128b -mllvm -scalable-vectorization=off"
-      QEMU_CPU="rv32,zve32f=true,v=true,vext_spec=v1.0,elen=32,vlen=128,rvv_ta_all_1s= true,rvv_ma_all_1s=true,rvv_vl_half_avl=true"
+      QEMU_CPU="rv32,zve32f=true,v=true,vext_spec=v1.0,elen=32,vlen=128,rvv_ta_all_1s=true,rvv_ma_all_1s=true,rvv_vl_half_avl=true"
       ;;
     *)
       echo "Unrecognised config name"
