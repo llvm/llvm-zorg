@@ -3793,10 +3793,10 @@ all += [
         },
         
     # PtrAuth (PAuth) builders.
-    {'name' : "llvm-clang-ubuntu-x-aarch64-pauth",
-    'tags'  : ["clang", "llvm", "lld", "clang-tools-extra", "compiler-rt", "libc++", "libc++abi", "libunwind", "cross", "aarch64", "pauth", "ptrauth"],
+    {'name' : "llvm-clang-ubuntu-x-aarch64-pac-ret",
+    'tags'  : ["clang", "llvm", "lld", "clang-tools-extra", "compiler-rt", "libc++", "libc++abi", "libunwind", "cross", "aarch64", "pauth", "ptrauth", "pac-ret"],
     'workernames' : ["as-builder-11"],
-    'builddir': "x-aarch64-pauth",
+    'builddir': "x-aarch64-pac-ret",
     'factory' : UnifiedTreeBuilder.getCmakeExBuildFactory(
                     depends_on_projects = [
                         'llvm',
