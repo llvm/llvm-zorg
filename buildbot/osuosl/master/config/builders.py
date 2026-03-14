@@ -1714,7 +1714,10 @@ all += [
     'tags'  : ["sanitizer", "ppc", "ppc64le"],
     'workernames' : ["ppc64le-sanitizer"],
     'builddir': "sanitizer-ppc64le",
-    'factory' : SanitizerBuilder.getSanitizerBuildFactory(timeout=1800)},
+    'factory' : SanitizerBuilder.getSanitizerBuildFactory(
+        clean=True,
+        timeout=1800
+    )},
 
     {'name' : "sanitizer-windows",
     'tags'  : ["sanitizer"],
