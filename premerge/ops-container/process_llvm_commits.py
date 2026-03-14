@@ -1,16 +1,12 @@
-import dataclasses
 import datetime
 import logging
-import math
 import os
 import re
 from typing import Any, Optional
 import git
 from google.cloud import bigquery
-import requests
-import retry
+import operational_metrics_lib
 
-GITHUB_GRAPHQL_API_URL = "https://api.github.com/graphql"
 REPOSITORY_URL = "https://github.com/llvm/llvm-project.git"
 
 # BigQuery dataset and tables to write metrics to.
@@ -42,75 +38,12 @@ commit_{commit_sha}:
       associatedPullRequests(first: 1) {{
         totalCount
         pullRequest: nodes {{
-          author {{ login }}
-          number
-          title
-          createdAt
-          mergedAt
-          labels(first: 25) {{
-            nodes {{
-              name
-            }}
-          }}
-          reviewRequests(first: 10) {{
-            nodes {{
-              requestedReviewer {{
-                ... on User {{
-                  login
-                }}
-              }}
-            }}
-          }}
-          reviews(last: 100) {{
-            nodes {{
-              state
-              reviewID: id
-              createdAt
-              reviewer: author {{
-                login
-              }}
-            }}
-          }}
+          {requested_pull_request_data}
         }}
       }}
     }}
   }}
 """
-
-
-@dataclasses.dataclass
-class LLVMCommitData:
-  commit_sha: str
-  commit_timestamp_seconds: int
-  diff: list[dict[str, int | str]]
-  commit_author: str | None = (
-      None  # Username of author is unknown until API call
-  )
-  associated_pull_request: int | None = None
-  is_revert: bool = False
-  pull_request_reverted: int | None = None
-  commit_reverted: str | None = None
-
-
-@dataclasses.dataclass
-class LLVMPullRequestData:
-  pull_request_number: int
-  pull_request_author: str
-  pull_request_title: str
-  pull_request_timestamp_seconds: int
-  merged_at_timestamp_seconds: int
-  associated_commit: str
-  labels: list[dict[str, str]]
-  requested_reviewers: list[str]
-
-
-@dataclasses.dataclass
-class LLVMReviewData:
-  review_id: str
-  review_author: str
-  review_timestamp_seconds: int
-  review_state: str
-  associated_pull_request: int
 
 
 def scrape_commits_by_date(
@@ -187,14 +120,14 @@ def parse_commit_revert_info(
 
 def extract_initial_commit_data(
     commit: git.Commit,
-) -> LLVMCommitData:
+) -> operational_metrics_lib.LLVMCommitData:
   # Parse commit message for revert information
   is_revert, pull_request_reverted, commit_reverted = parse_commit_revert_info(
       commit.message
   )
 
   # Add entry
-  return LLVMCommitData(
+  return operational_metrics_lib.LLVMCommitData(
       commit_sha=commit.hexsha,
       commit_timestamp_seconds=commit.committed_date,
       diff=[
@@ -215,7 +148,7 @@ def extract_initial_commit_data(
 def extract_commit_data(
     scraped_commits: list[git.Commit],
     api_data: dict[str, Any],
-) -> list[LLVMCommitData]:
+) -> list[operational_metrics_lib.LLVMCommitData]:
   """Extract commit data from scraped Git commits and GitHub API data.
 
   Args:
@@ -253,7 +186,7 @@ def extract_commit_data(
 
 def extract_pull_request_data(
     api_data: dict[str, Any],
-) -> list[LLVMPullRequestData]:
+) -> list[operational_metrics_lib.LLVMPullRequestData]:
   """Extract pull request data from GitHub API data.
 
   Args:
@@ -268,50 +201,10 @@ def extract_pull_request_data(
       continue
     pull_request = commit_data["associatedPullRequests"]["pullRequest"][0]
 
-    # Some pull requests have no author, possible when an account is deleted or
-    # email address is changed.
-    if pull_request["author"] is not None:
-      author_login = pull_request["author"]["login"]
-    else:
-      author_login = None
-      logging.warning(
-          "No author found for pull request %d", pull_request["number"]
-      )
-
-    # Convert ISO timestamp to Unix timestamp, in seconds
-    create_unix_timestamp = int(
-        datetime.datetime.fromisoformat(pull_request["createdAt"]).timestamp()
-    )
-    if pull_request["mergedAt"] is not None:
-      merge_unix_timestamp = int(
-          datetime.datetime.fromisoformat(pull_request["mergedAt"]).timestamp()
-      )
-    else:
-      merge_unix_timestamp = None
-
-    # Extract label names associated with the pull request
-    labels = [
-        {
-            "name": label["name"],
-        }
-        for label in pull_request["labels"]["nodes"]
-    ]
-
-    requested_reviewers = [
-        review_request["requestedReviewer"]["login"]
-        for review_request in pull_request["reviewRequests"]["nodes"]
-    ]
-
     pull_request_data.append(
-        LLVMPullRequestData(
-            pull_request_number=pull_request["number"],
-            pull_request_author=author_login,
-            pull_request_title=pull_request["title"],
-            pull_request_timestamp_seconds=create_unix_timestamp,
-            merged_at_timestamp_seconds=merge_unix_timestamp,
+        operational_metrics_lib.parse_pull_request_data(
+            pull_request=pull_request,
             associated_commit=commit_sha.removeprefix("commit_"),
-            labels=labels,
-            requested_reviewers=requested_reviewers,
         )
     )
 
@@ -320,7 +213,7 @@ def extract_pull_request_data(
 
 def extract_review_data(
     api_data: dict[str, Any],
-) -> list[LLVMReviewData]:
+) -> list[operational_metrics_lib.LLVMReviewData]:
   """Extract review data from GitHub API data.
 
   Args:
@@ -334,152 +227,26 @@ def extract_review_data(
     if commit_data["associatedPullRequests"]["totalCount"] == 0:
       continue
     pull_request = commit_data["associatedPullRequests"]["pullRequest"][0]
-    associated_pull_request = pull_request["number"]
-    pull_request_author = (
-        pull_request["author"]["login"] if pull_request["author"] else None
-    )
-
-    for review in pull_request["reviews"]["nodes"]:
-      # Some reviews have no author, possible when an account is deleted or
-      # email address is changed.
-      if review["reviewer"] is not None:
-        reviewer_login = review["reviewer"]["login"]
-      else:
-        reviewer_login = None
-        logging.warning(
-            "No reviewer found for review associated with pull request %d",
-            associated_pull_request,
-        )
-
-      # Skip 'reviews' that were made by the pull request author.
-      if reviewer_login is not None and reviewer_login == pull_request_author:
-        continue
-
-      # Convert ISO timestamp to Unix timestamp, in seconds
-      unix_timestamp = int(
-          datetime.datetime.fromisoformat(review["createdAt"]).timestamp()
-      )
-
-      review_data.append(
-          LLVMReviewData(
-              review_id=review["reviewID"],
-              review_author=reviewer_login,
-              review_timestamp_seconds=unix_timestamp,
-              review_state=review["state"].upper(),
-              associated_pull_request=associated_pull_request,
-          )
-      )
+    review_data.extend(operational_metrics_lib.parse_review_data(pull_request))
 
   return review_data
 
 
-@retry.retry(
-    exceptions=(
-        requests.exceptions.HTTPError,
-        requests.exceptions.ChunkedEncodingError,
-    ),
-    tries=5,
-    delay=1,
-    backoff=2,
-)
-def query_github_graphql_api(
-    query: str,
-    github_token: str,
-) -> requests.Response:
-  """Query GitHub GraphQL API, retrying on failure.
-
-  Args:
-    query: The GraphQL query to send to the GitHub API.
-    github_token: The access token to use with the GitHub GraphQL API.
-
-  Returns:
-    The response from the GitHub GraphQL API.
-  """
-  response = requests.post(
-      url=GITHUB_GRAPHQL_API_URL,
-      headers={
-          "Authorization": f"bearer {github_token}",
-      },
-      json={"query": query},
-  )
-  # Exit if API call fails
-  # A failed API call means a large batch of data is missing and will not be
-  # reflected in the dashboard. The dashboard will silently misrepresent
-  # commit data if we continue execution, so it's better to fail loudly.
-  response.raise_for_status()
-
-  return response
-
-
-def fetch_github_api_data(
+def fetch_commit_data_from_github(
     github_token: str,
     commit_hashes: list[str],
-    batch_size: int = GITHUB_API_BATCH_SIZE,
-) -> dict[str, dict[str, Any]]:
-  """Fetch commit data from the GitHub GraphQL API.
-
-  Args:
-    github_token: The access token to use with the GitHub GraphQL API.
-    commit_hashes: List of commit hashes to fetch data for.
-    batch_size: The number of commits to query the GitHub GraphQL API for at a
-      time.
-
-  Returns:
-    A dictionary of commit hash to commit data from the GitHub GraphQL API.
-  """
-  # Create GraphQL subqueries for each commit
+):
   commit_subqueries = [
-      COMMIT_GRAPHQL_SUBQUERY_TEMPLATE.format(commit_sha=commit_sha)
+      COMMIT_GRAPHQL_SUBQUERY_TEMPLATE.format(
+          commit_sha=commit_sha,
+          requested_pull_request_data=operational_metrics_lib.PULL_REQUEST_GRAPHQL_DATA,
+      )
       for commit_sha in commit_hashes
   ]
-  api_commit_data = {}
-  query_template = """
-    query {
-      repository(owner:"llvm", name:"llvm-project"){
-          %s
-      }
-    }
-  """
-  num_batches = math.ceil(len(commit_subqueries) / batch_size)
-  logging.info("Querying GitHub GraphQL API in %d batches", num_batches)
-  for i in range(num_batches):
-    subquery_batch = commit_subqueries[i * batch_size : (i + 1) * batch_size]
-    query = query_template % "".join(subquery_batch)
-
-    logging.info(
-        "Querying batch %d of %d (%d commits)",
-        i + 1,
-        num_batches,
-        len(subquery_batch),
-    )
-    response = query_github_graphql_api(query, github_token)
-
-    api_commit_data.update(response.json()["data"]["repository"])
-
-  return api_commit_data
-
-
-def upload_daily_metrics_to_bigquery(
-    bq_client: bigquery.Client,
-    bq_dataset: str,
-    bq_table: str,
-    llvm_data: list[LLVMCommitData | LLVMPullRequestData | LLVMReviewData],
-) -> None:
-  """Upload processed LLVM metrics to a BigQuery dataset.
-
-  Args:
-    bq_client: The BigQuery client to use.
-    bq_dataset: The name of the BigQuery dataset to upload to.
-    bq_table: The name of the BigQuery table to upload to.
-    llvm_data: List of LLVM data to process & upload to BigQuery.
-  """
-  table_ref = bq_client.dataset(bq_dataset).table(bq_table)
-  table = bq_client.get_table(table_ref)
-  llvm_records = [dataclasses.asdict(commit) for commit in llvm_data]
-  errors = bq_client.insert_rows(table=table, rows=llvm_records)
-  if errors:
-    logging.error("Failed to upload LLVM data to BigQuery: %s", errors)
-    exit(1)
+  return operational_metrics_lib.fetch_repository_data_from_github(
+      github_token=github_token,
+      subqueries=commit_subqueries,
+  )
 
 
 def main() -> None:
@@ -506,24 +273,33 @@ def main() -> None:
     return
 
   logging.info("Fetching GitHub API data for discovered commits.")
-  api_data = fetch_github_api_data(github_token, commits)
+  api_data = fetch_commit_data_from_github(github_token, commits)
   commit_data = extract_commit_data(commits, api_data)
   pull_request_data = extract_pull_request_data(api_data)
   review_data = extract_review_data(api_data)
 
   logging.info("Uploading metrics to BigQuery.")
   bq_client = bigquery.Client()
-  upload_daily_metrics_to_bigquery(
-      bq_client, OPERATIONAL_METRICS_DATASET, LLVM_COMMITS_TABLE, commit_data
-  )
-  upload_daily_metrics_to_bigquery(
+  operational_metrics_lib.upload_to_bigquery(
       bq_client,
-      OPERATIONAL_METRICS_DATASET,
-      LLVM_PULL_REQUESTS_TABLE,
-      pull_request_data,
+      bq_dataset=OPERATIONAL_METRICS_DATASET,
+      bq_table=LLVM_COMMITS_TABLE,
+      llvm_data=commit_data,
+      primary_key="commit_sha",
   )
-  upload_daily_metrics_to_bigquery(
-      bq_client, OPERATIONAL_METRICS_DATASET, LLVM_REVIEWS_TABLE, review_data
+  operational_metrics_lib.upload_to_bigquery(
+      bq_client,
+      bq_dataset=OPERATIONAL_METRICS_DATASET,
+      bq_table=LLVM_PULL_REQUESTS_TABLE,
+      llvm_data=pull_request_data,
+      primary_key="pull_request_number",
+  )
+  operational_metrics_lib.upload_to_bigquery(
+      bq_client,
+      bq_dataset=OPERATIONAL_METRICS_DATASET,
+      bq_table=LLVM_REVIEWS_TABLE,
+      llvm_data=review_data,
+      primary_key="review_id",
   )
   bq_client.close()
 

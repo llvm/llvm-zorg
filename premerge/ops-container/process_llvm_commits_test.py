@@ -1,4 +1,3 @@
-import dataclasses
 import datetime
 from typing import Any
 import unittest
@@ -27,16 +26,6 @@ class TestProcessLLVMCommits(unittest.TestCase):
     }
     commit.message = message
     return commit
-
-  def _create_llvm_commit_data(
-      self, commit_sha: str = 'abcdef'
-  ) -> process_llvm_commits.LLVMCommitData:
-    """Creates a basic LLVMCommitData object."""
-    return process_llvm_commits.LLVMCommitData(
-        commit_sha=commit_sha,
-        commit_timestamp_seconds=10000000,
-        diff=[],
-    )
 
   def _create_mock_api_response(
       self, status_code: int = 200, payload: dict[str, Any] | None = None
@@ -87,6 +76,7 @@ class TestProcessLLVMCommits(unittest.TestCase):
             {'login': pull_request_author} if pull_request_author else None
         ),
         'title': pull_request_title,
+        'state': 'MERGED',
         'createdAt': created_at,
         'mergedAt': merged_at,
         'reviews': {'nodes': reviews or []},
@@ -224,38 +214,7 @@ class TestProcessLLVMCommits(unittest.TestCase):
     self.assertIsNone(commit_data.commit_reverted)
 
   @unittest.mock.patch.object(requests, 'post', autospec=True)
-  def test_query_github_graphql_api_success(self, mock_post):
-    """Test querying against the GitHub GraphQL API."""
-    mock_post.return_value = self._create_mock_api_response()
-
-    _ = process_llvm_commits.query_github_graphql_api(
-        'dummy_query', 'dummy_token'
-    )
-
-    _, mock_kwargs = mock_post.call_args
-    mock_post.assert_called_once()
-    self.assertEqual(mock_kwargs['json'], {'query': 'dummy_query'})
-    self.assertEqual(
-        mock_kwargs['headers'], {'Authorization': 'bearer dummy_token'}
-    )
-
-  @unittest.mock.patch.object(requests, 'post', autospec=True)
-  def test_query_github_graphql_api_with_http_error_retries(self, mock_post):
-    """Test querying against the GitHub GraphQL API resulting in an HTTP error."""
-    mock_post.return_value = self._create_mock_api_response(status_code=404)
-
-    with self.assertLogs(level='WARNING'):
-      with self.assertRaises(requests.exceptions.HTTPError):
-        with unittest.mock.patch('time.sleep'):  # Avoid sleep in unit test
-          _ = process_llvm_commits.query_github_graphql_api(
-              'dummy_query', 'dummy_token'
-          )
-
-    # Assert that the post was retried at least once
-    self.assertGreater(mock_post.call_count, 1)
-
-  @unittest.mock.patch.object(requests, 'post', autospec=True)
-  def test_fetch_github_api_data(self, mock_post):
+  def test_fetch_commit_data_from_github(self, mock_post):
     """Test fetching GitHub API data for a list of commits."""
     response_payload = {
         'data': {'repository': {'commit_abcdef': {}, 'commit_ghijkl': {}}}
@@ -264,7 +223,7 @@ class TestProcessLLVMCommits(unittest.TestCase):
         payload=response_payload
     )
 
-    api_data = process_llvm_commits.fetch_github_api_data(
+    api_data = process_llvm_commits.fetch_commit_data_from_github(
         github_token='dummy_token',
         commit_hashes=['abcdef', 'ghijkl'],
     )
@@ -274,26 +233,6 @@ class TestProcessLLVMCommits(unittest.TestCase):
     self.assertEqual(len(api_data), 2)
     self.assertIn('commit_abcdef', mock_kwargs['json']['query'])
     self.assertIn('commit_ghijkl', mock_kwargs['json']['query'])
-
-  @unittest.mock.patch.object(requests, 'post', autospec=True)
-  def test_fetch_github_api_data_batching(self, mock_post):
-    """Test fetching GitHub API data in batches at a time."""
-    response_payload = {'data': {'repository': {}}}
-    mock_post.return_value = self._create_mock_api_response(
-        payload=response_payload
-    )
-
-    # Require 3 batches to query 50 commits
-    commit_hashes = [str(i) for i in range(50)]
-    batch_size = 24
-
-    _ = process_llvm_commits.fetch_github_api_data(
-        github_token='dummy_token',
-        commit_hashes=commit_hashes,
-        batch_size=batch_size,
-    )
-
-    self.assertEqual(mock_post.call_count, 3)
 
   def test_extract_commit_data(self):
     """Test extracting commit data from scraped commits and GitHub API data."""
@@ -459,42 +398,6 @@ class TestProcessLLVMCommits(unittest.TestCase):
       review_data = process_llvm_commits.extract_review_data(commit_data)
     self.assertEqual(len(review_data), 1)
     self.assertIsNone(review_data[0].review_author)
-
-  def test_upload_daily_metrics_to_bigquery(self):
-    """Test uploading commit data to BigQuery."""
-    mock_bq_client = unittest.mock.MagicMock()
-    mock_table = unittest.mock.MagicMock()
-
-    mock_bq_client.get_table.return_value = mock_table
-    mock_bq_client.insert_rows.return_value = []  # No errors
-
-    commit_data = self._create_llvm_commit_data(commit_sha='abcdef')
-    expected_commit_record = dataclasses.asdict(commit_data)
-
-    process_llvm_commits.upload_daily_metrics_to_bigquery(
-        mock_bq_client,
-        bq_dataset='mock_dataset',
-        bq_table='mock_table',
-        llvm_data=[commit_data],
-    )
-
-    mock_bq_client.insert_rows.assert_called_once_with(
-        table=mock_table, rows=[expected_commit_record]
-    )
-
-  def test_upload_daily_metrics_to_bigquery_exits_on_error(self):
-    """Test uploading commit data to BigQuery resulting in errors."""
-    mock_bq_client = unittest.mock.MagicMock()
-    mock_bq_client.insert_rows.return_value = ['Error']
-
-    with self.assertLogs(level='ERROR'):
-      with self.assertRaises(SystemExit):
-        process_llvm_commits.upload_daily_metrics_to_bigquery(
-            bq_client=mock_bq_client,
-            bq_dataset='mock_dataset',
-            bq_table='mock_table',
-            llvm_data=[self._create_llvm_commit_data(commit_sha='abcdef')],
-        )
 
 
 if __name__ == '__main__':
