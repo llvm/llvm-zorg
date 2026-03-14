@@ -3564,7 +3564,7 @@ all += [
 
                         "TOOLCHAIN_TARGET_TRIPLE"       : "aarch64-unknown-linux-gnu",
                         "TOOLCHAIN_TARGET_COMPILER_FLAGS"   :  "-mcpu=cortex-a78",
-                        "TOOLCHAIN_TARGET_SYSROOTFS"    : util.Interpolate("%(prop:sysroot_path_aarch64)s"),
+                        "TOOLCHAIN_TARGET_SYSROOTFS"    : util.Interpolate("%(prop:sysroots)s/aarch64-linux-gnu"),
                         "LIBCXX_ABI_VERSION"            : "1",
                         "LLVM_INSTALL_TOOLCHAIN_ONLY"   : "OFF",
 
@@ -3572,7 +3572,7 @@ all += [
                         "LLDB_TEST_COMPILER"            : util.Interpolate("%(prop:builddir)s/build/bin/clang"),
                         "LLDB_TEST_PLATFORM_URL"        : util.Interpolate("connect://%(prop:remote_test_host)s:1234"),
                         "LLDB_TEST_PLATFORM_WORKING_DIR": "/home/ubuntu/lldb-tests",
-                        "LLDB_TEST_SYSROOT"             : util.Interpolate("%(prop:sysroot_path_aarch64)s"),
+                        "LLDB_TEST_SYSROOT"             : util.Interpolate("%(prop:sysroots)s/aarch64-linux-gnu"),
                         "LLDB_ENABLE_PYTHON"            : "ON",
                         "LLDB_ENABLE_SWIG"              : "ON",
                         "LLDB_ENABLE_LIBEDIT"           : "OFF",
@@ -3585,7 +3585,7 @@ all += [
                                                             "--skip-category=lldb-server"),
                     },
                     cmake_options = [
-                        "-C", util.Interpolate("%(prop:srcdir_relative)s/clang/cmake/caches/CrossWinToARMLinux.cmake"),
+                        "-C", util.Interpolate("%(prop:srcdir_relative)s/clang/cmake/caches/cross-linux-toolchain.cmake"),
                     ],
                     install_dir = "native",
                     post_build_steps =
@@ -3703,14 +3703,14 @@ all += [
 
                         "TOOLCHAIN_TARGET_TRIPLE"       : "aarch64-unknown-linux-gnu",
                         "TOOLCHAIN_TARGET_COMPILER_FLAGS"   :  "-mcpu=cortex-a78",
-                        "TOOLCHAIN_TARGET_SYSROOTFS:PATH"   : util.Interpolate("%(prop:sysroot_path_aarch64)s"),
+                        "TOOLCHAIN_TARGET_SYSROOTFS:PATH"   : util.Interpolate("%(prop:sysroots)s/aarch64-linux-gnu"),
                         "LIBCXX_ABI_VERSION"            : "1",
                         "LLVM_INSTALL_TOOLCHAIN_ONLY"   : "OFF",
 
                         "LLDB_TEST_ARCH"                : "aarch64",
                         "LLDB_TEST_PLATFORM_URL"        : util.Interpolate("connect://%(prop:remote_test_host)s:1234"),
                         "LLDB_TEST_PLATFORM_WORKING_DIR": "/home/ubuntu/lldb-tests",
-                        "LLDB_TEST_SYSROOT:PATH"        : util.Interpolate("%(prop:sysroot_path_aarch64)s"),
+                        "LLDB_TEST_SYSROOT:PATH"        : util.Interpolate("%(prop:sysroots)s/aarch64-linux-gnu"),
                         "LLDB_ENABLE_PYTHON"            : "ON",
                         "LLDB_ENABLE_SWIG"              : "ON",
                         "LLDB_ENABLE_LIBEDIT"           : "OFF",
@@ -3723,7 +3723,7 @@ all += [
                                                             "--skip-category=lldb-server"),
                     },
                     cmake_options = [
-                        "-C", util.Interpolate("%(prop:srcdir_relative)s/clang/cmake/caches/CrossWinToARMLinux.cmake"),
+                        "-C", util.Interpolate("%(prop:srcdir_relative)s/clang/cmake/caches/cross-linux-toolchain.cmake"),
                     ],
                     install_dir = "native",
                     post_build_steps =
