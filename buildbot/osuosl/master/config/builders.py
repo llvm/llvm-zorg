@@ -3923,7 +3923,7 @@ all += [
                         ),
                         TestSuiteBuilder.getLlvmTestSuiteSteps(
                             # Common C/CXX flags.
-                            compiler_flags = "--target=aarch64-linux-pauthtest -march=armv8l+pauth -O2 -fno-inline",
+                            compiler_flags = "--target=aarch64-linux-pauthtest -march=armv8l+pauth -O2",
                             # Common linker flags.
                             linker_flags = util.Interpolate(
                                 "--target=aarch64-linux-pauthtest -march=armv8l+pauth -O2 "
