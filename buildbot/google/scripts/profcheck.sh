@@ -11,7 +11,7 @@ ln -sf /usr/bin/ld.lld-20 /usr/bin/ld
 
 rm -rf /b
 BOT_DIR=/b
-SERVER_PORT=9994
+SERVER_PORT=9990
 WORKER_NAME="$(hostname)"
 WORKER_PASSWORD="$(gsutil cat gs://sanitizer-buildbot/$(hostname)-password)"
 
