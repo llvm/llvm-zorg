@@ -1,5 +1,7 @@
 set -ex
 
+LLVM_MAJOR_VERSION=22
+
 until (
   set -e
   # Delete this repository as it does not exist for Ubuntu 24.04 and apt-get
@@ -12,14 +14,14 @@ until (
   rm -rf /tmp/llvm.sh
   wget https://apt.llvm.org/llvm.sh -O /tmp/llvm.sh
   chmod +x /tmp/llvm.sh
-  /tmp/llvm.sh 21
+  /tmp/llvm.sh ${LLVM_MAJOR_VERSION}
 ); do
   echo "A command during package installation failed. Retrying."
 done
 
-ln -sf /usr/bin/clang-21 /usr/bin/cc
-ln -sf /usr/bin/clang++-21 /usr/bin/c++
-ln -sf /usr/bin/ld.lld-21 /usr/bin/ld
+ln -sf /usr/bin/clang-${LLVM_MAJOR_VERSION} /usr/bin/cc
+ln -sf /usr/bin/clang++-${LLVM_MAJOR_VERSION} /usr/bin/c++
+ln -sf /usr/bin/ld.lld-${LLVM_MAJOR_VERSION} /usr/bin/ld
 
 rm -rf /b
 BOT_DIR=/b
