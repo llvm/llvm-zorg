@@ -37,12 +37,6 @@ sudo -u buildbot buildbot-worker create-worker -f --allow-shutdown=signal $BOT_D
   echo "  -DLLVM_LIT_ARGS='--exclude-xfail'"
   echo "  -DLLVM_ENABLE_PROFCHECK=ON"
   echo
-  uname -a | head -n1
-  date
-  cmake --version | head -n1
-  c++ --version | head -n1
-  ld --version | head -n1
-  lscpu
 } > $BOT_DIR/info/host
 
 sudo -u buildbot buildbot-worker start $BOT_DIR
