@@ -323,14 +323,25 @@ resource "kubernetes_secret" "operational_metrics_secrets" {
   depends_on = [kubernetes_namespace.operational_metrics]
 }
 
-resource "kubernetes_manifest" "operational_metrics_cronjob" {
-  manifest = yamldecode(file("operational_metrics_cronjob.yaml"))
+resource "kubernetes_manifest" "process_llvm_commits_cronjob" {
+  manifest = yamldecode(file("./cronjobs/process_llvm_commits_cronjob.yaml"))
   provider = kubernetes.llvm-premerge-us-central
 
   depends_on = [
     kubernetes_namespace.operational_metrics,
     kubernetes_secret.operational_metrics_secrets,
     kubernetes_service_account.operational_metrics_ksa,
+  ]
+}
+
+resource "kubernetes_manifest" "amend_pull_request_data_cronjob" {
+  manifest = yamldecode(file("./cronjobs/amend_pull_request_data_cronjob.yaml"))
+  provider = kubernetes.llvm-premerge-us-central
+
+  depends_on = [
+    kubernetes_namespace.operational_metrics,
+    kubernetes_secret.operational_metrics_secrets,
+    kubernetes_service_account.operational_metrics_ksa
   ]
 }
 

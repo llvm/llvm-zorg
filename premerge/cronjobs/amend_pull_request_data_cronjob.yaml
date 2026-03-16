@@ -1,12 +1,12 @@
-# operational_metrics_cronjob.yaml
+# amend_pull_request_data_cronjob.yaml
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: operational-metrics-cronjob
+  name: amend-pull-request-data-cronjob
   namespace: operational-metrics
 spec:
   # Midnight PDT
-  schedule: "0 7 * * *"
+  schedule: "0 */2 * * *"
   timeZone: "Etc/UTC"
   concurrencyPolicy: Forbid
   jobTemplate:
@@ -17,8 +17,9 @@ spec:
           nodeSelector:
             iam.gke.io/gke-metadata-server-enabled: "true"
           containers:
-          - name: process-llvm-commits
+          - name: amend-pull-request-data
             image: ghcr.io/llvm/operations-metrics:latest
+            command: ["python3", "amend_pull_request_data.py"]
             env:
             - name: GITHUB_TOKEN
               valueFrom:
@@ -31,7 +32,7 @@ spec:
                 # We explicitly use Mi here instead of a decimal number of
                 # Gi because k8s will automatically convert to Mi which
                 # terraform then thinks differs from what it intended to apply.
-                memory: "1792Mi"
+                memory: "512Mi"
               limits:
                 cpu: "2"
                 memory: "2Gi"
