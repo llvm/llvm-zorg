@@ -6,7 +6,7 @@ from typing import Any
 from google.cloud import bigquery
 import operational_metrics_lib
 
-# Matches the cadence at which this script runs.
+# Must match the frequency of cronjobs/amend_pull_request_data_cronjob.yaml
 LOOKBACK_HOURS = 2
 
 # BigQuery dataset and tables to write metrics to.
