@@ -14,8 +14,6 @@ spec:
       template:
         spec:
           serviceAccountName: operational-metrics-ksa
-          nodeSelector:
-            iam.gke.io/gke-metadata-server-enabled: "true"
           containers:
           - name: amend-pull-request-data
             image: ghcr.io/llvm/operations-metrics:latest
