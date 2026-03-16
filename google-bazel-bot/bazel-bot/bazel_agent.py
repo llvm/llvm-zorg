@@ -294,24 +294,3 @@ async def query_agent(
         status=AgentErrors.SUCCESS if build_result.success else AgentErrors.FAILURE,
         summary=messages,
     )
-
-
-# main function is present to test bazel_agent.py independently.
-async def main():
-    args = parser.parse_args(sys.argv[1:])
-    print("Simulating external call to query_agent...")
-
-    cmd_processor = utils.CommandProcessor(args.llvm_git_repo)
-    git_repo = utils.LocalGitRepo(args.llvm_git_repo, utils.CredentialManager(), False)
-    git_repo.create_branch_for_fix(args.commit_sha)
-    final_output = await query_agent(
-        commit_sha=args.commit_sha,
-        cmd_processor=cmd_processor,
-        past_fixes=[],
-    )
-
-    print(f"\nFinal Result:\n{final_output}")
-
-
-if __name__ == "__main__":
-    asyncio.run(main())
