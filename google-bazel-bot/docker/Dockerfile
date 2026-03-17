@@ -97,4 +97,4 @@ RUN .venv/bin/python3 -m pip install --require-hashes -r ./requirements.lock.txt
 COPY bazel-bot/* .
 
 ENTRYPOINT [".venv/bin/python3"]
-CMD ["./bazelbot_server.py", "--llvm_git_repo=/var/lib/buildkite-agent/llvm-project-bazelbot/", "--create_prs"]
+CMD ["./bazelbot_server_main.py", "--llvm_git_repo=/var/lib/buildkite-agent/llvm-project-bazelbot/", "--create_prs"]
