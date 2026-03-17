@@ -28,6 +28,7 @@ parser.add_argument(
 )
 
 MAX_AGENT_ITERATIONS = 5
+MAX_LLM_QUERY_RETRIES = 20
 USER_ID = "default_user"
 APP_NAME = "bazel_fixer"
 
@@ -83,7 +84,9 @@ code_fixer = LlmAgent(
     ],
     generate_content_config=types.GenerateContentConfig(
         http_options=types.HttpOptions(
-            retry_options=types.HttpRetryOptions(initial_delay=1, attempts=20),
+            retry_options=types.HttpRetryOptions(
+                initial_delay=1, attempts=MAX_LLM_QUERY_RETRIES
+            ),
             api_version="v1",
             headers={
                 "X-Vertex-AI-LLM-Request-Type": "shared",
