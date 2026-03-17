@@ -14,7 +14,7 @@ from google.adk.events import Event
 from google.adk.models.google_llm import _ResourceExhaustedError
 from google.adk.runners import Runner
 from google.adk.sessions import InMemorySessionService
-from google.genai.types import Content, Part
+from google.genai import types
 
 import tools
 import utils
@@ -104,17 +104,19 @@ class BazelFixerAgent(BaseAgent):  # pytype: disable=wrong-arg-types
         if build_result.success:
             yield Event(
                 author=self.name,
-                content=Content(
-                    parts=[Part(text="✅ Bazel Build already passing! Exiting loop.")]
+                content=types.Content(
+                    parts=[
+                        types.Part(text="✅ Bazel Build already passing! Exiting loop.")
+                    ]
                 ),
             )
             return
 
         yield Event(
             author=self.name,
-            content=Content(
+            content=types.Content(
                 parts=[
-                    Part(
+                    types.Part(
                         text=f"Starting Fix Loop for {ctx.session.state.get('commit_sha')}"
                     )
                 ]
@@ -124,8 +126,8 @@ class BazelFixerAgent(BaseAgent):  # pytype: disable=wrong-arg-types
             is_last_attempt = i == self.max_iterations - 1
             yield Event(
                 author=self.name,
-                content=Content(
-                    parts=[Part(text=f"Iteration {i+1}: Running Bazel Build...")]
+                content=types.Content(
+                    parts=[types.Part(text=f"Iteration {i+1}: Running Bazel Build...")]
                 ),
             )
 
@@ -149,9 +151,9 @@ class BazelFixerAgent(BaseAgent):  # pytype: disable=wrong-arg-types
                 Event(
                     invocation_id=ctx.invocation_id,
                     author="bazelbuilder",
-                    content=Content(
+                    content=types.Content(
                         role="user",
-                        parts=[Part(text="\n".join(fix_request))],
+                        parts=[types.Part(text="\n".join(fix_request))],
                     ),
                 )
             )
@@ -165,8 +167,10 @@ class BazelFixerAgent(BaseAgent):  # pytype: disable=wrong-arg-types
             if build_result.success:
                 yield Event(
                     author=self.name,
-                    content=Content(
-                        parts=[Part(text="✅ Bazel Build passed! Exiting fix loop.")]
+                    content=types.Content(
+                        parts=[
+                            types.Part(text="✅ Bazel Build passed! Exiting fix loop.")
+                        ]
                     ),
                 )
                 return
@@ -174,18 +178,20 @@ class BazelFixerAgent(BaseAgent):  # pytype: disable=wrong-arg-types
                 if is_last_attempt:
                     yield Event(
                         author=self.name,
-                        content=Content(
+                        content=types.Content(
                             parts=[
-                                Part(text="❌ Reached max iterations. Exiting fix loop.")
+                                types.Part(
+                                    text="❌ Reached max iterations. Exiting fix loop."
+                                )
                             ]
                         ),
                     )
                 else:
                     yield Event(
                         author=self.name,
-                        content=Content(
+                        content=types.Content(
                             parts=[
-                                Part(
+                                types.Part(
                                     text=f"Build still failing after attempt {i+1}. Continuing fix loop."
                                 )
                             ]
@@ -255,9 +261,9 @@ async def query_agent(
         },
     )
 
-    content = Content(
+    content = types.Content(
         role="user",
-        parts=[Part(text="Please fix the build for me.")],
+        parts=[types.Part(text="Please fix the build for me.")],
     )
     # Execute the agent synchronously
     logger_agent.info(f"--- Invoking Agent for {commit_sha} ---")
