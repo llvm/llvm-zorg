@@ -26,6 +26,7 @@ fi
 
 CHECK_SYMBOLIZER=1
 CHECK_TSAN=0
+NINJA_FLAGS=
 
 case "$ARCH" in
   x86_64*)
@@ -37,8 +38,10 @@ case "$ARCH" in
     CMAKE_COMMON_OPTIONS+=" -DLLVM_TARGETS_TO_BUILD=PowerPC"
     if [[ "$ARCH" == "ppc64le" ]]; then
       CMAKE_COMMON_OPTIONS+=" -DLLVM_LIT_ARGS=-vj256"
+      NINJA_FLAGS+=" -j256"
     else
       CMAKE_COMMON_OPTIONS+=" -DLLVM_LIT_ARGS=-vj80"
+      NINJA_FLAGS+=" -j80"
     fi
   ;;
 esac
@@ -67,7 +70,7 @@ function build {
     touch "${BUILD_DIR}/delete_next_time"
     build_failure
   }
-  ninja -C ${BUILD_DIR} || {
+  ninja -C ${BUILD_DIR} ${NINJA_FLAGS} || {
     touch "${BUILD_DIR}/delete_next_time"
     build_failure
   }
@@ -77,7 +80,7 @@ function build_and_test {
   build "${1}" "${2}"
 
   build_step "test compiler-rt ${1}"
-  ninja -C ${BUILD_DIR} check-compiler-rt || build_failure
+  ninja -C ${BUILD_DIR} ${NINJA_FLAGS} check-compiler-rt || build_failure
 }
 
 CMAKE_COMMON_OPTIONS+=" ${STAGE1_AS_COMPILER}"
@@ -108,10 +111,10 @@ cmake -B compiler_rt_build -GNinja \
   -DCOMPILER_RT_ENABLE_WERROR=ON \
   -DLLVM_CMAKE_DIR=${FRESH_CLANG_PATH}/.. \
   $LLVM/../compiler-rt || build_failure
-ninja -C compiler_rt_build || build_failure
+ninja -C compiler_rt_build ${NINJA_FLAGS} || build_failure
 
 build_step "test standalone compiler-rt"
-ninja -C compiler_rt_build check-all || build_failure
+ninja -C compiler_rt_build ${NINJA_FLAGS} check-all || build_failure
 
 if [ "$CHECK_TSAN" == "1" ]; then
   # FIXME: Convert to a LIT test.
