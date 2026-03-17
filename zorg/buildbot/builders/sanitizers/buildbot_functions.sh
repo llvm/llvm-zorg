@@ -49,6 +49,7 @@ include_config
 build_step "Info"
 (
   set +e
+  set -x
   date
   env | sort
   echo
@@ -69,6 +70,8 @@ build_step "Info"
   ldd --version
   echo
   uptime
+  echo
+  free -h
   echo
   hostname -f
 )
