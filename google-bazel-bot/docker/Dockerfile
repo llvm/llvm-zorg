@@ -23,7 +23,7 @@ RUN apt-get update; \
         sudo
 
 # LLVM must be installed after prerequsite packages.
-ENV LLVM_VERSION=18
+ENV LLVM_VERSION=22
 RUN echo 'install llvm ${LLVM_VERSION}' && \
     wget --no-verbose https://apt.llvm.org/llvm.sh && \
     chmod +x llvm.sh && \
