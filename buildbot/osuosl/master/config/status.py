@@ -498,11 +498,9 @@ def getReporters():
                         "openmp-offload-amdgpu-runtime",
                         "openmp-offload-amdgpu-runtime-2",
                         "openmp-offload-libc-amdgpu-runtime",
-                        "openmp-offload-sles-build-only",
                         "amdgpu-offload-ubuntu-22-cmake-build-only",
-                        "amdgpu-offload-rhel-8-cmake-build-only",
-                        "amdgpu-offload-rhel-9-cmake-build-only",
                         "amdgpu-offload-build-only",
+                        "openmp-offload-amdgpu-clang-flang",
                     ])
             ]),
         reporters.MailNotifier(
