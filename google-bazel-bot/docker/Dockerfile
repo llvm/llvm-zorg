@@ -88,6 +88,13 @@ CMD ["gosu", "buildkite-agent", "buildkite-agent", "start", "--no-color", "--tag
 
 FROM bazel-base as bazel-fixer-bot
 
+# Build and install bant.build to automatically fix issues by bazelbot.
+ENV BANT_VERSION=v0.2.3
+RUN wget --no-verbose -O /tmp/bant.tar.gz https://github.com/hzeller/bant/releases/download/${BANT_VERSION}/bant-${BANT_VERSION}-linux-static-x86_64.tar.gz; \
+  tar xzf /tmp/bant.tar.gz -C /tmp/; \
+  rm /tmp/bant.tar.gz; \
+  cp /tmp/bant-${BANT_VERSION}-linux-static-x86_64/bin/bant /usr/local/bin/;
+
 RUN mkdir /var/lib/buildkite-agent/bazel-fixer-bot
 WORKDIR /var/lib/buildkite-agent/bazel-fixer-bot
 RUN apt-get update && apt-get install -y python3-venv
