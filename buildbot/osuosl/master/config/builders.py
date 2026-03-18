@@ -1915,30 +1915,6 @@ all += [
                     script_interpreter=None
                 )},
 
-    {'name' : "amdgpu-offload-rhel-9-cmake-build-only",
-    'tags'  : ["openmp"],
-    'workernames' : ["rocm-docker-rhel-9"],
-    'builddir': "amdgpu-offload-rhel-9-cmake-build-only",
-    'collapseRequests' : False,
-    'factory' : AnnotatedBuilder.getAnnotatedBuildFactory(
-                    depends_on_projects=["llvm", "clang", "flang", "flang-rt", "mlir", "lld", "compiler-rt", "libcxx", "libcxxabi", "openmp", "offload", "libunwind"],
-                    script="amdgpu-offload-cmake.py",
-                    checkout_llvm_sources=True,
-                    script_interpreter=None
-                )},
-
-    {'name' : "amdgpu-offload-rhel-8-cmake-build-only",
-    'tags'  : ["amdgpu", "offload", "openmp"],
-    'workernames' : ["rocm-docker-rhel-8"],
-    'builddir': "amdgpu-offload-rhel-8-cmake-build-only",
-    'collapseRequests' : False,
-    'factory' : AnnotatedBuilder.getAnnotatedBuildFactory(
-                    depends_on_projects=["llvm", "clang", "flang", "flang-rt", "mlir", "lld", "compiler-rt", "libcxx", "libcxxabi", "offload", "openmp", "libunwind"],
-                    script="amdgpu-offload-cmake.py",
-                    checkout_llvm_sources=True,
-                    script_interpreter=None
-                )},
-
     # This one has a longer turn-around time, so we cannot disallow collapsing requests
     {'name' : "hip-third-party-libs-test",
     'tags'  : ["amdgpu", "offload", "openmp"],
@@ -1971,39 +1947,6 @@ all += [
     'factory' : ScriptedBuilder.getScriptedBuildFactory(
                         "offload/ci/openmp-offload-amdgpu-clang-flang.py",
                         depends_on_projects=['llvm','clang','lld', 'offload', 'openmp', 'mlir', 'flang', 'flang-rt', 'compiler-rt'],
-                    )},
-
-    # This bot, for now does not run OpenMP/Offload runtime tests, as we have no GPU yet
-    {'name' : "openmp-offload-sles-build-only",
-    'tags'  : ["openmp"],
-    'workernames' : ["rocm-worker-hw-04-sles"],
-    'builddir': "openmp-offload-sles-build",
-    'factory' : OpenMPBuilder.getOpenMPCMakeBuildFactory(
-                        clean=True,
-                        test=False, # we have no GPU avail, skip runtime tests
-                        enable_runtimes=['openmp', 'compiler-rt', 'offload', 'flang-rt'],
-                        depends_on_projects=['llvm','clang', 'flang', 'flang-rt', 'lld', 'mlir', 'offload', 'openmp', 'compiler-rt'],
-                        extraCmakeArgs=[
-                            "-DCMAKE_BUILD_TYPE=Release",
-                            "-DCLANG_DEFAULT_LINKER=lld",
-                            "-DLLVM_TARGETS_TO_BUILD=X86;AMDGPU",
-                            "-DLLVM_ENABLE_ASSERTIONS=ON",
-                            "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
-                            "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
-                            ],
-                        env={
-                            'HSA_ENABLE_SDMA':'0',
-                            'LD_LIBRARY_PATH':'/opt/rocm/lib',
-                            },
-                        install=True,
-                        testsuite=False,
-                        testsuite_sollvevv=False,
-                        extraTestsuiteCmakeArgs=[
-                            "-DTEST_SUITE_SOLLVEVV_OFFLOADING_CFLAGS=-fopenmp-targets=amdgcn-amd-amdhsa;-Xopenmp-target=amdgcn-amd-amdhsa",
-                            "-DTEST_SUITE_SOLLVEVV_OFFLOADING_LDLAGS=-fopenmp-targets=amdgcn-amd-amdhsa;-Xopenmp-target=amdgcn-amd-amdhsa",
-                        ],
-                        add_lit_checks=["check-clang", "check-flang", "check-flang-rt", "check-llvm", "check-lld", "check-mlir"],
-                        add_openmp_lit_args=["--time-tests", "--timeout 100"],
                     )},
 
     {'name' : "openmp-offload-rhel-9_4",
