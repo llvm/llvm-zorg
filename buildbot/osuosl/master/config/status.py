@@ -358,8 +358,10 @@ def getReporters():
         reporters.MailNotifier(
             fromaddr = status_email_fromaddr,
             sendToInterestedUsers = False,
-            extraRecipients = ["lntue@google.com", "michaelrj@google.com",
-                            "ndesaulniers@google.com"],
+            extraRecipients = [
+                "lntue@google.com",
+                "michaelrj@google.com",
+            ],
             generators = [
                 utils.LLVMDefaultBuildStatusGenerator(
                     builders = [
