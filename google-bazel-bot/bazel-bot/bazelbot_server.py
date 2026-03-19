@@ -182,22 +182,18 @@ class BazelRepairBot:
 
             attempt_num += 1
 
-        bazel_build = self.command_processor.run_bazel_build()
-        commit_msg = f"Fix Bazel build for {build_data.commit[:7]}"
-        if not bazel_build.success:
-            logger.info("Local verification FAILED after running AI agent.")
-            logger.info(bazel_build.stderr)
-            commit_msg = f"[DO NOT MERGE] Attempted AI fix for {build_data.commit[:7]}"
+        if not self.validate_before_publishing():
+            logger.info("Validation before publishing failed.")
+            return False
 
-        self.git_repo.commit(commit_msg)
-        should_create_pr = bazel_build.success and self.git_repo.can_create_pr
-        if not self.git_repo.push_fix(build_data.commit, should_create_pr):
+        self.git_repo.commit(f"Fix Bazel build for {build_data.commit[:7]}")
+        if not self.git_repo.push_fix(build_data.commit, self.git_repo.can_create_pr):
             logger.warning(
                 f"Failed to publish AI changes for commit: {build_data.commit}"
             )
             return False
 
-        return bazel_build.success
+        return True
 
     def set_state_from_latest_build(self) -> bool:
         logger.info("Initializing state with the latest build.")
