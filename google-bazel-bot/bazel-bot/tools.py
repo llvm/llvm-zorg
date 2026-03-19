@@ -106,30 +106,29 @@ def search_and_replace(file_path: str, old_content: str, new_content: str) -> st
         return f"Error modifying file: {str(e)}"
 
 
-def get_diff(commit_sha: str) -> str:
-    """
-    Retrieves the git diff for a specific commit SHA using the GitHub API.
+def get_diff_tool(github_token: str):
+    def get_diff(commit_sha: str) -> str:
+        """
+        Retrieves the git diff for a specific commit SHA using the GitHub API.
 
-    Args:
-        commit_sha: The SHA hash of the commit to analyze.
+        Args:
+            commit_sha: The SHA hash of the commit to analyze.
 
-    Returns:
-        The diff of the commit as a string, or an error message.
-    """
-    try:
-        github_token = os.environ.get("GITHUB_API_TOKEN")
-        if not github_token:
-            return "Error: GITHUB_API_TOKEN environment variable not set."
+        Returns:
+            The diff of the commit as a string, or an error message.
+        """
+        try:
+            url = f"https://api.github.com/repos/{GITHUB_REPO}/commits/{commit_sha}"
+            headers = {
+                "Authorization": f"Bearer {github_token}",
+                "Accept": "application/vnd.github.v3.diff",
+            }
+            response = requests.get(url, headers=headers)
+            response.raise_for_status()
+            return response.text
+        except requests.exceptions.RequestException as e:
+            return f"Error getting diff from GitHub API: {e}"
+        except Exception as e:
+            return f"An unexpected error occurred: {str(e)}"
 
-        url = f"https://api.github.com/repos/{GITHUB_REPO}/commits/{commit_sha}"
-        headers = {
-            "Authorization": f"Bearer {github_token}",
-            "Accept": "application/vnd.github.v3.diff",
-        }
-        response = requests.get(url, headers=headers)
-        response.raise_for_status()
-        return response.text
-    except requests.exceptions.RequestException as e:
-        return f"Error getting diff from GitHub API: {e}"
-    except Exception as e:
-        return f"An unexpected error occurred: {str(e)}"
+    return get_diff

@@ -32,13 +32,6 @@ spec:
             - name: scratch-volume
               mountPath: /dev/shm
           env:
-            # TODO(boomanaiden154): We should eventually remove this token and
-            # replace any such usage with the Github App.
-            - name: GITHUB_API_TOKEN
-              valueFrom:
-                secretKeyRef:
-                  name: github-api-token
-                  key: token
             - name: GITHUB_APP_ID
               valueFrom:
                 secretKeyRef:

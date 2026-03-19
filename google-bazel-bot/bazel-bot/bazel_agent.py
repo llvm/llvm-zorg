@@ -71,31 +71,6 @@ You can use following guidelines to figure out what changes needs to be made to 
 4. Do not make any changes to MODULE.bazel.lock file. bazel builds may modify those files but you should not attempt to make further changes to it.
 """
 
-code_fixer = LlmAgent(
-    name="code_fixer",
-    description="Fixes code based on error messages and commit context.",
-    model=MODEL,
-    instruction=CODE_FIXER_PROMPT,
-    tools=[
-        tools.read_file,
-        tools.search_and_replace,
-        tools.get_diff,
-        tools.directory_structure,
-    ],
-    generate_content_config=types.GenerateContentConfig(
-        http_options=types.HttpOptions(
-            retry_options=types.HttpRetryOptions(
-                initial_delay=1, attempts=MAX_LLM_QUERY_RETRIES
-            ),
-            api_version="v1",
-            headers={
-                "X-Vertex-AI-LLM-Request-Type": "shared",
-                "X-Vertex-AI-LLM-Shared-Request-Type": "priority",
-            },
-        )
-    ),
-)
-
 
 class BazelFixerAgent(BaseAgent):  # pytype: disable=wrong-arg-types
     """
@@ -225,7 +200,10 @@ class AgentResult:
 
 
 async def query_agent(
-    commit_sha: str, cmd_processor: utils.CommandProcessor, past_fixes: list[str]
+    commit_sha: str,
+    cmd_processor: utils.CommandProcessor,
+    past_fixes: list[str],
+    github_token: str,
 ) -> AgentResult:
     """
     A self-contained method to invoke the BazelFixerAgent from external modules.
@@ -251,6 +229,30 @@ async def query_agent(
         logger_agent.propagate = False
 
     session_service = InMemorySessionService()
+    code_fixer = LlmAgent(
+        name="code_fixer",
+        description="Fixes code based on error messages and commit context.",
+        model=MODEL,
+        instruction=CODE_FIXER_PROMPT,
+        tools=[
+            tools.read_file,
+            tools.search_and_replace,
+            tools.get_diff_tool(github_token),
+            tools.directory_structure,
+        ],
+        generate_content_config=types.GenerateContentConfig(
+            http_options=types.HttpOptions(
+                retry_options=types.HttpRetryOptions(
+                    initial_delay=1, attempts=MAX_LLM_QUERY_RETRIES
+                ),
+                api_version="v1",
+                headers={
+                    "X-Vertex-AI-LLM-Request-Type": "shared",
+                    "X-Vertex-AI-LLM-Shared-Request-Type": "priority",
+                },
+            )
+        ),
+    )
     bazel_agent = BazelFixerAgent(
         name="bazel_fixer_agent",
         fixer_agent=code_fixer,
