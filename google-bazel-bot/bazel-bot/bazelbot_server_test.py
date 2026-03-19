@@ -70,11 +70,29 @@ class TestBazelBotServer(unittest.TestCase):
             "--hard", f"{repo.remote_name}/{repo.main_branch}"
         )
 
+        # Setup mocks for getting open PRs.
+        class MockPullRequest:
+            def __init__(self):
+                setattr(self, "state", "open")
+
+            def edit(self, state: str) -> None:
+                setattr(self, "state", state)
+
+            @property
+            def url(self) -> str:
+                return "testing"
+
+        mock_prs = [MockPullRequest(), MockPullRequest()]
+        repo.gh_pr_repo.get_issues = mock.MagicMock()
+        repo.gh_pr_repo.get_issues.return_value = mock_prs
+
         # Test push_fix
         repo_instance.git.push.return_value = True
         repo.push_fix("commit_hash", True)
         repo_instance.git.push.assert_called()
         repo.gh_pr_repo.create_pull.assert_called()
+        self.assertEqual(mock_prs[0].state, "closed")
+        self.assertEqual(mock_prs[1].state, "closed")
 
     def test_local_build_processor(self):
         cmd_processor = mock.MagicMock()
