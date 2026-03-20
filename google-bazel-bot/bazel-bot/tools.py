@@ -107,6 +107,20 @@ def search_and_replace(file_path: str, old_content: str, new_content: str) -> st
 
 
 def get_diff_tool(github_token: str):
+    """Returns a function containing a tool to get a diff.
+
+    Takes in as argument a github token to use when accessing the github API
+    and returns a function that can be used as a LLM tool for getting a diff
+    for a specific commit.
+
+    Args:
+      github_token: The github token the returned tool should use for
+        requesting diffs.
+
+    Returns:
+      A function that takes in a commit SHA and returns a string diff.
+    """
+
     def get_diff(commit_sha: str) -> str:
         """
         Retrieves the git diff for a specific commit SHA using the GitHub API.
