@@ -242,6 +242,13 @@ class LocalGitRepo:
     def is_repo_dirty(self, untracked_files=False) -> bool:
         return self.repo.is_dirty(untracked_files=untracked_files)
 
+    def close_existing_prs(self) -> None:
+        for open_pr in self.gh_pr_repo.get_issues(
+            creator="google-llvm-bazel-bot", state="open"
+        ):
+            print(f"Closing unmerged PR from previous fix attempt: {open_pr.url}")
+            open_pr.edit(state="closed")
+
     def push_fix(self, commit_hash: str, create_pr: bool) -> bool:
         """Pushes the branch and creates a GitHub PR against it."""
         branch_name = self.get_branch_name(commit_hash)
@@ -267,6 +274,9 @@ class LocalGitRepo:
                     f"Pull request can be created at: https://github.com/llvm/llvm-project/compare/main...{self.creds.gh_fork_user}:llvm-project:{branch_name}?expand=1"
                 )
                 return True
+
+            # Close any leftover PRs from previous fixes that were never merged.
+            self.close_existing_prs()
 
             # This requires the Github app installation used for authentication
             # to have pull-request:write access.
