@@ -80,7 +80,7 @@ class TestBazelBotServer(unittest.TestCase):
 
             @property
             def url(self) -> str:
-                return "testing"
+                return "PullRequestMockObjectURL"
 
         mock_prs = [MockPullRequest(), MockPullRequest()]
         repo.gh_pr_repo.get_issues = mock.MagicMock()
