@@ -153,6 +153,9 @@ class BazelRepairBot:
                     commit_sha=build_data.commit,
                     cmd_processor=self.command_processor,
                     past_fixes=past_fixes[:],
+                    github_token=self.git_repo.fork_github_integration.get_access_token(
+                        self.git_repo.gh_fork_installation.id
+                    ),
                 )
             )
 
