@@ -78,14 +78,18 @@ build_step "Info"
 
 build_step "Prepare"
 
+
 export LIT_OPTS="--time-tests"
 
-#[[ -f llvm-venv/bin/activate ]] || python3 -m venv llvm-venv
-#. llvm-venv/bin/activate
-#pip install --upgrade pip
-#pip install psutil pyyaml Pygments
+{
+  [[ -f llvm-venv/bin/activate ]] || python3 -m venv llvm-venv
+  . llvm-venv/bin/activate
+  pip install --upgrade pip
+  pip install psutil pyyaml Pygments
 
-#CMAKE_COMMON_OPTIONS+=" -DPython3_EXECUTABLE=$ROOT/llvm-venv/bin/python"
+  $ROOT/llvm-venv/bin/python --version
+  CMAKE_COMMON_OPTIONS+=" -DPython3_EXECUTABLE=$ROOT/llvm-venv/bin/python"
+} || build_exception
 
 LIT_OPTS+=" --timeout=900"
 
