@@ -79,10 +79,13 @@ build_step "Info"
 build_step "Prepare"
 
 export LIT_OPTS="--time-tests"
-# --timeout requires psutil missing on some bots.
-if [[ ! "$(arch)" =~ "ppc64" ]] ; then
-  LIT_OPTS+=" --timeout=900"
-fi
+
+python3 -m venv llvm-venv
+. llvm-venv/bin/activate
+pip install psutil pyyaml
+
+LIT_OPTS+=" --timeout=900"
+
 
 CMAKE="$(which cmake)"
 
