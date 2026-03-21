@@ -80,12 +80,11 @@ build_step "Prepare"
 
 export LIT_OPTS="--time-tests"
 
-python3 -m venv llvm-venv
+[[ ! -f llvm-venv/bin/activate ]] || python3 -m venv llvm-venv
 . llvm-venv/bin/activate
 pip install psutil pyyaml
 
 LIT_OPTS+=" --timeout=900"
-
 
 CMAKE="$(which cmake)"
 
