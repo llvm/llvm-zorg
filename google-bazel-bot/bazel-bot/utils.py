@@ -116,7 +116,7 @@ class CommandProcessor:
         logger.info(f"Running buildifier: {' '.join(cmd)}...")
         result = subprocess.run(
             cmd,
-            cwd=os.path.join(self.repo_path, self.BazelPath),
+            cwd=self.repo_path,
             capture_output=True,
             text=True,
             timeout=30,
