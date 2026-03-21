@@ -80,7 +80,7 @@ build_step "Prepare"
 
 export LIT_OPTS="--time-tests"
 
-[[ ! -f llvm-venv/bin/activate ]] || python3 -m venv llvm-venv
+[[ -f llvm-venv/bin/activate ]] || python3 -m venv llvm-venv
 . llvm-venv/bin/activate
 pip install psutil pyyaml
 
