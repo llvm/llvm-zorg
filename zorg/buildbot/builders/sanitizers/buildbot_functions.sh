@@ -85,6 +85,8 @@ export LIT_OPTS="--time-tests"
 pip install --upgrade pip
 pip install psutil pyyaml
 
+CMAKE_COMMON_OPTIONS+=" -DPython3_EXECUTABLE=$ROOT/llvm-venv/bin/python"
+
 LIT_OPTS+=" --timeout=900"
 
 CMAKE="$(which cmake)"
