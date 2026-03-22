@@ -105,7 +105,7 @@ build_step "build standalone compiler-rt"
 mkdir -p compiler_rt_build
 # Standalone build as in https://compiler-rt.llvm.org/
 cmake -B compiler_rt_build -GNinja \
-  -DPython3_EXECUTABLE=$ROOT/llvm-venv/bin/python \
+  -DPython3_EXECUTABLE=$(which python) \
   -DCMAKE_C_COMPILER=${FRESH_CLANG_PATH}/clang \
   -DCMAKE_CXX_COMPILER=${FRESH_CLANG_PATH}/clang++ \
   -DCOMPILER_RT_INCLUDE_TESTS=ON \
