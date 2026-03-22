@@ -46,6 +46,23 @@ function include_config() {
 
 include_config
 
+build_step "Prepare"
+
+export LIT_OPTS="--time-tests"
+
+{
+  [[ -f llvm_venv/bin/activate ]] || python3 -m venv llvm_venv
+  . llvm_venv/bin/activate
+  pip install --upgrade pip
+  pip install psutil pyyaml Pygments
+
+  CMAKE_COMMON_OPTIONS+=" -DPython3_EXECUTABLE=$(which python)"
+} || build_exception
+
+LIT_OPTS+=" --timeout=900"
+
+CMAKE="$(which cmake)"
+
 build_step "Info"
 (
   set +e
@@ -65,6 +82,9 @@ build_step "Info"
   echo
   cmake --version
   echo
+  which python
+  python --version
+  echo
   uname -a
   echo
   ldd --version
@@ -75,25 +95,6 @@ build_step "Info"
   echo
   hostname -f
 )
-
-build_step "Prepare"
-
-
-export LIT_OPTS="--time-tests"
-
-{
-  [[ -f llvm-venv/bin/activate ]] || python3 -m venv llvm-venv
-  . llvm-venv/bin/activate
-  pip install --upgrade pip
-  pip install psutil pyyaml Pygments
-
-  $ROOT/llvm-venv/bin/python --version
-  CMAKE_COMMON_OPTIONS+=" -DPython3_EXECUTABLE=$ROOT/llvm-venv/bin/python"
-} || build_exception
-
-LIT_OPTS+=" --timeout=900"
-
-CMAKE="$(which cmake)"
 
 function cmake() {
   (
@@ -126,7 +127,7 @@ function clobber {
       exit 1
     fi
     # Keep sources in ./llvm-project and ./llvm_build0 for faster builds.
-    find . -maxdepth 1 -mindepth 1 -path ./llvm-project -prune -o -path ./llvm_build0 -prune -o -print -exec rm -rf {} \;
+    find . -maxdepth 1 -mindepth 1 -path ./llvm-project -prune -o -path ./llvm_build0 -prune -o -path ./llvm_venv -prune -o -print -exec rm -rf {} \;
     du -hs ./* | sort -h
     return 0
   else
