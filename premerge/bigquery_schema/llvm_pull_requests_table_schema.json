@@ -30,6 +30,12 @@
     "description": "Number of the pull request."
   },
   {
+    "name": "pull_request_state",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "The state of this pull request (OPEN, MERGED, etc)"
+  },
+  {
     "name": "associated_commit",
     "type": "STRING",
     "mode": "NULLABLE",
