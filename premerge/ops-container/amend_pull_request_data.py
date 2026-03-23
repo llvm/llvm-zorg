@@ -189,6 +189,7 @@ def get_unapproved_pull_requests_from_bigquery(
         TIMESTAMP_SECONDS(LLVMPull.merged_at_timestamp_seconds),
         DAY
     ) <= @cutoff_age_days
+    AND 'reviewed-post-commit' NOT IN UNNEST(LLVMPull.labels.name)
     AND NOT EXISTS(
       SELECT 1
       FROM {OPERATIONAL_METRICS_DATASET}.{LLVM_REVIEWS_TABLE} AS LLVMReview
