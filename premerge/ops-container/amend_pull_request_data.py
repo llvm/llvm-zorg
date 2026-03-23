@@ -75,26 +75,26 @@ def fetch_open_pull_requests_from_github(
   return pull_requests
 
 
-def delete_stale_pull_requests_in_bigquery(
+def mark_stale_pull_request_data_in_bigquery(
     bq_client: bigquery.Client,
     cutoff_age_days: int,
 ) -> None:
-  """Delete stale pull requests from BigQuery once they exceed the cutoff age.
-
+  """Mark stale pull requests in BigQuery once they exceed the cutoff age.
+  
   Args:
     bq_client: The BigQuery client to use for querying.
     cutoff_age_days: The number of days to look back for outdated pull requests.
   """
   query = f"""
-  DELETE FROM {OPERATIONAL_METRICS_DATASET}.{LLVM_PULL_REQUESTS_TABLE}
+  UPDATE {OPERATIONAL_METRICS_DATASET}.{LLVM_PULL_REQUESTS_TABLE}
+  SET is_stale_data = true
   WHERE
     pull_request_state = 'OPEN'
     AND TIMESTAMP_DIFF(
         CURRENT_TIMESTAMP(),
         TIMESTAMP_SECONDS(pull_request_timestamp_seconds),
         DAY
-    )
-    > @cutoff_age_days
+    ) > @cutoff_age_days
   """
   job_config = bigquery.QueryJobConfig(
       query_parameters=[
@@ -104,7 +104,6 @@ def delete_stale_pull_requests_in_bigquery(
       ],
   )
   bq_client.query(query, job_config=job_config).result()
-
 
 def get_open_pull_requests_from_bigquery(
     bq_client: bigquery.Client,
@@ -122,6 +121,7 @@ def get_open_pull_requests_from_bigquery(
   FROM {OPERATIONAL_METRICS_DATASET}.{LLVM_PULL_REQUESTS_TABLE}
   WHERE
     pull_request_state = 'OPEN'
+    AND NOT is_stale_data
   """
   return [row.pull_request_number for row in bq_client.query(query).result()]
 
@@ -352,8 +352,8 @@ def main():
 
   # We don't want to amend data for pull requests that have been open for more
   # than two weeks.
-  logging.info("Deleting stale pull requests from BigQuery.")
-  delete_stale_pull_requests_in_bigquery(
+  logging.info("Marking stale pull requests in BigQuery.")
+  mark_stale_pull_request_data_in_bigquery(
       bq_client,
       cutoff_age_days=14,
   )
