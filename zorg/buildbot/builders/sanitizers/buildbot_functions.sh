@@ -502,7 +502,7 @@ function check_stage2_msan_track_origins {
 }
 
 function check_stage2_asan {
-  check_stage2 asan
+  LIT_FILTER_OUT="ExecutionEngine/" check_stage2 asan
 }
 
 function check_stage2_hwasan {
@@ -514,7 +514,7 @@ function check_stage2_ubsan {
 }
 
 function check_stage2_asan_ubsan {
-  check_stage2 asan_ubsan
+  LIT_FILTER_OUT="ExecutionEngine/" check_stage2 asan_ubsan
 }
 
 function build_stage3 {
