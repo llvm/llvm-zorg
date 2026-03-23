@@ -37,8 +37,8 @@ case "$ARCH" in
     CHECK_SYMBOLIZER=0
     CMAKE_COMMON_OPTIONS+=" -DLLVM_TARGETS_TO_BUILD=PowerPC"
     if [[ "$ARCH" == "ppc64le" ]]; then
-      LIT_OPTS+=" -j 256"
-      NINJA_FLAGS+=" -j256"
+      LIT_OPTS+=" -j 64"
+      NINJA_FLAGS+=" -j64"
     else
       LIT_OPTS+=" -j 80"
       NINJA_FLAGS+=" -j80"
