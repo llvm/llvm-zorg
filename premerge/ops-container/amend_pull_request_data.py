@@ -214,8 +214,16 @@ def get_unapproved_pull_requests_from_bigquery(
 def upload_github_data_to_bigquery(
     bq_client: bigquery.Client,
     pull_request_data: list[dict[str, Any]],
-):
-  """Parse and upload GitHub API data to BigQuery."""
+) -> None:
+  """Parse and upload GitHub API data to BigQuery.
+
+  Duplicate data will not be uploaded, existing records will instead be updated
+  with any new information contained pull_request_data.
+
+  Args:
+    bq_client: The BigQuery client to use for querying.
+    pull_request_data: The pull request data to be uploaded.
+  """
   parsed_pull_requests = [
       operational_metrics_lib.parse_pull_request_data(pull_request)
       for pull_request in pull_request_data
