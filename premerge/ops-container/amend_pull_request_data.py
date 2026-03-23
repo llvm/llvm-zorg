@@ -6,8 +6,8 @@ from typing import Any
 from google.cloud import bigquery
 import operational_metrics_lib
 
-# Must match the frequency of cronjobs/amend_pull_request_data_cronjob.yaml
-LOOKBACK_HOURS = 2
+# Twice the frequency of cronjobs/amend_pull_request_data_cronjob.yaml
+LOOKBACK_HOURS = 4
 
 # BigQuery dataset and tables to write metrics to.
 OPERATIONAL_METRICS_DATASET = "operational_metrics"

@@ -5,7 +5,7 @@ metadata:
   namespace: operational-metrics
 spec:
   # Every 2 hours
-  # Frequency must match that of amend_pull_request_data.py
+  # Half of the lookback window in amend_pull_request_data.py
   schedule: "0 */2 * * *"
   timeZone: "Etc/UTC"
   concurrencyPolicy: Forbid
