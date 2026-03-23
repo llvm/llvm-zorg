@@ -59,7 +59,12 @@ export LIT_OPTS="--time-tests"
   CMAKE_COMMON_OPTIONS+=" -DPython3_EXECUTABLE=$(which python)"
 } || build_exception
 
-LIT_OPTS+=" --timeout=900"
+if [[ ! "$(arch)" =~ "ppc64" ]] ; then
+  LIT_OPTS+=" --timeout=900"
+else
+  LIT_OPTS+=" --timeout=1800"
+  LIT_OPTS+=" -av"
+fi
 
 CMAKE="$(which cmake)"
 
