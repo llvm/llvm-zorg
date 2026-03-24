@@ -59,5 +59,11 @@
     "type": "STRING",
     "mode": "REPEATED",
     "description": "GitHub usernames of Users requested to review the pull request."
+  },
+  {
+    "name": "is_stale_data",
+    "type": "BOOLEAN",
+    "mode": "NULLABLE",
+    "description": "Whether or not this data is stale, outdated. Stale data will not be amended by daily cronjobs."
   }
 ]

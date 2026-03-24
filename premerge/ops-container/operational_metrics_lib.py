@@ -75,6 +75,7 @@ class LLVMPullRequestData:
   associated_commit: str | None
   labels: list[dict[str, str]]
   requested_reviewers: list[str]
+  is_stale_data: bool = False  # Used to avoid amending outdated data (>14 days)
 
 
 @dataclasses.dataclass
