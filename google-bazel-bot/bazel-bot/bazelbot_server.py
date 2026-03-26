@@ -187,6 +187,12 @@ class BazelRepairBot:
 
         if not self.validate_before_publishing():
             logger.info("Validation before publishing failed.")
+            self.git_repo.create_branch_for_fix(build_data.commit)
+            self.git_repo.commit(
+                f"AI failed to fix the build for {build_data.commit[:7]}. You "
+                "will need to fix it manually"
+            )
+            self.git_repo.push_fix(build_data.commit, False)
             return False
 
         self.git_repo.commit(f"Fix Bazel build for {build_data.commit[:7]}")
