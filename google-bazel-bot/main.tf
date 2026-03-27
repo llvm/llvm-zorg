@@ -148,8 +148,12 @@ data "google_secret_manager_secret_version" "github_app_private_key" {
   secret = "github-app-private-key"
 }
 
-data "google_secret_manager_secret_version" "github_pr_pat" {
-  secret = "github-pr-pat"
+data "google_secret_manager_secret_version" "github_pr_app_id" {
+  secret = "github-pr-app-id"
+}
+
+data "google_secret_manager_secret_version" "github_pr_app_private_key" {
+  secret = "github-pr-app-private-key"
 }
 
 resource "kubernetes_namespace" "bazel_ci" {
@@ -194,7 +198,8 @@ resource "kubernetes_secret" "github_pr_app" {
   }
 
   data = {
-    "pat" = data.google_secret_manager_secret_version.github_pr_pat.secret_data
+    "id"          = data.google_secret_manager_secret_version.github_pr_app_id.secret_data
+    "private-key" = data.google_secret_manager_secret_version.github_pr_app_private_key.secret_data
   }
 
   type       = "Opaque"

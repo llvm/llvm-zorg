@@ -35,7 +35,8 @@ class CredentialManager:
         self.bk_token = os.getenv("BUILDKITE_API_TOKEN")
         self.gh_app_id = os.getenv("GITHUB_APP_ID")
         self.gh_app_private_key = os.getenv("GITHUB_APP_PRIVATE_KEY")
-        self.gh_pr_pat = os.getenv("GITHUB_PR_PAT")
+        self.gh_pr_app_id = os.getenv("GITHUB_PR_APP_ID")
+        self.gh_pr_app_private_key = os.getenv("GITHUB_PR_APP_PRIVATE_KEY")
 
     @property
     def gh_fork_repo_name(self):
@@ -198,9 +199,17 @@ class LocalGitRepo:
                 self.creds.gh_fork_repo_name
             )
         )
-        self.gh_pr_repo = github.Github(
-            auth=github.Auth.Token(self.creds.gh_pr_pat)
-        ).get_repo(self.creds.gh_pr_repo_name)
+        self.pr_github_integration = github.GithubIntegration(
+            auth=github.Auth.AppAuth(creds.gh_pr_app_id, creds.gh_pr_app_private_key)
+        )
+        self.gh_pr_installation = self.pr_github_integration.get_repo_installation(
+            self.creds.gh_pr_user, "llvm-project"
+        )
+        self.gh_pr_repo = (
+            self.gh_pr_installation.get_github_for_installation().get_repo(
+                self.creds.gh_pr_repo_name
+            )
+        )
         self.bazel_utils_path = os.path.join(self.repo_path, "utils", "bazel")
         self.main_branch = "main"
         self.remote_name = "origin"
