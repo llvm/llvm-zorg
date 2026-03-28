@@ -295,6 +295,7 @@ all = [
     'workernames': ["sie-linux-worker3"],
     'builddir': "x86_64-gcc-rel",
     'factory': UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
+                    clean=True,
                     depends_on_projects=['llvm','clang','clang-tools-extra','compiler-rt','lld','cross-project-tests'],
                     extra_configure_args=[
                         "-DCMAKE_C_COMPILER=gcc",
