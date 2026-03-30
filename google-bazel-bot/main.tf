@@ -245,7 +245,6 @@ resource "kubernetes_manifest" "bazel_fixer_bot" {
   depends_on = [
     kubernetes_namespace.bazel_ci,
     kubernetes_secret.github_app,
-    kubernetes_secret.github_api_token,
     kubernetes_secret.github_pr_app,
     kubernetes_service_account.bazel_cache_ksa
   ]
