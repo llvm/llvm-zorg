@@ -51,6 +51,11 @@
         "name": "name",
         "type": "STRING",
         "mode": "NULLABLE"
+      },
+      {
+        "name": "labeled_at_timestamp_seconds",
+        "type": "INTEGER",
+        "mode": "NULLABLE"
       }
     ]
   },
