@@ -32,7 +32,7 @@ MAX_LLM_QUERY_RETRIES = 20
 USER_ID = "default_user"
 APP_NAME = "bazel_fixer"
 
-MODEL = "gemini-3-pro-preview"
+MODEL = "gemini-3.1-pro-preview"
 
 CODE_FIXER_PROMPT = """
 ## Context
