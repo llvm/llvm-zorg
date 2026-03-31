@@ -304,7 +304,7 @@ def update_open_pull_requests_in_bigquery(
 
   # Parse and upload amended pull request and review data to BigQuery.
   logging.info(
-      "Uploaded amendments for %d open pull requests.",
+      "Uploading amendments for %d open pull requests.",
       len(recorded_open_pull_requests),
   )
   upload_github_data_to_bigquery(

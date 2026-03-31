@@ -23,9 +23,14 @@ number
 state
 createdAt
 mergedAt
-labels(first: 25) {
+label_events: timelineItems(last: 10, itemTypes: [LABELED_EVENT]) {
   nodes {
-    name
+    ... on LabeledEvent {
+      createdAt
+      label {
+        name
+      }
+    }
   }
 }
 reviewRequests(first: 10) {
@@ -209,9 +214,14 @@ def parse_pull_request_data(
   # Extract label names associated with the pull request
   labels = [
       {
-          "name": label["name"],
+          "name": label_event["label"]["name"],
+          "labeled_at_timestamp_seconds": int(
+              datetime.datetime.fromisoformat(
+                  label_event["createdAt"]
+              ).timestamp()
+          ),
       }
-      for label in pull_request["labels"]["nodes"]
+      for label_event in pull_request["label_events"]["nodes"]
   ]
 
   requested_reviewers = []

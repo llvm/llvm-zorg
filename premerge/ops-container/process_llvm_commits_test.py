@@ -80,7 +80,12 @@ class TestProcessLLVMCommits(unittest.TestCase):
         'createdAt': created_at,
         'mergedAt': merged_at,
         'reviews': {'nodes': reviews or []},
-        'labels': {'nodes': [{'name': label} for label in labels or []]},
+        'label_events': {
+            'nodes': [{
+                'createdAt': created_at,
+                'label': {'name': label_name},
+            } for label_name in labels or []]
+        },
         'reviewRequests': {
             'nodes': [
                 {'requestedReviewer': {'login': reviewer}}

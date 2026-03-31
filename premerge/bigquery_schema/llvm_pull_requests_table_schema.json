@@ -33,7 +33,7 @@
     "name": "pull_request_state",
     "type": "STRING",
     "mode": "NULLABLE",
-    "description": "The state of this pull request (OPEN, MERGED, etc)"
+    "description": "The state of this pull request (OPEN, MERGED, etc)."
   },
   {
     "name": "associated_commit",
@@ -50,7 +50,14 @@
       {
         "name": "name",
         "type": "STRING",
-        "mode": "NULLABLE"
+        "mode": "NULLABLE",
+        "description": "The name of the label."
+      },
+      {
+        "name": "labeled_at_timestamp_seconds",
+        "type": "INTEGER",
+        "mode": "NULLABLE",
+        "description": "Time the label was added to this pull request, as a Unix timestamp."
       }
     ]
   },
