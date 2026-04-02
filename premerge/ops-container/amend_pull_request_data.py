@@ -168,14 +168,15 @@ def query_pull_request_data_from_github(
 
 def get_unapproved_pull_requests_from_bigquery(
     bq_client: bigquery.Client,
-    cutoff_age_days: int,
+    minimum_age_days: int,
+    maximum_age_days: int,
 ) -> list[int]:
   """Get merged pull requests that have not yet been approved.
 
   Args:
     bq_client: The BigQuery client to use for querying.
-    cutoff_age_days: The number of days to look back for unreviewed pull
-      requests.
+    minimum_age_days: The minimum age of pull requests to query, inclusive.
+    maximum_age_days: The maximum age of pull requests to query, exclusive.
 
   Returns:
     A list of relevant pull request numbers
@@ -188,9 +189,14 @@ def get_unapproved_pull_requests_from_bigquery(
     LLVMPull.pull_request_state = 'MERGED'
     AND TIMESTAMP_DIFF(
         CURRENT_TIMESTAMP(),
+        TIMESTAMP_SECONDS(LLVMPull.pull_request_timestamp_seconds),
+        DAY
+    ) >= @minimum_age_days
+    AND TIMESTAMP_DIFF(
+        CURRENT_TIMESTAMP(),
         TIMESTAMP_SECONDS(LLVMPull.merged_at_timestamp_seconds),
         DAY
-    ) <= @cutoff_age_days
+    ) < @maximum_age_days
     AND 'reviewed-post-commit' NOT IN UNNEST(LLVMPull.labels.name)
     AND NOT EXISTS(
       SELECT 1
@@ -203,7 +209,10 @@ def get_unapproved_pull_requests_from_bigquery(
   job_config = bigquery.QueryJobConfig(
       query_parameters=[
           bigquery.ScalarQueryParameter(
-              "cutoff_age_days", "INT64", cutoff_age_days
+              "minimum_age_days", "INT64", minimum_age_days
+          ),
+          bigquery.ScalarQueryParameter(
+              "maximum_age_days", "INT64", maximum_age_days
           ),
       ],
   )
@@ -329,7 +338,8 @@ def update_post_commit_reviews_in_bigquery(
   # any more reviews.
   unapproved_merged_pull_requests = get_unapproved_pull_requests_from_bigquery(
       bq_client,
-      cutoff_age_days=14,
+      minimum_age_days=0,
+      maximum_age_days=14,
   )
   pull_request_data = query_pull_request_data_from_github(
       unapproved_merged_pull_requests, github_token
@@ -357,10 +367,18 @@ def record_repository_snapshot_in_bigquery(
       datetime.datetime.now(datetime.timezone.utc).timestamp()
   )
   open_pull_request_count = len(get_open_pull_requests_from_bigquery(bq_client))
-  require_post_commit_count = len(
+  recent_unapproved_pull_request_count = len(
       get_unapproved_pull_requests_from_bigquery(
           bq_client,
-          cutoff_age_days=14,
+          minimum_age_days=0,
+          maximum_age_days=14,
+      )
+  )
+  stale_unapproved_pull_request_count = len(
+      get_unapproved_pull_requests_from_bigquery(
+          bq_client,
+          minimum_age_days=14,
+          maximum_age_days=180,  # Six months.
       )
   )
 
@@ -372,7 +390,8 @@ def record_repository_snapshot_in_bigquery(
           operational_metrics_lib.LLVMRepositorySnapshot(
               snapshot_timestamp_seconds=snapshot_timestamp_seconds,
               open_pull_request_count=open_pull_request_count,
-              require_post_commit_count=require_post_commit_count,
+              recent_unapproved_pull_request_count=recent_unapproved_pull_request_count,
+              stale_unapproved_pull_request_count=stale_unapproved_pull_request_count,
           )
       ],
       "snapshot_timestamp_seconds",

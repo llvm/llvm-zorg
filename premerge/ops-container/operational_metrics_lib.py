@@ -98,7 +98,8 @@ class LLVMReviewData:
 class LLVMRepositorySnapshot:
   snapshot_timestamp_seconds: int
   open_pull_request_count: int
-  require_post_commit_count: int
+  recent_unapproved_pull_request_count: int
+  stale_unapproved_pull_request_count: int
 
 
 LLVMData: TypeAlias = (

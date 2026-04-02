@@ -12,9 +12,15 @@
     "description": "The number of non-stale, open pull requests at this snapshot."
   },
   {
-    "name": "require_post_commit_count",
+    "name": "recent_unapproved_pull_request_count",
     "type": "INTEGER",
     "mode": "NULLABLE",
-    "description": "The number of pull requests requiring post-commit review."
+    "description": "The number of pull requests requiring post-commit review (merged within the last 14 days)."
+  },
+  {
+    "name": "stale_unapproved_pull_request_count",
+    "type": "INTEGER",
+    "mode": "NULLABLE",
+    "description": "The number of pull requests requiring post-commit review (merged between 14 an 180 days ago)."
   }
 ]
