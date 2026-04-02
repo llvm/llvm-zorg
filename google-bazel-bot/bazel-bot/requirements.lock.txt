@@ -317,7 +317,9 @@ cryptography==46.0.3 \
     --hash=sha256:f260d0d41e9b4da1ed1e0f1ce571f97fe370b152ab18778e9e8f67d6af432018
     # via
     #   authlib
+    #   google-auth
     #   pyjwt
+    #   pyopenssl
 distro==1.9.0 \
     --hash=sha256:2fa77c6fd8940f116ee1d6b94a2f90b13b5ea8d019b98bc8bafdcabcdd9bdbed \
     --hash=sha256:7bffd925d65168f85027d8da9af6bddab658135b840670a223589bc0c8ef02b2
@@ -326,9 +328,9 @@ docstring-parser==0.17.0 \
     --hash=sha256:583de4a309722b3315439bb31d64ba3eebada841f2e2cee23b99df001434c912 \
     --hash=sha256:cf2569abd23dce8099b300f9b4fa8191e9582dda731fd533daf54c4551658708
     # via google-cloud-aiplatform
-fastapi==0.123.10 \
-    --hash=sha256:0503b7b7bc71bc98f7c90c9117d21fdf6147c0d74703011b87936becc86985c1 \
-    --hash=sha256:624d384d7cda7c096449c889fc776a0571948ba14c3c929fa8e9a78cd0b0a6a8
+fastapi==0.135.3 \
+    --hash=sha256:9b0f590c813acd13d0ab43dd8494138eb58e484bfac405db1f3187cfc5810d98 \
+    --hash=sha256:bd6d7caf1a2bdd8d676843cdcd2287729572a1ef524fc4d65c17ae002a1be654
     # via google-adk
 gitdb==4.0.12 \
     --hash=sha256:5ef71f855d191a3326fcfbc0d5da835f26b13fbcba60c32c21091c349ffdb571 \
@@ -338,9 +340,9 @@ gitpython==3.1.46 \
     --hash=sha256:400124c7d0ef4ea03f7310ac2fbf7151e09ff97f2a3288d64a440c584a29c37f \
     --hash=sha256:79812ed143d9d25b6d176a10bb511de0f9c67b1fa641d82097b0ab90398a2058
     # via -r requirements.txt
-google-adk==1.22.1 \
-    --hash=sha256:4590df0a9340cf05cf5a9899986dfcc3db1c624c6165d76c04be16de535e6404 \
-    --hash=sha256:65c921a1343220eb7823ec8972479c046e7d9464f17c0829fb5508551678a9ef
+google-adk==1.28.0 \
+    --hash=sha256:3c7ef1a518296641b992cc68ae4795987da48765f9788af37da1acc39db0f362 \
+    --hash=sha256:8470c2e5a97bcef9a54283148be9f4ffaa88b3eefe3f55f269183f715d8830b6
     # via -r requirements.txt
 google-api-core[grpc]==2.29.0 \
     --hash=sha256:84181be0f8e6b04006df75ddfe728f24489f0af57c96a529ff7cf45bc28797f7 \
@@ -353,6 +355,7 @@ google-api-core[grpc]==2.29.0 \
     #   google-cloud-bigquery-storage
     #   google-cloud-bigtable
     #   google-cloud-core
+    #   google-cloud-dataplex
     #   google-cloud-discoveryengine
     #   google-cloud-logging
     #   google-cloud-monitoring
@@ -367,7 +370,7 @@ google-api-python-client==2.188.0 \
     --hash=sha256:3cad1b68f9d48b82b93d77927e8370a6f43f33d97848242601f14a93a1c70ef5 \
     --hash=sha256:5c469db6614f071009e3e5bb8b6aeeccae3beb3647fa9c6cd97f0d551edde0b6
     # via google-adk
-google-auth[requests]==2.47.0 \
+google-auth[pyopenssl,requests]==2.47.0 \
     --hash=sha256:833229070a9dfee1a353ae9877dcd2dec069a8281a4e72e72f77d4a70ff945da \
     --hash=sha256:c516d68336bfde7cf0da26aab674a36fedcf04b37ac4edd59c597178760c3498
     # via
@@ -381,6 +384,7 @@ google-auth[requests]==2.47.0 \
     #   google-cloud-bigquery-storage
     #   google-cloud-bigtable
     #   google-cloud-core
+    #   google-cloud-dataplex
     #   google-cloud-discoveryengine
     #   google-cloud-logging
     #   google-cloud-monitoring
@@ -429,6 +433,10 @@ google-cloud-core==2.5.0 \
     #   google-cloud-logging
     #   google-cloud-spanner
     #   google-cloud-storage
+google-cloud-dataplex==2.18.0 \
+    --hash=sha256:6e4ec95b24f64e95cec5f3753fbe7419f78ddb8b1ba90f8d955bc7613bb90764 \
+    --hash=sha256:ae3f7f1b5c64675e8a4b66725d404eec864e12d29051323a2232bdb05797016d
+    # via google-adk
 google-cloud-discoveryengine==0.13.12 \
     --hash=sha256:295f8c6df3fb26b90fb82c2cd6fbcf4b477661addcb19a94eea16463a5c4e041 \
     --hash=sha256:d6b9f8fadd8ad0d2f4438231c5eb7772a317e9f59cafbcbadc19b5d54c609419
@@ -517,9 +525,9 @@ google-crc32c==1.8.0 \
     #   google-cloud-bigtable
     #   google-cloud-storage
     #   google-resumable-media
-google-genai==1.57.0 \
-    --hash=sha256:0ff9c36b8d68abfbdbd13b703ece926de5f3e67955666b36315ecf669b94a826 \
-    --hash=sha256:d63c7a89a1f549c4d14032f41a0cdb4b6fe3f565e2eee6b5e0907a0aeceabefd
+google-genai==1.68.0 \
+    --hash=sha256:a1bc9919c0e2ea2907d1e319b65471d3d6d58c54822039a249fe1323e4178d15 \
+    --hash=sha256:ac30c0b8bc630f9372993a97e4a11dae0e36f2e10d7c55eacdca95a9fa14ca96
     # via
     #   google-adk
     #   google-cloud-aiplatform
@@ -597,6 +605,7 @@ grpc-google-iam-v1==0.14.3 \
     --hash=sha256:879ac4ef33136c5491a6300e27575a9ec760f6cdf9a2518798c1b8977a5dc389
     # via
     #   google-cloud-bigtable
+    #   google-cloud-dataplex
     #   google-cloud-logging
     #   google-cloud-pubsub
     #   google-cloud-resource-manager
@@ -672,6 +681,7 @@ grpcio==1.76.0 \
     #   google-api-core
     #   google-cloud-appengine-logging
     #   google-cloud-bigquery-storage
+    #   google-cloud-dataplex
     #   google-cloud-monitoring
     #   google-cloud-pubsub
     #   google-cloud-resource-manager
@@ -708,6 +718,7 @@ httpx==0.28.1 \
     --hash=sha256:75e98c5f16b0f35b567856f597f06ff2270a374470a5c2392242528e3e3e42fc \
     --hash=sha256:d909fcccc110f8c7faf814ca82a9a4d816bc5a6dbfea25d6591d6985b8ba59ad
     # via
+    #   google-adk
     #   google-genai
     #   mcp
 httpx-sse==0.4.3 \
@@ -1173,6 +1184,7 @@ proto-plus==1.27.0 \
     #   google-cloud-appengine-logging
     #   google-cloud-bigquery-storage
     #   google-cloud-bigtable
+    #   google-cloud-dataplex
     #   google-cloud-discoveryengine
     #   google-cloud-logging
     #   google-cloud-monitoring
@@ -1200,6 +1212,7 @@ protobuf==6.33.4 \
     #   google-cloud-audit-log
     #   google-cloud-bigquery-storage
     #   google-cloud-bigtable
+    #   google-cloud-dataplex
     #   google-cloud-discoveryengine
     #   google-cloud-logging
     #   google-cloud-monitoring
@@ -1454,6 +1467,10 @@ pynacl==1.6.2 \
     --hash=sha256:d29bfe37e20e015a7d8b23cfc8bd6aa7909c92a1b8f41ee416bbb3e79ef182b2 \
     --hash=sha256:fe9847ca47d287af41e82be1dd5e23023d3c31a951da134121ab02e42ac218c9
     # via pygithub
+pyopenssl==26.0.0 \
+    --hash=sha256:df94d28498848b98cc1c0ffb8ef1e71e40210d3b0a8064c9d29571ed2904bf81 \
+    --hash=sha256:f293934e52936f2e3413b89c6ce36df66a0b34ae1ea3a053b8c5020ff2f513fc
+    # via google-auth
 pyparsing==3.3.1 \
     --hash=sha256:023b5e7e5520ad96642e2c6db4cb683d3970bd640cdf7115049a6e9c3682df82 \
     --hash=sha256:47fad0f17ac1e2cad3de3b458570fbc9b03560aa029ed5e16ee5554da9a2251c
@@ -1812,6 +1829,7 @@ typing-extensions==4.15.0 \
     #   pydantic
     #   pydantic-core
     #   pygithub
+    #   pyopenssl
     #   referencing
     #   sqlalchemy
     #   starlette
@@ -1820,6 +1838,7 @@ typing-inspection==0.4.2 \
     --hash=sha256:4ed1cacbdc298c220f1bd249ed5287caa16f34d44ef4e9c3d0cbad5b521545e7 \
     --hash=sha256:ba561c48a67c5958007083d386c3295464928b01faa735ab8547c5692e87f464
     # via
+    #   fastapi
     #   mcp
     #   pydantic
     #   pydantic-settings
