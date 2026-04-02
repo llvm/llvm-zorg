@@ -2,7 +2,7 @@ import dataclasses
 import datetime
 import logging
 import math
-from typing import Any
+from typing import Any, TypeAlias
 from google.cloud import bigquery
 import requests
 import retry
@@ -92,6 +92,21 @@ class LLVMReviewData:
   review_timestamp_seconds: int
   review_state: str
   associated_pull_request: int
+
+
+@dataclasses.dataclass
+class LLVMRepositorySnapshot:
+  snapshot_timestamp_seconds: int
+  open_pull_request_count: int
+  require_post_commit_count: int
+
+
+LLVMData: TypeAlias = (
+    LLVMCommitData
+    | LLVMPullRequestData
+    | LLVMReviewData
+    | LLVMRepositorySnapshot
+)
 
 
 @retry.retry(
@@ -309,7 +324,7 @@ def upload_to_bigquery(
     bq_client: bigquery.Client,
     bq_dataset: str,
     bq_table: str,
-    llvm_data: list[LLVMCommitData | LLVMPullRequestData | LLVMReviewData],
+    llvm_data: list[LLVMData],
     primary_key: str,
 ) -> None:
   """Upload processed LLVM metrics to a BigQuery dataset.

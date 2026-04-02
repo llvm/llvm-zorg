@@ -13,6 +13,7 @@ LOOKBACK_HOURS = 4
 OPERATIONAL_METRICS_DATASET = "operational_metrics"
 LLVM_PULL_REQUESTS_TABLE = "llvm_pull_requests"
 LLVM_REVIEWS_TABLE = "llvm_reviews"
+LLVM_REPOSITORY_SNAPSHOT_TABLE = "llvm_repository_snapshots"
 
 
 def fetch_open_pull_requests_from_github(
@@ -80,7 +81,7 @@ def mark_stale_pull_request_data_in_bigquery(
     cutoff_age_days: int,
 ) -> None:
   """Mark stale pull requests in BigQuery once they exceed the cutoff age.
-  
+
   Args:
     bq_client: The BigQuery client to use for querying.
     cutoff_age_days: The number of days to look back for outdated pull requests.
@@ -104,6 +105,7 @@ def mark_stale_pull_request_data_in_bigquery(
       ],
   )
   bq_client.query(query, job_config=job_config).result()
+
 
 def get_open_pull_requests_from_bigquery(
     bq_client: bigquery.Client,
@@ -343,6 +345,40 @@ def update_post_commit_reviews_in_bigquery(
   )
 
 
+def record_repository_snapshot_in_bigquery(
+    bq_client: bigquery.Client,
+) -> None:
+  """Record a snapshot of the repository's current state in BigQuery.
+
+  Args:
+    bq_client: The BigQuery client to use for querying.
+  """
+  snapshot_timestamp_seconds = int(
+      datetime.datetime.now(datetime.timezone.utc).timestamp()
+  )
+  open_pull_request_count = len(get_open_pull_requests_from_bigquery(bq_client))
+  require_post_commit_count = len(
+      get_unapproved_pull_requests_from_bigquery(
+          bq_client,
+          cutoff_age_days=14,
+      )
+  )
+
+  operational_metrics_lib.upload_to_bigquery(
+      bq_client,
+      OPERATIONAL_METRICS_DATASET,
+      LLVM_REPOSITORY_SNAPSHOT_TABLE,
+      [
+          operational_metrics_lib.LLVMRepositorySnapshot(
+              snapshot_timestamp_seconds=snapshot_timestamp_seconds,
+              open_pull_request_count=open_pull_request_count,
+              require_post_commit_count=require_post_commit_count,
+          )
+      ],
+      "snapshot_timestamp_seconds",
+  )
+
+
 def main():
   github_token = os.environ["GITHUB_TOKEN"]
   bq_client = bigquery.Client()
@@ -363,6 +399,8 @@ def main():
 
   logging.info("Updating post-commit reviews in BigQuery.")
   update_post_commit_reviews_in_bigquery(bq_client, github_token)
+
+  record_repository_snapshot_in_bigquery(bq_client)
 
   bq_client.close()
 
