@@ -22,6 +22,7 @@ title
 number
 state
 createdAt
+updatedAt
 mergedAt
 label_events: timelineItems(last: 10, itemTypes: [LABELED_EVENT]) {
   nodes {
@@ -76,6 +77,7 @@ class LLVMPullRequestData:
   pull_request_title: str
   pull_request_state: str
   pull_request_timestamp_seconds: int
+  last_updated_at_timestamp_seconds: int
   merged_at_timestamp_seconds: int | None
   associated_commit: str | None
   labels: list[dict[str, str]]
@@ -204,6 +206,9 @@ def parse_pull_request_data(
   create_unix_timestamp = int(
       datetime.datetime.fromisoformat(pull_request["createdAt"]).timestamp()
   )
+  updated_unix_timestamp = int(
+      datetime.datetime.fromisoformat(pull_request["updatedAt"]).timestamp()
+  )
   if pull_request["mergedAt"] is not None:
     merge_unix_timestamp = int(
         datetime.datetime.fromisoformat(pull_request["mergedAt"]).timestamp()
@@ -241,6 +246,7 @@ def parse_pull_request_data(
       pull_request_title=pull_request["title"],
       pull_request_state=pull_request["state"],
       pull_request_timestamp_seconds=create_unix_timestamp,
+      last_updated_at_timestamp_seconds=updated_unix_timestamp,
       merged_at_timestamp_seconds=merge_unix_timestamp,
       associated_commit=associated_commit,
       labels=labels,

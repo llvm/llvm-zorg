@@ -92,7 +92,7 @@ def mark_stale_pull_request_data_in_bigquery(
     pull_request_state = 'OPEN'
     AND TIMESTAMP_DIFF(
         CURRENT_TIMESTAMP(),
-        TIMESTAMP_SECONDS(pull_request_timestamp_seconds),
+        TIMESTAMP_SECONDS(last_updated_at_timestamp_seconds),
         DAY
     ) > @cutoff_age_days
   """
