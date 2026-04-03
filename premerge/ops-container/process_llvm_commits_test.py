@@ -63,6 +63,7 @@ class TestProcessLLVMCommits(unittest.TestCase):
       pull_request_number: int,
       pull_request_title: str,
       created_at: str | None = None,
+      updated_at: str | None = None,
       merged_at: str | None = None,
       pull_request_author: str | None = None,
       reviews: list[dict[str, Any]] | None = None,
@@ -78,6 +79,7 @@ class TestProcessLLVMCommits(unittest.TestCase):
         'title': pull_request_title,
         'state': 'MERGED',
         'createdAt': created_at,
+        'updatedAt': updated_at,
         'mergedAt': merged_at,
         'reviews': {'nodes': reviews or []},
         'label_events': {
@@ -286,6 +288,7 @@ class TestProcessLLVMCommits(unittest.TestCase):
         pull_request_number=12345,
         pull_request_title='[TEST] Title',
         created_at=created_at_iso,
+        updated_at=merged_at_iso,
         merged_at=merged_at_iso,
         pull_request_author='pull_request_author',
         labels=['llvm:test-label'],
@@ -312,6 +315,10 @@ class TestProcessLLVMCommits(unittest.TestCase):
         created_at.timestamp(),
     )
     self.assertEqual(
+        pull_request_data[0].last_updated_at_timestamp_seconds,
+        merged_at.timestamp(),
+    )
+    self.assertEqual(
         pull_request_data[0].merged_at_timestamp_seconds,
         merged_at.timestamp(),
     )
@@ -330,6 +337,7 @@ class TestProcessLLVMCommits(unittest.TestCase):
         pull_request_number=12345,
         pull_request_title='[TEST] Title',
         created_at=created_at_iso,
+        updated_at=created_at_iso,
     )
     commit_api_data = {
         'commit_abcdef': self._create_commit_api_data(
