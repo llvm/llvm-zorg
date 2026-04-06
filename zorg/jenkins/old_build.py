@@ -380,7 +380,7 @@ def clang_builder(target):
                                    '-DCMAKE_BUILD_TYPE=RelWithDebInfo',
                                    '-DCMAKE_MAKE_PROGRAM=' + NINJA,
                                    '-DLLVM_VERSION_PATCH=99',
-                                   '-DLLVM_VERSION_SUFFIX=""',
+                                   '-DLLVM_VERSION_SUFFIX=',
                                    '-DLLVM_BUILD_EXTERNAL_COMPILER_RT=On',
                                    '-DCLANG_COMPILER_RT_CMAKE_ARGS={}/llvm/projects/compiler-rt/cmake/caches/Apple.cmake'.format(
                                        conf.workspace),
