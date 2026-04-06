@@ -21,11 +21,11 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout LLVM Zorg
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           sparse-checkout: premerge/ops-container
       - name: Build Container
-        uses: llvm/llvm-project/.github/actions/build-container@f091be6d53e447391ca23142cf9d49b2654116d7
+        uses: llvm/llvm-project/.github/actions/build-container@12e957fd7feb388b266fd71ab7960450df6884c1
         with:
           container-name: operations-metrics
           context: premerge/ops-container
@@ -40,6 +40,6 @@ jobs:
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
-      - uses: llvm/llvm-project/.github/actions/push-container@f091be6d53e447391ca23142cf9d49b2654116d7
+      - uses: llvm/llvm-project/.github/actions/push-container@12e957fd7feb388b266fd71ab7960450df6884c1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
