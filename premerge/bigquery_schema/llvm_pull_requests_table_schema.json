@@ -24,6 +24,12 @@
     "description": "Time the pull request was merged at, as a Unix timestamp."
   },
   {
+    "name": "last_updated_at_timestamp_seconds",
+    "type": "INTEGER",
+    "mode": "NULLABLE",
+    "description": "Time the pull request was last updated at, as a Unix timestamp."
+  },
+  {
     "name": "pull_request_number",
     "type": "INTEGER",
     "mode": "NULLABLE",
