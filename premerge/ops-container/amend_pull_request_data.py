@@ -419,6 +419,7 @@ def main():
   logging.info("Updating post-commit reviews in BigQuery.")
   update_post_commit_reviews_in_bigquery(bq_client, github_token)
 
+  logging.info("Recording repository snapshot in BigQuery.")
   record_repository_snapshot_in_bigquery(bq_client)
 
   bq_client.close()

@@ -42,10 +42,10 @@
     "description": "The state of this pull request (OPEN, MERGED, etc)."
   },
   {
-    "name": "associated_commit",
+    "name": "associated_commits",
     "type": "STRING",
-    "mode": "NULLABLE",
-    "description": "SHA of the commit associated with the pull request."
+    "mode": "REPEATED",
+    "description": "List of SHAs for the commits associated with the pull request."
   },
   {
     "name": "labels",
