@@ -381,6 +381,16 @@ resource "google_bigquery_table" "llvm_reviews_table" {
   depends_on = [google_bigquery_dataset.operational_metrics_dataset]
 }
 
+resource "google_bigquery_table" "llvm_repository_snapshots_table" {
+  dataset_id  = google_bigquery_dataset.operational_metrics_dataset.dataset_id
+  table_id    = "llvm_repository_snapshots"
+  description = "LLVM Repository Snapshots"
+
+  schema = file("./bigquery_schema/llvm_repository_snapshots_table_schema.json")
+
+  depends_on = [google_bigquery_dataset.operational_metrics_dataset]
+}
+
 resource "google_bigquery_dataset_iam_binding" "operational_metrics_dataset_editor_binding" {
   dataset_id = google_bigquery_dataset.operational_metrics_dataset.dataset_id
   role       = "roles/bigquery.dataEditor"

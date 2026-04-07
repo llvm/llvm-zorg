@@ -139,10 +139,11 @@ class TestAmendPullRequestData(unittest.TestCase):
 
     result = amend_pull_request_data.get_unapproved_pull_requests_from_bigquery(
         mock_bq_client,
-        cutoff_age_days=14,
+        minimum_age_days=0,
+        maximum_age_days=14,
     )
     job_config = mock_bq_client.query.call_args.kwargs["job_config"]
-    query_parameters = job_config.query_parameters[0]
+    min_parameter, max_parameter = job_config.query_parameters
 
     mock_bq_client.query.assert_called_once()
     executed_query = mock_bq_client.query.call_args.args[0]
@@ -150,8 +151,10 @@ class TestAmendPullRequestData(unittest.TestCase):
     self.assertRegex(
         executed_query, r"WHERE\s+(.+.)?pull_request_state = 'MERGED'"
     )
-    self.assertEqual(query_parameters.name, "cutoff_age_days")
-    self.assertEqual(query_parameters.value, 14)
+    self.assertEqual(min_parameter.name, "minimum_age_days")
+    self.assertEqual(min_parameter.value, 0)
+    self.assertEqual(max_parameter.name, "maximum_age_days")
+    self.assertEqual(max_parameter.value, 14)
     self.assertEqual(result, [1234, 5678])
 
   @unittest.mock.patch.object(

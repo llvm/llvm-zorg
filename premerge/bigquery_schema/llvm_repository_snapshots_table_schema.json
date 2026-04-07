@@ -1,0 +1,26 @@
+[
+  {
+    "name": "snapshot_timestamp_seconds",
+    "type": "INTEGER",
+    "mode": "NULLABLE",
+    "description": "Time this snapshot was taken at, as a Unix timestamp."
+  },
+  {
+    "name": "open_pull_request_count",
+    "type": "INTEGER",
+    "mode": "NULLABLE",
+    "description": "The number of non-stale, open pull requests at this snapshot."
+  },
+  {
+    "name": "recent_unapproved_pull_request_count",
+    "type": "INTEGER",
+    "mode": "NULLABLE",
+    "description": "The number of pull requests requiring post-commit review (merged within the last 14 days)."
+  },
+  {
+    "name": "stale_unapproved_pull_request_count",
+    "type": "INTEGER",
+    "mode": "NULLABLE",
+    "description": "The number of pull requests requiring post-commit review (merged between 14 an 180 days ago)."
+  }
+]
