@@ -79,7 +79,7 @@ class LLVMPullRequestData:
   pull_request_timestamp_seconds: int
   last_updated_at_timestamp_seconds: int
   merged_at_timestamp_seconds: int | None
-  associated_commit: str | None
+  associated_commits: list[str]
   labels: list[dict[str, str]]
   requested_reviewers: list[str]
   is_stale_data: bool = False  # Used to avoid amending outdated data (>14 days)
@@ -196,14 +196,14 @@ def fetch_repository_data_from_github(
 
 def parse_pull_request_data(
     pull_request: dict[str, Any],
-    associated_commit: str | None = None,
+    associated_commits: list[str] | None = None,
 ) -> LLVMPullRequestData:
   """Parse pull requests from the GitHub GraphQL API response.
 
   Args:
     pull_request: The JSON response for a single pull request from the GitHub
       GraphQL API.
-    associated_commit: The commit hash associated with this pull request.
+    associated_commits: The commit hashes associated with this pull request.
 
   Returns:
     An LLVMPullRequestData object containing the parsed data.
@@ -264,7 +264,7 @@ def parse_pull_request_data(
       pull_request_timestamp_seconds=create_unix_timestamp,
       last_updated_at_timestamp_seconds=updated_unix_timestamp,
       merged_at_timestamp_seconds=merge_unix_timestamp,
-      associated_commit=associated_commit,
+      associated_commits=associated_commits or [],  # Avoid None values
       labels=labels,
       requested_reviewers=requested_reviewers,
   )
@@ -338,6 +338,11 @@ def upload_to_bigquery(
     primary_key: The name of the field to use as a primary key when merging
       pending data with existing records.
   """
+
+  if not llvm_data:
+    logging.info("No data to upload to BigQuery.")
+    return
+
   target_table_id = f"{bq_dataset}.{bq_table}"
   staging_table_id = f"{target_table_id}_staging"
 

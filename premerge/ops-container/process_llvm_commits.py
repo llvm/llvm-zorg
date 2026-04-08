@@ -195,20 +195,32 @@ def extract_pull_request_data(
   Returns:
     List of LLVMPullRequestData objects for each pull request found.
   """
-  pull_request_data = []
+  pull_requests_by_number = {}
+  commits_by_pull_request_number = {}
+
   for commit_sha, commit_data in api_data.items():
     if commit_data["associatedPullRequests"]["totalCount"] == 0:
       continue
+
     pull_request = commit_data["associatedPullRequests"]["pullRequest"][0]
+    pull_request_number = pull_request["number"]
+    commit_hash = commit_sha.removeprefix("commit_")
 
-    pull_request_data.append(
-        operational_metrics_lib.parse_pull_request_data(
-            pull_request=pull_request,
-            associated_commit=commit_sha.removeprefix("commit_"),
-        )
-    )
+    if pull_request_number not in pull_requests_by_number:
+      pull_requests_by_number[pull_request_number] = pull_request
+      commits_by_pull_request_number[pull_request_number] = []
 
-  return pull_request_data
+    commits_by_pull_request_number[pull_request_number].append(commit_hash)
+
+  return [
+      operational_metrics_lib.parse_pull_request_data(
+          pull_request=pull_request,
+          associated_commits=commits_by_pull_request_number[
+              pull_request_number
+          ],
+      )
+      for pull_request_number, pull_request in pull_requests_by_number.items()
+  ]
 
 
 def extract_review_data(

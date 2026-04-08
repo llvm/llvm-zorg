@@ -83,10 +83,13 @@ class TestProcessLLVMCommits(unittest.TestCase):
         'mergedAt': merged_at,
         'reviews': {'nodes': reviews or []},
         'label_events': {
-            'nodes': [{
-                'createdAt': created_at,
-                'label': {'name': label_name},
-            } for label_name in labels or []]
+            'nodes': [
+                {
+                    'createdAt': created_at,
+                    'label': {'name': label_name},
+                }
+                for label_name in labels or []
+            ]
         },
         'reviewRequests': {
             'nodes': [
@@ -322,12 +325,40 @@ class TestProcessLLVMCommits(unittest.TestCase):
         pull_request_data[0].merged_at_timestamp_seconds,
         merged_at.timestamp(),
     )
-    self.assertEqual(pull_request_data[0].associated_commit, 'abcdef')
+    self.assertEqual(pull_request_data[0].associated_commits, ['abcdef'])
     self.assertIn(
         'llvm:test-label',
         [label['name'] for label in pull_request_data[0].labels],
     )
     self.assertIn('reviewer_1', pull_request_data[0].requested_reviewers)
+
+  def test_extract_pull_request_data_with_multiple_commits(self):
+    """Test extracting pull request data with multiple associated commits."""
+    pull_request_api_data = self._create_pull_request_api_data(
+        pull_request_number=12345,
+        pull_request_title='[TEST] Title',
+        pull_request_author='pull_request_author',
+        created_at='2020-01-01T00:00:00Z',
+        updated_at='2020-01-01T00:00:00Z',
+    )
+    commit_api_data = {
+        'commit_abcdef': self._create_commit_api_data(
+            pull_request_data=pull_request_api_data
+        ),
+        'commit_ghijkl': self._create_commit_api_data(
+            pull_request_data=pull_request_api_data
+        ),
+    }
+
+    pull_request_data = process_llvm_commits.extract_pull_request_data(
+        commit_api_data
+    )
+
+    self.assertEqual(len(pull_request_data), 1)
+    self.assertEqual(pull_request_data[0].pull_request_number, 12345)
+    self.assertEqual(
+        set(pull_request_data[0].associated_commits), {'abcdef', 'ghijkl'}
+    )
 
   def test_extract_pull_request_data_with_missing_author(self):
     """Test extracting pull request data from GitHub API data."""
