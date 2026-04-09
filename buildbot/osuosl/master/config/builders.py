@@ -2026,6 +2026,18 @@ all += [
                     checkout_llvm_sources=True,
                     script_interpreter=None
                 )},
+
+    {'name' : "amdgpu-hip-tpl",
+    'tags'  : ["amdgpu", "offload", "openmp"],
+    'workernames' : ["AMD-bb-w-03"],
+    'builddir': "amdgpu-hip-tpl",
+    'factory' : AnnotatedBuilder.getAnnotatedBuildFactory(
+                    depends_on_projects=['llvm', 'clang', 'compiler-rt', 'lld', 'mlir', 'flang', 'openmp', 'offload', 'flang-rt'],
+                    script="hip-tpl.py",
+                    checkout_llvm_sources=True,
+                    script_interpreter=None
+                )},
+
 # SYCL GPU builders.
 
     {'name' : "intel-sycl-gpu",
@@ -2592,6 +2604,15 @@ all += [
     'tags'  : ["clang"],
     'workernames' : ["hip-vega20-0"],
     'builddir': "clang-hip-vega20",
+    'factory' : AnnotatedBuilder.getAnnotatedBuildFactory(
+                    script="hip-build.sh",
+                    checkout_llvm_sources=False,
+                    script_interpreter=None)},
+
+    {'name' : "amdgpu-hip-blender",
+    'tags'  : ["clang"],
+    'workernames' : ["AMD-bb-w-04"],
+    'builddir': "amdgpu-hip-blender",
     'factory' : AnnotatedBuilder.getAnnotatedBuildFactory(
                     script="hip-build.sh",
                     checkout_llvm_sources=False,
