@@ -750,25 +750,32 @@ all = [
                         "-DCMAKE_BUILD_TYPE=Release",
                         "-DLLVM_LIT_ARGS=-vj 20"])},
 
-    {'name' : "clang-ppc64-aix",
-    'tags'  : ["clang", "aix", "ppc"],
+    {'name' : "clang-flang-ppc64-aix",
+    'tags'  : ["clang", "aix", "ppc64", "flang"],
     'workernames' : ["aix-ppc64"],
-    'builddir': "clang-ppc64-aix",
-    'factory' : TestSuiteBuilder.getTestSuiteBuildFactory(
-                    depends_on_projects=["llvm", "clang", "compiler-rt"],
-                    clean=False,
+    'builddir': "clang-flang-ppc64-aix",
+    'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
+                    depends_on_projects=['llvm', 'mlir', 'clang', 'flang', 'flang-rt', 'compiler-rt', 'openmp'],
+                    checks=['check-llvm', 'check-clang', 'check-flang', 'check-mlir', 'check-compiler-rt', 'check-openmp', 'check-flang-rt'],
                     extra_configure_args=[
-                        "-DLLVM_ENABLE_ASSERTIONS=On",
-                        "-DLLVM_LIT_ARGS=-v --time-tests",
-                        "-DCMAKE_C_COMPILER=clang",
-                        "-DCMAKE_CXX_COMPILER=clang++",
+                        '-DLLVM_DEFAULT_TARGET_TRIPLE=powerpc64-ibm-aix',
+                        '-DLLVM_INSTALL_UTILS=ON',
+                        '-DCMAKE_CXX_STANDARD=17',
+                        '-DLLVM_LIT_ARGS=-j 60 -v --time-tests',
+                        '-DFLANG_ENABLE_WERROR=ON',
+                        '-DLLVM_ENABLE_ASSERTIONS=ON',
                         "-DPython3_EXECUTABLE:FILEPATH=python3",
                         "-DLLVM_ENABLE_ZLIB=OFF", "-DLLVM_APPEND_VC_REV=OFF",
                         "-DLLVM_PARALLEL_LINK_JOBS=2",
-                        "-DLLVM_ENABLE_WERROR=ON",
-                        "-DSANITIZER_DISABLE_SYMBOLIZER_PATH_SEARCH:BOOL=ON"]),
-    'env' : {'OBJECT_MODE': '64'}},
-
+                        "-DSANITIZER_DISABLE_SYMBOLIZER_PATH_SEARCH:BOOL=ON",
+                    ],
+                    env={
+                        'CC': 'clang',
+                        'CXX': 'clang++',
+                        'LD': 'lld',
+                        'OBJECT_MODE': '64'
+                    })},
+ 
     {'name' : "clang-s390x-linux",
     'tags'  : ["clang"],
     'workernames' : ["systemz-1"],
@@ -2471,33 +2478,6 @@ all += [
                         "-DCMAKE_TRY_COMPILE_CONFIGURATION=Release",
                         "-DCOMPILER_RT_BUILD_SANITIZERS=OFF",
                         "-DLLVM_CCACHE_BUILD=ON"])},
-
-    {'name' : 'ppc64-flang-aix',
-    'tags'  : ["flang", "ppc", "ppc64", "aix"],
-    'workernames' : ['ppc64-flang-aix-test'],
-    'builddir': 'ppc64-flang-aix-build',
-    'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
-                    clean=False,
-                    depends_on_projects=['llvm', 'mlir', 'clang', 'flang', 'flang-rt', 'compiler-rt', 'openmp'],
-                    checks=['check-flang', 'check-flang-rt'],
-                    extra_configure_args=[
-                        '-DLLVM_DEFAULT_TARGET_TRIPLE=powerpc64-ibm-aix',
-                        '-DLLVM_INSTALL_UTILS=ON',
-                        '-DCMAKE_CXX_STANDARD=17',
-                        '-DLLVM_LIT_ARGS=--threads=20 -v --time-tests',
-                        '-DFLANG_ENABLE_WERROR=ON',
-                        '-DLLVM_ENABLE_ASSERTIONS=ON',
-                        "-DPython3_EXECUTABLE:FILEPATH=python3",
-                        "-DLLVM_ENABLE_ZLIB=OFF", "-DLLVM_APPEND_VC_REV=OFF",
-                        "-DLLVM_PARALLEL_LINK_JOBS=2",
-                        "-DSANITIZER_DISABLE_SYMBOLIZER_PATH_SEARCH:BOOL=ON",
-                    ],
-                    env={
-                        'CC': 'clang',
-                        'CXX': 'clang++',
-                        'LD': 'lld',
-                        'OBJECT_MODE': '64'
-                    })},
 
 # Builders responsible building Sphinx documentation.
 
