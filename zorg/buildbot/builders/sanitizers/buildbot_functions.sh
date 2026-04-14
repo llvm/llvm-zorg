@@ -459,7 +459,9 @@ function check_stage2 {
       LIT_OPTS+=" --timeout=1500"
       build_step "stage2/$sanitizer_name check-cxx"
       # Very slow.
-      export LIT_FILTER_OUT="std/utilities/format/format.functions/format.locale.runtime_format.pass.cpp"
+      export LIT_FILTER_OUT="std/utilities/format/format.functions/format.locale.dynamic_format.pass.cpp"
+      LIT_FILTER_OUT+="|std/utilities/format/format.functions/format.dynamic_format.pass.cpp"
+      LIT_FILTER_OUT+="|std/utilities/format/format.functions/format.locale.runtime_format.pass.cpp"
       LIT_FILTER_OUT+="|std/utilities/format/format.functions/format.runtime_format.pass.cpp"
       LIT_FILTER_OUT+="|std/utilities/format/format.functions/format_to_n.locale.pass.cpp"
       LIT_FILTER_OUT+="|std/utilities/format/format.functions/format_to_n.pass.cpp"
