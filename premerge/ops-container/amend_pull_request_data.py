@@ -33,7 +33,7 @@ def fetch_open_pull_requests_from_github(
   search_query = """
   query($cursor: String) {{
     search(
-      query: "repo:llvm/llvm-project is:pr is:open created:>{cutoff_timestamp}",
+      query: "repo:llvm/llvm-project is:pr is:open base:main created:>{cutoff_timestamp}",
       type: ISSUE,
       first: 100,
       after: $cursor
