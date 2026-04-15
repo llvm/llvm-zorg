@@ -331,6 +331,16 @@ def getReporters():
         reporters.MailNotifier(
             fromaddr = status_email_fromaddr,
             sendToInterestedUsers = False,
+            extraRecipients = ["dvassiliev@accesssoftek.com"],
+            generators = [
+                utils.LLVMDefaultBuildStatusGenerator(
+                    builders = [
+                        "llvm-nvptx-nvidia-ubuntu", "llvm-nvptx64-nvidia-ubuntu",
+                        "llvm-nvptx-nvidia-win", "llvm-nvptx64-nvidia-win"])
+            ]),
+        reporters.MailNotifier(
+            fromaddr = status_email_fromaddr,
+            sendToInterestedUsers = False,
             extraRecipients = ["dvassiliev@accesssoftek.com", "vdzhidzhoev@accesssoftek.com"],
             generators = [
                 utils.LLVMDefaultBuildStatusGenerator(
