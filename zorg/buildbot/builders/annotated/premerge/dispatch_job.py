@@ -140,7 +140,7 @@ def start_build_windows(commit_sha: str, bucket_name: str, k8s_client):
         "export SCCACHE_GCS_RW_MODE=READ_WRITE",
         "export SCCACHE_IDLE_TIMEOUT=0",
         "sccache --start-server",
-        "source <(echo '.ci/utils.sh' | python .ci/compute_projects.py)",
+        "source <(echo '.ci/utils.sh' | python .ci/compute_projects.py Windows)",
         '.ci/monolithic-windows.sh "${projects_to_build}" "${project_check_targets}" "${runtimes_to_build}" "${runtimes_check_targets}"',
         "python .ci/cache_lit_timing_files.py upload",
         "echo BUILD FINISHED",
