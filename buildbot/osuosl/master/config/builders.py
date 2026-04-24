@@ -3514,7 +3514,6 @@ all += [
                         "LIBCXX_ABI_VERSION"            : "1",
                         "LLVM_INSTALL_TOOLCHAIN_ONLY"   : "OFF",
 
-                        "LLDB_TEST_ARCH"                : "aarch64",
                         "LLDB_TEST_COMPILER"            : util.Interpolate("%(prop:builddir)s/build/bin/clang"),
                         "LLDB_TEST_PLATFORM_URL"        : util.Interpolate("connect://%(prop:remote_test_host)s:1234"),
                         "LLDB_TEST_PLATFORM_WORKING_DIR": "/home/ubuntu/lldb-tests",
@@ -3653,7 +3652,6 @@ all += [
                         "LIBCXX_ABI_VERSION"            : "1",
                         "LLVM_INSTALL_TOOLCHAIN_ONLY"   : "OFF",
 
-                        "LLDB_TEST_ARCH"                : "aarch64",
                         "LLDB_TEST_PLATFORM_URL"        : util.Interpolate("connect://%(prop:remote_test_host)s:1234"),
                         "LLDB_TEST_PLATFORM_WORKING_DIR": "/home/ubuntu/lldb-tests",
                         "LLDB_TEST_SYSROOT:PATH"        : util.Interpolate("%(prop:sysroots)s/aarch64-linux-gnu"),
