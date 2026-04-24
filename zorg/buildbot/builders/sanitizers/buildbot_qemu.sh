@@ -162,7 +162,7 @@ function build_lam_linux {
   )
 }
 
-build_qemu qemu https://github.com/vitalybuka/qemu.git origin/sanitizer_bot
+build_qemu qemu https://github.com/qemu/qemu.git origin/stable-11.0
 [[ -z "$SKIP_HWASAN_LAM" ]] && build_lam_linux
 
 SCUDO_BUILDS=
