@@ -2416,31 +2416,6 @@ all += [
                         "-DCMAKE_CXX_STANDARD=17",
                     ])},
 
-    {'name' : 'ppc64le-flang-mlir-rhel-clang',
-    'tags'  : ["clang", "llvm", "flang", "flang-rt", "mlir", "openmp", "ppc", "ppc64le"],
-    'workernames' : ['ppc64le-flang-mlir-rhel-test'],
-    'builddir': 'ppc64le-flang-mlir-rhel-clang-build',
-    'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
-                    clean=True,
-                    depends_on_projects=['llvm', 'mlir', 'clang', 'flang','flang-rt','openmp'],
-                    checks=['check-flang','check-flang-rt','check-mlir'],
-                    extra_configure_args=[
-                        '-DLLVM_TARGETS_TO_BUILD=PowerPC',
-                        '-DLLVM_INSTALL_UTILS=ON',
-                        '-DCMAKE_CXX_STANDARD=17',
-                        '-DLLVM_LIT_ARGS=-vj 256',
-                        '-DFLANG_ENABLE_WERROR=ON',
-                        '-DLLVM_ENABLE_ASSERTIONS=ON',
-                        '-DCMAKE_C_COMPILER_LAUNCHER=ccache',
-                        '-DCMAKE_CXX_COMPILER_LAUNCHER=ccache'
-                    ],
-                    env={
-                        'CC': 'clang',
-                        'CXX': 'clang++',
-                        'LD': 'lld',
-                        'LD_LIBRARY_PATH': '/usr/lib64',
-                    })},
-
     {'name' : "flang-x86_64-windows",
     'tags'  : ["flang"],
     'workernames' : ["minipc-ryzen-win"],
