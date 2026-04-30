@@ -513,6 +513,8 @@ def getReporters():
                         "amdgpu-offload-ubuntu-22-cmake-build-only",
                         "amdgpu-offload-build-only",
                         "openmp-offload-amdgpu-clang-flang",
+                        "amdgpu-hip-blender",
+                        "amdgpu-hip-tpl",
                     ])
             ]),
         reporters.MailNotifier(
