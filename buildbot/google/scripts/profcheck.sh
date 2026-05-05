@@ -1,5 +1,6 @@
 set -ex
 
+export DEBIAN_FRONTEND=noninteractive
 apt-get update
 apt-get upgrade -y
 apt-get install -y python3 python3-pip cmake ninja-build git ccache lsb-release wget software-properties-common gnupg wget
