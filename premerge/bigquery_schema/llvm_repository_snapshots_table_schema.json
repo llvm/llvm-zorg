@@ -15,7 +15,7 @@
         "name": "age_in_days",
         "type": "INTEGER",
         "mode": "NULLABLE",
-        "description": "The age of the pull requests."
+        "description": "The age of the pull requests, since time of creation."
       },
       {
         "name": "pull_request_count",
@@ -35,7 +35,7 @@
         "name": "age_in_days",
         "type": "INTEGER",
         "mode": "NULLABLE",
-        "description": "The age of the pull requests."
+        "description": "The age of the pull requests, since time of merge."
       },
       {
         "name": "pull_request_count",
