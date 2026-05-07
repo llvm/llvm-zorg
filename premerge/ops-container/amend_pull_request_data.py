@@ -15,6 +15,22 @@ LLVM_PULL_REQUESTS_TABLE = "llvm_pull_requests"
 LLVM_REVIEWS_TABLE = "llvm_reviews"
 LLVM_REPOSITORY_SNAPSHOT_TABLE = "llvm_repository_snapshots"
 
+OPEN_PULL_REQUEST_PREDICATE = (
+    "LLVMPull.pull_request_state = 'OPEN' AND NOT LLVMPull.is_stale_data"
+)
+
+UNAPPROVED_PULL_REQUEST_PREDICATE = f"""
+LLVMPull.pull_request_state = 'MERGED'
+AND 'reviewed-post-commit' NOT IN UNNEST(LLVMPull.labels.name)
+AND NOT EXISTS(
+  SELECT 1
+  FROM {OPERATIONAL_METRICS_DATASET}.{LLVM_REVIEWS_TABLE} AS LLVMReview
+  WHERE
+    LLVMReview.review_state = 'APPROVED'
+    AND LLVMReview.associated_pull_request = LLVMPull.pull_request_number
+)
+"""
+
 
 def fetch_open_pull_requests_from_github(
     github_token: str,
@@ -76,6 +92,58 @@ def fetch_open_pull_requests_from_github(
   return pull_requests
 
 
+def get_pull_requests_by_age_from_bigquery(
+    bq_client: bigquery.Client,
+    predicate: str,
+    timestamp_column: str,
+    minimum_age_days: int,
+    maximum_age_days: int,
+) -> dict[int, list[int]]:
+  """Get pull requests from BigQuery, filtered by predicate and grouped by age.
+
+  Args:
+    bq_client: The BigQuery client to use for querying.
+    predicate: The predicate to use for filtering pull requests.
+    timestamp_column: The column to use for the timestamp.
+    minimum_age_days: The minimum age in days to filter by.
+    maximum_age_days: The maximum age in days to filter by.
+
+  Returns:
+    A dictionary of pull requests grouped by age in days.
+  """
+
+  query = f"""
+  SELECT
+    ARRAY_AGG(DISTINCT pull_request_number) AS pull_request_numbers,
+    TIMESTAMP_DIFF(
+        CURRENT_TIMESTAMP(),
+        TIMESTAMP_SECONDS(LLVMPull.{timestamp_column}),
+        DAY
+    ) AS age_in_days
+  FROM {OPERATIONAL_METRICS_DATASET}.{LLVM_PULL_REQUESTS_TABLE} AS LLVMPull
+  WHERE
+    {predicate}
+  GROUP BY age_in_days
+  HAVING
+    age_in_days >= @minimum_age_days
+    AND age_in_days < @maximum_age_days
+  """
+  job_config = bigquery.QueryJobConfig(
+      query_parameters=[
+          bigquery.ScalarQueryParameter(
+              "minimum_age_days", "INT64", minimum_age_days
+          ),
+          bigquery.ScalarQueryParameter(
+              "maximum_age_days", "INT64", maximum_age_days
+          ),
+      ],
+  )
+  return {
+      row.age_in_days: row.pull_request_numbers
+      for row in bq_client.query(query, job_config=job_config).result()
+  }
+
+
 def mark_stale_pull_request_data_in_bigquery(
     bq_client: bigquery.Client,
     cutoff_age_days: int,
@@ -105,27 +173,6 @@ def mark_stale_pull_request_data_in_bigquery(
       ],
   )
   bq_client.query(query, job_config=job_config).result()
-
-
-def get_open_pull_requests_from_bigquery(
-    bq_client: bigquery.Client,
-) -> list[int]:
-  """Get a list of open pull requests that have already been recorded.
-
-  Args:
-    bq_client: The BigQuery client to use for querying.
-
-  Returns:
-    A list of open pull request numbers that have already been recorded.
-  """
-  query = f"""
-  SELECT pull_request_number
-  FROM {OPERATIONAL_METRICS_DATASET}.{LLVM_PULL_REQUESTS_TABLE}
-  WHERE
-    pull_request_state = 'OPEN'
-    AND NOT is_stale_data
-  """
-  return [row.pull_request_number for row in bq_client.query(query).result()]
 
 
 def query_pull_request_data_from_github(
@@ -164,62 +211,6 @@ def query_pull_request_data_from_github(
   )
 
   return [pull_request for _, pull_request in pull_request_data.items()]
-
-
-def get_unapproved_pull_requests_from_bigquery(
-    bq_client: bigquery.Client,
-    minimum_age_days: int,
-    maximum_age_days: int,
-) -> list[int]:
-  """Get merged pull requests that have not yet been approved.
-
-  Args:
-    bq_client: The BigQuery client to use for querying.
-    minimum_age_days: The minimum age of pull requests to query, inclusive.
-    maximum_age_days: The maximum age of pull requests to query, exclusive.
-
-  Returns:
-    A list of relevant pull request numbers
-  """
-  query = f"""
-  SELECT
-    LLVMPull.pull_request_number
-  FROM {OPERATIONAL_METRICS_DATASET}.{LLVM_PULL_REQUESTS_TABLE} AS LLVMPull
-  WHERE
-    LLVMPull.pull_request_state = 'MERGED'
-    AND TIMESTAMP_DIFF(
-        CURRENT_TIMESTAMP(),
-        TIMESTAMP_SECONDS(LLVMPull.pull_request_timestamp_seconds),
-        DAY
-    ) >= @minimum_age_days
-    AND TIMESTAMP_DIFF(
-        CURRENT_TIMESTAMP(),
-        TIMESTAMP_SECONDS(LLVMPull.merged_at_timestamp_seconds),
-        DAY
-    ) < @maximum_age_days
-    AND 'reviewed-post-commit' NOT IN UNNEST(LLVMPull.labels.name)
-    AND NOT EXISTS(
-      SELECT 1
-      FROM {OPERATIONAL_METRICS_DATASET}.{LLVM_REVIEWS_TABLE} AS LLVMReview
-      WHERE
-        LLVMReview.review_state = 'APPROVED'
-        AND LLVMReview.associated_pull_request = LLVMPull.pull_request_number
-    )
-  """
-  job_config = bigquery.QueryJobConfig(
-      query_parameters=[
-          bigquery.ScalarQueryParameter(
-              "minimum_age_days", "INT64", minimum_age_days
-          ),
-          bigquery.ScalarQueryParameter(
-              "maximum_age_days", "INT64", maximum_age_days
-          ),
-      ],
-  )
-  return [
-      row.pull_request_number
-      for row in bq_client.query(query, job_config=job_config).result()
-  ]
 
 
 def upload_github_data_to_bigquery(
@@ -308,7 +299,16 @@ def update_open_pull_requests_in_bigquery(
   """
 
   # Fetch potential updates for already recorded pull requests that are open.
-  recorded_open_pull_requests = get_open_pull_requests_from_bigquery(bq_client)
+  open_pull_requests_by_age = get_pull_requests_by_age_from_bigquery(
+      bq_client,
+      predicate=OPEN_PULL_REQUEST_PREDICATE,
+      timestamp_column="pull_request_timestamp_seconds",
+      minimum_age_days=0,
+      maximum_age_days=180,  # Six months
+  )
+  recorded_open_pull_requests = []
+  for _, pull_request_numbers in open_pull_requests_by_age.items():
+    recorded_open_pull_requests.extend(pull_request_numbers)
   pull_request_data = query_pull_request_data_from_github(
       recorded_open_pull_requests, github_token
   )
@@ -336,11 +336,18 @@ def update_post_commit_reviews_in_bigquery(
   """
   # After two weeks, a merged pull request is most likely not going to receive
   # any more reviews.
-  unapproved_merged_pull_requests = get_unapproved_pull_requests_from_bigquery(
-      bq_client,
-      minimum_age_days=0,
-      maximum_age_days=14,
+  unapproved_merged_pull_requests_by_age = (
+      get_pull_requests_by_age_from_bigquery(
+          bq_client,
+          predicate=UNAPPROVED_PULL_REQUEST_PREDICATE,
+          timestamp_column="merged_at_timestamp_seconds",
+          minimum_age_days=0,
+          maximum_age_days=14,
+      )
   )
+  unapproved_merged_pull_requests = []
+  for _, pull_request_numbers in unapproved_merged_pull_requests_by_age.items():
+    unapproved_merged_pull_requests.extend(pull_request_numbers)
   pull_request_data = query_pull_request_data_from_github(
       unapproved_merged_pull_requests, github_token
   )
@@ -366,21 +373,28 @@ def record_repository_snapshot_in_bigquery(
   snapshot_timestamp_seconds = int(
       datetime.datetime.now(datetime.timezone.utc).timestamp()
   )
-  open_pull_request_count = len(get_open_pull_requests_from_bigquery(bq_client))
-  recent_unapproved_pull_request_count = len(
-      get_unapproved_pull_requests_from_bigquery(
-          bq_client,
-          minimum_age_days=0,
-          maximum_age_days=14,
-      )
+  open_pull_requests_by_age = get_pull_requests_by_age_from_bigquery(
+      bq_client,
+      predicate=OPEN_PULL_REQUEST_PREDICATE,
+      timestamp_column="pull_request_timestamp_seconds",
+      minimum_age_days=0,
+      maximum_age_days=180,  # Six months
   )
-  stale_unapproved_pull_request_count = len(
-      get_unapproved_pull_requests_from_bigquery(
-          bq_client,
-          minimum_age_days=14,
-          maximum_age_days=180,  # Six months.
-      )
+  open_pull_request_count_by_age = [
+      {"age_in_days": age, "pull_request_count": len(pull_request_numbers)}
+      for age, pull_request_numbers in open_pull_requests_by_age.items()
+  ]
+  unapproved_pull_requests_by_age = get_pull_requests_by_age_from_bigquery(
+      bq_client,
+      predicate=UNAPPROVED_PULL_REQUEST_PREDICATE,
+      timestamp_column="merged_at_timestamp_seconds",
+      minimum_age_days=0,
+      maximum_age_days=180,  # Six months
   )
+  unapproved_pull_request_count_by_age = [
+      {"age_in_days": age, "pull_request_count": len(pull_request_numbers)}
+      for age, pull_request_numbers in unapproved_pull_requests_by_age.items()
+  ]
 
   operational_metrics_lib.upload_to_bigquery(
       bq_client,
@@ -389,9 +403,8 @@ def record_repository_snapshot_in_bigquery(
       [
           operational_metrics_lib.LLVMRepositorySnapshot(
               snapshot_timestamp_seconds=snapshot_timestamp_seconds,
-              open_pull_request_count=open_pull_request_count,
-              recent_unapproved_pull_request_count=recent_unapproved_pull_request_count,
-              stale_unapproved_pull_request_count=stale_unapproved_pull_request_count,
+              open_pull_request_count_by_age=open_pull_request_count_by_age,
+              unapproved_pull_request_count_by_age=unapproved_pull_request_count_by_age,
           )
       ],
       "snapshot_timestamp_seconds",

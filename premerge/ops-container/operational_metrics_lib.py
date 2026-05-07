@@ -7,7 +7,6 @@ from google.cloud import bigquery
 import requests
 import retry
 
-
 GITHUB_GRAPHQL_API_URL = "https://api.github.com/graphql"
 
 # How many subqueries to query the GitHub GraphQL API for at a time.
@@ -97,9 +96,8 @@ class LLVMReviewData:
 @dataclasses.dataclass
 class LLVMRepositorySnapshot:
   snapshot_timestamp_seconds: int
-  open_pull_request_count: int
-  recent_unapproved_pull_request_count: int
-  stale_unapproved_pull_request_count: int
+  open_pull_request_count_by_age: list[dict[str, int]]
+  unapproved_pull_request_count_by_age: list[dict[str, int]]
 
 
 LLVMData: TypeAlias = (
