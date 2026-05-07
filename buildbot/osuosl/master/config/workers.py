@@ -565,6 +565,24 @@ def get_all():
                 "aidengrossman@google.com"
             ],
         ),
+        create_worker(
+            "nvhpc-x86_64-worker1",
+            properties={"jobs": 8},
+            max_builds=1,
+            notify_on_missing=[
+                "rglusic@nvidia.com",
+                "nvhpc-devops@nvidia.com"
+            ],
+        ),
+        create_worker(
+            "nvhpc-x86_64-worker2",
+            properties={"jobs": 8},
+            max_builds=1,
+            notify_on_missing=[
+                "rglusic@nvidia.com",
+                "nvhpc-devops@nvidia.com"
+            ],
+        ),
         # FIXME: A placeholder for annoying worker which nobody could stop.
         # adding it avoid logs spammed by failed authentication for that worker.
         create_worker("mlir-ubuntu-worker0"),
