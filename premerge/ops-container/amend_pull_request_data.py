@@ -210,7 +210,13 @@ def query_pull_request_data_from_github(
       subqueries=pull_request_subqueries,
   )
 
-  return [pull_request for _, pull_request in pull_request_data.items()]
+  # TODO: Determine why some pull requests are None, and whether such pull
+  # requests should be deleted from our datasets.
+  return [
+      pull_request
+      for _, pull_request in pull_request_data.items()
+      if pull_request is not None
+  ]
 
 
 def upload_github_data_to_bigquery(
