@@ -1,6 +1,8 @@
 # UnifiedTreeBuilder.py
 #
 
+import os
+
 from buildbot.plugins import steps, util
 from buildbot.steps.shell import SetPropertyFromCommand
 from buildbot.process.factory import BuildFactory
@@ -267,9 +269,18 @@ def getCmakeBuildFactory(
            install_dir = None,
            clean = False,
            extra_configure_args = None,
-           install_pip_requirements = False,
+           pip_requirements = None,
+           install_pip_requirements = None, # deprecated, use pip_requirements instead
            env = None,
            **kwargs):
+
+    # Warn the deprecated install_pip_requirements boolean parameter.
+    if install_pip_requirements:
+        raise ValueError(
+            "install_pip_requirements=True is deprecated. "
+            "Pass the requirements file path relative to the repo root instead, e.g.:\n"
+            "    pip_requirements='mlir/python/requirements.txt'"
+        )
 
     f = getLLVMBuildFactoryAndSourcecodeSteps(
             depends_on_projects=depends_on_projects,
@@ -283,13 +294,17 @@ def getCmakeBuildFactory(
 
     cleanBuildRequested = lambda step: step.build.getProperty("clean") or step.build.getProperty("clean_obj") or clean
 
-    if install_pip_requirements:
-        # Install python requirements, right now for MLIR
-        # but can evolve to more projects later.
+    if pip_requirements:
+        if not isinstance(pip_requirements, str):
+            raise ValueError(
+                "pip_requirements must be a string path relative to the repo root, "
+                "e.g. 'mlir/python/requirements.txt'"
+            )
+
         f.addStep(steps.ShellCommand(
-            name='install-mlir-requirements',
-            command=["pip", "install", "-q", "-r", "../mlir/python/requirements.txt"],
-            workdir=f.llvm_srcdir))
+            name='install-pip-requirements',
+            command=["pip", "install", "-q", "-r", pip_requirements],
+            workdir=os.path.join(f.llvm_srcdir, "..")))
 
     addCmakeSteps(
         f,
@@ -315,9 +330,18 @@ def getCmakeWithNinjaBuildFactory(
            install_dir = None,
            clean = False,
            extra_configure_args = None,
-           install_pip_requirements = False,
+           pip_requirements = None,
+           install_pip_requirements = None, # deprecated, use pip_requirements instead
            env = None,
            **kwargs):
+
+    # Warn the deprecated install_pip_requirements boolean parameter.
+    if install_pip_requirements is not None:
+        raise ValueError(
+            "install_pip_requirements=True is deprecated. "
+            "Pass the requirements file path relative to the repo root instead, e.g.:\n"
+            "    pip_requirements='mlir/python/requirements.txt'"
+        )
 
     # Make a local copy of the configure args, as we are going to modify that.
     if extra_configure_args:
@@ -351,7 +375,7 @@ def getCmakeWithNinjaBuildFactory(
             install_dir=install_dir,
             clean=clean,
             extra_configure_args=cmake_args,
-            install_pip_requirements=install_pip_requirements,
+            pip_requirements=pip_requirements,
             env=merged_env,
             **kwargs) # Pass through all the extra arguments.
 
@@ -381,9 +405,17 @@ def getCmakeWithNinjaWithMSVCBuildFactory(
            # %VS140COMNTOOLS% selects the 2015 toolchain.
            vs=None,
            target_arch=None,
-           install_pip_requirements = False,
+           pip_requirements=None,
+           install_pip_requirements = None, # deprecated, use pip_requirements instead
            env = None,
            **kwargs):
+
+    if install_pip_requirements is not None:
+        raise ValueError(
+            "install_pip_requirements=True is deprecated. "
+            "Pass the requirements file path relative to the repo root instead, e.g.:\n"
+            "    pip_requirements='mlir/python/requirements.txt'"
+        )
 
     # Make a local copy of the configure args, as we are going to modify that.
     if extra_configure_args:
@@ -411,13 +443,17 @@ def getCmakeWithNinjaWithMSVCBuildFactory(
 
     cleanBuildRequested = lambda step: step.build.getProperty("clean") or step.build.getProperty("clean_obj") or clean
 
-    if install_pip_requirements:
-        # Install python requirements, right now for MLIR
-        # but can evolve to more projects later.
+    if pip_requirements:
+        if not isinstance(pip_requirements, str):
+            raise ValueError(
+                "pip_requirements must be a string path relative to the repo root, "
+                "e.g. 'mlir/python/requirements.txt'"
+            )
+
         f.addStep(steps.ShellCommand(
-            name='install-mlir-requirements',
-            command=["pip", "install", "-q", "-r", "../mlir/python/requirements.txt"],
-            workdir=f.llvm_srcdir))
+            name='install-pip-requirements',
+            command=["pip", "install", "-q", "-r", pip_requirements],
+            workdir=os.path.join(f.llvm_srcdir, "..")))
 
     addCmakeSteps(
         f,

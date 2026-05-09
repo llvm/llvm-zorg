@@ -1463,7 +1463,7 @@ all += [
                     llvm_srcdir="llvm.src",
                     obj_dir="llvm.obj",
                     clean=True,
-                    install_pip_requirements=True,
+                    pip_requirements='mlir/python/requirements.txt',
                     targets = ['check-mlir-build-only'],
                     checks = ['check-mlir'],
                     depends_on_projects=['llvm','mlir'],
@@ -1489,7 +1489,7 @@ all += [
                     llvm_srcdir="llvm.src",
                     obj_dir="llvm.obj",
                     clean=True,
-                    install_pip_requirements=True,
+                    pip_requirements='mlir/python/requirements.txt',
                     targets = ['check-mlir-build-only'],
                     checks = ['check-mlir'],
                     depends_on_projects=['llvm','mlir'],
@@ -2688,11 +2688,13 @@ all += [
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                     clean=True,
                     depends_on_projects=['llvm'],
+                    pip_requirements='llvm/tools/llvm-ir2vec/Bindings/requirements.txt',
                     extra_configure_args=[
                         "-DCMAKE_BUILD_TYPE=Release",
                         "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
                         "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
+                        "-DLLVM_IR2VEC_ENABLE_PYTHON_BINDINGS=ON",
                         "-DTENSORFLOW_C_LIB_PATH=/tmp/tensorflow",
                         "-C", "/tmp/tflitebuild/tflite.cmake",
                         "-DCMAKE_INSTALL_RPATH_USE_LINK_PATH=ON"
@@ -2707,11 +2709,13 @@ all += [
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                     clean=True,
                     depends_on_projects=['llvm'],
+                    pip_requirements='llvm/tools/llvm-ir2vec/Bindings/requirements.txt',
                     extra_configure_args= [
                         "-DCMAKE_BUILD_TYPE=Release",
                         "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
                         "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
+                        "-DLLVM_IR2VEC_ENABLE_PYTHON_BINDINGS=ON",
                         "-DTENSORFLOW_C_LIB_PATH=/tmp/tensorflow",
                         "-C", "/tmp/tflitebuild/tflite.cmake",
                         "-DTENSORFLOW_AOT_PATH=/var/lib/buildbot/.local/lib/python3.7/site-packages/tensorflow",
@@ -2730,11 +2734,13 @@ all += [
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                     clean=True,
                     depends_on_projects=['llvm'],
+                    pip_requirements='llvm/tools/llvm-ir2vec/Bindings/requirements.txt',
                     extra_configure_args= [
                         "-DCMAKE_BUILD_TYPE=Release",
                         "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
                         "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
+                        "-DLLVM_IR2VEC_ENABLE_PYTHON_BINDINGS=ON",
                         "-DTENSORFLOW_AOT_PATH=/var/lib/buildbot/.local/lib/python3.7/site-packages/tensorflow"
                     ])},
 
@@ -2991,7 +2997,7 @@ all += [
          depends_on_projects=['llvm', 'mlir'],
          targets = ['check-mlir-build-only'],
          checks = ['check-mlir'],
-         install_pip_requirements=True,
+         pip_requirements='mlir/python/requirements.txt',
          extra_configure_args= mlir_default_cmake_options + [
              '-DLLVM_CCACHE_BUILD=ON',
              '-DLLVM_ENABLE_ASSERTIONS=ON',
