@@ -1365,7 +1365,6 @@ all = [
                         "LLDB_TEST_USER_ARGS"           : "--skip-category=lldb-dap",
                     },
                     env = {
-                        'LLDB_USE_LLDB_SERVER' : "1",
                         'CCACHE_DIR'    : util.Interpolate("%(prop:builddir)s/ccache-db"),
                         # TMP/TEMP within the build dir (to utilize a ramdisk).
                         'TMP'           : util.Interpolate("%(prop:builddir)s/build"),
