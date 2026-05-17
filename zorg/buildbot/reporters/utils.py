@@ -304,6 +304,7 @@ class LLVMFailGitHubReporter(GitHubCommentPush):
         log.msg(f"{self.name}._extract_issue: INFO: issue={issue}")
         return issue
 
+    @defer.inlineCallbacks
     def is_wrong_issue(self, repo_user, repo_name, sha, issue):
         # Users could reference wrong PRs in commit messages.
         # So, to make sure we are commenting the correct one we need to check
@@ -316,6 +317,7 @@ class LLVMFailGitHubReporter(GitHubCommentPush):
             log.msg(
                 f"{self.name}.is_wrong_issue: WARNING: Skipped adding the comment for repo {repo_name}, issue is not specified."
             )
+            yield
             return wrong_issue
 
         page = 1
@@ -339,7 +341,7 @@ class LLVMFailGitHubReporter(GitHubCommentPush):
                 break
 
             log.msg(
-                f"{self.name}.is_wrong_issue: WARNING: Got events list for PR#{issue} (page {page}): {events}."
+                f"{self.name}.is_wrong_issue: INFO: Got events list for PR#{issue} (page {page}): {events}."
             )
 
             for event in events:
@@ -371,7 +373,8 @@ class LLVMFailGitHubReporter(GitHubCommentPush):
         issue=None,
         description=None,
     ):  # override
-        if self.is_wrong_issue(repo_user, repo_name, sha, issue):
+        wrong_issue = yield self.is_wrong_issue(repo_user, repo_name, sha, issue)
+        if wrong_issue:
             return None
 
         # This is the right issue to comment.
@@ -381,12 +384,10 @@ class LLVMFailGitHubReporter(GitHubCommentPush):
         url = "/".join(["/repos", repo_user, repo_name, "issues", issue, "comments"])
         log.msg(f"{self.name}.createStatus: INFO: http.post({url})")
 
-        # Use utils.LLVMFailGitHubReporter(debug=True, ...) to simulate the process.
-        if self.debug:
-            yield
-            ret = None
-        else:
-            ret = yield self._http.post(url, json=payload)
+        # Never use debug=True in GitHubStatusPush and inherited classes.
+        # It will cause unexpected exceptions inside HTTP client service.
+
+        ret = yield self._http.post(url, json=payload)
         return ret
 
 
@@ -431,7 +432,8 @@ class LLVMFailGitHubLabeler(LLVMFailGitHubReporter):
         issue=None,
         description=None,
     ):  # override
-        if self.is_wrong_issue(repo_user, repo_name, sha, issue):
+        wrong_issue = yield self.is_wrong_issue(repo_user, repo_name, sha, issue)
+        if wrong_issue:
             return None
 
         # This is the right issue to label.
@@ -446,10 +448,8 @@ class LLVMFailGitHubLabeler(LLVMFailGitHubReporter):
         url = "/".join(["/repos", repo_user, repo_name, "issues", issue, "labels"])
         log.msg(f"{self.name}.createStatus: INFO: http.post({url}), label={description}")
 
-        # Use utils.LLVMFailGitHubLabeler(debug=True, ... ) to simulate the process.
-        if self.debug:
-            yield
-            ret = None
-        else:
-            ret = yield self._http.post(url, json=payload)
+        # Never use debug=True in GitHubStatusPush and inherited classes.
+        # It will cause unexpected exceptions inside HTTP client service.
+
+        ret = yield self._http.post(url, json=payload)
         return ret
