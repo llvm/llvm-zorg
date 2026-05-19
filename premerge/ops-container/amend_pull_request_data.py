@@ -9,6 +9,10 @@ import operational_metrics_lib
 # Twice the frequency of cronjobs/amend_pull_request_data_cronjob.yaml
 LOOKBACK_HOURS = 4
 
+# The number of days after which an open pull request is considered stale, or
+# when to stop checking for post-commit reviews.
+CUTOFF_AGE_DAYS = 30
+
 # BigQuery dataset and tables to write metrics to.
 OPERATIONAL_METRICS_DATASET = "operational_metrics"
 LLVM_PULL_REQUESTS_TABLE = "llvm_pull_requests"
@@ -340,7 +344,7 @@ def update_post_commit_reviews_in_bigquery(
     bq_client: The BigQuery client to use for querying.
     github_token: The GitHub API token to use for authentication.
   """
-  # After two weeks, a merged pull request is most likely not going to receive
+  # After CUTOFF_AGE_DAYS, a merged pull request is most likely not going to receive
   # any more reviews.
   unapproved_merged_pull_requests_by_age = (
       get_pull_requests_by_age_from_bigquery(
@@ -348,7 +352,7 @@ def update_post_commit_reviews_in_bigquery(
           predicate=UNAPPROVED_PULL_REQUEST_PREDICATE,
           timestamp_column="merged_at_timestamp_seconds",
           minimum_age_days=0,
-          maximum_age_days=14,
+          maximum_age_days=CUTOFF_AGE_DAYS,
       )
   )
   unapproved_merged_pull_requests = []
@@ -425,11 +429,11 @@ def main():
   sync_recent_pull_requests_to_bigquery(bq_client, github_token)
 
   # We don't want to amend data for pull requests that have been open for more
-  # than two weeks.
+  # than CUTOFF_AGE_DAYS.
   logging.info("Marking stale pull requests in BigQuery.")
   mark_stale_pull_request_data_in_bigquery(
       bq_client,
-      cutoff_age_days=14,
+      cutoff_age_days=CUTOFF_AGE_DAYS,
   )
 
   logging.info("Updating open pull requests in BigQuery.")
