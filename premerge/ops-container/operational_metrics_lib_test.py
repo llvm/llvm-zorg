@@ -106,8 +106,13 @@ class TestOperationalMetricsLib(unittest.TestCase):
 
     self.assertEqual(mock_post.call_count, 3)
 
-  def test_upload_to_bigquery(self):
+  @unittest.mock.patch('uuid.uuid4')
+  def test_upload_to_bigquery(self, mock_uuid4):
     """Test uploading commit data to BigQuery."""
+    mock_uuid4_instance = unittest.mock.MagicMock()
+    mock_uuid4_instance.hex = 'abc123'
+    mock_uuid4.return_value = mock_uuid4_instance
+
     mock_bq_client = unittest.mock.MagicMock()
     mock_bq_table = unittest.mock.MagicMock()
 
@@ -129,7 +134,7 @@ class TestOperationalMetricsLib(unittest.TestCase):
     mock_bq_client.load_table_from_json.assert_called_once()
     mock_bq_client.load_table_from_json.assert_called_once_with(
         json_rows=[expected_commit_record],
-        destination='mock_dataset.mock_table_staging',
+        destination='mock_dataset.mock_table_staging_abc123',
         job_config=unittest.mock.ANY,
     )
 
@@ -137,12 +142,14 @@ class TestOperationalMetricsLib(unittest.TestCase):
     mock_bq_client.query.assert_called_once()
     executed_query = mock_bq_client.query.call_args.args[0]
     self.assertIn('MERGE mock_dataset.mock_table', executed_query)
-    self.assertIn('USING mock_dataset.mock_table_staging', executed_query)
+    self.assertIn(
+        'USING mock_dataset.mock_table_staging_abc123', executed_query
+    )
     self.assertIn('ON dest.commit_sha = src.commit_sha', executed_query)
 
     # Cleanup
     mock_bq_client.delete_table.assert_called_once_with(
-        'mock_dataset.mock_table_staging',
+        'mock_dataset.mock_table_staging_abc123',
         not_found_ok=True,
     )
 
