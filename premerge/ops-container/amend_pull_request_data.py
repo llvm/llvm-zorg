@@ -344,7 +344,7 @@ def update_post_commit_reviews_in_bigquery(
     bq_client: The BigQuery client to use for querying.
     github_token: The GitHub API token to use for authentication.
   """
-  # After 30 days, a merged pull request is most likely not going to receive
+  # After CUTOFF_AGE_DAYS, a merged pull request is most likely not going to receive
   # any more reviews.
   unapproved_merged_pull_requests_by_age = (
       get_pull_requests_by_age_from_bigquery(
@@ -429,7 +429,7 @@ def main():
   sync_recent_pull_requests_to_bigquery(bq_client, github_token)
 
   # We don't want to amend data for pull requests that have been open for more
-  # than 30 days.
+  # than CUTOFF_AGE_DAYS.
   logging.info("Marking stale pull requests in BigQuery.")
   mark_stale_pull_request_data_in_bigquery(
       bq_client,
