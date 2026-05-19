@@ -1,8 +1,0 @@
-*.pyc
-/.coverage
-
-# pycharm noise
-/.idea/
-
-# virtualenv noise
-/venv*
