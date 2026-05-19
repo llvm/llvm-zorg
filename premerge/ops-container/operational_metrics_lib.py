@@ -346,8 +346,7 @@ def upload_to_bigquery(
 
   # Create a unique staging table ID to avoid conflict with concurrently running
   # scripts.
-  unique_id = uuid.uuid4().hex
-  staging_table_id = f"{target_table_id}_staging_{unique_id}"
+  staging_table_id = f"{target_table_id}_staging_{uuid.uuid4().hex}"
 
   records = [dataclasses.asdict(record) for record in llvm_data]
   fields = [field for field in records[0].keys()]
