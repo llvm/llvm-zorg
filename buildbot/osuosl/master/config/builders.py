@@ -2692,6 +2692,7 @@ all += [
                         "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
                         "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
+                        "-DLLVM_IR2VEC_ENABLE_PYTHON_BINDINGS=ON",
                         "-DTENSORFLOW_C_LIB_PATH=/tmp/tensorflow",
                         "-C", "/tmp/tflitebuild/tflite.cmake",
                         "-DCMAKE_INSTALL_RPATH_USE_LINK_PATH=ON"
@@ -2711,6 +2712,7 @@ all += [
                         "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
                         "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
+                        "-DLLVM_IR2VEC_ENABLE_PYTHON_BINDINGS=ON",
                         "-DTENSORFLOW_C_LIB_PATH=/tmp/tensorflow",
                         "-C", "/tmp/tflitebuild/tflite.cmake",
                         "-DTENSORFLOW_AOT_PATH=/var/lib/buildbot/.local/lib/python3.7/site-packages/tensorflow",
@@ -2734,6 +2736,7 @@ all += [
                         "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
                         "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
+                        "-DLLVM_IR2VEC_ENABLE_PYTHON_BINDINGS=ON",
                         "-DTENSORFLOW_AOT_PATH=/var/lib/buildbot/.local/lib/python3.7/site-packages/tensorflow"
                     ])},
 
