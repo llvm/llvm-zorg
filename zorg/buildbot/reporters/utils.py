@@ -248,9 +248,10 @@ class LLVMFailBuildGenerator(BuildStatusGenerator):
                 return None
 
         changes = yield master.data.get(("builds", buildid, "changes"))
-        log.msg(
-            f"LLVMFailBuildGenerator.generate(buildid={buildid}): INFO: changes={changes}"
-        )
+
+        # This logging generates a massive log lines (up to 100Kb each) that are not required during the regular usage.
+        # Uncomment for the debug purposes when necessary.
+        # log.msg(f"LLVMFailBuildGenerator.generate(buildid={buildid}): INFO: changes={changes}")
 
         len_changes = len(changes)
         if len_changes < 1:
@@ -289,7 +290,7 @@ class LLVMFailBuildGenerator(BuildStatusGenerator):
             None,
         )
 
-        #log.msg(f"LLVMFailBuildGenerator.generate(buildid={buildid}): INFO: calling  yield self.build_message build_info={build_info}")
+        # log.msg(f"LLVMFailBuildGenerator.generate(buildid={buildid}): INFO: calling  yield self.build_message build_info={build_info}")
         report = yield self.build_message(self.formatter, master, reporter, build_info)
         # log.msg(f"LLVMFailBuildGenerator.generate(buildid={buildid}): INFO: report={report}")
         return report
@@ -299,9 +300,11 @@ class LLVMFailGitHubReporter(GitHubCommentPush):
     name = "LLVMFailGitHubReporter"
 
     def _extract_issue(self, props):  # override
-        log.msg(f"{self.name}._extract_issue: INFO: props={props}")
+        # This logging generates a massive log lines (up to 100Kb each) that are not required during the regular usage.
+        # Uncomment for the debug purposes when necessary.
+        # log.msg(f"{self.name}._extract_issue: INFO: props={props}")
         issue = props.getProperty("issue")
-        log.msg(f"{self.name}._extract_issue: INFO: issue={issue}")
+        # log.msg(f"{self.name}._extract_issue: INFO: issue={issue}")
         return issue
 
     @defer.inlineCallbacks
@@ -340,9 +343,9 @@ class LLVMFailGitHubReporter(GitHubCommentPush):
                 )
                 break
 
-            log.msg(
-                f"{self.name}.is_wrong_issue: INFO: Got events list for PR#{issue} (page {page}): {events}."
-            )
+            # This logging generates a massive log lines (up to 100Kb each) that are not required during the regular usage.
+            # Uncomment for the debug purposes when necessary.
+            # log.msg(f"{self.name}.is_wrong_issue: INFO: Got events list for PR#{issue} (page {page}): {events}.")
 
             for event in events:
                 if event["event"] == "merged":
