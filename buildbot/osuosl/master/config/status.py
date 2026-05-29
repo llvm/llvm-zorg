@@ -335,7 +335,8 @@ def getReporters():
                 utils.LLVMDefaultBuildStatusGenerator(
                     builders = [
                         "llvm-nvptx-nvidia-ubuntu", "llvm-nvptx64-nvidia-ubuntu",
-                        "llvm-nvptx-nvidia-win", "llvm-nvptx64-nvidia-win"])
+                        "llvm-nvptx-nvidia-win", "llvm-nvptx64-nvidia-win",
+                        "flang-runtime-cuda-gcc"])
             ]),
         reporters.MailNotifier(
             fromaddr = status_email_fromaddr,
