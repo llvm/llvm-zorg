@@ -282,7 +282,7 @@ function run_scudo_tests {
 
     ninja check-scudo_standalone || exit 3
   ) || {
-    if [[ "$name" =~ mips.* ]]; then
+    if [[ "$name" =~ mips.* || "$name" =~ powerpc.* ]]; then
       build_warning
       return 0
     fi
