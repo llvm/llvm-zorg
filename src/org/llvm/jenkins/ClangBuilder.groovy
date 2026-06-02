@@ -63,6 +63,7 @@ class ClangBuilder implements Serializable {
         def stage1Mode = config.stage == 1
         def incremental = config.incremental
         def extraEnvVars = config.env_vars ?: [:]
+        def preBuildCommands = config.pre_build_commands ?: ''
 
         // Build environment variables map
         def envVars = [
@@ -118,6 +119,7 @@ class ClangBuilder implements Serializable {
                         ${stage1Mode ? 'echo "GIT_SHA=\$GIT_SHA" >> build.properties' : ''}
                         echo "ARTIFACT=\$JOB_NAME/clang-d\$GIT_DISTANCE-g\$GIT_SHA.tar.gz" >> build.properties
                         ${incremental ? '' : 'rm -rf clang-build clang-install *.tar.gz'}
+                        ${preBuildCommands}
                         ${buildCmd}
                     """
                 }
