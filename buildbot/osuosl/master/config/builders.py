@@ -2045,6 +2045,15 @@ all += [
                     script_interpreter=None
                 )},
 
+    {'name' : "amdgpu-clang-flang",
+    'tags'  : ["openmp,flang"],
+    'workernames' : ["AMD-bb-w-05"],
+    'builddir': "amdgpu-clang-flang",
+    'factory' : ScriptedBuilder.getScriptedBuildFactory(
+                    "offload/ci/openmp-offload-amdgpu-clang-flang.py",
+                    depends_on_projects=['llvm','clang','lld', 'offload', 'openmp', 'mlir', 'flang', 'flang-rt', 'compiler-rt'],
+                )},
+
 # SYCL GPU builders.
 
     {'name' : "intel-sycl-gpu",
