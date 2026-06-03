@@ -684,7 +684,7 @@ def getReporters():
             ]),
         reporters.MailNotifier(
             fromaddr = status_email_fromaddr,
-            SendToInterestedUsers = False,
+            sendToInterestedUsers=False,
             extraRecipients = ["llvm-presubmit-infra@google.com"],
             generators = [
                 utils.LLVMDefaultBuildStatusGenerator(
