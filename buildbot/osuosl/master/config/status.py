@@ -515,6 +515,7 @@ def getReporters():
                         "openmp-offload-amdgpu-clang-flang",
                         "amdgpu-hip-blender",
                         "amdgpu-hip-tpl",
+                        "amdgpu-clang-flang",
                     ])
             ]),
         reporters.MailNotifier(
