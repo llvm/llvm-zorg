@@ -36,7 +36,7 @@ def main(argv):
         # Use Ninja as the generator.
         # The other important settings alrady come from the CMake CMake
         # cache file inside LLVM
-        cmake_args = ["-GNinja", "-C %s" % cmake_cache_file, "-DLLVM_ENABLE_RUNTIMES=compiler-rt"]
+        cmake_args = ["-GNinja", "-C %s" % cmake_cache_file]
 
         run_command(["cmake", os.path.join(source_dir, "llvm")] + cmake_args)
 
