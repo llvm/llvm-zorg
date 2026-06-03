@@ -1927,11 +1927,9 @@ all += [
     'tags'  : ["amdgpu", "offload", "openmp"],
     'workernames' : ["ext_buildbot_hw_05-hip-docker"],
     'builddir': "hip-third-party-libs-test",
-    'factory' : AnnotatedBuilder.getAnnotatedBuildFactory(
+    'factory' : ScriptedBuilder.getScriptedBuildFactory(
+                    "offload/ci/hip-tpl.py",
                     depends_on_projects=['llvm', 'clang', 'compiler-rt', 'lld', 'mlir', 'flang', 'openmp', 'offload', 'flang-rt'],
-                    script="hip-tpl.py",
-                    checkout_llvm_sources=True,
-                    script_interpreter=None
                 )},
 
     {'name' : "openmp-offload-libc-amdgpu-runtime",
