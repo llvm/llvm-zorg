@@ -2935,6 +2935,9 @@ all += [
                     extra_configure_args=[
                         "-DCMAKE_C_COMPILER=gcc",
                         "-DCMAKE_CXX_COMPILER=g++",
+                        # Neoverse V1 does not need Cortex-A53 erratum veneers.
+                        "-DCMAKE_C_FLAGS=-mno-fix-cortex-a53-843419",
+                        "-DCMAKE_CXX_FLAGS=-mno-fix-cortex-a53-843419",
                         "-DLLVM_APPEND_VC_REV=OFF",
                         "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
                         "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
