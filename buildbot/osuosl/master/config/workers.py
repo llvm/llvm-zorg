@@ -377,7 +377,6 @@ def get_all():
         create_worker("intel-sycl-gpu-01", properties={'jobs': 192}, max_builds=1),
 
         # Containerized builder for third party libraries using HIP
-        create_worker("ext_buildbot_hw_05-hip-docker", properties={'jobs': 32}, max_builds=1),
         create_worker("AMD-bb-w-03", properties={'jobs': 32}, max_builds=1),
 
         # AMD ROCm support, Ubuntu 18.04.6, AMD Ryzen @ 1.5 GHz, MI200 GPU

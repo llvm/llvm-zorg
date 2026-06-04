@@ -506,7 +506,6 @@ def getReporters():
                 utils.LLVMDefaultBuildStatusGenerator(
                     builders = [
                         "clang-hip-vega20",
-                        "hip-third-party-libs-test",
                         "openmp-offload-amdgpu-runtime",
                         "openmp-offload-amdgpu-runtime-2",
                         "openmp-offload-libc-amdgpu-runtime",
