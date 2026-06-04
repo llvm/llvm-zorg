@@ -1922,16 +1922,6 @@ all += [
                     script_interpreter=None
                 )},
 
-    # This one has a longer turn-around time, so we cannot disallow collapsing requests
-    {'name' : "hip-third-party-libs-test",
-    'tags'  : ["amdgpu", "offload", "openmp"],
-    'workernames' : ["ext_buildbot_hw_05-hip-docker"],
-    'builddir': "hip-third-party-libs-test",
-    'factory' : ScriptedBuilder.getScriptedBuildFactory(
-                    "offload/ci/hip-tpl.py",
-                    depends_on_projects=['llvm', 'clang', 'compiler-rt', 'lld', 'mlir', 'flang', 'openmp', 'offload', 'flang-rt'],
-                )},
-
     {'name' : "openmp-offload-libc-amdgpu-runtime",
     'tags'  : ["openmp"],
     'workernames' : ["omp-vega20-1"],
@@ -2036,11 +2026,9 @@ all += [
     'tags'  : ["amdgpu", "offload", "openmp"],
     'workernames' : ["AMD-bb-w-03"],
     'builddir': "amdgpu-hip-tpl",
-    'factory' : AnnotatedBuilder.getAnnotatedBuildFactory(
+    'factory' : ScriptedBuilder.getScriptedBuildFactory(
+                    "offload/ci/hip-tpl.py",
                     depends_on_projects=['llvm', 'clang', 'compiler-rt', 'lld', 'mlir', 'flang', 'openmp', 'offload', 'flang-rt'],
-                    script="hip-tpl.py",
-                    checkout_llvm_sources=True,
-                    script_interpreter=None
                 )},
 
     {'name' : "amdgpu-clang-flang",
