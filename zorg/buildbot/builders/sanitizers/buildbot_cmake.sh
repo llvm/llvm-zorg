@@ -6,12 +6,6 @@ HERE="$(dirname $0)"
 ARCH=`uname -m`
 ninja --version || export PATH="/usr/local/bin:$PATH"
 
-if [[ "$ARCH" == "ppc64le" ]]; then
-    echo "Skipping testing on flaky sanitizer-ppc64le-linux"
-    build_warning
-    exit 0
-fi
-
 CMAKE_ARGS=""
 for arg in "$@"
 do
