@@ -31,6 +31,8 @@ def call(Map config = [:]) {
             booleanParam(name: 'IS_BISECT_JOB', defaultValue: false, description: 'Whether clang is being built as part of a bisection job')
             booleanParam(name: 'SKIP_TESTS', defaultValue: false, description: 'Skip test stage. Can be useful when rebuilding a stage 1 compiler')
             booleanParam(name: 'SKIP_TRIGGER', defaultValue: config.buildConfig?.skipTrigger ?: false, description: 'Skip trigger of consuming CI jobs')
+            string(name: 'LIT_TEST_FILTER', defaultValue: '', description: 'LIT test filter for bisection. For standard jobs: workspace-relative path passed directly to llvm-lit (e.g. llvm-project/clang/test/CodeGen/foo.c). For custom script jobs (e.g. clang-san-iossim): regex pattern exported as LIT_FILTER env var so lit filters within the custom script (e.g. deep_sleep_test). Only used when IS_BISECT_JOB is true.')
+            string(name: 'TEST_REPEAT_COUNT', defaultValue: '3', description: 'Number of times to run the LIT test per bisection step. A single failure marks the commit BAD.')
         }
 
         agent {

@@ -229,6 +229,43 @@ class ClangBuilder implements Serializable {
 
         def envList = envVars.collect { k, v -> "${k}=${v}" }
 
+        if (script.params.IS_BISECT_JOB && script.params.LIT_TEST_FILTER) {
+            def litFilter = script.params.LIT_TEST_FILTER
+            def repeatCount = (script.params.TEST_REPEAT_COUNT ?: '3').toInteger()
+            script.echo "Bisection LIT filter mode: '${litFilter}' × ${repeatCount} run(s)"
+            script.withEnv(envList) {
+                script.timeout(timeout) {
+                    for (int run = 1; run <= repeatCount; run++) {
+                        script.echo "LIT run ${run}/${repeatCount}: ${litFilter}"
+                        def runScript
+                        if (customScript) {
+                            runScript = """
+                                set +e
+                                source ./venv/bin/activate
+                                export LIT_FILTER='${litFilter}'
+                                ${shellExportsStr}
+                                ${customScript}
+                            """
+                        } else {
+                            runScript = """
+                                set +e
+                                source ./venv/bin/activate
+                                ${shellExportsStr}
+                                python ./clang-build/bin/llvm-lit -v ./${litFilter}
+                            """
+                        }
+                        def exitCode = script.sh(script: runScript, returnStatus: true)
+                        if (exitCode != 0) {
+                            script.error("LIT run ${run}/${repeatCount} FAILED for '${litFilter}' — marking commit as BAD")
+                        }
+                        script.echo "LIT run ${run}/${repeatCount}: PASSED"
+                    }
+                    script.echo "All ${repeatCount} LIT run(s) passed for '${litFilter}' — marking commit as GOOD"
+                }
+            }
+            return
+        }
+
         script.withEnv(envList) {
             script.timeout(timeout) {
                 if (customScript) {
