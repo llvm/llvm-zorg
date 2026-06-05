@@ -21,9 +21,16 @@ class BisectionManager:
         """Print non-JSON output to stderr so it appears in CI logs"""
         print(message, file=sys.stderr)
 
-    def initialize_bisection(self, good_commit: str, bad_commit: str,
-                             test_job: Optional[str] = None, session_id: Optional[str] = None,
-                             verbose: bool = True) -> Dict[str, Any]:
+    def initialize_bisection(
+        self,
+        good_commit: str,
+        bad_commit: str,
+        test_job: Optional[str] = None,
+        session_id: Optional[str] = None,
+        lit_test_filter: Optional[str] = None,
+        test_repeat_count: int = 3,
+        verbose: bool = True
+    ) -> Dict[str, Any]:
         """Initialize a new bisection session"""
 
         # Get commit range
@@ -46,7 +53,9 @@ class BisectionManager:
             "metadata": {
                 "total_commits": len(commits),
                 "repo_path": str(self.repo_path),
-                "test_job": test_job
+                "test_job": test_job,
+                "lit_test_filter": lit_test_filter,
+                "test_repeat_count": test_repeat_count
             },
             "next_action": None
         }
@@ -68,7 +77,13 @@ class BisectionManager:
             self._print(f"Total commits in range: {len(commits)}, estimated {estimated_steps} steps")
 
             # Initialize log files
-            self._initialize_logs(state, test_job, session_type)
+            self._initialize_logs(
+                state,
+                test_job,
+                session_type,
+                lit_test_filter,
+                test_repeat_count
+            )
 
         return state
 
@@ -142,7 +157,14 @@ Range: {step_info['bisection_range']['current_good']}..{step_info['bisection_ran
 
         return step_info
 
-    def show_restart_instructions(self, step_number: int, test_job: str, platform: str = "jenkins") -> None:
+    def show_restart_instructions(
+        self,
+        step_number: int,
+        test_job: str,
+        platform: str = "jenkins",
+        lit_test_filter: Optional[str] = None,
+        test_repeat_count: int = 3
+    ) -> None:
         """Display and log restart instructions"""
         step_info = self.get_next_step_info()
 
@@ -179,8 +201,18 @@ Range: {step_info['bisection_range']['current_good']}..{step_info['bisection_ran
         self._print("└─────────────────────────────────────────────────────────────────────────────┘")
 
         # Log restart instructions
-        self._log_restart_instructions(step_number, current_good, current_bad,
-                                       session_id, commit, commit_info, test_job, platform)
+        self._log_restart_instructions(
+            step_number,
+            current_good,
+            current_bad,
+            session_id,
+            commit,
+            commit_info,
+            test_job,
+            platform,
+            lit_test_filter,
+            test_repeat_count
+        )
 
     def log_job_execution(self, job_name: str, result: str, duration: float,
                           job_url: Optional[str] = None, build_number: Optional[str] = None) -> None:
@@ -423,7 +455,14 @@ TEST RESULTS SUMMARY:
             }
         }
 
-    def _initialize_logs(self, state: Dict[str, Any], test_job: Optional[str], session_type: str) -> None:
+    def _initialize_logs(
+        self,
+        state: Dict[str, Any],
+        test_job: Optional[str],
+        session_type: str,
+        lit_test_filter: Optional[str] = None,
+        test_repeat_count: int = 3
+    ) -> None:
         """Initialize log files"""
         log_header = f"""
 === BISECTION {session_type} ===
@@ -431,6 +470,8 @@ Session ID: {state['session_id']}
 Good commit: {state['good_commit']}
 Bad commit: {state['bad_commit']}
 Test job: {test_job or 'N/A'}
+LIT test filter: {lit_test_filter or 'N/A (full test suite)'}
+Test repeat count: {test_repeat_count if lit_test_filter else 'N/A'}
 Total commits: {state['metadata']['total_commits']}
 Estimated steps: {state['estimated_steps']}
 {session_type.lower().capitalize()} at: {state['start_time']}
@@ -443,9 +484,19 @@ Estimated steps: {state['estimated_steps']}
         with open(self.restart_log, 'w') as f:
             f.write("=== RESTART INSTRUCTIONS LOG ===\n\n")
 
-    def _log_restart_instructions(self, step_number: int, current_good: str, current_bad: str,
-                                  session_id: str, commit: str, commit_info: Dict[str, str],
-                                  test_job: str, platform: str) -> None:
+    def _log_restart_instructions(
+        self,
+        step_number: int,
+        current_good: str,
+        current_bad: str,
+        session_id: str,
+        commit: str,
+        commit_info: Dict[str, str],
+        test_job: str,
+        platform: str,
+        lit_test_filter: Optional[str] = None,
+        test_repeat_count: int = 3
+    ) -> None:
         """Log restart instructions to file"""
         timestamp = datetime.now().isoformat()
 
@@ -463,8 +514,14 @@ RESTART PARAMETERS:
 {'BAD_COMMIT' if platform == 'jenkins' else 'bad_commit'}={current_bad}
 {'SESSION_ID' if platform == 'jenkins' else 'session_id'}={session_id}
 {'TEST_JOB_NAME' if platform == 'jenkins' else 'test_workflow'}={test_job}
-
 """
+        if lit_test_filter:
+            lit_key = 'LIT_TEST_FILTER' if platform == 'jenkins' else 'lit_test_filter'
+            repeat_key = 'TEST_REPEAT_COUNT' if platform == 'jenkins' else 'test_repeat_count'
+            log_entry += f"{lit_key}={lit_test_filter}\n"
+            log_entry += f"{repeat_key}={test_repeat_count}\n"
+
+        log_entry += "\n"
 
         self._append_to_log(self.restart_log, log_entry)
 
@@ -505,6 +562,10 @@ def main():
     init_parser.add_argument('bad_commit', help='Known bad commit SHA')
     init_parser.add_argument('--test-job', help='Test job/workflow name')
     init_parser.add_argument('--session-id', help='Session ID for restart')
+    init_parser.add_argument('--lit-test-filter', default=None,
+                             help='LIT test file path relative to llvm-project root (e.g. clang/test/CodeGen/foo.c)')
+    init_parser.add_argument('--test-repeat-count', type=int, default=3,
+                             help='Number of times to run the LIT test per step; any failure = BAD')
     add_common_args(init_parser)
 
     # Record result command (original interface)
@@ -521,6 +582,8 @@ def main():
     restart_parser.add_argument('step_number', type=int, help='Step number')
     restart_parser.add_argument('test_job', help='Test job/workflow name')
     restart_parser.add_argument('--platform', choices=['jenkins', 'github'], default='jenkins')
+    restart_parser.add_argument('--lit-test-filter', default=None)
+    restart_parser.add_argument('--test-repeat-count', type=int, default=3)
     add_common_args(restart_parser)
 
     job_parser = subparsers.add_parser('log-job', help='Log job execution result')
@@ -548,7 +611,12 @@ def main():
 
         if args.command == 'init':
             state = manager.initialize_bisection(
-                args.good_commit, args.bad_commit, args.test_job, args.session_id
+                args.good_commit,
+                args.bad_commit,
+                args.test_job,
+                args.session_id,
+                args.lit_test_filter,
+                args.test_repeat_count
             )
             print(json.dumps(state, indent=2))
 
@@ -561,7 +629,13 @@ def main():
             print(json.dumps(step_info, indent=2))
 
         elif args.command == 'show-restart':
-            manager.show_restart_instructions(args.step_number, args.test_job, args.platform)
+            manager.show_restart_instructions(
+                args.step_number,
+                args.test_job,
+                args.platform,
+                args.lit_test_filter,
+                args.test_repeat_count
+            )
 
         elif args.command == 'log-job':
             manager.log_job_execution(

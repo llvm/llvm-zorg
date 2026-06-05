@@ -47,11 +47,22 @@ def call(Map params) {
     }
 }
 
-def initializeBisection(String goodCommit, String badCommit, String testJob,
-                       String repoPath = '.', String sessionId = null) {
+def initializeBisection(
+    String goodCommit,
+    String badCommit,
+    String testJob,
+    String repoPath = '.',
+    String sessionId = null,
+    String litTestFilter = null,
+    int testRepeatCount = 3
+) {
     def args = [goodCommit, badCommit, '--test-job', testJob]
     if (sessionId) {
         args.addAll(['--session-id', sessionId])
+    }
+    if (litTestFilter) {
+        args.addAll(['--lit-test-filter', litTestFilter])
+        args.addAll(['--test-repeat-count', testRepeatCount.toString()])
     }
 
     return bisectionManager([
@@ -69,10 +80,21 @@ def logStepStart(int stepNumber, String repoPath = '.') {
     ])
 }
 
-def showRestartInstructions(int stepNumber, String testJob, String repoPath = '.') {
+def showRestartInstructions(
+    int stepNumber,
+    String testJob,
+    String repoPath = '.',
+    String litTestFilter = null,
+    int testRepeatCount = 3
+) {
+    def args = [stepNumber.toString(), testJob, '--platform', 'jenkins']
+    if (litTestFilter) {
+        args.addAll(['--lit-test-filter', litTestFilter])
+        args.addAll(['--test-repeat-count', testRepeatCount.toString()])
+    }
     return bisectionManager([
         command: 'show-restart',
-        args: [stepNumber.toString(), testJob, '--platform', 'jenkins'],
+        args: args,
         repoPath: repoPath
     ])
 }
