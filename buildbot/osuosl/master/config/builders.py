@@ -1617,12 +1617,22 @@ all += [
     'tags'  : ["sanitizer"],
     'workernames' : [
         "sanitizer-buildbot3",
-        "sanitizer-buildbot4",
     ],
     'builddir': "sanitizer-x86_64-linux-bootstrap-ubsan",
     'factory' : SanitizerBuilder.getSanitizerBuildFactory(
         clean=True,
         extra_depends_on_projects=["mlir", "clang-tools-extra"]
+    )},
+
+    {'name' : "sanitizer-x86_64-linux-bootstrap-cfi",
+    'tags'  : ["sanitizer"],
+    'workernames' : [
+        "sanitizer-buildbot4",
+    ],
+    'builddir': "sanitizer-x86_64-linux-bootstrap-cfi",
+    'factory' : SanitizerBuilder.getSanitizerBuildFactory(
+        clean=True,
+        extra_depends_on_projects=["clang-tools-extra"]
     )},
 
     {'name' : "sanitizer-x86_64-linux-qemu",
@@ -1700,12 +1710,22 @@ all += [
     'tags'  : ["sanitizer", "aarch64"],
     'workernames' : [
         "sanitizer-buildbot9",
-        "sanitizer-buildbot10",
     ],
     'builddir': "sanitizer-aarch64-linux-bootstrap-ubsan",
     'factory' : SanitizerBuilder.getSanitizerBuildFactory(
         clean=True,
         extra_depends_on_projects=["mlir", "clang-tools-extra"]
+    )},
+
+    {'name' : "sanitizer-aarch64-linux-bootstrap-cfi",
+    'tags'  : ["sanitizer", "aarch64"],
+    'workernames' : [
+        "sanitizer-buildbot10",
+    ],
+    'builddir': "sanitizer-aarch64-linux-bootstrap-cfi",
+    'factory' : SanitizerBuilder.getSanitizerBuildFactory(
+        clean=True,
+        extra_depends_on_projects="clang-tools-extra"]
     )},
 
     {'name' : "sanitizer-aarch64-linux-fuzzer",
