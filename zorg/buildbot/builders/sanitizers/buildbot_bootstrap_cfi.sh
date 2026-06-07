@@ -13,18 +13,18 @@ buildbot_update
 
 build_stage1_clang
 
-check_stage1_ubsan
+check_stage1_cfi
 
-# Stage 2 / UndefinedBehaviorSanitizer
+# Stage 2 / CFI
 
-build_stage2_ubsan
+build_stage2_cfi
 
-check_stage2_ubsan
+check_stage2_cfi
 
-# Stage 3 / UndefinedBehaviorSanitizer
+# Stage 3 / CFI
 
-build_stage3_ubsan
+build_stage3_cfi
 
-check_stage3_ubsan
+check_stage3_cfi
 
 cleanup

@@ -342,6 +342,12 @@ function build_stage2 {
     # FIXME: After switching to LLVM_ENABLE_RUNTIMES, vptr has infitine
     # recursion.
     fno_sanitize_flag+=" -fno-sanitize=vptr"
+  elif [ "$sanitizer_name" == "cfi" ]; then
+    export UBSAN_OPTIONS="external_symbolizer_path=${llvm_symbolizer_path}:print_stacktrace=1"
+    export UBSAN_OPTIONS+=":${san_options}"
+    llvm_use_sanitizer="Undefined"
+    fsanitize_flag="-fsanitize=undefined -fno-sanitize-recover=all"
+    fno_sanitize_flag+=" -fno-sanitize=vptr"
   else
     echo "Unknown sanitizer!"
     exit 1
@@ -426,6 +432,10 @@ function build_stage2_asan_ubsan {
   build_stage2 asan_ubsan
 }
 
+function build_stage2_cfi {
+  build_stage2 cfi
+}
+
 function check_stage1 {
   local sanitizer_name=$1
 
@@ -450,6 +460,10 @@ function check_stage1_ubsan {
 
 function check_stage1_asan_ubsan {
   check_stage1 asan_ubsan
+}
+
+function check_stage1_cfi {
+  check_stage1 cfi
 }
 
 function check_stage2 {
@@ -520,6 +534,10 @@ function check_stage2_asan_ubsan {
   LIT_FILTER_OUT="ExecutionEngine/" check_stage2 asan_ubsan
 }
 
+function check_stage2_cfi {
+  check_stage2 cfi
+}
+
 function build_stage3 {
   local sanitizer_name
   sanitizer_name="${1}"
@@ -574,6 +592,10 @@ function build_stage3_ubsan {
   build_stage3 ubsan
 }
 
+function build_stage3_cfi {
+  build_stage3 cfi
+}
+
 function check_stage3 {
   local sanitizer_name=$1
   build_step "stage3/$sanitizer_name check"
@@ -601,6 +623,10 @@ function check_stage3_hwasan {
 
 function check_stage3_ubsan {
   check_stage3 ubsan
+}
+
+function check_stage3_cfi {
+  check_stage3 cfi
 }
 
 function buildbot_build() {
