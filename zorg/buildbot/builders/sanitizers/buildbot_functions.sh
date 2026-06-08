@@ -643,6 +643,7 @@ function build_failure() {
   for _ in 0 1 2 ; do
     echo
     echo "@@@STEP_FAILURE@@@"
+    [[ -v BUILDBOT_BUILDERNAME ]] || break
     sleep 5
   done
 
@@ -654,6 +655,7 @@ function build_exception() {
   for _ in 0 1 2 ; do
     echo
     echo "@@@STEP_EXCEPTION@@@"
+    [[ -v BUILDBOT_BUILDERNAME ]] || break
     sleep 5
   done
 
@@ -665,6 +667,7 @@ function build_warning() {
   for _ in 0 1 2 ; do
     echo
     echo "@@@STEP_WARNINGS@@@"
+    [[ -v BUILDBOT_BUILDERNAME ]] || break
     sleep 5
   done
   
