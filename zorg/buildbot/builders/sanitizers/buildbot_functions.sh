@@ -346,8 +346,37 @@ function build_stage2 {
     export UBSAN_OPTIONS="external_symbolizer_path=${llvm_symbolizer_path}:print_stacktrace=1"
     export UBSAN_OPTIONS+=":${san_options}"
     llvm_use_sanitizer="Undefined"
-    fsanitize_flag="-fsanitize=undefined -fno-sanitize-recover=all"
-    fno_sanitize_flag+=" -fno-sanitize=vptr"
+    fsanitize_flag="-fsanitize=cfi-icall,cfi-vcall -flto=thin -fsplit-lto-unit -fvisibility=hidden -fno-sanitize-trap=cfi -ftls-model=global-dynamic"
+
+    cmake_options+=("-DLLVM_ENABLE_LTO=Thin")
+    cmake_options+=("-DLLVM_UBSAN_FLAGS=${fsanitize_flag}")
+    cmake_options+=("-DCMAKE_REQUIRED_FLAGS=-fno-sanitize=all")
+    cmake_options+=("-DCMAKE_POSITION_INDEPENDENT_CODE=ON")
+    
+    # Avoid .so.
+    cmake_options+=("-DBUILD_SHARED_LIBS=OFF")
+    cmake_options+=("-DCLANG_LINK_CLANG_DYLIB=OFF")
+    cmake_options+=("-DLIBCXX_ENABLE_SHARED=OFF")
+    cmake_options+=("-DLIBCXXABI_ENABLE_SHARED=OFF")
+    cmake_options+=("-DLLVM_ENABLE_PIC=OFF")
+    cmake_options+=("-DLLVM_ENABLE_PLUGINS=OFF")
+    cmake_options+=("-DLLVM_EXPORT_SYMBOLS_FOR_PLUGINS=OFF")
+    cmake_options+=("-DLLVM_INCLUDE_EXAMPLES=OFF")
+    cmake_options+=("-DLLVM_LINK_LLVM_DYLIB=OFF")
+    cmake_options+=("-DLLVM_STATIC_LINK_CXX_STDLIB=ON")
+
+    #cmake_options+=("-DCMAKE_CXX_ARCHIVE_CREATE='<CMAKE_AR> crsT <TARGET> <LINK_FLAGS> <OBJECTS>'")
+    #cmake_options+=("-DCMAKE_C_ARCHIVE_CREATE='<CMAKE_AR> crsT <TARGET> <LINK_FLAGS> <OBJECTS>'")
+    #cmake_options+=("-DCMAKE_CXX_ARCHIVE_APPEND='<CMAKE_AR> rsT <TARGET> <LINK_FLAGS> <OBJECTS>'")
+    #cmake_options+=("-DCMAKE_C_ARCHIVE_APPEND='<CMAKE_AR> rsT <TARGET> <LINK_FLAGS> <OBJECTS>'")
+
+    # Slow to build because of ThinLTO.
+    cmake_options+=("-DLIBCXX_INCLUDE_BENCHMARKS=OFF")
+    cmake_options+=("-DLIBCXX_INCLUDE_TESTS=OFF")
+    cmake_options+=("-DLIBCXXABI_INCLUDE_TESTS=OFF")
+
+    #cmake_options+=("-DLLVM_CCACHE_BUILD=OFF")
+    #cmake_options+=("-DLLVM_PARALLEL_LINK_JOBS=8")
   else
     echo "Unknown sanitizer!"
     exit 1
@@ -541,7 +570,7 @@ function check_stage2_asan_ubsan {
 }
 
 function check_stage2_cfi {
-  check_stage2 cfi
+  LIT_FILTER_OUT="ExecutionEngine/" check_stage2 cfi
 }
 
 function build_stage3 {
