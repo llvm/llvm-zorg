@@ -353,7 +353,7 @@ function build_stage2 {
     cmake_options+=("-DCMAKE_REQUIRED_FLAGS=-fno-sanitize=all")
     cmake_options+=("-DCMAKE_POSITION_INDEPENDENT_CODE=ON")
     
-    # Avoid .so.
+    # Avoid .so and JIT.
     cmake_options+=("-DBUILD_SHARED_LIBS=OFF")
     cmake_options+=("-DCLANG_LINK_CLANG_DYLIB=OFF")
     cmake_options+=("-DLIBCXX_ENABLE_SHARED=OFF")
@@ -364,6 +364,7 @@ function build_stage2 {
     cmake_options+=("-DLLVM_INCLUDE_EXAMPLES=OFF")
     cmake_options+=("-DLLVM_LINK_LLVM_DYLIB=OFF")
     cmake_options+=("-DLLVM_STATIC_LINK_CXX_STDLIB=ON")
+    cmake_options+=("-DLLVM_TOOL_LLVM_EXEGESIS_BUILD=OFF")
 
     #cmake_options+=("-DCMAKE_CXX_ARCHIVE_CREATE='<CMAKE_AR> crsT <TARGET> <LINK_FLAGS> <OBJECTS>'")
     #cmake_options+=("-DCMAKE_C_ARCHIVE_CREATE='<CMAKE_AR> crsT <TARGET> <LINK_FLAGS> <OBJECTS>'")
