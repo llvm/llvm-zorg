@@ -365,6 +365,7 @@ function build_stage2 {
     -DLLVM_USE_SANITIZER=${llvm_use_sanitizer} \
     -DCMAKE_C_FLAGS="${fsanitize_flag} ${cmake_libcxx_cflags} ${fno_sanitize_flag}" \
     -DCMAKE_CXX_FLAGS="${fsanitize_flag} ${cmake_libcxx_cflags} ${fno_sanitize_flag}" \
+    -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=lld" \
       "$LLVM/../runtimes" || build_failure
   
   run_ninja -C "${libcxx_build_dir}"
@@ -375,7 +376,7 @@ function build_stage2 {
   local libcxx_runtime_path
   libcxx_runtime_path=$(dirname "${libcxx_path}")
 
-  local sanitizer_ldflags="-Wl,--rpath=${libcxx_runtime_path} -L${libcxx_runtime_path}"
+  local sanitizer_ldflags="-Wl,--rpath=${libcxx_runtime_path} -L${libcxx_runtime_path} -lc++abi -fuse-ld=lld"
   local sanitizer_cflags="-nostdinc++ -isystem ${ROOT}/${libcxx_install_dir}/include -isystem ${ROOT}/${libcxx_install_dir}/include/c++/v1 $fsanitize_flag"
 
   build_step "stage2/$sanitizer_name build"
