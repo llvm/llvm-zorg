@@ -291,7 +291,7 @@ function build_stage2 {
   ccache -z || true
 
   local fno_sanitize_flag=
-  local cmake_options="-DLIBCXXABI_USE_LLVM_UNWINDER=OFF"
+  local cmake_options=()
 
   rm -rf "${SANITIZER_LOG_DIR}"
   mkdir -p "${SANITIZER_LOG_DIR}"
@@ -356,11 +356,12 @@ function build_stage2 {
   mkdir -p "${libcxx_build_dir}"
   cmake -B "${libcxx_build_dir}" \
     ${cmake_stage2_common_options} \
-    ${cmake_options} \
+    "${cmake_options[@]}" \
     -DCMAKE_INSTALL_PREFIX="${ROOT}/${libcxx_install_dir}" \
     -DLLVM_ENABLE_RUNTIMES='libcxx;libcxxabi' \
     -DLIBCXX_TEST_PARAMS='long_tests=False' \
     -DLIBCXX_INCLUDE_BENCHMARKS=OFF \
+    -DLIBCXXABI_USE_LLVM_UNWINDER=OFF \
     -DLLVM_USE_SANITIZER=${llvm_use_sanitizer} \
     -DCMAKE_C_FLAGS="${fsanitize_flag} ${cmake_libcxx_cflags} ${fno_sanitize_flag}" \
     -DCMAKE_CXX_FLAGS="${fsanitize_flag} ${cmake_libcxx_cflags} ${fno_sanitize_flag}" \
@@ -394,6 +395,7 @@ function build_stage2 {
   fi
   cmake -B "${build_dir}" \
      ${cmake_stage2_common_options} \
+     "${cmake_options[@]}" \
      "-DLLVM_ENABLE_PROJECTS=$projects" \
      -DLLVM_USE_SANITIZER=${llvm_use_sanitizer} \
      -DLLVM_ENABLE_LIBCXX=ON \
