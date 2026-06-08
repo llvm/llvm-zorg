@@ -369,11 +369,10 @@ function build_stage2 {
   run_ninja -C "${libcxx_build_dir}"
   run_ninja -C "${libcxx_build_dir}" install
 
-  local libcxx_so_path
-  libcxx_so_path="$(find "${ROOT}/${libcxx_install_dir}" -name libc++.so)"
-  test -f "${libcxx_so_path}" || build_failure
+  local libcxx_path="$(find "${ROOT}/${libcxx_install_dir}" -name libc++.a)"
+  test -f "${libcxx_path}" || build_failure
   local libcxx_runtime_path
-  libcxx_runtime_path=$(dirname "${libcxx_so_path}")
+  libcxx_runtime_path=$(dirname "${libcxx_path}")
 
   local sanitizer_ldflags="-Wl,--rpath=${libcxx_runtime_path} -L${libcxx_runtime_path}"
   local sanitizer_cflags="-nostdinc++ -isystem ${ROOT}/${libcxx_install_dir}/include -isystem ${ROOT}/${libcxx_install_dir}/include/c++/v1 $fsanitize_flag"
