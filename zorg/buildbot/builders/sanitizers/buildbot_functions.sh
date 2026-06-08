@@ -383,14 +383,18 @@ function build_stage2 {
   sanitizer_cflags+=" $sanitizer_ldflags -w"
 
   mkdir -p "${build_dir}"
-  local cmake_stage2_clang_options="-DLLVM_ENABLE_PROJECTS='clang;lld;clang-tools-extra;mlir'"
-  if [[ "$(arch)" == "aarch64" ]] ; then
+  local projects="clang;lld"
+  if [[ "$(arch)" != "aarch64" ]] ; then
     # FIXME: clangd tests fail.
-    cmake_stage2_clang_options="-DLLVM_ENABLE_PROJECTS='clang;lld;mlir'"
+    projects+=";clang-tools-extra"
+  fi
+  if [[ "$sanitizer_name" != "cfi" ]]; then
+    # Jit.
+    projects+=";mlir"
   fi
   cmake -B "${build_dir}" \
      ${cmake_stage2_common_options} \
-     ${cmake_stage2_clang_options} \
+     "-DLLVM_ENABLE_PROJECTS=$projects" \
      -DLLVM_USE_SANITIZER=${llvm_use_sanitizer} \
      -DLLVM_ENABLE_LIBCXX=ON \
      -DCMAKE_C_FLAGS="${sanitizer_cflags}" \
