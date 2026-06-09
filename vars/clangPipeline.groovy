@@ -8,6 +8,7 @@ def call(Map config = [:]) {
     def stagesToRun = config.stages ?: ['checkout', 'fetch', 'build', 'test']
     def jobName = config.jobName
     def zorgBranch = config.zorgBranch
+    def shortCircuit = false
 
     def pipelineProperties = [
         buildDiscarder(logRotator(numToKeepStr: '30'))
@@ -67,6 +68,12 @@ def call(Map config = [:]) {
                         retry(3) {
                             builder.checkoutStage(zorgBranch)
                         }
+                        if (params.IS_BISECT_JOB && params.LIT_TEST_FILTER && !testConfig.custom_script) {
+                            if (!fileExists(params.LIT_TEST_FILTER)) {
+                                echo "Test '${params.LIT_TEST_FILTER}' does not exist at this commit, skipping build and marking commit as GOOD"
+                                shortCircuit = true
+                            }
+                        }
                     }
                 }
             }
@@ -114,7 +121,7 @@ def call(Map config = [:]) {
             stage('Fetch Artifact') {
                 when {
                     expression {
-                        'fetch' in stagesToRun && (buildConfig.stage ?: 1) >= 2
+                        'fetch' in stagesToRun && (buildConfig.stage ?: 1) >= 2 && !shortCircuit
                     }
                 }
                 steps {
@@ -128,7 +135,7 @@ def call(Map config = [:]) {
 
             stage('Build') {
                 when {
-                    expression { 'build' in stagesToRun }
+                    expression { 'build' in stagesToRun && !shortCircuit }
                 }
                 steps {
                     script {
@@ -140,7 +147,7 @@ def call(Map config = [:]) {
             stage('Test') {
                 when {
                     expression {
-                        'test' in stagesToRun  && !params.SKIP_TESTS
+                        'test' in stagesToRun && !params.SKIP_TESTS && !shortCircuit
                     }
                 }
                 steps {
