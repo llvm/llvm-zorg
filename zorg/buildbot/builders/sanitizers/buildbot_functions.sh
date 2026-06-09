@@ -364,6 +364,7 @@ function build_stage2 {
     cmake_options+=("-DLLVM_INCLUDE_EXAMPLES=OFF")
     cmake_options+=("-DLLVM_LINK_LLVM_DYLIB=OFF")
     cmake_options+=("-DLLVM_STATIC_LINK_CXX_STDLIB=ON")
+    cmake_options+=("-DLLVM_ENABLE_LIBXML2=OFF")
 
     #cmake_options+=("-DCMAKE_CXX_ARCHIVE_CREATE='<CMAKE_AR> crsT <TARGET> <LINK_FLAGS> <OBJECTS>'")
     #cmake_options+=("-DCMAKE_C_ARCHIVE_CREATE='<CMAKE_AR> crsT <TARGET> <LINK_FLAGS> <OBJECTS>'")
