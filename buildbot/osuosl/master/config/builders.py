@@ -1725,7 +1725,7 @@ all += [
     'builddir': "sanitizer-aarch64-linux-bootstrap-cfi",
     'factory' : SanitizerBuilder.getSanitizerBuildFactory(
         clean=True,
-        extra_depends_on_projects="clang-tools-extra"]
+        extra_depends_on_projects=["clang-tools-extra"]
     )},
 
     {'name' : "sanitizer-aarch64-linux-fuzzer",
