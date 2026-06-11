@@ -195,7 +195,7 @@ all = [
                     post_finalize_steps = [
                         #Note: requires for Jetson TX2/Linux Ubuntu 18.
                         steps.ShellCommand(name = "restart-target-finalize",
-                            command = [ "ssh", util.Interpolate("%(prop:remote_user_tx2_rel)s@%(prop:remote_host_tx2_rel)s"),
+                            command = [ "ssh", util.Interpolate("%(prop:remote_test_user_rel)s@%(prop:remote_test_host_rel)s"),
                                         "((sleep 5 && sudo reboot) > /dev/null 2>&1 &); exit 0;"
                             ],
                             alwaysRun = True,
