@@ -215,9 +215,9 @@ class LLVMFailBuildGenerator(BuildStatusGenerator):
         results = build["results"]
         # Check for mode == "problem" only.
         if results == FAILURE:
-            prev_build = build["prev_build"]
+            prev_build = build.get("prev_build")
             if (
-                prev_build and prev_build["results"] == SUCCESS
+                prev_build and prev_build["results"] in [SUCCESS, WARNINGS]
             ):  # Note != FAILURE in base
                 return True
         return False
