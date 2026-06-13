@@ -1365,7 +1365,6 @@ all = [
                         "LLDB_TEST_USER_ARGS"           : "--skip-category=lldb-dap",
                     },
                     env = {
-                        'LLDB_USE_LLDB_SERVER' : "1",
                         'CCACHE_DIR'    : util.Interpolate("%(prop:builddir)s/ccache-db"),
                         # TMP/TEMP within the build dir (to utilize a ramdisk).
                         'TMP'           : util.Interpolate("%(prop:builddir)s/build"),
@@ -1618,12 +1617,22 @@ all += [
     'tags'  : ["sanitizer"],
     'workernames' : [
         "sanitizer-buildbot3",
-        "sanitizer-buildbot4",
     ],
     'builddir': "sanitizer-x86_64-linux-bootstrap-ubsan",
     'factory' : SanitizerBuilder.getSanitizerBuildFactory(
         clean=True,
         extra_depends_on_projects=["mlir", "clang-tools-extra"]
+    )},
+
+    {'name' : "sanitizer-x86_64-linux-bootstrap-cfi",
+    'tags'  : ["sanitizer"],
+    'workernames' : [
+        "sanitizer-buildbot4",
+    ],
+    'builddir': "sanitizer-x86_64-linux-bootstrap-cfi",
+    'factory' : SanitizerBuilder.getSanitizerBuildFactory(
+        clean=True,
+        extra_depends_on_projects=["clang-tools-extra"]
     )},
 
     {'name' : "sanitizer-x86_64-linux-qemu",
@@ -1701,12 +1710,22 @@ all += [
     'tags'  : ["sanitizer", "aarch64"],
     'workernames' : [
         "sanitizer-buildbot9",
-        "sanitizer-buildbot10",
     ],
     'builddir': "sanitizer-aarch64-linux-bootstrap-ubsan",
     'factory' : SanitizerBuilder.getSanitizerBuildFactory(
         clean=True,
         extra_depends_on_projects=["mlir", "clang-tools-extra"]
+    )},
+
+    {'name' : "sanitizer-aarch64-linux-bootstrap-cfi",
+    'tags'  : ["sanitizer", "aarch64"],
+    'workernames' : [
+        "sanitizer-buildbot10",
+    ],
+    'builddir': "sanitizer-aarch64-linux-bootstrap-cfi",
+    'factory' : SanitizerBuilder.getSanitizerBuildFactory(
+        clean=True,
+        extra_depends_on_projects=["clang-tools-extra"]
     )},
 
     {'name' : "sanitizer-aarch64-linux-fuzzer",
@@ -1866,49 +1885,9 @@ all += [
     'tags'  : ["openmp"],
     'workernames' : ["rocm-worker-hw-02"],
     'builddir': "openmp-offload-amdgpu-runtime-2",
-    'factory' : OpenMPBuilder.getOpenMPCMakeBuildFactory(
-                        clean=True,
-                        enable_runtimes=['compiler-rt', 'libunwind', 'libc', 'libcxx', 'libcxxabi', 'openmp', 'offload'],
+    'factory' : ScriptedBuilder.getScriptedBuildFactory(
+                        "offload/ci/openmp-offload-amdgpu-libc-runtime.py",
                         depends_on_projects=['llvm','clang','lld', 'offload', 'openmp', 'compiler-rt', 'libunwind', 'libcxx', 'libcxxabi', 'libc'],
-                        extraCmakeArgs=[
-                            "-DCMAKE_BUILD_TYPE=Release",
-                            "-DCLANG_DEFAULT_LINKER=lld",
-                            "-DLLVM_TARGETS_TO_BUILD=X86;AMDGPU",
-                            "-DLLVM_ENABLE_ASSERTIONS=ON",
-                            "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
-                            "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
-                            "-DLIBCXX_ENABLE_SHARED=OFF",
-                            "-DLIBCXX_ENABLE_STATIC=ON",
-                            "-DLIBCXX_INSTALL_LIBRARY=OFF",
-                            "-DLIBCXX_INSTALL_HEADERS=OFF",
-                            "-DLIBCXXABI_ENABLE_SHARED=OFF",
-                            "-DLIBCXXABI_ENABLE_STATIC=ON",
-                            "-DLIBCXXABI_INSTALL_STATIC_LIBRARY=OFF",
-                            "-DLLVM_ENABLE_ZLIB=ON",
-                            "-DLLVM_ENABLE_Z3_SOLVER=OFF",
-                            "-DLLVM_ENABLE_PER_TARGET_RUNTIME_DIR=ON",
-                            "-DCMAKE_CXX_STANDARD=17",
-                            "-DBUILD_SHARED_LIBS=ON",
-                            "-DLLVM_ENABLE_LIBCXX=ON",
-                            "-DCLANG_DEFAULT_RTLIB=compiler-rt",
-                            "-DCLANG_DEFAULT_UNWINDLIB=libgcc",
-                            "-DLIBOMPTARGET_PLUGINS_TO_BUILD=amdgpu;host",
-                            "-DRUNTIMES_amdgcn-amd-amdhsa_LLVM_ENABLE_RUNTIMES=libc",
-                            "-DLLVM_RUNTIME_TARGETS=default;amdgcn-amd-amdhsa",
-                            "-DRUNTIMES_amdgcn-amd-amdhsa_LIBC_GPU_TEST_JOBS=4",
-                            ],
-                        env={
-                            'HSA_ENABLE_SDMA':'0',
-                            },
-                        install=True,
-                        testsuite=False,
-                        testsuite_sollvevv=False,
-                        extraTestsuiteCmakeArgs=[
-                            "-DTEST_SUITE_SOLLVEVV_OFFLOADING_CFLAGS=-fopenmp-targets=amdgcn-amd-amdhsa;-Xopenmp-target=amdgcn-amd-amdhsa",
-                            "-DTEST_SUITE_SOLLVEVV_OFFLOADING_LDLAGS=-fopenmp-targets=amdgcn-amd-amdhsa;-Xopenmp-target=amdgcn-amd-amdhsa",
-                        ],
-                        add_lit_checks=["check-clang", "check-llvm", "check-lld", "check-libc-amdgcn-amd-amdhsa"],
-                        add_openmp_lit_args=["--time-tests", "--timeout 100"],
                         )},
 
     {'name' : "amdgpu-offload-ubuntu-22-cmake-build-only",
@@ -1919,18 +1898,6 @@ all += [
     'factory' : AnnotatedBuilder.getAnnotatedBuildFactory(
                     depends_on_projects=["llvm", "clang", "flang", "flang-rt", "mlir", "lld", "compiler-rt", "libcxx", "libcxxabi", "openmp", "offload", "libunwind"],
                     script="amdgpu-offload-cmake.py",
-                    checkout_llvm_sources=True,
-                    script_interpreter=None
-                )},
-
-    # This one has a longer turn-around time, so we cannot disallow collapsing requests
-    {'name' : "hip-third-party-libs-test",
-    'tags'  : ["amdgpu", "offload", "openmp"],
-    'workernames' : ["ext_buildbot_hw_05-hip-docker"],
-    'builddir': "hip-third-party-libs-test",
-    'factory' : AnnotatedBuilder.getAnnotatedBuildFactory(
-                    depends_on_projects=['llvm', 'clang', 'compiler-rt', 'lld', 'mlir', 'flang', 'openmp', 'offload', 'flang-rt'],
-                    script="hip-tpl.py",
                     checkout_llvm_sources=True,
                     script_interpreter=None
                 )},
@@ -2039,11 +2006,18 @@ all += [
     'tags'  : ["amdgpu", "offload", "openmp"],
     'workernames' : ["AMD-bb-w-03"],
     'builddir': "amdgpu-hip-tpl",
-    'factory' : AnnotatedBuilder.getAnnotatedBuildFactory(
+    'factory' : ScriptedBuilder.getScriptedBuildFactory(
+                    "offload/ci/hip-tpl.py",
                     depends_on_projects=['llvm', 'clang', 'compiler-rt', 'lld', 'mlir', 'flang', 'openmp', 'offload', 'flang-rt'],
-                    script="hip-tpl.py",
-                    checkout_llvm_sources=True,
-                    script_interpreter=None
+                )},
+
+    {'name' : "amdgpu-clang-flang",
+    'tags'  : ["openmp,flang"],
+    'workernames' : ["AMD-bb-w-05"],
+    'builddir': "amdgpu-clang-flang",
+    'factory' : ScriptedBuilder.getScriptedBuildFactory(
+                    "offload/ci/openmp-offload-amdgpu-clang-flang.py",
+                    depends_on_projects=['llvm','clang','lld', 'offload', 'openmp', 'mlir', 'flang', 'flang-rt', 'compiler-rt'],
                 )},
 
 # SYCL GPU builders.
@@ -2693,6 +2667,7 @@ all += [
                         "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
                         "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
+                        "-DLLVM_IR2VEC_ENABLE_PYTHON_BINDINGS=ON",
                         "-DTENSORFLOW_C_LIB_PATH=/tmp/tensorflow",
                         "-C", "/tmp/tflitebuild/tflite.cmake",
                         "-DCMAKE_INSTALL_RPATH_USE_LINK_PATH=ON"
@@ -2712,6 +2687,7 @@ all += [
                         "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
                         "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
+                        "-DLLVM_IR2VEC_ENABLE_PYTHON_BINDINGS=ON",
                         "-DTENSORFLOW_C_LIB_PATH=/tmp/tensorflow",
                         "-C", "/tmp/tflitebuild/tflite.cmake",
                         "-DTENSORFLOW_AOT_PATH=/var/lib/buildbot/.local/lib/python3.7/site-packages/tensorflow",
@@ -2735,6 +2711,7 @@ all += [
                         "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
                         "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
+                        "-DLLVM_IR2VEC_ENABLE_PYTHON_BINDINGS=ON",
                         "-DTENSORFLOW_AOT_PATH=/var/lib/buildbot/.local/lib/python3.7/site-packages/tensorflow"
                     ])},
 
@@ -2935,6 +2912,9 @@ all += [
                     extra_configure_args=[
                         "-DCMAKE_C_COMPILER=gcc",
                         "-DCMAKE_CXX_COMPILER=g++",
+                        # Neoverse V1 does not need Cortex-A53 erratum veneers.
+                        "-DCMAKE_C_FLAGS=-mno-fix-cortex-a53-843419",
+                        "-DCMAKE_CXX_FLAGS=-mno-fix-cortex-a53-843419",
                         "-DLLVM_APPEND_VC_REV=OFF",
                         "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
                         "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
@@ -3514,7 +3494,6 @@ all += [
                         "LIBCXX_ABI_VERSION"            : "1",
                         "LLVM_INSTALL_TOOLCHAIN_ONLY"   : "OFF",
 
-                        "LLDB_TEST_ARCH"                : "aarch64",
                         "LLDB_TEST_COMPILER"            : util.Interpolate("%(prop:builddir)s/build/bin/clang"),
                         "LLDB_TEST_PLATFORM_URL"        : util.Interpolate("connect://%(prop:remote_test_host)s:1234"),
                         "LLDB_TEST_PLATFORM_WORKING_DIR": "/home/ubuntu/lldb-tests",
@@ -3653,7 +3632,6 @@ all += [
                         "LIBCXX_ABI_VERSION"            : "1",
                         "LLVM_INSTALL_TOOLCHAIN_ONLY"   : "OFF",
 
-                        "LLDB_TEST_ARCH"                : "aarch64",
                         "LLDB_TEST_PLATFORM_URL"        : util.Interpolate("connect://%(prop:remote_test_host)s:1234"),
                         "LLDB_TEST_PLATFORM_WORKING_DIR": "/home/ubuntu/lldb-tests",
                         "LLDB_TEST_SYSROOT:PATH"        : util.Interpolate("%(prop:sysroots)s/aarch64-linux-gnu"),
@@ -3892,5 +3870,20 @@ all += [
                         )
                     ]
                 )
+        },
+        {'name': "nvhpc-flang-x86_64-linux",
+         'tags': ["flang", "x86_64", "linux"],
+         'collapseRequests': False,
+         'workernames': ["nvhpc-x86_64-worker1", "nvhpc-x86_64-worker2"],
+         'builddir': "flang-x86_64-linux",
+         'factory': UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
+             clean=True,
+             depends_on_projects=['llvm', 'mlir', 'flang', 'clang'],
+             checks=[
+                 "check-llvm",
+                 "check-mlir",
+                 "check-flang"
+             ],
+         )
         },
 ]

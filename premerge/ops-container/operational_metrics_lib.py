@@ -3,10 +3,10 @@ import datetime
 import logging
 import math
 from typing import Any, TypeAlias
+import uuid
 from google.cloud import bigquery
 import requests
 import retry
-
 
 GITHUB_GRAPHQL_API_URL = "https://api.github.com/graphql"
 
@@ -97,9 +97,8 @@ class LLVMReviewData:
 @dataclasses.dataclass
 class LLVMRepositorySnapshot:
   snapshot_timestamp_seconds: int
-  open_pull_request_count: int
-  recent_unapproved_pull_request_count: int
-  stale_unapproved_pull_request_count: int
+  open_pull_request_count_by_age: list[dict[str, int]]
+  unapproved_pull_request_count_by_age: list[dict[str, int]]
 
 
 LLVMData: TypeAlias = (
@@ -344,7 +343,10 @@ def upload_to_bigquery(
     return
 
   target_table_id = f"{bq_dataset}.{bq_table}"
-  staging_table_id = f"{target_table_id}_staging"
+
+  # Create a unique staging table ID to avoid conflict with concurrently running
+  # scripts.
+  staging_table_id = f"{target_table_id}_staging_{uuid.uuid4().hex}"
 
   records = [dataclasses.asdict(record) for record in llvm_data]
   fields = [field for field in records[0].keys()]

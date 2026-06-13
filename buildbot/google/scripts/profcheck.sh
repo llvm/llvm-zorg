@@ -1,14 +1,16 @@
 set -ex
 
+export DEBIAN_FRONTEND=noninteractive
 apt-get update
 apt-get upgrade -y
 apt-get install -y python3 python3-pip cmake ninja-build git ccache lsb-release wget software-properties-common gnupg wget
 pip3 install --break-system-packages buildbot-worker==3.11.7
 
-bash -c "$(wget -O - https://apt.llvm.org/llvm.sh)" 20
-ln -sf /usr/bin/clang-20 /usr/bin/cc
-ln -sf /usr/bin/clang++-20 /usr/bin/c++
-ln -sf /usr/bin/ld.lld-20 /usr/bin/ld
+export LLVM_MAJOR_VERSION=22
+bash -c "$(wget -O - https://apt.llvm.org/llvm.sh)" ${LLVM_MAJOR_VERSION}
+ln -sf /usr/bin/clang-${LLVM_MAJOR_VERSION} /usr/bin/cc
+ln -sf /usr/bin/clang++-${LLVM_MAJOR_VERSION} /usr/bin/c++
+ln -sf /usr/bin/ld.lld-${LLVM_MAJOR_VERSION} /usr/bin/ld
 
 rm -rf /b
 BOT_DIR=/b

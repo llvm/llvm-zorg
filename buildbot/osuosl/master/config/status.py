@@ -116,7 +116,6 @@ def getReporters():
 
         r.append(
             utils.LLVMFailGitHubLabeler(
-                debug = True,
                 token = token,
                 generators = [
                     utils.LLVMFailBuildGenerator(
@@ -336,7 +335,8 @@ def getReporters():
                 utils.LLVMDefaultBuildStatusGenerator(
                     builders = [
                         "llvm-nvptx-nvidia-ubuntu", "llvm-nvptx64-nvidia-ubuntu",
-                        "llvm-nvptx-nvidia-win", "llvm-nvptx64-nvidia-win"])
+                        "llvm-nvptx-nvidia-win", "llvm-nvptx64-nvidia-win",
+                        "flang-runtime-cuda-gcc"])
             ]),
         reporters.MailNotifier(
             fromaddr = status_email_fromaddr,
@@ -506,13 +506,15 @@ def getReporters():
                 utils.LLVMDefaultBuildStatusGenerator(
                     builders = [
                         "clang-hip-vega20",
-                        "hip-third-party-libs-test",
                         "openmp-offload-amdgpu-runtime",
                         "openmp-offload-amdgpu-runtime-2",
                         "openmp-offload-libc-amdgpu-runtime",
                         "amdgpu-offload-ubuntu-22-cmake-build-only",
                         "amdgpu-offload-build-only",
                         "openmp-offload-amdgpu-clang-flang",
+                        "amdgpu-hip-blender",
+                        "amdgpu-hip-tpl",
+                        "amdgpu-clang-flang",
                     ])
             ]),
         reporters.MailNotifier(
@@ -679,6 +681,16 @@ def getReporters():
                     ],
                 )
             ]),
+        reporters.MailNotifier(
+            fromaddr = status_email_fromaddr,
+            sendToInterestedUsers=False,
+            extraRecipients = ["llvm-presubmit-infra@google.com"],
+            generators = [
+                utils.LLVMDefaultBuildStatusGenerator(
+                    builders = [
+                        "release-noassertions-warnings"])
+            ]
+        )
     ])
 
     return r

@@ -215,9 +215,9 @@ class LLVMFailBuildGenerator(BuildStatusGenerator):
         results = build["results"]
         # Check for mode == "problem" only.
         if results == FAILURE:
-            prev_build = build["prev_build"]
+            prev_build = build.get("prev_build")
             if (
-                prev_build and prev_build["results"] == SUCCESS
+                prev_build and prev_build["results"] in [SUCCESS, WARNINGS]
             ):  # Note != FAILURE in base
                 return True
         return False
@@ -248,9 +248,10 @@ class LLVMFailBuildGenerator(BuildStatusGenerator):
                 return None
 
         changes = yield master.data.get(("builds", buildid, "changes"))
-        log.msg(
-            f"LLVMFailBuildGenerator.generate(buildid={buildid}): INFO: changes={changes}"
-        )
+
+        # This logging generates a massive log lines (up to 100Kb each) that are not required during the regular usage.
+        # Uncomment for the debug purposes when necessary.
+        # log.msg(f"LLVMFailBuildGenerator.generate(buildid={buildid}): INFO: changes={changes}")
 
         len_changes = len(changes)
         if len_changes < 1:
@@ -289,7 +290,7 @@ class LLVMFailBuildGenerator(BuildStatusGenerator):
             None,
         )
 
-        #log.msg(f"LLVMFailBuildGenerator.generate(buildid={buildid}): INFO: calling  yield self.build_message build_info={build_info}")
+        # log.msg(f"LLVMFailBuildGenerator.generate(buildid={buildid}): INFO: calling  yield self.build_message build_info={build_info}")
         report = yield self.build_message(self.formatter, master, reporter, build_info)
         # log.msg(f"LLVMFailBuildGenerator.generate(buildid={buildid}): INFO: report={report}")
         return report
@@ -299,11 +300,14 @@ class LLVMFailGitHubReporter(GitHubCommentPush):
     name = "LLVMFailGitHubReporter"
 
     def _extract_issue(self, props):  # override
-        log.msg(f"{self.name}._extract_issue: INFO: props={props}")
+        # This logging generates a massive log lines (up to 100Kb each) that are not required during the regular usage.
+        # Uncomment for the debug purposes when necessary.
+        # log.msg(f"{self.name}._extract_issue: INFO: props={props}")
         issue = props.getProperty("issue")
-        log.msg(f"{self.name}._extract_issue: INFO: issue={issue}")
+        # log.msg(f"{self.name}._extract_issue: INFO: issue={issue}")
         return issue
 
+    @defer.inlineCallbacks
     def is_wrong_issue(self, repo_user, repo_name, sha, issue):
         # Users could reference wrong PRs in commit messages.
         # So, to make sure we are commenting the correct one we need to check
@@ -316,6 +320,7 @@ class LLVMFailGitHubReporter(GitHubCommentPush):
             log.msg(
                 f"{self.name}.is_wrong_issue: WARNING: Skipped adding the comment for repo {repo_name}, issue is not specified."
             )
+            yield
             return wrong_issue
 
         page = 1
@@ -338,9 +343,9 @@ class LLVMFailGitHubReporter(GitHubCommentPush):
                 )
                 break
 
-            log.msg(
-                f"{self.name}.is_wrong_issue: WARNING: Got events list for PR#{issue} (page {page}): {events}."
-            )
+            # This logging generates a massive log lines (up to 100Kb each) that are not required during the regular usage.
+            # Uncomment for the debug purposes when necessary.
+            # log.msg(f"{self.name}.is_wrong_issue: INFO: Got events list for PR#{issue} (page {page}): {events}.")
 
             for event in events:
                 if event["event"] == "merged":
@@ -371,7 +376,8 @@ class LLVMFailGitHubReporter(GitHubCommentPush):
         issue=None,
         description=None,
     ):  # override
-        if self.is_wrong_issue(repo_user, repo_name, sha, issue):
+        wrong_issue = yield self.is_wrong_issue(repo_user, repo_name, sha, issue)
+        if wrong_issue:
             return None
 
         # This is the right issue to comment.
@@ -381,12 +387,10 @@ class LLVMFailGitHubReporter(GitHubCommentPush):
         url = "/".join(["/repos", repo_user, repo_name, "issues", issue, "comments"])
         log.msg(f"{self.name}.createStatus: INFO: http.post({url})")
 
-        # Use utils.LLVMFailGitHubReporter(debug=True, ...) to simulate the process.
-        if self.debug:
-            yield
-            ret = None
-        else:
-            ret = yield self._http.post(url, json=payload)
+        # Never use debug=True in GitHubStatusPush and inherited classes.
+        # It will cause unexpected exceptions inside HTTP client service.
+
+        ret = yield self._http.post(url, json=payload)
         return ret
 
 
@@ -431,7 +435,8 @@ class LLVMFailGitHubLabeler(LLVMFailGitHubReporter):
         issue=None,
         description=None,
     ):  # override
-        if self.is_wrong_issue(repo_user, repo_name, sha, issue):
+        wrong_issue = yield self.is_wrong_issue(repo_user, repo_name, sha, issue)
+        if wrong_issue:
             return None
 
         # This is the right issue to label.
@@ -446,10 +451,8 @@ class LLVMFailGitHubLabeler(LLVMFailGitHubReporter):
         url = "/".join(["/repos", repo_user, repo_name, "issues", issue, "labels"])
         log.msg(f"{self.name}.createStatus: INFO: http.post({url}), label={description}")
 
-        # Use utils.LLVMFailGitHubLabeler(debug=True, ... ) to simulate the process.
-        if self.debug:
-            yield
-            ret = None
-        else:
-            ret = yield self._http.post(url, json=payload)
+        # Never use debug=True in GitHubStatusPush and inherited classes.
+        # It will cause unexpected exceptions inside HTTP client service.
+
+        ret = yield self._http.post(url, json=payload)
         return ret

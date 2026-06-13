@@ -291,7 +291,7 @@ function build_stage2 {
   ccache -z || true
 
   local fno_sanitize_flag=
-  local cmake_options="-DLIBCXXABI_USE_LLVM_UNWINDER=OFF"
+  local cmake_options=()
 
   rm -rf "${SANITIZER_LOG_DIR}"
   mkdir -p "${SANITIZER_LOG_DIR}"
@@ -342,6 +342,42 @@ function build_stage2 {
     # FIXME: After switching to LLVM_ENABLE_RUNTIMES, vptr has infitine
     # recursion.
     fno_sanitize_flag+=" -fno-sanitize=vptr"
+  elif [ "$sanitizer_name" == "cfi" ]; then
+    export UBSAN_OPTIONS="external_symbolizer_path=${llvm_symbolizer_path}:print_stacktrace=1"
+    export UBSAN_OPTIONS+=":${san_options}"
+    llvm_use_sanitizer="Undefined"
+    fsanitize_flag="-fsanitize=cfi-icall,cfi-vcall -flto=thin -fsplit-lto-unit -fvisibility=hidden -fno-sanitize-trap=cfi -ftls-model=global-dynamic"
+
+    cmake_options+=("-DLLVM_ENABLE_LTO=Thin")
+    cmake_options+=("-DLLVM_UBSAN_FLAGS=${fsanitize_flag}")
+    cmake_options+=("-DCMAKE_REQUIRED_FLAGS=-fno-sanitize=all")
+    cmake_options+=("-DCMAKE_POSITION_INDEPENDENT_CODE=ON")
+    
+    # Avoid .so.
+    cmake_options+=("-DBUILD_SHARED_LIBS=OFF")
+    cmake_options+=("-DCLANG_LINK_CLANG_DYLIB=OFF")
+    cmake_options+=("-DLIBCXX_ENABLE_SHARED=OFF")
+    cmake_options+=("-DLIBCXXABI_ENABLE_SHARED=OFF")
+    cmake_options+=("-DLLVM_ENABLE_PIC=OFF")
+    cmake_options+=("-DLLVM_ENABLE_PLUGINS=OFF")
+    cmake_options+=("-DLLVM_EXPORT_SYMBOLS_FOR_PLUGINS=OFF")
+    cmake_options+=("-DLLVM_INCLUDE_EXAMPLES=OFF")
+    cmake_options+=("-DLLVM_LINK_LLVM_DYLIB=OFF")
+    cmake_options+=("-DLLVM_STATIC_LINK_CXX_STDLIB=ON")
+    cmake_options+=("-DLLVM_ENABLE_LIBXML2=OFF")
+
+    #cmake_options+=("-DCMAKE_CXX_ARCHIVE_CREATE='<CMAKE_AR> crsT <TARGET> <LINK_FLAGS> <OBJECTS>'")
+    #cmake_options+=("-DCMAKE_C_ARCHIVE_CREATE='<CMAKE_AR> crsT <TARGET> <LINK_FLAGS> <OBJECTS>'")
+    #cmake_options+=("-DCMAKE_CXX_ARCHIVE_APPEND='<CMAKE_AR> rsT <TARGET> <LINK_FLAGS> <OBJECTS>'")
+    #cmake_options+=("-DCMAKE_C_ARCHIVE_APPEND='<CMAKE_AR> rsT <TARGET> <LINK_FLAGS> <OBJECTS>'")
+
+    # Slow to build because of ThinLTO.
+    cmake_options+=("-DLIBCXX_INCLUDE_BENCHMARKS=OFF")
+    cmake_options+=("-DLIBCXX_INCLUDE_TESTS=OFF")
+    cmake_options+=("-DLIBCXXABI_INCLUDE_TESTS=OFF")
+
+    #cmake_options+=("-DLLVM_CCACHE_BUILD=OFF")
+    #cmake_options+=("-DLLVM_PARALLEL_LINK_JOBS=8")
   else
     echo "Unknown sanitizer!"
     exit 1
@@ -350,26 +386,27 @@ function build_stage2 {
   mkdir -p "${libcxx_build_dir}"
   cmake -B "${libcxx_build_dir}" \
     ${cmake_stage2_common_options} \
-    ${cmake_options} \
+    "${cmake_options[@]}" \
     -DCMAKE_INSTALL_PREFIX="${ROOT}/${libcxx_install_dir}" \
     -DLLVM_ENABLE_RUNTIMES='libcxx;libcxxabi' \
     -DLIBCXX_TEST_PARAMS='long_tests=False' \
     -DLIBCXX_INCLUDE_BENCHMARKS=OFF \
+    -DLIBCXXABI_USE_LLVM_UNWINDER=OFF \
     -DLLVM_USE_SANITIZER=${llvm_use_sanitizer} \
     -DCMAKE_C_FLAGS="${fsanitize_flag} ${cmake_libcxx_cflags} ${fno_sanitize_flag}" \
     -DCMAKE_CXX_FLAGS="${fsanitize_flag} ${cmake_libcxx_cflags} ${fno_sanitize_flag}" \
+    -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=lld" \
       "$LLVM/../runtimes" || build_failure
   
   run_ninja -C "${libcxx_build_dir}"
   run_ninja -C "${libcxx_build_dir}" install
 
-  local libcxx_so_path
-  libcxx_so_path="$(find "${ROOT}/${libcxx_install_dir}" -name libc++.so)"
-  test -f "${libcxx_so_path}" || build_failure
+  local libcxx_path="$(find "${ROOT}/${libcxx_install_dir}" -name libc++.a)"
+  test -f "${libcxx_path}" || build_failure
   local libcxx_runtime_path
-  libcxx_runtime_path=$(dirname "${libcxx_so_path}")
+  libcxx_runtime_path=$(dirname "${libcxx_path}")
 
-  local sanitizer_ldflags="-Wl,--rpath=${libcxx_runtime_path} -L${libcxx_runtime_path}"
+  local sanitizer_ldflags="-Wl,--rpath=${libcxx_runtime_path} -L${libcxx_runtime_path} -lc++abi -fuse-ld=lld"
   local sanitizer_cflags="-nostdinc++ -isystem ${ROOT}/${libcxx_install_dir}/include -isystem ${ROOT}/${libcxx_install_dir}/include/c++/v1 $fsanitize_flag"
 
   build_step "stage2/$sanitizer_name build"
@@ -378,14 +415,19 @@ function build_stage2 {
   sanitizer_cflags+=" $sanitizer_ldflags -w"
 
   mkdir -p "${build_dir}"
-  local cmake_stage2_clang_options="-DLLVM_ENABLE_PROJECTS='clang;lld;clang-tools-extra;mlir'"
-  if [[ "$(arch)" == "aarch64" ]] ; then
+  local projects="clang;lld"
+  if [[ "$(arch)" != "aarch64" ]] ; then
     # FIXME: clangd tests fail.
-    cmake_stage2_clang_options="-DLLVM_ENABLE_PROJECTS='clang;lld;mlir'"
+    projects+=";clang-tools-extra"
+  fi
+  if [[ "$sanitizer_name" != "cfi" ]]; then
+    # Jit.
+    projects+=";mlir"
   fi
   cmake -B "${build_dir}" \
      ${cmake_stage2_common_options} \
-     ${cmake_stage2_clang_options} \
+     "${cmake_options[@]}" \
+     "-DLLVM_ENABLE_PROJECTS=$projects" \
      -DLLVM_USE_SANITIZER=${llvm_use_sanitizer} \
      -DLLVM_ENABLE_LIBCXX=ON \
      -DCMAKE_C_FLAGS="${sanitizer_cflags}" \
@@ -426,6 +468,10 @@ function build_stage2_asan_ubsan {
   build_stage2 asan_ubsan
 }
 
+function build_stage2_cfi {
+  build_stage2 cfi
+}
+
 function check_stage1 {
   local sanitizer_name=$1
 
@@ -450,6 +496,10 @@ function check_stage1_ubsan {
 
 function check_stage1_asan_ubsan {
   check_stage1 asan_ubsan
+}
+
+function check_stage1_cfi {
+  check_stage1 cfi
 }
 
 function check_stage2 {
@@ -520,6 +570,10 @@ function check_stage2_asan_ubsan {
   LIT_FILTER_OUT="ExecutionEngine/" check_stage2 asan_ubsan
 }
 
+function check_stage2_cfi {
+  LIT_FILTER_OUT="ExecutionEngine/" check_stage2 cfi
+}
+
 function build_stage3 {
   local sanitizer_name
   sanitizer_name="${1}"
@@ -574,6 +628,10 @@ function build_stage3_ubsan {
   build_stage3 ubsan
 }
 
+function build_stage3_cfi {
+  build_stage3 cfi
+}
+
 function check_stage3 {
   local sanitizer_name=$1
   build_step "stage3/$sanitizer_name check"
@@ -603,6 +661,10 @@ function check_stage3_ubsan {
   check_stage3 ubsan
 }
 
+function check_stage3_cfi {
+  check_stage3 cfi
+}
+
 function buildbot_build() {
   [[ "${BUILDBOT_BISECT_MODE:-}" != "1" && -v BUILDBOT_BUILDERNAME ]]
 }
@@ -617,6 +679,7 @@ function build_failure() {
   for _ in 0 1 2 ; do
     echo
     echo "@@@STEP_FAILURE@@@"
+    [[ -v BUILDBOT_BUILDERNAME ]] || break
     sleep 5
   done
 
@@ -628,6 +691,7 @@ function build_exception() {
   for _ in 0 1 2 ; do
     echo
     echo "@@@STEP_EXCEPTION@@@"
+    [[ -v BUILDBOT_BUILDERNAME ]] || break
     sleep 5
   done
 
@@ -639,6 +703,7 @@ function build_warning() {
   for _ in 0 1 2 ; do
     echo
     echo "@@@STEP_WARNINGS@@@"
+    [[ -v BUILDBOT_BUILDERNAME ]] || break
     sleep 5
   done
   

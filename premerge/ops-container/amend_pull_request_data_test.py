@@ -86,24 +86,54 @@ class TestAmendPullRequestData(unittest.TestCase):
     self.assertEqual(query_parameters.name, "cutoff_age_days")
     self.assertEqual(query_parameters.value, 14)
 
-  def test_get_open_pull_requests_from_bigquery(self):
-    """Test getting open pull requests from BigQuery."""
+  def test_get_pull_requests_by_age_from_bigquery(self):
+    """Test getting pull requests grouped by age from BigQuery."""
     mock_bq_client = unittest.mock.MagicMock()
     mock_bq_query_job = unittest.mock.MagicMock()
-    mock_bq_query_job.result.return_value = [
-        self._create_mock_bq_row(1234),
-        self._create_mock_bq_row(5678),
-    ]
+
+    mock_row_1 = unittest.mock.MagicMock()
+    mock_row_1.age_in_days = 2
+    mock_row_1.pull_request_numbers = [1111, 2222]
+
+    mock_row_2 = unittest.mock.MagicMock()
+    mock_row_2.age_in_days = 5
+    mock_row_2.pull_request_numbers = [3333]
+
+    mock_bq_query_job.result.return_value = [mock_row_1, mock_row_2]
     mock_bq_client.query.return_value = mock_bq_query_job
 
-    result = amend_pull_request_data.get_open_pull_requests_from_bigquery(
-        mock_bq_client
+    result = amend_pull_request_data.get_pull_requests_by_age_from_bigquery(
+        bq_client=mock_bq_client,
+        predicate="mock_column = 'MOCK_VALUE'",
+        timestamp_column="mock_timestamp_seconds",
+        minimum_age_days=0,
+        maximum_age_days=14,
     )
+
     mock_bq_client.query.assert_called_once()
+
+    # Check query string formatting
     executed_query = mock_bq_client.query.call_args.args[0]
-    self.assertIn("SELECT pull_request_number", executed_query)
-    self.assertRegex(executed_query, r"WHERE\s+pull_request_state = 'OPEN'")
-    self.assertEqual(result, [1234, 5678])
+    self.assertIn("mock_column = 'MOCK_VALUE'", executed_query)
+    self.assertIn(
+        "TIMESTAMP_SECONDS(LLVMPull.mock_timestamp_seconds)", executed_query
+    )
+    self.assertIn("ARRAY_AGG(DISTINCT pull_request_number)", executed_query)
+
+    # Check query arguments
+    job_config = mock_bq_client.query.call_args.kwargs["job_config"]
+    query_parameters = {
+        param.name: param.value for param in job_config.query_parameters
+    }
+    self.assertEqual(query_parameters["minimum_age_days"], 0)
+    self.assertEqual(query_parameters["maximum_age_days"], 14)
+
+    # Check results
+    expected_result = {
+        2: [1111, 2222],
+        5: [3333],
+    }
+    self.assertEqual(result, expected_result)
 
   @unittest.mock.patch.object(
       operational_metrics_lib, "fetch_repository_data_from_github"
@@ -126,36 +156,6 @@ class TestAmendPullRequestData(unittest.TestCase):
     self.assertEqual(mock_fetch_repository_data_from_github.call_count, 1)
     self.assertEqual(len(call_kwargs["subqueries"]), 2)
     self.assertEqual(result, [{"number": 1234}, {"number": 5678}])
-
-  def test_get_unapproved_pull_requests_from_bigquery(self):
-    """Test getting unapproved pull requests from BigQuery."""
-    mock_bq_client = unittest.mock.MagicMock()
-    mock_bq_query_job = unittest.mock.MagicMock()
-    mock_bq_query_job.result.return_value = [
-        self._create_mock_bq_row(1234),
-        self._create_mock_bq_row(5678),
-    ]
-    mock_bq_client.query.return_value = mock_bq_query_job
-
-    result = amend_pull_request_data.get_unapproved_pull_requests_from_bigquery(
-        mock_bq_client,
-        minimum_age_days=0,
-        maximum_age_days=14,
-    )
-    job_config = mock_bq_client.query.call_args.kwargs["job_config"]
-    min_parameter, max_parameter = job_config.query_parameters
-
-    mock_bq_client.query.assert_called_once()
-    executed_query = mock_bq_client.query.call_args.args[0]
-    self.assertRegex(executed_query, r"SELECT\s+(.+.)?pull_request_number")
-    self.assertRegex(
-        executed_query, r"WHERE\s+(.+.)?pull_request_state = 'MERGED'"
-    )
-    self.assertEqual(min_parameter.name, "minimum_age_days")
-    self.assertEqual(min_parameter.value, 0)
-    self.assertEqual(max_parameter.name, "maximum_age_days")
-    self.assertEqual(max_parameter.value, 14)
-    self.assertEqual(result, [1234, 5678])
 
   @unittest.mock.patch.object(
       operational_metrics_lib, "parse_pull_request_data"

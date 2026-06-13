@@ -367,6 +367,7 @@ def get_all():
         create_worker("rocm-worker-hw-02", properties={'jobs': 64}, max_builds=1),
         create_worker("rocm-worker-hw-04-rhel-9_4", properties={'jobs': 32}, max_builds=1),
         create_worker("rocm-worker-hw-04-rhel-8_8", properties={'jobs': 32}, max_builds=1),
+        create_worker("AMD-bb-w-05", properties={'jobs': 64}, max_builds=1),
         # Containerized build-only, using llvm-project/offload/cmake/caches/AMDGPUbot.cmake
         create_worker("rocm-docker-ubu-22", properties={'jobs': 32}, max_builds=1),
         create_worker("AMD-bb-w-01", properties={'jobs': 32}, max_builds=1),
@@ -376,7 +377,6 @@ def get_all():
         create_worker("intel-sycl-gpu-01", properties={'jobs': 192}, max_builds=1),
 
         # Containerized builder for third party libraries using HIP
-        create_worker("ext_buildbot_hw_05-hip-docker", properties={'jobs': 32}, max_builds=1),
         create_worker("AMD-bb-w-03", properties={'jobs': 32}, max_builds=1),
 
         # AMD ROCm support, Ubuntu 18.04.6, AMD Ryzen @ 1.5 GHz, MI200 GPU
@@ -563,6 +563,24 @@ def get_all():
             notify_on_missing=[
                 "llvm-presubmit-infra@google.com",
                 "aidengrossman@google.com"
+            ],
+        ),
+        create_worker(
+            "nvhpc-x86_64-worker1",
+            properties={"jobs": 8},
+            max_builds=1,
+            notify_on_missing=[
+                "rglusic@nvidia.com",
+                "nvhpc-devops@nvidia.com"
+            ],
+        ),
+        create_worker(
+            "nvhpc-x86_64-worker2",
+            properties={"jobs": 8},
+            max_builds=1,
+            notify_on_missing=[
+                "rglusic@nvidia.com",
+                "nvhpc-devops@nvidia.com"
             ],
         ),
         ]

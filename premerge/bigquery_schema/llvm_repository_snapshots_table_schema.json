@@ -6,21 +6,43 @@
     "description": "Time this snapshot was taken at, as a Unix timestamp."
   },
   {
-    "name": "open_pull_request_count",
-    "type": "INTEGER",
-    "mode": "NULLABLE",
-    "description": "The number of non-stale, open pull requests at this snapshot."
+    "name": "open_pull_request_count_by_age",
+    "type": "RECORD",
+    "mode": "REPEATED",
+    "description": "Number of non-stale, open pull requests at this snapshot. Grouped by age.",
+    "fields": [
+      {
+        "name": "age_in_days",
+        "type": "INTEGER",
+        "mode": "NULLABLE",
+        "description": "The age of the pull requests, since time of creation."
+      },
+      {
+        "name": "pull_request_count",
+        "type": "INTEGER",
+        "mode": "NULLABLE",
+        "description": "The number of pull requests `age_in_days` old"
+      }
+    ]
   },
   {
-    "name": "recent_unapproved_pull_request_count",
-    "type": "INTEGER",
-    "mode": "NULLABLE",
-    "description": "The number of pull requests requiring post-commit review (merged within the last 14 days)."
-  },
-  {
-    "name": "stale_unapproved_pull_request_count",
-    "type": "INTEGER",
-    "mode": "NULLABLE",
-    "description": "The number of pull requests requiring post-commit review (merged between 14 an 180 days ago)."
+    "name": "unapproved_pull_request_count_by_age",
+    "type": "RECORD",
+    "mode": "REPEATED",
+    "description": "Number of unapproved & merged pull requests at this snapshot. Grouped by age.",
+    "fields": [
+      {
+        "name": "age_in_days",
+        "type": "INTEGER",
+        "mode": "NULLABLE",
+        "description": "The age of the pull requests, since time of merge."
+      },
+      {
+        "name": "pull_request_count",
+        "type": "INTEGER",
+        "mode": "NULLABLE",
+        "description": "The number of pull requests `age_in_days` old"
+      }
+    ]
   }
 ]

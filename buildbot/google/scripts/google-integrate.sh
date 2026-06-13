@@ -25,7 +25,7 @@ ln -sf /usr/bin/ld.lld-${LLVM_MAJOR_VERSION} /usr/bin/ld
 
 rm -rf /b
 BOT_DIR=/b
-SERVER_PORT=9994
+SERVER_PORT=9990
 WORKER_NAME="$(hostname -s)"
 WORKER_PASSWORD="$(gsutil cat gs://sanitizer-buildbot/$(hostname -s)-password)"
 
@@ -42,13 +42,10 @@ sudo -u buildbot buildbot-worker create-worker -f --allow-shutdown=signal $BOT_D
 } > $BOT_DIR/info/admin
 
 {
-  echo "To reproduce locally, use a standard CMake invocation with the latest release clang as your system compiler and the options -DLLVM_ENABLE_WERROR=ON, -DCMAKE_BUILD_TYPE=Release, and -DLLVM_ENABLE_ASSERTIONS=OFF"
-  echo "Example:"
-  echo "cmake -GNinja"
-  echo "  -DCMAKE_BUILD_TYPE=Release"
-  echo "  -DLLVM_ENABLE_ASSERTIONS=OFF"
-  echo "  -DLLVM_ENABLE_WERROR=ON"
-  echo
+  uname -a
+  echo "32 core GCP instance"
+  grep MemTotal /proc/meminfo
+  echo "-DLLVM_ENABLE_PROFCHECK=ON passed to CMake"
 } > $BOT_DIR/info/host
 
 sudo -u buildbot buildbot-worker start $BOT_DIR
