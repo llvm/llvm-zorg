@@ -87,6 +87,14 @@ cmake -G Ninja \
   -DLLVM_TARGETS_TO_BUILD="AMDGPU;X86;SPIRV" \
   -DLLVM_ENABLE_PROJECTS="clang;lld;clang-tools-extra" \
   -DLLVM_ENABLE_RUNTIMES="compiler-rt;libcxx;libcxxabi;libunwind" \
+  -DLLVM_RUNTIME_TARGETS="default;amdgcn-amd-amdhsa" \
+  -DRUNTIMES_amdgcn-amd-amdhsa_CACHE_FILES="${LLVM_ROOT}/compiler-rt/cmake/caches/AMDGPU.cmake" \
+  -DRUNTIMES_amdgcn-amd-amdhsa_LLVM_ENABLE_RUNTIMES="compiler-rt;libc" \
+  -DRUNTIMES_amdgcn-amd-amdhsa_RUNTIMES_USE_LIBC=llvm-libc \
+  -DRUNTIMES_amdgcn-amd-amdhsa_COMPILER_RT_BUILD_SANITIZERS=OFF \
+  -DRUNTIMES_amdgcn-amd-amdhsa_COMPILER_RT_INCLUDE_TESTS=OFF \
+  -DRUNTIMES_amdgcn-amd-amdhsa_LLVM_ENABLE_PER_TARGET_RUNTIME_DIR=ON \
+  -DRUNTIMES_amdgcn-amd-amdhsa_COMPILER_RT_SANITIZERS_TO_BUILD="" \
   -DCLANG_DEFAULT_LINKER=lld \
   -DLIBCXX_ENABLE_SHARED=OFF \
   -DLIBCXX_ENABLE_STATIC=ON \
