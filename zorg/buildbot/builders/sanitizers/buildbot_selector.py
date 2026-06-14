@@ -1,7 +1,6 @@
 #!/usr/bin/python
 
 import os
-import socket
 import subprocess
 import sys
 
@@ -61,15 +60,10 @@ def Main():
     builder = os.environ.get("BUILDBOT_BUILDERNAME")
     revision = os.environ.get("BUILDBOT_REVISION")
     print("builder name: %s" % (builder))
-    script = BOT_ASSIGNMENT.get(builder)
-    if 'main' not in socket.gethostname():
-        script = 'buildbot_bootstrap_cfi.sh'
-
-    if not script:
-        sys.stderr.write('ERROR - unset/invalid builder name\n')
+    cmd = [in_script_dir(BOT_ASSIGNMENT.get(builder))] + extra_args
+    if not cmd:
+        sys.stderr.write("ERROR - unset/invalid builder name\n")
         sys.exit(1)
-
-    cmd = [in_script_dir(script)] + extra_args
 
     print("%s runs: %s\n" % (builder, " ".join(cmd)))
     sys.stdout.flush()
