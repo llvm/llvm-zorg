@@ -3,6 +3,47 @@
 This document lists past issues that could be of interest if you encounter
 issues with the cluser/presubmit.
 
+## Windows Premerge Jobs are Failing on sccache startup
+
+### Date: 2025-06-05
+
+### Symptoms:
+
+It was reported that `sccache` was erroring out on startup specifically on
+Windows nodes with logs looking like the following:
+
+```
+++ sccache --zero-stats
+sccache: error: Timed out waiting for server startup. Maybe the remote service is unreachable?
+Run with SCCACHE_LOG=debug SCCACHE_NO_DAEMON=1 to get more information
+```
+
+### Investigation
+
+The investigation is largely chronicled in
+[this issue](https://github.com/llvm/llvm-project/issues/202255).
+
+There were a couple red herrings that were discovered initially, including
+issues filed against upstream `sccache` that are still open that were related
+to an earlier LLVM premerge setup.
+
+Eventually it was noted that the issue was related to the in-cluster GKE
+metadata server pods timing out on requests. It was also eventually noted
+that the outage occurred during a GKE update window, and it was later confirmed
+that a GKE upgrade occurred around the time the outage started by looking at
+the GKE cluster logs.
+
+Some release notes mentioned metadata server changes, although in a version
+farther ahead than the one that we updated to.
+
+### Solution
+
+Given the GKE cluster upgrade was the likely culprit, a roll forward of the
+GKE version was attempted. This involved updating the cluster control plane
+and then the Windows node pool of each cluster through the GKE UI. Once it
+was verified that this fixed the `us-west` cluster, the `us-central` cluster
+was then updated.
+
 ## Workflows are failing: DNS resolution of github.com fails.
 
 ### Date: 2025-01-27
