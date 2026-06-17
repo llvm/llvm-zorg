@@ -73,9 +73,9 @@ def setup_db(db_path: str) -> sqlite3.Connection:
 
         # The schema of the table does not match what we were expecting. Keep the
         # current table around just in case by renaming it and recreate the
-        # failures table using the expected schema.
+        # table using the expected schema.
         new_table_name = f"{table_name}_old_{int(time.time())}"
-        connection.execute(f"ALTER TABLE failures RENAME TO {new_table_name}")
+        connection.execute(f"ALTER TABLE {table_name} RENAME TO {new_table_name}")
         connection.commit()
 
         _create_table(table_name, connection)
