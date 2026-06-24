@@ -166,6 +166,17 @@ def call(Map config = [:]) {
                             testResults: pattern
                         ])
                     }
+
+                    if ('test' in stagesToRun && !params.SKIP_TESTS && junitPatterns && currentBuild.currentResult == 'SUCCESS') {
+                        boolean hasResults = junitPatterns.any { pattern ->
+                            findFiles(glob: pattern).length > 0
+                        }
+                        if (!hasResults) {
+                            currentBuild.result = 'FAILURE'
+                            echo "Test stage produced no JUnit results. It likely timed out or was interrupted"
+                        }
+                    }
+
                     builder.cleanupStage(buildConfig)
                 }
             }
