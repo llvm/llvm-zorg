@@ -12,9 +12,20 @@ import shutil
 import math
 import re
 from pathlib import Path
+import signal
 
 import requests
 from contextlib import contextmanager
+
+_received_sigint = False
+
+
+def _sigint_handler(signum, frame):
+    global _received_sigint
+    _received_sigint = True
+
+
+signal.signal(signal.SIGINT, _sigint_handler)
 
 BUCKET = os.environ.get("S3_BUCKET")
 
@@ -932,6 +943,8 @@ def run_cmd(working_dir, cmd, env=None, sudo=False, err_okay=False):
             subprocess.check_call(cmd)
             os.chdir(old_cwd)
         except subprocess.CalledProcessError as excpt:
+            if _received_sigint:
+                raise excpt
             if not err_okay and not ignore_errors_override:
                 raise excpt
             else:
