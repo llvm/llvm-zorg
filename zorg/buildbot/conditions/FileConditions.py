@@ -1,5 +1,4 @@
 from buildbot.process.remotecommand import RemoteCommand
-from buildbot.interfaces import WorkerTooOldError
 import stat
 
 

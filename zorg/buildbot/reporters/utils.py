@@ -177,10 +177,9 @@ class LLVMInformativeMailGenerator(BuildStatusGenerator):
         super().__init__(mode=mode, message_formatter=message_formatter, **kwargs)
 
 class LLVMDefaultBuildStatusGenerator(BuildStatusGenerator):
-    def __init__(self, mode=("failing",),
-                 subject="Build Failure: {{ buildername }}", **kwargs):
+    def __init__(self, mode=("failing",), **kwargs):
         super().__init__(mode=mode,
-                         message_formatter=MessageFormatter(subject=subject),
+                         message_formatter=MessageFormatter(subject="Build Failure: {{ buildername }}"),
                          **kwargs)
 
 
@@ -191,7 +190,6 @@ class LLVMFailBuildGenerator(BuildStatusGenerator):
         builders=None,
         schedulers=None,
         branches=None,
-        add_logs=True,
         add_patch=False,
         message_formatter=LLVMInformativeComment,
         is_message_needed_filter=None,
@@ -202,8 +200,6 @@ class LLVMFailBuildGenerator(BuildStatusGenerator):
             builders=builders,
             schedulers=schedulers,
             branches=branches,
-            subject=None,
-            add_logs=add_logs,
             add_patch=add_patch,
         )
         self.formatter = message_formatter
@@ -371,6 +367,7 @@ class LLVMFailGitHubReporter(GitHubCommentPush):
         repo_name,
         sha,
         state,
+        props=None, # 4.x
         target_url=None,
         context=None,
         issue=None,
@@ -387,10 +384,11 @@ class LLVMFailGitHubReporter(GitHubCommentPush):
         url = "/".join(["/repos", repo_user, repo_name, "issues", issue, "comments"])
         log.msg(f"{self.name}.createStatus: INFO: http.post({url})")
 
-        # Never use debug=True in GitHubStatusPush and inherited classes.
-        # It will cause unexpected exceptions inside HTTP client service.
-
-        ret = yield self._http.post(url, json=payload)
+        if props:
+            headers = yield self._get_auth_header(props) # 4.x
+            ret = yield self._http.post(url, json=payload, headers=headers)
+        else:
+            ret = yield self._http.post(url, json=payload)
         return ret
 
 
@@ -430,6 +428,7 @@ class LLVMFailGitHubLabeler(LLVMFailGitHubReporter):
         repo_name,
         sha,
         state,
+        props=None, # 4.x
         target_url=None,
         context=None,
         issue=None,
@@ -451,8 +450,9 @@ class LLVMFailGitHubLabeler(LLVMFailGitHubReporter):
         url = "/".join(["/repos", repo_user, repo_name, "issues", issue, "labels"])
         log.msg(f"{self.name}.createStatus: INFO: http.post({url}), label={description}")
 
-        # Never use debug=True in GitHubStatusPush and inherited classes.
-        # It will cause unexpected exceptions inside HTTP client service.
-
-        ret = yield self._http.post(url, json=payload)
+        if props:
+            headers = yield self._get_auth_header(props) # 4.x
+            ret = yield self._http.post(url, json=payload, headers=headers)
+        else:
+            ret = yield self._http.post(url, json=payload)
         return ret

@@ -1,5 +1,5 @@
 from buildbot.plugins import util
-from buildbot.steps.shell import SetProperty
+from buildbot.steps.shell import SetPropertyFromCommand
 from zorg.buildbot.commands.AnnotatedCommand import AnnotatedCommand
 from zorg.buildbot.process.factory import LLVMBuildFactory
 
@@ -51,7 +51,7 @@ def getAnnotatedBuildFactory(
         depends_on_projects=depends_on_projects)
 
     if clean:
-        f.addStep(SetProperty(property='clean', command='echo 1'))
+        f.addStep(SetPropertyFromCommand(property='clean', command='echo 1'))
 
     # We normally use the clean property to indicate that we want a
     # clean build, but AnnotatedCommand uses the clobber property
@@ -59,7 +59,7 @@ def getAnnotatedBuildFactory(
     # value.  This will cause AnnotatedCommand to set
     # BUILDBOT_CLOBBER=1 in the environment, which is how we
     # communicate to the script that we need a clean build.
-    f.addStep(SetProperty(
+    f.addStep(SetPropertyFromCommand(
         property='clobber',
         command='echo 1',
         doStepIf=lambda step: step.build.getProperty('clean', False)))
