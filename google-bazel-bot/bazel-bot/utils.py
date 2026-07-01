@@ -258,8 +258,15 @@ class LocalGitRepo:
             print(f"Closing unmerged PR from previous fix attempt: {open_pr.url}")
             open_pr.edit(state="closed")
 
-    def push_fix(self, commit_hash: str, create_pr: bool) -> bool:
+    def push_fix(
+        self,
+        build_data: "BuildInfo",
+        create_pr: bool | None = None,
+    ) -> bool:
         """Pushes the branch and creates a GitHub PR against it."""
+        if create_pr is None:
+            create_pr = self.can_create_pr
+        commit_hash = build_data.commit
         branch_name = self.get_branch_name(commit_hash)
         try:
             logger.info(f"Pushing branch {branch_name} to remote...")
@@ -292,7 +299,11 @@ class LocalGitRepo:
             logger.info(
                 f"Creating Pull Request for branch {branch_name} from {self.creds.gh_fork_repo_name} to {self.creds.gh_pr_repo_name}..."
             )
-            pr_body = f"This fixes {commit_hash}.\n\n"
+            buildkite_url = build_data.buildkite_url
+            pr_body = (
+                f"This fixes {commit_hash}.\n\n"
+                f"Buildkite error link: {buildkite_url}\n"
+            )
 
             pr = self.gh_pr_repo.create_pull(
                 title=f"[Bazel] Fixes {commit_hash[:7]}",
@@ -323,6 +334,13 @@ class BuildInfo:
     state: BuildState = BuildState.UNKNOWN
     failed_targets: Sequence[str] = dataclasses.field(default_factory=list)
     build_number: int | None = None
+
+    @property
+    def buildkite_url(self) -> str:
+        if self.build_number is not None:
+            return f"https://buildkite.com/llvm-project/upstream-bazel/builds/{self.build_number}"
+        return f"https://buildkite.com/llvm-project/upstream-bazel/builds?commit={self.commit}"
+
 
 
 class BuildProcessor(abc.ABC):

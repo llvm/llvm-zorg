@@ -87,7 +87,7 @@ class TestBazelBotServer(unittest.TestCase):
 
         # Test push_fix
         repo_instance.git.push.return_value = True
-        repo.push_fix("commit_hash", True)
+        repo.push_fix(utils.BuildInfo("commit_hash"), True)
         repo_instance.git.push.assert_called()
         repo.gh_pr_repo.create_pull.assert_called()
         self.assertEqual(mock_prs[0].state, "closed")
@@ -150,7 +150,7 @@ class TestBazelBotServer(unittest.TestCase):
         self.assertTrue(result)
         git_repo.create_branch_for_fix.assert_called_with("sha1")
         git_repo.commit.assert_called()
-        git_repo.push_fix.assert_called_with("sha1", True)
+        git_repo.push_fix.assert_called_with(build_info, True)
 
     @mock.patch("bazelbot_server.bazel_agent.query_agent")
     @mock.patch("bazelbot_server.asyncio.run")
@@ -333,6 +333,19 @@ class TestBazelBotServer(unittest.TestCase):
 
         # Verify get_builds_to_process was called with initial sha
         build_processor.get_builds_to_process.assert_called_with("init_sha")
+
+    def test_buildkite_url(self):
+        info_with_num = utils.BuildInfo("sha1", build_number=123)
+        self.assertEqual(
+            info_with_num.buildkite_url,
+            "https://buildkite.com/llvm-project/upstream-bazel/builds/123",
+        )
+        info_without_num = utils.BuildInfo("sha2")
+        self.assertEqual(
+            info_without_num.buildkite_url,
+            "https://buildkite.com/llvm-project/upstream-bazel/builds?commit=sha2",
+        )
+
 
 
 if __name__ == "__main__":

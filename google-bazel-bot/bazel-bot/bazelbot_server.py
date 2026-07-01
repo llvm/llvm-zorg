@@ -70,8 +70,11 @@ class BazelRepairBot:
             logger.info("Validation before publishing failed.")
             return False
 
-        self.git_repo.commit(f"[Bazel] Fix build for {build_data.commit[:7]}")
-        if not self.git_repo.push_fix(build_data.commit):
+        self.git_repo.commit(
+            f"[Bazel] Fix build for {build_data.commit[:7]}\n\n"
+            f"Buildkite error link: {build_data.buildkite_url}"
+        )
+        if not self.git_repo.push_fix(build_data):
             logger.warning("Failed to publish bant fix.")
             return False
 
@@ -135,9 +138,10 @@ class BazelRepairBot:
         # Push an empty branch to indicate that AI fix is in progress
         self.git_repo.create_branch_for_fix(build_data.commit)
         self.git_repo.commit(
-            f"AI is working on fixing build for {build_data.commit[:7]}. Check back later!"
+            f"AI is working on fixing build for {build_data.commit[:7]}. Check back later!\n\n"
+            f"Buildkite error link: {build_data.buildkite_url}"
         )
-        self.git_repo.push_fix(build_data.commit, False)
+        self.git_repo.push_fix(build_data, False)
 
         while True:
             if attempt_num == MAX_AGENT_ITERATIONS:
@@ -190,13 +194,17 @@ class BazelRepairBot:
             self.git_repo.create_branch_for_fix(build_data.commit)
             self.git_repo.commit(
                 f"AI failed to fix the build for {build_data.commit[:7]}. You "
-                "will need to fix it manually"
+                f"will need to fix it manually\n\n"
+                f"Buildkite error link: {build_data.buildkite_url}"
             )
-            self.git_repo.push_fix(build_data.commit, False)
+            self.git_repo.push_fix(build_data, False)
             return False
 
-        self.git_repo.commit(f"Fix Bazel build for {build_data.commit[:7]}")
-        if not self.git_repo.push_fix(build_data.commit, self.git_repo.can_create_pr):
+        self.git_repo.commit(
+            f"Fix Bazel build for {build_data.commit[:7]}\n\n"
+            f"Buildkite error link: {build_data.buildkite_url}"
+        )
+        if not self.git_repo.push_fix(build_data, self.git_repo.can_create_pr):
             logger.warning(
                 f"Failed to publish AI changes for commit: {build_data.commit}"
             )
