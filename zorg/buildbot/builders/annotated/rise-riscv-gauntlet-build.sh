@@ -80,7 +80,7 @@ STAGE1_BINDIR=$(pwd)/llvm-project/build/stage1/bin
 set +e
 
 # Skip a few tests that have excessive runtimes relative to the others.
-export LIT_FILTER_OUT='(SingleSource/Benchmarks/Polybench/linear-algebra/solvers/(ludcmp|lu)|MicroBenchmarks/LoopVectorization/LoopInterleavingBenchmarks)'
+export LIT_FILTER_OUT='MicroBenchmarks/LoopVectorization/LoopInterleavingBenchmarks'
 for CONF in rva20 rv32gc rva22 rva23 rv32gcv rv32gc_zve32f_zvl128b rva23-zvl1024b rva23-mrvv-vec-bits; do
   RVA23_QEMU_CPU="rv64,zba=true,zbb=true,zbc=false,zbs=true,zfhmin=true,v=true,vext_spec=v1.0,zkt=true,zvfhmin=true,zvbb=true,zvkt=true,zihintntl=true,zicond=true,zimop=true,zcmop=true,zcb=true,zfa=true,zawrs=true,rvv_ta_all_1s=true,rvv_ma_all_1s=true,rvv_vl_half_avl=true"
   SYSROOT="$(pwd)/../rvsysroot"
@@ -135,8 +135,8 @@ set(CMAKE_SYSTEM_NAME Linux)
 set(CMAKE_SYSROOT $SYSROOT)
 set(CMAKE_C_COMPILER_TARGET $TARGET)
 set(CMAKE_CXX_COMPILER_TARGET $TARGET)
-set(CMAKE_C_FLAGS_INIT "$CFLAGS -DSMALL_PROBLEM_SIZE")
-set(CMAKE_CXX_FLAGS_INIT "$CFLAGS -DSMALL_PROBLEM_SIZE")
+set(CMAKE_C_FLAGS_INIT "$CFLAGS")
+set(CMAKE_CXX_FLAGS_INIT "$CFLAGS")
 set(CMAKE_LINKER_TYPE LLD)
 set(CMAKE_C_COMPILER $STAGE1_BINDIR/clang)
 set(CMAKE_CXX_COMPILER $STAGE1_BINDIR/clang++)
