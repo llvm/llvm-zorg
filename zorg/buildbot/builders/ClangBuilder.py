@@ -2,7 +2,7 @@ import copy
 from datetime import datetime
 
 from buildbot.plugins import util
-from buildbot.steps.shell import ShellCommand, SetProperty
+from buildbot.steps.shell import ShellCommand, SetPropertyFromCommand
 from buildbot.steps.shell import WarningCountingShellCommand
 from buildbot.steps.transfer import StringDownload
 
@@ -44,7 +44,7 @@ def addGCSUploadSteps(f, package_name, install_prefix, gcs_directory, env,
             now=lambda _: datetime.utcnow().strftime(time_fmt))
 
     if gcs_url_property:
-        f.addStep(SetProperty(
+        f.addStep(SetPropertyFromCommand(
                       name="record GCS url for " + package_name,
                       command=['echo', gcs_url],
                       property=gcs_url_property))
@@ -337,7 +337,7 @@ def _getClangCMakeBuildFactory(
 
     # Set up VS environment, if appropriate.
     if vs and vs != "manual":
-        f.addStep(SetProperty(
+        f.addStep(SetPropertyFromCommand(
             command=builders_util.getVisualStudioEnvironment(vs, vs_target_arch),
             extract_fn=builders_util.extractVSEnvironment))
         assert not env, "Can't have custom builder env vars with VS"
@@ -593,7 +593,7 @@ def _getClangCMakeBuildFactory(
         # CC and CXX are needed as env for build-tools
         if vs and vs != "manual":
             # VS environment requires some extra care.
-            f.addStep(SetProperty(
+            f.addStep(SetPropertyFromCommand(
                 command=builders_util.getVisualStudioEnvironment(vs, vs_target_arch),
                 extract_fn=builders_util.extractVSEnvironment,
                 env={'CC'  : cc, 'CXX' : cxx}))

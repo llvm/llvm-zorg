@@ -1,4 +1,4 @@
-from buildbot.steps.shell import SetProperty
+from buildbot.steps.shell import SetPropertyFromCommand
 from buildbot.steps.shell import ShellCommand, WarningCountingShellCommand
 from buildbot.plugins import steps, util
 
@@ -36,7 +36,7 @@ def getLLDBCMakeBuildFactory(
 
     env = {}
     if vs and vs != 'manual':
-        f.addStep(SetProperty(
+        f.addStep(SetPropertyFromCommand(
             command=getVisualStudioEnvironment(vs, target_arch),
             extract_fn=extractVSEnvironment))
         env = Property('vs_env')
