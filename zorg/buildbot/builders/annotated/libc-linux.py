@@ -36,6 +36,15 @@ def is_arm32_builder(builder_name):
 def is_qemu_builder(builder_name):
   return 'qemu' in builder_name
 
+def is_baremetal_builder(builder_name):
+  return 'baremetal' in builder_name
+
+def is_softfp_builder(builder_name):
+  return 'softfp' in builder_name
+
+def is_hardfp_builder(builder_name):
+  return 'hardfp' in builder_name
+
 def main(argv):
     ap = argparse.ArgumentParser()
     ap.add_argument('--asan', action='store_true', default=False,
@@ -45,6 +54,7 @@ def main(argv):
     args, _ = ap.parse_known_args()
 
     source_dir = os.path.join('..', 'llvm-project')
+    script_dir = os.path.abspath(os.path.dirname(__file__))
     builder_name = os.environ.get('BUILDBOT_BUILDERNAME')
     fullbuild = is_fullbuild_builder(builder_name)
     bootstrap_build = is_bootstrap_builder(builder_name)
@@ -55,6 +65,9 @@ def main(argv):
     riscv32_build = is_riscv32_builder(builder_name)
     arm32_build = is_arm32_builder(builder_name)
     qemu_build = is_qemu_builder(builder_name)
+    baremetal_build = is_baremetal_builder(builder_name)
+    softfp_build = is_softfp_builder(builder_name)
+    hardfp_build = is_hardfp_builder(builder_name)
 
     if gcc_build:
         cc = 'gcc'
@@ -96,7 +109,7 @@ def main(argv):
             runtimes.append('compiler-rt')
         cmake_args.append('-DLLVM_ENABLE_RUNTIMES={}'.format(';'.join(runtimes)))
 
-        if fullbuild and not args.asan and not lint_build and not riscv_build:
+        if fullbuild and not args.asan and not lint_build and not riscv_build and not baremetal_build:
             cmake_args.append('-DLLVM_LIBC_INCLUDE_SCUDO=ON')
             cmake_args.append('-DCOMPILER_RT_BUILD_SCUDO_STANDALONE_WITH_LLVM_LIBC=ON')
             cmake_args.append('-DCOMPILER_RT_BUILD_GWP_ASAN=OFF')
@@ -119,7 +132,7 @@ def main(argv):
             cmake_args.append('-DCMAKE_LINKER=/usr/bin/ld.lld')
             cmake_args.append('-DLLVM_LIBC_MPFR_INSTALL_PATH={}/gmp+mpfr/'.format(os.getenv('HOME')))
 
-        if arm32_build and qemu_build:
+        if arm32_build and qemu_build and not baremetal_build:
             cmake_args.append('-DLIBC_TARGET_TRIPLE=arm-linux-gnueabihf')
             cmake_args.append('-DCMAKE_SYSROOT=/opt/sysroot-deb-armhf-stable')
             cmake_args.append('-DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabihf')
@@ -127,6 +140,52 @@ def main(argv):
             cmake_args.append('-DCMAKE_AR=/usr/bin/llvm-ar-20')
             cmake_args.append('-DCMAKE_RANLIB=/usr/bin/llvm-ranlib-20')
             cmake_args.append('-DLIBC_UNITTEST_ENV=QEMU_LD_PREFIX=/opt/sysroot-deb-armhf-stable')
+
+        if arm32_build and qemu_build and baremetal_build:
+            builtins = os.getcwd() + '/compiler-rt/lib/arm-unknown-none-eabi/libclang_rt.builtins.a;'
+            ld_script = source_dir + '/libc/test/UnitTest/llvm-libc-baremetal.ld;'
+
+            flags = ''
+            qemu_machine = ''
+            qemu_memory_map = ''
+
+            if softfp_build:
+                flags = '-Wno-error=atomic-alignment -march=armv7-m -mfloat-abi=soft -mfpu=none'
+                qemu_machine = '-M mps2-an386 -cpu cortex-m4'
+                qemu_memory_map = (
+                    '-Wl,--defsym=__boot_flash=0x00000000;'
+                    '-Wl,--defsym=__boot_flash_size=0x3000;'
+                    '-Wl,--defsym=__flash=0x21000000;'
+                    '-Wl,--defsym=__flash_size=0x600000;'
+                    '-Wl,--defsym=__ram=0x21600000;'
+                    '-Wl,--defsym=__ram_size=0xa00000;'
+                    '-Wl,--defsym=__stack_size=0x4000;'
+                )
+            elif hardfp_build:
+                flags = '-Wno-error=atomic-alignment -march=armv7-m -mfloat-abi=hard -mfpu=fpv5-d16'
+                qemu_machine = '-M mps2-an500 -cpu cortex-m7'
+                qemu_memory_map = (
+                    '-Wl,--defsym=__boot_flash=0x00000000;'
+                    '-Wl,--defsym=__boot_flash_size=0x3000;'
+                    '-Wl,--defsym=__flash=0x60000000;'
+                    '-Wl,--defsym=__flash_size=0x600000;'
+                    '-Wl,--defsym=__ram=0x60600000;'
+                    '-Wl,--defsym=__ram_size=0xa00000;'
+                    '-Wl,--defsym=__stack_size=0x4000;'
+                )
+            else:
+                util.report('softfp or hardfp must be specified for baremetal build')
+                sys.exit(1)
+
+            cmake_args.extend(['-C', os.path.join(script_dir, 'libc-arm32-baremetal.cmake')])
+            cmake_args.append('-DCMAKE_ASM_FLAGS=' + flags)
+            cmake_args.append('-DCMAKE_C_FLAGS=' + flags)
+            cmake_args.append('-DCMAKE_CXX_FLAGS=' + flags)
+
+            cmake_args.append('-DLIBC_TEST_LINK_OPTIONS_DEFAULT:LIST=-nostdlib;'
+                    + builtins + ld_script + qemu_memory_map)
+            cmake_args.append("-DLIBC_TEST_CMD=sh -c 'exec qemu-system-arm " + qemu_machine
+                    + " -monitor none -serial none -nographic -semihosting -device loader,file=${1},cpu-num=0' sh @BINARY@")
 
         if bootstrap_build:
             cmake_root = 'llvm'
@@ -142,18 +201,25 @@ def main(argv):
     with step('build libc'):
        run_command(['ninja', 'libc'])
 
-    if fullbuild:
+    if fullbuild and not baremetal_build:
        with step('build libc-startup'):
           run_command(['ninja', 'libc-startup'])
 
-    if bootstrap_build:
+    if baremetal_build:
+        with step('build builtins'):
+            run_command(['ninja', 'builtins'])
+        with step('build libc-hermetic-tests'):
+            run_command(['ninja', 'libc-hermetic-tests-build'])
+        with step('check-libc'):
+            run_command(['ninja', 'check-libc'])
+    elif bootstrap_build:
         with step('check-libc'):
             run_command(['ninja', 'check-libc'])
     else:
         with step('libc-unit-tests'):
             run_command(['ninja', 'libc-unit-tests'])
 
-    if fullbuild and not args.asan:
+    if fullbuild and not args.asan and not baremetal_build:
         if gcc_build or ('riscv' in builder_name):
             # The rest of the targets are either not yet gcc-clean or
             # not yet availabe on riscv.
