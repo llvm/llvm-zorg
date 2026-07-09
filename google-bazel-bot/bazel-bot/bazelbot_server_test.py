@@ -128,7 +128,9 @@ class TestBazelBotServer(unittest.TestCase):
         repo.gh_pr_repo.get_issues.return_value = mock_prs
 
         # Scenario 1: Push fails always, should retry 3 times and return False
-        repo_instance.git.push.side_effect = Exception("Push failed")
+        repo_instance.git.push.side_effect = utils.git.GitCommandError(
+            "git push", 1, "Push failed"
+        )
 
         result = repo.push_fix(utils.BuildInfo("commit_hash"), True)
 
@@ -144,7 +146,10 @@ class TestBazelBotServer(unittest.TestCase):
         repo_instance.git.push.side_effect = None
 
         # Scenario 2: Push fails first time, succeeds second time
-        repo_instance.git.push.side_effect = [Exception("Push failed"), None]
+        repo_instance.git.push.side_effect = [
+            utils.git.GitCommandError("git push", 1, "Push failed"),
+            None,
+        ]
 
         result = repo.push_fix(utils.BuildInfo("commit_hash"), True)
 

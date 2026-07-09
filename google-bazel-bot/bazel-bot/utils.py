@@ -279,7 +279,7 @@ class LocalGitRepo:
                 )
                 try:
                     self.repo.delete_remote(self.remote_name)
-                except Exception as e:
+                except git.GitCommandError as e:
                     logger.debug(f"Failed to delete remote (might not exist): {e}")
 
                 access_token = self.fork_github_integration.get_access_token(
@@ -324,7 +324,7 @@ class LocalGitRepo:
                 )
                 logger.info(f"Pull Request Created: {pr.html_url}")
                 return True
-            except Exception as e:
+            except (git.GitCommandError, github.GithubException) as e:
                 logger.warning(f"Attempt {attempt + 1} to push fix failed: {e}")
                 if attempt < max_retries - 1:
                     logger.info(f"Retrying in {delay} seconds...")
