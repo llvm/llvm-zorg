@@ -12,7 +12,7 @@ parser.add_argument(
 parser.add_argument("--poll_interval", type=int, help="Polling interval", default=120)
 parser.add_argument("--create_prs", action="store_true", help="Whether to create PRs.")
 parser.add_argument(
-    "--log_level", default="INFO", help="Set the logging level -- WARNING, INFO, DEBUG",
+    "--log_level", default="INFO", help="Set the logging level -- WARNING, INFO, DEBUG"
 )
 parser.add_argument(
     "--test_commits", type=str, help="File path containing commits to test."
