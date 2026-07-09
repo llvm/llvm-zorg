@@ -93,6 +93,66 @@ class TestBazelBotServer(unittest.TestCase):
         self.assertEqual(mock_prs[0].state, "closed")
         self.assertEqual(mock_prs[1].state, "closed")
 
+    @mock.patch("utils.git.Repo")
+    @mock.patch("utils.github.GithubIntegration")
+    @mock.patch("utils.github.Auth")
+    @mock.patch("os.path.exists")
+    @mock.patch("utils.time.sleep")
+    def test_local_git_repo_push_retry(
+        self, mock_sleep, mock_exists, github_mock, auth_mock, mock_repo
+    ):
+        mock_exists.return_value = False
+        creds = mock.MagicMock()
+        creds.gh_fork_repo_name = "fork/repo"
+        creds.gh_pr_repo_name = "pr/repo"
+        creds.gh_app_id = "app_id"
+        creds.gh_app_private_key = "app_private_key"
+
+        repo = utils.LocalGitRepo("/path/to/repo", creds, can_create_pr=True)
+        repo_instance = mock_repo.return_value
+
+        # Setup mocks for getting open PRs.
+        class MockPullRequest:
+            def __init__(self):
+                setattr(self, "state", "open")
+
+            def edit(self, state: str) -> None:
+                setattr(self, "state", state)
+
+            @property
+            def url(self) -> str:
+                return "PullRequestMockObjectURL"
+
+        mock_prs = [MockPullRequest()]
+        repo.gh_pr_repo.get_issues = mock.MagicMock()
+        repo.gh_pr_repo.get_issues.return_value = mock_prs
+
+        # Scenario 1: Push fails always, should retry 3 times and return False
+        repo_instance.git.push.side_effect = Exception("Push failed")
+
+        result = repo.push_fix(utils.BuildInfo("commit_hash"), True)
+
+        self.assertFalse(result)
+        self.assertEqual(repo_instance.git.push.call_count, 3)
+        self.assertEqual(mock_sleep.call_count, 2)
+        repo.gh_pr_repo.create_pull.assert_not_called()
+
+        # Reset mocks for next scenario
+        repo_instance.git.push.reset_mock()
+        mock_sleep.reset_mock()
+        repo.gh_pr_repo.create_pull.reset_mock()
+        repo_instance.git.push.side_effect = None
+
+        # Scenario 2: Push fails first time, succeeds second time
+        repo_instance.git.push.side_effect = [Exception("Push failed"), None]
+
+        result = repo.push_fix(utils.BuildInfo("commit_hash"), True)
+
+        self.assertTrue(result)
+        self.assertEqual(repo_instance.git.push.call_count, 2)
+        self.assertEqual(mock_sleep.call_count, 1)
+        repo.gh_pr_repo.create_pull.assert_called_once()
+
     def test_local_build_processor(self):
         cmd_processor = mock.MagicMock()
         git_repo = mock.MagicMock()
