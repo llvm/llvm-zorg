@@ -268,56 +268,71 @@ class LocalGitRepo:
             create_pr = self.can_create_pr
         commit_hash = build_data.commit
         branch_name = self.get_branch_name(commit_hash)
-        try:
-            logger.info(f"Pushing branch {branch_name} to remote...")
-            self.repo.delete_remote(self.remote_name)
-            access_token = self.fork_github_integration.get_access_token(
-                self.gh_fork_installation.id
-            ).token
-            self.repo.create_remote(
-                self.remote_name,
-                f"https://x-access-token:{access_token}@github.com/{self.creds.gh_fork_repo_name}.git",
-            )
-            if not self.repo.git.push(
-                "--set-upstream", self.remote_name, f"HEAD:{branch_name}", "-f"
-            ):
-                logger.error("Failed to push branch.")
-                return False
 
-            if not create_pr:
-                logger.info("PR creation disabled. Skipping PR creation.")
+        max_retries = 3
+        delay = 10
+
+        for attempt in range(max_retries):
+            try:
                 logger.info(
-                    f"Pull request can be created at: https://github.com/llvm/llvm-project/compare/main...{self.creds.gh_fork_user}:llvm-project:{branch_name}?expand=1"
+                    f"Pushing branch {branch_name} to remote (attempt {attempt + 1}/{max_retries})..."
                 )
+                try:
+                    self.repo.delete_remote(self.remote_name)
+                except git.GitCommandError as e:
+                    logger.debug(f"Failed to delete remote (might not exist): {e}")
+
+                access_token = self.fork_github_integration.get_access_token(
+                    self.gh_fork_installation.id
+                ).token
+                self.repo.create_remote(
+                    self.remote_name,
+                    f"https://x-access-token:{access_token}@github.com/{self.creds.gh_fork_repo_name}.git",
+                )
+                logger.debug(f"New remote {self.remote_name} created.")
+                self.repo.git.push(
+                    "--set-upstream", self.remote_name, f"HEAD:{branch_name}", "-f"
+                )
+
+                if not create_pr:
+                    logger.info("PR creation disabled. Skipping PR creation.")
+                    logger.info(
+                        f"Pull request can be created at: https://github.com/llvm/llvm-project/compare/main...{self.creds.gh_fork_user}:llvm-project:{branch_name}?expand=1"
+                    )
+                    return True
+
+                # Close any leftover PRs from previous fixes that were never merged.
+                self.close_existing_prs()
+
+                # This requires the Github app installation used for authentication
+                # to have pull-request:write access.
+                logger.info(
+                    f"Creating Pull Request for branch {branch_name} from {self.creds.gh_fork_repo_name} to {self.creds.gh_pr_repo_name}..."
+                )
+                buildkite_url = build_data.buildkite_url
+                pr_body = (
+                    f"This fixes {commit_hash}.\n\n"
+                    f"Buildkite error link: {buildkite_url}\n"
+                )
+
+                pr = self.gh_pr_repo.create_pull(
+                    title=f"[Bazel] Fixes {commit_hash[:7]}",
+                    body=pr_body,
+                    head=f"{self.creds.gh_fork_user}:{branch_name}",
+                    base=self.main_branch,
+                    maintainer_can_modify=False,
+                )
+                logger.info(f"Pull Request Created: {pr.html_url}")
                 return True
-
-            # Close any leftover PRs from previous fixes that were never merged.
-            self.close_existing_prs()
-
-            # This requires the Github app installation used for authentication
-            # to have pull-request:write access.
-            logger.info(
-                f"Creating Pull Request for branch {branch_name} from {self.creds.gh_fork_repo_name} to {self.creds.gh_pr_repo_name}..."
-            )
-            buildkite_url = build_data.buildkite_url
-            pr_body = (
-                f"This fixes {commit_hash}.\n\n"
-                f"Buildkite error link: {buildkite_url}\n"
-            )
-
-            pr = self.gh_pr_repo.create_pull(
-                title=f"[Bazel] Fixes {commit_hash[:7]}",
-                body=pr_body,
-                head=f"{self.creds.gh_fork_user}:{branch_name}",
-                base=self.main_branch,
-                maintainer_can_modify=False,
-            )
-            logger.info(f"Pull Request Created: {pr.html_url}")
-        except Exception as e:
-            logger.error(f"Failed to push or create PR: {e}")
-            return False
-
-        return True
+            except (git.GitCommandError, github.GithubException) as e:
+                logger.warning(f"Attempt {attempt + 1} to push fix failed: {e}")
+                if attempt < max_retries - 1:
+                    logger.info(f"Retrying in {delay} seconds...")
+                    time.sleep(delay)
+                else:
+                    logger.error("All attempts to push fix failed.")
+                    return False
+        return False
 
 
 class BuildState(enum.Enum):
@@ -340,7 +355,6 @@ class BuildInfo:
         if self.build_number is not None:
             return f"https://buildkite.com/llvm-project/upstream-bazel/builds/{self.build_number}"
         return f"https://buildkite.com/llvm-project/upstream-bazel/builds?commit={self.commit}"
-
 
 
 class BuildProcessor(abc.ABC):
