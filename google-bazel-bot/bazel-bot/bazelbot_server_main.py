@@ -1,6 +1,9 @@
 import argparse
 import logging
+import os
 import sys
+
+from google.cloud.logging.handlers import StructuredLogHandler
 
 import bazelbot_server
 import utils
@@ -12,10 +15,17 @@ parser.add_argument(
 parser.add_argument("--poll_interval", type=int, help="Polling interval", default=120)
 parser.add_argument("--create_prs", action="store_true", help="Whether to create PRs.")
 parser.add_argument(
-    "--log_level", default="INFO", help="Set the logging level -- WARNING, INFO, DEBUG"
+    "--log_level",
+    default=os.environ.get("LOG_LEVEL", "INFO"),
+    help="Set the logging level -- WARNING, INFO, DEBUG",
 )
 parser.add_argument(
     "--test_commits", type=str, help="File path containing commits to test."
+)
+parser.add_argument(
+    "--structured_logging",
+    action="store_true",
+    help="Enable structured JSON logging to stdout.",
 )
 
 logger = logging.getLogger(__name__)
@@ -39,10 +49,18 @@ def test_commits(bot, test_commits_file):
 
 if __name__ == "__main__":
     args = parser.parse_args(sys.argv[1:])
+    handlers = [logging.FileHandler("bot.log")]
+    if args.structured_logging:
+        sh = StructuredLogHandler(stream=sys.stdout)
+        sh.setFormatter(logging.Formatter("%(message)s"))
+        handlers.append(sh)
+    else:
+        handlers.append(logging.StreamHandler())
+
     logging.basicConfig(
         level=getattr(logging, args.log_level.upper(), logging.INFO),
         format="%(asctime)s - %(filename)s:%(lineno)d - %(levelname)s - %(message)s",
-        handlers=[logging.FileHandler("bot.log"), logging.StreamHandler()],
+        handlers=handlers,
     )
     creds_manager = utils.CredentialManager()
     cmd_processor = utils.CommandProcessor(args.llvm_git_repo)

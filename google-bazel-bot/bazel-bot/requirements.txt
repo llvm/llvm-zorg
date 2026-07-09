@@ -4,3 +4,4 @@ GitPython==3.1.46
 schedule==1.2.2
 google-adk==1.28.0
 mypy==1.19.1
+google-cloud-logging==3.16.1
