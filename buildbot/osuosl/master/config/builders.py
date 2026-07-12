@@ -1083,12 +1083,12 @@ all = [
                         "-DLLVM_ENABLE_WERROR=OFF"])},
 
     {'name': "llvm-clang-x86_64-darwin",
-    'tags'  : ["llvm", "clang", "clang-tools-extra", "lld", "cross-project-tests"],
+    'tags'  : ["llvm", "clang", "clang-tools-extra", "lld"],
     'workernames': ["doug-worker-3"],
     'builddir': "x86_64-darwin",
     'factory': UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                     clean=True,
-                    depends_on_projects=['llvm','clang','clang-tools-extra','lld','cross-project-tests'],
+                    depends_on_projects=['llvm','clang','clang-tools-extra','lld'],
                     extra_configure_args=[
                         "-DCMAKE_C_COMPILER=clang",
                         "-DCMAKE_CXX_COMPILER=clang++",
