@@ -100,6 +100,8 @@ build_step "Info"
   free -h
   echo
   hostname -f
+  echo
+  ping -c 1 $(hostname)
 )
 
 function cmake() {
