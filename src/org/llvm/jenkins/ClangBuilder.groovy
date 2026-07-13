@@ -197,6 +197,19 @@ class ClangBuilder implements Serializable {
         return cmd
     }
 
+    // Locates the llvm-lit binary within the build tree. Most 'cmake' build_type jobs
+    // install straight into clang-build/, but 'clang' build_type jobs (e.g. thinlto)
+    // build under a nested clang-build/Build/ directory instead.
+    def findLitBinary() {
+        def candidates = ['./clang-build/bin/llvm-lit', './clang-build/Build/bin/llvm-lit']
+        def found = candidates.find { path -> script.fileExists(path) }
+        if (!found) {
+            script.error("llvm-lit not found in any of: ${candidates.join(', ')}")
+        }
+        script.echo "Resolved llvm-lit binary: ${found}"
+        return found
+    }
+
     def testStage(config = [:]) {
         def testCommand = config.test_command ?: "cmake"
         def testType = config.test_type ?: "testlong"
@@ -232,6 +245,7 @@ class ClangBuilder implements Serializable {
         if (script.params.IS_BISECT_JOB && script.params.LIT_TEST_FILTER) {
             def litFilter = script.params.LIT_TEST_FILTER
             def repeatCount = (script.params.TEST_REPEAT_COUNT ?: '3').toInteger()
+            def litBinary = customScript ? null : findLitBinary()
             script.echo "Bisection LIT filter mode: '${litFilter}' × ${repeatCount} run(s)"
             script.withEnv(envList) {
                 script.timeout(timeout) {
@@ -251,7 +265,7 @@ class ClangBuilder implements Serializable {
                                 set +e
                                 source ./venv/bin/activate
                                 ${shellExportsStr}
-                                python ./clang-build/bin/llvm-lit -v ./${litFilter}
+                                python ${litBinary} -v ./${litFilter}
                             """
                         }
                         def exitCode = script.sh(script: runScript, returnStatus: true)
