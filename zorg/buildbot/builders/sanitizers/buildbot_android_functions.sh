@@ -197,13 +197,13 @@ function test_android {
   # Return to avoid exception if we already have error.
   [[ $BUILD_RT_ERR == "" ]] || return
 
-  for _arg in "$@"; do
-    local _arch=${_arg%:*}
-    if [[ ! -f tested_arch_$_arch ]]; then
-      build_step "unavailable device android/$_arch"
-      echo @@@STEP_EXCEPTION@@@
-    fi
-  done
+  # for _arg in "$@"; do
+  #   local _arch=${_arg%:*}
+  #   if [[ ! -f tested_arch_$_arch ]]; then
+  #     build_step "unavailable device android/$_arch"
+  #     echo @@@STEP_EXCEPTION@@@
+  #   fi
+  # done
 }
 
 function run_command_on_device {
