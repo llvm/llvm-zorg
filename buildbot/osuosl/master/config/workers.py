@@ -31,7 +31,6 @@ def get_all():
         create_worker("linaro-flang-aarch64-dylib", max_builds=1),
         create_worker("linaro-flang-aarch64-sharedlibs", max_builds=1),
         create_worker("linaro-flang-aarch64-out-of-tree", max_builds=1),
-        create_worker("linaro-flang-aarch64-debug-reverse-iteration", max_builds=1),
         create_worker("linaro-flang-aarch64-libcxx", max_builds=1),
         create_worker("linaro-flang-aarch64-release", max_builds=1),
         create_worker("linaro-flang-aarch64-rel-assert", max_builds=1),
