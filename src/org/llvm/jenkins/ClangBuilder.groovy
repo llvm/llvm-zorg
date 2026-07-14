@@ -210,6 +210,35 @@ class ClangBuilder implements Serializable {
         return found
     }
 
+    // Re-anchors a workspace-relative LIT_TEST_FILTER (e.g.
+    // llvm-project/compiler-rt/test/asan/TestCases/Darwin/foo.cpp) onto the build tree.
+    //
+    // lit never copies test sources into the build tree only generated
+    // lit.site.cfg.py files land there.
+    //
+    // Returns one resolved path per matching config directory, since a single test
+    // can have more than one valid build config (e.g. multiple target architectures).
+    def resolveTestPaths(litFilter) {
+        def relPath = litFilter.replaceFirst(/^[^\/]+\//, '')
+        def parts = relPath.split('/') as List
+
+        // Walk up the tree looking for lit.site.cfg.py
+        for (int i = parts.size() - 1; i >= 1; i--) {
+            def ancestor = parts[0..<i].join('/')
+            def matches = script.findFiles(glob: "clang-build/**/${ancestor}/**/lit.site.cfg.py")
+            if (matches.size() > 0) {
+                // We found the lit config so construct the full file name
+                def tail = parts[i..-1].join('/')
+                def configDirs = matches.collect { it.path.substring(0, it.path.lastIndexOf('/')) }.unique().sort()
+                script.echo "Resolved '${litFilter}' -> ${configDirs.size()} build config(s) at '${ancestor}': ${configDirs.join(', ')}"
+                return configDirs.collect { "${it}/${tail}" }
+            }
+        }
+
+        script.echo "No generated lit.site.cfg.py found in build tree for '${litFilter}'; running as-is"
+        return [litFilter]
+    }
+
     def testStage(config = [:]) {
         def testCommand = config.test_command ?: "cmake"
         def testType = config.test_type ?: "testlong"
@@ -246,6 +275,7 @@ class ClangBuilder implements Serializable {
             def litFilter = script.params.LIT_TEST_FILTER
             def repeatCount = (script.params.TEST_REPEAT_COUNT ?: '3').toInteger()
             def litBinary = customScript ? null : findLitBinary()
+            def resolvedPaths = customScript ? null : resolveTestPaths(litFilter)
             script.echo "Bisection LIT filter mode: '${litFilter}' × ${repeatCount} run(s)"
             script.withEnv(envList) {
                 script.timeout(timeout) {
@@ -261,11 +291,12 @@ class ClangBuilder implements Serializable {
                                 ${customScript}
                             """
                         } else {
+                            def litArgs = resolvedPaths.collect { "./${it}" }.join(' ')
                             runScript = """
                                 set +e
                                 source ./venv/bin/activate
                                 ${shellExportsStr}
-                                python ${litBinary} -v ./${litFilter}
+                                python ${litBinary} -v ${litArgs}
                             """
                         }
                         def exitCode = script.sh(script: runScript, returnStatus: true)
