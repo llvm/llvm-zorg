@@ -32,7 +32,7 @@ class TestBazelBotServer(unittest.TestCase):
         },
     )
     def test_credential_manager(self):
-        creds = utils.CredentialManager()
+        creds = utils.CredentialManager(use_github_app=True)
         self.assertEqual(creds.gh_fork_user, "fork_user")
         self.assertEqual(creds.gh_pr_user, "pr_user")
         self.assertEqual(creds.bk_token, "bk_token")
