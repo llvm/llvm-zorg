@@ -7,6 +7,7 @@ import re
 import subprocess
 import time
 from collections.abc import Sequence
+from typing import Tuple, Type
 
 import git
 import github
@@ -18,6 +19,43 @@ def parse_targets(error_log: str | None) -> Sequence[str]:
     if not error_log:
         return []
     return re.findall(r"\(from target (.*?)\)", error_log)
+
+
+RetryExceptions = Tuple[Type[BaseException], ...]
+
+def call_with_retry(exceptions : RetryExceptions, func, *args, **kwargs):
+    """Calls a function and retries it if it raises specified exceptions.
+
+    Args:
+        exceptions: Tuple of exceptions to catch and retry on.
+        func: The callable to run.        
+        *args: Positional arguments for func.
+        **kwargs: Keyword arguments for func.
+    """
+    MAX_RETRIES = 3
+    DELAY = 3
+    BACKOFF = 2
+
+    val_delay = DELAY
+    func_name = getattr(func, "__name__", str(func))
+    
+    if not exceptions:
+        raise ValueError("At least one exception class must be provided.")
+    
+    for attempt in range(MAX_RETRIES):
+        try:
+            return func(*args, **kwargs)
+        except exceptions as e:
+            if attempt == MAX_RETRIES - 1:
+                logger.error(f"All {MAX_RETRIES} attempts to call {func_name} failed.")
+                raise
+
+            logger.warning(
+                f"Attempt {attempt + 1} to call {func_name} failed with {e}. "
+                f"Retrying in {val_delay} seconds..."
+            )
+            time.sleep(val_delay)
+            val_delay *= BACKOFF
 
 
 @dataclasses.dataclass
@@ -222,10 +260,17 @@ class LocalGitRepo:
 
     def refresh_main_branch(self) -> str:
         """Pulls the repository locally."""
-        self.gh_fork_repo.merge_upstream(self.main_branch)
+        call_with_retry(
+            (github.GithubException,),
+            self.gh_fork_repo.merge_upstream,
+            self.main_branch,
+        )
         self.repo.git.checkout("-f", self.main_branch)
         # Force pull by fetching and resetting to overwrite local changes.
-        self.repo.remotes.origin.fetch()
+        call_with_retry(
+            (git.GitCommandError,),
+            self.repo.remotes.origin.fetch
+        )
         self.repo.git.reset("--hard", f"{self.remote_name}/{self.main_branch}")
 
         return self.repo.head.commit.hexsha
@@ -269,70 +314,83 @@ class LocalGitRepo:
         commit_hash = build_data.commit
         branch_name = self.get_branch_name(commit_hash)
 
-        max_retries = 3
-        delay = 10
+        # 1. Get access token
+        try:
+            access_token = call_with_retry(
+                (github.GithubException,),
+                self.fork_github_integration.get_access_token,
+                self.gh_fork_installation.id,
+            ).token
+        except github.GithubException as e:
+            logger.error(f"Failed to get access token: {e}")
+            return False
 
-        for attempt in range(max_retries):
-            try:
-                logger.info(
-                    f"Pushing branch {branch_name} to remote (attempt {attempt + 1}/{max_retries})..."
-                )
-                try:
-                    self.repo.delete_remote(self.remote_name)
-                except git.GitCommandError as e:
-                    logger.debug(f"Failed to delete remote (might not exist): {e}")
+        # 2. Setup Remote and Push
+        try:
+            self.repo.delete_remote(self.remote_name)
+        except git.GitCommandError as e:
+            logger.debug(f"Failed to delete remote (might not exist): {e}")
 
-                access_token = self.fork_github_integration.get_access_token(
-                    self.gh_fork_installation.id
-                ).token
-                self.repo.create_remote(
-                    self.remote_name,
-                    f"https://x-access-token:{access_token}@github.com/{self.creds.gh_fork_repo_name}.git",
-                )
-                logger.debug(f"New remote {self.remote_name} created.")
-                self.repo.git.push(
-                    "--set-upstream", self.remote_name, f"HEAD:{branch_name}", "-f"
-                )
+        self.repo.create_remote(
+            self.remote_name,
+            f"https://x-access-token:{access_token}@github.com/{self.creds.gh_fork_repo_name}.git",
+        )
+        logger.debug(f"New remote {self.remote_name} created.")
 
-                if not create_pr:
-                    logger.info("PR creation disabled. Skipping PR creation.")
-                    logger.info(
-                        f"Pull request can be created at: https://github.com/llvm/llvm-project/compare/main...{self.creds.gh_fork_user}:llvm-project:{branch_name}?expand=1"
-                    )
-                    return True
+        # 3. Push fixes to the branch
+        try:
+            call_with_retry(
+                (git.GitCommandError,),
+                self.repo.git.push,
+                "--set-upstream",
+                self.remote_name,
+                f"HEAD:{branch_name}",
+                "-f",
+            )
+        except git.GitCommandError as e:
+            logger.error(f"All attempts to push branch {branch_name} failed: {e}")
+            return False
 
-                # Close any leftover PRs from previous fixes that were never merged.
-                self.close_existing_prs()
+        if not create_pr:
+            logger.info("PR creation disabled. Skipping PR creation.")
+            logger.info(
+                f"Pull request can be created at: https://github.com/llvm/llvm-project/compare/main...{self.creds.gh_fork_user}:llvm-project:{branch_name}?expand=1"
+            )
+            return True
 
-                # This requires the Github app installation used for authentication
-                # to have pull-request:write access.
-                logger.info(
-                    f"Creating Pull Request for branch {branch_name} from {self.creds.gh_fork_repo_name} to {self.creds.gh_pr_repo_name}..."
-                )
-                buildkite_url = build_data.buildkite_url
-                pr_body = (
-                    f"This fixes {commit_hash}.\n\n"
-                    f"Buildkite error link: {buildkite_url}\n"
-                )
+        # 4. Close existing PRs (if any)
+        try:
+            call_with_retry(
+                (github.GithubException,),
+                self.close_existing_prs,
+            )
+        except github.GithubException as e:
+            logger.warning(f"Failed to close existing PRs: {e}. Proceeding anyway.")
 
-                pr = self.gh_pr_repo.create_pull(
-                    title=f"[Bazel] Fixes {commit_hash[:7]}",
-                    body=pr_body,
-                    head=f"{self.creds.gh_fork_user}:{branch_name}",
-                    base=self.main_branch,
-                    maintainer_can_modify=False,
-                )
-                logger.info(f"Pull Request Created: {pr.html_url}")
-                return True
-            except (git.GitCommandError, github.GithubException) as e:
-                logger.warning(f"Attempt {attempt + 1} to push fix failed: {e}")
-                if attempt < max_retries - 1:
-                    logger.info(f"Retrying in {delay} seconds...")
-                    time.sleep(delay)
-                else:
-                    logger.error("All attempts to push fix failed.")
-                    return False
-        return False
+        # 5. Create new Pull Request
+        logger.info(
+            f"Creating Pull Request for branch {branch_name} from {self.creds.gh_fork_repo_name} to {self.creds.gh_pr_repo_name}..."
+        )
+        buildkite_url = build_data.buildkite_url
+        pr_body = (
+            f"This fixes {commit_hash}.\n\n" f"Buildkite error link: {buildkite_url}\n"
+        )
+
+        try:
+            pr = call_with_retry(
+                (github.GithubException,),
+                self.gh_pr_repo.create_pull,
+                title=f"[Bazel] Fixes {commit_hash[:7]}",
+                body=pr_body,
+                head=f"{self.creds.gh_fork_user}:{branch_name}",
+                base=self.main_branch,
+                maintainer_can_modify=False,
+            )
+            logger.info(f"Pull Request Created: {pr.html_url}")
+            return True
+        except github.GithubException as e:
+            logger.error(f"All attempts to create PR failed: {e}")
+            return False
 
 
 class BuildState(enum.Enum):

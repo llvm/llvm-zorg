@@ -4,6 +4,8 @@ from unittest import mock
 
 import bazel_agent
 import bazelbot_server
+import git
+import github
 import utils
 
 
@@ -93,13 +95,13 @@ class TestBazelBotServer(unittest.TestCase):
         self.assertEqual(mock_prs[0].state, "closed")
         self.assertEqual(mock_prs[1].state, "closed")
 
-    @mock.patch("utils.git.Repo")
     @mock.patch("utils.github.GithubIntegration")
     @mock.patch("utils.github.Auth")
+    @mock.patch("utils.call_with_retry")
+    @mock.patch("utils.git.Repo")
     @mock.patch("os.path.exists")
-    @mock.patch("utils.time.sleep")
-    def test_local_git_repo_push_retry(
-        self, mock_sleep, mock_exists, github_mock, auth_mock, mock_repo
+    def test_push_fix_uses_retry(
+        self, mock_exists, mock_repo, mock_call_with_retry, mock_auth, mock_github_integration
     ):
         mock_exists.return_value = False
         creds = mock.MagicMock()
@@ -107,56 +109,87 @@ class TestBazelBotServer(unittest.TestCase):
         creds.gh_pr_repo_name = "pr/repo"
         creds.gh_app_id = "app_id"
         creds.gh_app_private_key = "app_private_key"
-
         repo = utils.LocalGitRepo("/path/to/repo", creds, can_create_pr=True)
         repo_instance = mock_repo.return_value
+        branch_name = repo.get_branch_name("commit_hash")
 
-        # Setup mocks for getting open PRs.
-        class MockPullRequest:
-            def __init__(self):
-                setattr(self, "state", "open")
+        mock_call_with_retry.side_effect = lambda exceptions, f, *args, **kwargs: f(*args, **kwargs)
 
-            def edit(self, state: str) -> None:
-                setattr(self, "state", state)
-
-            @property
-            def url(self) -> str:
-                return "PullRequestMockObjectURL"
-
-        mock_prs = [MockPullRequest()]
-        repo.gh_pr_repo.get_issues = mock.MagicMock()
-        repo.gh_pr_repo.get_issues.return_value = mock_prs
-
-        # Scenario 1: Push fails always, should retry 3 times and return False
-        repo_instance.git.push.side_effect = utils.git.GitCommandError(
-            "git push", 1, "Push failed"
-        )
-
-        result = repo.push_fix(utils.BuildInfo("commit_hash"), True)
-
-        self.assertFalse(result)
-        self.assertEqual(repo_instance.git.push.call_count, 3)
-        self.assertEqual(mock_sleep.call_count, 2)
-        repo.gh_pr_repo.create_pull.assert_not_called()
-
-        # Reset mocks for next scenario
-        repo_instance.git.push.reset_mock()
-        mock_sleep.reset_mock()
-        repo.gh_pr_repo.create_pull.reset_mock()
-        repo_instance.git.push.side_effect = None
-
-        # Scenario 2: Push fails first time, succeeds second time
-        repo_instance.git.push.side_effect = [
-            utils.git.GitCommandError("git push", 1, "Push failed"),
-            None,
-        ]
+        repo.fork_github_integration.get_access_token.return_value.token = "token"
+        repo.gh_pr_repo.get_issues.return_value = []
+        repo.gh_pr_repo.create_pull.return_value = mock.MagicMock(html_url="http://pr")
 
         result = repo.push_fix(utils.BuildInfo("commit_hash"), True)
 
         self.assertTrue(result)
-        self.assertEqual(repo_instance.git.push.call_count, 2)
-        self.assertEqual(mock_sleep.call_count, 1)
-        repo.gh_pr_repo.create_pull.assert_called_once()
+        self.assertEqual(mock_call_with_retry.call_count, 4)
+
+        # 1. get_access_token
+        call1 = mock_call_with_retry.call_args_list[0]
+        self.assertEqual(call1[0][0], (github.GithubException,))
+        self.assertEqual(call1[0][1], repo.fork_github_integration.get_access_token)
+        self.assertEqual(call1[0][2], repo.gh_fork_installation.id)
+
+        # 2. git push
+        call2 = mock_call_with_retry.call_args_list[1]
+        self.assertEqual(call2[0][0], (git.GitCommandError,))
+        self.assertEqual(call2[0][1], repo_instance.git.push)
+        self.assertEqual(
+            call2[0][2:],
+            ("--set-upstream", repo.remote_name, f"HEAD:{branch_name}", "-f"),
+        )
+
+        # 3. close_existing_prs
+        call3 = mock_call_with_retry.call_args_list[2]
+        self.assertEqual(call3[0][0], (github.GithubException,))
+        self.assertEqual(call3[0][1], repo.close_existing_prs)
+
+        # 4. create_pull
+        call4 = mock_call_with_retry.call_args_list[3]
+        self.assertEqual(call4[0][0], (github.GithubException,))
+        self.assertEqual(call4[0][1], repo.gh_pr_repo.create_pull)
+        self.assertEqual(call4[1]["base"], "main")
+        self.assertEqual(call4[1]["maintainer_can_modify"], False)
+
+
+    @mock.patch("utils.call_with_retry")
+    @mock.patch("utils.git.Repo")
+    @mock.patch("utils.github.GithubIntegration")
+    @mock.patch("utils.github.Auth")
+    @mock.patch("os.path.exists")
+    def test_refresh_main_branch_uses_retry(
+        self, mock_exists, github_mock, auth_mock, mock_repo, mock_call_with_retry
+    ):
+        mock_exists.return_value = False
+        creds = mock.MagicMock()
+        creds.gh_fork_repo_name = "fork/repo"
+        creds.gh_pr_repo_name = "pr/repo"
+        creds.gh_app_id = "app_id"
+        creds.gh_app_private_key = "app_private_key"
+        repo = utils.LocalGitRepo("/path/to/repo", creds, can_create_pr=True)
+
+        repo_instance = mock_repo.return_value
+        repo_instance.head.commit.hexsha = "new_sha"
+
+        repo.gh_fork_repo.merge_upstream.side_effect = [
+            utils.github.GithubException(504, "Gateway Timeout", {}),
+            None,
+        ]
+        repo_instance.remotes.origin.fetch.return_value = None
+
+        repo.refresh_main_branch()
+
+        self.assertEqual(mock_call_with_retry.call_count, 2)
+        
+        call1 = mock_call_with_retry.call_args_list[0]
+        self.assertEqual(call1[0][0], (github.GithubException,))
+        self.assertEqual(call1[0][1], repo.gh_fork_repo.merge_upstream)
+        self.assertEqual(call1[0][2], "main")
+        
+        call2 = mock_call_with_retry.call_args_list[1]
+        self.assertEqual(call2[0][0], (git.GitCommandError,))
+        self.assertEqual(call2[0][1], repo.repo.remotes.origin.fetch)
+        
 
     def test_local_build_processor(self):
         cmd_processor = mock.MagicMock()
@@ -410,6 +443,52 @@ class TestBazelBotServer(unittest.TestCase):
             info_without_num.buildkite_url,
             "https://buildkite.com/llvm-project/upstream-bazel/builds?commit=sha2",
         )
+
+    def test_call_with_retry_success(self):
+        mock_func = mock.MagicMock(return_value="success")
+        res = utils.call_with_retry((utils.github.GithubException,), mock_func)
+        self.assertEqual(res, "success")
+        mock_func.assert_called_once()
+
+    @mock.patch("utils.time.sleep")
+    def test_call_with_retry_fail_then_success(self, mock_sleep):
+        mock_func = mock.MagicMock(
+            side_effect=[
+                utils.github.GithubException(504, "Gateway Timeout", {}),
+                "success",
+            ]
+        )
+        res = utils.call_with_retry((utils.github.GithubException,), mock_func)
+        self.assertEqual(res, "success")
+        self.assertEqual(mock_func.call_count, 2)
+        mock_sleep.assert_called_once_with(3)
+
+    @mock.patch("utils.time.sleep")
+    def test_call_with_retry_always_fail(self, mock_sleep):
+        mock_func = mock.MagicMock(
+            side_effect=utils.github.GithubException(504, "Gateway Timeout", {})
+        )
+        with self.assertRaises(utils.github.GithubException):
+            utils.call_with_retry((utils.github.GithubException,), mock_func)
+        self.assertEqual(mock_func.call_count, 3)
+        self.assertEqual(mock_sleep.call_count, 2)
+        mock_sleep.assert_has_calls([mock.call(3), mock.call(6)])
+
+    @mock.patch("utils.time.sleep")
+    def test_call_with_retry_no_retry_on_unspecified_exception(self, mock_sleep):
+        mock_func = mock.MagicMock(
+            side_effect=ValueError("Some value error")
+        )
+        with self.assertRaises(ValueError):
+            utils.call_with_retry((utils.github.GithubException,), mock_func)
+        self.assertEqual(mock_func.call_count, 1)
+        mock_sleep.assert_not_called()
+
+    def test_call_with_retry_empty_exceptions(self):
+        mock_func = mock.MagicMock()
+        with self.assertRaises(ValueError):
+            utils.call_with_retry((), mock_func)
+        mock_func.assert_not_called()
 
 
 
