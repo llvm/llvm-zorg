@@ -101,7 +101,7 @@ build_step "Info"
   echo
   hostname -f
   echo
-  ip a | grep "inet "
+  ping -c 1 $(hostname)
 )
 
 function cmake() {
