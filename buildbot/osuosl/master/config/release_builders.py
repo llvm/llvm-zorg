@@ -134,6 +134,8 @@ all = [
                         "REMOTE_TEST_HOST"              : util.Interpolate("%(prop:remote_test_host_rel)s"),
                         "REMOTE_TEST_USER"              : util.Interpolate("%(prop:remote_test_user_rel)s"),
                         "CMAKE_CXX_FLAGS"               : "-D__OPTIMIZE__",
+                        # The precompiled headers are not supported for non-clang compilers with ccache enabled.
+                        "CMAKE_DISABLE_PRECOMPILE_HEADERS"  : "ON",
                     },
                     cmake_options = [
                         "-C", util.Interpolate("%(prop:srcdir_relative)s/clang/cmake/caches/cross-linux-toolchain.cmake"),
@@ -187,6 +189,8 @@ all = [
                         "CMAKE_CXX_FLAGS"               : "-D__OPTIMIZE__",
                         "CMAKE_C_COMPILER_LAUNCHER"     : "ccache",
                         "CMAKE_CXX_COMPILER_LAUNCHER"   : "ccache",
+                        # The precompiled headers are not supported for non-clang compilers with ccache enabled.
+                        "CMAKE_DISABLE_PRECOMPILE_HEADERS"  : "ON",
                     },
                     cmake_options = [
                         "-C", util.Interpolate("%(prop:srcdir_relative)s/clang/cmake/caches/cross-linux-toolchain.cmake"),
@@ -227,6 +231,8 @@ all = [
                     depends_on_projects=['llvm', 'lld'],
                     clean=True,
                     extra_configure_args=[
+                        # The precompiled headers are not supported for non-clang compilers with ccache enabled.
+                        "-DCMAKE_DISABLE_PRECOMPILE_HEADERS=ON",
                         "-DLLVM_CCACHE_BUILD=ON",
                         '-DLLVM_ENABLE_WERROR=OFF'],
                     env={
