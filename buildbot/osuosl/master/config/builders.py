@@ -102,6 +102,8 @@ all = [
                         "-DLLVM_ENABLE_ASSERTIONS=OFF",
                         "-DLLVM_OPTIMIZED_TABLEGEN=OFF",
                         "-DLLVM_LIT_ARGS=-v --threads=32",
+                        # The precompiled headers are not supported for non-clang compilers with ccache enabled.
+                        "-DCMAKE_DISABLE_PRECOMPILE_HEADERS=ON",
                     ],
                     env={
                         'CCACHE_DIR' : util.Interpolate("%(prop:builddir)s/ccache-db"),
@@ -265,6 +267,8 @@ all = [
                         "REMOTE_TEST_HOST"              : util.Interpolate("%(prop:remote_test_host)s"),
                         "REMOTE_TEST_USER"              : util.Interpolate("%(prop:remote_test_user)s"),
                         "CMAKE_CXX_FLAGS"               : "-D__OPTIMIZE__",
+                        # The precompiled headers are not supported for non-clang compilers with ccache enabled.
+                        "CMAKE_DISABLE_PRECOMPILE_HEADERS"  : "ON",
                     },
                     cmake_options = [
                         "-C", util.Interpolate("%(prop:srcdir_relative)s/clang/cmake/caches/cross-linux-toolchain.cmake"),
@@ -318,6 +322,8 @@ all = [
                         "CMAKE_CXX_FLAGS"               : "-D__OPTIMIZE__",
                         "CMAKE_C_COMPILER_LAUNCHER"     : "ccache",
                         "CMAKE_CXX_COMPILER_LAUNCHER"   : "ccache",
+                        # The precompiled headers are not supported for non-clang compilers with ccache enabled.
+                        "CMAKE_DISABLE_PRECOMPILE_HEADERS"  : "ON",
                     },
                     cmake_options = [
                         "-C", util.Interpolate("%(prop:srcdir_relative)s/clang/cmake/caches/cross-linux-toolchain.cmake"),
@@ -1358,6 +1364,8 @@ all = [
                         "CMAKE_CXX_COMPILER_LAUNCHER"   : "ccache",
                         "CMAKE_CXX_FLAGS"               : "-D__OPTIMIZE__",
                         "CMAKE_MSVC_RUNTIME_LIBRARY"    : "MultiThreadedDLL",
+                        # The precompiled headers are not supported for non-clang compilers with ccache enabled.
+                        "CMAKE_DISABLE_PRECOMPILE_HEADERS"  : "ON",
 
                         "LLVM_ENABLE_ASSERTIONS"        : "ON",    
                         "LLVM_INCLUDE_BENCHMARKS"       : "OFF",
@@ -1405,6 +1413,8 @@ all = [
                     depends_on_projects=['llvm', 'lld'],
                     clean=True,
                     extra_configure_args=[
+                        # The precompiled headers are not supported for non-clang compilers with ccache enabled.
+                        "-DCMAKE_DISABLE_PRECOMPILE_HEADERS=ON",
                         "-DLLVM_CCACHE_BUILD=ON",
                         '-DLLVM_ENABLE_WERROR=OFF'],
                     env={
@@ -3053,6 +3063,8 @@ all += [
                     checks=["check-llvm"],
                     extra_configure_args=[
                         "-DLLVM_CCACHE_BUILD=ON",
+                        # The precompiled headers are not supported for non-clang compilers with ccache enabled.
+                        "-DCMAKE_DISABLE_PRECOMPILE_HEADERS=ON",
                         "-DLLVM_TARGETS_TO_BUILD=X86;NVPTX",
                         "-DLLVM_DEFAULT_TARGET_TRIPLE=nvptx-nvidia-cuda",
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
@@ -3080,6 +3092,8 @@ all += [
                     checks=["check-llvm"],
                     extra_configure_args=[
                         "-DLLVM_CCACHE_BUILD=ON",
+                        # The precompiled headers are not supported for non-clang compilers with ccache enabled.
+                        "-DCMAKE_DISABLE_PRECOMPILE_HEADERS=ON",
                         "-DLLVM_TARGETS_TO_BUILD=X86;NVPTX",
                         "-DLLVM_DEFAULT_TARGET_TRIPLE=nvptx64-nvidia-cuda",
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
@@ -3107,6 +3121,8 @@ all += [
                     checks=["check-llvm"],
                     extra_configure_args=[
                         "-DLLVM_CCACHE_BUILD=ON",
+                        # The precompiled headers are not supported for non-clang compilers with ccache enabled.
+                        "-DCMAKE_DISABLE_PRECOMPILE_HEADERS=ON",
                         "-DLLVM_TARGETS_TO_BUILD=X86;NVPTX",
                         "-DLLVM_DEFAULT_TARGET_TRIPLE=nvptx-nvidia-cuda",
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
@@ -3132,6 +3148,8 @@ all += [
                     checks=["check-llvm"],
                     extra_configure_args=[
                         "-DLLVM_CCACHE_BUILD=ON",
+                        # The precompiled headers are not supported for non-clang compilers with ccache enabled.
+                        "-DCMAKE_DISABLE_PRECOMPILE_HEADERS=ON",
                         "-DLLVM_TARGETS_TO_BUILD=X86;NVPTX",
                         "-DLLVM_DEFAULT_TARGET_TRIPLE=nvptx64-nvidia-cuda",
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
@@ -3173,6 +3191,8 @@ all += [
                         "CMAKE_CUDA_COMPILER_LAUNCHER"  : "ccache",
                         "CMAKE_CXX_COMPILER_LAUNCHER"   : "ccache",
                         "CMAKE_C_COMPILER_LAUNCHER"     : "ccache",
+                        # The precompiled headers are not supported for non-clang compilers with ccache enabled.
+                        "CMAKE_DISABLE_PRECOMPILE_HEADERS" : "ON",
                         "FLANG_RT_LIBCUDACXX_PATH"      : util.Interpolate("%(prop:nv_cccl_root_path)s/libcudacxx"),
                     },
                     jobs = 64,
@@ -3473,6 +3493,8 @@ all += [
                         "CMAKE_C_COMPILER_LAUNCHER"     : "ccache",
                         "CMAKE_CXX_COMPILER_LAUNCHER"   : "ccache",
                         "CMAKE_CXX_FLAGS"               : "-D__OPTIMIZE__",
+                        # The precompiled headers are not supported for non-clang compilers with ccache enabled.
+                        "CMAKE_DISABLE_PRECOMPILE_HEADERS"  : "ON",
                         "LLVM_TARGETS_TO_BUILD"         : "AArch64",
                         #Note: needs for some LLDB tests.
                         "LLVM_TARGET_TRIPLE"            : "aarch64-unknown-linux-gnu",
@@ -3612,6 +3634,8 @@ all += [
                         "CMAKE_C_COMPILER_LAUNCHER"     : "ccache",
                         "CMAKE_CXX_COMPILER_LAUNCHER"   : "ccache",
                         "CMAKE_CXX_FLAGS"               : "-D__OPTIMIZE__",
+                        # The precompiled headers are not supported for non-clang compilers with ccache enabled.
+                        "CMAKE_DISABLE_PRECOMPILE_HEADERS"  : "ON",
                         "LLVM_TARGETS_TO_BUILD"         : "AArch64",
                         #Note: needs for some LLDB tests.
                         "LLVM_TARGET_TRIPLE"            : "aarch64-unknown-linux-gnu",
@@ -3745,6 +3769,8 @@ all += [
                         "CMAKE_C_COMPILER_LAUNCHER"         : "ccache",
                         "CMAKE_CXX_COMPILER_LAUNCHER"       : "ccache",
                         "LIBCXX_INCLUDE_BENCHMARKS"         : "OFF",
+                        # The precompiled headers are not supported for non-clang compilers with ccache enabled.
+                        "CMAKE_DISABLE_PRECOMPILE_HEADERS"  : "ON",
                     },
                     cmake_options = [
                         "-C", util.Interpolate("%(prop:srcdir_relative)s/clang/cmake/caches/cross-linux-toolchain.cmake"),
@@ -3812,6 +3838,8 @@ all += [
                         "CMAKE_C_COMPILER_LAUNCHER"         : "ccache",
                         "CMAKE_CXX_COMPILER_LAUNCHER"       : "ccache",
                         "LIBCXX_INCLUDE_BENCHMARKS"         : "OFF",
+                        # The precompiled headers are not supported for non-clang compilers with ccache enabled.
+                        "CMAKE_DISABLE_PRECOMPILE_HEADERS"  : "ON",
                     },
                     cmake_options = [
                         "-C", util.Interpolate("%(prop:srcdir_relative)s/clang/cmake/caches/cross-linux-toolchain.cmake"),
