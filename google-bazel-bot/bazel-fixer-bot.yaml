@@ -8,6 +8,7 @@ spec:
   selector:
     matchLabels:
       app: bazel-fixer-bot
+  shareProcessNamespace: true
   strategy:
     type: RollingUpdate
     rollingUpdate:
