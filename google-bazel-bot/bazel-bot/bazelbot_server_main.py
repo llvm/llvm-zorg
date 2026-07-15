@@ -62,7 +62,7 @@ if __name__ == "__main__":
         format="%(asctime)s - %(filename)s:%(lineno)d - %(levelname)s - %(message)s",
         handlers=handlers,
     )
-    creds_manager = utils.CredentialManager()
+    creds_manager = utils.CredentialManager(use_github_app=not args.test_commits)
     cmd_processor = utils.CommandProcessor(args.llvm_git_repo)
     git_repo = utils.LocalGitRepo(args.llvm_git_repo, creds_manager, args.create_prs)
     build_processor = utils.LocalBuildProcessor(cmd_processor, git_repo)
