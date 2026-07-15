@@ -218,6 +218,12 @@ class ClangBuilder implements Serializable {
     //
     // Returns one resolved path per matching config directory, since a single test
     // can have more than one valid build config (e.g. multiple target architectures).
+    // Two narrowing passes keep unrelated configs out of that list: (1) a sibling
+    // suite nested one level deeper (e.g. asan/Unit/<Config>/, a separate gtest-based
+    // suite) is only considered if there's no config directly under the matched
+    // ancestor, and (2) if the filter's tail encodes a platform (e.g.
+    // TestCases/Darwin/...), configs for other platforms (e.g. an IOSConfig variant)
+    // are dropped
     def resolveTestPaths(litFilter) {
         def relPath = litFilter.replaceFirst(/^[^\/]+\//, '')
         def parts = relPath.split('/') as List
@@ -225,14 +231,43 @@ class ClangBuilder implements Serializable {
         // Walk up the tree looking for lit.site.cfg.py
         for (int i = parts.size() - 1; i >= 1; i--) {
             def ancestor = parts[0..<i].join('/')
-            def matches = script.findFiles(glob: "clang-build/**/${ancestor}/**/lit.site.cfg.py")
-            if (matches.size() > 0) {
-                // We found the lit config so construct the full file name
-                def tail = parts[i..-1].join('/')
-                def configDirs = matches.collect { it.path.substring(0, it.path.lastIndexOf('/')) }.unique().sort()
-                script.echo "Resolved '${litFilter}' -> ${configDirs.size()} build config(s) at '${ancestor}': ${configDirs.join(', ')}"
-                return configDirs.collect { "${it}/${tail}" }
+            def tail = parts[i..-1].join('/')
+
+            // Prefer a config directly in the ancestor (clang/llvm tools); only fall
+            // back to one-level-deep variant subdirectories (compiler-rt's per-arch
+            // X86_64DarwinConfig/) if there's no direct config.
+            def direct = script.findFiles(glob: "clang-build/**/${ancestor}/lit.site.cfg.py")
+            def matches = direct.size() > 0 ? direct : script.findFiles(glob: "clang-build/**/${ancestor}/*/lit.site.cfg.py")
+            if (matches.size() == 0) {
+                continue
             }
+
+            // We found the lit config(s) so construct the full file name(s)
+            def configDirs = matches.collect { it.path.substring(0, it.path.lastIndexOf('/')) }.unique().sort()
+
+            def tailParts = tail.split('/') as List
+
+            // We see if any of the provided test path match the ones we found, for example if a user passes something
+            // like llvm-project/compiler-rt/test/dir/TestCases/Darwin/test.cpp. we would match only configs which match
+            // Darwin here as opposed to the other platform variants. Basically seeing if there's overlap in the strings
+            // to narrow down
+            def platformSegment = tailParts.find { seg ->
+                def hits = configDirs.count { dir ->
+                    def name = dir.substring(dir.lastIndexOf('/') + 1)
+                    name.toLowerCase().contains(seg.toLowerCase())
+                }
+                hits > 0 && hits < configDirs.size()
+            }
+            if (platformSegment) {
+                configDirs = configDirs.findAll { dir ->
+                    def name = dir.substring(dir.lastIndexOf('/') + 1)
+                    name.toLowerCase().contains(platformSegment.toLowerCase())
+                }
+                script.echo "Narrowed build configs by platform hint '${platformSegment}': ${configDirs.join(', ')}"
+            }
+
+            script.echo "Resolved '${litFilter}' -> ${configDirs.size()} build config(s) at '${ancestor}': ${configDirs.join(', ')}"
+            return configDirs.collect { "${it}/${tail}" }
         }
 
         script.echo "No generated lit.site.cfg.py found in build tree for '${litFilter}'; running as-is"
