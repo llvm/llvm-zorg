@@ -399,10 +399,11 @@ class LocalGitRepo:
         )
 
         try:
-            if create_pr and not self.creds.gh_pr_user_token:
-                raise EnvironmentError(
-                    "GITHUB_PR_USER_TOKEN must be set to create PR when not using GitHub App."
-                )
+            if not self.creds.use_github_app:
+                if create_pr and not self.creds.gh_pr_user_token:
+                    raise EnvironmentError(
+                        "GITHUB_PR_USER_TOKEN must be set to create PR when not using GitHub App."
+                    )                
 
             pr = call_with_retry(
                 (github.GithubException,),
