@@ -362,7 +362,6 @@ def get_all():
         # OpenMP / Offload / libc on AMDGPU
         create_worker("omp-vega20-1", properties={'jobs': 32}, max_builds=1),
         # Flang OpenMP on AMDGPU, Ubuntu 22.04.3, AMD(R) EPYC 9354 @ 2.5GHz with 512GB Memory, 1 MI210 GPU with 64GB Memory
-        create_worker("rocm-worker-hw-01", properties={'jobs': 64}, max_builds=1),
         create_worker("rocm-worker-hw-02", properties={'jobs': 64}, max_builds=1),
         create_worker("rocm-worker-hw-04-rhel-9_4", properties={'jobs': 32}, max_builds=1),
         create_worker("rocm-worker-hw-04-rhel-8_8", properties={'jobs': 32}, max_builds=1),
