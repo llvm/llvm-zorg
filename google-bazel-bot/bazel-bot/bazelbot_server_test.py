@@ -211,14 +211,18 @@ class TestBazelBotServer(unittest.TestCase):
         git_repo.repo.is_ancestor.return_value = True
         sha_new = mock.MagicMock()
         sha_new.hexsha = "sha_new"
+        sha_new.message = "[compiler-rt] [sanitizers] Add includes for symbolizer (#201929)\n\nThis commit is great."
         sha_old = mock.MagicMock()
         sha_old.hexsha = "sha_old"
+        sha_old.message = "Initial commit\n"
         git_repo.repo.iter_commits.return_value = [sha_new, sha_old]
 
         builds = lbp.get_builds_to_process("sha1")
         self.assertEqual(len(builds), 2)
         self.assertEqual(builds[0].commit, "sha_old")
+        self.assertIsNone(builds[0].pr_number)
         self.assertEqual(builds[1].commit, "sha_new")
+        self.assertEqual(builds[1].pr_number, 201929)
 
     @mock.patch("bazelbot_server.asyncio.run")
     def test_process_failure_with_ai(self, mock_asyncio_run):

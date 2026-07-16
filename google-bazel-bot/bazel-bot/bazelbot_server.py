@@ -263,11 +263,12 @@ class BazelRepairBot:
                 if not build:
                     continue
 
-                current_build = (
-                    self.get_build_info_for_commit(build.commit)
-                    if build.state == utils.BuildState.UNKNOWN
-                    else build
-                )
+                if build.state == utils.BuildState.UNKNOWN:
+                    current_build = self.get_build_info_for_commit(build.commit)
+                    if current_build:
+                        current_build.pr_number = build.pr_number
+                else:
+                    current_build = build
                 logger.info(
                     f"Processing build {current_build.commit} with state '{current_build.state}'."
                 )
