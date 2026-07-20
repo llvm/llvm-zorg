@@ -394,8 +394,10 @@ class LocalGitRepo:
             f"Creating Pull Request for branch {branch_name} from {self.creds.gh_fork_repo_name} to {self.creds.gh_pr_repo_name}..."
         )
         buildkite_url = build_data.buildkite_url
+        pr_number_suffix = f" (#{build_data.pr_number})" if build_data.pr_number else ""
         pr_body = (
-            f"This fixes {commit_hash}.\n\n" f"Buildkite error link: {buildkite_url}\n"
+            f"This fixes {commit_hash}{pr_number_suffix}.\n\n"
+            f"Buildkite error link: {buildkite_url}\n"
         )
 
         try:
@@ -435,6 +437,7 @@ class BuildInfo:
     state: BuildState = BuildState.UNKNOWN
     failed_targets: Sequence[str] = dataclasses.field(default_factory=list)
     build_number: int | None = None
+    pr_number: int | None = None
 
     @property
     def buildkite_url(self) -> str:
@@ -496,7 +499,17 @@ class LocalBuildProcessor(BuildProcessor):
         )
         builds = []
         for commit in commits:
-            builds.append(BuildInfo(commit.hexsha, BuildState.UNKNOWN, []))
+            title = commit.message.splitlines()[0].strip() if getattr(commit, "message", None) else ""
+            match = re.search(r"\(#(\d+)\)$", title)
+            pr_number = int(match.group(1)) if match else None
+            builds.append(
+                BuildInfo(
+                    commit=commit.hexsha,
+                    state=BuildState.UNKNOWN,
+                    failed_targets=[],
+                    pr_number=pr_number,
+                )
+            )
 
         builds.reverse()  # Oldest first
         return builds
