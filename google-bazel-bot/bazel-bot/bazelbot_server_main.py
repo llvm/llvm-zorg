@@ -28,6 +28,11 @@ parser.add_argument(
     action="store_true",
     help="Enable structured JSON logging to stdout.",
 )
+parser.add_argument(
+    "--disable_github_app",
+    action="store_true",
+    help="Skips GitHub app authentication and use provided tokens.",
+)
 
 logger = logging.getLogger(__name__)
 
@@ -65,7 +70,8 @@ if __name__ == "__main__":
         format="%(asctime)s - %(filename)s:%(lineno)d - %(levelname)s - %(message)s",
         handlers=handlers,
     )
-    creds_manager = utils.CredentialManager(use_github_app=not args.test_commits)
+    use_github_user_tokens = args.disable_github_app or args.test_commits
+    creds_manager = utils.CredentialManager(use_github_app=not use_github_user_tokens)
     cmd_processor = utils.CommandProcessor(args.llvm_git_repo)
     git_repo = utils.LocalGitRepo(args.llvm_git_repo, creds_manager, args.create_prs)
     build_processor = utils.LocalBuildProcessor(cmd_processor, git_repo)
