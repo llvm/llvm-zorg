@@ -1934,15 +1934,6 @@ all += [
                     script_interpreter=None
                 )},
 
-    {'name' : "openmp-offload-amdgpu-clang-flang",
-    'tags'  : ["openmp,flang"],
-    'workernames' : ["rocm-worker-hw-01"],
-    'builddir': "openmp-offload-amdgpu-clang-flang",
-    'factory' : ScriptedBuilder.getScriptedBuildFactory(
-                        "offload/ci/openmp-offload-amdgpu-clang-flang.py",
-                        depends_on_projects=['llvm','clang','lld', 'offload', 'openmp', 'mlir', 'flang', 'flang-rt', 'compiler-rt'],
-                    )},
-
     {'name' : "openmp-offload-rhel-9_4",
     'tags'  : ["openmp"],
     'workernames' : ["rocm-worker-hw-04-rhel-9_4"],
