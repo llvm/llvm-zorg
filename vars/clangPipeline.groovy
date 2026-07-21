@@ -152,32 +152,36 @@ def call(Map config = [:]) {
         post {
             always {
                 script {
-                    def crashFiles = findFiles(glob: "clang_crash_diagnostics/**")
-                    if (crashFiles.length > 0) {
-                        zip archive: true, dir: 'clang_crash_diagnostics', zipFile: 'clang_crash_diagnostics.zip'
-                    }
-
-                    def Junit = new org.swift.Junit()
-                    def junitPatterns = testConfig.junit_patterns ?: []
-
-                    junitPatterns.each { pattern ->
-                        Junit.safeJunit([
-                            allowEmptyResults: true,
-                            testResults: pattern
-                        ])
-                    }
-
-                    if ('test' in stagesToRun && !params.SKIP_TESTS && junitPatterns && currentBuild.currentResult == 'SUCCESS') {
-                        boolean hasResults = junitPatterns.any { pattern ->
-                            findFiles(glob: pattern).length > 0
+                    if (env.WORKSPACE) {
+                        def crashFiles = findFiles(glob: "clang_crash_diagnostics/**")
+                        if (crashFiles.length > 0) {
+                            zip archive: true, dir: 'clang_crash_diagnostics', zipFile: 'clang_crash_diagnostics.zip'
                         }
-                        if (!hasResults) {
-                            currentBuild.result = 'FAILURE'
-                            echo "Test stage produced no JUnit results. It likely timed out or was interrupted"
+    
+                        def Junit = new org.swift.Junit()
+                        def junitPatterns = testConfig.junit_patterns ?: []
+    
+                        junitPatterns.each { pattern ->
+                            Junit.safeJunit([
+                                allowEmptyResults: true,
+                                testResults: pattern
+                            ])
                         }
+    
+                        if ('test' in stagesToRun && !params.SKIP_TESTS && junitPatterns && currentBuild.currentResult == 'SUCCESS') {
+                            boolean hasResults = junitPatterns.any { pattern ->
+                                findFiles(glob: pattern).length > 0
+                            }
+                            if (!hasResults) {
+                                currentBuild.result = 'FAILURE'
+                                echo "Test stage produced no JUnit results. It likely timed out or was interrupted"
+                            }
+                        }
+    
+                        builder.cleanupStage(buildConfig)
+                    } else {
+                        echo "Skipping cleanup — no workspace (checkout may have failed)"
                     }
-
-                    builder.cleanupStage(buildConfig)
                 }
             }
             success {
