@@ -68,6 +68,7 @@ def main(argv):
         test_suite_cmake_args.append("-DTEST_SUITE_SUBDIRS=External")
         # Giving only this flag enables to pull the default Kokkos version.
         test_suite_cmake_args.append("-DEXTERNAL_HIP_TESTS_KOKKOS=ON")
+        test_suite_cmake_args.append("-DEXTERNAL_HIP_TESTS_GINKGO=ON")
 
         # Pick up compilers from build tree
         test_suite_cmake_args.append("-DCMAKE_CXX_COMPILER=%s" % clangpp_binary)
@@ -96,6 +97,18 @@ def main(argv):
     with step("run kokkos test suite", halt_on_fail=True):
         os.chdir(test_suite_source_dir)
         run_command(["cmake", "--build", test_suite_build_dir, "--target", "test-kokkos"])
+
+    with step("build ginkgo and test suite", halt_on_fail=True):
+        old_cwd = os.getcwd()
+        os.chdir(test_suite_source_dir)
+
+        run_command(["cmake", "--build", test_suite_build_dir, "--parallel", "--target", "build-ginkgo"])
+
+        os.chdir(old_cwd)
+
+    with step("run ginkgo test suite", halt_on_fail=True):
+        os.chdir(test_suite_source_dir)
+        run_command(["cmake", "--build", test_suite_build_dir, "--target", "test-ginkgo"])
 
 
 @contextmanager
