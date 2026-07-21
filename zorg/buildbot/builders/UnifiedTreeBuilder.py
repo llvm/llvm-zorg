@@ -13,6 +13,7 @@ from zorg.buildbot.conditions.FileConditions import FileDoesNotExist
 from zorg.buildbot.process.factory import LLVMBuildFactory
 
 import zorg.buildbot.builders.Util as builders_util
+from zorg.buildbot.process.properties import MergedEnv
 
 def getLLVMBuildFactoryAndPrepareForSourcecodeSteps(
            depends_on_projects = None,
@@ -235,13 +236,28 @@ def addNinjaSteps(
 
     if checks:
         for check in checks:
-            f.addStep(LitTestCommand(name=trunc50("test-%s-%s" % (step_name, check)),
-                                    command=['ninja', check],
+            check_target = check
+            check_env_override = None
+            check_suffix = ""
+
+            if isinstance(check, dict):
+                check_target = check.get('target')
+                check_env_override = check.get('env_override')
+                check_suffix = check.get('name_suffix', "")
+
+            check_name = check_target + check_suffix
+
+            step_env = check_env
+            if check_env_override:
+                step_env = MergedEnv(check_env, check_env_override)
+
+            f.addStep(LitTestCommand(name=trunc50("test-%s-%s" % (step_name, check_name)),
+                                    command=['ninja', check_target],
                                     description=[
                                     "Test", "just", "built", "components", "for",
-                                    check,
+                                    check_name,
                                     ],
-                                    env=check_env,
+                                    env=step_env,
                                     workdir=obj_dir,
                                     **kwargs # Pass through all the extra arguments.
                                     ))
