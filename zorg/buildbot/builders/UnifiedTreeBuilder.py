@@ -928,6 +928,8 @@ def getCmakeExBuildFactory(
             src_to_build_dir    = src_to_build_dir,
             obj_dir             = obj_dir,
             install_dir         = install_dir,
+            # mark factory as "always does clean build" if requested
+            clean               = clean,
         )
 
     f.addSteps([
