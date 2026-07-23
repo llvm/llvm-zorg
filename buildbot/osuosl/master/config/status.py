@@ -229,6 +229,14 @@ def getReporters():
         reporters.MailNotifier(
             fromaddr = status_email_fromaddr,
             sendToInterestedUsers = False,
+            extraRecipients = ["raihaan.sandhu@ibm.com"],
+            generators = [
+               utils.LLVMDefaultBuildStatusGenerator(
+                   builders = ["llvm-s390x-zos"])
+            ]),
+        reporters.MailNotifier(
+            fromaddr = status_email_fromaddr,
+            sendToInterestedUsers = False,
             extraRecipients = ["sunil_srivastava@playstation.sony.com",
                                 "warren_ristow@playstation.sony.com"],
             generators = [

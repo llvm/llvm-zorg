@@ -835,6 +835,34 @@ all = [
                         "-DLLVM_CCACHE_BUILD=ON",
                         "-DLLVM_ENABLE_ASSERTIONS=ON"])},
 
+    # z/OS s390x - IBM mainframe OS (different from Linux on s390x)
+    {'name' : "llvm-s390x-zos",
+    'collapseRequests' : False,
+    'tags'  : ["llvm", "zos", "s390x"],
+    'workernames' : ["zos-s390x-1"],
+    'builddir': "llvm-s390x-zos",
+    'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
+                    depends_on_projects=['llvm'],
+                    checks=['check-llvm'],
+                    clean=True,
+                    extra_configure_args=[
+                        '-DCMAKE_BUILD_TYPE=Release',
+                        '-DLLVM_COMPILER_CHECKED=1',
+                        '-DHAVE_CXX_ATOMICS_WITHOUT_LIB=ON',
+                        '-DHAVE_CXX_ATOMICS64_WITHOUT_LIB=ON',
+                        '-DLLVM_ENABLE_ASSERTIONS=ON',
+                        '-DLLVM_APPEND_VC_REV=OFF',
+                        '-DLLVM_TOOL_GOLD_BUILD=OFF',
+                        '-DLLVM_ENABLE_WERROR=ON',
+                        '-DCMAKE_AR=/VERSYSB/bin/ar',
+                        '-DLLVM_TARGETS_TO_BUILD=SystemZ',
+                    ],
+                    env={
+                        'CC': '/usr/lpp/IBM/cnw/v2r2/openxl/bin/ibm-clang64',
+                        'CXX': '/usr/lpp/IBM/cnw/v2r2/openxl/bin/ibm-clang++64',
+                        'TMPDIR': '/data/devuser/tmp/',
+                    })},
+
     {'name' : 'clang-sparc64-linux',
     'tags'  : ['clang'],
     'workernames' : ['debian-stadler-sparc64'],
