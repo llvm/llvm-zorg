@@ -3817,7 +3817,6 @@ all += [
                         "LLVM_LIT_ARGS"                     : "-v -vv --threads=32 --time-tests",
                         "LLVM_DEFAULT_TARGET_TRIPLE"        : "aarch64-unknown-linux-musl",
                         "TOOLCHAIN_TARGET_TRIPLE"           : "aarch64-linux-pauthtest;aarch64-linux-musl",
-                        "TOOLCHAIN_TARGET_SYSROOTFS"        : util.Interpolate("%(prop:sysroot_path_pauth)s"),
                         "TOOLCHAIN_TARGET_COMPILER_FLAGS"   : "-march=armv8l+pauth -fdebug-default-version=4 -gdwarf-4",
                         "TOOLCHAIN_TARGET_COMPILER_FLAGS-aarch64-linux-pauthtest"   : "-Xclang -fptrauth-elf-got",
                         "TOOLCHAIN_TARGET_SYSROOTFS-aarch64-linux-musl"             : util.Interpolate("%(prop:sysroots)s/aarch64-linux-musl"),
