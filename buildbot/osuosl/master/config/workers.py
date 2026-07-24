@@ -120,6 +120,9 @@ def get_all():
         # IBM z13 (s390x), Ubuntu 16.04.2
         create_worker("systemz-1", properties={'jobs': 4, 'vcs_protocol': 'https'}, max_builds=4),
 
+        # IBM z15, z/OS 3.1
+        create_worker("zos-s390x-1", properties={'jobs': 4, 'vcs_protocol': 'https'}, max_builds=1),
+
         # Windows Server 2012 x86_64 16-core GCE instance
         create_worker("sanitizer-windows", properties={'jobs': 16}, max_builds=1),
 
