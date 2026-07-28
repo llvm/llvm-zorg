@@ -2040,8 +2040,8 @@ all += [
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                     clean=True,
                     checks=['check-all','check-sycl'],
-                    enable_runtimes=['openmp', 'offload', 'libsycl'],
-                    depends_on_projects=['llvm', 'clang', 'libsycl', 'offload', 'openmp', 'lld'],
+                    enable_runtimes=['compiler-rt', 'openmp', 'offload', 'libsycl'],
+                    depends_on_projects=['llvm', 'clang', 'compiler-rt', 'libsycl', 'offload', 'openmp', 'lld'],
                     extra_configure_args=[
                         "-DLLVM_CCACHE_BUILD=ON",                        
                         "-DLLVM_TARGETS_TO_BUILD=host;SPIRV",
@@ -2051,8 +2051,10 @@ all += [
                         "-DLIBOMPTARGET_PLUGINS_TO_BUILD=level_zero",
                         "-DLIBOMPTARGET_DLOPEN_PLUGINS=level_zero",
                         "-DLIBOMPTARGET_ENABLE_DEBUG=ON",
-                        "-DLLVM_RUNTIME_TARGETS=default;spirv64-intel",
+                        "-DLLVM_RUNTIME_TARGETS=default;spirv64-intel;spirv64-unknown-unknown",
                         "-DRUNTIMES_spirv64-intel_LLVM_ENABLE_RUNTIMES=openmp",
+                        "-DRUNTIMES_spirv64-unknown-unknown_LLVM_ENABLE_RUNTIMES=compiler-rt",
+                        "-DRUNTIMES_spirv64-unknown-unknown_COMPILER_RT_INCLUDE_TESTS=OFF",
                     ])},
 
 
