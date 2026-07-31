@@ -2669,6 +2669,20 @@ all += [
                         "-DCMAKE_INSTALL_RPATH_USE_LINK_PATH=ON"
                     ])},
 
+    {
+        'name' : "ml-opt-dev-emitc-x86-64",
+        'tags'  : ['ml_opt'],
+        'collapseRequests': False,
+        'workernames' : ["ml-opt-dev-x86-64-b1", "ml-opt-dev-x86-64-b2"],
+        'builddir': "ml-opt-dev-emitc-x86-64-b1",
+        'factory': AnnotatedBuilder.getAnnotatedBuildFactory(
+            script="mlgo-emitc.sh",
+            clean=True,
+            depends_on_projects=['llvm', 'mlir', 'clang'],
+            script_interpreter=None,
+        )
+    },
+
     # Both tensorflow C library, and the pip package, are present.
     {'name' : "ml-opt-devrel-x86-64",
     'tags'  : ["ml_opt"],
