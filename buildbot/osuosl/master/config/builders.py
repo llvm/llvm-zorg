@@ -836,7 +836,7 @@ all = [
                         "-DLLVM_ENABLE_ASSERTIONS=ON"])},
 
     {'name' : "llvm-s390x-zos",
-    'collapseRequests' : False,
+    'collapseRequests' : True,
     'tags'  : ["llvm", "zos", "s390x"],
     'workernames' : ["zos-s390x-1"],
     'builddir': "llvm-s390x-zos",
