@@ -28,17 +28,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 ENTRYPOINT ["/usr/bin/dumb-init", "--"]
 
-# TODO(zeroomega): Temporarily switch back to cmake from Ubuntu to avoid
-#                  build errors on baremetal runtimes.
 # Install latest CMake release.
-# RUN curl -fsSL https://apt.kitware.com/keys/kitware-archive-latest.asc | \
-#    gpg --dearmor -o /usr/share/keyrings/kitware-archive-keyring.gpg && \
-#    echo "deb [signed-by=/usr/share/keyrings/kitware-archive-keyring.gpg] https://apt.kitware.com/ubuntu/ jammy main" | \
-#    tee /etc/apt/sources.list.d/kitware.list && \
-#    apt-get update && apt-get install -y --no-install-recommends cmake && \
-#    rm -rf /var/lib/apt/lists/*
+RUN curl -fsSL https://apt.kitware.com/keys/kitware-archive-latest.asc | \
+    gpg --dearmor -o /usr/share/keyrings/kitware-archive-keyring.gpg && \
+    echo "deb [signed-by=/usr/share/keyrings/kitware-archive-keyring.gpg] https://apt.kitware.com/ubuntu/ jammy main" | \
+    tee /etc/apt/sources.list.d/kitware.list && \
+    apt-get update && apt-get install -y --no-install-recommends cmake && \
+    rm -rf /var/lib/apt/lists/*
 
-ARG LLVM_VERSION=20
+ARG LLVM_VERSION=22
 
 # Install latest LLVM release.
 RUN curl -fsSL https://apt.llvm.org/llvm-snapshot.gpg.key | \
