@@ -418,7 +418,7 @@ all = [
     ## AArch64 check-all
     {'name' : "clang-aarch64-quick",
     'tags'  : ["clang"],
-    'workernames' : ["linaro-clang-aarch64-quick"],
+    'workernames' : ["linaro-clang-aarch64-quick", "arm-bbot-clang-aarch64-quick"],
     'builddir': "clang-aarch64-quick",
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
                     clean=False,

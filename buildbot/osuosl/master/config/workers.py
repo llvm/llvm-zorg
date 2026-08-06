@@ -584,4 +584,6 @@ def get_all():
                 "nvhpc-devops@nvidia.com"
             ],
         ),
+        # Arm-managed buildbot
+        create_worker("arm-bbot-clang-aarch64-quick", max_builds=1),
         ]
