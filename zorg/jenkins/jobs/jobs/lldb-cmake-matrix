@@ -234,19 +234,21 @@ pipeline {
         stage('Build Clang 17.0.6') {
             steps {
                 timeout(30) {
-                    dir('clang_1706') {
-                        checkout([$class: 'GitSCM', branches: [
-                            [name: "llvmorg-17.0.6"]
-                        ], userRemoteConfigs: [
-                            [url: 'https://github.com/llvm/llvm-project.git']
-                        ], extensions: [
-                            [$class: 'CloneOption', timeout: 30,
-                            timeout: 30]
-                        ],
-                        changelog: false,
-                        poll: false
-                        ])
-                    }
+                    // Deliberately a plain clone rather than checkout/GitSCM.
+                    // A second GitSCM checkout of llvm-project in this job
+                    // records a rival BuildData action for the same remote URL,
+                    // and the git plugin resolves the changelog baseline for the
+                    // main checkout by matching on remote URL alone, taking the
+                    // last match (GitSCM.getBuildData / isRelevantBuildData).
+                    // The pinned checkout's stale refs/remotes/origin/main entry
+                    // then becomes the baseline, so every build re-reports its
+                    // entire history, truncated at GitSCM.MAX_CHANGELOG (1024
+                    // commits). A pinned tag needs no SCM bookkeeping at all.
+                    sh '''
+                    rm -rf clang_1706
+                    git clone --depth 1 --branch llvmorg-17.0.6 \
+                      https://github.com/llvm/llvm-project.git clang_1706
+                    '''
                 }
                 timeout(90) {
                     sh '''
@@ -310,19 +312,12 @@ pipeline {
         stage('Build Clang 19.1.7') {
             steps {
                 timeout(30) {
-                    dir('clang_1917') {
-                        checkout([$class: 'GitSCM', branches: [
-                            [name: "llvmorg-19.1.7"]
-                        ], userRemoteConfigs: [
-                            [url: 'https://github.com/llvm/llvm-project.git']
-                        ], extensions: [
-                            [$class: 'CloneOption', timeout: 30,
-                            timeout: 30]
-                        ],
-                        changelog: false,
-                        poll: false
-                        ])
-                    }
+                    // Plain clone, not checkout/GitSCM. See 'Build Clang 17.0.6'.
+                    sh '''
+                    rm -rf clang_1917
+                    git clone --depth 1 --branch llvmorg-19.1.7 \
+                      https://github.com/llvm/llvm-project.git clang_1917
+                    '''
                 }
                 timeout(90) {
                     sh '''
