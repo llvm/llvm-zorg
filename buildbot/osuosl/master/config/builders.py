@@ -2669,20 +2669,6 @@ all += [
                         "-DCMAKE_INSTALL_RPATH_USE_LINK_PATH=ON"
                     ])},
 
-    {
-        'name' : "ml-opt-dev-emitc-x86-64",
-        'tags'  : ['ml_opt'],
-        'collapseRequests': False,
-        'workernames' : ["ml-opt-dev-x86-64-b1", "ml-opt-dev-x86-64-b2"],
-        'builddir': "ml-opt-dev-emitc-x86-64-b1",
-        'factory': AnnotatedBuilder.getAnnotatedBuildFactory(
-            script="mlgo-emitc.sh",
-            clean=True,
-            depends_on_projects=['llvm', 'mlir', 'clang'],
-            script_interpreter=None,
-        )
-    },
-
     # Both tensorflow C library, and the pip package, are present.
     {'name' : "ml-opt-devrel-x86-64",
     'tags'  : ["ml_opt"],
@@ -2704,26 +2690,18 @@ all += [
                         "-DCMAKE_INSTALL_RPATH_USE_LINK_PATH=ON"
                     ])},
 
-    # Release mode build bot: the model is pre-built and linked in the
-    # compiler. Only the tensorflow pip package is needed, and out of it,
-    # only saved_model_cli (the model compiler) and the thin C++ wrappers
-    # in xla_aot_runtime_src (and include files)
-    {'name' : "ml-opt-rel-x86-64",
+    # Release mode build bot
+    {'name' : "ml-opt-rel-emitc-x86-64",
     'tags'  : ["ml_opt"],
     'collapseRequests': False,
     'workernames' : ["ml-opt-rel-x86-64-b1", "ml-opt-rel-x86-64-b2"],
-    'builddir': "ml-opt-rel-x86-64-b1",
-    'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
-                    clean=True,
-                    depends_on_projects=['llvm'],
-                    extra_configure_args= [
-                        "-DCMAKE_BUILD_TYPE=Release",
-                        "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
-                        "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
-                        "-DLLVM_ENABLE_ASSERTIONS=ON",
-                        "-DLLVM_IR2VEC_ENABLE_PYTHON_BINDINGS=ON",
-                        "-DTENSORFLOW_AOT_PATH=/var/lib/buildbot/.local/lib/python3.7/site-packages/tensorflow"
-                    ])},
+    'builddir': "ml-opt-rel-emitc-x86-64-b1",
+    'factory' : AnnotatedBuilder.getAnnotatedBuildFactory(
+         script="mlgo-emitc.sh",
+         clean=True,
+         depends_on_projects=['llvm', 'mlir'],
+         script_interpreter=None,
+         )},
 
     # build clangd with remote-index enabled and check with TSan
     {'name': "clangd-ubuntu-tsan",

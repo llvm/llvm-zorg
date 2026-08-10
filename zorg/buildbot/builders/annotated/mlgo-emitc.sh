@@ -1,6 +1,18 @@
 #!/bin/bash
 
+# Enable Error tracing
+set -o errtrace
+
+# Print trace for all commands ran before execution
+set -x
+
+# Include the Buildbot helper functions
+HERE="$(dirname $0)"
+. ${HERE}/buildbot-helper.sh
+
+# Ensure all commands pass, and not dereferencing unset variables.
 set -eu
+
 set -o pipefail
 
 halt_on_failure
@@ -14,8 +26,7 @@ cmake -GNinja \
   -S ../../llvm-project/llvm \
   -B . \
   -DCMAKE_BUILD_TYPE="Release" \
-  -DCMAKE_C_COMPILER_LAUNCHER=ccache \
-  -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
+  -DLLVM_CCACHE_BUILD=ON \
   -DLLVM_ENABLE_PROJECTS="mlir"
 
 ninja mlir-opt mlir-translate
@@ -31,10 +42,9 @@ cmake -GNinja \
   -S ../llvm-project/llvm \
   -B . \
   -DCMAKE_BUILD_TYPE="Release" \
-  -DCMAKE_C_COMPILER_LAUNCHER=ccache \
-  -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
+  -DLLVM_CCACHE_BUILD=ON \
   -DLLVM_ENABLE_PROJECTS="clang" \
-  -DLLVM_MLGO_MODELS="tosa1,${PWD}/model_tosa1.mlir,inliner" \
+  -DLLVM_MLGO_MODELS="inliner,${PWD}/../llvm-project/mlir/test/Integration/Dialect/EmitC/inline-oz-test-model-tosa.mlir,inliner;regalloc,${PWD}/../llvm-project/mlir/test/Integration/Dialect/EmitC/regalloc-eviction-test-model-tosa.mlir,regalloc" \
   -DLLVM_ENABLE_LLD=ON \
   -DLLVM_TARGETS_TO_BUILD="Native" \
   -DLLVM_MLGO_MLIR_OPT="${MLIR_OPT}" \
