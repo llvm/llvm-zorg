@@ -2087,7 +2087,7 @@ all += [
     {'name' : "intel-sycl-gpu-win",
     'tags'  : ["sycl"],
     'collapseRequests': False,
-    'workernames' : ["intel-sycl-gpu-win-01"],
+    'workernames' : ["intel-win-bmg-01"],
     'builddir': "intel-sycl-gpu-win",
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                     clean=True,
