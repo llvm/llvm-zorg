@@ -376,6 +376,7 @@ def get_all():
 
         # SYCL GPU
         create_worker("intel-sycl-gpu-01", properties={'jobs': 192}, max_builds=1),
+        create_worker("intel-sycl-gpu-win-01", properties={'jobs': 128}, max_builds=1),
 
         # Containerized builder for third party libraries using HIP
         create_worker("AMD-bb-w-03", properties={'jobs': 32}, max_builds=1),
