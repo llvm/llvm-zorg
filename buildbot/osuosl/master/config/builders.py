@@ -2691,11 +2691,11 @@ all += [
                     ])},
 
     # Release mode build bot
-    {'name' : "ml-opt-rel-emitc-x86-64",
+    {'name' : "ml-opt-rel-x86-64",
     'tags'  : ["ml_opt"],
     'collapseRequests': False,
     'workernames' : ["ml-opt-rel-x86-64-b1", "ml-opt-rel-x86-64-b2"],
-    'builddir': "ml-opt-rel-emitc-x86-64-b1",
+    'builddir': "build",
     'factory' : AnnotatedBuilder.getAnnotatedBuildFactory(
          script="mlgo-emitc.sh",
          clean=True,
