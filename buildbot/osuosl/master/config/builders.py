@@ -2083,7 +2083,6 @@ all += [
                         "-DRUNTIMES_spirv64-unknown-unknown_LLVM_ENABLE_RUNTIMES=compiler-rt",
                         "-DRUNTIMES_spirv64-unknown-unknown_COMPILER_RT_INCLUDE_TESTS=OFF",
                         "-DOFFLOAD_INCLUDE_TESTS=ON",
-
                     ])},
 
     {'name' : "intel-sycl-gpu-win",
