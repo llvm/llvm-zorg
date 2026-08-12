@@ -2061,7 +2061,7 @@ all += [
 
     {'name' : "intel-sycl-gpu",
     'tags'  : ["sycl"],
-    'collapseRequests': False,     
+    'collapseRequests': False,
     'workernames' : ["intel-sycl-gpu-01"],
     'builddir': "intel-sycl-gpu",
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
@@ -2082,8 +2082,34 @@ all += [
                         "-DRUNTIMES_spirv64-intel_LLVM_ENABLE_RUNTIMES=openmp",
                         "-DRUNTIMES_spirv64-unknown-unknown_LLVM_ENABLE_RUNTIMES=compiler-rt",
                         "-DRUNTIMES_spirv64-unknown-unknown_COMPILER_RT_INCLUDE_TESTS=OFF",
+                        "-DOFFLOAD_INCLUDE_TESTS=ON",
                     ])},
 
+    {'name' : "intel-sycl-gpu-win",
+    'tags'  : ["sycl"],
+    'collapseRequests': False,
+    'workernames' : ["intel-win-bmg-01"],
+    'builddir': "intel-sycl-gpu-win",
+    'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
+                    clean=True,
+                    checks=['check-offload'],
+                    enable_runtimes=['offload'],
+                    depends_on_projects=['llvm', 'clang', 'offload'],
+                    extra_configure_args=[
+                        "-DCMAKE_C_COMPILER=clang-cl",
+                        "-DCMAKE_CXX_COMPILER=clang-cl",
+                        "-DCMAKE_LINKER=lld-link",
+                        "-DCMAKE_RC_COMPILER=llvm-rc",
+                        "-DCMAKE_MT=llvm-mt",
+                        "-DLLVM_CCACHE_BUILD=ON",
+                        "-DLLVM_TARGETS_TO_BUILD=host;SPIRV",
+                        "-DLLVM_ENABLE_ASSERTIONS=ON",
+                        "-DLLVM_INSTALL_UTILS=ON",
+                        "-DLIBOMPTARGET_PLUGINS_TO_BUILD=level_zero",
+                        "-DLIBOMPTARGET_DLOPEN_PLUGINS=level_zero",
+                        "-DLIBOMPTARGET_ENABLE_DEBUG=ON",
+                        "-DOFFLOAD_INCLUDE_TESTS=ON",
+                    ])},
 
 # Whole-toolchain builders.
 
