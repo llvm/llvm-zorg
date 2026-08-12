@@ -2082,6 +2082,8 @@ all += [
                         "-DRUNTIMES_spirv64-intel_LLVM_ENABLE_RUNTIMES=openmp",
                         "-DRUNTIMES_spirv64-unknown-unknown_LLVM_ENABLE_RUNTIMES=compiler-rt",
                         "-DRUNTIMES_spirv64-unknown-unknown_COMPILER_RT_INCLUDE_TESTS=OFF",
+                        "-DOFFLOAD_INCLUDE_TESTS=ON",
+
                     ])},
 
     {'name' : "intel-sycl-gpu-win",
@@ -2107,6 +2109,7 @@ all += [
                         "-DLIBOMPTARGET_PLUGINS_TO_BUILD=level_zero",
                         "-DLIBOMPTARGET_DLOPEN_PLUGINS=level_zero",
                         "-DLIBOMPTARGET_ENABLE_DEBUG=ON",
+                        "-DOFFLOAD_INCLUDE_TESTS=ON",
                     ])},
 
 # Whole-toolchain builders.
