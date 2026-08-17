@@ -29,9 +29,11 @@ cmake -GNinja \
   -DLLVM_CCACHE_BUILD=ON \
   -DLLVM_ENABLE_ASSERTIONS=ON \
   -DLLVM_IR2VEC_ENABLE_PYTHON_BINDINGS=ON \
-  -DLLVM_ENABLE_PROJECTS="llvm" \
+  "-DLLVM_MLGO_MODELS=inliner,../../llvm-project/mlir/test/Integration/Dialect/EmitC/inline-oz-test-model-tosa.mlir,inliner;regalloc,../../llvm-project/mlir/test/Integration/Dialect/EmitC/regalloc-eviction-test-model-tosa.mlir,regalloc" \
+  -DLLVM_MLGO_MLIR_OPT="bin/mlir-opt" \
+  -DLLVM_MLGO_MLIR_TRANSLATE="bin/mlir-translate" \
   '-DLLVM_LIT_ARGS=-v -vv'
 
 build_step "Run tests"
 
-ninja check
+ninja check-llvm
