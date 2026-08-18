@@ -1,5 +1,5 @@
 # Use an official Ubuntu image as the base.
-FROM docker.io/ubuntu:resolute as base
+FROM docker.io/ubuntu:jammy as base
 
 ARG DEBIAN_FRONTEND=noninteractive
 
@@ -19,7 +19,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python-is-python3 \
     python3 \
     python3-pip \
-    python3-venv \
     python3-psutil \
     python3-yaml \
     software-properties-common \
@@ -32,7 +31,7 @@ ENTRYPOINT ["/usr/bin/dumb-init", "--"]
 # Install latest CMake release.
 RUN curl -fsSL https://apt.kitware.com/keys/kitware-archive-latest.asc | \
     gpg --dearmor -o /usr/share/keyrings/kitware-archive-keyring.gpg && \
-    echo "deb [signed-by=/usr/share/keyrings/kitware-archive-keyring.gpg] https://apt.kitware.com/ubuntu/ resolute main" | \
+    echo "deb [signed-by=/usr/share/keyrings/kitware-archive-keyring.gpg] https://apt.kitware.com/ubuntu/ jammy main" | \
     tee /etc/apt/sources.list.d/kitware.list && \
     apt-get update && apt-get install -y --no-install-recommends cmake && \
     rm -rf /var/lib/apt/lists/*
@@ -42,7 +41,7 @@ ARG LLVM_VERSION=22
 # Install latest LLVM release.
 RUN curl -fsSL https://apt.llvm.org/llvm-snapshot.gpg.key | \
     gpg --dearmor -o /usr/share/keyrings/llvm-archive-keyring.gpg && \
-    echo "deb [signed-by=/usr/share/keyrings/llvm-archive-keyring.gpg] http://apt.llvm.org/resolute/ llvm-toolchain-resolute-${LLVM_VERSION} main" | \
+    echo "deb [signed-by=/usr/share/keyrings/llvm-archive-keyring.gpg] http://apt.llvm.org/jammy/ llvm-toolchain-jammy-${LLVM_VERSION} main" | \
     tee /etc/apt/sources.list.d/llvm.list && \
     apt-get update && apt-get install -y --no-install-recommends clang-${LLVM_VERSION} lld-${LLVM_VERSION} && \
     rm -rf /var/lib/apt/lists/*
@@ -76,18 +75,14 @@ ARG FUCHSIA_VERSION=26
 # Install Fuchsia SDK.
 RUN cipd install -root /usr/local/fuchsia/sdk fuchsia/sdk/core/${CIPD_PLATFORM} f${FUCHSIA_VERSION}
 
-
 # Use the base image to build the image for buildbot.
 FROM base as buildbot
 
 ARG BUILDBOT_VERSION=3.11.6
 
-# Create a virtual environment and ensure it's in the PATH for subsequent commands.
-RUN python3 -m venv /var/lib/buildbot/venv
-ENV PATH="/var/lib/buildbot/venv/bin:$PATH"
-
-# Install buildbot inside the virtual environment.
-RUN pip install --no-cache-dir twisted[tls] buildbot_worker==${BUILDBOT_VERSION}
+# Install buildbot.
+RUN pip3 --no-cache-dir install twisted[tls] && \
+    pip3 install buildbot_worker==${BUILDBOT_VERSION}
 
 RUN useradd -d /var/lib/buildbot -r -s /usr/sbin/nologin buildbot
 WORKDIR /var/lib/buildbot
@@ -106,8 +101,6 @@ RUN chown -R buildbot:buildbot /var/lib/buildbot
 USER buildbot
 
 # By default, start the Buildbot worker.
-# Because /var/lib/buildbot/venv/bin is in the PATH, this will correctly use
-# the twistd from the venv.
 CMD ["twistd", "--pidfile=", "-ny", "buildbot.tac"]
 
 # Use the base image to build the image for buildkite.
