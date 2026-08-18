@@ -58,7 +58,7 @@ locals {
 module "premerge_cluster_us_central" {
   source                                               = "./gke_cluster"
   cluster_name                                         = "llvm-premerge-cluster-us-central"
-  region                                               = "us-central1-a"
+  region                                               = "us-central1"
   libcxx_machine_type                                  = "n2d-standard-32"
   linux_machine_type                                   = "n2-standard-64"
   windows_machine_type                                 = "n2-standard-32"
