@@ -587,4 +587,8 @@ def get_all():
         ),
         # Arm-managed buildbot
         create_worker("arm-bbot-clang-aarch64-quick", max_builds=1),
+        create_worker("arm-bbot-clang-aarch64-sve-vla-2stage", max_builds=1),
+        create_worker("arm-bbot-clang-aarch64-sve-vls-2stage", max_builds=1),
+        create_worker("arm-bbot-clang-aarch64-sve2-vla", max_builds=1),
+        create_worker("arm-bbot-clang-aarch64-sve2-vla-2stage", max_builds=1),
         ]

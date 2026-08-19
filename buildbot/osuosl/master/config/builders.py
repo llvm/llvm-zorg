@@ -524,7 +524,7 @@ all = [
     # AArch64 Clang+LLVM+RT+LLD check-all + flang + test-suite 2-stage w/SVE-Vector-Length-Agnostic
     {'name' : "clang-aarch64-sve-vla-2stage",
     'tags'  : ["clang"],
-    'workernames' : ["linaro-g3-01", "linaro-g3-02", "linaro-g3-03", "linaro-g3-04"],
+    'workernames' : ["linaro-g3-01", "linaro-g3-02", "linaro-g3-03", "linaro-g3-04", "arm-bbot-clang-aarch64-sve-vla-2stage"],
     'builddir': "clang-aarch64-sve-vla-2stage",
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
                     clean=True,
@@ -572,7 +572,7 @@ all = [
     # AArch64 Clang+LLVM+RT+LLD check-all + flang + test-suite 2-stage w/SVE-Vector-Length-Specific
     {'name' : "clang-aarch64-sve-vls-2stage",
     'tags'  : ["clang"],
-    'workernames' : ["linaro-g3-01", "linaro-g3-02", "linaro-g3-03", "linaro-g3-04"],
+    'workernames' : ["linaro-g3-01", "linaro-g3-02", "linaro-g3-03", "linaro-g3-04", "arm-bbot-clang-aarch64-sve-vls-2stage"],
     'builddir': "clang-aarch64-sve-vls-2stage",
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
                     clean=True,
@@ -600,7 +600,7 @@ all = [
 
     {'name' : "clang-aarch64-sve2-vla",
     'tags'  : ["clang"],
-    'workernames' : ["linaro-g4-01", "linaro-g4-02"],
+    'workernames' : ["linaro-g4-01", "linaro-g4-02", "arm-bbot-clang-aarch64-sve2-vla"],
     'builddir': "clang-aarch64-sve2-vla",
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
                     clean=False,
@@ -624,7 +624,7 @@ all = [
     # (not just SVE) Vector Length Agnostic codegen.
     {'name' : "clang-aarch64-sve2-vla-2stage",
     'tags'  : ["clang"],
-    'workernames' : ["linaro-g4-01", "linaro-g4-02"],
+    'workernames' : ["linaro-g4-01", "linaro-g4-02", "arm-bbot-clang-aarch64-sve2-vla-2stage"],
     'builddir': "clang-aarch64-sve2-vla-2stage",
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
                     clean=True,
