@@ -92,7 +92,17 @@ all = [
                     clean=True,
                     checks=[
                         "check-llvm-unit",
-                        "check-clang-unit"
+                        "check-clang-unit",
+                        {
+                            'target': 'check-llvm-unit',
+                            'env_override': {'LLVM_WINDOWS_PREFER_FORWARD_SLASH': '1'},
+                            'name_suffix': '-forward-slashes'
+                        },
+                        {
+                            'target': 'check-clang-unit',
+                            'env_override': {'LLVM_WINDOWS_PREFER_FORWARD_SLASH': '1'},
+                            'name_suffix': '-forward-slashes'
+                        }
                     ],
                     extra_configure_args=[
                         "-DLLVM_CCACHE_BUILD=ON",

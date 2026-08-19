@@ -59,3 +59,26 @@ class InterpolateToPosixPath(Interpolate):
             pass
 
         return p
+
+
+@implementer(IRenderable)
+class MergedEnv(object):
+    def __init__(self, base_env, overrides):
+        self.base_env = base_env
+        self.overrides = overrides
+
+    @defer.inlineCallbacks
+    def getRenderingFor(self, build):
+        if hasattr(build, 'render'):
+            base_env_rendered = yield build.render(self.base_env)
+        elif hasattr(build, 'properties') and hasattr(build.properties, 'render'):
+            base_env_rendered = yield build.properties.render(self.base_env)
+        else:
+            base_env_rendered = {}
+
+        if not isinstance(base_env_rendered, dict):
+            base_env_rendered = {}
+
+        merged = base_env_rendered.copy()
+        merged.update(self.overrides)
+        return merged
