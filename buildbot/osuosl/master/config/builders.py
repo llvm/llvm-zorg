@@ -3941,7 +3941,14 @@ all += [
                  "check-llvm",
                  "check-mlir",
                  "check-flang",
-                 "check-lldb"
+                 "check-lldb-unit",
+                 "check-lldb-shell",
+                 "check-lldb-api"
+             ],
+             extra_configure_args=[
+                 "-DLLDB_ENABLE_PYTHON=ON",
+                 "-DLLDB_ENABLE_LIBXML2=ON",
+                 "-DLLDB_ENFORCE_STRICT_TEST_REQUIREMENTS=ON"
              ],
          )
         },
