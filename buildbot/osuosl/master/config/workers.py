@@ -120,6 +120,9 @@ def get_all():
         # IBM z13 (s390x), Ubuntu 16.04.2
         create_worker("systemz-1", properties={'jobs': 4, 'vcs_protocol': 'https'}, max_builds=4),
 
+        # IBM z15, z/OS 3.1
+        create_worker("zos-s390x-1", properties={'jobs': 4, 'vcs_protocol': 'https'}, max_builds=1),
+
         # Windows Server 2012 x86_64 16-core GCE instance
         create_worker("sanitizer-windows", properties={'jobs': 16}, max_builds=1),
 
@@ -373,6 +376,7 @@ def get_all():
 
         # SYCL GPU
         create_worker("intel-sycl-gpu-01", properties={'jobs': 192}, max_builds=1),
+        create_worker("intel-win-bmg-01", properties={'jobs': 128}, max_builds=1),
 
         # Containerized builder for third party libraries using HIP
         create_worker("AMD-bb-w-03", properties={'jobs': 32}, max_builds=1),
@@ -581,4 +585,10 @@ def get_all():
                 "nvhpc-devops@nvidia.com"
             ],
         ),
+        # Arm-managed buildbot
+        create_worker("arm-bbot-clang-aarch64-quick", max_builds=1),
+        create_worker("arm-bbot-clang-aarch64-sve-vla-2stage", max_builds=1),
+        create_worker("arm-bbot-clang-aarch64-sve-vls-2stage", max_builds=1),
+        create_worker("arm-bbot-clang-aarch64-sve2-vla", max_builds=1),
+        create_worker("arm-bbot-clang-aarch64-sve2-vla-2stage", max_builds=1),
         ]

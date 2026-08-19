@@ -418,7 +418,7 @@ all = [
     ## AArch64 check-all
     {'name' : "clang-aarch64-quick",
     'tags'  : ["clang"],
-    'workernames' : ["linaro-clang-aarch64-quick"],
+    'workernames' : ["linaro-clang-aarch64-quick", "arm-bbot-clang-aarch64-quick"],
     'builddir': "clang-aarch64-quick",
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
                     clean=False,
@@ -524,7 +524,7 @@ all = [
     # AArch64 Clang+LLVM+RT+LLD check-all + flang + test-suite 2-stage w/SVE-Vector-Length-Agnostic
     {'name' : "clang-aarch64-sve-vla-2stage",
     'tags'  : ["clang"],
-    'workernames' : ["linaro-g3-01", "linaro-g3-02", "linaro-g3-03", "linaro-g3-04"],
+    'workernames' : ["linaro-g3-01", "linaro-g3-02", "linaro-g3-03", "linaro-g3-04", "arm-bbot-clang-aarch64-sve-vla-2stage"],
     'builddir': "clang-aarch64-sve-vla-2stage",
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
                     clean=True,
@@ -572,7 +572,7 @@ all = [
     # AArch64 Clang+LLVM+RT+LLD check-all + flang + test-suite 2-stage w/SVE-Vector-Length-Specific
     {'name' : "clang-aarch64-sve-vls-2stage",
     'tags'  : ["clang"],
-    'workernames' : ["linaro-g3-01", "linaro-g3-02", "linaro-g3-03", "linaro-g3-04"],
+    'workernames' : ["linaro-g3-01", "linaro-g3-02", "linaro-g3-03", "linaro-g3-04", "arm-bbot-clang-aarch64-sve-vls-2stage"],
     'builddir': "clang-aarch64-sve-vls-2stage",
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
                     clean=True,
@@ -600,7 +600,7 @@ all = [
 
     {'name' : "clang-aarch64-sve2-vla",
     'tags'  : ["clang"],
-    'workernames' : ["linaro-g4-01", "linaro-g4-02"],
+    'workernames' : ["linaro-g4-01", "linaro-g4-02", "arm-bbot-clang-aarch64-sve2-vla"],
     'builddir': "clang-aarch64-sve2-vla",
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
                     clean=False,
@@ -624,7 +624,7 @@ all = [
     # (not just SVE) Vector Length Agnostic codegen.
     {'name' : "clang-aarch64-sve2-vla-2stage",
     'tags'  : ["clang"],
-    'workernames' : ["linaro-g4-01", "linaro-g4-02"],
+    'workernames' : ["linaro-g4-01", "linaro-g4-02", "arm-bbot-clang-aarch64-sve2-vla-2stage"],
     'builddir': "clang-aarch64-sve2-vla-2stage",
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
                     clean=True,
@@ -834,6 +834,33 @@ all = [
                     extra_cmake_args=[
                         "-DLLVM_CCACHE_BUILD=ON",
                         "-DLLVM_ENABLE_ASSERTIONS=ON"])},
+
+    {'name' : "llvm-s390x-zos",
+    'collapseRequests' : True,
+    'tags'  : ["llvm", "zos", "s390x"],
+    'workernames' : ["zos-s390x-1"],
+    'builddir': "llvm-s390x-zos",
+    'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
+                    depends_on_projects=['llvm'],
+                    checks=['check-llvm'],
+                    clean=True,
+                    extra_configure_args=[
+                        '-DCMAKE_BUILD_TYPE=Release',
+                        '-DLLVM_COMPILER_CHECKED=1',
+                        '-DHAVE_CXX_ATOMICS_WITHOUT_LIB=ON',
+                        '-DHAVE_CXX_ATOMICS64_WITHOUT_LIB=ON',
+                        '-DLLVM_ENABLE_ASSERTIONS=ON',
+                        '-DLLVM_APPEND_VC_REV=OFF',
+                        '-DLLVM_TOOL_GOLD_BUILD=OFF',
+                        '-DLLVM_ENABLE_WERROR=ON',
+                        '-DCMAKE_AR=/VERSYSB/bin/ar',
+                        '-DLLVM_TARGETS_TO_BUILD=SystemZ',
+                    ],
+                    env={
+                        'CC': '/usr/lpp/IBM/cnw/v2r2/openxl/bin/ibm-clang64',
+                        'CXX': '/usr/lpp/IBM/cnw/v2r2/openxl/bin/ibm-clang++64',
+                        'TMPDIR': '/data/devuser/tmp/',
+                    })},
 
     {'name' : 'clang-sparc64-linux',
     'tags'  : ['clang'],
@@ -2034,7 +2061,7 @@ all += [
 
     {'name' : "intel-sycl-gpu",
     'tags'  : ["sycl"],
-    'collapseRequests': False,     
+    'collapseRequests': False,
     'workernames' : ["intel-sycl-gpu-01"],
     'builddir': "intel-sycl-gpu",
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
@@ -2055,8 +2082,34 @@ all += [
                         "-DRUNTIMES_spirv64-intel_LLVM_ENABLE_RUNTIMES=openmp",
                         "-DRUNTIMES_spirv64-unknown-unknown_LLVM_ENABLE_RUNTIMES=compiler-rt",
                         "-DRUNTIMES_spirv64-unknown-unknown_COMPILER_RT_INCLUDE_TESTS=OFF",
+                        "-DOFFLOAD_INCLUDE_TESTS=ON",
                     ])},
 
+    {'name' : "intel-sycl-gpu-win",
+    'tags'  : ["sycl"],
+    'collapseRequests': False,
+    'workernames' : ["intel-win-bmg-01"],
+    'builddir': "intel-sycl-gpu-win",
+    'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
+                    clean=True,
+                    checks=['check-offload'],
+                    enable_runtimes=['offload'],
+                    depends_on_projects=['llvm', 'clang', 'offload'],
+                    extra_configure_args=[
+                        "-DCMAKE_C_COMPILER=clang-cl",
+                        "-DCMAKE_CXX_COMPILER=clang-cl",
+                        "-DCMAKE_LINKER=lld-link",
+                        "-DCMAKE_RC_COMPILER=llvm-rc",
+                        "-DCMAKE_MT=llvm-mt",
+                        "-DLLVM_CCACHE_BUILD=ON",
+                        "-DLLVM_TARGETS_TO_BUILD=host;SPIRV",
+                        "-DLLVM_ENABLE_ASSERTIONS=ON",
+                        "-DLLVM_INSTALL_UTILS=ON",
+                        "-DLIBOMPTARGET_PLUGINS_TO_BUILD=level_zero",
+                        "-DLIBOMPTARGET_DLOPEN_PLUGINS=level_zero",
+                        "-DLIBOMPTARGET_ENABLE_DEBUG=ON",
+                        "-DOFFLOAD_INCLUDE_TESTS=ON",
+                    ])},
 
 # Whole-toolchain builders.
 
@@ -2690,26 +2743,18 @@ all += [
                         "-DCMAKE_INSTALL_RPATH_USE_LINK_PATH=ON"
                     ])},
 
-    # Release mode build bot: the model is pre-built and linked in the
-    # compiler. Only the tensorflow pip package is needed, and out of it,
-    # only saved_model_cli (the model compiler) and the thin C++ wrappers
-    # in xla_aot_runtime_src (and include files)
+    # Release mode build bot
     {'name' : "ml-opt-rel-x86-64",
     'tags'  : ["ml_opt"],
     'collapseRequests': False,
     'workernames' : ["ml-opt-rel-x86-64-b1", "ml-opt-rel-x86-64-b2"],
-    'builddir': "ml-opt-rel-x86-64-b1",
-    'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
-                    clean=True,
-                    depends_on_projects=['llvm'],
-                    extra_configure_args= [
-                        "-DCMAKE_BUILD_TYPE=Release",
-                        "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
-                        "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
-                        "-DLLVM_ENABLE_ASSERTIONS=ON",
-                        "-DLLVM_IR2VEC_ENABLE_PYTHON_BINDINGS=ON",
-                        "-DTENSORFLOW_AOT_PATH=/var/lib/buildbot/.local/lib/python3.7/site-packages/tensorflow"
-                    ])},
+    'builddir': "build",
+    'factory' : AnnotatedBuilder.getAnnotatedBuildFactory(
+         script="mlgo-emitc.sh",
+         clean=True,
+         depends_on_projects=['llvm', 'mlir'],
+         script_interpreter=None,
+         )},
 
     # build clangd with remote-index enabled and check with TSan
     {'name': "clangd-ubuntu-tsan",
