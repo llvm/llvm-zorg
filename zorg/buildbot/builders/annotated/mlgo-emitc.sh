@@ -17,13 +17,15 @@ set -o pipefail
 
 halt_on_failure
 
+LLVM_ROOT="${LLVM_ROOT:-$(realpath ../llvm-project)}"
+
 build_step "Build MLIR Dependencies (mlir-opt and mlir-translate)"
 
 mkdir -p deps
 cd deps
 
 cmake -GNinja \
-  -S ../../llvm-project/llvm \
+  -S "${LLVM_ROOT}/llvm" \
   -B . \
   -DCMAKE_BUILD_TYPE="Release" \
   -DLLVM_CCACHE_BUILD=ON \
@@ -39,13 +41,13 @@ cd ..
 build_step "Build LLVM"
 
 cmake -GNinja \
-  -S ../llvm-project/llvm \
+  -S "${LLVM_ROOT}/llvm" \
   -B . \
   -DCMAKE_BUILD_TYPE="Release" \
   -DLLVM_CCACHE_BUILD=ON \
   -DLLVM_ENABLE_ASSERTIONS=ON \
   -DLLVM_IR2VEC_ENABLE_PYTHON_BINDINGS=ON \
-  "-DLLVM_MLGO_MODELS=inliner,../llvm-project/mlir/test/Integration/Dialect/EmitC/inline-oz-test-model-tosa.mlir,inliner;regalloc,../llvm-project/mlir/test/Integration/Dialect/EmitC/regalloc-eviction-test-model-tosa.mlir,regalloc" \
+  "-DLLVM_MLGO_MODELS=inliner,${LLVM_ROOT}/mlir/test/Integration/Dialect/EmitC/inline-oz-test-model-tosa.mlir,inliner;regalloc,${LLVM_ROOT}/mlir/test/Integration/Dialect/EmitC/regalloc-eviction-test-model-tosa.mlir,regalloc" \
   -DLLVM_MLGO_MLIR_OPT="${MLIR_OPT}" \
   -DLLVM_MLGO_MLIR_TRANSLATE="${MLIR_TRANSLATE}" \
   '-DLLVM_LIT_ARGS=-v -vv'
