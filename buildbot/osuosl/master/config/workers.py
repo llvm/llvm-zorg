@@ -591,4 +591,9 @@ def get_all():
         create_worker("arm-bbot-clang-aarch64-sve-vls-2stage", max_builds=1),
         create_worker("arm-bbot-clang-aarch64-sve2-vla", max_builds=1),
         create_worker("arm-bbot-clang-aarch64-sve2-vla-2stage", max_builds=1),
+        create_worker("arm-bbot-clang-aarch64-global-isel", max_builds=1),
+        create_worker("arm-bbot-lldb-aarch64-ubuntu", max_builds=1),
+        create_worker("arm-bbot-flang-aarch64-latest-gcc", max_builds=1),
+        create_worker("arm-bbot-flang-aarch64-libcxx", max_builds=1),
+        create_worker("arm-bbot-flang-aarch64-rel-assert", max_builds=1),
         ]
