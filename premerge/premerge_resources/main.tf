@@ -11,6 +11,54 @@ terraform {
   }
 }
 
+# konnectivity-agent pods proxy some kubernetes API request to the backplane,
+# including kubectl exec calls. By default, GKE has a horizontal autoscaler
+# setup to provision a number of konnectivity-agent pods based purely on the
+# total node count of the cluster. A konnectivity-agent pod getting turned off
+# during a downscale will drop all of its running kubectl exec connections. This
+# means that runners running in kubernetes mode will randomly fail. We prevent
+# this by disabling autoscaling and setting a fixed count of konnectivity-agent
+# pods that is similar to what the horizontal autoscaler would use at max size.
+#
+# This configuration (modifying GKE system resources) is not officially
+# supported although in the case one insists on modifying GKE system resources, it
+# is the reccomended path.
+resource "kubernetes_manifest" "konnectivity_autoscaler_replica_count_override" {
+  manifest = {
+    apiVersion = "apps/v1"
+    kind       = "Deployment"
+    metadata = {
+      name      = "konnectivity-agent-autoscaler"
+      namespace = "kube-system"
+    }
+    spec = {
+      replices = 0
+    }
+  }
+
+  field_manager {
+    force_conflicts = true
+  }
+}
+
+resource "kubernetes_manifest" "konnectivity_agent_relica_count_override" {
+  manifest = {
+    apiVersion = "apps/v1"
+    kind       = "Deployment"
+    metadata = {
+      name      = "konnectivity-agent"
+      namespace = "kube-system"
+    }
+    spec = {
+      replices = 10
+    }
+  }
+
+  field_manager {
+    force_conflicts = true
+  }
+}
+
 resource "kubernetes_namespace" "llvm_premerge_controller" {
   metadata {
     name = "llvm-premerge-controller"
@@ -20,6 +68,12 @@ resource "kubernetes_namespace" "llvm_premerge_controller" {
 resource "kubernetes_namespace" "llvm_premerge_linux_runners" {
   metadata {
     name = var.linux_runners_namespace_name
+  }
+}
+
+resource "kubernetes_namespace" "llvm_premerge_linux_32_runners" {
+  metadata {
+    name = "llvm-premerge-linux-32-runners"
   }
 }
 
@@ -107,6 +161,23 @@ resource "kubernetes_secret" "linux_github_pat" {
   type = "Opaque"
 
   depends_on = [kubernetes_namespace.llvm_premerge_linux_runners]
+}
+
+resource "kubernetes_secret" "linux_32_github_pat" {
+  metadata {
+    name      = "github-token"
+    namespace = "llvm-premerge-linux-32-runners"
+  }
+
+  data = {
+    "github_app_id"              = var.github_app_id
+    "github_app_installation_id" = var.github_app_installation_id
+    "github_app_private_key"     = var.github_app_private_key
+  }
+
+  type = "Opaque"
+
+  depends_on = [kubernetes_namespace.llvm_premerge_linux_32_runners]
 }
 
 resource "kubernetes_secret" "libcxx_github_pat" {
@@ -222,6 +293,36 @@ resource "helm_release" "github_actions_runner_set_windows_2022" {
     kubernetes_namespace.llvm_premerge_windows_2022_runners,
     kubernetes_secret.windows_2022_github_pat,
     helm_release.github_actions_runner_controller,
+  ]
+}
+
+resource "kubernetes_config_map" "linux_32_pod_template" {
+  metadata {
+    name      = "linux-32-pod-template"
+    namespace = "linux-32-runners"
+  }
+
+  data = {
+    "linux-32-pod-template" : "${file("linux_32_pod_template.yaml")}"
+  }
+}
+
+resource "helm_release" "github_actions_runner_set_linux_32" {
+  name       = "llvm-premerge-linux-32-runners"
+  namespace  = "llvm-premerge-linux-32-runners"
+  repository = "oci://ghcr.io/actions/actions-runner-controller-charts"
+  version    = var.github_arc_version
+  chart      = "gha-runner-scale-set"
+
+  values = [
+    "${templatefile("linux_32_runners_values.yaml", { runner_group_name : var.runner_group_name })}"
+  ]
+
+  depends_on = [
+    kubernetes_namespace.llvm_premerge_linux_32_runners,
+    kubernetes_config_map.linux_32_pod_template,
+    helm_release.github_actions_runner_controller,
+    kubernetes_secret.linux_32_github_pat,
   ]
 }
 

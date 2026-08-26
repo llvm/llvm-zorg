@@ -1,0 +1,72 @@
+githubConfigUrl: "https://github.com/llvm"
+githubConfigSecret: "github-token"
+
+minRunners: 0
+maxRunners: 4
+
+runnerGroup: ${ runner_group_name }
+
+containerMode:
+  type: "kubernetes-novolume"
+  kubernetesModeServiceAccount:
+    annotations:
+
+template:
+  metadata:
+    annotations:
+      cluster-autoscaler.kubernetes.io/safe-to-evict: "false"
+  spec:
+    terminationGracePeriodSeconds: 3600
+    tolerations:
+    - key: "premerge-platform-libcxx"
+      operator: "Equal"
+      value: "linux-libcxx"
+      effect: "NoSchedule"
+    nodeSelector:
+      premerge-platform-libcxx: linux-libcxx
+    containers:
+    - name: runner
+      image: ghcr.io/actions/actions-runner:2.336.0
+      command: ["/home/runner/run.sh"]
+      resources:
+        # If we don't set the CPU request high-enough here, 2 runners might
+        # be scheduled on the same pod, meaning 2 jobs, and they will starve
+        # each other.
+        #
+        # This number should be:
+        #  - greater than number_of_cores / 2:
+        #    A value lower than that could allow the scheduler to put 2
+        #    runners on the same node. Meaning 2 jobs sharing the resources of
+        #    a single node.
+        #  - lower than number_of_cores:
+        #    Each pod has some basic services running (metrics for ex). Those
+        #    already require some amount of CPU (~0.5). This means we don't
+        #    exactly have N cores to allocate, but N - epsilon.
+        #
+        # We also need to request sufficient memory to not get OOM killed.
+        requests:
+          cpu: 28
+          memory: "8Gi"
+        limits:
+          cpu: 32
+          memory: "128Gi"
+      env:
+        - name: ACTIONS_RUNNER_CONTAINER_HOOKS
+          value: /home/runner/k8s/index.js
+        - name: ACTIONS_RUNNER_POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: ACTIONS_RUNNER_REQUIRE_JOB_CONTAINER
+          value: "true"
+        - name: ACTIONS_RUNNER_CONTAINER_HOOK_TEMPLATE
+          value: "/home/runner/pod-config/linux-32-pod-template.yaml"
+      volumeMounts:
+        - name: container-pod-config
+          mountPath: /home/runner/pod-config
+    securityContext:
+      fsGroup: 123
+    volumes:
+      - name: container-pod-config
+        configMap:
+          name: linux-32-pod-template
