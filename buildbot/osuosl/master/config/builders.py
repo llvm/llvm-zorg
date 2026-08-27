@@ -355,7 +355,7 @@ all = [
     ## ARMv8 check-all
     {'name' : "clang-armv8-quick",
     'tags'  : ["clang"],
-    'workernames':["linaro-clang-armv8-quick"],
+    'workernames':["linaro-clang-armv8-quick", "arm-bbot-clang-armv8-quick"],
     'builddir':"clang-armv8-quick",
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
                     clean=False,
@@ -403,7 +403,7 @@ all = [
     ## ARMv7 VFPv3 check-all 2-stage
     {'name' : "clang-armv7-vfpv3-2stage",
     'tags'  : ["clang"],
-    'workernames' : ["linaro-clang-armv7-vfpv3-2stage"],
+    'workernames' : ["linaro-clang-armv7-vfpv3-2stage", "arm-bbot-clang-armv7-vfpv3-2stage"],
     'builddir': "clang-armv7-vfpv3-2stage",
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
                     clean=True,
@@ -476,7 +476,7 @@ all = [
     # Sanitizers build disabled due to PR38690
     {'name' : "clang-armv8-lld-2stage",
     'tags'  : ["lld"],
-    'workernames' : ["linaro-clang-armv8-lld-2stage"],
+    'workernames' : ["linaro-clang-armv8-lld-2stage", "arm-bbot-clang-armv8-lld-2stage"],
     'builddir': "clang-armv8-lld-2stage",
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
                     clean=True,
@@ -1345,7 +1345,7 @@ all = [
 
     {'name' : "lldb-arm-ubuntu",
     'tags'  : ["lldb"],
-    'workernames' : ["linaro-lldb-arm-ubuntu"],
+    'workernames' : ["linaro-lldb-arm-ubuntu", "arm-bbot-lldb-arm-ubuntu"],
     'builddir': "lldb-arm-ubuntu",
     'factory' : LLDBBuilder.getLLDBCMakeBuildFactory(
                     test=True,
