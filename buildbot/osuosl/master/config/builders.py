@@ -461,7 +461,7 @@ all = [
     ## AArch64 run test-suite at -O0 (GlobalISel is now default).
     {'name' : "clang-aarch64-global-isel",
     'tags'  : ["clang"],
-    'workernames' : ["linaro-clang-aarch64-global-isel"],
+    'workernames' : ["linaro-clang-aarch64-global-isel", "arm-bbot-clang-aarch64-global-isel"],
     'builddir': "clang-aarch64-global-isel",
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
                     clean=False,
@@ -1333,7 +1333,7 @@ all = [
 
     {'name' : "lldb-aarch64-ubuntu",
     'tags'  : ["lldb"],
-    'workernames' : ["linaro-lldb-aarch64-ubuntu"],
+    'workernames' : ["linaro-lldb-aarch64-ubuntu", "arm-bbot-lldb-aarch64-ubuntu"],
     'builddir': "lldb-aarch64-ubuntu",
     'factory' : LLDBBuilder.getLLDBCMakeBuildFactory(
                     test=True,
@@ -2346,7 +2346,7 @@ all += [
 
     {'name' : "flang-aarch64-libcxx",
     'tags'  : ['flang'],
-    'workernames' : ["linaro-flang-aarch64-libcxx"],
+    'workernames' : ["linaro-flang-aarch64-libcxx", "arm-bbot-flang-aarch64-libcxx"],
     'builddir': "flang-aarch64-libcxx",
     'factory' : FlangBuilder.getFlangOutOfTreeBuildFactory(
                     checks=['check-flang'],
@@ -2387,7 +2387,7 @@ all += [
 
     {'name' : "flang-aarch64-rel-assert",
     'tags'  : ["flang"],
-    'workernames' : ["linaro-flang-aarch64-rel-assert"],
+    'workernames' : ["linaro-flang-aarch64-rel-assert", "arm-bbot-flang-aarch64-rel-assert"],
     'builddir': "flang-aarch64-rel-assert",
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                     clean=True,
@@ -2403,7 +2403,7 @@ all += [
 
     {'name' : "flang-aarch64-latest-gcc",
     'tags'  : ['flang'],
-    'workernames' : ["linaro-flang-aarch64-latest-gcc"],
+    'workernames' : ["linaro-flang-aarch64-latest-gcc", "arm-bbot-flang-aarch64-latest-gcc"],
     'builddir': "flang-aarch64-latest-gcc",
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                     clean=True,
