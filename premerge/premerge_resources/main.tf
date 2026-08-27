@@ -32,7 +32,7 @@ resource "kubernetes_manifest" "konnectivity_autoscaler_replica_count_override" 
       namespace = "kube-system"
     }
     spec = {
-      replices = 0
+      repliaes = 0
     }
   }
 
@@ -50,7 +50,7 @@ resource "kubernetes_manifest" "konnectivity_agent_relica_count_override" {
       namespace = "kube-system"
     }
     spec = {
-      replices = 10
+      replicas = 10
     }
   }
 
