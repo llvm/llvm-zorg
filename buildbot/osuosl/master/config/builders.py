@@ -855,6 +855,7 @@ all = [
                         '-DLLVM_ENABLE_WERROR=ON',
                         '-DCMAKE_AR=/VERSYSB/bin/ar',
                         '-DLLVM_TARGETS_TO_BUILD=SystemZ',
+                        '-DLLVM_ENABLE_THREADS=OFF',
                     ],
                     env={
                         'CC': '/usr/lpp/IBM/cnw/v2r2/openxl/bin/ibm-clang64',
