@@ -3209,8 +3209,7 @@ all += [
     'workernames' : ["as-builder-7"],
     'builddir': "flang-runtime-cuda-gcc",
     'factory' : UnifiedTreeBuilder.getCmakeExBuildFactory(
-                    depends_on_projects = ["llvm", "clang", "mlir", "flang"],
-                    enable_runtimes = ["flang-rt", "openmp"],
+                    depends_on_projects = ["llvm", "clang", "mlir", "flang", "flang-rt", "openmp"],
                     clean = True,
                     checks = [],
                     targets = ["flang-rt"],
