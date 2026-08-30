@@ -11,6 +11,54 @@ terraform {
   }
 }
 
+# konnectivity-agent pods proxy some kubernetes API request to the backplane,
+# including kubectl exec calls. By default, GKE has a horizontal autoscaler
+# setup to provision a number of konnectivity-agent pods based purely on the
+# total node count of the cluster. A konnectivity-agent pod getting turned off
+# during a downscale will drop all of its running kubectl exec connections. This
+# means that runners running in kubernetes mode will randomly fail. We prevent
+# this by disabling autoscaling and setting a fixed count of konnectivity-agent
+# pods that is similar to what the horizontal autoscaler would use at max size.
+#
+# This configuration (modifying GKE system resources) is not officially
+# supported although in the case one insists on modifying GKE system resources, it
+# is the reccomended path.
+resource "kubernetes_manifest" "konnectivity_autoscaler_replica_count_override" {
+  manifest = {
+    apiVersion = "apps/v1"
+    kind       = "Deployment"
+    metadata = {
+      name      = "konnectivity-agent-autoscaler"
+      namespace = "kube-system"
+    }
+    spec = {
+      replicas = 0
+    }
+  }
+
+  field_manager {
+    force_conflicts = true
+  }
+}
+
+resource "kubernetes_manifest" "konnectivity_agent_replica_count_override" {
+  manifest = {
+    apiVersion = "apps/v1"
+    kind       = "Deployment"
+    metadata = {
+      name      = "konnectivity-agent"
+      namespace = "kube-system"
+    }
+    spec = {
+      replicas = 10
+    }
+  }
+
+  field_manager {
+    force_conflicts = true
+  }
+}
+
 resource "kubernetes_namespace" "llvm_premerge_controller" {
   metadata {
     name = "llvm-premerge-controller"
