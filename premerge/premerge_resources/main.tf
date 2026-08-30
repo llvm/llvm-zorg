@@ -305,7 +305,7 @@ resource "kubernetes_config_map" "linux_32_pod_template" {
   }
 
   data = {
-    "linux-32-pod-template" : "${file("linux_32_pod_template.yaml")}"
+    "linux-32-pod-template.yaml" : "${file("linux_32_pod_template.yaml")}"
   }
 }
 
