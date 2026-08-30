@@ -17,40 +17,42 @@ terraform {
 # total node count of the cluster. A konnectivity-agent pod getting turned off
 # during a downscale will drop all of its running kubectl exec connections. This
 # means that runners running in kubernetes mode will randomly fail. We prevent
-# this by disabling autoscaling and setting a fixed count of konnectivity-agent
-# pods that is similar to what the horizontal autoscaler would use at max size.
+# this by setting the ConfigMap for the horizontal autoscaler to use a constant
+# number of pods for every node count.
 #
-# This configuration (modifying GKE system resources) is not officially
-# supported although in the case one insists on modifying GKE system resources, it
-# is the reccomended path.
-resource "kubernetes_manifest" "konnectivity_autoscaler_replica_count_override" {
+# We are allowed to do this given ConfigMaps in the kube-system namespace have
+# have a GKE set reconciliation mode of EnsureExists, which means that the object
+# will be recreated by GKE upon deletion, but modifications will not be erased
+# by the GKE automation.
+resource "kubernetes_manifest" "konnectivity_autoscaler_config_override" {
   manifest = {
-    apiVersion = "apps/v1"
-    kind       = "Deployment"
+    apiVersion = "v1"
+    kind       = "ConfigMap"
     metadata = {
-      name      = "konnectivity-agent-autoscaler"
+      name      = "konnectivity-agent-autoscaler-config"
       namespace = "kube-system"
     }
-    spec = {
-      replicas = 0
-    }
-  }
-
-  field_manager {
-    force_conflicts = true
-  }
-}
-
-resource "kubernetes_manifest" "konnectivity_agent_replica_count_override" {
-  manifest = {
-    apiVersion = "apps/v1"
-    kind       = "Deployment"
-    metadata = {
-      name      = "konnectivity-agent"
-      namespace = "kube-system"
-    }
-    spec = {
-      replicas = 10
+    data = {
+      ladder = <<-EOT
+        {
+          "coresToReplicas": [],
+          "nodesToReplicas":
+          [
+            [1, 10],
+            [2, 10],
+            [3, 10],
+            [4, 10],
+            [5, 10],
+            [6, 10],
+            [10, 10],
+            [100, 10],
+            [250, 10],
+            [500, 10],
+            [2000, 10],
+            [5000, 10]
+          ]
+        }
+      EOT
     }
   }
 
