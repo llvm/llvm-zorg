@@ -188,6 +188,11 @@ module "premerge_cluster_us_central_resources" {
   }
 }
 
+import {
+  to = module.premerge_cluster_us_central_resources.kubernetes_manifest.konnectivity_autoscaler_config_override
+  id = "apiVersion=v1,kind=ConfigMap,namespace=kube-system,name=konnectivity-agent-autoscaler-config"
+}
+
 module "premerge_cluster_us_west_resources" {
   source                                                   = "./premerge_resources"
   github_app_id                                            = data.google_secret_manager_secret_version.github_app_id.secret_data
@@ -212,6 +217,11 @@ module "premerge_cluster_us_west_resources" {
     kubernetes = kubernetes.llvm-premerge-us-west
     helm       = helm.llvm-premerge-us-west
   }
+}
+
+import {
+  to = module.premerge_cluster_us_west_resources.kubernetes_manifest.konnectivity_autoscaler_config_override
+  id = "apiVersion=v1,kind=ConfigMap,namespace=kube-system,name=konnectivity-agent-autoscaler-config"
 }
 
 data "google_secret_manager_secret_version" "metrics_github_pat" {
