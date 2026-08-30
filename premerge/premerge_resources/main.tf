@@ -73,6 +73,12 @@ resource "kubernetes_namespace" "llvm_premerge_linux_runners" {
   }
 }
 
+resource "kubernetes_namespace" "llvm_premerge_linux_32_runners" {
+  metadata {
+    name = "llvm-premerge-linux-32-runners"
+  }
+}
+
 resource "kubernetes_namespace" "llvm_premerge_libcxx_runners" {
   metadata {
     name = "llvm-premerge-libcxx-runners"
@@ -157,6 +163,23 @@ resource "kubernetes_secret" "linux_github_pat" {
   type = "Opaque"
 
   depends_on = [kubernetes_namespace.llvm_premerge_linux_runners]
+}
+
+resource "kubernetes_secret" "linux_32_github_pat" {
+  metadata {
+    name      = "github-token"
+    namespace = "llvm-premerge-linux-32-runners"
+  }
+
+  data = {
+    "github_app_id"              = var.github_app_id
+    "github_app_installation_id" = var.github_app_installation_id
+    "github_app_private_key"     = var.github_app_private_key
+  }
+
+  type = "Opaque"
+
+  depends_on = [kubernetes_namespace.llvm_premerge_linux_32_runners]
 }
 
 resource "kubernetes_secret" "libcxx_github_pat" {
@@ -272,6 +295,36 @@ resource "helm_release" "github_actions_runner_set_windows_2022" {
     kubernetes_namespace.llvm_premerge_windows_2022_runners,
     kubernetes_secret.windows_2022_github_pat,
     helm_release.github_actions_runner_controller,
+  ]
+}
+
+resource "kubernetes_config_map" "linux_32_pod_template" {
+  metadata {
+    name      = "linux-32-pod-template"
+    namespace = "linux-32-runners"
+  }
+
+  data = {
+    "linux-32-pod-template" : "${file("linux_32_pod_template.yaml")}"
+  }
+}
+
+resource "helm_release" "github_actions_runner_set_linux_32" {
+  name       = "llvm-premerge-linux-32-runners"
+  namespace  = "llvm-premerge-linux-32-runners"
+  repository = "oci://ghcr.io/actions/actions-runner-controller-charts"
+  version    = var.github_arc_version
+  chart      = "gha-runner-scale-set"
+
+  values = [
+    "${templatefile("linux_32_runners_values.yaml", { runner_group_name : var.runner_group_name })}"
+  ]
+
+  depends_on = [
+    kubernetes_namespace.llvm_premerge_linux_32_runners,
+    kubernetes_config_map.linux_32_pod_template,
+    helm_release.github_actions_runner_controller,
+    kubernetes_secret.linux_32_github_pat,
   ]
 }
 
