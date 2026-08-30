@@ -25,7 +25,7 @@ template:
       premerge-platform-libcxx: linux-libcxx
     containers:
     - name: runner
-      image: ghcr.io/actions/actions-runner:2.336.0
+      image: ghcr.io/actions/actions-runner:2.337.0
       command: ["/home/runner/run.sh"]
       resources:
         # If we don't set the CPU request high-enough here, 2 runners might
