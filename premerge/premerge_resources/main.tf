@@ -301,7 +301,7 @@ resource "helm_release" "github_actions_runner_set_windows_2022" {
 resource "kubernetes_config_map" "linux_32_pod_template" {
   metadata {
     name      = "linux-32-pod-template"
-    namespace = "linux-32-runners"
+    namespace = "llvm-premerge-linux-32-runners"
   }
 
   data = {
