@@ -320,3 +320,50 @@ problem is rather than starting with an assumption.
 - Buildbots being mixed into the Github Actions node count on Grafana caused
 confusion around whether or not Github jobs were scheduling. An attempt should
 be made to separate them.
+
+## US-Central Cluster Not Scheduling Pods
+
+### Date: 2026-08-16
+
+### Symptoms
+
+The LLVM CI Rotation oncall was getting messages with the following message:
+
+> Workflow completed under 50mn in the last 7 days - Error Budget Burn Rate is High
+
+By looking at the dashboard it was observed that the Linux premerge tun time
+was consistent, but the queue time was sporadically quite high (1+ hours when
+it normally hovers <1 minute).
+
+### Investigation
+
+After digging into the data, it was observed that the high queue times were
+specific to the us-central cluster and the us-west cluster was not degraded.
+By digging into k8s events of pending pods on the us-central cluster, it
+was observed that the node pools were not autoscaling up due to GCE being
+out of resources.
+
+### Solution
+
+We deployed a stop-gap in https://github.com/llvm/llvm-project/pull/217111 to
+move all jobs to the us-west cluster to lower the queue delays. No other remediations
+were immediately possible due to the fact that GitHub does all job scheduling
+on the server side and it is not user configurable.
+
+A more permanent solution was deployed in https://github.com/llvm/llvm-zorg/pull/914
+to move the us-central cluster from a zonal cluster to a regional cluster.
+This makes the cluster the same configuration as the us-west cluster and thus
+immune to single/multi-zone stockouts that do not impact the entire region.
+
+### Postmortem
+
+What worked well:
+- The automation alerted the current oncall.
+- We were able to deploy a stop-gap fix to remediate the problem once we were aware.
+
+What needs improvement:
+- By the time we became aware of the issue, it had been ongoing for at least the day.
+
+Lessons/Action Items
+- Stop-gap solutions are generally pretty easy to deploy and efforts should probably
+be prioritized on getting one deployed to stop the bleeding.
