@@ -331,7 +331,7 @@ The LLVM CI Rotation oncall was getting messages with the following message:
 
 > Workflow completed under 50mn in the last 7 days - Error Budget Burn Rate is High
 
-By looking at the dashboard it was observed that the Linux premerge tun time
+By looking at the dashboard it was observed that the Linux premerge run time
 was consistent, but the queue time was sporadically quite high (1+ hours when
 it normally hovers <1 minute).
 
