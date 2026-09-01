@@ -600,4 +600,7 @@ def get_all():
         create_worker("arm-bbot-clang-armv8-quick", max_builds=1),
         create_worker("arm-bbot-lldb-arm-ubuntu", max_builds=1),
         create_worker("arm-bbot-clang-armv8-lld-2stage", max_builds=1),
+        create_worker("arm-bbot-clang-aarch64-cir", max_builds=1),
+        create_worker("arm-bbot-mlir-aarch64-sve-sme", max_builds=1),
+        create_worker("arm-bbot-mlir-aarch64-expensive-checks", max_builds=1),
         ]
