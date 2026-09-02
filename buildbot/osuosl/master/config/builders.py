@@ -3241,6 +3241,53 @@ all += [
                         'TEMP'       : util.Interpolate("%(prop:builddir)s/build"),
                     })},
 
+    {'name' : "nvhpc-offload-nvgpu-x86_64-linux",
+    'tags'  : ["flang", "cuda", "nvhpc", "offload", "openmp"],
+    'workernames' : ["as-builder-7"],
+    'builddir': "nvhpc-offload-nvgpu-x86_64-linux",
+    'factory' : UnifiedTreeBuilder.getCmakeExBuildFactory(
+                    depends_on_projects = ["llvm", "clang", "mlir", "flang", "lld", "flang-rt", "openmp", "offload", "compiler-rt", "libcxx", "libcxxabi", "libc"],
+                    clean = True,
+                    checks = ["check-offload"],
+                    targets = [],
+                    cmake_definitions = {
+                        "CMAKE_BUILD_TYPE"              : "Release",
+                        "CMAKE_EXPORT_COMPILE_COMMANDS" : "ON",
+                        "LLVM_CCACHE_BUILD"             : "ON",
+                        "LLVM_ENABLE_ASSERTIONS"        : "ON",
+                        "BUILD_SHARED_LIBS"             : "ON",
+                        "LLVM_OPTIMIZED_TABLEGEN"       : "ON",
+                        "LLVM_TARGETS_TO_BUILD"         : "host;NVPTX",
+                        "LLVM_RUNTIME_TARGETS"          : "default;nvptx64-nvidia-cuda",
+                        "LLVM_LIT_ARGS"                 : "-v --timeout 100 --threads 16 --time-tests",
+                        "LIBOMPTARGET_PLUGINS_TO_BUILD" : "cuda;host",
+                        "LLVM_ENABLE_PER_TARGET_RUNTIME_DIR" : "ON",
+                        "LIBOMPTEST_BUILD_UNITTESTS"    : "ON",
+                        "CLANG_DEFAULT_LINKER"          : "lld",
+                        "FLANG_PARALLEL_COMPILE_JOBS"   : 12,
+                        # The precompiled headers are not supported for non-clang compilers with ccache enabled.
+                        "CMAKE_DISABLE_PRECOMPILE_HEADERS" : "ON",
+
+                        "RUNTIMES_nvptx64-nvidia-cuda_CACHE_FILES" :
+                            util.Interpolate(
+                                "%(prop:builddir)s/%(prop:srcdir)s/compiler-rt/cmake/caches/NVPTX.cmake;"
+                                "%(prop:builddir)s/%(prop:srcdir)s/libcxx/cmake/caches/NVPTX.cmake"
+                                ),
+                        "RUNTIMES_nvptx64-nvidia-cuda_LLVM_ENABLE_RUNTIMES"         : "compiler-rt;libc;openmp;libcxx;libcxxabi;flang-rt",
+                        "RUNTIMES_nvptx64-nvidia-cuda_FLANG_RT_LIBC_PROVIDER"       : "llvm",
+                        "RUNTIMES_nvptx64-nvidia-cuda_FLANG_RT_LIBCXX_PROVIDER"     : "llvm",
+                        "RUNTIMES_nvptx64-nvidia-cuda_LLVM_USE_SPLIT_DWARF"         : "OFF",
+                        "RUNTIMES_nvptx64-nvidia-cuda_FLANG_PARALLEL_COMPILE_JOBS"  : 12,
+                    },
+                    jobs = 64,
+                    env = {
+                        'CCACHE_DIR' : util.Interpolate("%(prop:builddir)s/ccache-db"),
+                        # TMP/TEMP within the build dir (to utilize a ramdisk).
+                        'TMP'        : util.Interpolate("%(prop:builddir)s/build"),
+                        'TEMP'       : util.Interpolate("%(prop:builddir)s/build"),
+                    })},
+
+
     ## RISC-V RV64GC check-all running under qemu-user.
     {'name' : "clang-rv64gc-qemu-user-single-stage",
     'tags'  : ["llvm", "clang"],

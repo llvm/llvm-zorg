@@ -337,7 +337,7 @@ def getReporters():
                     builders = [
                         "llvm-nvptx-nvidia-ubuntu", "llvm-nvptx64-nvidia-ubuntu",
                         "llvm-nvptx-nvidia-win", "llvm-nvptx64-nvidia-win",
-                        "flang-runtime-cuda-gcc"])
+                        "flang-runtime-cuda-gcc", "nvhpc-offload-nvgpu-x86_64-linux"])
             ]),
         reporters.MailNotifier(
             fromaddr = status_email_fromaddr,
@@ -646,6 +646,14 @@ def getReporters():
             generators = [
                 utils.LLVMDefaultBuildStatusGenerator(
                     builders = ["flang-runtime-cuda-gcc"])
+            ]),
+        reporters.MailNotifier(
+            fromaddr = status_email_fromaddr,
+            sendToInterestedUsers = False,
+            extraRecipients = ["nvhpc-llvm-offload-buildbot-watchers@nvidia.com"],
+            generators = [
+                utils.LLVMDefaultBuildStatusGenerator(
+                    builders = ["nvhpc-offload-nvgpu-x86_64-linux"])
             ]),
         reporters.MailNotifier(
             fromaddr = status_email_fromaddr,
