@@ -1,0 +1,19 @@
+# Explicit list of LLDB tests to run under the lldb-cmake-tsan builder.
+#
+# The expected foramt is one test name per line, matched as a regex against the
+# lit test name.
+
+# Take random tests from different languages/functionality.
+lang/c/enum_types/TestEnumTypes.py
+lang/objc/bitfield_ivars/TestBitfieldIvars.py
+lang/cpp/multiple-inheritance/TestCppMultipleInheritance.py
+functionalities/load_unload/TestLoadUnload.py
+tools/lldb-dap/server/TestDAP_server.py
+
+# related to past TSan issues.
+python_api/was_interrupted/TestDebuggerInterruption.py
+python_api/process/cancel_attach/TestCancelAttach.py
+functionalities/scripted_frame_provider/runlock_reentrant_deadlock/TestRunLockReentrantDeadlock.py
+
+# Those are actually multithreaded tests.
+api/multithreaded
