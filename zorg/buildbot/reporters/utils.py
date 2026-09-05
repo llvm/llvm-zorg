@@ -295,6 +295,22 @@ class LLVMFailBuildGenerator(BuildStatusGenerator):
 class LLVMFailGitHubReporter(GitHubCommentPush):
     name = "LLVMFailGitHubReporter"
 
+    @defer.inlineCallbacks
+    def reconfigService(self, token, **kwargs,):
+        self.token = token # buildbot 3.x compatibility
+        yield super().reconfigService(token=token, **kwargs)
+
+    @defer.inlineCallbacks
+    def _get_auth_header_uni(self, props):
+        if hasattr(self, '_get_auth_header') and props is not None:
+            # buildbot 4.x
+            ret = yield self._get_auth_header(props)
+            return ret
+        else:
+            # buildbot 3.x
+            token = yield self.renderSecrets(self.token)
+            return {'Authorization': f"token {token}"}
+
     def _extract_issue(self, props):  # override
         # This logging generates a massive log lines (up to 100Kb each) that are not required during the regular usage.
         # Uncomment for the debug purposes when necessary.
@@ -304,7 +320,7 @@ class LLVMFailGitHubReporter(GitHubCommentPush):
         return issue
 
     @defer.inlineCallbacks
-    def is_wrong_issue(self, repo_user, repo_name, sha, issue):
+    def is_wrong_issue(self, repo_user, repo_name, sha, issue, props=None):
         # Users could reference wrong PRs in commit messages.
         # So, to make sure we are commenting the correct one we need to check
         # if the given commit is actually corresponding to the PR we parsed
@@ -319,11 +335,12 @@ class LLVMFailGitHubReporter(GitHubCommentPush):
             yield
             return wrong_issue
 
+        headers = yield self._get_auth_header_uni(props)
+
         page = 1
         while wrong_issue:
-            events_response = yield self._http.get(
-                "/".join(["/repos", repo_user, repo_name, "issues", issue, "events"]) +
-                f"?per_page=100&page={page}")
+            url = "/".join(["/repos", repo_user, repo_name, "issues", issue, "events"]) + f"?per_page=100&page={page}"
+            events_response = yield self._http.get(url, headers=headers)
             if events_response.code not in (200,):
                 log.msg(
                     f"{self.name}.is_wrong_issue: WARNING: Cannot get events for PR#{issue}. Do not comment this PR."
@@ -373,7 +390,7 @@ class LLVMFailGitHubReporter(GitHubCommentPush):
         issue=None,
         description=None,
     ):  # override
-        wrong_issue = yield self.is_wrong_issue(repo_user, repo_name, sha, issue)
+        wrong_issue = yield self.is_wrong_issue(repo_user, repo_name, sha, issue, props)
         if wrong_issue:
             return None
 
@@ -384,11 +401,8 @@ class LLVMFailGitHubReporter(GitHubCommentPush):
         url = "/".join(["/repos", repo_user, repo_name, "issues", issue, "comments"])
         log.msg(f"{self.name}.createStatus: INFO: http.post({url})")
 
-        if props:
-            headers = yield self._get_auth_header(props) # 4.x
-            ret = yield self._http.post(url, json=payload, headers=headers)
-        else:
-            ret = yield self._http.post(url, json=payload)
+        headers = yield self._get_auth_header_uni(props)
+        ret = yield self._http.post(url, json=payload, headers=headers)
         return ret
 
 
@@ -434,7 +448,7 @@ class LLVMFailGitHubLabeler(LLVMFailGitHubReporter):
         issue=None,
         description=None,
     ):  # override
-        wrong_issue = yield self.is_wrong_issue(repo_user, repo_name, sha, issue)
+        wrong_issue = yield self.is_wrong_issue(repo_user, repo_name, sha, issue, props)
         if wrong_issue:
             return None
 
@@ -450,9 +464,6 @@ class LLVMFailGitHubLabeler(LLVMFailGitHubReporter):
         url = "/".join(["/repos", repo_user, repo_name, "issues", issue, "labels"])
         log.msg(f"{self.name}.createStatus: INFO: http.post({url}), label={description}")
 
-        if props:
-            headers = yield self._get_auth_header(props) # 4.x
-            ret = yield self._http.post(url, json=payload, headers=headers)
-        else:
-            ret = yield self._http.post(url, json=payload)
+        headers = yield self._get_auth_header_uni(props)
+        ret = yield self._http.post(url, json=payload, headers=headers)
         return ret
