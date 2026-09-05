@@ -4003,4 +4003,55 @@ all += [
              ],
          )
         },
+    # Clang CIR bot
+    {'name' : "clang-aarch64-cir",
+          'tags'  : ["cir"],
+          'workernames' : ["arm-bbot-clang-aarch64-cir"],
+          'builddir':"clang-aarch64-cir",
+          'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
+                      clean=True,
+                      depends_on_projects=["llvm", "clang", "mlir", "clang-tools-extra"],
+                      checks=["check-clang", "check-clang-cir",],
+                      extra_configure_args=[
+                          "-DLLVM_TARGETS_TO_BUILD=AArch64",
+                          "-DLLVM_ENABLE_LLD=True",
+                          "-DLLVM_LIT_ARGS=-v",
+                          "-DCLANG_ENABLE_CIR=True"
+    ])},
+
+    # MLIR SVE+SME
+    {'name' : "mlir-aarch64-sve-sme",
+          'tags'  : ["mlir"],
+          'workernames' : ["arm-bbot-mlir-aarch64-sve-sme"],
+          'builddir':"mlir-aarch64-sve-sme",
+          'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
+                      clean=True,
+                      depends_on_projects=['llvm', 'mlir'],
+                      checks=['check-mlir'],
+                      extra_configure_args=[
+                          "-DLLVM_TARGETS_TO_BUILD=AArch64",
+                          "-DLLVM_ENABLE_LLD=True",
+                          "-DLLVM_LIT_ARGS=-v",
+                          "-DMLIR_INCLUDE_INTEGRATION_TESTS=True",
+                          "-DMLIR_RUN_ARM_SVE_TESTS=True",
+                          "-DMLIR_RUN_ARM_SME_TESTS=True",
+                          "-DARM_EMULATOR_EXECUTABLE=qemu-aarch64"
+    ])},
+
+    # MLIR expensive checks
+    {'name' : "mlir-aarch64-expensive-checks",
+          'tags'  : ["mlir"],
+          'workernames' : ["arm-bbot-mlir-aarch64-expensive-checks"],
+          'builddir':"mlir-aarch64-expensive-checks",
+          'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
+                      clean=True,
+                      depends_on_projects=['llvm', 'mlir', 'lld'],
+                      checks=['check-mlir'],
+                      extra_configure_args=[
+                          "-DLLVM_TARGETS_TO_BUILD=AArch64",
+                          "-DLLVM_ENABLE_LLD=True",
+                          "-DLLVM_LIT_ARGS=-v",
+                          "-DMLIR_ENABLE_EXPENSIVE_PATTERN_API_CHECKS=True"
+     ])},
+
 ]
