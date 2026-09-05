@@ -3255,7 +3255,6 @@ all += [
                     enable_runtimes = ["flang-rt", "openmp", "offload"],
                     clean = True,
                     checks = ["check-offload"],
-                    targets = [],
                     cmake_definitions = {
                         "CMAKE_BUILD_TYPE"              : "Release",
                         "CMAKE_EXPORT_COMPILE_COMMANDS" : "ON",
