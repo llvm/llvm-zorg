@@ -3251,6 +3251,8 @@ all += [
     'builddir': "nvhpc-offload-nvgpu-x86_64-linux",
     'factory' : UnifiedTreeBuilder.getCmakeExBuildFactory(
                     depends_on_projects = ["llvm", "clang", "mlir", "flang", "lld", "flang-rt", "openmp", "offload", "compiler-rt", "libcxx", "libcxxabi", "libc"],
+                    enable_projects = ["clang", "mlir", "flang", "lld"],
+                    enable_runtimes = ["flang-rt", "openmp", "offload"],
                     clean = True,
                     checks = ["check-offload"],
                     targets = [],
