@@ -1,6 +1,6 @@
 six==1.15.0
 urllib3==1.26.8
-requests==2.25.1
+requests==2.32.2
 pexpect==4.9.0
 pyOpenSSL==24.0.0
 cryptography==42.0.5
