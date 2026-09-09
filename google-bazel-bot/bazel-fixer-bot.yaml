@@ -8,8 +8,6 @@ spec:
   selector:
     matchLabels:
       app: bazel-fixer-bot
-  # Allow reaping zombies to restart Bazel Java server
-  shareProcessNamespace: true
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -19,6 +17,8 @@ spec:
       labels:
         app: bazel-fixer-bot
     spec:
+      # Allow reaping zombies to restart Bazel Java server
+      shareProcessNamespace: true
       serviceAccountName: bazel-cache-ksa
       containers:
         - name: runner
