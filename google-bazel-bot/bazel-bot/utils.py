@@ -262,9 +262,11 @@ class LocalGitRepo:
                     self.creds.gh_pr_repo_name
                 )
             )
+            self.gh_pr_creator = f"{self.gh_pr_installation.app_slug}[bot]"
         else:
             self.gh_fork_repo = github.Github(self.creds.gh_fork_user_token).get_repo(self.creds.gh_fork_repo_name)
             self.gh_pr_repo = github.Github(self.creds.gh_pr_user_token).get_repo(self.creds.gh_pr_repo_name) if self.can_create_pr else None
+            self.gh_pr_creator = self.creds.gh_pr_user
 
         self.bazel_utils_path = os.path.join(self.repo_path, "utils", "bazel")
         self.main_branch = "main"
@@ -314,9 +316,10 @@ class LocalGitRepo:
     def is_repo_dirty(self, untracked_files=False) -> bool:
         return self.repo.is_dirty(untracked_files=untracked_files)
 
+    # This needs to be revisited when we have support for nested failures.
     def close_existing_prs(self) -> None:
         for open_pr in self.gh_pr_repo.get_issues(
-            creator="google-llvm-bazel-bot", state="open"
+            creator=self.gh_pr_creator, state="open"
         ):
             print(f"Closing unmerged PR from previous fix attempt: {open_pr.url}")
             open_pr.edit(state="closed")
