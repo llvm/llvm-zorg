@@ -11,7 +11,7 @@ else
   TARGETS=("$@")
 fi
 
-# Quiet mode is important so it doesn't populate LLM logs with unnecessary info 
+# Quiet mode is important so it doesn't populate LLM logs with unnecessary info
 bazelisk --quiet test --lockfile_mode=off --config=generic_clang --jobs=128 \
   --build_tag_filters=-nobuildkite \
   --test_tag_filters=-nobuildkite \

@@ -9,11 +9,11 @@ export BAZELISK_HOME=/var/lib/buildkite-agent/.cache/bazelisk
 if [ $# -eq 0 ]; then
   TARGETS=("@llvm-project//..." "//...")
 else
-  TARGETS=("$@") 
+  TARGETS=("$@")
 fi
 
 # Differences from build script running on buildkite (https://buildkite.com/llvm-project/upstream-bazel/settings/steps):
-# 1. Quiet mode is important so it doesn't populate LLM logs with unnecessary info 
+# 1. Quiet mode is important so it doesn't populate LLM logs with unnecessary info
 # 2. --lockfile_mode=off for both query and build to avoid updating MODULE.bazel.lock files
 # 3. --nokeep_going so we don't pollute agent's context with too many failures.
 bazelisk --quiet build --lockfile_mode=off --config=ci --jobs=128 --nokeep_going \
