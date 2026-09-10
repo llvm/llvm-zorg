@@ -84,7 +84,7 @@ COPY --chown=buildkite-agent:buildkite-agent docker/pre-checkout /etc/buildkite-
 RUN chsh -s /bin/bash buildkite-agent
 
 ENTRYPOINT ["entrypoint.sh"]
-CMD ["gosu", "buildkite-agent", "buildkite-agent", "start", "--no-color", "--tags-from-gcp"]
+CMD ["gosu", "buildkite-agent", "buildkite-agent", "start", "--no-color"]
 
 FROM bazel-base as bazel-fixer-bot
 
