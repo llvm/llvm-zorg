@@ -472,8 +472,8 @@ all = [
                         '--cppflags', '-O0',
                         '--threads=32', '--build-threads=32'])},
 
-    ## AArch32 Self-hosting Clang+LLVM check-all + LLD + test-suite
-    # Sanitizers build disabled due to PR38690
+    ## AArch32 Clang+LLVM+LLD check-all + test-suite.
+    # Not using lld for everything due to https://github.com/llvm/llvm-project/issues/172659.
     {'name' : "clang-armv8-lld-2stage",
     'tags'  : ["lld"],
     'workernames' : ["linaro-clang-armv8-lld-2stage", "arm-bbot-clang-armv8-lld-2stage"],
@@ -488,8 +488,8 @@ all = [
                     extra_cmake_args=[
                         "-DCMAKE_C_FLAGS='-mcpu=neoverse-n1'",
                         "-DCMAKE_CXX_FLAGS='-mcpu=neoverse-n1'",
+                        # Sanitizers disabled due to https://github.com/llvm/llvm-project/issues/38038.
                         "-DCOMPILER_RT_BUILD_SANITIZERS=OFF",
-                        "-DLLVM_ENABLE_LLD=True",
                         # lld tests cause us to hit thread limits
                         "-DLLVM_ENABLE_THREADS=OFF"])},
 
