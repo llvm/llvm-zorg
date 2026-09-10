@@ -7,17 +7,15 @@ set -ueo pipefail
 export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/bin
 export BAZELISK_HOME=/var/lib/buildkite-agent/.cache/bazelisk
 if [ $# -eq 0 ]; then
-  # Differences from build script running on buildkite:
-  # 1. Quiet mode is important so it doesn't populate LLM logs with unnecessary info 
-  # 2. --lockfile_mode=off for both query and build to avoid updating MODULE.bazel.lock files
-  # 3. --nokeep_going so we don't pollute agent's context with too many failures.
-  bazelisk query //... + @llvm-project//... --lockfile_mode=off | \
-  xargs --max-args 1000000 --max-chars 1000000 --exit \
-  bazelisk --quiet build --lockfile_mode=off --config=ci --jobs=128 --nokeep_going \
-  --remote_cache=https://storage.googleapis.com/llvm-bazel-cache \
-  --google_default_credentials
+  TARGETS=("@llvm-project//..." "//...")
 else
-  bazelisk --quiet build --lockfile_mode=off $@ --config=ci --jobs=128 --nokeep_going \
-  --remote_cache=https://storage.googleapis.com/llvm-bazel-cache \
-  --google_default_credentials
-fi  
+  TARGETS=("$@") 
+fi
+
+# Differences from build script running on buildkite (https://buildkite.com/llvm-project/upstream-bazel/settings/steps):
+# 1. Quiet mode is important so it doesn't populate LLM logs with unnecessary info 
+# 2. --lockfile_mode=off for both query and build to avoid updating MODULE.bazel.lock files
+# 3. --nokeep_going so we don't pollute agent's context with too many failures.
+bazelisk --quiet build --lockfile_mode=off --config=ci --jobs=128 --nokeep_going \
+  --sandbox_base='' --remote_cache=https://storage.googleapis.com/llvm-bazel-cache \
+  --google_default_credentials "${TARGETS[@]}"
