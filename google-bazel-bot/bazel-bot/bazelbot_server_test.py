@@ -247,12 +247,11 @@ class TestBazelBotServer(unittest.TestCase):
         cmd_processor.run_bazel_build.return_value = mock.MagicMock(success=True)
         git_repo.push_fix.return_value = True
 
-        result = bot.process_failure_with_ai(build_info)
+        result = bot.process_failure_with_ai(build_info, "bazel-sha1")
 
         self.assertTrue(result)
-        git_repo.create_branch_for_fix.assert_called_with("sha1")
         git_repo.commit.assert_called()
-        git_repo.push_fix.assert_called_with(build_info, True)
+        git_repo.push_fix.assert_called_with(build_info, True, branch_name="bazel-sha1")
 
     @mock.patch("bazelbot_server.bazel_agent.query_agent")
     @mock.patch("bazelbot_server.asyncio.run")
@@ -289,7 +288,7 @@ class TestBazelBotServer(unittest.TestCase):
         cmd_processor.run_bazel_build.return_value = mock.MagicMock(success=True)
         git_repo.push_fix.return_value = True
 
-        result = bot.process_failure_with_ai(build_info)
+        result = bot.process_failure_with_ai(build_info, "bazel-sha1")
 
         self.assertTrue(result)
         self.assertEqual(mock_query_agent.call_count, 2)
@@ -317,13 +316,12 @@ class TestBazelBotServer(unittest.TestCase):
         bot.validate_before_publishing = mock.MagicMock(return_value=True)
         git_repo.push_fix.return_value = True
 
-        result = bot.process_failure_with_bant(build_info)
+        result = bot.process_failure_with_bant(build_info, "bazel-sha1")
 
         self.assertTrue(result)
-        git_repo.create_branch_for_fix.assert_called_with("sha1")
         cmd_processor.run_bant.assert_called_with(targets=["//target:foo"])
         git_repo.commit.assert_called()
-        git_repo.push_fix.assert_called()
+        git_repo.push_fix.assert_called_with(build_info, branch_name="bazel-sha1")
 
     def test_validate_before_publishing(self):
         cmd_processor = mock.MagicMock()
@@ -372,25 +370,27 @@ class TestBazelBotServer(unittest.TestCase):
         # Mock methods
         bot.process_failure_with_bant = mock.MagicMock()
         bot.process_failure_with_ai = mock.MagicMock()
+        git_repo.get_branch_name.return_value = "bazel-sha1"
 
         # 1. Bant succeeds
         bot.process_failure_with_bant.return_value = True
-        self.assertTrue(bot.repair_build(build_info))
+        self.assertTrue(bot.repair_build(build_info, "bazel-sha1"))
         bot.process_failure_with_ai.assert_not_called()
 
         # 2. Bant fails, AI succeeds
         bot.process_failure_with_bant.return_value = False
         bot.process_failure_with_ai.return_value = True
-        self.assertTrue(bot.repair_build(build_info))
+        self.assertTrue(bot.repair_build(build_info, "bazel-sha1"))
         bot.process_failure_with_ai.assert_called_once()
 
         # 3. Both fail
         bot.process_failure_with_ai.return_value = False
-        self.assertFalse(bot.repair_build(build_info))
+        self.assertFalse(bot.repair_build(build_info, "bazel-sha1"))
 
     def test_run_logic(self):
         cmd_processor = mock.MagicMock()
         git_repo = mock.MagicMock()
+        git_repo.create_branch_for_fix.return_value = "bazel-sha2"
         creds = mock.MagicMock()
         build_processor = mock.MagicMock()
 
@@ -427,7 +427,7 @@ class TestBazelBotServer(unittest.TestCase):
 
         # 1. repair_build should be called only for sha2 (PASSED -> FAILED transition)
         self.assertEqual(bot.repair_build.call_count, 1)
-        bot.repair_build.assert_called_with(builds[1])  # sha2
+        bot.repair_build.assert_called_with(builds[1], "bazel-sha2")
 
         # 2. Verify state updates
         self.assertEqual(bot.last_processed_sha, "sha4")
@@ -488,12 +488,222 @@ class TestBazelBotServer(unittest.TestCase):
         self.assertEqual(mock_func.call_count, 1)
         mock_sleep.assert_not_called()
 
+    def test_rebase_branch_success(self):
+        repo = mock.MagicMock()
+        git_repo = utils.LocalGitRepo.__new__(utils.LocalGitRepo)
+        git_repo.repo = repo
+
+        self.assertTrue(git_repo.rebase_branch("bazel-sha1", "sha2"))
+        repo.git.checkout.assert_called_with("bazel-sha1")
+        repo.git.rebase.assert_called_with("sha2")
+
+    def test_rebase_branch_failure(self):
+        repo = mock.MagicMock()
+        git_repo = utils.LocalGitRepo.__new__(utils.LocalGitRepo)
+        git_repo.repo = repo
+        repo.git.rebase.side_effect = git.GitCommandError("rebase", 1)
+
+        self.assertFalse(git_repo.rebase_branch("bazel-sha1", "sha2"))
+        repo.git.rebase.assert_has_calls([
+            mock.call("sha2"),
+            mock.call("--abort"),
+        ])
+
+    def test_close_existing_prs_with_exclude_branch(self):
+        git_repo = utils.LocalGitRepo.__new__(utils.LocalGitRepo)
+        git_repo.gh_pr_creator = "bot"
+        git_repo.gh_pr_repo = mock.MagicMock()
+
+        class MockPR:
+            def __init__(self, ref, url):
+                self.head = mock.MagicMock(ref=ref)
+                self.url = url
+                self.state = "open"
+
+            def edit(self, state):
+                self.state = state
+
+            @property
+            def pull_request(self):
+                return True
+
+            def as_pull_request(self):
+                return self
+
+        pr1 = MockPR("bazel-sha1", "http://pr1")
+        pr2 = MockPR("bazel-sha2", "http://pr2")
+        git_repo.gh_pr_repo.get_issues.return_value = [pr1, pr2]
+
+        git_repo.close_existing_prs(exclude_branch="bazel-sha1")
+
+        self.assertEqual(pr1.state, "open")
+        self.assertEqual(pr2.state, "closed")
+
+    def test_get_build_info_clean_pass_resets_fix_branch(self):
+        cmd_processor = mock.MagicMock()
+        git_repo = mock.MagicMock()
+        creds = mock.MagicMock()
+        build_processor = mock.MagicMock()
+
+        bot = bazelbot_server.BazelRepairBot(
+            cmd_processor, git_repo, creds, build_processor, 10
+        )
+        bot.active_fix_branch = "bazel-old"
+
+        cmd_processor.run_bazel_build.return_value = mock.MagicMock(success=True)
+
+        info = bot.get_build_info_for_commit("sha1")
+
+        self.assertEqual(info.commit, "sha1")
+        self.assertEqual(info.state, utils.BuildState.PASSED)
+        self.assertIsNone(bot.active_fix_branch)
+        git_repo.checkout_commit.assert_called_with("sha1")
+        self.assertEqual(cmd_processor.run_bazel_build.call_count, 1)
+
+    def test_get_build_info_clean_fail_no_active_fix(self):
+        cmd_processor = mock.MagicMock()
+        git_repo = mock.MagicMock()
+        creds = mock.MagicMock()
+        build_processor = mock.MagicMock()
+
+        bot = bazelbot_server.BazelRepairBot(
+            cmd_processor, git_repo, creds, build_processor, 10
+        )
+        bot.active_fix_branch = None
+
+        cmd_processor.run_bazel_build.return_value = mock.MagicMock(
+            success=False, stderr="ERROR: (from target //broken:target)"
+        )
+
+        info = bot.get_build_info_for_commit("sha1")
+
+        self.assertEqual(info.commit, "sha1")
+        self.assertEqual(info.state, utils.BuildState.FAILED)
+        self.assertEqual(info.failed_targets, ["//broken:target"])
+        self.assertIsNone(bot.active_fix_branch)
+        self.assertEqual(cmd_processor.run_bazel_build.call_count, 1)
+
+    def test_get_build_info_nested_pass_carries_fix(self):
+        cmd_processor = mock.MagicMock()
+        git_repo = mock.MagicMock()
+        creds = mock.MagicMock()
+        build_processor = mock.MagicMock()
+
+        bot = bazelbot_server.BazelRepairBot(
+            cmd_processor, git_repo, creds, build_processor, 10
+        )
+        bot.active_fix_branch = "bazel-sha1"
+
+        git_repo.rebase_branch.return_value = True
+        cmd_processor.run_bazel_build.side_effect = [
+            mock.MagicMock(success=False, stderr="err1"),
+            mock.MagicMock(success=True, stderr=""),
+        ]
+
+        info = bot.get_build_info_for_commit("sha2")
+
+        self.assertEqual(info.commit, "sha2")
+        self.assertEqual(info.state, utils.BuildState.PASSED)
+        self.assertEqual(info.failed_targets, [])
+        self.assertEqual(bot.active_fix_branch, "bazel-sha1")
+        git_repo.rebase_branch.assert_called_with("bazel-sha1", "sha2")
+        self.assertEqual(cmd_processor.run_bazel_build.call_count, 2)
+
+    def test_get_build_info_nested_fail_returns_failure(self):
+        cmd_processor = mock.MagicMock()
+        git_repo = mock.MagicMock()
+        creds = mock.MagicMock()
+        build_processor = mock.MagicMock()
+
+        bot = bazelbot_server.BazelRepairBot(
+            cmd_processor, git_repo, creds, build_processor, 10
+        )
+        bot.active_fix_branch = "bazel-sha1"
+
+        git_repo.rebase_branch.return_value = True
+        cmd_processor.run_bazel_build.side_effect = [
+            mock.MagicMock(success=False, stderr="err1"),
+            mock.MagicMock(success=False, stderr="ERROR: (from target //nested:fail)"),
+        ]
+
+        info = bot.get_build_info_for_commit("sha2")
+
+        self.assertEqual(info.commit, "sha2")
+        self.assertEqual(info.state, utils.BuildState.FAILED)
+        self.assertEqual(info.failed_targets, ["//nested:fail"])
+        self.assertEqual(bot.active_fix_branch, "bazel-sha1")
+        self.assertEqual(cmd_processor.run_bazel_build.call_count, 2)
+
+    def test_get_build_info_rebase_fail_resets_fix_branch(self):
+        cmd_processor = mock.MagicMock()
+        git_repo = mock.MagicMock()
+        creds = mock.MagicMock()
+        build_processor = mock.MagicMock()
+
+        bot = bazelbot_server.BazelRepairBot(
+            cmd_processor, git_repo, creds, build_processor, 10
+        )
+        bot.active_fix_branch = "bazel-sha1"
+
+        git_repo.rebase_branch.return_value = False
+        cmd_processor.run_bazel_build.return_value = mock.MagicMock(
+            success=False, stderr="ERROR: (from target //t:one)"
+        )
+
+        info = bot.get_build_info_for_commit("sha2")
+
+        self.assertEqual(info.commit, "sha2")
+        self.assertEqual(info.state, utils.BuildState.FAILED)
+        self.assertIsNone(bot.active_fix_branch)
+        self.assertEqual(cmd_processor.run_bazel_build.call_count, 1)
+
+    def test_run_logic_nested_failure_repair(self):
+        cmd_processor = mock.MagicMock()
+        git_repo = mock.MagicMock()
+        git_repo.create_branch_for_fix.return_value = "bazel-sha2"
+        creds = mock.MagicMock()
+        build_processor = mock.MagicMock()
+
+        bot = bazelbot_server.BazelRepairBot(
+            cmd_processor, git_repo, creds, build_processor, 10
+        )
+        bot.last_processed_sha = "init_sha"
+        bot.last_processed_state = utils.BuildState.PASSED
+
+        builds = [
+            utils.BuildInfo(commit="sha1", state=utils.BuildState.PASSED),
+            utils.BuildInfo(commit="sha2", state=utils.BuildState.FAILED),  # Root failure
+            utils.BuildInfo(commit="sha3", state=utils.BuildState.PASSED),  # Clean with fix
+            utils.BuildInfo(commit="sha4", state=utils.BuildState.FAILED),  # Nested failure!
+            utils.BuildInfo(commit="sha5", state=utils.BuildState.PASSED),
+        ]
+        build_processor.get_builds_to_process.return_value = builds
+
+        bot.repair_build = mock.MagicMock(return_value=True)
+        bot.wait = mock.MagicMock(side_effect=StopIteration)
+
+        try:
+            bot.run()
+        except StopIteration:
+            pass
+
+        # Both sha2 (root) and sha4 (nested) should be repaired!
+        self.assertEqual(bot.repair_build.call_count, 2)
+        bot.repair_build.assert_has_calls([
+            mock.call(builds[1], "bazel-sha2"),
+            mock.call(builds[3], "bazel-sha2"),
+        ])
+        self.assertEqual(bot.active_fix_branch, "bazel-sha2")
+        self.assertEqual(bot.last_processed_sha, "sha5")
+        self.assertEqual(bot.last_processed_state, utils.BuildState.PASSED)
+
+
+
     def test_call_with_retry_empty_exceptions(self):
         mock_func = mock.MagicMock()
         with self.assertRaises(ValueError):
             utils.call_with_retry((), mock_func)
         mock_func.assert_not_called()
-
 
 
 if __name__ == "__main__":
