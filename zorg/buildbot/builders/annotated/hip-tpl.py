@@ -67,7 +67,10 @@ def main(argv):
         test_suite_cmake_args.append("-DAMDGPU_ARCHS=gfx90a")
         test_suite_cmake_args.append("-DTEST_SUITE_SUBDIRS=External")
         # Giving only this flag enables to pull the default Kokkos version.
+        # this spelling is going to be removed
         test_suite_cmake_args.append("-DEXTERNAL_HIP_TESTS_KOKKOS=ON")
+        # new spelling
+        test_suite_cmake_args.append("-DENABLE_HIP_KOKKOS_TESTS=ON")
 
         # Pick up compilers from build tree
         test_suite_cmake_args.append("-DCMAKE_CXX_COMPILER=%s" % clangpp_binary)
