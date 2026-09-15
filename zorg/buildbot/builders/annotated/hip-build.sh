@@ -142,7 +142,7 @@ build_step "Building HIP test-suite"
 ninja $NINJAOPT hip-tests-simple
 
 build_step "Testing HIP test-suite"
-ninja $NINJAOPT check-hip-simple
+ninja $NINJAOPT check-hip-all
 }
 
 setup_env
