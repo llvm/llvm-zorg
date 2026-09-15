@@ -136,6 +136,7 @@ PATH="${LLVM_BUILD_DIR}/bin:$PATH" cmake -G Ninja \
   -DCMAKE_C_COMPILER="${LLVM_BUILD_DIR}/bin/clang" \
   -DCMAKE_VERBOSE_MAKEFILE=ON \
   -DENABLE_HIP_HIPIFY_TESTS=ON \
+  -DENABLE_HIP_BLENDER_TESTS=ON \
   ${TESTSUITE_ROOT}
 
 build_step "Building HIP test-suite"
