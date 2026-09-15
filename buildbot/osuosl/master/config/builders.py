@@ -860,6 +860,7 @@ all = [
                         'CMAKE_AR'                       : '/data/devuser/ar_wrapper.sh',
                         'LLVM_TARGETS_TO_BUILD'          : 'SystemZ',
                         'LLVM_ENABLE_THREADS'            : 'OFF',
+                        'DIFF_EXE'                       : '/data/zopen/usr/local/bin/gdiff',
                     },
                     env={
                         'CC': '/usr/lpp/IBM/cnw/v2r2/openxl/bin/ibm-clang64',
