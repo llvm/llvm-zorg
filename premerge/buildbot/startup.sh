@@ -13,7 +13,7 @@ echo "Google LLVM Premerge Infra Rotation <llvm-presubmit-infra@google.com>" \
   > /worker/info/admin
 
 {
-  echo "Premerge container (https://github.com/llvm/llvm-project/pkgs/container/ci-ubuntu-24.04)"
+  echo "Premerge container (https://github.com/llvm/llvm-project/pkgs/container/ci-ubuntu-26.04)"
   echo "GCP n2/n2d standard instances."
 } > /worker/info/host
 
