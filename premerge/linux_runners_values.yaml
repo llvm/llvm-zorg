@@ -22,7 +22,7 @@ template:
       premerge-platform: linux
     containers:
     - name: runner
-      image: ghcr.io/llvm/ci-ubuntu-26.04-agent:59ae8d382261
+      image: ghcr.io/llvm/ci-ubuntu-24.04-agent:404d35af4d58
       command: ["/home/gha/actions-runner/run.sh"]
       resources:
         # If we don't set the CPU request high-enough here, 2 runners might
