@@ -538,8 +538,8 @@ def lldb_cmake_builder(target, variant=None):
     lit_args = ['-v', '--time-tests', '--shuffle',
                 '--xunit-xml-output={}'.format(results_file), '-v']
     if host_is_macos_26():
-        # Work around a in problem where macOS 26 unpredictably denies
-        # a bunch concurrently running debugserver instances to attch
+        # Work around a problem where macOS 26 unpredictably denies
+        # a bunch concurrently running debugserver instances to attach
         # to a process, by re-runing only these failures in
         # series. CMake's separate_arguments() splits LLVM_LIT_ARGS on
         # whitespace without honoring quotes, hence the `.`.
