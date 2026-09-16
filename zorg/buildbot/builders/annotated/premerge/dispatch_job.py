@@ -27,7 +27,7 @@ PLATFORM_TAINT = {
 }
 PLATFORM_TO_BUILDBOT_PLATFORM = {"Linux": "linux", "Windows": "windows-2022"}
 PLATFORM_CONTAINER = {
-    "Linux": "ghcr.io/llvm/ci-ubuntu-24.04",
+    "Linux": "ghcr.io/llvm/ci-ubuntu-26.04",
     "Windows": "ghcr.io/llvm/ci-windows-2022",
 }
 PLATFORM_TO_GCS_BUCKET_SUFFIX = {
