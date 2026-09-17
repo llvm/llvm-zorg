@@ -123,6 +123,9 @@ pipeline {
                     source ./venv/bin/activate
 
                     export PATH=$PATH:/usr/bin:/usr/local/bin
+
+                    rm -rf $WORKSPACE/lldb-build/lldb-test-build.noindex
+
                     python3 llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix configure \
                       $MATRIX_COMMON_BUILD_PARAMETERS \
                       --assertions \
@@ -161,6 +164,8 @@ pipeline {
                     sh '''
                     source ./venv/bin/activate
 
+                    rm -rf $WORKSPACE/lldb-build/lldb-test-build.noindex
+
                     python3 llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix configure \
                       $MATRIX_COMMON_BUILD_PARAMETERS \
                       --lldb-test-compiler="$WORKSPACE/lldb-build/bin/clang" \
@@ -198,6 +203,8 @@ pipeline {
                 timeout(60) {
                     sh '''
                     source ./venv/bin/activate
+
+                    rm -rf $WORKSPACE/lldb-build/lldb-test-build.noindex
 
                     python3 llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix configure \
                       $MATRIX_COMMON_BUILD_PARAMETERS \
@@ -276,6 +283,9 @@ pipeline {
                     source ./venv/bin/activate
 
                     build_dir=$WORKSPACE/clang_1917_build
+
+                    rm -rf $WORKSPACE/lldb-build/lldb-test-build.noindex
+
                     python3 llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix configure \
                       $MATRIX_COMMON_BUILD_PARAMETERS \
                       --assertions \
@@ -345,6 +355,9 @@ pipeline {
                     source ./venv/bin/activate
 
                     build_dir=$WORKSPACE/clang_2118_build
+
+                    rm -rf $WORKSPACE/lldb-build/lldb-test-build.noindex
+
                     python3 llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix configure \
                       $MATRIX_COMMON_BUILD_PARAMETERS \
                       --assertions \
