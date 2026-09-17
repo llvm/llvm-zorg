@@ -231,7 +231,7 @@ pipeline {
             }
             }
         }
-        stage('Build Clang 17.0.6') {
+        stage('Build Clang 19.1.7') {
             steps {
                 timeout(30) {
                     // Deliberately a plain clone rather than checkout/GitSCM.
@@ -245,16 +245,16 @@ pipeline {
                     // entire history, truncated at GitSCM.MAX_CHANGELOG (1024
                     // commits). A pinned tag needs no SCM bookkeeping at all.
                     sh '''
-                    rm -rf clang_1706
-                    git clone --depth 1 --branch llvmorg-17.0.6 \
-                      https://github.com/llvm/llvm-project.git clang_1706
+                    rm -rf clang_1917
+                    git clone --depth 1 --branch llvmorg-19.1.7 \
+                      https://github.com/llvm/llvm-project.git clang_1917
                     '''
                 }
                 timeout(90) {
                     sh '''
                     export PATH=$PATH:/usr/bin:/usr/local/bin
-                    export SRC_DIR='clang_1706'
-                    export BUILD_DIR='clang_1706_build'
+                    export SRC_DIR='clang_1917'
+                    export BUILD_DIR='clang_1917_build'
 
                     source ./venv/bin/activate
 
@@ -269,13 +269,13 @@ pipeline {
                 }
             }
         }
-        stage('Test Clang 17.0.6') {
+        stage('Test Clang 19.1.7') {
             steps {
                 timeout(60) {
                     sh '''
                     source ./venv/bin/activate
 
-                    build_dir=$WORKSPACE/clang_1706_build
+                    build_dir=$WORKSPACE/clang_1917_build
                     python3 llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix configure \
                       $MATRIX_COMMON_BUILD_PARAMETERS \
                       --assertions \
@@ -309,21 +309,21 @@ pipeline {
                 }
             }
         }
-        stage('Build Clang 19.1.7') {
+        stage('Build Clang 21.1.8') {
             steps {
                 timeout(30) {
-                    // Plain clone, not checkout/GitSCM. See 'Build Clang 17.0.6'.
+                    // Plain clone, not checkout/GitSCM. See 'Build Clang 19.1.7'.
                     sh '''
-                    rm -rf clang_1917
-                    git clone --depth 1 --branch llvmorg-19.1.7 \
-                      https://github.com/llvm/llvm-project.git clang_1917
+                    rm -rf clang_2118
+                    git clone --depth 1 --branch llvmorg-21.1.8 \
+                      https://github.com/llvm/llvm-project.git clang_2118
                     '''
                 }
                 timeout(90) {
                     sh '''
                     export PATH=$PATH:/usr/bin:/usr/local/bin
-                    export SRC_DIR='clang_1917'
-                    export BUILD_DIR='clang_1917_build'
+                    export SRC_DIR='clang_2118'
+                    export BUILD_DIR='clang_2118_build'
 
                     source ./venv/bin/activate
 
@@ -338,13 +338,13 @@ pipeline {
                 }
             }
         }
-        stage('Test Clang 19.1.7') {
+        stage('Test Clang 21.1.8') {
             steps {
                 timeout(60) {
                     sh '''
                     source ./venv/bin/activate
 
-                    build_dir=$WORKSPACE/clang_1917_build
+                    build_dir=$WORKSPACE/clang_2118_build
                     python3 llvm-zorg/zorg/jenkins/monorepo_build.py lldb-cmake-matrix configure \
                       $MATRIX_COMMON_BUILD_PARAMETERS \
                       --assertions \
