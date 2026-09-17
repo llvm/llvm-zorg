@@ -543,7 +543,8 @@ def lldb_cmake_builder(target, variant=None):
         # to a process, by re-runing only these failures in
         # series. CMake's separate_arguments() splits LLVM_LIT_ARGS on
         # whitespace without honoring quotes, hence the `.`.
-        attach_failure_regex = 'cannot.get.permission.to.debug.processes'
+        attach_failure_regex = \
+            r'cannot.get.permission.to.debug.processes\|Process.launch.failed'
         lit_args.extend(['--rerun-failed-serially', attach_failure_regex])
     if conf.max_parallel_tests:
         lit_args.extend(['-j', conf.max_parallel_tests])
