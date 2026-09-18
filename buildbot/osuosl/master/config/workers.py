@@ -603,4 +603,7 @@ def get_all():
         create_worker("arm-bbot-clang-aarch64-cir", max_builds=1),
         create_worker("arm-bbot-mlir-aarch64-sve-sme", max_builds=1),
         create_worker("arm-bbot-mlir-aarch64-expensive-checks", max_builds=1),
+        create_worker("arm-bbot-clang-arm64-windows-msvc", max_builds=1),
+        create_worker("arm-bbot-lldb-aarch64-windows", max_builds=1),
+        create_worker("arm-bbot-clang-arm64-windows-msvc-2stage", max_builds=1),
         ]

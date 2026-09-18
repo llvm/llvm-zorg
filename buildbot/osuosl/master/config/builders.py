@@ -339,7 +339,7 @@ all = [
 
     {'name': "clang-arm64-windows-msvc",
     'tags' : ["llvm", "clang", "lld"],
-    'workernames' : ["linaro-armv8-windows-msvc-04"],
+    'workernames' : ["linaro-armv8-windows-msvc-04", "arm-bbot-clang-arm64-windows-msvc"],
     'builddir': "clang-arm64-windows-msvc",
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                     depends_on_projects=['llvm', 'clang', 'clang-tools-extra',
@@ -648,7 +648,7 @@ all = [
 
     {'name' : "clang-arm64-windows-msvc-2stage",
     'tags'  : ["clang"],
-    'workernames' : ["linaro-armv8-windows-msvc-02", "linaro-armv8-windows-msvc-03"],
+    'workernames' : ["linaro-armv8-windows-msvc-02", "linaro-armv8-windows-msvc-03", "arm-bbot-clang-arm64-windows-msvc-2stage"],
     'builddir': "clang-arm64-windows-msvc-2stage",
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
                     vs="manual",
@@ -1365,7 +1365,7 @@ all = [
 
     {'name' : "lldb-aarch64-windows",
     'tags'  : ["lldb"],
-    'workernames' : ["linaro-armv8-windows-msvc-05"],
+    'workernames' : ["linaro-armv8-windows-msvc-05", "arm-bbot-lldb-aarch64-windows"],
     'builddir': "lldb-aarch64-windows",
     'factory' : LLDBBuilder.getLLDBCMakeBuildFactory(
                     clean=True,
