@@ -52,6 +52,16 @@ def get_all():
         create_worker("linaro-armv8-windows-msvc-05", max_builds=1),
         create_worker("linaro-armv8-windows-msvc-06", max_builds=1),
 
+        #Windows Ampere Altra
+        create_worker("linaro-armv8-windows-msvc-90", max_builds=1),
+        create_worker("linaro-armv8-windows-msvc-91", max_builds=1),
+        create_worker("linaro-armv8-windows-msvc-92", max_builds=1),
+        create_worker("linaro-armv8-windows-msvc-93", max_builds=1),
+        create_worker("linaro-armv8-windows-msvc-100", max_builds=1),
+        create_worker("linaro-armv8-windows-msvc-101", max_builds=1),
+        create_worker("linaro-armv8-windows-msvc-102", max_builds=1),
+        create_worker("linaro-armv8-windows-msvc-103", max_builds=1),
+
         # Linux s390x Ubuntu Focal, IBM z13 (5GHz), 64GB of RAM
         create_worker("onnx-mlir-nowarn-linux-s390x", properties={'jobs' : 4}, max_builds=1),
 
