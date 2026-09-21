@@ -205,7 +205,8 @@ all = [
                     extra_configure_args=[
                         "-DLLVM_ENABLE_EXPENSIVE_CHECKS=ON",
                         "-DLLVM_ENABLE_WERROR=OFF",
-                        "-DCMAKE_BUILD_TYPE=Debug"])},
+                        "-DCMAKE_BUILD_TYPE=Debug",
+                        "-DLLVM_PARALLEL_LINK_JOBS=14"])},
 
     {'name' : "llvm-clang-x86_64-expensive-checks-debian",
     'tags'  : ["llvm", "expensive-checks"],
