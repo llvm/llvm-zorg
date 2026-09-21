@@ -537,14 +537,6 @@ def lldb_cmake_builder(target, variant=None):
     # Construct lit arguments.
     lit_args = ['-v', '--time-tests', '--shuffle',
                 '--xunit-xml-output={}'.format(results_file), '-v']
-    if host_is_macos_26():
-        # Work around a problem where macOS 26 unpredictably denies
-        # a bunch concurrently running debugserver instances to attach
-        # to a process, by re-runing only these failures in
-        # series. CMake's separate_arguments() splits LLVM_LIT_ARGS on
-        # whitespace without honoring quotes, hence the `.`.
-        attach_failure_regex = 'cannot.get.permission.to.debug.processes'
-        lit_args.extend(['--rerun-failed-serially', attach_failure_regex])
     if conf.max_parallel_tests:
         lit_args.extend(['-j', conf.max_parallel_tests])
     if variant == 'sanitized':
@@ -993,14 +985,8 @@ def max_link_jobs():
     return int(math.ceil(mem / conf.link_memory_usage()))
 
 
-def host_is_macos_26():
-    version = run_collect_output(['sw_vers', '-productVersion']).strip()
-    return version == '26' or version.startswith('26.')
-
-
 TEST_VALS = {"sysctl hw.ncpu": "hw.ncpu: 8\n",
              "sysctl hw.memsize": "hw.memsize: 8589934592\n",
-             "sw_vers -productVersion": "26.0\n",
              "xcrun --sdk iphoneos --show-sdk-path": "/Foo/bar",
              "/usr/bin/xcrun svn upgrade": "",
              }
