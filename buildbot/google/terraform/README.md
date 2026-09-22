@@ -41,7 +41,7 @@ manual steps are required:
   versioning" to be able to access previous versions of the state in case it
   gets corrupted: 
   ```bash
-  gsutil versioning set on gs://<bucket name>
+  gcloud storage buckets update --versioning gs://<bucket name>
   ````
 * Store the secrets (see next section).
 

@@ -715,7 +715,7 @@ function upload_stats() {
     lscpu > "${ROOT}/cpu.txt"
     curl http://metadata.google.internal/computeMetadata/v1/instance/machine-type \
       -H Metadata-Flavor:Google > "${ROOT}/machine-type.txt" || true
-    gsutil cp "${ROOT}/"{time,cpu,machine-type}".txt" "gs://sanitizer-buildbot-out/${BUILDBOT_BUILDERNAME}/${1}/${BUILDBOT_REVISION}/" || true
+    gcloud storage cp "${ROOT}/"{time,cpu,machine-type}".txt" "gs://sanitizer-buildbot-out/${BUILDBOT_BUILDERNAME}/${1}/${BUILDBOT_REVISION}/" || true
   fi
   [[ ! -f "${ROOT}/time.txt" ]] || cat "${ROOT}/time.txt"
 }

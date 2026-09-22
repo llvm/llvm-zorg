@@ -27,7 +27,7 @@ rm -rf /b
 BOT_DIR=/b
 SERVER_PORT=9990
 WORKER_NAME="$(hostname -s)"
-WORKER_PASSWORD="$(gsutil cat gs://sanitizer-buildbot/$(hostname -s)-password)"
+WORKER_PASSWORD="$(gcloud storage cat gs://sanitizer-buildbot/$(hostname -s)-password)"
 
 userdel buildbot | true
 groupadd -f buildbot
