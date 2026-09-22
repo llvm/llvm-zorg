@@ -64,7 +64,7 @@ def addGCSUploadSteps(f, package_name, install_prefix, gcs_directory, env,
 
     f.addStep(ShellCommand(
                   name='upload ' + package_name + ' to storage bucket',
-                  command=['gsutil', 'cp', '../install.tar.xz', gcs_url],
+                  command=['gcloud', 'storage', 'cp', '../install.tar.xz', gcs_url],
                   description=('uploading ' + package_name +
                                'to storage bucket ...'),
                   workdir=install_prefix,
