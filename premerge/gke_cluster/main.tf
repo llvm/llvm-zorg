@@ -62,7 +62,7 @@ resource "google_container_node_pool" "llvm_premerge_linux" {
   }
 
   node_config {
-    machine_type     = var.linux_machine_type
+    machine_type = var.linux_machine_type
     taint {
       key    = "premerge-platform"
       value  = "linux"
@@ -96,7 +96,7 @@ resource "google_container_node_pool" "llvm_buildbot_linux" {
   }
 
   node_config {
-    machine_type     = var.linux_machine_type
+    machine_type = var.linux_machine_type
     taint {
       key    = "buildbot-platform"
       value  = "linux"
@@ -127,7 +127,7 @@ resource "google_container_node_pool" "llvm_premerge_libcxx" {
   }
 
   node_config {
-    machine_type     = var.libcxx_machine_type
+    machine_type = var.libcxx_machine_type
     taint {
       key    = "premerge-platform-libcxx"
       value  = "linux-libcxx"
@@ -154,7 +154,7 @@ resource "google_container_node_pool" "llvm_premerge_windows_2022" {
   # We do not set a taint for the windows nodes as kubernetes by default sets
   # a node.kubernetes.io/os taint for windows nodes.
   node_config {
-    machine_type     = var.windows_machine_type
+    machine_type = var.windows_machine_type
     labels = {
       "premerge-platform" : "windows-2022"
     }
@@ -204,7 +204,7 @@ resource "google_container_node_pool" "llvm_buildbot_window_2022" {
     # Use the Linux machine type here as we want to keep the windows machines
     # symmetric with the Linux machines for faster builds. Throughput is not
     # as much of a concern postcommit.
-    machine_type     = var.linux_machine_type
+    machine_type = var.linux_machine_type
     labels = {
       "buildbot-platform" : "windows-2022"
     }
