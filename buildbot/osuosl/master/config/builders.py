@@ -340,7 +340,7 @@ all = [
 
     {'name': "clang-arm64-windows-msvc",
     'tags' : ["llvm", "clang", "lld"],
-    'workernames' : ["linaro-armv8-windows-msvc-04"],
+    'workernames' : ["linaro-armv8-windows-msvc-04", "linaro-armv8-windows-msvc-92", "linaro-armv8-windows-msvc-102"],
     'builddir': "clang-arm64-windows-msvc",
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                     depends_on_projects=['llvm', 'clang', 'clang-tools-extra',
@@ -649,7 +649,7 @@ all = [
 
     {'name' : "clang-arm64-windows-msvc-2stage",
     'tags'  : ["clang"],
-    'workernames' : ["linaro-armv8-windows-msvc-02", "linaro-armv8-windows-msvc-03"],
+    'workernames' : ["linaro-armv8-windows-msvc-02", "linaro-armv8-windows-msvc-03", "linaro-armv8-windows-msvc-93", "linaro-armv8-windows-msvc-103"],
     'builddir': "clang-arm64-windows-msvc-2stage",
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
                     vs="manual",
@@ -1366,7 +1366,7 @@ all = [
 
     {'name' : "lldb-aarch64-windows",
     'tags'  : ["lldb"],
-    'workernames' : ["linaro-armv8-windows-msvc-05"],
+    'workernames' : ["linaro-armv8-windows-msvc-05", "linaro-armv8-windows-msvc-91", "linaro-armv8-windows-msvc-101"],
     'builddir': "lldb-aarch64-windows",
     'factory' : LLDBBuilder.getLLDBCMakeBuildFactory(
                     clean=True,
@@ -2486,7 +2486,7 @@ all += [
 
     {'name': "flang-arm64-windows-msvc",
     'tags' : ["mlir", "flang"],
-    'workernames' : ["linaro-armv8-windows-msvc-01"],
+    'workernames' : ["linaro-armv8-windows-msvc-01", "linaro-armv8-windows-msvc-90", "linaro-armv8-windows-msvc-100"],
     'builddir': "flang-arm64-windows-msvc",
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                     depends_on_projects=['llvm', 'clang', 'lld', 'mlir', 'compiler-rt', 'openmp', 'flang','flang-rt'],
@@ -2500,7 +2500,7 @@ all += [
 
     {'name' : "flang-arm64-windows-msvc-testsuite",
     'tags'  : ["flang"],
-    'workernames' : ["linaro-armv8-windows-msvc-06"],
+    'workernames' : ["linaro-armv8-windows-msvc-06", "linaro-armv8-windows-msvc-90", "linaro-armv8-windows-msvc-100"],
     'builddir': "flang-arm64-win-msvc-ts",
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
                     vs="manual",
