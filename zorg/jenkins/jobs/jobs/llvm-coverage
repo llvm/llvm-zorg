@@ -149,6 +149,7 @@ pipeline {
         stage('Test') {
             environment {
                PATH="$PATH:/usr/bin:/usr/local/bin"
+               CLANG_TOOLCHAIN_PROGRAM_TIMEOUT="120"
             }
             steps {
                 timeout(900) {
