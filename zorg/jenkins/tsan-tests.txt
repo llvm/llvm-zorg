@@ -1,0 +1,4 @@
+# Explicit list of LLDB tests to run under the lldb-cmake-tsan builder.
+#
+# The expected foramt is one test name per line, matched as a regex against the
+# lit test name.
