@@ -2685,11 +2685,13 @@ all += [
                     clean=False,
                     timeout=1800,
                     checkout_lld=False,
-                    enable_runtimes=None,
+                    enable_runtimes=['compiler-rt'],
                     extra_cmake_args=['-DLLVM_ENABLE_ASSERTIONS=ON',
                                     '-DLLVM_TARGETS_TO_BUILD=X86',
-                                    '-DLLVM_HOST_TRIPLE=amd64-pc-solaris2.11',
-                                    '-DLLVM_PARALLEL_LINK_JOBS=4'])},
+                                    '-DLLVM_HOST_TRIPLE=x86_64-pc-solaris2.11',
+                                    '-DLLVM_PARALLEL_LINK_JOBS=4',
+                                    "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
+                                    "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache"])},
 
     {'name' : "clang-solaris11-sparcv9",
     'tags' : ["clang"],
@@ -2700,11 +2702,13 @@ all += [
                     clean=False,
                     timeout=1800,
                     checkout_lld=False,
-                    enable_runtimes=None,
+                    enable_runtimes=['compiler-rt'],
                     extra_cmake_args=['-DLLVM_ENABLE_ASSERTIONS=ON',
                                     '-DLLVM_TARGETS_TO_BUILD=Sparc',
                                     '-DLLVM_HOST_TRIPLE=sparcv9-sun-solaris2.11',
-                                    '-DLLVM_PARALLEL_LINK_JOBS=4'])},
+                                    '-DLLVM_PARALLEL_LINK_JOBS=4',
+                                    "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
+                                    "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache"])},
 
 # Builders for ML-driven compiler optimizations.
 
