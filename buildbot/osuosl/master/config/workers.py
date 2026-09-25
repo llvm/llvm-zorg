@@ -155,9 +155,6 @@ def get_all():
         create_worker("fuchsia-debian-64-staging-1", properties={'jobs': 64}, max_builds=1),
         create_worker("fuchsia-debian-64-staging-2", properties={'jobs': 64}, max_builds=1),
 
-        # Debian x86_64 Buster Xeon(R) Gold 6154 CPU @ 3.00GHz, 192GB RAM
-        create_worker("lldb-x86_64-debian", properties={'jobs': 72}, max_builds=1),
-
         # Windows x86_64 32 CPUs, 125 GB RAM
         create_worker("libc-x86_64-windows", properties={'jobs': 32}, max_builds=2),
 
