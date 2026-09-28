@@ -867,6 +867,9 @@ all = [
                         'CC': '/usr/lpp/IBM/cnw/v2r2/openxl/bin/ibm-clang64',
                         'CXX': '/usr/lpp/IBM/cnw/v2r2/openxl/bin/ibm-clang++64',
                         'TMPDIR': '/data/devuser/tmp/',
+                        '_TAG_REDIR_IN': '',
+                        '_TAG_REDIR_OUT': '',
+                        '_TAG_REDIR_ERR': '',
                     })},
 
     {'name' : 'clang-sparc64-linux',
