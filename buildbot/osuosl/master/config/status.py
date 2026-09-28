@@ -306,14 +306,6 @@ def getReporters():
         reporters.MailNotifier(
             fromaddr = status_email_fromaddr,
             sendToInterestedUsers = False,
-            extraRecipients = ["labath@google.com", "cmtice@google.com"],
-            generators = [
-                utils.LLVMDefaultBuildStatusGenerator(
-                    builders = ["lldb-x86_64-debian"])
-            ]),
-        reporters.MailNotifier(
-            fromaddr = status_email_fromaddr,
-            sendToInterestedUsers = False,
             extraRecipients = ["vvereschaka@accesssoftek.com"],
             generators = [
                 utils.LLVMDefaultBuildStatusGenerator(
