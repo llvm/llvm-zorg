@@ -60,6 +60,8 @@ template:
           value: "true"
         - name: ACTIONS_RUNNER_CONTAINER_HOOK_TEMPLATE
           value: "/home/runner/pod-config/linux-32-pod-template.yaml"
+        - name: ACTIONS_RUNNER_PREPARE_JOB_TIMEOUT_SECONDS
+          value: "1200"
       volumeMounts:
         - name: container-pod-config
           mountPath: /home/runner/pod-config
