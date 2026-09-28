@@ -367,3 +367,63 @@ What needs improvement:
 Lessons/Action Items
 - Stop-gap solutions are generally pretty easy to deploy and efforts should probably
 be prioritized on getting one deployed to stop the bleeding.
+
+## US-Central Cluster Not Scheduling Pods (Part 2)
+
+### Date: 2026-09-21
+
+### Symptoms
+
+The LLVM CI Rotation oncall was again getting emails with the following message:
+
+> Workflow completed under 50mn in the last 7 days - Error Budget Burn Rate is High
+
+Run times were reasonably consistent while queue times were very elevated
+and a significant fraction of jobs were queueing.
+
+### Investigation
+
+Some initial investigation by LLVM community members showed a very large PR
+stack (33 total PRs) being put up at around the same time problems started.
+Given the previous incident, we looked at pod scheduling in the `us-central`
+cluster and saw that no jobs on `n2` machines were scheduling with the
+pods displaying `GCE out of resources` errors.
+
+### Solution
+
+We initially tried removing CPU microarchitecture pinning in
+https://github.com/llvm/llvm-zorg/commit/df3cb677658d70b6c1e224d6a37f5568feabe55c
+to try and give the GCE scheduler more flexibility in where it placed our jobs.
+This did not help much. We eventually ended up reverting that patch in
+https://github.com/llvm/llvm-zorg/commit/fc468e71dbcc15f87561d38bf3800a8a02a91d35
+but set the pinned CPU microarchitecture for `n2` machines to Cascade Lake
+rather than Ice Lake. While the inner workings of the GCE scheduler are opaque,
+it seems like it will prioritize scheduling on newer microarchitectures if
+they are available, to the point of not scheduling at all if no newer machines
+are available.
+
+Setting the pinned CPU microarchitecture to Cascade Lake rectified the problem
+and the backlog of jobs cleared out quickly after making the change and we have
+not observed any issues related to GCE stockouts since applying the change.
+
+### Postmortem
+
+What worked well:
+- The automation alerted the current oncall.
+
+What needs improvement:
+- The system was degraded for a long period of time (several business days)
+  which increased the latency for changes to land and also led to a significant
+  increase in PRs merged without CI checks.
+- We spent a lot of time looking at alternative solutions that ended up
+  leading nowhere. Specifically, we looked at trying to get additional quota
+  for different machine types (`n4`/`n4d`) in various regions, but all of our
+  quota increase requests were auto-rejected.
+- No stop-gap solution was possible this time because the `us-west` cluster
+  was running at maximum capacity during peak load events during this incident.
+
+Action Items
+- Get quota on newer machines. Cascade Lake is old and a lot slower than newer
+  microarchitectures. We likely took a premerge latency hit by moving from
+  Ice Lake to Cascade Lake. Ideally we also want more quota than we need so
+  if we do need to shift load between clusters we have the ability to do so.
