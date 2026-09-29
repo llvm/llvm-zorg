@@ -517,6 +517,21 @@ def parse_settings_from_output(working_dir, cmd):
         os.chdir(old_dir)
 
 
+def tsan_lit_filter():
+    """Build a LIT_FILTER regex from the explicit list of tests in
+    lldb-tsan-tests.txt, one test name/path per line."""
+    tests = []
+    with open(os.path.join(here, "lldb-tsan-tests.txt")) as f:
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            tests.append(line)
+    if not tests:
+        return None
+    return "|".join(re.escape(test) for test in tests)
+
+
 def lldb_cmake_builder(target, variant=None):
     """Do a CMake build of lldb."""
 
@@ -539,7 +554,7 @@ def lldb_cmake_builder(target, variant=None):
                 '--xunit-xml-output={}'.format(results_file), '-v']
     if conf.max_parallel_tests:
         lit_args.extend(['-j', conf.max_parallel_tests])
-    if variant == 'sanitized':
+    if variant in ('sanitized', 'tsan'):
         lit_args.extend(['--timeout 1200'])
 
     # Construct CMake invocation.
@@ -569,7 +584,11 @@ def lldb_cmake_builder(target, variant=None):
 
     if variant == 'sanitized':
         cmake_cmd.append('-DLLVM_USE_SANITIZER=Address;Undefined')
-        # There is no need to compile the lldb tests with an asanified compiler
+    elif variant == 'tsan':
+        cmake_cmd.append('-DLLVM_USE_SANITIZER=Thread')
+
+    if variant in ('sanitized', 'tsan'):
+        # There is no need to compile the lldb tests with a sanitized compiler
         # if we have a host compiler available.
         if conf.CC():
             cmake_cmd.extend([
@@ -589,7 +608,7 @@ def lldb_cmake_builder(target, variant=None):
 
     cmake_cmd.extend(conf.cmake_flags)
 
-    if variant == "sanitized":
+    if variant in ("sanitized", "tsan"):
         # On macOS, we need to use bootstrapped sanitizer runtimes for sanitized libLTO
         # to be loadable in ld
         def bootstrap_option(x):
@@ -626,7 +645,7 @@ def lldb_cmake_builder(target, variant=None):
 
     if target == 'all' or target == 'build':
         header("Build")
-        run_cmd(conf.lldbbuilddir(), [NINJA, '-v'] + (["stage2"] if variant == 'sanitized' else []))
+        run_cmd(conf.lldbbuilddir(), [NINJA, '-v'] + (["stage2"] if variant in ('sanitized', 'tsan') else []))
         footer()
 
     if target == 'all' or target == 'install':
@@ -639,11 +658,16 @@ def lldb_cmake_builder(target, variant=None):
         check_target = "check-lldb"
         if variant == "debuginfo":
             check_target = "check-debuginfo"
-        elif variant == "sanitized":
+        elif variant in ("sanitized", "tsan"):
             check_target = "stage2-check-lldb"
 
         test_command = ["/usr/bin/env", "TERM=vt100", NINJA, "-v", check_target]
-        run_cmd(conf.lldbbuilddir(), test_command)
+        test_env = {}
+        if variant == "tsan":
+            lit_filter = tsan_lit_filter()
+            if lit_filter:
+                test_env["LIT_FILTER"] = lit_filter
+        run_cmd(conf.lldbbuilddir(), test_command, env=test_env)
         footer()
 
     for test_target in conf.cmake_test_targets:
@@ -953,6 +977,7 @@ KNOWN_BUILDS = [
     'lldb-cmake-debuginfo',
     'lldb-cmake-xcode',
     'lldb-cmake-sanitized',
+    'lldb-cmake-tsan',
     'lldb-cmake-matrix',
     'fetch',
     'artifact',
@@ -1127,6 +1152,8 @@ def main():
             lldb_cmake_builder(args.build_target, 'debuginfo')
         elif args.build_type == 'lldb-cmake-sanitized':
             lldb_cmake_builder(args.build_target, 'sanitized')
+        elif args.build_type == 'lldb-cmake-tsan':
+            lldb_cmake_builder(args.build_target, 'tsan')
         elif args.build_type == 'lldb-cmake-matrix':
             lldb_cmake_builder(args.build_target, 'matrix')
         elif args.build_type == 'lldb-cmake-standalone':
