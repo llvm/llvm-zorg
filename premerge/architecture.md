@@ -106,5 +106,5 @@ the same instance, forcing containers to share resources.
 Those bits are configures in the
 [linux runner configuration](linux_runners_values.yaml),
 [windows runner configuration](windows_runner_values.yaml), and
-[libcxx runner configuration](libcxx_runners_values.yaml).
+[libcxx runner configuration](linux_32_runners_values.yaml).
 

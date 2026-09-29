@@ -125,6 +125,9 @@ resource "google_container_node_pool" "llvm_buildbot_linux" {
   }
 }
 
+# TODO(boomanaiden154): This should be renamed to something more generic when we
+# get a chance given this is now used more broadly than libc++ and the runner
+# set is named more generically.
 resource "google_container_node_pool" "llvm_premerge_libcxx" {
   name               = "llvm-premerge-libcxx"
   location           = var.region

@@ -147,9 +147,7 @@ on a kubernetes destroy command:
 ```bash
 terraform destroy -target module.premerge_cluster_us_central_resources.helm_release.github_actions_runner_set_linux
 terraform destroy -target module.premerge_cluster_us_central_resources.helm_release.github_actions_runner_set_windows_2022
-terraform destroy -target module.premerge_cluster_us_central_resources.helm_release.github_actions_runner_set_libcxx
-terraform destroy -target module.premerge_cluster_us_central_resources.helm_release.github_actions_runner_set_libcxx_release
-terraform destroy -target module.premerge_cluster_us_central_resources.helm_release.github_actions_runner_set_libcxx_next
+terraform destroy -target module.premerge_cluster_us_central_resources.helm_release.github_actions_runner_set_linux_32
 ```
 
 These should complete, but if they do not, we are still able to get things
@@ -162,9 +160,7 @@ commands by deleting the kubernetes namespaces all the resources live in:
 ```bash
 terraform destroy -target module.premerge_cluster_us_central_resources.kubernetes_namespace.llvm_premerge_linux_runners
 terraform destroy -target module.premerge_cluster_us_central_resources.kubernetes_namespace.llvm_premerge_windows_2022_runners
-terraform destroy -target module.premerge_cluster_us_central_resources.kubernetes_namespace.llvm_premerge_libcxx_runners
-terraform destroy -target module.premerge_cluster_us_central_resources.kubernetes_namespace.llvm_premerge_libcxx_release_runners
-terraform destroy -target module.premerge_cluster_us_central_resources.kubernetes_namespace.llvm_premerge_libcxx_next_runners
+terraform destroy -target module.premerge_cluster_us_central_resources.kubernetes_namespace.llvm_premerge_linux_32_runners
 ```
 
 If things go smoothly, these should complete quickly. If they do not complete,

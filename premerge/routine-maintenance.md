@@ -48,10 +48,9 @@ needs to be updated to the new version.
 `.github/workflows/containers/github-action-ci-windows/Dockerfile` has an
 argument called `RUNNER_VERSION` near the bottom of the file that needs to
 be updated to the new version.
-3. The libc++ CI container - The `docker-compose` manifest at
-`libcxx/utils/ci/docker-compose.yml` needs to be updated by updating the
-`GITHUB_RUNNER_VERSION` variable to pull in the latest
-runner binary using the [libc++ instructions](https://libcxx.llvm.org/Contributing.html#updating-the-ci-testing-container-images)
+3. The runtimes CI infrastructure - The runner image in
+`linux_32_runners_values.yaml` needs to be updated to point at the latest
+version. No changes are needed in the LLVM monorepo.
 
 ### Other Container Image Software
 
