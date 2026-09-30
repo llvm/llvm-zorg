@@ -710,7 +710,7 @@ class TestBazelBotServer(unittest.TestCase):
         self.assertEqual(git_repo.push_fix.call_count, 1)
         git_repo.push_fix.assert_called_with(build_info, git_repo.can_create_pr, branch_name="bazel-sha1")
 
-        # Case 2: active_fix_branch is set, validation fails -> should NOT push "AI failed" commit
+        # Case 2: active_fix_branch is set, validation fails -> should push "AI failed" commit
         git_repo.push_fix.reset_mock()
         bot.validate_before_publishing = mock.MagicMock(return_value=False)
 
@@ -719,7 +719,9 @@ class TestBazelBotServer(unittest.TestCase):
         )
 
         self.assertFalse(result)
-        git_repo.push_fix.assert_not_called()
+        git_repo.push_fix.assert_called_once_with(
+            build_info, False, branch_name="bazel-sha1"
+        )
 
     @mock.patch("utils.github.GithubIntegration")
     @mock.patch("utils.github.Auth")
