@@ -235,7 +235,6 @@ class LocalGitRepo:
             git.Repo.clone_from(
                 f"https://github.com/{self.creds.gh_fork_repo_name}.git",
                 self.repo_path,
-                multi_options=["--ref-format=files"],
             )
         self.repo = git.Repo(repo_path)
 
