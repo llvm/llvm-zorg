@@ -54,7 +54,11 @@ class TestBazelBotServer(unittest.TestCase):
         creds.gh_app_private_key = "app_private_key"
 
         repo = utils.LocalGitRepo("/path/to/repo", creds, can_create_pr=True)
-        mock_repo.clone_from.assert_called_once()
+        mock_repo.clone_from.assert_called_once_with(
+            "https://github.com/fork/repo.git",
+            "/path/to/repo",
+            env={"GIT_DEFAULT_REF_FORMAT": "files"},
+        )
 
         # Test get_branch_name
         self.assertEqual(repo.get_branch_name("abcdef"), "bazel-abcdef")
