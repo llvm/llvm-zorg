@@ -37,6 +37,11 @@ pipeline {
                 cmake --version
                 python3 --version
                 '''
+                script {
+                    env.XCODE_MAJOR_VERSION = sh(returnStdout: true, script: '''
+                        xcodebuild -version | awk 'NR==1 { split($2, v, "."); print v[1] }'
+                    ''').trim()
+                }
             }
         }
         stage('Checkout') {
@@ -239,6 +244,8 @@ pipeline {
             }
         }
         stage('Build Clang 19.1.7') {
+            // Clang 19 does not compile with Xcode 27 and later.
+            when { expression { env.XCODE_MAJOR_VERSION.toInteger() < 27 } }
             steps {
                 timeout(30) {
                     // Deliberately a plain clone rather than checkout/GitSCM.
@@ -277,6 +284,8 @@ pipeline {
             }
         }
         stage('Test Clang 19.1.7') {
+            // See 'Build Clang 19.1.7'.
+            when { expression { env.XCODE_MAJOR_VERSION.toInteger() < 27 } }
             steps {
                 timeout(60) {
                     sh '''
