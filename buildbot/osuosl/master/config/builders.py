@@ -4015,6 +4015,8 @@ all += [
     ])},
 
     # MLIR SVE+SME
+    # While this buildbot is primarily for SVE + SME, we also enable Neon tests
+    # for full coverage.
     {'name' : "mlir-aarch64-sve-sme",
           'tags'  : ["mlir"],
           'workernames' : ["arm-bbot-mlir-aarch64-sve-sme"],
@@ -4028,6 +4030,7 @@ all += [
                           "-DLLVM_ENABLE_LLD=True",
                           "-DLLVM_LIT_ARGS=-v",
                           "-DMLIR_INCLUDE_INTEGRATION_TESTS=True",
+                          "-DMLIR_RUN_ARM_NEON_TESTS=True",
                           "-DMLIR_RUN_ARM_SVE_TESTS=True",
                           "-DMLIR_RUN_ARM_SME_TESTS=True",
                           "-DARM_EMULATOR_EXECUTABLE=qemu-aarch64"
