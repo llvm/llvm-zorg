@@ -130,7 +130,7 @@ all = [
                         "-DLLVM_INCLUDE_EXAMPLES=OFF",
                         "-DLLVM_DEFAULT_TARGET_TRIPLE=x86_64-scei-ps4",
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
-                        "-DLLVM_LIT_ARGS=--verbose -j100 --timeout=900",
+                        "-DLLVM_LIT_ARGS=--verbose --timeout=900",
                         "-DLLVM_TARGETS_TO_BUILD=X86",
                         "-DLLVM_USE_LINKER=gold"])},
 
