@@ -293,16 +293,38 @@ class LocalGitRepo:
             self.repo.remotes.origin.fetch
         )
         self.repo.git.reset("--hard", f"{self.remote_name}/{self.main_branch}")
-
         return self.repo.head.commit.hexsha
 
     def diff(self) -> str:
         return self.repo.git.diff(None)
 
-    def create_branch_for_fix(self, commit_hash: str) -> None:
-        """Prepares the local git repository for applying fixes."""
-        self.checkout_commit(commit_hash)
-        self.repo.create_head(self.get_branch_name(commit_hash), force=True).checkout()
+    def create_branch_for_fix(self, commit_hash: str) -> str:
+        """Prepares the local git repository for applying fixes from current HEAD."""
+        branch_name = self.get_branch_name(commit_hash)
+        self.repo.create_head(branch_name, force=True).checkout()
+        return branch_name
+
+    def rebase_branch(self, branch_name: str, new_base: str) -> bool:
+        """Rebases branch_name onto new_base. Returns True on success, False on conflict/error."""
+        try:
+            self.repo.git.checkout(branch_name)
+            self.repo.git.rebase(new_base)
+            return True
+        except git.GitCommandError as e:
+            logger.error(f"Failed to rebase {branch_name} onto {new_base}: {e}")
+            try:
+                self.repo.git.rebase("--abort")
+            except git.GitCommandError:
+                pass
+            return False
+
+    def reset_hard(self, commit_or_branch: str | None = None) -> None:
+        """Hard resets the repository and cleans untracked files."""
+        if commit_or_branch:
+            self.repo.git.reset("--hard", commit_or_branch)
+        else:
+            self.repo.git.reset("--hard")
+        self.repo.git.clean("-fd")
 
     def checkout_commit(self, commit_hash: str):
         """Prepares the local git repository for applying fixes."""
@@ -317,24 +339,40 @@ class LocalGitRepo:
     def is_repo_dirty(self, untracked_files=False) -> bool:
         return self.repo.is_dirty(untracked_files=untracked_files)
 
-    # This needs to be revisited when we have support for nested failures.
-    def close_existing_prs(self) -> None:
+    def close_existing_prs(self, active_fix_branch: str | None = None):
+        active_pr = None
         for open_pr in self.gh_pr_repo.get_issues(
             creator=self.gh_pr_creator, state="open"
         ):
+            if active_fix_branch:
+                pr = None
+                head_ref = None
+                if getattr(open_pr, "pull_request", None) and hasattr(open_pr, "as_pull_request"):
+                    pr = open_pr.as_pull_request()
+                    head_ref = getattr(getattr(pr, "head", None), "ref", None)
+                elif hasattr(open_pr, "head"):
+                    pr = open_pr
+                    head_ref = getattr(open_pr.head, "ref", None)
+                if head_ref == active_fix_branch:
+                    logger.info(f"Skipping active PR for branch {active_fix_branch}: {open_pr.url}")
+                    active_pr = pr or open_pr
+                    continue
             print(f"Closing unmerged PR from previous fix attempt: {open_pr.url}")
             open_pr.edit(state="closed")
+        return active_pr
 
     def push_fix(
         self,
         build_data: "BuildInfo",
         create_pr: bool | None = None,
+        branch_name: str | None = None,
     ) -> bool:
         """Pushes the branch and creates a GitHub PR against it."""
         if create_pr is None:
             create_pr = self.can_create_pr
         commit_hash = build_data.commit
-        branch_name = self.get_branch_name(commit_hash)
+        if not branch_name:
+            branch_name = self.get_branch_name(commit_hash)
 
         # 1. Get access token
         try:
@@ -384,19 +422,17 @@ class LocalGitRepo:
             )
             return True
 
-        # 4. Close existing PRs (if any)
+        # 4. Close existing PRs (if any) and locate active PR
+        active_pr = None
         try:
-            call_with_retry(
+            active_pr = call_with_retry(
                 (github.GithubException,),
                 self.close_existing_prs,
+                active_fix_branch=branch_name,
             )
         except github.GithubException as e:
             logger.warning(f"Failed to close existing PRs: {e}. Proceeding anyway.")
 
-        # 5. Create new Pull Request
-        logger.info(
-            f"Creating Pull Request for branch {branch_name} from {self.creds.gh_fork_repo_name} to {self.creds.gh_pr_repo_name}..."
-        )
         buildkite_url = build_data.buildkite_url
         pr_number_suffix = f" (#{build_data.pr_number})" if build_data.pr_number else ""
         pr_body = (
@@ -404,6 +440,32 @@ class LocalGitRepo:
             f"Buildkite error link: {buildkite_url}\n"
         )
 
+        # If a PR already exists for active_branch, update its body by appending the new fix
+        if active_pr:
+            current_body = getattr(active_pr, "body", "") or ""
+            if commit_hash not in current_body:
+                updated_body = f"{current_body.rstrip()}\n\n{pr_body.strip()}\n"
+                logger.info(
+                    f"Updating PR body for existing PR for branch {branch_name} to include fix for {commit_hash[:7]}..."
+                )
+                try:
+                    call_with_retry(
+                        (github.GithubException,),
+                        active_pr.edit,
+                        body=updated_body,
+                    )
+                except github.GithubException as e:
+                    logger.error(f"Failed to update PR body: {e}")
+            else:
+                logger.info(
+                    f"PR body for {branch_name} already mentions {commit_hash[:7]}."
+                )
+            return True
+
+        # 5. No active PR exists - create new Pull Request
+        logger.info(
+            f"Creating Pull Request for branch {branch_name} from {self.creds.gh_fork_repo_name} to {self.creds.gh_pr_repo_name}..."
+        )
         try:
             if not self.creds.use_github_app:
                 if create_pr and not self.creds.gh_pr_user_token:
@@ -423,6 +485,11 @@ class LocalGitRepo:
             logger.info(f"Pull Request Created: {pr.html_url}")
             return True
         except github.GithubException as e:
+            if getattr(e, "status", None) == 422 and "A pull request already exists" in str(getattr(e, "data", "")):
+                logger.info(
+                    f"Pull request already exists for branch {branch_name}. Updated via push."
+                )
+                return True
             logger.error(f"All attempts to create PR failed: {e}")
             return False
 
