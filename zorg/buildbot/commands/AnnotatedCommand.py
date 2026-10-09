@@ -88,6 +88,10 @@ class AnnotatedBuildStep(buildstep.BuildStep):
         self.master = self.parent_step.build.master
         self.worker = self.parent_step.worker
 
+        # Init result to SUCCESS by default.
+        self.results = results.SUCCESS
+        self.description = [self.name]
+
         self.stdio_log = None
 
         self._loglines = []
@@ -102,9 +106,6 @@ class AnnotatedBuildStep(buildstep.BuildStep):
         yield buildstep.BuildStep.addStep(self)
         # Put ourselves into a list of processed steps of the build object.
         self.build.executedSteps.append(self)
-        # Init result to SUCCESS by default.
-        self.results = results.SUCCESS
-        self.description = [self.name]
         self.stdio_log = yield self.addLog('stdio')
 
         debuglog("AnnotatedBuildStep: added step '{}': stepid={}, buildid={}".format(
