@@ -138,6 +138,16 @@ def get_all():
         create_worker("cuda-p4-0", max_builds=1),
         create_worker("cuda-t4-0", max_builds=1),
 
+        # NVIDIA CUDA bots: Ubuntu 24.04 containers on Oracle Cloud (OKE).
+        # Clang build: VM.Standard.E5.Flex, 32 vCPUs (AMD EPYC), 64 GB of RAM.
+        create_worker("nvidia-cuda-build-x86-64", properties={'jobs': 32}, max_builds=1),
+        # GPU tests: VM.GPU.A10.1, one NVIDIA A10 (24 GB), 30 vCPUs and 240 GB of RAM,
+        # two workers to each.
+        create_worker("nvidia-cuda-a10-toolkits-1", properties={'jobs': 16}, max_builds=2),
+        create_worker("nvidia-cuda-a10-toolkits-2", properties={'jobs': 16}, max_builds=2),
+        create_worker("nvidia-cuda-a10-libc-1", properties={'jobs': 16}, max_builds=1),
+        create_worker("nvidia-cuda-a10-libc-2", properties={'jobs': 16}, max_builds=1),
+
         # HIP on Ubuntu 18.04.5,  Intel(R) Xeon(R) Gold 5218 @ 2.30GHz, Vega20 GPU
         create_worker("hip-vega20-0", max_builds=1),
         # Containerized worker for HIP blender test. Host: AMD EPYC 9354, AMD MI210
