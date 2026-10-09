@@ -112,7 +112,7 @@ all = [
     {'name': "llvm-clang-x86_64-sie-ubuntu-fast",
     'tags'  : ["clang", "llvm", "clang-tools-extra", "lld", "cross-project-tests"],
     'collapseRequests': False,
-    'workernames': ["sie-linux-worker"],
+    'workernames': ["sie-linux-worker", "doug-worker-7"],
     'builddir': "llvm-clang-x86_64-sie-ubuntu-fast",
     'factory': UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                     depends_on_projects=['llvm','clang','clang-tools-extra','lld','cross-project-tests'],
@@ -130,7 +130,7 @@ all = [
                         "-DLLVM_INCLUDE_EXAMPLES=OFF",
                         "-DLLVM_DEFAULT_TARGET_TRIPLE=x86_64-scei-ps4",
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
-                        "-DLLVM_LIT_ARGS=--verbose -j100 --timeout=900",
+                        "-DLLVM_LIT_ARGS=--verbose --timeout=900",
                         "-DLLVM_TARGETS_TO_BUILD=X86",
                         "-DLLVM_USE_LINKER=gold"])},
 
