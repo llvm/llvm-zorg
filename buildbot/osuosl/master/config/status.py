@@ -650,6 +650,18 @@ def getReporters():
         reporters.MailNotifier(
             fromaddr = status_email_fromaddr,
             sendToInterestedUsers = False,
+            extraRecipients = ["crodewig@nvidia.com", "llvm-solid-pillar-notifications@nvidia.com"],
+            generators = [
+                utils.LLVMDefaultBuildStatusGenerator(
+                    builders = [
+                        "nvidia-cuda-toolchain",
+                        "nvidia-cuda-a10-test-suite",
+                        "nvidia-cuda-a10-libc",
+                        "nvidia-cuda-a10-library-samples"])
+            ]),
+        reporters.MailNotifier(
+            fromaddr = status_email_fromaddr,
+            sendToInterestedUsers = False,
             extraRecipients = ["stephen.tozer@sony.com"],
             generators = [
                 utils.LLVMDefaultBuildStatusGenerator(
