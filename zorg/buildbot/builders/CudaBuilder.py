@@ -12,8 +12,10 @@
 #
 # getCudaGpuTestFactory() fetches the toolchain of the triggering build with the
 # worker's download command and runs the stages its builder asks for against it, on the
-# GPU: the CUDA tests of the LLVM test suite and the GPU libc tests.
+# GPU: the CUDA tests of the LLVM test suite, the GPU libc tests and NVIDIA's CUDA
+# library samples.
 
+import os
 import shlex
 
 from buildbot.plugins import steps, util
@@ -34,6 +36,13 @@ _gpu_triple = "nvptx64-nvidia-cuda"
 # with what the tests need. Whether to compress it, and how long to keep it, is up to
 # the store behind the commands of the workers (see _artifactCommand).
 _artifact_name = "clang-cuda"
+
+# NVIDIA's public CUDA library samples, pinned so that their results only change with
+# the compiler. Their GPU code is NVIDIA's, inside the prebuilt libraries, so they test
+# Clang building programs against the toolkits rather than its device code generation.
+# Which of them run is up to _cuda_library_samples_superbuild.
+_cuda_library_samples_repo = "https://github.com/NVIDIA/CUDALibrarySamples.git"
+_cuda_library_samples_revision = "07c4f09223302ce4310eef945ed458e092598d17"
 
 # The lock on a GPU which builds share (see the 'gpu_lock' argument of
 # getCudaGpuTestFactory), named after the GPU's UUID, so that builds on different GPUs
@@ -154,6 +163,9 @@ class _CudaDirs:
         self.test_suite_src_dir = "llvm-test-suite"
         self.test_suite_obj_dir = "build-tests"
         self.libc_obj_dir       = "build-libc"
+        self.samples_src_dir    = "CUDALibrarySamples"
+        self.superbuild_dir     = "library-samples-superbuild"
+        self.samples_obj_dir    = "build-library-samples"
         self.install_dir        = "install"
 
         self.builddir_path      = util.Interpolate("%(prop:builddir)s")
@@ -351,6 +363,7 @@ def getCudaClangBuildFactory(
 def getCudaGpuTestFactory(
         test_suite = False,
         gpu_libc = False,
+        library_samples = False,
         gpu_lock = False,
         gpu_arch = None,
         cuda_test_jobs = 4,
@@ -359,9 +372,9 @@ def getCudaGpuTestFactory(
         env  = None,
     ):
 
-    """ Create and configure a builder factory to run the CUDA tests and the GPU libc
-        tests against a Clang toolchain built by another builder (see
-        getCudaClangBuildFactory).
+    """ Create and configure a builder factory to run the CUDA tests, the GPU libc tests
+        and the samples of NVIDIA's prebuilt libraries against a Clang toolchain built by
+        another builder (see getCudaClangBuildFactory).
 
         It fetches the toolchain artifact of the triggering build, so the GPU worker never
         builds Clang, and runs these stages against it:
@@ -370,9 +383,12 @@ def getCudaGpuTestFactory(
                executed on the GPU (see TestSuiteBuilder).
             2. A stand-alone runtimes build of the GPU libc, executed on the GPU through
                llvm-gpu-loader (see UnifiedTreeBuilder.getCmakeExBuildFactory).
+            3. NVIDIA's public samples of its prebuilt CUDA libraries, compiled by the
+               unpacked Clang against every recent enough toolkit of the worker, and
+               executed on the GPU.
 
-        A stage only runs when its argument asks for it ('test_suite' and 'gpu_libc'),
-        and at least one must, so that a builder names what it tests.
+        A stage only runs when its argument asks for it ('test_suite', 'gpu_libc' and
+        'library_samples'), and at least one must, so that a builder names what it tests.
 
         The worker needs the NVIDIA driver and nvidia-smi, git, CMake, Ninja, python3 and
         tar, and for each stage:
@@ -382,6 +398,9 @@ def getCudaGpuTestFactory(
             gpu_libc        python3 with pyyaml for the libc header generator, and the
                             ptxas of a CUDA toolkit, which clang assembles the nvptx64
                             code with. It finds ptxas on the PATH or in /usr/local/cuda.
+            library_samples The CUDA toolkits of the externals directory, with the
+                            libraries of the samples: cuBLAS, cuFFT, cuRAND, cuSOLVER
+                            and cuSPARSE.
 
         It declares no source code dependencies, as a Triggerable scheduler drives it, but
         checks out the triggering revision to configure the test suite and the GPU libc.
@@ -425,8 +444,8 @@ def getCudaGpuTestFactory(
         test_suite_externals
             The LLVM test suite externals directory of the worker. The CUDA tests get a
             variant per toolkit, C++ standard and standard library in <externals>/cuda,
-            so the worker decides what they are tested against. Only the stages which
-            use it require it.
+            so the worker decides what they are tested against. The library samples use
+            its cuda-<version> entries as well. Only the stages which use it require it.
 
 
         Parameters
@@ -441,13 +460,17 @@ def getCudaGpuTestFactory(
             Note that the GPU libc requires a sm_60 or a newer GPU, so this is not for
             the builders running on the older hardware.
 
+        library_samples : boolean
+            Build and run NVIDIA's public samples of its prebuilt CUDA libraries
+            (default is False).
+
         gpu_lock : boolean
             Lock the GPU for the steps running tests on it, for workers whose builds
             share a GPU (default is False).
 
             - The CUDA tests take the lock exclusively: their assert tests fault the
               GPU on purpose, which can kill the contexts of other processes on it.
-            - The GPU libc tests share it.
+            - The GPU libc tests and the library samples share it.
             - The lock is named after the GPU's UUID, so the worker must see exactly
               one GPU. The steps taking the lock fail otherwise.
 
@@ -457,7 +480,8 @@ def getCudaGpuTestFactory(
 
         cuda_test_jobs : int, optional
             A degree of parallelism for the tests running on the GPU (default is 4).
-            This applies to the CUDA tests of the LLVM test suite.
+            This applies to the CUDA tests of the LLVM test suite and to the library
+            samples.
 
         download_command : list, optional
             The command which downloads the toolchain artifact, given its name as the last
@@ -472,8 +496,8 @@ def getCudaGpuTestFactory(
 
     """
 
-    assert test_suite or gpu_libc, \
-        "At least one of the 'test_suite' and 'gpu_libc' arguments must be specified."
+    assert test_suite or gpu_libc or library_samples, \
+        "At least one of the 'test_suite', 'gpu_libc' and 'library_samples' arguments must be specified."
 
     if download_command is None:
         download_command = _requiredWorkerInfo.withArgs("artifact_download_command")
@@ -522,6 +546,17 @@ def getCudaGpuTestFactory(
                 dirs                = dirs,
                 env                 = env,
             ).steps)
+
+    if library_samples:
+        f.addSteps(
+            _getCudaLibrarySamplesSteps(
+                gpu_arch            = gpu_arch,
+                cuda_test_jobs      = cuda_test_jobs,
+                gpu_lock            = gpu_lock,
+                jobs                = jobs,
+                dirs                = dirs,
+                env                 = env,
+            ))
 
     return f
 
@@ -638,7 +673,8 @@ def _getFetchArtifactStep(download_command, dirs, env):
                 command         = ["rm", "-rf",
                                    dirs.toolchain_dir,
                                    dirs.test_suite_obj_dir,
-                                   dirs.libc_obj_dir],
+                                   dirs.libc_obj_dir,
+                                   dirs.samples_obj_dir],
                 logname         = "stdio",
                 haltOnFailure   = True),
             util.ShellArg(
@@ -792,3 +828,104 @@ def _getGpuLibcSteps(
     )
 
     return _withGpuLock(libc, "counting") if gpu_lock else libc
+
+
+# The CMake project which builds and runs the library samples.
+_cuda_library_samples_superbuild = os.path.join(
+    os.path.dirname(__file__), "cuda", "library-samples", "CMakeLists.txt")
+
+
+def _getCudaLibrarySamplesSteps(
+        gpu_arch,
+        cuda_test_jobs,
+        gpu_lock,
+        jobs,
+        dirs,
+        env,
+    ):
+
+    """ Build NVIDIA's public samples of its prebuilt CUDA libraries with the unpacked
+        Clang and run them on the GPU.
+
+        Returns a list of the steps to extend a build workflow with.
+    """
+
+    obj_path = util.Interpolate(f"%(prop:builddir)s/{dirs.samples_obj_dir}")
+
+    return [
+        # A shallow fetch of the pinned commit, as the Git step cannot check out a commit
+        # of a repository other than the build's.
+        steps.ShellSequence(
+            name            = "checkout-library-samples",
+            commands        = [
+                util.ShellArg(
+                    command         = ["rm", "-rf", dirs.samples_src_dir],
+                    logname         = "stdio",
+                    haltOnFailure   = True),
+                util.ShellArg(
+                    command         = ["git", "init", "--quiet", dirs.samples_src_dir],
+                    logname         = "stdio",
+                    haltOnFailure   = True),
+                util.ShellArg(
+                    command         = ["git", "-C", dirs.samples_src_dir, "fetch", "--depth", "1",
+                                       _cuda_library_samples_repo, _cuda_library_samples_revision],
+                    logname         = "stdio",
+                    haltOnFailure   = True),
+                util.ShellArg(
+                    command         = ["git", "-C", dirs.samples_src_dir, "checkout", "--force", "--detach",
+                                       "FETCH_HEAD"],
+                    logname         = "stdio",
+                    haltOnFailure   = True),
+            ],
+            description     = ["Checkout the library samples"],
+            haltOnFailure   = True,
+            env             = dict(env),
+            workdir         = dirs.builddir_path,
+        ),
+
+        steps.FileDownload(
+            mastersrc       = _cuda_library_samples_superbuild,
+            name            = "write-library-samples-superbuild",
+            workerdest      = f"{dirs.superbuild_dir}/CMakeLists.txt",
+            haltOnFailure   = True,
+            workdir         = dirs.builddir_path,
+        ),
+
+        steps.ShellCommand(
+            name            = "cmake-configure-library-samples",
+            command         = [
+                "cmake", "-G", "Ninja",
+                "-S", dirs.superbuild_dir,
+                "-B", dirs.samples_obj_dir,
+                util.Interpolate(f"-DSAMPLES_DIR=%(prop:builddir)s/{dirs.samples_src_dir}"),
+                util.Interpolate("-DTEST_SUITE_EXTERNALS=%(kw:externals)s", externals = dirs.externals_path),
+                util.Interpolate("-DCLANG_DIR=%(kw:dir)s", dir = dirs.toolchain_path),
+                util.Interpolate("-DGPU_ARCH=%(kw:gpu_arch)s", gpu_arch = gpu_arch),
+            ],
+            description     = ["Configure the library samples"],
+            haltOnFailure   = True,
+            env             = dict(env),
+            workdir         = dirs.builddir_path,
+        ),
+
+        # A sample which fails to build fails its test below, so keep going.
+        steps.ShellCommand(
+            name            = "build-library-samples",
+            command         = ["ninja", "-k", "0", "-j", util.Interpolate("%(kw:jobs)s", jobs = jobs)],
+            description     = ["Build the library samples"],
+            haltOnFailure   = False,
+            env             = dict(env),
+            workdir         = obj_path,
+        ),
+
+        steps.ShellCommand(
+            name            = "test-library-samples",
+            command         = ["ctest", "--verbose", "--no-tests=error",
+                               "-j", util.Interpolate("%(kw:jobs)s", jobs = cuda_test_jobs)],
+            description     = ["Run the library samples"],
+            haltOnFailure   = True,
+            locks           = _gpuLock.withArgs("counting") if gpu_lock else [],
+            env             = dict(env),
+            workdir         = obj_path,
+        ),
+    ]
