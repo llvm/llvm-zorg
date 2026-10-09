@@ -675,38 +675,22 @@ function build_failure() {
   echo "How to reproduce locally: https://github.com/google/sanitizers/wiki/SanitizerBotReproduceBuild"
   echo
 
-  # Repeat, server sometimes ignores failures or warnings.
-  for _ in 0 1 2 ; do
-    echo
-    echo "@@@STEP_FAILURE@@@"
-    [[ -v BUILDBOT_BUILDERNAME ]] || break
-    sleep 5
-  done
+  echo "@@@STEP_FAILURE@@@"
 
   buildbot_build || exit 1
 }
 
 function build_exception() {
-  # Repeat, server sometimes ignores failures or warnings.
-  for _ in 0 1 2 ; do
-    echo
-    echo "@@@STEP_EXCEPTION@@@"
-    [[ -v BUILDBOT_BUILDERNAME ]] || break
-    sleep 5
-  done
+  echo
+  echo "@@@STEP_EXCEPTION@@@"
 
   buildbot_build || exit 2
 }
 
 function build_warning() {
-  # Repeat, server sometimes ignores failures or warnings.
-  for _ in 0 1 2 ; do
-    echo
-    echo "@@@STEP_WARNINGS@@@"
-    [[ -v BUILDBOT_BUILDERNAME ]] || break
-    sleep 5
-  done
-  
+  echo
+  echo "@@@STEP_WARNINGS@@@"
+
   buildbot_build || exit 2
 }
 
