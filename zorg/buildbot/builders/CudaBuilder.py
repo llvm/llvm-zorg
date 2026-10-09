@@ -9,11 +9,17 @@
 # worker's upload command, and 'trigger_scheduler' starts the test builder (see
 # getCudaGpuTestFactory), which fetches it back and does all the GPU work. That keeps
 # the long Clang build off the GPU workers.
+#
+# getCudaGpuTestFactory() fetches the toolchain of the triggering build with the
+# worker's download command and runs the stages its builder asks for against it, on the
+# GPU: the CUDA tests of the LLVM test suite and the GPU libc tests.
 
 import shlex
 
 from buildbot.plugins import steps, util
+from buildbot.steps.shell import Test
 
+from zorg.buildbot.builders import TestSuiteBuilder
 from zorg.buildbot.builders import UnifiedTreeBuilder
 
 # The runtimes we build for the host as a part of the main build. Note that
@@ -28,6 +34,12 @@ _gpu_triple = "nvptx64-nvidia-cuda"
 # with what the tests need. Whether to compress it, and how long to keep it, is up to
 # the store behind the commands of the workers (see _artifactCommand).
 _artifact_name = "clang-cuda"
+
+# The lock on a GPU which builds share (see the 'gpu_lock' argument of
+# getCudaGpuTestFactory), named after the GPU's UUID, so that builds on different GPUs
+# do not wait for each other. Its count only needs to be greater than the number of
+# builds which can share a GPU.
+_gpu_lock_max_count = 16
 
 
 def _getArtifactName():
@@ -60,6 +72,38 @@ def _requiredWorkerInfo(props, name):
     if value is None or value.strip() == "":
         raise ValueError(f"the worker's info/{name} is not set")
     return value.strip()
+
+
+@util.renderer
+def _gpuLock(props, mode):
+
+    """ The lock on the GPU of the worker (see _gpu_lock_max_count), taken in the given
+        mode: "exclusive" or "counting". The build must have run _getGpuUuidStep.
+    """
+
+    uuid = props.getProperty("gpu_uuid")
+    if uuid is None or uuid == "":
+        raise ValueError("the 'gpu_uuid' property is not set")
+    # One UUID per line, for each GPU the worker sees.
+    uuids = uuid.split()
+    if len(uuids) != 1:
+        raise ValueError(f"the worker sees {len(uuids)} GPUs ({', '.join(uuids)}) rather than one")
+    return [util.MasterLock(f"gpu-{uuid}", maxCount = _gpu_lock_max_count).access(mode)]
+
+
+def _withGpuLock(f, mode):
+
+    """ Make the test steps of the factory take the lock on the GPU in the given mode.
+        The test steps of the factories of TestSuiteBuilder and UnifiedTreeBuilder are
+        their check steps, which run on the GPU here.
+
+        Returns the factory.
+    """
+
+    for s in f.steps:
+        if issubclass(s.step_class, Test):
+            s.kwargs["locks"] = _gpuLock.withArgs(mode)
+    return f
 
 
 @util.renderer
@@ -100,15 +144,25 @@ def _getArtifactNameStep():
 
 class _CudaDirs:
 
-    """ The directory layout of the CUDA factories. The '*_path' attributes are
+    """ The directory layout the two CUDA factories share. The '*_path' attributes are
         renderables, resolved against the build directory when the build runs.
     """
 
     def __init__(self):
         self.obj_dir            = "build"
+        self.toolchain_dir      = "toolchain"
+        self.test_suite_src_dir = "llvm-test-suite"
+        self.test_suite_obj_dir = "build-tests"
+        self.libc_obj_dir       = "build-libc"
         self.install_dir        = "install"
 
         self.builddir_path      = util.Interpolate("%(prop:builddir)s")
+        # Where the GPU builders unpack the toolchain artifact.
+        self.toolchain_path     = util.Interpolate(f"%(prop:builddir)s/{self.toolchain_dir}")
+        self.gpu_loader         = util.Interpolate(f"%(prop:builddir)s/{self.toolchain_dir}/bin/llvm-gpu-loader")
+        # Unlike a generated llvm-lit, lit of the source tree works with any toolchain.
+        self.source_lit         = util.Interpolate("%(prop:builddir)s/llvm-project/llvm/utils/lit/lit.py")
+        self.externals_path     = _requiredWorkerInfo.withArgs("test_suite_externals")
 
 
 def getCudaClangBuildFactory(
@@ -294,6 +348,216 @@ def getCudaClangBuildFactory(
     )
 
 
+def getCudaGpuTestFactory(
+        test_suite = False,
+        gpu_libc = False,
+        gpu_lock = False,
+        gpu_arch = None,
+        cuda_test_jobs = 4,
+        download_command = None,
+        jobs = None,
+        env  = None,
+    ):
+
+    """ Create and configure a builder factory to run the CUDA tests and the GPU libc
+        tests against a Clang toolchain built by another builder (see
+        getCudaClangBuildFactory).
+
+        It fetches the toolchain artifact of the triggering build, so the GPU worker never
+        builds Clang, and runs these stages against it:
+
+            1. The CUDA tests of the LLVM test suite, compiled by the unpacked Clang and
+               executed on the GPU (see TestSuiteBuilder).
+            2. A stand-alone runtimes build of the GPU libc, executed on the GPU through
+               llvm-gpu-loader (see UnifiedTreeBuilder.getCmakeExBuildFactory).
+
+        A stage only runs when its argument asks for it ('test_suite' and 'gpu_libc'),
+        and at least one must, so that a builder names what it tests.
+
+        The worker needs the NVIDIA driver and nvidia-smi, git, CMake, Ninja, python3 and
+        tar, and for each stage:
+
+            test_suite      The CUDA toolkits and GCC installations of its test suite
+                            externals directory (see 'test_suite_externals' below).
+            gpu_libc        python3 with pyyaml for the libc header generator, and the
+                            ptxas of a CUDA toolkit, which clang assembles the nvptx64
+                            code with. It finds ptxas on the PATH or in /usr/local/cuda.
+
+        It declares no source code dependencies, as a Triggerable scheduler drives it, but
+        checks out the triggering revision to configure the test suite and the GPU libc.
+
+        Property Parameters
+        -------------------
+
+        artifact : str
+            The name of the toolchain artifact to fetch, which the triggering build sets
+            (see getCudaClangBuildFactory). A rebuild keeps it, but the force form cannot
+            set it, so instead of forcing this builder, rebuild one of its builds or force
+            the triggering builder.
+
+        got_revision : str
+            The revision to test, which the triggering build passes through the source
+            stamp.
+
+        clean : boolean
+            Clean up the source folders. There is no 'clean_obj': every build starts
+            from fresh build folders, as the toolchain they were built with is gone.
+
+        jobs : int
+            The degree of parallelism of the builds. Used as a default value of the
+            'jobs' argument. When the builder does not pass that argument, the worker
+            must set this property, or the build fails.
+
+        Worker Info
+        -----------
+
+        The files in the info/ directory of the worker which the build reads. Each is
+        required unless the builder passes the argument it is the default of.
+
+        artifact_download_command
+            The command which downloads the toolchain artifact (see _artifactCommand).
+            Used as a default value of the 'download_command' argument.
+
+        gpu_arch
+            The GPU architecture of the worker, e.g. "sm_75". Used as a default value of
+            the 'gpu_arch' argument.
+
+        test_suite_externals
+            The LLVM test suite externals directory of the worker. The CUDA tests get a
+            variant per toolkit, C++ standard and standard library in <externals>/cuda,
+            so the worker decides what they are tested against. Only the stages which
+            use it require it.
+
+
+        Parameters
+        ----------
+
+        test_suite : boolean
+            Build and run the CUDA tests of the LLVM test suite (default is False).
+
+        gpu_libc : boolean
+            Build and run the GPU libc tests (default is False).
+
+            Note that the GPU libc requires a sm_60 or a newer GPU, so this is not for
+            the builders running on the older hardware.
+
+        gpu_lock : boolean
+            Lock the GPU for the steps running tests on it, for workers whose builds
+            share a GPU (default is False).
+
+            - The CUDA tests take the lock exclusively: their assert tests fault the
+              GPU on purpose, which can kill the contexts of other processes on it.
+            - The GPU libc tests share it.
+            - The lock is named after the GPU's UUID, so the worker must see exactly
+              one GPU. The steps taking the lock fail otherwise.
+
+        gpu_arch : str, optional
+            The GPU architecture to compile the tests for, e.g. "sm_75"
+            (default is the worker's info/gpu_arch).
+
+        cuda_test_jobs : int, optional
+            A degree of parallelism for the tests running on the GPU (default is 4).
+            This applies to the CUDA tests of the LLVM test suite.
+
+        download_command : list, optional
+            The command which downloads the toolchain artifact, given its name as the last
+            argument (default is the worker's info/artifact_download_command).
+
+        The rest of the arguments have the same meaning as in getCudaClangBuildFactory.
+
+        Returns
+        -------
+
+        Returns the factory object with the prepared build steps.
+
+    """
+
+    assert test_suite or gpu_libc, \
+        "At least one of the 'test_suite' and 'gpu_libc' arguments must be specified."
+
+    if download_command is None:
+        download_command = _requiredWorkerInfo.withArgs("artifact_download_command")
+
+    if gpu_arch is None:
+        gpu_arch = _requiredWorkerInfo.withArgs("gpu_arch")
+    if jobs is None:
+        jobs = _requiredProperty.withArgs("jobs")
+
+    dirs = _CudaDirs()
+    env = dict(env or {})
+
+    f = UnifiedTreeBuilder.getLLVMBuildFactoryAndPrepareForSourcecodeSteps(
+        depends_on_projects = [],
+        enable_projects     = [],
+        enable_runtimes     = [],
+    )
+    # Before the llvm-project checkout, which then sets got_revision to the revision
+    # under test rather than leaving it at the test suite's.
+    if test_suite:
+        _addCudaTestSuiteCheckoutSteps(f, dirs)
+    f.addGetSourcecodeSteps()
+
+    f.addStep(_getGpuInfoStep(dirs, env))
+    if gpu_lock:
+        f.addStep(_getGpuUuidStep(dirs, env))
+    f.addStep(_getFetchArtifactStep(download_command, dirs, env))
+
+    if test_suite:
+        f.addSteps(
+            _getCudaTestSuiteSteps(
+                gpu_arch        = gpu_arch,
+                cuda_test_jobs  = cuda_test_jobs,
+                gpu_lock        = gpu_lock,
+                jobs            = jobs,
+                dirs            = dirs,
+                env             = env,
+            ).steps)
+
+    if gpu_libc:
+        f.addSteps(
+            _getGpuLibcSteps(
+                gpu_arch            = gpu_arch,
+                gpu_lock            = gpu_lock,
+                jobs                = jobs,
+                dirs                = dirs,
+                env                 = env,
+            ).steps)
+
+    return f
+
+
+def _getGpuInfoStep(dirs, env):
+
+    """ Report the GPU we are about to test on, and fail early if there is none. """
+
+    return steps.ShellCommand(
+        name            = "gpu-info",
+        command         = ["nvidia-smi", "-L"],
+        description     = ["GPU information"],
+        haltOnFailure   = True,
+        env             = dict(env),
+        workdir         = dirs.builddir_path,
+    )
+
+
+def _getGpuUuidStep(dirs, env):
+
+    """ Set the 'gpu_uuid' property to the UUID of the GPU, which names the lock on it
+        (see _gpuLock). On a worker which sees more than one GPU, the property holds a
+        UUID per line, which _gpuLock rejects.
+    """
+
+    return steps.SetPropertyFromCommand(
+        name            = "set-props-gpu-uuid",
+        command         = ["nvidia-smi", "--query-gpu=uuid", "--format=csv,noheader"],
+        property        = "gpu_uuid",
+        description     = ["Get the GPU UUID"],
+        haltOnFailure   = True,
+        env             = dict(env),
+        workdir         = dirs.builddir_path,
+    )
+
+
 def _getPublishArtifactSteps(upload_command, dirs, env):
 
     """ Pack the just built toolchain and upload it with the given command (see
@@ -354,3 +618,177 @@ def _getTriggerSteps(trigger_scheduler):
             waitForFinish       = False,
         ),
     ]
+
+
+def _getFetchArtifactStep(download_command, dirs, env):
+
+    """ Replace the toolchain directory with the toolchain of the triggering build,
+        discarding the test build directories it has compiled before.
+
+        The artifact gets downloaded with the given command (see _artifactCommand).
+    """
+
+    return steps.ShellSequence(
+        name            = "fetch-artifact",
+        commands        = [
+            # A stale toolchain file would mask an incomplete artifact. The test build
+            # directories go too: ninja tracks the path of the compiler, not the
+            # compiler, so it would rerun what the previous toolchain built.
+            util.ShellArg(
+                command         = ["rm", "-rf",
+                                   dirs.toolchain_dir,
+                                   dirs.test_suite_obj_dir,
+                                   dirs.libc_obj_dir],
+                logname         = "stdio",
+                haltOnFailure   = True),
+            util.ShellArg(
+                command         = _artifactCommand.withArgs(download_command),
+                logname         = "stdio",
+                haltOnFailure   = True),
+            util.ShellArg(
+                command         = ["mkdir", dirs.toolchain_dir],
+                logname         = "stdio",
+                haltOnFailure   = True),
+            util.ShellArg(
+                command         = ["tar", "-xf", _getArtifactName(), "-C", dirs.toolchain_dir],
+                logname         = "stdio",
+                haltOnFailure   = True),
+            util.ShellArg(
+                command         = util.Interpolate(
+                    'rm -f "%(kw:artifact)s"',
+                    artifact = _getArtifactName()),
+                logname         = "stdio",
+                haltOnFailure   = True),
+        ],
+        description     = ["Fetch the toolchain artifact"],
+        haltOnFailure   = True,
+        env             = dict(env),
+        workdir         = dirs.builddir_path,
+    )
+
+
+def _addCudaTestSuiteCheckoutSteps(f, dirs):
+
+    """ Check out the latest LLVM test suite, which the CUDA tests come from.
+
+        Its Git step sets got_revision like any other, so it must come before the
+        llvm-project checkout of the factory: the reporters and the build page then
+        show the revision under test, not the test suite's.
+    """
+
+    src_path = f"%(prop:builddir)s/{dirs.test_suite_src_dir}"
+
+    f.addStep(steps.RemoveDirectory(
+        name            = "clean-src-dir-cuda-test-suite",
+        dir             = util.Interpolate(src_path),
+        haltOnFailure   = False,
+        flunkOnFailure  = False,
+        doStepIf        = lambda step: bool(step.getProperty("clean")),
+    ))
+    f.addGetSourcecodeForProject(
+        project         = "test-suite",
+        name            = "checkout-cuda-test-suite",
+        src_dir         = src_path,
+        alwaysUseLatest = True,
+    )
+
+
+def _getCudaTestSuiteSteps(
+        gpu_arch,
+        cuda_test_jobs,
+        gpu_lock,
+        jobs,
+        dirs,
+        env,
+    ):
+
+    """ Build and run the CUDA tests of the LLVM test suite.
+
+        What they are tested against comes from the externals directory of the worker
+        (see the 'test_suite_externals' worker info in getCudaGpuTestFactory).
+
+        Returns the factory object to extend a build workflow with.
+    """
+
+    definitions = {
+        "CUDA_GPU_ARCH"                     : gpu_arch,
+        "CUDA_JOBS"                         : cuda_test_jobs,
+        "CUDA_NEW_DRIVER"                   : "OFF",
+        "TEST_SUITE_COLLECT_CODE_SIZE"      : "OFF",
+        "TEST_SUITE_COLLECT_COMPILE_TIME"   : "OFF",
+        "TEST_SUITE_EXTERNALS_DIR"          : dirs.externals_path,
+        "TEST_SUITE_LIT_FLAGS"              : "-vv",
+        "TEST_SUITE_LIT:FILEPATH"           : dirs.source_lit,
+        "TEST_SUITE_SUBDIRS"                : "External",
+    }
+
+    test_suite = TestSuiteBuilder.getLlvmTestSuiteSteps(
+        hint                = "cuda-test-suite",
+        # Checked out up front (see _addCudaTestSuiteCheckoutSteps).
+        repo_profiles       = None,
+        src_dir             = dirs.test_suite_src_dir,
+        obj_dir             = dirs.test_suite_obj_dir,
+        targets             = ["cuda-tests-simple"],
+        checks              = ["check-cuda-simple"],
+        compiler_dir        = dirs.toolchain_path,
+        cmake_definitions   = definitions,
+        jobs                = jobs,
+        env                 = dict(env),
+    )
+
+    # These tests include the assert tests, which fault the GPU (see 'gpu_lock' in
+    # getCudaGpuTestFactory).
+    return _withGpuLock(test_suite, "exclusive") if gpu_lock else test_suite
+
+
+def _getGpuLibcSteps(
+        gpu_arch,
+        gpu_lock,
+        jobs,
+        dirs,
+        env,
+    ):
+
+    """ Build the GPU libc as a stand-alone runtimes build and run its tests on the GPU.
+
+        Note that the factory sets the 'srcdir', 'objdir' and the like properties of the
+        build to its own, so the stages after this one must not rely on them.
+
+        Returns a factory to extend a build workflow with.
+    """
+
+    libc = UnifiedTreeBuilder.getCmakeExBuildFactory(
+        depends_on_projects     = ["libc", "llvm"],
+        enable_projects         = [],
+        enable_runtimes         = ["libc"],
+        hint                    = "nvptx-libc",
+        # The source tree is the one checked out at the start of the build.
+        repo_profiles           = None,
+        allow_cmake_defaults    = False,
+        src_to_build_dir        = "runtimes",
+        obj_dir                 = dirs.libc_obj_dir,
+        # Compile the tests up front, so that the check step only runs them on the GPU.
+        targets                 = ["libc", "check-libc-build"],
+        checks                  = ["check-libc"],
+        install_targets         = None,
+        cmake_definitions       = {
+            "CMAKE_BUILD_TYPE"              : "Release",
+            "CMAKE_C_COMPILER"              : util.Interpolate("%(kw:dir)s/bin/clang", dir = dirs.toolchain_path),
+            "CMAKE_C_COMPILER_TARGET"       : _gpu_triple,
+            "CMAKE_C_COMPILER_WORKS"        : "TRUE",
+            "CMAKE_CXX_COMPILER"            : util.Interpolate("%(kw:dir)s/bin/clang++", dir = dirs.toolchain_path),
+            "CMAKE_CXX_COMPILER_TARGET"     : _gpu_triple,
+            "CMAKE_CXX_COMPILER_WORKS"      : "TRUE",
+            "CMAKE_CROSSCOMPILING_EMULATOR" : dirs.gpu_loader,
+            # Otherwise libc probes -march=native for the GPU, and builds no tests at all
+            # when that fails, which check-libc reports as a pass.
+            "LIBC_GPU_TEST_ARCHITECTURE"    : gpu_arch,
+            "LLVM_BINARY_DIR"               : dirs.toolchain_path,
+            "LLVM_DEFAULT_TARGET_TRIPLE"    : _gpu_triple,
+            "LLVM_RUNTIMES_TARGET"          : _gpu_triple,
+        },
+        jobs                    = jobs,
+        env                     = dict(env),
+    )
+
+    return _withGpuLock(libc, "counting") if gpu_lock else libc
