@@ -11,6 +11,7 @@ from zorg.buildbot.builders import OpenMPBuilder
 from zorg.buildbot.builders import SphinxDocsBuilder
 from zorg.buildbot.builders import ABITestsuitBuilder
 from zorg.buildbot.builders import ClangLTOBuilder
+from zorg.buildbot.builders import CudaBuilder
 from zorg.buildbot.builders import UnifiedTreeBuilder
 from zorg.buildbot.builders import AOSPBuilder
 from zorg.buildbot.builders import AnnotatedBuilder
@@ -34,6 +35,7 @@ reload(OpenMPBuilder)
 reload(SphinxDocsBuilder)
 reload(ABITestsuitBuilder)
 reload(ClangLTOBuilder)
+reload(CudaBuilder)
 reload(UnifiedTreeBuilder)
 reload(AOSPBuilder)
 reload(AnnotatedBuilder)
@@ -2597,6 +2599,53 @@ all += [
                                          'libc', 'libcxx', 'libcxxabi',
                                          'libunwind', 'lld', 'offload'],
                     checkout_llvm_sources=False)},
+
+    # Build Clang for the NVIDIA CUDA bots on a worker without a GPU, then let the
+    # nvidia-cuda-a10-* builders below run all the GPU work against the published
+    # toolchain.
+    {'name' : "nvidia-cuda-toolchain",
+    'tags'  : ["clang", "cuda", "silent"],
+    'workernames' : ["nvidia-cuda-build-x86-64"],
+    'builddir': "nvidia-cuda-toolchain",
+    'factory' : CudaBuilder.getCudaClangBuildFactory(
+                    publish_artifact = True,
+                    trigger_scheduler = "nvidia-cuda-a10-tests",
+                    # This worker has ccache installed. It only caches the llvm and
+                    # clang compilations, not the runtimes sub-builds.
+                    cmake_definitions = {
+                        "LLVM_CCACHE_BUILD"                : "ON",
+                    })},
+
+    # The GPU work of the CUDA bots, split up because the parts need different
+    # workers: the CUDA tests of the LLVM test suite and the library samples are CUDA
+    # programs and need a toolkit, while the GPU libc tests only need a GPU. Splitting
+    # them also keeps a failure in one from hiding the results of the others.
+    #
+    # None of these builders collapses the requests triggered by nvidia-cuda-toolchain,
+    # or a builder that fell behind would skip the revisions in between. Their builds
+    # share the A10s, so they lock the GPU.
+    {'name' : "nvidia-cuda-a10-test-suite",
+    'tags'  : ["clang", "cuda", "silent"],
+    'workernames' : ["nvidia-cuda-a10-toolkits-1", "nvidia-cuda-a10-toolkits-2"],
+    'builddir': "nvidia-cuda-a10-test-suite",
+    'collapseRequests' : False,
+    'factory' : CudaBuilder.getCudaGpuTestFactory(test_suite = True, gpu_lock = True)},
+
+    {'name' : "nvidia-cuda-a10-libc",
+    'tags'  : ["clang", "cuda", "silent"],
+    'workernames' : ["nvidia-cuda-a10-libc-1", "nvidia-cuda-a10-libc-2"],
+    'builddir': "nvidia-cuda-a10-libc",
+    'collapseRequests' : False,
+    'factory' : CudaBuilder.getCudaGpuTestFactory(gpu_libc = True, gpu_lock = True)},
+
+    # NVIDIA's public samples of its prebuilt CUDA libraries, on the workers with the
+    # toolkits.
+    {'name' : "nvidia-cuda-a10-library-samples",
+    'tags'  : ["clang", "cuda", "silent"],
+    'workernames' : ["nvidia-cuda-a10-toolkits-1", "nvidia-cuda-a10-toolkits-2"],
+    'builddir': "nvidia-cuda-a10-library-samples",
+    'collapseRequests' : False,
+    'factory' : CudaBuilder.getCudaGpuTestFactory(library_samples = True, gpu_lock = True)},
 
 # HIP builders.
     {'name' : "clang-hip-vega20",

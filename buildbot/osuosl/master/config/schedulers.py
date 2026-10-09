@@ -221,9 +221,16 @@ def getForceSchedulers(builders):
         if 'release' in getattr(builder, 'tags', [])
     ]
 
+    # The builders a Triggerable scheduler drives get none: a forced build would lack
+    # what the triggering build passes them, such as the artifact to test. Rebuild one
+    # of their builds, or force the builder which triggers them, instead.
+    triggered_builders = [
+        name for names in triggered_builders_by_scheduler.values() for name in names
+    ]
+
     scheduler_builders = [
         builder.name for builder in builders
-        if builder.name not in release_builders
+        if builder.name not in release_builders and builder.name not in triggered_builders
     ]
 
     # Create the force schedulers.
@@ -285,6 +292,54 @@ def getForceSchedulers(builders):
                 ]
             ) for i in range(2)
         ]
+
+# The builders driven by a Triggerable scheduler instead of the commits, as a
+# {scheduler name : [builder names]} map. Such a builder consumes the artifacts of
+# another build, so it declares no source code dependencies and gets no automatic
+# scheduler (see getMainBranchSchedulers).
+triggered_builders_by_scheduler = {
+    # One toolchain artifact, three builders testing it on a GPU.
+    "nvidia-cuda-a10-tests" : [
+        "nvidia-cuda-a10-test-suite",
+        "nvidia-cuda-a10-libc",
+        "nvidia-cuda-a10-library-samples",
+    ],
+}
+
+def getTriggerableSchedulers(builders):
+    """
+    Create a Triggerable scheduler for each group of builders that another build
+    triggers (see triggered_builders_by_scheduler), leaving out the builders
+    missing from the configuration.
+    """
+
+    builder_names = set(builder.name for builder in builders)
+
+    triggerable_schedulers = []
+
+    for scheduler_name, triggered in triggered_builders_by_scheduler.items():
+        # Some of the builders could be missing from the configuration, e.g. when
+        # their workers are not available.
+        configured_builders = [
+            name for name in triggered
+            if name in builder_names
+        ]
+
+        if not configured_builders:
+            continue
+
+        triggerable_schedulers.append(
+            schedulers.Triggerable(
+                name=scheduler_name,
+                builderNames=configured_builders)
+        )
+
+        log.msg(
+            "Generated Triggerable: {{ name='{}'".format(scheduler_name),
+            ", builderNames=", configured_builders,
+            "}")
+
+    return triggerable_schedulers
 
 # TODO: Abstract this kind of scheduler better.
 def getLntSchedulers():
