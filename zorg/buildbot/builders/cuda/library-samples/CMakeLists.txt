@@ -116,8 +116,14 @@ foreach(group IN LISTS SAMPLE_GROUPS)
 endforeach()
 
 # A test runs every executable its sample built, and fails when there are none, so that
-# a sample which failed to build does not pass. It also fails on "test FAILED", which
-# the cuSPARSE samples print on a wrong result while exiting successfully.
+# a sample which failed to build does not pass. It also fails when a sample reports a
+# wrong result, which the samples which check their results do while exiting
+# successfully:
+#   - "FAILED": "<sample> test FAILED: wrong result" from cuSPARSE, "FAILED with L2
+#     error = ..." from the cuFFT multi-GPU samples, and "Check: FAILED" from cuSOLVER's
+#     Xtrtri.
+#   - "Error: max_relerr is bigger than eps" from cuSOLVER's Xgesvdr.
+# The samples' other error messages come with a failing exit status.
 set(runner "${CMAKE_BINARY_DIR}/run-sample.cmake")
 file(WRITE "${runner}" [=[
 file(GLOB executables "${BIN_DIR}/*")
@@ -132,7 +138,8 @@ foreach(executable IN LISTS executables)
   if(NOT result EQUAL 0)
     message(FATAL_ERROR "${executable} failed: ${result}")
   endif()
-  if(output MATCHES "test FAILED")
+  if(output MATCHES "(^|[^A-Za-z])FAILED([^A-Za-z]|$)" OR
+     output MATCHES "max_relerr is bigger than eps")
     message(FATAL_ERROR "${executable} reported a wrong result")
   endif()
 endforeach()
@@ -180,6 +187,14 @@ foreach(toolkit IN LISTS tested_toolkits)
              COMMAND "${CMAKE_COMMAND}" "-DBIN_DIR=${binary_dir}/bin" -P "${runner}")
     # The samples take seconds, so one which hangs must not hold up the GPU worker.
     set_tests_properties("${toolkit_name}/${sample}" PROPERTIES TIMEOUT 300)
+    # The cuFFT multi-GPU samples run their GPUs as device 0 twice, and then compute
+    # wrong results, or fail, when other processes use the GPU. So they run one at a
+    # time, and the factory runs the tests with this label in a step of their own, with
+    # the GPU to themselves.
+    if(sample MATCHES "^cuFFT/.*_mgpu_")
+      set_tests_properties("${toolkit_name}/${sample}" PROPERTIES
+                           LABELS exclusive_gpu RUN_SERIAL TRUE)
+    endif()
   endforeach()
   message(STATUS "${toolkit_name}: ${sample_count} tests")
 endforeach()

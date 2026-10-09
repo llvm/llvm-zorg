@@ -470,7 +470,9 @@ def getCudaGpuTestFactory(
 
             - The CUDA tests take the lock exclusively: their assert tests fault the
               GPU on purpose, which can kill the contexts of other processes on it.
-            - The GPU libc tests and the library samples share it.
+            - The cuFFT multi-GPU library samples take it exclusively too, as they
+              compute wrong results when other processes use the GPU.
+            - The GPU libc tests and the other library samples share it.
             - The lock is named after the GPU's UUID, so the worker must see exactly
               one GPU. The steps taking the lock fail otherwise.
 
@@ -918,13 +920,27 @@ def _getCudaLibrarySamplesSteps(
             workdir         = obj_path,
         ),
 
+        # Keep going, so that the samples below get tested as well.
         steps.ShellCommand(
             name            = "test-library-samples",
-            command         = ["ctest", "--verbose", "--no-tests=error",
+            command         = ["ctest", "--verbose", "--no-tests=error", "-LE", "exclusive_gpu",
                                "-j", util.Interpolate("%(kw:jobs)s", jobs = cuda_test_jobs)],
             description     = ["Run the library samples"],
-            haltOnFailure   = True,
+            haltOnFailure   = False,
             locks           = _gpuLock.withArgs("counting") if gpu_lock else [],
+            env             = dict(env),
+            workdir         = obj_path,
+        ),
+
+        # The samples which need the GPU to themselves, one at a time with the GPU
+        # locked exclusively (see 'gpu_lock' in getCudaGpuTestFactory). They take
+        # seconds, so they hold up the other builds on the GPU no more than that.
+        steps.ShellCommand(
+            name            = "test-library-samples-exclusive-gpu",
+            command         = ["ctest", "--verbose", "--no-tests=error", "-L", "exclusive_gpu"],
+            description     = ["Run the library samples which need the GPU to themselves"],
+            haltOnFailure   = True,
+            locks           = _gpuLock.withArgs("exclusive") if gpu_lock else [],
             env             = dict(env),
             workdir         = obj_path,
         ),

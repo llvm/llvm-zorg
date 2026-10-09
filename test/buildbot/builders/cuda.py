@@ -91,6 +91,15 @@ superbuild = [s for s in f.steps
               if isinstance(s.kwargs.get("name"), str) and s.kwargs["name"] == "write-library-samples-superbuild"]
 assert len(superbuild) == 1
 assert os.path.isfile(superbuild[0].kwargs["mastersrc"])
+# The tests which need the GPU to themselves run in a step of their own, the rest in
+# another: both select them by the label the superbuild gives them.
+def step_command(name):
+    return " ".join(str(a) for s in f.steps if partly_rendered(s.kwargs.get("name")) == name
+                    for a in s.kwargs["command"])
+
+assert " -LE exclusive_gpu " in step_command("test-library-samples")
+assert " -L exclusive_gpu" in step_command("test-library-samples-exclusive-gpu")
+assert "LABELS exclusive_gpu RUN_SERIAL TRUE" in open(superbuild[0].kwargs["mastersrc"]).read()
 
 # Each stage adds its own steps, and only those.
 stages = {
@@ -152,12 +161,14 @@ names = [partly_rendered(s.kwargs.get("name")) for s in f.steps]
 assert names.index("gpu-info") < names.index("set-props-gpu-uuid") < names.index("fetch-artifact")
 assert factory_has_step(f, "set-props-gpu-uuid", hasarg = "property", contains = "gpu_uuid")
 
-# The CUDA tests take it exclusively, as their assert tests fault the GPU, and the
-# other tests on the GPU share it. No other step takes it.
+# The CUDA tests take it exclusively, as their assert tests fault the GPU, and so do
+# the cuFFT multi-GPU samples, which go wrong on a shared GPU. The other tests on the
+# GPU share it. No other step takes it.
 gpu_lock_modes = {
     "test-check-cuda-simple-cuda-test-suite"    : "exclusive",
     "test-check-libc-nvptx-libc"                : "counting",
     "test-library-samples"                      : "counting",
+    "test-library-samples-exclusive-gpu"        : "exclusive",
 }
 for s in f.steps:
     name = partly_rendered(s.kwargs.get("name"))
