@@ -298,6 +298,12 @@ def getForceSchedulers(builders):
 # another build, so it declares no source code dependencies and gets no automatic
 # scheduler (see getMainBranchSchedulers).
 triggered_builders_by_scheduler = {
+    # One toolchain artifact, three builders testing it on a GPU.
+    "nvidia-cuda-a10-tests" : [
+        "nvidia-cuda-a10-test-suite",
+        "nvidia-cuda-a10-libc",
+        "nvidia-cuda-a10-library-samples",
+    ],
 }
 
 def getTriggerableSchedulers(builders):
