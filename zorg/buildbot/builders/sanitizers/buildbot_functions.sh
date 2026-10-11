@@ -243,14 +243,21 @@ function download_clang_from_chromium {
 function build_clang_at_release_tag {
   common_stage1_variables
 
-  local host_clang_revision
-  host_clang_revision=llvmorg-$(
+  local clang_version
+  clang_version=$(
     git ls-remote --tags https://github.com/llvm/llvm-project.git | \
       grep -oE "refs/tags/llvmorg-[0-9.]+$" | \
       grep -Eo "[0-9.]+" | \
       sort -n | \
       tail -n1
     )
+
+  local host_clang_revision
+  if (( ${clang_version%%.*} < 24 )); then
+    host_clang_revision=d283ad857cbfc1d890c1fdc0a829574a84aabe75
+  else
+    host_clang_revision=llvmorg-${clang_version}
+  fi
 
   if  [ -r "${STAGE1_DIR}/host_clang_revision" ] && \
       [ "$(cat "${STAGE1_DIR}/host_clang_revision")" == "$host_clang_revision" ]
