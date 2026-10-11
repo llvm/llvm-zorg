@@ -111,7 +111,7 @@ all = [
 
     {'name': "llvm-clang-x86_64-sie-ubuntu-fast",
     'tags'  : ["clang", "llvm", "clang-tools-extra", "lld", "cross-project-tests"],
-    'collapseRequests': False,
+    'collapseRequests': True,
     'workernames': ["sie-linux-worker", "doug-worker-7"],
     'builddir': "llvm-clang-x86_64-sie-ubuntu-fast",
     'factory': UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
