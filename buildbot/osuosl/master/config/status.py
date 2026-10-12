@@ -656,8 +656,7 @@ def getReporters():
                     builders = [
                         "nvidia-cuda-toolchain",
                         "nvidia-cuda-a10-test-suite",
-                        "nvidia-cuda-a10-libc",
-                        "nvidia-cuda-a10-library-samples"])
+                        "nvidia-cuda-a10-libc"])
             ]),
         reporters.MailNotifier(
             fromaddr = status_email_fromaddr,

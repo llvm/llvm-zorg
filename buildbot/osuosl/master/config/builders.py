@@ -2617,9 +2617,9 @@ all += [
                     })},
 
     # The GPU work of the CUDA bots, split up because the parts need different
-    # workers: the CUDA tests of the LLVM test suite and the library samples are CUDA
-    # programs and need a toolkit, while the GPU libc tests only need a GPU. Splitting
-    # them also keeps a failure in one from hiding the results of the others.
+    # workers: the CUDA tests of the LLVM test suite are CUDA programs and need a
+    # toolkit, while the GPU libc tests only need a GPU. Splitting them also keeps a
+    # failure in one from hiding the results of the other.
     #
     # None of these builders collapses the requests triggered by nvidia-cuda-toolchain,
     # or a builder that fell behind would skip the revisions in between. Their builds
@@ -2637,15 +2637,6 @@ all += [
     'builddir': "nvidia-cuda-a10-libc",
     'collapseRequests' : False,
     'factory' : CudaBuilder.getCudaGpuTestFactory(gpu_libc = True, gpu_lock = True)},
-
-    # NVIDIA's public samples of its prebuilt CUDA libraries, on the workers with the
-    # toolkits.
-    {'name' : "nvidia-cuda-a10-library-samples",
-    'tags'  : ["clang", "cuda", "silent"],
-    'workernames' : ["nvidia-cuda-a10-toolkits-1", "nvidia-cuda-a10-toolkits-2"],
-    'builddir': "nvidia-cuda-a10-library-samples",
-    'collapseRequests' : False,
-    'factory' : CudaBuilder.getCudaGpuTestFactory(library_samples = True, gpu_lock = True)},
 
 # HIP builders.
     {'name' : "clang-hip-vega20",
