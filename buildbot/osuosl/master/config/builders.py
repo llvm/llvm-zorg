@@ -359,14 +359,16 @@ all = [
     'workernames':["linaro-clang-armv8-quick", "arm-bbot-clang-armv8-quick"],
     'builddir':"clang-armv8-quick",
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
-                    clean=False,
+                    clean=True,
                     checkout_compiler_rt=False,
                     checkout_lld=False,
                     checkout_clang_tools_extra=False,
                     extra_cmake_args=[
                         "-DLLVM_TARGETS_TO_BUILD='ARM'",
                         # Skip scheduling sensitive tests.
-                        "-DLLVM_LIT_ARGS=-v --filter-out '(googletest-timeout|timeout-hang|max-time)\.py'"])},
+                        "-DLLVM_LIT_ARGS=-v --filter-out '(googletest-timeout|timeout-hang|max-time)\.py'",
+                        "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
+                        "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",])},
 
     ## ARMv7 check-all 2-stage
     {'name' : "clang-armv7-2stage",
@@ -422,14 +424,16 @@ all = [
     'workernames' : ["linaro-clang-aarch64-quick", "arm-bbot-clang-aarch64-quick"],
     'builddir': "clang-aarch64-quick",
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
-                    clean=False,
+                    clean=True,
                     checkout_compiler_rt=False,
                     checkout_lld=False,
                     checkout_clang_tools_extra=False,
                     extra_cmake_args=[
                         "-DLLVM_TARGETS_TO_BUILD='AArch64'",
                         # Skip scheduling sensitive tests.
-                        "-DLLVM_LIT_ARGS=-v --filter-out '(googletest-timeout|timeout-hang|max-time)\.py'"])},
+                        "-DLLVM_LIT_ARGS=-v --filter-out '(googletest-timeout|timeout-hang|max-time)\.py'",
+                        "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
+                        "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache"])},
 
     # AArch64 2 stage build with lld, flang, compiler-rt, test-suite and SVE/SME
     # mlir integration tests.
@@ -469,6 +473,10 @@ all = [
                     checkout_compiler_rt=False,
                     checkout_lld=False,
                     runTestSuite=True,
+                    extra_cmake_args=[
+                        "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
+                        "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
+                    ],
                     testsuite_flags=[
                         '--cppflags', '-O0',
                         '--threads=32', '--build-threads=32'])},
@@ -619,7 +627,9 @@ all = [
                         "-DCMAKE_CXX_FLAGS='-mcpu=neoverse-v2'",
                         "-DLLVM_ENABLE_LLD=True",
                         "-DMLIR_INCLUDE_INTEGRATION_TESTS=True",
-                        "-DMLIR_RUN_ARM_SVE_TESTS=True"])},
+                        "-DMLIR_RUN_ARM_SVE_TESTS=True",
+                        "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
+                        "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache"])},
 
     # AArch64 Clang+LLVM+RT+LLD check-all + flang + test-suite 2-stage with SVE2
     # (not just SVE) Vector Length Agnostic codegen.
@@ -1336,7 +1346,9 @@ all = [
                     extra_cmake_args=[
                         '-DLLVM_ENABLE_ASSERTIONS=True',
                         '-DLLVM_USE_LINKER=lld',
-                        '-DLLDB_ENFORCE_STRICT_TEST_REQUIREMENTS=ON'])},
+                        '-DLLDB_ENFORCE_STRICT_TEST_REQUIREMENTS=ON',
+                        '-DCMAKE_C_COMPILER_LAUNCHER=ccache',
+                        '-DCMAKE_CXX_COMPILER_LAUNCHER=ccache'])},
 
     {'name' : "lldb-arm-ubuntu",
     'tags'  : ["lldb"],
@@ -1350,7 +1362,9 @@ all = [
                         '-DLLVM_LIT_ARGS=-vj 4',
                         '-DLLVM_USE_LINKER=lld',
                         '-DCLANG_DEFAULT_LINKER=lld',
-                        '-DLLDB_ENFORCE_STRICT_TEST_REQUIREMENTS=ON'])},
+                        '-DLLDB_ENFORCE_STRICT_TEST_REQUIREMENTS=ON',
+                        '-DCMAKE_C_COMPILER_LAUNCHER=ccache',
+                        '-DCMAKE_CXX_COMPILER_LAUNCHER=ccache'])},
 
     {'name' : "lldb-aarch64-windows",
     'tags'  : ["lldb"],
@@ -2352,17 +2366,23 @@ all += [
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
                         "-DLLVM_ENABLE_LIBCXX=On",
                         "-DCMAKE_BUILD_TYPE=Release",
+                        "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
+                        "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
                     ],
                     flang_extra_configure_args=[
                         "-DFLANG_ENABLE_WERROR=ON",
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
                         "-DLLVM_ENABLE_LIBCXX=On",
                         "-DCMAKE_BUILD_TYPE=Release",
+                        "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
+                        "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
                     ],
                     flang_rt_extra_configure_args=[
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
                         "-DLLVM_ENABLE_LIBCXX=On",
                         "-DCMAKE_BUILD_TYPE=Release",
+                        "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
+                        "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
                     ])},
 
     {'name' : "flang-aarch64-release",
@@ -2394,6 +2414,8 @@ all += [
                         "-DLLVM_BUILD_EXAMPLES=ON",
                         "-DCMAKE_BUILD_TYPE=Release",
                         "-DCMAKE_CXX_STANDARD=17",
+                        "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
+                        "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache"
                     ])},
 
     {'name' : "flang-aarch64-latest-gcc",
@@ -2412,6 +2434,8 @@ all += [
                         "-DBUILD_SHARED_LIBS=ON",
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
                         "-DCMAKE_BUILD_TYPE=Release",
+                        "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
+                        "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache"
                     ])},
 
     {'name' : "flang-x86_64-knl-linux",
