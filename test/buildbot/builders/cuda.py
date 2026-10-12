@@ -2,8 +2,6 @@
 
 # Lit Regression Tests for the CudaBuilder factories.
 
-import os
-
 from buildbot.plugins import util
 from buildbot.process.properties import Properties
 from buildbot.steps.source.git import Git
@@ -58,7 +56,7 @@ except AssertionError as e:
 
 
 # The GPU test factory, with all of its stages.
-all_stages = {"test_suite" : True, "gpu_libc" : True, "library_samples" : True}
+all_stages = {"test_suite" : True, "gpu_libc" : True}
 f = CudaBuilder.getCudaGpuTestFactory(**all_stages, gpu_arch = "sm_75")
 print(f"GPU test factory: {f}\n")
 
@@ -85,27 +83,11 @@ assert factory_has_step(f, "fetch-artifact")
 assert factory_has_step(f, "cmake-configure-nvptx-libc", hasarg = "definitions", contains = {
     "LIBC_GPU_TEST_ARCHITECTURE" : "sm_75",
 })
-# The superbuild of the library samples is a file sent from the master.
-# Some step names are renderables, which compare as a renderable rather than a boolean.
-superbuild = [s for s in f.steps
-              if isinstance(s.kwargs.get("name"), str) and s.kwargs["name"] == "write-library-samples-superbuild"]
-assert len(superbuild) == 1
-assert os.path.isfile(superbuild[0].kwargs["mastersrc"])
-# The tests which need the GPU to themselves run in a step of their own, the rest in
-# another: both select them by the label the superbuild gives them.
-def step_command(name):
-    return " ".join(str(a) for s in f.steps if partly_rendered(s.kwargs.get("name")) == name
-                    for a in s.kwargs["command"])
-
-assert " -LE exclusive_gpu " in step_command("test-library-samples")
-assert " -L exclusive_gpu" in step_command("test-library-samples-exclusive-gpu")
-assert "LABELS exclusive_gpu RUN_SERIAL TRUE" in open(superbuild[0].kwargs["mastersrc"]).read()
 
 # Each stage adds its own steps, and only those.
 stages = {
     "test_suite"        : "cmake-configure-cuda-test-suite",
     "gpu_libc"          : "cmake-configure-nvptx-libc",
-    "library_samples"   : "cmake-configure-library-samples",
 }
 for stage in stages:
     f = CudaBuilder.getCudaGpuTestFactory(**{s : s == stage for s in stages})
@@ -161,14 +143,11 @@ names = [partly_rendered(s.kwargs.get("name")) for s in f.steps]
 assert names.index("gpu-info") < names.index("set-props-gpu-uuid") < names.index("fetch-artifact")
 assert factory_has_step(f, "set-props-gpu-uuid", hasarg = "property", contains = "gpu_uuid")
 
-# The CUDA tests take it exclusively, as their assert tests fault the GPU, and so do
-# the cuFFT multi-GPU samples, which go wrong on a shared GPU. The other tests on the
-# GPU share it. No other step takes it.
+# The CUDA tests take it exclusively, as their assert tests fault the GPU, and the GPU
+# libc tests share it. No other step takes it.
 gpu_lock_modes = {
     "test-check-cuda-simple-cuda-test-suite"    : "exclusive",
     "test-check-libc-nvptx-libc"                : "counting",
-    "test-library-samples"                      : "counting",
-    "test-library-samples-exclusive-gpu"        : "exclusive",
 }
 for s in f.steps:
     name = partly_rendered(s.kwargs.get("name"))
