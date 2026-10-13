@@ -4009,7 +4009,9 @@ all += [
                           "-DLLVM_TARGETS_TO_BUILD=AArch64",
                           "-DLLVM_ENABLE_LLD=True",
                           "-DLLVM_LIT_ARGS=-v",
-                          "-DCLANG_ENABLE_CIR=True"
+                          "-DCLANG_ENABLE_CIR=True",
+                          "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
+                          "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache"
     ])},
 
     # MLIR SVE+SME
@@ -4028,7 +4030,10 @@ all += [
                           "-DMLIR_INCLUDE_INTEGRATION_TESTS=True",
                           "-DMLIR_RUN_ARM_SVE_TESTS=True",
                           "-DMLIR_RUN_ARM_SME_TESTS=True",
-                          "-DARM_EMULATOR_EXECUTABLE=qemu-aarch64"
+                          "-DARM_EMULATOR_EXECUTABLE=qemu-aarch64",
+                          "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
+                          "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache"
+
     ])},
 
     # MLIR expensive checks
@@ -4044,7 +4049,9 @@ all += [
                           "-DLLVM_TARGETS_TO_BUILD=AArch64",
                           "-DLLVM_ENABLE_LLD=True",
                           "-DLLVM_LIT_ARGS=-v",
-                          "-DMLIR_ENABLE_EXPENSIVE_PATTERN_API_CHECKS=True"
+                          "-DMLIR_ENABLE_EXPENSIVE_PATTERN_API_CHECKS=True",
+                          "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
+                          "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache"
      ])},
 
 ]
