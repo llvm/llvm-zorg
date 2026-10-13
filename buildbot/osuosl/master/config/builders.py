@@ -2821,7 +2821,7 @@ all += [
                     depends_on_projects=['bolt', 'llvm'],
                     extra_configure_args=[
                         "-DLLVM_APPEND_VC_REV=OFF",
-                        "-DCMAKE_EXE_LINKER_FLAGS='-Wl,--build-id=none'"
+                        "-DCMAKE_EXE_LINKER_FLAGS='-Wl,--build-id=none'",
                         "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
                         "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
                         "-DLLVM_ENABLE_PROJECTS=clang;lld;bolt",
@@ -2924,7 +2924,7 @@ all += [
                     depends_on_projects=['bolt', 'llvm'],
                     extra_configure_args=[
                         "-DLLVM_APPEND_VC_REV=OFF",
-                        "-DCMAKE_EXE_LINKER_FLAGS='-Wl,--build-id=none'"
+                        "-DCMAKE_EXE_LINKER_FLAGS='-Wl,--build-id=none'",
                         "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
                         "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
                         "-DLLVM_ENABLE_PROJECTS=clang;lld;bolt",
