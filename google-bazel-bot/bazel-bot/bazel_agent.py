@@ -63,6 +63,9 @@ You can use following guidelines to figure out what changes needs to be made to 
 - Once you have a potential fix, you can use `search_and_replace` tool to modify any file on the disk. Make sure you pass exact text you want to replace, otherwise, this wouldn't succeed. 
 - You can read the directory structure of utils/bazel/llvm-project-overlay/ using `directory_structure` tool if needed.
 - Try to make minimal set of changes necessary to fix the build.
+- The build is verified under several Bazel configurations, matching what CI runs:
+{build_configs}
+  The build error message states which configuration failed. Your fix must keep all configurations building. For example, LLVM-libc fullbuild mode (`--@llvm-project//libc:build_mode=full`) selects different sources, headers and dependencies in utils/bazel/llvm-project-overlay/libc/ than the default (overlay) mode, so pay attention to `select()`s and build-mode-specific macros there.
 
 ## Common pitfalls
 1. Any BUILD.bazel or *.bzl file is going to be in the llvm-project-overlay/ directory. So it is important to append that to the given repo path to be able to read these files. Otherwise, you would get file not found errors from the `read_file` tool.
@@ -121,7 +124,9 @@ class BazelFixerAgent(BaseAgent):  # pytype: disable=wrong-arg-types
 
             self.logger_agent.info(f"Build Failed. Delegating to Code Fixer...")
             fix_request = [
-                "The Bazel build failed with the following error:",
+                f"The Bazel build failed for configuration '{build_result.config.name}' "
+                f"with arguments: {' '.join(build_result.config.args)}",
+                "The output of the build was:",
                 "<STDERR>" f"{build_result.stderr}" "</STDERR>",
                 "<STDOUT>" f"{build_result.stdout}" "</STDOUT>",
             ]
@@ -199,6 +204,13 @@ class AgentResult:
     summary: Sequence[str]
 
 
+def _describe_build_configs(configs: Sequence[utils.BazelBuildConfig]) -> str:
+    """Renders build configurations as a markdown list for the agent prompt."""
+    return "\n".join(
+        f"  - {config.name}: `{' '.join(config.args)}`" for config in configs
+    )
+
+
 async def query_agent(
     commit_sha: str,
     cmd_processor: utils.CommandProcessor,
@@ -273,6 +285,7 @@ async def query_agent(
             "repo_path": cmd_processor.bazel_path,
             "commit_sha": commit_sha,
             "past_fixes": json.dumps(past_fixes),
+            "build_configs": _describe_build_configs(utils.BAZEL_BUILD_CONFIGS),
         },
     )
 

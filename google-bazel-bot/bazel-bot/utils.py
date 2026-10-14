@@ -58,6 +58,36 @@ def call_with_retry(exceptions : RetryExceptions, func, *args, **kwargs):
             val_delay *= BACKOFF
 
 
+@dataclasses.dataclass(frozen=True)
+class BazelBuildConfig:
+    """A Bazel invocation that CI runs and that the bot must keep passing."""
+
+    # Name of the configuration.
+    name: str
+
+    # Arguments (flags and targets) passed to the bazel-build scripts.
+    args: Tuple[str, ...]
+
+
+# These must stay in sync with the Bazel invocations run by buildkite.
+BAZEL_BUILD_CONFIGS: Tuple[BazelBuildConfig, ...] = (
+    BazelBuildConfig(
+        name="default",
+        args=(
+            "//...",
+            "@llvm-project//...",
+        ),
+    ),
+    BazelBuildConfig(
+        name="llvm_libc_fullbuild",
+        args=(
+            "--@llvm-project//libc:build_mode=full",
+            "@llvm-project//libc/...",
+        ),
+    ),
+)
+
+
 @dataclasses.dataclass(frozen=True, kw_only=True)
 class BazelBuildSuccess:
     """A successful build result."""
@@ -72,6 +102,7 @@ class BazelBuildFailure:
     success: Literal[False] = dataclasses.field(default=False, init=False)
     stdout: str = ""
     stderr: str = ""
+    config: BazelBuildConfig
 
 
 # Result of a Bazel build. Check `result.success` to narrow the type.
@@ -118,13 +149,27 @@ class CommandProcessor:
     def bazel_build_in_kubernetes(self) -> bool:
         return os.getenv("POD_NAME") is not None
 
-    def run_bazel_build(self) -> BazelBuildResult:
-        """
-        Runs the bazel build command in the given repository path for specific targets.
-
+    def run_bazel_build(
+        self,
+        configs: Sequence[BazelBuildConfig] = BAZEL_BUILD_CONFIGS,
+    ) -> BazelBuildResult:
+        """Runs the bazel build for each of the given configurations.
+ 
         Returns:
-            BazelBuildResult containing status, stdout, stderr.
+            BazelBuildSuccess if every config built,
+            otherwise the BazelBuildFailure for the first config that failed.
         """
+        for config in configs:
+            result = self._run_bazel_build_with_config(config)
+            if not result.success:
+                return result
+        return BazelBuildSuccess()
+
+    def _run_bazel_build_with_config(
+        self,
+        config: BazelBuildConfig,
+    ) -> BazelBuildResult:
+        """Runs the bazel build for a single configuration."""
         try:
             bazel_build_file = (
                 "bazel-build-ci" if self.bazel_build_in_kubernetes() else "bazel-build"
@@ -132,33 +177,43 @@ class CommandProcessor:
             base_path = os.path.dirname(os.path.abspath(__file__))
             bazel_build_path = os.path.join(base_path, bazel_build_file)
 
-            logger.info("Running bazel build...")
+            env = os.environ.copy()
+            if config.name != "default":
+                env["BAZEL_OUTPUT_BASE"] = f"/tmp/bazel_build_{config.name}"
+
+            logger.info(f"Running bazel build ({config.name})...")
             start_time = time.time()
             result = subprocess.run(
-                [bazel_build_path],
+                [bazel_build_path, *config.args],
                 cwd=os.path.join(self.repo_path, self.BazelPath),
+                env=env,
                 capture_output=True,
                 text=True,
                 timeout=1800,  # 30 minutes
             )
             end_time = time.time()
             time_taken = end_time - start_time
-            logger.info(f"Bazel build took {time_taken} seconds.")
+            logger.info(f"Bazel build ({config.name}) took {time_taken} seconds.")
             if result.returncode == 0:
                 return BazelBuildSuccess()
             return BazelBuildFailure(
                 stdout=result.stdout,
                 stderr=result.stderr,
+                config=config,
             )
 
         except subprocess.TimeoutExpired:
-            return BazelBuildFailure(stderr="Timeout")
+            return BazelBuildFailure(stderr="Timeout", config=config)
         except FileNotFoundError:
             return BazelBuildFailure(
                 stderr="Error: 'bazel' command not found. Please ensure Bazel is installed.",
+                config=config,
             )
         except Exception as e:
-            return BazelBuildFailure(stderr=f"Error running bazel build: {str(e)}")
+            return BazelBuildFailure(
+                stderr=f"Error running bazel build: {str(e)}",
+                config=config,
+            )
 
     def run_buildifier(self, files: Sequence[str]) -> bool:
         """
