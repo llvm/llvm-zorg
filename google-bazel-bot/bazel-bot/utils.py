@@ -7,7 +7,7 @@ import re
 import subprocess
 import time
 from collections.abc import Sequence
-from typing import Tuple, Type
+from typing import Literal, Tuple, Type
 
 import git
 import github
@@ -58,12 +58,24 @@ def call_with_retry(exceptions : RetryExceptions, func, *args, **kwargs):
             val_delay *= BACKOFF
 
 
-@dataclasses.dataclass
-class BazelBuildResult:
-    success: bool
+@dataclasses.dataclass(frozen=True, kw_only=True)
+class BazelBuildSuccess:
+    """A successful build result."""
+
+    success: Literal[True] = dataclasses.field(default=True, init=False)
+
+
+@dataclasses.dataclass(frozen=True, kw_only=True)
+class BazelBuildFailure:
+    """The outputs of failed build result."""
+
+    success: Literal[False] = dataclasses.field(default=False, init=False)
     stdout: str = ""
     stderr: str = ""
-    time_taken: float = 0.0
+
+
+# Result of a Bazel build. Check `result.success` to narrow the type.
+BazelBuildResult = BazelBuildSuccess | BazelBuildFailure
 
 
 class CredentialManager:
@@ -111,7 +123,7 @@ class CommandProcessor:
         Runs the bazel build command in the given repository path for specific targets.
 
         Returns:
-            BazelBuildResult containing status, stdout, stderr, and time taken.
+            BazelBuildResult containing status, stdout, stderr.
         """
         try:
             bazel_build_file = (
@@ -132,24 +144,21 @@ class CommandProcessor:
             end_time = time.time()
             time_taken = end_time - start_time
             logger.info(f"Bazel build took {time_taken} seconds.")
-            return BazelBuildResult(
-                success=result.returncode == 0,
+            if result.returncode == 0:
+                return BazelBuildSuccess()
+            return BazelBuildFailure(
                 stdout=result.stdout,
                 stderr=result.stderr,
-                time_taken=time_taken,
             )
 
         except subprocess.TimeoutExpired:
-            return BazelBuildResult(success=False, stderr="Timeout", time_taken=1800)
+            return BazelBuildFailure(stderr="Timeout")
         except FileNotFoundError:
-            return BazelBuildResult(
-                success=False,
+            return BazelBuildFailure(
                 stderr="Error: 'bazel' command not found. Please ensure Bazel is installed.",
             )
         except Exception as e:
-            return BazelBuildResult(
-                success=False, stderr=f"Error running bazel build: {str(e)}"
-            )
+            return BazelBuildFailure(stderr=f"Error running bazel build: {str(e)}")
 
     def run_buildifier(self, files: Sequence[str]) -> bool:
         """
@@ -471,10 +480,12 @@ class LocalBuildProcessor(BuildProcessor):
         """Get the latest build status by running bazel build locally."""
         latest_sha = self.git_repo.refresh_main_branch()
         result = self.cmd_processor.run_bazel_build()
+        if result.success:
+            return BuildInfo(commit=latest_sha, state=BuildState.PASSED)
 
         return BuildInfo(
             commit=latest_sha,
-            state=BuildState.PASSED if result.success else BuildState.FAILED,
+            state=BuildState.FAILED,
             failed_targets=parse_targets(result.stderr),
         )
 
