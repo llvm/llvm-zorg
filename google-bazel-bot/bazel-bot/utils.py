@@ -178,8 +178,7 @@ class CommandProcessor:
             bazel_build_path = os.path.join(base_path, bazel_build_file)
 
             env = os.environ.copy()
-            if config.name != "default":
-                env["BAZEL_OUTPUT_BASE"] = f"/tmp/bazel_build_{config.name}"
+            env["BAZEL_OUTPUT_BASE"] = f"/tmp/bazel_build_{config.name}"
 
             logger.info(f"Running bazel build ({config.name})...")
             start_time = time.time()
