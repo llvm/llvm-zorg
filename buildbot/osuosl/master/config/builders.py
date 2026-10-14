@@ -2452,6 +2452,23 @@ all += [
                         'LD': 'lld'
                     })},
 
+    {'name' : 'flang-s390x-linux',
+    'tags'  : ["flang", "s390x"],
+    'workernames' : ['systemz-1'],
+    'builddir': "flang-s390x-linux",
+    'factory' : UnifiedTreeBuilder.getCmakeExBuildFactory(
+                    depends_on_projects=['llvm', 'mlir', 'clang', 'flang'],
+                    checks=['check-flang'],
+                    jobs=4,
+                    cmake_definitions={
+                        'LLVM_TARGETS_TO_BUILD'          : 'SystemZ',
+                        'LLVM_INSTALL_UTILS'             : 'ON',
+                        'CMAKE_CXX_STANDARD'             : '17',
+                        'FLANG_ENABLE_WERROR'            : 'ON',
+                        'LLVM_ENABLE_ASSERTIONS'         : 'ON',
+                        'LLVM_CCACHE_BUILD'              : 'ON',
+                    })},
+
     {'name' : "flang-x86_64-windows",
     'tags'  : ["flang"],
     'workernames' : ["minipc-ryzen-win"],
