@@ -511,11 +511,10 @@ class TestBazelBotServer(unittest.TestCase):
         self.assertEqual(mock_run.call_count, len(configs))
         for call, config in zip(mock_run.call_args_list, configs):
             self.assertEqual(call.args[0][1:], list(config.args))
-        self.assertNotIn("BAZEL_OUTPUT_BASE", mock_run.call_args_list[0].kwargs["env"])
-        self.assertEqual(
-            mock_run.call_args_list[1].kwargs["env"]["BAZEL_OUTPUT_BASE"],
-            "/tmp/bazel_build_second",
-        )
+            self.assertEqual(
+                call.kwargs["env"]["BAZEL_OUTPUT_BASE"],
+                "/tmp/bazel_build_" + config.name,
+            )
 
     @mock.patch("utils.subprocess.run")
     def test_run_bazel_build_propagates_failure(self, mock_run):
