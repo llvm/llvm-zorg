@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 import os
 import pathlib
-import shutil
+import shlex
 import subprocess
 import sys
+import time
 
 # Note:
 # * Builders always use the latest version of this script, checking out the
@@ -20,6 +21,67 @@ import sys
 def error(message):
     print(f"!!!!!!!!!! Error: {message} !!!!!!!!!!")
     sys.exit(1)
+
+
+def run_ssh(
+    ssh_host, key_path, remote_command, check=False, timeout=None, connect_timeout=5
+):
+    # fmt: off
+    command = [
+        "ssh",
+        "-o", f"IdentityFile={key_path}",
+        "-o", "IdentitiesOnly=yes",
+        "-o", "StrictHostKeyChecking=no",
+        "-o", "UserKnownHostsFile=/dev/null",
+        "-o", "GlobalKnownHostsFile=/dev/null",
+        "-o", "LogLevel=ERROR",
+        "-o", "BatchMode=yes",
+        "-o", f"ConnectTimeout={connect_timeout}",
+        f"root@{ssh_host}",
+        remote_command,
+    ]
+    # fmt: on
+    return subprocess.run(command, check=check, timeout=timeout)
+
+
+def wait_for_ssh(ssh_host, ssh_socket_path, key_path, qemu_process):
+    deadline = time.monotonic() + 30
+    while time.monotonic() < deadline:
+        if qemu_process.poll() is not None:
+            error(f"qemu exited before ssh became available: {qemu_process.returncode}")
+        if ssh_socket_path.exists():
+            try:
+                ssh_result = run_ssh(
+                    ssh_host,
+                    key_path,
+                    "true",
+                    timeout=75,
+                    connect_timeout=60,
+                )
+            except subprocess.TimeoutExpired:
+                ssh_result = None
+            if ssh_result and ssh_result.returncode == 0:
+                return
+            error("Timed out waiting for ssh")
+        time.sleep(0.1)
+    error("Timed out waiting for ssh socket")
+
+
+def stop_qemu(ssh_host, key_path, qemu_process):
+    if qemu_process.poll() is None:
+        try:
+            run_ssh(ssh_host, key_path, "poweroff", timeout=10)
+        except subprocess.TimeoutExpired:
+            pass
+        try:
+            qemu_process.wait(timeout=60)
+        except subprocess.TimeoutExpired:
+            qemu_process.terminate()
+            try:
+                qemu_process.wait(timeout=10)
+            except subprocess.TimeoutExpired:
+                qemu_process.kill()
+                qemu_process.wait()
 
 
 # Validate environment variables
@@ -90,16 +152,23 @@ tar_command = (
 print(f"About to execute tar command: {tar_command}")
 subprocess.run(tar_command, shell=True, check=True)
 
-# Create appropriate exec-on-boot script
-hgcomm_path = build_dir / "hgcomm"
+ssh_socket_path = pathlib.Path(f"/tmp/litonqemu_{os.getpid()}.sock")
+if ssh_socket_path.exists():
+    ssh_socket_path.unlink()
+ssh_host = "unix" + str(ssh_socket_path)
 
-if hgcomm_path.exists():
-    shutil.rmtree(hgcomm_path)
-hgcomm_path.mkdir()
+ssh_key_path = build_dir / "lit-on-qemu-ssh-key"
+ssh_pubkey_path = pathlib.Path(f"{ssh_key_path}.pub")
+for path in [ssh_key_path, ssh_pubkey_path]:
+    if path.exists():
+        path.unlink()
+subprocess.run(
+    ["ssh-keygen", "-q", "-t", "ed25519", "-N", "", "-f", ssh_key_path],
+    check=True,
+)
 
-args_string = " ".join(sys.argv[1:])
-exec_on_boot_content = f"""#!/bin/sh
-error() {{
+lit_command = shlex.join([str(build_dir / "bin" / "llvm-lit"), *sys.argv[1:]])
+remote_script = f"""error() {{
   printf "!!!!!!!!!! Error: %s !!!!!!!!!!\\n" "$*" >&2
   exit 1
 }}
@@ -112,13 +181,9 @@ if [ -f "{build_dir}/tools/clang/test/lit.site.cfg.py" ]; then
   sed -i 's/^config\\.llvm_external_lit.*$/config.llvm_external_lit = path(r"")/' "{build_dir}/tools/clang/test/lit.site.cfg.py"
 fi
 cd "{current_path}"
-su user -c "/usr/bin/python3 {build_dir}/bin/llvm-lit {args_string}"
+su user -c {shlex.quote("/usr/bin/python3 " + lit_command)}
 """
-exec_on_boot_path = hgcomm_path / "exec-on-boot"
-exec_on_boot_path.write_text(exec_on_boot_content)
-exec_on_boot_path.chmod(0o755)
 
-# Launch qemu-system appliance
 print("@@@@@@@@@@ Pivoting execution to qemu-system @@@@@@@@")
 # fmt: off
 qemu_command = [
@@ -128,8 +193,9 @@ qemu_command = [
     "-smp", os.getenv("BB_QEMU_SMP"),
     "-m", os.getenv("BB_QEMU_MEM"),
     "-device", "virtio-blk-device,drive=hd",
-    "-drive", f"file={os.getenv('BB_IMG_DIR')}/rootfs.img,if=none,id=hd,format=raw",
-    "-virtfs", "local,path=hgcomm,mount_tag=hgcomm,security_model=none,id=hgcomm",
+    "-drive", f"file={os.getenv('BB_IMG_DIR')}/rootfs.img,if=none,id=hd,format=raw,snapshot=on",
+    "-netdev", f"user,id=net,hostfwd=unix:{ssh_socket_path}-:22",
+    "-device", "virtio-net-device,netdev=net",
     "-device", "virtio-blk-device,drive=hdb",
     "-drive", "file=llvm-project.img,format=raw,if=none,id=hdb",
     "-bios", "/usr/share/qemu/opensbi-riscv64-generic-fw_dynamic.bin",
@@ -137,16 +203,30 @@ qemu_command = [
     "-initrd", f"{os.getenv('BB_IMG_DIR')}/initrd",
     "-object", "rng-random,filename=/dev/urandom,id=rng",
     "-device", "virtio-rng-device,rng=rng",
+    "-fw_cfg", f"name=opt/io.systemd.credentials/ssh.authorized_keys,file={ssh_pubkey_path}",
     "-nographic",
-    "-append", "rw quiet root=/dev/vda console=ttyS0",
+    "-append", "rw quiet root=LABEL=rootfs console=ttyS0",
 ]
 # fmt: on
 print(f"About to execute qemu command: {' '.join(qemu_command)}")
-subprocess.run(qemu_command, check=True)
-print("@@@@@@@@@@ qemu-system execution finished @@@@@@@@")
 
-exit_code_file = hgcomm_path / "exec-on-boot.exitcode"
-if exit_code_file.is_file():
-    sys.exit(int(exit_code_file.read_text().strip()))
-else:
-    sys.exit(111)
+qemu_process = subprocess.Popen(qemu_command)
+try:
+    wait_for_ssh(ssh_host, ssh_socket_path, ssh_key_path, qemu_process)
+    run_ssh(
+        ssh_host,
+        ssh_key_path,
+        "systemctl is-system-running --wait || [ $? -eq 1 ]",
+        check=True,
+        timeout=120,
+    )
+    result = run_ssh(ssh_host, ssh_key_path, remote_script)
+finally:
+    stop_qemu(ssh_host, ssh_key_path, qemu_process)
+    for path in [ssh_key_path, ssh_pubkey_path]:
+        if path.exists():
+            path.unlink()
+    if ssh_socket_path.exists():
+        ssh_socket_path.unlink()
+
+sys.exit(result.returncode)
