@@ -1179,6 +1179,24 @@ all = [
                         "-DLLVM_LIT_ARGS=--verbose --timeout=900",
                         "-DLLVM_USE_LINKER=gold"])},
 
+    {'name': "llvm-clang-x86_64-ubuntu26-flmd",
+     'tags': ["llvm", "clang"],
+     'workernames': ["sie-linux-worker6"],
+     'builddir': "llvm-flmd",
+     'factory': UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
+                    depends_on_projects=['llvm','clang'],
+                    extra_configure_args=[
+                        "-DCMAKE_C_COMPILER=clang",
+                        "-DCMAKE_CXX_COMPILER=clang++",
+                        "-DCMAKE_BUILD_TYPE=Release",
+                        "-DLLVM_CCACHE_BUILD=ON",
+                        "-DLLVM_BUILD_TESTS=ON",
+                        "-DLLVM_ENABLE_ASSERTIONS=ON",
+                        "-DLLVM_INCLUDE_EXAMPLES=OFF",
+                        "-DLLVM_LIT_ARGS=-v",
+                        "-DLLVM_USE_LINKER=lld",
+                        "-DLLVM_USE_FLMD_SOURCE_LOCS=ON",
+                        "-DLLVM_ENABLE_WERROR=OFF"])},
 # Polly builders.
 
     {'name' : "polly-arm-linux",
