@@ -56,7 +56,6 @@ class BazelRepairBot:
         self.last_processed_sha: str = ""
         self.poll_interval = poll_interval
         # Branch containing fixes that have not been merged
-        # All subsequent failures are merged into this branch as separate commits
         self.active_fix_branch: str | None = None
 
     def reset_active_fix_branch(self) -> None:
@@ -66,9 +65,7 @@ class BazelRepairBot:
         """Sleeps for a given number of seconds"""
         time.sleep(seconds)
 
-    def process_failure_with_bant(
-        self, build_data: utils.BuildInfo, fix_branch: str
-    ) -> bool:
+    def process_failure_with_bant(self, build_data: utils.BuildInfo) -> bool:
         base_sha = self.git_repo.repo.head.commit.hexsha
         if not self.command_processor.run_bant(targets=build_data.failed_targets):
             logger.warning("Running bant failed.")
@@ -84,26 +81,24 @@ class BazelRepairBot:
             f"[Bazel] Fix build for {build_data.commit[:7]}\n\n"
             f"Buildkite error link: {build_data.buildkite_url}"
         )
-        if not self.git_repo.push_fix(build_data, branch_name=fix_branch):
+        if not self.git_repo.push_fix(
+            build_data, close_existing_prs=not self.active_fix_branch
+        ):
             logger.warning("Failed to publish bant fix.")
             return False
 
         return True
 
-    def repair_build(
-        self,
-        build: utils.BuildInfo,
-        fix_branch: str | None = None,
-    ) -> bool:
+    def repair_build(self, build: utils.BuildInfo) -> bool:
         if build.state != utils.BuildState.FAILED:
             logger.info(f"Build for {build.commit} is not failed. Nothing to repair.")
             return False
 
         record = RepairSummaryRecord(build.commit, "", time.time())
-        if self.process_failure_with_bant(build, fix_branch):
+        if self.process_failure_with_bant(build):
             logger.info(f"Successfully repaired build for {build.commit}) using bant.")
             record.fixed_by = FixTool.BANT
-        elif self.process_failure_with_ai(build, fix_branch):
+        elif self.process_failure_with_ai(build):
             logger.info(
                 f"Successfully repaired build for {build.commit} using AI agent."
             )
@@ -143,25 +138,19 @@ class BazelRepairBot:
 
         return True
 
-    def process_failure_with_ai(
-        self,
-        build_data: utils.BuildInfo,
-        fix_branch: str,
-    ) -> bool:
+    def process_failure_with_ai(self, build_data: utils.BuildInfo) -> bool:
         logger.info("Invoking AI Agent...")
         attempt_num = 0
         agent_exhausted_tries = 0
         past_fixes = []
         base_sha = self.git_repo.repo.head.commit.hexsha
 
-        # Push an empty branch to indicate that AI fix is in progress ONLY
-        # We only do this if there is no active branch
-        if not self.active_fix_branch:
-            self.git_repo.commit(
-                f"AI is working on fixing build for {build_data.commit[:7]}. Check back later!\n\n"
-                f"Buildkite error link: {build_data.buildkite_url}"
-            )
-            self.git_repo.push_fix(build_data, False, branch_name=fix_branch)
+        # Push an empty branch to indicate that AI fix is in progress
+        self.git_repo.commit(
+            f"AI is working on fixing build for {build_data.commit[:7]}. Check back later!\n\n"
+            f"Buildkite error link: {build_data.buildkite_url}"
+        )
+        self.git_repo.push_fix(build_data, False)
 
         while True:
             if attempt_num == MAX_AGENT_ITERATIONS:
@@ -225,7 +214,7 @@ class BazelRepairBot:
                 f"will need to fix it manually\n\n"
                 f"Buildkite error link: {build_data.buildkite_url}"
             )
-            self.git_repo.push_fix(build_data, False, branch_name=fix_branch)
+            self.git_repo.push_fix(build_data, False)
             return False
 
         self.git_repo.commit(
@@ -233,7 +222,9 @@ class BazelRepairBot:
             f"Buildkite error link: {build_data.buildkite_url}"
         )
         if not self.git_repo.push_fix(
-            build_data, self.git_repo.can_create_pr, branch_name=fix_branch
+            build_data,
+            self.git_repo.can_create_pr,
+            close_existing_prs=not self.active_fix_branch,
         ):
             logger.warning(
                 f"Failed to publish AI changes for commit: {build_data.commit}"
@@ -356,14 +347,11 @@ class BazelRepairBot:
                         logger.info(
                             f"Detected 'passed' -> '{current_build.state}' transition for {current_build.commit}). Repairing ..."
                         )
-                        branch_name = (
-                            self.active_fix_branch
-                            or self.git_repo.create_branch_for_fix(
-                                current_build.commit
-                            )
+                        branch_name = self.git_repo.create_branch_for_fix(
+                            current_build.commit
                         )
 
-                        if self.repair_build(current_build, branch_name):
+                        if self.repair_build(current_build):
                             self.active_fix_branch = branch_name
                             current_build.state = utils.BuildState.PASSED
                         else:
