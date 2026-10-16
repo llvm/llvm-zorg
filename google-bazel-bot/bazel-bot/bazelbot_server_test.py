@@ -41,6 +41,71 @@ class TestBazelBotServer(unittest.TestCase):
         self.assertEqual(creds.gh_pr_app_id, "pr_app_id")
         self.assertEqual(creds.gh_pr_app_private_key, "pr_private_key")
 
+    def test_to_apparent_label(self):
+        # Canonical -> apparent, as returned by get_repo_mapping.
+        repo_mapping = {
+            "": "",
+            "+llvm_configure+llvm-project": "llvm-project",
+            "rules_cc+": "rules_cc",
+        }
+
+        self.assertEqual(
+            utils.to_apparent_label(
+                "@@+llvm_configure+llvm-project//mlir:IR", repo_mapping
+            ),
+            "@llvm-project//mlir:IR",
+        )
+        self.assertEqual(
+            utils.to_apparent_label("@@rules_cc+//cc:defs.bzl", repo_mapping),
+            "@rules_cc//cc:defs.bzl",
+        )
+
+        # Main repository.
+        self.assertEqual(
+            utils.to_apparent_label("@@//foo:bar", repo_mapping),
+            "//foo:bar",
+        )
+
+        # Non-canonical labels are left alone.
+        self.assertEqual(
+            utils.to_apparent_label("@llvm-project//mlir:IR", repo_mapping),
+            "@llvm-project//mlir:IR",
+        )
+        self.assertEqual(
+            utils.to_apparent_label("//foo:bar", repo_mapping),
+            "//foo:bar",
+        )
+
+        # Unknown canonical repositories are left alone.
+        self.assertEqual(
+            utils.to_apparent_label("@@unknown+//x:y", repo_mapping),
+            "@@unknown+//x:y",
+        )
+
+    @mock.patch("utils.subprocess.run")
+    def test_run_bant_maps_canonical_labels(self, mock_run):
+        repo_mapping_result = mock.MagicMock(
+            returncode=0,
+            stdout='{"": "", "llvm-project": "+llvm_configure+llvm-project"}',
+        )
+        bant_result = mock.MagicMock(returncode=0, stdout="")
+        mock_run.side_effect = [repo_mapping_result, bant_result]
+
+        cmd_processor = utils.CommandProcessor("/path/to/repo")
+        self.assertTrue(
+            cmd_processor.run_bant(
+                ["@@+llvm_configure+llvm-project//llvm:Support", "@@//foo:bar"]
+            )
+        )
+
+        repo_mapping_call, bant_call = mock_run.call_args_list
+        self.assertEqual(repo_mapping_call.args[0][0], "bazelisk")
+        self.assertIn("dump_repo_mapping", repo_mapping_call.args[0])
+        self.assertEqual(
+            bant_call.args[0],
+            ["bant", "dwyu", "@llvm-project//llvm:Support", "//foo:bar"],
+        )
+
     @mock.patch("utils.git.Repo")
     @mock.patch("utils.github.GithubIntegration")
     @mock.patch("utils.github.Auth")

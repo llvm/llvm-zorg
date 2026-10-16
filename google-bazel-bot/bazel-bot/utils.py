@@ -1,6 +1,7 @@
 import abc
 import dataclasses
 import enum
+import json
 import logging
 import os
 import re
@@ -76,6 +77,31 @@ class BazelBuildFailure:
 
 # Result of a Bazel build. Check `result.success` to narrow the type.
 BazelBuildResult = BazelBuildSuccess | BazelBuildFailure
+
+
+def to_apparent_label(label: str, repo_mapping: dict[str, str]) -> str:
+    """Converts a canonical Bazel label to its apparent form.
+
+    See https://bazel.build/external/overview#canonical-repo-name.
+
+    Args:
+        label: A label, canonical or not. Apparent labels are returned as-is.
+        repo_mapping: Canonical -> apparent repository names.
+    Returns:
+        An apparent label.
+    """
+    canonical_label_match = re.fullmatch(r"@@([^/]*)(//.*)", label)
+    if not canonical_label_match:
+        return label
+    canonical_repo, rest = canonical_label_match.groups()
+    if not canonical_repo:
+        return rest
+    if canonical_repo not in repo_mapping:
+        logger.warning(f"No apparent repository name for label {label}")
+        return label
+    
+    apparent_repo = repo_mapping[canonical_repo]
+    return f"@{apparent_repo}{rest}"
 
 
 class CredentialManager:
@@ -186,6 +212,33 @@ class CommandProcessor:
 
         return True
 
+    def get_repo_mapping(self) -> dict[str, str]:
+        """Returns canonical -> apparent repository mappings."""
+        result = subprocess.run(
+            [
+                "bazelisk",
+                "--quiet",
+                "mod",
+                "dump_repo_mapping",
+                "--lockfile_mode=off",
+                "",
+            ],
+            cwd=self.bazel_path,
+            capture_output=True,
+            text=True,
+            check=True,
+            timeout=300,
+        )
+        apparent_to_canonical_mapping = json.loads(result.stdout)
+
+        # Invert the mapping.
+        # Technically a canonical repo can map to multiple apparent repos,
+        # but we just care about having _some_ apparent repo per canonical one.
+        return {
+            canonical: apparent
+            for apparent, canonical in apparent_to_canonical_mapping.items()
+        }
+
     def run_bant(self, targets: Sequence[str]) -> bool:
         """
         Runs bant on the given files.
@@ -198,10 +251,11 @@ class CommandProcessor:
             if not targets:
                 return False
 
-            # Target will be @@+_repo_rules+llvm-project//mlir:AMDGPUDialect
+            # Target will be @@+{repo}+llvm-project//mlir:AMDGPUDialect
             # We want @llvm-project//mlir:AMDGPUDialect
+            repo_mapping = self.get_repo_mapping()
             processed_targets = [
-                t.replace("@@+_repo_rules+llvm-project//", "@llvm-project//")
+                to_apparent_label(t, repo_mapping)
                 for t in targets
             ]
             cmd = ["bant", "dwyu"] + processed_targets
