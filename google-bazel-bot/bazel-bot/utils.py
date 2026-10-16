@@ -99,7 +99,7 @@ def to_apparent_label(label: str, repo_mapping: dict[str, str]) -> str:
     if canonical_repo not in repo_mapping:
         logger.warning(f"No apparent repository name for label {label}")
         return label
-    
+
     apparent_repo = repo_mapping[canonical_repo]
     return f"@{apparent_repo}{rest}"
 
