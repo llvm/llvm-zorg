@@ -10,6 +10,8 @@ from typing import AsyncGenerator
 
 from google.adk.agents import BaseAgent, LlmAgent
 from google.adk.agents.invocation_context import InvocationContext
+from google.adk.apps.app import App, EventsCompactionConfig
+from google.adk.apps.llm_event_summarizer import LlmEventSummarizer
 from google.adk.events import Event
 from google.adk.models.google_llm import _ResourceExhaustedError
 from google.adk.runners import Runner
@@ -31,6 +33,10 @@ MAX_AGENT_ITERATIONS = 5
 MAX_LLM_QUERY_RETRIES = 20
 USER_ID = "default_user"
 APP_NAME = "bazel_fixer"
+_COMPACTION_TOKEN_THRESHOLD = 800_000
+_COMPACTION_EVENT_RETENTION_SIZE = 4
+_COMPACTION_INTERVAL = 5
+_COMPACTION_OVERLAP_SIZE = 1
 
 MODEL = "gemini-3.8-flash"
 
@@ -261,9 +267,19 @@ async def query_agent(
         cmd_processor=cmd_processor,
     )
 
-    runner = Runner(
-        app_name=APP_NAME, agent=bazel_agent, session_service=session_service
+    app = App(
+        name=APP_NAME,
+        root_agent=bazel_agent,
+        events_compaction_config=EventsCompactionConfig(
+            summarizer=LlmEventSummarizer(llm=code_fixer.canonical_model),
+            compaction_interval=_COMPACTION_INTERVAL,
+            overlap_size=_COMPACTION_OVERLAP_SIZE,
+            token_threshold=_COMPACTION_TOKEN_THRESHOLD,
+            event_retention_size=_COMPACTION_EVENT_RETENTION_SIZE,
+        ),
     )
+
+    runner = Runner(app=app, session_service=session_service)
 
     # Create a new session
     session = await runner.session_service.create_session(
