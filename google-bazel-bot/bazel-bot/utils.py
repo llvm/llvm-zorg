@@ -162,6 +162,10 @@ class CommandProcessor:
         for config in configs:
             result = self._run_bazel_build_with_config(config)
             if not result.success:
+                # TODO: Consider building for every config and returning all
+                # failures. If there are distinct failures in multiple configs,
+                # the bant fixer probably won't succeed because it only makes
+                # one attempt at fixing the build based on this output.
                 return result
         return BazelBuildSuccess()
 
