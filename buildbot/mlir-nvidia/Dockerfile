@@ -90,11 +90,14 @@ RUN wget -qO - https://packages.lunarg.com/lunarg-signing-key-pub.asc 2>/dev/nul
 
 
 # The VM mounts its NVIDIA driver libraries at /usr/local/nvidia/lib64.
-# Use that matching Vulkan driver instead of installing a different driver.
-RUN mkdir -p /etc/vulkan/icd.d \
+# Register both Vulkan and EGL so the matching host driver can initialize.
+RUN mkdir -p /etc/vulkan/icd.d /usr/share/glvnd/egl_vendor.d \
   && printf '%s\n' \
        '{"file_format_version":"1.0.0","ICD":{"library_path":"/usr/local/nvidia/lib64/libGLX_nvidia.so.0","api_version":"1.3.0"}}' \
-       > /etc/vulkan/icd.d/nvidia_icd.json
+       > /etc/vulkan/icd.d/nvidia_icd.json \
+  && printf '%s\n' \
+       '{"file_format_version":"1.0.0","ICD":{"library_path":"/usr/local/nvidia/lib64/libEGL_nvidia.so.0"}}' \
+       > /usr/share/glvnd/egl_vendor.d/10_nvidia.json
 
 # Install build bot (server was at 2.8.5-dev at time of writing).
 RUN pip3 install buildbot-worker==2.8.4
