@@ -48,22 +48,27 @@ RUN apt-get update \
 # https://github.com/pypa/manylinux
 RUN python3 -m pip install --upgrade pip==23.1.2
 
-# Ubuntu ships with old cmake version, install the latest one
-# from https://apt.kitware.com/
-RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null \
-  | gpg --dearmor - \
-  | \
-  tee /etc/apt/trusted.gpg.d/kitware.gpg >/dev/null \
-  && apt-add-repository 'deb https://apt.kitware.com/ubuntu/ bionic main' \
-  && apt-get update \
-  && apt-get install -y --no-install-recommends cmake \
-  && rm -rf /var/lib/apt/lists/*
+# Ubuntu ships with an old CMake version. Install the latest stable release
+# from Kitware's official binary distribution.
+ARG CMAKE_VERSION=4.4.4
+RUN cd /tmp \
+  && case "$(uname -m)" in \
+       x86_64) cmake_sha256=e5bb807f7728cb60cd8b27ebc97a2edb469b68655f21e844a600c3575b76f5bb ;; \
+       aarch64) cmake_sha256=a1b6cc63636a0e55c63257cf3315a8a5f129e42fade25db1afea4ff8ab06f25e ;; \
+       *) echo "Unsupported CMake architecture: $(uname -m)" >&2; exit 1 ;; \
+     esac \
+  && wget -q "https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-linux-$(uname -m).tar.gz" \
+  && echo "${cmake_sha256}  cmake-${CMAKE_VERSION}-linux-$(uname -m).tar.gz" \
+       | sha256sum --check - \
+  && tar -xzf "cmake-${CMAKE_VERSION}-linux-$(uname -m).tar.gz" \
+       --strip-components=1 -C /usr/local \
+  && rm "cmake-${CMAKE_VERSION}-linux-$(uname -m).tar.gz"
 
 # Get the Vulkan SDK from LunarG.
 RUN wget -qO - http://packages.lunarg.com/lunarg-signing-key-pub.asc 2>/dev/null \
   | apt-key add - \
-  && wget -qO /etc/apt/sources.list.d/lunarg-vulkan-1.2.141-bionic.list \
-       https://packages.lunarg.com/vulkan/1.3.243/lunarg-vulkan-1.3.243-focal.list \
+  && wget -qO /etc/apt/sources.list.d/lunarg-vulkan-1.3.283-focal.list \
+       https://packages.lunarg.com/vulkan/1.3.283/lunarg-vulkan-1.3.283-focal.list \
   && apt-get update \
   && apt-get install -y --no-install-recommends vulkan-sdk \
   && rm -rf /var/lib/apt/lists/*
