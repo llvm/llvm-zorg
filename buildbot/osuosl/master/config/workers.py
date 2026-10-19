@@ -338,6 +338,8 @@ def get_all():
         create_worker("sie-linux-worker4", properties={'jobs': 40}, max_builds=1),
         # Ubuntu 24.04 on AWS
         create_worker("sie-linux-worker5", max_builds=1),
+        # Ubuntu 26.04 on AWS
+        create_worker("sie-linux-worker6", max_builds=1),
 
         # Windows Server 2019 on AWS, x86_64 PS4 target
         create_worker("sie-win-worker", properties={'jobs': 64}, max_builds=1),
