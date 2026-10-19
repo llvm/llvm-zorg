@@ -272,7 +272,8 @@ def get_all():
         create_worker("hpce-ve-staging", properties={'jobs': 8}, max_builds=1),
 
         # Ubuntu 18.04 amd64 on Google Cloud, 16 core, Nvidia Tesla T4
-        create_worker("mlir-nvidia", properties={'jobs': 16}, max_builds=1),
+        create_worker("mlir-nvidia", properties={'jobs': 16}, max_builds=1,
+                      missing_timeout=300), # notify after 5 minutes of missing
 
         # Ubuntu 18.04 on Google Cloud, for machine configuration check
         # buildbot/google/terraform/main.tf
