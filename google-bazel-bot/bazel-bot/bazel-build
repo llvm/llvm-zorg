@@ -1,19 +1,13 @@
 #!/bin/bash
-# Starts a bazel test matching buildkite config.
-# You can pass targets to test, otherwise tests everything.
+# Starts a bazel build matching buildkite config.
+# Arguments are passed to `bazel build` verbatim (flags and/or targets).
 set -ueo pipefail
 
-# Assumes one is cd-ed into utils/bazel directory already.
-if [ $# -eq 0 ]; then
-  TARGETS=("@llvm-project//..." "//...")
-else
-  TARGETS=("$@")
-fi
-
 # Quiet mode is important so it doesn't populate LLM logs with unnecessary info
-bazelisk --quiet build --lockfile_mode=off --config=generic_clang --jobs=128 \
+bazelisk --quiet ${BAZEL_OUTPUT_BASE:+--output_base="$BAZEL_OUTPUT_BASE"} \
+  build --lockfile_mode=off --config=generic_clang --jobs=128 \
   --build_tag_filters=-nobuildkite \
   --test_tag_filters=-nobuildkite \
   --remote_cache=https://storage.googleapis.com/llvm-bazel-cache \
   --google_default_credentials \
-  "${TARGETS[@]}"
+  "$@"
