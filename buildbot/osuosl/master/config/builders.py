@@ -25,6 +25,8 @@ from zorg.buildbot.builders import DoxygenDocsBuilder
 
 from zorg.buildbot.builders import StagedBuilder
 
+import config
+
 reload(ClangBuilder)
 reload(FlangBuilder)
 reload(PollyBuilder)
@@ -4053,3 +4055,15 @@ all += [
      ])},
 
 ]
+
+if config.options.getboolean('Master Options', 'allow_develop_workers', fallback = False):
+    try:
+        from .develop_builders import all as all_develop_builders
+        for rb in all_develop_builders:
+            # Make sure a release builder has the "release" tag.
+            tags = rb.get('tags', [])
+            if 'develop' not in tags:
+                rb['tags'] = tags + ['develop']
+        all.extend(all_develop_builders)
+    except ModuleNotFoundError:
+        print("ERROR: The 'develop_builders' module is not installed.")
