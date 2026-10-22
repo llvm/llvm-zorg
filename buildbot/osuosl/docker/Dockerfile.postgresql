@@ -1,0 +1,34 @@
+# Dockerfile.postgresql
+#
+# Build Docker image
+#  cd buildbot/osuosl/docker
+#  docker build --build-arg PG_UID=$(id -u postgres) --build-arg PG_GID=$(id -g postgres) -t "buildbot/postgresql:custom" -f Dockerfile.postgresql .
+#
+# Note: Percona Optimizaed Distribution docker image:
+#   percona/percona-distribution-postgresql:latest
+
+#FROM postgres:18-alpine
+FROM percona/percona-distribution-postgresql:18
+
+ARG PG_UID=999
+ARG PG_GID=999
+
+USER root
+
+# Update the UID/GID and correct file ownerships
+RUN if [ -f /etc/alpine-release ]; then \
+        # Alpine Linux syntax
+        apk add --no-cache shadow && \
+        groupmod -g ${PG_GID} postgres && \
+        usermod -u ${PG_UID} -g ${PG_GID} postgres; \
+    else \
+        # Debian/Ubuntu-based syntax (if using a non-alpine base image)
+        groupmod -g ${PG_GID} postgres && \
+        usermod -u ${PG_UID} -g ${PG_GID} postgres; \
+    fi && \
+    # Fix existing file permissions inside the image
+    chown -R postgres:postgres /var/lib/postgresql /var/run/postgresql
+
+# The official entrypoint relies on the 'postgres' user
+USER postgres
+

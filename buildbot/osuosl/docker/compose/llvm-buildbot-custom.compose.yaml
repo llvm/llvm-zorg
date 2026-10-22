@@ -1,0 +1,50 @@
+services:
+  llvm-buildbot:
+    image: buildbot/llvm-buildbot:custom
+    restart: unless-stopped
+    env_file:
+      - db.env
+    links:
+      - db
+    depends_on:
+      - db
+    ports:
+      - "8011:8011"
+    volumes:
+      - /d/projects/llvm-public/llvm-zorg-vvereschaka:/buildbot/llvm-zorg
+      - ./local.develop.cfg:/buildbot/llvm-zorg/buildbot/osuosl/master/config/local.cfg:ro
+      - ./worker-passwords.develop.cfg:/buildbot/llvm-zorg/buildbot/osuosl/master/config/worker-passwords.develop.cfg:ro
+    logging:
+      driver: "local"
+      options:
+        max-size: "10m"
+        max-file: "3"
+      
+  db:
+    env_file:
+      - db.env
+    image: "postgres:18"
+    restart: always
+    expose:
+      - 5432
+
+  worker:
+    image: "buildbot/llvm-buildbot:dumb-worker"
+    restart: unless-stopped
+    environment:
+      BUILDMASTER: llvm-buildbot
+      BUILDMASTER_PORT: 9990
+      WORKERNAME: as-develop-1
+      WORKERPASS: pass
+      WORKER_ENVIRONMENT_BLACKLIST: DOCKER_BUILDBOT* BUILDBOT_ENV_* BUILDBOT_1* WORKER_ENVIRONMENT_BLACKLIST WORKERPASS
+
+    volumes:
+      - /d/projects/llvm-public/llvm-zorg-vvereschaka/buildbot/osuosl/docker/dumb-worker-logs:/buildbot/dumb-worker/logs
+      
+    links:
+      - llvm-buildbot
+    logging:
+      driver: "local"
+      options:
+        max-size: "10m"
+        max-file: "2"
