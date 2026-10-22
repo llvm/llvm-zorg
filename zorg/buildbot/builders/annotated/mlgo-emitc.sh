@@ -23,11 +23,7 @@ BUILD_MLGO="${BUILD_MLGO:-${LLVM_ROOT}/build-mlgo}"
 
 build_step "Install Python Dependencies"
 
-PIP_ARGS=()
-if [[ -z "${VIRTUAL_ENV:-}" ]]; then
-  PIP_ARGS+=(--user --break-system-packages)
-fi
-python3 -m pip install "${PIP_ARGS[@]}" -r "${LLVM_ROOT}/llvm/tools/llvm-ir2vec/Bindings/requirements.txt"
+python3 -m pip install --break-system-packages -r "${LLVM_ROOT}/llvm/tools/llvm-ir2vec/Bindings/requirements.txt"
 
 build_step "Build MLIR Dependencies (mlir-opt and mlir-translate)"
 
