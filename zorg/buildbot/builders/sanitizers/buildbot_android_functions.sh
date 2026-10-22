@@ -51,7 +51,6 @@ function configure_android { # ARCH triple
   echo "Building for Android API level $ANDROID_API"
 
   local ANDROID_LIBRARY_OUTPUT_DIR=$(ls -d $ROOT/llvm_build64/lib/clang/* | tail -1)
-  local ANDROID_EXEC_OUTPUT_DIR=$ROOT/llvm_build64/bin
   local ANDROID_FLAGS="--target=${_triple}${ANDROID_API} --sysroot=$ANDROID_TOOLCHAIN/sysroot --gcc-toolchain=$ANDROID_TOOLCHAIN  -B$ANDROID_TOOLCHAIN"
 
   local CLANG_PATH=$ROOT/llvm_build64/bin/clang
@@ -96,7 +95,6 @@ function configure_android { # ARCH triple
     -DCOMPILER_RT_TEST_COMPILER_CFLAGS="$ANDROID_FLAGS" \
     -DCOMPILER_RT_DEFAULT_TARGET_TRIPLE=$_triple \
     -DCOMPILER_RT_OUTPUT_DIR="$ANDROID_LIBRARY_OUTPUT_DIR" \
-    -DCOMPILER_RT_EXEC_OUTPUT_DIR="$ANDROID_EXEC_OUTPUT_DIR" \
     -DLLVM_LIT_ARGS="-vv --show-unsupported --show-xfail" \
     ${COMPILER_RT_OPTIONS} || build_failure) &
 }
