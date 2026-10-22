@@ -24,7 +24,7 @@ services:
       - "${BUILDBOT_WEB_PORT}:8011"
     expose:
       - ${BUILDBOT_PB_PORT:-9990}
-     volumes:
+    volumes:
       - ./llvm-zorg-g0:/buildbot/llvm-zorg
       - ./local.staged.cfg:/buildbot/local.cfg:ro
       # - ./worker-passwords.staged.cfg:/buildbot/worker-passwords.cfg:ro
