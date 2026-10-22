@@ -2702,18 +2702,12 @@ all += [
     'collapseRequests': False,
     'workernames' : ["ml-opt-dev-x86-64-b1", "ml-opt-dev-x86-64-b2"],
     'builddir': "ml-opt-dev-x86-64-b1",
-    'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
-                    clean=True,
-                    depends_on_projects=['llvm'],
-                    extra_configure_args=[
-                        "-DCMAKE_BUILD_TYPE=Release",
-                        "-DLLVM_CCACHE_BUILD=ON",
-                        "-DLLVM_ENABLE_ASSERTIONS=ON",
-                        "-DLLVM_IR2VEC_ENABLE_PYTHON_BINDINGS=ON",
-                        "-DTENSORFLOW_C_LIB_PATH=/tmp/tensorflow",
-                        "-C", "/tmp/tflitebuild/tflite.cmake",
-                        "-DCMAKE_INSTALL_RPATH_USE_LINK_PATH=ON"
-                    ])},
+    'factory' : AnnotatedBuilder.getAnnotatedBuildFactory(
+         script="mlgo-dev.sh",
+         clean=True,
+         depends_on_projects=['llvm'],
+         script_interpreter=None,
+         )},
 
     # Both tensorflow C library, and the pip package, are present.
     {'name' : "ml-opt-devrel-x86-64",
@@ -2721,19 +2715,13 @@ all += [
     'collapseRequests': False,
     'workernames' : ["ml-opt-devrel-x86-64-b1", "ml-opt-devrel-x86-64-b2"],
     'builddir': "ml-opt-devrel-x86-64-b1",
-    'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
-                    clean=True,
-                    depends_on_projects=['llvm'],
-                    extra_configure_args= [
-                        "-DCMAKE_BUILD_TYPE=Release",
-                        "-DLLVM_CCACHE_BUILD=ON",
-                        "-DLLVM_ENABLE_ASSERTIONS=ON",
-                        "-DLLVM_IR2VEC_ENABLE_PYTHON_BINDINGS=ON",
-                        "-DTENSORFLOW_C_LIB_PATH=/tmp/tensorflow",
-                        "-C", "/tmp/tflitebuild/tflite.cmake",
-                        "-DTENSORFLOW_AOT_PATH=/var/lib/buildbot/.local/lib/python3.7/site-packages/tensorflow",
-                        "-DCMAKE_INSTALL_RPATH_USE_LINK_PATH=ON"
-                    ])},
+    'factory' : AnnotatedBuilder.getAnnotatedBuildFactory(
+         script="mlgo-dev.sh",
+         clean=True,
+         depends_on_projects=['llvm'],
+         extra_args=["--enable-tf-aot"],
+         script_interpreter=None,
+         )},
 
     # Release mode build bot
     {'name' : "ml-opt-rel-x86-64",
