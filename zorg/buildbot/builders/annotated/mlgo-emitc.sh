@@ -20,7 +20,6 @@ halt_on_failure
 LLVM_ROOT="${LLVM_ROOT:-$(realpath ../llvm-project)}"
 BUILD_MLGO_DEPS="${BUILD_MLGO_DEPS:-${LLVM_ROOT}/build-mlgo-deps}"
 BUILD_MLGO="${BUILD_MLGO:-${LLVM_ROOT}/build-mlgo}"
-PYTHON_EXECUTABLE="${PYTHON_EXECUTABLE:-$(command -v python3)}"
 
 build_step "Install Python Dependencies"
 
@@ -28,7 +27,7 @@ PIP_ARGS=()
 if [[ -z "${VIRTUAL_ENV:-}" ]]; then
   PIP_ARGS+=(--user --break-system-packages)
 fi
-"${PYTHON_EXECUTABLE}" -m pip install "${PIP_ARGS[@]}" -r "${LLVM_ROOT}/llvm/tools/llvm-ir2vec/Bindings/requirements.txt"
+python3 -m pip install "${PIP_ARGS[@]}" -r "${LLVM_ROOT}/llvm/tools/llvm-ir2vec/Bindings/requirements.txt"
 
 build_step "Build MLIR Dependencies (mlir-opt and mlir-translate)"
 
@@ -59,8 +58,6 @@ cmake -GNinja \
   -DLLVM_CCACHE_BUILD=ON \
   -DLLVM_ENABLE_ASSERTIONS=ON \
   -DLLVM_IR2VEC_ENABLE_PYTHON_BINDINGS=ON \
-  -DPython_EXECUTABLE="${PYTHON_EXECUTABLE}" \
-  -DPython3_EXECUTABLE="${PYTHON_EXECUTABLE}" \
   "-DLLVM_MLGO_MODELS=inliner,${INLINER_MODEL},inliner;regalloc,${REGALLOC_MODEL},regalloc" \
   -DLLVM_MLGO_MLIR_OPT="${MLIR_OPT}" \
   -DLLVM_MLGO_MLIR_TRANSLATE="${MLIR_TRANSLATE}" \
