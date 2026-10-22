@@ -182,7 +182,7 @@ function buildbot_update {
 function print_sanitizer_logs() {
   if compgen -G "${SANITIZER_LOG_DIR}"/* ; then
     build_step "sanitizer logs: ${CURRENT_STEP}"
-    head -n -1 "${SANITIZER_LOG_DIR}"/*
+    head -n 10000 "${SANITIZER_LOG_DIR}"/* | head -n 10000
     buildbot_build && rm -rf "${SANITIZER_LOG_DIR}"
     mkdir -p "${SANITIZER_LOG_DIR}"
     build_warning
