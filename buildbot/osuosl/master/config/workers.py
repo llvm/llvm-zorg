@@ -594,6 +594,7 @@ def get_all():
         create_worker("arm-bbot-flang-aarch64-latest-gcc", max_builds=1),
         create_worker("arm-bbot-flang-aarch64-libcxx", max_builds=1),
         create_worker("arm-bbot-flang-aarch64-rel-assert", max_builds=1),
+        create_worker("arm-bbot-flang-aarch64-sanitizer", max_builds=1),
         create_worker("arm-bbot-clang-armv7-vfpv3-2stage", max_builds=1),
         create_worker("arm-bbot-clang-armv8-quick", max_builds=1),
         create_worker("arm-bbot-lldb-arm-ubuntu", max_builds=1),
