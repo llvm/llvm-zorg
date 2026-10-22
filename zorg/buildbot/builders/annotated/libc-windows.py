@@ -9,6 +9,10 @@ import sys
 import traceback
 from contextlib import contextmanager
 
+def is_true_env(var):
+    val = os.environ.get(var, '').strip().lower()
+    return val not in ('', '0', 'false', 'no', 'off')
+
 def main(argv):
     ap = argparse.ArgumentParser()
     ap.add_argument('--asan', action='store_true', default=False,
@@ -21,6 +25,17 @@ def main(argv):
     vc_vars = annotated_builder.get_vcvars(vs_tools=None, arch='amd64')
     for (var, val) in vc_vars.items():
         os.environ[var] = val
+
+    clean_build = any(
+        is_true_env(var)
+        for var in ('BUILDBOT_CLOBBER', 'BUILDBOT_CLEAN', 'BUILDBOT_CLEAN_OBJ')
+    )
+    if clean_build:
+        with step('clean build dir', halt_on_fail=True):
+            cwd = os.getcwd()
+            os.chdir('..')
+            util.clean_dir(cwd)
+            os.chdir(cwd)
 
     with step('cmake', halt_on_fail=True):
         # On most systems the default generator is make and the default
