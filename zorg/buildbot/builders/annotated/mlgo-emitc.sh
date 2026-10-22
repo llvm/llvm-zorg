@@ -21,6 +21,10 @@ LLVM_ROOT="${LLVM_ROOT:-$(realpath ../llvm-project)}"
 BUILD_MLGO_DEPS="${BUILD_MLGO_DEPS:-${LLVM_ROOT}/build-mlgo-deps}"
 BUILD_MLGO="${BUILD_MLGO:-${LLVM_ROOT}/build-mlgo}"
 
+build_step "Install Python Dependencies"
+
+python3 -m pip install --break-system-packages -r "${LLVM_ROOT}/llvm/tools/llvm-ir2vec/Bindings/requirements.txt"
+
 build_step "Build MLIR Dependencies (mlir-opt and mlir-translate)"
 
 mkdir -p "${BUILD_MLGO_DEPS}"
