@@ -2334,6 +2334,43 @@ all += [
                         "-DCMAKE_BUILD_TYPE=Release",
                     ])},
 
+    {'name' : "flang-aarch64-sanitizer",
+    'tags'  : ["flang", "sanitizer"],
+    'workernames' : ["arm-bbot-flang-aarch64-sanitizer"],
+    'builddir': "flang-aarch64-sanitizer",
+    'factory' : FlangBuilder.getFlangOutOfTreeBuildFactory(
+                    clean=True,
+                    # flang-rt is not sanitized, so we leave testing it to other bots.
+                    checks=['check-flang'],
+                    run_test_suite=True,
+                    env={
+                        "ASAN_OPTIONS": "detect_leaks=0",
+                        "NO_STOP_MESSAGE": "1",
+                    },
+                    llvm_extra_configure_args=[
+                        "-DLLVM_TARGETS_TO_BUILD=AArch64",
+                        "-DCMAKE_CXX_STANDARD=17",
+                        "-DLLVM_ENABLE_WERROR=OFF",
+                        "-DLLVM_ENABLE_ASSERTIONS=ON",
+                        "-DCMAKE_BUILD_TYPE=Release",
+                        "-DLLVM_ENABLE_RUNTIMES=compiler-rt",
+                        "-DCOMPILER_RT_BUILD_SANITIZERS=OFF",
+                        "-DLLVM_USE_SANITIZER=Address;Undefined",
+                        "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
+                        "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
+                        "-DCLANG_ENABLE_CIR:BOOL=OFF",
+                    ],
+                    flang_extra_configure_args=[
+                        "-DFLANG_ENABLE_WERROR=ON",
+                        "-DCMAKE_BUILD_TYPE=Release",
+                        "-DLLVM_USE_SANITIZER=Address;Undefined",
+                    ],
+                    flang_rt_extra_configure_args=[
+                        "-DCMAKE_BUILD_TYPE=Release",
+                        "-DLLVM_ENABLE_ASSERTIONS=ON",
+                        "-DCMAKE_INSTALL_PREFIX=../install",
+                    ])},
+
     {'name' : "flang-aarch64-libcxx",
     'tags'  : ['flang'],
     'workernames' : ["linaro-flang-aarch64-libcxx", "arm-bbot-flang-aarch64-libcxx"],
