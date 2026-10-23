@@ -110,7 +110,7 @@ pipeline {
                       --assertions \
                       --projects="clang;lld;lldb"  \
                       --runtimes="libcxx;libcxxabi;libunwind" \
-                      --cmake-type=Release \
+                      --cmake-type=Debug \
                       --cmake-flag="-DLLDB_USE_SYSTEM_DEBUGSERVER=ON" \
                       --cmake-flag="-DPython3_EXECUTABLE=$(which python)"
                     '''
