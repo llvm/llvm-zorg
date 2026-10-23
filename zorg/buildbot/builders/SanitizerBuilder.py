@@ -46,7 +46,7 @@ def getSanitizerBuildFactory(
     sanitizer_script = "../%s/zorg/buildbot/builders/sanitizers/%s" % (sanitizer_script_dir, "buildbot_selector.py")
 
     f = LLVMBuildFactory(
-        clean=True,
+        clean=clean,
         depends_on_projects=depends_on_projects,
         llvm_srcdir=sanitizer_script_dir)
 
