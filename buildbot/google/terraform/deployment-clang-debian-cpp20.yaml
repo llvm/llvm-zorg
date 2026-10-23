@@ -25,7 +25,7 @@ spec:
       - env:
         - name: BUILDBOT_PORT
           value: "9990" # 9990 is production, 9994 is staging.
-        image: gcr.io/sanitizer-bots/buildbot-cpp20:5
+        image: gcr.io/sanitizer-bots/buildbot-cpp20:7
         name: buildbot-clang-debian-cpp20
         resources:
           limits:
@@ -38,7 +38,7 @@ spec:
         - mountPath: /vol/secrets
           mountPropagation: None
           name: buildbot-token
-        - mountPath: /vol/cccache
+        - mountPath: /vol/ccache
           mountPropagation: None
           name: ccache-vol
         - mountPath: /vol/worker
