@@ -40,7 +40,7 @@ def getLLDBCMakeBuildFactory(
         f.addStep(SetPropertyFromCommand(
             command=getVisualStudioEnvironment(vs, target_arch),
             extract_fn=extractVSEnvironment))
-        env = util.Property("vs_env")
+        env = Property('vs_env')
 
     f.addGetSourcecodeSteps()
 
