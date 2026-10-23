@@ -6,6 +6,9 @@ HERE="$(cd $(dirname $0) && pwd)"
 
 LOCAL_IPS=`hostname -I`
 
+# TODO: Separate clobber from Force Build UI ("Clean source code and build
+# directory" / "Clean build directory") and builder clean=True config.
+BUILDBOT_CLOBBER=
 clobber
 
 download_android_tools

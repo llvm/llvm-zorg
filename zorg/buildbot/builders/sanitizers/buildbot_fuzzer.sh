@@ -9,6 +9,9 @@ LIBFUZZER=$LLVM/lib/Fuzzer
 # Also, the Fuzzer does not provide reproducers on assertion failures yet.
 CMAKE_COMMON_OPTIONS+=" -DLLVM_ENABLE_ASSERTIONS=OFF"
 
+# TODO: Separate clobber from Force Build UI ("Clean source code and build
+# directory" / "Clean build directory") and builder clean=True config.
+BUILDBOT_CLOBBER=
 clobber RUNDIR-*
 
 # Make sure asan intercepts SIGABRT so that the fuzzer can print the test cases

@@ -13,6 +13,9 @@ def getSanitizerBuildFactory(
         "TERM" : "dumb", # Make sure Clang doesn't use color escape sequences.
                  }
     # Clobber bot if we need a clean build.
+    # TODO: Separate BUILDBOT_CLOBBER from LLVMBuildFactory(clean=True) and
+    # wire it to the Force Build UI ("Clean source code and build directory" /
+    # "Clean build directory").
     if clean:
         merged_env["BUILDBOT_CLOBBER"] = "1"
     # Overwrite pre-set items with the given ones, so user can set anything.
@@ -39,7 +42,7 @@ def getSanitizerBuildFactory(
     sanitizer_script = "../%s/zorg/buildbot/builders/sanitizers/%s" % (sanitizer_script_dir, "buildbot_selector.py")
 
     f = LLVMBuildFactory(
-        clean=clean,
+        clean=True,
         depends_on_projects=depends_on_projects,
         llvm_srcdir=sanitizer_script_dir)
 
