@@ -11,6 +11,9 @@ function cleanup() {
   du -hs * | sort -h
 }
 
+# TODO: Separate clobber from Force Build UI ("Clean source code and build
+# directory" / "Clean build directory") and builder clean=True config.
+BUILDBOT_CLOBBER=
 clobber
 
 # Stage 1

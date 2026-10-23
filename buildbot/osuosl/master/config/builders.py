@@ -1633,7 +1633,6 @@ all += [
     ],
     'builddir': "sanitizer-x86_64-linux-bootstrap-asan",
     'factory' : SanitizerBuilder.getSanitizerBuildFactory(
-        clean=True,
         extra_depends_on_projects=["mlir", "clang-tools-extra"]
     )},
 
@@ -1645,7 +1644,6 @@ all += [
     ],
     'builddir': "sanitizer-x86_64-linux-bootstrap-msan",
     'factory' : SanitizerBuilder.getSanitizerBuildFactory(
-        clean=True,
         extra_depends_on_projects=["mlir", "clang-tools-extra"]
     )},
 
@@ -1656,7 +1654,6 @@ all += [
     ],
     'builddir': "sanitizer-x86_64-linux-bootstrap-ubsan",
     'factory' : SanitizerBuilder.getSanitizerBuildFactory(
-        clean=True,
         extra_depends_on_projects=["mlir", "clang-tools-extra"]
     )},
 
@@ -1667,7 +1664,6 @@ all += [
     ],
     'builddir': "sanitizer-x86_64-linux-bootstrap-cfi",
     'factory' : SanitizerBuilder.getSanitizerBuildFactory(
-        clean=True,
         extra_depends_on_projects=["clang-tools-extra"]
     )},
 
@@ -1714,7 +1710,6 @@ all += [
     ],
     'builddir': "sanitizer-aarch64-linux-bootstrap-asan",
     'factory' : SanitizerBuilder.getSanitizerBuildFactory(
-        clean=True,
         extra_depends_on_projects=["mlir", "clang-tools-extra"]
     )},
 
@@ -1726,7 +1721,6 @@ all += [
     ],
     'builddir': "sanitizer-aarch64-linux-bootstrap-hwasan",
     'factory' : SanitizerBuilder.getSanitizerBuildFactory(
-        clean=True,
         extra_depends_on_projects=["mlir", "clang-tools-extra"]
     )},
 
@@ -1738,7 +1732,6 @@ all += [
     ],
     'builddir': "sanitizer-aarch64-linux-bootstrap-msan",
     'factory' : SanitizerBuilder.getSanitizerBuildFactory(
-        clean=True,
         extra_depends_on_projects=["mlir", "clang-tools-extra"]
     )},
 
@@ -1749,7 +1742,6 @@ all += [
     ],
     'builddir': "sanitizer-aarch64-linux-bootstrap-ubsan",
     'factory' : SanitizerBuilder.getSanitizerBuildFactory(
-        clean=True,
         extra_depends_on_projects=["mlir", "clang-tools-extra"]
     )},
 
@@ -1760,7 +1752,6 @@ all += [
     ],
     'builddir': "sanitizer-aarch64-linux-bootstrap-cfi",
     'factory' : SanitizerBuilder.getSanitizerBuildFactory(
-        clean=True,
         extra_depends_on_projects=["clang-tools-extra"]
     )},
 
@@ -1778,7 +1769,6 @@ all += [
     'workernames' : ["ppc64le-sanitizer"],
     'builddir': "sanitizer-ppc64le",
     'factory' : SanitizerBuilder.getSanitizerBuildFactory(
-        clean=True,
         timeout=1800
     )},
 

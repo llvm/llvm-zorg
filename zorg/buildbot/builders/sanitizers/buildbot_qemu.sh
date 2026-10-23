@@ -7,6 +7,9 @@ set -u
 HERE="$(cd $(dirname $0) && pwd)"
 . ${HERE}/buildbot_functions.sh
 
+# TODO: Separate clobber from Force Build UI ("Clean source code and build
+# directory" / "Clean build directory") and builder clean=True config.
+BUILDBOT_CLOBBER=
 clobber
 
 build_stage1_clang_at_revison
