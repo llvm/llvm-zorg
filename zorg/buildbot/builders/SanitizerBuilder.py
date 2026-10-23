@@ -2,6 +2,10 @@ from zorg.buildbot.commands.AnnotatedCommand import AnnotatedCommand
 from zorg.buildbot.process.factory import LLVMBuildFactory
 
 def getSanitizerBuildFactory(
+    # Sanitizer builds are slow and not very incremental, so the difference
+    # between clean and incremental builds is small, while clean=False forces
+    # extra build requests on every CMake change that workers cannot keep up
+    # with.
     clean=True,
     extra_depends_on_projects=[],
     extra_configure_args=None,
