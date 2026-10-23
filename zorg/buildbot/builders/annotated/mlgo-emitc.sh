@@ -34,7 +34,10 @@ cmake -GNinja \
   -B "${BUILD_MLGO_DEPS}" \
   -DCMAKE_BUILD_TYPE="Release" \
   -DLLVM_CCACHE_BUILD=ON \
-  -DLLVM_ENABLE_PROJECTS="mlir"
+  -DLLVM_ENABLE_PROJECTS="mlir" \
+  -DLLVM_TARGETS_TO_BUILD=Native \
+  -DLLVM_INCLUDE_TESTS=OFF \
+  -DMLIR_INCLUDE_TESTS=OFF
 
 ninja -C "${BUILD_MLGO_DEPS}" mlir-opt mlir-translate
 
