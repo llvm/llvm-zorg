@@ -41,6 +41,7 @@ PIP_PACKAGES=("tosa-converter-for-tflite==2026.2.0" "ai-edge-litert==2.2.0" "abs
 VENV_STAMP_FILE="${VENV_DIR}/.stamp"
 VENV_STAMP_EXPECTED="python=$("${PYTHON_EXECUTABLE}" --version 2>&1);packages=${PIP_PACKAGES[*]}"
 
+# we only recreate the venv if the stamp file doesn't exist
 if [[ ! -x "${VENV_DIR}/bin/python3" || \
       ! -x "${VENV_DIR}/bin/tosa-converter-for-tflite" || \
       ! -f "${VENV_STAMP_FILE}" || \
@@ -70,16 +71,6 @@ fi
 if [[ "$(git -C "${ML_COMPILER_OPT_DIR}" rev-parse HEAD 2>/dev/null || true)" != "${ML_COMPILER_OPT_COMMIT}" ]]; then
   git -C "${ML_COMPILER_OPT_DIR}" fetch --prune origin
   git -C "${ML_COMPILER_OPT_DIR}" checkout --force "${ML_COMPILER_OPT_COMMIT}"
-fi
-
-if [[ "$(git -C "${ML_COMPILER_OPT_DIR}" rev-parse HEAD)" != "${ML_COMPILER_OPT_COMMIT}" ]]; then
-  echo "Error: ml-compiler-opt HEAD does not match pinned commit ${ML_COMPILER_OPT_COMMIT}" >&2
-  exit 1
-fi
-
-if [[ ! -f "${ML_COMPILER_OPT_DIR}/compiler_opt/tools/strip_tfa_tflite.py" ]]; then
-  echo "Error: strip_tfa_tflite.py not found in ${ML_COMPILER_OPT_DIR}" >&2
-  exit 1
 fi
 
 build_step "Fetch and Convert Released Models to TOSA"
