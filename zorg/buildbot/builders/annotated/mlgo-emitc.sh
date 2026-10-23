@@ -64,4 +64,9 @@ cmake -GNinja \
 
 build_step "Run tests"
 
-ninja -C "${BUILD_MLGO}" check-llvm
+ninja -C "${BUILD_MLGO}" \
+  check-llvm-transforms-inline \
+  check-llvm-codegen-mlregalloc \
+  check-llvm-analysis-ir2vec \
+  check-llvm-codegen-mir2vec \
+  check-llvm-tools-llvm-ir2vec
