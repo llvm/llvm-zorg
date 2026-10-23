@@ -1,0 +1,74 @@
+# llvm-buildbot-staged-compose.yaml
+#
+# Run:
+#   docker compose -f llvm-buildbot-staged-compose.yaml up -d
+#
+# .env
+#   PG_DATA=/opt/docker/stagebot/postgresql<-staged-g0>/data
+# Note: use 5433 for gX instances 
+#   PG_PORT=5432
+# Note: use 8012 for gX instances
+#   BUILDBOT_WEB_PORT=8011
+
+services:
+  llvm-buildbot:
+    image: buildbot/llvm-buildbot:custom
+    container_name: stagebot
+    hostname: stagebot
+    restart: unless-stopped
+    links:
+      - db
+    depends_on:
+      - db
+    ports:
+      - "${BUILDBOT_WEB_PORT}:8011"
+    volumes:
+      - ./llvm-zorg-g0:/buildbot/llvm-zorg
+      - ./local.staged.cfg:/buildbot/local.cfg:ro
+      # - ./worker-passwords.staged.cfg:/buildbot/worker-passwords.cfg:ro
+    logging:
+      driver: "local"
+      options:
+        max-size: "10m"
+        max-file: "3"
+  db:
+#    image: percona/percona-distribution-postgresql:latest
+    image: buildbot/postgresql:custom
+    container_name: postgresql-staged
+    hostname: postgresql-staged
+    restart: unless-stopped
+    user: ${PG_UID:-999}:${PG_GID:-999}
+    # Environment vars:
+    #   POSTGRES_PASSWORD=secret_db_pass
+    env_file:
+      - .env.pg.staged
+    ports:
+      - "${PG_PORT}:5432"
+    volumes:
+      # percona-distribution-postgresql
+      - ${PG_DATA}:/data/db
+      # postgresql:18
+      #- ${PG_DATA}:/var/lib/postgresql
+
+  # latest == 3
+  pmm-client:
+    image: percona/pmm-client:latest
+    container_name: pmm-agent-staged
+    restart: unless-stopped
+    # Environment vars:
+    #   PMM_AGENT_SETUP_NODE_NAME=my_node_name
+    #   PMM_AGENT_SETUP_NODE_TYPE=container
+    #   PMM_AGENT_SERVER_ADDRESS=X.X.X.X:443
+    #   PMM_AGENT_SERVER_USERNAME=service_token
+    #   PMM_AGENT_SERVER_PASSWORD=YOUR_GLSA_TOKEN
+    #   PMM_AGENT_SERVER_INSECURE_TLS=1
+    #   PMM_AGENT_SETUP=1
+    #   PMM_AGENT_CONFIG_FILE=config/pmm-agent.yaml
+    #   PMM_AGENT_SETUP_FORCE=1
+    env_file:
+      - .env.pmm-client.staged
+    depends_on:
+      - db
+    # The client hooks directly into the database engine network
+    network_mode: "service:db"
+
