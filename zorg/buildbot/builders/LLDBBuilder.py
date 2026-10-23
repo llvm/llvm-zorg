@@ -4,6 +4,7 @@ from buildbot.plugins import steps, util
 
 from zorg.buildbot.commands.CmakeCommand import CmakeCommand
 from zorg.buildbot.commands.NinjaCommand import NinjaCommand
+from zorg.buildbot.commands.LitTestCommand import LitTestCommand
 from zorg.buildbot.builders.Util import getVisualStudioEnvironment
 from zorg.buildbot.builders.Util import extractVSEnvironment
 from zorg.buildbot.process.factory import LLVMBuildFactory
@@ -39,7 +40,7 @@ def getLLDBCMakeBuildFactory(
         f.addStep(SetPropertyFromCommand(
             command=getVisualStudioEnvironment(vs, target_arch),
             extract_fn=extractVSEnvironment))
-        env = Property('vs_env')
+        env = util.Property("vs_env")
 
     f.addGetSourcecodeSteps()
 
@@ -54,24 +55,32 @@ def getLLDBCMakeBuildFactory(
 
     rel_src_dir = LLVMBuildFactory.pathRelativeTo(f.llvm_srcdir, f.obj_dir)
     cmake_options = [
-        "-G", "Ninja",
-        "-DCMAKE_BUILD_TYPE=" + config,
-        "-DLLVM_LIT_ARGS=-v",
-        "-DCMAKE_INSTALL_PREFIX=../install",
-        f"-DLLVM_ENABLE_PROJECTS={';'.join(f.depends_on_projects)}",
-        ]
+        "-G",
+        "Ninja",
+    ]
+    cmake_definitions = {
+        "CMAKE_BUILD_TYPE": config,
+        "LLVM_LIT_ARGS": "-v --time-tests",
+        "CMAKE_INSTALL_PREFIX": "../install",
+        "LLVM_ENABLE_PROJECTS": ";".join(f.depends_on_projects),
+    }
     if python_source_dir:
-        cmake_options.append("-DPYTHON_HOME=" + python_source_dir)
+        cmake_definitions["PYTHON_HOME"] = python_source_dir
     if extra_cmake_args:
         cmake_options += extra_cmake_args
 
-    f.addStep(CmakeCommand(name="cmake-configure",
-                           description=["cmake configure"],
-                           haltOnFailure=True,
-                           options=cmake_options,
-                           path=rel_src_dir,
-                           env=env,
-                           workdir=build_dir))
+    f.addStep(
+        CmakeCommand(
+            name="cmake-configure",
+            description=["cmake configure"],
+            definitions=cmake_definitions,
+            haltOnFailure=True,
+            options=cmake_options,
+            path=rel_src_dir,
+            env=env,
+            workdir=build_dir,
+        )
+    )
 
     f.addStep(NinjaCommand(name='build',
                           haltOnFailure=True,
@@ -89,13 +98,25 @@ def getLLDBCMakeBuildFactory(
                           env=env))
 
     ignoreTestFail = bool(test != 'ignoreFail')
-    f.addStep(NinjaCommand(targets=['check-lldb'],
-                          name='test',
-                          flunkOnFailure=ignoreTestFail,
-                          timeout=testTimeout,
-                          description='ninja check-lldb',
-                          workdir=build_dir,
-                          doStepIf=bool(test),
-                          env=env))
+    checks = [
+        "check-lldb-unit",
+        "check-lldb-api",
+        "check-lldb-shell",
+    ]
+    for target in checks:
+        f.addStep(
+            LitTestCommand(
+                name=util.Interpolate("test-%(kw:title)s", title=target),
+                command=["ninja", target],
+                flunkOnFailure=ignoreTestFail,
+                haltOnFailure=False,
+                timeout=testTimeout,
+                workdir=build_dir,
+                doStepIf=bool(test),
+                env=env,
+                description=["Test just built components:", target],
+                descriptionDone=["Test just built components:", target, "completed"],
+            )
+        )
 
     return f
