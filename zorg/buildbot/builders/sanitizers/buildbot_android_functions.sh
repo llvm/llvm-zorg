@@ -3,12 +3,13 @@
 ANDROID_NDK_VERSION=21
 ANDROID_API=24
 NDK_DIR=android_ndk
+SDK_DIR=android_sdk
 
 function download_android_tools {
   local VERSION=android-ndk-r${ANDROID_NDK_VERSION}d
   local FILE_NAME=${VERSION}-linux-x86_64.zip
   local NDK_URL=https://dl.google.com/android/repository/${FILE_NAME}
-  if  [[ "$(cat ${NDK_DIR}/android_ndk_url)" != ${NDK_URL} ]] ; then
+  if  [[ "$(cat ${NDK_DIR}/android_ndk_url 2>/dev/null)" != ${NDK_URL} ]] ; then
     build_step "downloading Android NDK"
     [[ -d ${NDK_DIR} ]] && rm -rf ${NDK_DIR}
     [[ -d ${VERSION} ]] && rm -rf ${VERSION}
@@ -19,14 +20,30 @@ function download_android_tools {
     echo ${NDK_URL} > ${NDK_DIR}/android_ndk_url
   fi
 
-  if  [[ ! -d platform-tools ]] ; then
-    build_step "downloading Android Platform Tools"
-    local FILE_NAME=platform-tools-latest-linux.zip
-    [[ -f ${FILE_NAME} ]] && rm -f ${FILE_NAME}
-    wget -e dotbytes=10m https://dl.google.com/android/repository/${FILE_NAME}
-    unzip ${FILE_NAME} > /dev/null
+  export ANDROID_HOME=$ROOT/$SDK_DIR
+  export ANDROID_SDK_ROOT=$ANDROID_HOME
+  export ANDROID_USER_HOME=$ANDROID_HOME/.android
+  export ANDROID_AVD_HOME=$ANDROID_USER_HOME/avd
+
+  local CMDLINE_FILE=commandlinetools-linux-11076708_latest.zip
+  local CMDLINE_URL=https://dl.google.com/android/repository/${CMDLINE_FILE}
+  local SYS_IMAGE="system-images;android-29;default;x86_64"
+  if [[ "$(cat ${SDK_DIR}/android_sdk_url 2>/dev/null)" != "${CMDLINE_URL}|${SYS_IMAGE}" ]] ; then
+    build_step "downloading Android SDK"
+    rm -rf ${SDK_DIR}
+    mkdir -p ${SDK_DIR}/cmdline-tools ${ANDROID_AVD_HOME}
+    [[ -f ${CMDLINE_FILE} ]] && rm -f ${CMDLINE_FILE}
+    wget -e dotbytes=10m ${CMDLINE_URL}
+    unzip ${CMDLINE_FILE} -d ${SDK_DIR}/cmdline-tools > /dev/null
+    mv ${SDK_DIR}/cmdline-tools/cmdline-tools ${SDK_DIR}/cmdline-tools/latest
+    rm -f ${CMDLINE_FILE}
+    yes | HOME=$ANDROID_HOME ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager --sdk_root=${ANDROID_HOME} \
+      "platform-tools" "emulator" "${SYS_IMAGE}" > /dev/null && \
+    echo no | HOME=$ANDROID_HOME ${ANDROID_HOME}/cmdline-tools/latest/bin/avdmanager create avd \
+      -n san_x86_64 -k "${SYS_IMAGE}" --force && \
+    echo "${CMDLINE_URL}|${SYS_IMAGE}" > ${SDK_DIR}/android_sdk_url
   fi
-  export PATH=$ROOT/platform-tools/:$PATH
+  export PATH=$ANDROID_HOME/platform-tools:$ANDROID_HOME/emulator:$PATH
 }
 
 function build_stage2_android() {
@@ -176,12 +193,41 @@ function tail_pids {
   wait
 }
 
+function start_android_emulator {
+  build_step "starting Android emulator"
+  stop_android_emulator
+  local ACCEL_FLAG="-accel off"
+  [[ -w /dev/kvm ]] && ACCEL_FLAG="-accel on"
+  mkdir -p $ANDROID_HOME/tmp
+  HOME=$ANDROID_HOME TMPDIR=$ANDROID_HOME/tmp \
+    $ANDROID_HOME/emulator/emulator -avd san_x86_64 \
+    -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect \
+    -no-snapshot -wipe-data $ACCEL_FLAG >$ROOT/emulator.log 2>&1 &
+  EMULATOR_PID=$!
+  if ! timeout 300 $ADB -e wait-for-device shell 'while [[ "$(getprop sys.boot_completed | tr -d "\r")" != "1" ]]; do sleep 1; done' ; then
+    cat $ROOT/emulator.log
+    build_failure
+  fi
+}
+
+function stop_android_emulator {
+  ${ADB:-adb} -e emu kill 2>/dev/null || true
+  if [[ -n "${EMULATOR_PID:-}" ]]; then
+    kill $EMULATOR_PID 2>/dev/null || true
+    wait $EMULATOR_PID 2>/dev/null || true
+    EMULATOR_PID=""
+  fi
+  pkill -f "$ANDROID_HOME/emulator" 2>/dev/null || true
+}
+
 function test_android {
   if [[ -v BUILDBOT_BUILDERNAME ]]; then
     restart_adb_server
   fi
 
   ADB=adb
+  start_android_emulator
+
   build_step "run all tests"
   ANDROID_DEVICES=$(${ADB} devices | grep 'device$' | sort -r | awk '{print $1}')
 
@@ -191,6 +237,8 @@ function test_android {
   for SERIAL in $ANDROID_DEVICES; do
     test_on_device "$SERIAL" $@
   done
+
+  stop_android_emulator
 
   # Return to avoid exception if we already have error.
   [[ $BUILD_RT_ERR == "" ]] || return
