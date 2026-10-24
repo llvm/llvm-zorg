@@ -1,0 +1,67 @@
+[DEFAULT]
+# Detect if the BUILDBOT_TEST environment variable is set and non-zero. This
+# will be used to enable a local testing mode.
+# test_mode=0
+
+[Buildbot]
+title=LLVM Develop
+title_url=http://localhost:8011/
+# NOTE: my_url must contain the trailing slash.
+my_url=http://localhost:8011/
+
+[Protocols]
+# pb_port=9990
+
+[Master Options]
+# status_email=<your@email.org>
+enable_manhole=0
+is_production=False
+master_name=localhost
+master_url=http://localhost:8011/
+master_protocol=http
+# rsync_user=<user>
+
+# Register the workers without entry inside [Worker Passwords] section.
+# (change to 'yes' for development)
+# allow_orphan_workers=no
+
+# Disable user authentication.
+# (change to 'yes' for development)
+# allow_no_auth=no
+
+# Disable user authorizaiton.
+# (change to 'yes' for development)
+# allow_no_authz=no
+
+# Config key only supported on downstream buildbot fork.
+# allow_ignore_offline_workers_timeout=no
+
+# Register the workers from [Develop Workers] section and try to load the `config/delovep_builder.py` module.
+# (change to 'yes' for development)
+# allow_develop_workers=no
+
+[Develop Workers]
+# A list of development workers
+# <worker name> = <pwd>
+
+[Admins]
+# A list of administrators
+# <username> = <email>
+
+[Database]
+db_url=sqlite:///state.sqlite
+
+# [GitHub Status]
+# token=<token>
+
+# [GitHub Auth]
+# clientId=<GiHub Client ID>
+# clientSecret=<pwd>
+# admins=<GitHub Group>
+# developers=<GitHub Group>
+
+# [IRC]
+# host=irc.oftc.net
+# nick=<dev-nick>
+# channels=<list of #channels>
+# notify_events=problem,recovery
