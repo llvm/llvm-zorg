@@ -17,7 +17,12 @@ CMAKE_COMMON_OPTIONS+=" -DCMAKE_INSTALL_MESSAGE=NEVER"
 export LC_ALL=C
 
 if ccache -s ; then
-  CMAKE_COMMON_OPTIONS+=" -DLLVM_CCACHE_BUILD=ON"
+  export CCACHE_BASEDIR="${ROOT}"
+  export CCACHE_NOHASHDIR=true
+  export CCACHE_COMPILERCHECK=content
+  export CCACHE_SLOPPINESS=pch_defines,time_macros
+  export CCACHE_IGNOREOPTIONS="-L* -Wl,*"
+  CMAKE_COMMON_OPTIONS+=" -DLLVM_CCACHE_BUILD=ON -DLLVM_CCACHE_PARAMS=CCACHE_CPP2=yes"
 fi
 
 if ld.lld --version ; then
