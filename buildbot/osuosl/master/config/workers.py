@@ -1,13 +1,17 @@
 # TODO: Refactor to define a list of tuples, each of which describes a worker, then enumerate and create as data driven.
 
+from twisted.python import log
 from buildbot.plugins import worker
 import config
 
 def create_worker(name, *args, **kwargs):
-    if config.options.getboolean('Internal', 'test_mode'):
-        password = "test"
-    else:
-        password = config.options.get('Worker Passwords', name)
+    allow_orphan_workers = config.options.getboolean('Master Options', 'allow_orphan_workers', fallback = False)
+    password = config.options.get('Worker Passwords', name,
+        fallback = "test" if config.options.getboolean('Internal', 'test_mode') else None)
+    if not password and not allow_orphan_workers:
+        raise ValueError(f"No password specified for '{name}' worker in option section 'Worker Passwords'")
+    if not password:
+        log.msg(f"WARNING: orphan worker '{name}'")
     return worker.Worker(name, password=password, *args, **kwargs)
 
 def get_all():
@@ -604,4 +608,17 @@ def get_all():
         create_worker("arm-bbot-clang-arm64-windows-msvc", max_builds=1),
         create_worker("arm-bbot-lldb-aarch64-windows", max_builds=1),
         create_worker("arm-bbot-clang-arm64-windows-msvc-2stage", max_builds=1),
-        ]
+        ] + get_develop()
+        
+def get_develop():
+    develop_workers = []
+    
+    if config.options.getboolean('Master Options', 'allow_develop_workers', fallback = False):
+        if config.options.has_section('Develop Workers'):
+            for n, p in config.options['Develop Workers'].items():
+                develop_workers.append(
+                    worker.Worker(n, password = p, max_builds=1))
+                log.msg(f"INFO: develop worker '{n}'")
+    return develop_workers
+    
+    
