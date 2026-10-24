@@ -2,6 +2,10 @@ from twisted.internet import defer
 import json
 import sqlalchemy as sa
 
+from importlib.metadata import version
+from packaging.version import Version
+
+is_sa2 =  bool(Version(version("SQLAlchemy")) >= Version("2.0"))
 
 @defer.inlineCallbacks
 def setBuildsetProperty(db, bsid, name, value, source="Collapse"):
@@ -16,7 +20,11 @@ def setBuildsetProperty(db, bsid, name, value, source="Collapse"):
         db.buildsets.checkLength(bs_props_tbl.c.property_name, name)
 
         whereclause=sa.and_(bs_props_tbl.c.buildsetid == bsid, bs_props_tbl.c.property_name == name)
-        q = sa.select([bs_props_tbl.c.property_name, bs_props_tbl.c.property_value], whereclause=whereclause)
+        if is_sa2:
+            q = sa.select(bs_props_tbl.c.property_name, bs_props_tbl.c.property_value).where(whereclause)
+        else:
+            q = sa.select([bs_props_tbl.c.property_name, bs_props_tbl.c.property_value], whereclause=whereclause)
+        
         prop = conn.execute(q).fetchone()
         value_js = json.dumps([value,source])
         if prop is None:
@@ -26,7 +34,13 @@ def setBuildsetProperty(db, bsid, name, value, source="Collapse"):
                 "property_value": value_js
             })
         elif prop.property_value != value_js:
-            conn.execute(bs_props_tbl.update(whereclause=whereclause), {"property_value": value_js})
+            if is_sa2:
+                stmt = (
+                    sa.update(bs_props_tbl).where(whereclause).values(property_value = value_js)
+                )
+                conn.execute(stmt)
+            else:
+                conn.execute(bs_props_tbl.update(whereclause=whereclause), {"property_value": value_js})
 
     yield db.pool.do(thd)
 
