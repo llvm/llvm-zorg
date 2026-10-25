@@ -270,10 +270,14 @@ function start_android_emulator {
   local _avd=$1
   build_step "starting Android emulator ($_avd)"
   stop_android_emulator
-  local ACCEL_FLAG="-accel off"
+  local ACCEL_FLAG="-accel off -cores 8"
+  EXTRA_LIT_OPTS="-j 16"
   local EMULATOR_BIN="$ANDROID_HOME/emulator/emulator"
   if [[ "$_avd" == "san_x86_64" ]]; then
-    [[ -w /dev/kvm ]] && ACCEL_FLAG="-accel on"
+    if [[ -w /dev/kvm ]]; then
+      ACCEL_FLAG="-accel on"
+      EXTRA_LIT_OPTS=""
+    fi
   elif [[ "$_avd" == "san_arm64" ]]; then
     EMULATOR_BIN="$ANDROID_HOME/emulator/qemu/linux-x86_64/qemu-system-aarch64-headless"
   elif [[ "$_avd" == "san_arm" ]]; then
@@ -404,7 +408,7 @@ function test_arch_on_device {
   done
 
   build_step "run lit tests [$DEVICE_DESCRIPTION]"
-  (cd $COMPILER_RT_BUILD_DIR && ninja check-all) || build_failure
+  (cd $COMPILER_RT_BUILD_DIR && LIT_OPTS="$LIT_OPTS ${EXTRA_LIT_OPTS:-}" ninja check-all) || build_failure
 
   run_tests_on_device sanitizer_common SanitizerTest ""
   run_tests_on_device asan AsanNoinstTest ""
