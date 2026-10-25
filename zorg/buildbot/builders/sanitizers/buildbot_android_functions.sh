@@ -86,11 +86,15 @@ function configure_android { # ARCH triple
   mkdir -p llvm_build_android_$_arch
 
   mkdir -p "$ANDROID_UNWIND_DIR"
+  # Create empty stub archives so CMake try_compile checks can link before
+  # build_android builds the real builtins and libunwind archives.
   rm -f "$ANDROID_LIBRARY_OUTPUT_DIR/lib/linux/libclang_rt.builtins-$_arch-android.a" "$ANDROID_UNWIND_DIR/libunwind.a"
   $ROOT/llvm_build64/bin/llvm-ar rcs "$ANDROID_LIBRARY_OUTPUT_DIR/lib/linux/libclang_rt.builtins-$_arch-android.a"
   $ROOT/llvm_build64/bin/llvm-ar rcs "$ANDROID_UNWIND_DIR/libunwind.a"
   ln -s "$ANDROID_UNWIND_DIR" libunwind_build_android_$_arch/lib
 
+  # Based on LibUnwindBuilder in
+  # https://android.googlesource.com/toolchain/llvm_android/+/refs/heads/main/src/llvm_android/builders.py
   (cd libunwind_build_android_$_arch && cmake \
     ${CMAKE_COMMON_OPTIONS} \
     -DLLVM_ENABLE_RUNTIMES=libunwind \
@@ -120,7 +124,12 @@ function configure_android { # ARCH triple
     $LLVM || build_failure)
 
   local COMPILER_RT_OPTIONS="$(readlink -f $LLVM/../compiler-rt)"
-  
+
+  # Based on BuiltinsBuilder and CompilerRTBuilder in
+  # https://android.googlesource.com/toolchain/llvm_android/+/refs/heads/main/src/llvm_android/builders.py
+  # - COMPILER_RT_USE_BUILTINS_LIBRARY=ON links libclang_rt.builtins instead of libgcc.
+  # - -Wl,-lunwind is needed because -nodefaultlibs suppresses the driver's
+  #   default -l:libunwind.a when linking shared sanitizer runtimes.
   (cd compiler_rt_build_android_$_arch && cmake \
     ${CMAKE_COMMON_OPTIONS} \
     -DCMAKE_C_COMPILER=$CLANG_PATH \
