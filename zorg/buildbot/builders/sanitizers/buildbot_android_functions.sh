@@ -1,9 +1,22 @@
 #!/usr/bin/env bash
 
 ANDROID_NDK_VERSION=30
-ANDROID_API=24
 NDK_DIR=android_ndk
 SDK_DIR=android_sdk
+
+declare -A ANDROID_API=(
+  [aarch64]="24"
+  [arm]="24"
+  [i686]="29"
+  [x86_64]="37.0"
+)
+
+declare -A ANDROID_ABI=(
+  [aarch64]="arm64-v8a"
+  [arm]="armeabi-v7a"
+  [i686]="x86"
+  [x86_64]="x86_64"
+)
 
 function download_android_tools {
   local VERSION=android-ndk-r${ANDROID_NDK_VERSION}
@@ -28,10 +41,11 @@ function download_android_tools {
 
   local CMDLINE_FILE=commandlinetools-linux-11076708_latest.zip
   local CMDLINE_URL=https://dl.google.com/android/repository/${CMDLINE_FILE}
-  local SYS_IMAGE_X86_64="system-images;android-29;default;x86_64"
-  local SYS_IMAGE_ARM64="system-images;android-24;default;arm64-v8a"
-  local SYS_IMAGE_ARM="system-images;android-24;default;armeabi-v7a"
-  local SDK_STAMP="${CMDLINE_URL}|${SYS_IMAGE_X86_64}|${SYS_IMAGE_ARM64}|${SYS_IMAGE_ARM}"
+  local ANDROID_IMAGES=()
+  for _arch in "${!ANDROID_API[@]}"; do
+    ANDROID_IMAGES+=("system-images;android-${ANDROID_API[$_arch]};default;${ANDROID_ABI[$_arch]}")
+  done
+  local SDK_STAMP="${CMDLINE_URL}|${ANDROID_IMAGES[*]}"
   if [[ "$(cat ${SDK_DIR}/android_sdk_url 2>/dev/null)" != "${SDK_STAMP}" ]] ; then
     build_step "downloading Android SDK"
     rm -rf ${SDK_DIR}
@@ -41,15 +55,15 @@ function download_android_tools {
     unzip ${CMDLINE_FILE} -d ${SDK_DIR}/cmdline-tools > /dev/null
     mv ${SDK_DIR}/cmdline-tools/cmdline-tools ${SDK_DIR}/cmdline-tools/latest
     rm -f ${CMDLINE_FILE}
-    yes | HOME=$ANDROID_HOME ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager --sdk_root=${ANDROID_HOME} \
-      "platform-tools" "emulator" "${SYS_IMAGE_X86_64}" "${SYS_IMAGE_ARM64}" "${SYS_IMAGE_ARM}" > /dev/null && \
-    echo no | HOME=$ANDROID_HOME ${ANDROID_HOME}/cmdline-tools/latest/bin/avdmanager create avd \
-      -n san_x86_64 -k "${SYS_IMAGE_X86_64}" --force && \
-    echo no | HOME=$ANDROID_HOME ${ANDROID_HOME}/cmdline-tools/latest/bin/avdmanager create avd \
-      -n san_arm64 -k "${SYS_IMAGE_ARM64}" --force && \
-    echo no | HOME=$ANDROID_HOME ${ANDROID_HOME}/cmdline-tools/latest/bin/avdmanager create avd \
-      -n san_arm -k "${SYS_IMAGE_ARM}" --force && \
-    echo "${SDK_STAMP}" > ${SDK_DIR}/android_sdk_url
+    if yes | HOME=$ANDROID_HOME ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager --sdk_root=${ANDROID_HOME} \
+      "platform-tools" "emulator" "${ANDROID_IMAGES[@]}" > /dev/null ; then
+      local _ok=1
+      for _arch in "${!ANDROID_API[@]}"; do
+        echo no | HOME=$ANDROID_HOME ${ANDROID_HOME}/cmdline-tools/latest/bin/avdmanager create avd \
+          -n san_$_arch -k "system-images;android-${ANDROID_API[$_arch]};default;${ANDROID_ABI[$_arch]}" --force || _ok=0
+      done
+      [[ $_ok == 1 ]] && echo "${SDK_STAMP}" > ${SDK_DIR}/android_sdk_url
+    fi
   fi
   export PATH=$ANDROID_HOME/platform-tools:$ANDROID_HOME/emulator:$PATH
 }
@@ -74,13 +88,14 @@ BUILD_RT_ERR=""
 function build_android { # ARCH triple
   local _arch=$1
   local _triple=$2
+  local _api=${ANDROID_API[$_arch]%.*}
 
   ANDROID_TOOLCHAIN=$ROOT/$NDK_DIR/toolchains/llvm/prebuilt/linux-x86_64
-  echo "Building for Android API level $ANDROID_API"
+  echo "Building for Android API level $_api"
 
   local ANDROID_LIBRARY_OUTPUT_DIR=$(ls -d $ROOT/llvm_build64/lib/clang/* | tail -1)
   local ANDROID_UNWIND_DIR="$ANDROID_LIBRARY_OUTPUT_DIR/lib/linux/${_arch/i686/i386}"
-  local ANDROID_FLAGS="--target=${_triple}${ANDROID_API} --sysroot=$ANDROID_TOOLCHAIN/sysroot -ffunction-sections -fdata-sections"
+  local ANDROID_FLAGS="--target=${_triple}${_api} --sysroot=$ANDROID_TOOLCHAIN/sysroot -ffunction-sections -fdata-sections"
   local ANDROID_LINKER_FLAGS="-Wl,--gc-sections -Wl,-z,defs -Wl,--build-id=sha1"
 
   local CLANG_PATH=$ROOT/llvm_build64/bin/clang
@@ -92,8 +107,8 @@ function build_android { # ARCH triple
     -DCMAKE_CXX_COMPILER=$CLANGXX_PATH
     -DLLVM_CMAKE_DIR=$ROOT/llvm_build64
     -DANDROID=1
-    -DANDROID_PLATFORM_LEVEL=${ANDROID_API}
-    -DANDROID_NATIVE_API_LEVEL=${ANDROID_API}
+    -DANDROID_PLATFORM_LEVEL=${_api}
+    -DANDROID_NATIVE_API_LEVEL=${_api}
     -DCMAKE_ASM_FLAGS="$ANDROID_FLAGS"
     -DCMAKE_C_FLAGS="$ANDROID_FLAGS"
     -DCMAKE_CXX_FLAGS="$ANDROID_FLAGS"
@@ -122,7 +137,7 @@ function build_android { # ARCH triple
     "${ANDROID_CMAKE_ARGS[@]}" \
     -DCOMPILER_RT_BUILTINS_HIDE_SYMBOLS=OFF \
     -DCOMPILER_RT_EXCLUDE_ATOMIC_BUILTIN=OFF \
-    -DCOMPILER_RT_DEFAULT_TARGET_TRIPLE=${_triple}${ANDROID_API} \
+    -DCOMPILER_RT_DEFAULT_TARGET_TRIPLE=${_triple}${_api} \
     -DCOMPILER_RT_OUTPUT_DIR="$ANDROID_LIBRARY_OUTPUT_DIR" \
     $LLVM/../compiler-rt/lib/builtins) ; then
     BUILD_RT_ERR="${BUILD_RT_ERR}|${_arch}|"
@@ -150,7 +165,7 @@ function build_android { # ARCH triple
     -DLIBUNWIND_ENABLE_STATIC=ON \
     -DLIBUNWIND_HIDE_SYMBOLS=ON \
     -DLIBUNWIND_USE_FRAME_HEADER_CACHE=OFF \
-    -DLIBUNWIND_TARGET_TRIPLE=${_triple}${ANDROID_API} \
+    -DLIBUNWIND_TARGET_TRIPLE=${_triple}${_api} \
     $LLVM/../runtimes) ; then
     BUILD_RT_ERR="${BUILD_RT_ERR}|${_arch}|"
     build_failure
@@ -203,7 +218,7 @@ function build_android { # ARCH triple
     -DSANITIZER_COMMON_LINK_FLAGS=-Wl,-z,defs \
     -DCOMPILER_RT_HWASAN_WITH_INTERCEPTORS=OFF \
     -DCOMPILER_RT_TEST_COMPILER_CFLAGS="$ANDROID_FLAGS -funwind-tables" \
-    -DCOMPILER_RT_DEFAULT_TARGET_TRIPLE=${_triple}${ANDROID_API} \
+    -DCOMPILER_RT_DEFAULT_TARGET_TRIPLE=${_triple}${_api} \
     -DCOMPILER_RT_OUTPUT_DIR="$ANDROID_LIBRARY_OUTPUT_DIR" \
     -DLLVM_LIT_ARGS="-vv --show-unsupported --show-xfail" \
     $(readlink -f $LLVM/../compiler-rt)) ; then
@@ -247,7 +262,7 @@ function test_on_device {
   local _serial=$1
   shift
 
-  ABILIST=$(${ADB} -s $_serial shell getprop ro.product.cpu.abilist)
+  ABILIST=$(${ADB} -s $_serial shell getprop ro.product.cpu.abilist | tr -d '\r')
   patch_abilist "$ABILIST" ABILIST
   for _arg in "$@"; do
     local _arch=${_arg%:*}
@@ -257,7 +272,7 @@ function test_on_device {
       build_failure
       continue
     fi
-    if [[ $ABILIST == *"$_abi"* ]]; then
+    if [[ ",$ABILIST," == *,"$_abi",* ]]; then
       echo "$_serial" >> tested_arch_$_arch
       BUILD_ID=$(${ADB} -s $_serial shell getprop ro.build.id | tr -d '\r')
       BUILD_FLAVOR=$(${ADB} -s $_serial shell getprop ro.build.flavor | tr -d '\r')
@@ -273,12 +288,12 @@ function start_android_emulator {
   local ACCEL_FLAG="-accel off -cores 8 -memory 16384"
   EXTRA_LIT_OPTS="-j 8"
   local EMULATOR_BIN="$ANDROID_HOME/emulator/emulator"
-  if [[ "$_avd" == "san_x86_64" ]]; then
+  if [[ "$_avd" == "san_x86_64" || "$_avd" == "san_i686" ]]; then
     if [[ -w /dev/kvm ]]; then
       ACCEL_FLAG="-accel on -cores $(( $(nproc) / 4 )) -memory 32768"
       EXTRA_LIT_OPTS=""
     fi
-  elif [[ "$_avd" == "san_arm64" ]]; then
+  elif [[ "$_avd" == "san_aarch64" ]]; then
     EMULATOR_BIN="$ANDROID_HOME/emulator/qemu/linux-x86_64/qemu-system-aarch64-headless"
   elif [[ "$_avd" == "san_arm" ]]; then
     EMULATOR_BIN="$ANDROID_HOME/emulator/qemu/linux-x86_64/qemu-system-armel-headless"
@@ -321,14 +336,16 @@ function test_android {
   ADB=adb
   rm -rf tested_arch_*
 
-  for AVD in san_x86_64; do # san_arm64 san_arm
-    start_android_emulator "$AVD"
+  for _arg in "$@"; do
+    local _arch=${_arg%:*}
+    local _avd="san_$_arch"
+    start_android_emulator "$_avd"
 
-    build_step "run all tests ($AVD)"
+    build_step "run all tests ($_avd)"
     ANDROID_DEVICES=$(${ADB} devices | grep 'device$' | sort -r | awk '{print $1}')
 
     for SERIAL in $ANDROID_DEVICES; do
-      test_on_device "$SERIAL" $@
+      test_on_device "$SERIAL" "$_arg"
     done
 
     stop_android_emulator
