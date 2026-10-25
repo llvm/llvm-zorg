@@ -51,7 +51,13 @@ function download_android_tools {
       -n san_arm -k "${SYS_IMAGE_ARM}" --force && \
     echo "${SDK_STAMP}" > ${SDK_DIR}/android_sdk_url
   fi
-  export PATH=$ANDROID_HOME/platform-tools:$ANDROID_HOME/emulator:$PATH
+  mkdir -p $ANDROID_HOME/bin
+  cat <<EOF > $ANDROID_HOME/bin/adb
+#!/usr/bin/env bash
+HOME=$ANDROID_HOME exec $ANDROID_HOME/platform-tools/adb "\$@"
+EOF
+  chmod +x $ANDROID_HOME/bin/adb
+  export PATH=$ANDROID_HOME/bin:$ANDROID_HOME/platform-tools:$ANDROID_HOME/emulator:$PATH
 }
 
 function build_stage2_android() {
