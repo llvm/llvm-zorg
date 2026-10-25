@@ -264,9 +264,8 @@ function test_on_device {
 
   ABILIST=$(${ADB} -s $_serial shell getprop ro.product.cpu.abilist | tr -d '\r')
   patch_abilist "$ABILIST" ABILIST
-  for _arg in "$@"; do
-    local _arch=${_arg%:*}
-    local _abi=${_arg#*:}
+  for _arch in "$@"; do
+    local _abi=${ANDROID_ABI[$_arch]}
     if [[ $BUILD_RT_ERR == *"|${_arch}|"* ]]; then
       echo "skipping tests on ${_arch}"
       build_failure
@@ -336,8 +335,7 @@ function test_android {
   ADB=adb
   rm -rf tested_arch_*
 
-  for _arg in "$@"; do
-    local _arch=${_arg%:*}
+  for _arch in "$@"; do
     local _avd="san_$_arch"
     start_android_emulator "$_avd"
 
@@ -345,7 +343,7 @@ function test_android {
     ANDROID_DEVICES=$(${ADB} devices | grep 'device$' | sort -r | awk '{print $1}')
 
     for SERIAL in $ANDROID_DEVICES; do
-      test_on_device "$SERIAL" "$_arg"
+      test_on_device "$SERIAL" "$_arch"
     done
 
     stop_android_emulator
@@ -354,8 +352,7 @@ function test_android {
   # Return to avoid exception if we already have error.
   [[ $BUILD_RT_ERR == "" ]] || return
 
-  for _arg in "$@"; do
-    local _arch=${_arg%:*}
+  for _arch in "$@"; do
     if [[ ! -f tested_arch_$_arch ]]; then
       build_step "unavailable device android/$_arch"
       echo @@@STEP_EXCEPTION@@@
