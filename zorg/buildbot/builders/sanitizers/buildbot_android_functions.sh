@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 
-ANDROID_NDK_VERSION=21
+ANDROID_NDK_VERSION=30
 ANDROID_API=24
 NDK_DIR=android_ndk
 SDK_DIR=android_sdk
 
 function download_android_tools {
-  local VERSION=android-ndk-r${ANDROID_NDK_VERSION}d
-  local FILE_NAME=${VERSION}-linux-x86_64.zip
+  local VERSION=android-ndk-r${ANDROID_NDK_VERSION}
+  local FILE_NAME=${VERSION}-linux.zip
   local NDK_URL=https://dl.google.com/android/repository/${FILE_NAME}
   if  [[ "$(cat ${NDK_DIR}/android_ndk_url 2>/dev/null)" != ${NDK_URL} ]] ; then
     build_step "downloading Android NDK"
