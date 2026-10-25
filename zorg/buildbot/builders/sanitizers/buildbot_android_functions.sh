@@ -49,15 +49,17 @@ function download_android_tools {
 function build_stage2_android() {
   # Build self-hosted tree with fresh Clang and -Werror.
   local CMAKE_OPTIONS="${CMAKE_COMMON_OPTIONS} -DLLVM_ENABLE_WERROR=ON ${STAGE1_AS_COMPILER}"
-  CMAKE_OPTIONS="${CMAKE_OPTIONS} -DLLVM_ENABLE_PROJECTS='clang;lld' -DCLANG_DEFAULT_RTLIB=libgcc"
+  CMAKE_OPTIONS="${CMAKE_OPTIONS} -DLLVM_ENABLE_PROJECTS='clang;lld'"
 
   build_step "bootstrap clang"
-  mkdir -p llvm_build64
-  if  [[ "$(cat llvm_build64/CMAKE_OPTIONS)" != "${CMAKE_OPTIONS}" ]] ; then
+  if [[ "$(cat llvm_build64/CMAKE_OPTIONS 2>/dev/null)" != "${CMAKE_OPTIONS}" ]] ; then
+    rm -rf llvm_build64
+    mkdir -p llvm_build64
     (cd llvm_build64 && cmake ${CMAKE_OPTIONS} $LLVM && \
        echo ${CMAKE_OPTIONS} > CMAKE_OPTIONS) || build_failure
   fi
   ninja -C llvm_build64 || (build_failure && exit 2)
+  rm -rf llvm_build64/lib/clang/*/lib/linux
 }
 
 function configure_android { # ARCH triple
@@ -69,6 +71,7 @@ function configure_android { # ARCH triple
   echo "Building for Android API level $ANDROID_API"
 
   local ANDROID_LIBRARY_OUTPUT_DIR=$(ls -d $ROOT/llvm_build64/lib/clang/* | tail -1)
+  local ANDROID_UNWIND_DIR="$ANDROID_LIBRARY_OUTPUT_DIR/lib/linux/${_arch/i686/i386}"
   local ANDROID_FLAGS="--target=${_triple}${ANDROID_API} --sysroot=$ANDROID_TOOLCHAIN/sysroot --gcc-toolchain=$ANDROID_TOOLCHAIN  -B$ANDROID_TOOLCHAIN"
 
   local CLANG_PATH=$ROOT/llvm_build64/bin/clang
@@ -77,9 +80,33 @@ function configure_android { # ARCH triple
   # Always clobber android build tree.
   # It has a hidden dependency on clang (through CXX) which is not known to
   # the build system.
-  rm_dirs compiler_rt_build_android_$_arch llvm_build_android_$_arch
+  rm_dirs compiler_rt_build_android_$_arch libunwind_build_android_$_arch llvm_build_android_$_arch
   mkdir -p compiler_rt_build_android_$_arch
+  mkdir -p libunwind_build_android_$_arch
   mkdir -p llvm_build_android_$_arch
+
+  mkdir -p "$ANDROID_UNWIND_DIR"
+  # Create empty stub archives so CMake try_compile checks can link before
+  # build_android builds the real builtins and libunwind archives.
+  rm -f "$ANDROID_LIBRARY_OUTPUT_DIR/lib/linux/libclang_rt.builtins-$_arch-android.a" "$ANDROID_UNWIND_DIR/libunwind.a"
+  $ROOT/llvm_build64/bin/llvm-ar rcs "$ANDROID_LIBRARY_OUTPUT_DIR/lib/linux/libclang_rt.builtins-$_arch-android.a"
+  $ROOT/llvm_build64/bin/llvm-ar rcs "$ANDROID_UNWIND_DIR/libunwind.a"
+  ln -s "$ANDROID_UNWIND_DIR" libunwind_build_android_$_arch/lib
+
+  # Based on LibUnwindBuilder in
+  # https://android.googlesource.com/toolchain/llvm_android/+/refs/heads/main/src/llvm_android/builders.py
+  (cd libunwind_build_android_$_arch && cmake \
+    ${CMAKE_COMMON_OPTIONS} \
+    -DLLVM_ENABLE_RUNTIMES=libunwind \
+    -DCMAKE_C_COMPILER=$CLANG_PATH \
+    -DCMAKE_CXX_COMPILER=$CLANGXX_PATH \
+    -DCMAKE_ASM_FLAGS="$ANDROID_FLAGS" \
+    -DCMAKE_C_FLAGS="$ANDROID_FLAGS" \
+    -DCMAKE_CXX_FLAGS="$ANDROID_FLAGS" \
+    -DLIBUNWIND_ENABLE_SHARED=OFF \
+    -DLIBUNWIND_ENABLE_STATIC=ON \
+    -DLIBUNWIND_HIDE_SYMBOLS=ON \
+    $LLVM/../runtimes || build_failure)
 
   (cd llvm_build_android_$_arch && cmake \
     ${CMAKE_COMMON_OPTIONS} \
@@ -97,18 +124,25 @@ function configure_android { # ARCH triple
     $LLVM || build_failure)
 
   local COMPILER_RT_OPTIONS="$(readlink -f $LLVM/../compiler-rt)"
-  
+
+  # Based on BuiltinsBuilder and CompilerRTBuilder in
+  # https://android.googlesource.com/toolchain/llvm_android/+/refs/heads/main/src/llvm_android/builders.py
+  # - COMPILER_RT_USE_BUILTINS_LIBRARY=ON links libclang_rt.builtins instead of libgcc.
+  # - -Wl,-lunwind is needed because -nodefaultlibs suppresses the driver's
+  #   default -l:libunwind.a when linking shared sanitizer runtimes.
   (cd compiler_rt_build_android_$_arch && cmake \
     ${CMAKE_COMMON_OPTIONS} \
     -DCMAKE_C_COMPILER=$CLANG_PATH \
     -DCMAKE_CXX_COMPILER=$CLANGXX_PATH \
     -DLLVM_CMAKE_DIR=$ROOT/llvm_build64 \
-    -DCOMPILER_RT_BUILD_BUILTINS=OFF \
+    -DCOMPILER_RT_BUILD_BUILTINS=ON \
+    -DCOMPILER_RT_USE_BUILTINS_LIBRARY=ON \
     -DCOMPILER_RT_INCLUDE_TESTS=ON \
     -DCOMPILER_RT_ENABLE_WERROR=ON \
     -DCMAKE_ASM_FLAGS="$ANDROID_FLAGS" \
     -DCMAKE_C_FLAGS="$ANDROID_FLAGS" \
     -DCMAKE_CXX_FLAGS="$ANDROID_FLAGS" \
+    -DCMAKE_SHARED_LINKER_FLAGS="-Wl,-lunwind" \
     -DSANITIZER_CXX_ABI="libcxxabi" \
     -DCOMPILER_RT_ASAN_ENABLE_EXCEPTIONS=OFF \
     -DCOMPILER_RT_TEST_COMPILER_CFLAGS="$ANDROID_FLAGS" \
@@ -122,6 +156,14 @@ BUILD_RT_ERR=""
 function build_android {
   local _arch=$1
   build_step "build android/$_arch"
+  if ! ninja -C libunwind_build_android_$_arch unwind ; then
+    BUILD_RT_ERR="${BUILD_RT_ERR}|${_arch}|"
+    build_failure
+  fi
+  if ! ninja -C compiler_rt_build_android_$_arch builtins ; then
+    BUILD_RT_ERR="${BUILD_RT_ERR}|${_arch}|"
+    build_failure
+  fi
   if ! ninja -C llvm_build_android_$_arch llvm-symbolizer ; then
     BUILD_RT_ERR="${BUILD_RT_ERR}|${_arch}|"
     build_failure
