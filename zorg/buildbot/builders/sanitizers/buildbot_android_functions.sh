@@ -28,8 +28,11 @@ function download_android_tools {
 
   local CMDLINE_FILE=commandlinetools-linux-11076708_latest.zip
   local CMDLINE_URL=https://dl.google.com/android/repository/${CMDLINE_FILE}
-  local SYS_IMAGE="system-images;android-29;default;x86_64"
-  if [[ "$(cat ${SDK_DIR}/android_sdk_url 2>/dev/null)" != "${CMDLINE_URL}|${SYS_IMAGE}" ]] ; then
+  local SYS_IMAGE_X86_64="system-images;android-29;default;x86_64"
+  local SYS_IMAGE_ARM64="system-images;android-24;default;arm64-v8a"
+  local SYS_IMAGE_ARM="system-images;android-24;default;armeabi-v7a"
+  local SDK_STAMP="${CMDLINE_URL}|${SYS_IMAGE_X86_64}|${SYS_IMAGE_ARM64}|${SYS_IMAGE_ARM}"
+  if [[ "$(cat ${SDK_DIR}/android_sdk_url 2>/dev/null)" != "${SDK_STAMP}" ]] ; then
     build_step "downloading Android SDK"
     rm -rf ${SDK_DIR}
     mkdir -p ${SDK_DIR}/cmdline-tools ${ANDROID_AVD_HOME}
@@ -39,10 +42,14 @@ function download_android_tools {
     mv ${SDK_DIR}/cmdline-tools/cmdline-tools ${SDK_DIR}/cmdline-tools/latest
     rm -f ${CMDLINE_FILE}
     yes | HOME=$ANDROID_HOME ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager --sdk_root=${ANDROID_HOME} \
-      "platform-tools" "emulator" "${SYS_IMAGE}" > /dev/null && \
+      "platform-tools" "emulator" "${SYS_IMAGE_X86_64}" "${SYS_IMAGE_ARM64}" "${SYS_IMAGE_ARM}" > /dev/null && \
     echo no | HOME=$ANDROID_HOME ${ANDROID_HOME}/cmdline-tools/latest/bin/avdmanager create avd \
-      -n san_x86_64 -k "${SYS_IMAGE}" --force && \
-    echo "${CMDLINE_URL}|${SYS_IMAGE}" > ${SDK_DIR}/android_sdk_url
+      -n san_x86_64 -k "${SYS_IMAGE_X86_64}" --force && \
+    echo no | HOME=$ANDROID_HOME ${ANDROID_HOME}/cmdline-tools/latest/bin/avdmanager create avd \
+      -n san_arm64 -k "${SYS_IMAGE_ARM64}" --force && \
+    echo no | HOME=$ANDROID_HOME ${ANDROID_HOME}/cmdline-tools/latest/bin/avdmanager create avd \
+      -n san_arm -k "${SYS_IMAGE_ARM}" --force && \
+    echo "${SDK_STAMP}" > ${SDK_DIR}/android_sdk_url
   fi
   export PATH=$ANDROID_HOME/platform-tools:$ANDROID_HOME/emulator:$PATH
 }
@@ -260,19 +267,35 @@ function test_on_device {
 }
 
 function start_android_emulator {
-  build_step "starting Android emulator"
+  local _avd=$1
+  build_step "starting Android emulator ($_avd)"
   stop_android_emulator
   local ACCEL_FLAG="-accel off"
-  [[ -w /dev/kvm ]] && ACCEL_FLAG="-accel on"
+  local EMULATOR_BIN="$ANDROID_HOME/emulator/emulator"
+  if [[ "$_avd" == "san_x86_64" ]]; then
+    [[ -w /dev/kvm ]] && ACCEL_FLAG="-accel on"
+  elif [[ "$_avd" == "san_arm64" ]]; then
+    EMULATOR_BIN="$ANDROID_HOME/emulator/qemu/linux-x86_64/qemu-system-aarch64-headless"
+  elif [[ "$_avd" == "san_arm" ]]; then
+    EMULATOR_BIN="$ANDROID_HOME/emulator/qemu/linux-x86_64/qemu-system-armel-headless"
+  fi
   mkdir -p $ANDROID_HOME/tmp
   HOME=$ANDROID_HOME TMPDIR=$ANDROID_HOME/tmp \
-    $ANDROID_HOME/emulator/emulator -avd san_x86_64 \
+    LD_LIBRARY_PATH=$ANDROID_HOME/emulator/lib64:$ANDROID_HOME/emulator/lib64/gles_swiftshader \
+    $EMULATOR_BIN -avd $_avd \
     -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect \
     -no-snapshot -wipe-data $ACCEL_FLAG >$ROOT/emulator.log 2>&1 &
   EMULATOR_PID=$!
-  if ! timeout 300 $ADB -e wait-for-device shell 'while [[ "$(getprop sys.boot_completed | tr -d "\r")" != "1" ]]; do sleep 1; done' ; then
-    cat $ROOT/emulator.log
-    build_failure
+  if [[ "$ACCEL_FLAG" == "-accel on" ]]; then
+    if ! timeout 300 $ADB -e wait-for-device shell 'while [[ "$(getprop sys.boot_completed | tr -d "\r")" != "1" ]]; do sleep 1; done' ; then
+      cat $ROOT/emulator.log
+      build_failure
+    fi
+  else
+    if ! timeout 300 $ADB -e wait-for-device shell 'while [[ -z "$(getprop ro.build.id | tr -d "\r")" ]]; do sleep 1; done' ; then
+      cat $ROOT/emulator.log
+      build_failure
+    fi
   fi
 }
 
@@ -292,28 +315,31 @@ function test_android {
   fi
 
   ADB=adb
-  start_android_emulator
-
-  build_step "run all tests"
-  ANDROID_DEVICES=$(${ADB} devices | grep 'device$' | sort -r | awk '{print $1}')
-
   rm -rf tested_arch_*
-  for SERIAL in $ANDROID_DEVICES; do
-    test_on_device "$SERIAL" $@
-  done
 
-  stop_android_emulator
+  for AVD in san_x86_64 san_arm64 san_arm; do
+    start_android_emulator "$AVD"
+
+    build_step "run all tests ($AVD)"
+    ANDROID_DEVICES=$(${ADB} devices | grep 'device$' | sort -r | awk '{print $1}')
+
+    for SERIAL in $ANDROID_DEVICES; do
+      test_on_device "$SERIAL" $@
+    done
+
+    stop_android_emulator
+  done
 
   # Return to avoid exception if we already have error.
   [[ $BUILD_RT_ERR == "" ]] || return
 
-  # for _arg in "$@"; do
-  #   local _arch=${_arg%:*}
-  #   if [[ ! -f tested_arch_$_arch ]]; then
-  #     build_step "unavailable device android/$_arch"
-  #     echo @@@STEP_EXCEPTION@@@
-  #   fi
-  # done
+  for _arg in "$@"; do
+    local _arch=${_arg%:*}
+    if [[ ! -f tested_arch_$_arch ]]; then
+      build_step "unavailable device android/$_arch"
+      echo @@@STEP_EXCEPTION@@@
+    fi
+  done
 }
 
 function run_command_on_device {
