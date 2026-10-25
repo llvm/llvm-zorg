@@ -101,6 +101,7 @@ function configure_android { # ARCH triple
     -DCMAKE_CXX_FLAGS="$ANDROID_FLAGS" \
     -DLIBUNWIND_ENABLE_SHARED=OFF \
     -DLIBUNWIND_ENABLE_STATIC=ON \
+    -DLIBUNWIND_HIDE_SYMBOLS=ON \
     $LLVM/../runtimes || build_failure)
 
   (cd llvm_build_android_$_arch && cmake \
