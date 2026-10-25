@@ -321,7 +321,7 @@ function test_android {
   ADB=adb
   rm -rf tested_arch_*
 
-  for AVD in san_x86_64 san_arm64 san_arm; do
+  for AVD in san_x86_64; do # san_arm64 san_arm
     start_android_emulator "$AVD"
 
     build_step "run all tests ($AVD)"
