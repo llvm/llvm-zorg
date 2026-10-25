@@ -67,24 +67,14 @@ function download_android_tools {
   fi
   export PATH=$ANDROID_HOME/platform-tools:$ANDROID_HOME/emulator:$PATH
 
-  local _ndk_max=$(grep '"max":' ${NDK_DIR}/meta/platforms.json | grep -Eo '[0-9]+')
-  local _sdk_list=$(HOME=$ANDROID_HOME ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager --sdk_root=${ANDROID_HOME} --list 2>/dev/null)
+  local _sdk_list=$(HOME=$ANDROID_HOME ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager --sdk_root=${ANDROID_HOME} --list)
   for _arch in "${!ANDROID_API[@]}"; do
-    local _abi=${ANDROID_ABI[$_arch]}
-    local _sdk_max=$(echo "$_sdk_list" | sed -n "s/.*system-images;android-\([0-9.]*\);default;${_abi}[[:space:]|].*/\1/p" | sort -V | tail -n1)
-    if [[ -n "$_sdk_max" && "$_sdk_max" != "${ANDROID_API[$_arch]}" ]]; then
-      build_step "outdated android/$_arch SDK API (${ANDROID_API[$_arch]} vs $_sdk_max)"
-      build_warning
-    fi
-    if [[ -n "$_ndk_max" ]] && (( ${ANDROID_API[$_arch]%.*} > _ndk_max )); then
-      build_step "android/$_arch API ${ANDROID_API[$_arch]} exceeds NDK max $_ndk_max"
+    local _max=$(echo "$_sdk_list" | grep -oP "system-images;android-\K[0-9.]+(?=;default;${ANDROID_ABI[$_arch]}\b)" | sort -V | tail -n1)
+    if [[ "$_max" != "${ANDROID_API[$_arch]}" ]]; then
+      build_step "unexpected android/$_arch API (${ANDROID_API[$_arch]} vs $_max)"
       build_warning
     fi
   done
-  if [[ -n "$_ndk_max" && "${ANDROID_API[x86_64]%.*}" != "$_ndk_max" ]]; then
-    build_step "outdated android NDK max API (${ANDROID_API[x86_64]%.*} vs $_ndk_max)"
-    build_warning
-  fi
 }
 
 function build_stage2_android() {
