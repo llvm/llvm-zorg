@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
 ANDROID_NDK_VERSION=30
-ANDROID_API=24
 NDK_DIR=android_ndk
 SDK_DIR=android_sdk
 
@@ -28,10 +27,11 @@ function download_android_tools {
 
   local CMDLINE_FILE=commandlinetools-linux-11076708_latest.zip
   local CMDLINE_URL=https://dl.google.com/android/repository/${CMDLINE_FILE}
-  local SYS_IMAGE_X86_64="system-images;android-29;default;x86_64"
+  local SYS_IMAGE_X86_64="system-images;android-37.0;default;x86_64"
+  local SYS_IMAGE_X86="system-images;android-29;default;x86"
   local SYS_IMAGE_ARM64="system-images;android-24;default;arm64-v8a"
   local SYS_IMAGE_ARM="system-images;android-24;default;armeabi-v7a"
-  local SDK_STAMP="${CMDLINE_URL}|${SYS_IMAGE_X86_64}|${SYS_IMAGE_ARM64}|${SYS_IMAGE_ARM}"
+  local SDK_STAMP="${CMDLINE_URL}|${SYS_IMAGE_X86_64}|${SYS_IMAGE_X86}|${SYS_IMAGE_ARM64}|${SYS_IMAGE_ARM}"
   if [[ "$(cat ${SDK_DIR}/android_sdk_url 2>/dev/null)" != "${SDK_STAMP}" ]] ; then
     build_step "downloading Android SDK"
     rm -rf ${SDK_DIR}
@@ -42,9 +42,11 @@ function download_android_tools {
     mv ${SDK_DIR}/cmdline-tools/cmdline-tools ${SDK_DIR}/cmdline-tools/latest
     rm -f ${CMDLINE_FILE}
     yes | HOME=$ANDROID_HOME ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager --sdk_root=${ANDROID_HOME} \
-      "platform-tools" "emulator" "${SYS_IMAGE_X86_64}" "${SYS_IMAGE_ARM64}" "${SYS_IMAGE_ARM}" > /dev/null && \
+      "platform-tools" "emulator" "${SYS_IMAGE_X86_64}" "${SYS_IMAGE_X86}" "${SYS_IMAGE_ARM64}" "${SYS_IMAGE_ARM}" > /dev/null && \
     echo no | HOME=$ANDROID_HOME ${ANDROID_HOME}/cmdline-tools/latest/bin/avdmanager create avd \
       -n san_x86_64 -k "${SYS_IMAGE_X86_64}" --force && \
+    echo no | HOME=$ANDROID_HOME ${ANDROID_HOME}/cmdline-tools/latest/bin/avdmanager create avd \
+      -n san_x86 -k "${SYS_IMAGE_X86}" --force && \
     echo no | HOME=$ANDROID_HOME ${ANDROID_HOME}/cmdline-tools/latest/bin/avdmanager create avd \
       -n san_arm64 -k "${SYS_IMAGE_ARM64}" --force && \
     echo no | HOME=$ANDROID_HOME ${ANDROID_HOME}/cmdline-tools/latest/bin/avdmanager create avd \
@@ -71,9 +73,10 @@ function build_stage2_android() {
 }
 
 BUILD_RT_ERR=""
-function build_android { # ARCH triple
+function build_android { # ARCH triple API
   local _arch=$1
   local _triple=$2
+  local ANDROID_API=$3
 
   ANDROID_TOOLCHAIN=$ROOT/$NDK_DIR/toolchains/llvm/prebuilt/linux-x86_64
   echo "Building for Android API level $ANDROID_API"
@@ -247,7 +250,7 @@ function test_on_device {
   local _serial=$1
   shift
 
-  ABILIST=$(${ADB} -s $_serial shell getprop ro.product.cpu.abilist)
+  ABILIST=$(${ADB} -s $_serial shell getprop ro.product.cpu.abilist | tr -d '\r')
   patch_abilist "$ABILIST" ABILIST
   for _arg in "$@"; do
     local _arch=${_arg%:*}
@@ -257,7 +260,7 @@ function test_on_device {
       build_failure
       continue
     fi
-    if [[ $ABILIST == *"$_abi"* ]]; then
+    if [[ ",$ABILIST," == *,"$_abi",* ]]; then
       echo "$_serial" >> tested_arch_$_arch
       BUILD_ID=$(${ADB} -s $_serial shell getprop ro.build.id | tr -d '\r')
       BUILD_FLAVOR=$(${ADB} -s $_serial shell getprop ro.build.flavor | tr -d '\r')
@@ -273,7 +276,7 @@ function start_android_emulator {
   local ACCEL_FLAG="-accel off -cores 8 -memory 16384"
   EXTRA_LIT_OPTS="-j 8"
   local EMULATOR_BIN="$ANDROID_HOME/emulator/emulator"
-  if [[ "$_avd" == "san_x86_64" ]]; then
+  if [[ "$_avd" == "san_x86"* ]]; then
     if [[ -w /dev/kvm ]]; then
       ACCEL_FLAG="-accel on -cores $(( $(nproc) / 4 )) -memory 32768"
       EXTRA_LIT_OPTS=""
@@ -321,7 +324,7 @@ function test_android {
   ADB=adb
   rm -rf tested_arch_*
 
-  for AVD in san_x86_64; do # san_arm64 san_arm
+  for AVD in san_x86_64 san_x86; do # san_arm64 san_arm
     start_android_emulator "$AVD"
 
     build_step "run all tests ($AVD)"

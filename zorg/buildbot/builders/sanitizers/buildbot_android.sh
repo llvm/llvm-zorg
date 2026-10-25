@@ -26,10 +26,10 @@ build_stage2_android
 
 # Testing armv7 instead of plain arm to work around
 # https://code.google.com/p/android/issues/detail?id=68779
-build_android aarch64 aarch64-linux-android
-build_android arm armv7-linux-androideabi
-build_android i686 i686-linux-android
-build_android x86_64 x86_64-linux-android
+build_android aarch64 aarch64-linux-android 37
+build_android arm armv7-linux-androideabi 24
+build_android i686 i686-linux-android 29
+build_android x86_64 x86_64-linux-android 37
 
 # Temporarily disable testing on arm arches because software emulation is too
 # slow; we will figure out how to run them later.
