@@ -103,6 +103,7 @@ function build_android { # ARCH triple
     -DCMAKE_C_FLAGS="$ANDROID_FLAGS" \
     -DCMAKE_CXX_FLAGS="$ANDROID_FLAGS" \
     -DANDROID=1 \
+    -DANDROID_PLATFORM_LEVEL=${ANDROID_API} \
     -DCOMPILER_RT_BUILTINS_HIDE_SYMBOLS=OFF \
     -DCOMPILER_RT_EXCLUDE_ATOMIC_BUILTIN=OFF \
     -DCOMPILER_RT_DEFAULT_TARGET_TRIPLE=${_triple}${ANDROID_API} \
@@ -126,12 +127,14 @@ function build_android { # ARCH triple
     -DLLVM_ENABLE_RUNTIMES=libunwind \
     -DCMAKE_C_COMPILER=$CLANG_PATH \
     -DCMAKE_CXX_COMPILER=$CLANGXX_PATH \
+    -DLLVM_CMAKE_DIR=$ROOT/llvm_build64 \
     -DCMAKE_ASM_FLAGS="$ANDROID_FLAGS -D_LIBUNWIND_USE_DLADDR=0" \
     -DCMAKE_C_FLAGS="$ANDROID_FLAGS -D_LIBUNWIND_USE_DLADDR=0" \
     -DCMAKE_CXX_FLAGS="$ANDROID_FLAGS -D_LIBUNWIND_USE_DLADDR=0" \
-    -DCMAKE_EXE_LINKER_FLAGS="-Wl,--gc-sections -Wl,-z,defs -unwindlib=none -nostdlib++" \
-    -DCMAKE_SHARED_LINKER_FLAGS="-Wl,--gc-sections -Wl,-z,defs -unwindlib=none -nostdlib++" \
+    -DCMAKE_EXE_LINKER_FLAGS="-Wl,--gc-sections -Wl,-z,defs -Wl,--build-id=sha1 -unwindlib=none -nostdlib++" \
+    -DCMAKE_SHARED_LINKER_FLAGS="-Wl,--gc-sections -Wl,-z,defs -Wl,--build-id=sha1 -unwindlib=none -nostdlib++" \
     -DANDROID=1 \
+    -DANDROID_PLATFORM_LEVEL=${ANDROID_API} \
     -DLIBUNWIND_ENABLE_SHARED=OFF \
     -DLIBUNWIND_ENABLE_STATIC=ON \
     -DLIBUNWIND_HIDE_SYMBOLS=ON \
@@ -158,7 +161,7 @@ function build_android { # ARCH triple
     -DCMAKE_C_FLAGS="$ANDROID_FLAGS" \
     -DCMAKE_CXX_FLAGS="$ANDROID_FLAGS" \
     -DLLVM_BINUTILS_INCDIR=/usr/include \
-    -DCMAKE_EXE_LINKER_FLAGS="-Wl,--gc-sections -Wl,-z,defs -pie" \
+    -DCMAKE_EXE_LINKER_FLAGS="-Wl,--gc-sections -Wl,-z,defs -Wl,--build-id=sha1 -pie" \
     -DCMAKE_SKIP_RPATH=ON \
     -DLLVM_BUILD_RUNTIME=OFF \
     -DLLVM_TABLEGEN=$ROOT/llvm_build64/bin/llvm-tblgen \
@@ -182,6 +185,8 @@ function build_android { # ARCH triple
     -DCMAKE_CXX_COMPILER=$CLANGXX_PATH \
     -DLLVM_CMAKE_DIR=$ROOT/llvm_build64 \
     -DANDROID=1 \
+    -DANDROID_PLATFORM_LEVEL=${ANDROID_API} \
+    -DANDROID_NATIVE_API_LEVEL=${ANDROID_API} \
     -DCOMPILER_RT_BUILD_BUILTINS=OFF \
     -DCOMPILER_RT_USE_BUILTINS_LIBRARY=ON \
     -DCOMPILER_RT_USE_LIBCXX=ON \
@@ -193,9 +198,9 @@ function build_android { # ARCH triple
     -DCMAKE_ASM_FLAGS="$ANDROID_FLAGS -funwind-tables" \
     -DCMAKE_C_FLAGS="$ANDROID_FLAGS -funwind-tables" \
     -DCMAKE_CXX_FLAGS="$ANDROID_FLAGS -funwind-tables" \
-    -DCMAKE_EXE_LINKER_FLAGS="-Wl,--gc-sections -Wl,-z,defs" \
-    -DCMAKE_SHARED_LINKER_FLAGS="-Wl,--gc-sections -Wl,-z,defs" \
-    -DCMAKE_MODULE_LINKER_FLAGS="-Wl,--gc-sections -Wl,-z,defs" \
+    -DCMAKE_EXE_LINKER_FLAGS="-Wl,--gc-sections -Wl,-z,defs -Wl,--build-id=sha1" \
+    -DCMAKE_SHARED_LINKER_FLAGS="-Wl,--gc-sections -Wl,-z,defs -Wl,--build-id=sha1" \
+    -DCMAKE_MODULE_LINKER_FLAGS="-Wl,--gc-sections -Wl,-z,defs -Wl,--build-id=sha1" \
     -DSANITIZER_CXX_ABI="libcxxabi" \
     -DSANITIZER_COMMON_LINK_LIBS=-lunwind \
     -DSANITIZER_COMMON_LINK_FLAGS=-Wl,-z,defs \
