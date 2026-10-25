@@ -29,8 +29,9 @@ build_stage2_android
 build_android aarch64 aarch64-linux-android
 build_android arm armv7-linux-androideabi
 build_android i686 i686-linux-android
+build_android x86_64 x86_64-linux-android
 
-test_android i686:x86 arm:armeabi-v7a aarch64:arm64-v8a
+test_android i686:x86 x86_64:x86_64 arm:armeabi-v7a aarch64:arm64-v8a
 
 cleanup tested_arch_* emulator.log
 
