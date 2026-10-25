@@ -93,7 +93,7 @@ function configure_android { # ARCH triple
     -DCMAKE_SKIP_RPATH=ON \
     -DLLVM_BUILD_RUNTIME=OFF \
     -DLLVM_TABLEGEN=$ROOT/llvm_build64/bin/llvm-tblgen \
-    $LLVM || build_failure) &
+    $LLVM || build_failure)
 
   local COMPILER_RT_OPTIONS="$(readlink -f $LLVM/../compiler-rt)"
   
@@ -114,13 +114,12 @@ function configure_android { # ARCH triple
     -DCOMPILER_RT_DEFAULT_TARGET_TRIPLE=$_triple \
     -DCOMPILER_RT_OUTPUT_DIR="$ANDROID_LIBRARY_OUTPUT_DIR" \
     -DLLVM_LIT_ARGS="-vv --show-unsupported --show-xfail" \
-    ${COMPILER_RT_OPTIONS} || build_failure) &
+    ${COMPILER_RT_OPTIONS} || build_failure)
 }
 
 BUILD_RT_ERR=""
 function build_android {
   local _arch=$1
-  wait
   build_step "build android/$_arch"
   if ! ninja -C llvm_build_android_$_arch llvm-symbolizer ; then
     BUILD_RT_ERR="${BUILD_RT_ERR}|${_arch}|"
@@ -175,23 +174,9 @@ function test_on_device {
       echo "$_serial" >> tested_arch_$_arch
       BUILD_ID=$(${ADB} -s $_serial shell getprop ro.build.id | tr -d '\r')
       BUILD_FLAVOR=$(${ADB} -s $_serial shell getprop ro.build.flavor | tr -d '\r')
-      (
-        # Test only one arch at a time to avoid simultaneously writes into the
-        # same compiler-rt build dir.
-        flock -x $lock_fd
-        test_arch_on_device "$_arch" "$_serial" "$BUILD_ID" "$BUILD_FLAVOR"
-      ) {lock_fd}>$ROOT/${_arch}.lock
+      test_arch_on_device "$_arch" "$_serial" "$BUILD_ID" "$BUILD_FLAVOR"
     fi
   done
-}
-
-function tail_pids {
-  for LOG_PID in $1; do
-    PID=${LOG_PID#*,}
-    LOG=${LOG_PID%,*}
-    tail -n +1 -F $LOG --pid=$PID
-  done
-  wait
 }
 
 function start_android_emulator {
@@ -232,9 +217,7 @@ function test_android {
   build_step "run all tests"
   ANDROID_DEVICES=$(${ADB} devices | grep 'device$' | sort -r | awk '{print $1}')
 
-  rm -rf test_android_log_*
   rm -rf tested_arch_*
-  rm -rf shards_*
   for SERIAL in $ANDROID_DEVICES; do
     test_on_device "$SERIAL" $@
   done
@@ -260,23 +243,15 @@ function run_command_on_device {
   return $($ADB shell "cat $EXIT_CODE")
 }
 
-function run_tests_sharded {
+function run_tests_on_device {
   local _test_name=$1
   local _test=$2
   local _env=$3
 
-  local NUM_SHARDS=4
-  local _log_prefix=$(mktemp shards_XXXX_)
   build_step "run $_test_name tests [$DEVICE_DESCRIPTION]"
-  LOGS=
-  for ((SHARD=0; SHARD < $NUM_SHARDS; SHARD++)); do
-    LOG=${_log_prefix}_$SHARD
-    # 'adb shell <command>' on Fugu is missing TMPDIR.
-    local ENV="$_env GTEST_TOTAL_SHARDS=$NUM_SHARDS GTEST_SHARD_INDEX=$SHARD LD_LIBRARY_PATH=$DEVICE_ROOT TMPDIR=$DEVICE_TMPDIR"
-    ( (run_command_on_device "$ENV $DEVICE_ROOT/$_test" || build_failure) 2>&1 >${_log_prefix}_$SHARD ) &
-    LOGS="$LOGS $LOG,$!"
-  done
-  tail_pids "$LOGS" || true
+  # 'adb shell <command>' on Fugu is missing TMPDIR.
+  local ENV="$_env LD_LIBRARY_PATH=$DEVICE_ROOT TMPDIR=$DEVICE_TMPDIR"
+  run_command_on_device "$ENV $DEVICE_ROOT/$_test" || build_failure
 }
 
 function test_arch_on_device {
@@ -319,14 +294,13 @@ function test_arch_on_device {
          $COMPILER_RT_BUILD_DIR/lib/asan/tests/AsanNoinstTest"
 
   for F in $FILES ; do
-    ( $ADB push $F $DEVICE_ROOT/ >/dev/null || build_failure )&
+    $ADB push $F $DEVICE_ROOT/ >/dev/null || build_failure
   done
-  wait
 
   build_step "run lit tests [$DEVICE_DESCRIPTION]"
   (cd $COMPILER_RT_BUILD_DIR && ninja check-all) || build_failure
 
-  run_tests_sharded sanitizer_common SanitizerTest ""
-  run_tests_sharded asan AsanNoinstTest ""
-  run_tests_sharded "instrumented asan" AsanTest "ASAN_OPTIONS=start_deactivated=1"
+  run_tests_on_device sanitizer_common SanitizerTest ""
+  run_tests_on_device asan AsanNoinstTest ""
+  run_tests_on_device "instrumented asan" AsanTest "ASAN_OPTIONS=start_deactivated=1"
 }
