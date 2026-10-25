@@ -49,15 +49,21 @@ function download_android_tools {
 function build_stage2_android() {
   # Build self-hosted tree with fresh Clang and -Werror.
   local CMAKE_OPTIONS="${CMAKE_COMMON_OPTIONS} -DLLVM_ENABLE_WERROR=ON ${STAGE1_AS_COMPILER}"
-  CMAKE_OPTIONS="${CMAKE_OPTIONS} -DLLVM_ENABLE_PROJECTS='clang;lld' -DCLANG_DEFAULT_RTLIB=libgcc"
+  CMAKE_OPTIONS="${CMAKE_OPTIONS} -DLLVM_ENABLE_PROJECTS='clang;lld'"
 
   build_step "bootstrap clang"
   mkdir -p llvm_build64
   if  [[ "$(cat llvm_build64/CMAKE_OPTIONS)" != "${CMAKE_OPTIONS}" ]] ; then
-    (cd llvm_build64 && cmake ${CMAKE_OPTIONS} $LLVM && \
+    (cd llvm_build64 && rm -f CMakeCache.txt && cmake ${CMAKE_OPTIONS} $LLVM && \
        echo ${CMAKE_OPTIONS} > CMAKE_OPTIONS) || build_failure
   fi
   ninja -C llvm_build64 || (build_failure && exit 2)
+
+  local ANDROID_TOOLCHAIN=$ROOT/$NDK_DIR/toolchains/llvm/prebuilt/linux-x86_64
+  local ANDROID_LIBRARY_OUTPUT_DIR=$(ls -d $ROOT/llvm_build64/lib/clang/* | tail -1)
+  rm -rf "$ANDROID_LIBRARY_OUTPUT_DIR/lib/linux"
+  mkdir -p "$ANDROID_LIBRARY_OUTPUT_DIR/lib/linux"
+  cp -r "$ANDROID_TOOLCHAIN"/lib/clang/*/lib/linux/{aarch64,arm,i386,x86_64,libclang_rt.builtins*} "$ANDROID_LIBRARY_OUTPUT_DIR/lib/linux/"
 }
 
 function configure_android { # ARCH triple
@@ -104,11 +110,13 @@ function configure_android { # ARCH triple
     -DCMAKE_CXX_COMPILER=$CLANGXX_PATH \
     -DLLVM_CMAKE_DIR=$ROOT/llvm_build64 \
     -DCOMPILER_RT_BUILD_BUILTINS=OFF \
+    -DCOMPILER_RT_USE_BUILTINS_LIBRARY=ON \
     -DCOMPILER_RT_INCLUDE_TESTS=ON \
     -DCOMPILER_RT_ENABLE_WERROR=ON \
     -DCMAKE_ASM_FLAGS="$ANDROID_FLAGS" \
     -DCMAKE_C_FLAGS="$ANDROID_FLAGS" \
     -DCMAKE_CXX_FLAGS="$ANDROID_FLAGS" \
+    -DCMAKE_SHARED_LINKER_FLAGS="-Wl,-lunwind" \
     -DSANITIZER_CXX_ABI="libcxxabi" \
     -DCOMPILER_RT_ASAN_ENABLE_EXCEPTIONS=OFF \
     -DCOMPILER_RT_TEST_COMPILER_CFLAGS="$ANDROID_FLAGS" \
