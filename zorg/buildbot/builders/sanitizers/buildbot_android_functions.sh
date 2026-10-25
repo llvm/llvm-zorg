@@ -59,12 +59,7 @@ function build_stage2_android() {
        echo ${CMAKE_OPTIONS} > CMAKE_OPTIONS) || build_failure
   fi
   ninja -C llvm_build64 || (build_failure && exit 2)
-
-  local ANDROID_TOOLCHAIN=$ROOT/$NDK_DIR/toolchains/llvm/prebuilt/linux-x86_64
-  local ANDROID_LIBRARY_OUTPUT_DIR=$(ls -d $ROOT/llvm_build64/lib/clang/* | tail -1)
-  rm -rf "$ANDROID_LIBRARY_OUTPUT_DIR/lib/linux"
-  mkdir -p "$ANDROID_LIBRARY_OUTPUT_DIR/lib/linux"
-  cp -r "$ANDROID_TOOLCHAIN"/lib/clang/*/lib/linux/{aarch64,arm,i386,x86_64,libclang_rt.builtins*} "$ANDROID_LIBRARY_OUTPUT_DIR/lib/linux/"
+  rm -rf llvm_build64/lib/clang/*/lib/linux
 }
 
 function configure_android { # ARCH triple
@@ -76,6 +71,7 @@ function configure_android { # ARCH triple
   echo "Building for Android API level $ANDROID_API"
 
   local ANDROID_LIBRARY_OUTPUT_DIR=$(ls -d $ROOT/llvm_build64/lib/clang/* | tail -1)
+  local ANDROID_UNWIND_DIR="$ANDROID_LIBRARY_OUTPUT_DIR/lib/linux/${_arch/i686/i386}"
   local ANDROID_FLAGS="--target=${_triple}${ANDROID_API} --sysroot=$ANDROID_TOOLCHAIN/sysroot --gcc-toolchain=$ANDROID_TOOLCHAIN  -B$ANDROID_TOOLCHAIN"
 
   local CLANG_PATH=$ROOT/llvm_build64/bin/clang
@@ -84,9 +80,28 @@ function configure_android { # ARCH triple
   # Always clobber android build tree.
   # It has a hidden dependency on clang (through CXX) which is not known to
   # the build system.
-  rm_dirs compiler_rt_build_android_$_arch llvm_build_android_$_arch
+  rm_dirs compiler_rt_build_android_$_arch libunwind_build_android_$_arch llvm_build_android_$_arch
   mkdir -p compiler_rt_build_android_$_arch
+  mkdir -p libunwind_build_android_$_arch
   mkdir -p llvm_build_android_$_arch
+
+  mkdir -p "$ANDROID_UNWIND_DIR"
+  rm -f "$ANDROID_LIBRARY_OUTPUT_DIR/lib/linux/libclang_rt.builtins-$_arch-android.a" "$ANDROID_UNWIND_DIR/libunwind.a"
+  $ROOT/llvm_build64/bin/llvm-ar rcs "$ANDROID_LIBRARY_OUTPUT_DIR/lib/linux/libclang_rt.builtins-$_arch-android.a"
+  $ROOT/llvm_build64/bin/llvm-ar rcs "$ANDROID_UNWIND_DIR/libunwind.a"
+  ln -s "$ANDROID_UNWIND_DIR" libunwind_build_android_$_arch/lib
+
+  (cd libunwind_build_android_$_arch && cmake \
+    ${CMAKE_COMMON_OPTIONS} \
+    -DLLVM_ENABLE_RUNTIMES=libunwind \
+    -DCMAKE_C_COMPILER=$CLANG_PATH \
+    -DCMAKE_CXX_COMPILER=$CLANGXX_PATH \
+    -DCMAKE_ASM_FLAGS="$ANDROID_FLAGS" \
+    -DCMAKE_C_FLAGS="$ANDROID_FLAGS" \
+    -DCMAKE_CXX_FLAGS="$ANDROID_FLAGS" \
+    -DLIBUNWIND_ENABLE_SHARED=OFF \
+    -DLIBUNWIND_ENABLE_STATIC=ON \
+    $LLVM/../runtimes || build_failure)
 
   (cd llvm_build_android_$_arch && cmake \
     ${CMAKE_COMMON_OPTIONS} \
@@ -110,7 +125,7 @@ function configure_android { # ARCH triple
     -DCMAKE_C_COMPILER=$CLANG_PATH \
     -DCMAKE_CXX_COMPILER=$CLANGXX_PATH \
     -DLLVM_CMAKE_DIR=$ROOT/llvm_build64 \
-    -DCOMPILER_RT_BUILD_BUILTINS=OFF \
+    -DCOMPILER_RT_BUILD_BUILTINS=ON \
     -DCOMPILER_RT_USE_BUILTINS_LIBRARY=ON \
     -DCOMPILER_RT_INCLUDE_TESTS=ON \
     -DCOMPILER_RT_ENABLE_WERROR=ON \
@@ -131,6 +146,14 @@ BUILD_RT_ERR=""
 function build_android {
   local _arch=$1
   build_step "build android/$_arch"
+  if ! ninja -C libunwind_build_android_$_arch unwind ; then
+    BUILD_RT_ERR="${BUILD_RT_ERR}|${_arch}|"
+    build_failure
+  fi
+  if ! ninja -C compiler_rt_build_android_$_arch builtins ; then
+    BUILD_RT_ERR="${BUILD_RT_ERR}|${_arch}|"
+    build_failure
+  fi
   if ! ninja -C llvm_build_android_$_arch llvm-symbolizer ; then
     BUILD_RT_ERR="${BUILD_RT_ERR}|${_arch}|"
     build_failure
