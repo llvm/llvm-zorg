@@ -275,7 +275,7 @@ function start_android_emulator {
   local EMULATOR_BIN="$ANDROID_HOME/emulator/emulator"
   if [[ "$_avd" == "san_x86_64" ]]; then
     if [[ -w /dev/kvm ]]; then
-      ACCEL_FLAG="-accel on"
+      ACCEL_FLAG="-accel on -cores $(( $(nproc) / 4 )) -memory 32768"
       EXTRA_LIT_OPTS=""
     fi
   elif [[ "$_avd" == "san_arm64" ]]; then
@@ -290,7 +290,7 @@ function start_android_emulator {
     -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect \
     -no-snapshot -wipe-data $ACCEL_FLAG >$ROOT/emulator.log 2>&1 &
   EMULATOR_PID=$!
-  if [[ "$ACCEL_FLAG" == "-accel on" ]]; then
+  if [[ "$ACCEL_FLAG" == "-accel on"* ]]; then
     if ! timeout 300 $ADB -e wait-for-device shell 'while [[ "$(getprop sys.boot_completed | tr -d "\r")" != "1" ]]; do sleep 1; done' ; then
       cat $ROOT/emulator.log
       build_failure
