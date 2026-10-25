@@ -270,8 +270,8 @@ function start_android_emulator {
   local _avd=$1
   build_step "starting Android emulator ($_avd)"
   stop_android_emulator
-  local ACCEL_FLAG="-accel off -cores 8"
-  EXTRA_LIT_OPTS="-j 16"
+  local ACCEL_FLAG="-accel off -cores 8 -memory 16384"
+  EXTRA_LIT_OPTS="-j 8"
   local EMULATOR_BIN="$ANDROID_HOME/emulator/emulator"
   if [[ "$_avd" == "san_x86_64" ]]; then
     if [[ -w /dev/kvm ]]; then
