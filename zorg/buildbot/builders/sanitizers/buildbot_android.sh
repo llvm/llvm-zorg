@@ -24,14 +24,14 @@ CMAKE_COMMON_OPTIONS+=" -DLLVM_ENABLE_ASSERTIONS=ON"
 
 build_stage2_android
 
-configure_android aarch64 aarch64-linux-android
 # Testing armv7 instead of plain arm to work around
 # https://code.google.com/p/android/issues/detail?id=68779
-configure_android arm armv7-linux-androideabi
-configure_android i686 i686-linux-android
-
-build_android aarch64
-build_android arm
-build_android i686
+build_android aarch64 aarch64-linux-android
+build_android arm armv7-linux-androideabi
+build_android i686 i686-linux-android
 
 test_android i686:x86 arm:armeabi-v7a aarch64:arm64-v8a
+
+cleanup tested_arch_* emulator.log
+
+
