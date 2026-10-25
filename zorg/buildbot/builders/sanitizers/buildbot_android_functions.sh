@@ -4,6 +4,13 @@ ANDROID_NDK_VERSION=30
 NDK_DIR=android_ndk
 SDK_DIR=android_sdk
 
+declare -A ANDROID_IMAGE=(
+  [aarch64]="system-images;android-24;default;arm64-v8a"
+  [arm]="system-images;android-24;default;armeabi-v7a"
+  [i686]="system-images;android-29;default;x86"
+  [x86_64]="system-images;android-37.0;default;x86_64"
+)
+
 function download_android_tools {
   local VERSION=android-ndk-r${ANDROID_NDK_VERSION}
   local FILE_NAME=${VERSION}-linux.zip
@@ -27,11 +34,7 @@ function download_android_tools {
 
   local CMDLINE_FILE=commandlinetools-linux-11076708_latest.zip
   local CMDLINE_URL=https://dl.google.com/android/repository/${CMDLINE_FILE}
-  local SYS_IMAGE_X86_64="system-images;android-37.0;default;x86_64"
-  local SYS_IMAGE_X86="system-images;android-29;default;x86"
-  local SYS_IMAGE_ARM64="system-images;android-24;default;arm64-v8a"
-  local SYS_IMAGE_ARM="system-images;android-24;default;armeabi-v7a"
-  local SDK_STAMP="${CMDLINE_URL}|${SYS_IMAGE_X86_64}|${SYS_IMAGE_X86}|${SYS_IMAGE_ARM64}|${SYS_IMAGE_ARM}"
+  local SDK_STAMP="${CMDLINE_URL}|${ANDROID_IMAGE[x86_64]}|${ANDROID_IMAGE[i686]}|${ANDROID_IMAGE[aarch64]}|${ANDROID_IMAGE[arm]}"
   if [[ "$(cat ${SDK_DIR}/android_sdk_url 2>/dev/null)" != "${SDK_STAMP}" ]] ; then
     build_step "downloading Android SDK"
     rm -rf ${SDK_DIR}
@@ -41,17 +44,15 @@ function download_android_tools {
     unzip ${CMDLINE_FILE} -d ${SDK_DIR}/cmdline-tools > /dev/null
     mv ${SDK_DIR}/cmdline-tools/cmdline-tools ${SDK_DIR}/cmdline-tools/latest
     rm -f ${CMDLINE_FILE}
-    yes | HOME=$ANDROID_HOME ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager --sdk_root=${ANDROID_HOME} \
-      "platform-tools" "emulator" "${SYS_IMAGE_X86_64}" "${SYS_IMAGE_X86}" "${SYS_IMAGE_ARM64}" "${SYS_IMAGE_ARM}" > /dev/null && \
-    echo no | HOME=$ANDROID_HOME ${ANDROID_HOME}/cmdline-tools/latest/bin/avdmanager create avd \
-      -n san_x86_64 -k "${SYS_IMAGE_X86_64}" --force && \
-    echo no | HOME=$ANDROID_HOME ${ANDROID_HOME}/cmdline-tools/latest/bin/avdmanager create avd \
-      -n san_x86 -k "${SYS_IMAGE_X86}" --force && \
-    echo no | HOME=$ANDROID_HOME ${ANDROID_HOME}/cmdline-tools/latest/bin/avdmanager create avd \
-      -n san_arm64 -k "${SYS_IMAGE_ARM64}" --force && \
-    echo no | HOME=$ANDROID_HOME ${ANDROID_HOME}/cmdline-tools/latest/bin/avdmanager create avd \
-      -n san_arm -k "${SYS_IMAGE_ARM}" --force && \
-    echo "${SDK_STAMP}" > ${SDK_DIR}/android_sdk_url
+    if yes | HOME=$ANDROID_HOME ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager --sdk_root=${ANDROID_HOME} \
+      "platform-tools" "emulator" "${ANDROID_IMAGE[@]}" > /dev/null ; then
+      local _ok=1
+      for _arch in "${!ANDROID_IMAGE[@]}"; do
+        echo no | HOME=$ANDROID_HOME ${ANDROID_HOME}/cmdline-tools/latest/bin/avdmanager create avd \
+          -n san_$_arch -k "${ANDROID_IMAGE[$_arch]}" --force || _ok=0
+      done
+      [[ $_ok == 1 ]] && echo "${SDK_STAMP}" > ${SDK_DIR}/android_sdk_url
+    fi
   fi
   export PATH=$ANDROID_HOME/platform-tools:$ANDROID_HOME/emulator:$PATH
 }
@@ -73,10 +74,10 @@ function build_stage2_android() {
 }
 
 BUILD_RT_ERR=""
-function build_android { # ARCH triple API
+function build_android { # ARCH triple
   local _arch=$1
   local _triple=$2
-  local ANDROID_API=$3
+  local ANDROID_API=$(echo "${ANDROID_IMAGE[$_arch]}" | sed -E 's/.*;android-([0-9]+).*/\1/')
 
   ANDROID_TOOLCHAIN=$ROOT/$NDK_DIR/toolchains/llvm/prebuilt/linux-x86_64
   echo "Building for Android API level $ANDROID_API"
@@ -276,12 +277,12 @@ function start_android_emulator {
   local ACCEL_FLAG="-accel off -cores 8 -memory 16384"
   EXTRA_LIT_OPTS="-j 8"
   local EMULATOR_BIN="$ANDROID_HOME/emulator/emulator"
-  if [[ "$_avd" == "san_x86"* ]]; then
+  if [[ "$_avd" == "san_x86_64" || "$_avd" == "san_i686" ]]; then
     if [[ -w /dev/kvm ]]; then
       ACCEL_FLAG="-accel on -cores $(( $(nproc) / 4 )) -memory 32768"
       EXTRA_LIT_OPTS=""
     fi
-  elif [[ "$_avd" == "san_arm64" ]]; then
+  elif [[ "$_avd" == "san_aarch64" ]]; then
     EMULATOR_BIN="$ANDROID_HOME/emulator/qemu/linux-x86_64/qemu-system-aarch64-headless"
   elif [[ "$_avd" == "san_arm" ]]; then
     EMULATOR_BIN="$ANDROID_HOME/emulator/qemu/linux-x86_64/qemu-system-armel-headless"
@@ -324,14 +325,16 @@ function test_android {
   ADB=adb
   rm -rf tested_arch_*
 
-  for AVD in san_x86_64 san_x86; do # san_arm64 san_arm
-    start_android_emulator "$AVD"
+  for _arg in "$@"; do
+    local _arch=${_arg%:*}
+    local _avd="san_$_arch"
+    start_android_emulator "$_avd"
 
-    build_step "run all tests ($AVD)"
+    build_step "run all tests ($_avd)"
     ANDROID_DEVICES=$(${ADB} devices | grep 'device$' | sort -r | awk '{print $1}')
 
     for SERIAL in $ANDROID_DEVICES; do
-      test_on_device "$SERIAL" $@
+      test_on_device "$SERIAL" "$_arg"
     done
 
     stop_android_emulator
