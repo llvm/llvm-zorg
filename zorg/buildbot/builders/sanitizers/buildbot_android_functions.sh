@@ -73,7 +73,7 @@ function build_android { # ARCH triple
 
   local ANDROID_LIBRARY_OUTPUT_DIR=$(ls -d $ROOT/llvm_build64/lib/clang/* | tail -1)
   local ANDROID_UNWIND_DIR="$ANDROID_LIBRARY_OUTPUT_DIR/lib/linux/${_arch/i686/i386}"
-  local ANDROID_FLAGS="--target=${_triple}${ANDROID_API} --sysroot=$ANDROID_TOOLCHAIN/sysroot"
+  local ANDROID_FLAGS="--target=${_triple}${ANDROID_API} --sysroot=$ANDROID_TOOLCHAIN/sysroot -ffunction-sections -fdata-sections"
 
   local CLANG_PATH=$ROOT/llvm_build64/bin/clang
   local CLANGXX_PATH=$ROOT/llvm_build64/bin/clang++
@@ -103,9 +103,9 @@ function build_android { # ARCH triple
     -DCMAKE_C_FLAGS="$ANDROID_FLAGS" \
     -DCMAKE_CXX_FLAGS="$ANDROID_FLAGS" \
     -DANDROID=1 \
-    -DCOMPILER_RT_BUILTINS_HIDE_SYMBOLS=ON \
+    -DCOMPILER_RT_BUILTINS_HIDE_SYMBOLS=OFF \
     -DCOMPILER_RT_EXCLUDE_ATOMIC_BUILTIN=OFF \
-    -DCOMPILER_RT_DEFAULT_TARGET_TRIPLE=$_triple \
+    -DCOMPILER_RT_DEFAULT_TARGET_TRIPLE=${_triple}${ANDROID_API} \
     -DCOMPILER_RT_OUTPUT_DIR="$ANDROID_LIBRARY_OUTPUT_DIR" \
     $LLVM/../compiler-rt/lib/builtins) ; then
     BUILD_RT_ERR="${BUILD_RT_ERR}|${_arch}|"
@@ -129,12 +129,14 @@ function build_android { # ARCH triple
     -DCMAKE_ASM_FLAGS="$ANDROID_FLAGS -D_LIBUNWIND_USE_DLADDR=0" \
     -DCMAKE_C_FLAGS="$ANDROID_FLAGS -D_LIBUNWIND_USE_DLADDR=0" \
     -DCMAKE_CXX_FLAGS="$ANDROID_FLAGS -D_LIBUNWIND_USE_DLADDR=0" \
-    -DCMAKE_EXE_LINKER_FLAGS="-unwindlib=none -nostdlib++" \
-    -DCMAKE_SHARED_LINKER_FLAGS="-unwindlib=none -nostdlib++" \
+    -DCMAKE_EXE_LINKER_FLAGS="-Wl,--gc-sections -Wl,-z,defs -unwindlib=none -nostdlib++" \
+    -DCMAKE_SHARED_LINKER_FLAGS="-Wl,--gc-sections -Wl,-z,defs -unwindlib=none -nostdlib++" \
+    -DANDROID=1 \
     -DLIBUNWIND_ENABLE_SHARED=OFF \
     -DLIBUNWIND_ENABLE_STATIC=ON \
     -DLIBUNWIND_HIDE_SYMBOLS=ON \
     -DLIBUNWIND_USE_FRAME_HEADER_CACHE=OFF \
+    -DLIBUNWIND_TARGET_TRIPLE=${_triple}${ANDROID_API} \
     $LLVM/../runtimes) ; then
     BUILD_RT_ERR="${BUILD_RT_ERR}|${_arch}|"
     build_failure
@@ -156,7 +158,7 @@ function build_android { # ARCH triple
     -DCMAKE_C_FLAGS="$ANDROID_FLAGS" \
     -DCMAKE_CXX_FLAGS="$ANDROID_FLAGS" \
     -DLLVM_BINUTILS_INCDIR=/usr/include \
-    -DCMAKE_EXE_LINKER_FLAGS="-pie" \
+    -DCMAKE_EXE_LINKER_FLAGS="-Wl,--gc-sections -Wl,-z,defs -pie" \
     -DCMAKE_SKIP_RPATH=ON \
     -DLLVM_BUILD_RUNTIME=OFF \
     -DLLVM_TABLEGEN=$ROOT/llvm_build64/bin/llvm-tblgen \
@@ -179,19 +181,28 @@ function build_android { # ARCH triple
     -DCMAKE_C_COMPILER=$CLANG_PATH \
     -DCMAKE_CXX_COMPILER=$CLANGXX_PATH \
     -DLLVM_CMAKE_DIR=$ROOT/llvm_build64 \
+    -DANDROID=1 \
     -DCOMPILER_RT_BUILD_BUILTINS=OFF \
     -DCOMPILER_RT_USE_BUILTINS_LIBRARY=ON \
+    -DCOMPILER_RT_USE_LIBCXX=ON \
+    -DLIBCXX_HAS_PTHREAD_LIB=OFF \
+    -DLIBCXX_HAS_RT_LIB=OFF \
+    -DLIBCXXABI_HAS_PTHREAD_LIB=OFF \
     -DCOMPILER_RT_INCLUDE_TESTS=ON \
     -DCOMPILER_RT_ENABLE_WERROR=ON \
     -DCMAKE_ASM_FLAGS="$ANDROID_FLAGS -funwind-tables" \
     -DCMAKE_C_FLAGS="$ANDROID_FLAGS -funwind-tables" \
     -DCMAKE_CXX_FLAGS="$ANDROID_FLAGS -funwind-tables" \
+    -DCMAKE_EXE_LINKER_FLAGS="-Wl,--gc-sections -Wl,-z,defs" \
+    -DCMAKE_SHARED_LINKER_FLAGS="-Wl,--gc-sections -Wl,-z,defs" \
+    -DCMAKE_MODULE_LINKER_FLAGS="-Wl,--gc-sections -Wl,-z,defs" \
     -DSANITIZER_CXX_ABI="libcxxabi" \
     -DSANITIZER_COMMON_LINK_LIBS=-lunwind \
     -DSANITIZER_COMMON_LINK_FLAGS=-Wl,-z,defs \
     -DCOMPILER_RT_ASAN_ENABLE_EXCEPTIONS=OFF \
+    -DCOMPILER_RT_HWASAN_WITH_INTERCEPTORS=OFF \
     -DCOMPILER_RT_TEST_COMPILER_CFLAGS="$ANDROID_FLAGS -funwind-tables" \
-    -DCOMPILER_RT_DEFAULT_TARGET_TRIPLE=$_triple \
+    -DCOMPILER_RT_DEFAULT_TARGET_TRIPLE=${_triple}${ANDROID_API} \
     -DCOMPILER_RT_OUTPUT_DIR="$ANDROID_LIBRARY_OUTPUT_DIR" \
     -DLLVM_LIT_ARGS="-vv --show-unsupported --show-xfail" \
     $(readlink -f $LLVM/../compiler-rt)) ; then
