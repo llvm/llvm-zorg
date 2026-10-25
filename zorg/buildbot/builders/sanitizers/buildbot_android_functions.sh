@@ -52,9 +52,10 @@ function build_stage2_android() {
   CMAKE_OPTIONS="${CMAKE_OPTIONS} -DLLVM_ENABLE_PROJECTS='clang;lld'"
 
   build_step "bootstrap clang"
-  mkdir -p llvm_build64
-  if  [[ "$(cat llvm_build64/CMAKE_OPTIONS)" != "${CMAKE_OPTIONS}" ]] ; then
-    (cd llvm_build64 && rm -f CMakeCache.txt && cmake ${CMAKE_OPTIONS} $LLVM && \
+  if [[ "$(cat llvm_build64/CMAKE_OPTIONS 2>/dev/null)" != "${CMAKE_OPTIONS}" ]] ; then
+    rm -rf llvm_build64
+    mkdir -p llvm_build64
+    (cd llvm_build64 && cmake ${CMAKE_OPTIONS} $LLVM && \
        echo ${CMAKE_OPTIONS} > CMAKE_OPTIONS) || build_failure
   fi
   ninja -C llvm_build64 || (build_failure && exit 2)
