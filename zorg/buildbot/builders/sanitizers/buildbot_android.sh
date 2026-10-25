@@ -31,7 +31,8 @@ build_android arm armv7-linux-androideabi
 build_android i686 i686-linux-android
 build_android x86_64 x86_64-linux-android
 
-# Temporarily disable testing on arm arches.
+# Temporarily disable testing on arm arches because software emulation is too
+# slow; we will figure out how to run them later.
 test_android i686:x86 x86_64:x86_64 # arm:armeabi-v7a aarch64:arm64-v8a
 
 cleanup tested_arch_* emulator.log
