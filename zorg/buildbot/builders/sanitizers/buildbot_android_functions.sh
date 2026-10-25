@@ -74,9 +74,26 @@ function build_android { # ARCH triple
   local ANDROID_LIBRARY_OUTPUT_DIR=$(ls -d $ROOT/llvm_build64/lib/clang/* | tail -1)
   local ANDROID_UNWIND_DIR="$ANDROID_LIBRARY_OUTPUT_DIR/lib/linux/${_arch/i686/i386}"
   local ANDROID_FLAGS="--target=${_triple}${ANDROID_API} --sysroot=$ANDROID_TOOLCHAIN/sysroot -ffunction-sections -fdata-sections"
+  local ANDROID_LINKER_FLAGS="-Wl,--gc-sections -Wl,-z,defs -Wl,--build-id=sha1"
 
   local CLANG_PATH=$ROOT/llvm_build64/bin/clang
   local CLANGXX_PATH=$ROOT/llvm_build64/bin/clang++
+
+  local ANDROID_CMAKE_ARGS=(
+    ${CMAKE_COMMON_OPTIONS}
+    -DCMAKE_C_COMPILER=$CLANG_PATH
+    -DCMAKE_CXX_COMPILER=$CLANGXX_PATH
+    -DLLVM_CMAKE_DIR=$ROOT/llvm_build64
+    -DANDROID=1
+    -DANDROID_PLATFORM_LEVEL=${ANDROID_API}
+    -DANDROID_NATIVE_API_LEVEL=${ANDROID_API}
+    -DCMAKE_ASM_FLAGS="$ANDROID_FLAGS"
+    -DCMAKE_C_FLAGS="$ANDROID_FLAGS"
+    -DCMAKE_CXX_FLAGS="$ANDROID_FLAGS"
+    -DCMAKE_EXE_LINKER_FLAGS="$ANDROID_LINKER_FLAGS"
+    -DCMAKE_SHARED_LINKER_FLAGS="$ANDROID_LINKER_FLAGS"
+    -DCMAKE_MODULE_LINKER_FLAGS="$ANDROID_LINKER_FLAGS"
+  )
 
   # Always clobber android build tree.
   # It has a hidden dependency on clang (through CXX) which is not known to
@@ -95,15 +112,7 @@ function build_android { # ARCH triple
   # https://android.googlesource.com/toolchain/llvm_android/+/refs/heads/main/src/llvm_android/builders.py
   build_step "cmake builtins android/$_arch"
   if ! (cd builtins_build_android_$_arch && cmake \
-    ${CMAKE_COMMON_OPTIONS} \
-    -DCMAKE_C_COMPILER=$CLANG_PATH \
-    -DCMAKE_CXX_COMPILER=$CLANGXX_PATH \
-    -DLLVM_CMAKE_DIR=$ROOT/llvm_build64 \
-    -DCMAKE_ASM_FLAGS="$ANDROID_FLAGS" \
-    -DCMAKE_C_FLAGS="$ANDROID_FLAGS" \
-    -DCMAKE_CXX_FLAGS="$ANDROID_FLAGS" \
-    -DANDROID=1 \
-    -DANDROID_PLATFORM_LEVEL=${ANDROID_API} \
+    "${ANDROID_CMAKE_ARGS[@]}" \
     -DCOMPILER_RT_BUILTINS_HIDE_SYMBOLS=OFF \
     -DCOMPILER_RT_EXCLUDE_ATOMIC_BUILTIN=OFF \
     -DCOMPILER_RT_DEFAULT_TARGET_TRIPLE=${_triple}${ANDROID_API} \
@@ -123,18 +132,13 @@ function build_android { # ARCH triple
   # https://android.googlesource.com/toolchain/llvm_android/+/refs/heads/main/src/llvm_android/builders.py
   build_step "cmake libunwind android/$_arch"
   if ! (cd libunwind_build_android_$_arch && cmake \
-    ${CMAKE_COMMON_OPTIONS} \
+    "${ANDROID_CMAKE_ARGS[@]}" \
     -DLLVM_ENABLE_RUNTIMES=libunwind \
-    -DCMAKE_C_COMPILER=$CLANG_PATH \
-    -DCMAKE_CXX_COMPILER=$CLANGXX_PATH \
-    -DLLVM_CMAKE_DIR=$ROOT/llvm_build64 \
     -DCMAKE_ASM_FLAGS="$ANDROID_FLAGS -D_LIBUNWIND_USE_DLADDR=0" \
     -DCMAKE_C_FLAGS="$ANDROID_FLAGS -D_LIBUNWIND_USE_DLADDR=0" \
     -DCMAKE_CXX_FLAGS="$ANDROID_FLAGS -D_LIBUNWIND_USE_DLADDR=0" \
-    -DCMAKE_EXE_LINKER_FLAGS="-Wl,--gc-sections -Wl,-z,defs -Wl,--build-id=sha1 -unwindlib=none -nostdlib++" \
-    -DCMAKE_SHARED_LINKER_FLAGS="-Wl,--gc-sections -Wl,-z,defs -Wl,--build-id=sha1 -unwindlib=none -nostdlib++" \
-    -DANDROID=1 \
-    -DANDROID_PLATFORM_LEVEL=${ANDROID_API} \
+    -DCMAKE_EXE_LINKER_FLAGS="$ANDROID_LINKER_FLAGS -unwindlib=none -nostdlib++" \
+    -DCMAKE_SHARED_LINKER_FLAGS="$ANDROID_LINKER_FLAGS -unwindlib=none -nostdlib++" \
     -DLIBUNWIND_ENABLE_SHARED=OFF \
     -DLIBUNWIND_ENABLE_STATIC=ON \
     -DLIBUNWIND_HIDE_SYMBOLS=ON \
@@ -153,15 +157,10 @@ function build_android { # ARCH triple
 
   build_step "cmake llvm-symbolizer android/$_arch"
   if ! (cd llvm_build_android_$_arch && cmake \
-    ${CMAKE_COMMON_OPTIONS} \
+    "${ANDROID_CMAKE_ARGS[@]}" \
     -DLLVM_ENABLE_WERROR=OFF \
-    -DCMAKE_C_COMPILER=$CLANG_PATH \
-    -DCMAKE_CXX_COMPILER=$CLANGXX_PATH \
-    -DCMAKE_ASM_FLAGS="$ANDROID_FLAGS" \
-    -DCMAKE_C_FLAGS="$ANDROID_FLAGS" \
-    -DCMAKE_CXX_FLAGS="$ANDROID_FLAGS" \
     -DLLVM_BINUTILS_INCDIR=/usr/include \
-    -DCMAKE_EXE_LINKER_FLAGS="-Wl,--gc-sections -Wl,-z,defs -Wl,--build-id=sha1 -pie" \
+    -DCMAKE_EXE_LINKER_FLAGS="$ANDROID_LINKER_FLAGS -pie" \
     -DCMAKE_SKIP_RPATH=ON \
     -DLLVM_BUILD_RUNTIME=OFF \
     -DLLVM_TABLEGEN=$ROOT/llvm_build64/bin/llvm-tblgen \
@@ -180,13 +179,7 @@ function build_android { # ARCH triple
   # https://android.googlesource.com/toolchain/llvm_android/+/refs/heads/main/src/llvm_android/builders.py
   build_step "cmake compiler-rt android/$_arch"
   if ! (cd compiler_rt_build_android_$_arch && cmake \
-    ${CMAKE_COMMON_OPTIONS} \
-    -DCMAKE_C_COMPILER=$CLANG_PATH \
-    -DCMAKE_CXX_COMPILER=$CLANGXX_PATH \
-    -DLLVM_CMAKE_DIR=$ROOT/llvm_build64 \
-    -DANDROID=1 \
-    -DANDROID_PLATFORM_LEVEL=${ANDROID_API} \
-    -DANDROID_NATIVE_API_LEVEL=${ANDROID_API} \
+    "${ANDROID_CMAKE_ARGS[@]}" \
     -DCOMPILER_RT_BUILD_BUILTINS=OFF \
     -DCOMPILER_RT_USE_BUILTINS_LIBRARY=ON \
     -DCOMPILER_RT_USE_LIBCXX=ON \
@@ -198,9 +191,6 @@ function build_android { # ARCH triple
     -DCMAKE_ASM_FLAGS="$ANDROID_FLAGS -funwind-tables" \
     -DCMAKE_C_FLAGS="$ANDROID_FLAGS -funwind-tables" \
     -DCMAKE_CXX_FLAGS="$ANDROID_FLAGS -funwind-tables" \
-    -DCMAKE_EXE_LINKER_FLAGS="-Wl,--gc-sections -Wl,-z,defs -Wl,--build-id=sha1" \
-    -DCMAKE_SHARED_LINKER_FLAGS="-Wl,--gc-sections -Wl,-z,defs -Wl,--build-id=sha1" \
-    -DCMAKE_MODULE_LINKER_FLAGS="-Wl,--gc-sections -Wl,-z,defs -Wl,--build-id=sha1" \
     -DSANITIZER_CXX_ABI="libcxxabi" \
     -DSANITIZER_COMMON_LINK_LIBS=-lunwind \
     -DSANITIZER_COMMON_LINK_FLAGS=-Wl,-z,defs \
