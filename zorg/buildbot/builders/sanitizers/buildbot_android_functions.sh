@@ -66,6 +66,19 @@ function download_android_tools {
     fi
   fi
   export PATH=$ANDROID_HOME/platform-tools:$ANDROID_HOME/emulator:$PATH
+  check_android_api
+}
+
+function check_android_api {
+  build_step "checking Android SDK API"
+  local _sdk_list=$(HOME=$ANDROID_HOME ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager --sdk_root=${ANDROID_HOME} --list)
+  for _arch in "${!ANDROID_API[@]}"; do
+    local _max=$(echo "$_sdk_list" | grep -oP "system-images;android-\K[0-9.]+(?=;default;${ANDROID_ABI[$_arch]}\b)" | sort -V | tail -n1)
+    if [[ "$_max" != "${ANDROID_API[$_arch]}" ]]; then
+      echo "Unexpected android/$_arch API: ${ANDROID_API[$_arch]} vs $_max"
+      build_warning
+    fi
+  done
 }
 
 function build_stage2_android() {
