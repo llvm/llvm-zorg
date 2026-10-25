@@ -268,7 +268,7 @@ function build_clang_at_release_tag {
   if  [ -r "${STAGE1_DIR}/host_clang_revision" ] && \
       [ "$(cat "${STAGE1_DIR}/host_clang_revision")" == "$host_clang_revision" ]
   then
-    build_step "using pre-built stage1 clang at r${host_clang_revision}"
+    build_step "using pre-built stage1 clang at ${host_clang_revision}"
   else
     BUILDBOT_MONO_REPO_PATH="" BUILDBOT_REVISION="${host_clang_revision}" buildbot_update
 
