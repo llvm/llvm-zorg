@@ -64,6 +64,7 @@ function configure_android { # ARCH triple
   local _arch=$1
   local _triple=$2
 
+  build_step "run cmake android/$_arch"
   ANDROID_TOOLCHAIN=$ROOT/$NDK_DIR/toolchains/llvm/prebuilt/linux-x86_64
   echo "Building for Android API level $ANDROID_API"
 
