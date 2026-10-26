@@ -1,9 +1,6 @@
 #!/usr/bin/env bash
 
 HERE="$(cd $(dirname $0) && pwd)"
-if [[ "$(arch)" == "x86_64" && "$(hostname)" == *"-staging-"* ]]; then
-  exec ${HERE}/buildbot_android.sh "$@"
-fi
 . ${HERE}/buildbot_functions.sh
 
 MAKE_JOBS=${MAX_MAKE_JOBS:-$(nproc)}
