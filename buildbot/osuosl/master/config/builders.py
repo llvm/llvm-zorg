@@ -351,7 +351,8 @@ all = [
                         "-DCLANG_DEFAULT_LINKER=lld",
                         "-DCMAKE_TRY_COMPILE_CONFIGURATION=Release",
                         "-DCOMPILER_RT_BUILD_SANITIZERS=OFF",
-                        "-DLLVM_CCACHE_BUILD=ON"])},
+                        "-DLLVM_CCACHE_BUILD=ON",
+                        "-DCLANG_ENABLE_CIR:BOOL=OFF"])},
 
     ## ARMv8 check-all
     {'name' : "clang-armv8-quick",
@@ -366,7 +367,8 @@ all = [
                     extra_cmake_args=[
                         "-DLLVM_TARGETS_TO_BUILD='ARM'",
                         # Skip scheduling sensitive tests.
-                        "-DLLVM_LIT_ARGS=-v --filter-out '(googletest-timeout|timeout-hang|max-time)\.py'"])},
+                        "-DLLVM_LIT_ARGS=-v --filter-out '(googletest-timeout|timeout-hang|max-time)\.py'",
+                        "-DCLANG_ENABLE_CIR:BOOL=OFF"])},
 
     ## ARMv7 check-all 2-stage
     {'name' : "clang-armv7-2stage",
@@ -414,7 +416,8 @@ all = [
                     testStage1=False,
                     extra_cmake_args=[
                         "-DCMAKE_C_FLAGS='-mcpu=cortex-a15 -mfpu=vfpv3 -marm'",
-                        "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a15 -mfpu=vfpv3 -marm'"])},
+                        "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a15 -mfpu=vfpv3 -marm'",
+                        "-DCLANG_ENABLE_CIR:BOOL=OFF"])},
 
     ## AArch64 check-all
     {'name' : "clang-aarch64-quick",
@@ -429,7 +432,8 @@ all = [
                     extra_cmake_args=[
                         "-DLLVM_TARGETS_TO_BUILD='AArch64'",
                         # Skip scheduling sensitive tests.
-                        "-DLLVM_LIT_ARGS=-v --filter-out '(googletest-timeout|timeout-hang|max-time)\.py'"])},
+                        "-DLLVM_LIT_ARGS=-v --filter-out '(googletest-timeout|timeout-hang|max-time)\.py'",
+                        "-DCLANG_ENABLE_CIR:BOOL=OFF"])},
 
     # AArch64 2 stage build with lld, flang, compiler-rt, test-suite and SVE/SME
     # mlir integration tests.
@@ -471,7 +475,10 @@ all = [
                     runTestSuite=True,
                     testsuite_flags=[
                         '--cppflags', '-O0',
-                        '--threads=32', '--build-threads=32'])},
+                        '--threads=32', '--build-threads=32'],
+                    extra_cmake_args=[
+                        "-DCLANG_ENABLE_CIR:BOOL=OFF",
+                    ])},
 
     ## AArch32 Clang+LLVM+LLD check-all + test-suite.
     # Not using lld for everything due to https://github.com/llvm/llvm-project/issues/172659.
@@ -492,7 +499,8 @@ all = [
                         # Sanitizers disabled due to https://github.com/llvm/llvm-project/issues/38038.
                         "-DCOMPILER_RT_BUILD_SANITIZERS=OFF",
                         # lld tests cause us to hit thread limits
-                        "-DLLVM_ENABLE_THREADS=OFF"])},
+                        "-DLLVM_ENABLE_THREADS=OFF",
+                        "-DCLANG_ENABLE_CIR:BOOL=OFF"])},
 
     # All SVE (as opposed to SVE2) builders are using optimisation flags
     # for Graviton 3 "balanced" from
@@ -545,7 +553,8 @@ all = [
                         "-DCMAKE_CXX_FLAGS='-mcpu=neoverse-512tvb -mllvm -scalable-vectorization=preferred'",
                         "-DLLVM_ENABLE_LLD=True",
                         "-DMLIR_INCLUDE_INTEGRATION_TESTS=True",
-                        "-DMLIR_RUN_ARM_SVE_TESTS=True"])},
+                        "-DMLIR_RUN_ARM_SVE_TESTS=True",
+                        "-DCLANG_ENABLE_CIR:BOOL=OFF"])},
 
     # AArch64 Clang+LLVM+RT+LLD check-all + flang + test-suite w/SVE-Vector-Length-Specific
     {'name' : "clang-aarch64-sve-vls",
@@ -593,7 +602,8 @@ all = [
                         "-DCMAKE_CXX_FLAGS='-mcpu=neoverse-512tvb -msve-vector-bits=256'",
                         "-DLLVM_ENABLE_LLD=True",
                         "-DMLIR_INCLUDE_INTEGRATION_TESTS=True",
-                        "-DMLIR_RUN_ARM_SVE_TESTS=True"])},
+                        "-DMLIR_RUN_ARM_SVE_TESTS=True",
+                        "-DCLANG_ENABLE_CIR:BOOL=OFF"])},
 
     # All SVE2 builders are using optimisation flags for Graviton 4 "performance" from
     # https://github.com/aws/aws-graviton-getting-started/blob/main/c-c++.md
@@ -619,7 +629,8 @@ all = [
                         "-DCMAKE_CXX_FLAGS='-mcpu=neoverse-v2'",
                         "-DLLVM_ENABLE_LLD=True",
                         "-DMLIR_INCLUDE_INTEGRATION_TESTS=True",
-                        "-DMLIR_RUN_ARM_SVE_TESTS=True"])},
+                        "-DMLIR_RUN_ARM_SVE_TESTS=True",
+                        "-DCLANG_ENABLE_CIR:BOOL=OFF"])},
 
     # AArch64 Clang+LLVM+RT+LLD check-all + flang + test-suite 2-stage with SVE2
     # (not just SVE) Vector Length Agnostic codegen.
@@ -645,7 +656,8 @@ all = [
                         "-DCMAKE_CXX_FLAGS='-mcpu=neoverse-v2 -mllvm -scalable-vectorization=preferred'",
                         "-DLLVM_ENABLE_LLD=True",
                         "-DMLIR_INCLUDE_INTEGRATION_TESTS=True",
-                        "-DMLIR_RUN_ARM_SVE_TESTS=True"])},
+                        "-DMLIR_RUN_ARM_SVE_TESTS=True",
+                        "-DCLANG_ENABLE_CIR:BOOL=OFF"])},
 
     {'name' : "clang-arm64-windows-msvc-2stage",
     'tags'  : ["clang"],
@@ -662,7 +674,8 @@ all = [
                         "-DCMAKE_TRY_COMPILE_CONFIGURATION=Release",
                         "-DLLVM_CCACHE_BUILD=ON",
                         "-DLLVM_ENABLE_RUNTIMES=openmp",
-                        "-DCOMPILER_RT_BUILD_SANITIZERS=OFF"])},
+                        "-DCOMPILER_RT_BUILD_SANITIZERS=OFF",
+                        "-DCLANG_ENABLE_CIR:BOOL=OFF"])},
 
     {'name' : "clang-m68k-linux",
     'tags'  : ["clang"],
@@ -1331,7 +1344,8 @@ all = [
                     extra_cmake_args=[
                         '-DLLVM_ENABLE_ASSERTIONS=True',
                         '-DLLVM_USE_LINKER=lld',
-                        '-DLLDB_ENFORCE_STRICT_TEST_REQUIREMENTS=ON'])},
+                        '-DLLDB_ENFORCE_STRICT_TEST_REQUIREMENTS=ON',
+                        '-DCLANG_ENABLE_CIR:BOOL=OFF'])},
 
     {'name' : "lldb-arm-ubuntu",
     'tags'  : ["lldb"],
@@ -1345,7 +1359,8 @@ all = [
                         '-DLLVM_LIT_ARGS=-vj 4',
                         '-DLLVM_USE_LINKER=lld',
                         '-DCLANG_DEFAULT_LINKER=lld',
-                        '-DLLDB_ENFORCE_STRICT_TEST_REQUIREMENTS=ON'])},
+                        '-DLLDB_ENFORCE_STRICT_TEST_REQUIREMENTS=ON',
+                        '-DCLANG_ENABLE_CIR:BOOL=OFF'])},
 
     {'name' : "lldb-aarch64-windows",
     'tags'  : ["lldb"],
@@ -1359,7 +1374,8 @@ all = [
                         # Hardware breakpoints and watchpoints are not yet supported,
                         # https://github.com/llvm/llvm-project/issues/80665.
                         '-DLLDB_TEST_USER_ARGS=--skip-category=watchpoint',
-                        '-DLLDB_ENFORCE_STRICT_TEST_REQUIREMENTS=ON'])},
+                        '-DLLDB_ENFORCE_STRICT_TEST_REQUIREMENTS=ON',
+                        '-DCLANG_ENABLE_CIR:BOOL=OFF'])},
 
     {'name': "lldb-x86_64-win",
     'tags'  : ["lldb"],
@@ -2337,6 +2353,7 @@ all += [
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
                         "-DLLVM_ENABLE_LIBCXX=On",
                         "-DCMAKE_BUILD_TYPE=Release",
+                        "-DCLANG_ENABLE_CIR:BOOL=OFF"
                     ],
                     flang_extra_configure_args=[
                         "-DFLANG_ENABLE_WERROR=ON",
@@ -2379,6 +2396,7 @@ all += [
                         "-DLLVM_BUILD_EXAMPLES=ON",
                         "-DCMAKE_BUILD_TYPE=Release",
                         "-DCMAKE_CXX_STANDARD=17",
+                        "-DCLANG_ENABLE_CIR:BOOL=OFF"
                     ])},
 
     {'name' : "flang-aarch64-latest-gcc",
@@ -2397,6 +2415,7 @@ all += [
                         "-DBUILD_SHARED_LIBS=ON",
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
                         "-DCMAKE_BUILD_TYPE=Release",
+                        "-DCLANG_ENABLE_CIR:BOOL=OFF"
                     ])},
 
     {'name' : "flang-x86_64-knl-linux",
@@ -4008,7 +4027,8 @@ all += [
                           "-DMLIR_RUN_ARM_SME_TESTS=True",
                           "-DARM_EMULATOR_EXECUTABLE=qemu-aarch64",
                           "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
-                          "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache"
+                          "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
+                          "-DCLANG_ENABLE_CIR:BOOL=OFF"
 
     ])},
 
@@ -4027,7 +4047,8 @@ all += [
                           "-DLLVM_LIT_ARGS=-v",
                           "-DMLIR_ENABLE_EXPENSIVE_PATTERN_API_CHECKS=True",
                           "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
-                          "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache"
+                          "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
+                          "-DCLANG_ENABLE_CIR:BOOL=OFF"
      ])},
 
 ]
