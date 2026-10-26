@@ -5,7 +5,7 @@ NDK_DIR=android_ndk
 SDK_DIR=android_sdk
 
 declare -A ANDROID_API=(
-  [aarch64]="37.0"
+  [aarch64]="24"
   [arm]="24"
   [i686]="29"
   [x86_64]="37.0"
@@ -309,6 +309,7 @@ function start_android_emulator {
   elif [[ "$_avd" == "san_aarch64" ]]; then
     EMULATOR_BIN="$ANDROID_HOME/emulator/qemu/linux-x86_64/qemu-system-aarch64-headless"
   elif [[ "$_avd" == "san_arm" ]]; then
+    ACCEL_FLAG="-accel off -cores 8 -memory 3072"
     EMULATOR_BIN="$ANDROID_HOME/emulator/qemu/linux-x86_64/qemu-system-armel-headless"
   fi
   mkdir -p $ANDROID_HOME/tmp
