@@ -216,6 +216,7 @@ function build_android { # ARCH triple
   if ! (cd compiler_rt_build_android_$_arch && cmake \
     "${ANDROID_CMAKE_ARGS[@]}" \
     -DCOMPILER_RT_BUILD_BUILTINS=OFF \
+    -DCOMPILER_RT_BUILD_ORC=OFF \
     -DCOMPILER_RT_USE_BUILTINS_LIBRARY=ON \
     -DCOMPILER_RT_USE_LIBCXX=ON \
     -DLIBCXX_HAS_PTHREAD_LIB=OFF \
