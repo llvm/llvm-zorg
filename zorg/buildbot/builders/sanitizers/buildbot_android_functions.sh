@@ -5,7 +5,7 @@ NDK_DIR=android_ndk
 SDK_DIR=android_sdk
 
 declare -A ANDROID_API=(
-  [aarch64]="26"
+  [aarch64]="29"
   [arm]="24"
   [i686]="29"
   [x86_64]="37.0"
@@ -308,9 +308,9 @@ function start_android_emulator {
     fi
   elif [[ "$_avd" == "san_aarch64" ]]; then
     # qemu-system-aarch64-headless uses -machine type=ranchu (no PCI bus) and
-    # adds -soundhw hda when target > android-25, failing with "PCI bus not
-    # available for hda".
+    # adds -soundhw hda when target > android-25 and PCI virtio-input on API >= 29.
     sed -i 's/target=android-.*/target=android-25/' "$ANDROID_AVD_HOME/$_avd.ini"
+    ACCEL_FLAG="$ACCEL_FLAG -feature -VirtioInput"
     EMULATOR_BIN="$ANDROID_HOME/emulator/qemu/linux-x86_64/qemu-system-aarch64-headless"
   elif [[ "$_avd" == "san_arm" ]]; then
     ACCEL_FLAG="-accel off -cores 8 -memory 3072"
