@@ -294,6 +294,18 @@ function test_on_device {
   done
 }
 
+function wait_for_android_boot {
+  local _prop="ro.build.id"
+  [[ "$ACCEL_FLAG" == "-accel on"* ]] && _prop="sys.boot_completed"
+  for ((i = 0; i < 300; i++)); do
+    if [[ -n "$(timeout 10 $ADB -e wait-for-device shell getprop $_prop 2>/dev/null | tr -d '\r')" ]]; then
+      return 0
+    fi
+    sleep 1
+  done
+  return 1
+}
+
 function start_android_emulator {
   local _avd=$1
   build_step "starting Android emulator ($_avd)"
@@ -323,16 +335,9 @@ function start_android_emulator {
     -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect \
     -no-snapshot -wipe-data $ACCEL_FLAG >$ROOT/emulator.log 2>&1 &
   EMULATOR_PID=$!
-  if [[ "$ACCEL_FLAG" == "-accel on"* ]]; then
-    if ! timeout 300 $ADB -e wait-for-device shell 'while [[ "$(getprop sys.boot_completed | tr -d "\r")" != "1" ]]; do sleep 1; done' ; then
-      cat $ROOT/emulator.log
-      build_failure
-    fi
-  else
-    if ! timeout 300 $ADB -e wait-for-device shell 'while [[ -z "$(getprop ro.build.id | tr -d "\r")" ]]; do sleep 1; done' ; then
-      cat $ROOT/emulator.log
-      build_failure
-    fi
+  if ! wait_for_android_boot ; then
+    cat $ROOT/emulator.log
+    build_failure
   fi
 }
 
