@@ -324,12 +324,12 @@ function start_android_emulator {
     -no-snapshot -wipe-data $ACCEL_FLAG >$ROOT/emulator.log 2>&1 &
   EMULATOR_PID=$!
   if [[ "$ACCEL_FLAG" == "-accel on"* ]]; then
-    if ! timeout 300 $ADB -e wait-for-device shell 'while [[ "$(getprop sys.boot_completed | tr -d "\r")" != "1" ]]; do sleep 1; done' ; then
+    if ! timeout 300 bash -c "while [[ \"\$($ADB -e wait-for-device shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')\" != \"1\" ]]; do sleep 1; done" ; then
       cat $ROOT/emulator.log
       build_failure
     fi
   else
-    if ! timeout 300 $ADB -e wait-for-device shell 'while [[ -z "$(getprop ro.build.id | tr -d "\r")" ]]; do sleep 1; done' ; then
+    if ! timeout 300 bash -c "while [[ -z \"\$($ADB -e wait-for-device shell getprop ro.build.id 2>/dev/null | tr -d '\r')\" ]]; do sleep 1; done" ; then
       cat $ROOT/emulator.log
       build_failure
     fi
