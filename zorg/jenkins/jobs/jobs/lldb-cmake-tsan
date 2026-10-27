@@ -112,6 +112,7 @@ pipeline {
                       --runtimes="libcxx;libcxxabi;libunwind" \
                       --cmake-type=Debug \
                       --cmake-flag="-DLLDB_USE_SYSTEM_DEBUGSERVER=ON" \
+                      --cmake-flag="-DLLVM_OPTIMIZE_SANITIZED_BUILDS=OFF" \
                       --cmake-flag="-DPython3_EXECUTABLE=$(which python)"
                     '''
                 }
