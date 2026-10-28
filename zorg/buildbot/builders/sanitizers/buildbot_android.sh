@@ -34,9 +34,9 @@ build_android x86_64 x86_64-linux-android
 # Temporarily disable testing on arm arches because software emulation is too
 # slow; we will figure out how to run them later.
 if [[ "$(hostname)" == *"-staging-"* ]]; then
-  test_android i686 x86_64 arm aarch64
+  test_android aarch64
 else
-  test_android i686 x86_64
+  test_android i686 x86_64 arm
 fi
 
 cleanup tested_arch_* emulator.log
