@@ -8,26 +8,30 @@
 #    BUILDBOT_PORT - server port to connect to
 #===----------------------------------------------------------------------===//
 
-FROM docker.io/debian:sid
+FROM docker.io/debian:trixie
 
 # Install build tools.
+# Debian trixie ships CMake 3.31, which satisfies the minimum required by LLVM.
 RUN apt-get update && \
     apt-get install -y \
-        software-properties-common apt-transport-https ca-certificates \
+        apt-transport-https ca-certificates lsb-release \
         git wget gnupg \
         cmake ninja-build  \
         ccache \
         python3 python3-pip python3-psutil && \
-    # Install clang-17 to make the minimal C++20 support in the toolchain.
-    echo "deb http://apt.llvm.org/unstable/ llvm-toolchain-17 main" >> /etc/apt/sources.list.d/llvm-17.list && \
-    wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key >> /etc/apt/trusted.gpg.d/llvm.asc && \
+    # Install clang-17: the minimal toolchain with C++20 support we want to test.
+    echo "deb http://apt.llvm.org/trixie/ llvm-toolchain-trixie-17 main" > /etc/apt/sources.list.d/llvm-17.list && \
+    wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key > /etc/apt/trusted.gpg.d/llvm.asc && \
     apt-get update && \
     apt-get install -y clang-17 lld-17 && \
     apt-get clean
 
-# Install build bot (server was at 2.8.4 at time of writing).
+# Install build bot, matching the version of the buildbot master.
 # We need --break-system-packages to install globally.
-RUN pip3 install --break-system-packages buildbot-worker==2.8.4
+# buildbot-worker 3.x still imports the 'pipes' module, which was removed from
+# the standard library in Python 3.13 (shipped by trixie). Install the
+# backport from PyPI to keep it working.
+RUN pip3 install --break-system-packages buildbot-worker==3.11.7 standard-pipes
 
 # Workaround permissions issues when writing to named volumes
 # https://github.com/docker/compose/issues/3270#issuecomment-206214034
