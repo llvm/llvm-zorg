@@ -4,6 +4,7 @@ metadata:
   name: bazel-buildkite
   namespace: bazel-ci
 spec:
+  replicas: 3
   selector:
     matchLabels:
       app: bazel-buildkite
