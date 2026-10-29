@@ -3,6 +3,11 @@
 ANDROID_NDK_VERSION=30
 NDK_DIR=android_ndk
 SDK_DIR=android_sdk
+CVD_DIR=android_cvd
+USE_CUTTLEFISH=0
+if [[ "$(hostname)" == *"-staging-"* ]]; then
+  USE_CUTTLEFISH=1
+fi
 
 declare -A ANDROID_API=(
   [aarch64]="29"
@@ -18,6 +23,38 @@ declare -A ANDROID_ABI=(
   [x86_64]="x86_64"
 )
 
+declare -A CVD_BUILD=(
+  [aarch64]="aosp-android-latest-release/aosp_cf_arm64_only_phone-userdebug"
+  [i686]="aosp-android14-gsi/aosp_cf_x86_64_phone-userdebug"
+  [x86_64]="aosp-android-latest-release/aosp_cf_x86_64_only_phone-userdebug"
+)
+
+function download_cuttlefish {
+  for _arch in "${!CVD_BUILD[@]}"; do
+    local _dir="$ROOT/$CVD_DIR/$_arch"
+    local _stamp="${CVD_BUILD[$_arch]}|${CVD_BUILD[x86_64]}"
+    if [[ "$(cat "$_dir/cvd_build_stamp" 2>/dev/null)" != "$_stamp" ]]; then
+      build_step "downloading Android Cuttlefish ($_arch)"
+      stop_cuttlefish
+      rm -rf "$_dir"
+      mkdir -p "$_dir"
+      local _fetch_args=(
+        --default_build="${CVD_BUILD[$_arch]}"
+        --target_directory="$_dir"
+        --enable_caching=false
+      )
+      if [[ "$_arch" == "aarch64" ]]; then
+        _fetch_args+=(--host_package_build="${CVD_BUILD[x86_64]}")
+      fi
+      if cvd fetch "${_fetch_args[@]}"; then
+        echo "$_stamp" > "$_dir/cvd_build_stamp"
+      else
+        build_failure
+      fi
+    fi
+  done
+}
+
 function download_android_tools {
   local VERSION=android-ndk-r${ANDROID_NDK_VERSION}
   local FILE_NAME=${VERSION}-linux.zip
@@ -32,6 +69,11 @@ function download_android_tools {
     mv ${VERSION} ${NDK_DIR}
     rm -f ${FILE_NAME}
     echo ${NDK_URL} > ${NDK_DIR}/android_ndk_url
+  fi
+
+  if (( USE_CUTTLEFISH )); then
+    download_cuttlefish
+    return
   fi
 
   export ANDROID_HOME=$ROOT/$SDK_DIR
@@ -306,8 +348,63 @@ function wait_for_android_boot {
   return 1
 }
 
+function wait_for_cuttlefish_boot {
+  local _adb="${ADB:-adb}"
+  for ((i = 0; i < 60; i++)); do
+    local _serial
+    _serial=$($_adb devices | awk '/:(652[0-9])[[:space:]]+device$/ {print $1; exit}')
+    if [[ -n "$_serial" ]] && [[ "$(timeout 10 $_adb -s "$_serial" shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" == "1" ]]; then
+      return 0
+    fi
+    sleep 1
+  done
+  return 1
+}
+
+function start_cuttlefish {
+  local _arch=$1
+  local _dir="$ROOT/$CVD_DIR/$_arch"
+  build_step "starting Android Cuttlefish ($_arch)"
+  stop_cuttlefish
+  local _cpus=8
+  local _mem=16384
+  local _extra_args=()
+  EXTRA_LIT_OPTS="-j 8"
+  if [[ "$_arch" == "x86_64" || "$_arch" == "i686" ]] && [[ -w /dev/kvm ]]; then
+    _cpus=$(( $(nproc) / 4 ))
+    _mem=32768
+    EXTRA_LIT_OPTS=""
+  else
+    _extra_args+=(--vm_manager=qemu_cli)
+  fi
+  if ! cvd create \
+    --product_path="$_dir" \
+    --host_path="$_dir" \
+    --cpus="$_cpus" \
+    --memory_mb="$_mem" \
+    --gpu_mode=guest_swiftshader \
+    --enable_sandbox=false \
+    --data_policy=always_create \
+    --blank_data_image_mb=16384 \
+    --report_anonymous_usage_stats=n \
+    ${_extra_args[@]+"${_extra_args[@]}"} >"$ROOT/emulator.log" 2>&1 || ! wait_for_cuttlefish_boot ; then
+    cat "$ROOT/emulator.log" || true
+    tail -n 200 /var/tmp/cvd/"$(id -u)"/*/home/cuttlefish/instances/cvd-1/logs/launcher.log 2>/dev/null || true
+    build_failure
+  fi
+}
+
+function stop_cuttlefish {
+  cvd reset -y >/dev/null 2>&1 || true
+  ${ADB:-adb} disconnect >/dev/null 2>&1 || true
+}
+
 function start_android_emulator {
   local _avd=$1
+  if (( USE_CUTTLEFISH )); then
+    start_cuttlefish "${_avd#san_}"
+    return
+  fi
   build_step "starting Android emulator ($_avd)"
   stop_android_emulator
   local ACCEL_FLAG="-accel off -cores 8 -memory 16384"
@@ -342,6 +439,10 @@ function start_android_emulator {
 }
 
 function stop_android_emulator {
+  if (( USE_CUTTLEFISH )); then
+    stop_cuttlefish
+    return
+  fi
   ${ADB:-adb} -e emu kill 2>/dev/null || true
   if [[ -n "${EMULATOR_PID:-}" ]]; then
     kill $EMULATOR_PID 2>/dev/null || true
