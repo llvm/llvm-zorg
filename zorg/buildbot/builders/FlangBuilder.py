@@ -1,5 +1,6 @@
 from zorg.buildbot.commands.CmakeCommand import CmakeCommand
 from zorg.buildbot.process.factory import LLVMBuildFactory
+from zorg.buildbot.builders import TestSuiteBuilder
 from zorg.buildbot.builders.UnifiedTreeBuilder import addNinjaSteps, getCmakeWithNinjaBuildFactory
 from buildbot.plugins import util, steps
 import os
@@ -7,9 +8,11 @@ import os
 def getFlangOutOfTreeBuildFactory(
            checks = None,
            clean = False,
+           run_test_suite = False,
            llvm_extra_configure_args = None,
            flang_extra_configure_args = None,
            flang_rt_extra_configure_args = None,
+           test_suite_extra_configure_args = None,
            env = None,
            **kwargs):
 
@@ -36,7 +39,10 @@ def getFlangOutOfTreeBuildFactory(
             **kwargs)
 
     if checks is None:
-        checks = ['check-all']
+        checks = ['check-flang', 'check-flang-rt']
+
+    flang_checks = [check for check in checks if check != 'check-flang-rt']
+    flang_rt_checks = [check for check in checks if check == 'check-flang-rt']
 
     cleanBuildRequested = (
         lambda step: step.build.getProperty("clean")
@@ -98,7 +104,7 @@ def getFlangOutOfTreeBuildFactory(
        f,
        obj_dir=flang_obj_dir,
        install_dir=install_dir,
-       checks=checks,
+       checks=flang_checks,
        env=env,
        stage_name="flang",
        **kwargs)
@@ -152,9 +158,63 @@ def getFlangOutOfTreeBuildFactory(
     addNinjaSteps(
        f,
        obj_dir=flang_rt_obj_dir,
-       checks=['check-flang-rt'],
+       install_dir=install_dir,
+       checks=flang_rt_checks,
        env=env,
        stage_name="flang-rt",
        **kwargs)
+
+    if run_test_suite:
+        test_suite_obj_dir = "build_llvm-test-suite"
+        test_suite_cmake_definitions = {
+            "CMAKE_BUILD_TYPE": "Release",
+            "CMAKE_C_COMPILER": util.Interpolate(
+                f"%(prop:builddir)s/{install_dir}/bin/clang"
+            ),
+            "CMAKE_CXX_COMPILER": util.Interpolate(
+                f"%(prop:builddir)s/{install_dir}/bin/clang++"
+            ),
+            "CMAKE_Fortran_COMPILER": util.Interpolate(
+                f"%(prop:builddir)s/{install_dir}/bin/flang"
+            ),
+            "TEST_SUITE_COLLECT_CODE_SIZE": "OFF",
+            "TEST_SUITE_FORTRAN": "ON",
+            "TEST_SUITE_LIT:FILEPATH": util.Interpolate(
+                f"%(prop:builddir)s/{f.obj_dir}/bin/llvm-lit"
+            ),
+            "TEST_SUITE_SUBDIRS": "Fortran",
+        }
+        if test_suite_extra_configure_args:
+            test_suite_cmake_definitions.update(test_suite_extra_configure_args)
+
+        f.addStep(
+            steps.RemoveDirectory(
+                name=f"clean-{test_suite_obj_dir}-dir",
+                dir=test_suite_obj_dir,
+                haltOnFailure=False,
+                flunkOnFailure=False,
+                doStepIf=cleanBuildRequested,
+            )
+        )
+
+        factory_hint = f.hint
+        test_suite_hint = (
+            f"{factory_hint}-test-suite" if factory_hint else "test-suite"
+        )
+        try:
+            # getLlvmTestSuiteSteps uses the factory hint for checkout and
+            # configure step names. Give its nested steps unique names.
+            f.hint = test_suite_hint
+            TestSuiteBuilder.getLlvmTestSuiteSteps(
+                cmake_definitions=test_suite_cmake_definitions,
+                targets=["."],
+                checks=["check"],
+                env=env,
+                hint=test_suite_hint,
+                obj_dir=test_suite_obj_dir,
+                f=f,
+            )
+        finally:
+            f.hint = factory_hint
 
     return f
