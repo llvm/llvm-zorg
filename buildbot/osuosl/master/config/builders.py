@@ -3985,4 +3985,34 @@ all += [
                           "-DCLANG_ENABLE_CIR:BOOL=OFF"
      ])},
 
+    # Flang Windows
+    {'name' : "flang-aarch64-windows-msvc",
+    'tags'  : ["flang"],
+    'workernames' : ["arm-bbot-flang-aarch64-windows-msvc"],
+    'builddir': "flang-aarch64-windows-msvc",
+    'factory' : ClangBuilder.getClangCMakeBuildFactory(
+                    vs="manual",
+                    clean=True,
+                    checkout_flang=True,
+                    checkout_lld=True,
+                    checkout_compiler_rt=True,
+                    # Disable check-all, and enable check-flang, check-flang-rt and check-mlir
+                    checks=['check-flang', 'check-flang-rt', 'check-mlir'],
+                    runTestSuite=True,
+                    testsuite_flags=[
+                        '--use-make=ninja',
+                        '--succinct-compile-output',
+                        '--cmake-define', 'TEST_SUITE_COLLECT_CODE_SIZE=OFF',
+                        '--cmake-define', 'TEST_SUITE_COLLECT_COMPILE_TIME=OFF',
+                        '--cmake-define', "TEST_SUITE_SUBDIRS='Fortran;External'",
+                        '--cmake-define', 'TEST_SUITE_ENABLE_LAPACK=On',
+                        '--use-make=ninja'],
+                    extra_cmake_args=[
+                        "-DLLVM_TARGETS_TO_BUILD=AArch64",
+                        "-DCLANG_DEFAULT_LINKER=lld",
+                        "-DCMAKE_TRY_COMPILE_CONFIGURATION=Release",
+                        "-DCOMPILER_RT_BUILD_SANITIZERS=OFF",
+                        "-DLLVM_CCACHE_BUILD=ON",
+                        "-DCLANG_ENABLE_CIR:BOOL=OFF"
+                    ])},
 ]
