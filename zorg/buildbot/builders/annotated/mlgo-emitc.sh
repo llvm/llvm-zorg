@@ -101,7 +101,7 @@ prepare_tosa_model() {
     return 1
   fi
 
-  unzip -q "${zip_path}" -d "${model_cache_dir}/extracted"
+  "${PYTHON_EXECUTABLE}" -m zipfile -e "${zip_path}" "${model_cache_dir}/extracted"
   local tflite_files=()
   mapfile -t tflite_files < <(find "${model_cache_dir}/extracted" -type f -name "model.tflite" -not -path "*/__MACOSX/*")
   if [[ "${#tflite_files[@]}" -ne 1 || ! -s "${tflite_files[0]}" ]]; then
