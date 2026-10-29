@@ -29,7 +29,7 @@ declare -A CVD_BUILD=(
   [x86_64]="aosp-android-latest-release/aosp_cf_x86_64_only_phone-userdebug"
 )
 
-function download_cuttlefish {
+function download_cuttlefish_images {
   for _arch in "${!CVD_BUILD[@]}"; do
     local _dir="$ROOT/$CVD_DIR/$_arch"
     local _stamp="${CVD_BUILD[$_arch]}|${CVD_BUILD[x86_64]}"
@@ -72,7 +72,7 @@ function download_android_tools {
   fi
 
   if (( USE_CUTTLEFISH )); then
-    download_cuttlefish
+    download_cuttlefish_images
     return
   fi
 
