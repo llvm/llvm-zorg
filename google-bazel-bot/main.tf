@@ -2,11 +2,11 @@ terraform {
   required_providers {
     google = {
       source  = "hashicorp/google"
-      version = "6.43.0"
+      version = "~> 8.0"
     }
     kubernetes = {
       source  = "hashicorp/kubernetes"
-      version = "2.35.1"
+      version = "~> 2.35"
     }
   }
 }
@@ -56,13 +56,25 @@ resource "google_container_cluster" "llvm_bazel_cluster" {
   workload_identity_config {
     workload_pool = "llvm-bazel.svc.id.goog"
   }
+
+  maintenance_policy {
+    recurring_maintenance_window {
+      window_start_time {
+        hours = 4
+        minutes = 0
+        seconds = 0
+      }
+      window_duration = "4h"
+      recurrence = "FREQ=WEEKLY;BYDAY=SA,SU"
+    }
+  }
 }
 
 resource "google_container_node_pool" "bazel_ci" {
   name               = "bazel-ci"
   location           = "us-central1-c"
   cluster            = google_container_cluster.llvm_bazel_cluster.name
-  initial_node_count = 2
+  initial_node_count = 1
 
   node_config {
     machine_type = "n2-standard-64"
@@ -231,12 +243,17 @@ resource "google_service_account_iam_binding" "bazel_cache_gsa_binding" {
   ]
 }
 
+resource "kubernetes_manifest" "bazel_ci_computeclass" {
+  manifest = yamldecode(file("bazel-ci-computeclass.yaml"))
+}
+
 resource "kubernetes_manifest" "bazel_buildkite" {
   manifest = yamldecode(file("bazel-buildkite.yaml"))
   depends_on = [
     kubernetes_namespace.bazel_ci,
     kubernetes_secret.buildkite_agent_token,
-    kubernetes_service_account.bazel_cache_ksa
+    kubernetes_service_account.bazel_cache_ksa,
+    kubernetes_manifest.bazel_ci_computeclass
   ]
 }
 
