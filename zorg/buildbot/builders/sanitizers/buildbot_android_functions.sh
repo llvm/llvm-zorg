@@ -4,10 +4,7 @@ ANDROID_NDK_VERSION=30
 NDK_DIR=android_ndk
 SDK_DIR=android_sdk
 CVD_DIR=android_cvd
-USE_CUTTLEFISH=0
-if [[ "$(hostname)" == *"-staging-"* ]]; then
-  USE_CUTTLEFISH=1
-fi
+USE_CUTTLEFISH=1
 
 declare -A ANDROID_API=(
   [aarch64]="29"
