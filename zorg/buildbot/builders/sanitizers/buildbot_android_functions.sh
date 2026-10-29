@@ -22,6 +22,7 @@ declare -A ANDROID_ABI=(
 
 declare -A CVD_BUILD=(
   [aarch64]="aosp-android-latest-release/aosp_cf_arm64_only_phone-userdebug"
+  [arm]="aosp-android14-gsi/aosp_cf_arm64_phone-userdebug"
   [i686]="aosp-android14-gsi/aosp_cf_x86_64_phone-userdebug"
   [x86_64]="aosp-android-latest-release/aosp_cf_x86_64_only_phone-userdebug"
 )
@@ -29,25 +30,42 @@ declare -A CVD_BUILD=(
 function download_cuttlefish_images {
   for _arch in "${!CVD_BUILD[@]}"; do
     local _dir="$ROOT/$CVD_DIR/$_arch"
-    local _stamp="${CVD_BUILD[$_arch]}|${CVD_BUILD[x86_64]}"
+    local _build="${CVD_BUILD[$_arch]}"
+    local _host_build="${_build/_arm64_/_x86_64_}"
+    local _stamp="${_build}|${_host_build}"
     if [[ "$(cat "$_dir/cvd_build_stamp" 2>/dev/null)" != "$_stamp" ]]; then
       build_step "downloading Android Cuttlefish ($_arch)"
       stop_cuttlefish
       rm -rf "$_dir"
       mkdir -p "$_dir"
-      local _fetch_args=(
-        --default_build="${CVD_BUILD[$_arch]}"
-        --target_directory="$_dir"
-        --enable_caching=false
-      )
-      if [[ "$_arch" == "aarch64" ]]; then
-        _fetch_args+=(--host_package_build="${CVD_BUILD[x86_64]}")
-      fi
-      if cvd fetch "${_fetch_args[@]}"; then
-        echo "$_stamp" > "$_dir/cvd_build_stamp"
-      else
+      if ! cvd fetch \
+        --default_build="$_build" \
+        --host_package_build="$_host_build" \
+        --target_directory="$_dir" \
+        --enable_caching=false ; then
         build_failure
+        continue
       fi
+      if [[ "$_arch" == "arm" ]]; then
+        # Android 14 host_tools passes QEMU 8 flags removed in QEMU 9+.
+        local _qemu_dir="$ROOT/$CVD_DIR/aarch64"
+        mkdir -p "$_dir/qemu_wrap"
+        cat > "$_dir/qemu_wrap/qemu-system-aarch64" <<EOF
+#!/usr/bin/env bash
+args=()
+while ((\$#)); do
+  if [[ "\$1" == "-device" && "\${2:-}" == "AC97" ]]; then
+    shift 2
+    continue
+  fi
+  args+=("\${1//,scsi=off/}")
+  shift
+done
+exec "$_qemu_dir/bin/x86_64-linux-gnu/qemu/qemu-system-aarch64" -L "$_qemu_dir/usr/share/qemu/x86_64-linux-gnu" "\${args[@]}"
+EOF
+        chmod +x "$_dir/qemu_wrap/qemu-system-aarch64"
+      fi
+      echo "$_stamp" > "$_dir/cvd_build_stamp"
     fi
   done
 }
@@ -347,7 +365,7 @@ function wait_for_android_boot {
 
 function wait_for_cuttlefish_boot {
   local _adb="${ADB:-adb}"
-  for ((i = 0; i < 60; i++)); do
+  for ((i = 0; i < 300; i++)); do
     local _serial
     _serial=$($_adb devices | awk '/:(652[0-9])[[:space:]]+device$/ {print $1; exit}')
     if [[ -n "$_serial" ]] && [[ "$(timeout 10 $_adb -s "$_serial" shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" == "1" ]]; then
@@ -373,6 +391,7 @@ function start_cuttlefish {
     EXTRA_LIT_OPTS=""
   else
     _extra_args+=(--vm_manager=qemu_cli)
+    [[ -d "$_dir/qemu_wrap" ]] && _extra_args+=(--qemu_binary_dir="$_dir/qemu_wrap")
   fi
   if ! cvd create \
     --product_path="$_dir" \

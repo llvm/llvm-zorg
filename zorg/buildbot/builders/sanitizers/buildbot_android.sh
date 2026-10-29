@@ -31,9 +31,13 @@ build_android arm armv7-linux-androideabi
 build_android i686 i686-linux-android
 build_android x86_64 x86_64-linux-android
 
-# Temporarily disable testing on arm arches because software emulation is too
-# slow; we will figure out how to run them later.
-test_android i686 x86_64
+if [[ "$(hostname)" == *"-staging-"* ]]; then
+  test_android arm aarch64
+else
+  # Temporarily disable testing on arm arches because software emulation is too
+  # slow; we will figure out how to run them later.
+  test_android i686 x86_64
+fi
 
 cleanup tested_arch_* emulator.log
 
