@@ -60,12 +60,12 @@ resource "google_container_cluster" "llvm_bazel_cluster" {
   maintenance_policy {
     recurring_maintenance_window {
       window_start_time {
-        hours = 4
+        hours   = 4
         minutes = 0
         seconds = 0
       }
       window_duration = "4h"
-      recurrence = "FREQ=WEEKLY;BYDAY=SA,SU"
+      recurrence      = "FREQ=WEEKLY;BYDAY=SA,SU"
     }
   }
 }
