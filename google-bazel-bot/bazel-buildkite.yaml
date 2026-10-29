@@ -4,6 +4,7 @@ metadata:
   name: bazel-buildkite
   namespace: bazel-ci
 spec:
+  replicas: 3
   selector:
     matchLabels:
       app: bazel-buildkite
@@ -44,6 +45,8 @@ spec:
               value: "queue=llvm-bazel-test,pod-name=$(POD_NAME)"
             - name: BUILDKITE_BUILD_PATH
               value: "/var/lib/buildkite-agent/builds"
+      nodeSelector:
+        cloud.google.com/compute-class: bazel-ci
       volumes:
         - name: scratch-volume
           emptyDir:
