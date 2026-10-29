@@ -474,6 +474,10 @@ all = [
                     checkout_lld=False,
                     runTestSuite=True,
                     testsuite_flags=[
+                        '--use-make=ninja',
+                        '--succinct-compile-output',
+                        '--cmake-define', 'TEST_SUITE_COLLECT_CODE_SIZE=OFF',
+                        '--cmake-define', 'TEST_SUITE_COLLECT_COMPILE_TIME=OFF',
                         '--cppflags', '-O0',
                         '--threads=32', '--build-threads=32'],
                     extra_cmake_args=[
@@ -491,6 +495,10 @@ all = [
                     useTwoStage=True,
                     runTestSuite=True,
                     testsuite_flags=[
+                        '--use-make=ninja',
+                        '--succinct-compile-output',
+                        '--cmake-define', 'TEST_SUITE_COLLECT_CODE_SIZE=OFF',
+                        '--cmake-define', 'TEST_SUITE_COLLECT_COMPILE_TIME=OFF',
                         '--cppflags', '-mcpu=neoverse-n1 -fuse-ld=lld',
                         '--threads=32', '--build-threads=32'],
                     extra_cmake_args=[
@@ -545,6 +553,10 @@ all = [
                         'NO_STOP_MESSAGE':'1', # For Fortran test-suite
                     },
                     testsuite_flags=[
+                        '--use-make=ninja',
+                        '--succinct-compile-output',
+                        '--cmake-define', 'TEST_SUITE_COLLECT_CODE_SIZE=OFF',
+                        '--cmake-define', 'TEST_SUITE_COLLECT_COMPILE_TIME=OFF',
                         '--cppflags', '-mcpu=neoverse-512tvb -mllvm -scalable-vectorization=preferred -O3',
                         '--cmake-define', 'CMAKE_Fortran_FLAGS=-mcpu=neoverse-512tvb -mllvm -scalable-vectorization=preferred -O3',
                         '--threads=32', '--build-threads=32'],
@@ -594,6 +606,10 @@ all = [
                         'NO_STOP_MESSAGE':'1', # For Fortran test-suite
                     },
                     testsuite_flags=[
+                        '--use-make=ninja',
+                        '--succinct-compile-output',
+                        '--cmake-define', 'TEST_SUITE_COLLECT_CODE_SIZE=OFF',
+                        '--cmake-define', 'TEST_SUITE_COLLECT_COMPILE_TIME=OFF',
                         '--cppflags', '-mcpu=neoverse-512tvb -msve-vector-bits=256 -O3',
                         '--cmake-define', 'CMAKE_Fortran_FLAGS=-mcpu=neoverse-512tvb -msve-vector-bits=256 -O3',
                         '--threads=32', '--build-threads=32'],
@@ -621,6 +637,10 @@ all = [
                         'NO_STOP_MESSAGE':'1', # For Fortran test-suite
                     },
                     testsuite_flags=[
+                        '--use-make=ninja',
+                        '--succinct-compile-output',
+                        '--cmake-define', 'TEST_SUITE_COLLECT_CODE_SIZE=OFF',
+                        '--cmake-define', 'TEST_SUITE_COLLECT_COMPILE_TIME=OFF',
                         '--cppflags', '-mcpu=neoverse-v2 -mllvm -scalable-vectorization=preferred -O3',
                         '--cmake-define', 'CMAKE_Fortran_FLAGS=-mcpu=neoverse-v2 -mllvm -scalable-vectorization=preferred -O3',
                         '--threads=48', '--build-threads=48'],
@@ -648,6 +668,10 @@ all = [
                         'NO_STOP_MESSAGE':'1', # For Fortran test-suite
                     },
                     testsuite_flags=[
+                        '--use-make=ninja',
+                        '--succinct-compile-output',
+                        '--cmake-define', 'TEST_SUITE_COLLECT_CODE_SIZE=OFF',
+                        '--cmake-define', 'TEST_SUITE_COLLECT_COMPILE_TIME=OFF',
                         '--cppflags', '-mcpu=neoverse-v2 -mllvm -scalable-vectorization=preferred -O3',
                         '--cmake-define', 'CMAKE_Fortran_FLAGS=-mcpu=neoverse-v2 -mllvm -scalable-vectorization=preferred -O3',
                         '--threads=48', '--build-threads=48'],
