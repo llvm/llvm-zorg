@@ -7,9 +7,9 @@ CVD_DIR=android_cvd
 USE_CUTTLEFISH=1
 
 declare -A ANDROID_API=(
-  [aarch64]="29"
-  [arm]="24"
-  [i686]="29"
+  [aarch64]="37.0"
+  [arm]="34"
+  [i686]="34"
   [x86_64]="37.0"
 )
 
@@ -123,19 +123,6 @@ function download_android_tools {
     fi
   fi
   export PATH=$ANDROID_HOME/platform-tools:$ANDROID_HOME/emulator:$PATH
-  check_android_api
-}
-
-function check_android_api {
-  build_step "checking Android SDK API"
-  local _sdk_list=$(HOME=$ANDROID_HOME ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager --sdk_root=${ANDROID_HOME} --list)
-  for _arch in "${!ANDROID_API[@]}"; do
-    local _max=$(echo "$_sdk_list" | grep -oP "system-images;android-\K[0-9.]+(?=;default;${ANDROID_ABI[$_arch]}\b)" | sort -V | tail -n1)
-    if [[ "$_max" != "${ANDROID_API[$_arch]}" ]]; then
-      echo "Unexpected android/$_arch API: ${ANDROID_API[$_arch]} vs $_max"
-      build_warning
-    fi
-  done
 }
 
 function build_stage2_android() {
@@ -544,6 +531,13 @@ function test_arch_on_device {
   $ADB wait-for-device
   $ADB devices
   $ADB shell getprop ro.build.version.release
+
+  local _sdk=$($ADB shell getprop ro.build.version.sdk | tr -d '\r')
+  local _api=${ANDROID_API[$_arch]%.*}
+  if [[ "$_sdk" != "$_api" ]]; then
+    echo "Unexpected android/$_arch API: $_api vs $_sdk"
+    build_warning
+  fi
 
   # Kill leftover symbolizers. TODO: figure out what's going on.
   $ADB shell pkill llvm-symbolizer || true
