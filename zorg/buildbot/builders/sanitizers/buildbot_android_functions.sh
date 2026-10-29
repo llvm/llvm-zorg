@@ -6,12 +6,21 @@ SDK_DIR=android_sdk
 CVD_DIR=android_cvd
 USE_CUTTLEFISH=1
 
-declare -A ANDROID_API=(
-  [aarch64]="29"
-  [arm]="24"
-  [i686]="29"
-  [x86_64]="37.0"
-)
+if (( USE_CUTTLEFISH )); then
+  declare -A ANDROID_API=(
+    [aarch64]="37"
+    [arm]="34"
+    [i686]="34"
+    [x86_64]="37"
+  )
+else
+  declare -A ANDROID_API=(
+    [aarch64]="29"
+    [arm]="24"
+    [i686]="29"
+    [x86_64]="37.0"
+  )
+fi
 
 declare -A ANDROID_ABI=(
   [aarch64]="arm64-v8a"
@@ -544,6 +553,13 @@ function test_arch_on_device {
   $ADB wait-for-device
   $ADB devices
   $ADB shell getprop ro.build.version.release
+
+  local _sdk=$($ADB shell getprop ro.build.version.sdk | tr -d '\r')
+  local _api=${ANDROID_API[$_arch]%.*}
+  if [[ "$_sdk" != "$_api" ]]; then
+    echo "Unexpected android/$_arch API: $_api vs $_sdk"
+    build_warning
+  fi
 
   # Kill leftover symbolizers. TODO: figure out what's going on.
   $ADB shell pkill llvm-symbolizer || true
