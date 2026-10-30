@@ -100,12 +100,12 @@ def get_all():
         # Ubuntu x86_64 6-core z440 workstation
         create_worker("sanitizer-buildbot-android", properties={'jobs': 6}, max_builds=1),
         # x86_64 GCE instances
-        create_worker("sanitizer-buildbot1", properties={'jobs': 64}, max_builds=3),
-        create_worker("sanitizer-buildbot2", properties={'jobs': 64}, max_builds=3),
-        create_worker("sanitizer-buildbot3", properties={'jobs': 64}, max_builds=3),
-        create_worker("sanitizer-buildbot4", properties={'jobs': 64}, max_builds=3),
-        create_worker("sanitizer-buildbot5", properties={'jobs': 64}, max_builds=3),
-        create_worker("sanitizer-buildbot6", properties={'jobs': 64}, max_builds=3),
+        create_worker("sanitizer-buildbot1", properties={'jobs': 96}, max_builds=2),
+        create_worker("sanitizer-buildbot2", properties={'jobs': 96}, max_builds=2),
+        create_worker("sanitizer-buildbot3", properties={'jobs': 96}, max_builds=2),
+        create_worker("sanitizer-buildbot4", properties={'jobs': 96}, max_builds=2),
+        create_worker("sanitizer-buildbot5", properties={'jobs': 96}, max_builds=2),
+        create_worker("sanitizer-buildbot6", properties={'jobs': 96}, max_builds=2),
         # aarch64 GCE instances
         create_worker("sanitizer-buildbot7", properties={'jobs': 48}, max_builds=2),
         create_worker("sanitizer-buildbot8", properties={'jobs': 48}, max_builds=2),
