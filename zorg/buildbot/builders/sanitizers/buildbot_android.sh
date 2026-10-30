@@ -31,12 +31,7 @@ build_android arm armv7-linux-androideabi
 build_android i686 i686-linux-android
 build_android x86_64 x86_64-linux-android
 
-if [[ "$(hostname)" == *"-staging-"* ]]; then
-  test_android aarch64
-else
-  # Temporarily test aarch64 on staging only while fixing remaining failures.
-  test_android i686 x86_64 arm
-fi
+test_android i686 x86_64 arm aarch64
 
 cleanup tested_arch_* emulator.log
 
