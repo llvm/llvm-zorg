@@ -37,6 +37,35 @@ function build_step() {
   CURRENT_STEP="${1}"
 }
 
+function buildbot_build() {
+  [[ "${BUILDBOT_BISECT_MODE:-}" != "1" && -v BUILDBOT_BUILDERNAME ]]
+}
+
+function build_failure() {
+  # In bisect mode exit early.
+  echo
+  echo "How to reproduce locally: https://github.com/google/sanitizers/wiki/SanitizerBotReproduceBuild"
+  echo
+
+  echo "@@@STEP_FAILURE@@@"
+
+  buildbot_build || exit 1
+}
+
+function build_exception() {
+  echo
+  echo "@@@STEP_EXCEPTION@@@"
+
+  buildbot_build || exit 2
+}
+
+function build_warning() {
+  echo
+  echo "@@@STEP_WARNINGS@@@"
+
+  buildbot_build || exit 2
+}
+
 function include_config() {
   local P=.
   while true ; do
@@ -107,6 +136,29 @@ build_step "Info"
   echo
   hostname -f
 )
+
+function check_glibc() {
+  [[ "${BUILDBOT_BISECT_MODE:-}" == "1" ]] && return 0
+  local _glibc _latest
+  _glibc=$(ldd --version | awk 'NR==1 {print $NF}')
+  _latest=$(
+    timeout 30 git ls-remote --tags https://sourceware.org/git/glibc.git |
+      grep -oE 'refs/tags/glibc-[0-9]+\.[0-9]+$' |
+      grep -oE '[0-9]+\.[0-9]+$' |
+      sort -V |
+      tail -n1
+  ) || true
+  echo
+  echo "glibc version: $_glibc (latest: $_latest)"
+  if [[ "$_glibc" != "$_latest" ]]; then
+    echo "Unexpected glibc version: $_glibc vs $_latest"
+    if buildbot_build; then
+      build_warning
+    fi
+  fi
+}
+
+check_glibc
 
 function cmake() {
   (
@@ -676,35 +728,6 @@ function check_stage3_ubsan {
 
 function check_stage3_cfi {
   check_stage3 cfi
-}
-
-function buildbot_build() {
-  [[ "${BUILDBOT_BISECT_MODE:-}" != "1" && -v BUILDBOT_BUILDERNAME ]]
-}
-
-function build_failure() {
-  # In bisect mode exit early.
-  echo
-  echo "How to reproduce locally: https://github.com/google/sanitizers/wiki/SanitizerBotReproduceBuild"
-  echo
-
-  echo "@@@STEP_FAILURE@@@"
-
-  buildbot_build || exit 1
-}
-
-function build_exception() {
-  echo
-  echo "@@@STEP_EXCEPTION@@@"
-
-  buildbot_build || exit 2
-}
-
-function build_warning() {
-  echo
-  echo "@@@STEP_WARNINGS@@@"
-
-  buildbot_build || exit 2
 }
 
 function upload_stats() {
