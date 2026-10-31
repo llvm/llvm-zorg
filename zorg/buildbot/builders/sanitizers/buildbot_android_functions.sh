@@ -2,25 +2,14 @@
 
 ANDROID_NDK_VERSION=30
 NDK_DIR=android_ndk
-SDK_DIR=android_sdk
 CVD_DIR=android_cvd
-USE_CUTTLEFISH=1
 
-if (( USE_CUTTLEFISH )); then
-  declare -A ANDROID_API=(
-    [aarch64]="37"
-    [arm]="34"
-    [i686]="34"
-    [x86_64]="37"
-  )
-else
-  declare -A ANDROID_API=(
-    [aarch64]="29"
-    [arm]="24"
-    [i686]="29"
-    [x86_64]="37.0"
-  )
-fi
+declare -A ANDROID_API=(
+  [aarch64]="37"
+  [arm]="34"
+  [i686]="34"
+  [x86_64]="37"
+)
 
 declare -A ANDROID_ABI=(
   [aarch64]="arm64-v8a"
@@ -95,56 +84,7 @@ function download_android_tools {
     echo ${NDK_URL} > ${NDK_DIR}/android_ndk_url
   fi
 
-  if (( USE_CUTTLEFISH )); then
-    download_cuttlefish_images
-    return
-  fi
-
-  export ANDROID_HOME=$ROOT/$SDK_DIR
-  export ANDROID_SDK_ROOT=$ANDROID_HOME
-  export ANDROID_USER_HOME=$ANDROID_HOME/.android
-  export ANDROID_AVD_HOME=$ANDROID_USER_HOME/avd
-
-  local CMDLINE_FILE=commandlinetools-linux-11076708_latest.zip
-  local CMDLINE_URL=https://dl.google.com/android/repository/${CMDLINE_FILE}
-  local ANDROID_IMAGES=()
-  for _arch in "${!ANDROID_API[@]}"; do
-    ANDROID_IMAGES+=("system-images;android-${ANDROID_API[$_arch]};default;${ANDROID_ABI[$_arch]}")
-  done
-  local SDK_STAMP="${CMDLINE_URL}|${ANDROID_IMAGES[*]}"
-  if [[ "$(cat ${SDK_DIR}/android_sdk_url 2>/dev/null)" != "${SDK_STAMP}" ]] ; then
-    build_step "downloading Android SDK"
-    rm -rf ${SDK_DIR}
-    mkdir -p ${SDK_DIR}/cmdline-tools ${ANDROID_AVD_HOME}
-    [[ -f ${CMDLINE_FILE} ]] && rm -f ${CMDLINE_FILE}
-    wget -e dotbytes=10m ${CMDLINE_URL}
-    unzip ${CMDLINE_FILE} -d ${SDK_DIR}/cmdline-tools > /dev/null
-    mv ${SDK_DIR}/cmdline-tools/cmdline-tools ${SDK_DIR}/cmdline-tools/latest
-    rm -f ${CMDLINE_FILE}
-    if yes | HOME=$ANDROID_HOME ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager --sdk_root=${ANDROID_HOME} \
-      "platform-tools" "emulator" "${ANDROID_IMAGES[@]}" > /dev/null ; then
-      local _ok=1
-      for _arch in "${!ANDROID_API[@]}"; do
-        echo no | HOME=$ANDROID_HOME ${ANDROID_HOME}/cmdline-tools/latest/bin/avdmanager create avd \
-          -n san_$_arch -k "system-images;android-${ANDROID_API[$_arch]};default;${ANDROID_ABI[$_arch]}" --force || _ok=0
-      done
-      [[ $_ok == 1 ]] && echo "${SDK_STAMP}" > ${SDK_DIR}/android_sdk_url
-    fi
-  fi
-  export PATH=$ANDROID_HOME/platform-tools:$ANDROID_HOME/emulator:$PATH
-  check_android_api
-}
-
-function check_android_api {
-  build_step "checking Android SDK API"
-  local _sdk_list=$(HOME=$ANDROID_HOME ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager --sdk_root=${ANDROID_HOME} --list)
-  for _arch in "${!ANDROID_API[@]}"; do
-    local _max=$(echo "$_sdk_list" | grep -oP "system-images;android-\K[0-9.]+(?=;default;${ANDROID_ABI[$_arch]}\b)" | sort -V | tail -n1)
-    if [[ "$_max" != "${ANDROID_API[$_arch]}" ]]; then
-      echo "Unexpected android/$_arch API: ${ANDROID_API[$_arch]} vs $_max"
-      build_warning
-    fi
-  done
+  download_cuttlefish_images
 }
 
 function build_stage2_android() {
@@ -166,7 +106,7 @@ function build_stage2_android() {
 function build_and_test_android { # ARCH triple
   local _arch=$1
   local _triple=$2
-  local _api=${ANDROID_API[$_arch]%.*}
+  local _api=${ANDROID_API[$_arch]}
 
   ANDROID_TOOLCHAIN=$ROOT/$NDK_DIR/toolchains/llvm/prebuilt/linux-x86_64
   echo "Building for Android API level $_api"
@@ -356,18 +296,6 @@ function test_on_device {
   done
 }
 
-function wait_for_android_boot {
-  local _prop="ro.build.id"
-  [[ "$ACCEL_FLAG" == "-accel on"* ]] && _prop="sys.boot_completed"
-  for ((i = 0; i < 300; i++)); do
-    if [[ -n "$(timeout 10 $ADB -e wait-for-device shell getprop $_prop 2>/dev/null | tr -d '\r')" ]]; then
-      return 0
-    fi
-    sleep 1
-  done
-  return 1
-}
-
 function wait_for_cuttlefish_boot {
   local _adb="${ADB:-adb}"
   for ((i = 0; i < 300; i++)); do
@@ -420,75 +348,21 @@ function stop_cuttlefish {
   ${ADB:-adb} disconnect >/dev/null 2>&1 || true
 }
 
-function start_android_emulator {
-  local _avd=$1
-  if (( USE_CUTTLEFISH )); then
-    start_cuttlefish "${_avd#san_}"
-    return
-  fi
-  build_step "starting Android emulator ($_avd)"
-  stop_android_emulator
-  local ACCEL_FLAG="-accel off -cores 8 -memory 16384"
-  EXTRA_LIT_OPTS="-j 8"
-  local EMULATOR_BIN="$ANDROID_HOME/emulator/emulator"
-  if [[ "$_avd" == "san_x86_64" || "$_avd" == "san_i686" ]]; then
-    if [[ -w /dev/kvm ]]; then
-      ACCEL_FLAG="-accel on -cores $(( $(nproc) / 4 )) -memory 32768"
-      EXTRA_LIT_OPTS=""
-    fi
-  elif [[ "$_avd" == "san_aarch64" ]]; then
-    # qemu-system-aarch64-headless uses -machine type=ranchu (no PCI bus) and
-    # adds -soundhw hda when target > android-25 and PCI virtio-input on API >= 29.
-    sed -i 's/target=android-.*/target=android-25/' "$ANDROID_AVD_HOME/$_avd.ini"
-    ACCEL_FLAG="$ACCEL_FLAG -feature -VirtioInput"
-    EMULATOR_BIN="$ANDROID_HOME/emulator/qemu/linux-x86_64/qemu-system-aarch64-headless"
-  elif [[ "$_avd" == "san_arm" ]]; then
-    ACCEL_FLAG="-accel off -cores 8 -memory 3072"
-    EMULATOR_BIN="$ANDROID_HOME/emulator/qemu/linux-x86_64/qemu-system-armel-headless"
-  fi
-  mkdir -p $ANDROID_HOME/tmp
-  HOME=$ANDROID_HOME TMPDIR=$ANDROID_HOME/tmp \
-    LD_LIBRARY_PATH=$ANDROID_HOME/emulator/lib64:$ANDROID_HOME/emulator/lib64/gles_swiftshader \
-    $EMULATOR_BIN -avd $_avd \
-    -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect \
-    -no-snapshot -wipe-data $ACCEL_FLAG >$ROOT/emulator.log 2>&1 &
-  EMULATOR_PID=$!
-  if ! wait_for_android_boot ; then
-    cat $ROOT/emulator.log
-    build_failure
-  fi
-}
-
-function stop_android_emulator {
-  if (( USE_CUTTLEFISH )); then
-    stop_cuttlefish
-    return
-  fi
-  ${ADB:-adb} -e emu kill 2>/dev/null || true
-  if [[ -n "${EMULATOR_PID:-}" ]]; then
-    kill $EMULATOR_PID 2>/dev/null || true
-    wait $EMULATOR_PID 2>/dev/null || true
-    EMULATOR_PID=""
-  fi
-  pkill -f "$ANDROID_HOME/emulator" 2>/dev/null || true
-}
-
 function test_android {
   ADB=adb
   rm -rf tested_arch_*
 
   for _arch in "$@"; do
-    local _avd="san_$_arch"
-    start_android_emulator "$_avd"
+    start_cuttlefish "$_arch"
 
-    build_step "run all tests ($_avd)"
+    build_step "run all tests ($_arch)"
     ANDROID_DEVICES=$(${ADB} devices | grep 'device$' | sort -r | awk '{print $1}')
 
     for SERIAL in $ANDROID_DEVICES; do
       test_on_device "$SERIAL" "$_arch"
     done
 
-    stop_android_emulator
+    stop_cuttlefish
   done
 
   for _arch in "$@"; do
@@ -544,7 +418,7 @@ function test_arch_on_device {
   $ADB shell getprop ro.build.version.release
 
   local _sdk=$($ADB shell getprop ro.build.version.sdk | tr -d '\r')
-  local _api=${ANDROID_API[$_arch]%.*}
+  local _api=${ANDROID_API[$_arch]}
   if [[ "$_sdk" != "$_api" ]]; then
     echo "Unexpected android/$_arch API: $_api vs $_sdk"
     build_warning
