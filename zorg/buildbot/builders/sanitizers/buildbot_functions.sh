@@ -41,6 +41,10 @@ function buildbot_build() {
   [[ "${BUILDBOT_BISECT_MODE:-}" != "1" && -v BUILDBOT_BUILDERNAME ]]
 }
 
+function staging_build() {
+  [[ "$(hostname)" == *"-staging-"* ]]
+}
+
 function build_failure() {
   # In bisect mode exit early.
   echo
@@ -249,6 +253,9 @@ function print_sanitizer_logs() {
 
 
 function run_ninja() {
+  if staging_build ; then
+    unset LIT_FILTER_OUT
+  fi
   env
   local ec=0
   /usr/bin/time -o "${ROOT}/time.txt" -- ninja "$@" || ec=$?
