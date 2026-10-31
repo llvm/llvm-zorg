@@ -24,14 +24,16 @@ CMAKE_COMMON_OPTIONS+=" -DLLVM_ENABLE_ASSERTIONS=ON"
 
 build_stage2_android
 
+if [[ -v BUILDBOT_BUILDERNAME ]]; then
+  restart_adb_server
+fi
+
+build_and_test_android i686 i686-linux-android
+build_and_test_android x86_64 x86_64-linux-android
 # Testing armv7 instead of plain arm to work around
 # https://code.google.com/p/android/issues/detail?id=68779
-build_android aarch64 aarch64-linux-android
-build_android arm armv7-linux-androideabi
-build_android i686 i686-linux-android
-build_android x86_64 x86_64-linux-android
-
-test_android i686 x86_64 arm aarch64
+build_and_test_android arm armv7-linux-androideabi
+build_and_test_android aarch64 aarch64-linux-android
 
 cleanup tested_arch_* emulator.log
 

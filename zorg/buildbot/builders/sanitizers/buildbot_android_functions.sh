@@ -163,8 +163,7 @@ function build_stage2_android() {
   rm -rf llvm_build64/lib/clang/*/lib/linux
 }
 
-BUILD_RT_ERR=""
-function build_android { # ARCH triple
+function build_and_test_android { # ARCH triple
   local _arch=$1
   local _triple=$2
   local _api=${ANDROID_API[$_arch]%.*}
@@ -219,14 +218,14 @@ function build_android { # ARCH triple
     -DCOMPILER_RT_DEFAULT_TARGET_TRIPLE=${_triple}${_api} \
     -DCOMPILER_RT_OUTPUT_DIR="$ANDROID_LIBRARY_OUTPUT_DIR" \
     $LLVM/../compiler-rt/lib/builtins) ; then
-    BUILD_RT_ERR="${BUILD_RT_ERR}|${_arch}|"
     build_failure
+    return 0
   fi
 
   build_step "build builtins android/$_arch"
   if ! ninja -C builtins_build_android_$_arch ; then
-    BUILD_RT_ERR="${BUILD_RT_ERR}|${_arch}|"
     build_failure
+    return 0
   fi
 
   # Based on LibUnwindBuilder in
@@ -246,14 +245,14 @@ function build_android { # ARCH triple
     -DLIBUNWIND_USE_FRAME_HEADER_CACHE=OFF \
     -DLIBUNWIND_TARGET_TRIPLE=${_triple}${_api} \
     $LLVM/../runtimes) ; then
-    BUILD_RT_ERR="${BUILD_RT_ERR}|${_arch}|"
     build_failure
+    return 0
   fi
 
   build_step "build libunwind android/$_arch"
   if ! ninja -C libunwind_build_android_$_arch unwind ; then
-    BUILD_RT_ERR="${BUILD_RT_ERR}|${_arch}|"
     build_failure
+    return 0
   fi
 
   build_step "cmake llvm-symbolizer android/$_arch"
@@ -266,14 +265,14 @@ function build_android { # ARCH triple
     -DLLVM_BUILD_RUNTIME=OFF \
     -DLLVM_TABLEGEN=$ROOT/llvm_build64/bin/llvm-tblgen \
     $LLVM) ; then
-    BUILD_RT_ERR="${BUILD_RT_ERR}|${_arch}|"
     build_failure
+    return 0
   fi
 
   build_step "build llvm-symbolizer android/$_arch"
   if ! ninja -C llvm_build_android_$_arch llvm-symbolizer ; then
-    BUILD_RT_ERR="${BUILD_RT_ERR}|${_arch}|"
     build_failure
+    return 0
   fi
 
   # Based on CompilerRTBuilder in
@@ -302,15 +301,17 @@ function build_android { # ARCH triple
     -DCOMPILER_RT_OUTPUT_DIR="$ANDROID_LIBRARY_OUTPUT_DIR" \
     -DLLVM_LIT_ARGS="-vv --show-unsupported --show-xfail" \
     $(readlink -f $LLVM/../compiler-rt)) ; then
-    BUILD_RT_ERR="${BUILD_RT_ERR}|${_arch}|"
     build_failure
+    return 0
   fi
 
   build_step "build compiler-rt android/$_arch"
   if ! ninja -C compiler_rt_build_android_$_arch ; then
-    BUILD_RT_ERR="${BUILD_RT_ERR}|${_arch}|"
     build_failure
+    return 0
   fi
+
+  test_android "$_arch"
 }
 
 # If a multiarch device's first arch starts with x86, remove archs that don't
@@ -346,11 +347,6 @@ function test_on_device {
   patch_abilist "$ABILIST" ABILIST
   for _arch in "$@"; do
     local _abi=${ANDROID_ABI[$_arch]}
-    if [[ $BUILD_RT_ERR == *"|${_arch}|"* ]]; then
-      echo "skipping tests on ${_arch}"
-      build_failure
-      continue
-    fi
     if [[ ",$ABILIST," == *,"$_abi",* ]]; then
       echo "$_serial" >> tested_arch_$_arch
       BUILD_ID=$(${ADB} -s $_serial shell getprop ro.build.id | tr -d '\r')
@@ -478,10 +474,6 @@ function stop_android_emulator {
 }
 
 function test_android {
-  if [[ -v BUILDBOT_BUILDERNAME ]]; then
-    restart_adb_server
-  fi
-
   ADB=adb
   rm -rf tested_arch_*
 
@@ -498,9 +490,6 @@ function test_android {
 
     stop_android_emulator
   done
-
-  # Return to avoid exception if we already have error.
-  [[ $BUILD_RT_ERR == "" ]] || return
 
   for _arch in "$@"; do
     if [[ ! -f tested_arch_$_arch ]]; then
