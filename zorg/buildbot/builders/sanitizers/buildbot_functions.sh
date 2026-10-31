@@ -589,6 +589,9 @@ function check_stage2 {
       LIT_FILTER_OUT+="|std/utilities/format/format.functions/formatted_size.pass.cpp"
       LIT_FILTER_OUT+="|std/utilities/format/format.functions/vformat"
 
+      # TODO: Remove after https://github.com/llvm/llvm-project/pull/237485
+      LIT_FILTER_OUT+="|extensions/gnu/hash/specializations.verify.cpp"
+
       if [[ "$(arch)" == "aarch64" && "$sanitizer_name" == "msan" ]] ; then
         # TODO: Investigate one slow tests.
         LIT_FILTER_OUT+="|test_demangle.pass.cpp"
