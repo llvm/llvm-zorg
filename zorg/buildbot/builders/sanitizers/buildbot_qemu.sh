@@ -380,8 +380,10 @@ function run_hwasan_lam_tests {
 
     echo
     build_step "test hwasan ${name}"
-    # Fixme: figure out why is the test failing with detect_leaks tunred on.
-    export LIT_FILTER_OUT="print-memory-usage.c"
+    if ! staging_build ; then
+      # Fixme: figure out why is the test failing with detect_leaks tunred on.
+      export LIT_FILTER_OUT="print-memory-usage.c"
+    fi
     ninja check-hwasan-lam || exit 3
   ) || build_failure
 }
