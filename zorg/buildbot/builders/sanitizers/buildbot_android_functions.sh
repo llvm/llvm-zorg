@@ -36,6 +36,13 @@ declare -A CVD_BUILD=(
   [x86_64]="aosp-android-latest-release/aosp_cf_x86_64_only_phone-userdebug"
 )
 
+declare -A CVD_INSTANCE=(
+  [aarch64]=1
+  [arm]=2
+  [i686]=3
+  [x86_64]=4
+)
+
 function download_cuttlefish_images {
   for _arch in "${!CVD_BUILD[@]}"; do
     local _dir="$ROOT/$CVD_DIR/$_arch"
@@ -163,17 +170,19 @@ function build_stage2_android() {
   rm -rf llvm_build64/lib/clang/*/lib/linux
 }
 
-function build_and_test_android { # ARCH triple
+function build_and_test_android_arch { # ARCH triple
   local _arch=$1
   local _triple=$2
   local _api=${ANDROID_API[$_arch]%.*}
+  local _jobs=$(( ($(nproc) + 3) / 4 ))
 
   ANDROID_TOOLCHAIN=$ROOT/$NDK_DIR/toolchains/llvm/prebuilt/linux-x86_64
   echo "Building for Android API level $_api"
 
-  local ANDROID_LIBRARY_OUTPUT_DIR=$(ls -d $ROOT/llvm_build64/lib/clang/* | tail -1)
+  local CLANG_RESOURCE_DIR=$(ls -d $ROOT/llvm_build64/lib/clang/* | tail -1)
+  local ANDROID_LIBRARY_OUTPUT_DIR="$ROOT/clang_rt_android_$_arch"
   local ANDROID_UNWIND_DIR="$ANDROID_LIBRARY_OUTPUT_DIR/lib/linux/${_arch/i686/i386}"
-  local ANDROID_FLAGS="--target=${_triple}${_api} --sysroot=$ANDROID_TOOLCHAIN/sysroot -ffunction-sections -fdata-sections"
+  local ANDROID_FLAGS="--target=${_triple}${_api} --sysroot=$ANDROID_TOOLCHAIN/sysroot -resource-dir=$ANDROID_LIBRARY_OUTPUT_DIR -ffunction-sections -fdata-sections"
   local ANDROID_LINKER_FLAGS="-Wl,--gc-sections -Wl,-z,defs -Wl,--build-id=sha1"
 
   local CLANG_PATH=$ROOT/llvm_build64/bin/clang
@@ -198,7 +207,8 @@ function build_and_test_android { # ARCH triple
   # Always clobber android build tree.
   # It has a hidden dependency on clang (through CXX) which is not known to
   # the build system.
-  rm_dirs builtins_build_android_$_arch libunwind_build_android_$_arch llvm_build_android_$_arch compiler_rt_build_android_$_arch
+  rm_dirs builtins_build_android_$_arch libunwind_build_android_$_arch llvm_build_android_$_arch compiler_rt_build_android_$_arch "$ANDROID_LIBRARY_OUTPUT_DIR"
+  cp -r "$CLANG_RESOURCE_DIR" "$ANDROID_LIBRARY_OUTPUT_DIR"
   mkdir -p builtins_build_android_$_arch
   mkdir -p libunwind_build_android_$_arch
   mkdir -p llvm_build_android_$_arch
@@ -223,7 +233,7 @@ function build_and_test_android { # ARCH triple
   fi
 
   build_step "build builtins android/$_arch"
-  if ! ninja -C builtins_build_android_$_arch ; then
+  if ! ninja -C builtins_build_android_$_arch -j "$_jobs" ; then
     build_failure
     return 0
   fi
@@ -250,7 +260,7 @@ function build_and_test_android { # ARCH triple
   fi
 
   build_step "build libunwind android/$_arch"
-  if ! ninja -C libunwind_build_android_$_arch unwind ; then
+  if ! ninja -C libunwind_build_android_$_arch -j "$_jobs" unwind ; then
     build_failure
     return 0
   fi
@@ -270,7 +280,7 @@ function build_and_test_android { # ARCH triple
   fi
 
   build_step "build llvm-symbolizer android/$_arch"
-  if ! ninja -C llvm_build_android_$_arch llvm-symbolizer ; then
+  if ! ninja -C llvm_build_android_$_arch -j "$_jobs" llvm-symbolizer ; then
     build_failure
     return 0
   fi
@@ -306,7 +316,7 @@ function build_and_test_android { # ARCH triple
   fi
 
   build_step "build compiler-rt android/$_arch"
-  if ! ninja -C compiler_rt_build_android_$_arch ; then
+  if ! ninja -C compiler_rt_build_android_$_arch -j "$_jobs" ; then
     build_failure
     return 0
   fi
@@ -369,11 +379,11 @@ function wait_for_android_boot {
 }
 
 function wait_for_cuttlefish_boot {
+  local _serial=$1
   local _adb="${ADB:-adb}"
   for ((i = 0; i < 300; i++)); do
-    local _serial
-    _serial=$($_adb devices | awk '/:(652[0-9])[[:space:]]+device$/ {print $1; exit}')
-    if [[ -n "$_serial" ]] && [[ "$(timeout 10 $_adb -s "$_serial" shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" == "1" ]]; then
+    if $_adb devices | awk -v s="$_serial" '$1 == s && $2 == "device" {found=1} END {exit !found}' && \
+       [[ "$(timeout 10 $_adb -s "$_serial" shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" == "1" ]]; then
       return 0
     fi
     sleep 1
@@ -384,21 +394,28 @@ function wait_for_cuttlefish_boot {
 function start_cuttlefish {
   local _arch=$1
   local _dir="$ROOT/$CVD_DIR/$_arch"
+  local _num=${CVD_INSTANCE[$_arch]}
+  local _serial="0.0.0.0:$((6519 + _num))"
+  local _log="$ROOT/emulator_$_arch.log"
   build_step "starting Android Cuttlefish ($_arch)"
-  stop_cuttlefish
+  stop_cuttlefish "$_arch"
   local _cpus=8
   local _mem=16384
   local _extra_args=()
-  EXTRA_LIT_OPTS="-j 8"
   if [[ "$_arch" == "x86_64" || "$_arch" == "i686" ]] && [[ -w /dev/kvm ]]; then
-    _cpus=$(( $(nproc) / 4 ))
-    _mem=32768
-    EXTRA_LIT_OPTS=""
+    _cpus=$(( $(nproc) / 6 ))
+    if (( _cpus < 8 )); then
+      _cpus=8
+    fi
   else
     _extra_args+=(--vm_manager=qemu_cli)
     [[ -d "$_dir/qemu_wrap" ]] && _extra_args+=(--qemu_binary_dir="$_dir/qemu_wrap")
   fi
-  if ! cvd create \
+  EXTRA_LIT_OPTS="-j $_cpus"
+  # Cuttlefish DataViewer::WithExclusiveLock in v1.56.0 acquires LOCK_SH instead
+  # of LOCK_EX when updating instance_database.binpb, so serialize cvd calls.
+  if ! flock "$ROOT/cvd.lock" cvd --group_name="san_$_arch" create \
+    --base_instance_num="$_num" \
     --product_path="$_dir" \
     --host_path="$_dir" \
     --cpus="$_cpus" \
@@ -408,16 +425,25 @@ function start_cuttlefish {
     --data_policy=always_create \
     --blank_data_image_mb=16384 \
     --report_anonymous_usage_stats=n \
-    ${_extra_args[@]+"${_extra_args[@]}"} >"$ROOT/emulator.log" 2>&1 || ! wait_for_cuttlefish_boot ; then
-    cat "$ROOT/emulator.log" || true
-    tail -n 200 /var/tmp/cvd/"$(id -u)"/*/home/cuttlefish/instances/cvd-1/logs/launcher.log 2>/dev/null || true
+    ${_extra_args[@]+"${_extra_args[@]}"} </dev/null >"$_log" 2>&1 || ! wait_for_cuttlefish_boot "$_serial" ; then
+    cat "$_log" || true
+    tail -n 200 /var/tmp/cvd/"$(id -u)"/*/home/cuttlefish/instances/cvd-"$_num"/logs/launcher.log 2>/dev/null || true
+    stop_cuttlefish "$_arch"
     build_failure
+    return 1
   fi
 }
 
 function stop_cuttlefish {
-  cvd reset -y >/dev/null 2>&1 || true
-  ${ADB:-adb} disconnect >/dev/null 2>&1 || true
+  local _arch=${1:-}
+  if [[ -z "$_arch" ]]; then
+    cvd reset -y >/dev/null 2>&1 || true
+    ${ADB:-adb} disconnect >/dev/null 2>&1 || true
+    return
+  fi
+  local _num=${CVD_INSTANCE[$_arch]}
+  flock "$ROOT/cvd.lock" cvd --group_name="san_$_arch" remove </dev/null >/dev/null 2>&1 || true
+  ${ADB:-adb} disconnect "0.0.0.0:$((6519 + _num))" >/dev/null 2>&1 || true
 }
 
 function start_android_emulator {
@@ -427,7 +453,7 @@ function start_android_emulator {
     return
   fi
   build_step "starting Android emulator ($_avd)"
-  stop_android_emulator
+  stop_android_emulator "$_avd"
   local ACCEL_FLAG="-accel off -cores 8 -memory 16384"
   EXTRA_LIT_OPTS="-j 8"
   local EMULATOR_BIN="$ANDROID_HOME/emulator/emulator"
@@ -455,13 +481,16 @@ function start_android_emulator {
   EMULATOR_PID=$!
   if ! wait_for_android_boot ; then
     cat $ROOT/emulator.log
+    stop_android_emulator "$_avd"
     build_failure
+    return 1
   fi
 }
 
 function stop_android_emulator {
+  local _avd=${1:-}
   if (( USE_CUTTLEFISH )); then
-    stop_cuttlefish
+    stop_cuttlefish "${_avd#san_}"
     return
   fi
   ${ADB:-adb} -e emu kill 2>/dev/null || true
@@ -474,29 +503,120 @@ function stop_android_emulator {
 }
 
 function test_android {
+  local _arch=$1
+  local _avd="san_$_arch"
   ADB=adb
-  rm -rf tested_arch_*
+  rm -f "tested_arch_$_arch"
 
-  for _arch in "$@"; do
-    local _avd="san_$_arch"
-    start_android_emulator "$_avd"
+  start_android_emulator "$_avd" || return 0
 
-    build_step "run all tests ($_avd)"
+  build_step "run all tests ($_avd)"
+  if (( USE_CUTTLEFISH )); then
+    test_on_device "0.0.0.0:$((6519 + CVD_INSTANCE[$_arch]))" "$_arch"
+  else
     ANDROID_DEVICES=$(${ADB} devices | grep 'device$' | sort -r | awk '{print $1}')
-
     for SERIAL in $ANDROID_DEVICES; do
       test_on_device "$SERIAL" "$_arch"
     done
+  fi
 
-    stop_android_emulator
+  stop_android_emulator "$_avd"
+
+  if [[ ! -f "tested_arch_$_arch" ]]; then
+    build_step "unavailable device android/$_arch"
+    build_exception
+  fi
+}
+
+function build_and_test_android {
+  if [[ -v BUILDBOT_BUILDERNAME ]]; then
+    restart_adb_server
+  fi
+  rm -rf tested_arch_* android_log_* android_rc_* emulator*.log cvd.lock
+
+  if (( ! USE_CUTTLEFISH )); then
+    local _pair
+    for _pair in "$@"; do
+      build_and_test_android_arch "${_pair%%:*}" "${_pair#*:}"
+    done
+    return
+  fi
+
+  stop_cuttlefish
+  build_step "run android builds and tests in parallel"
+
+  local -A _pids=()
+  local _arches=()
+  local _pair
+  for _pair in "$@"; do
+    local _arch="${_pair%%:*}"
+    local _triple="${_pair#*:}"
+    _arches+=("$_arch")
+    (
+      function build_step {
+        echo
+        echo "@@@BUILD_STEP ${1}@@@"
+        CURRENT_STEP="${1}"
+        date '+[%H:%M:%S]'
+      }
+      trap 'echo $? > "$ROOT/android_rc_'"$_arch"'"' EXIT
+      build_and_test_android_arch "$_arch" "$_triple"
+    ) >"$ROOT/android_log_$_arch" 2>&1 &
+    _pids[$_arch]=$!
   done
 
-  for _arch in "$@"; do
-    if [[ ! -f tested_arch_$_arch ]]; then
-      build_step "unavailable device android/$_arch"
-      echo @@@STEP_EXCEPTION@@@
+  trap 'kill "${_pids[@]}" 2>/dev/null || true; stop_cuttlefish' INT TERM
+
+  local _ticks=0
+  while true; do
+    local _running=0
+    local _status_line=""
+    local _arch
+    for _arch in "${_arches[@]}"; do
+      local _step
+      _step=$(sed -n 's/^@@@BUILD_STEP \(.*\)@@@$/\1/p' "$ROOT/android_log_$_arch" 2>/dev/null | tail -n1)
+      local _entry
+      if [[ ! -f "$ROOT/android_rc_$_arch" ]] && kill -0 "${_pids[$_arch]}" 2>/dev/null; then
+        _running=$(( _running + 1 ))
+        _entry="$_arch: ${_step:-starting}"
+      else
+        _entry="$_arch: done"
+      fi
+      _status_line+="${_status_line:+ | }$_entry"
+    done
+    if (( _running == 0 || _ticks % 30 == 0 )); then
+      printf '[%(%H:%M:%S)T] %s\n' -1 "$_status_line"
+    fi
+    if (( _running == 0 )); then
+      break
+    fi
+    sleep 1
+    _ticks=$(( _ticks + 1 ))
+  done
+
+  local _exit_code=0
+  local _arch
+  for _arch in "${_arches[@]}"; do
+    local _rc=0
+    wait "${_pids[$_arch]}" 2>/dev/null || _rc=$?
+    if [[ -f "$ROOT/android_rc_$_arch" ]]; then
+      _rc=$(cat "$ROOT/android_rc_$_arch")
+    fi
+    cat "$ROOT/android_log_$_arch"
+    if (( _rc != 0 )); then
+      if buildbot_build; then
+        build_step "parallel worker failed ($_arch)"
+        echo "Worker for $_arch exited with status $_rc"
+        build_exception
+      elif (( _exit_code == 0 )); then
+        _exit_code=$_rc
+      fi
     fi
   done
+
+  trap - INT TERM
+  stop_cuttlefish
+  (( _exit_code == 0 )) || exit "$_exit_code"
 }
 
 function run_command_on_device {
@@ -530,7 +650,7 @@ function test_arch_on_device {
     local LIBCXX_SHARED=$ANDROID_TOOLCHAIN/sysroot/usr/lib/${_arch}-linux-android/libc++_shared.so
   fi
   local SYMBOLIZER_BIN=$ROOT/llvm_build_android_$_arch/bin/llvm-symbolizer
-  local RT_DIR=$($ROOT/llvm_build64/bin/clang -print-resource-dir)/lib/linux
+  local RT_DIR=$ROOT/clang_rt_android_$_arch/lib/linux
   local COMPILER_RT_BUILD_DIR=$ROOT/compiler_rt_build_android_$_arch
   export ADB=adb
   export DEVICE_TMPDIR=/data/local/tmp
