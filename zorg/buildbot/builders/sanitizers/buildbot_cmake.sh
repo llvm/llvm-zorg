@@ -91,12 +91,8 @@ if [ "$CHECK_SYMBOLIZER" == "1" ]; then
 fi
 
 # FIXME: all tests should pass with DCOMPILER_RT_DEBUG=ON
-if staging_build ; then
+LIT_FILTER_OUT='(AddressSanitizer|asan|ubsan)' \
   build_and_test "debug" "-DCOMPILER_RT_DEBUG=ON"
-else
-  LIT_FILTER_OUT='(AddressSanitizer|asan|ubsan)' \
-    build_and_test "debug" "-DCOMPILER_RT_DEBUG=ON"
-fi
 
 # Copied from buildbot_standard.sh, where it was not tested as well.
 build "tsan_debug" "-DCOMPILER_RT_DEBUG=ON -DCOMPILER_RT_TSAN_DEBUG_OUTPUT=ON -DLLVM_INCLUDE_TESTS=OFF -DCOMPILER_RT_BUILD_LIBFUZZER=OFF"

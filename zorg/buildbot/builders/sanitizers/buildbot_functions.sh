@@ -253,6 +253,9 @@ function print_sanitizer_logs() {
 
 
 function run_ninja() {
+  if staging_build ; then
+    unset LIT_FILTER_OUT
+  fi
   env
   local ec=0
   /usr/bin/time -o "${ROOT}/time.txt" -- ninja "$@" || ec=$?
@@ -578,41 +581,38 @@ function check_stage2 {
     (
       LIT_OPTS+=" --timeout=1500"
       build_step "stage2/$sanitizer_name check-cxx"
-      if ! staging_build ; then
-        # Very slow.
-        export LIT_FILTER_OUT="std/utilities/format/format.functions/format.locale.dynamic_format.pass.cpp"
-        LIT_FILTER_OUT+="|std/utilities/format/format.functions/format.dynamic_format.pass.cpp"
-        LIT_FILTER_OUT+="|std/utilities/format/format.functions/format.locale.runtime_format.pass.cpp"
-        LIT_FILTER_OUT+="|std/utilities/format/format.functions/format.runtime_format.pass.cpp"
-        LIT_FILTER_OUT+="|std/utilities/format/format.functions/format_to_n.locale.pass.cpp"
-        LIT_FILTER_OUT+="|std/utilities/format/format.functions/format_to_n.pass.cpp"
-        LIT_FILTER_OUT+="|std/utilities/format/format.functions/format_to.locale.pass.cpp"
-        LIT_FILTER_OUT+="|std/utilities/format/format.functions/format_to.pass.cpp"
-        LIT_FILTER_OUT+="|std/utilities/format/format.functions/format.locale.pass.cpp"
-        LIT_FILTER_OUT+="|std/utilities/format/format.functions/format.pass.cpp"
-        LIT_FILTER_OUT+="|std/utilities/format/format.functions/formatted_size.locale.pass.cpp"
-        LIT_FILTER_OUT+="|std/utilities/format/format.functions/formatted_size.pass.cpp"
-        LIT_FILTER_OUT+="|std/utilities/format/format.functions/vformat"
-
-        if [[ "$(arch)" == "aarch64" && "$sanitizer_name" == "msan" ]] ; then
-          # TODO: Investigate one slow tests.
-          LIT_FILTER_OUT+="|test_demangle.pass.cpp"
-        fi
-        if [[ "$(arch)" == "aarch64" && "$sanitizer_name" == "hwasan" ]] ; then
-          # TODO: Investigate one slow tests.
-          LIT_FILTER_OUT+="|test_demangle.pass.cpp"
-        fi
-        
-        if [[ "$(arch)" == "aarch64" ]] ; then
-          # TODO: Investigate what is wrong with aarch64 unwinder.
-          LIT_FILTER_OUT+="|ostream.formatted.print/vprint_nonunicode.pass.cpp"
-          LIT_FILTER_OUT+="|ostream.formatted.print/vprint_unicode.pass.cpp"
-        fi
-      fi
+      # Very slow.
+      export LIT_FILTER_OUT="std/utilities/format/format.functions/format.locale.dynamic_format.pass.cpp"
+      LIT_FILTER_OUT+="|std/utilities/format/format.functions/format.dynamic_format.pass.cpp"
+      LIT_FILTER_OUT+="|std/utilities/format/format.functions/format.locale.runtime_format.pass.cpp"
+      LIT_FILTER_OUT+="|std/utilities/format/format.functions/format.runtime_format.pass.cpp"
+      LIT_FILTER_OUT+="|std/utilities/format/format.functions/format_to_n.locale.pass.cpp"
+      LIT_FILTER_OUT+="|std/utilities/format/format.functions/format_to_n.pass.cpp"
+      LIT_FILTER_OUT+="|std/utilities/format/format.functions/format_to.locale.pass.cpp"
+      LIT_FILTER_OUT+="|std/utilities/format/format.functions/format_to.pass.cpp"
+      LIT_FILTER_OUT+="|std/utilities/format/format.functions/format.locale.pass.cpp"
+      LIT_FILTER_OUT+="|std/utilities/format/format.functions/format.pass.cpp"
+      LIT_FILTER_OUT+="|std/utilities/format/format.functions/formatted_size.locale.pass.cpp"
+      LIT_FILTER_OUT+="|std/utilities/format/format.functions/formatted_size.pass.cpp"
+      LIT_FILTER_OUT+="|std/utilities/format/format.functions/vformat"
 
       # TODO: Remove after https://github.com/llvm/llvm-project/pull/237485
-      export LIT_FILTER_OUT="${LIT_FILTER_OUT:+${LIT_FILTER_OUT}|}extensions/gnu/hash/specializations.verify.cpp"
+      LIT_FILTER_OUT+="|extensions/gnu/hash/specializations.verify.cpp"
 
+      if [[ "$(arch)" == "aarch64" && "$sanitizer_name" == "msan" ]] ; then
+        # TODO: Investigate one slow tests.
+        LIT_FILTER_OUT+="|test_demangle.pass.cpp"
+      fi
+      if [[ "$(arch)" == "aarch64" && "$sanitizer_name" == "hwasan" ]] ; then
+        # TODO: Investigate one slow tests.
+        LIT_FILTER_OUT+="|test_demangle.pass.cpp"
+      fi
+      
+      if [[ "$(arch)" == "aarch64" ]] ; then
+        # TODO: Investigate what is wrong with aarch64 unwinder.
+        LIT_FILTER_OUT+="|ostream.formatted.print/vprint_nonunicode.pass.cpp"
+        LIT_FILTER_OUT+="|ostream.formatted.print/vprint_unicode.pass.cpp"
+      fi
       run_ninja -C "libcxx_build_${sanitizer_name}" check-runtimes
     )
   fi
@@ -646,11 +646,7 @@ function check_stage2_asan_ubsan {
 }
 
 function check_stage2_cfi {
-  if staging_build ; then
-    check_stage2 cfi
-  else
-    LIT_FILTER_OUT="ExecutionEngine/" check_stage2 cfi
-  fi
+  LIT_FILTER_OUT="ExecutionEngine/" check_stage2 cfi
 }
 
 function build_stage3 {
