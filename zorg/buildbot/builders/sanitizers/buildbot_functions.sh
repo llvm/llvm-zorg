@@ -242,7 +242,15 @@ function buildbot_update {
         build_step "merge ${staging_branch}"
         git rev-list --pretty --max-count=1 "${staging_branch}"
         git -c user.name="buildbot" -c user.email="buildbot@localhost" \
-          merge --no-edit "${staging_branch}"
+          merge --no-edit "${staging_branch}" || {
+          git merge --abort || true
+          git reset --hard
+          git clean -fd
+          git rev-list --pretty --max-count=1 HEAD
+          if buildbot_build ; then
+            build_warning
+          fi
+        }
       fi
     ) || { build_warning ; exit 0 ; }
     LLVM=$ROOT/llvm-project/llvm
