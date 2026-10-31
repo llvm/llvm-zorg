@@ -218,6 +218,7 @@ function buildbot_update {
     return 0
   fi
   build_step "update $BUILDBOT_REVISION"
+  local staging_branch="origin/users/vitalybuka/spr/staging"
   if [[ -d "$BUILDBOT_MONO_REPO_PATH" ]]; then
     LLVM=$BUILDBOT_MONO_REPO_PATH/llvm
   else
@@ -230,12 +231,27 @@ function buildbot_update {
         git config --local advice.detachedHead false
       )
       cd llvm-project
-      git fetch origin
+      git fetch --prune origin
       git clean -fd
       git reset --hard
       git checkout -f "${BUILDBOT_REVISION}"
       git status
       git rev-list --pretty --max-count=1 HEAD
+      if [[ "${1:-}" != "--no-merge" ]] && staging_build && \
+          git rev-parse --verify --quiet "${staging_branch}" >/dev/null ; then
+        build_step "merge ${staging_branch}"
+        git rev-list --pretty --max-count=1 "${staging_branch}"
+        git -c user.name="buildbot" -c user.email="buildbot@localhost" \
+          merge --no-edit "${staging_branch}" || {
+          git merge --abort || true
+          git reset --hard
+          git clean -fd
+          git rev-list --pretty --max-count=1 HEAD
+          if buildbot_build ; then
+            build_warning
+          fi
+        }
+      fi
     ) || { build_warning ; exit 0 ; }
     LLVM=$ROOT/llvm-project/llvm
   fi
@@ -329,7 +345,7 @@ function build_clang_at_release_tag {
   then
     build_step "using pre-built stage1 clang at ${host_clang_revision}"
   else
-    BUILDBOT_MONO_REPO_PATH="" BUILDBOT_REVISION="${host_clang_revision}" buildbot_update
+    BUILDBOT_MONO_REPO_PATH="" BUILDBOT_REVISION="${host_clang_revision}" buildbot_update --no-merge
 
     rm -rf ${STAGE1_DIR}
     build_step "build stage1 clang at $host_clang_revision"
