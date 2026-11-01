@@ -26,7 +26,7 @@ if ccache -s ; then
 fi
 
 if ld.lld --version ; then
-  CMAKE_COMMON_OPTIONS+=" -DLLVM_USE_LINKER=lld"
+  CMAKE_COMMON_OPTIONS+=" -DLLVM_USE_LINKER=lld -DCLANG_DEFAULT_LINKER=lld"
 fi
 
 SANITIZER_LOG_DIR=$ROOT/sanitizer_logs
@@ -622,12 +622,6 @@ function check_stage2 {
       if [[ "$(arch)" == "aarch64" && "$sanitizer_name" == "hwasan" ]] ; then
         # TODO: Investigate one slow tests.
         LIT_FILTER_OUT+="|test_demangle.pass.cpp"
-      fi
-      
-      if [[ "$(arch)" == "aarch64" ]] ; then
-        # TODO: Investigate what is wrong with aarch64 unwinder.
-        LIT_FILTER_OUT+="|ostream.formatted.print/vprint_nonunicode.pass.cpp"
-        LIT_FILTER_OUT+="|ostream.formatted.print/vprint_unicode.pass.cpp"
       fi
       run_ninja -C "libcxx_build_${sanitizer_name}" check-runtimes
     )
