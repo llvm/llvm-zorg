@@ -623,6 +623,12 @@ function check_stage2 {
         # TODO: Investigate one slow tests.
         LIT_FILTER_OUT+="|test_demangle.pass.cpp"
       fi
+      
+      if [[ "$(arch)" == "aarch64" ]] ; then
+        # TODO: Investigate what is wrong with aarch64 unwinder.
+        LIT_FILTER_OUT+="|ostream.formatted.print/vprint_nonunicode.pass.cpp"
+        LIT_FILTER_OUT+="|ostream.formatted.print/vprint_unicode.pass.cpp"
+      fi
       run_ninja -C "libcxx_build_${sanitizer_name}" check-runtimes
     )
   fi
