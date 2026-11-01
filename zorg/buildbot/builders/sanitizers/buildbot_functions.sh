@@ -26,7 +26,7 @@ if ccache -s ; then
 fi
 
 if ld.lld --version ; then
-  CMAKE_COMMON_OPTIONS+=" -DLLVM_USE_LINKER=lld"
+  CMAKE_COMMON_OPTIONS+=" -DLLVM_USE_LINKER=lld -DCLANG_DEFAULT_LINKER=lld"
 fi
 
 SANITIZER_LOG_DIR=$ROOT/sanitizer_logs
