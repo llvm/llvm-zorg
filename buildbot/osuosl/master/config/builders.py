@@ -3037,7 +3037,6 @@ all += [
     # NVPTX builders
     {'name' : "llvm-nvptx-nvidia-ubuntu",
     'tags'  : ["llvm", "nvptx"],
-    'collapseRequests': False,
     'workernames' : ["as-builder-7"],
     'builddir': "llvm-nvptx-nvidia-ubuntu",
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
