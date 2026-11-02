@@ -26,6 +26,12 @@ MACHO_MAGICS = {
 
 TIMEOUT_SECONDS = 600
 
+# Binaries whose file name contains any of these strings are not launched.
+EXCLUDED_BINARIES = [
+    # Doesn't do arg parsing and would run for a long time.
+    "llvm-PerfectShuffle",
+]
+
 
 def is_macho_executable(path):
     if os.path.islink(path) or not os.path.isfile(path):
@@ -46,6 +52,9 @@ def find_binaries(dirs):
             print("Skipping non-existent directory: {}".format(d))
             continue
         for name in sorted(os.listdir(d)):
+            if any(excluded in name for excluded in EXCLUDED_BINARIES):
+                print("Skipping excluded binary: {}".format(name))
+                continue
             path = os.path.join(d, name)
             if is_macho_executable(path):
                 binaries.append(os.path.abspath(path))
