@@ -807,6 +807,7 @@ all = [
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                     depends_on_projects=['llvm', 'mlir', 'clang', 'flang', 'flang-rt', 'compiler-rt', 'openmp'],
                     checks=['check-llvm', 'check-clang', 'check-flang', 'check-mlir', 'check-compiler-rt', 'check-openmp', 'check-flang-rt'],
+                    timeout=1800,
                     extra_configure_args=[
                         '-DLLVM_DEFAULT_TARGET_TRIPLE=powerpc64-ibm-aix',
                         '-DLLVM_INSTALL_UTILS=ON',
