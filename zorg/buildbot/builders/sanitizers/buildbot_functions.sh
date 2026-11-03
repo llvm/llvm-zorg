@@ -597,8 +597,6 @@ function check_stage2 {
     (
       LIT_OPTS+=" --timeout=1500"
       build_step "stage2/$sanitizer_name check-cxx"
-      # TODO: Remove after https://github.com/llvm/llvm-project/pull/237485
-      export LIT_FILTER_OUT="extensions/gnu/hash/specializations.verify.cpp"
       run_ninja -C "libcxx_build_${sanitizer_name}" check-runtimes
     )
   fi
@@ -632,7 +630,7 @@ function check_stage2_asan_ubsan {
 }
 
 function check_stage2_cfi {
-  LIT_FILTER_OUT="ExecutionEngine/" check_stage2 cfi
+  check_stage2 cfi
 }
 
 function build_stage3 {
