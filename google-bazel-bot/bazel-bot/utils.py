@@ -318,7 +318,8 @@ class LocalGitRepo:
     ) -> bool:
         """Rebases branch_name onto new_base. Returns True on success, False on conflict/error."""
         try:
-            self.repo.git.checkout(branch_name)
+            self.repo.git.checkout("-f", branch_name)
+            self.repo.git.clean("-fd")
             self.repo.git.rebase("-X", strategy_option, new_base)
             return True
         except git.GitCommandError as e:
