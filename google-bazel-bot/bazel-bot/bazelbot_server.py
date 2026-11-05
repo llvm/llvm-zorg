@@ -275,8 +275,10 @@ class BazelRepairBot:
             logger.warning(
                 f"Failed to rebase active fix branch {self.active_fix_branch} on top of commit {commit_sha}."
             )
+            # Failed git rebase operation -> not buildable
+            # Let's reset the active fix branch so next revision doesn't have any rebase
             self.reset_active_fix_branch()
-            current_build.state = utils.BuildState.FAILED
+            current_build.state = utils.BuildState.UNKNOWN
             return current_build
 
         logger.info(
