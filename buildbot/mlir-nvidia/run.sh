@@ -31,6 +31,7 @@ echo "Mehdi Amini <joker.eph@gmail.com>" > "${WORKER_NAME}/info/admin"
   clang --version | head -n1 ; \
   ld.lld --version ; \
   cmake --version | head -n1 ; \
+  python3 --version ; \
   vulkaninfo 2>/dev/null | grep "Vulkan Instance" ; \
   vulkaninfo 2>/dev/null | grep "apiVersion" | cut -d= -f2 | awk '{printf "NVIDIA Vulkan ICD Version: " $2 "\n"}'
 ) > ${WORKER_NAME}/info/host

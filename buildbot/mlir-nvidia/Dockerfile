@@ -40,12 +40,9 @@ RUN case "$(dpkg --print-architecture)" in \
     g++-7 \
     git \
     gnupg \
-    libpython3-dev \
     lld-14 \
     ninja-build \
     python3 \
-    python3-pip \
-    python3-psutil \
     software-properties-common \
     wget \
   && update-alternatives --install /usr/bin/clang clang /usr/bin/clang-14 100 \
@@ -56,12 +53,6 @@ RUN case "$(dpkg --print-architecture)" in \
 # The worker's Tesla T4 uses an R535 host driver. Use CUDA's forward-compatible
 # driver libraries for CUDA 13.4, including JIT compilation of new PTX.
 ENV LD_LIBRARY_PATH=/usr/local/cuda/compat:${LD_LIBRARY_PATH}
-
-# LTS releases often bundle obsolete pip versions that cannot access newest
-# Linux binary wheels. This pinned version is not special: it was just current
-# at the time this was added. Refer to compatibility table:
-# https://github.com/pypa/manylinux
-RUN python3 -m pip install --upgrade pip==23.1.2
 
 # Ubuntu ships with an old CMake version. Install the latest stable release
 # from Kitware's official binary distribution.
@@ -99,11 +90,38 @@ RUN mkdir -p /etc/vulkan/icd.d /usr/share/glvnd/egl_vendor.d \
        '{"file_format_version":"1.0.0","ICD":{"library_path":"/usr/local/nvidia/lib64/libEGL_nvidia.so.0"}}' \
        > /usr/share/glvnd/egl_vendor.d/10_nvidia.json
 
-# Install build bot (server was at 2.8.5-dev at time of writing).
-RUN pip3 install buildbot-worker==2.8.4
+# Install a pinned uv release, verifying the downloaded archive.
+ARG UV_VERSION=0.13.7
+RUN cd /tmp \
+  && case "$(uname -m)" in \
+       x86_64) uv_sha256=c5221ff41b7892bfc223543883600125f6a47fe845093e0f5bdff4f359196d83 ;; \
+       aarch64) uv_sha256=71279f8d3c67241e807b9d8db872d1bf541579fb9f08b7d1eb1682196d1e57dc ;; \
+       *) echo "Unsupported uv architecture: $(uname -m)" >&2; exit 1 ;; \
+     esac \
+  && wget -q "https://github.com/astral-sh/uv/releases/download/${UV_VERSION}/uv-$(uname -m)-unknown-linux-gnu.tar.gz" \
+  && echo "${uv_sha256}  uv-$(uname -m)-unknown-linux-gnu.tar.gz" \
+       | sha256sum --check - \
+  && tar -xzf "uv-$(uname -m)-unknown-linux-gnu.tar.gz" \
+       --strip-components=1 -C /usr/local/bin \
+  && rm "uv-$(uname -m)-unknown-linux-gnu.tar.gz"
+
+# Python 3.13 is the newest version listed as supported by Buildbot worker 4.3.
+# Keep the interpreter and its development files together, and use the same
+# environment for the worker, pip requirements, and MLIR's Python bindings.
+ARG PYTHON_VERSION=3.13.18
+ARG BUILDBOT_WORKER_VERSION=4.3.0
+ARG PIP_VERSION=26.3
+ENV UV_PYTHON_INSTALL_DIR=/opt/python
+ENV VIRTUAL_ENV=/opt/venv
+ENV PATH=${VIRTUAL_ENV}/bin:${PATH}
+RUN uv --no-cache python install "${PYTHON_VERSION}" \
+  && uv --no-cache venv --python "${PYTHON_VERSION}" "${VIRTUAL_ENV}" \
+  && uv --no-cache pip install --python "${VIRTUAL_ENV}/bin/python" \
+       "pip==${PIP_VERSION}" "buildbot-worker==${BUILDBOT_WORKER_VERSION}" psutil
 
 # Create user account, some tests fail if run as root.
-RUN useradd buildbot --create-home
+RUN useradd buildbot --create-home \
+  && chown -R buildbot "${VIRTUAL_ENV}"
 WORKDIR /vol/worker
 RUN mkdir -p /vol/worker \
   && chown buildbot /vol/worker
