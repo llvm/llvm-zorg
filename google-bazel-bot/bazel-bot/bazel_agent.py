@@ -10,6 +10,8 @@ from typing import AsyncGenerator
 
 from google.adk.agents import BaseAgent, LlmAgent
 from google.adk.agents.invocation_context import InvocationContext
+from google.adk.apps.app import App, EventsCompactionConfig
+from google.adk.apps.llm_event_summarizer import LlmEventSummarizer
 from google.adk.events import Event
 from google.adk.models.google_llm import _ResourceExhaustedError
 from google.adk.runners import Runner
@@ -31,6 +33,10 @@ MAX_AGENT_ITERATIONS = 5
 MAX_LLM_QUERY_RETRIES = 20
 USER_ID = "default_user"
 APP_NAME = "bazel_fixer"
+_COMPACTION_TOKEN_THRESHOLD = 800_000
+_COMPACTION_EVENT_RETENTION_SIZE = 4
+_COMPACTION_INTERVAL = 5
+_COMPACTION_OVERLAP_SIZE = 1
 
 MODEL = "gemini-3.8-flash"
 
@@ -73,6 +79,20 @@ You can use following guidelines to figure out what changes needs to be made to 
 3. You should not modify files outside of llvm-project-overlay/ directory. The `search_and_replace` tool only works when you modify files 
 4. Do not make any changes to MODULE.bazel.lock file. bazel builds may modify those files but you should not attempt to make further changes to it.
 """
+
+
+class _LoggingEventSummarizer(LlmEventSummarizer):
+    def __init__(self, logger: logging.Logger, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._logger = logger
+
+    async def maybe_summarize_events(
+        self, *, events: list[Event]
+    ) -> Event | None:
+        self._logger.info(
+            f"Event compaction triggered for {len(events)} events."
+        )
+        return await super().maybe_summarize_events(events=events)
 
 
 class BazelFixerAgent(BaseAgent):  # pytype: disable=wrong-arg-types
@@ -273,9 +293,21 @@ async def query_agent(
         cmd_processor=cmd_processor,
     )
 
-    runner = Runner(
-        app_name=APP_NAME, agent=bazel_agent, session_service=session_service
+    app = App(
+        name=APP_NAME,
+        root_agent=bazel_agent,
+        events_compaction_config=EventsCompactionConfig(
+            summarizer=_LoggingEventSummarizer(
+                logger=logger_agent, llm=code_fixer.canonical_model
+            ),
+            compaction_interval=_COMPACTION_INTERVAL,
+            overlap_size=_COMPACTION_OVERLAP_SIZE,
+            token_threshold=_COMPACTION_TOKEN_THRESHOLD,
+            event_retention_size=_COMPACTION_EVENT_RETENTION_SIZE,
+        ),
     )
+
+    runner = Runner(app=app, session_service=session_service)
 
     # Create a new session
     session = await runner.session_service.create_session(
