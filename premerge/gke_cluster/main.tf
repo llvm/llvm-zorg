@@ -154,6 +154,31 @@ resource "google_container_node_pool" "llvm_premerge_libcxx" {
   }
 }
 
+resource "google_container_node_pool" "llvm_premerge_linux_4" {
+  name               = "llvm-premerge-linux-4"
+  location           = var.region
+  cluster            = google_container_cluster.llvm_premerge.name
+  initial_node_count = 0
+
+  autoscaling {
+    total_min_node_count = 0
+    total_max_node_count = 32
+  }
+
+  node_config {
+    machine_type = var.linux_4_machine_type
+    taint {
+      key    = "premerge-platform"
+      value  = "linux-4-runners"
+      effect = "NO_SCHEDULE"
+    }
+    labels = {
+      "premerge-platform" : "linux-4-runners"
+    }
+    disk_size_gb = 200
+  }
+}
+
 resource "google_container_node_pool" "llvm_premerge_windows_2022" {
   name               = "llvm-premerge-windows-2022"
   location           = var.region

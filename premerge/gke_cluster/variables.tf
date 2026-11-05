@@ -53,3 +53,8 @@ variable "windows_2022_runners_kubernetes_service_account_name" {
   description = "The name of the kubernetes service account used to access the Windows object cache GCS bucket"
   type        = string
 }
+
+variable "linux_4_machine_type" {
+  description = "The type of machine to use for llvm-premerge-linux-4-runner instances"
+  type        = string
+}
