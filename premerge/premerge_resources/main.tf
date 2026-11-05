@@ -231,12 +231,21 @@ resource "helm_release" "github_actions_runner_set_windows_2022" {
 
 resource "kubernetes_config_map" "linux_32_pod_template" {
   metadata {
-    name      = "linux-32-pod-template"
+    name      = "linux-n-pod-template"
     namespace = "llvm-premerge-linux-32-runners"
   }
 
   data = {
-    "linux-32-pod-template.yaml" : "${file("linux_32_pod_template.yaml")}"
+    "linux-n-pod-template.yaml" : "${templatefile("linux_n_pod_template.yaml", {
+      taint_key : "premerge-platform-libcxx",
+      taint_value : "linux-libcxx",
+      premerge_platform_key : "premerge-platform-libcxx",
+      premerge_platform : "linux-libcxx",
+      request_cpu : "100m",
+      request_memory : "100Gi",
+      limit_cpu : 28,
+      limit_memory : "128Gi"
+    })}"
   }
 }
 
@@ -248,7 +257,17 @@ resource "helm_release" "github_actions_runner_set_linux_32" {
   chart      = "gha-runner-scale-set"
 
   values = [
-    "${templatefile("linux_32_runners_values.yaml", { runner_group_name : var.runner_group_name })}"
+    "${templatefile("linux_n_runners_values.yaml", {
+      runner_group_name : var.runner_group_name,
+      taint_key : "premerge-platform-libcxx",
+      taint_value : "linux-libcxx",
+      premerge_platform : "linux-libcxx",
+      premerge_platform_key : "premerge-platform-libcxx",
+      request_cpu : 28,
+      request_memory : "8Gi",
+      limit_cpu : 32,
+      limit_memory : "128Gi"
+    })}"
   ]
 
   depends_on = [

@@ -17,12 +17,12 @@ template:
   spec:
     terminationGracePeriodSeconds: 3600
     tolerations:
-    - key: "premerge-platform-libcxx"
+    - key: ${ taint_key }
       operator: "Equal"
-      value: "linux-libcxx"
+      value: ${ taint_value }
       effect: "NoSchedule"
     nodeSelector:
-      premerge-platform-libcxx: linux-libcxx
+      ${premerge_platform_key}: ${ premerge_platform }
     containers:
     - name: runner
       image: ghcr.io/actions/actions-runner:2.338.2
@@ -44,11 +44,11 @@ template:
         #
         # We also need to request sufficient memory to not get OOM killed.
         requests:
-          cpu: 28
-          memory: "8Gi"
+          cpu: ${ request_cpu }
+          memory: ${ request_memory }
         limits:
-          cpu: 32
-          memory: "128Gi"
+          cpu: ${ limit_cpu }
+          memory: ${ limit_memory }
       env:
         - name: ACTIONS_RUNNER_CONTAINER_HOOKS
           value: /home/runner/k8s-novolume/index.js
@@ -59,7 +59,7 @@ template:
         - name: ACTIONS_RUNNER_REQUIRE_JOB_CONTAINER
           value: "true"
         - name: ACTIONS_RUNNER_CONTAINER_HOOK_TEMPLATE
-          value: "/home/runner/pod-config/linux-32-pod-template.yaml"
+          value: "/home/runner/pod-config/linux-n-pod-template.yaml"
         - name: ACTIONS_RUNNER_PREPARE_JOB_TIMEOUT_SECONDS
           value: "1200"
       volumeMounts:
@@ -70,4 +70,4 @@ template:
     volumes:
       - name: container-pod-config
         configMap:
-          name: linux-32-pod-template
+          name: linux-n-pod-template
