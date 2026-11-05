@@ -313,11 +313,13 @@ class LocalGitRepo:
         self.repo.create_head(branch_name, force=True).checkout()
         return branch_name
 
-    def rebase_branch(self, branch_name: str, new_base: str) -> bool:
+    def rebase_branch(
+        self, branch_name: str, new_base: str, strategy_option: str = "ours"
+    ) -> bool:
         """Rebases branch_name onto new_base. Returns True on success, False on conflict/error."""
         try:
             self.repo.git.checkout(branch_name)
-            self.repo.git.rebase(new_base)
+            self.repo.git.rebase("-X", strategy_option, new_base)
             return True
         except git.GitCommandError as e:
             logger.error(f"Failed to rebase {branch_name} onto {new_base}: {e}")

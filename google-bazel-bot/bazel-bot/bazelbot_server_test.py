@@ -392,59 +392,6 @@ class TestBazelBotServer(unittest.TestCase):
         bot.process_failure_with_ai.return_value = False
         self.assertFalse(bot.repair_build(build_info))
 
-    def test_run_logic(self):
-        cmd_processor = mock.MagicMock()
-        git_repo = mock.MagicMock()
-        git_repo.create_branch_for_fix.side_effect = lambda sha: f"bazel-{sha}"
-        creds = mock.MagicMock()
-        build_processor = mock.MagicMock()
-
-        # Initialize bot with known state
-        bot = bazelbot_server.BazelRepairBot(
-            cmd_processor, git_repo, creds, build_processor, 10
-        )
-        bot.last_processed_sha = "init_sha"
-        bot.last_processed_state = utils.BuildState.PASSED
-
-        # Define the sequence of builds
-        builds = [
-            utils.BuildInfo(commit="sha1", state=utils.BuildState.PASSED),
-            utils.BuildInfo(commit="sha2", state=utils.BuildState.FAILED),
-            utils.BuildInfo(commit="sha3", state=utils.BuildState.FAILED),
-            utils.BuildInfo(commit="sha4", state=utils.BuildState.PASSED),
-        ]
-
-        build_processor.get_builds_to_process.return_value = builds
-
-        # Mock repair_build to verify calls
-        bot.repair_build = mock.MagicMock(return_value=True)
-
-        # Mock wait to break the loop
-        bot.wait = mock.MagicMock(side_effect=StopIteration)
-
-        # Run the bot
-        try:
-            bot.run()
-        except StopIteration:
-            pass
-
-        # Verifications
-
-        # 1. Both sha2 (root) and sha3 (nested/consecutive) should be repaired on their own branches
-        self.assertEqual(bot.repair_build.call_count, 2)
-        bot.repair_build.assert_has_calls([
-            mock.call(builds[1]),
-            mock.call(builds[2]),
-        ])
-        self.assertEqual(bot.active_fix_branch, "bazel-sha3")
-
-        # 2. Verify state updates
-        self.assertEqual(bot.last_processed_sha, "sha4")
-        self.assertEqual(bot.last_processed_state, utils.BuildState.PASSED)
-
-        # Verify get_builds_to_process was called with initial sha
-        build_processor.get_builds_to_process.assert_called_with("init_sha")
-
     def test_buildkite_url(self):
         info_with_num = utils.BuildInfo("sha1", build_number=123)
         self.assertEqual(
@@ -497,167 +444,104 @@ class TestBazelBotServer(unittest.TestCase):
         self.assertEqual(mock_func.call_count, 1)
         mock_sleep.assert_not_called()
 
-    def test_get_build_info_clean_pass_resets_fix_branch(self):
-        cmd_processor = mock.MagicMock()
-        git_repo = mock.MagicMock()
-        creds = mock.MagicMock()
-        build_processor = mock.MagicMock()
-
-        bot = bazelbot_server.BazelRepairBot(
-            cmd_processor, git_repo, creds, build_processor, 10
-        )
-        bot.active_fix_branch = "bazel-old"
-
-        cmd_processor.run_bazel_build.return_value = mock.MagicMock(success=True)
-
-        info = bot.get_build_info_for_commit("sha1")
-
-        self.assertEqual(info.commit, "sha1")
-        self.assertEqual(info.state, utils.BuildState.PASSED)
-        self.assertIsNone(bot.active_fix_branch)
-        git_repo.checkout_commit.assert_called_with("sha1")
-        self.assertEqual(cmd_processor.run_bazel_build.call_count, 1)
-
-    def test_get_build_info_clean_fail_no_active_fix(self):
-        cmd_processor = mock.MagicMock()
-        git_repo = mock.MagicMock()
-        creds = mock.MagicMock()
-        build_processor = mock.MagicMock()
-
-        bot = bazelbot_server.BazelRepairBot(
-            cmd_processor, git_repo, creds, build_processor, 10
-        )
-        bot.active_fix_branch = None
-
-        cmd_processor.run_bazel_build.return_value = mock.MagicMock(
-            success=False, stderr="ERROR: (from target //broken:target)"
-        )
-
-        info = bot.get_build_info_for_commit("sha1")
-
-        self.assertEqual(info.commit, "sha1")
-        self.assertEqual(info.state, utils.BuildState.FAILED)
-        self.assertEqual(info.failed_targets, ["//broken:target"])
-        self.assertIsNone(bot.active_fix_branch)
-        self.assertEqual(cmd_processor.run_bazel_build.call_count, 1)
-
-    def test_get_build_info_nested_pass_carries_fix(self):
-        cmd_processor = mock.MagicMock()
-        git_repo = mock.MagicMock()
-        creds = mock.MagicMock()
-        build_processor = mock.MagicMock()
-
-        bot = bazelbot_server.BazelRepairBot(
-            cmd_processor, git_repo, creds, build_processor, 10
-        )
-        bot.active_fix_branch = "bazel-sha1"
-
-        git_repo.rebase_branch.return_value = True
-        cmd_processor.run_bazel_build.side_effect = [
-            mock.MagicMock(success=False, stderr="err1"),
-            mock.MagicMock(success=True, stderr=""),
+    def test_get_build_info_scenarios(self):
+        """Parameterized test covering clean and nested get_build_info evaluation scenarios."""
+        scenarios = [
+            {
+                "name": "clean_pass_resets_fix_branch",
+                "initial_active_branch": "bazel-old",
+                "build_results": [mock.MagicMock(success=True)],
+                "rebase_result": None,
+                "expected_state": utils.BuildState.PASSED,
+                "expected_targets": [],
+                "expected_active_branch": None,
+                "expected_build_count": 1,
+            },
+            {
+                "name": "clean_fail_without_active_fix",
+                "initial_active_branch": None,
+                "build_results": [
+                    mock.MagicMock(
+                        success=False, stderr="ERROR: (from target //broken:target)"
+                    )
+                ],
+                "rebase_result": None,
+                "expected_state": utils.BuildState.FAILED,
+                "expected_targets": ["//broken:target"],
+                "expected_active_branch": None,
+                "expected_build_count": 1,
+            },
+            {
+                "name": "nested_pass_carries_fix",
+                "initial_active_branch": "bazel-sha1",
+                "build_results": [
+                    mock.MagicMock(success=False, stderr="err1"),
+                    mock.MagicMock(success=True, stderr=""),
+                ],
+                "rebase_result": True,
+                "expected_state": utils.BuildState.PASSED,
+                "expected_targets": [],
+                "expected_active_branch": "bazel-sha1",
+                "expected_build_count": 2,
+            },
+            {
+                "name": "nested_fail_returns_failure",
+                "initial_active_branch": "bazel-sha1",
+                "build_results": [
+                    mock.MagicMock(success=False, stderr="err1"),
+                    mock.MagicMock(
+                        success=False, stderr="ERROR: (from target //nested:fail)"
+                    )
+                ],
+                "rebase_result": True,
+                "expected_state": utils.BuildState.FAILED,
+                "expected_targets": ["//nested:fail"],
+                "expected_active_branch": "bazel-sha1",
+                "expected_build_count": 2,
+            },
+            {
+                "name": "rebase_fail_resets_fix_branch",
+                "initial_active_branch": "bazel-sha1",
+                "build_results": [
+                    mock.MagicMock(
+                        success=False, stderr="ERROR: (from target //t:one)"
+                    )
+                ],
+                "rebase_result": False,
+                "expected_state": utils.BuildState.UNKNOWN,
+                "expected_targets": ["//t:one"],
+                "expected_active_branch": None,
+                "expected_build_count": 1,
+            },
         ]
 
-        info = bot.get_build_info_for_commit("sha2")
+        for s in scenarios:
+            with self.subTest(scenario=s["name"]):
+                cmd_processor = mock.MagicMock()
+                git_repo = mock.MagicMock()
+                bot = bazelbot_server.BazelRepairBot(
+                    cmd_processor, git_repo, mock.MagicMock(), mock.MagicMock(), 10
+                )
+                bot.active_fix_branch = s["initial_active_branch"]
 
-        self.assertEqual(info.commit, "sha2")
-        self.assertEqual(info.state, utils.BuildState.PASSED)
-        self.assertEqual(info.failed_targets, [])
-        self.assertEqual(bot.active_fix_branch, "bazel-sha1")
-        git_repo.rebase_branch.assert_called_with("bazel-sha1", "sha2")
-        self.assertEqual(cmd_processor.run_bazel_build.call_count, 2)
+                cmd_processor.run_bazel_build.side_effect = s["build_results"]
+                if s["rebase_result"] is not None:
+                    git_repo.rebase_branch.return_value = s["rebase_result"]
 
-    def test_get_build_info_nested_fail_returns_failure(self):
-        cmd_processor = mock.MagicMock()
-        git_repo = mock.MagicMock()
-        creds = mock.MagicMock()
-        build_processor = mock.MagicMock()
+                info = bot.get_build_info_for_commit("sha_test")
 
-        bot = bazelbot_server.BazelRepairBot(
-            cmd_processor, git_repo, creds, build_processor, 10
-        )
-        bot.active_fix_branch = "bazel-sha1"
+                self.assertEqual(info.commit, "sha_test")
+                self.assertEqual(info.state, s["expected_state"])
+                self.assertEqual(info.failed_targets, s["expected_targets"])
+                self.assertEqual(bot.active_fix_branch, s["expected_active_branch"])
+                self.assertEqual(
+                    cmd_processor.run_bazel_build.call_count, s["expected_build_count"]
+                )
 
-        git_repo.rebase_branch.return_value = True
-        cmd_processor.run_bazel_build.side_effect = [
-            mock.MagicMock(success=False, stderr="err1"),
-            mock.MagicMock(success=False, stderr="ERROR: (from target //nested:fail)"),
-        ]
-
-        info = bot.get_build_info_for_commit("sha2")
-
-        self.assertEqual(info.commit, "sha2")
-        self.assertEqual(info.state, utils.BuildState.FAILED)
-        self.assertEqual(info.failed_targets, ["//nested:fail"])
-        self.assertEqual(bot.active_fix_branch, "bazel-sha1")
-        self.assertEqual(cmd_processor.run_bazel_build.call_count, 2)
-
-    def test_get_build_info_rebase_fail_resets_fix_branch(self):
-        cmd_processor = mock.MagicMock()
-        git_repo = mock.MagicMock()
-        creds = mock.MagicMock()
-        build_processor = mock.MagicMock()
-
-        bot = bazelbot_server.BazelRepairBot(
-            cmd_processor, git_repo, creds, build_processor, 10
-        )
-        bot.active_fix_branch = "bazel-sha1"
-
-        git_repo.rebase_branch.return_value = False
-        cmd_processor.run_bazel_build.return_value = mock.MagicMock(
-            success=False, stderr="ERROR: (from target //t:one)"
-        )
-
-        info = bot.get_build_info_for_commit("sha2")
-
-        self.assertEqual(info.commit, "sha2")
-        self.assertEqual(info.state, utils.BuildState.FAILED)
-        self.assertIsNone(bot.active_fix_branch)
-        self.assertEqual(cmd_processor.run_bazel_build.call_count, 1)
-
-    def test_run_logic_nested_failure_repair(self):
-        cmd_processor = mock.MagicMock()
-        git_repo = mock.MagicMock()
-        git_repo.create_branch_for_fix.side_effect = lambda sha: f"bazel-{sha}"
-        creds = mock.MagicMock()
-        build_processor = mock.MagicMock()
-
-        bot = bazelbot_server.BazelRepairBot(
-            cmd_processor, git_repo, creds, build_processor, 10
-        )
-        bot.last_processed_sha = "init_sha"
-        bot.last_processed_state = utils.BuildState.PASSED
-
-        builds = [
-            utils.BuildInfo(commit="sha1", state=utils.BuildState.PASSED),
-            utils.BuildInfo(commit="sha2", state=utils.BuildState.FAILED),  # Root failure
-            utils.BuildInfo(commit="sha3", state=utils.BuildState.PASSED),  # Clean with fix
-            utils.BuildInfo(commit="sha4", state=utils.BuildState.FAILED),  # Nested failure!
-            utils.BuildInfo(commit="sha5", state=utils.BuildState.PASSED),
-        ]
-        build_processor.get_builds_to_process.return_value = builds
-
-        bot.repair_build = mock.MagicMock(return_value=True)
-        bot.wait = mock.MagicMock(side_effect=StopIteration)
-
-        try:
-            bot.run()
-        except StopIteration:
-            pass
-
-        # Both sha2 (root) and sha4 (nested) should be repaired on separate branches!
-        self.assertEqual(bot.repair_build.call_count, 2)
-        bot.repair_build.assert_has_calls([
-            mock.call(builds[1]),
-            mock.call(builds[3]),
-        ])
-        git_repo.create_branch_for_fix.assert_has_calls([
-            mock.call("sha2"),
-            mock.call("sha4"),
-        ])
-        self.assertEqual(bot.active_fix_branch, "bazel-sha4")
-        self.assertEqual(bot.last_processed_sha, "sha5")
-        self.assertEqual(bot.last_processed_state, utils.BuildState.PASSED)
+                if s["rebase_result"] is not None:
+                    git_repo.rebase_branch.assert_called_with(
+                        s["initial_active_branch"], "sha_test"
+                    )
 
     @mock.patch("bazelbot_server.asyncio.run")
     def test_process_failure_with_ai_with_active_fix_branch(self, mock_asyncio_run):
@@ -735,126 +619,112 @@ class TestBazelBotServer(unittest.TestCase):
             utils.call_with_retry((), mock_func)
         mock_func.assert_not_called()
 
-    def test_run_logic_consecutive_failures_both_repaired(self):
-        """Tests that when the first build fails and the second commit also fails (back-to-back),
-        both are repaired sequentially on their own stacked branches."""
-        cmd_processor = mock.MagicMock()
-        git_repo = mock.MagicMock()
-        git_repo.create_branch_for_fix.side_effect = lambda sha: f"bazel-{sha}"
-        creds = mock.MagicMock()
-        build_processor = mock.MagicMock()
-
-        bot = bazelbot_server.BazelRepairBot(
-            cmd_processor, git_repo, creds, build_processor, 10
-        )
-        bot.last_processed_sha = "init_sha"
-        bot.last_processed_state = utils.BuildState.PASSED
-
-        builds = [
-            utils.BuildInfo(commit="sha1", state=utils.BuildState.FAILED),
-            utils.BuildInfo(commit="sha2", state=utils.BuildState.FAILED),
-            utils.BuildInfo(commit="sha3", state=utils.BuildState.PASSED),
+    def test_run_logic_scenarios(self):
+        """Parameterized test covering run() loop scenarios with consecutive/nested failures and rebase failures."""
+        scenarios = [
+            {
+                "name": "consecutive_failures_both_repaired",
+                "initial_active_branch": None,
+                "builds": [
+                    utils.BuildInfo(commit="sha1", state=utils.BuildState.FAILED),
+                    utils.BuildInfo(commit="sha2", state=utils.BuildState.FAILED),
+                    utils.BuildInfo(commit="sha3", state=utils.BuildState.PASSED),
+                ],
+                "repair_side_effect": [True, True],
+                "rebase_result": None,
+                "bazel_build_result": None,
+                "expected_repairs": ["sha1", "sha2"],
+                "expected_active_branch": "bazel-sha2",
+                "expected_last_sha": "sha3",
+                "expected_last_state": utils.BuildState.PASSED,
+            },
+            {
+                "name": "consecutive_failures_first_repair_fails",
+                "initial_active_branch": None,
+                "builds": [
+                    utils.BuildInfo(commit="sha1", state=utils.BuildState.FAILED),
+                    utils.BuildInfo(commit="sha2", state=utils.BuildState.FAILED),
+                    utils.BuildInfo(commit="sha3", state=utils.BuildState.PASSED),
+                ],
+                "repair_side_effect": [False],
+                "rebase_result": None,
+                "bazel_build_result": None,
+                "expected_repairs": ["sha1"],
+                "expected_active_branch": None,
+                "expected_last_sha": "sha3",
+                "expected_last_state": utils.BuildState.PASSED,
+            },
+            {
+                "name": "nested_failure_after_gap_both_repaired",
+                "initial_active_branch": None,
+                "builds": [
+                    utils.BuildInfo(commit="sha1", state=utils.BuildState.FAILED),
+                    utils.BuildInfo(commit="sha2", state=utils.BuildState.PASSED),
+                    utils.BuildInfo(commit="sha3", state=utils.BuildState.PASSED),
+                    utils.BuildInfo(commit="sha4", state=utils.BuildState.FAILED),
+                    utils.BuildInfo(commit="sha5", state=utils.BuildState.PASSED),
+                ],
+                "repair_side_effect": [True, True],
+                "rebase_result": None,
+                "bazel_build_result": None,
+                "expected_repairs": ["sha1", "sha4"],
+                "expected_active_branch": "bazel-sha4",
+                "expected_last_sha": "sha5",
+                "expected_last_state": utils.BuildState.PASSED,
+            },
+            {
+                "name": "rebase_failure_skips_revision",
+                "initial_active_branch": "bazel-sha1",
+                "builds": [
+                    utils.BuildInfo(commit="sha2", state=utils.BuildState.UNKNOWN),
+                    utils.BuildInfo(commit="sha3", state=utils.BuildState.PASSED),
+                ],
+                "repair_side_effect": [],
+                "rebase_result": False,
+                "bazel_build_result": mock.MagicMock(success=False, stderr="err"),
+                "expected_repairs": [],
+                "expected_active_branch": None,
+                "expected_last_sha": "sha3",
+                "expected_last_state": utils.BuildState.PASSED,
+            },
         ]
-        build_processor.get_builds_to_process.return_value = builds
 
-        bot.repair_build = mock.MagicMock(return_value=True)
-        bot.wait = mock.MagicMock(side_effect=StopIteration)
+        for s in scenarios:
+            with self.subTest(scenario=s["name"]):
+                cmd_processor = mock.MagicMock()
+                git_repo = mock.MagicMock()
+                git_repo.create_branch_for_fix.side_effect = lambda sha: f"bazel-{sha}"
+                build_processor = mock.MagicMock()
 
-        try:
-            bot.run()
-        except StopIteration:
-            pass
+                bot = bazelbot_server.BazelRepairBot(
+                    cmd_processor, git_repo, mock.MagicMock(), build_processor, 10
+                )
+                bot.last_processed_sha = "init_sha"
+                bot.last_processed_state = utils.BuildState.PASSED
+                bot.active_fix_branch = s["initial_active_branch"]
 
-        # Both consecutive failures must be repaired
-        self.assertEqual(bot.repair_build.call_count, 2)
-        bot.repair_build.assert_has_calls([
-            mock.call(builds[0]),
-            mock.call(builds[1]),
-        ])
-        self.assertEqual(bot.active_fix_branch, "bazel-sha2")
-        self.assertEqual(bot.last_processed_sha, "sha3")
-        self.assertEqual(bot.last_processed_state, utils.BuildState.PASSED)
+                if s["rebase_result"] is not None:
+                    git_repo.rebase_branch.return_value = s["rebase_result"]
+                if s["bazel_build_result"] is not None:
+                    cmd_processor.run_bazel_build.return_value = s["bazel_build_result"]
 
-    def test_run_logic_consecutive_failures_first_repair_fails(self):
-        """Tests that when the first build fails and repair fails, its state remains FAILED,
-        so the next consecutive failure does not trigger repair (waiting for manual intervention)."""
-        cmd_processor = mock.MagicMock()
-        git_repo = mock.MagicMock()
-        git_repo.create_branch_for_fix.side_effect = lambda sha: f"bazel-{sha}"
-        creds = mock.MagicMock()
-        build_processor = mock.MagicMock()
+                build_processor.get_builds_to_process.return_value = s["builds"]
+                bot.repair_build = mock.MagicMock(side_effect=s["repair_side_effect"])
+                bot.wait = mock.MagicMock(side_effect=StopIteration)
 
-        bot = bazelbot_server.BazelRepairBot(
-            cmd_processor, git_repo, creds, build_processor, 10
-        )
-        bot.last_processed_sha = "init_sha"
-        bot.last_processed_state = utils.BuildState.PASSED
+                try:
+                    bot.run()
+                except StopIteration:
+                    pass
 
-        builds = [
-            utils.BuildInfo(commit="sha1", state=utils.BuildState.FAILED),
-            utils.BuildInfo(commit="sha2", state=utils.BuildState.FAILED),
-            utils.BuildInfo(commit="sha3", state=utils.BuildState.PASSED),
-        ]
-        build_processor.get_builds_to_process.return_value = builds
-
-        # First repair fails
-        bot.repair_build = mock.MagicMock(return_value=False)
-        bot.wait = mock.MagicMock(side_effect=StopIteration)
-
-        try:
-            bot.run()
-        except StopIteration:
-            pass
-
-        # Only sha1 was attempted; sha2 was skipped because state was FAILED
-        self.assertEqual(bot.repair_build.call_count, 1)
-        bot.repair_build.assert_called_once_with(builds[0])
-        self.assertIsNone(bot.active_fix_branch)
-        self.assertEqual(bot.last_processed_sha, "sha3")
-        self.assertEqual(bot.last_processed_state, utils.BuildState.PASSED)
-
-    def test_run_logic_nested_failure_after_gap_of_commits(self):
-        """Tests scenario where first build fails and is repaired, followed by a gap of
-        2-3 passing commits, and then another build fails (nested failure)."""
-        cmd_processor = mock.MagicMock()
-        git_repo = mock.MagicMock()
-        git_repo.create_branch_for_fix.side_effect = lambda sha: f"bazel-{sha}"
-        creds = mock.MagicMock()
-        build_processor = mock.MagicMock()
-
-        bot = bazelbot_server.BazelRepairBot(
-            cmd_processor, git_repo, creds, build_processor, 10
-        )
-        bot.last_processed_sha = "init_sha"
-        bot.last_processed_state = utils.BuildState.PASSED
-
-        builds = [
-            utils.BuildInfo(commit="sha1", state=utils.BuildState.FAILED),  # Root failure
-            utils.BuildInfo(commit="sha2", state=utils.BuildState.PASSED),  # Gap commit 1
-            utils.BuildInfo(commit="sha3", state=utils.BuildState.PASSED),  # Gap commit 2
-            utils.BuildInfo(commit="sha4", state=utils.BuildState.PASSED),  # Gap commit 3
-            utils.BuildInfo(commit="sha5", state=utils.BuildState.FAILED),  # Nested failure after 3-commit gap
-            utils.BuildInfo(commit="sha6", state=utils.BuildState.PASSED),
-        ]
-        build_processor.get_builds_to_process.return_value = builds
-
-        bot.repair_build = mock.MagicMock(return_value=True)
-        bot.wait = mock.MagicMock(side_effect=StopIteration)
-
-        try:
-            bot.run()
-        except StopIteration:
-            pass
-
-        # Both sha1 (root) and sha5 (nested after gap of 3 commits) should be repaired
-        self.assertEqual(bot.repair_build.call_count, 2)
-        bot.repair_build.assert_has_calls([
-            mock.call(builds[0]),
-            mock.call(builds[4]),
-        ])
-        self.assertEqual(bot.active_fix_branch, "bazel-sha5")
-        self.assertEqual(bot.last_processed_sha, "sha6")
-        self.assertEqual(bot.last_processed_state, utils.BuildState.PASSED)
+                actual_repairs = [
+                    call.args[0].commit for call in bot.repair_build.call_args_list
+                ]
+                self.assertEqual(actual_repairs, s["expected_repairs"])
+                self.assertEqual(bot.active_fix_branch, s["expected_active_branch"])
+                self.assertEqual(bot.last_processed_sha, s["expected_last_sha"])
+                self.assertEqual(bot.last_processed_state, s["expected_last_state"])
+                build_processor.get_builds_to_process.assert_called_with("init_sha")
 
 
 if __name__ == "__main__":
