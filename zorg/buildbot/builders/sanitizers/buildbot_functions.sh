@@ -146,7 +146,7 @@ function check_glibc() {
   local _glibc _latest
   _glibc=$(ldd --version | awk 'NR==1 {print $NF}')
   _latest=$(
-    timeout 30 git ls-remote --tags https://sourceware.org/git/glibc.git |
+    timeout 30 git ls-remote --tags https://github.com/gnutools/glibc.git |
       grep -oE 'refs/tags/glibc-[0-9]+\.[0-9]+$' |
       grep -oE '[0-9]+\.[0-9]+$' |
       sort -V |
