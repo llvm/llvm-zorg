@@ -302,6 +302,8 @@ function wait_for_cuttlefish_boot {
     local _serial
     _serial=$($_adb devices | awk '/:(652[0-9])[[:space:]]+device$/ {print $1; exit}')
     if [[ -n "$_serial" ]] && [[ "$(timeout 10 $_adb -s "$_serial" shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" == "1" ]]; then
+      # Stop Android UI and framework runtime to free CPU cycles for tests.
+      $_adb -s "$_serial" shell stop || true
       return 0
     fi
     sleep 1
