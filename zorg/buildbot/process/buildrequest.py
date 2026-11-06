@@ -35,10 +35,8 @@ def setBuildsetProperty(db, bsid, name, value, source="Collapse"):
             })
         elif prop.property_value != value_js:
             if is_sa2:
-                stmt = (
-                    sa.update(bs_props_tbl).where(whereclause).values(property_value = value_js)
-                )
-                conn.execute(stmt)
+                conn.execute(bs_props_tbl.update().where(whereclause).values(property_value = value_js))
+                conn.commit()
             else:
                 conn.execute(bs_props_tbl.update(whereclause=whereclause), {"property_value": value_js})
 
