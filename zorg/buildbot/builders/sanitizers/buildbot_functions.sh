@@ -274,7 +274,7 @@ function run_ninja() {
   fi
   env
   local ec=0
-  /usr/bin/time -o "${ROOT}/time.txt" -- ninja "$@" || ec=$?
+  nice -n 10 /usr/bin/time -o "${ROOT}/time.txt" -- ninja "$@" || ec=$?
   buildbot_build || print_sanitizer_logs
   if [[ $ec -ne 0 ]] ; then
     build_failure
@@ -300,7 +300,7 @@ function build_stage1_clang_impl {
   if clang -v ; then
     cmake_stage1_options+=" -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++"
   fi
-  (cd ${STAGE1_DIR} && cmake ${cmake_stage1_options} $LLVM && ninja) || {
+  (cd ${STAGE1_DIR} && cmake ${cmake_stage1_options} $LLVM && nice -n 10 ninja) || {
     touch "${STAGE1_DIR}/delete_next_time"
     return 1
   }
