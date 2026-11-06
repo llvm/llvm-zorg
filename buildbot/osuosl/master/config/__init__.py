@@ -15,8 +15,7 @@ for f in ['local.cfg', 'worker-passwords.cfg']:
 
 # Detect if the BUILDBOT_TEST environment variable is set and non-zero. This
 # will be used to enable a local testing mode.
-buildbot_test = os.environ.get('BUILDBOT_TEST')
-test_mode = bool(buildbot_test) and buildbot_test != '0'
+test_mode = os.getenv('BUILDBOT_TEST', '').lower() in {'1', 'true', 'on', 'yes', 'y'}
 options.add_section('Internal')
 options.set('Internal', 'test_mode', str(test_mode))
 
