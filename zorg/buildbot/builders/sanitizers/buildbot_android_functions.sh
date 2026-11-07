@@ -342,7 +342,6 @@ function start_cuttlefish {
       --enable_host_bluetooth=false \
       --enable_host_uwb=false \
       --start_gnss_proxy=false \
-      --start_webrtc=false \
       --enable_sandbox=false \
       --data_policy=always_create \
       --blank_data_image_mb=16384 \
