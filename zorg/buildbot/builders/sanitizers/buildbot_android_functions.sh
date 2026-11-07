@@ -351,7 +351,7 @@ function start_cuttlefish {
       --dpi=120 \
       --refresh_rate_hz=10 \
       --start_webrtc=false \
-      --extra_bootconfig_args=androidboot.hardware.hwcomposer.mode=noop \
+      --extra_bootconfig_args="androidboot.hardware.hwcomposer.mode=noop androidboot.hardware.hwcomposer.display_finder_mode=noop" \
       --enable_minimal_mode=true \
       --enable_bootanimation=false \
       --enable_audio=false \
