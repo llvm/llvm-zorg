@@ -370,7 +370,8 @@ function start_cuttlefish {
     tail -n 200 /var/tmp/cvd/"$(id -u)"/*/home/cuttlefish/instances/cvd-1/logs/launcher.log 2>/dev/null || true
   done
   stop_cuttlefish
-  build_failure
+  build_exception
+  return 1
 }
 
 function stop_cuttlefish {
@@ -383,7 +384,7 @@ function test_android {
   rm -rf tested_arch_*
 
   for _arch in "$@"; do
-    start_cuttlefish "$_arch"
+    start_cuttlefish "$_arch" || continue
 
     build_step "run all tests ($_arch)"
     ANDROID_DEVICES=$(${ADB} devices | grep 'device$' | sort -r | awk '{print $1}')
@@ -393,12 +394,10 @@ function test_android {
     done
 
     stop_cuttlefish
-  done
 
-  for _arch in "$@"; do
     if [[ ! -f tested_arch_$_arch ]]; then
       build_step "unavailable device android/$_arch"
-      echo @@@STEP_EXCEPTION@@@
+      build_exception
     fi
   done
 }
