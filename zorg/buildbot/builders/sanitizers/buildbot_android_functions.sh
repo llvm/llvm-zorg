@@ -327,6 +327,16 @@ function start_cuttlefish {
     _extra_args+=(--vm_manager=qemu_cli)
     [[ -d "$_dir/qemu_wrap" ]] && _extra_args+=(--qemu_binary_dir="$_dir/qemu_wrap")
   fi
+  if [[ "${CVD_BUILD[$_arch]}" == aosp-android-latest-release/* ]]; then
+    _extra_args+=(
+      --enable_wifi=false
+      --enable_host_nfc=false
+      --netsim_uwb=false
+      --pica_instance_num=1
+      --enable_usb=false
+      --guest_renderer_preload=disabled
+    )
+  fi
   local _attempt
   for _attempt in 1 2; do
     stop_cuttlefish
@@ -336,12 +346,23 @@ function start_cuttlefish {
       --cpus="$_cpus" \
       --memory_mb="$_mem" \
       --gpu_mode=guest_swiftshader \
+      --x_res=320 \
+      --y_res=240 \
+      --dpi=120 \
+      --refresh_rate_hz=10 \
+      --start_webrtc=false \
+      --extra_bootconfig_args=androidboot.hardware.hwcomposer.mode=noop \
+      --enable_minimal_mode=true \
       --enable_bootanimation=false \
       --enable_audio=false \
       --enable_modem_simulator=false \
       --enable_host_bluetooth=false \
+      --netsim_bt=false \
       --enable_host_uwb=false \
       --start_gnss_proxy=false \
+      --ap_rootfs_image="" \
+      --ap_kernel_image="" \
+      --use_sdcard=false \
       --enable_sandbox=false \
       --data_policy=always_create \
       --blank_data_image_mb=16384 \
