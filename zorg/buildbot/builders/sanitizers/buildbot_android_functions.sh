@@ -352,7 +352,6 @@ function start_cuttlefish {
       --enable_bootanimation=false \
       --enable_audio=false \
       --enable_modem_simulator=false \
-      --enable_host_bluetooth=false \
       --netsim_bt=false \
       --enable_host_uwb=false \
       --start_gnss_proxy=false \
