@@ -6,6 +6,7 @@ from twisted.python import log
 
 from buildbot.reporters.generators.build import BuildStatusGenerator
 from buildbot.reporters.github import GitHubCommentPush
+from buildbot.reporters.mail import MailNotifier
 from buildbot.reporters.message import MessageFormatter, MessageFormatterBase
 from buildbot.reporters.utils import getDetailsForBuild
 
@@ -152,7 +153,7 @@ class LLVMMessageFormatter(MessageFormatter):
         ctx.update(self.context)
         ctx.update(get_log_details(ctx["build"]))
 
-LLVMInformativeMailNotifier = LLVMMessageFormatter(
+LLVMInformativeMailFormatter = LLVMMessageFormatter(
     template=MAIL_TEMPLATE,
     template_type="plain",
     want_logs=True,
@@ -161,7 +162,7 @@ LLVMInformativeMailNotifier = LLVMMessageFormatter(
     want_steps=True,
 )
 
-LLVMInformativeComment = LLVMMessageFormatter(
+LLVMInformativeCommentFormatter = LLVMMessageFormatter(
     template=COMMENT_TEMPLATE,
     template_type="plain",
     want_logs=True,
@@ -172,15 +173,61 @@ LLVMInformativeComment = LLVMMessageFormatter(
 
 
 class LLVMInformativeMailGenerator(BuildStatusGenerator):
-    def __init__(self, mode=("problem",),
-                 message_formatter = LLVMInformativeMailNotifier, **kwargs):
+    def __init__(
+        self,
+        mode=("problem",),
+        message_formatter=LLVMInformativeMailFormatter,
+        **kwargs,
+    ):
         super().__init__(mode=mode, message_formatter=message_formatter, **kwargs)
 
+
 class LLVMDefaultBuildStatusGenerator(BuildStatusGenerator):
-    def __init__(self, mode=("failing",), **kwargs):
-        super().__init__(mode=mode,
-                         message_formatter=MessageFormatter(subject="Build Failure: {{ buildername }}"),
-                         **kwargs)
+    def __init__(self, mode=("failing",), recipients=None, **kwargs):
+        super().__init__(
+            mode=mode,
+            message_formatter=MessageFormatter(
+                subject="Build Failure: {{ buildername }}"
+            ),
+            **kwargs,
+        )
+        self.recipients = recipients
+        assert recipients and isinstance(recipients, list), f"'{recipients}' must be non empty list."
+
+    @defer.inlineCallbacks
+    def build_message(self, formatter, master, reporter, build):  # override
+        report = yield super().build_message(formatter, master, reporter, build)
+        report["users"] = self.recipients
+        return report
+
+
+class LLVMDefaultMailNotifier(MailNotifier):
+    @defer.inlineCallbacks
+    def getResponsibleUsersForBuild(self, master, buildid):
+        # Do not request changes and properties by buildid
+        if False:
+            yield  # To make twisted happy because of @defer.inlineCallbacks
+        return set()
+
+    @defer.inlineCallbacks
+    def findInterrestedUsersEmails(self, users):
+        # Ignore self.sendToInterestedUsers
+        if False:
+            yield  # To make twisted happy because of @defer.inlineCallbacks
+        return users
+
+    def processRecipients(self, users, m):
+        to_recipients = set(users)
+        m["To"] = ", ".join(
+            [self.formatAddress(addr) for addr in sorted(to_recipients)]
+        )
+        return list(to_recipients)
+
+    @defer.inlineCallbacks
+    def sendMessage(self, reports):
+        # Note MailNotifier.sendMessage(reports) merges all reports to single e-mail
+        for report in reports:
+            yield super().sendMessage([report])
 
 
 class LLVMFailBuildGenerator(BuildStatusGenerator):
@@ -191,7 +238,7 @@ class LLVMFailBuildGenerator(BuildStatusGenerator):
         schedulers=None,
         branches=None,
         add_patch=False,
-        message_formatter=LLVMInformativeComment,
+        message_formatter=LLVMInformativeCommentFormatter,
         is_message_needed_filter=None,
     ):
         super().__init__(
@@ -376,6 +423,12 @@ class LLVMFailGitHubReporter(GitHubCommentPush):
                 f"{self.name}.is_wrong_issue: WARNING: Given commit {sha} is not related to PR#{issue}. Do not comment this PR."
             )
         return wrong_issue
+
+    @defer.inlineCallbacks
+    def sendMessage(self, reports):
+        # Note GitHubCommentPush.sendMessage(reports) uses only reports[0]
+        for report in reports:
+            yield super().sendMessage([report])
 
     @defer.inlineCallbacks
     def createStatus(
