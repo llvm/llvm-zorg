@@ -315,7 +315,6 @@ function start_cuttlefish {
   local _arch=$1
   local _dir="$ROOT/$CVD_DIR/$_arch"
   build_step "starting Android Cuttlefish ($_arch)"
-  stop_cuttlefish
   local _cpus=8
   local _mem=16384
   local _extra_args=()
@@ -328,28 +327,34 @@ function start_cuttlefish {
     _extra_args+=(--vm_manager=qemu_cli)
     [[ -d "$_dir/qemu_wrap" ]] && _extra_args+=(--qemu_binary_dir="$_dir/qemu_wrap")
   fi
-  if ! nice -n -15 cvd create \
-    --product_path="$_dir" \
-    --host_path="$_dir" \
-    --cpus="$_cpus" \
-    --memory_mb="$_mem" \
-    --gpu_mode=guest_swiftshader \
-    --enable_bootanimation=false \
-    --enable_audio=false \
-    --enable_modem_simulator=false \
-    --enable_host_bluetooth=false \
-    --enable_host_uwb=false \
-    --start_gnss_proxy=false \
-    --start_webrtc=false \
-    --enable_sandbox=false \
-    --data_policy=always_create \
-    --blank_data_image_mb=16384 \
-    --report_anonymous_usage_stats=n \
-    ${_extra_args[@]+"${_extra_args[@]}"} >"$ROOT/emulator.log" 2>&1 || ! wait_for_cuttlefish_boot ; then
-    cat "$ROOT/emulator.log" || true
+  local _attempt
+  for _attempt in 1 2; do
+    stop_cuttlefish
+    if timeout -k 30 900 nice -n -15 cvd create \
+      --product_path="$_dir" \
+      --host_path="$_dir" \
+      --cpus="$_cpus" \
+      --memory_mb="$_mem" \
+      --gpu_mode=guest_swiftshader \
+      --enable_bootanimation=false \
+      --enable_audio=false \
+      --enable_modem_simulator=false \
+      --enable_host_bluetooth=false \
+      --enable_host_uwb=false \
+      --start_gnss_proxy=false \
+      --start_webrtc=false \
+      --enable_sandbox=false \
+      --data_policy=always_create \
+      --blank_data_image_mb=16384 \
+      --report_anonymous_usage_stats=n \
+      ${_extra_args[@]+"${_extra_args[@]}"} && wait_for_cuttlefish_boot; then
+      return 0
+    fi
+    echo "Cuttlefish ($_arch) boot attempt $_attempt failed"
     tail -n 200 /var/tmp/cvd/"$(id -u)"/*/home/cuttlefish/instances/cvd-1/logs/launcher.log 2>/dev/null || true
-    build_failure
-  fi
+  done
+  stop_cuttlefish
+  build_failure
 }
 
 function stop_cuttlefish {
