@@ -334,8 +334,9 @@ function start_cuttlefish {
     _extra_args+=(
       --enable_wifi=false
       --enable_host_nfc=false
+      --casimir_instance_num=99
       --netsim_uwb=false
-      --pica_instance_num=1
+      --pica_instance_num=99
       --enable_usb=false
       --guest_renderer_preload=disabled
     )
