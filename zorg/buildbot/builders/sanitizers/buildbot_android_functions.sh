@@ -324,7 +324,7 @@ function start_cuttlefish {
     _mem=32768
     EXTRA_LIT_OPTS=""
   else
-    _extra_args+=(--vm_manager=qemu_cli)
+    _extra_args+=(--vm_manager=qemu_cli --start_webrtc=false)
     [[ -d "$_dir/qemu_wrap" ]] && _extra_args+=(--qemu_binary_dir="$_dir/qemu_wrap")
   fi
   if [[ "${CVD_BUILD[$_arch]}" == aosp-android-latest-release/* ]]; then
@@ -336,6 +336,10 @@ function start_cuttlefish {
       --enable_usb=false
       --guest_renderer_preload=disabled
     )
+  else
+    _extra_args+=(
+      --start_webrtc=false
+    )
   fi
   local _attempt
   for _attempt in 1 2; do
@@ -346,7 +350,6 @@ function start_cuttlefish {
       --cpus="$_cpus" \
       --memory_mb="$_mem" \
       --gpu_mode=guest_swiftshader \
-      --start_webrtc=false \
       --extra_bootconfig_args="androidboot.hardware.hwcomposer.mode=noop androidboot.hardware.hwcomposer.display_finder_mode=noop" \
       --enable_minimal_mode=true \
       --enable_bootanimation=false \
