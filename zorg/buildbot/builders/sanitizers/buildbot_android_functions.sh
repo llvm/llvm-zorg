@@ -328,7 +328,7 @@ function start_cuttlefish {
     _extra_args+=(--vm_manager=qemu_cli)
     [[ -d "$_dir/qemu_wrap" ]] && _extra_args+=(--qemu_binary_dir="$_dir/qemu_wrap")
   fi
-  if ! cvd create \
+  if ! nice -n -15 cvd create \
     --product_path="$_dir" \
     --host_path="$_dir" \
     --cpus="$_cpus" \
