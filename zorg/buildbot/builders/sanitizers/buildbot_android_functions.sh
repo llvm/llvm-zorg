@@ -301,9 +301,11 @@ function wait_for_cuttlefish_boot {
   for ((i = 0; i < 300; i++)); do
     local _serial
     _serial=$($_adb devices | awk '/:(652[0-9])[[:space:]]+device$/ {print $1; exit}')
-    if [[ -n "$_serial" ]] && [[ "$(timeout 10 $_adb -s "$_serial" shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" == "1" ]]; then
+    if [[ -n "$_serial" ]] && timeout 10 $_adb -s "$_serial" shell 'test -d /data/local/tmp -a -d /apex/com.android.runtime -a -n "$(getprop ro.build.version.sdk)"' >/dev/null 2>&1; then
       # Stop Android UI and framework runtime to free CPU cycles for tests.
       $_adb -s "$_serial" shell su 0 stop || build_warning
+      $_adb -s "$_serial" wait-for-device
+      tee -a /var/tmp/cvd/"$(id -u)"/*/home/cuttlefish/instances/cvd-1/internal/kernel-log-pipe <<<"VIRTUAL_DEVICE_BOOT_COMPLETED" >/dev/null
       return 0
     fi
     sleep 1
@@ -344,7 +346,7 @@ function start_cuttlefish {
   local _attempt
   for _attempt in 1 2; do
     stop_cuttlefish
-    if timeout -k 30 900 nice -n -15 cvd create \
+    timeout -k 30 300 nice -n -15 cvd create \
       --product_path="$_dir" \
       --host_path="$_dir" \
       --cpus="$_cpus" \
@@ -365,9 +367,11 @@ function start_cuttlefish {
       --data_policy=always_create \
       --blank_data_image_mb=16384 \
       --report_anonymous_usage_stats=n \
-      ${_extra_args[@]+"${_extra_args[@]}"} && wait_for_cuttlefish_boot; then
+      ${_extra_args[@]+"${_extra_args[@]}"} &
+    if wait_for_cuttlefish_boot && wait $!; then
       return 0
     fi
+    wait $! || true
     echo "Cuttlefish ($_arch) boot attempt $_attempt failed"
     tail -n 200 /var/tmp/cvd/"$(id -u)"/*/home/cuttlefish/instances/cvd-1/logs/launcher.log 2>/dev/null || true
   done
