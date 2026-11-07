@@ -11,11 +11,30 @@ import utils
 
 class TestBazelBotServer(unittest.TestCase):
     def test_parse_targets(self):
+        # Bazel 8x-style errors.
         log = "ERROR: /path/to/BUILD:10:11: (from target //foo:bar)"
         self.assertEqual(utils.parse_targets(log), ["//foo:bar"])
 
+        # Parse multiple targets.
         log = "some other error\n(from target //a:b)\n(from target //c:d)"
         self.assertEqual(utils.parse_targets(log), ["//a:b", "//c:d"])
+
+        # Bazel 9x-style error.
+        log = (
+            "clang failed: error executing CppCompile command (from cc_library "
+            "rule target @@+llvm_configure+llvm-project//libc:tls) clang ..."
+        )
+        self.assertEqual(
+            utils.parse_targets(log),
+            ["@@+llvm_configure+llvm-project//libc:tls"],
+        )
+
+        # Actions owned by an aspect.
+        log = (
+            "ERROR: /BUILD:1:1: Foo failed: error executing Foo command (from "
+            "aspects [foo_aspect, bar_aspect] on cc_library rule target //a:b)"
+        )
+        self.assertEqual(utils.parse_targets(log), ["//a:b"])
 
         self.assertEqual(utils.parse_targets(None), [])
 
