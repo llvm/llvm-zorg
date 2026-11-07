@@ -354,7 +354,7 @@ function start_cuttlefish {
       --cpus="$_cpus" \
       --memory_mb="$_mem" \
       --gpu_mode=guest_swiftshader \
-      --extra_bootconfig_args="androidboot.hardware.hwcomposer.mode=noop androidboot.hardware.hwcomposer.display_finder_mode=noop" \
+      --extra_bootconfig_args="androidboot.hardware.hwcomposer.mode=noop androidboot.hardware.hwcomposer.display_finder_mode=noop androidboot.debug.sf.nobootanimation=1" \
       --enable_minimal_mode=true \
       --enable_bootanimation=false \
       --enable_audio=false \
