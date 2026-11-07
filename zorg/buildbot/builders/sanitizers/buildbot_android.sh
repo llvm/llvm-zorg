@@ -35,6 +35,6 @@ build_and_test_android x86_64 x86_64-linux-android
 build_and_test_android arm armv7-linux-androideabi
 build_and_test_android aarch64 aarch64-linux-android
 
-cleanup tested_arch_* emulator.log
+cleanup tested_arch_*
 
 
