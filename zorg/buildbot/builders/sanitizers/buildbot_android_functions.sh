@@ -44,11 +44,14 @@ function download_cuttlefish_images {
         build_failure
         continue
       fi
-      if [[ "$_arch" == "arm" ]]; then
-        # Android 14 host_tools passes QEMU 8 flags removed in QEMU 9+.
-        local _qemu_dir="$ROOT/$CVD_DIR/aarch64"
-        mkdir -p "$_dir/qemu_wrap"
-        cat > "$_dir/qemu_wrap/qemu-system-aarch64" <<EOF
+      echo "$_stamp" > "$_dir/cvd_build_stamp"
+    fi
+    if [[ "$_arch" == "arm" || "$_arch" == "aarch64" ]]; then
+      # Android 14 host_tools passes QEMU 8 flags removed in QEMU 9+, and
+      # QEMU -cpu max enables slow software QARMA5 pointer authentication.
+      local _qemu_dir="$ROOT/$CVD_DIR/aarch64"
+      mkdir -p "$_dir/qemu_wrap"
+      cat > "$_dir/qemu_wrap/qemu-system-aarch64" <<EOF
 #!/usr/bin/env bash
 args=()
 while ((\$#)); do
@@ -59,11 +62,9 @@ while ((\$#)); do
   args+=("\${1//,scsi=off/}")
   shift
 done
-exec "$_qemu_dir/bin/x86_64-linux-gnu/qemu/qemu-system-aarch64" -L "$_qemu_dir/usr/share/qemu/x86_64-linux-gnu" "\${args[@]}"
+exec "$_qemu_dir/bin/x86_64-linux-gnu/qemu/qemu-system-aarch64" -L "$_qemu_dir/usr/share/qemu/x86_64-linux-gnu" "\${args[@]}" -cpu max,pauth=off
 EOF
-        chmod +x "$_dir/qemu_wrap/qemu-system-aarch64"
-      fi
-      echo "$_stamp" > "$_dir/cvd_build_stamp"
+      chmod +x "$_dir/qemu_wrap/qemu-system-aarch64"
     fi
   done
 }
