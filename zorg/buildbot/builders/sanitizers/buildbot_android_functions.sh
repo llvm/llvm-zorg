@@ -280,7 +280,7 @@ function restart_adb_server {
   build_step "restart adb server"
   $ADB kill-server
   sleep 2
-  $ADB start-server
+  chrt -o 0 nice -n -15 $ADB start-server
   sleep 2
 }
 
@@ -352,7 +352,7 @@ function start_cuttlefish {
   local _attempt
   for _attempt in 1 2; do
     stop_cuttlefish
-    timeout -k 30 300 nice -n -15 cvd create \
+    timeout -k 30 300 chrt -o 0 nice -n -15 cvd create \
       --product_path="$_dir" \
       --host_path="$_dir" \
       --cpus="$_cpus" \
@@ -388,7 +388,8 @@ function stop_cuttlefish {
   ${ADB:-adb} disconnect >/dev/null 2>&1 || true
 }
 
-function test_android {
+function test_android {(
+  chrt -o -p 0 "$BASHPID"
   ADB=adb
   rm -rf tested_arch_*
 
@@ -409,7 +410,7 @@ function test_android {
       build_exception
     fi
   done
-}
+)}
 
 function run_command_on_device {
   local _cmd=$1
