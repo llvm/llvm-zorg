@@ -342,6 +342,7 @@ function start_cuttlefish {
   else
     _extra_args+=(
       --start_webrtc=false
+      --enable_modem_simulator=false
     )
   fi
   local _attempt
@@ -357,7 +358,6 @@ function start_cuttlefish {
       --enable_minimal_mode=true \
       --enable_bootanimation=false \
       --enable_audio=false \
-      --enable_modem_simulator=false \
       --netsim_bt=false \
       --enable_host_uwb=false \
       --start_gnss_proxy=false \
