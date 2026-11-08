@@ -25,6 +25,13 @@ declare -A CVD_BUILD=(
   [x86_64]="aosp-android-latest-release/aosp_cf_x86_64_only_phone-userdebug"
 )
 
+declare -A CVD_INSTANCE=(
+  [aarch64]="1"
+  [arm]="2"
+  [i686]="3"
+  [x86_64]="4"
+)
+
 function download_cuttlefish_images {
   for _arch in "${!CVD_BUILD[@]}"; do
     local _dir="$ROOT/$CVD_DIR/$_arch"
@@ -33,7 +40,7 @@ function download_cuttlefish_images {
     local _stamp="${_build}|${_host_build}"
     if [[ "$(cat "$_dir/cvd_build_stamp" 2>/dev/null)" != "$_stamp" ]]; then
       build_step "downloading Android Cuttlefish ($_arch)"
-      stop_cuttlefish
+      stop_cuttlefish "$_arch"
       rm -rf "$_dir"
       mkdir -p "$_dir"
       if ! cvd fetch \
@@ -297,16 +304,36 @@ function test_on_device {
   done
 }
 
-function wait_for_cuttlefish_boot {
+function check_cuttlefish_health {
+  local _arch=$1
   local _adb="${ADB:-adb}"
+  local _serial="0.0.0.0:$(( 6519 + CVD_INSTANCE[$_arch] ))"
+  $_adb connect "$_serial" >/dev/null 2>&1 || true
+  if ! $_adb devices | awk -v s="$_serial" '$1 == s && $2 == "device" {found=1} END {exit !found}'; then
+    return 1
+  fi
+  timeout 10 $_adb -s "$_serial" shell '
+    su 0 pkill -9 -f /data/local/tmp 2>/dev/null
+    su 0 pkill -9 llvm-symbolizer 2>/dev/null
+    rm -rf /data/local/tmp/* &&
+    mkdir -p /data/local/tmp/.probe &&
+    rmdir /data/local/tmp/.probe &&
+    test -d /apex/com.android.runtime &&
+    test -n "$(getprop ro.build.version.sdk)"
+  ' >/dev/null 2>&1
+}
+
+function wait_for_cuttlefish_boot {
+  local _arch=$1
+  local _adb="${ADB:-adb}"
+  local _instance=${CVD_INSTANCE[$_arch]}
+  local _serial="0.0.0.0:$(( 6519 + _instance ))"
   for ((i = 0; i < 300; i++)); do
-    local _serial
-    _serial=$($_adb devices | awk '/:(652[0-9])[[:space:]]+device$/ {print $1; exit}')
-    if [[ -n "$_serial" ]] && timeout 10 $_adb -s "$_serial" shell 'test -d /data/local/tmp -a -d /apex/com.android.runtime -a -n "$(getprop ro.build.version.sdk)"' >/dev/null 2>&1; then
+    if check_cuttlefish_health "$_arch"; then
       # Stop Android UI and framework runtime to free CPU cycles for tests.
       $_adb -s "$_serial" shell su 0 stop || build_warning
       $_adb -s "$_serial" wait-for-device
-      tee -a /var/tmp/cvd/"$(id -u)"/*/home/cuttlefish/instances/cvd-1/internal/kernel-log-pipe <<<"VIRTUAL_DEVICE_BOOT_COMPLETED" >/dev/null
+      tee -a /var/tmp/cvd/"$(id -u)"/*/home/cuttlefish/instances/cvd-"$_instance"/internal/kernel-log-pipe <<<"VIRTUAL_DEVICE_BOOT_COMPLETED" >/dev/null
       return 0
     fi
     sleep 1
@@ -317,6 +344,8 @@ function wait_for_cuttlefish_boot {
 function start_cuttlefish {
   local _arch=$1
   local _dir="$ROOT/$CVD_DIR/$_arch"
+  local _instance=${CVD_INSTANCE[$_arch]}
+  local _serial="0.0.0.0:$(( 6519 + _instance ))"
   build_step "starting Android Cuttlefish ($_arch)"
   local _cpus=8
   local _mem=16384
@@ -329,6 +358,10 @@ function start_cuttlefish {
   else
     _extra_args+=(--vm_manager=qemu_cli --start_webrtc=false)
     [[ -d "$_dir/qemu_wrap" ]] && _extra_args+=(--qemu_binary_dir="$_dir/qemu_wrap")
+  fi
+  if check_cuttlefish_health "$_arch"; then
+    echo "Reusing running Android Cuttlefish ($_arch on $_serial)"
+    return 0
   fi
   if [[ "${CVD_BUILD[$_arch]}" == aosp-android-latest-release/* ]]; then
     _extra_args+=(
@@ -347,8 +380,10 @@ function start_cuttlefish {
   fi
   local _attempt
   for _attempt in 1 2; do
-    stop_cuttlefish
+    stop_cuttlefish "$_arch"
     timeout -k 30 300 nice -n -15 cvd create \
+      --group_name="cvd_$_arch" \
+      --base_instance_num="$_instance" \
       --product_path="$_dir" \
       --host_path="$_dir" \
       --cpus="$_cpus" \
@@ -367,21 +402,27 @@ function start_cuttlefish {
       --enable_sandbox=false \
       --report_anonymous_usage_stats=n \
       ${_extra_args[@]+"${_extra_args[@]}"} &
-    if wait_for_cuttlefish_boot && wait $!; then
+    if wait_for_cuttlefish_boot "$_arch" && wait $!; then
       return 0
     fi
     wait $! || true
     echo "Cuttlefish ($_arch) boot attempt $_attempt failed"
-    tail -n 200 /var/tmp/cvd/"$(id -u)"/*/home/cuttlefish/instances/cvd-1/logs/launcher.log 2>/dev/null || true
+    tail -n 200 /var/tmp/cvd/"$(id -u)"/*/home/cuttlefish/instances/cvd-"$_instance"/logs/launcher.log 2>/dev/null || true
   done
-  stop_cuttlefish
+  stop_cuttlefish "$_arch"
   build_exception
   return 1
 }
 
 function stop_cuttlefish {
-  cvd reset -y >/dev/null 2>&1 || true
-  ${ADB:-adb} disconnect >/dev/null 2>&1 || true
+  local _arch=${1:-}
+  if [[ -n "$_arch" ]]; then
+    cvd --group_name="cvd_$_arch" remove >/dev/null 2>&1 || true
+    ${ADB:-adb} disconnect "0.0.0.0:$(( 6519 + CVD_INSTANCE[$_arch] ))" >/dev/null 2>&1 || true
+  else
+    cvd reset -y >/dev/null 2>&1 || true
+    ${ADB:-adb} disconnect >/dev/null 2>&1 || true
+  fi
 }
 
 function test_android {
@@ -392,13 +433,7 @@ function test_android {
     start_cuttlefish "$_arch" || continue
 
     build_step "run all tests ($_arch)"
-    ANDROID_DEVICES=$(${ADB} devices | grep 'device$' | sort -r | awk '{print $1}')
-
-    for SERIAL in $ANDROID_DEVICES; do
-      test_on_device "$SERIAL" "$_arch"
-    done
-
-    stop_cuttlefish
+    test_on_device "0.0.0.0:$(( 6519 + CVD_INSTANCE[$_arch] ))" "$_arch"
 
     if [[ ! -f tested_arch_$_arch ]]; then
       build_step "unavailable device android/$_arch"
