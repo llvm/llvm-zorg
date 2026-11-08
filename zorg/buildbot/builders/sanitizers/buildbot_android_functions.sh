@@ -364,8 +364,6 @@ function start_cuttlefish {
       --ap_kernel_image="" \
       --use_sdcard=false \
       --enable_sandbox=false \
-      --data_policy=always_create \
-      --blank_data_image_mb=16384 \
       --report_anonymous_usage_stats=n \
       ${_extra_args[@]+"${_extra_args[@]}"} &
     if wait_for_cuttlefish_boot && wait $!; then
