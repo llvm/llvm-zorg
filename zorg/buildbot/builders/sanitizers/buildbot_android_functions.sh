@@ -252,6 +252,10 @@ function build_and_test_android { # ARCH triple
     return 0
   fi
 
+  if [[ "$_arch" == "arm" || "$_arch" == "aarch64" ]] && ! staging_build; then
+    return 0
+  fi
+
   test_android "$_arch"
 }
 
