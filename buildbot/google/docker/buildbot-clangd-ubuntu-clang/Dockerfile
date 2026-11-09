@@ -16,7 +16,7 @@ FROM docker.io/ubuntu:18.04
 # Install build tools.
 RUN apt-get update && \
     apt-get install -y software-properties-common apt-transport-https ca-certificates \
-    ninja-build git wget gnupg \
+    git wget gnupg unzip \
     # Install ccache for local caching of builds.
     ccache \
     # Install python for buildbot and LIT.
@@ -34,16 +34,21 @@ RUN wget https://apt.llvm.org/llvm.sh && \
     # clean apt cache to reduce image size
     apt-get clean
 
-# Ubuntu ships with old cmake version, install the latest one
-# from https://apt.kitware.com/
-RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | \
-    gpg --dearmor - | \
-    tee /etc/apt/trusted.gpg.d/kitware.gpg >/dev/null && \
-    apt-add-repository 'deb https://apt.kitware.com/ubuntu/ bionic main' && \
-    apt-get update && \
-    apt-get install -y cmake && \
-    # Clean apt cache to reduce image size.
-    apt-get clean
+# Install newer CMake and Ninja, the versions in Ubuntu repositories are too old.
+ENV CMAKE_VERSION=3.31.12
+ENV CMAKE_SHA256=0dc2e9a6860f06bf10bd8fadc03e35d9eeb4df46e33763a7e480e987758f385c
+ENV NINJA_VERSION=1.13.2
+ENV NINJA_SHA256=5749cbc4e668273514150a80e387a957f933c6ed3f5f11e03fb30955e2bbead6
+RUN cd /tmp && \
+    wget -q "https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-linux-x86_64.tar.gz" && \
+    wget -q "https://github.com/ninja-build/ninja/releases/download/v${NINJA_VERSION}/ninja-linux.zip" && \
+    echo "${CMAKE_SHA256}  cmake-${CMAKE_VERSION}-linux-x86_64.tar.gz" | sha256sum -c - && \
+    echo "${NINJA_SHA256}  ninja-linux.zip" | sha256sum -c - && \
+    tar -xz --strip-components=1 -C /usr/local -f "cmake-${CMAKE_VERSION}-linux-x86_64.tar.gz" && \
+    unzip -q -o ninja-linux.zip -d /usr/local/bin && \
+    rm -f "cmake-${CMAKE_VERSION}-linux-x86_64.tar.gz" ninja-linux.zip && \
+    cmake --version && \
+    ninja --version
 
 # configure default versions of LLVM tools and python needed for
 # buildbot-worker. We deliberately do this after installing all the system
