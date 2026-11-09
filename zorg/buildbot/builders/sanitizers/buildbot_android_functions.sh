@@ -325,7 +325,7 @@ function start_cuttlefish {
   local _cpus=8
   local _mem=16384
   local _extra_args=()
-  EXTRA_LIT_OPTS="-j 8"
+  EXTRA_LIT_OPTS="-j 2"
   if [[ "$_arch" == "x86_64" || "$_arch" == "i686" ]] && [[ -w /dev/kvm ]]; then
     _cpus=$(( $(nproc) / 4 ))
     _mem=32768
