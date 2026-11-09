@@ -113,7 +113,7 @@ print(f"Initial working directory: {current_path}. Found build_dir: {build_dir}"
 
 llvm_img = build_dir / "llvm-project.img"
 print(f"Allocating file for filesystem image at: {llvm_img}")
-subprocess.run(["fallocate", "-l", "50GiB", llvm_img], check=True)
+subprocess.run(["fallocate", "-l", "100GiB", llvm_img], check=True)
 
 os.chdir(build_dir)
 build_dir_name = build_dir.name
@@ -147,7 +147,7 @@ else:
 tar_command = (
     f"tar --create --file=- --owner={target_uid} --group={target_gid} "
     f"{' '.join(extra_tar_args)} "
-    f"-C {change_to_dir} {paths_to_tar} | mkfs.ext4 -d - {llvm_img}"
+    f"-C {change_to_dir} {paths_to_tar} | mkfs.ext4 -m 0 -d - {llvm_img}"
 )
 print(f"About to execute tar command: {tar_command}")
 subprocess.run(tar_command, shell=True, check=True)
