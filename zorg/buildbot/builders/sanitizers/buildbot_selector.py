@@ -1,8 +1,6 @@
 #!/usr/bin/python
 
 import os
-import resource
-import shutil
 import subprocess
 import sys
 
@@ -67,6 +65,9 @@ def Main():
         sys.stderr.write("ERROR - unset/invalid builder name\n")
         sys.exit(1)
 
+    print("%s runs: %s\n" % (builder, " ".join(cmd)))
+    sys.stdout.flush()
+
     bot_env = os.environ
     bot_env["BOT_DIR"] = BOT_DIR
     add_env = BOT_ADDITIONAL_ENV.get(builder)
@@ -77,15 +78,6 @@ def Main():
 
     if ":" in revision:
         cmd = [in_script_dir("buildbot_bisect_run.sh")] + cmd
-    if (
-        hasattr(resource, "RLIMIT_NICE")
-        and resource.getrlimit(resource.RLIMIT_NICE)[0] >= 20
-        and shutil.which("chrt")
-    ):
-        cmd = ["chrt", "-i", "0"] + cmd
-
-    print("%s runs: %s\n" % (builder, " ".join(cmd)))
-    sys.stdout.flush()
     sys.exit(subprocess.call(cmd, env=bot_env))
 
 

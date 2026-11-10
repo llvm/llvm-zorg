@@ -280,7 +280,11 @@ function restart_adb_server {
   build_step "restart adb server"
   $ADB kill-server
   sleep 2
-  chrt -o 0 nice -n -15 $ADB start-server
+  if staging_build; then
+    chrt -o 0 nice -n -15 $ADB start-server
+  else
+    $ADB start-server
+  fi
   sleep 2
 }
 
@@ -349,10 +353,14 @@ function start_cuttlefish {
       --enable_modem_simulator=false
     )
   fi
+  local _sched=()
+  if staging_build; then
+    _sched=(chrt -o 0 nice -n -15)
+  fi
   local _attempt
   for _attempt in 1 2; do
     stop_cuttlefish
-    timeout -k 30 300 chrt -o 0 nice -n -15 cvd create \
+    timeout -k 30 300 ${_sched[@]+"${_sched[@]}"} cvd create \
       --product_path="$_dir" \
       --host_path="$_dir" \
       --cpus="$_cpus" \
@@ -389,7 +397,9 @@ function stop_cuttlefish {
 }
 
 function test_android {(
-  chrt -o -p 0 "$BASHPID"
+  if staging_build; then
+    chrt -o -p 0 "$BASHPID"
+  fi
   ADB=adb
   rm -rf tested_arch_*
 
