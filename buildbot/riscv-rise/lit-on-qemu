@@ -144,10 +144,12 @@ elif (build_dir.parent / "llvm" / ".git").is_dir():
 else:
     error("Unrecognized repo/build layout")
 
+# Turn off ext4 metadata checksums as they significantly slow down image
+# creation and are unnecessary for a single-use image.
 tar_command = (
     f"tar --create --file=- --owner={target_uid} --group={target_gid} "
     f"{' '.join(extra_tar_args)} "
-    f"-C {change_to_dir} {paths_to_tar} | mkfs.ext4 -m 0 -d - {llvm_img}"
+    f"-C {change_to_dir} {paths_to_tar} | mkfs.ext4 -m 0 -O ^metadata_csum -d - {llvm_img}"
 )
 print(f"About to execute tar command: {tar_command}")
 subprocess.run(tar_command, shell=True, check=True)
