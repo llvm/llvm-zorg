@@ -27,11 +27,11 @@ master_protocol=http
 
 # Disable user authentication.
 # (change to 'yes' for development)
-# allow_no_auth=no
+# no_authentication=no
 
 # Disable user authorizaiton.
 # (change to 'yes' for development)
-# allow_no_authz=no
+# no_authorization=no
 
 # Config key only supported on downstream buildbot fork.
 # allow_ignore_offline_workers_timeout=no

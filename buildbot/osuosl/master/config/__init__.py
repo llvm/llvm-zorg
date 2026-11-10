@@ -32,8 +32,8 @@ if test_mode:
     options.set('Protocols', 'pb_port', "tcp:9990:interface=127.0.0.1")
     options.set('Database', 'db_url', "sqlite:///state.sqlite")
     options.set('Master Options', 'allow_orphan_workers', "True")
-    options.set('Master Options', 'allow_no_auth', "True")
-    options.set('Master Options', 'allow_no_authz', "True")
+    options.set('Master Options', 'no_authentication', "True")
+    options.set('Master Options', 'no_authorization', "True")
     options.set('Master Options', 'allow_ignore_offline_workers_timeout', "False")
 
 import config.auth
