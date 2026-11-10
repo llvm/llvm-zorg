@@ -24,7 +24,7 @@ case "$BUILDBOT_BUILDERNAME" in
   "clang-riscv-rva20-2stage")
     TARGET_CFLAGS="-march=rva20u64"
     export BB_IMG_DIR=$(pwd)/..
-    export BB_QEMU_CPU="rv64,zfa=false,zba=false,zbb=false,zbc=false,zbs=false"
+    export BB_QEMU_CPU="rv64,zfa=false,zba=false,zbb=false,zbc=false,zbs=false,sstc=true,svvptc=true"
     export BB_QEMU_SMP=32
     export BB_QEMU_MEM="64G"
     ;;
@@ -33,28 +33,28 @@ case "$BUILDBOT_BUILDERNAME" in
     export BB_IMG_DIR=$(pwd)/..
      # TODO: Switch to specifying rva23u64 once qemu on the builder is
      # upgraded to a version that recognises it.
-    export BB_QEMU_CPU="rv64,zba=true,zbb=true,zbc=false,zbs=true,zfhmin=true,v=true,vext_spec=v1.0,zkt=true,zvfhmin=true,zvbb=true,zvkt=true,zihintntl=true,zicond=true,zimop=true,zcmop=true,zcb=true,zfa=true,zawrs=true,rvv_ta_all_1s=true,rvv_ma_all_1s=true,rvv_vl_half_avl=true"
+    export BB_QEMU_CPU="rv64,zba=true,zbb=true,zbc=false,zbs=true,zfhmin=true,v=true,vext_spec=v1.0,zkt=true,zvfhmin=true,zvbb=true,zvkt=true,zihintntl=true,zicond=true,zimop=true,zcmop=true,zcb=true,zfa=true,zawrs=true,rvv_ta_all_1s=true,rvv_ma_all_1s=true,rvv_vl_half_avl=true,sstc=true,svvptc=true"
     export BB_QEMU_SMP=32
     export BB_QEMU_MEM="64G"
     ;;
   "clang-riscv-rva23-zvl512b-2stage")
     TARGET_CFLAGS="-march=rva23u64_zvl512b"
     export BB_IMG_DIR=$(pwd)/..
-    export BB_QEMU_CPU="rva23s64,vlen=512,rvv_ta_all_1s=true,rvv_ma_all_1s=true,rvv_vl_half_avl=true"
+    export BB_QEMU_CPU="rva23s64,vlen=512,rvv_ta_all_1s=true,rvv_ma_all_1s=true,rvv_vl_half_avl=true,sstc=true,svvptc=true"
     export BB_QEMU_SMP=32
     export BB_QEMU_MEM="64G"
     ;;
   "clang-riscv-rva23-zvl1024b-2stage")
     TARGET_CFLAGS="-march=rva23u64_zvl1024b"
     export BB_IMG_DIR=$(pwd)/..
-    export BB_QEMU_CPU="rva23s64,vlen=1024,rvv_ta_all_1s=true,rvv_ma_all_1s=true,rvv_vl_half_avl=true"
+    export BB_QEMU_CPU="rva23s64,vlen=1024,rvv_ta_all_1s=true,rvv_ma_all_1s=true,rvv_vl_half_avl=true,sstc=true,svvptc=true"
     export BB_QEMU_SMP=32
     export BB_QEMU_MEM="64G"
     ;;
   "clang-riscv-x60-mrvv-vec-bits-2stage")
     TARGET_CFLAGS="-mcpu=spacemit-x60 -mrvv-vector-bits=zvl"
     export BB_IMG_DIR=$(pwd)/..
-    export BB_QEMU_CPU="rva22s64,v=true,zbc=true,zbkc=true,zfh=true,zicond=true,zvkt=true,vlen=256,rvv_ta_all_1s=true,rvv_ma_all_1s=true,rvv_vl_half_avl=true"
+    export BB_QEMU_CPU="rva22s64,v=true,zbc=true,zbkc=true,zfh=true,zicond=true,zvkt=true,vlen=256,rvv_ta_all_1s=true,rvv_ma_all_1s=true,rvv_vl_half_avl=true,sstc=true,svvptc=true"
     export BB_QEMU_SMP=32
     export BB_QEMU_MEM="64G"
     ;;
