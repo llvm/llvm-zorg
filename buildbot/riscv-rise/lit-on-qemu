@@ -144,6 +144,10 @@ elif (build_dir.parent / "llvm" / ".git").is_dir():
 else:
     error("Unrecognized repo/build layout")
 
+# Leave out CMakeFiles directories, which hold object files and precompiled
+# headers that tests never use.
+extra_tar_args.append("--exclude=CMakeFiles")
+
 # Turn off ext4 metadata checksums as they significantly slow down image
 # creation and are unnecessary for a single-use image.
 tar_command = (
