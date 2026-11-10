@@ -45,6 +45,11 @@ function staging_build() {
   [[ "$(hostname)" == *"-staging-"* ]]
 }
 
+if staging_build && command -v chrt >/dev/null && \
+    [[ "$(ulimit -Se)" == "unlimited" || "$(ulimit -Se)" -ge 20 ]]; then
+  chrt -i -p 0 "$$"
+fi
+
 function build_failure() {
   # In bisect mode exit early.
   echo
@@ -116,6 +121,8 @@ build_step "Info"
   env | sort
   echo
   ulimit -a
+  echo
+  chrt -p "$$" || true
   echo
   df -h
   echo
@@ -269,12 +276,14 @@ function print_sanitizer_logs() {
 
 
 function run_ninja() {
+  local _nice=()
   if staging_build ; then
     unset LIT_FILTER_OUT
+    _nice=(nice -n 10)
   fi
   env
   local ec=0
-  nice -n 10 /usr/bin/time -o "${ROOT}/time.txt" -- ninja "$@" || ec=$?
+  ${_nice[@]+"${_nice[@]}"} /usr/bin/time -o "${ROOT}/time.txt" -- ninja "$@" || ec=$?
   buildbot_build || print_sanitizer_logs
   if [[ $ec -ne 0 ]] ; then
     build_failure
@@ -300,7 +309,11 @@ function build_stage1_clang_impl {
   if clang -v ; then
     cmake_stage1_options+=" -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++"
   fi
-  (cd ${STAGE1_DIR} && cmake ${cmake_stage1_options} $LLVM && nice -n 10 ninja) || {
+  local _nice=()
+  if staging_build ; then
+    _nice=(nice -n 10)
+  fi
+  (cd ${STAGE1_DIR} && cmake ${cmake_stage1_options} $LLVM && ${_nice[@]+"${_nice[@]}"} ninja) || {
     touch "${STAGE1_DIR}/delete_next_time"
     return 1
   }
