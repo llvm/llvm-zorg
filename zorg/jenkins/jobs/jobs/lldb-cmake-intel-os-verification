@@ -125,6 +125,20 @@ pipeline {
                 }
             }
         }
+        stage('Pre-scan Binaries') {
+            environment {
+                PATH="$PATH:/usr/bin:/usr/local/bin:/opt/homebrew/bin/"
+            }
+            steps {
+                timeout(60) {
+                    // Launch every built binary once so the macOS malware
+                    // scan on first launch doesn't happen during the tests.
+                    sh '''
+                    python3 llvm-zorg/zorg/jenkins/jobs/util/prescan_binaries.py lldb-build/bin
+                    '''
+                }
+            }
+        }
         stage('Clean Test Results') {
             environment {
                PATH="$PATH:/usr/bin:/usr/local/bin"

@@ -203,9 +203,7 @@ class TestBazelBotServer(unittest.TestCase):
 
         # Test get_latest_build_status
         git_repo.refresh_main_branch.return_value = "sha1"
-        cmd_processor.run_bazel_build.return_value = mock.MagicMock(
-            success=True, stderr=""
-        )
+        cmd_processor.run_bazel_build.return_value = utils.BazelBuildSuccess()
 
         info = lbp.get_latest_build_status()
         self.assertEqual(info.commit, "sha1")
@@ -248,7 +246,7 @@ class TestBazelBotServer(unittest.TestCase):
         mock_asyncio_run.return_value = agent_result
 
         # Mock build success after fix
-        cmd_processor.run_bazel_build.return_value = mock.MagicMock(success=True)
+        cmd_processor.run_bazel_build.return_value = utils.BazelBuildSuccess()
         git_repo.push_fix.return_value = True
 
         result = bot.process_failure_with_ai(build_info)
@@ -290,7 +288,7 @@ class TestBazelBotServer(unittest.TestCase):
         git_repo.diff.return_value = "diff_content"
 
         # Mock final verification build
-        cmd_processor.run_bazel_build.return_value = mock.MagicMock(success=True)
+        cmd_processor.run_bazel_build.return_value = utils.BazelBuildSuccess()
         git_repo.push_fix.return_value = True
 
         result = bot.process_failure_with_ai(build_info)
@@ -345,13 +343,14 @@ class TestBazelBotServer(unittest.TestCase):
 
         # Case 2: Repo dirty, build fails -> False
         git_repo.is_repo_dirty.return_value = True
-        cmd_processor.run_bazel_build.return_value = mock.MagicMock(
-            success=False, stderr="err"
+        cmd_processor.run_bazel_build.return_value = utils.BazelBuildFailure(
+            config=utils.BazelBuildConfig(name="default", args=("//...",)),
+            stderr="err",
         )
         self.assertFalse(bot.validate_before_publishing())
 
         # Case 3: Repo dirty, build passes, buildifier fails -> False
-        cmd_processor.run_bazel_build.return_value = mock.MagicMock(success=True)
+        cmd_processor.run_bazel_build.return_value = utils.BazelBuildSuccess()
         git_repo.repo.git.diff.return_value = "file1.py"
         git_repo.repo.untracked_files = []
         cmd_processor.run_buildifier.return_value = False
@@ -359,7 +358,7 @@ class TestBazelBotServer(unittest.TestCase):
 
         # Case 4: All pass
         cmd_processor.run_buildifier.return_value = True
-        cmd_processor.run_bazel_build.return_value = mock.MagicMock(success=True)
+        cmd_processor.run_bazel_build.return_value = utils.BazelBuildSuccess()
         self.assertTrue(bot.validate_before_publishing())
 
     def test_repair_build_logic(self):
@@ -498,6 +497,47 @@ class TestBazelBotServer(unittest.TestCase):
             utils.call_with_retry((), mock_func)
         mock_func.assert_not_called()
 
+    @mock.patch("utils.subprocess.run")
+    def test_run_bazel_build_runs_all_configs(self, mock_run):
+        mock_run.return_value = mock.MagicMock(returncode=0, stdout="ok", stderr="")
+        cmd_processor = utils.CommandProcessor("/path/to/repo")
+        configs = (
+            utils.BazelBuildConfig(name="default", args=("//...",)),
+            utils.BazelBuildConfig(name="second", args=("--flag", "//foo/...")),
+        )
+        result = cmd_processor.run_bazel_build(configs=configs)
+
+        self.assertTrue(result.success)
+        self.assertEqual(mock_run.call_count, len(configs))
+        for call, config in zip(mock_run.call_args_list, configs):
+            self.assertEqual(call.args[0][1:], list(config.args))
+            self.assertEqual(
+                call.kwargs["env"]["BAZEL_OUTPUT_BASE"],
+                "/tmp/bazel_build_" + config.name,
+            )
+
+    @mock.patch("utils.subprocess.run")
+    def test_run_bazel_build_propagates_failure(self, mock_run):
+        configs = (
+            utils.BazelBuildConfig(name="default", args=("//...",)),
+            utils.BazelBuildConfig(name="second", args=("--flag", "//foo/...")),
+            utils.BazelBuildConfig(name="third", args=("//bar/...",)),
+        )
+        mock_run.side_effect = [
+            mock.MagicMock(returncode=0, stdout="", stderr=""),
+            mock.MagicMock(
+                returncode=1, stdout="out", stderr="ERROR (from target //foo:bar)"
+            ),
+        ]
+        cmd_processor = utils.CommandProcessor("/path/to/repo")
+        result = cmd_processor.run_bazel_build(configs)
+
+        self.assertFalse(result.success)
+        self.assertEqual(mock_run.call_count, 2)
+        self.assertEqual(result.config, configs[1])
+        self.assertEqual(result.stdout, "out")
+        self.assertEqual(result.stderr, "ERROR (from target //foo:bar)")
+        self.assertEqual(utils.parse_targets(result.stderr), ["//foo:bar"])
 
 
 if __name__ == "__main__":

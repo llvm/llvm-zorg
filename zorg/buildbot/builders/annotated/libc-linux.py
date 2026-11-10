@@ -36,6 +36,10 @@ def is_arm32_builder(builder_name):
 def is_qemu_builder(builder_name):
   return 'qemu' in builder_name
 
+def is_true_env(var):
+    val = os.environ.get(var, '').strip().lower()
+    return val not in ('', '0', 'false', 'no', 'off')
+
 def main(argv):
     ap = argparse.ArgumentParser()
     ap.add_argument('--asan', action='store_true', default=False,
@@ -68,6 +72,17 @@ def main(argv):
         else:
             cc = 'clang'
             cxx = 'clang++'
+
+    clean_build = any(
+        is_true_env(var)
+        for var in ('BUILDBOT_CLOBBER', 'BUILDBOT_CLEAN', 'BUILDBOT_CLEAN_OBJ')
+    )
+    if clean_build:
+        with step('clean build dir', halt_on_fail=True):
+            cwd = os.getcwd()
+            os.chdir('..')
+            util.clean_dir(cwd)
+            os.chdir(cwd)
 
     with step('cmake', halt_on_fail=True):
         # On most systems the default generator is make, and the default
@@ -127,6 +142,7 @@ def main(argv):
             cmake_args.append('-DCMAKE_AR=/usr/bin/llvm-ar-20')
             cmake_args.append('-DCMAKE_RANLIB=/usr/bin/llvm-ranlib-20')
             cmake_args.append('-DLIBC_UNITTEST_ENV=QEMU_LD_PREFIX=/opt/sysroot-deb-armhf-stable')
+            os.environ['QEMU_LD_PREFIX'] = '/opt/sysroot-deb-armhf-stable'
 
         if bootstrap_build:
             cmake_root = 'llvm'
@@ -145,21 +161,15 @@ def main(argv):
     if fullbuild:
        with step('build libc-startup'):
           run_command(['ninja', 'libc-startup'])
+       if args.asan or gcc_build or riscv_build:
+          # The rest of the targets are either not yet supported with ASan in
+          # fullbuild mode, not yet gcc-clean, or not yet available on riscv.
+          return
 
-    if bootstrap_build:
-        with step('check-libc'):
-            run_command(['ninja', 'check-libc'])
-    else:
-        with step('libc-unit-tests'):
-            run_command(['ninja', 'libc-unit-tests'])
+    with step('check-libc'):
+        run_command(['ninja', 'check-libc'])
 
-    if fullbuild and not args.asan:
-        if gcc_build or ('riscv' in builder_name):
-            # The rest of the targets are either not yet gcc-clean or
-            # not yet availabe on riscv.
-            return
-        with step('libc-integration-tests'):
-            run_command(['ninja', 'libc-integration-tests'])
+    if fullbuild:
         with step('libc-scudo-integration-test'):
             run_command(['ninja', 'libc-scudo-integration-test'])
         # TODO(https://github.com/llvm/llvm-project/issues/119789): re-enable

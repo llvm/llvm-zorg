@@ -17,18 +17,62 @@ CMAKE_COMMON_OPTIONS+=" -DCMAKE_INSTALL_MESSAGE=NEVER"
 export LC_ALL=C
 
 if ccache -s ; then
-  CMAKE_COMMON_OPTIONS+=" -DLLVM_CCACHE_BUILD=ON"
+  export CCACHE_BASEDIR="${ROOT}"
+  export CCACHE_NOHASHDIR=true
+  export CCACHE_COMPILERCHECK=content
+  export CCACHE_SLOPPINESS=pch_defines,time_macros
+  export CCACHE_IGNOREOPTIONS="-L* -Wl,*"
+  CMAKE_COMMON_OPTIONS+=" -DLLVM_CCACHE_BUILD=ON -DLLVM_CCACHE_PARAMS=CCACHE_CPP2=yes"
 fi
 
 if ld.lld --version ; then
-  CMAKE_COMMON_OPTIONS+=" -DLLVM_USE_LINKER=lld"
+  CMAKE_COMMON_OPTIONS+=" -DLLVM_USE_LINKER=lld -DCLANG_DEFAULT_LINKER=lld"
 fi
 
 SANITIZER_LOG_DIR=$ROOT/sanitizer_logs
 
 function build_step() {
+  echo
   echo "@@@BUILD_STEP ${1}@@@"
   CURRENT_STEP="${1}"
+}
+
+function buildbot_build() {
+  [[ "${BUILDBOT_BISECT_MODE:-}" != "1" && -v BUILDBOT_BUILDERNAME ]]
+}
+
+function staging_build() {
+  [[ "$(hostname)" == *"-staging-"* ]]
+}
+
+if staging_build && command -v chrt >/dev/null && \
+    [[ "$(ulimit -Se)" == "unlimited" || "$(ulimit -Se)" -ge 20 ]]; then
+  chrt -i -p 0 "$$"
+fi
+
+function build_failure() {
+  # In bisect mode exit early.
+  echo
+  echo "How to reproduce locally: https://github.com/google/sanitizers/wiki/SanitizerBotReproduceBuild"
+  echo
+
+  echo "@@@STEP_FAILURE@@@"
+
+  buildbot_build || exit 1
+}
+
+function build_exception() {
+  echo
+  echo "@@@STEP_EXCEPTION@@@"
+
+  buildbot_build || exit 2
+}
+
+function build_warning() {
+  echo
+  echo "@@@STEP_WARNINGS@@@"
+
+  buildbot_build || exit 2
 }
 
 function include_config() {
@@ -78,6 +122,8 @@ build_step "Info"
   echo
   ulimit -a
   echo
+  chrt -p "$$" || true
+  echo
   df -h
   echo
   ccache -ps
@@ -102,6 +148,29 @@ build_step "Info"
   hostname -f
 )
 
+function check_glibc() {
+  [[ "${BUILDBOT_BISECT_MODE:-}" == "1" ]] && return 0
+  local _glibc _latest
+  _glibc=$(ldd --version | awk 'NR==1 {print $NF}')
+  _latest=$(
+    timeout 30 git ls-remote --tags https://github.com/gnutools/glibc.git |
+      grep -oE 'refs/tags/glibc-[0-9]+\.[0-9]+$' |
+      grep -oE '[0-9]+\.[0-9]+$' |
+      sort -V |
+      tail -n1
+  ) || true
+  echo
+  echo "glibc version: $_glibc (latest: $_latest)"
+  if [[ "$_glibc" != "$_latest" ]]; then
+    echo "Unexpected glibc version: $_glibc vs $_latest"
+    if buildbot_build; then
+      build_warning
+    fi
+  fi
+}
+
+check_glibc
+
 function cmake() {
   (
     set -x
@@ -116,7 +185,7 @@ function rm_dirs {
 function cleanup() {
   [[ -v BUILDBOT_BUILDERNAME ]] || return 0
   build_step "cleanup"
-  rm_dirs llvm_build2_* llvm_build_* libcxx_build_* libcxx_install_* compiler_rt_build* symbolizer_build* "$@"
+  rm_dirs llvm_build2_* llvm_build_* builtins_build_* libunwind_build_* libcxx_build_* libcxx_install_* compiler_rt_build* symbolizer_build* "$@"
   if ccache -s >/dev/null ; then
     rm_dirs llvm_build64
   fi
@@ -156,6 +225,7 @@ function buildbot_update {
     return 0
   fi
   build_step "update $BUILDBOT_REVISION"
+  local staging_branch="origin/users/vitalybuka/spr/staging"
   if [[ -d "$BUILDBOT_MONO_REPO_PATH" ]]; then
     LLVM=$BUILDBOT_MONO_REPO_PATH/llvm
   else
@@ -168,12 +238,27 @@ function buildbot_update {
         git config --local advice.detachedHead false
       )
       cd llvm-project
-      git fetch origin
+      git fetch --prune origin
       git clean -fd
       git reset --hard
       git checkout -f "${BUILDBOT_REVISION}"
       git status
       git rev-list --pretty --max-count=1 HEAD
+      if [[ "${1:-}" != "--no-merge" ]] && staging_build && \
+          git rev-parse --verify --quiet "${staging_branch}" >/dev/null ; then
+        build_step "merge ${staging_branch}"
+        git rev-list --pretty --max-count=1 "${staging_branch}"
+        git -c user.name="buildbot" -c user.email="buildbot@localhost" \
+          merge --no-edit "${staging_branch}" || {
+          git merge --abort || true
+          git reset --hard
+          git clean -fd
+          git rev-list --pretty --max-count=1 HEAD
+          if buildbot_build ; then
+            build_warning
+          fi
+        }
+      fi
     ) || { build_warning ; exit 0 ; }
     LLVM=$ROOT/llvm-project/llvm
   fi
@@ -182,7 +267,7 @@ function buildbot_update {
 function print_sanitizer_logs() {
   if compgen -G "${SANITIZER_LOG_DIR}"/* ; then
     build_step "sanitizer logs: ${CURRENT_STEP}"
-    head -n -1 "${SANITIZER_LOG_DIR}"/*
+    head -n 10000 "${SANITIZER_LOG_DIR}"/* | head -n 10000
     buildbot_build && rm -rf "${SANITIZER_LOG_DIR}"
     mkdir -p "${SANITIZER_LOG_DIR}"
     build_warning
@@ -191,9 +276,14 @@ function print_sanitizer_logs() {
 
 
 function run_ninja() {
+  local _nice=()
+  if staging_build ; then
+    unset LIT_FILTER_OUT
+    _nice=(nice -n 10)
+  fi
   env
   local ec=0
-  /usr/bin/time -o "${ROOT}/time.txt" -- ninja "$@" || ec=$?
+  ${_nice[@]+"${_nice[@]}"} /usr/bin/time -o "${ROOT}/time.txt" -- ninja "$@" || ec=$?
   buildbot_build || print_sanitizer_logs
   if [[ $ec -ne 0 ]] ; then
     build_failure
@@ -219,7 +309,11 @@ function build_stage1_clang_impl {
   if clang -v ; then
     cmake_stage1_options+=" -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++"
   fi
-  (cd ${STAGE1_DIR} && cmake ${cmake_stage1_options} $LLVM && ninja) || {
+  local _nice=()
+  if staging_build ; then
+    _nice=(nice -n 10)
+  fi
+  (cd ${STAGE1_DIR} && cmake ${cmake_stage1_options} $LLVM && ${_nice[@]+"${_nice[@]}"} ninja) || {
     touch "${STAGE1_DIR}/delete_next_time"
     return 1
   }
@@ -262,9 +356,9 @@ function build_clang_at_release_tag {
   if  [ -r "${STAGE1_DIR}/host_clang_revision" ] && \
       [ "$(cat "${STAGE1_DIR}/host_clang_revision")" == "$host_clang_revision" ]
   then
-    build_step "using pre-built stage1 clang at r${host_clang_revision}"
+    build_step "using pre-built stage1 clang at ${host_clang_revision}"
   else
-    BUILDBOT_MONO_REPO_PATH="" BUILDBOT_REVISION="${host_clang_revision}" buildbot_update
+    BUILDBOT_MONO_REPO_PATH="" BUILDBOT_REVISION="${host_clang_revision}" buildbot_update --no-merge
 
     rm -rf ${STAGE1_DIR}
     build_step "build stage1 clang at $host_clang_revision"
@@ -516,35 +610,6 @@ function check_stage2 {
     (
       LIT_OPTS+=" --timeout=1500"
       build_step "stage2/$sanitizer_name check-cxx"
-      # Very slow.
-      export LIT_FILTER_OUT="std/utilities/format/format.functions/format.locale.dynamic_format.pass.cpp"
-      LIT_FILTER_OUT+="|std/utilities/format/format.functions/format.dynamic_format.pass.cpp"
-      LIT_FILTER_OUT+="|std/utilities/format/format.functions/format.locale.runtime_format.pass.cpp"
-      LIT_FILTER_OUT+="|std/utilities/format/format.functions/format.runtime_format.pass.cpp"
-      LIT_FILTER_OUT+="|std/utilities/format/format.functions/format_to_n.locale.pass.cpp"
-      LIT_FILTER_OUT+="|std/utilities/format/format.functions/format_to_n.pass.cpp"
-      LIT_FILTER_OUT+="|std/utilities/format/format.functions/format_to.locale.pass.cpp"
-      LIT_FILTER_OUT+="|std/utilities/format/format.functions/format_to.pass.cpp"
-      LIT_FILTER_OUT+="|std/utilities/format/format.functions/format.locale.pass.cpp"
-      LIT_FILTER_OUT+="|std/utilities/format/format.functions/format.pass.cpp"
-      LIT_FILTER_OUT+="|std/utilities/format/format.functions/formatted_size.locale.pass.cpp"
-      LIT_FILTER_OUT+="|std/utilities/format/format.functions/formatted_size.pass.cpp"
-      LIT_FILTER_OUT+="|std/utilities/format/format.functions/vformat"
-
-      if [[ "$(arch)" == "aarch64" && "$sanitizer_name" == "msan" ]] ; then
-        # TODO: Investigate one slow tests.
-        LIT_FILTER_OUT+="|test_demangle.pass.cpp"
-      fi
-      if [[ "$(arch)" == "aarch64" && "$sanitizer_name" == "hwasan" ]] ; then
-        # TODO: Investigate one slow tests.
-        LIT_FILTER_OUT+="|test_demangle.pass.cpp"
-      fi
-      
-      if [[ "$(arch)" == "aarch64" ]] ; then
-        # TODO: Investigate what is wrong with aarch64 unwinder.
-        LIT_FILTER_OUT+="|ostream.formatted.print/vprint_nonunicode.pass.cpp"
-        LIT_FILTER_OUT+="|ostream.formatted.print/vprint_unicode.pass.cpp"
-      fi
       run_ninja -C "libcxx_build_${sanitizer_name}" check-runtimes
     )
   fi
@@ -578,7 +643,7 @@ function check_stage2_asan_ubsan {
 }
 
 function check_stage2_cfi {
-  LIT_FILTER_OUT="ExecutionEngine/" check_stage2 cfi
+  check_stage2 cfi
 }
 
 function build_stage3 {
@@ -670,51 +735,6 @@ function check_stage3_ubsan {
 
 function check_stage3_cfi {
   check_stage3 cfi
-}
-
-function buildbot_build() {
-  [[ "${BUILDBOT_BISECT_MODE:-}" != "1" && -v BUILDBOT_BUILDERNAME ]]
-}
-
-function build_failure() {
-  # In bisect mode exit early.
-  echo
-  echo "How to reproduce locally: https://github.com/google/sanitizers/wiki/SanitizerBotReproduceBuild"
-  echo
-
-  # Repeat, server sometimes ignores failures or warnings.
-  for _ in 0 1 2 ; do
-    echo
-    echo "@@@STEP_FAILURE@@@"
-    [[ -v BUILDBOT_BUILDERNAME ]] || break
-    sleep 5
-  done
-
-  buildbot_build || exit 1
-}
-
-function build_exception() {
-  # Repeat, server sometimes ignores failures or warnings.
-  for _ in 0 1 2 ; do
-    echo
-    echo "@@@STEP_EXCEPTION@@@"
-    [[ -v BUILDBOT_BUILDERNAME ]] || break
-    sleep 5
-  done
-
-  buildbot_build || exit 2
-}
-
-function build_warning() {
-  # Repeat, server sometimes ignores failures or warnings.
-  for _ in 0 1 2 ; do
-    echo
-    echo "@@@STEP_WARNINGS@@@"
-    [[ -v BUILDBOT_BUILDERNAME ]] || break
-    sleep 5
-  done
-  
-  buildbot_build || exit 2
 }
 
 function upload_stats() {

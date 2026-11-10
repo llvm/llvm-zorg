@@ -68,6 +68,7 @@ module "premerge_cluster_us_central" {
   linux_runners_kubernetes_service_account_name        = local.linux_runners_kubernetes_service_account_name
   windows_2022_runners_namespace_name                  = local.windows_2022_runners_namespace_name
   windows_2022_runners_kubernetes_service_account_name = local.windows_2022_runners_kubernetes_service_account_name
+  linux_4_machine_type                                 = "c2d-standard-4"
 }
 
 # We explicitly specify a single zone for the service node pool locations as
@@ -87,6 +88,7 @@ module "premerge_cluster_us_west" {
   linux_runners_kubernetes_service_account_name        = local.linux_runners_kubernetes_service_account_name
   windows_2022_runners_namespace_name                  = local.windows_2022_runners_namespace_name
   windows_2022_runners_kubernetes_service_account_name = local.windows_2022_runners_kubernetes_service_account_name
+  linux_4_machine_type                                 = "c2d-standard-4"
 }
 
 provider "helm" {

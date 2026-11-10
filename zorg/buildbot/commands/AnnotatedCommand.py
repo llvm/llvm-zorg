@@ -56,6 +56,8 @@
 
 import re
 
+from typing import Any, cast
+
 from twisted.internet import defer
 from twisted.internet import error
 from twisted.python import failure
@@ -78,8 +80,9 @@ else:
 class AnnotatedBuildStep(buildstep.BuildStep):
 
     def  __init__(self, parent_step, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
         self.parent_step = parent_step
-        buildstep.BuildStep.__init__(self, *args, **kwargs)
 
         # Step is really unpredictable
         self.useProgress = False
@@ -402,7 +405,17 @@ class AnnotatedCommand(buildstep.ShellMixin, buildstep.BuildStep):
 
         self._fixupActiveAnnotatedStep()
 
-        s = AnnotatedBuildStep(parent_step=self, name=name)
+        # Buildbot >= 4
+        if hasattr(buildstep, "create_step_from_step_or_factory"):
+            s = cast(
+                AnnotatedBuildStep,
+                buildstep.create_step_from_step_or_factory(
+                    AnnotatedBuildStep(parent_step=self, name=name)
+                ),
+            )
+        else:
+            s = AnnotatedBuildStep(parent_step=self, name=name)
+
         # Doing this last so that @@@BUILD_STEP... occurs in the log of the new
         # step.
         s.scheduleStdout(logline)

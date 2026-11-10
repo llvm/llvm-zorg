@@ -9,6 +9,7 @@ from zorg.buildbot.commands.NinjaCommand import NinjaCommand
 llvm_docs = OrderedDict([
   # Project              Build target             Local path                            Remote path
   ("llvm",              ("docs-llvm-html",        "docs/html/",                         "llvm")),
+  ("bolt",              ("docs-bolt-html",        "tools/bolt/docs/html/",              "bolt")),
   ("clang",             ("docs-clang-html",       "tools/clang/docs/html/",             "cfe")),
   ("clang-tools-extra", ("docs-clang-tools-html", "tools/clang/tools/extra/docs/html/", "clang-tools-extra")),
   ("libc",              ("docs-libc-html",        "libc/docs/html/",                    "libc")),
@@ -25,6 +26,7 @@ llvm_docs = OrderedDict([
 def getSphinxDocsBuildFactory(
         llvm_html         = False, # Build LLVM HTML documentation
         llvm_man          = False, # Build LLVM man pages
+        bolt_html         = False, # Build BOLT HTML documentation
         clang_html        = False, # Build Clang HTML documentation
         clang_man         = False, # Build Clang man pages
         clang_tools_html  = False, # Build Clang Extra Tools HTML documentation
@@ -54,6 +56,8 @@ def getSphinxDocsBuildFactory(
     llvm_objdir = 'llvm/build'
 
     depends_on_projects = ['llvm']
+    if bolt_html:
+        depends_on_projects.append('bolt')
     if clang_html or clang_man or clang_tools_html or lldb_html:
         depends_on_projects.append('clang')
     if clang_tools_html:
@@ -86,6 +90,14 @@ def getSphinxDocsBuildFactory(
                                description=["Build LLVM Sphinx man pages"],
                                workdir=llvm_objdir,
                                targets=['docs-llvm-man']
+                              ))
+
+    if bolt_html:
+        f.addStep(NinjaCommand(name="docs-bolt-html",
+                               haltOnFailure=True,
+                               description=["Build BOLT Sphinx HTML documentation"],
+                               workdir=llvm_objdir,
+                               targets=['docs-bolt-html']
                               ))
 
     if clang_html:
@@ -228,6 +240,7 @@ def getLLVMDocsBuildFactory(
         # All the projects by default.
         _depends_on_projects=[
             "llvm",
+            "bolt",
             "clang",
             "clang-tools-extra",
             "lld",

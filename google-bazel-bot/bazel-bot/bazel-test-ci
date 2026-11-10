@@ -1,19 +1,17 @@
 #!/bin/bash
 # Starts a bazel test matching buildkite config.
-# You can pass targets to build, otherwise builds everything.
+# Arguments are passed to `bazel test` verbatim (flags and/or targets).
 set -ueo pipefail
+
 # Those variables have to match automated buildkite bazel agent runner to share
 # remote cache.
 export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/bin
 export BAZELISK_HOME=/var/lib/buildkite-agent/.cache/bazelisk
 mkdir -p "$HOME/bazel_execution_log"
-if [ $# -eq 0 ]; then
-  TARGETS=("@llvm-project//..." "//...")
-else
-  TARGETS=("$@")
-fi
 
 # Quiet mode is important so it doesn't populate LLM logs with unnecessary info
-bazelisk --quiet test --lockfile_mode=off --config=ci --jobs=128 --nokeep_going \
+bazelisk --quiet ${BAZEL_OUTPUT_BASE:+--output_base="$BAZEL_OUTPUT_BASE"} \
+  test --lockfile_mode=off --config=ci --jobs=128 --nokeep_going \
   --remote_cache=https://storage.googleapis.com/llvm-bazel-cache \
-  --google_default_credentials "${TARGETS[@]}"
+  --google_default_credentials \
+  "$@"

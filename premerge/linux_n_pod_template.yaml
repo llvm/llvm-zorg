@@ -3,12 +3,12 @@ metadata:
     cluster-autoscaler.kubernetes.io/safe-to-evict: "false"
 spec:
   tolerations:
-  - key: "premerge-platform-libcxx"
+  - key: ${ taint_key }
     operator: "Equal"
-    value: "linux-libcxx"
+    value: ${ taint_value }
     effect: "NoSchedule"
   nodeSelector:
-    premerge-platform-libcxx: linux-libcxx
+    ${premerge_platform_key}: ${ premerge_platform }
   containers:
   - name: $job
     resources:
@@ -22,8 +22,8 @@ spec:
       # For memory however, the request/limits shall be correct.
       # It's not used for scheduling, but can be used by k8 for OOM kill.
       requests:
-        cpu: "100m"
-        memory: "100Gi"
+        cpu: ${ request_cpu }
+        memory: ${ request_memory }
       limits:
-        cpu: 28
-        memory: "128Gi"
+        cpu: ${ limit_cpu }
+        memory: ${ limit_memory }

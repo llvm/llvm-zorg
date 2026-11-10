@@ -49,7 +49,7 @@ needs to be updated to the new version.
 argument called `RUNNER_VERSION` near the bottom of the file that needs to
 be updated to the new version.
 3. The runtimes CI infrastructure - The runner image in
-`linux_32_runners_values.yaml` needs to be updated to point at the latest
+`linux_n_runners_values.yaml` needs to be updated to point at the latest
 version. No changes are needed in the LLVM monorepo.
 
 ### Other Container Image Software

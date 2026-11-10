@@ -2,7 +2,11 @@ from zorg.buildbot.commands.AnnotatedCommand import AnnotatedCommand
 from zorg.buildbot.process.factory import LLVMBuildFactory
 
 def getSanitizerBuildFactory(
-    clean=False,
+    # Sanitizer builds are slow and not very incremental, so the difference
+    # between clean and incremental builds is small, while clean=False forces
+    # extra build requests on every CMake change that workers cannot keep up
+    # with.
+    clean=True,
     extra_depends_on_projects=[],
     extra_configure_args=None,
     env=None,
@@ -13,6 +17,9 @@ def getSanitizerBuildFactory(
         "TERM" : "dumb", # Make sure Clang doesn't use color escape sequences.
                  }
     # Clobber bot if we need a clean build.
+    # TODO: Separate BUILDBOT_CLOBBER from LLVMBuildFactory(clean=True) and
+    # wire it to the Force Build UI ("Clean source code and build directory" /
+    # "Clean build directory").
     if clean:
         merged_env["BUILDBOT_CLOBBER"] = "1"
     # Overwrite pre-set items with the given ones, so user can set anything.

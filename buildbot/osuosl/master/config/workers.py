@@ -1,13 +1,17 @@
 # TODO: Refactor to define a list of tuples, each of which describes a worker, then enumerate and create as data driven.
 
+from twisted.python import log
 from buildbot.plugins import worker
 import config
 
 def create_worker(name, *args, **kwargs):
-    if config.options.getboolean('Internal', 'test_mode'):
-        password = "test"
-    else:
-        password = config.options.get('Worker Passwords', name)
+    allow_orphan_workers = config.options.getboolean('Master Options', 'allow_orphan_workers', fallback = False)
+    password = config.options.get('Worker Passwords', name,
+        fallback = "test" if config.options.getboolean('Internal', 'test_mode') else None)
+    if not password and not allow_orphan_workers:
+        raise ValueError(f"No password specified for '{name}' worker in option section 'Worker Passwords'")
+    if not password:
+        log.msg(f"WARNING: orphan worker '{name}'")
     return worker.Worker(name, password=password, *args, **kwargs)
 
 def get_all():
@@ -100,12 +104,12 @@ def get_all():
         # Ubuntu x86_64 6-core z440 workstation
         create_worker("sanitizer-buildbot-android", properties={'jobs': 6}, max_builds=1),
         # x86_64 GCE instances
-        create_worker("sanitizer-buildbot1", properties={'jobs': 64}, max_builds=3),
-        create_worker("sanitizer-buildbot2", properties={'jobs': 64}, max_builds=3),
-        create_worker("sanitizer-buildbot3", properties={'jobs': 64}, max_builds=3),
-        create_worker("sanitizer-buildbot4", properties={'jobs': 64}, max_builds=3),
-        create_worker("sanitizer-buildbot5", properties={'jobs': 64}, max_builds=3),
-        create_worker("sanitizer-buildbot6", properties={'jobs': 64}, max_builds=3),
+        create_worker("sanitizer-buildbot1", properties={'jobs': 96}, max_builds=2),
+        create_worker("sanitizer-buildbot2", properties={'jobs': 96}, max_builds=2),
+        create_worker("sanitizer-buildbot3", properties={'jobs': 96}, max_builds=2),
+        create_worker("sanitizer-buildbot4", properties={'jobs': 96}, max_builds=2),
+        create_worker("sanitizer-buildbot5", properties={'jobs': 96}, max_builds=2),
+        create_worker("sanitizer-buildbot6", properties={'jobs': 96}, max_builds=2),
         # aarch64 GCE instances
         create_worker("sanitizer-buildbot7", properties={'jobs': 48}, max_builds=2),
         create_worker("sanitizer-buildbot8", properties={'jobs': 48}, max_builds=2),
@@ -272,7 +276,8 @@ def get_all():
         create_worker("hpce-ve-staging", properties={'jobs': 8}, max_builds=1),
 
         # Ubuntu 18.04 amd64 on Google Cloud, 16 core, Nvidia Tesla T4
-        create_worker("mlir-nvidia", properties={'jobs': 16}, max_builds=1),
+        create_worker("mlir-nvidia", properties={'jobs': 16}, max_builds=1,
+                      missing_timeout=300), # notify after 5 minutes of missing
 
         # Ubuntu 18.04 on Google Cloud, for machine configuration check
         # buildbot/google/terraform/main.tf
@@ -337,6 +342,8 @@ def get_all():
         create_worker("sie-linux-worker4", properties={'jobs': 40}, max_builds=1),
         # Ubuntu 24.04 on AWS
         create_worker("sie-linux-worker5", max_builds=1),
+        # Ubuntu 26.04 on AWS
+        create_worker("sie-linux-worker6", max_builds=1),
 
         # Windows Server 2019 on AWS, x86_64 PS4 target
         create_worker("sie-win-worker", properties={'jobs': 64}, max_builds=1),
@@ -351,6 +358,8 @@ def get_all():
         # Ubuntu 20.04, AMD Ryzen 5 PRO 3400GE, 32GB
         create_worker("doug-worker-6", properties={'jobs': 8}, max_builds=1),
 
+        create_worker("doug-worker-7", max_builds=1),
+
         # XCore target, Ubuntu 20.04 x64 host
         create_worker("xcore-ubuntu20-x64", properties={'jobs': 4}, max_builds=1),
 
@@ -363,8 +372,6 @@ def get_all():
         create_worker("omp-vega20-1", properties={'jobs': 32}, max_builds=1),
         # Flang OpenMP on AMDGPU, Ubuntu 22.04.3, AMD(R) EPYC 9354 @ 2.5GHz with 512GB Memory, 1 MI210 GPU with 64GB Memory
         create_worker("rocm-worker-hw-02", properties={'jobs': 64}, max_builds=1),
-        create_worker("rocm-worker-hw-04-rhel-9_4", properties={'jobs': 32}, max_builds=1),
-        create_worker("rocm-worker-hw-04-rhel-8_8", properties={'jobs': 32}, max_builds=1),
         create_worker("AMD-bb-w-05", properties={'jobs': 64}, max_builds=1),
         # Containerized build-only, using llvm-project/offload/cmake/caches/AMDGPUbot.cmake
         create_worker("rocm-docker-ubu-22", properties={'jobs': 32}, max_builds=1),
@@ -593,6 +600,7 @@ def get_all():
         create_worker("arm-bbot-flang-aarch64-latest-gcc", max_builds=1),
         create_worker("arm-bbot-flang-aarch64-libcxx", max_builds=1),
         create_worker("arm-bbot-flang-aarch64-rel-assert", max_builds=1),
+        create_worker("arm-bbot-flang-aarch64-sanitizer", max_builds=1),
         create_worker("arm-bbot-clang-armv7-vfpv3-2stage", max_builds=1),
         create_worker("arm-bbot-clang-armv8-quick", max_builds=1),
         create_worker("arm-bbot-lldb-arm-ubuntu", max_builds=1),
@@ -604,4 +612,17 @@ def get_all():
         create_worker("arm-bbot-lldb-aarch64-windows", max_builds=1),
         create_worker("arm-bbot-clang-arm64-windows-msvc-2stage", max_builds=1),
         create_worker("arm-bbot-flang-aarch64-windows-msvc", max_builds=1),
-        ]
+        ] + get_develop()
+        
+def get_develop():
+    develop_workers = []
+    
+    if config.options.getboolean('Master Options', 'allow_develop_workers', fallback = False):
+        if config.options.has_section('Develop Workers'):
+            for n, p in config.options['Develop Workers'].items():
+                develop_workers.append(
+                    worker.Worker(n, password = p, max_builds=1))
+                log.msg(f"INFO: develop worker '{n}'")
+    return develop_workers
+    
+    

@@ -25,6 +25,8 @@ from zorg.buildbot.builders import DoxygenDocsBuilder
 
 from zorg.buildbot.builders import StagedBuilder
 
+import config
+
 reload(ClangBuilder)
 reload(FlangBuilder)
 reload(PollyBuilder)
@@ -111,8 +113,8 @@ all = [
 
     {'name': "llvm-clang-x86_64-sie-ubuntu-fast",
     'tags'  : ["clang", "llvm", "clang-tools-extra", "lld", "cross-project-tests"],
-    'collapseRequests': False,
-    'workernames': ["sie-linux-worker"],
+    'collapseRequests': True,
+    'workernames': ["sie-linux-worker", "doug-worker-7"],
     'builddir': "llvm-clang-x86_64-sie-ubuntu-fast",
     'factory': UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                     depends_on_projects=['llvm','clang','clang-tools-extra','lld','cross-project-tests'],
@@ -121,6 +123,7 @@ all = [
                         "-DCMAKE_CXX_COMPILER=g++",
                         "-DCMAKE_BUILD_TYPE=Release",
                         "-DCLANG_ENABLE_ARCMT=OFF",
+                        "-DCLANG_ENABLE_CIR=OFF",
                         "-DCLANG_ENABLE_CLANGD=OFF",
                         "-DCLANG_RESOURCE_DIR=../lib/clang",
                         "-DCLANG_VENDOR=SIE",
@@ -130,7 +133,7 @@ all = [
                         "-DLLVM_INCLUDE_EXAMPLES=OFF",
                         "-DLLVM_DEFAULT_TARGET_TRIPLE=x86_64-scei-ps4",
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
-                        "-DLLVM_LIT_ARGS=--verbose -j100 --timeout=900",
+                        "-DLLVM_LIT_ARGS=--verbose --timeout=900",
                         "-DLLVM_TARGETS_TO_BUILD=X86",
                         "-DLLVM_USE_LINKER=gold"])},
 
@@ -146,6 +149,7 @@ all = [
                         "-DCMAKE_CXX_COMPILER=g++",
                         "-DCMAKE_BUILD_TYPE=Release",
                         "-DCLANG_ENABLE_ARCMT=OFF",
+                        "-DCLANG_ENABLE_CIR=OFF",
                         "-DCLANG_ENABLE_CLANGD=OFF",
                         "-DCLANG_RESOURCE_DIR=../lib/clang",
                         "-DCLANG_VENDOR=SIE",
@@ -351,7 +355,8 @@ all = [
                         "-DCLANG_DEFAULT_LINKER=lld",
                         "-DCMAKE_TRY_COMPILE_CONFIGURATION=Release",
                         "-DCOMPILER_RT_BUILD_SANITIZERS=OFF",
-                        "-DLLVM_CCACHE_BUILD=ON"])},
+                        "-DLLVM_CCACHE_BUILD=ON",
+                        "-DCLANG_ENABLE_CIR:BOOL=OFF"])},
 
     ## ARMv8 check-all
     {'name' : "clang-armv8-quick",
@@ -366,7 +371,8 @@ all = [
                     extra_cmake_args=[
                         "-DLLVM_TARGETS_TO_BUILD='ARM'",
                         # Skip scheduling sensitive tests.
-                        "-DLLVM_LIT_ARGS=-v --filter-out '(googletest-timeout|timeout-hang|max-time)\.py'"])},
+                        "-DLLVM_LIT_ARGS=-v --filter-out '(googletest-timeout|timeout-hang|max-time)\.py'",
+                        "-DCLANG_ENABLE_CIR:BOOL=OFF"])},
 
     ## ARMv7 check-all 2-stage
     {'name' : "clang-armv7-2stage",
@@ -414,7 +420,8 @@ all = [
                     testStage1=False,
                     extra_cmake_args=[
                         "-DCMAKE_C_FLAGS='-mcpu=cortex-a15 -mfpu=vfpv3 -marm'",
-                        "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a15 -mfpu=vfpv3 -marm'"])},
+                        "-DCMAKE_CXX_FLAGS='-mcpu=cortex-a15 -mfpu=vfpv3 -marm'",
+                        "-DCLANG_ENABLE_CIR:BOOL=OFF"])},
 
     ## AArch64 check-all
     {'name' : "clang-aarch64-quick",
@@ -429,7 +436,8 @@ all = [
                     extra_cmake_args=[
                         "-DLLVM_TARGETS_TO_BUILD='AArch64'",
                         # Skip scheduling sensitive tests.
-                        "-DLLVM_LIT_ARGS=-v --filter-out '(googletest-timeout|timeout-hang|max-time)\.py'"])},
+                        "-DLLVM_LIT_ARGS=-v --filter-out '(googletest-timeout|timeout-hang|max-time)\.py'",
+                        "-DCLANG_ENABLE_CIR:BOOL=OFF"])},
 
     # AArch64 2 stage build with lld, flang, compiler-rt, test-suite and SVE/SME
     # mlir integration tests.
@@ -470,8 +478,15 @@ all = [
                     checkout_lld=False,
                     runTestSuite=True,
                     testsuite_flags=[
+                        '--use-make=ninja',
+                        '--succinct-compile-output',
+                        '--cmake-define', 'TEST_SUITE_COLLECT_CODE_SIZE=OFF',
+                        '--cmake-define', 'TEST_SUITE_COLLECT_COMPILE_TIME=OFF',
                         '--cppflags', '-O0',
-                        '--threads=32', '--build-threads=32'])},
+                        '--threads=32', '--build-threads=32'],
+                    extra_cmake_args=[
+                        "-DCLANG_ENABLE_CIR:BOOL=OFF",
+                    ])},
 
     ## AArch32 Clang+LLVM+LLD check-all + test-suite.
     # Not using lld for everything due to https://github.com/llvm/llvm-project/issues/172659.
@@ -484,6 +499,10 @@ all = [
                     useTwoStage=True,
                     runTestSuite=True,
                     testsuite_flags=[
+                        '--use-make=ninja',
+                        '--succinct-compile-output',
+                        '--cmake-define', 'TEST_SUITE_COLLECT_CODE_SIZE=OFF',
+                        '--cmake-define', 'TEST_SUITE_COLLECT_COMPILE_TIME=OFF',
                         '--cppflags', '-mcpu=neoverse-n1 -fuse-ld=lld',
                         '--threads=32', '--build-threads=32'],
                     extra_cmake_args=[
@@ -492,7 +511,8 @@ all = [
                         # Sanitizers disabled due to https://github.com/llvm/llvm-project/issues/38038.
                         "-DCOMPILER_RT_BUILD_SANITIZERS=OFF",
                         # lld tests cause us to hit thread limits
-                        "-DLLVM_ENABLE_THREADS=OFF"])},
+                        "-DLLVM_ENABLE_THREADS=OFF",
+                        "-DCLANG_ENABLE_CIR:BOOL=OFF"])},
 
     # All SVE (as opposed to SVE2) builders are using optimisation flags
     # for Graviton 3 "balanced" from
@@ -537,6 +557,10 @@ all = [
                         'NO_STOP_MESSAGE':'1', # For Fortran test-suite
                     },
                     testsuite_flags=[
+                        '--use-make=ninja',
+                        '--succinct-compile-output',
+                        '--cmake-define', 'TEST_SUITE_COLLECT_CODE_SIZE=OFF',
+                        '--cmake-define', 'TEST_SUITE_COLLECT_COMPILE_TIME=OFF',
                         '--cppflags', '-mcpu=neoverse-512tvb -mllvm -scalable-vectorization=preferred -O3',
                         '--cmake-define', 'CMAKE_Fortran_FLAGS=-mcpu=neoverse-512tvb -mllvm -scalable-vectorization=preferred -O3',
                         '--threads=32', '--build-threads=32'],
@@ -545,7 +569,8 @@ all = [
                         "-DCMAKE_CXX_FLAGS='-mcpu=neoverse-512tvb -mllvm -scalable-vectorization=preferred'",
                         "-DLLVM_ENABLE_LLD=True",
                         "-DMLIR_INCLUDE_INTEGRATION_TESTS=True",
-                        "-DMLIR_RUN_ARM_SVE_TESTS=True"])},
+                        "-DMLIR_RUN_ARM_SVE_TESTS=True",
+                        "-DCLANG_ENABLE_CIR:BOOL=OFF"])},
 
     # AArch64 Clang+LLVM+RT+LLD check-all + flang + test-suite w/SVE-Vector-Length-Specific
     {'name' : "clang-aarch64-sve-vls",
@@ -585,6 +610,10 @@ all = [
                         'NO_STOP_MESSAGE':'1', # For Fortran test-suite
                     },
                     testsuite_flags=[
+                        '--use-make=ninja',
+                        '--succinct-compile-output',
+                        '--cmake-define', 'TEST_SUITE_COLLECT_CODE_SIZE=OFF',
+                        '--cmake-define', 'TEST_SUITE_COLLECT_COMPILE_TIME=OFF',
                         '--cppflags', '-mcpu=neoverse-512tvb -msve-vector-bits=256 -O3',
                         '--cmake-define', 'CMAKE_Fortran_FLAGS=-mcpu=neoverse-512tvb -msve-vector-bits=256 -O3',
                         '--threads=32', '--build-threads=32'],
@@ -593,7 +622,8 @@ all = [
                         "-DCMAKE_CXX_FLAGS='-mcpu=neoverse-512tvb -msve-vector-bits=256'",
                         "-DLLVM_ENABLE_LLD=True",
                         "-DMLIR_INCLUDE_INTEGRATION_TESTS=True",
-                        "-DMLIR_RUN_ARM_SVE_TESTS=True"])},
+                        "-DMLIR_RUN_ARM_SVE_TESTS=True",
+                        "-DCLANG_ENABLE_CIR:BOOL=OFF"])},
 
     # All SVE2 builders are using optimisation flags for Graviton 4 "performance" from
     # https://github.com/aws/aws-graviton-getting-started/blob/main/c-c++.md
@@ -611,6 +641,10 @@ all = [
                         'NO_STOP_MESSAGE':'1', # For Fortran test-suite
                     },
                     testsuite_flags=[
+                        '--use-make=ninja',
+                        '--succinct-compile-output',
+                        '--cmake-define', 'TEST_SUITE_COLLECT_CODE_SIZE=OFF',
+                        '--cmake-define', 'TEST_SUITE_COLLECT_COMPILE_TIME=OFF',
                         '--cppflags', '-mcpu=neoverse-v2 -mllvm -scalable-vectorization=preferred -O3',
                         '--cmake-define', 'CMAKE_Fortran_FLAGS=-mcpu=neoverse-v2 -mllvm -scalable-vectorization=preferred -O3',
                         '--threads=48', '--build-threads=48'],
@@ -619,7 +653,8 @@ all = [
                         "-DCMAKE_CXX_FLAGS='-mcpu=neoverse-v2'",
                         "-DLLVM_ENABLE_LLD=True",
                         "-DMLIR_INCLUDE_INTEGRATION_TESTS=True",
-                        "-DMLIR_RUN_ARM_SVE_TESTS=True"])},
+                        "-DMLIR_RUN_ARM_SVE_TESTS=True",
+                        "-DCLANG_ENABLE_CIR:BOOL=OFF"])},
 
     # AArch64 Clang+LLVM+RT+LLD check-all + flang + test-suite 2-stage with SVE2
     # (not just SVE) Vector Length Agnostic codegen.
@@ -637,6 +672,10 @@ all = [
                         'NO_STOP_MESSAGE':'1', # For Fortran test-suite
                     },
                     testsuite_flags=[
+                        '--use-make=ninja',
+                        '--succinct-compile-output',
+                        '--cmake-define', 'TEST_SUITE_COLLECT_CODE_SIZE=OFF',
+                        '--cmake-define', 'TEST_SUITE_COLLECT_COMPILE_TIME=OFF',
                         '--cppflags', '-mcpu=neoverse-v2 -mllvm -scalable-vectorization=preferred -O3',
                         '--cmake-define', 'CMAKE_Fortran_FLAGS=-mcpu=neoverse-v2 -mllvm -scalable-vectorization=preferred -O3',
                         '--threads=48', '--build-threads=48'],
@@ -645,7 +684,8 @@ all = [
                         "-DCMAKE_CXX_FLAGS='-mcpu=neoverse-v2 -mllvm -scalable-vectorization=preferred'",
                         "-DLLVM_ENABLE_LLD=True",
                         "-DMLIR_INCLUDE_INTEGRATION_TESTS=True",
-                        "-DMLIR_RUN_ARM_SVE_TESTS=True"])},
+                        "-DMLIR_RUN_ARM_SVE_TESTS=True",
+                        "-DCLANG_ENABLE_CIR:BOOL=OFF"])},
 
     {'name' : "clang-arm64-windows-msvc-2stage",
     'tags'  : ["clang"],
@@ -662,7 +702,8 @@ all = [
                         "-DCMAKE_TRY_COMPILE_CONFIGURATION=Release",
                         "-DLLVM_CCACHE_BUILD=ON",
                         "-DLLVM_ENABLE_RUNTIMES=openmp",
-                        "-DCOMPILER_RT_BUILD_SANITIZERS=OFF"])},
+                        "-DCOMPILER_RT_BUILD_SANITIZERS=OFF",
+                        "-DCLANG_ENABLE_CIR:BOOL=OFF"])},
 
     {'name' : "clang-m68k-linux",
     'tags'  : ["clang"],
@@ -770,6 +811,7 @@ all = [
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                     depends_on_projects=['llvm', 'mlir', 'clang', 'flang', 'flang-rt', 'compiler-rt', 'openmp'],
                     checks=['check-llvm', 'check-clang', 'check-flang', 'check-mlir', 'check-compiler-rt', 'check-openmp', 'check-flang-rt'],
+                    timeout=1800,
                     extra_configure_args=[
                         '-DLLVM_DEFAULT_TARGET_TRIPLE=powerpc64-ibm-aix',
                         '-DLLVM_INSTALL_UTILS=ON',
@@ -837,7 +879,6 @@ all = [
                         "-DLLVM_ENABLE_ASSERTIONS=ON"])},
 
     {'name' : "llvm-s390x-zos",
-    'collapseRequests' : True,
     'tags'  : ["llvm", "zos", "s390x"],
     'workernames' : ["zos-s390x-1"],
     'builddir': "llvm-s390x-zos",
@@ -858,18 +899,14 @@ all = [
                         'LLVM_ENABLE_WERROR'             : 'OFF',
                         'CMAKE_CXX_FLAGS_RELEASE'        : '-O3 -DNDEBUG',
                         'CMAKE_C_FLAGS_RELEASE'          : '-O3 -DNDEBUG',
-                        'CMAKE_AR'                       : '/data/devuser/ar_wrapper.sh',
                         'LLVM_TARGETS_TO_BUILD'          : 'SystemZ',
                         'LLVM_ENABLE_THREADS'            : 'OFF',
-                        'DIFF_EXE'                       : '/data/zopen/usr/local/bin/gdiff',
+                        'DIFF_EXE'                       : '/data/devuser/tools/gnu-diff-3.3/diff',
                     },
                     env={
                         'CC': '/usr/lpp/IBM/cnw/v2r2/openxl/bin/ibm-clang64',
                         'CXX': '/usr/lpp/IBM/cnw/v2r2/openxl/bin/ibm-clang++64',
                         'TMPDIR': '/data/devuser/tmp/',
-                        '_TAG_REDIR_IN': '',
-                        '_TAG_REDIR_OUT': '',
-                        '_TAG_REDIR_ERR': '',
                     })},
 
     {'name' : 'clang-sparc64-linux',
@@ -1012,6 +1049,7 @@ all = [
                     extra_configure_args=[
                         "-DCMAKE_BUILD_TYPE=Release",
                         "-DCLANG_ENABLE_ARCMT=OFF",
+                        "-DCLANG_ENABLE_CIR=OFF",
                         "-DCLANG_ENABLE_CLANGD=OFF",
                         "-DCLANG_RESOURCE_DIR=../lib/clang",
                         "-DCLANG_VENDOR=SIE",
@@ -1037,6 +1075,7 @@ all = [
                         "-DCMAKE_CXX_COMPILER=g++",
                         "-DCMAKE_BUILD_TYPE=Release",
                         "-DCLANG_ENABLE_ARCMT=OFF",
+                        "-DCLANG_ENABLE_CIR=OFF",
                         "-DLLDB_ENABLE_PYTHON=TRUE",
                         "-DLLVM_INCLUDE_EXAMPLES=OFF",
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
@@ -1057,6 +1096,7 @@ all = [
                         "-DCMAKE_CXX_COMPILER=g++",
                         "-DCMAKE_BUILD_TYPE=Release",
                         "-DCLANG_ENABLE_ARCMT=OFF",
+                        "-DCLANG_ENABLE_CIR=OFF",
                         "-DLLDB_ENABLE_PYTHON=TRUE",
                         "-DLLVM_INCLUDE_EXAMPLES=OFF",
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
@@ -1076,6 +1116,7 @@ all = [
                         "-DCMAKE_C_COMPILER=gcc",
                         "-DCMAKE_CXX_COMPILER=g++",
                         "-DCMAKE_BUILD_TYPE=Release",
+                        "-DCLANG_ENABLE_CIR=OFF",
                         "-DCLANG_ENABLE_CLANGD=OFF",
                         "-DLLVM_BUILD_RUNTIME=ON",
                         "-DLLVM_BUILD_TESTS=ON",
@@ -1094,6 +1135,7 @@ all = [
                         "-DCMAKE_C_COMPILER=gcc",
                         "-DCMAKE_CXX_COMPILER=g++",
                         "-DCMAKE_BUILD_TYPE=Release",
+                        "-DCLANG_ENABLE_CIR=OFF",
                         "-DCLANG_ENABLE_CLANGD=OFF",
                         "-DLLVM_BUILD_RUNTIME=ON",
                         "-DLLVM_BUILD_TESTS=ON",
@@ -1116,6 +1158,7 @@ all = [
                         "-DCMAKE_BUILD_TYPE=RelWithDebInfo",
                         "-DCMAKE_C_FLAGS_RELWITHDEBINFO=-O2 -gmlt -DNDEBUG",
                         "-DCMAKE_CXX_FLAGS_RELWITHDEBINFO=-O2 -gmlt -DNDEBUG",
+                        "-DCLANG_ENABLE_CIR=OFF",
                         "-DLLVM_CCACHE_BUILD=ON",
                         "-DLLVM_BUILD_TESTS=ON",
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
@@ -1136,6 +1179,7 @@ all = [
                         "-DCMAKE_C_COMPILER=clang",
                         "-DCMAKE_CXX_COMPILER=clang++",
                         "-DCMAKE_BUILD_TYPE=Release",
+                        "-DCLANG_ENABLE_CIR=OFF",
                         "-DLLVM_BUILD_TESTS=ON",
                         "-DLLVM_CCACHE_BUILD=ON",
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
@@ -1154,6 +1198,7 @@ all = [
                         "-DCMAKE_C_COMPILER=clang",
                         "-DCMAKE_CXX_COMPILER=clang++",
                         "-DCMAKE_BUILD_TYPE=Release",
+                        "-DCLANG_ENABLE_CIR=OFF",
                         "-DLLVM_BUILD_TESTS=ON",
                         "-DLLVM_CCACHE_BUILD=ON",
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
@@ -1171,6 +1216,7 @@ all = [
                         "-DCMAKE_C_COMPILER=gcc",
                         "-DCMAKE_CXX_COMPILER=g++",
                         "-DCMAKE_BUILD_TYPE=Release",
+                        "-DCLANG_ENABLE_CIR=OFF",
                         "-DCLANG_ENABLE_CLANGD=OFF",
                         "-DLLVM_BUILD_RUNTIME=ON",
                         "-DLLVM_BUILD_TESTS=ON",
@@ -1179,6 +1225,24 @@ all = [
                         "-DLLVM_LIT_ARGS=--verbose --timeout=900",
                         "-DLLVM_USE_LINKER=gold"])},
 
+    {'name': "llvm-clang-x86_64-ubuntu26-flmd",
+     'tags': ["llvm", "clang"],
+     'workernames': ["sie-linux-worker6"],
+     'builddir': "llvm-flmd",
+     'factory': UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
+                    depends_on_projects=['llvm','clang'],
+                    extra_configure_args=[
+                        "-DCMAKE_C_COMPILER=clang",
+                        "-DCMAKE_CXX_COMPILER=clang++",
+                        "-DCMAKE_BUILD_TYPE=Release",
+                        "-DLLVM_CCACHE_BUILD=ON",
+                        "-DLLVM_BUILD_TESTS=ON",
+                        "-DLLVM_ENABLE_ASSERTIONS=ON",
+                        "-DLLVM_INCLUDE_EXAMPLES=OFF",
+                        "-DLLVM_LIT_ARGS=-v",
+                        "-DLLVM_USE_LINKER=lld",
+                        "-DLLVM_USE_FLMD_SOURCE_LOCS=ON",
+                        "-DLLVM_ENABLE_WERROR=OFF"])},
 # Polly builders.
 
     {'name' : "polly-arm-linux",
@@ -1336,7 +1400,8 @@ all = [
                     extra_cmake_args=[
                         '-DLLVM_ENABLE_ASSERTIONS=True',
                         '-DLLVM_USE_LINKER=lld',
-                        '-DLLDB_ENFORCE_STRICT_TEST_REQUIREMENTS=ON'])},
+                        '-DLLDB_ENFORCE_STRICT_TEST_REQUIREMENTS=ON',
+                        '-DCLANG_ENABLE_CIR:BOOL=OFF'])},
 
     {'name' : "lldb-arm-ubuntu",
     'tags'  : ["lldb"],
@@ -1350,7 +1415,8 @@ all = [
                         '-DLLVM_LIT_ARGS=-vj 4',
                         '-DLLVM_USE_LINKER=lld',
                         '-DCLANG_DEFAULT_LINKER=lld',
-                        '-DLLDB_ENFORCE_STRICT_TEST_REQUIREMENTS=ON'])},
+                        '-DLLDB_ENFORCE_STRICT_TEST_REQUIREMENTS=ON',
+                        '-DCLANG_ENABLE_CIR:BOOL=OFF'])},
 
     {'name' : "lldb-aarch64-windows",
     'tags'  : ["lldb"],
@@ -1364,7 +1430,8 @@ all = [
                         # Hardware breakpoints and watchpoints are not yet supported,
                         # https://github.com/llvm/llvm-project/issues/80665.
                         '-DLLDB_TEST_USER_ARGS=--skip-category=watchpoint',
-                        '-DLLDB_ENFORCE_STRICT_TEST_REQUIREMENTS=ON'])},
+                        '-DLLDB_ENFORCE_STRICT_TEST_REQUIREMENTS=ON',
+                        '-DCLANG_ENABLE_CIR:BOOL=OFF'])},
 
     {'name': "lldb-x86_64-win",
     'tags'  : ["lldb"],
@@ -1614,7 +1681,6 @@ all += [
     'tags'  : ["sanitizer", "compiler-rt"],
     'workernames' : [
         "sanitizer-buildbot1",
-        "sanitizer-buildbot2",
     ],
     'builddir': "sanitizer-x86_64-linux",
     'factory' : SanitizerBuilder.getSanitizerBuildFactory()},
@@ -1638,7 +1704,6 @@ all += [
     ],
     'builddir': "sanitizer-x86_64-linux-bootstrap-asan",
     'factory' : SanitizerBuilder.getSanitizerBuildFactory(
-        clean=True,
         extra_depends_on_projects=["mlir", "clang-tools-extra"]
     )},
 
@@ -1650,7 +1715,6 @@ all += [
     ],
     'builddir': "sanitizer-x86_64-linux-bootstrap-msan",
     'factory' : SanitizerBuilder.getSanitizerBuildFactory(
-        clean=True,
         extra_depends_on_projects=["mlir", "clang-tools-extra"]
     )},
 
@@ -1661,7 +1725,6 @@ all += [
     ],
     'builddir': "sanitizer-x86_64-linux-bootstrap-ubsan",
     'factory' : SanitizerBuilder.getSanitizerBuildFactory(
-        clean=True,
         extra_depends_on_projects=["mlir", "clang-tools-extra"]
     )},
 
@@ -1672,15 +1735,13 @@ all += [
     ],
     'builddir': "sanitizer-x86_64-linux-bootstrap-cfi",
     'factory' : SanitizerBuilder.getSanitizerBuildFactory(
-        clean=True,
         extra_depends_on_projects=["clang-tools-extra"]
     )},
 
     {'name' : "sanitizer-x86_64-linux-qemu",
     'tags'  : ["sanitizer"],
     'workernames' : [
-        "sanitizer-buildbot3",
-        "sanitizer-buildbot4",
+        "sanitizer-buildbot6",
     ],
     'builddir': "sanitizer-x86_64-linux-qemu",
     'factory' : SanitizerBuilder.getSanitizerBuildFactory()},
@@ -1689,7 +1750,6 @@ all += [
     'tags'  : ["sanitizer"],
     'workernames' : [
         "sanitizer-buildbot5",
-        "sanitizer-buildbot6",
     ],
     'builddir': "sanitizer-x86_64-linux-fuzzer",
     'factory' : SanitizerBuilder.getSanitizerBuildFactory()},
@@ -1698,6 +1758,7 @@ all += [
     'tags'  : ["sanitizer"],
     'workernames' : [
         "sanitizer-buildbot-android",
+        "sanitizer-buildbot2",
     ],
     'builddir': "sanitizer-x86_64-linux-android",
     'factory' : SanitizerBuilder.getSanitizerBuildFactory()},
@@ -1705,8 +1766,8 @@ all += [
     {'name' : "sanitizer-aarch64-linux",
     'tags'  : ["sanitizer", "aarch64", "compiler-rt"],
     'workernames' : [
-        "sanitizer-buildbot7",
-        "sanitizer-buildbot8",
+        "sanitizer-buildbot11",
+        "sanitizer-buildbot12",
     ],
     'builddir': "sanitizer-aarch64-linux",
     'factory' : SanitizerBuilder.getSanitizerBuildFactory()},
@@ -1714,24 +1775,23 @@ all += [
     {'name' : "sanitizer-aarch64-linux-bootstrap-asan",
     'tags'  : ["sanitizer", "aarch64"],
     'workernames' : [
-        "sanitizer-buildbot7",
-        "sanitizer-buildbot8",
+        "sanitizer-buildbot9",
+        "sanitizer-buildbot10",
     ],
     'builddir': "sanitizer-aarch64-linux-bootstrap-asan",
     'factory' : SanitizerBuilder.getSanitizerBuildFactory(
-        clean=True,
         extra_depends_on_projects=["mlir", "clang-tools-extra"]
     )},
 
     {'name' : "sanitizer-aarch64-linux-bootstrap-hwasan",
     'tags'  : ["sanitizer", "aarch64"],
     'workernames' : [
+        "sanitizer-buildbot7",
         "sanitizer-buildbot11",
         "sanitizer-buildbot12",
     ],
     'builddir': "sanitizer-aarch64-linux-bootstrap-hwasan",
     'factory' : SanitizerBuilder.getSanitizerBuildFactory(
-        clean=True,
         extra_depends_on_projects=["mlir", "clang-tools-extra"]
     )},
 
@@ -1743,37 +1803,33 @@ all += [
     ],
     'builddir': "sanitizer-aarch64-linux-bootstrap-msan",
     'factory' : SanitizerBuilder.getSanitizerBuildFactory(
-        clean=True,
         extra_depends_on_projects=["mlir", "clang-tools-extra"]
     )},
 
     {'name' : "sanitizer-aarch64-linux-bootstrap-ubsan",
     'tags'  : ["sanitizer", "aarch64"],
     'workernames' : [
-        "sanitizer-buildbot9",
+        "sanitizer-buildbot7",
     ],
     'builddir': "sanitizer-aarch64-linux-bootstrap-ubsan",
     'factory' : SanitizerBuilder.getSanitizerBuildFactory(
-        clean=True,
         extra_depends_on_projects=["mlir", "clang-tools-extra"]
     )},
 
     {'name' : "sanitizer-aarch64-linux-bootstrap-cfi",
     'tags'  : ["sanitizer", "aarch64"],
     'workernames' : [
-        "sanitizer-buildbot10",
+        "sanitizer-buildbot8",
     ],
     'builddir': "sanitizer-aarch64-linux-bootstrap-cfi",
     'factory' : SanitizerBuilder.getSanitizerBuildFactory(
-        clean=True,
         extra_depends_on_projects=["clang-tools-extra"]
     )},
 
     {'name' : "sanitizer-aarch64-linux-fuzzer",
     'tags'  : ["sanitizer", "aarch64"],
     'workernames' : [
-        "sanitizer-buildbot11",
-        "sanitizer-buildbot12",
+        "sanitizer-buildbot8",
     ],
     'builddir': "sanitizer-aarch64-linux-fuzzer",
     'factory' : SanitizerBuilder.getSanitizerBuildFactory()},
@@ -1783,7 +1839,6 @@ all += [
     'workernames' : ["ppc64le-sanitizer"],
     'builddir': "sanitizer-ppc64le",
     'factory' : SanitizerBuilder.getSanitizerBuildFactory(
-        clean=True,
         timeout=1800
     )},
 
@@ -1956,72 +2011,6 @@ all += [
                     script_interpreter=None
                 )},
 
-    {'name' : "openmp-offload-rhel-9_4",
-    'tags'  : ["openmp"],
-    'workernames' : ["rocm-worker-hw-04-rhel-9_4"],
-    'builddir': "openmp-offload-rhel-9.4-build",
-    'factory' : OpenMPBuilder.getOpenMPCMakeBuildFactory(
-                        clean=True,
-                        test=True,
-                        enable_runtimes=['openmp', 'compiler-rt', 'offload', 'flang-rt'],
-                        depends_on_projects=['llvm','clang', 'flang', 'flang-rt', 'lld', 'mlir', 'offload', 'openmp', 'compiler-rt'],
-                        extraCmakeArgs=[
-                            "-DCMAKE_BUILD_TYPE=Release",
-                            "-DCLANG_DEFAULT_LINKER=lld",
-                            "-DLLVM_TARGETS_TO_BUILD=X86;AMDGPU",
-                            "-DLLVM_ENABLE_ASSERTIONS=ON",
-                            "-DLIBOMP_ARCHER_SUPPORT=OFF",
-                            "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
-                            "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
-                            ],
-                        env={
-                            'HSA_ENABLE_SDMA':'0',
-                            'LD_LIBRARY_PATH':'/opt/rocm/lib',
-                            },
-                        install=True,
-                        testsuite=False,
-                        testsuite_sollvevv=False,
-                        extraTestsuiteCmakeArgs=[
-                            "-DTEST_SUITE_SOLLVEVV_OFFLOADING_CFLAGS=-fopenmp-targets=amdgcn-amd-amdhsa;-Xopenmp-target=amdgcn-amd-amdhsa",
-                            "-DTEST_SUITE_SOLLVEVV_OFFLOADING_LDLAGS=-fopenmp-targets=amdgcn-amd-amdhsa;-Xopenmp-target=amdgcn-amd-amdhsa",
-                        ],
-                        add_lit_checks=["check-clang", "check-flang", "check-flang-rt", "check-llvm", "check-lld", "check-mlir", "check-offload"],
-                        add_openmp_lit_args=["--time-tests", "--timeout 100", "--xfail=affinity/format/proc_bind.c"],
-                    )},
-
-    {'name' : "openmp-offload-rhel-8_8",
-    'tags'  : ["openmp"],
-    'workernames' : ["rocm-worker-hw-04-rhel-8_8"],
-    'builddir': "openmp-offload-rhel-8.8-build",
-    'factory' : OpenMPBuilder.getOpenMPCMakeBuildFactory(
-                        clean=True,
-                        test=True,
-                        enable_runtimes=['openmp', 'compiler-rt', 'offload', 'flang-rt'],
-                        depends_on_projects=['llvm','clang', 'flang', 'flang-rt', 'lld', 'mlir', 'offload', 'openmp', 'compiler-rt'],
-                        extraCmakeArgs=[
-                            "-DCMAKE_BUILD_TYPE=Release",
-                            "-DCLANG_DEFAULT_LINKER=lld",
-                            "-DLLVM_TARGETS_TO_BUILD=X86;AMDGPU",
-                            "-DLLVM_ENABLE_ASSERTIONS=ON",
-                            "-DLIBOMP_ARCHER_SUPPORT=OFF",
-                            "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
-                            "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
-                            ],
-                        env={
-                            'HSA_ENABLE_SDMA':'0',
-                            'LD_LIBRARY_PATH':'/opt/rocm/lib',
-                            },
-                        install=True,
-                        testsuite=False,
-                        testsuite_sollvevv=False,
-                        extraTestsuiteCmakeArgs=[
-                            "-DTEST_SUITE_SOLLVEVV_OFFLOADING_CFLAGS=-fopenmp-targets=amdgcn-amd-amdhsa;-Xopenmp-target=amdgcn-amd-amdhsa",
-                            "-DTEST_SUITE_SOLLVEVV_OFFLOADING_LDLAGS=-fopenmp-targets=amdgcn-amd-amdhsa;-Xopenmp-target=amdgcn-amd-amdhsa",
-                        ],
-                        add_lit_checks=["check-clang", "check-flang", "check-flang-rt", "check-llvm", "check-lld", "check-mlir", "check-offload"],
-                        add_openmp_lit_args=["--time-tests", "--timeout 100", "--xfail=affinity/format/proc_bind.c"],
-                    )},
-
     {'name' : "amdgpu-offload-build-only",
     'tags'  : ["amdgpu", "offload", "openmp"],
     'workernames' : ["AMD-bb-w-01", "AMD-bb-w-02"],
@@ -2087,9 +2076,9 @@ all += [
     'builddir': "intel-sycl-gpu-win",
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                     clean=True,
-                    checks=['check-offload'],
-                    enable_runtimes=['offload'],
-                    depends_on_projects=['llvm', 'clang', 'offload'],
+                    checks=['check-offload', 'check-sycl'],
+                    enable_runtimes=['offload', 'libsycl'],
+                    depends_on_projects=['llvm', 'clang', 'offload', 'libsycl'],
                     extra_configure_args=[
                         "-DCMAKE_C_COMPILER=clang-cl",
                         "-DCMAKE_CXX_COMPILER=clang-cl",
@@ -2339,6 +2328,43 @@ all += [
                         "-DCMAKE_BUILD_TYPE=Release",
                     ])},
 
+    {'name' : "flang-aarch64-sanitizer",
+    'tags'  : ["flang", "sanitizer"],
+    'workernames' : ["arm-bbot-flang-aarch64-sanitizer"],
+    'builddir': "flang-aarch64-sanitizer",
+    'factory' : FlangBuilder.getFlangOutOfTreeBuildFactory(
+                    clean=True,
+                    # flang-rt is not sanitized, so we leave testing it to other bots.
+                    checks=['check-flang'],
+                    run_test_suite=True,
+                    env={
+                        "ASAN_OPTIONS": "detect_leaks=0",
+                        "NO_STOP_MESSAGE": "1",
+                    },
+                    llvm_extra_configure_args=[
+                        "-DLLVM_TARGETS_TO_BUILD=AArch64",
+                        "-DCMAKE_CXX_STANDARD=17",
+                        "-DLLVM_ENABLE_WERROR=OFF",
+                        "-DLLVM_ENABLE_ASSERTIONS=ON",
+                        "-DCMAKE_BUILD_TYPE=Release",
+                        "-DLLVM_ENABLE_RUNTIMES=compiler-rt",
+                        "-DCOMPILER_RT_BUILD_SANITIZERS=OFF",
+                        "-DLLVM_USE_SANITIZER=Address;Undefined",
+                        "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
+                        "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
+                        "-DCLANG_ENABLE_CIR:BOOL=OFF",
+                    ],
+                    flang_extra_configure_args=[
+                        "-DFLANG_ENABLE_WERROR=ON",
+                        "-DCMAKE_BUILD_TYPE=Release",
+                        "-DLLVM_USE_SANITIZER=Address;Undefined",
+                    ],
+                    flang_rt_extra_configure_args=[
+                        "-DCMAKE_BUILD_TYPE=Release",
+                        "-DLLVM_ENABLE_ASSERTIONS=ON",
+                        "-DCMAKE_INSTALL_PREFIX=../install",
+                    ])},
+
     {'name' : "flang-aarch64-libcxx",
     'tags'  : ['flang'],
     'workernames' : ["linaro-flang-aarch64-libcxx", "arm-bbot-flang-aarch64-libcxx"],
@@ -2352,6 +2378,7 @@ all += [
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
                         "-DLLVM_ENABLE_LIBCXX=On",
                         "-DCMAKE_BUILD_TYPE=Release",
+                        "-DCLANG_ENABLE_CIR:BOOL=OFF"
                     ],
                     flang_extra_configure_args=[
                         "-DFLANG_ENABLE_WERROR=ON",
@@ -2394,6 +2421,7 @@ all += [
                         "-DLLVM_BUILD_EXAMPLES=ON",
                         "-DCMAKE_BUILD_TYPE=Release",
                         "-DCMAKE_CXX_STANDARD=17",
+                        "-DCLANG_ENABLE_CIR:BOOL=OFF"
                     ])},
 
     {'name' : "flang-aarch64-latest-gcc",
@@ -2412,6 +2440,7 @@ all += [
                         "-DBUILD_SHARED_LIBS=ON",
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
                         "-DCMAKE_BUILD_TYPE=Release",
+                        "-DCLANG_ENABLE_CIR:BOOL=OFF"
                     ])},
 
     {'name' : "flang-x86_64-knl-linux",
@@ -2450,6 +2479,23 @@ all += [
                         'CC': 'clang',
                         'CXX': 'clang++',
                         'LD': 'lld'
+                    })},
+
+    {'name' : 'flang-s390x-linux',
+    'tags'  : ["flang", "s390x"],
+    'workernames' : ['systemz-1'],
+    'builddir': "flang-s390x-linux",
+    'factory' : UnifiedTreeBuilder.getCmakeExBuildFactory(
+                    depends_on_projects=['llvm', 'mlir', 'clang', 'flang'],
+                    checks=['check-flang'],
+                    jobs=4,
+                    cmake_definitions={
+                        'LLVM_TARGETS_TO_BUILD'          : 'SystemZ',
+                        'LLVM_INSTALL_UTILS'             : 'ON',
+                        'CMAKE_CXX_STANDARD'             : '17',
+                        'FLANG_ENABLE_WERROR'            : 'ON',
+                        'LLVM_ENABLE_ASSERTIONS'         : 'ON',
+                        'LLVM_CCACHE_BUILD'              : 'ON',
                     })},
 
     {'name' : "flang-x86_64-windows",
@@ -2707,19 +2753,12 @@ all += [
     'collapseRequests': False,
     'workernames' : ["ml-opt-dev-x86-64-b1", "ml-opt-dev-x86-64-b2"],
     'builddir': "ml-opt-dev-x86-64-b1",
-    'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
-                    clean=True,
-                    depends_on_projects=['llvm'],
-                    extra_configure_args=[
-                        "-DCMAKE_BUILD_TYPE=Release",
-                        "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
-                        "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
-                        "-DLLVM_ENABLE_ASSERTIONS=ON",
-                        "-DLLVM_IR2VEC_ENABLE_PYTHON_BINDINGS=ON",
-                        "-DTENSORFLOW_C_LIB_PATH=/tmp/tensorflow",
-                        "-C", "/tmp/tflitebuild/tflite.cmake",
-                        "-DCMAKE_INSTALL_RPATH_USE_LINK_PATH=ON"
-                    ])},
+    'factory' : AnnotatedBuilder.getAnnotatedBuildFactory(
+         script="mlgo-dev.sh",
+         clean=True,
+         depends_on_projects=['llvm'],
+         script_interpreter=None,
+         )},
 
     # Both tensorflow C library, and the pip package, are present.
     {'name' : "ml-opt-devrel-x86-64",
@@ -2727,20 +2766,13 @@ all += [
     'collapseRequests': False,
     'workernames' : ["ml-opt-devrel-x86-64-b1", "ml-opt-devrel-x86-64-b2"],
     'builddir': "ml-opt-devrel-x86-64-b1",
-    'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
-                    clean=True,
-                    depends_on_projects=['llvm'],
-                    extra_configure_args= [
-                        "-DCMAKE_BUILD_TYPE=Release",
-                        "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
-                        "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
-                        "-DLLVM_ENABLE_ASSERTIONS=ON",
-                        "-DLLVM_IR2VEC_ENABLE_PYTHON_BINDINGS=ON",
-                        "-DTENSORFLOW_C_LIB_PATH=/tmp/tensorflow",
-                        "-C", "/tmp/tflitebuild/tflite.cmake",
-                        "-DTENSORFLOW_AOT_PATH=/var/lib/buildbot/.local/lib/python3.7/site-packages/tensorflow",
-                        "-DCMAKE_INSTALL_RPATH_USE_LINK_PATH=ON"
-                    ])},
+    'factory' : AnnotatedBuilder.getAnnotatedBuildFactory(
+         script="mlgo-dev.sh",
+         clean=True,
+         depends_on_projects=['llvm'],
+         extra_args=["--enable-tf-aot"],
+         script_interpreter=None,
+         )},
 
     # Release mode build bot
     {'name' : "ml-opt-rel-x86-64",
@@ -2823,7 +2855,7 @@ all += [
                     depends_on_projects=['bolt', 'llvm'],
                     extra_configure_args=[
                         "-DLLVM_APPEND_VC_REV=OFF",
-                        "-DCMAKE_EXE_LINKER_FLAGS='-Wl,--build-id=none'"
+                        "-DCMAKE_EXE_LINKER_FLAGS='-Wl,--build-id=none'",
                         "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
                         "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
                         "-DLLVM_ENABLE_PROJECTS=clang;lld;bolt",
@@ -2926,7 +2958,7 @@ all += [
                     depends_on_projects=['bolt', 'llvm'],
                     extra_configure_args=[
                         "-DLLVM_APPEND_VC_REV=OFF",
-                        "-DCMAKE_EXE_LINKER_FLAGS='-Wl,--build-id=none'"
+                        "-DCMAKE_EXE_LINKER_FLAGS='-Wl,--build-id=none'",
                         "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
                         "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
                         "-DLLVM_ENABLE_PROJECTS=clang;lld;bolt",
@@ -3091,7 +3123,6 @@ all += [
     # NVPTX builders
     {'name' : "llvm-nvptx-nvidia-ubuntu",
     'tags'  : ["llvm", "nvptx"],
-    'collapseRequests': False,
     'workernames' : ["as-builder-7"],
     'builddir': "llvm-nvptx-nvidia-ubuntu",
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
@@ -4011,10 +4042,14 @@ all += [
                           "-DLLVM_TARGETS_TO_BUILD=AArch64",
                           "-DLLVM_ENABLE_LLD=True",
                           "-DLLVM_LIT_ARGS=-v",
-                          "-DCLANG_ENABLE_CIR=True"
+                          "-DCLANG_ENABLE_CIR=True",
+                          "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
+                          "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache"
     ])},
 
     # MLIR SVE+SME
+    # While this buildbot is primarily for SVE + SME, we also enable Neon tests
+    # for full coverage.
     {'name' : "mlir-aarch64-sve-sme",
           'tags'  : ["mlir"],
           'workernames' : ["arm-bbot-mlir-aarch64-sve-sme"],
@@ -4028,9 +4063,14 @@ all += [
                           "-DLLVM_ENABLE_LLD=True",
                           "-DLLVM_LIT_ARGS=-v",
                           "-DMLIR_INCLUDE_INTEGRATION_TESTS=True",
+                          "-DMLIR_RUN_ARM_NEON_TESTS=True",
                           "-DMLIR_RUN_ARM_SVE_TESTS=True",
                           "-DMLIR_RUN_ARM_SME_TESTS=True",
-                          "-DARM_EMULATOR_EXECUTABLE=qemu-aarch64"
+                          "-DARM_EMULATOR_EXECUTABLE=qemu-aarch64",
+                          "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
+                          "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
+                          "-DCLANG_ENABLE_CIR:BOOL=OFF"
+
     ])},
 
     # MLIR expensive checks
@@ -4046,7 +4086,10 @@ all += [
                           "-DLLVM_TARGETS_TO_BUILD=AArch64",
                           "-DLLVM_ENABLE_LLD=True",
                           "-DLLVM_LIT_ARGS=-v",
-                          "-DMLIR_ENABLE_EXPENSIVE_PATTERN_API_CHECKS=True"
+                          "-DMLIR_ENABLE_EXPENSIVE_PATTERN_API_CHECKS=True",
+                          "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
+                          "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
+                          "-DCLANG_ENABLE_CIR:BOOL=OFF"
      ])},
 
     # Flang Windows
@@ -4080,3 +4123,20 @@ all += [
                         "-DCLANG_ENABLE_CIR:BOOL=OFF"
                     ])},
 ]
+
+if config.options.getboolean('Master Options', 'allow_develop_workers', fallback = False):
+    from twisted.python import log as logging
+    from twisted.python import failure
+
+    try:
+        from .develop_builders import all as all_develop_builders
+        for rb in all_develop_builders:
+            # Make sure a release builder has the "develop" tag.
+            tags = rb.get('tags', [])
+            if 'develop' not in tags:
+                rb['tags'] = tags + ['develop']
+        all.extend(all_develop_builders)
+    except ModuleNotFoundError:
+        why = failure.Failure()
+        logging.err(why, "The 'develop_builders' module is not installed.")
+        raise

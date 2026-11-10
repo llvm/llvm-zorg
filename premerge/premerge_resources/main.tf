@@ -79,6 +79,12 @@ resource "kubernetes_namespace" "llvm_premerge_linux_32_runners" {
   }
 }
 
+resource "kubernetes_namespace" "llvm_premerge_linux_4_runners" {
+  metadata {
+    name = "llvm-premerge-linux-4-runners"
+  }
+}
+
 resource "kubernetes_namespace" "llvm_premerge_windows_2022_runners" {
   metadata {
     name = var.windows_2022_runners_namespace_name
@@ -164,6 +170,23 @@ resource "kubernetes_secret" "linux_32_github_pat" {
   depends_on = [kubernetes_namespace.llvm_premerge_linux_32_runners]
 }
 
+resource "kubernetes_secret" "linux_4_github_pat" {
+  metadata {
+    name      = "github-token"
+    namespace = "llvm-premerge-linux-4-runners"
+  }
+
+  data = {
+    "github_app_id"              = var.github_app_id
+    "github_app_installation_id" = var.github_app_installation_id
+    "github_app_private_key"     = var.github_app_private_key
+  }
+
+  type = "Opaque"
+
+  depends_on = [kubernetes_namespace.llvm_premerge_linux_4_runners]
+}
+
 resource "kubernetes_secret" "windows_2022_github_pat" {
   metadata {
     name      = "github-token"
@@ -231,12 +254,21 @@ resource "helm_release" "github_actions_runner_set_windows_2022" {
 
 resource "kubernetes_config_map" "linux_32_pod_template" {
   metadata {
-    name      = "linux-32-pod-template"
+    name      = "linux-n-pod-template"
     namespace = "llvm-premerge-linux-32-runners"
   }
 
   data = {
-    "linux-32-pod-template.yaml" : "${file("linux_32_pod_template.yaml")}"
+    "linux-n-pod-template.yaml" : "${templatefile("linux_n_pod_template.yaml", {
+      taint_key : "premerge-platform-libcxx",
+      taint_value : "linux-libcxx",
+      premerge_platform_key : "premerge-platform-libcxx",
+      premerge_platform : "linux-libcxx",
+      request_cpu : "100m",
+      request_memory : "100Gi",
+      limit_cpu : 28,
+      limit_memory : "128Gi"
+    })}"
   }
 }
 
@@ -248,7 +280,17 @@ resource "helm_release" "github_actions_runner_set_linux_32" {
   chart      = "gha-runner-scale-set"
 
   values = [
-    "${templatefile("linux_32_runners_values.yaml", { runner_group_name : var.runner_group_name })}"
+    "${templatefile("linux_n_runners_values.yaml", {
+      runner_group_name : var.runner_group_name,
+      taint_key : "premerge-platform-libcxx",
+      taint_value : "linux-libcxx",
+      premerge_platform : "linux-libcxx",
+      premerge_platform_key : "premerge-platform-libcxx",
+      request_cpu : 28,
+      request_memory : "8Gi",
+      limit_cpu : 32,
+      limit_memory : "128Gi"
+    })}"
   ]
 
   depends_on = [
@@ -256,6 +298,55 @@ resource "helm_release" "github_actions_runner_set_linux_32" {
     kubernetes_config_map.linux_32_pod_template,
     helm_release.github_actions_runner_controller,
     kubernetes_secret.linux_32_github_pat,
+  ]
+}
+
+resource "kubernetes_config_map" "linux_4_pod_template" {
+  metadata {
+    name      = "linux-n-pod-template"
+    namespace = "llvm-premerge-linux-4-runners"
+  }
+
+  data = {
+    "linux-n-pod-template.yaml" : "${templatefile("linux_n_pod_template.yaml", {
+      taint_key : "premerge-platform",
+      taint_value : "linux-4-runners",
+      premerge_platform_key : "premerge-platform",
+      premerge_platform : "linux-4-runners",
+      request_cpu : "100m",
+      request_memory : "12Gi",
+      limit_cpu : 3,
+      limit_memory : "16Gi"
+    })}"
+  }
+}
+
+resource "helm_release" "github_actions_runner_set_linux_4" {
+  name       = "llvm-premerge-linux-4-runners"
+  namespace  = "llvm-premerge-linux-4-runners"
+  repository = "oci://ghcr.io/actions/actions-runner-controller-charts"
+  version    = var.github_arc_version
+  chart      = "gha-runner-scale-set"
+
+  values = [
+    "${templatefile("linux_n_runners_values.yaml", {
+      runner_group_name : var.runner_group_name,
+      taint_key : "premerge-platform",
+      taint_value : "linux-4-runners",
+      premerge_platform : "linux-4-runners",
+      premerge_platform_key : "premerge-platform",
+      request_cpu : 3,
+      request_memory : "4Gi",
+      limit_cpu : 4,
+      limit_memory : "16Gi"
+    })}"
+  ]
+
+  depends_on = [
+    kubernetes_namespace.llvm_premerge_linux_4_runners,
+    kubernetes_config_map.linux_4_pod_template,
+    helm_release.github_actions_runner_controller,
+    kubernetes_secret.linux_4_github_pat,
   ]
 }
 
