@@ -611,6 +611,7 @@ def get_all():
         create_worker("arm-bbot-clang-arm64-windows-msvc", max_builds=1),
         create_worker("arm-bbot-lldb-aarch64-windows", max_builds=1),
         create_worker("arm-bbot-clang-arm64-windows-msvc-2stage", max_builds=1),
+        create_worker("arm-bbot-flang-aarch64-windows-msvc", max_builds=1),
         ] + get_develop()
         
 def get_develop():
