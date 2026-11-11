@@ -326,10 +326,10 @@ function start_cuttlefish {
   local _arch=$1
   local _dir="$ROOT/$CVD_DIR/$_arch"
   build_step "starting Android Cuttlefish ($_arch)"
-  local _cpus=8
+  local _cpus=4
   local _mem=16384
   local _extra_args=()
-  EXTRA_LIT_OPTS="-j 2"
+  EXTRA_LIT_OPTS="-j 8"
   if [[ "$_arch" == "x86_64" || "$_arch" == "i686" ]] && [[ -w /dev/kvm ]]; then
     _cpus=$(( $(nproc) / 4 ))
     _mem=32768
