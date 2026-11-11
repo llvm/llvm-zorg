@@ -247,7 +247,7 @@ all = [
     'builddir': "clang-with-thin-lto-ubuntu-rel",
     'factory' : ClangLTOBuilder.getClangWithLTOBuildFactory(
                     jobs=72,
-                    lto='thin'
+                    lto='thin',
                     extra_configure_args=[
                         '-DCLANG_ENABLE_CIR=OFF',
                     ])},
