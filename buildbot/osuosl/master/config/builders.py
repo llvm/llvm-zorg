@@ -1522,7 +1522,9 @@ all = [
     'factory' : ClangLTOBuilder.getClangWithLTOBuildFactory(
                     jobs=72,
                     lto='thin',
-                    )},
+                    extra_configure_args=[
+                        '-DCLANG_ENABLE_CIR=OFF',
+                    ])},
 
     {'name' : "clang-with-thin-lto-wpd-ubuntu",
     'tags'  : ["clang","lld","LTO"],
