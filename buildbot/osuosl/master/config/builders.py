@@ -2652,7 +2652,7 @@ all += [
     # nvidia-cuda-a10-* builders below run all the GPU work against the published
     # toolchain.
     {'name' : "nvidia-cuda-toolchain",
-    'tags'  : ["clang", "cuda", "silent"],
+    'tags'  : ["clang", "cuda"],
     'workernames' : ["nvidia-cuda-build-x86-64"],
     'builddir': "nvidia-cuda-toolchain",
     'factory' : CudaBuilder.getCudaClangBuildFactory(
@@ -2673,14 +2673,14 @@ all += [
     # or a builder that fell behind would skip the revisions in between. Their builds
     # share the A10s, so they lock the GPU.
     {'name' : "nvidia-cuda-a10-test-suite",
-    'tags'  : ["clang", "cuda", "silent"],
+    'tags'  : ["clang", "cuda"],
     'workernames' : ["nvidia-cuda-a10-toolkits-1", "nvidia-cuda-a10-toolkits-2"],
     'builddir': "nvidia-cuda-a10-test-suite",
     'collapseRequests' : False,
     'factory' : CudaBuilder.getCudaGpuTestFactory(test_suite = True, gpu_lock = True)},
 
     {'name' : "nvidia-cuda-a10-libc",
-    'tags'  : ["clang", "cuda", "silent"],
+    'tags'  : ["clang", "cuda"],
     'workernames' : ["nvidia-cuda-a10-libc-1", "nvidia-cuda-a10-libc-2"],
     'builddir': "nvidia-cuda-a10-libc",
     'collapseRequests' : False,
