@@ -193,138 +193,96 @@ def getReporters():
             fromaddr = status_email_fromaddr,
             generators = [
                 utils.LLVMDefaultBuildStatusGenerator(
-                    recipients=["gribozavr@gmail.com"],
-                    builders=["clang-x86_64-debian-fast"],
-                ),
+                    recipients = ["gribozavr@gmail.com"],
+                    builders = ["clang-x86_64-debian-fast"]),
                 utils.LLVMDefaultBuildStatusGenerator(
-                    recipients=["tbaeder@redhat.com", "tstellar@redhat.com"],
-                    builders=["llvm-x86_64-debian-dylib"],
-                ),
+                    recipients = ["tbaeder@redhat.com", "tstellar@redhat.com"],
+                    builders = ["llvm-x86_64-debian-dylib"]),
                 utils.LLVMDefaultBuildStatusGenerator(
-                    recipients=["llvm.buildmaster@quicinc.com"],
-                    builders=["clang-hexagon-elf"],
-                ),
+                    recipients = ["llvm.buildmaster@quicinc.com"],
+                    builders = ["clang-hexagon-elf"]),
+               utils.LLVMDefaultBuildStatusGenerator(
+                   recipients = ["Ulrich.Weigand@de.ibm.com"],
+                   builders = [
+                       "clang-s390x-linux",
+                       "clang-s390x-linux-multistage",
+                       "clang-s390x-linux-lnt",
+                       "mlir-s390x-linux",
+                       "openmp-s390x-linux"]),
                 utils.LLVMDefaultBuildStatusGenerator(
-                    recipients=["Ulrich.Weigand@de.ibm.com"],
-                    builders=[
-                        "clang-s390x-linux",
-                        "clang-s390x-linux-multistage",
-                        "clang-s390x-linux-lnt",
-                        "mlir-s390x-linux",
-                        "openmp-s390x-linux",
-                    ],
-                ),
+                    recipients = ["sunil_srivastava@playstation.sony.com",
+                                   "warren_ristow@playstation.sony.com"],
+                    builders = ["clang-x86_64-linux-abi-test"]),
                 utils.LLVMDefaultBuildStatusGenerator(
-                    recipients=[
-                        "sunil_srivastava@playstation.sony.com",
-                        "warren_ristow@playstation.sony.com",
-                    ],
-                    builders=["clang-x86_64-linux-abi-test"],
-                ),
-                utils.LLVMDefaultBuildStatusGenerator(
-                    recipients=["gkistanova@gmail.com"],
-                    builders=[
+                    recipients = ["gkistanova@gmail.com"],
+                    builders = [
                         "lld-x86_64-win",
                         "lld-x86_64-freebsd",
                         "clang-x86_64-linux-abi-test",
-                        "clang-with-lto-ubuntu",
-                        "clang-with-thin-lto-ubuntu",
+                        "clang-with-lto-ubuntu", "clang-with-thin-lto-ubuntu",
                         "llvm-clang-x86_64-expensive-checks-win",
-                        "llvm-clang-x86_64-expensive-checks-ubuntu",
-                    ],
-                ),
+                        "llvm-clang-x86_64-expensive-checks-ubuntu"]),
                 utils.LLVMDefaultBuildStatusGenerator(
-                    recipients=[
-                        "efriedma@codeaurora.org",
-                        "huihuiz@codeaurora.org",
-                    ],
-                    builders=[
+                    recipients = ["efriedma@codeaurora.org", "huihuiz@codeaurora.org"],
+                    builders = [
                         "polly-arm-linux",
-                        "aosp-O3-polly-before-vectorizer-unprofitable",
-                    ],
-                ),
+                        "aosp-O3-polly-before-vectorizer-unprofitable"]),
                 utils.LLVMDefaultBuildStatusGenerator(
-                    mode="problem",
-                    recipients=["mgrang@codeaurora.org"],
-                    builders=["reverse-iteration"],
-                ),
+                    recipients = ["mgrang@codeaurora.org"],
+                    mode = "problem",
+                    builders = ["reverse-iteration"]),
                 utils.LLVMDefaultBuildStatusGenerator(
-                    recipients=["tra+buildbot@google.com"],
-                    builders=["clang-cuda-l4", "clang-cuda-p4", "clang-cuda-t4"],
-                ),
+                    recipients = ["tra+buildbot@google.com"],
+                    builders = [
+                        "clang-cuda-l4",
+                        "clang-cuda-p4",
+                        "clang-cuda-t4"]),
                 utils.LLVMDefaultBuildStatusGenerator(
-                    recipients=["asb@lowrisc.org"],
-                    builders=["llvm-riscv-linux"],
-                ),
+                    recipients = ["asb@lowrisc.org"],
+                    builders = ["llvm-riscv-linux"]),
                 utils.LLVMDefaultBuildStatusGenerator(
-                    recipients=["gongsu@us.ibm.com", "alexe@us.ibm.com"],
-                    builders=["mlir-s390x-linux-werror"],
-                ),
+                    recipients = ["gongsu@us.ibm.com", "alexe@us.ibm.com"],
+                    builders = ["mlir-s390x-linux-werror"]),
                 utils.LLVMDefaultBuildStatusGenerator(
-                    recipients=["phosek@google.com"],
-                    builders=["fuchsia-x86_64-linux"],
-                ),
+                    recipients = ["phosek@google.com"],
+                    builders = ["fuchsia-x86_64-linux"]),
                 utils.LLVMDefaultBuildStatusGenerator(
-                    recipients=["vvereschaka@accesssoftek.com"],
-                    builders=[
-                        "llvm-clang-x86_64-win-fast",
-                        "lld-x86_64-ubuntu-fast",
+                    recipients = ["vvereschaka@accesssoftek.com"],
+                    builders = [
+                        "llvm-clang-x86_64-win-fast","lld-x86_64-ubuntu-fast",
                         "llvm-clang-x86_64-expensive-checks-ubuntu",
-                        "llvm-clang-win-x-armv7l",
-                        "llvm-clang-win-x-aarch64",
-                        "llvm-nvptx-nvidia-ubuntu",
-                        "llvm-nvptx64-nvidia-ubuntu",
-                        "llvm-nvptx-nvidia-win",
-                        "llvm-nvptx64-nvidia-win",
-                        "lldb-remote-linux-ubuntu",
-                        "lldb-remote-linux-win",
+                        "llvm-clang-win-x-armv7l", "llvm-clang-win-x-aarch64",
+                        "llvm-nvptx-nvidia-ubuntu", "llvm-nvptx64-nvidia-ubuntu",
+                        "llvm-nvptx-nvidia-win", "llvm-nvptx64-nvidia-win",
+                        "lldb-remote-linux-ubuntu", "lldb-remote-linux-win",
                         "lldb-x86_64-win",
                         "llvm-clang-ubuntu-x-aarch64-pac-ret",
-                        "llvm-clang-ubuntu-x-aarch64-pauthtest",
-                    ],
-                ),
+                        "llvm-clang-ubuntu-x-aarch64-pauthtest"]),
                 utils.LLVMDefaultBuildStatusGenerator(
-                    recipients=["dvassiliev@accesssoftek.com"],
-                    builders=[
-                        "llvm-nvptx-nvidia-ubuntu",
-                        "llvm-nvptx64-nvidia-ubuntu",
-                        "llvm-nvptx-nvidia-win",
-                        "llvm-nvptx64-nvidia-win",
-                        "flang-runtime-cuda-gcc",
-                        "nvhpc-offload-nvgpu-x86_64-linux",
-                    ],
-                ),
+                    recipients = ["dvassiliev@accesssoftek.com"],
+                    builders = [
+                        "llvm-nvptx-nvidia-ubuntu", "llvm-nvptx64-nvidia-ubuntu",
+                        "llvm-nvptx-nvidia-win", "llvm-nvptx64-nvidia-win",
+                        "flang-runtime-cuda-gcc", "nvhpc-offload-nvgpu-x86_64-linux"]),
                 utils.LLVMDefaultBuildStatusGenerator(
-                    recipients=[
-                        "dvassiliev@accesssoftek.com",
-                        "vdzhidzhoev@accesssoftek.com",
-                    ],
-                    builders=[
-                        "lldb-remote-linux-ubuntu",
-                        "lldb-remote-linux-win",
-                        "lldb-x86_64-win",
-                    ],
-                ),
+                    recipients = ["dvassiliev@accesssoftek.com", "vdzhidzhoev@accesssoftek.com"],
+                    builders = [
+                        "lldb-remote-linux-ubuntu", "lldb-remote-linux-win",
+                        "lldb-x86_64-win"]),
                 utils.LLVMDefaultBuildStatusGenerator(
-                    recipients=[
-                        "atrosinenko@accesssoftek.com",
-                        "dkovalev@accesssoftek.com",
-                    ],
-                    builders=[
+                    recipients = ["atrosinenko@accesssoftek.com", "dkovalev@accesssoftek.com"],
+                    builders = [
                         "llvm-clang-ubuntu-x-aarch64-pac-ret",
-                        "llvm-clang-ubuntu-x-aarch64-pauthtest",
-                    ],
-                ),
+                        "llvm-clang-ubuntu-x-aarch64-pauthtest"]),
                 utils.LLVMDefaultBuildStatusGenerator(
-                    recipients=["llvm.buildbot@emea.nec.com"],
-                    builders=["clang-ve-ninja"],
-                ),
+                    recipients = ["llvm.buildbot@emea.nec.com"],
+                    builders = ["clang-ve-ninja"]),
                 utils.LLVMDefaultBuildStatusGenerator(
-                    recipients=[
+                    recipients = [
                         "lntue@google.com",
                         "michaelrj@google.com",
                     ],
-                    builders=[
+                    builders = [
                         "libc-aarch64-ubuntu-dbg",
                         "libc-aarch64-ubuntu-fullbuild-dbg",
                         "libc-arm32-qemu-debian-dbg",
@@ -338,15 +296,28 @@ def getReporters():
                         "libc-x86_64-debian-fullbuild-dbg-asan",
                         "libc-x86_64-debian-gcc-fullbuild-dbg",
                         "libc-x86_64-windows-dbg",
-                        "libc-x86_64_debian-dbg",
-                    ],
-                ),
+                        "libc-x86_64_debian-dbg"]),
+                utils.LLVMDefaultBuildStatusGenerator(
+                    recipients = ["aaron@aaronballman.com"],
+                    subject = "Sphinx build {{ buildername }} Failure",
+                    builders = ["publish-sphinx-docs"]),
                 utils.LLVMDefaultBuildStatusGenerator(
                     recipients=[
-                        "douglas.yung@sony.com",
-                        "douglasyung.llvm@gmail.com",
-                    ],
-                    builders=[
+                        "mlcompileropt-buildbot@google.com"],
+                    subject = "ML Compiler Opt Failure: {{ buildername }}",
+                    builders = [
+                        "ml-opt-dev-x86-64",
+                        "ml-opt-rel-x86-64",
+                        "ml-opt-devrel-x86-64"]),
+                utils.LLVMDefaultBuildStatusGenerator(
+                    recipients=[
+                        "tejohnson@google.com"],
+                    subject = "ThinLTO WPD Failure: {{ buildername }}",
+                    builders = ["clang-with-thin-lto-wpd-ubuntu"]),
+                utils.LLVMDefaultBuildStatusGenerator(
+                    recipients = ["douglas.yung@sony.com",
+                                  "douglasyung.llvm@gmail.com" ],
+                    builders = [
                         "llvm-clang-x86_64-sie-ubuntu-fast",
                         "llvm-clang-x86_64-sie-ps5-fast",
                         "llvm-clang-x86_64-sie-win",
@@ -360,27 +331,33 @@ def getReporters():
                         "llvm-clang-x86_64-darwin",
                         "llvm-clang-aarch64-darwin",
                         "llvm-clang-aarch64-darwin-release",
-                        "llvm-x86_64-debugify-coverage",
-                    ],
-                ),
+                        "llvm-x86_64-debugify-coverage"]),
                 utils.LLVMDefaultBuildStatusGenerator(
                     recipients=["tom.weaver@sony.com"],
                     builders=[
                         "llvm-clang-x86_64-sie-ubuntu-fast",
                         "llvm-clang-x86_64-sie-win",
-                        "llvm-clang-x86_64-gcc-ubuntu",
-                    ],
-                ),
+                        "llvm-clang-x86_64-gcc-ubuntu"]),
+                utils.LLVMDefaultBuildStatusGenerator(
+                    recipients = [
+                    	"joker.eph@gmail.com"],
+                    subject = "MLIR Build Failure: {{ buildername }}",
+                    builders = [
+                        "mlir-nvidia",
+                        "mlir-nvidia-gcc7"]),
                 utils.LLVMDefaultBuildStatusGenerator(
                     recipients=[
-                        "llvm_arc_buildbot@synopsys.com",
-                        "heli@synopsys.com",
-                    ],
-                    builders=["arc-builder"],
-                ),
+                        "mlir-bugs-external+buildbot@googlegroups.com"],
+                    subject = "MLIR Build Failure: {{ buildername }}",
+                    builders = [
+                        "mlir-nvidia",
+                        "ppc64le-mlir-rhel-clang"]),
+                utils.LLVMDefaultBuildStatusGenerator(
+                    recipients=["llvm_arc_buildbot@synopsys.com", "heli@synopsys.com"],
+                    builders = ["arc-builder"]),
                 utils.LLVMDefaultBuildStatusGenerator(
                     recipients=["dl.gcr.lightning.buildbot@amd.com"],
-                    builders=[
+                    builders = [
                         "clang-hip-vega20",
                         "openmp-offload-amdgpu-runtime",
                         "openmp-offload-amdgpu-runtime-2",
@@ -390,57 +367,77 @@ def getReporters():
                         "amdgpu-hip-blender",
                         "amdgpu-hip-tpl",
                         "amdgpu-clang-flang",
-                    ],
-                ),
+                    ]),
                 utils.LLVMDefaultBuildStatusGenerator(
                     recipients=["dl.mlse.buildbot@amd.com"],
-                    builders=["mlir-rocm-mi200"],
-                ),
+                    builders = ["mlir-rocm-mi200"]),
                 utils.LLVMDefaultBuildStatusGenerator(
-                    recipients=["orlando.hyams@sony.com"],
-                    builders=[
+                    recipients=["flangbuilder@meinersbur.de"],
+                    subject = "Build Failure (flang): {{ buildername }}",
+                    builders = ["flang-x86_64-windows"]),
+                utils.LLVMDefaultBuildStatusGenerator(
+                    recipients=["offloadbuilder@meinersbur.de"],
+                    subject = "Build Failure (offload): {{ buildername }}",
+                    builders = [
+                        "openmp-offload-cuda-project",
+                        "openmp-offload-cuda-runtime"]),
+                utils.LLVMDefaultBuildStatusGenerator(
+                    recipients=["pollybuilder@meinersbur.de"],
+                    subject = "Build Failure (polly): {{ buildername }}",
+                    builders = [
+                        "polly-x86_64-linux",
+                        "polly-x86_64-linux-noassert",
+                        "polly-x86_64-linux-plugin",
+                        "polly-x86_64-linux-shared",
+                        "polly-x86_64-linux-shared-plugin",
+                        "polly-x86_64-linux-shlib",
+                        "polly-x86_64-linux-shlib-plugin",
+                        "polly-sphinx-docs",
+                    ]),
+                utils.LLVMDefaultBuildStatusGenerator(
+                    recipients = ["orlando.hyams@sony.com"],
+                    builders = [
                         "cross-project-tests-sie-ubuntu",
-                        "llvm-clang-x86_64-sie-win",
-                    ],
-                ),
+                        "llvm-clang-x86_64-sie-win"]),
                 utils.LLVMDefaultBuildStatusGenerator(
-                    recipients=["kkleine@redhat.com"],
-                    builders=["standalone-build-x86_64"],
-                ),
+                    recipients = ["kkleine@redhat.com"],
+                    builders = ["standalone-build-x86_64"]),
                 utils.LLVMDefaultBuildStatusGenerator(
-                    recipients=["luweining@loongson.cn", "chenli@loongson.cn"],
-                    builders=["clang-loongarch64-linux"],
-                ),
+                    recipients = ["llvm-bolt@meta.com"],
+                    subject = "BOLT NFC checks mismatch (X86)",
+                    mode = ("warnings",),
+                    builders = ["bolt-x86_64-ubuntu-nfc"]),
                 utils.LLVMDefaultBuildStatusGenerator(
-                    recipients=["kadircet@google.com", "sammccall@google.com"],
-                    builders=["clangd-ubuntu-tsan"],
-                ),
+                    recipients = ["llvm-bolt@arm.com", "llvm-bolt@meta.com"],
+                    subject = "BOLT NFC checks mismatch (AArch64)",
+                    mode = ("warnings",),
+                    builders = ["bolt-aarch64-ubuntu-nfc"]),
                 utils.LLVMDefaultBuildStatusGenerator(
-                    recipients=["kadircet@google.com", "ibiryukov@google.com"],
-                    builders=["clang-debian-cpp20"],
-                ),
+                    recipients = ["luweining@loongson.cn", "chenli@loongson.cn"],
+                    builders = ["clang-loongarch64-linux"]),
                 utils.LLVMDefaultBuildStatusGenerator(
-                    recipients=["llvm.buildbot.notification@intel.com"],
-                    builders=["clang-cmake-x86_64-avx512-linux"],
-                ),
+                    recipients = ["kadircet@google.com", "sammccall@google.com"],
+                    builders = ["clangd-ubuntu-tsan"]),
                 utils.LLVMDefaultBuildStatusGenerator(
-                    recipients=["szakharin@nvidia.com"],
-                    builders=["flang-runtime-cuda-gcc"],
-                ),
+                    recipients = ["kadircet@google.com", "ibiryukov@google.com"],
+                    builders = ["clang-debian-cpp20"]),
                 utils.LLVMDefaultBuildStatusGenerator(
-                    recipients=[
-                        "nvhpc-llvm-offload-buildbot-watchers@nvidia.com"
-                    ],
-                    builders=["nvhpc-offload-nvgpu-x86_64-linux"],
-                ),
+                    recipients = ["llvm.buildbot.notification@intel.com"],
+                    builders = ["clang-cmake-x86_64-avx512-linux"]),
                 utils.LLVMDefaultBuildStatusGenerator(
-                    recipients=["stephen.tozer@sony.com"],
-                    builders=["llvm-x86_64-debugify-coverage"],
-                ),
+                    recipients = ["szakharin@nvidia.com"],
+                    builders = ["flang-runtime-cuda-gcc"]),
                 utils.LLVMDefaultBuildStatusGenerator(
-                    recipients=["profcheck-buildbot@google.com"],
-                    builders=["profcheck"],
-                ),
+                    recipients = ["nvhpc-llvm-offload-buildbot-watchers@nvidia.com"],
+                    builders = ["nvhpc-offload-nvgpu-x86_64-linux"]),
+                utils.LLVMDefaultBuildStatusGenerator(
+                    recipients = ["stephen.tozer@sony.com"],
+                    builders = [
+                        "llvm-x86_64-debugify-coverage"]),
+                utils.LLVMDefaultBuildStatusGenerator(
+                    recipients = ["profcheck-buildbot@google.com"],
+                    builders = [
+                        "profcheck"]),
                 utils.LLVMDefaultBuildStatusGenerator(
                     recipients=[
                         "llvm-presubmit-infra@google.com",
@@ -454,89 +451,11 @@ def getReporters():
                     ],
                 ),
                 utils.LLVMDefaultBuildStatusGenerator(
-                    recipients=["google-integrate-buildbot@google.com"],
-                    builders=["release-noassertions-warnings"],
-                ),
-            ],
+                    recipients = ["google-integrate-buildbot@google.com"],
+                    builders = [
+                        "release-noassertions-warnings"])
+            ]
         ),
-
-        utils.LLVMDefaultMailNotifier(
-            dumpMailsToLog=True,  # TODO: For debug purposes only. Remove this later.
-            fromaddr=status_email_fromaddr,
-            generators=[
-                utils.LLVMDefaultBuildStatusGenerator(
-                    recipients=["aaron@aaronballman.com"],
-                    subject="Sphinx build {{ buildername }} Failure",
-                    builders=["publish-sphinx-docs"],
-                ),
-                utils.LLVMDefaultBuildStatusGenerator(
-                    recipients=["mlcompileropt-buildbot@google.com"],
-                    subject="ML Compiler Opt Failure: {{ buildername }}",
-                    builders=[
-                        "ml-opt-dev-x86-64",
-                        "ml-opt-rel-x86-64",
-                        "ml-opt-devrel-x86-64",
-                    ],
-                ),
-                utils.LLVMDefaultBuildStatusGenerator(
-                    recipients=["tejohnson@google.com"],
-                    subject="ThinLTO WPD Failure: {{ buildername }}",
-                    builders=["clang-with-thin-lto-wpd-ubuntu"],
-                ),
-                utils.LLVMDefaultBuildStatusGenerator(
-                    recipients=["joker.eph@gmail.com"],
-                    subject="MLIR Build Failure: {{ buildername }}",
-                    builders=["mlir-nvidia", "mlir-nvidia-gcc7"],
-                ),
-                utils.LLVMDefaultBuildStatusGenerator(
-                    recipients=[
-                        "mlir-bugs-external+buildbot@googlegroups.com"
-                    ],
-                    subject="MLIR Build Failure: {{ buildername }}",
-                    builders=["mlir-nvidia", "ppc64le-mlir-rhel-clang"],
-                ),
-                utils.LLVMDefaultBuildStatusGenerator(
-                    recipients=["flangbuilder@meinersbur.de"],
-                    subject="Build Failure (flang): {{ buildername }}",
-                    builders=["flang-x86_64-windows"],
-                ),
-                utils.LLVMDefaultBuildStatusGenerator(
-                    recipients=["offloadbuilder@meinersbur.de"],
-                    subject="Build Failure (offload): {{ buildername }}",
-                    builders=[
-                        "openmp-offload-cuda-project",
-                        "openmp-offload-cuda-runtime",
-                    ],
-                ),
-                utils.LLVMDefaultBuildStatusGenerator(
-                    recipients=["pollybuilder@meinersbur.de"],
-                    subject="Build Failure (polly): {{ buildername }}",
-                    builders=[
-                        "polly-x86_64-linux",
-                        "polly-x86_64-linux-noassert",
-                        "polly-x86_64-linux-plugin",
-                        "polly-x86_64-linux-shared",
-                        "polly-x86_64-linux-shared-plugin",
-                        "polly-x86_64-linux-shlib",
-                        "polly-x86_64-linux-shlib-plugin",
-                        "polly-sphinx-docs",
-                    ],
-                ),
-                utils.LLVMDefaultBuildStatusGenerator(
-                    recipients=["llvm-bolt@meta.com"],
-                    subject="BOLT NFC checks mismatch (X86)",
-                    mode=("warnings",),
-                    builders=["bolt-x86_64-ubuntu-nfc"],
-                ),
-                utils.LLVMDefaultBuildStatusGenerator(
-                    recipients=["llvm-bolt@arm.com", "llvm-bolt@meta.com"],
-                    subject="BOLT NFC checks mismatch (AArch64)",
-                    mode=("warnings",),
-                    builders=["bolt-aarch64-ubuntu-nfc"],
-                ),
-            ],
-        ),
-
         reporters.MailNotifier(
             dumpMailsToLog=True,  # TODO: For debug purposes only. Remove this later.
             fromaddr=status_email_fromaddr,
@@ -547,8 +466,8 @@ def getReporters():
                     workers=["mlir-nvidia"],
                     message_formatter=MessageFormatterMissingWorker(),
                 )
-            ],
-        ),
+            ]
+        )
     ])
 
     return r
