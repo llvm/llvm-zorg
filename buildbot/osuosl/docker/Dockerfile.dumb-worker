@@ -1,0 +1,85 @@
+# buildbot/llvm-buildbot:dumb-worker
+
+# please follow docker best practices
+# https://docs.docker.com/engine/userguide/eng-image/dockerfile_best-practices/
+
+# Provides a base Debian image with latest buildbot worker installed
+
+# Build:
+#   docker build --build-arg BUILDBOT_ADMIN="your-admin" -t buildbot/llvm-buildbot:dumb-worker -f Dockerfile.dumb-worker .
+
+ARG OS_VERSION="noble"
+
+ARG BUILDBOT_HOME="/buildbot"
+ARG BUILDBOT_ADMIN=""
+
+FROM --platform=${BUILDPLATFORM} ubuntu:${OS_VERSION} AS buildbot-build
+LABEL org.opencontainers.image.authors="LLVM/Buildbot Maintainers"
+ARG BUILDBOT_HOME
+ARG BUILDBOT_ADMIN
+
+# This will make apt-get install without question
+ARG DEBIAN_FRONTEND=noninteractive
+
+# Install security updates and required packages
+RUN apt-get update \
+    && apt-get -y upgrade \
+    && apt-get -y install -q \
+    build-essential \
+    git \
+    subversion \
+    python3-dev \
+    libffi-dev \
+    libssl-dev \
+    virtualenv \
+    # Test runs produce a great quantity of dead grandchild processes.  In a
+    # non-docker environment, these are automatically reaped by init (process 1),
+    # so we need to simulate that here.  See https://github.com/Yelp/dumb-init
+    dumb-init \
+    curl \
+    && rm -rf /var/lib/apt/lists/* 
+
+ARG BUILDBOT_REPO_URL="https://github.com/gkistanova/buildbot.git"
+ARG BUILDBOT_REPO_BRANCH="llvm/4.x"
+
+RUN \
+    git clone -b ${BUILDBOT_REPO_BRANCH} ${BUILDBOT_REPO_URL} /usr/src/buildbot
+
+RUN useradd -m -d $BUILDBOT_HOME -s /bin/bash buildbot \
+    && virtualenv --python=python3 $BUILDBOT_HOME/venv \
+    && $BUILDBOT_HOME/venv/bin/pip3 install 'twisted[tls]' psutil
+
+COPY --chmod=0755 buildbotctl.sh /usr/src/buildbot/buildbotctl.sh
+RUN \
+    ln -sf /usr/src/buildbot/buildbotctl.sh /usr/bin/buildbotctl
+
+COPY buildbot-worker.tac $BUILDBOT_HOME/buildbot.tac
+COPY --chmod=0755 dumb-util.sh ${BUILDBOT_HOME}/dumb-worker/bin/dumb-util.sh
+
+#NOTE:VV: do not override 'git' that is required for the buildbot's pollers.
+RUN \
+    ln -sf ${BUILDBOT_HOME}/dumb-worker/bin/dumb-util.sh ${BUILDBOT_HOME}/dumb-worker/bin/make && \
+    ln -sf ${BUILDBOT_HOME}/dumb-worker/bin/dumb-util.sh ${BUILDBOT_HOME}/dumb-worker/bin/cmake && \
+    ln -sf ${BUILDBOT_HOME}/dumb-worker/bin/dumb-util.sh ${BUILDBOT_HOME}/dumb-worker/bin/ninja && \
+    ln -sf ${BUILDBOT_HOME}/dumb-worker/bin/dumb-util.sh ${BUILDBOT_HOME}/dumb-worker/bin/clang && \
+    ln -sf ${BUILDBOT_HOME}/dumb-worker/bin/dumb-util.sh ${BUILDBOT_HOME}/dumb-worker/bin/clang++ && \
+    ln -sf ${BUILDBOT_HOME}/dumb-worker/bin/dumb-util.sh ${BUILDBOT_HOME}/dumb-worker/bin/gcc && \
+    ln -sf ${BUILDBOT_HOME}/dumb-worker/bin/dumb-util.sh ${BUILDBOT_HOME}/dumb-worker/bin/g++
+
+COPY gethostinfo.py ${BUILDBOT_HOME}/gethostinfo.py
+COPY gethostinfo.ini ${BUILDBOT_HOME}/gethostinfo.ini
+
+RUN $BUILDBOT_HOME/venv/bin/pip3 install /usr/src/buildbot/worker \
+    && mkdir -p "${BUILDBOT_HOME}/dumb-worker/logs" \
+    && mkdir -p $BUILDBOT_HOME/info \
+    && echo $BUILDBOT_ADMIN > ${BUILDBOT_HOME}/info/admin \
+    && chown -R buildbot $BUILDBOT_HOME/
+
+USER buildbot
+
+ENV BUILDBOT_HOME="${BUILDBOT_HOME}"
+ENV DUMB_WORKER_DIR="${BUILDBOT_HOME}/dumb-worker"
+
+WORKDIR ${BUILDBOT_HOME}
+
+CMD ["dumb-init", "/usr/bin/buildbotctl", "start-worker"]
