@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 def parse_targets(error_log: str | None) -> Sequence[str]:
     if not error_log:
         return []
-    return re.findall(r"\(from target (.*?)\)", error_log)
+    return re.findall(r"\(from (?:[^)]*? )?target (\S+?)\)", error_log)
 
 
 RetryExceptions = Tuple[Type[BaseException], ...]
