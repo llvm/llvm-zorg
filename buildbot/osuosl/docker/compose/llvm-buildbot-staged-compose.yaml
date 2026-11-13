@@ -22,7 +22,9 @@ services:
       - db
     ports:
       - "${BUILDBOT_WEB_PORT}:8011"
-    volumes:
+    expose:
+      - ${BUILDBOT_PB_PORT:-9990}
+     volumes:
       - ./llvm-zorg-g0:/buildbot/llvm-zorg
       - ./local.staged.cfg:/buildbot/local.cfg:ro
       # - ./worker-passwords.staged.cfg:/buildbot/worker-passwords.cfg:ro
@@ -42,8 +44,6 @@ services:
     #   POSTGRES_PASSWORD=secret_db_pass
     env_file:
       - .env.pg.staged
-    ports:
-      - "${PG_PORT}:5432"
     volumes:
       # percona-distribution-postgresql
       - ${PG_DATA}:/data/db
