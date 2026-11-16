@@ -1,4 +1,11 @@
+#!/bin/bash
+
+set -e
+
+export PATH=$PATH:~/.local/bin
+
 BOT_DIR=/home/gha/worker
+mkdir $BOT_DIR
 buildbot-worker create-worker $BOT_DIR \
   lab.llvm.org:9994 \
   $BUILDBOT_USERNAME \
