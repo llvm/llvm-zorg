@@ -117,3 +117,32 @@ resource "kubernetes_manifest" "clang_debian_cpp20" {
 resource "kubernetes_manifest" "clangd_ubuntu_clang" {
   manifest = yamldecode(file("${path.module}/deployment-clangd-ubuntu-clang.yaml"))
 }
+
+data "google_compute_zones" "available" {
+  region = var.gcp_config.region
+  status = "UP"
+}
+
+resource "google_container_node_pool" "linux_32_core_pool" {
+  name           = "linux-32-core-pool"
+  location       = var.gcp_config.zone_a
+  cluster        = google_container_cluster.primary.name
+  node_locations = data.google_compute_zones.available.names
+
+  autoscaling {
+    total_min_node_count = 0
+    total_max_node_count = 2
+    location_policy      = "ANY"
+  }
+
+  node_config {
+    preemptible  = true
+    machine_type = "n2d-standard-32"
+    disk_size_gb = 100
+    disk_type    = "pd-ssd"
+
+    labels = {
+      pool = "linux-32-core-pool"
+    }
+  }
+}
