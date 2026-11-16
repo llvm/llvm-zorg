@@ -146,3 +146,61 @@ resource "google_container_node_pool" "linux_32_core_pool" {
     }
   }
 }
+
+data "google_secret_manager_secret_version" "password_profcheck_b1" {
+  secret = "profcheck-b1"
+}
+
+data "google_secret_manager_secret_version" "password_profcheck_b2" {
+  secret = "profcheck-b2"
+}
+
+resource "kubernetes_secret" "password_profcheck_b1" {
+  metadata {
+    name = "password-profcheck-b1"
+  }
+
+  data = {
+    "password" = data.google_secret_manager_secret_version.password_profcheck_b1.secret_data
+  }
+
+  type = "Opaque"
+}
+
+resource "kubernetes_secret" "password_profcheck_b2" {
+  metadata {
+    name = "password-profcheck-b2"
+  }
+
+  data = {
+    "password" = data.google_secret_manager_secret_version.password_profcheck_b2.secret_data
+  }
+
+  type = "Opaque"
+}
+
+resource "kubernetes_manifest" "profcheck_b1_deployment" {
+  manifest = yamldecode(
+    templatefile("profcheck_deployment.yaml", {
+      buildbot_name : "profcheck-b1",
+      secret_name : "password-profcheck-b1"
+    })
+  )
+
+  depends_on = [
+    kubernetes_secret.password_profcheck_b1
+  ]
+}
+
+resource "kubernetes_manifest" "profcheck_b2_deployment" {
+  manifest = yamldecode(
+    templatefile("profcheck_deployment.yaml", {
+      buildbot_name : "profcheck-b2",
+      secret_name : "password-profcheck-b2"
+    })
+  )
+
+  depends_on = [
+    kubernetes_secret.password_profcheck_b2
+  ]
+}
