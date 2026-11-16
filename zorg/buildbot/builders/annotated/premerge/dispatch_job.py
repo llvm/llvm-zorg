@@ -98,6 +98,19 @@ def start_build(
     kubernetes.utils.create_from_dict(k8s_client, pod_definition)
 
 
+def _compute_projects_command(platform: str) -> str:
+    """Returns a bash command that loads compute_projects.py JSON output into env vars."""
+    # Avoid double quotes inside the command so it stays safe inside Windows `bash -c "..."`.
+    json_to_env = (
+        "import json, shlex, sys; "
+        "[print(chr(61).join((k, shlex.quote(v)))) for k, v in json.load(sys.stdin).items()]"
+    )
+    return (
+        f"source <(echo '.ci/utils.sh' | python .ci/compute_projects.py {platform}"
+        f" | python -c '{json_to_env}')"
+    )
+
+
 def start_build_linux(commit_sha: str, bucket_name: str, k8s_client) -> str:
     """Starts a pod to build/test on Linux at the specified SHA."""
     pod_name = f"build-{commit_sha}"
@@ -114,8 +127,8 @@ def start_build_linux(commit_sha: str, bucket_name: str, k8s_client) -> str:
         "export SCCACHE_GCS_RW_MODE=READ_WRITE",
         "export SCCACHE_IDLE_TIMEOUT=0",
         "sccache --start-server",
-        "source <(echo '.ci/utils.sh' | python .ci/compute_projects.py)",
-        './.ci/monolithic-linux.sh "${projects_to_build}" "${project_check_targets}" "${runtimes_to_build}" "${runtimes_check_targets}" "${runtimes_check_targets_needs_reconfig}" "${enable_cir}"',
+        _compute_projects_command("Linux"),
+        './.ci/monolithic-linux.sh "${projects_to_build}" "${project_check_targets}" "${runtimes_to_build}" "${runtimes_check_targets}" "${runtimes_check_targets_needs_reconfig}"',
         "python .ci/cache_lit_timing_files.py upload",
         "echo BUILD FINISHED",
     ]
@@ -140,7 +153,7 @@ def start_build_windows(commit_sha: str, bucket_name: str, k8s_client):
         "export SCCACHE_GCS_RW_MODE=READ_WRITE",
         "export SCCACHE_IDLE_TIMEOUT=0",
         "sccache --start-server",
-        "source <(echo '.ci/utils.sh' | python .ci/compute_projects.py Windows)",
+        _compute_projects_command("Windows"),
         '.ci/monolithic-windows.sh "${projects_to_build}" "${project_check_targets}" "${runtimes_to_build}" "${runtimes_check_targets}"',
         "python .ci/cache_lit_timing_files.py upload",
         "echo BUILD FINISHED",
