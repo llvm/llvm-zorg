@@ -5,7 +5,7 @@
 
 mkdir /worker
 buildbot-worker create-worker /worker \
-  lab.llvm.org:9994 \
+  lab.llvm.org:9990 \
   $BUILDBOT_USERNAME \
   $BUILDBOT_PASSWORD
 
