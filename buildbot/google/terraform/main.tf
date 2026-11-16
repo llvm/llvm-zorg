@@ -109,8 +109,3 @@ resource "kubernetes_secret" "clangd_ubuntu_clang_password" {
 
   type = "Opaque"
 }
-
-import {
-  to = kubernetes_secret.clangd_ubuntu_clang_password
-  id = "default/password-clangd-ubuntu-clang"
-}
