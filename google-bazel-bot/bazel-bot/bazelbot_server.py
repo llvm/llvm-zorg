@@ -55,26 +55,35 @@ class BazelRepairBot:
         self.last_processed_state: utils.BuildState = utils.BuildState.UNKNOWN
         self.last_processed_sha: str = ""
         self.poll_interval = poll_interval
+        # Branch containing fixes that have not been merged
+        self.active_fix_branch: str | None = None
+
+    def reset_active_fix_branch(self) -> None:
+        self.active_fix_branch = None
 
     def wait(self, seconds):
         """Sleeps for a given number of seconds"""
         time.sleep(seconds)
 
     def process_failure_with_bant(self, build_data: utils.BuildInfo) -> bool:
-        self.git_repo.create_branch_for_fix(build_data.commit)
+        base_sha = self.git_repo.repo.head.commit.hexsha
         if not self.command_processor.run_bant(targets=build_data.failed_targets):
             logger.warning("Running bant failed.")
+            self.git_repo.reset_hard(base_sha)
             return False
 
         if not self.validate_before_publishing():
             logger.info("Validation before publishing failed.")
+            self.git_repo.reset_hard(base_sha)
             return False
 
         self.git_repo.commit(
             f"[Bazel] Fix build for {build_data.commit[:7]}\n\n"
             f"Buildkite error link: {build_data.buildkite_url}"
         )
-        if not self.git_repo.push_fix(build_data):
+        if not self.git_repo.push_fix(
+            build_data, close_existing_prs=not self.active_fix_branch
+        ):
             logger.warning("Failed to publish bant fix.")
             return False
 
@@ -129,14 +138,14 @@ class BazelRepairBot:
 
         return True
 
-    def process_failure_with_ai(self, build_data):
+    def process_failure_with_ai(self, build_data: utils.BuildInfo) -> bool:
         logger.info("Invoking AI Agent...")
         attempt_num = 0
         agent_exhausted_tries = 0
         past_fixes = []
+        base_sha = self.git_repo.repo.head.commit.hexsha
 
         # Push an empty branch to indicate that AI fix is in progress
-        self.git_repo.create_branch_for_fix(build_data.commit)
         self.git_repo.commit(
             f"AI is working on fixing build for {build_data.commit[:7]}. Check back later!\n\n"
             f"Buildkite error link: {build_data.buildkite_url}"
@@ -150,7 +159,7 @@ class BazelRepairBot:
                 )
                 break
 
-            self.git_repo.create_branch_for_fix(build_data.commit)
+            self.git_repo.reset_hard(base_sha)
 
             # For local testing, users must use their personal access tokens
             access_token = (
@@ -199,7 +208,7 @@ class BazelRepairBot:
 
         if not self.validate_before_publishing():
             logger.info("Validation before publishing failed.")
-            self.git_repo.create_branch_for_fix(build_data.commit)
+            self.git_repo.reset_hard(base_sha)
             self.git_repo.commit(
                 f"AI failed to fix the build for {build_data.commit[:7]}. You "
                 f"will need to fix it manually\n\n"
@@ -212,7 +221,11 @@ class BazelRepairBot:
             f"Fix Bazel build for {build_data.commit[:7]}\n\n"
             f"Buildkite error link: {build_data.buildkite_url}"
         )
-        if not self.git_repo.push_fix(build_data, self.git_repo.can_create_pr):
+        if not self.git_repo.push_fix(
+            build_data,
+            self.git_repo.can_create_pr,
+            close_existing_prs=not self.active_fix_branch,
+        ):
             logger.warning(
                 f"Failed to publish AI changes for commit: {build_data.commit}"
             )
@@ -232,15 +245,59 @@ class BazelRepairBot:
         return False
 
     def get_build_info_for_commit(self, commit_sha: str) -> utils.BuildInfo | None:
-        logger.info(f"Finding build state for commit {commit_sha} locally ...")
+        # Build 1: Bazel build with a clean checkout of commit_sha
+        # Build 2: Bazel build of commit_sha + active_fix_branch containing fixes for previous errors
+        logger.info(
+            f"Finding build state for commit {commit_sha} locally (build 1: clean commit)..."
+        )
         current_build = utils.BuildInfo(commit=commit_sha)
         self.git_repo.checkout_commit(commit_sha)
         build_result = self.command_processor.run_bazel_build()
-        current_build.state = (
-            utils.BuildState.PASSED if build_result.success else utils.BuildState.FAILED
+
+        if build_result.success:
+            logger.info(
+                f"Build 1 for commit {commit_sha} passed. Resetting active fix branch."
+            )
+            self.reset_active_fix_branch()
+            current_build.state = utils.BuildState.PASSED
+            return current_build
+
+        logger.info(f"Build 1 for commit {commit_sha} failed.")
+        current_build.failed_targets = utils.parse_targets(build_result.stderr)
+        if not self.active_fix_branch:
+            current_build.state = utils.BuildState.FAILED
+            return current_build
+
+        logger.info(
+            f"Rebasing active fix branch {self.active_fix_branch} on top of commit {commit_sha}..."
         )
-        if not build_result.success:
-            current_build.failed_targets = utils.parse_targets(build_result.stderr)
+        if not self.git_repo.rebase_branch(self.active_fix_branch, commit_sha):
+            logger.warning(
+                f"Failed to rebase active fix branch {self.active_fix_branch} on top of commit {commit_sha}."
+            )
+            # Failed git rebase operation -> not buildable
+            # Let's reset the active fix branch so next revision doesn't have any rebase
+            self.reset_active_fix_branch()
+            current_build.state = utils.BuildState.UNKNOWN
+            return current_build
+
+        logger.info(
+            f"Finding build state for commit {commit_sha} locally (build 2: with active fix branch {self.active_fix_branch})..."
+        )
+        build_result2 = self.command_processor.run_bazel_build()
+        if build_result2.success:
+            logger.info(
+                f"Build 2 for commit {commit_sha} with fix branch {self.active_fix_branch} passed."
+            )
+            current_build.state = utils.BuildState.PASSED
+            current_build.failed_targets = []
+        else:
+            logger.info(
+                f"Build 2 for commit {commit_sha} with fix branch {self.active_fix_branch} failed."
+            )
+            current_build.state = utils.BuildState.FAILED
+            current_build.failed_targets = utils.parse_targets(build_result2.stderr)
+
         return current_build
 
     def run(self) -> None:
@@ -277,6 +334,7 @@ class BazelRepairBot:
                     current_build.state == utils.BuildState.RUNNING
                     or current_build.state == utils.BuildState.SCHEDULED
                 ):
+                    # TODO: Remove: We should never run into this now since we are building locally
                     logger.debug(
                         f"Build for {current_build.commit} is still running. Waiting for completion."
                     )
@@ -291,10 +349,18 @@ class BazelRepairBot:
                         logger.info(
                             f"Detected 'passed' -> '{current_build.state}' transition for {current_build.commit}). Repairing ..."
                         )
-                        if not self.repair_build(current_build):
+                        branch_name = self.git_repo.create_branch_for_fix(
+                            current_build.commit
+                        )
+
+                        if self.repair_build(current_build):
+                            self.active_fix_branch = branch_name
+                            current_build.state = utils.BuildState.PASSED
+                        else:
                             logger.warning(
                                 f"Failed to repair build #{current_build.commit} (commit: {current_build.commit}). Giving up and waiting for user to fix it manually."
                             )
+                            self.reset_active_fix_branch()
                     else:
                         logger.info(
                             f"{self.last_processed_sha} also not passing. Waiting for transition from passed->failed state."
