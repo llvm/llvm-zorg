@@ -1,0 +1,45 @@
+name: Build Google Buildbot Containers
+
+permissions:
+  contents: read
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/build-google-buildbot-containers.yml
+      - 'buildbot/google/docker/profcheck/**'
+  pull_request:
+    paths:
+      - .github/workflows/build-google-buildbot-containers.yml
+      - 'buildbot/google/docker/profcheck/**'
+
+jobs:
+  build-profcheck-buildbot-container:
+    if: github.repository_owner == 'llvm'
+    runs-on: ubuntu-26.04
+    steps:
+      - name: Checkout LLVM Zorg
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          sparse-checkout: buildbot/google/docker/profcheck
+      - name: Build Container
+        uses: llvm/llvm-project/.github/actions/build-container@12e957fd7feb388b266fd71ab7960450df6884c1
+        with:
+          container-name: profcheck
+          context: buildbot/google/docker/profcheck
+  
+  push-premerge-buildbot-container:
+    if: github.event_name == 'push'
+    needs:
+      - build-profcheck-buildbot-container
+    permissions:
+      packages: write
+    runs-on: ubuntu-26.04
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: llvm/llvm-project/.github/actions/push-container@12e957fd7feb388b266fd71ab7960450df6884c1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
