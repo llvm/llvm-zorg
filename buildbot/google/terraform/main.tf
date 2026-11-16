@@ -83,3 +83,34 @@ resource "google_container_node_pool" "linux_16_core_pool" {
     }
   }
 }
+
+data "google_secret_manager_secret_version" "password_clangd_ubuntu_clang" {
+  secret = "password-clangd-ubuntu-clang"
+}
+
+data "google_client_config" "current" {}
+
+provider "kubernetes" {
+  host  = "https://${google_container_cluster.primary.endpoint}"
+  token = data.google_client_config.current.access_token
+  cluster_ca_certificate = base64decode(
+    google_container_cluster.primary.master_auth[0].cluster_ca_certificate
+  )
+}
+
+resource "kubernetes_secret" "clangd_ubuntu_clang_password" {
+  metadata {
+    name = "password-clangd-ubuntu-clang"
+  }
+
+  data = {
+    "token" = data.google_secret_manager_secret_version.password_clangd_ubuntu_clang.secret_data
+  }
+
+  type = "Opaque"
+}
+
+import {
+  to = kubernetes_secret.clangd_ubuntu_clang_password
+  id = "default/password-clangd-ubuntu-clang"
+}
