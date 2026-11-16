@@ -109,3 +109,21 @@ resource "kubernetes_secret" "clangd_ubuntu_clang_password" {
 
   type = "Opaque"
 }
+
+resource "kubernetes_manifest" "clang_debian_cpp20" {
+  manifest = yamldecode(file("${path.module}/deployment-clang-debian-cpp20.yaml"))
+}
+
+import {
+  to = kubernetes_manifest.clang_debian_cpp20
+  id = "apiVersion=apps/v1,kind=Deployment,namespace=default,name=clang-debian-cpp20"
+}
+
+resource "kubernetes_manifest" "clangd_ubuntu_clang" {
+  manifest = yamldecode(file("${path.module}/deployment-clangd-ubuntu-clang.yaml"))
+}
+
+import {
+  to = kubernetes_manifest.clangd_ubuntu_clang
+  id = "apiVersion=apps/v1,kind=Deployment,namespace=default,name=clangd-ubuntu-clang"
+}
