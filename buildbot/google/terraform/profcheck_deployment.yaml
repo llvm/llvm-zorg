@@ -9,6 +9,10 @@ spec:
   selector:
     matchLabels:
       app: ${ buildbot_name }
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 0
   template:
     metadata:
       labels:
@@ -16,7 +20,7 @@ spec:
     spec:
       containers:
       - name: buildbot
-        image: ghcr.io/llvm/profcheck:bfc6b9c3afc2
+        image: ghcr.io/llvm/profcheck:a7291e793026
         nodeSelector:
           pool: linux-32-core-pool
         env:
