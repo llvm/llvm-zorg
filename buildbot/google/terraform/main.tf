@@ -16,6 +16,35 @@ provider "google" {
   region  = var.gcp_config.region
 }
 
+resource "random_id" "default" {
+  byte_length = 8
+}
+
+resource "google_storage_bucket" "terraform_state_bucket" {
+  name     = "${random_id.default.hex}-terraform-remote-backend"
+  location = "US"
+
+  force_destroy               = false
+  public_access_prevention    = "enforced"
+  uniform_bucket_level_access = true
+
+  versioning {
+    enabled = true
+  }
+}
+
+resource "local_file" "terraform_state" {
+  file_permission = "0644"
+  filename        = "${path.module}/backend.tf"
+
+  content = <<-EOT
+  terraform {
+    backend "gcs" {
+      bucket = "${google_storage_bucket.terraform_state_bucket.name}"
+    }
+  }
+  EOT
+}
 
 # create a network for the cluster, required for Kubernetes on Windows 
 # FIXME: rename to "buildbot-vpc-network", causes destruction of the cluster!
@@ -34,8 +63,8 @@ resource "google_container_cluster" "primary" {
   # enable alias IP addresses, required for Kubernetes for Windows
   ip_allocation_policy {}
 
-  # use newer Kubernetes version, otherwise Windows node pools can't be created
-  min_master_version = "1.16"
+  # Keep around for now to avoid updates to the cluster.
+  enable_shielded_nodes = false
 
   # one node is enough (at the moment)
   initial_node_count = 1
@@ -83,4 +112,19 @@ resource "google_container_node_pool" "linux_16_core_pool" {
       pool = "linux-16-core-pool"
     }
   }
+}
+
+import {
+  to = google_compute_network.vpc_network
+  id = "projects/sanitizer-bots/global/networks/vpc-network"
+}
+
+import {
+  to = google_container_cluster.primary
+  id = "projects/sanitizer-bots/locations/us-central1-a/clusters/buildbot-cluster"
+}
+
+import {
+  to = google_container_node_pool.linux_16_core_pool
+  id = "projects/sanitizer-bots/locations/us-central1-a/clusters/buildbot-cluster/nodePools/linux-16-core-pool"
 }
