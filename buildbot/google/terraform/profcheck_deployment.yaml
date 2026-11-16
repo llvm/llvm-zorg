@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: buildbot
-        image: ghcr.io/llvm/profcheck:4af2cb5772aa
+        image: ghcr.io/llvm/profcheck:bfc6b9c3afc2
         nodeSelector:
           pool: linux-32-core-pool
         env:
