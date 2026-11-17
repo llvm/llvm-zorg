@@ -2789,27 +2789,6 @@ all += [
          script_interpreter=None,
          )},
 
-    # build clangd with remote-index enabled and check with TSan
-    {'name': "clangd-ubuntu-tsan",
-     'tags': ["clangd"],
-     'workernames': ["clangd-ubuntu-clang"],
-     'builddir': "clangd-ubuntu-tsan",
-     'factory': UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
-         clean=True,
-         depends_on_projects=["llvm", "clang", "clang-tools-extra"],
-         checks=["check-clangd"],
-         targets=["clangd", "clangd-index-server", "clangd-indexer"],
-         extra_configure_args=[
-             "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
-             "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
-             "-DLLVM_USE_SANITIZER=Thread",
-             "-DCMAKE_BUILD_TYPE=Release",
-             "-DCLANGD_ENABLE_REMOTE=ON",
-             "-DLLVM_ENABLE_ASSERTIONS=ON",
-             "-DGRPC_INSTALL_PATH=/usr/local/lib/grpc",
-             "-DLLVM_OPTIMIZED_TABLEGEN=ON"
-         ])},
-
     # Build in C++20 configuration.
     {'name': "clang-debian-cpp20",
      'tags': ["clang", "c++20"],

@@ -279,10 +279,6 @@ def get_all():
         create_worker("mlir-nvidia", properties={'jobs': 16}, max_builds=1,
                       missing_timeout=300), # notify after 5 minutes of missing
 
-        # Ubuntu 18.04 on Google Cloud, for machine configuration check
-        # buildbot/google/terraform/main.tf
-        create_worker("clangd-ubuntu-clang", max_builds=1),
-
         # Debian bullseye, build in C++20 configuration, for worker
         # configuration check buildbot/google/terraform/main.tf
         create_worker("clang-debian-cpp20", max_builds=1),
