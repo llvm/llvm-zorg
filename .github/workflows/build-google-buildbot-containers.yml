@@ -32,8 +32,8 @@ jobs:
       - name: Build Container
         uses: llvm/llvm-project/.github/actions/build-container@12e957fd7feb388b266fd71ab7960450df6884c1
         with:
-          container-name: ${{ matrix.container }}
-          context: buildbot/google/docker/${{ matrix.container }}
+          container-name: ${{ matrix.container-name }}
+          context: buildbot/google/docker/${{ matrix.container-name }}
   
   push-containers:
     if: github.event_name == 'push'
