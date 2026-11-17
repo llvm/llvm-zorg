@@ -28,7 +28,7 @@ jobs:
       - name: Checkout LLVM Zorg
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          sparse-checkout: buildbot/google/docker/profcheck
+          sparse-checkout: buildbot/google/docker
       - name: Build Container
         uses: llvm/llvm-project/.github/actions/build-container@12e957fd7feb388b266fd71ab7960450df6884c1
         with:
