@@ -131,7 +131,7 @@ resource "google_container_node_pool" "linux_32_core_pool" {
 
   autoscaling {
     total_min_node_count = 0
-    total_max_node_count = 2
+    total_max_node_count = 4
     location_policy      = "ANY"
   }
 
@@ -202,5 +202,63 @@ resource "kubernetes_manifest" "profcheck_b2_deployment" {
 
   depends_on = [
     kubernetes_secret.password_profcheck_b2
+  ]
+}
+
+data "google_secret_manager_secret_version" "password_google_integrate_b1" {
+  secret = "google-integrate-b1"
+}
+
+data "google_secret_manager_secret_version" "password_google_integrate_b2" {
+  secret = "google-integrate-b2"
+}
+
+resource "kubernetes_secret" "password_google_integrate_b1" {
+  metadata {
+    name = "password-google-integrate-b1"
+  }
+
+  data = {
+    "password" = data.google_secret_manager_secret_version.password_google_integrate_b1.secret_data
+  }
+
+  type = "Opaque"
+}
+
+resource "kubernetes_secret" "password_google_integrate_b2" {
+  metadata {
+    name = "password-google-integrate-b2"
+  }
+
+  data = {
+    "password" = data.google_secret_manager_secret_version.password_google_integrate_b2.secret_data
+  }
+
+  type = "Opaque"
+}
+
+resource "kubernetes_manifest" "google_integrate_b1_deployment" {
+  manifest = yamldecode(
+    templatefile("google_integrate_deployment.yaml", {
+      buildbot_name : "google-integrate-b1",
+      secret_name : "password-google-integrate-b1"
+    })
+  )
+
+  depends_on = [
+    kubernetes_secret.password_google_integrate_b1
+  ]
+}
+
+resource "kubernetes_manifest" "google_integrate_b2_deployment" {
+  manifest = yamldecode(
+    templatefile("google_integrate_deployment.yaml", {
+      buildbot_name : "google-integrate-b2",
+      secret_name : "password-google-integrate-b2"
+    })
+  )
+
+  depends_on = [
+    kubernetes_secret.password_google_integrate_b2
   ]
 }
