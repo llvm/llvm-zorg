@@ -20,7 +20,7 @@ spec:
     spec:
       containers:
       - name: buildbot
-        image: ghcr.io/llvm/google-integrate:b449afa44bb7
+        image: ghcr.io/llvm/google-integrate:04f531b4a3ec
         nodeSelector:
           pool: linux-32-core-pool
         env:
