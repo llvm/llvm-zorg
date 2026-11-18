@@ -341,6 +341,12 @@ class LocalGitRepo:
         self.remote_name = "origin"
         self.author_name = os.getenv("GIT_AUTHOR_NAME", "Google Bazel Bot")
         self.author_email = os.getenv("GIT_AUTHOR_EMAIL", "google-bazel-bot@google.com")
+        self.repo.git.update_environment(
+            GIT_AUTHOR_NAME=self.author_name,
+            GIT_AUTHOR_EMAIL=self.author_email,
+            GIT_COMMITTER_NAME=self.author_name,
+            GIT_COMMITTER_EMAIL=self.author_email,
+        )
         self.branch_prefix = "bazel-"
 
     def get_branch_name(self, commit_hash: str) -> str:
