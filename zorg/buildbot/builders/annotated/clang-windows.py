@@ -6,6 +6,7 @@ import annotated_builder
 
 def main(argv):
     ap = annotated_builder.get_argument_parser()
+    ap.add_argument('--extra_cmake_arg', nargs='*', default=[])
     args = ap.parse_args(argv[1:])
 
     # TODO: Add back debuginfo-tests once it works.
@@ -19,7 +20,7 @@ def main(argv):
         '-DLLVM_ENABLE_PDB=ON',
         '-DLLVM_ENABLE_ASSERTIONS=ON',
         '-DLLVM_TARGETS_TO_BUILD=all',
-    ]
+    ] + args.extra_cmake_arg
     check_targets = [
         'check-llvm',
         'check-clang',
