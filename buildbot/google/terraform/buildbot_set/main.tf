@@ -3,7 +3,7 @@ data "google_secret_manager_secret_version" "password" {
   secret   = each.value
 }
 
-resource "kubernetes_secret" "password" {
+resource "kubernetes_secret_v1" "password" {
   for_each = var.buildbot_names
 
   metadata {
@@ -17,17 +17,24 @@ resource "kubernetes_secret" "password" {
   type = "Opaque"
 }
 
+removed {
+  from = kubernetes_secret.password
+  lifecycle {
+    destroy = false
+  }
+}
+
 resource "kubernetes_manifest" "deployment" {
   for_each = var.buildbot_names
 
   manifest = yamldecode(
     templatefile(var.deployment_template_path, {
       buildbot_name = each.value
-      secret_name   = kubernetes_secret.password[each.value].metadata[0].name
+      secret_name   = kubernetes_secret_v1.password[each.value].metadata[0].name
     })
   )
 
   depends_on = [
-    kubernetes_secret.password
+    kubernetes_secret_v1.password
   ]
 }
