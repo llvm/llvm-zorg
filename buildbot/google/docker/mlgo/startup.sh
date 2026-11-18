@@ -7,7 +7,7 @@ export PATH=$PATH:~/.local/bin
 BOT_DIR=/b
 mkdir $BOT_DIR
 buildbot-worker create-worker $BOT_DIR \
-  lab.llvm.org:9994 \
+  lab.llvm.org:$BUILDBOT_PORT \
   $BUILDBOT_USERNAME \
   $BUILDBOT_PASSWORD
 
