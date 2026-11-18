@@ -1,4 +1,4 @@
-FROM debian:12 AS mlgo-rel
+FROM debian:12 AS rel
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV LLVM_MAJOR_VERSION=23
