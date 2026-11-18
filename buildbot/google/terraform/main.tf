@@ -110,18 +110,6 @@ resource "kubernetes_secret_v1" "clangd_ubuntu_clang_password" {
   type = "Opaque"
 }
 
-removed {
-  from = kubernetes_secret.clangd_ubuntu_clang_password
-  lifecycle {
-    destroy = false
-  }
-}
-
-import {
-  to = kubernetes_secret_v1.clangd_ubuntu_clang_password
-  id = "default/password-clangd-ubuntu-clang"
-}
-
 resource "kubernetes_manifest" "clang_debian_cpp20" {
   manifest = yamldecode(file("${path.module}/deployment-clang-debian-cpp20.yaml"))
 }
@@ -187,34 +175,4 @@ module "ml_opt_devrel" {
   source                   = "./buildbot_set"
   buildbot_names           = ["ml-opt-devrel-x86-64-b1", "ml-opt-devrel-x86-64-b2"]
   deployment_template_path = "${path.module}/ml_opt_dev.yaml"
-}
-
-import {
-  for_each = toset(["profcheck-b1", "profcheck-b2"])
-  to       = module.profcheck.kubernetes_secret_v1.password[each.value]
-  id       = "default/password-${each.value}"
-}
-
-import {
-  for_each = toset(["google-integrate-b1", "google-integrate-b2"])
-  to       = module.google_integrate.kubernetes_secret_v1.password[each.value]
-  id       = "default/password-${each.value}"
-}
-
-import {
-  for_each = toset(["ml-opt-rel-x86-64-b1", "ml-opt-rel-x86-64-b2"])
-  to       = module.ml_opt_rel.kubernetes_secret_v1.password[each.value]
-  id       = "default/password-${each.value}"
-}
-
-import {
-  for_each = toset(["ml-opt-dev-x86-64-b1", "ml-opt-dev-x86-64-b2"])
-  to       = module.ml_opt_dev.kubernetes_secret_v1.password[each.value]
-  id       = "default/password-${each.value}"
-}
-
-import {
-  for_each = toset(["ml-opt-devrel-x86-64-b1", "ml-opt-devrel-x86-64-b2"])
-  to       = module.ml_opt_devrel.kubernetes_secret_v1.password[each.value]
-  id       = "default/password-${each.value}"
 }

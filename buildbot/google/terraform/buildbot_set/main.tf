@@ -17,13 +17,6 @@ resource "kubernetes_secret_v1" "password" {
   type = "Opaque"
 }
 
-removed {
-  from = kubernetes_secret.password
-  lifecycle {
-    destroy = false
-  }
-}
-
 resource "kubernetes_manifest" "deployment" {
   for_each = var.buildbot_names
 
