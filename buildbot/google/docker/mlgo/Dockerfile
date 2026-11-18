@@ -74,6 +74,9 @@ ENTRYPOINT /startup.sh
 
 FROM rel as dev
 
+RUN mkdir /tflite
+WORKDIR /tflite
 COPY build_tflite.sh /tmp/build_tflite.sh
 RUN bash /tmp/build_tflite.sh && rm /tmp/build_tflite.sh
 ENV TFLITE_CMAKE=/tflite/tflite.cmake
+WORKDIR /
