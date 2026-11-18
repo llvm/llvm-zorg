@@ -29,6 +29,8 @@ jobs:
         include:
           - container-name: mlgo
             container-target: rel
+          - container-name: mlgo
+            container-target: dev
     steps:
       - name: Checkout LLVM Zorg
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1

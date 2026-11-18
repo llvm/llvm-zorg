@@ -71,3 +71,9 @@ RUN python3 -m pip install --no-cache-dir --break-system-packages pipenv buildbo
 
 COPY startup.sh liveness.sh ./
 ENTRYPOINT /startup.sh
+
+FROM rel as dev
+
+COPY build_tflite.sh /tmp/build_tflite.sh
+RUN bash /tmp/build_tflite.sh && rm /tmp/build_tflite.sh
+ENV TFLITE_CMAKE=/tflite/tflite.cmake
