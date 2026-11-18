@@ -20,7 +20,7 @@ spec:
     spec:
       containers:
       - name: buildbot
-        image: ghcr.io/llvm/mlgo-dev:3b232627b613
+        image: ghcr.io/llvm/mlgo-dev:499a87156042
         nodeSelector:
           pool: linux-32-core-pool
         env:
