@@ -69,7 +69,5 @@ RUN python3 -m pip install --no-cache-dir --break-system-packages pipenv buildbo
     python3 -m pip install --no-cache-dir --break-system-packages -r /tmp/ir2vec-reqs.txt && \
     rm -f /tmp/ir2vec-reqs.txt
 
-COPY startup.sh .
-COPY liveness.sh .
-RUN chmod +x startup.sh && chmod +x liveness.sh
+COPY startup.sh liveness.sh ./
 ENTRYPOINT /startup.sh
