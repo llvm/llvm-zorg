@@ -68,3 +68,8 @@ RUN python3 -m pip install --no-cache-dir --break-system-packages pipenv buildbo
     curl -fsSL https://raw.githubusercontent.com/llvm/llvm-project/main/llvm/tools/llvm-ir2vec/Bindings/requirements.txt -o /tmp/ir2vec-reqs.txt && \
     python3 -m pip install --no-cache-dir --break-system-packages -r /tmp/ir2vec-reqs.txt && \
     rm -f /tmp/ir2vec-reqs.txt
+
+COPY startup.sh .
+COPY liveness.sh .
+RUN chmod +x startup.sh && chmod +x liveness.sh
+ENTRYPOINT /startup.sh
