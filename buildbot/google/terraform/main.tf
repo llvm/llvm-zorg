@@ -131,7 +131,7 @@ resource "google_container_node_pool" "linux_32_core_pool" {
 
   autoscaling {
     total_min_node_count = 0
-    total_max_node_count = 6
+    total_max_node_count = 8
     location_policy      = "ANY"
   }
 
@@ -163,4 +163,10 @@ module "ml_opt_rel" {
   source                   = "./buildbot_set"
   buildbot_names           = ["ml-opt-rel-x86-64-b1", "ml-opt-rel-x86-64-b2"]
   deployment_template_path = "${path.module}/ml_opt_rel.yaml"
+}
+
+module "ml_opt_dev" {
+  source                   = "./buildbot_set"
+  buildbot_names           = ["ml-opt-dev-x86-64-b1", "ml-opt-dev-x86-64-b2"]
+  deployment_template_path = "${path.module}/ml_opt_dev.yaml"
 }

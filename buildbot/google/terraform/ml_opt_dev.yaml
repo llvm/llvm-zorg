@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ${ buildbot_name }
+  namespace: default
+  labels:
+    app: ${ buildbot_name }
+spec:
+  selector:
+    matchLabels:
+      app: ${ buildbot_name }
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 0
+  template:
+    metadata:
+      labels:
+        app: ${ buildbot_name }
+    spec:
+      containers:
+      - name: buildbot
+        image: ghcr.io/llvm/mlgo-dev:3b232627b613
+        nodeSelector:
+          pool: linux-32-core-pool
+        env:
+        - name: BUILDBOT_USERNAME
+          value: ${ buildbot_name }
+        - name: BUILDBOT_PORT
+          value: "9994"
+        - name: BUILDBOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: ${ secret_name }
+              key: password
+        resources:
+          requests:
+            memory: "100Gi"
+            cpu: "28"
+          limits:
+            memory: "128Gi"
+            cpu: "32"
+        livenessProbe:
+          exec:
+            command:
+              - /liveness.sh
+            initialDelaySeconds: 10
+            periodSeconds: 60
