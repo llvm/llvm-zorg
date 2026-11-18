@@ -147,118 +147,54 @@ resource "google_container_node_pool" "linux_32_core_pool" {
   }
 }
 
-data "google_secret_manager_secret_version" "password_profcheck_b1" {
-  secret = "profcheck-b1"
+module "profcheck" {
+  source                   = "./buildbot_set"
+  buildbot_names           = ["profcheck-b1", "profcheck-b2"]
+  deployment_template_path = "${path.module}/profcheck_deployment.yaml"
 }
 
-data "google_secret_manager_secret_version" "password_profcheck_b2" {
-  secret = "profcheck-b2"
+moved {
+  from = kubernetes_secret.password_profcheck_b1
+  to   = module.profcheck.kubernetes_secret.password["profcheck-b1"]
 }
 
-resource "kubernetes_secret" "password_profcheck_b1" {
-  metadata {
-    name = "password-profcheck-b1"
-  }
-
-  data = {
-    "password" = data.google_secret_manager_secret_version.password_profcheck_b1.secret_data
-  }
-
-  type = "Opaque"
+moved {
+  from = kubernetes_secret.password_profcheck_b2
+  to   = module.profcheck.kubernetes_secret.password["profcheck-b2"]
 }
 
-resource "kubernetes_secret" "password_profcheck_b2" {
-  metadata {
-    name = "password-profcheck-b2"
-  }
-
-  data = {
-    "password" = data.google_secret_manager_secret_version.password_profcheck_b2.secret_data
-  }
-
-  type = "Opaque"
+moved {
+  from = kubernetes_manifest.profcheck_b1_deployment
+  to   = module.profcheck.kubernetes_manifest.deployment["profcheck-b1"]
 }
 
-resource "kubernetes_manifest" "profcheck_b1_deployment" {
-  manifest = yamldecode(
-    templatefile("profcheck_deployment.yaml", {
-      buildbot_name : "profcheck-b1",
-      secret_name : "password-profcheck-b1"
-    })
-  )
-
-  depends_on = [
-    kubernetes_secret.password_profcheck_b1
-  ]
+moved {
+  from = kubernetes_manifest.profcheck_b2_deployment
+  to   = module.profcheck.kubernetes_manifest.deployment["profcheck-b2"]
 }
 
-resource "kubernetes_manifest" "profcheck_b2_deployment" {
-  manifest = yamldecode(
-    templatefile("profcheck_deployment.yaml", {
-      buildbot_name : "profcheck-b2",
-      secret_name : "password-profcheck-b2"
-    })
-  )
-
-  depends_on = [
-    kubernetes_secret.password_profcheck_b2
-  ]
+module "google_integrate" {
+  source                   = "./buildbot_set"
+  buildbot_names           = ["google-integrate-b1", "google-integrate-b2"]
+  deployment_template_path = "${path.module}/google_integrate_deployment.yaml"
 }
 
-data "google_secret_manager_secret_version" "password_google_integrate_b1" {
-  secret = "google-integrate-b1"
+moved {
+  from = kubernetes_secret.password_google_integrate_b1
+  to   = module.google_integrate.kubernetes_secret.password["google-integrate-b1"]
 }
 
-data "google_secret_manager_secret_version" "password_google_integrate_b2" {
-  secret = "google-integrate-b2"
+moved {
+  from = kubernetes_secret.password_google_integrate_b2
+  to   = module.google_integrate.kubernetes_secret.password["google-integrate-b2"]
 }
 
-resource "kubernetes_secret" "password_google_integrate_b1" {
-  metadata {
-    name = "password-google-integrate-b1"
-  }
-
-  data = {
-    "password" = data.google_secret_manager_secret_version.password_google_integrate_b1.secret_data
-  }
-
-  type = "Opaque"
+moved {
+  from = kubernetes_manifest.google_integrate_b1_deployment
+  to   = module.google_integrate.kubernetes_manifest.deployment["google-integrate-b1"]
 }
 
-resource "kubernetes_secret" "password_google_integrate_b2" {
-  metadata {
-    name = "password-google-integrate-b2"
-  }
-
-  data = {
-    "password" = data.google_secret_manager_secret_version.password_google_integrate_b2.secret_data
-  }
-
-  type = "Opaque"
-}
-
-resource "kubernetes_manifest" "google_integrate_b1_deployment" {
-  manifest = yamldecode(
-    templatefile("google_integrate_deployment.yaml", {
-      buildbot_name : "google-integrate-b1",
-      secret_name : "password-google-integrate-b1"
-    })
-  )
-
-  depends_on = [
-    kubernetes_secret.password_google_integrate_b1
-  ]
-}
-
-resource "kubernetes_manifest" "google_integrate_b2_deployment" {
-  manifest = yamldecode(
-    templatefile("google_integrate_deployment.yaml", {
-      buildbot_name : "google-integrate-b2",
-      secret_name : "password-google-integrate-b2"
-    })
-  )
-
-  depends_on = [
-    kubernetes_secret.password_google_integrate_b2
-  ]
+moved {
+  from = kubernetes_manifest.google_integrate_b2_deployment
+  to   = module.google_integrate.kubernetes_manifest.deployment["google-integrate-b2"]
 }
