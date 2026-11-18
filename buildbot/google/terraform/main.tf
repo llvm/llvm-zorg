@@ -153,48 +153,8 @@ module "profcheck" {
   deployment_template_path = "${path.module}/profcheck_deployment.yaml"
 }
 
-moved {
-  from = kubernetes_secret.password_profcheck_b1
-  to   = module.profcheck.kubernetes_secret.password["profcheck-b1"]
-}
-
-moved {
-  from = kubernetes_secret.password_profcheck_b2
-  to   = module.profcheck.kubernetes_secret.password["profcheck-b2"]
-}
-
-moved {
-  from = kubernetes_manifest.profcheck_b1_deployment
-  to   = module.profcheck.kubernetes_manifest.deployment["profcheck-b1"]
-}
-
-moved {
-  from = kubernetes_manifest.profcheck_b2_deployment
-  to   = module.profcheck.kubernetes_manifest.deployment["profcheck-b2"]
-}
-
 module "google_integrate" {
   source                   = "./buildbot_set"
   buildbot_names           = ["google-integrate-b1", "google-integrate-b2"]
   deployment_template_path = "${path.module}/google_integrate_deployment.yaml"
-}
-
-moved {
-  from = kubernetes_secret.password_google_integrate_b1
-  to   = module.google_integrate.kubernetes_secret.password["google-integrate-b1"]
-}
-
-moved {
-  from = kubernetes_secret.password_google_integrate_b2
-  to   = module.google_integrate.kubernetes_secret.password["google-integrate-b2"]
-}
-
-moved {
-  from = kubernetes_manifest.google_integrate_b1_deployment
-  to   = module.google_integrate.kubernetes_manifest.deployment["google-integrate-b1"]
-}
-
-moved {
-  from = kubernetes_manifest.google_integrate_b2_deployment
-  to   = module.google_integrate.kubernetes_manifest.deployment["google-integrate-b2"]
 }
