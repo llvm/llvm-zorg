@@ -24,6 +24,11 @@ jobs:
         container-name:
           - profcheck
           - google-integrate
+        container-target:
+          - ''
+        include:
+          - container-name: mlgo
+            container-target: rel
     steps:
       - name: Checkout LLVM Zorg
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -32,8 +37,9 @@ jobs:
       - name: Build Container
         uses: llvm/llvm-project/.github/actions/build-container@12e957fd7feb388b266fd71ab7960450df6884c1
         with:
-          container-name: ${{ matrix.container-name }}
+          container-name: ${{ matrix.container-target && format('{0}-{1}', matrix.container-name, matrix.container-target) || matrix.container-name }}
           context: buildbot/google/docker/${{ matrix.container-name }}
+          target: ${{ matrix.container-target }}
   
   push-containers:
     if: github.event_name == 'push'
