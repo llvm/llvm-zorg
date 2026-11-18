@@ -20,12 +20,14 @@ spec:
     spec:
       containers:
       - name: buildbot
-        image: ghcr.io/llvm/google-integrate:04f531b4a3ec
+        image: ghcr.io/llvm/google-integrate:e295fdd1c0cd
         nodeSelector:
           pool: linux-32-core-pool
         env:
         - name: BUILDBOT_USERNAME
           value: ${ buildbot_name }
+        - name: BUILDBOT_PORT
+          value: "9990"
         - name: BUILDBOT_PASSWORD
           valueFrom:
             secretKeyRef:

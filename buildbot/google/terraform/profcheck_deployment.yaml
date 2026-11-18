@@ -26,6 +26,8 @@ spec:
         env:
         - name: BUILDBOT_USERNAME
           value: ${ buildbot_name }
+        - name: BUILDBOT_PORT
+          value: "9990"
         - name: BUILDBOT_PASSWORD
           valueFrom:
             secretKeyRef:
