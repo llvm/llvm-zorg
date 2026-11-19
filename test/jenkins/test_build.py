@@ -160,7 +160,7 @@
 # CHECK-LLDB-CONFIG-NOT: -DLLVM_TARGETS_TO_BUILD
 
 # Without a build target, only the custom test target runs.
-# RUN: python %{src_root}/zorg/jenkins/build.py lldb-cmake-matrix \
+# RUN: python %{src_root}/zorg/jenkins/build.py lldb-cmake \
 # RUN:   --cmake-test-target=check-lldb-api > %t-lldb-test-target.log
 # RUN: FileCheck --check-prefix CHECK-LLDB-TEST-TARGET < %t-lldb-test-target.log %s
 
