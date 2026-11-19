@@ -619,7 +619,7 @@ def getReporters():
         reporters.MailNotifier(
             fromaddr = status_email_fromaddr,
             sendToInterestedUsers = False,
-            extraRecipients = ["kadircet@google.com", "ibiryukov@google.com"],
+            extraRecipients = ["lexinadia@google.com"],
             generators = [
                 utils.LLVMDefaultBuildStatusGenerator(
                     builders = ["clang-debian-cpp20"])
