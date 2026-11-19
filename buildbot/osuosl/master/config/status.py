@@ -611,14 +611,6 @@ def getReporters():
         reporters.MailNotifier(
             fromaddr = status_email_fromaddr,
             sendToInterestedUsers = False,
-            extraRecipients = ["kadircet@google.com", "sammccall@google.com"],
-            generators = [
-                utils.LLVMDefaultBuildStatusGenerator(
-                    builders = ["clangd-ubuntu-tsan"])
-            ]),
-        reporters.MailNotifier(
-            fromaddr = status_email_fromaddr,
-            sendToInterestedUsers = False,
             extraRecipients = ["kadircet@google.com", "ibiryukov@google.com"],
             generators = [
                 utils.LLVMDefaultBuildStatusGenerator(

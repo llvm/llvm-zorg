@@ -84,6 +84,7 @@ resource "google_container_node_pool" "linux_16_core_pool" {
   }
 }
 
+# Despite the name, this secret is shared and still used by clang-debian-cpp20.
 data "google_secret_manager_secret_version" "password_clangd_ubuntu_clang" {
   secret = "password-clangd-ubuntu-clang"
 }
@@ -112,10 +113,6 @@ resource "kubernetes_secret_v1" "clangd_ubuntu_clang_password" {
 
 resource "kubernetes_manifest" "clang_debian_cpp20" {
   manifest = yamldecode(file("${path.module}/deployment-clang-debian-cpp20.yaml"))
-}
-
-resource "kubernetes_manifest" "clangd_ubuntu_clang" {
-  manifest = yamldecode(file("${path.module}/deployment-clangd-ubuntu-clang.yaml"))
 }
 
 data "google_compute_zones" "available" {
