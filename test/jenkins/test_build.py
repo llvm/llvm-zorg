@@ -158,3 +158,13 @@
 # CHECK-LLDB-CONFIG: -DLLVM_TARGETS_TO_BUILD=X86
 # there may be other "target to build", but the one above should be the last:
 # CHECK-LLDB-CONFIG-NOT: -DLLVM_TARGETS_TO_BUILD
+
+# Without a build target, only the custom test target runs.
+# RUN: python %{src_root}/zorg/jenkins/build.py lldb-cmake-matrix \
+# RUN:   --cmake-test-target=check-lldb-api > %t-lldb-test-target.log
+# RUN: FileCheck --check-prefix CHECK-LLDB-TEST-TARGET < %t-lldb-test-target.log %s
+
+# CHECK-LLDB-TEST-TARGET-NOT: @@@ Cmake @@@
+# CHECK-LLDB-TEST-TARGET-NOT: @@@ Run Tests @@@
+# CHECK-LLDB-TEST-TARGET: @@@ Run Custom Test: check-lldb-api @@@
+# CHECK-LLDB-TEST-TARGET: '/usr/local/bin/ninja' '-k' '0' '-v' 'check-lldb-api'

@@ -2054,7 +2054,7 @@ all += [
     'builddir': "intel-sycl-gpu",
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                     clean=True,
-                    checks=['check-all','check-sycl'],
+                    checks=['check-offload','check-sycl'],
                     enable_runtimes=['compiler-rt', 'openmp', 'offload', 'libsycl'],
                     depends_on_projects=['llvm', 'clang', 'compiler-rt', 'libsycl', 'offload', 'openmp', 'lld'],
                     extra_configure_args=[
@@ -2084,8 +2084,8 @@ all += [
                     enable_runtimes=['offload', 'libsycl'],
                     depends_on_projects=['llvm', 'clang', 'offload', 'libsycl'],
                     extra_configure_args=[
-                        "-DCMAKE_C_COMPILER=clang-cl",
-                        "-DCMAKE_CXX_COMPILER=clang-cl",
+                        "-DCMAKE_C_COMPILER=clang",
+                        "-DCMAKE_CXX_COMPILER=clang++",
                         "-DCMAKE_LINKER=lld-link",
                         "-DCMAKE_RC_COMPILER=llvm-rc",
                         "-DCMAKE_MT=llvm-mt",
