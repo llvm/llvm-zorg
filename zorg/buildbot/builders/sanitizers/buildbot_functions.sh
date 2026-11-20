@@ -490,6 +490,7 @@ function build_stage2 {
     "${cmake_options[@]}" \
     -DCMAKE_INSTALL_PREFIX="${ROOT}/${libcxx_install_dir}" \
     -DLLVM_ENABLE_RUNTIMES='libcxx;libcxxabi' \
+    -DLIBCXX_HARDENING_MODE=none \
     -DLIBCXX_TEST_PARAMS='long_tests=False' \
     -DLIBCXX_INCLUDE_BENCHMARKS=OFF \
     -DLIBCXXABI_USE_LLVM_UNWINDER=OFF \
