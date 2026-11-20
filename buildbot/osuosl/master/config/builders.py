@@ -3637,8 +3637,7 @@ all += [
                         "LLDB_ENABLE_SWIG"              : "ON",
                         "LLDB_ENABLE_LIBEDIT"           : "OFF",
                         "LLDB_ENABLE_CURSES"            : "OFF",
-                        "LLDB_ENABLE_LZMA"              : "OFF",
-                        "LLDB_ENABLE_LIBXML2"           : "OFF",
+                        "LLDB_ENABLE_LIBXML2"           : "ON",
                         "LLDB_TEST_USER_ARGS"           : util.Interpolate(
                                                             "--env;ARCH_CFLAGS=-mcpu=cortex-a78;" \
                                                             "--platform-name;remote-linux;" \
@@ -3831,7 +3830,6 @@ all += [
                                 "LLDB_ENABLE_PYTHON"            : "OFF",
                                 "LLDB_ENABLE_LIBEDIT"           : "OFF",
                                 "LLDB_ENABLE_CURSES"            : "OFF",
-                                "LLDB_ENABLE_LZMA"              : "OFF",
 
                                 "LLVM_ENABLE_ZLIB"              : "OFF",
                             },
