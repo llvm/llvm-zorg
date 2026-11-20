@@ -1470,7 +1470,6 @@ all = [
                         "LLDB_ENABLE_SWIG"              : "ON ",
                         "LLDB_ENABLE_LIBEDIT"           : "OFF",
                         "LLDB_ENABLE_CURSES"            : "OFF",
-                        "LLDB_ENABLE_LZMA"              : "OFF",
                         "LLDB_CAN_USE_LLDB_SERVER"      : "ON",
                         "LLDB_TEST_USER_ARGS"           : "--skip-category=lldb-dap",
                     },
@@ -3690,7 +3689,6 @@ all += [
                                 "LLDB_ENABLE_PYTHON"            : "OFF",
                                 "LLDB_ENABLE_LIBEDIT"           : "OFF",
                                 "LLDB_ENABLE_CURSES"            : "OFF",
-                                "LLDB_ENABLE_LZMA"              : "OFF",
 
                                 "LLVM_ENABLE_ZLIB"              : "OFF",
                             },
@@ -3783,7 +3781,6 @@ all += [
                         "LLDB_ENABLE_SWIG"              : "ON",
                         "LLDB_ENABLE_LIBEDIT"           : "OFF",
                         "LLDB_ENABLE_CURSES"            : "OFF",
-                        "LLDB_ENABLE_LZMA"              : "OFF",
                         "LLDB_TEST_USER_ARGS"           : util.Interpolate(
                                                             "--env;ARCH_CFLAGS=-mcpu=cortex-a78;" \
                                                             "--platform-name;remote-linux;" \
