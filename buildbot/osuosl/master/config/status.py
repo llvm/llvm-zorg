@@ -432,6 +432,12 @@ def getReporters():
                     recipients = ["nvhpc-llvm-offload-buildbot-watchers@nvidia.com"],
                     builders = ["nvhpc-offload-nvgpu-x86_64-linux"]),
                 utils.LLVMDefaultBuildStatusGenerator(
+                    recipients = ["crodewig@nvidia.com", "llvm-solid-pillar-notifications@nvidia.com"],
+                    builders = [
+                        "nvidia-cuda-toolchain",
+                        "nvidia-cuda-a10-test-suite",
+                        "nvidia-cuda-a10-libc"]),
+                utils.LLVMDefaultBuildStatusGenerator(
                     recipients = ["stephen.tozer@sony.com"],
                     builders = [
                         "llvm-x86_64-debugify-coverage"]),
