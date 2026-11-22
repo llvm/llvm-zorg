@@ -631,7 +631,7 @@ all = [
 
     {'name' : "clang-aarch64-sve2-vla",
     'tags'  : ["clang"],
-    'workernames' : ["linaro-g4-01", "linaro-g4-02", "arm-bbot-clang-aarch64-sve2-vla"],
+    'workernames' : ["arm-bbot-clang-aarch64-sve2-vla"],
     'builddir': "clang-aarch64-sve2-vla",
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
                     clean=False,
@@ -660,7 +660,7 @@ all = [
     # (not just SVE) Vector Length Agnostic codegen.
     {'name' : "clang-aarch64-sve2-vla-2stage",
     'tags'  : ["clang"],
-    'workernames' : ["linaro-g4-01", "linaro-g4-02", "arm-bbot-clang-aarch64-sve2-vla-2stage"],
+    'workernames' : ["arm-bbot-clang-aarch64-sve2-vla-2stage"],
     'builddir': "clang-aarch64-sve2-vla-2stage",
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
                     clean=True,
