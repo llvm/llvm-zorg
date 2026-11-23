@@ -1462,13 +1462,16 @@ all = [
                         "LLVM_INCLUDE_BENCHMARKS"       : "OFF",
                         "LLVM_PARALLEL_LINK_JOBS"       : 8,
                         "LLVM_LIT_ARGS"                 : "-v -vv --threads=32 --time-tests",
-                        
+                        # Enable libxml2 support for LLDB.
+                        "LibXml2_ROOT"                  : util.Interpolate("%(prop:sysroots)s/libxml2"),
+                        "LLVM_ENABLE_LIBXML2"           : "ON",
+                        "LLVM_USE_STATIC_LIBXML2"       : "ON",
+                        "LLDB_ENABLE_LIBXML2"           : "ON",
+
                         "LLDB_ENFORCE_STRICT_TEST_REQUIREMENTS" : "ON",
                         "LLDB_ENABLE_SWIG"              : "ON ",
                         "LLDB_ENABLE_LIBEDIT"           : "OFF",
                         "LLDB_ENABLE_CURSES"            : "OFF",
-                        "LLDB_ENABLE_LZMA"              : "OFF",
-                        "LLDB_ENABLE_LIBXML2"           : "OFF",
                         "LLDB_CAN_USE_LLDB_SERVER"      : "ON",
                         "LLDB_TEST_USER_ARGS"           : "--skip-category=lldb-dap",
                     },
@@ -3674,8 +3677,7 @@ all += [
                         "LLDB_ENABLE_SWIG"              : "ON",
                         "LLDB_ENABLE_LIBEDIT"           : "OFF",
                         "LLDB_ENABLE_CURSES"            : "OFF",
-                        "LLDB_ENABLE_LZMA"              : "OFF",
-                        "LLDB_ENABLE_LIBXML2"           : "OFF",
+                        "LLDB_ENABLE_LIBXML2"           : "ON",
                         "LLDB_TEST_USER_ARGS"           : util.Interpolate(
                                                             "--env;ARCH_CFLAGS=-mcpu=cortex-a78;" \
                                                             "--platform-name;remote-linux;" \
@@ -3726,7 +3728,6 @@ all += [
                                 "LLDB_ENABLE_PYTHON"            : "OFF",
                                 "LLDB_ENABLE_LIBEDIT"           : "OFF",
                                 "LLDB_ENABLE_CURSES"            : "OFF",
-                                "LLDB_ENABLE_LZMA"              : "OFF",
 
                                 "LLVM_ENABLE_ZLIB"              : "OFF",
                             },
@@ -3806,6 +3807,12 @@ all += [
                         "LIBCXX_ABI_VERSION"            : "1",
                         "LLVM_INSTALL_TOOLCHAIN_ONLY"   : "OFF",
 
+                        # Enable libxml2 support for LLDB.
+                        "LibXml2_ROOT"                  : util.Interpolate("%(prop:sysroots)s/libxml2"),
+                        "LLVM_ENABLE_LIBXML2"           : "ON",
+                        "LLVM_USE_STATIC_LIBXML2"       : "ON",
+                        "LLDB_ENABLE_LIBXML2"           : "ON",
+
                         "LLDB_TEST_PLATFORM_URL"        : util.Interpolate("connect://%(prop:remote_test_host)s:1234"),
                         "LLDB_TEST_PLATFORM_WORKING_DIR": "/home/ubuntu/lldb-tests",
                         "LLDB_TEST_SYSROOT:PATH"        : util.Interpolate("%(prop:sysroots)s/aarch64-linux-gnu"),
@@ -3813,8 +3820,6 @@ all += [
                         "LLDB_ENABLE_SWIG"              : "ON",
                         "LLDB_ENABLE_LIBEDIT"           : "OFF",
                         "LLDB_ENABLE_CURSES"            : "OFF",
-                        "LLDB_ENABLE_LZMA"              : "OFF",
-                        "LLDB_ENABLE_LIBXML2"           : "OFF",
                         "LLDB_TEST_USER_ARGS"           : util.Interpolate(
                                                             "--env;ARCH_CFLAGS=-mcpu=cortex-a78;" \
                                                             "--platform-name;remote-linux;" \
@@ -3865,7 +3870,6 @@ all += [
                                 "LLDB_ENABLE_PYTHON"            : "OFF",
                                 "LLDB_ENABLE_LIBEDIT"           : "OFF",
                                 "LLDB_ENABLE_CURSES"            : "OFF",
-                                "LLDB_ENABLE_LZMA"              : "OFF",
 
                                 "LLVM_ENABLE_ZLIB"              : "OFF",
                             },
