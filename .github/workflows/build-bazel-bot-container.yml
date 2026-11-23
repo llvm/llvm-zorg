@@ -20,7 +20,7 @@ on:
 jobs:
   build-container:
     if: github.repository_owner == 'llvm'
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     strategy:
       matrix:
        container-name:
@@ -45,7 +45,7 @@ jobs:
       - build-container
     permissions:
       packages: write
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
