@@ -518,30 +518,6 @@ all = [
     # for Graviton 3 "balanced" from
     # https://github.com/aws/aws-graviton-getting-started/blob/main/c-c++.md.
 
-    # AArch64 Clang+LLVM+RT+LLD check-all + flang + test-suite +
-    # mlir-integration-tests w/SVE-Vector-Length-Agnostic
-    {'name' : "clang-aarch64-sve-vla",
-    'tags'  : ["clang"],
-    'workernames' : ["linaro-g3-01", "linaro-g3-02", "linaro-g3-03", "linaro-g3-04"],
-    'builddir': "clang-aarch64-sve-vla",
-    'factory' : ClangBuilder.getClangCMakeBuildFactory(
-                    clean=False,
-                    checkout_flang=True,
-                    runTestSuite=True,
-                    env={
-                        'NO_STOP_MESSAGE':'1', # For Fortran test-suite
-                    },
-                    testsuite_flags=[
-                        '--cppflags', '-mcpu=neoverse-512tvb -mllvm -scalable-vectorization=preferred -O3',
-                        '--cmake-define', 'CMAKE_Fortran_FLAGS=-mcpu=neoverse-512tvb -mllvm -scalable-vectorization=preferred -O3',
-                        '--threads=32', '--build-threads=32'],
-                    extra_cmake_args=[
-                        "-DCMAKE_C_FLAGS='-mcpu=neoverse-512tvb'",
-                        "-DCMAKE_CXX_FLAGS='-mcpu=neoverse-512tvb'",
-                        "-DLLVM_ENABLE_LLD=True",
-                        "-DMLIR_INCLUDE_INTEGRATION_TESTS=True",
-                        "-DMLIR_RUN_ARM_SVE_TESTS=True"])},
-
     # AArch64 Clang+LLVM+RT+LLD check-all + flang + test-suite 2-stage w/SVE-Vector-Length-Agnostic
     {'name' : "clang-aarch64-sve-vla-2stage",
     'tags'  : ["clang"],
@@ -571,29 +547,6 @@ all = [
                         "-DMLIR_INCLUDE_INTEGRATION_TESTS=True",
                         "-DMLIR_RUN_ARM_SVE_TESTS=True",
                         "-DCLANG_ENABLE_CIR:BOOL=OFF"])},
-
-    # AArch64 Clang+LLVM+RT+LLD check-all + flang + test-suite w/SVE-Vector-Length-Specific
-    {'name' : "clang-aarch64-sve-vls",
-    'tags'  : ["clang"],
-    'workernames' : ["linaro-g3-01", "linaro-g3-02", "linaro-g3-03", "linaro-g3-04"],
-    'builddir': "clang-aarch64-sve-vls",
-    'factory' : ClangBuilder.getClangCMakeBuildFactory(
-                    clean=False,
-                    checkout_flang=True,
-                    runTestSuite=True,
-                    env={
-                        'NO_STOP_MESSAGE':'1', # For Fortran test-suite
-                    },
-                    testsuite_flags=[
-                        '--cppflags', '-mcpu=neoverse-512tvb -msve-vector-bits=256 -O3',
-                        '--cmake-define', 'CMAKE_Fortran_FLAGS=-mcpu=neoverse-512tvb -msve-vector-bits=256 -O3',
-                        '--threads=32', '--build-threads=32'],
-                    extra_cmake_args=[
-                        "-DCMAKE_C_FLAGS='-mcpu=neoverse-512tvb'",
-                        "-DCMAKE_CXX_FLAGS='-mcpu=neoverse-512tvb'",
-                        "-DLLVM_ENABLE_LLD=True",
-                        "-DMLIR_INCLUDE_INTEGRATION_TESTS=True",
-                        "-DMLIR_RUN_ARM_SVE_TESTS=True"])},
 
     # AArch64 Clang+LLVM+RT+LLD check-all + flang + test-suite 2-stage w/SVE-Vector-Length-Specific
     {'name' : "clang-aarch64-sve-vls-2stage",
