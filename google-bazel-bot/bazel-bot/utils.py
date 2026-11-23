@@ -266,7 +266,7 @@ class CommandProcessor:
             logger.info(f"Running bant: {' '.join(cmd)}")
             result = subprocess.run(
                 cmd,
-                cwd=os.path.join(self.repo_path, self.BazelPath),
+                cwd=self.bazel_path,
                 capture_output=True,
                 text=True,
                 timeout=30,
@@ -278,7 +278,7 @@ class CommandProcessor:
                     "@llvm-project//", "//llvm-project-overlay//"
                 )
                 buildozer_result = subprocess.run(
-                    buildozer_cmd, shell=True, cwd=self.repo_path
+                    buildozer_cmd, shell=True, cwd=self.bazel_path
                 )
                 if buildozer_result.returncode != 0:
                     logger.error(f"Buildozer command failed: {buildozer_cmd}")
