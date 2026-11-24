@@ -351,6 +351,7 @@ all = [
     'factory' : UnifiedTreeBuilder.getCmakeWithNinjaBuildFactory(
                     depends_on_projects=['llvm', 'clang', 'clang-tools-extra',
                                          'lld', 'compiler-rt', 'openmp'],
+                    clean=True,
                     checks=['check-all'],
                     extra_configure_args=[
                         "-DLLVM_TARGETS_TO_BUILD=X86;ARM;AArch64",
@@ -475,7 +476,7 @@ all = [
     'workernames' : ["linaro-clang-aarch64-global-isel", "arm-bbot-clang-aarch64-global-isel"],
     'builddir': "clang-aarch64-global-isel",
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
-                    clean=False,
+                    clean=True,
                     checkout_compiler_rt=False,
                     checkout_lld=False,
                     runTestSuite=True,
@@ -636,7 +637,7 @@ all = [
     'workernames' : ["linaro-g4-01", "linaro-g4-02", "arm-bbot-clang-aarch64-sve2-vla"],
     'builddir': "clang-aarch64-sve2-vla",
     'factory' : ClangBuilder.getClangCMakeBuildFactory(
-                    clean=False,
+                    clean=True,
                     checkout_flang=True,
                     runTestSuite=True,
                     env={
@@ -2374,6 +2375,7 @@ all += [
     'workernames' : ["linaro-flang-aarch64-libcxx", "arm-bbot-flang-aarch64-libcxx"],
     'builddir': "flang-aarch64-libcxx",
     'factory' : FlangBuilder.getFlangOutOfTreeBuildFactory(
+                    clean=True,
                     checks=['check-flang'],
                     llvm_extra_configure_args=[
                         "-DLLVM_TARGETS_TO_BUILD=AArch64",
