@@ -2331,6 +2331,7 @@ all += [
                     ],
                     flang_rt_extra_configure_args=[
                         "-DCMAKE_BUILD_TYPE=Release",
+                        "-DCMAKE_INSTALL_PREFIX=../install",
                     ])},
 
     {'name' : "flang-aarch64-sanitizer",
@@ -2396,6 +2397,7 @@ all += [
                         "-DLLVM_ENABLE_ASSERTIONS=ON",
                         "-DLLVM_ENABLE_LIBCXX=On",
                         "-DCMAKE_BUILD_TYPE=Release",
+                        "-DCMAKE_INSTALL_PREFIX=../install",
                     ])},
 
     {'name' : "flang-aarch64-release",
