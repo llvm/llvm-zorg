@@ -2864,6 +2864,10 @@ all += [
          depends_on_projects=["llvm", "clang", "clang-tools-extra"],
          extra_configure_args=[
              "-DCMAKE_CXX_STANDARD=20",
+             # CMake >= 3.28 enables C++20 module dependency scanning by default
+             # (CMP0155), which requires clang-scan-deps (not installed in the
+             # container) and is unnecessary since LLVM does not use modules.
+             "-DCMAKE_CXX_SCAN_FOR_MODULES=OFF",
              "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
              "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
              "-DCMAKE_BUILD_TYPE=Release",
