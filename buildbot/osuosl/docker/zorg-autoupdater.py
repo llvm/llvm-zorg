@@ -142,7 +142,7 @@ def link_working_config(staging, working_config):
 
 def changed_paths(changed):
     config = [path for path in changed if path.startswith(CONFIG_PATH_PREFIX)]
-    zorg = [path for path in changed if path.startswith(ZORG_PATH_PREFIX)]
+    zorg = [path for path in changed if path.startswith(ZORG_PATH_PREFIX) or Path(path) == DEFAULT_CONFIG_PATH / "master.cfg"]
     return config, zorg
 
 
