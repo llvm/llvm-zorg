@@ -12,6 +12,7 @@ set -euo pipefail
 
 : "${BUILDBOT_HOME:=$HOME}"
 : "${BUILDBOT_ZORG:=$BUILDBOT_HOME/llvm-zorg}"
+: "${BUILDBOT_STAGED_ZORG:=$BUILDBOT_HOME/llvm-zorg-autoupdate}"
 : "${BUILDBOT_CONFIG_DIR:=$BUILDBOT_ZORG/buildbot/osuosl/master}"
 
 #TODO:VV: replace with production values
@@ -104,8 +105,7 @@ cmd_checkconfig() {
 cmd_updateconfig() {
     check_init_zorg "$@"
 
-    #TODO:
-    sleep 1
+    zorg-autoupdater -w "$BUILDBOT_ZORG" -s "$BUILDBOT_STAGED_ZORG"
 }
 
 cmd_startworker() {
@@ -146,7 +146,8 @@ usage() {
     echo "BUILDBOT_ZORG_BRANCH: $BUILDBOT_ZORG_BRANCH"
     echo "BUILDBOT_CONFIG_DIR:  $BUILDBOT_CONFIG_DIR"
     echo "BUILDBOT_BASEDIR:     $BUILDBOT_BASEDIR"
-    
+    echo "BUILDBOT_STAGED_ZORG:     $BUILDBOT_STAGED_ZORG"
+
     exit 1
 }
 
