@@ -29,6 +29,9 @@ services:
       - db
     ports:
       - "8011:8011"
+      - "9990:9990"
+    expose:
+      - 9990
     volumes:
       - llvm-zorg:/buildbot/llvm-zorg
       - llvm-zorg-autoupdate:/buildbot/llvm-zorg-autoupdate

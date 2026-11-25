@@ -21,11 +21,13 @@ services:
     depends_on:
       - db
     ports:
-      - "${BUILDBOT_WEB_PORT}:8011"
+      - "${BUILDBOT_WEB_PORT:-8011}:8011"
+      - "${BUILDBOT_PB_PORT:-9990}:9990"
     expose:
       - ${BUILDBOT_PB_PORT:-9990}
     volumes:
-      - ./llvm-zorg-g0:/buildbot/llvm-zorg
+      - llvm-zorg:/buildbot/llvm-zorg
+      - llvm-zorg-autoupdate:/buildbot/llvm-zorg-autoupdate
       - ./local.staged.cfg:/buildbot/local.cfg:ro
       # - ./worker-passwords.staged.cfg:/buildbot/worker-passwords.cfg:ro
     logging:
@@ -72,3 +74,15 @@ services:
     # The client hooks directly into the database engine network
     network_mode: "service:db"
 
+volumes:
+  llvm-zorg:
+    labels:
+      com.volume.description: "LLVM Zorg Working Directory"
+    driver: local
+    driver_opts:
+      type: none
+      device: ${LLVM_ZORG_ROOT:-./llvm-zorg}
+      o: bind
+  llvm-zorg-autoupdate:
+    labels:
+      com.volume.description: "LLVM Zorg Autoupdater Volume"
