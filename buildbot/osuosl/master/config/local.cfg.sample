@@ -8,6 +8,10 @@ title=LLVM Develop
 title_url=http://localhost:8011/
 # NOTE: my_url must contain the trailing slash.
 my_url=http://localhost:8011/
+# default_page=builders
+# www_port=8011
+# Default: None (merge into twistd.log)
+www_log_file=http.log
 
 [Protocols]
 # pb_port=9990
