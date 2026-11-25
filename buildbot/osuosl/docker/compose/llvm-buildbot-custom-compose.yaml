@@ -1,3 +1,22 @@
+# llvm-buildbot-custom-compose.yaml
+#
+# Custom Docker Compose file for LLVM Buildbot with local development overrides.
+#
+# Note: The llvm-buildbot image is expected to be built locally with the custom Dockerfile.master file.
+# The worker image is expected to be built locally with the custom Dockerfile.dumb-worker file.
+#
+# Run:
+#   docker compose -f llvm-buildbot-custom-compose.yaml up -d
+#
+# .env
+#   LLVM_ZORG_ROOT=
+# db.env
+#   POSTGRES_PASSWORD=change_me
+#   POSTGRES_USER=buildbot
+#   POSTGRES_DB=buildbot
+# in master.cfg, this variable is str.format()ed with the environment variables
+#   BUILDBOT_DB_URL=postgresql+psycopg2://{POSTGRES_USER}:{POSTGRES_PASSWORD}@db/{POSTGRES_DB}
+
 services:
   llvm-buildbot:
     image: buildbot/llvm-buildbot:custom
@@ -11,7 +30,9 @@ services:
     ports:
       - "8011:8011"
     volumes:
-      - /d/projects/llvm-public/llvm-zorg-vvereschaka:/buildbot/llvm-zorg
+      - llvm-zorg:/buildbot/llvm-zorg
+      - llvm-zorg-autoupdate:/buildbot/llvm-zorg-autoupdate
+      # Direct mapping of local configuration files into the container.
       - ./local.develop.cfg:/buildbot/llvm-zorg/buildbot/osuosl/master/config/local.cfg:ro
       - ./worker-passwords.develop.cfg:/buildbot/llvm-zorg/buildbot/osuosl/master/config/worker-passwords.develop.cfg:ro
     logging:
@@ -24,7 +45,7 @@ services:
     env_file:
       - db.env
     image: "postgres:18"
-    restart: always
+    restart: unless-stopped
     expose:
       - 5432
 
@@ -39,7 +60,7 @@ services:
       WORKER_ENVIRONMENT_BLACKLIST: DOCKER_BUILDBOT* BUILDBOT_ENV_* BUILDBOT_1* WORKER_ENVIRONMENT_BLACKLIST WORKERPASS
 
     volumes:
-      - /d/projects/llvm-public/llvm-zorg-vvereschaka/buildbot/osuosl/docker/dumb-worker-logs:/buildbot/dumb-worker/logs
+      - dumb-worker-logs:/buildbot/dumb-worker/logs
       
     links:
       - llvm-buildbot
@@ -48,3 +69,24 @@ services:
       options:
         max-size: "10m"
         max-file: "2"
+
+volumes:
+  llvm-zorg:
+    labels:
+      com.volume.description: "LLVM Zorg Working Directory"
+    driver: local
+    driver_opts:
+      type: none
+      device: ${LLVM_ZORG_ROOT:-../../../../}
+      o: bind
+  llvm-zorg-autoupdate:
+    labels:
+      com.volume.description: "LLVM Zorg Autoupdater Volume"
+  dumb-worker-logs:
+    labels:
+      com.volume.description: "Dumb Worker Logs Directory"
+    driver: local
+    driver_opts:
+      type: none
+      device: ${LLVM_ZORG_ROOT:-../../../../}/buildbot/osuosl/docker/dumb-worker-logs
+      o: bind

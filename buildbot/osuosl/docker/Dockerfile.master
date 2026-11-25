@@ -39,7 +39,7 @@ RUN \
     apt-get update && \
     apt-get -y upgrade && \
     apt-get -y install -q \
-        ca-certificates curl gnupg && \
+    ca-certificates curl gnupg && \
     rm -rf /var/lib/apt/lists/*
 
 RUN \
@@ -54,11 +54,11 @@ RUN \
 RUN \
     apt-get update && \
     apt-get -y install --no-install-recommends --no-install-suggests -q \
-        make \
-        nodejs \
-        virtualenv \
-        git \
-        && \
+    make \
+    nodejs \
+    virtualenv \
+    git \
+    && \
     rm -rf /var/lib/apt/lists/*
 
 RUN corepack enable npm && \
@@ -67,9 +67,15 @@ RUN corepack enable npm && \
 ARG BUILDBOT_REPO_URL="https://github.com/gkistanova/buildbot.git"
 ARG BUILDBOT_REPO_BRANCH="llvm/4.x"
 
-RUN \
-    git clone -b ${BUILDBOT_REPO_BRANCH} ${BUILDBOT_REPO_URL} /usr/src/buildbot
-    
+#TODO:VV:RUN \
+#    git clone -b ${BUILDBOT_REPO_BRANCH} ${BUILDBOT_REPO_URL} /usr/src/buildbot
+ADD --keep-git-dir=true ${BUILDBOT_REPO_URL}#${BUILDBOT_REPO_BRANCH} /usr/src/buildbot
+#TODO:VV:FIXME: we need a proper version tag in the repository
+RUN cd /usr/src/buildbot && \
+    git config user.email "buildbot@lab.llvm.com" && \
+    git config user.name "LLVM Buildbot" && \
+    git tag -a v4.4.0 -m "LLVM Buildbot 4.4.0"
+
 # Use our local specific requirements for the docker container.
 COPY requirements-master-docker-extras.txt /usr/src/buildbot/requirements-master-docker-extras.txt
 COPY constraints-master-docker.txt /usr/src/buildbot/constraints-master-docker.txt
@@ -77,7 +83,7 @@ COPY constraints-master-docker.txt /usr/src/buildbot/constraints-master-docker.t
 RUN cd /usr/src/buildbot && make tarballs
 RUN virtualenv --python=python3 ${BUILDBOT_HOME}/venv && \
     ${BUILDBOT_HOME}/venv/bin/pip3 install -r /usr/src/buildbot/requirements-master-docker-extras.txt \
-        -c /usr/src/buildbot/constraints-master-docker.txt && \
+    -c /usr/src/buildbot/constraints-master-docker.txt && \
     env CRYPTOGRAPHY_DONT_BUILD_RUST=1 ${BUILDBOT_HOME}/venv/bin/pip3 install /usr/src/buildbot/dist/*.whl
 
 RUN mkdir -p /wheels && \
@@ -96,22 +102,24 @@ FROM ubuntu:${OS_VERSION} AS buildbot-master
 LABEL org.opencontainers.image.authors="LLVM/Buildbot Maintainers"
 ARG BUILDBOT_HOME
 
+VOLUME [ "${BUILDBOT_HOME}/llvm-zorg", "${BUILDBOT_HOME}/llvm-zorg-autoupdate" ]
+
 RUN \
     apt-get update && \
     apt-get -y upgrade && \
     apt-get -y install -q \
-        curl \
-        dumb-init \
-        git \
-        libpq5 \
-        libcairo2 \
-        openssh-client \
-        python3 \
-        python3-pip \
-        tar \
-        tzdata \
-        virtualenv \
-        && \
+    curl \
+    dumb-init \
+    git \
+    libpq5 \
+    libcairo2 \
+    openssh-client \
+    python3 \
+    python3-pip \
+    tar \
+    tzdata \
+    virtualenv \
+    && \
     rm -rf /var/lib/apt/lists
 
 # Build wheels in other container using the Dockerfile.build
@@ -121,6 +129,15 @@ COPY --from=buildbot-build /wheels /wheels
 COPY --from=buildbot-build /requirements.txt /requirements.txt
 COPY constraints-master-docker.txt /constraints.txt
 
+# Copy custom scripts into the container.
+COPY --chmod=0755 buildbotctl.sh /usr/src/buildbot/buildbotctl.sh
+COPY --chmod=0755 zorg-autoupdater.py /usr/src/buildbot/zorg-autoupdater.py
+
+RUN \
+    ln -sf /usr/src/buildbot/buildbotctl.sh /usr/bin/buildbotctl && \
+    ln -sf /usr/src/buildbot/zorg-autoupdater.py /usr/bin/zorg-autoupdater
+
+#TODO:VV:FIXME: create a local 'buildbot' user account and sync ownership of the buildbot home directory.
 
 # install pip dependencies
 RUN virtualenv --python=python3 ${BUILDBOT_HOME}/venv && \
@@ -129,17 +146,13 @@ RUN virtualenv --python=python3 ${BUILDBOT_HOME}/venv && \
     rm -r /root/.cache /wheels
 #TODO:VV: do not remove yet    /requirements.txt
 
-
-COPY --chmod=0755 buildbotctl.sh /usr/src/buildbot/buildbotctl.sh
-RUN \
-    ln -sf /usr/src/buildbot/buildbotctl.sh /usr/bin/buildbotctl
-
 COPY buildbot.tac ${BUILDBOT_HOME}/buildbot.tac
 COPY local.cfg ${BUILDBOT_HOME}/local.cfg
 COPY worker-passwords.cfg ${BUILDBOT_HOME}/worker-passwords.cfg
 
 ENV BUILDBOT_HOME="${BUILDBOT_HOME}"
 ENV BUILDBOT_ZORG="${BUILDBOT_HOME}/llvm-zorg"
+ENV BUILDBOT_STAGED_ZORG="${BUILDBOT_HOME}/llvm-zorg-autoupdate"
 
 WORKDIR ${BUILDBOT_HOME}
 
