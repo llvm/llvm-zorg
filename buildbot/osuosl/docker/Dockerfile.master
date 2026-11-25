@@ -26,9 +26,16 @@
 #   --build-arg BUILDBOT_REPO_URL="https://github.com/gkistanova/buildbot.git"
 #   --build-arg BUILDBOT_REPO_BRANCH="llvm/4.x"
 
+# To synchronize the container buildbot account with the host system, you can UID and GID arguments.
+#   --build-arg UID=$(id -u buildbot)
+#   --build-arg GID=$(id -g buildbot)
+# The default UID and GID for the container's buildbot account are 1001.
+
 ARG OS_VERSION="noble"
 
 ARG BUILDBOT_HOME="/buildbot"
+ARG UID=1001
+ARG GID=1001
 
 # Only build on one platform as Buildbot's wheels are pure-python, so cross-platform
 FROM --platform=${BUILDPLATFORM} ubuntu:${OS_VERSION} AS buildbot-build
@@ -67,8 +74,6 @@ RUN corepack enable npm && \
 ARG BUILDBOT_REPO_URL="https://github.com/gkistanova/buildbot.git"
 ARG BUILDBOT_REPO_BRANCH="llvm/4.x"
 
-#TODO:VV:RUN \
-#    git clone -b ${BUILDBOT_REPO_BRANCH} ${BUILDBOT_REPO_URL} /usr/src/buildbot
 ADD --keep-git-dir=true ${BUILDBOT_REPO_URL}#${BUILDBOT_REPO_BRANCH} /usr/src/buildbot
 #TODO:VV:FIXME: we need a proper version tag in the repository
 RUN cd /usr/src/buildbot && \
@@ -101,8 +106,13 @@ RUN mkdir -p /wheels && \
 FROM ubuntu:${OS_VERSION} AS buildbot-master
 LABEL org.opencontainers.image.authors="LLVM/Buildbot Maintainers"
 ARG BUILDBOT_HOME
+ARG UID
+ARG GID
 
 VOLUME [ "${BUILDBOT_HOME}/llvm-zorg", "${BUILDBOT_HOME}/llvm-zorg-autoupdate" ]
+
+RUN groupadd -g ${GID} buildbot && \
+    useradd -m -u ${UID} -g ${GID} buildbot
 
 RUN \
     apt-get update && \
@@ -137,8 +147,6 @@ RUN \
     ln -sf /usr/src/buildbot/buildbotctl.sh /usr/bin/buildbotctl && \
     ln -sf /usr/src/buildbot/zorg-autoupdater.py /usr/bin/zorg-autoupdater
 
-#TODO:VV:FIXME: create a local 'buildbot' user account and sync ownership of the buildbot home directory.
-
 # install pip dependencies
 RUN virtualenv --python=python3 ${BUILDBOT_HOME}/venv && \
     ${BUILDBOT_HOME}/venv/bin/pip3 install --upgrade pip setuptools && \
@@ -149,6 +157,13 @@ RUN virtualenv --python=python3 ${BUILDBOT_HOME}/venv && \
 COPY buildbot.tac ${BUILDBOT_HOME}/buildbot.tac
 COPY local.cfg ${BUILDBOT_HOME}/local.cfg
 COPY worker-passwords.cfg ${BUILDBOT_HOME}/worker-passwords.cfg
+
+# Ensure the buildbot home directory is owned by the buildbot user.
+RUN chown -R buildbot:buildbot ${BUILDBOT_HOME} && \
+    git config --global --add safe.directory ${BUILDBOT_HOME}/llvm-zorg && \
+    git config --global --add safe.directory ${BUILDBOT_HOME}/llvm-zorg-autoupdate
+
+USER buildbot
 
 ENV BUILDBOT_HOME="${BUILDBOT_HOME}"
 ENV BUILDBOT_ZORG="${BUILDBOT_HOME}/llvm-zorg"
