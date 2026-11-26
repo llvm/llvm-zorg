@@ -29,7 +29,7 @@ services:
       - llvm-zorg:/buildbot/llvm-zorg
       - llvm-zorg-autoupdate:/buildbot/llvm-zorg-autoupdate
       - ./local.staged.cfg:/buildbot/local.cfg:ro
-      # - ./worker-passwords.staged.cfg:/buildbot/worker-passwords.cfg:ro
+      - ./worker-passwords.staged.cfg:/buildbot/worker-passwords.cfg:ro
     logging:
       driver: "local"
       options:
