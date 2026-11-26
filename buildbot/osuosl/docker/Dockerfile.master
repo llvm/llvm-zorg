@@ -1,0 +1,174 @@
+# buildbot/buildbot-master
+
+# please follow docker best practices
+# https://docs.docker.com/engine/userguide/eng-image/dockerfile_best-practices/
+
+# Use a multi-stage build:
+# https://docs.docker.com/develop/develop-images/multistage-build/
+
+# Build Docker image
+#  cd buildbot/osuosl/docker
+#  docker build -t "buildbot/llvm-buildbot:custom" -f Dockerfile.master .
+
+# Provides a base Debian (11) image with latest buildbot master installed
+# the master image is not optimized for size, but rather uses Debian for wider package availability
+
+# Provide an intermediate Docker image named "buildbot-build".
+# This intermediate image builds binary wheels
+# which get installed in the final image.
+# This allows us to avoid installing build tools like gcc in the final image.
+
+# buildbot upstream repository
+#   --build-arg BUILDBOT_REPO_URL="https://github.com/buildbot/buildbot.git"
+#   --build-arg BUILDBOT_REPO_BRANCH="master"
+
+# llvm-buildbot git repository
+#   --build-arg BUILDBOT_REPO_URL="https://github.com/gkistanova/buildbot.git"
+#   --build-arg BUILDBOT_REPO_BRANCH="llvm/4.x"
+
+# To synchronize the container buildbot account with the host system, you can UID and GID arguments.
+#   --build-arg UID=$(id -u buildbot)
+#   --build-arg GID=$(id -g buildbot)
+# The default UID and GID for the container's buildbot account are 1001.
+
+ARG OS_VERSION="noble"
+
+ARG BUILDBOT_HOME="/buildbot"
+ARG UID=1001
+ARG GID=1001
+
+# Only build on one platform as Buildbot's wheels are pure-python, so cross-platform
+FROM --platform=${BUILDPLATFORM} ubuntu:${OS_VERSION} AS buildbot-build
+LABEL org.opencontainers.image.authors="LLVM/Buildbot Maintainers"
+ARG BUILDBOT_HOME
+
+RUN \
+    apt-get update && \
+    apt-get -y upgrade && \
+    apt-get -y install -q \
+    ca-certificates curl gnupg && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN \
+    KEYRING=/etc/apt/trusted.gpg.d/nodesource.gpg && \
+    curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o "$KEYRING" && \
+    gpg --no-default-keyring --keyring "$KEYRING" --list-keys && \
+    chmod a+r ${KEYRING} && \
+    NODE_MAJOR=24 && \
+    echo "deb https://deb.nodesource.com/node_${NODE_MAJOR}.x nodistro main" > /etc/apt/sources.list.d/nodesource.list && \
+    cat /etc/apt/sources.list.d/nodesource.list
+
+RUN \
+    apt-get update && \
+    apt-get -y install --no-install-recommends --no-install-suggests -q \
+    make \
+    nodejs \
+    virtualenv \
+    git \
+    && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN corepack enable npm && \
+    npm install -g yarn
+
+ARG BUILDBOT_REPO_URL="https://github.com/gkistanova/buildbot.git"
+ARG BUILDBOT_REPO_BRANCH="llvm/4.x"
+
+ADD --keep-git-dir=true ${BUILDBOT_REPO_URL}#${BUILDBOT_REPO_BRANCH} /usr/src/buildbot
+#TODO:VV:FIXME: we need a proper version tag in the repository
+RUN cd /usr/src/buildbot && \
+    git config user.email "buildbot@lab.llvm.com" && \
+    git config user.name "LLVM Buildbot" && \
+    git tag -a v4.4.0 -m "LLVM Buildbot 4.4.0"
+
+# Use our local specific requirements for the docker container.
+COPY requirements-master-docker-extras.txt /usr/src/buildbot/requirements-master-docker-extras.txt
+COPY constraints-master-docker.txt /usr/src/buildbot/constraints-master-docker.txt
+
+RUN cd /usr/src/buildbot && make tarballs
+RUN virtualenv --python=python3 ${BUILDBOT_HOME}/venv && \
+    ${BUILDBOT_HOME}/venv/bin/pip3 install -r /usr/src/buildbot/requirements-master-docker-extras.txt \
+    -c /usr/src/buildbot/constraints-master-docker.txt && \
+    env CRYPTOGRAPHY_DONT_BUILD_RUST=1 ${BUILDBOT_HOME}/venv/bin/pip3 install /usr/src/buildbot/dist/*.whl
+
+RUN mkdir -p /wheels && \
+    ${BUILDBOT_HOME}/venv/bin/pip3 list --format freeze > /requirements.txt && \
+    cat /requirements.txt && \
+    cp /usr/src/buildbot/dist/*.whl /wheels
+
+#==============================================================================================
+# Build the final image here.  Use build artifacts from the buildbot-build
+# container.
+
+# Note that the UI and worker packages are the latest version published on pypi
+# This is to avoid pulling node inside this container
+
+FROM ubuntu:${OS_VERSION} AS buildbot-master
+LABEL org.opencontainers.image.authors="LLVM/Buildbot Maintainers"
+ARG BUILDBOT_HOME
+ARG UID
+ARG GID
+
+VOLUME [ "${BUILDBOT_HOME}/llvm-zorg", "${BUILDBOT_HOME}/llvm-zorg-autoupdate" ]
+
+RUN groupadd -g ${GID} buildbot && \
+    useradd -m -u ${UID} -g ${GID} buildbot
+
+RUN \
+    apt-get update && \
+    apt-get -y upgrade && \
+    apt-get -y install -q \
+    curl \
+    dumb-init \
+    git \
+    libpq5 \
+    libcairo2 \
+    openssh-client \
+    python3 \
+    python3-pip \
+    tar \
+    tzdata \
+    virtualenv \
+    && \
+    rm -rf /var/lib/apt/lists
+
+# Build wheels in other container using the Dockerfile.build
+# and copy them into this container.
+# We do this to avoid having to pull gcc for building native extensions.
+COPY --from=buildbot-build /wheels /wheels
+COPY --from=buildbot-build /requirements.txt /requirements.txt
+COPY constraints-master-docker.txt /constraints.txt
+
+# Copy custom scripts into the container.
+COPY --chmod=0755 buildbotctl.sh /usr/src/buildbot/buildbotctl.sh
+COPY --chmod=0755 zorg-autoupdater.py /usr/src/buildbot/zorg-autoupdater.py
+
+RUN \
+    ln -sf /usr/src/buildbot/buildbotctl.sh /usr/bin/buildbotctl && \
+    ln -sf /usr/src/buildbot/zorg-autoupdater.py /usr/bin/zorg-autoupdater
+
+# install pip dependencies
+RUN virtualenv --python=python3 ${BUILDBOT_HOME}/venv && \
+    ${BUILDBOT_HOME}/venv/bin/pip3 install --upgrade pip setuptools && \
+    cd /wheels && ${BUILDBOT_HOME}/venv/bin/pip3 install -c /constraints.txt -r /requirements.txt $(ls -1 | grep -v 'buildbot-worker') && \
+    rm -r /root/.cache /wheels
+#TODO:VV: do not remove yet    /requirements.txt
+
+COPY buildbot.tac ${BUILDBOT_HOME}/buildbot.tac
+COPY local.cfg ${BUILDBOT_HOME}/local.cfg
+COPY worker-passwords.cfg ${BUILDBOT_HOME}/worker-passwords.cfg
+
+# Ensure the buildbot home directory is owned by the buildbot user.
+RUN chown -R buildbot:buildbot ${BUILDBOT_HOME} && \
+    git config --global --add safe.directory ${BUILDBOT_HOME}/llvm-zorg && \
+    git config --global --add safe.directory ${BUILDBOT_HOME}/llvm-zorg-autoupdate
+
+USER buildbot
+
+ENV BUILDBOT_HOME="${BUILDBOT_HOME}"
+ENV BUILDBOT_ZORG="${BUILDBOT_HOME}/llvm-zorg"
+ENV BUILDBOT_STAGED_ZORG="${BUILDBOT_HOME}/llvm-zorg-autoupdate"
+
+WORKDIR ${BUILDBOT_HOME}
+
+CMD ["dumb-init", "/usr/bin/buildbotctl", "start"]
