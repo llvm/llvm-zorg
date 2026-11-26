@@ -35,6 +35,7 @@ if test_mode:
     options.set('Master Options', 'no_authentication', "True")
     options.set('Master Options', 'no_authorization', "True")
     options.set('Master Options', 'allow_ignore_offline_workers_timeout', "False")
+    options.set('Master Options', 'allow_develop_workers', "False")
 
 import config.auth
 import config.builders
