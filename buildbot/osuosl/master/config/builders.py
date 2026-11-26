@@ -4172,6 +4172,47 @@ all += [
                         "-DLLVM_CCACHE_BUILD=ON",
                         "-DCLANG_ENABLE_CIR:BOOL=OFF"
                     ])},
+
+    # ARM64EC Flang Windows
+    {'name' : "flang-arm64ec-windows-msvc",
+    'tags'  : ["flang"],
+    'workernames' : ["arm-bbot-flang-arm64ec-windows-msvc"],
+    'builddir': "flang-arm64ec-windows-msvc",
+    'factory' : ClangBuilder.getClangCMakeBuildFactory(
+                    vs="manual",
+                    clean=True,
+                    checkout_flang=True,
+                    checkout_lld=True,
+                    checkout_compiler_rt=True,
+                    # Disable check-all, and enable check-flang and check-mlir
+                    checks=['check-flang', 'check-mlir'],
+                    runTestSuite=True,
+                    testsuite_flags=[
+                        '--use-make=ninja',
+                        '--succinct-compile-output',
+                        '--cmake-define', 'TEST_SUITE_COLLECT_CODE_SIZE=OFF',
+                        '--cmake-define', 'TEST_SUITE_COLLECT_COMPILE_TIME=OFF',
+                        '--cmake-define', "TEST_SUITE_SUBDIRS='Fortran;External'",
+                        '--cmake-define', 'TEST_SUITE_ENABLE_LAPACK=On',
+                        '--cmake-define', 'CMAKE_C_COMPILER_TARGET=arm64ec-pc-windows-msvc',
+                        '--cmake-define', 'CMAKE_CXX_COMPILER_TARGET=arm64ec-pc-windows-msvc',
+                        '--cmake-define', 'CMAKE_Fortran_COMPILER_TARGET=arm64ec-pc-windows-msvc',
+                        '--cmake-define', 'CMAKE_EXE_LINKER_FLAGS=-machine:arm64ec',
+                        '--use-make=ninja'],
+                    extra_cmake_args=[
+                        "-DLLVM_TARGETS_TO_BUILD=AArch64",
+                        "-DCLANG_DEFAULT_LINKER=lld",
+                        "-DCMAKE_TRY_COMPILE_CONFIGURATION=Release",
+                        "-DCMAKE_DISABLE_PRECOMPILE_HEADERS=On",
+                        "-DCOMPILER_RT_BUILD_SANITIZERS=OFF",
+                        "-DLLVM_CCACHE_BUILD=ON",
+                        "-DCLANG_ENABLE_CIR:BOOL=OFF",
+                        "-DLLVM_RUNTIME_TARGETS=default;arm64ec-pc-windows-msvc",
+                        "-DLLVM_BUILTIN_TARGETS=default;arm64ec-pc-windows-msvc",
+                        "-DLLVM_ENABLE_PER_TARGET_RUNTIME_DIR=On",
+                        "-DLIBOMP_ENABLE_ARM64X=On"
+                    ])},
+
 ]
 
 if config.options.getboolean('Master Options', 'allow_develop_workers', fallback = False):
