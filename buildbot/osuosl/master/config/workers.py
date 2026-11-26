@@ -31,7 +31,6 @@ def get_all():
         create_worker("linaro-clang-aarch64-quick", max_builds=1),
         create_worker("linaro-clang-aarch64-lld-2stage", max_builds=1),
         create_worker("linaro-clang-aarch64-global-isel", max_builds=1),
-        create_worker("linaro-lldb-aarch64-ubuntu", max_builds=1),
         create_worker("linaro-flang-aarch64-dylib", max_builds=1),
         create_worker("linaro-flang-aarch64-sharedlibs", max_builds=1),
         create_worker("linaro-flang-aarch64-out-of-tree", max_builds=1),
@@ -39,14 +38,6 @@ def get_all():
         create_worker("linaro-flang-aarch64-release", max_builds=1),
         create_worker("linaro-flang-aarch64-rel-assert", max_builds=1),
         create_worker("linaro-flang-aarch64-latest-gcc", max_builds=1),
-        # Graviton 3
-        create_worker("linaro-g3-01", max_builds=1),
-        create_worker("linaro-g3-02", max_builds=1),
-        create_worker("linaro-g3-03", max_builds=1),
-        create_worker("linaro-g3-04", max_builds=1),
-        # Graviton 4
-        create_worker("linaro-g4-01", max_builds=1),
-        create_worker("linaro-g4-02", max_builds=1),
 
         # Windows Dev Kit 2023, Snapdragon® 8cx Gen 3 
         create_worker("linaro-armv8-windows-msvc-01", max_builds=1),
